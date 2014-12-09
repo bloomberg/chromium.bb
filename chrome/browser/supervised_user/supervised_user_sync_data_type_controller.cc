@@ -5,8 +5,6 @@
 #include "chrome/browser/supervised_user/supervised_user_sync_data_type_controller.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/supervised_user/supervised_user_service.h"
-#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -35,8 +33,7 @@ bool SupervisedUserSyncDataTypeController::ReadyForStart() const {
     case syncer::SUPERVISED_USER_SETTINGS:
       return profile_->IsSupervised();
     case syncer::SUPERVISED_USER_SHARED_SETTINGS:
-      return !SupervisedUserServiceFactory::GetForProfile(profile_)
-                  ->IsChildAccount();
+      return !profile_->IsChild();
     default:
       NOTREACHED();
   }

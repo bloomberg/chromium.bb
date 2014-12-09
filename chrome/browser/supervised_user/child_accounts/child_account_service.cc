@@ -45,7 +45,7 @@ void ChildAccountService::Init() {
   SigninManagerFactory::GetForProfile(profile_)->AddObserver(this);
   SupervisedUserServiceFactory::GetForProfile(profile_)->SetDelegate(this);
 
-  PropagateChildStatusToUser(IsChildAccount());
+  PropagateChildStatusToUser(profile_->IsChild());
 
   // If we're already signed in, fetch the flag again just to be sure.
   // (Previously, the browser might have been closed before we got the flag.
@@ -65,13 +65,8 @@ void ChildAccountService::Shutdown() {
   SigninManagerFactory::GetForProfile(profile_)->RemoveObserver(this);
 }
 
-bool ChildAccountService::IsChildAccount() const {
-  return profile_->GetPrefs()->GetString(prefs::kSupervisedUserId) ==
-             supervised_users::kChildAccountSUID;
-}
-
 bool ChildAccountService::SetActive(bool active) {
-  if (!IsChildAccount() && !active_)
+  if (!profile_->IsChild() && !active_)
     return false;
   if (active_ == active)
     return true;
@@ -173,7 +168,7 @@ void ChildAccountService::GoogleSigninSucceeded(const std::string& account_id,
 
 void ChildAccountService::GoogleSignedOut(const std::string& account_id,
                                           const std::string& username) {
-  DCHECK(!IsChildAccount());
+  DCHECK(!profile_->IsChild());
   CancelFetchingServiceFlags();
 }
 
@@ -253,7 +248,7 @@ void ChildAccountService::OnFlagsFetched(
 }
 
 void ChildAccountService::SetIsChildAccount(bool is_child_account) {
-  if (IsChildAccount() == is_child_account)
+  if (profile_->IsChild() == is_child_account)
     return;
 
   if (is_child_account) {

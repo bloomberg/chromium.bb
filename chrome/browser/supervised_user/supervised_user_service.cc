@@ -694,10 +694,6 @@ void SupervisedUserService::AddAccessRequest(const GURL& url,
                            0);
 }
 
-bool SupervisedUserService::IsChildAccount() const {
-  return delegate_ && delegate_->IsChildAccount();
-}
-
 void SupervisedUserService::InitSync(const std::string& refresh_token) {
   StartSetupSync();
 

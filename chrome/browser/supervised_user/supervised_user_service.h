@@ -83,7 +83,7 @@ class SupervisedUserService : public KeyedService,
     // Returns true to indicate that the delegate handled the (de)activation, or
     // false to indicate that the SupervisedUserService itself should handle it.
     virtual bool SetActive(bool active) = 0;
-    // Returns whether the current profile is linked to a child account.
+    // TODO(treib): Unused, remove.
     virtual bool IsChildAccount() const;
     // Returns the path to a blacklist file to load, or an empty path to
     // indicate "none".
@@ -129,9 +129,6 @@ class SupervisedUserService : public KeyedService,
   // a prefix followed by a URIEncoded version of the URL. Each entry contains
   // a dictionary which currently has the timestamp of the request in it.
   void AddAccessRequest(const GURL& url, const SuccessCallback& callback);
-
-  // Returns whether the profile is linked to a child account.
-  bool IsChildAccount() const;
 
   // Returns the email address of the custodian.
   std::string GetCustodianEmailAddress() const;

@@ -46,7 +46,6 @@ class ChildAccountService : public KeyedService,
 
   // SupervisedUserService::Delegate implementation.
   virtual bool SetActive(bool active) override;
-  virtual bool IsChildAccount() const override;
   virtual base::FilePath GetBlacklistPath() const override;
   virtual GURL GetBlacklistURL() const override;
   virtual std::string GetSafeSitesCx() const override;

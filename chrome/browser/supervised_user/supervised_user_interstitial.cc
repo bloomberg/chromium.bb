@@ -192,7 +192,7 @@ std::string SupervisedUserInterstitial::GetHTMLContents() {
   strings.SetString("secondAvatarURL2x", BuildAvatarImageUrl(profile_image_url2,
                                                              kAvatarSize2x));
 
-  bool is_child_account = supervised_user_service->IsChildAccount();
+  bool is_child_account = profile_->IsChild();
 
   base::string16 custodian =
       base::UTF8ToUTF16(supervised_user_service->GetCustodianName());
