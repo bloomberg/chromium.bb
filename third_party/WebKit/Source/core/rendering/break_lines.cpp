@@ -182,12 +182,52 @@ static inline int nextBreakablePosition(LazyLineBreakIterator& lazyBreakIterator
     return len;
 }
 
+static inline bool isUnicodeCategoryLetterOrNumber(UChar lastCh, UChar ch)
+{
+    UChar32 ch32 = U16_IS_LEAD(lastCh) && U16_IS_TRAIL(ch) ? U16_GET_SUPPLEMENTARY(lastCh, ch) : ch;
+    return (U_MASK(u_charType(ch32)) & (U_GC_L_MASK | U_GC_N_MASK));
+}
+
+template<typename CharacterType>
+static inline int nextBreakablePositionBreakAll(LazyLineBreakIterator& lazyBreakIterator, const CharacterType* str, unsigned length, int pos)
+{
+    int len = static_cast<int>(length);
+    CharacterType lastLastCh = pos > 1 ? str[pos - 2] : static_cast<CharacterType>(lazyBreakIterator.secondToLastCharacter());
+    CharacterType lastCh = pos > 0 ? str[pos - 1] : static_cast<CharacterType>(lazyBreakIterator.lastCharacter());
+    bool lastIsLetterOrNumber = isUnicodeCategoryLetterOrNumber(lastLastCh, lastCh);
+    for (int i = pos; i < len; ++i) {
+        CharacterType ch = str[i];
+
+        if (isBreakableSpace<false>(ch) || shouldBreakAfter(lastLastCh, lastCh, ch))
+            return i;
+
+        if (!U16_IS_LEAD(ch)) {
+            bool isLetterOrNumber = isUnicodeCategoryLetterOrNumber(lastCh, ch);
+            if (isLetterOrNumber && lastIsLetterOrNumber)
+                return i > pos && U16_IS_TRAIL(ch) ? i - 1 : i;
+            lastIsLetterOrNumber = isLetterOrNumber;
+        }
+
+        lastLastCh = lastCh;
+        lastCh = ch;
+    }
+    return len;
+}
+
 int nextBreakablePositionIgnoringNBSP(LazyLineBreakIterator& lazyBreakIterator, int pos)
 {
     String string = lazyBreakIterator.string();
     if (string.is8Bit())
         return nextBreakablePosition<LChar, false>(lazyBreakIterator, string.characters8(), string.length(), pos);
     return nextBreakablePosition<UChar, false>(lazyBreakIterator, string.characters16(), string.length(), pos);
+}
+
+int nextBreakablePositionBreakAll(LazyLineBreakIterator& lazyBreakIterator, int pos)
+{
+    String string = lazyBreakIterator.string();
+    if (string.is8Bit())
+        return nextBreakablePositionBreakAll<LChar>(lazyBreakIterator, string.characters8(), string.length(), pos);
+    return nextBreakablePositionBreakAll<UChar>(lazyBreakIterator, string.characters16(), string.length(), pos);
 }
 
 } // namespace blink

@@ -1008,7 +1008,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
             continue;
         }
 
-        bool hasBreak = breakAll || isBreakable(breakIterator, i, nextBreakable);
+        bool hasBreak = isBreakable(breakIterator, i, nextBreakable, breakAll ? LineBreakType::BreakAll : LineBreakType::Normal);
         bool betweenWords = true;
         int j = i;
         while (c != newlineCharacter && c != space && c != characterTabulation && (c != softHyphen)) {

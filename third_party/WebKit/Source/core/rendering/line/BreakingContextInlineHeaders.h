@@ -615,7 +615,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
 
         bool applyWordSpacing = false;
 
-        if ((breakAll || breakWords) && !midWordBreak) {
+        if (breakWords && !midWordBreak) {
             wrapW += charWidth;
             bool midWordBreakIsBeforeSurrogatePair = U16_IS_LEAD(c) && m_current.offset() + 1 < renderText->textLength() && U16_IS_TRAIL((*renderText)[m_current.offset() + 1]);
             charWidth = textWidth(renderText, m_current.offset(), midWordBreakIsBeforeSurrogatePair ? 2 : 1, font, m_width.committedWidth() + wrapW, isFixedPitch, m_collapseWhiteSpace);
@@ -623,7 +623,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
         }
 
         int nextBreakablePosition = m_current.nextBreakablePosition();
-        bool betweenWords = c == '\n' || (m_currWS != PRE && !m_atStart && isBreakable(m_renderTextInfo.m_lineBreakIterator, m_current.offset(), nextBreakablePosition));
+        bool betweenWords = c == '\n' || (m_currWS != PRE && !m_atStart && isBreakable(m_renderTextInfo.m_lineBreakIterator, m_current.offset(), nextBreakablePosition, breakAll ? LineBreakType::BreakAll : LineBreakType::Normal));
         m_current.setNextBreakablePosition(nextBreakablePosition);
 
         if (betweenWords || midWordBreak) {
