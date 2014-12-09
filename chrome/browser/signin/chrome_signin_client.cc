@@ -165,6 +165,7 @@ void ChromeSigninClient::OnSignedOut() {
       g_browser_process->profile_manager()->GetProfileInfoCache();
   size_t index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
   cache.SetLocalAuthCredentialsOfProfileAtIndex(index, std::string());
+  cache.SetUserNameOfProfileAtIndex(index, base::string16());
   cache.SetProfileSigninRequiredAtIndex(index, false);
 }
 
