@@ -69,16 +69,6 @@ void PNGAPI decodingFailed(png_structp png, png_const_charp)
     longjmp(JMPBUF(png), 1);
 }
 
-// Callbacks given to the read struct.  The first is for warnings (we want to
-// treat a particular warning as an error, which is why we have to register this
-// callback).
-void PNGAPI decodingWarning(png_structp png, png_const_charp warning)
-{
-    // Turn PLTE tRNS warnings into errors: http://bugzil.la/251381 for details.
-    if (!strncmp(warning, "Missing PLTE before tRNS", 24))
-        png_error(png, warning);
-}
-
 // Called when image header information is available (including the size).
 void PNGAPI headerAvailable(png_structp png, png_infop)
 {
@@ -115,7 +105,7 @@ public:
         , m_rowBuffer()
 #endif
     {
-        m_png = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, decodingFailed, decodingWarning);
+        m_png = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, decodingFailed, 0);
         m_info = png_create_info_struct(m_png);
         png_set_progressive_read_fn(m_png, m_decoder, headerAvailable, rowAvailable, pngComplete);
     }
