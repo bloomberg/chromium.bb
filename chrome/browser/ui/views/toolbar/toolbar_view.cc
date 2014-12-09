@@ -147,8 +147,7 @@ ToolbarView::ToolbarView(Browser* browser)
   chrome::AddCommandObserver(browser_, IDC_LOAD_NEW_TAB_PAGE, this);
 
   display_mode_ = DISPLAYMODE_LOCATION;
-  if (browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP) ||
-      (browser->is_app() && extensions::util::IsStreamlinedHostedAppsEnabled()))
+  if (browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP))
     display_mode_ = DISPLAYMODE_NORMAL;
 
   if (OutdatedUpgradeBubbleView::IsAvailable()) {
