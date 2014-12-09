@@ -45,6 +45,7 @@ WheelEvent::WheelEvent()
     , m_deltaY(0)
     , m_deltaZ(0)
     , m_deltaMode(DOM_DELTA_PIXEL)
+    , m_canScroll(true)
 {
 }
 
@@ -55,12 +56,13 @@ WheelEvent::WheelEvent(const AtomicString& type, const WheelEventInit& initializ
     , m_deltaY(initializer.deltaY ? initializer.deltaY : -initializer.wheelDeltaY)
     , m_deltaZ(initializer.deltaZ)
     , m_deltaMode(initializer.deltaMode)
+    , m_canScroll(true)
 {
 }
 
 WheelEvent::WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta, unsigned deltaMode,
     PassRefPtrWillBeRawPtr<AbstractView> view, const IntPoint& screenLocation, const IntPoint& windowLocation,
-    bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short buttons)
+    bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short buttons, bool canScroll)
     : MouseEvent(EventTypeNames::wheel, true, true, view, 0, screenLocation.x(), screenLocation.y(),
         windowLocation.x(), windowLocation.y(), 0, 0, ctrlKey, altKey, shiftKey, metaKey, 0, buttons,
         nullptr, nullptr, false, PlatformMouseEvent::RealOrIndistinguishable)
@@ -69,6 +71,7 @@ WheelEvent::WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta,
     , m_deltaY(-rawDelta.y())
     , m_deltaZ(0)
     , m_deltaMode(deltaMode)
+    , m_canScroll(canScroll)
 {
 }
 
@@ -107,7 +110,8 @@ WheelEventDispatchMediator::WheelEventDispatchMediator(const PlatformWheelEvent&
     setEvent(WheelEvent::create(FloatPoint(event.wheelTicksX(), event.wheelTicksY()), FloatPoint(event.deltaX(), event.deltaY()),
         deltaMode(event), view, event.globalPosition(), event.position(),
         event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(),
-        MouseEvent::platformModifiersToButtons(event.modifiers())));
+        MouseEvent::platformModifiersToButtons(event.modifiers()),
+        event.canScroll()));
 }
 
 WheelEvent& WheelEventDispatchMediator::event() const

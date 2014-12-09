@@ -38,6 +38,7 @@
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/TouchEvent.h"
+#include "core/events/WheelEvent.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -728,4 +729,71 @@ TEST(WebInputEventConversionTest, PinchViewportOffset)
     }
 }
 
+TEST(WebInputEventConversionTest, WebMouseWheelEventBuilder)
+{
+    const std::string baseURL("http://www.test5.com/");
+    const std::string fileName("fixed_layout.html");
+
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("fixed_layout.html"));
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(baseURL + fileName, true);
+    int pageWidth = 640;
+    int pageHeight = 480;
+    webViewImpl->resize(WebSize(pageWidth, pageHeight));
+    webViewImpl->layout();
+
+    RefPtrWillBeRawPtr<Document> document = toLocalFrame(webViewImpl->page()->mainFrame())->document();
+    RefPtrWillBeRawPtr<WheelEvent> event = WheelEvent::create(FloatPoint(1, 3), FloatPoint(5, 10),
+        WheelEvent::DOM_DELTA_PAGE, document.get()->domWindow(),  IntPoint(2, 6), IntPoint(10, 30),
+        true, false, false, false, 0, true);
+    WebMouseWheelEventBuilder webMouseWheel(toLocalFrame(webViewImpl->page()->mainFrame())->view(), document.get()->renderView(), *event);
+    EXPECT_EQ(1, webMouseWheel.wheelTicksX);
+    EXPECT_EQ(3, webMouseWheel.wheelTicksY);
+    EXPECT_EQ(5, webMouseWheel.deltaX);
+    EXPECT_EQ(10, webMouseWheel.deltaY);
+    EXPECT_EQ(2, webMouseWheel.globalX);
+    EXPECT_EQ(6, webMouseWheel.globalY);
+    EXPECT_EQ(10, webMouseWheel.windowX);
+    EXPECT_EQ(30, webMouseWheel.windowY);
+    EXPECT_TRUE(webMouseWheel.scrollByPage);
+    EXPECT_EQ(WebInputEvent::ControlKey, webMouseWheel.modifiers);
+    EXPECT_TRUE(webMouseWheel.canScroll);
+}
+
+TEST(WebInputEventConversionTest, PlatformWheelEventBuilder)
+{
+    const std::string baseURL("http://www.test6.com/");
+    const std::string fileName("fixed_layout.html");
+
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("fixed_layout.html"));
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(baseURL + fileName, true);
+    int pageWidth = 640;
+    int pageHeight = 480;
+    webViewImpl->resize(WebSize(pageWidth, pageHeight));
+    webViewImpl->layout();
+
+    FrameView* view = toLocalFrame(webViewImpl->page()->mainFrame())->view();
+
+    {
+        WebMouseWheelEvent webMouseWheelEvent;
+        webMouseWheelEvent.type = WebInputEvent::MouseWheel;
+        webMouseWheelEvent.x = 0;
+        webMouseWheelEvent.y = 5;
+        webMouseWheelEvent.deltaX = 10;
+        webMouseWheelEvent.deltaY = 15;
+        webMouseWheelEvent.modifiers = WebInputEvent::ControlKey;
+        webMouseWheelEvent.hasPreciseScrollingDeltas = true;
+        webMouseWheelEvent.canScroll = true;
+
+        PlatformWheelEventBuilder platformWheelBuilder(view, webMouseWheelEvent);
+        EXPECT_EQ(0, platformWheelBuilder.position().x());
+        EXPECT_EQ(5, platformWheelBuilder.position().y());
+        EXPECT_EQ(10, platformWheelBuilder.deltaX());
+        EXPECT_EQ(15, platformWheelBuilder.deltaY());
+        EXPECT_EQ(WebInputEvent::ControlKey, platformWheelBuilder.modifiers());
+        EXPECT_TRUE(platformWheelBuilder.hasPreciseScrollingDeltas());
+        EXPECT_TRUE(platformWheelBuilder.canScroll());
+    }
+}
 } // anonymous namespace

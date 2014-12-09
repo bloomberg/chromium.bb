@@ -374,6 +374,12 @@ public:
     bool scrollByPage;
     bool hasPreciseScrollingDeltas;
 
+    // When false, this wheel event should not trigger scrolling (or any other default
+    // action) if the event goes unhandled by JavaScript. This is used, for example,
+    // when the browser decides the default behavior for Ctrl+Wheel should be to zoom
+    // instead of scroll.
+    bool canScroll;
+
     WebMouseWheelEvent()
         : WebMouseEvent(sizeof(WebMouseWheelEvent))
         , deltaX(0.0f)
@@ -388,6 +394,7 @@ public:
         , canRubberbandRight(true)
         , scrollByPage(false)
         , hasPreciseScrollingDeltas(false)
+        , canScroll(true)
     {
     }
 };

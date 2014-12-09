@@ -196,6 +196,7 @@ PlatformWheelEventBuilder::PlatformWheelEventBuilder(Widget* widget, const WebMo
     m_modifiers = toPlatformMouseEventModifiers(e.modifiers);
 
     m_hasPreciseScrollingDeltas = e.hasPreciseScrollingDeltas;
+    m_canScroll = e.canScroll;
 #if OS(MACOSX)
     m_phase = static_cast<PlatformWheelEventPhase>(e.phase);
     m_momentumPhase = static_cast<PlatformWheelEventPhase>(e.momentumPhase);
@@ -641,6 +642,7 @@ WebMouseWheelEventBuilder::WebMouseWheelEventBuilder(const Widget* widget, const
     wheelTicksX = event.ticksX();
     wheelTicksY = event.ticksY();
     scrollByPage = event.deltaMode() == WheelEvent::DOM_DELTA_PAGE;
+    canScroll = event.canScroll();
 }
 
 WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event)

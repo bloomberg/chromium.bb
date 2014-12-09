@@ -68,10 +68,10 @@ public:
     static PassRefPtrWillBeRawPtr<WheelEvent> create(const FloatPoint& wheelTicks,
         const FloatPoint& rawDelta, unsigned deltaMode, PassRefPtrWillBeRawPtr<AbstractView> view,
         const IntPoint& screenLocation, const IntPoint& windowLocation,
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short buttons)
+        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short buttons, bool canScroll)
     {
         return adoptRefWillBeNoop(new WheelEvent(wheelTicks, rawDelta, deltaMode, view,
-        screenLocation, windowLocation, ctrlKey, altKey, shiftKey, metaKey, buttons));
+        screenLocation, windowLocation, ctrlKey, altKey, shiftKey, metaKey, buttons, canScroll));
     }
 
     double deltaX() const { return m_deltaX; } // Positive when scrolling right.
@@ -83,6 +83,7 @@ public:
     unsigned deltaMode() const { return m_deltaMode; }
     float ticksX() const { return static_cast<float>(m_wheelDelta.x()) / TickMultiplier; }
     float ticksY() const { return static_cast<float>(m_wheelDelta.y()) / TickMultiplier; }
+    bool canScroll() const { return m_canScroll; }
 
     virtual const AtomicString& interfaceName() const override;
     virtual bool isMouseEvent() const override;
@@ -95,13 +96,14 @@ private:
     WheelEvent(const AtomicString&, const WheelEventInit&);
     WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta,
         unsigned, PassRefPtrWillBeRawPtr<AbstractView>, const IntPoint& screenLocation, const IntPoint& windowLocation,
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short buttons);
+        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short buttons, bool canScroll);
 
     IntPoint m_wheelDelta;
     double m_deltaX;
     double m_deltaY;
     double m_deltaZ;
     unsigned m_deltaMode;
+    bool m_canScroll;
 };
 
 DEFINE_EVENT_TYPE_CASTS(WheelEvent);

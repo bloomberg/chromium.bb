@@ -51,7 +51,7 @@ struct SameSizeAsWebMouseEvent : public SameSizeAsWebInputEvent {
 };
 
 struct SameSizeAsWebMouseWheelEvent : public SameSizeAsWebMouseEvent {
-    int mousewheelData[9];
+    int mousewheelData[10];
 };
 
 struct SameSizeAsWebGestureEvent : public SameSizeAsWebInputEvent {

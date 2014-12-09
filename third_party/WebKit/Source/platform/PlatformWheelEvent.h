@@ -63,6 +63,7 @@ public:
         , m_wheelTicksY(0)
         , m_granularity(ScrollByPixelWheelEvent)
         , m_hasPreciseScrollingDeltas(false)
+        , m_canScroll(true)
 #if OS(MACOSX)
         , m_phase(PlatformWheelEventPhaseNone)
         , m_momentumPhase(PlatformWheelEventPhaseNone)
@@ -82,6 +83,7 @@ public:
         , m_wheelTicksY(wheelTicksY)
         , m_granularity(granularity)
         , m_hasPreciseScrollingDeltas(false)
+        , m_canScroll(true)
 #if OS(MACOSX)
         , m_phase(PlatformWheelEventPhaseNone)
         , m_momentumPhase(PlatformWheelEventPhaseNone)
@@ -104,6 +106,8 @@ public:
 
     bool hasPreciseScrollingDeltas() const { return m_hasPreciseScrollingDeltas; }
     void setHasPreciseScrollingDeltas(bool b) { m_hasPreciseScrollingDeltas = b; }
+    bool canScroll() const { return m_canScroll; }
+    void setCanScroll(bool b) { m_canScroll = b; }
 #if OS(MACOSX)
     PlatformWheelEventPhase phase() const { return m_phase; }
     PlatformWheelEventPhase momentumPhase() const { return m_momentumPhase; }
@@ -123,6 +127,7 @@ protected:
     float m_wheelTicksY;
     PlatformWheelEventGranularity m_granularity;
     bool m_hasPreciseScrollingDeltas;
+    bool m_canScroll;
 #if OS(MACOSX)
     PlatformWheelEventPhase m_phase;
     PlatformWheelEventPhase m_momentumPhase;
