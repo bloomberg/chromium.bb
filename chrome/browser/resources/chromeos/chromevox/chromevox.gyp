@@ -154,16 +154,6 @@
           ],
           'includes': ['generate_deps.gypi'],
         },
-        # Used for webstore releases.
-        {
-          'target_name': 'chromevox_webstore_manifest',
-          'type': 'none',
-          'variables': {
-            'output_manifest_path': '<(chromevox_dest_dir)/manifest.json',
-            'is_chromevox_classic': 1,
-          },
-          'includes': [ 'generate_manifest.gypi', ],
-        },
         {
           'target_name': 'chromevox_manifest',
           'type': 'none',

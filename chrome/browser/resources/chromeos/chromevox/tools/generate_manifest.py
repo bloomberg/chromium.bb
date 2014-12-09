@@ -43,13 +43,13 @@ def main():
       '-o', '--output_manifest', action='store', metavar='OUTPUT_MANIFEST',
       help='File to place generated manifest')
   parser.add_option(
-      '--is_guest_manifest', action='store', metavar='NUM',
+      '--is_guest_manifest', default='0', action='store', metavar='NUM',
       help='Whether to generate a guest mode capable manifest')
   parser.add_option(
-      '--is_chromevox_classic', action='store', metavar='NUM',
+      '--is_chromevox_classic', default='0', action='store', metavar='NUM',
       help='Whether to generate a ChromeVox Classic manifest')
   parser.add_option(
-      '--is_js_compressed', action='store', metavar='NUM',
+      '--is_js_compressed', default='1', action='store', metavar='NUM',
       help='Whether compressed JavaScript files are used')
   parser.add_option(
       '--set_version', action='store', metavar='SET_VERSION',
@@ -62,7 +62,15 @@ def main():
   if len(args) != 1:
     print >>sys.stderr, 'Expected exactly one argument'
     sys.exit(1)
-  processJinjaTemplate(args[0], options.output_manifest, parser.values.__dict__)
+  if options.output_manifest is None:
+    print >>sys.stderr, '--output_manifest option must be specified'
+    sys.exit(1)
+  if options.set_version is None:
+    print >>sys.stderr, '--set_version option must be specified'
+    sys.exit(1)
+
+  context = {k: v for k, v in parser.values.__dict__.items() if v is not None}
+  processJinjaTemplate(args[0], options.output_manifest, context)
 
 if __name__ == '__main__':
   main()
