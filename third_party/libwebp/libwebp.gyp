@@ -74,6 +74,11 @@
     },
     {
       'target_name': 'libwebp_dsp_neon',
+      'includes' : [
+        # Disable LTO due to Neon issues.
+        # crbug.com/408997
+        '../../build/android/disable_lto.gypi',
+      ],
       'conditions': [
         # iOS uses the same project to generate build project for both device
         # and simulator and do not use "target_arch" variable. Other platform
