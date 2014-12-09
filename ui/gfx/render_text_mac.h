@@ -26,6 +26,7 @@ class RenderTextMac : public RenderText {
   ~RenderTextMac() override;
 
   // Overridden from RenderText:
+  scoped_ptr<RenderText> CreateInstanceOfSameType() const override;
   Size GetStringSize() override;
   SizeF GetStringSizeF() override;
   SelectionModel FindCursorPosition(const Point& point) override;

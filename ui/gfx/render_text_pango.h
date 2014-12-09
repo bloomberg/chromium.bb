@@ -19,6 +19,7 @@ class RenderTextPango : public RenderText {
   ~RenderTextPango() override;
 
   // Overridden from RenderText:
+  scoped_ptr<RenderText> CreateInstanceOfSameType() const override;
   Size GetStringSize() override;
   SelectionModel FindCursorPosition(const Point& point) override;
   std::vector<FontSpan> GetFontSpansForTesting() override;

@@ -191,6 +191,10 @@ class GFX_EXPORT RenderText {
 
   // Creates a platform-specific or cross-platform RenderText instance.
   static RenderText* CreateInstance();
+  static RenderText* CreateInstanceForEditing();
+
+  // Creates another instance of the same concrete class.
+  virtual scoped_ptr<RenderText> CreateInstanceOfSameType() const = 0;
 
   const base::string16& text() const { return text_; }
   void SetText(const base::string16& text);

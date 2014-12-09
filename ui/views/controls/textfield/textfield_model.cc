@@ -278,7 +278,7 @@ TextfieldModel::Delegate::~Delegate() {}
 
 TextfieldModel::TextfieldModel(Delegate* delegate)
     : delegate_(delegate),
-      render_text_(gfx::RenderText::CreateInstance()),
+      render_text_(gfx::RenderText::CreateInstanceForEditing()),
       current_edit_(edit_history_.end()) {
 }
 

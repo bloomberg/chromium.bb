@@ -89,6 +89,10 @@ RenderTextPango::~RenderTextPango() {
   ResetLayout();
 }
 
+scoped_ptr<RenderText> RenderTextPango::CreateInstanceOfSameType() const {
+  return scoped_ptr<RenderTextPango>(new RenderTextPango);
+}
+
 Size RenderTextPango::GetStringSize() {
   EnsureLayout();
   int width = 0, height = 0;

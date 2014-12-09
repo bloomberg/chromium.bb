@@ -588,6 +588,10 @@ RenderTextHarfBuzz::RenderTextHarfBuzz()
 
 RenderTextHarfBuzz::~RenderTextHarfBuzz() {}
 
+scoped_ptr<RenderText> RenderTextHarfBuzz::CreateInstanceOfSameType() const {
+  return scoped_ptr<RenderTextHarfBuzz>(new RenderTextHarfBuzz);
+}
+
 Size RenderTextHarfBuzz::GetStringSize() {
   const SizeF size_f = GetStringSizeF();
   return Size(std::ceil(size_f.width()), size_f.height());

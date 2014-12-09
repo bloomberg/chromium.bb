@@ -23,6 +23,10 @@ RenderTextMac::RenderTextMac() : common_baseline_(0), runs_valid_(false) {
 RenderTextMac::~RenderTextMac() {
 }
 
+scoped_ptr<RenderText> RenderTextMac::CreateInstanceOfSameType() const {
+  return scoped_ptr<RenderTextMac>(new RenderTextMac);
+}
+
 Size RenderTextMac::GetStringSize() {
   EnsureLayout();
   return Size(std::ceil(string_size_.width()), string_size_.height());

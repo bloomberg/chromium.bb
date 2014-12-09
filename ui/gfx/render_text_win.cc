@@ -476,6 +476,10 @@ RenderTextWin::RenderTextWin() : RenderText(), needs_layout_(false) {
 
 RenderTextWin::~RenderTextWin() {}
 
+scoped_ptr<RenderText> RenderTextWin::CreateInstanceOfSameType() const {
+  return scoped_ptr<RenderTextWin>(new RenderTextWin);
+}
+
 Size RenderTextWin::GetStringSize() {
   EnsureLayout();
   return multiline_string_size_;

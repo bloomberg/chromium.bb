@@ -63,6 +63,7 @@ class RenderTextWin : public RenderText {
   virtual ~RenderTextWin();
 
   // Overridden from RenderText:
+  virtual scoped_ptr<RenderText> CreateInstanceOfSameType() const override;
   virtual Size GetStringSize() override;
   virtual SelectionModel FindCursorPosition(const Point& point) override;
   virtual std::vector<FontSpan> GetFontSpansForTesting() override;

@@ -48,7 +48,7 @@ class PreferredSizeLabel : public Label {
 // A simple View that hosts a RenderText object.
 class MultilineExample::RenderTextView : public View {
  public:
-  RenderTextView() : render_text_(gfx::RenderText::CreateInstance()) {
+  RenderTextView() : render_text_(gfx::RenderText::CreateInstanceForEditing()) {
     render_text_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     render_text_->SetColor(SK_ColorBLACK);
     render_text_->SetMultiline(true);

@@ -398,13 +398,19 @@ RenderText::~RenderText() {
 }
 
 RenderText* RenderText::CreateInstance() {
-#if defined(OS_MACOSX) && !defined(TOOLKIT_VIEWS)
+#if defined(OS_MACOSX)
   static const bool use_harfbuzz = CommandLine::ForCurrentProcess()->
       HasSwitch(switches::kEnableHarfBuzzRenderText);
 #else
   static const bool use_harfbuzz = !CommandLine::ForCurrentProcess()->
       HasSwitch(switches::kDisableHarfBuzzRenderText);
 #endif
+  return use_harfbuzz ? new RenderTextHarfBuzz : CreateNativeInstance();
+}
+
+RenderText* RenderText::CreateInstanceForEditing() {
+  static const bool use_harfbuzz = !CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kDisableHarfBuzzRenderText);
   return use_harfbuzz ? new RenderTextHarfBuzz : CreateNativeInstance();
 }
 
@@ -1235,7 +1241,7 @@ base::string16 RenderText::Elide(const base::string16& text,
     return ElideEmail(text, available_width);
 
   // Create a RenderText copy with attributes that affect the rendering width.
-  scoped_ptr<RenderText> render_text(CreateInstance());
+  scoped_ptr<RenderText> render_text = CreateInstanceOfSameType();
   render_text->SetFontList(font_list_);
   render_text->SetDirectionalityMode(directionality_mode_);
   render_text->SetCursorEnabled(cursor_enabled_);
