@@ -115,9 +115,6 @@ void HotwordServiceFactory::RegisterProfilePrefs(
   prefs->RegisterStringPref(prefs::kHotwordPreviousLanguage,
                             std::string(),
                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kHotwordAudioHistoryEnabled,
-                             false,
-                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   // Per-device settings (do not sync).
   prefs->RegisterBooleanPref(prefs::kHotwordSearchEnabled,
                              false,

@@ -634,7 +634,6 @@ extern const char kHotwordSearchEnabled[];
 extern const char kHotwordAlwaysOnSearchEnabled[];
 extern const char kHotwordAlwaysOnNotificationSeen[];
 extern const char kHotwordAudioLoggingEnabled[];
-extern const char kHotwordAudioHistoryEnabled[];
 extern const char kHotwordPreviousLanguage[];
 
 #if defined(OS_ANDROID)

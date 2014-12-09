@@ -32,7 +32,7 @@ void HotwordAudioHistoryHandler::GetAudioHistoryEnabled(
   history::WebHistoryService* web_history = GetWebHistory();
   if (web_history) {
     web_history->GetAudioHistoryEnabled(
-        base::Bind(&HotwordAudioHistoryHandler::AudioHistoryComplete,
+        base::Bind(&HotwordAudioHistoryHandler::GetAudioHistoryComplete,
                    weak_ptr_factory_.GetWeakPtr(),
                    callback));
   } else {
@@ -40,7 +40,7 @@ void HotwordAudioHistoryHandler::GetAudioHistoryEnabled(
     // should be seen as false. Run the callback with false for success
     // and false for the enabled value.
     PrefService* prefs = profile_->GetPrefs();
-    prefs->SetBoolean(prefs::kHotwordAudioHistoryEnabled, false);
+    prefs->SetBoolean(prefs::kHotwordAudioLoggingEnabled, false);
     callback.Run(false, false);
   }
 }
@@ -52,8 +52,9 @@ void HotwordAudioHistoryHandler::SetAudioHistoryEnabled(
   if (web_history) {
     web_history->SetAudioHistoryEnabled(
         enabled,
-        base::Bind(&HotwordAudioHistoryHandler::AudioHistoryComplete,
+        base::Bind(&HotwordAudioHistoryHandler::SetAudioHistoryComplete,
                    weak_ptr_factory_.GetWeakPtr(),
+                   enabled,
                    callback));
   } else {
     // If web_history is null, run the callback with false for success
@@ -62,14 +63,26 @@ void HotwordAudioHistoryHandler::SetAudioHistoryEnabled(
   }
 }
 
-void HotwordAudioHistoryHandler::AudioHistoryComplete(
+void HotwordAudioHistoryHandler::GetAudioHistoryComplete(
     const HotwordAudioHistoryCallback& callback,
     bool success, bool new_enabled_value) {
   PrefService* prefs = profile_->GetPrefs();
   // Set preference to false if the call was not successful to err on the safe
   // side.
   bool new_value = success && new_enabled_value;
-  prefs->SetBoolean(prefs::kHotwordAudioHistoryEnabled, new_value);
+  prefs->SetBoolean(prefs::kHotwordAudioLoggingEnabled, new_value);
 
   callback.Run(success, new_value);
+}
+
+void HotwordAudioHistoryHandler::SetAudioHistoryComplete(
+    bool new_enabled_value,
+    const HotwordAudioHistoryCallback& callback,
+    bool success, bool callback_enabled_value) {
+  if (success) {
+    PrefService* prefs = profile_->GetPrefs();
+    prefs->SetBoolean(prefs::kHotwordAudioLoggingEnabled, new_enabled_value);
+  }
+
+  callback.Run(success, new_enabled_value);
 }

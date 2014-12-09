@@ -224,7 +224,7 @@ class HotwordNotificationDelegate : public NotificationDelegate {
     HotwordService::LaunchMode launch_mode =
         HotwordService::HOTWORD_AND_AUDIO_HISTORY;
     if (profile_->GetPrefs()->GetBoolean(
-            prefs::kHotwordAudioHistoryEnabled)) {
+            prefs::kHotwordAudioLoggingEnabled)) {
       // TODO(rlp): Make sure the Chrome Audio History pref is synced
       // to the account-level Audio History setting from footprints.
       launch_mode = HotwordService::HOTWORD_ONLY;

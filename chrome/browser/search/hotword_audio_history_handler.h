@@ -38,11 +38,20 @@ class HotwordAudioHistoryHandler {
   virtual history::WebHistoryService* GetWebHistory();
 
  private:
-  // Callback called upon completion of the web history request.
-  void AudioHistoryComplete(
+  // Called upon completion of web history->GetAudioHistoryEnabled.
+  void GetAudioHistoryComplete(
       const HotwordAudioHistoryCallback& callback,
       bool success,
       bool new_enabled_value);
+
+  // Called upon completion of web history->SetAudioHistoryEnabled.
+  // |new_enabled_value| is the desired value of the preference.
+  // |callback_enabled_value| should not be considered valid.
+  void SetAudioHistoryComplete(
+      bool new_enabled_value,
+      const HotwordAudioHistoryCallback& callback,
+      bool success,
+      bool callback_enabled_value);
 
   Profile* profile_;
 

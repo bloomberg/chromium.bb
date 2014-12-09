@@ -1707,7 +1707,7 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
     // Audio history should be displayed if it's enabled regardless of the
     // hotword error state. An additional message is displayed if always-on
     // hotwording is enabled.
-    if (profile->GetPrefs()->GetBoolean(prefs::kHotwordAudioHistoryEnabled) &&
+    if (profile->GetPrefs()->GetBoolean(prefs::kHotwordAudioLoggingEnabled) &&
         HotwordService::IsExperimentalHotwordingEnabled()) {
       web_ui()->CallJavascriptFunction("BrowserOptions.showAudioHistorySection",
                                        base::FundamentalValue(always_on));
@@ -1741,12 +1741,14 @@ void BrowserOptionsHandler::HandleLaunchHotwordAudioVerificationApp(
   if (retrain) {
     DCHECK(profile->GetPrefs()->GetBoolean(
         prefs::kHotwordAlwaysOnSearchEnabled));
+    DCHECK(profile->GetPrefs()->GetBoolean(
+        prefs::kHotwordAudioLoggingEnabled));
 
     launch_mode = HotwordService::RETRAIN;
     // TODO(rlp): Make sure the Chrome Audio History pref is synced
     // to the account-level Audio History setting from footprints.
   } else if (profile->GetPrefs()->GetBoolean(
-      prefs::kHotwordAudioHistoryEnabled)) {
+      prefs::kHotwordAudioLoggingEnabled)) {
     DCHECK(!profile->GetPrefs()->GetBoolean(
         prefs::kHotwordAlwaysOnSearchEnabled));
     launch_mode = HotwordService::HOTWORD_ONLY;

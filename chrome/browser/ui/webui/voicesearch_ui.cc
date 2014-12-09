@@ -265,11 +265,6 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
       audio_logging_enabled = "Yes";
     AddPair(list, "Hotword Audio Logging Enabled", audio_logging_enabled);
 
-    std::string audio_history_enabled = "No";
-    if (profile_->GetPrefs()->GetBoolean(prefs::kHotwordAudioHistoryEnabled))
-      audio_history_enabled = "Yes";
-    AddPair(list, "Audio History Enabled", audio_history_enabled);
-
     std::string group = base::FieldTrialList::FindFullName(
         hotword_internal::kHotwordFieldTrialName);
     AddPair(list, "Field trial", group);
