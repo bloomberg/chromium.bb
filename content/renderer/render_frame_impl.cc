@@ -1792,6 +1792,9 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
 #if defined(ENABLE_PEPPER_CDMS)
   scoped_ptr<media::CdmFactory> cdm_factory(
       new RenderCdmFactory(base::Bind(&PepperCdmWrapperImpl::Create, frame)));
+#elif defined(ENABLE_BROWSER_CDMS)
+  scoped_ptr<media::CdmFactory> cdm_factory(
+      new RenderCdmFactory(GetCdmManager()));
 #else
   scoped_ptr<media::CdmFactory> cdm_factory(new RenderCdmFactory());
 #endif
