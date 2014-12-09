@@ -922,8 +922,6 @@ template("java_prebuilt") {
 #
 #   dex_path: If set, the resulting .dex.jar file will be placed under this
 #     path.
-#   standalone_dex_path: If set, a standalone .dex.jar containing the code from
-#     the library and all dependencies will be placed under this path.
 #
 #
 # Example
@@ -986,9 +984,6 @@ template("android_library") {
     if (defined(invoker.dex_path)) {
       dex_path = invoker.dex_path
     }
-    if (defined(invoker.standalone_dex_path)) {
-      standalone_dex_path = invoker.standalone_dex_path
-    }
 
     supports_android = true
     requires_android = true
@@ -1002,6 +997,20 @@ template("android_library") {
       "*/Manifest.class",
       "*/Manifest##*.class",
     ]
+  }
+}
+
+# Declare a target that packages a set of Java dependencies into a standalone
+# .dex.jar.
+#
+# Variables
+#   deps: specifies the dependencies of this target. Android libraries in deps
+#     will be packaged into the resulting .dex.jar file.
+#   dex_path: location at which the output file will be put
+template("android_standalone_library") {
+  deps_dex(target_name) {
+    deps = invoker.deps
+    dex_path = invoker.dex_path
   }
 }
 

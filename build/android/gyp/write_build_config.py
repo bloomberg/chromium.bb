@@ -95,13 +95,14 @@ def main(argv):
 
 
   if not options.type in [
-      'java_library', 'android_resources', 'android_apk']:
+      'java_library', 'android_resources', 'android_apk', 'deps_dex']:
     raise Exception('Unknown type: <%s>' % options.type)
 
   required_options = ['build_config'] + {
       'java_library': ['jar_path'],
       'android_resources': ['resources_zip'],
-      'android_apk': ['jar_path', 'dex_path', 'resources_zip']
+      'android_apk': ['jar_path', 'dex_path', 'resources_zip'],
+      'deps_dex': ['dex_path']
     }[options.type]
 
   if options.native_libs:
@@ -213,10 +214,8 @@ def main(argv):
         c['package_name'] for c in all_resources_deps if 'package_name' in c]
 
 
-  # Dependencies for the final dex file of an apk or the standalone .dex.jar
-  # output of a library.
-  if options.type == 'android_apk' or (options.type == "java_library"
-                                       and options.supports_android):
+  # Dependencies for the final dex file of an apk or a 'deps_dex'.
+  if options.type in ['android_apk', 'deps_dex']:
     config['final_dex'] = {}
     dex_config = config['final_dex']
     # TODO(cjhopman): proguard version
