@@ -6,14 +6,6 @@
 
 namespace browser_defaults {
 
-#if defined(USE_X11)
-#if defined(TOOLKIT_VIEWS)
-const bool kCanToggleSystemTitleBar = false;
-#else
-const bool kCanToggleSystemTitleBar = true;
-#endif
-#endif
-
 const int kOmniboxFontPixelSize = 16;
 
 #if defined(OS_CHROMEOS) || defined(OS_MACOSX)

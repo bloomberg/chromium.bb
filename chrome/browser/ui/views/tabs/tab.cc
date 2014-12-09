@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/defaults.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
@@ -78,12 +77,14 @@ static const int kFaviconTitleSpacing = 4;
 static const int kViewSpacing = 3;
 static const int kStandardTitleWidth = 175;
 
+// Width of mini-tabs.
+const int kMiniTabWidth = 64;
+
 // When a non-mini-tab becomes a mini-tab the width of the tab animates. If
 // the width of a mini-tab is >= kMiniTabRendererAsNormalTabWidth then the tab
 // is rendered as a normal tab. This is done to avoid having the title
 // immediately disappear when transitioning a tab from normal to mini-tab.
-static const int kMiniTabRendererAsNormalTabWidth =
-    browser_defaults::kMiniTabWidth + 30;
+static const int kMiniTabRendererAsNormalTabWidth = kMiniTabWidth + 30;
 
 // How opaque to make the hover state (out of 1).
 static const double kHoverOpacity = 0.33;
@@ -626,7 +627,7 @@ int Tab::GetTouchWidth() {
 
 // static
 int Tab::GetMiniWidth() {
-  return browser_defaults::kMiniTabWidth;
+  return kMiniTabWidth;
 }
 
 // static

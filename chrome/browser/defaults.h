@@ -13,25 +13,8 @@
 
 namespace browser_defaults {
 
-#if defined(USE_X11)
-
-// Can the user toggle the system title bar?
-extern const bool kCanToggleSystemTitleBar;
-
-#endif
-
 // Size of the font used in the omnibox, in pixels.
 extern const int kOmniboxFontPixelSize;
-
-// Width of mini-tabs.  Inline because other constants are computed depending
-// on this, which causes static initializers if the value isn't available in
-// all translation units that do this.
-#if defined(TOOLKIT_VIEWS)
-// Windows and Chrome OS have bigger shadows in the tab art.
-const int kMiniTabWidth = 64;
-#else
-const int kMiniTabWidth = 56;
-#endif
 
 // Can the browser be alive without any browser windows?
 extern const bool kBrowserAliveWithNoWindows;
