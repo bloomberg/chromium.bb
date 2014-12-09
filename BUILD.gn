@@ -168,16 +168,12 @@ if (build_ffmpegsumo) {
       configs += [ "//build/config/compiler:optimize_max" ]
     }
 
-    if (is_posix) {
-      cflags += [
-        "-fPIC",
-        "-fomit-frame-pointer",
-        # ffmpeg uses its own deprecated functions.
-        "-Wno-deprecated-declarations",
-      ]
-
+    # gn orders flags on a target before flags from configs. The default config
+    # adds -Wall, and these flags have to be after -Wall -- so they need to come
+    # from a config and can't be on the target directly.
+    config("ffmpegsumo_warnings") {
       if (is_clang) {
-        cflags += [
+        cflags = [
           "-Wno-absolute-value",
           # ffmpeg uses its own deprecated functions.
           "-Wno-deprecated-declarations",
@@ -197,7 +193,20 @@ if (build_ffmpegsumo) {
           # This fires on `av_assert0(!"valid element size")` in utils.c
           "-Wno-string-conversion",
         ]
-      } else {
+       }
+    }
+
+    if (is_posix) {
+      cflags += [
+        "-fPIC",
+        "-fomit-frame-pointer",
+        # ffmpeg uses its own deprecated functions.
+        "-Wno-deprecated-declarations",
+      ]
+
+      configs += [ ":ffmpegsumo_warnings" ]
+
+      if (!is_clang) {
         # gcc doesn't have flags for specific warnings, so disable them
         # all.
         cflags += [ "-w" ]
