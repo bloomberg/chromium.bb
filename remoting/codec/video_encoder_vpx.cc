@@ -56,8 +56,11 @@ void SetCommonCodecParameters(const webrtc::DesktopSize& size,
   // Start emitting packets immediately.
   config->g_lag_in_frames = 0;
 
-  // Since the transport layer is reliable, keyframes aren't necessary.
-  config->kf_mode = VPX_KF_DISABLED;
+  // Since the transport layer is reliable, keyframes should not be necessary.
+  // However, due to crbug.com/440223, decoding fails after 30,000 non-key
+  // frames, so take the hit of an "unnecessary" key-frame every 10,000 frames.
+  config->kf_min_dist = 10000;
+  config->kf_max_dist = 10000;
 
   // Using 2 threads gives a great boost in performance for most systems with
   // adequate processing power. NB: Going to multiple threads on low end
