@@ -94,7 +94,7 @@ public class CronetTestBase extends
      * @return Whether or not the Shell was actually finished loading.
      * @throws InterruptedException
      */
-    protected boolean waitForActiveShellToBeDoneLoading()
+    private boolean waitForActiveShellToBeDoneLoading()
             throws InterruptedException {
         final CronetTestActivity activity = getActivity();
 

@@ -83,7 +83,6 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         };
         mActivity = launchCronetTestAppWithUrlAndCommandLineArgs(TEST_URL,
                 commandLineArgs);
-        waitForActiveShellToBeDoneLoading();
         assertTrue(UploadTestServer.startUploadTestServer());
         TestUrlRequestListener listener = new TestUrlRequestListener();
         UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
@@ -187,7 +186,6 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testNetLog() throws Exception {
         mActivity = launchCronetTestApp();
-        waitForActiveShellToBeDoneLoading();
         File directory = new File(PathUtils.getDataDirectory(
                 getInstrumentation().getTargetContext()));
         File file = File.createTempFile("cronet", "json", directory);
@@ -209,7 +207,6 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testNetLogAfterShutdown() throws Exception {
         mActivity = launchCronetTestApp();
-        waitForActiveShellToBeDoneLoading();
         TestUrlRequestListener listener = new TestUrlRequestListener();
         UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
                 TEST_URL, listener, listener.getExecutor());
@@ -232,7 +229,6 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testNetLogStartMultipleTimes() throws Exception {
         mActivity = launchCronetTestApp();
-        waitForActiveShellToBeDoneLoading();
         File directory = new File(PathUtils.getDataDirectory(
                 getInstrumentation().getTargetContext()));
         File file = File.createTempFile("cronet", "json", directory);
@@ -258,7 +254,6 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testNetLogStopMultipleTimes() throws Exception {
         mActivity = launchCronetTestApp();
-        waitForActiveShellToBeDoneLoading();
         File directory = new File(PathUtils.getDataDirectory(
                 getInstrumentation().getTargetContext()));
         File file = File.createTempFile("cronet", "json", directory);

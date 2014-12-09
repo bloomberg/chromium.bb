@@ -35,9 +35,6 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
         CronetTestActivity activity =
                 launchCronetTestAppWithUrlAndCommandLineArgs(URL,
                                                              commandLineArgs);
-        // Make sure the activity was created as expected.
-        assertNotNull(activity);
-        waitForActiveShellToBeDoneLoading();
         HttpUrlRequestFactory factory = activity.mRequestFactory;
         assertNotNull("Factory should be created", factory);
         assertTrue("Factory should be Chromium/n.n.n.n@r but is "

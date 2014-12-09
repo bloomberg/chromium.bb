@@ -37,7 +37,6 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         mActivity = launchCronetTestApp();
-        waitForActiveShellToBeDoneLoading();
         assertTrue(UploadTestServer.startUploadTestServer());
     }
 

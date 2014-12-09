@@ -34,8 +34,6 @@ public class CronetUrlRequestTest extends CronetTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         mActivity = launchCronetTestApp();
-        // Make sure the activity was created as expected.
-        waitForActiveShellToBeDoneLoading();
         assertTrue(UploadTestServer.startUploadTestServer());
         // Add url interceptors after native application context is initialized.
         mMockUrlRequestJobFactory = new MockUrlRequestJobFactory(
