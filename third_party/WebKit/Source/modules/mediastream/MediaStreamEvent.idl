@@ -22,9 +22,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    EventConstructor,
-] interface MediaStreamEvent : Event {
-   [InitializedByEventConstructor] readonly attribute MediaStream? stream;
-};
+// http://www.w3.org/TR/webrtc/#mediastreamevent
 
+[
+    Constructor(DOMString type, optional MediaStreamEventInit eventInitDict),
+] interface MediaStreamEvent : Event {
+    readonly attribute MediaStream? stream;
+};

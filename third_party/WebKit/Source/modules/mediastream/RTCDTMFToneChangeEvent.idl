@@ -23,9 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/webrtc/#rtcdtmftonechangeevent
+
 [
-    EventConstructor,
     NoInterfaceObject,
+    Constructor(DOMString type, RTCDTMFToneChangeEventInit eventInitDict),
 ] interface RTCDTMFToneChangeEvent : Event {
-    [InitializedByEventConstructor] readonly attribute DOMString tone;
+    readonly attribute DOMString tone;
 };

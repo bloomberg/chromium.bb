@@ -27,13 +27,10 @@
 #define RTCDTMFToneChangeEvent_h
 
 #include "modules/EventModules.h"
+#include "modules/mediastream/RTCDTMFToneChangeEventInit.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {
-
-struct RTCDTMFToneChangeEventInit : public EventInit {
-    String tone;
-};
 
 class RTCDTMFToneChangeEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();

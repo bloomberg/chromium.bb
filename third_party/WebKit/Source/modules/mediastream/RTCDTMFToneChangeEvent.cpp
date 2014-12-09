@@ -56,8 +56,9 @@ RTCDTMFToneChangeEvent::RTCDTMFToneChangeEvent(const String& tone)
 
 RTCDTMFToneChangeEvent::RTCDTMFToneChangeEvent(const RTCDTMFToneChangeEventInit& initializer)
     : Event(EventTypeNames::tonechange, initializer)
-    , m_tone(initializer.tone)
 {
+    if (initializer.hasTone())
+        m_tone = initializer.tone();
 }
 
 RTCDTMFToneChangeEvent::~RTCDTMFToneChangeEvent()
