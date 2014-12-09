@@ -21,14 +21,15 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   CastBrowserMainParts(
       const content::MainFunctionParams& parameters,
       URLRequestContextFactory* url_request_context_factory);
-  virtual ~CastBrowserMainParts();
+  ~CastBrowserMainParts() override;
 
   // content::BrowserMainParts implementation:
-  virtual void PreMainMessageLoopStart() override;
-  virtual void PostMainMessageLoopStart() override;
-  virtual void PreMainMessageLoopRun() override;
-  virtual bool MainMessageLoopRun(int* result_code) override;
-  virtual void PostMainMessageLoopRun() override;
+  void PreMainMessageLoopStart() override;
+  void PostMainMessageLoopStart() override;
+  int PreCreateThreads() override;
+  void PreMainMessageLoopRun() override;
+  bool MainMessageLoopRun(int* result_code) override;
+  void PostMainMessageLoopRun() override;
 
  private:
   scoped_ptr<CastBrowserProcess> cast_browser_process_;
