@@ -1266,9 +1266,6 @@ class ValidationPool(object):
         raw_changes = helper.Query(gerrit_query, sort='lastUpdated')
         raw_changes.reverse()
 
-        # Reload the changes because the data in the Gerrit cache may be stale.
-        raw_changes = list(cls.ReloadChanges(raw_changes))
-
         # We always filter draft CLs, even if the query allowed them.
         published_changes = cls.FilterDraftChanges(raw_changes)
         draft_changes.extend(set(raw_changes) - set(published_changes))
