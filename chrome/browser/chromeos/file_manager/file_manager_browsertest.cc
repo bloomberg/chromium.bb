@@ -17,6 +17,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_value_converter.h"
 #include "base/json/json_writer.h"
+#include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
@@ -615,9 +616,12 @@ void FileManagerBrowserTestBase::SetUpCommandLine(CommandLine* command_line) {
 }
 
 void FileManagerBrowserTestBase::StartTest() {
+  base::FilePath root_path;
+  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &root_path));
+
   // Launch the extension.
   const base::FilePath path =
-      test_data_dir_.AppendASCII("file_manager_browsertest");
+      root_path.Append(FILE_PATH_LITERAL("ui/file_manager/integration_tests"));
   const extensions::Extension* const extension =
       LoadExtensionAsComponentWithManifest(path, GetTestManifestName());
   ASSERT_TRUE(extension);
