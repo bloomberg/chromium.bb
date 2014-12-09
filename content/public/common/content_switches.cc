@@ -855,9 +855,6 @@ const char kUseMobileUserAgent[] = "use-mobile-user-agent";
 // Use the new surfaces system to handle compositor delegation.
 const char kUseSurfaces[] = "use-surfaces";
 
-// Disable the use of the new surfaces system to handle compositor delegation.
-const char kDisableSurfaces[] = "disable-surfaces";
-
 // On POSIX only: the contents of this flag are prepended to the utility
 // process command line. Useful values might be "valgrind" or "xterm -e gdb
 // --args".
