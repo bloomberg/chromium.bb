@@ -5,11 +5,6 @@
 #ifndef PRINTING_BITMAP_TRANSFORM_SETTINGS_H_
 #define PRINTING_BITMAP_TRANSFORM_SETTINGS_H_
 
-#include "base/tuple.h"
-#include "ipc/ipc_param_traits.h"
-#include "printing/printing_export.h"
-#include "ui/gfx/rect.h"
-
 namespace printing {
 
 enum PwgRasterTransformType {

@@ -18,7 +18,6 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_checker.h"
-#include "base/tuple.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/content_settings_override_provider.h"
 #include "components/content_settings/core/common/content_settings.h"

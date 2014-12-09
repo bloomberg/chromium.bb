@@ -19,7 +19,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "base/tuple.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_metrics.h"

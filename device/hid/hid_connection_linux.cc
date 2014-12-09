@@ -17,7 +17,6 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/tuple.h"
 #include "device/hid/hid_service.h"
 
 // These are already defined in newer versions of linux/hidraw.h.

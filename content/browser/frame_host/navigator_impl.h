@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "base/tuple.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/common/content_export.h"

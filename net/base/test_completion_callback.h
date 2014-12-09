@@ -7,7 +7,6 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/tuple.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 
