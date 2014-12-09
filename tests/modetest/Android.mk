@@ -9,6 +9,6 @@ LOCAL_MODULE := modetest
 
 LOCAL_C_INCLUDES += $(TARGET_OUT_HEADERS)/libdrm
 
-LOCAL_SHARED_LIBRARIES := libdrm libkms
+LOCAL_SHARED_LIBRARIES := libdrm
 
 include $(BUILD_EXECUTABLE)

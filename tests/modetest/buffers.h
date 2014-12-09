@@ -27,8 +27,7 @@
 #ifndef __BUFFERS_H__
 #define __BUFFERS_H__
 
-struct kms_bo;
-struct kms_driver;
+struct bo;
 
 enum fill_pattern {
 	PATTERN_TILES = 0,
@@ -36,10 +35,11 @@ enum fill_pattern {
 	PATTERN_SMPTE = 2,
 };
 
-struct kms_bo *create_test_buffer(struct kms_driver *kms, unsigned int format,
+struct bo *bo_create(int fd, unsigned int format,
 		   unsigned int width, unsigned int height,
 		   unsigned int handles[4], unsigned int pitches[4],
 		   unsigned int offsets[4], enum fill_pattern pattern);
+void bo_destroy(struct bo *bo);
 
 unsigned int format_fourcc(const char *name);
 
