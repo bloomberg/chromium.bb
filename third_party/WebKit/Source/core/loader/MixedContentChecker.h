@@ -88,6 +88,7 @@ private:
     static ContextType contextTypeFromContext(WebURLRequest::RequestContext);
     static const char* typeNameFromContext(WebURLRequest::RequestContext);
     static void logToConsole(LocalFrame*, const KURL&, WebURLRequest::RequestContext, bool allowed);
+    static void count(LocalFrame*, WebURLRequest::RequestContext);
 
     // FIXME: This should probably have a separate client from FrameLoader.
     FrameLoaderClient* client() const;

@@ -45,9 +45,6 @@
 
 namespace blink {
 
-namespace {
-} // namespace
-
 MixedContentChecker::MixedContentChecker(LocalFrame* frame)
     : m_frame(frame)
 {
@@ -213,6 +210,53 @@ void MixedContentChecker::logToConsole(LocalFrame* frame, const KURL& url, WebUR
 }
 
 // static
+void MixedContentChecker::count(LocalFrame* frame, WebURLRequest::RequestContext requestContext)
+{
+    UseCounter::count(frame, UseCounter::MixedContentPresent);
+
+    // Roll blockable content up into a single counter, count unblocked types individually so we
+    // can determine when they can be safely moved to the blockable category:
+    ContextType contextType = contextTypeFromContext(requestContext);
+    if (contextType == ContextTypeBlockable || contextType == ContextTypeBlockableUnlessLax) {
+        UseCounter::count(frame, UseCounter::MixedContentBlockable);
+        return;
+    }
+
+    UseCounter::Feature feature;
+    switch (requestContext) {
+    case WebURLRequest::RequestContextAudio:
+        feature = UseCounter::MixedContentAudio;
+        break;
+    case WebURLRequest::RequestContextDownload:
+        feature = UseCounter::MixedContentDownload;
+        break;
+    case WebURLRequest::RequestContextFavicon:
+        feature = UseCounter::MixedContentFavicon;
+        break;
+    case WebURLRequest::RequestContextImage:
+        feature = UseCounter::MixedContentImage;
+        break;
+    case WebURLRequest::RequestContextInternal:
+        feature = UseCounter::MixedContentInternal;
+        break;
+    case WebURLRequest::RequestContextPlugin:
+        feature = UseCounter::MixedContentPlugin;
+        break;
+    case WebURLRequest::RequestContextPrefetch:
+        feature = UseCounter::MixedContentPrefetch;
+        break;
+    case WebURLRequest::RequestContextVideo:
+        feature = UseCounter::MixedContentVideo;
+        break;
+
+    default:
+        ASSERT_NOT_REACHED();
+        return;
+    }
+    UseCounter::count(frame, feature);
+}
+
+// static
 bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, const ResourceRequest& resourceRequest, const KURL& url, MixedContentChecker::ReportingStatus reportingStatus)
 {
     // No frame, no mixed content:
@@ -239,6 +283,8 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, const ResourceRequ
     // No mixed content, no problem.
     if (!isMixedContent(frame->document()->securityOrigin(), url))
         return false;
+
+    MixedContentChecker::count(frame, resourceRequest.requestContext());
 
     Settings* settings = frame->settings();
     FrameLoaderClient* client = frame->loader().client();

@@ -550,6 +550,16 @@ public:
         StyleMedia = 606,
         StyleMediaType = 607,
         StyleMediaMatchMedium = 608,
+        MixedContentPresent = 609,
+        MixedContentBlockable = 610,
+        MixedContentAudio = 611,
+        MixedContentDownload = 612,
+        MixedContentFavicon = 613,
+        MixedContentImage = 614,
+        MixedContentInternal = 615,
+        MixedContentPlugin = 616,
+        MixedContentPrefetch = 617,
+        MixedContentVideo = 618,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
