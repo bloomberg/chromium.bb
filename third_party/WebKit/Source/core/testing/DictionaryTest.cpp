@@ -114,18 +114,18 @@ void DictionaryTest::getDerived(InternalDictionaryDerived& result)
 
 void DictionaryTest::reset()
 {
-    m_longMember = Nullable<int>();
-    m_longMemberWithClamp = Nullable<int>();
-    m_longMemberWithEnforceRange = Nullable<int>();
+    m_longMember = nullptr;
+    m_longMemberWithClamp = nullptr;
+    m_longMemberWithEnforceRange = nullptr;
     m_longMemberWithDefault = -1; // This value should not be returned.
-    m_longOrNullMember = Nullable<int>();
-    m_longOrNullMemberWithDefault = Nullable<int>();
-    m_booleanMember = Nullable<bool>();
-    m_doubleMember = Nullable<double>();
+    m_longOrNullMember = nullptr;
+    m_longOrNullMemberWithDefault = nullptr;
+    m_booleanMember = nullptr;
+    m_doubleMember = nullptr;
     m_stringMember = String();
     m_stringMemberWithDefault = String("Should not be returned");
-    m_stringSequenceMember = Nullable<Vector<String> >();
-    m_stringSequenceOrNullMember = Nullable<Vector<String> >();
+    m_stringSequenceMember = nullptr;
+    m_stringSequenceOrNullMember = nullptr;
     m_enumMember = String();
     m_enumMemberWithDefault = String();
     m_enumOrNullMember = String();

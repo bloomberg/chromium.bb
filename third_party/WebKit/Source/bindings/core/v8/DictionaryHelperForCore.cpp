@@ -628,7 +628,7 @@ bool DictionaryHelper::convert(const Dictionary& dictionary, Dictionary::Convers
         return true;
 
     if (context.isNullable() && blink::isUndefinedOrNull(v8Value)) {
-        value = Nullable<T>();
+        value = nullptr;
         return true;
     }
 
