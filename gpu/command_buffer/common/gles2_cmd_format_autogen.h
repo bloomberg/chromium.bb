@@ -10351,6 +10351,38 @@ COMPILE_ASSERT(offsetof(ScheduleOverlayPlaneCHROMIUM, uv_width) == 40,
 COMPILE_ASSERT(offsetof(ScheduleOverlayPlaneCHROMIUM, uv_height) == 44,
                OffsetOf_ScheduleOverlayPlaneCHROMIUM_uv_height_not_44);
 
+struct SwapInterval {
+  typedef SwapInterval ValueType;
+  static const CommandId kCmdId = kSwapInterval;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLint _interval) {
+    SetHeader();
+    interval = _interval;
+  }
+
+  void* Set(void* cmd, GLint _interval) {
+    static_cast<ValueType*>(cmd)->Init(_interval);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  int32_t interval;
+};
+
+COMPILE_ASSERT(sizeof(SwapInterval) == 8, Sizeof_SwapInterval_is_not_8);
+COMPILE_ASSERT(offsetof(SwapInterval, header) == 0,
+               OffsetOf_SwapInterval_header_not_0);
+COMPILE_ASSERT(offsetof(SwapInterval, interval) == 4,
+               OffsetOf_SwapInterval_interval_not_4);
+
 struct MatrixLoadfCHROMIUMImmediate {
   typedef MatrixLoadfCHROMIUMImmediate ValueType;
   static const CommandId kCmdId = kMatrixLoadfCHROMIUMImmediate;

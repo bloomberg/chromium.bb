@@ -3989,6 +3989,16 @@ error::Error GLES2DecoderImpl::HandleDrawBuffersEXTImmediate(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleSwapInterval(uint32_t immediate_data_size,
+                                                  const void* cmd_data) {
+  const gles2::cmds::SwapInterval& c =
+      *static_cast<const gles2::cmds::SwapInterval*>(cmd_data);
+  (void)c;
+  GLint interval = static_cast<GLint>(c.interval);
+  DoSwapInterval(interval);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleMatrixLoadfCHROMIUMImmediate(
     uint32_t immediate_data_size,
     const void* cmd_data) {

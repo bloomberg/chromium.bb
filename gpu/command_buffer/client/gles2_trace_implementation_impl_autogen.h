@@ -1717,6 +1717,11 @@ void GLES2TraceImplementation::ScheduleOverlayPlaneCHROMIUM(
       bounds_width, bounds_height, uv_x, uv_y, uv_width, uv_height);
 }
 
+void GLES2TraceImplementation::SwapInterval(GLint interval) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::SwapInterval");
+  gl_->SwapInterval(interval);
+}
+
 void GLES2TraceImplementation::MatrixLoadfCHROMIUM(GLenum matrixMode,
                                                    const GLfloat* m) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::MatrixLoadfCHROMIUM");

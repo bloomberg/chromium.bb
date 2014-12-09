@@ -880,6 +880,9 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // Wrapper for SwapBuffers.
   void DoSwapBuffers();
 
+  // Wrapper for SwapInterval.
+  void DoSwapInterval(int interval);
+
   // Wrapper for CopyTexSubImage2D.
   void DoCopyTexSubImage2D(
       GLenum target,
@@ -9722,6 +9725,11 @@ void GLES2DecoderImpl::DoSwapBuffers() {
   // This may be a slow command.  Exit command processing to allow for
   // context preemption and GPU watchdog checks.
   ExitCommandProcessingEarly();
+}
+
+void GLES2DecoderImpl::DoSwapInterval(int interval)
+{
+  context_->SetSwapInterval(interval);
 }
 
 error::Error GLES2DecoderImpl::HandleEnableFeatureCHROMIUM(

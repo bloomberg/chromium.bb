@@ -2206,6 +2206,14 @@ _FUNCTION_INFO = {
     'extension': True,
     'trace_level': 1,
   },
+  'SwapInterval': {
+    'impl_func': False,
+    'decoder_func': 'DoSwapInterval',
+    'unit_test': False,
+    'client_test': False,
+    'extension': True,
+    'trace_level': 1,
+  },
   'TexImage2D': {
     'type': 'Manual',
     'data_transfer_methods': ['shm'],

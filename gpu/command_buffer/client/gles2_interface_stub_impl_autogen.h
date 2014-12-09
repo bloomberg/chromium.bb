@@ -991,6 +991,8 @@ void GLES2InterfaceStub::ScheduleOverlayPlaneCHROMIUM(
     GLfloat /* uv_width */,
     GLfloat /* uv_height */) {
 }
+void GLES2InterfaceStub::SwapInterval(GLint /* interval */) {
+}
 void GLES2InterfaceStub::MatrixLoadfCHROMIUM(GLenum /* matrixMode */,
                                              const GLfloat* /* m */) {
 }

@@ -2163,6 +2163,13 @@ void ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
   }
 }
 
+void SwapInterval(GLint interval) {
+  gles2::cmds::SwapInterval* c = GetCmdSpace<gles2::cmds::SwapInterval>();
+  if (c) {
+    c->Init(interval);
+  }
+}
+
 void MatrixLoadfCHROMIUMImmediate(GLenum matrixMode, const GLfloat* m) {
   const uint32_t size =
       gles2::cmds::MatrixLoadfCHROMIUMImmediate::ComputeSize();
