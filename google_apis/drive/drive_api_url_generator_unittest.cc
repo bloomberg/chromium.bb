@@ -422,6 +422,72 @@ TEST_F(DriveApiUrlGeneratorTest, GetInitiateUploadExistingFileUrl) {
           "file:file_id", kSetModifiedDate).spec());
 }
 
+TEST_F(DriveApiUrlGeneratorTest, GetMultipartUploadNewFileUrl) {
+  const bool kSetModifiedDate = true;
+
+  EXPECT_EQ(
+      "https://www.googleapis.com/upload/drive/v2/files?uploadType=multipart",
+      url_generator_.GetMultipartUploadNewFileUrl(!kSetModifiedDate).spec());
+
+  EXPECT_EQ(
+      "http://127.0.0.1:12345/upload/drive/v2/files?uploadType=multipart",
+      test_url_generator_.GetMultipartUploadNewFileUrl(
+          !kSetModifiedDate).spec());
+
+  EXPECT_EQ(
+      "http://127.0.0.1:12345/upload/drive/v2/files?uploadType=multipart&"
+      "setModifiedDate=true",
+      test_url_generator_.GetMultipartUploadNewFileUrl(
+          kSetModifiedDate).spec());
+}
+
+TEST_F(DriveApiUrlGeneratorTest, GetMultipartUploadExistingFileUrl) {
+  const bool kSetModifiedDate = true;
+
+  // |resource_id| should be embedded into the url.
+  EXPECT_EQ(
+      "https://www.googleapis.com/upload/drive/v2/files/0ADK06pfg"
+      "?uploadType=multipart",
+      url_generator_.GetMultipartUploadExistingFileUrl(
+          "0ADK06pfg", !kSetModifiedDate).spec());
+  EXPECT_EQ(
+      "https://www.googleapis.com/upload/drive/v2/files/0Bz0bd074"
+      "?uploadType=multipart",
+      url_generator_.GetMultipartUploadExistingFileUrl(
+          "0Bz0bd074", !kSetModifiedDate).spec());
+  EXPECT_EQ(
+      "https://www.googleapis.com/upload/drive/v2/files/file%3Afile_id"
+      "?uploadType=multipart",
+      url_generator_.GetMultipartUploadExistingFileUrl(
+          "file:file_id", !kSetModifiedDate).spec());
+  EXPECT_EQ(
+      "https://www.googleapis.com/upload/drive/v2/files/file%3Afile_id"
+      "?uploadType=multipart&setModifiedDate=true",
+      url_generator_.GetMultipartUploadExistingFileUrl(
+          "file:file_id", kSetModifiedDate).spec());
+
+  EXPECT_EQ(
+      "http://127.0.0.1:12345/upload/drive/v2/files/0ADK06pfg"
+      "?uploadType=multipart",
+      test_url_generator_.GetMultipartUploadExistingFileUrl(
+          "0ADK06pfg", !kSetModifiedDate).spec());
+  EXPECT_EQ(
+      "http://127.0.0.1:12345/upload/drive/v2/files/0Bz0bd074"
+      "?uploadType=multipart",
+      test_url_generator_.GetMultipartUploadExistingFileUrl(
+          "0Bz0bd074", !kSetModifiedDate).spec());
+  EXPECT_EQ(
+      "http://127.0.0.1:12345/upload/drive/v2/files/file%3Afile_id"
+      "?uploadType=multipart",
+      test_url_generator_.GetMultipartUploadExistingFileUrl(
+          "file:file_id", !kSetModifiedDate).spec());
+  EXPECT_EQ(
+      "http://127.0.0.1:12345/upload/drive/v2/files/file%3Afile_id"
+      "?uploadType=multipart&setModifiedDate=true",
+      test_url_generator_.GetMultipartUploadExistingFileUrl(
+          "file:file_id", kSetModifiedDate).spec());
+}
+
 TEST_F(DriveApiUrlGeneratorTest, GenerateDownloadFileUrl) {
   EXPECT_EQ(
       "https://www.googledrive.com/host/resourceId",
