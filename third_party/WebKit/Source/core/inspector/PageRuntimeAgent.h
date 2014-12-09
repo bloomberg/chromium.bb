@@ -55,8 +55,8 @@ public:
     virtual void run(ErrorString*) override;
 
     void didClearDocumentOfWindowObject(LocalFrame*);
-    void didCreateIsolatedContext(LocalFrame*, ScriptState*, SecurityOrigin*);
-    void frameWindowDiscarded(LocalDOMWindow*);
+    void didCreateScriptContext(LocalFrame*, ScriptState*, SecurityOrigin*, bool isMainWorldContext);
+    void willReleaseScriptContext(LocalFrame*, ScriptState*);
 
 private:
     PageRuntimeAgent(InjectedScriptManager*, InspectorClient*, ScriptDebugServer*, Page*, InspectorPageAgent*);

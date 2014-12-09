@@ -67,7 +67,7 @@ public:
     int injectedScriptIdFor(ScriptState*);
     InjectedScript injectedScriptForObjectId(const String& objectId);
     void discardInjectedScripts();
-    void discardInjectedScriptsFor(LocalDOMWindow*);
+    void discardInjectedScriptFor(ScriptState*);
     void releaseObjectGroup(const String& objectGroup);
 
     typedef bool (*InspectedStateAccessCheck)(ScriptState*);

@@ -580,7 +580,6 @@ void LocalDOMWindow::willDetachFrameHost()
 {
     frame()->host()->eventHandlerRegistry().didRemoveAllEventHandlers(*this);
     frame()->host()->consoleMessageStorage().frameWindowDiscarded(this);
-    InspectorInstrumentation::frameWindowDiscarded(frame(), this);
 }
 
 void LocalDOMWindow::willDestroyDocumentInFrame()

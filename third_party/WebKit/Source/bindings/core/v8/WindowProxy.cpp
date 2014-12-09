@@ -106,6 +106,7 @@ void WindowProxy::disposeContext(GlobalDetachmentBehavior behavior)
     v8::HandleScope handleScope(m_isolate);
     v8::Handle<v8::Context> context = m_scriptState->context();
     m_frame->loader().client()->willReleaseScriptContext(context, m_world->worldId());
+    InspectorInstrumentation::willReleaseScriptContext(m_frame, m_scriptState.get());
 
     if (behavior == DetachGlobal)
         m_scriptState->detachGlobalObject();
@@ -222,20 +223,22 @@ bool WindowProxy::initialize()
         return false;
     }
 
+    SecurityOrigin* origin = 0;
     if (m_world->isMainWorld()) {
         ASSERT(m_frame->document());
 
         // ActivityLogger for main world is updated within updateDocument().
         updateDocument();
+        origin = m_frame->securityContext()->securityOrigin();
         ContentSecurityPolicy* csp = m_frame->document()->contentSecurityPolicy();
         context->AllowCodeGenerationFromStrings(csp->allowEval(0, ContentSecurityPolicy::SuppressReport));
         context->SetErrorMessageForCodeGenerationFromStrings(v8String(m_isolate, csp->evalDisabledErrorMessage()));
     } else {
         updateActivityLogger();
-        SecurityOrigin* origin = m_world->isolatedWorldSecurityOrigin();
+        origin = m_world->isolatedWorldSecurityOrigin();
         setSecurityToken(origin);
-        InspectorInstrumentation::didCreateIsolatedContext(m_frame, m_scriptState.get(), origin);
     }
+    InspectorInstrumentation::didCreateScriptContext(m_frame, m_scriptState.get(), origin, m_world->isMainWorld());
     m_frame->loader().client()->didCreateScriptContext(context, m_world->extensionGroup(), m_world->worldId());
     return true;
 }

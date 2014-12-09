@@ -119,30 +119,14 @@ void InjectedScriptManager::discardInjectedScripts()
     m_scriptStateToId.clear();
 }
 
-void InjectedScriptManager::discardInjectedScriptsFor(LocalDOMWindow* window)
+void InjectedScriptManager::discardInjectedScriptFor(ScriptState* scriptState)
 {
-    if (m_scriptStateToId.isEmpty())
+    ScriptStateToId::iterator it = m_scriptStateToId.find(scriptState);
+    if (it == m_scriptStateToId.end())
         return;
 
-    Vector<long> idsToRemove;
-    IdToInjectedScriptMap::iterator end = m_idToInjectedScript.end();
-    for (IdToInjectedScriptMap::iterator it = m_idToInjectedScript.begin(); it != end; ++it) {
-        ScriptState* scriptState = it->value.scriptState();
-        if (window != scriptState->domWindow())
-            continue;
-        m_scriptStateToId.remove(scriptState);
-        idsToRemove.append(it->key);
-    }
-    m_idToInjectedScript.removeAll(idsToRemove);
-
-    // Now remove script states that have id but no injected script.
-    Vector<ScriptState*> scriptStatesToRemove;
-    for (ScriptStateToId::iterator it = m_scriptStateToId.begin(); it != m_scriptStateToId.end(); ++it) {
-        ScriptState* scriptState = it->key.get();
-        if (window == scriptState->domWindow())
-            scriptStatesToRemove.append(scriptState);
-    }
-    m_scriptStateToId.removeAll(scriptStatesToRemove);
+    m_idToInjectedScript.remove(it->value);
+    m_scriptStateToId.remove(it);
 }
 
 bool InjectedScriptManager::canAccessInspectedWorkerGlobalScope(ScriptState*)

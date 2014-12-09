@@ -116,9 +116,6 @@ interface InspectorInstrumentation {
     [CSS, Inline=FastReturn]
     void activeStyleSheetsUpdated([Keep] Document*);
 
-    [PageRuntime]
-    void frameWindowDiscarded(LocalFrame*, LocalDOMWindow* domWindow);
-
     [CSS, Inline=FastReturn]
     void mediaQueryResultChanged(Document*);
 
@@ -213,7 +210,10 @@ interface InspectorInstrumentation {
     void didEvaluateScript(const InspectorInstrumentationCookie&);
 
     [PageRuntime, Inline=FastReturn]
-    void didCreateIsolatedContext([Keep] LocalFrame*, ScriptState*, SecurityOrigin*);
+    void didCreateScriptContext([Keep] LocalFrame*, ScriptState*, SecurityOrigin*, bool isMainWorldContext);
+
+    [PageRuntime, Inline=FastReturn]
+    void willReleaseScriptContext([Keep] LocalFrame*, ScriptState*);
 
     [AsyncCallStackTracker, DOMDebugger, Timeline, Inline=FastReturn]
     InspectorInstrumentationCookie willFireTimer([Keep] ExecutionContext*, int timerId);
