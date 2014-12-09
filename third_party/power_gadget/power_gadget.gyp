@@ -11,6 +11,7 @@
         'PowerGadgetLib.cpp',
         'PowerGadgetLib.h',
       ],
+      'msvs_disabled_warnings': [4244,],
     },
   ],
 }
