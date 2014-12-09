@@ -89,7 +89,8 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
 class TestPasswordManagerClient : public StubPasswordManagerClient {
  public:
   explicit TestPasswordManagerClient(PasswordStore* password_store)
-      : password_store_(password_store) {
+      : password_store_(password_store),
+        driver_(new NiceMock<MockPasswordManagerDriver>) {
     prefs_.registry()->RegisterBooleanPref(prefs::kPasswordManagerSavingEnabled,
                                            true);
   }
@@ -108,20 +109,22 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
     form_to_filter_ = form;
   }
 
-  MockPasswordManagerDriver* mock_driver() { return &driver_; }
+  MockPasswordManagerDriver* mock_driver() { return driver_.get(); }
 
-  base::WeakPtr<PasswordManagerDriver> driver() { return driver_.AsWeakPtr(); }
+  base::WeakPtr<PasswordManagerDriver> driver() { return driver_->AsWeakPtr(); }
 
   virtual autofill::AutofillManager* GetAutofillManagerForMainFrame() override {
     return mock_driver()->mock_autofill_manager();
   }
+
+  void KillDriver() { driver_.reset(); }
 
  private:
   autofill::PasswordForm form_to_filter_;
 
   TestingPrefServiceSimple prefs_;
   PasswordStore* password_store_;
-  NiceMock<MockPasswordManagerDriver> driver_;
+  scoped_ptr<MockPasswordManagerDriver> driver_;
 };
 
 class TestPasswordManager : public PasswordManager {
@@ -1305,6 +1308,43 @@ TEST_F(PasswordFormManagerTest, CorrectlySavePasswordWithoutUsernameFields) {
   EXPECT_EQ(ASCIIToUTF16("password"),
             retrieving_manager.preferred_match()->password_value);
   password_store->Shutdown();
+}
+
+TEST_F(PasswordFormManagerTest, DriverDeletedBeforeStoreDone) {
+  // Test graceful handling of the following situation:
+  // 1. A form appears in a frame, a PFM is created for that form.
+  // 2. The PFM asks the store for credentials for this form.
+  // 3. The frame (and associated driver) gets deleted.
+  // 4. The PFM returns the callback with credentials.
+  // This test checks implicitly that after step 4 the PFM does not attempt
+  // use-after-free of the deleted driver.
+  std::string example_url("http://example.com");
+  scoped_ptr<PasswordForm> form(new PasswordForm);
+  form->origin = GURL(example_url);
+  form->signon_realm = example_url;
+  form->action = GURL(example_url);
+  form->username_element = ASCIIToUTF16("u");
+  form->password_element = ASCIIToUTF16("p");
+  form->submit_element = ASCIIToUTF16("s");
+
+  TestPasswordManagerClient client_with_store(mock_store());
+
+  TestPasswordManager manager(&client_with_store);
+  PasswordFormManager form_manager(&manager, &client_with_store,
+                                   client_with_store.driver(), *form, false);
+
+  const PasswordStore::AuthorizationPromptPolicy auth_policy =
+      PasswordStore::DISALLOW_PROMPT;
+  EXPECT_CALL(*mock_store(),
+              GetLogins(*form, auth_policy, &form_manager));
+  form_manager.FetchMatchingLoginsFromPasswordStore(auth_policy);
+
+  // Suddenly, the frame and its driver disappear.
+  client_with_store.KillDriver();
+
+  std::vector<PasswordForm*> results;
+  results.push_back(form.release());
+  form_manager.OnRequestDone(results);
 }
 
 }  // namespace password_manager
