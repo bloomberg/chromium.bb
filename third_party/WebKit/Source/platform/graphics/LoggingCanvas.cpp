@@ -163,17 +163,6 @@ void LoggingCanvas::drawBitmapRectToRect(const SkBitmap& bitmap, const SkRect* s
     this->SkCanvas::drawBitmapRectToRect(bitmap, src, dst, paint, flags);
 }
 
-void LoggingCanvas::drawBitmapMatrix(const SkBitmap& bitmap, const SkMatrix& m, const SkPaint* paint)
-{
-    AutoLogger logger(this);
-    RefPtr<JSONObject> params = logger.logItemWithParams("drawBitmapMatrix");
-    params->setObject("bitmap", objectForSkBitmap(bitmap));
-    params->setArray("matrix", arrayForSkMatrix(m));
-    if (paint)
-        params->setObject("paint", objectForSkPaint(*paint));
-    this->SkCanvas::drawBitmapMatrix(bitmap, m, paint);
-}
-
 void LoggingCanvas::drawBitmapNine(const SkBitmap& bitmap, const SkIRect& center, const SkRect& dst, const SkPaint* paint)
 {
     AutoLogger logger(this);

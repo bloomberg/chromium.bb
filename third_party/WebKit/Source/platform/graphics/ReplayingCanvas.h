@@ -51,7 +51,6 @@ public:
     virtual void drawPath(const SkPath&, const SkPaint&) override;
     virtual void drawBitmap(const SkBitmap&, SkScalar left, SkScalar top, const SkPaint* = 0) override;
     virtual void drawBitmapRectToRect(const SkBitmap&, const SkRect* src, const SkRect& dst, const SkPaint*, DrawBitmapRectFlags) override;
-    virtual void drawBitmapMatrix(const SkBitmap&, const SkMatrix&, const SkPaint* = 0) override;
     virtual void drawBitmapNine(const SkBitmap&, const SkIRect& center, const SkRect& dst, const SkPaint*) override;
     virtual void drawSprite(const SkBitmap&, int left, int top, const SkPaint* = 0) override;
     virtual void drawVertices(VertexMode vmode, int vertexCount, const SkPoint vertices[], const SkPoint texs[],

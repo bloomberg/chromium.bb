@@ -118,12 +118,6 @@ void ProfilingCanvas::drawBitmapRectToRect(const SkBitmap& bitmap, const SkRect*
     this->SkCanvas::drawBitmapRectToRect(bitmap, src, dst, paint, flags);
 }
 
-void ProfilingCanvas::drawBitmapMatrix(const SkBitmap& bitmap, const SkMatrix& m, const SkPaint* paint)
-{
-    AutoStamper stamper(this);
-    this->SkCanvas::drawBitmapMatrix(bitmap, m, paint);
-}
-
 void ProfilingCanvas::drawBitmapNine(const SkBitmap& bitmap, const SkIRect& center, const SkRect& dst, const SkPaint* paint)
 {
     AutoStamper stamper(this);
