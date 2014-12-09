@@ -110,7 +110,8 @@ remoting.DesktopRemoting.prototype.getRequiredCapabilities = function() {
     // TODO(aiguha): Add this capability based on a gyp/command-line flag,
     // rather than by default.
     remoting.ClientSession.Capability.CAST,
-    remoting.ClientSession.Capability.GNUBBY_AUTH
+    remoting.ClientSession.Capability.GNUBBY_AUTH,
+    remoting.ClientSession.Capability.MEDIA_SOURCE_RENDERING
   ];
 };
 

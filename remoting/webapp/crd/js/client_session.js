@@ -407,7 +407,12 @@ remoting.ClientSession.Capability = {
 
   // When enabled, this capability results in the client informing the host
   // that it supports Gnubby-based authentication.
-  GNUBBY_AUTH: 'gnubbyAuth'
+  GNUBBY_AUTH: 'gnubbyAuth',
+
+  // Enable MediaSource based rendering in the client, if available.
+  // The plugin also needs to support MediaSource rendering.
+  // TODO(garykac): Remove this once mediaSource is stable for VP9 streams.
+  MEDIA_SOURCE_RENDERING: 'mediaSourceRendering'
 };
 
 /**
@@ -563,24 +568,27 @@ remoting.ClientSession.prototype.onPluginInitialized_ = function(initialized) {
     this.plugin_.allowMouseLock();
   }
 
-  // Enable MediaSource-based rendering on Chrome 37 and above.
-  var chromeVersionMajor =
-      parseInt((remoting.getChromeVersion() || '0').split('.')[0], 10);
-  if (chromeVersionMajor >= 37 &&
-      this.plugin_.hasFeature(
-          remoting.ClientPlugin.Feature.MEDIA_SOURCE_RENDERING)) {
-    this.video_ = /** @type {HTMLMediaElement} */(
-        this.container_.querySelector('video'));
-    // Make sure that the <video> element is hidden until we get the first
-    // frame.
-    this.video_.style.width = '0px';
-    this.video_.style.height = '0px';
+  if (this.hasCapability_(
+      remoting.ClientSession.Capability.MEDIA_SOURCE_RENDERING)) {
+    // MediaSource-based rendering is only supported on Chrome 37 and above.
+    var chromeVersionMajor =
+        parseInt((remoting.getChromeVersion() || '0').split('.')[0], 10);
+    if (chromeVersionMajor >= 37 &&
+        this.plugin_.hasFeature(
+            remoting.ClientPlugin.Feature.MEDIA_SOURCE_RENDERING)) {
+      this.video_ = /** @type {HTMLMediaElement} */(
+          this.container_.querySelector('video'));
+      // Make sure that the <video> element is hidden until we get the first
+      // frame.
+      this.video_.style.width = '0px';
+      this.video_.style.height = '0px';
 
-    var renderer = new remoting.MediaSourceRenderer(this.video_);
-    this.plugin_.enableMediaSourceRendering(renderer);
-    this.container_.classList.add('mediasource-rendering');
-  } else {
-    this.container_.classList.remove('mediasource-rendering');
+      var renderer = new remoting.MediaSourceRenderer(this.video_);
+      this.plugin_.enableMediaSourceRendering(renderer);
+      this.container_.classList.add('mediasource-rendering');
+    } else {
+      this.container_.classList.remove('mediasource-rendering');
+    }
   }
 
   this.plugin_.setOnOutgoingIqHandler(this.sendIq_.bind(this));
