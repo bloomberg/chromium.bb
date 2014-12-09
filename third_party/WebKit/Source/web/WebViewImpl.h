@@ -36,6 +36,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebFloatSize.h"
 #include "public/platform/WebGestureCurveTarget.h"
 #include "public/platform/WebLayer.h"
 #include "public/platform/WebPoint.h"
@@ -118,6 +119,13 @@ public:
         const WebSize& scrollDelta,
         float pageScaleDelta,
         float topControlsDelta) override;
+    virtual void applyViewportDeltas(
+        const WebSize& pinchViewportDelta,
+        const WebSize& mainFrameDelta,
+        const WebFloatSize& elasticOverscrollDelta,
+        float pageScaleDelta,
+        float topControlsDelta) override;
+    // TODO(ccameron): Remove this when all callers are removed.
     virtual void applyViewportDeltas(
         const WebSize& pinchViewportDelta,
         const WebSize& mainFrameDelta,

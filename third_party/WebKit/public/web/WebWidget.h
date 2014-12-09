@@ -33,6 +33,7 @@
 
 #include "../platform/WebCanvas.h"
 #include "../platform/WebCommon.h"
+#include "../platform/WebFloatSize.h"
 #include "../platform/WebPoint.h"
 #include "../platform/WebRect.h"
 #include "../platform/WebSize.h"
@@ -146,6 +147,13 @@ public:
 
     // Applies viewport related properties during a commit from the compositor
     // thread.
+    virtual void applyViewportDeltas(
+        const WebSize& pinchViewportDelta,
+        const WebSize& mainFrameDelta,
+        const WebFloatSize& elasticOverscrollDelta,
+        float scaleFactor,
+        float topControlsDelta) { }
+    // TODO(ccameron): Delete this when all callers are removed.
     virtual void applyViewportDeltas(
         const WebSize& pinchViewportDelta,
         const WebSize& mainFrameDelta,
