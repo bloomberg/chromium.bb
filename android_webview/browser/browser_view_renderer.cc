@@ -75,8 +75,8 @@ BrowserViewRenderer::BrowserViewRenderer(
 BrowserViewRenderer::~BrowserViewRenderer() {
 }
 
-intptr_t BrowserViewRenderer::GetAwDrawGLViewContext() {
-  return reinterpret_cast<intptr_t>(&shared_renderer_state_);
+SharedRendererState* BrowserViewRenderer::GetAwDrawGLViewContext() {
+  return &shared_renderer_state_;
 }
 
 bool BrowserViewRenderer::RequestDrawGL(bool wait_for_completion) {

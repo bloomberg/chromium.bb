@@ -180,10 +180,12 @@ ScopedAppGLStateRestoreImpl::ScopedAppGLStateRestoreImpl(
     g_globals_initialized = true;
 
     glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &g_gl_max_texture_units);
-    DCHECK_GT(g_gl_max_texture_units, 0);
 
-    std::string extensions(
-        reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)));
+    std::string extensions;
+    const char* extensions_c_str =
+        reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
+    if (extensions_c_str)
+      extensions = extensions_c_str;
     g_supports_oes_vertex_array_object =
         extensions.find("GL_OES_vertex_array_object") != std::string::npos;
   }

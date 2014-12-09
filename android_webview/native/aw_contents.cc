@@ -341,7 +341,8 @@ jint GetNativeInstanceCount(JNIEnv* env, jclass) {
 
 jlong AwContents::GetAwDrawGLViewContext(JNIEnv* env, jobject obj) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return browser_view_renderer_.GetAwDrawGLViewContext();
+  return reinterpret_cast<intptr_t>(
+      browser_view_renderer_.GetAwDrawGLViewContext());
 }
 
 namespace {
