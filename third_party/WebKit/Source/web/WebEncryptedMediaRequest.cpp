@@ -25,7 +25,7 @@ WebEncryptedMediaRequest::WebEncryptedMediaRequest(const WebEncryptedMediaReques
     assign(request);
 }
 
-WebEncryptedMediaRequest::WebEncryptedMediaRequest(const PassRefPtr<EncryptedMediaRequest>& request)
+WebEncryptedMediaRequest::WebEncryptedMediaRequest(EncryptedMediaRequest* request)
     : m_private(request)
 {
 }

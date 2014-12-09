@@ -5,7 +5,7 @@
 #ifndef EncryptedMediaRequest_h
 #define EncryptedMediaRequest_h
 
-#include "platform/heap/Heap.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -15,7 +15,7 @@ struct WebMediaKeySystemConfiguration;
 class WebString;
 template <typename T> class WebVector;
 
-class EncryptedMediaRequest : public RefCountedGarbageCollected<EncryptedMediaRequest> {
+class EncryptedMediaRequest : public GarbageCollectedFinalized<EncryptedMediaRequest> {
 public:
     virtual ~EncryptedMediaRequest() { }
 

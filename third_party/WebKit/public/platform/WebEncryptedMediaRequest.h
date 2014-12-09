@@ -32,7 +32,7 @@ public:
     BLINK_EXPORT void requestNotSupported(const WebString& errorMessage);
 
 #if BLINK_IMPLEMENTATION
-    explicit WebEncryptedMediaRequest(const PassRefPtr<EncryptedMediaRequest>&);
+    explicit WebEncryptedMediaRequest(EncryptedMediaRequest*);
 #endif
 
 private:
