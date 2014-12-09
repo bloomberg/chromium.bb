@@ -180,4 +180,10 @@ void
 expect_protocol_error(struct client *client,
 		      const struct wl_interface *intf, uint32_t code);
 
+char*
+screenshot_output_filename(const char *basename, uint32_t seq);
+
+char*
+screenshot_reference_filename(const char *basename, uint32_t seq);
+
 #endif
