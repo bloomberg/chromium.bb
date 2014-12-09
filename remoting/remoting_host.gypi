@@ -107,6 +107,7 @@
                 'host/disconnect_window_linux.cc',
                 'host/linux/x_server_clipboard.cc',
                 'host/linux/x_server_clipboard.h',
+                'host/local_input_monitor_x11.cc',
                 'host/policy_hack/policy_watcher_linux.cc',
                 'host/remoting_me2me_host.cc',
               ],
@@ -120,8 +121,11 @@
                   'sources!': [
                     'host/input_injector_chromeos.cc',
                     'host/input_injector_chromeos.h',
-                    'host/local_input_monitor_chromeos.cc',
                   ],
+                }, {  # use_ozone==1
+                  'dependencies' : [
+                    '../ui/ozone/ozone.gyp:ozone',
+                  ]
                 }],
               ],
             }],

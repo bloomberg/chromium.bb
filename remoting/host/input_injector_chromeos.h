@@ -31,8 +31,11 @@ class InputInjectorChromeos : public InputInjector {
   void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
 
  private:
+  class Core;
+
   // Task runner for input injection.
   scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
+  scoped_ptr<Core> core_;
 
   DISALLOW_COPY_AND_ASSIGN(InputInjectorChromeos);
 };

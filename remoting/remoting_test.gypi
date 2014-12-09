@@ -255,6 +255,7 @@
         }, { # chromeos==1
           'sources!': [
             'host/linux/x_server_clipboard_unittest.cc',
+            'host/local_input_monitor_unittest.cc',
           ],
         }],
         [ 'use_ozone==1', {

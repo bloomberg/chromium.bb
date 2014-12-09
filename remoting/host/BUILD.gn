@@ -67,10 +67,8 @@ static_library("host") {
     }
 
     if (use_ozone) {
-      sources -= [
-        "input_injector_x11.cc",
-        "local_input_monitor_x11.cc",
-      ]
+      sources -= [ "input_injector_x11.cc" ]
+      deps += [ "//ui/ozone" ]
     } else {
       sources -= [
         "clipboard_x11.cc",
@@ -78,13 +76,13 @@ static_library("host") {
         "input_injector_chromeos.h",
         "linux/x_server_clipboard.cc",
         "linux/x_server_clipboard.h",
-        "local_input_monitor_chromeos.cc",
       ]
     }
 
     sources -= [
       "continue_window_linux.cc",
       "disconnect_window_linux.cc",
+      "local_input_monitor_x11.cc",
       "policy_hack/policy_watcher_linux.cc",
       "remoting_me2me_host.cc",
     ]

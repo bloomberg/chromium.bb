@@ -85,6 +85,9 @@ class KeycodeConverter {
   // The returned pointer references a static global string.
   static const char* UsbKeycodeToCode(uint32_t usb_keycode);
 
+  // Convert a USB keycode into a DomCode.
+  static DomCode UsbKeycodeToDomCode(uint32_t usb_keycode);
+
   // Convert a DOM3 Event |code| string into a USB keycode value.
   static uint32_t CodeToUsbKeycode(const char* code);
 

@@ -204,6 +204,15 @@ const char* KeycodeConverter::UsbKeycodeToCode(uint32_t usb_keycode) {
 }
 
 // static
+DomCode KeycodeConverter::UsbKeycodeToDomCode(uint32_t usb_keycode) {
+  for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
+    if (usb_keycode_map[i].usb_keycode == usb_keycode)
+      return static_cast<DomCode>(usb_keycode);
+  }
+  return DomCode::NONE;
+}
+
+// static
 uint32_t KeycodeConverter::CodeToUsbKeycode(const char* code) {
   if (!code || !*code)
     return InvalidUsbKeycode();

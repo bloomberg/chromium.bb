@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"
+#include "remoting/host/chromeos/point_transformer.h"
 #include "remoting/host/client_session_control.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "ui/events/event.h"
@@ -52,6 +53,10 @@ class LocalInputMonitorChromeos : public LocalInputMonitor {
     // disconnect requests.  Must be called on the |caller_task_runner_|.
     base::WeakPtr<ClientSessionControl> client_session_control_;
 
+    // Used to rotate the local mouse positions appropriately based on the
+    // current display rotation settings.
+    scoped_ptr<PointTransformer> point_transformer_;
+
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
 
@@ -86,6 +91,7 @@ LocalInputMonitorChromeos::Core::Core(
 
 void LocalInputMonitorChromeos::Core::Start() {
   ui::PlatformEventSource::GetInstance()->AddPlatformEventObserver(this);
+  point_transformer_.reset(new PointTransformer());
 }
 
 LocalInputMonitorChromeos::Core::~Core() {
@@ -109,7 +115,9 @@ void LocalInputMonitorChromeos::Core::DidProcessEvent(
 
 void LocalInputMonitorChromeos::Core::HandleMouseMove(
     const ui::PlatformEvent& event) {
-  gfx::Point mouse_position = ui::EventLocationFromNative(event);
+  gfx::PointF mouse_position = ui::EventLocationFromNative(event);
+  mouse_position = point_transformer_->FromScreenCoordinates(mouse_position);
+
   caller_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(

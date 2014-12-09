@@ -18,6 +18,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "remoting/base/logging.h"
+#if defined(OS_CHROMEOS)
+#include "remoting/host/chromeos/point_transformer.h"
+#endif
 #include "remoting/host/clipboard.h"
 #include "remoting/host/linux/unicode_to_keysym.h"
 #include "remoting/proto/internal.pb.h"
@@ -170,6 +173,10 @@ class InputInjectorX11 : public InputInjector {
     static const int kNumPointerButtons = 7;
 
     int pointer_button_map_[kNumPointerButtons];
+
+#if defined(OS_CHROMEOS)
+    PointTransformer point_transformer_;
+#endif
 
     scoped_ptr<Clipboard> clipboard_;
 
@@ -401,8 +408,15 @@ void InputInjectorX11::Core::InjectMouseEvent(const MouseEvent& event) {
     // a MotionNotify even if the mouse position hasn't changed, which confuses
     // apps which assume MotionNotify implies movement. See crbug.com/138075.
     bool inject_motion = true;
-    webrtc::DesktopVector new_mouse_position(
-        webrtc::DesktopVector(event.x(), event.y()));
+    webrtc::DesktopVector new_mouse_position(event.x(), event.y());
+#if defined(OS_CHROMEOS)
+    // Interim hack to handle display rotation on Chrome OS.
+    // TODO(kelvin): Remove this when Chrome OS has completely migrated to
+    // Ozone (crbug.com/439287).
+    gfx::PointF screen_location = point_transformer_.ToScreenCoordinates(
+        gfx::PointF(event.x(), event.y()));
+    new_mouse_position.set(screen_location.x(), screen_location.y());
+#endif
     if (event.has_button() && event.has_button_down() && !event.button_down()) {
       if (new_mouse_position.equals(latest_mouse_position_))
         inject_motion = false;
