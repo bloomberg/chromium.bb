@@ -213,6 +213,7 @@ HidServiceMac::HidServiceMac(
   // Drain devices_added_iterator_ to arm the notification.
   devices_removed_iterator_.reset(iterator);
   RemoveDevices();
+  FirstEnumerationComplete();
 }
 
 HidServiceMac::~HidServiceMac() {

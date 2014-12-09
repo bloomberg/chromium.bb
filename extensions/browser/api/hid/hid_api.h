@@ -38,6 +38,8 @@ class HidGetDevicesFunction : public UIThreadExtensionFunction {
   // ExtensionFunction:
   ResponseAction Run() override;
 
+  void OnEnumerationComplete(scoped_ptr<base::ListValue> devices);
+
   DISALLOW_COPY_AND_ASSIGN(HidGetDevicesFunction);
 };
 

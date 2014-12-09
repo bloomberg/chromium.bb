@@ -4,6 +4,7 @@
 
 #include "device/hid/hid_service.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
@@ -71,13 +72,17 @@ HidService::~HidService() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void HidService::GetDevices(std::vector<HidDeviceInfo>* devices) {
+void HidService::GetDevices(const GetDevicesCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  STLClearObject(devices);
-  for (DeviceMap::iterator it = devices_.begin();
-      it != devices_.end();
-      ++it) {
-    devices->push_back(it->second);
+  if (enumeration_ready_) {
+    std::vector<HidDeviceInfo> devices;
+    for (const auto& map_entry : devices_) {
+      devices.push_back(map_entry.second);
+    }
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::Bind(callback, devices));
+  } else {
+    pending_enumerations_.push_back(callback);
   }
 }
 
@@ -100,14 +105,17 @@ bool HidService::GetDeviceInfo(const HidDeviceId& device_id,
   return true;
 }
 
-HidService::HidService() {
+HidService::HidService() : enumeration_ready_(false) {
 }
 
 void HidService::AddDevice(const HidDeviceInfo& info) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!ContainsKey(devices_, info.device_id)) {
     devices_[info.device_id] = info;
-    FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceAdded(info));
+
+    if (enumeration_ready_) {
+      FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceAdded(info));
+    }
   }
 }
 
@@ -115,8 +123,26 @@ void HidService::RemoveDevice(const HidDeviceId& device_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DeviceMap::iterator it = devices_.find(device_id);
   if (it != devices_.end()) {
+    if (enumeration_ready_) {
+      FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceRemoved(it->second));
+    }
     devices_.erase(it);
-    FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceRemoved(device_id));
+  }
+}
+
+void HidService::FirstEnumerationComplete() {
+  enumeration_ready_ = true;
+
+  if (!pending_enumerations_.empty()) {
+    std::vector<HidDeviceInfo> devices;
+    for (const auto& map_entry : devices_) {
+      devices.push_back(map_entry.second);
+    }
+
+    for (const GetDevicesCallback& callback : pending_enumerations_) {
+      callback.Run(devices);
+    }
+    pending_enumerations_.clear();
   }
 }
 

@@ -89,8 +89,15 @@ ExtensionFunction::ResponseAction HidGetDevicesFunction::Run() {
     filters.push_back(legacy_filter);
   }
 
-  return RespondNow(OneArgument(
-      device_manager->GetApiDevices(extension(), filters).release()));
+  device_manager->GetApiDevices(
+      extension(), filters,
+      base::Bind(&HidGetDevicesFunction::OnEnumerationComplete, this));
+  return RespondLater();
+}
+
+void HidGetDevicesFunction::OnEnumerationComplete(
+    scoped_ptr<base::ListValue> devices) {
+  Respond(OneArgument(devices.release()));
 }
 
 HidConnectFunction::HidConnectFunction() : connection_manager_(nullptr) {

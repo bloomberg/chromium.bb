@@ -99,54 +99,11 @@ class MockHidConnection : public HidConnection {
 class MockHidService : public HidService {
  public:
   MockHidService() : HidService() {
-    {
-      HidDeviceInfo device_info;
-      device_info.device_id = "Device A";
-      device_info.vendor_id = 0x18D1;
-      device_info.product_id = 0x58F0;
-      device_info.max_input_report_size = 128;
-      device_info.max_output_report_size = 128;
-      device_info.max_feature_report_size = 128;
-      {
-        HidCollectionInfo collection_info;
-        device_info.collections.push_back(collection_info);
-      }
-      AddDevice(device_info);
-    }
-
-    {
-      HidDeviceInfo device_info;
-      device_info.device_id = "Device B";
-      device_info.vendor_id = 0x18D1;
-      device_info.product_id = 0x58F0;
-      device_info.max_input_report_size = 128;
-      device_info.max_output_report_size = 128;
-      device_info.max_feature_report_size = 128;
-      {
-        HidCollectionInfo collection_info;
-        collection_info.usage =
-            HidUsageAndPage(0, HidUsageAndPage::kPageVendor);
-        collection_info.report_ids.insert(1);
-        device_info.has_report_id = true;
-        device_info.collections.push_back(collection_info);
-      }
-      AddDevice(device_info);
-    }
-
-    {
-      HidDeviceInfo device_info;
-      device_info.device_id = "Device C";
-      device_info.vendor_id = 0x18D1;
-      device_info.product_id = 0x58F1;
-      device_info.max_input_report_size = 128;
-      device_info.max_output_report_size = 128;
-      device_info.max_feature_report_size = 128;
-      {
-        HidCollectionInfo collection_info;
-        device_info.collections.push_back(collection_info);
-      }
-      AddDevice(device_info);
-    }
+    // Verify that devices are enumerated properly even when the first
+    // enumeration happens asynchronously.
+    ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&MockHidService::LazyFirstEnumeration,
+                              base::Unretained(this)));
   }
 
   void Connect(const HidDeviceId& device_id,
@@ -159,6 +116,37 @@ class MockHidService : public HidService {
 
     ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                             base::Bind(callback, connection));
+  }
+
+  void LazyFirstEnumeration() {
+    AddDevice("A", 0x18D1, 0x58F0, false);
+    AddDevice("B", 0x18D1, 0x58F0, true);
+    AddDevice("C", 0x18D1, 0x58F1, false);
+    FirstEnumerationComplete();
+  }
+
+  void AddDevice(const std::string& device_id,
+                 int vendor_id,
+                 int product_id,
+                 bool report_id) {
+    HidDeviceInfo device_info;
+    device_info.device_id = device_id;
+    device_info.vendor_id = vendor_id;
+    device_info.product_id = product_id;
+    device_info.max_input_report_size = 128;
+    device_info.max_output_report_size = 128;
+    device_info.max_feature_report_size = 128;
+    {
+      HidCollectionInfo collection_info;
+      if (report_id) {
+        collection_info.usage =
+            HidUsageAndPage(0, HidUsageAndPage::kPageVendor);
+        collection_info.report_ids.insert(1);
+        device_info.has_report_id = true;
+      }
+      device_info.collections.push_back(collection_info);
+    }
+    HidService::AddDevice(device_info);
   }
 };
 

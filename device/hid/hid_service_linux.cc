@@ -70,6 +70,9 @@ class HidServiceLinux::Helper : public DeviceMonitorLinux::Observer,
     observer_.Add(monitor);
     monitor->Enumerate(
         base::Bind(&Helper::OnDeviceAdded, base::Unretained(this)));
+    task_runner->PostTask(
+        FROM_HERE,
+        base::Bind(&HidServiceLinux::FirstEnumerationComplete, service_));
   }
 
   virtual ~Helper() {

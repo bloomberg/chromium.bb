@@ -152,6 +152,8 @@ void HidServiceWin::DoInitialEnumeration() {
       PlatformAddDevice(device_path);
     }
   }
+
+  FirstEnumerationComplete();
 }
 
 // static
