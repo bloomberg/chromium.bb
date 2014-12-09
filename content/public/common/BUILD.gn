@@ -52,5 +52,6 @@ source_set("common_sources") {
 mojom("mojo_bindings") {
   sources = [
     "mojo_geoposition.mojom",
+    "permission_status.mojom",
   ]
 }

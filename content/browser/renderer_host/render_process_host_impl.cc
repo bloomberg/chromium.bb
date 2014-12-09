@@ -456,7 +456,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       within_process_died_observer_(false),
       power_monitor_broadcaster_(this),
       worker_ref_count_(0),
-      permission_service_context_(new PermissionServiceContext(nullptr)),
+      permission_service_context_(new PermissionServiceContext(this)),
       weak_factory_(this) {
   widget_helper_ = new RenderWidgetHelper();
 

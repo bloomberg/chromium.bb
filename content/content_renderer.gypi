@@ -36,6 +36,7 @@
     '../ui/surface/surface.gyp:surface',
     '../v8/tools/gyp/v8.gyp:v8',
     '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
+    'content_common_mojo_bindings.gyp:content_common_mojo_bindings',
   ],
   'include_dirs': [
     '..',
