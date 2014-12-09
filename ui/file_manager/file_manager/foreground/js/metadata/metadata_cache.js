@@ -9,7 +9,6 @@
  * Some of the properties:
  * {
  *   filesystem: size, modificationTime
- *   internal: presence
  *   external: pinned, present, hosted, availableOffline, externalFileUrl
  *
  *   Following are not fetched for non-present external files.
@@ -29,7 +28,7 @@
  *       alert("Pinned and empty!");
  *   });
  *
- *   cache.set(entry, 'internal', {presence: 'deleted'});
+ *   cache.set(entry, 'external', {present: true});
  *
  *   cache.clear([fileEntry1, fileEntry2], 'filesystem');
  *

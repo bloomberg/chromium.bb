@@ -851,7 +851,6 @@ Object.freeze(DialogType);
 
     assert(this.metadataCache_);
     this.fileFilter_ = new FileFilter(
-        this.metadataCache_,
         false  /* Don't show dot files and *.crdownload by default. */);
     this.fileWatcher_ = new FileWatcher(this.metadataCache_);
 

@@ -317,32 +317,18 @@ DriveMetadataSearchContentScanner.prototype.scan = function(
  * This class manages filters and determines a file should be shown or not.
  * When filters are changed, a 'changed' event is fired.
  *
- * @param {MetadataCache} metadataCache Metadata cache service.
  * @param {boolean} showHidden If files starting with '.' or ending with
  *     '.crdownlaod' are shown.
  * @constructor
  * @extends {cr.EventTarget}
  */
-function FileFilter(metadataCache, showHidden) {
-  /**
-   * @type {MetadataCache}
-   * @private
-   */
-  this.metadataCache_ = metadataCache;
-
+function FileFilter(showHidden) {
   /**
    * @type {Object.<string, Function>}
    * @private
    */
   this.filters_ = {};
   this.setFilterHidden(!showHidden);
-
-  // Do not show entries marked as 'deleted'.
-  this.addFilter('deleted', function(entry) {
-    var internal = /** @type {{deleted}} */
-        (this.metadataCache_.getCached(entry, 'internal'));
-    return !(internal && internal.deleted);
-  }.bind(this));
 }
 
 /*
