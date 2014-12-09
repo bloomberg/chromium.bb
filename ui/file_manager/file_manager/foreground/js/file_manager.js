@@ -93,6 +93,11 @@ function FileManager() {
   this.selectionHandler_ = null;
 
   /**
+   * @private {MediaImportHandler}
+   */
+  this.mediaImportHandler_ = null;
+
+  /**
    * UI management class of file manager.
    * @type {FileManagerUI}
    * @private
@@ -313,6 +318,12 @@ FileManager.prototype = /** @struct */ {
    */
   get metadataCache() {
     return this.metadataCache_;
+  },
+  /**
+   * @return {MediaImportHandler}
+   */
+  get mediaImportHandler() {
+    return this.mediaImportHandler_;
   },
   /**
    * @return {FileManagerUI}
@@ -641,6 +652,8 @@ Object.freeze(DialogType);
               this.backgroundPage_.registerDialog(window);
             this.fileOperationManager_ =
                 this.backgroundPage_.background.fileOperationManager;
+            this.mediaImportHandler_ =
+                this.backgroundPage_.background.mediaImportHandler;
             this.backgroundPage_.background.historyLoaderPromise.then(
                 /**
                  * @param {!importer.HistoryLoader} loader

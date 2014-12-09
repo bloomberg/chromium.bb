@@ -1039,8 +1039,9 @@ CommandHandler.COMMANDS_['cloud-import'] = /** @type {Command} */ ({
    * @param {!FileManager} fileManager FileManager to use.
    */
   execute: function(event, fileManager) {
-    // TODO(smckay): Initiate import.
     metrics.recordEnum('CloudImport.UserAction', 'IMPORT_INITIATED');
+    var importer = fileManager.mediaImportHandler;
+    importer.importMedia(fileManager.getCurrentDirectoryEntry());
   },
   /**
    * @param {!Event} event Command event.
