@@ -36,7 +36,7 @@ build_dir() {
   # errors about components that you just happen to have not built (NaCl, for
   # example).
   $(ctags_cmd "$extraexcludes") 2> /dev/null || fail $1
-  mv -f .tmp_tags .tags
+  mv -f .tmp_tags tags
 }
 
 # We always build the top level but leave all submodules as optional.
