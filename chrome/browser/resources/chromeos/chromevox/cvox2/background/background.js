@@ -47,7 +47,7 @@ Background = function() {
    * @type {!Array.<string>}
    * @private
    */
-  this.whitelist_ = ['http://www.chromevox.com/', 'chromevox_next_test'];
+  this.whitelist_ = ['chromevox_next_test'];
 
   /**
    * @type {cvox.TabsApiHandler}
@@ -117,10 +117,6 @@ Background.prototype = {
         return;
 
       var next = this.isWhitelisted_(tab.url);
-
-      // Only care about Next for now.
-      if (!next)
-        return;
 
       this.toggleChromeVoxVersion({next: next, classic: !next});
     }.bind(this));
@@ -361,7 +357,10 @@ Background.prototype = {
 
     chrome.tabs.query({active: true}, function(tabs) {
       if (opt_options.classic) {
-        cvox.ChromeVox.injectChromeVoxIntoTabs(tabs);
+        // This case should do nothing because Classic gets injected by the
+        // extension system via our manifest. Once ChromeVox Next is enabled
+        // for tabs, re-enable.
+        // cvox.ChromeVox.injectChromeVoxIntoTabs(tabs);
       } else {
         tabs.forEach(function(tab) {
           this.disableClassicChromeVox_(tab.id);
