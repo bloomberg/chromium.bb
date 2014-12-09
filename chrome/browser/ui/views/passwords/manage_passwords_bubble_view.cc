@@ -66,6 +66,8 @@ enum ColumnSetType {
   SINGLE_BUTTON_COLUMN_SET = 3,
 };
 
+enum TextRowType { ROW_SINGLE, ROW_MULTILINE };
+
 // Construct an appropriate ColumnSet for the given |type|, and add it
 // to |layout|.
 void BuildColumnSet(views::GridLayout* layout, ColumnSetType type) {
@@ -151,10 +153,12 @@ void AddTitleRow(views::GridLayout* layout, ManagePasswordsBubbleModel* model) {
 
 // Given a |layout| and |text|, adds a text row with small font using a
 // SINGLE_VIEW_COLUMN_SET.
-void AddTextRow(views::GridLayout* layout, const base::string16& text) {
+void AddTextRow(views::GridLayout* layout,
+                const base::string16& text,
+                TextRowType row_type) {
   views::Label* text_label = new views::Label(text);
   text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  text_label->SetMultiLine(true);
+  text_label->SetMultiLine(row_type == ROW_MULTILINE);
   text_label->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
       ui::ResourceBundle::SmallFont));
   layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
@@ -164,7 +168,7 @@ void AddTextRow(views::GridLayout* layout, const base::string16& text) {
 // Returns the string representing the reported URL. This string will be shown
 // to the user and reported through Feedback.
 std::string PresentURL(const GURL& url) {
-  return url.host();
+  return url.GetAsReferrer().spec();
 }
 
 }  // namespace
@@ -322,15 +326,16 @@ ManagePasswordsBubbleView::AskUserToSubmitURLView::AskUserToSubmitURLView(
   AddTitleRow(layout, parent_->model());
   // Confirmation text.
   AddTextRow(layout, l10n_util::GetStringUTF16(
-                         IDS_MANAGE_PASSWORDS_ASK_TO_SUBMIT_URL_TEXT));
+                         IDS_MANAGE_PASSWORDS_ASK_TO_SUBMIT_URL_TEXT),
+             ROW_MULTILINE);
   // Border row.
   SkColor color = GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor);
   AddBorderRow(layout, color);
   layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
   // URL row.
-  // TODO(melandory) Use full URL instead of host.
-  AddTextRow(layout, base::UTF8ToUTF16(PresentURL(parent->model()->origin())));
+  AddTextRow(layout, base::UTF8ToUTF16(PresentURL(parent->model()->origin())),
+             ROW_SINGLE);
   layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
   // Border row.
   AddBorderRow(layout, color);
