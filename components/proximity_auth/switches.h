@@ -13,8 +13,6 @@ namespace switches {
 extern const char kCryptAuthHTTPHost[];
 extern const char kDisableEasySignin[];
 extern const char kDisableEasyUnlock[];
-extern const char kEnableEasySignin[];
-extern const char kEnableEasyUnlock[];
 extern const char kEnableProximityDetection[];
 
 }  // namespace switches
