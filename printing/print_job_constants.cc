@@ -51,6 +51,9 @@ const char kSettingCopies[] = "copies";
 // Device name: Unique printer identifier.
 const char kSettingDeviceName[] = "deviceName";
 
+// Option to disable scaling. True if scaling is disabled else false.
+const char kSettingDisableScaling[] = "disableScaling";
+
 // Print job duplex mode.
 const char kSettingDuplexMode[] = "duplex";
 

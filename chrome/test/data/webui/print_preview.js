@@ -474,8 +474,10 @@ TEST_F('PrintPreviewWebUITest', 'PrintScalingDisabledForPlugin', function() {
   this.setCapabilities(getCddTemplate("FooDevice"));
 
   // Indicate that the PDF does not support scaling by default.
-  cr.dispatchSimpleEvent(
-      this.nativeLayer_, print_preview.NativeLayer.EventType.DISABLE_SCALING);
+  var printPresetOptionsEvent = new Event(
+      print_preview.NativeLayer.EventType.PRINT_PRESET_OPTIONS);
+  printPresetOptionsEvent.optionsFromDocument = {disableScaling: true};
+  this.nativeLayer_.dispatchEvent(printPresetOptionsEvent);
 
   var otherOptions = $('other-options-settings');
   checkSectionVisible(otherOptions, true);
@@ -483,6 +485,32 @@ TEST_F('PrintPreviewWebUITest', 'PrintScalingDisabledForPlugin', function() {
       otherOptions.querySelector('.fit-to-page-container'), true);
   expectFalse(
       otherOptions.querySelector('.fit-to-page-checkbox').checked);
+
+  this.waitForAnimationToEnd('other-options-collapsible');
+});
+
+// When the number of copies print preset is set for source 'PDF', we update
+// copies value if capability is supported by printer.
+TEST_F('PrintPreviewWebUITest', 'CheckNumCopiesPrintPreset', function() {
+  this.initialSettings_.isDocumentModifiable_ = false;
+  this.setInitialSettings();
+  this.setLocalDestinations();
+  this.setCapabilities(getCddTemplate("FooDevice"));
+
+  // Indicate that the number of copies print preset is set for source PDF.
+  var printPresetOptions = {
+    disableScaling: true,
+    copies: 2
+  };
+  var printPresetOptionsEvent = new Event(
+      print_preview.NativeLayer.EventType.PRINT_PRESET_OPTIONS);
+  printPresetOptionsEvent.optionsFromDocument = printPresetOptions;
+  this.nativeLayer_.dispatchEvent(printPresetOptionsEvent);
+
+  checkSectionVisible($('copies-settings'), true);
+  expectEquals(
+      printPresetOptions.copies,
+      parseInt($('copies-settings').querySelector('.copies').value));
 
   this.waitForAnimationToEnd('other-options-collapsible');
 });

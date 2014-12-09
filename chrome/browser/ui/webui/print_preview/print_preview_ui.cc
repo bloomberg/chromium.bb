@@ -628,9 +628,11 @@ void PrintPreviewUI::OnReloadPrintersList() {
 
 void PrintPreviewUI::OnSetOptionsFromDocument(
     const PrintHostMsg_SetOptionsFromDocument_Params& params) {
-  // Notify WebUI that print scaling is disabled
-  if (params.is_scaling_disabled)
-    web_ui()->CallJavascriptFunction("printScalingDisabledForSourcePDF");
+  base::DictionaryValue options;
+  options.SetBoolean(printing::kSettingDisableScaling,
+                     params.is_scaling_disabled);
+  options.SetInteger(printing::kSettingCopies, params.copies);
+  web_ui()->CallJavascriptFunction("printPresetOptionsFromDocument", options);
 }
 
 // static

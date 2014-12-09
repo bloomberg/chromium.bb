@@ -347,8 +347,8 @@ cr.define('print_preview', function() {
           this.onSettingsInvalid_.bind(this));
       this.tracker.add(
           this.nativeLayer_,
-          print_preview.NativeLayer.EventType.DISABLE_SCALING,
-          this.onDisableScaling_.bind(this));
+          print_preview.NativeLayer.EventType.PRINT_PRESET_OPTIONS,
+          this.onPrintPresetOptionsFromDocument_.bind(this));
       this.tracker.add(
           this.nativeLayer_,
           print_preview.NativeLayer.EventType.PRIVET_PRINT_FAILED,
@@ -979,13 +979,21 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Called when the native layer dispatches a DISABLE_SCALING event. Resets
-     * fit-to-page selection and updates document info.
+     * Updates printing options according to source document presets.
+     * @param {Event} event Contains options from source document.
      * @private
      */
-    onDisableScaling_: function() {
-      this.printTicketStore_.fitToPage.updateValue(null);
-      this.documentInfo_.updateIsScalingDisabled(true);
+    onPrintPresetOptionsFromDocument_: function(event) {
+      if (event.optionsFromDocument.disableScaling) {
+        this.printTicketStore_.fitToPage.updateValue(null);
+        this.documentInfo_.updateIsScalingDisabled(true);
+      }
+
+      if (event.optionsFromDocument.copies > 0 &&
+          this.printTicketStore_.copies.isCapabilityAvailable()) {
+        this.printTicketStore_.copies.updateValue(
+            event.optionsFromDocument.copies);
+      }
     },
 
     /**
