@@ -220,7 +220,7 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
       ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_COMPONENT, 0, NULL);
 
   if (WebInputEvent::isGestureEventType(event.type)) {
-    if (rendering_scheduled) {
+    if (!rendering_scheduled) {
       latency->AddLatencyNumber(
           ui::INPUT_EVENT_LATENCY_TERMINATED_GESTURE_COMPONENT, 0, 0);
       // TODO(jdduke): Consider exposing histograms for gesture event types.
@@ -230,23 +230,23 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
 
   if (WebInputEvent::isTouchEventType(event.type)) {
     latency->AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0, 0);
-    if (rendering_scheduled) {
+    if (!rendering_scheduled) {
       latency->AddLatencyNumber(
           ui::INPUT_EVENT_LATENCY_TERMINATED_TOUCH_COMPONENT, 0, 0);
-      ComputeInputLatencyHistograms(WebInputEvent::TouchTypeFirst,
-                                    latency_component_id_, *latency);
     }
+    ComputeInputLatencyHistograms(WebInputEvent::TouchTypeFirst,
+                                  latency_component_id_, *latency);
     return;
   }
 
   if (event.type == WebInputEvent::MouseWheel) {
     latency->AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0, 0);
-    if (rendering_scheduled) {
+    if (!rendering_scheduled) {
       latency->AddLatencyNumber(
           ui::INPUT_EVENT_LATENCY_TERMINATED_MOUSE_COMPONENT, 0, 0);
-      ComputeInputLatencyHistograms(WebInputEvent::MouseWheel,
-                                    latency_component_id_, *latency);
     }
+    ComputeInputLatencyHistograms(WebInputEvent::MouseWheel,
+                                  latency_component_id_, *latency);
     return;
   }
 

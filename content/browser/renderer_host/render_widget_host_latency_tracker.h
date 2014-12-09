@@ -9,13 +9,14 @@
 
 #include "base/basictypes.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
+#include "content/common/content_export.h"
 #include "ui/events/latency_info.h"
 
 namespace content {
 
 // Utility class for tracking the latency of events passing through
 // a given RenderWidgetHost.
-class RenderWidgetHostLatencyTracker {
+class CONTENT_EXPORT RenderWidgetHostLatencyTracker {
  public:
   RenderWidgetHostLatencyTracker();
   ~RenderWidgetHostLatencyTracker();
