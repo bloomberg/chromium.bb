@@ -339,6 +339,7 @@ Node* FocusController::findFocusableNodeDecendingDownIntoFrameDocument(FocusType
         HTMLFrameOwnerElement& owner = toHTMLFrameOwnerElement(*node);
         if (!owner.contentFrame() || !owner.contentFrame()->isLocalFrame())
             break;
+        toLocalFrame(owner.contentFrame())->document()->updateLayoutIgnorePendingStylesheets();
         Node* foundNode = findFocusableNode(type, FocusNavigationScope::ownedByIFrame(owner), nullptr);
         if (!foundNode)
             break;
