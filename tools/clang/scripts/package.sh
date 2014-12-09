@@ -87,7 +87,7 @@ fi
     ${extra_flags} 2>&1 | tee -a buildlog.txt
 
 R=$("${LLVM_BIN_DIR}/clang" --version | \
-     sed -ne 's/clang version .*(\([0-9]*\))/\1/p')
+     sed -ne 's/clang version .*(trunk \([0-9]*\))/\1/p')
 
 PDIR=clang-$R
 rm -rf $PDIR

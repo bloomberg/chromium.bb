@@ -8,7 +8,7 @@
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION=218707
+CLANG_REVISION=223109
 
 THIS_DIR="$(dirname "${0}")"
 LLVM_DIR="${THIS_DIR}/../../../third_party/llvm"
@@ -238,8 +238,15 @@ for i in \
       "${LLVM_DIR}/test/DebugInfo/gmlt.ll" \
       "${LLVM_DIR}/lib/CodeGen/SpillPlacement.cpp" \
       "${LLVM_DIR}/lib/CodeGen/SpillPlacement.h" \
+      "${LLVM_DIR}/lib/Transforms/Instrumentation/MemorySanitizer.cpp" \
+      "${CLANG_DIR}/test/Driver/env.c" \
+      "${CLANG_DIR}/lib/Frontend/InitPreprocessor.cpp" \
+      "${CLANG_DIR}/test/Frontend/exceptions.c" \
+      "${CLANG_DIR}/test/Preprocessor/predefined-exceptions.m" \
+      "${LLVM_DIR}/test/Bindings/Go/go.test" \
       ; do
   if [[ -e "${i}" ]]; then
+    rm -f "${i}"  # For unversioned files.
     svn revert "${i}"
   fi;
 done
@@ -317,177 +324,141 @@ EOF
 patch -p0
 popd
 
-# Apply r218742: test: XFAIL the non-darwin gmlt test on darwin
-# Back-ported becase the test was renamed.
+# Apply r223211: "Revert r222997."
 pushd "${LLVM_DIR}"
 cat << 'EOF' |
---- a/test/DebugInfo/gmlt.ll
-+++ b/test/DebugInfo/gmlt.ll
-@@ -1,2 +1,5 @@
- ; REQUIRES: object-emission
- ; RUN: %llc_dwarf -O0 -filetype=obj < %S/Inputs/gmlt.ll | llvm-dwarfdump - | FileCheck %S/Inputs/gmlt.ll
-+
-+; There's a darwin specific test in X86/gmlt, so it's okay to XFAIL this here.
-+; XFAIL: darwin
+--- a/lib/Transforms/Instrumentation/MemorySanitizer.cpp
++++ b/lib/Transforms/Instrumentation/MemorySanitizer.cpp
+@@ -921,8 +921,6 @@ struct MemorySanitizerVisitor : public InstVisitor<MemorySanitizerVisitor> {
+             Value *OriginPtr =
+                 getOriginPtrForArgument(&FArg, EntryIRB, ArgOffset);
+             setOrigin(A, EntryIRB.CreateLoad(OriginPtr));
+-          } else {
+-            setOrigin(A, getCleanOrigin());
+           }
+         }
+         ArgOffset += RoundUpToAlignment(Size, kShadowTLSAlignment);
+@@ -942,13 +940,15 @@ struct MemorySanitizerVisitor : public InstVisitor<MemorySanitizerVisitor> {
+   /// \brief Get the origin for a value.
+   Value *getOrigin(Value *V) {
+     if (!MS.TrackOrigins) return nullptr;
+-    if (!PropagateShadow) return getCleanOrigin();
+-    if (isa<Constant>(V)) return getCleanOrigin();
+-    assert((isa<Instruction>(V) || isa<Argument>(V)) &&
+-           "Unexpected value type in getOrigin()");
+-    Value *Origin = OriginMap[V];
+-    assert(Origin && "Missing origin");
+-    return Origin;
++    if (isa<Instruction>(V) || isa<Argument>(V)) {
++      Value *Origin = OriginMap[V];
++      if (!Origin) {
++        DEBUG(dbgs() << "NO ORIGIN: " << *V << "\n");
++        Origin = getCleanOrigin();
++      }
++      return Origin;
++    }
++    return getCleanOrigin();
+   }
+ 
+   /// \brief Get the origin for i-th argument of the instruction I.
+@@ -1088,7 +1088,6 @@ struct MemorySanitizerVisitor : public InstVisitor<MemorySanitizerVisitor> {
+     IRB.CreateStore(getCleanShadow(&I), ShadowPtr);
+ 
+     setShadow(&I, getCleanShadow(&I));
+-    setOrigin(&I, getCleanOrigin());
+   }
+ 
+   void visitAtomicRMWInst(AtomicRMWInst &I) {
 EOF
 patch -p1
 popd
 
-# Apply r218921; fixes spill placement compile-time regression.
-pushd "${LLVM_DIR}"
+# Apply r223219: "Preserve LD_LIBRARY_PATH when using the 'env' command"
+pushd "${CLANG_DIR}"
 cat << 'EOF' |
---- a/lib/CodeGen/SpillPlacement.cpp
-+++ b/lib/CodeGen/SpillPlacement.cpp
-@@ -61,27 +61,6 @@ void SpillPlacement::getAnalysisUsage(AnalysisUsage &AU) const {
-   MachineFunctionPass::getAnalysisUsage(AU);
- }
- 
--namespace {
--static ManagedStatic<BlockFrequency> Threshold;
--}
--
--/// Decision threshold. A node gets the output value 0 if the weighted sum of
--/// its inputs falls in the open interval (-Threshold;Threshold).
--static BlockFrequency getThreshold() { return *Threshold; }
--
--/// \brief Set the threshold for a given entry frequency.
--///
--/// Set the threshold relative to \c Entry.  Since the threshold is used as a
--/// bound on the open interval (-Threshold;Threshold), 1 is the minimum
--/// threshold.
--static void setThreshold(const BlockFrequency &Entry) {
--  // Apparently 2 is a good threshold when Entry==2^14, but we need to scale
--  // it.  Divide by 2^13, rounding as appropriate.
--  uint64_t Freq = Entry.getFrequency();
--  uint64_t Scaled = (Freq >> 13) + bool(Freq & (1 << 12));
--  *Threshold = std::max(UINT64_C(1), Scaled);
--}
--
- /// Node - Each edge bundle corresponds to a Hopfield node.
- ///
- /// The node contains precomputed frequency data that only depends on the CFG,
-@@ -127,9 +106,9 @@ struct SpillPlacement::Node {
- 
-   /// clear - Reset per-query data, but preserve frequencies that only depend on
-   // the CFG.
--  void clear() {
-+  void clear(const BlockFrequency &Threshold) {
-     BiasN = BiasP = Value = 0;
--    SumLinkWeights = getThreshold();
-+    SumLinkWeights = Threshold;
-     Links.clear();
-   }
- 
-@@ -167,7 +146,7 @@ struct SpillPlacement::Node {
- 
-   /// update - Recompute Value from Bias and Links. Return true when node
-   /// preference changes.
--  bool update(const Node nodes[]) {
-+  bool update(const Node nodes[], const BlockFrequency &Threshold) {
-     // Compute the weighted sum of inputs.
-     BlockFrequency SumN = BiasN;
-     BlockFrequency SumP = BiasP;
-@@ -187,9 +166,9 @@ struct SpillPlacement::Node {
-     //  2. It helps tame rounding errors when the links nominally sum to 0.
-     //
-     bool Before = preferReg();
--    if (SumN >= SumP + getThreshold())
-+    if (SumN >= SumP + Threshold)
-       Value = -1;
--    else if (SumP >= SumN + getThreshold())
-+    else if (SumP >= SumN + Threshold)
-       Value = 1;
-     else
-       Value = 0;
-@@ -228,7 +207,7 @@ void SpillPlacement::activate(unsigned n) {
-   if (ActiveNodes->test(n))
-     return;
-   ActiveNodes->set(n);
--  nodes[n].clear();
-+  nodes[n].clear(Threshold);
- 
-   // Very large bundles usually come from big switches, indirect branches,
-   // landing pads, or loops with many 'continue' statements. It is difficult to
-@@ -245,6 +224,18 @@ void SpillPlacement::activate(unsigned n) {
-   }
- }
- 
-+/// \brief Set the threshold for a given entry frequency.
-+///
-+/// Set the threshold relative to \c Entry.  Since the threshold is used as a
-+/// bound on the open interval (-Threshold;Threshold), 1 is the minimum
-+/// threshold.
-+void SpillPlacement::setThreshold(const BlockFrequency &Entry) {
-+  // Apparently 2 is a good threshold when Entry==2^14, but we need to scale
-+  // it.  Divide by 2^13, rounding as appropriate.
-+  uint64_t Freq = Entry.getFrequency();
-+  uint64_t Scaled = (Freq >> 13) + bool(Freq & (1 << 12));
-+  Threshold = std::max(UINT64_C(1), Scaled);
-+}
- 
- /// addConstraints - Compute node biases and weights from a set of constraints.
- /// Set a bit in NodeMask for each active node.
-@@ -311,7 +302,7 @@ bool SpillPlacement::scanActiveBundles() {
-   Linked.clear();
-   RecentPositive.clear();
-   for (int n = ActiveNodes->find_first(); n>=0; n = ActiveNodes->find_next(n)) {
--    nodes[n].update(nodes);
-+    nodes[n].update(nodes, Threshold);
-     // A node that must spill, or a node without any links is not going to
-     // change its value ever again, so exclude it from iterations.
-     if (nodes[n].mustSpill())
-@@ -331,7 +322,7 @@ void SpillPlacement::iterate() {
-   // First update the recently positive nodes. They have likely received new
-   // negative bias that will turn them off.
-   while (!RecentPositive.empty())
--    nodes[RecentPositive.pop_back_val()].update(nodes);
-+    nodes[RecentPositive.pop_back_val()].update(nodes, Threshold);
- 
-   if (Linked.empty())
-     return;
-@@ -350,7 +341,7 @@ void SpillPlacement::iterate() {
-            iteration == 0 ? Linked.rbegin() : std::next(Linked.rbegin()),
-            E = Linked.rend(); I != E; ++I) {
-       unsigned n = *I;
--      if (nodes[n].update(nodes)) {
-+      if (nodes[n].update(nodes, Threshold)) {
-         Changed = true;
-         if (nodes[n].preferReg())
-           RecentPositive.push_back(n);
-@@ -364,7 +355,7 @@ void SpillPlacement::iterate() {
-     for (SmallVectorImpl<unsigned>::const_iterator I =
-            std::next(Linked.begin()), E = Linked.end(); I != E; ++I) {
-       unsigned n = *I;
--      if (nodes[n].update(nodes)) {
-+      if (nodes[n].update(nodes, Threshold)) {
-         Changed = true;
-         if (nodes[n].preferReg())
-           RecentPositive.push_back(n);
-diff --git a/lib/CodeGen/SpillPlacement.h b/lib/CodeGen/SpillPlacement.h
-index 03cf5cd..622361e 100644
---- a/lib/CodeGen/SpillPlacement.h
-+++ b/lib/CodeGen/SpillPlacement.h
-@@ -62,6 +62,10 @@ class SpillPlacement : public MachineFunctionPass {
-   // Block frequencies are computed once. Indexed by block number.
-   SmallVector<BlockFrequency, 8> BlockFrequencies;
- 
-+  /// Decision threshold. A node gets the output value 0 if the weighted sum of
-+  /// its inputs falls in the open interval (-Threshold;Threshold).
-+  BlockFrequency Threshold;
-+
- public:
-   static char ID; // Pass identification, replacement for typeid.
- 
-@@ -152,6 +156,7 @@ private:
-   void releaseMemory() override;
- 
-   void activate(unsigned);
-+  void setThreshold(const BlockFrequency &Entry);
- };
- 
- } // end namespace llvm
+--- a/test/Driver/env.c
++++ b/test/Driver/env.c
+@@ -5,12 +5,14 @@
+ // REQUIRES: shell
+ //
+ // The PATH variable is heavily used when trying to find a linker.
+-// RUN: env -i LC_ALL=C %clang -no-canonical-prefixes %s -### -o %t.o 2>&1 \
++// RUN: env -i LC_ALL=C LD_LIBRARY_PATH="$LD_LIBRARY_PATH" \
++// RUN:   %clang -no-canonical-prefixes %s -### -o %t.o 2>&1 \
+ // RUN:     --target=i386-unknown-linux \
+ // RUN:     --sysroot=%S/Inputs/basic_linux_tree \
+ // RUN:   | FileCheck --check-prefix=CHECK-LD-32 %s
+ //
+-// RUN: env -i LC_ALL=C PATH="" %clang -no-canonical-prefixes %s -### -o %t.o 2>&1 \
++// RUN: env -i LC_ALL=C PATH="" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" \
++// RUN:   %clang -no-canonical-prefixes %s -### -o %t.o 2>&1 \
+ // RUN:     --target=i386-unknown-linux \
+ // RUN:     --sysroot=%S/Inputs/basic_linux_tree \
+ // RUN:   | FileCheck --check-prefix=CHECK-LD-32 %s
 EOF
 patch -p1
+popd
+
+# Revert r220714: "Frontend: Define __EXCEPTIONS if -fexceptions is passed"
+pushd "${CLANG_DIR}"
+cat << 'EOF' |
+--- a/lib/Frontend/InitPreprocessor.cpp
++++ b/lib/Frontend/InitPreprocessor.cpp
+@@ -566,7 +566,7 @@ static void InitializePredefinedMacros(const TargetInfo &TI,
+     Builder.defineMacro("__BLOCKS__");
+   }
+ 
+-  if (!LangOpts.MSVCCompat && LangOpts.Exceptions)
++  if (!LangOpts.MSVCCompat && LangOpts.CXXExceptions)
+     Builder.defineMacro("__EXCEPTIONS");
+   if (!LangOpts.MSVCCompat && LangOpts.RTTI)
+     Builder.defineMacro("__GXX_RTTI");
+diff --git a/test/Frontend/exceptions.c b/test/Frontend/exceptions.c
+index 981b5b9..4bbaaa3 100644
+--- a/test/Frontend/exceptions.c
++++ b/test/Frontend/exceptions.c
+@@ -1,9 +1,6 @@
+-// RUN: %clang_cc1 -fms-compatibility -fexceptions -fcxx-exceptions -DMS_MODE -verify %s
++// RUN: %clang_cc1 -fms-compatibility -fexceptions -fcxx-exceptions -verify %s
+ // expected-no-diagnostics
+ 
+-// RUN: %clang_cc1 -fms-compatibility -fexceptions -verify %s
+-// expected-no-diagnostics
+-
+-#if defined(MS_MODE) && defined(__EXCEPTIONS)
++#if defined(__EXCEPTIONS)
+ #error __EXCEPTIONS should not be defined.
+ #endif
+diff --git a/test/Preprocessor/predefined-exceptions.m b/test/Preprocessor/predefined-exceptions.m
+index 0791075..c13f429 100644
+--- a/test/Preprocessor/predefined-exceptions.m
++++ b/test/Preprocessor/predefined-exceptions.m
+@@ -1,6 +1,6 @@
+ // RUN: %clang_cc1 -x objective-c -fobjc-exceptions -fexceptions -E -dM %s | FileCheck -check-prefix=CHECK-OBJC-NOCXX %s 
+ // CHECK-OBJC-NOCXX: #define OBJC_ZEROCOST_EXCEPTIONS 1
+-// CHECK-OBJC-NOCXX: #define __EXCEPTIONS 1
++// CHECK-OBJC-NOCXX-NOT: #define __EXCEPTIONS 1
+ 
+ // RUN: %clang_cc1 -x objective-c++ -fobjc-exceptions -fexceptions -fcxx-exceptions -E -dM %s | FileCheck -check-prefix=CHECK-OBJC-CXX %s 
+ // CHECK-OBJC-CXX: #define OBJC_ZEROCOST_EXCEPTIONS 1
+EOF
+patch -p1
+popd
+
+# This Go bindings test doesn't work after the bootstrap build on Linux. (PR21552)
+pushd "${LLVM_DIR}"
+cat << 'EOF' |
+Index: test/Bindings/Go/go.test
+===================================================================
+--- test/Bindings/Go/go.test    (revision 223109)
++++ test/Bindings/Go/go.test    (working copy)
+@@ -1,3 +1,3 @@
+-; RUN: llvm-go test llvm.org/llvm/bindings/go/llvm
++; RUN: true
+ 
+ ; REQUIRES: shell
+EOF
+patch -p0
 popd
 
 

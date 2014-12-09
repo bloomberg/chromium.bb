@@ -30,7 +30,7 @@ fi
 "$THIS_DIR"/package.sh $@
 
 R=$("${LLVM_BIN_DIR}/clang" --version | \
-     sed -ne 's/clang version .*(\([0-9]*\))/\1/p')
+     sed -ne 's/clang version .*(trunk \([0-9]*\))/\1/p')
 PDIR=clang-$R
 
 if [ ! -f "$PDIR.tgz" ]; then
