@@ -9,18 +9,22 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT DrawingDisplayItem : public DisplayItem {
 public:
-    DrawingDisplayItem(DisplayItemClient client, Type type, PassRefPtr<SkPicture> picture)
-        : DisplayItem(client, type), m_picture(picture) { ASSERT(m_picture); }
+    static PassOwnPtr<DrawingDisplayItem> create(DisplayItemClient client, Type type, PassRefPtr<SkPicture> picture) { return adoptPtr(new DrawingDisplayItem(client, type, picture)); }
 
     virtual void replay(GraphicsContext*);
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
     PassRefPtr<SkPicture> picture() const { return m_picture; }
+
+protected:
+    DrawingDisplayItem(DisplayItemClient client, Type type, PassRefPtr<SkPicture> picture)
+        : DisplayItem(client, type), m_picture(picture) { ASSERT(m_picture); }
 
 private:
 

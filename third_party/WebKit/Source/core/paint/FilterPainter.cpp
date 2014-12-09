@@ -56,7 +56,7 @@ FilterPainter::FilterPainter(RenderLayer& renderLayer, GraphicsContext* context,
     }
 
     ASSERT(m_renderer);
-    OwnPtr<BeginFilterDisplayItem> filterDisplayItem = adoptPtr(new BeginFilterDisplayItem(m_renderer->displayItemClient(), DisplayItem::BeginFilter, imageFilter, rootRelativeBounds));
+    OwnPtr<BeginFilterDisplayItem> filterDisplayItem = BeginFilterDisplayItem::create(m_renderer->displayItemClient(), DisplayItem::BeginFilter, imageFilter, rootRelativeBounds);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(context->displayItemList());
         context->displayItemList()->add(filterDisplayItem.release());
@@ -72,7 +72,7 @@ FilterPainter::~FilterPainter()
     if (!m_filterInProgress)
         return;
 
-    OwnPtr<EndFilterDisplayItem> endFilterDisplayItem = adoptPtr(new EndFilterDisplayItem(m_renderer->displayItemClient()));
+    OwnPtr<EndFilterDisplayItem> endFilterDisplayItem = EndFilterDisplayItem::create(m_renderer->displayItemClient());
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context->displayItemList());
         m_context->displayItemList()->add(endFilterDisplayItem.release());

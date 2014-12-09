@@ -18,7 +18,7 @@ typedef Vector<OwnPtr<DisplayItem> > PaintList;
 class PLATFORM_EXPORT DisplayItemList {
     WTF_MAKE_NONCOPYABLE(DisplayItemList);
 public:
-    DisplayItemList() { };
+    static PassOwnPtr<DisplayItemList> create() { return adoptPtr(new DisplayItemList); }
 
     const PaintList& paintList();
     void add(WTF::PassOwnPtr<DisplayItem>);
@@ -27,6 +27,9 @@ public:
 #ifndef NDEBUG
     void showDebugData() const;
 #endif
+
+protected:
+    DisplayItemList() { };
 
 private:
     PaintList::iterator findDisplayItem(PaintList::iterator, const DisplayItem&);

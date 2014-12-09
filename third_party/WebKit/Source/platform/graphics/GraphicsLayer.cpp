@@ -1077,7 +1077,7 @@ DisplayItemList* GraphicsLayer::displayItemList()
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
         return 0;
     if (!m_displayItemList)
-        m_displayItemList = adoptPtr(new DisplayItemList());
+        m_displayItemList = DisplayItemList::create();
     return m_displayItemList.get();
 }
 

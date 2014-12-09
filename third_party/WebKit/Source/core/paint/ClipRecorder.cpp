@@ -22,7 +22,7 @@ ClipRecorder::ClipRecorder(RenderLayerModelObject& canvas, const PaintInfo& pain
     , m_canvas(canvas)
 {
     DisplayItem::Type type = paintPhaseToClipType(paintInfo.phase);
-    OwnPtr<ClipDisplayItem> clipDisplayItem = adoptPtr(new ClipDisplayItem(m_canvas.displayItemClient(), type, pixelSnappedIntRect(clipRect)));
+    OwnPtr<ClipDisplayItem> clipDisplayItem = ClipDisplayItem::create(m_canvas.displayItemClient(), type, pixelSnappedIntRect(clipRect));
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_paintInfo.context->displayItemList());
@@ -33,7 +33,7 @@ ClipRecorder::ClipRecorder(RenderLayerModelObject& canvas, const PaintInfo& pain
 
 ClipRecorder::~ClipRecorder()
 {
-    OwnPtr<EndClipDisplayItem> endClipDisplayItem = adoptPtr(new EndClipDisplayItem(m_canvas.displayItemClient()));
+    OwnPtr<EndClipDisplayItem> endClipDisplayItem = EndClipDisplayItem::create(m_canvas.displayItemClient());
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_paintInfo.context->displayItemList());

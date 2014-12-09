@@ -8,6 +8,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/paint/DisplayItem.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -16,13 +17,16 @@ class RoundedRect;
 
 class PLATFORM_EXPORT ClipDisplayItem : public DisplayItem {
 public:
-    ClipDisplayItem(DisplayItemClient client, Type type, IntRect clipRect)
-        : DisplayItem(client, type), m_clipRect(clipRect) { }
+    static PassOwnPtr<ClipDisplayItem> create(DisplayItemClient client, Type type, const IntRect& clipRect) { return adoptPtr(new ClipDisplayItem(client, type, clipRect)); }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
     Vector<RoundedRect>& roundedRectClips() { return m_roundedRectClips; }
+
+protected:
+    ClipDisplayItem(DisplayItemClient client, Type type, const IntRect& clipRect)
+        : DisplayItem(client, type), m_clipRect(clipRect) { }
 
 private:
     IntRect m_clipRect;
@@ -34,10 +38,13 @@ private:
 
 class PLATFORM_EXPORT EndClipDisplayItem : public DisplayItem {
 public:
-    EndClipDisplayItem(DisplayItemClient client) : DisplayItem(client, EndClip) { }
+    static PassOwnPtr<EndClipDisplayItem> create(DisplayItemClient client) { return adoptPtr(new EndClipDisplayItem(client)); }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+
+protected:
+    EndClipDisplayItem(DisplayItemClient client) : DisplayItem(client, EndClip) { }
 };
 
 } // namespace blink

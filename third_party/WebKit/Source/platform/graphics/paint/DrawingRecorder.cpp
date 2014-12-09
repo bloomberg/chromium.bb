@@ -47,8 +47,7 @@ DrawingRecorder::~DrawingRecorder()
     RefPtr<Picture> picture = m_context->endRecording();
     if (!picture || !picture->approximateOpCount())
         return;
-    OwnPtr<DrawingDisplayItem> drawingItem = adoptPtr(
-        new DrawingDisplayItem(m_displayItemClient, m_displayItemType, picture));
+    OwnPtr<DrawingDisplayItem> drawingItem = DrawingDisplayItem::create(m_displayItemClient, m_displayItemType, picture);
 #ifndef NDEBUG
     drawingItem->setClientDebugString(m_clientDebugString);
 #endif

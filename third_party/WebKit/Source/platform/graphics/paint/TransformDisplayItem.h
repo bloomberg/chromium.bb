@@ -7,6 +7,7 @@
 
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/transforms/TransformationMatrix.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -14,26 +15,36 @@ class TransformationMatrix;
 
 class PLATFORM_EXPORT BeginTransformDisplayItem : public DisplayItem {
 public:
-    BeginTransformDisplayItem(DisplayItemClient, const TransformationMatrix&);
+    static PassOwnPtr<BeginTransformDisplayItem> create(DisplayItemClient client, const TransformationMatrix& matrix) { return adoptPtr(new BeginTransformDisplayItem(client, matrix)); }
+
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 #ifndef NDEBUG
     virtual WTF::String asDebugString() const override;
 #endif
+
+protected:
+    BeginTransformDisplayItem(DisplayItemClient, const TransformationMatrix&);
+
+private:
     const TransformationMatrix m_transform;
 };
 
 class PLATFORM_EXPORT EndTransformDisplayItem : public DisplayItem {
 public:
-    EndTransformDisplayItem(DisplayItemClient client)
-        : DisplayItem(client, EndTransform) { }
+    static PassOwnPtr<EndTransformDisplayItem> create(DisplayItemClient client) { return adoptPtr(new EndTransformDisplayItem(client)); }
+
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 #ifndef NDEBUG
     virtual WTF::String asDebugString() const override;
 #endif
+
+protected:
+    EndTransformDisplayItem(DisplayItemClient client)
+        : DisplayItem(client, EndTransform) { }
 };
 
 } // namespace blink

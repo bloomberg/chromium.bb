@@ -6,6 +6,7 @@
 #define DisplayItem_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Assertions.h"
 
 #ifndef NDEBUG
 #include "wtf/text/WTFString.h"
@@ -93,7 +94,9 @@ public:
 protected:
     DisplayItem(DisplayItemClient client, Type type)
         : m_id(client, type)
-    { }
+    {
+        ASSERT(client);
+    }
 
 private:
     struct Id {
