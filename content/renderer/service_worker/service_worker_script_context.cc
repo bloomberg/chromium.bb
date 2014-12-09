@@ -77,6 +77,8 @@ void ServiceWorkerScriptContext::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_FetchEvent, OnFetchEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_InstallEvent, OnInstallEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SyncEvent, OnSyncEvent)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_NotificationClickEvent,
+                        OnNotificationClickEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_PushEvent, OnPushEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_GeofencingEvent, OnGeofencingEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_MessageToWorker, OnPostMessage)
@@ -255,13 +257,22 @@ void ServiceWorkerScriptContext::OnSyncEvent(int request_id) {
 }
 
 void ServiceWorkerScriptContext::OnNotificationClickEvent(
-    int request_id, const std::string& notification_id) {
+    int request_id,
+    const std::string& notification_id,
+    const ShowDesktopNotificationHostMsgParams& notification_data) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerScriptContext::OnNotificationClickEvent");
   notification_click_start_timings_[request_id] = base::TimeTicks::Now();
 
-  blink::WebNotificationData notification;
-  // TODO(peter): Initialize |notification| with the actual contents.
+  // TODO(peter): Set the appropriate direction once it's been plumbed through.
+  // TODO(peter): Store the notification's language and icon URL in the struct.
+  blink::WebNotificationData notification(
+      blink::WebString(notification_data.title),
+      blink::WebNotificationData::DirectionLeftToRight,
+      blink::WebString() /* lang */,
+      blink::WebString(notification_data.body),
+      blink::WebString(notification_data.replace_id),
+      blink::WebURL() /* icon_url */);
 
   proxy_->dispatchNotificationClickEvent(
       request_id,

@@ -13,6 +13,7 @@
 namespace content {
 
 // Parameters used when showing an HTML5 notification.
+// TODO(peter): Rename this to PlatformNotificationData.
 struct CONTENT_EXPORT ShowDesktopNotificationHostMsgParams {
   ShowDesktopNotificationHostMsgParams();
   ~ShowDesktopNotificationHostMsgParams();

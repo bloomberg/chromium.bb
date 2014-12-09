@@ -35,6 +35,7 @@ class Message;
 namespace content {
 
 class EmbeddedWorkerContextClient;
+struct ShowDesktopNotificationHostMsgParams;
 
 // TODO(kinuko): This should implement WebServiceWorkerContextClient
 // rather than having EmbeddedWorkerContextClient implement it.
@@ -92,8 +93,10 @@ class ServiceWorkerScriptContext {
   void OnInstallEvent(int request_id, int active_version_id);
   void OnFetchEvent(int request_id, const ServiceWorkerFetchRequest& request);
   void OnSyncEvent(int request_id);
-  void OnNotificationClickEvent(int request_id,
-                                const std::string& notification_id);
+  void OnNotificationClickEvent(
+      int request_id,
+      const std::string& notification_id,
+      const ShowDesktopNotificationHostMsgParams& notification_data);
   void OnPushEvent(int request_id, const std::string& data);
   void OnGeofencingEvent(int request_id,
                          blink::WebGeofencingEventType event_type,

@@ -396,7 +396,8 @@ void ServiceWorkerVersion::DispatchSyncEvent(const StatusCallback& callback) {
 
 void ServiceWorkerVersion::DispatchNotificationClickEvent(
     const StatusCallback& callback,
-    const std::string& notification_id) {
+    const std::string& notification_id,
+    const ShowDesktopNotificationHostMsgParams& notification_data) {
   DCHECK_EQ(ACTIVATED, status()) << status();
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
@@ -411,14 +412,17 @@ void ServiceWorkerVersion::DispatchNotificationClickEvent(
                            weak_factory_.GetWeakPtr(), callback,
                            base::Bind(&self::DispatchNotificationClickEvent,
                                       weak_factory_.GetWeakPtr(),
-                                      callback, notification_id)));
+                                      callback, notification_id,
+                                      notification_data)));
     return;
   }
 
   int request_id =
       notification_click_callbacks_.Add(new StatusCallback(callback));
   ServiceWorkerStatusCode status = embedded_worker_->SendMessage(
-      ServiceWorkerMsg_NotificationClickEvent(request_id, notification_id));
+      ServiceWorkerMsg_NotificationClickEvent(request_id,
+                                              notification_id,
+                                              notification_data));
   if (status != SERVICE_WORKER_OK) {
     notification_click_callbacks_.Remove(request_id);
     RunSoon(base::Bind(callback, status));
