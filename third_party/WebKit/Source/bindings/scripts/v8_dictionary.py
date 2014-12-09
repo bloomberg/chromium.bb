@@ -102,6 +102,8 @@ def member_context(member):
             extended_attributes=member.extended_attributes),
         'enum_validation_expression': unwrapped_idl_type.enum_validation_expression,
         'has_method_name': has_method_name_for_dictionary_member(member),
+        'idl_type': idl_type.base_type,
+        'is_interface_type': idl_type.is_interface_type and not idl_type.is_dictionary,
         'is_nullable': idl_type.is_nullable,
         'is_object': unwrapped_idl_type.name == 'Object',
         'name': member.name,

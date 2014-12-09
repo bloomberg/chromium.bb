@@ -174,6 +174,13 @@ if (window.internals && internals.dictionaryTest) {
     shouldThrow("dictionaryTest.set({objectMember: 'invalid'})");
     debug('');
 
+    debug('Test for setting invalid Element value');
+    shouldThrow("dictionaryTest.set({elementMember: 42})");
+    shouldThrow("dictionaryTest.set({elementMember: testObject1})");
+    shouldThrow("dictionaryTest.set({elementMember: []})");
+    shouldThrow("dictionaryTest.set({elementMember: document})");
+    debug('');
+
     debug('Test for passing invalid dictionary values');
     shouldThrow("dictionaryTest.set(42)");
     shouldThrow("dictionaryTest.set('string')");

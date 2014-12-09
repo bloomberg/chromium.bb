@@ -11,11 +11,11 @@ NotSupportedError exception tests
 PASS context.addHitRegion() threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
 PASS context.addHitRegion({ id : '' }) threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
 PASS context.addHitRegion({ id : undefined }) threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
-PASS context.addHitRegion({ control : {} }) threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
+PASS context.addHitRegion({ control : {} }) threw exception TypeError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': member control is not of type Element..
 PASS context.addHitRegion({ control : null }) threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
 PASS context.addHitRegion({ control : undefined }) threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
-PASS context.addHitRegion({ id : '', control : {} }) threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
-PASS context.addHitRegion({ id : undefined, control : {} }) threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
+PASS context.addHitRegion({ id : '', control : {} }) threw exception TypeError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': member control is not of type Element..
+PASS context.addHitRegion({ id : undefined, control : {} }) threw exception TypeError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': member control is not of type Element..
 PASS context.addHitRegion({ id : '', control : null }) threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
 PASS context.addHitRegion({ id : undefined, control : null }) threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
 PASS context.addHitRegion({ id : '', control : undefined }) threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..

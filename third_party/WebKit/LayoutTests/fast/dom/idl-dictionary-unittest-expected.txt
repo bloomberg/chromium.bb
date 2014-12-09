@@ -93,6 +93,12 @@ Test for setting invalid object value
 PASS dictionaryTest.set({objectMember: 42}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': member objectMember is not an object..
 PASS dictionaryTest.set({objectMember: 'invalid'}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': member objectMember is not an object..
 
+Test for setting invalid Element value
+PASS dictionaryTest.set({elementMember: 42}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': member elementMember is not of type Element..
+PASS dictionaryTest.set({elementMember: testObject1}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': member elementMember is not of type Element..
+PASS dictionaryTest.set({elementMember: []}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': member elementMember is not of type Element..
+PASS dictionaryTest.set({elementMember: document}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': member elementMember is not of type Element..
+
 Test for passing invalid dictionary values
 PASS dictionaryTest.set(42) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': parameter 1 ('testingDictionary') is not an object..
 PASS dictionaryTest.set('string') threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': parameter 1 ('testingDictionary') is not an object..

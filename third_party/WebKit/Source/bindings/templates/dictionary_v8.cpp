@@ -52,6 +52,12 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, {
         {{member.cpp_type}} {{member.name}};
         {% endif %}
         {{member.v8_value_to_local_cpp_value}};
+        {% if member.is_interface_type %}
+        if (!{{member.name}} && !{{member.name}}Value->IsNull()) {
+            exceptionState.throwTypeError("member {{member.name}} is not of type {{member.idl_type}}.");
+            return;
+        }
+        {% endif %}
         {% if member.enum_validation_expression %}
         String string = {{member.name}};
         if (!({{member.enum_validation_expression}})) {

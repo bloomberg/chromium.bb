@@ -92,6 +92,10 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Valu
         impl.setElementOrNullMemberToNull();
     } else {
         Element* elementOrNullMember = V8Element::toImplWithTypeCheck(isolate, elementOrNullMemberValue);
+        if (!elementOrNullMember && !elementOrNullMemberValue->IsNull()) {
+            exceptionState.throwTypeError("member elementOrNullMember is not of type Element.");
+            return;
+        }
         impl.setElementOrNullMember(elementOrNullMember);
     }
 
@@ -229,6 +233,10 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Valu
         // Do nothing.
     } else {
         TestInterfaceGarbageCollected* testInterfaceGarbageCollectedMember = V8TestInterfaceGarbageCollected::toImplWithTypeCheck(isolate, testInterfaceGarbageCollectedMemberValue);
+        if (!testInterfaceGarbageCollectedMember && !testInterfaceGarbageCollectedMemberValue->IsNull()) {
+            exceptionState.throwTypeError("member testInterfaceGarbageCollectedMember is not of type TestInterfaceGarbageCollected.");
+            return;
+        }
         impl.setTestInterfaceGarbageCollectedMember(testInterfaceGarbageCollectedMember);
     }
 
@@ -243,6 +251,10 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Valu
         impl.setTestInterfaceGarbageCollectedOrNullMemberToNull();
     } else {
         TestInterfaceGarbageCollected* testInterfaceGarbageCollectedOrNullMember = V8TestInterfaceGarbageCollected::toImplWithTypeCheck(isolate, testInterfaceGarbageCollectedOrNullMemberValue);
+        if (!testInterfaceGarbageCollectedOrNullMember && !testInterfaceGarbageCollectedOrNullMemberValue->IsNull()) {
+            exceptionState.throwTypeError("member testInterfaceGarbageCollectedOrNullMember is not of type TestInterfaceGarbageCollected.");
+            return;
+        }
         impl.setTestInterfaceGarbageCollectedOrNullMember(testInterfaceGarbageCollectedOrNullMember);
     }
 
@@ -255,6 +267,10 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Valu
         // Do nothing.
     } else {
         TestInterfaceImplementation* testInterfaceMember = V8TestInterface::toImplWithTypeCheck(isolate, testInterfaceMemberValue);
+        if (!testInterfaceMember && !testInterfaceMemberValue->IsNull()) {
+            exceptionState.throwTypeError("member testInterfaceMember is not of type TestInterface.");
+            return;
+        }
         impl.setTestInterfaceMember(testInterfaceMember);
     }
 
@@ -269,6 +285,10 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Valu
         impl.setTestInterfaceOrNullMemberToNull();
     } else {
         TestInterfaceImplementation* testInterfaceOrNullMember = V8TestInterface::toImplWithTypeCheck(isolate, testInterfaceOrNullMemberValue);
+        if (!testInterfaceOrNullMember && !testInterfaceOrNullMemberValue->IsNull()) {
+            exceptionState.throwTypeError("member testInterfaceOrNullMember is not of type TestInterface.");
+            return;
+        }
         impl.setTestInterfaceOrNullMember(testInterfaceOrNullMember);
     }
 
@@ -281,6 +301,10 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Valu
         // Do nothing.
     } else {
         TestInterfaceWillBeGarbageCollected* testInterfaceWillBeGarbageCollectedMember = V8TestInterfaceWillBeGarbageCollected::toImplWithTypeCheck(isolate, testInterfaceWillBeGarbageCollectedMemberValue);
+        if (!testInterfaceWillBeGarbageCollectedMember && !testInterfaceWillBeGarbageCollectedMemberValue->IsNull()) {
+            exceptionState.throwTypeError("member testInterfaceWillBeGarbageCollectedMember is not of type TestInterfaceWillBeGarbageCollected.");
+            return;
+        }
         impl.setTestInterfaceWillBeGarbageCollectedMember(testInterfaceWillBeGarbageCollectedMember);
     }
 
@@ -295,6 +319,10 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Valu
         impl.setTestInterfaceWillBeGarbageCollectedOrNullMemberToNull();
     } else {
         TestInterfaceWillBeGarbageCollected* testInterfaceWillBeGarbageCollectedOrNullMember = V8TestInterfaceWillBeGarbageCollected::toImplWithTypeCheck(isolate, testInterfaceWillBeGarbageCollectedOrNullMemberValue);
+        if (!testInterfaceWillBeGarbageCollectedOrNullMember && !testInterfaceWillBeGarbageCollectedOrNullMemberValue->IsNull()) {
+            exceptionState.throwTypeError("member testInterfaceWillBeGarbageCollectedOrNullMember is not of type TestInterfaceWillBeGarbageCollected.");
+            return;
+        }
         impl.setTestInterfaceWillBeGarbageCollectedOrNullMember(testInterfaceWillBeGarbageCollectedOrNullMember);
     }
 
@@ -307,6 +335,10 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Valu
         // Do nothing.
     } else {
         DOMUint8Array* uint8ArrayMember = uint8ArrayMemberValue->IsUint8Array() ? V8Uint8Array::toImpl(v8::Handle<v8::Uint8Array>::Cast(uint8ArrayMemberValue)) : 0;
+        if (!uint8ArrayMember && !uint8ArrayMemberValue->IsNull()) {
+            exceptionState.throwTypeError("member uint8ArrayMember is not of type Uint8Array.");
+            return;
+        }
         impl.setUint8ArrayMember(uint8ArrayMember);
     }
 
