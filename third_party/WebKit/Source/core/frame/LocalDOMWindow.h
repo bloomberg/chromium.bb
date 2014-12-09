@@ -128,9 +128,9 @@ public:
     Performance* performance() const override;
     DOMWindowCSS* css() const override;
     DOMSelection* getSelection() override;
-    void focus(ExecutionContext* = 0) override;
+    void focus(ExecutionContext*) override;
     void blur() override;
-    void close(ExecutionContext* = 0) override;
+    void close(ExecutionContext*) override;
     void print() override;
     void stop() override;
     void alert(const String& message = String()) override;
