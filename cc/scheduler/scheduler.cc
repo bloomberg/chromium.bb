@@ -224,9 +224,9 @@ void Scheduler::SetNeedsAnimate() {
   ProcessScheduledActions();
 }
 
-void Scheduler::SetNeedsManageTiles() {
-  DCHECK(!IsInsideAction(SchedulerStateMachine::ACTION_MANAGE_TILES));
-  state_machine_.SetNeedsManageTiles();
+void Scheduler::SetNeedsPrepareTiles() {
+  DCHECK(!IsInsideAction(SchedulerStateMachine::ACTION_PREPARE_TILES));
+  state_machine_.SetNeedsPrepareTiles();
   ProcessScheduledActions();
 }
 
@@ -266,8 +266,8 @@ void Scheduler::BeginMainFrameAborted(bool did_handle) {
   ProcessScheduledActions();
 }
 
-void Scheduler::DidManageTiles() {
-  state_machine_.DidManageTiles();
+void Scheduler::DidPrepareTiles() {
+  state_machine_.DidPrepareTiles();
 }
 
 void Scheduler::DidLoseOutputSurface() {
@@ -711,8 +711,8 @@ void Scheduler::ProcessScheduledActions() {
       case SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION:
         client_->ScheduledActionBeginOutputSurfaceCreation();
         break;
-      case SchedulerStateMachine::ACTION_MANAGE_TILES:
-        client_->ScheduledActionManageTiles();
+      case SchedulerStateMachine::ACTION_PREPARE_TILES:
+        client_->ScheduledActionPrepareTiles();
         break;
     }
   } while (action != SchedulerStateMachine::ACTION_NONE);

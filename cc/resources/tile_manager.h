@@ -106,7 +106,12 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
       size_t scheduled_raster_task_limit);
   ~TileManager() override;
 
-  void ManageTiles(const GlobalStateThatImpactsTilePriority& state);
+  // Assigns tile memory and schedules work to prepare tiles for drawing.
+  // - Runs client_->NotifyReadyToActivate() when all tiles required for
+  // activation are prepared, or failed to prepare due to OOM.
+  // - Runs client_->NotifyReadyToDraw() when all tiles required draw are
+  // prepared, or failed to prepare due to OOM.
+  void PrepareTiles(const GlobalStateThatImpactsTilePriority& state);
 
   void UpdateVisibleTiles();
 

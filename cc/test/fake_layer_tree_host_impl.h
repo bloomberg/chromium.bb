@@ -35,7 +35,7 @@ class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
   static int RecursiveUpdateNumChildren(LayerImpl* layer);
 
   using LayerTreeHostImpl::ActivateSyncTree;
-  using LayerTreeHostImpl::manage_tiles_needed;
+  using LayerTreeHostImpl::prepare_tiles_needed;
 
  private:
   BeginFrameArgs current_begin_frame_args_;

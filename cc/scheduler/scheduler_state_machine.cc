@@ -26,13 +26,13 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       last_frame_number_swap_performed_(-1),
       last_frame_number_swap_requested_(-1),
       last_frame_number_begin_main_frame_sent_(-1),
-      manage_tiles_funnel_(0),
+      prepare_tiles_funnel_(0),
       consecutive_checkerboard_animations_(0),
       max_pending_swaps_(1),
       pending_swaps_(0),
       needs_redraw_(false),
       needs_animate_(false),
-      needs_manage_tiles_(false),
+      needs_prepare_tiles_(false),
       needs_commit_(false),
       inside_poll_for_anticipated_draw_triggers_(false),
       visible_(false),
@@ -140,8 +140,8 @@ const char* SchedulerStateMachine::ActionToString(Action action) {
       return "ACTION_DRAW_AND_SWAP_ABORT";
     case ACTION_BEGIN_OUTPUT_SURFACE_CREATION:
       return "ACTION_BEGIN_OUTPUT_SURFACE_CREATION";
-    case ACTION_MANAGE_TILES:
-      return "ACTION_MANAGE_TILES";
+    case ACTION_PREPARE_TILES:
+      return "ACTION_PREPARE_TILES";
   }
   NOTREACHED();
   return "???";
@@ -206,14 +206,14 @@ void SchedulerStateMachine::AsValueInto(base::debug::TracedValue* state,
   state->SetInteger("last_frame_number_begin_main_frame_sent",
                     last_frame_number_begin_main_frame_sent_);
 
-  state->SetInteger("manage_tiles_funnel", manage_tiles_funnel_);
+  state->SetInteger("prepare_tiles_funnel", prepare_tiles_funnel_);
   state->SetInteger("consecutive_checkerboard_animations",
                     consecutive_checkerboard_animations_);
   state->SetInteger("max_pending_swaps_", max_pending_swaps_);
   state->SetInteger("pending_swaps_", pending_swaps_);
   state->SetBoolean("needs_redraw", needs_redraw_);
   state->SetBoolean("needs_animate_", needs_animate_);
-  state->SetBoolean("needs_manage_tiles", needs_manage_tiles_);
+  state->SetBoolean("needs_prepare_tiles", needs_prepare_tiles_);
   state->SetBoolean("needs_commit", needs_commit_);
   state->SetBoolean("visible", visible_);
   state->SetBoolean("can_start", can_start_);
@@ -244,9 +244,9 @@ void SchedulerStateMachine::AsValueInto(base::debug::TracedValue* state,
 void SchedulerStateMachine::AdvanceCurrentFrameNumber() {
   current_frame_number_++;
 
-  // "Drain" the ManageTiles funnel.
-  if (manage_tiles_funnel_ > 0)
-    manage_tiles_funnel_--;
+  // "Drain" the PrepareTiles funnel.
+  if (prepare_tiles_funnel_ > 0)
+    prepare_tiles_funnel_--;
 
   skip_begin_main_frame_to_reduce_latency_ =
       skip_next_begin_main_frame_to_reduce_latency_;
@@ -481,20 +481,20 @@ bool SchedulerStateMachine::ShouldCommit() const {
   return true;
 }
 
-bool SchedulerStateMachine::ShouldManageTiles() const {
-  // ManageTiles only really needs to be called immediately after commit
+bool SchedulerStateMachine::ShouldPrepareTiles() const {
+  // PrepareTiles only really needs to be called immediately after commit
   // and then periodically after that. Use a funnel to make sure we average
-  // one ManageTiles per BeginImplFrame in the long run.
-  if (manage_tiles_funnel_ > 0)
+  // one PrepareTiles per BeginImplFrame in the long run.
+  if (prepare_tiles_funnel_ > 0)
     return false;
 
   // Limiting to once per-frame is not enough, since we only want to
-  // manage tiles _after_ draws. Polling for draw triggers and
+  // prepare tiles _after_ draws. Polling for draw triggers and
   // begin-frame are mutually exclusive, so we limit to these two cases.
   if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE &&
       !inside_poll_for_anticipated_draw_triggers_)
     return false;
-  return needs_manage_tiles_;
+  return needs_prepare_tiles_;
 }
 
 SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
@@ -512,8 +512,8 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
     else
       return ACTION_DRAW_AND_SWAP_IF_POSSIBLE;
   }
-  if (ShouldManageTiles())
-    return ACTION_MANAGE_TILES;
+  if (ShouldPrepareTiles())
+    return ACTION_PREPARE_TILES;
   if (ShouldSendBeginMainFrame())
     return ACTION_SEND_BEGIN_MAIN_FRAME;
   if (ShouldBeginOutputSurfaceCreation())
@@ -580,8 +580,8 @@ void SchedulerStateMachine::UpdateState(Action action) {
       DCHECK(!active_tree_needs_first_draw_);
       return;
 
-    case ACTION_MANAGE_TILES:
-      UpdateStateOnManageTiles();
+    case ACTION_PREPARE_TILES:
+      UpdateStateOnPrepareTiles();
       return;
   }
 }
@@ -673,8 +673,8 @@ void SchedulerStateMachine::UpdateStateOnDraw(bool did_request_swap) {
     last_frame_number_swap_requested_ = current_frame_number_;
 }
 
-void SchedulerStateMachine::UpdateStateOnManageTiles() {
-  needs_manage_tiles_ = false;
+void SchedulerStateMachine::UpdateStateOnPrepareTiles() {
+  needs_prepare_tiles_ = false;
 }
 
 void SchedulerStateMachine::SetSkipNextBeginMainFrameToReduceLatency() {
@@ -779,7 +779,7 @@ bool SchedulerStateMachine::ProactiveBeginFrameWanted() const {
 
   // Changing priorities may allow us to activate (given the new priorities),
   // which may result in a new frame.
-  if (needs_manage_tiles_)
+  if (needs_prepare_tiles_)
     return true;
 
   // If we just sent a swap request, it's likely that we are going to produce
@@ -939,11 +939,10 @@ void SchedulerStateMachine::SetNeedsAnimate() {
   needs_animate_ = true;
 }
 
-void SchedulerStateMachine::SetNeedsManageTiles() {
-  if (!needs_manage_tiles_) {
-    TRACE_EVENT0("cc",
-                 "SchedulerStateMachine::SetNeedsManageTiles");
-    needs_manage_tiles_ = true;
+void SchedulerStateMachine::SetNeedsPrepareTiles() {
+  if (!needs_prepare_tiles_) {
+    TRACE_EVENT0("cc", "SchedulerStateMachine::SetNeedsPrepareTiles");
+    needs_prepare_tiles_ = true;
   }
 }
 
@@ -1037,10 +1036,10 @@ void SchedulerStateMachine::BeginMainFrameAborted(bool did_handle) {
   }
 }
 
-void SchedulerStateMachine::DidManageTiles() {
-  needs_manage_tiles_ = false;
-  // "Fill" the ManageTiles funnel.
-  manage_tiles_funnel_++;
+void SchedulerStateMachine::DidPrepareTiles() {
+  needs_prepare_tiles_ = false;
+  // "Fill" the PrepareTiles funnel.
+  prepare_tiles_funnel_++;
 }
 
 void SchedulerStateMachine::DidLoseOutputSurface() {

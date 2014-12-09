@@ -263,8 +263,8 @@ class FakeSchedulerClient : public SchedulerClient {
     actions_.push_back("ScheduledActionBeginOutputSurfaceCreation");
     states_.push_back(scheduler_->AsValue());
   }
-  void ScheduledActionManageTiles() override {
-    actions_.push_back("ScheduledActionManageTiles");
+  void ScheduledActionPrepareTiles() override {
+    actions_.push_back("ScheduledActionPrepareTiles");
     states_.push_back(scheduler_->AsValue());
   }
   void DidAnticipatedDrawTimeChange(base::TimeTicks) override {
@@ -808,17 +808,17 @@ TEST(SchedulerTest, NoSwapWhenDrawFails) {
   EXPECT_EQ(2, client.num_draws());
 }
 
-class SchedulerClientNeedsManageTilesInDraw : public FakeSchedulerClient {
+class SchedulerClientNeedsPrepareTilesInDraw : public FakeSchedulerClient {
  public:
   DrawResult ScheduledActionDrawAndSwapIfPossible() override {
-    scheduler_->SetNeedsManageTiles();
+    scheduler_->SetNeedsPrepareTiles();
     return FakeSchedulerClient::ScheduledActionDrawAndSwapIfPossible();
   }
 };
 
-// Test manage tiles is independant of draws.
-TEST(SchedulerTest, ManageTiles) {
-  SchedulerClientNeedsManageTilesInDraw client;
+// Test prepare tiles is independant of draws.
+TEST(SchedulerTest, PrepareTiles) {
+  SchedulerClientNeedsPrepareTilesInDraw client;
   SchedulerSettings scheduler_settings;
   scheduler_settings.use_external_begin_frame_source = true;
   TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
@@ -827,16 +827,16 @@ TEST(SchedulerTest, ManageTiles) {
   scheduler->SetCanDraw(true);
   InitializeOutputSurfaceAndFirstCommit(scheduler, &client);
 
-  // Request both draw and manage tiles. ManageTiles shouldn't
+  // Request both draw and prepare tiles. PrepareTiles shouldn't
   // be trigged until BeginImplFrame.
   client.Reset();
-  scheduler->SetNeedsManageTiles();
+  scheduler->SetNeedsPrepareTiles();
   scheduler->SetNeedsRedraw();
   EXPECT_TRUE(scheduler->RedrawPending());
-  EXPECT_TRUE(scheduler->ManageTilesPending());
+  EXPECT_TRUE(scheduler->PrepareTilesPending());
   EXPECT_TRUE(client.needs_begin_frames());
   EXPECT_EQ(0, client.num_draws());
-  EXPECT_FALSE(client.HasAction("ScheduledActionManageTiles"));
+  EXPECT_FALSE(client.HasAction("ScheduledActionPrepareTiles"));
   EXPECT_FALSE(client.HasAction("ScheduledActionDrawAndSwapIfPossible"));
 
   // We have no immediate actions to perform, so the BeginImplFrame should post
@@ -852,18 +852,18 @@ TEST(SchedulerTest, ManageTiles) {
   client.task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(1, client.num_draws());
   EXPECT_TRUE(client.HasAction("ScheduledActionDrawAndSwapIfPossible"));
-  EXPECT_TRUE(client.HasAction("ScheduledActionManageTiles"));
+  EXPECT_TRUE(client.HasAction("ScheduledActionPrepareTiles"));
   EXPECT_LT(client.ActionIndex("ScheduledActionDrawAndSwapIfPossible"),
-            client.ActionIndex("ScheduledActionManageTiles"));
+            client.ActionIndex("ScheduledActionPrepareTiles"));
   EXPECT_FALSE(scheduler->RedrawPending());
-  EXPECT_FALSE(scheduler->ManageTilesPending());
+  EXPECT_FALSE(scheduler->PrepareTilesPending());
   EXPECT_FALSE(scheduler->BeginImplFrameDeadlinePending());
 
-  // Request a draw. We don't need a ManageTiles yet.
+  // Request a draw. We don't need a PrepareTiles yet.
   client.Reset();
   scheduler->SetNeedsRedraw();
   EXPECT_TRUE(scheduler->RedrawPending());
-  EXPECT_FALSE(scheduler->ManageTilesPending());
+  EXPECT_FALSE(scheduler->PrepareTilesPending());
   EXPECT_TRUE(client.needs_begin_frames());
   EXPECT_EQ(0, client.num_draws());
 
@@ -875,18 +875,18 @@ TEST(SchedulerTest, ManageTiles) {
   EXPECT_ACTION("ScheduledActionAnimate", client, 1, 2);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
 
-  // Draw. The draw will trigger SetNeedsManageTiles, and
-  // then the ManageTiles action will be triggered after the Draw.
-  // Afterwards, neither a draw nor ManageTiles are pending.
+  // Draw. The draw will trigger SetNeedsPrepareTiles, and
+  // then the PrepareTiles action will be triggered after the Draw.
+  // Afterwards, neither a draw nor PrepareTiles are pending.
   client.Reset();
   client.task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(1, client.num_draws());
   EXPECT_TRUE(client.HasAction("ScheduledActionDrawAndSwapIfPossible"));
-  EXPECT_TRUE(client.HasAction("ScheduledActionManageTiles"));
+  EXPECT_TRUE(client.HasAction("ScheduledActionPrepareTiles"));
   EXPECT_LT(client.ActionIndex("ScheduledActionDrawAndSwapIfPossible"),
-            client.ActionIndex("ScheduledActionManageTiles"));
+            client.ActionIndex("ScheduledActionPrepareTiles"));
   EXPECT_FALSE(scheduler->RedrawPending());
-  EXPECT_FALSE(scheduler->ManageTilesPending());
+  EXPECT_FALSE(scheduler->PrepareTilesPending());
   EXPECT_FALSE(scheduler->BeginImplFrameDeadlinePending());
 
   // We need a BeginImplFrame where we don't swap to go idle.
@@ -900,16 +900,16 @@ TEST(SchedulerTest, ManageTiles) {
   EXPECT_FALSE(scheduler->BeginImplFrameDeadlinePending());
   EXPECT_EQ(0, client.num_draws());
 
-  // Now trigger a ManageTiles outside of a draw. We will then need
-  // a begin-frame for the ManageTiles, but we don't need a draw.
+  // Now trigger a PrepareTiles outside of a draw. We will then need
+  // a begin-frame for the PrepareTiles, but we don't need a draw.
   client.Reset();
   EXPECT_FALSE(client.needs_begin_frames());
-  scheduler->SetNeedsManageTiles();
+  scheduler->SetNeedsPrepareTiles();
   EXPECT_TRUE(client.needs_begin_frames());
-  EXPECT_TRUE(scheduler->ManageTilesPending());
+  EXPECT_TRUE(scheduler->PrepareTilesPending());
   EXPECT_FALSE(scheduler->RedrawPending());
 
-  // BeginImplFrame. There will be no draw, only ManageTiles.
+  // BeginImplFrame. There will be no draw, only PrepareTiles.
   client.Reset();
   client.AdvanceFrame();
   EXPECT_SINGLE_ACTION("WillBeginImplFrame", client);
@@ -918,13 +918,13 @@ TEST(SchedulerTest, ManageTiles) {
   client.task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(0, client.num_draws());
   EXPECT_FALSE(client.HasAction("ScheduledActionDrawAndSwapIfPossible"));
-  EXPECT_TRUE(client.HasAction("ScheduledActionManageTiles"));
+  EXPECT_TRUE(client.HasAction("ScheduledActionPrepareTiles"));
   EXPECT_FALSE(scheduler->BeginImplFrameDeadlinePending());
 }
 
-// Test that ManageTiles only happens once per frame.  If an external caller
-// initiates it, then the state machine should not ManageTiles on that frame.
-TEST(SchedulerTest, ManageTilesOncePerFrame) {
+// Test that PrepareTiles only happens once per frame.  If an external caller
+// initiates it, then the state machine should not PrepareTiles on that frame.
+TEST(SchedulerTest, PrepareTilesOncePerFrame) {
   FakeSchedulerClient client;
   SchedulerSettings scheduler_settings;
   scheduler_settings.use_external_begin_frame_source = true;
@@ -934,8 +934,9 @@ TEST(SchedulerTest, ManageTilesOncePerFrame) {
   scheduler->SetCanDraw(true);
   InitializeOutputSurfaceAndFirstCommit(scheduler, &client);
 
-  // If DidManageTiles during a frame, then ManageTiles should not occur again.
-  scheduler->SetNeedsManageTiles();
+  // If DidPrepareTiles during a frame, then PrepareTiles should not occur
+  // again.
+  scheduler->SetNeedsPrepareTiles();
   scheduler->SetNeedsRedraw();
   client.Reset();
   client.AdvanceFrame();
@@ -943,21 +944,21 @@ TEST(SchedulerTest, ManageTilesOncePerFrame) {
   EXPECT_ACTION("ScheduledActionAnimate", client, 1, 2);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
 
-  EXPECT_TRUE(scheduler->ManageTilesPending());
-  scheduler->DidManageTiles();  // An explicit ManageTiles.
-  EXPECT_FALSE(scheduler->ManageTilesPending());
+  EXPECT_TRUE(scheduler->PrepareTilesPending());
+  scheduler->DidPrepareTiles();  // An explicit PrepareTiles.
+  EXPECT_FALSE(scheduler->PrepareTilesPending());
 
   client.Reset();
   client.task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(1, client.num_draws());
   EXPECT_TRUE(client.HasAction("ScheduledActionDrawAndSwapIfPossible"));
-  EXPECT_FALSE(client.HasAction("ScheduledActionManageTiles"));
+  EXPECT_FALSE(client.HasAction("ScheduledActionPrepareTiles"));
   EXPECT_FALSE(scheduler->RedrawPending());
-  EXPECT_FALSE(scheduler->ManageTilesPending());
+  EXPECT_FALSE(scheduler->PrepareTilesPending());
   EXPECT_FALSE(scheduler->BeginImplFrameDeadlinePending());
 
-  // Next frame without DidManageTiles should ManageTiles with draw.
-  scheduler->SetNeedsManageTiles();
+  // Next frame without DidPrepareTiles should PrepareTiles with draw.
+  scheduler->SetNeedsPrepareTiles();
   scheduler->SetNeedsRedraw();
   client.Reset();
   client.AdvanceFrame();
@@ -969,18 +970,18 @@ TEST(SchedulerTest, ManageTilesOncePerFrame) {
   client.task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(1, client.num_draws());
   EXPECT_TRUE(client.HasAction("ScheduledActionDrawAndSwapIfPossible"));
-  EXPECT_TRUE(client.HasAction("ScheduledActionManageTiles"));
+  EXPECT_TRUE(client.HasAction("ScheduledActionPrepareTiles"));
   EXPECT_LT(client.ActionIndex("ScheduledActionDrawAndSwapIfPossible"),
-            client.ActionIndex("ScheduledActionManageTiles"));
+            client.ActionIndex("ScheduledActionPrepareTiles"));
   EXPECT_FALSE(scheduler->RedrawPending());
-  EXPECT_FALSE(scheduler->ManageTilesPending());
+  EXPECT_FALSE(scheduler->PrepareTilesPending());
   EXPECT_FALSE(scheduler->BeginImplFrameDeadlinePending());
-  scheduler->DidManageTiles();  // Corresponds to ScheduledActionManageTiles
+  scheduler->DidPrepareTiles();  // Corresponds to ScheduledActionPrepareTiles
 
-  // If we get another DidManageTiles within the same frame, we should
-  // not ManageTiles on the next frame.
-  scheduler->DidManageTiles();  // An explicit ManageTiles.
-  scheduler->SetNeedsManageTiles();
+  // If we get another DidPrepareTiles within the same frame, we should
+  // not PrepareTiles on the next frame.
+  scheduler->DidPrepareTiles();  // An explicit PrepareTiles.
+  scheduler->SetNeedsPrepareTiles();
   scheduler->SetNeedsRedraw();
   client.Reset();
   client.AdvanceFrame();
@@ -988,22 +989,23 @@ TEST(SchedulerTest, ManageTilesOncePerFrame) {
   EXPECT_ACTION("ScheduledActionAnimate", client, 1, 2);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
 
-  EXPECT_TRUE(scheduler->ManageTilesPending());
+  EXPECT_TRUE(scheduler->PrepareTilesPending());
 
   client.Reset();
   client.task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(1, client.num_draws());
   EXPECT_TRUE(client.HasAction("ScheduledActionDrawAndSwapIfPossible"));
-  EXPECT_FALSE(client.HasAction("ScheduledActionManageTiles"));
+  EXPECT_FALSE(client.HasAction("ScheduledActionPrepareTiles"));
   EXPECT_FALSE(scheduler->RedrawPending());
   EXPECT_FALSE(scheduler->BeginImplFrameDeadlinePending());
 
-  // If we get another DidManageTiles, we should not ManageTiles on the next
-  // frame. This verifies we don't alternate calling ManageTiles once and twice.
-  EXPECT_TRUE(scheduler->ManageTilesPending());
-  scheduler->DidManageTiles();  // An explicit ManageTiles.
-  EXPECT_FALSE(scheduler->ManageTilesPending());
-  scheduler->SetNeedsManageTiles();
+  // If we get another DidPrepareTiles, we should not PrepareTiles on the next
+  // frame. This verifies we don't alternate calling PrepareTiles once and
+  // twice.
+  EXPECT_TRUE(scheduler->PrepareTilesPending());
+  scheduler->DidPrepareTiles();  // An explicit PrepareTiles.
+  EXPECT_FALSE(scheduler->PrepareTilesPending());
+  scheduler->SetNeedsPrepareTiles();
   scheduler->SetNeedsRedraw();
   client.Reset();
   client.AdvanceFrame();
@@ -1011,18 +1013,18 @@ TEST(SchedulerTest, ManageTilesOncePerFrame) {
   EXPECT_ACTION("ScheduledActionAnimate", client, 1, 2);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
 
-  EXPECT_TRUE(scheduler->ManageTilesPending());
+  EXPECT_TRUE(scheduler->PrepareTilesPending());
 
   client.Reset();
   client.task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(1, client.num_draws());
   EXPECT_TRUE(client.HasAction("ScheduledActionDrawAndSwapIfPossible"));
-  EXPECT_FALSE(client.HasAction("ScheduledActionManageTiles"));
+  EXPECT_FALSE(client.HasAction("ScheduledActionPrepareTiles"));
   EXPECT_FALSE(scheduler->RedrawPending());
   EXPECT_FALSE(scheduler->BeginImplFrameDeadlinePending());
 
-  // Next frame without DidManageTiles should ManageTiles with draw.
-  scheduler->SetNeedsManageTiles();
+  // Next frame without DidPrepareTiles should PrepareTiles with draw.
+  scheduler->SetNeedsPrepareTiles();
   scheduler->SetNeedsRedraw();
   client.Reset();
   client.AdvanceFrame();
@@ -1034,17 +1036,17 @@ TEST(SchedulerTest, ManageTilesOncePerFrame) {
   client.task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(1, client.num_draws());
   EXPECT_TRUE(client.HasAction("ScheduledActionDrawAndSwapIfPossible"));
-  EXPECT_TRUE(client.HasAction("ScheduledActionManageTiles"));
+  EXPECT_TRUE(client.HasAction("ScheduledActionPrepareTiles"));
   EXPECT_LT(client.ActionIndex("ScheduledActionDrawAndSwapIfPossible"),
-            client.ActionIndex("ScheduledActionManageTiles"));
+            client.ActionIndex("ScheduledActionPrepareTiles"));
   EXPECT_FALSE(scheduler->RedrawPending());
-  EXPECT_FALSE(scheduler->ManageTilesPending());
+  EXPECT_FALSE(scheduler->PrepareTilesPending());
   EXPECT_FALSE(scheduler->BeginImplFrameDeadlinePending());
-  scheduler->DidManageTiles();  // Corresponds to ScheduledActionManageTiles
+  scheduler->DidPrepareTiles();  // Corresponds to ScheduledActionPrepareTiles
 }
 
 TEST(SchedulerTest, TriggerBeginFrameDeadlineEarly) {
-  SchedulerClientNeedsManageTilesInDraw client;
+  SchedulerClientNeedsPrepareTilesInDraw client;
   SchedulerSettings scheduler_settings;
   scheduler_settings.use_external_begin_frame_source = true;
   TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
@@ -1891,7 +1893,7 @@ TEST(SchedulerTest, DidLoseOutputSurfaceAfterReadyToCommitWithImplPainting) {
   DidLoseOutputSurfaceAfterReadyToCommit(true);
 }
 
-TEST(SchedulerTest, DidLoseOutputSurfaceAfterSetNeedsManageTiles) {
+TEST(SchedulerTest, DidLoseOutputSurfaceAfterSetNeedsPrepareTiles) {
   FakeSchedulerClient client;
   SchedulerSettings scheduler_settings;
   scheduler_settings.use_external_begin_frame_source = true;
@@ -1902,7 +1904,7 @@ TEST(SchedulerTest, DidLoseOutputSurfaceAfterSetNeedsManageTiles) {
   InitializeOutputSurfaceAndFirstCommit(scheduler, &client);
 
   client.Reset();
-  scheduler->SetNeedsManageTiles();
+  scheduler->SetNeedsPrepareTiles();
   scheduler->SetNeedsRedraw();
   EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client);
 
@@ -1918,7 +1920,7 @@ TEST(SchedulerTest, DidLoseOutputSurfaceAfterSetNeedsManageTiles) {
 
   client.Reset();
   client.task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_ACTION("ScheduledActionManageTiles", client, 0, 2);
+  EXPECT_ACTION("ScheduledActionPrepareTiles", client, 0, 2);
   EXPECT_ACTION("ScheduledActionBeginOutputSurfaceCreation", client, 1, 2);
 }
 

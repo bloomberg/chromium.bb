@@ -90,7 +90,7 @@ class LayerTreeHostImplTest : public testing::Test,
         did_request_commit_(false),
         did_request_redraw_(false),
         did_request_animate_(false),
-        did_request_manage_tiles_(false),
+        did_request_prepare_tiles_(false),
         reduce_memory_result_(true),
         current_limit_bytes_(0),
         current_priority_cutoff_value_(0) {
@@ -134,8 +134,8 @@ class LayerTreeHostImplTest : public testing::Test,
     did_request_redraw_ = true;
   }
   void SetNeedsAnimateOnImplThread() override { did_request_animate_ = true; }
-  void SetNeedsManageTilesOnImplThread() override {
-    did_request_manage_tiles_ = true;
+  void SetNeedsPrepareTilesOnImplThread() override {
+    did_request_prepare_tiles_ = true;
   }
   void SetNeedsCommitOnImplThread() override { did_request_commit_ = true; }
   void PostAnimationEventsToMainThreadOnImplThread(
@@ -154,7 +154,7 @@ class LayerTreeHostImplTest : public testing::Test,
     requested_scrollbar_animation_delay_ = delay;
   }
   void DidActivateSyncTree() override {}
-  void DidManageTiles() override {}
+  void DidPrepareTiles() override {}
 
   void set_reduce_memory_result(bool reduce_memory_result) {
     reduce_memory_result_ = reduce_memory_result;
@@ -395,7 +395,7 @@ class LayerTreeHostImplTest : public testing::Test,
   bool did_request_commit_;
   bool did_request_redraw_;
   bool did_request_animate_;
-  bool did_request_manage_tiles_;
+  bool did_request_prepare_tiles_;
   bool reduce_memory_result_;
   base::Closure scrollbar_fade_start_;
   base::TimeDelta requested_scrollbar_animation_delay_;
@@ -6529,7 +6529,7 @@ TEST_F(LayerTreeHostImplTest, RequireHighResAfterGpuRasterizationToggles) {
   EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
 }
 
-class LayerTreeHostImplTestManageTiles : public LayerTreeHostImplTest {
+class LayerTreeHostImplTestPrepareTiles : public LayerTreeHostImplTest {
  public:
   void SetUp() override {
     LayerTreeSettings settings;
@@ -6545,11 +6545,11 @@ class LayerTreeHostImplTestManageTiles : public LayerTreeHostImplTest {
   FakeLayerTreeHostImpl* fake_host_impl_;
 };
 
-TEST_F(LayerTreeHostImplTestManageTiles, ManageTilesWhenInvisible) {
+TEST_F(LayerTreeHostImplTestPrepareTiles, PrepareTilesWhenInvisible) {
   fake_host_impl_->DidModifyTilePriorities();
-  EXPECT_TRUE(fake_host_impl_->manage_tiles_needed());
+  EXPECT_TRUE(fake_host_impl_->prepare_tiles_needed());
   fake_host_impl_->SetVisible(false);
-  EXPECT_FALSE(fake_host_impl_->manage_tiles_needed());
+  EXPECT_FALSE(fake_host_impl_->prepare_tiles_needed());
 }
 
 TEST_F(LayerTreeHostImplTest, UIResourceManagement) {

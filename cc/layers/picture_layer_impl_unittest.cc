@@ -3824,7 +3824,7 @@ TEST_F(PictureLayerImplTestWithDelegatingRenderer,
                              resource_limit);
   host_impl_.SetMemoryPolicy(policy);
   host_impl_.SetTreePriority(SAME_PRIORITY_FOR_BOTH_TREES);
-  host_impl_.ManageTiles();
+  host_impl_.PrepareTiles();
 
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;

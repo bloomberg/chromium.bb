@@ -81,10 +81,11 @@ ThreadProxy::MainThreadOnly::MainThreadOnly(ThreadProxy* proxy,
       commit_requested(false),
       commit_request_sent_to_impl_thread(false),
       started(false),
-      manage_tiles_pending(false),
+      prepare_tiles_pending(false),
       can_cancel_commit(true),
       defer_commits(false),
-      weak_factory(proxy) {}
+      weak_factory(proxy) {
+}
 
 ThreadProxy::MainThreadOnly::~MainThreadOnly() {}
 
@@ -468,9 +469,9 @@ void ThreadProxy::SetNeedsAnimateOnImplThread() {
   impl().scheduler->SetNeedsAnimate();
 }
 
-void ThreadProxy::SetNeedsManageTilesOnImplThread() {
+void ThreadProxy::SetNeedsPrepareTilesOnImplThread() {
   DCHECK(IsImplThread());
-  impl().scheduler->SetNeedsManageTiles();
+  impl().scheduler->SetNeedsPrepareTiles();
 }
 
 void ThreadProxy::SetNeedsRedrawRectOnImplThread(const gfx::Rect& damage_rect) {
@@ -1050,10 +1051,10 @@ DrawResult ThreadProxy::DrawSwapInternal(bool forced_draw) {
   return result;
 }
 
-void ThreadProxy::ScheduledActionManageTiles() {
-  TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionManageTiles");
+void ThreadProxy::ScheduledActionPrepareTiles() {
+  TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionPrepareTiles");
   DCHECK(impl().layer_tree_host_impl->settings().impl_side_painting);
-  impl().layer_tree_host_impl->ManageTiles();
+  impl().layer_tree_host_impl->PrepareTiles();
 }
 
 DrawResult ThreadProxy::ScheduledActionDrawAndSwapIfPossible() {
@@ -1342,9 +1343,9 @@ void ThreadProxy::DidActivateSyncTree() {
   impl().timing_history.DidActivateSyncTree();
 }
 
-void ThreadProxy::DidManageTiles() {
+void ThreadProxy::DidPrepareTiles() {
   DCHECK(IsImplThread());
-  impl().scheduler->DidManageTiles();
+  impl().scheduler->DidPrepareTiles();
 }
 
 }  // namespace cc

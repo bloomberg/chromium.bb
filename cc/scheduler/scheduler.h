@@ -42,7 +42,7 @@ class SchedulerClient {
   virtual void ScheduledActionCommit() = 0;
   virtual void ScheduledActionActivateSyncTree() = 0;
   virtual void ScheduledActionBeginOutputSurfaceCreation() = 0;
-  virtual void ScheduledActionManageTiles() = 0;
+  virtual void ScheduledActionPrepareTiles() = 0;
   virtual void DidAnticipatedDrawTimeChange(base::TimeTicks time) = 0;
   virtual base::TimeDelta DrawDurationEstimate() = 0;
   virtual base::TimeDelta BeginMainFrameToCommitDurationEstimate() = 0;
@@ -119,7 +119,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn,
 
   void SetNeedsAnimate();
 
-  void SetNeedsManageTiles();
+  void SetNeedsPrepareTiles();
 
   void SetMaxSwapsPending(int max);
   void DidSwapBuffers();
@@ -130,7 +130,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn,
   void NotifyReadyToCommit();
   void BeginMainFrameAborted(bool did_handle);
 
-  void DidManageTiles();
+  void DidPrepareTiles();
   void DidLoseOutputSurface();
   void DidCreateAndInitializeOutputSurface();
 
@@ -143,8 +143,8 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn,
 
   bool CommitPending() const { return state_machine_.CommitPending(); }
   bool RedrawPending() const { return state_machine_.RedrawPending(); }
-  bool ManageTilesPending() const {
-    return state_machine_.ManageTilesPending();
+  bool PrepareTilesPending() const {
+    return state_machine_.PrepareTilesPending();
   }
   bool MainThreadIsInHighLatencyMode() const {
     return state_machine_.MainThreadIsInHighLatencyMode();

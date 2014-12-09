@@ -397,8 +397,9 @@ void TileManager::DidFinishRunningTileTasks(TaskSet task_set) {
   NOTREACHED();
 }
 
-void TileManager::ManageTiles(const GlobalStateThatImpactsTilePriority& state) {
-  TRACE_EVENT0("cc", "TileManager::ManageTiles");
+void TileManager::PrepareTiles(
+    const GlobalStateThatImpactsTilePriority& state) {
+  TRACE_EVENT0("cc", "TileManager::PrepareTiles");
 
   global_state_ = state;
 
@@ -421,10 +422,7 @@ void TileManager::ManageTiles(const GlobalStateThatImpactsTilePriority& state) {
   did_notify_ready_to_activate_ = false;
   did_notify_ready_to_draw_ = false;
 
-  TRACE_EVENT_INSTANT1("cc",
-                       "DidManage",
-                       TRACE_EVENT_SCOPE_THREAD,
-                       "state",
+  TRACE_EVENT_INSTANT1("cc", "DidPrepare", TRACE_EVENT_SCOPE_THREAD, "state",
                        BasicStateAsValue());
 
   TRACE_COUNTER_ID1("cc",

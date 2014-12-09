@@ -72,7 +72,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
     bool commit_request_sent_to_impl_thread;
 
     bool started;
-    bool manage_tiles_pending;
+    bool prepare_tiles_pending;
     bool can_cancel_commit;
     bool defer_commits;
 
@@ -195,7 +195,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void SetNeedsRedrawOnImplThread() override;
   void SetNeedsRedrawRectOnImplThread(const gfx::Rect& dirty_rect) override;
   void SetNeedsAnimateOnImplThread() override;
-  void SetNeedsManageTilesOnImplThread() override;
+  void SetNeedsPrepareTilesOnImplThread() override;
   void SetNeedsCommitOnImplThread() override;
   void PostAnimationEventsToMainThreadOnImplThread(
       scoped_ptr<AnimationEventsVector> queue) override;
@@ -206,7 +206,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void PostDelayedScrollbarFadeOnImplThread(const base::Closure& start_fade,
                                             base::TimeDelta delay) override;
   void DidActivateSyncTree() override;
-  void DidManageTiles() override;
+  void DidPrepareTiles() override;
 
   // SchedulerClient implementation
   void WillBeginImplFrame(const BeginFrameArgs& args) override;
@@ -217,7 +217,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void ScheduledActionCommit() override;
   void ScheduledActionActivateSyncTree() override;
   void ScheduledActionBeginOutputSurfaceCreation() override;
-  void ScheduledActionManageTiles() override;
+  void ScheduledActionPrepareTiles() override;
   void DidAnticipatedDrawTimeChange(base::TimeTicks time) override;
   base::TimeDelta DrawDurationEstimate() override;
   base::TimeDelta BeginMainFrameToCommitDurationEstimate() override;

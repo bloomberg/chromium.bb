@@ -153,9 +153,9 @@ class ThreadProxyForTest : public ThreadProxy {
     test_hooks_->ScheduledActionBeginOutputSurfaceCreation();
   }
 
-  void ScheduledActionManageTiles() override {
-    ThreadProxy::ScheduledActionManageTiles();
-    test_hooks_->ScheduledActionManageTiles();
+  void ScheduledActionPrepareTiles() override {
+    ThreadProxy::ScheduledActionPrepareTiles();
+    test_hooks_->ScheduledActionPrepareTiles();
   }
 
   ThreadProxyForTest(

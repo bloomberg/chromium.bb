@@ -309,7 +309,7 @@ void LayerTreeHostImpl::CommitComplete() {
     sync_tree()->UpdateDrawProperties();
     // Start working on newly created tiles immediately if needed.
     if (tile_manager_ && tile_priorities_dirty_)
-      ManageTiles();
+      PrepareTiles();
     else
       NotifyReadyToActivate();
   } else {
@@ -382,16 +382,16 @@ void LayerTreeHostImpl::Animate(base::TimeTicks monotonic_time) {
   AnimateTopControls(monotonic_time);
 }
 
-void LayerTreeHostImpl::ManageTiles() {
+void LayerTreeHostImpl::PrepareTiles() {
   if (!tile_manager_)
     return;
   if (!tile_priorities_dirty_)
     return;
 
   tile_priorities_dirty_ = false;
-  tile_manager_->ManageTiles(global_tile_state_);
+  tile_manager_->PrepareTiles(global_tile_state_);
 
-  client_->DidManageTiles();
+  client_->DidPrepareTiles();
 }
 
 void LayerTreeHostImpl::StartPageScaleAnimation(
@@ -1186,9 +1186,9 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
 
 void LayerTreeHostImpl::DidModifyTilePriorities() {
   DCHECK(settings_.impl_side_painting);
-  // Mark priorities as dirty and schedule a ManageTiles().
+  // Mark priorities as dirty and schedule a PrepareTiles().
   tile_priorities_dirty_ = true;
-  client_->SetNeedsManageTilesOnImplThread();
+  client_->SetNeedsPrepareTilesOnImplThread();
 }
 
 void LayerTreeHostImpl::GetPictureLayerImplPairs(
@@ -1857,7 +1857,7 @@ void LayerTreeHostImpl::SetVisible(bool visible) {
   // Evict tiles immediately if invisible since this tab may never get another
   // draw or timer tick.
   if (!visible_)
-    ManageTiles();
+    PrepareTiles();
 
   if (!renderer_)
     return;
