@@ -15,8 +15,6 @@ goog.provide('cvox.BrailleDisplayState');
 goog.provide('cvox.BrailleKeyCommand');
 goog.provide('cvox.BrailleKeyEvent');
 
-goog.require('cvox.ChromeVox');
-
 
 /**
  * The set of commands sent from a braille display.

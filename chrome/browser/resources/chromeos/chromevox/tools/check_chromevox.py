@@ -40,7 +40,6 @@ _COMMON_EXTERNS = [
     CVoxPath('common/chrome_extension_externs.js'),
     CVoxPath('chromevox/background/externs.js'),
     CVoxPath('chromevox/injected/externs.js'),
-    CVoxPath('liblouis_nacl/externs.js'),
     CVoxPath('host/chrome/externs.js')]
 
 # List of top-level scripts and externs that we can check.

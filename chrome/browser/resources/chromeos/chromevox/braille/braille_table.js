@@ -25,7 +25,7 @@ cvox.BrailleTable.Table;
 /**
  * @const {string}
  */
-cvox.BrailleTable.TABLE_PATH = 'chromevox/background/braille/tables.json';
+cvox.BrailleTable.TABLE_PATH = 'braille/tables.json';
 
 
 /**

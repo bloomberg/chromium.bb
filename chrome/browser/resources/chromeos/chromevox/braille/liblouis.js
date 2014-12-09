@@ -31,7 +31,7 @@ cvox.LibLouis = function(nmfPath, opt_tablesDir) {
   /**
    * Native Client <embed> element.
    * {@code null} when no <embed> is attached to the DOM.
-   * @private {NaClEmbedElement}
+   * @private {HTMLEmbedElement}
    */
   this.embedElement_ = null;
 
@@ -101,7 +101,7 @@ cvox.LibLouis.prototype.attachToElement = function(elem) {
       false /* useCapture */);
   elem.appendChild(embed);
 
-  this.embedElement_ = /** @type {!NaClEmbedElement} */ (embed);
+  this.embedElement_ = /** @type {!HTMLEmbedElement} */ (embed);
   this.instanceState_ = cvox.LibLouis.InstanceState.LOADING;
 };
 

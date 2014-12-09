@@ -12,7 +12,6 @@
 goog.provide('cvox.NavBraille');
 
 goog.require('cvox.ChromeVox');
-goog.require('cvox.CursorSelection');
 goog.require('cvox.Spannable');
 
 /**

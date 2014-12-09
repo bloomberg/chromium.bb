@@ -208,9 +208,9 @@ cvox.BrailleBackground.prototype.initialize_ = function(retries) {
      */
     this.liblouis_ = new cvox.LibLouis(
         chrome.extension.getURL(
-            'chromevox/background/braille/liblouis_nacl.nmf'),
+            'braille/liblouis_nacl.nmf'),
         chrome.extension.getURL(
-            'chromevox/background/braille/tables'));
+            'braille/tables'));
     this.liblouis_.attachToElement(document.body);
     this.refreshTranslator();
   }
