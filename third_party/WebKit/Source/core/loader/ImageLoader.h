@@ -63,11 +63,6 @@ public:
     virtual ~ImageLoader();
     void trace(Visitor*);
 
-    enum LoadType {
-        LoadNormally,
-        ForceLoadImmediately
-    };
-
     enum UpdateFromElementBehavior {
         // This should be the update behavior when the element is attached to a document, or when DOM mutations trigger a new load.
         // Starts loading if a load hasn't already been started.
@@ -85,7 +80,7 @@ public:
         DoNotBypassMainWorldCSP
     };
 
-    void updateFromElement(UpdateFromElementBehavior = UpdateNormal, LoadType = LoadNormally);
+    void updateFromElement(UpdateFromElementBehavior = UpdateNormal);
 
     void elementDidMoveToNewDocument();
 
@@ -112,7 +107,6 @@ public:
 
     void addClient(ImageLoaderClient*);
     void removeClient(ImageLoaderClient*);
-
 protected:
     virtual void notifyFinished(Resource*) override;
 
@@ -124,6 +118,7 @@ private:
 
     virtual void dispatchLoadEvent() = 0;
     virtual String sourceURI(const AtomicString&) const = 0;
+    virtual void noImageResourceToLoad() { };
 
     void updatedHasPendingEvent();
 
@@ -147,7 +142,7 @@ private:
 
     // Used to determine whether to immediately initiate the load
     // or to schedule a microtask.
-    bool shouldLoadImmediately(const KURL&, LoadType) const;
+    bool shouldLoadImmediately(const KURL&) const;
 
     void willRemoveClient(ImageLoaderClient&);
 

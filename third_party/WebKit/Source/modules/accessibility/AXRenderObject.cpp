@@ -253,6 +253,17 @@ ScrollableArea* AXRenderObject::getScrollableAreaIfScrollable() const
     return box->scrollableArea();
 }
 
+static bool isImageOrAltText(RenderBoxModelObject* box, Node* node)
+{
+    if (box && box->isImage())
+        return true;
+    if (isHTMLImageElement(node))
+        return true;
+    if (isHTMLInputElement(node) && toHTMLInputElement(node)->hasFallbackContent())
+        return true;
+    return false;
+}
+
 AccessibilityRole AXRenderObject::determineAccessibilityRole()
 {
     if (!m_renderer)
@@ -272,7 +283,7 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
         return LegendRole;
     if (m_renderer->isText())
         return StaticTextRole;
-    if (cssBox && cssBox->isImage()) {
+    if (cssBox && isImageOrAltText(cssBox, node)) {
         if (node && node->isLink())
             return ImageMapRole;
         if (isHTMLInputElement(node))
@@ -683,7 +694,7 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
                 return true;
         }
 
-        if (isNativeImage() && m_renderer->isImage()) {
+        if (isNativeImage() && isImageOrAltText(toRenderBoxModelObject(m_renderer), node)) {
             // check for one-dimensional image
             RenderImage* image = toRenderImage(m_renderer);
             if (image->size().height() <= 1 || image->size().width() <= 1)

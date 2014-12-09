@@ -40,9 +40,9 @@ class BaseButtonInputType : public BaseClickableWithKeyInputType {
 protected:
     BaseButtonInputType(HTMLInputElement& element) : BaseClickableWithKeyInputType(element) { }
     virtual void valueAttributeChanged() override;
+    virtual void createShadowSubtree() override;
 
 private:
-    virtual void createShadowSubtree() override;
     virtual bool shouldSaveAndRestoreFormControlState() const override;
     virtual bool appendFormData(FormDataList&, bool) const override;
     virtual RenderObject* createRenderer(RenderStyle*) const override;

@@ -56,7 +56,10 @@ ImageResource::ImageResource(const ResourceRequest& resourceRequest)
 
 ImageResource::ImageResource(blink::Image* image)
     : Resource(ResourceRequest(""), Image)
+    , m_devicePixelRatioHeaderValue(1.0)
     , m_image(image)
+    , m_loadingMultipartContent(false)
+    , m_hasDevicePixelRatioHeaderValue(false)
 {
     WTF_LOG(Timers, "new ImageResource(Image) %p", this);
     setStatus(Cached);
