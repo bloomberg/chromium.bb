@@ -29,8 +29,8 @@ enum {
 // Default minimum protocol version.
 NET_EXPORT extern const uint16 kDefaultSSLVersionMin;
 
-// Default maximum protocol version.
-NET_EXPORT extern const uint16 kDefaultSSLVersionMax;
+// For maximum supported protocol version, use
+// SSLClientSocket::GetMaxSupportedSSLVersion().
 
 // Default minimum protocol version that it's acceptable to fallback to.
 NET_EXPORT extern const uint16 kDefaultSSLVersionFallbackMin;
