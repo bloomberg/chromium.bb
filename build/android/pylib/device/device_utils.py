@@ -19,6 +19,7 @@ import zipfile
 
 import pylib.android_commands
 from pylib import cmd_helper
+from pylib import constants
 from pylib.device import adb_wrapper
 from pylib.device import decorators
 from pylib.device import device_errors
@@ -42,7 +43,17 @@ def GetAVDs():
   Returns:
     A list containing the configured AVDs.
   """
-  return pylib.android_commands.GetAVDs()
+  lines = cmd_helper.GetCmdOutput([
+      os.path.join(constants.ANDROID_SDK_ROOT, 'tools', 'android'),
+      'list', 'avd']).splitlines()
+  avds = []
+  for line in lines:
+    if 'Name:' not in line:
+      continue
+    key, value = (s.strip() for s in line.split(':', 1))
+    if key == 'Name':
+      avds.append(value)
+  return avds
 
 
 @decorators.WithExplicitTimeoutAndRetries(

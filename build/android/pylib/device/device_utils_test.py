@@ -69,6 +69,21 @@ class DeviceUtilsTest(unittest.TestCase):
       device_utils.DeviceUtils('')
 
 
+class DeviceUtilsGetAVDsTest(mock_calls.TestCase):
+
+  def testGetAVDs(self):
+    with self.assertCall(
+        mock.call.pylib.cmd_helper.GetCmdOutput([mock.ANY, 'list', 'avd']),
+        'Available Android Virtual Devices:\n'
+        '    Name: my_android5.0\n'
+        '    Path: /some/path/to/.android/avd/my_android5.0.avd\n'
+        '  Target: Android 5.0 (API level 21)\n'
+        ' Tag/ABI: default/x86\n'
+        '    Skin: WVGA800\n'):
+      self.assertEquals(['my_android5.0'],
+                        device_utils.GetAVDs())
+
+
 class MockTempFile(object):
 
   def __init__(self, name='/tmp/some/file'):
