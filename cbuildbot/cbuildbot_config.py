@@ -1584,6 +1584,10 @@ chrome_pfq.add_config('link_freon-chrome-pfq',
   _base_configs['link_freon'],
 )
 
+chrome_pfq.add_config('veyron_pinky-chrome-pfq',
+  _base_configs['veyron_pinky'],
+)
+
 chrome_pfq.add_config('rush_ryu-chrome-pfq',
   _base_configs['rush_ryu'],
 )
