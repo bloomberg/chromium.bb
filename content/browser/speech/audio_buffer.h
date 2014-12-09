@@ -19,6 +19,8 @@ class CONTENT_EXPORT AudioChunk :
     public base::RefCountedThreadSafe<AudioChunk> {
  public:
   explicit AudioChunk(int bytes_per_sample);
+  // Creates a chunk of |length| bytes, initialized to zeros.
+  AudioChunk(size_t length, int bytes_per_sample);
   AudioChunk(const uint8* data, size_t length, int bytes_per_sample);
 
   bool IsEmpty() const;
@@ -27,14 +29,14 @@ class CONTENT_EXPORT AudioChunk :
   const std::string& AsString() const;
   int16 GetSample16(size_t index) const;
   const int16* SamplesData16() const;
-  friend class AudioBuffer;
+  uint8* writable_data() { return reinterpret_cast<uint8*>(&data_string_[0]); }
 
  private:
-  ~AudioChunk() {}
   friend class base::RefCountedThreadSafe<AudioChunk>;
+  ~AudioChunk() {}
 
   std::string data_string_;
-  int bytes_per_sample_;
+  const int bytes_per_sample_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioChunk);
 };
@@ -51,7 +53,8 @@ class AudioBuffer {
 
   // Dequeues, in FIFO order, a single chunk respecting the length of the
   // corresponding Enqueue call (in a nutshell: multiple Enqueue calls followed
-  // by Dequeue calls will return the individual chunks without merging them).
+  // by DequeueSingleChunk calls will return the individual chunks without
+  // merging them).
   scoped_refptr<AudioChunk> DequeueSingleChunk();
 
   // Dequeues all previously enqueued chunks, merging them in a single chunk.
@@ -66,7 +69,7 @@ class AudioBuffer {
  private:
   typedef std::deque<scoped_refptr<AudioChunk> > ChunksContainer;
   ChunksContainer chunks_;
-  int bytes_per_sample_;
+  const int bytes_per_sample_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioBuffer);
 };

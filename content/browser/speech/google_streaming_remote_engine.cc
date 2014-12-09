@@ -471,12 +471,10 @@ GoogleStreamingRemoteEngine::CloseUpstreamAndWaitForResults(
 
   // The encoder requires a non-empty final buffer. So we encode a packet
   // of silence in case encoder had no data already.
-  std::vector<short> samples(
-      config_.audio_sample_rate * kAudioPacketIntervalMs / 1000);
-  scoped_refptr<AudioChunk> dummy_chunk =
-      new AudioChunk(reinterpret_cast<uint8*>(&samples[0]),
-                     samples.size() * sizeof(short),
-                     encoder_->bits_per_sample() / 8);
+  size_t sample_count =
+      config_.audio_sample_rate * kAudioPacketIntervalMs / 1000;
+  scoped_refptr<AudioChunk> dummy_chunk = new AudioChunk(
+      sample_count * sizeof(int16), encoder_->bits_per_sample() / 8);
   encoder_->Encode(*dummy_chunk.get());
   encoder_->Flush();
   scoped_refptr<AudioChunk> encoded_dummy_data =

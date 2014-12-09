@@ -5,12 +5,16 @@
 #include "content/browser/speech/audio_buffer.h"
 
 #include "base/logging.h"
-#include "base/stl_util.h"
 
 namespace content {
 
 AudioChunk::AudioChunk(int bytes_per_sample)
     : bytes_per_sample_(bytes_per_sample) {
+}
+
+AudioChunk::AudioChunk(size_t length, int bytes_per_sample)
+    : data_string_(length, '\0'), bytes_per_sample_(bytes_per_sample) {
+  DCHECK_EQ(length % bytes_per_sample, 0U);
 }
 
 AudioChunk::AudioChunk(const uint8* data, size_t length, int bytes_per_sample)
@@ -40,7 +44,6 @@ const int16* AudioChunk::SamplesData16() const {
   return reinterpret_cast<const int16*>(data_string_.data());
 }
 
-
 AudioBuffer::AudioBuffer(int bytes_per_sample)
     : bytes_per_sample_(bytes_per_sample) {
   DCHECK(bytes_per_sample == 1 ||
@@ -64,17 +67,19 @@ scoped_refptr<AudioChunk> AudioBuffer::DequeueSingleChunk() {
 }
 
 scoped_refptr<AudioChunk> AudioBuffer::DequeueAll() {
-  scoped_refptr<AudioChunk> chunk(new AudioChunk(bytes_per_sample_));
   size_t resulting_length = 0;
   ChunksContainer::const_iterator it;
   // In order to improve performance, calulate in advance the total length
   // and then copy the chunks.
   for (it = chunks_.begin(); it != chunks_.end(); ++it) {
-    resulting_length += (*it)->data_string_.length();
+    resulting_length += (*it)->AsString().length();
   }
-  chunk->data_string_.reserve(resulting_length);
+  scoped_refptr<AudioChunk> chunk(
+      new AudioChunk(resulting_length, bytes_per_sample_));
+  uint8* dest = chunk->writable_data();
   for (it = chunks_.begin(); it != chunks_.end(); ++it) {
-    chunk->data_string_.append((*it)->data_string_);
+    memcpy(dest, (*it)->AsString().data(), (*it)->AsString().length());
+    dest += (*it)->AsString().length();
   }
   Clear();
   return chunk;
