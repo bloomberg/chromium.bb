@@ -259,7 +259,7 @@ function registerInputviewApi() {
         modifiers: Modifier.NONE
       };
       if (data.altKey)
-        event.modifers |= Modifier.ALT;
+        event.modifiers |= Modifier.ALT;
       if (data.ctrlKey)
         event.modifiers |= Modifier.CONTROL;
       if (data.shiftKey || data.capsLock)
