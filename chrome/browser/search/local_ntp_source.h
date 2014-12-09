@@ -31,12 +31,6 @@ class LocalNtpSource : public content::URLDataSource {
   bool ShouldServiceRequest(const net::URLRequest* request) const override;
   std::string GetContentSecurityPolicyFrameSrc() const override;
 
-  // Sends a local resource with a specific |class_name| substituted.
-  void SendResourceWithClass(
-    int resource_id,
-    const std::string& class_name,
-    const content::URLDataSource::GotDataCallback& callback);
-
   Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalNtpSource);

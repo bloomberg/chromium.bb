@@ -113,8 +113,9 @@ var MIDDLE_MOUSE_BUTTON = 1;
 /**
  * Specifications for the NTP design.
  * @const {NtpDesign}
+ * TODO(mathp): Remove hardcoded 'des-mat' and supporting code in design.js.
  */
-var NTP_DESIGN = getNtpDesign(configData.ntpDesignName);
+var NTP_DESIGN = getNtpDesign('des-mat');
 
 
 /**
