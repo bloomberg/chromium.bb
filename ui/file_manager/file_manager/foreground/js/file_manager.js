@@ -31,6 +31,24 @@ function FileManager() {
   this.historyLoader_ = null;
 
   /**
+   * ImportHistory. Non-null only once history observer is added in
+   * {@code addHistoryObserver}.
+   *
+   * @type {importer.ImportHistory}
+   * @private
+   */
+  this.importHistory_ = null;
+
+  /**
+   * Bound observer for use with {@code importer.ImportHistory.Observer}.
+   * The instance is bound once here as {@code ImportHistory.removeObserver}
+   * uses object equivilency to remove observers.
+   *
+   * @private {function(!importer.ImportHistory.ChangedEvent)}
+   */
+  this.onHistoryChangedBound_ = this.onHistoryChanged_.bind(this);
+
+  /**
    * Metadata cache.
    * @type {MetadataCache}
    * @private
@@ -57,13 +75,6 @@ function FileManager() {
    * @private
    */
   this.fileWatcher_ = null;
-
-  /**
-   * ImportHistory.Observer subscription. Call to release.
-   * @type {function()}
-   * @private
-   */
-  this.unsubscribeImportHistory_ = function() {};
 
   /**
    * Model of current directory.
@@ -766,7 +777,7 @@ Object.freeze(DialogType);
         this.volumeManager_,
         this.historyLoader_);
 
-    this.initHistoryObserver_();
+    this.addHistoryObserver_();
 
     this.ui_.initAdditionalUI(
         assertInstanceof(table, FileTable),
@@ -808,7 +819,7 @@ Object.freeze(DialogType);
    *
    * @private
    */
-  FileManager.prototype.initHistoryObserver_ = function() {
+  FileManager.prototype.addHistoryObserver_ = function() {
     // Monitor changes to history so that when it changes we update
     // metadata... which results in badges being updated.
     this.historyLoader_.getHistory()
@@ -818,11 +829,8 @@ Object.freeze(DialogType);
              * @this {FileManager}
              */
             function(history) {
-              var onHistoryUpdated = this.onHistoryChanged_.bind(this);
-              history.addObserver(onHistoryUpdated);
-              this.unsubscribeImportHistory_ = function() {
-                history.removeObserver(onHistoryUpdated);
-              };
+              this.importHistory_ = history;
+              history.addObserver(this.onHistoryChangedBound_);
             }.bind(this));
   };
 
@@ -1253,6 +1261,8 @@ Object.freeze(DialogType);
    * @private
    */
   FileManager.prototype.onUnload_ = function() {
+    if (this.importHistory_)
+      this.importHistory_.removeObserver(this.onHistoryChangedBound_);
     if (this.directoryModel_)
       this.directoryModel_.dispose();
     if (this.volumeManager_)

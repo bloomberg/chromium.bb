@@ -276,6 +276,8 @@ importer.PersistentImportHistory.prototype.removeObserver =
   var index = this.observers_.indexOf(observer);
   if (index > -1) {
     this.observers_.splice(index, 1);
+  } else {
+    console.warn('Ignoring request to remove observer that is not registered.');
   }
 };
 
