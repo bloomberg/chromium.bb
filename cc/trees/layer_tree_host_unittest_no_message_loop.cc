@@ -66,13 +66,14 @@ class LayerTreeHostNoMessageLoopTest
   void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
                            float page_scale,
                            float top_controls_delta) override {}
-  void RequestNewOutputSurface(bool fallback) override {
+  void RequestNewOutputSurface() override {
     layer_tree_host_->SetOutputSurface(
         make_scoped_ptr<OutputSurface>(new NoMessageLoopOutputSurface));
   }
   void DidInitializeOutputSurface() override {
     did_initialize_output_surface_ = true;
   }
+  void DidFailToInitializeOutputSurface() override {}
   void WillCommit() override {}
   void DidCommit() override { did_commit_ = true; }
   void DidCommitAndDrawFrame() override { did_commit_and_draw_frame_ = true; }

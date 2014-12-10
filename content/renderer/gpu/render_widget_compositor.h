@@ -143,8 +143,9 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
                            float page_scale,
                            float top_controls_delta) override;
-  void RequestNewOutputSurface(bool fallback) override;
+  void RequestNewOutputSurface() override;
   void DidInitializeOutputSurface() override;
+  void DidFailToInitializeOutputSurface() override;
   void WillCommit() override;
   void DidCommit() override;
   void DidCommitAndDrawFrame() override;
@@ -156,11 +157,20 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void DidPostSwapBuffers() override;
   void DidAbortSwapBuffers() override;
 
- private:
+  enum {
+   OUTPUT_SURFACE_RETRIES_BEFORE_FALLBACK = 4,
+   MAX_OUTPUT_SURFACE_RETRIES = 5,
+  };
+
+ protected:
   RenderWidgetCompositor(RenderWidget* widget, bool threaded);
 
-  void Initialize(cc::LayerTreeSettings settings);
+  void Initialize(const cc::LayerTreeSettings& settings);
 
+  cc::LayerTreeHost* layer_tree_host() { return layer_tree_host_.get(); }
+
+ private:
+  int num_failed_recreate_attempts_;
   bool threaded_;
   RenderWidget* widget_;
   scoped_ptr<cc::LayerTreeHost> layer_tree_host_;
@@ -171,6 +181,8 @@ class CONTENT_EXPORT RenderWidgetCompositor
   base::TimeTicks begin_main_frame_time_;
   // The time interval between BeginMainFrame calls, provided by the scheduler.
   base::TimeDelta begin_main_frame_interval_;
+
+  base::WeakPtrFactory<RenderWidgetCompositor> weak_factory_;
 };
 
 }  // namespace content

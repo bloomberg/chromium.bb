@@ -5,6 +5,8 @@
 #include "content/renderer/gpu/render_widget_compositor.h"
 
 #include "cc/output/begin_frame_args.h"
+#include "cc/test/failure_output_surface.h"
+#include "cc/trees/layer_tree_host.h"
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/render_widget.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -34,7 +36,7 @@ class TestRenderWidget : public RenderWidget {
 
   MockWebWidget mock_webwidget_;
 
- private:
+ protected:
   ~TestRenderWidget() override { webwidget_ = NULL; }
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderWidget);
@@ -73,6 +75,214 @@ TEST_F(RenderWidgetCompositorTest, BeginMainFrame) {
                   Field(&blink::WebBeginFrameArgs::interval, 3))));
 
   render_widget_compositor_->BeginMainFrame(args);
+}
+
+class RenderWidgetCompositorOutputSurface;
+
+class RenderWidgetOutputSurface : public TestRenderWidget {
+ public:
+  RenderWidgetOutputSurface() : compositor_(NULL) {}
+  void SetCompositor(RenderWidgetCompositorOutputSurface* compositor);
+
+  scoped_ptr<cc::OutputSurface> CreateOutputSurface(bool fallback) override;
+
+ protected:
+  ~RenderWidgetOutputSurface() {}
+
+ private:
+  RenderWidgetCompositorOutputSurface* compositor_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetOutputSurface);
+};
+
+// Verify that failing to create an output surface will cause the compositor
+// to attempt to repeatedly create another output surface.  After enough
+// failures, verify that it attempts to create a fallback output surface.
+// The use null output surface parameter allows testing whether failures
+// from RenderWidget (couldn't create an output surface) vs failures from
+// the compositor (couldn't bind the output surface) are handled identically.
+class RenderWidgetCompositorOutputSurface : public RenderWidgetCompositor {
+ public:
+  RenderWidgetCompositorOutputSurface(RenderWidget* widget, bool threaded)
+      : RenderWidgetCompositor(widget, threaded),
+        num_failures_before_success_(0),
+        expected_successes_(0),
+        expected_fallback_successes_(0),
+        expected_requests_(0),
+        num_requests_(0),
+        num_requests_since_last_success_(0),
+        num_successes_(0),
+        num_fallback_successes_(0),
+        num_failures_(0),
+        last_create_was_fallback_(false),
+        use_null_output_surface_(true) {
+    cc::LayerTreeSettings settings;
+    Initialize(settings);
+  }
+
+  scoped_ptr<cc::OutputSurface> CreateOutputSurface(bool fallback) {
+    EXPECT_EQ(num_requests_since_last_success_ >
+                  OUTPUT_SURFACE_RETRIES_BEFORE_FALLBACK,
+              fallback);
+    last_create_was_fallback_ = fallback;
+    bool success = num_failures_ >= num_failures_before_success_;
+    if (success)
+      return cc::FakeOutputSurface::Create3d();
+    return use_null_output_surface_
+               ? nullptr
+               : make_scoped_ptr(new cc::FailureOutputSurface(false));
+  }
+
+  void RequestNewOutputSurface() override {
+    ++num_requests_;
+    ++num_requests_since_last_success_;
+    RenderWidgetCompositor::RequestNewOutputSurface();
+  }
+
+  void DidInitializeOutputSurface() override {
+    if (last_create_was_fallback_)
+      ++num_fallback_successes_;
+    else
+      ++num_successes_;
+
+    if (num_requests_ == expected_requests_) {
+      EndTest();
+    } else {
+      num_requests_since_last_success_ = 0;
+      RenderWidgetCompositor::DidInitializeOutputSurface();
+      layer_tree_host()->DidLoseOutputSurface();
+      RequestNewOutputSurface();
+    }
+  }
+
+  void DidFailToInitializeOutputSurface() override {
+    ++num_failures_;
+    if (num_requests_ == expected_requests_) {
+      EndTest();
+      return;
+    }
+
+    RenderWidgetCompositor::DidFailToInitializeOutputSurface();
+  }
+
+  void SetUp(bool use_null_output_surface,
+             int num_failures_before_success,
+             int expected_successes,
+             int expected_fallback_succeses) {
+    use_null_output_surface_ = use_null_output_surface;
+    num_failures_before_success_ = num_failures_before_success;
+    expected_successes_ = expected_successes;
+    expected_fallback_successes_ = expected_fallback_succeses;
+    expected_requests_ = num_failures_before_success_ + expected_successes_ +
+                         expected_fallback_successes_;
+  }
+
+  void EndTest() { base::MessageLoop::current()->Quit(); }
+
+  void AfterTest() {
+    EXPECT_EQ(num_failures_before_success_, num_failures_);
+    EXPECT_EQ(expected_successes_, num_successes_);
+    EXPECT_EQ(expected_fallback_successes_, num_fallback_successes_);
+    EXPECT_EQ(expected_requests_, num_requests_);
+  }
+
+ private:
+  int num_failures_before_success_;
+  int expected_successes_;
+  int expected_fallback_successes_;
+  int expected_requests_;
+  int num_requests_;
+  int num_requests_since_last_success_;
+  int num_successes_;
+  int num_fallback_successes_;
+  int num_failures_;
+  bool last_create_was_fallback_;
+  bool use_null_output_surface_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetCompositorOutputSurface);
+};
+
+class RenderWidgetCompositorOutputSurfaceTest : public testing::Test {
+ public:
+  RenderWidgetCompositorOutputSurfaceTest()
+      : render_widget_(make_scoped_refptr(new RenderWidgetOutputSurface)),
+        render_widget_compositor_(make_scoped_ptr(
+            new RenderWidgetCompositorOutputSurface(render_widget_.get(),
+                                                    false))) {
+    render_widget_->SetCompositor(render_widget_compositor_.get());
+  }
+
+  void RunTest(bool use_null_output_surface,
+               int num_failures_before_success,
+               int expected_successes,
+               int expected_fallback_succeses) {
+    render_widget_compositor_->SetUp(
+        use_null_output_surface, num_failures_before_success,
+        expected_successes, expected_fallback_succeses);
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&RenderWidgetCompositor::RequestNewOutputSurface,
+                   base::Unretained(render_widget_compositor_.get())));
+    base::MessageLoop::current()->Run();
+    render_widget_compositor_->AfterTest();
+  }
+
+ protected:
+  base::MessageLoop ye_olde_message_loope_;
+  MockRenderThread render_thread_;
+  scoped_refptr<RenderWidgetOutputSurface> render_widget_;
+  scoped_ptr<RenderWidgetCompositorOutputSurface> render_widget_compositor_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetCompositorOutputSurfaceTest);
+};
+
+scoped_ptr<cc::OutputSurface> RenderWidgetOutputSurface::CreateOutputSurface(
+    bool fallback) {
+  return compositor_->CreateOutputSurface(fallback);
+}
+
+void RenderWidgetOutputSurface::SetCompositor(
+    RenderWidgetCompositorOutputSurface* compositor) {
+  compositor_ = compositor;
+}
+
+TEST_F(RenderWidgetCompositorOutputSurfaceTest, SucceedOnce) {
+  RunTest(false, 0, 1, 0);
+}
+
+TEST_F(RenderWidgetCompositorOutputSurfaceTest, SucceedTwice) {
+  RunTest(false, 0, 2, 0);
+}
+
+TEST_F(RenderWidgetCompositorOutputSurfaceTest, FailOnceNull) {
+  static_assert(
+      RenderWidgetCompositor::OUTPUT_SURFACE_RETRIES_BEFORE_FALLBACK >= 2,
+      "Adjust the values of this test if this fails");
+  RunTest(true, 1, 1, 0);
+}
+
+TEST_F(RenderWidgetCompositorOutputSurfaceTest, FailOnceBind) {
+  static_assert(
+      RenderWidgetCompositor::OUTPUT_SURFACE_RETRIES_BEFORE_FALLBACK >= 2,
+      "Adjust the values of this test if this fails");
+  RunTest(false, 1, 1, 0);
+}
+
+TEST_F(RenderWidgetCompositorOutputSurfaceTest, FallbackSuccessNull) {
+  RunTest(true, RenderWidgetCompositor::OUTPUT_SURFACE_RETRIES_BEFORE_FALLBACK,
+          0, 1);
+}
+
+TEST_F(RenderWidgetCompositorOutputSurfaceTest, FallbackSuccessBind) {
+  RunTest(false, RenderWidgetCompositor::OUTPUT_SURFACE_RETRIES_BEFORE_FALLBACK,
+          0, 1);
+}
+
+TEST_F(RenderWidgetCompositorOutputSurfaceTest, FallbackSuccessNormalSuccess) {
+  // The first success is a fallback, but the next should not be a fallback.
+  RunTest(false, RenderWidgetCompositor::OUTPUT_SURFACE_RETRIES_BEFORE_FALLBACK,
+          1, 1);
 }
 
 }  // namespace content

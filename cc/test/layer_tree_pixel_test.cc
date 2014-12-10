@@ -35,8 +35,7 @@ LayerTreePixelTest::LayerTreePixelTest()
 
 LayerTreePixelTest::~LayerTreePixelTest() {}
 
-scoped_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface(
-    bool fallback) {
+scoped_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface() {
   gfx::Size surface_expansion_size(40, 60);
   scoped_ptr<PixelTestOutputSurface> output_surface;
 

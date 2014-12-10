@@ -192,6 +192,8 @@
       'test/fake_ui_resource_layer_tree_host_impl.h',
       'test/fake_video_frame_provider.cc',
       'test/fake_video_frame_provider.h',
+      'test/failure_output_surface.cc',
+      'test/failure_output_surface.h',
       'test/geometry_test_utils.cc',
       'test/geometry_test_utils.h',
       'test/test_in_process_context_provider.cc',

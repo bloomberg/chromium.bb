@@ -215,16 +215,10 @@ void ThreadProxy::RequestNewOutputSurface() {
 }
 
 void ThreadProxy::SetOutputSurface(scoped_ptr<OutputSurface> output_surface) {
-  if (output_surface) {
-    Proxy::ImplThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&ThreadProxy::InitializeOutputSurfaceOnImplThread,
-                   impl_thread_weak_ptr_,
-                   base::Passed(&output_surface)));
-    return;
-  }
-
-  DidInitializeOutputSurface(false, RendererCapabilities());
+  Proxy::ImplThreadTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&ThreadProxy::InitializeOutputSurfaceOnImplThread,
+                 impl_thread_weak_ptr_, base::Passed(&output_surface)));
 }
 
 void ThreadProxy::DidInitializeOutputSurface(
@@ -232,15 +226,13 @@ void ThreadProxy::DidInitializeOutputSurface(
     const RendererCapabilities& capabilities) {
   TRACE_EVENT0("cc", "ThreadProxy::DidInitializeOutputSurface");
   DCHECK(IsMainThread());
-  main().renderer_capabilities_main_thread_copy = capabilities;
-  layer_tree_host()->OnCreateAndInitializeOutputSurfaceAttempted(success);
 
   if (!success) {
-    Proxy::MainThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&ThreadProxy::RequestNewOutputSurface,
-                   main_thread_weak_ptr_));
+    layer_tree_host()->DidFailToInitializeOutputSurface();
+    return;
   }
+  main().renderer_capabilities_main_thread_copy = capabilities;
+  layer_tree_host()->DidInitializeOutputSurface();
 }
 
 void ThreadProxy::SetRendererCapabilitiesMainThreadCopy(

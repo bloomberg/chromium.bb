@@ -528,7 +528,13 @@ void CompositorImpl::Layout() {
   ignore_schedule_composite_ = false;
 }
 
-void CompositorImpl::RequestNewOutputSurface(bool fallback) {
+void CompositorImpl::RequestNewOutputSurface() {
+  // SetVisible(false) can happen (destroying the host_) between when this
+  // function is posted and when it is handled.  An output surface will get
+  // re-requested when the host is recreated.
+  if (!host_.get())
+    return;
+
   BrowserGpuChannelHostFactory* factory =
       BrowserGpuChannelHostFactory::instance();
   if (!factory->GetGpuChannel() || factory->GetGpuChannel()->IsLost()) {
@@ -537,15 +543,18 @@ void CompositorImpl::RequestNewOutputSurface(bool fallback) {
     factory->EstablishGpuChannel(
         cause,
         base::Bind(&CompositorImpl::CreateOutputSurface,
-                   weak_factory_.GetWeakPtr(),
-                   fallback));
+                   weak_factory_.GetWeakPtr()));
     return;
   }
 
-  CreateOutputSurface(fallback);
+  CreateOutputSurface();
 }
 
-void CompositorImpl::CreateOutputSurface(bool fallback) {
+void CompositorImpl::DidFailToInitializeOutputSurface() {
+  RequestNewOutputSurface();
+}
+
+void CompositorImpl::CreateOutputSurface() {
   blink::WebGraphicsContext3D::Attributes attrs;
   attrs.shareResources = true;
   attrs.noAutomaticFlushes = true;
@@ -565,7 +574,9 @@ void CompositorImpl::CreateOutputSurface(bool fallback) {
   }
   if (!context_provider.get()) {
     LOG(ERROR) << "Failed to create 3D context for compositor.";
-    host_->SetOutputSurface(scoped_ptr<cc::OutputSurface>());
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE, base::Bind(&CompositorImpl::RequestNewOutputSurface,
+                              weak_factory_.GetWeakPtr()));
     return;
   }
 

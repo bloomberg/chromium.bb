@@ -77,6 +77,7 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
       device_scale_factor_(0.0f),
       last_started_frame_(0),
       last_ended_frame_(0),
+      num_failed_recreate_attempts_(0),
       disable_schedule_composite_(false),
       compositor_lock_(NULL),
       defer_draw_scheduling_(false),
@@ -356,9 +357,28 @@ void Compositor::Layout() {
   disable_schedule_composite_ = false;
 }
 
-void Compositor::RequestNewOutputSurface(bool fallback) {
+void Compositor::RequestNewOutputSurface() {
+  bool fallback =
+      num_failed_recreate_attempts_ >= OUTPUT_SURFACE_RETRIES_BEFORE_FALLBACK;
   context_factory_->CreateOutputSurface(weak_ptr_factory_.GetWeakPtr(),
                                         fallback);
+}
+
+void Compositor::DidInitializeOutputSurface() {
+  num_failed_recreate_attempts_ = 0;
+}
+
+void Compositor::DidFailToInitializeOutputSurface() {
+  num_failed_recreate_attempts_++;
+
+  // Tolerate a certain number of recreation failures to work around races
+  // in the output-surface-lost machinery.
+  if (num_failed_recreate_attempts_ >= MAX_OUTPUT_SURFACE_RETRIES)
+    LOG(FATAL) << "Failed to create a fallback OutputSurface.";
+
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&Compositor::RequestNewOutputSurface,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void Compositor::DidCommit() {

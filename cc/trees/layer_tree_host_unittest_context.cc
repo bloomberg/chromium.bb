@@ -19,6 +19,7 @@
 #include "cc/layers/video_layer_impl.h"
 #include "cc/output/filter_operations.h"
 #include "cc/resources/single_release_callback.h"
+#include "cc/test/failure_output_surface.h"
 #include "cc/test/fake_content_layer.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_content_layer_impl.h"
@@ -81,12 +82,11 @@ class LayerTreeHostContextTest : public LayerTreeTest {
     return TestWebGraphicsContext3D::Create();
   }
 
-  scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(
-      bool fallback) override {
+  scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
     if (times_to_fail_create_) {
       --times_to_fail_create_;
       ExpectCreateToFail();
-      return nullptr;
+      return make_scoped_ptr(new FailureOutputSurface(delegating_renderer()));
     }
 
     scoped_ptr<TestWebGraphicsContext3D> context3d = CreateContext3d();
@@ -174,22 +174,22 @@ class LayerTreeHostContextTestLostContextSucceeds
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void RequestNewOutputSurface(bool fallback) override {
+  void RequestNewOutputSurface() override {
     if (async_output_surface_creation_) {
       MainThreadTaskRunner()->PostTask(
-          FROM_HERE,
-          base::Bind(&LayerTreeHostContextTestLostContextSucceeds::
-                         CreateAndSetOutputSurface,
-                     base::Unretained(this),
-                     fallback));
+          FROM_HERE, base::Bind(&LayerTreeHostContextTestLostContextSucceeds::
+                                    CreateAndSetOutputSurface,
+                                base::Unretained(this)));
     } else {
-      CreateAndSetOutputSurface(fallback);
+      CreateAndSetOutputSurface();
     }
   }
 
-  void CreateAndSetOutputSurface(bool fallback) {
-    layer_tree_host()->SetOutputSurface(
-        LayerTreeHostContextTest::CreateOutputSurface(fallback));
+  void CreateAndSetOutputSurface() {
+    scoped_ptr<OutputSurface> surface(
+        LayerTreeHostContextTest::CreateOutputSurface());
+    CHECK(surface);
+    layer_tree_host()->SetOutputSurface(surface.Pass());
   }
 
   void DidInitializeOutputSurface() override {
@@ -364,7 +364,7 @@ class LayerTreeHostClientNotReadyDoesNotCreateOutputSurface
     EndTest();
   }
 
-  scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback) override {
+  scoped_ptr<OutputSurface> CreateOutputSurface() override {
     EXPECT_TRUE(false);
     return nullptr;
   }
@@ -387,7 +387,7 @@ class MultipleCompositeDoesNotCreateOutputSurface
     settings->single_thread_proxy_scheduler = false;
   }
 
-  void RequestNewOutputSurface(bool fallback) override {
+  void RequestNewOutputSurface() override {
     EXPECT_GE(1, ++request_count_);
     EndTest();
   }
@@ -397,7 +397,7 @@ class MultipleCompositeDoesNotCreateOutputSurface
     layer_tree_host()->Composite(base::TimeTicks());
   }
 
-  scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback) override {
+  scoped_ptr<OutputSurface> CreateOutputSurface() override {
     EXPECT_TRUE(false);
     return nullptr;
   }
@@ -421,13 +421,12 @@ class FailedCreateDoesNotCreateExtraOutputSurface
     settings->single_thread_proxy_scheduler = false;
   }
 
-  void RequestNewOutputSurface(bool fallback) override {
+  void RequestNewOutputSurface() override {
     if (request_count_ == 0) {
       ExpectCreateToFail();
-      layer_tree_host()->SetOutputSurface(nullptr);
+      layer_tree_host()->SetOutputSurface(
+          make_scoped_ptr(new FailureOutputSurface(false)));
     }
-    EXPECT_GE(2, ++request_count_);
-    EndTest();
   }
 
   void BeginTest() override {
@@ -435,12 +434,13 @@ class FailedCreateDoesNotCreateExtraOutputSurface
     layer_tree_host()->Composite(base::TimeTicks());
   }
 
-  scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback) override {
-    EXPECT_TRUE(false);
-    return nullptr;
-  }
-
   void DidInitializeOutputSurface() override { EXPECT_TRUE(false); }
+
+  void DidFailToInitializeOutputSurface() override {
+    LayerTreeHostContextTest::DidFailToInitializeOutputSurface();
+    EXPECT_GE(2, ++request_count_);
+    EndTest();
+  }
 
   void AfterTest() override {}
 
@@ -459,19 +459,18 @@ class LayerTreeHostContextTestCommitAfterDelayedOutputSurface
     settings->single_thread_proxy_scheduler = false;
   }
 
-  void RequestNewOutputSurface(bool fallback) override {
+  void RequestNewOutputSurface() override {
     MainThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(&LayerTreeHostContextTestCommitAfterDelayedOutputSurface::
                        CreateAndSetOutputSurface,
-                   base::Unretained(this),
-                   fallback));
+                   base::Unretained(this)));
   }
 
-  void CreateAndSetOutputSurface(bool fallback) {
+  void CreateAndSetOutputSurface() {
     creating_output_ = true;
     layer_tree_host()->SetOutputSurface(
-        LayerTreeHostContextTest::CreateOutputSurface(fallback));
+        LayerTreeHostContextTest::CreateOutputSurface());
   }
 
   void BeginTest() override { layer_tree_host()->Composite(base::TimeTicks()); }
@@ -499,9 +498,9 @@ class LayerTreeHostContextTestAvoidUnnecessaryComposite
     settings->single_thread_proxy_scheduler = false;
   }
 
-  void RequestNewOutputSurface(bool fallback) override {
+  void RequestNewOutputSurface() override {
     layer_tree_host()->SetOutputSurface(
-        LayerTreeHostContextTest::CreateOutputSurface(fallback));
+        LayerTreeHostContextTest::CreateOutputSurface());
     EndTest();
   }
 
@@ -579,34 +578,15 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostContextTestLostContextSucceedsWithContent);
 
-class LayerTreeHostContextTestCreateOutputSurfaceFails
+class LayerTreeHostContextTestCreateOutputSurfaceFailsOnce
     : public LayerTreeHostContextTest {
  public:
-  // Run a test that initially fails OutputSurface creation |times_to_fail|
-  // times. If |expect_fallback_attempt| is |true|, an attempt to create a
-  // fallback/software OutputSurface is expected to occur.
-  LayerTreeHostContextTestCreateOutputSurfaceFails(int times_to_fail,
-                                                   bool expect_fallback_attempt)
-      : times_to_fail_(times_to_fail),
-        expect_fallback_attempt_(expect_fallback_attempt),
-        did_attempt_fallback_(false),
-        times_initialized_(0) {
+  LayerTreeHostContextTestCreateOutputSurfaceFailsOnce()
+      : times_to_fail_(1), times_initialized_(0) {
     times_to_fail_create_ = times_to_fail_;
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
-
-  scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(
-      bool fallback) override {
-    scoped_ptr<FakeOutputSurface> surface =
-        LayerTreeHostContextTest::CreateFakeOutputSurface(fallback);
-
-    if (surface)
-      EXPECT_EQ(times_to_fail_, times_create_failed_);
-
-    did_attempt_fallback_ = fallback;
-    return surface.Pass();
-  }
 
   void DidInitializeOutputSurface() override { times_initialized_++; }
 
@@ -615,37 +595,15 @@ class LayerTreeHostContextTestCreateOutputSurfaceFails
   void AfterTest() override {
     EXPECT_EQ(times_to_fail_, times_create_failed_);
     EXPECT_NE(0, times_initialized_);
-    EXPECT_EQ(expect_fallback_attempt_, did_attempt_fallback_);
   }
 
  private:
   int times_to_fail_;
-  bool expect_fallback_attempt_;
-  bool did_attempt_fallback_;
   int times_initialized_;
-};
-
-class LayerTreeHostContextTestCreateOutputSurfaceFailsOnce
-    : public LayerTreeHostContextTestCreateOutputSurfaceFails {
- public:
-  LayerTreeHostContextTestCreateOutputSurfaceFailsOnce()
-      : LayerTreeHostContextTestCreateOutputSurfaceFails(1, false) {}
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostContextTestCreateOutputSurfaceFailsOnce);
-
-// After 4 failures we expect an attempt to create a fallback/software
-// OutputSurface.
-class LayerTreeHostContextTestCreateOutputSurfaceFailsWithFallback
-    : public LayerTreeHostContextTestCreateOutputSurfaceFails {
- public:
-  LayerTreeHostContextTestCreateOutputSurfaceFailsWithFallback()
-      : LayerTreeHostContextTestCreateOutputSurfaceFails(4, true) {}
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostContextTestCreateOutputSurfaceFailsWithFallback);
 
 class LayerTreeHostContextTestLostContextAndEvictTextures
     : public LayerTreeHostContextTest {
@@ -1176,15 +1134,14 @@ class LayerTreeHostContextTestDontUseLostResources
     return draw_result;
   }
 
-  scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(
-      bool fallback) override {
+  scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
     // This will get called twice:
     // First when we create the initial output surface...
     if (layer_tree_host()->source_frame_number() > 0) {
       // ... and then again after we forced the context to be lost.
       lost_context_ = true;
     }
-    return LayerTreeHostContextTest::CreateFakeOutputSurface(fallback);
+    return LayerTreeHostContextTest::CreateFakeOutputSurface();
   }
 
   void DidCommitAndDrawFrame() override {

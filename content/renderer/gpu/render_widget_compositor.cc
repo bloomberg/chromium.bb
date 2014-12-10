@@ -409,9 +409,11 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
 
 RenderWidgetCompositor::RenderWidgetCompositor(RenderWidget* widget,
                                                bool threaded)
-    : threaded_(threaded),
+    : num_failed_recreate_attempts_(0),
+      threaded_(threaded),
       widget_(widget),
-      send_v8_idle_notification_after_commit_(true) {
+      send_v8_idle_notification_after_commit_(true),
+      weak_factory_(this) {
   CommandLine* cmd = CommandLine::ForCurrentProcess();
 
   if (cmd->HasSwitch(switches::kEnableV8IdleNotificationAfterCommit))
@@ -513,7 +515,7 @@ bool RenderWidgetCompositor::SendMessageToMicroBenchmark(
   return layer_tree_host_->SendMessageToMicroBenchmark(id, value.Pass());
 }
 
-void RenderWidgetCompositor::Initialize(cc::LayerTreeSettings settings) {
+void RenderWidgetCompositor::Initialize(const cc::LayerTreeSettings& settings) {
   scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy;
   scoped_refptr<base::SingleThreadTaskRunner>
       main_thread_compositor_task_runner(base::MessageLoopProxy::current());
@@ -843,16 +845,39 @@ void RenderWidgetCompositor::ApplyViewportDeltas(
       top_controls_delta);
 }
 
-void RenderWidgetCompositor::RequestNewOutputSurface(bool fallback) {
+void RenderWidgetCompositor::RequestNewOutputSurface() {
   // If the host is closing, then no more compositing is possible.  This
   // prevents shutdown races between handling the close message and
   // the CreateOutputSurface task.
   if (widget_->host_closing())
     return;
-  layer_tree_host_->SetOutputSurface(widget_->CreateOutputSurface(fallback));
+
+  bool fallback =
+      num_failed_recreate_attempts_ >= OUTPUT_SURFACE_RETRIES_BEFORE_FALLBACK;
+  scoped_ptr<cc::OutputSurface> surface(widget_->CreateOutputSurface(fallback));
+
+  if (!surface) {
+    DidFailToInitializeOutputSurface();
+    return;
+  }
+
+  layer_tree_host_->SetOutputSurface(surface.Pass());
 }
 
 void RenderWidgetCompositor::DidInitializeOutputSurface() {
+  num_failed_recreate_attempts_ = 0;
+}
+
+void RenderWidgetCompositor::DidFailToInitializeOutputSurface() {
+  ++num_failed_recreate_attempts_;
+  // Tolerate a certain number of recreation failures to work around races
+  // in the output-surface-lost machinery.
+  LOG_IF(FATAL, (num_failed_recreate_attempts_ >= MAX_OUTPUT_SURFACE_RETRIES))
+      << "Failed to create a fallback OutputSurface.";
+
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&RenderWidgetCompositor::RequestNewOutputSurface,
+                            weak_factory_.GetWeakPtr()));
 }
 
 void RenderWidgetCompositor::WillCommit() {

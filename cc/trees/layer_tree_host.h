@@ -125,11 +125,12 @@ class CC_EXPORT LayerTreeHost {
   void CommitComplete();
   void SetOutputSurface(scoped_ptr<OutputSurface> output_surface);
   void RequestNewOutputSurface();
+  void DidInitializeOutputSurface();
+  void DidFailToInitializeOutputSurface();
   virtual scoped_ptr<LayerTreeHostImpl> CreateLayerTreeHostImpl(
       LayerTreeHostImplClient* client);
   void DidLoseOutputSurface();
   bool output_surface_lost() const { return output_surface_lost_; }
-  virtual void OnCreateAndInitializeOutputSurfaceAttempted(bool success);
   void DidCommitAndDrawFrame() { client_->DidCommitAndDrawFrame(); }
   void DidCompleteSwapBuffers() { client_->DidCompleteSwapBuffers(); }
   void DeleteContentsTexturesOnImplThread(ResourceProvider* resource_provider);
@@ -402,7 +403,6 @@ class CC_EXPORT LayerTreeHost {
   scoped_ptr<RenderingStatsInstrumentation> rendering_stats_instrumentation_;
 
   bool output_surface_lost_;
-  int num_failed_recreate_attempts_;
 
   scoped_refptr<Layer> root_layer_;
   scoped_refptr<HeadsUpDisplayLayer> hud_layer_;

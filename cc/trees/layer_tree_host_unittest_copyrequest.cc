@@ -103,8 +103,7 @@ class LayerTreeHostCopyRequestTestMultipleRequests
 
   void AfterTest() override { EXPECT_EQ(4u, callbacks_.size()); }
 
-  scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(
-      bool fallback) override {
+  scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
     if (use_gl_renderer_)
       return FakeOutputSurface::Create3d();
     return FakeOutputSurface::CreateSoftware(
@@ -534,8 +533,7 @@ SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_NOIMPL_TEST_F(
 class LayerTreeHostCopyRequestTestLostOutputSurface
     : public LayerTreeHostCopyRequestTest {
  protected:
-  scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(
-      bool fallback) override {
+  scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
     if (!first_context_provider_.get()) {
       first_context_provider_ = TestContextProvider::Create();
       return FakeOutputSurface::Create3d(first_context_provider_);
@@ -663,8 +661,7 @@ SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_NOIMPL_TEST_F(
 class LayerTreeHostCopyRequestTestCountTextures
     : public LayerTreeHostCopyRequestTest {
  protected:
-  scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(
-      bool fallback) override {
+  scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
     context_provider_ = TestContextProvider::Create();
     return FakeOutputSurface::Create3d(context_provider_);
   }

@@ -21,7 +21,7 @@ FakeLayerTreeHostClient::FakeLayerTreeHostClient(RendererOptions options)
 
 FakeLayerTreeHostClient::~FakeLayerTreeHostClient() {}
 
-void FakeLayerTreeHostClient::RequestNewOutputSurface(bool fallback) {
+void FakeLayerTreeHostClient::RequestNewOutputSurface() {
   DCHECK(host_);
   scoped_ptr<OutputSurface> surface;
   if (use_software_rendering_) {
@@ -38,6 +38,10 @@ void FakeLayerTreeHostClient::RequestNewOutputSurface(bool fallback) {
     surface = FakeOutputSurface::Create3d();
   }
   host_->SetOutputSurface(surface.Pass());
+}
+
+void FakeLayerTreeHostClient::DidFailToInitializeOutputSurface() {
+  RequestNewOutputSurface();
 }
 
 }  // namespace cc

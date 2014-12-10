@@ -129,8 +129,8 @@ void SingleThreadProxy::SetOutputSurface(
   output_surface_creation_requested_ = false;
   renderer_capabilities_for_main_thread_ = RendererCapabilities();
 
-  bool success = !!output_surface;
-  if (success) {
+  bool success;
+  {
     DebugScopedSetMainThreadBlocked main_thread_blocked(this);
     DebugScopedSetImplThread impl(this);
     layer_tree_host_->DeleteContentsTexturesOnImplThread(
@@ -138,15 +138,14 @@ void SingleThreadProxy::SetOutputSurface(
     success = layer_tree_host_impl_->InitializeRenderer(output_surface.Pass());
   }
 
-  layer_tree_host_->OnCreateAndInitializeOutputSurfaceAttempted(success);
-
   if (success) {
+    layer_tree_host_->DidInitializeOutputSurface();
     if (scheduler_on_impl_thread_)
       scheduler_on_impl_thread_->DidCreateAndInitializeOutputSurface();
     else if (!inside_synchronous_composite_)
       SetNeedsCommit();
-  } else if (Proxy::MainThreadTaskRunner()) {
-    ScheduleRequestNewOutputSurface();
+  } else {
+    layer_tree_host_->DidFailToInitializeOutputSurface();
   }
 }
 

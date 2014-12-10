@@ -110,7 +110,7 @@ class TestHooks : public AnimationDelegate {
                                Animation::TargetProperty target_property,
                                int group) override {}
 
-  virtual void RequestNewOutputSurface(bool fallback) = 0;
+  virtual void RequestNewOutputSurface() = 0;
 };
 
 class BeginTask;
@@ -202,11 +202,11 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void DestroyLayerTreeHost();
 
   // By default, output surface recreation is synchronous.
-  void RequestNewOutputSurface(bool fallback) override;
+  void RequestNewOutputSurface() override;
   // Override this for pixel tests, where you need a real output surface.
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback);
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface();
   // Override this for unit tests, which should not produce pixel output.
-  virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(bool fallback);
+  virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface();
 
   TestWebGraphicsContext3D* TestContext();
 

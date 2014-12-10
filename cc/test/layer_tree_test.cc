@@ -377,8 +377,8 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
                                      top_controls_delta);
   }
 
-  void RequestNewOutputSurface(bool fallback) override {
-    test_hooks_->RequestNewOutputSurface(fallback);
+  void RequestNewOutputSurface() override {
+    test_hooks_->RequestNewOutputSurface();
   }
 
   void DidInitializeOutputSurface() override {
@@ -391,6 +391,7 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
 
   void DidFailToInitializeOutputSurface() override {
     test_hooks_->DidFailToInitializeOutputSurface();
+    RequestNewOutputSurface();
   }
 
   void WillCommit() override { test_hooks_->WillCommit(); }
@@ -785,17 +786,14 @@ void LayerTreeTest::RunTestWithImplSidePainting() {
   RunTest(true, false, true);
 }
 
-void LayerTreeTest::RequestNewOutputSurface(bool fallback) {
-  layer_tree_host_->SetOutputSurface(CreateOutputSurface(fallback));
+void LayerTreeTest::RequestNewOutputSurface() {
+  layer_tree_host_->SetOutputSurface(CreateOutputSurface());
 }
 
-scoped_ptr<OutputSurface> LayerTreeTest::CreateOutputSurface(bool fallback) {
-  scoped_ptr<FakeOutputSurface> output_surface =
-      CreateFakeOutputSurface(fallback);
-  if (output_surface) {
-    DCHECK_EQ(delegating_renderer_,
-              output_surface->capabilities().delegated_rendering);
-  }
+scoped_ptr<OutputSurface> LayerTreeTest::CreateOutputSurface() {
+  scoped_ptr<FakeOutputSurface> output_surface = CreateFakeOutputSurface();
+  DCHECK_EQ(delegating_renderer_,
+            output_surface->capabilities().delegated_rendering);
   output_surface_ = output_surface.get();
 
   if (settings_.use_external_begin_frame_source &&
@@ -806,8 +804,7 @@ scoped_ptr<OutputSurface> LayerTreeTest::CreateOutputSurface(bool fallback) {
   return output_surface.Pass();
 }
 
-scoped_ptr<FakeOutputSurface> LayerTreeTest::CreateFakeOutputSurface(
-    bool fallback) {
+scoped_ptr<FakeOutputSurface> LayerTreeTest::CreateFakeOutputSurface() {
   if (delegating_renderer_)
     return FakeOutputSurface::CreateDelegating3d();
   else

@@ -78,8 +78,9 @@ class WebLayerTreeViewImplForTesting
   void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
                            float page_scale,
                            float top_controls_delta) override;
-  void RequestNewOutputSurface(bool fallback) override;
+  void RequestNewOutputSurface() override;
   void DidInitializeOutputSurface() override {}
+  void DidFailToInitializeOutputSurface() override;
   void WillCommit() override {}
   void DidCommit() override {}
   void DidCommitAndDrawFrame() override {}

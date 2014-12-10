@@ -38,11 +38,12 @@ class LayerTreeHostClient {
                                    float page_scale,
                                    float top_controls_delta) = 0;
   // Request an OutputSurface from the client. When the client has one it should
-  // call LayerTreeHost::SetOutputSurface.  If fallback is true, it should
-  // attempt to create an OutputSurface that is guaranteed to initialize
-  // correctly.
-  virtual void RequestNewOutputSurface(bool fallback) = 0;
+  // call LayerTreeHost::SetOutputSurface.  This will result in either
+  // DidFailToInitializeOutputSurface or DidInitializeOutputSurface being
+  // called.
+  virtual void RequestNewOutputSurface() = 0;
   virtual void DidInitializeOutputSurface() = 0;
+  virtual void DidFailToInitializeOutputSurface() = 0;
   virtual void WillCommit() = 0;
   virtual void DidCommit() = 0;
   virtual void DidCommitAndDrawFrame() = 0;
@@ -57,9 +58,6 @@ class LayerTreeHostClient {
   // ahead of the compositor's command stream. Only needed if the tree contains
   // a TextureLayer that calls SetRateLimitContext(true).
   virtual void RateLimitSharedMainThreadContext() {}
-
-  // This hook is for testing.
-  virtual void DidFailToInitializeOutputSurface() {}
 
  protected:
   virtual ~LayerTreeHostClient() {}

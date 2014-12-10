@@ -114,7 +114,6 @@ LayerTreeHost::LayerTreeHost(
       source_frame_number_(0),
       rendering_stats_instrumentation_(RenderingStatsInstrumentation::Create()),
       output_surface_lost_(true),
-      num_failed_recreate_attempts_(0),
       settings_(settings),
       debug_state_(settings.initial_debug_state),
       top_controls_shrink_blink_size_(false),
@@ -215,40 +214,6 @@ void LayerTreeHost::SetLayerTreeHostClientReady() {
 
 static void LayerTreeHostOnOutputSurfaceCreatedCallback(Layer* layer) {
   layer->OnOutputSurfaceCreated();
-}
-
-void LayerTreeHost::OnCreateAndInitializeOutputSurfaceAttempted(bool success) {
-  DCHECK(output_surface_lost_);
-  TRACE_EVENT1("cc",
-               "LayerTreeHost::OnCreateAndInitializeOutputSurfaceAttempted",
-               "success",
-               success);
-
-  if (!success) {
-    // Tolerate a certain number of recreation failures to work around races
-    // in the output-surface-lost machinery.
-    ++num_failed_recreate_attempts_;
-    if (num_failed_recreate_attempts_ >= 5)
-      LOG(FATAL) << "Failed to create a fallback OutputSurface.";
-    client_->DidFailToInitializeOutputSurface();
-    return;
-  }
-
-  output_surface_lost_ = false;
-
-  if (!contents_texture_manager_ && !settings_.impl_side_painting) {
-    contents_texture_manager_ =
-        PrioritizedResourceManager::Create(proxy_.get());
-    surface_memory_placeholder_ =
-        contents_texture_manager_->CreateTexture(gfx::Size(), RGBA_8888);
-  }
-
-  if (root_layer()) {
-    LayerTreeHostCommon::CallFunctionForSubtree(
-        root_layer(), base::Bind(&LayerTreeHostOnOutputSurfaceCreatedCallback));
-  }
-
-  client_->DidInitializeOutputSurface();
 }
 
 void LayerTreeHost::DeleteContentsTexturesOnImplThread(
@@ -441,11 +406,38 @@ void LayerTreeHost::CommitComplete() {
 }
 
 void LayerTreeHost::SetOutputSurface(scoped_ptr<OutputSurface> surface) {
+  TRACE_EVENT0("cc", "LayerTreeHost::SetOutputSurface");
+  DCHECK(output_surface_lost_);
+  DCHECK(surface);
+
   proxy_->SetOutputSurface(surface.Pass());
 }
 
 void LayerTreeHost::RequestNewOutputSurface() {
-  client_->RequestNewOutputSurface(num_failed_recreate_attempts_ >= 4);
+  client_->RequestNewOutputSurface();
+}
+
+void LayerTreeHost::DidInitializeOutputSurface() {
+  output_surface_lost_ = false;
+
+  if (!contents_texture_manager_ && !settings_.impl_side_painting) {
+    contents_texture_manager_ =
+        PrioritizedResourceManager::Create(proxy_.get());
+    surface_memory_placeholder_ =
+        contents_texture_manager_->CreateTexture(gfx::Size(), RGBA_8888);
+  }
+
+  if (root_layer()) {
+    LayerTreeHostCommon::CallFunctionForSubtree(
+        root_layer(), base::Bind(&LayerTreeHostOnOutputSurfaceCreatedCallback));
+  }
+
+  client_->DidInitializeOutputSurface();
+}
+
+void LayerTreeHost::DidFailToInitializeOutputSurface() {
+  DCHECK(output_surface_lost_);
+  client_->DidFailToInitializeOutputSurface();
 }
 
 scoped_ptr<LayerTreeHostImpl> LayerTreeHost::CreateLayerTreeHostImpl(
@@ -478,7 +470,6 @@ void LayerTreeHost::DidLoseOutputSurface() {
   if (output_surface_lost_)
     return;
 
-  num_failed_recreate_attempts_ = 0;
   output_surface_lost_ = true;
   SetNeedsCommit();
 }
