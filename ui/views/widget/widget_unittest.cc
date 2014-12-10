@@ -1051,8 +1051,18 @@ TEST_F(WidgetTest, GetRestoredBounds) {
 }
 #endif
 
+// ExitFullscreenRestoreState doesn't use DesktopAura widgets. On Mac, there are
+// currently only Desktop widgets and fullscreen changes need to occur in an
+// interactive test to avoid flakes. Maximize on mac is also (intentionally) a
+// no-op.
+#if defined(OS_MACOSX) && !defined(USE_AURA)
+#define MAYBE_ExitFullscreenRestoreState DISABLED_ExitFullscreenRestoreState
+#else
+#define MAYBE_ExitFullscreenRestoreState ExitFullscreenRestoreState
+#endif
+
 // Test that window state is not changed after getting out of full screen.
-TEST_F(WidgetTest, ExitFullscreenRestoreState) {
+TEST_F(WidgetTest, MAYBE_ExitFullscreenRestoreState) {
   Widget* toplevel = CreateTopLevelPlatformWidget();
 
   toplevel->Show();
@@ -1069,9 +1079,6 @@ TEST_F(WidgetTest, ExitFullscreenRestoreState) {
   // And it should still be in normal state after getting out of full screen.
   EXPECT_EQ(ui::SHOW_STATE_NORMAL, GetWidgetShowState(toplevel));
 
-// On Mac, a "maximized" state is indistinguishable from a window that just
-// fills the screen, so nothing to check there.
-#if !defined(OS_MACOSX)
   // Now, make it maximized.
   toplevel->Maximize();
   EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, GetWidgetShowState(toplevel));
@@ -1083,7 +1090,6 @@ TEST_F(WidgetTest, ExitFullscreenRestoreState) {
 
   // And it stays maximized after getting out of full screen.
   EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, GetWidgetShowState(toplevel));
-#endif
 
   // Clean up.
   toplevel->Close();

@@ -132,7 +132,12 @@ class PaintCountView : public View {
 // Test minimized states triggered externally, implied visibility and restored
 // bounds whilst minimized.
 TEST_F(NativeWidgetMacTest, MiniaturizeExternally) {
-  Widget* widget = CreateTopLevelPlatformWidget();
+  Widget* widget = new Widget;
+  Widget::InitParams init_params(Widget::InitParams::TYPE_WINDOW);
+  // Don't add a layer, so that calls to paint can be observed synchronously.
+  init_params.layer_type = aura::WINDOW_LAYER_NONE;
+  widget->Init(init_params);
+
   PaintCountView* view = new PaintCountView();
   widget->GetContentsView()->AddChildView(view);
   NSWindow* ns_window = widget->GetNativeWindow();

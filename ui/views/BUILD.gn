@@ -105,6 +105,10 @@ component("views") {
       }
     }
   }
+
+  if (is_mac) {
+    deps += [ "//ui/accelerated_widget_mac" ]
+  }
 }
 
 static_library("test_support") {

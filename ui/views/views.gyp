@@ -697,6 +697,11 @@
             }],
           ],
         }],
+        ['OS=="mac"', {
+          'dependencies': [
+            '../accelerated_widget_mac/accelerated_widget_mac.gyp:accelerated_widget_mac',
+          ],
+        }],
       ],
     }, # target_name: views
     {

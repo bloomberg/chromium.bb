@@ -110,17 +110,24 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
   virtual void SetUp() override {
     ui::CocoaTest::SetUp();
 
-    Widget::InitParams params;
-    params.native_widget = native_widget_mac_;
+    init_params_.native_widget = native_widget_mac_;
+
     // To control the lifetime without an actual window that must be closed,
     // tests in this file need to use WIDGET_OWNS_NATIVE_WIDGET.
-    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    native_widget_mac_->GetWidget()->Init(params);
+    init_params_.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+
+    // Opacity defaults to "infer" which is usually updated by ViewsDelegate.
+    init_params_.opacity = Widget::InitParams::OPAQUE_WINDOW;
+
+    native_widget_mac_->GetWidget()->Init(init_params_);
   }
 
  protected:
   scoped_ptr<Widget> widget_;
   MockNativeWidgetMac* native_widget_mac_;  // Weak. Owned by |widget_|.
+
+  // Make the InitParams available to tests to cover initialization codepaths.
+  Widget::InitParams init_params_;
 };
 
 class BridgedNativeWidgetTest : public BridgedNativeWidgetTestBase {
@@ -178,7 +185,7 @@ void BridgedNativeWidgetTest::SetUp() {
   // window.
   [window orderOut:nil];
   EXPECT_FALSE([window delegate]);
-  bridge()->Init(window, Widget::InitParams());
+  bridge()->Init(window, init_params_);
 
   // The delegate should exist before setting the root view.
   EXPECT_TRUE([window delegate]);
@@ -440,7 +447,7 @@ TEST_F(BridgedNativeWidgetSimulateFullscreenTest, FailToEnterAndExit) {
                       backing:NSBackingStoreBuffered
                         defer:YES]);
   [owned_window setReleasedWhenClosed:NO];  // Owned by scoped_nsobject.
-  bridge()->Init(owned_window, Widget::InitParams());  // Transfers ownership.
+  bridge()->Init(owned_window, init_params_);  // Transfers ownership.
 
   BridgedNativeWidgetTestFullScreenWindow* window =
       base::mac::ObjCCastStrict<BridgedNativeWidgetTestFullScreenWindow>(

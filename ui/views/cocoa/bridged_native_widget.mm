@@ -7,17 +7,33 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #import "base/mac/sdk_forward_declarations.h"
+#include "base/thread_task_runner_handle.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/base/ui_base_switches_util.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/geometry/dip_util.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
+#include "ui/gfx/screen.h"
 #import "ui/views/cocoa/bridged_content_view.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/ime/input_method_bridge.h"
 #include "ui/views/ime/null_input_method.h"
 #include "ui/views/view.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
+
+namespace {
+
+float GetDeviceScaleFactorFromView(NSView* view) {
+  gfx::Display display =
+      gfx::Screen::GetScreenFor(view)->GetDisplayNearestWindow(view);
+  DCHECK(display.is_valid());
+  return display.device_scale_factor();
+}
+
+}  // namespace
 
 namespace views {
 
@@ -39,6 +55,7 @@ BridgedNativeWidget::~BridgedNativeWidget() {
   DCHECK(child_windows_.empty());
   SetFocusManager(NULL);
   SetRootView(NULL);
+  DestroyCompositor();
   if ([window_ delegate]) {
     // If the delegate is still set, it means OnWindowWillClose has not been
     // called and the window is still open. Calling -[NSWindow close] will
@@ -111,6 +128,10 @@ void BridgedNativeWidget::SetBounds(const gfx::Rect& new_bounds) {
 void BridgedNativeWidget::SetRootView(views::View* view) {
   if (view == [bridged_view_ hostedView])
     return;
+
+  // If this is ever false, the compositor will need to be properly torn down
+  // and replaced, pointing at the new view.
+  DCHECK(!view || !compositor_widget_);
 
   [bridged_view_ clearView];
   bridged_view_.reset();
@@ -250,9 +271,10 @@ void BridgedNativeWidget::ToggleDesiredFullscreenState() {
 }
 
 void BridgedNativeWidget::OnSizeChanged() {
-  gfx::Size new_size = native_widget_mac_->GetClientAreaBoundsInScreen().size();
+  gfx::Size new_size = GetClientAreaSize();
   native_widget_mac_->GetWidget()->OnNativeWidgetSizeChanged(new_size);
-  // TODO(tapted): If there's a layer, resize it here.
+  if (layer())
+    UpdateLayerProperties();
 }
 
 void BridgedNativeWidget::OnVisibilityChanged() {
@@ -272,6 +294,18 @@ void BridgedNativeWidget::OnVisibilityChangedTo(bool new_visibility) {
   if (window_visible_)
     wants_to_be_visible_ = true;
 
+  // TODO(tapted): Investigate whether we want this for Mac. This is what Aura
+  // does, and it is what tests expect. However, because layer drawing is
+  // asynchronous (and things like deminiaturize in AppKit are not), it can
+  // result in a CALayer appearing on screen before it has been redrawn in the
+  // GPU process. This is a general problem. In content, a helper class,
+  // RenderWidgetResizeHelper, blocks the UI thread in -[NSView setFrameSize:]
+  // and RenderWidgetHostView::Show() until a frame is ready.
+  if (layer()) {
+    layer()->SetVisible(window_visible_);
+    layer()->SchedulePaint(gfx::Rect(GetClientAreaSize()));
+  }
+
   native_widget_mac_->GetWidget()->OnNativeWidgetVisibilityChanged(
       window_visible_);
 
@@ -280,6 +314,10 @@ void BridgedNativeWidget::OnVisibilityChangedTo(bool new_visibility) {
   // prevents Cocoa drawing just *after* a minimize, resulting in a blank window
   // represented in the deminiaturize animation.
   [window_ setAutodisplay:window_visible_];
+}
+
+void BridgedNativeWidget::OnBackingPropertiesChanged() {
+  UpdateLayerProperties();
 }
 
 InputMethod* BridgedNativeWidget::CreateInputMethod() {
@@ -303,6 +341,33 @@ gfx::Rect BridgedNativeWidget::GetRestoredBounds() const {
     return bounds_before_fullscreen_;
 
   return gfx::ScreenRectFromNSRect([window_ frame]);
+}
+
+void BridgedNativeWidget::CreateLayer(ui::LayerType layer_type,
+                                      bool translucent) {
+  DCHECK(bridged_view_);
+  DCHECK(!layer());
+
+  CreateCompositor();
+  DCHECK(compositor_);
+
+  SetLayer(new ui::Layer(layer_type));
+  // Note, except for controls, this will set the layer to be hidden, since it
+  // is only called during Init().
+  layer()->SetVisible(window_visible_);
+  layer()->set_delegate(this);
+
+  InitCompositor();
+
+  // Transparent window support.
+  layer()->GetCompositor()->SetHostHasTransparentBackground(translucent);
+  layer()->SetFillsBoundsOpaquely(!translucent);
+  if (translucent) {
+    [window_ setOpaque:NO];
+    [window_ setBackgroundColor:[NSColor clearColor]];
+  }
+
+  UpdateLayerProperties();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -329,6 +394,48 @@ void BridgedNativeWidget::OnDidChangeFocus(View* focused_before,
   ui::TextInputClient* input_client =
       focused_now ? focused_now->GetTextInputClient() : NULL;
   [bridged_view_ setTextInputClient:input_client];
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// BridgedNativeWidget, LayerDelegate:
+
+void BridgedNativeWidget::OnPaintLayer(gfx::Canvas* canvas) {
+  DCHECK(window_visible_);
+  native_widget_mac_->GetWidget()->OnNativeWidgetPaint(canvas);
+}
+
+void BridgedNativeWidget::OnDelegatedFrameDamage(
+    const gfx::Rect& damage_rect_in_dip) {
+  NOTIMPLEMENTED();
+}
+
+void BridgedNativeWidget::OnDeviceScaleFactorChanged(
+    float device_scale_factor) {
+  NOTIMPLEMENTED();
+}
+
+base::Closure BridgedNativeWidget::PrepareForLayerBoundsChange() {
+  NOTIMPLEMENTED();
+  return base::Closure();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// BridgedNativeWidget, AcceleratedWidgetMac:
+
+NSView* BridgedNativeWidget::AcceleratedWidgetGetNSView() const {
+  return compositor_superview_;
+}
+
+bool BridgedNativeWidget::AcceleratedWidgetShouldIgnoreBackpressure() const {
+  return true;
+}
+
+void BridgedNativeWidget::AcceleratedWidgetSwapCompleted(
+    const std::vector<ui::LatencyInfo>& latency_info) {
+}
+
+void BridgedNativeWidget::AcceleratedWidgetHitError() {
+  compositor_->ScheduleFullRedraw();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -382,6 +489,92 @@ void BridgedNativeWidget::NotifyVisibilityChangeDown() {
       CHECK_EQ(child_count, child_windows_.size());
     }
   }
+}
+
+gfx::Size BridgedNativeWidget::GetClientAreaSize() const {
+  NSRect content_rect = [window_ contentRectForFrameRect:[window_ frame]];
+  return gfx::Size(NSWidth(content_rect), NSHeight(content_rect));
+}
+
+void BridgedNativeWidget::CreateCompositor() {
+  DCHECK(!compositor_);
+  DCHECK(!compositor_widget_);
+  DCHECK(ViewsDelegate::views_delegate);
+
+  ui::ContextFactory* context_factory =
+      ViewsDelegate::views_delegate->GetContextFactory();
+  DCHECK(context_factory);
+
+  AddCompositorSuperview();
+
+  // TODO(tapted): Get this value from GpuDataManagerImpl via ViewsDelegate.
+  bool needs_gl_finish_workaround = false;
+
+  compositor_widget_.reset(
+      new ui::AcceleratedWidgetMac(needs_gl_finish_workaround));
+  compositor_.reset(new ui::Compositor(compositor_widget_->accelerated_widget(),
+                                       context_factory,
+                                       base::ThreadTaskRunnerHandle::Get()));
+  compositor_widget_->SetNSView(this);
+}
+
+void BridgedNativeWidget::InitCompositor() {
+  DCHECK(layer());
+  float scale_factor = GetDeviceScaleFactorFromView(compositor_superview_);
+  gfx::Size size_in_dip = GetClientAreaSize();
+  compositor_->SetScaleAndSize(scale_factor,
+                               ConvertSizeToPixel(scale_factor, size_in_dip));
+  compositor_->SetRootLayer(layer());
+}
+
+void BridgedNativeWidget::DestroyCompositor() {
+  if (layer())
+    layer()->set_delegate(nullptr);
+  DestroyLayer();
+
+  if (!compositor_widget_) {
+    DCHECK(!compositor_);
+    return;
+  }
+  compositor_widget_->ResetNSView();
+  compositor_.reset();
+  compositor_widget_.reset();
+}
+
+void BridgedNativeWidget::AddCompositorSuperview() {
+  DCHECK(!compositor_superview_);
+  compositor_superview_.reset(
+      [[NSView alloc] initWithFrame:[bridged_view_ bounds]]);
+
+  // Size and resize automatically with |bridged_view_|.
+  [compositor_superview_
+      setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+  [compositor_superview_
+      setWantsBestResolutionOpenGLSurface:YES];  // For HiDPI.
+
+  base::scoped_nsobject<CALayer> background_layer([[CALayer alloc] init]);
+  [background_layer
+      setAutoresizingMask:kCALayerWidthSizable | kCALayerHeightSizable];
+
+  // Set the layer first to create a layer-hosting view (not layer-backed).
+  [compositor_superview_ setLayer:background_layer];
+  [compositor_superview_ setWantsLayer:YES];
+
+  // The UI compositor should always be the first subview, to ensure webviews
+  // are drawn on top of it.
+  DCHECK_EQ(0u, [[bridged_view_ subviews] count]);
+  [bridged_view_ addSubview:compositor_superview_];
+}
+
+void BridgedNativeWidget::UpdateLayerProperties() {
+  DCHECK(layer());
+  DCHECK(compositor_superview_);
+  gfx::Size size_in_dip = GetClientAreaSize();
+  layer()->SetBounds(gfx::Rect(size_in_dip));
+
+  float scale_factor = GetDeviceScaleFactorFromView(compositor_superview_);
+  compositor_->SetScaleAndSize(scale_factor,
+                               ConvertSizeToPixel(scale_factor, size_in_dip));
 }
 
 }  // namespace views

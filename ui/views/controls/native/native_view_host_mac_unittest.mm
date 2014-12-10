@@ -19,6 +19,15 @@ class NativeViewHostMacTest : public test::NativeViewHostTestBase {
  public:
   NativeViewHostMacTest() {}
 
+  // testing::Test:
+  void TearDown() override {
+    // On Aura, the compositor is destroyed when the WindowTreeHost provided by
+    // AuraTestHelper is destroyed. On Mac, the Widget is the host, so it must
+    // be closed before the ContextFactory is torn down by ViewsTestBase.
+    DestroyTopLevel();
+    NativeViewHostTestBase::TearDown();
+  }
+
   NativeViewHostMac* native_host() {
     return static_cast<NativeViewHostMac*>(GetNativeWrapper());
   }
@@ -84,6 +93,8 @@ TEST_F(NativeViewHostMacTest, Attach) {
   int bottom = toplevel()->GetClientAreaBoundsInScreen().height() - 10 - 60;
   EXPECT_TRUE(NSEqualRects(NSMakeRect(10, bottom, 80, 60),
                            [native_view_ frame]));
+
+  DestroyHost();
 }
 
 // Ensure the native view is hidden along with its host, and when detaching, or
@@ -123,6 +134,8 @@ TEST_F(NativeViewHostMacTest, NativeViewHidden) {
   toplevel()->GetRootView()->AddChildView(host());
   EXPECT_FALSE([native_view_ isHidden]);  // And visible when added.
   EXPECT_TRUE([native_view_ superview]);
+
+  DestroyHost();
 }
 
 }  // namespace views

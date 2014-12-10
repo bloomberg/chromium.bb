@@ -79,6 +79,10 @@
   parent_->OnVisibilityChanged();
 }
 
+- (void)windowDidChangeBackingProperties:(NSNotification*)notification {
+  parent_->OnBackingPropertiesChanged();
+}
+
 - (void)windowWillEnterFullScreen:(NSNotification*)notification {
   parent_->OnFullscreenTransitionStart(true);
 }

@@ -10,6 +10,8 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/compositor/layer_owner.h"
+#import "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #import "ui/views/focus/focus_manager.h"
 #include "ui/views/ime/input_method_delegate.h"
 #include "ui/views/views_export.h"
@@ -31,8 +33,11 @@ class View;
 // A bridge to an NSWindow managed by an instance of NativeWidgetMac or
 // DesktopNativeWidgetMac. Serves as a helper class to bridge requests from the
 // NativeWidgetMac to the Cocoa window. Behaves a bit like an aura::Window.
-class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate,
-                                         public FocusChangeListener {
+class VIEWS_EXPORT BridgedNativeWidget : public ui::LayerDelegate,
+                                         public ui::LayerOwner,
+                                         public internal::InputMethodDelegate,
+                                         public FocusChangeListener,
+                                         public ui::AcceleratedWidgetMacNSView {
  public:
   // Ways of changing the visibility of the bridged NSWindow.
   enum WindowVisibilityState {
@@ -93,6 +98,9 @@ class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate,
   // but hasn't updated the value of -[NSWindow isVisible] yet.
   void OnVisibilityChangedTo(bool new_visibility);
 
+  // Called by the NSWindowDelegate on a scale factor or color space change.
+  void OnBackingPropertiesChanged();
+
   // See widget.h for documentation.
   InputMethod* CreateInputMethod();
   ui::InputMethod* GetHostInputMethod();
@@ -100,6 +108,9 @@ class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate,
   // The restored bounds will be derived from the current NSWindow frame unless
   // fullscreen or transitioning between fullscreen states.
   gfx::Rect GetRestoredBounds() const;
+
+  // Creates a ui::Compositor which becomes responsible for drawing the window.
+  void CreateLayer(ui::LayerType layer_type, bool translucent);
 
   NativeWidgetMac* native_widget_mac() { return native_widget_mac_; }
   BridgedContentView* ns_view() { return bridged_view_; }
@@ -129,11 +140,42 @@ class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate,
   // Notify descendants of a visibility change.
   void NotifyVisibilityChangeDown();
 
+  // Essentially NativeWidgetMac::GetClientAreaBoundsInScreen().size(), but no
+  // coordinate transformations are required from AppKit coordinates.
+  gfx::Size GetClientAreaSize() const;
+
+  // Creates an owned ui::Compositor. For consistency, these functions reflect
+  // those in aura::WindowTreeHost.
+  void CreateCompositor();
+  void InitCompositor();
+  void DestroyCompositor();
+
+  // Installs the NSView for hosting the composited layer. It is later provided
+  // to |compositor_widget_| via AcceleratedWidgetGetNSView().
+  void AddCompositorSuperview();
+
+  // Size the layer to match the client area bounds, taking into account display
+  // scale factor.
+  void UpdateLayerProperties();
+
   // Overridden from FocusChangeListener:
   void OnWillChangeFocus(View* focused_before,
                          View* focused_now) override;
   void OnDidChangeFocus(View* focused_before,
                         View* focused_now) override;
+
+  // Overridden from ui::LayerDelegate:
+  void OnPaintLayer(gfx::Canvas* canvas) override;
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override;
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+  base::Closure PrepareForLayerBoundsChange() override;
+
+  // Overridden from ui::AcceleratedWidgetMac:
+  NSView* AcceleratedWidgetGetNSView() const override;
+  bool AcceleratedWidgetShouldIgnoreBackpressure() const override;
+  void AcceleratedWidgetSwapCompleted(
+      const std::vector<ui::LatencyInfo>& latency_info) override;
+  void AcceleratedWidgetHitError() override;
 
   views::NativeWidgetMac* native_widget_mac_;  // Weak. Owns this.
   base::scoped_nsobject<NSWindow> window_;
@@ -144,6 +186,10 @@ class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate,
 
   BridgedNativeWidget* parent_;  // Weak. If non-null, owns this.
   std::vector<BridgedNativeWidget*> child_windows_;
+
+  base::scoped_nsobject<NSView> compositor_superview_;
+  scoped_ptr<ui::AcceleratedWidgetMac> compositor_widget_;
+  scoped_ptr<ui::Compositor> compositor_;
 
   // Tracks the bounds when the window last started entering fullscreen. Used to
   // provide an answer for GetRestoredBounds(), but not ever sent to Cocoa (it

@@ -94,6 +94,10 @@
   if (!hostedView_)
     return;
 
+  // If there's a layer, painting occurs in BridgedNativeWidget::OnPaintLayer().
+  if (hostedView_->GetWidget()->GetLayer())
+    return;
+
   gfx::CanvasSkiaPaint canvas(dirtyRect, false /* opaque */);
   hostedView_->GetWidget()->OnNativeWidgetPaint(&canvas);
 }
