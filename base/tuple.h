@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// A Tuple is a generic templatized container, similar in concept to std::pair.
-// There are classes Tuple0 to Tuple6, cooresponding to the number of elements
-// it contains.  The convenient MakeTuple() function takes 0 to 6 arguments,
-// and will construct and return the appropriate Tuple object.  The functions
-// DispatchToMethod and DispatchToFunction take a function pointer or instance
-// and method pointer, and unpack a tuple into arguments to the call.
+// A Tuple is a generic templatized container, similar in concept to std::pair
+// and std::tuple.  The convenient MakeTuple() function takes any number of
+// arguments and will construct and return the appropriate Tuple object.  The
+// functions DispatchToMethod and DispatchToFunction take a function pointer or
+// instance and method pointer, and unpack a tuple into arguments to the call.
 //
 // Tuple elements are copied by value, and stored in the tuple.  See the unit
 // tests for more details of how/when the values are copied.
 //
 // Example usage:
 //   // These two methods of creating a Tuple are identical.
-//   Tuple2<int, const char*> tuple_a(1, "wee");
-//   Tuple2<int, const char*> tuple_b = MakeTuple(1, "wee");
+//   Tuple<int, const char*> tuple_a(1, "wee");
+//   Tuple<int, const char*> tuple_b = MakeTuple(1, "wee");
 //
 //   void SomeFunc(int a, const char* b) { }
 //   DispatchToFunction(&SomeFunc, tuple_a);  // SomeFunc(1, "wee")
@@ -47,9 +46,8 @@ struct MakeIndexSequenceImpl<0, Ns...> {
 };
 
 template <size_t N, size_t... Ns>
-struct MakeIndexSequenceImpl<N, Ns...> {
-  using Type = typename MakeIndexSequenceImpl<N - 1, N - 1, Ns...>::Type;
-};
+struct MakeIndexSequenceImpl<N, Ns...>
+    : MakeIndexSequenceImpl<N - 1, N - 1, Ns...> {};
 
 template <size_t N>
 using MakeIndexSequence = typename MakeIndexSequenceImpl<N>::Type;
@@ -83,217 +81,77 @@ struct TupleTraits<P&> {
 // function objects that need to take an arbitrary number of parameters; see
 // RunnableMethod and IPC::MessageWithTuple.
 //
-// Tuple0 is supplied to act as a 'void' type.  It can be used, for example,
+// Tuple<> is supplied to act as a 'void' type.  It can be used, for example,
 // when dispatching to a function that accepts no arguments (see the
 // Dispatchers below).
-// Tuple1<A> is rarely useful.  One such use is when A is non-const ref that you
+// Tuple<A> is rarely useful.  One such use is when A is non-const ref that you
 // want filled by the dispatchee, and the tuple is merely a container for that
 // output (a "tier").  See MakeRefTuple and its usages.
 
+template <typename IxSeq, typename... Ts>
+struct TupleBaseImpl;
 template <typename... Ts>
-struct Tuple;
+using TupleBase = TupleBaseImpl<MakeIndexSequence<sizeof...(Ts)>, Ts...>;
+template <size_t N, typename T>
+struct TupleLeaf;
 
+template <typename... Ts>
+struct Tuple : TupleBase<Ts...> {
+  Tuple() : TupleBase<Ts...>() {}
+  explicit Tuple(typename TupleTraits<Ts>::ParamType... args)
+      : TupleBase<Ts...>(args...) {}
+};
+
+// Avoids ambiguity between Tuple's two constructors.
 template <>
 struct Tuple<> {};
 
-template <typename A>
-struct Tuple<A> {
- public:
-  typedef A TypeA;
-
-  Tuple() {}
-  explicit Tuple(typename TupleTraits<A>::ParamType a) : a(a) {}
-
-  A a;
+template <size_t... Ns, typename... Ts>
+struct TupleBaseImpl<IndexSequence<Ns...>, Ts...> : TupleLeaf<Ns, Ts>... {
+  TupleBaseImpl() : TupleLeaf<Ns, Ts>()... {}
+  explicit TupleBaseImpl(typename TupleTraits<Ts>::ParamType... args)
+      : TupleLeaf<Ns, Ts>(args)... {}
 };
 
-template <typename A, typename B>
-struct Tuple<A, B> {
- public:
-  typedef A TypeA;
-  typedef B TypeB;
+template <size_t N, typename T>
+struct TupleLeaf {
+  TupleLeaf() : x() {}
+  explicit TupleLeaf(typename TupleTraits<T>::ParamType x) : x(x) {}
 
-  Tuple() {}
-  Tuple(typename TupleTraits<A>::ParamType a,
-        typename TupleTraits<B>::ParamType b)
-      : a(a), b(b) {}
+  T& get() { return x; }
+  const T& get() const { return x; }
 
-  A a;
-  B b;
+  T x;
 };
 
-template <typename A, typename B, typename C>
-struct Tuple<A, B, C> {
- public:
-  typedef A TypeA;
-  typedef B TypeB;
-  typedef C TypeC;
+// For legacy compatibility, we name the first 8 tuple elements "a", "b", ...
+// TODO(mdempsky): Update users to use get<N>() (crbug.com/440675).
 
-  Tuple() {}
-  Tuple(typename TupleTraits<A>::ParamType a,
-        typename TupleTraits<B>::ParamType b,
-        typename TupleTraits<C>::ParamType c)
-      : a(a), b(b), c(c) {}
+#define DEFINE_TUPLE_LEAF(N, x)                                        \
+  template <typename T>                                                \
+  struct TupleLeaf<N, T> {                                             \
+    TupleLeaf() : x() {}                                               \
+    explicit TupleLeaf(typename TupleTraits<T>::ParamType x) : x(x) {} \
+                                                                       \
+    T& get() { return x; }                                             \
+    const T& get() const { return x; }                                 \
+                                                                       \
+    T x;                                                               \
+  }
 
-  A a;
-  B b;
-  C c;
-};
+DEFINE_TUPLE_LEAF(0, a);
+DEFINE_TUPLE_LEAF(1, b);
+DEFINE_TUPLE_LEAF(2, c);
+DEFINE_TUPLE_LEAF(3, d);
+DEFINE_TUPLE_LEAF(4, e);
+DEFINE_TUPLE_LEAF(5, f);
+DEFINE_TUPLE_LEAF(6, g);
+DEFINE_TUPLE_LEAF(7, h);
 
-template <typename A, typename B, typename C, typename D>
-struct Tuple<A, B, C, D> {
- public:
-  typedef A TypeA;
-  typedef B TypeB;
-  typedef C TypeC;
-  typedef D TypeD;
-
-  Tuple() {}
-  Tuple(typename TupleTraits<A>::ParamType a,
-        typename TupleTraits<B>::ParamType b,
-        typename TupleTraits<C>::ParamType c,
-        typename TupleTraits<D>::ParamType d)
-      : a(a), b(b), c(c), d(d) {}
-
-  A a;
-  B b;
-  C c;
-  D d;
-};
-
-template <typename A, typename B, typename C, typename D, typename E>
-struct Tuple<A, B, C, D, E> {
- public:
-  typedef A TypeA;
-  typedef B TypeB;
-  typedef C TypeC;
-  typedef D TypeD;
-  typedef E TypeE;
-
-  Tuple() {}
-  Tuple(typename TupleTraits<A>::ParamType a,
-        typename TupleTraits<B>::ParamType b,
-        typename TupleTraits<C>::ParamType c,
-        typename TupleTraits<D>::ParamType d,
-        typename TupleTraits<E>::ParamType e)
-      : a(a), b(b), c(c), d(d), e(e) {}
-
-  A a;
-  B b;
-  C c;
-  D d;
-  E e;
-};
-
-template <typename A,
-          typename B,
-          typename C,
-          typename D,
-          typename E,
-          typename F>
-struct Tuple<A, B, C, D, E, F> {
- public:
-  typedef A TypeA;
-  typedef B TypeB;
-  typedef C TypeC;
-  typedef D TypeD;
-  typedef E TypeE;
-  typedef F TypeF;
-
-  Tuple() {}
-  Tuple(typename TupleTraits<A>::ParamType a,
-        typename TupleTraits<B>::ParamType b,
-        typename TupleTraits<C>::ParamType c,
-        typename TupleTraits<D>::ParamType d,
-        typename TupleTraits<E>::ParamType e,
-        typename TupleTraits<F>::ParamType f)
-      : a(a), b(b), c(c), d(d), e(e), f(f) {}
-
-  A a;
-  B b;
-  C c;
-  D d;
-  E e;
-  F f;
-};
-
-template <typename A,
-          typename B,
-          typename C,
-          typename D,
-          typename E,
-          typename F,
-          typename G>
-struct Tuple<A, B, C, D, E, F, G> {
- public:
-  typedef A TypeA;
-  typedef B TypeB;
-  typedef C TypeC;
-  typedef D TypeD;
-  typedef E TypeE;
-  typedef F TypeF;
-  typedef G TypeG;
-
-  Tuple() {}
-  Tuple(typename TupleTraits<A>::ParamType a,
-        typename TupleTraits<B>::ParamType b,
-        typename TupleTraits<C>::ParamType c,
-        typename TupleTraits<D>::ParamType d,
-        typename TupleTraits<E>::ParamType e,
-        typename TupleTraits<F>::ParamType f,
-        typename TupleTraits<G>::ParamType g)
-      : a(a), b(b), c(c), d(d), e(e), f(f), g(g) {}
-
-  A a;
-  B b;
-  C c;
-  D d;
-  E e;
-  F f;
-  G g;
-};
-
-template <typename A,
-          typename B,
-          typename C,
-          typename D,
-          typename E,
-          typename F,
-          typename G,
-          typename H>
-struct Tuple<A, B, C, D, E, F, G, H> {
- public:
-  typedef A TypeA;
-  typedef B TypeB;
-  typedef C TypeC;
-  typedef D TypeD;
-  typedef E TypeE;
-  typedef F TypeF;
-  typedef G TypeG;
-  typedef H TypeH;
-
-  Tuple() {}
-  Tuple(typename TupleTraits<A>::ParamType a,
-        typename TupleTraits<B>::ParamType b,
-        typename TupleTraits<C>::ParamType c,
-        typename TupleTraits<D>::ParamType d,
-        typename TupleTraits<E>::ParamType e,
-        typename TupleTraits<F>::ParamType f,
-        typename TupleTraits<G>::ParamType g,
-        typename TupleTraits<H>::ParamType h)
-      : a(a), b(b), c(c), d(d), e(e), f(f), g(g), h(h) {}
-
-  A a;
-  B b;
-  C c;
-  D d;
-  E e;
-  F f;
-  G g;
-  H h;
-};
+#undef DEFINE_TUPLE_LEAF
 
 // Deprecated compat aliases
+// TODO(mdempsky): Update users to just use Tuple instead (crbug.com/440675).
 
 using Tuple0 = Tuple<>;
 template <typename A>
@@ -331,91 +189,23 @@ template <typename A,
           typename H>
 using Tuple8 = Tuple<A, B, C, D, E, F, G, H>;
 
-// Tuple element --------------------------------------------------------------
-
-template <size_t N, typename T>
-struct TupleElement;
-
-template <typename T, typename... Ts>
-struct TupleElement<0, Tuple<T, Ts...>> {
-  using Type = T;
-};
-
-template <size_t N, typename T, typename... Ts>
-struct TupleElement<N, Tuple<T, Ts...>> {
-  using Type = typename TupleElement<N - 1, Tuple<Ts...>>::Type;
-};
-
 // Tuple getters --------------------------------------------------------------
+//
+// Allows accessing an arbitrary tuple element by index.
+//
+// Example usage:
+//   Tuple<int, double> t2;
+//   get<0>(t2) = 42;
+//   get<1>(t2) = 3.14;
 
-template <size_t, typename T>
-struct TupleGetter;
-
-template <typename... Ts>
-struct TupleGetter<0, Tuple<Ts...>> {
-  using Elem = typename TupleElement<0, Tuple<Ts...>>::Type;
-  static Elem& Get(Tuple<Ts...>& t) { return t.a; }
-  static const Elem& Get(const Tuple<Ts...>& t) { return t.a; }
-};
-
-template <typename... Ts>
-struct TupleGetter<1, Tuple<Ts...>> {
-  using Elem = typename TupleElement<1, Tuple<Ts...>>::Type;
-  static Elem& Get(Tuple<Ts...>& t) { return t.b; }
-  static const Elem& Get(const Tuple<Ts...>& t) { return t.b; }
-};
-
-template <typename... Ts>
-struct TupleGetter<2, Tuple<Ts...>> {
-  using Elem = typename TupleElement<2, Tuple<Ts...>>::Type;
-  static Elem& Get(Tuple<Ts...>& t) { return t.c; }
-  static const Elem& Get(const Tuple<Ts...>& t) { return t.c; }
-};
-
-template <typename... Ts>
-struct TupleGetter<3, Tuple<Ts...>> {
-  using Elem = typename TupleElement<3, Tuple<Ts...>>::Type;
-  static Elem& Get(Tuple<Ts...>& t) { return t.d; }
-  static const Elem& Get(const Tuple<Ts...>& t) { return t.d; }
-};
-
-template <typename... Ts>
-struct TupleGetter<4, Tuple<Ts...>> {
-  using Elem = typename TupleElement<4, Tuple<Ts...>>::Type;
-  static Elem& Get(Tuple<Ts...>& t) { return t.e; }
-  static const Elem& Get(const Tuple<Ts...>& t) { return t.e; }
-};
-
-template <typename... Ts>
-struct TupleGetter<5, Tuple<Ts...>> {
-  using Elem = typename TupleElement<5, Tuple<Ts...>>::Type;
-  static Elem& Get(Tuple<Ts...>& t) { return t.f; }
-  static const Elem& Get(const Tuple<Ts...>& t) { return t.f; }
-};
-
-template <typename... Ts>
-struct TupleGetter<6, Tuple<Ts...>> {
-  using Elem = typename TupleElement<6, Tuple<Ts...>>::Type;
-  static Elem& Get(Tuple<Ts...>& t) { return t.g; }
-  static const Elem& Get(const Tuple<Ts...>& t) { return t.g; }
-};
-
-template <typename... Ts>
-struct TupleGetter<7, Tuple<Ts...>> {
-  using Elem = typename TupleElement<7, Tuple<Ts...>>::Type;
-  static Elem& Get(Tuple<Ts...>& t) { return t.h; }
-  static const Elem& Get(const Tuple<Ts...>& t) { return t.h; }
-};
-
-template <size_t I, typename... Ts>
-typename TupleElement<I, Tuple<Ts...>>::Type& get(Tuple<Ts...>& tuple) {
-  return TupleGetter<I, Tuple<Ts...>>::Get(tuple);
+template <size_t I, typename T>
+T& get(TupleLeaf<I, T>& leaf) {
+  return leaf.get();
 }
 
-template <size_t I, typename... Ts>
-const typename TupleElement<I, Tuple<Ts...>>::Type& get(
-    const Tuple<Ts...>& tuple) {
-  return TupleGetter<I, Tuple<Ts...>>::Get(tuple);
+template <size_t I, typename T>
+const T& get(const TupleLeaf<I, T>& leaf) {
+  return leaf.get();
 }
 
 // Tuple types ----------------------------------------------------------------
