@@ -15,6 +15,7 @@
           '../../../../ui/webui/resources/js/cr/ui/command.js',
           '../../../../ui/webui/resources/js/cr/ui/focus_grid.js',
           '../../../../ui/webui/resources/js/cr/ui/focus_manager.js',
+          '../../../../ui/webui/resources/js/cr/ui/focus_outline_manager.js',
           '../../../../ui/webui/resources/js/cr/ui/focus_row.js',
           '../../../../ui/webui/resources/js/cr/ui/menu.js',
           '../../../../ui/webui/resources/js/cr/ui/menu_button.js',

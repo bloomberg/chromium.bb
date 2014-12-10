@@ -130,6 +130,7 @@ cr.define('cr.ui.overlay', function() {
   }
 
   return {
+    getDefaultButton: getDefaultButton,
     globalInitialization: globalInitialization,
     setupOverlay: setupOverlay,
   };
