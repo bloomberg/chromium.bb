@@ -71,7 +71,7 @@ int WINAPI wWinMain(HINSTANCE instance,
   for (const auto& arg : CommandLine::ForCurrentProcess()->GetArgs())
     command_line.AppendArgNative(arg);
 
-  if (!base::LaunchProcess(command_line, base::LaunchOptions(), nullptr)) {
+  if (!base::LaunchProcess(command_line, base::LaunchOptions()).IsValid()) {
     LOG(ERROR) << "Could not run chrome.exe.";
     return kLaunchFailure;
   }
