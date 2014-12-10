@@ -211,12 +211,9 @@ MediaObserver* ContentBrowserClient::GetMediaObserver() {
   return NULL;
 }
 
-blink::WebNotificationPermission
-ContentBrowserClient::CheckDesktopNotificationPermission(
-    const GURL& source_origin,
-    ResourceContext* context,
-    int render_process_id) {
-  return blink::WebNotificationPermissionDenied;
+PlatformNotificationService*
+ContentBrowserClient::GetPlatformNotificationService() {
+  return NULL;
 }
 
 void ContentBrowserClient::RequestPermission(

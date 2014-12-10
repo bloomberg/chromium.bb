@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "content/public/browser/platform_notification_service.h"
 #include "third_party/WebKit/public/platform/WebNotificationPermission.h"
 #include "url/gurl.h"
 
@@ -20,14 +21,10 @@ class DesktopNotificationDelegate;
 
 // Responsible for tracking active notifications and allowed origins for the
 // Web Notification API when running layout tests.
-class LayoutTestNotificationManager {
+class LayoutTestNotificationManager : public PlatformNotificationService {
  public:
   LayoutTestNotificationManager();
-  ~LayoutTestNotificationManager();
-
-  // Checks whether |origin| has permission to display notifications in tests.
-  // Must be called on the IO thread.
-  blink::WebNotificationPermission CheckPermission(const GURL& origin);
+  ~LayoutTestNotificationManager() override;
 
   // Requests permission for |origin| to display notifications in layout tests.
   // Must be called on the IO thread.
@@ -42,16 +39,20 @@ class LayoutTestNotificationManager {
   // Clears the currently granted permissions. Must be called on the IO thread.
   void ClearPermissions();
 
-  // Pretends to show the given notification for testing, storing a delegate so
-  // that interaction with the notification can be simulated later on. Must
-  // be called on the UI thread.
-  void Show(const ShowDesktopNotificationHostMsgParams& params,
-            scoped_ptr<DesktopNotificationDelegate> delegate,
-            base::Closure* cancel_callback);
-
   // Simulates a click on the notification titled |title|. Must be called on the
   // UI thread.
   void SimulateClick(const std::string& title);
+
+  // PlatformNotificationService implementation.
+  blink::WebNotificationPermission CheckPermission(
+      ResourceContext* resource_context,
+      const GURL& origin,
+      int render_process_id) override;
+  void DisplayNotification(BrowserContext* browser_context,
+                           const ShowDesktopNotificationHostMsgParams& params,
+                           scoped_ptr<DesktopNotificationDelegate> delegate,
+                           int render_process_id,
+                           base::Closure* cancel_callback) override;
 
  private:
   // Closes the notification titled |title|. Must be called on the UI thread.

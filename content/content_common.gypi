@@ -87,6 +87,7 @@
       'public/common/pepper_plugin_info.cc',
       'public/common/pepper_plugin_info.h',
       'public/common/persistent_notification_status.h',
+      'public/common/platform_notification_service.h',
       'public/common/process_type.h',
       'public/common/push_messaging_status.cc',
       'public/common/push_messaging_status.h',

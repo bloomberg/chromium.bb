@@ -16,7 +16,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "content/public/browser/certificate_request_result_type.h"
-#include "content/public/browser/desktop_notification_delegate.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/media_stream_request.h"
@@ -29,7 +28,6 @@
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "storage/browser/fileapi/file_system_context.h"
-#include "third_party/WebKit/public/platform/WebNotificationPermission.h"
 #include "ui/base/window_open_disposition.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -90,11 +88,11 @@ class BrowserMainParts;
 class BrowserPluginGuestDelegate;
 class BrowserPpapiHost;
 class BrowserURLHandler;
-class DesktopNotificationDelegate;
 class DevToolsManagerDelegate;
 class ExternalVideoSurfaceContainer;
 class LocationProvider;
 class MediaObserver;
+class PlatformNotificationService;
 class QuotaPermissionContext;
 class RenderFrameHost;
 class RenderProcessHost;
@@ -107,7 +105,6 @@ class WebContents;
 class WebContentsViewDelegate;
 struct MainFunctionParams;
 struct Referrer;
-struct ShowDesktopNotificationHostMsgParams;
 struct WebPreferences;
 
 // A mapping from the scheme name to the protocol handler that services its
@@ -419,22 +416,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // return NULL if they're not interested.
   virtual MediaObserver* GetMediaObserver();
 
-  // Checks if the given page has permission to show desktop notifications.
-  // This is called on the IO thread.
-  virtual blink::WebNotificationPermission
-      CheckDesktopNotificationPermission(
-          const GURL& source_url,
-          ResourceContext* context,
-          int render_process_id);
-
-  // Show a desktop notification. If |cancel_callback| is non-null, it's set to
-  // a callback which can be used to cancel the notification.
-  virtual void ShowDesktopNotification(
-      const ShowDesktopNotificationHostMsgParams& params,
-      BrowserContext* browser_context,
-      int render_process_id,
-      scoped_ptr<DesktopNotificationDelegate> delegate,
-      base::Closure* cancel_callback) {}
+  // Returns the platform notification service, capable of displaying Web
+  // Notifications to the user. The embedder can return a nullptr if they don't
+  // support this functionality. May be called from any thread.
+  virtual PlatformNotificationService* GetPlatformNotificationService();
 
   virtual void RequestPermission(
       PermissionType permission,

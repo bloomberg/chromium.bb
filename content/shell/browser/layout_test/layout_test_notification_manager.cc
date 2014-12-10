@@ -17,7 +17,10 @@ LayoutTestNotificationManager::LayoutTestNotificationManager()
 LayoutTestNotificationManager::~LayoutTestNotificationManager() {}
 
 blink::WebNotificationPermission
-LayoutTestNotificationManager::CheckPermission(const GURL& origin) {
+LayoutTestNotificationManager::CheckPermission(
+    ResourceContext* resource_context,
+    const GURL& origin,
+    int render_process_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   NotificationPermissionMap::iterator iter =
       permission_map_.find(origin);
@@ -28,7 +31,8 @@ LayoutTestNotificationManager::CheckPermission(const GURL& origin) {
 }
 
 bool LayoutTestNotificationManager::RequestPermission(const GURL& origin) {
-  return CheckPermission(origin) == blink::WebNotificationPermissionAllowed;
+  return CheckPermission(nullptr, origin, 0) ==
+      blink::WebNotificationPermissionAllowed;
 }
 
 void LayoutTestNotificationManager::SetPermission(
@@ -43,9 +47,11 @@ void LayoutTestNotificationManager::ClearPermissions() {
   permission_map_.clear();
 }
 
-void LayoutTestNotificationManager::Show(
+void LayoutTestNotificationManager::DisplayNotification(
+    BrowserContext* browser_context,
     const ShowDesktopNotificationHostMsgParams& params,
     scoped_ptr<DesktopNotificationDelegate> delegate,
+    int render_process_id,
     base::Closure* cancel_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::string title = base::UTF16ToUTF8(params.title);

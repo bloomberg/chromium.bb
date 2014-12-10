@@ -44,6 +44,7 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -108,7 +109,6 @@
 #include "content/public/browser/browser_url_handler.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/desktop_notification_delegate.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -118,7 +118,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_descriptors.h"
-#include "content/public/common/show_desktop_notification_params.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
 #include "net/base/mime_util.h"
@@ -1857,74 +1856,13 @@ content::MediaObserver* ChromeContentBrowserClient::GetMediaObserver() {
   return MediaCaptureDevicesDispatcher::GetInstance();
 }
 
-blink::WebNotificationPermission
-ChromeContentBrowserClient::CheckDesktopNotificationPermission(
-    const GURL& source_origin,
-    content::ResourceContext* context,
-    int render_process_id) {
+content::PlatformNotificationService*
+ChromeContentBrowserClient::GetPlatformNotificationService() {
 #if defined(ENABLE_NOTIFICATIONS)
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-#if defined(ENABLE_EXTENSIONS)
-  InfoMap* extension_info_map = io_data->GetExtensionInfoMap();
-
-  // We want to see if there is an extension that hasn't been manually disabled
-  // that has the notifications permission and applies to this security origin.
-  // First, get the list of extensions with permission for the origin.
-  extensions::ExtensionSet extensions;
-  extension_info_map->GetExtensionsWithAPIPermissionForSecurityOrigin(
-      source_origin,
-      render_process_id,
-      extensions::APIPermission::kNotifications,
-      &extensions);
-  for (extensions::ExtensionSet::const_iterator iter = extensions.begin();
-       iter != extensions.end(); ++iter) {
-    // Then, check to see if it's been disabled by the user.
-    if (!extension_info_map->AreNotificationsDisabled((*iter)->id()))
-      return blink::WebNotificationPermissionAllowed;
-  }
-#endif
-
-  // No enabled extensions exist, so check the normal host content settings.
-  HostContentSettingsMap* host_content_settings_map =
-      io_data->GetHostContentSettingsMap();
-  ContentSetting setting = host_content_settings_map->GetContentSetting(
-      source_origin,
-      source_origin,
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      NO_RESOURCE_IDENTIFIER);
-
-  if (setting == CONTENT_SETTING_ALLOW)
-    return blink::WebNotificationPermissionAllowed;
-  if (setting == CONTENT_SETTING_BLOCK)
-    return blink::WebNotificationPermissionDenied;
-  return blink::WebNotificationPermissionDefault;
-#else
-  return blink::WebNotificationPermissionAllowed;
-#endif
-}
-
-void ChromeContentBrowserClient::ShowDesktopNotification(
-    const content::ShowDesktopNotificationHostMsgParams& params,
-    content::BrowserContext* browser_context,
-    int render_process_id,
-    scoped_ptr<content::DesktopNotificationDelegate> delegate,
-    base::Closure* cancel_callback) {
-#if defined(ENABLE_NOTIFICATIONS)
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  DCHECK(profile);
-
-  DesktopNotificationService* service =
-      DesktopNotificationServiceFactory::GetForProfile(profile);
-  DCHECK(service);
-
-  service->ShowDesktopNotification(
-      params, render_process_id, delegate.Pass(), cancel_callback);
-  profile->GetHostContentSettingsMap()->UpdateLastUsage(
-      params.origin, params.origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  return PlatformNotificationServiceImpl::GetInstance();
 #else
   NOTIMPLEMENTED();
+  return NULL;
 #endif
 }
 

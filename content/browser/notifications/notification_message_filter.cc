@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/desktop_notification_delegate.h"
+#include "content/public/browser/platform_notification_service.h"
 #include "content/public/common/content_client.h"
 
 namespace content {
@@ -60,11 +61,15 @@ void NotificationMessageFilter::OverrideThreadForMessage(
 
 void NotificationMessageFilter::OnCheckNotificationPermission(
     const GURL& origin, blink::WebNotificationPermission* permission) {
-  *permission =
-      GetContentClient()->browser()->CheckDesktopNotificationPermission(
-          origin,
-          resource_context_,
-          process_id_);
+  PlatformNotificationService* service =
+      GetContentClient()->browser()->GetPlatformNotificationService();
+  if (service) {
+    *permission = service->CheckPermission(resource_context_,
+                                           origin,
+                                           process_id_);
+  } else {
+    *permission = blink::WebNotificationPermissionDenied;
+  }
 }
 
 void NotificationMessageFilter::OnShowPlatformNotification(
@@ -73,11 +78,15 @@ void NotificationMessageFilter::OnShowPlatformNotification(
       new PageNotificationDelegate(process_id_, notification_id));
 
   base::Closure close_closure;
-  GetContentClient()->browser()->ShowDesktopNotification(params,
-                                                         browser_context_,
-                                                         process_id_,
-                                                         delegate.Pass(),
-                                                         &close_closure);
+  PlatformNotificationService* service =
+      GetContentClient()->browser()->GetPlatformNotificationService();
+  DCHECK(service);
+
+  service->DisplayNotification(browser_context_,
+                               params,
+                               delegate.Pass(),
+                               process_id_,
+                               &close_closure);
 
   if (!close_closure.is_null())
     close_closures_[notification_id] = close_closure;
