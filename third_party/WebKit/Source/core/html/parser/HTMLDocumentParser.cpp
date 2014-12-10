@@ -978,6 +978,11 @@ void HTMLDocumentParser::notifyScriptLoaded(Resource* cachedResource)
 
     ASSERT(m_scriptRunner);
     ASSERT(!isExecutingScript());
+
+    if (isStopped()) {
+        return;
+    }
+
     if (isStopping()) {
         attemptToRunDeferredScriptsAndEnd();
         return;
