@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/service_worker/web_service_worker_provider_impl.h"
+#include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/common/push_messaging_messages.h"
 #include "content/renderer/manifest/manifest_manager.h"
 #include "content/renderer/render_frame_impl.h"
@@ -13,6 +14,7 @@
 #include "third_party/WebKit/public/platform/WebPushError.h"
 #include "third_party/WebKit/public/platform/WebPushRegistration.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerProvider.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerRegistration.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "url/gurl.h"
 
@@ -47,14 +49,26 @@ void PushMessagingDispatcher::registerPushMessaging(
     blink::WebPushRegistrationCallbacks* callbacks,
     blink::WebServiceWorkerProvider* service_worker_provider) {
   DCHECK(callbacks);
-  RenderFrameImpl::FromRoutingID(routing_id())->manifest_manager()->GetManifest(
-      base::Bind(&PushMessagingDispatcher::DoRegister,
-                 base::Unretained(this),
-                 callbacks,
-                 service_worker_provider));
+  RenderFrameImpl::FromRoutingID(routing_id())
+      ->manifest_manager()
+      ->GetManifest(base::Bind(&PushMessagingDispatcher::DoRegisterOld,
+                               base::Unretained(this), callbacks,
+                               service_worker_provider));
 }
 
-void PushMessagingDispatcher::DoRegister(
+void PushMessagingDispatcher::registerPushMessaging(
+    blink::WebServiceWorkerRegistration* service_worker_registration,
+    blink::WebPushRegistrationCallbacks* callbacks) {
+  DCHECK(service_worker_registration);
+  DCHECK(callbacks);
+  RenderFrameImpl::FromRoutingID(routing_id())
+      ->manifest_manager()
+      ->GetManifest(base::Bind(&PushMessagingDispatcher::DoRegister,
+                               base::Unretained(this),
+                               service_worker_registration, callbacks));
+}
+
+void PushMessagingDispatcher::DoRegisterOld(
     blink::WebPushRegistrationCallbacks* callbacks,
     blink::WebServiceWorkerProvider* service_worker_provider,
     const Manifest& manifest) {
@@ -70,13 +84,39 @@ void PushMessagingDispatcher::DoRegister(
     return;
   }
 
+  Send(new PushMessagingHostMsg_RegisterFromDocumentOld(
+      routing_id(), request_id,
+      manifest.gcm_sender_id.is_null()
+          ? std::string()
+          : base::UTF16ToUTF8(manifest.gcm_sender_id.string()),
+      manifest.gcm_user_visible_only, service_worker_provider_id));
+}
+
+void PushMessagingDispatcher::DoRegister(
+    blink::WebServiceWorkerRegistration* service_worker_registration,
+    blink::WebPushRegistrationCallbacks* callbacks,
+    const Manifest& manifest) {
+  int request_id = registration_callbacks_.Add(callbacks);
+  int64 service_worker_registration_id =
+      static_cast<WebServiceWorkerRegistrationImpl*>(
+          service_worker_registration)->registration_id();
+
+  std::string sender_id =
+      manifest.gcm_sender_id.is_null()
+          ? std::string()
+          : base::UTF16ToUTF8(manifest.gcm_sender_id.string());
+  if (sender_id.empty()) {
+    OnRegisterFromDocumentError(request_id,
+                                PUSH_REGISTRATION_STATUS_NO_SENDER_ID);
+    return;
+  }
+
   Send(new PushMessagingHostMsg_RegisterFromDocument(
       routing_id(), request_id,
       manifest.gcm_sender_id.is_null()
           ? std::string()
           : base::UTF16ToUTF8(manifest.gcm_sender_id.string()),
-      manifest.gcm_user_visible_only,
-      service_worker_provider_id));
+      manifest.gcm_user_visible_only, service_worker_registration_id));
 }
 
 void PushMessagingDispatcher::getPermissionStatus(

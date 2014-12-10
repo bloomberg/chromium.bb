@@ -38,18 +38,28 @@ class PushMessagingDispatcher : public RenderFrameObserver,
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // WebPushClient implementation.
+  // TODO(mvanouwerkerk): Delete this when it is no longer called.
   virtual void registerPushMessaging(
       blink::WebPushRegistrationCallbacks* callbacks,
       blink::WebServiceWorkerProvider* service_worker_provider);  // override
+  virtual void registerPushMessaging(
+      blink::WebServiceWorkerRegistration* service_worker_registration,
+      blink::WebPushRegistrationCallbacks* callbacks);  // override
   // TODO(mvanouwerkerk): Delete once the Push API flows through platform.
   // https://crbug.com/389194
   virtual void getPermissionStatus(
       blink::WebPushPermissionStatusCallback* callback,
       blink::WebServiceWorkerProvider* service_worker_provider);  // override
 
-  void DoRegister(blink::WebPushRegistrationCallbacks* callbacks,
-                  blink::WebServiceWorkerProvider* service_worker_provider,
-                  const Manifest& manifest);
+  // TODO(mvanouwerkerk): Delete this when it is no longer called.
+  void DoRegisterOld(blink::WebPushRegistrationCallbacks* callbacks,
+                     blink::WebServiceWorkerProvider* service_worker_provider,
+                     const Manifest& manifest);
+
+  void DoRegister(
+      blink::WebServiceWorkerRegistration* service_worker_registration,
+      blink::WebPushRegistrationCallbacks* callbacks,
+      const Manifest& manifest);
 
   void OnRegisterFromDocumentSuccess(int32 request_id,
                                      const GURL& endpoint,

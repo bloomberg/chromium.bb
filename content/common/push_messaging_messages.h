@@ -57,12 +57,20 @@ IPC_MESSAGE_CONTROL1(PushMessagingMsg_GetPermissionStatusError,
 
 // Messages sent from the child process to the browser.
 
-IPC_MESSAGE_CONTROL5(PushMessagingHostMsg_RegisterFromDocument,
+// TODO(mvanouwerkerk): Delete this when it is no longer used.
+IPC_MESSAGE_CONTROL5(PushMessagingHostMsg_RegisterFromDocumentOld,
                      int32 /* render_frame_id */,
                      int32 /* request_id */,
                      std::string /* sender_id */,
                      bool /* user_visible_only */,
                      int32 /* service_worker_provider_id */)
+
+IPC_MESSAGE_CONTROL5(PushMessagingHostMsg_RegisterFromDocument,
+                     int32 /* render_frame_id */,
+                     int32 /* request_id */,
+                     std::string /* sender_id */,
+                     bool /* user_visible_only */,
+                     int64 /* service_worker_registration_id */)
 
 IPC_MESSAGE_CONTROL2(PushMessagingHostMsg_RegisterFromWorker,
                      int32 /* request_id */,

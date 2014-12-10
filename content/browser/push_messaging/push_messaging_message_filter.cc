@@ -64,6 +64,8 @@ bool PushMessagingMessageFilter::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PushMessagingMessageFilter, message)
+    IPC_MESSAGE_HANDLER(PushMessagingHostMsg_RegisterFromDocumentOld,
+                        OnRegisterFromDocumentOld)
     IPC_MESSAGE_HANDLER(PushMessagingHostMsg_RegisterFromDocument,
                         OnRegisterFromDocument)
     IPC_MESSAGE_HANDLER(PushMessagingHostMsg_RegisterFromWorker,
@@ -77,7 +79,7 @@ bool PushMessagingMessageFilter::OnMessageReceived(
   return handled;
 }
 
-void PushMessagingMessageFilter::OnRegisterFromDocument(
+void PushMessagingMessageFilter::OnRegisterFromDocumentOld(
     int render_frame_id,
     int request_id,
     const std::string& sender_id,
@@ -96,6 +98,31 @@ void PushMessagingMessageFilter::OnRegisterFromDocument(
     RecordRegistrationStatus(status);
     return;
   }
+  OnRegisterFromDocument(
+      render_frame_id, request_id, sender_id, user_visible_only,
+      service_worker_host->active_version()->registration_id());
+}
+
+void PushMessagingMessageFilter::OnRegisterFromDocument(
+    int render_frame_id,
+    int request_id,
+    const std::string& sender_id,
+    bool user_visible_only,
+    int64 service_worker_registration_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // TODO(mvanouwerkerk): Validate arguments?
+  ServiceWorkerRegistration* service_worker_registration =
+      service_worker_context_->context()->GetLiveRegistration(
+          service_worker_registration_id);
+  DCHECK(service_worker_registration);
+  if (!service_worker_registration ||
+      !service_worker_registration->active_version()) {
+    PushRegistrationStatus status = PUSH_REGISTRATION_STATUS_NO_SERVICE_WORKER;
+    Send(new PushMessagingMsg_RegisterFromDocumentError(render_frame_id,
+                                                        request_id, status));
+    RecordRegistrationStatus(status);
+    return;
+  }
 
   // TODO(mvanouwerkerk): Persist sender id in Service Worker storage.
   // https://crbug.com/437298
@@ -104,10 +131,8 @@ void PushMessagingMessageFilter::OnRegisterFromDocument(
 
   RegisterData data;
   data.request_id = request_id;
-  data.requesting_origin =
-      service_worker_host->active_version()->scope().GetOrigin();
-  data.service_worker_registration_id =
-      service_worker_host->active_version()->registration_id();
+  data.requesting_origin = service_worker_registration->pattern().GetOrigin();
+  data.service_worker_registration_id = service_worker_registration_id;
   data.render_frame_id = render_frame_id;
   data.user_visible_only = user_visible_only;
 
