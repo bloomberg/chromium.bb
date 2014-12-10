@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceFragment.OnPreferenceStartFragmentCallback;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.MenuItem;
@@ -97,9 +98,8 @@ public abstract class Preferences extends ActionBarActivity implements
 
         if (displayHomeAsUp) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        // Workaround for an Android bug. This must be called before the fragment transaction below,
-        // or else the fragment's view may not be attached to the view hierarchy. http://b/18525402
-        setContentView(new View(this));
+        // This must be called before the fragment transaction below.
+        workAroundPlatformBugs();
 
         // Display the fragment as the main content.
         if (initialFragment == null) initialFragment = getTopLevelFragmentName();
@@ -198,5 +198,21 @@ public abstract class Preferences extends ActionBarActivity implements
             // Something terribly wrong has happened.
             throw new RuntimeException(ex);
         }
+    }
+
+    private void workAroundPlatformBugs() {
+        // Workaround for an Android bug where the fragment's view may not be attached to the view
+        // hierarchy. http://b/18525402
+        setContentView(new View(this));
+
+        // Workaround for HTC One S bug which causes all the text in settings to turn white.
+        // This must be called after setContentView().
+        // https://code.google.com/p/android/issues/detail?id=78819
+        ViewCompat.postOnAnimation(getWindow().getDecorView(), new Runnable() {
+            @Override
+            public void run() {
+                setTheme(R.style.PreferencesTheme);
+            }
+        });
     }
 }
