@@ -10,116 +10,10 @@ function FileOperationManager() {
   this.copyTasks_ = [];
   this.deleteTasks_ = [];
   this.taskIdCounter_ = 0;
-  this.eventRouter_ = new FileOperationManager.EventRouter();
+  this.eventRouter_ = new fileOperationUtil.EventRouter();
 
   Object.seal(this);
 }
-
-/**
- * Manages Event dispatching.
- * Currently this can send three types of events: "copy-progress",
- * "copy-operation-completed" and "delete".
- *
- * TODO(hidehiko): Reorganize the event dispatching mechanism.
- * @constructor
- * @extends {cr.EventTarget}
- */
-FileOperationManager.EventRouter = function() {
-  this.pendingDeletedEntries_ = [];
-  this.pendingCreatedEntries_ = [];
-  this.entryChangedEventRateLimiter_ = new AsyncUtil.RateLimiter(
-      this.dispatchEntryChangedEvent_.bind(this), 500);
-};
-
-/**
- * Extends cr.EventTarget.
- */
-FileOperationManager.EventRouter.prototype.__proto__ = cr.EventTarget.prototype;
-
-/**
- * Dispatches a simple "copy-progress" event with reason and current
- * FileOperationManager status. If it is an ERROR event, error should be set.
- *
- * @param {string} reason Event type. One of "BEGIN", "PROGRESS", "SUCCESS",
- *     "ERROR" or "CANCELLED". TODO(hidehiko): Use enum.
- * @param {Object} status Current FileOperationManager's status. See also
- *     FileOperationManager.Task.getStatus().
- * @param {string} taskId ID of task related with the event.
- * @param {fileOperationUtil.Error=} opt_error The info for the error. This
- *     should be set iff the reason is "ERROR".
- */
-FileOperationManager.EventRouter.prototype.sendProgressEvent = function(
-    reason, status, taskId, opt_error) {
-  // Before finishing operation, dispatch pending entries-changed events.
-  if (reason === 'SUCCESS' || reason === 'CANCELED')
-    this.entryChangedEventRateLimiter_.runImmediately();
-
-  var event = /** @type {FileOperationProgressEvent} */
-      (new Event('copy-progress'));
-  event.reason = reason;
-  event.status = status;
-  event.taskId = taskId;
-  if (opt_error)
-    event.error = opt_error;
-  this.dispatchEvent(event);
-};
-
-/**
- * Stores changed (created or deleted) entry temporarily, and maybe dispatch
- * entries-changed event with stored entries.
- * @param {util.EntryChangedKind} kind The enum to represent if the entry is
- *     created or deleted.
- * @param {Entry} entry The changed entry.
- */
-FileOperationManager.EventRouter.prototype.sendEntryChangedEvent = function(
-    kind, entry) {
-  if (kind === util.EntryChangedKind.DELETED)
-    this.pendingDeletedEntries_.push(entry);
-  if (kind === util.EntryChangedKind.CREATED)
-    this.pendingCreatedEntries_.push(entry);
-
-  this.entryChangedEventRateLimiter_.run();
-};
-
-/**
- * Dispatches an event to notify that entries are changed (created or deleted).
- * @private
- */
-FileOperationManager.EventRouter.prototype.dispatchEntryChangedEvent_ =
-    function() {
-  if (this.pendingDeletedEntries_.length > 0) {
-    var event = new Event('entries-changed');
-    event.kind = util.EntryChangedKind.DELETED;
-    event.entries = this.pendingDeletedEntries_;
-    this.dispatchEvent(event);
-    this.pendingDeletedEntries_ = [];
-  }
-  if (this.pendingCreatedEntries_.length > 0) {
-    var event = new Event('entries-changed');
-    event.kind = util.EntryChangedKind.CREATED;
-    event.entries = this.pendingCreatedEntries_;
-    this.dispatchEvent(event);
-    this.pendingCreatedEntries_ = [];
-  }
-};
-
-/**
- * Dispatches an event to notify entries are changed for delete task.
- *
- * @param {string} reason Event type. One of "BEGIN", "PROGRESS", "SUCCESS",
- *     or "ERROR". TODO(hidehiko): Use enum.
- * @param {!Object} task Delete task related with the event.
- */
-FileOperationManager.EventRouter.prototype.sendDeleteEvent = function(
-    reason, task) {
-  var event = /** @type {FileOperationProgressEvent} */ (new Event('delete'));
-  event.reason = reason;
-  event.taskId = task.taskId;
-  event.entries = task.entries;
-  event.totalBytes = task.totalBytes;
-  event.processedBytes = task.processedBytes;
-  this.dispatchEvent(event);
-};
 
 /**
  * Adds an event listener for the tasks.
@@ -173,9 +67,10 @@ FileOperationManager.prototype.requestTaskCancel = function(taskId) {
     task.requestCancel();
     // If the task is not on progress, remove it immediately.
     if (i !== 0) {
-      this.eventRouter_.sendProgressEvent('CANCELED',
-                                          task.getStatus(),
-                                          task.taskId);
+      this.eventRouter_.sendProgressEvent(
+          fileOperationUtil.EventRouter.EventType.CANCELED,
+          task.getStatus(),
+          task.taskId);
       this.copyTasks_.splice(i, 1);
     }
   }
@@ -186,7 +81,8 @@ FileOperationManager.prototype.requestTaskCancel = function(taskId) {
     task.cancelRequested = true;
     // If the task is not on progress, remove it immediately.
     if (i !== 0) {
-      this.eventRouter_.sendDeleteEvent('CANCELED', task);
+      this.eventRouter_.sendDeleteEvent(
+          fileOperationUtil.EventRouter.EventType.CANCELED, task);
       this.deleteTasks_.splice(i, 1);
     }
   }
@@ -293,7 +189,10 @@ FileOperationManager.prototype.queueCopy_ = function(
         new fileOperationUtil.CopyTask(taskId, entries, targetDirEntry, false);
   }
 
-  this.eventRouter_.sendProgressEvent('BEGIN', task.getStatus(), task.taskId);
+  this.eventRouter_.sendProgressEvent(
+      fileOperationUtil.EventRouter.EventType.BEGIN,
+      task.getStatus(),
+      task.taskId);
   task.initialize(function() {
     this.copyTasks_.push(task);
     if (this.copyTasks_.length === 1)
@@ -319,9 +218,10 @@ FileOperationManager.prototype.serviceAllTasks_ = function() {
   chrome.power.requestKeepAwake('system');
 
   var onTaskProgress = function() {
-    this.eventRouter_.sendProgressEvent('PROGRESS',
-                                        this.copyTasks_[0].getStatus(),
-                                        this.copyTasks_[0].taskId);
+    this.eventRouter_.sendProgressEvent(
+        fileOperationUtil.EventRouter.EventType.PROGRESS,
+        this.copyTasks_[0].getStatus(),
+        this.copyTasks_[0].taskId);
   }.bind(this);
 
   var onEntryChanged = function(kind, entry) {
@@ -331,7 +231,8 @@ FileOperationManager.prototype.serviceAllTasks_ = function() {
   var onTaskError = function(err) {
     var task = this.copyTasks_.shift();
     var reason = err.data.name === util.FileError.ABORT_ERR ?
-        'CANCELED' : 'ERROR';
+        fileOperationUtil.EventRouter.EventType.CANCELED :
+        fileOperationUtil.EventRouter.EventType.ERROR;
     this.eventRouter_.sendProgressEvent(reason,
                                         task.getStatus(),
                                         task.taskId,
@@ -342,16 +243,18 @@ FileOperationManager.prototype.serviceAllTasks_ = function() {
   var onTaskSuccess = function() {
     // The task at the front of the queue is completed. Pop it from the queue.
     var task = this.copyTasks_.shift();
-    this.eventRouter_.sendProgressEvent('SUCCESS',
-                                        task.getStatus(),
-                                        task.taskId);
+    this.eventRouter_.sendProgressEvent(
+        fileOperationUtil.EventRouter.EventType.SUCCESS,
+        task.getStatus(),
+        task.taskId);
     this.serviceAllTasks_();
   }.bind(this);
 
   var nextTask = this.copyTasks_[0];
-  this.eventRouter_.sendProgressEvent('PROGRESS',
-                                      nextTask.getStatus(),
-                                      nextTask.taskId);
+  this.eventRouter_.sendProgressEvent(
+      fileOperationUtil.EventRouter.EventType.PROGRESS,
+      nextTask.getStatus(),
+      nextTask.taskId);
   nextTask.run(onEntryChanged, onTaskProgress, onTaskSuccess, onTaskError);
 };
 
@@ -397,7 +300,8 @@ FileOperationManager.prototype.deleteEntries = function(entries) {
   // Add a delete task.
   group.run(function() {
     this.deleteTasks_.push(task);
-    this.eventRouter_.sendDeleteEvent('BEGIN', task);
+    this.eventRouter_.sendDeleteEvent(
+        fileOperationUtil.EventRouter.EventType.BEGIN, task);
     if (this.deleteTasks_.length === 1)
       this.serviceAllDeleteTasks_();
   }.bind(this));
@@ -438,7 +342,8 @@ FileOperationManager.prototype.serviceDeleteTask_ = function(task, callback) {
       inCallback();
       return;
     }
-    this.eventRouter_.sendDeleteEvent('PROGRESS', task);
+    this.eventRouter_.sendDeleteEvent(
+        fileOperationUtil.EventRouter.EventType.PROGRESS, task);
     util.removeFileOrDirectory(
         task.entries[0],
         function() {
@@ -457,13 +362,14 @@ FileOperationManager.prototype.serviceDeleteTask_ = function(task, callback) {
 
   // Send an event and finish the async steps.
   queue.run(function(inCallback) {
+    var EventType = fileOperationUtil.EventRouter.EventType;
     var reason;
     if (error)
-      reason = 'ERROR';
+      reason = EventType.ERROR;
     else if (task.cancelRequested)
-      reason = 'CANCELED';
+      reason = EventType.CANCELED;
     else
-      reason = 'SUCCESS';
+      reason = EventType.SUCCESS;
     this.eventRouter_.sendDeleteEvent(reason, task);
     inCallback();
     callback();
@@ -480,9 +386,10 @@ FileOperationManager.prototype.zipSelection = function(
     dirEntry, selectionEntries) {
   var zipTask = new fileOperationUtil.ZipTask(
       this.generateTaskId(), selectionEntries, dirEntry, dirEntry);
-  this.eventRouter_.sendProgressEvent('BEGIN',
-                                      zipTask.getStatus(),
-                                      zipTask.taskId);
+  this.eventRouter_.sendProgressEvent(
+      fileOperationUtil.EventRouter.EventType.BEGIN,
+      zipTask.getStatus(),
+      zipTask.taskId);
   zipTask.initialize(function() {
     this.copyTasks_.push(zipTask);
     if (this.copyTasks_.length == 1)

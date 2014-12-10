@@ -149,7 +149,7 @@ MetadataUpdateController.prototype.onPreferencesChanged_ = function() {
  * This updates directory model to reflect operation result immediately (not
  * waiting for directory update event). Also, preloads thumbnails for the
  * images of new entries.
- * See also FileOperationManager.EventRouter.
+ * See also fileOperationUtil.EventRouter.
  *
  * @param {Event} event An event for the entry change.
  * @private

@@ -34,7 +34,7 @@ BackgroundWindow.prototype.launchFileManager =
  */
 var FileOperationProgressEvent = function() {};
 
-/** @type {string} */
+/** @type {fileOperationUtil.EventRouter.EventType} */
 FileOperationProgressEvent.prototype.reason;
 
 /** @type {(fileOperationUtil.Error|undefined)} */

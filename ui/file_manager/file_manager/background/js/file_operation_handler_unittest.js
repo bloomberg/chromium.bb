@@ -31,7 +31,7 @@ function testCopySuccess() {
   background.fileOperationManager.dispatchEvent({
     type: 'copy-progress',
     taskId: 'TASK_ID',
-    reason: 'BEGIN',
+    reason: fileOperationUtil.EventRouter.EventType.BEGIN,
     status: {
       operationType: 'COPY',
       numRemainingItems: 1,
@@ -54,7 +54,7 @@ function testCopySuccess() {
   background.fileOperationManager.dispatchEvent({
     type: 'copy-progress',
     taskId: 'TASK_ID',
-    reason: 'SUCCESS',
+    reason: fileOperationUtil.EventRouter.EventType.SUCCESS,
     status: {
       operationType: 'COPY'
     }
@@ -77,7 +77,7 @@ function testCopyCancel() {
   background.fileOperationManager.dispatchEvent({
     type: 'copy-progress',
     taskId: 'TASK_ID',
-    reason: 'BEGIN',
+    reason: fileOperationUtil.EventRouter.EventType.BEGIN,
     status: {
       operationType: 'COPY',
       numRemainingItems: 1,
@@ -99,7 +99,7 @@ function testCopyCancel() {
   background.fileOperationManager.cancelEvent = {
     type: 'copy-progress',
     taskId: 'TASK_ID',
-    reason: 'CANCELED',
+    reason: fileOperationUtil.EventRouter.EventType.CANCELED,
     status: {
       operationType: 'COPY'
     }
@@ -122,7 +122,7 @@ function testCopyTargetExistsError() {
   background.fileOperationManager.dispatchEvent({
     type: 'copy-progress',
     taskId: 'TASK_ID',
-    reason: 'ERROR',
+    reason: fileOperationUtil.EventRouter.EventType.ERROR,
     status: {
       operationType: 'COPY'
     },
@@ -148,7 +148,7 @@ function testCopyFileSystemError() {
   background.fileOperationManager.dispatchEvent({
     type: 'copy-progress',
     taskId: 'TASK_ID',
-    reason: 'ERROR',
+    reason: fileOperationUtil.EventRouter.EventType.ERROR,
     status: {
       operationType: 'COPY'
     },
@@ -174,7 +174,7 @@ function testCopyUnexpectedError() {
   background.fileOperationManager.dispatchEvent({
     type: 'copy-progress',
     taskId: 'TASK_ID',
-    reason: 'ERROR',
+    reason: fileOperationUtil.EventRouter.EventType.ERROR,
     status: {
       operationType: 'COPY'
     },
