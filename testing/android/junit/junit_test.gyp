@@ -10,6 +10,7 @@
       'type': 'none',
       'dependencies': [
         '../../../third_party/junit/junit.gyp:junit_jar',
+        '../../../third_party/mockito/mockito.gyp:mockito_jar',
       ],
       'variables': {
         'src_paths': [
