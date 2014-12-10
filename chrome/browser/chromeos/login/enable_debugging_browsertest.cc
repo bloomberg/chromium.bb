@@ -226,6 +226,10 @@ class EnableDebuggingTest : public LoginManagerTest {
     JSExpect("!document.querySelector('#debugging.hidden')");
     debug_daemon_client_->WaitUntilCalled();
     base::MessageLoop::current()->RunUntilIdle();
+    VerifyRemoveProtectionScreen();
+  }
+
+  void VerifyRemoveProtectionScreen() {
     JSExpect("!!document.querySelector('#debugging.remove-protection-view')");
     JSExpect("!document.querySelector('#debugging.setup-view')");
     JSExpect("!document.querySelector('#debugging.done-view')");
@@ -287,6 +291,25 @@ IN_PROC_BROWSER_TEST_F(EnableDebuggingTest, ShowSetup) {
   base::MessageLoop::current()->RunUntilIdle();
   JSExpect("!!document.querySelector('#debugging.done-view')");
   EXPECT_EQ(debug_daemon_client_->num_enable_debugging_features(), 1);
+  EXPECT_EQ(debug_daemon_client_->num_remove_protection(), 0);
+}
+
+// Test images come with some features enabled but still has rootfs protection.
+// Invoking debug screen should show remove protection screen.
+IN_PROC_BROWSER_TEST_F(EnableDebuggingTest, ShowOnTestImages) {
+  debug_daemon_client_->SetDebuggingFeaturesStatus(
+      DebugDaemonClient::DEV_FEATURE_SSH_SERVER_CONFIGURED |
+      DebugDaemonClient::DEV_FEATURE_SYSTEM_ROOT_PASSWORD_SET);
+  WaitUntilJSIsReady();
+  JSExpect("!!document.querySelector('#debugging.hidden')");
+  InvokeEnableDebuggingScreen();
+  JSExpect("!document.querySelector('#debugging.hidden')");
+  debug_daemon_client_->WaitUntilCalled();
+  base::MessageLoop::current()->RunUntilIdle();
+  VerifyRemoveProtectionScreen();
+
+  EXPECT_EQ(debug_daemon_client_->num_query_debugging_features(), 1);
+  EXPECT_EQ(debug_daemon_client_->num_enable_debugging_features(), 0);
   EXPECT_EQ(debug_daemon_client_->num_remove_protection(), 0);
 }
 

@@ -206,20 +206,17 @@ void EnableDebuggingScreenHandler::OnQueryDebuggingFeatures(bool success,
     return;
   }
 
-  if (features_flag == DebugDaemonClient::DEV_FEATURE_NONE) {
+  if ((features_flag &
+       DebugDaemonClient::DEV_FEATURE_ROOTFS_VERIFICATION_REMOVED) == 0) {
     UpdateUIState(UI_STATE_REMOVE_PROTECTION);
     return;
   }
 
-  if ((features_flag & DebugDaemonClient::DEV_FEATURE_ALL_ENABLED) ==
-         DebugDaemonClient::DEV_FEATURE_ALL_ENABLED) {
-    UpdateUIState(UI_STATE_DONE);
-  } else if (features_flag &
-               DebugDaemonClient::DEV_FEATURE_ROOTFS_VERIFICATION_REMOVED) {
+  if ((features_flag & DebugDaemonClient::DEV_FEATURE_ALL_ENABLED) !=
+      DebugDaemonClient::DEV_FEATURE_ALL_ENABLED) {
     UpdateUIState(UI_STATE_SETUP);
   } else {
-    LOG(WARNING) << "Unexpected status of debugging features:" << features_flag;
-    UpdateUIState(UI_STATE_ERROR);
+    UpdateUIState(UI_STATE_DONE);
   }
 }
 
