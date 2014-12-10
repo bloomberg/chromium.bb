@@ -94,6 +94,27 @@ component("test_util") {
   }
 }
 
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "chromeos/test/action_logger.cc",
+    "chromeos/test/action_logger.h",
+    "chromeos/test/action_logger_util.cc",
+    "chromeos/test/action_logger_util.h",
+    "chromeos/test/test_native_display_delegate.cc",
+    "chromeos/test/test_native_display_delegate.h",
+  ]
+
+  public_deps = [
+    ":display",
+  ]
+  deps = [
+    "//base",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+  ]
+}
+
 test("display_unittests") {
   sources = [
     "chromeos/display_configurator_unittest.cc",
@@ -115,6 +136,7 @@ test("display_unittests") {
   if (is_chromeos) {
     deps += [
       ":display",
+      ":test_support",
       "//ui/display/types",
     ]
   }

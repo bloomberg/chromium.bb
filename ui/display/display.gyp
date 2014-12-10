@@ -121,6 +121,8 @@
       ],
     },
     {
+      # Used to share stubs with code outside ui/display
+      #
       # GN version: //ui/display:test_util
       'target_name': 'display_test_util',
       'type': '<(component)',
@@ -143,6 +145,24 @@
             'display_types',
           ],
         }],
+      ],
+    },
+    # Internal utilities used by display_unittests
+    {
+      'target_name': 'display_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        '../../base/base.gyp:base',
+        '../../ui/gfx/gfx.gyp:gfx',
+        '../../ui/gfx/gfx.gyp:gfx_geometry',
+      ],
+      'sources': [
+        'chromeos/test/action_logger.cc',
+        'chromeos/test/action_logger.h',
+        'chromeos/test/action_logger_util.cc',
+        'chromeos/test/action_logger_util.h',
+        'chromeos/test/test_native_display_delegate.cc',
+        'chromeos/test/test_native_display_delegate.h',
       ],
     },
     {
@@ -169,6 +189,7 @@
         ['chromeos == 1', {
           'dependencies': [
             'display',
+            'display_test_support',
             'display_test_util',
             'display_types',
           ],
