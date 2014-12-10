@@ -7,6 +7,8 @@
 
 #include <crypto/p224_spake.h>
 
+#include <algorithm>
+
 #include <base/logging.h>
 #include <crypto/p224.h>
 #include <crypto/random.h>
@@ -105,13 +107,17 @@ P224EncryptedKeyExchange::P224EncryptedKeyExchange(
   // x_ is a random scalar.
   RandBytes(x_, sizeof(x_));
 
-  // X = g**x_
-  p224::Point X;
-  p224::ScalarBaseMult(x_, &X);
-
   // Calculate |password| hash to get SPAKE password value.
   SHA256HashString(std::string(password.data(), password.length()),
                    pw_, sizeof(pw_));
+
+  Init();
+}
+
+void P224EncryptedKeyExchange::Init() {
+  // X = g**x_
+  p224::Point X;
+  p224::ScalarBaseMult(x_, &X);
 
   // The client masks the Diffie-Hellman value, X, by adding M**pw and the
   // server uses N**pw.
@@ -251,6 +257,12 @@ const std::string& P224EncryptedKeyExchange::GetUnverifiedKey() const {
   // with sending verifiable data instead of |expected_authenticator_|.
   DCHECK_GE(state_, kStateSendHash);
   return key_;
+}
+
+void P224EncryptedKeyExchange::SetXForTesting(const std::string& x) {
+  memset(&x_, 0, sizeof(x_));
+  memcpy(&x_, x.data(), std::min(x.size(), sizeof(x_)));
+  Init();
 }
 
 }  // namespace crypto
