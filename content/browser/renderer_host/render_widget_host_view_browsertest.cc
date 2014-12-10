@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/barrier_closure.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
@@ -351,10 +352,7 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
   EXPECT_LE(1, frames_captured());
 }
 
-// Test that we can copy twice from an accelerated composited page.
-// Disabled because of flakiness/failures, see http://crbug.com/439834.
-IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
-                       DISABLED_CopyTwice) {
+IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest, CopyTwice) {
   SET_UP_SURFACE_OR_PASS_TEST(NULL);
   RenderWidgetHostViewBase* const view = GetRenderWidgetHostView();
   if (!view->CanCopyToVideoFrame()) {
@@ -371,22 +369,17 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
   scoped_refptr<media::VideoFrame> second_output =
       media::VideoFrame::CreateBlackFrame(frame_size());
   ASSERT_TRUE(second_output.get());
+  base::Closure closure = base::BarrierClosure(2, run_loop.QuitClosure());
   view->CopyFromCompositingSurfaceToVideoFrame(
-      gfx::Rect(view->GetViewBounds().size()),
-      first_output,
+      gfx::Rect(view->GetViewBounds().size()), first_output,
       base::Bind(&RenderWidgetHostViewBrowserTest::FrameDelivered,
-                 base::Unretained(this),
-                 base::MessageLoopProxy::current(),
-                 base::Closure(),
-                 base::TimeTicks::Now()));
+                 base::Unretained(this), base::MessageLoopProxy::current(),
+                 closure, base::TimeTicks::Now()));
   view->CopyFromCompositingSurfaceToVideoFrame(
-      gfx::Rect(view->GetViewBounds().size()),
-      second_output,
+      gfx::Rect(view->GetViewBounds().size()), second_output,
       base::Bind(&RenderWidgetHostViewBrowserTest::FrameDelivered,
-                 base::Unretained(this),
-                 base::MessageLoopProxy::current(),
-                 run_loop.QuitClosure(),
-                 base::TimeTicks::Now()));
+                 base::Unretained(this), base::MessageLoopProxy::current(),
+                 closure, base::TimeTicks::Now()));
   run_loop.Run();
 
   EXPECT_EQ(2, callback_invoke_count());
