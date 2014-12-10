@@ -48,6 +48,7 @@
         'ARCHS': [ 'armv7' ],
         'SDKROOT': 'iphoneos',
         'IPHONEOS_DEPLOYMENT_TARGET': '7.0',
+        'CODE_SIGN_IDENTITY[sdk=iphoneos*]': 'iPhone Developer',
       },
     },
     {
@@ -76,6 +77,7 @@
         'ARCHS': [ 'armv7' ],
         'SDKROOT': 'iphoneos',
         'IPHONEOS_DEPLOYMENT_TARGET': '7.0',
+        'CODE_SIGN_IDENTITY[sdk=iphoneos*]': 'iPhone Developer',
       },
     },
   ],
