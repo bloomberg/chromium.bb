@@ -270,7 +270,7 @@ void AnimationPlayer::postCommit(double timelineTime)
 
 void AnimationPlayer::notifyCompositorStartTime(double timelineTime)
 {
-    PlayStateUpdateScope updateScope(*this, TimingUpdateOnDemand);
+    PlayStateUpdateScope updateScope(*this, TimingUpdateOnDemand, DoNotSetCompositorPending);
 
     if (m_compositorState) {
         ASSERT(m_compositorState->pendingAction == Start);
