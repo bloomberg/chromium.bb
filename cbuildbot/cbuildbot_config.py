@@ -2023,10 +2023,6 @@ _paladin_full_boards = frozenset([
   'nyan',
 ])
 
-_paladin_separate_symbols = frozenset([
-  'gizmo',
-])
-
 def _CreatePaladinConfigs():
   for board in _paladin_boards:
     assert board in _base_configs, '%s not in _base_configs' % board
@@ -2046,8 +2042,6 @@ def _CreatePaladinConfigs():
       customizations = customizations.derive(
           internal, official_chrome,
           manifest=constants.OFFICIAL_MANIFEST)
-    if board in _paladin_separate_symbols:
-      customizations.update(separate_debug_symbols=True)
 
     if board not in _paladin_default_vmtest_boards:
       vm_tests = []
