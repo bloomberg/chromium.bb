@@ -1,0 +1,49 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x496
+  RenderBlock {HTML} at (0,0) size 800x496
+    RenderBody {BODY} at (8,8) size 784x480
+layer at (8,8) size 160x160
+  RenderBlock {DIV} at (0,0) size 160x160 [bgcolor=#373763]
+    RenderBlock (anonymous) at (0,0) size 160x16
+      RenderText {#text} at (0,0) size 46x16
+        text run at (0,0) width 46: "sample"
+layer at (8,24) size 120x120
+  RenderBlock {DIV} at (0,16) size 120x120 [color=#FFFF00] [bgcolor=#C8C89C]
+    RenderText {#text} at (0,0) size 46x16
+      text run at (0,0) width 46: "sample"
+layer at (8,168) size 160x160
+  RenderBlock {DIV} at (0,160) size 160x160 [bgcolor=#373763]
+    RenderBlock (anonymous) at (0,0) size 160x16
+      RenderText {#text} at (0,0) size 46x16
+        text run at (0,0) width 46: "sample"
+    RenderBlock (anonymous) at (0,136) size 160x16
+      RenderText {#text} at (0,0) size 46x16
+        text run at (0,0) width 46: "sample"
+layer at (8,184) size 120x120
+  RenderBlock {DIV} at (0,16) size 120x120 [color=#FFFF00] [bgcolor=#C8C89C]
+    RenderText {#text} at (0,0) size 46x16
+      text run at (0,0) width 46: "sample"
+layer at (8,230) size 120x120
+  RenderBlock {DIV} at (0,62) size 120x120 [color=#FFFFFF] [bgcolor=#646438]
+    RenderText {#text} at (0,0) size 46x16
+      text run at (0,0) width 46: "sample"
+layer at (8,328) size 160x160 layerType: background only
+layer at (8,374) size 120x120
+  RenderBlock (positioned) zI: -1 {DIV} at (0,46) size 120x120 [color=#FFFFFF] [bgcolor=#646438]
+    RenderText zI: -1 {#text} at (0,0) size 95x96
+      text run at (0,0) width 95: "sample sample"
+      text run at (0,16) width 95: "sample sample"
+      text run at (0,32) width 95: "sample sample"
+      text run at (0,48) width 95: "sample sample"
+      text run at (0,64) width 95: "sample sample"
+      text run at (0,80) width 95: "sample sample"
+layer at (8,328) size 160x160 layerType: foreground only
+  RenderBlock {DIV} at (0,320) size 160x160 [bgcolor=#373763]
+    RenderBlock (anonymous) at (0,0) size 160x16
+      RenderText {#text} at (0,0) size 46x16
+        text run at (0,0) width 46: "sample"
+layer at (8,344) size 120x120
+  RenderBlock {DIV} at (0,16) size 120x120 [color=#FFFF00] [bgcolor=#C8C89C]
+    RenderText {#text} at (0,0) size 46x16
+      text run at (0,0) width 46: "sample"
