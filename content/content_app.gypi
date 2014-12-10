@@ -10,8 +10,6 @@
     '../base/base.gyp:base',
     '../base/base.gyp:base_i18n',
     '../crypto/crypto.gyp:crypto',
-    '../mojo/edk/mojo_edk.gyp:mojo_system_impl',
-    '../mojo/mojo_base.gyp:mojo_environment_chromium',
     '../ui/base/ui_base.gyp:ui_base',
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/gfx/gfx.gyp:gfx_geometry',
@@ -65,6 +63,11 @@
         'app/mojo/mojo_init.cc',
         'app/mojo/mojo_init.h',
       ],
+    }, {  # OS!="ios"
+      'dependencies': [
+        '../mojo/edk/mojo_edk.gyp:mojo_system_impl',
+        '../mojo/mojo_base.gyp:mojo_environment_chromium',
+     ],
     }],
   ],
 }

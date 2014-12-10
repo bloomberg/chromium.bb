@@ -25,6 +25,7 @@
     ['OS != "ios"', {
       'includes': [
         '../build/win_precompile.gypi',
+        'content_common_mojo_bindings.gypi',
         'content_resources.gypi',
       ],
     }],
@@ -74,6 +75,7 @@
             ['OS != "ios"', {
               'dependencies': [
                 'content_child',
+                'content_common_mojo_bindings',
                 'content_gpu',
                 'content_plugin',
                 'content_ppapi_plugin',
@@ -173,6 +175,7 @@
             }],
             ['OS != "ios"', {
               'dependencies': [
+                'content_common_mojo_bindings',
                 'content_resources',
               ],
             }],
@@ -189,6 +192,7 @@
           'conditions': [
             ['OS != "ios"', {
               'dependencies': [
+                'content_common_mojo_bindings',
                 'content_resources',
               ],
             }],
@@ -308,6 +312,11 @@
                 '../v8/src/third_party/vtune/v8vtune.gyp:v8_vtune',
               ],
             }],
+            ['OS != "ios"', {
+              'dependencies': [
+                'content_common_mojo_bindings',
+              ]
+            }]
           ],
           'includes': [
             'content_app.gypi',

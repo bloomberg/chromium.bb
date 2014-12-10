@@ -15,7 +15,6 @@ namespace content {
 class PermissionService;
 class PermissionServiceImpl;
 class RenderFrameHost;
-class RenderProcessHost;
 
 // Provides information to a PermissionService. It is used by the
 // PermissionService to handle request permission UI.
@@ -24,7 +23,6 @@ class RenderProcessHost;
 class PermissionServiceContext : public WebContentsObserver {
  public:
   explicit PermissionServiceContext(RenderFrameHost* render_frame_host);
-  explicit PermissionServiceContext(RenderProcessHost* render_process_host);
   virtual ~PermissionServiceContext();
 
   void CreateService(mojo::InterfaceRequest<PermissionService> request);
@@ -32,9 +30,6 @@ class PermissionServiceContext : public WebContentsObserver {
   // Called by a PermissionService identified as |service| when it has a
   // connection error in order to get unregistered and killed.
   void ServiceHadConnectionError(PermissionServiceImpl* service);
-
-  BrowserContext* GetBrowserContext() const;
-  GURL GetEmbeddingOrigin() const;
 
  private:
   // WebContentsObserver
@@ -46,7 +41,6 @@ class PermissionServiceContext : public WebContentsObserver {
   void CancelPendingRequests(RenderFrameHost*) const;
 
   RenderFrameHost* render_frame_host_;
-  RenderProcessHost* render_process_host_;
   ScopedVector<PermissionServiceImpl> services_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionServiceContext);

@@ -29,7 +29,6 @@
     '../ui/snapshot/snapshot.gyp:snapshot',
     'browser/service_worker/service_worker_proto.gyp:proto',
     'browser/speech/proto/speech_proto.gyp:speech_proto',
-    'content_common_mojo_bindings.gyp:content_common_mojo_bindings',
   ],
   'export_dependent_settings': [
     '../ui/accessibility/accessibility.gyp:ax_gen',
@@ -39,7 +38,6 @@
     '../third_party/WebKit/public/blink_headers.gyp:blink_headers',
     # The public render_widget_host.h needs to re-export skia defines.
     '../skia/skia.gyp:skia',
-    'content_common_mojo_bindings.gyp:content_common_mojo_bindings',
   ],
   'include_dirs': [
     '..',

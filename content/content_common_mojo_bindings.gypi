@@ -17,7 +17,6 @@
           # NOTE: Sources duplicated in
           # //content/public/common/BUILD.gn:mojo_bindings.
           'public/common/mojo_geoposition.mojom',
-          'public/common/permission_status.mojom',
         ],
       },
       'includes': [ '../mojo/public/tools/bindings/mojom_bindings_generator_explicit.gypi' ],
