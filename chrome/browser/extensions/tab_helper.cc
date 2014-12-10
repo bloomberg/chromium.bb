@@ -233,9 +233,11 @@ void TabHelper::DidNavigateMainFrame(
   if (util::IsStreamlinedHostedAppsEnabled()) {
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
     if (browser && browser->is_app()) {
-      SetExtensionApp(registry->GetExtensionById(
+      const Extension* extension = registry->GetExtensionById(
           web_app::GetExtensionIdFromApplicationName(browser->app_name()),
-          ExtensionRegistry::EVERYTHING));
+          ExtensionRegistry::EVERYTHING);
+      if (extension && AppLaunchInfo::GetFullLaunchURL(extension).is_valid())
+        SetExtensionApp(extension);
     } else {
       UpdateExtensionAppIcon(
           enabled_extensions.GetExtensionOrAppByURL(params.url));
