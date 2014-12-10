@@ -58,13 +58,10 @@ toolchain_install_dir = os.path.join(
     '%s_%s' % (host_os, pynacl.platform.GetArch()),
     'pnacl_newlib')
 
-def ToolchainBuildCmd(python_executable=None, sync=False, extra_flags=[]):
-  executable = [python_executable] if python_executable else [sys.executable]
+def ToolchainBuildCmd(sync=False, extra_flags=[]):
   sync_flag = ['--sync'] if sync else []
 
-  # The path to the script is a relative path with forward slashes so it is
-  # interpreted properly when it uses __file__ inside cygwin
-  executable_args = ['toolchain_build/toolchain_build_pnacl.py',
+  executable_args = [os.path.join('toolchain_build','toolchain_build_pnacl.py'),
                      '--verbose', '--clobber']
 
   if args.buildbot:
@@ -79,7 +76,12 @@ def ToolchainBuildCmd(python_executable=None, sync=False, extra_flags=[]):
   if host_os == 'win':
     executable_args.append('--disable-llvm-assertions')
 
-  return executable + executable_args + sync_flag + extra_flags
+  return [sys.executable] + executable_args + sync_flag + extra_flags
+
+def RunWithLog(cmd):
+  logging.info('Running: ' + ' '.join(cmd))
+  subprocess.check_call(cmd)
+  sys.stdout.flush()
 
 
 # Clean out any installed toolchain parts that were built by previous bot runs.
@@ -105,68 +107,16 @@ if host_os != 'win':
          os.path.join(
              NACL_DIR, '..', 'tools', 'clang', 'scripts', 'update.py')])
 
-if host_os == 'win':
-  # On windows, sync with Windows git/svn rather than cygwin git/svn
-  with buildbot_lib.Step('Sync toolchain_build sources', status):
-    buildbot_lib.Command(
-      context, ToolchainBuildCmd(sync=True, extra_flags=['--sync-only']))
-
-with buildbot_lib.Step('Update cygwin/check bash', status, halt_on_fail=True):
-  # Update cygwin if necessary.
-  if host_os == 'win':
-    if sys.platform == 'cygwin':
-      print 'This script does not support running from inside cygwin!'
-      sys.exit(1)
-    subprocess.check_call(os.path.join(SCRIPT_DIR, 'cygwin_env.bat'))
-    saved_path = os.environ['PATH']
-    print saved_path
-    paths = saved_path.split(os.pathsep)
-    # Put path to cygwin tools at the beginning, so cygwin tools like python
-    # and cmake will supercede others (which do not understand cygwin paths)
-    paths = [os.path.join(NACL_DIR, 'cygwin', 'bin')] + paths
-    print paths
-    os.environ['PATH'] = os.pathsep.join(paths)
-    print os.environ['PATH']
-    bash = os.path.join(NACL_DIR, 'cygwin', 'bin', 'bash')
-    cygwin_python = os.path.join(NACL_DIR, 'cygwin', 'bin', 'python')
-  else:
-    # Assume bash is in the path
-    bash = 'bash'
-
-  try:
-    print 'Bash version:'
-    sys.stdout.flush()
-    subprocess.check_call([bash , '--version'])
-  except subprocess.CalledProcessError:
-    print 'Bash not found in path!'
-    raise buildbot_lib.StepFailed()
 
 # toolchain_build outputs its own buildbot annotations, so don't use
 # buildbot_lib.Step to run it here.
-# Always run with the system python.
-# TODO(dschuff): remove support for cygwin python once the mingw build is rolled
-cmd = ToolchainBuildCmd(None,
-                        host_os != 'win', # On Windows, we synced already
-                        ['--packages-file', TEMP_PACKAGES_FILE])
-logging.info('Running: ' + ' '.join(cmd))
-subprocess.check_call(cmd)
+RunWithLog(ToolchainBuildCmd(True,
+                             ['--packages-file', TEMP_PACKAGES_FILE]))
 
 if args.buildbot or args.trybot:
   # Don't upload packages from the 32-bit linux bot to avoid racing on
   # uploading the same packages as the 64-bit linux bot
   if host_os != 'linux' or pynacl.platform.IsArch64Bit():
-    if host_os == 'win':
-      # Since we are currently running the build in cygwin, the filenames in
-      # TEMP_PACKAGES_FILE will have cygwin paths. Convert them to system
-      # paths so we dont' have to worry about running package_version tools
-      # in cygwin.
-      converted = []
-      with open(TEMP_PACKAGES_FILE) as f:
-        for line in f:
-          converted.append(
-            subprocess.check_output(['cygpath', '-w', line]).strip())
-      with open(TEMP_PACKAGES_FILE, 'w') as f:
-        f.write('\n'.join(converted))
     packages.UploadPackages(TEMP_PACKAGES_FILE, args.trybot)
 
   # Extract packages for bot testing
@@ -174,10 +124,11 @@ if args.buildbot or args.trybot:
 
 sys.stdout.flush()
 
-# Since mac and windows bots don't build target libraries or run tests yet,
-# Run a basic sanity check that tests the host components (LLVM, binutils,
-# gold plugin)
-if host_os == 'win' or host_os == 'mac':
+# Since windows bots don't build target libraries or run tests yet, Run a basic
+# sanity check that tests the host components (LLVM, binutils, gold plugin).
+# Then exit, since the rest of this file is just test running.
+# For now full test coverage is only achieved on the main waterfall bots.
+if host_os == 'win':
   with buildbot_lib.Step('Test host binaries and gold plugin', status,
                          halt_on_fail=False):
     buildbot_lib.Command(
@@ -185,17 +136,17 @@ if host_os == 'win' or host_os == 'mac':
         [sys.executable,
         os.path.join('tests', 'gold_plugin', 'gold_plugin_test.py'),
         '--toolchaindir', toolchain_install_dir])
+  sys.exit(0)
 
-if host_os != 'win':
-  # TODO(dschuff): Fix windows regression test runner (upstream in the LLVM
-  # codebase or locally in the way we build LLVM) ASAP
-  with buildbot_lib.Step('LLVM Regression', status,
-                         halt_on_fail=False):
-    llvm_test = [sys.executable,
-                 os.path.join(NACL_DIR, 'pnacl', 'scripts', 'llvm-test.py'),
-                 '--llvm-regression',
-                 '--verbose']
-    buildbot_lib.Command(context, llvm_test)
+# TODO(dschuff): Fix windows regression test runner (upstream in the LLVM
+# codebase or locally in the way we build LLVM) ASAP
+with buildbot_lib.Step('LLVM Regression', status,
+                       halt_on_fail=False):
+  llvm_test = [sys.executable,
+               os.path.join(NACL_DIR, 'pnacl', 'scripts', 'llvm-test.py'),
+               '--llvm-regression',
+               '--verbose']
+  buildbot_lib.Command(context, llvm_test)
 
 sys.stdout.flush()
 # On Linux we build all toolchain components (driven from this script), and then
@@ -204,15 +155,10 @@ sys.stdout.flush()
 # On Mac we build the toolchain but not the sandboxed translator, and run the
 # same tests as the main waterfall bot (which also does not run the sandboxed
 # translator: see https://code.google.com/p/nativeclient/issues/detail?id=3856 )
-# On Windows we don't build the target libraries, so we can't run the SCons
-# tests (other than the gold_plugin_test) on those platforms yet.
-# For now full test coverage is only achieved on the main waterfall bots.
-if host_os == 'win':
-  sys.exit(0)
-elif host_os == 'mac':
-  subprocess.check_call([sys.executable,
-                         os.path.join(NACL_DIR, 'buildbot','buildbot_pnacl.py'),
-                         'opt', '64', 'pnacl'])
+if host_os == 'mac':
+  RunWithLog([sys.executable,
+              os.path.join(NACL_DIR, 'buildbot','buildbot_pnacl.py'),
+              'opt', '64', 'pnacl'])
 else:
   # Now we run the PNaCl buildbot script. It in turn runs the PNaCl build.sh
   # script (currently only for the sandboxed translator) and runs scons tests.
@@ -231,6 +177,5 @@ else:
 
   platform_arg = 'mode-buildbot-tc-' + arch + '-linux'
 
-  command = [bash, buildbot_shell, platform_arg,  trybot_mode]
-  logging.info('Running: ' + ' '.join(command))
-  subprocess.check_call(command)
+  command = ['bash', buildbot_shell, platform_arg,  trybot_mode]
+  RunWithLog(command)
