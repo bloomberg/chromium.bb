@@ -12,7 +12,10 @@
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class KeyedService;
-class Profile;
+
+namespace content {
+class BrowserContext;
+}
 
 namespace ownership {
 class OwnerKeyUtil;
@@ -26,7 +29,8 @@ class OwnerSettingsServiceChromeOS;
 class OwnerSettingsServiceChromeOSFactory
     : public BrowserContextKeyedServiceFactory {
  public:
-  static OwnerSettingsServiceChromeOS* GetForProfile(Profile* profile);
+  static OwnerSettingsServiceChromeOS* GetForBrowserContext(
+      content::BrowserContext* context);
 
   static OwnerSettingsServiceChromeOSFactory* GetInstance();
 

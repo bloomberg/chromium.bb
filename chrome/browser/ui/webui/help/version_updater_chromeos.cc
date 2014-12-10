@@ -11,6 +11,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
 #include "chrome/grit/generated_resources.h"
@@ -20,14 +22,14 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/settings/cros_settings_names.h"
-#include "components/user_manager/user_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using chromeos::CrosSettings;
 using chromeos::DBusThreadManager;
+using chromeos::OwnerSettingsServiceChromeOS;
+using chromeos::OwnerSettingsServiceChromeOSFactory;
 using chromeos::UpdateEngineClient;
-using user_manager::UserManager;
 using chromeos::WizardController;
 
 namespace {
@@ -107,8 +109,8 @@ bool EnsureCanUpdate(const VersionUpdater::StatusCallback& callback) {
 
 }  // namespace
 
-VersionUpdater* VersionUpdater::Create() {
-  return new VersionUpdaterCros;
+VersionUpdater* VersionUpdater::Create(content::BrowserContext* context) {
+  return new VersionUpdaterCros(context);
 }
 
 void VersionUpdaterCros::GetUpdateStatus(const StatusCallback& callback) {
@@ -158,10 +160,14 @@ void VersionUpdaterCros::RelaunchBrowser() const {
 
 void VersionUpdaterCros::SetChannel(const std::string& channel,
                                     bool is_powerwash_allowed) {
-  if (user_manager::UserManager::Get()->IsCurrentUserOwner()) {
-    // For local owner set the field in the policy blob.
-    CrosSettings::Get()->SetString(chromeos::kReleaseChannel, channel);
-  }
+  OwnerSettingsServiceChromeOS* service =
+      context_
+          ? OwnerSettingsServiceChromeOSFactory::GetInstance()
+                ->GetForBrowserContext(context_)
+          : nullptr;
+  // For local owner set the field in the policy blob.
+  if (service)
+    service->SetString(chromeos::kReleaseChannel, channel);
   DBusThreadManager::Get()->GetUpdateEngineClient()->
       SetChannel(channel, is_powerwash_allowed);
 }
@@ -175,8 +181,9 @@ void VersionUpdaterCros::GetChannel(bool get_current_channel,
   update_engine_client->GetChannel(get_current_channel, cb);
 }
 
-VersionUpdaterCros::VersionUpdaterCros()
-    : last_operation_(UpdateEngineClient::UPDATE_STATUS_IDLE),
+VersionUpdaterCros::VersionUpdaterCros(content::BrowserContext* context)
+    : context_(context),
+      last_operation_(UpdateEngineClient::UPDATE_STATUS_IDLE),
       check_for_update_when_idle_(false),
       weak_ptr_factory_(this) {
 }

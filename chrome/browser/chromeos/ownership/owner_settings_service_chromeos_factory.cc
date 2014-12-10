@@ -40,9 +40,10 @@ OwnerSettingsServiceChromeOSFactory::~OwnerSettingsServiceChromeOSFactory() {
 
 // static
 OwnerSettingsServiceChromeOS*
-OwnerSettingsServiceChromeOSFactory::GetForProfile(Profile* profile) {
+OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
+    content::BrowserContext* context) {
   return static_cast<OwnerSettingsServiceChromeOS*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
+      GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 // static

@@ -57,8 +57,8 @@ class SessionManagerOperationTest : public testing::Test {
     policy_.Build();
 
     profile_.reset(new TestingProfile());
-    service_ =
-        OwnerSettingsServiceChromeOSFactory::GetForProfile(profile_.get());
+    service_ = OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
+        profile_.get());
   }
 
   MOCK_METHOD2(OnOperationCompleted,

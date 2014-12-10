@@ -38,7 +38,7 @@ void CheckNotification(VersionUpdater::Status /* status */,
 class VersionUpdaterCrosTest : public ::testing::Test {
  protected:
   VersionUpdaterCrosTest()
-      : version_updater_(VersionUpdater::Create()),
+      : version_updater_(VersionUpdater::Create(nullptr)),
         fake_update_engine_client_(NULL),
         mock_user_manager_(new MockUserManager()),
         user_manager_enabler_(mock_user_manager_) {}

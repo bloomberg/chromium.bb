@@ -271,6 +271,6 @@ void VersionUpdaterWin::BeginUpdateCheckOnFileThread(bool install_if_newer) {
 
 }  // namespace
 
-VersionUpdater* VersionUpdater::Create() {
+VersionUpdater* VersionUpdater::Create(content::BrowserContext* /* context */) {
   return new VersionUpdaterWin;
 }

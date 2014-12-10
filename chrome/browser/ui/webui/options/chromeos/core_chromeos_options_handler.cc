@@ -230,8 +230,9 @@ void CoreChromeOSOptionsHandler::SetPref(const std::string& pref_name,
     return ::options::CoreOptionsHandler::SetPref(pref_name, value, metric);
   Profile* profile = Profile::FromWebUI(web_ui());
   OwnerSettingsServiceChromeOS* service =
-      profile ? OwnerSettingsServiceChromeOSFactory::GetForProfile(profile)
-              : nullptr;
+      profile
+          ? OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(profile)
+          : nullptr;
   if (service && service->HandlesSetting(pref_name))
     service->Set(pref_name, *value);
   else
