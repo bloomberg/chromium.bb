@@ -142,6 +142,15 @@ class ExtensionFunction
   };
   typedef scoped_ptr<ResponseActionObject> ResponseAction;
 
+  // Helper class for tests to force all ExtensionFunction::user_gesture()
+  // calls to return true as long as at least one instance of this class
+  // exists.
+  class ScopedUserGestureForTests {
+   public:
+    ScopedUserGestureForTests();
+    ~ScopedUserGestureForTests();
+  };
+
   // Runs the function and returns the action to take when the caller is ready
   // to respond.
   //
@@ -239,8 +248,10 @@ class ExtensionFunction
   void set_include_incognito(bool include) { include_incognito_ = include; }
   bool include_incognito() const { return include_incognito_; }
 
+  // Note: consider using ScopedUserGestureForTests instead of calling
+  // set_user_gesture directly.
   void set_user_gesture(bool user_gesture) { user_gesture_ = user_gesture; }
-  bool user_gesture() const { return user_gesture_; }
+  bool user_gesture() const;
 
   void set_histogram_value(
       extensions::functions::HistogramValue histogram_value) {

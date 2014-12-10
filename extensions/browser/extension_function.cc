@@ -5,6 +5,8 @@
 #include "extensions/browser/extension_function.h"
 
 #include "base/logging.h"
+#include "base/memory/singleton.h"
+#include "base/synchronization/lock.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
@@ -104,6 +106,51 @@ class RespondLaterAction : public ExtensionFunction::ResponseActionObject {
 
   void Execute() override {}
 };
+
+// Used in implementation of ScopedUserGestureForTests.
+class UserGestureForTests {
+ public:
+  static UserGestureForTests* GetInstance();
+
+  // Returns true if there is at least one ScopedUserGestureForTests object
+  // alive.
+  bool HaveGesture();
+
+  // These should be called when a ScopedUserGestureForTests object is
+  // created/destroyed respectively.
+  void IncrementCount();
+  void DecrementCount();
+
+ private:
+  UserGestureForTests();
+  friend struct DefaultSingletonTraits<UserGestureForTests>;
+
+  base::Lock lock_; // for protecting access to count_
+  int count_;
+};
+
+// static
+UserGestureForTests* UserGestureForTests::GetInstance() {
+  return Singleton<UserGestureForTests>::get();
+}
+
+UserGestureForTests::UserGestureForTests() : count_(0) {}
+
+bool UserGestureForTests::HaveGesture() {
+  base::AutoLock autolock(lock_);
+  return count_ > 0;
+}
+
+void UserGestureForTests::IncrementCount() {
+  base::AutoLock autolock(lock_);
+  ++count_;
+}
+
+void UserGestureForTests::DecrementCount() {
+  base::AutoLock autolock(lock_);
+  --count_;
+}
+
 
 }  // namespace
 
@@ -220,6 +267,10 @@ std::string ExtensionFunction::GetError() const {
 
 void ExtensionFunction::SetError(const std::string& error) {
   error_ = error;
+}
+
+bool ExtensionFunction::user_gesture() const {
+  return user_gesture_ || UserGestureForTests::GetInstance()->HaveGesture();
 }
 
 ExtensionFunction::ResponseValue ExtensionFunction::NoArguments() {
@@ -444,6 +495,14 @@ AsyncExtensionFunction::AsyncExtensionFunction() {
 }
 
 AsyncExtensionFunction::~AsyncExtensionFunction() {
+}
+
+ExtensionFunction::ScopedUserGestureForTests::ScopedUserGestureForTests() {
+  UserGestureForTests::GetInstance()->IncrementCount();
+}
+
+ExtensionFunction::ScopedUserGestureForTests::~ScopedUserGestureForTests() {
+  UserGestureForTests::GetInstance()->DecrementCount();
 }
 
 ExtensionFunction::ResponseAction AsyncExtensionFunction::Run() {

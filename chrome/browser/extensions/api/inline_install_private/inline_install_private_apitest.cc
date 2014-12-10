@@ -45,12 +45,12 @@ class InlineInstallPrivateApiTestApp :
 };
 
 IN_PROC_BROWSER_TEST_F(InlineInstallPrivateApiTestApp, SuccessfulInstall) {
-  InlineInstallPrivateInstallFunction::SetRequireGestureForTests(false);
+  ExtensionFunction::ScopedUserGestureForTests gesture;
   Run("successfulInstall");
 }
 
 IN_PROC_BROWSER_TEST_F(InlineInstallPrivateApiTestApp, BackgroundInstall) {
-  InlineInstallPrivateInstallFunction::SetRequireGestureForTests(false);
+  ExtensionFunction::ScopedUserGestureForTests gesture;
   Run("backgroundInstall");
 }
 
@@ -68,7 +68,7 @@ class InlineInstallPrivateApiTestExtension :
 };
 
 IN_PROC_BROWSER_TEST_F(InlineInstallPrivateApiTestExtension, OnlyApps) {
-  InlineInstallPrivateInstallFunction::SetRequireGestureForTests(false);
+  ExtensionFunction::ScopedUserGestureForTests gesture;
   Run("onlyApps");
 }
 

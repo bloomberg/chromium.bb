@@ -18,8 +18,6 @@ namespace extensions {
 
 namespace {
 
-bool g_gesture_required = true;
-
 class Installer : public WebstoreInstallWithPrompt {
  public:
   Installer(const std::string& id,
@@ -94,12 +92,6 @@ InlineInstallPrivateInstallFunction::
     InlineInstallPrivateInstallFunction() {
 }
 
-// static
-void InlineInstallPrivateInstallFunction::SetRequireGestureForTests(
-    bool gesture_required) {
-  g_gesture_required = gesture_required;
-}
-
 InlineInstallPrivateInstallFunction::
     ~InlineInstallPrivateInstallFunction() {
 }
@@ -109,7 +101,7 @@ InlineInstallPrivateInstallFunction::Run() {
   typedef api::inline_install_private::Install::Params Params;
   scoped_ptr<Params> params(Params::Create(*args_));
 
-  if (g_gesture_required && !user_gesture())
+  if (!user_gesture())
     return RespondNow(CreateResponse("Must be called with a user gesture",
                                      webstore_install::NOT_PERMITTED));
 

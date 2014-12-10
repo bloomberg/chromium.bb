@@ -16,8 +16,6 @@ class InlineInstallPrivateInstallFunction
  public:
   InlineInstallPrivateInstallFunction();
 
-  static void SetRequireGestureForTests(bool gesture_required);
-
  protected:
   virtual ~InlineInstallPrivateInstallFunction() override;
 
