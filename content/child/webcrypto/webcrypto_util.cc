@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/logging.h"
+#include "base/numerics/safe_math.h"
 #include "base/strings/stringprintf.h"
 #include "content/child/webcrypto/status.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
@@ -122,11 +123,21 @@ blink::WebCryptoAlgorithm CreateAlgorithm(blink::WebCryptoAlgorithmId id) {
 }
 
 blink::WebCryptoAlgorithm CreateHmacImportAlgorithm(
+    blink::WebCryptoAlgorithmId hash_id,
+    unsigned int length_bits) {
+  DCHECK(blink::WebCryptoAlgorithm::isHash(hash_id));
+  return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
+      blink::WebCryptoAlgorithmIdHmac,
+      new blink::WebCryptoHmacImportParams(CreateAlgorithm(hash_id), true,
+                                           length_bits));
+}
+
+blink::WebCryptoAlgorithm CreateHmacImportAlgorithmNoLength(
     blink::WebCryptoAlgorithmId hash_id) {
   DCHECK(blink::WebCryptoAlgorithm::isHash(hash_id));
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       blink::WebCryptoAlgorithmIdHmac,
-      new blink::WebCryptoHmacImportParams(CreateAlgorithm(hash_id)));
+      new blink::WebCryptoHmacImportParams(CreateAlgorithm(hash_id), false, 0));
 }
 
 blink::WebCryptoAlgorithm CreateRsaHashedImportAlgorithm(
@@ -208,6 +219,38 @@ Status GetHmacKeyGenLengthInBits(const blink::WebCryptoHmacKeyGenParams* params,
   // Zero-length HMAC keys are disallowed by the spec.
   if (*keylen_bits == 0)
     return Status::ErrorGenerateHmacKeyLengthZero();
+
+  return Status::Success();
+}
+
+Status GetHmacImportKeyLengthBits(
+    const blink::WebCryptoHmacImportParams* params,
+    unsigned int key_data_byte_length,
+    unsigned int* keylen_bits) {
+  // Make sure that the key data's length can be represented in bits without
+  // overflow.
+  unsigned int data_keylen_bits = 0;
+  {
+    base::CheckedNumeric<unsigned int> keylen_bits(key_data_byte_length);
+    keylen_bits *= 8;
+
+    if (!keylen_bits.IsValid())
+      return Status::ErrorDataTooLarge();
+
+    data_keylen_bits = keylen_bits.ValueOrDie();
+  }
+
+  // Determine how many bits of the input to use.
+  *keylen_bits = data_keylen_bits;
+  if (params->hasLengthBits()) {
+    // The requested bit length must be:
+    //   * No longer than the input data length
+    //   * At most 7 bits shorter.
+    if (NumBitsToBytes(params->optionalLengthBits()) != key_data_byte_length) {
+      return Status::ErrorHmacImportBadLength();
+    }
+    *keylen_bits = params->optionalLengthBits();
+  }
 
   return Status::Success();
 }

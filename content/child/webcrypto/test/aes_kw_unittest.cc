@@ -194,7 +194,8 @@ TEST(WebCryptoAesKwTest, AesKwRawSymkeyWrapUnwrapKnownAnswer) {
 
     // Import the key to be wrapped.
     blink::WebCryptoKey key = ImportSecretKeyFromRaw(
-        test_key, CreateHmacImportAlgorithm(blink::WebCryptoAlgorithmIdSha1),
+        test_key,
+        CreateHmacImportAlgorithmNoLength(blink::WebCryptoAlgorithmIdSha1),
         blink::WebCryptoKeyUsageSign);
 
     // Wrap the key and verify the ciphertext result against the known answer.
@@ -208,10 +209,11 @@ TEST(WebCryptoAesKwTest, AesKwRawSymkeyWrapUnwrapKnownAnswer) {
     blink::WebCryptoKey unwrapped_key;
     ASSERT_EQ(
         Status::Success(),
-        UnwrapKey(blink::WebCryptoKeyFormatRaw, CryptoData(test_ciphertext),
-                  wrapping_key, wrapping_algorithm,
-                  CreateHmacImportAlgorithm(blink::WebCryptoAlgorithmIdSha1),
-                  true, blink::WebCryptoKeyUsageSign, &unwrapped_key));
+        UnwrapKey(
+            blink::WebCryptoKeyFormatRaw, CryptoData(test_ciphertext),
+            wrapping_key, wrapping_algorithm,
+            CreateHmacImportAlgorithmNoLength(blink::WebCryptoAlgorithmIdSha1),
+            true, blink::WebCryptoKeyUsageSign, &unwrapped_key));
     EXPECT_FALSE(key.isNull());
     EXPECT_TRUE(key.handle());
     EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
@@ -252,8 +254,9 @@ TEST(WebCryptoAesKwTest, AesKwRawSymkeyUnwrapSignVerifyHmac) {
       UnwrapKey(
           blink::WebCryptoKeyFormatRaw, CryptoData(test_ciphertext),
           wrapping_key, wrapping_algorithm,
-          CreateHmacImportAlgorithm(blink::WebCryptoAlgorithmIdSha1), false,
-          blink::WebCryptoKeyUsageSign | blink::WebCryptoKeyUsageVerify, &key));
+          CreateHmacImportAlgorithmNoLength(blink::WebCryptoAlgorithmIdSha1),
+          false, blink::WebCryptoKeyUsageSign | blink::WebCryptoKeyUsageVerify,
+          &key));
 
   EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
   EXPECT_EQ(blink::WebCryptoAlgorithmIdHmac, key.algorithm().id());
@@ -376,10 +379,11 @@ TEST(WebCryptoAesKwTest, AesKwJwkSymkeyUnwrapKnownData) {
   blink::WebCryptoKey unwrapped_key;
   ASSERT_EQ(
       Status::Success(),
-      UnwrapKey(blink::WebCryptoKeyFormatJwk, CryptoData(wrapped_key_data),
-                wrapping_key, wrapping_algorithm,
-                CreateHmacImportAlgorithm(blink::WebCryptoAlgorithmIdSha256),
-                true, blink::WebCryptoKeyUsageVerify, &unwrapped_key));
+      UnwrapKey(
+          blink::WebCryptoKeyFormatJwk, CryptoData(wrapped_key_data),
+          wrapping_key, wrapping_algorithm,
+          CreateHmacImportAlgorithmNoLength(blink::WebCryptoAlgorithmIdSha256),
+          true, blink::WebCryptoKeyUsageVerify, &unwrapped_key));
 
   // Validate the new key's attributes.
   EXPECT_FALSE(unwrapped_key.isNull());
@@ -464,8 +468,8 @@ TEST(WebCryptoAesKwTest, UnwrapHmacKeyBadUsage_JWK) {
         Status::ErrorCreateKeyBadUsages(),
         UnwrapKey(blink::WebCryptoKeyFormatJwk,
                   CryptoData(HexStringToBytes(kWrappedJwk)), wrapping_key,
-                  unwrap_algorithm,
-                  CreateHmacImportAlgorithm(blink::WebCryptoAlgorithmIdSha256),
+                  unwrap_algorithm, CreateHmacImportAlgorithmNoLength(
+                                        blink::WebCryptoAlgorithmIdSha256),
                   true, bad_usages[i], &key));
   }
 }

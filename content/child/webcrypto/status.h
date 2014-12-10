@@ -211,6 +211,9 @@ class CONTENT_EXPORT Status {
   // Attempted to generate an HMAC key using a key length of 0.
   static Status ErrorGenerateHmacKeyLengthZero();
 
+  // Attempted to import an HMAC key using a bad optional length.
+  static Status ErrorHmacImportBadLength();
+
   // Attempted to create a key (either by importKey(), generateKey(), or
   // unwrapKey()) however the key usages were not applicable for the key type
   // and algorithm.

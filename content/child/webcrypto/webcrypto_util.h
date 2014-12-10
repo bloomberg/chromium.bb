@@ -36,6 +36,11 @@ CONTENT_EXPORT blink::WebCryptoAlgorithm CreateAlgorithm(
 // the specified algorithm ID. It is an error to call this method with a hash
 // algorithm that is not SHA*.
 CONTENT_EXPORT blink::WebCryptoAlgorithm CreateHmacImportAlgorithm(
+    blink::WebCryptoAlgorithmId hash_id,
+    unsigned int length_bits);
+
+// Same as above but without specifying a length.
+CONTENT_EXPORT blink::WebCryptoAlgorithm CreateHmacImportAlgorithmNoLength(
     blink::WebCryptoAlgorithmId hash_id);
 
 // Creates an import algorithm for RSA algorithms that take a hash.
@@ -64,6 +69,12 @@ Status GetAesKeyGenLengthInBits(const blink::WebCryptoAesKeyGenParams* params,
 
 Status GetHmacKeyGenLengthInBits(const blink::WebCryptoHmacKeyGenParams* params,
                                  unsigned int* keylen_bits);
+
+// Gets the requested key length in bits for an HMAC import operation.
+Status GetHmacImportKeyLengthBits(
+    const blink::WebCryptoHmacImportParams* params,
+    unsigned int key_data_byte_length,
+    unsigned int* keylen_bits);
 
 Status VerifyAesKeyLengthForImport(unsigned int keylen_bytes);
 

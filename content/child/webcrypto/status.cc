@@ -246,6 +246,13 @@ Status Status::ErrorGenerateHmacKeyLengthZero() {
                 "HMAC key length must not be zero");
 }
 
+Status Status::ErrorHmacImportBadLength() {
+  return Status(
+      blink::WebCryptoErrorTypeData,
+      "The optional HMAC key length must be shorter than the key data, and by "
+      "no more than 7 bits.");
+}
+
 Status Status::ErrorCreateKeyBadUsages() {
   return Status(blink::WebCryptoErrorTypeSyntax,
                 "Cannot create a key using the specified key usages.");

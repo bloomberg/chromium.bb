@@ -8,7 +8,6 @@
 #include <sechash.h>
 
 #include "base/logging.h"
-#include "base/numerics/safe_math.h"
 #include "base/stl_util.h"
 #include "content/child/webcrypto/algorithm_implementation.h"
 #include "content/child/webcrypto/crypto_data.h"
@@ -98,21 +97,34 @@ class HmacImplementation : public AlgorithmImplementation {
                       bool extractable,
                       blink::WebCryptoKeyUsageMask usages,
                       blink::WebCryptoKey* key) const override {
-    const blink::WebCryptoAlgorithm& hash =
-        algorithm.hmacImportParams()->hash();
+    const blink::WebCryptoHmacImportParams* params =
+        algorithm.hmacImportParams();
 
     CK_MECHANISM_TYPE mechanism = CKM_INVALID_MECHANISM;
-    if (!WebCryptoHashToHMACMechanism(hash, &mechanism))
+    if (!WebCryptoHashToHMACMechanism(params->hash(), &mechanism))
       return Status::ErrorUnsupported();
 
-    base::CheckedNumeric<unsigned int> keylen_bits(key_data.byte_length());
-    keylen_bits *= 8;
+    unsigned int keylen_bits = 0;
+    Status status = GetHmacImportKeyLengthBits(params, key_data.byte_length(),
+                                               &keylen_bits);
+    if (status.IsError())
+      return status;
 
-    if (!keylen_bits.IsValid())
-      return Status::ErrorDataTooLarge();
+    const blink::WebCryptoKeyAlgorithm key_algorithm =
+        blink::WebCryptoKeyAlgorithm::createHmac(params->hash().id(),
+                                                 keylen_bits);
 
-    return ImportKeyRawNss(key_data, blink::WebCryptoKeyAlgorithm::createHmac(
-                                         hash.id(), keylen_bits.ValueOrDie()),
+    // If no bit truncation was requested, then done!
+    if ((keylen_bits % 8) == 0) {
+      return ImportKeyRawNss(key_data, key_algorithm, extractable, usages,
+                             mechanism, key);
+    }
+
+    // Otherwise zero out the unused bits in the key data before importing.
+    std::vector<uint8_t> modified_key_data(
+        key_data.bytes(), key_data.bytes() + key_data.byte_length());
+    TruncateToBitLength(keylen_bits, &modified_key_data);
+    return ImportKeyRawNss(CryptoData(modified_key_data), key_algorithm,
                            extractable, usages, mechanism, key);
   }
 
@@ -227,9 +239,13 @@ class HmacImplementation : public AlgorithmImplementation {
                                 blink::WebCryptoKeyUsageMask usages,
                                 const CryptoData& key_data,
                                 blink::WebCryptoKey* key) const override {
-    return ImportKeyRaw(key_data, CreateHmacImportAlgorithm(
-                                      algorithm.hmacParams()->hash().id()),
-                        extractable, usages, key);
+    const blink::WebCryptoHmacKeyAlgorithmParams* params =
+        algorithm.hmacParams();
+
+    return ImportKeyRaw(
+        key_data,
+        CreateHmacImportAlgorithm(params->hash().id(), params->lengthBits()),
+        extractable, usages, key);
   }
 };
 
