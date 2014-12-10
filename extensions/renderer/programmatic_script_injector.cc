@@ -73,6 +73,11 @@ PermissionsData::AccessType ProgrammaticScriptInjector::CanExecuteOnFrame(
   GURL effective_document_url = ScriptContext::GetEffectiveDocumentURL(
       frame, frame->document().url(), params_->match_about_blank);
   if (params_->is_web_view) {
+    if (frame->parent()) {
+      // This is a subframe inside <webview>, so allow it.
+      return PermissionsData::ACCESS_ALLOWED;
+    }
+
     return effective_document_url == params_->webview_src
                ? PermissionsData::ACCESS_ALLOWED
                : PermissionsData::ACCESS_DENIED;

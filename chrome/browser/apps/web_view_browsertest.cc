@@ -863,6 +863,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DisplayNoneSetSrc) {
   EXPECT_TRUE(test_passed_listener.WaitUntilSatisfied());
 }
 
+// Checks that {allFrames: true} injects script correctly to subframes
+// inside <webview>.
+IN_PROC_BROWSER_TEST_F(WebViewTest, ExecuteScript) {
+  ASSERT_TRUE(RunPlatformAppTestWithArg(
+      "platform_apps/web_view/common", "execute_script")) << message_;
+}
+
 // http://crbug.com/326332
 IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_Shim_TestAutosizeAfterNavigation) {
   TestHelper("testAutosizeAfterNavigation", "web_view/shim", NO_TEST_SERVER);

@@ -79,9 +79,15 @@ embedder.setupWebView = function(
     LOG('FROM GUEST: ' + e.message);
   });
 
+  var loadstopFired = false;
   // Step 1. loadstop.
   webview.addEventListener('loadstop', function(e) {
     LOG('webview.loadstop');
+    if (config.SKIP_MULTIPLE_LOADSTOP && loadstopFired) {
+      LOG('Skip loadstop handler');
+      return;
+    }
+    loadstopFired = true;
 
     LOG('IS_JS_ONLY_GUEST: ' + config.IS_JS_ONLY_GUEST);
     if (config.IS_JS_ONLY_GUEST) {
