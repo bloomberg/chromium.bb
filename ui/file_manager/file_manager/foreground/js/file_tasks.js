@@ -649,12 +649,8 @@ FileTasks.prototype.display_ = function(combobutton) {
 
   // If there exist defaultTask show it on the combobutton.
   if (this.defaultTask_) {
-    if (this.defaultTask_.taskId === FileTasks.ZIP_UNPACKER_TASK_ID) {
-      combobutton.defaultItem = this.createCombobuttonItem_(this.defaultTask_,
-          str('ACTION_OPEN'));
-    } else {
-      combobutton.defaultItem = this.createCombobuttonItem_(this.defaultTask_);
-    }
+    combobutton.defaultItem = this.createCombobuttonItem_(this.defaultTask_,
+        str('ACTION_OPEN'));
   } else {
     combobutton.defaultItem = {
       label: loadTimeData.getString('MORE_ACTIONS')
