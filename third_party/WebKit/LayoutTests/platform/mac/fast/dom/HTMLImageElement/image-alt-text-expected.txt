@@ -8,9 +8,21 @@ layer at (0,0) size 800x600
           text run at (0,0) width 782: "This tests whether alt text is shown for image elements with no src attribute. You should see \"Success\" twice, followed by"
           text run at (0,16) width 106: "a blue rectangle."
       RenderBlock {P} at (0,48) size 784x97
-        RenderImage {IMG} at (0,0) size 55x20
-        RenderBR {BR} at (55,20) size 0x0
-        RenderImage {IMG} at (0,20) size 102x52 [border: (1px solid #000000)]
-        RenderBR {BR} at (102,72) size 0x0
+        RenderBlock {IMG} at (0,0) size 54.66x20
+        RenderBR {BR} at (54,20) size 1x0
+        RenderBlock {IMG} at (0,20) size 102x52 [border: (1px solid #000000)]
+        RenderBR {BR} at (102,71) size 0x0
         RenderImage {IMG} at (0,72) size 75x25
         RenderBR {BR} at (75,97) size 0x0
+layer at (8,56) size 55x20 clip at (9,57) size 53x18
+  RenderBlock {DIV} at (0,0) size 54.66x20 [border: (1px solid #C0C0C0)]
+layer at (10,58) size 51x16
+  RenderBlock {DIV} at (2,2) size 50.66x16
+    RenderText {#text} at (0,0) size 51x16
+      text run at (0,0) width 51: "Success"
+layer at (9,77) size 100x50 clip at (10,78) size 98x48
+  RenderBlock {DIV} at (1,1) size 100x50 [border: (1px solid #C0C0C0)]
+layer at (11,79) size 96x16
+  RenderBlock {DIV} at (2,2) size 96x16
+    RenderText {#text} at (0,0) size 51x16
+      text run at (0,0) width 51: "Success"

@@ -20,7 +20,7 @@ layer at (0,0) size 800x600
             RenderTableCell {TD} at (0,7) size 17x3 [bgcolor=#666666] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               RenderImage {IMG} at (1,1) size 15x1
             RenderTableCell {TD} at (17,0) size 764x17 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 110x15
+              RenderBlock {IMG} at (1,1) size 110x15
             RenderTableCell {TD} at (781,7) size 17x3 [bgcolor=#666666] [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
               RenderImage {IMG} at (1,1) size 15x1
           RenderTableRow {TR} at (0,17) size 798x18
@@ -30,7 +30,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (1,1) size 24x16
                 text run at (1,1) width 24: "that"
             RenderTableCell {TD} at (781,24) size 17x3 [bgcolor=#666666] [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 15x1
+              RenderBlock {IMG} at (1,1) size 15x1
       RenderBlock {P} at (0,117) size 800x32
         RenderText {#text} at (20,0) size 730x32
           text run at (20,0) width 264: "Here's the first row in a table on its own. "
@@ -40,11 +40,11 @@ layer at (0,0) size 800x600
         RenderTableSection {TBODY} at (1,1) size 798x17
           RenderTableRow {TR} at (0,0) size 798x17
             RenderTableCell {TD} at (0,7) size 84x3 [bgcolor=#666666] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 15x1
+              RenderBlock {IMG} at (1,1) size 15x1
             RenderTableCell {TD} at (84,0) size 629x17 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 110x15
+              RenderBlock {IMG} at (1,1) size 110x15
             RenderTableCell {TD} at (713,7) size 85x3 [bgcolor=#666666] [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 15x1
+              RenderBlock {IMG} at (1,1) size 15x1
       RenderBlock {P} at (0,200) size 800x32
         RenderText {#text} at (20,0) size 749x32
           text run at (20,0) width 283: "Here's the second row in a table on its own. "
@@ -65,3 +65,28 @@ layer at (0,0) size 800x600
           text run at (20,0) width 626: "Note that in Nav4.x, the middle column gets the width of the maximum width cell in the column; "
           text run at (645,0) width 117: "on 5.0, the middle"
           text run at (20,16) width 228: "column gets the opposite treatment."
+layer at (19,66) size 110x15 clip at (20,67) size 108x13 scrollHeight 18
+  RenderBlock {DIV} at (0,0) size 110x15 [border: (1px solid #C0C0C0)]
+    RenderImage {IMG} at (2,2) size 16x16
+layer at (37,68) size 90x0
+  RenderBlock {DIV} at (18,2) size 90x0
+layer at (783,90) size 15x4 clip at (784,91) size 13x2 scrollWidth 17 scrollHeight 18
+  RenderBlock {DIV} at (0,0) size 15x4 [border: (1px solid #C0C0C0)]
+    RenderImage {IMG} at (2,2) size 16x16
+layer at (801,92) size 0x0
+  RenderBlock {DIV} at (18,2) size 0x0
+layer at (2,174) size 15x4 clip at (3,175) size 13x2 scrollWidth 17 scrollHeight 18
+  RenderBlock {DIV} at (0,0) size 15x4 [border: (1px solid #C0C0C0)]
+    RenderImage {IMG} at (2,2) size 16x16
+layer at (20,176) size 0x0
+  RenderBlock {DIV} at (18,2) size 0x0
+layer at (86,167) size 110x15 clip at (87,168) size 108x13 scrollHeight 18
+  RenderBlock {DIV} at (0,0) size 110x15 [border: (1px solid #C0C0C0)]
+    RenderImage {IMG} at (2,2) size 16x16
+layer at (104,169) size 90x0
+  RenderBlock {DIV} at (18,2) size 90x0
+layer at (715,174) size 15x4 clip at (716,175) size 13x2 scrollWidth 17 scrollHeight 18
+  RenderBlock {DIV} at (0,0) size 15x4 [border: (1px solid #C0C0C0)]
+    RenderImage {IMG} at (2,2) size 16x16
+layer at (733,176) size 0x0
+  RenderBlock {DIV} at (18,2) size 0x0

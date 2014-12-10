@@ -12,3 +12,5 @@ layer at (0,0) size 800x600
 layer at (8,28) size 300x150 clip at (9,29) size 298x148
   RenderBlock {DIV} at (0,0) size 300x150 [border: (1px solid #C0C0C0)]
     RenderImage {IMG} at (2,2) size 16x16
+layer at (26,30) size 280x0
+  RenderBlock {DIV} at (18,2) size 280x0

@@ -95,7 +95,7 @@ layer at (0,0) size 800x600
                 RenderText {#text} at (1,1) size 226x17
                   text run at (1,1) width 226: "image with value property changed"
               RenderTableCell {TD} at (396,123) size 240x22 [r=5 c=1 rs=1 cs=1]
-                RenderImage {INPUT} at (1,1) size 39x20
+                RenderBlock {INPUT} at (1,1) size 39x20
               RenderTableCell {TD} at (638,124) size 63x20 [r=5 c=2 rs=1 cs=1]
                 RenderText {#text} at (1,1) size 30x17
                   text run at (1,1) width 30: "after"
@@ -208,6 +208,12 @@ layer at (407,158) size 169x16
   RenderBlock {DIV} at (2,3) size 169x16
     RenderText {#text} at (0,0) size 30x16
       text run at (0,0) width 30: "\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}"
+layer at (405,252) size 39x20 clip at (406,253) size 37x18
+  RenderBlock {DIV} at (0,0) size 39x20 [border: (1px solid #C0C0C0)]
+layer at (407,254) size 35x16
+  RenderBlock {DIV} at (2,2) size 35x16
+    RenderText {#text} at (0,0) size 35x16
+      text run at (0,0) width 35: "before"
 layer at (407,301) size 169x16
   RenderBlock {DIV} at (2,3) size 169x16
     RenderText {#text} at (0,0) size 25x16

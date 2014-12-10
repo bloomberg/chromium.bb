@@ -7,13 +7,33 @@ layer at (0,0) size 800x600
         RenderTableSection {TBODY} at (1,1) size 343x119
           RenderTableRow {TR} at (0,2) size 343x23
             RenderTableCell {TD} at (2,40) size 126x39 [border: (1px inset #808080)] [r=0 c=0 rs=2 cs=2]
-              RenderImage {IMG} at (2,2) size 122x35
+              RenderBlock {IMG} at (2,2) size 122x35
             RenderTableCell {TD} at (130,9) size 199x9 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
-              RenderImage {IMG} at (2,2) size 195x5
+              RenderBlock {IMG} at (2,2) size 195x5
             RenderTableCell {TD} at (331,1) size 10x117 [border: (1px inset #808080)] [r=0 c=3 rs=4 cs=1]
-              RenderImage {IMG} at (2,2) size 6x113
+              RenderBlock {IMG} at (2,2) size 6x113
           RenderTableRow {TR} at (0,27) size 343x90
             RenderTableCell {TD} at (130,55) size 199x34 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
               RenderInline {A} at (0,0) size 195x16 [color=#0000EE]
                 RenderText {#text} at (0,0) size 0x0
-                RenderImage {IMG} at (2,2) size 195x30
+                RenderBlock {IMG} at (2,2) size 195x30
+layer at (13,51) size 122x35 clip at (14,52) size 120x33
+  RenderBlock {DIV} at (0,0) size 122x35 [border: (1px solid #C0C0C0)]
+    RenderImage {IMG} at (2,2) size 16x16
+layer at (31,53) size 102x0
+  RenderBlock {DIV} at (18,2) size 102x0
+layer at (141,20) size 195x5 clip at (142,21) size 193x3 scrollHeight 18
+  RenderBlock {DIV} at (0,0) size 195x5 [border: (1px solid #C0C0C0)]
+    RenderImage {IMG} at (2,2) size 16x16
+layer at (159,22) size 175x0
+  RenderBlock {DIV} at (18,2) size 175x0
+layer at (342,12) size 6x113 clip at (343,13) size 4x111 scrollWidth 17
+  RenderBlock {DIV} at (0,0) size 6x113 [border: (1px solid #C0C0C0)]
+    RenderImage {IMG} at (2,2) size 16x16
+layer at (360,14) size 0x0
+  RenderBlock {DIV} at (18,2) size 0x0
+layer at (141,66) size 195x30 clip at (142,67) size 193x28
+  RenderBlock {DIV} at (0,0) size 195x30 [border: (1px solid #C0C0C0)]
+    RenderImage {IMG} at (2,2) size 16x16
+layer at (159,68) size 175x0
+  RenderBlock {DIV} at (18,2) size 175x0

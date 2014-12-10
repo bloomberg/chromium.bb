@@ -99,7 +99,7 @@ layer at (0,0) size 800x628 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         RenderText {#text} at (70,16) size 10x16
           text run at (70,16) width 10: ": "
         RenderBR {BR} at (0,0) size 0x0
-        RenderImage {IMG} at (0,32) size 221x20
+        RenderBlock {IMG} at (0,32) size 236.81x20
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,488) size 784x32
         RenderText {#text} at (0,0) size 768x32
@@ -143,3 +143,10 @@ layer at (0,0) size 800x628 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             RenderTableCell {TD} at (100,40) size 50x19 [border: (1px none #000000)] [r=2 c=2 rs=1 cs=1]
               RenderText {#text} at (17,2) size 16x16
                 text run at (17,2) width 16: "13"
+layer at (8,468) size 237x20 clip at (9,469) size 235x18
+  RenderBlock {DIV} at (0,0) size 236.81x20 [border: (1px solid #C0C0C0)]
+    RenderImage {IMG} at (2,2) size 16x16
+layer at (26,470) size 217x16
+  RenderBlock {DIV} at (18,2) size 216.81x16
+    RenderText {#text} at (0,0) size 217x16
+      text run at (0,0) width 217: "[Example rendering from w3.org]"

@@ -35,4 +35,9 @@ layer at (0,0) size 800x325
                         text run at (2,34) width 27: "itself."
                   RenderTableRow {TR} at (0,51) size 93x19
                     RenderTableCell {TD} at (0,51) size 93x19 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
-                      RenderImage {IMG} at (2,9) size 5x5
+                      RenderBlock {IMG} at (2,2) size 5x5
+layer at (6,310) size 5x5 clip at (7,311) size 3x3 scrollWidth 17 scrollHeight 18
+  RenderBlock {DIV} at (0,7) size 5x5 [border: (1px solid #C0C0C0)]
+    RenderImage {IMG} at (2,2) size 16x16
+layer at (24,312) size 0x0
+  RenderBlock {DIV} at (18,2) size 0x0

@@ -10,9 +10,21 @@ layer at (0,0) size 800x600
           text run at (0,16) width 229: "twice, followed by a blue rectangle."
       RenderBlock {P} at (0,48) size 784x0
       RenderBlock {FORM} at (0,48) size 784x94
-        RenderImage {INPUT} at (0,0) size 46x17
-        RenderBR {BR} at (46,17) size 0x0
-        RenderImage {INPUT} at (0,17) size 102x52 [border: (1px solid #000000)]
-        RenderBR {BR} at (102,69) size 0x0
+        RenderBlock {INPUT} at (0,0) size 45.38x17
+        RenderBR {BR} at (45,17) size 1x0
+        RenderBlock {INPUT} at (0,17) size 102x52 [border: (1px solid #000000)]
+        RenderBR {BR} at (102,68) size 0x0
         RenderImage {INPUT} at (0,69) size 75x25
         RenderBR {BR} at (75,94) size 0x0
+layer at (8,56) size 45x17 clip at (9,57) size 43x15
+  RenderBlock {DIV} at (0,0) size 45.38x17 [border: (1px solid #C0C0C0)]
+layer at (10,58) size 41x13
+  RenderBlock {DIV} at (2,2) size 41.38x13
+    RenderText {#text} at (0,0) size 42x13
+      text run at (0,0) width 42: "Success"
+layer at (9,74) size 100x50 clip at (10,75) size 98x48
+  RenderBlock {DIV} at (1,1) size 100x50 [border: (1px solid #C0C0C0)]
+layer at (11,76) size 96x13
+  RenderBlock {DIV} at (2,2) size 96x13
+    RenderText {#text} at (0,0) size 42x13
+      text run at (0,0) width 42: "Success"

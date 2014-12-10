@@ -16,4 +16,10 @@ layer at (0,0) size 800x600
         RenderText {#text} at (339,40) size 74x19
           text run at (339,40) width 74: " is specified."
       RenderDeprecatedFlexibleBox {DIV} at (0,76) size 100x100 [bgcolor=#FF0000]
-        RenderImage {IMG} at (0,0) size 100x100 [bgcolor=#008000]
+        RenderBlock {IMG} at (0,0) size 100x100 [bgcolor=#008000]
+layer at (8,84) size 100x100 clip at (9,85) size 98x98
+  RenderBlock {DIV} at (0,0) size 100x100 [border: (1px solid #C0C0C0)]
+layer at (10,86) size 96x20
+  RenderBlock {DIV} at (2,2) size 96x20
+    RenderText {#text} at (0,0) size 37x19
+      text run at (0,0) width 37: "Image"
