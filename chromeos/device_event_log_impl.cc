@@ -6,6 +6,7 @@
 
 #include <cmath>
 #include <list>
+#include <set>
 
 #include "base/files/file_path.h"
 #include "base/json/json_string_value_serializer.h"
@@ -13,6 +14,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -28,12 +30,15 @@ const char* kLogLevelName[] = {"Error", "User", "Event", "Debug"};
 
 const char* kLogTypeNetworkDesc = "Network";
 const char* kLogTypePowerDesc = "Power";
+const char* kLogTypeLoginDesc = "Login";
 
 std::string GetLogTypeString(LogType type) {
   if (type == LOG_TYPE_NETWORK)
     return kLogTypeNetworkDesc;
   if (type == LOG_TYPE_POWER)
     return kLogTypePowerDesc;
+  if (type == LOG_TYPE_LOGIN)
+    return kLogTypeLoginDesc;
   NOTREACHED();
   return "Unknown";
 }
@@ -162,13 +167,16 @@ bool LogEntryMatches(const DeviceEventLogImpl::LogEntry& first,
          first.log_type == second.log_type && first.event == second.event;
 }
 
-bool LogEntryMatchesType(const DeviceEventLogImpl::LogEntry& entry,
-                         LogType type) {
-  if (type == LOG_TYPE_ALL)
+bool LogEntryMatchesTypes(const DeviceEventLogImpl::LogEntry& entry,
+                          const std::set<LogType>& include_types,
+                          const std::set<LogType>& exclude_types) {
+  if (include_types.empty() && exclude_types.empty())
     return true;
-  if (type == LOG_TYPE_NON_NETWORK && entry.log_type != LOG_TYPE_NETWORK)
+  if (!include_types.empty() && include_types.count(entry.log_type))
     return true;
-  return type == entry.log_type;
+  if (!exclude_types.empty() && !exclude_types.count(entry.log_type))
+    return true;
+  return false;
 }
 
 void GetFormat(const std::string& format_string,
@@ -199,6 +207,36 @@ void GetFormat(const std::string& format_string,
       *format_html = true;
     if (tok == "json")
       *format_json = true;
+  }
+}
+
+LogType LogTypeFromString(const std::string& desc) {
+  std::string desc_lc = base::StringToLowerASCII(desc);
+  if (desc_lc == "network")
+    return LOG_TYPE_NETWORK;
+  if (desc_lc == "power")
+    return LOG_TYPE_POWER;
+  if (desc_lc == "login")
+    return LOG_TYPE_LOGIN;
+  NOTREACHED() << "Unrecogized LogType: " << desc;
+  return LOG_TYPE_UNKNOWN;
+}
+
+void GetLogTypes(const std::string& types,
+                 std::set<LogType>* include_types,
+                 std::set<LogType>* exclude_types) {
+  base::StringTokenizer tokens(types, ",");
+  while (tokens.GetNext()) {
+    std::string tok(tokens.token());
+    if (tok.substr(0, 4) == "non-") {
+      LogType type = LogTypeFromString(tok.substr(4));
+      if (type != LOG_TYPE_UNKNOWN)
+        exclude_types->insert(type);
+    } else {
+      LogType type = LogTypeFromString(tok);
+      if (type != LOG_TYPE_UNKNOWN)
+        include_types->insert(type);
+    }
   }
 }
 
@@ -265,7 +303,7 @@ void DeviceEventLogImpl::AddLogEntry(const LogEntry& entry) {
 
 std::string DeviceEventLogImpl::GetAsString(StringOrder order,
                                             const std::string& format,
-                                            LogType log_type,
+                                            const std::string& types,
                                             LogLevel max_level,
                                             size_t max_events) {
   if (entries_.empty())
@@ -274,6 +312,9 @@ std::string DeviceEventLogImpl::GetAsString(StringOrder order,
   bool show_time, show_file, show_type, show_level, format_html, format_json;
   GetFormat(format, &show_time, &show_file, &show_type, &show_level,
             &format_html, &format_json);
+
+  std::set<LogType> include_types, exclude_types;
+  GetLogTypes(types, &include_types, &exclude_types);
 
   std::string result;
   base::ListValue log_entries;
@@ -287,7 +328,7 @@ std::string DeviceEventLogImpl::GetAsString(StringOrder order,
       for (LogEntryList::const_reverse_iterator riter = entries_.rbegin();
            riter != entries_.rend(); ++riter) {
         ++num_entries;
-        if (!LogEntryMatchesType(*riter, log_type))
+        if (!LogEntryMatchesTypes(*riter, include_types, exclude_types))
           continue;
         if (riter->log_level > max_level)
           continue;
@@ -302,7 +343,7 @@ std::string DeviceEventLogImpl::GetAsString(StringOrder order,
         --offset;
         continue;
       }
-      if (!LogEntryMatchesType(*iter, log_type))
+      if (!LogEntryMatchesTypes(*iter, include_types, exclude_types))
         continue;
       if (iter->log_level > max_level)
         continue;
@@ -319,7 +360,7 @@ std::string DeviceEventLogImpl::GetAsString(StringOrder order,
     // Iterate backwards through the list to show the most recent entries first.
     for (LogEntryList::const_reverse_iterator riter = entries_.rbegin();
          riter != entries_.rend(); ++riter) {
-      if (!LogEntryMatchesType(*riter, log_type))
+      if (!LogEntryMatchesTypes(*riter, include_types, exclude_types))
         continue;
       if (riter->log_level > max_level)
         continue;

@@ -47,7 +47,7 @@ class CHROMEOS_EXPORT DeviceEventLogImpl {
   // Implements device_event_log::GetAsString.
   std::string GetAsString(StringOrder order,
                           const std::string& format,
-                          LogType log_type,
+                          const std::string& types,
                           LogLevel max_level,
                           size_t max_events);
 

@@ -29,6 +29,9 @@ namespace chromeos {
 #define POWER_LOG(level)                                   \
   DEVICE_LOG(::chromeos::device_event_log::LOG_TYPE_POWER, \
              ::chromeos::device_event_log::LOG_LEVEL_##level)
+#define LOGIN_LOG(level)                                   \
+  DEVICE_LOG(::chromeos::device_event_log::LOG_TYPE_LOGIN, \
+             ::chromeos::device_event_log::LOG_LEVEL_##level)
 
 // Generally prefer the above macros unless |level| is not constant.
 
@@ -38,16 +41,17 @@ namespace chromeos {
 
 namespace device_event_log {
 
-// Used to specify the type of event.
+// Used to specify the type of event. NOTE: Be sure to update LogTypeFromString
+// and GetLogTypeString when adding entries to this enum.
 enum LogType {
   // Shill / network configuration related events.
   LOG_TYPE_NETWORK,
   // Power manager related events.
   LOG_TYPE_POWER,
-  // Use this in GetAsString for non NETWORK events (which are more frequent).
-  LOG_TYPE_NON_NETWORK,
-  // Use this in GetAsString for all events.
-  LOG_TYPE_ALL,
+  // Login related events.
+  LOG_TYPE_LOGIN,
+  // Used internally
+  LOG_TYPE_UNKNOWN
 };
 
 // Used to specify the detail level for logging. In GetAsString, used to
@@ -88,22 +92,23 @@ CHROMEOS_EXPORT void AddEntryWithDescription(const char* file,
 
 // Outputs the log to a formatted string.
 // |order| determines which order to output the events.
-// |format| is a string that determines which elements to show. Elements
-// must be comma-separated, e.g. "time,desc".
-// Note: order of the format strings does not affect the output.
+// |format| is a comma-separated string that determines which elements to show.
+//  e.g. "time,desc". Note: order of the strings does not affect the output.
 //  "time" - Include a timestamp.
 //  "file" - Include file and line number.
 //  "type" - Include the event type.
 //  "html" - Include html tags.
-//  "json" - Return as JSON format
-// Only events matching |log_type| are included in the output.
-// Only events with |log_level| <= |max_level| are included in the output.
-// If |max_events| > 0, limits how many events are output.
-// If |json| is specified, returns a JSON list of dictionaries containing time,
-// level, file, event, and description.
+//  "json" - Return JSON format dictionaries containing entries for timestamp,
+//           level, type, file, and event.
+// |types| lists the types included in the output. Prepend "non-" to disclude
+//  a type. e.g. "network,login" or "non-network". Use an empty string for
+//  all types.
+// |max_level| determines the maximum log level to be included in the output.
+// |max_events| limits how many events are output if > 0, otherwise all events
+//  are included.
 CHROMEOS_EXPORT std::string GetAsString(StringOrder order,
                                         const std::string& format,
-                                        LogType log_type,
+                                        const std::string& types,
                                         LogLevel max_level,
                                         size_t max_events);
 

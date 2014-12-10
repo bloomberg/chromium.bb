@@ -27,12 +27,12 @@ void DeviceEventLogSource::Fetch(const SysLogsSourceCallback& callback) {
   const int kMaxDeviceEventsForAboutSystem = 400;
   (*response)[kNetworkEventLogEntry] = chromeos::device_event_log::GetAsString(
       chromeos::device_event_log::OLDEST_FIRST, "time,file,level",
-      chromeos::device_event_log::LOG_TYPE_NETWORK,
+      "network",
       chromeos::device_event_log::kDefaultLogLevel,
       kMaxDeviceEventsForAboutSystem);
   (*response)[kDeviceEventLogEntry] = chromeos::device_event_log::GetAsString(
       chromeos::device_event_log::OLDEST_FIRST, "time,file,type,level",
-      chromeos::device_event_log::LOG_TYPE_NON_NETWORK,
+      "non-network",
       chromeos::device_event_log::LOG_LEVEL_DEBUG,
       kMaxDeviceEventsForAboutSystem);
   callback.Run(response.get());

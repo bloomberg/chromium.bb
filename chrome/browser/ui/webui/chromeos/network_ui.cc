@@ -41,8 +41,7 @@ class NetworkUIMessageHandler : public content::WebUIMessageHandler {
  private:
   void GetNetworkLog(const base::ListValue* value) const {
     base::StringValue data(chromeos::device_event_log::GetAsString(
-        chromeos::device_event_log::NEWEST_FIRST, "json",
-        device_event_log::LOG_TYPE_NETWORK,
+        chromeos::device_event_log::NEWEST_FIRST, "json", "network,login",
         chromeos::device_event_log::LOG_LEVEL_DEBUG, kMaxLogEvents));
     web_ui()->CallJavascriptFunction("NetworkUI.getNetworkLogCallback", data);
   }

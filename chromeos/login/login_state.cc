@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/sys_info.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/device_event_log.h"
 
 namespace chromeos {
 
@@ -63,14 +64,14 @@ void LoginState::SetLoggedInStateAndPrimaryUser(
     const std::string& primary_user_hash) {
   DCHECK(type != LOGGED_IN_USER_NONE);
   primary_user_hash_ = primary_user_hash;
-  VLOG(1) << "LoggedInStateUser: " << primary_user_hash;
+  LOGIN_LOG(EVENT) << "LoggedInStateUser: " << primary_user_hash;
   SetLoggedInState(state, type);
 }
 
 void LoginState::SetLoggedInState(LoggedInState state, LoggedInUserType type) {
   if (state == logged_in_state_ && type == logged_in_user_type_)
     return;
-  VLOG(1) << "LoggedInState: " << state << " UserType: " << type;
+  LOGIN_LOG(EVENT) << "LoggedInState: " << state << " UserType: " << type;
   logged_in_state_ = state;
   logged_in_user_type_ = type;
   NotifyObservers();

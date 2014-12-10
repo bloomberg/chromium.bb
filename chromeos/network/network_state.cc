@@ -6,7 +6,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "chromeos/network/network_event_log.h"
+#include "chromeos/device_event_log.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/network_util.h"
@@ -130,7 +130,7 @@ bool NetworkState::PropertyChanged(const std::string& key,
   } else if (key == shill::kProxyConfigProperty) {
     std::string proxy_config_str;
     if (!value.GetAsString(&proxy_config_str)) {
-      NET_LOG_ERROR("Failed to parse " + key, path());
+      NET_LOG(ERROR) << "Failed to parse " << path() << "." << key;
       return false;
     }
 
@@ -147,7 +147,7 @@ bool NetworkState::PropertyChanged(const std::string& key,
       // order leads to memory access errors.
       proxy_config_.MergeDictionary(proxy_config_dict.get());
     } else {
-      NET_LOG_ERROR("Failed to parse " + key, path());
+      NET_LOG(ERROR) << "Failed to parse " << path() << "." << key;
     }
     return true;
   }
@@ -156,11 +156,13 @@ bool NetworkState::PropertyChanged(const std::string& key,
 
 bool NetworkState::InitialPropertiesReceived(
     const base::DictionaryValue& properties) {
-  NET_LOG_DEBUG("InitialPropertiesReceived", path());
+  NET_LOG(EVENT) << "InitialPropertiesReceived: " << path() << ": " << name()
+                 << " State: " << connection_state_ << " Visible: " << visible_;
   bool changed = false;
   if (!properties.HasKey(shill::kTypeProperty)) {
-    NET_LOG_ERROR("NetworkState has no type",
-                  shill_property_util::GetNetworkIdFromProperties(properties));
+    NET_LOG(ERROR) << "NetworkState has no type: "
+                   << shill_property_util::GetNetworkIdFromProperties(
+                          properties);
     return false;
   }
   // Ensure that the network has a valid name.
@@ -256,8 +258,8 @@ void NetworkState::IPConfigPropertiesChanged(
           if (gurl.is_valid()) {
             web_proxy_auto_discovery_url_ = gurl;
           } else {
-            NET_LOG_ERROR("Invalid WebProxyAutoDiscoveryUrl: " + url_string,
-                          path());
+            NET_LOG(ERROR) << "Invalid WebProxyAutoDiscoveryUrl: " << path()
+                           << ": " << url_string;
             web_proxy_auto_discovery_url_ = GURL();
           }
         }
@@ -314,7 +316,7 @@ std::string NetworkState::GetNetmask() const {
 
 std::string NetworkState::GetSpecifier() const {
   if (!update_received()) {
-    NET_LOG_ERROR("GetSpecifier called before update", path());
+    NET_LOG(ERROR) << "GetSpecifier called before update: " <<  path();
     return std::string();
   }
   if (type() == shill::kTypeWifi)

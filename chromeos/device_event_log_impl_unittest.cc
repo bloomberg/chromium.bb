@@ -59,17 +59,15 @@ class DeviceEventLogTest : public testing::Test {
                            const std::string& format,
                            LogLevel max_level,
                            size_t max_events) {
-    return impl_->GetAsString(order, format, kDefaultType, max_level,
-                              max_events);
+    return impl_->GetAsString(order, format, "", max_level, max_events);
   }
 
   std::string GetOrderedString(StringOrder order, size_t max_events) {
-    return impl_->GetAsString(order, "file", kDefaultType, kDefaultLevel,
-                              max_events);
+    return impl_->GetAsString(order, "file", "", kDefaultLevel, max_events);
   }
 
-  std::string GetLogStringForType(LogType type) {
-    return impl_->GetAsString(OLDEST_FIRST, "type", type, kDefaultLevel, 0);
+  std::string GetLogStringForType(const std::string& types) {
+    return impl_->GetAsString(OLDEST_FIRST, "type", types, kDefaultLevel, 0);
   }
 
   void AddNetworkEntry(const char* file,
@@ -247,19 +245,19 @@ TEST_F(DeviceEventLogTest, TestType) {
   AddEventType(LOG_TYPE_NETWORK, "event6");
   EXPECT_EQ(
       "Network: event1\nNetwork: event3\nNetwork: event5\nNetwork: event6\n",
-      GetLogStringForType(LOG_TYPE_NETWORK));
-  EXPECT_EQ("Power: event2\nPower: event4\n",
-            GetLogStringForType(LOG_TYPE_POWER));
-  EXPECT_EQ("Power: event2\nPower: event4\n",
-            GetLogStringForType(LOG_TYPE_NON_NETWORK));
-  EXPECT_EQ(
+      GetLogStringForType("network"));
+  const std::string power_events("Power: event2\nPower: event4\n");
+  EXPECT_EQ(power_events, GetLogStringForType("power"));
+  EXPECT_EQ(power_events, GetLogStringForType("non-network"));
+  const std::string all_events(
       "Network: event1\n"
       "Power: event2\n"
       "Network: event3\n"
       "Power: event4\n"
       "Network: event5\n"
-      "Network: event6\n",
-      GetLogStringForType(LOG_TYPE_ALL));
+      "Network: event6\n");
+  EXPECT_EQ(all_events, GetLogStringForType("network,power"));
+  EXPECT_EQ(all_events, GetLogStringForType(""));
 }
 
 }  // namespace device_event_log

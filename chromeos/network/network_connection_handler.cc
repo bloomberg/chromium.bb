@@ -211,7 +211,6 @@ void NetworkConnectionHandler::LoggedInStateChanged() {
   if (logged_in_ || !login_state->IsUserLoggedIn())
     return;
 
-  NET_LOG_EVENT("Logged In", "");
   logged_in_ = true;
   logged_in_time_ = base::TimeTicks::Now();
 }

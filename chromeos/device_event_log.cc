@@ -61,12 +61,12 @@ void AddEntryWithDescription(const char* file,
 
 std::string GetAsString(StringOrder order,
                         const std::string& format,
-                        LogType log_type,
+                        const std::string& types,
                         LogLevel max_level,
                         size_t max_events) {
   if (!g_device_event_log)
     return "DeviceEventLog not initialized.";
-  return g_device_event_log->GetAsString(order, format, log_type, max_level,
+  return g_device_event_log->GetAsString(order, format, types, max_level,
                                          max_events);
 }
 

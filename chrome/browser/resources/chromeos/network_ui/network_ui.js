@@ -88,8 +88,7 @@ var NetworkUI = (function() {
       'logEntryFormat',
       timestamp,
       fileinfo,
-      logEntry['event'],
-      logEntry['description']);
+      logEntry['event']);
     res.appendChild(createLevelTag(level));
     res.appendChild(textWrapper);
     return res;
