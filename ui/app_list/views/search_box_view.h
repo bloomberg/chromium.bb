@@ -58,6 +58,7 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   // Overridden from views::View:
   gfx::Size GetPreferredSize() const override;
   bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
+  void OnEnabledChanged() override;
 
  private:
   // Updates model text and selection model with current Textfield info.

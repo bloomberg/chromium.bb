@@ -658,6 +658,12 @@ void AppListView::OnSpeechRecognitionStateChanged(
   }
 
   {
+    ui::ScopedLayerAnimationSettings search_box_settings(
+        search_box_widget_->GetLayer()->GetAnimator());
+    search_box_widget_->GetLayer()->SetOpacity(will_appear ? 0.0f : 1.0f);
+  }
+
+  {
     ui::ScopedLayerAnimationSettings speech_settings(
         speech_view_->layer()->GetAnimator());
     if (!will_appear) {
@@ -672,10 +678,15 @@ void AppListView::OnSpeechRecognitionStateChanged(
       speech_view_->layer()->SetTransform(speech_transform);
   }
 
-  if (will_appear)
+  // Prevent the search box from receiving events when hidden.
+  search_box_view_->SetEnabled(!will_appear);
+
+  if (will_appear) {
     speech_view_->SetVisible(true);
-  else
+  } else {
     app_list_main_view_->SetVisible(true);
+    search_box_view_->search_box()->RequestFocus();
+  }
 }
 
 }  // namespace app_list

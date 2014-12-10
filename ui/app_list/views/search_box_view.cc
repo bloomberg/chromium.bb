@@ -84,6 +84,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
       icon_view_(NULL),
       back_button_(NULL),
       speech_button_(NULL),
+      menu_button_(NULL),
       search_box_(new views::Textfield),
       contents_view_(NULL) {
   if (switches::IsExperimentalAppListEnabled()) {
@@ -184,6 +185,14 @@ bool SearchBoxView::OnMouseWheel(const ui::MouseWheelEvent& event) {
     return contents_view_->OnMouseWheel(event);
 
   return false;
+}
+
+void SearchBoxView::OnEnabledChanged() {
+  search_box_->SetEnabled(enabled());
+  if (menu_button_)
+    menu_button_->SetEnabled(enabled());
+  if (speech_button_)
+    speech_button_->SetEnabled(enabled());
 }
 
 void SearchBoxView::UpdateModel() {
