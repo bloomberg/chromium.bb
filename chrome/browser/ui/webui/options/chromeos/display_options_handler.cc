@@ -264,8 +264,7 @@ void DisplayOptionsHandler::SendDisplayInfo(
 
   int64 primary_id = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
   base::ListValue js_displays;
-  for (size_t i = 0; i < displays.size(); ++i) {
-    const gfx::Display& display = displays[i];
+  for (const gfx::Display& display : displays) {
     const ash::DisplayInfo& display_info =
         display_manager->GetDisplayInfo(display.id());
     const gfx::Rect& bounds = display.bounds();
@@ -283,20 +282,15 @@ void DisplayOptionsHandler::SendDisplayInfo(
                            static_cast<int>(display_info.rotation()));
 
     base::ListValue* js_resolutions = new base::ListValue();
-    const std::vector<ash::DisplayMode>& display_modes =
-        display_info.display_modes();
-    for (size_t i = 0; i < display_modes.size(); ++i) {
+    for (const ash::DisplayMode& display_mode : display_info.display_modes()) {
       js_resolutions->Append(
-          ConvertDisplayModeToValue(display.id(), display_modes[i]));
+          ConvertDisplayModeToValue(display.id(), display_mode));
     }
     js_display->Set("resolutions", js_resolutions);
 
     js_display->SetInteger("colorProfile", display_info.color_profile());
     base::ListValue* available_color_profiles = new base::ListValue();
-    for (size_t i = 0;
-         i < display_info.available_color_profiles().size(); ++i) {
-      ui::ColorCalibrationProfile color_profile =
-          display_info.available_color_profiles()[i];
+    for (const auto& color_profile : display_info.available_color_profiles()) {
       const base::string16 profile_name = GetColorProfileName(color_profile);
       if (profile_name.empty())
         continue;
@@ -391,7 +385,7 @@ void DisplayOptionsHandler::HandleSetDisplayMode(const base::ListValue* args) {
   if (display_id == gfx::Display::kInvalidDisplayID)
     return;
 
-  const base::DictionaryValue* mode_data = NULL;
+  const base::DictionaryValue* mode_data = nullptr;
   if (!args->GetDictionary(1, &mode_data)) {
     LOG(ERROR) << "Failed to get mode data";
     return;
