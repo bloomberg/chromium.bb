@@ -166,3 +166,13 @@ IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewGoodDataShouldSucceed) {
              skeleton_app->id(),
              NO_TEST_SERVER);
 }
+
+// Tests that <appview> correctly handles multiple successive connects.
+IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewMultipleConnects) {
+  const extensions::Extension* skeleton_app =
+      InstallPlatformApp("app_view/shim/skeleton");
+  TestHelper("testAppViewMultipleConnects",
+             "app_view/shim",
+             skeleton_app->id(),
+             NO_TEST_SERVER);
+}

@@ -132,11 +132,42 @@ function testAppViewGoodDataShouldSucceed(appToEmbed) {
   });
 };
 
+function testAppViewMultipleConnects(appToEmbed) {
+  var appview = new AppView();
+  LOG('appToEmbed  ' + appToEmbed);
+  document.body.appendChild(appview);
+  var connections = 0;
+  var callback = function(success) {
+    if (!success) {
+      LOG('FAILED TO CONNECT.');
+      embedder.test.fail();
+      return;
+    }
+    ++connections;
+    LOG('CONNECTED. (' + connections + ' / 10)');
+    if (connections == 10) {
+      embedder.test.succeed();
+      return;
+    }
+  }
+  appview.connect(appToEmbed, { 'foo': 'bleep' }, callback);
+  appview.connect(appToEmbed, { 'foo': 'bleep' }, callback);
+  appview.connect(appToEmbed, { 'foo': 'bleep' }, callback);
+  appview.connect(appToEmbed, { 'foo': 'bleep' }, callback);
+  appview.connect(appToEmbed, { 'foo': 'bleep' }, callback);
+  appview.connect(appToEmbed, { 'foo': 'bleep' }, callback);
+  appview.connect(appToEmbed, { 'foo': 'bleep' }, callback);
+  appview.connect(appToEmbed, { 'foo': 'bleep' }, callback);
+  appview.connect(appToEmbed, { 'foo': 'bleep' }, callback);
+  appview.connect(appToEmbed, { 'foo': 'bleep' }, callback);
+};
+
 embedder.test.testList = {
   'testAppViewWithUndefinedDataShouldSucceed':
       testAppViewWithUndefinedDataShouldSucceed,
   'testAppViewRefusedDataShouldFail': testAppViewRefusedDataShouldFail,
-  'testAppViewGoodDataShouldSucceed': testAppViewGoodDataShouldSucceed
+  'testAppViewGoodDataShouldSucceed': testAppViewGoodDataShouldSucceed,
+  'testAppViewMultipleConnects': testAppViewMultipleConnects
 };
 
 onload = function() {

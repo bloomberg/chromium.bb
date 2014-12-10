@@ -51,6 +51,7 @@ AppViewImpl.prototype.connect = function(app, data, callback) {
     'data': data || {}
   };
 
+  this.guest.destroy();
   this.guest.create(createParams, function() {
     if (!this.guest.getId()) {
       var errorMsg = 'Unable to connect to app "' + app + '".';
