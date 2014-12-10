@@ -995,9 +995,9 @@ namespace WTF {
         // one of the components is polymorphic.
         COMPILE_ASSERT(!Traits::emptyValueIsZero || !IsPolymorphic<KeyType>::value, EmptyValueCannotBeZeroForThingsWithAVtable);
         if (Traits::emptyValueIsZero) {
-            result = Allocator::template zeroedHashTableBackingMalloc<ValueType, HashTable>(allocSize);
+            result = Allocator::template allocateZeroedHashTableBacking<ValueType, HashTable>(allocSize);
         } else {
-            result = Allocator::template hashTableBackingMalloc<ValueType, HashTable>(allocSize);
+            result = Allocator::template allocateHashTableBacking<ValueType, HashTable>(allocSize);
             for (unsigned i = 0; i < size; i++)
                 initializeBucket(result[i]);
         }
@@ -1026,7 +1026,7 @@ namespace WTF {
                 }
             }
         }
-        Allocator::hashTableBackingFree(table);
+        Allocator::freeHashTableBacking(table);
     }
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>

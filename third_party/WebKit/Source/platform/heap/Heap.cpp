@@ -2731,7 +2731,7 @@ void HeapAllocator::backingFree(void* address)
     heap->promptlyFreeObject(header);
 }
 
-void HeapAllocator::vectorBackingFree(void* address)
+void HeapAllocator::freeVectorBacking(void* address)
 {
     typedef HeapIndexTrait<VectorBackingHeap> HeapTraits;
     typedef HeapTraits::HeapType HeapType;
@@ -2739,13 +2739,13 @@ void HeapAllocator::vectorBackingFree(void* address)
     backingFree<HeapTraits, HeapType, HeaderType>(address);
 }
 
-void HeapAllocator::inlineVectorBackingFree(void* address)
+void HeapAllocator::freeInlineVectorBacking(void* address)
 {
     using HeapTraits = HeapIndexTrait<InlineVectorBackingHeap>;
     backingFree<HeapTraits, HeapTraits::HeapType, HeapTraits::HeaderType>(address);
 }
 
-void HeapAllocator::hashTableBackingFree(void* address)
+void HeapAllocator::freeHashTableBacking(void* address)
 {
     typedef HeapIndexTrait<HashTableBackingHeap> HeapTraits;
     typedef HeapTraits::HeapType HeapType;
@@ -2777,7 +2777,7 @@ bool HeapAllocator::backingExpand(void* address, size_t newSize)
     return heap->expandObject(header, newSize);
 }
 
-bool HeapAllocator::vectorBackingExpand(void* address, size_t newSize)
+bool HeapAllocator::expandVectorBacking(void* address, size_t newSize)
 {
     typedef HeapIndexTrait<VectorBackingHeap> HeapTraits;
     typedef HeapTraits::HeapType HeapType;
@@ -2785,7 +2785,7 @@ bool HeapAllocator::vectorBackingExpand(void* address, size_t newSize)
     return backingExpand<HeapTraits, HeapType, HeaderType>(address, newSize);
 }
 
-bool HeapAllocator::inlineVectorBackingExpand(void* address, size_t newSize)
+bool HeapAllocator::expandInlineVectorBacking(void* address, size_t newSize)
 {
     using HeapTraits = HeapIndexTrait<InlineVectorBackingHeap>;
     return backingExpand<HeapTraits, HeapTraits::HeapType, HeapTraits::HeaderType>(address, newSize);
@@ -2825,12 +2825,12 @@ void HeapAllocator::backingShrink(void* address, size_t quantizedCurrentSize, si
     static_cast<typename HeapTraits::HeapType*>(state->heap(heapIndex))->shrinkObject(header, quantizedShrunkSize);
 }
 
-void HeapAllocator::vectorBackingShrinkInternal(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
+void HeapAllocator::shrinkVectorBackingInternal(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
 {
     backingShrink<HeapIndexTrait<VectorBackingHeap>>(address, quantizedCurrentSize, quantizedShrunkSize);
 }
 
-void HeapAllocator::inlineVectorBackingShrinkInternal(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
+void HeapAllocator::shrinkInlineVectorBackingInternal(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
 {
     backingShrink<HeapIndexTrait<InlineVectorBackingHeap>>(address, quantizedCurrentSize, quantizedShrunkSize);
 }

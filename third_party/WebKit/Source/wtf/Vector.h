@@ -292,9 +292,9 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             ASSERT(newCapacity);
             size_t sizeToAllocate = allocationSize(newCapacity);
             if (hasInlineCapacity)
-                m_buffer = Allocator::template inlineVectorBackingMalloc<T>(sizeToAllocate);
+                m_buffer = Allocator::template allocateInlineVectorBacking<T>(sizeToAllocate);
             else
-                m_buffer = Allocator::template vectorBackingMalloc<T>(sizeToAllocate);
+                m_buffer = Allocator::template allocateVectorBacking<T>(sizeToAllocate);
             m_capacity = sizeToAllocate / sizeof(T);
         }
 
@@ -358,13 +358,13 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         void deallocateBuffer(T* bufferToDeallocate)
         {
-            Allocator::vectorBackingFree(bufferToDeallocate);
+            Allocator::freeVectorBacking(bufferToDeallocate);
         }
 
         bool expandBuffer(size_t newCapacity)
         {
             size_t sizeToAllocate = allocationSize(newCapacity);
-            if (Allocator::vectorBackingExpand(m_buffer, sizeToAllocate)) {
+            if (Allocator::expandVectorBacking(m_buffer, sizeToAllocate)) {
                 m_capacity = sizeToAllocate / sizeof(T);
                 return true;
             }
@@ -375,7 +375,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         {
             ASSERT(newCapacity < capacity());
             size_t newSize = allocationSize(newCapacity);
-            if (!Allocator::vectorBackingShrink(m_buffer, allocationSize(capacity()), newSize))
+            if (!Allocator::shrinkVectorBacking(m_buffer, allocationSize(capacity()), newSize))
                 return false;
             m_capacity = newSize / sizeof(T);
             return true;
@@ -441,7 +441,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         NEVER_INLINE void reallyDeallocateBuffer(T* bufferToDeallocate)
         {
-            Allocator::inlineVectorBackingFree(bufferToDeallocate);
+            Allocator::freeInlineVectorBacking(bufferToDeallocate);
         }
 
         void deallocateBuffer(T* bufferToDeallocate)
@@ -457,7 +457,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
                 return false;
 
             size_t sizeToAllocate = allocationSize(newCapacity);
-            if (Allocator::inlineVectorBackingExpand(m_buffer, sizeToAllocate)) {
+            if (Allocator::expandInlineVectorBacking(m_buffer, sizeToAllocate)) {
                 m_capacity = sizeToAllocate / sizeof(T);
                 return true;
             }
@@ -474,7 +474,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             }
             ASSERT(m_buffer != inlineBuffer());
             size_t newSize = allocationSize(newCapacity);
-            if (!Allocator::inlineVectorBackingShrink(m_buffer, allocationSize(capacity()), newSize))
+            if (!Allocator::shrinkInlineVectorBacking(m_buffer, allocationSize(capacity()), newSize))
                 return false;
             m_capacity = newSize / sizeof(T);
             return true;
