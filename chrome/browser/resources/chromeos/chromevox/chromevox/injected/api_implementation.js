@@ -287,7 +287,7 @@ cvox.ApiImplementation.syncToNode = function(
         cvox.TtsCategory.NAV);
   }
 
-  cvox.ChromeVox.navigationManager.getBraille().write();
+  cvox.ChromeVox.braille.write(cvox.ChromeVox.navigationManager.getBraille());
 
   cvox.ChromeVox.navigationManager.updatePosition(targetNode);
 };

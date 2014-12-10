@@ -1139,7 +1139,7 @@ cvox.ChromeVoxEventWatcher.handleControlChanged = function(control) {
     cvox.ChromeVox.tts.speak(newValue,
                              cvox.ChromeVoxEventWatcher.queueMode_(),
                              null);
-    cvox.NavBraille.fromText(newValue).write();
+    cvox.ChromeVox.braille.write(cvox.NavBraille.fromText(newValue));
   }
 };
 

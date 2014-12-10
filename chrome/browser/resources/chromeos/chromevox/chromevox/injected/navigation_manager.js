@@ -740,7 +740,7 @@ cvox.NavigationManager.prototype.finishNavCommand = function(
                              null,
                              cvox.TtsCategory.NAV);
 
-  this.getBraille().write();
+  cvox.ChromeVox.braille.write(this.getBraille());
 
   this.updatePosition(this.getCurrentNode());
 };

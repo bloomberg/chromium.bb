@@ -11,7 +11,6 @@
 
 goog.provide('cvox.NavBraille');
 
-goog.require('cvox.ChromeVox');
 goog.require('cvox.Spannable');
 
 /**
@@ -109,12 +108,4 @@ cvox.NavBraille.prototype.toJson = function() {
     startIndex: this.startIndex,
     endIndex: this.endIndex
   };
-};
-
-
-/**
- * Sends braille to the background page.
- */
-cvox.NavBraille.prototype.write = function() {
-  cvox.ChromeVox.braille.write(this);
 };
