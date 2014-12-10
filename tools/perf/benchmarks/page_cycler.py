@@ -8,7 +8,7 @@ from telemetry import benchmark
 
 
 class _PageCycler(benchmark.Benchmark):
-  options = {'pageset_repeat': 10}
+  options = {'pageset_repeat': 6}
 
   @classmethod
   def AddBenchmarkCommandLineArgs(cls, parser):
@@ -81,7 +81,7 @@ class PageCyclerNetsimTop10(_PageCycler):
   options = {
       'cold_load_percent': 100,
       'extra_wpr_args_as_string': '--shaping_type=proxy --net=cable',
-      'pageset_repeat': 5,
+      'pageset_repeat': 6,
   }
 
   def CreatePageTest(self, options):
