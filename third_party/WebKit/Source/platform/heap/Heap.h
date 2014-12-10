@@ -1383,6 +1383,11 @@ public:
     {
         return reinterpret_cast<T*>(Heap::allocate<HeapVectorBacking<T, VectorTraits<T>>, HeapIndexTrait<VectorBackingHeap> >(size));
     }
+    template <typename T>
+    static T* inlineVectorBackingMalloc(size_t size)
+    {
+        return reinterpret_cast<T*>(Heap::allocate<HeapVectorBacking<T, VectorTraits<T>>, HeapIndexTrait<InlineVectorBackingHeap>>(size));
+    }
     template <typename T, typename HashTable>
     static T* hashTableBackingMalloc(size_t size)
     {
@@ -1404,6 +1409,13 @@ public:
     static inline bool vectorBackingShrink(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
     {
         vectorBackingShrinkInternal(address, quantizedCurrentSize, quantizedShrunkSize);
+        return true;
+    }
+    PLATFORM_EXPORT static void inlineVectorBackingFree(void* address);
+    PLATFORM_EXPORT static bool inlineVectorBackingExpand(void*, size_t);
+    static inline bool inlineVectorBackingShrink(void* address, size_t quantizedCurrentSize, size_t quantizedShrinkedSize)
+    {
+        inlineVectorBackingShrinkInternal(address, quantizedCurrentSize, quantizedShrinkedSize);
         return true;
     }
 
@@ -1495,7 +1507,10 @@ private:
     static void backingFree(void*);
     template<typename HeapTraits, typename HeapType, typename HeaderType>
     static bool backingExpand(void*, size_t);
+    template<typename HeapTraits>
+    static void backingShrink(void*, size_t quantizedCurrentSize, size_t quantizedShrunkSize);
     PLATFORM_EXPORT static void vectorBackingShrinkInternal(void*, size_t quantizedCurrentSize, size_t quantizedShrunkSize);
+    PLATFORM_EXPORT static void inlineVectorBackingShrinkInternal(void*, size_t quantizedCurrentSize, size_t quantizedShrunkSize);
 
     template<typename T, size_t u, typename V> friend class WTF::Vector;
     template<typename T, typename U, typename V, typename W> friend class WTF::HashSet;

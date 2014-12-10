@@ -40,7 +40,7 @@ namespace blink {
 
 class CSSValueList;
 
-class CSSValuePool :  public NoBaseWillBeGarbageCollected<CSSValuePool> {
+class CSSValuePool :  public NoBaseWillBeGarbageCollectedFinalized<CSSValuePool> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     PassRefPtrWillBeRawPtr<CSSValueList> createFontFaceValue(const AtomicString&);

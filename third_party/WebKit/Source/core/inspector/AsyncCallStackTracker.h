@@ -72,7 +72,7 @@ public:
 
     typedef WillBeHeapDeque<RefPtrWillBeMember<AsyncCallStack>, 4> AsyncCallStackVector;
 
-    class AsyncCallChain final : public RefCountedWillBeGarbageCollected<AsyncCallChain> {
+    class AsyncCallChain final : public RefCountedWillBeGarbageCollectedFinalized<AsyncCallChain> {
     public:
         explicit AsyncCallChain(int id) : m_id(id) { }
         AsyncCallChain(int id, const AsyncCallChain& t) : m_id(id), m_callStacks(t.m_callStacks) { }

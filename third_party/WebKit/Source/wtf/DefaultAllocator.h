@@ -97,6 +97,11 @@ public:
         // we can skip reallocation.
         return quantizedCurrentSize == quantizedShrunkSize;
     }
+    template <typename T>
+    static T* inlineVectorBackingMalloc(size_t size) { return vectorBackingMalloc<T>(size); }
+    static inline void inlineVectorBackingFree(void* address) { vectorBackingFree(address); }
+    static inline bool inlineVectorBackingExpand(void*, size_t) { return false; }
+    static inline bool inlineVectorBackingShrink(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize) { return vectorBackingShrink(address, quantizedCurrentSize, quantizedShrunkSize); }
 
     static void free(void* address)
     {

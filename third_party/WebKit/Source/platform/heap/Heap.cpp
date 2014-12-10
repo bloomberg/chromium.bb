@@ -2739,6 +2739,12 @@ void HeapAllocator::vectorBackingFree(void* address)
     backingFree<HeapTraits, HeapType, HeaderType>(address);
 }
 
+void HeapAllocator::inlineVectorBackingFree(void* address)
+{
+    using HeapTraits = HeapIndexTrait<InlineVectorBackingHeap>;
+    backingFree<HeapTraits, HeapTraits::HeapType, HeapTraits::HeaderType>(address);
+}
+
 void HeapAllocator::hashTableBackingFree(void* address)
 {
     typedef HeapIndexTrait<HashTableBackingHeap> HeapTraits;
@@ -2779,7 +2785,14 @@ bool HeapAllocator::vectorBackingExpand(void* address, size_t newSize)
     return backingExpand<HeapTraits, HeapType, HeaderType>(address, newSize);
 }
 
-void HeapAllocator::vectorBackingShrinkInternal(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
+bool HeapAllocator::inlineVectorBackingExpand(void* address, size_t newSize)
+{
+    using HeapTraits = HeapIndexTrait<InlineVectorBackingHeap>;
+    return backingExpand<HeapTraits, HeapTraits::HeapType, HeapTraits::HeaderType>(address, newSize);
+}
+
+template<typename HeapTraits>
+void HeapAllocator::backingShrink(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
 {
     // We shrink the object only if the shrinking will make a non-small
     // prompt-free block.
@@ -2805,16 +2818,21 @@ void HeapAllocator::vectorBackingShrinkInternal(void* address, size_t quantizedC
     if (page->threadState() != state)
         return;
 
-    using HeapTraits = HeapIndexTrait<VectorBackingHeap>;
-    using HeapType = HeapTraits::HeapType;
-    using HeaderType = HeapTraits::HeaderType;
-
-    HeaderType* header = HeaderType::fromPayload(address);
+    typename HeapTraits::HeaderType* header = HeapTraits::HeaderType::fromPayload(address);
     header->checkHeader();
 
     int heapIndex = HeapTraits::index(header->gcInfo()->hasFinalizer(), header->payloadSize());
-    static_cast<HeapType*>(state->heap(heapIndex))->shrinkObject(header, quantizedShrunkSize);
-    return;
+    static_cast<typename HeapTraits::HeapType*>(state->heap(heapIndex))->shrinkObject(header, quantizedShrunkSize);
+}
+
+void HeapAllocator::vectorBackingShrinkInternal(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
+{
+    backingShrink<HeapIndexTrait<VectorBackingHeap>>(address, quantizedCurrentSize, quantizedShrunkSize);
+}
+
+void HeapAllocator::inlineVectorBackingShrinkInternal(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
+{
+    backingShrink<HeapIndexTrait<InlineVectorBackingHeap>>(address, quantizedCurrentSize, quantizedShrunkSize);
 }
 
 BaseHeapPage* Heap::lookup(Address address)

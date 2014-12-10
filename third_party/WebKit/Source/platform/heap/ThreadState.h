@@ -181,6 +181,7 @@ enum TypedHeaps {
     General3Heap,
     General4Heap,
     VectorBackingHeap,
+    InlineVectorBackingHeap,
     HashTableBackingHeap,
     FOR_EACH_TYPED_HEAP(TypedHeapEnumName)
     General1HeapNonFinalized,
@@ -188,6 +189,7 @@ enum TypedHeaps {
     General3HeapNonFinalized,
     General4HeapNonFinalized,
     VectorBackingHeapNonFinalized,
+    InlineVectorBackingHeapNonFinalized,
     HashTableBackingHeapNonFinalized,
     FOR_EACH_TYPED_HEAP(TypedHeapEnumNameNonFinalized)
     // Values used for iteration of heap segments.
@@ -269,6 +271,10 @@ template<>
 struct HeapIndexTrait<VectorBackingHeap> : public HeapIndexTraitBase<VectorBackingHeap> { };
 template<>
 struct HeapIndexTrait<VectorBackingHeapNonFinalized> : public HeapIndexTrait<VectorBackingHeap> { };
+template<>
+struct HeapIndexTrait<InlineVectorBackingHeap> : public HeapIndexTraitBase<InlineVectorBackingHeap> { };
+template<>
+struct HeapIndexTrait<InlineVectorBackingHeapNonFinalized> : public HeapIndexTrait<InlineVectorBackingHeap> { };
 template<>
 struct HeapIndexTrait<HashTableBackingHeap> : public HeapIndexTraitBase<HashTableBackingHeap> { };
 template<>

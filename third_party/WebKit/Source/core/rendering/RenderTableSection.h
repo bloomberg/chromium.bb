@@ -327,6 +327,10 @@ DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderTableSection, isTableSection());
 #if ENABLE(OILPAN)
 namespace WTF {
 
+template<> struct VectorTraits<blink::RenderTableSection::CellStruct> : VectorTraitsBase<blink::RenderTableSection::CellStruct> {
+    static const bool needsDestruction = false;
+};
+
 template<> struct VectorTraits<blink::RenderTableSection::RowStruct> : VectorTraitsBase<blink::RenderTableSection::RowStruct> {
     static const bool needsDestruction = false;
 };
