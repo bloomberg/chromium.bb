@@ -623,7 +623,7 @@ void AppListViewTestContext::RunSearchResultsTest() {
     // Check that the current search is using |search_text|.
     EXPECT_EQ(search_text, delegate_->GetTestModel()->search_box()->text());
     EXPECT_EQ(search_text, main_view->search_box_view()->search_box()->text());
-    view_->Layout();
+    contents_view->Layout();
     EXPECT_TRUE(
         contents_view->IsStateActive(AppListModel::STATE_SEARCH_RESULTS));
     EXPECT_TRUE(
@@ -631,7 +631,7 @@ void AppListViewTestContext::RunSearchResultsTest() {
 
     // Check that typing into the search box triggers the search page.
     EXPECT_TRUE(SetAppListState(AppListModel::STATE_APPS));
-    view_->Layout();
+    contents_view->Layout();
     EXPECT_EQ(default_contents_bounds,
               contents_view->apps_container_view()->bounds());
     EXPECT_TRUE(
@@ -644,7 +644,7 @@ void AppListViewTestContext::RunSearchResultsTest() {
     EXPECT_EQ(new_search_text, delegate_->GetTestModel()->search_box()->text());
     EXPECT_EQ(new_search_text,
               main_view->search_box_view()->search_box()->text());
-    view_->Layout();
+    contents_view->Layout();
     EXPECT_TRUE(
         contents_view->IsStateActive(AppListModel::STATE_SEARCH_RESULTS));
     EXPECT_TRUE(

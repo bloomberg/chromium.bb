@@ -25,6 +25,7 @@
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"
+#include "ui/views/widget/widget.h"
 
 namespace app_list {
 
@@ -461,6 +462,15 @@ gfx::Size ContentsView::GetPreferredSize() const {
 }
 
 void ContentsView::Layout() {
+  // The search box is contained in a widget so set the bounds of the widget
+  // rather than the SearchBoxView. In athena, the search box widget will be the
+  // same as the app list widget so don't move it.
+  views::Widget* search_box_widget = GetSearchBoxView()->GetWidget();
+  if (search_box_widget && search_box_widget != GetWidget()) {
+    search_box_widget->SetBounds(
+        ConvertRectToWidget(GetSearchBoxBoundsForState(GetActiveState())));
+  }
+
   // Immediately finish all current animations.
   pagination_model_.FinishAnimation();
 

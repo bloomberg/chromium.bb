@@ -398,7 +398,7 @@ void AppListView::InitChildWidgets() {
   search_box_widget_->Init(search_box_widget_params);
   search_box_widget_->SetContentsView(search_box_view_);
 
-  Layout();
+  app_list_main_view_->contents_view()->Layout();
 }
 
 void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
@@ -581,16 +581,6 @@ void AppListView::Layout() {
       contents_bounds.height()));
 
   app_list_main_view_->SetBoundsRect(centered_bounds);
-
-  // GetDefaultSearchBoxBounds() returns the bounds in |contents_view|'s
-  // coordinate, therefore convert it to this coordinate.
-  ContentsView* contents_view = app_list_main_view_->contents_view();
-  gfx::Rect search_box_bounds = contents_view->GetSearchBoxBoundsForState(
-      contents_view->GetActiveState());
-  if (search_box_widget_) {
-    search_box_widget_->SetBounds(
-        contents_view->ConvertRectToWidget(search_box_bounds));
-  }
 
   if (speech_view_) {
     gfx::Rect speech_bounds = centered_bounds;
