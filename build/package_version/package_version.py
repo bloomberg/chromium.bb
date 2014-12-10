@@ -900,8 +900,8 @@ def _DoSetRevisionCmd(arguments):
       first_target = custom_package_targets[0]
       package_name = first_target[1]
 
-    with pynacl.working_directory.TemporaryWorkingDirectory() as work_dir:
-      for package_target in package_targets:
+    for package_target in package_targets:
+      with pynacl.working_directory.TemporaryWorkingDirectory() as work_dir:
         remote_package_key = package_locations.GetRemotePackageKey(
             arguments.packages_desc.IsSharedPackage(package_name),
             revision_num,
