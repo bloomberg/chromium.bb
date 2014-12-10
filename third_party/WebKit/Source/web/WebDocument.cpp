@@ -284,13 +284,6 @@ WebSize WebDocument::maximumScrollOffset() const
     return WebSize();
 }
 
-// FIXME: This will be removed once Chrome side implementation is done.
-void WebDocument::setIsTransitionDocument()
-{
-    // This ensures the transition UA stylesheet gets applied.
-    unwrap<Document>()->setIsTransitionDocument(true);
-}
-
 void WebDocument::setIsTransitionDocument(bool isTransitionDocument)
 {
     // When isTransitionDocument is true, it ensures the transition UA

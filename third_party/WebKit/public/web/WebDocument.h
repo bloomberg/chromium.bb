@@ -118,7 +118,6 @@ public:
     BLINK_EXPORT WebSize minimumScrollOffset() const;
     // Shorthand of frame()->maximumScrollOffset().
     BLINK_EXPORT WebSize maximumScrollOffset() const;
-    BLINK_EXPORT void setIsTransitionDocument();
     BLINK_EXPORT void setIsTransitionDocument(bool);
     BLINK_EXPORT void beginExitTransition(const WebString& cssSelector, bool exitToNativeApp);
     BLINK_EXPORT void revertExitTransition();
