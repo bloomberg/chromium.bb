@@ -341,6 +341,19 @@ void FrameView::recalculateCustomScrollbarStyle()
     }
 }
 
+void FrameView::invalidateAllCustomScrollbarsOnActiveChanged()
+{
+    const ChildrenWidgetSet* viewChildren = children();
+    for (const RefPtrWillBeMember<Widget>& child : *viewChildren) {
+        Widget* widget = child.get();
+        if (widget->isFrameView())
+            toFrameView(widget)->invalidateAllCustomScrollbarsOnActiveChanged();
+        else if (widget->isScrollbar() && toScrollbar(widget)->isCustomScrollbar())
+            toScrollbar(widget)->styleChanged();
+    }
+    recalculateCustomScrollbarStyle();
+}
+
 void FrameView::recalculateScrollbarOverlayStyle()
 {
     ScrollbarOverlayStyle oldOverlayStyle = scrollbarOverlayStyle();
