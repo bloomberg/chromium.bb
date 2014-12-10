@@ -146,9 +146,9 @@ scoped_ptr<BackToBackBeginFrameSource> BackToBackBeginFrameSource::Create(
 BackToBackBeginFrameSource::BackToBackBeginFrameSource(
     base::SingleThreadTaskRunner* task_runner)
     : BeginFrameSourceMixIn(),
-      weak_factory_(this),
       task_runner_(task_runner),
-      send_begin_frame_posted_(false) {
+      send_begin_frame_posted_(false),
+      weak_factory_(this) {
   DCHECK(task_runner);
   DCHECK_EQ(needs_begin_frames_, false);
   DCHECK_EQ(send_begin_frame_posted_, false);

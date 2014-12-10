@@ -185,7 +185,6 @@ class CC_EXPORT BackToBackBeginFrameSource : public BeginFrameSourceMixIn {
       base::SingleThreadTaskRunner* task_runner);
   virtual base::TimeTicks Now();  // Now overridable for testing
 
-  base::WeakPtrFactory<BackToBackBeginFrameSource> weak_factory_;
   base::SingleThreadTaskRunner* task_runner_;
 
   bool send_begin_frame_posted_;
@@ -194,6 +193,9 @@ class CC_EXPORT BackToBackBeginFrameSource : public BeginFrameSourceMixIn {
   void OnNeedsBeginFramesChange(bool needs_begin_frames) override;
 
   void BeginFrame();
+
+ private:
+  base::WeakPtrFactory<BackToBackBeginFrameSource> weak_factory_;
 };
 
 // A frame source which is locked to an external parameters provides from a
