@@ -104,7 +104,7 @@ function FileManager() {
   this.selectionHandler_ = null;
 
   /**
-   * @private {MediaImportHandler}
+   * @private {importer.MediaImportHandler}
    */
   this.mediaImportHandler_ = null;
 
@@ -331,7 +331,7 @@ FileManager.prototype = /** @struct */ {
     return this.metadataCache_;
   },
   /**
-   * @return {MediaImportHandler}
+   * @return {importer.MediaImportHandler}
    */
   get mediaImportHandler() {
     return this.mediaImportHandler_;
