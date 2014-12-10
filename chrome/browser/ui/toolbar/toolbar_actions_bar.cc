@@ -284,7 +284,7 @@ void ToolbarActionsBar::Update() {
 void ToolbarActionsBar::SetOverflowRowWidth(int width) {
   DCHECK(in_overflow_mode_);
   platform_settings_.icons_per_overflow_menu_row =
-      (width - kItemSpacing) / IconWidth(true);
+      std::max((width - kItemSpacing) / IconWidth(true), 1);
 }
 
 void ToolbarActionsBar::OnResizeComplete(int width) {

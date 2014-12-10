@@ -11,9 +11,12 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_action_view_delegate_cocoa.h"
+#import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -105,6 +108,17 @@ bool ExtensionActionPlatformDelegateCocoa::ShowPopupWithUrl(
     const GURL& popup_url,
     bool grant_tab_permissions) {
   NSPoint arrowPoint = GetDelegateCocoa()->GetPopupPoint();
+
+  // If this was triggered by an action overflowed to the wrench menu, then
+  // the wrench menu will be open. Close it before opening the popup.
+  WrenchMenuController* wrenchMenuController =
+      [[[BrowserWindowController
+          browserWindowControllerForWindow:
+              controller_->browser()->window()->GetNativeWindow()]
+          toolbarController] wrenchMenuController];
+  if ([wrenchMenuController isMenuOpen])
+    [wrenchMenuController cancel];
+
   [ExtensionPopupController showURL:popup_url
                           inBrowser:controller_->browser()
                          anchoredAt:arrowPoint

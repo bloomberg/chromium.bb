@@ -167,6 +167,9 @@ class NotificationBridge;
 // Returns the wrench button.
 - (NSView*)wrenchButton;
 
+// Returns the wrench menu controller.
+- (WrenchMenuController*)wrenchMenuController;
+
 @end
 
 // A set of private methods used by subclasses. Do not call these directly
@@ -187,7 +190,6 @@ class NotificationBridge;
 - (NSArray*)toolbarViews;
 - (void)showOptionalHomeButton;
 - (void)installWrenchMenu;
-- (WrenchMenuController*)wrenchMenuController;
 // Return a hover button for the current event.
 - (NSButton*)hoverButtonForEvent:(NSEvent*)theEvent;
 @end

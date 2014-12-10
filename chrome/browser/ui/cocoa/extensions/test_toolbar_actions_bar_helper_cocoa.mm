@@ -40,7 +40,8 @@ TestToolbarActionsBarHelperCocoa::TestToolbarActionsBarHelperCocoa(
       initWithFrame:NSMakeRect(0, 0, 0, 15)]);
   controller_.reset([[BrowserActionsController alloc]
       initWithBrowser:browser
-        containerView:containerView_.get()]);
+        containerView:containerView_.get()
+           isOverflow:NO]);
 }
 
 TestToolbarActionsBarHelperCocoa::~TestToolbarActionsBarHelperCocoa() {}

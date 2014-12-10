@@ -8,11 +8,14 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
+#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
+#import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
@@ -230,15 +233,19 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
 #pragma mark Public Methods
 
 - (id)initWithBrowser:(Browser*)browser
-        containerView:(BrowserActionsContainerView*)container {
+        containerView:(BrowserActionsContainerView*)container
+           isOverflow:(BOOL)isOverflow {
   DCHECK(browser && container);
 
   if ((self = [super init])) {
     browser_ = browser;
+    isOverflow_ = isOverflow;
 
     toolbarActionsBarBridge_.reset(new ToolbarActionsBarBridge(self));
     toolbarActionsBar_.reset(
-        new ToolbarActionsBar(toolbarActionsBarBridge_.get(), browser_, false));
+        new ToolbarActionsBar(toolbarActionsBarBridge_.get(),
+                              browser_,
+                              isOverflow));
 
     containerView_ = container;
     [containerView_ setPostsFrameChangedNotifications:YES];
@@ -266,16 +273,21 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
            object:nil];
 
     suppressChevron_ = NO;
-    chevronAnimation_.reset([[NSViewAnimation alloc] init]);
-    [chevronAnimation_ gtm_setDuration:kAnimationDuration
-                             eventMask:NSLeftMouseUpMask];
-    [chevronAnimation_ setAnimationBlockingMode:NSAnimationNonblocking];
+    if (toolbarActionsBar_->platform_settings().chevron_enabled) {
+      chevronAnimation_.reset([[NSViewAnimation alloc] init]);
+      [chevronAnimation_ gtm_setDuration:kAnimationDuration
+                               eventMask:NSLeftMouseUpMask];
+      [chevronAnimation_ setAnimationBlockingMode:NSAnimationNonblocking];
+    }
+
+    if (isOverflow_)
+      toolbarActionsBar_->SetOverflowRowWidth(NSWidth([containerView_ frame]));
 
     buttons_.reset([[NSMutableArray alloc] init]);
     toolbarActionsBar_->CreateActions();
     [self showChevronIfNecessaryInFrame:[containerView_ frame]];
     [self updateGrippyCursors];
-    [container setResizable:YES];
+    [container setResizable:!isOverflow_];
   }
 
   return self;
@@ -293,8 +305,7 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
 }
 
 - (void)update {
-  for (BrowserActionButton* button in buttons_.get())
-    [button updateState];
+  toolbarActionsBar_->Update();
 }
 
 - (NSUInteger)buttonCount {
@@ -308,8 +319,8 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
   return visibleCount;
 }
 
-- (CGFloat)savedWidth {
-  return toolbarActionsBar_->GetPreferredSize().width();
+- (gfx::Size)preferredSize {
+  return toolbarActionsBar_->GetPreferredSize();
 }
 
 - (NSPoint)popupPointForId:(const std::string&)id {
@@ -318,10 +329,18 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
     return NSZeroPoint;
 
   NSRect bounds;
-  NSButton* referenceButton = button;
-  if ([button superview] != containerView_) {
-    bounds = [chevronMenuButton_ bounds];
-    referenceButton = chevronMenuButton_.get();
+  NSView* referenceButton = button;
+  if ([button superview] != containerView_ || isOverflow_) {
+    if (toolbarActionsBar_->platform_settings().chevron_enabled) {
+      referenceButton = chevronMenuButton_.get();
+    } else {
+      referenceButton =
+          [[[BrowserWindowController
+              browserWindowControllerForWindow:browser_->
+                  window()->GetNativeWindow()]
+                  toolbarController] wrenchButton];
+    }
+    bounds = [referenceButton bounds];
   } else {
     bounds = [button convertRect:[button frameAfterAnimation]
                         fromView:[button superview]];
@@ -435,9 +454,11 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
   }
 
   [self showChevronIfNecessaryInFrame:[containerView_ frame]];
-  for (NSUInteger i = 0; i < [buttons_ count]; ++i) {
+  NSUInteger offset = isOverflow_ ?
+      [buttons_ count] - toolbarActionsBar_->GetIconCount() : 0;
+  for (NSUInteger i = offset; i < [buttons_ count]; ++i) {
     if (![[buttons_ objectAtIndex:i] isBeingDragged])
-      [self moveButton:[buttons_ objectAtIndex:i] toIndex:i];
+      [self moveButton:[buttons_ objectAtIndex:i] toIndex:i - offset];
   }
 }
 
@@ -568,8 +589,10 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
     CGFloat intersectionWidth =
         NSWidth(NSIntersectionRect(draggedButtonFrame, [button frame]));
 
+    NSUInteger maxIndex =
+        isOverflow_ ? [buttons_ count] : [self visibleButtonCount];
     if (intersectionWidth > dragThreshold && button != draggedButton &&
-        ![button isAnimating] && index < [self visibleButtonCount]) {
+        ![button isAnimating] && index < maxIndex) {
       toolbarActionsBar_->OnDragDrop(
           [buttons_ indexOfObject:draggedButton],
           index,
@@ -589,10 +612,18 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
            toIndex:(NSUInteger)index {
   const ToolbarActionsBar::PlatformSettings& platformSettings =
       toolbarActionsBar_->platform_settings();
+  int icons_per_overflow_row = platformSettings.icons_per_overflow_menu_row;
+  NSUInteger rowIndex = isOverflow_ ? index / icons_per_overflow_row : 0;
+  NSUInteger indexInRow = isOverflow_ ? index % icons_per_overflow_row : index;
+
   CGFloat xOffset = platformSettings.left_padding +
-      (index * ToolbarActionsBar::IconWidth(true));
+      (indexInRow * ToolbarActionsBar::IconWidth(true));
+
   NSRect buttonFrame = [button frame];
   buttonFrame.origin.x = xOffset;
+  buttonFrame.origin.y = NSMaxY([containerView_ frame]) -
+       (ToolbarActionsBar::IconHeight() * (rowIndex + 1));
+
   [button setFrame:buttonFrame
            animate:!toolbarActionsBar_->suppress_animation()];
 
@@ -618,6 +649,8 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
 }
 
 - (void)showChevronIfNecessaryInFrame:(NSRect)frame {
+  if (!toolbarActionsBar_->platform_settings().chevron_enabled)
+    return;
   bool hidden = suppressChevron_ ||
       toolbarActionsBar_->GetIconCount() == [self buttonCount];
   [self setChevronHidden:hidden inFrame:frame];
@@ -635,7 +668,8 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
 
 - (void)setChevronHidden:(BOOL)hidden
                  inFrame:(NSRect)frame {
-  if (hidden == [self chevronIsHidden])
+  if (!toolbarActionsBar_->platform_settings().chevron_enabled ||
+      hidden == [self chevronIsHidden])
     return;
 
   if (!chevronMenuButton_.get()) {

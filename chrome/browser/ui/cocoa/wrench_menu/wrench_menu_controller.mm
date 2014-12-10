@@ -17,6 +17,8 @@
 #import "chrome/browser/ui/cocoa/accelerators_cocoa.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h"
+#import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
+#import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/ui/cocoa/encoding_menu_controller_delegate_mac.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
@@ -29,6 +31,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace wrench_menu_controller {
 const CGFloat kWrenchBubblePointOffsetY = 6;
@@ -113,9 +116,11 @@ class ZoomLevelObserver {
 - (void)addItemToMenu:(NSMenu*)menu
               atIndex:(NSInteger)index
             fromModel:(ui::MenuModel*)model {
-  // Non-button item types should be built as normal items.
-  ui::MenuModel::ItemType type = model->GetTypeAt(index);
-  if (type != ui::MenuModel::TYPE_BUTTON_ITEM) {
+  // Non-button item types should be built as normal items, with the exception
+  // of the extensions overflow menu.
+  int command_id = model->GetCommandIdAt(index);
+  if (model->GetTypeAt(index) != ui::MenuModel::TYPE_BUTTON_ITEM &&
+      command_id != IDC_EXTENSIONS_OVERFLOW_MENU) {
     [super addItemToMenu:menu
                  atIndex:index
                fromModel:model];
@@ -123,27 +128,50 @@ class ZoomLevelObserver {
   }
 
   // Handle the special-cased menu items.
-  int command_id = model->GetCommandIdAt(index);
   base::scoped_nsobject<NSMenuItem> customItem(
       [[NSMenuItem alloc] initWithTitle:@"" action:nil keyEquivalent:@""]);
-  MenuTrackedRootView* view;
+  MenuTrackedRootView* view = nil;
   switch (command_id) {
+    case IDC_EXTENSIONS_OVERFLOW_MENU: {
+      view = [buttonViewController_ toolbarActionsOverflowItem];
+      BrowserActionsContainerView* containerView =
+          [buttonViewController_ overflowActionsContainerView];
+
+      browserActionsController_.reset(
+          [[BrowserActionsController alloc]
+              initWithBrowser:browser_
+                containerView:containerView
+                   isOverflow:YES]);
+
+      // Set the origins and preferred size for the container.
+      gfx::Size preferredSize = [browserActionsController_ preferredSize];
+      NSSize preferredNSSize = NSMakeSize(preferredSize.width(),
+                                          preferredSize.height());
+      // View hierarchy is as follows (from parent > child):
+      // |view| > |anonymous view| > containerView. We have to set the origin
+      // and size of each for it display properly.
+      [view setFrameSize:preferredNSSize];
+      [view setFrameOrigin:NSMakePoint(0, 0)];
+      [[containerView superview] setFrameSize:preferredNSSize];
+      [[containerView superview] setFrameOrigin:NSMakePoint(0, 0)];
+      [containerView setFrameSize:preferredNSSize];
+      [containerView setFrameOrigin:NSMakePoint(0, 0)];
+      [browserActionsController_ update];
+      break;
+    }
     case IDC_EDIT_MENU:
       view = [buttonViewController_ editItem];
-      DCHECK(view);
-      [customItem setView:view];
-      [view setMenuItem:customItem];
       break;
     case IDC_ZOOM_MENU:
       view = [buttonViewController_ zoomItem];
-      DCHECK(view);
-      [customItem setView:view];
-      [view setMenuItem:customItem];
       break;
     default:
       NOTREACHED();
       break;
   }
+  DCHECK(view);
+  [customItem setView:view];
+  [view setMenuItem:customItem];
   [self adjustPositioning];
   [menu insertItem:customItem.get() atIndex:index];
 }
@@ -401,6 +429,8 @@ class ZoomLevelObserver {
 @synthesize zoomDisplay = zoomDisplay_;
 @synthesize zoomMinus = zoomMinus_;
 @synthesize zoomFullScreen = zoomFullScreen_;
+@synthesize toolbarActionsOverflowItem = toolbarActionsOverflowItem_;
+@synthesize overflowActionsContainerView = overflowActionsContainerView_;
 
 - (id)initWithController:(WrenchMenuController*)controller {
   if ((self = [super initWithNibName:@"WrenchMenu"

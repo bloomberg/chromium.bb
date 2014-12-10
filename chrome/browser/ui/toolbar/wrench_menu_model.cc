@@ -1000,7 +1000,6 @@ void WrenchMenuModel::AddGlobalErrorMenuItems() {
 }
 
 void WrenchMenuModel::CreateExtensionToolbarOverflowMenu() {
-#if defined(TOOLKIT_VIEWS)
   AddItem(IDC_EXTENSIONS_OVERFLOW_MENU, base::string16());
   // We only add the separator if there are > 0 items to show in the overflow.
   extensions::ExtensionToolbarModel* toolbar_model =
@@ -1008,7 +1007,6 @@ void WrenchMenuModel::CreateExtensionToolbarOverflowMenu() {
   // A count of -1 means all actions are visible.
   if (!toolbar_model->all_icons_visible())
     AddSeparator(ui::UPPER_SEPARATOR);
-#endif  // defined(TOOLKIT_VIEWS)
 }
 
 void WrenchMenuModel::CreateCutCopyPasteMenu() {

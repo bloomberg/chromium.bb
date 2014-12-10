@@ -9,6 +9,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/gfx/geometry/size.h"
 
 class Browser;
 @class BrowserActionButton;
@@ -48,6 +49,9 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
   // animations).
   BOOL suppressChevron_;
 
+  // True if this is the overflow container for toolbar actions.
+  BOOL isOverflow_;
+
   // The currently running chevron animation (fade in/out).
   base::scoped_nsobject<NSViewAnimation> chevronAnimation_;
 
@@ -63,7 +67,8 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 // Initializes the controller given the current browser and container view that
 // will hold the browser action buttons.
 - (id)initWithBrowser:(Browser*)browser
-        containerView:(BrowserActionsContainerView*)container;
+        containerView:(BrowserActionsContainerView*)container
+           isOverflow:(BOOL)isOverflow;
 
 // Update the display of all buttons.
 - (void)update;
@@ -76,10 +81,8 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 // container.
 - (NSUInteger)visibleButtonCount;
 
-// Returns the saved width determined by the number of shown Browser Actions
-// preference property. If no preference is found, then the width for the
-// container is returned as if all buttons are shown.
-- (CGFloat)savedWidth;
+// Returns the preferred size for the container.
+- (gfx::Size)preferredSize;
 
 // Returns where the popup arrow should point to for the action with the given
 // |id|. If passed an id with no corresponding button, returns NSZeroPoint.
