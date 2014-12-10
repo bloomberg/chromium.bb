@@ -883,6 +883,8 @@ crbug.com/392640 svg/as-object/sizing/svg-in-object-placeholder-height-percentag
 # Temporary disabled for rebaeline of crbug.com/394619
 # crbug.com/393087 [ Win ] svg/custom/resource-client-removal.svg [ Pass Failure ]
 
+crbug.com/440511 fast/text-autosizing/hackernews-comments.html [ Pass Failure ]
+
 # Expectations changes due to switiching to In-renderer Shared Worker.
 crbug.com/327256 fast/workers/shared-worker-lifecycle.html [ Failure Pass ]
 
