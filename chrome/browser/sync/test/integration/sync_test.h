@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/process/process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "net/dns/mock_host_resolver.h"
@@ -387,7 +388,7 @@ class SyncTest : public InProcessBrowserTest {
   scoped_ptr<net::ScopedDefaultHostResolverProc> mock_host_resolver_override_;
 
   // Used to start and stop the local test server.
-  base::ProcessHandle test_server_handle_;
+  base::Process test_server_;
 
   // Fake URLFetcher factory used to mock out GAIA signin.
   scoped_ptr<net::FakeURLFetcherFactory> fake_factory_;

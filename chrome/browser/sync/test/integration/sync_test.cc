@@ -176,8 +176,7 @@ SyncTest::SyncTest(TestType test_type)
       server_type_(SERVER_TYPE_UNDECIDED),
       num_clients_(-1),
       use_verifier_(true),
-      notifications_enabled_(true),
-      test_server_handle_(base::kNullProcessHandle) {
+      notifications_enabled_(true) {
   sync_datatype_helper::AssociateWithTest(this);
   switch (test_type_) {
     case SINGLE_CLIENT:
@@ -786,7 +785,8 @@ bool SyncTest::SetUpLocalTestServer() {
 #if defined(OS_WIN)
   options.start_hidden = true;
 #endif
-  if (!base::LaunchProcess(server_cmdline, options, &test_server_handle_))
+  test_server_ = base::LaunchProcess(server_cmdline, options);
+  if (!test_server_.IsValid())
     LOG(ERROR) << "Could not launch local test server.";
 
   const base::TimeDelta kMaxWaitTime = TestTimeouts::action_max_timeout();
@@ -812,11 +812,10 @@ bool SyncTest::TearDownLocalPythonTestServer() {
 }
 
 bool SyncTest::TearDownLocalTestServer() {
-  if (test_server_handle_ != base::kNullProcessHandle) {
-    EXPECT_TRUE(base::KillProcess(test_server_handle_, 0, false))
+  if (test_server_.IsValid()) {
+    EXPECT_TRUE(base::KillProcess(test_server_.Handle(), 0, false))
         << "Could not stop local test server.";
-    base::CloseProcessHandle(test_server_handle_);
-    test_server_handle_ = base::kNullProcessHandle;
+    test_server_.Close();
   }
   return true;
 }
