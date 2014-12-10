@@ -30,8 +30,7 @@ struct ProcessMetricsMetadata {
   ProcessMetricsMetadata()
       : handle(base::kNullProcessHandle),
         process_type(content::PROCESS_TYPE_UNKNOWN),
-        process_subtype(kProcessSubtypeUnknown) {
-  }
+        process_subtype(kProcessSubtypeUnknown) {}
 };
 
 class ProcessMetricsHistory {
@@ -42,10 +41,6 @@ class ProcessMetricsHistory {
   // Configure this to monitor a specific process.
   void Initialize(const ProcessMetricsMetadata& process_data,
                   int initial_update_sequence);
-
-  // End of a measurement cycle; check for performance issues and reset
-  // accumulated statistics.
-  void EndOfCycle();
 
   // Gather metrics for the process and accumulate with past data.
   void SampleMetrics();
@@ -58,20 +53,7 @@ class ProcessMetricsHistory {
 
   int last_update_sequence() const { return last_update_sequence_; }
 
-  // Average CPU over all the past sampling points since last reset.
-  double GetAverageCPUUsage() const {
-    return accumulated_cpu_usage_ / sample_count_;
-  }
-
-  // Average mem usage over all the past sampling points since last reset.
-  void GetAverageMemoryBytes(size_t* private_bytes,
-                             size_t* shared_bytes) const {
-    *private_bytes = accumulated_private_bytes_ / sample_count_;
-    *shared_bytes = accumulated_shared_bytes_ / sample_count_;
-  }
-
  private:
-  void ResetCounters();
   void RunPerformanceTriggers();
 
   // May not be fully populated. e.g. no |id| and no |name| for browser and
@@ -80,11 +62,7 @@ class ProcessMetricsHistory {
   linked_ptr<base::ProcessMetrics> process_metrics_;
   int last_update_sequence_;
 
-  double accumulated_cpu_usage_;
-  double min_cpu_usage_;
-  size_t accumulated_private_bytes_;
-  size_t accumulated_shared_bytes_;
-  int sample_count_;
+  double cpu_usage_;
 
   DISALLOW_ASSIGN(ProcessMetricsHistory);
 };

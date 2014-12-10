@@ -48,15 +48,13 @@ void PerformanceMonitor::StartGatherCycle() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   repeating_timer_.Start(FROM_HERE,
                          base::TimeDelta::FromSeconds(kGatherIntervalInSeconds),
-                         this,
-                         &PerformanceMonitor::GatherMetricsMapOnUIThread);
+                         this, &PerformanceMonitor::GatherMetricsMapOnUIThread);
 }
 
 namespace {
 
-void GatherMetricsForRenderProcess(
-    content::RenderProcessHost* host,
-    ProcessMetricsMetadata& data) {
+void GatherMetricsForRenderProcess(content::RenderProcessHost* host,
+                                   ProcessMetricsMetadata& data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(ENABLE_EXTENSIONS)
   content::BrowserContext* browser_context = host->GetBrowserContext();
@@ -88,7 +86,7 @@ void GatherMetricsForRenderProcess(
 #endif
 }
 
-} // namespace
+}  // namespace
 
 void PerformanceMonitor::GatherMetricsMapOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -112,11 +110,9 @@ void PerformanceMonitor::GatherMetricsMapOnUIThread() {
   }
 
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
+      BrowserThread::IO, FROM_HERE,
       base::Bind(&PerformanceMonitor::GatherMetricsMapOnIOThread,
-                 base::Unretained(this),
-                 current_update_sequence));
+                 base::Unretained(this), current_update_sequence));
 }
 
 void PerformanceMonitor::MarkProcessAsAlive(
@@ -163,10 +159,6 @@ void PerformanceMonitor::GatherMetricsMapOnIOThread(
   browser_process_data.handle = base::GetCurrentProcessHandle();
   MarkProcessAsAlive(browser_process_data, current_update_sequence);
 
-  double cpu_usage = 0.0;
-  size_t private_memory_sum = 0;
-  size_t shared_memory_sum = 0;
-
   // Update metrics for all watched processes; remove dead entries from the map.
   MetricsMap::iterator iter = metrics_map_.begin();
   while (iter != metrics_map_.end()) {
@@ -176,18 +168,6 @@ void PerformanceMonitor::GatherMetricsMapOnIOThread(
       metrics_map_.erase(iter++);
     } else {
       process_metrics.SampleMetrics();
-
-      // Gather averages of previously sampled metrics.
-      cpu_usage += process_metrics.GetAverageCPUUsage();
-
-      size_t private_memory = 0;
-      size_t shared_memory = 0;
-      process_metrics.GetAverageMemoryBytes(&private_memory, &shared_memory);
-      private_memory_sum += private_memory;
-      shared_memory_sum += shared_memory;
-
-      process_metrics.EndOfCycle();
-
       ++iter;
     }
   }
