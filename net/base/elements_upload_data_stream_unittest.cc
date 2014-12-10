@@ -669,8 +669,8 @@ TEST_F(ElementsUploadDataStreamTest, InitToReset) {
       new ElementsUploadDataStream(element_readers_.Pass(), 0));
 
   std::vector<char> expected_data(kTestData, kTestData + kTestDataSize);
-  expected_data.insert(expected_data.end(), expected_data.begin(),
-                       expected_data.begin() + kTestDataSize);
+  expected_data.insert(expected_data.end(), kTestData,
+                       kTestData + kTestDataSize);
 
   // Call Init().
   TestCompletionCallback init_callback1;
@@ -728,8 +728,8 @@ TEST_F(ElementsUploadDataStreamTest, InitDuringAsyncInit) {
       new ElementsUploadDataStream(element_readers_.Pass(), 0));
 
   std::vector<char> expected_data(kTestData, kTestData + kTestDataSize);
-  expected_data.insert(expected_data.end(), expected_data.begin(),
-                       expected_data.begin() + kTestDataSize);
+  expected_data.insert(expected_data.end(), kTestData,
+                       kTestData + kTestDataSize);
 
   // Start Init.
   TestCompletionCallback init_callback1;
@@ -777,8 +777,8 @@ TEST_F(ElementsUploadDataStreamTest, InitDuringAsyncRead) {
       new ElementsUploadDataStream(element_readers_.Pass(), 0));
 
   std::vector<char> expected_data(kTestData, kTestData + kTestDataSize);
-  expected_data.insert(expected_data.end(), expected_data.begin(),
-                       expected_data.begin() + kTestDataSize);
+  expected_data.insert(expected_data.end(), kTestData,
+                       kTestData + kTestDataSize);
 
   // Call Init().
   TestCompletionCallback init_callback1;
