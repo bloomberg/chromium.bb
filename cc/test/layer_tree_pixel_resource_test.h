@@ -33,6 +33,7 @@ enum PixelResourceTestCase {
 class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
  public:
   explicit LayerTreeHostPixelResourceTest(PixelResourceTestCase test_case);
+  LayerTreeHostPixelResourceTest();
 
   void CreateResourceAndTileTaskWorkerPool(
       LayerTreeHostImpl* host_impl,
@@ -55,10 +56,11 @@ class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
   unsigned staging_texture_target_;
   unsigned draw_texture_target_;
   TileTaskWorkerPoolOption resource_pool_option_;
+  bool initialized_;
 
- private:
   void InitializeFromTestCase(PixelResourceTestCase test_case);
 
+ private:
   PixelResourceTestCase test_case_;
 };
 

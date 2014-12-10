@@ -47,12 +47,23 @@ LayerTreeHostPixelResourceTest::LayerTreeHostPixelResourceTest(
     : staging_texture_target_(GL_INVALID_VALUE),
       draw_texture_target_(GL_INVALID_VALUE),
       resource_pool_option_(BITMAP_TILE_TASK_WORKER_POOL),
+      initialized_(false),
       test_case_(test_case) {
   InitializeFromTestCase(test_case);
 }
 
+LayerTreeHostPixelResourceTest::LayerTreeHostPixelResourceTest()
+    : staging_texture_target_(GL_INVALID_VALUE),
+      draw_texture_target_(GL_INVALID_VALUE),
+      resource_pool_option_(BITMAP_TILE_TASK_WORKER_POOL),
+      initialized_(false),
+      test_case_(SOFTWARE) {
+}
+
 void LayerTreeHostPixelResourceTest::InitializeFromTestCase(
     PixelResourceTestCase test_case) {
+  DCHECK(!initialized_);
+  initialized_ = true;
   switch (test_case) {
     case SOFTWARE:
       test_type_ = PIXEL_TEST_SOFTWARE;
@@ -121,6 +132,7 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndTileTaskWorkerPool(
       proxy()->HasImplThread() ? proxy()->ImplThreadTaskRunner()
                                : proxy()->MainThreadTaskRunner();
   DCHECK(task_runner);
+  DCHECK(initialized_);
 
   ContextProvider* context_provider =
       host_impl->output_surface()->context_provider();

@@ -4,7 +4,7 @@
 
 #include "cc/layers/image_layer.h"
 #include "cc/layers/solid_color_layer.h"
-#include "cc/test/layer_tree_pixel_test.h"
+#include "cc/test/layer_tree_pixel_resource_test.h"
 #include "cc/test/pixel_comparator.h"
 
 #if !defined(OS_ANDROID)
@@ -54,7 +54,7 @@ const uint32 kUseAntialiasing = 1 << 1;
 const uint32 kUseColorMatrix = 1 << 2;
 const uint32 kForceShaders = 1 << 3;
 
-class LayerTreeHostBlendingPixelTest : public LayerTreePixelTest {
+class LayerTreeHostBlendingPixelTest : public LayerTreeHostPixelResourceTest {
  public:
   LayerTreeHostBlendingPixelTest()
       : force_antialiasing_(false), force_blending_with_shaders_(false) {
@@ -68,11 +68,12 @@ class LayerTreeHostBlendingPixelTest : public LayerTreePixelTest {
   }
 
  protected:
-  void RunBlendingWithRootPixelTestType(PixelTestType type) {
+  void RunBlendingWithRootPixelTestType(PixelResourceTestCase type) {
     const int kLaneWidth = 2;
     const int kLaneHeight = kLaneWidth;
     const int kRootWidth = (kBlendModesCount + 2) * kLaneWidth;
     const int kRootHeight = 2 * kLaneWidth + kLaneHeight;
+    InitializeFromTestCase(type);
 
     scoped_refptr<SolidColorLayer> background =
         CreateSolidColorLayer(gfx::Rect(kRootWidth, kRootHeight), kCSSOrange);
@@ -87,16 +88,17 @@ class LayerTreeHostBlendingPixelTest : public LayerTreePixelTest {
       green_lane->SetBlendMode(kBlendModes[i]);
     }
 
-    RunPixelTest(type,
-                 background,
-                 base::FilePath(FILE_PATH_LITERAL("blending_with_root.png")));
+    RunPixelResourceTest(
+        background,
+        base::FilePath(FILE_PATH_LITERAL("blending_with_root.png")));
   }
 
-  void RunBlendingWithTransparentPixelTestType(PixelTestType type) {
+  void RunBlendingWithTransparentPixelTestType(PixelResourceTestCase type) {
     const int kLaneWidth = 2;
     const int kLaneHeight = 3 * kLaneWidth;
     const int kRootWidth = (kBlendModesCount + 2) * kLaneWidth;
     const int kRootHeight = 2 * kLaneWidth + kLaneHeight;
+    InitializeFromTestCase(type);
 
     scoped_refptr<SolidColorLayer> root =
         CreateSolidColorLayer(gfx::Rect(kRootWidth, kRootHeight), kCSSBrown);
@@ -117,9 +119,8 @@ class LayerTreeHostBlendingPixelTest : public LayerTreePixelTest {
       green_lane->SetBlendMode(kBlendModes[i]);
     }
 
-    RunPixelTest(type,
-                 root,
-                 base::FilePath(FILE_PATH_LITERAL("blending_transparent.png")));
+    RunPixelResourceTest(
+        root, base::FilePath(FILE_PATH_LITERAL("blending_transparent.png")));
   }
 
   scoped_refptr<Layer> CreateColorfulBackdropLayer(int width, int height) {
@@ -218,12 +219,13 @@ class LayerTreeHostBlendingPixelTest : public LayerTreePixelTest {
     }
   }
 
-  void RunBlendingWithRenderPass(PixelTestType type,
+  void RunBlendingWithRenderPass(PixelResourceTestCase type,
                                  const base::FilePath::CharType* expected_path,
                                  RenderPassOptions flags) {
     const int kLaneWidth = 8;
     const int kLaneHeight = kLaneWidth * kCSSTestColorsCount;
     const int kRootSize = kLaneHeight;
+    InitializeFromTestCase(type);
 
     scoped_refptr<SolidColorLayer> root =
         CreateSolidColorLayer(gfx::Rect(kRootSize, kRootSize), SK_ColorWHITE);
@@ -239,7 +241,7 @@ class LayerTreeHostBlendingPixelTest : public LayerTreePixelTest {
     this->force_antialiasing_ = (flags & kUseAntialiasing);
     this->force_blending_with_shaders_ = (flags & kForceShaders);
 
-    if ((flags & kUseAntialiasing) && (type == PIXEL_TEST_GL)) {
+    if ((flags & kUseAntialiasing) && (test_type_ == PIXEL_TEST_GL)) {
       // Anti aliasing causes differences up to 8 pixels at the edges.
       int large_error_allowed = 8;
       // Blending results might differ with one pixel.
@@ -261,7 +263,7 @@ class LayerTreeHostBlendingPixelTest : public LayerTreePixelTest {
                                    small_error_allowed));
     }
 
-    RunPixelTest(type, root, base::FilePath(expected_path));
+    RunPixelResourceTest(root, base::FilePath(expected_path));
   }
 
   bool force_antialiasing_;
@@ -269,11 +271,11 @@ class LayerTreeHostBlendingPixelTest : public LayerTreePixelTest {
 };
 
 TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithRoot_GL) {
-  RunBlendingWithRootPixelTestType(PIXEL_TEST_GL);
+  RunBlendingWithRootPixelTestType(GL_ASYNC_UPLOAD_2D_DRAW);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithRoot_Software) {
-  RunBlendingWithRootPixelTestType(PIXEL_TEST_SOFTWARE);
+  RunBlendingWithRootPixelTestType(SOFTWARE);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithBackgroundFilter) {
@@ -281,6 +283,7 @@ TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithBackgroundFilter) {
   const int kLaneHeight = kLaneWidth;
   const int kRootWidth = (kBlendModesCount + 2) * kLaneWidth;
   const int kRootHeight = 2 * kLaneWidth + kLaneHeight;
+  InitializeFromTestCase(GL_ASYNC_UPLOAD_2D_DRAW);
 
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(kRootWidth, kRootHeight), kCSSOrange);
@@ -300,166 +303,163 @@ TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithBackgroundFilter) {
     green_lane->SetBlendMode(kBlendModes[i]);
   }
 
-  RunPixelTest(PIXEL_TEST_GL,
-               background,
-               base::FilePath(FILE_PATH_LITERAL("blending_and_filter.png")));
+  RunPixelResourceTest(
+      background, base::FilePath(FILE_PATH_LITERAL("blending_and_filter.png")));
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithTransparent_GL) {
-  RunBlendingWithTransparentPixelTestType(PIXEL_TEST_GL);
+  RunBlendingWithTransparentPixelTestType(GL_ASYNC_UPLOAD_2D_DRAW);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithTransparent_Software) {
-  RunBlendingWithTransparentPixelTestType(PIXEL_TEST_SOFTWARE);
+  RunBlendingWithTransparentPixelTestType(SOFTWARE);
 }
 
 // Tests for render passes
 TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithRenderPass_GL) {
-  RunBlendingWithRenderPass(
-      PIXEL_TEST_GL, FILE_PATH_LITERAL("blending_render_pass.png"), 0);
+  RunBlendingWithRenderPass(GL_ASYNC_UPLOAD_2D_DRAW,
+                            FILE_PATH_LITERAL("blending_render_pass.png"), 0);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithRenderPass_Software) {
-  RunBlendingWithRenderPass(
-      PIXEL_TEST_SOFTWARE, FILE_PATH_LITERAL("blending_render_pass.png"), 0);
+  RunBlendingWithRenderPass(SOFTWARE,
+                            FILE_PATH_LITERAL("blending_render_pass.png"), 0);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassAA_GL) {
-  RunBlendingWithRenderPass(PIXEL_TEST_GL,
+  RunBlendingWithRenderPass(GL_ASYNC_UPLOAD_2D_DRAW,
                             FILE_PATH_LITERAL("blending_render_pass.png"),
                             kUseAntialiasing);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassAA_Software) {
-  RunBlendingWithRenderPass(PIXEL_TEST_SOFTWARE,
+  RunBlendingWithRenderPass(SOFTWARE,
                             FILE_PATH_LITERAL("blending_render_pass.png"),
                             kUseAntialiasing);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassWithMask_GL) {
-  RunBlendingWithRenderPass(PIXEL_TEST_GL,
+  RunBlendingWithRenderPass(GL_ASYNC_UPLOAD_2D_DRAW,
                             FILE_PATH_LITERAL("blending_render_pass_mask.png"),
                             kUseMasks);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest,
        BlendingWithRenderPassWithMask_Software) {
-  RunBlendingWithRenderPass(PIXEL_TEST_SOFTWARE,
-                            FILE_PATH_LITERAL("blending_render_pass_mask.png"),
-                            kUseMasks);
+  RunBlendingWithRenderPass(
+      SOFTWARE, FILE_PATH_LITERAL("blending_render_pass_mask.png"), kUseMasks);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassWithMaskAA_GL) {
-  RunBlendingWithRenderPass(PIXEL_TEST_GL,
+  RunBlendingWithRenderPass(GL_ASYNC_UPLOAD_2D_DRAW,
                             FILE_PATH_LITERAL("blending_render_pass_mask.png"),
                             kUseMasks | kUseAntialiasing);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest,
        BlendingWithRenderPassWithMaskAA_Software) {
-  RunBlendingWithRenderPass(PIXEL_TEST_SOFTWARE,
+  RunBlendingWithRenderPass(SOFTWARE,
                             FILE_PATH_LITERAL("blending_render_pass_mask.png"),
                             kUseMasks | kUseAntialiasing);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassColorMatrix_GL) {
-  RunBlendingWithRenderPass(PIXEL_TEST_GL,
+  RunBlendingWithRenderPass(GL_ASYNC_UPLOAD_2D_DRAW,
                             FILE_PATH_LITERAL("blending_render_pass.png"),
                             kUseColorMatrix);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest,
        BlendingWithRenderPassColorMatrix_Software) {
-  RunBlendingWithRenderPass(PIXEL_TEST_SOFTWARE,
-                            FILE_PATH_LITERAL("blending_render_pass.png"),
-                            kUseColorMatrix);
+  RunBlendingWithRenderPass(
+      SOFTWARE, FILE_PATH_LITERAL("blending_render_pass.png"), kUseColorMatrix);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassColorMatrixAA_GL) {
-  RunBlendingWithRenderPass(PIXEL_TEST_GL,
+  RunBlendingWithRenderPass(GL_ASYNC_UPLOAD_2D_DRAW,
                             FILE_PATH_LITERAL("blending_render_pass.png"),
                             kUseAntialiasing | kUseColorMatrix);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest,
        BlendingWithRenderPassColorMatrixAA_Software) {
-  RunBlendingWithRenderPass(PIXEL_TEST_SOFTWARE,
+  RunBlendingWithRenderPass(SOFTWARE,
                             FILE_PATH_LITERAL("blending_render_pass.png"),
                             kUseAntialiasing | kUseColorMatrix);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest,
        BlendingWithRenderPassWithMaskColorMatrix_GL) {
-  RunBlendingWithRenderPass(PIXEL_TEST_GL,
+  RunBlendingWithRenderPass(GL_ASYNC_UPLOAD_2D_DRAW,
                             FILE_PATH_LITERAL("blending_render_pass_mask.png"),
                             kUseMasks | kUseColorMatrix);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest,
        BlendingWithRenderPassWithMaskColorMatrix_Software) {
-  RunBlendingWithRenderPass(PIXEL_TEST_SOFTWARE,
+  RunBlendingWithRenderPass(SOFTWARE,
                             FILE_PATH_LITERAL("blending_render_pass_mask.png"),
                             kUseMasks | kUseColorMatrix);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest,
        BlendingWithRenderPassWithMaskColorMatrixAA_GL) {
-  RunBlendingWithRenderPass(PIXEL_TEST_GL,
+  RunBlendingWithRenderPass(GL_ASYNC_UPLOAD_2D_DRAW,
                             FILE_PATH_LITERAL("blending_render_pass_mask.png"),
                             kUseMasks | kUseAntialiasing | kUseColorMatrix);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest,
        BlendingWithRenderPassWithMaskColorMatrixAA_Software) {
-  RunBlendingWithRenderPass(PIXEL_TEST_SOFTWARE,
+  RunBlendingWithRenderPass(SOFTWARE,
                             FILE_PATH_LITERAL("blending_render_pass_mask.png"),
                             kUseMasks | kUseAntialiasing | kUseColorMatrix);
 }
 
 // Tests for render passes forcing shaders for all the blend modes.
 TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassShaders_GL) {
-  RunBlendingWithRenderPass(PIXEL_TEST_GL,
+  RunBlendingWithRenderPass(GL_ASYNC_UPLOAD_2D_DRAW,
                             FILE_PATH_LITERAL("blending_render_pass.png"),
                             kForceShaders);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassShadersAA_GL) {
-  RunBlendingWithRenderPass(PIXEL_TEST_GL,
+  RunBlendingWithRenderPass(GL_ASYNC_UPLOAD_2D_DRAW,
                             FILE_PATH_LITERAL("blending_render_pass.png"),
                             kUseAntialiasing | kForceShaders);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest,
        BlendingWithRenderPassShadersWithMask_GL) {
-  RunBlendingWithRenderPass(PIXEL_TEST_GL,
+  RunBlendingWithRenderPass(GL_ASYNC_UPLOAD_2D_DRAW,
                             FILE_PATH_LITERAL("blending_render_pass_mask.png"),
                             kUseMasks | kForceShaders);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest,
        BlendingWithRenderPassShadersWithMaskAA_GL) {
-  RunBlendingWithRenderPass(PIXEL_TEST_GL,
+  RunBlendingWithRenderPass(GL_ASYNC_UPLOAD_2D_DRAW,
                             FILE_PATH_LITERAL("blending_render_pass_mask.png"),
                             kUseMasks | kUseAntialiasing | kForceShaders);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest,
        BlendingWithRenderPassShadersColorMatrix_GL) {
-  RunBlendingWithRenderPass(PIXEL_TEST_GL,
+  RunBlendingWithRenderPass(GL_ASYNC_UPLOAD_2D_DRAW,
                             FILE_PATH_LITERAL("blending_render_pass.png"),
                             kUseColorMatrix | kForceShaders);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest,
        BlendingWithRenderPassShadersColorMatrixAA_GL) {
-  RunBlendingWithRenderPass(PIXEL_TEST_GL,
+  RunBlendingWithRenderPass(GL_ASYNC_UPLOAD_2D_DRAW,
                             FILE_PATH_LITERAL("blending_render_pass.png"),
                             kUseAntialiasing | kUseColorMatrix | kForceShaders);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest,
        BlendingWithRenderPassShadersWithMaskColorMatrix_GL) {
-  RunBlendingWithRenderPass(PIXEL_TEST_GL,
+  RunBlendingWithRenderPass(GL_ASYNC_UPLOAD_2D_DRAW,
                             FILE_PATH_LITERAL("blending_render_pass_mask.png"),
                             kUseMasks | kUseColorMatrix | kForceShaders);
 }
@@ -467,7 +467,8 @@ TEST_F(LayerTreeHostBlendingPixelTest,
 TEST_F(LayerTreeHostBlendingPixelTest,
        BlendingWithRenderPassShadersWithMaskColorMatrixAA_GL) {
   RunBlendingWithRenderPass(
-      PIXEL_TEST_GL, FILE_PATH_LITERAL("blending_render_pass_mask.png"),
+      GL_ASYNC_UPLOAD_2D_DRAW,
+      FILE_PATH_LITERAL("blending_render_pass_mask.png"),
       kUseMasks | kUseAntialiasing | kUseColorMatrix | kForceShaders);
 }
 
