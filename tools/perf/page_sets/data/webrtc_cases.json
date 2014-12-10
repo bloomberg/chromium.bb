@@ -8,6 +8,11 @@
         "webrtc_cases_000.wpr": [
             "third_party/webrtc/samples/js/demos/html/pc1.html", 
             "webrtc/local-video.html"
+        ], 
+        "webrtc_cases_008.wpr": [
+            "http://googlechrome.github.io/webrtc/samples/web/content/peerconnection/pc1/", 
+            "http://googlechrome.github.io/webrtc/samples/web/content/getusermedia/gum/", 
+            "http://googlechrome.github.io/webrtc/samples/web/content/getusermedia/resolution/"
         ]
     }
 }

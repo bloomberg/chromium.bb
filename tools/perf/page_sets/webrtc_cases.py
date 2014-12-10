@@ -23,12 +23,11 @@ class Page1(WebrtcCasesPage):
 
   def __init__(self, page_set):
     super(Page1, self).__init__(
-      url=('http://googlechrome.github.io/webrtc/samples/web/content/'
-           'getusermedia-resolution/'),
+        url=('http://googlechrome.github.io/webrtc/samples/web/content/'
+             'getusermedia/gum/'),
       page_set=page_set)
 
   def RunPageInteractions(self, action_runner):
-    action_runner.ClickElement('button[id="vga"]')
     action_runner.Wait(10)
 
 
@@ -39,7 +38,7 @@ class Page2(WebrtcCasesPage):
   def __init__(self, page_set):
     super(Page2, self).__init__(
       url=('http://googlechrome.github.io/webrtc/samples/web/content/'
-           'peerconnection/'),
+           'peerconnection/pc1/'),
       page_set=page_set)
 
   def RunPageInteractions(self, action_runner):
@@ -49,6 +48,7 @@ class Page2(WebrtcCasesPage):
     action_runner.Wait(10)
     action_runner.ClickElement('button[id="hangupButton"]')
 
+
 class Page3(WebrtcCasesPage):
 
   """ Why: Acquires a high definition local stream. """
@@ -56,7 +56,7 @@ class Page3(WebrtcCasesPage):
   def __init__(self, page_set):
     super(Page3, self).__init__(
       url=('http://googlechrome.github.io/webrtc/samples/web/content/'
-           'getusermedia-resolution/'),
+           'getusermedia/resolution/'),
       page_set=page_set)
 
   def RunPageInteractions(self, action_runner):
