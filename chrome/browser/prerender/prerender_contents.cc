@@ -240,7 +240,6 @@ PrerenderContents::PrerenderContents(
       route_id_(-1),
       origin_(origin),
       experiment_id_(experiment_id),
-      creator_child_id_(-1),
       cookie_status_(0),
       cookie_send_type_(COOKIE_SEND_TYPE_NONE),
       network_bytes_(0) {
@@ -292,7 +291,6 @@ PrerenderContents* PrerenderContents::FromWebContents(
 }
 
 void PrerenderContents::StartPrerendering(
-    int creator_child_id,
     const gfx::Size& size,
     SessionStorageNamespace* session_storage_namespace,
     net::URLRequestContextGetter* request_context) {
@@ -300,11 +298,9 @@ void PrerenderContents::StartPrerendering(
   DCHECK(!size.IsEmpty());
   DCHECK(!prerendering_has_started_);
   DCHECK(prerender_contents_.get() == NULL);
-  DCHECK_EQ(-1, creator_child_id_);
   DCHECK(size_.IsEmpty());
   DCHECK_EQ(1U, alias_urls_.size());
 
-  creator_child_id_ = creator_child_id;
   session_storage_namespace_id_ = session_storage_namespace->id();
   size_ = size;
 

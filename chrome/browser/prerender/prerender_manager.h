@@ -547,14 +547,12 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   void OnCancelPrerenderHandle(PrerenderData* prerender_data);
 
-  // Adds a prerender for |url| from |referrer| initiated from the process
-  // |child_id|. The |origin| specifies how the prerender was added. If |size|
-  // is empty, then PrerenderContents::StartPrerendering will instead use a
-  // default from PrerenderConfig. Returns a PrerenderHandle*, owned by the
-  // caller, or NULL.
+  // Adds a prerender for |url| from |referrer|. The |origin| specifies how the
+  // prerender was added. If |size| is empty, then
+  // PrerenderContents::StartPrerendering will instead use a default from
+  // PrerenderConfig. Returns a PrerenderHandle*, owned by the caller, or NULL.
   PrerenderHandle* AddPrerender(
       Origin origin,
-      int child_id,
       const GURL& url,
       const content::Referrer& referrer,
       const gfx::Size& size,

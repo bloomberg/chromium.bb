@@ -53,7 +53,6 @@ class DummyPrerenderContents : public PrerenderContents {
   ~DummyPrerenderContents() override;
 
   void StartPrerendering(
-      int creator_child_id,
       const gfx::Size& size,
       content::SessionStorageNamespace* session_storage_namespace,
       net::URLRequestContextGetter* request_context) override;
@@ -294,7 +293,6 @@ DummyPrerenderContents::~DummyPrerenderContents() {
 }
 
 void DummyPrerenderContents::StartPrerendering(
-    int creator_child_id,
     const gfx::Size& size,
     content::SessionStorageNamespace* session_storage_namespace,
     net::URLRequestContextGetter* request_context) {

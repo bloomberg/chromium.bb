@@ -356,8 +356,7 @@ PrerenderHandle* PrerenderManager::AddPrerenderFromLinkRelPrerender(
             .GetDefaultSessionStorageNamespace();
   }
 
-  return AddPrerender(origin, process_id, url, referrer, size,
-                      session_storage_namespace);
+  return AddPrerender(origin, url, referrer, size, session_storage_namespace);
 }
 
 PrerenderHandle* PrerenderManager::AddPrerenderFromOmnibox(
@@ -366,7 +365,7 @@ PrerenderHandle* PrerenderManager::AddPrerenderFromOmnibox(
     const gfx::Size& size) {
   if (!IsOmniboxEnabled(profile_))
     return NULL;
-  return AddPrerender(ORIGIN_OMNIBOX, -1, url, content::Referrer(), size,
+  return AddPrerender(ORIGIN_OMNIBOX, url, content::Referrer(), size,
                       session_storage_namespace);
 }
 
@@ -374,7 +373,7 @@ PrerenderHandle* PrerenderManager::AddPrerenderFromLocalPredictor(
     const GURL& url,
     SessionStorageNamespace* session_storage_namespace,
     const gfx::Size& size) {
-  return AddPrerender(ORIGIN_LOCAL_PREDICTOR, -1, url, content::Referrer(),
+  return AddPrerender(ORIGIN_LOCAL_PREDICTOR, url, content::Referrer(),
                       size, session_storage_namespace);
 }
 
@@ -383,7 +382,7 @@ PrerenderHandle* PrerenderManager::AddPrerenderFromExternalRequest(
     const content::Referrer& referrer,
     SessionStorageNamespace* session_storage_namespace,
     const gfx::Size& size) {
-  return AddPrerender(ORIGIN_EXTERNAL_REQUEST, -1, url, referrer, size,
+  return AddPrerender(ORIGIN_EXTERNAL_REQUEST, url, referrer, size,
                       session_storage_namespace);
 }
 
@@ -392,7 +391,7 @@ PrerenderHandle* PrerenderManager::AddPrerenderForInstant(
     content::SessionStorageNamespace* session_storage_namespace,
     const gfx::Size& size) {
   DCHECK(chrome::ShouldPrefetchSearchResults());
-  return AddPrerender(ORIGIN_INSTANT, -1, url, content::Referrer(), size,
+  return AddPrerender(ORIGIN_INSTANT, url, content::Referrer(), size,
                       session_storage_namespace);
 }
 
@@ -1245,7 +1244,6 @@ net::URLRequestContextGetter* PrerenderManager::GetURLRequestContext() {
 // private
 PrerenderHandle* PrerenderManager::AddPrerender(
     Origin origin,
-    int process_id,
     const GURL& url_arg,
     const content::Referrer& referrer,
     const gfx::Size& size,
@@ -1344,7 +1342,7 @@ PrerenderHandle* PrerenderManager::AddPrerender(
   net::URLRequestContextGetter* request_context =
       (IsPrerenderCookieStoreEnabled() ? GetURLRequestContext() : NULL);
 
-  prerender_contents->StartPrerendering(process_id, contents_size,
+  prerender_contents->StartPrerendering(contents_size,
                                         session_storage_namespace,
                                         request_context);
 
