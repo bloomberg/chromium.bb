@@ -47,10 +47,6 @@ Promise.resolve(null).then(function() {
     return crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: undefined}, extractable , keyUsages);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
-
-    return crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: true}, extractable , keyUsages);
-}).then(failAndFinishJSTest, function(result) {
-    logError(result);
 }).then(finishJSTest, failAndFinishJSTest);
 
 </script>
