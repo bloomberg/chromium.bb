@@ -3,10 +3,14 @@
 # found in the LICENSE file.
 {
   'conditions': [
-    ['OS=="android" or OS=="linux"', {
+    ['OS=="android" or OS=="linux" or OS=="win" or OS=="mac"', {
       'variables': {
         'files': [
-          '<(PRODUCT_DIR)/test_data/',
+          '<(PRODUCT_DIR)/test_data/chrome/browser/resources/google_now/',
+          '<(PRODUCT_DIR)/test_data/chrome/browser/resources/print_preview/',
+          '<(PRODUCT_DIR)/test_data/chrome/renderer/resources/extensions/',
+          '<(PRODUCT_DIR)/test_data/chrome/test/data/unit/',
+          '<(PRODUCT_DIR)/test_data/ui/webui/',
         ],
       },
     }],
@@ -70,7 +74,6 @@
           '../third_party/pywebsocket/',
           '../third_party/tlslite/',
           '<(PRODUCT_DIR)/pyproto/google/',
-          '<(PRODUCT_DIR)/test_data/',
           '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
         ],
       },
@@ -133,6 +136,7 @@
         'files': [
           '../chromeos/test/data/network/',
           '<(PRODUCT_DIR)/libexif.so',
+          '<(PRODUCT_DIR)/test_data/chrome/browser/resources/chromeos/',
         ],
       },
     }],
