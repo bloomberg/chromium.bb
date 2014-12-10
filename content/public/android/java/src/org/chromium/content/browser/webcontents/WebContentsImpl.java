@@ -6,7 +6,6 @@ package org.chromium.content.browser.webcontents;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationTransitionDelegate;
@@ -110,7 +109,6 @@ import org.chromium.content_public.browser.WebContents;
         nativeAddStyleSheetByURL(mNativeWebContentsAndroid, url);
     }
 
-    @VisibleForTesting
     @Override
     public void showInterstitialPage(
             String url, long interstitialPageDelegateAndroid) {
