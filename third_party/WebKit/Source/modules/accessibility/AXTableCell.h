@@ -33,12 +33,15 @@
 
 namespace blink {
 
+class AXObjectCacheImpl;
+
 class AXTableCell : public AXRenderObject {
 
 protected:
-    explicit AXTableCell(RenderObject*);
+    AXTableCell(RenderObject*, AXObjectCacheImpl*);
+
 public:
-    static PassRefPtr<AXTableCell> create(RenderObject*);
+    static PassRefPtr<AXTableCell> create(RenderObject*, AXObjectCacheImpl*);
     virtual ~AXTableCell();
 
     virtual bool isTableCell() const override final;

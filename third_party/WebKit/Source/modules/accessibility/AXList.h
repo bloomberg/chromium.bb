@@ -33,12 +33,15 @@
 
 namespace blink {
 
+class AXObjectCacheImpl;
+
 class AXList final : public AXRenderObject {
 
 private:
-    explicit AXList(RenderObject*);
+    AXList(RenderObject*, AXObjectCacheImpl*);
+
 public:
-    static PassRefPtr<AXList> create(RenderObject*);
+    static PassRefPtr<AXList> create(RenderObject*, AXObjectCacheImpl*);
     virtual ~AXList();
 
     virtual bool isList() const override { return true; }

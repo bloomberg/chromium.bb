@@ -33,12 +33,15 @@
 
 namespace blink {
 
+class AXObjectCacheImpl;
+
 class AXSVGRoot final : public AXRenderObject {
 
 protected:
-    explicit AXSVGRoot(RenderObject*);
+    AXSVGRoot(RenderObject*, AXObjectCacheImpl*);
+
 public:
-    static PassRefPtr<AXSVGRoot> create(RenderObject*);
+    static PassRefPtr<AXSVGRoot> create(RenderObject*, AXObjectCacheImpl*);
     virtual ~AXSVGRoot();
 
     void setParent(AXObject*) override;

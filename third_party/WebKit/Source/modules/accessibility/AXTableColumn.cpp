@@ -38,7 +38,8 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXTableColumn::AXTableColumn()
+AXTableColumn::AXTableColumn(AXObjectCacheImpl* axObjectCache)
+    : AXMockObject(axObjectCache)
 {
 }
 
@@ -46,9 +47,9 @@ AXTableColumn::~AXTableColumn()
 {
 }
 
-PassRefPtr<AXTableColumn> AXTableColumn::create()
+PassRefPtr<AXTableColumn> AXTableColumn::create(AXObjectCacheImpl* axObjectCache)
 {
-    return adoptRef(new AXTableColumn());
+    return adoptRef(new AXTableColumn(axObjectCache));
 }
 
 void AXTableColumn::setParent(AXObject* parent)

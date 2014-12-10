@@ -35,12 +35,15 @@
 
 namespace blink {
 
+class AXObjectCacheImpl;
+
 class AXImageMapLink final : public AXMockObject {
 
 private:
-    AXImageMapLink();
+    explicit AXImageMapLink(AXObjectCacheImpl*);
+
 public:
-    static PassRefPtr<AXImageMapLink> create();
+    static PassRefPtr<AXImageMapLink> create(AXObjectCacheImpl*);
     virtual ~AXImageMapLink();
 
     void setHTMLAreaElement(HTMLAreaElement* element) { m_areaElement = element; }

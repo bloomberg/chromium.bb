@@ -30,16 +30,17 @@
 
 namespace blink {
 
+class AXObjectCacheImpl;
 class HTMLElement;
 
 class AXMenuListOption final : public AXMockObject {
 public:
-    static PassRefPtr<AXMenuListOption> create() { return adoptRef(new AXMenuListOption); }
+    static PassRefPtr<AXMenuListOption> create(AXObjectCacheImpl* axObjectCache) { return adoptRef(new AXMenuListOption(axObjectCache)); }
 
     void setElement(HTMLElement*);
 
 private:
-    AXMenuListOption();
+    explicit AXMenuListOption(AXObjectCacheImpl*);
 
     virtual bool isMenuListOption() const override { return true; }
 

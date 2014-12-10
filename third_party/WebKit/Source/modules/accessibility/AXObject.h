@@ -281,7 +281,7 @@ public:
     };
 
 protected:
-    AXObject();
+    AXObject(AXObjectCacheImpl*);
 
 public:
     virtual ~AXObject();
@@ -301,7 +301,8 @@ public:
     virtual void setParent(AXObject* parent) { m_parent = parent; }
 
     // The AXObjectCacheImpl that owns this object, and its unique ID within this cache.
-    AXObjectCacheImpl* axObjectCache() const;
+    AXObjectCacheImpl* axObjectCache() const { return m_axObjectCache; }
+
     AXID axObjectID() const { return m_id; }
 
     // Determine subclass type.
@@ -507,7 +508,7 @@ public:
     // Low-level accessibility tree exploration, only for use within the accessibility module.
     virtual AXObject* firstChild() const { return 0; }
     virtual AXObject* nextSibling() const { return 0; }
-    static AXObject* firstAccessibleObjectFromNode(const Node*);
+    AXObject* firstAccessibleObjectFromNode(const Node*);
     virtual void addChildren() { }
     virtual bool canHaveChildren() const { return true; }
     bool hasChildren() const { return m_haveChildren; }
@@ -605,6 +606,8 @@ protected:
     mutable int m_lastModificationCount;
     mutable bool m_cachedIsIgnored;
     mutable const AXObject* m_cachedLiveRegionRoot;
+
+    AXObjectCacheImpl* m_axObjectCache;
 
     // Updates the cached attribute values. This may be recursive, so to prevent deadlocks,
     // functions called here may only search up the tree (ancestors), not down.

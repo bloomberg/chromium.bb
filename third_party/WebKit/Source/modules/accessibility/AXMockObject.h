@@ -30,10 +30,13 @@
 
 namespace blink {
 
+class AXObjectCacheImpl;
+
 class AXMockObject : public AXObject {
 
 protected:
-    AXMockObject();
+    explicit AXMockObject(AXObjectCacheImpl*);
+
 public:
     virtual ~AXMockObject();
 

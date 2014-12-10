@@ -33,12 +33,15 @@
 
 namespace blink {
 
+class AXObjectCacheImpl;
+
 class AXARIAGridRow final : public AXTableRow {
 
 private:
-    explicit AXARIAGridRow(RenderObject*);
+    AXARIAGridRow(RenderObject*, AXObjectCacheImpl*);
+
 public:
-    static PassRefPtr<AXARIAGridRow> create(RenderObject*);
+    static PassRefPtr<AXARIAGridRow> create(RenderObject*, AXObjectCacheImpl*);
     virtual ~AXARIAGridRow();
 
     virtual AXObject* headerObject() override;

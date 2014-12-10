@@ -29,11 +29,12 @@
 #include "config.h"
 #include "modules/accessibility/AXSVGRoot.h"
 
+#include "modules/accessibility/AXObjectCacheImpl.h"
 
 namespace blink {
 
-AXSVGRoot::AXSVGRoot(RenderObject* renderer)
-    : AXRenderObject(renderer)
+AXSVGRoot::AXSVGRoot(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+    : AXRenderObject(renderer, axObjectCache)
 {
 }
 
@@ -41,9 +42,9 @@ AXSVGRoot::~AXSVGRoot()
 {
 }
 
-PassRefPtr<AXSVGRoot> AXSVGRoot::create(RenderObject* renderer)
+PassRefPtr<AXSVGRoot> AXSVGRoot::create(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
 {
-    return adoptRef(new AXSVGRoot(renderer));
+    return adoptRef(new AXSVGRoot(renderer, axObjectCache));
 }
 
 void AXSVGRoot::setParent(AXObject* parent)

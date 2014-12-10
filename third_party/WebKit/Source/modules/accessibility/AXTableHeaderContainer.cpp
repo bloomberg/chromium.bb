@@ -29,11 +29,12 @@
 #include "config.h"
 #include "modules/accessibility/AXTableHeaderContainer.h"
 
-
+#include "modules/accessibility/AXObjectCacheImpl.h"
 
 namespace blink {
 
-AXTableHeaderContainer::AXTableHeaderContainer()
+AXTableHeaderContainer::AXTableHeaderContainer(AXObjectCacheImpl* axObjectCache)
+    : AXMockObject(axObjectCache)
 {
 }
 
@@ -41,9 +42,9 @@ AXTableHeaderContainer::~AXTableHeaderContainer()
 {
 }
 
-PassRefPtr<AXTableHeaderContainer> AXTableHeaderContainer::create()
+PassRefPtr<AXTableHeaderContainer> AXTableHeaderContainer::create(AXObjectCacheImpl* axObjectCache)
 {
-    return adoptRef(new AXTableHeaderContainer());
+    return adoptRef(new AXTableHeaderContainer(axObjectCache));
 }
 
 LayoutRect AXTableHeaderContainer::elementRect() const

@@ -31,13 +31,14 @@
 
 #include "core/rendering/RenderListBox.h"
 #include "modules/accessibility/AXListBoxOption.h"
+#include "modules/accessibility/AXObjectCacheImpl.h"
 
 namespace blink {
 
 using namespace HTMLNames;
 
-AXListBox::AXListBox(RenderObject* renderer)
-    : AXRenderObject(renderer)
+AXListBox::AXListBox(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+    : AXRenderObject(renderer, axObjectCache)
 {
 }
 
@@ -45,9 +46,9 @@ AXListBox::~AXListBox()
 {
 }
 
-PassRefPtr<AXListBox> AXListBox::create(RenderObject* renderer)
+PassRefPtr<AXListBox> AXListBox::create(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
 {
-    return adoptRef(new AXListBox(renderer));
+    return adoptRef(new AXListBox(renderer, axObjectCache));
 }
 
 } // namespace blink

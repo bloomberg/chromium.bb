@@ -37,8 +37,8 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXTableCell::AXTableCell(RenderObject* renderer)
-    : AXRenderObject(renderer)
+AXTableCell::AXTableCell(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+    : AXRenderObject(renderer, axObjectCache)
 {
 }
 
@@ -46,9 +46,9 @@ AXTableCell::~AXTableCell()
 {
 }
 
-PassRefPtr<AXTableCell> AXTableCell::create(RenderObject* renderer)
+PassRefPtr<AXTableCell> AXTableCell::create(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
 {
-    return adoptRef(new AXTableCell(renderer));
+    return adoptRef(new AXTableCell(renderer, axObjectCache));
 }
 
 bool AXTableCell::computeAccessibilityIsIgnored() const

@@ -26,9 +26,12 @@
 #include "config.h"
 #include "modules/accessibility/AXMockObject.h"
 
+#include "modules/accessibility/AXObjectCacheImpl.h"
+
 namespace blink {
 
-AXMockObject::AXMockObject()
+AXMockObject::AXMockObject(AXObjectCacheImpl* axObjectCache)
+    : AXObject(axObjectCache)
 {
 }
 

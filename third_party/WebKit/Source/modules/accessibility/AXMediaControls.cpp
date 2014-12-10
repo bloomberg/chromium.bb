@@ -30,6 +30,7 @@
 #include "config.h"
 #include "modules/accessibility/AXMediaControls.h"
 
+#include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/text/PlatformLocale.h"
 
 namespace blink {
@@ -42,28 +43,28 @@ static inline String queryString(WebLocalizedString::Name name)
     return Locale::defaultLocale().queryString(name);
 }
 
-AccessibilityMediaControl::AccessibilityMediaControl(RenderObject* renderer)
-    : AXRenderObject(renderer)
+AccessibilityMediaControl::AccessibilityMediaControl(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+    : AXRenderObject(renderer, axObjectCache)
 {
 }
 
-PassRefPtr<AXObject> AccessibilityMediaControl::create(RenderObject* renderer)
+PassRefPtr<AXObject> AccessibilityMediaControl::create(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
 {
     ASSERT(renderer->node());
 
     switch (mediaControlElementType(renderer->node())) {
     case MediaSlider:
-        return AccessibilityMediaTimeline::create(renderer);
+        return AccessibilityMediaTimeline::create(renderer, axObjectCache);
 
     case MediaCurrentTimeDisplay:
     case MediaTimeRemainingDisplay:
-        return AccessibilityMediaTimeDisplay::create(renderer);
+        return AccessibilityMediaTimeDisplay::create(renderer, axObjectCache);
 
     case MediaControlsPanel:
-        return AXMediaControlsContainer::create(renderer);
+        return AXMediaControlsContainer::create(renderer, axObjectCache);
 
     default:
-        return adoptRef(new AccessibilityMediaControl(renderer));
+        return adoptRef(new AccessibilityMediaControl(renderer, axObjectCache));
     }
 }
 
@@ -192,14 +193,14 @@ AccessibilityRole AccessibilityMediaControl::roleValue() const
 //
 // AXMediaControlsContainer
 
-AXMediaControlsContainer::AXMediaControlsContainer(RenderObject* renderer)
-    : AccessibilityMediaControl(renderer)
+AXMediaControlsContainer::AXMediaControlsContainer(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+    : AccessibilityMediaControl(renderer, axObjectCache)
 {
 }
 
-PassRefPtr<AXObject> AXMediaControlsContainer::create(RenderObject* renderer)
+PassRefPtr<AXObject> AXMediaControlsContainer::create(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
 {
-    return adoptRef(new AXMediaControlsContainer(renderer));
+    return adoptRef(new AXMediaControlsContainer(renderer, axObjectCache));
 }
 
 String AXMediaControlsContainer::accessibilityDescription() const
@@ -227,14 +228,14 @@ static String localizedMediaTimeDescription(float /*time*/)
     return String();
 }
 
-AccessibilityMediaTimeline::AccessibilityMediaTimeline(RenderObject* renderer)
-    : AXSlider(renderer)
+AccessibilityMediaTimeline::AccessibilityMediaTimeline(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+    : AXSlider(renderer, axObjectCache)
 {
 }
 
-PassRefPtr<AXObject> AccessibilityMediaTimeline::create(RenderObject* renderer)
+PassRefPtr<AXObject> AccessibilityMediaTimeline::create(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
 {
-    return adoptRef(new AccessibilityMediaTimeline(renderer));
+    return adoptRef(new AccessibilityMediaTimeline(renderer, axObjectCache));
 }
 
 String AccessibilityMediaTimeline::valueDescription() const
@@ -255,14 +256,14 @@ String AccessibilityMediaTimeline::helpText() const
 //
 // AccessibilityMediaTimeDisplay
 
-AccessibilityMediaTimeDisplay::AccessibilityMediaTimeDisplay(RenderObject* renderer)
-    : AccessibilityMediaControl(renderer)
+AccessibilityMediaTimeDisplay::AccessibilityMediaTimeDisplay(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+    : AccessibilityMediaControl(renderer, axObjectCache)
 {
 }
 
-PassRefPtr<AXObject> AccessibilityMediaTimeDisplay::create(RenderObject* renderer)
+PassRefPtr<AXObject> AccessibilityMediaTimeDisplay::create(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
 {
-    return adoptRef(new AccessibilityMediaTimeDisplay(renderer));
+    return adoptRef(new AccessibilityMediaTimeDisplay(renderer, axObjectCache));
 }
 
 bool AccessibilityMediaTimeDisplay::computeAccessibilityIsIgnored() const
