@@ -905,9 +905,6 @@ void GraphicsLayer::setNeedsDisplay()
         addRepaintRect(FloatRect(FloatPoint(), m_size));
         for (size_t i = 0; i < m_linkHighlights.size(); ++i)
             m_linkHighlights[i]->invalidate();
-
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-            displayItemList()->invalidateAll();
     }
 }
 

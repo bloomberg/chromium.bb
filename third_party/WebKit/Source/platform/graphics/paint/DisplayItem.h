@@ -103,9 +103,7 @@ private:
         Id(DisplayItemClient c, Type t)
             : client(c)
             , type(t)
-        {
-            ASSERT(client);
-        }
+        { }
 
         const DisplayItemClient client;
         const Type type;

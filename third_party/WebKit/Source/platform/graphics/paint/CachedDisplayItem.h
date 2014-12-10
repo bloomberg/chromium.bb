@@ -15,19 +15,13 @@ namespace blink {
 // when merging new paint list to cached paint list.
 class PLATFORM_EXPORT CachedDisplayItem : public DisplayItem {
 public:
-    static PassOwnPtr<CachedDisplayItem> create(DisplayItemClient client, Type type)
-    {
-        return adoptPtr(new CachedDisplayItem(client, type));
-    }
-
-    virtual bool isCached() const { return true; }
-
-private:
     CachedDisplayItem(DisplayItemClient client, Type type) : DisplayItem(client, type) { }
 
     // CachedDisplayItem is never replayed or appended to WebDisplayItemList.
-    virtual void replay(GraphicsContext*) override final { ASSERT_NOT_REACHED(); }
-    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override final { ASSERT_NOT_REACHED(); }
+    virtual void replay(GraphicsContext*) override { ASSERT_NOT_REACHED(); }
+    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override { ASSERT_NOT_REACHED(); }
+
+    virtual bool isCached() const { return true; }
 };
 
 } // namespace blink

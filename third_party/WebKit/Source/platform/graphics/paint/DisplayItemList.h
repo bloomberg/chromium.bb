@@ -22,10 +22,7 @@ public:
 
     const PaintList& paintList();
     void add(WTF::PassOwnPtr<DisplayItem>);
-
     void invalidate(DisplayItemClient);
-    void invalidateAll();
-    bool clientCacheIsValid(DisplayItemClient client) const { return m_cachedClients.contains(client); }
 
 #ifndef NDEBUG
     void showDebugData() const;
@@ -35,16 +32,13 @@ protected:
     DisplayItemList() { };
 
 private:
-    PaintList::iterator findNextMatchingCachedItem(PaintList::iterator, const DisplayItem&);
+    PaintList::iterator findDisplayItem(PaintList::iterator, const DisplayItem&);
     bool wasInvalidated(const DisplayItem&) const;
     void updatePaintList();
 
-#ifndef NDEBUG
-    WTF::String paintListAsDebugString(const PaintList&) const;
-#endif
-
     PaintList m_paintList;
-    HashSet<DisplayItemClient> m_cachedClients;
+    HashSet<DisplayItemClient> m_paintListRenderers;
+    HashSet<DisplayItemClient> m_invalidated;
     PaintList m_newPaints;
 };
 

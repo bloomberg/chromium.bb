@@ -25,8 +25,6 @@ public:
 
     ~DrawingRecorder();
 
-    bool canUseCachedDrawing() const { return m_canUseCachedDrawing; }
-
 #ifndef NDEBUG
     void setClientDebugString(const WTF::String&);
 #endif
@@ -36,7 +34,6 @@ private:
     DisplayItemClient m_displayItemClient;
     const DisplayItem::Type m_displayItemType;
     const FloatRect m_bounds;
-    bool m_canUseCachedDrawing;
 #ifndef NDEBUG
     WTF::String m_clientDebugString;
 #endif

@@ -29,26 +29,16 @@ void DisplayItemList::add(WTF::PassOwnPtr<DisplayItem> displayItem)
     m_newPaints.append(displayItem);
 }
 
-void DisplayItemList::invalidate(DisplayItemClient client)
+void DisplayItemList::invalidate(DisplayItemClient renderer)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
-    m_cachedClients.remove(client);
+    m_invalidated.add(renderer);
 }
 
-void DisplayItemList::invalidateAll()
-{
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
-    // Can only be called during layout/paintInvalidation, not during painting.
-    ASSERT(m_newPaints.isEmpty());
-    m_paintList.clear();
-    m_cachedClients.clear();
-}
-
-PaintList::iterator DisplayItemList::findNextMatchingCachedItem(PaintList::iterator begin, const DisplayItem& displayItem)
+PaintList::iterator DisplayItemList::findDisplayItem(PaintList::iterator begin, const DisplayItem& displayItem)
 {
     PaintList::iterator end = m_paintList.end();
-
-    if (!clientCacheIsValid(displayItem.client()))
+    if (displayItem.client() && !m_paintListRenderers.contains(displayItem.client()))
         return end;
 
     for (PaintList::iterator it = begin; it != end; ++it) {
@@ -61,9 +51,16 @@ PaintList::iterator DisplayItemList::findNextMatchingCachedItem(PaintList::itera
     return end;
 }
 
-static void appendDisplayItem(PaintList& list, HashSet<DisplayItemClient>& clients, WTF::PassOwnPtr<DisplayItem> displayItem)
+bool DisplayItemList::wasInvalidated(const DisplayItem& displayItem) const
 {
-    clients.add(displayItem->client());
+    // FIXME: Use a bit on DisplayItemClient instead of tracking m_invalidated.
+    return displayItem.client() && m_invalidated.contains(displayItem.client());
+}
+
+static void appendDisplayItem(PaintList& list, HashSet<DisplayItemClient>& renderers, WTF::PassOwnPtr<DisplayItem> displayItem)
+{
+    if (DisplayItemClient renderer = displayItem->client())
+        renderers.add(renderer);
     list.append(displayItem);
 }
 
@@ -75,49 +72,48 @@ static void appendDisplayItem(PaintList& list, HashSet<DisplayItemClient>& clien
 void DisplayItemList::updatePaintList()
 {
     PaintList updatedList;
-    HashSet<DisplayItemClient> newCachedClients;
+    HashSet<DisplayItemClient> updatedRenderers;
+
+    if (int maxCapacity = m_newPaints.size() + std::max(0, (int)m_paintList.size() - (int)m_invalidated.size()))
+        updatedList.reserveCapacity(maxCapacity);
 
     PaintList::iterator paintListIt = m_paintList.begin();
     PaintList::iterator paintListEnd = m_paintList.end();
 
     for (OwnPtr<DisplayItem>& newDisplayItem : m_newPaints) {
-        PaintList::iterator cachedItemIt = findNextMatchingCachedItem(paintListIt, *newDisplayItem);
-        if (cachedItemIt != paintListEnd) {
-            // Copy all of the existing items over until we hit the matching cached item.
-            for (; paintListIt != cachedItemIt; ++paintListIt) {
-                if (clientCacheIsValid((*paintListIt)->client()))
-                    appendDisplayItem(updatedList, newCachedClients, paintListIt->release());
+        // FIXME: Should check isCached only and ASSERT(!wasInvalidated) when painters emit CachedDisplayItem.
+        if (newDisplayItem->isCached() || !wasInvalidated(*newDisplayItem)) {
+            PaintList::iterator repaintIt = findDisplayItem(paintListIt, *newDisplayItem);
+            if (repaintIt != paintListEnd) {
+                // Copy all of the existing items over until we hit the repaint.
+                for (; paintListIt != repaintIt; ++paintListIt) {
+                    if (!wasInvalidated(**paintListIt))
+                        appendDisplayItem(updatedList, updatedRenderers, paintListIt->release());
+                }
+                paintListIt++;
             }
-
-            // Use the cached item for the new display item.
-            appendDisplayItem(updatedList, newCachedClients, cachedItemIt->release());
-            ++paintListIt;
-        } else {
-            // If the new display item is a cached placeholder, we should have found
-            // the cached display item.
-            ASSERT(!newDisplayItem->isCached());
-
-            // Copy over the new item.
-            appendDisplayItem(updatedList, newCachedClients, newDisplayItem.release());
         }
+        // Copy over the new item.
+        appendDisplayItem(updatedList, updatedRenderers, newDisplayItem.release());
     }
 
-    // Copy over any remaining items that are validly cached.
+    // Copy over any remaining items that were not invalidated.
     for (; paintListIt != paintListEnd; ++paintListIt) {
-        if (clientCacheIsValid((*paintListIt)->client()))
-            appendDisplayItem(updatedList, newCachedClients, paintListIt->release());
+        if (!wasInvalidated(**paintListIt))
+            appendDisplayItem(updatedList, updatedRenderers, paintListIt->release());
     }
 
+    m_invalidated.clear();
     m_newPaints.clear();
     m_paintList.clear();
     m_paintList.swap(updatedList);
-    m_cachedClients.clear();
-    m_cachedClients.swap(newCachedClients);
+    m_paintListRenderers.clear();
+    m_paintListRenderers.swap(updatedRenderers);
 }
 
 #ifndef NDEBUG
 
-WTF::String DisplayItemList::paintListAsDebugString(const PaintList& list) const
+static WTF::String paintListAsDebugString(const PaintList& list)
 {
     StringBuilder stringBuilder;
     bool isFirst = true;
@@ -125,11 +121,7 @@ WTF::String DisplayItemList::paintListAsDebugString(const PaintList& list) const
         if (!isFirst)
             stringBuilder.append(", ");
         isFirst = false;
-        String displayItemDebugString = displayItem->asDebugString();
-        stringBuilder.append(displayItemDebugString, 0, displayItemDebugString.length() - 1); // Omit the closing '}'.
-        stringBuilder.append(", cached: ");
-        stringBuilder.append(clientCacheIsValid(displayItem->client()) ? "true" : "false");
-        stringBuilder.append('}');
+        stringBuilder.append(displayItem->asDebugString());
     }
     return stringBuilder.toString();
 }
