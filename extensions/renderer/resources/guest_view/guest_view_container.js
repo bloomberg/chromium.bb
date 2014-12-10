@@ -15,6 +15,7 @@ function GuestViewContainer(element, viewType) {
   this.elementAttached = false;
   this.guest = new GuestView(viewType);
   this.viewInstanceId = IdGenerator.GetNextId();
+  this.viewType = viewType;
 
   privates(this).browserPluginElement = this.createBrowserPluginElement();
   this.setupFocusPropagation();
@@ -56,7 +57,8 @@ GuestViewContainer.registerElement =
 GuestViewContainer.prototype.createBrowserPluginElement = function() {
   // We create BrowserPlugin as a custom element in order to observe changes
   // to attributes synchronously.
-  var browserPluginElement = new GuestViewContainer.BrowserPlugin();
+  var browserPluginElement =
+      new GuestViewContainer[this.viewType + 'BrowserPlugin']();
   privates(browserPluginElement).internal = this;
   return browserPluginElement;
 };
@@ -138,7 +140,7 @@ function registerBrowserPluginElement(viewType) {
     internal.handleBrowserPluginAttributeMutation(name, oldValue, newValue);
   };
 
-  GuestViewContainer.BrowserPlugin =
+  GuestViewContainer[viewType + 'BrowserPlugin'] =
       DocumentNatives.RegisterElement(viewType + 'browserplugin',
                                       {extends: 'object', prototype: proto});
 
