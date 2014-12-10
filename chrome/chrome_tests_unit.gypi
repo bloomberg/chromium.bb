@@ -1263,7 +1263,6 @@
       'browser/web_applications/web_app_unittest.cc',
       'browser/web_resource/promo_resource_service_mobile_ntp_unittest.cc',
       'browser/web_resource/promo_resource_service_unittest.cc',
-      'browser/webdata/keyword_table_unittest.cc',
       'common/chrome_paths_unittest.cc',
       'common/chrome_content_client_unittest.cc',
       'common/cloud_print/cloud_print_helpers_unittest.cc',

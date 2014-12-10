@@ -210,6 +210,7 @@
             'search/search_unittest.cc',
             'search_engines/default_search_manager_unittest.cc',
             'search_engines/default_search_policy_handler_unittest.cc',
+            'search_engines/keyword_table_unittest.cc',
             'search_engines/search_host_to_urls_map_unittest.cc',
             'search_engines/template_url_prepopulate_data_unittest.cc',
             'search_engines/template_url_service_util_unittest.cc',
