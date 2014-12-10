@@ -915,8 +915,8 @@ void Internals::scrollElementToRect(Element* element, long x, long y, long w, lo
         exceptionState.throwDOMException(InvalidNodeTypeError, element ? "No view can be obtained from the provided element's document." : ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
         return;
     }
-    FrameView* frameView = element->document().view();
-    frameView->scrollElementToRect(element, IntRect(x, y, w, h));
+    FrameView* mainFrame = toLocalFrame(element->document().page()->mainFrame())->view();
+    mainFrame->scrollElementToRect(element, IntRect(x, y, w, h));
 }
 
 PassRefPtrWillBeRawPtr<Range> Internals::rangeFromLocationAndLength(Element* scope, int rangeLocation, int rangeLength)

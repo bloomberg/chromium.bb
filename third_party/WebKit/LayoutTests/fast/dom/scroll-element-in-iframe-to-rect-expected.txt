@@ -1,0 +1,13 @@
+
+Tests that scrolling to rect works for an element inside an iframe.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Scrolled element to rect.
+PASS rect.left is computedLeft
+PASS rect.top is computedTop
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

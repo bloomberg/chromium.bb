@@ -1492,10 +1492,9 @@ void FrameView::scrollElementToRect(Element* element, const IntRect& rect)
 
     m_frame->document()->updateLayoutIgnorePendingStylesheets();
 
-    bool pinchVirtualViewportEnabled = m_frame->settings()->pinchVirtualViewportEnabled();
+    bool adjustForVirtualViewport = m_frame->isMainFrame() && m_frame->settings()->pinchVirtualViewportEnabled();
 
-    // FIXME: This needs an isMainFrame() check as well. crbug.com/378776.
-    if (pinchVirtualViewportEnabled) {
+    if (adjustForVirtualViewport) {
         PinchViewport& pinchViewport = m_frame->page()->frameHost().pinchViewport();
 
         FloatRect visibleRect = pinchViewport.visibleRect();
@@ -1504,7 +1503,12 @@ void FrameView::scrollElementToRect(Element* element, const IntRect& rect)
         targetRect.setSize(pinchViewportSize.shrunkTo(targetRect.size()));
     }
 
-    LayoutRect bounds = element->boundingBox();
+    // Obtain focused element's bounding box in window space. The targetRect is already in window space.
+    // Use |pixelSnappedIntRect| for rounding to pixel as opposed to |enclosingIntRect|. It gives a
+    // better combined (location and size) rounding error resulting in a more accurate scroll offset.
+    LayoutRect boundsInContent = element->boundingBox();
+    IntRect bounds = element->document().view()->contentsToWindow(pixelSnappedIntRect(boundsInContent));
+
     int centeringOffsetX = (targetRect.width() - bounds.width()) / 2;
     int centeringOffsetY = (targetRect.height() - bounds.height()) / 2;
 
@@ -1512,9 +1516,11 @@ void FrameView::scrollElementToRect(Element* element, const IntRect& rect)
         bounds.x() - centeringOffsetX - targetRect.x(),
         bounds.y() - centeringOffsetY - targetRect.y());
 
+    // Update frame scroll offset to make target element visible.
+    targetOffset.move(scrollOffset());
     setScrollPosition(DoublePoint(targetOffset));
 
-    if (pinchVirtualViewportEnabled) {
+    if (adjustForVirtualViewport) {
         IntPoint remainder = IntPoint(targetOffset - scrollPosition());
         m_frame->page()->frameHost().pinchViewport().move(remainder);
     }
