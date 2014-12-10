@@ -24,5 +24,10 @@ const char kDisableEasyUnlock[] = "disable-easy-unlock";
 const char kEnableProximityDetection[] =
     "enable-proximity-auth-proximity-detection";
 
+// Force easy unlock app loading in test.
+// TODO(xiyuan): Remove this when app could be bundled with Chrome.
+const char kForceLoadEasyUnlockAppInTests[] =
+    "force-load-easy-unlock-app-in-tests";
+
 }  // namespace switches
 }  // namespace proximity_auth

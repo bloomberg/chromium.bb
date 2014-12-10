@@ -79,7 +79,7 @@ void SetUpBluetoothMock(
 class EasyUnlockServiceTest : public InProcessBrowserTest {
  public:
   EasyUnlockServiceTest() : is_bluetooth_adapter_present_(true) {}
-  virtual ~EasyUnlockServiceTest() {}
+  ~EasyUnlockServiceTest() override {}
 
   void SetEasyUnlockAllowedPolicy(bool allowed) {
     policy::PolicyMap policy;
@@ -99,7 +99,7 @@ class EasyUnlockServiceTest : public InProcessBrowserTest {
 #endif
 
   // InProcessBrowserTest:
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     EXPECT_CALL(provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
@@ -112,6 +112,11 @@ class EasyUnlockServiceTest : public InProcessBrowserTest {
     power_manager_client_ = new FakePowerManagerClient;
     dbus_setter->SetPowerManagerClient(
         scoped_ptr<PowerManagerClient>(power_manager_client_));
+  }
+
+  void SetUpCommandLine(CommandLine* command_line) override {
+    command_line->AppendSwitch(
+        proximity_auth::switches::kForceLoadEasyUnlockAppInTests);
   }
 
   Profile* profile() const { return browser()->profile(); }
@@ -177,10 +182,10 @@ IN_PROC_BROWSER_TEST_F(EasyUnlockServiceTest, PolicyOveride) {
 class EasyUnlockServiceNoBluetoothTest : public EasyUnlockServiceTest {
  public:
   EasyUnlockServiceNoBluetoothTest() {}
-  virtual ~EasyUnlockServiceNoBluetoothTest() {}
+  ~EasyUnlockServiceNoBluetoothTest() override {}
 
   // InProcessBrowserTest:
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     set_is_bluetooth_adapter_present(false);
     EasyUnlockServiceTest::SetUpInProcessBrowserTestFixture();
   }
@@ -199,10 +204,10 @@ IN_PROC_BROWSER_TEST_F(EasyUnlockServiceNoBluetoothTest, NoService) {
 class EasyUnlockServiceDisabledTest : public EasyUnlockServiceTest {
  public:
   EasyUnlockServiceDisabledTest() {}
-  virtual ~EasyUnlockServiceDisabledTest() {}
+  ~EasyUnlockServiceDisabledTest() override {}
 
   // InProcessBrowserTest:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(proximity_auth::switches::kDisableEasyUnlock);
   }
 
@@ -235,10 +240,10 @@ IN_PROC_BROWSER_TEST_F(EasyUnlockServiceDisabledTest, NoPolicyOverride) {
 class EasyUnlockServiceMultiProfileTest : public LoginManagerTest {
  public:
   EasyUnlockServiceMultiProfileTest() : LoginManagerTest(false) {}
-  virtual ~EasyUnlockServiceMultiProfileTest() {}
+  ~EasyUnlockServiceMultiProfileTest() override {}
 
   // InProcessBrowserTest:
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     LoginManagerTest::SetUpInProcessBrowserTestFixture();
 
     mock_adapter_ = new testing::NiceMock<MockBluetoothAdapter>();

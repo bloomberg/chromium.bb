@@ -14,6 +14,7 @@ extern const char kCryptAuthHTTPHost[];
 extern const char kDisableEasySignin[];
 extern const char kDisableEasyUnlock[];
 extern const char kEnableProximityDetection[];
+extern const char kForceLoadEasyUnlockAppInTests[];
 
 }  // namespace switches
 }  // namespace proximity_auth

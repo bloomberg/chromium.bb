@@ -37,6 +37,7 @@
 #include "grit/browser_resources.h"
 
 #if defined(OS_CHROMEOS)
+#include "base/sys_info.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -463,6 +464,15 @@ void  EasyUnlockService::Shutdown() {
 
 void EasyUnlockService::LoadApp() {
   DCHECK(IsAllowed());
+
+#if defined(OS_CHROMEOS)
+  // TODO(xiyuan): Remove this when the app is bundled with chrome.
+  if (!base::SysInfo::IsRunningOnChromeOS() &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kForceLoadEasyUnlockAppInTests)) {
+    return;
+  }
+#endif
 
 #if defined(GOOGLE_CHROME_BUILD)
   base::FilePath easy_unlock_path;
