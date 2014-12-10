@@ -72,7 +72,7 @@ function SearchBox(element, searchButton, noResultMessage) {
   var dispatchItemSelect =
       cr.dispatchSimpleEvent.bind(cr, this, SearchBox.EventType.ITEM_SELECT);
   this.autocompleteList.handleEnterKeydown = dispatchItemSelect;
-  this.autocompleteList.addEventListener('mouseDown', dispatchItemSelect);
+  this.autocompleteList.addEventListener('mousedown', dispatchItemSelect);
 
   // Append dynamically created element.
   element.parentNode.appendChild(this.autocompleteList);
