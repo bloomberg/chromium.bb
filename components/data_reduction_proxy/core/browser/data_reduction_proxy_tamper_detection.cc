@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
+#include "net/base/mime_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 
@@ -299,40 +300,53 @@ void DataReductionProxyTamperDetection::
   std::string mime_type;
   response_headers_->GetMimeType(&mime_type);
 
-  std::string JS1   = "text/javascript";
-  std::string JS2   = "application/x-javascript";
-  std::string JS3   = "application/javascript";
-  std::string CSS   = "text/css";
-  std::string IMAGE = "image/";
-
-  size_t mime_type_size = mime_type.size();
-  if ((mime_type_size >= JS1.size() && LowerCaseEqualsASCII(mime_type.begin(),
-      mime_type.begin() + JS1.size(), JS1.c_str())) ||
-      (mime_type_size >= JS2.size() && LowerCaseEqualsASCII(mime_type.begin(),
-      mime_type.begin() + JS2.size(), JS2.c_str())) ||
-      (mime_type_size >= JS3.size() && LowerCaseEqualsASCII(mime_type.begin(),
-      mime_type.begin() + JS3.size(), JS3.c_str()))) {
+  if (net::MatchesMimeType("text/javascript", mime_type) ||
+      net::MatchesMimeType("application/x-javascript", mime_type) ||
+      net::MatchesMimeType("application/javascript", mime_type)) {
     REPORT_TAMPER_DETECTION_UMA(
         scheme_is_https_,
         "DataReductionProxy.HeaderTamperedHTTPS_ContentLength_JS",
         "DataReductionProxy.HeaderTamperedHTTP_ContentLength_JS",
         carrier_id_);
-  } else if (mime_type_size >= CSS.size() &&
-      LowerCaseEqualsASCII(mime_type.begin(),
-      mime_type.begin() + CSS.size(), CSS.c_str())) {
+  } else if (net::MatchesMimeType("text/css", mime_type)) {
     REPORT_TAMPER_DETECTION_UMA(
         scheme_is_https_,
         "DataReductionProxy.HeaderTamperedHTTPS_ContentLength_CSS",
         "DataReductionProxy.HeaderTamperedHTTP_ContentLength_CSS",
         carrier_id_);
-  } else if (mime_type_size >= IMAGE.size() &&
-      LowerCaseEqualsASCII(mime_type.begin(),
-      mime_type.begin() + IMAGE.size(), IMAGE.c_str())) {
+  } else if (net::MatchesMimeType("image/*", mime_type)) {
     REPORT_TAMPER_DETECTION_UMA(
         scheme_is_https_,
         "DataReductionProxy.HeaderTamperedHTTPS_ContentLength_Image",
         "DataReductionProxy.HeaderTamperedHTTP_ContentLength_Image",
         carrier_id_);
+
+    if (net::MatchesMimeType("image/gif", mime_type)) {
+      REPORT_TAMPER_DETECTION_UMA(
+          scheme_is_https_,
+          "DataReductionProxy.HeaderTamperedHTTPS_ContentLength_Image_GIF",
+          "DataReductionProxy.HeaderTamperedHTTP_ContentLength_Image_GIF",
+          carrier_id_);
+    } else if (net::MatchesMimeType("image/jpeg", mime_type) ||
+        net::MatchesMimeType("image/jpg", mime_type)) {
+      REPORT_TAMPER_DETECTION_UMA(
+          scheme_is_https_,
+          "DataReductionProxy.HeaderTamperedHTTPS_ContentLength_Image_JPG",
+          "DataReductionProxy.HeaderTamperedHTTP_ContentLength_Image_JPG",
+          carrier_id_);
+    } else if (net::MatchesMimeType("image/png", mime_type)) {
+      REPORT_TAMPER_DETECTION_UMA(
+          scheme_is_https_,
+          "DataReductionProxy.HeaderTamperedHTTPS_ContentLength_Image_PNG",
+          "DataReductionProxy.HeaderTamperedHTTP_ContentLength_Image_PNG",
+          carrier_id_);
+    } else if (net::MatchesMimeType("image/webp", mime_type)) {
+      REPORT_TAMPER_DETECTION_UMA(
+          scheme_is_https_,
+          "DataReductionProxy.HeaderTamperedHTTPS_ContentLength_Image_WEBP",
+          "DataReductionProxy.HeaderTamperedHTTP_ContentLength_Image_WEBP",
+          carrier_id_);
+    }
   } else {
     REPORT_TAMPER_DETECTION_UMA(
         scheme_is_https_,

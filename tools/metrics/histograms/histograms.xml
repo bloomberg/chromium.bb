@@ -57896,6 +57896,18 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="ContentLength_Image"
       label="for each carrier, number of image responses whose Content-Length
              header has been tampered with"/>
+  <suffix name="ContentLength_Image_GIF"
+      label="for each carrier, number of GIF image responses whose
+             Content-Length header has been tampered with"/>
+  <suffix name="ContentLength_Image_JPG"
+      label="for each carrier, number of JPEG image responses whose
+             Content-Length header has been tampered with"/>
+  <suffix name="ContentLength_Image_PNG"
+      label="for each carrier, number of PNG image responses whose
+             Content-Length header has been tampered with"/>
+  <suffix name="ContentLength_Image_WEBP"
+      label="for each carrier, number of WebP image responses whose
+             Content-Length header has been tampered with"/>
   <suffix name="ContentLength_JS"
       label="for each carrier, number of JavaScript responses whose
              Content-Length header has been tampered with"/>
