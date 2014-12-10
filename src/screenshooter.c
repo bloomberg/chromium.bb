@@ -464,8 +464,9 @@ weston_recorder_free(struct weston_recorder *recorder)
 {
 	if (recorder == NULL)
 		return;
-	free(recorder->rect);
+
 	free(recorder->tmpbuf);
+	free(recorder->rect);
 	free(recorder->frame);
 	free(recorder);
 }
@@ -495,12 +496,16 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 
 	if ((recorder->frame == NULL) || (recorder->rect == NULL)) {
 		weston_log("%s: out of memory\n", __func__);
-		weston_recorder_free(recorder);
-		return;
+		goto err_recorder;
 	}
 
-	if (!do_yflip)
+	if (!do_yflip) {
 		recorder->tmpbuf = malloc(size);
+		if (recorder->tmpbuf == NULL) {
+			weston_log("%s: out of memory\n", __func__);
+			goto err_recorder;
+		}
+	}
 
 	header.magic = WCAP_HEADER_MAGIC;
 
@@ -514,8 +519,7 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 		break;
 	default:
 		weston_log("unknown recorder format\n");
-		weston_recorder_free(recorder);
-		return;
+		goto err_recorder;
 	}
 
 	recorder->fd = open(filename,
@@ -523,8 +527,7 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 
 	if (recorder->fd < 0) {
 		weston_log("problem opening output file %s: %m\n", filename);
-		weston_recorder_free(recorder);
-		return;
+		goto err_recorder;
 	}
 
 	header.width = output->current_mode->width;
@@ -535,6 +538,12 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 	wl_signal_add(&output->frame_signal, &recorder->frame_listener);
 	output->disable_planes++;
 	weston_output_damage(output);
+
+	return;
+
+err_recorder:
+	weston_recorder_free(recorder);
+	return;
 }
 
 static void
