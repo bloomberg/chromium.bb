@@ -13,13 +13,14 @@ description("This tests the constructor for the StorageEvent DOM class.");
 // No initializer is passed.
 shouldBe("new StorageEvent('eventType').bubbles", "false");
 shouldBe("new StorageEvent('eventType').cancelable", "false");
-shouldBeEqualToString("new StorageEvent('eventType').key", "");
+// Note: key is nullable.
+shouldBeNull("new StorageEvent('eventType').key");
 // Note: oldValue is nullable.
-shouldBe("new StorageEvent('eventType').oldValue", "null");
+shouldBeNull("new StorageEvent('eventType').oldValue");
 // Note: newValue is nullable.
-shouldBe("new StorageEvent('eventType').newValue", "null");
+shouldBeNull("new StorageEvent('eventType').newValue");
 shouldBeEqualToString("new StorageEvent('eventType').url", "");
-shouldBe("new StorageEvent('eventType').storageArea", "null");
+shouldBeNull("new StorageEvent('eventType').storageArea");
 
 // bubbles is passed.
 shouldBe("new StorageEvent('eventType', { bubbles: false }).bubbles", "false");
@@ -36,8 +37,6 @@ shouldBe("new StorageEvent('eventType', { cancelable: true }).cancelable", "true
     shouldBeEqualToString("new StorageEvent('eventType', { " + attr + ": '' })." + attr, "");
 
     // Non-strings.
-    shouldBeEqualToString("new StorageEvent('eventType', { " + attr + ": undefined })." + attr, "undefined");
-    shouldBeEqualToString("new StorageEvent('eventType', { " + attr + ": null })." + attr, "null");
     shouldBeEqualToString("new StorageEvent('eventType', { " + attr + ": false })." + attr, "false");
     shouldBeEqualToString("new StorageEvent('eventType', { " + attr + ": true })." + attr, "true");
     shouldBeEqualToString("new StorageEvent('eventType', { " + attr + ": 12345 })." + attr, "12345");
@@ -48,6 +47,16 @@ shouldBe("new StorageEvent('eventType', { cancelable: true }).cancelable", "true
     shouldBeEqualToString("new StorageEvent('eventType', { " + attr + ": {abcde: 12345} })." + attr, "[object Object]");
     shouldBeEqualToString("new StorageEvent('eventType', { " + attr + ": {valueOf: function () { return 'abcde'; } } })." + attr, "[object Object]");
 });
+
+// key, oldValue and newValue are nullable strings.
+["key", "oldValue", "newValue"].forEach(function(attr) {
+    shouldBeNull("new StorageEvent('eventType', { " + attr + ": undefined })." + attr);
+    shouldBeNull("new StorageEvent('eventType', { " + attr + ": null })." + attr);
+});
+
+// url is non-nullable string.
+shouldBeEqualToString("new StorageEvent('eventType', { url: undefined }).url", "");
+shouldBeEqualToString("new StorageEvent('eventType', { url: null }).url", "null");
 
 // storageArea is passed.
 // Storage objects.

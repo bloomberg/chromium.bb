@@ -27,12 +27,9 @@
 #include "core/storage/StorageEvent.h"
 
 #include "core/storage/Storage.h"
+#include "core/storage/StorageEventInit.h"
 
 namespace blink {
-
-StorageEventInit::StorageEventInit()
-{
-}
 
 PassRefPtrWillBeRawPtr<StorageEvent> StorageEvent::create()
 {
@@ -69,12 +66,17 @@ StorageEvent::StorageEvent(const AtomicString& type, const String& key, const St
 
 StorageEvent::StorageEvent(const AtomicString& type, const StorageEventInit& initializer)
     : Event(type, initializer)
-    , m_key(initializer.key)
-    , m_oldValue(initializer.oldValue)
-    , m_newValue(initializer.newValue)
-    , m_url(initializer.url)
-    , m_storageArea(initializer.storageArea)
 {
+    if (initializer.hasKey())
+        m_key = initializer.key();
+    if (initializer.hasOldValue())
+        m_oldValue = initializer.oldValue();
+    if (initializer.hasNewValue())
+        m_newValue = initializer.newValue();
+    if (initializer.hasURL())
+        m_url = initializer.url();
+    if (initializer.hasStorageArea())
+        m_storageArea = initializer.storageArea();
 }
 
 void StorageEvent::initStorageEvent(const AtomicString& type, bool canBubble, bool cancelable, const String& key, const String& oldValue, const String& newValue, const String& url, Storage* storageArea)

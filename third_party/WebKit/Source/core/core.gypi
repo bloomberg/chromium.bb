@@ -3405,6 +3405,7 @@
             'html/canvas/HitRegionOptions.idl',
             'html/track/TrackEventInit.idl',
             'page/EventSourceInit.idl',
+            'storage/StorageEventInit.idl',
         ],
         'generated_core_dictionary_files': [
             '<(blink_core_output_dir)/css/FontFaceDescriptors.cpp',
@@ -3427,6 +3428,8 @@
             '<(blink_core_output_dir)/html/track/TrackEventInit.h',
             '<(blink_core_output_dir)/page/EventSourceInit.cpp',
             '<(blink_core_output_dir)/page/EventSourceInit.h',
+            '<(blink_core_output_dir)/storage/StorageEventInit.cpp',
+            '<(blink_core_output_dir)/storage/StorageEventInit.h',
         ],
         'core_testing_dictionary_idl_files': [
             'testing/InternalDictionary.idl',

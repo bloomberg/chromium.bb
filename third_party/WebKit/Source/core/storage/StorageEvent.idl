@@ -23,14 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://dev.w3.org/html5/webstorage/#the-storage-event
+
 [
-    EventConstructor,
+    Constructor(DOMString type, optional StorageEventInit eventInitDict),
 ] interface StorageEvent : Event {
-    [InitializedByEventConstructor] readonly attribute DOMString key;
-    [InitializedByEventConstructor, TreatReturnedNullStringAs=Null] readonly attribute DOMString oldValue;
-    [InitializedByEventConstructor, TreatReturnedNullStringAs=Null] readonly attribute DOMString newValue;
-    [InitializedByEventConstructor] readonly attribute DOMString url;
-    [InitializedByEventConstructor] readonly attribute Storage? storageArea;
+    readonly attribute DOMString? key;
+    readonly attribute DOMString? oldValue;
+    readonly attribute DOMString? newValue;
+    readonly attribute DOMString url;
+    readonly attribute Storage? storageArea;
 
     void initStorageEvent([Default=Undefined] optional DOMString typeArg,
                           [Default=Undefined] optional boolean canBubbleArg,

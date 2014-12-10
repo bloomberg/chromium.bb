@@ -33,16 +33,7 @@
 namespace blink {
 
 class Storage;
-
-struct StorageEventInit : public EventInit {
-    StorageEventInit();
-
-    String key;
-    String oldValue;
-    String newValue;
-    String url;
-    RefPtrWillBeMember<Storage> storageArea;
-};
+class StorageEventInit;
 
 class StorageEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();

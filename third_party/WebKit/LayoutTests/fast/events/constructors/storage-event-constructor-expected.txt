@@ -5,7 +5,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS new StorageEvent('eventType').bubbles is false
 PASS new StorageEvent('eventType').cancelable is false
-PASS new StorageEvent('eventType').key is ""
+PASS new StorageEvent('eventType').key is null
 PASS new StorageEvent('eventType').oldValue is null
 PASS new StorageEvent('eventType').newValue is null
 PASS new StorageEvent('eventType').url is ""
@@ -16,8 +16,6 @@ PASS new StorageEvent('eventType', { cancelable: false }).cancelable is false
 PASS new StorageEvent('eventType', { cancelable: true }).cancelable is true
 PASS new StorageEvent('eventType', { key: 'abcde' }).key is "abcde"
 PASS new StorageEvent('eventType', { key: '' }).key is ""
-PASS new StorageEvent('eventType', { key: undefined }).key is "undefined"
-PASS new StorageEvent('eventType', { key: null }).key is "null"
 PASS new StorageEvent('eventType', { key: false }).key is "false"
 PASS new StorageEvent('eventType', { key: true }).key is "true"
 PASS new StorageEvent('eventType', { key: 12345 }).key is "12345"
@@ -29,8 +27,6 @@ PASS new StorageEvent('eventType', { key: {abcde: 12345} }).key is "[object Obje
 PASS new StorageEvent('eventType', { key: {valueOf: function () { return 'abcde'; } } }).key is "[object Object]"
 PASS new StorageEvent('eventType', { oldValue: 'abcde' }).oldValue is "abcde"
 PASS new StorageEvent('eventType', { oldValue: '' }).oldValue is ""
-PASS new StorageEvent('eventType', { oldValue: undefined }).oldValue is "undefined"
-PASS new StorageEvent('eventType', { oldValue: null }).oldValue is "null"
 PASS new StorageEvent('eventType', { oldValue: false }).oldValue is "false"
 PASS new StorageEvent('eventType', { oldValue: true }).oldValue is "true"
 PASS new StorageEvent('eventType', { oldValue: 12345 }).oldValue is "12345"
@@ -42,8 +38,6 @@ PASS new StorageEvent('eventType', { oldValue: {abcde: 12345} }).oldValue is "[o
 PASS new StorageEvent('eventType', { oldValue: {valueOf: function () { return 'abcde'; } } }).oldValue is "[object Object]"
 PASS new StorageEvent('eventType', { newValue: 'abcde' }).newValue is "abcde"
 PASS new StorageEvent('eventType', { newValue: '' }).newValue is ""
-PASS new StorageEvent('eventType', { newValue: undefined }).newValue is "undefined"
-PASS new StorageEvent('eventType', { newValue: null }).newValue is "null"
 PASS new StorageEvent('eventType', { newValue: false }).newValue is "false"
 PASS new StorageEvent('eventType', { newValue: true }).newValue is "true"
 PASS new StorageEvent('eventType', { newValue: 12345 }).newValue is "12345"
@@ -55,8 +49,6 @@ PASS new StorageEvent('eventType', { newValue: {abcde: 12345} }).newValue is "[o
 PASS new StorageEvent('eventType', { newValue: {valueOf: function () { return 'abcde'; } } }).newValue is "[object Object]"
 PASS new StorageEvent('eventType', { url: 'abcde' }).url is "abcde"
 PASS new StorageEvent('eventType', { url: '' }).url is ""
-PASS new StorageEvent('eventType', { url: undefined }).url is "undefined"
-PASS new StorageEvent('eventType', { url: null }).url is "null"
 PASS new StorageEvent('eventType', { url: false }).url is "false"
 PASS new StorageEvent('eventType', { url: true }).url is "true"
 PASS new StorageEvent('eventType', { url: 12345 }).url is "12345"
@@ -66,23 +58,31 @@ PASS new StorageEvent('eventType', { url: [] }).url is ""
 PASS new StorageEvent('eventType', { url: [1, 2, 3] }).url is "1,2,3"
 PASS new StorageEvent('eventType', { url: {abcde: 12345} }).url is "[object Object]"
 PASS new StorageEvent('eventType', { url: {valueOf: function () { return 'abcde'; } } }).url is "[object Object]"
+PASS new StorageEvent('eventType', { key: undefined }).key is null
+PASS new StorageEvent('eventType', { key: null }).key is null
+PASS new StorageEvent('eventType', { oldValue: undefined }).oldValue is null
+PASS new StorageEvent('eventType', { oldValue: null }).oldValue is null
+PASS new StorageEvent('eventType', { newValue: undefined }).newValue is null
+PASS new StorageEvent('eventType', { newValue: null }).newValue is null
+PASS new StorageEvent('eventType', { url: undefined }).url is ""
+PASS new StorageEvent('eventType', { url: null }).url is "null"
 PASS new StorageEvent('eventType', { storageArea: localStorage }).storageArea is localStorage
 PASS new StorageEvent('eventType', { storageArea: sessionStorage }).storageArea is sessionStorage
-PASS new StorageEvent('eventType', { storageArea: test_object }).storageArea threw exception TypeError: Failed to construct 'StorageEvent': The 'storageArea' property does not have a Storage type..
-PASS new StorageEvent('eventType', { storageArea: window }).storageArea threw exception TypeError: Failed to construct 'StorageEvent': The 'storageArea' property does not have a Storage type..
-PASS new StorageEvent('eventType', { storageArea: document }).storageArea threw exception TypeError: Failed to construct 'StorageEvent': The 'storageArea' property does not have a Storage type..
+PASS new StorageEvent('eventType', { storageArea: test_object }).storageArea threw exception TypeError: Failed to construct 'StorageEvent': member storageArea is not of type Storage..
+PASS new StorageEvent('eventType', { storageArea: window }).storageArea threw exception TypeError: Failed to construct 'StorageEvent': member storageArea is not of type Storage..
+PASS new StorageEvent('eventType', { storageArea: document }).storageArea threw exception TypeError: Failed to construct 'StorageEvent': member storageArea is not of type Storage..
 PASS new StorageEvent('eventType', { storageArea: undefined }).storageArea is null
 PASS new StorageEvent('eventType', { storageArea: null }).storageArea is null
-PASS new StorageEvent('eventType', { storageArea: false }).storageArea threw exception TypeError: Failed to construct 'StorageEvent': The 'storageArea' property does not have a Storage type..
-PASS new StorageEvent('eventType', { storageArea: true }).storageArea threw exception TypeError: Failed to construct 'StorageEvent': The 'storageArea' property does not have a Storage type..
-PASS new StorageEvent('eventType', { storageArea: '' }).storageArea threw exception TypeError: Failed to construct 'StorageEvent': The 'storageArea' property does not have a Storage type..
-PASS new StorageEvent('eventType', { storageArea: 'chocolate' }).storageArea threw exception TypeError: Failed to construct 'StorageEvent': The 'storageArea' property does not have a Storage type..
-PASS new StorageEvent('eventType', { storageArea: 12345 }).storageArea threw exception TypeError: Failed to construct 'StorageEvent': The 'storageArea' property does not have a Storage type..
-PASS new StorageEvent('eventType', { storageArea: 18446744073709551615 }).storageArea threw exception TypeError: Failed to construct 'StorageEvent': The 'storageArea' property does not have a Storage type..
-PASS new StorageEvent('eventType', { storageArea: NaN }).storageArea threw exception TypeError: Failed to construct 'StorageEvent': The 'storageArea' property does not have a Storage type..
-PASS new StorageEvent('eventType', { storageArea: {valueOf: function () { return window; } } }).storageArea == window threw exception TypeError: Failed to construct 'StorageEvent': The 'storageArea' property does not have a Storage type..
+PASS new StorageEvent('eventType', { storageArea: false }).storageArea threw exception TypeError: Failed to construct 'StorageEvent': member storageArea is not of type Storage..
+PASS new StorageEvent('eventType', { storageArea: true }).storageArea threw exception TypeError: Failed to construct 'StorageEvent': member storageArea is not of type Storage..
+PASS new StorageEvent('eventType', { storageArea: '' }).storageArea threw exception TypeError: Failed to construct 'StorageEvent': member storageArea is not of type Storage..
+PASS new StorageEvent('eventType', { storageArea: 'chocolate' }).storageArea threw exception TypeError: Failed to construct 'StorageEvent': member storageArea is not of type Storage..
+PASS new StorageEvent('eventType', { storageArea: 12345 }).storageArea threw exception TypeError: Failed to construct 'StorageEvent': member storageArea is not of type Storage..
+PASS new StorageEvent('eventType', { storageArea: 18446744073709551615 }).storageArea threw exception TypeError: Failed to construct 'StorageEvent': member storageArea is not of type Storage..
+PASS new StorageEvent('eventType', { storageArea: NaN }).storageArea threw exception TypeError: Failed to construct 'StorageEvent': member storageArea is not of type Storage..
+PASS new StorageEvent('eventType', { storageArea: {valueOf: function () { return window; } } }).storageArea == window threw exception TypeError: Failed to construct 'StorageEvent': member storageArea is not of type Storage..
 PASS new StorageEvent('eventType', { get storageArea() { return localStorage; } }).storageArea is localStorage
-PASS new StorageEvent('eventType', { get storageArea() { return 123; } }).storageArea threw exception TypeError: Failed to construct 'StorageEvent': The 'storageArea' property does not have a Storage type..
+PASS new StorageEvent('eventType', { get storageArea() { return 123; } }).storageArea threw exception TypeError: Failed to construct 'StorageEvent': member storageArea is not of type Storage..
 PASS new StorageEvent('eventType', { get storageArea() { throw 'StorageEvent Error'; } }) threw exception StorageEvent Error.
 PASS new StorageEvent('eventType', { bubbles: true, cancelable: false, key: 'abc', oldValue: 'def', newValue: 'ghi', url: 'jkl', storageArea: localStorage }).bubbles is true
 PASS new StorageEvent('eventType', { bubbles: false, cancelable: true, key: 'abc', oldValue: 'def', newValue: 'ghi', url: 'jkl', storageArea: localStorage }).cancelable is true
