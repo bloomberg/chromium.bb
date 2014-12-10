@@ -357,18 +357,18 @@ void PNGImageDecoder::headerAvailable()
 
     if (!m_hasColorProfile) {
         // Deal with gamma and keep it under our control.
-        const double cInverseGamma = 0.45455;
-        const double cDefaultGamma = 2.2;
+        const double inverseGamma = 0.45455;
+        const double defaultGamma = 2.2;
         double gamma;
         if (!m_ignoreGammaAndColorProfile && png_get_gAMA(png, info, &gamma)) {
-            const double cMaxGamma = 21474.83;
-            if ((gamma <= 0.0) || (gamma > cMaxGamma)) {
-                gamma = cInverseGamma;
+            const double maxGamma = 21474.83;
+            if ((gamma <= 0.0) || (gamma > maxGamma)) {
+                gamma = inverseGamma;
                 png_set_gAMA(png, info, gamma);
             }
-            png_set_gamma(png, cDefaultGamma, gamma);
+            png_set_gamma(png, defaultGamma, gamma);
         } else {
-            png_set_gamma(png, cDefaultGamma, cInverseGamma);
+            png_set_gamma(png, defaultGamma, inverseGamma);
         }
     }
 
