@@ -61,6 +61,7 @@ void NotificationMessageFilter::OverrideThreadForMessage(
 
 void NotificationMessageFilter::OnCheckNotificationPermission(
     const GURL& origin, blink::WebNotificationPermission* permission) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   PlatformNotificationService* service =
       GetContentClient()->browser()->GetPlatformNotificationService();
   if (service) {
@@ -77,11 +78,13 @@ void NotificationMessageFilter::OnShowPlatformNotification(
   scoped_ptr<DesktopNotificationDelegate> delegate(
       new PageNotificationDelegate(process_id_, notification_id));
 
-  base::Closure close_closure;
   PlatformNotificationService* service =
       GetContentClient()->browser()->GetPlatformNotificationService();
   DCHECK(service);
 
+  // TODO(peter): Verify that permission has been granted for params.origin.
+
+  base::Closure close_closure;
   service->DisplayNotification(browser_context_,
                                params,
                                delegate.Pass(),
@@ -96,10 +99,19 @@ void NotificationMessageFilter::OnShowPersistentNotification(
     int request_id,
     int64 service_worker_registration_id,
     const ShowDesktopNotificationHostMsgParams& params) {
-  NOTIMPLEMENTED();
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // Despite this being NOTIMPLEMENTED, inform the renderer that we did show the
-  // notification to avoid leaving the promise in an unsettled state.
+  PlatformNotificationService* service =
+      GetContentClient()->browser()->GetPlatformNotificationService();
+  DCHECK(service);
+
+  // TODO(peter): Verify that permission has been granted for params.origin.
+
+  service->DisplayPersistentNotification(browser_context_,
+                                         service_worker_registration_id,
+                                         params,
+                                         process_id_);
+
   Send(new PlatformNotificationMsg_DidShowPersistent(request_id));
 }
 
@@ -114,7 +126,14 @@ void NotificationMessageFilter::OnClosePlatformNotification(
 
 void NotificationMessageFilter::OnClosePersistentNotification(
     const std::string& persistent_notification_id) {
-  NOTIMPLEMENTED();
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  PlatformNotificationService* service =
+      GetContentClient()->browser()->GetPlatformNotificationService();
+  DCHECK(service);
+
+  service->ClosePersistentNotification(browser_context_,
+                                       persistent_notification_id);
 }
 
 }  // namespace content

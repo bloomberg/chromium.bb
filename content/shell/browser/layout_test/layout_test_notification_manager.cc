@@ -84,6 +84,22 @@ void LayoutTestNotificationManager::DisplayNotification(
   notifications_[title]->NotificationDisplayed();
 }
 
+void LayoutTestNotificationManager::DisplayPersistentNotification(
+    BrowserContext* browser_context,
+    int64 service_worker_registration_id,
+    const ShowDesktopNotificationHostMsgParams& params,
+    int render_process_id) {
+  // TODO(peter): Make persistent notifications layout testable.
+  NOTIMPLEMENTED();
+}
+
+void LayoutTestNotificationManager::ClosePersistentNotification(
+    BrowserContext* browser_context,
+    const std::string& persistent_notification_id) {
+  // TODO(peter): Make persistent notifications layout testable.
+  NOTIMPLEMENTED();
+}
+
 void LayoutTestNotificationManager::SimulateClick(const std::string& title) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   auto iterator = notifications_.find(title);

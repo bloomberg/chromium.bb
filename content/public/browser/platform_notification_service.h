@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_PLATFORM_NOTIFICATION_SERVICE_H_
 #define CONTENT_PUBLIC_BROWSER_PLATFORM_NOTIFICATION_SERVICE_H_
 
+#include <string>
+
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
@@ -42,6 +44,20 @@ class CONTENT_EXPORT PlatformNotificationService {
       scoped_ptr<DesktopNotificationDelegate> delegate,
       int render_process_id,
       base::Closure* cancel_callback) = 0;
+
+  // Displays the persistent notification described in |notification_data| to
+  // the user. This method must be called on the UI thread.
+  virtual void DisplayPersistentNotification(
+      BrowserContext* browser_context,
+      int64 service_worker_registration_id,
+      const ShowDesktopNotificationHostMsgParams& params,
+      int render_process_id) = 0;
+
+  // Closes the persistent notification identified by
+  // |persistent_notification_id|. This method must be called on the UI thread.
+  virtual void ClosePersistentNotification(
+      BrowserContext* browser_context,
+      const std::string& persistent_notification_id) = 0;
 };
 
 }  // namespace content

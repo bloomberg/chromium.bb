@@ -53,6 +53,14 @@ class LayoutTestNotificationManager : public PlatformNotificationService {
                            scoped_ptr<DesktopNotificationDelegate> delegate,
                            int render_process_id,
                            base::Closure* cancel_callback) override;
+  void DisplayPersistentNotification(
+      BrowserContext* browser_context,
+      int64 service_worker_registration_id,
+      const ShowDesktopNotificationHostMsgParams& params,
+      int render_process_id) override;
+  void ClosePersistentNotification(
+      BrowserContext* browser_context,
+      const std::string& persistent_notification_id) override;
 
  private:
   // Closes the notification titled |title|. Must be called on the UI thread.

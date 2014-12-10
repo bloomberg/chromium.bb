@@ -95,3 +95,17 @@ void PlatformNotificationServiceImpl::DisplayNotification(
   profile->GetHostContentSettingsMap()->UpdateLastUsage(
       params.origin, params.origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }
+
+void PlatformNotificationServiceImpl::DisplayPersistentNotification(
+    content::BrowserContext* browser_context,
+    int64 service_worker_registration_id,
+    const content::ShowDesktopNotificationHostMsgParams& params,
+    int render_process_id) {
+  NOTIMPLEMENTED();
+}
+
+void PlatformNotificationServiceImpl::ClosePersistentNotification(
+    content::BrowserContext* browser_context,
+    const std::string& persistent_notification_id) {
+  NOTIMPLEMENTED();
+}
