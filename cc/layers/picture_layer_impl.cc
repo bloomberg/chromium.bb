@@ -623,12 +623,8 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
 
   int flags = 0;
 
-  // TODO(vmpstr): Revisit this. For now, enabling analysis means that we get as
-  // much savings on memory as we can. However, for some cases like ganesh or
-  // small layers, the amount of time we spend analyzing might not justify
-  // memory savings that we can get. Note that we don't handle solid color
-  // masks, so we shouldn't bother analyzing those.
-  // Bugs: crbug.com/397198, crbug.com/396908
+  // We don't handle solid color masks, so we shouldn't bother analyzing those.
+  // Otherwise, always analyze to maximize memory savings.
   if (!is_mask_)
     flags = Tile::USE_PICTURE_ANALYSIS;
 
