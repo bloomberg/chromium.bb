@@ -373,7 +373,7 @@ ExitCode GetChrome(bool is_canary, const std::string& inline_install_json) {
   // Install Chrome. Wait for the installer to finish before returning.
   base::LaunchOptions options;
   options.wait = true;
-  bool launch_success = base::LaunchProcess(command_line, options, NULL);
+  bool launch_success = base::LaunchProcess(command_line, options).IsValid();
   base::DeleteFile(setup_file, false);
   return launch_success ? SUCCESS : FAILED_TO_LAUNCH_CHROME_SETUP;
 }

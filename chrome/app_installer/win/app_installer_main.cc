@@ -136,7 +136,7 @@ int WINAPI wWinMain(HINSTANCE instance,
   base::CommandLine cmd(chrome_path);
   cmd.AppendSwitchASCII(kInstallChromeApp, app_id);
   DVLOG(1) << "Install command: " << cmd.GetCommandLineString();
-  bool launched = base::LaunchProcess(cmd, base::LaunchOptions(), NULL);
+  bool launched = base::LaunchProcess(cmd, base::LaunchOptions()).IsValid();
   DVLOG(1) << "Launch " << (launched ? "success." : "failed.");
 
   return SUCCESS;
