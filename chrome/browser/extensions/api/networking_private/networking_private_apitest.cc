@@ -8,17 +8,12 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_delegate.h"
+#include "chrome/browser/extensions/api/networking_private/networking_private_delegate_factory.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/onc/onc_constants.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/switches.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/extensions/api/networking_private/networking_private_factory_chromeos.h"
-#else
-#include "chrome/browser/extensions/api/networking_private/networking_private_service_client_factory.h"
-#endif
 
 namespace extensions {
 
@@ -264,13 +259,8 @@ class NetworkingPrivateApiTest : public ExtensionApiTest {
 
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
-#if defined(OS_CHROMEOS)
-    NetworkingPrivateChromeOSFactory::GetInstance()->SetTestingFactory(
+    NetworkingPrivateDelegateFactory::GetInstance()->SetTestingFactory(
         profile(), &NetworkingPrivateApiTest::GetNetworkingPrivateDelegate);
-#else
-    NetworkingPrivateServiceClientFactory::GetInstance()->SetTestingFactory(
-        profile(), &NetworkingPrivateApiTest::GetNetworkingPrivateDelegate);
-#endif
     content::RunAllPendingInMessageLoop();
   }
 

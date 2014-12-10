@@ -31,8 +31,8 @@ void NetworkingPrivateDelegate::VerifyDestination(
     failure_callback.Run(networking_private::kErrorNotSupported);
     return;
   }
-  verify_delegate_->VerifyDestination(
-      verification_properties, success_callback, failure_callback);
+  verify_delegate_->VerifyDestination(verification_properties, success_callback,
+                                      failure_callback);
 }
 
 void NetworkingPrivateDelegate::VerifyAndEncryptCredentials(
@@ -57,8 +57,8 @@ void NetworkingPrivateDelegate::VerifyAndEncryptData(
     failure_callback.Run(networking_private::kErrorNotSupported);
     return;
   }
-  verify_delegate_->VerifyAndEncryptData(
-      verification_properties, data, success_callback, failure_callback);
+  verify_delegate_->VerifyAndEncryptData(verification_properties, data,
+                                         success_callback, failure_callback);
 }
 
 }  // namespace extensions

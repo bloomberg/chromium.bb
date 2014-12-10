@@ -75,8 +75,7 @@ void NetworkingPrivateVerifyDelegateChromeOS::VerifyDestination(
       ConvertVerificationProperties(verification_properties);
 
   GetShillManagerClient()->VerifyDestination(
-      verification_property_struct,
-      success_callback,
+      verification_property_struct, success_callback,
       base::Bind(&ShillFailureCallback, failure_callback));
 }
 
@@ -95,9 +94,7 @@ void NetworkingPrivateVerifyDelegateChromeOS::VerifyAndEncryptCredentials(
       ConvertVerificationProperties(verification_properties);
 
   GetShillManagerClient()->VerifyAndEncryptCredentials(
-      verification_property_struct,
-      service_path,
-      success_callback,
+      verification_property_struct, service_path, success_callback,
       base::Bind(&ShillFailureCallback, failure_callback));
 }
 
@@ -110,9 +107,7 @@ void NetworkingPrivateVerifyDelegateChromeOS::VerifyAndEncryptData(
       ConvertVerificationProperties(verification_properties);
 
   GetShillManagerClient()->VerifyAndEncryptData(
-      verification_property_struct,
-      data,
-      success_callback,
+      verification_property_struct, data, success_callback,
       base::Bind(&ShillFailureCallback, failure_callback));
 }
 

@@ -15,10 +15,9 @@ class NetworkingPrivateVerifyDelegateChromeOS
   NetworkingPrivateVerifyDelegateChromeOS();
   ~NetworkingPrivateVerifyDelegateChromeOS() override;
 
-  void VerifyDestination(
-      const VerificationProperties& verification_properties,
-      const BoolCallback& success_callback,
-      const FailureCallback& failure_callback) override;
+  void VerifyDestination(const VerificationProperties& verification_properties,
+                         const BoolCallback& success_callback,
+                         const FailureCallback& failure_callback) override;
   void VerifyAndEncryptCredentials(
       const std::string& guid,
       const VerificationProperties& verification_properties,

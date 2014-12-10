@@ -4,8 +4,8 @@
 
 #include "chrome/browser/extensions/api/networking_private/networking_private_event_router_factory.h"
 
+#include "chrome/browser/extensions/api/networking_private/networking_private_delegate_factory.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_event_router.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_service_client_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_system_provider.h"
@@ -32,9 +32,7 @@ NetworkingPrivateEventRouterFactory::NetworkingPrivateEventRouterFactory()
           "NetworkingPrivateEventRouter",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
-#if !defined(OS_CHROMEOS)
-  DependsOn(NetworkingPrivateServiceClientFactory::GetInstance());
-#endif
+  DependsOn(NetworkingPrivateDelegateFactory::GetInstance());
 }
 
 NetworkingPrivateEventRouterFactory::~NetworkingPrivateEventRouterFactory() {

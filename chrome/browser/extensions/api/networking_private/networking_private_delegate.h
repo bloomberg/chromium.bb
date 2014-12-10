@@ -74,9 +74,6 @@ class NetworkingPrivateDelegate : public KeyedService {
     DISALLOW_COPY_AND_ASSIGN(VerifyDelegate);
   };
 
-  static NetworkingPrivateDelegate* GetForBrowserContext(
-      content::BrowserContext* browser_context);
-
   // If |verify_delegate| is not NULL, the Verify* methods will be forwarded
   // to the delegate. Otherwise they will fail with a NotSupported error.
   explicit NetworkingPrivateDelegate(
@@ -119,10 +116,9 @@ class NetworkingPrivateDelegate : public KeyedService {
       bool enabled,
       const StringCallback& success_callback,
       const FailureCallback& failure_callback) = 0;
-  virtual void GetWifiTDLSStatus(
-      const std::string& ip_or_mac_address,
-      const StringCallback& success_callback,
-      const FailureCallback& failure_callback) = 0;
+  virtual void GetWifiTDLSStatus(const std::string& ip_or_mac_address,
+                                 const StringCallback& success_callback,
+                                 const FailureCallback& failure_callback) = 0;
   virtual void GetCaptivePortalStatus(
       const std::string& guid,
       const StringCallback& success_callback,
@@ -144,10 +140,9 @@ class NetworkingPrivateDelegate : public KeyedService {
   virtual bool RequestScan() = 0;
 
   // Verify* methods are forwarded to |verify_delegate_| if not NULL.
-  void VerifyDestination(
-      const VerificationProperties& verification_properties,
-      const BoolCallback& success_callback,
-      const FailureCallback& failure_callback);
+  void VerifyDestination(const VerificationProperties& verification_properties,
+                         const BoolCallback& success_callback,
+                         const FailureCallback& failure_callback);
   void VerifyAndEncryptCredentials(
       const std::string& guid,
       const VerificationProperties& verification_properties,

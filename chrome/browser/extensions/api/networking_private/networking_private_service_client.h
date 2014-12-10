@@ -28,13 +28,7 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace wifi {
-class WiFiService;
-}
-
 namespace extensions {
-
-using wifi::WiFiService;
 
 // Windows / Mac NetworkingPrivateApi implementation. This implements
 // NetworkingPrivateDelegate, making WiFiService calls on the worker thead.
@@ -166,9 +160,9 @@ class NetworkingPrivateServiceClient
                             const std::string* error);
 
   void OnNetworksChangedEventOnUIThread(
-      const WiFiService::NetworkGuidList& network_guid_list);
+      const wifi::WiFiService::NetworkGuidList& network_guid_list);
   void OnNetworkListChangedEventOnUIThread(
-      const WiFiService::NetworkGuidList& network_guid_list);
+      const wifi::WiFiService::NetworkGuidList& network_guid_list);
 
   // Add new |ServiceCallbacks| to |callbacks_map_|.
   ServiceCallbacks* AddServiceCallbacks();

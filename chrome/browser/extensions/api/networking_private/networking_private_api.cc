@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_delegate.h"
+#include "chrome/browser/extensions/api/networking_private/networking_private_delegate_factory.h"
 #include "chrome/common/extensions/api/networking_private.h"
 #include "components/onc/onc_constants.h"
 #include "extensions/browser/extension_function_registry.h"
@@ -18,7 +19,7 @@ const int kDefaultNetworkListLimit = 1000;
 
 extensions::NetworkingPrivateDelegate* GetDelegate(
     content::BrowserContext* browser_context) {
-  return extensions::NetworkingPrivateDelegate::GetForBrowserContext(
+  return extensions::NetworkingPrivateDelegateFactory::GetForBrowserContext(
       browser_context);
 }
 

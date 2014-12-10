@@ -14,6 +14,8 @@
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/extensions/api/networking_private/networking_private_delegate_factory.h"
+#include "chrome/browser/extensions/api/networking_private/networking_private_verify_delegate_factory_impl.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_factory.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
@@ -210,6 +212,14 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #endif
   SupervisedUserServiceFactory::GetInstance();
   SupervisedUserSyncServiceFactory::GetInstance();
+#endif
+#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MACOSX)
+  scoped_ptr<extensions::NetworkingPrivateVerifyDelegateFactoryImpl>
+      networking_private_verify_delegate_factory(
+          new extensions::NetworkingPrivateVerifyDelegateFactoryImpl);
+  extensions::NetworkingPrivateDelegateFactory::GetInstance()
+      ->SetVerifyDelegateFactory(
+          networking_private_verify_delegate_factory.Pass());
 #endif
 #if !defined(OS_ANDROID)
   MediaGalleriesPreferencesFactory::GetInstance();
