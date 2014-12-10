@@ -48,12 +48,6 @@ BackgroundComponents.load = function() {
 };
 
 /**
- * Promise to be fulfilled with singleton instance of background components.
- * @type {Promise}
- */
-var backgroundComponentsPromise = BackgroundComponents.load();
-
-/**
  * Resolves file system names and obtains entries.
  * @param {Array.<FileEntry>} entries Names of isolated file system.
  * @return {Promise} Promise to be fulfilled with an entry array.
@@ -71,27 +65,56 @@ function resolveEntries(entries) {
 }
 
 /**
- * Obtains child entries.
- * @param {DirectoryEntry} entry Directory entry.
- * @return {Promise} Promise to be fulfilled with child entries.
+ * Obtains the entry set from the entries passed from onLaunched events.
+ * If an single entry is specified, the function returns all entries in the same
+ * directory. Otherwise the function returns the passed entries.
+ *
+ * The function also filters non-image items and hidden items.
+ *
+ * @param {!Array.<!FileEntry>} originalEntries Entries passed from onLaunched
+ *     events.
+ * @return {Promise} Promise to be fulfilled with entry array.
  */
-function getChildren(entry) {
-  var reader = entry.createReader();
-  var readEntries = function() {
-    return new Promise(reader.readEntries.bind(reader)).then(function(entries) {
-      if (entries.length === 0)
-        return [];
-      return readEntries().then(function(nextEntries) {
-        return entries.concat(nextEntries);
+function createEntrySet(originalEntries) {
+  var entriesPromise;
+  if (originalEntries.length === 1) {
+    var parentPromise =
+        new Promise(originalEntries[0].getParent.bind(originalEntries[0]));
+    entriesPromise = parentPromise.then(function(parent) {
+      var reader = parent.createReader();
+      var readEntries = function() {
+        return new Promise(reader.readEntries.bind(reader)).then(
+            function(entries) {
+              if (entries.length === 0)
+                return [];
+              return readEntries().then(function(nextEntries) {
+                return entries.concat(nextEntries);
+              });
+            });
+      };
+      return readEntries();
+    }).then(function(entries) {
+      return entries.filter(function(entry) {
+        return originalEntries[0].toURL() === entry.toURL() ||
+            entry.name[0] !== '.';
       });
     });
-  };
-  return readEntries().then(function(entries) {
-    return entries.sort(function(a, b) {
+  } else {
+    entriesPromise = Promise.resolve(originalEntries);
+  }
+
+  return entriesPromise.then(function(entries) {
+    return entries.filter(FileType.isImage).sort(function(a, b) {
       return a.name.localeCompare(b.name);
     });
   });
 }
+
+/**
+ * Promise to be fulfilled with singleton instance of background components.
+ * @type {Promise}
+ */
+var backgroundComponentsPromise = null;
 
 /**
  * Promise to be fulfilled with single application window.
@@ -151,16 +174,7 @@ function launch(selectedEntriesPromise) {
 
   // If only 1 entry is selected, retrieve entries in the same directory.
   // Otherwise, just use the selectedEntries as an entry set.
-  var allEntriesPromise = selectedEntriesPromise.then(function(entries) {
-    if (entries.length === 1) {
-      var parentPromise = new Promise(entries[0].getParent.bind(entries[0]));
-      return parentPromise.then(getChildren).then(function(entries) {
-        return entries.filter(FileType.isImage);
-      });
-    } else {
-      return entries;
-    }
-  });
+  var allEntriesPromise = selectedEntriesPromise.then(createEntrySet);
 
   // Initialize the window document.
   return Promise.all([
@@ -177,26 +191,31 @@ function launch(selectedEntriesPromise) {
   });
 }
 
-chrome.app.runtime.onLaunched.addListener(function(launchData) {
-  // Skip if files are not selected.
-  if (!launchData || !launchData.items || launchData.items.length === 0)
-    return;
+// If the script is loaded from unit test, chrome.app.runtime is not defined.
+// In this case, does not run the initialization code for the application.
+if (chrome.app.runtime) {
+  backgroundComponentsPromise = BackgroundComponents.load();
+  chrome.app.runtime.onLaunched.addListener(function(launchData) {
+    // Skip if files are not selected.
+    if (!launchData || !launchData.items || launchData.items.length === 0)
+      return;
 
-  // Obtains entries in non-isolated file systems.
-  // The entries in launchData are stored in the isolated file system.
-  // We need to map the isolated entries to the normal entries to retrieve their
-  // parent directory.
-  var isolatedEntries = launchData.items.map(function(item) {
-    return item.entry;
-  });
-  var selectedEntriesPromise = backgroundComponentsPromise.then(function() {
-    return resolveEntries(isolatedEntries);
-  });
+    // Obtains entries in non-isolated file systems.
+    // The entries in launchData are stored in the isolated file system.
+    // We need to map the isolated entries to the normal entries to retrieve
+    // their parent directory.
+    var isolatedEntries = launchData.items.map(function(item) {
+      return item.entry;
+    });
+    var selectedEntriesPromise = backgroundComponentsPromise.then(function() {
+      return resolveEntries(isolatedEntries);
+    });
 
-  launch(selectedEntriesPromise).catch(function(error) {
-    console.error(error.stack || error);
+    launch(selectedEntriesPromise).catch(function(error) {
+      console.error(error.stack || error);
+    });
   });
-});
+}
 
 // If is is run in the browser test, wait for the test resources are installed
 // as a component extension, and then load the test resources.

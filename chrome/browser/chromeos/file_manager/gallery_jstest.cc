@@ -48,3 +48,8 @@ IN_PROC_BROWSER_TEST_F(GalleryJsTest, EntryListWatcherTest) {
   RunTest(base::FilePath(
       FILE_PATH_LITERAL("js/entry_list_watcher_unittest.html")));
 }
+
+IN_PROC_BROWSER_TEST_F(GalleryJsTest, BackgroundTest) {
+  RunTest(base::FilePath(
+      FILE_PATH_LITERAL("js/background_unittest.html")));
+}

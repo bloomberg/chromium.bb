@@ -65,11 +65,11 @@ MockFileSystem.prototype.populate = function(paths) {
  * @private
  */
 MockFileSystem.prototype.findChildren_ = function(directory) {
+  var parentPath = directory.fullPath.replace(/\/?$/, '/');
   var children = [];
   for (var path in this.entries) {
-    if (path.indexOf(directory.fullPath) === 0 &&
-        path !== directory.fullPath) {
-      var nextSeparator = path.indexOf('/', directory.fullPath.length);
+    if (path.indexOf(parentPath) === 0 && path !== parentPath) {
+      var nextSeparator = path.indexOf('/', parentPath.length);
       // Add immediate children files and directories...
       if (nextSeparator === -1 ||
           nextSeparator === path.length - 1) {
