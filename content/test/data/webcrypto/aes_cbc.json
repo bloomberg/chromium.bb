@@ -127,7 +127,7 @@
       "k": "GADWrMRHwQfoNaXU5fZvTg",
       "key_ops": [ "encrypt", "decrypt", "encrypt" ]
     },
-    "import_error": "DataError: The \"key_ops\" property of the JWK dictionary contains duplicate usages."
+    "import_error": "DataError: The \"key_ops\" member of the JWK dictionary contains duplicate usages."
   },
 
   // JWK: key_ops has (unrecognized duplicates)
@@ -138,7 +138,7 @@
       "k": "GADWrMRHwQfoNaXU5fZvTg",
       "key_ops": [ "foopy", "decrypt", "foopy" ]
     },
-    "import_error": "DataError: The \"key_ops\" property of the JWK dictionary contains duplicate usages."
+    "import_error": "DataError: The \"key_ops\" member of the JWK dictionary contains duplicate usages."
   },
 
   // JWK: alg present but incorrect (expecting A128CBC).
@@ -149,7 +149,7 @@
       "alg": "A127CBC",
       "k": "GADWrMRHwQfoNaXU5fZvTg"
     },
-    "import_error": "DataError: The JWK \"alg\" property was inconsistent with that specified by the Web Crypto call"
+    "import_error": "DataError: The JWK \"alg\" member was inconsistent with that specified by the Web Crypto call"
   },
 
   // JWK: Invalid kty
@@ -159,7 +159,7 @@
       "kty": "foo",
       "k": "GADWrMRHwQfoNaXU5fZvTg"
     },
-    "import_error": "DataError: The JWK \"kty\" property was not \"oct\""
+    "import_error": "DataError: The JWK \"kty\" member was not \"oct\""
   },
 
   // JWK: Missing kty.
@@ -168,7 +168,7 @@
     "key": {
       "k": "GADWrMRHwQfoNaXU5fZvTg"
     },
-    "import_error": "DataError: The required JWK property \"kty\" was missing"
+    "import_error": "DataError: The required JWK member \"kty\" was missing"
   },
 
   // JWK: kty is wrong type
@@ -178,7 +178,7 @@
       "kty": 0.1,
       "k": "GADWrMRHwQfoNaXU5fZvTg"
     },
-    "import_error": "DataError: The JWK property \"kty\" must be a string"
+    "import_error": "DataError: The JWK member \"kty\" must be a string"
   },
 
   // JWK: Invalid use
@@ -189,7 +189,7 @@
       "use": "foo",
       "k": "GADWrMRHwQfoNaXU5fZvTg"
     },
-    "import_error": "DataError: The JWK \"use\" property could not be parsed"
+    "import_error": "DataError: The JWK \"use\" member could not be parsed"
   },
 
   // JWK: Invalid use (wrong type)
@@ -200,7 +200,7 @@
       "use": true,
       "k": "GADWrMRHwQfoNaXU5fZvTg"
     },
-    "import_error": "DataError: The JWK property \"use\" must be a string"
+    "import_error": "DataError: The JWK member \"use\" must be a string"
   },
 
   // JWK: Invalid ext (wrong type)
@@ -211,7 +211,7 @@
       "k": "GADWrMRHwQfoNaXU5fZvTg",
       "ext": 0
     },
-    "import_error": "DataError: The JWK property \"ext\" must be a boolean"
+    "import_error": "DataError: The JWK member \"ext\" must be a boolean"
   },
 
   // JWK: Invalid key_ops (wrong type)
@@ -222,7 +222,7 @@
       "k": "GADWrMRHwQfoNaXU5fZvTg",
       "key_ops": true
     },
-    "import_error": "DataError: The JWK property \"key_ops\" must be a list"
+    "import_error": "DataError: The JWK member \"key_ops\" must be a list"
   },
 
   // JWK: unrecognized values in "key_ops". This is OK.
@@ -243,7 +243,7 @@
       "k": "GADWrMRHwQfoNaXU5fZvTg",
       "key_ops": ["encrypt", 3]
     },
-    "import_error": "DataError: The JWK property \"key_ops[1]\" must be a string"
+    "import_error": "DataError: The JWK member \"key_ops[1]\" must be a string"
   },
 
   // JWK: missing k
@@ -252,7 +252,7 @@
     "key": {
       "kty": "oct"
     },
-    "import_error": "DataError: The required JWK property \"k\" was missing"
+    "import_error": "DataError: The required JWK member \"k\" was missing"
   },
 
   // JWK: Bad Base64 encoding for k
@@ -262,7 +262,7 @@
       "kty": "oct",
       "k": "Qk3f0DsytU8lfza2au #$% Htaw2xpop9GYyTuH0p5GghxTI="
     },
-    "import_error": "DataError: The JWK property \"k\" could not be base64 decoded"
+    "import_error": "DataError: The JWK member \"k\" could not be base64url decoded or contained padding"
   },
 
   // JWK: empty k
@@ -283,7 +283,7 @@
       "alg": "A128CBC",
       "k": ""
     },
-    "import_error": "DataError: The JWK \"k\" property did not include the right length of key data for the given algorithm."
+    "import_error": "DataError: The JWK \"k\" member did not include the right length of key data for the given algorithm."
   },
 
   // JWK: k actual length (120 bits) inconsistent with alg (128 bits)
@@ -294,7 +294,7 @@
       "alg": "A128CBC",
       "k": "AVj42h0Y5aqGtE3yluKL"
     },
-    "import_error": "DataError: The JWK \"k\" property did not include the right length of key data for the given algorithm."
+    "import_error": "DataError: The JWK \"k\" member did not include the right length of key data for the given algorithm."
   },
 
   // JWK: k actual length (192 bits) inconsistent with alg (128 bits)
@@ -305,7 +305,7 @@
       "alg": "A128CBC",
       "k": "dGhpcyAgaXMgIDI0ICBieXRlcyBsb25n"
     },
-    "import_error": "DataError: The JWK \"k\" property did not include the right length of key data for the given algorithm."
+    "import_error": "DataError: The JWK \"k\" member did not include the right length of key data for the given algorithm."
   },
 
   // AES 192-bit is not allowed: http://crbug.com/381829

@@ -128,7 +128,7 @@
       "d": "M6UEKpCyfU9UUcqbu9C0R3GhAa-IQ0Cu-YhfKku-kuiUpySsPFaMj5eFOtB8AmbIxqPKCSnx6PESMYhEKfxNmuVf7olqEM5wfD7X5zTkRyejlXRQGlMmgxCcKrrKuig8MbS9L1PD7jfjUs7jT55QO9gMBiKtecbc7og1R8ajsyU",
       "p": "5-iUJyCod1Fyc6NWBT6iobwMlKpy1VxuhilrLfyWeUjApyy8zKfqyzVwbgmh31WhU1vZs8w0Fgs7bc0-2o5kQw"
     },
-    "error": "DataError: The required JWK property \"q\" was missing"
+    "error": "DataError: The required JWK member \"q\" was missing"
   },
 
   // RSA private key without any of the optional parameters.
@@ -145,7 +145,7 @@
       "e": "AQAB",
       "d": "M6UEKpCyfU9UUcqbu9C0R3GhAa-IQ0Cu-YhfKku-kuiUpySsPFaMj5eFOtB8AmbIxqPKCSnx6PESMYhEKfxNmuVf7olqEM5wfD7X5zTkRyejlXRQGlMmgxCcKrrKuig8MbS9L1PD7jfjUs7jT55QO9gMBiKtecbc7og1R8ajsyU"
     },
-    "error": "DataError: The required JWK property \"p\" was missing"
+    "error": "DataError: The required JWK member \"p\" was missing"
   },
 
   // Public RSA key whose exponent contains leading zeros.
@@ -157,7 +157,7 @@
       "e": "AAEAAQ",
       "n": "qLOyhK-OtQs4cDSoYPFGxJGfMYdjzWxVmMiuSBGh4KvEx-CwgtaTpef87Wdc9GaFEncsDLxkp0LGxjD1M8jMcvYq6DPEC_JYQumEu3i9v5fAEH1VvbZi9cTg-rmEXLUUjvc5LdOq_5OuHmtme7PUJHYW1PW6ENTP0ibeiNOfFvs"
     },
-    "error": "DataError: The JWK \"e\" property contained a leading zero."
+    "error": "DataError: The JWK \"e\" member contained a leading zero."
   },
 
 
@@ -267,7 +267,7 @@
        "q": "wb7rEiGxG4CrybVYns9voNQM2NPCuCEgWPLA_vCkuzk",
        "qi": "6rrPQ4YaOLNGtG7TrLXUR_FSWpOFSUveHTHbFQU6iNU"
     },
-    "error": "DataError: The JWK property \"d\" could not be base64 decoded"
+    "error": "DataError: The JWK member \"d\" could not be base64url decoded or contained padding"
   },
 
   // A '/' was used in place of '_' in the "n" member. While this is valid for
@@ -286,7 +286,7 @@
        "q": "wb7rEiGxG4CrybVYns9voNQM2NPCuCEgWPLA_vCkuzk",
        "qi": "6rrPQ4YaOLNGtG7TrLXUR_FSWpOFSUveHTHbFQU6iNU"
     },
-    "error": "DataError: The JWK property \"n\" could not be base64 decoded"
+    "error": "DataError: The JWK member \"n\" could not be base64url decoded or contained padding"
   },
 
   // A '+' was used in place of '-' in the "dq" member. While this is valid for
@@ -305,6 +305,6 @@
        "q": "wb7rEiGxG4CrybVYns9voNQM2NPCuCEgWPLA_vCkuzk",
        "qi": "6rrPQ4YaOLNGtG7TrLXUR_FSWpOFSUveHTHbFQU6iNU"
     },
-    "error": "DataError: The JWK property \"dq\" could not be base64 decoded"
+    "error": "DataError: The JWK member \"dq\" could not be base64url decoded or contained padding"
   }
 ]

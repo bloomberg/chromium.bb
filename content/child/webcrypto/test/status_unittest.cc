@@ -54,20 +54,21 @@ TEST(WebCryptoStatusTest, Basic) {
 
   status = Status::ErrorJwkMemberMissing("kty");
   EXPECT_TRUE(status.IsError());
-  EXPECT_EQ("The required JWK property \"kty\" was missing",
+  EXPECT_EQ("The required JWK member \"kty\" was missing",
             status.error_details());
   EXPECT_EQ(blink::WebCryptoErrorTypeData, status.error_type());
 
   status = Status::ErrorJwkMemberWrongType("kty", "string");
   EXPECT_TRUE(status.IsError());
-  EXPECT_EQ("The JWK property \"kty\" must be a string",
-            status.error_details());
+  EXPECT_EQ("The JWK member \"kty\" must be a string", status.error_details());
   EXPECT_EQ(blink::WebCryptoErrorTypeData, status.error_type());
 
   status = Status::ErrorJwkBase64Decode("n");
   EXPECT_TRUE(status.IsError());
-  EXPECT_EQ("The JWK property \"n\" could not be base64 decoded",
-            status.error_details());
+  EXPECT_EQ(
+      "The JWK member \"n\" could not be base64url decoded or contained "
+      "padding",
+      status.error_details());
   EXPECT_EQ(blink::WebCryptoErrorTypeData, status.error_type());
 }
 

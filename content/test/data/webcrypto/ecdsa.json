@@ -117,7 +117,7 @@
       "x": "APUKCHAyUMFfBDyMRumXg0NSRc-Y9PJpSw4vjQKaUU3W8LCG1O2JIADNVZAQeq5pxMCnqV98905XcKB9XbVbzkq0",
       "y": "APLHcLq4ub5M227NPcJsaY2g0lmc6_PZBPf5yjpV5kcxgQ1zzTFyZOULq6S8KGCFfhbWy7eVAbyeOjK9Fy6opx3u"
     },
-    "error": "DataError: The JWK \"alg\" property was inconsistent with that specified by the Web Crypto call"
+    "error": "DataError: The JWK \"alg\" member was inconsistent with that specified by the Web Crypto call"
   },
 
   // Import Error: crv is missing
@@ -129,7 +129,7 @@
       "x": "hqwS3Qp_5bgf2uhrEkNdMW75OSo_ULMHq2XZxged0NLYGdwJ4ihhRZwu2Z-6tm-u",
       "y": "rIREB3qu1tbMrL5npMqs7gtaCUo1dcoS6ktHdMAw_hyHDJJJAj9dxNmtbjM2aMw4"
     },
-    "error": "DataError: The required JWK property \"crv\" was missing"
+    "error": "DataError: The required JWK member \"crv\" was missing"
   },
 
   // Import Error: x is missing
@@ -141,7 +141,7 @@
       "crv": "P-384",
       "y": "rIREB3qu1tbMrL5npMqs7gtaCUo1dcoS6ktHdMAw_hyHDJJJAj9dxNmtbjM2aMw4"
     },
-    "error": "DataError: The required JWK property \"x\" was missing"
+    "error": "DataError: The required JWK member \"x\" was missing"
   },
 
   // Import Error: Invalid key (x was corrupted)
@@ -167,7 +167,7 @@
       "x": "hqwS3Qp_5bgf2uhrEkNdMW75OSo_ULMHq2XZxged0NLYGdwJ4ihhRZwu2Z-6tm-u",
       "y": "rIREB3qu1tbMrL5npMqs7gtaCUo1dcoS6ktHdMAw_hyHDJJJAj9dxNmtbjM2aMw4"
     },
-    "error": "DataError: The JWK \"kty\" property was not \"EC\""
+    "error": "DataError: The JWK \"kty\" member was not \"EC\""
   },
 
   // Import Error: SPKI data is empty.
