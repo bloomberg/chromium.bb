@@ -5,7 +5,6 @@
 #include "ui/ozone/platform/caca/caca_window_manager.h"
 
 #include "base/debug/trace_event.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/skia_util.h"
@@ -26,7 +25,7 @@ class CacaSurface : public ui::SurfaceOzoneCanvas {
   bool Initialize();
 
   // ui::SurfaceOzoneCanvas overrides:
-  skia::RefPtr<SkCanvas> GetCanvas() override;
+  skia::RefPtr<SkSurface> GetSurface() override;
   void ResizeCanvas(const gfx::Size& viewport_size) override;
   void PresentCanvas(const gfx::Rect& damage) override;
   scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() override;
@@ -52,8 +51,8 @@ bool CacaSurface::Initialize() {
   return true;
 }
 
-skia::RefPtr<SkCanvas> CacaSurface::GetCanvas() {
-  return skia::SharePtr<SkCanvas>(surface_->getCanvas());
+skia::RefPtr<SkSurface> CacaSurface::GetSurface() {
+  return surface_;
 }
 
 void CacaSurface::ResizeCanvas(const gfx::Size& viewport_size) {

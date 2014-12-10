@@ -43,8 +43,8 @@ DriSurface::DriSurface(DriWindowDelegate* window_delegate, DriWrapper* dri)
 DriSurface::~DriSurface() {
 }
 
-skia::RefPtr<SkCanvas> DriSurface::GetCanvas() {
-  return skia::SharePtr(surface_->getCanvas());
+skia::RefPtr<SkSurface> DriSurface::GetSurface() {
+  return surface_;
 }
 
 void DriSurface::ResizeCanvas(const gfx::Size& viewport_size) {

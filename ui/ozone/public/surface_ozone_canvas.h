@@ -10,7 +10,7 @@
 #include "skia/ext/refptr.h"
 #include "ui/ozone/ozone_base_export.h"
 
-class SkCanvas;
+class SkSurface;
 
 namespace gfx {
 class Size;
@@ -27,8 +27,8 @@ class OZONE_BASE_EXPORT SurfaceOzoneCanvas {
  public:
   virtual ~SurfaceOzoneCanvas() {}
 
-  // Returns an SkCanvas for drawing on the window.
-  virtual skia::RefPtr<SkCanvas> GetCanvas() = 0;
+  // Returns an SkSurface for drawing on the window.
+  virtual skia::RefPtr<SkSurface> GetSurface() = 0;
 
   // Attempts to resize the canvas to match the viewport size. After
   // resizing, the compositor must call GetCanvas() to get the next

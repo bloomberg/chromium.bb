@@ -43,7 +43,7 @@ SkCanvas* SoftwareOutputDeviceOzone::BeginPaint(const gfx::Rect& damage_rect) {
   DCHECK(gfx::Rect(viewport_pixel_size_).Contains(damage_rect));
 
   // Get canvas for next frame.
-  canvas_ = surface_ozone_->GetCanvas();
+  surface_ = surface_ozone_->GetSurface();
 
   return SoftwareOutputDevice::BeginPaint(damage_rect);
 }

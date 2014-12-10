@@ -11,7 +11,6 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
-class SkCanvas;
 class SkSurface;
 
 namespace ui {
@@ -27,7 +26,7 @@ class DriSurface : public SurfaceOzoneCanvas {
   ~DriSurface() override;
 
   // SurfaceOzoneCanvas:
-  skia::RefPtr<SkCanvas> GetCanvas() override;
+  skia::RefPtr<SkSurface> GetSurface() override;
   void ResizeCanvas(const gfx::Size& viewport_size) override;
   void PresentCanvas(const gfx::Rect& damage) override;
   scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() override;

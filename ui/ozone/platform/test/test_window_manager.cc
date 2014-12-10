@@ -39,9 +39,7 @@ class FileSurface : public SurfaceOzoneCanvas {
     surface_ = skia::AdoptRef(SkSurface::NewRaster(SkImageInfo::MakeN32Premul(
         viewport_size.width(), viewport_size.height())));
   }
-  skia::RefPtr<SkCanvas> GetCanvas() override {
-    return skia::SharePtr(surface_->getCanvas());
-  }
+  skia::RefPtr<SkSurface> GetSurface() override { return surface_; }
   void PresentCanvas(const gfx::Rect& damage) override {
     if (location_.empty())
       return;

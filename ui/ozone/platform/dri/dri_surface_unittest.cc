@@ -103,7 +103,7 @@ TEST_F(DriSurfaceTest, CheckSurfaceContents) {
   paint.setColor(SK_ColorWHITE);
   SkRect rect = SkRect::MakeWH(kDefaultMode.hdisplay / 2,
                                kDefaultMode.vdisplay / 2);
-  surface_->GetCanvas()->drawRect(rect, paint);
+  surface_->GetSurface()->getCanvas()->drawRect(rect, paint);
   surface_->PresentCanvas(
       gfx::Rect(0, 0, kDefaultMode.hdisplay / 2, kDefaultMode.vdisplay / 2));
 
