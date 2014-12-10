@@ -2150,11 +2150,19 @@ void RenderBox::computeMarginsForDirection(MarginDirection flowDirection, const 
         return;
     }
 
-    bool pushToEndFromTextAlign = !marginEndLength.isAuto() && ((!containingBlockStyle->isLeftToRightDirection() && containingBlockStyle->textAlign() == WEBKIT_LEFT)
+    bool adjustFromTextAlign = !marginEndLength.isAuto() && ((!containingBlockStyle->isLeftToRightDirection() && containingBlockStyle->textAlign() == WEBKIT_LEFT)
         || (containingBlockStyle->isLeftToRightDirection() && containingBlockStyle->textAlign() == WEBKIT_RIGHT));
-    if ((marginStartLength.isAuto() && marginBoxWidth < availableWidth) || pushToEndFromTextAlign) {
+    bool hasInvertedDirection = containingBlockStyle->isLeftToRightDirection() != style()->isLeftToRightDirection();
+
+    if ((marginStartLength.isAuto() && marginBoxWidth < availableWidth) || (adjustFromTextAlign && !hasInvertedDirection)) {
         marginEnd = marginEndWidth;
         marginStart = availableWidth - childWidth - marginEnd;
+        return;
+    }
+
+    if (adjustFromTextAlign && hasInvertedDirection) {
+        marginStart = marginStartWidth;
+        marginEnd = availableWidth - childWidth - marginStart;
         return;
     }
 
