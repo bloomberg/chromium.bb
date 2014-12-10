@@ -5,11 +5,6 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 
-gypi_values = exec_script("//build/gypi_to_gn.py",
-                          [ rebase_path("../chrome_tests.gypi") ],
-                          "scope",
-                          [ "../chrome_tests.gypi" ])
-
 # This target exists to reference other test executables to bring these files
 # into the build.
 group("test") {
@@ -218,185 +213,192 @@ source_set("test_support_unit") {
   ]
 }
 
-source_set("sync_integration_test_support") {
-  testonly = true
+if (!is_android) {
+  gypi_values = exec_script(
+      "//build/gypi_to_gn.py",
+      [ rebase_path("../chrome_tests.gypi") ],
+      "scope",
+      [ "../chrome_tests.gypi" ])
 
-  sources = rebase_path(gypi_values.test_support_sync_integration_sources,
-                        ".",
-                        "//chrome")
-  deps = [
-    ":test_support",
-    "//base",
-    "//chrome",
-    "//chrome/browser",
-    "//components/invalidation",
-    "//components/invalidation:test_support",
-    "//net",
-    "//skia",
-    "//sync",
-    "//sync:test_support_sync_testserver",
-    "//sync:test_support_sync_fake_server",
-    "//ui/app_list:test_support",
-  ]
-
-  if (is_mac) {
-    sources -= [
-      "../browser/sync/test/integration/dictionary_helper.cc",
-      "../browser/sync/test/integration/dictionary_helper.h",
-      "../browser/sync/test/integration/dictionary_load_observer.cc",
-      "../browser/sync/test/integration/dictionary_load_observer.h",
-    ]
-  }
-  if (!enable_app_list) {
-    sources -= [
-      "../browser/sync/test/integration/sync_app_list_helper.cc",
-      "../browser/sync/test/integration/sync_app_list_helper.h",
-    ]
-  }
-}
-
-test("sync_integration_tests") {
-  sources =
-      rebase_path(gypi_values.sync_integration_tests_sources, ".", "//chrome")
-
-  # TODO(phajdan.jr): Only temporary, to make transition easier.
-  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
-
-  deps = [
-    ":sync_integration_test_support",
-    ":test_support",
-    "//base/allocator",
-    "//chrome:packed_extra_resources",
-    "//chrome:packed_resources",
-    "//chrome:resources",
-    "//chrome:strings",
-    "//chrome/common",
-    "//chrome/renderer",
-    "//crypto:platform",
-    "//sync",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//third_party/icu",
-    "//third_party/leveldatabase",
-    "//third_party/npapi",
-    "//third_party/WebKit/public:blink",
-  ]
-
-  if (cld_version == 0 || cld_version == 2) {
-    # Language detection is irrelevant to sync, so it can depend on any
-    # implementation for CLD2. Dynamic is smaller, so go with dynamic.
-    deps += [ "//third_party/cld_2:cld2_dynamic" ]
-  }
-  if (is_mac) {
-    # Dictionary sync is disabled on Mac.
-    sources -= [
-      "../browser/sync/test/integration/multiple_client_dictionary_sync_test.cc",
-      "../browser/sync/test/integration/single_client_dictionary_sync_test.cc",
-      "../browser/sync/test/integration/two_client_dictionary_sync_test.cc",
+  source_set("sync_integration_test_support") {
+    testonly = true
+    sources = rebase_path(gypi_values.test_support_sync_integration_sources,
+                          ".",
+                          "//chrome")
+    deps = [
+      ":test_support",
+      "//base",
+      "//chrome",
+      "//chrome/browser",
+      "//components/invalidation",
+      "//components/invalidation:test_support",
+      "//net",
+      "//skia",
+      "//sync",
+      "//sync:test_support_sync_testserver",
+      "//sync:test_support_sync_fake_server",
+      "//ui/app_list:test_support",
     ]
 
-    # The sync_integration_tests do not run on mac without this flag.
-    # Search for comments about "xcode_settings" elsewhere in this file.
-    ldflags = [ "-Wl,-ObjC" ]
+    if (is_mac) {
+      sources -= [
+        "../browser/sync/test/integration/dictionary_helper.cc",
+        "../browser/sync/test/integration/dictionary_helper.h",
+        "../browser/sync/test/integration/dictionary_load_observer.cc",
+        "../browser/sync/test/integration/dictionary_load_observer.h",
+      ]
+    }
+    if (!enable_app_list) {
+      sources -= [
+        "../browser/sync/test/integration/sync_app_list_helper.cc",
+        "../browser/sync/test/integration/sync_app_list_helper.h",
+      ]
+    }
   }
-  if (is_win) {
-    # TODO(GYP) figure out what these should map to.
-    #sources += [
-    #  '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
-    #  '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_unscaled_resources.rc',
-    #]
-    deps += [
-      "//third_party/wtl",
-      #'chrome_version_resources',  TODO(GYP)
+
+  test("sync_integration_tests") {
+    sources =
+        rebase_path(gypi_values.sync_integration_tests_sources, ".", "//chrome")
+
+    # TODO(phajdan.jr): Only temporary, to make transition easier.
+    defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+
+    deps = [
+      ":sync_integration_test_support",
+      ":test_support",
+      "//base/allocator",
+      "//chrome:packed_extra_resources",
+      "//chrome:packed_resources",
+      "//chrome:resources",
+      "//chrome:strings",
+      "//chrome/common",
+      "//chrome/renderer",
+      "//crypto:platform",
+      "//sync",
+      "//testing/gmock",
+      "//testing/gtest",
+      "//third_party/icu",
+      "//third_party/leveldatabase",
+      "//third_party/npapi",
+      "//third_party/WebKit/public:blink",
     ]
-  } else {
-    sources -= [ "../app/chrome_version.rc.version" ]
+
+    if (cld_version == 0 || cld_version == 2) {
+      # Language detection is irrelevant to sync, so it can depend on any
+      # implementation for CLD2. Dynamic is smaller, so go with dynamic.
+      deps += [ "//third_party/cld_2:cld2_dynamic" ]
+    }
+    if (is_mac) {
+      # Dictionary sync is disabled on Mac.
+      sources -= [
+        "../browser/sync/test/integration/multiple_client_dictionary_sync_test.cc",
+        "../browser/sync/test/integration/single_client_dictionary_sync_test.cc",
+        "../browser/sync/test/integration/two_client_dictionary_sync_test.cc",
+      ]
+
+      # The sync_integration_tests do not run on mac without this flag.
+      # Search for comments about "xcode_settings" elsewhere in this file.
+      ldflags = [ "-Wl,-ObjC" ]
+    }
+    if (is_win) {
+      # TODO(GYP) figure out what these should map to.
+      #sources += [
+      #  '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
+      #  '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_unscaled_resources.rc',
+      #]
+      deps += [
+        "//third_party/wtl",
+        #'chrome_version_resources',  TODO(GYP)
+      ]
+    } else {
+      sources -= [ "../app/chrome_version.rc.version" ]
+    }
+
+    if (toolkit_views) {
+      deps += [ "//ui/views" ]
+    }
+    if (enable_basic_printing || enable_print_preview) {
+      deps += [ "//printing" ]
+    }
+    if (!enable_app_list) {
+      sources -= [
+        "../browser/sync/test/integration/single_client_app_list_sync_test.cc",
+        "../browser/sync/test/integration/two_client_app_list_sync_test.cc",
+      ]
+    }
+    if (!enable_supervised_users) {
+      sources -= [ "../browser/sync/test/integration/single_client_supervised_user_settings_sync_test.cc" ]
+    }
   }
 
-  if (toolkit_views) {
-    deps += [ "//ui/views" ]
-  }
-  if (enable_basic_printing || enable_print_preview) {
-    deps += [ "//printing" ]
-  }
-  if (!enable_app_list) {
-    sources -= [
-      "../browser/sync/test/integration/single_client_app_list_sync_test.cc",
-      "../browser/sync/test/integration/two_client_app_list_sync_test.cc",
+  test("sync_performance_tests") {
+    sources =
+        rebase_path(gypi_values.sync_performance_tests_sources, ".", "//chrome")
+
+    defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+
+    deps = [
+      ":sync_integration_test_support",
+      "//base/allocator",
+      "//crypto:platform",
+      "//sync",
+      "//testing/gmock",
+      "//testing/gtest",
     ]
+
+    if (cld_version == 0 || cld_version == 2) {
+      # Language detection is irrelevant to sync, so it can depend on any
+      # implementation for CLD2. Dynamic is smaller, so go with dynamic.
+      deps += [ "//third_party/cld_2:cld2_dynamic" ]
+    }
+
+    if (is_mac) {
+      # Dictionary sync is disabled on Mac.
+      sources -= [ "../browser/sync/test/integration/performance/dictionary_sync_perf_test.cc" ]
+
+      # The sync_performance_tests do not run on mac without this flag.
+      # Search for comments about "xcode_settings" elsewhere in this file.
+      ldflags = [ "-Wl,-ObjC" ]
+    }
+    if (is_win) {
+      # TODO(GYP) figure out what these should map to.
+      #sources += [
+      #  '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
+      #  '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_unscaled_resources.rc',
+      #]
+      deps += [
+        "//third_party/wtl",
+        #'chrome_version_resources',  TODO(GYP)
+      ]
+    } else {
+      sources -= [ "../app/chrome_version.rc.version" ]
+    }
+
+    if (toolkit_views) {
+      deps += [ "//ui/views" ]
+    }
   }
-  if (!enable_supervised_users) {
-    sources -= [ "../browser/sync/test/integration/single_client_supervised_user_settings_sync_test.cc" ]
-  }
-}
-
-test("sync_performance_tests") {
-  sources =
-      rebase_path(gypi_values.sync_performance_tests_sources, ".", "//chrome")
-
-  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
-
-  deps = [
-    ":sync_integration_test_support",
-    "//base/allocator",
-    "//crypto:platform",
-    "//sync",
-    "//testing/gmock",
-    "//testing/gtest",
-  ]
-
-  if (cld_version == 0 || cld_version == 2) {
-    # Language detection is irrelevant to sync, so it can depend on any
-    # implementation for CLD2. Dynamic is smaller, so go with dynamic.
-    deps += [ "//third_party/cld_2:cld2_dynamic" ]
-  }
-
-  if (is_mac) {
-    # Dictionary sync is disabled on Mac.
-    sources -= [ "../browser/sync/test/integration/performance/dictionary_sync_perf_test.cc" ]
-
-    # The sync_performance_tests do not run on mac without this flag.
-    # Search for comments about "xcode_settings" elsewhere in this file.
-    ldflags = [ "-Wl,-ObjC" ]
-  }
-  if (is_win) {
-    # TODO(GYP) figure out what these should map to.
-    #sources += [
-    #  '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
-    #  '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_unscaled_resources.rc',
-    #]
-    deps += [
-      "//third_party/wtl",
-      #'chrome_version_resources',  TODO(GYP)
-    ]
-  } else {
-    sources -= [ "../app/chrome_version.rc.version" ]
-  }
-
-  if (toolkit_views) {
-    deps += [ "//ui/views" ]
-  }
-}
 
 # Executable to measure time to load libraries.
-test("load_library_perf_tests") {
-  sources = [
-    "../browser/load_library_perf_test.cc",
-  ]
+  test("load_library_perf_tests") {
+    sources = [
+      "../browser/load_library_perf_test.cc",
+    ]
 
-  deps = [
-    "//base/test:test_support_perf",
-    "//testing/gtest",
-    "//testing/perf",
-    "//third_party/widevine/cdm:version_h",
-  ]
+    deps = [
+      "//base/test:test_support_perf",
+      "//testing/gtest",
+      "//testing/perf",
+      "//third_party/widevine/cdm:version_h",
+    ]
 
-  # TODO(GYP) CDM adapter stuff.
-  #if (enable_pepper_cdms) {
-  #  deps += [
-  #    "//media/cdm/ppapi:clearkeycdmadapter",
-  #    "//ppapi:ppapi_cpp",
-  #    "//third_party/widevine/cdm:adapter",
-  #  ]
-  #}
+    # TODO(GYP) CDM adapter stuff.
+    #if (enable_pepper_cdms) {
+    #  deps += [
+    #    "//media/cdm/ppapi:clearkeycdmadapter",
+    #    "//ppapi:ppapi_cpp",
+    #    "//third_party/widevine/cdm:adapter",
+    #  ]
+    #}
+  }
 }

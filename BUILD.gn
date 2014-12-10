@@ -184,6 +184,7 @@ group("root") {
       "//third_party/openmax_dl/dl",
       "//content/shell/android:content_shell_apk",
       "//chrome/android:chrome_shell_apk",
+      "//chrome/test:test_support_unit",
       "//chrome/test/chromedriver/test/webview_shell:chromedriver_webview_shell_apk",
       "//ui/android:ui_java",
       "//third_party/android_tools:android_gcm_java",

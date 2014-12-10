@@ -12,7 +12,9 @@ if (is_android) {
 
   if (has_chrome_android_internal) {
     import("//clank/config.gni")
-  } else {
+  }
+
+  if (!defined(default_android_sdk_root)) {
     default_android_sdk_root = "//third_party/android_tools/sdk"
     default_android_sdk_version = "21"
     default_android_sdk_build_tools_version = "21.0.1"
