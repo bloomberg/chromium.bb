@@ -61,6 +61,7 @@
 #include "core/page/EventHandler.h"
 #include "core/rendering/RenderBox.h"
 #include "platform/KillRing.h"
+#include "platform/UserGestureIndicator.h"
 #include "platform/scroll/Scrollbar.h"
 #include "public/platform/Platform.h"
 #include "wtf/text/AtomicString.h"
@@ -1174,7 +1175,7 @@ static bool supportedCopyCut(LocalFrame* frame)
         return false;
 
     Settings* settings = frame->settings();
-    bool defaultValue = settings && settings->javaScriptCanAccessClipboard();
+    bool defaultValue = (settings && settings->javaScriptCanAccessClipboard()) || UserGestureIndicator::processingUserGesture();
     return frame->editor().client().canCopyCut(frame, defaultValue);
 }
 
