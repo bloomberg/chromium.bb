@@ -81,6 +81,8 @@ class TestBlinkWebUnitTestSupport : public blink::WebUnitTestSupport,
   virtual blink::WebString webKitRootDir();
   virtual blink::WebLayerTreeView* createLayerTreeViewForTesting();
   virtual blink::WebData readFromFile(const blink::WebString& path);
+  virtual bool getBlobItems(const blink::WebString& uuid,
+                            blink::WebVector<blink::WebBlobData::Item*>* items);
 
  private:
   MockWebBlobRegistryImpl blob_registry_;
