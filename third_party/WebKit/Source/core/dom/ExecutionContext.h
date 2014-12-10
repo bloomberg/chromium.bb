@@ -133,6 +133,10 @@ public:
     virtual EventTarget* errorEventTarget() = 0;
     virtual EventQueue* eventQueue() const = 0;
 
+    void allowWindowFocus();
+    void consumeWindowFocus();
+    bool isWindowFocusAllowed() const;
+
 protected:
     ExecutionContext();
     virtual ~ExecutionContext();
@@ -177,6 +181,12 @@ private:
     // ExecutionContext's members (notably m_timeouts) is called before they are destructed,
     // m_lifecycleNotifer should be placed *after* such members.
     OwnPtr<ContextLifecycleNotifier> m_lifecycleNotifier;
+
+    // Counter that keeps track of how many window focus calls are allowed for
+    // this ExecutionContext. Callers are expected to call |allowWindowFocus()|
+    // and |consumeWindowFocus()| in order to increment and decrement the
+    // counter.
+    int m_windowFocusTokens;
 };
 
 } // namespace blink

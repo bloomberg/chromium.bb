@@ -976,20 +976,19 @@ void LocalDOMWindow::focus(ExecutionContext* context)
     if (!host)
         return;
 
-    bool allowFocus = WindowFocusAllowedIndicator::windowFocusAllowed();
-    if (context) {
+    ASSERT(context);
+
+    bool allowFocus = context->isWindowFocusAllowed();
+    if (allowFocus) {
+        context->consumeWindowFocus();
+    } else {
         ASSERT(isMainThread());
-        Document* activeDocument = toDocument(context);
-        if (opener() && opener() != this && activeDocument->domWindow() == opener())
-            allowFocus = true;
+        allowFocus = opener() && (opener() != this) && (toDocument(context)->domWindow() == opener());
     }
 
     // If we're a top level window, bring the window to the front.
     if (frame()->isMainFrame() && allowFocus)
         host->chrome().focus();
-
-    if (!frame())
-        return;
 
     frame()->eventHandler().focusDocumentView();
 }

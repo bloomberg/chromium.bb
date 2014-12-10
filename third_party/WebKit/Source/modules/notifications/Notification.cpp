@@ -33,9 +33,9 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/Document.h"
+#include "core/dom/ScopedWindowFocusAllowedIndicator.h"
 #include "core/events/Event.h"
 #include "core/frame/UseCounter.h"
-#include "core/page/WindowFocusAllowedIndicator.h"
 #include "modules/notifications/NotificationOptions.h"
 #include "modules/notifications/NotificationPermissionClient.h"
 #include "public/platform/Platform.h"
@@ -128,7 +128,7 @@ void Notification::dispatchShowEvent()
 void Notification::dispatchClickEvent()
 {
     UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
-    WindowFocusAllowedIndicator windowFocusAllowed;
+    ScopedWindowFocusAllowedIndicator windowFocusAllowed(executionContext());
     dispatchEvent(Event::create(EventTypeNames::click));
 }
 
