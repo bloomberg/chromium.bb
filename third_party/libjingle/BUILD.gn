@@ -535,6 +535,8 @@ if (enable_webrtc) {
   # as is supported in the GYP build. It's not clear what this is used for.
   source_set("libpeerconnection") {
     sources = [
+      "source/talk/media/webrtc/simulcast.cc",
+      "source/talk/media/webrtc/simulcast.h",
       "source/talk/media/webrtc/webrtcmediaengine.cc",
       "source/talk/media/webrtc/webrtcmediaengine.h",
       "source/talk/media/webrtc/webrtcvideoengine.cc",

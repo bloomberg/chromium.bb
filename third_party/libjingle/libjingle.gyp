@@ -591,6 +591,8 @@
           'type': '<(libpeer_target_type)',
           'sources': [
             # Note: sources list duplicated in GN build.
+            '<(libjingle_source)/talk/media/webrtc/simulcast.cc',
+            '<(libjingle_source)/talk/media/webrtc/simulcast.h',
             '<(libjingle_source)/talk/media/webrtc/webrtcmediaengine.cc',
             '<(libjingle_source)/talk/media/webrtc/webrtcmediaengine.h',
             '<(libjingle_source)/talk/media/webrtc/webrtcvideoengine.cc',
