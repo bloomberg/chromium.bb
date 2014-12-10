@@ -15,8 +15,7 @@ from telemetry.core import browser_options
 
 def _RunPrebuilt(options):
   browser_to_create = browser_finder.FindBrowser(options)
-  with browser_to_create.Create() as browser:
-    browser.Start()
+  with browser_to_create.Create(options) as browser:
     output_file = os.path.join(tempfile.mkdtemp(), options.profiler)
     raw_input('Press enter to start profiling...')
     print '>> Starting profiler', options.profiler
