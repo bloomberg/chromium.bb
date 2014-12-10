@@ -9,6 +9,7 @@
 
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/track/TrackEvent.h"
+#include "core/html/track/TrackEventInit.h"
 
 namespace blink {
 
@@ -118,11 +119,7 @@ public:
 private:
     void scheduleTrackEvent(const AtomicString& eventName, PassRefPtrWillBeRawPtr<T> track)
     {
-        TrackEventInit initializer;
-        initializer.track = track;
-        initializer.bubbles = false;
-        initializer.cancelable = false;
-        RefPtrWillBeRawPtr<Event> event = TrackEvent::create(eventName, initializer);
+        RefPtrWillBeRawPtr<Event> event = TrackEvent::create(eventName, track);
         event->setTarget(this);
         m_mediaElement->scheduleEvent(event);
     }

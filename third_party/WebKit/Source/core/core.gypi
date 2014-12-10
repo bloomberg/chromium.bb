@@ -3401,6 +3401,7 @@
             'frame/ScrollOptions.idl',
             'frame/ScrollToOptions.idl',
             'html/canvas/HitRegionOptions.idl',
+            'html/track/TrackEventInit.idl',
             'page/EventSourceInit.idl',
         ],
         'generated_core_dictionary_files': [
@@ -3420,6 +3421,8 @@
             '<(blink_core_output_dir)/frame/ScrollToOptions.h',
             '<(blink_core_output_dir)/html/canvas/HitRegionOptions.cpp',
             '<(blink_core_output_dir)/html/canvas/HitRegionOptions.h',
+            '<(blink_core_output_dir)/html/track/TrackEventInit.cpp',
+            '<(blink_core_output_dir)/html/track/TrackEventInit.h',
             '<(blink_core_output_dir)/page/EventSourceInit.cpp',
             '<(blink_core_output_dir)/page/EventSourceInit.h',
         ],

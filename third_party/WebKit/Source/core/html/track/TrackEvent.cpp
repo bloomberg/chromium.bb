@@ -33,19 +33,25 @@
 
 namespace blink {
 
-TrackEventInit::TrackEventInit()
-{
-}
-
-
 TrackEvent::TrackEvent()
 {
 }
 
 TrackEvent::TrackEvent(const AtomicString& type, const TrackEventInit& initializer)
     : Event(type, initializer)
-    , m_track(initializer.track)
 {
+    if (!initializer.hasTrack())
+        return;
+
+    const VideoTrackOrAudioTrackOrTextTrack& track = initializer.track();
+    if (track.isVideoTrack())
+        m_track = track.getAsVideoTrack();
+    else if (track.isAudioTrack())
+        m_track = track.getAsAudioTrack();
+    else if (track.isTextTrack())
+        m_track = track.getAsTextTrack();
+    else
+        ASSERT_NOT_REACHED();
 }
 
 TrackEvent::~TrackEvent()

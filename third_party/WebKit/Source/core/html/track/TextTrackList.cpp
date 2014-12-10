@@ -280,12 +280,7 @@ void TextTrackList::clearOwner()
 
 void TextTrackList::scheduleTrackEvent(const AtomicString& eventName, PassRefPtrWillBeRawPtr<TextTrack> track)
 {
-    TrackEventInit initializer;
-    initializer.track = track;
-    initializer.bubbles = false;
-    initializer.cancelable = false;
-
-    m_asyncEventQueue->enqueueEvent(TrackEvent::create(eventName, initializer));
+    m_asyncEventQueue->enqueueEvent(TrackEvent::create(eventName, track));
 }
 
 void TextTrackList::scheduleAddTrackEvent(PassRefPtrWillBeRawPtr<TextTrack> track)
