@@ -48,6 +48,11 @@
     font-weight: bold;
 }
 
+.indexeddb-path {
+    display: block;
+    margin-left: 1em;
+}
+
 .indexeddb-transaction-list {
     margin-left: 10px;
     border-collapse: collapse;

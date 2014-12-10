@@ -39,9 +39,9 @@
                           jsvalues=".idb_origin_url:url;.idb_partition_path:$partition_path"
                           jscontent="connection_count">
                 </div>
-                <div class="indexeddb-last-modified">
-                    <span>Path:</span>
-                    <span jscontent="path"></span>
+                <div class="indexeddb-paths">
+                    <span>Paths:</span>
+                    <span class="indexeddb-path" jscontent="$this" jsselect="$this.paths"></span>
                 </div>
                 <div class="controls">
                     <a href="#" class="force-close"

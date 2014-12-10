@@ -170,8 +170,12 @@ base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
     info->SetString("size", ui::FormatBytes(GetOriginDiskUsage(origin_url)));
     info->SetDouble("last_modified",
                     GetOriginLastModified(origin_url).ToJsTime());
-    if (!is_incognito())
-      info->SetString("path", GetLevelDBPath(origin_url).value());
+    if (!is_incognito()) {
+      scoped_ptr<base::ListValue> paths(new base::ListValue());
+      for (const base::FilePath& path : GetStoragePaths(origin_url))
+        paths->AppendString(path.value());
+      info->Set("paths", paths.release());
+    }
     info->SetDouble("connection_count", GetConnectionCount(origin_url));
 
     // This ends up being O(n^2) since we iterate over all open databases
