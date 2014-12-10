@@ -274,4 +274,12 @@ bool WebRtcAudioDeviceNotImpl::AGC() const {
   return true;
 }
 
+bool WebRtcAudioDeviceNotImpl::BuiltInAECIsAvailable() const {
+  return false;
+}
+
+int32_t WebRtcAudioDeviceNotImpl::EnableBuiltInAEC(bool enable) {
+  return 0;
+}
+
 }  // namespace content

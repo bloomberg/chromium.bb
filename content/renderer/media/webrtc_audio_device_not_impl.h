@@ -101,6 +101,8 @@ class CONTENT_EXPORT WebRtcAudioDeviceNotImpl
   int32_t GetLoudspeakerStatus(bool* enabled) const override;
   int32_t SetAGC(bool enable) override;
   bool AGC() const override;
+  bool BuiltInAECIsAvailable() const override;
+  int32_t EnableBuiltInAEC(bool enable) override;
 
  protected:
   ~WebRtcAudioDeviceNotImpl() override{};
