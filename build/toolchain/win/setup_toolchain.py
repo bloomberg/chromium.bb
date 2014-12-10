@@ -67,7 +67,8 @@ def _SetupScript(target_arch, sdk_dir):
     # We only support x64-hosted tools.
     # TODO(scottmg|dpranke): Non-depot_tools toolchain: need to get Visual
     # Studio install location from registry.
-    return [os.path.normpath(os.path.join(FIND_VS_IN_REG, 'VC/vcvarsall.bat')),
+    return [os.path.normpath(os.path.join(os.environ['GYP_MSVS_OVERRIDE_PATH'],
+                                          'VC/vcvarsall.bat')),
             'amd64_x86' if target_arch == 'x86' else 'amd64']
 
 

@@ -202,7 +202,7 @@ runtime_dirs = "%s"
       os.environ['WINDOWSSDKDIR'],
       os.environ['GYP_MSVS_VERSION'],
       os.environ.get('WDK_DIR', ''),
-      ';'.join(runtime_dll_dirs))
+      ';'.join(runtime_dll_dirs or ['None']))
 
 
 def main():
