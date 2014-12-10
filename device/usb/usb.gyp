@@ -11,6 +11,7 @@
       'target_name': 'device_usb',
       'type': 'static_library',
       'dependencies': [
+        '../../net/net.gyp:net',
         '../../third_party/libusb/libusb.gyp:libusb',
       ],
       'include_dirs': [
