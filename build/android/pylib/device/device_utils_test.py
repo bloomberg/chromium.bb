@@ -273,7 +273,7 @@ class DeviceUtilsNewImplTest(mock_calls.TestCase):
   def ShellError(self, output=None, exit_code=1):
     def action(cmd, *args, **kwargs):
       raise device_errors.AdbCommandFailedError(
-          cmd, output, exit_code, str(self.device))
+          ['shell', cmd], output, exit_code, str(self.device))
     if output is None:
       output = 'Permission denied\n'
     return action
@@ -1109,55 +1109,32 @@ class DeviceUtilsPullFileTest(DeviceUtilsNewImplTest):
                                '/test/file/host/path')
 
 
-class DeviceUtilsReadFileTest(DeviceUtilsOldImplTest):
+class DeviceUtilsReadFileTest(DeviceUtilsNewImplTest):
 
   def testReadFile_exists(self):
-    with self.assertCallsSequence([
-        ("adb -s 0123456789abcdef shell "
-            "'cat \"/read/this/test/file\" 2>/dev/null'",
-         'this is a test file')]):
-      self.assertEqual(['this is a test file'],
+    with self.assertCall(
+        self.call.adb.Shell('cat /read/this/test/file'),
+        'this is a test file\r\n'):
+      self.assertEqual('this is a test file\n',
                        self.device.ReadFile('/read/this/test/file'))
 
   def testReadFile_doesNotExist(self):
+    with self.assertCall(
+        self.call.adb.Shell('cat /this/file/does.not.exist'),
+        self.ShellError('/system/bin/sh: cat: /this/file/does.not.exist: '
+                        'No such file or directory')):
+      with self.assertRaises(device_errors.AdbCommandFailedError):
+        self.device.ReadFile('/this/file/does.not.exist')
+
+  def testReadFile_withSU(self):
     with self.assertCalls(
-        "adb -s 0123456789abcdef shell "
-            "'cat \"/this/file/does.not.exist\" 2>/dev/null'",
-         ''):
-      self.device.ReadFile('/this/file/does.not.exist')
-
-  def testReadFile_asRoot_withRoot(self):
-    self.device.old_interface._privileged_command_runner = (
-        self.device.old_interface.RunShellCommand)
-    self.device.old_interface._protected_file_access_method_initialized = True
-    with self.assertCallsSequence([
-        ("adb -s 0123456789abcdef shell "
-            "'cat \"/this/file/must.be.read.by.root\" 2> /dev/null'",
-         'this is a test file\nread by root')]):
+      (self.call.device.NeedsSU(), True),
+      (self.call.adb.Shell("su -c sh -c 'cat /this/file/can.be.read.with.su'"),
+       'this is a test file\nread with su')):
       self.assertEqual(
-          ['this is a test file', 'read by root'],
-          self.device.ReadFile('/this/file/must.be.read.by.root',
-                               as_root=True))
-
-  def testReadFile_asRoot_withSu(self):
-    self.device.old_interface._privileged_command_runner = (
-        self.device.old_interface.RunShellCommandWithSU)
-    self.device.old_interface._protected_file_access_method_initialized = True
-    with self.assertCallsSequence([
-        ("adb -s 0123456789abcdef shell "
-            "'su -c cat \"/this/file/can.be.read.with.su\" 2> /dev/null'",
-         'this is a test file\nread with su')]):
-      self.assertEqual(
-          ['this is a test file', 'read with su'],
+          'this is a test file\nread with su\n',
           self.device.ReadFile('/this/file/can.be.read.with.su',
                                as_root=True))
-
-  def testReadFile_asRoot_rejected(self):
-    self.device.old_interface._privileged_command_runner = None
-    self.device.old_interface._protected_file_access_method_initialized = True
-    with self.assertRaises(device_errors.CommandFailedError):
-      self.device.ReadFile('/this/file/cannot.be.read.by.user',
-                           as_root=True)
 
 
 class DeviceUtilsWriteFileTest(DeviceUtilsNewImplTest):
