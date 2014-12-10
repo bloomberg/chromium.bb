@@ -6,6 +6,7 @@
 #include "core/html/HTMLMenuItemElement.h"
 
 #include "core/HTMLNames.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/events/Event.h"
 
 namespace blink {
@@ -25,6 +26,18 @@ void HTMLMenuItemElement::defaultEventHandler(Event* event)
                 removeAttribute(checkedAttr);
             else
                 setAttribute(checkedAttr, "checked");
+        } else if (equalIgnoringCase(fastGetAttribute(typeAttr), "radio")) {
+            if (Element* parent = parentElement()) {
+                const AtomicString& group = fastGetAttribute(radiogroupAttr);
+                for (HTMLMenuItemElement& menuItem : Traversal<HTMLMenuItemElement>::childrenOf(*parent)) {
+                    if (!menuItem.fastHasAttribute(checkedAttr))
+                        continue;
+                    const AtomicString& groupAttr = menuItem.fastGetAttribute(radiogroupAttr);
+                    if (equalIgnoringNullity(groupAttr.impl(), group.impl()))
+                        menuItem.removeAttribute(checkedAttr);
+                }
+            }
+            setAttribute(checkedAttr, "checked");
         }
         event->setDefaultHandled();
     }

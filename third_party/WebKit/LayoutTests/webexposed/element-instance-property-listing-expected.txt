@@ -581,6 +581,7 @@ html element menuitem
     property default
     property disabled
     property label
+    property radiogroup
     property type
 html element meta
     property content

@@ -54,6 +54,17 @@ TEST_F(ContextMenuControllerTest, TestCustomMenu)
         "<menuitem id=\"item7\" type=\"checkbox\" checked label=\"Item7\""
         "onclick='if (document.getElementById(\"item7\").hasAttribute(\"checked\"))"
         "document.title = \"Title 7 checked\"; else document.title = \"Title 7 not checked\";'>"
+        "<menuitem id=\"item8\" type=\"radio\" radiogroup=\"group\" label=\"Item8\""
+        "onclick='if (document.getElementById(\"item8\").hasAttribute(\"checked\"))"
+        "document.title = \"Title 8 checked\"; else if (document.getElementById(\"item9\").hasAttribute(\"checked\"))"
+        "document.title = \"Title 8 not checked and Title 9 checked\";'>"
+        "<menuitem id=\"item9\" type=\"radio\" radiogroup=\"group\" checked label=\"Item9\""
+        "onclick='if (document.getElementById(\"item9\").hasAttribute(\"checked\"))"
+        "document.title = \"Title 9 checked\"; else document.title = \"Title 9 not checked\";'>"
+        "<menuitem id=\"item10\" type=\"radio\" radiogroup=\"group\" label=\"Item10\""
+        "onclick='if (document.getElementById(\"item10\").hasAttribute(\"checked\"))"
+        "document.title = \"Title 10 checked\"; else if (document.getElementById(\"item8\").hasAttribute(\"checked\"))"
+        "document.title = \"Title 10 not checked and Title 8 checked\";'>"
         "</menu>"
         "</button>");
 
@@ -71,8 +82,11 @@ TEST_F(ContextMenuControllerTest, TestCustomMenu)
     //           Item 5
     //           Item 6
     // *Item 7
+    // Item 8
+    // *Item 9
+    // Item 10
     const Vector<ContextMenuItem>& items = document().page()->contextMenuController().contextMenu()->items();
-    EXPECT_EQ(5u, items.size());
+    EXPECT_EQ(8u, items.size());
     EXPECT_EQ(ActionType, items[0].type());
     EXPECT_STREQ("Item1", items[0].title().utf8().data());
     document().page()->contextMenuController().contextMenuItemSelected(&items[0]);
@@ -88,6 +102,10 @@ TEST_F(ContextMenuControllerTest, TestCustomMenu)
     EXPECT_STREQ("Title 7 checked", document().title().utf8().data());
     document().page()->contextMenuController().contextMenuItemSelected(&items[4]);
     EXPECT_STREQ("Title 7 not checked", document().title().utf8().data());
+    document().page()->contextMenuController().contextMenuItemSelected(&items[5]);
+    EXPECT_STREQ("Title 8 not checked and Title 9 checked", document().title().utf8().data());
+    document().page()->contextMenuController().contextMenuItemSelected(&items[7]);
+    EXPECT_STREQ("Title 10 not checked and Title 8 checked", document().title().utf8().data());
 }
 
 }

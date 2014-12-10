@@ -3,7 +3,7 @@ Tests the custom context menu items.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS itemsWithCustomContextMenu.length - items.length is 20
+PASS itemsWithCustomContextMenu.length - items.length is 23
 PASS itemsWithCustomContextMenu[0] is "Item1"
 PASS itemsWithCustomContextMenu[1] is "#Item2"
 PASS itemsWithCustomContextMenu[2] is "---------"
@@ -24,6 +24,9 @@ PASS itemsWithCustomContextMenu[16] is "Item13"
 PASS itemsWithCustomContextMenu[17] is "Item14"
 PASS itemsWithCustomContextMenu[18] is "*Item15"
 PASS itemsWithCustomContextMenu[19] is "Item16"
+PASS itemsWithCustomContextMenu[20] is "Item17"
+PASS itemsWithCustomContextMenu[21] is "*Item18"
+PASS itemsWithCustomContextMenu[22] is "Item19"
 PASS items1.length - items.length is 0
 PASS items2.length - items.length is 0
 PASS items3.length - items.length is 0

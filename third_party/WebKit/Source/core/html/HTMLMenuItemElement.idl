@@ -10,5 +10,6 @@
     [Reflect] attribute boolean disabled;
     [Reflect] attribute boolean checked;
     [Reflect] attribute boolean default;
-    // FIXME: icon, radiogroup and command need to be implemented.
+    [Reflect] attribute DOMString radiogroup;
+    // FIXME: icon and command need to be implemented.
 };
