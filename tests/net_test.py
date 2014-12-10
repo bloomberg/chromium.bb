@@ -340,6 +340,24 @@ class HttpServiceTest(RetryLoopMockedTest):
     self.assertEqual(['filepath'], removed)
 
 
+class TestNetFunctions(auto_stub.TestCase):
+  def test_fix_url(self):
+    data = [
+      ('http://foo.com/', 'http://foo.com'),
+      ('https://foo.com/', 'https://foo.com'),
+      ('https://foo.com', 'https://foo.com'),
+      ('https://foo.com/a', 'https://foo.com/a'),
+      ('https://foo.com/a/', 'https://foo.com/a'),
+      ('https://foo.com:8080/a/', 'https://foo.com:8080/a'),
+      ('foo.com', 'https://foo.com'),
+      ('foo.com:8080', 'https://foo.com:8080'),
+      ('foo.com/', 'https://foo.com'),
+      ('foo.com/a/', 'https://foo.com/a'),
+    ]
+    for value, expected in data:
+      self.assertEqual(expected, net.fix_url(value))
+
+
 if __name__ == '__main__':
   logging.basicConfig(
       level=(logging.DEBUG if '-v' in sys.argv else logging.FATAL))

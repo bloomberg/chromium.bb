@@ -1256,17 +1256,29 @@ class OptionParserSwarming(tools.OptionParserWithLogging):
   def parse_args(self, *args, **kwargs):
     options, args = tools.OptionParserWithLogging.parse_args(
         self, *args, **kwargs)
-    options.swarming = options.swarming.rstrip('/')
+    auth.process_auth_options(self, options)
+    user = self._process_swarming(options)
+    if hasattr(options, 'user') and not options.user:
+      options.user = user
+    return options, args
+
+  def _process_swarming(self, options):
+    """Processes the --swarming option and aborts if not specified.
+
+    Returns the identity as determined by the server.
+    """
     if not options.swarming:
       self.error('--swarming is required.')
-    auth.process_auth_options(self, options)
+    try:
+      options.swarming = net.fix_url(options.swarming)
+    except ValueError as e:
+      self.error('--swarming %s' % e)
+    on_error.report_on_exception_exit(options.swarming)
     try:
       user = auth.ensure_logged_in(options.swarming)
     except ValueError as e:
       self.error(str(e))
-    if hasattr(options, 'user') and not options.user:
-      options.user = user
-    return options, args
+    return user
 
 
 def main(args):

@@ -2137,20 +2137,10 @@ def process_isolate_server_options(parser, options):
   """
   if not options.isolate_server:
     parser.error('--isolate-server is required.')
-
-  parts = urlparse.urlparse(options.isolate_server, 'https')
-  if parts.query:
-    parser.error('--isolate-server doesn\'t support query parameter.')
-  if parts.fragment:
-    parser.error('--isolate-server doesn\'t support fragment in the url.')
-  # urlparse('foo.com') will result in netloc='', path='foo.com', which is not
-  # what is desired here.
-  new = list(parts)
-  if not new[1] and new[2]:
-    new[1] = new[2].rstrip('/')
-    new[2] = ''
-  new[2] = new[2].rstrip('/')
-  options.isolate_server = urlparse.urlunparse(new)
+  try:
+    options.isolate_server = net.fix_url(options.isolate_server)
+  except ValueError as e:
+    parser.error('--isolate-server %s' % e)
   on_error.report_on_exception_exit(options.isolate_server)
   try:
     return auth.ensure_logged_in(options.isolate_server)

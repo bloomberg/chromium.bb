@@ -221,6 +221,23 @@ def split_server_request_url(url):
   return urlhost, urlpath
 
 
+def fix_url(url):
+  """Fixes an url to https."""
+  parts = urlparse.urlparse(url, 'https')
+  if parts.query:
+    raise ValueError('doesn\'t support query parameter.')
+  if parts.fragment:
+    raise ValueError('doesn\'t support fragment in the url.')
+  # urlparse('foo.com') will result in netloc='', path='foo.com', which is not
+  # what is desired here.
+  new = list(parts)
+  if not new[1] and new[2]:
+    new[1] = new[2].rstrip('/')
+    new[2] = ''
+  new[2] = new[2].rstrip('/')
+  return urlparse.urlunparse(new)
+
+
 def get_http_service(urlhost, allow_cached=True):
   """Returns existing or creates new instance of HttpService that can send
   requests to given base urlhost.
