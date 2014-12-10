@@ -560,7 +560,7 @@ static HTMLElement* highestAncestorToWrapMarkup(const Range* range, EAnnotateFor
 
 // FIXME: Shouldn't we omit style info when annotate == DoNotAnnotateForInterchange?
 // FIXME: At least, annotation and style info should probably not be included in range.markupString()
-static String createMarkupInternal(Document& document, const Range* range, const Range* updatedRange, WillBeHeapVector<RawPtrWillBeMember<Node>>* nodes,
+static String createMarkupInternal(Document& document, const Range* range, const Range* updatedRange,
     EAnnotateForInterchange shouldAnnotate, bool convertBlocksToInlines, EAbsoluteURLs shouldResolveURLs, Node* constrainingAncestor)
 {
     ASSERT(range);
@@ -582,7 +582,7 @@ static String createMarkupInternal(Document& document, const Range* range, const
     if (body && areRangesEqual(VisibleSelection::selectionFromContentsOfNode(body).toNormalizedRange().get(), range))
         fullySelectedRoot = body;
     HTMLElement* specialCommonAncestor = highestAncestorToWrapMarkup(updatedRange, shouldAnnotate, constrainingAncestor);
-    StyledMarkupAccumulator accumulator(nodes, shouldResolveURLs, shouldAnnotate, updatedRange, specialCommonAncestor);
+    StyledMarkupAccumulator accumulator(nullptr, shouldResolveURLs, shouldAnnotate, updatedRange, specialCommonAncestor);
     Node* pastEnd = updatedRange->pastLastNode();
 
     Node* startNode = updatedRange->firstNode();
@@ -628,8 +628,6 @@ static String createMarkupInternal(Document& document, const Range* range, const
                 // so that styles that affect the exterior of the node are not included.
                 accumulator.wrapWithNode(*ancestor, convertBlocksToInlines, StyledMarkupAccumulator::DoesNotFullySelectNode);
             }
-            if (nodes)
-                nodes->append(ancestor);
 
             if (ancestor == specialCommonAncestor)
                 break;
@@ -643,7 +641,7 @@ static String createMarkupInternal(Document& document, const Range* range, const
     return accumulator.takeResults();
 }
 
-String createMarkup(const Range* range, WillBeHeapVector<RawPtrWillBeMember<Node>>* nodes, EAnnotateForInterchange shouldAnnotate, bool convertBlocksToInlines, EAbsoluteURLs shouldResolveURLs, Node* constrainingAncestor)
+String createMarkup(const Range* range, EAnnotateForInterchange shouldAnnotate, bool convertBlocksToInlines, EAbsoluteURLs shouldResolveURLs, Node* constrainingAncestor)
 {
     if (!range)
         return emptyString();
@@ -651,7 +649,7 @@ String createMarkup(const Range* range, WillBeHeapVector<RawPtrWillBeMember<Node
     Document& document = range->ownerDocument();
     const Range* updatedRange = range;
 
-    return createMarkupInternal(document, range, updatedRange, nodes, shouldAnnotate, convertBlocksToInlines, shouldResolveURLs, constrainingAncestor);
+    return createMarkupInternal(document, range, updatedRange, shouldAnnotate, convertBlocksToInlines, shouldResolveURLs, constrainingAncestor);
 }
 
 PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromMarkup(Document& document, const String& markup, const String& baseURL, ParserContentPolicy parserContentPolicy)
@@ -753,12 +751,12 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromMarkupWithContext(Doc
     return fragment;
 }
 
-String createMarkup(const Node* node, EChildrenOnly childrenOnly, WillBeHeapVector<RawPtrWillBeMember<Node>>* nodes, EAbsoluteURLs shouldResolveURLs)
+String createMarkup(const Node* node, EChildrenOnly childrenOnly, EAbsoluteURLs shouldResolveURLs)
 {
     if (!node)
         return "";
 
-    MarkupAccumulator accumulator(nodes, shouldResolveURLs);
+    MarkupAccumulator accumulator(nullptr, shouldResolveURLs);
     return accumulator.serializeNodes(const_cast<Node&>(*node), childrenOnly);
 }
 

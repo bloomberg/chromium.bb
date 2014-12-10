@@ -61,8 +61,8 @@ bool isPlainTextMarkup(Node*);
 void replaceChildrenWithFragment(ContainerNode*, PassRefPtrWillBeRawPtr<DocumentFragment>, ExceptionState&);
 void replaceChildrenWithText(ContainerNode*, const String&, ExceptionState&);
 
-String createMarkup(const Range*, WillBeHeapVector<RawPtrWillBeMember<Node>>* = nullptr, EAnnotateForInterchange = DoNotAnnotateForInterchange, bool convertBlocksToInlines = false, EAbsoluteURLs = DoNotResolveURLs, Node* constrainingAncestor = nullptr);
-String createMarkup(const Node*, EChildrenOnly = IncludeNode, WillBeHeapVector<RawPtrWillBeMember<Node>>* = nullptr, EAbsoluteURLs = DoNotResolveURLs);
+String createMarkup(const Range*, EAnnotateForInterchange = DoNotAnnotateForInterchange, bool convertBlocksToInlines = false, EAbsoluteURLs = DoNotResolveURLs, Node* constrainingAncestor = nullptr);
+String createMarkup(const Node*, EChildrenOnly = IncludeNode, EAbsoluteURLs = DoNotResolveURLs);
 
 String createStyledMarkupForNavigationTransition(Node*);
 

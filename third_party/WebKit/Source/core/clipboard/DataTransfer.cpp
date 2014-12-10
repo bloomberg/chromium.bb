@@ -331,7 +331,7 @@ void DataTransfer::declareAndWriteDragImage(Element* element, const KURL& url, c
     writeImageToDataObject(m_dataObject.get(), element, url);
 
     // Put img tag on the clipboard referencing the image
-    m_dataObject->setData(mimeTypeTextHTML, createMarkup(element, IncludeNode, 0, ResolveAllURLs));
+    m_dataObject->setData(mimeTypeTextHTML, createMarkup(element, IncludeNode, ResolveAllURLs));
 }
 
 void DataTransfer::writeURL(const KURL& url, const String& title)
@@ -355,7 +355,7 @@ void DataTransfer::writeRange(Range* selectedRange, LocalFrame* frame)
     if (!m_dataObject)
         return;
 
-    m_dataObject->setHTMLAndBaseURL(createMarkup(selectedRange, 0, AnnotateForInterchange, false, ResolveNonLocalURLs), frame->document()->url());
+    m_dataObject->setHTMLAndBaseURL(createMarkup(selectedRange, AnnotateForInterchange, false, ResolveNonLocalURLs), frame->document()->url());
 
     String str = frame->selectedTextForClipboard();
 #if OS(WIN)

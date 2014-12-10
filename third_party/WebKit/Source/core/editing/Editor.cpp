@@ -416,7 +416,7 @@ void Editor::pasteWithPasteboard(Pasteboard* pasteboard)
 
 void Editor::writeSelectionToPasteboard(Pasteboard* pasteboard, Range* selectedRange, const String& plainText)
 {
-    String html = createMarkup(selectedRange, 0, AnnotateForInterchange, false, ResolveNonLocalURLs);
+    String html = createMarkup(selectedRange, AnnotateForInterchange, false, ResolveNonLocalURLs);
     KURL url = selectedRange->startContainer()->document().url();
     pasteboard->writeHTML(html, url, plainText, canSmartCopyOrDelete());
 }
