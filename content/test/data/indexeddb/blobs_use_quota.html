@@ -1,18 +1,22 @@
 <!DOCTYPE html>
 <html>
 <!--
-  Copyright (c) 2014 The Chromium Authors. All rights reserved.
+  Copyright 2014 The Chromium Authors. All rights reserved.
   Use of this source code is governed by a BSD-style license that can be
   found in the LICENSE file.
 -->
 <head>
 <title>IDB Test that blobs use space when created and free up space when deleted</title>
-<script type="text/javascript" src="common.js"></script>
+<script src="common.js"></script>
 <script>
 
-const store_name = 'blobs_use_space';
-const blob_key = 'blob_key';
-const blob_size = 20 * 1024 * 1024;
+// Constants.
+var store_name = 'blobs_use_space';
+var blob_key = 'blob_key';
+var blob_size = 20 * 1024 * 1024;
+
+// Shared variables.
+var db;
 var size_initial;
 var size_after_write;
 
@@ -22,7 +26,7 @@ function test() {
 
 function prepareDatabase() {
   db = event.target.result;
-  objectStore = db.createObjectStore(store_name);
+  db.createObjectStore(store_name);
 }
 
 function getInitialSize() {
@@ -35,11 +39,11 @@ function getInitialSize() {
 function putBlob() {
   debug("Writing blob.");
 
-  var trans = db.transaction([store_name], 'readwrite');
+  var trans = db.transaction(store_name, 'readwrite');
   trans.onabort = unexpectedAbortCallback;
   trans.oncomplete = checkSizeIncreased;
 
-  var data = new Array(1+blob_size).join("X");
+  var data = new Array(1 + blob_size).join("X");
   var blob = new Blob([data]);
   var request = trans.objectStore(store_name).put(blob, blob_key);
   request.onerror = unexpectedErrorCallback;
@@ -57,7 +61,7 @@ function checkSizeIncreased() {
 
 function deleteBlob() {
   debug("Deleting blob.");
-  var trans = db.transaction([store_name], 'readwrite');
+  var trans = db.transaction(store_name, 'readwrite');
   trans.onabort = unexpectedAbortCallback;
   trans.oncomplete = checkSizeBackToInitial;
 
