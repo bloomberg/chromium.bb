@@ -70,6 +70,9 @@ void MockWebBlobRegistryImpl::addDataToStream(const WebURL& url,
                                               size_t length) {
 }
 
+void MockWebBlobRegistryImpl::flushStream(const WebURL& url) {
+}
+
 void MockWebBlobRegistryImpl::finalizeStream(const WebURL& url) {
 }
 

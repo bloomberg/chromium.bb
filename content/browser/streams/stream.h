@@ -68,6 +68,9 @@ class CONTENT_EXPORT Stream : public base::RefCountedThreadSafe<Stream> {
   // of the data, and then passes it to |writer_|.
   void AddData(const char* data, size_t size);
 
+  // Flushes contents buffered in the stream to the corresponding reader.
+  void Flush();
+
   // Notifies this stream that it will not be receiving any more data.
   void Finalize();
 

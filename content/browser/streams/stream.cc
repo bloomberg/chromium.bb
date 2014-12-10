@@ -108,6 +108,12 @@ void Stream::AddData(const char* data, size_t size) {
   AddData(io_buffer, size);
 }
 
+void Stream::Flush() {
+  if (!writer_.get())
+    return;
+  writer_->Flush();
+}
+
 void Stream::Finalize() {
   if (!writer_.get())
     return;

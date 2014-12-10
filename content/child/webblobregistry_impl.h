@@ -37,6 +37,7 @@ class WebBlobRegistryImpl : public blink::WebBlobRegistry {
                                  const blink::WebURL& src_url);
   virtual void addDataToStream(const blink::WebURL& url,
                                const char* data, size_t length);
+  virtual void flushStream(const blink::WebURL& url);
   virtual void finalizeStream(const blink::WebURL& url);
   virtual void abortStream(const blink::WebURL& url);
   virtual void unregisterStreamURL(const blink::WebURL& url);

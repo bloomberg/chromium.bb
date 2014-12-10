@@ -154,6 +154,7 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
                                     const storage::BlobData::Item& item);
   void OnAppendSharedMemoryToStream(
       const GURL& url, base::SharedMemoryHandle handle, size_t buffer_size);
+  void OnFlushStream(const GURL& url);
   void OnFinishBuildingStream(const GURL& url);
   void OnAbortBuildingStream(const GURL& url);
   void OnCloneStream(const GURL& url, const GURL& src_url);

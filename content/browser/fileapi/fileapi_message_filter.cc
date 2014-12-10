@@ -185,6 +185,7 @@ bool FileAPIMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnAppendBlobDataItemToStream)
     IPC_MESSAGE_HANDLER(StreamHostMsg_SyncAppendSharedMemory,
                         OnAppendSharedMemoryToStream)
+    IPC_MESSAGE_HANDLER(StreamHostMsg_Flush, OnFlushStream)
     IPC_MESSAGE_HANDLER(StreamHostMsg_FinishBuilding, OnFinishBuildingStream)
     IPC_MESSAGE_HANDLER(StreamHostMsg_AbortBuilding, OnAbortBuildingStream)
     IPC_MESSAGE_HANDLER(StreamHostMsg_Clone, OnCloneStream)
@@ -651,6 +652,13 @@ void FileAPIMessageFilter::OnAppendSharedMemoryToStream(
     return;
 
   stream->AddData(static_cast<char*>(shared_memory.memory()), buffer_size);
+}
+
+void FileAPIMessageFilter::OnFlushStream(const GURL& url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  scoped_refptr<Stream> stream(GetStreamForURL(url));
+  if (stream.get())
+    stream->Flush();
 }
 
 void FileAPIMessageFilter::OnFinishBuildingStream(const GURL& url) {

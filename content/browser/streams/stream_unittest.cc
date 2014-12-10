@@ -342,4 +342,32 @@ TEST_F(StreamTest, UnderMemoryUsageLimit) {
   EXPECT_EQ(stream.get(), registry_->GetStream(url).get());
 }
 
+TEST_F(StreamTest, Flush) {
+  TestStreamWriter writer;
+  TestStreamReader reader;
+
+  GURL url("blob://stream");
+  scoped_refptr<Stream> stream(new Stream(registry_.get(), &writer, url));
+  EXPECT_TRUE(stream->SetReadObserver(&reader));
+
+  // If the written data size is smaller than ByteStreamWriter's (total size /
+  // kFractionBufferBeforeSending), StreamReadObserver::OnDataAvailable is not
+  // called.
+  const int kBufferSize = 1;
+  scoped_refptr<net::IOBuffer> buffer(NewIOBuffer(kBufferSize));
+  writer.Write(stream.get(), buffer, kBufferSize);
+
+  // Run loop to make |reader| consume the data.
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(0, reader.buffer()->capacity());
+
+  stream->Flush();
+
+  // Run loop to make |reader| consume the data.
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(kBufferSize, reader.buffer()->capacity());
+
+  EXPECT_EQ(stream.get(), registry_->GetStream(url).get());
+}
+
 }  // namespace content

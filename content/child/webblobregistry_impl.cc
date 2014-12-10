@@ -198,6 +198,11 @@ void WebBlobRegistryImpl::addDataToStream(const WebURL& url,
   }
 }
 
+void WebBlobRegistryImpl::flushStream(const WebURL& url) {
+  DCHECK(ChildThread::current());
+  sender_->Send(new StreamHostMsg_Flush(url));
+}
+
 void WebBlobRegistryImpl::finalizeStream(const WebURL& url) {
   DCHECK(ChildThread::current());
   sender_->Send(new StreamHostMsg_FinishBuilding(url));

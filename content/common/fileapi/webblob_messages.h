@@ -57,6 +57,10 @@ IPC_SYNC_MESSAGE_CONTROL3_0(StreamHostMsg_SyncAppendSharedMemory,
                             base::SharedMemoryHandle,
                             size_t /* buffer size */)
 
+// Flushes contents buffered in the stream.
+IPC_MESSAGE_CONTROL1(StreamHostMsg_Flush,
+                     GURL /* url */)
+
 // Finishes building a stream.
 IPC_MESSAGE_CONTROL1(StreamHostMsg_FinishBuilding,
                      GURL /* url */)
