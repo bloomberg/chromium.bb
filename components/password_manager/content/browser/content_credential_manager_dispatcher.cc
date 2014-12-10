@@ -26,14 +26,8 @@ ContentCredentialManagerDispatcher::ContentCredentialManagerDispatcher(
     PasswordManagerClient* client)
     : WebContentsObserver(web_contents),
       client_(client),
-      driver_(nullptr),
       pending_request_id_(0) {
   DCHECK(web_contents);
-
-  ContentPasswordManagerDriverFactory* driver_factory =
-      ContentPasswordManagerDriverFactory::FromWebContents(web_contents);
-  if (driver_factory)
-    driver_ = driver_factory->GetDriverForFrame(web_contents->GetMainFrame());
 }
 
 ContentCredentialManagerDispatcher::~ContentCredentialManagerDispatcher() {}
@@ -76,7 +70,8 @@ void ContentCredentialManagerDispatcher::OnNotifySignedIn(
   // determine whether or not the credential exists, and calling UpdateLogin
   // accordingly.
   form_manager_.reset(
-      new CredentialManagerPasswordFormManager(client_, driver_, *form, this));
+      new CredentialManagerPasswordFormManager(client_, GetDriver(), *form,
+                                               this));
 
   web_contents()->GetRenderViewHost()->Send(
       new CredentialManagerMsg_AcknowledgeSignedIn(
@@ -140,6 +135,16 @@ void ContentCredentialManagerDispatcher::OnGetPasswordStoreResults(
 
 PasswordStore* ContentCredentialManagerDispatcher::GetPasswordStore() {
   return client_ ? client_->GetPasswordStore() : nullptr;
+}
+
+base::WeakPtr<PasswordManagerDriver>
+ContentCredentialManagerDispatcher::GetDriver() {
+  ContentPasswordManagerDriverFactory* driver_factory =
+        ContentPasswordManagerDriverFactory::FromWebContents(web_contents());
+  DCHECK(driver_factory);
+  PasswordManagerDriver* driver =
+      driver_factory->GetDriverForFrame(web_contents()->GetMainFrame());
+  return driver->AsWeakPtr();
 }
 
 void ContentCredentialManagerDispatcher::SendCredential(

@@ -77,6 +77,33 @@ class TestPasswordManagerClient
   scoped_ptr<password_manager::PasswordFormManager> manager_;
 };
 
+class TestContentCredentialManagerDispatcher
+    : public password_manager::ContentCredentialManagerDispatcher {
+ public:
+  TestContentCredentialManagerDispatcher(
+      content::WebContents* web_contents,
+      password_manager::PasswordManagerClient* client,
+      password_manager::PasswordManagerDriver* driver);
+
+ private:
+  base::WeakPtr<password_manager::PasswordManagerDriver> GetDriver() override;
+
+  base::WeakPtr<password_manager::PasswordManagerDriver> driver_;
+};
+
+TestContentCredentialManagerDispatcher::TestContentCredentialManagerDispatcher(
+    content::WebContents* web_contents,
+    password_manager::PasswordManagerClient* client,
+    password_manager::PasswordManagerDriver* driver)
+    : ContentCredentialManagerDispatcher(web_contents, client),
+      driver_(driver->AsWeakPtr()) {
+}
+
+base::WeakPtr<password_manager::PasswordManagerDriver>
+TestContentCredentialManagerDispatcher::GetDriver() {
+  return driver_;
+}
+
 void RunAllPendingTasks() {
   base::RunLoop run_loop;
   base::MessageLoop::current()->PostTask(
@@ -98,8 +125,9 @@ class ContentCredentialManagerDispatcherTest
     store_ = new TestPasswordStore;
     client_.reset(new TestPasswordManagerClient(store_.get()));
     dispatcher_.reset(
-        new ContentCredentialManagerDispatcher(web_contents(), client_.get()));
-    dispatcher_->set_password_manager_driver(&stub_driver_);
+        new TestContentCredentialManagerDispatcher(web_contents(),
+                                                   client_.get(),
+                                                   &stub_driver_));
 
     NavigateAndCommit(GURL("https://example.com/test.html"));
 
