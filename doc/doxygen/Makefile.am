@@ -17,6 +17,11 @@ scanned_src_files_server = 				\
 	$(top_srcdir)/src/wayland-server.h	\
 	$(top_srcdir)/src/wayland-shm.c
 
+scanned_src_files_man =					\
+	$(scanned_src_files_server)			\
+	$(top_srcdir)/src/wayland-client.c	\
+	$(top_srcdir)/src/wayland-client.h
+
 # find all man/man3/wl_foo.3 pages
 # for this to work, we need to create them before the man target (hence
 # all-local below)
@@ -39,12 +44,12 @@ xml/server/index.xml: $(scanned_src_files_server) wayland.doxygen | xml/server
           echo "INPUT= $(scanned_src_files_server)"; \
           ) | $(DOXYGEN) -
 
-man/man3/wl_display.3: $(scanned_src_files_client) $(scanned_src_files_server) wayland.doxygen | man/man3
+man/man3/wl_display.3: $(scanned_src_files_man) wayland.doxygen | man/man3
 	$(AM_V_GEN)(cat wayland.doxygen; \
           echo "GENERATE_MAN=YES"; \
           echo "MAN_OUTPUT=man"; \
           echo "JAVADOC_AUTOBRIEF=NO"; \
-          echo "INPUT= $^"; \
+          echo "INPUT= $(scanned_src_files_man)"; \
           ) | $(DOXYGEN) -
 
 # general rule to create one of the listed directories.
