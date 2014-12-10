@@ -4,10 +4,8 @@
 
 // This module implements the WorkerFrame prototype.
 
-var DocumentNatives = requireNative('document_natives');
 var GuestView = require('guestView').GuestView;
 var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
-var IdGenerator = requireNative('id_generator');
 
 function WorkerFrameImpl(workerFrameElement) {
   GuestViewContainer.call(this, workerFrameElement, 'workerframe');
