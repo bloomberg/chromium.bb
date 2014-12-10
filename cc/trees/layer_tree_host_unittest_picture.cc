@@ -123,5 +123,69 @@ class LayerTreeHostPictureTestTwinLayer
 
 MULTI_THREAD_TEST_F(LayerTreeHostPictureTestTwinLayer);
 
+class LayerTreeHostPictureTestResizeViewportWithGpuRaster
+    : public LayerTreeHostPictureTest {
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->gpu_rasterization_forced = true;
+  }
+
+  void SetupTree() override {
+    scoped_refptr<Layer> root = Layer::Create();
+    root->SetBounds(gfx::Size(768, 960));
+
+    client_.set_fill_with_nonsolid_color(true);
+    picture_ = FakePictureLayer::Create(&client_);
+    picture_->SetBounds(gfx::Size(768, 960));
+    root->AddChild(picture_);
+
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeHostPictureTest::SetupTree();
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void WillActivateTreeOnThread(LayerTreeHostImpl* impl) override {
+    LayerImpl* child = impl->sync_tree()->root_layer()->children()[0];
+    FakePictureLayerImpl* picture_impl =
+        static_cast<FakePictureLayerImpl*>(child);
+    gfx::Size tile_size =
+        picture_impl->HighResTiling()->TileAt(0, 0)->content_rect().size();
+
+    switch (impl->sync_tree()->source_frame_number()) {
+      case 0:
+        tile_size_ = tile_size;
+        // GPU Raster picks a tile size based on the viewport size.
+        EXPECT_EQ(gfx::Size(768, 256), tile_size);
+        break;
+      case 1:
+        // When the viewport changed size, the new frame's tiles should change
+        // along with it.
+        EXPECT_NE(gfx::Size(768, 256), tile_size);
+    }
+  }
+
+  void DidCommit() override {
+    switch (layer_tree_host()->source_frame_number()) {
+      case 1:
+        // Change the picture layer's size along with the viewport, so it will
+        // consider picking a new tile size.
+        picture_->SetBounds(gfx::Size(768, 1056));
+        layer_tree_host()->SetViewportSize(gfx::Size(768, 1056));
+        break;
+      case 2:
+        EndTest();
+    }
+  }
+
+  void AfterTest() override {}
+
+  gfx::Size tile_size_;
+  FakeContentLayerClient client_;
+  scoped_refptr<FakePictureLayer> picture_;
+};
+
+SINGLE_AND_MULTI_THREAD_IMPL_TEST_F(
+    LayerTreeHostPictureTestResizeViewportWithGpuRaster);
+
 }  // namespace
 }  // namespace cc

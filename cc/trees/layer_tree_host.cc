@@ -293,12 +293,6 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     sync_tree->SetRootLayer(TreeSynchronizer::SynchronizeTrees(
         root_layer(), sync_tree->DetachLayerTree(), sync_tree));
   }
-
-  {
-    TRACE_EVENT0("cc", "LayerTreeHost::PushProperties");
-    TreeSynchronizer::PushProperties(root_layer(), sync_tree->root_layer());
-  }
-
   sync_tree->set_needs_full_tree_sync(needs_full_tree_sync_);
   needs_full_tree_sync_ = false;
 
@@ -320,6 +314,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
         page_scale_layer_->id(), inner_viewport_scroll_layer_->id(),
         outer_viewport_scroll_layer_.get() ? outer_viewport_scroll_layer_->id()
                                            : Layer::INVALID_ID);
+    DCHECK(inner_viewport_scroll_layer_->IsContainerForFixedPositionLayers());
   } else {
     sync_tree->ClearViewportLayers();
   }
@@ -379,6 +374,11 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   }
 
   sync_tree->set_has_ever_been_drawn(false);
+
+  {
+    TRACE_EVENT0("cc", "LayerTreeHost::PushProperties");
+    TreeSynchronizer::PushProperties(root_layer(), sync_tree->root_layer());
+  }
 
   micro_benchmark_controller_.ScheduleImplBenchmarks(host_impl);
 }

@@ -1268,8 +1268,6 @@ void LayerImpl::SetScrollbarPosition(ScrollbarLayerImplBase* scrollbar_layer,
 
   DCHECK(this != page_scale_layer);
   DCHECK(scrollbar_clip_layer);
-  DCHECK(this != layer_tree_impl()->InnerViewportScrollLayer() ||
-         IsContainerForFixedPositionLayers());
   gfx::RectF clip_rect(gfx::PointF(),
                        scrollbar_clip_layer->BoundsForScrolling());
 
