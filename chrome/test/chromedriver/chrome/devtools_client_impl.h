@@ -84,8 +84,12 @@ class DevToolsClientImpl : public DevToolsClient {
   const std::string& GetId() override;
   bool WasCrashed() override;
   Status ConnectIfNecessary() override;
-  Status SendCommand(const std::string& method,
-                     const base::DictionaryValue& params) override;
+  Status SendCommand(
+      const std::string& method,
+      const base::DictionaryValue& params) override;
+  Status SendCommandAndIgnoreResponse(
+      const std::string& method,
+      const base::DictionaryValue& params) override;
   Status SendCommandAndGetResult(
       const std::string& method,
       const base::DictionaryValue& params,
@@ -120,7 +124,8 @@ class DevToolsClientImpl : public DevToolsClient {
   Status SendCommandInternal(
       const std::string& method,
       const base::DictionaryValue& params,
-      scoped_ptr<base::DictionaryValue>* result);
+      scoped_ptr<base::DictionaryValue>* result,
+      bool wait_for_response);
   Status ProcessNextMessage(int expected_id, const base::TimeDelta& timeout);
   Status ProcessEvent(const internal::InspectorEvent& event);
   Status ProcessCommandResponse(

@@ -25,10 +25,17 @@ Status StubDevToolsClient::ConnectIfNecessary() {
   return Status(kOk);
 }
 
-Status StubDevToolsClient::SendCommand(const std::string& method,
-                                       const base::DictionaryValue& params) {
+Status StubDevToolsClient::SendCommand(
+    const std::string& method,
+    const base::DictionaryValue& params) {
   scoped_ptr<base::DictionaryValue> result;
   return SendCommandAndGetResult(method, params, &result);
+}
+
+Status StubDevToolsClient::SendCommandAndIgnoreResponse(
+    const std::string& method,
+    const base::DictionaryValue& params) {
+  return SendCommand(method, params);
 }
 
 Status StubDevToolsClient::SendCommandAndGetResult(

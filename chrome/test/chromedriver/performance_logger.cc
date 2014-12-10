@@ -250,8 +250,12 @@ Status PerformanceLogger::CollectTraceEvents() {
                   "was not started");
   }
 
-  Status status = browser_client_->SendCommand("Tracing.end",
-                                               base::DictionaryValue());
+  // As of r307466, DevTools no longer returns a response to Tracing.end
+  // commands, so we need to ignore it here to avoid a timeout. See
+  // https://code.google.com/p/chromedriver/issues/detail?id=997 for details.
+  // TODO(samuong): find other commands where we don't need the response.
+  Status status = browser_client_->SendCommandAndIgnoreResponse(
+      "Tracing.end", base::DictionaryValue());
   if (status.IsError()) {
     LOG(ERROR) << "error when stopping trace: " << status.message();
     return status;
