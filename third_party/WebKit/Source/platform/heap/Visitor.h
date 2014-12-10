@@ -191,74 +191,57 @@ public:
 
 template<typename T> class TraceTrait<const T> : public TraceTrait<T> { };
 
-// If ENABLE_EAGER_TRACING_BY_DEFAULT is set to 1, GCed objects will
-// be eagerly traced by default. A class type can opt out by declaring
-// a TraceEagerlyTrait<> specialization, mapping the value to 'false'
-// (see the WILL_NOT_BE_EAGERLY_TRACED() macro below.)
-#define ENABLE_EAGER_TRACING_BY_DEFAULT 0
-
-// DISABLE_ALL_EAGER_TRACING provides the "kill switch" for eager
-// tracing; setting it to 1 will disable the use of eager tracing
-// entirely. That is, eager tracing is disabled even if traits have
-// been declared.
-#define DISABLE_ALL_EAGER_TRACING 0
-
-// If TraceEagerlyTrait<T>::value is true, then the marker thread should
-// invoke trace() on not-yet-marked objects deriving from class T right
-// away, and not queue their trace callbacks on its marker stack.
+// If MARKER_EAGER_TRACING is set to 1, a marker thread is allowed
+// to directly invoke the trace() method of not-as-yet marked objects upon
+// marking. If it is set to 0, the |trace()| callback for an object will
+// be pushed onto an explicit mark stack, which the marker proceeds to
+// iteratively pop and invoke. The eager scheme enables inlining of a trace()
+// method inside another, the latter keeps system call stack usage bounded
+// and under explicit control.
 //
-// Specific template specializations of TraceEagerlyTrait<T> can be used
-// to declare that eager tracing should always be used when tracing over
-// GCed objects with class type T. If the trait's boolean 'value' is
-// mapped to 'true' that is; declare it as 'false' to disable eager tracing.
+// If eager tracing leads to excessively deep |trace()| call chains (and
+// the system stack usage that this brings), the marker implementation will
+// switch to using an explicit mark stack. Recursive and deep object graphs
+// are uncommon for Blink objects.
+//
+// A class type can opt out of eager tracing by declaring a TraceEagerlyTrait<>
+// specialization, mapping the trait's |value| to |false| (see the
+// WILL_NOT_BE_EAGERLY_TRACED() macros below.) For Blink, this is done for
+// the small set of GCed classes that are directly recursive.
+#define MARKER_EAGER_TRACING 1
+
+// The TraceEagerlyTrait<T> trait controls whether or not a class
+// (and its subclasses) should be eagerly traced or not.
+//
+// If |TraceEagerlyTrait<T>::value| is |true|, then the marker thread
+// should invoke |trace()| on not-yet-marked objects deriving from class T
+// right away, and not queue their trace callbacks on its marker stack,
+// which it will do if |value| is |false|.
 //
 // The trait can be declared to enable/disable eager tracing for a class T
-// and any of its subclasses, or just to the class T (but none of its subclasses.)
+// and any of its subclasses, or just to the class T, but none of its
+// subclasses.
 //
 template<typename T, typename Enabled = void>
 class TraceEagerlyTrait {
 public:
-    static const bool value = ENABLE_EAGER_TRACING_BY_DEFAULT;
+    static const bool value = MARKER_EAGER_TRACING;
 };
 
-#define WILL_BE_EAGERLY_TRACED(TYPE)                                                        \
-template<typename U>                                                                        \
-class TraceEagerlyTrait<U, typename WTF::EnableIf<WTF::IsSubclass<U, TYPE>::value>::Type> { \
-public:                                                                                     \
-    static const bool value = true;                                                         \
-}
-
 #define WILL_NOT_BE_EAGERLY_TRACED(TYPE)                                                    \
-template<typename U>                                                                        \
-class TraceEagerlyTrait<U, typename WTF::EnableIf<WTF::IsSubclass<U, TYPE>::value>::Type> { \
+template<typename T>                                                                        \
+class TraceEagerlyTrait<T, typename WTF::EnableIf<WTF::IsSubclass<T, TYPE>::value>::Type> { \
 public:                                                                                     \
     static const bool value = false;                                                        \
 }
 
-// Limit eager tracing to only apply to TYPE (but not any of its subclasses.)
-#define WILL_BE_EAGERLY_TRACED_CLASS(TYPE)       \
-template<>                                       \
-class TraceEagerlyTrait<TYPE> {                  \
-public:                                          \
-    static const bool value = true;              \
-}
-
+// Disable eager tracing for TYPE, but not any of its subclasses.
 #define WILL_NOT_BE_EAGERLY_TRACED_CLASS(TYPE)   \
 template<>                                       \
 class TraceEagerlyTrait<TYPE> {                  \
 public:                                          \
     static const bool value = false;             \
 }
-
-// Set to 1 if you want collections to be eagerly traced regardless
-// of whether the elements are eagerly traceable or not.
-#define ENABLE_EAGER_HEAP_COLLECTION_TRACING ENABLE_EAGER_TRACING_BY_DEFAULT
-
-#if ENABLE_EAGER_HEAP_COLLECTION_TRACING
-#define IS_EAGERLY_TRACED_HEAP_COLLECTION(Type) true
-#else
-#define IS_EAGERLY_TRACED_HEAP_COLLECTION(Type) TraceEagerlyTrait<Type>::value
-#endif
 
 template<typename Collection>
 struct OffHeapCollectionTraceTrait;
@@ -586,7 +569,7 @@ public:
         //
         // If the trait allows it, invoke the trace callback right here on the
         // not-yet-marked object.
-        if (!DISABLE_ALL_EAGER_TRACING && TraceEagerlyTrait<T>::value) {
+        if (TraceEagerlyTrait<T>::value) {
             // Protect against too deep trace call chains, and the
             // unbounded system stack usage they can bring about.
             //
@@ -697,7 +680,7 @@ public: \
     { \
         typedef WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<TYPE>::Type, blink::GarbageCollected> IsSubclassOfGarbageCollected; \
         COMPILE_ASSERT(IsSubclassOfGarbageCollected::value, OnlyGarbageCollectedObjectsCanHaveGarbageCollectedMixins);                  \
-        if (!DISABLE_ALL_EAGER_TRACING && TraceEagerlyTrait<TYPE>::value) {             \
+        if (TraceEagerlyTrait<TYPE>::value) {                                           \
             if (visitor->ensureMarked(static_cast<const TYPE*>(this)))                  \
                 TraceTrait<TYPE>::trace(visitor, const_cast<TYPE*>(this));              \
             return;                                                                     \

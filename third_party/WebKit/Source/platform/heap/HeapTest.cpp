@@ -673,6 +673,8 @@ protected:
     }
 };
 
+WILL_NOT_BE_EAGERLY_TRACED(Bar);
+
 unsigned Bar::s_live = 0;
 
 class Baz : public GarbageCollected<Baz> {
@@ -5284,30 +5286,22 @@ TEST(HeapTest, NonNodeAllocatingNodeInDestructor)
 }
 
 class TraceTypeEagerly1 : public GarbageCollected<TraceTypeEagerly1> { };
-WILL_BE_EAGERLY_TRACED(TraceTypeEagerly1);
 class TraceTypeEagerly2 : public TraceTypeEagerly1 { };
-
-class TraceTypeEagerly3 { };
-WILL_BE_EAGERLY_TRACED(TraceTypeEagerly3);
-
-class TraceTypeEagerly4 : public TraceTypeEagerly3 { };
-
-class TraceTypeEagerly5 { };
-WILL_BE_EAGERLY_TRACED_CLASS(TraceTypeEagerly5);
-
-class TraceTypeEagerly6 : public TraceTypeEagerly5 { };
-
-class TraceTypeEagerly7 { };
 
 class TraceTypeNonEagerly1 { };
 WILL_NOT_BE_EAGERLY_TRACED(TraceTypeNonEagerly1);
+class TraceTypeNonEagerly2 : public TraceTypeNonEagerly1 { };
+
+class TraceTypeNonEagerly3 { };
+WILL_NOT_BE_EAGERLY_TRACED_CLASS(TraceTypeNonEagerly3);
+class TraceTypeNonEagerly4 : public TraceTypeNonEagerly3 { };
 
 TEST(HeapTest, TraceTypesEagerly)
 {
     COMPILE_ASSERT(TraceEagerlyTrait<TraceTypeEagerly1>::value, ShouldBeTrue);
     COMPILE_ASSERT(TraceEagerlyTrait<Member<TraceTypeEagerly1>>::value, ShouldBeTrue);
     COMPILE_ASSERT(TraceEagerlyTrait<WeakMember<TraceTypeEagerly1>>::value, ShouldBeTrue);
-    COMPILE_ASSERT(ENABLE_EAGER_TRACING_BY_DEFAULT || !TraceEagerlyTrait<RawPtr<TraceTypeEagerly1>>::value, ShouldBeTrue);
+    COMPILE_ASSERT(TraceEagerlyTrait<RawPtr<TraceTypeEagerly1>>::value == MARKER_EAGER_TRACING, ShouldBeTrue);
     COMPILE_ASSERT(TraceEagerlyTrait<HeapVector<Member<TraceTypeEagerly1>>>::value, ShouldBeTrue);
     COMPILE_ASSERT(TraceEagerlyTrait<HeapVector<WeakMember<TraceTypeEagerly1>>>::value, ShouldBeTrue);
     COMPILE_ASSERT(TraceEagerlyTrait<HeapHashSet<Member<TraceTypeEagerly1>>>::value, ShouldBeTrue);
@@ -5318,17 +5312,53 @@ TEST(HeapTest, TraceTypesEagerly)
     COMPILE_ASSERT(TraceEagerlyTrait<HashMapObjToInt>::value, ShouldBeTrue);
 
     COMPILE_ASSERT(TraceEagerlyTrait<TraceTypeEagerly2>::value, ShouldBeTrue);
-    COMPILE_ASSERT(TraceEagerlyTrait<TraceTypeEagerly3>::value, ShouldBeTrue);
-
-    COMPILE_ASSERT(TraceEagerlyTrait<TraceTypeEagerly4>::value, ShouldBeTrue);
-
-    COMPILE_ASSERT(TraceEagerlyTrait<TraceTypeEagerly5>::value, ShouldBeTrue);
-    COMPILE_ASSERT(TraceEagerlyTrait<Member<TraceTypeEagerly5>>::value, ShouldBeTrue);
-
-    COMPILE_ASSERT(ENABLE_EAGER_TRACING_BY_DEFAULT || !TraceEagerlyTrait<TraceTypeEagerly6>::value, ShouldBeTrue);
-    COMPILE_ASSERT(ENABLE_EAGER_TRACING_BY_DEFAULT || !TraceEagerlyTrait<TraceTypeEagerly7>::value, ShouldBeTrue);
+    COMPILE_ASSERT(TraceEagerlyTrait<Member<TraceTypeEagerly2>>::value, ShouldBeTrue);
 
     COMPILE_ASSERT(!TraceEagerlyTrait<TraceTypeNonEagerly1>::value, ShouldBeTrue);
+    COMPILE_ASSERT(!TraceEagerlyTrait<TraceTypeNonEagerly2>::value, ShouldBeTrue);
+    COMPILE_ASSERT(!TraceEagerlyTrait<TraceTypeNonEagerly3>::value, ShouldBeTrue);
+    COMPILE_ASSERT(TraceEagerlyTrait<TraceTypeNonEagerly4>::value == MARKER_EAGER_TRACING, ShouldBeTrue);
+}
+
+class DeepEagerly final : public GarbageCollected<DeepEagerly> {
+public:
+    DeepEagerly(DeepEagerly* next)
+        : m_next(next)
+    {
+    }
+
+    void trace(Visitor* visitor)
+    {
+        int calls = ++sTraceCalls;
+        visitor->trace(m_next);
+        if (sTraceCalls == calls)
+            sTraceLazy++;
+    }
+
+    Member<DeepEagerly> m_next;
+
+    static int sTraceCalls;
+    static int sTraceLazy;
+};
+
+int DeepEagerly::sTraceCalls = 0;
+int DeepEagerly::sTraceLazy = 0;
+
+TEST(HeapTest, TraceDeepEagerly)
+{
+#if !ENABLE(ASSERT)
+    DeepEagerly* obj = nullptr;
+    for (int i = 0; i < 2000; i++)
+        obj = new DeepEagerly(obj);
+
+    Persistent<DeepEagerly> persistent(obj);
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+
+    // Verify that the DeepEagerly chain isn't completely unravelled
+    // by performing eager trace() calls, but the explicit mark
+    // stack is switched once some nesting limit is exceeded.
+    EXPECT_GT(DeepEagerly::sTraceLazy, 2);
+#endif
 }
 
 } // namespace blink

@@ -52,7 +52,7 @@ private:
 template<typename T>
 class TraceEagerlyTrait<HeapTerminatedArray<T> > {
 public:
-    static const bool value = IS_EAGERLY_TRACED_HEAP_COLLECTION(T);
+    static const bool value = TraceEagerlyTrait<T>::value;
 };
 
 } // namespace blink
