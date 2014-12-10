@@ -78,18 +78,16 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   // Allows us to simulate that a contents was created via CreateNewWindow.
   void AddPendingContents(TestWebContents* contents);
 
-  // Establish expected arguments for |SetHistoryLengthAndPrune()|. When
-  // |SetHistoryLengthAndPrune()| is called, the arguments are compared
+  // Establish expected arguments for |SetHistoryOffsetAndLength()|. When
+  // |SetHistoryOffsetAndLength()| is called, the arguments are compared
   // with the expected arguments specified here.
-  void ExpectSetHistoryLengthAndPrune(const SiteInstance* site_instance,
-                                      int history_length,
-                                      int32 min_page_id);
+  void ExpectSetHistoryOffsetAndLength(int history_offset,
+                                       int history_length);
 
   // Compares the arguments passed in with the expected arguments passed in
-  // to |ExpectSetHistoryLengthAndPrune()|.
-  void SetHistoryLengthAndPrune(const SiteInstance* site_instance,
-                                int history_length,
-                                int32 min_page_id) override;
+  // to |ExpectSetHistoryOffsetAndLength()|.
+  void SetHistoryOffsetAndLength(int history_offset,
+                                 int history_length) override;
 
   void TestDidFinishLoad(const GURL& url);
   void TestDidFailLoadWithError(const GURL& url,
@@ -121,12 +119,10 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
 
   RenderViewHostDelegateView* delegate_view_override_;
 
-  // Expectations for arguments of |SetHistoryLengthAndPrune()|.
-  bool expect_set_history_length_and_prune_;
-  scoped_refptr<const SiteInstanceImpl>
-    expect_set_history_length_and_prune_site_instance_;
-  int expect_set_history_length_and_prune_history_length_;
-  int32 expect_set_history_length_and_prune_min_page_id_;
+  // Expectations for arguments of |SetHistoryOffsetAndLength()|.
+  bool expect_set_history_offset_and_length_;
+  int expect_set_history_offset_and_length_history_offset_;
+  int expect_set_history_offset_and_length_history_length_;
 };
 
 }  // namespace content

@@ -948,36 +948,26 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
   TRACE_EVENT2("navigation", "RenderFrameImpl::OnNavigate",
                "id", routing_id_,
                "url", params.common_params.url.possibly_invalid_spec());
+
   bool is_reload =
       RenderViewImpl::IsReload(params.common_params.navigation_type);
+  bool is_history_navigation = params.commit_params.page_state.IsValid();
   WebURLRequest::CachePolicy cache_policy =
       WebURLRequest::UseProtocolCachePolicy;
   if (!RenderFrameImpl::PrepareRenderViewForNavigation(
       params.common_params.url, params.common_params.navigation_type,
-      params.commit_params.page_state, true, params.pending_history_list_offset,
-      params.page_id, &is_reload, &cache_policy)) {
+      params.commit_params.page_state, true, is_history_navigation,
+      params.current_history_list_offset, params.page_id, &is_reload,
+      &cache_policy)) {
     Send(new FrameHostMsg_DidDropNavigation(routing_id_));
     return;
   }
 
-  int pending_history_list_offset = params.pending_history_list_offset;
-  int current_history_list_offset = params.current_history_list_offset;
-  int current_history_list_length = params.current_history_list_length;
+  render_view_->history_list_offset_ = params.current_history_list_offset;
+  render_view_->history_list_length_ = params.current_history_list_length;
   if (params.should_clear_history_list) {
-    CHECK_EQ(pending_history_list_offset, -1);
-    CHECK_EQ(current_history_list_offset, -1);
-    CHECK_EQ(current_history_list_length, 0);
-  }
-  render_view_->history_list_offset_ = current_history_list_offset;
-  render_view_->history_list_length_ = current_history_list_length;
-  if (render_view_->history_list_length_ >= 0) {
-    render_view_->history_page_ids_.resize(
-        render_view_->history_list_length_, -1);
-  }
-  if (pending_history_list_offset >= 0 &&
-      pending_history_list_offset < render_view_->history_list_length_) {
-    render_view_->history_page_ids_[pending_history_list_offset] =
-        params.page_id;
+    CHECK_EQ(-1, render_view_->history_list_offset_);
+    CHECK_EQ(0, render_view_->history_list_length_);
   }
 
   GetContentClient()->SetActiveURL(params.common_params.url);
@@ -1015,7 +1005,7 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
       frame->reloadWithOverrideURL(params.common_params.url, true);
     else
       frame->reload(ignore_cache);
-  } else if (params.commit_params.page_state.IsValid()) {
+  } else if (is_history_navigation) {
     // We must know the page ID of the page we are navigating back to.
     DCHECK_NE(params.page_id, -1);
     scoped_ptr<HistoryEntry> entry =
@@ -2370,7 +2360,7 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     // We bump our Page ID to correspond with the new session history entry.
     render_view_->page_id_ = render_view_->next_page_id_++;
 
-    // Don't update history_page_ids_ (etc) for kSwappedOutURL, since
+    // Don't update history list values for kSwappedOutURL, since
     // we don't want to forget the entry that was there, and since we will
     // never come back to kSwappedOutURL.  Note that we have to call
     // UpdateSessionHistory and update page_id_ even in this case, so that
@@ -2384,10 +2374,6 @@ void RenderFrameImpl::didCommitProvisionalLoad(
         render_view_->history_list_offset_ = kMaxSessionHistoryEntries - 1;
       render_view_->history_list_length_ =
           render_view_->history_list_offset_ + 1;
-      render_view_->history_page_ids_.resize(
-          render_view_->history_list_length_, -1);
-      render_view_->history_page_ids_[render_view_->history_list_offset_] =
-          render_view_->page_id_;
     }
   } else {
     // Inspect the navigation_state on this frame to see if the navigation
@@ -2408,14 +2394,6 @@ void RenderFrameImpl::didCommitProvisionalLoad(
 
       render_view_->history_list_offset_ =
           navigation_state->pending_history_list_offset();
-
-      // If the history list is valid, our list of page IDs should be correct.
-      DCHECK(render_view_->history_list_length_ <= 0 ||
-             render_view_->history_list_offset_ < 0 ||
-             render_view_->history_list_offset_ >=
-                 render_view_->history_list_length_ ||
-             render_view_->history_page_ids_[render_view_->history_list_offset_]
-                  == render_view_->page_id_);
     }
   }
 
@@ -3712,11 +3690,14 @@ void RenderFrameImpl::OnCommitNavigation(
   CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
   bool is_reload = false;
+  bool is_history_navigation = commit_params.page_state.IsValid();
   WebURLRequest::CachePolicy cache_policy =
       WebURLRequest::UseProtocolCachePolicy;
   if (!RenderFrameImpl::PrepareRenderViewForNavigation(
       common_params.url, common_params.navigation_type,
-      commit_params.page_state, false, -1, -1, &is_reload, &cache_policy)) {
+      commit_params.page_state, false /* check_for_stale_navigation */,
+      is_history_navigation, -1 /* current_history_list_offset; TODO(clamy)*/,
+      -1, &is_reload, &cache_policy)) {
     return;
   }
 
@@ -4138,8 +4119,9 @@ bool RenderFrameImpl::PrepareRenderViewForNavigation(
     const GURL& url,
     FrameMsg_Navigate_Type::Value navigate_type,
     const PageState& state,
-    bool check_history,
-    int pending_history_list_offset,
+    bool check_for_stale_navigation,
+    bool is_history_navigation,
+    int current_history_list_offset,
     int32 page_id,
     bool* is_reload,
     WebURLRequest::CachePolicy* cache_policy) {
@@ -4151,10 +4133,14 @@ bool RenderFrameImpl::PrepareRenderViewForNavigation(
       RenderViewObserver, render_view_->observers_, Navigate(url));
 
   // If this is a stale back/forward (due to a recent navigation the browser
-  // didn't know about), ignore it.
-  if (check_history && render_view_->IsBackForwardToStaleEntry(
-      state, pending_history_list_offset, page_id, *is_reload))
+  // didn't know about), ignore it. Only check if swapped in because if the
+  // frame is swapped out, it won't commit before asking the browser.
+  // TODO(clamy): remove check_for_stale_navigation
+  if (check_for_stale_navigation &&
+      !render_view_->is_swapped_out() && is_history_navigation &&
+      render_view_->history_list_offset_ != current_history_list_offset) {
     return false;
+  }
 
   if (!is_swapped_out_ || frame_->parent())
     return true;

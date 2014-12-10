@@ -848,8 +848,6 @@ RenderViewImpl::~RenderViewImpl() {
        it != disambiguation_bitmaps_.end();
        ++it)
     delete it->second;
-  history_page_ids_.clear();
-
   base::debug::TraceLog::GetInstance()->RemoveProcessLabel(routing_id_);
 
   // If file chooser is still waiting for answer, dispatch empty answer.
@@ -1355,8 +1353,8 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
         OnGetSerializedHtmlDataForCurrentPageWithLocalLinks)
     IPC_MESSAGE_HANDLER(ViewMsg_ShowContextMenu, OnShowContextMenu)
     // TODO(viettrungluu): Move to a separate message filter.
-    IPC_MESSAGE_HANDLER(ViewMsg_SetHistoryLengthAndPrune,
-                        OnSetHistoryLengthAndPrune)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetHistoryOffsetAndLength,
+                        OnSetHistoryOffsetAndLength)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableViewSourceMode, OnEnableViewSourceMode)
     IPC_MESSAGE_HANDLER(ViewMsg_ReleaseDisambiguationPopupBitmap,
                         OnReleaseDisambiguationPopupBitmap)
@@ -1397,44 +1395,6 @@ void RenderViewImpl::OnSelectWordAroundCaret() {
   handling_input_event_ = true;
   webview()->focusedFrame()->selectWordAroundCaret();
   handling_input_event_ = false;
-}
-
-bool RenderViewImpl::IsBackForwardToStaleEntry(const PageState& state,
-                                               int pending_history_list_offset,
-                                               int32 page_id,
-                                               bool is_reload) {
-  // Make sure this isn't a back/forward to an entry we have already cropped
-  // or replaced from our history, before the browser knew about it.  If so,
-  // a new navigation has committed in the mean time, and we can ignore this.
-  bool is_back_forward = !is_reload && state.IsValid();
-
-  // Note: if the history_list_length_ is 0 for a back/forward, we must be
-  // restoring from a previous session.  We'll update our state in OnNavigate.
-  if (!is_back_forward || history_list_length_ <= 0)
-    return false;
-
-  DCHECK_EQ(static_cast<int>(history_page_ids_.size()), history_list_length_);
-
-  // Check for whether the forward history has been cropped due to a recent
-  // navigation the browser didn't know about.
-  if (pending_history_list_offset >= history_list_length_)
-    return true;
-
-  // Check for whether this entry has been replaced with a new one.
-  int expected_page_id =
-      history_page_ids_[pending_history_list_offset];
-  if (expected_page_id > 0 && page_id != expected_page_id) {
-    if (page_id < expected_page_id)
-      return true;
-
-    // Otherwise we've removed an earlier entry and should have shifted all
-    // entries left.  For now, it's ok to lazily update the list.
-    // TODO(creis): Notify all live renderers when we remove entries from
-    // the front of the list, so that we don't hit this case.
-    history_page_ids_[pending_history_list_offset] = page_id;
-  }
-
-  return false;
 }
 
 void RenderViewImpl::OnCopyImageAt(int x, int y) {
@@ -1491,26 +1451,14 @@ void RenderViewImpl::OnSetEditCommandsForNextKeyEvent(
   edit_commands_ = edit_commands;
 }
 
-void RenderViewImpl::OnSetHistoryLengthAndPrune(int history_length,
-                                                int32 minimum_page_id) {
+void RenderViewImpl::OnSetHistoryOffsetAndLength(int history_offset,
+                                                 int history_length) {
+  DCHECK_GE(history_offset, -1);
   DCHECK_GE(history_length, 0);
-  DCHECK(history_list_offset_ == history_list_length_ - 1);
-  DCHECK_GE(minimum_page_id, -1);
 
-  // Generate the new list.
-  std::vector<int32> new_history_page_ids(history_length, -1);
-  for (size_t i = 0; i < history_page_ids_.size(); ++i) {
-    if (minimum_page_id >= 0 && history_page_ids_[i] < minimum_page_id)
-      continue;
-    new_history_page_ids.push_back(history_page_ids_[i]);
-  }
-  new_history_page_ids.swap(history_page_ids_);
-
-  // Update indexes.
-  history_list_length_ = history_page_ids_.size();
-  history_list_offset_ = history_list_length_ - 1;
+  history_list_offset_ = history_offset;
+  history_list_length_ = history_length;
 }
-
 
 void RenderViewImpl::OnSetInitialFocus(bool reverse) {
   if (!webview())

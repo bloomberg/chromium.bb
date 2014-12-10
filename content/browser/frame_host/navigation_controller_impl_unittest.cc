@@ -3415,9 +3415,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune) {
       static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url3);
-  other_contents->ExpectSetHistoryLengthAndPrune(
-      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 2,
-      other_controller.GetEntryAtIndex(0)->GetPageID());
+  other_contents->ExpectSetHistoryOffsetAndLength(2, 3);
   other_controller.CopyStateFromAndPrune(&controller, false);
 
   // other_controller should now contain the 3 urls: url1, url2 and url3.
@@ -3463,9 +3461,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune2) {
       static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url3);
-  other_contents->ExpectSetHistoryLengthAndPrune(
-      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 1,
-      other_controller.GetEntryAtIndex(0)->GetPageID());
+  other_contents->ExpectSetHistoryOffsetAndLength(1, 2);
   other_controller.CopyStateFromAndPrune(&controller, false);
 
   // other_controller should now contain: url1, url3
@@ -3501,9 +3497,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune3) {
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url3);
   other_contents->NavigateAndCommit(url4);
-  other_contents->ExpectSetHistoryLengthAndPrune(
-      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(1)), 2,
-      other_controller.GetEntryAtIndex(0)->GetPageID());
+  other_contents->ExpectSetHistoryOffsetAndLength(2, 3);
   other_controller.CopyStateFromAndPrune(&controller, false);
 
   // other_controller should now contain: url1, url2, url4
@@ -3541,9 +3535,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneNotLast) {
   other_contents->NavigateAndCommit(url4);
   other_controller.GoBack();
   other_contents->CommitPendingNavigation();
-  other_contents->ExpectSetHistoryLengthAndPrune(
-      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 2,
-      other_controller.GetEntryAtIndex(0)->GetPageID());
+  other_contents->ExpectSetHistoryOffsetAndLength(2, 3);
   other_controller.CopyStateFromAndPrune(&controller, false);
 
   // other_controller should now contain: url1, url2, url3
@@ -3582,9 +3574,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneTargetPending) {
   other_contents->NavigateAndCommit(url3);
   other_controller.LoadURL(
       url4, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  other_contents->ExpectSetHistoryLengthAndPrune(
-      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 1,
-      other_controller.GetEntryAtIndex(0)->GetPageID());
+  other_contents->ExpectSetHistoryOffsetAndLength(1, 2);
   other_controller.CopyStateFromAndPrune(&controller, false);
 
   // other_controller should now contain url1, url3, and a pending entry
@@ -3629,9 +3619,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneTargetPending2) {
   other_controller.GetPendingEntry()->SetPageID(
       other_controller.GetLastCommittedEntry()->GetPageID());
 
-  other_contents->ExpectSetHistoryLengthAndPrune(
-      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 1,
-      other_controller.GetEntryAtIndex(0)->GetPageID());
+  other_contents->ExpectSetHistoryOffsetAndLength(1, 2);
   other_controller.CopyStateFromAndPrune(&controller, false);
 
   // other_controller should now contain url1, url2a, and a pending entry
@@ -3673,9 +3661,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneSourcePending) {
       static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url3);
-  other_contents->ExpectSetHistoryLengthAndPrune(
-      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 2,
-      other_controller.GetEntryAtIndex(0)->GetPageID());
+  other_contents->ExpectSetHistoryOffsetAndLength(2, 3);
   other_controller.CopyStateFromAndPrune(&controller, false);
 
   // other_controller should now contain: url1, url2, url3
@@ -3720,9 +3706,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneMaxEntries) {
       static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url4);
-  other_contents->ExpectSetHistoryLengthAndPrune(
-      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 2,
-      other_controller.GetEntryAtIndex(0)->GetPageID());
+  other_contents->ExpectSetHistoryOffsetAndLength(2, 3);
   other_controller.CopyStateFromAndPrune(&controller, false);
 
   // We should have received a pruned notification.
@@ -3771,9 +3755,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneReplaceEntry) {
       static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url3);
-  other_contents->ExpectSetHistoryLengthAndPrune(
-      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 1,
-      other_controller.GetEntryAtIndex(0)->GetPageID());
+  other_contents->ExpectSetHistoryOffsetAndLength(1, 2);
   other_controller.CopyStateFromAndPrune(&controller, true);
 
   // other_controller should now contain the 2 urls: url1 and url3.
@@ -3825,9 +3807,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneMaxEntriesReplaceEntry) {
       static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url4);
-  other_contents->ExpectSetHistoryLengthAndPrune(
-      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 2,
-      other_controller.GetEntryAtIndex(0)->GetPageID());
+  other_contents->ExpectSetHistoryOffsetAndLength(2, 3);
   other_controller.CopyStateFromAndPrune(&controller, true);
 
   // We should have received no pruned notification.
@@ -3882,9 +3862,7 @@ TEST_F(NavigationControllerTest, CopyRestoredStateAndNavigate) {
 
   // Load a page, then copy state from |source_contents|.
   NavigateAndCommit(kInitialUrl);
-  contents()->ExpectSetHistoryLengthAndPrune(
-      GetSiteInstanceFromEntry(controller_impl().GetEntryAtIndex(0)), 2,
-      controller_impl().GetEntryAtIndex(0)->GetPageID());
+  contents()->ExpectSetHistoryOffsetAndLength(2, 3);
   controller_impl().CopyStateFromAndPrune(&source_controller, false);
   ASSERT_EQ(3, controller_impl().GetEntryCount());
 
@@ -3960,9 +3938,7 @@ TEST_F(NavigationControllerTest, PruneAllButLastCommittedForSingle) {
   const GURL url1("http://foo1");
   NavigateAndCommit(url1);
 
-  contents()->ExpectSetHistoryLengthAndPrune(
-      GetSiteInstanceFromEntry(controller.GetEntryAtIndex(0)), 0,
-      controller.GetEntryAtIndex(0)->GetPageID());
+  contents()->ExpectSetHistoryOffsetAndLength(0, 1);
 
   controller.PruneAllButLastCommitted();
 
@@ -3984,9 +3960,7 @@ TEST_F(NavigationControllerTest, PruneAllButLastCommittedForFirst) {
   controller.GoBack();
   contents()->CommitPendingNavigation();
 
-  contents()->ExpectSetHistoryLengthAndPrune(
-      GetSiteInstanceFromEntry(controller.GetEntryAtIndex(0)), 0,
-      controller.GetEntryAtIndex(0)->GetPageID());
+  contents()->ExpectSetHistoryOffsetAndLength(0, 1);
 
   controller.PruneAllButLastCommitted();
 
@@ -4007,9 +3981,7 @@ TEST_F(NavigationControllerTest, PruneAllButLastCommittedForIntermediate) {
   controller.GoBack();
   contents()->CommitPendingNavigation();
 
-  contents()->ExpectSetHistoryLengthAndPrune(
-      GetSiteInstanceFromEntry(controller.GetEntryAtIndex(1)), 0,
-      controller.GetEntryAtIndex(1)->GetPageID());
+  contents()->ExpectSetHistoryOffsetAndLength(0, 1);
 
   controller.PruneAllButLastCommitted();
 
@@ -4034,8 +4006,7 @@ TEST_F(NavigationControllerTest, PruneAllButLastCommittedForPendingNotInList) {
   EXPECT_TRUE(controller.GetPendingEntry());
   EXPECT_EQ(2, controller.GetEntryCount());
 
-  contents()->ExpectSetHistoryLengthAndPrune(
-      NULL, 0, controller.GetPendingEntry()->GetPageID());
+  contents()->ExpectSetHistoryOffsetAndLength(0, 1);
   controller.PruneAllButLastCommitted();
 
   // We should only have the last committed and pending entries at this point,

@@ -1943,28 +1943,18 @@ void WebContentsImpl::DetachInterstitialPage() {
                     DidDetachInterstitialPage());
 }
 
-void WebContentsImpl::SetHistoryLengthAndPrune(
-    const SiteInstance* site_instance,
-    int history_length,
-    int32 minimum_page_id) {
-  // SetHistoryLengthAndPrune doesn't work when there are pending cross-site
-  // navigations. Callers should ensure that this is the case.
-  if (GetRenderManager()->pending_render_view_host()) {
-    NOTREACHED();
-    return;
-  }
-  RenderViewHostImpl* rvh = GetRenderViewHostImpl();
-  if (!rvh) {
-    NOTREACHED();
-    return;
-  }
-  if (site_instance && rvh->GetSiteInstance() != site_instance) {
-    NOTREACHED();
-    return;
-  }
-  Send(new ViewMsg_SetHistoryLengthAndPrune(GetRoutingID(),
-                                            history_length,
-                                            minimum_page_id));
+void WebContentsImpl::SetHistoryOffsetAndLength(int history_offset,
+                                                int history_length) {
+  SetHistoryOffsetAndLengthForView(
+      GetRenderViewHost(), history_offset, history_length);
+}
+
+void WebContentsImpl::SetHistoryOffsetAndLengthForView(
+    RenderViewHost* render_view_host,
+    int history_offset,
+    int history_length) {
+  render_view_host->Send(new ViewMsg_SetHistoryOffsetAndLength(
+      render_view_host->GetRoutingID(), history_offset, history_length));
 }
 
 void WebContentsImpl::ReloadFocusedFrame(bool ignore_cache) {
@@ -4147,6 +4137,10 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
                                               created_with_opener_)) {
     return false;
   }
+
+  SetHistoryOffsetAndLengthForView(render_view_host,
+                                   controller_.GetLastCommittedEntryIndex(),
+                                   controller_.GetEntryCount());
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   // Force a ViewMsg_Resize to be sent, needed to make plugins show up on

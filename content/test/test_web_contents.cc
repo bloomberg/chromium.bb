@@ -33,10 +33,8 @@ namespace content {
 TestWebContents::TestWebContents(BrowserContext* browser_context)
     : WebContentsImpl(browser_context, NULL),
       delegate_view_override_(NULL),
-      expect_set_history_length_and_prune_(false),
-      expect_set_history_length_and_prune_site_instance_(NULL),
-      expect_set_history_length_and_prune_history_length_(0),
-      expect_set_history_length_and_prune_min_page_id_(-1) {
+      expect_set_history_offset_and_length_(false),
+      expect_set_history_offset_and_length_history_length_(0) {
 }
 
 TestWebContents* TestWebContents::Create(BrowserContext* browser_context,
@@ -47,7 +45,7 @@ TestWebContents* TestWebContents::Create(BrowserContext* browser_context,
 }
 
 TestWebContents::~TestWebContents() {
-  EXPECT_FALSE(expect_set_history_length_and_prune_);
+  EXPECT_FALSE(expect_set_history_offset_and_length_);
 }
 
 TestRenderFrameHost* TestWebContents::GetMainFrame() {
@@ -217,27 +215,21 @@ void TestWebContents::AddPendingContents(TestWebContents* contents) {
   AddDestructionObserver(contents);
 }
 
-void TestWebContents::ExpectSetHistoryLengthAndPrune(
-    const SiteInstance* site_instance,
-    int history_length,
-    int32 min_page_id) {
-  expect_set_history_length_and_prune_ = true;
-  expect_set_history_length_and_prune_site_instance_ =
-      static_cast<const SiteInstanceImpl*>(site_instance);
-  expect_set_history_length_and_prune_history_length_ = history_length;
-  expect_set_history_length_and_prune_min_page_id_ = min_page_id;
+void TestWebContents::ExpectSetHistoryOffsetAndLength(int history_offset,
+                                                      int history_length) {
+  expect_set_history_offset_and_length_ = true;
+  expect_set_history_offset_and_length_history_offset_ = history_offset;
+  expect_set_history_offset_and_length_history_length_ = history_length;
 }
 
-void TestWebContents::SetHistoryLengthAndPrune(
-    const SiteInstance* site_instance, int history_length,
-    int32 min_page_id) {
-  EXPECT_TRUE(expect_set_history_length_and_prune_);
-  expect_set_history_length_and_prune_ = false;
-  EXPECT_EQ(expect_set_history_length_and_prune_site_instance_.get(),
-            site_instance);
-  EXPECT_EQ(expect_set_history_length_and_prune_history_length_,
+void TestWebContents::SetHistoryOffsetAndLength(int history_offset,
+                                                int history_length) {
+  EXPECT_TRUE(expect_set_history_offset_and_length_);
+  expect_set_history_offset_and_length_ = false;
+  EXPECT_EQ(expect_set_history_offset_and_length_history_offset_,
+            history_offset);
+  EXPECT_EQ(expect_set_history_offset_and_length_history_length_,
             history_length);
-  EXPECT_EQ(expect_set_history_length_and_prune_min_page_id_, min_page_id);
 }
 
 void TestWebContents::TestDidFinishLoad(const GURL& url) {

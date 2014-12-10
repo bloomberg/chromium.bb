@@ -109,9 +109,6 @@ class RenderViewTest : public testing::Test {
   // Simulates |node| being focused.
   void SetFocused(const blink::WebNode& node);
 
-  // Clears anything associated with the browsing history.
-  void ClearHistory();
-
   // Simulates a navigation with a type of reload to the given url.
   void Reload(const GURL& url);
 

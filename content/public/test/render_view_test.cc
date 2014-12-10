@@ -337,14 +337,6 @@ void RenderViewTest::SetFocused(const blink::WebNode& node) {
   impl->focusedNodeChanged(node);
 }
 
-void RenderViewTest::ClearHistory() {
-  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  impl->page_id_ = -1;
-  impl->history_list_offset_ = -1;
-  impl->history_list_length_ = 0;
-  impl->history_page_ids_.clear();
-}
-
 void RenderViewTest::Reload(const GURL& url) {
   FrameMsg_Navigate_Params params;
   params.common_params.url = url;
@@ -422,14 +414,14 @@ void RenderViewTest::GoToOffset(int offset, const PageState& state) {
 
   int history_list_length = impl->historyBackListCount() +
                             impl->historyForwardListCount() + 1;
-  int pending_offset = offset + impl->history_list_offset();
+  int pending_offset = offset + impl->history_list_offset_;
 
   FrameMsg_Navigate_Params navigate_params;
   navigate_params.common_params.navigation_type =
       FrameMsg_Navigate_Type::NORMAL;
   navigate_params.common_params.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
   navigate_params.current_history_list_length = history_list_length;
-  navigate_params.current_history_list_offset = impl->history_list_offset();
+  navigate_params.current_history_list_offset = impl->history_list_offset_;
   navigate_params.pending_history_list_offset = pending_offset;
   navigate_params.page_id = impl->page_id_ + offset;
   navigate_params.commit_params.page_state = state;

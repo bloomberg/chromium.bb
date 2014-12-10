@@ -51,10 +51,8 @@ class NavigationControllerDelegate {
       const LoadCommittedDetails& load_details) = 0;
   virtual bool NavigateToPendingEntry(
       NavigationController::ReloadType reload_type) = 0;
-  virtual void SetHistoryLengthAndPrune(
-      const SiteInstance* site_instance,
-      int merge_history_length,
-      int32 minimum_page_id) = 0;
+  virtual void SetHistoryOffsetAndLength(int history_offset,
+                                         int history_length) = 0;
   virtual void CopyMaxPageIDsFrom(WebContents* web_contents) = 0;
   virtual void UpdateMaxPageID(int32 page_id) = 0;
   virtual void UpdateMaxPageIDForSiteInstance(SiteInstance* site_instance,

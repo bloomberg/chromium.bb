@@ -2282,10 +2282,7 @@ TEST_F(WebContentsImplTest, CopyStateFromAndPruneSourceInterstitial) {
       static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url3);
-  other_contents->ExpectSetHistoryLengthAndPrune(
-      NavigationEntryImpl::FromNavigationEntry(
-          other_controller.GetEntryAtIndex(0))->site_instance(), 1,
-      other_controller.GetEntryAtIndex(0)->GetPageID());
+  other_contents->ExpectSetHistoryOffsetAndLength(1, 2);
   other_controller.CopyStateFromAndPrune(&controller(), false);
 
   // The merged controller should only have two entries: url1 and url2.

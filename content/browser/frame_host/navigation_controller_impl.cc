@@ -1317,19 +1317,8 @@ void NavigationControllerImpl::CopyStateFromAndPrune(
 
   NavigationControllerImpl* source =
       static_cast<NavigationControllerImpl*>(temp);
-  // The SiteInstance and page_id of the last committed entry needs to be
-  // remembered at this point, in case there is only one committed entry
-  // and it is pruned.  We use a scoped_refptr to ensure the SiteInstance
-  // can't be freed during this time period.
-  NavigationEntryImpl* last_committed =
-      NavigationEntryImpl::FromNavigationEntry(GetLastCommittedEntry());
-  scoped_refptr<SiteInstance> site_instance(
-      last_committed->site_instance());
-  int32 minimum_page_id = last_committed->GetPageID();
-  int32 max_page_id =
-      delegate_->GetMaxPageIDForSiteInstance(site_instance.get());
 
-  // Remove all the entries leaving the active entry.
+  // Remove all the entries leaving the last committed entry.
   PruneAllButLastCommittedInternal();
 
   // We now have one entry, possibly with a new pending entry.  Ensure that
@@ -1339,7 +1328,7 @@ void NavigationControllerImpl::CopyStateFromAndPrune(
     source->PruneOldestEntryIfFull();
 
   // Insert the entries from source. Don't use source->GetCurrentEntryIndex as
-  // we don't want to copy over the transient entry.  Ignore any pending entry,
+  // we don't want to copy over the transient entry. Ignore any pending entry,
   // since it has not committed in source.
   int max_source_index = source->last_committed_entry_index_;
   if (max_source_index == -1)
@@ -1358,22 +1347,20 @@ void NavigationControllerImpl::CopyStateFromAndPrune(
   // Adjust indices such that the last entry and pending are at the end now.
   last_committed_entry_index_ = GetEntryCount() - 1;
 
-  delegate_->SetHistoryLengthAndPrune(site_instance.get(),
-                                      max_source_index,
-                                      minimum_page_id);
+  delegate_->SetHistoryOffsetAndLength(last_committed_entry_index_,
+                                       GetEntryCount());
 
-  // Copy the max page id map from the old tab to the new tab.  This ensures
-  // that new and existing navigations in the tab's current SiteInstances
-  // are identified properly.
+  // Copy the max page id map from the old tab to the new tab. This ensures that
+  // new and existing navigations in the tab's current SiteInstances are
+  // identified properly.
+  NavigationEntryImpl* last_committed =
+      NavigationEntryImpl::FromNavigationEntry(GetLastCommittedEntry());
+  int32 site_max_page_id =
+      delegate_->GetMaxPageIDForSiteInstance(last_committed->site_instance());
   delegate_->CopyMaxPageIDsFrom(source->delegate()->GetWebContents());
+  delegate_->UpdateMaxPageIDForSiteInstance(last_committed->site_instance(),
+                                            site_max_page_id);
   max_restored_page_id_ = source->max_restored_page_id_;
-
-  // If there is a last committed entry, be sure to include it in the new
-  // max page ID map.
-  if (max_page_id > -1) {
-    delegate_->UpdateMaxPageIDForSiteInstance(site_instance.get(),
-                                              max_page_id);
-  }
 }
 
 bool NavigationControllerImpl::CanPruneAllButLastCommitted() {
@@ -1400,18 +1387,11 @@ bool NavigationControllerImpl::CanPruneAllButLastCommitted() {
 void NavigationControllerImpl::PruneAllButLastCommitted() {
   PruneAllButLastCommittedInternal();
 
-  // We should still have a last committed entry.
-  DCHECK_NE(-1, last_committed_entry_index_);
+  DCHECK_EQ(0, last_committed_entry_index_);
+  DCHECK_EQ(1, GetEntryCount());
 
-  // We pass 0 instead of GetEntryCount() for the history_length parameter of
-  // SetHistoryLengthAndPrune, because it will create history_length additional
-  // history entries.
-  // TODO(jochen): This API is confusing and we should clean it up.
-  // http://crbug.com/178491
-  NavigationEntryImpl* entry =
-      NavigationEntryImpl::FromNavigationEntry(GetVisibleEntry());
-  delegate_->SetHistoryLengthAndPrune(
-      entry->site_instance(), 0, entry->GetPageID());
+  delegate_->SetHistoryOffsetAndLength(last_committed_entry_index_,
+                                       GetEntryCount());
 }
 
 void NavigationControllerImpl::PruneAllButLastCommittedInternal() {

@@ -234,9 +234,8 @@ IPC_STRUCT_BEGIN(FrameMsg_Navigate_Params)
   // FrameHostMsg_DidCommitProvisionalLoad message.
   IPC_STRUCT_MEMBER(int32, page_id)
 
-  // If page_id is -1, then pending_history_list_offset will also be -1.
-  // Otherwise, it contains the offset into the history list corresponding to
-  // the current navigation.
+  // For history navigations, this is the offset in the history list of the
+  // pending load. For non-history navigations, this will be ignored.
   IPC_STRUCT_MEMBER(int, pending_history_list_offset)
 
   // Informs the RenderView of where its current page contents reside in

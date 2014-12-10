@@ -798,21 +798,18 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   EXPECT_EQ(state_C, state);
 }
 
-// Test that the history_page_ids_ list can reveal when a stale back/forward
-// navigation arrives from the browser and can be ignored.  See
-// http://crbug.com/86758.
+// Test that stale back/forward navigations arriving from the browser are
+// ignored.  See http://crbug.com/86758.
 TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
   // Load page A.
   LoadHTML("<div>Page A</div>");
   EXPECT_EQ(1, view()->history_list_length_);
   EXPECT_EQ(0, view()->history_list_offset_);
-  EXPECT_EQ(1, view()->history_page_ids_[0]);
 
   // Load page B, which will trigger an UpdateState message for page A.
   LoadHTML("<div>Page B</div>");
   EXPECT_EQ(2, view()->history_list_length_);
   EXPECT_EQ(1, view()->history_list_offset_);
-  EXPECT_EQ(2, view()->history_page_ids_[1]);
 
   // Check for a valid UpdateState message for page A.
   ProcessPendingMessages();
@@ -844,7 +841,7 @@ TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
   LoadHTML("<div>Page C</div>");
   EXPECT_EQ(2, view()->history_list_length_);
   EXPECT_EQ(1, view()->history_list_offset_);
-  EXPECT_EQ(3, view()->history_page_ids_[1]);
+  EXPECT_EQ(3, view()->page_id_); // page C is now page id 3
 
   // The browser then sends a stale navigation to B, which should be ignored.
   FrameMsg_Navigate_Params params_B;
@@ -863,7 +860,7 @@ TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
   // State should be unchanged.
   EXPECT_EQ(2, view()->history_list_length_);
   EXPECT_EQ(1, view()->history_list_offset_);
-  EXPECT_EQ(3, view()->history_page_ids_[1]);
+  EXPECT_EQ(3, view()->page_id_); // page C, not page B
 
   // Check for a valid DidDropNavigation message.
   ProcessPendingMessages();
@@ -871,75 +868,6 @@ TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
       FrameHostMsg_DidDropNavigation::ID);
   ASSERT_TRUE(msg);
   render_thread_->sink().ClearMessages();
-}
-
-// Test that we do not ignore navigations after the entry limit is reached,
-// in which case the browser starts dropping entries from the front.  In this
-// case, we'll see a page_id mismatch but the RenderView's id will be older,
-// not newer, than params.page_id.  Use this as a cue that we should update the
-// state and not treat it like a navigation to a cropped forward history item.
-// See http://crbug.com/89798.
-TEST_F(RenderViewImplTest, DontIgnoreBackAfterNavEntryLimit) {
-  // Load page A.
-  LoadHTML("<div>Page A</div>");
-  EXPECT_EQ(1, view()->history_list_length_);
-  EXPECT_EQ(0, view()->history_list_offset_);
-  EXPECT_EQ(1, view()->history_page_ids_[0]);
-
-  // Load page B, which will trigger an UpdateState message for page A.
-  LoadHTML("<div>Page B</div>");
-  EXPECT_EQ(2, view()->history_list_length_);
-  EXPECT_EQ(1, view()->history_list_offset_);
-  EXPECT_EQ(2, view()->history_page_ids_[1]);
-
-  // Check for a valid UpdateState message for page A.
-  ProcessPendingMessages();
-  const IPC::Message* msg_A = render_thread_->sink().GetUniqueMessageMatching(
-      ViewHostMsg_UpdateState::ID);
-  ASSERT_TRUE(msg_A);
-  ViewHostMsg_UpdateState::Param param;
-  ViewHostMsg_UpdateState::Read(msg_A, &param);
-  int page_id_A = param.a;
-  PageState state_A = param.b;
-  EXPECT_EQ(1, page_id_A);
-  render_thread_->sink().ClearMessages();
-
-  // Load page C, which will trigger an UpdateState message for page B.
-  LoadHTML("<div>Page C</div>");
-  EXPECT_EQ(3, view()->history_list_length_);
-  EXPECT_EQ(2, view()->history_list_offset_);
-  EXPECT_EQ(3, view()->history_page_ids_[2]);
-
-  // Check for a valid UpdateState message for page B.
-  ProcessPendingMessages();
-  const IPC::Message* msg_B = render_thread_->sink().GetUniqueMessageMatching(
-      ViewHostMsg_UpdateState::ID);
-  ASSERT_TRUE(msg_B);
-  ViewHostMsg_UpdateState::Read(msg_B, &param);
-  int page_id_B = param.a;
-  PageState state_B = param.b;
-  EXPECT_EQ(2, page_id_B);
-  render_thread_->sink().ClearMessages();
-
-  // Suppose the browser has limited the number of NavigationEntries to 2.
-  // It has now dropped the first entry, but the renderer isn't notified.
-  // Ensure that going back to page B (page_id 2) at offset 0 is successful.
-  FrameMsg_Navigate_Params params_B;
-  params_B.common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
-  params_B.common_params.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
-  params_B.current_history_list_length = 2;
-  params_B.current_history_list_offset = 1;
-  params_B.pending_history_list_offset = 0;
-  params_B.page_id = 2;
-  params_B.commit_params.page_state = state_B;
-  params_B.commit_params.browser_navigation_start =
-      base::TimeTicks::FromInternalValue(1);
-  frame()->OnNavigate(params_B);
-  ProcessPendingMessages();
-
-  EXPECT_EQ(2, view()->history_list_length_);
-  EXPECT_EQ(0, view()->history_list_offset_);
-  EXPECT_EQ(2, view()->history_page_ids_[0]);
 }
 
 // Test that our IME backend sends a notification message when the input focus
@@ -1684,203 +1612,16 @@ TEST_F(RenderViewImplTest, UpdateTargetURLWithInvalidURL) {
   EXPECT_EQ(invalid_gurl, view()->target_url_);
 }
 
-TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
-  int expected_page_id = -1;
-
-  // No history to merge and no committed pages.
-  view()->OnSetHistoryLengthAndPrune(0, -1);
-  EXPECT_EQ(0, view()->history_list_length_);
-  EXPECT_EQ(-1, view()->history_list_offset_);
-
-  // History to merge and no committed pages.
-  view()->OnSetHistoryLengthAndPrune(2, -1);
-  EXPECT_EQ(2, view()->history_list_length_);
-  EXPECT_EQ(1, view()->history_list_offset_);
-  EXPECT_EQ(-1, view()->history_page_ids_[0]);
-  EXPECT_EQ(-1, view()->history_page_ids_[1]);
-  ClearHistory();
-
-  blink::WebHistoryItem item;
-  item.initialize();
-
-  // No history to merge and a committed page to be kept.
-  frame()->didCommitProvisionalLoad(GetMainFrame(),
-                                    item,
-                                    blink::WebStandardCommit);
-  expected_page_id = view()->page_id_;
-  view()->OnSetHistoryLengthAndPrune(0, expected_page_id);
+TEST_F(RenderViewImplTest, SetHistoryLengthAndOffset) {
+  // No history to merge; one committed page.
+  view()->OnSetHistoryOffsetAndLength(0, 1);
   EXPECT_EQ(1, view()->history_list_length_);
   EXPECT_EQ(0, view()->history_list_offset_);
-  EXPECT_EQ(expected_page_id, view()->history_page_ids_[0]);
-  ClearHistory();
 
-  // No history to merge and a committed page to be pruned.
-  frame()->didCommitProvisionalLoad(GetMainFrame(),
-                                    item,
-                                    blink::WebStandardCommit);
-  expected_page_id = view()->page_id_;
-  view()->OnSetHistoryLengthAndPrune(0, expected_page_id + 1);
-  EXPECT_EQ(0, view()->history_list_length_);
-  EXPECT_EQ(-1, view()->history_list_offset_);
-  ClearHistory();
-
-  // No history to merge and a committed page that the browser was unaware of.
-  frame()->didCommitProvisionalLoad(GetMainFrame(),
-                                    item,
-                                    blink::WebStandardCommit);
-  expected_page_id = view()->page_id_;
-  view()->OnSetHistoryLengthAndPrune(0, -1);
-  EXPECT_EQ(1, view()->history_list_length_);
-  EXPECT_EQ(0, view()->history_list_offset_);
-  EXPECT_EQ(expected_page_id, view()->history_page_ids_[0]);
-  ClearHistory();
-
-  // History to merge and a committed page to be kept.
-  frame()->didCommitProvisionalLoad(GetMainFrame(),
-                                    item,
-                                    blink::WebStandardCommit);
-  expected_page_id = view()->page_id_;
-  view()->OnSetHistoryLengthAndPrune(2, expected_page_id);
-  EXPECT_EQ(3, view()->history_list_length_);
-  EXPECT_EQ(2, view()->history_list_offset_);
-  EXPECT_EQ(-1, view()->history_page_ids_[0]);
-  EXPECT_EQ(-1, view()->history_page_ids_[1]);
-  EXPECT_EQ(expected_page_id, view()->history_page_ids_[2]);
-  ClearHistory();
-
-  // History to merge and a committed page to be pruned.
-  frame()->didCommitProvisionalLoad(GetMainFrame(),
-                                    item,
-                                    blink::WebStandardCommit);
-  expected_page_id = view()->page_id_;
-  view()->OnSetHistoryLengthAndPrune(2, expected_page_id + 1);
+  // History of length 1 to merge; one committed page.
+  view()->OnSetHistoryOffsetAndLength(1, 2);
   EXPECT_EQ(2, view()->history_list_length_);
   EXPECT_EQ(1, view()->history_list_offset_);
-  EXPECT_EQ(-1, view()->history_page_ids_[0]);
-  EXPECT_EQ(-1, view()->history_page_ids_[1]);
-  ClearHistory();
-
-  // History to merge and a committed page that the browser was unaware of.
-  frame()->didCommitProvisionalLoad(GetMainFrame(),
-                                    item,
-                                    blink::WebStandardCommit);
-  expected_page_id = view()->page_id_;
-  view()->OnSetHistoryLengthAndPrune(2, -1);
-  EXPECT_EQ(3, view()->history_list_length_);
-  EXPECT_EQ(2, view()->history_list_offset_);
-  EXPECT_EQ(-1, view()->history_page_ids_[0]);
-  EXPECT_EQ(-1, view()->history_page_ids_[1]);
-  EXPECT_EQ(expected_page_id, view()->history_page_ids_[2]);
-  ClearHistory();
-
-  int expected_page_id_2 = -1;
-
-  // No history to merge and two committed pages, both to be kept.
-  frame()->didCommitProvisionalLoad(GetMainFrame(),
-                                    item,
-                                    blink::WebStandardCommit);
-  expected_page_id = view()->page_id_;
-  frame()->didCommitProvisionalLoad(GetMainFrame(),
-                                    item,
-                                    blink::WebStandardCommit);
-  expected_page_id_2 = view()->page_id_;
-  EXPECT_GT(expected_page_id_2, expected_page_id);
-  view()->OnSetHistoryLengthAndPrune(0, expected_page_id);
-  EXPECT_EQ(2, view()->history_list_length_);
-  EXPECT_EQ(1, view()->history_list_offset_);
-  EXPECT_EQ(expected_page_id, view()->history_page_ids_[0]);
-  EXPECT_EQ(expected_page_id_2, view()->history_page_ids_[1]);
-  ClearHistory();
-
-  // No history to merge and two committed pages, and only the second is kept.
-  frame()->didCommitProvisionalLoad(GetMainFrame(),
-                                    item,
-                                    blink::WebStandardCommit);
-  expected_page_id = view()->page_id_;
-  frame()->didCommitProvisionalLoad(GetMainFrame(),
-                                    item,
-                                    blink::WebStandardCommit);
-  expected_page_id_2 = view()->page_id_;
-  EXPECT_GT(expected_page_id_2, expected_page_id);
-  view()->OnSetHistoryLengthAndPrune(0, expected_page_id_2);
-  EXPECT_EQ(1, view()->history_list_length_);
-  EXPECT_EQ(0, view()->history_list_offset_);
-  EXPECT_EQ(expected_page_id_2, view()->history_page_ids_[0]);
-  ClearHistory();
-
-  // No history to merge and two committed pages, both of which the browser was
-  // unaware of.
-  frame()->didCommitProvisionalLoad(GetMainFrame(),
-                                    item,
-                                    blink::WebStandardCommit);
-  expected_page_id = view()->page_id_;
-  frame()->didCommitProvisionalLoad(GetMainFrame(),
-                                    item,
-                                    blink::WebStandardCommit);
-  expected_page_id_2 = view()->page_id_;
-  EXPECT_GT(expected_page_id_2, expected_page_id);
-  view()->OnSetHistoryLengthAndPrune(0, -1);
-  EXPECT_EQ(2, view()->history_list_length_);
-  EXPECT_EQ(1, view()->history_list_offset_);
-  EXPECT_EQ(expected_page_id, view()->history_page_ids_[0]);
-  EXPECT_EQ(expected_page_id_2, view()->history_page_ids_[1]);
-  ClearHistory();
-
-  // History to merge and two committed pages, both to be kept.
-  frame()->didCommitProvisionalLoad(GetMainFrame(),
-                                    item,
-                                    blink::WebStandardCommit);
-  expected_page_id = view()->page_id_;
-  frame()->didCommitProvisionalLoad(GetMainFrame(),
-                                    item,
-                                    blink::WebStandardCommit);
-  expected_page_id_2 = view()->page_id_;
-  EXPECT_GT(expected_page_id_2, expected_page_id);
-  view()->OnSetHistoryLengthAndPrune(2, expected_page_id);
-  EXPECT_EQ(4, view()->history_list_length_);
-  EXPECT_EQ(3, view()->history_list_offset_);
-  EXPECT_EQ(-1, view()->history_page_ids_[0]);
-  EXPECT_EQ(-1, view()->history_page_ids_[1]);
-  EXPECT_EQ(expected_page_id, view()->history_page_ids_[2]);
-  EXPECT_EQ(expected_page_id_2, view()->history_page_ids_[3]);
-  ClearHistory();
-
-  // History to merge and two committed pages, and only the second is kept.
-  frame()->didCommitProvisionalLoad(GetMainFrame(),
-                                    item,
-                                    blink::WebStandardCommit);
-  expected_page_id = view()->page_id_;
-  frame()->didCommitProvisionalLoad(GetMainFrame(),
-                                    item,
-                                    blink::WebStandardCommit);
-  expected_page_id_2 = view()->page_id_;
-  EXPECT_GT(expected_page_id_2, expected_page_id);
-  view()->OnSetHistoryLengthAndPrune(2, expected_page_id_2);
-  EXPECT_EQ(3, view()->history_list_length_);
-  EXPECT_EQ(2, view()->history_list_offset_);
-  EXPECT_EQ(-1, view()->history_page_ids_[0]);
-  EXPECT_EQ(-1, view()->history_page_ids_[1]);
-  EXPECT_EQ(expected_page_id_2, view()->history_page_ids_[2]);
-  ClearHistory();
-
-  // History to merge and two committed pages, both of which the browser was
-  // unaware of.
-  frame()->didCommitProvisionalLoad(GetMainFrame(),
-                                    item,
-                                    blink::WebStandardCommit);
-  expected_page_id = view()->page_id_;
-  frame()->didCommitProvisionalLoad(GetMainFrame(),
-                                    item,
-                                    blink::WebStandardCommit);
-  expected_page_id_2 = view()->page_id_;
-  EXPECT_GT(expected_page_id_2, expected_page_id);
-  view()->OnSetHistoryLengthAndPrune(2, -1);
-  EXPECT_EQ(4, view()->history_list_length_);
-  EXPECT_EQ(3, view()->history_list_offset_);
-  EXPECT_EQ(-1, view()->history_page_ids_[0]);
-  EXPECT_EQ(-1, view()->history_page_ids_[1]);
-  EXPECT_EQ(expected_page_id, view()->history_page_ids_[2]);
-  EXPECT_EQ(expected_page_id_2, view()->history_page_ids_[3]);
 }
 
 TEST_F(RenderViewImplTest, ContextMenu) {

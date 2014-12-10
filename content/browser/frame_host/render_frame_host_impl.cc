@@ -1257,7 +1257,7 @@ void RenderFrameHostImpl::Navigate(const FrameMsg_Navigate_Params& params) {
   // loading" message will be received asynchronously from the UI of the
   // browser. But we want to keep the throbber in sync with what's happening
   // in the UI. For example, we want to start throbbing immediately when the
-  // user naivgates even if the renderer is delayed. There is also an issue
+  // user navigates even if the renderer is delayed. There is also an issue
   // with the throbber starting because the WebUI (which controls whether the
   // favicon is displayed) happens synchronously. If the start loading
   // messages was asynchronous, then the default favicon would flash in.
