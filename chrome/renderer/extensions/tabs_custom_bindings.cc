@@ -29,18 +29,28 @@ void TabsCustomBindings::OpenChannelToTab(
   if (!renderview)
     return;
 
-  if (args.Length() >= 3 && args[0]->IsInt32() && args[1]->IsString() &&
-      args[2]->IsString()) {
-    int tab_id = args[0]->Int32Value();
-    std::string extension_id = *v8::String::Utf8Value(args[1]);
-    std::string channel_name = *v8::String::Utf8Value(args[2]);
-    int port_id = -1;
-    renderview->Send(new ExtensionHostMsg_OpenChannelToTab(
-      renderview->GetRoutingID(), tab_id, extension_id, channel_name,
-        &port_id));
-    args.GetReturnValue().Set(static_cast<int32_t>(port_id));
-    return;
-  }
+  // tabs_custom_bindings.js unwraps arguments to tabs.connect/sendMessage and
+  // passes them to OpenChannelToTab, in the following order:
+  // - |tab_id| - Positive number that specifies the destination of the channel.
+  // - |frame_id| - Target frame(s) in the tab where onConnect is dispatched:
+  //   -1 for all frames, 0 for the main frame, >0 for a child frame.
+  // - |extension_id| - Extension ID of sender and destination.
+  // - |channel_name| - A user-defined channel name.
+  CHECK(args.Length() >= 4 &&
+        args[0]->IsInt32() &&
+        args[1]->IsInt32() &&
+        args[2]->IsString() &&
+        args[3]->IsString());
+
+  ExtensionMsg_TabTargetConnectionInfo info;
+  info.tab_id = args[0]->Int32Value();
+  info.frame_id = args[1]->Int32Value();
+  std::string extension_id = *v8::String::Utf8Value(args[2]);
+  std::string channel_name = *v8::String::Utf8Value(args[3]);
+  int port_id = -1;
+  renderview->Send(new ExtensionHostMsg_OpenChannelToTab(
+    renderview->GetRoutingID(), info, extension_id, channel_name, &port_id));
+  args.GetReturnValue().Set(static_cast<int32_t>(port_id));
 }
 
 }  // namespace extensions

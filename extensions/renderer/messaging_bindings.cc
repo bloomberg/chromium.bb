@@ -25,6 +25,7 @@
 #include "extensions/renderer/scoped_persistent.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 #include "third_party/WebKit/public/web/WebScopedUserGesture.h"
 #include "third_party/WebKit/public/web/WebScopedWindowFocusAllowedIndicator.h"
@@ -245,6 +246,14 @@ void DispatchOnConnectToScriptContext(
     const std::string& tls_channel_id,
     bool* port_created,
     ScriptContext* script_context) {
+  // Only dispatch the events if this is the requested target frame (0 = main
+  // frame; positive = child frame).
+  content::RenderFrame* renderframe = script_context->GetRenderFrame();
+  if (info.target_frame_id == 0 && renderframe->GetWebFrame()->parent() != NULL)
+    return;
+  if (info.target_frame_id > 0 &&
+      renderframe->GetRoutingID() != info.target_frame_id)
+    return;
   v8::Isolate* isolate = script_context->isolate();
   v8::HandleScope handle_scope(isolate);
 

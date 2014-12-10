@@ -121,6 +121,7 @@ struct MessageService::OpenChannelParams {
   int source_process_id;
   scoped_ptr<base::DictionaryValue> source_tab;
   int source_frame_id;
+  int target_frame_id;
   scoped_ptr<MessagePort> receiver;
   int receiver_port_id;
   std::string source_extension_id;
@@ -134,6 +135,7 @@ struct MessageService::OpenChannelParams {
   OpenChannelParams(int source_process_id,
                     scoped_ptr<base::DictionaryValue> source_tab,
                     int source_frame_id,
+                    int target_frame_id,
                     MessagePort* receiver,
                     int receiver_port_id,
                     const std::string& source_extension_id,
@@ -143,6 +145,7 @@ struct MessageService::OpenChannelParams {
                     bool include_tls_channel_id)
       : source_process_id(source_process_id),
         source_frame_id(source_frame_id),
+        target_frame_id(target_frame_id),
         receiver(receiver),
         receiver_port_id(receiver_port_id),
         source_extension_id(source_extension_id),
@@ -321,9 +324,10 @@ void MessageService::OpenChannelToExtension(
   }
 
   scoped_ptr<OpenChannelParams> params(new OpenChannelParams(
-      source_process_id, source_tab.Pass(), source_frame_id, nullptr,
-      receiver_port_id, source_extension_id, target_extension_id, source_url,
-      channel_name, include_tls_channel_id));
+      source_process_id, source_tab.Pass(), source_frame_id,
+      -1, // no target_frame_id for a channel to an extension/background page.
+      nullptr, receiver_port_id, source_extension_id, target_extension_id,
+      source_url, channel_name, include_tls_channel_id));
 
   pending_incognito_channels_[GET_CHANNEL_ID(params->receiver_port_id)] =
       PendingMessagesQueue();
@@ -435,7 +439,7 @@ void MessageService::OpenChannelToNativeApp(
 
 void MessageService::OpenChannelToTab(
     int source_process_id, int source_routing_id, int receiver_port_id,
-    int tab_id, const std::string& extension_id,
+    int tab_id, int frame_id, const std::string& extension_id,
     const std::string& channel_name) {
   content::RenderProcessHost* source =
       content::RenderProcessHost::FromID(source_process_id);
@@ -445,28 +449,46 @@ void MessageService::OpenChannelToTab(
 
   WebContents* contents = NULL;
   scoped_ptr<MessagePort> receiver;
-  if (ExtensionTabUtil::GetTabById(tab_id, profile, true,
-                                   NULL, NULL, &contents, NULL)) {
-    // TODO(robwu): Update logic so that frames that are not hosted in the main
-    // frame's process can also receive the port.
-    receiver.reset(new ExtensionMessagePort(
-        contents->GetRenderProcessHost(),
-        contents->GetMainFrame()->GetRoutingID(),
-        extension_id));
-  }
-
-  if (contents && contents->GetController().NeedsReload()) {
+  if (!ExtensionTabUtil::GetTabById(tab_id, profile, true, NULL, NULL,
+                                    &contents, NULL) ||
+      contents->GetController().NeedsReload()) {
     // The tab isn't loaded yet. Don't attempt to connect.
     DispatchOnDisconnect(
         source, receiver_port_id, kReceivingEndDoesntExistError);
     return;
   }
 
+  int receiver_routing_id;
+  if (frame_id > 0) {
+    // Positive frame ID is child frame.
+    int receiver_process_id = contents->GetRenderProcessHost()->GetID();
+    if (!content::RenderFrameHost::FromID(receiver_process_id, frame_id)) {
+      // Frame does not exist.
+      DispatchOnDisconnect(
+          source, receiver_port_id, kReceivingEndDoesntExistError);
+      return;
+    }
+    receiver_routing_id = frame_id;
+  } else if (frame_id == 0) {
+    // Frame ID 0 is main frame.
+    receiver_routing_id = contents->GetMainFrame()->GetRoutingID();
+  } else {
+    DCHECK_EQ(-1, frame_id);
+    // If the frame ID is not set (i.e. -1), then the channel has to be opened
+    // in every frame.
+    // TODO(robwu): Update logic so that frames that are not hosted in the main
+    // frame's process can also receive the port.
+    receiver_routing_id = contents->GetMainFrame()->GetRoutingID();
+  }
+  receiver.reset(new ExtensionMessagePort(
+          contents->GetRenderProcessHost(), receiver_routing_id, extension_id));
+
   scoped_ptr<OpenChannelParams> params(new OpenChannelParams(
       source_process_id,
       scoped_ptr<base::DictionaryValue>(),  // Source tab doesn't make sense
                                             // for opening to tabs.
       -1,  // If there is no tab, then there is no frame either.
+      frame_id,
       receiver.release(), receiver_port_id, extension_id, extension_id,
       GURL(),  // Source URL doesn't make sense for opening to tabs.
       channel_name,
@@ -507,6 +529,7 @@ void MessageService::OpenChannelImpl(scoped_ptr<OpenChannelParams> params) {
                                        params->channel_name,
                                        params->source_tab.Pass(),
                                        params->source_frame_id,
+                                       params->target_frame_id,
                                        params->source_extension_id,
                                        params->target_extension_id,
                                        params->source_url,

@@ -105,6 +105,12 @@ unexpected results.
 
 <h2 id="frame_ids">A note about frame and process IDs</h2>
 <p>
+Frames within a tab can be identified by a frame ID. The frame ID of the main
+frame is always 0, the ID of child frames is a positive number. Once a document
+is constructed in a frame, its frame ID remains constant during the lifetime of
+the document.
+</p>
+<p>
 Due to the multi-process nature of Chrome, a tab might use different processes
 to render the source and destination of a web page. Therefore, if a navigation
 takes place in a new process, you might receive events both from the new and

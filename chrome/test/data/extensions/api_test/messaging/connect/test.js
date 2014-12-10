@@ -164,6 +164,38 @@ chrome.test.getConfig(function(config) {
       chrome.test.log("sendMessageFromFrameInTab: send 1st message to tab");
     },
 
+    // connect to frameId 0 should trigger onConnect in the main frame only.
+    function sendMessageToMainFrameInTab() {
+      connectToTabWithFrameId(0, ['from_main']);
+    },
+
+    // connect without frameId should trigger onConnect in every frame.
+    function sendMessageToAllFramesInTab() {
+      connectToTabWithFrameId(undefined, ['from_main', 'from_0', 'from_1']);
+    },
+
+    // connect with a positive frameId should trigger onConnect in that specific
+    // frame only.
+    function sendMessageToFrameInTab() {
+      chrome.webNavigation.getAllFrames({
+        tabId: testTab.id
+      }, function(details) {
+        var frames = details.filter(function(frame) {
+          return /\?testSendMessageFromFrame1$/.test(frame.url);
+        });
+        chrome.test.assertEq(1, frames.length);
+        connectToTabWithFrameId(frames[0].frameId, ['from_1']);
+      });
+    },
+
+    // sendMessage with an invalid frameId should fail.
+    function sendMessageToInvalidFrameInTab() {
+      chrome.tabs.sendMessage(testTab.id, {}, {
+        frameId: 999999999 // Some (hopefully) invalid frameId.
+      }, chrome.test.callbackFail(
+        'Could not establish connection. Receiving end does not exist.'));
+    },
+
     // Tests error handling when sending a request from a content script to an
     // invalid extension.
     function sendMessageFromTabError() {
@@ -260,3 +292,29 @@ chrome.test.getConfig(function(config) {
 
   ]);
 });
+
+function connectToTabWithFrameId(frameId, expectedMessages) {
+  var port = chrome.tabs.connect(testTab.id, {
+    frameId: frameId
+  });
+  var messages = [];
+  var isDone = false;
+  listenForever(port.onMessage, function(message) {
+    if (isDone) // Should not get any messages after completing the test.
+      chrome.test.fail(
+          'Unexpected message from port to frame ' + frameId + ': ' + message);
+
+    messages.push(message);
+    isDone = messages.length == expectedMessages.length;
+    if (isDone) {
+      chrome.test.assertEq(expectedMessages.sort(), messages.sort());
+      chrome.test.succeed();
+    }
+  });
+  listenOnce(port.onDisconnect, function() {
+    if (!isDone) // The event should never be triggered when we expect messages.
+      chrome.test.fail('Unexpected disconnect from port to frame ' + frameId);
+  });
+  port.postMessage({testSendMessageToFrame: true});
+  chrome.test.log('connectToTabWithFrameId: port to frame ' + frameId);
+}

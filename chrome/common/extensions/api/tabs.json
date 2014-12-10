@@ -125,7 +125,13 @@
             "type": "object",
             "name": "connectInfo",
             "properties": {
-              "name": { "type": "string", "optional": true, "description": "Will be passed into onConnect for content scripts that are listening for the connection event." }
+              "name": { "type": "string", "optional": true, "description": "Will be passed into onConnect for content scripts that are listening for the connection event." },
+              "frameId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": 0,
+                "description": "Open a port to a specific <a href='webNavigation#frame_ids'>frame</a> identified by <code>frameId</code> instead of all frames in the tab."
+              }
             },
             "optional": true
           }
@@ -179,6 +185,19 @@
           {
             "type": "any",
             "name": "message"
+          },
+          {
+            "type": "object",
+            "name": "options",
+            "properties": {
+              "frameId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": 0,
+                "description": "Send a message to a specific <a href='webNavigation#frame_ids'>frame</a> identified by <code>frameId</code> instead of all frames in the tab."
+              }
+            },
+            "optional": true
           },
           {
             "type": "function",

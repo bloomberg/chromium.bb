@@ -158,6 +158,16 @@ IPC_STRUCT_BEGIN(ExtensionMsg_TabConnectionInfo)
   IPC_STRUCT_MEMBER(int, frame_id)
 IPC_STRUCT_END()
 
+// Struct containing information about the destination of tab.connect().
+IPC_STRUCT_BEGIN(ExtensionMsg_TabTargetConnectionInfo)
+  // The destination tab's ID.
+  IPC_STRUCT_MEMBER(int, tab_id)
+
+  // Frame ID of the destination. -1 for all frames, 0 for main frame and
+  // positive if the destination is a specific child frame.
+  IPC_STRUCT_MEMBER(int, frame_id)
+IPC_STRUCT_END()
+
 // Struct containing the data for external connections to extensions. Used to
 // handle the IPCs initiated by both connect() and onConnect().
 IPC_STRUCT_BEGIN(ExtensionMsg_ExternalConnectionInfo)
@@ -170,6 +180,9 @@ IPC_STRUCT_BEGIN(ExtensionMsg_ExternalConnectionInfo)
 
   // The URL of the frame that initiated the request.
   IPC_STRUCT_MEMBER(GURL, source_url)
+
+  // The ID of the frame that is the target of the request.
+  IPC_STRUCT_MEMBER(int, target_frame_id)
 IPC_STRUCT_END()
 
 IPC_STRUCT_TRAITS_BEGIN(extensions::DraggableRegion)
@@ -632,7 +645,7 @@ IPC_SYNC_MESSAGE_CONTROL3_1(ExtensionHostMsg_OpenChannelToNativeApp,
 // messages to the extension.
 IPC_SYNC_MESSAGE_CONTROL4_1(ExtensionHostMsg_OpenChannelToTab,
                             int /* routing_id */,
-                            int /* tab_id */,
+                            ExtensionMsg_TabTargetConnectionInfo,
                             std::string /* extension_id */,
                             std::string /* channel_name */,
                             int /* port_id */)

@@ -31,6 +31,8 @@ chrome.runtime.onConnect.addListener(function(port) {
       testSendMessageFromTab();
     } else if (msg.testSendMessageFromFrame) {
       testSendMessageFromFrame();
+    } else if (msg.testSendMessageToFrame) {
+      port.postMessage('from_main');
     } else if (msg.testDisconnect) {
       port.disconnect();
     } else if (msg.testDisconnectOnClose) {
