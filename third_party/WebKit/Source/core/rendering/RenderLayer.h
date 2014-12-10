@@ -130,8 +130,11 @@ public:
         return curr;
     }
 
-    LayoutPoint location() const;
-    IntSize size() const;
+    const LayoutPoint& location() const { ASSERT(!m_needsPositionUpdate); return m_location; }
+    // FIXME: size() should ASSERT(!m_needsPositionUpdate) as well, but that fails in some tests,
+    // for example, fast/repaint/clipped-relative.html.
+    const IntSize& size() const { return m_size; }
+    void setSizeHackForRenderTreeAsText(const IntSize& size) { m_size = size; }
 
     LayoutRect rect() const { return LayoutRect(location(), LayoutSize(size())); }
 
@@ -144,6 +147,7 @@ public:
     void contentChanged(ContentChangeType);
 
     void updateLayerPositionsAfterLayout();
+    void updateLayerPositionsAfterOverflowScroll();
 
     bool isPaginated() const { return m_isPaginated; }
     RenderLayer* enclosingPaginationLayer() const { return m_enclosingPaginationLayer; }
@@ -151,8 +155,7 @@ public:
     void updateTransformationMatrix();
     RenderLayer* renderingContextRoot();
 
-    // Our current relative position offset.
-    const LayoutSize offsetForInFlowPosition() const;
+    const LayoutSize& offsetForInFlowPosition() const { return m_offsetForInFlowPosition; }
 
     void blockSelectionGapsBoundsChanged();
     void addBlockSelectionGapsBounds(const LayoutRect&);
@@ -521,7 +524,11 @@ private:
 
     void dirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
 
+    // Returns true if the position changed.
+    bool updateLayerPosition();
+
     void updateLayerPositionRecursive();
+    void updateLayerPositionsAfterScrollRecursive();
 
     void setNextSibling(RenderLayer* next) { m_next = next; }
     void setPreviousSibling(RenderLayer* prev) { m_previous = prev; }
@@ -613,6 +620,10 @@ private:
 
     unsigned m_isPaginated : 1; // If we think this layer is split by a multi-column ancestor, then this bit will be set.
 
+#if ENABLE(ASSERT)
+    unsigned m_needsPositionUpdate : 1;
+#endif
+
     unsigned m_3DTransformedDescendantStatusDirty : 1;
     // Set on a stacking context layer that has 3D descendants anywhere
     // in a preserves3D hierarchy. Hint to do 3D-aware hit testing.
@@ -646,6 +657,15 @@ private:
     RenderLayer* m_next;
     RenderLayer* m_first;
     RenderLayer* m_last;
+
+    // Our current relative position offset.
+    LayoutSize m_offsetForInFlowPosition;
+
+    // Our (x,y) coordinates are in our parent layer's coordinate space.
+    LayoutPoint m_location;
+
+    // The layer's width/height
+    IntSize m_size;
 
     // Cached normal flow values for absolute positioned elements with static left/top values.
     LayoutUnit m_staticInlinePosition;

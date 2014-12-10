@@ -111,6 +111,9 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer, LayerType type)
     , m_hasVisibleDescendant(false)
     , m_hasVisibleNonLayerContent(false)
     , m_isPaginated(false)
+#if ENABLE(ASSERT)
+    , m_needsPositionUpdate(true)
+#endif
     , m_3DTransformedDescendantStatusDirty(true)
     , m_has3DTransformedDescendant(false)
     , m_containsDirtyOverlayScrollbars(false)
@@ -249,6 +252,8 @@ void RenderLayer::updateLayerPositionsAfterLayout()
 
 void RenderLayer::updateLayerPositionRecursive()
 {
+    updateLayerPosition();
+
     if (m_reflectionInfo)
         m_reflectionInfo->reflection()->layout();
 
@@ -300,6 +305,21 @@ bool RenderLayer::scrollsWithRespectTo(const RenderLayer* other) const
     if (scrollsWithViewport() != other->scrollsWithViewport())
         return true;
     return ancestorScrollingLayer() != other->ancestorScrollingLayer();
+}
+
+void RenderLayer::updateLayerPositionsAfterOverflowScroll()
+{
+    m_clipper.clearClipRectsIncludingDescendants();
+    updateLayerPositionsAfterScrollRecursive();
+}
+
+void RenderLayer::updateLayerPositionsAfterScrollRecursive()
+{
+    if (updateLayerPosition())
+        m_renderer->setPreviousPaintInvalidationRect(m_renderer->boundsRectForPaintInvalidation(m_renderer->containerForPaintInvalidation()));
+
+    for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
+        child->updateLayerPositionsAfterScrollRecursive();
 }
 
 void RenderLayer::updateTransformationMatrix()
@@ -782,19 +802,7 @@ bool RenderLayer::update3DTransformedDescendantStatus()
     return has3DTransform();
 }
 
-IntSize RenderLayer::size() const
-{
-    if (renderer()->isInline() && renderer()->isRenderInline())
-        return toRenderInline(renderer())->linesBoundingBox().size();
-
-    // FIXME: Is snapping the size really needed here?
-    if (RenderBox* box = renderBox())
-        return pixelSnappedIntSize(box->size(), box->location());
-
-    return IntSize();
-}
-
-LayoutPoint RenderLayer::location() const
+bool RenderLayer::updateLayerPosition()
 {
     LayoutPoint localPoint;
     LayoutPoint inlineBoundingBoxOffset; // We don't put this into the RenderLayer x/y for inlines, so we need to subtract it out when done.
@@ -802,9 +810,11 @@ LayoutPoint RenderLayer::location() const
     if (renderer()->isInline() && renderer()->isRenderInline()) {
         RenderInline* inlineFlow = toRenderInline(renderer());
         IntRect lineBox = inlineFlow->linesBoundingBox();
+        m_size = lineBox.size();
         inlineBoundingBoxOffset = lineBox.location();
         localPoint.moveBy(inlineBoundingBoxOffset);
     } else if (RenderBox* box = renderBox()) {
+        m_size = pixelSnappedIntSize(box->size(), box->location());
         localPoint.moveBy(box->topLeftLocation());
     }
 
@@ -860,17 +870,27 @@ LayoutPoint RenderLayer::location() const
         }
     }
 
-    localPoint.move(offsetForInFlowPosition());
+    bool positionOrOffsetChanged = false;
+    if (renderer()->isRelPositioned()) {
+        LayoutSize newOffset = toRenderBoxModelObject(renderer())->offsetForInFlowPosition();
+        positionOrOffsetChanged = newOffset != m_offsetForInFlowPosition;
+        m_offsetForInFlowPosition = newOffset;
+        localPoint.move(m_offsetForInFlowPosition);
+    } else {
+        m_offsetForInFlowPosition = LayoutSize();
+    }
 
     // FIXME: We'd really like to just get rid of the concept of a layer rectangle and rely on the renderers.
     localPoint.moveBy(-inlineBoundingBoxOffset);
 
-    return localPoint;
-}
+    if (m_location != localPoint)
+        positionOrOffsetChanged = true;
+    m_location = localPoint;
 
-const LayoutSize RenderLayer::offsetForInFlowPosition() const
-{
-    return renderer()->isRelPositioned() ? toRenderBoxModelObject(renderer())->offsetForInFlowPosition() : LayoutSize();
+#if ENABLE(ASSERT)
+    m_needsPositionUpdate = false;
+#endif
+    return positionOrOffsetChanged;
 }
 
 TransformationMatrix RenderLayer::perspectiveTransform() const
