@@ -612,8 +612,9 @@ public class TestWebServer {
             HttpParams params = new BasicHttpParams();
             params.setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_0);
             while (!mIsCancelled) {
+                Socket socket = null;
                 try {
-                    Socket socket = mSocket.accept();
+                    socket = mSocket.accept();
                     DefaultHttpServerConnection conn = new DefaultHttpServerConnection();
                     conn.bind(socket, params);
 
@@ -628,8 +629,9 @@ public class TestWebServer {
                     HttpResponse response = mServer.getResponse(request);
                     conn.sendResponseHeader(response);
                     conn.sendResponseEntity(response);
-                    conn.close();
 
+                    conn.close();
+                    socket = null;
                 } catch (IOException e) {
                     // normal during shutdown, ignore
                     Log.w(TAG, e);
@@ -641,6 +643,18 @@ public class TestWebServer {
                     // DefaultHttpServerConnection's close() throws an
                     // UnsupportedOperationException.
                     Log.w(TAG, e);
+                } finally {
+                    // Since DefaultHttpServerConnection can raise an exception
+                    // during conn.close() (in the case of SSL), we always force
+                    // the socket to close, since it may be left open. This will
+                    // be a no-op if the connection managed to close the socket.
+                    if (socket != null) {
+                        try {
+                            socket.close();
+                        } catch (IOException ignored) {
+                            // safe to ignore
+                        }
+                    }
                 }
             }
             try {
