@@ -138,8 +138,6 @@ GuestViewBase::GuestViewBase(content::BrowserContext* browser_context,
                              content::WebContents* owner_web_contents,
                              int guest_instance_id)
     : owner_web_contents_(owner_web_contents),
-      owner_render_process_id_(
-          owner_web_contents_->GetRenderProcessHost()->GetID()),
       browser_context_(browser_context),
       guest_instance_id_(guest_instance_id),
       view_instance_id_(guestview::kInstanceIDNone),
@@ -172,8 +170,9 @@ void GuestViewBase::Init(const std::string& owner_extension_id,
   // Ok for |embedder_extension| to be NULL, the embedder might be WebUI.
   Feature::Availability availability = feature->IsAvailableToContext(
       embedder_extension,
-      process_map->GetMostLikelyContextType(embedder_extension,
-                                            owner_render_process_id()),
+      process_map->GetMostLikelyContextType(
+          embedder_extension,
+          owner_web_contents()->GetRenderProcessHost()->GetID()),
       GetOwnerSiteURL());
   if (!availability.is_available()) {
     // The derived class did not create a WebContents so this class serves no

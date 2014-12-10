@@ -2377,9 +2377,8 @@ IN_PROC_BROWSER_TEST_F(
   Profile* profile = browser()->profile();
   int rules_registry_id =
       extensions::WebViewGuest::GetOrGenerateRulesRegistryID(
-          guest->owner_render_process_id(),
-          guest->view_instance_id(),
-          profile);
+          guest->owner_web_contents()->GetRenderProcessHost()->GetID(),
+          guest->view_instance_id());
 
   extensions::RulesRegistryService* registry_service =
       extensions::RulesRegistryService::Get(profile);
@@ -2415,9 +2414,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_WebViewWebRequestRegistryHasNoCache) {
       extensions::RulesRegistryService::Get(profile);
   int rules_registry_id =
       extensions::WebViewGuest::GetOrGenerateRulesRegistryID(
-          guest->owner_render_process_id(),
-          guest->view_instance_id(),
-          profile);
+          guest->owner_web_contents()->GetRenderProcessHost()->GetID(),
+          guest->view_instance_id());
 
   // Get an existing registered rule for the guest.
   extensions::RulesRegistry* registry =

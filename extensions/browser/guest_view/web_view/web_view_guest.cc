@@ -192,8 +192,7 @@ static base::LazyInstance<WebViewKeyToIDMap> web_view_key_to_id_map =
 // static
 int WebViewGuest::GetOrGenerateRulesRegistryID(
     int embedder_process_id,
-    int webview_instance_id,
-    content::BrowserContext* browser_context) {
+    int webview_instance_id) {
   bool is_web_view = embedder_process_id && webview_instance_id;
   if (!is_web_view)
     return RulesRegistryService::kDefaultRulesRegistryID;
@@ -203,8 +202,11 @@ int WebViewGuest::GetOrGenerateRulesRegistryID(
   if (it != web_view_key_to_id_map.Get().end())
     return it->second;
 
+  content::RenderProcessHost* rph =
+      content::RenderProcessHost::FromID(embedder_process_id);
   int rules_registry_id =
-      RulesRegistryService::Get(browser_context)->GetNextRulesRegistryID();
+      RulesRegistryService::Get(rph->GetBrowserContext())->
+          GetNextRulesRegistryID();
   web_view_key_to_id_map.Get()[key] = rules_registry_id;
   return rules_registry_id;
 }
@@ -230,7 +232,7 @@ void WebViewGuest::CreateWebContents(
     const base::DictionaryValue& create_params,
     const WebContentsCreatedCallback& callback) {
   content::RenderProcessHost* owner_render_process_host =
-      content::RenderProcessHost::FromID(owner_render_process_id());
+      owner_web_contents()->GetRenderProcessHost();
   std::string storage_partition_id;
   bool persist_storage = false;
   std::string storage_partition_string;
@@ -376,7 +378,8 @@ void WebViewGuest::EmbedderWillBeDestroyed() {
   // Clean up rules registries for the webview.
   RulesRegistryService::Get(browser_context())
       ->RemoveRulesRegistriesByID(rules_registry_id_);
-  WebViewKey key(owner_render_process_id(), view_instance_id());
+  WebViewKey key(owner_web_contents()->GetRenderProcessHost()->GetID(),
+                 view_instance_id());
   web_view_key_to_id_map.Get().erase(key);
 
   content::BrowserThread::PostTask(
@@ -386,7 +389,7 @@ void WebViewGuest::EmbedderWillBeDestroyed() {
           &RemoveWebViewEventListenersOnIOThread,
           browser_context(),
           owner_extension_id(),
-          owner_render_process_id(),
+          owner_web_contents()->GetRenderProcessHost()->GetID(),
           view_instance_id()));
 }
 
@@ -845,7 +848,8 @@ void WebViewGuest::PushWebViewStateToIOThread() {
   }
 
   WebViewRendererState::WebViewInfo web_view_info;
-  web_view_info.embedder_process_id = owner_render_process_id();
+  web_view_info.embedder_process_id =
+      owner_web_contents()->GetRenderProcessHost()->GetID();
   web_view_info.instance_id = view_instance_id();
   web_view_info.partition_id = partition_id;
   web_view_info.owner_extension_id = owner_extension_id();
@@ -923,7 +927,8 @@ void WebViewGuest::RequestPointerLockPermission(
 
 void WebViewGuest::WillAttachToEmbedder() {
   rules_registry_id_ = GetOrGenerateRulesRegistryID(
-      owner_render_process_id(), view_instance_id(), browser_context());
+      owner_web_contents()->GetRenderProcessHost()->GetID(),
+      view_instance_id());
 
   // We must install the mapping from guests to WebViews prior to resuming
   // suspended resource loads so that the WebRequest API will catch resource
@@ -1258,7 +1263,8 @@ void WebViewGuest::OnWebViewNewWindowResponse(
     bool allow,
     const std::string& user_input) {
   WebViewGuest* guest =
-      WebViewGuest::From(owner_render_process_id(), new_window_instance_id);
+      WebViewGuest::From(owner_web_contents()->GetRenderProcessHost()->GetID(),
+                         new_window_instance_id);
   if (!guest)
     return;
 

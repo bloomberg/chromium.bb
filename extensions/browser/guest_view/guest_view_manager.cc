@@ -327,7 +327,8 @@ bool GuestViewManager::CanEmbedderAccessInstanceID(
   if (!guest_view)
     return false;
 
-  return embedder_render_process_id == guest_view->owner_render_process_id();
+  return embedder_render_process_id ==
+      guest_view->owner_web_contents()->GetRenderProcessHost()->GetID();
 }
 
 }  // namespace extensions

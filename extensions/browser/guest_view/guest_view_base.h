@@ -216,9 +216,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // Returns the user browser context of the embedder.
   content::BrowserContext* browser_context() const { return browser_context_; }
 
-  // Returns the owner's process ID.
-  int owner_render_process_id() const { return owner_render_process_id_; }
-
   GuestViewBase* GetOpener() const {
     return opener_.get();
   }
@@ -292,7 +289,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // guest will also self-destruct.
   content::WebContents* owner_web_contents_;
   std::string owner_extension_id_;
-  int owner_render_process_id_;
   content::BrowserContext* browser_context_;
 
   // |guest_instance_id_| is a profile-wide unique identifier for a guest

@@ -152,7 +152,7 @@ bool RulesFunction::RunAsync() {
   int rules_registry_id = RulesRegistryService::kDefaultRulesRegistryID;
   if (has_web_view) {
     rules_registry_id = WebViewGuest::GetOrGenerateRulesRegistryID(
-        embedder_process_id, web_view_instance_id, browser_context());
+        embedder_process_id, web_view_instance_id);
   }
 
   // The following call will return a NULL pointer for apps_shell, but should
