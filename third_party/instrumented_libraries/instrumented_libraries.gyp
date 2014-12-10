@@ -321,6 +321,12 @@
       'package_name': 'libxcb1',
       'dependencies=': [],
       'extra_configure_flags': ['--disable-build-docs'],
+      'conditions': [
+        ['"<(_ubuntu_release)"=="precise"', {
+          # Backport fix for https://bugs.freedesktop.org/show_bug.cgi?id=54671
+          'patch': 'patches/libxcb1.precise.diff',
+        }],
+      ],
       # Required on Trusty due to autoconf version mismatch.
       'run_before_build': 'scripts/autoreconf.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
