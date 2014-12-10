@@ -170,7 +170,6 @@ crbug.com/360889 [ Win ] fast/css/css3-ch-unit.html [ Failure ]
 crbug.com/360889 [ Win ] fast/text/whitespace/nowrap-line-break-after-white-space.html [ Failure ]
 crbug.com/360889 [ Win ] virtual/antialiasedtext/fast/text/whitespace/nowrap-line-break-after-white-space.html [ Failure ]
 crbug.com/360889 [ Win ] virtual/slimmingpaint/fast/text/whitespace/nowrap-line-break-after-white-space.html [ Failure ]
-crbug.com/360889 [ Win ] virtual/textblob/fast/text/whitespace/nowrap-line-break-after-white-space.html [ Failure ]
 
 crbug.com/410461 [ Linux ] fast/css/word-spacing-characters-complex-text.html [ ImageOnlyFailure ]
 
@@ -182,8 +181,6 @@ crbug.com/3231 fast/text/midword-break-before-surrogate-pair.html [ NeedsRebasel
 crbug.com/3231 fast/text/midword-break-before-surrogate-pair-2.html [ NeedsRebaseline ]
 crbug.com/3231 virtual/antialiasedtext/fast/text/midword-break-before-surrogate-pair.html [ NeedsRebaseline ]
 crbug.com/3231 virtual/antialiasedtext/fast/text/midword-break-before-surrogate-pair-2.html [ NeedsRebaseline ]
-crbug.com/3231 virtual/textblob/fast/text/midword-break-before-surrogate-pair.html [ NeedsRebaseline ]
-crbug.com/3231 virtual/textblob/fast/text/midword-break-before-surrogate-pair-2.html [ NeedsRebaseline ]
 
 # New W3C failures (dpranke@ to triage)
 crbug.com/330083 imported/web-platform-tests/custom-elements/instantiating-custom-elements/extensions-to-document-interface/create-element-interface-type-is-a-type-extension.html [ Failure ]
@@ -389,7 +386,6 @@ crbug.com/397255 [ Linux XP ] css3/masking/clip-path-reference-userSpaceOnUse.ht
 crbug.com/378610 [ Win7 ] fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
 crbug.com/232061 [ Linux ] fast/text/zero-font-size-2.html [ ImageOnlyFailure ]
 crbug.com/232061 [ Linux ] virtual/slimmingpaint/fast/text/zero-font-size-2.html [ ImageOnlyFailure ]
-crbug.com/232061 [ Linux ] virtual/textblob/fast/text/zero-font-size-2.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] fast/writing-mode/table-vertical-child-width.html [ ImageOnlyFailure ]
 crbug.com/396940 ietestcenter/css3/multicolumn/column-containing-block-001.htm [ ImageOnlyFailure ]
 crbug.com/396940 ietestcenter/css3/multicolumn/column-containing-block-002.htm [ ImageOnlyFailure ]
@@ -408,7 +404,6 @@ crbug.com/371725 http/tests/webfont/slow-loading.html [ Pass ImageOnlyFailure Ti
 # crbug.com/367074 [ Mac ] virtual/antialiasedtext/fast/text/sub-pixel/text-scaling-pixel.html [ Skip ]
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/zerowidthjoiner.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] virtual/slimmingpaint/fast/text/international/zerowidthjoiner.html [ ImageOnlyFailure ]
-crbug.com/334269 [ Mac ] virtual/textblob/fast/text/international/zerowidthjoiner.html [ ImageOnlyFailure ]
 crbug.com/290411 [ Mac ] virtual/antialiasedtext/fast/text/sub-pixel/text-scaling-pixel.html [ Skip ]
 
 crbug.com/393157 [ Mac ] virtual/threaded/printing/print-document-without-documentElement-crash.html [ Pass Crash ]
@@ -615,7 +610,6 @@ crbug.com/311469 [ Mac ] svg/zoom/page/zoom-zoom-coords.xhtml [ Failure Pass ]
 
 crbug.com/312606 [ Mac ] fast/text/international/text-combine-image-test.html [ Failure Pass ]
 crbug.com/312606 [ Mac ] virtual/slimmingpaint/fast/text/international/text-combine-image-test.html [ Failure Pass ]
-crbug.com/312606 [ Mac ] virtual/textblob/fast/text/international/text-combine-image-test.html [ Failure Pass ]
 
 crbug.com/312613 fast/canvas/canvas-blending-pattern-over-gradient.html [ Pass Timeout ]
 
@@ -730,7 +724,6 @@ crbug.com/356828 fast/dom/gc-dom-tree-lifetime.html [ Timeout Pass ]
 
 crbug.com/418070 [ Mac ] fast/text/atsui-multiple-renderers.html [ Failure ]
 crbug.com/418070 [ Mac ] virtual/slimmingpaint/fast/text/atsui-multiple-renderers.html [ Failure ]
-crbug.com/418070 [ Mac ] virtual/textblob/fast/text/atsui-multiple-renderers.html [ Failure ]
 
 # Failing Reftests from CoreText shaper removal
 crbug.com/334269 [ Mac ] css2.1/20110323/c541-word-sp-000.htm [ ImageOnlyFailure ]
@@ -740,14 +733,11 @@ crbug.com/334269 [ Mac ] fast/table/td-width-fifty-percent-regression.html [ Ima
 crbug.com/334269 [ Mac ] fast/text-autosizing/list-marker-with-links-autosizing.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] fast/text/international/complex-text-missing-glyph-fallback.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] virtual/slimmingpaint/fast/text/international/complex-text-missing-glyph-fallback.html [ ImageOnlyFailure ]
-crbug.com/334269 [ Mac ] virtual/textblob/fast/text/international/complex-text-missing-glyph-fallback.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] fast/text/international/vertical-positioning-with-combining-marks.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] virtual/slimmingpaint/fast/text/international/vertical-positioning-with-combining-marks.html [ ImageOnlyFailure ]
-crbug.com/334269 [ Mac ] virtual/textblob/fast/text/international/vertical-positioning-with-combining-marks.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] fast/writing-mode/table-vertical-child-width.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] svg/custom/root-size-attribute-changes.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] svg/text/tspan-multiple-outline.svg [ ImageOnlyFailure ]
-crbug.com/334269 [ Mac ] virtual/textblob/svg/text/tspan-multiple-outline.svg [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] svg/transforms/transformed-text-fill-gradient.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/complex-text-missing-glyph-fallback.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/vertical-positioning-with-combining-marks.html [ ImageOnlyFailure ]
@@ -758,7 +748,6 @@ crbug.com/334269 [ Mac ] fast/multicol/multicol-with-child-renderLayer-for-input
 
 crbug.com/334269 [ SnowLeopard Debug ] fast/text/zero-width-characters-complex-script.html [ Crash ]
 crbug.com/334269 [ SnowLeopard Debug ] virtual/slimmingpaint/fast/text/zero-width-characters-complex-script.html [ Crash ]
-crbug.com/334269 [ SnowLeopard Debug ] virtual/textblob/fast/text/zero-width-characters-complex-script.html [ Crash ]
 crbug.com/334269 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/zero-width-characters-complex-script.html [ Crash ]
 
 crbug.com/334269 [ Mac ] editing/spelling/spellcheck-editable-on-focus-sync.html [ NeedsManualRebaseline ]
@@ -803,7 +792,6 @@ crbug.com/412758 [ Win ] svg/W3C-SVG-1.1/text-intro-04-t.svg [ Crash NeedsManual
 
 crbug.com/419696 [ Mac Debug ] fast/text/font-linux-normalize.html [ Crash Pass ]
 crbug.com/419696 [ Mac Debug ] virtual/slimmingpaint/fast/text/font-linux-normalize.html [ Crash Pass ]
-crbug.com/419696 [ Mac Debug ] virtual/textblob/fast/text/font-linux-normalize.html [ Crash Pass ]
 crbug.com/419696 [ Mac Debug ] virtual/antialiasedtext/fast/text/font-linux-normalize.html [ Crash Pass ]
 
 crbug.com/353186 [ Win Debug ] http/tests/security/webgl-remote-read-remote-image-allowed-with-credentials.html [ Pass Timeout ]
@@ -1151,9 +1139,7 @@ crbug.com/419101 virtual/deferred/fast/images/imagemap-polygon-focus-ring.html [
 crbug.com/419101 virtual/deferred/fast/images/png-suite/test.html [ NeedsRebaseline ]
 crbug.com/419101 virtual/implsidepainting/inspector/tracing/paint-command-log-nodes.html [ NeedsRebaseline ]
 crbug.com/419101 [ Linux Mac Win ] fast/images/png-suite/test.html [ NeedsRebaseline ]
-crbug.com/419101 virtual/textblob/fast/text/whitespace/normal-after-nowrap-breaking.html [ NeedsRebaseline ]
 crbug.com/419101 virtual/antialiasedtext/fast/text/whitespace/normal-after-nowrap-breaking.html [ NeedsRebaseline ]
-crbug.com/419101 virtual/textblob/fast/text/bidi-img-alt-text.html [ NeedsRebaseline ]
 crbug.com/419101 virtual/antialiasedtext/fast/text/bidi-img-alt-text.html [ NeedsRebaseline ]
 crbug.com/419101 virtual/deferred/fast/images/image-error-event-not-firing.html [ NeedsRebaseline ]
 crbug.com/419101 [ Mac Win ] virtual/deferred/fast/images/imagemap-focus-ring.html [ NeedsRebaseline ]
@@ -1389,7 +1375,6 @@ crbug.com/437131 [ Linux x86 ] virtual/gpu/fast/canvas/image-object-in-canvas.ht
 
 crbug.com/419486 [ Mac ] fast/text/atsui-small-caps-punctuation-size.html [ Pass Failure ]
 crbug.com/419486 [ Mac ] virtual/slimmingpaint/fast/text/atsui-small-caps-punctuation-size.html [ Pass Failure ]
-crbug.com/419486 [ Mac ] virtual/textblob/fast/text/atsui-small-caps-punctuation-size.html [ Pass Failure ]
 
 crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
 
@@ -1449,7 +1434,6 @@ crbug.com/421298 http/tests/security/subresourceIntegrity/subresource-integrity-
 # These are experiencing assertions in harfbuzz.
 # fast/text/international/bidi-neutral-run.html is missing here, since it has a NeedsManualRebaseline expectation up above.
 crbug.com/421854 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/sub-pixel/text-scaling-rtl.html [ Pass Crash ]
-crbug.com/421854 [ SnowLeopard Debug ] virtual/textblob/fast/text/sub-pixel/text-scaling-rtl.html [ Pass Crash ]
 crbug.com/421854 [ SnowLeopard Debug ] fast/dom/52776.html [ Crash ]
 
 crbug.com/435865 fast/events/message-port-start-and-close-different-microtask.html [ Pass Failure ]
@@ -1470,13 +1454,11 @@ crbug.com/435232 http/tests/misc/webtiming-buffer-full-no-event.html [ Pass Fail
 
 crbug.com/422846 [ Linux ] fast/text/shaping/same-script-different-lang.html [ Pass Failure ]
 crbug.com/422846 [ Linux ] virtual/slimmingpaint/fast/text/shaping/same-script-different-lang.html [ Pass Failure ]
-crbug.com/422846 [ Linux ] virtual/textblob/fast/text/shaping/same-script-different-lang.html [ Pass Failure ]
 
 crbug.com/424648 editing/selection/deleteFromDocument-crash.html [ Pass ImageOnlyFailure ]
 
 crbug.com/425345 [ Mac ] fast/text/line-break-after-question-mark.html [ Failure ]
 crbug.com/425345 [ Mac ] virtual/slimmingpaint/fast/text/line-break-after-question-mark.html [ Failure ]
-crbug.com/425345 [ Mac ] virtual/textblob/fast/text/line-break-after-question-mark.html [ Failure ]
 
 
 crbug.com/426543 fast/js/mozilla/strict/15.4.4.9.html [ Pass Failure ]
@@ -1498,27 +1480,6 @@ crbug.com/433146 fast/media/mq-hover.html [ Failure ]
 crbug.com/433146 fast/media/mq-pointer.html [ Failure ]
 
 crbug.com/435870 fast/loader/open-in-srcdoc-unload.html [ Pass Failure ]
-
-crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/apply-start-width-after-skipped-text.html [ Failure ]
-crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/bidi-embedding-pop-and-push-same-2.html [ Failure ]
-crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/bidi-explicit-embedding-past-end.html [ Failure ]
-crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/cg-fallback-bolding.html [ Failure ]
-crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/decorations-transformed.html [ Failure ]
-crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/ellipsis-stroked.html [ ImageOnlyFailure ]
-crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/emphasis-avoid-ruby.html [ Failure ]
-crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/emphasis-overlap.html [ Failure ]
-crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/fake-italic.html [ Failure ]
-crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/fixed-pitch-control-characters.html [ Failure ]
-crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/justify-nbsp.html [ Failure ]
-crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/justify-padding-distribution.html [ Failure ]
-crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/remove-zero-length-run.html [ Failure ]
-crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/selection-painted-separately.html [ Failure ]
-crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/setData-dirty-lines.html [ Failure ]
-crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/soft-hyphen-2.html [ Failure ]
-crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/soft-hyphen-3.html [ Failure ]
-crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/soft-hyphen-4.html [ Failure ]
-crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/splitText-dirty-lines.html [ Failure ]
-crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/text-combine-shrink-to-fit.html [ Failure ]
 
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/basic/016.html [ Failure ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/basic/fieldset-stretch-to-legend.html [ Failure ImageOnlyFailure ]
