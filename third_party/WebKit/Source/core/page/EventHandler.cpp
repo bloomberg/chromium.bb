@@ -2827,12 +2827,9 @@ bool EventHandler::sendContextMenuEventForKey()
 
     // The contextmenu event is a mouse event even when invoked using the keyboard.
     // This is required for web compatibility.
-
-#if OS(WIN)
-    PlatformEvent::Type eventType = PlatformEvent::MouseReleased;
-#else
     PlatformEvent::Type eventType = PlatformEvent::MousePressed;
-#endif
+    if (m_frame->settings()->showContextMenuOnMouseUp())
+        eventType = PlatformEvent::MouseReleased;
 
     PlatformMouseEvent mouseEvent(position, globalPosition, RightButton, eventType, 1, false, false, false, false, PlatformMouseEvent::RealOrIndistinguishable, WTF::currentTime());
 
