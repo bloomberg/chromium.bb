@@ -97,12 +97,13 @@ IN_PROC_BROWSER_TEST_P(WebRtcWebcamBrowserTest,
             GetUserMediaAndGetStreamSize(tab, kVideoCallConstraintsVGA));
   EXPECT_EQ("640x360",
             GetUserMediaAndGetStreamSize(tab, kVideoCallConstraints360p));
+
+  // QTKit supports up to 480p (used to support 720p until crbug.com/440762).
+  if (IsOnQtKit())
+    return;
+
   EXPECT_EQ("1280x720",
             GetUserMediaAndGetStreamSize(tab, kVideoCallConstraints720p));
-
-  if (IsOnQtKit())
-    return;  // QTKit only supports up to 720p.
-
   EXPECT_EQ("1920x1080",
             GetUserMediaAndGetStreamSize(tab, kVideoCallConstraints1080p));
 }
