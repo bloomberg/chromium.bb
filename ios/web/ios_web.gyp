@@ -56,6 +56,8 @@
       'sources': [
         'public/test/test_browser_state.cc',
         'public/test/test_browser_state.h',
+        'public/test/test_web_state.cc',
+        'public/test/test_web_state.h',
       ],
     },
   ],
