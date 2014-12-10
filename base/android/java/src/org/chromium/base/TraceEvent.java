@@ -226,17 +226,7 @@ public class TraceEvent {
      * @param id   The id of the asynchronous event.
      */
     public static void startAsync(String name, long id) {
-        if (sEnabled) nativeStartAsync(name, id, null);
-    }
-
-    /**
-     * Triggers the 'start' native trace event.
-     * @param name The name of the event.
-     * @param id   The id of the asynchronous event.
-     * @param arg  The arguments of the event.
-     */
-    public static void startAsync(String name, long id, String arg) {
-        if (sEnabled) nativeStartAsync(name, id, arg);
+        if (sEnabled) nativeStartAsync(name, id);
     }
 
     /**
@@ -245,17 +235,7 @@ public class TraceEvent {
      * @param id   The id of the asynchronous event.
      */
     public static void finishAsync(String name, long id) {
-        if (sEnabled) nativeFinishAsync(name, id, null);
-    }
-
-    /**
-     * Triggers the 'finish' native trace event.
-     * @param name The name of the event.
-     * @param id   The id of the asynchronous event.
-     * @param arg  The arguments of the event.
-     */
-    public static void finishAsync(String name, long id, String arg) {
-        if (sEnabled) nativeFinishAsync(name, id, arg);
+        if (sEnabled) nativeFinishAsync(name, id);
     }
 
     /**
@@ -336,6 +316,6 @@ public class TraceEvent {
     private static native void nativeEnd(String name, String arg);
     private static native void nativeBeginToplevel();
     private static native void nativeEndToplevel();
-    private static native void nativeStartAsync(String name, long id, String arg);
-    private static native void nativeFinishAsync(String name, long id, String arg);
+    private static native void nativeStartAsync(String name, long id);
+    private static native void nativeFinishAsync(String name, long id);
 }

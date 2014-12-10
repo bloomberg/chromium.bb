@@ -129,36 +129,14 @@ static void EndToplevel(JNIEnv* env, jclass clazz) {
   TRACE_EVENT_END0(kToplevelCategory, kLooperDispatchMessage);
 }
 
-static void StartAsync(JNIEnv* env, jclass clazz,
-                       jstring jname, jlong jid, jstring jarg) {
-  TraceEventDataConverter converter(env, jname, jarg);
-  if (converter.arg()) {
-    TRACE_EVENT_COPY_ASYNC_BEGIN1(kJavaCategory,
-                                  converter.name(),
-                                  jid,
-                                  converter.arg_name(),
-                                  converter.arg());
-  } else {
-    TRACE_EVENT_COPY_ASYNC_BEGIN0(kJavaCategory,
-                                  converter.name(),
-                                  jid);
-  }
+static void StartAsync(JNIEnv* env, jclass clazz, jstring jname, jlong jid) {
+  TraceEventDataConverter converter(env, jname, nullptr);
+  TRACE_EVENT_COPY_ASYNC_BEGIN0(kJavaCategory, converter.name(), jid);
 }
 
-static void FinishAsync(JNIEnv* env, jclass clazz,
-                        jstring jname, jlong jid, jstring jarg) {
-  TraceEventDataConverter converter(env, jname, jarg);
-  if (converter.arg()) {
-    TRACE_EVENT_COPY_ASYNC_END1(kJavaCategory,
-                                converter.name(),
-                                jid,
-                                converter.arg_name(),
-                                converter.arg());
-  } else {
-    TRACE_EVENT_COPY_ASYNC_END0(kJavaCategory,
-                                converter.name(),
-                                jid);
-  }
+static void FinishAsync(JNIEnv* env, jclass clazz, jstring jname, jlong jid) {
+  TraceEventDataConverter converter(env, jname, nullptr);
+  TRACE_EVENT_COPY_ASYNC_END0(kJavaCategory, converter.name(), jid);
 }
 
 bool RegisterTraceEvent(JNIEnv* env) {
