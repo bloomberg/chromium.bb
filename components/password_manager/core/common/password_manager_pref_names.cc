@@ -43,6 +43,10 @@ const char kPasswordManagerGroupsForDomains[] =
 const char kLocalProfileId[] = "profile.local_profile_id";
 #endif
 
+// Boolean that indicates whether "Allow to collect URL?" bubble was shown or
+// not.
+const char kWasAllowToCollectURLBubbleShown[] =
+    "password_manager_url_collection_bubble.appearance_flag";
 }  // namespace prefs
 
 }  // namespace password_manager
