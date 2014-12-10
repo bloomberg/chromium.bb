@@ -575,6 +575,9 @@ void RenderWidgetHostViewAndroid::Show() {
   if (layer_.get())
     layer_->SetHideLayerAndSubtree(false);
 
+  if (overscroll_controller_)
+    overscroll_controller_->Enable();
+
   frame_evictor_->SetVisible(true);
   WasShown();
 }
@@ -586,6 +589,9 @@ void RenderWidgetHostViewAndroid::Hide() {
   is_showing_ = false;
   if (layer_.get() && locks_on_frame_count_ == 0)
     layer_->SetHideLayerAndSubtree(true);
+
+  if (overscroll_controller_)
+    overscroll_controller_->Disable();
 
   frame_evictor_->SetVisible(false);
   // We don't know if we will ever get a frame if we are hiding the renderer, so

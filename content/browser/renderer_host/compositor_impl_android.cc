@@ -425,6 +425,9 @@ void CompositorImpl::CreateLayerTreeHost() {
   host_->SetViewportSize(size_);
   host_->set_has_transparent_background(has_transparent_background_);
   host_->SetDeviceScaleFactor(device_scale_factor_);
+
+  if (needs_animate_)
+    host_->SetNeedsAnimate();
 }
 
 void CompositorImpl::SetVisible(bool visible) {
@@ -691,6 +694,7 @@ void CompositorImpl::OnVSync(base::TimeTicks frame_time,
 }
 
 void CompositorImpl::SetNeedsAnimate() {
+  needs_animate_ = true;
   if (!host_)
     return;
 
