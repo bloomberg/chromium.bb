@@ -1315,7 +1315,7 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) {
     // cycling through its window elements.
     return RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;
   }
-  if (MruWindowTracker::BuildWindowList(false).empty() &&
+  if (MruWindowTracker::BuildWindowList().empty() &&
       actions_needing_window_.find(action) != actions_needing_window_.end()) {
     Shell::GetInstance()->accessibility_delegate()->TriggerAccessibilityAlert(
         ui::A11Y_ALERT_WINDOW_NEEDED);

@@ -40,10 +40,9 @@ class ASH_EXPORT MruWindowTracker
   // the vector based on the current set of windows across all valid root
   // windows. As a result it is not necessarily the same as the set of
   // windows being iterated over.
-  // If |top_most_at_end| the window list will return in ascending (lowest
-  // window in stacking order first) order instead of the default descending
-  // (top most window first) order.
-  static WindowList BuildWindowList(bool top_most_at_end);
+  // The returned window list will be in descending (top most window first)
+  // order.
+  static WindowList BuildWindowList();
 
   // Returns the set of windows which can be cycled through using the tracked
   // list of most recently used windows.

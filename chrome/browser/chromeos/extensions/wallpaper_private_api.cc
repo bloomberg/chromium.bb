@@ -175,8 +175,7 @@ void WindowStateManager::BuildWindowListAndMinimizeInactiveForUser(
   std::set<aura::Window*>* results =
       &user_id_hash_window_list_map_[user_id_hash];
 
-  std::vector<aura::Window*> windows =
-      ash::MruWindowTracker::BuildWindowList(false);
+  std::vector<aura::Window*> windows = ash::MruWindowTracker::BuildWindowList();
 
   for (std::vector<aura::Window*>::iterator iter = windows.begin();
        iter != windows.end(); ++iter) {
