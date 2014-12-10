@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// This file contains the implementation of ExynosV4L2Device used on
-// Exynos platform.
+// This file contains the implementation of GenericV4L2Device used on
+// platforms, which provide generic V4L2 video codec devices.
 
-#ifndef CONTENT_COMMON_GPU_MEDIA_EXYNOS_V4L2_VIDEO_DEVICE_H_
-#define CONTENT_COMMON_GPU_MEDIA_EXYNOS_V4L2_VIDEO_DEVICE_H_
+#ifndef CONTENT_COMMON_GPU_MEDIA_GENERIC_V4L2_VIDEO_DEVICE_H_
+#define CONTENT_COMMON_GPU_MEDIA_GENERIC_V4L2_VIDEO_DEVICE_H_
 
 #include "content/common/gpu/media/v4l2_video_device.h"
 
 namespace content {
 
-class ExynosV4L2Device : public V4L2Device {
+class GenericV4L2Device : public V4L2Device {
  public:
-  explicit ExynosV4L2Device(Type type);
-  virtual ~ExynosV4L2Device();
+  explicit GenericV4L2Device(Type type);
+  virtual ~GenericV4L2Device();
 
   // V4L2Device implementation.
   virtual int Ioctl(int request, void* arg) override;
@@ -51,8 +51,8 @@ class ExynosV4L2Device : public V4L2Device {
   // interrupted.
   int device_poll_interrupt_fd_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExynosV4L2Device);
+  DISALLOW_COPY_AND_ASSIGN(GenericV4L2Device);
 };
 }  //  namespace content
 
-#endif  // CONTENT_COMMON_GPU_MEDIA_EXYNOS_V4L2_VIDEO_DEVICE_H_
+#endif  // CONTENT_COMMON_GPU_MEDIA_GENERIC_V4L2_VIDEO_DEVICE_H_
