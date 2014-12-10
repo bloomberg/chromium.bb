@@ -162,6 +162,8 @@ public:
     virtual bool requestPointerLock() override;
     virtual void requestPointerUnlock() override;
 
+    virtual bool shouldDisableDesktopWorkarounds() override;
+
     // AutofillClient pass throughs:
     virtual void didAssociateFormControls(const WillBeHeapVector<RefPtrWillBeMember<Element> >&, LocalFrame*) override;
     virtual void handleKeyboardEventOnTextField(HTMLInputElement&, KeyboardEvent&) override;

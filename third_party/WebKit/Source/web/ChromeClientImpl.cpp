@@ -788,6 +788,11 @@ void ChromeClientImpl::requestPointerUnlock()
     return m_webView->requestPointerUnlock();
 }
 
+bool ChromeClientImpl::shouldDisableDesktopWorkarounds()
+{
+    return m_webView->shouldDisableDesktopWorkarounds();
+}
+
 void ChromeClientImpl::annotatedRegionsChanged()
 {
     WebViewClient* client = m_webView->client();
