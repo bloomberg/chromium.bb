@@ -25,27 +25,25 @@ namespace {
 
 // Constants defining the visual attributes of selection handles
 
-// Controls the width of the cursor line associated with the selection handle.
-const int kSelectionHandleLineWidth = 2;
-
-const SkColor kSelectionHandleLineColor =
-    SkColorSetRGB(0x42, 0x81, 0xf4);
+// The distance by which a handle image is offset from the bottom of the
+// selection/text baseline.
+const int kSelectionHandleVerticalVisualOffset = 2;
 
 // When a handle is dragged, the drag position reported to the client view is
 // offset vertically to represent the cursor position. This constant specifies
-// the offset in  pixels above the "O" (see pic below). This is required because
-// say if this is zero, that means the drag position we report is the point
-// right above the "O" or the bottom most point of the cursor "|". In that case,
-// a vertical movement of even one pixel will make the handle jump to the line
-// below it. So when the user just starts dragging, the handle will jump to the
-// next line if the user makes any vertical movement. It is correct but
-// looks/feels weird. So we have this non-zero offset to prevent this jumping.
+// the offset in pixels above the bottom of the selection (see pic below). This
+// is required because say if this is zero, that means the drag position we
+// report is right on the text baseline. In that case, a vertical movement of
+// even one pixel will make the handle jump to the line below it. So when the
+// user just starts dragging, the handle will jump to the next line if the user
+// makes any vertical movement. So we have this non-zero offset to prevent this
+// jumping.
 //
 // Editing handle widget showing the padding and difference between the position
 // of the ET_GESTURE_SCROLL_UPDATE event and the drag position reported to the
 // client:
-//                                  _____
-//                                 |  |<-|---- Drag position reported to client
+//                            ___________
+//    Selection Highlight --->_____|__|<-|---- Drag position reported to client
 //                              _  |  O  |
 //          Vertical Padding __|   |   <-|---- ET_GESTURE_SCROLL_UPDATE position
 //                             |_  |_____|<--- Editing handle widget
@@ -129,43 +127,30 @@ gfx::Image* GetHandleImage(ui::SelectionBound::Type bound_type) {
   };
 }
 
-enum Alignment {ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT};
-
-// Determine the cursor line alignment to the handle image based on the bound
-// type. Depends on the visual shapes of the handle image assets.
-Alignment GetCursorAlignment(ui::SelectionBound::Type bound_type) {
-  switch (bound_type) {
-    case ui::SelectionBound::LEFT:
-      return ALIGN_RIGHT;
-    case ui::SelectionBound::RIGHT:
-      return ALIGN_LEFT;
-    case ui::SelectionBound::CENTER:
-      return ALIGN_CENTER;
-    default:
-      NOTREACHED() << "Undefined bound type for cursor alignment.";
-      return ALIGN_LEFT;
-  };
-}
-
 // Calculates the bounds of the widget containing the selection handle based
 // on the SelectionBound's type and location
 gfx::Rect GetSelectionWidgetBounds(const ui::SelectionBound& bound) {
-  Alignment cursor_alignment = GetCursorAlignment(bound.type());
   gfx::Size image_size = GetHandleImage(bound.type())->Size();
-  int widget_width =  image_size.width() + 2 * kSelectionHandleHorizPadding;
+  int widget_width = image_size.width() + 2 * kSelectionHandleHorizPadding;
   int widget_height = bound.GetHeight() + image_size.height() +
-      kSelectionHandleVertPadding;
+                      kSelectionHandleVerticalVisualOffset +
+                      kSelectionHandleVertPadding;
+  // Due to the shape of the handle images, the widget is aligned differently to
+  // the selection bound depending on the type of the bound.
   int widget_left = 0;
-  switch (cursor_alignment) {
-    case ALIGN_LEFT:
+  switch (bound.type()) {
+    case ui::SelectionBound::LEFT:
+      widget_left = bound.edge_top_rounded().x() - image_size.width() -
+                    kSelectionHandleHorizPadding;
+      break;
+    case ui::SelectionBound::RIGHT:
       widget_left = bound.edge_top_rounded().x() - kSelectionHandleHorizPadding;
       break;
-    case ALIGN_RIGHT:
-      widget_left = bound.edge_top_rounded().x() - image_size.width() -
-          kSelectionHandleHorizPadding;
-      break;
-    case ALIGN_CENTER:
+    case ui::SelectionBound::CENTER:
       widget_left = bound.edge_top_rounded().x() - widget_width / 2;
+      break;
+    default:
+      NOTREACHED() << "Undefined bound type.";
       break;
   };
   return gfx::Rect(
@@ -267,10 +252,12 @@ class TouchSelectionControllerImpl::EditingHandleView
     gfx::Size image_size = image_->Size();
     mask->addRect(
         SkIntToScalar(0),
-        SkIntToScalar(selection_bound_.GetHeight()),
+        SkIntToScalar(selection_bound_.GetHeight() +
+                      kSelectionHandleVerticalVisualOffset),
         SkIntToScalar(image_size.width()) + 2 * kSelectionHandleHorizPadding,
-        SkIntToScalar(selection_bound_.GetHeight() + image_size.height() +
-                      kSelectionHandleVertPadding));
+        SkIntToScalar(selection_bound_.GetHeight() +
+                      kSelectionHandleVerticalVisualOffset +
+                      image_size.height() + kSelectionHandleVertPadding));
   }
 
   void DeleteDelegate() override {
@@ -282,30 +269,11 @@ class TouchSelectionControllerImpl::EditingHandleView
     if (draw_invisible_)
       return;
 
-    Alignment cursor_alignment = GetCursorAlignment(selection_bound_.type());
-    int cursor_x = 0;
-    switch (cursor_alignment) {
-      case ALIGN_RIGHT:
-        cursor_x = selection_bound_.edge_top_rounded().x() -
-                   kSelectionHandleLineWidth + 1;
-        break;
-      case ALIGN_LEFT:
-        cursor_x = selection_bound_.edge_top_rounded().x() - 1;
-        break;
-      case ALIGN_CENTER:
-        cursor_x = selection_bound_.edge_top_rounded().x() -
-                   kSelectionHandleLineWidth / 2;
-        break;
-    };
-    // Draw the cursor line.
-    canvas->FillRect(gfx::Rect(cursor_x,
-                               0,
-                               kSelectionHandleLineWidth,
-                               selection_bound_.GetHeight()),
-                     kSelectionHandleLineColor);
     // Draw the handle image.
-    canvas->DrawImageInt(*image_->ToImageSkia(),
-        kSelectionHandleHorizPadding, selection_bound_.GetHeight());
+    canvas->DrawImageInt(
+        *image_->ToImageSkia(),
+        kSelectionHandleHorizPadding,
+        selection_bound_.GetHeight() + kSelectionHandleVerticalVisualOffset);
   }
 
   void OnGestureEvent(ui::GestureEvent* event) override {
@@ -315,7 +283,7 @@ class TouchSelectionControllerImpl::EditingHandleView
         widget_->SetCapture(this);
         controller_->SetDraggingHandle(this);
         // Distance from the point which is |kSelectionHandleVerticalDragOffset|
-        // pixels above the bottom of the handle's cursor line to the event
+        // pixels above the bottom of the selection bound edge to the event
         // location (aka the touch-drag point).
         drag_offset_ = selection_bound_.edge_bottom_rounded() -
                        gfx::Vector2d(0, kSelectionHandleVerticalDragOffset) -
@@ -337,10 +305,7 @@ class TouchSelectionControllerImpl::EditingHandleView
   }
 
   gfx::Size GetPreferredSize() const override {
-    gfx::Size image_size = image_->Size();
-    return gfx::Size(image_size.width() + 2 * kSelectionHandleHorizPadding,
-                     image_size.height() + selection_bound_.GetHeight() +
-                         kSelectionHandleVertPadding);
+    return GetSelectionWidgetBounds(selection_bound_).size();
   }
 
   bool IsWidgetVisible() const {
@@ -701,6 +666,10 @@ void TouchSelectionControllerImpl::ContextMenuTimerFired() {
     menu_anchor = BoundToRect(b2_in_screen);
   else
     return;
+
+  // Enlarge the anchor rect so that the menu is offset from the text at least
+  // by the same distance the handles are offset from the text.
+  menu_anchor.Inset(0, -kSelectionHandleVerticalVisualOffset);
 
   DCHECK(!context_menu_);
   context_menu_ = TouchEditingMenuView::Create(this, menu_anchor,
