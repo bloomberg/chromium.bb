@@ -15,7 +15,9 @@ var worker = 'resources/fetch-event-test-worker.js';
 async_test(function(t) {
     var scope = 'resources/simple.html?string';
     service_worker_unregister_and_register(t, worker, scope)
-      .then(function(reg) { return wait_for_activated(t, reg); })
+      .then(function(reg) {
+          return wait_for_state(t, reg.installing, 'activated');
+        })
       .then(function() { return with_iframe(scope); })
       .then(function(frame) {
           assert_equals(
@@ -39,7 +41,9 @@ async_test(function(t) {
 async_test(function(t) {
     var scope = 'resources/simple.html?blob';
     service_worker_unregister_and_register(t, worker, scope)
-      .then(function(reg) { return wait_for_activated(t, reg); })
+      .then(function(reg) {
+          return wait_for_state(t, reg.installing, 'activated');
+        })
       .then(function() { return with_iframe(scope); })
       .then(function(frame) {
           assert_equals(
@@ -55,7 +59,9 @@ async_test(function(t) {
 async_test(function(t) {
     var scope = 'resources/simple.html?referrer';
     service_worker_unregister_and_register(t, worker, scope)
-      .then(function(reg) { return wait_for_activated(t, reg); })
+      .then(function(reg) {
+          return wait_for_state(t, reg.installing, 'activated');
+        })
       .then(function() { return with_iframe(scope); })
       .then(function(frame) {
           assert_equals(
@@ -71,7 +77,9 @@ async_test(function(t) {
 async_test(function(t) {
     var scope = 'resources/simple.html?ignore';
     service_worker_unregister_and_register(t, worker, scope)
-      .then(function(reg) { return wait_for_activated(t, reg); })
+      .then(function(reg) {
+          return wait_for_state(t, reg.installing, 'activated');
+        })
       .then(function() { return with_iframe(scope); })
       .then(function(frame) {
           assert_equals(frame.contentDocument.body.textContent,
@@ -86,7 +94,9 @@ async_test(function(t) {
 async_test(function(t) {
     var scope = 'resources/simple.html?null';
     service_worker_unregister_and_register(t, worker, scope)
-      .then(function(reg) { return wait_for_activated(t, reg); })
+      .then(function(reg) {
+          return wait_for_state(t, reg.installing, 'activated');
+        })
       .then(function() { return with_iframe(scope); })
       .then(function(frame) {
           assert_equals(frame.contentDocument.body.textContent,
@@ -101,7 +111,9 @@ async_test(function(t) {
 async_test(function(t) {
     var scope = 'resources/simple.html?fetch';
     service_worker_unregister_and_register(t, worker, scope)
-      .then(function(reg) { return wait_for_activated(t, reg); })
+      .then(function(reg) {
+          return wait_for_state(t, reg.installing, 'activated');
+        })
       .then(function() { return with_iframe(scope); })
       .then(function(frame) {
           assert_equals(frame.contentDocument.body.textContent,
@@ -117,7 +129,9 @@ async_test(function(t) {
     var scope = 'resources/simple.html?form-post';
     var frame_name = 'xhr-post-frame';
     service_worker_unregister_and_register(t, worker, scope)
-      .then(function(reg) { return wait_for_activated(t, reg); })
+      .then(function(reg) {
+          return wait_for_state(t, reg.installing, 'activated');
+        })
       .then(function(sw) {
          return new Promise(function(resolve) {
             var frame = document.createElement('iframe');
@@ -157,7 +171,9 @@ async_test(function(t) {
 async_test(function(t) {
     var scope = 'resources/simple.html?multiple-respond-with';
     service_worker_unregister_and_register(t, worker, scope)
-      .then(function(reg) { return wait_for_activated(t, reg); })
+      .then(function(reg) {
+          return wait_for_state(t, reg.installing, 'activated');
+        })
       .then(function() { return with_iframe(scope); })
       .then(function(frame) {
           assert_equals(
@@ -181,7 +197,9 @@ async_test(function(t) {
 async_test(function(t) {
     var scope = 'resources/simple.html?used-check';
     service_worker_unregister_and_register(t, worker, scope)
-      .then(function(reg) { return wait_for_activated(t, reg); })
+      .then(function(reg) {
+          return wait_for_state(t, reg.installing, 'activated');
+        })
       .then(function() { return with_iframe(scope); })
       .then(function(frame) {
           assert_equals(frame.contentDocument.body.textContent,

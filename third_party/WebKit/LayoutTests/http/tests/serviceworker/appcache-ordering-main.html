@@ -70,7 +70,7 @@ async_test(function(t) {
               t, SERVICE_WORKER_SCRIPT, SERVICE_WORKER_SCOPE);
         })
       .then(function(r) {  
-          return wait_for_activated(t, r);
+          return wait_for_state(t, r.installing, 'activated');
         })
       .then(function() {  
           return is_appcached();

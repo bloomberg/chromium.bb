@@ -58,7 +58,7 @@ async_test(function(t) {
         t, worker_script, scope)
       .then(function(r) {
           registration = r;
-          return wait_for_activated(t, registration);
+          return wait_for_state(t, r.installing, 'activated');
         })
       .then(function() {
           worker = registration.active;
@@ -112,7 +112,7 @@ async_test(function(t) {
         t, worker_script, scope)
       .then(function(r) {
           registration = r;
-          return wait_for_activated(t, registration);
+          return wait_for_state(t, r.installing, 'activated');
         })
       .then(function() {
           worker = registration.active;

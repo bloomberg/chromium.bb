@@ -24,7 +24,7 @@ async_test(function(t) {
         t, 'resources/postmessage-cross-process-worker.js', scope)
       .then(function(r) {
           registration = r;
-          return wait_for_activated(t, registration);
+          return wait_for_state(t, r.installing, 'activated');
         })
       .then(function() {
           var worker = registration.active;

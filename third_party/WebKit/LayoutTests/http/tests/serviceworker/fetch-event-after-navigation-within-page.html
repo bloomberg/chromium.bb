@@ -14,7 +14,9 @@ promise_test(function(t) {
     var frame;
 
     service_worker_unregister_and_register(t, worker, scope)
-      .then(function(reg) { return wait_for_activated(t, reg); })
+      .then(function(reg) {
+          return wait_for_state(t, reg.installing, 'activated');
+        })
       .then(function() { return with_iframe(scope); })
       .then(function(f) {
           frame = f;
@@ -40,7 +42,9 @@ promise_test(function(t) {
     var frame;
 
     service_worker_unregister_and_register(t, worker, scope)
-      .then(function(reg) { return wait_for_activated(t, reg); })
+      .then(function(reg) {
+          return wait_for_state(t, reg.installing, 'activated');
+        })
       .then(function() { return with_iframe(scope); })
       .then(function(f) {
           frame = f;
