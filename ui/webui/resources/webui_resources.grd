@@ -208,6 +208,8 @@ without changes to the corresponding grd file. -->
                  file="css/bubble_button.css" type="chrome_html" />
       <structure name="IDR_WEBUI_CSS_BUTTER_BAR"
                  file="css/butter_bar.css" type="chrome_html" />
+      <structure name="IDR_WEBUI_CSS_CONTROLLED_INDICATOR"
+                 file="css/controlled_indicator.css" type="chrome_html" />
       <structure name="IDR_WEBUI_CSS_APPS_COMMON"
                  file="css/apps/common.css" type="chrome_html" />
       <structure name="IDR_WEBUI_CSS_APPS_TOPBUTTON_BAR"
@@ -282,6 +284,8 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_JS_CR_UI_CONTEXT_MENU_HANDLER"
                  file="js/cr/ui/context_menu_handler.js"
                  type="chrome_html" />
+      <structure name="IDR_WEBUI_JS_CR_UI_CONTROLLED_INDICATOR"
+                 file="js/cr/ui/controlled_indicator.js" type="chrome_html" />
       <structure name="IDR_WEBUI_JS_CR_UI_DIALOGS"
                  file="js/cr/ui/dialogs.js" type="chrome_html" />
       <structure name="IDR_WEBUI_JS_CR_UI_DRAG_WRAPPER"

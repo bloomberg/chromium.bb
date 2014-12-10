@@ -3,26 +3,25 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  var Preferences = options.Preferences;
+  /** @const */ var Preferences = options.Preferences;
 
   /**
    * A controlled setting indicator that can be placed on a setting as an
    * indicator that the value is controlled by some external entity such as
    * policy or an extension.
    * @constructor
-   * @extends {cr.ui.BubbleButton}
+   * @extends {cr.ui.ControlledIndicator}
    */
   var ControlledSettingIndicator = cr.ui.define('span');
 
   ControlledSettingIndicator.prototype = {
-    __proto__: cr.ui.BubbleButton.prototype,
+    __proto__: cr.ui.ControlledIndicator.prototype,
 
     /**
      * Decorates the base element to show the proper icon.
      */
     decorate: function() {
-      cr.ui.BubbleButton.prototype.decorate.call(this);
-      this.classList.add('controlled-setting-indicator');
+      cr.ui.ControlledIndicator.prototype.decorate.call(this);
 
       // If there is a pref, track its controlledBy and recommendedValue
       // properties in order to be able to bring up the correct bubble.
@@ -85,108 +84,109 @@ cr.define('options', function() {
     },
 
     /**
-     * Open or close a bubble with further information about the pref.
+     * Uses the page's PageManager to display an informational bubble.
      * @override
      */
-    toggleBubble: function() {
-      if (this.showingBubble) {
-        PageManager.hideBubble();
+    showBubble: function(content) {
+      PageManager.showBubble(content, this.image, this, this.location);
+    },
+
+    /**
+     * Uses the page's PageManager to hide the currently visible bubble, if
+     * any.
+     * @override
+     */
+    hideBubble: function() {
+      PageManager.hideBubble();
+    },
+
+    /**
+     * Queries the |loadTimeData| singleton for the default bubble text strings.
+     * @override
+     */
+    getDefaultStrings: function() {
+      // Construct the bubble text.
+      if (this.hasAttribute('plural')) {
+        var defaultStrings = {
+          'policy': loadTimeData.getString('controlledSettingsPolicy'),
+          'extension': loadTimeData.getString('controlledSettingsExtension'),
+          'extensionWithName':
+              loadTimeData.getString('controlledSettingsExtensionWithName'),
+        };
+        if (cr.isChromeOS) {
+          defaultStrings.shared =
+              loadTimeData.getString('controlledSettingsShared');
+        }
       } else {
-        var self = this;
-
-        // Construct the bubble text.
-        if (this.hasAttribute('plural')) {
-          var defaultStrings = {
-            'policy': loadTimeData.getString('controlledSettingsPolicy'),
-            'extension': loadTimeData.getString('controlledSettingsExtension'),
-            'extensionWithName': loadTimeData.getString(
-                'controlledSettingsExtensionWithName'),
-          };
-          if (cr.isChromeOS) {
-            defaultStrings.shared =
-                loadTimeData.getString('controlledSettingsShared');
-          }
-        } else {
-          var defaultStrings = {
-            'policy': loadTimeData.getString('controlledSettingPolicy'),
-            'extension': loadTimeData.getString('controlledSettingExtension'),
-            'extensionWithName': loadTimeData.getString(
-                'controlledSettingExtensionWithName'),
-            'recommended':
-                loadTimeData.getString('controlledSettingRecommended'),
-            'hasRecommendation':
-                loadTimeData.getString('controlledSettingHasRecommendation'),
-          };
-          if (cr.isChromeOS) {
-            defaultStrings.owner =
-                loadTimeData.getString('controlledSettingOwner');
-            defaultStrings.shared =
-                loadTimeData.getString('controlledSettingShared');
-          }
+        var defaultStrings = {
+          'policy': loadTimeData.getString('controlledSettingPolicy'),
+          'extension': loadTimeData.getString('controlledSettingExtension'),
+          'extensionWithName':
+              loadTimeData.getString('controlledSettingExtensionWithName'),
+          'recommended': loadTimeData.getString('controlledSettingRecommended'),
+          'hasRecommendation':
+              loadTimeData.getString('controlledSettingHasRecommendation'),
+        };
+        if (cr.isChromeOS) {
+          defaultStrings.owner =
+              loadTimeData.getString('controlledSettingOwner');
+          defaultStrings.shared =
+              loadTimeData.getString('controlledSettingShared');
         }
-
-        // No controller, no bubble.
-        if (!this.controlledBy || !(this.controlledBy in defaultStrings))
-          return;
-
-        var text = defaultStrings[this.controlledBy];
-        if (this.controlledBy == 'extension' && this.extensionName)
-          text = defaultStrings.extensionWithName;
-
-        // Apply text overrides.
-        if (this.hasAttribute('text' + this.controlledBy))
-          text = this.getAttribute('text' + this.controlledBy);
-
-        // Create the DOM tree.
-        var content = document.createElement('div');
-        content.classList.add('controlled-setting-bubble-header');
-        content.textContent = text;
-
-        if (this.controlledBy == 'hasRecommendation' && this.resetHandler_ &&
-            !this.readOnly) {
-          var container = document.createElement('div');
-          var action = new ActionLink;
-          action.classList.add('controlled-setting-bubble-action');
-          action.textContent =
-              loadTimeData.getString('controlledSettingFollowRecommendation');
-          action.addEventListener('click', function(event) {
-            self.resetHandler_();
-          });
-          container.appendChild(action);
-          content.appendChild(container);
-        } else if (this.controlledBy == 'extension' && this.extensionName) {
-          var extensionContainer =
-              $('extension-controlled-settings-bubble-template').
-                  cloneNode(true);
-          // No need for an id anymore, and thus remove to avoid id collision.
-          extensionContainer.removeAttribute('id');
-          extensionContainer.hidden = false;
-
-          var extensionName = extensionContainer.querySelector(
-              '.controlled-setting-bubble-extension-name');
-          extensionName.textContent = this.extensionName;
-          extensionName.style.backgroundImage =
-              'url("' + this.extensionIcon + '")';
-
-          var manageLink = extensionContainer.querySelector(
-              '.controlled-setting-bubble-extension-manage-link');
-          var extensionId = this.extensionId;
-          manageLink.onclick = function() {
-            uber.invokeMethodOnWindow(
-                window.top, 'showPage', {pageId: 'extensions',
-                                         path: '?id=' + extensionId});
-          };
-
-          var disableButton = extensionContainer.querySelector(
-              '.controlled-setting-bubble-extension-disable-button');
-          disableButton.onclick = function() {
-            chrome.send('disableExtension', [extensionId]);
-          };
-          content.appendChild(extensionContainer);
-        }
-
-        PageManager.showBubble(content, this.image, this, this.location);
       }
+      return defaultStrings;
+    },
+
+    /**
+     * Returns the DOM tree for a showing the message |text|.
+     * @param {string} text to be shown in the bubble.
+     * @override
+     */
+    createDomTree: function(text) {
+      var content = document.createElement('div');
+      content.classList.add('controlled-setting-bubble-header');
+      content.textContent = text;
+
+      if (this.controlledBy == 'hasRecommendation' && this.resetHandler_ &&
+          !this.readOnly) {
+        var container = document.createElement('div');
+        var action = new ActionLink;
+        action.classList.add('controlled-setting-bubble-action');
+        action.textContent =
+            loadTimeData.getString('controlledSettingFollowRecommendation');
+        action.addEventListener('click',
+                                function(event) { self.resetHandler_(); });
+        container.appendChild(action);
+        content.appendChild(container);
+      } else if (this.controlledBy == 'extension' && this.extensionName) {
+        var extensionContainer =
+            $('extension-controlled-settings-bubble-template').cloneNode(true);
+        // No need for an id anymore, and thus remove to avoid id collision.
+        extensionContainer.removeAttribute('id');
+        extensionContainer.hidden = false;
+
+        var extensionName = extensionContainer.querySelector(
+            '.controlled-setting-bubble-extension-name');
+        extensionName.textContent = this.extensionName;
+        extensionName.style.backgroundImage =
+            'url("' + this.extensionIcon + '")';
+
+        var manageLink = extensionContainer.querySelector(
+            '.controlled-setting-bubble-extension-manage-link');
+        var extensionId = this.extensionId;
+        manageLink.onclick = function() {
+          uber.invokeMethodOnWindow(
+              window.top, 'showPage',
+              {pageId: 'extensions', path: '?id=' + extensionId});
+        };
+
+        var disableButton = extensionContainer.querySelector(
+            '.controlled-setting-bubble-extension-disable-button');
+        disableButton.onclick =
+            function() { chrome.send('disableExtension', [extensionId]); };
+        content.appendChild(extensionContainer);
+      }
+      return content;
     },
   };
 
@@ -214,23 +214,6 @@ cr.define('options', function() {
    * ensuring that only one of them is visible at a time.
    */
   cr.defineProperty(ControlledSettingIndicator, 'value',
-                    cr.PropertyKind.ATTR);
-
-  /**
-   * The status of the associated preference:
-   * - 'policy':            A specific value is enforced by policy.
-   * - 'extension':         A specific value is enforced by an extension.
-   * - 'recommended':       A value is recommended by policy. The user could
-   *                        override this recommendation but has not done so.
-   * - 'hasRecommendation': A value is recommended by policy. The user has
-   *                        overridden this recommendation.
-   * - 'owner':             A value is controlled by the owner of the device
-   *                        (Chrome OS only).
-   * - 'shared':            A value belongs to the primary user but can be
-   *                        modified (Chrome OS only).
-   * - unset:               The value is controlled by the user alone.
-   */
-  cr.defineProperty(ControlledSettingIndicator, 'controlledBy',
                     cr.PropertyKind.ATTR);
 
   // Export.

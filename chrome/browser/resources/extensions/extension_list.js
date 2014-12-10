@@ -47,6 +47,7 @@
  *            order: number,
  *            packagedApp: boolean,
  *            path: (string|undefined),
+ *            policyText: (string|undefined),
  *            prettifiedPath: (string|undefined),
  *            recommendedInstall: boolean,
  *            runtimeErrors: (Array.<RuntimeError>|undefined),
@@ -170,17 +171,19 @@ cr.define('options', function() {
       if (!extension.enabled || extension.terminated)
         node.classList.add('inactive-extension');
 
-      if (extension.managedInstall ||
-          extension.dependentExtensions.length > 0) {
-        node.classList.add('may-not-modify');
-        node.classList.add('may-not-remove');
+      var classes = [];
+      if (extension.managedInstall) {
+        classes.push('policy-controlled', 'may-not-modify');
+      } else if (extension.dependentExtensions.length > 0) {
+        classes.push('may-not-remove', 'may-not-modify');
       } else if (extension.recommendedInstall) {
-        node.classList.add('may-not-remove');
+        classes.push('may-not-remove');
       } else if (extension.suspiciousInstall ||
                  extension.corruptInstall ||
                  extension.updateRequiredByPolicy) {
-        node.classList.add('may-not-modify');
+        classes.push('may-not-modify');
       }
+      node.classList.add.apply(node.classList, classes);
 
       var idToHighlight = this.getIdQueryParam_();
       if (node.id == idToHighlight)
@@ -362,6 +365,14 @@ cr.define('options', function() {
                                      extension.updateRequiredByPolicy ||
                                      extension.dependentExtensions.length > 0;
         enable.querySelector('input').disabled = enableCheckboxDisabled;
+
+        if (extension.managedInstall) {
+          var indicator = new cr.ui.ControlledIndicator();
+          indicator.classList.add('controlled-extension-indicator');
+          indicator.setAttribute('controlled-by', 'policy');
+          indicator.setAttribute('textpolicy', extension.policyText);
+          node.querySelector('.enable-controls').appendChild(indicator);
+        }
 
         if (!enableCheckboxDisabled) {
           enable.addEventListener('click', function(e) {
