@@ -1229,6 +1229,10 @@ void RenderGrid::offsetAndBreadthForPositionedChild(const RenderBox& child, Grid
     GridResolvedPosition lastPosition = GridResolvedPosition((direction == ForColumns ? gridColumnCount() : gridRowCount()) - 1);
     GridResolvedPosition finalPosition = endIsAuto ? lastPosition : positions->resolvedFinalPosition;
 
+    // Positioned children do not grow the grid, so we need to clamp the positions to avoid ending up outside of it.
+    initialPosition = std::min<GridResolvedPosition>(initialPosition, lastPosition);
+    finalPosition = std::min<GridResolvedPosition>(finalPosition, lastPosition);
+
     LayoutUnit start = startIsAuto ? LayoutUnit(0) : (direction == ForColumns) ?  m_columnPositions[initialPosition.toInt()] : m_rowPositions[initialPosition.toInt()];
     LayoutUnit end = endIsAuto ? (direction == ForColumns) ? logicalWidth() : logicalHeight() : (direction == ForColumns) ?  m_columnPositions[finalPosition.next().toInt()] : m_rowPositions[finalPosition.next().toInt()];
 
