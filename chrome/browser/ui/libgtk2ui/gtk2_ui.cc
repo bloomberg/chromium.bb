@@ -1146,8 +1146,6 @@ SkBitmap Gtk2UI::GenerateFrameImage(
     SkColor lighter = gradient_top_color ?
         GdkColorToSkColor(*gradient_top_color) :
         color_utils::HSLShift(base, kGtkFrameShift);
-    if (gradient_top_color)
-      gdk_color_free(gradient_top_color);
     skia::RefPtr<SkShader> shader = gfx::CreateGradientShader(
         0, gradient_size, lighter, base);
     SkPaint paint;
@@ -1157,6 +1155,9 @@ SkBitmap Gtk2UI::GenerateFrameImage(
 
     canvas.DrawRect(gfx::Rect(0, 0, kToolbarImageWidth, gradient_size), paint);
   }
+
+  if (gradient_top_color)
+    gdk_color_free(gradient_top_color);
 
   canvas.FillRect(gfx::Rect(0, gradient_size, kToolbarImageWidth,
                             kToolbarImageHeight - gradient_size), base);
