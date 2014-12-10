@@ -30,6 +30,7 @@ const char kIdDisplayName[] = "displayName";
 const char kIdEmail[] = "email";
 const char kIdProfileUrl[] = "profileUrl";
 const char kIdProfileImageUrl[] = "profileImageUrl";
+const char kIdDefaultProfileImageUrl[] = "defaultProfileImageUrl";
 
 // These correspond to enum FamilyInfoFetcher::FamilyMemberRole, in order.
 const char* kFamilyMemberRoleStrings[] = {
@@ -264,6 +265,8 @@ void FamilyInfoFetcher::ParseProfile(const base::DictionaryValue* dict,
   dict->GetString(kIdEmail, &member->email);
   dict->GetString(kIdProfileUrl, &member->profile_url);
   dict->GetString(kIdProfileImageUrl, &member->profile_image_url);
+  if (member->profile_image_url.empty())
+    dict->GetString(kIdDefaultProfileImageUrl, &member->profile_image_url);
 }
 
 void FamilyInfoFetcher::FamilyProfileFetched(const std::string& response) {
