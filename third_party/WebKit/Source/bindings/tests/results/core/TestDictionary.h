@@ -10,6 +10,7 @@
 #include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/UnionTypesCore.h"
+#include "bindings/tests/idls/core/TestInterface2.h"
 #include "bindings/tests/idls/core/TestInterfaceGarbageCollected.h"
 #include "bindings/tests/idls/core/TestInterfaceImplementation.h"
 #include "bindings/tests/idls/core/TestInterfaceWillBeGarbageCollected.h"
@@ -110,6 +111,10 @@ public:
     const DoubleOrString& doubleOrStringMember() const { return m_doubleOrStringMember; }
     void setDoubleOrStringMember(const DoubleOrString& value) { m_doubleOrStringMember = value; }
 
+    bool hasTestInterface2OrUint8ArrayMember() const { return !m_testInterface2OrUint8ArrayMember.isNull(); }
+    const TestInterface2OrUint8Array& testInterface2OrUint8ArrayMember() const { return m_testInterface2OrUint8ArrayMember; }
+    void setTestInterface2OrUint8ArrayMember(const TestInterface2OrUint8Array& value) { m_testInterface2OrUint8ArrayMember = value; }
+
     bool hasInternalDictionarySequenceMember() const { return !m_internalDictionarySequenceMember.isNull(); }
     const Vector<InternalDictionary>& internalDictionarySequenceMember() const { return m_internalDictionarySequenceMember.get(); }
     void setInternalDictionarySequenceMember(const Vector<InternalDictionary>& value) { m_internalDictionarySequenceMember = value; }
@@ -140,6 +145,7 @@ private:
     ScriptValue m_objectOrNullMember;
     Nullable<bool> m_createMember;
     DoubleOrString m_doubleOrStringMember;
+    TestInterface2OrUint8Array m_testInterface2OrUint8ArrayMember;
     Nullable<Vector<InternalDictionary> > m_internalDictionarySequenceMember;
     RefPtr<DOMUint8Array> m_uint8ArrayMember;
 

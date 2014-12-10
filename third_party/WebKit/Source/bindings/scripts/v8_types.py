@@ -446,7 +446,15 @@ def impl_includes_for_type(idl_type, interfaces_info):
         return set(['core/dom/DOMTypedArray.h'])
     return includes_for_type
 
+
+def impl_includes_for_type_union(idl_type, interfaces_info):
+    includes_for_type = set()
+    for member_type in idl_type.member_types:
+        includes_for_type.update(member_type.impl_includes_for_type(interfaces_info))
+    return includes_for_type
+
 IdlTypeBase.impl_includes_for_type = impl_includes_for_type
+IdlUnionType.impl_includes_for_type = impl_includes_for_type_union
 
 
 component_dir = {}

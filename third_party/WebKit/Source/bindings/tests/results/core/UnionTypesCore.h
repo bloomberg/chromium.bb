@@ -14,11 +14,13 @@
 
 namespace blink {
 
+class DOMUint8Array;
 class Node;
 class NodeList;
 class TestArrayBuffer;
 class TestArrayBufferView;
 class TestDictionary;
+class TestInterface2;
 class TestInterfaceEmpty;
 class TestInterfaceGarbageCollected;
 class TestInterfaceImplementation;
@@ -318,6 +320,52 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, StringOrDouble& i
 template <>
 struct NativeValueTraits<StringOrDouble> {
     static StringOrDouble nativeValue(const v8::Handle<v8::Value>&, v8::Isolate*, ExceptionState&);
+};
+
+class TestInterface2OrUint8Array final {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
+    TestInterface2OrUint8Array();
+    bool isNull() const { return m_type == SpecificTypeNone; }
+
+    bool isTestInterface2() const { return m_type == SpecificTypeTestInterface2; }
+    PassRefPtr<TestInterface2> getAsTestInterface2() const;
+    void setTestInterface2(PassRefPtr<TestInterface2>);
+
+    bool isUint8Array() const { return m_type == SpecificTypeUint8Array; }
+    PassRefPtr<DOMUint8Array> getAsUint8Array() const;
+    void setUint8Array(PassRefPtr<DOMUint8Array>);
+
+private:
+    enum SpecificTypes {
+        SpecificTypeNone,
+        SpecificTypeTestInterface2,
+        SpecificTypeUint8Array,
+    };
+    SpecificTypes m_type;
+
+    RefPtr<TestInterface2> m_testInterface2;
+    RefPtr<DOMUint8Array> m_uint8Array;
+
+    friend v8::Handle<v8::Value> toV8(const TestInterface2OrUint8Array&, v8::Handle<v8::Object>, v8::Isolate*);
+};
+
+class V8TestInterface2OrUint8Array final {
+public:
+    static void toImpl(v8::Isolate*, v8::Handle<v8::Value>, TestInterface2OrUint8Array&, ExceptionState&);
+};
+
+v8::Handle<v8::Value> toV8(const TestInterface2OrUint8Array&, v8::Handle<v8::Object>, v8::Isolate*);
+
+template <class CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterface2OrUint8Array& impl)
+{
+    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+}
+
+template <>
+struct NativeValueTraits<TestInterface2OrUint8Array> {
+    static TestInterface2OrUint8Array nativeValue(const v8::Handle<v8::Value>&, v8::Isolate*, ExceptionState&);
 };
 
 class TestInterfaceGarbageCollectedOrString final {

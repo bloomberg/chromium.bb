@@ -13,6 +13,7 @@
 #include "bindings/core/v8/V8Element.h"
 #include "bindings/core/v8/V8InternalDictionary.h"
 #include "bindings/core/v8/V8TestInterface.h"
+#include "bindings/core/v8/V8TestInterface2.h"
 #include "bindings/core/v8/V8TestInterfaceGarbageCollected.h"
 #include "bindings/core/v8/V8TestInterfaceWillBeGarbageCollected.h"
 #include "bindings/core/v8/V8Uint8Array.h"
@@ -224,6 +225,19 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Valu
         impl.setStringSequenceMember(stringSequenceMember);
     }
 
+    v8::Local<v8::Value> testInterface2OrUint8ArrayMemberValue = v8Object->Get(v8String(isolate, "testInterface2OrUint8ArrayMember"));
+    if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return;
+    }
+    if (testInterface2OrUint8ArrayMemberValue.IsEmpty() || testInterface2OrUint8ArrayMemberValue->IsUndefined()) {
+        // Do nothing.
+    } else {
+        TestInterface2OrUint8Array testInterface2OrUint8ArrayMember;
+        TONATIVE_VOID_EXCEPTIONSTATE_ARGINTERNAL(V8TestInterface2OrUint8Array::toImpl(isolate, testInterface2OrUint8ArrayMemberValue, testInterface2OrUint8ArrayMember, exceptionState), exceptionState);
+        impl.setTestInterface2OrUint8ArrayMember(testInterface2OrUint8ArrayMember);
+    }
+
     v8::Local<v8::Value> testInterfaceGarbageCollectedMemberValue = v8Object->Get(v8String(isolate, "testInterfaceGarbageCollectedMember"));
     if (block.HasCaught()) {
         exceptionState.rethrowV8Exception(block.Exception());
@@ -417,6 +431,10 @@ void toV8TestDictionary(const TestDictionary& impl, v8::Handle<v8::Object> dicti
 
     if (impl.hasStringSequenceMember()) {
         dictionary->Set(v8String(isolate, "stringSequenceMember"), toV8(impl.stringSequenceMember(), creationContext, isolate));
+    }
+
+    if (impl.hasTestInterface2OrUint8ArrayMember()) {
+        dictionary->Set(v8String(isolate, "testInterface2OrUint8ArrayMember"), toV8(impl.testInterface2OrUint8ArrayMember(), creationContext, isolate));
     }
 
     if (impl.hasTestInterfaceGarbageCollectedMember()) {

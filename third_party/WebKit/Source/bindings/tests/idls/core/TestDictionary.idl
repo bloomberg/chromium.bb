@@ -24,6 +24,7 @@ dictionary TestDictionary {
     object? objectOrNullMember;
     [ImplementedAs=createMember] boolean create;
     (double or DOMString) doubleOrStringMember;
+    (TestInterface2 or Uint8Array) testInterface2OrUint8ArrayMember;
     sequence<InternalDictionary> internalDictionarySequenceMember;
     Uint8Array uint8ArrayMember;
 };

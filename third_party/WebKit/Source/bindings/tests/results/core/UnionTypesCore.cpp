@@ -15,9 +15,11 @@
 #include "bindings/core/v8/V8NodeList.h"
 #include "bindings/core/v8/V8TestDictionary.h"
 #include "bindings/core/v8/V8TestInterface.h"
+#include "bindings/core/v8/V8TestInterface2.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
 #include "bindings/core/v8/V8TestInterfaceGarbageCollected.h"
 #include "bindings/core/v8/V8TestInterfaceWillBeGarbageCollected.h"
+#include "bindings/core/v8/V8Uint8Array.h"
 #include "bindings/tests/idls/core/TestImplements2.h"
 #include "bindings/tests/idls/core/TestImplements3Implementation.h"
 #include "bindings/tests/idls/core/TestPartialInterface.h"
@@ -528,6 +530,79 @@ StringOrDouble NativeValueTraits<StringOrDouble>::nativeValue(const v8::Handle<v
 {
     StringOrDouble impl;
     V8StringOrDouble::toImpl(isolate, value, impl, exceptionState);
+    return impl;
+}
+
+TestInterface2OrUint8Array::TestInterface2OrUint8Array()
+    : m_type(SpecificTypeNone)
+{
+}
+
+PassRefPtr<TestInterface2> TestInterface2OrUint8Array::getAsTestInterface2() const
+{
+    ASSERT(isTestInterface2());
+    return m_testInterface2;
+}
+
+void TestInterface2OrUint8Array::setTestInterface2(PassRefPtr<TestInterface2> value)
+{
+    ASSERT(isNull());
+    m_testInterface2 = value;
+    m_type = SpecificTypeTestInterface2;
+}
+
+PassRefPtr<DOMUint8Array> TestInterface2OrUint8Array::getAsUint8Array() const
+{
+    ASSERT(isUint8Array());
+    return m_uint8Array;
+}
+
+void TestInterface2OrUint8Array::setUint8Array(PassRefPtr<DOMUint8Array> value)
+{
+    ASSERT(isNull());
+    m_uint8Array = value;
+    m_type = SpecificTypeUint8Array;
+}
+
+void V8TestInterface2OrUint8Array::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, TestInterface2OrUint8Array& impl, ExceptionState& exceptionState)
+{
+    if (v8Value.IsEmpty())
+        return;
+
+    if (V8TestInterface2::hasInstance(v8Value, isolate)) {
+        RefPtr<TestInterface2> cppValue = V8TestInterface2::toImpl(v8::Handle<v8::Object>::Cast(v8Value));
+        impl.setTestInterface2(cppValue);
+        return;
+    }
+
+    if (V8Uint8Array::hasInstance(v8Value, isolate)) {
+        RefPtr<DOMUint8Array> cppValue = V8Uint8Array::toImpl(v8::Handle<v8::Object>::Cast(v8Value));
+        impl.setUint8Array(cppValue);
+        return;
+    }
+
+    exceptionState.throwTypeError("The provided value is not of type '(TestInterface2 or Uint8Array)'");
+}
+
+v8::Handle<v8::Value> toV8(const TestInterface2OrUint8Array& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    switch (impl.m_type) {
+    case TestInterface2OrUint8Array::SpecificTypeNone:
+        return v8::Null(isolate);
+    case TestInterface2OrUint8Array::SpecificTypeTestInterface2:
+        return toV8(impl.getAsTestInterface2(), creationContext, isolate);
+    case TestInterface2OrUint8Array::SpecificTypeUint8Array:
+        return toV8(impl.getAsUint8Array(), creationContext, isolate);
+    default:
+        ASSERT_NOT_REACHED();
+    }
+    return v8::Handle<v8::Value>();
+}
+
+TestInterface2OrUint8Array NativeValueTraits<TestInterface2OrUint8Array>::nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+{
+    TestInterface2OrUint8Array impl;
+    V8TestInterface2OrUint8Array::toImpl(isolate, value, impl, exceptionState);
     return impl;
 }
 
