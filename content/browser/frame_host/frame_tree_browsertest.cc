@@ -19,6 +19,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace content {
 
@@ -26,20 +27,19 @@ class FrameTreeBrowserTest : public ContentBrowserTest {
  public:
   FrameTreeBrowserTest() {}
 
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    SetupCrossSiteRedirector(embedded_test_server());
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FrameTreeBrowserTest);
 };
 
 // Ensures FrameTree correctly reflects page structure during navigations.
 IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeShape) {
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
-
-  GURL base_url = test_server()->GetURL("files/site_isolation/");
-  GURL::Replacements replace_host;
-  std::string host_str("A.com");  // Must stay in scope with replace_host.
-  replace_host.SetHostStr(host_str);
-  base_url = base_url.ReplaceComponents(replace_host);
+  GURL base_url = embedded_test_server()->GetURL("A.com", "/site_isolation/");
 
   // Load doc without iframes. Verify FrameTree just has root.
   // Frame tree:
@@ -68,9 +68,8 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeShape) {
 // TODO(ajwong): Talk with nasko and merge this functionality with
 // FrameTreeShape.
 IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeShape2) {
-  ASSERT_TRUE(test_server()->Start());
   NavigateToURL(shell(),
-                test_server()->GetURL("files/frame_tree/top.html"));
+                embedded_test_server()->GetURL("/frame_tree/top.html"));
 
   WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
   FrameTreeNode* root = wc->GetFrameTree()->root();
@@ -91,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeShape2) {
 
   // Navigate to about:blank, which should leave only the root node of the frame
   // tree in the browser process.
-  NavigateToURL(shell(), test_server()->GetURL("files/title1.html"));
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
 
   root = wc->GetFrameTree()->root();
   EXPECT_EQ(0UL, root->child_count());
@@ -101,9 +100,8 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeShape2) {
 // Test that we can navigate away if the previous renderer doesn't clean up its
 // child frames.
 IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeAfterCrash) {
-  ASSERT_TRUE(test_server()->Start());
   NavigateToURL(shell(),
-                test_server()->GetURL("files/frame_tree/top.html"));
+                embedded_test_server()->GetURL("/frame_tree/top.html"));
 
   // Ensure the view and frame are live.
   RenderViewHost* rvh = shell()->web_contents()->GetRenderViewHost();
@@ -129,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeAfterCrash) {
   EXPECT_FALSE(rfh->IsRenderFrameLive());
 
   // Navigate to a new URL.
-  GURL url(test_server()->GetURL("files/title1.html"));
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
   NavigateToURL(shell(), url);
   EXPECT_EQ(0UL, root->child_count());
   EXPECT_EQ(url, root->current_url());
@@ -142,17 +140,10 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeAfterCrash) {
 // Test that we can navigate away if the previous renderer doesn't clean up its
 // child frames.
 IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, NavigateWithLeftoverFrames) {
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
-
-  GURL base_url = test_server()->GetURL("files/site_isolation/");
-  GURL::Replacements replace_host;
-  std::string host_str("A.com");  // Must stay in scope with replace_host.
-  replace_host.SetHostStr(host_str);
-  base_url = base_url.ReplaceComponents(replace_host);
+  GURL base_url = embedded_test_server()->GetURL("A.com", "/site_isolation/");
 
   NavigateToURL(shell(),
-                test_server()->GetURL("files/frame_tree/top.html"));
+                embedded_test_server()->GetURL("/frame_tree/top.html"));
 
   // Hang the renderer so that it doesn't send any FrameDetached messages.
   // (This navigation will never complete, so don't wait for it.)
@@ -175,9 +166,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, NavigateWithLeftoverFrames) {
 
 // Ensure that IsRenderFrameLive is true for main frames and same-site iframes.
 IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, IsRenderFrameLive) {
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
-  GURL main_url(test_server()->GetURL("files/frame_tree/top.html"));
+  GURL main_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
@@ -191,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, IsRenderFrameLive) {
   EXPECT_TRUE(root->child_at(0)->current_frame_host()->IsRenderFrameLive());
 
   // Load a same-site page into iframe and it should still be live.
-  GURL http_url(test_server()->GetURL("files/title1.html"));
+  GURL http_url(embedded_test_server()->GetURL("/title1.html"));
   NavigateFrameToURL(root->child_at(0), http_url);
   EXPECT_TRUE(
       root->current_frame_host()->render_view_host()->IsRenderViewLive());
@@ -201,9 +190,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, IsRenderFrameLive) {
 
 // Ensure that origins are correctly set on navigations.
 IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, OriginSetOnNavigation) {
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
-  GURL main_url(test_server()->GetURL("files/frame_tree/top.html"));
+  GURL main_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
@@ -216,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, OriginSetOnNavigation) {
   EXPECT_EQ(root->current_replication_state().origin.string() + '/',
             main_url.GetOrigin().spec());
 
-  GURL frame_url(test_server()->GetURL("files/title1.html"));
+  GURL frame_url(embedded_test_server()->GetURL("/title1.html"));
   NavigateFrameToURL(root->child_at(0), frame_url);
 
   EXPECT_EQ(
@@ -244,6 +231,12 @@ class CrossProcessFrameTreeBrowserTest : public ContentBrowserTest {
     command_line->AppendSwitch(switches::kSitePerProcess);
   }
 
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    SetupCrossSiteRedirector(embedded_test_server());
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(CrossProcessFrameTreeBrowserTest);
 };
@@ -256,9 +249,7 @@ class CrossProcessFrameTreeBrowserTest : public ContentBrowserTest {
 #endif
 IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
                        MAYBE_CreateCrossProcessSubframeProxies) {
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
-  GURL main_url(test_server()->GetURL("files/site_per_process_main.html"));
+  GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
@@ -270,17 +261,12 @@ IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
   EXPECT_FALSE(root->render_manager()->GetRenderFrameProxyHost(root_instance));
 
   // Load same-site page into iframe.
-  GURL http_url(test_server()->GetURL("files/title1.html"));
+  GURL http_url(embedded_test_server()->GetURL("/title1.html"));
   NavigateFrameToURL(root->child_at(0), http_url);
 
-  // These must stay in scope with replace_host.
-  GURL::Replacements replace_host;
-  std::string foo_com("foo.com");
-
   // Load cross-site page into iframe.
-  GURL cross_site_url(test_server()->GetURL("files/title2.html"));
-  replace_host.SetHostStr(foo_com);
-  cross_site_url = cross_site_url.ReplaceComponents(replace_host);
+  GURL cross_site_url(
+      embedded_test_server()->GetURL("foo.com", "/title2.html"));
   NavigateFrameToURL(root->child_at(0), cross_site_url);
 
   // Ensure that we have created a new process for the subframe.
@@ -316,9 +302,7 @@ IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
                        OriginSetOnCrossProcessNavigations) {
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
-  GURL main_url(test_server()->GetURL("files/site_per_process_main.html"));
+  GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
@@ -340,14 +324,9 @@ IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
       root->child_at(1)->current_replication_state().origin.string() + '/',
       main_url.GetOrigin().spec());
 
-  // These must stay in scope with replace_host.
-  GURL::Replacements replace_host;
-  std::string foo_com("foo.com");
-
   // Load cross-site page into the first frame.
-  GURL cross_site_url(test_server()->GetURL("files/title2.html"));
-  replace_host.SetHostStr(foo_com);
-  cross_site_url = cross_site_url.ReplaceComponents(replace_host);
+  GURL cross_site_url(
+      embedded_test_server()->GetURL("foo.com", "/title2.html"));
   NavigateFrameToURL(root->child_at(0), cross_site_url);
 
   EXPECT_EQ(
