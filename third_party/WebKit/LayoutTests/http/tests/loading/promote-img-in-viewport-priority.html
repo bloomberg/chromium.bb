@@ -12,8 +12,10 @@ if (window.testRunner)
 var iframe = document.createElement("iframe");
 iframe.src = "resources/promote-img-in-viewport-priority-iframe.html";
 document.body.appendChild(iframe);
-iframe.addEventListener("load", function() {
-    document.body.removeChild(iframe);
-    finishJSTest();
-});
+window.onload = function() {
+    setTimeout(function() {
+        document.body.removeChild(iframe);
+        finishJSTest();
+    }, 0);
+};
 </script>
