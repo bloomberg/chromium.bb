@@ -79,7 +79,9 @@ scoped_ptr<net::test_server::HttpResponse> UploadServerRequestHandler(
 
 }  // namespace
 
-jboolean StartUploadTestServer(JNIEnv* env, jclass jcaller) {
+jboolean StartUploadTestServer(JNIEnv* env,
+                               jclass jcaller,
+                               jstring jtest_files_root) {
   // Shouldn't happen.
   if (g_test_server)
     return false;
@@ -88,8 +90,8 @@ jboolean StartUploadTestServer(JNIEnv* env, jclass jcaller) {
       base::Bind(&UploadServerRequestHandler));
   // Add a second handler for paths that UploadServerRequestHandler does not
   // handle.
-  base::FilePath test_files_root;
-  PathService::Get(base::DIR_ANDROID_APP_DATA, &test_files_root);
+  base::FilePath test_files_root(
+      base::android::ConvertJavaStringToUTF8(env, jtest_files_root));
   g_test_server->ServeFilesFromDirectory(test_files_root);
   return g_test_server->InitializeAndWaitUntilReady();
 }

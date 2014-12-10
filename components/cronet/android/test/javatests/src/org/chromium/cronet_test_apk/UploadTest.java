@@ -34,7 +34,8 @@ public class UploadTest extends CronetTestBase {
         super.setUp();
         mActivity = launchCronetTestApp();
         assertNotNull(mActivity);
-        assertTrue(UploadTestServer.startUploadTestServer());
+        assertTrue(UploadTestServer.startUploadTestServer(
+                getInstrumentation().getTargetContext()));
     }
 
     private HttpUrlRequest createRequest(

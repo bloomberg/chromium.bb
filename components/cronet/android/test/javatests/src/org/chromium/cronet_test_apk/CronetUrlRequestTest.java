@@ -34,16 +34,15 @@ public class CronetUrlRequestTest extends CronetTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         mActivity = launchCronetTestApp();
-        assertTrue(UploadTestServer.startUploadTestServer());
+        assertTrue(UploadTestServer.startUploadTestServer(
+                getInstrumentation().getTargetContext()));
         // Add url interceptors after native application context is initialized.
         mMockUrlRequestJobFactory = new MockUrlRequestJobFactory(
                 getInstrumentation().getTargetContext());
-        mMockUrlRequestJobFactory.setUp();
     }
 
     @Override
     protected void tearDown() throws Exception {
-        mMockUrlRequestJobFactory.tearDown();
         UploadTestServer.shutdownUploadTestServer();
         mActivity.mUrlRequestContext.shutdown();
         super.tearDown();

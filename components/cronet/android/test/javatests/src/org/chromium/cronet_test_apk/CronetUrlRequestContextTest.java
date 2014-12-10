@@ -83,7 +83,8 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         };
         mActivity = launchCronetTestAppWithUrlAndCommandLineArgs(TEST_URL,
                 commandLineArgs);
-        assertTrue(UploadTestServer.startUploadTestServer());
+        assertTrue(UploadTestServer.startUploadTestServer(
+                getInstrumentation().getTargetContext()));
         TestUrlRequestListener listener = new TestUrlRequestListener();
         UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
                 UploadTestServer.getEchoHeaderURL(userAgentName), listener,

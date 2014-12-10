@@ -21,11 +21,12 @@ public class CronetTestApplication extends Application {
     public void onCreate() {
         super.onCreate();
         initializeApplicationParameters();
+        TestFilesInstaller.installIfNeeded(getApplicationContext());
     }
 
     public static void initializeApplicationParameters() {
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
-        Log.i(TAG, "CronetTestApplication.initializeApplicationParameters()" +
-                   " success.");
+        Log.i(TAG, "CronetTestApplication.initializeApplicationParameters()"
+                + " success.");
     }
 }

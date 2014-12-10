@@ -4,6 +4,8 @@
 
 package org.chromium.cronet_test_apk;
 
+import android.content.Context;
+
 import org.chromium.base.JNINamespace;
 
 /**
@@ -12,8 +14,9 @@ import org.chromium.base.JNINamespace;
  */
 @JNINamespace("cronet")
 public final class UploadTestServer {
-    public static boolean startUploadTestServer() {
-        return nativeStartUploadTestServer();
+    public static boolean startUploadTestServer(Context context) {
+        return nativeStartUploadTestServer(
+                TestFilesInstaller.getInstalledPath(context));
     }
 
     public static void shutdownUploadTestServer() {
@@ -44,7 +47,7 @@ public final class UploadTestServer {
         return nativeGetFileURL(filePath);
     }
 
-    private static native boolean nativeStartUploadTestServer();
+    private static native boolean nativeStartUploadTestServer(String filePath);
     private static native void nativeShutdownUploadTestServer();
     private static native String nativeGetEchoBodyURL();
     private static native String nativeGetEchoHeaderURL(String header);

@@ -46,13 +46,6 @@ public class MockUrlRequestJobTest extends CronetTestBase {
         mActivity = launchCronetTestApp();
         mMockUrlRequestJobFactory = new MockUrlRequestJobFactory(
                 getInstrumentation().getTargetContext());
-        mMockUrlRequestJobFactory.setUp();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        mMockUrlRequestJobFactory.tearDown();
-        super.tearDown();
     }
 
     @SmallTest

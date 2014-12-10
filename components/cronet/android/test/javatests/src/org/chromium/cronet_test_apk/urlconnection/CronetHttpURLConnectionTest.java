@@ -37,7 +37,8 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         mActivity = launchCronetTestApp();
-        assertTrue(UploadTestServer.startUploadTestServer());
+        assertTrue(UploadTestServer.startUploadTestServer(
+                getInstrumentation().getTargetContext()));
     }
 
     @Override
@@ -67,7 +68,6 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
     public void testNotFoundURLRequest() throws Exception {
         MockUrlRequestJobFactory mockFactory = new MockUrlRequestJobFactory(
                 getInstrumentation().getTargetContext());
-        mockFactory.setUp();
         URL url = new URL(MockUrlRequestJobFactory.NOTFOUND_URL);
         HttpURLConnection urlConnection =
                 (HttpURLConnection) url.openConnection();
@@ -78,7 +78,6 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
                 + "</head>\n</html>\n",
                 getResponseAsString(urlConnection));
         urlConnection.disconnect();
-        mockFactory.tearDown();
     }
 
     @SmallTest
