@@ -137,6 +137,15 @@ function ImageRect() {
 }
 
 /**
+ * Creates an image rect with a canvas.
+ * @param {!HTMLCanvasElement} canvas A canvas.
+ * @return {!ImageRect}
+ */
+ImageRect.createFromCanvas = function(canvas) {
+  return new ImageRect(canvas);
+};
+
+/**
  * Creates an image rect with a bound.
  * @param {{left: number, top: number, right: number, bottom: number}} bound
  *     A bound.
@@ -315,7 +324,7 @@ ImageRect.prototype.toString = function() {
 /**
  * Draw the image in context with appropriate scaling.
  * @param {CanvasRenderingContext2D} context Context to draw.
- * @param {Image} image Image to draw.
+ * @param {!(HTMLCanvasElement|HTMLImageElement)} image Image to draw.
  * @param {ImageRect=} opt_dstRect Rectangle in the canvas (whole canvas by
  *     default).
  * @param {ImageRect=} opt_srcRect Rectangle in the image (whole image by
@@ -472,7 +481,7 @@ ImageUtil.ImageLoader = function(document) {
  * ThumbnaiLoader class.
  *
  * @param {Gallery.Item} item Item representing the image to be loaded.
- * @param {function(HTMLCanvasElement, string=)} callback Callback to be
+ * @param {function(!HTMLCanvasElement, string=)} callback Callback to be
  *     called when loaded. The second optional argument is an error identifier.
  * @param {number=} opt_delay Load delay in milliseconds, useful to let the
  *     animations play out before the computation heavy image loading starts.
@@ -585,7 +594,7 @@ ImageUtil.ImageLoader.prototype.isLoading = function(entry) {
 };
 
 /**
- * @param {function(HTMLCanvasElement, string=)} callback To be called when the
+ * @param {function(!HTMLCanvasElement, string=)} callback To be called when the
  *     image loaded.
  */
 ImageUtil.ImageLoader.prototype.setCallback = function(callback) {

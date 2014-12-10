@@ -123,7 +123,8 @@ ImageBuffer.DoubleTapAction = {
 /**
  * ImageBuffer.Overlay is a pluggable extension that modifies the outlook
  * and the behavior of the ImageBuffer instance.
- * @class
+ * @constructor
+ * @struct
  */
 ImageBuffer.Overlay = function() {};
 

@@ -5,17 +5,25 @@
 /**
  * The overlay displaying the image.
  *
- * @param {HTMLElement} container The container element.
- * @param {Viewport} viewport The viewport.
+ * @param {!HTMLElement} container The container element.
+ * @param {!Viewport} viewport The viewport.
  * @constructor
  * @extends {ImageBuffer.Overlay}
+ * @struct
  */
 function ImageView(container, viewport) {
   ImageBuffer.Overlay.call(this);
 
   this.container_ = container;
+
+  /**
+   * The viewport.
+   * @type {!Viewport}
+   * @private
+   */
   this.viewport_ = viewport;
-  this.document_ = container.ownerDocument;
+
+  this.document_ = assertInstanceof(container.ownerDocument, HTMLDocument);
   this.contentGeneration_ = 0;
   this.displayedContentGeneration_ = 0;
 
@@ -28,53 +36,93 @@ function ImageView(container, viewport) {
 
   /**
    * The element displaying the current content.
-   *
    * @type {HTMLCanvasElement}
    * @private
    */
   this.screenImage_ = null;
+
+  /**
+   * The content canvas element.
+   * @type {(HTMLCanvasElement|HTMLImageElement)}
+   * @private
+   */
+  this.contentCanvas_ = null;
+
+  /**
+   * True if the image is a preview (not full res).
+   * @type {boolean}
+   * @private
+   */
+  this.preview_ = false;
+
+  /**
+   * Cached thumbnail image.
+   * @type {HTMLCanvasElement}
+   * @private
+   */
+  this.thumbnailCanvas_ = null;
+
+  /**
+   * The content revision number.
+   * @type {number}
+   * @private
+   */
+  this.contentRevision_ = -1;
+
+  /**
+   * The last load time.
+   * @type {?number}
+   * @private
+   */
+  this.lastLoadTime_ = null;
+
+  /**
+   * Gallery item which is loaded.
+   * @type {Gallery.Item}
+   * @private
+   */
+  this.contentItem_ = null;
+
+  /**
+   * Timer to unload.
+   * @type {?number}
+   * @private
+   */
+  this.unloadTimer_ = null;
 }
 
 /**
  * Duration of transition between modes in ms.
+ * @type {number}
+ * @const
  */
 ImageView.MODE_TRANSITION_DURATION = 350;
 
 /**
  * If the user flips though images faster than this interval we do not apply
  * the slide-in/slide-out transition.
+ * @type {number}
+ * @const
  */
 ImageView.FAST_SCROLL_INTERVAL = 300;
 
-/**
- * Image load type: full resolution image loaded from cache.
- */
-ImageView.LOAD_TYPE_CACHED_FULL = 0;
 
 /**
- * Image load type: screen resolution preview loaded from cache.
+ * Image load types.
+ * @enum {number}
  */
-ImageView.LOAD_TYPE_CACHED_SCREEN = 1;
-
-/**
- * Image load type: image read from file.
- */
-ImageView.LOAD_TYPE_IMAGE_FILE = 2;
-
-/**
- * Image load type: error occurred.
- */
-ImageView.LOAD_TYPE_ERROR = 3;
-
-/**
- * Image load type: the file contents is not available offline.
- */
-ImageView.LOAD_TYPE_OFFLINE = 4;
-
-/**
- * The total number of load types.
- */
-ImageView.LOAD_TYPE_TOTAL = 5;
+ImageView.LoadType = {
+  // Full resolution image loaded from cache.
+  CACHED_FULL: 0,
+  // Screen resolution preview loaded from cache.
+  CACHED_SCREEN: 1,
+  // Image read from file.
+  IMAGE_FILE: 2,
+  // Error occurred.
+  ERROR: 3,
+  // The file contents is not available offline.
+  OFFLINE: 4
+};
 
 /**
  * Target of image load.
@@ -124,12 +172,12 @@ ImageView.prototype.getZIndex = function() { return -1; };
 ImageView.prototype.draw = function() {
   if (!this.contentCanvas_)  // Do nothing if the image content is not set.
     return;
-  if (this.setupDeviceBuffer(this.screenImage_) ||
+  if ((this.screenImage_ && this.setupDeviceBuffer(this.screenImage_)) ||
       this.displayedContentGeneration_ !== this.contentGeneration_) {
     this.displayedContentGeneration_ = this.contentGeneration_;
     ImageUtil.trace.resetTimer('paint');
     this.paintDeviceRect(
-        this.contentCanvas_, new ImageRect(this.contentCanvas_));
+        this.contentCanvas_, ImageRect.createFromCanvas(this.contentCanvas_));
     ImageUtil.trace.reportTimer('paint');
   }
 };
@@ -171,7 +219,7 @@ ImageView.prototype.getCanvas = function() { return this.contentCanvas_; };
  * @return {boolean} True if the a valid image is currently loaded.
  */
 ImageView.prototype.hasValidImage = function() {
-  return !this.preview_ && this.contentCanvas_ && this.contentCanvas_.width;
+  return !!(!this.preview_ && this.contentCanvas_ && this.contentCanvas_.width);
 };
 
 /**
@@ -193,9 +241,9 @@ ImageView.prototype.getContentRevision = function() {
  * Copies an image fragment from a full resolution canvas to a device resolution
  * canvas.
  *
- * @param {HTMLCanvasElement} canvas Canvas containing whole image. The canvas
+ * @param {!HTMLCanvasElement} canvas Canvas containing whole image. The canvas
  *     may not be full resolution (scaled).
- * @param {ImageRect} imageRect Rectangle region of the canvas to be rendered.
+ * @param {!ImageRect} imageRect Rectangle region of the canvas to be rendered.
  */
 ImageView.prototype.paintDeviceRect = function(canvas, imageRect) {
   // Map the rectangle in full resolution image to the rectangle in the device
@@ -203,7 +251,7 @@ ImageView.prototype.paintDeviceRect = function(canvas, imageRect) {
   var deviceBounds = this.viewport_.getDeviceBounds();
   var scaleX = deviceBounds.width / canvas.width;
   var scaleY = deviceBounds.height / canvas.height;
-  var deviceRect = new ImageRect(
+  var deviceRect = ImageRect.createWith(
       imageRect.left * scaleX,
       imageRect.top * scaleY,
       imageRect.width * scaleX,
@@ -217,10 +265,11 @@ ImageView.prototype.paintDeviceRect = function(canvas, imageRect) {
  * Creates an overlay canvas with properties similar to the screen canvas.
  * Useful for showing quick feedback when editing.
  *
- * @return {HTMLCanvasElement} Overlay canvas.
+ * @return {!HTMLCanvasElement} Overlay canvas.
  */
 ImageView.prototype.createOverlayCanvas = function() {
-  var canvas = this.document_.createElement('canvas');
+  var canvas = assertInstanceof(this.document_.createElement('canvas'),
+      HTMLCanvasElement);
   canvas.className = 'image';
   this.container_.appendChild(canvas);
   return canvas;
@@ -229,7 +278,7 @@ ImageView.prototype.createOverlayCanvas = function() {
 /**
  * Sets up the canvas as a buffer in the device resolution.
  *
- * @param {HTMLCanvasElement} canvas The buffer canvas.
+ * @param {!HTMLCanvasElement} canvas The buffer canvas.
  * @return {boolean} True if the canvas needs to be rendered.
  */
 ImageView.prototype.setupDeviceBuffer = function(canvas) {
@@ -258,7 +307,7 @@ ImageView.prototype.setupDeviceBuffer = function(canvas) {
 };
 
 /**
- * @return {ImageData} A new ImageData object with a copy of the content.
+ * @return {!ImageData} A new ImageData object with a copy of the content.
  */
 ImageView.prototype.copyScreenImageData = function() {
   return this.screenImage_.getContext('2d').getImageData(
@@ -285,19 +334,19 @@ ImageView.prototype.cancelLoad = function() {
  * Loads the thumbnail first, then replaces it with the main image.
  * Takes into account the image orientation encoded in the metadata.
  *
- * @param {Gallery.Item} item Gallery item to be loaded.
+ * @param {!Gallery.Item} item Gallery item to be loaded.
  * @param {!ImageView.Effect} effect Transition effect object.
  * @param {function()} displayCallback Called when the image is displayed
  *     (possibly as a preview).
- * @param {function(number, number, *=)} loadCallback Called when the image is
- *     fully loaded. The first parameter is the load type.
+ * @param {function(ImageView.LoadType, number, *=)} loadCallback Called when
+ *     the image is fully loaded. The first parameter is the load type.
  */
 ImageView.prototype.load =
     function(item, effect, displayCallback, loadCallback) {
   var entry = item.getEntry();
   var metadata = item.getMetadata() || {};
 
-  if (effect) {
+  if (!(effect instanceof ImageView.Effect.None)) {
     // Skip effects when reloading repeatedly very quickly.
     var time = Date.now();
     if (this.lastLoadTime_ &&
@@ -317,14 +366,14 @@ ImageView.prototype.load =
   switch (ImageView.getLoadTarget(item, effect)) {
     case ImageView.LoadTarget.CACHED_MAIN_IMAGE:
       displayMainImage(
-          ImageView.LOAD_TYPE_CACHED_FULL,
+          ImageView.LoadType.CACHED_FULL,
           false /* no preview */,
           assert(item.contentImage));
       break;
 
     case ImageView.LoadTarget.CACHED_THUMBNAIL:
       // We have a cached screen-scale canvas, use it instead of a thumbnail.
-      displayThumbnail(ImageView.LOAD_TYPE_CACHED_SCREEN, item.screenImage);
+      displayThumbnail(ImageView.LoadType.CACHED_SCREEN, item.screenImage);
       // As far as the user can tell the image is loaded. We still need to load
       // the full res image to make editing possible, but we can report now.
       ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('DisplayTime'));
@@ -337,14 +386,14 @@ ImageView.prototype.load =
           metadata);
       thumbnailLoader.loadDetachedImage(function(success) {
         displayThumbnail(
-            ImageView.LOAD_TYPE_IMAGE_FILE,
+            ImageView.LoadType.IMAGE_FILE,
             success ? thumbnailLoader.getImage() : null);
       });
       break;
 
     case ImageView.LoadTarget.MAIN_IMAGE:
       loadMainImage(
-          ImageView.LOAD_TYPE_IMAGE_FILE,
+          ImageView.LoadType.IMAGE_FILE,
           entry,
           false /* no preview*/,
           0 /* delay */);
@@ -354,6 +403,10 @@ ImageView.prototype.load =
       assertNotReached();
   }
 
+  /**
+   * @param {ImageView.LoadType} loadType A load type.
+   * @param {(HTMLCanvasElement|HTMLImageElement)} canvas A canvas.
+   */
   function displayThumbnail(loadType, canvas) {
     if (canvas) {
       var width = null;
@@ -381,6 +434,12 @@ ImageView.prototype.load =
         (effect && canvas) ? effect.getSafeInterval() : 0);
   }
 
+  /**
+   * @param {ImageView.LoadType} loadType Load type.
+   * @param {Entry} contentEntry A content entry.
+   * @param {boolean} previewShown A preview is shown or not.
+   * @param {number} delay Load delay.
+   */
   function loadMainImage(loadType, contentEntry, previewShown, delay) {
     if (self.prefetchLoader_.isLoading(contentEntry)) {
       // The image we need is already being prefetched. Initiating another load
@@ -403,35 +462,35 @@ ImageView.prototype.load =
   }
 
   /**
-   * @param {number} loadType
-   * @param {boolean} previewShown
-   * @param {!HTMLCanvasElement} content
-   * @param {*=} opt_error
+   * @param {ImageView.LoadType} loadType Load type.
+   * @param {boolean} previewShown A preview is shown or not.
+   * @param {!(HTMLCanvasElement|HTMLImageElement)} content A content.
+   * @param {string=} opt_error Error message.
    */
   function displayMainImage(loadType, previewShown, content, opt_error) {
     if (opt_error)
-      loadType = ImageView.LOAD_TYPE_ERROR;
+      loadType = ImageView.LoadType.ERROR;
 
     // If we already displayed the preview we should not replace the content if
     // the full content failed to load.
     var animationDuration = 0;
-    if (!(previewShown && loadType === ImageView.LOAD_TYPE_ERROR)) {
+    if (!(previewShown && loadType === ImageView.LoadType.ERROR)) {
       var replaceEffect = previewShown ? null : effect;
       animationDuration = replaceEffect ? replaceEffect.getSafeInterval() : 0;
       self.replace(content, replaceEffect);
       if (!previewShown && displayCallback) displayCallback();
     }
 
-    if (loadType !== ImageView.LOAD_TYPE_ERROR &&
-        loadType !== ImageView.LOAD_TYPE_CACHED_SCREEN) {
+    if (loadType !== ImageView.LoadType.ERROR &&
+        loadType !== ImageView.LoadType.CACHED_SCREEN) {
       ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('DisplayTime'));
     }
     ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('LoadMode'),
-        loadType, ImageView.LOAD_TYPE_TOTAL);
+        loadType, Object.keys(ImageView.LoadType).length);
 
-    if (loadType === ImageView.LOAD_TYPE_ERROR &&
+    if (loadType === ImageView.LoadType.ERROR &&
         !navigator.onLine && !metadata.external.present) {
-      loadType = ImageView.LOAD_TYPE_OFFLINE;
+      loadType = ImageView.LoadType.OFFLINE;
     }
     if (loadCallback) loadCallback(loadType, animationDuration, opt_error);
   }
@@ -439,7 +498,7 @@ ImageView.prototype.load =
 
 /**
  * Prefetches an image.
- * @param {Gallery.Item} item The image item.
+ * @param {!Gallery.Item} item The image item.
  * @param {number=} opt_delay Image load delay in ms.
  */
 ImageView.prototype.prefetch = function(item, opt_delay) {
@@ -476,7 +535,7 @@ ImageView.prototype.unload = function(opt_zoomToRect) {
 };
 
 /**
- * @param {HTMLCanvasElement} content The image element.
+ * @param {!(HTMLCanvasElement|HTMLImageElement)} content The image element.
  * @param {number=} opt_width Image width.
  * @param {number=} opt_height Image height.
  * @param {boolean=} opt_preview True if the image is a preview (not full res).
@@ -488,7 +547,8 @@ ImageView.prototype.replaceContent_ = function(
   if (this.contentCanvas_ && this.contentCanvas_.parentNode === this.container_)
     this.container_.removeChild(this.contentCanvas_);
 
-  this.screenImage_ = this.document_.createElement('canvas');
+  this.screenImage_ = assertInstanceof(this.document_.createElement('canvas'),
+      HTMLCanvasElement);
   this.screenImage_.className = 'image';
 
   this.contentCanvas_ = content;
@@ -500,7 +560,7 @@ ImageView.prototype.replaceContent_ = function(
 
   this.container_.appendChild(this.screenImage_);
 
-  this.preview_ = opt_preview;
+  this.preview_ = opt_preview || false;
   // If this is not a thumbnail, cache the content and the screen-scale image.
   if (this.hasValidImage()) {
     // Insert the full resolution canvas into DOM so that it can be printed.
@@ -537,7 +597,7 @@ ImageView.prototype.addContentCallback = function(callback) {
 /**
  * Updates the cached thumbnail image.
  *
- * @param {HTMLCanvasElement} canvas The source canvas.
+ * @param {!HTMLCanvasElement} canvas The source canvas.
  * @private
  */
 ImageView.prototype.updateThumbnail_ = function(canvas) {
@@ -556,8 +616,8 @@ ImageView.prototype.updateThumbnail_ = function(canvas) {
 /**
  * Replaces the displayed image, possibly with slide-in animation.
  *
- * @param {HTMLCanvasElement} content The image element.
- * @param {Object=} opt_effect Transition effect object.
+ * @param {!(HTMLCanvasElement|HTMLImageElement)} content The image element.
+ * @param {ImageView.Effect=} opt_effect Transition effect object.
  * @param {number=} opt_width Image width.
  * @param {number=} opt_height Image height.
  * @param {boolean=} opt_preview True if the image is a preview (not full res).
@@ -574,6 +634,7 @@ ImageView.prototype.replace = function(
     return;
   }
 
+  assert(this.screenImage_);
   var newScreenImage = this.screenImage_;
   this.viewport_.resetView();
 
@@ -591,20 +652,20 @@ ImageView.prototype.replace = function(
     if (oldScreenImage) {
       ImageUtil.setAttribute(newScreenImage, 'fade', false);
       ImageUtil.setAttribute(oldScreenImage, 'fade', true);
-      console.assert(opt_effect.getReverse, 'Cannot revert an effect.');
       var reverse = opt_effect.getReverse();
+      assert(reverse);
       this.setTransform_(oldScreenImage, oldViewport, reverse);
       setTimeout(function() {
         if (oldScreenImage.parentNode)
           oldScreenImage.parentNode.removeChild(oldScreenImage);
       }, reverse.getSafeInterval());
     }
-  }.bind(this));
+  }.bind(this), 0);
 };
 
 /**
- * @param {HTMLCanvasElement} element The element to transform.
- * @param {Viewport} viewport Viewport to be used for calculating
+ * @param {!HTMLCanvasElement} element The element to transform.
+ * @param {!Viewport} viewport Viewport to be used for calculating
  *     transformation.
  * @param {ImageView.Effect=} opt_effect The effect to apply.
  * @param {number=} opt_duration Transition duration.
@@ -622,7 +683,8 @@ ImageView.prototype.setTransform_ = function(
 };
 
 /**
- * @param {ImageRect} screenRect Target rectangle in screen coordinates.
+ * Creates zoom effect object.
+ * @param {!ImageRect} screenRect Target rectangle in screen coordinates.
  * @return {!ImageView.Effect} Zoom effect object.
  */
 ImageView.prototype.createZoomEffect = function(screenRect) {
@@ -635,14 +697,16 @@ ImageView.prototype.createZoomEffect = function(screenRect) {
  * Visualizes crop or rotate operation. Hide the old image instantly, animate
  * the new image to visualize the operation.
  *
- * @param {HTMLCanvasElement} canvas New content canvas.
- * @param {ImageRect} imageCropRect The crop rectangle in image coordinates.
- *                             Null for rotation operations.
+ * @param {!HTMLCanvasElement} canvas New content canvas.
+ * @param {!ImageRect} imageCropRect The crop rectangle in image coordinates.
+ *     Null for rotation operations.
  * @param {number} rotate90 Rotation angle in 90 degree increments.
  * @return {number} Animation duration.
  */
 ImageView.prototype.replaceAndAnimate = function(
     canvas, imageCropRect, rotate90) {
+  assert(this.screenImage_);
+
   var oldImageBounds = {
     width: this.viewport_.getImageBounds().width,
     height: this.viewport_.getImageBounds().height
@@ -673,8 +737,8 @@ ImageView.prototype.replaceAndAnimate = function(
  * Visualizes "undo crop". Shrink the current image to the given crop rectangle
  * while fading in the new image.
  *
- * @param {HTMLCanvasElement} canvas New content canvas.
- * @param {ImageRect} imageCropRect The crop rectangle in image coordinates.
+ * @param {!HTMLCanvasElement} canvas New content canvas.
+ * @param {!ImageRect} imageCropRect The crop rectangle in image coordinates.
  * @return {number} Animation duration.
  */
 ImageView.prototype.animateAndReplace = function(canvas, imageCropRect) {
@@ -708,6 +772,7 @@ ImageView.prototype.animateAndReplace = function(canvas, imageCropRect) {
  * @param {number} duration Duration in ms.
  * @param {string=} opt_timing CSS transition timing function name.
  * @constructor
+ * @struct
  */
 ImageView.Effect = function(duration, opt_timing) {
   this.duration_ = duration;
@@ -715,12 +780,16 @@ ImageView.Effect = function(duration, opt_timing) {
 };
 
 /**
- *
+ * Default duration of an effect.
+ * @type {number}
+ * @const
  */
 ImageView.Effect.DEFAULT_DURATION = 180;
 
 /**
- *
+ * Effect margin.
+ * @type {number}
+ * @const
  */
 ImageView.Effect.MARGIN = 100;
 
@@ -738,20 +807,28 @@ ImageView.Effect.prototype.getSafeInterval = function() {
 };
 
 /**
+ * Reverses the effect.
+ * @return {ImageView.Effect} Reversed effect. Null is returned if this
+ *     is not supported in the effect.
+ */
+ImageView.Effect.prototype.getReverse = function() {
+  return null;
+};
+
+/**
  * @return {string} CSS transition timing function name.
  */
 ImageView.Effect.prototype.getTiming = function() { return this.timing_; };
 
 /**
  * Obtains the CSS transformation string of the effect.
- * @param {HTMLCanvasElement} element Canvas element to be applied the
+ * @param {!HTMLCanvasElement} element Canvas element to be applied the
  *     transformation.
- * @param {Viewport} viewport Current viewport.
+ * @param {!Viewport} viewport Current viewport.
  * @return {string} CSS transformation description.
  */
 ImageView.Effect.prototype.transform = function(element, viewport) {
   throw new Error('Not implemented.');
-  return '';
 };
 
 /**
@@ -759,6 +836,7 @@ ImageView.Effect.prototype.transform = function(element, viewport) {
  *
  * @constructor
  * @extends {ImageView.Effect}
+ * @struct
  */
 ImageView.Effect.None = function() {
   ImageView.Effect.call(this, 0, 'easy-out');
@@ -770,8 +848,8 @@ ImageView.Effect.None = function() {
 ImageView.Effect.None.prototype = { __proto__: ImageView.Effect.prototype };
 
 /**
- * @param {HTMLCanvasElement} element Element.
- * @param {Viewport} viewport Current viewport.
+ * @param {!HTMLCanvasElement} element Element.
+ * @param {!Viewport} viewport Current viewport.
  * @return {string} Transform string.
  */
 ImageView.Effect.None.prototype.transform = function(element, viewport) {
@@ -785,6 +863,7 @@ ImageView.Effect.None.prototype.transform = function(element, viewport) {
  * @param {boolean=} opt_slow True if slow (as in slideshow).
  * @constructor
  * @extends {ImageView.Effect}
+ * @struct
  */
 ImageView.Effect.Slide = function Slide(direction, opt_slow) {
   ImageView.Effect.call(this,
@@ -798,8 +877,7 @@ ImageView.Effect.Slide = function Slide(direction, opt_slow) {
 ImageView.Effect.Slide.prototype = { __proto__: ImageView.Effect.prototype };
 
 /**
- * Reverses the slide effect.
- * @return {ImageView.Effect.Slide} Reversed effect.
+ * @override
  */
 ImageView.Effect.Slide.prototype.getReverse = function() {
   return new ImageView.Effect.Slide(-this.direction_, this.slow_);
@@ -819,10 +897,12 @@ ImageView.Effect.Slide.prototype.transform = function(element, viewport) {
  *
  * @param {number} previousImageWidth Width of the full resolution image.
  * @param {number} previousImageHeight Height of the full resolution image.
- * @param {ImageRect} imageCropRect Crop rectangle in the full resolution image.
+ * @param {!ImageRect} imageCropRect Crop rectangle in the full resolution
+ *     image.
  * @param {number=} opt_duration Duration of the effect.
  * @constructor
  * @extends {ImageView.Effect}
+ * @struct
  */
 ImageView.Effect.Zoom = function(
     previousImageWidth, previousImageHeight, imageCropRect, opt_duration) {
@@ -846,14 +926,16 @@ ImageView.Effect.Zoom.prototype.transform = function(element, viewport) {
 /**
  * Effect to zoom to a screen rectangle.
  *
- * @param {ImageRect} screenRect Rectangle in the application window's
+ * @param {!ImageRect} screenRect Rectangle in the application window's
  *     coordinate.
  * @param {number=} opt_duration Duration of effect.
  * @constructor
  * @extends {ImageView.Effect}
+ * @struct
  */
 ImageView.Effect.ZoomToScreen = function(screenRect, opt_duration) {
-  ImageView.Effect.call(this, opt_duration);
+  ImageView.Effect.call(this, opt_duration ||
+      ImageView.Effect.DEFAULT_DURATION);
   this.screenRect_ = screenRect;
 };
 
@@ -876,6 +958,7 @@ ImageView.Effect.ZoomToScreen.prototype.transform = function(
  *     and false is for counterclockwise.
  * @constructor
  * @extends {ImageView.Effect}
+ * @struct
  */
 ImageView.Effect.Rotate = function(orientation) {
   ImageView.Effect.call(this, ImageView.Effect.DEFAULT_DURATION);

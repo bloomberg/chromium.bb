@@ -783,7 +783,7 @@ SlideMode.prototype.loadSelectedItem_ = function() {
       return false;
 
     // Always prefetch if the previous load was from cache.
-    if (loadType === ImageView.LOAD_TYPE_CACHED_FULL)
+    if (loadType === ImageView.LoadType.CACHED_FULL)
       return true;
 
     // Prefetch if we have been going in the same direction for long enough.
@@ -983,7 +983,7 @@ SlideMode.prototype.itemLoaded_ = function(
   var metadata = item.getMetadata();
 
   this.showSpinner_(false);
-  if (loadType === ImageView.LOAD_TYPE_ERROR) {
+  if (loadType === ImageView.LoadType.ERROR) {
     // if we have a specific error, then display it
     if (opt_error) {
       this.errorBanner_.show(/** @type {string} */ (opt_error));
@@ -991,7 +991,7 @@ SlideMode.prototype.itemLoaded_ = function(
       // otherwise try to infer general error
       this.errorBanner_.show('GALLERY_IMAGE_ERROR');
     }
-  } else if (loadType === ImageView.LOAD_TYPE_OFFLINE) {
+  } else if (loadType === ImageView.LoadType.OFFLINE) {
     this.errorBanner_.show('GALLERY_IMAGE_OFFLINE');
   }
 

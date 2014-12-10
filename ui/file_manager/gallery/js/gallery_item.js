@@ -46,7 +46,7 @@ Gallery.Item = function(
    * The content cache is used for prefetching the next image when going through
    * the images sequentially. The real life photos can be large (18Mpix = 72Mb
    * pixel array) so we want only the minimum amount of caching.
-   * @type {HTMLCanvasElement}
+   * @type {(HTMLCanvasElement|HTMLImageElement)}
    */
   this.contentImage = null;
 
