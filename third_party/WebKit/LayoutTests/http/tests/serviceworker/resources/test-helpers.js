@@ -145,63 +145,35 @@ function wait_for_activated(test, registration) {
     new Error('registration must have at least one version'));
 }
 
-(function() {
-  function fetch_tests_from_worker(worker) {
-    return new Promise(function(resolve, reject) {
-        var messageChannel = new MessageChannel();
-        messageChannel.port1.addEventListener('message', function(message) {
-            if (message.data.type == 'complete') {
-              synthesize_tests(message.data.tests, message.data.status);
-              resolve();
-            }
+// Declare a test that runs entirely in the ServiceWorkerGlobalScope. The |url|
+// is the service worker script URL. This function:
+// - Instantiates a new test with the description specified in |description|.
+//   The test will succeed if the specified service worker can be successfully
+//   registered and installed.
+// - Creates a new ServiceWorker registration with a scope unique to the current
+//   document URL. Note that this doesn't allow more than one
+//   service_worker_test() to be run from the same document.
+// - Waits for the new worker to begin installing.
+// - Imports tests results from tests running inside the ServiceWorker.
+function service_worker_test(url, description) {
+  // If the document URL is https://example.com/document and the script URL is
+  // https://example.com/script/worker.js, then the scope would be
+  // https://example.com/script/scope/document.
+  var scope = new URL('scope' + window.location.pathname,
+                      new URL(url, window.location)).toString();
+  promise_test(function(test) {
+      return service_worker_unregister_and_register(test, url, scope)
+        .then(function(registration) {
+            add_completion_callback(function() {
+                registration.unregister();
+              });
+            return wait_for_update(test, registration)
+              .then(function(worker) {
+                  return fetch_tests_from_worker(worker);
+                });
           });
-        worker.postMessage({type: 'fetch_results', port: messageChannel.port2},
-                           [messageChannel.port2]);
-        messageChannel.port1.start();
-      });
-  };
-
-  function synthesize_tests(tests, status) {
-    for (var i = 0; i < tests.length; ++i) {
-      var t = async_test(tests[i].name);
-      switch (tests[i].status) {
-        case tests[i].PASS:
-          t.step(function() { assert_true(true); });
-          t.done();
-          break;
-        case tests[i].TIMEOUT:
-          t.force_timeout();
-          break;
-        case tests[i].FAIL:
-          t.step(function() { throw {message: tests[i].message}; });
-          break;
-        case tests[i].NOTRUN:
-          // Leave NOTRUN alone. It'll get marked as a NOTRUN when the test
-          // terminates.
-          break;
-      }
-    }
-  };
-
-  function service_worker_test(url, description) {
-    var scope = new URL('./', new URL(url, window.location)) +
-      'resources/service-worker-scope' +
-      window.location.pathname;
-    var test = async_test(description);
-    var registration;
-    service_worker_unregister_and_register(test, url, scope)
-      .then(function(r) {
-          registration = r;
-          return wait_for_update(test, registration);
-        })
-      .then(function(worker) { return fetch_tests_from_worker(worker); })
-      .then(function() { return registration.unregister(); })
-      .then(function() { test.done(); })
-      .catch(test.step_func(function(e) { throw e; }));
-  };
-
-  self.service_worker_test = service_worker_test;
-})();
+    }, description);
+}
 
 function get_host_info() {
   var ORIGINAL_HOST = '127.0.0.1';
