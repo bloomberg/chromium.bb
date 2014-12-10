@@ -63,20 +63,14 @@ inline blink::PNGImageDecoder* imageDecoder(png_structp png)
     return static_cast<blink::PNGImageDecoder*>(png_get_progressive_ptr(png));
 }
 
-// Called when decoding fails.
-void PNGAPI decodingFailed(png_structp png, png_const_charp)
-{
-    longjmp(JMPBUF(png), 1);
-}
-
 // Called when image header information is available (including the size).
-void PNGAPI headerAvailable(png_structp png, png_infop)
+void PNGAPI pngHeaderAvailable(png_structp png, png_infop)
 {
     imageDecoder(png)->headerAvailable();
 }
 
 // Called when a decoded row is ready.
-void PNGAPI rowAvailable(png_structp png, png_bytep rowBuffer, png_uint_32 rowIndex, int interlacePass)
+void PNGAPI pngRowAvailable(png_structp png, png_bytep rowBuffer, png_uint_32 rowIndex, int interlacePass)
 {
     imageDecoder(png)->rowAvailable(rowBuffer, rowIndex, interlacePass);
 }
@@ -84,7 +78,13 @@ void PNGAPI rowAvailable(png_structp png, png_bytep rowBuffer, png_uint_32 rowIn
 // Called when decoding completes.
 void PNGAPI pngComplete(png_structp png, png_infop)
 {
-    imageDecoder(png)->pngComplete();
+    imageDecoder(png)->complete();
+}
+
+// Called when decoding fails.
+void PNGAPI pngFailed(png_structp png, png_const_charp)
+{
+    longjmp(JMPBUF(png), 1);
 }
 
 } // anonymous
@@ -105,9 +105,9 @@ public:
         , m_rowBuffer()
 #endif
     {
-        m_png = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, decodingFailed, 0);
+        m_png = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, pngFailed, 0);
         m_info = png_create_info_struct(m_png);
-        png_set_progressive_read_fn(m_png, m_decoder, headerAvailable, rowAvailable, pngComplete);
+        png_set_progressive_read_fn(m_png, m_decoder, pngHeaderAvailable, pngRowAvailable, pngComplete);
     }
 
     ~PNGImageReader()
@@ -521,7 +521,7 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer, unsigned rowIndex, 
     buffer.setPixelsChanged(true);
 }
 
-void PNGImageDecoder::pngComplete()
+void PNGImageDecoder::complete()
 {
     if (!m_frameBufferCache.isEmpty())
         m_frameBufferCache.first().setStatus(ImageFrame::FrameComplete);
