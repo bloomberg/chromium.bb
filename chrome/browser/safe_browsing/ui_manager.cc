@@ -97,15 +97,18 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
     const UnsafeResource& resource) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!resource.threat_metadata.empty() &&
-      resource.threat_type == SB_THREAT_TYPE_URL_MALWARE) {
+  if (resource.is_subresource && !resource.is_subframe) {
+    // Sites tagged as serving Unwanted Software should only show a warning for
+    // main-frame or sub-frame resource. Similar warning restrictions should be
+    // applied to malware sites tagged as "landing sites" (see "Types of
+    // Malware sites" under
+    // https://developers.google.com/safe-browsing/developers_guide_v3#UserWarnings).
     safe_browsing::MalwarePatternType proto;
-    // Malware sites tagged as "landing site" should only show a warning for a
-    // main-frame or sub-frame resource. (See "Types of Malware sites" under
-    // https://developers.google.com/safe-browsing/developers_guide_v3#UserWarnings)
-    if (proto.ParseFromString(resource.threat_metadata) &&
-        proto.pattern_type() == safe_browsing::MalwarePatternType::LANDING &&
-        resource.is_subresource && !resource.is_subframe) {
+    if (resource.threat_type == SB_THREAT_TYPE_URL_UNWANTED ||
+        (resource.threat_type == SB_THREAT_TYPE_URL_MALWARE &&
+         !resource.threat_metadata.empty() &&
+         proto.ParseFromString(resource.threat_metadata) &&
+         proto.pattern_type() == safe_browsing::MalwarePatternType::LANDING)) {
       if (!resource.callback.is_null()) {
         BrowserThread::PostTask(
             BrowserThread::IO, FROM_HERE, base::Bind(resource.callback, true));

@@ -415,6 +415,18 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
 #endif
   }
 
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+    g_browser_process->safe_browsing_service()->ui_manager()->AddObserver(
+        &observer_);
+  }
+
+  void TearDownOnMainThread() override {
+    g_browser_process->safe_browsing_service()->ui_manager()->RemoveObserver(
+        &observer_);
+    InProcessBrowserTest::TearDownOnMainThread();
+  }
+
   virtual void SetUpInProcessBrowserTestFixture() {
     ASSERT_TRUE(test_server()->Start());
   }
@@ -514,18 +526,6 @@ class SafeBrowsingServiceMetadataTest
  public:
   SafeBrowsingServiceMetadataTest() {}
 
-  void SetUpOnMainThread() override {
-    SafeBrowsingServiceTest::SetUpOnMainThread();
-    g_browser_process->safe_browsing_service()->ui_manager()->AddObserver(
-        &observer_);
-  }
-
-  void TearDownOnMainThread() override {
-    g_browser_process->safe_browsing_service()->ui_manager()->RemoveObserver(
-        &observer_);
-    SafeBrowsingServiceTest::TearDownOnMainThread();
-  }
-
   void GenUrlFullhashResultWithMetadata(const GURL& url,
                                         SBFullHashResult* full_hash) {
     GenUrlFullhashResult(url, safe_browsing_util::MALWARE, full_hash);
@@ -600,7 +600,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceMetadataTest, MalwareImg) {
   SBFullHashResult malware_full_hash;
   GenUrlFullhashResultWithMetadata(img_url, &malware_full_hash);
   switch (GetParam()) {
-    case METADATA_NONE:
+    case METADATA_NONE:  // Falls through.
     case METADATA_DISTRIBUTION:
       EXPECT_CALL(observer_, OnSafeBrowsingMatch(IsUnsafeResourceFor(img_url)))
           .Times(1);
@@ -632,10 +632,24 @@ INSTANTIATE_TEST_CASE_P(MaybeSetMetadata,
                                         METADATA_LANDING,
                                         METADATA_DISTRIBUTION));
 
+IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, UnwantedImgIgnored) {
+  GURL main_url = test_server()->GetURL(kMalwarePage);
+  GURL img_url = test_server()->GetURL(kMalwareImg);
+
+  // Add the img url as coming from a site serving UwS and then load the parent
+  // page.
+  SBFullHashResult uws_full_hash;
+  GenUrlFullhashResult(img_url, safe_browsing_util::UNWANTEDURL,
+                       &uws_full_hash);
+  SetupResponseForUrl(img_url, uws_full_hash);
+
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  EXPECT_FALSE(ShowingInterstitialPage());
+}
+
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, DISABLED_MalwareWithWhitelist) {
   GURL url = test_server()->GetURL(kEmptyPage);
-  g_browser_process->safe_browsing_service()->
-      ui_manager()->AddObserver(&observer_);
 
   // After adding the url to safebrowsing database and getfullhash result,
   // we should see the interstitial page.
@@ -661,9 +675,6 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, DISABLED_MalwareWithWhitelist) {
   EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(url))).Times(0);
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_FALSE(ShowingInterstitialPage());
-
-  g_browser_process->safe_browsing_service()->
-      ui_manager()->RemoveObserver(&observer_);
 }
 
 const char kPrefetchMalwarePage[] = "files/safe_browsing/prefetch_malware.html";
@@ -673,8 +684,6 @@ const char kPrefetchMalwarePage[] = "files/safe_browsing/prefetch_malware.html";
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, Prefetch) {
   GURL url = test_server()->GetURL(kPrefetchMalwarePage);
   GURL malware_url = test_server()->GetURL(kMalwarePage);
-  g_browser_process->safe_browsing_service()->
-      ui_manager()->AddObserver(&observer_);
 
   class SetPrefetchForTest {
    public:
@@ -715,8 +724,6 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, Prefetch) {
   ui_test_utils::NavigateToURL(browser(), malware_url);
   EXPECT_TRUE(ShowingInterstitialPage());
   Mock::VerifyAndClear(&observer_);
-  g_browser_process->safe_browsing_service()->
-      ui_manager()->RemoveObserver(&observer_);
 }
 
 }  // namespace
