@@ -1653,7 +1653,7 @@ void AXRenderObject::setSelectedTextRange(const PlainTextRange& range)
 {
     if (isNativeTextControl() && m_renderer->isTextControl()) {
         HTMLTextFormControlElement* textControl = toRenderTextControl(m_renderer)->textFormControlElement();
-        textControl->setSelectionRange(range.start, range.start + range.length);
+        textControl->setSelectionRange(range.start, range.start + range.length, SelectionHasNoDirection, NotDispatchSelectEvent);
         return;
     }
 

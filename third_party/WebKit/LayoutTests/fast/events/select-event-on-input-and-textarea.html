@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body onload="runInputTests()">
+<input id="inputId" value="abcd"></input>
+<textarea id="textAreaId">abcd</textarea>
+<script>
+description("Test select event is triggered on input and textarea Elements.");
+var input = document.getElementById("inputId");
+var textarea = document.getElementById("textAreaId");
+var expectedNumOfSelectEvent;
+var actualNumOfSelectEvent;
+var jsTestIsAsync = true;
+
+var inputTests = [
+    function() {
+        input.setSelectionRange(1, 2);
+    },
+    function() {
+        input.setRangeText("efgh");
+    },
+    function() {
+        input.selectionStart = 1;
+    },
+    function() {
+        input.selectionEnd = 3;
+    },
+    function() {
+        input.selectionDirection = "forward";
+    }
+];
+
+var textAreaTests = [
+    function() {
+        textarea.setSelectionRange(1, 2);
+    },
+    function() {
+        textarea.setRangeText("efgh");
+    },
+    function() {
+        textarea.selectionStart = 1;
+    },
+    function() {
+        textarea.selectionEnd = 3;
+    },
+    function() {
+        textarea.selectionDirection = "forward";
+    }
+];
+
+function handleInputSelectEvent() {
+    actualNumOfSelectEvent++;
+    if (inputTests.length) {
+        inputTests.shift()();
+        return;
+    }
+
+    if (expectedNumOfSelectEvent == actualNumOfSelectEvent) {
+        testPassed("select event is triggered on setSelectionRange, setRangeText, selectionStart, selectionEnd and selectionDirection methods of input element.");
+    } else {
+        testFailed("select is triggered " + actualNumOfSelectEvent + " times instead of " + expectedNumOfSelectEvent + " times on textarea element.");
+    }
+
+    runTextareaTests();
+}
+
+function handleTextAreaSelectEvent() {
+    actualNumOfSelectEvent++;
+    if (textAreaTests.length) {
+        textAreaTests.shift()();
+        return;
+    }
+
+    if (expectedNumOfSelectEvent == actualNumOfSelectEvent) {
+        testPassed("select event is triggered on setSelectionRange, setRangeText, selectionStart, selectionEnd and selectionDirection methods of textarea element.");
+    } else {
+        testFailed("select is triggered " + actualNumOfSelectEvent + " times instead of " + expectedNumOfSelectEvent + " times on textarea element.");
+    }
+
+    finishJSTest();
+}
+
+function runInputTests() {
+    // incrementing it by 1 as select() is kept outside the inputTests array.
+    expectedNumOfSelectEvent = inputTests.length + 1;
+    actualNumOfSelectEvent = 0;
+    input.addEventListener("select", handleInputSelectEvent);
+    input.select();
+}
+
+function runTextareaTests() {
+    // incrementing it by 1 as select() is kept outside the textAreaTests array.
+    expectedNumOfSelectEvent = textAreaTests.length + 1;
+    actualNumOfSelectEvent = 0;
+    textarea.addEventListener("select", handleTextAreaSelectEvent);
+    textarea.select();
+}
+</script>
+</body>
+</html>

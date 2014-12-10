@@ -349,7 +349,7 @@ void HTMLInputElement::updateFocusAppearance(bool restorePreviousSelection)
 {
     if (isTextField()) {
         if (!restorePreviousSelection)
-            select();
+            select(NotDispatchSelectEvent);
         else
             restoreCachedSelection();
         if (document().frame())
@@ -1029,7 +1029,7 @@ void HTMLInputElement::setEditingValue(const String& value)
 
     unsigned max = value.length();
     if (focused())
-        setSelectionRange(max, max);
+        setSelectionRange(max, max, SelectionHasNoDirection, NotDispatchSelectEvent);
     else
         cacheSelectionInResponseToSetValue(max);
 

@@ -179,7 +179,7 @@ void SearchFieldDecorationElement::defaultEventHandler(Event* event)
     HTMLInputElement* input = toHTMLInputElement(shadowHost());
     if (input && event->type() == EventTypeNames::mousedown && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
         input->focus();
-        input->select();
+        input->select(NotDispatchSelectEvent);
         event->setDefaultHandled();
     }
 

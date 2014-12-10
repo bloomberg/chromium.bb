@@ -243,7 +243,7 @@ bool HTMLTextAreaElement::shouldShowFocusRingOnMouseFocus() const
 void HTMLTextAreaElement::updateFocusAppearance(bool restorePreviousSelection)
 {
     if (!restorePreviousSelection)
-        setSelectionRange(0, 0);
+        setSelectionRange(0, 0, SelectionHasNoDirection, NotDispatchSelectEvent);
     else
         restoreCachedSelection();
 
@@ -373,7 +373,7 @@ void HTMLTextAreaElement::setValueCommon(const String& newValue, TextFieldEventB
             if (isFinishedParsingChildren()) {
                 // Set the caret to the end of the text value except for initialize.
                 unsigned endOfString = m_value.length();
-                setSelectionRange(endOfString, endOfString, SelectionHasNoDirection, ChangeSelectionIfFocused);
+                setSelectionRange(endOfString, endOfString, SelectionHasNoDirection, NotDispatchSelectEvent, ChangeSelectionIfFocused);
             }
         }
         return;
@@ -390,7 +390,7 @@ void HTMLTextAreaElement::setValueCommon(const String& newValue, TextFieldEventB
     if (isFinishedParsingChildren()) {
         // Set the caret to the end of the text value except for initialize.
         unsigned endOfString = m_value.length();
-        setSelectionRange(endOfString, endOfString, SelectionHasNoDirection, ChangeSelectionIfFocused);
+        setSelectionRange(endOfString, endOfString, SelectionHasNoDirection, NotDispatchSelectEvent, ChangeSelectionIfFocused);
     }
 
     notifyFormStateChanged();

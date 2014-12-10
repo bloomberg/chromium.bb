@@ -183,10 +183,10 @@ void HTMLTextFormControlElement::setSelectionDirection(const String& direction)
     setSelectionRange(selectionStart(), selectionEnd(), direction);
 }
 
-void HTMLTextFormControlElement::select()
+void HTMLTextFormControlElement::select(NeedToDispatchSelectEvent eventBehaviour)
 {
     document().updateLayoutIgnorePendingStylesheets();
-    setSelectionRange(0, std::numeric_limits<int>::max(), SelectionHasNoDirection, isFocusable() ? ChangeSelectionAndFocus : NotChangeSelection);
+    setSelectionRange(0, std::numeric_limits<int>::max(), SelectionHasNoDirection, eventBehaviour, isFocusable() ? ChangeSelectionAndFocus : NotChangeSelection);
 }
 
 bool HTMLTextFormControlElement::shouldDispatchFormControlChangeEvent(String& oldValue, String& newValue)
@@ -345,7 +345,7 @@ static int indexForPosition(HTMLElement* innerEditor, const Position& passedPosi
     return index;
 }
 
-void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextFieldSelectionDirection direction, SelectionOption selectionOption)
+void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextFieldSelectionDirection direction, NeedToDispatchSelectEvent eventBehaviour, SelectionOption selectionOption)
 {
     if (hasAuthorShadowRoot() || !isTextFormControl())
         return;
@@ -356,8 +356,11 @@ void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextField
     start = std::min(std::max(start, 0), end);
     cacheSelection(start, end, direction);
 
-    if (selectionOption == NotChangeSelection || (selectionOption == ChangeSelectionIfFocused && document().focusedElement() != this))
+    if (selectionOption == NotChangeSelection || (selectionOption == ChangeSelectionIfFocused && document().focusedElement() != this)) {
+        if (eventBehaviour == DispatchSelectEvent)
+            scheduleSelectEvent();
         return;
+    }
 
     LocalFrame* frame = document().frame();
     HTMLElement* innerEditor = innerEditorElement();
@@ -384,6 +387,8 @@ void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextField
     newSelection.setIsDirectional(direction != SelectionHasNoDirection);
 
     frame->selection().setSelection(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | (selectionOption == ChangeSelectionAndFocus ? 0 : FrameSelection::DoNotSetFocus));
+    if (eventBehaviour == DispatchSelectEvent)
+        scheduleSelectEvent();
 }
 
 VisiblePosition HTMLTextFormControlElement::visiblePositionForIndex(int index) const
@@ -544,7 +549,7 @@ PassRefPtrWillBeRawPtr<Range> HTMLTextFormControlElement::selection() const
 
 void HTMLTextFormControlElement::restoreCachedSelection()
 {
-    setSelectionRange(m_cachedSelectionStart, m_cachedSelectionEnd, m_cachedSelectionDirection);
+    setSelectionRange(m_cachedSelectionStart, m_cachedSelectionEnd, m_cachedSelectionDirection, NotDispatchSelectEvent);
 }
 
 void HTMLTextFormControlElement::selectionChanged(bool userTriggered)
@@ -559,6 +564,13 @@ void HTMLTextFormControlElement::selectionChanged(bool userTriggered)
         if (frame->selection().isRange() && userTriggered)
             dispatchEvent(Event::createBubble(EventTypeNames::select));
     }
+}
+
+void HTMLTextFormControlElement::scheduleSelectEvent()
+{
+    RefPtrWillBeRawPtr<Event> event = Event::createBubble(EventTypeNames::select);
+    event->setTarget(this);
+    document().enqueueAnimationFrameEvent(event.release());
 }
 
 void HTMLTextFormControlElement::parseAttribute(const QualifiedName& name, const AtomicString& value)

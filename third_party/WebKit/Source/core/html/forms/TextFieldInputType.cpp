@@ -161,7 +161,7 @@ void TextFieldInputType::setValue(const String& sanitizedValue, bool valueChange
 
     unsigned max = visibleValue().length();
     if (input->focused())
-        input->setSelectionRange(max, max);
+        input->setSelectionRange(max, max, SelectionHasNoDirection, NotDispatchSelectEvent);
     else
         input->cacheSelectionInResponseToSetValue(max);
 
@@ -536,7 +536,7 @@ void TextFieldInputType::focusAndSelectSpinButtonOwner()
 {
     RefPtrWillBeRawPtr<HTMLInputElement> input(element());
     input->focus();
-    input->select();
+    input->select(NotDispatchSelectEvent);
 }
 
 bool TextFieldInputType::shouldSpinButtonRespondToMouseEvents()
