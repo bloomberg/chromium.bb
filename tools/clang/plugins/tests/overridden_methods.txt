@@ -11,14 +11,14 @@ In file included from overridden_methods.cpp:5:
   virtual void SomeConstMethod() const {}
                                       ^
                                        override
-./overridden_methods.h:58:53: warning: [chromium-style] Overriding method must be marked with 'override' or 'final'.
+./overridden_methods.h:58:55: warning: [chromium-style] Overriding method must be marked with 'override' or 'final'.
   virtual void SomeMethodWithExceptionSpec() throw() {}
-                                                    ^
-                                                     override
-./overridden_methods.h:61:67: warning: [chromium-style] Overriding method must be marked with 'override' or 'final'.
+                                                      ^
+                                                       override
+./overridden_methods.h:61:69: warning: [chromium-style] Overriding method must be marked with 'override' or 'final'.
   virtual void SomeConstMethodWithExceptionSpec() const throw(int) {}
-                                                                  ^
-                                                                   override
+                                                                    ^
+                                                                     override
 ./overridden_methods.h:63:39: warning: [chromium-style] Overriding method must be marked with 'override' or 'final'.
   virtual void SomeNonPureBaseMethod() {}
                                       ^
@@ -43,14 +43,14 @@ overridden_methods.cpp:32:39: warning: [chromium-style] Overriding method must b
   virtual void SomeConstMethod() const {}
                                       ^
                                        override
-overridden_methods.cpp:34:53: warning: [chromium-style] Overriding method must be marked with 'override' or 'final'.
+overridden_methods.cpp:34:55: warning: [chromium-style] Overriding method must be marked with 'override' or 'final'.
   virtual void SomeMethodWithExceptionSpec() throw() {}
-                                                    ^
-                                                     override
-overridden_methods.cpp:37:67: warning: [chromium-style] Overriding method must be marked with 'override' or 'final'.
+                                                      ^
+                                                       override
+overridden_methods.cpp:37:69: warning: [chromium-style] Overriding method must be marked with 'override' or 'final'.
   virtual void SomeConstMethodWithExceptionSpec() const throw(int) {}
-                                                                  ^
-                                                                   override
+                                                                    ^
+                                                                     override
 overridden_methods.cpp:39:39: warning: [chromium-style] Overriding method must be marked with 'override' or 'final'.
   virtual void SomeNonPureBaseMethod() {}
                                       ^

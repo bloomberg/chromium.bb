@@ -762,6 +762,9 @@ config("default_warnings") {
 
         # TODO(thakis): Remove, http://crbug.com/263960
         "-Wno-reserved-user-defined-literal",
+
+        # TODO(hans): Get this cleaned up.
+        "-Wno-inconsistent-missing-override",
       ]
     }
     if (gcc_version >= 48) {

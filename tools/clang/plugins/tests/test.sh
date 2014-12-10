@@ -34,6 +34,7 @@ do_testcase() {
   fi
 
   local output="$("${CLANG_PATH}" -fsyntax-only -Wno-c++11-extensions \
+      -Wno-inconsistent-missing-override \
       -Xclang -load -Xclang "${PLUGIN_PATH}" \
       -Xclang -add-plugin -Xclang find-bad-constructs ${flags} ${1} 2>&1)"
   local diffout="$(echo "${output}" | diff - "${2}")"

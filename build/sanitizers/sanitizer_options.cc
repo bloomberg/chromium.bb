@@ -72,7 +72,7 @@ const char *kAsanDefaultOptions =
 const char *kAsanDefaultOptions =
     "strict_memcmp=0 replace_intrin=0 check_printf=1 use_sigaltstack=1 "
     "strip_path_prefix=Release/../../ fast_unwind_on_fatal=1 "
-    "detect_stack_use_after_return=1 ";
+    "detect_stack_use_after_return=1 detect_odr_violation=0 ";
 static const char kNaClDefaultOptions[] = "handle_segv=0";
 static const char kNaClFlag[] = "--type=nacl-loader";
 #endif  // OS_LINUX
