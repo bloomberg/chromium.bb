@@ -55,8 +55,7 @@ class DummyPrerenderContents : public PrerenderContents {
       const GURL& url,
       const Referrer& referrer,
       Origin origin,
-      bool call_did_finish_load,
-      const content::SessionStorageNamespaceMap& session_storage_namespace_map);
+      bool call_did_finish_load);
 
   void StartPrerendering(
       const gfx::Size& size,
@@ -69,18 +68,14 @@ class DummyPrerenderContents : public PrerenderContents {
   Profile* profile_;
   const GURL url_;
   bool call_did_finish_load_;
-  content::SessionStorageNamespaceMap session_storage_namespace_map_;
 
   DISALLOW_COPY_AND_ASSIGN(DummyPrerenderContents);
 };
 
 class DummyPrerenderContentsFactory : public PrerenderContents::Factory {
  public:
-  DummyPrerenderContentsFactory(
-      bool call_did_finish_load,
-      const content::SessionStorageNamespaceMap& session_storage_namespace_map)
-      : call_did_finish_load_(call_did_finish_load),
-        session_storage_namespace_map_(session_storage_namespace_map) {
+  explicit DummyPrerenderContentsFactory(bool call_did_finish_load)
+      : call_did_finish_load_(call_did_finish_load) {
   }
 
   PrerenderContents* CreatePrerenderContents(
@@ -93,7 +88,6 @@ class DummyPrerenderContentsFactory : public PrerenderContents::Factory {
 
  private:
   bool call_did_finish_load_;
-  content::SessionStorageNamespaceMap session_storage_namespace_map_;
 
   DISALLOW_COPY_AND_ASSIGN(DummyPrerenderContentsFactory);
 };
@@ -104,23 +98,23 @@ DummyPrerenderContents::DummyPrerenderContents(
     const GURL& url,
     const Referrer& referrer,
     Origin origin,
-    bool call_did_finish_load,
-    const content::SessionStorageNamespaceMap& session_storage_namespace_map)
+    bool call_did_finish_load)
     : PrerenderContents(prerender_manager, profile, url, referrer, origin,
                         PrerenderManager::kNoExperiment),
       profile_(profile),
       url_(url),
-      call_did_finish_load_(call_did_finish_load),
-      session_storage_namespace_map_(session_storage_namespace_map) {
+      call_did_finish_load_(call_did_finish_load) {
 }
 
 void DummyPrerenderContents::StartPrerendering(
     const gfx::Size& size,
     content::SessionStorageNamespace* session_storage_namespace,
     net::URLRequestContextGetter* request_context) {
+  content::SessionStorageNamespaceMap session_storage_namespace_map;
+  session_storage_namespace_map[std::string()] = session_storage_namespace;
   prerender_contents_.reset(content::WebContents::CreateWithSessionStorage(
       content::WebContents::CreateParams(profile_),
-      session_storage_namespace_map_));
+      session_storage_namespace_map));
   PrerenderTabHelper::CreateForWebContents(prerender_contents_.get());
   content::NavigationController::LoadURLParams params(url_);
   prerender_contents_->GetController().LoadURLWithParams(params);
@@ -153,8 +147,7 @@ PrerenderContents* DummyPrerenderContentsFactory::CreatePrerenderContents(
     Origin origin,
     uint8 experiment_id) {
   return new DummyPrerenderContents(prerender_manager, profile, url, referrer,
-                                    origin, call_did_finish_load_,
-                                    session_storage_namespace_map_);
+                                    origin, call_did_finish_load_);
 }
 
 }  // namespace
@@ -174,19 +167,17 @@ class InstantSearchPrerendererTest : public InstantUnitTestBase {
             bool call_did_finish_load) {
     AddTab(browser(), GURL(url::kAboutBlankURL));
 
-    content::SessionStorageNamespaceMap session_storage_namespace_map;
-    session_storage_namespace_map[std::string()] =
-        GetActiveWebContents()->GetController().
-            GetDefaultSessionStorageNamespace();
     PrerenderManagerFactory::GetForProfile(browser()->profile())->
         SetPrerenderContentsFactory(
-            new DummyPrerenderContentsFactory(call_did_finish_load,
-                                              session_storage_namespace_map));
+            new DummyPrerenderContentsFactory(call_did_finish_load));
     PrerenderManagerFactory::GetForProfile(browser()->profile())->
         OnCookieStoreLoaded();
     if (prerender_search_results_base_page) {
+      content::SessionStorageNamespace* session_storage_namespace =
+          GetActiveWebContents()->GetController().
+              GetDefaultSessionStorageNamespace();
       InstantSearchPrerenderer* prerenderer = GetInstantSearchPrerenderer();
-      prerenderer->Init(session_storage_namespace_map, gfx::Size(640, 480));
+      prerenderer->Init(session_storage_namespace, gfx::Size(640, 480));
       EXPECT_NE(static_cast<PrerenderHandle*>(NULL), prerender_handle());
     }
   }

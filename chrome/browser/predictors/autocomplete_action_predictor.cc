@@ -149,7 +149,7 @@ void AutocompleteActionPredictor::CancelPrerender() {
 
 void AutocompleteActionPredictor::StartPrerendering(
     const GURL& url,
-    const content::SessionStorageNamespaceMap& session_storage_namespace_map,
+    content::SessionStorageNamespace* session_storage_namespace,
     const gfx::Size& size) {
   // Only cancel the old prerender after starting the new one, so if the URLs
   // are the same, the underlying prerender will be reused.
@@ -157,11 +157,6 @@ void AutocompleteActionPredictor::StartPrerendering(
       prerender_handle_.release());
   if (prerender::PrerenderManager* prerender_manager =
           prerender::PrerenderManagerFactory::GetForProfile(profile_)) {
-    content::SessionStorageNamespace* session_storage_namespace = NULL;
-    content::SessionStorageNamespaceMap::const_iterator it =
-        session_storage_namespace_map.find(std::string());
-    if (it != session_storage_namespace_map.end())
-      session_storage_namespace = it->second.get();
     prerender_handle_.reset(prerender_manager->AddPrerenderFromOmnibox(
         url, session_storage_namespace, size));
   }

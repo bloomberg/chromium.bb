@@ -46,7 +46,7 @@ InstantSearchPrerenderer* InstantSearchPrerenderer::GetForProfile(
 }
 
 void InstantSearchPrerenderer::Init(
-    const content::SessionStorageNamespaceMap& session_storage_namespace_map,
+    content::SessionStorageNamespace* session_storage_namespace,
     const gfx::Size& size) {
   // TODO(kmadhusu): Enable Instant for Incognito profile.
   if (profile_->IsOffTheRecord())
@@ -59,12 +59,6 @@ void InstantSearchPrerenderer::Init(
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(profile_);
   if (prerender_manager) {
-    content::SessionStorageNamespace* session_storage_namespace = NULL;
-    content::SessionStorageNamespaceMap::const_iterator it =
-        session_storage_namespace_map.find(std::string());
-    if (it != session_storage_namespace_map.end())
-      session_storage_namespace = it->second.get();
-
     prerender_handle_.reset(prerender_manager->AddPrerenderForInstant(
         prerender_url_, session_storage_namespace, size));
   }

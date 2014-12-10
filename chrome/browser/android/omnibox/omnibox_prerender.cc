@@ -147,13 +147,13 @@ void OmniboxPrerender::DoPrerender(const AutocompleteMatch& match,
       InstantSearchPrerenderer::GetForProfile(profile);
   if (prerenderer && prerenderer->IsAllowed(match, web_contents)) {
     prerenderer->Init(
-        web_contents->GetController().GetSessionStorageNamespaceMap(),
+        web_contents->GetController().GetDefaultSessionStorageNamespace(),
         container_bounds.size());
     return;
   }
   predictors::AutocompleteActionPredictorFactory::GetForProfile(profile)->
       StartPrerendering(
           match.destination_url,
-          web_contents->GetController().GetSessionStorageNamespaceMap(),
+          web_contents->GetController().GetDefaultSessionStorageNamespace(),
           container_bounds.size());
 }

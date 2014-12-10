@@ -107,7 +107,7 @@ void OmniboxCurrentPageDelegateImpl::DoPrerender(
       InstantSearchPrerenderer::GetForProfile(profile_);
   if (prerenderer && prerenderer->IsAllowed(match, web_contents)) {
     prerenderer->Init(
-        web_contents->GetController().GetSessionStorageNamespaceMap(),
+        web_contents->GetController().GetDefaultSessionStorageNamespace(),
         container_bounds.size());
     return;
   }
@@ -115,7 +115,7 @@ void OmniboxCurrentPageDelegateImpl::DoPrerender(
   predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_)->
       StartPrerendering(
           match.destination_url,
-          web_contents->GetController().GetSessionStorageNamespaceMap(),
+          web_contents->GetController().GetDefaultSessionStorageNamespace(),
           container_bounds.size());
 }
 

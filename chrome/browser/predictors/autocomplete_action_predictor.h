@@ -17,7 +17,6 @@
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "url/gurl.h"
@@ -101,7 +100,7 @@ class AutocompleteActionPredictor
   // prerenders (if any).
   void StartPrerendering(
       const GURL& url,
-      const content::SessionStorageNamespaceMap& session_storage_namespace_map,
+      content::SessionStorageNamespace* session_storage_namespace,
       const gfx::Size& size);
 
   // Cancels the current prerender, unless it has already been abandoned.

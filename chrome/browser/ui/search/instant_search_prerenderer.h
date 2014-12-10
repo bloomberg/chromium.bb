@@ -20,6 +20,7 @@ struct NavigateParams;
 }
 
 namespace content {
+class SessionStorageNamespace;
 class WebContents;
 }
 
@@ -43,15 +44,14 @@ class InstantSearchPrerenderer {
   // Returns the InstantSearchPrerenderer instance for the given |profile|.
   static InstantSearchPrerenderer* GetForProfile(Profile* profile);
 
-  // Prerender the |prerender_url_| contents. The
-  // |session_storage_namespace_map| is used to identify the namespace of the
-  // active tab at the time the prerender is generated. The |size| gives the
-  // initial size for the target prerender. InstantSearchPrerenderer will run at
-  // most one prerender at a time, so launching a prerender will cancel the
-  // previous prerenders (if any).
-  void Init(
-      const content::SessionStorageNamespaceMap& session_storage_namespace_map,
-      const gfx::Size& size);
+  // Prerender the |prerender_url_| contents. |session_storage_namespace| is
+  // used to identify the namespace of the active tab at the time the prerender
+  // is generated. The |size| gives the initial size for the target
+  // prerender. InstantSearchPrerenderer will run at most one prerender at a
+  // time, so launching a prerender will cancel the previous prerenders (if
+  // any).
+  void Init(content::SessionStorageNamespace* session_storage_namespace,
+            const gfx::Size& size);
 
   // Cancels the current request.
   void Cancel();

@@ -215,7 +215,7 @@ void SearchTabHelper::OmniboxFocusChanged(OmniboxFocusState state,
 
     if (!IsSearchResultsPage()) {
       prerenderer->Init(
-          web_contents_->GetController().GetSessionStorageNamespaceMap(),
+          web_contents_->GetController().GetDefaultSessionStorageNamespace(),
           web_contents_->GetContainerBounds().size());
     }
   }
@@ -270,7 +270,7 @@ void SearchTabHelper::OnTabActivated() {
         InstantSearchPrerenderer::GetForProfile(profile());
     if (prerenderer && !IsSearchResultsPage()) {
       prerenderer->Init(
-          web_contents_->GetController().GetSessionStorageNamespaceMap(),
+          web_contents_->GetController().GetDefaultSessionStorageNamespace(),
           web_contents_->GetContainerBounds().size());
     }
   }
