@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
         [feGaussianBlur stdDeviation="1.00, 1.00"]
           [SourceGraphic]
     RenderSVGText {text} at (30,12) size 200x22 contains 1 chunk(s)
-      [filter="filter"] RenderSVGResourceFilter {filter} at (10.00,9.80) size 239.94x26.40
+      [filter="filter"] RenderSVGResourceFilter {filter} at (10,9.80) size 239.94x26.40
       RenderSVGInlineText {#text} at (0,0) size 132x22
         [filter="filter"] RenderSVGResourceFilter {filter} at (16.89,9.80) size 157.30x26.40
         chunk 1 text run 1 at (30.00,30.00) startOffset 0 endOffset 19 width 131.08: "This is for filter "

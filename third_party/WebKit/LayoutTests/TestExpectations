@@ -1200,10 +1200,6 @@ crbug.com/419486 [ Mac ] virtual/slimmingpaint/fast/text/atsui-small-caps-punctu
 
 crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
 
-crbug.com/440530 [ Mac Win ] svg/filters/filter-on-filter-for-text.svg [ NeedsRebaseline ]
-crbug.com/440530 [ Mac Win ] svg/filters/filter-on-tspan.svg [ NeedsRebaseline ]
-crbug.com/440530 [ Mac Win ] svg/filters/feColorMatrix-values.svg [ NeedsRebaseline ]
-
 # Disabled until the test plugin is fixed.
 crbug.com/363099 [ Win ] plugins/geturlnotify-during-document-teardown.html [ Failure ]
 crbug.com/363099 [ Win ] plugins/nested-plugin-objects.html [ Failure ]

@@ -102,7 +102,7 @@ layer at (0,0) size 800x600
           [filter="satrange"] RenderSVGResourceFilter {filter} at (196.87,316.40) size 157.57x31.20
           chunk 1 text run 1 at (210.00,340.00) startOffset 0 endOffset 13 width 131.31: "Saturate must"
       RenderSVGText {text} at (210,349) size 150x26 contains 1 chunk(s)
-        [filter="satrange"] RenderSVGResourceFilter {filter} at (195.01,346.40) size 179.93x31.20
+        [filter="satrange"] RenderSVGResourceFilter {filter} at (195,346.40) size 179.93x31.20
         RenderSVGInlineText {#text} at (0,0) size 150x26
-          [filter="satrange"] RenderSVGResourceFilter {filter} at (195.01,346.40) size 179.92x31.20
+          [filter="satrange"] RenderSVGResourceFilter {filter} at (195,346.40) size 179.92x31.20
           chunk 1 text run 1 at (210.00,370.00) startOffset 0 endOffset 15 width 149.93: "have one value."
