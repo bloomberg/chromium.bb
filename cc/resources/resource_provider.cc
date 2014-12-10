@@ -1123,11 +1123,6 @@ SkSurface* ResourceProvider::ScopedWriteLockGr::GetSkSurface(
       !resource_->sk_surface.get() ||
       !SurfaceHasMatchingProperties(use_distance_field_text, can_use_lcd_text);
   if (create_surface) {
-    class GrContext* gr_context = resource_provider_->GrContext();
-    // TODO(alokp): Implement TestContextProvider::GrContext().
-    if (!gr_context)
-      return nullptr;
-
     resource_provider_->LazyAllocate(resource_);
 
     GrBackendTextureDesc desc;
@@ -1137,6 +1132,8 @@ SkSurface* ResourceProvider::ScopedWriteLockGr::GetSkSurface(
     desc.fConfig = ToGrPixelConfig(resource_->format);
     desc.fOrigin = kTopLeft_GrSurfaceOrigin;
     desc.fTextureHandle = resource_->gl_id;
+
+    class GrContext* gr_context = resource_provider_->GrContext();
     skia::RefPtr<GrTexture> gr_texture =
         skia::AdoptRef(gr_context->wrapBackendTexture(desc));
     if (!gr_texture)

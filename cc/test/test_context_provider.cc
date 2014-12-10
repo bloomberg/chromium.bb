@@ -12,6 +12,8 @@
 #include "base/logging.h"
 #include "cc/test/test_gles2_interface.h"
 #include "cc/test/test_web_graphics_context_3d.h"
+#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 
 namespace cc {
 
@@ -90,8 +92,14 @@ class GrContext* TestContextProvider::GrContext() {
   DCHECK(bound_);
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
-  // TODO(danakj): Make a test GrContext that works with a test Context3d.
-  return NULL;
+  if (gr_context_)
+    return gr_context_.get();
+
+  auto null_interface = skia::AdoptRef(GrGLCreateNullInterface());
+  gr_context_ = skia::AdoptRef(GrContext::Create(
+      kOpenGL_GrBackend,
+      reinterpret_cast<GrBackendContext>(null_interface.get())));
+  return gr_context_.get();
 }
 
 bool TestContextProvider::IsContextLost() {

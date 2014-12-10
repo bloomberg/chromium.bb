@@ -13,6 +13,7 @@
 #include "cc/output/context_provider.h"
 #include "cc/test/test_context_support.h"
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
+#include "skia/ext/refptr.h"
 
 namespace cc {
 class TestWebGraphicsContext3D;
@@ -75,6 +76,7 @@ class TestContextProvider : public ContextProvider {
 
   LostContextCallback lost_context_callback_;
   MemoryPolicyChangedCallback memory_policy_changed_callback_;
+  skia::RefPtr<class GrContext> gr_context_;
 
   base::WeakPtrFactory<TestContextProvider> weak_ptr_factory_;
 

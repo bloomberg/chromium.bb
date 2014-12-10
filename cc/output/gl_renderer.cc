@@ -155,8 +155,6 @@ class GLRenderer::ScopedUseGrContext {
  public:
   static scoped_ptr<ScopedUseGrContext> Create(GLRenderer* renderer,
                                                DrawingFrame* frame) {
-    if (!renderer->output_surface_->context_provider()->GrContext())
-      return nullptr;
     return make_scoped_ptr(new ScopedUseGrContext(renderer, frame));
   }
 
