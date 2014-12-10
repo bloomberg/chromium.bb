@@ -104,12 +104,6 @@ void TestExtensionsClient::FilterHostPermissions(
     std::set<PermissionMessage>* messages) const {
 }
 
-void TestExtensionsClient::FilterHostPermissions(
-    const URLPatternSet& hosts,
-    URLPatternSet* new_hosts,
-    PermissionIDSet* permissions) const {
-}
-
 void TestExtensionsClient::SetScriptingWhitelist(
     const ExtensionsClient::ScriptingWhitelist& whitelist) {
   scripting_whitelist_ = whitelist;

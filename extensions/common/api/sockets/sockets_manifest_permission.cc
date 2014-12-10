@@ -6,7 +6,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
-#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "extensions/common/api/extensions_manifest_types.h"
@@ -159,23 +158,21 @@ std::string SocketsManifestPermission::name() const {
 
 std::string SocketsManifestPermission::id() const { return name(); }
 
-PermissionIDSet SocketsManifestPermission::GetPermissions() const {
-  PermissionMessages messages;
-  PermissionIDSet ids;
-  AddAllHostMessages(messages, ids);
-  return ids;
-}
-
 bool SocketsManifestPermission::HasMessages() const {
   bool is_empty = permissions_.empty();
   return !is_empty;
 }
 
 PermissionMessages SocketsManifestPermission::GetMessages() const {
-  PermissionMessages messages;
-  PermissionIDSet ids;
-  AddAllHostMessages(messages, ids);
-  return messages;
+  // TODO(rpaquay): This function and callees is (almost) a copy/paste
+  // from extensions::SocketPermissiona.
+  PermissionMessages result;
+  if (!AddAnyHostMessage(result)) {
+    AddSpecificHostMessage(result);
+    AddSubdomainHostMessage(result);
+  }
+  AddNetworkListMessage(result);
+  return result;
 }
 
 bool SocketsManifestPermission::FromValue(const base::Value* value) {
@@ -263,27 +260,13 @@ void SocketsManifestPermission::AddPermission(
   permissions_.insert(entry);
 }
 
-void SocketsManifestPermission::AddAllHostMessages(PermissionMessages& messages,
-                                                   PermissionIDSet& ids) const {
-  // TODO(rpaquay): This function and callees is (almost) a copy/paste from
-  // extensions::SocketPermission.
-  if (!AddAnyHostMessage(messages, ids)) {
-    AddSpecificHostMessage(messages, ids);
-    AddSubdomainHostMessage(messages, ids);
-  }
-  AddNetworkListMessage(messages, ids);
-}
-
-bool SocketsManifestPermission::AddAnyHostMessage(PermissionMessages& messages,
-                                                  PermissionIDSet& ids) const {
+bool SocketsManifestPermission::AddAnyHostMessage(
+    PermissionMessages& messages) const {
   for (SocketPermissionEntrySet::const_iterator it = permissions_.begin();
        it != permissions_.end();
        ++it) {
     if (it->IsAddressBoundType() &&
         it->GetHostType() == SocketPermissionEntry::ANY_HOST) {
-      // TODO(sashab): Add a rule to ChromePermissionMessageProvider:
-      // kSocketAnyHost -> IDS_EXTENSION_PROMPT_WARNING_SOCKET_ANY_HOST
-      ids.insert(APIPermission::kSocketAnyHost);
       messages.push_back(
           PermissionMessage(PermissionMessage::kSocketAnyHost,
                             l10n_util::GetStringUTF16(
@@ -295,8 +278,7 @@ bool SocketsManifestPermission::AddAnyHostMessage(PermissionMessages& messages,
 }
 
 void SocketsManifestPermission::AddSubdomainHostMessage(
-    PermissionMessages& messages,
-    PermissionIDSet& ids) const {
+    PermissionMessages& messages) const {
   std::set<base::string16> domains;
   for (SocketPermissionEntrySet::const_iterator it = permissions_.begin();
        it != permissions_.end();
@@ -305,8 +287,6 @@ void SocketsManifestPermission::AddSubdomainHostMessage(
       domains.insert(base::UTF8ToUTF16(it->pattern().host));
   }
   if (!domains.empty()) {
-    // TODO(sashab): This is not correct for all languages - add proper
-    // internationalization of this string for all plural states.
     int id = (domains.size() == 1)
                  ? IDS_EXTENSION_PROMPT_WARNING_SOCKET_HOSTS_IN_DOMAIN
                  : IDS_EXTENSION_PROMPT_WARNING_SOCKET_HOSTS_IN_DOMAINS;
@@ -317,22 +297,11 @@ void SocketsManifestPermission::AddSubdomainHostMessage(
             JoinString(
                 std::vector<base::string16>(domains.begin(), domains.end()),
                 ' '))));
-    // TODO(sashab): Add rules to ChromePermissionMessageProvider:
-    // kSocketDomainHostsSingular ->
-    //         IDS_EXTENSION_PROMPT_WARNING_SOCKET_HOSTS_IN_DOMAIN
-    // kSocketDomainHostsPlural ->
-    //         IDS_EXTENSION_PROMPT_WARNING_SOCKET_HOSTS_IN_DOMAINS
-    APIPermission::ID pid = (domains.size() == 1)
-                                ? APIPermission::kSocketDomainHostsSingular
-                                : APIPermission::kSocketDomainHostsPlural;
-    for (const auto& domain : domains)
-      ids.insert(pid, domain);
   }
 }
 
 void SocketsManifestPermission::AddSpecificHostMessage(
-    PermissionMessages& messages,
-    PermissionIDSet& ids) const {
+    PermissionMessages& messages) const {
   std::set<base::string16> hostnames;
   for (SocketPermissionEntrySet::const_iterator it = permissions_.begin();
        it != permissions_.end();
@@ -341,8 +310,6 @@ void SocketsManifestPermission::AddSpecificHostMessage(
       hostnames.insert(base::UTF8ToUTF16(it->pattern().host));
   }
   if (!hostnames.empty()) {
-    // TODO(sashab): This is not correct for all languages - add proper
-    // internationalization of this string for all plural states.
     int id = (hostnames.size() == 1)
                  ? IDS_EXTENSION_PROMPT_WARNING_SOCKET_SPECIFIC_HOST
                  : IDS_EXTENSION_PROMPT_WARNING_SOCKET_SPECIFIC_HOSTS;
@@ -353,29 +320,15 @@ void SocketsManifestPermission::AddSpecificHostMessage(
             JoinString(
                 std::vector<base::string16>(hostnames.begin(), hostnames.end()),
                 ' '))));
-    // TODO(sashab): Add rules to ChromePermissionMessageProvider:
-    // kSocketSpecificHostsSingular ->
-    //         IDS_EXTENSION_PROMPT_WARNING_SOCKET_SPECIFIC_HOST
-    // kSocketSpecificHostsPlural ->
-    //         IDS_EXTENSION_PROMPT_WARNING_SOCKET_SPECIFIC_HOSTS
-    APIPermission::ID pid = (hostnames.size() == 1)
-                                ? APIPermission::kSocketSpecificHostsSingular
-                                : APIPermission::kSocketSpecificHostsPlural;
-    for (const auto& hostname : hostnames)
-      ids.insert(pid, hostname);
   }
 }
 
 void SocketsManifestPermission::AddNetworkListMessage(
-    PermissionMessages& messages,
-    PermissionIDSet& ids) const {
+    PermissionMessages& messages) const {
   for (SocketPermissionEntrySet::const_iterator it = permissions_.begin();
        it != permissions_.end();
        ++it) {
     if (it->pattern().type == SocketPermissionRequest::NETWORK_STATE) {
-      // TODO(sashab): Add a rule to ChromePermissionMessageProvider:
-      // kNetworkState -> IDS_EXTENSION_PROMPT_WARNING_NETWORK_STATE
-      ids.insert(APIPermission::kNetworkState);
       messages.push_back(
           PermissionMessage(PermissionMessage::kNetworkState,
                             l10n_util::GetStringUTF16(

@@ -207,8 +207,6 @@
         'common/permissions/api_permission_set.cc',
         'common/permissions/api_permission_set.h',
         'common/permissions/base_set_operators.h',
-        'common/permissions/coalesced_permission_message.cc',
-        'common/permissions/coalesced_permission_message.h',
         'common/permissions/extensions_api_permissions.cc',
         'common/permissions/extensions_api_permissions.h',
         'common/permissions/manifest_permission.cc',

@@ -29,13 +29,6 @@ class ChromeAPIPermissions;
 // There is one instance per permission per loaded extension.
 class APIPermission {
  public:
-  // The IDs of all permissions available to apps. Add as many permissions here
-  // as needed to generate meaningful permission messages. Add the rules for the
-  // messages to ChromePermissionMessageProvider.
-  // Remove permissions from this list if they have no longer have a
-  // corresponding API permission and no permission message.
-  // TODO(sashab): Move this to a more central location, and rename it to
-  // PermissionID.
   enum ID {
     // Error codes.
     kInvalid = -2,
@@ -202,27 +195,6 @@ class APIPermission {
     kSystemNetwork,
     kSystemInfoCpu,
     kSystemInfoMemory,
-
-    // Permission message IDs that are not currently valid permissions on their
-    // own, but are needed by various manifest permissions to represent their
-    // permission message rule combinations.
-    // TODO(sashab): Move these in-line with the other permission IDs.
-    kBluetooth,
-    kBluetoothDevices,
-    kFavicon,
-    kFullAccess,
-    kHostReadOnly,
-    kHostReadWrite,
-    kHostsAll,
-    kHostsAllReadOnly,
-    kOverrideBookmarksUI,
-    kSocketAnyHost,
-    kSocketDomainHostsSingular,
-    kSocketDomainHostsPlural,
-    kSocketSpecificHostsSingular,
-    kSocketSpecificHostsPlural,
-    kNetworkState,
-
     kEnumBoundary
   };
 

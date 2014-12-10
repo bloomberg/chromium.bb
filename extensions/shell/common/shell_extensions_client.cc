@@ -147,13 +147,6 @@ void ShellExtensionsClient::FilterHostPermissions(
   NOTIMPLEMENTED();
 }
 
-void ShellExtensionsClient::FilterHostPermissions(
-    const URLPatternSet& hosts,
-    URLPatternSet* new_hosts,
-    PermissionIDSet* permissions) const {
-  NOTIMPLEMENTED();
-}
-
 void ShellExtensionsClient::SetScriptingWhitelist(
     const ScriptingWhitelist& whitelist) {
   scripting_whitelist_ = whitelist;
