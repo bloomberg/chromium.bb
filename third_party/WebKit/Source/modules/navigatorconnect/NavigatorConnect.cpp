@@ -45,7 +45,7 @@ public:
 
 private:
     RefPtr<ScriptPromiseResolver> m_resolver;
-    RefPtrWillBeMember<MessagePort> m_port;
+    RefPtrWillBePersistent<MessagePort> m_port;
     WTF_MAKE_NONCOPYABLE(ConnectCallbacks);
 };
 
