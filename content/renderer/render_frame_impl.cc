@@ -247,7 +247,7 @@ void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
 // Returns the original request url. If there is no redirect, the original
 // url is the same as ds->request()->url(). If the WebDataSource belongs to a
 // frame was loaded by loadData, the original url will be ds->unreachableURL()
-static GURL GetOriginalRequestURL(WebDataSource* ds) {
+GURL GetOriginalRequestURL(WebDataSource* ds) {
   // WebDataSource has unreachable URL means that the frame is loaded through
   // blink::WebFrame::loadData(), and the base URL will be in the redirect
   // chain. However, we never visited the baseURL. So in this case, we should
@@ -263,7 +263,7 @@ static GURL GetOriginalRequestURL(WebDataSource* ds) {
   return ds->originalRequest().url();
 }
 
-NOINLINE static void CrashIntentionally() {
+NOINLINE void CrashIntentionally() {
   // NOTE(shess): Crash directly rather than using NOTREACHED() so
   // that the signature is easier to triage in crash reports.
   volatile int* zero = NULL;
@@ -271,7 +271,7 @@ NOINLINE static void CrashIntentionally() {
 }
 
 #if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
-NOINLINE static void MaybeTriggerAsanError(const GURL& url) {
+NOINLINE void MaybeTriggerAsanError(const GURL& url) {
   // NOTE(rogerm): We intentionally perform an invalid heap access here in
   //     order to trigger an Address Sanitizer (ASAN) error report.
   const char kCrashDomain[] = "crash";
@@ -306,7 +306,7 @@ NOINLINE static void MaybeTriggerAsanError(const GURL& url) {
 }
 #endif  // ADDRESS_SANITIZER || SYZYASAN
 
-static void MaybeHandleDebugURL(const GURL& url) {
+void MaybeHandleDebugURL(const GURL& url) {
   if (!url.SchemeIs(kChromeUIScheme))
     return;
   if (url == GURL(kChromeUICrashURL)) {
@@ -333,15 +333,15 @@ static void MaybeHandleDebugURL(const GURL& url) {
 }
 
 // Returns false unless this is a top-level navigation.
-static bool IsTopLevelNavigation(WebFrame* frame) {
+bool IsTopLevelNavigation(WebFrame* frame) {
   return frame->parent() == NULL;
 }
 
 // Returns false unless this is a top-level navigation that crosses origins.
-static bool IsNonLocalTopLevelNavigation(const GURL& url,
-                                         WebFrame* frame,
-                                         WebNavigationType type,
-                                         bool is_form_post) {
+bool IsNonLocalTopLevelNavigation(const GURL& url,
+                                  WebFrame* frame,
+                                  WebNavigationType type,
+                                  bool is_form_post) {
   if (!IsTopLevelNavigation(frame))
     return false;
 
@@ -473,10 +473,11 @@ CommonNavigationParams MakeCommonNavigationParams(
   return params;
 }
 
+RenderFrameImpl::CreateRenderFrameImplFunction g_create_render_frame_impl =
+    nullptr;
+
 }  // namespace
 
-static RenderFrameImpl* (*g_create_render_frame_impl)(RenderViewImpl*, int32) =
-    NULL;
 
 // static
 RenderFrameImpl* RenderFrameImpl::Create(RenderViewImpl* render_view,
@@ -549,7 +550,7 @@ RenderFrameImpl* RenderFrameImpl::FromWebFrame(blink::WebFrame* web_frame) {
 
 // static
 void RenderFrameImpl::InstallCreateHook(
-    RenderFrameImpl* (*create_render_frame_impl)(RenderViewImpl*, int32)) {
+    CreateRenderFrameImplFunction create_render_frame_impl) {
   CHECK(!g_create_render_frame_impl);
   g_create_render_frame_impl = create_render_frame_impl;
 }

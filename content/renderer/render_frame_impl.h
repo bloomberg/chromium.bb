@@ -128,8 +128,10 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Used by content_layouttest_support to hook into the creation of
   // RenderFrameImpls.
+  using CreateRenderFrameImplFunction = RenderFrameImpl* (*)(RenderViewImpl*,
+                                                             int32);
   static void InstallCreateHook(
-      RenderFrameImpl* (*create_render_frame_impl)(RenderViewImpl*, int32));
+      CreateRenderFrameImplFunction create_render_frame_impl);
 
   virtual ~RenderFrameImpl();
 
