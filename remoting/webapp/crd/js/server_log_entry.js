@@ -75,6 +75,8 @@ remoting.ServerLogEntry.KEY_CONNECTION_ERROR_ = 'connection-error';
  */
 remoting.ServerLogEntry.getValueForError =
     function(connectionError) {
+  // Directory service should be updated if a new string is added here as
+  // otherwise the error code will be ignored (i.e. recorded as 0 instead).
   switch(connectionError) {
     case remoting.Error.NONE:
       return 'none';
