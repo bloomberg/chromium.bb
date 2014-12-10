@@ -39,7 +39,6 @@ class PepperCompositorHost : public ppapi::host::ResourceHost {
   const scoped_refptr<cc::Layer> layer() { return layer_; };
 
   void ViewInitiatedPaint();
-  void ViewFlushedPaint();
 
  private:
   ~PepperCompositorHost() override;

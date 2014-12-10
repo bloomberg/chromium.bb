@@ -1337,17 +1337,6 @@ void PepperPluginInstanceImpl::ViewInitiatedPaint() {
     bound_compositor_->ViewInitiatedPaint();
 }
 
-void PepperPluginInstanceImpl::ViewFlushedPaint() {
-  // Keep a reference on the stack. See NOTE above.
-  scoped_refptr<PepperPluginInstanceImpl> ref(this);
-  if (bound_graphics_2d_platform_)
-    bound_graphics_2d_platform_->ViewFlushedPaint();
-  else if (bound_graphics_3d_.get())
-    bound_graphics_3d_->ViewFlushedPaint();
-  else if (bound_compositor_)
-    bound_compositor_->ViewFlushedPaint();
-}
-
 void PepperPluginInstanceImpl::SetSelectedText(
     const base::string16& selected_text) {
   selected_text_ = selected_text;

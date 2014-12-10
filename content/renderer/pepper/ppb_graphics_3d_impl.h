@@ -55,7 +55,6 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
   // Notifications about the view's progress painting.  See PluginInstance.
   // These messages are used to send Flush callbacks to the plugin.
   void ViewInitiatedPaint();
-  void ViewFlushedPaint();
 
   void GetBackingMailbox(gpu::Mailbox* mailbox, uint32* sync_point) {
     *mailbox = mailbox_;

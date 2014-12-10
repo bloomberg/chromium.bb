@@ -392,9 +392,6 @@ void PepperGraphics2DHost::ViewInitiatedPaint() {
   }
 }
 
-void PepperGraphics2DHost::ViewFlushedPaint() {
-}
-
 void PepperGraphics2DHost::SetScale(float scale) { scale_ = scale; }
 
 float PepperGraphics2DHost::GetScale() const { return scale_; }

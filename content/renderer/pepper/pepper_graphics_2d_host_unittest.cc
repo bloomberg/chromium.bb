@@ -67,7 +67,7 @@ class PepperGraphics2DHostTest : public testing::Test {
         ppapi::proxy::ResourceMessageCallParams(host_->pp_resource(), 0));
     std::vector<ui::LatencyInfo> latency;
     host_->OnHostMsgFlush(&context, latency);
-    host_->ViewFlushedPaint();
+    host_->ViewInitiatedPaint();
     host_->SendOffscreenFlushAck();
   }
 

@@ -164,8 +164,6 @@ void PPB_Graphics3D_Impl::ViewInitiatedPaint() {
     SwapBuffersACK(PP_OK);
 }
 
-void PPB_Graphics3D_Impl::ViewFlushedPaint() {}
-
 int PPB_Graphics3D_Impl::GetCommandBufferRouteId() {
   DCHECK(command_buffer_);
   return command_buffer_->GetRouteID();

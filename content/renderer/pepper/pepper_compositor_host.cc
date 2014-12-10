@@ -168,8 +168,6 @@ void PepperCompositorHost::ViewInitiatedPaint() {
   SendCommitLayersReplyIfNecessary();
 }
 
-void PepperCompositorHost::ViewFlushedPaint() {}
-
 void PepperCompositorHost::ImageReleased(
     int32_t id,
     const scoped_ptr<base::SharedMemory>& shared_memory,

@@ -359,8 +359,6 @@ void RenderWidgetFullscreenPepper::DidInitiatePaint() {
 }
 
 void RenderWidgetFullscreenPepper::DidFlushPaint() {
-  if (plugin_)
-    plugin_->ViewFlushedPaint();
 }
 
 void RenderWidgetFullscreenPepper::Close() {
