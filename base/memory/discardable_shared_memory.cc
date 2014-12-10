@@ -224,6 +224,7 @@ bool DiscardableSharedMemory::IsMemoryResident() const {
 }
 
 void DiscardableSharedMemory::Close() {
+  shared_memory_.Unmap();
   shared_memory_.Close();
 }
 

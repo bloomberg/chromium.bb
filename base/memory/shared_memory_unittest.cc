@@ -260,6 +260,29 @@ TEST(SharedMemoryTest, OpenExclusive) {
 }
 #endif
 
+// Check that memory is still mapped after its closed.
+TEST(SharedMemoryTest, CloseNoUnmap) {
+  const size_t kDataSize = 4096;
+
+  SharedMemory memory;
+  ASSERT_TRUE(memory.CreateAndMapAnonymous(kDataSize));
+  char* ptr = static_cast<char*>(memory.memory());
+  ASSERT_NE(ptr, static_cast<void*>(NULL));
+  memset(ptr, 'G', kDataSize);
+
+  memory.Close();
+
+  EXPECT_EQ(ptr, memory.memory());
+  EXPECT_EQ(SharedMemory::NULLHandle(), memory.handle());
+
+  for (size_t i = 0; i < kDataSize; i++) {
+    EXPECT_EQ('G', ptr[i]);
+  }
+
+  memory.Unmap();
+  EXPECT_EQ(nullptr, memory.memory());
+}
+
 // Create a set of N threads to each open a shared memory segment and write to
 // it. Verify that they are always reading/writing consistent data.
 TEST(SharedMemoryTest, MultipleThreads) {

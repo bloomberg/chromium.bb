@@ -46,6 +46,7 @@ SharedMemory::SharedMemory(SharedMemoryHandle handle, bool read_only,
 }
 
 SharedMemory::~SharedMemory() {
+  Unmap();
   Close();
 }
 
@@ -125,7 +126,6 @@ SharedMemoryHandle SharedMemory::handle() const {
 }
 
 void SharedMemory::Close() {
-  Unmap();
   if (mapped_file_ > 0) {
     if (close(mapped_file_) < 0)
       DPLOG(ERROR) << "close";
@@ -159,8 +159,10 @@ bool SharedMemory::ShareToProcessCommon(ProcessHandle process,
   new_handle->fd = new_fd;
   new_handle->auto_close = true;
 
-  if (close_self)
+  if (close_self) {
+    Unmap();
     Close();
+  }
   return true;
 }
 

@@ -200,7 +200,8 @@ class BASE_EXPORT SharedMemory {
   SharedMemoryId id() const { return inode_; }
 #endif
 
-  // Closes the open shared memory segment.
+  // Closes the open shared memory segment. The memory will remain mapped if
+  // it was previously mapped.
   // It is safe to call Close repeatedly.
   void Close();
 
