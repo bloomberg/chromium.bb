@@ -274,7 +274,7 @@ void LaunchDateAndTimeSettings() {
   base::LaunchOptions options;
   options.wait = false;
   options.allow_new_privs = true;
-  base::LaunchProcess(command, options, NULL);
+  base::LaunchProcess(command, options);
 
 #elif defined(OS_MACOSX)
   CommandLine command(base::FilePath("/usr/bin/open"));
@@ -282,7 +282,7 @@ void LaunchDateAndTimeSettings() {
 
   base::LaunchOptions options;
   options.wait = false;
-  base::LaunchProcess(command, options, NULL);
+  base::LaunchProcess(command, options);
 
 #elif defined(OS_WIN)
   base::FilePath path;
@@ -295,7 +295,7 @@ void LaunchDateAndTimeSettings() {
 
   base::LaunchOptions options;
   options.wait = false;
-  base::LaunchProcess(command, options, NULL);
+  base::LaunchProcess(command, options);
 
 #else
   NOTREACHED();
