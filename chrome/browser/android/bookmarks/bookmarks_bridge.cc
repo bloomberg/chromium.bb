@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/bookmarks/bookmarks_bridge.h"
 
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/containers/stack_container.h"
 #include "base/i18n/string_compare.h"
@@ -37,6 +38,7 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ScopedJavaLocalRef;
 using base::android::ScopedJavaGlobalRef;
+using base::android::ToJavaIntArray;
 using bookmarks::android::JavaBookmarkIdCreateBookmarkId;
 using bookmarks::android::JavaBookmarkIdGetId;
 using bookmarks::android::JavaBookmarkIdGetType;
@@ -676,8 +678,27 @@ void BookmarksBridge::SearchBookmarks(JNIEnv* env,
       &results);
   for (const bookmarks::BookmarkMatch& match : results) {
     const BookmarkNode* node = match.node;
-    Java_BookmarksBridge_addToBookmarkIdList(
-        env, j_list, node->id(), node->type());
+
+    std::vector<int> title_match_start_positions;
+    std::vector<int> title_match_end_positions;
+    for (auto position : match.title_match_positions) {
+      title_match_start_positions.push_back(position.first);
+      title_match_end_positions.push_back(position.second);
+    }
+
+    std::vector<int> url_match_start_positions;
+    std::vector<int> url_match_end_positions;
+    for (auto position : match.url_match_positions) {
+      url_match_start_positions.push_back(position.first);
+      url_match_end_positions.push_back(position.second);
+    }
+
+    Java_BookmarksBridge_addToBookmarkMatchList(
+        env, j_list, node->id(), node->type(),
+        ToJavaIntArray(env, title_match_start_positions).obj(),
+        ToJavaIntArray(env, title_match_end_positions).obj(),
+        ToJavaIntArray(env, url_match_start_positions).obj(),
+        ToJavaIntArray(env, url_match_end_positions).obj());
   }
 }
 
