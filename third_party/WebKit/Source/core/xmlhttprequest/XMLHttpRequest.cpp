@@ -791,13 +791,12 @@ void XMLHttpRequest::send(Document* document, ExceptionState& exceptionState)
     RefPtr<FormData> httpBody;
 
     if (areMethodAndURLValidForSend()) {
-        if (getRequestHeader("Content-Type").isEmpty()) {
-            // FIXME: this should include the charset used for encoding.
-            setRequestHeaderInternal("Content-Type", "application/xml");
-        }
+        // FIXME: Per https://xhr.spec.whatwg.org/#dom-xmlhttprequest-send the
+        // Content-Type header and whether to serialize as HTML or XML should
+        // depend on |document->isHTMLDocument()|.
+        if (getRequestHeader("Content-Type").isEmpty())
+            setRequestHeaderInternal("Content-Type", "application/xml;charset=UTF-8");
 
-        // FIXME: According to XMLHttpRequest Level 2, this should use the Document.innerHTML algorithm
-        // from the HTML5 specification to serialize the document.
         String body = createMarkup(document);
 
         httpBody = FormData::create(UTF8Encoding().encode(body, WTF::EntitiesForUnencodables));
