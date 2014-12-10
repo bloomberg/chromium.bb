@@ -93,6 +93,11 @@ void InsertionPoint::setDistribution(ContentDistribution& distribution)
         distribution.at(j)->lazyReattachIfAttached();
 
     m_distribution.swap(distribution);
+#if ENABLE(OILPAN)
+    // Deallocate a Vector and a HashMap explicitly in order that Oilpan can
+    // recycle them without GC.
+    distribution.clear();
+#endif
     m_distribution.shrinkToFit();
 }
 
