@@ -9,6 +9,7 @@
 #include "base/timer/timer.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -161,12 +162,12 @@ class DemoWindow : public ui::PlatformWindowDelegate {
     float fraction = NextFraction();
     gfx::Size window_size = GetSize();
 
-    skia::RefPtr<SkCanvas> canvas = software_surface_->GetCanvas();
+    skia::RefPtr<SkSurface> surface = software_surface_->GetSurface();
 
     SkColor color =
         SkColorSetARGB(0xff, 0, 0xff * fraction, 0xff * (1 - fraction));
 
-    canvas->clear(color);
+    surface->getCanvas()->clear(color);
 
     software_surface_->PresentCanvas(gfx::Rect(window_size));
   }
