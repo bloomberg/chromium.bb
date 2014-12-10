@@ -108,7 +108,7 @@ void RenderReplaced::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
     ReplacedPainter(*this).paint(paintInfo, paintOffset);
 }
 
-bool RenderReplaced::shouldPaint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+bool RenderReplaced::shouldPaint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseOutline && paintInfo.phase != PaintPhaseSelfOutline
         && paintInfo.phase != PaintPhaseSelection && paintInfo.phase != PaintPhaseMask && paintInfo.phase != PaintPhaseClippingMask)
