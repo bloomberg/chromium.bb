@@ -437,6 +437,13 @@ static_library("browser") {
                            "//chrome")
   }
 
+  if (is_ios) {
+    sources -= [
+      "metrics/signin_status_metrics_provider_base.cc",
+      "metrics/signin_status_metrics_provider_base.h",
+    ]
+  }
+
   if (is_chromeos || is_ios) {
     sources -= [
       "metrics/signin_status_metrics_provider.cc",

@@ -12,13 +12,13 @@
 TEST(SigninStatusMetricsProvider, UpdateInitialSigninStatus) {
   SigninStatusMetricsProvider metrics_provider(true);
   metrics_provider.UpdateInitialSigninStatus(2, 2);
-  EXPECT_EQ(SigninStatusMetricsProvider::ALL_PROFILES_SIGNED_IN,
+  EXPECT_EQ(SigninStatusMetricsProviderBase::ALL_PROFILES_SIGNED_IN,
             metrics_provider.GetSigninStatusForTesting());
   metrics_provider.UpdateInitialSigninStatus(2, 0);
-  EXPECT_EQ(SigninStatusMetricsProvider::ALL_PROFILES_NOT_SIGNED_IN,
+  EXPECT_EQ(SigninStatusMetricsProviderBase::ALL_PROFILES_NOT_SIGNED_IN,
             metrics_provider.GetSigninStatusForTesting());
   metrics_provider.UpdateInitialSigninStatus(2, 1);
-  EXPECT_EQ(SigninStatusMetricsProvider::MIXED_SIGNIN_STATUS,
+  EXPECT_EQ(SigninStatusMetricsProviderBase::MIXED_SIGNIN_STATUS,
             metrics_provider.GetSigninStatusForTesting());
 }
 
@@ -29,37 +29,37 @@ TEST(SigninStatusMetricsProvider, UpdateStatusWhenBrowserAdded) {
   // Initial status is all signed in and then a signed-in browser is opened.
   metrics_provider.UpdateInitialSigninStatus(2, 2);
   metrics_provider.UpdateStatusWhenBrowserAdded(true);
-  EXPECT_EQ(SigninStatusMetricsProvider::ALL_PROFILES_SIGNED_IN,
+  EXPECT_EQ(SigninStatusMetricsProviderBase::ALL_PROFILES_SIGNED_IN,
             metrics_provider.GetSigninStatusForTesting());
 
   // Initial status is all signed in and then a signed-out browser is opened.
   metrics_provider.UpdateInitialSigninStatus(2, 2);
   metrics_provider.UpdateStatusWhenBrowserAdded(false);
-  EXPECT_EQ(SigninStatusMetricsProvider::MIXED_SIGNIN_STATUS,
+  EXPECT_EQ(SigninStatusMetricsProviderBase::MIXED_SIGNIN_STATUS,
             metrics_provider.GetSigninStatusForTesting());
 
   // Initial status is all signed out and then a signed-in browser is opened.
   metrics_provider.UpdateInitialSigninStatus(2, 0);
   metrics_provider.UpdateStatusWhenBrowserAdded(true);
-  EXPECT_EQ(SigninStatusMetricsProvider::MIXED_SIGNIN_STATUS,
+  EXPECT_EQ(SigninStatusMetricsProviderBase::MIXED_SIGNIN_STATUS,
             metrics_provider.GetSigninStatusForTesting());
 
   // Initial status is all signed out and then a signed-out browser is opened.
   metrics_provider.UpdateInitialSigninStatus(2, 0);
   metrics_provider.UpdateStatusWhenBrowserAdded(false);
-  EXPECT_EQ(SigninStatusMetricsProvider::ALL_PROFILES_NOT_SIGNED_IN,
+  EXPECT_EQ(SigninStatusMetricsProviderBase::ALL_PROFILES_NOT_SIGNED_IN,
             metrics_provider.GetSigninStatusForTesting());
 
   // Initial status is mixed and then a signed-in browser is opened.
   metrics_provider.UpdateInitialSigninStatus(2, 1);
   metrics_provider.UpdateStatusWhenBrowserAdded(true);
-  EXPECT_EQ(SigninStatusMetricsProvider::MIXED_SIGNIN_STATUS,
+  EXPECT_EQ(SigninStatusMetricsProviderBase::MIXED_SIGNIN_STATUS,
             metrics_provider.GetSigninStatusForTesting());
 
   // Initial status is mixed and then a signed-out browser is opened.
   metrics_provider.UpdateInitialSigninStatus(2, 1);
   metrics_provider.UpdateStatusWhenBrowserAdded(false);
-  EXPECT_EQ(SigninStatusMetricsProvider::MIXED_SIGNIN_STATUS,
+  EXPECT_EQ(SigninStatusMetricsProviderBase::MIXED_SIGNIN_STATUS,
             metrics_provider.GetSigninStatusForTesting());
 }
 #endif
@@ -71,14 +71,14 @@ TEST(SigninStatusMetricsProvider, GoogleSigninSucceeded) {
   metrics_provider.UpdateInitialSigninStatus(2, 0);
   metrics_provider.GoogleSigninSucceeded(std::string(), std::string(),
                                          std::string());
-  EXPECT_EQ(SigninStatusMetricsProvider::MIXED_SIGNIN_STATUS,
+  EXPECT_EQ(SigninStatusMetricsProviderBase::MIXED_SIGNIN_STATUS,
             metrics_provider.GetSigninStatusForTesting());
 
   // Initial status is mixed and then one of the profiles is signed in.
   metrics_provider.UpdateInitialSigninStatus(2, 1);
   metrics_provider.GoogleSigninSucceeded(std::string(), std::string(),
                                          std::string());
-  EXPECT_EQ(SigninStatusMetricsProvider::MIXED_SIGNIN_STATUS,
+  EXPECT_EQ(SigninStatusMetricsProviderBase::MIXED_SIGNIN_STATUS,
             metrics_provider.GetSigninStatusForTesting());
 }
 
@@ -88,12 +88,12 @@ TEST(SigninStatusMetricsProvider, GoogleSignedOut) {
   // Initial status is all signed in and then one of the profiles is signed out.
   metrics_provider.UpdateInitialSigninStatus(2, 2);
   metrics_provider.GoogleSignedOut(std::string(), std::string());
-  EXPECT_EQ(SigninStatusMetricsProvider::MIXED_SIGNIN_STATUS,
+  EXPECT_EQ(SigninStatusMetricsProviderBase::MIXED_SIGNIN_STATUS,
             metrics_provider.GetSigninStatusForTesting());
 
   // Initial status is mixed and then one of the profiles is signed out.
   metrics_provider.UpdateInitialSigninStatus(2, 1);
   metrics_provider.GoogleSignedOut(std::string(), std::string());
-  EXPECT_EQ(SigninStatusMetricsProvider::MIXED_SIGNIN_STATUS,
+  EXPECT_EQ(SigninStatusMetricsProviderBase::MIXED_SIGNIN_STATUS,
             metrics_provider.GetSigninStatusForTesting());
 }

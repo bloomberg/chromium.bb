@@ -44,8 +44,7 @@ void RecordComputeSigninStatusHistogram(ComputeSigninStatus status) {
 }  // namespace
 
 SigninStatusMetricsProvider::SigninStatusMetricsProvider(bool is_test)
-    : signin_status_(UNKNOWN_SIGNIN_STATUS),
-      scoped_observer_(this),
+    : scoped_observer_(this),
       is_test_(is_test),
       weak_ptr_factory_(this) {
   if (is_test_)
@@ -73,12 +72,11 @@ SigninStatusMetricsProvider::~SigninStatusMetricsProvider() {
 
 void SigninStatusMetricsProvider::ProvideGeneralMetrics(
     metrics::ChromeUserMetricsExtension* uma_proto) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "UMA.ProfileSignInStatus", signin_status_, SIGNIN_STATUS_MAX);
+  RecordSigninStatusHistogram(signin_status());
   // After a histogram value is recorded, a new UMA session will be started, so
   // we need to re-check the current sign-in status regardless of the previous
   // recorded |signin_status_| value.
-  signin_status_ = UNKNOWN_SIGNIN_STATUS;
+  ResetSigninStatus();
   ComputeCurrentSigninStatus();
 }
 
@@ -88,7 +86,7 @@ SigninStatusMetricsProvider* SigninStatusMetricsProvider::CreateInstance() {
 }
 
 void SigninStatusMetricsProvider::OnBrowserAdded(Browser* browser) {
-  if (signin_status_ == MIXED_SIGNIN_STATUS)
+  if (signin_status() == MIXED_SIGNIN_STATUS)
     return;
 
   SigninManager* manager = SigninManagerFactory::GetForProfile(
@@ -112,7 +110,7 @@ void SigninStatusMetricsProvider::SigninManagerCreated(
   // If the status is unknown, it means this is the first created
   // SigninManagerBase and the corresponding profile should be the only opened
   // profile.
-  if (signin_status_ == UNKNOWN_SIGNIN_STATUS) {
+  if (signin_status() == UNKNOWN_SIGNIN_STATUS) {
     size_t signed_in_count =
         manager->IsAuthenticated() ? 1 : 0;
     UpdateInitialSigninStatus(1, signed_in_count);
@@ -129,9 +127,10 @@ void SigninStatusMetricsProvider::GoogleSigninSucceeded(
     const std::string& account_id,
     const std::string& username,
     const std::string& password) {
-  if (signin_status_ == ALL_PROFILES_NOT_SIGNED_IN) {
+  SigninStatus recorded_signin_status = signin_status();
+  if (recorded_signin_status == ALL_PROFILES_NOT_SIGNED_IN) {
     SetSigninStatus(MIXED_SIGNIN_STATUS);
-  } else if (signin_status_ == UNKNOWN_SIGNIN_STATUS) {
+  } else if (recorded_signin_status == UNKNOWN_SIGNIN_STATUS) {
     // There should have at least one browser opened if the user can sign in, so
     // signin_status_ value should not be unknown.
     SetSigninStatus(ERROR_GETTING_SIGNIN_STATUS);
@@ -141,9 +140,10 @@ void SigninStatusMetricsProvider::GoogleSigninSucceeded(
 
 void SigninStatusMetricsProvider::GoogleSignedOut(const std::string& account_id,
                                                   const std::string& username) {
-  if (signin_status_ == ALL_PROFILES_SIGNED_IN) {
+  SigninStatus recorded_signin_status = signin_status();
+  if (recorded_signin_status == ALL_PROFILES_SIGNED_IN) {
     SetSigninStatus(MIXED_SIGNIN_STATUS);
-  } else if (signin_status_ == UNKNOWN_SIGNIN_STATUS) {
+  } else if (recorded_signin_status == UNKNOWN_SIGNIN_STATUS) {
     // There should have at least one browser opened if the user can sign out,
     // so signin_status_ value should not be unknown.
     SetSigninStatus(ERROR_GETTING_SIGNIN_STATUS);
@@ -198,10 +198,11 @@ void SigninStatusMetricsProvider::UpdateInitialSigninStatus(
 
 void SigninStatusMetricsProvider::UpdateStatusWhenBrowserAdded(bool signed_in) {
 #if !defined(OS_ANDROID)
-  if ((signin_status_ == ALL_PROFILES_NOT_SIGNED_IN && signed_in) ||
-      (signin_status_ == ALL_PROFILES_SIGNED_IN && !signed_in)) {
+  SigninStatus recorded_signin_status = signin_status();
+  if ((recorded_signin_status == ALL_PROFILES_NOT_SIGNED_IN && signed_in) ||
+      (recorded_signin_status == ALL_PROFILES_SIGNED_IN && !signed_in)) {
     SetSigninStatus(MIXED_SIGNIN_STATUS);
-  } else if (signin_status_ == UNKNOWN_SIGNIN_STATUS) {
+  } else if (recorded_signin_status == UNKNOWN_SIGNIN_STATUS) {
     // If when function ProvideGeneralMetrics() is called, Chrome is
     // running in the background with no browser window opened, |signin_status_|
     // will be reset to |UNKNOWN_SIGNIN_STATUS|. Then this newly added browser
@@ -249,16 +250,7 @@ void SigninStatusMetricsProvider::ComputeCurrentSigninStatus() {
   }
 }
 
-void SigninStatusMetricsProvider::SetSigninStatus(
-    SigninStatusMetricsProvider::ProfilesSigninStatus new_status) {
-  if (signin_status_ == ERROR_GETTING_SIGNIN_STATUS) {
-    RecordComputeSigninStatusHistogram(TRY_TO_OVERRIDE_ERROR_STATUS);
-    return;
-  }
-  signin_status_ = new_status;
-}
-
-SigninStatusMetricsProvider::ProfilesSigninStatus
+SigninStatusMetricsProvider::SigninStatus
 SigninStatusMetricsProvider::GetSigninStatusForTesting() {
-  return signin_status_;
+  return signin_status();
 }

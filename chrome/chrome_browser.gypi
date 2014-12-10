@@ -1681,8 +1681,12 @@
       'browser/metrics/perf_provider_chromeos.h',
       'browser/metrics/rappor/sampling.cc',
       'browser/metrics/rappor/sampling.h',
+      'browser/metrics/signin_status_metrics_provider_base.cc',
+      'browser/metrics/signin_status_metrics_provider_base.h',
       'browser/metrics/signin_status_metrics_provider.cc',
       'browser/metrics/signin_status_metrics_provider.h',
+      'browser/metrics/signin_status_metrics_provider_chromeos.cc',
+      'browser/metrics/signin_status_metrics_provider_chromeos.h',
       'browser/metrics/thread_watcher.cc',
       'browser/metrics/thread_watcher.h',
       'browser/metrics/thread_watcher_android.cc',
@@ -3119,7 +3123,13 @@
           ],
           'sources': [ '<@(chrome_browser_mac_sources)' ]
         }],
-        ['chromeos==1 or OS=="ios"', {
+        ['OS=="ios"', {
+          'sources!': [
+            'browser/metrics/signin_status_metrics_provider_base.cc',
+            'browser/metrics/signin_status_metrics_provider_base.h',
+          ],
+        }],
+        ['OS=="ios" or chromeos==1', {
           'sources!': [
             'browser/metrics/signin_status_metrics_provider.cc',
             'browser/metrics/signin_status_metrics_provider.h',
