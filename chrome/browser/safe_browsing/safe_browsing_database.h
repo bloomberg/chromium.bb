@@ -511,7 +511,6 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
 
   SBWhitelist csd_whitelist_;
   SBWhitelist download_whitelist_;
-  SBWhitelist extension_blacklist_;
 
   // The IP blacklist should be small.  At most a couple hundred IPs.
   IPBlacklist ip_blacklist_;
