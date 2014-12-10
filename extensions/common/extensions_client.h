@@ -11,6 +11,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
+#include "extensions/common/permissions/api_permission_set.h"
 
 class GURL;
 
@@ -66,10 +67,20 @@ class ExtensionsClient {
   // Takes the list of all hosts and filters out those with special
   // permission strings. Adds the regular hosts to |new_hosts|,
   // and adds the special permission messages to |messages|.
+  // TODO(sashab): Deprecate this in favour of FilterHostPermissions() below.
   virtual void FilterHostPermissions(
       const URLPatternSet& hosts,
       URLPatternSet* new_hosts,
       std::set<PermissionMessage>* messages) const = 0;
+
+  // Takes the list of all hosts and filters out those with special
+  // permission strings. Adds the regular hosts to |new_hosts|,
+  // and adds any additional permissions to |permissions|.
+  // TODO(sashab): Split this function in two: One to filter out ignored host
+  // permissions, and one to get permissions for the given hosts.
+  virtual void FilterHostPermissions(const URLPatternSet& hosts,
+                                     URLPatternSet* new_hosts,
+                                     PermissionIDSet* permissions) const = 0;
 
   // Replaces the scripting whitelist with |whitelist|. Used in the renderer;
   // only used for testing in the browser process.

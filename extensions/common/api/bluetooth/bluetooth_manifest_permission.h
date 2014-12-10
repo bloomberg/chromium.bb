@@ -43,6 +43,7 @@ class BluetoothManifestPermission : public ManifestPermission {
   // extensions::ManifestPermission overrides.
   std::string name() const override;
   std::string id() const override;
+  PermissionIDSet GetPermissions() const override;
   bool HasMessages() const override;
   PermissionMessages GetMessages() const override;
   bool FromValue(const base::Value* value) override;

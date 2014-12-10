@@ -8,6 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "extensions/common/permissions/coalesced_permission_message.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/url_pattern_set.h"
@@ -15,10 +16,8 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/url_constants.h"
-#include "base/strings/string_split.h"
 
 using extensions::PermissionMessage;
-using extensions::PermissionSet;
 using extensions::URLPatternSet;
 
 namespace {
@@ -39,6 +38,32 @@ bool RcdBetterThan(const std::string& a, const std::string& b) {
 }  // namespace
 
 namespace permission_message_util {
+
+// The number of host messages supported. The first N - 1 of these messages are
+// specific for the number of hosts; the last one is a catch-all for N or more
+// hosts.
+static const int kNumMessages = 4;
+
+std::vector<base::string16> GetHostListFromHosts(
+    const std::set<std::string>& hosts,
+    PermissionMessageProperties properties) {
+  int host_msg_id = hosts.size() < kNumMessages
+                        ? IDS_EXTENSION_PROMPT_WARNING_HOST_AND_SUBDOMAIN
+                        : IDS_EXTENSION_PROMPT_WARNING_HOST_AND_SUBDOMAIN_LIST;
+  std::vector<base::string16> host_list;
+  for (std::set<std::string>::const_iterator it = hosts.begin();
+       it != hosts.end();
+       ++it) {
+    std::string host = *it;
+    host_list.push_back(
+        host[0] == '*' && host[1] == '.'
+            ? l10n_util::GetStringFUTF16(host_msg_id,
+                                         base::UTF8ToUTF16(host.erase(0, 2)))
+            : base::UTF8ToUTF16(host));
+  }
+  DCHECK(host_list.size());
+  return host_list;
+}
 
 PermissionMessage CreateFromHostList(const std::set<std::string>& hosts,
                                      PermissionMessageProperties properties) {
@@ -64,25 +89,13 @@ PermissionMessage CreateFromHostList(const std::set<std::string>& hosts,
   COMPILE_ASSERT(
       arraysize(kReadWriteMessagesList) == arraysize(kReadOnlyMessagesList),
       message_lists_different_size);
-  static const int kNumMessages = arraysize(kReadWriteMessagesList);
+  COMPILE_ASSERT(kNumMessages == arraysize(kReadWriteMessagesList),
+                 messages_array_different_size);
+
   const MsgPair(&messages_list)[kNumMessages] =
       properties == kReadOnly ? kReadOnlyMessagesList : kReadWriteMessagesList;
-
-  int host_msg_id = hosts.size() < kNumMessages
-                        ? IDS_EXTENSION_PROMPT_WARNING_HOST_AND_SUBDOMAIN
-                        : IDS_EXTENSION_PROMPT_WARNING_HOST_AND_SUBDOMAIN_LIST;
-  std::vector<base::string16> host_list;
-  for (std::set<std::string>::const_iterator it = hosts.begin();
-       it != hosts.end();
-       ++it) {
-    std::string host = *it;
-    host_list.push_back(
-        host[0] == '*' && host[1] == '.'
-            ? l10n_util::GetStringFUTF16(host_msg_id,
-                                         base::UTF8ToUTF16(host.erase(0, 2)))
-            : base::UTF8ToUTF16(host));
-  }
-  DCHECK(host_list.size());
+  std::vector<base::string16> host_list =
+      GetHostListFromHosts(hosts, properties);
 
   if (host_list.size() < kNumMessages) {
     return PermissionMessage(
@@ -102,6 +115,24 @@ PermissionMessage CreateFromHostList(const std::set<std::string>& hosts,
       l10n_util::GetStringUTF16(
           messages_list[arraysize(messages_list) - 1].second),
       details);
+}
+
+void AddHostPermissions(extensions::PermissionIDSet* permissions,
+                        const std::set<std::string>& hosts,
+                        PermissionMessageProperties properties) {
+  std::vector<base::string16> host_list =
+      GetHostListFromHosts(hosts, properties);
+
+  // Create a separate permission for each host, and add it to the permissions
+  // list.
+  // TODO(sashab): Add coalescing rules for kHostReadOnly and kHostReadWrite
+  // to mimic the current behavior of CreateFromHostList() above.
+  for (const auto& host : host_list) {
+    permissions->insert(properties == kReadOnly
+                            ? extensions::APIPermission::kHostReadOnly
+                            : extensions::APIPermission::kHostReadWrite,
+                        host);
+  }
 }
 
 std::set<std::string> GetDistinctHosts(const URLPatternSet& host_patterns,

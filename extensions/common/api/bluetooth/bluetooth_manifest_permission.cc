@@ -117,9 +117,24 @@ std::string BluetoothManifestPermission::name() const {
 
 std::string BluetoothManifestPermission::id() const { return name(); }
 
+PermissionIDSet BluetoothManifestPermission::GetPermissions() const {
+  PermissionIDSet permissions;
+  // TODO(sashab): Add a rule to ChromePermissionMessageProvider:
+  // kBluetooth -> IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH
+  permissions.insert(APIPermission::kBluetooth);
+  if (!uuids_.empty()) {
+    // TODO(sashab): Add a rule to ChromePermissionMessageProvider:
+    // kBluetoothDevices -> IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_DEVICES
+    permissions.insert(APIPermission::kBluetoothDevices);
+  }
+  return permissions;
+}
+
 bool BluetoothManifestPermission::HasMessages() const { return true; }
 
 PermissionMessages BluetoothManifestPermission::GetMessages() const {
+  // When modifying this function, be careful to also modify GetPermissions()
+  // above to have the same functionality.
   DCHECK(HasMessages());
   PermissionMessages result;
 

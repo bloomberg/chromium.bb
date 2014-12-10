@@ -21,6 +21,8 @@ class MockManifestPermission : public ManifestPermission {
 
   std::string id() const override { return name(); }
 
+  PermissionIDSet GetPermissions() const override { return PermissionIDSet(); }
+
   bool HasMessages() const override { return false; }
 
   PermissionMessages GetMessages() const override {
