@@ -54,7 +54,7 @@ class StylePropertySet;
 class TextEvent;
 class UndoStack;
 
-enum EditorCommandSource { CommandFromMenuOrKeyBinding, CommandFromDOM, CommandFromDOMWithUserInterface };
+enum EditorCommandSource { CommandFromMenuOrKeyBinding, CommandFromDOM };
 enum EditorParagraphSeparator { EditorParagraphSeparatorIsDiv, EditorParagraphSeparatorIsP };
 
 class Editor final : public NoBaseWillBeGarbageCollectedFinalized<Editor> {

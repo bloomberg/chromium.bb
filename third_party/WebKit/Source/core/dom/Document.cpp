@@ -4336,19 +4336,19 @@ KURL Document::completeURLWithOverride(const String& url, const KURL& baseURLOve
 
 // Support for Javascript execCommand, and related methods
 
-static Editor::Command command(Document* document, const String& commandName, bool userInterface = false)
+static Editor::Command command(Document* document, const String& commandName)
 {
     LocalFrame* frame = document->frame();
     if (!frame || frame->document() != document)
         return Editor::Command();
 
     document->updateRenderTreeIfNeeded();
-    return frame->editor().command(commandName, userInterface ? CommandFromDOMWithUserInterface : CommandFromDOM);
+    return frame->editor().command(commandName, CommandFromDOM);
 }
 
-bool Document::execCommand(const String& commandName, bool userInterface, const String& value)
+bool Document::execCommand(const String& commandName, bool, const String& value)
 {
-    // We don't allow recusrive |execCommand()| to protect against attack code.
+    // We don't allow recursive |execCommand()| to protect against attack code.
     // Recursive call of |execCommand()| could be happened by moving iframe
     // with script triggered by insertion, e.g. <iframe src="javascript:...">
     // <iframe onload="...">. This usage is valid as of the specification
@@ -4364,7 +4364,7 @@ bool Document::execCommand(const String& commandName, bool userInterface, const 
     // Postpone DOM mutation events, which can execute scripts and change
     // DOM tree against implementation assumption.
     EventQueueScope eventQueueScope;
-    Editor::Command editorCommand = command(this, commandName, userInterface);
+    Editor::Command editorCommand = command(this, commandName);
     Platform::current()->histogramSparse("WebCore.Document.execCommand", editorCommand.idForHistogram());
     return editorCommand.execute(value);
 }
