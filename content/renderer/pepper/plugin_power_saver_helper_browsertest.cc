@@ -6,7 +6,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/view_message_enums.h"
 #include "content/public/test/render_view_test.h"
-#include "content/renderer/pepper/plugin_power_saver_helper_impl.h"
+#include "content/renderer/pepper/plugin_power_saver_helper.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,13 +25,33 @@ class PluginPowerSaverHelperTest : public RenderViewTest {
     return static_cast<RenderFrameImpl*>(view_->GetMainRenderFrame());
   }
 
-  PluginPowerSaverHelperImpl* power_saver_helper() {
-    return frame()->GetPluginPowerSaverHelper();
-  }
-
   void SetUp() override {
     RenderViewTest::SetUp();
     sink_ = &render_thread_->sink();
+  }
+
+  blink::WebPluginParams MakeParams(const std::string& url,
+                                    const std::string& poster,
+                                    const std::string& width,
+                                    const std::string& height) {
+    const size_t size = 3;
+    blink::WebVector<blink::WebString> names(size);
+    blink::WebVector<blink::WebString> values(size);
+
+    blink::WebPluginParams params;
+    params.url = GURL(url);
+
+    params.attributeNames.swap(names);
+    params.attributeValues.swap(values);
+
+    params.attributeNames[0] = "poster";
+    params.attributeNames[1] = "height";
+    params.attributeNames[2] = "width";
+    params.attributeValues[0] = blink::WebString::fromUTF8(poster);
+    params.attributeValues[1] = blink::WebString::fromUTF8(height);
+    params.attributeValues[2] = blink::WebString::fromUTF8(width);
+
+    return params;
   }
 
  protected:
@@ -58,74 +78,86 @@ TEST_F(PluginPowerSaverHelperTest, PosterImage) {
   params.attributeValues[1] = "100";
   params.attributeValues[2] = "100";
 
-  EXPECT_EQ(GURL("http://a.com/poster.jpg"),
-            power_saver_helper()->GetPluginInstancePosterImage(
-                params, GURL("http://a.com/page.html")));
+  GURL poster_result;
+
+  EXPECT_TRUE(frame()->ShouldThrottleContent(
+      MakeParams("http://b.com/foo.swf", "poster.jpg", "100", "100"),
+      GURL("http://a.com/page.html"), &poster_result, nullptr));
+  EXPECT_EQ(GURL("http://a.com/poster.jpg"), poster_result);
 
   // Ignore empty poster paramaters.
-  params.attributeValues[0] = "";
-  EXPECT_EQ(GURL(), power_saver_helper()->GetPluginInstancePosterImage(
-                        params, GURL("http://a.com/page.html")));
+  EXPECT_TRUE(frame()->ShouldThrottleContent(
+      MakeParams("http://b.com/foo.swf", std::string(), "100", "100"),
+      GURL("http://a.com/page.html"), &poster_result, nullptr));
+  EXPECT_EQ(GURL(), poster_result);
 
   // Ignore poster parameter when plugin is big (shouldn't be throttled).
-  params.attributeValues[0] = "poster.jpg";
-  params.attributeValues[1] = "500";
-  params.attributeValues[2] = "500";
-  EXPECT_EQ(GURL(), power_saver_helper()->GetPluginInstancePosterImage(
-                        params, GURL("http://a.com/page.html")));
+  EXPECT_FALSE(frame()->ShouldThrottleContent(
+      MakeParams("http://b.com/foo.swf", "poster.jpg", "500", "500"),
+      GURL("http://a.com/page.html"), &poster_result, nullptr));
+  EXPECT_EQ(GURL(), poster_result);
 }
 
 TEST_F(PluginPowerSaverHelperTest, AllowSameOrigin) {
-  EXPECT_FALSE(
-      power_saver_helper()->ShouldThrottleContent(GURL(), 100, 100, nullptr));
-
-  EXPECT_FALSE(
-      power_saver_helper()->ShouldThrottleContent(GURL(), 1000, 1000, nullptr));
+  EXPECT_FALSE(frame()->ShouldThrottleContent(
+      MakeParams(std::string(), std::string(), "100", "100"), GURL(), nullptr,
+      nullptr));
+  EXPECT_FALSE(frame()->ShouldThrottleContent(
+      MakeParams(std::string(), std::string(), "1000", "1000"), GURL(), nullptr,
+      nullptr));
 }
 
 TEST_F(PluginPowerSaverHelperTest, DisallowCrossOriginUnlessLarge) {
-  bool is_main_attraction = false;
-  EXPECT_TRUE(power_saver_helper()->ShouldThrottleContent(
-      GURL("http://other.com"), 100, 100, &is_main_attraction));
-  EXPECT_FALSE(is_main_attraction);
+  bool cross_origin_main_content = false;
+  EXPECT_TRUE(frame()->ShouldThrottleContent(
+      MakeParams("http://b.com/foo.swf", std::string(), "100", "100"), GURL(),
+      nullptr, &cross_origin_main_content));
+  EXPECT_FALSE(cross_origin_main_content);
 
-  EXPECT_FALSE(power_saver_helper()->ShouldThrottleContent(
-      GURL("http://other.com"), 1000, 1000, &is_main_attraction));
-  EXPECT_TRUE(is_main_attraction);
+  EXPECT_FALSE(frame()->ShouldThrottleContent(
+      MakeParams("http://b.com/foo.swf", std::string(), "1000", "1000"), GURL(),
+      nullptr, &cross_origin_main_content));
+  EXPECT_TRUE(cross_origin_main_content);
 }
 
 TEST_F(PluginPowerSaverHelperTest, AlwaysAllowTinyContent) {
-  bool is_main_attraction = false;
-  EXPECT_FALSE(power_saver_helper()->ShouldThrottleContent(
-      GURL(), 1, 1, &is_main_attraction));
-  EXPECT_FALSE(is_main_attraction);
+  bool cross_origin_main_content = false;
+  EXPECT_FALSE(frame()->ShouldThrottleContent(
+      MakeParams(std::string(), std::string(), "1", "1"), GURL(), nullptr,
+      &cross_origin_main_content));
+  EXPECT_FALSE(cross_origin_main_content);
 
-  EXPECT_FALSE(power_saver_helper()->ShouldThrottleContent(
-      GURL("http://other.com"), 1, 1, &is_main_attraction));
-  EXPECT_FALSE(is_main_attraction);
+  EXPECT_FALSE(frame()->ShouldThrottleContent(
+      MakeParams("http://b.com/foo.swf", std::string(), "1", "1"), GURL(),
+      nullptr, &cross_origin_main_content));
+  EXPECT_FALSE(cross_origin_main_content);
 
-  EXPECT_FALSE(power_saver_helper()->ShouldThrottleContent(
-      GURL("http://other.com"), 5, 5, &is_main_attraction));
-  EXPECT_FALSE(is_main_attraction);
+  EXPECT_FALSE(frame()->ShouldThrottleContent(
+      MakeParams("http://b.com/foo.swf", std::string(), "5", "5"), GURL(),
+      nullptr, &cross_origin_main_content));
+  EXPECT_FALSE(cross_origin_main_content);
 
-  EXPECT_TRUE(power_saver_helper()->ShouldThrottleContent(
-      GURL("http://other.com"), 10, 10, &is_main_attraction));
-  EXPECT_FALSE(is_main_attraction);
+  EXPECT_TRUE(frame()->ShouldThrottleContent(
+      MakeParams("http://b.com/foo.swf", std::string(), "10", "10"), GURL(),
+      nullptr, &cross_origin_main_content));
+  EXPECT_FALSE(cross_origin_main_content);
 }
 
 TEST_F(PluginPowerSaverHelperTest, TemporaryOriginWhitelist) {
-  bool is_main_attraction = false;
-  EXPECT_TRUE(power_saver_helper()->ShouldThrottleContent(
-      GURL("http://other.com"), 100, 100, &is_main_attraction));
-  EXPECT_FALSE(is_main_attraction);
+  bool cross_origin_main_content = false;
+  EXPECT_TRUE(frame()->ShouldThrottleContent(
+      MakeParams("http://b.com/foo.swf", std::string(), "100", "100"), GURL(),
+      nullptr, &cross_origin_main_content));
+  EXPECT_FALSE(cross_origin_main_content);
 
   // Clear out other messages so we find just the plugin power saver IPCs.
   sink_->ClearMessages();
 
-  power_saver_helper()->WhitelistContentOrigin(GURL("http://other.com"));
-  EXPECT_FALSE(power_saver_helper()->ShouldThrottleContent(
-      GURL("http://other.com"), 100, 100, &is_main_attraction));
-  EXPECT_FALSE(is_main_attraction);
+  frame()->WhitelistContentOrigin(GURL("http://b.com"));
+  EXPECT_FALSE(frame()->ShouldThrottleContent(
+      MakeParams("http://b.com/foo.swf", std::string(), "100", "100"), GURL(),
+      nullptr, &cross_origin_main_content));
+  EXPECT_FALSE(cross_origin_main_content);
 
   // Test that we've sent an IPC to the browser.
   ASSERT_EQ(1u, sink_->message_count());
@@ -133,13 +165,13 @@ TEST_F(PluginPowerSaverHelperTest, TemporaryOriginWhitelist) {
   EXPECT_EQ(FrameHostMsg_PluginContentOriginAllowed::ID, msg->type());
   FrameHostMsg_PluginContentOriginAllowed::Param params;
   FrameHostMsg_PluginContentOriginAllowed::Read(msg, &params);
-  EXPECT_EQ(GURL("http://other.com"), params.a);
+  EXPECT_EQ(GURL("http://b.com"), params.a);
 }
 
 TEST_F(PluginPowerSaverHelperTest, UnthrottleOnExPostFactoWhitelist) {
   base::RunLoop loop;
-  power_saver_helper()->RegisterPeripheralPlugin(GURL("http://other.com"),
-                                                 loop.QuitClosure());
+  frame()->RegisterPeripheralPlugin(GURL("http://other.com"),
+                                    loop.QuitClosure());
 
   std::set<GURL> origin_whitelist;
   origin_whitelist.insert(GURL("http://other.com"));
@@ -151,15 +183,17 @@ TEST_F(PluginPowerSaverHelperTest, UnthrottleOnExPostFactoWhitelist) {
 }
 
 TEST_F(PluginPowerSaverHelperTest, ClearWhitelistOnNavigate) {
-  power_saver_helper()->WhitelistContentOrigin(GURL("http://other.com"));
+  frame()->WhitelistContentOrigin(GURL("http://b.com"));
 
-  EXPECT_FALSE(power_saver_helper()->ShouldThrottleContent(
-      GURL("http://other.com"), 100, 100, nullptr));
+  EXPECT_FALSE(frame()->ShouldThrottleContent(
+      MakeParams("http://b.com/foo.swf", std::string(), "100", "100"), GURL(),
+      nullptr, nullptr));
 
   LoadHTML("<html></html>");
 
-  EXPECT_TRUE(power_saver_helper()->ShouldThrottleContent(
-      GURL("http://other.com"), 100, 100, nullptr));
+  EXPECT_TRUE(frame()->ShouldThrottleContent(
+      MakeParams("http://b.com/foo.swf", std::string(), "100", "100"), GURL(),
+      nullptr, nullptr));
 }
 
 }  // namespace content

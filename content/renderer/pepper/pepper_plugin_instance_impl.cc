@@ -44,7 +44,6 @@
 #include "content/renderer/pepper/pepper_url_loader_host.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/plugin_object.h"
-#include "content/renderer/pepper/plugin_power_saver_helper_impl.h"
 #include "content/renderer/pepper/ppapi_preferences_builder.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
 #include "content/renderer/pepper/ppb_graphics_3d_impl.h"
@@ -833,15 +832,17 @@ static void SetGPUHistogram(const ppapi::Preferences& prefs,
 bool PepperPluginInstanceImpl::Initialize(
     const std::vector<std::string>& arg_names,
     const std::vector<std::string>& arg_values,
-    bool full_frame) {
+    bool full_frame,
+    RenderFrame::PluginPowerSaverMode power_saver_mode) {
   if (!render_frame_)
     return false;
 
+  blink::WebRect bounds = container()->element().boundsInViewportSpace();
+
   throttler_.reset(new PepperPluginInstanceThrottler(
-      render_frame()->GetPluginPowerSaverHelper(),
-      container()->element().boundsInViewportSpace(), module()->name(),
-      plugin_url_, base::Bind(&PepperPluginInstanceImpl::SendDidChangeView,
-                              weak_factory_.GetWeakPtr())));
+      render_frame(), bounds, module()->name(), plugin_url_, power_saver_mode,
+      base::Bind(&PepperPluginInstanceImpl::SendDidChangeView,
+                 weak_factory_.GetWeakPtr())));
 
   message_channel_ = MessageChannel::Create(this, &message_channel_object_);
 

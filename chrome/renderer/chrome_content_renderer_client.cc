@@ -72,7 +72,6 @@
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "components/web_cache/renderer/web_cache_render_process_observer.h"
 #include "content/public/common/content_constants.h"
-#include "content/public/renderer/plugin_power_saver_helper.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
@@ -149,6 +148,7 @@ using autofill::PasswordAutofillAgent;
 using autofill::PasswordGenerationAgent;
 using base::ASCIIToUTF16;
 using base::UserMetricsAction;
+using content::RenderFrame;
 using content::RenderThread;
 using content::WebPluginInfo;
 using extensions::Extension;
@@ -785,18 +785,25 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         }
 #endif  // !defined(DISABLE_NACL) && defined(ENABLE_EXTENSIONS)
 
+        RenderFrame::PluginPowerSaverMode power_saver_mode =
+            RenderFrame::POWER_SAVER_MODE_ESSENTIAL;
+#if defined(ENABLE_PLUGINS)
         bool show_poster = false;
         GURL poster_url;
-
-#if defined(ENABLE_PLUGINS)
-        content::PluginPowerSaverHelper* power_saver_helper =
-            render_frame->GetPluginPowerSaverHelper();
-        poster_url = power_saver_helper->GetPluginInstancePosterImage(
-            params, frame->document().url());
-        show_poster = poster_url.is_valid() &&
-                      base::CommandLine::ForCurrentProcess()->HasSwitch(
-                          switches::kEnablePluginPowerSaver);
-#endif
+        bool cross_origin_main_content = false;
+        if (render_frame->ShouldThrottleContent(params, frame->document().url(),
+                                                &poster_url,
+                                                &cross_origin_main_content)) {
+          if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+                  switches::kEnablePluginPowerSaver)) {
+            power_saver_mode =
+                RenderFrame::POWER_SAVER_MODE_PERIPHERAL_THROTTLED;
+            show_poster = poster_url.is_valid();
+          } else {
+            power_saver_mode =
+                RenderFrame::POWER_SAVER_MODE_PERIPHERAL_UNTHROTTLED;
+          }
+        }
 
         // Delay loading plugins if prerendering.
         // TODO(mmenke):  In the case of prerendering, feed into
@@ -811,13 +818,17 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
               l10n_util::GetStringFUTF16(IDS_PLUGIN_LOAD, group_name),
               poster_url);
           placeholder->set_blocked_for_prerendering(is_prerendering);
+          placeholder->set_power_saver_mode(power_saver_mode);
           placeholder->set_allow_loading(true);
           break;
+        } else if (cross_origin_main_content) {
+          GURL content_origin = GURL(params.url).GetOrigin();
+          render_frame->WhitelistContentOrigin(content_origin);
         }
+#endif  // defined(ENABLE_PLUGINS)
 
-        return render_frame->CreatePlugin(
-            frame, plugin, params,
-            content::RenderFrame::CREATE_PLUGIN_GESTURE_NO_USER_GESTURE);
+        return render_frame->CreatePlugin(frame, plugin, params,
+                                          power_saver_mode);
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kNPAPINotSupported: {
         RenderThread::Get()->RecordAction(

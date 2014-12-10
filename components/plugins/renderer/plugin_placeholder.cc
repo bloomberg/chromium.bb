@@ -13,7 +13,6 @@
 #include "base/values.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/context_menu_params.h"
-#include "content/public/renderer/plugin_power_saver_helper.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "gin/object_template_builder.h"
@@ -43,13 +42,13 @@ namespace plugins {
 gin::WrapperInfo PluginPlaceholder::kWrapperInfo = {gin::kEmbedderNativeGin};
 
 #if defined(ENABLE_PLUGINS)
-void PluginPlaceholder::BlockForPowerSaver() {
-  DCHECK(!is_blocked_for_power_saver_);
-  is_blocked_for_power_saver_ = true;
+void PluginPlaceholder::BlockForPowerSaverPoster() {
+  DCHECK(!is_blocked_for_power_saver_poster_);
+  is_blocked_for_power_saver_poster_ = true;
 
-  render_frame()->GetPluginPowerSaverHelper()->RegisterPeripheralPlugin(
+  render_frame()->RegisterPeripheralPlugin(
       GURL(plugin_params_.url).GetOrigin(),
-      base::Bind(&PluginPlaceholder::UnblockForPowerSaver,
+      base::Bind(&PluginPlaceholder::DisablePowerSaverForInstance,
                  weak_factory_.GetWeakPtr()));
 }
 #endif
@@ -67,7 +66,8 @@ PluginPlaceholder::PluginPlaceholder(content::RenderFrame* render_frame,
                                     html_data,
                                     placeholderDataUrl)),
       is_blocked_for_prerendering_(false),
-      is_blocked_for_power_saver_(false),
+      is_blocked_for_power_saver_poster_(false),
+      power_saver_mode_(content::RenderFrame::POWER_SAVER_MODE_ESSENTIAL),
       allow_loading_(false),
       hidden_(false),
       finished_loading_(false),
@@ -77,10 +77,13 @@ PluginPlaceholder::PluginPlaceholder(content::RenderFrame* render_frame,
 PluginPlaceholder::~PluginPlaceholder() {}
 
 #if defined(ENABLE_PLUGINS)
-void PluginPlaceholder::UnblockForPowerSaver() {
-  is_blocked_for_power_saver_ = false;
-  if (!is_blocked_for_prerendering_)
-    LoadPlugin(content::RenderFrame::CREATE_PLUGIN_GESTURE_NO_USER_GESTURE);
+void PluginPlaceholder::DisablePowerSaverForInstance() {
+  power_saver_mode_ = content::RenderFrame::POWER_SAVER_MODE_ESSENTIAL;
+  // Load the plugin now if it has been deferred for a Power Saver poster.
+  if (is_blocked_for_prerendering_) {
+    is_blocked_for_power_saver_poster_ = false;
+    LoadPlugin();
+  }
 }
 #endif
 
@@ -209,7 +212,7 @@ void PluginPlaceholder::OnLoadBlockedPlugins(const std::string& identifier) {
     return;
 
   RenderThread::Get()->RecordAction(UserMetricsAction("Plugin_Load_UI"));
-  LoadPlugin(content::RenderFrame::CREATE_PLUGIN_GESTURE_NO_USER_GESTURE);
+  LoadPlugin();
 }
 
 void PluginPlaceholder::OnSetIsPrerendering(bool is_prerendering) {
@@ -217,13 +220,12 @@ void PluginPlaceholder::OnSetIsPrerendering(bool is_prerendering) {
   // so no BlockedPlugin should see the notification that enables prerendering.
   DCHECK(!is_prerendering);
   if (is_blocked_for_prerendering_ && !is_prerendering &&
-      !is_blocked_for_power_saver_) {
-    LoadPlugin(content::RenderFrame::CREATE_PLUGIN_GESTURE_NO_USER_GESTURE);
+      !is_blocked_for_power_saver_poster_) {
+    LoadPlugin();
   }
 }
 
-void PluginPlaceholder::LoadPlugin(
-    content::RenderFrame::CreatePluginGesture gesture) {
+void PluginPlaceholder::LoadPlugin() {
   // This is not strictly necessary but is an important defense in case the
   // event propagation changes between "close" vs. "click-to-play".
   if (hidden_)
@@ -238,14 +240,19 @@ void PluginPlaceholder::LoadPlugin(
   // TODO(mmenke):  In the case of prerendering, feed into
   //                ChromeContentRendererClient::CreatePlugin instead, to
   //                reduce the chance of future regressions.
-  WebPlugin* plugin = render_frame()->CreatePlugin(frame_, plugin_info_,
-                                                   plugin_params_, gesture);
+  WebPlugin* plugin = render_frame()->CreatePlugin(
+      frame_, plugin_info_, plugin_params_, power_saver_mode_);
   ReplacePlugin(plugin);
 }
 
 void PluginPlaceholder::LoadCallback() {
   RenderThread::Get()->RecordAction(UserMetricsAction("Plugin_Load_Click"));
-  LoadPlugin(content::RenderFrame::CREATE_PLUGIN_GESTURE_HAS_USER_GESTURE);
+// If the user specifically clicks on the plug-in content's placeholder,
+// disable power saver throttling for this instance.
+#if defined(ENABLE_PLUGINS)
+  DisablePowerSaverForInstance();
+#endif
+  LoadPlugin();
 }
 
 void PluginPlaceholder::HideCallback() {

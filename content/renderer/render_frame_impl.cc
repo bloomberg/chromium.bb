@@ -604,7 +604,7 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
 #endif
 
 #if defined(ENABLE_PLUGINS)
-  plugin_power_saver_helper_ = new PluginPowerSaverHelperImpl(this);
+  plugin_power_saver_helper_ = new PluginPowerSaverHelper(this);
 #endif
 
   manifest_manager_ = new ManifestManager(this);
@@ -1588,20 +1588,16 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
     blink::WebFrame* frame,
     const WebPluginInfo& info,
     const blink::WebPluginParams& params,
-    CreatePluginGesture gesture) {
+    PluginPowerSaverMode power_saver_mode) {
   DCHECK_EQ(frame_, frame);
 #if defined(ENABLE_PLUGINS)
-  if (gesture == CREATE_PLUGIN_GESTURE_HAS_USER_GESTURE) {
-    plugin_power_saver_helper_->WhitelistContentOrigin(
-        GURL(params.url).GetOrigin());
-  }
-
   bool pepper_plugin_was_registered = false;
   scoped_refptr<PluginModule> pepper_module(PluginModule::Create(
       this, info, &pepper_plugin_was_registered));
   if (pepper_plugin_was_registered) {
     if (pepper_module.get()) {
-      return new PepperWebPluginImpl(pepper_module.get(), params, this);
+      return new PepperWebPluginImpl(pepper_module.get(), params, this,
+                                     power_saver_mode);
     }
   }
 #if defined(OS_CHROMEOS)
@@ -1632,11 +1628,26 @@ ServiceRegistry* RenderFrameImpl::GetServiceRegistry() {
 }
 
 #if defined(ENABLE_PLUGINS)
-PluginPowerSaverHelperImpl* RenderFrameImpl::GetPluginPowerSaverHelper() {
-  DCHECK(plugin_power_saver_helper_);
-  return plugin_power_saver_helper_;
+void RenderFrameImpl::RegisterPeripheralPlugin(
+    const GURL& content_origin,
+    const base::Closure& unthrottle_callback) {
+  return plugin_power_saver_helper_->RegisterPeripheralPlugin(
+      content_origin, unthrottle_callback);
 }
-#endif
+
+bool RenderFrameImpl::ShouldThrottleContent(
+    const blink::WebPluginParams& params,
+    const GURL& page_frame_url,
+    GURL* poster_image,
+    bool* cross_origin_main_content) const {
+  return plugin_power_saver_helper_->ShouldThrottleContent(
+      params, page_frame_url, poster_image, cross_origin_main_content);
+}
+
+void RenderFrameImpl::WhitelistContentOrigin(const GURL& content_origin) {
+  return plugin_power_saver_helper_->WhitelistContentOrigin(content_origin);
+}
+#endif  // defined(ENABLE_PLUGINS)
 
 bool RenderFrameImpl::IsFTPDirectoryListing() {
   WebURLResponseExtraDataImpl* extra_data =
@@ -1732,8 +1743,7 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
 
   WebPluginParams params_to_use = params;
   params_to_use.mimeType = WebString::fromUTF8(mime_type);
-  return CreatePlugin(frame, info, params_to_use,
-                      CREATE_PLUGIN_GESTURE_NO_USER_GESTURE);
+  return CreatePlugin(frame, info, params_to_use, POWER_SAVER_MODE_ESSENTIAL);
 #else
   return NULL;
 #endif  // defined(ENABLE_PLUGINS)

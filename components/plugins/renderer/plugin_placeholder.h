@@ -35,7 +35,13 @@ class PluginPlaceholder : public content::RenderFrameObserver,
   }
 
 #if defined(ENABLE_PLUGINS)
-  void BlockForPowerSaver();
+  void set_power_saver_mode(
+      content::RenderFrame::PluginPowerSaverMode power_saver_mode) {
+    power_saver_mode_ = power_saver_mode;
+  }
+
+  // Defer loading of plug-in, and instead show the Power Saver poster image.
+  void BlockForPowerSaverPoster();
 #endif
 
   void set_allow_loading(bool allow_loading) { allow_loading_ = allow_loading; }
@@ -52,7 +58,7 @@ class PluginPlaceholder : public content::RenderFrameObserver,
   ~PluginPlaceholder() override;
 
 #if defined(ENABLE_PLUGINS)
-  void UnblockForPowerSaver();
+  void DisablePowerSaverForInstance();
 #endif
 
   void OnLoadBlockedPlugins(const std::string& identifier);
@@ -74,7 +80,7 @@ class PluginPlaceholder : public content::RenderFrameObserver,
   void HidePlugin();
 
   // Load the blocked plugin.
-  void LoadPlugin(content::RenderFrame::CreatePluginGesture gesture);
+  void LoadPlugin();
 
   // gin::Wrappable method:
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
@@ -113,7 +119,10 @@ class PluginPlaceholder : public content::RenderFrameObserver,
   bool is_blocked_for_prerendering_;
 
   // True if the plugin load is deferred due to a Power Saver poster.
-  bool is_blocked_for_power_saver_;
+  bool is_blocked_for_power_saver_poster_;
+
+  // This is independent of deferred plugin load due to a Power Saver poster.
+  content::RenderFrame::PluginPowerSaverMode power_saver_mode_;
 
   bool allow_loading_;
 

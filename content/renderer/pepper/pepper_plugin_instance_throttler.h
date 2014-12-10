@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "content/public/renderer/render_frame.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 
@@ -20,8 +21,6 @@ class GURL;
 class SkBitmap;
 
 namespace content {
-
-class PluginPowerSaverHelperImpl;
 
 // Manages the Plugin Power Saver feature for a single Pepper plugin instance.
 //
@@ -44,11 +43,13 @@ class PluginPowerSaverHelperImpl;
 // representative keyframe.
 class CONTENT_EXPORT PepperPluginInstanceThrottler {
  public:
-  PepperPluginInstanceThrottler(PluginPowerSaverHelperImpl* power_saver_helper,
-                                const blink::WebRect& bounds,
-                                const std::string& module_name,
-                                const GURL& plugin_url,
-                                const base::Closure& throttle_change_callback);
+  PepperPluginInstanceThrottler(
+      RenderFrame* frame,
+      const blink::WebRect& bounds,
+      const std::string& module_name,
+      const GURL& plugin_url,
+      RenderFrame::PluginPowerSaverMode power_saver_mode,
+      const base::Closure& throttle_change_callback);
 
   virtual ~PepperPluginInstanceThrottler();
 

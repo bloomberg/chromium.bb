@@ -175,7 +175,7 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateBlockedPlugin(
 
 #if defined(ENABLE_PLUGINS)
   if (poster_url.is_valid())
-    blocked_plugin->BlockForPowerSaver();
+    blocked_plugin->BlockForPowerSaverPoster();
 #endif
   blocked_plugin->SetPluginInfo(plugin);
   blocked_plugin->SetIdentifier(identifier);
@@ -311,7 +311,10 @@ void ChromePluginPlaceholder::OnMenuAction(int request_id, unsigned action) {
   switch (action) {
     case chrome::MENU_COMMAND_PLUGIN_RUN: {
       RenderThread::Get()->RecordAction(UserMetricsAction("Plugin_Load_Menu"));
-      LoadPlugin(content::RenderFrame::CREATE_PLUGIN_GESTURE_HAS_USER_GESTURE);
+#if defined(ENABLE_PLUGINS)
+      DisablePowerSaverForInstance();
+#endif
+      LoadPlugin();
       break;
     }
     case chrome::MENU_COMMAND_PLUGIN_HIDE: {

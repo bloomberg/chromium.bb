@@ -32,7 +32,7 @@
 #include "ui/gfx/range/range.h"
 
 #if defined(ENABLE_PLUGINS)
-#include "content/renderer/pepper/plugin_power_saver_helper_impl.h"
+#include "content/renderer/pepper/plugin_power_saver_helper.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -272,10 +272,11 @@ class CONTENT_EXPORT RenderFrameImpl
                       const ContextMenuParams& params) override;
   void CancelContextMenu(int request_id) override;
   blink::WebNode GetContextMenuNode() const override;
-  blink::WebPlugin* CreatePlugin(blink::WebFrame* frame,
-                                 const WebPluginInfo& info,
-                                 const blink::WebPluginParams& params,
-                                 CreatePluginGesture gesture) override;
+  blink::WebPlugin* CreatePlugin(
+      blink::WebFrame* frame,
+      const WebPluginInfo& info,
+      const blink::WebPluginParams& params,
+      PluginPowerSaverMode power_saver_mode) override;
   void LoadURLExternally(blink::WebLocalFrame* frame,
                          const blink::WebURLRequest& request,
                          blink::WebNavigationPolicy policy) override;
@@ -283,7 +284,14 @@ class CONTENT_EXPORT RenderFrameImpl
   bool IsHidden() override;
   ServiceRegistry* GetServiceRegistry() override;
 #if defined(ENABLE_PLUGINS)
-  PluginPowerSaverHelperImpl* GetPluginPowerSaverHelper() override;
+  void RegisterPeripheralPlugin(
+      const GURL& content_origin,
+      const base::Closure& unthrottle_callback) override;
+  bool ShouldThrottleContent(const blink::WebPluginParams& params,
+                             const GURL& page_frame_url,
+                             GURL* poster_image,
+                             bool* cross_origin_main_content) const override;
+  void WhitelistContentOrigin(const GURL& content_origin) override;
 #endif
   bool IsFTPDirectoryListing() override;
   void AttachGuest(int element_instance_id) override;
@@ -713,7 +721,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // progress.
   base::string16 pepper_composition_text_;
 
-  PluginPowerSaverHelperImpl* plugin_power_saver_helper_;
+  PluginPowerSaverHelper* plugin_power_saver_helper_;
 #endif
 
   RendererWebCookieJarImpl cookie_jar_;

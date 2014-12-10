@@ -4,17 +4,14 @@
 
 #include "content/renderer/pepper/pepper_plugin_instance_throttler.h"
 
-#include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/time/time.h"
 #include "content/public/common/content_constants.h"
-#include "content/public/common/content_switches.h"
-#include "content/renderer/pepper/plugin_power_saver_helper_impl.h"
-#include "content/renderer/render_thread_impl.h"
+#include "content/public/renderer/render_thread.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/color_utils.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -107,10 +104,11 @@ const int kMinimumConsecutiveInterestingFrames = 4;
 }  // namespace
 
 PepperPluginInstanceThrottler::PepperPluginInstanceThrottler(
-    PluginPowerSaverHelperImpl* power_saver_helper,
+    RenderFrame* frame,
     const blink::WebRect& bounds,
     const std::string& module_name,
     const GURL& plugin_url,
+    RenderFrame::PluginPowerSaverMode power_saver_mode,
     const base::Closure& throttle_change_callback)
     : bounds_(bounds),
       throttle_change_callback_(throttle_change_callback),
@@ -119,44 +117,37 @@ PepperPluginInstanceThrottler::PepperPluginInstanceThrottler(
       consecutive_interesting_frames_(0),
       has_been_clicked_(false),
       power_saver_enabled_(false),
-      is_peripheral_content_(false),
+      is_peripheral_content_(power_saver_mode !=
+                             RenderFrame::POWER_SAVER_MODE_ESSENTIAL),
       plugin_throttled_(false),
       weak_factory_(this) {
-  GURL content_origin = plugin_url.GetOrigin();
-
   if (is_flash_plugin_ && RenderThread::Get()) {
     RenderThread::Get()->RecordAction(
         base::UserMetricsAction("Flash.PluginInstanceCreated"));
     RecordFlashSizeMetric(bounds.width, bounds.height);
   }
 
-  bool is_main_attraction = false;
-  is_peripheral_content_ =
+  power_saver_enabled_ =
       is_flash_plugin_ &&
-      power_saver_helper->ShouldThrottleContent(
-          content_origin, bounds.width, bounds.height, &is_main_attraction);
+      power_saver_mode == RenderFrame::POWER_SAVER_MODE_PERIPHERAL_THROTTLED;
 
-  power_saver_enabled_ = is_peripheral_content_ &&
-                         base::CommandLine::ForCurrentProcess()->HasSwitch(
-                             switches::kEnablePluginPowerSaver);
+  GURL content_origin = plugin_url.GetOrigin();
 
-  if (is_peripheral_content_) {
-    // To collect UMAs, register peripheral content even if we don't throttle.
-    power_saver_helper->RegisterPeripheralPlugin(
+  // To collect UMAs, register peripheral content even if power saver disabled.
+  if (frame) {
+    frame->RegisterPeripheralPlugin(
         content_origin, base::Bind(&PepperPluginInstanceThrottler::
                                        DisablePowerSaverByRetroactiveWhitelist,
                                    weak_factory_.GetWeakPtr()));
+  }
 
-    if (power_saver_enabled_) {
-      needs_representative_keyframe_ = true;
-      base::MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&PepperPluginInstanceThrottler::SetPluginThrottled,
-                     weak_factory_.GetWeakPtr(), true /* throttled */),
-          base::TimeDelta::FromMilliseconds(kThrottleTimeout));
-    }
-  } else if (is_main_attraction) {
-    power_saver_helper->WhitelistContentOrigin(content_origin);
+  if (power_saver_enabled_) {
+    needs_representative_keyframe_ = true;
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&PepperPluginInstanceThrottler::SetPluginThrottled,
+                   weak_factory_.GetWeakPtr(), true /* throttled */),
+        base::TimeDelta::FromMilliseconds(kThrottleTimeout));
   }
 }
 

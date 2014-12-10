@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/pepper/plugin_power_saver_helper_impl.h"
+#include "content/renderer/pepper/plugin_power_saver_helper.h"
 
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
@@ -75,27 +75,39 @@ bool ExtractDimensions(const blink::WebPluginParams& params,
   return width_extracted && height_extracted && *width >= 0 && *height >= 0;
 }
 
+GURL GetPluginInstancePosterImage(const blink::WebPluginParams& params,
+                                  const GURL& page_base_url) {
+  DCHECK_EQ(params.attributeNames.size(), params.attributeValues.size());
+
+  for (size_t i = 0; i < params.attributeNames.size(); ++i) {
+    if (params.attributeNames[i] == kPosterParamName) {
+      std::string poster_value(params.attributeValues[i].utf8());
+      if (!poster_value.empty())
+        return page_base_url.Resolve(poster_value);
+    }
+  }
+  return GURL();
+}
+
 }  // namespace
 
-PluginPowerSaverHelperImpl::PeripheralPlugin::PeripheralPlugin(
+PluginPowerSaverHelper::PeripheralPlugin::PeripheralPlugin(
     const GURL& content_origin,
     const base::Closure& unthrottle_callback)
     : content_origin(content_origin), unthrottle_callback(unthrottle_callback) {
 }
 
-PluginPowerSaverHelperImpl::PeripheralPlugin::~PeripheralPlugin() {
+PluginPowerSaverHelper::PeripheralPlugin::~PeripheralPlugin() {
 }
 
-PluginPowerSaverHelperImpl::PluginPowerSaverHelperImpl(
-    RenderFrame* render_frame)
+PluginPowerSaverHelper::PluginPowerSaverHelper(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame) {
 }
 
-PluginPowerSaverHelperImpl::~PluginPowerSaverHelperImpl() {
+PluginPowerSaverHelper::~PluginPowerSaverHelper() {
 }
 
-void PluginPowerSaverHelperImpl::DidCommitProvisionalLoad(
-    bool is_new_navigation) {
+void PluginPowerSaverHelper::DidCommitProvisionalLoad(bool is_new_navigation) {
   blink::WebFrame* frame = render_frame()->GetWebFrame();
   if (frame->parent())
     return;  // Not a top-level navigation.
@@ -107,10 +119,9 @@ void PluginPowerSaverHelperImpl::DidCommitProvisionalLoad(
     origin_whitelist_.clear();
 }
 
-bool PluginPowerSaverHelperImpl::OnMessageReceived(
-    const IPC::Message& message) {
+bool PluginPowerSaverHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(PluginPowerSaverHelperImpl, message)
+  IPC_BEGIN_MESSAGE_MAP(PluginPowerSaverHelper, message)
   IPC_MESSAGE_HANDLER(FrameMsg_UpdatePluginContentOriginWhitelist,
                       OnUpdatePluginContentOriginWhitelist)
   IPC_MESSAGE_UNHANDLED(handled = false)
@@ -118,7 +129,7 @@ bool PluginPowerSaverHelperImpl::OnMessageReceived(
   return handled;
 }
 
-void PluginPowerSaverHelperImpl::OnUpdatePluginContentOriginWhitelist(
+void PluginPowerSaverHelper::OnUpdatePluginContentOriginWhitelist(
     const std::set<GURL>& origin_whitelist) {
   origin_whitelist_ = origin_whitelist;
 
@@ -134,46 +145,29 @@ void PluginPowerSaverHelperImpl::OnUpdatePluginContentOriginWhitelist(
   }
 }
 
-GURL PluginPowerSaverHelperImpl::GetPluginInstancePosterImage(
-    const blink::WebPluginParams& params,
-    const GURL& base_url) const {
-  DCHECK_EQ(params.attributeNames.size(), params.attributeValues.size());
-
-  GURL content_origin = GURL(params.url).GetOrigin();
-  int width = 0;
-  int height = 0;
-
-  if (!ExtractDimensions(params, &width, &height))
-    return GURL();
-
-  if (!ShouldThrottleContent(content_origin, width, height, nullptr))
-    return GURL();
-
-  for (size_t i = 0; i < params.attributeNames.size(); ++i) {
-    if (params.attributeNames[i] == kPosterParamName) {
-      std::string poster_value(params.attributeValues[i].utf8());
-      if (!poster_value.empty())
-        return base_url.Resolve(poster_value);
-    }
-  }
-  return GURL();
-}
-
-void PluginPowerSaverHelperImpl::RegisterPeripheralPlugin(
+void PluginPowerSaverHelper::RegisterPeripheralPlugin(
     const GURL& content_origin,
     const base::Closure& unthrottle_callback) {
   peripheral_plugins_.push_back(
       PeripheralPlugin(content_origin, unthrottle_callback));
 }
 
-bool PluginPowerSaverHelperImpl::ShouldThrottleContent(
-    const GURL& content_origin,
-    int width,
-    int height,
-    bool* is_main_attraction) const {
-  DCHECK_EQ(content_origin.GetOrigin(), content_origin);
-  if (is_main_attraction)
-    *is_main_attraction = false;
+bool PluginPowerSaverHelper::ShouldThrottleContent(
+    const blink::WebPluginParams& params,
+    const GURL& plugin_frame_url,
+    GURL* poster_image,
+    bool* cross_origin_main_content) const {
+  if (poster_image)
+    *poster_image = GURL();
+  if (cross_origin_main_content)
+    *cross_origin_main_content = false;
+
+  GURL content_origin = GURL(params.url).GetOrigin();
+
+  int width = 0;
+  int height = 0;
+  if (!ExtractDimensions(params, &width, &height))
+    return false;
 
   // TODO(alexmos): Update this to use the origin of the RemoteFrame when 426512
   // is fixed. For now, case 3 in the class level comment doesn't work in
@@ -182,6 +176,8 @@ bool PluginPowerSaverHelperImpl::ShouldThrottleContent(
       render_frame()->GetWebFrame()->view()->mainFrame();
   if (main_frame->isWebRemoteFrame()) {
     RecordDecisionMetric(HEURISTIC_DECISION_PERIPHERAL);
+    if (poster_image)
+      *poster_image = GetPluginInstancePosterImage(params, plugin_frame_url);
     return true;
   }
 
@@ -209,16 +205,18 @@ bool PluginPowerSaverHelperImpl::ShouldThrottleContent(
   if (width >= kPeripheralContentMaxWidth &&
       height >= kPeripheralContentMaxHeight) {
     RecordDecisionMetric(HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_BIG);
-    if (is_main_attraction)
-      *is_main_attraction = true;
+    if (cross_origin_main_content)
+      *cross_origin_main_content = true;
     return false;
   }
 
   RecordDecisionMetric(HEURISTIC_DECISION_PERIPHERAL);
+  if (poster_image)
+    *poster_image = GetPluginInstancePosterImage(params, plugin_frame_url);
   return true;
 }
 
-void PluginPowerSaverHelperImpl::WhitelistContentOrigin(
+void PluginPowerSaverHelper::WhitelistContentOrigin(
     const GURL& content_origin) {
   DCHECK_EQ(content_origin.GetOrigin(), content_origin);
   if (origin_whitelist_.insert(content_origin).second) {
