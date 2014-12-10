@@ -163,6 +163,11 @@ public interface WebContents {
     public void beginExitTransition(String cssSelector, boolean exitToNativeApp);
 
     /**
+     * Revert the effect of exit transition after it transitions to activity.
+     */
+    public void revertExitTransition();
+
+    /**
      * Hide transition elements.
      */
     public void hideTransitionElements(String cssSelector);

@@ -57,6 +57,7 @@ class CONTENT_EXPORT WebContentsAndroid
   void SetupTransitionView(JNIEnv* env, jobject jobj, jstring markup);
   void BeginExitTransition(JNIEnv* env, jobject jobj, jstring css_selector,
                            jboolean exit_to_native_app);
+  void RevertExitTransition(JNIEnv* env, jobject jobj);
   void HideTransitionElements(JNIEnv* env, jobject jobj, jstring css_selector);
   void ShowTransitionElements(JNIEnv* env, jobject jobj, jstring css_selector);
   void ClearNavigationTransitionData(JNIEnv* env, jobject jobj);

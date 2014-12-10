@@ -919,6 +919,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnSetEditableSelectionOffsets)
     IPC_MESSAGE_HANDLER(FrameMsg_SetupTransitionView, OnSetupTransitionView)
     IPC_MESSAGE_HANDLER(FrameMsg_BeginExitTransition, OnBeginExitTransition)
+    IPC_MESSAGE_HANDLER(FrameMsg_RevertExitTransition, OnRevertExitTransition)
     IPC_MESSAGE_HANDLER(FrameMsg_HideTransitionElements,
                         OnHideTransitionElements)
     IPC_MESSAGE_HANDLER(FrameMsg_ShowTransitionElements,
@@ -1485,26 +1486,29 @@ void RenderFrameImpl::OnAddStyleSheetByURL(const std::string& url) {
 }
 
 void RenderFrameImpl::OnSetupTransitionView(const std::string& markup) {
-  frame_->document().setIsTransitionDocument();
+  frame_->document().setIsTransitionDocument(true);
   frame_->navigateToSandboxedMarkup(WebData(markup.data(), markup.length()));
 }
 
 void RenderFrameImpl::OnBeginExitTransition(const std::string& css_selector,
                                             bool exit_to_native_app) {
-  frame_->document().setIsTransitionDocument();
+  frame_->document().setIsTransitionDocument(true);
   frame_->document().beginExitTransition(WebString::fromUTF8(css_selector),
                                          exit_to_native_app);
 }
 
+void RenderFrameImpl::OnRevertExitTransition() {
+  frame_->document().setIsTransitionDocument(false);
+  frame_->document().revertExitTransition();
+}
+
 void RenderFrameImpl::OnHideTransitionElements(
     const std::string& css_selector) {
-  frame_->document().setIsTransitionDocument();
   frame_->document().hideTransitionElements(WebString::fromUTF8(css_selector));
 }
 
 void RenderFrameImpl::OnShowTransitionElements(
     const std::string& css_selector) {
-  frame_->document().setIsTransitionDocument();
   frame_->document().showTransitionElements(WebString::fromUTF8(css_selector));
 }
 

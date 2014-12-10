@@ -451,6 +451,9 @@ IPC_MESSAGE_ROUTED2(FrameMsg_BeginExitTransition,
                     std::string /* css_selector */,
                     bool /* exit_to_native_app */)
 
+// Tell the renderer to revert the exit transition done before
+IPC_MESSAGE_ROUTED0(FrameMsg_RevertExitTransition)
+
 // Tell the renderer to hide transition elements.
 IPC_MESSAGE_ROUTED1(FrameMsg_HideTransitionElements,
                     std::string /* css_selector */)

@@ -186,6 +186,12 @@ void WebContentsAndroid::BeginExitTransition(JNIEnv* env,
       exit_to_native_app));
 }
 
+void WebContentsAndroid::RevertExitTransition(JNIEnv* env,
+                                              jobject jobj) {
+  web_contents_->GetMainFrame()->Send(new FrameMsg_RevertExitTransition(
+      web_contents_->GetMainFrame()->GetRoutingID()));
+}
+
 void WebContentsAndroid::HideTransitionElements(JNIEnv* env,
                                                 jobject jobj,
                                                 jstring css_selector) {

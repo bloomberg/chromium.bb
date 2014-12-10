@@ -200,6 +200,14 @@ import org.chromium.content_public.browser.WebContents;
     }
 
     /**
+     * Revert the effect of exit transition.
+     */
+    @Override
+    public void revertExitTransition() {
+        nativeRevertExitTransition(mNativeWebContentsAndroid);
+    }
+
+    /**
      * Hide transition elements.
      */
     public void hideTransitionElements(String cssSelector) {
@@ -315,6 +323,7 @@ import org.chromium.content_public.browser.WebContents;
             String markup);
     private native void nativeBeginExitTransition(long nativeWebContentsAndroid,
             String cssSelector, boolean exitToNativeApp);
+    private native void nativeRevertExitTransition(long nativeWebContentsAndroid);
     private native void nativeHideTransitionElements(long nativeWebContentsAndroid,
             String cssSelector);
     private native void nativeShowTransitionElements(long nativeWebContentsAndroid,
