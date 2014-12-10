@@ -175,11 +175,6 @@ crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-ele
 crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars.html [ Failure Timeout ]
 crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-naming.html [ Failure ]
 
-crbug.com/3231 fast/text/midword-break-before-surrogate-pair.html [ NeedsRebaseline ]
-crbug.com/3231 fast/text/midword-break-before-surrogate-pair-2.html [ NeedsRebaseline ]
-crbug.com/3231 virtual/antialiasedtext/fast/text/midword-break-before-surrogate-pair.html [ NeedsRebaseline ]
-crbug.com/3231 virtual/antialiasedtext/fast/text/midword-break-before-surrogate-pair-2.html [ NeedsRebaseline ]
-
 # New W3C failures (dpranke@ to triage)
 crbug.com/330083 imported/web-platform-tests/custom-elements/instantiating-custom-elements/extensions-to-document-interface/create-element-interface-type-is-a-type-extension.html [ Failure ]
 
