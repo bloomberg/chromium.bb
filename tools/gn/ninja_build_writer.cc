@@ -256,10 +256,26 @@ bool NinjaBuildWriter::WritePhonyAndAllRules(Err* err) {
     }
   }
 
+  // Figure out if the BUILD file wants to declare a custom "default"
+  // target (rather than building 'all' by default). By convention
+  // we use group("default") but it doesn't have to be a group.
+  bool default_target_exists = false;
+  for (size_t i = 0; i < default_toolchain_targets_.size(); i++) {
+    const Label& label = default_toolchain_targets_[i]->label();
+    if (label.dir().value() == "//" && label.name() == "default")
+      default_target_exists = true;
+  }
+
   if (!all_rules.empty()) {
     out_ << "\nbuild all: phony " << all_rules << std::endl;
+  }
+
+  if (default_target_exists) {
+    out_ << "default default" << std::endl;
+  } else if (!all_rules.empty()) {
     out_ << "default all" << std::endl;
   }
+
   return true;
 }
 
