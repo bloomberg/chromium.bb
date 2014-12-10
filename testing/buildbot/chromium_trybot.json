@@ -158,6 +158,7 @@
     },
     "sync_unit_tests",
     "ui_base_unittests",
+    "ui_touch_selection_unittests",
     {
       "test": "unit_tests",
       "swarming": {

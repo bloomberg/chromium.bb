@@ -83,6 +83,7 @@
         }
       },
       "ui_base_unittests",
+      "ui_touch_selection_unittests",
       "url_unittests",
       "views_unittests",
       "wm_unittests"
@@ -192,6 +193,7 @@
         }
       },
       "ui_base_unittests",
+      "ui_touch_selection_unittests",
       "url_unittests",
       "views_unittests",
       "wm_unittests"
@@ -303,6 +305,7 @@
       },
       "sync_unit_tests",
       "ui_base_unittests",
+      "ui_touch_selection_unittests",
       {
         "test": "unit_tests",
         "swarming": {
@@ -424,6 +427,7 @@
       "sql_unittests",
       "sync_unit_tests",
       "ui_base_unittests",
+      "ui_touch_selection_unittests",
       {
         "test": "unit_tests",
         "swarming": {
@@ -539,6 +543,7 @@
       },
       "sync_unit_tests",
       "ui_base_unittests",
+      "ui_touch_selection_unittests",
       {
         "test": "unit_tests",
         "swarming": {
@@ -568,7 +573,8 @@
       "ash_unittests",
       "compositor_unittests",
       "content_browsertests",
-      "events_unittests"
+      "events_unittests",
+      "ui_touch_selection_unittests"
     ]
   }
 }

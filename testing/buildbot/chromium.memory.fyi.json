@@ -43,6 +43,7 @@
       "sql_unittests",
       "sync_unit_tests",
       "ui_base_unittests",
+      "ui_touch_selection_unittests",
       "unit_tests",
       "url_unittests",
       "views_unittests",

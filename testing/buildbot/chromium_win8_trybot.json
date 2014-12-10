@@ -9,6 +9,7 @@
     "ash_unittests",
     "compositor_unittests",
     "content_browsertests",
-    "events_unittests"
+    "events_unittests",
+    "ui_touch_selection_unittests"
   ]
 }
