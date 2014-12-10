@@ -251,6 +251,9 @@ const char kForceFirstRunUI[] = "force-first-run-ui";
 // Enables testing for auto update UI.
 const char kTestAutoUpdateUI[] = "test-auto-update-ui";
 
+// Enable memory pressure checks on ChromeOS.
+const char kUseMemoryPressureSystemChromeOS[] = "use-memory-pressure-chromeos";
+
 // Enables waking the device based on the receipt of some network packets.
 const char kWakeOnPackets[] = "wake-on-packets";
 

@@ -122,6 +122,8 @@
           'callback_internal.h',
           'callback_list.h',
           'cancelable_callback.h',
+          'chromeos/memory_pressure_observer_chromeos.cc',
+          'chromeos/memory_pressure_observer_chromeos.h',
           'command_line.cc',
           'command_line.h',
           'compiler_specific.h',

@@ -11,6 +11,10 @@
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/chromeos/version_loader.h"
 
+namespace base {
+class MemoryPressureObserverChromeOS;
+}
+
 namespace content {
 class PowerSaveBlocker;
 }
@@ -85,6 +89,8 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<EventRewriterController> keyboard_event_rewriters_;
 
   scoped_refptr<chromeos::ExternalMetrics> external_metrics_;
+
+  scoped_ptr<base::MemoryPressureObserverChromeOS> memory_pressure_observer_;
 
   VersionLoader cros_version_loader_;
   base::CancelableTaskTracker tracker_;
