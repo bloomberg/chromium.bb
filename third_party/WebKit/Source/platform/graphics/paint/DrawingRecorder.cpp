@@ -8,6 +8,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/paint/CachedDisplayItem.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -23,6 +24,7 @@ DrawingRecorder::DrawingRecorder(GraphicsContext* context, const DisplayItemClie
     , m_displayItemClient(displayItemClient)
     , m_displayItemType(displayItemType)
     , m_bounds(bounds)
+    , m_canUseCachedDrawing(false)
 {
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
         return;
@@ -32,7 +34,14 @@ DrawingRecorder::DrawingRecorder(GraphicsContext* context, const DisplayItemClie
     s_inDrawingRecorder = true;
 #endif
 
+    m_canUseCachedDrawing = context->displayItemList()->clientCacheIsValid(displayItemClient);
+#if ENABLE(ASSERT)
+    // Enable recording to check if any painter is still doing unnecessary painting when we can use cache.
     m_context->beginRecording(bounds);
+#else
+    if (!m_canUseCachedDrawing)
+        m_context->beginRecording(bounds);
+#endif
 }
 
 DrawingRecorder::~DrawingRecorder()
@@ -44,16 +53,27 @@ DrawingRecorder::~DrawingRecorder()
     s_inDrawingRecorder = false;
 #endif
 
-    RefPtr<const SkPicture> picture = m_context->endRecording();
-    if (!picture || !picture->approximateOpCount())
-        return;
-    OwnPtr<DrawingDisplayItem> drawingItem = DrawingDisplayItem::create(m_displayItemClient, m_displayItemType, picture);
+    OwnPtr<DisplayItem> displayItem;
+
+    if (m_canUseCachedDrawing) {
+#if ENABLE(ASSERT)
+        RefPtr<const SkPicture> picture = m_context->endRecording();
+        // FIXME: Enable this ASSERT after all painters call canUseCachedDrawing().
+        // ASSERT(!picture || !picture->approximateOpCount());
+#endif
+        displayItem = CachedDisplayItem::create(m_displayItemClient, m_displayItemType);
+    } else {
+        RefPtr<const SkPicture> picture = m_context->endRecording();
+        if (!picture || !picture->approximateOpCount())
+            return;
+        displayItem = DrawingDisplayItem::create(m_displayItemClient, m_displayItemType, picture);
+    }
+
 #ifndef NDEBUG
-    drawingItem->setClientDebugString(m_clientDebugString);
+    displayItem->setClientDebugString(m_clientDebugString);
 #endif
 
-    ASSERT(m_context->displayItemList());
-    m_context->displayItemList()->add(drawingItem.release());
+    m_context->displayItemList()->add(displayItem.release());
 }
 
 #ifndef NDEBUG
