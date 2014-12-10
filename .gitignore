@@ -24,6 +24,7 @@
 /git_bin
 /git-*_bin
 /svn_bin
+/external_bin
 /win_toolchain/vs2013_files
 /win_toolchain/.timestamps
 /win_toolchain/.vspro
