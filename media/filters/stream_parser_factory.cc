@@ -274,13 +274,6 @@ static bool VerifyCodec(
     std::vector<CodecInfo::HistogramTag>* video_codecs) {
   switch (codec_info->type) {
     case CodecInfo::AUDIO:
-#if defined(ENABLE_EAC3_PLAYBACK)
-      if (codec_info->tag == CodecInfo::HISTOGRAM_EAC3) {
-        const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-        if (!cmd_line->HasSwitch(switches::kEnableEac3Playback))
-          return false;
-      }
-#endif
       if (audio_codecs)
         audio_codecs->push_back(codec_info->tag);
       return true;
