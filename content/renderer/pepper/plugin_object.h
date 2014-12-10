@@ -12,6 +12,7 @@
 #include "gin/interceptor.h"
 #include "gin/wrappable.h"
 #include "ppapi/c/pp_var.h"
+#include "v8/include/v8-util.h"
 
 struct PPP_Class_Deprecated;
 
@@ -75,12 +76,17 @@ class PluginObject : public gin::Wrappable<PluginObject>,
 
   void Call(const std::string& identifier, gin::Arguments* args);
 
+  v8::Local<v8::FunctionTemplate> GetFunctionTemplate(v8::Isolate* isolate,
+                                                      const std::string& name);
+
   PepperPluginInstanceImpl* instance_;
 
   const PPP_Class_Deprecated* ppp_class_;
   void* ppp_class_data_;
 
   base::WeakPtrFactory<PluginObject> weak_factory_;
+
+  v8::StdPersistentValueMap<std::string, v8::FunctionTemplate> template_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginObject);
 };

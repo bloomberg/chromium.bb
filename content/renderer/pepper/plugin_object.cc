@@ -169,7 +169,8 @@ PluginObject::PluginObject(PepperPluginInstanceImpl* instance,
       instance_(instance),
       ppp_class_(ppp_class),
       ppp_class_data_(ppp_class_data),
-      weak_factory_(this) {
+      weak_factory_(this),
+      template_cache_(instance->GetIsolate()) {
   instance_->AddPluginObject(this);
 }
 
@@ -216,10 +217,7 @@ v8::Local<v8::Value> PluginObject::GetPropertyOrMethod(v8::Isolate* isolate,
   if (has_method) {
     const std::string& identifier =
         StringVar::FromPPVar(identifier_var)->value();
-    return gin::CreateFunctionTemplate(isolate,
-                                       base::Bind(&PluginObject::Call,
-                                                  weak_factory_.GetWeakPtr(),
-                                                  identifier))->GetFunction();
+    return GetFunctionTemplate(isolate, identifier)->GetFunction();
   }
 
   return v8::Local<v8::Value>();
@@ -266,6 +264,20 @@ void PluginObject::Call(const std::string& identifier,
     return;
 
   args->Return(result);
+}
+
+v8::Local<v8::FunctionTemplate> PluginObject::GetFunctionTemplate(
+    v8::Isolate* isolate,
+    const std::string& name) {
+  v8::Local<v8::FunctionTemplate> function_template = template_cache_.Get(name);
+  if (!function_template.IsEmpty())
+    return function_template;
+  function_template =
+      gin::CreateFunctionTemplate(
+          isolate, base::Bind(&PluginObject::Call, weak_factory_.GetWeakPtr(),
+                              name));
+  template_cache_.Set(name, function_template);
+  return function_template;
 }
 
 }  // namespace content
