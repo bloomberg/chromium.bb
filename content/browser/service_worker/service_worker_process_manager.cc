@@ -50,8 +50,8 @@ ServiceWorkerProcessManager::ServiceWorkerProcessManager(
     BrowserContext* browser_context)
     : browser_context_(browser_context),
       process_id_for_test_(-1),
-      weak_this_factory_(this),
-      weak_this_(weak_this_factory_.GetWeakPtr()) {
+      weak_this_factory_(this) {
+  weak_this_ = weak_this_factory_.GetWeakPtr();
 }
 
 ServiceWorkerProcessManager::~ServiceWorkerProcessManager() {

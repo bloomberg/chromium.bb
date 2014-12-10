@@ -222,7 +222,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       const GURL& origin,
       const std::vector<ServiceWorkerRegistrationInfo>& registrations);
 
-  base::WeakPtrFactory<ServiceWorkerContextCore> weak_factory_;
   // It's safe to store a raw pointer instead of a scoped_refptr to |wrapper_|
   // because the Wrapper::Shutdown call that hops threads to destroy |this| uses
   // Bind() to hold a reference to |wrapper_| until |this| is fully destroyed.
@@ -238,6 +237,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   int next_registration_handle_id_;
   scoped_refptr<ObserverListThreadSafe<ServiceWorkerContextObserver> >
       observer_list_;
+  base::WeakPtrFactory<ServiceWorkerContextCore> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextCore);
 };

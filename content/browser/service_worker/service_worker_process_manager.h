@@ -123,8 +123,8 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
   PatternProcessRefMap pattern_processes_;
 
   // Used to double-check that we don't access *this after it's destroyed.
+  base::WeakPtr<ServiceWorkerProcessManager> weak_this_;
   base::WeakPtrFactory<ServiceWorkerProcessManager> weak_this_factory_;
-  const base::WeakPtr<ServiceWorkerProcessManager> weak_this_;
 };
 
 }  // namespace content
