@@ -146,6 +146,7 @@ bool HotwordPrivateGetStatusFunction::RunSync() {
   if (!hotword_service) {
     result.available = false;
     result.enabled = false;
+    result.audio_logging_enabled = false;
     result.always_on_enabled = false;
     result.user_is_active = false;
   } else {
@@ -159,7 +160,6 @@ bool HotwordPrivateGetStatusFunction::RunSync() {
 
   PrefService* prefs = GetProfile()->GetPrefs();
   result.enabled_set = prefs->HasPrefPath(prefs::kHotwordSearchEnabled);
-  result.audio_logging_enabled = false;
   result.experimental_hotword_enabled =
       HotwordService::IsExperimentalHotwordingEnabled();
 
