@@ -45,8 +45,6 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
     kResetting,                   // upon received Reset(), before ResetDone()
     kStopped,                     // upon output EOS received.
     kFlushing,                    // upon flush request received.
-    kFlushingPendingInputBuffers, // pending flush request for unprocessed
-                                  // input buffers.
   };
 
   // Does not take ownership of |client| which must outlive |*this|.
@@ -134,7 +132,9 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   void RequestPictureBuffers(int width, int height);
 
   // Notifies the client about the availability of a picture.
-  void NotifyPictureReady(const media::Picture& picture);
+  void NotifyPictureReady(int picture_buffer_id,
+                          int input_buffer_id,
+                          const gfx::Rect& picture_buffer_size);
 
   // Sends pending input buffer processed acks to the client if we don't have
   // output samples waiting to be processed.
@@ -181,6 +181,29 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // time.
   bool OutputSamplesPresent();
 
+  // Copies the source surface |src_surface| to the destination |dest_surface|.
+  // The copying is done on the decoder thread.
+  void CopySurface(IDirect3DSurface9* src_surface,
+                   IDirect3DSurface9* dest_surface,
+                   int picture_buffer_id,
+                   int input_buffer_id);
+
+  // This is a notification that the source surface |src_surface| was copied to
+  // the destination |dest_surface|. Received on the main thread.
+  void CopySurfaceComplete(IDirect3DSurface9* src_surface,
+                           IDirect3DSurface9* dest_surface,
+                           int picture_buffer_id,
+                           int input_buffer_id);
+
+  // Flushes the decoder device to ensure that the decoded surface is copied
+  // to the target surface. |iterations| helps to maintain an upper limit on
+  // the number of times we try to complete the flush operation.
+  void FlushDecoder(int iterations,
+                    IDirect3DSurface9* src_surface,
+                    IDirect3DSurface9* dest_surface,
+                    int picture_buffer_id,
+                    int input_buffer_id);
+
   // To expose client callbacks from VideoDecodeAccelerator.
   media::VideoDecodeAccelerator::Client* client_;
 
@@ -212,6 +235,11 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
     ~PendingSampleInfo();
 
     int32 input_buffer_id;
+
+    // The target picture buffer id where the frame would be copied to.
+    // Defaults to -1.
+    int picture_buffer_id;
+
     base::win::ScopedComPtr<IMFSample> output_sample;
   };
 
@@ -270,6 +298,10 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // thread safety of reaching into this class from multiple threads to
   // attain a WeakPtr.
   const base::WeakPtr<DXVAVideoDecodeAccelerator> weak_ptr_;
+
+  // Set to true if we are in the context of a Flush operation. Used to prevent
+  // multiple flush done notifications being sent out.
+  bool pending_flush_;
 };
 
 }  // namespace content

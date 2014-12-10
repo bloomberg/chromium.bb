@@ -87,11 +87,6 @@ const CLSID MEDIASUBTYPE_VP90 = {
 
 namespace content {
 
-// We only request 5 picture buffers from the client which are used to hold the
-// decoded samples. These buffers are then reused when the client tells us that
-// it is done with the buffer.
-static const int kNumPictureBuffers = 5;
-
 #define RETURN_ON_FAILURE(result, log, ret)  \
   do {                                       \
     if (!(result)) {                         \
@@ -119,10 +114,18 @@ static const int kNumPictureBuffers = 5;
                                log << ", HRESULT: 0x" << std::hex << result, \
                                error_code, ret);
 
-// Maximum number of iterations we allow before aborting the attempt to flush
-// the batched queries to the driver and allow torn/corrupt frames to be
-// rendered.
-enum { kMaxIterationsForD3DFlush = 10 };
+enum {
+  // Maximum number of iterations we allow before aborting the attempt to flush
+  // the batched queries to the driver and allow torn/corrupt frames to be
+  // rendered.
+  kFlushDecoderSurfaceTimeoutMs = 1,
+  // Maximum iterations where we try to flush the d3d device.
+  kMaxIterationsForD3DFlush = 4,
+  // We only request 5 picture buffers from the client which are used to hold
+  // the decoded samples. These buffers are then reused when the client tells
+  // us that it is done with the buffer.
+  kNumPictureBuffers = 5,
+};
 
 static IMFSample* CreateEmptySample() {
   base::win::ScopedComPtr<IMFSample> sample;
@@ -224,8 +227,9 @@ struct DXVAVideoDecodeAccelerator::DXVAPictureBuffer {
   // client.
   // The dest_surface parameter contains the decoded bits.
   bool CopyOutputSampleDataToPictureBuffer(
-      const DXVAVideoDecodeAccelerator& decoder,
-      IDirect3DSurface9* dest_surface);
+      DXVAVideoDecodeAccelerator* decoder,
+      IDirect3DSurface9* dest_surface,
+      int input_buffer_id);
 
   bool available() const {
     return available_;
@@ -243,6 +247,11 @@ struct DXVAVideoDecodeAccelerator::DXVAPictureBuffer {
     return picture_buffer_.size();
   }
 
+  // Called when the source surface |src_surface| is copied to the destination
+  // |dest_surface|
+  void CopySurfaceComplete(IDirect3DSurface9* src_surface,
+                           IDirect3DSurface9* dest_surface);
+
  private:
   explicit DXVAPictureBuffer(const media::PictureBuffer& buffer);
 
@@ -250,6 +259,14 @@ struct DXVAVideoDecodeAccelerator::DXVAPictureBuffer {
   media::PictureBuffer picture_buffer_;
   EGLSurface decoding_surface_;
   base::win::ScopedComPtr<IDirect3DTexture9> decoding_texture_;
+
+  // The following |IDirect3DSurface9| interface pointers are used to hold
+  // references on the surfaces during the course of a StretchRect operation
+  // to copy the source surface to the target. The references are released
+  // when the StretchRect operation i.e. the copy completes.
+  base::win::ScopedComPtr<IDirect3DSurface9> decoder_surface_;
+  base::win::ScopedComPtr<IDirect3DSurface9> target_surface_;
+
   // Set to true if RGB is supported by the texture.
   // Defaults to true.
   bool use_rgb_;
@@ -346,13 +363,16 @@ void DXVAVideoDecodeAccelerator::DXVAPictureBuffer::ReusePictureBuffer() {
     egl_display,
     decoding_surface_,
     EGL_BACK_BUFFER);
+  decoder_surface_.Release();
+  target_surface_.Release();
   set_available(true);
 }
 
 bool DXVAVideoDecodeAccelerator::DXVAPictureBuffer::
     CopyOutputSampleDataToPictureBuffer(
-        const DXVAVideoDecodeAccelerator& decoder,
-        IDirect3DSurface9* dest_surface) {
+        DXVAVideoDecodeAccelerator* decoder,
+        IDirect3DSurface9* dest_surface,
+        int input_buffer_id) {
   DCHECK(dest_surface);
 
   D3DSURFACE_DESC surface_desc;
@@ -368,13 +388,35 @@ bool DXVAVideoDecodeAccelerator::DXVAPictureBuffer::
     return false;
   }
 
-  hr = decoder.d3d9_->CheckDeviceFormatConversion(
+  hr = decoder->d3d9_->CheckDeviceFormatConversion(
       D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, surface_desc.Format,
       use_rgb_ ? D3DFMT_X8R8G8B8 : D3DFMT_A8R8G8B8);
   RETURN_ON_HR_FAILURE(hr, "Device does not support format converision", false);
 
-  // This function currently executes in the context of IPC handlers in the
-  // GPU process which ensures that there is always an OpenGL context.
+  // The same picture buffer can be reused for a different frame. Release the
+  // target surface and the decoder references here.
+  target_surface_.Release();
+  decoder_surface_.Release();
+
+  // Grab a reference on the decoder surface and the target surface. These
+  // references will be released when we receive a notification that the
+  // copy was completed or when the DXVAPictureBuffer instance is destroyed.
+  // We hold references here as it is easier to manage their lifetimes.
+  hr = decoding_texture_->GetSurfaceLevel(0, target_surface_.Receive());
+  RETURN_ON_HR_FAILURE(hr, "Failed to get surface from texture", false);
+
+  decoder_surface_ = dest_surface;
+
+  decoder->CopySurface(decoder_surface_.get(), target_surface_.get(), id(),
+                       input_buffer_id);
+  return true;
+}
+
+void DXVAVideoDecodeAccelerator::DXVAPictureBuffer::CopySurfaceComplete(
+    IDirect3DSurface9* src_surface,
+    IDirect3DSurface9* dest_surface) {
+  DCHECK(!available());
+
   GLint current_texture = 0;
   glGetIntegerv(GL_TEXTURE_BINDING_2D, &current_texture);
 
@@ -382,51 +424,26 @@ bool DXVAVideoDecodeAccelerator::DXVAPictureBuffer::
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-  base::win::ScopedComPtr<IDirect3DSurface9> d3d_surface;
-  hr = decoding_texture_->GetSurfaceLevel(0, d3d_surface.Receive());
-  RETURN_ON_HR_FAILURE(hr, "Failed to get surface from texture", false);
+  DCHECK_EQ(src_surface, decoder_surface_.get());
+  DCHECK_EQ(dest_surface, target_surface_.get());
 
-  hr = decoder.device_->StretchRect(dest_surface, NULL, d3d_surface.get(), NULL,
-                                    D3DTEXF_NONE);
-  RETURN_ON_HR_FAILURE(hr, "Colorspace conversion via StretchRect failed",
-                        false);
+  decoder_surface_.Release();
+  target_surface_.Release();
 
-  // Ideally, this should be done immediately before the draw call that uses
-  // the texture. Flush it once here though.
-  hr = decoder.query_->Issue(D3DISSUE_END);
-  RETURN_ON_HR_FAILURE(hr, "Failed to issue END", false);
-
-  // The DXVA decoder has its own device which it uses for decoding. ANGLE
-  // has its own device which we don't have access to.
-  // The above code attempts to copy the decoded picture into a surface
-  // which is owned by ANGLE. As there are multiple devices involved in
-  // this, the StretchRect call above is not synchronous.
-  // We attempt to flush the batched operations to ensure that the picture is
-  // copied to the surface owned by ANGLE.
-  // We need to do this in a loop and call flush multiple times.
-  // We have seen the GetData call for flushing the command buffer fail to
-  // return success occassionally on multi core machines, leading to an
-  // infinite loop.
-  // Workaround is to have an upper limit of 10 on the number of iterations to
-  // wait for the Flush to finish.
-  int iterations = 0;
-  while ((decoder.query_->GetData(NULL, 0, D3DGETDATA_FLUSH) == S_FALSE) &&
-         ++iterations < kMaxIterationsForD3DFlush) {
-    Sleep(1);  // Poor-man's Yield().
-  }
   EGLDisplay egl_display = gfx::GLSurfaceEGL::GetHardwareDisplay();
   eglBindTexImage(
       egl_display,
       decoding_surface_,
       EGL_BACK_BUFFER);
+
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glBindTexture(GL_TEXTURE_2D, current_texture);
-  return true;
 }
 
 DXVAVideoDecodeAccelerator::PendingSampleInfo::PendingSampleInfo(
     int32 buffer_id, IMFSample* sample)
-    : input_buffer_id(buffer_id) {
+    : input_buffer_id(buffer_id),
+      picture_buffer_id(-1) {
   output_sample.Attach(sample);
 }
 
@@ -491,7 +508,8 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       codec_(media::kUnknownVideoCodec),
       decoder_thread_("DXVAVideoDecoderThread"),
       weak_this_factory_(this),
-      weak_ptr_(weak_this_factory_.GetWeakPtr()) {
+      weak_ptr_(weak_this_factory_.GetWeakPtr()),
+      pending_flush_(false) {
   memset(&input_stream_info_, 0, sizeof(input_stream_info_));
   memset(&output_stream_info_, 0, sizeof(output_stream_info_));
 }
@@ -514,11 +532,9 @@ bool DXVAVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
   HMODULE mfplat_dll = ::LoadLibrary(L"MFPlat.dll");
   RETURN_ON_FAILURE(mfplat_dll, "MFPlat.dll is required for decoding", false);
 
-  // TODO(ananta)
-  // H264PROFILE_HIGH video decoding is janky at times. Needs more
-  // investigation. http://crbug.com/426707
   if (profile != media::H264PROFILE_BASELINE &&
       profile != media::H264PROFILE_MAIN &&
+      profile != media::H264PROFILE_HIGH &&
       profile != media::VP8PROFILE_ANY &&
       profile != media::VP9PROFILE_ANY) {
     RETURN_AND_NOTIFY_ON_FAILURE(false,
@@ -616,7 +632,6 @@ void DXVAVideoDecodeAccelerator::AssignPictureBuffers(
     DCHECK(inserted);
   }
   ProcessPendingSamples();
-
   if (state == kFlushing) {
     decoder_thread_task_runner_->PostTask(
         FROM_HERE,
@@ -656,7 +671,6 @@ void DXVAVideoDecodeAccelerator::ReusePictureBuffer(
 
   it->second->ReusePictureBuffer();
   ProcessPendingSamples();
-
   if (state == kFlushing) {
     decoder_thread_task_runner_->PostTask(
         FROM_HERE,
@@ -679,6 +693,8 @@ void DXVAVideoDecodeAccelerator::Flush() {
   RETURN_AND_NOTIFY_ON_FAILURE(SendMFTMessage(MFT_MESSAGE_COMMAND_DRAIN, 0),
       "Failed to send drain message", PLATFORM_FAILURE,);
 
+  pending_flush_ = true;
+
   decoder_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DXVAVideoDecodeAccelerator::FlushInternal,
@@ -697,6 +713,22 @@ void DXVAVideoDecodeAccelerator::Reset() {
   decoder_thread_.Stop();
 
   SetState(kResetting);
+
+  // If we have pending output frames waiting for display then we drop those
+  // frames and set the corresponding picture buffer as available.
+  PendingOutputSamples::iterator index;
+  for (index = pending_output_samples_.begin();
+       index != pending_output_samples_.end();
+       ++index) {
+    if (index->picture_buffer_id != -1) {
+      OutputBuffers::iterator it = output_picture_buffers_.find(
+          index->picture_buffer_id);
+      if (it != output_picture_buffers_.end()) {
+        DXVAPictureBuffer* picture_buffer = it->second.get();
+        picture_buffer->ReusePictureBuffer();
+      }
+    }
+  }
 
   pending_output_samples_.clear();
 
@@ -965,8 +997,7 @@ void DXVAVideoDecodeAccelerator::DoDecode() {
   // result in the state transitioning to kStopped due to no decoded output.
   State state = GetState();
   RETURN_AND_NOTIFY_ON_FAILURE(
-      (state == kNormal || state == kFlushing ||
-       state == kStopped || state == kFlushingPendingInputBuffers),
+      (state == kNormal || state == kFlushing || state == kStopped),
           "DoDecode: not in normal/flushing/stopped state", ILLEGAL_STATE,);
 
   MFT_OUTPUT_DATA_BUFFER output_data_buffer = {0};
@@ -998,10 +1029,7 @@ void DXVAVideoDecodeAccelerator::DoDecode() {
       return;
     } else if (hr == MF_E_TRANSFORM_NEED_MORE_INPUT) {
       // No more output from the decoder. Stop playback.
-      if (state != kFlushingPendingInputBuffers ||
-          pending_input_buffers_.empty()) {
-        SetState(kStopped);
-      }
+      SetState(kStopped);
       return;
     } else {
       NOTREACHED() << "Unhandled error in DoDecode()";
@@ -1039,6 +1067,7 @@ bool DXVAVideoDecodeAccelerator::ProcessOutputSample(IMFSample* sample) {
 
   {
     base::AutoLock lock(decoder_lock_);
+    DCHECK(pending_output_samples_.empty());
     pending_output_samples_.push_back(
         PendingSampleInfo(input_buffer_id, sample));
   }
@@ -1087,10 +1116,18 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
        OutputSamplesPresent();
        ++index) {
     if (index->second->available()) {
-      PendingSampleInfo sample_info = pending_output_samples_.front();
+      PendingSampleInfo* pending_sample = NULL;
+      {
+        base::AutoLock lock(decoder_lock_);
+
+        PendingSampleInfo& sample_info = pending_output_samples_.front();
+        if (sample_info.picture_buffer_id != -1)
+          continue;
+        pending_sample = &sample_info;
+      }
 
       base::win::ScopedComPtr<IMFMediaBuffer> output_buffer;
-      HRESULT hr = sample_info.output_sample->GetBufferByIndex(
+      HRESULT hr = pending_sample->output_sample->GetBufferByIndex(
           0, output_buffer.Receive());
       RETURN_AND_NOTIFY_ON_HR_FAILURE(
           hr, "Failed to get buffer from output sample", PLATFORM_FAILURE,);
@@ -1115,39 +1152,18 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
         return;
       }
 
+      pending_sample->picture_buffer_id = index->second->id();
+
       RETURN_AND_NOTIFY_ON_FAILURE(
-          index->second->CopyOutputSampleDataToPictureBuffer(*this,
-                                                             surface.get()),
+          index->second->CopyOutputSampleDataToPictureBuffer(
+              this,
+              surface.get(),
+              pending_sample->input_buffer_id),
           "Failed to copy output sample", PLATFORM_FAILURE, );
 
-      media::Picture output_picture(index->second->id(),
-                                    sample_info.input_buffer_id,
-                                    gfx::Rect(index->second->size()));
-      main_thread_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&DXVAVideoDecodeAccelerator::NotifyPictureReady,
-                     weak_this_factory_.GetWeakPtr(),
-                     output_picture));
-
       index->second->set_available(false);
-      {
-        base::AutoLock lock(decoder_lock_);
-        pending_output_samples_.pop_front();
-      }
     }
   }
-
-  State state = GetState();
-  if (state == kFlushing) {
-    decoder_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&DXVAVideoDecodeAccelerator::FlushInternal,
-                   base::Unretained(this)));
-  }
-  decoder_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&DXVAVideoDecodeAccelerator::DecodePendingInputBuffers,
-                 base::Unretained(this)));
 }
 
 void DXVAVideoDecodeAccelerator::StopOnError(
@@ -1192,8 +1208,10 @@ void DXVAVideoDecodeAccelerator::NotifyInputBufferRead(int input_buffer_id) {
 
 void DXVAVideoDecodeAccelerator::NotifyFlushDone() {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
-  if (client_ && GetState() == kStopped)
+  if (client_ && pending_flush_) {
+    pending_flush_ = false;
     client_->NotifyFlushDone();
+  }
 }
 
 void DXVAVideoDecodeAccelerator::NotifyResetDone() {
@@ -1214,11 +1232,17 @@ void DXVAVideoDecodeAccelerator::RequestPictureBuffers(int width, int height) {
 }
 
 void DXVAVideoDecodeAccelerator::NotifyPictureReady(
-    const media::Picture& picture) {
+    int picture_buffer_id,
+    int input_buffer_id,
+    const gfx::Rect& picture_buffer_size) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   // This task could execute after the decoder has been torn down.
-  if (GetState() != kUninitialized && client_)
+  if (GetState() != kUninitialized && client_) {
+    media::Picture picture(picture_buffer_id,
+                           input_buffer_id,
+                           picture_buffer_size);
     client_->PictureReady(picture);
+  }
 }
 
 void DXVAVideoDecodeAccelerator::NotifyInputBuffersDropped() {
@@ -1272,17 +1296,23 @@ void DXVAVideoDecodeAccelerator::FlushInternal() {
     if (OutputSamplesPresent())
       return;
   }
+
+  SetState(kFlushing);
+
   // TODO(ananta)
   // Look into whether we can simplify this function by combining the while
   // above and the code below into a single block which achieves both. The Flush
   // transitions in the decoder are a touch intertwined with other portions of
   // the code like AssignPictureBuffers, ReusePictureBuffers etc.
   if (!pending_input_buffers_.empty()) {
-    SetState(kFlushingPendingInputBuffers);
     decoder_thread_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&DXVAVideoDecodeAccelerator::DecodePendingInputBuffers,
-                   base::Unretained(this)));
+                    base::Unretained(this)));
+    decoder_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&DXVAVideoDecodeAccelerator::FlushInternal,
+                    base::Unretained(this)));
     return;
   }
 
@@ -1323,12 +1353,16 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
   // decoder failure.
   if (hr == MF_E_NOTACCEPTING) {
     DoDecode();
-    State state = GetState();
-    RETURN_AND_NOTIFY_ON_FAILURE((state == kStopped || state == kNormal ||
-                                  state == kFlushing),
-        "Failed to process output. Unexpected decoder state: " << state,
-        PLATFORM_FAILURE,);
-    hr = decoder_->ProcessInput(0, sample.get(), 0);
+    // If the DoDecode call resulted in an output frame then we should not
+    // process any more input until that frame is copied to the target surface.
+    if (!OutputSamplesPresent()) {
+      State state = GetState();
+      RETURN_AND_NOTIFY_ON_FAILURE((state == kStopped || state == kNormal ||
+                                    state == kFlushing),
+          "Failed to process output. Unexpected decoder state: " << state,
+          PLATFORM_FAILURE,);
+      hr = decoder_->ProcessInput(0, sample.get(), 0);
+    }
     // If we continue to get the MF_E_NOTACCEPTING error we do the following:-
     // 1. Add the input sample to the pending queue.
     // 2. If we don't have any output samples we post the
@@ -1354,7 +1388,6 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
 
   State state = GetState();
   RETURN_AND_NOTIFY_ON_FAILURE((state == kStopped || state == kNormal ||
-                                state == kFlushingPendingInputBuffers ||
                                 state == kFlushing),
       "Failed to process output. Unexpected decoder state: " << state,
       ILLEGAL_STATE,);
@@ -1455,6 +1488,135 @@ void DXVAVideoDecodeAccelerator::StartDecoderThread() {
 bool DXVAVideoDecodeAccelerator::OutputSamplesPresent() {
   base::AutoLock lock(decoder_lock_);
   return !pending_output_samples_.empty();
+}
+
+void DXVAVideoDecodeAccelerator::CopySurface(IDirect3DSurface9* src_surface,
+                                             IDirect3DSurface9* dest_surface,
+                                             int picture_buffer_id,
+                                             int input_buffer_id) {
+  if (!decoder_thread_task_runner_->BelongsToCurrentThread()) {
+    decoder_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&DXVAVideoDecodeAccelerator::CopySurface,
+                   base::Unretained(this),
+                   src_surface,
+                   dest_surface,
+                   picture_buffer_id,
+                   input_buffer_id));
+    return;
+  }
+
+  HRESULT hr = device_->StretchRect(src_surface, NULL, dest_surface,
+                                    NULL, D3DTEXF_NONE);
+  RETURN_ON_HR_FAILURE(hr, "Colorspace conversion via StretchRect failed",);
+
+  // Ideally, this should be done immediately before the draw call that uses
+  // the texture. Flush it once here though.
+  hr = query_->Issue(D3DISSUE_END);
+  RETURN_ON_HR_FAILURE(hr, "Failed to issue END",);
+
+  // Flush the decoder device to ensure that the decoded frame is copied to the
+  // target surface.
+  decoder_thread_task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&DXVAVideoDecodeAccelerator::FlushDecoder,
+                 base::Unretained(this), 0, src_surface, dest_surface,
+                 picture_buffer_id, input_buffer_id),
+      base::TimeDelta::FromMilliseconds(kFlushDecoderSurfaceTimeoutMs));
+}
+
+void DXVAVideoDecodeAccelerator::CopySurfaceComplete(
+    IDirect3DSurface9* src_surface,
+    IDirect3DSurface9* dest_surface,
+    int picture_buffer_id,
+    int input_buffer_id) {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+
+  // The output buffers may have changed in the following scenarios:-
+  // 1. A resolution change.
+  // 2. Decoder instance was destroyed.
+  // Ignore copy surface notifications for such buffers.
+  // copy surface notifications for such buffers.
+  OutputBuffers::iterator it = output_picture_buffers_.find(picture_buffer_id);
+  if (it == output_picture_buffers_.end())
+    return;
+
+  // If the picture buffer is marked as available it probably means that there
+  // was a Reset operation which dropped the output frame.
+  DXVAPictureBuffer* picture_buffer = it->second.get();
+  if (picture_buffer->available())
+    return;
+
+  RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_.Run(),
+      "Failed to make context current", PLATFORM_FAILURE,);
+
+  DCHECK(!output_picture_buffers_.empty());
+
+  picture_buffer->CopySurfaceComplete(src_surface,
+                                      dest_surface);
+
+  NotifyPictureReady(picture_buffer->id(),
+                     input_buffer_id,
+                     gfx::Rect(picture_buffer->size()));
+
+  {
+    base::AutoLock lock(decoder_lock_);
+    if (!pending_output_samples_.empty())
+      pending_output_samples_.pop_front();
+  }
+
+  if (GetState() == kFlushing) {
+    decoder_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&DXVAVideoDecodeAccelerator::FlushInternal,
+                   base::Unretained(this)));
+    return;
+  }
+  decoder_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DXVAVideoDecodeAccelerator::DecodePendingInputBuffers,
+                 base::Unretained(this)));
+}
+
+void DXVAVideoDecodeAccelerator::FlushDecoder(
+    int iterations,
+    IDirect3DSurface9* src_surface,
+    IDirect3DSurface9* dest_surface,
+    int picture_buffer_id,
+    int input_buffer_id) {
+  DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
+
+  // The DXVA decoder has its own device which it uses for decoding. ANGLE
+  // has its own device which we don't have access to.
+  // The above code attempts to copy the decoded picture into a surface
+  // which is owned by ANGLE. As there are multiple devices involved in
+  // this, the StretchRect call above is not synchronous.
+  // We attempt to flush the batched operations to ensure that the picture is
+  // copied to the surface owned by ANGLE.
+  // We need to do this in a loop and call flush multiple times.
+  // We have seen the GetData call for flushing the command buffer fail to
+  // return success occassionally on multi core machines, leading to an
+  // infinite loop.
+  // Workaround is to have an upper limit of 4 on the number of iterations to
+  // wait for the Flush to finish.
+  HRESULT hr = query_->GetData(NULL, 0, D3DGETDATA_FLUSH);
+  if ((hr == S_FALSE) && (++iterations < kMaxIterationsForD3DFlush)) {
+    decoder_thread_task_runner_->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&DXVAVideoDecodeAccelerator::FlushDecoder,
+                   base::Unretained(this), iterations, src_surface,
+                   dest_surface, picture_buffer_id, input_buffer_id),
+        base::TimeDelta::FromMilliseconds(kFlushDecoderSurfaceTimeoutMs));
+    return;
+  }
+  main_thread_task_runner_->PostTask(
+    FROM_HERE,
+    base::Bind(&DXVAVideoDecodeAccelerator::CopySurfaceComplete,
+               weak_this_factory_.GetWeakPtr(),
+               src_surface,
+               dest_surface,
+               picture_buffer_id,
+               input_buffer_id));
 }
 
 }  // namespace content
