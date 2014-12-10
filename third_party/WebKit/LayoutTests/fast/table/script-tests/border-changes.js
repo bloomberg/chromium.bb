@@ -153,4 +153,20 @@ shouldBe("getComputedStyle(cell, '').borderRightColor", "red");
 shouldBe("getComputedStyle(cell, '').borderTopColor", "red");
 shouldBe("getComputedStyle(cell, '').borderBottomColor", "red");
 
+// resets to default border width of 3px
+table.removeAttribute("border");
+
+shouldBe("getComputedStyle(table, '').borderLeftWidth", "'3px'");
+shouldBe("getComputedStyle(table, '').borderRightWidth", "'3px'");
+shouldBe("getComputedStyle(table, '').borderTopWidth", "'3px'");
+shouldBe("getComputedStyle(table, '').borderBottomWidth", "'3px'");
+shouldBe("getComputedStyle(table, '').borderLeftStyle", "'solid'");
+shouldBe("getComputedStyle(table, '').borderRightStyle", "'solid'");
+shouldBe("getComputedStyle(table, '').borderTopStyle", "'solid'");
+shouldBe("getComputedStyle(table, '').borderBottomStyle", "'solid'");
+shouldBe("getComputedStyle(table, '').borderLeftColor", "yellow");
+shouldBe("getComputedStyle(table, '').borderRightColor", "yellow");
+shouldBe("getComputedStyle(table, '').borderTopColor", "yellow");
+shouldBe("getComputedStyle(table, '').borderBottomColor", "yellow");
+
 document.body.removeChild(table);
