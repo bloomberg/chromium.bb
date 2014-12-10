@@ -49355,6 +49355,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2037756154" label="enable-impl-side-painting"/>
   <int value="2052321823" label="enable-worker-frame"/>
   <int value="2059322877" label="new-avatar-menu"/>
+  <int value="2071461362" label="disable-credit-card-scan"/>
   <int value="2093235103" label="default-tile-width"/>
   <int value="2101151142" label="disable-direct-write"/>
   <int value="2119964154" label="enable-download-resumption"/>

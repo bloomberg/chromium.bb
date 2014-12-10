@@ -7,6 +7,10 @@
 namespace autofill {
 namespace switches {
 
+// Disables using device's camera to scan a new credit card when filling out a
+// credit card form.
+const char kDisableCreditCardScan[]         = "disable-credit-card-scan";
+
 // Disables password generation when we detect that the user is going through
 // account creation.
 const char kDisablePasswordGeneration[]     = "disable-password-generation";

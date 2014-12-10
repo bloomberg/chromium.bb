@@ -2043,7 +2043,8 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_CREDIT_CARD_SCAN_NAME,
     IDS_FLAGS_ENABLE_CREDIT_CARD_SCAN_DESCRIPTION,
     kOsAndroid,
-    SINGLE_VALUE_TYPE(autofill::switches::kEnableCreditCardScan)
+    ENABLE_DISABLE_VALUE_TYPE(autofill::switches::kEnableCreditCardScan,
+                              autofill::switches::kDisableCreditCardScan)
   },
 #if defined(OS_CHROMEOS)
   {
