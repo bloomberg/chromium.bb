@@ -38,8 +38,6 @@ static inline float gaussianKernelFactor()
     return 3 / 4.f * sqrtf(twoPiFloat);
 }
 
-static const int gMaxKernelSize = 1000;
-
 namespace blink {
 
 FEGaussianBlur::FEGaussianBlur(Filter* filter, float x, float y)
@@ -83,12 +81,12 @@ IntSize FEGaussianBlur::calculateUnscaledKernelSize(const FloatPoint& std)
     // inflates the absolute paint rect to much. This is compatible with Firefox' behavior.
     if (std.x()) {
         int size = std::max<unsigned>(2, static_cast<unsigned>(floorf(std.x() * gaussianKernelFactor() + 0.5f)));
-        kernelSize.setWidth(std::min(size, gMaxKernelSize));
+        kernelSize.setWidth(size);
     }
 
     if (std.y()) {
         int size = std::max<unsigned>(2, static_cast<unsigned>(floorf(std.y() * gaussianKernelFactor() + 0.5f)));
-        kernelSize.setHeight(std::min(size, gMaxKernelSize));
+        kernelSize.setHeight(size);
     }
 
     return kernelSize;
