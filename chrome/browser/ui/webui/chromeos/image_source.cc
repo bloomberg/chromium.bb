@@ -21,8 +21,39 @@ namespace chromeos {
 namespace {
 
 const char* kWhitelistedFiles[] = {
-    "fcc/label.png"
+  "fcc/label.png"
 };
+
+// Callback for user_manager::UserImageLoader.
+void ImageLoaded(
+    const content::URLDataSource::GotDataCallback& got_data_callback,
+    const user_manager::UserImage& user_image) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (user_image.has_raw_image())
+    got_data_callback.Run(new base::RefCountedBytes(user_image.raw_image()));
+  else
+    got_data_callback.Run(NULL);
+}
+
+// Looks for the image at |path| under the shared assets directory.
+void StartOnBlockingPool(
+    const std::string& path,
+    scoped_refptr<UserImageLoader> image_loader,
+    const content::URLDataSource::GotDataCallback& got_data_callback,
+    scoped_refptr<base::MessageLoopProxy> message_loop_proxy) {
+  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+
+  const base::FilePath asset_dir(FILE_PATH_LITERAL(chrome::kChromeOSAssetPath));
+  const base::FilePath image_path = asset_dir.AppendASCII(path);
+  if (base::PathExists(image_path)) {
+    image_loader->Start(image_path.value(), 0,
+                        base::Bind(&ImageLoaded, got_data_callback));
+  } else {
+    message_loop_proxy->PostTask(FROM_HERE,
+                                 base::Bind(got_data_callback, nullptr));
+  }
+}
 
 }  // namespace
 
@@ -45,17 +76,24 @@ void ImageSource::StartDataRequest(
     const std::string& path,
     int render_process_id,
     int render_frame_id,
-    const content::URLDataSource::GotDataCallback& callback) {
+    const content::URLDataSource::GotDataCallback& got_data_callback) {
   if (!IsWhitelisted(path)) {
-    callback.Run(NULL);
+    got_data_callback.Run(NULL);
     return;
   }
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ImageSource::StartOnFileThread,
-                 weak_factory_.GetWeakPtr(),
+
+  if (!image_loader_) {
+    image_loader_ = new UserImageLoader(ImageDecoder::DEFAULT_CODEC,
+                                        task_runner_);
+  }
+
+  content::BrowserThread::GetBlockingPool()->PostTask(
+      FROM_HERE,
+      base::Bind(&StartOnBlockingPool,
                  path,
-                 callback));
+                 image_loader_,
+                 got_data_callback,
+                 base::MessageLoopProxy::current()));
 }
 
 std::string ImageSource::GetMimeType(const std::string& path) const {
@@ -64,35 +102,6 @@ std::string ImageSource::GetMimeType(const std::string& path) const {
   if (!ext.empty())
     net::GetWellKnownMimeTypeFromExtension(ext.substr(1), &mime_type);
   return mime_type;
-}
-
-void ImageSource::StartOnFileThread(
-    const std::string& path,
-    const content::URLDataSource::GotDataCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  base::FilePath file_path(chrome::kChromeOSAssetPath + path);
-  if (!base::PathExists(file_path)) {
-    callback.Run(NULL);
-    return;
-  }
-
-  image_loader_ = new UserImageLoader(ImageDecoder::DEFAULT_CODEC,
-                                      task_runner_);
-  image_loader_->Start(file_path.value(),
-                       0,
-                       base::Bind(&ImageSource::ImageLoaded,
-                                  weak_factory_.GetWeakPtr(),
-                                  callback));
-}
-
-void ImageSource::ImageLoaded(
-    const content::URLDataSource::GotDataCallback& callback,
-    const user_manager::UserImage& user_image) const {
-  if (user_image.has_raw_image())
-    callback.Run(new base::RefCountedBytes(user_image.raw_image()));
-  else
-    callback.Run(NULL);
 }
 
 bool ImageSource::IsWhitelisted(const std::string& path) const {

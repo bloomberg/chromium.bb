@@ -91,8 +91,8 @@ class HelpHandler : public content::WebUIMessageHandler,
   void OnCurrentChannel(const std::string& channel);
   void OnTargetChannel(const std::string& channel);
 
-  // Callback for loading FCC label alt text.
-  void LoadFCCLabelText();
+  // Callback for setting the FCC label alt text.
+  void OnFCCLabelTextRead(const std::string& text);
 #endif
 
   // Specialized instance of the VersionUpdater used to update the browser.

@@ -38,19 +38,12 @@ class ImageSource : public content::URLDataSource {
       const std::string& path,
       int render_process_id,
       int render_frame_id,
-      const content::URLDataSource::GotDataCallback& callback) override;
+      const content::URLDataSource::GotDataCallback& got_data_callback)
+      override;
+
   std::string GetMimeType(const std::string& path) const override;
 
  private:
-  void StartOnFileThread(
-      const std::string& path,
-      const content::URLDataSource::GotDataCallback& callback);
-
-  // Callback for user_manager::UserImageLoader.
-  void ImageLoaded(
-    const content::URLDataSource::GotDataCallback& callback,
-    const user_manager::UserImage& user_image) const;
-
   // Checks whether we have allowed the image to be loaded.
   bool IsWhitelisted(const std::string& path) const;
 
