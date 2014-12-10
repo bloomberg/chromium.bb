@@ -51,10 +51,8 @@ class FindBar {
   // where it would be if we place it on the left of the selection and if it
   // doesn't fit on the screen we try the right side. The parameter
   // |selection_rect| is expected to have coordinates relative to the top of
-  // the web page area. If |no_redraw| is true, the window will be moved without
-  // redrawing siblings.
-  virtual void MoveWindowIfNecessary(const gfx::Rect& selection_rect,
-                                     bool no_redraw) = 0;
+  // the web page area.
+  virtual void MoveWindowIfNecessary(const gfx::Rect& selection_rect) = 0;
 
   // Set the text in the find box.
   virtual void SetFindTextAndSelectedRange(

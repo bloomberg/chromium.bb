@@ -173,7 +173,7 @@ void DropdownBarHost::AnimationProgressed(const gfx::Animation* animation) {
   // This call makes sure it appears in the right location, the size and shape
   // is correct and that it slides in the right direction.
   gfx::Rect dlg_rect = GetDialogPosition(gfx::Rect());
-  SetDialogPosition(dlg_rect, false);
+  SetDialogPosition(dlg_rect);
 
   // Let the view know if we are animating, and at which offset to draw the
   // edges.

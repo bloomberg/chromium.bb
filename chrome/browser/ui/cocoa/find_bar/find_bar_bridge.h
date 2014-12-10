@@ -68,8 +68,7 @@ class FindBarBridge : public FindBar,
   void RestoreSavedFocus() override;
   bool HasGlobalFindPasteboard() override;
   void UpdateFindBarForChangedWebContents() override;
-  void MoveWindowIfNecessary(const gfx::Rect& selection_rect,
-                             bool no_redraw) override;
+  void MoveWindowIfNecessary(const gfx::Rect& selection_rect) override;
 
   // Methods from FindBarTesting.
   bool GetFindBarWindowInfo(gfx::Point* position, bool* fully_visible) override;

@@ -8,16 +8,6 @@
 #include "ui/views/view_constants_aura.h"
 #include "ui/views/widget/widget.h"
 
-void DropdownBarHost::SetWidgetPositionNative(const gfx::Rect& new_pos,
-                                              bool no_redraw) {
-  if (!host_->IsVisible())
-    host_->GetNativeView()->Show();
-  host_->GetNativeView()->SetBounds(new_pos);
-
-  // The z-order of |host_| is controlled by the view specified via
-  // views::kHostViewKey.
-}
-
 void DropdownBarHost::SetHostViewNative(views::View* host_view) {
   host_->GetNativeView()->SetProperty(views::kHostViewKey, host_view);
 }

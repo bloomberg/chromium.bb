@@ -348,7 +348,7 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
   // TabContentsContainer's bounds being up to date.
   if (browser()->HasFindBarController()) {
     browser()->GetFindBarController()->find_bar()->MoveWindowIfNecessary(
-        gfx::Rect(), true);
+        gfx::Rect());
   }
 
   // Adjust the fullscreen exit bubble bounds for |top_container_|'s new bounds.

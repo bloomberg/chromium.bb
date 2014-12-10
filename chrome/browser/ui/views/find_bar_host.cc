@@ -103,10 +103,9 @@ void FindBarHost::StopAnimation() {
   DropdownBarHost::StopAnimation();
 }
 
-void FindBarHost::MoveWindowIfNecessary(const gfx::Rect& selection_rect,
-                                        bool no_redraw) {
+void FindBarHost::MoveWindowIfNecessary(const gfx::Rect& selection_rect) {
   // We only move the window if one is active for the current WebContents. If we
-  // don't check this, then SetWidgetPosition below will end up making the Find
+  // don't check this, then SetDialogPosition below will end up making the Find
   // Bar visible.
   content::WebContents* web_contents = find_bar_controller_->web_contents();
   if (!web_contents)
@@ -117,7 +116,7 @@ void FindBarHost::MoveWindowIfNecessary(const gfx::Rect& selection_rect,
     return;
 
   gfx::Rect new_pos = GetDialogPosition(selection_rect);
-  SetDialogPosition(new_pos, no_redraw);
+  SetDialogPosition(new_pos);
 
   // May need to redraw our frame to accommodate bookmark bar styles.
   view()->Layout();  // Bounds may have changed.
@@ -148,7 +147,7 @@ void FindBarHost::UpdateUIForFindResult(const FindNotificationDetails& result,
     find_bar_view()->UpdateForResult(result, find_text);
 
   // We now need to check if the window is obscuring the search results.
-  MoveWindowIfNecessary(result.selection_rect(), false);
+  MoveWindowIfNecessary(result.selection_rect());
 
   // Once we find a match we no longer want to keep track of what had
   // focus. EndFindSession will then set the focus to the page content.
@@ -308,11 +307,13 @@ gfx::Rect FindBarHost::GetDialogPosition(gfx::Rect avoid_overlapping_rect) {
   return new_pos;
 }
 
-void FindBarHost::SetDialogPosition(const gfx::Rect& new_pos, bool no_redraw) {
+void FindBarHost::SetDialogPosition(const gfx::Rect& new_pos) {
   if (new_pos.IsEmpty())
     return;
 
-  SetWidgetPositionNative(new_pos, no_redraw);
+  if (!host()->IsVisible())
+    host()->Show();
+  host()->SetBounds(new_pos);
 
   // Tell the immersive mode controller about the find bar's new bounds. The
   // immersive mode controller uses the bounds to keep the top-of-window views

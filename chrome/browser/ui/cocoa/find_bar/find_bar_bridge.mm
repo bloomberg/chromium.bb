@@ -82,8 +82,7 @@ bool FindBarBridge::IsFindBarVisible() {
   return [cocoa_controller_ isFindBarVisible] ? true : false;
 }
 
-void FindBarBridge::MoveWindowIfNecessary(const gfx::Rect& selection_rect,
-                                          bool no_redraw) {
+void FindBarBridge::MoveWindowIfNecessary(const gfx::Rect& selection_rect) {
   // See FindBarCocoaController moveFindBarToAvoidRect.
 }
 

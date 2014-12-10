@@ -52,8 +52,7 @@ class FindBarHost : public DropdownBarHost,
   void SetFocusAndSelection() override;
   void ClearResults(const FindNotificationDetails& results) override;
   void StopAnimation() override;
-  void MoveWindowIfNecessary(const gfx::Rect& selection_rect,
-                             bool no_redraw) override;
+  void MoveWindowIfNecessary(const gfx::Rect& selection_rect) override;
   void SetFindTextAndSelectedRange(const base::string16& find_text,
                                    const gfx::Range& selected_range) override;
   base::string16 GetFindText() override;
@@ -93,9 +92,8 @@ class FindBarHost : public DropdownBarHost,
   // Moves the dialog window to the provided location, moves it to top in the
   // z-order (HWND_TOP, not HWND_TOPMOST) and shows the window (if hidden).
   // It then calls UpdateWindowEdges to make sure we don't overwrite the Chrome
-  // window border. If |no_redraw| is set, the window is getting moved but not
-  // sized, and should not be redrawn to reduce update flicker.
-  void SetDialogPosition(const gfx::Rect& new_pos, bool no_redraw) override;
+  // window border.
+  void SetDialogPosition(const gfx::Rect& new_pos) override;
 
   // Retrieves the boundaries that the find bar widget has to work with
   // within the Chrome frame window. The resulting rectangle will be a
