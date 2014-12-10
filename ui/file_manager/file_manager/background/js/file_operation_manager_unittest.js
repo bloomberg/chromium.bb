@@ -178,6 +178,107 @@ function testResolvePath(callback) {
 }
 
 /**
+ * @param {function(boolean)} callback Callback to be passed true on
+ *     error.
+ */
+function testFindEntriesRecursively(callback) {
+  var fileSystem = createTestFileSystem('testVolume', {
+    '/': DIRECTORY_SIZE,
+    '/file.txt': 10,
+    '/file (1).txt': 10,
+    '/file (2).txt': 10,
+    '/file (3).txt': 10,
+    '/file (4).txt': 10,
+    '/file (5).txt': 10,
+    '/DCIM/': DIRECTORY_SIZE,
+    '/DCIM/IMG_1232.txt': 10,
+    '/DCIM/IMG_1233 (7).txt': 10,
+    '/DCIM/IMG_1234 (8).txt': 10,
+    '/DCIM/IMG_1235 (9).txt': 10,
+  });
+
+  var foundFiles = [];
+  fileOperationUtil.findEntriesRecursively(
+      fileSystem.root,
+      function(fileEntry) {
+        foundFiles.push(fileEntry);
+      })
+      .then(
+          function() {
+            assertEquals(12, foundFiles.length);
+            callback(false);
+          })
+      .catch(callback);
+}
+
+/**
+ * @param {function(boolean)} callback Callback to be passed true on
+ *     error.
+ */
+function testFindFilesRecursively(callback) {
+  var fileSystem = createTestFileSystem('testVolume', {
+    '/': DIRECTORY_SIZE,
+    '/file.txt': 10,
+    '/file (1).txt': 10,
+    '/file (2).txt': 10,
+    '/file (3).txt': 10,
+    '/file (4).txt': 10,
+    '/file (5).txt': 10,
+    '/DCIM/': DIRECTORY_SIZE,
+    '/DCIM/IMG_1232.txt': 10,
+    '/DCIM/IMG_1233 (7).txt': 10,
+    '/DCIM/IMG_1234 (8).txt': 10,
+    '/DCIM/IMG_1235 (9).txt': 10,
+  });
+
+  var foundFiles = [];
+  fileOperationUtil.findFilesRecursively(
+      fileSystem.root,
+      function(fileEntry) {
+        foundFiles.push(fileEntry);
+      })
+      .then(
+          function() {
+            assertEquals(10, foundFiles.length);
+            foundFiles.forEach(
+                function(entry) {
+                  assertTrue(entry.isFile);
+                });
+            callback(false);
+          })
+      .catch(callback);
+}
+
+/**
+ * @param {function(boolean)} callback Callback to be passed true on
+ *     error.
+ */
+function testGatherEntriesRecursively(callback) {
+  var fileSystem = createTestFileSystem('testVolume', {
+    '/': DIRECTORY_SIZE,
+    '/file.txt': 10,
+    '/file (1).txt': 10,
+    '/file (2).txt': 10,
+    '/file (3).txt': 10,
+    '/file (4).txt': 10,
+    '/file (5).txt': 10,
+    '/DCIM/': DIRECTORY_SIZE,
+    '/DCIM/IMG_1232.txt': 10,
+    '/DCIM/IMG_1233 (7).txt': 10,
+    '/DCIM/IMG_1234 (8).txt': 10,
+    '/DCIM/IMG_1235 (9).txt': 10,
+  });
+
+  fileOperationUtil.gatherEntriesRecursively(fileSystem.root)
+      .then(
+          function(gatheredFiles) {
+            assertEquals(12, gatheredFiles.length);
+            callback(false);
+          })
+      .catch(callback);
+}
+
+/**
  * Tests the fileOperationUtil.deduplicatePath
  * @param {function(boolean:hasError)} callback Callback to be passed true on
  *     error.

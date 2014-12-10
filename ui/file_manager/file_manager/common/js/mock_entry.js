@@ -59,6 +59,28 @@ MockFileSystem.prototype.populate = function(paths) {
 };
 
 /**
+ * Returns all children of the supplied directoryEntry.
+ * @param  {!DirectoryEntry} directoryEntry
+ * @return {!Array.<!Entry>}
+ * @private
+ */
+MockFileSystem.prototype.findChildren_ = function(directory) {
+  var children = [];
+  for (var path in this.entries) {
+    if (path.indexOf(directory.fullPath) === 0 &&
+        path !== directory.fullPath) {
+      var nextSeparator = path.indexOf('/', directory.fullPath.length);
+      // Add immediate children files and directories...
+      if (nextSeparator === -1 ||
+          nextSeparator === path.length - 1) {
+        children.push(this.entries[path]);
+      }
+    }
+  }
+  return children;
+};
+
+/**
  * Base class of mock entries.
  *
  * @param {TestFileSystem} filesystem File system where the entry is localed.
@@ -260,21 +282,29 @@ MockDirectoryEntry.prototype.getDirectory =
  * @return {DirectoryReader} A directory reader.
  */
 MockDirectoryEntry.prototype.createReader = function() {
-  return new MockDirectoryReader();
+  return new MockDirectoryReader(this.filesystem.findChildren_(this));
 };
 
 /**
  * Mock class for DirectoryReader.
+ * @param {!Array.<!Entry>} entries
  */
-function MockDirectoryReader() {}
+function MockDirectoryReader(entries) {
+  this.entries_ = entries;
+}
 
 /**
- * Reads entries.
- * Current implementation just calls success callback with an empty list.
+ * Returns entries from the filesystem associated with this directory
+ * in chunks of 2.
  *
  * @param {function(Array)} success Success callback.
  * @param {function} error Error callback.
  */
 MockDirectoryReader.prototype.readEntries = function(success, error) {
-  success([]);
+  if (this.entries_.length > 0) {
+    var chunk = this.entries_.splice(0, 2);
+    success(chunk);
+  } else {
+    success([]);
+  }
 };

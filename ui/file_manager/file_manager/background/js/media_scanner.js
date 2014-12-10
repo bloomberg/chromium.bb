@@ -24,9 +24,12 @@ MediaScanner.prototype.scan = function(entries) {
    * @return {!Promise<!Array<!Entry>>}
    */
   var scanRecurse = function(entry) {
-    return new Promise(function(resolve, reject) {
-      fileOperationUtil.resolveRecursively(entry, resolve, reject);
-    });
+    if (entry.isFile) {
+      return Promise.resolve([entry]);
+    } else {
+      return fileOperationUtil.gatherEntriesRecursively(
+          /** @type {!DirectoryEntry} */ (entry));
+    }
   };
 
   /**
