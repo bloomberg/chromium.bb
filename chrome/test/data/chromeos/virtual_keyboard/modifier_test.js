@@ -27,6 +27,10 @@ function testControlKeyStickyAsync(testDoneCallback) {
   onKeyboardReady(testCallback, config);
 }
 
+/**
+ * Test that holding down a modifier key will apply it to all character keys
+ * until it is released.
+ */
 function testChordedControlKeyAsync(testDoneCallback) {
   var testCallback = function() {
     var controlKey = findKeyById('ControlLeft');
@@ -40,6 +44,50 @@ function testChordedControlKeyAsync(testDoneCallback) {
 
     // Expect a regular tap of a key after chording ends.
     mockTouchEvent(controlKey, 'touchend');
+    mockTypeCharacter('a', 0x41, Modifier.NONE);
+    testDoneCallback();
+  };
+  var config = {
+    keyset: 'us',
+    languageCode: 'en',
+    passwordLayout: 'us',
+    name: 'English'
+  };
+  onKeyboardReady(testCallback, config);
+}
+
+/**
+ * Test that multiple sticky keys stack until a character is typed.
+ */
+function testMultipleStickyModifiersAsync(testDoneCallback) {
+  var testCallback = function() {
+    mockTap(findKeyById('ControlLeft'));
+    mockTap(findKeyById('AltLeft'));
+    mockTap(findKeyById('ShiftLeft'));
+    mockTypeCharacter('A', 0x41,
+                      Modifier.CONTROL | Modifier.ALT | Modifier.SHIFT,
+                      0);
+
+    // Keys should un-stick on a subsequent press.
+    mockTypeCharacter('a', 0x41, Modifier.NONE);
+    testDoneCallback();
+  };
+  var config = {
+    keyset: 'us',
+    languageCode: 'en',
+    passwordLayout: 'us',
+    name: 'English'
+  };
+  onKeyboardReady(testCallback, config);
+}
+
+/**
+ * Test that the second tap on a sticky key disables it.
+ */
+function testDoubleTapUnstickAsync(testDoneCallback) {
+  var testCallback = function() {
+    mockTap(findKeyById('ControlLeft'));
+    mockTap(findKeyById('ControlLeft'));
     mockTypeCharacter('a', 0x41, Modifier.NONE);
     testDoneCallback();
   };
