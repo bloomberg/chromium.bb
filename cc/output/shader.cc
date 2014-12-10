@@ -695,14 +695,14 @@ std::string FragmentTexBlendMode::SetBlendModeFunctions(
   // clang-format off
   static const std::string kFunctionApplyBlendMode = SHADER0(
       // clang-format on
-      uniform SamplerType s_backdropTexture;
+      uniform sampler2D s_backdropTexture;
       uniform TexCoordPrecision vec4 backdropRect;
 
       vec4 GetBackdropColor() {
         TexCoordPrecision vec2 bgTexCoord = gl_FragCoord.xy - backdropRect.xy;
         bgTexCoord.x /= backdropRect.z;
         bgTexCoord.y /= backdropRect.w;
-        return TextureLookup(s_backdropTexture, bgTexCoord);
+        return texture2D(s_backdropTexture, bgTexCoord);
       }
 
       vec4 ApplyBlendMode(vec4 src) {
