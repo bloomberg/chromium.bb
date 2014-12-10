@@ -251,16 +251,15 @@ void ChildAccountService::SetIsChildAccount(bool is_child_account) {
 
 void ChildAccountService::PropagateChildStatusToUser(bool is_child) {
 #if defined(OS_CHROMEOS)
-  // TODO(merkulova,treib): Figure out why this causes tests to fail.
-//  user_manager::User* user =
-//      chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
-//  if (user) {
-//    user_manager::UserManager::Get()->ChangeUserSupervisedStatus(
-//        user, is_child);
-//  } else {
-//    LOG(WARNING) <<
-//        "User instance wasn't found while setting child account flag.";
-//  }
+  user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
+  if (user) {
+    user_manager::UserManager::Get()->ChangeUserSupervisedStatus(
+        user, is_child);
+  } else {
+    LOG(WARNING) <<
+        "User instance wasn't found while setting child account flag.";
+  }
 #endif
 }
 

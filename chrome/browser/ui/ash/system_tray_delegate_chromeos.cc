@@ -840,9 +840,12 @@ void SystemTrayDelegateChromeOS::UserAddedToSession(
 void SystemTrayDelegateChromeOS::UserChangedSupervisedStatus(
     user_manager::User* user) {
   Profile* user_profile = ProfileHelper::Get()->GetProfileByUser(user);
-  DCHECK(user_profile);
 
-  if (session_started_ && user_profile_ == user_profile) {
+  // Returned user_profile might be NULL on restoring Users on browser start.
+  // At some point profile is not yet fully initiated.
+  if (session_started_ &&
+      user_profile != NULL &&
+      user_profile_ == user_profile) {
     ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(
         GetUserLoginStatus());
   }

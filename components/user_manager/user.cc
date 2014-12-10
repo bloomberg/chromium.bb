@@ -136,7 +136,10 @@ std::string User::GetUserID() const {
 
 void User::SetIsSupervised(bool is_supervised) {
   VLOG(1) << "Ignoring SetIsSupervised call with param " << is_supervised;
-  NOTREACHED() << "Calling SetIsSupervised for base User class.";
+  if (is_supervised) {
+    NOTREACHED() << "Calling SetIsSupervised(true) for base User class. "
+                 << "Base class cannot be set as supervised";
+  }
 }
 
 bool User::HasGaiaAccount() const {
