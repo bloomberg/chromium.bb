@@ -13,11 +13,13 @@
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/connect.h"
 #include "mojo/public/cpp/application/interface_factory_impl.h"
-#include "mojo/services/html_viewer/html_document_view.h"
+#include "mojo/services/html_viewer/html_document.h"
 #include "mojo/services/html_viewer/mojo_blink_platform_impl.h"
 #include "mojo/services/html_viewer/webmediaplayer_factory.h"
 #include "mojo/services/public/interfaces/content_handler/content_handler.mojom.h"
+#include "mojo/services/public/interfaces/network/network_service.mojom.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 
 #if !defined(COMPONENT_BUILD)
@@ -32,11 +34,71 @@ namespace mojo {
 // Switches for html_viewer to be used with "--args-for". For example:
 // --args-for='mojo:html_viewer --enable-mojo-media-renderer'
 
-// Enable mojo::MediaRenderer in media pipeline instead of using the internal
+// Enable MediaRenderer in media pipeline instead of using the internal
 // media::Renderer implementation.
 const char kEnableMojoMediaRenderer[] = "enable-mojo-media-renderer";
 
 class HTMLViewer;
+
+class HTMLViewerApplication : public Application {
+ public:
+  HTMLViewerApplication(ShellPtr shell,
+                        URLResponsePtr response,
+                        scoped_refptr<base::MessageLoopProxy> compositor_thread,
+                        WebMediaPlayerFactory* web_media_player_factory)
+      : url_(response->url),
+        shell_(shell.Pass()),
+        initial_response_(response.Pass()),
+        compositor_thread_(compositor_thread),
+        web_media_player_factory_(web_media_player_factory) {
+    shell_.set_client(this);
+    ServiceProviderPtr service_provider;
+    shell_->ConnectToApplication("mojo:network_service",
+                                 GetProxy(&service_provider));
+    ConnectToService(service_provider.get(), &network_service_);
+  }
+
+  void Initialize(Array<String> args) override {}
+
+  void AcceptConnection(const String& requestor_url,
+                        ServiceProviderPtr provider) override {
+    if (initial_response_) {
+      OnResponseReceived(URLLoaderPtr(), provider.Pass(),
+                         initial_response_.Pass());
+    } else {
+      URLLoaderPtr loader;
+      network_service_->CreateURLLoader(GetProxy(&loader));
+      URLRequestPtr request(URLRequest::New());
+      request->url = url_;
+      request->auto_follow_redirects = true;
+
+      // |loader| will be pass to the OnResponseReceived method through a
+      // callback. Because order of evaluation is undefined, a reference to the
+      // raw pointer is needed.
+      URLLoader* raw_loader = loader.get();
+      raw_loader->Start(
+          request.Pass(),
+          base::Bind(&HTMLViewerApplication::OnResponseReceived,
+                     base::Unretained(this), base::Passed(&loader),
+                     base::Passed(&provider)));
+    }
+  }
+
+ private:
+  void OnResponseReceived(URLLoaderPtr loader,
+                          ServiceProviderPtr provider,
+                          URLResponsePtr response) {
+    new HTMLDocument(provider.Pass(), response.Pass(), shell_.get(),
+                     compositor_thread_, web_media_player_factory_);
+  }
+
+  String url_;
+  ShellPtr shell_;
+  NetworkServicePtr network_service_;
+  URLResponsePtr initial_response_;
+  scoped_refptr<base::MessageLoopProxy> compositor_thread_;
+  WebMediaPlayerFactory* web_media_player_factory_;
+};
 
 class ContentHandlerImpl : public InterfaceImpl<ContentHandler> {
  public:
@@ -49,10 +111,8 @@ class ContentHandlerImpl : public InterfaceImpl<ContentHandler> {
  private:
   // Overridden from ContentHandler:
   void StartApplication(ShellPtr shell, URLResponsePtr response) override {
-    new HTMLDocumentView(response.Pass(),
-                         shell.Pass(),
-                         compositor_thread_,
-                         web_media_player_factory_);
+    new HTMLViewerApplication(shell.Pass(), response.Pass(), compositor_thread_,
+                              web_media_player_factory_);
   }
 
   scoped_refptr<base::MessageLoopProxy> compositor_thread_;

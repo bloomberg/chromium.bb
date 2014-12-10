@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/html_viewer/html_document_view.h"
+#include "mojo/services/html_viewer/html_document.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -85,22 +85,25 @@ bool CanNavigateLocally(blink::WebFrame* frame,
 
 }  // namespace
 
-HTMLDocumentView::HTMLDocumentView(
+HTMLDocument::HTMLDocument(
+    mojo::ServiceProviderPtr provider,
     URLResponsePtr response,
-    ShellPtr shell,
+    Shell* shell,
     scoped_refptr<base::MessageLoopProxy> compositor_thread,
     WebMediaPlayerFactory* web_media_player_factory)
     : response_(response.Pass()),
-      shell_(shell.Pass()),
+      shell_(shell),
       web_view_(NULL),
       root_(NULL),
-      view_manager_client_factory_(shell_.get(), this),
+      view_manager_client_factory_(shell_, this),
       compositor_thread_(compositor_thread),
       web_media_player_factory_(web_media_player_factory) {
-  shell_.set_client(this);
+  exported_services_.AddService(this);
+  exported_services_.AddService(&view_manager_client_factory_);
+  WeakBindToPipe(&exported_services_, provider.PassMessagePipe());
 }
 
-HTMLDocumentView::~HTMLDocumentView() {
+HTMLDocument::~HTMLDocument() {
   STLDeleteElements(&ax_provider_impls_);
 
   if (web_view_)
@@ -109,18 +112,7 @@ HTMLDocumentView::~HTMLDocumentView() {
     root_->RemoveObserver(this);
 }
 
-void HTMLDocumentView::AcceptConnection(const String& requestor_url,
-                                        ServiceProviderPtr provider) {
-  exported_services_.AddService(this);
-  exported_services_.AddService(&view_manager_client_factory_);
-  WeakBindToPipe(&exported_services_, provider.PassMessagePipe());
-  Load(response_.Pass());
-}
-
-void HTMLDocumentView::Initialize(Array<String> args) {
-}
-
-void HTMLDocumentView::OnEmbed(
+void HTMLDocument::OnEmbed(
     ViewManager* view_manager,
     View* root,
     ServiceProviderImpl* embedee_service_provider_impl,
@@ -129,6 +121,8 @@ void HTMLDocumentView::OnEmbed(
   embedder_service_provider_ = embedder_service_provider.Pass();
   navigator_host_.set_service_provider(embedder_service_provider_.get());
 
+  Load(response_.Pass());
+
   blink::WebSize root_size(root_->bounds().width, root_->bounds().height);
   web_view_->resize(root_size);
   web_layer_tree_view_impl_->setViewportSize(root_size);
@@ -136,19 +130,19 @@ void HTMLDocumentView::OnEmbed(
   root_->AddObserver(this);
 }
 
-void HTMLDocumentView::Create(ApplicationConnection* connection,
-                              InterfaceRequest<AxProvider> request) {
+void HTMLDocument::Create(ApplicationConnection* connection,
+                          InterfaceRequest<AxProvider> request) {
   if (!web_view_)
     return;
   ax_provider_impls_.insert(
       WeakBindToRequest(new AxProviderImpl(web_view_), &request));
 }
 
-void HTMLDocumentView::OnViewManagerDisconnected(ViewManager* view_manager) {
+void HTMLDocument::OnViewManagerDisconnected(ViewManager* view_manager) {
   // TODO(aa): Need to figure out how shutdown works.
 }
 
-void HTMLDocumentView::Load(URLResponsePtr response) {
+void HTMLDocument::Load(URLResponsePtr response) {
   web_view_ = blink::WebView::create(this);
   web_layer_tree_view_impl_->set_widget(web_view_);
   ConfigureSettings(web_view_->settings());
@@ -167,11 +161,11 @@ void HTMLDocumentView::Load(URLResponsePtr response) {
   web_view_->mainFrame()->loadRequest(web_request);
 }
 
-blink::WebStorageNamespace* HTMLDocumentView::createSessionStorageNamespace() {
+blink::WebStorageNamespace* HTMLDocument::createSessionStorageNamespace() {
   return new WebStorageNamespaceImpl();
 }
 
-void HTMLDocumentView::initializeLayerTreeView() {
+void HTMLDocument::initializeLayerTreeView() {
   ServiceProviderPtr surfaces_service_provider;
   shell_->ConnectToApplication("mojo:surfaces_service",
                                GetProxy(&surfaces_service_provider));
@@ -188,19 +182,19 @@ void HTMLDocumentView::initializeLayerTreeView() {
       compositor_thread_, surfaces_service.Pass(), gpu_service.Pass()));
 }
 
-blink::WebLayerTreeView* HTMLDocumentView::layerTreeView() {
+blink::WebLayerTreeView* HTMLDocument::layerTreeView() {
   return web_layer_tree_view_impl_.get();
 }
 
-blink::WebMediaPlayer* HTMLDocumentView::createMediaPlayer(
+blink::WebMediaPlayer* HTMLDocument::createMediaPlayer(
     blink::WebLocalFrame* frame,
     const blink::WebURL& url,
     blink::WebMediaPlayerClient* client) {
-  return web_media_player_factory_->CreateMediaPlayer(
-      frame, url, client, shell_.get());
+  return web_media_player_factory_->CreateMediaPlayer(frame, url, client,
+                                                      shell_);
 }
 
-blink::WebMediaPlayer* HTMLDocumentView::createMediaPlayer(
+blink::WebMediaPlayer* HTMLDocument::createMediaPlayer(
     blink::WebLocalFrame* frame,
     const blink::WebURL& url,
     blink::WebMediaPlayerClient* client,
@@ -208,7 +202,7 @@ blink::WebMediaPlayer* HTMLDocumentView::createMediaPlayer(
   return createMediaPlayer(frame, url, client);
 }
 
-blink::WebFrame* HTMLDocumentView::createChildFrame(
+blink::WebFrame* HTMLDocument::createChildFrame(
     blink::WebLocalFrame* parent,
     const blink::WebString& frameName) {
   blink::WebLocalFrame* web_frame = blink::WebLocalFrame::create(this);
@@ -216,7 +210,7 @@ blink::WebFrame* HTMLDocumentView::createChildFrame(
   return web_frame;
 }
 
-void HTMLDocumentView::frameDetached(blink::WebFrame* frame) {
+void HTMLDocument::frameDetached(blink::WebFrame* frame) {
   if (frame->parent())
     frame->parent()->removeChild(frame);
 
@@ -224,16 +218,19 @@ void HTMLDocumentView::frameDetached(blink::WebFrame* frame) {
   frame->close();
 }
 
-blink::WebCookieJar* HTMLDocumentView::cookieJar(blink::WebLocalFrame* frame) {
+blink::WebCookieJar* HTMLDocument::cookieJar(blink::WebLocalFrame* frame) {
   // TODO(darin): Blink does not fallback to the Platform provided WebCookieJar.
   // Either it should, as it once did, or we should find another solution here.
   return blink::Platform::current()->cookieJar();
 }
 
-blink::WebNavigationPolicy HTMLDocumentView::decidePolicyForNavigation(
-    blink::WebLocalFrame* frame, blink::WebDataSource::ExtraData* data,
-    const blink::WebURLRequest& request, blink::WebNavigationType nav_type,
-    blink::WebNavigationPolicy default_policy, bool is_redirect) {
+blink::WebNavigationPolicy HTMLDocument::decidePolicyForNavigation(
+    blink::WebLocalFrame* frame,
+    blink::WebDataSource::ExtraData* data,
+    const blink::WebURLRequest& request,
+    blink::WebNavigationType nav_type,
+    blink::WebNavigationPolicy default_policy,
+    bool is_redirect) {
   if (CanNavigateLocally(frame, request))
     return default_policy;
 
@@ -244,36 +241,36 @@ blink::WebNavigationPolicy HTMLDocumentView::decidePolicyForNavigation(
   return blink::WebNavigationPolicyIgnore;
 }
 
-void HTMLDocumentView::didAddMessageToConsole(
+void HTMLDocument::didAddMessageToConsole(
     const blink::WebConsoleMessage& message,
     const blink::WebString& source_name,
     unsigned source_line,
     const blink::WebString& stack_trace) {
 }
 
-void HTMLDocumentView::didNavigateWithinPage(
-    blink::WebLocalFrame* frame, const blink::WebHistoryItem& history_item,
+void HTMLDocument::didNavigateWithinPage(
+    blink::WebLocalFrame* frame,
+    const blink::WebHistoryItem& history_item,
     blink::WebHistoryCommitType commit_type) {
   navigator_host_->DidNavigateLocally(history_item.urlString().utf8());
 }
 
-void HTMLDocumentView::OnViewBoundsChanged(View* view,
-                                           const Rect& old_bounds,
-                                           const Rect& new_bounds) {
+void HTMLDocument::OnViewBoundsChanged(View* view,
+                                       const Rect& old_bounds,
+                                       const Rect& new_bounds) {
   DCHECK_EQ(view, root_);
   web_view_->resize(
       blink::WebSize(view->bounds().width, view->bounds().height));
 }
 
-void HTMLDocumentView::OnViewDestroyed(View* view) {
+void HTMLDocument::OnViewDestroyed(View* view) {
   DCHECK_EQ(view, root_);
-  view->RemoveObserver(this);
-  root_ = NULL;
+  root_ = nullptr;
 }
 
-void HTMLDocumentView::OnViewInputEvent(View* view, const EventPtr& event) {
+void HTMLDocument::OnViewInputEvent(View* view, const EventPtr& event) {
   scoped_ptr<blink::WebInputEvent> web_event =
-      event.To<scoped_ptr<blink::WebInputEvent> >();
+      event.To<scoped_ptr<blink::WebInputEvent>>();
   if (web_event)
     web_view_->handleInputEvent(*web_event);
 }

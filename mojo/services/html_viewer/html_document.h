@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_HTML_VIEWER_HTML_DOCUMENT_VIEW_H_
-#define MOJO_SERVICES_HTML_VIEWER_HTML_DOCUMENT_VIEW_H_
+#ifndef MOJO_SERVICES_HTML_VIEWER_HTML_DOCUMENT_H_
+#define MOJO_SERVICES_HTML_VIEWER_HTML_DOCUMENT_H_
 
 #include <set>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/application/interface_factory.h"
 #include "mojo/public/cpp/application/lazy_interface_ptr.h"
@@ -36,12 +37,11 @@ class View;
 class WebLayerTreeViewImpl;
 
 // A view for a single HTML document.
-class HTMLDocumentView : public mojo::InterfaceImpl<mojo::Application>,
-                         public blink::WebViewClient,
-                         public blink::WebFrameClient,
-                         public ViewManagerDelegate,
-                         public ViewObserver,
-                         public InterfaceFactory<AxProvider> {
+class HTMLDocument : public blink::WebViewClient,
+                     public blink::WebFrameClient,
+                     public ViewManagerDelegate,
+                     public ViewObserver,
+                     public InterfaceFactory<AxProvider> {
  public:
   // Load a new HTMLDocument with |response|.
   //
@@ -51,18 +51,14 @@ class HTMLDocumentView : public mojo::InterfaceImpl<mojo::Application>,
   // request ViewManagerClient.
   //
   // |shell| is the Shell connection for this mojo::Application.
-  HTMLDocumentView(URLResponsePtr response,
-                   ShellPtr shell,
-                   scoped_refptr<base::MessageLoopProxy> compositor_thread,
-                   WebMediaPlayerFactory* web_media_player_factory);
-  virtual ~HTMLDocumentView();
+  HTMLDocument(ServiceProviderPtr provider,
+               URLResponsePtr response,
+               Shell* shell,
+               scoped_refptr<base::MessageLoopProxy> compositor_thread,
+               WebMediaPlayerFactory* web_media_player_factory);
+  virtual ~HTMLDocument();
 
  private:
-  // Application methods:
-  void AcceptConnection(const String& requestor_url,
-                        ServiceProviderPtr provider) override;
-  void Initialize(Array<String> args) override;
-
   // WebViewClient methods:
   virtual blink::WebStorageNamespace* createSessionStorageNamespace();
 
@@ -85,18 +81,19 @@ class HTMLDocumentView : public mojo::InterfaceImpl<mojo::Application>,
   virtual void frameDetached(blink::WebFrame*);
   virtual blink::WebCookieJar* cookieJar(blink::WebLocalFrame* frame);
   virtual blink::WebNavigationPolicy decidePolicyForNavigation(
-      blink::WebLocalFrame* frame, blink::WebDataSource::ExtraData* data,
-      const blink::WebURLRequest& request, blink::WebNavigationType nav_type,
-      blink::WebNavigationPolicy default_policy, bool isRedirect);
-  virtual void didAddMessageToConsole(
-      const blink::WebConsoleMessage& message,
-      const blink::WebString& source_name,
-      unsigned source_line,
-      const blink::WebString& stack_trace);
-  virtual void didNavigateWithinPage(
       blink::WebLocalFrame* frame,
-      const blink::WebHistoryItem& history_item,
-      blink::WebHistoryCommitType commit_type);
+      blink::WebDataSource::ExtraData* data,
+      const blink::WebURLRequest& request,
+      blink::WebNavigationType nav_type,
+      blink::WebNavigationPolicy default_policy,
+      bool isRedirect);
+  virtual void didAddMessageToConsole(const blink::WebConsoleMessage& message,
+                                      const blink::WebString& source_name,
+                                      unsigned source_line,
+                                      const blink::WebString& stack_trace);
+  virtual void didNavigateWithinPage(blink::WebLocalFrame* frame,
+                                     const blink::WebHistoryItem& history_item,
+                                     blink::WebHistoryCommitType commit_type);
 
   // ViewManagerDelegate methods:
   void OnEmbed(ViewManager* view_manager,
@@ -121,7 +118,7 @@ class HTMLDocumentView : public mojo::InterfaceImpl<mojo::Application>,
   URLResponsePtr response_;
   ServiceProviderImpl exported_services_;
   scoped_ptr<ServiceProvider> embedder_service_provider_;
-  ShellPtr shell_;
+  Shell* shell_;
   LazyInterfacePtr<NavigatorHost> navigator_host_;
   blink::WebView* web_view_;
   View* root_;
@@ -130,12 +127,12 @@ class HTMLDocumentView : public mojo::InterfaceImpl<mojo::Application>,
   scoped_refptr<base::MessageLoopProxy> compositor_thread_;
   WebMediaPlayerFactory* web_media_player_factory_;
 
-  // HTMLDocumentView owns these pointers.
+  // HTMLDocument owns these pointers.
   std::set<AxProviderImpl*> ax_provider_impls_;
 
-  DISALLOW_COPY_AND_ASSIGN(HTMLDocumentView);
+  DISALLOW_COPY_AND_ASSIGN(HTMLDocument);
 };
 
 }  // namespace mojo
 
-#endif  // MOJO_SERVICES_HTML_VIEWER_HTML_DOCUMENT_VIEW_H_
+#endif  // MOJO_SERVICES_HTML_VIEWER_HTML_DOCUMENT_H_
