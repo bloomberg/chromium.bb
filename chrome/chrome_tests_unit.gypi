@@ -890,6 +890,7 @@
       'browser/ui/app_list/extension_app_model_builder_unittest.cc',
       'browser/ui/app_list/model_pref_updater_unittest.cc',
       'browser/ui/app_list/profile_loader_unittest.cc',
+      'browser/ui/app_list/search/suggestions/suggestions_search_provider_unittest.cc',
       'browser/ui/app_list/test/fake_profile.cc',
       'browser/ui/app_list/test/fake_profile.h',
       'browser/ui/app_list/test/fake_profile_store.cc',
@@ -2121,6 +2122,8 @@
           ],
         }],
         ['use_ash==1', {
+          # TODO(calamity): Consider moving the tests to regular
+          # "chrome_unit_tests_sources" and not require Ash. crbug.com/439542.
           'sources': [
             'browser/ui/app_list/search/app_search_provider_unittest.cc',
             'browser/ui/app_list/search/history_unittest.cc',

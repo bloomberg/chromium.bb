@@ -5,17 +5,36 @@
 #include "chrome/browser/ui/app_list/search/search_controller_factory.h"
 
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
 #include "chrome/browser/ui/app_list/search/history_factory.h"
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
 #include "chrome/browser/ui/app_list/search/people/people_provider.h"
+#include "chrome/browser/ui/app_list/search/suggestions/suggestions_search_provider.h"
 #include "chrome/browser/ui/app_list/search/webstore/webstore_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/app_list/search/mixer.h"
 #include "ui/app_list/search_controller.h"
 
 namespace app_list {
+
+namespace {
+
+// Constants related to the SuggestionsService in AppList field trial.
+const char kSuggestionsProviderFieldTrialName[] = "SuggestionsAppListProvider";
+const char kSuggestionsProviderFieldTrialEnabledPrefix[] = "Enabled";
+
+// Returns whether the user is part of a group where the Suggestions provider is
+// enabled.
+bool IsSuggestionsSearchProviderEnabled() {
+  return StartsWithASCII(
+      base::FieldTrialList::FindFullName(kSuggestionsProviderFieldTrialName),
+      kSuggestionsProviderFieldTrialEnabledPrefix, true);
+}
+
+}  // namespace
 
 scoped_ptr<SearchController> CreateSearchController(
     Profile* profile,
@@ -39,6 +58,12 @@ scoped_ptr<SearchController> CreateSearchController(
     controller->AddProvider(Mixer::PEOPLE_GROUP,
                             scoped_ptr<SearchProvider>(
                                 new PeopleProvider(profile, list_controller)));
+  }
+  if (IsSuggestionsSearchProviderEnabled()) {
+    controller->AddProvider(
+        Mixer::SUGGESTIONS_GROUP,
+        scoped_ptr<SearchProvider>(
+            new SuggestionsSearchProvider(profile, list_controller)));
   }
 
   return controller.Pass();

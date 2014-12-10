@@ -20,6 +20,9 @@ enum SearchResultType {
   SEARCH_WEBSTORE_SEARCH_RESULT,
   // A result that opens a people search.
   SEARCH_PEOPLE_SEARCH_RESULT,
+  // A result that opens a suggestion.
+  SUGGESTIONS_SEARCH_RESULT,
+  // Boundary is always last.
   SEARCH_RESULT_TYPE_BOUNDARY
 };
 

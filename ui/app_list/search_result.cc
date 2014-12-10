@@ -76,6 +76,8 @@ int SearchResult::GetPreferredIconDimension() const {
       return kTileIconSize;
     case DISPLAY_LIST:
       return kListIconSize;
+    case DISPLAY_NONE:
+      return 0;
   }
   NOTREACHED();
   return 0;

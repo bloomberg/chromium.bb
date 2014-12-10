@@ -32,6 +32,7 @@ class APP_LIST_EXPORT SearchResult {
   enum DisplayType {
     DISPLAY_LIST,
     DISPLAY_TILE,
+    DISPLAY_NONE,
   };
 
   // A tagged range in search result text.

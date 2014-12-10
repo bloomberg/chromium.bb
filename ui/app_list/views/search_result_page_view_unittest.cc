@@ -82,8 +82,10 @@ TEST_F(SearchResultPageViewTest, Basic) {
   std::map<SearchResult::DisplayType, int> result_types;
   const int kListResults = 2;
   const int kTileResults = 1;
+  const int kNoneResults = 3;
   result_types[SearchResult::DISPLAY_LIST] = kListResults;
   result_types[SearchResult::DISPLAY_TILE] = kTileResults;
+  result_types[SearchResult::DISPLAY_NONE] = kNoneResults;
 
   SetUpSearchResults(result_types);
   EXPECT_EQ(0, GetSelectedIndex());
