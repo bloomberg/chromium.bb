@@ -256,7 +256,7 @@ void DeviceSettingsTestBase::InitOwner(const std::string& user_id,
         const_cast<user_manager::User*>(user));
   }
   OwnerSettingsServiceChromeOS* service =
-      OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(profile_.get());
+      OwnerSettingsServiceChromeOSFactory::GetForProfile(profile_.get());
   CHECK(service);
   if (tpm_is_ready)
     service->OnTPMTokenReady(true /* token is enabled */);

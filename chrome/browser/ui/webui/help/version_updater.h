@@ -10,10 +10,6 @@
 #include "base/callback.h"
 #include "base/strings/string16.h"
 
-namespace content {
-class BrowserContext;
-}
-
 // Interface implemented to expose per-platform updating functionality.
 class VersionUpdater {
  public:
@@ -59,7 +55,7 @@ class VersionUpdater {
 
   // Sub-classes must implement this method to create the respective
   // specialization.
-  static VersionUpdater* Create(content::BrowserContext* context);
+  static VersionUpdater* Create();
 
   // Begins the update process by checking for update availability.
   // |status_callback| is called for each status update. |promote_callback| can

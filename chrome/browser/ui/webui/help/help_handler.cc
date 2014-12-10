@@ -33,7 +33,6 @@
 #include "components/google/core/browser/google_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/user_agent.h"
 #include "grit/components_strings.h"
@@ -50,10 +49,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/image_source.h"
@@ -93,7 +89,7 @@ bool IsEnterpriseManaged() {
 }
 
 // Returns true if current user can change channel, false otherwise.
-bool CanChangeChannel(Profile* profile) {
+bool CanChangeChannel() {
   bool value = false;
   chromeos::CrosSettings::Get()->GetBoolean(chromeos::kReleaseChannelDelegated,
                                             &value);
@@ -105,24 +101,18 @@ bool CanChangeChannel(Profile* profile) {
       return false;
     // Get the currently logged in user and strip the domain part only.
     std::string domain = "";
-    const user_manager::User* user =
-        profile ? chromeos::ProfileHelper::Get()->GetUserByProfile(profile)
-                : nullptr;
-    std::string email = user ? user->email() : std::string();
-    size_t at_pos = email.find('@');
-    if (at_pos != std::string::npos && at_pos + 1 < email.length())
-      domain = email.substr(email.find('@') + 1);
+    std::string user =
+        user_manager::UserManager::Get()->GetLoggedInUser()->email();
+    size_t at_pos = user.find('@');
+    if (at_pos != std::string::npos && at_pos + 1 < user.length())
+      domain = user.substr(user.find('@') + 1);
     policy::BrowserPolicyConnectorChromeOS* connector =
         g_browser_process->platform_part()->browser_policy_connector_chromeos();
     return domain == connector->GetEnterpriseDomain();
-  } else {
-    chromeos::OwnerSettingsServiceChromeOS* service =
-        chromeos::OwnerSettingsServiceChromeOSFactory::GetInstance()
-            ->GetForBrowserContext(profile);
+  } else if (user_manager::UserManager::Get()->IsCurrentUserOwner()) {
     // On non managed machines we have local owner who is the only one to change
     // anything. Ensure that ReleaseChannelDelegated is false.
-    if (service && service->IsOwner())
-      return !value;
+    return !value;
   }
   return false;
 }
@@ -145,7 +135,8 @@ std::string ReadFCCLabelText() {
 }  // namespace
 
 HelpHandler::HelpHandler()
-    : version_updater_(VersionUpdater::Create(nullptr)), weak_factory_(this) {
+    : version_updater_(VersionUpdater::Create()),
+      weak_factory_(this) {
 }
 
 HelpHandler::~HelpHandler() {
@@ -299,10 +290,6 @@ void HelpHandler::GetLocalizedValues(base::DictionaryValue* localized_strings) {
 }
 
 void HelpHandler::RegisterMessages() {
-#if defined(OS_CHROMEOS)
-  version_updater_.reset(
-      VersionUpdater::Create(web_ui()->GetWebContents()->GetBrowserContext()));
-#endif
   registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
                  content::NotificationService::AllSources());
 
@@ -378,7 +365,7 @@ void HelpHandler::OnPageLoaded(const base::ListValue* args) {
 
   web_ui()->CallJavascriptFunction(
       "help.HelpPage.updateEnableReleaseChannel",
-      base::FundamentalValue(CanChangeChannel(Profile::FromWebUI(web_ui()))));
+      base::FundamentalValue(CanChangeChannel()));
 
   base::Time build_time = base::SysInfo::GetLsbReleaseTime();
   base::string16 build_date = base::TimeFormatFriendlyDate(build_time);
@@ -456,7 +443,7 @@ void HelpHandler::OpenHelpPage(const base::ListValue* args) {
 void HelpHandler::SetChannel(const base::ListValue* args) {
   DCHECK(args->GetSize() == 2);
 
-  if (!CanChangeChannel(Profile::FromWebUI(web_ui()))) {
+  if (!CanChangeChannel()) {
     LOG(WARNING) << "Non-owner tried to change release track.";
     return;
   }
