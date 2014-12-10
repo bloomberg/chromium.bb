@@ -401,6 +401,10 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CanDeleteWhenOverQuotaTest) {
   SimpleTest(GetTestUrl("indexeddb", "delete_over_quota.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, BlobsCountAgainstQuota) {
+  SimpleTest(GetTestUrl("indexeddb", "blobs_use_quota.html"));
+}
+
 namespace {
 
 static void CompactIndexedDBBackingStore(

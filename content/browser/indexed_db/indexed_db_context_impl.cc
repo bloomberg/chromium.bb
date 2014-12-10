@@ -476,8 +476,10 @@ base::FilePath IndexedDBContextImpl::GetLevelDBPath(
 int64 IndexedDBContextImpl::ReadUsageFromDisk(const GURL& origin_url) const {
   if (data_path_.empty())
     return 0;
-  base::FilePath file_path = GetLevelDBPath(origin_url);
-  return base::ComputeDirectorySize(file_path);
+  int64 total_size = 0;
+  for (const base::FilePath& path : GetStoragePaths(origin_url))
+    total_size += base::ComputeDirectorySize(path);
+  return total_size;
 }
 
 void IndexedDBContextImpl::EnsureDiskUsageCacheInitialized(
