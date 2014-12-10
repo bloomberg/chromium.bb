@@ -151,6 +151,7 @@ clipboard_source_create(struct clipboard *clipboard,
 	source->refcount = 1;
 	source->clipboard = clipboard;
 	source->serial = serial;
+	source->fd = fd;
 
 	s = wl_array_add(&source->base.mime_types, sizeof *s);
 	if (s == NULL)
