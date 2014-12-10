@@ -23,6 +23,9 @@ enum EncryptOrDecrypt { ENCRYPT, DECRYPT };
 
 CryptoData SECItemToCryptoData(const SECItem& item);
 
+const CK_FLAGS kAllOperationFlags =
+    CKF_ENCRYPT | CKF_DECRYPT | CKF_SIGN | CKF_VERIFY | CKF_WRAP | CKF_UNWRAP;
+
 // Signature for PK11_Encrypt and PK11_Decrypt.
 typedef SECStatus (*PK11_EncryptDecryptFunction)(PK11SymKey*,
                                                  CK_MECHANISM_TYPE,

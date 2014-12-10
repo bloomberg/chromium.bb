@@ -78,7 +78,7 @@ class HmacImplementation : public AlgorithmImplementation {
 
     return GenerateSecretKeyNss(
         blink::WebCryptoKeyAlgorithm::createHmac(hash.id(), keylen_bits),
-        extractable, usages, keylen_bits / 8, mechanism, result);
+        extractable, usages, keylen_bits, mechanism, result);
   }
 
   Status VerifyKeyUsagesBeforeImportKey(
@@ -113,8 +113,7 @@ class HmacImplementation : public AlgorithmImplementation {
 
     return ImportKeyRawNss(key_data, blink::WebCryptoKeyAlgorithm::createHmac(
                                          hash.id(), keylen_bits.ValueOrDie()),
-                           extractable, usages, mechanism,
-                           CKF_SIGN | CKF_VERIFY, key);
+                           extractable, usages, mechanism, key);
   }
 
   Status ImportKeyJwk(const CryptoData& key_data,

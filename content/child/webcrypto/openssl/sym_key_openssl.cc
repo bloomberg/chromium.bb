@@ -11,6 +11,7 @@
 #include "content/child/webcrypto/generate_key_result.h"
 #include "content/child/webcrypto/openssl/key_openssl.h"
 #include "content/child/webcrypto/status.h"
+#include "content/child/webcrypto/webcrypto_util.h"
 #include "crypto/openssl_util.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
 
@@ -21,26 +22,25 @@ namespace webcrypto {
 Status GenerateSecretKeyOpenSsl(const blink::WebCryptoKeyAlgorithm& algorithm,
                                 bool extractable,
                                 blink::WebCryptoKeyUsageMask usages,
-                                unsigned keylen_bytes,
+                                unsigned int keylen_bits,
                                 GenerateKeyResult* result) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
   if (usages == 0)
     return Status::ErrorCreateKeyEmptyUsages();
 
+  unsigned int keylen_bytes = NumBitsToBytes(keylen_bits);
   std::vector<unsigned char> random_bytes(keylen_bytes, 0);
 
   if (keylen_bytes > 0) {
     if (!(RAND_bytes(&random_bytes[0], keylen_bytes)))
       return Status::OperationError();
+    TruncateToBitLength(keylen_bits, &random_bytes);
   }
 
-  result->AssignSecretKey(
-      blink::WebCryptoKey::create(new SymKeyOpenSsl(CryptoData(random_bytes)),
-                                  blink::WebCryptoKeyTypeSecret,
-                                  extractable,
-                                  algorithm,
-                                  usages));
+  result->AssignSecretKey(blink::WebCryptoKey::create(
+      new SymKeyOpenSsl(CryptoData(random_bytes)),
+      blink::WebCryptoKeyTypeSecret, extractable, algorithm, usages));
 
   return Status::Success();
 }

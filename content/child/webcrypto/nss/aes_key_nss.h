@@ -18,21 +18,19 @@ namespace webcrypto {
 class AesAlgorithm : public AlgorithmImplementation {
  public:
   // Constructs an AES algorithm whose keys will be imported using the NSS
-  // mechanism |import_mechanism| and NSS flags |import_flags|.
+  // mechanism |import_mechanism|.
   // |all_key_usages| is the set of all WebCrypto key usages that are
   // allowed for imported or generated keys. |jwk_suffix| is the suffix
   // used when constructing JWK names for the algorithm. For instance A128CBC
   // is the JWK name for 128-bit AES-CBC. The |jwk_suffix| in this case would
   // be "CBC".
   AesAlgorithm(CK_MECHANISM_TYPE import_mechanism,
-               CK_FLAGS import_flags,
                blink::WebCryptoKeyUsageMask all_key_usages,
                const std::string& jwk_suffix);
 
   // This is the same as the other AesAlgorithm constructor, however
-  // |import_flags| and |all_key_usages| are pre-filled to values for
-  // encryption/decryption algorithms (supports usages for: encrypt, decrypt,
-  // wrap, unwrap).
+  // |all_key_usages| is pre-filled with values for encryption/decryption
+  // algorithms (supports usages for: encrypt, decrypt, wrap, unwrap).
   AesAlgorithm(CK_MECHANISM_TYPE import_mechanism,
                const std::string& jwk_suffix);
 
@@ -76,7 +74,6 @@ class AesAlgorithm : public AlgorithmImplementation {
 
  private:
   const CK_MECHANISM_TYPE import_mechanism_;
-  const CK_FLAGS import_flags_;
   const blink::WebCryptoKeyUsageMask all_key_usages_;
   const std::string jwk_suffix_;
 };

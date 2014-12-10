@@ -203,11 +203,6 @@ Status GetHmacKeyGenLengthInBits(const blink::WebCryptoHmacKeyGenParams* params,
     }
   }
 
-  // TODO(eroman): Non multiple of 8 bit keylengths should be allowed:
-  // http://crbug.com/438469
-  if (params->optionalLengthBits() % 8)
-    return Status::ErrorGenerateHmacKeyLengthPartialByte();
-
   *keylen_bits = params->optionalLengthBits();
 
   // Zero-length HMAC keys are disallowed by the spec.
@@ -285,6 +280,21 @@ Status VerifyUsagesBeforeImportAsymmetricKey(
     default:
       return Status::ErrorUnsupportedImportKeyFormat();
   }
+}
+
+void TruncateToBitLength(size_t length_bits, std::vector<uint8_t>* bytes) {
+  size_t length_bytes = NumBitsToBytes(length_bits);
+
+  if (bytes->size() != length_bytes) {
+    CHECK_LT(length_bytes, bytes->size());
+    bytes->resize(length_bytes);
+  }
+
+  size_t remainder_bits = length_bits % 8;
+
+  // Zero any "unused bits" in the final byte
+  if (remainder_bits)
+    (*bytes)[bytes->size() - 1] &= ~((0xFF) >> remainder_bits);
 }
 
 }  // namespace webcrypto

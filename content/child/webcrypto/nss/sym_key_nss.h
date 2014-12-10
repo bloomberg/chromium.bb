@@ -20,7 +20,7 @@ class Status;
 Status GenerateSecretKeyNss(const blink::WebCryptoKeyAlgorithm& algorithm,
                             bool extractable,
                             blink::WebCryptoKeyUsageMask usages,
-                            unsigned keylen_bytes,
+                            unsigned int keylen_bits,
                             CK_MECHANISM_TYPE mechanism,
                             GenerateKeyResult* result);
 
@@ -29,7 +29,6 @@ Status ImportKeyRawNss(const CryptoData& key_data,
                        bool extractable,
                        blink::WebCryptoKeyUsageMask usages,
                        CK_MECHANISM_TYPE mechanism,
-                       CK_FLAGS flags,
                        blink::WebCryptoKey* key);
 
 }  // namespace webcrypto

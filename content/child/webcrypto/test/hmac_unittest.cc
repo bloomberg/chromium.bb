@@ -178,6 +178,26 @@ TEST(WebCryptoHmacTest, GenerateKeyEmptyUsage) {
             GenerateSecretKey(algorithm, true, 0, &key));
 }
 
+// Generate a 1 bit key. The exported key is 1 byte long, and 7 of the bits are
+// guaranteed to be zero.
+TEST(WebCryptoHmacTest, Generate1BitKey) {
+  blink::WebCryptoKey key;
+  blink::WebCryptoAlgorithm algorithm =
+      CreateHmacKeyGenAlgorithm(blink::WebCryptoAlgorithmIdSha1, 1);
+
+  ASSERT_EQ(
+      Status::Success(),
+      GenerateSecretKey(algorithm, true, blink::WebCryptoKeyUsageSign, &key));
+  EXPECT_EQ(1u, key.algorithm().hmacParams()->lengthBits());
+
+  std::vector<uint8_t> raw_key;
+  ASSERT_EQ(Status::Success(),
+            ExportKey(blink::WebCryptoKeyFormatRaw, key, &raw_key));
+  ASSERT_EQ(1U, raw_key.size());
+
+  EXPECT_FALSE(raw_key[0] & 0x7F);
+}
+
 TEST(WebCryptoHmacTest, ImportKeyJwkKeyOpsSignVerify) {
   blink::WebCryptoKey key;
   base::DictionaryValue dict;

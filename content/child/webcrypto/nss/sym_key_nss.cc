@@ -21,7 +21,7 @@ namespace webcrypto {
 Status GenerateSecretKeyNss(const blink::WebCryptoKeyAlgorithm& algorithm,
                             bool extractable,
                             blink::WebCryptoKeyUsageMask usages,
-                            unsigned keylen_bytes,
+                            unsigned int keylen_bits,
                             CK_MECHANISM_TYPE mechanism,
                             GenerateKeyResult* result) {
   DCHECK_NE(CKM_INVALID_MECHANISM, mechanism);
@@ -33,26 +33,20 @@ Status GenerateSecretKeyNss(const blink::WebCryptoKeyAlgorithm& algorithm,
   if (!slot)
     return Status::OperationError();
 
-  crypto::ScopedPK11SymKey pk11_key(
-      PK11_KeyGen(slot.get(), mechanism, NULL, keylen_bytes, NULL));
+  std::vector<uint8_t> bytes(NumBitsToBytes(keylen_bits));
+  if (bytes.size() > 0) {
+    if (PK11_GenerateRandom(&bytes[0], bytes.size()) != SECSuccess)
+      return Status::OperationError();
+    TruncateToBitLength(keylen_bits, &bytes);
+  }
 
-  if (!pk11_key)
-    return Status::OperationError();
+  blink::WebCryptoKey key;
+  Status status = ImportKeyRawNss(CryptoData(bytes), algorithm, extractable,
+                                  usages, mechanism, &key);
+  if (status.IsError())
+    return status;
 
-  if (PK11_ExtractKeyValue(pk11_key.get()) != SECSuccess)
-    return Status::OperationError();
-
-  const SECItem* key_data = PK11_GetKeyData(pk11_key.get());
-  if (!key_data)
-    return Status::OperationError();
-
-  scoped_ptr<SymKeyNss> handle(new SymKeyNss(
-      pk11_key.Pass(), CryptoData(key_data->data, key_data->len)));
-
-  result->AssignSecretKey(blink::WebCryptoKey::create(
-      handle.release(), blink::WebCryptoKeyTypeSecret, extractable, algorithm,
-      usages));
-
+  result->AssignSecretKey(key);
   return Status::Success();
 }
 
@@ -61,8 +55,11 @@ Status ImportKeyRawNss(const CryptoData& key_data,
                        bool extractable,
                        blink::WebCryptoKeyUsageMask usages,
                        CK_MECHANISM_TYPE mechanism,
-                       CK_FLAGS flags,
                        blink::WebCryptoKey* key) {
+  // The usages are enforced at the WebCrypto layer, so it isn't necessary to
+  // create keys with limited usages.
+  CK_FLAGS flags = kAllOperationFlags;
+
   DCHECK(!algorithm.isNull());
   SECItem key_item = MakeSECItemForBuffer(key_data);
 

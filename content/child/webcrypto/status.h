@@ -208,10 +208,6 @@ class CONTENT_EXPORT Status {
   // An unextractable key was used by an operation which exports the key data.
   static Status ErrorKeyNotExtractable();
 
-  // Attempted to generate an HMAC key with a key length in bits that was not a
-  // multiple of 8.
-  static Status ErrorGenerateHmacKeyLengthPartialByte();
-
   // Attempted to generate an HMAC key using a key length of 0.
   static Status ErrorGenerateHmacKeyLengthZero();
 

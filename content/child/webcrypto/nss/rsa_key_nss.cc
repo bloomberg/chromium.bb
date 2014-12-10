@@ -531,8 +531,9 @@ Status RsaHashedAlgorithm::GenerateKey(
   rsa_gen_params.keySizeInBits = modulus_length_bits;
   rsa_gen_params.pe = public_exponent;
 
-  const CK_FLAGS operation_flags_mask =
-      CKF_ENCRYPT | CKF_DECRYPT | CKF_SIGN | CKF_VERIFY | CKF_WRAP | CKF_UNWRAP;
+  // The usages are enforced at the WebCrypto layer, so it isn't necessary to
+  // create keys with limited usages.
+  const CK_FLAGS operation_flags_mask = kAllOperationFlags;
 
   // The private key must be marked as insensitive and extractable, otherwise it
   // cannot later be exported in unencrypted form or structured-cloned.

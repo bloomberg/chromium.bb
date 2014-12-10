@@ -18,7 +18,7 @@ class Status;
 Status GenerateSecretKeyOpenSsl(const blink::WebCryptoKeyAlgorithm& algorithm,
                                 bool extractable,
                                 blink::WebCryptoKeyUsageMask usages,
-                                unsigned keylen_bytes,
+                                unsigned int keylen_bits,
                                 GenerateKeyResult* result);
 
 Status ImportKeyRawOpenSsl(const CryptoData& key_data,

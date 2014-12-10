@@ -97,15 +97,15 @@ class EcdhImplementation : public EcAlgorithm {
     // The size of the shared secret is the field size in bytes (rounded up).
     // Note that, if rounding was required, the most significant bits of the
     // secret are zero. So for P-521, the maximum length is 528 bits, not 521.
-    int field_size_bytes =
-        (EC_GROUP_get_degree(EC_KEY_get0_group(private_key_ec.get())) + 7) / 8;
+    int field_size_bytes = NumBitsToBytes(
+        EC_GROUP_get_degree(EC_KEY_get0_group(private_key_ec.get())));
 
     if (length_bits > static_cast<unsigned int>(field_size_bytes * 8))
       return Status::ErrorEcdhLengthTooBig(field_size_bytes * 8);
 
     // Resize to target length in bytes (BoringSSL can operate on a shorter
     // buffer than field_size_bytes).
-    derived_bytes->resize((length_bits + 7) / 8);
+    derived_bytes->resize(NumBitsToBytes(length_bits));
 
     int result =
         ECDH_compute_key(&derived_bytes->front(), derived_bytes->size(),
@@ -113,15 +113,7 @@ class EcdhImplementation : public EcAlgorithm {
     if (result < 0 || static_cast<size_t>(result) != derived_bytes->size())
       return Status::OperationError();
 
-    // Zero any "unused bits" in the resulting byte array.
-    // TODO(eroman): This is not described by the spec:
-    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=27402
-    unsigned int remainder_bits = length_bits % 8;
-    if (remainder_bits) {
-      (*derived_bytes)[derived_bytes->size() - 1] &=
-          ~((0xFF) >> remainder_bits);
-    }
-
+    TruncateToBitLength(length_bits, derived_bytes);
     return Status::Success();
   }
 };

@@ -122,7 +122,6 @@ class AesKwCryptoAlgorithmNss : public AesAlgorithm {
   AesKwCryptoAlgorithmNss()
       : AesAlgorithm(
             CKM_NSS_AES_KEY_WRAP,
-            CKF_WRAP | CKF_WRAP,
             blink::WebCryptoKeyUsageWrapKey | blink::WebCryptoKeyUsageUnwrapKey,
             "KW") {}
 

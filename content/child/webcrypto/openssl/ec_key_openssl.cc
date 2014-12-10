@@ -181,7 +181,7 @@ Status ReadPaddedBIGNUM(const JwkReader& jwk,
 
 int GetGroupDegreeInBytes(EC_KEY* ec) {
   const EC_GROUP* group = EC_KEY_get0_group(ec);
-  return (EC_GROUP_get_degree(group) + 7) / 8;
+  return NumBitsToBytes(EC_GROUP_get_degree(group));
 }
 
 // Extracts the public key as affine coordinates (x,y).

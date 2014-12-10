@@ -45,7 +45,7 @@ Status AesAlgorithm::GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
 
   return GenerateSecretKeyOpenSsl(
       blink::WebCryptoKeyAlgorithm::createAes(algorithm.id(), keylen_bits),
-      extractable, usages, keylen_bits / 8, result);
+      extractable, usages, keylen_bits, result);
 }
 
 Status AesAlgorithm::VerifyKeyUsagesBeforeImportKey(

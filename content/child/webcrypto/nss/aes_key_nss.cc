@@ -18,11 +18,9 @@ namespace content {
 namespace webcrypto {
 
 AesAlgorithm::AesAlgorithm(CK_MECHANISM_TYPE import_mechanism,
-                           CK_FLAGS import_flags,
                            blink::WebCryptoKeyUsageMask all_key_usages,
                            const std::string& jwk_suffix)
     : import_mechanism_(import_mechanism),
-      import_flags_(import_flags),
       all_key_usages_(all_key_usages),
       jwk_suffix_(jwk_suffix) {
 }
@@ -30,7 +28,6 @@ AesAlgorithm::AesAlgorithm(CK_MECHANISM_TYPE import_mechanism,
 AesAlgorithm::AesAlgorithm(CK_MECHANISM_TYPE import_mechanism,
                            const std::string& jwk_suffix)
     : import_mechanism_(import_mechanism),
-      import_flags_(CKF_ENCRYPT | CKF_DECRYPT),
       all_key_usages_(blink::WebCryptoKeyUsageEncrypt |
                       blink::WebCryptoKeyUsageDecrypt |
                       blink::WebCryptoKeyUsageWrapKey |
@@ -53,7 +50,7 @@ Status AesAlgorithm::GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
 
   return GenerateSecretKeyNss(
       blink::WebCryptoKeyAlgorithm::createAes(algorithm.id(), keylen_bits),
-      extractable, usages, keylen_bits / 8, CKM_AES_KEY_GEN, result);
+      extractable, usages, keylen_bits, CKM_AES_KEY_GEN, result);
 }
 
 Status AesAlgorithm::VerifyKeyUsagesBeforeImportKey(
@@ -80,10 +77,9 @@ Status AesAlgorithm::ImportKeyRaw(const CryptoData& key_data,
   // No possibility of overflow.
   unsigned int keylen_bits = keylen_bytes * 8;
 
-  return ImportKeyRawNss(
-      key_data,
-      blink::WebCryptoKeyAlgorithm::createAes(algorithm.id(), keylen_bits),
-      extractable, usages, import_mechanism_, import_flags_, key);
+  return ImportKeyRawNss(key_data, blink::WebCryptoKeyAlgorithm::createAes(
+                                       algorithm.id(), keylen_bits),
+                         extractable, usages, import_mechanism_, key);
 }
 
 Status AesAlgorithm::ImportKeyJwk(const CryptoData& key_data,

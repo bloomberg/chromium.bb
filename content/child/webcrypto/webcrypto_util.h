@@ -88,6 +88,27 @@ Status VerifyUsagesBeforeImportAsymmetricKey(
     blink::WebCryptoKeyUsageMask all_private_key_usages,
     blink::WebCryptoKeyUsageMask usages);
 
+// Truncates an octet string to a particular bit length. This is accomplished by
+// resizing to the closest byte length, and then zero-ing the unused
+// least-significant bits of the final byte.
+//
+// It is an error to call this function with a bit length that is larger than
+// that of |bytes|.
+//
+// TODO(eroman): This operation is not yet defined by the WebCrypto spec,
+// however this is a reasonable interpretation:
+// https://www.w3.org/Bugs/Public/show_bug.cgi?id=27402
+void TruncateToBitLength(size_t length_bits, std::vector<uint8_t>* bytes);
+
+// Rounds a bit count (up) to the nearest byte count.
+//
+// This is mathematically equivalent to (x + 7) / 8, however has no
+// possibility of integer overflow.
+template <typename T>
+T NumBitsToBytes(T x) {
+  return (x / 8) + (7 + (x % 8)) / 8;
+}
+
 }  // namespace webcrypto
 
 }  // namespace content
