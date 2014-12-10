@@ -467,10 +467,14 @@ bool SimpleFontData::fillGlyphPage(GlyphPage* pageToFill, unsigned offset, unsig
         return false;
     }
 
-    SkAutoSTMalloc<GlyphPage::size, uint16_t> glyphStorage(length);
-
-    uint16_t* glyphs = glyphStorage.get();
     SkTypeface* typeface = platformData().typeface();
+    if (!typeface) {
+        WTF_LOG_ERROR("fillGlyphPage called on an empty Skia typeface.");
+        return false;
+    }
+
+    SkAutoSTMalloc<GlyphPage::size, uint16_t> glyphStorage(length);
+    uint16_t* glyphs = glyphStorage.get();
     typeface->charsToGlyphs(buffer, SkTypeface::kUTF16_Encoding, glyphs, length);
 
     bool haveGlyphs = false;
