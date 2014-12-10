@@ -57,7 +57,8 @@ def CalculateDeviceMd5Sums(paths, device):
 
   out = []
   with tempfile.NamedTemporaryFile() as md5sum_script_file:
-    with device_temp_file.DeviceTempFile(device) as md5sum_device_script_file:
+    with device_temp_file.DeviceTempFile(
+        device.adb) as md5sum_device_script_file:
       md5sum_script = (
           MD5SUM_DEVICE_SCRIPT_FORMAT.format(
               path=p, md5sum_lib=MD5SUM_DEVICE_LIB_PATH,

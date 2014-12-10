@@ -921,7 +921,7 @@ class DeviceUtils(object):
         host_temp.write(contents)
         host_temp.flush()
         if as_root and self.NeedsSU():
-          with device_temp_file.DeviceTempFile(self) as device_temp:
+          with device_temp_file.DeviceTempFile(self.adb) as device_temp:
             self.adb.Push(host_temp.name, device_temp.name)
             # Here we need 'cp' rather than 'mv' because the temp and
             # destination files might be on different file systems (e.g.

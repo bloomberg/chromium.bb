@@ -9,34 +9,42 @@
 import random
 import time
 
+from pylib import cmd_helper
+from pylib.device import device_errors
+
+
 class DeviceTempFile(object):
-  def __init__(self, device, prefix='temp_file', suffix=''):
+  def __init__(self, adb, suffix='', prefix='temp_file', dir='/data/local/tmp'):
     """Find an unused temporary file path in the devices external directory.
 
     When this object is closed, the file will be deleted on the device.
 
     Args:
-      device: An instance of DeviceUtils
-      prefix: The prefix of the name of the temp file.
+      adb: An instance of AdbWrapper
       suffix: The suffix of the name of the temp file.
+      prefix: The prefix of the name of the temp file.
+      dir: The directory on the device where to place the temp file.
     """
-    self._device = device
+    self._adb = adb
+    # make sure that the temp dir is writable
+    self._adb.Shell('test -d %s' % cmd_helper.SingleQuote(dir))
     while True:
-      i = random.randint(0, 1000000)
-      self.name = '%s/%s-%d-%010d%s' % (
-          self._device.GetExternalStoragePath(),
-          prefix, int(time.time()), i, suffix)
-      if not self._device.FileExists(self.name):
-        break
-    # Immediately create an empty file so that other temp files can't
-    # be given the same name.
-    # |as_root| must be set to False due to the implementation of |WriteFile|.
-    # Having |as_root| be True may cause infinite recursion.
-    self._device.WriteFile(self.name, '', as_root=False)
+      self.name = '{dir}/{prefix}-{time:d}-{nonce:d}{suffix}'.format(
+        dir=dir, prefix=prefix, time=int(time.time()),
+        nonce=random.randint(0, 1000000), suffix=suffix)
+      self.name_quoted = cmd_helper.SingleQuote(self.name)
+      try:
+        self._adb.Shell('test -e %s' % self.name_quoted)
+      except device_errors.AdbCommandFailedError:
+        break # file does not exist
+
+    # Immediately touch the file, so other temp files can't get the same name.
+    self._adb.Shell('touch %s' % self.name_quoted)
 
   def close(self):
     """Deletes the temporary file from the device."""
-    self._device.RunShellCommand(['rm', self.name])
+    # we use -f to ignore errors if the file is already gone
+    self._adb.Shell('rm -f %s' % self.name_quoted)
 
   def __enter__(self):
     return self

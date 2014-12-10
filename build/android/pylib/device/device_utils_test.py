@@ -1163,7 +1163,7 @@ class DeviceUtilsWriteFileTest(DeviceUtilsNewImplTest):
     with self.assertCalls(
         (mock.call.tempfile.NamedTemporaryFile(), tmp_host),
         (self.call.device.NeedsSU(), True),
-        (mock.call.pylib.utils.device_temp_file.DeviceTempFile(self.device),
+        (mock.call.pylib.utils.device_temp_file.DeviceTempFile(self.adb),
          MockTempFile('/external/path/tmp/on.device')),
         self.call.adb.Push('/tmp/file/on.host', '/external/path/tmp/on.device'),
         self.call.device.RunShellCommand(
