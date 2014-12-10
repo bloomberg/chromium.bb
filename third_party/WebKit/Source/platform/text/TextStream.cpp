@@ -41,7 +41,8 @@ static const size_t printBufferSize = 100; // large enough for any integer or fl
 
 static inline bool hasFractions(double val)
 {
-    static const double s_epsilon = 0.0001;
+    // We use 0.011 to more than match the number of significant digits we print out when dumping the render tree.
+    static const double s_epsilon = 0.011;
     int ival = static_cast<int>(val);
     double dval = static_cast<double>(ival);
     return fabs(val - dval) > s_epsilon;
