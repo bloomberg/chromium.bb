@@ -347,14 +347,4 @@ void AppListMainView::OnResultInstalled(SearchResult* result) {
   search_box_view_->ClearSearch();
 }
 
-void AppListMainView::OnResultUninstalled(SearchResult* result) {
-  // Resubmit the query via a posted task so that all observers for the
-  // uninstall notification are notified.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&AppListMainView::QueryChanged,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 search_box_view_));
-}
-
 }  // namespace app_list

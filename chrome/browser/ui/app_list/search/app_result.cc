@@ -201,15 +201,6 @@ void AppResult::OnExtensionLoaded(content::BrowserContext* browser_context,
   UpdateIcon();
 }
 
-void AppResult::OnExtensionUninstalled(content::BrowserContext* browser_context,
-                                       const extensions::Extension* extension,
-                                       extensions::UninstallReason reason) {
-  if (extension->id() != app_id_)
-    return;
-
-  NotifyItemUninstalled();
-}
-
 void AppResult::OnShutdown(extensions::ExtensionRegistry* registry) {
   DCHECK_EQ(extension_registry_, registry);
   StopObservingExtensionRegistry();

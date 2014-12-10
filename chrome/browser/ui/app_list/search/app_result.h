@@ -79,9 +79,6 @@ class AppResult : public SearchResult,
   // extensions::ExtensionRegistryObserver override:
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const extensions::Extension* extension) override;
-  void OnExtensionUninstalled(content::BrowserContext* browser_context,
-                              const extensions::Extension* extension,
-                              extensions::UninstallReason reason) override;
   void OnShutdown(extensions::ExtensionRegistry* registry) override;
 
   Profile* profile_;

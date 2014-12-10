@@ -111,7 +111,6 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
 
   // Overridden from SearchResultListViewDelegate:
   void OnResultInstalled(SearchResult* result) override;
-  void OnResultUninstalled(SearchResult* result) override;
 
   AppListViewDelegate* delegate_;  // Owned by parent view (AppListView).
   AppListModel* model_;  // Unowned; ownership is handled by |delegate_|.

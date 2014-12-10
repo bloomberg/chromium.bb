@@ -24,7 +24,6 @@ class SearchResult;
 
 - (app_list::AppListModel*)appListModel;
 - (void)openResult:(app_list::SearchResult*)result;
-- (void)redoSearch;
 
 @end
 

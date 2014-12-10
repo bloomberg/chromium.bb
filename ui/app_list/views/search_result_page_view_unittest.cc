@@ -68,7 +68,6 @@ class SearchResultPageViewTest : public views::ViewsTestBase,
 
  private:
   void OnResultInstalled(SearchResult* result) override {}
-  void OnResultUninstalled(SearchResult* result) override {}
 
   SearchResultListView* list_view_;
   SearchResultTileItemListView* tile_list_view_;

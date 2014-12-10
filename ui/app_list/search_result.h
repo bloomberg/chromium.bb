@@ -114,7 +114,6 @@ class APP_LIST_EXPORT SearchResult {
   int GetPreferredIconDimension() const;
 
   void NotifyItemInstalled();
-  void NotifyItemUninstalled();
 
   void AddObserver(SearchResultObserver* observer);
   void RemoveObserver(SearchResultObserver* observer);

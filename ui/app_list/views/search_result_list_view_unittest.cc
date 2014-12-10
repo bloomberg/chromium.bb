@@ -113,7 +113,6 @@ class SearchResultListViewTest : public views::ViewsTestBase,
 
  private:
   void OnResultInstalled(SearchResult* result) override {}
-  void OnResultUninstalled(SearchResult* result) override {}
 
   AppListTestViewDelegate view_delegate_;
   scoped_ptr<SearchResultListView> view_;

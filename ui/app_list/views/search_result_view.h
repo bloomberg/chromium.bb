@@ -87,7 +87,6 @@ class SearchResultView : public views::CustomButton,
   void OnIsInstallingChanged() override;
   void OnPercentDownloadedChanged() override;
   void OnItemInstalled() override;
-  void OnItemUninstalled() override;
 
   // SearchResultActionsViewDelegate overrides:
   void OnSearchResultActionActivated(size_t index, int event_flags) override;

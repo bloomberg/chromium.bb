@@ -361,10 +361,6 @@ void AppListModelObserverBridge::OnShutdown() {
   }
 }
 
-- (void)redoSearch {
-  [self modelTextDidChange];
-}
-
 - (void)onProfilesChanged {
   [appsSearchBoxController_ rebuildMenu];
 }

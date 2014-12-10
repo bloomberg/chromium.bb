@@ -320,10 +320,6 @@ void SearchResultView::OnItemInstalled() {
   list_view_->OnSearchResultInstalled(this);
 }
 
-void SearchResultView::OnItemUninstalled() {
-  list_view_->OnSearchResultUninstalled(this);
-}
-
 void SearchResultView::OnSearchResultActionActivated(size_t index,
                                                      int event_flags) {
   // |result_| could be NULL when result list is changing.

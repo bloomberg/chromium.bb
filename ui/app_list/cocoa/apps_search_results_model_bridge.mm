@@ -48,7 +48,6 @@ class AppsSearchResultsModelBridge::ItemObserver : public SearchResultObserver {
   void OnIsInstallingChanged() override {}
   void OnPercentDownloadedChanged() override {}
   void OnItemInstalled() override {}
-  void OnItemUninstalled() override;
 
  private:
   AppsSearchResultsModelBridge* bridge_;  // Weak. Owns us.
@@ -58,15 +57,6 @@ class AppsSearchResultsModelBridge::ItemObserver : public SearchResultObserver {
 
   DISALLOW_COPY_AND_ASSIGN(ItemObserver);
 };
-
-void AppsSearchResultsModelBridge::ItemObserver::OnItemUninstalled() {
-  // Performing the search again will destroy |this|, so post a task. This also
-  // ensures that the AppSearchProvider has observed the uninstall before
-  // performing the search again, otherwise it will provide a NULL result.
-  [[bridge_->parent_ delegate] performSelector:@selector(redoSearch)
-                                    withObject:nil
-                                    afterDelay:0];
-}
 
 AppsSearchResultsModelBridge::AppsSearchResultsModelBridge(
     AppsSearchResultsController* results_controller)
