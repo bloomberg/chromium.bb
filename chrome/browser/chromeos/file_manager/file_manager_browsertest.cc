@@ -1144,8 +1144,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "showGridViewDownloads"),
                       TestParameter(IN_GUEST_MODE, "showGridViewDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE, "showGridViewDrive"),
-                      TestParameter(IN_GUEST_MODE, "checkFilesSorted")));
+                      TestParameter(NOT_IN_GUEST_MODE, "showGridViewDrive")));
 
 // Structure to describe an account info.
 struct TestAccountInfo {

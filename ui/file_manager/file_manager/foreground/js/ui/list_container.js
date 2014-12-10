@@ -102,14 +102,6 @@ function ListContainer(element, table, grid) {
    */
   this.textSearchState = new TextSearchState();
 
-  /**
-   * Saved sort status of DETAIL view. This is used to restore sort order when
-   * the view is changed to DETAIL from THUMBNAIL, in which the sort order is
-   * always alphabetical.
-   * @type {!Object}
-   */
-  this.savedSortStatus_ = {};
-
   // Overriding the default role 'list' to 'listbox' for better accessibility
   // on ChromeOS.
   this.table.list.setAttribute('role', 'listbox');
@@ -201,12 +193,6 @@ ListContainer.prototype.setCurrentListType = function(listType) {
   // view that is not in use.
   switch (listType) {
     case ListContainer.ListType.DETAIL:
-      // Restore the last sort status of the detail view
-      if (this.savedSortStatus_) {
-        this.dataModel.sort(this.savedSortStatus_.field,
-                            this.savedSortStatus_.direction);
-      }
-
       this.table.dataModel = this.dataModel;
       this.table.selectionModel = this.selectionModel;
       this.table.hidden = false;
@@ -216,12 +202,6 @@ ListContainer.prototype.setCurrentListType = function(listType) {
       break;
 
     case ListContainer.ListType.THUMBNAIL:
-      // Save the last sort status of the detail view, and use alphabetical
-      // order for the thumbnail view.
-      if (this.dataModel.sortStatus.field)
-        this.savedSortStatus_ = this.dataModel.sortStatus;
-      this.dataModel.sort('name', 'asc');
-
       this.grid.dataModel = this.dataModel;
       this.grid.selectionModel = this.selectionModel;
       this.grid.hidden = false;
@@ -235,34 +215,6 @@ ListContainer.prototype.setCurrentListType = function(listType) {
       break;
   }
   this.endBatchUpdates();
-};
-
-/**
- * Sets sorting order of this list container. Note that, whether the sort order
- * of list container is applied to the list depends on the list type. If the
- * list type is THUMBNAIL, the list will always be sorted in alphabetical order.
- * The given sort order will be applied after the list type becomes DETAIL.
- * @param {string} field
- * @param {string} direction
- */
-ListContainer.prototype.sort = function(field, direction) {
-  if (this.currentListType === ListContainer.ListType.DETAIL) {
-    this.dataModel.sort(field, direction);
-  } else {
-    this.savedSortStatus_ = {field: field, direction: direction};
-  }
-};
-
-/**
- * Returns sort status, which is used to sort the file list in DETAIL view.
- * @return {!Object}
- */
-ListContainer.prototype.getSortStatus = function() {
-  if (this.currentListType === ListContainer.ListType.DETAIL) {
-    return this.dataModel.sortStatus;
-  } else {
-    return this.savedSortStatus_;
-  }
 };
 
 /**
