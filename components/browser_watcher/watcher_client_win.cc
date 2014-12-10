@@ -16,8 +16,8 @@ namespace browser_watcher {
 
 namespace {
 
-base::win::ScopedHandle OpenOwnProcessInheritable() {
-  return base::win::ScopedHandle(
+base::Process OpenOwnProcessInheritable() {
+  return base::Process(
       ::OpenProcess(SYNCHRONIZE | PROCESS_QUERY_INFORMATION,
                     TRUE,  // Ineritable handle.
                     base::GetCurrentProcId()));
@@ -33,12 +33,11 @@ void AddHandleArgument(base::ProcessHandle handle,
 
 WatcherClient::WatcherClient(const base::CommandLine& base_command_line) :
     use_legacy_launch_(base::win::GetVersion() < base::win::VERSION_VISTA),
-    base_command_line_(base_command_line),
-    process_(base::kNullProcessHandle) {
+    base_command_line_(base_command_line) {
 }
 
-base::win::ScopedHandle WatcherClient::LaunchWatcherProcess(
-    const base::CommandLine& cmd_line, base::ProcessHandle handle) {
+void WatcherClient::LaunchWatcherProcess(const base::CommandLine& cmd_line,
+                                         base::Process self) {
   base::HandlesToInheritVector to_inherit;
   base::LaunchOptions options;
   options.start_hidden = true;
@@ -48,28 +47,26 @@ base::win::ScopedHandle WatcherClient::LaunchWatcherProcess(
   } else {
     // Launch the child process inheriting only |handle| on
     // Vista and better.
-    to_inherit.push_back(handle);
+    to_inherit.push_back(self.Handle());
     options.handles_to_inherit = &to_inherit;
   }
 
-  base::ProcessHandle process = base::kNullProcessHandle;
-  if (!base::LaunchProcess(cmd_line, options, &process))
+  process_ = base::LaunchProcess(cmd_line, options);
+  if (!process_.IsValid())
     LOG(ERROR) << "Failed to launch browser watcher.";
-
-  return base::win::ScopedHandle(process);
 }
 
 void WatcherClient::LaunchWatcher() {
   DCHECK(!process_.IsValid());
 
   // Build the command line for the watcher process.
-  base::win::ScopedHandle self(OpenOwnProcessInheritable());
+  base::Process self = OpenOwnProcessInheritable();
   DCHECK(self.IsValid());
   base::CommandLine cmd_line(base_command_line_);
-  AddHandleArgument(self.Get(), &cmd_line);
+  AddHandleArgument(self.Handle(), &cmd_line);
 
   // Launch it.
-  process_ = LaunchWatcherProcess(cmd_line, self.Get());
+  LaunchWatcherProcess(cmd_line, self.Pass());
 }
 
 }  // namespace browser_watcher

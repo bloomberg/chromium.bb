@@ -7,8 +7,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/process/process_handle.h"
-#include "base/win/scoped_handle.h"
+#include "base/process/process.h"
 
 namespace browser_watcher {
 
@@ -29,15 +28,15 @@ class WatcherClient {
   void set_use_legacy_launch(bool use_legacy_launch) {
       use_legacy_launch_ = use_legacy_launch;
   }
-  base::ProcessHandle process() const { return process_.Get(); }
+  base::ProcessHandle process() const { return process_.Handle(); }
 
  private:
   // Launches |cmd_line| such that the child process is able to inherit
   // |handle|. If |use_legacy_launch_| is true, this uses a non-threadsafe
   // legacy launch mode that's compatible with Windows XP.
   // Returns a handle to the child process.
-  base::win::ScopedHandle LaunchWatcherProcess(
-        const base::CommandLine& cmd_line, base::ProcessHandle self_handle);
+  void LaunchWatcherProcess(const base::CommandLine& cmd_line,
+                            base::Process self);
 
   // If true, the watcher process will be launched with XP legacy handle
   // inheritance. This is not thread safe and can leak random handles into the
@@ -49,7 +48,7 @@ class WatcherClient {
 
   // A handle to the launched watcher process. Valid after a successful
   // LaunchWatcher() call.
-  base::win::ScopedHandle process_;
+  base::Process process_;
 
   DISALLOW_COPY_AND_ASSIGN(WatcherClient);
 };
