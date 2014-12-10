@@ -86,15 +86,15 @@ def RunRdfaValidator(options, data):
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     stdout, stderr = proc.communicate()
-    assert stderr == '', stderr
+    assert stdout == '', stdout
     return_code = proc.wait()
   finally:
     tmp.close()
     os.remove(tmp.name)
 
   # Remove the carriage return characters that we get on Windows.
-  stdout = stdout.replace('\r', '')
-  return return_code, stdout
+  stderr = stderr.replace('\r', '')
+  return return_code, stderr
 
 
 def ParseRdfaMessages(stdout):

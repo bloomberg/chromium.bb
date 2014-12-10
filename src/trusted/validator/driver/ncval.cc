@@ -318,20 +318,37 @@ bool ValidateArm(const Segment &segment, vector<Error> *errors) {
 
 
 void Usage() {
-  printf("Usage:\n");
-  printf("    ncval <ELF file>\n");
-  exit(1);
+  fprintf(stderr, "Usage:\n");
+  fprintf(stderr, "    ncval [-v] <ELF file>\n");
 }
 
 
 struct Options {
+  Options() : input_file(NULL), verbose(false) {}
   const char *input_file;
+  bool verbose;
 };
 
 
-void ParseOptions(size_t argc, const char * const *argv, Options *options) {
-  if (argc != 2)
+void ParseOptions(int argc, char **argv, Options *options) {
+  int opt;
+  while ((opt = getopt(argc, argv, "v")) != -1) {
+    switch (opt) {
+      case 'v':
+        options->verbose = true;
+        break;
+      default:
+        fprintf(stderr, "ERROR: unknown option: [%c]\n\n", opt);
+        Usage();
+        exit(-1);
+    }
+  }
+
+  if (argc - optind != 1) {
+    fprintf(stderr, "ERROR: too many arguments provided\n\n");
     Usage();
+    exit(1);
+  }
 
   options->input_file = argv[argc - 1];
 }
@@ -365,14 +382,16 @@ int main(int argc, char **argv) {
 
   for (size_t i = 0; i < errors.size(); i++) {
     const Error &e = errors[i];
-    printf("%8" NACL_PRIx32 ": %s\n", e.offset, e.message.c_str());
+    fprintf(stderr, "%8" NACL_PRIx32 ": %s\n", e.offset, e.message.c_str());
   }
 
-  if (result) {
-    printf("Valid.\n");
-    return 0;
-  } else {
-    printf("Invalid.\n");
+  if (!result) {
+    fprintf(stderr, "Invalid.\n");
     return 1;
   }
+
+  if (options.verbose) {
+    fprintf(stderr, "Valid.\n");
+  }
+  return 0;
 }

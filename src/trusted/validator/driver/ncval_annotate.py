@@ -108,8 +108,8 @@ def main():
   # by bundles).
 
   errors = []
-  proc = subprocess.Popen(["ncval_new", binary], stdout=subprocess.PIPE)
-  for line in proc.stdout:
+  proc = subprocess.Popen(["ncval_new", binary], stderr=subprocess.PIPE)
+  for line in proc.stderr:
     # Collect error messages of the form
     #    201ef: unrecognized instruction
     m = re.match(r'\s*([0-9a-f]+): (.*)$', line, re.IGNORECASE)
