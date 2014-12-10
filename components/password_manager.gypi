@@ -23,6 +23,8 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'password_manager/core/browser/affiliation_utils.cc',
+        'password_manager/core/browser/affiliation_utils.h',
         'password_manager/core/browser/browser_save_password_progress_logger.cc',
         'password_manager/core/browser/browser_save_password_progress_logger.h',
         'password_manager/core/browser/credential_manager_dispatcher.h',
