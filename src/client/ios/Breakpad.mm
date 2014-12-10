@@ -45,7 +45,7 @@
 #import "client/mac/handler/protected_memory_allocator.h"
 #import "common/simple_string_dictionary.h"
 
-#ifndef __EXCEPTIONS
+#if !defined(__EXCEPTIONS) || (__clang__ && !__has_feature(cxx_exceptions))
 // This file uses C++ try/catch (but shouldn't). Duplicate the macros from
 // <c++/4.2.1/exception_defines.h> allowing this file to work properly with
 // exceptions disabled even when other C++ libraries are used. #undef the try
