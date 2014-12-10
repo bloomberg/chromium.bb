@@ -25,10 +25,6 @@ AppViewImpl.setupElement = function(proto) {
   GuestViewContainer.forwardApiMethods(proto, apiMethods);
 }
 
-AppViewImpl.prototype.onElementDetached = function() {
-  this.guest.destroy();
-};
-
 AppViewImpl.prototype.getErrorNode = function() {
   if (!this.errorNode) {
     this.errorNode = document.createElement('div');

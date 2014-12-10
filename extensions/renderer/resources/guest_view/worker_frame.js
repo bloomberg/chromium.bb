@@ -25,10 +25,6 @@ WorkerFrameImpl.setupElement = function(proto) {
   GuestViewContainer.forwardApiMethods(proto, apiMethods);
 }
 
-WorkerFrameImpl.prototype.onElementDetached = function() {
-  this.guest.destroy();
-};
-
 WorkerFrameImpl.prototype.connect = function(url, callback) {
   if (!this.elementAttached) {
     if (callback) {

@@ -105,11 +105,13 @@ GuestViewContainer.prototype.handleBrowserPluginAttributeMutation =
   }
 };
 
-// Implemented by the specific view type.
+// Implemented by the specific view type, if needed.
 GuestViewContainer.prototype.buildAttachParams = function() { return {}; };
 GuestViewContainer.prototype.handleAttributeMutation = function() {};
 GuestViewContainer.prototype.onElementAttached = function() {};
-GuestViewContainer.prototype.onElementDetached = function() {};
+GuestViewContainer.prototype.onElementDetached = function() {
+  this.guest.destroy();
+};
 
 // Registers the browser plugin <object> custom element. |viewType| is the
 // name of the specific guestview container (e.g. 'webview').
