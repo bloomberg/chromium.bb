@@ -43,3 +43,8 @@ IN_PROC_BROWSER_TEST_F(GalleryJsTest, ImageViewTest) {
   RunTest(base::FilePath(
       FILE_PATH_LITERAL("js/image_editor/image_view_unittest.html")));
 }
+
+IN_PROC_BROWSER_TEST_F(GalleryJsTest, EntryListWatcherTest) {
+  RunTest(base::FilePath(
+      FILE_PATH_LITERAL("js/entry_list_watcher_unittest.html")));
+}

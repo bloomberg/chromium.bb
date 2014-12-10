@@ -51,8 +51,9 @@ function waitUntil(testFunction) {
  *   recorder.assertCallCount(1);
  *   assertEquals(recorder.getListCall()[0], 'hammy');
  * </pre>
+ * @constructor
  */
-TestCallRecorder = function() {
+function TestCallRecorder() {
   /** @private {!Array.<!Argument>} */
   this.calls_ = [];
 
@@ -64,7 +65,7 @@ TestCallRecorder = function() {
    * @type {function()}
    */
   this.callback = this.recordArguments_.bind(this);
-};
+}
 
 /**
  * Records the magic {@code arguments} value for later inspection.
@@ -93,4 +94,42 @@ TestCallRecorder.prototype.getLastArguments = function() {
   return (this.calls_.length === 0) ?
       null :
       this.calls_[this.calls_.length - 1];
+};
+
+/**
+ * @constructor
+ * @struct
+ */
+function MockAPIEvent() {
+  /**
+   * @type {!Array.<!Function>}
+   * @const
+   */
+  this.listeners_ = [];
+}
+
+/**
+ * @param {!Function} callback
+ */
+MockAPIEvent.prototype.addListener = function(callback) {
+  this.listeners_.push(callback);
+};
+
+/**
+ * @param {!Function} callback
+ */
+MockAPIEvent.prototype.removeListener = function(callback) {
+  var index = this.listeners_.indexOf(callback);
+  if (index < 0)
+    throw new Error('Tried to remove an unregistered listener.');
+  this.listeners_.splice(index, 1);
+};
+
+/**
+ * @param {...*} var_args
+ */
+MockAPIEvent.prototype.dispatch = function(var_args) {
+  for (var i = 0; i < this.listeners_.length; i++) {
+    this.listeners_[i].apply(null, arguments);
+  }
 };

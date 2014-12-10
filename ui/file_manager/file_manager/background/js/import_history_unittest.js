@@ -34,13 +34,14 @@ var historyProvider;
 
 // Set up the test components.
 function setUp() {
-  testFileSystem = new MockFileSystem('abc-123', 'filesystem:abc-123');
   testFileEntry = new MockFileEntry(
       testFileSystem,
       FILE_PATH, {
         size: FILE_SIZE,
         modificationTime: FILE_LAST_MODIFIED
       });
+  testFileSystem = new MockFileSystem('abc-123', 'filesystem:abc-123');
+  testFileSystem.entries[FILE_PATH] = testFileEntry;
 
   storage = new TestRecordStorage();
 

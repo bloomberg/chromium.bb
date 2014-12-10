@@ -189,11 +189,13 @@ MockFileEntry.prototype = {
  * Obtains metadata of the entry.
  * @param {function(Object)} callback Function to take the metadata.
  */
-MockFileEntry.prototype.getMetadata = function(callback) {
-  Promise.resolve(this.metadata_).then(callback).catch(function(error) {
-    console.error(error.stack || error);
-    window.onerror();
-  });
+MockFileEntry.prototype.getMetadata = function(onSuccess, onError) {
+  new Promise(function(fulfill, reject) {
+    if (this.filesystem && !this.filesystem.entries[this.fullPath])
+      reject(new DOMError('NotFoundError'));
+    else
+      onSuccess(this.metadata_);
+  }.bind(this)).then(onSuccess, onError);
 };
 
 /**
