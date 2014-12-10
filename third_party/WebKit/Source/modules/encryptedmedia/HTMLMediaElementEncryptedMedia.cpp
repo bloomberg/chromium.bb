@@ -297,10 +297,10 @@ ScriptPromise HTMLMediaElementEncryptedMedia::setMediaKeys(ScriptState* scriptSt
 static PassRefPtrWillBeRawPtr<Event> createEncryptedEvent(const String& initDataType, const unsigned char* initData, unsigned initDataLength)
 {
     MediaEncryptedEventInit initializer;
-    initializer.initDataType = initDataType;
-    initializer.initData = DOMArrayBuffer::create(initData, initDataLength);
-    initializer.bubbles = false;
-    initializer.cancelable = false;
+    initializer.setInitDataType(initDataType);
+    initializer.setInitData(DOMArrayBuffer::create(initData, initDataLength));
+    initializer.setBubbles(false);
+    initializer.setCancelable(false);
 
     return MediaEncryptedEvent::create(EventTypeNames::encrypted, initializer);
 }

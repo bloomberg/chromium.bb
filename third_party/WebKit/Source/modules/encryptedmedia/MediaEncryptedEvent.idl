@@ -23,9 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://w3c.github.io/encrypted-media/#mediaencryptedevent
+
 [
-    EventConstructor,
-    RuntimeEnabled=EncryptedMedia
+    Constructor(DOMString type, optional MediaEncryptedEventInit eventInitDict),
+    RuntimeEnabled=EncryptedMedia,
 ] interface MediaEncryptedEvent : Event {
     readonly attribute DOMString initDataType;
     readonly attribute ArrayBuffer? initData;

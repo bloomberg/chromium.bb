@@ -27,17 +27,9 @@
 #define MediaEncryptedEvent_h
 
 #include "modules/EventModules.h"
+#include "modules/encryptedmedia/MediaEncryptedEventInit.h"
 
 namespace blink {
-
-class DOMArrayBuffer;
-
-struct MediaEncryptedEventInit : public EventInit {
-    MediaEncryptedEventInit();
-
-    String initDataType;
-    RefPtr<DOMArrayBuffer> initData;
-};
 
 class MediaEncryptedEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();

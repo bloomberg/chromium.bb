@@ -302,6 +302,7 @@
     'modules_dictionary_idl_files': [
       'encoding/TextDecodeOptions.idl',
       'encoding/TextDecoderOptions.idl',
+      'encryptedmedia/MediaEncryptedEventInit.idl',
       'encryptedmedia/MediaKeySystemConfiguration.idl',
       'encryptedmedia/MediaKeySystemMediaCapability.idl',
       'filesystem/FileSystemFlags.idl',
@@ -345,6 +346,8 @@
       '<(blink_modules_output_dir)/encoding/TextDecodeOptions.h',
       '<(blink_modules_output_dir)/encoding/TextDecoderOptions.cpp',
       '<(blink_modules_output_dir)/encoding/TextDecoderOptions.h',
+      '<(blink_modules_output_dir)/encryptedmedia/MediaEncryptedEventInit.cpp',
+      '<(blink_modules_output_dir)/encryptedmedia/MediaEncryptedEventInit.h',
       '<(blink_modules_output_dir)/encryptedmedia/MediaKeySystemConfiguration.cpp',
       '<(blink_modules_output_dir)/encryptedmedia/MediaKeySystemConfiguration.h',
       '<(blink_modules_output_dir)/encryptedmedia/MediaKeySystemMediaCapability.cpp',
