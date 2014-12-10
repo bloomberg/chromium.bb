@@ -561,7 +561,9 @@ SlideMode.prototype.enter = function(
     // Load the image of the item.
     this.loadItem_(
         selectedItem,
-        zoomFromRect && this.imageView_.createZoomEffect(zoomFromRect),
+        zoomFromRect ?
+            this.imageView_.createZoomEffect(zoomFromRect) :
+            new ImageView.Effect.None(),
         displayCallback,
         function(loadType, delay) {
           fulfill(delay);
@@ -939,7 +941,7 @@ SlideMode.prototype.selectLast = function() {
  * Load and display an item.
  *
  * @param {!Gallery.Item} item Item.
- * @param {!Object} effect Transition effect object.
+ * @param {!ImageView.Effect} effect Transition effect object.
  * @param {function()} displayCallback Called when the image is displayed
  *     (which can happen before the image load due to caching).
  * @param {function(number, number)} loadCallback Called when the image is fully

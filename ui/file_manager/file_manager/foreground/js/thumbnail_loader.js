@@ -37,8 +37,7 @@ function ThumbnailLoader(entry, opt_loaderType, opt_metadata, opt_mediaType,
   if (opt_metadata.external && opt_metadata.external.customIconUrl)
     this.fallbackUrl_ = opt_metadata.external.customIconUrl;
 
-  if (((opt_metadata.thumbnail && opt_metadata.thumbnail.url) ||
-       (opt_metadata.external && opt_metadata.external.thumbnailUrl)) &&
+  if (ThumbnailLoader.hasThumbnailInMetadata(opt_metadata) &&
       opt_useEmbedded === ThumbnailLoader.UseEmbedded.USE_EMBEDDED) {
     // If the thumbnail generated from the local cache (metadata.thumbnail.url)
     // is available, use it. If not, use the one passed from the external
@@ -118,6 +117,16 @@ ThumbnailLoader.THUMBNAIL_MAX_WIDTH = 500;
  * @type {number}
  */
 ThumbnailLoader.THUMBNAIL_MAX_HEIGHT = 500;
+
+/**
+ * Returns whether the metadata have the thumbnail information or not.
+ * @param {!Object} metadata Metadata.
+ * @return {boolean}
+ */
+ThumbnailLoader.hasThumbnailInMetadata = function(metadata) {
+  return (metadata.thumbnail && metadata.thumbnail.url) ||
+      (metadata.external && metadata.external.thumbnailUrl);
+};
 
 /**
  * Loads and attaches an image.

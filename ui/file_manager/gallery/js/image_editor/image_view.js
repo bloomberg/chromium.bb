@@ -76,6 +76,41 @@ ImageView.LOAD_TYPE_OFFLINE = 4;
  */
 ImageView.LOAD_TYPE_TOTAL = 5;
 
+/**
+ * Target of image load.
+ * @enum {string}
+ */
+ImageView.LoadTarget = {
+  CACHED_MAIN_IMAGE: 'cachedMainImage',
+  CACHED_THUMBNAIL: 'cachedThumbnail',
+  THUMBNAIL: 'thumbnail',
+  MAIN_IMAGE: 'mainImage'
+};
+
+/**
+ * Obtains prefered load type from GalleryItem.
+ *
+ * @param {!Gallery.Item} item
+ * @param {!ImageView.Effect} effect
+ * @return {ImageView.LoadTarget} Load target.
+ */
+ImageView.getLoadTarget = function(item, effect) {
+  if (item.contentImage)
+    return ImageView.LoadTarget.CACHED_MAIN_IMAGE;
+  if (item.screenImage)
+    return ImageView.LoadTarget.CACHED_THUMBNAIL;
+
+  // Only show thumbnails if there is no effect or the effect is Slide.
+  var metadata = item.getMetadata();
+  if ((effect instanceof ImageView.Effect.None ||
+       effect instanceof ImageView.Effect.Slide) &&
+      ThumbnailLoader.hasThumbnailInMetadata(metadata)) {
+    return ImageView.LoadTarget.THUMBNAIL;
+  }
+
+  return ImageView.LoadTarget.MAIN_IMAGE;
+};
+
 ImageView.prototype = {__proto__: ImageBuffer.Overlay.prototype};
 
 /**
@@ -251,8 +286,8 @@ ImageView.prototype.cancelLoad = function() {
  * Takes into account the image orientation encoded in the metadata.
  *
  * @param {Gallery.Item} item Gallery item to be loaded.
- * @param {Object} effect Transition effect object.
- * @param {function(number)} displayCallback Called when the image is displayed
+ * @param {!ImageView.Effect} effect Transition effect object.
+ * @param {function()} displayCallback Called when the image is displayed
  *     (possibly as a preview).
  * @param {function(number, number, *=)} loadCallback Called when the image is
  *     fully loaded. The first parameter is the load type.
@@ -267,7 +302,7 @@ ImageView.prototype.load =
     var time = Date.now();
     if (this.lastLoadTime_ &&
         (time - this.lastLoadTime_) < ImageView.FAST_SCROLL_INTERVAL) {
-      effect = null;
+      effect = new ImageView.Effect.None();
     }
     this.lastLoadTime_ = time;
   }
@@ -279,38 +314,44 @@ ImageView.prototype.load =
   this.contentItem_ = item;
   this.contentRevision_ = -1;
 
-  var cached = item.contentImage;
-  if (cached) {
-    displayMainImage(ImageView.LOAD_TYPE_CACHED_FULL,
-        false /* no preview */, cached);
-  } else {
-    var cachedScreen = item.screenImage;
-    var imageWidth = metadata.media && metadata.media.width ||
-                     metadata.external && metadata.external.imageWidth;
-    var imageHeight = metadata.media && metadata.media.height ||
-                      metadata.external && metadata.external.imageHeight;
-    if (cachedScreen) {
+  switch (ImageView.getLoadTarget(item, effect)) {
+    case ImageView.LoadTarget.CACHED_MAIN_IMAGE:
+      displayMainImage(
+          ImageView.LOAD_TYPE_CACHED_FULL,
+          false /* no preview */,
+          assert(item.contentImage));
+      break;
+
+    case ImageView.LoadTarget.CACHED_THUMBNAIL:
       // We have a cached screen-scale canvas, use it instead of a thumbnail.
-      displayThumbnail(ImageView.LOAD_TYPE_CACHED_SCREEN, cachedScreen);
+      displayThumbnail(ImageView.LOAD_TYPE_CACHED_SCREEN, item.screenImage);
       // As far as the user can tell the image is loaded. We still need to load
       // the full res image to make editing possible, but we can report now.
       ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('DisplayTime'));
-    } else if ((effect && effect.constructor.name === 'Slide') &&
-               (metadata.thumbnail && metadata.thumbnail.url)) {
-      // Only show thumbnails if there is no effect or the effect is Slide.
-      // Also no thumbnail if the image is too large to be loaded.
+      break;
+
+    case ImageView.LoadTarget.THUMBNAIL:
       var thumbnailLoader = new ThumbnailLoader(
           entry,
           ThumbnailLoader.LoaderType.CANVAS,
           metadata);
       thumbnailLoader.loadDetachedImage(function(success) {
-        displayThumbnail(ImageView.LOAD_TYPE_IMAGE_FILE,
-                         success ? thumbnailLoader.getImage() : null);
+        displayThumbnail(
+            ImageView.LOAD_TYPE_IMAGE_FILE,
+            success ? thumbnailLoader.getImage() : null);
       });
-    } else {
-      loadMainImage(ImageView.LOAD_TYPE_IMAGE_FILE, entry,
-          false /* no preview*/, 0 /* delay */);
-    }
+      break;
+
+    case ImageView.LoadTarget.MAIN_IMAGE:
+      loadMainImage(
+          ImageView.LOAD_TYPE_IMAGE_FILE,
+          entry,
+          false /* no preview*/,
+          0 /* delay */);
+      break;
+
+    default:
+      assertNotReached();
   }
 
   function displayThumbnail(loadType, canvas) {
@@ -361,6 +402,12 @@ ImageView.prototype.load =
         delay);
   }
 
+  /**
+   * @param {number} loadType
+   * @param {boolean} previewShown
+   * @param {!HTMLCanvasElement} content
+   * @param {*=} opt_error
+   */
   function displayMainImage(loadType, previewShown, content, opt_error) {
     if (opt_error)
       loadType = ImageView.LOAD_TYPE_ERROR;
@@ -576,7 +623,7 @@ ImageView.prototype.setTransform_ = function(
 
 /**
  * @param {ImageRect} screenRect Target rectangle in screen coordinates.
- * @return {ImageView.Effect.Zoom} Zoom effect object.
+ * @return {!ImageView.Effect} Zoom effect object.
  */
 ImageView.prototype.createZoomEffect = function(screenRect) {
   return new ImageView.Effect.ZoomToScreen(

@@ -38,3 +38,8 @@ IN_PROC_BROWSER_TEST_F(GalleryJsTest, ExifEncoderTest) {
   RunTest(base::FilePath(
       FILE_PATH_LITERAL("js/image_editor/exif_encoder_unittest.html")));
 }
+
+IN_PROC_BROWSER_TEST_F(GalleryJsTest, ImageViewTest) {
+  RunTest(base::FilePath(
+      FILE_PATH_LITERAL("js/image_editor/image_view_unittest.html")));
+}
