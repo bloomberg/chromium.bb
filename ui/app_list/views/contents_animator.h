@@ -80,6 +80,7 @@ class DefaultAnimator : public ContentsAnimator {
   std::string NameForTests() const override;
   void Update(double progress, int from_page, int to_page) override;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(DefaultAnimator);
 };
 
@@ -94,6 +95,7 @@ class StartToAppsAnimator : public ContentsAnimator {
   std::string NameForTests() const override;
   void Update(double progress, int start_page, int apps_page) override;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(StartToAppsAnimator);
 };
 
@@ -105,6 +107,7 @@ class StartToCustomAnimator : public ContentsAnimator {
   std::string NameForTests() const override;
   void Update(double progress, int start_page, int custom_page) override;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(StartToCustomAnimator);
 };
 

@@ -291,14 +291,11 @@ class SynchronousDrag : public ui::DragSourceWin {
 
  private:
   // Overridden from ui::DragSourceWin.
-  virtual void OnDragSourceCancel() override {
-    canceled_ = true;
-  }
+  void OnDragSourceCancel() override { canceled_ = true; }
 
-  virtual void OnDragSourceDrop() override {
-  }
+  void OnDragSourceDrop() override {}
 
-  virtual void OnDragSourceMove() override {
+  void OnDragSourceMove() override {
     grid_view_->UpdateDrag(AppsGridView::MOUSE, GetCursorInGridViewCoords());
   }
 

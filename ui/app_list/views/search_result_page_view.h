@@ -5,6 +5,8 @@
 #ifndef UI_APP_LIST_VIEWS_SEARCH_RESULT_PAGE_VIEW_H_
 #define UI_APP_LIST_VIEWS_SEARCH_RESULT_PAGE_VIEW_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/app_list/app_list_export.h"

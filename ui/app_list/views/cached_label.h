@@ -28,7 +28,7 @@ class CachedLabel : public views::Label {
 
 #if defined(OS_WIN)
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  void OnPaint(gfx::Canvas* canvas) override;
 #endif
 
   // Overridden from ui::LayerDelegate:

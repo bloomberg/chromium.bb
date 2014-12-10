@@ -4,6 +4,9 @@
 
 #include "ui/app_list/views/app_list_view.h"
 
+#include <string>
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"

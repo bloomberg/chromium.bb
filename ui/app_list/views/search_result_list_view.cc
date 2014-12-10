@@ -5,6 +5,7 @@
 #include "ui/app_list/views/search_result_list_view.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
