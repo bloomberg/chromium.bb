@@ -16,7 +16,6 @@
 #include "chrome/browser/supervised_user/supervised_user_resource_throttle.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/history/core/browser/history_types.h"
@@ -204,6 +203,7 @@ void SupervisedUserNavigationObserver::OnRequestBlocked(
     int render_process_host_id,
     int render_view_id,
     const GURL& url,
+    SupervisedUserURLFilter::FilteringBehaviorReason reason,
     const base::Callback<void(bool)>& callback) {
   content::WebContents* web_contents =
       tab_util::GetWebContentsByID(render_process_host_id, render_view_id);
@@ -219,7 +219,7 @@ void SupervisedUserNavigationObserver::OnRequestBlocked(
     navigation_observer->OnRequestBlockedInternal(url);
 
   // Show the interstitial.
-  SupervisedUserInterstitial::Show(web_contents, url, callback);
+  SupervisedUserInterstitial::Show(web_contents, url, reason, callback);
 }
 
 void SupervisedUserNavigationObserver::OnRequestBlockedInternal(

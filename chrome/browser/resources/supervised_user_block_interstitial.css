@@ -64,6 +64,11 @@ a {
   margin: 20px 25px;
 }
 
+#block-reason-message {
+  font-size: 80%;
+  margin-top: 5px;
+}
+
 button {
   -webkit-user-select: none;
   background-image: linear-gradient(rgb(246, 246, 246) 5%,

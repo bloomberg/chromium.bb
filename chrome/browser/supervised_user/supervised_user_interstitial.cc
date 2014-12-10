@@ -96,9 +96,10 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabCloser);
 void SupervisedUserInterstitial::Show(
     WebContents* web_contents,
     const GURL& url,
+    SupervisedUserURLFilter::FilteringBehaviorReason reason,
     const base::Callback<void(bool)>& callback) {
   SupervisedUserInterstitial* interstitial =
-      new SupervisedUserInterstitial(web_contents, url, callback);
+      new SupervisedUserInterstitial(web_contents, url, reason, callback);
 
   // If Init() does not complete fully, immediately delete the interstitial.
   if (!interstitial->Init())
@@ -109,11 +110,13 @@ void SupervisedUserInterstitial::Show(
 SupervisedUserInterstitial::SupervisedUserInterstitial(
     WebContents* web_contents,
     const GURL& url,
+    SupervisedUserURLFilter::FilteringBehaviorReason reason,
     const base::Callback<void(bool)>& callback)
     : web_contents_(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       interstitial_page_(NULL),
       url_(url),
+      reason_(reason),
       callback_(callback),
       weak_ptr_factory_(this) {}
 
@@ -215,6 +218,10 @@ std::string SupervisedUserInterstitial::GetHTMLContents() {
         IDS_BLOCK_INTERSTITIAL_MESSAGE_ACCESS_REQUESTS_DISABLED);
   }
   strings.SetString("blockPageMessage", block_message);
+  strings.SetString("blockReasonMessage", is_child_account
+      ? l10n_util::GetStringUTF16(
+          SupervisedUserURLFilter::GetBlockMessageID(reason_))
+      : base::string16());
 
   strings.SetString("backButton", l10n_util::GetStringUTF16(IDS_BACK_BUTTON));
   strings.SetString("requestAccessButton", l10n_util::GetStringUTF16(

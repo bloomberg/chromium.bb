@@ -31,10 +31,12 @@ class SupervisedUserResourceThrottle : public content::ResourceThrottle {
 
  private:
   void ShowInterstitialIfNeeded(bool is_redirect, const GURL& url, bool* defer);
-  void ShowInterstitial(const GURL& url);
+  void ShowInterstitial(
+      const GURL& url,
+      SupervisedUserURLFilter::FilteringBehaviorReason reason);
   void OnCheckDone(const GURL& url,
                    SupervisedUserURLFilter::FilteringBehavior behavior,
-                   SupervisedUserURLFilter::FilteringBehaviorSource source,
+                   SupervisedUserURLFilter::FilteringBehaviorReason reason,
                    bool uncertain);
   void OnInterstitialResult(bool continue_request);
 

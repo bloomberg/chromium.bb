@@ -18,6 +18,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/supervised_user/experimental/supervised_user_async_url_checker.h"
 #include "chrome/browser/supervised_user/experimental/supervised_user_blacklist.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/policy/core/browser/url_blacklist_manager.h"
 #include "components/url_fixer/url_fixer.h"
 #include "components/url_matcher/url_matcher.h"
@@ -191,6 +192,22 @@ SupervisedUserURLFilter::BehaviorFromInt(int behavior_value) {
 }
 
 // static
+int SupervisedUserURLFilter::GetBlockMessageID(FilteringBehaviorReason reason) {
+  switch (reason) {
+    case DEFAULT:
+      return IDS_SUPERVISED_USER_BLOCK_MESSAGE_DEFAULT;
+    case ASYNC_CHECKER:
+      return IDS_SUPERVISED_USER_BLOCK_MESSAGE_ASYNC_CHECKER;
+    case BLACKLIST:
+      return IDS_SUPERVISED_USER_BLOCK_MESSAGE_BLACKLIST;
+    case MANUAL:
+      return IDS_SUPERVISED_USER_BLOCK_MESSAGE_MANUAL;
+  }
+  NOTREACHED();
+  return 0;
+}
+
+// static
 GURL SupervisedUserURLFilter::Normalize(const GURL& url) {
   GURL normalized_url = url;
   GURL::Replacements replacements;
@@ -256,25 +273,25 @@ bool SupervisedUserURLFilter::HostMatchesPattern(const std::string& host,
 
 SupervisedUserURLFilter::FilteringBehavior
 SupervisedUserURLFilter::GetFilteringBehaviorForURL(const GURL& url) const {
-  FilteringBehaviorSource source;
-  return GetFilteringBehaviorForURL(url, false, &source);
+  FilteringBehaviorReason reason;
+  return GetFilteringBehaviorForURL(url, false, &reason);
 }
 
 bool SupervisedUserURLFilter::GetManualFilteringBehaviorForURL(
     const GURL& url, FilteringBehavior* behavior) const {
-  FilteringBehaviorSource source;
-  *behavior = GetFilteringBehaviorForURL(url, true, &source);
-  return source == MANUAL;
+  FilteringBehaviorReason reason;
+  *behavior = GetFilteringBehaviorForURL(url, true, &reason);
+  return reason == MANUAL;
 }
 
 SupervisedUserURLFilter::FilteringBehavior
 SupervisedUserURLFilter::GetFilteringBehaviorForURL(
     const GURL& url,
     bool manual_only,
-    FilteringBehaviorSource* source) const {
+    FilteringBehaviorReason* reason) const {
   DCHECK(CalledOnValidThread());
 
-  *source = MANUAL;
+  *reason = MANUAL;
 
   // URLs with a non-standard scheme (e.g. chrome://) are always allowed.
   if (!HasFilteredScheme(url))
@@ -312,23 +329,22 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
 
   // Check the static blacklist.
   if (!manual_only && blacklist_ && blacklist_->HasURL(url)) {
-    *source = BLACKLIST;
+    *reason = BLACKLIST;
     return BLOCK;
   }
 
   // Fall back to the default behavior.
-  *source = DEFAULT;
+  *reason = DEFAULT;
   return default_behavior_;
 }
 
 bool SupervisedUserURLFilter::GetFilteringBehaviorForURLWithAsyncChecks(
     const GURL& url,
     const FilteringBehaviorCallback& callback) const {
-  FilteringBehaviorSource source = DEFAULT;
-  FilteringBehavior behavior =
-      GetFilteringBehaviorForURL(url, false, &source);
-  if (source != DEFAULT || !async_url_checker_) {
-    callback.Run(behavior, source, false);
+  FilteringBehaviorReason reason = DEFAULT;
+  FilteringBehavior behavior = GetFilteringBehaviorForURL(url, false, &reason);
+  if (reason != DEFAULT || !async_url_checker_) {
+    callback.Run(behavior, reason, false);
     return true;
   }
 

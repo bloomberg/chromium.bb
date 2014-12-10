@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
+#include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -40,10 +41,12 @@ class SupervisedUserNavigationObserver
   }
 
   // Called when a network request to |url| is blocked.
-  static void OnRequestBlocked(int render_process_host_id,
-                               int render_view_id,
-                               const GURL& url,
-                               const base::Callback<void(bool)>& callback);
+  static void OnRequestBlocked(
+      int render_process_host_id,
+      int render_view_id,
+      const GURL& url,
+      SupervisedUserURLFilter::FilteringBehaviorReason reason,
+      const base::Callback<void(bool)>& callback);
 
  private:
   friend class content::WebContentsUserData<SupervisedUserNavigationObserver>;

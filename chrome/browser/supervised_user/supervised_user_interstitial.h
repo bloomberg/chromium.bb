@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
+#include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "url/gurl.h"
 
@@ -28,12 +29,15 @@ class SupervisedUserInterstitial : public content::InterstitialPageDelegate,
  public:
   static void Show(content::WebContents* web_contents,
                    const GURL& url,
+                   SupervisedUserURLFilter::FilteringBehaviorReason reason,
                    const base::Callback<void(bool)>& callback);
 
  private:
-  SupervisedUserInterstitial(content::WebContents* web_contents,
-                             const GURL& url,
-                             const base::Callback<void(bool)>& callback);
+  SupervisedUserInterstitial(
+      content::WebContents* web_contents,
+      const GURL& url,
+      SupervisedUserURLFilter::FilteringBehaviorReason reason,
+      const base::Callback<void(bool)>& callback);
   ~SupervisedUserInterstitial() override;
 
   bool Init();
@@ -67,6 +71,7 @@ class SupervisedUserInterstitial : public content::InterstitialPageDelegate,
   content::InterstitialPage* interstitial_page_;  // Owns us.
 
   GURL url_;
+  SupervisedUserURLFilter::FilteringBehaviorReason reason_;
 
   base::Callback<void(bool)> callback_;
 
