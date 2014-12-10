@@ -612,7 +612,7 @@ bool ResourceFetcher::canAccessResource(Resource* resource, SecurityOrigin* sour
         return true;
 
     String errorDescription;
-    if (!resource->passesAccessControlCheck(sourceOrigin, errorDescription)) {
+    if (!resource->passesAccessControlCheck(document(), sourceOrigin, errorDescription)) {
         if (resource->type() == Resource::Font)
             toFontResource(resource)->setCORSFailed();
         if (frame() && frame()->document()) {
@@ -1455,7 +1455,7 @@ bool ResourceFetcher::canAccessRedirect(Resource* resource, ResourceRequest& req
             sourceOrigin = document()->securityOrigin();
 
         String errorMessage;
-        if (!CrossOriginAccessControl::handleRedirect(resource, sourceOrigin, request, redirectResponse, options, errorMessage)) {
+        if (!CrossOriginAccessControl::handleRedirect(document(), resource, sourceOrigin, request, redirectResponse, options, errorMessage)) {
             if (resource->type() == Resource::Font)
                 toFontResource(resource)->setCORSFailed();
             if (frame() && frame()->document())

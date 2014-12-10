@@ -86,7 +86,7 @@ public:
 
     static void updateBitmapImages(HashSet<ImageResource*>&, bool redecodeImages = false);
 
-    bool isAccessAllowed(SecurityOrigin*);
+    bool isAccessAllowed(ExecutionContext*, SecurityOrigin*);
 
     virtual void didAddClient(ResourceClient*) override;
     virtual void didRemoveClient(ResourceClient*) override;

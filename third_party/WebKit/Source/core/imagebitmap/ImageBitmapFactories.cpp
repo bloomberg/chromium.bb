@@ -104,7 +104,8 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, 
         exceptionState.throwSecurityError("The source image contains image data from multiple origins.");
         return ScriptPromise();
     }
-    if (!image->cachedImage()->passesAccessControlCheck(eventTarget.toDOMWindow()->document()->securityOrigin()) && eventTarget.toDOMWindow()->document()->securityOrigin()->taintsCanvas(image->src())) {
+    Document* document = eventTarget.toDOMWindow()->document();
+    if (!image->cachedImage()->passesAccessControlCheck(document, document->securityOrigin()) && document->securityOrigin()->taintsCanvas(image->src())) {
         exceptionState.throwSecurityError("Cross-origin access to the source image is denied.");
         return ScriptPromise();
     }

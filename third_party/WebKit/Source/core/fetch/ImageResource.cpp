@@ -502,13 +502,13 @@ bool ImageResource::currentFrameKnownToBeOpaque(const RenderObject* renderer)
     return image->currentFrameKnownToBeOpaque();
 }
 
-bool ImageResource::isAccessAllowed(SecurityOrigin* securityOrigin)
+bool ImageResource::isAccessAllowed(ExecutionContext* context, SecurityOrigin* securityOrigin)
 {
     if (response().wasFetchedViaServiceWorker())
         return response().serviceWorkerResponseType() != WebServiceWorkerResponseTypeOpaque;
     if (!image()->currentFrameHasSingleSecurityOrigin())
         return false;
-    if (passesAccessControlCheck(securityOrigin))
+    if (passesAccessControlCheck(context, securityOrigin))
         return true;
     return !securityOrigin->taintsCanvas(response().url());
 }
