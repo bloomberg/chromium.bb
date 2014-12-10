@@ -211,12 +211,7 @@ IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
   // Now uninstall and ensure this browser test observes it.
   EXPECT_EQ(0, item_uninstall_count_);
   UninstallExtension(extension->id());
-  EXPECT_EQ(1, item_uninstall_count_);
 
-  // Results should not be immediately refreshed. When they are, the item should
-  // be removed from the model.
-  EXPECT_TRUE(observed_result_);
-  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(observed_result_);
   StopWatchingResults();
   service->DismissAppList();

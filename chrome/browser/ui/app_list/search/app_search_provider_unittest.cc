@@ -60,6 +60,8 @@ class AppSearchProviderTest : public AppListTestBase {
     return result_str;
   }
 
+  const SearchProvider::Results& results() { return app_search_->results(); }
+
  private:
   scoped_ptr<AppSearchProvider> app_search_;
 
@@ -96,10 +98,16 @@ TEST_F(AppSearchProviderTest, DisableAndEnable) {
 
 TEST_F(AppSearchProviderTest, Uninstall) {
   EXPECT_EQ("Packaged App 1", RunQuery("pa1"));
+  EXPECT_FALSE(results().empty());
   service_->UninstallExtension(kPackagedApp1Id,
                                extensions::UNINSTALL_REASON_FOR_TESTING,
                                base::Bind(&base::DoNothing),
                                NULL);
+  // Uninstalling an app should update the result list without needing to start
+  // a new search.
+  EXPECT_TRUE(results().empty());
+
+  // Rerunning the query also should return no results.
   EXPECT_EQ("", RunQuery("pa1"));
 
   // Let uninstall code to clean up.

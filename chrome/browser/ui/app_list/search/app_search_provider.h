@@ -43,6 +43,7 @@ class AppSearchProvider : public SearchProvider,
   friend test::AppSearchProviderTest;
 
   void StartImpl(const base::Time& current_time, const base::string16& query);
+  void UpdateResults();
 
   // Adds extensions to apps container if they should be displayed.
   void AddApps(const extensions::ExtensionSet& extensions);
@@ -57,6 +58,9 @@ class AppSearchProvider : public SearchProvider,
 
   Profile* profile_;
   AppListControllerDelegate* list_controller_;
+
+  base::string16 query_;
+  base::Time search_time_;
 
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>

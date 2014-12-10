@@ -65,14 +65,22 @@ void AppSearchProvider::Stop() {
 
 void AppSearchProvider::StartImpl(const base::Time& current_time,
                                   const base::string16& query) {
-  const TokenizedString query_terms(query);
-
-  ClearResults();
+  query_ = query;
+  search_time_ = current_time;
 
   bool show_recommendations = query.empty();
   // Refresh list of apps to ensure we have the latest launch time information.
+  // This will also cause the results to update.
   if (show_recommendations)
     RefreshApps();
+
+  UpdateResults();
+}
+
+void AppSearchProvider::UpdateResults() {
+  const TokenizedString query_terms(query_);
+  bool show_recommendations = query_.empty();
+  ClearResults();
 
   for (Apps::const_iterator app_it = apps_.begin();
        app_it != apps_.end();
@@ -81,7 +89,7 @@ void AppSearchProvider::StartImpl(const base::Time& current_time,
         new AppResult(profile_, (*app_it)->app_id(), list_controller_));
     if (show_recommendations) {
       result->set_title((*app_it)->indexed_name().text());
-      result->UpdateFromLastLaunched(current_time,
+      result->UpdateFromLastLaunched(search_time_,
                                      (*app_it)->last_launch_time());
     } else {
       TokenizedStringMatch match;
@@ -123,6 +131,7 @@ void AppSearchProvider::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension) {
   RefreshApps();
+  UpdateResults();
 }
 
 void AppSearchProvider::OnExtensionUninstalled(
@@ -130,6 +139,7 @@ void AppSearchProvider::OnExtensionUninstalled(
     const extensions::Extension* extension,
     extensions::UninstallReason reason) {
   RefreshApps();
+  UpdateResults();
 }
 
 }  // namespace app_list
