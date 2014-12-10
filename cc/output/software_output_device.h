@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "skia/ext/refptr.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -75,7 +76,7 @@ class CC_EXPORT SoftwareOutputDevice {
   gfx::Size viewport_pixel_size_;
   float scale_factor_;
   gfx::Rect damage_rect_;
-  skia::RefPtr<SkCanvas> canvas_;
+  skia::RefPtr<SkSurface> surface_;
   scoped_ptr<gfx::VSyncProvider> vsync_provider_;
 
  private:

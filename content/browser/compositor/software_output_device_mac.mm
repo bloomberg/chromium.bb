@@ -21,7 +21,7 @@ SoftwareOutputDeviceMac::~SoftwareOutputDeviceMac() {
 void SoftwareOutputDeviceMac::EndPaint(cc::SoftwareFrameData* frame_data) {
   SoftwareOutputDevice::EndPaint(frame_data);
   ui::AcceleratedWidgetMacGotSoftwareFrame(
-      compositor_->widget(), scale_factor_, canvas_.get());
+      compositor_->widget(), scale_factor_, surface_->getCanvas());
 }
 
 }  // namespace content

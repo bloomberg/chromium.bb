@@ -38,10 +38,10 @@ SoftwareOutputDeviceX11::~SoftwareOutputDeviceX11() {
 
 void SoftwareOutputDeviceX11::EndPaint(cc::SoftwareFrameData* frame_data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(canvas_);
+  DCHECK(surface_);
   DCHECK(frame_data);
 
-  if (!canvas_)
+  if (!surface_)
     return;
 
   SoftwareOutputDevice::EndPaint(frame_data);
@@ -64,7 +64,7 @@ void SoftwareOutputDeviceX11::EndPaint(cc::SoftwareFrameData* frame_data) {
 
     SkImageInfo info;
     size_t rowBytes;
-    const void* addr = canvas_->peekPixels(&info, &rowBytes);
+    const void* addr = surface_->peekPixels(&info, &rowBytes);
     image.width = viewport_pixel_size_.width();
     image.height = viewport_pixel_size_.height();
     image.depth = 32;
@@ -118,7 +118,7 @@ void SoftwareOutputDeviceX11::EndPaint(cc::SoftwareFrameData* frame_data) {
   // TODO(jbauman): Switch to XShmPutImage since it's async.
   SkImageInfo info;
   size_t rowBytes;
-  const void* addr = canvas_->peekPixels(&info, &rowBytes);
+  const void* addr = surface_->peekPixels(&info, &rowBytes);
   gfx::PutARGBImage(display_,
                     attributes_.visual,
                     attributes_.depth,
