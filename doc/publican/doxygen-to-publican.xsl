@@ -12,13 +12,29 @@
 ]>
 ]]></xsl:text>
 
-  <section id="sect-Library-$which">
+  <appendix id="sect-Library-$which">
     <xsl:attribute name="id">sect-Library-<xsl:value-of select="$which"/></xsl:attribute>
     <title><xsl:value-of select="$which"/> API</title>
-    <para>Following is the Wayland library classes for the <xsl:value-of select="$which"/>
-      (<emphasis>libwayland-<xsl:value-of select="translate($which, 'SC', 'sc')"/></emphasis>).
-      Note that most of the procedures are related with IPC, which is the main responsibility of
-      the library.
+
+    <para>
+      The open-source reference implementation of Wayland protocol is
+      split in two C libraries, <link
+      linkend="sect-Library-Client">libwayland-client</link> and <link
+      linkend="sect-Library-Server">libwayland-server</link>. Their
+      main responsibility is to handle the Inter-process communication
+      (<emphasis>IPC</emphasis>) with each other, therefore
+      guaranteeing the protocol objects marshaling and messages
+      synchronization.
+    </para>
+
+    <para>
+      Following is the Wayland library classes for the
+      <xsl:value-of select="$which"/>
+      (<emphasis>libwayland-<xsl:value-of select="translate($which,
+      'SC', 'sc')"/></emphasis>).  This appendix describes in detail
+      the library's methods and their helpers, aiming implementors who
+      are building a Wayland <xsl:value-of select="translate($which,
+      'SC', 'sc')"/>.
     </para>
 
     <xsl:if test="/doxygen/compounddef[@kind='class']">
@@ -36,7 +52,7 @@
     <xsl:apply-templates select="/doxygen/compounddef/sectiondef/memberdef" />
     </variablelist>
     </para>
-  </section>
+  </appendix>
 </xsl:template>
 
 <xsl:template match="parameteritem">

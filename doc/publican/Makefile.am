@@ -25,7 +25,6 @@ publican_sources = \
 	$(srcdir)/sources/Introduction.xml \
 	$(srcdir)/sources/Architecture.xml \
 	$(srcdir)/sources/Protocol.xml \
-	$(srcdir)/sources/Library.xml \
 	$(srcdir)/sources/Compositors.xml \
 	$(srcdir)/sources/images/icon.svg  \
 	$(srcdir)/sources/images/wayland-architecture.png \
