@@ -36,6 +36,8 @@ void LayoutTestPushMessagingService::RegisterFromDocument(
     int render_frame_id,
     bool user_gesture,
     const PushMessagingService::RegisterCallback& callback) {
+  RegisterFromWorker(requesting_origin, service_worker_registration_id,
+                     sender_id, callback);
 }
 
 void LayoutTestPushMessagingService::RegisterFromWorker(
@@ -43,6 +45,12 @@ void LayoutTestPushMessagingService::RegisterFromWorker(
     int64 service_worker_registration_id,
     const std::string& sender_id,
     const PushMessagingService::RegisterCallback& callback) {
+  if (GetPermissionStatus(requesting_origin, requesting_origin) ==
+      blink::WebPushPermissionStatusGranted) {
+    callback.Run("layoutTestRegistrationId", PUSH_REGISTRATION_STATUS_SUCCESS);
+  } else {
+    callback.Run("registration_id", PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
+  }
 }
 
 blink::WebPushPermissionStatus
@@ -50,17 +58,14 @@ LayoutTestPushMessagingService::GetPermissionStatus(
     const GURL& requesting_origin,
     int renderer_id,
     int render_frame_id) {
-  auto it = permission_map_.find(requesting_origin);
-  if (it == permission_map_.end())
-    return blink::WebPushPermissionStatusDefault;
-  return it->second;
+  return GetPermissionStatus(requesting_origin, requesting_origin);
 }
 
 blink::WebPushPermissionStatus
 LayoutTestPushMessagingService::GetPermissionStatus(
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
-  auto it = permission_map_.find(requesting_origin);
+  const auto& it = permission_map_.find(requesting_origin);
   if (it == permission_map_.end())
     return blink::WebPushPermissionStatusDefault;
   return it->second;
