@@ -12,6 +12,7 @@
 #include "content/browser/android/edge_effect_l.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/input/did_overscroll_params.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/android/window_android_compositor.h"
@@ -275,7 +276,7 @@ void OverscrollControllerAndroid::TriggerRefresh() {
     return;
 
   triggered_refresh_active_ = true;
-  web_contents()->ReloadFocusedFrame(false);
+  web_contents()->GetController().Reload(true);
 }
 
 bool OverscrollControllerAndroid::IsStillRefreshing() const {

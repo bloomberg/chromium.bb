@@ -32,10 +32,10 @@ const int kRecedeTimeMs = 300;
 const int kActivationStartTimeMs = 150;
 
 // Animation duration after the effect is released and triggers a refresh.
-const int kActivationTimeMs = 1000;
+const int kActivationTimeMs = 850;
 
 // Max animation duration after the effect is released and triggers a refresh.
-const int kMaxActivationTimeMs = kActivationTimeMs * 3;
+const int kMaxActivationTimeMs = kActivationTimeMs * 4;
 
 // Animation duration after the refresh activated phase has completed.
 const int kActivationRecedeTimeMs = 250;
