@@ -44,6 +44,9 @@ class PrintingContextDelegate : public PrintingContext::Delegate {
   gfx::NativeView GetParentView() override;
   std::string GetAppLocale() override;
 
+  // Not exposed to PrintingContext::Delegate because of dependency issues.
+  content::WebContents* GetWebContents();
+
  private:
   int render_process_id_;
   int render_view_id_;
@@ -59,13 +62,15 @@ PrintingContextDelegate::~PrintingContextDelegate() {
 }
 
 gfx::NativeView PrintingContextDelegate::GetParentView() {
+  content::WebContents* wc = GetWebContents();
+  return wc ? wc->GetNativeView() : nullptr;
+}
+
+content::WebContents* PrintingContextDelegate::GetWebContents() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::RenderViewHost* view =
       content::RenderViewHost::FromID(render_process_id_, render_view_id_);
-  if (!view)
-    return NULL;
-  content::WebContents* wc = content::WebContents::FromRenderViewHost(view);
-  return wc ? wc->GetNativeView() : NULL;
+  return view ? content::WebContents::FromRenderViewHost(view) : nullptr;
 }
 
 std::string PrintingContextDelegate::GetAppLocale() {
