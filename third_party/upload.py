@@ -650,6 +650,10 @@ group.add_option("--base_url", action="store", dest="base_url", default=None,
                  help="Base URL path for files (listed as \"Base URL\" when "
                  "viewing issue).  If omitted, will be guessed automatically "
                  "for SVN repos and left blank for others.")
+group.add_option("--target_ref", action="store", dest="target_ref",
+                 default=None,
+                 help="The target ref that is transitively tracked by the "
+                 "local branch this patch comes from.")
 group.add_option("--download_base", action="store_true",
                  dest="download_base", default=False,
                  help="Base files will be downloaded by the server "
@@ -2605,6 +2609,8 @@ def RealMain(argv, data=None):
     form_fields.append(("cc", options.cc))
   if options.project:
     form_fields.append(("project", options.project))
+  if options.target_ref:
+    form_fields.append(("target_ref", options.target_ref))
 
   # Process --message, --title and --file.
   message = options.message or ""

@@ -1747,6 +1747,21 @@ def RietveldUpload(options, args, cl, change):
                       + cl.GetUpstreamBranch().split('/')[-1])
   if remote_url:
     upload_args.extend(['--base_url', remote_url])
+    remote, remote_branch = cl.GetRemoteBranch()
+    if remote and remote_branch:
+      # Create the true path to the remote branch.
+      # Does the following translation:
+      # * refs/remotes/origin/refs/diff/test -> refs/diff/test
+      # * refs/remotes/origin/master -> refs/heads/master
+      # * refs/remotes/branch-heads/test -> refs/branch-heads/test
+      if remote_branch.startswith('refs/remotes/%s/refs/' % remote):
+        remote_branch = remote_branch.replace('refs/remotes/%s/' % remote, '')
+      elif remote_branch.startswith('refs/remotes/%s/' % remote):
+        remote_branch = remote_branch.replace('refs/remotes/%s/' % remote,
+                                              'refs/heads/')
+      elif remote_branch.startswith('refs/remotes/branch-heads'):
+        remote_branch = remote_branch.replace('refs/remotes/', 'refs/')
+      upload_args.extend(['--target_ref', remote_branch])
 
   project = settings.GetProject()
   if project:
