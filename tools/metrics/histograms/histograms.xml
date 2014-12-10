@@ -22282,6 +22282,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.SearchProvider.AddHistoryResultsTime"
+    units="milliseconds">
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    Time it takes to add all the raw history results to the list of matches.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.SearchProvider.ConvertResultsTime"
+    units="milliseconds">
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    Time it takes to convert all the results to matches and add them to a map,
+    to keep the most relevant match for each result.
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.SearchProviderMatches">
   <owner>mpearson@chromium.org</owner>
   <summary>
