@@ -254,13 +254,18 @@ class DeviceUtilsOldImplTest(unittest.TestCase):
   def tearDown(self):
     self._get_adb_path_patch.stop()
 
+
+def _AdbWrapperMock(test_serial):
+  adb = mock.Mock(spec=adb_wrapper.AdbWrapper)
+  adb.__str__ = mock.Mock(return_value=test_serial)
+  adb.GetDeviceSerial.return_value = test_serial
+  return adb
+
+
 class DeviceUtilsNewImplTest(mock_calls.TestCase):
 
   def setUp(self):
-    test_serial = '0123456789abcdef'
-    self.adb = mock.Mock(spec=adb_wrapper.AdbWrapper)
-    self.adb.__str__ = mock.Mock(return_value=test_serial)
-    self.adb.GetDeviceSerial.return_value = test_serial
+    self.adb = _AdbWrapperMock('0123456789abcdef')
     self.device = device_utils.DeviceUtils(
         self.adb, default_timeout=10, default_retries=0)
     self.watchMethodCalls(self.call.adb, ignore=['GetDeviceSerial'])
@@ -1516,6 +1521,21 @@ class DeviceUtilsStrTest(DeviceUtilsNewImplTest):
     with self.assertCalls(
         (self.call.adb.GetDeviceSerial(), '0123456789abcdef')):
       self.assertEqual('0123456789abcdef', str(self.device))
+
+
+class DeviceUtilsParallelTest(mock_calls.TestCase):
+
+  def testParallel_default(self):
+    test_serials = ['0123456789abcdef', 'fedcba9876543210']
+    with self.assertCall(
+        mock.call.pylib.device.adb_wrapper.AdbWrapper.GetDevices(),
+        [_AdbWrapperMock(serial) for serial in test_serials]):
+      parallel_devices = device_utils.DeviceUtils.parallel()
+    for serial, device in zip(test_serials, parallel_devices.pGet(None)):
+      self.assertTrue(
+          isinstance(device, device_utils.DeviceUtils)
+          and serial == str(device),
+          'Expected a DeviceUtils object with serial %s' % serial)
 
 
 if __name__ == '__main__':

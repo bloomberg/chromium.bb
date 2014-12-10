@@ -1173,8 +1173,8 @@ class DeviceUtils(object):
     """Returns the device serial."""
     return self.adb.GetDeviceSerial()
 
-  @staticmethod
-  def parallel(devices=None, async=False):
+  @classmethod
+  def parallel(cls, devices=None, async=False):
     """Creates a Parallelizer to operate over the provided list of devices.
 
     If |devices| is either |None| or an empty list, the Parallelizer will
@@ -1190,10 +1190,10 @@ class DeviceUtils(object):
     Returns:
       A Parallelizer operating over |devices|.
     """
-    if not devices or len(devices) == 0:
-      devices = pylib.android_commands.GetAttachedDevices()
-    parallelizer_type = (parallelizer.Parallelizer if async
-                         else parallelizer.SyncParallelizer)
-    return parallelizer_type([
-        d if isinstance(d, DeviceUtils) else DeviceUtils(d)
-        for d in devices])
+    if not devices:
+      devices = adb_wrapper.AdbWrapper.GetDevices()
+    devices = [d if isinstance(d, cls) else cls(d) for d in devices]
+    if async:
+      return parallelizer.Parallelizer(devices)
+    else:
+      return parallelizer.SyncParallelizer(devices)
