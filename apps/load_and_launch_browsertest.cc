@@ -50,13 +50,13 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                                  app_path.value());
 
   new_cmdline.AppendSwitch(content::kLaunchAsBrowser);
-  base::ProcessHandle process;
-  base::LaunchProcess(new_cmdline, base::LaunchOptionsForTest(), &process);
-  ASSERT_NE(base::kNullProcessHandle, process);
+  base::Process process =
+      base::LaunchProcess(new_cmdline, base::LaunchOptionsForTest());
+  ASSERT_TRUE(process.IsValid());
 
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
-  ASSERT_TRUE(base::WaitForSingleProcess(
-      process, TestTimeouts::action_timeout()));
+  ASSERT_TRUE(base::WaitForSingleProcess(process.Handle(),
+                                         TestTimeouts::action_timeout()));
 }
 
 // TODO(jackhou): Enable this test once it works on OSX. It currently does not
@@ -93,13 +93,13 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   new_cmdline.AppendSwitch(content::kLaunchAsBrowser);
   new_cmdline.AppendArgPath(test_file_path);
 
-  base::ProcessHandle process;
-  base::LaunchProcess(new_cmdline, base::LaunchOptionsForTest(), &process);
-  ASSERT_NE(base::kNullProcessHandle, process);
+  base::Process process =
+      base::LaunchProcess(new_cmdline, base::LaunchOptionsForTest());
+  ASSERT_TRUE(process.IsValid());
 
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
-  ASSERT_TRUE(base::WaitForSingleProcess(
-      process, TestTimeouts::action_timeout()));
+  ASSERT_TRUE(base::WaitForSingleProcess(process.Handle(),
+                                         TestTimeouts::action_timeout()));
 }
 
 namespace {
