@@ -380,12 +380,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs(const GURL& url) {
   prefs.allow_file_access_from_file_urls =
       command_line.HasSwitch(switches::kAllowFileAccessFromFiles);
 
-  prefs.layer_squashing_enabled = true;
-  if (command_line.HasSwitch(switches::kEnableLayerSquashing))
-      prefs.layer_squashing_enabled = true;
-  if (command_line.HasSwitch(switches::kDisableLayerSquashing))
-      prefs.layer_squashing_enabled = false;
-
   prefs.accelerated_2d_canvas_enabled =
       GpuProcessHost::gpu_enabled() &&
       !command_line.HasSwitch(switches::kDisableAccelerated2dCanvas);

@@ -430,13 +430,6 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kIgnoreGpuBlacklist)
   },
-  {
-    "disable_layer_squashing",
-    IDS_FLAGS_DISABLE_LAYER_SQUASHING_NAME,
-    IDS_FLAGS_DISABLE_LAYER_SQUASHING_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kDisableLayerSquashing)
-  },
 #if defined(OS_WIN)
   {
     "disable-direct-write",
