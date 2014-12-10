@@ -36,7 +36,7 @@ class DevToolsClient {
       const std::string& method,
       const base::DictionaryValue& params) = 0;
 
-  virtual Status SendCommandAndIgnoreResponse(
+  virtual Status SendAsyncCommand(
       const std::string& method,
       const base::DictionaryValue& params) = 0;
 

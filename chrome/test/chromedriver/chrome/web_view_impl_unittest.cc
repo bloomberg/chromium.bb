@@ -37,7 +37,7 @@ class FakeDevToolsClient : public DevToolsClient {
       const base::DictionaryValue& params) override {
     return SendCommandAndGetResult(method, params, NULL);
   }
-  Status SendCommandAndIgnoreResponse(
+  Status SendAsyncCommand(
       const std::string& method,
       const base::DictionaryValue& params) override {
     return SendCommandAndGetResult(method, params, NULL);

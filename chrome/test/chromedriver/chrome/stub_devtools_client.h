@@ -31,7 +31,7 @@ class StubDevToolsClient : public DevToolsClient {
   Status SendCommand(
       const std::string& method,
       const base::DictionaryValue& params) override;
-  Status SendCommandAndIgnoreResponse(
+  Status SendAsyncCommand(
       const std::string& method,
       const base::DictionaryValue& params) override;
   Status SendCommandAndGetResult(

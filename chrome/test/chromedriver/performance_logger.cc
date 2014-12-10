@@ -11,6 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/chrome/browser_info.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/devtools_client_impl.h"
@@ -254,8 +255,18 @@ Status PerformanceLogger::CollectTraceEvents() {
   // commands, so we need to ignore it here to avoid a timeout. See
   // https://code.google.com/p/chromedriver/issues/detail?id=997 for details.
   // TODO(samuong): find other commands where we don't need the response.
-  Status status = browser_client_->SendCommandAndIgnoreResponse(
-      "Tracing.end", base::DictionaryValue());
+  bool wait_for_response = false;
+  if (session_->chrome) {
+    const BrowserInfo* browser_info = session_->chrome->GetBrowserInfo();
+    if (browser_info->browser_name == "chrome" && browser_info->build_no < 2245)
+      wait_for_response = true;
+  }
+  base::DictionaryValue params;
+  Status status(kOk);
+  if (wait_for_response)
+    status = browser_client_->SendCommand("Tracing.end", params);
+  else
+    status = browser_client_->SendAsyncCommand("Tracing.end", params);
   if (status.IsError()) {
     LOG(ERROR) << "error when stopping trace: " << status.message();
     return status;

@@ -32,7 +32,7 @@ Status StubDevToolsClient::SendCommand(
   return SendCommandAndGetResult(method, params, &result);
 }
 
-Status StubDevToolsClient::SendCommandAndIgnoreResponse(
+Status StubDevToolsClient::SendAsyncCommand(
     const std::string& method,
     const base::DictionaryValue& params) {
   return SendCommand(method, params);

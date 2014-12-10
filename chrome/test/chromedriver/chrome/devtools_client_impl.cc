@@ -166,7 +166,7 @@ Status DevToolsClientImpl::SendCommand(
   return SendCommandInternal(method, params, &result, true);
 }
 
-Status DevToolsClientImpl::SendCommandAndIgnoreResponse(
+Status DevToolsClientImpl::SendAsyncCommand(
     const std::string& method,
     const base::DictionaryValue& params) {
   scoped_ptr<base::DictionaryValue> result;
