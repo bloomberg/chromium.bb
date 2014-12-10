@@ -755,22 +755,22 @@ void AnimationPlayer::uncancel()
 
 AnimationPlayer::PlayStateUpdateScope::PlayStateUpdateScope(AnimationPlayer& player, TimingUpdateReason reason, CompositorPendingChange compositorPendingChange)
     : m_player(player)
-    , m_initial(player.playStateInternal())
+    , m_initial(m_player->playStateInternal())
     , m_compositorPendingChange(compositorPendingChange)
 {
-    m_player.updateCurrentTimingState(reason);
+    m_player->updateCurrentTimingState(reason);
 }
 
 AnimationPlayer::PlayStateUpdateScope::~PlayStateUpdateScope()
 {
     AnimationPlayState oldPlayState = m_initial;
-    AnimationPlayState newPlayState = m_player.calculatePlayState();
+    AnimationPlayState newPlayState = m_player->calculatePlayState();
     if (oldPlayState != newPlayState) {
         bool wasActive = oldPlayState == Pending || oldPlayState == Running;
         bool isActive = newPlayState == Pending || newPlayState == Running;
         if (!wasActive && isActive) {
-            if (m_player.m_content) {
-                TRACE_EVENT_ASYNC_BEGIN1("blink", "Animation", &m_player, "Name", TRACE_STR_COPY(m_player.m_content->name().utf8().data()));
+            if (m_player->m_content) {
+                TRACE_EVENT_ASYNC_BEGIN1("blink", "Animation", &m_player, "Name", TRACE_STR_COPY(m_player->m_content->name().utf8().data()));
             } else {
                 TRACE_EVENT_ASYNC_BEGIN0("blink", "Animation", &m_player);
             }
@@ -785,22 +785,22 @@ AnimationPlayer::PlayStateUpdateScope::~PlayStateUpdateScope()
     }
 
     if (oldPlayState != newPlayState && (oldPlayState == Idle || newPlayState == Idle)) {
-        m_player.setOutdated();
+        m_player->setOutdated();
     }
 
-    m_player.m_playState = newPlayState;
+    m_player->m_playState = newPlayState;
 
 #if ENABLE(ASSERT)
     // Verify that current time is up to date.
-    m_player.currentTimeInternal();
+    m_player->currentTimeInternal();
 #endif
 
     switch (m_compositorPendingChange) {
     case SetCompositorPending:
-        m_player.setCompositorPending();
+        m_player->setCompositorPending();
         break;
     case SetCompositorPendingWithSourceChanged:
-        m_player.setCompositorPending(true);
+        m_player->setCompositorPending(true);
         break;
     case DoNotSetCompositorPending:
         break;

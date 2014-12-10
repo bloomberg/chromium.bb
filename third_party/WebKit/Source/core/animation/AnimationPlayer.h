@@ -235,7 +235,7 @@ private:
         PlayStateUpdateScope(AnimationPlayer&, TimingUpdateReason, CompositorPendingChange = SetCompositorPending);
         ~PlayStateUpdateScope();
     private:
-        AnimationPlayer& m_player;
+        RawPtrWillBeMember<AnimationPlayer> m_player;
         AnimationPlayState m_initial;
         CompositorPendingChange m_compositorPendingChange;
     };
