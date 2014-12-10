@@ -11,12 +11,12 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/platform_notification_service.h"
+#include "content/public/common/show_desktop_notification_params.h"
 #include "third_party/WebKit/public/platform/WebNotificationPermission.h"
 #include "url/gurl.h"
 
 namespace content {
 
-struct ShowDesktopNotificationHostMsgParams;
 class DesktopNotificationDelegate;
 
 // Responsible for tracking active notifications and allowed origins for the
@@ -66,11 +66,27 @@ class LayoutTestNotificationManager : public PlatformNotificationService {
   // Closes the notification titled |title|. Must be called on the UI thread.
   void Close(const std::string& title);
 
-  typedef std::map<GURL, blink::WebNotificationPermission>
-      NotificationPermissionMap;
-  NotificationPermissionMap permission_map_;
+  // Fakes replacing the notification identified by |params| when it has a tag
+  // and a previous notification has been displayed using the same tag. All
+  // notifications, both page and persistent ones, will be considered for this.
+  void ReplaceNotificationIfNeeded(
+      const ShowDesktopNotificationHostMsgParams& params);
 
-  std::map<std::string, DesktopNotificationDelegate*> notifications_;
+  // Structure to represent the information of a persistent notification.
+  struct PersistentNotification {
+    PersistentNotification();
+
+    BrowserContext* browser_context;
+    int64 service_worker_registration_id;
+    ShowDesktopNotificationHostMsgParams notification_data;
+    std::string persistent_id;
+  };
+
+  std::map<GURL, blink::WebNotificationPermission> permission_map_;
+
+  std::map<std::string, DesktopNotificationDelegate*> page_notifications_;
+  std::map<std::string, PersistentNotification> persistent_notifications_;
+
   std::map<std::string, std::string> replacements_;
 
   base::WeakPtrFactory<LayoutTestNotificationManager> weak_factory_;
