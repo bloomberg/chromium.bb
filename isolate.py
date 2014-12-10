@@ -847,17 +847,14 @@ def CMDarchive(parser, args):
   """
   add_isolate_options(parser)
   add_subdir_option(parser)
-  isolateserver.add_isolate_server_options(parser, False)
+  isolateserver.add_isolate_server_options(parser)
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
+  if args:
+    parser.error('Unsupported argument: %s' % args)
   process_isolate_options(parser, options)
   auth.process_auth_options(parser, options)
   isolateserver.process_isolate_server_options(parser, options)
-  if args:
-    parser.error('Unsupported argument: %s' % args)
-  if not file_path.is_url(options.isolate_server):
-    parser.error('Not a valid server URL: %s' % options.isolate_server)
-  auth.ensure_logged_in(options.isolate_server)
   result = isolate_and_archive(
       [(options, os.getcwd())], options.isolate_server, options.namespace)
   if result is None:
@@ -885,7 +882,7 @@ def CMDbatcharchive(parser, args):
     "args": [list of command line arguments for single 'archive' command]
   }
   """
-  isolateserver.add_isolate_server_options(parser, False)
+  isolateserver.add_isolate_server_options(parser)
   isolateserver.add_archive_options(parser)
   auth.add_auth_options(parser)
   parser.add_option(
@@ -895,9 +892,6 @@ def CMDbatcharchive(parser, args):
   options, args = parser.parse_args(args)
   auth.process_auth_options(parser, options)
   isolateserver.process_isolate_server_options(parser, options)
-  if not file_path.is_url(options.isolate_server):
-    parser.error('Not a valid server URL: %s' % options.isolate_server)
-  auth.ensure_logged_in(options.isolate_server)
 
   # Validate all incoming options, prepare what needs to be archived as a list
   # of tuples (archival options, working directory).

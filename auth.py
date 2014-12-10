@@ -85,21 +85,30 @@ def process_auth_options(parser, options):
 def ensure_logged_in(server_url):
   """Checks that user is logged in, asking to do it if not.
 
-  Aborts the process with exit code 1 if user is not logged it. Noop when used
-  on bots.
+  Raises:
+    ValueError if the server_url is not acceptable.
   """
   if net.get_auth_method() not in ('cookie', 'oauth'):
     return None
   server_url = server_url.lower().rstrip('/')
-  assert server_url.startswith(('https://', 'http://localhost:')), server_url
+  allowed = (
+      'https://',
+      'http://localhost:', 'http://127.0.0.1:', 'http://::1:')
+  if not server_url.startswith(allowed):
+    raise ValueError('URL must start with https:// or be http:// to localhost')
   service = AuthService(server_url)
-  service.login(False)
-  identity = service.get_current_identity()
+  try:
+    service.login(False)
+  except IOError:
+    raise ValueError('Failed to contact %s' % server_url)
+  try:
+    identity = service.get_current_identity()
+  except AuthServiceError:
+    raise ValueError('Failed to fetch identify from %s' % server_url)
   if identity == 'anonymous:anonymous':
-    print >> sys.stderr, (
+    raise ValueError(
         'Please login to %s: \n'
         '  python auth.py login --service=%s' % (server_url, server_url))
-    sys.exit(1)
   email = identity.split(':')[1]
   logging.info('Logged in to %s: %s', server_url, email)
   return email

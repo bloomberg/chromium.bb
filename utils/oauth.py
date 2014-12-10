@@ -247,7 +247,7 @@ def _fetch_service_config(urlhost):
       except (KeyError, ValueError) as err:
         logging.error('Invalid response from the service: %s', err)
     else:
-      logging.error(
+      logging.warning(
           'Error when fetching oauth_config, HTTP status code %d',
           response.status_code)
     return None

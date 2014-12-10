@@ -2033,12 +2033,10 @@ def CMDarchive(parser, args):
   directories, the .isolated generated for the directory is listed as the
   directory entry itself.
   """
-  add_isolate_server_options(parser, False)
+  add_isolate_server_options(parser)
   add_archive_options(parser)
   options, files = parser.parse_args(args)
   process_isolate_server_options(parser, options)
-  if file_path.is_url(options.isolate_server):
-    auth.ensure_logged_in(options.isolate_server)
   try:
     archive(options.isolate_server, options.namespace, files, options.blacklist)
   except Error as e:
@@ -2052,7 +2050,7 @@ def CMDdownload(parser, args):
   It can either download individual files or a complete tree from a .isolated
   file.
   """
-  add_isolate_server_options(parser, True)
+  add_isolate_server_options(parser)
   parser.add_option(
       '-i', '--isolated', metavar='HASH',
       help='hash of an isolated file, .isolated file content is discarded, use '
@@ -2065,20 +2063,16 @@ def CMDdownload(parser, args):
       help='destination directory')
   add_cache_options(parser)
   options, args = parser.parse_args(args)
-  process_isolate_server_options(parser, options)
   if args:
     parser.error('Unsupported arguments: %s' % args)
+
+  process_isolate_server_options(parser, options)
   if bool(options.isolated) == bool(options.file):
     parser.error('Use one of --isolated or --file, and only one.')
 
   cache = process_cache_options(options)
   options.target = os.path.abspath(options.target)
-
-  remote = options.isolate_server or options.indir
-  if file_path.is_url(remote):
-    auth.ensure_logged_in(remote)
-
-  with get_storage(remote, options.namespace) as storage:
+  with get_storage(options.isolate_server, options.namespace) as storage:
     # Fetching individual files.
     if options.file:
       # TODO(maruel): Enable cache in this case too.
@@ -2123,11 +2117,8 @@ def add_archive_options(parser):
            'directories')
 
 
-def add_isolate_server_options(parser, add_indir):
-  """Adds --isolate-server and --namespace options to parser.
-
-  Includes --indir if desired.
-  """
+def add_isolate_server_options(parser):
+  """Adds --isolate-server and --namespace options to parser."""
   parser.add_option(
       '-I', '--isolate-server',
       metavar='URL', default=os.environ.get('ISOLATE_SERVER', ''),
@@ -2137,51 +2128,34 @@ def add_isolate_server_options(parser, add_indir):
   parser.add_option(
       '--namespace', default='default-gzip',
       help='The namespace to use on the Isolate Server, default: %default')
-  if add_indir:
-    parser.add_option(
-        '--indir', metavar='DIR',
-        help='Directory used to store the hashtable instead of using an '
-             'isolate server.')
 
 
 def process_isolate_server_options(parser, options):
-  """Processes the --isolate-server and --indir options and aborts if neither is
-  specified.
+  """Processes the --isolate-server option and aborts if not specified.
+
+  Returns the identity as determined by the server.
   """
-  has_indir = hasattr(options, 'indir')
   if not options.isolate_server:
-    if not has_indir:
-      parser.error('--isolate-server is required.')
-    elif not options.indir:
-      parser.error('Use one of --indir or --isolate-server.')
-  else:
-    if has_indir and options.indir:
-      parser.error('Use only one of --indir or --isolate-server.')
+    parser.error('--isolate-server is required.')
 
-  if options.isolate_server:
-    parts = urlparse.urlparse(options.isolate_server, 'https')
-    if parts.query:
-      parser.error('--isolate-server doesn\'t support query parameter.')
-    if parts.fragment:
-      parser.error('--isolate-server doesn\'t support fragment in the url.')
-    # urlparse('foo.com') will result in netloc='', path='foo.com', which is not
-    # what is desired here.
-    new = list(parts)
-    if not new[1] and new[2]:
-      new[1] = new[2].rstrip('/')
-      new[2] = ''
-    new[2] = new[2].rstrip('/')
-    options.isolate_server = urlparse.urlunparse(new)
-    on_error.report_on_exception_exit(options.isolate_server)
-    return
-
-  if file_path.is_url(options.indir):
-    parser.error('Can\'t use an URL for --indir.')
-  options.indir = unicode(options.indir).replace('/', os.path.sep)
-  options.indir = os.path.abspath(
-      os.path.normpath(os.path.join(os.getcwd(), options.indir)))
-  if not os.path.isdir(options.indir):
-    parser.error('Path given to --indir must exist.')
+  parts = urlparse.urlparse(options.isolate_server, 'https')
+  if parts.query:
+    parser.error('--isolate-server doesn\'t support query parameter.')
+  if parts.fragment:
+    parser.error('--isolate-server doesn\'t support fragment in the url.')
+  # urlparse('foo.com') will result in netloc='', path='foo.com', which is not
+  # what is desired here.
+  new = list(parts)
+  if not new[1] and new[2]:
+    new[1] = new[2].rstrip('/')
+    new[2] = ''
+  new[2] = new[2].rstrip('/')
+  options.isolate_server = urlparse.urlunparse(new)
+  on_error.report_on_exception_exit(options.isolate_server)
+  try:
+    return auth.ensure_logged_in(options.isolate_server)
+  except ValueError as e:
+    parser.error(str(e))
 
 
 def add_cache_options(parser):

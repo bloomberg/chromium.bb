@@ -802,7 +802,7 @@ def add_sharding_options(parser):
 
 def add_trigger_options(parser):
   """Adds all options to trigger a task on Swarming."""
-  isolateserver.add_isolate_server_options(parser, True)
+  isolateserver.add_isolate_server_options(parser)
   add_filter_options(parser)
 
   parser.task_group = tools.optparse.OptionGroup(parser, 'Task properties')
@@ -851,9 +851,9 @@ def add_trigger_options(parser):
 
 
 def process_trigger_options(parser, options, args):
-  isolateserver.process_isolate_server_options(parser, options)
   if len(args) != 1:
     parser.error('Must pass one .isolated file or its hash (sha1).')
+  isolateserver.process_isolate_server_options(parser, options)
   process_filter_options(parser, options)
 
 
@@ -909,8 +909,6 @@ def CMDbots(parser, args):
 
   if options.keep_dead and options.dead_only:
     parser.error('Use only one of --keep-dead and --dead-only')
-
-  auth.ensure_logged_in(options.swarming)
 
   bots = []
   cursor = None
@@ -988,7 +986,6 @@ def CMDcollect(parser, args):
     if any(not valid.issuperset(task_id) for task_id in args):
       parser.error('Task ids are 0-9a-f.')
 
-  auth.ensure_logged_in(options.swarming)
   try:
     return collect(
         options.swarming,
@@ -1025,8 +1022,6 @@ def CMDquery(parser, args):
   (options, args) = parser.parse_args(args)
   if len(args) != 1:
     parser.error('Must specify only one resource name.')
-
-  auth.ensure_logged_in(options.swarming)
 
   base_url = options.swarming + '/swarming/api/v1/client/' + args[0]
   url = base_url
@@ -1075,16 +1070,10 @@ def CMDrun(parser, args):
   args, isolated_cmd_args = extract_isolated_command_extra_args(args)
   options, args = parser.parse_args(args)
   process_trigger_options(parser, options, args)
-
-  user = auth.ensure_logged_in(options.swarming)
-  if file_path.is_url(options.isolate_server):
-    auth.ensure_logged_in(options.isolate_server)
-
-  options.user = options.user or user
   try:
     tasks, task_name = trigger(
         swarming=options.swarming,
-        isolate_server=options.isolate_server or options.indir,
+        isolate_server=options.isolate_server,
         namespace=options.namespace,
         file_hash_or_isolated=args[0],
         task_name=options.task_name,
@@ -1142,7 +1131,6 @@ def CMDreproduce(parser, args):
   if len(args) != 1:
     parser.error('Must specify exactly one task id.')
 
-  auth.ensure_logged_in(options.swarming)
   url = options.swarming + '/swarming/api/v1/client/task/%s/request' % args[0]
   request = net.url_read_json(url)
   if not request:
@@ -1206,16 +1194,10 @@ def CMDtrigger(parser, args):
       help='Dump details about the triggered task(s) to this file as json')
   options, args = parser.parse_args(args)
   process_trigger_options(parser, options, args)
-
-  user = auth.ensure_logged_in(options.swarming)
-  if file_path.is_url(options.isolate_server):
-    auth.ensure_logged_in(options.isolate_server)
-
-  options.user = options.user or user
   try:
     tasks, task_name = trigger(
         swarming=options.swarming,
-        isolate_server=options.isolate_server or options.indir,
+        isolate_server=options.isolate_server,
         namespace=options.namespace,
         file_hash_or_isolated=args[0],
         task_name=options.task_name,
@@ -1278,6 +1260,12 @@ class OptionParserSwarming(tools.OptionParserWithLogging):
     if not options.swarming:
       self.error('--swarming is required.')
     auth.process_auth_options(self, options)
+    try:
+      user = auth.ensure_logged_in(options.swarming)
+    except ValueError as e:
+      self.error(str(e))
+    if hasattr(options, 'user') and not options.user:
+      options.user = user
     return options, args
 
 

@@ -540,7 +540,7 @@ class HttpService(object):
         if not self.is_transient_http_error(e.code, retry_404, retry_50x):
           # This HttpError means we reached the server and there was a problem
           # with the request, so don't retry.
-          logging.error(
+          logging.warning(
               'Able to connect to %s but an exception was thrown.\n%s',
               request.get_full_url(), self._format_error(e, verbose=True))
           return None

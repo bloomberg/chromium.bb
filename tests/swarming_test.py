@@ -780,12 +780,12 @@ class MainTest(TestCase):
   def test_trigger_no_isolate_env_var(self):
     with self.assertRaises(SystemExit):
       with test_utils.EnvVars({'SWARMING_SERVER': 'https://host'}):
-        main(['trigger', 'T', 'foo', 'foo.isolated'])
+        main(['trigger', '-T', 'foo', 'foo.isolated'])
     self._check_output(
         '',
         'Usage: swarming.py trigger [options] (hash|isolated) [-- extra_args]'
         '\n\n'
-        'swarming.py: error: Use one of --indir or --isolate-server.'
+        'swarming.py: error: --isolate-server is required.'
         '\n')
 
   def test_trigger_env_var(self):

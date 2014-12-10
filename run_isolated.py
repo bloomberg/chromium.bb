@@ -252,7 +252,7 @@ def main(args):
   data_group.add_option(
       '-H', '--hash',
       help='Hash of the .isolated to grab from the hash table')
-  isolateserver.add_isolate_server_options(data_group, True)
+  isolateserver.add_isolate_server_options(data_group)
   parser.add_option_group(data_group)
 
   isolateserver.add_cache_options(parser)
@@ -268,19 +268,14 @@ def main(args):
 
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
+  if not options.hash:
+    parser.error('--hash is required.')
   auth.process_auth_options(parser, options)
   isolateserver.process_isolate_server_options(parser, options)
 
-  if not options.hash:
-    parser.error('--hash is required.')
-
   cache = isolateserver.process_cache_options(options)
-
-  remote = options.isolate_server or options.indir
-  if file_path.is_url(remote):
-    auth.ensure_logged_in(remote)
-
-  with isolateserver.get_storage(remote, options.namespace) as storage:
+  with isolateserver.get_storage(
+      options.isolate_server, options.namespace) as storage:
     # Hashing schemes used by |storage| and |cache| MUST match.
     assert storage.hash_algo == cache.hash_algo
     return run_tha_test(
