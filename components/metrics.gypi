@@ -152,6 +152,7 @@
       'target_name': 'component_metrics_proto',
       'type': 'static_library',
       'sources': [
+        'metrics/proto/cast_logs.proto',
         'metrics/proto/chrome_user_metrics_extension.proto',
         'metrics/proto/histogram_event.proto',
         'metrics/proto/omnibox_event.proto',
