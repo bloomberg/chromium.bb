@@ -46,7 +46,8 @@ CastMetricsHelper* CastMetricsHelper::GetInstance() {
 CastMetricsHelper::CastMetricsHelper(
     scoped_refptr<base::MessageLoopProxy> message_loop_proxy)
     : message_loop_proxy_(message_loop_proxy),
-      metrics_sink_(NULL) {
+      metrics_sink_(NULL),
+      record_action_callback_(base::Bind(&base::RecordComputedAction)) {
   DCHECK(message_loop_proxy_.get());
   DCHECK(!g_instance);
   g_instance = this;
@@ -73,11 +74,11 @@ void CastMetricsHelper::TagAppStart(const std::string& arg_app_name) {
 }
 
 void CastMetricsHelper::LogMediaPlay() {
-  LogAction(GetMetricsNameWithAppName("MediaPlay", ""));
+  RecordSimpleAction(GetMetricsNameWithAppName("MediaPlay", ""));
 }
 
 void CastMetricsHelper::LogMediaPause() {
-  LogAction(GetMetricsNameWithAppName("MediaPause", ""));
+  RecordSimpleAction(GetMetricsNameWithAppName("MediaPause", ""));
 }
 
 void CastMetricsHelper::LogTimeToDisplayVideo() {
@@ -193,13 +194,19 @@ void CastMetricsHelper::SetMetricsSink(MetricsSink* delegate) {
   metrics_sink_ = delegate;
 }
 
-void CastMetricsHelper::LogAction(const std::string& action) {
-  MAKE_SURE_THREAD(LogAction, action);
+void CastMetricsHelper::SetRecordActionCallback(
+      const RecordActionCallback& callback) {
+  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
+  record_action_callback_ = callback;
+}
+
+void CastMetricsHelper::RecordSimpleAction(const std::string& action) {
+  MAKE_SURE_THREAD(RecordSimpleAction, action);
 
   if (metrics_sink_) {
     metrics_sink_->OnAction(action);
   } else {
-    base::RecordComputedAction(action);
+    record_action_callback_.Run(action);
   }
 }
 

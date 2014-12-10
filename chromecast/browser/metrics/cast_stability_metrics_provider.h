@@ -6,7 +6,6 @@
 #define CHROMECAST_BROWSER_METRICS_CAST_STABILITY_METRICS_PROVIDER_H_
 
 #include "base/basictypes.h"
-#include "base/metrics/user_metrics.h"
 #include "base/process/kill.h"
 #include "components/metrics/metrics_provider.h"
 #include "content/public/browser/browser_child_process_observer.h"

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 
@@ -27,6 +28,8 @@ class CastMetricsHelper {
     kBufferingAfterUnderrun,
     kAbortedBuffering,
   };
+
+  typedef base::Callback<void(const std::string&)> RecordActionCallback;
 
   class MetricsSink {
    public:
@@ -55,6 +58,10 @@ class CastMetricsHelper {
   virtual void LogMediaPlay();
   virtual void LogMediaPause();
 
+  // Logs a simple UMA user action.
+  // This is used as an in-place replacement of content::RecordComputedAction().
+  virtual void RecordSimpleAction(const std::string& action);
+
   // Logs UMA record of the elapsed time from the app launch
   // to the time first video frame is displayed.
   virtual void LogTimeToDisplayVideo();
@@ -82,6 +89,11 @@ class CastMetricsHelper {
   // Caller retains ownership of MetricsSink.
   virtual void SetMetricsSink(MetricsSink* delegate);
 
+  // Sets a default callback to record user action when MetricsSink is not set.
+  // This function could be called multiple times (in unittests), and
+  // CastMetricsHelper only honors the last one.
+  virtual void SetRecordActionCallback(const RecordActionCallback& callback);
+
  protected:
   // Creates a CastMetricsHelper instance with no MessageLoopProxy. This should
   // only be used by tests, since invoking any non-overridden methods on this
@@ -89,7 +101,6 @@ class CastMetricsHelper {
   CastMetricsHelper();
 
  private:
-  void LogAction(const std::string& action);
   void LogEnumerationHistogramEvent(const std::string& name,
                                     int value, int num_buckets);
   void LogTimeHistogramEvent(const std::string& name,
@@ -116,6 +127,8 @@ class CastMetricsHelper {
   base::TimeTicks previous_video_stat_sample_time_;
 
   MetricsSink* metrics_sink_;
+  // Default RecordAction callback when metrics_sink_ is not set.
+  RecordActionCallback record_action_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMetricsHelper);
 };

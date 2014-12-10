@@ -34,9 +34,6 @@ class ExternalMetrics {
   // The max length of a message (name-value pair, plus header)
   static const int kMetricsMessageMaxLength = 1024;  // be generous
 
-  // Passes an action event to the UMA service.
-  void RecordAction(const std::string& action_name);
-
   // Records an external crash of the given string description.
   void RecordCrash(const std::string& crash_kind);
 
