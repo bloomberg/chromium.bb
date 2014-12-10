@@ -15,7 +15,6 @@
 
 class MessageCenterNotificationsTest;
 class MessageCenterTrayBridgeTest;
-class StubNotificationUIManager;
 
 namespace ash {
 class WebNotificationTrayTest;
@@ -75,7 +74,6 @@ struct MESSAGE_CENTER_EXPORT NotifierId {
   friend class TrayViewControllerTest;
   friend class ::MessageCenterNotificationsTest;
   friend class ::MessageCenterTrayBridgeTest;
-  friend class ::StubNotificationUIManager;
   friend class ash::WebNotificationTrayTest;
   friend class test::MessagePopupCollectionTest;
   FRIEND_TEST_ALL_PREFIXES(PopupControllerTest, Creation);

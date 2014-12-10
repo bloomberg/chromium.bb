@@ -4,8 +4,11 @@
 
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 
-#include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_object_proxy.h"
+#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -13,14 +16,29 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_notification_delegate.h"
 #include "content/public/common/show_desktop_notification_params.h"
+#include "ui/message_center/notifier_settings.h"
 
 #if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/api_permission.h"
 #endif
 
 using content::BrowserThread;
+using message_center::NotifierId;
+
+namespace {
+
+void CancelNotification(const std::string& id, ProfileID profile_id) {
+  PlatformNotificationServiceImpl::GetInstance()
+      ->GetNotificationUIManager()->CancelById(id, profile_id);
+}
+
+}  // namespace
 
 // static
 PlatformNotificationServiceImpl*
@@ -28,7 +46,8 @@ PlatformNotificationServiceImpl::GetInstance() {
   return Singleton<PlatformNotificationServiceImpl>::get();
 }
 
-PlatformNotificationServiceImpl::PlatformNotificationServiceImpl() {}
+PlatformNotificationServiceImpl::PlatformNotificationServiceImpl()
+    : notification_ui_manager_for_tests_(nullptr) {}
 
 PlatformNotificationServiceImpl::~PlatformNotificationServiceImpl() {}
 
@@ -86,12 +105,28 @@ void PlatformNotificationServiceImpl::DisplayNotification(
   Profile* profile = Profile::FromBrowserContext(browser_context);
   DCHECK(profile);
 
-  DesktopNotificationService* service =
-      DesktopNotificationServiceFactory::GetForProfile(profile);
-  DCHECK(service);
+  NotificationObjectProxy* proxy = new NotificationObjectProxy(delegate.Pass());
+  base::string16 display_source = DisplayNameForOriginInProcessId(
+      profile, params.origin, render_process_id);
 
-  service->ShowDesktopNotification(
-      params, render_process_id, delegate.Pass(), cancel_callback);
+  // TODO(peter): Icons for Web Notifications are currently always requested for
+  // 1x scale, whereas the displays on which they can be displayed can have a
+  // different pixel density. Be smarter about this when the API gets updated
+  // with a way for developers to specify images of different resolutions.
+  Notification notification(params.origin, params.title, params.body,
+      gfx::Image::CreateFrom1xBitmap(params.icon),
+      display_source, params.replace_id, proxy);
+
+  // Web Notifications do not timeout.
+  notification.set_never_timeout(true);
+
+  GetNotificationUIManager()->Add(notification, profile);
+  if (cancel_callback)
+    *cancel_callback =
+        base::Bind(&CancelNotification,
+                   proxy->id(),
+                   NotificationUIManager::GetProfileID(profile));
+
   profile->GetHostContentSettingsMap()->UpdateLastUsage(
       params.origin, params.origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }
@@ -108,4 +143,47 @@ void PlatformNotificationServiceImpl::ClosePersistentNotification(
     content::BrowserContext* browser_context,
     const std::string& persistent_notification_id) {
   NOTIMPLEMENTED();
+}
+
+NotificationUIManager*
+PlatformNotificationServiceImpl::GetNotificationUIManager() const {
+  if (notification_ui_manager_for_tests_)
+    return notification_ui_manager_for_tests_;
+
+  return g_browser_process->notification_ui_manager();
+}
+
+void PlatformNotificationServiceImpl::SetNotificationUIManagerForTesting(
+    NotificationUIManager* manager) {
+  notification_ui_manager_for_tests_ = manager;
+}
+
+base::string16 PlatformNotificationServiceImpl::DisplayNameForOriginInProcessId(
+    Profile* profile, const GURL& origin, int process_id) {
+#if defined(ENABLE_EXTENSIONS)
+  // If the source is an extension, lookup the display name.
+  if (origin.SchemeIs(extensions::kExtensionScheme)) {
+    extensions::InfoMap* extension_info_map =
+        extensions::ExtensionSystem::Get(profile)->info_map();
+    if (extension_info_map) {
+      extensions::ExtensionSet extensions;
+      extension_info_map->GetExtensionsWithAPIPermissionForSecurityOrigin(
+          origin,
+          process_id,
+          extensions::APIPermission::kNotifications,
+          &extensions);
+      DesktopNotificationService* desktop_notification_service =
+          DesktopNotificationServiceFactory::GetForProfile(profile);
+      DCHECK(desktop_notification_service);
+
+      for (const auto& extension : extensions) {
+        NotifierId notifier_id(NotifierId::APPLICATION, extension->id());
+        if (desktop_notification_service->IsNotifierEnabled(notifier_id))
+          return base::UTF8ToUTF16(extension->name());
+      }
+    }
+  }
+#endif
+
+  return base::UTF8ToUTF16(origin.host());
 }

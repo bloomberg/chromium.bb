@@ -5,8 +5,12 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_PLATFORM_NOTIFICATION_SERVICE_IMPL_H_
 #define CHROME_BROWSER_NOTIFICATIONS_PLATFORM_NOTIFICATION_SERVICE_IMPL_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/singleton.h"
 #include "content/public/browser/platform_notification_service.h"
+
+class NotificationUIManager;
+class Profile;
 
 // The platform notification service is the profile-agnostic entry point through
 // which Web Notifications can be controlled.
@@ -16,6 +20,10 @@ class PlatformNotificationServiceImpl
   // Returns the active instance of the service in the browser process. Safe to
   // be called from any thread.
   static PlatformNotificationServiceImpl* GetInstance();
+
+  // Returns the Notification UI Manager through which notifications can be
+  // displayed to the user. Can be overridden for testing.
+  NotificationUIManager* GetNotificationUIManager() const;
 
   // content::PlatformNotificationService implementation.
   blink::WebNotificationPermission CheckPermission(
@@ -39,9 +47,28 @@ class PlatformNotificationServiceImpl
 
  private:
   friend struct DefaultSingletonTraits<PlatformNotificationServiceImpl>;
+  friend class PlatformNotificationServiceTest;
+  FRIEND_TEST_ALL_PREFIXES(
+      PlatformNotificationServiceTest, DisplayNameForOrigin);
 
   PlatformNotificationServiceImpl();
   ~PlatformNotificationServiceImpl() override;
+
+  // Overrides the Notification UI Manager to use to |manager|. Only to be
+  // used by tests. Tests are responsible for cleaning up after themselves.
+  void SetNotificationUIManagerForTesting(NotificationUIManager* manager);
+
+  // Returns a display name for an origin in the process id, to be used in
+  // permission infobar or on the frame of the notification toast. Different
+  // from the origin itself when dealing with extensions.
+  base::string16 DisplayNameForOriginInProcessId(Profile* profile,
+                                                 const GURL& origin,
+                                                 int process_id);
+
+  // Weak reference. Ownership maintains with the test.
+  NotificationUIManager* notification_ui_manager_for_tests_;
+
+  DISALLOW_COPY_AND_ASSIGN(PlatformNotificationServiceImpl);
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_PLATFORM_NOTIFICATION_SERVICE_IMPL_H_

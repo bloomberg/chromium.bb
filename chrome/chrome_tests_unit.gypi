@@ -568,6 +568,7 @@
       'browser/notifications/message_center_notifications_unittest.cc',
       'browser/notifications/message_center_settings_controller_unittest.cc',
       'browser/notifications/notification_conversion_helper_unittest.cc',
+      'browser/notifications/platform_notification_service_unittest.cc',
       'browser/omaha_client/chrome_omaha_query_params_delegate_unittest.cc',
       'browser/password_manager/chrome_password_manager_client_unittest.cc',
       'browser/password_manager/native_backend_kwallet_x_unittest.cc',

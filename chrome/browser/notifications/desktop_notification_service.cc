@@ -41,14 +41,6 @@
 using content::BrowserThread;
 using message_center::NotifierId;
 
-namespace {
-
-void CancelNotification(const std::string& id, ProfileID profile_id) {
-  g_browser_process->notification_ui_manager()->CancelById(id, profile_id);
-}
-
-}  // namespace
-
 // DesktopNotificationService -------------------------------------------------
 
 // static
@@ -142,66 +134,6 @@ void DesktopNotificationService::RequestNotificationPermission(
                     requesting_origin,
                     user_gesture,
                     result_callback);
-}
-
-void DesktopNotificationService::ShowDesktopNotification(
-    const content::ShowDesktopNotificationHostMsgParams& params,
-    int render_process_id,
-    scoped_ptr<content::DesktopNotificationDelegate> delegate,
-    base::Closure* cancel_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  const GURL& origin = params.origin;
-  NotificationObjectProxy* proxy = new NotificationObjectProxy(delegate.Pass());
-
-  base::string16 display_source = DisplayNameForOriginInProcessId(
-      origin, render_process_id);
-
-  // TODO(peter): Icons for Web Notifications are currently always requested for
-  // 1x scale, whereas the displays on which they can be displayed can have a
-  // different pixel density. Be smarter about this when the API gets updated
-  // with a way for developers to specify images of different resolutions.
-  Notification notification(origin, params.title, params.body,
-      gfx::Image::CreateFrom1xBitmap(params.icon),
-      display_source, params.replace_id, proxy);
-
-  // The webkit notification doesn't timeout.
-  notification.set_never_timeout(true);
-
-  g_browser_process->notification_ui_manager()->Add(notification, profile_);
-  if (cancel_callback)
-    *cancel_callback =
-        base::Bind(&CancelNotification,
-                   proxy->id(),
-                   NotificationUIManager::GetProfileID(profile_));
-
-  DesktopNotificationProfileUtil::UsePermission(profile_, origin);
-}
-
-base::string16 DesktopNotificationService::DisplayNameForOriginInProcessId(
-    const GURL& origin, int process_id) {
-#if defined(ENABLE_EXTENSIONS)
-  // If the source is an extension, lookup the display name.
-  if (origin.SchemeIs(extensions::kExtensionScheme)) {
-    extensions::InfoMap* extension_info_map =
-        extensions::ExtensionSystem::Get(profile_)->info_map();
-    if (extension_info_map) {
-      extensions::ExtensionSet extensions;
-      extension_info_map->GetExtensionsWithAPIPermissionForSecurityOrigin(
-          origin,
-          process_id,
-          extensions::APIPermission::kNotifications,
-          &extensions);
-      for (extensions::ExtensionSet::const_iterator iter = extensions.begin();
-           iter != extensions.end(); ++iter) {
-        NotifierId notifier_id(NotifierId::APPLICATION, (*iter)->id());
-        if (IsNotifierEnabled(notifier_id))
-          return base::UTF8ToUTF16((*iter)->name());
-      }
-    }
-  }
-#endif
-
-  return base::UTF8ToUTF16(origin.host());
 }
 
 bool DesktopNotificationService::IsNotifierEnabled(

@@ -20,8 +20,6 @@
 #include "chrome/browser/content_settings/permission_context_base.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "third_party/WebKit/public/platform/WebNotificationPermission.h"
-#include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "ui/message_center/notifier_settings.h"
 #include "url/gurl.h"
 
@@ -29,25 +27,13 @@
 #include "extensions/browser/extension_registry_observer.h"
 #endif
 
-class Notification;
-class NotificationDelegate;
-class NotificationUIManager;
 class Profile;
-
-namespace content {
-class DesktopNotificationDelegate;
-struct ShowDesktopNotificationHostMsgParams;
-}
 
 #if defined(ENABLE_EXTENSIONS)
 namespace extensions {
 class ExtensionRegistry;
 }
 #endif
-
-namespace gfx {
-class Image;
-}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -77,14 +63,6 @@ class DesktopNotificationService : public PermissionContextBase
       bool user_gesture,
       const base::Callback<void(bool)>& result_callback);
 
-  // Show a desktop notification. If |cancel_callback| is non-null, it's set to
-  // a callback which can be used to cancel the notification.
-  void ShowDesktopNotification(
-      const content::ShowDesktopNotificationHostMsgParams& params,
-      int render_process_id,
-      scoped_ptr<content::DesktopNotificationDelegate> delegate,
-      base::Closure* cancel_callback);
-
   // Returns true if the notifier with |notifier_id| is allowed to send
   // notifications.
   bool IsNotifierEnabled(const message_center::NotifierId& notifier_id);
@@ -94,12 +72,6 @@ class DesktopNotificationService : public PermissionContextBase
                           bool enabled);
 
  private:
-  // Returns a display name for an origin in the process id, to be used in
-  // permission infobar or on the frame of the notification toast.  Different
-  // from the origin itself when dealing with extensions.
-  base::string16 DisplayNameForOriginInProcessId(const GURL& origin,
-                                                 int process_id);
-
   // Called when the string list pref has been changed.
   void OnStringListPrefChanged(
       const char* pref_name, std::set<std::string>* ids_field);
