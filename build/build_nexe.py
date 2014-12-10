@@ -29,6 +29,20 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import pynacl.platform
 
 
+# When a header file defining NACL_BUILD_SUBARCH is introduced,
+# we can simply remove this map.
+# cf) https://code.google.com/p/chromium/issues/detail?id=440012.
+NACL_BUILD_ARCH_MAP = {
+  'x86-32': ['NACL_BUILD_ARCH=x86', 'NACL_BUILD_SUBARCH=32'],
+  'x86-32-nonsfi': ['NACL_BUILD_ARCH=x86', 'NACL_BUILD_SUBARCH=32'],
+  'x86-64': ['NACL_BUILD_ARCH=x86', 'NACL_BUILD_SUBARCH=64'],
+  'arm': ['NACL_BUILD_ARCH=arm', 'NACL_BUILD_SUBARCH=32'],
+  'arm-nonsfi': ['NACL_BUILD_ARCH=arm', 'NACL_BUILD_SUBARCH=32'],
+  'mips': ['NACL_BUILD_ARCH=mips', 'NACL_BUILD_SUBARCH=32'],
+  'pnacl': ['NACL_BUILD_ARCH=pnacl'],
+}
+
+
 def RemoveQuotes(opt):
   if opt and opt[0] == '"':
     assert opt[-1] == '"', opt
@@ -194,7 +208,8 @@ class Builder(CommandRunner):
 
     self.name = options.name
     self.cmd_file = options.cmd_file
-    self.BuildCompileOptions(options.compile_flags, self.define_list)
+    self.BuildCompileOptions(
+        options.compile_flags, self.define_list, options.arch)
     self.BuildLinkOptions(options.link_flags)
     self.BuildArchiveOptions()
     self.strip = options.strip
@@ -304,7 +319,7 @@ class Builder(CommandRunner):
   def Soname(self):
     return self.name
 
-  def BuildCompileOptions(self, options, define_list):
+  def BuildCompileOptions(self, options, define_list, arch):
     """Generates compile options, called once by __init__."""
     options = ArgToList(options)
     # We want to shared gyp 'defines' with other targets, but not
@@ -316,6 +331,8 @@ class Builder(CommandRunner):
                            define.startswith('NACL_OSX=') or
                            define.startswith('NACL_LINUX=') or
                            define.startswith('NACL_ANDROID=') or
+                           define.startswith('NACL_BUILD_ARCH=') or
+                           define.startswith('NACL_BUILD_SUBARCH=') or
                            define == 'COMPONENT_BUILD' or
                            'WIN32' in define or
                            'WINDOWS' in define or
@@ -324,6 +341,7 @@ class Builder(CommandRunner):
                         'NACL_OSX=0',
                         'NACL_LINUX=0',
                         'NACL_ANDROID=0'])
+    define_list.extend(NACL_BUILD_ARCH_MAP[arch])
     options += ['-D' + define for define in define_list]
     self.compile_options = options + ['-I' + name for name in self.inc_paths]
 

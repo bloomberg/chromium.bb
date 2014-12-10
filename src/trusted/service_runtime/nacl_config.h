@@ -297,6 +297,10 @@
 # define NACL_STACK_RED_ZONE        (0)
 /* 16 byte bundles */
 
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_pnacl
+
+/* This is a PNaCl build, so we define no arch-dependent stuff */
+
 #else /* NACL_ARCH(NACL_BUILD_ARCH) */
 
 # error Unknown platform!

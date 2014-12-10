@@ -70,6 +70,7 @@
 #define NACL_x86  1
 #define NACL_arm  2
 #define NACL_mips 3
+#define NACL_pnacl 4
 
 /*****************************************************************************
  * Architecture name encodings.
