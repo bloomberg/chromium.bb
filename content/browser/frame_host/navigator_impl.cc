@@ -517,7 +517,8 @@ void NavigatorImpl::DidNavigate(
     }
 
     if (!use_site_per_process)
-      frame_tree->root()->render_manager()->DidNavigateFrame(render_frame_host);
+      frame_tree->root()->render_manager()->DidNavigateFrame(
+          render_frame_host, params.gesture == NavigationGestureUser);
   }
 
   // Save the origin of the new page.  Do this before calling
@@ -532,7 +533,8 @@ void NavigatorImpl::DidNavigate(
   // not just main frame navigations.
   if (use_site_per_process) {
     FrameTreeNode* frame = render_frame_host->frame_tree_node();
-    frame->render_manager()->DidNavigateFrame(render_frame_host);
+    frame->render_manager()->DidNavigateFrame(
+        render_frame_host, params.gesture == NavigationGestureUser);
   }
 
   // Update the site of the SiteInstance if it doesn't have one yet, unless

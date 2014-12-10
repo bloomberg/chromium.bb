@@ -288,7 +288,8 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   void ClearNavigationTransitionData();
 
   // Called when a renderer's frame navigates.
-  void DidNavigateFrame(RenderFrameHostImpl* render_frame_host);
+  void DidNavigateFrame(RenderFrameHostImpl* render_frame_host,
+                        bool was_caused_by_user_gesture);
 
   // Called when a renderer sets its opener to null.
   void DidDisownOpener(RenderFrameHost* render_frame_host);
