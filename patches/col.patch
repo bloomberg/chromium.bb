@@ -1,8 +1,8 @@
 Index: source/i18n/ucol.cpp
 ===================================================================
---- source/i18n/ucol.cpp	(revision 292709)
-+++ source/i18n/ucol.cpp	(working copy)
-@@ -2259,6 +2259,9 @@
+--- source/i18n/ucol.cpp       (revision 292709)
++++ source/i18n/ucol.cpp       (working copy)
+@@ -2259,6 +2259,9 @@ inline UChar getNextNormalizedChar(collIterate *data)
          if (data->pos + 1 == data->endp) {
              return *(data->pos ++);
          }
@@ -12,13 +12,15 @@ Index: source/i18n/ucol.cpp
      }
      else {
          if (innormbuf) {
-@@ -2821,7 +2824,13 @@
+@@ -2820,8 +2823,14 @@ uint32_t ucol_prv_getSpecialCE(const UCollator *coll, UChar ch, uint32_t CE, col
+                                     goBackOne(source);
                                  }
                              }
-                         } else if (U16_IS_LEAD(schar)) {
+-                        } else if (U16_IS_LEAD(schar)) {
 -                            miss = U16_GET_SUPPLEMENTARY(schar, getNextNormalizedChar(source));
-+                            UChar nextChar = getNextNormalizedChar(source);
++                        } else if (U16_IS_LEAD(schar) && source->pos + 1 < source->endp) {
 +                            const UChar* prevPos = source->pos;
++                            UChar nextChar = getNextNormalizedChar(source);
 +                            if (U16_IS_TRAIL(nextChar)) {
 +                                miss = U16_GET_SUPPLEMENTARY(schar, nextChar);
 +                            } else if (prevPos < source->pos) {

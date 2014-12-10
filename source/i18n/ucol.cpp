@@ -2823,9 +2823,9 @@ uint32_t ucol_prv_getSpecialCE(const UCollator *coll, UChar ch, uint32_t CE, col
                                     goBackOne(source);
                                 }
                             }
-                        } else if (U16_IS_LEAD(schar)) {
-                            UChar nextChar = getNextNormalizedChar(source);
+                        } else if (U16_IS_LEAD(schar) && source->pos + 1 < source->endp) {
                             const UChar* prevPos = source->pos;
+                            UChar nextChar = getNextNormalizedChar(source);
                             if (U16_IS_TRAIL(nextChar)) {
                                 miss = U16_GET_SUPPLEMENTARY(schar, nextChar);
                             } else if (prevPos < source->pos) {
