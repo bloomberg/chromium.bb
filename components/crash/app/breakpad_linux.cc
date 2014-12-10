@@ -723,9 +723,10 @@ bool MicrodumpCrashDone(const MinidumpDescriptor& minidump,
 // system console (logcat) a restricted and serialized variant of a minidump.
 // See crbug.com/410294 for more details.
 void InitMicrodumpCrashHandlerIfNecessary(const std::string& process_type) {
-#if !defined(NO_UNWIND_TABLES) || !defined(ARCH_CPU_ARMEL)
-  // TODO(primiano): For the moment microdumps are enabled only on arm32. Extend
-  // support also to other architectures (requires some breakpad changes).
+#if !defined(NO_UNWIND_TABLES) \
+    || (!defined(ARCH_CPU_ARMEL) && !defined(ARCH_CPU_ARM64))
+  // TODO(primiano): For the moment microdumps are enabled only on arm (32/64).
+  // Extend support to other architectures (requires some breakpad changes).
   return;
 #endif
   VLOG(1) << "Enabling microdumps crash handler (process_type:"
