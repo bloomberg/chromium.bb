@@ -72,6 +72,11 @@ RequirementsMask ExtractionRequirements() {
              : REQUIRE_NONE;
 }
 
+void TruncateString(base::string16* str, size_t max_length) {
+  if (str->length() > max_length)
+    str->resize(max_length);
+}
+
 bool IsOptionElement(const WebElement& element) {
   CR_DEFINE_STATIC_LOCAL(WebString, kOption, ("option"));
   return element.hasHTMLTagName(kOption);
@@ -569,7 +574,7 @@ void FillFormField(const FormFieldData& data,
     if (IsTextInput(input_element) || IsMonthInput(input_element)) {
       // If the maxlength attribute contains a negative value, maxLength()
       // returns the default maxlength value.
-      value = value.substr(0, input_element->maxLength());
+      TruncateString(&value, input_element->maxLength());
     }
     field->setValue(value, true);
   }
@@ -813,8 +818,7 @@ bool FormOrFieldsetsToFormData(
     const WebFormControlElement& control_element = control_elements[i];
     if (form_fields[field_idx]->label.empty())
       form_fields[field_idx]->label = InferLabelForElement(control_element);
-    form_fields[field_idx]->label =
-        form_fields[field_idx]->label.substr(0, kMaxDataLength);
+    TruncateString(&form_fields[field_idx]->label, kMaxDataLength);
 
     if (field && *form_control_element == control_element)
       *field = *form_fields[field_idx];
@@ -1027,8 +1031,7 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
 
   // Constrain the maximum data length to prevent a malicious site from DOS'ing
   // the browser: http://crbug.com/49332
-  if (value.size() > kMaxDataLength)
-    value = value.substr(0, kMaxDataLength);
+  TruncateString(&value, kMaxDataLength);
 
   field->value = value;
 }
