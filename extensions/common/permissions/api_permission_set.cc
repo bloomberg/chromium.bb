@@ -183,4 +183,47 @@ void APIPermissionSet::AddImpliedPermissions() {
   }
 }
 
+PermissionIDSet::PermissionIDSet() : permissions() {
+}
+
+PermissionIDSet::~PermissionIDSet() {
+}
+
+PermissionIDSet::PermissionIDSet(APIPermission::ID permission_one) {
+  insert(permission_one);
+}
+
+PermissionIDSet::PermissionIDSet(APIPermission::ID permission_one,
+                                 APIPermission::ID permission_two) {
+  insert(permission_one);
+  insert(permission_two);
+}
+
+PermissionIDSet::PermissionIDSet(APIPermission::ID permission_one,
+                                 APIPermission::ID permission_two,
+                                 APIPermission::ID permission_three) {
+  insert(permission_one);
+  insert(permission_two);
+  insert(permission_three);
+}
+
+PermissionIDSet::PermissionIDSet(APIPermission::ID permission_one,
+                                 APIPermission::ID permission_two,
+                                 APIPermission::ID permission_three,
+                                 APIPermission::ID permission_four) {
+  insert(permission_one);
+  insert(permission_two);
+  insert(permission_three);
+  insert(permission_four);
+}
+
+void PermissionIDSet::insert(APIPermission::ID permission) {
+  permissions.insert(PermissionID(permission, base::string16()));
+}
+
+void PermissionIDSet::insert(APIPermission::ID permission,
+                             base::string16 permission_detail) {
+  permissions.insert(PermissionID(permission, permission_detail));
+}
+
 }  // namespace extensions

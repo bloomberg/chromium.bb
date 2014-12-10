@@ -34,11 +34,24 @@ class UIOverridesHandler::ManifestPermissionImpl : public ManifestPermission {
 
   std::string id() const override { return name(); }
 
+  PermissionIDSet GetPermissions() const override {
+    PermissionIDSet permissions;
+    if (override_bookmarks_ui_permission_) {
+      // TODO(sashab): Add rule to ChromePermissionMessageProvider:
+      // kOverrideBookmarksUI ->
+      // IDS_EXTENSION_PROMPT_WARNING_OVERRIDE_BOOKMARKS_UI
+      permissions.insert(APIPermission::kOverrideBookmarksUI);
+    }
+    return permissions;
+  }
+
   bool HasMessages() const override {
     return override_bookmarks_ui_permission_;
   }
 
   PermissionMessages GetMessages() const override {
+    // When making changes to this function, be careful to modify
+    // GetPermissions() above to have the same behaviour.
     PermissionMessages result;
     if (override_bookmarks_ui_permission_) {
       result.push_back(PermissionMessage(

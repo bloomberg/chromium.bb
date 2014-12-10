@@ -589,6 +589,173 @@ TEST_F(PermissionMessageCombinationsUnittest, HostsPermissionMessages) {
   ASSERT_TRUE(CheckManifestProducesHostPermissions());
 }
 
+// Check that permission messages are generated correctly for the sockets
+// permission, which has host-like permission messages.
+TEST_F(PermissionMessageCombinationsUnittest, SocketsPermissionMessages) {
+  CreateAndInstall(
+      "{"
+      "  'app': {"
+      "    'background': {"
+      "      'scripts': ['background.js']"
+      "    }"
+      "  },"
+      "  'sockets': {"
+      "    'udp': {'send': '*'},"
+      "  }"
+      "}");
+  ASSERT_TRUE(CheckManifestProducesPermissions(
+      "Exchange data with any computer on the local network or internet"));
+  ASSERT_TRUE(CheckManifestProducesHostPermissions());
+
+  CreateAndInstall(
+      "{"
+      "  'app': {"
+      "    'background': {"
+      "      'scripts': ['background.js']"
+      "    }"
+      "  },"
+      "  'sockets': {"
+      "    'udp': {'send': ':99'},"
+      "  }"
+      "}");
+  ASSERT_TRUE(CheckManifestProducesPermissions(
+      "Exchange data with any computer on the local network or internet"));
+  ASSERT_TRUE(CheckManifestProducesHostPermissions());
+
+  CreateAndInstall(
+      "{"
+      "  'app': {"
+      "    'background': {"
+      "      'scripts': ['background.js']"
+      "    }"
+      "  },"
+      "  'sockets': {"
+      "    'tcp': {'connect': '127.0.0.1:80'},"
+      "  }"
+      "}");
+  ASSERT_TRUE(CheckManifestProducesPermissions(
+      "Exchange data with the computer named 127.0.0.1"));
+  ASSERT_TRUE(CheckManifestProducesHostPermissions());
+
+  CreateAndInstall(
+      "{"
+      "  'app': {"
+      "    'background': {"
+      "      'scripts': ['background.js']"
+      "    }"
+      "  },"
+      "  'sockets': {"
+      "    'tcp': {'connect': 'www.example.com:23'},"
+      "  }"
+      "}");
+  ASSERT_TRUE(CheckManifestProducesPermissions(
+      "Exchange data with the computer named www.example.com"));
+  ASSERT_TRUE(CheckManifestProducesHostPermissions());
+
+  CreateAndInstall(
+      "{"
+      "  'app': {"
+      "    'background': {"
+      "      'scripts': ['background.js']"
+      "    }"
+      "  },"
+      "  'sockets': {"
+      "    'tcpServer': {'listen': '127.0.0.1:80'}"
+      "  }"
+      "}");
+  ASSERT_TRUE(CheckManifestProducesPermissions(
+      "Exchange data with the computer named 127.0.0.1"));
+  ASSERT_TRUE(CheckManifestProducesHostPermissions());
+
+  CreateAndInstall(
+      "{"
+      "  'app': {"
+      "    'background': {"
+      "      'scripts': ['background.js']"
+      "    }"
+      "  },"
+      "  'sockets': {"
+      "    'tcpServer': {'listen': ':8080'}"
+      "  }"
+      "}");
+  ASSERT_TRUE(CheckManifestProducesPermissions(
+      "Exchange data with any computer on the local network or internet"));
+  ASSERT_TRUE(CheckManifestProducesHostPermissions());
+
+  CreateAndInstall(
+      "{"
+      "  'app': {"
+      "    'background': {"
+      "      'scripts': ['background.js']"
+      "    }"
+      "  },"
+      "  'sockets': {"
+      "    'tcpServer': {"
+      "      'listen': ["
+      "        '127.0.0.1:80',"
+      "        'www.google.com',"
+      "        'www.example.com:*',"
+      "        'www.foo.com:200',"
+      "        'www.bar.com:200'"
+      "      ]"
+      "    }"
+      "  }"
+      "}");
+  ASSERT_TRUE(CheckManifestProducesPermissions(
+      "Exchange data with the computers named: 127.0.0.1 www.bar.com "
+      "www.example.com www.foo.com www.google.com"));
+  ASSERT_TRUE(CheckManifestProducesHostPermissions());
+
+  CreateAndInstall(
+      "{"
+      "  'app': {"
+      "    'background': {"
+      "      'scripts': ['background.js']"
+      "    }"
+      "  },"
+      "  'sockets': {"
+      "    'tcp': {"
+      "      'connect': ["
+      "        'www.abc.com:*',"
+      "        'www.mywebsite.com:320',"
+      "        'www.freestuff.com',"
+      "        'www.foo.com:34',"
+      "        'www.test.com'"
+      "      ]"
+      "    },"
+      "    'tcpServer': {"
+      "      'listen': ["
+      "        '127.0.0.1:80',"
+      "        'www.google.com',"
+      "        'www.example.com:*',"
+      "        'www.foo.com:200',"
+      "      ]"
+      "    }"
+      "  }"
+      "}");
+  ASSERT_TRUE(CheckManifestProducesPermissions(
+      "Exchange data with the computers named: 127.0.0.1 www.abc.com "
+      "www.example.com www.foo.com www.freestuff.com www.google.com "
+      "www.mywebsite.com www.test.com"));
+  ASSERT_TRUE(CheckManifestProducesHostPermissions());
+
+  CreateAndInstall(
+      "{"
+      "  'app': {"
+      "    'background': {"
+      "      'scripts': ['background.js']"
+      "    }"
+      "  },"
+      "  'sockets': {"
+      "    'tcp': {'send': '*:*'},"
+      "    'tcpServer': {'listen': '*:*'},"
+      "  }"
+      "}");
+  ASSERT_TRUE(CheckManifestProducesPermissions(
+      "Exchange data with any computer on the local network or internet"));
+  ASSERT_TRUE(CheckManifestProducesHostPermissions());
+}
+
 // Test that hosted apps are not given any messages for host permissions.
 TEST_F(PermissionMessageCombinationsUnittest,
        PackagedAppsHaveNoHostPermissions) {

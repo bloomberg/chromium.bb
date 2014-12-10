@@ -21,6 +21,8 @@ class PermissionMessage {
  public:
   // Do not reorder this enumeration. If you need to add a new enum, add it just
   // prior to kEnumBoundary.
+  // TODO(sashab): Deprecate these IDs - use whatever APIPermission::ID becomes
+  // instead.
   enum ID {
     kUnknown,
     kNone,
