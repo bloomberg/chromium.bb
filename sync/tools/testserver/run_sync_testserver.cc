@@ -45,7 +45,7 @@ static bool RunSyncTest(
   }
 
   python_command.AppendArgPath(sync_test_script_path);
-  if (!base::LaunchProcess(python_command, base::LaunchOptions(), NULL)) {
+  if (!base::LaunchProcess(python_command, base::LaunchOptions()).IsValid()) {
     LOG(ERROR) << "Failed to launch test script " << sync_test_script_name;
     return false;
   }
