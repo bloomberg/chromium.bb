@@ -313,7 +313,8 @@ void IndexedDBContextImpl::DeleteForOrigin(const GURL& origin_url) {
     const bool kNonRecursive = false;
     base::DeleteFile(idb_directory, kNonRecursive);
   }
-
+  base::DeleteFile(GetBlobPath(storage::GetIdentifierFromOrigin(origin_url)),
+                   true /* recursive */);
   QueryDiskAndUpdateQuotaUsage(origin_url);
   if (s.ok()) {
     RemoveFromOriginSet(origin_url);

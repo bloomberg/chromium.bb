@@ -161,7 +161,6 @@ class IndexedDBBrowserTest : public ContentBrowserTest {
   }
 
   virtual void DidGetDiskUsage(int64 bytes) {
-    EXPECT_GT(bytes, 0);
     disk_usage_ = bytes;
   }
 
@@ -335,6 +334,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithVersion123456Schema,
   EXPECT_GT(original_size, 0);
   SimpleTest(GetTestUrl("indexeddb", "open_bad_db.html"));
   int64 new_size = RequestDiskUsage();
+  EXPECT_GT(new_size, 0);
   EXPECT_NE(original_size, new_size);
 }
 
@@ -349,6 +349,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithVersion987654SSVData,
   EXPECT_GT(original_size, 0);
   SimpleTest(GetTestUrl("indexeddb", "open_bad_db.html"));
   int64 new_size = RequestDiskUsage();
+  EXPECT_GT(new_size, 0);
   EXPECT_NE(original_size, new_size);
 }
 
@@ -363,6 +364,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithCorruptLevelDB,
   EXPECT_GT(original_size, 0);
   SimpleTest(GetTestUrl("indexeddb", "open_bad_db.html"));
   int64 new_size = RequestDiskUsage();
+  EXPECT_GT(new_size, 0);
   EXPECT_NE(original_size, new_size);
 }
 
@@ -377,6 +379,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithMissingSSTFile,
   EXPECT_GT(original_size, 0);
   SimpleTest(GetTestUrl("indexeddb", "open_missing_table.html"));
   int64 new_size = RequestDiskUsage();
+  EXPECT_GT(new_size, 0);
   EXPECT_NE(original_size, new_size);
 }
 
@@ -403,6 +406,22 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CanDeleteWhenOverQuotaTest) {
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, BlobsCountAgainstQuota) {
   SimpleTest(GetTestUrl("indexeddb", "blobs_use_quota.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteForOriginDeletesBlobs) {
+  SimpleTest(GetTestUrl("indexeddb", "write_20mb_blob.html"));
+  int64 size = RequestDiskUsage();
+  // This assertion assumes that we do not compress blobs.
+  EXPECT_GT(size, 20 << 20 /* 20 MB */);
+  GetContext()->TaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&IndexedDBContextImpl::DeleteForOrigin,
+                            GetContext(), GURL("file:///")));
+  scoped_refptr<base::ThreadTestHelper> helper(
+      new base::ThreadTestHelper(BrowserMainLoop::GetInstance()
+                                     ->indexed_db_thread()
+                                     ->message_loop_proxy()));
+  ASSERT_TRUE(helper->Run());
+  EXPECT_EQ(0, RequestDiskUsage());
 }
 
 namespace {
