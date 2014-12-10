@@ -61,7 +61,7 @@ public:
     }
 
 private:
-    void invalidatePaintOnRemoval(RenderObject& oldChild);
+    void invalidatePaintOnRemoval(const RenderObject& oldChild);
 
     RawPtrWillBeMember<RenderObject> m_firstChild;
     RawPtrWillBeMember<RenderObject> m_lastChild;

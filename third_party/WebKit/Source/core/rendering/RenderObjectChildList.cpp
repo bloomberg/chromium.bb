@@ -174,7 +174,7 @@ void RenderObjectChildList::insertChildNode(RenderObject* owner, RenderObject* n
         cache->childrenChanged(owner);
 }
 
-void RenderObjectChildList::invalidatePaintOnRemoval(RenderObject& oldChild)
+void RenderObjectChildList::invalidatePaintOnRemoval(const RenderObject& oldChild)
 {
     if (!oldChild.isRooted())
         return;

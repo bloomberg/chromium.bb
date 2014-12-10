@@ -1110,12 +1110,11 @@ LayoutRect RenderObject::computePaintInvalidationRect(const RenderLayerModelObje
     return clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState);
 }
 
-void RenderObject::invalidatePaintUsingContainer(const RenderLayerModelObject* paintInvalidationContainer, const LayoutRect& r, PaintInvalidationReason invalidationReason)
+void RenderObject::invalidatePaintUsingContainer(const RenderLayerModelObject* paintInvalidationContainer, const LayoutRect& r, PaintInvalidationReason invalidationReason) const
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         if (RenderLayer* container = enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
             container->graphicsLayerBacking()->displayItemList()->invalidate(displayItemClient());
-        setNeedsPaint();
     }
 
     if (r.isEmpty())
@@ -1149,7 +1148,7 @@ LayoutRect RenderObject::boundsRectForPaintInvalidation(const RenderLayerModelOb
     return RenderLayer::computePaintInvalidationRect(this, paintInvalidationContainer->layer(), paintInvalidationState);
 }
 
-void RenderObject::invalidatePaintRectangle(const LayoutRect& r)
+void RenderObject::invalidatePaintRectangle(const LayoutRect& r) const
 {
     RELEASE_ASSERT(isRooted());
 
