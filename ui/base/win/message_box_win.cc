@@ -4,9 +4,7 @@
 
 #include "ui/base/win/message_box_win.h"
 
-#include "base/command_line.h"
 #include "base/i18n/rtl.h"
-#include "ui/base/ui_base_switches.h"
 
 namespace ui {
 
@@ -17,9 +15,6 @@ int MessageBox(HWND hwnd,
                const base::string16& text,
                const base::string16& caption,
                UINT flags) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoMessageBox))
-    return IDOK;
-
   UINT actual_flags = flags;
   if (base::i18n::IsRTL())
     actual_flags |= MB_RIGHT | MB_RTLREADING;

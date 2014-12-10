@@ -47,10 +47,6 @@ const char kEnableTouchEditing[] = "enable-touch-editing";
 // language[-country] where language is the 2 letter code from ISO-639.
 const char kLang[] = "lang";
 
-// Disable ui::MessageBox. This is useful when running as part of scripts that
-// do not have a user interface.
-const char kNoMessageBox[] = "no-message-box";
-
 // On Windows only: requests that Chrome connect to the running Metro viewer
 // process.
 const char kViewerConnect[] = "connect-to-metro-viewer";
