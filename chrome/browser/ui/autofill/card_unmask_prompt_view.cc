@@ -6,7 +6,7 @@
 
 namespace autofill {
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(TOOLKIT_VIEWS)
 // static
 CardUnmaskPromptView* CardUnmaskPromptView::CreateAndShow(
     content::WebContents* web_contents,
