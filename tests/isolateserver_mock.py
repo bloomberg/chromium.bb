@@ -8,6 +8,7 @@ import json
 import logging
 import threading
 import urllib2
+import urlparse
 
 ALGO = hashlib.sha1
 
@@ -17,18 +18,25 @@ def hash_content(content):
 
 
 class IsolateServerHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-  """An extremely minimal implementation of the isolate server API."""
+  """An extremely minimal implementation of the isolate server API v1.0."""
+
   def _json(self, data):
+    """Sends a JSON response."""
     self.send_response(200)
     self.send_header('Content-type', 'application/json')
     self.end_headers()
     json.dump(data, self.wfile)
 
   def _octet_stream(self, data):
+    """Sends a binary response."""
     self.send_response(200)
     self.send_header('Content-type', 'application/octet-stream')
     self.end_headers()
     self.wfile.write(data)
+
+  def _read_body(self):
+    """Reads the request body."""
+    return self.rfile.read(int(self.headers['Content-Length']))
 
   def do_GET(self):
     logging.info('GET %s', self.path)
@@ -50,14 +58,48 @@ class IsolateServerHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       raise NotImplementedError(self.path)
 
   def do_POST(self):
-    raise NotImplementedError(self.path)
+    body = self._read_body()
+    if self.path == '/content-gs/handshake':
+      self._json(
+          {
+            'access_token': 'a',
+            'protocol_version': '1.0',
+            'server_app_version': '123-abc',
+          })
+    elif self.path.startswith('/content-gs/pre-upload/'):
+      parts = urlparse.urlparse(self.path)
+      namespace = parts.path[len('/content-gs/pre-upload/'):]
+      if parts.query != 'token=a':
+        raise ValueError('Bad token')
+      def process_entry(entry):
+        """Converts a {'h', 's', 'i'} to ["<upload url>", "<finalize url>"] or
+        None.
+        """
+        if entry['h'] in self.server.contents.get(namespace, {}):
+          return None
+        # Don't use finalize url for the mock.
+        return [
+          '%s/mockimpl/push/%s/%s' % (self.server.url, namespace, entry['h']),
+          None,
+        ]
+      out = [process_entry(i) for i in json.loads(body)]
+      logging.info('Returning %s' % out)
+      self._json(out)
+    else:
+      raise NotImplementedError(self.path)
 
   def do_PUT(self):
-    raise NotImplementedError(self.path)
+    body = self._read_body()
+    if self.path.startswith('/mockimpl/push/'):
+      namespace, h = self.path[len('/mockimpl/push/'):].split('/', 1)
+      self.server.contents.setdefault(namespace, {})[h] = body
+      self._octet_stream('')
+    else:
+      raise NotImplementedError(self.path)
 
   def log_message(self, fmt, *args):
     logging.info(
-        '%s - - [%s] %s\n', self.address_string(), self.log_date_time_string(),
+        '%s - - [%s] %s', self.address_string(), self.log_date_time_string(),
         fmt % args)
 
 

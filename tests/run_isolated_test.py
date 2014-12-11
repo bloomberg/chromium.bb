@@ -7,7 +7,6 @@
 
 import StringIO
 import functools
-import hashlib
 import json
 import logging
 import os
@@ -28,7 +27,7 @@ from depot_tools import auto_stub
 from utils import file_path
 from utils import tools
 
-ALGO = hashlib.sha1
+import isolateserver_mock
 
 
 def write_content(filepath, content):
@@ -52,7 +51,7 @@ class StorageFake(object):
 
   @property
   def hash_algo(self):
-    return ALGO
+    return isolateserver_mock.ALGO
 
   def async_fetch(self, channel, _priority, digest, _size, sink):
     sink([self._files[digest]])
@@ -106,7 +105,7 @@ class RunIsolatedTest(auto_stub.TestCase):
         {
           'command': ['foo.exe', 'cmd with space'],
         })
-    isolated_hash = ALGO(isolated).hexdigest()
+    isolated_hash = isolateserver_mock.hash_content(isolated)
     def get_storage(_isolate_server, _namespace):
       return StorageFake({isolated_hash:isolated})
     self.mock(isolateserver, 'get_storage', get_storage)
@@ -134,7 +133,7 @@ class RunIsolatedTest(auto_stub.TestCase):
         {
           'command': ['foo.exe', 'cmd with space'],
         })
-    isolated_hash = ALGO(isolated).hexdigest()
+    isolated_hash = isolateserver_mock.hash_content(isolated)
     def get_storage(_isolate_server, _namespace):
       return StorageFake({isolated_hash:isolated})
     self.mock(isolateserver, 'get_storage', get_storage)
@@ -178,7 +177,7 @@ class RunIsolatedTest(auto_stub.TestCase):
 
   def test_run_tha_test_naked(self):
     isolated = json_dumps({'command': ['invalid', 'command']})
-    isolated_hash = ALGO(isolated).hexdigest()
+    isolated_hash = isolateserver_mock.hash_content(isolated)
     files = {isolated_hash:isolated}
     subprocess_call, make_tree_call = self._run_tha_test(isolated_hash, files)
     self.assertEqual(
@@ -196,7 +195,7 @@ class RunIsolatedTest(auto_stub.TestCase):
           'command': ['invalid', 'command'],
           'read_only': 0,
         })
-    isolated_hash = ALGO(isolated).hexdigest()
+    isolated_hash = isolateserver_mock.hash_content(isolated)
     files = {isolated_hash:isolated}
     subprocess_call, make_tree_call = self._run_tha_test(isolated_hash, files)
     self.assertEqual(
@@ -214,7 +213,7 @@ class RunIsolatedTest(auto_stub.TestCase):
           'command': ['invalid', 'command'],
           'read_only': 1,
         })
-    isolated_hash = ALGO(isolated).hexdigest()
+    isolated_hash = isolateserver_mock.hash_content(isolated)
     files = {isolated_hash:isolated}
     subprocess_call, make_tree_call = self._run_tha_test(isolated_hash, files)
     self.assertEqual(
@@ -235,7 +234,7 @@ class RunIsolatedTest(auto_stub.TestCase):
           'command': ['invalid', 'command'],
           'read_only': 2,
         })
-    isolated_hash = ALGO(isolated).hexdigest()
+    isolated_hash = isolateserver_mock.hash_content(isolated)
     files = {isolated_hash:isolated}
     subprocess_call, make_tree_call = self._run_tha_test(isolated_hash, files)
     self.assertEqual(
@@ -251,7 +250,7 @@ class RunIsolatedTest(auto_stub.TestCase):
     # The most naked .isolated file that can exist.
     self.mock(tools, 'disable_buffering', lambda: None)
     isolated = json_dumps({'command': ['invalid', 'command']})
-    isolated_hash = ALGO(isolated).hexdigest()
+    isolated_hash = isolateserver_mock.hash_content(isolated)
     def get_storage(_isolate_server, _namespace):
       return StorageFake({isolated_hash:isolated})
     self.mock(isolateserver, 'get_storage', get_storage)
@@ -280,7 +279,7 @@ class RunIsolatedTest(auto_stub.TestCase):
         'command': ['../out/some.exe', 'arg'],
         'relative_cwd': 'some',
     })
-    isolated_hash = ALGO(isolated).hexdigest()
+    isolated_hash = isolateserver_mock.hash_content(isolated)
     files = {isolated_hash:isolated}
     subprocess_call, _ = self._run_tha_test(isolated_hash, files)
     self.assertEqual(1, len(subprocess_call))
@@ -295,7 +294,7 @@ class RunIsolatedTest(auto_stub.TestCase):
         'command': ['../out/cmd.py', 'arg'],
         'relative_cwd': 'some',
     })
-    isolated_hash = ALGO(isolated).hexdigest()
+    isolated_hash = isolateserver_mock.hash_content(isolated)
     files = {isolated_hash:isolated}
     subprocess_call, _ = self._run_tha_test(isolated_hash, files)
     self.assertEqual(1, len(subprocess_call))
@@ -307,76 +306,75 @@ class RunIsolatedTest(auto_stub.TestCase):
         subprocess_call)
 
   def test_output(self):
-    script = (
-      'import sys\n'
-      'open(sys.argv[1], "w").write("bar")\n')
-    script_hash = ALGO(script).hexdigest()
-    isolated = {
-      'algo': 'sha-1',
-      'command': ['cmd.py', '${ISOLATED_OUTDIR}/foo'],
-      'files': {
-        'cmd.py': {
-          'h': script_hash,
-          'm': 0700,
-          's': len(script),
+    # Starts a full isolate server mock and have run_tha_test() uploads results
+    # back after the task completed.
+    server = isolateserver_mock.MockIsolateServer()
+    try:
+      script = (
+        'import sys\n'
+        'open(sys.argv[1], "w").write("bar")\n')
+      script_hash = isolateserver_mock.hash_content(script)
+      isolated = {
+        'algo': 'sha-1',
+        'command': ['cmd.py', '${ISOLATED_OUTDIR}/foo'],
+        'files': {
+          'cmd.py': {
+            'h': script_hash,
+            'm': 0700,
+            's': len(script),
+          },
         },
-      },
-      'version': isolated_format.ISOLATED_FILE_VERSION,
-    }
-    if sys.platform == 'win32':
-      isolated['files']['cmd.py'].pop('m')
-    isolated_data = json_dumps(isolated)
-    isolated_hash = ALGO(isolated_data).hexdigest()
-    contents = {
-      isolated_hash: isolated_data,
-      script_hash: script,
-    }
+        'version': isolated_format.ISOLATED_FILE_VERSION,
+      }
+      if sys.platform == 'win32':
+        isolated['files']['cmd.py'].pop('m')
+      isolated_data = json_dumps(isolated)
+      isolated_hash = isolateserver_mock.hash_content(isolated_data)
+      server.add_content('default-store', script)
+      server.add_content('default-store', isolated_data)
+      store = isolateserver.get_storage(server.url, 'default-store')
 
-    path = os.path.join(self.tempdir, 'store')
-    os.mkdir(path)
-    for h, c in contents.iteritems():
-      write_content(os.path.join(path, h), c)
-    store = isolateserver.get_storage(path, 'default-store')
+      self.mock(sys, 'stdout', StringIO.StringIO())
+      ret = run_isolated.run_tha_test(
+          isolated_hash,
+          store,
+          isolateserver.MemoryCache(),
+          False,
+          [])
+      self.assertEqual(0, ret)
 
-    self.mock(sys, 'stdout', StringIO.StringIO())
-    ret = run_isolated.run_tha_test(
-        isolated_hash,
-        store,
-        isolateserver.MemoryCache(),
-        False,
-        [])
-    self.assertEqual(0, ret)
-
-    # It uploaded back. Assert the store has a new item containing foo.
-    hashes = set(contents)
-    output_hash = ALGO('bar').hexdigest()
-    hashes.add(output_hash)
-    isolated =  {
-      'algo': 'sha-1',
-      'files': {
-        'foo': {
-          'h': output_hash,
-          # TODO(maruel): Handle umask.
-          'm': 0640,
-          's': 3,
+      # It uploaded back. Assert the store has a new item containing foo.
+      hashes = {isolated_hash, script_hash}
+      output_hash = isolateserver_mock.hash_content('bar')
+      hashes.add(output_hash)
+      isolated =  {
+        'algo': 'sha-1',
+        'files': {
+          'foo': {
+            'h': output_hash,
+            # TODO(maruel): Handle umask.
+            'm': 0640,
+            's': 3,
+          },
         },
-      },
-      'version': isolated_format.ISOLATED_FILE_VERSION,
-    }
-    if sys.platform == 'win32':
-      isolated['files']['foo'].pop('m')
-    uploaded = json_dumps(isolated)
-    uploaded_hash = ALGO(uploaded).hexdigest()
-    hashes.add(uploaded_hash)
-    self.assertEqual(hashes, set(os.listdir(path)))
+        'version': isolated_format.ISOLATED_FILE_VERSION,
+      }
+      if sys.platform == 'win32':
+        isolated['files']['foo'].pop('m')
+      uploaded = json_dumps(isolated)
+      uploaded_hash = isolateserver_mock.hash_content(uploaded)
+      hashes.add(uploaded_hash)
+      self.assertEqual(hashes, set(server._server.contents['default-store']))
 
-    expected = ''.join([
-      '[run_isolated_out_hack]',
-      '{"hash":"%s","namespace":"default-store","storage":%s}' % (
-          uploaded_hash, json.dumps(path)),
-      '[/run_isolated_out_hack]'
-    ]) + '\n'
-    self.assertEqual(expected, sys.stdout.getvalue())
+      expected = ''.join([
+        '[run_isolated_out_hack]',
+        '{"hash":"%s","namespace":"default-store","storage":%s}' % (
+            uploaded_hash, json.dumps(server.url)),
+        '[/run_isolated_out_hack]'
+      ]) + '\n'
+      self.assertEqual(expected, sys.stdout.getvalue())
+    finally:
+      server.close()
 
 
 if __name__ == '__main__':

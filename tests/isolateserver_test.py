@@ -5,7 +5,6 @@
 
 # pylint: disable=W0212,W0223,W0231,W0613
 
-import hashlib
 import json
 import logging
 import os
@@ -27,8 +26,7 @@ from depot_tools import auto_stub
 from utils import file_path
 from utils import threading_utils
 
-
-ALGO = hashlib.sha1
+import isolateserver_mock
 
 
 CONTENTS = {
@@ -108,7 +106,7 @@ class TestZipCompression(TestCase):
 class FakeItem(isolateserver.Item):
   def __init__(self, data, high_priority=False):
     super(FakeItem, self).__init__(
-        ALGO(data).hexdigest(), len(data), high_priority)
+      isolateserver_mock.hash_content(data), len(data), high_priority)
     self.data = data
 
   def content(self):
@@ -420,7 +418,7 @@ class IsolateServerStorageApiTest(TestCase):
     server = 'http://example.com'
     namespace = 'default'
     data = ''.join(str(x) for x in xrange(1000))
-    item = ALGO(data).hexdigest()
+    item = isolateserver_mock.hash_content(data)
     self.expected_requests(
         [self.mock_fetch_request(server, namespace, item, data)])
     storage = isolateserver.IsolateServer(server, namespace)
@@ -430,7 +428,7 @@ class IsolateServerStorageApiTest(TestCase):
   def test_fetch_failure(self):
     server = 'http://example.com'
     namespace = 'default'
-    item = ALGO('something').hexdigest()
+    item = isolateserver_mock.hash_content('something')
     self.expected_requests(
         [self.mock_fetch_request(server, namespace, item, None)])
     storage = isolateserver.IsolateServer(server, namespace)
@@ -441,7 +439,7 @@ class IsolateServerStorageApiTest(TestCase):
     server = 'http://example.com'
     namespace = 'default'
     data = ''.join(str(x) for x in xrange(1000))
-    item = ALGO(data).hexdigest()
+    item = isolateserver_mock.hash_content(data)
     offset = 200
     size = len(data)
 
@@ -466,7 +464,7 @@ class IsolateServerStorageApiTest(TestCase):
     server = 'http://example.com'
     namespace = 'default'
     data = ''.join(str(x) for x in xrange(1000))
-    item = ALGO(data).hexdigest()
+    item = isolateserver_mock.hash_content(data)
     offset = 200
     size = len(data)
 
@@ -676,15 +674,18 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
   def setUp(self):
     super(IsolateServerStorageSmokeTest, self).setUp()
     self.tempdir = tempfile.mkdtemp(prefix='isolateserver')
+    self.server = isolateserver_mock.MockIsolateServer()
 
   def tearDown(self):
     try:
+      self.server.close_start()
       file_path.rmtree(self.tempdir)
+      self.server.close_end()
     finally:
       super(IsolateServerStorageSmokeTest, self).tearDown()
 
   def run_synchronous_push_test(self, namespace):
-    storage = isolateserver.get_storage(self.tempdir, namespace)
+    storage = isolateserver.get_storage(self.server.url, namespace)
 
     # Items to upload.
     items = [isolateserver.BufferItem('item %d' % i) for i in xrange(10)]
@@ -707,7 +708,7 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
     self.run_synchronous_push_test('default-gzip')
 
   def run_upload_items_test(self, namespace):
-    storage = isolateserver.get_storage(self.tempdir, namespace)
+    storage = isolateserver.get_storage(self.server.url, namespace)
 
     # Items to upload.
     items = [isolateserver.BufferItem('item %d' % i) for i in xrange(10)]
@@ -733,7 +734,7 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
     self.run_upload_items_test('default-gzip')
 
   def run_push_and_fetch_test(self, namespace):
-    storage = isolateserver.get_storage(self.tempdir, namespace)
+    storage = isolateserver.get_storage(self.server.url, namespace)
 
     # Upload items.
     items = [isolateserver.BufferItem('item %d' % i) for i in xrange(10)]
@@ -821,12 +822,12 @@ class IsolateServerDownloadTest(TestCase):
       'command': ['Absurb', 'command'],
       'relative_cwd': 'a',
       'files': dict(
-          (k, {'h': ALGO(v).hexdigest(), 's': len(v)})
+          (k, {'h': isolateserver_mock.hash_content(v), 's': len(v)})
           for k, v in files.iteritems()),
       'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     isolated_data = json.dumps(isolated, sort_keys=True, separators=(',',':'))
-    isolated_hash = ALGO(isolated_data).hexdigest()
+    isolated_hash = isolateserver_mock.hash_content(isolated_data)
     requests = [(v['h'], files[k]) for k, v in isolated['files'].iteritems()]
     requests.append((isolated_hash, isolated_data))
     requests = [
@@ -859,7 +860,7 @@ class IsolateServerDownloadTest(TestCase):
 
 class TestIsolated(auto_stub.TestCase):
   def test_load_isolated_empty(self):
-    m = isolated_format.load_isolated('{}', ALGO)
+    m = isolated_format.load_isolated('{}', isolateserver_mock.ALGO)
     self.assertEqual({}, m)
 
   def test_load_isolated_good(self):
@@ -880,7 +881,7 @@ class TestIsolated(auto_stub.TestCase):
       u'relative_cwd': u'somewhere_else',
       u'version': isolated_format.ISOLATED_FILE_VERSION,
     }
-    m = isolated_format.load_isolated(json.dumps(data), ALGO)
+    m = isolated_format.load_isolated(json.dumps(data), isolateserver_mock.ALGO)
     self.assertEqual(data, m)
 
   def test_load_isolated_bad(self):
@@ -894,7 +895,7 @@ class TestIsolated(auto_stub.TestCase):
       u'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     with self.assertRaises(isolated_format.IsolatedError):
-      isolated_format.load_isolated(json.dumps(data), ALGO)
+      isolated_format.load_isolated(json.dumps(data), isolateserver_mock.ALGO)
 
   def test_load_isolated_os_only(self):
     # Tolerate 'os' on older version.
@@ -902,7 +903,7 @@ class TestIsolated(auto_stub.TestCase):
       u'os': 'HP/UX',
       u'version': '1.3',
     }
-    m = isolated_format.load_isolated(json.dumps(data), ALGO)
+    m = isolated_format.load_isolated(json.dumps(data), isolateserver_mock.ALGO)
     self.assertEqual(data, m)
 
   def test_load_isolated_os_only_bad(self):
@@ -911,7 +912,7 @@ class TestIsolated(auto_stub.TestCase):
       u'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     with self.assertRaises(isolated_format.IsolatedError):
-      isolated_format.load_isolated(json.dumps(data), ALGO)
+      isolated_format.load_isolated(json.dumps(data), isolateserver_mock.ALGO)
 
   def test_load_isolated_path(self):
     # Automatically convert the path case.
@@ -929,7 +930,8 @@ class TestIsolated(auto_stub.TestCase):
       }
 
     data = gen_data(wrong_path_sep)
-    actual = isolated_format.load_isolated(json.dumps(data), ALGO)
+    actual = isolated_format.load_isolated(
+        json.dumps(data), isolateserver_mock.ALGO)
     expected = gen_data(os.path.sep)
     self.assertEqual(expected, actual)
 
@@ -1027,13 +1029,13 @@ class TestArchive(TestCase):
     }
     for k, v in CONTENTS.iteritems():
       isolated['files'][k] = {
-        'h': hashlib.sha1(v).hexdigest(),
+        'h': isolateserver_mock.hash_content(v),
         's': len(v),
       }
       if sys.platform != 'win32':
         isolated['files'][k]['m'] = 0600
     isolated_data = json.dumps(isolated, sort_keys=True, separators=(',',':'))
-    isolated_hash = ALGO(isolated_data).hexdigest()
+    isolated_hash = isolateserver_mock.hash_content(isolated_data)
     self.checkOutput(
         '%s %s\n' % (isolated_hash, self.tempdir),
         '')
@@ -1056,6 +1058,6 @@ if __name__ == '__main__':
   if '-v' in sys.argv:
     unittest.TestCase.maxDiff = None
   logging.basicConfig(
-      level=(logging.DEBUG if '-v' in sys.argv else logging.ERROR))
+      level=(logging.DEBUG if '-v' in sys.argv else logging.CRITICAL))
   clear_env_vars()
   unittest.main()
