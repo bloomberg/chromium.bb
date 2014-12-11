@@ -256,7 +256,8 @@ def _ParseCloudLinksFromOutput(output):
   return results
 
 
-def _ParseAndOutputCloudLinks(results_without_patch, results_with_patch):
+def _ParseAndOutputCloudLinks(
+    results_without_patch, results_with_patch, annotations_dict):
   cloud_links_without_patch = _ParseCloudLinksFromOutput(
       results_without_patch[2])
   cloud_links_with_patch = _ParseCloudLinksFromOutput(
@@ -298,11 +299,11 @@ def _ParseAndOutputCloudLinks(results_without_patch, results_with_patch):
   if profiler_file_links_with_patch and profiler_file_links_without_patch:
     for i in xrange(len(profiler_file_links_with_patch)):
       bisect_utils.OutputAnnotationStepLink(
-          'With Patch - Profiler Data[%d]' % i,
+          '%s[%d]' % (annotations_dict.get('profiler_link1'), i),
           profiler_file_links_with_patch[i])
     for i in xrange(len(profiler_file_links_without_patch)):
       bisect_utils.OutputAnnotationStepLink(
-          'Without Patch - Profiler Data[%d]' % i,
+          '%s[%d]' % (annotations_dict.get('profiler_link2'), i),
           profiler_file_links_without_patch[i])
 
 
@@ -335,6 +336,8 @@ def _GetStepAnnotationStringsDict(config):
         'sync2': 'Syncing [%s]' % config['bad_revision'],
         'results_label1': config['good_revision'],
         'results_label2': config['bad_revision'],
+        'profiler_link1': 'Profiler Data - %s' % config['good_revision'],
+        'profiler_link2': 'Profiler Data - %s' % config['bad_revision'],
     }
   else:
     return {
@@ -344,6 +347,8 @@ def _GetStepAnnotationStringsDict(config):
         'run2': 'Running Without Patch',
         'results_label1': 'Patch',
         'results_label2': 'ToT',
+        'profiler_link1': 'With Patch - Profiler Data',
+        'profiler_link2': 'Without Patch - Profiler Data',
     }
 
 
@@ -437,7 +442,8 @@ def _RunPerformanceTest(config):
       annotations_dict['run2'])
 
   # Find the link to the cloud stored results file.
-  _ParseAndOutputCloudLinks(results_without_patch, results_with_patch)
+  _ParseAndOutputCloudLinks(
+      results_without_patch, results_with_patch, annotations_dict)
 
 
 def _SetupAndRunPerformanceTest(config, path_to_goma):
