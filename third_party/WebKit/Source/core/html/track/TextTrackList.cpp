@@ -194,9 +194,7 @@ void TextTrackList::append(PassRefPtrWillBeRawPtr<TextTrack> prpTrack)
         size_t index = static_cast<LoadableTextTrack*>(track.get())->trackElementIndex();
         m_elementTracks.insert(index, track);
     } else if (track->trackType() == TextTrack::InBand) {
-        // Insert tracks added for in-band in the media file order.
-        size_t index = static_cast<InbandTextTrack*>(track.get())->inbandTrackIndex();
-        m_inbandTracks.insert(index, track);
+        m_inbandTracks.append(track);
     } else {
         ASSERT_NOT_REACHED();
     }

@@ -84,12 +84,6 @@ InbandTextTrack::~InbandTextTrack()
 #endif
 }
 
-size_t InbandTextTrack::inbandTrackIndex()
-{
-    ASSERT(m_webTrack);
-    return m_webTrack->textTrackIndex();
-}
-
 void InbandTextTrack::setTrackList(TextTrackList* trackList)
 {
     TextTrack::setTrackList(trackList);

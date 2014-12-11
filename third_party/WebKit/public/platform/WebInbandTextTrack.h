@@ -57,8 +57,6 @@ public:
     virtual WebString label() const = 0;
     virtual WebString language() const = 0;
     virtual WebString id() const { return WebString(); }
-
-    virtual int textTrackIndex() const = 0;
 };
 
 } // namespace blink

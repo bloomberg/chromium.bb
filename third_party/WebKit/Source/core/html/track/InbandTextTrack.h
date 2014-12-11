@@ -43,7 +43,6 @@ public:
     static PassRefPtrWillBeRawPtr<InbandTextTrack> create(blink::WebInbandTextTrack*);
     virtual ~InbandTextTrack();
 
-    size_t inbandTrackIndex();
     virtual void setTrackList(TextTrackList*) override;
 
 private:
