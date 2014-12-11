@@ -507,8 +507,18 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer, unsigned rowIndex, 
 
 void PNGImageDecoder::complete()
 {
-    if (!m_frameBufferCache.isEmpty())
-        m_frameBufferCache.first().setStatus(ImageFrame::FrameComplete);
+    if (m_frameBufferCache.isEmpty())
+        return;
+
+    m_frameBufferCache[0].setStatus(ImageFrame::FrameComplete);
+}
+
+bool PNGImageDecoder::isComplete() const
+{
+    if (m_frameBufferCache.isEmpty())
+        return false;
+
+    return m_frameBufferCache[0].status() == ImageFrame::FrameComplete;
 }
 
 void PNGImageDecoder::decode(bool onlySize)

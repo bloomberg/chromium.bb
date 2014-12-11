@@ -51,10 +51,7 @@ public:
     void rowAvailable(unsigned char* rowBuffer, unsigned rowIndex, int interlacePass);
     void complete();
 
-    bool isComplete() const
-    {
-        return !m_frameBufferCache.isEmpty() && (m_frameBufferCache.first().status() == ImageFrame::FrameComplete);
-    }
+    bool isComplete() const;
 
 private:
     // Decodes the image.  If |onlySize| is true, stops decoding after
