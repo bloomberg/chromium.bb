@@ -10,6 +10,7 @@
 #include "components/sync_driver/device_info_data_type_controller.h"
 #include "components/sync_driver/local_device_info_provider_mock.h"
 #include "components/sync_driver/sync_api_component_factory.h"
+#include "sync/internal_api/public/base/model_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sync_driver {
@@ -67,6 +68,7 @@ class DeviceInfoDataTypeControllerTest : public testing::Test,
       const scoped_refptr<syncer::AttachmentStore>& attachment_store,
       const syncer::UserShare& user_share,
       const std::string& store_birthday,
+      syncer::ModelType model_type,
       syncer::AttachmentService::Delegate* delegate) override {
     // Shouldn't be called for this test.
     NOTREACHED();

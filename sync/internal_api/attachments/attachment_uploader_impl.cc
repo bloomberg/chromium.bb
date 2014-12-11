@@ -29,6 +29,7 @@ namespace {
 const char kContentType[] = "application/octet-stream";
 const char kAttachments[] = "attachments/";
 const char kSyncStoreBirthday[] = "X-Sync-Store-Birthday";
+const char kSyncDataTypeId[] = "X-Sync-Data-Type-Id";
 
 }  // namespace
 
@@ -57,7 +58,8 @@ class AttachmentUploaderImpl::UploadState : public net::URLFetcherDelegate,
       const OAuth2TokenService::ScopeSet& scopes,
       OAuth2TokenServiceRequest::TokenServiceProvider* token_service_provider,
       const std::string& raw_store_birthday,
-      const base::WeakPtr<AttachmentUploaderImpl>& owner);
+      const base::WeakPtr<AttachmentUploaderImpl>& owner,
+      ModelType model_type);
 
   ~UploadState() override;
 
@@ -108,6 +110,7 @@ class AttachmentUploaderImpl::UploadState : public net::URLFetcherDelegate,
   // Pointer to the AttachmentUploaderImpl that owns this object.
   base::WeakPtr<AttachmentUploaderImpl> owner_;
   scoped_ptr<OAuth2TokenServiceRequest> access_token_request_;
+  ModelType model_type_;
 
   DISALLOW_COPY_AND_ASSIGN(UploadState);
 };
@@ -122,7 +125,8 @@ AttachmentUploaderImpl::UploadState::UploadState(
     const OAuth2TokenService::ScopeSet& scopes,
     OAuth2TokenServiceRequest::TokenServiceProvider* token_service_provider,
     const std::string& raw_store_birthday,
-    const base::WeakPtr<AttachmentUploaderImpl>& owner)
+    const base::WeakPtr<AttachmentUploaderImpl>& owner,
+    ModelType model_type)
     : OAuth2TokenService::Consumer("attachment-uploader-impl"),
       is_stopped_(false),
       upload_url_(upload_url),
@@ -133,7 +137,8 @@ AttachmentUploaderImpl::UploadState::UploadState(
       scopes_(scopes),
       raw_store_birthday_(raw_store_birthday),
       token_service_provider_(token_service_provider),
-      owner_(owner) {
+      owner_(owner),
+      model_type_(model_type) {
   DCHECK(upload_url_.is_valid());
   DCHECK(url_request_context_getter_.get());
   DCHECK(!account_id_.empty());
@@ -208,7 +213,7 @@ void AttachmentUploaderImpl::UploadState::OnGetTokenSuccess(
   fetcher_.reset(
       net::URLFetcher::Create(upload_url_, net::URLFetcher::POST, this));
   ConfigureURLFetcherCommon(fetcher_.get(), access_token_, raw_store_birthday_,
-                            url_request_context_getter_.get());
+                            model_type_, url_request_context_getter_.get());
 
   const uint32_t crc32c = attachment_.GetCrc32c();
   fetcher_->AddExtraRequestHeader(base::StringPrintf(
@@ -273,13 +278,15 @@ AttachmentUploaderImpl::AttachmentUploaderImpl(
     const OAuth2TokenService::ScopeSet& scopes,
     const scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>&
         token_service_provider,
-    const std::string& store_birthday)
+    const std::string& store_birthday,
+    ModelType model_type)
     : sync_service_url_(sync_service_url),
       url_request_context_getter_(url_request_context_getter),
       account_id_(account_id),
       scopes_(scopes),
       token_service_provider_(token_service_provider),
       raw_store_birthday_(store_birthday),
+      model_type_(model_type),
       weak_ptr_factory_(this) {
   DCHECK(CalledOnValidThread());
   DCHECK(!account_id.empty());
@@ -314,10 +321,10 @@ void AttachmentUploaderImpl::UploadAttachment(const Attachment& attachment,
   }
 
   const GURL url = GetURLForAttachmentId(sync_service_url_, attachment_id);
-  scoped_ptr<UploadState> upload_state(
-      new UploadState(url, url_request_context_getter_, attachment, callback,
-                      account_id_, scopes_, token_service_provider_.get(),
-                      raw_store_birthday_, weak_ptr_factory_.GetWeakPtr()));
+  scoped_ptr<UploadState> upload_state(new UploadState(
+      url, url_request_context_getter_, attachment, callback, account_id_,
+      scopes_, token_service_provider_.get(), raw_store_birthday_,
+      weak_ptr_factory_.GetWeakPtr(), model_type_));
   state_map_.add(unique_id, upload_state.Pass());
 }
 
@@ -360,6 +367,7 @@ void AttachmentUploaderImpl::ConfigureURLFetcherCommon(
     net::URLFetcher* fetcher,
     const std::string& access_token,
     const std::string& raw_store_birthday,
+    ModelType model_type,
     net::URLRequestContextGetter* request_context_getter) {
   DCHECK(request_context_getter);
   DCHECK(fetcher);
@@ -377,6 +385,12 @@ void AttachmentUploaderImpl::ConfigureURLFetcherCommon(
   Base64URLSafeEncode(raw_store_birthday, &encoded_store_birthday);
   fetcher->AddExtraRequestHeader(base::StringPrintf(
       "%s: %s", kSyncStoreBirthday, encoded_store_birthday.c_str()));
+
+  // Use field number to pass ModelType because it's stable and we have server
+  // code to decode it.
+  const int field_number = GetSpecificsFieldNumberFromModelType(model_type);
+  fetcher->AddExtraRequestHeader(
+      base::StringPrintf("%s: %d", kSyncDataTypeId, field_number));
 }
 
 void AttachmentUploaderImpl::Base64URLSafeEncode(const std::string& input,

@@ -18,6 +18,7 @@
 #include "sync/api/attachments/attachment.h"
 #include "sync/internal_api/public/attachments/attachment_uploader_impl.h"
 #include "sync/internal_api/public/attachments/attachment_util.h"
+#include "sync/internal_api/public/base/model_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/util/crc32c.h"
 
@@ -30,6 +31,7 @@ const char kAccessToken[] = "access.token";
 const char kAttachmentServerUrl[] = "http://attachments.com/";
 const char kAttachmentContent[] = "attachment.content";
 const char kStoreBirthday[] = "z00000000-0000-007b-0000-0000000004d2";
+const syncer::ModelType kModelType = syncer::ModelType::ARTICLES;
 
 // MockOAuth2TokenService remembers last request for access token and verifies
 // that only one request is active at a time.
@@ -206,7 +208,7 @@ void AttachmentDownloaderImplTest::SetUp() {
   scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
   attachment_downloader_ = AttachmentDownloader::Create(
       GURL(kAttachmentServerUrl), url_request_context_getter_, kAccountId,
-      scopes, token_service_provider, std::string(kStoreBirthday));
+      scopes, token_service_provider, std::string(kStoreBirthday), kModelType);
 }
 
 void AttachmentDownloaderImplTest::TearDown() {

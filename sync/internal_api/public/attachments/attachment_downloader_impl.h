@@ -11,6 +11,7 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "sync/internal_api/public/attachments/attachment_downloader.h"
+#include "sync/internal_api/public/base/model_type.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -40,6 +41,8 @@ class AttachmentDownloaderImpl : public AttachmentDownloader,
   // |token_service_provider| provides an OAuth2 token service.
   //
   // |store_birthday| is the raw, sync store birthday.
+  //
+  // |model_type| is the model type this downloader is used with.
   AttachmentDownloaderImpl(
       const GURL& sync_service_url,
       const scoped_refptr<net::URLRequestContextGetter>&
@@ -48,7 +51,8 @@ class AttachmentDownloaderImpl : public AttachmentDownloader,
       const OAuth2TokenService::ScopeSet& scopes,
       const scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>&
           token_service_provider,
-      const std::string& store_birthday);
+      const std::string& store_birthday,
+      ModelType model_type);
   ~AttachmentDownloaderImpl() override;
 
   // AttachmentDownloader implementation.
@@ -111,6 +115,8 @@ class AttachmentDownloaderImpl : public AttachmentDownloader,
   // objects while access token request is pending. It doesn't control objects'
   // lifetime.
   StateList requests_waiting_for_access_token_;
+
+  ModelType model_type_;
 
   DISALLOW_COPY_AND_ASSIGN(AttachmentDownloaderImpl);
 };

@@ -614,6 +614,7 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
     const scoped_refptr<syncer::AttachmentStore>& attachment_store,
     const syncer::UserShare& user_share,
     const std::string& store_birthday,
+    syncer::ModelType model_type,
     syncer::AttachmentService::Delegate* delegate) {
   scoped_ptr<syncer::AttachmentUploader> attachment_uploader;
   scoped_ptr<syncer::AttachmentDownloader> attachment_downloader;
@@ -634,7 +635,7 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
         sync_service_url_, url_request_context_getter_,
         user_share.sync_credentials.email,
         user_share.sync_credentials.scope_set, token_service_provider,
-        store_birthday));
+        store_birthday, model_type));
 
     token_service_provider = new TokenServiceProvider(
         content::BrowserThread::GetMessageLoopProxyForThread(
@@ -644,7 +645,7 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
         sync_service_url_, url_request_context_getter_,
         user_share.sync_credentials.email,
         user_share.sync_credentials.scope_set, token_service_provider,
-        store_birthday);
+        store_birthday, model_type);
   }
 
   // It is important that the initial backoff delay is relatively large.  For

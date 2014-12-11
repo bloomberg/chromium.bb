@@ -11,6 +11,7 @@
 #include "google_apis/gaia/oauth2_token_service_request.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "sync/internal_api/public/attachments/attachment_uploader.h"
+#include "sync/internal_api/public/base/model_type.h"
 
 class GURL;
 
@@ -35,6 +36,8 @@ class SYNC_EXPORT AttachmentUploaderImpl : public AttachmentUploader,
   // |token_service_provider| provides an OAuth2 token service.
   //
   // |store_birthday| is the raw, sync store birthday.
+  //
+  // |model_type| is the model type this uploader is used with.
   AttachmentUploaderImpl(
       const GURL& sync_service_url,
       const scoped_refptr<net::URLRequestContextGetter>&
@@ -43,7 +46,8 @@ class SYNC_EXPORT AttachmentUploaderImpl : public AttachmentUploader,
       const OAuth2TokenService::ScopeSet& scopes,
       const scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>&
           token_service_provider,
-      const std::string& store_birthday);
+      const std::string& store_birthday,
+      ModelType model_type);
   ~AttachmentUploaderImpl() override;
 
   // AttachmentUploader implementation.
@@ -67,6 +71,7 @@ class SYNC_EXPORT AttachmentUploaderImpl : public AttachmentUploader,
       net::URLFetcher* fetcher,
       const std::string& auth_token,
       const std::string& raw_store_birthday,
+      ModelType model_type,
       net::URLRequestContextGetter* request_context_getter);
 
  private:
@@ -89,6 +94,7 @@ class SYNC_EXPORT AttachmentUploaderImpl : public AttachmentUploader,
       token_service_provider_;
   std::string raw_store_birthday_;
   StateMap state_map_;
+  ModelType model_type_;
 
   // Must be last data member.
   base::WeakPtrFactory<AttachmentUploaderImpl> weak_ptr_factory_;

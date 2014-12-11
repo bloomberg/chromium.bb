@@ -51,14 +51,16 @@ AttachmentDownloaderImpl::AttachmentDownloaderImpl(
     const OAuth2TokenService::ScopeSet& scopes,
     const scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>&
         token_service_provider,
-    const std::string& store_birthday)
+    const std::string& store_birthday,
+    ModelType model_type)
     : OAuth2TokenService::Consumer("attachment-downloader-impl"),
       sync_service_url_(sync_service_url),
       url_request_context_getter_(url_request_context_getter),
       account_id_(account_id),
       oauth2_scopes_(scopes),
       token_service_provider_(token_service_provider),
-      raw_store_birthday_(store_birthday) {
+      raw_store_birthday_(store_birthday),
+      model_type_(model_type) {
   DCHECK(url_request_context_getter_.get());
   DCHECK(!account_id.empty());
   DCHECK(!scopes.empty());
@@ -194,7 +196,7 @@ scoped_ptr<net::URLFetcher> AttachmentDownloaderImpl::CreateFetcher(
   scoped_ptr<net::URLFetcher> url_fetcher(
       net::URLFetcher::Create(GURL(url), net::URLFetcher::GET, this));
   AttachmentUploaderImpl::ConfigureURLFetcherCommon(
-      url_fetcher.get(), access_token, raw_store_birthday_,
+      url_fetcher.get(), access_token, raw_store_birthday_, model_type_,
       url_request_context_getter_.get());
   return url_fetcher.Pass();
 }

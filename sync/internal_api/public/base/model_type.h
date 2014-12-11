@@ -251,8 +251,6 @@ SYNC_EXPORT_PRIVATE ModelType GetModelTypeFromSpecificsFieldNumber(
 
 // Return the field number of the EntitySpecifics field associated with
 // a model type.
-//
-// Used by tests outside of sync.
 SYNC_EXPORT int GetSpecificsFieldNumberFromModelType(
     ModelType model_type);
 

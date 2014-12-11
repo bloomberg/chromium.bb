@@ -93,6 +93,7 @@ class MockSyncApiComponentFactory : public SyncApiComponentFactory {
       const scoped_refptr<syncer::AttachmentStore>& attachment_store,
       const syncer::UserShare& user_share,
       const std::string& store_birthday,
+      syncer::ModelType model_type,
       syncer::AttachmentService::Delegate* delegate) override {
     EXPECT_TRUE(attachment_service_ != NULL);
     return attachment_service_.Pass();

@@ -110,7 +110,7 @@ GenericChangeProcessor::GenericChangeProcessor(
       store_birthday = trans.GetStoreBirthday();
     }
     attachment_service_ = sync_factory->CreateAttachmentService(
-        attachment_store, *user_share, store_birthday, this);
+        attachment_store, *user_share, store_birthday, type, this);
     attachment_service_weak_ptr_factory_.reset(
         new base::WeakPtrFactory<syncer::AttachmentService>(
             attachment_service_.get()));

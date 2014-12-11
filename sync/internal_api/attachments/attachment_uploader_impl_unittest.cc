@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/test/histogram_tester.h"
@@ -27,6 +28,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "sync/api/attachments/attachment.h"
 #include "sync/internal_api/public/attachments/attachment_util.h"
+#include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync.pb.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,6 +48,8 @@ const char kStoreBirthday[] =
 const char kBase64URLSafeStoreBirthday[] =
     "Rv_d4HQ6SP2dBpM8YY6lcAlZmQVhRiFhGwPTAmDNQVX-JhXXDA";
 const char kSyncStoreBirthdayHeader[] = "X-Sync-Store-Birthday";
+const char kSyncDataTypeIdHeader[] = "X-Sync-Data-Type-Id";
+const syncer::ModelType kModelType = syncer::ModelType::ARTICLES;
 
 }  // namespace
 
@@ -293,7 +297,7 @@ void AttachmentUploaderImplTest::SetUp() {
   scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
   uploader().reset(new AttachmentUploaderImpl(
       url, url_request_context_getter_, kAccountId, scopes,
-      token_service_provider, std::string(kStoreBirthday)));
+      token_service_provider, std::string(kStoreBirthday), kModelType));
 
   upload_callback_ = base::Bind(&AttachmentUploaderImplTest::UploadDone,
                                 base::Unretained(this));
@@ -506,6 +510,11 @@ TEST_F(AttachmentUploaderImplTest, UploadAttachment_Headers) {
   EXPECT_THAT(http_request.headers,
               testing::Contains(testing::Pair(kSyncStoreBirthdayHeader,
                                               kBase64URLSafeStoreBirthday)));
+  EXPECT_THAT(http_request.headers,
+              testing::Contains(testing::Pair(
+                  kSyncDataTypeIdHeader,
+                  base::IntToString(
+                      GetSpecificsFieldNumberFromModelType(kModelType)))));
 }
 
 // Verify two overlapping calls to upload the same attachment result in only one
