@@ -117,7 +117,7 @@ class Stats(object):
           self.not_requested * 100. / self.actually_reviewed)
     assert bool(first_day) == bool(last_day)
     if first_day and last_day:
-      assert first_day < last_day
+      assert first_day <= last_day
       self.days = (to_datetime(last_day) - to_datetime(first_day)).days + 1
       assert self.days > 0
 
@@ -306,13 +306,18 @@ def main():
   rietveld.upload.verbosity = 0
   today = datetime.date.today()
   begin, end = get_previous_quarter(today)
-  parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
+  default_email = os.environ.get('EMAIL_ADDRESS')
+  if not default_email:
+    user = os.environ.get('USER')
+    if user:
+      default_email = user + '@chromium.org'
+
+  parser = optparse.OptionParser(description=__doc__)
   parser.add_option(
       '--count', action='store_true',
       help='Just count instead of printing individual issues')
   parser.add_option(
-      '-r', '--reviewer', metavar='<email>',
-      default=os.environ.get('EMAIL_ADDRESS'),
+      '-r', '--reviewer', metavar='<email>', default=default_email,
       help='Filter on issue reviewer, default=%default')
   parser.add_option(
       '-b', '--begin', metavar='<date>',
@@ -322,8 +327,7 @@ def main():
       help='Filter issues created before the date')
   parser.add_option(
       '-Q', '--last_quarter', action='store_true',
-      help='Use last quarter\'s dates, e.g. %s to %s' % (
-        begin, end))
+      help='Use last quarter\'s dates, e.g. %s to %s' % (begin, end))
   parser.add_option(
       '-i', '--instance_url', metavar='<host>',
       default='http://codereview.chromium.org',
@@ -334,14 +338,18 @@ def main():
   options, args = parser.parse_args()
   if args:
     parser.error('Args unsupported')
-  if not options.reviewer:
-    parser.error('$EMAIL_ADDRESS is not set, please use -r')
+  if options.reviewer is None:
+    parser.error('$EMAIL_ADDRESS and $USER are not set, please use -r')
+
   print >> sys.stderr, 'Searching for reviews by %s' % options.reviewer
   if options.last_quarter:
     options.begin = begin
     options.end = end
     print >> sys.stderr, 'Using range %s to %s' % (
         options.begin, options.end)
+  else:
+    if options.begin is None or options.end is None:
+      parser.error('Please specify either --last_quarter or --begin and --end')
 
   # Validate dates.
   try:
