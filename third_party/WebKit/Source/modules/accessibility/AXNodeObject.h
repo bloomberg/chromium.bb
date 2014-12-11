@@ -61,6 +61,7 @@ protected:
     String accessibilityDescriptionForElements(WillBeHeapVector<RawPtrWillBeMember<Element> > &elements) const;
     void alterSliderValue(bool increase);
     String ariaAccessibilityDescription() const;
+    String ariaAutoComplete() const;
     void ariaLabeledByElements(WillBeHeapVector<RawPtrWillBeMember<Element> >& elements) const;
     void changeValueByStep(bool increase);
     AccessibilityRole determineAriaRoleAttribute() const;

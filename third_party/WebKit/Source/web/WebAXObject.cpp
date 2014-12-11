@@ -229,6 +229,14 @@ bool WebAXObject::isAriaReadOnly() const
     return equalIgnoringCase(m_private->getAttribute(HTMLNames::aria_readonlyAttr), "true");
 }
 
+WebString WebAXObject::ariaAutoComplete() const
+{
+    if (isDetached())
+        return WebString();
+
+    return m_private->ariaAutoComplete();
+}
+
 bool WebAXObject::isButtonStateMixed() const
 {
     if (isDetached())

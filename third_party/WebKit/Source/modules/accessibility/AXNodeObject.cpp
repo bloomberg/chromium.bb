@@ -951,6 +951,20 @@ unsigned AXNodeObject::hierarchicalLevel() const
     return level;
 }
 
+String AXNodeObject::ariaAutoComplete() const
+{
+    if (roleValue() != ComboBoxRole && roleValue() != TextAreaRole)
+        return String();
+
+    const AtomicString& ariaAutoComplete = getAttribute(aria_autocompleteAttr).lower();
+
+    if (ariaAutoComplete == "inline" || ariaAutoComplete == "list"
+        || ariaAutoComplete == "both")
+        return ariaAutoComplete;
+
+    return String();
+}
+
 String AXNodeObject::text() const
 {
     // If this is a user defined static text, use the accessible name computation.

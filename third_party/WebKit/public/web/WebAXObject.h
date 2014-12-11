@@ -114,6 +114,7 @@ public:
 
     BLINK_EXPORT WebString accessKey() const;
     BLINK_EXPORT WebAXObject ariaActiveDescendant() const;
+    BLINK_EXPORT WebString ariaAutoComplete() const;
     BLINK_EXPORT bool ariaControls(WebVector<WebAXObject>& controlsElements) const;
     BLINK_EXPORT bool ariaDescribedby(WebVector<WebAXObject>& describedbyElements) const;
     BLINK_EXPORT bool ariaFlowTo(WebVector<WebAXObject>& flowToElements) const;

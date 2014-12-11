@@ -436,6 +436,7 @@ public:
 
     // ARIA attributes.
     virtual AXObject* activeDescendant() const { return 0; }
+    virtual String ariaAutoComplete() const { return String(); }
     virtual String ariaDescribedByAttribute() const { return String(); }
     virtual void ariaFlowToElements(AccessibilityChildrenVector&) const { }
     virtual void ariaControlsElements(AccessibilityChildrenVector&) const { }
