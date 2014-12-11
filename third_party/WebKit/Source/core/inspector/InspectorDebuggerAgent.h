@@ -143,8 +143,10 @@ public:
     void getPromiseById(ErrorString*, int promiseId, const String* objectGroup, RefPtr<TypeBuilder::Runtime::RemoteObject>& promise) final;
 
     // AsyncCallStackTracker::Listener
-    void didCreateAsyncCallChain(const AsyncCallStackTracker::AsyncCallChain*) final;
-    void didChangeCurrentAsyncCallChain(const AsyncCallStackTracker::AsyncCallChain*) final;
+    void didCreateAsyncCallChain(AsyncCallStackTracker::AsyncCallChain*) final;
+    void didSetCurrentAsyncCallChain(AsyncCallStackTracker::AsyncCallChain*) final;
+    void didClearCurrentAsyncCallChain() final;
+    void didRemoveAsyncCallChain(AsyncCallStackTracker::AsyncCallChain*) final;
 
     void schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
     void didFireTimer();
@@ -272,7 +274,7 @@ private:
     unsigned m_cachedSkipStackGeneration;
     OwnPtrWillBeMember<AsyncCallStackTracker> m_asyncCallStackTracker;
     OwnPtrWillBeMember<PromiseTracker> m_promiseTracker;
-    HashSet<int> m_asyncOperationIdsForStepInto;
+    HashSet<RefPtr<AsyncCallStackTracker::AsyncCallChain> > m_asyncOperationsForStepInto;
 };
 
 } // namespace blink

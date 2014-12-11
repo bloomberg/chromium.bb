@@ -848,7 +848,7 @@ void InspectorDebuggerAgent::stepIntoAsync(ErrorString* errorString)
         return;
     }
     m_inAsyncOperationForStepInto = false;
-    m_asyncOperationIdsForStepInto.clear();
+    m_asyncOperationsForStepInto.clear();
     asyncCallStackTracker().setListener(this);
     m_scheduledDebuggerStep = NoStep;
     m_steppingFromFramework = isTopCallFrameInFramework();
@@ -1088,29 +1088,40 @@ void InspectorDebuggerAgent::getPromiseById(ErrorString* errorString, int promis
     promise = injectedScript.wrapObject(value, objectGroup ? *objectGroup : "");
 }
 
-void InspectorDebuggerAgent::didCreateAsyncCallChain(const AsyncCallStackTracker::AsyncCallChain* chain)
+void InspectorDebuggerAgent::didCreateAsyncCallChain(AsyncCallStackTracker::AsyncCallChain* chain)
 {
-    if (m_inAsyncOperationForStepInto || m_asyncOperationIdsForStepInto.isEmpty())
-        m_asyncOperationIdsForStepInto.add(chain->asyncOperationId());
+    if (m_inAsyncOperationForStepInto || m_asyncOperationsForStepInto.isEmpty())
+        m_asyncOperationsForStepInto.add(chain);
 }
 
-void InspectorDebuggerAgent::didChangeCurrentAsyncCallChain(const AsyncCallStackTracker::AsyncCallChain* chain)
+void InspectorDebuggerAgent::didClearCurrentAsyncCallChain()
 {
-    if (!chain) {
-        if (m_inAsyncOperationForStepInto) {
-            m_inAsyncOperationForStepInto = false;
-            m_scheduledDebuggerStep = NoStep;
-            scriptDebugServer().setPauseOnNextStatement(false);
-        }
+    if (!m_inAsyncOperationForStepInto)
         return;
-    }
-    if (m_asyncOperationIdsForStepInto.contains(chain->asyncOperationId())) {
-        m_inAsyncOperationForStepInto = true;
-        m_scheduledDebuggerStep = StepInto;
-        m_skippedStepFrameCount = 0;
-        m_recursionLevelForStepFrame = 0;
-        scriptDebugServer().setPauseOnNextStatement(true);
-    }
+    m_inAsyncOperationForStepInto = false;
+    m_scheduledDebuggerStep = NoStep;
+    scriptDebugServer().setPauseOnNextStatement(false);
+    if (m_asyncOperationsForStepInto.isEmpty())
+        clearStepIntoAsync();
+}
+
+void InspectorDebuggerAgent::didSetCurrentAsyncCallChain(AsyncCallStackTracker::AsyncCallChain* chain)
+{
+    ASSERT(chain);
+    if (!m_asyncOperationsForStepInto.contains(chain))
+        return;
+    m_inAsyncOperationForStepInto = true;
+    m_scheduledDebuggerStep = StepInto;
+    m_skippedStepFrameCount = 0;
+    m_recursionLevelForStepFrame = 0;
+    scriptDebugServer().setPauseOnNextStatement(true);
+}
+
+void InspectorDebuggerAgent::didRemoveAsyncCallChain(AsyncCallStackTracker::AsyncCallChain* chain)
+{
+    m_asyncOperationsForStepInto.remove(chain);
+    if (!m_inAsyncOperationForStepInto && m_asyncOperationsForStepInto.isEmpty())
+        clearStepIntoAsync();
 }
 
 void InspectorDebuggerAgent::scriptExecutionBlockedByCSP(const String& directiveText)
@@ -1444,7 +1455,7 @@ void InspectorDebuggerAgent::clear()
 void InspectorDebuggerAgent::clearStepIntoAsync()
 {
     asyncCallStackTracker().setListener(nullptr);
-    m_asyncOperationIdsForStepInto.clear();
+    m_asyncOperationsForStepInto.clear();
     m_inAsyncOperationForStepInto = false;
 }
 

@@ -58,12 +58,70 @@ static const char enqueueMutationRecordName[] = "Mutation";
 
 namespace blink {
 
+template <class K>
+class AsyncCallStackTracker::AsyncCallChainMap final {
+public:
+    typedef HashMap<K, RefPtr<AsyncCallStackTracker::AsyncCallChain> > MapType;
+    explicit AsyncCallChainMap(AsyncCallStackTracker* tracker) : m_tracker(tracker) { }
+
+    ~AsyncCallChainMap()
+    {
+        clear();
+    }
+
+    void clear()
+    {
+        for (auto it : m_asyncCallChains) {
+            if (AsyncCallStackTracker::Listener* listener = m_tracker->m_listener)
+                listener->didRemoveAsyncCallChain(it.value.get());
+            else
+                break;
+        }
+        m_asyncCallChains.clear();
+    }
+
+    void set(typename MapType::KeyPeekInType key, PassRefPtrWillBeRawPtr<AsyncCallChain> chain)
+    {
+        m_asyncCallChains.set(key, chain);
+    }
+
+    bool contains(typename MapType::KeyPeekInType key) const
+    {
+        return m_asyncCallChains.contains(key);
+    }
+
+    PassRefPtrWillBeRawPtr<AsyncCallChain> get(typename MapType::KeyPeekInType key) const
+    {
+        return m_asyncCallChains.get(key);
+    }
+
+    void remove(typename MapType::KeyPeekInType key)
+    {
+        RefPtr<AsyncCallStackTracker::AsyncCallChain> chain = m_asyncCallChains.take(key);
+        if (chain && m_tracker->m_listener)
+            m_tracker->m_listener->didRemoveAsyncCallChain(chain.get());
+    }
+
+private:
+    AsyncCallStackTracker* m_tracker;
+    MapType m_asyncCallChains;
+};
+
 class AsyncCallStackTracker::ExecutionContextData final : public NoBaseWillBeGarbageCollectedFinalized<ExecutionContextData>, public ContextLifecycleObserver {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     ExecutionContextData(AsyncCallStackTracker* tracker, ExecutionContext* executionContext)
         : ContextLifecycleObserver(executionContext)
         , m_tracker(tracker)
+        , m_timerCallChains(tracker)
+        , m_animationFrameCallChains(tracker)
+        , m_eventCallChains(tracker)
+        , m_xhrCallChains(tracker)
+        , m_mutationObserverCallChains(tracker)
+        , m_executionContextTaskCallChains(tracker)
+        , m_v8AsyncTaskCallChains(tracker)
+        , m_asyncOperationCallChains(tracker)
+        , m_circularSequentialId(0)
     {
     }
 
@@ -73,6 +131,16 @@ public:
         OwnPtrWillBeRawPtr<ExecutionContextData> self = m_tracker->m_executionContextDataMap.take(executionContext());
         ASSERT_UNUSED(self, self == this);
         ContextLifecycleObserver::contextDestroyed();
+    }
+
+    int nextAsyncOperationUniqueId()
+    {
+        do {
+            ++m_circularSequentialId;
+            if (m_circularSequentialId <= 0)
+                m_circularSequentialId = 1;
+        } while (m_asyncOperationCallChains.contains(m_circularSequentialId));
+        return m_circularSequentialId;
     }
 
     void trace(Visitor* visitor)
@@ -92,14 +160,17 @@ public:
 
     RawPtrWillBeMember<AsyncCallStackTracker> m_tracker;
     HashSet<int> m_intervalTimerIds;
-    WillBeHeapHashMap<int, RefPtrWillBeMember<AsyncCallChain> > m_timerCallChains;
-    WillBeHeapHashMap<int, RefPtrWillBeMember<AsyncCallChain> > m_animationFrameCallChains;
-    WillBeHeapHashMap<RawPtrWillBeMember<Event>, RefPtrWillBeMember<AsyncCallChain> > m_eventCallChains;
-    WillBeHeapHashMap<RawPtrWillBeMember<EventTarget>, RefPtrWillBeMember<AsyncCallChain> > m_xhrCallChains;
-    WillBeHeapHashMap<RawPtrWillBeMember<MutationObserver>, RefPtrWillBeMember<AsyncCallChain> > m_mutationObserverCallChains;
-    WillBeHeapHashMap<ExecutionContextTask*, RefPtrWillBeMember<AsyncCallChain> > m_executionContextTaskCallChains;
-    WillBeHeapHashMap<String, RefPtrWillBeMember<AsyncCallChain> > m_v8AsyncTaskCallChains;
-    WillBeHeapHashMap<int, RefPtrWillBeMember<AsyncCallChain> > m_asyncOperationCallChains;
+    AsyncCallChainMap<int> m_timerCallChains;
+    AsyncCallChainMap<int> m_animationFrameCallChains;
+    AsyncCallChainMap<RawPtrWillBeMember<Event> > m_eventCallChains;
+    AsyncCallChainMap<RawPtrWillBeMember<EventTarget> > m_xhrCallChains;
+    AsyncCallChainMap<RawPtrWillBeMember<MutationObserver> > m_mutationObserverCallChains;
+    AsyncCallChainMap<ExecutionContextTask*> m_executionContextTaskCallChains;
+    AsyncCallChainMap<String> m_v8AsyncTaskCallChains;
+    AsyncCallChainMap<int> m_asyncOperationCallChains;
+
+private:
+    int m_circularSequentialId;
 };
 
 static XMLHttpRequest* toXmlHttpRequest(EventTarget* eventTarget)
@@ -128,8 +199,7 @@ AsyncCallStackTracker::AsyncCallStack::~AsyncCallStack()
 }
 
 AsyncCallStackTracker::AsyncCallStackTracker()
-    : m_circularSequentialId(0)
-    , m_maxAsyncCallStackDepth(0)
+    : m_maxAsyncCallStackDepth(0)
     , m_nestedAsyncCallCount(0)
     , m_listener(0)
     , m_scriptDebugServer(nullptr)
@@ -165,7 +235,7 @@ void AsyncCallStackTracker::didInstallTimer(ExecutionContext* context, int timer
         return;
     ASSERT(timerId > 0);
     ExecutionContextData* data = createContextDataIfNeeded(context);
-    data->m_timerCallChains.set(timerId, createAsyncCallChain(data, singleShot ? setTimeoutName : setIntervalName, callFrames));
+    data->m_timerCallChains.set(timerId, createAsyncCallChain(singleShot ? setTimeoutName : setIntervalName, callFrames));
     if (!singleShot)
         data->m_intervalTimerIds.add(timerId);
 }
@@ -190,10 +260,9 @@ bool AsyncCallStackTracker::willFireTimer(ExecutionContext* context, int timerId
     ASSERT(timerId > 0);
     ASSERT(!m_currentAsyncCallChain);
     if (ExecutionContextData* data = m_executionContextDataMap.get(context)) {
-        if (data->m_intervalTimerIds.contains(timerId))
-            setCurrentAsyncCallChain(context, data->m_timerCallChains.get(timerId));
-        else
-            setCurrentAsyncCallChain(context, data->m_timerCallChains.take(timerId));
+        setCurrentAsyncCallChain(context, data->m_timerCallChains.get(timerId));
+        if (!data->m_intervalTimerIds.contains(timerId))
+            data->m_timerCallChains.remove(timerId);
     } else {
         setCurrentAsyncCallChain(context, nullptr);
     }
@@ -210,7 +279,7 @@ void AsyncCallStackTracker::didRequestAnimationFrame(ExecutionContext* context, 
         return;
     ASSERT(callbackId > 0);
     ExecutionContextData* data = createContextDataIfNeeded(context);
-    data->m_animationFrameCallChains.set(callbackId, createAsyncCallChain(data, requestAnimationFrameName, callFrames));
+    data->m_animationFrameCallChains.set(callbackId, createAsyncCallChain(requestAnimationFrameName, callFrames));
 }
 
 void AsyncCallStackTracker::didCancelAnimationFrame(ExecutionContext* context, int callbackId)
@@ -229,10 +298,12 @@ bool AsyncCallStackTracker::willFireAnimationFrame(ExecutionContext* context, in
     ASSERT(isEnabled());
     ASSERT(callbackId > 0);
     ASSERT(!m_currentAsyncCallChain);
-    if (ExecutionContextData* data = m_executionContextDataMap.get(context))
-        setCurrentAsyncCallChain(context, data->m_animationFrameCallChains.take(callbackId));
-    else
+    if (ExecutionContextData* data = m_executionContextDataMap.get(context)) {
+        setCurrentAsyncCallChain(context, data->m_animationFrameCallChains.get(callbackId));
+        data->m_animationFrameCallChains.remove(callbackId);
+    } else {
         setCurrentAsyncCallChain(context, nullptr);
+    }
     return true;
 }
 
@@ -245,7 +316,7 @@ void AsyncCallStackTracker::didEnqueueEvent(EventTarget* eventTarget, Event* eve
     if (!validateCallFrames(callFrames))
         return;
     ExecutionContextData* data = createContextDataIfNeeded(eventTarget->executionContext());
-    data->m_eventCallChains.set(event, createAsyncCallChain(data, event->type(), callFrames));
+    data->m_eventCallChains.set(event, createAsyncCallChain(event->type(), callFrames));
 }
 
 void AsyncCallStackTracker::didRemoveEvent(EventTarget* eventTarget, Event* event)
@@ -282,7 +353,7 @@ void AsyncCallStackTracker::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderCli
     if (!validateCallFrames(callFrames))
         return;
     ExecutionContextData* data = createContextDataIfNeeded(xhr->executionContext());
-    data->m_xhrCallChains.set(xhr, createAsyncCallChain(data, xhrSendName, callFrames));
+    data->m_xhrCallChains.set(xhr, createAsyncCallChain(xhrSendName, callFrames));
 }
 
 void AsyncCallStackTracker::didDispatchXHRLoadendEvent(XMLHttpRequest* xhr)
@@ -315,7 +386,7 @@ void AsyncCallStackTracker::didEnqueueMutationRecord(ExecutionContext* context, 
     ScriptValue callFrames = m_scriptDebugServer->currentCallFramesForAsyncStack();
     if (!validateCallFrames(callFrames))
         return;
-    data->m_mutationObserverCallChains.set(observer, createAsyncCallChain(data, enqueueMutationRecordName, callFrames));
+    data->m_mutationObserverCallChains.set(observer, createAsyncCallChain(enqueueMutationRecordName, callFrames));
 }
 
 void AsyncCallStackTracker::didClearAllMutationRecords(ExecutionContext* context, MutationObserver* observer)
@@ -330,10 +401,12 @@ void AsyncCallStackTracker::willDeliverMutationRecords(ExecutionContext* context
 {
     ASSERT(context);
     ASSERT(isEnabled());
-    if (ExecutionContextData* data = m_executionContextDataMap.get(context))
-        setCurrentAsyncCallChain(context, data->m_mutationObserverCallChains.take(observer));
-    else
+    if (ExecutionContextData* data = m_executionContextDataMap.get(context)) {
+        setCurrentAsyncCallChain(context, data->m_mutationObserverCallChains.get(observer));
+        data->m_mutationObserverCallChains.remove(observer);
+    } else {
         setCurrentAsyncCallChain(context, nullptr);
+    }
 }
 
 void AsyncCallStackTracker::didPostExecutionContextTask(ExecutionContext* context, ExecutionContextTask* task)
@@ -347,7 +420,7 @@ void AsyncCallStackTracker::didPostExecutionContextTask(ExecutionContext* contex
     if (!validateCallFrames(callFrames))
         return;
     ExecutionContextData* data = createContextDataIfNeeded(context);
-    data->m_executionContextTaskCallChains.set(task, createAsyncCallChain(data, task->taskNameForInstrumentation(), callFrames));
+    data->m_executionContextTaskCallChains.set(task, createAsyncCallChain(task->taskNameForInstrumentation(), callFrames));
 }
 
 void AsyncCallStackTracker::didKillAllExecutionContextTasks(ExecutionContext* context)
@@ -362,10 +435,12 @@ void AsyncCallStackTracker::willPerformExecutionContextTask(ExecutionContext* co
 {
     ASSERT(context);
     ASSERT(isEnabled());
-    if (ExecutionContextData* data = m_executionContextDataMap.get(context))
-        setCurrentAsyncCallChain(context, data->m_executionContextTaskCallChains.take(task));
-    else
+    if (ExecutionContextData* data = m_executionContextDataMap.get(context)) {
+        setCurrentAsyncCallChain(context, data->m_executionContextTaskCallChains.get(task));
+        data->m_executionContextTaskCallChains.remove(task);
+    } else {
         setCurrentAsyncCallChain(context, nullptr);
+    }
 }
 
 static String makeV8AsyncTaskUniqueId(const String& eventName, int id)
@@ -383,17 +458,20 @@ void AsyncCallStackTracker::didEnqueueV8AsyncTask(ExecutionContext* context, con
     if (!validateCallFrames(callFrames))
         return;
     ExecutionContextData* data = createContextDataIfNeeded(context);
-    data->m_v8AsyncTaskCallChains.set(makeV8AsyncTaskUniqueId(eventName, id), createAsyncCallChain(data, eventName, callFrames));
+    data->m_v8AsyncTaskCallChains.set(makeV8AsyncTaskUniqueId(eventName, id), createAsyncCallChain(eventName, callFrames));
 }
 
 void AsyncCallStackTracker::willHandleV8AsyncTask(ExecutionContext* context, const String& eventName, int id)
 {
     ASSERT(context);
     ASSERT(isEnabled());
-    if (ExecutionContextData* data = m_executionContextDataMap.get(context))
-        setCurrentAsyncCallChain(context, data->m_v8AsyncTaskCallChains.take(makeV8AsyncTaskUniqueId(eventName, id)));
-    else
+    if (ExecutionContextData* data = m_executionContextDataMap.get(context)) {
+        String taskId = makeV8AsyncTaskUniqueId(eventName, id);
+        setCurrentAsyncCallChain(context, data->m_v8AsyncTaskCallChains.get(taskId));
+        data->m_v8AsyncTaskCallChains.remove(taskId);
+    } else {
         setCurrentAsyncCallChain(context, nullptr);
+    }
 }
 
 int AsyncCallStackTracker::traceAsyncOperationStarting(ExecutionContext* context, const String& operationName, int prevOperationId)
@@ -407,8 +485,8 @@ int AsyncCallStackTracker::traceAsyncOperationStarting(ExecutionContext* context
     if (!validateCallFrames(callFrames))
         return 0;
     ExecutionContextData* data = createContextDataIfNeeded(context);
-    RefPtrWillBeRawPtr<AsyncCallChain> chain = createAsyncCallChain(data, operationName, callFrames);
-    int id = chain->asyncOperationId();
+    RefPtrWillBeRawPtr<AsyncCallChain> chain = createAsyncCallChain(operationName, callFrames);
+    int id = data->nextAsyncOperationUniqueId();
     data->m_asyncOperationCallChains.set(id, chain.release());
     return id;
 }
@@ -444,7 +522,7 @@ void AsyncCallStackTracker::didFireAsyncCall()
     clearCurrentAsyncCallChain();
 }
 
-PassRefPtrWillBeRawPtr<AsyncCallStackTracker::AsyncCallChain> AsyncCallStackTracker::createAsyncCallChain(ExecutionContextData* data, const String& description, const ScriptValue& callFrames)
+PassRefPtrWillBeRawPtr<AsyncCallStackTracker::AsyncCallChain> AsyncCallStackTracker::createAsyncCallChain(const String& description, const ScriptValue& callFrames)
 {
     if (callFrames.isEmpty()) {
         ASSERT(m_currentAsyncCallChain);
@@ -452,10 +530,7 @@ PassRefPtrWillBeRawPtr<AsyncCallStackTracker::AsyncCallChain> AsyncCallStackTrac
             m_listener->didCreateAsyncCallChain(m_currentAsyncCallChain.get());
         return m_currentAsyncCallChain; // Propogate async call stack chain.
     }
-    int id = circularSequentialId();
-    while (data->m_asyncOperationCallChains.contains(id))
-        id = circularSequentialId();
-    RefPtrWillBeRawPtr<AsyncCallChain> chain = adoptRefWillBeNoop(m_currentAsyncCallChain ? new AsyncCallStackTracker::AsyncCallChain(id, *m_currentAsyncCallChain) : new AsyncCallStackTracker::AsyncCallChain(id));
+    RefPtrWillBeRawPtr<AsyncCallChain> chain = adoptRefWillBeNoop(m_currentAsyncCallChain ? new AsyncCallStackTracker::AsyncCallChain(*m_currentAsyncCallChain) : new AsyncCallStackTracker::AsyncCallChain());
     ensureMaxAsyncCallChainDepth(chain.get(), m_maxAsyncCallStackDepth - 1);
     chain->m_callStacks.prepend(adoptRefWillBeNoop(new AsyncCallStackTracker::AsyncCallStack(description, callFrames)));
     if (m_listener)
@@ -472,7 +547,7 @@ void AsyncCallStackTracker::setCurrentAsyncCallChain(ExecutionContext* context, 
         m_currentAsyncCallChain = chain;
         m_nestedAsyncCallCount = 1;
         if (m_listener)
-            m_listener->didChangeCurrentAsyncCallChain(m_currentAsyncCallChain.get());
+            m_listener->didSetCurrentAsyncCallChain(m_currentAsyncCallChain.get());
     } else {
         if (m_currentAsyncCallChain)
             ++m_nestedAsyncCallCount;
@@ -488,7 +563,7 @@ void AsyncCallStackTracker::clearCurrentAsyncCallChain()
     if (!m_nestedAsyncCallCount) {
         m_currentAsyncCallChain.clear();
         if (m_listener)
-            m_listener->didChangeCurrentAsyncCallChain(nullptr);
+            m_listener->didClearCurrentAsyncCallChain();
     }
 }
 
@@ -501,14 +576,6 @@ void AsyncCallStackTracker::ensureMaxAsyncCallChainDepth(AsyncCallChain* chain, 
 bool AsyncCallStackTracker::validateCallFrames(const ScriptValue& callFrames)
 {
     return !callFrames.isEmpty() || m_currentAsyncCallChain;
-}
-
-int AsyncCallStackTracker::circularSequentialId()
-{
-    ++m_circularSequentialId;
-    if (m_circularSequentialId <= 0)
-        m_circularSequentialId = 1;
-    return m_circularSequentialId;
 }
 
 AsyncCallStackTracker::ExecutionContextData* AsyncCallStackTracker::createContextDataIfNeeded(ExecutionContext* context)

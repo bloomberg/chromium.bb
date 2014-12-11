@@ -74,14 +74,12 @@ public:
 
     class AsyncCallChain final : public RefCountedWillBeGarbageCollectedFinalized<AsyncCallChain> {
     public:
-        explicit AsyncCallChain(int id) : m_id(id) { }
-        AsyncCallChain(int id, const AsyncCallChain& t) : m_id(id), m_callStacks(t.m_callStacks) { }
-        int asyncOperationId() const { return m_id; }
+        AsyncCallChain() { }
+        explicit AsyncCallChain(const AsyncCallChain& t) : m_callStacks(t.m_callStacks) { }
         AsyncCallStackVector callStacks() const { return m_callStacks; }
         void trace(Visitor*);
     private:
         friend class AsyncCallStackTracker;
-        int m_id;
         AsyncCallStackVector m_callStacks;
     };
 
@@ -135,8 +133,10 @@ public:
     class Listener : public WillBeGarbageCollectedMixin {
     public:
         virtual ~Listener() { }
-        virtual void didCreateAsyncCallChain(const AsyncCallChain*) = 0;
-        virtual void didChangeCurrentAsyncCallChain(const AsyncCallChain*) = 0;
+        virtual void didCreateAsyncCallChain(AsyncCallChain*) = 0;
+        virtual void didSetCurrentAsyncCallChain(AsyncCallChain*) = 0;
+        virtual void didClearCurrentAsyncCallChain() = 0;
+        virtual void didRemoveAsyncCallChain(AsyncCallChain*) = 0;
     };
     void setListener(Listener* listener) { m_listener = listener; }
 
@@ -145,18 +145,17 @@ public:
     class ExecutionContextData;
 
 private:
+    template <class K> class AsyncCallChainMap;
     void willHandleXHREvent(XMLHttpRequest*, Event*);
 
-    PassRefPtrWillBeRawPtr<AsyncCallChain> createAsyncCallChain(ExecutionContextData*, const String& description, const ScriptValue& callFrames);
+    PassRefPtrWillBeRawPtr<AsyncCallChain> createAsyncCallChain(const String& description, const ScriptValue& callFrames);
     void setCurrentAsyncCallChain(ExecutionContext*, PassRefPtrWillBeRawPtr<AsyncCallChain>);
     void clearCurrentAsyncCallChain();
     static void ensureMaxAsyncCallChainDepth(AsyncCallChain*, unsigned);
     bool validateCallFrames(const ScriptValue& callFrames);
-    int circularSequentialId();
 
     ExecutionContextData* createContextDataIfNeeded(ExecutionContext*);
 
-    int m_circularSequentialId;
     unsigned m_maxAsyncCallStackDepth;
     RefPtrWillBeMember<AsyncCallChain> m_currentAsyncCallChain;
     unsigned m_nestedAsyncCallCount;
