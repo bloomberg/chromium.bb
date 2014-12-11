@@ -3533,3 +3533,11 @@
    ...
    fun:_ZN3gpu22InProcessCommandBuffer21InitializeOnGpuThreadERKNS0_27InitializeOnGpuThreadParamsE
 }
+{
+   bug_441333
+   Memcheck:Uninitialized
+   fun:av_packet_unpack_dictionary
+   fun:add_metadata_from_side_data
+   fun:avcodec_decode_*
+   fun:avcodec_decode_*
+}
