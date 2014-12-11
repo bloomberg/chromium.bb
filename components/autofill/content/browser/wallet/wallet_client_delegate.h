@@ -29,10 +29,6 @@ class WalletClientDelegate {
   // Accessors called when making requests.
   // --------------------------------------
 
-  // Returns the MetricLogger instance that should be used for logging Online
-  // Wallet metrics.
-  virtual const AutofillMetrics& GetMetricLogger() const = 0;
-
   // Returns the serialized fingerprint data to be sent to the Risk server.
   virtual std::string GetRiskData() const = 0;
 

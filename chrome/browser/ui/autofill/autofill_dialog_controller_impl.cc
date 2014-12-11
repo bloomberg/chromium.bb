@@ -650,7 +650,7 @@ AutofillDialogControllerImpl::~AutofillDialogControllerImpl() {
   if (popup_controller_)
     popup_controller_->Hide();
 
-  GetMetricLogger().LogDialogInitialUserState(initial_user_state_);
+  AutofillMetrics::LogDialogInitialUserState(initial_user_state_);
 }
 
 // Checks the country code against the values the form structure enumerates.
@@ -799,9 +799,9 @@ void AutofillDialogControllerImpl::Show() {
   }
 
   // Log any relevant UI metrics and security exceptions.
-  GetMetricLogger().LogDialogUiEvent(AutofillMetrics::DIALOG_UI_SHOWN);
+  AutofillMetrics::LogDialogUiEvent(AutofillMetrics::DIALOG_UI_SHOWN);
 
-  GetMetricLogger().LogDialogSecurityMetric(
+  AutofillMetrics::LogDialogSecurityMetric(
       AutofillMetrics::SECURITY_METRIC_DIALOG_SHOWN);
 
   // The Autofill dialog is shown in response to a message from the renderer and
@@ -814,7 +814,7 @@ void AutofillDialogControllerImpl::Show() {
       current_url.GetOrigin() == source_url_.GetOrigin();
 
   if (!invoked_from_same_origin_) {
-    GetMetricLogger().LogDialogSecurityMetric(
+    AutofillMetrics::LogDialogSecurityMetric(
         AutofillMetrics::SECURITY_METRIC_CROSS_ORIGIN_FRAME);
   }
 
@@ -847,10 +847,7 @@ void AutofillDialogControllerImpl::Show() {
       HTML_TYPE_TRANSACTION_CURRENCY);
 
   account_chooser_model_.reset(
-      new AccountChooserModel(this,
-                              profile_,
-                              !ShouldShowAccountChooser(),
-                              metric_logger_));
+      new AccountChooserModel(this, profile_, !ShouldShowAccountChooser()));
 
   acceptable_cc_types_ = form_structure_.PossibleValues(CREDIT_CARD_TYPE);
   // Wallet generates MC virtual cards, so we have to disable it if MC is not
@@ -2283,8 +2280,7 @@ void AutofillDialogControllerImpl::ShowSignIn(const GURL& url) {
     signin_registrar_.Add(
         this, content::NOTIFICATION_NAV_ENTRY_COMMITTED, source);
 
-    GetMetricLogger().LogDialogUiEvent(
-        AutofillMetrics::DIALOG_UI_SIGNIN_SHOWN);
+    AutofillMetrics::LogDialogUiEvent(AutofillMetrics::DIALOG_UI_SIGNIN_SHOWN);
   } else {
     waiting_for_explicit_sign_in_response_ = false;
     HideSignIn();
@@ -2392,7 +2388,7 @@ void AutofillDialogControllerImpl::OnPopupShown() {
   ScopedViewUpdates update(view_.get());
   view_->UpdateErrorBubble();
 
-  GetMetricLogger().LogDialogPopupEvent(AutofillMetrics::DIALOG_POPUP_SHOWN);
+  AutofillMetrics::LogDialogPopupEvent(AutofillMetrics::DIALOG_POPUP_SHOWN);
 }
 
 void AutofillDialogControllerImpl::OnPopupHidden() {}
@@ -2465,7 +2461,7 @@ void AutofillDialogControllerImpl::DidAcceptSuggestion(
   wrapper->FillInputs(MutableRequestedFieldsForSection(popup_section_));
   view_->FillSection(popup_section_, popup_input_type);
 
-  GetMetricLogger().LogDialogPopupEvent(
+  AutofillMetrics::LogDialogPopupEvent(
       AutofillMetrics::DIALOG_POPUP_FORM_FILLED);
 
   // TODO(estade): not sure why it's necessary to do this explicitly.
@@ -2548,10 +2544,6 @@ void AutofillDialogControllerImpl::SuggestionItemSelected(
 
 ////////////////////////////////////////////////////////////////////////////////
 // wallet::WalletClientDelegate implementation.
-
-const AutofillMetrics& AutofillDialogControllerImpl::GetMetricLogger() const {
-  return metric_logger_;
-}
 
 std::string AutofillDialogControllerImpl::GetRiskData() const {
   DCHECK(!risk_data_.empty());
@@ -4012,11 +4004,11 @@ bool AutofillDialogControllerImpl::GetAutofillChoice(DialogSection section,
 }
 
 void AutofillDialogControllerImpl::LogOnFinishSubmitMetrics() {
-  GetMetricLogger().LogDialogUiDuration(
+  AutofillMetrics::LogDialogUiDuration(
       base::Time::Now() - dialog_shown_timestamp_,
       AutofillMetrics::DIALOG_ACCEPTED);
 
-  GetMetricLogger().LogDialogUiEvent(AutofillMetrics::DIALOG_UI_ACCEPTED);
+  AutofillMetrics::LogDialogUiEvent(AutofillMetrics::DIALOG_UI_ACCEPTED);
 
   AutofillMetrics::DialogDismissalState dismissal_state;
   if (!IsManuallyEditingAnySection()) {
@@ -4031,11 +4023,11 @@ void AutofillDialogControllerImpl::LogOnFinishSubmitMetrics() {
     dismissal_state = AutofillMetrics::DIALOG_ACCEPTED_NO_SAVE;
   }
 
-  GetMetricLogger().LogDialogDismissalState(dismissal_state);
+  AutofillMetrics::LogDialogDismissalState(dismissal_state);
 }
 
 void AutofillDialogControllerImpl::LogOnCancelMetrics() {
-  GetMetricLogger().LogDialogUiEvent(AutofillMetrics::DIALOG_UI_CANCELED);
+  AutofillMetrics::LogDialogUiEvent(AutofillMetrics::DIALOG_UI_CANCELED);
 
   AutofillMetrics::DialogDismissalState dismissal_state;
   if (ShouldShowSignInWebView())
@@ -4047,9 +4039,9 @@ void AutofillDialogControllerImpl::LogOnCancelMetrics() {
   else
     dismissal_state = AutofillMetrics::DIALOG_CANCELED_WITH_INVALID_FIELDS;
 
-  GetMetricLogger().LogDialogDismissalState(dismissal_state);
+  AutofillMetrics::LogDialogDismissalState(dismissal_state);
 
-  GetMetricLogger().LogDialogUiDuration(
+  AutofillMetrics::LogDialogUiDuration(
       base::Time::Now() - dialog_shown_timestamp_,
       AutofillMetrics::DIALOG_CANCELED);
 }
@@ -4071,15 +4063,15 @@ void AutofillDialogControllerImpl::LogSuggestionItemSelectedMetric(
     return;
   }
 
-  GetMetricLogger().LogDialogUiEvent(dialog_ui_event);
+  AutofillMetrics::LogDialogUiEvent(dialog_ui_event);
 }
 
 void AutofillDialogControllerImpl::LogDialogLatencyToShow() {
   if (was_ui_latency_logged_)
     return;
 
-  GetMetricLogger().LogDialogLatencyToShow(
-      base::Time::Now() - dialog_shown_timestamp_);
+  AutofillMetrics::LogDialogLatencyToShow(base::Time::Now() -
+                                          dialog_shown_timestamp_);
   was_ui_latency_logged_ = true;
 }
 

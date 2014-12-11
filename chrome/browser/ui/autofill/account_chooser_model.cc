@@ -24,16 +24,13 @@ const int AccountChooserModel::kWalletAccountsStartId = 2;
 
 AccountChooserModelDelegate::~AccountChooserModelDelegate() {}
 
-AccountChooserModel::AccountChooserModel(
-    AccountChooserModelDelegate* delegate,
-    Profile* profile,
-    bool disable_wallet,
-    const AutofillMetrics& metric_logger)
+AccountChooserModel::AccountChooserModel(AccountChooserModelDelegate* delegate,
+                                         Profile* profile,
+                                         bool disable_wallet)
     : ui::SimpleMenuModel(this),
       delegate_(delegate),
       checked_item_(kWalletAccountsStartId),
-      had_wallet_error_(false),
-      metric_logger_(metric_logger) {
+      had_wallet_error_(false) {
   if (profile->GetPrefs()->GetBoolean(
           ::prefs::kAutofillDialogPayWithoutWallet) ||
       profile->IsOffTheRecord() ||
@@ -129,7 +126,7 @@ void AccountChooserModel::ExecuteCommand(int command_id, int event_flags) {
     chooser_event =
         AutofillMetrics::DIALOG_UI_ACCOUNT_CHOOSER_SWITCHED_WALLET_ACCOUNT;
   }
-  metric_logger_.LogDialogUiEvent(chooser_event);
+  AutofillMetrics::LogDialogUiEvent(chooser_event);
 
   DoAccountSwitch(command_id);
 }

@@ -32,13 +32,11 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   TestAutofillDialogController(
       content::WebContents* contents,
       const FormData& form_structure,
-      const AutofillMetrics& metric_logger,
       scoped_refptr<content::MessageLoopRunner> runner)
       : AutofillDialogControllerImpl(contents,
                                      form_structure,
                                      GURL(),
                                      base::Bind(MockCallback)),
-        metric_logger_(metric_logger) ,
         runner_(runner) {}
 
   ~TestAutofillDialogController() override {}
@@ -55,12 +53,6 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   }
 
  private:
-  // To specify our own metric logger.
-  const AutofillMetrics& GetMetricLogger() const override {
-    return metric_logger_;
-  }
-
-  const AutofillMetrics& metric_logger_;
   scoped_refptr<content::MessageLoopRunner> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDialogController);
@@ -88,7 +80,6 @@ class AutofillDialogCocoaBrowserTest : public InProcessBrowserTest {
     controller_ = new TestAutofillDialogController(
         browser()->tab_strip_model()->GetActiveWebContents(),
         form_data,
-        metric_logger_,
         runner_);
   }
 
@@ -103,8 +94,6 @@ class AutofillDialogCocoaBrowserTest : public InProcessBrowserTest {
   // The controller owns itself.
   TestAutofillDialogController* controller_;
 
-  // The following members must outlive the controller.
-  AutofillMetrics metric_logger_;
   scoped_refptr<content::MessageLoopRunner> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogCocoaBrowserTest);

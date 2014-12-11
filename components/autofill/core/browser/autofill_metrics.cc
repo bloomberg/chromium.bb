@@ -272,37 +272,40 @@ void AutofillMetrics::LogCreditCardInfoBarMetric(InfoBarMetric metric) {
                             NUM_INFO_BAR_METRICS);
 }
 
-void AutofillMetrics::LogDialogDismissalState(
-    DialogDismissalState state) const {
+// static
+void AutofillMetrics::LogDialogDismissalState(DialogDismissalState state) {
   UMA_HISTOGRAM_ENUMERATION("RequestAutocomplete.DismissalState",
                             state, NUM_DIALOG_DISMISSAL_STATES);
 }
 
+// static
 void AutofillMetrics::LogDialogInitialUserState(
-    DialogInitialUserStateMetric user_type) const {
+    DialogInitialUserStateMetric user_type) {
   UMA_HISTOGRAM_ENUMERATION("RequestAutocomplete.InitialUserState",
                             user_type, NUM_DIALOG_INITIAL_USER_STATE_METRICS);
 }
 
-void AutofillMetrics::LogDialogLatencyToShow(
-    const base::TimeDelta& duration) const {
+// static
+void AutofillMetrics::LogDialogLatencyToShow(const base::TimeDelta& duration) {
   LogUMAHistogramTimes("RequestAutocomplete.UiLatencyToShow", duration);
 }
 
-void AutofillMetrics::LogDialogPopupEvent(DialogPopupEvent event) const {
+// static
+void AutofillMetrics::LogDialogPopupEvent(DialogPopupEvent event) {
   UMA_HISTOGRAM_ENUMERATION("RequestAutocomplete.PopupInDialog",
                             event, NUM_DIALOG_POPUP_EVENTS);
 }
 
-void AutofillMetrics::LogDialogSecurityMetric(
-    DialogSecurityMetric metric) const {
+// static
+void AutofillMetrics::LogDialogSecurityMetric(DialogSecurityMetric metric) {
   UMA_HISTOGRAM_ENUMERATION("RequestAutocomplete.Security",
                             metric, NUM_DIALOG_SECURITY_METRICS);
 }
 
+// static
 void AutofillMetrics::LogDialogUiDuration(
     const base::TimeDelta& duration,
-    DialogDismissalAction dismissal_action) const {
+    DialogDismissalAction dismissal_action) {
   std::string suffix;
   switch (dismissal_action) {
     case DIALOG_ACCEPTED:
@@ -319,36 +322,42 @@ void AutofillMetrics::LogDialogUiDuration(
                            duration);
 }
 
-void AutofillMetrics::LogDialogUiEvent(DialogUiEvent event) const {
+// static
+void AutofillMetrics::LogDialogUiEvent(DialogUiEvent event) {
   UMA_HISTOGRAM_ENUMERATION("RequestAutocomplete.UiEvents", event,
                             NUM_DIALOG_UI_EVENTS);
 }
 
-void AutofillMetrics::LogWalletErrorMetric(WalletErrorMetric metric) const {
+// static
+void AutofillMetrics::LogWalletErrorMetric(WalletErrorMetric metric) {
   UMA_HISTOGRAM_ENUMERATION("RequestAutocomplete.WalletErrors", metric,
                             NUM_WALLET_ERROR_METRICS);
 }
 
+// static
 void AutofillMetrics::LogWalletApiCallDuration(
     WalletApiCallMetric metric,
-    const base::TimeDelta& duration) const {
+    const base::TimeDelta& duration) {
   LogUMAHistogramTimes("Wallet.ApiCallDuration." +
                        WalletApiMetricToString(metric), duration);
 }
 
+// static
 void AutofillMetrics::LogWalletMalformedResponseMetric(
-    WalletApiCallMetric metric) const {
+    WalletApiCallMetric metric) {
   UMA_HISTOGRAM_ENUMERATION("Wallet.MalformedResponse", metric,
                             NUM_WALLET_API_CALLS);
 }
 
+// static
 void AutofillMetrics::LogWalletRequiredActionMetric(
-      WalletRequiredActionMetric required_action) const {
+    WalletRequiredActionMetric required_action) {
   UMA_HISTOGRAM_ENUMERATION("RequestAutocomplete.WalletRequiredActions",
                             required_action, NUM_WALLET_REQUIRED_ACTIONS);
 }
 
-void AutofillMetrics::LogWalletResponseCode(int response_code) const {
+// static
+void AutofillMetrics::LogWalletResponseCode(int response_code) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("Wallet.ResponseCode", response_code);
 }
 

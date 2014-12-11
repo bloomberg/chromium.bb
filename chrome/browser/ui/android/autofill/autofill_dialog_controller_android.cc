@@ -292,13 +292,13 @@ void AutofillDialogControllerAndroid::Show() {
   }
 
   // Log any relevant UI metrics and security exceptions.
-  GetMetricLogger().LogDialogUiEvent(AutofillMetrics::DIALOG_UI_SHOWN);
+  AutofillMetrics::LogDialogUiEvent(AutofillMetrics::DIALOG_UI_SHOWN);
 
-  GetMetricLogger().LogDialogSecurityMetric(
+  AutofillMetrics::LogDialogSecurityMetric(
       AutofillMetrics::SECURITY_METRIC_DIALOG_SHOWN);
 
   if (!invoked_from_same_origin_) {
-    GetMetricLogger().LogDialogSecurityMetric(
+    AutofillMetrics::LogDialogSecurityMetric(
         AutofillMetrics::SECURITY_METRIC_CROSS_ORIGIN_FRAME);
   }
 
@@ -520,19 +520,19 @@ AutofillDialogControllerAndroid::AutofillDialogControllerAndroid(
 }
 
 void AutofillDialogControllerAndroid::LogOnFinishSubmitMetrics() {
-  GetMetricLogger().LogDialogUiDuration(
+  AutofillMetrics::LogDialogUiDuration(
       base::Time::Now() - dialog_shown_timestamp_,
       AutofillMetrics::DIALOG_ACCEPTED);
 
-  GetMetricLogger().LogDialogUiEvent(AutofillMetrics::DIALOG_UI_ACCEPTED);
+  AutofillMetrics::LogDialogUiEvent(AutofillMetrics::DIALOG_UI_ACCEPTED);
 }
 
 void AutofillDialogControllerAndroid::LogOnCancelMetrics() {
-  GetMetricLogger().LogDialogUiDuration(
+  AutofillMetrics::LogDialogUiDuration(
       base::Time::Now() - dialog_shown_timestamp_,
       AutofillMetrics::DIALOG_CANCELED);
 
-  GetMetricLogger().LogDialogUiEvent(AutofillMetrics::DIALOG_UI_CANCELED);
+  AutofillMetrics::LogDialogUiEvent(AutofillMetrics::DIALOG_UI_CANCELED);
 }
 
 }  // namespace autofill

@@ -182,7 +182,6 @@ class AutofillDialogControllerImpl
                               size_t index) override;
 
   // wallet::WalletClientDelegate implementation.
-  const AutofillMetrics& GetMetricLogger() const override;
   std::string GetRiskData() const override;
   std::string GetWalletCookieValue() const override;
   bool IsShippingAddressRequired() const override;
@@ -629,7 +628,6 @@ class AutofillDialogControllerImpl
   Profile* const profile_;
 
   // For logging UMA metrics.
-  const AutofillMetrics metric_logger_;
   base::Time dialog_shown_timestamp_;
   AutofillMetrics::DialogInitialUserStateMetric initial_user_state_;
 

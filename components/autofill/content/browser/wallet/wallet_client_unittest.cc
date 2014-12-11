@@ -12,6 +12,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/histogram_tester.h"
 #include "base/values.h"
 #include "components/autofill/content/browser/wallet/full_wallet.h"
 #include "components/autofill/content/browser/wallet/instrument.h"
@@ -634,20 +635,22 @@ const char kUpdateInstrumentExpirationDateValidRequest[] =
         "\"use_minimal_addresses\":false"
     "}";
 
-class MockAutofillMetrics : public AutofillMetrics {
- public:
-  MockAutofillMetrics() {}
-  MOCK_CONST_METHOD2(LogWalletApiCallDuration,
-                     void(WalletApiCallMetric metric,
-                          const base::TimeDelta& duration));
-  MOCK_CONST_METHOD1(LogWalletErrorMetric, void(WalletErrorMetric metric));
-  MOCK_CONST_METHOD1(LogWalletRequiredActionMetric,
-                     void(WalletRequiredActionMetric action));
-  MOCK_CONST_METHOD1(LogWalletMalformedResponseMetric,
-                     void(WalletApiCallMetric metric));
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockAutofillMetrics);
-};
+void ExpectBaselineMetrics(const base::HistogramTester& histogram) {
+  histogram.ExpectBucketCount(
+      "RequestAutocomplete.WalletErrors",
+      AutofillMetrics::WALLET_ERROR_BASELINE_ISSUED_REQUEST, 1);
+  histogram.ExpectBucketCount(
+      "RequestAutocomplete.WalletRequiredActions",
+      AutofillMetrics::WALLET_REQUIRED_ACTION_BASELINE_ISSUED_REQUEST, 1);
+}
+
+void ExpectCommonWalletRequiredActionMetrics(
+    const base::HistogramTester& histogram) {
+  histogram.ExpectBucketCount("RequestAutocomplete.WalletRequiredActions",
+                              AutofillMetrics::REQUIRE_PHONE_NUMBER, 1);
+  histogram.ExpectBucketCount("RequestAutocomplete.WalletRequiredActions",
+                              AutofillMetrics::INVALID_FORM_FIELD, 1);
+}
 
 class MockWalletClientDelegate : public WalletClientDelegate {
  public:
@@ -656,10 +659,6 @@ class MockWalletClientDelegate : public WalletClientDelegate {
         wallet_items_received_(0),
         is_shipping_required_(true) {}
   ~MockWalletClientDelegate() {}
-
-  virtual const AutofillMetrics& GetMetricLogger() const override {
-    return metric_logger_;
-  }
 
   virtual std::string GetRiskData() const override {
     return "risky business";
@@ -675,43 +674,6 @@ class MockWalletClientDelegate : public WalletClientDelegate {
 
   void SetIsShippingAddressRequired(bool is_shipping_required) {
     is_shipping_required_ = is_shipping_required;
-  }
-
-  void ExpectLogWalletApiCallDuration(
-      AutofillMetrics::WalletApiCallMetric metric,
-      size_t times) {
-    EXPECT_CALL(metric_logger_,
-                LogWalletApiCallDuration(metric, testing::_)).Times(times);
-  }
-
-  void ExpectLogWalletMalformedResponse(
-      AutofillMetrics::WalletApiCallMetric metric) {
-    EXPECT_CALL(metric_logger_,
-                LogWalletMalformedResponseMetric(metric)).Times(1);
-  }
-
-  void ExpectWalletErrorMetric(AutofillMetrics::WalletErrorMetric metric) {
-    EXPECT_CALL(metric_logger_, LogWalletErrorMetric(metric)).Times(1);
-  }
-
-  void ExpectWalletRequiredActionMetric(
-      AutofillMetrics::WalletRequiredActionMetric metric) {
-    EXPECT_CALL(metric_logger_,
-                LogWalletRequiredActionMetric(metric)).Times(1);
-  }
-
-  void ExpectBaselineMetrics() {
-    EXPECT_CALL(
-        metric_logger_,
-        LogWalletErrorMetric(
-            AutofillMetrics::WALLET_ERROR_BASELINE_ISSUED_REQUEST))
-                .Times(1);
-    ExpectWalletRequiredActionMetric(
-        AutofillMetrics::WALLET_REQUIRED_ACTION_BASELINE_ISSUED_REQUEST);
-  }
-
-  MockAutofillMetrics* metric_logger() {
-    return &metric_logger_;
   }
 
   MOCK_METHOD0(OnDidAcceptLegalDocuments, void());
@@ -739,8 +701,6 @@ class MockWalletClientDelegate : public WalletClientDelegate {
   size_t full_wallets_received_;
   size_t wallet_items_received_;
   bool is_shipping_required_;
-
-  testing::StrictMock<MockAutofillMetrics> metric_logger_;
 };
 
 }  // namespace
@@ -877,10 +837,7 @@ class WalletClientTest : public testing::Test {
         "  }"
         "}";
     EXPECT_CALL(delegate_, OnWalletError(expected_error_type)).Times(1);
-    delegate_.ExpectLogWalletApiCallDuration(
-        AutofillMetrics::GET_WALLET_ITEMS, 1);
-    delegate_.ExpectBaselineMetrics();
-    delegate_.ExpectWalletErrorMetric(expected_autofill_metric);
+    base::HistogramTester histogram;
 
     wallet_client_->GetWalletItems(base::string16(), base::string16());
     std::string buyer_error;
@@ -894,6 +851,11 @@ class WalletClientTest : public testing::Test {
     VerifyAndFinishRequest(net::HTTP_INTERNAL_SERVER_ERROR,
                            kGetWalletItemsValidRequest,
                            response);
+
+    histogram.ExpectTotalCount("Wallet.ApiCallDuration.GetWalletItems", 1);
+    histogram.ExpectBucketCount("RequestAutocomplete.WalletErrors",
+                                expected_autofill_metric, 1);
+    ExpectBaselineMetrics(histogram);
   }
 
  protected:
@@ -1022,46 +984,51 @@ TEST_F(WalletClientTest, WalletErrorCodes) {
 TEST_F(WalletClientTest, WalletErrorResponseMissing) {
   EXPECT_CALL(delegate_, OnWalletError(
       WalletClient::UNKNOWN_ERROR)).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(
-      AutofillMetrics::GET_WALLET_ITEMS, 1);
-  delegate_.ExpectBaselineMetrics();
-  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_UNKNOWN_ERROR);
+  base::HistogramTester histogram;
 
   wallet_client_->GetWalletItems(base::string16(), base::string16());
   VerifyAndFinishRequest(net::HTTP_INTERNAL_SERVER_ERROR,
                          kGetWalletItemsValidRequest,
                          kErrorTypeMissingInResponse);
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectBucketCount("RequestAutocomplete.WalletErrors",
+                              AutofillMetrics::WALLET_UNKNOWN_ERROR, 1);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.GetWalletItems", 1);
 }
 
 TEST_F(WalletClientTest, NetworkFailureOnExpectedResponse) {
   EXPECT_CALL(delegate_, OnWalletError(WalletClient::NETWORK_ERROR)).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
-                                           1);
-  delegate_.ExpectBaselineMetrics();
-  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_NETWORK_ERROR);
+  base::HistogramTester histogram;
 
   wallet_client_->GetWalletItems(base::string16(), base::string16());
   VerifyAndFinishRequest(net::HTTP_UNAUTHORIZED,
                          kGetWalletItemsValidRequest,
                          std::string());
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectBucketCount("RequestAutocomplete.WalletErrors",
+                              AutofillMetrics::WALLET_NETWORK_ERROR, 1);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.GetWalletItems", 1);
 }
 
 TEST_F(WalletClientTest, RequestError) {
   EXPECT_CALL(delegate_, OnWalletError(WalletClient::BAD_REQUEST)).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(
-      AutofillMetrics::GET_WALLET_ITEMS, 1);
-  delegate_.ExpectBaselineMetrics();
-  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_BAD_REQUEST);
+  base::HistogramTester histogram;
 
   wallet_client_->GetWalletItems(base::string16(), base::string16());
   VerifyAndFinishRequest(net::HTTP_BAD_REQUEST,
                          kGetWalletItemsValidRequest,
                          std::string());
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectBucketCount("RequestAutocomplete.WalletErrors",
+                              AutofillMetrics::WALLET_BAD_REQUEST, 1);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.GetWalletItems", 1);
 }
 
 TEST_F(WalletClientTest, GetFullWalletSuccess) {
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_FULL_WALLET, 1);
-  delegate_.ExpectBaselineMetrics();
+  base::HistogramTester histogram;
 
   WalletClient::FullWalletRequest full_wallet_request(
       "instrument_id",
@@ -1076,11 +1043,13 @@ TEST_F(WalletClientTest, GetFullWalletSuccess) {
                                     kGetFullWalletValidResponse,
                                     3U);
   EXPECT_EQ(1U, delegate_.full_wallets_received());
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.GetFullWallet", 1);
 }
 
 TEST_F(WalletClientTest, GetFullWalletSuccessNewuser) {
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_FULL_WALLET, 1);
-  delegate_.ExpectBaselineMetrics();
+  base::HistogramTester histogram;
 
   WalletClient::FullWalletRequest full_wallet_request(
       "instrument_id",
@@ -1095,11 +1064,13 @@ TEST_F(WalletClientTest, GetFullWalletSuccessNewuser) {
                                     kGetFullWalletValidResponse,
                                     3U);
   EXPECT_EQ(1U, delegate_.full_wallets_received());
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.GetFullWallet", 1);
 }
 
 TEST_F(WalletClientTest, GetFullWalletWithRiskCapabilitesSuccess) {
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_FULL_WALLET, 1);
-  delegate_.ExpectBaselineMetrics();
+  base::HistogramTester histogram;
 
   std::vector<WalletClient::RiskCapability> risk_capabilities;
   risk_capabilities.push_back(WalletClient::VERIFY_CVC);
@@ -1117,16 +1088,15 @@ TEST_F(WalletClientTest, GetFullWalletWithRiskCapabilitesSuccess) {
       kGetFullWalletValidResponse,
       3U);
   EXPECT_EQ(1U, delegate_.full_wallets_received());
-}
 
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.GetFullWallet", 1);
+}
 
 TEST_F(WalletClientTest, GetFullWalletMalformedResponse) {
   EXPECT_CALL(delegate_,
               OnWalletError(WalletClient::MALFORMED_RESPONSE)).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_FULL_WALLET, 1);
-  delegate_.ExpectBaselineMetrics();
-  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
-  delegate_.ExpectLogWalletMalformedResponse(AutofillMetrics::GET_FULL_WALLET);
+  base::HistogramTester histogram;
 
   WalletClient::FullWalletRequest full_wallet_request(
       "instrument_id",
@@ -1141,14 +1111,18 @@ TEST_F(WalletClientTest, GetFullWalletMalformedResponse) {
                                     kGetFullWalletInvalidResponse,
                                     3U);
   EXPECT_EQ(0U, delegate_.full_wallets_received());
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.GetFullWallet", 1);
+  histogram.ExpectBucketCount("RequestAutocomplete.WalletErrors",
+                              AutofillMetrics::WALLET_MALFORMED_RESPONSE, 1);
+  histogram.ExpectUniqueSample("Wallet.MalformedResponse",
+                               AutofillMetrics::GET_FULL_WALLET, 1);
 }
 
 TEST_F(WalletClientTest, AcceptLegalDocuments) {
   EXPECT_CALL(delegate_, OnDidAcceptLegalDocuments()).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(
-      AutofillMetrics::ACCEPT_LEGAL_DOCUMENTS,
-      1);
-  delegate_.ExpectBaselineMetrics();
+  base::HistogramTester histogram;
 
   ScopedVector<WalletItems::LegalDocument> docs;
   base::DictionaryValue document;
@@ -1170,14 +1144,14 @@ TEST_F(WalletClientTest, AcceptLegalDocuments) {
   VerifyAndFinishRequest(net::HTTP_OK,
                          kAcceptLegalDocumentsValidRequest,
                          ")}'");  // Invalid JSON. Should be ignored.
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.AcceptLegalDocuments", 1);
 }
 
 TEST_F(WalletClientTest, AuthenticateInstrumentSucceeded) {
   EXPECT_CALL(delegate_, OnDidAuthenticateInstrument(true)).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(
-      AutofillMetrics::AUTHENTICATE_INSTRUMENT,
-      1);
-  delegate_.ExpectBaselineMetrics();
+  base::HistogramTester histogram;
 
   wallet_client_->AuthenticateInstrument("instrument_id", "123");
 
@@ -1185,14 +1159,15 @@ TEST_F(WalletClientTest, AuthenticateInstrumentSucceeded) {
                                     kAuthenticateInstrumentValidRequest,
                                     kAuthenticateInstrumentSuccessResponse,
                                     3U);
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.AuthenticateInstrument",
+                             1);
 }
 
 TEST_F(WalletClientTest, AuthenticateInstrumentFailed) {
   EXPECT_CALL(delegate_, OnDidAuthenticateInstrument(false)).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(
-      AutofillMetrics::AUTHENTICATE_INSTRUMENT,
-      1);
-  delegate_.ExpectBaselineMetrics();
+  base::HistogramTester histogram;
 
   wallet_client_->AuthenticateInstrument("instrument_id", "123");
 
@@ -1200,18 +1175,16 @@ TEST_F(WalletClientTest, AuthenticateInstrumentFailed) {
                                     kAuthenticateInstrumentValidRequest,
                                     kAuthenticateInstrumentFailureResponse,
                                     3U);
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.AuthenticateInstrument",
+                             1);
 }
 
 TEST_F(WalletClientTest, AuthenticateInstrumentFailedMalformedResponse) {
   EXPECT_CALL(delegate_,
               OnWalletError(WalletClient::MALFORMED_RESPONSE)).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(
-      AutofillMetrics::AUTHENTICATE_INSTRUMENT,
-      1);
-  delegate_.ExpectBaselineMetrics();
-  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
-  delegate_.ExpectLogWalletMalformedResponse(
-      AutofillMetrics::AUTHENTICATE_INSTRUMENT);
+  base::HistogramTester histogram;
 
   wallet_client_->AuthenticateInstrument("instrument_id", "123");
 
@@ -1219,14 +1192,20 @@ TEST_F(WalletClientTest, AuthenticateInstrumentFailedMalformedResponse) {
                                     kAuthenticateInstrumentValidRequest,
                                     kSaveInvalidResponse,
                                     3U);
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectBucketCount("RequestAutocomplete.WalletErrors",
+                              AutofillMetrics::WALLET_MALFORMED_RESPONSE, 1);
+  histogram.ExpectUniqueSample("Wallet.MalformedResponse",
+                               AutofillMetrics::AUTHENTICATE_INSTRUMENT, 1);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.AuthenticateInstrument",
+                             1);
 }
 
 // TODO(ahutter): Add failure tests for GetWalletItems.
 
 TEST_F(WalletClientTest, GetWalletItems) {
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
-                                           1);
-  delegate_.ExpectBaselineMetrics();
+  base::HistogramTester histogram;
 
   wallet_client_->GetWalletItems(base::string16(), base::string16());
 
@@ -1234,12 +1213,13 @@ TEST_F(WalletClientTest, GetWalletItems) {
                          kGetWalletItemsValidRequest,
                          kGetWalletItemsValidResponse);
   EXPECT_EQ(1U, delegate_.wallet_items_received());
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.GetWalletItems", 1);
 }
 
 TEST_F(WalletClientTest, GetWalletItemsWithTransactionDetails) {
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
-                                           1);
-  delegate_.ExpectBaselineMetrics();
+  base::HistogramTester histogram;
 
   wallet_client_->GetWalletItems(base::ASCIIToUTF16("100.00"),
                                  base::ASCIIToUTF16("USD"));
@@ -1248,12 +1228,13 @@ TEST_F(WalletClientTest, GetWalletItemsWithTransactionDetails) {
                          kGetWalletItemsWithTransactionDetails,
                          kGetWalletItemsValidResponse);
   EXPECT_EQ(1U, delegate_.wallet_items_received());
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.GetWalletItems", 1);
 }
 
 TEST_F(WalletClientTest, GetWalletItemsRespectsDelegateForShippingRequired) {
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
-                                           1);
-  delegate_.ExpectBaselineMetrics();
+  base::HistogramTester histogram;
   delegate_.SetIsShippingAddressRequired(false);
 
   wallet_client_->GetWalletItems(base::string16(), base::string16());
@@ -1262,6 +1243,9 @@ TEST_F(WalletClientTest, GetWalletItemsRespectsDelegateForShippingRequired) {
                          kGetWalletItemsNoShippingRequest,
                          kGetWalletItemsValidResponse);
   EXPECT_EQ(1U, delegate_.wallet_items_received());
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.GetWalletItems", 1);
 }
 
 TEST_F(WalletClientTest, SaveAddressSucceeded) {
@@ -1270,8 +1254,7 @@ TEST_F(WalletClientTest, SaveAddressSucceeded) {
                                 "saved_address_id",
                                 std::vector<RequiredAction>(),
                                 std::vector<FormFieldError>())).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_TO_WALLET, 1);
-  delegate_.ExpectBaselineMetrics();
+  base::HistogramTester histogram;
 
   scoped_ptr<Address> address = GetTestSaveableAddress();
   wallet_client_->SaveToWallet(scoped_ptr<Instrument>(),
@@ -1281,15 +1264,13 @@ TEST_F(WalletClientTest, SaveAddressSucceeded) {
   VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveAddressValidRequest,
                          kSaveAddressValidResponse);
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.SaveToWallet", 1);
 }
 
 TEST_F(WalletClientTest, SaveAddressWithRequiredActionsSucceeded) {
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_TO_WALLET, 1);
-  delegate_.ExpectBaselineMetrics();
-  delegate_.ExpectWalletRequiredActionMetric(
-      AutofillMetrics::REQUIRE_PHONE_NUMBER);
-  delegate_.ExpectWalletRequiredActionMetric(
-      AutofillMetrics::INVALID_FORM_FIELD);
+  base::HistogramTester histogram;
 
   std::vector<RequiredAction> required_actions;
   required_actions.push_back(REQUIRE_PHONE_NUMBER);
@@ -1313,15 +1294,16 @@ TEST_F(WalletClientTest, SaveAddressWithRequiredActionsSucceeded) {
   VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveAddressValidRequest,
                          kSaveAddressWithRequiredActionsValidResponse);
+
+  ExpectBaselineMetrics(histogram);
+  ExpectCommonWalletRequiredActionMetrics(histogram);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.SaveToWallet", 1);
 }
 
 TEST_F(WalletClientTest, SaveAddressFailedInvalidRequiredAction) {
   EXPECT_CALL(delegate_,
               OnWalletError(WalletClient::MALFORMED_RESPONSE)).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_TO_WALLET, 1);
-  delegate_.ExpectBaselineMetrics();
-  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
-  delegate_.ExpectLogWalletMalformedResponse(AutofillMetrics::SAVE_TO_WALLET);
+  base::HistogramTester histogram;
 
   scoped_ptr<Address> address = GetTestSaveableAddress();
   wallet_client_->SaveToWallet(scoped_ptr<Instrument>(),
@@ -1331,15 +1313,21 @@ TEST_F(WalletClientTest, SaveAddressFailedInvalidRequiredAction) {
   VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveAddressValidRequest,
                          kSaveWithInvalidRequiredActionsResponse);
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectBucketCount("RequestAutocomplete.WalletErrors",
+                              AutofillMetrics::WALLET_MALFORMED_RESPONSE, 1);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.SaveToWallet", 1);
+  histogram.ExpectUniqueSample("Wallet.MalformedResponse",
+                               AutofillMetrics::SAVE_TO_WALLET, 1);
+  histogram.ExpectUniqueSample("Wallet.MalformedResponse",
+                               AutofillMetrics::SAVE_TO_WALLET, 1);
 }
 
 TEST_F(WalletClientTest, SaveAddressFailedMalformedResponse) {
   EXPECT_CALL(delegate_,
               OnWalletError(WalletClient::MALFORMED_RESPONSE)).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_TO_WALLET, 1);
-  delegate_.ExpectBaselineMetrics();
-  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
-  delegate_.ExpectLogWalletMalformedResponse(AutofillMetrics::SAVE_TO_WALLET);
+  base::HistogramTester histogram;
 
   scoped_ptr<Address> address = GetTestSaveableAddress();
   wallet_client_->SaveToWallet(scoped_ptr<Instrument>(),
@@ -1349,6 +1337,15 @@ TEST_F(WalletClientTest, SaveAddressFailedMalformedResponse) {
   VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveAddressValidRequest,
                          kSaveInvalidResponse);
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectBucketCount("RequestAutocomplete.WalletErrors",
+                              AutofillMetrics::WALLET_MALFORMED_RESPONSE, 1);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.SaveToWallet", 1);
+  histogram.ExpectUniqueSample("Wallet.MalformedResponse",
+                               AutofillMetrics::SAVE_TO_WALLET, 1);
+  histogram.ExpectUniqueSample("Wallet.MalformedResponse",
+                               AutofillMetrics::SAVE_TO_WALLET, 1);
 }
 
 TEST_F(WalletClientTest, SaveInstrumentSucceeded) {
@@ -1357,8 +1354,7 @@ TEST_F(WalletClientTest, SaveInstrumentSucceeded) {
                                 std::string(),
                                 std::vector<RequiredAction>(),
                                 std::vector<FormFieldError>())).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_TO_WALLET, 1);
-  delegate_.ExpectBaselineMetrics();
+  base::HistogramTester histogram;
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   wallet_client_->SaveToWallet(instrument.Pass(),
@@ -1370,15 +1366,13 @@ TEST_F(WalletClientTest, SaveInstrumentSucceeded) {
                                     kSaveInstrumentValidRequest,
                                     kSaveInstrumentValidResponse,
                                     4U);
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.SaveToWallet", 1);
 }
 
 TEST_F(WalletClientTest, SaveInstrumentWithRequiredActionsSucceeded) {
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_TO_WALLET, 1);
-  delegate_.ExpectBaselineMetrics();
-  delegate_.ExpectWalletRequiredActionMetric(
-      AutofillMetrics::REQUIRE_PHONE_NUMBER);
-  delegate_.ExpectWalletRequiredActionMetric(
-      AutofillMetrics::INVALID_FORM_FIELD);
+  base::HistogramTester histogram;
 
   std::vector<RequiredAction> required_actions;
   required_actions.push_back(REQUIRE_PHONE_NUMBER);
@@ -1405,13 +1399,14 @@ TEST_F(WalletClientTest, SaveInstrumentWithRequiredActionsSucceeded) {
       kSaveInstrumentValidRequest,
       kSaveInstrumentWithRequiredActionsValidResponse,
       4U);
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.SaveToWallet", 1);
+  ExpectCommonWalletRequiredActionMetrics(histogram);
 }
 
 TEST_F(WalletClientTest, SaveInstrumentFailedInvalidRequiredActions) {
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_TO_WALLET, 1);
-  delegate_.ExpectBaselineMetrics();
-  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
-  delegate_.ExpectLogWalletMalformedResponse(AutofillMetrics::SAVE_TO_WALLET);
+  base::HistogramTester histogram;
 
   EXPECT_CALL(delegate_,
               OnWalletError(WalletClient::MALFORMED_RESPONSE));
@@ -1426,15 +1421,19 @@ TEST_F(WalletClientTest, SaveInstrumentFailedInvalidRequiredActions) {
                                     kSaveInstrumentValidRequest,
                                     kSaveWithInvalidRequiredActionsResponse,
                                     4U);
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectBucketCount("RequestAutocomplete.WalletErrors",
+                              AutofillMetrics::WALLET_MALFORMED_RESPONSE, 1);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.SaveToWallet", 1);
+  histogram.ExpectUniqueSample("Wallet.MalformedResponse",
+                               AutofillMetrics::SAVE_TO_WALLET, 1);
 }
 
 TEST_F(WalletClientTest, SaveInstrumentFailedMalformedResponse) {
   EXPECT_CALL(delegate_,
               OnWalletError(WalletClient::MALFORMED_RESPONSE)).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_TO_WALLET, 1);
-  delegate_.ExpectBaselineMetrics();
-  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
-  delegate_.ExpectLogWalletMalformedResponse(AutofillMetrics::SAVE_TO_WALLET);
+  base::HistogramTester histogram;
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   wallet_client_->SaveToWallet(instrument.Pass(),
@@ -1446,6 +1445,15 @@ TEST_F(WalletClientTest, SaveInstrumentFailedMalformedResponse) {
                                     kSaveInstrumentValidRequest,
                                     kSaveInvalidResponse,
                                     4U);
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectBucketCount("RequestAutocomplete.WalletErrors",
+                              AutofillMetrics::WALLET_MALFORMED_RESPONSE, 1);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.SaveToWallet", 1);
+  histogram.ExpectUniqueSample("Wallet.MalformedResponse",
+                               AutofillMetrics::SAVE_TO_WALLET, 1);
+  histogram.ExpectUniqueSample("Wallet.MalformedResponse",
+                               AutofillMetrics::SAVE_TO_WALLET, 1);
 }
 
 TEST_F(WalletClientTest, SaveInstrumentAndAddressSucceeded) {
@@ -1454,10 +1462,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressSucceeded) {
                                 "saved_address_id",
                                 std::vector<RequiredAction>(),
                                 std::vector<FormFieldError>())).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(
-      AutofillMetrics::SAVE_TO_WALLET,
-      1);
-  delegate_.ExpectBaselineMetrics();
+  base::HistogramTester histogram;
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   scoped_ptr<Address> address = GetTestSaveableAddress();
@@ -1467,17 +1472,13 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressSucceeded) {
                                     kSaveInstrumentAndAddressValidRequest,
                                     kSaveInstrumentAndAddressValidResponse,
                                     4U);
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.SaveToWallet", 1);
 }
 
 TEST_F(WalletClientTest, SaveInstrumentAndAddressWithRequiredActionsSucceeded) {
-  delegate_.ExpectLogWalletApiCallDuration(
-      AutofillMetrics::SAVE_TO_WALLET,
-      1);
-  delegate_.ExpectBaselineMetrics();
-  delegate_.ExpectWalletRequiredActionMetric(
-      AutofillMetrics::REQUIRE_PHONE_NUMBER);
-  delegate_.ExpectWalletRequiredActionMetric(
-      AutofillMetrics::INVALID_FORM_FIELD);
+  base::HistogramTester histogram;
 
   std::vector<RequiredAction> required_actions;
   required_actions.push_back(REQUIRE_PHONE_NUMBER);
@@ -1502,17 +1503,16 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressWithRequiredActionsSucceeded) {
       kSaveInstrumentAndAddressValidRequest,
       kSaveInstrumentAndAddressWithRequiredActionsValidResponse,
       4U);
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.SaveToWallet", 1);
+  ExpectCommonWalletRequiredActionMetrics(histogram);
 }
 
 TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedInvalidRequiredAction) {
   EXPECT_CALL(delegate_,
               OnWalletError(WalletClient::MALFORMED_RESPONSE)).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(
-      AutofillMetrics::SAVE_TO_WALLET,
-      1);
-  delegate_.ExpectBaselineMetrics();
-  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
-  delegate_.ExpectLogWalletMalformedResponse(AutofillMetrics::SAVE_TO_WALLET);
+  base::HistogramTester histogram;
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   scoped_ptr<Address> address = GetTestSaveableAddress();
@@ -1522,6 +1522,15 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedInvalidRequiredAction) {
                                     kSaveInstrumentAndAddressValidRequest,
                                     kSaveWithInvalidRequiredActionsResponse,
                                     4U);
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectBucketCount("RequestAutocomplete.WalletErrors",
+                              AutofillMetrics::WALLET_MALFORMED_RESPONSE, 1);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.SaveToWallet", 1);
+  histogram.ExpectUniqueSample("Wallet.MalformedResponse",
+                               AutofillMetrics::SAVE_TO_WALLET, 1);
+  histogram.ExpectUniqueSample("Wallet.MalformedResponse",
+                               AutofillMetrics::SAVE_TO_WALLET, 1);
 }
 
 TEST_F(WalletClientTest, UpdateAddressSucceeded) {
@@ -1530,8 +1539,7 @@ TEST_F(WalletClientTest, UpdateAddressSucceeded) {
                                 "shipping_address_id",
                                 std::vector<RequiredAction>(),
                                 std::vector<FormFieldError>())).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_TO_WALLET, 1);
-  delegate_.ExpectBaselineMetrics();
+  base::HistogramTester histogram;
 
   scoped_ptr<Address> reference_address = GetTestNonDefaultShippingAddress();
   wallet_client_->SaveToWallet(scoped_ptr<Instrument>(),
@@ -1542,15 +1550,13 @@ TEST_F(WalletClientTest, UpdateAddressSucceeded) {
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateAddressValidRequest,
                          kUpdateAddressValidResponse);
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.SaveToWallet", 1);
 }
 
 TEST_F(WalletClientTest, UpdateAddressWithRequiredActionsSucceeded) {
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_TO_WALLET, 1);
-  delegate_.ExpectBaselineMetrics();
-  delegate_.ExpectWalletRequiredActionMetric(
-      AutofillMetrics::REQUIRE_PHONE_NUMBER);
-  delegate_.ExpectWalletRequiredActionMetric(
-      AutofillMetrics::INVALID_FORM_FIELD);
+  base::HistogramTester histogram;
 
   std::vector<RequiredAction> required_actions;
   required_actions.push_back(REQUIRE_PHONE_NUMBER);
@@ -1574,15 +1580,16 @@ TEST_F(WalletClientTest, UpdateAddressWithRequiredActionsSucceeded) {
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateAddressValidRequest,
                          kUpdateWithRequiredActionsValidResponse);
+
+  ExpectBaselineMetrics(histogram);
+  ExpectCommonWalletRequiredActionMetrics(histogram);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.SaveToWallet", 1);
 }
 
 TEST_F(WalletClientTest, UpdateAddressFailedInvalidRequiredAction) {
   EXPECT_CALL(delegate_,
               OnWalletError(WalletClient::MALFORMED_RESPONSE)).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_TO_WALLET, 1);
-  delegate_.ExpectBaselineMetrics();
-  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
-  delegate_.ExpectLogWalletMalformedResponse(AutofillMetrics::SAVE_TO_WALLET);
+  base::HistogramTester histogram;
 
   scoped_ptr<Address> reference_address = GetTestNonDefaultShippingAddress();
   wallet_client_->SaveToWallet(scoped_ptr<Instrument>(),
@@ -1593,15 +1600,21 @@ TEST_F(WalletClientTest, UpdateAddressFailedInvalidRequiredAction) {
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateAddressValidRequest,
                          kSaveWithInvalidRequiredActionsResponse);
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectBucketCount("RequestAutocomplete.WalletErrors",
+                              AutofillMetrics::WALLET_MALFORMED_RESPONSE, 1);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.SaveToWallet", 1);
+  histogram.ExpectUniqueSample("Wallet.MalformedResponse",
+                               AutofillMetrics::SAVE_TO_WALLET, 1);
+  histogram.ExpectUniqueSample("Wallet.MalformedResponse",
+                               AutofillMetrics::SAVE_TO_WALLET, 1);
 }
 
 TEST_F(WalletClientTest, UpdateAddressMalformedResponse) {
   EXPECT_CALL(delegate_,
               OnWalletError(WalletClient::MALFORMED_RESPONSE)).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_TO_WALLET, 1);
-  delegate_.ExpectBaselineMetrics();
-  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
-  delegate_.ExpectLogWalletMalformedResponse(AutofillMetrics::SAVE_TO_WALLET);
+  base::HistogramTester histogram;
 
   scoped_ptr<Address> reference_address = GetTestNonDefaultShippingAddress();
   wallet_client_->SaveToWallet(scoped_ptr<Instrument>(),
@@ -1612,6 +1625,13 @@ TEST_F(WalletClientTest, UpdateAddressMalformedResponse) {
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateAddressValidRequest,
                          kUpdateMalformedResponse);
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectBucketCount("RequestAutocomplete.WalletErrors",
+                              AutofillMetrics::WALLET_MALFORMED_RESPONSE, 1);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.SaveToWallet", 1);
+  histogram.ExpectUniqueSample("Wallet.MalformedResponse",
+                               AutofillMetrics::SAVE_TO_WALLET, 1);
 }
 
 TEST_F(WalletClientTest, UpdateInstrumentAddressSucceeded) {
@@ -1620,9 +1640,7 @@ TEST_F(WalletClientTest, UpdateInstrumentAddressSucceeded) {
                                 std::string(),
                                 std::vector<RequiredAction>(),
                                 std::vector<FormFieldError>())).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_TO_WALLET,
-                                           1);
-  delegate_.ExpectBaselineMetrics();
+  base::HistogramTester histogram;
 
   scoped_ptr<WalletItems::MaskedInstrument> reference_instrument =
       GetTestMaskedInstrument();
@@ -1634,6 +1652,9 @@ TEST_F(WalletClientTest, UpdateInstrumentAddressSucceeded) {
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateInstrumentAddressValidRequest,
                          kUpdateInstrumentValidResponse);
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.SaveToWallet", 1);
 }
 
 TEST_F(WalletClientTest, UpdateInstrumentExpirationDateSuceeded) {
@@ -1642,9 +1663,7 @@ TEST_F(WalletClientTest, UpdateInstrumentExpirationDateSuceeded) {
                                 std::string(),
                                 std::vector<RequiredAction>(),
                                 std::vector<FormFieldError>())).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_TO_WALLET,
-                                           1);
-  delegate_.ExpectBaselineMetrics();
+  base::HistogramTester histogram;
 
   scoped_ptr<Instrument> instrument = GetTestExpirationDateChangeInstrument();
   scoped_ptr<WalletItems::MaskedInstrument> reference_instrument =
@@ -1664,6 +1683,9 @@ TEST_F(WalletClientTest, UpdateInstrumentExpirationDateSuceeded) {
                                     kUpdateInstrumentExpirationDateValidRequest,
                                     kUpdateInstrumentValidResponse,
                                     3U);
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.SaveToWallet", 1);
 }
 
 TEST_F(WalletClientTest, UpdateInstrumentAddressWithNameChangeSucceeded) {
@@ -1672,9 +1694,7 @@ TEST_F(WalletClientTest, UpdateInstrumentAddressWithNameChangeSucceeded) {
                                 std::string(),
                                 std::vector<RequiredAction>(),
                                 std::vector<FormFieldError>())).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_TO_WALLET,
-                                           1);
-  delegate_.ExpectBaselineMetrics();
+  base::HistogramTester histogram;
 
   scoped_ptr<WalletItems::MaskedInstrument> reference_instrument =
       GetTestMaskedInstrument();
@@ -1688,16 +1708,13 @@ TEST_F(WalletClientTest, UpdateInstrumentAddressWithNameChangeSucceeded) {
       kUpdateInstrumentAddressWithNameChangeValidRequest,
       kUpdateInstrumentValidResponse,
       3U);
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.SaveToWallet", 1);
 }
 
 TEST_F(WalletClientTest, UpdateInstrumentWithRequiredActionsSucceeded) {
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_TO_WALLET,
-                                           1);
-  delegate_.ExpectBaselineMetrics();
-  delegate_.ExpectWalletRequiredActionMetric(
-      AutofillMetrics::REQUIRE_PHONE_NUMBER);
-  delegate_.ExpectWalletRequiredActionMetric(
-      AutofillMetrics::INVALID_FORM_FIELD);
+  base::HistogramTester histogram;
 
   std::vector<RequiredAction> required_actions;
   required_actions.push_back(REQUIRE_PHONE_NUMBER);
@@ -1723,16 +1740,16 @@ TEST_F(WalletClientTest, UpdateInstrumentWithRequiredActionsSucceeded) {
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateInstrumentAddressValidRequest,
                          kUpdateWithRequiredActionsValidResponse);
+
+  ExpectBaselineMetrics(histogram);
+  ExpectCommonWalletRequiredActionMetrics(histogram);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.SaveToWallet", 1);
 }
 
 TEST_F(WalletClientTest, UpdateInstrumentFailedInvalidRequiredAction) {
   EXPECT_CALL(delegate_,
               OnWalletError(WalletClient::MALFORMED_RESPONSE)).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_TO_WALLET,
-                                           1);
-  delegate_.ExpectBaselineMetrics();
-  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
-  delegate_.ExpectLogWalletMalformedResponse(AutofillMetrics::SAVE_TO_WALLET);
+  base::HistogramTester histogram;
 
   scoped_ptr<WalletItems::MaskedInstrument> reference_instrument =
       GetTestMaskedInstrument();
@@ -1744,16 +1761,19 @@ TEST_F(WalletClientTest, UpdateInstrumentFailedInvalidRequiredAction) {
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateInstrumentAddressValidRequest,
                          kSaveWithInvalidRequiredActionsResponse);
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectBucketCount("RequestAutocomplete.WalletErrors",
+                              AutofillMetrics::WALLET_MALFORMED_RESPONSE, 1);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.SaveToWallet", 1);
+  histogram.ExpectUniqueSample("Wallet.MalformedResponse",
+                               AutofillMetrics::SAVE_TO_WALLET, 1);
 }
 
 TEST_F(WalletClientTest, UpdateInstrumentMalformedResponse) {
   EXPECT_CALL(delegate_,
               OnWalletError(WalletClient::MALFORMED_RESPONSE)).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_TO_WALLET,
-                                           1);
-  delegate_.ExpectBaselineMetrics();
-  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
-  delegate_.ExpectLogWalletMalformedResponse(AutofillMetrics::SAVE_TO_WALLET);
+  base::HistogramTester histogram;
 
   scoped_ptr<WalletItems::MaskedInstrument> reference_instrument =
       GetTestMaskedInstrument();
@@ -1765,13 +1785,18 @@ TEST_F(WalletClientTest, UpdateInstrumentMalformedResponse) {
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateInstrumentAddressValidRequest,
                          kUpdateMalformedResponse);
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectBucketCount("RequestAutocomplete.WalletErrors",
+                              AutofillMetrics::WALLET_MALFORMED_RESPONSE, 1);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.SaveToWallet", 1);
+  histogram.ExpectUniqueSample("Wallet.MalformedResponse",
+                               AutofillMetrics::SAVE_TO_WALLET, 1);
 }
 
 TEST_F(WalletClientTest, HasRequestInProgress) {
   EXPECT_FALSE(wallet_client_->HasRequestInProgress());
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
-                                           1);
-  delegate_.ExpectBaselineMetrics();
+  base::HistogramTester histogram;
 
   wallet_client_->GetWalletItems(base::string16(), base::string16());
   EXPECT_TRUE(wallet_client_->HasRequestInProgress());
@@ -1780,92 +1805,99 @@ TEST_F(WalletClientTest, HasRequestInProgress) {
                          kGetWalletItemsValidRequest,
                          kGetWalletItemsValidResponse);
   EXPECT_FALSE(wallet_client_->HasRequestInProgress());
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.GetWalletItems", 1);
 }
 
 // 500 (INTERNAL_SERVER_ERROR) - response json is parsed.
 TEST_F(WalletClientTest, ErrorResponse500) {
+  base::HistogramTester histogram;
   EXPECT_FALSE(wallet_client_->HasRequestInProgress());
-  delegate_.ExpectBaselineMetrics();
   wallet_client_->GetWalletItems(base::string16(), base::string16());
   EXPECT_TRUE(wallet_client_->HasRequestInProgress());
-  testing::Mock::VerifyAndClear(delegate_.metric_logger());
 
   EXPECT_CALL(delegate_, OnWalletError(
       WalletClient::SERVICE_UNAVAILABLE)).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
-                                           1);
-  delegate_.ExpectWalletErrorMetric(
-      AutofillMetrics::WALLET_SERVICE_UNAVAILABLE);
 
   VerifyAndFinishRequest(net::HTTP_INTERNAL_SERVER_ERROR,
                          kGetWalletItemsValidRequest,
                          kErrorResponse);
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectBucketCount("RequestAutocomplete.WalletErrors",
+                              AutofillMetrics::WALLET_SERVICE_UNAVAILABLE, 1);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.GetWalletItems", 1);
 }
 
 // 403 (FORBIDDEN) - response json is parsed.
 TEST_F(WalletClientTest, ErrorResponse403) {
+  base::HistogramTester histogram;
   EXPECT_FALSE(wallet_client_->HasRequestInProgress());
-  delegate_.ExpectBaselineMetrics();
   wallet_client_->GetWalletItems(base::string16(), base::string16());
   EXPECT_TRUE(wallet_client_->HasRequestInProgress());
-  testing::Mock::VerifyAndClear(delegate_.metric_logger());
 
   EXPECT_CALL(delegate_, OnWalletError(WalletClient::SPENDING_LIMIT_EXCEEDED))
       .Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
-                                           1);
-  delegate_.ExpectWalletErrorMetric(
-      AutofillMetrics::WALLET_SPENDING_LIMIT_EXCEEDED);
 
   VerifyAndFinishRequest(net::HTTP_FORBIDDEN,
                          kGetWalletItemsValidRequest,
                          kErrorResponseSpendingLimitExceeded);
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectBucketCount("RequestAutocomplete.WalletErrors",
+                              AutofillMetrics::WALLET_SPENDING_LIMIT_EXCEEDED,
+                              1);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.GetWalletItems", 1);
 }
 
 // 400 (BAD_REQUEST) - response json is ignored.
 TEST_F(WalletClientTest, ErrorResponse400) {
+  base::HistogramTester histogram;
   EXPECT_FALSE(wallet_client_->HasRequestInProgress());
-  delegate_.ExpectBaselineMetrics();
   wallet_client_->GetWalletItems(base::string16(), base::string16());
   EXPECT_TRUE(wallet_client_->HasRequestInProgress());
-  testing::Mock::VerifyAndClear(delegate_.metric_logger());
 
   EXPECT_CALL(delegate_, OnWalletError(WalletClient::BAD_REQUEST)).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
-                                           1);
-  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_BAD_REQUEST);
 
   VerifyAndFinishRequest(
       net::HTTP_BAD_REQUEST, kGetWalletItemsValidRequest, kErrorResponse);
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectBucketCount("RequestAutocomplete.WalletErrors",
+                              AutofillMetrics::WALLET_BAD_REQUEST, 1);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.GetWalletItems", 1);
 }
 
 // Anything else - response json is ignored.
 TEST_F(WalletClientTest, ErrorResponseOther) {
+  base::HistogramTester histogram;
   EXPECT_FALSE(wallet_client_->HasRequestInProgress());
-  delegate_.ExpectBaselineMetrics();
   wallet_client_->GetWalletItems(base::string16(), base::string16());
   EXPECT_TRUE(wallet_client_->HasRequestInProgress());
-  testing::Mock::VerifyAndClear(delegate_.metric_logger());
 
   EXPECT_CALL(delegate_, OnWalletError(WalletClient::NETWORK_ERROR)).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
-                                           1);
-  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_NETWORK_ERROR);
 
   VerifyAndFinishRequest(
       net::HTTP_NOT_FOUND, kGetWalletItemsValidRequest, kErrorResponse);
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectBucketCount("RequestAutocomplete.WalletErrors",
+                              AutofillMetrics::WALLET_NETWORK_ERROR, 1);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.GetWalletItems", 1);
 }
 
 TEST_F(WalletClientTest, CancelRequest) {
   EXPECT_FALSE(wallet_client_->HasRequestInProgress());
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
-                                           0);
-  delegate_.ExpectBaselineMetrics();
+  base::HistogramTester histogram;
 
   wallet_client_->GetWalletItems(base::string16(), base::string16());
   EXPECT_TRUE(wallet_client_->HasRequestInProgress());
   wallet_client_->CancelRequest();
   EXPECT_FALSE(wallet_client_->HasRequestInProgress());
+
+  ExpectBaselineMetrics(histogram);
+  histogram.ExpectTotalCount("Wallet.ApiCallDuration.GetWalletItems", 0);
 }
 
 }  // namespace wallet

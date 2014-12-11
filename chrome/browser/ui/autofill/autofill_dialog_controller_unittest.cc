@@ -255,14 +255,12 @@ class TestAutofillDialogController
       content::WebContents* contents,
       const FormData& form_structure,
       const GURL& source_url,
-      const AutofillMetrics& metric_logger,
       const AutofillClient::ResultCallback& callback,
       MockNewCreditCardBubbleController* mock_new_card_bubble_controller)
       : AutofillDialogControllerImpl(contents,
                                      form_structure,
                                      source_url,
                                      callback),
-        metric_logger_(metric_logger),
         mock_wallet_client_(
             Profile::FromBrowserContext(contents->GetBrowserContext())
                 ->GetRequestContext(),
@@ -373,12 +371,6 @@ class TestAutofillDialogController
   }
 
  private:
-  // To specify our own metric logger.
-  virtual const AutofillMetrics& GetMetricLogger() const override {
-    return metric_logger_;
-  }
-
-  const AutofillMetrics& metric_logger_;
   TestPersonalDataManager test_manager_;
   testing::NiceMock<wallet::MockWalletClient> mock_wallet_client_;
 
@@ -455,7 +447,6 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
         web_contents(),
         form_data,
         GURL(kSourceUrl),
-        metric_logger_,
         callback,
         mock_new_card_bubble_controller_.get()))->AsWeakPtr();
     controller_->Init(profile());
@@ -662,9 +653,6 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
 
   // The controller owns itself.
   base::WeakPtr<TestAutofillDialogController> controller_;
-
-  // Must outlive the controller.
-  AutofillMetrics metric_logger_;
 
   // Returned when the dialog closes successfully.
   const FormStructure* form_structure_;

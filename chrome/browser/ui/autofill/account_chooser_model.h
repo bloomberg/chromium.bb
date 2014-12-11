@@ -14,7 +14,6 @@
 #include "components/autofill/core/browser/autofill_client.h"
 #include "ui/base/models/simple_menu_model.h"
 
-class AutofillMetrics;
 class Profile;
 
 namespace autofill {
@@ -50,8 +49,7 @@ class AccountChooserModel : public ui::SimpleMenuModel,
   // pref.
   AccountChooserModel(AccountChooserModelDelegate* delegate,
                       Profile* profile,
-                      bool disable_wallet,
-                      const AutofillMetrics& metric_logger);
+                      bool disable_wallet);
   ~AccountChooserModel() override;
 
   // ui::SimpleMenuModel::Delegate implementation.
@@ -121,9 +119,6 @@ class AccountChooserModel : public ui::SimpleMenuModel,
 
   // Whether there has been a Wallet error.
   bool had_wallet_error_;
-
-  // For logging UMA metrics.
-  const AutofillMetrics& metric_logger_;
 
   // The names (emails) of the signed in accounts, gotten from the
   // Online Wallet service.

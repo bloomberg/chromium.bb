@@ -542,16 +542,16 @@ void WalletClient::MakeWalletRequest(const GURL& url,
   request_started_timestamp_ = base::Time::Now();
   request_->Start();
 
-  delegate_->GetMetricLogger().LogWalletErrorMetric(
+  AutofillMetrics::LogWalletErrorMetric(
       AutofillMetrics::WALLET_ERROR_BASELINE_ISSUED_REQUEST);
-  delegate_->GetMetricLogger().LogWalletRequiredActionMetric(
+  AutofillMetrics::LogWalletRequiredActionMetric(
       AutofillMetrics::WALLET_REQUIRED_ACTION_BASELINE_ISSUED_REQUEST);
 }
 
 // TODO(ahutter): Add manual retry logic if it's necessary.
 void WalletClient::OnURLFetchComplete(
     const net::URLFetcher* source) {
-  delegate_->GetMetricLogger().LogWalletApiCallDuration(
+  AutofillMetrics::LogWalletApiCallDuration(
       RequestTypeToUmaMetric(request_type_),
       base::Time::Now() - request_started_timestamp_);
 
@@ -569,7 +569,7 @@ void WalletClient::OnURLFetchComplete(
   scoped_ptr<base::DictionaryValue> response_dict;
 
   int response_code = source->GetResponseCode();
-  delegate_->GetMetricLogger().LogWalletResponseCode(response_code);
+  AutofillMetrics::LogWalletResponseCode(response_code);
 
   switch (response_code) {
     // HTTP_BAD_REQUEST means the arguments are invalid. No point retrying.
@@ -715,8 +715,8 @@ void WalletClient::HandleMalformedResponse(RequestType request_type,
   // Called to inform exponential backoff logic of the error.
   request->ReceivedContentWasMalformed();
   // Record failed API call in metrics.
-  delegate_->GetMetricLogger().LogWalletMalformedResponseMetric(
-    RequestTypeToUmaMetric(request_type));
+  AutofillMetrics::LogWalletMalformedResponseMetric(
+      RequestTypeToUmaMetric(request_type));
   HandleWalletError(MALFORMED_RESPONSE);
 }
 
@@ -770,15 +770,14 @@ void WalletClient::HandleWalletError(WalletClient::ErrorType error_type) {
   DVLOG(1) << "Wallet encountered a " << error_message;
 
   delegate_->OnWalletError(error_type);
-  delegate_->GetMetricLogger().LogWalletErrorMetric(
-      ErrorTypeToUmaMetric(error_type));
+  AutofillMetrics::LogWalletErrorMetric(ErrorTypeToUmaMetric(error_type));
 }
 
 // Logs an UMA metric for each of the |required_actions|.
 void WalletClient::LogRequiredActions(
     const std::vector<RequiredAction>& required_actions) const {
   for (size_t i = 0; i < required_actions.size(); ++i) {
-    delegate_->GetMetricLogger().LogWalletRequiredActionMetric(
+    AutofillMetrics::LogWalletRequiredActionMetric(
         RequiredActionToUmaMetric(required_actions[i]));
   }
 }

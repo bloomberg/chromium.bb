@@ -21,9 +21,8 @@ class TestAccountChooserModel : public AccountChooserModel {
  public:
   TestAccountChooserModel(AccountChooserModelDelegate* delegate,
                           Profile* profile,
-                          bool disable_wallet,
-                          const AutofillMetrics& metric_logger)
-      : AccountChooserModel(delegate, profile, disable_wallet, metric_logger) {}
+                          bool disable_wallet)
+      : AccountChooserModel(delegate, profile, disable_wallet) {}
   ~TestAccountChooserModel() override {}
 
   using AccountChooserModel::kWalletAccountsStartId;
@@ -46,20 +45,17 @@ class MockAccountChooserModelDelegate : public AccountChooserModelDelegate {
 
 class AccountChooserModelTest : public testing::Test {
  public:
-  AccountChooserModelTest()
-      : model_(&delegate_, &profile_, false, metric_logger_) {}
+  AccountChooserModelTest() : model_(&delegate_, &profile_, false) {}
   virtual ~AccountChooserModelTest() {}
 
   TestingProfile* profile() { return &profile_; }
   MockAccountChooserModelDelegate* delegate() { return &delegate_; }
   TestAccountChooserModel* model() { return &model_; }
-  const AutofillMetrics& metric_logger() { return metric_logger_; }
 
  private:
   TestingProfile profile_;
   testing::NiceMock<MockAccountChooserModelDelegate> delegate_;
   TestAccountChooserModel model_;
-  AutofillMetrics metric_logger_;
 };
 
 }  // namespace
@@ -69,20 +65,14 @@ TEST_F(AccountChooserModelTest, ObeysPref) {
   {
     profile()->GetPrefs()->SetBoolean(
         ::prefs::kAutofillDialogPayWithoutWallet, false);
-    TestAccountChooserModel model(delegate(),
-                                  profile(),
-                                  false,
-                                  metric_logger());
+    TestAccountChooserModel model(delegate(), profile(), false);
     EXPECT_TRUE(model.WalletIsSelected());
   }
   // When the user chose to "Pay without wallet", use Autofill.
   {
     profile()->GetPrefs()->SetBoolean(
         ::prefs::kAutofillDialogPayWithoutWallet, true);
-    TestAccountChooserModel model(delegate(),
-                                  profile(),
-                                  false,
-                                  metric_logger());
+    TestAccountChooserModel model(delegate(), profile(), false);
     EXPECT_FALSE(model.WalletIsSelected());
   }
   // When the |disable_wallet| argument is true, use Autofill regardless
@@ -90,7 +80,7 @@ TEST_F(AccountChooserModelTest, ObeysPref) {
   {
     profile()->GetPrefs()->SetBoolean(
         ::prefs::kAutofillDialogPayWithoutWallet, false);
-    TestAccountChooserModel model(delegate(), profile(), true, metric_logger());
+    TestAccountChooserModel model(delegate(), profile(), true);
     EXPECT_FALSE(model.WalletIsSelected());
   }
   // In incognito, use local data regardless of the pref.
@@ -101,8 +91,7 @@ TEST_F(AccountChooserModelTest, ObeysPref) {
     incognito->GetPrefs()->SetBoolean(
         ::prefs::kAutofillDialogPayWithoutWallet, false);
 
-    TestAccountChooserModel model(
-        delegate(), incognito, false, metric_logger());
+    TestAccountChooserModel model(delegate(), incognito, false);
     EXPECT_FALSE(model.WalletIsSelected());
   }
 }

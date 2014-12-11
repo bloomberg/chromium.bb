@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -87,45 +88,16 @@ void MockCallback(AutofillClient::RequestAutocompleteResult,
                   const FormStructure*) {
 }
 
-class MockAutofillMetrics : public AutofillMetrics {
- public:
-  MockAutofillMetrics()
-      : dialog_dismissal_action_(static_cast<DialogDismissalAction>(-1)) {}
-  virtual ~MockAutofillMetrics() {}
-
-  virtual void LogDialogUiDuration(
-      const base::TimeDelta& duration,
-      DialogDismissalAction dismissal_action) const override {
-    // Ignore constness for testing.
-    MockAutofillMetrics* mutable_this = const_cast<MockAutofillMetrics*>(this);
-    mutable_this->dialog_dismissal_action_ = dismissal_action;
-  }
-
-  AutofillMetrics::DialogDismissalAction dialog_dismissal_action() const {
-    return dialog_dismissal_action_;
-  }
-
-  MOCK_CONST_METHOD1(LogDialogDismissalState,
-                     void(DialogDismissalState state));
-
- private:
-  DialogDismissalAction dialog_dismissal_action_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockAutofillMetrics);
-};
-
 class TestAutofillDialogController : public AutofillDialogControllerImpl {
  public:
   TestAutofillDialogController(
       content::WebContents* contents,
       const FormData& form_data,
-      const AutofillMetrics& metric_logger,
       scoped_refptr<content::MessageLoopRunner> runner)
       : AutofillDialogControllerImpl(contents,
                                      form_data,
                                      form_data.origin,
                                      base::Bind(&MockCallback)),
-        metric_logger_(metric_logger),
         mock_wallet_client_(
             Profile::FromBrowserContext(contents->GetBrowserContext())->
                 GetRequestContext(), this, form_data.origin),
@@ -249,12 +221,6 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   }
 
  private:
-  // To specify our own metric logger.
-  virtual const AutofillMetrics& GetMetricLogger() const override {
-    return metric_logger_;
-  }
-
-  const AutofillMetrics& metric_logger_;
   TestPersonalDataManager test_manager_;
   testing::NiceMock<MockAddressValidator> mock_validator_;
   testing::NiceMock<wallet::MockWalletClient> mock_wallet_client_;
@@ -370,7 +336,6 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
     controller_ = new TestAutofillDialogController(
         GetActiveWebContents(),
         form,
-        metric_logger_,
         message_loop_runner_);
   }
 
@@ -392,7 +357,6 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
     return AutofillDialogViewTester::For(controller()->view()).Pass();
   }
 
-  const MockAutofillMetrics& metric_logger() { return metric_logger_; }
   TestAutofillDialogController* controller() { return controller_; }
 
   void RunMessageLoop() {
@@ -549,7 +513,6 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
     content::RunAllPendingInMessageLoop(content::BrowserThread::DB);
   }
 
-  testing::NiceMock<MockAutofillMetrics> metric_logger_;
   TestAutofillDialogController* controller_;  // Weak reference.
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
   scoped_ptr<content::DOMMessageQueue> dom_message_queue_;
@@ -562,43 +525,43 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
 
 // Submit the form data.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Submit) {
+  base::HistogramTester histogram;
   GetViewTester()->SubmitForTesting();
   RunMessageLoop();
 
-  EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
-            metric_logger().dialog_dismissal_action());
+  histogram.ExpectTotalCount("RequestAutocomplete.UiDuration.Submit", 1);
+  histogram.ExpectTotalCount("RequestAutocomplete.UiDuration.Cancel", 0);
 }
 
 // Cancel out of the dialog.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Cancel) {
-  EXPECT_CALL(metric_logger(),
-              LogDialogDismissalState(
-                  AutofillMetrics::DIALOG_CANCELED_NO_INVALID_FIELDS));
-
+  base::HistogramTester histogram;
   GetViewTester()->CancelForTesting();
   RunMessageLoop();
 
-  EXPECT_EQ(AutofillMetrics::DIALOG_CANCELED,
-            metric_logger().dialog_dismissal_action());
+  histogram.ExpectTotalCount("RequestAutocomplete.UiDuration.Submit", 0);
+  histogram.ExpectTotalCount("RequestAutocomplete.UiDuration.Cancel", 1);
+  histogram.ExpectUniqueSample(
+      "RequestAutocomplete.DismissalState",
+      AutofillMetrics::DIALOG_CANCELED_NO_INVALID_FIELDS, 1);
 }
 
 // Take some other action that dismisses the dialog.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Hide) {
-  EXPECT_CALL(metric_logger(),
-              LogDialogDismissalState(
-                  AutofillMetrics::DIALOG_CANCELED_NO_INVALID_FIELDS));
+  base::HistogramTester histogram;
   controller()->Hide();
 
   RunMessageLoop();
 
-  EXPECT_EQ(AutofillMetrics::DIALOG_CANCELED,
-            metric_logger().dialog_dismissal_action());
+  histogram.ExpectTotalCount("RequestAutocomplete.UiDuration.Submit", 0);
+  histogram.ExpectTotalCount("RequestAutocomplete.UiDuration.Cancel", 1);
+  histogram.ExpectUniqueSample(
+      "RequestAutocomplete.DismissalState",
+      AutofillMetrics::DIALOG_CANCELED_NO_INVALID_FIELDS, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, CancelWithSuggestions) {
-  EXPECT_CALL(metric_logger(),
-              LogDialogDismissalState(
-                  AutofillMetrics::DIALOG_CANCELED_NO_EDITS));
+  base::HistogramTester histogram;
 
   CreditCard card(test::GetVerifiedCreditCard());
   controller()->GetTestingManager()->AddTestingCreditCard(&card);
@@ -612,15 +575,14 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, CancelWithSuggestions) {
   GetViewTester()->CancelForTesting();
   RunMessageLoop();
 
-  EXPECT_EQ(AutofillMetrics::DIALOG_CANCELED,
-            metric_logger().dialog_dismissal_action());
+  histogram.ExpectTotalCount("RequestAutocomplete.UiDuration.Submit", 0);
+  histogram.ExpectTotalCount("RequestAutocomplete.UiDuration.Cancel", 1);
+  histogram.ExpectUniqueSample("RequestAutocomplete.DismissalState",
+                               AutofillMetrics::DIALOG_CANCELED_NO_EDITS, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AcceptWithSuggestions) {
-  EXPECT_CALL(metric_logger(),
-              LogDialogDismissalState(
-                  AutofillMetrics::DIALOG_ACCEPTED_EXISTING_AUTOFILL_DATA));
-
+  base::HistogramTester histogram;
   CreditCard card(test::GetVerifiedCreditCard());
   controller()->GetTestingManager()->AddTestingCreditCard(&card);
   AutofillProfile profile(test::GetVerifiedProfile());
@@ -633,8 +595,11 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AcceptWithSuggestions) {
   GetViewTester()->SubmitForTesting();
   RunMessageLoop();
 
-  EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
-            metric_logger().dialog_dismissal_action());
+  histogram.ExpectTotalCount("RequestAutocomplete.UiDuration.Submit", 1);
+  histogram.ExpectTotalCount("RequestAutocomplete.UiDuration.Cancel", 0);
+  histogram.ExpectUniqueSample(
+      "RequestAutocomplete.DismissalState",
+      AutofillMetrics::DIALOG_ACCEPTED_EXISTING_AUTOFILL_DATA, 1);
 }
 
 // Ensure that Hide() will only destroy the controller object after the
@@ -655,17 +620,18 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, DeferredDestruction) {
 // Ensure that the expected metric is logged when the dialog is closed during
 // signin.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, CloseDuringSignin) {
+  base::HistogramTester histogram;
   controller()->SignInLinkClicked();
 
-  EXPECT_CALL(metric_logger(),
-              LogDialogDismissalState(
-                  AutofillMetrics::DIALOG_CANCELED_DURING_SIGNIN));
   GetViewTester()->CancelForTesting();
 
   RunMessageLoop();
 
-  EXPECT_EQ(AutofillMetrics::DIALOG_CANCELED,
-            metric_logger().dialog_dismissal_action());
+  histogram.ExpectTotalCount("RequestAutocomplete.UiDuration.Submit", 0);
+  histogram.ExpectTotalCount("RequestAutocomplete.UiDuration.Cancel", 1);
+  histogram.ExpectUniqueSample("RequestAutocomplete.DismissalState",
+                               AutofillMetrics::DIALOG_CANCELED_DURING_SIGNIN,
+                               1);
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
@@ -751,10 +717,11 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
     EXPECT_EQ(expectations[i], view->GetTextContentsOfInput(inputs[i].type));
   }
 
-  EXPECT_CALL(metric_logger(),
-              LogDialogDismissalState(
-                  AutofillMetrics::DIALOG_ACCEPTED_SAVE_TO_AUTOFILL));
+  base::HistogramTester histogram;
   view->SubmitForTesting();
+  histogram.ExpectUniqueSample(
+      "RequestAutocomplete.DismissalState",
+      AutofillMetrics::DIALOG_ACCEPTED_SAVE_TO_AUTOFILL, 1);
 }
 
 // This test makes sure that picking a profile variant in the Autofill
@@ -912,10 +879,11 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, ShouldShowErrorBubble) {
   controller()->FocusMoved();
   EXPECT_TRUE(controller()->ShouldShowErrorBubble());
 
-  EXPECT_CALL(metric_logger(),
-              LogDialogDismissalState(
-                  AutofillMetrics::DIALOG_CANCELED_WITH_INVALID_FIELDS));
+  base::HistogramTester histogram;
   controller()->Hide();
+  histogram.ExpectUniqueSample(
+      "RequestAutocomplete.DismissalState",
+      AutofillMetrics::DIALOG_CANCELED_WITH_INVALID_FIELDS, 1);
 }
 
 // Ensure that expired cards trigger invalid suggestions.
@@ -1145,14 +1113,15 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   controller()->OnAccept();
   EXPECT_TRUE(test_view->IsShowingOverlay());
 
-  EXPECT_CALL(metric_logger(),
-              LogDialogDismissalState(
-                  AutofillMetrics::DIALOG_ACCEPTED_EXISTING_WALLET_DATA));
-
+  base::HistogramTester histogram;
   EXPECT_CALL(*controller()->GetTestingWalletClient(), GetFullWallet(_));
   controller()->OnDidAuthenticateInstrument(true);
   controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
   controller()->ForceFinishSubmit();
+
+  histogram.ExpectUniqueSample(
+      "RequestAutocomplete.DismissalState",
+      AutofillMetrics::DIALOG_ACCEPTED_EXISTING_WALLET_DATA, 1);
 
   RunMessageLoop();
 
@@ -1226,12 +1195,13 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, SimulateSuccessfulSignIn) {
   EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_CC_BILLING));
   EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_SHIPPING));
 
-  EXPECT_CALL(metric_logger(),
-              LogDialogDismissalState(
-                  AutofillMetrics::DIALOG_ACCEPTED_EXISTING_WALLET_DATA));
+  base::HistogramTester histogram;
   view->SubmitForTesting();
   controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
   controller()->ForceFinishSubmit();
+  histogram.ExpectUniqueSample(
+      "RequestAutocomplete.DismissalState",
+      AutofillMetrics::DIALOG_ACCEPTED_EXISTING_WALLET_DATA, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AddAccount) {
