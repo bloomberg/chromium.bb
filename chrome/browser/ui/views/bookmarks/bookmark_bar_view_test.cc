@@ -501,7 +501,7 @@ class BookmarkBarViewTest3 : public BookmarkBarViewEventTestBase {
   void DoTestOnMessageLoop() override {
     // Move the mouse to the first folder on the bookmark bar and press the
     // mouse.
-    views::MenuButton* button = bb_view_->other_bookmarked_button();
+    views::MenuButton* button = bb_view_->other_bookmarks_button();
     ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest3::Step2));
@@ -608,7 +608,7 @@ class BookmarkBarViewTest4 : public BookmarkBarViewEventTestBase {
   void DoTestOnMessageLoop() override {
     // Move the mouse to the first folder on the bookmark bar and press the
     // mouse.
-    views::LabelButton* button = bb_view_->other_bookmarked_button();
+    views::LabelButton* button = bb_view_->other_bookmarks_button();
     ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest4::Step2));
@@ -799,8 +799,7 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
 
   void Step3() {
     // Drag over other button.
-    views::LabelButton* other_button =
-        bb_view_->other_bookmarked_button();
+    views::LabelButton* other_button = bb_view_->other_bookmarks_button();
     gfx::Point loc(other_button->width() / 2, other_button->height() / 2);
     views::View::ConvertPointToScreen(other_button, &loc);
 
@@ -821,8 +820,7 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
 
   void Step3A() {
     // Drag over other button.
-    views::LabelButton* other_button =
-        bb_view_->other_bookmarked_button();
+    views::LabelButton* other_button = bb_view_->other_bookmarks_button();
     gfx::Point loc(other_button->width() / 2, other_button->height() / 2);
     views::View::ConvertPointToScreen(other_button, &loc);
 
@@ -899,8 +897,7 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
 
   void Step3() {
     // Drag over other button.
-    views::LabelButton* other_button =
-        bb_view_->other_bookmarked_button();
+    views::LabelButton* other_button = bb_view_->other_bookmarks_button();
     gfx::Point loc(other_button->width() / 2, other_button->height() / 2);
     views::View::ConvertPointToScreen(other_button, &loc);
 
@@ -920,8 +917,7 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
 
   void Step3A() {
     // Drag over other button.
-    views::LabelButton* other_button =
-        bb_view_->other_bookmarked_button();
+    views::LabelButton* other_button = bb_view_->other_bookmarks_button();
     gfx::Point loc(other_button->width() / 2, other_button->height() / 2);
     views::View::ConvertPointToScreen(other_button, &loc);
 
@@ -1178,7 +1174,7 @@ class BookmarkBarViewTest11 : public BookmarkBarViewEventTestBase {
   void DoTestOnMessageLoop() override {
     // Move the mouse to the first folder on the bookmark bar and press the
     // mouse.
-    views::LabelButton* button = bb_view_->other_bookmarked_button();
+    views::LabelButton* button = bb_view_->other_bookmarks_button();
     ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest11::Step2));
@@ -1257,7 +1253,7 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
  protected:
   void DoTestOnMessageLoop() override {
     // Open up the other folder.
-    views::LabelButton* button = bb_view_->other_bookmarked_button();
+    views::LabelButton* button = bb_view_->other_bookmarks_button();
     ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest12::Step2));
@@ -1360,7 +1356,7 @@ class BookmarkBarViewTest13 : public BookmarkBarViewEventTestBase {
   void DoTestOnMessageLoop() override {
     // Move the mouse to the first folder on the bookmark bar and press the
     // mouse.
-    views::LabelButton* button = bb_view_->other_bookmarked_button();
+    views::LabelButton* button = bb_view_->other_bookmarks_button();
     ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest13::Step2));
@@ -1490,7 +1486,7 @@ class BookmarkBarViewTest15 : public BookmarkBarViewEventTestBase {
  protected:
   void DoTestOnMessageLoop() override {
     // Show the other bookmarks.
-    views::LabelButton* button = bb_view_->other_bookmarked_button();
+    views::LabelButton* button = bb_view_->other_bookmarks_button();
     ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest15::Step2));
@@ -1609,7 +1605,7 @@ class BookmarkBarViewTest17 : public BookmarkBarViewEventTestBase {
   void DoTestOnMessageLoop() override {
     // Move the mouse to the other folder on the bookmark bar and press the
     // left mouse button.
-    views::LabelButton* button = bb_view_->other_bookmarked_button();
+    views::LabelButton* button = bb_view_->other_bookmarks_button();
     ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest17::Step2));
@@ -1698,7 +1694,7 @@ class BookmarkBarViewTest18 : public BookmarkBarViewEventTestBase {
   void DoTestOnMessageLoop() override {
     // Move the mouse to the other folder on the bookmark bar and press the
     // left mouse button.
-    views::LabelButton* button = bb_view_->other_bookmarked_button();
+    views::LabelButton* button = bb_view_->other_bookmarks_button();
     ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest18::Step2));
@@ -1755,7 +1751,7 @@ class BookmarkBarViewTest19 : public BookmarkBarViewEventTestBase {
   void DoTestOnMessageLoop() override {
     // Move the mouse to the other folder on the bookmark bar and press the
     // left mouse button.
-    views::LabelButton* button = bb_view_->other_bookmarked_button();
+    views::LabelButton* button = bb_view_->other_bookmarks_button();
     ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest19::Step2));
@@ -1783,8 +1779,8 @@ class BookmarkBarViewTest19 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(menu != NULL);
     ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
 
-    // Move the mouse back to the other bookmark button.
-    views::LabelButton* button = bb_view_->other_bookmarked_button();
+    // Move the mouse back to the "Other Bookmarks" button.
+    views::LabelButton* button = bb_view_->other_bookmarks_button();
     gfx::Point button_center(button->width() / 2, button->height() / 2);
     views::View::ConvertPointToScreen(button, &button_center);
     ui_controls::SendMouseMoveNotifyWhenDone(

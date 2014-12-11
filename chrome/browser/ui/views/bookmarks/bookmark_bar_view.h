@@ -120,10 +120,10 @@ class BookmarkBarView : public DetachableToolbarView,
   void GetAnchorPositionForButton(views::MenuButton* button,
                                   views::MenuAnchorPosition* anchor);
 
-  // Returns the button responsible for showing bookmarks in the other bookmark
-  // folder.
-  views::MenuButton* other_bookmarked_button() const {
-    return other_bookmarked_button_;
+  // Returns the button responsible for showing bookmarks in the
+  // "Other Bookmarks" folder.
+  views::MenuButton* other_bookmarks_button() const {
+    return other_bookmarks_button_;
   }
 
   // Returns the button used when not all the items on the bookmark bar fit.
@@ -290,10 +290,10 @@ class BookmarkBarView : public DetachableToolbarView,
   // visible, this returns GetBookmarkButtonCount().
   int GetFirstHiddenNodeIndex();
 
-  // Creates the button showing the other bookmarked items.
-  views::MenuButton* CreateOtherBookmarkedButton();
+  // Creates the button showing the "Other Bookmarks" folder.
+  views::MenuButton* CreateOtherBookmarksButton();
 
-  // Creates the button showing the managed bookmarks items.
+  // Creates the button showing the "Managed Bookmarks" folder.
   views::MenuButton* CreateManagedBookmarksButton();
 
   // Creates the button used when not all bookmark buttons fit.
@@ -359,7 +359,7 @@ class BookmarkBarView : public DetachableToolbarView,
   // Updates the colors for all the child objects in the bookmarks bar.
   void UpdateColors();
 
-  // Updates the visibility of |other_bookmarked_button_| and
+  // Updates the visibility of |other_bookmarks_button_| and
   // |managed_bookmarks_button_|. Also shows or hides the separator if required.
   // Returns true if something changed and a LayoutAndPaint() is needed.
   bool UpdateOtherAndManagedButtonsVisibility();
@@ -403,8 +403,8 @@ class BookmarkBarView : public DetachableToolbarView,
   // bookmark bar.
   scoped_ptr<BookmarkContextMenu> context_menu_;
 
-  // Shows the other bookmark entries.
-  views::MenuButton* other_bookmarked_button_;
+  // Shows the "Other Bookmarks" folder button.
+  views::MenuButton* other_bookmarks_button_;
 
   // Shows the managed bookmarks entries.
   views::MenuButton* managed_bookmarks_button_;
@@ -434,8 +434,8 @@ class BookmarkBarView : public DetachableToolbarView,
   scoped_ptr<gfx::SlideAnimation> size_animation_;
 
   // If the bookmark bubble is showing, this is the visible ancestor of the URL.
-  // The visible ancestor is either the other_bookmarked_button_,
-  // overflow_button_ or a button on the bar.
+  // The visible ancestor is either the |other_bookmarks_button_|,
+  // |overflow_button_| or a button on the bar.
   views::CustomButton* throbbing_view_;
 
   BookmarkBar::State bookmark_bar_state_;
