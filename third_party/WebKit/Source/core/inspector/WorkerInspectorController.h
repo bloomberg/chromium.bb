@@ -58,6 +58,7 @@ public:
     ~WorkerInspectorController();
     void trace(Visitor*);
 
+    void registerModuleAgent(PassOwnPtrWillBeRawPtr<InspectorAgent>);
     void connectFrontend();
     void disconnectFrontend();
     void restoreInspectorStateFromCookie(const String& inspectorCookie);

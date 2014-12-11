@@ -37,12 +37,14 @@
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "core/inspector/WorkerInspectorController.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/EventTargetModules.h"
 #include "modules/serviceworkers/CacheStorage.h"
 #include "modules/serviceworkers/GlobalFetch.h"
+#include "modules/serviceworkers/InspectorServiceWorkerCacheAgent.h"
 #include "modules/serviceworkers/Request.h"
 #include "modules/serviceworkers/ServiceWorkerClients.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
@@ -87,6 +89,7 @@ ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(const KURL& url, const String
     , m_hadErrorInTopLevelEventHandler(false)
     , m_eventNestingLevel(0)
 {
+    workerInspectorController()->registerModuleAgent(InspectorServiceWorkerCacheAgent::create(this));
 }
 
 ServiceWorkerGlobalScope::~ServiceWorkerGlobalScope()

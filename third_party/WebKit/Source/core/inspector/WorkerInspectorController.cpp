@@ -111,6 +111,11 @@ WorkerInspectorController::~WorkerInspectorController()
 {
 }
 
+void WorkerInspectorController::registerModuleAgent(PassOwnPtrWillBeRawPtr<InspectorAgent> agent)
+{
+    m_agents.append(agent);
+}
+
 void WorkerInspectorController::connectFrontend()
 {
     ASSERT(!m_frontend);

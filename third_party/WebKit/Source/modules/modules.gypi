@@ -907,6 +907,8 @@
       'serviceworkers/Headers.h',
       'serviceworkers/InstallEvent.cpp',
       'serviceworkers/InstallEvent.h',
+      'serviceworkers/InspectorServiceWorkerCacheAgent.cpp',
+      'serviceworkers/InspectorServiceWorkerCacheAgent.h',
       'serviceworkers/NavigatorServiceWorker.cpp',
       'serviceworkers/NavigatorServiceWorker.h',
       'serviceworkers/Request.cpp',
