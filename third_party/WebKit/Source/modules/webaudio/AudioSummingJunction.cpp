@@ -56,6 +56,11 @@ AudioSummingJunction::~AudioSummingJunction()
 void AudioSummingJunction::trace(Visitor* visitor)
 {
     visitor->trace(m_context);
+    // FIXME: Oilpan: m_renderingOutputs should not be strong references.  This
+    // is a short-term workaround to avoid crashes, and causes AudioNode leaks.
+    AudioContext::AutoLocker locker(m_context);
+    for (size_t i = 0; i < m_renderingOutputs.size(); ++i)
+        visitor->trace(m_renderingOutputs[i]);
 }
 
 void AudioSummingJunction::changedOutputs()
