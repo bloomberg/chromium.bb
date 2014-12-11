@@ -4,7 +4,10 @@ Tests snapshot command log for trace-based Timeline paint event
 Paint command log:
     div#a drawRect
     div#b drawRect
-    img#c drawRect
-    img#c drawBitmapRectToRect
+    div#alttext-container drawRect
+    div#alttext-container drawRect
+    div#alttext-container drawRect
+    div#alttext-container drawRect
+    img#alttext-image drawBitmapRectToRect
     rect#e drawRect
 
