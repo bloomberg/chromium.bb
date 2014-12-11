@@ -400,5 +400,45 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateClip)
         TestDisplayItem(secondRenderer, DisplayItem::EndClip));
 }
 
+TEST_F(ViewDisplayListTest, CachedDisplayItems)
+{
+    setBodyInnerHTML("<div id='first'><div id='second'></div></div>");
+    RenderLayerModelObject* firstRenderer = toRenderLayerModelObject(document().body()->firstChild()->renderer());
+    RenderLayerModelObject* secondRenderer = toRenderLayerModelObject(document().body()->firstChild()->firstChild()->renderer());
+    GraphicsContext context(nullptr, &rootDisplayItemList());
+
+    drawRect(&context, firstRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
+    drawRect(&context, secondRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
+
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
+        TestDisplayItem(firstRenderer, DisplayItem::DrawingPaintPhaseBlockBackground),
+        TestDisplayItem(secondRenderer, DisplayItem::DrawingPaintPhaseBlockBackground));
+    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(firstRenderer->displayItemClient()));
+    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(secondRenderer->displayItemClient()));
+    DisplayItem* firstDisplayItem = rootDisplayItemList().paintList()[0].get();
+    DisplayItem* secondDisplayItem = rootDisplayItemList().paintList()[1].get();
+
+    rootDisplayItemList().invalidate(firstRenderer->displayItemClient());
+    EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(firstRenderer->displayItemClient()));
+    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(secondRenderer->displayItemClient()));
+
+    drawRect(&context, firstRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
+    drawRect(&context, secondRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
+
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
+        TestDisplayItem(firstRenderer, DisplayItem::DrawingPaintPhaseBlockBackground),
+        TestDisplayItem(secondRenderer, DisplayItem::DrawingPaintPhaseBlockBackground));
+    // The first display item should be updated.
+    EXPECT_NE(firstDisplayItem, rootDisplayItemList().paintList()[0].get());
+    // The second display item should be cached.
+    EXPECT_EQ(secondDisplayItem, rootDisplayItemList().paintList()[1].get());
+    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(firstRenderer->displayItemClient()));
+    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(secondRenderer->displayItemClient()));
+
+    rootDisplayItemList().invalidateAll();
+    EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(firstRenderer->displayItemClient()));
+    EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(secondRenderer->displayItemClient()));
+}
+
 } // anonymous namespace
 } // namespace blink
