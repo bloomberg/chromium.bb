@@ -47,7 +47,7 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTest):
     self._Prepare(build_id=None)
 
   def testUnknownWaterfall(self):
-    """Test that an assertion is thrown is master name is not valid."""
+    """Test that an assertion is thrown if master name is not valid."""
     os.environ['BUILDBOT_MASTERNAME'] = 'gibberish'
     self.assertRaises(failures_lib.StepFailure, self.RunStage)
 
@@ -62,7 +62,8 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTest):
         build_number=1234321,
         builder_name=mock.ANY,
         master_build_id=None,
-        waterfall='chromiumos')
+        waterfall='chromiumos',
+        timeout_seconds=mock.ANY)
     self.assertEqual(self._run.attrs.metadata.GetValue('build_id'), 31337)
     self.assertEqual(self._run.attrs.metadata.GetValue('db_type'),
                      cidb.CIDBConnectionFactory._CONNECTION_TYPE_MOCK)

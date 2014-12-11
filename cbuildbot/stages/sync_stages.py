@@ -803,6 +803,16 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
         cros_build_lib.Warning(str(e))
         return None
 
+      # We must extend the builder deadline before publishing a new manifest to
+      # ensure that slaves have enough time to complete the builds about to
+      # start.
+      build_id, db = self._run.GetCIDBHandle()
+      if db:
+        timeout = constants.MASTER_BUILD_TIMEOUT_SECONDS.get(
+            self._run.config.build_type,
+            constants.MASTER_BUILD_TIMEOUT_DEFAULT_SECONDS)
+        db.ExtendDeadline(build_id, timeout)
+
       manifest = self.manifest_manager.CreateNewCandidate(validation_pool=pool,
                                                           build_id=build_id)
       if MasterSlaveLKGMSyncStage.sub_manager:

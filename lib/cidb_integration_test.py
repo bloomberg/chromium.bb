@@ -430,7 +430,7 @@ class BuildStagesAndFailureTest(CIDBIntegrationTest):
 class BuildTableTest(CIDBIntegrationTest):
   """Test buildTable functionality not tested by the DataSeries tests."""
 
-  def testDeadlineAPI(self):
+  def testInsertWithDeadline(self):
     """Test deadline setting/querying API."""
     self._PrepareFreshDatabase(32)
     bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
@@ -441,9 +441,8 @@ class BuildTableTest(CIDBIntegrationTest):
                                   'build_config',
                                   'bot_hostname',
                                   timeout_seconds=30 * 60)
-    time_remaining = bot_db.GetTimeToDeadline(build_id)
     # This will flake if the few cidb calls above take hours. Unlikely.
-    self.assertGreater(time_remaining, 10)
+    self.assertLess(10, bot_db.GetTimeToDeadline(build_id))
 
     build_id = bot_db.InsertBuild('build_name',
                                   constants.WATERFALL_INTERNAL,
@@ -453,19 +452,50 @@ class BuildTableTest(CIDBIntegrationTest):
                                   timeout_seconds=1)
     # Sleep till the deadline expires.
     time.sleep(3)
-    time_remaining = bot_db.GetTimeToDeadline(build_id)
-    self.assertEqual(0, time_remaining)
+    self.assertEqual(0, bot_db.GetTimeToDeadline(build_id))
 
     build_id = bot_db.InsertBuild('build_name',
                                   constants.WATERFALL_INTERNAL,
                                   3,
                                   'build_config',
                                   'bot_hostname')
-    time_remaining = bot_db.GetTimeToDeadline(build_id)
-    self.assertEqual(None, time_remaining)
+    self.assertEqual(None, bot_db.GetTimeToDeadline(build_id))
 
-    time_remaining = bot_db.GetTimeToDeadline(-1)
-    self.assertEqual(None, time_remaining)
+    self.assertEqual(None, bot_db.GetTimeToDeadline(build_id))
+
+  def testExtendDeadline(self):
+    """Test that a deadline in the future can be extended."""
+
+    #self._PrepareFreshDatabase(32)
+    bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
+
+    build_id = bot_db.InsertBuild('build_name',
+                                  constants.WATERFALL_INTERNAL,
+                                  1,
+                                  'build_config',
+                                  'bot_hostname')
+    self.assertEqual(None, bot_db.GetTimeToDeadline(build_id))
+
+    self.assertEqual(1, bot_db.ExtendDeadline(build_id, 1))
+    time.sleep(2)
+    self.assertEqual(0, bot_db.GetTimeToDeadline(build_id))
+    self.assertEqual(0, bot_db.ExtendDeadline(build_id, 10 * 60))
+    self.assertEqual(0, bot_db.GetTimeToDeadline(build_id))
+
+
+    build_id = bot_db.InsertBuild('build_name',
+                                  constants.WATERFALL_INTERNAL,
+                                  2,
+                                  'build_config',
+                                  'bot_hostname',
+                                  timeout_seconds=30 * 60)
+    self.assertLess(10, bot_db.GetTimeToDeadline(build_id))
+
+    self.assertEqual(0, bot_db.ExtendDeadline(build_id, 10 * 60))
+    self.assertLess(20 * 60, bot_db.GetTimeToDeadline(build_id))
+
+    self.assertEqual(1, bot_db.ExtendDeadline(build_id, 60 * 60))
+    self.assertLess(40 * 60, bot_db.GetTimeToDeadline(build_id))
 
 
 class DataSeries1Test(CIDBIntegrationTest):

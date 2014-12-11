@@ -668,6 +668,28 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                          'toolchain_url': d.get('toolchain-url'),
                          'build_type': d.get('build_type')})
 
+  @minimum_schema(32)
+  def ExtendDeadline(self, build_id, timeout_seconds):
+    """Extend the deadline for this build.
+
+    Args:
+      build_id: primary key, in buildTable, of the build for which deadline
+          should be extended.
+      timeout_seconds: Time remaining for the deadline from the current time.
+
+    Returns:
+      Number of rows updated (1 for success, 0 for failure)
+      Deadline extension can fail if
+        (1) The deadline is already past, or
+        (2) The new deadline requested is earlier than the original deadline.
+    """
+    return self._Execute(
+        'UPDATE buildTable SET deadline = NOW() + INTERVAL %s SECOND WHERE '
+        'id = %s AND '
+        '(deadline = 0 OR deadline > NOW()) AND '
+        'NOW() + INTERVAL %s SECOND > deadline',
+        timeout_seconds, build_id, timeout_seconds).rowcount
+
   @minimum_schema(6)
   def UpdateBoardPerBuildMetadata(self, build_id, board, board_metadata):
     """Update the given board-per-build metadata.

@@ -1857,9 +1857,6 @@ def main(argv):
     # cgroups would kill gets killed, etc.
     stack.Add(critical_section.ForkWatchdog)
 
-    if options.timeout > 0:
-      stack.Add(timeout_util.FatalTimeout, options.timeout)
-
     if not options.buildbot:
       build_config = cbuildbot_config.OverrideConfigForTrybot(
           build_config, options)
@@ -1880,5 +1877,31 @@ def main(argv):
 
     _SetupCidb(options, build_config)
     retry_stats.SetupStats()
+
+    # For master-slave builds: Update slave's timeout using master's published
+    # deadline.
+    if options.buildbot and options.master_build_id is not None:
+      slave_timeout = None
+      if cidb.CIDBConnectionFactory.IsCIDBSetup():
+        cidb_handle = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
+        if cidb_handle:
+          slave_timeout = cidb_handle.GetTimeToDeadline(options.master_build_id)
+
+      if slave_timeout is not None:
+        # Cut me some slack. We artificially add a a small time here to the
+        # slave_timeout because '0' is handled specially, and because we don't
+        # want to timeout while trying to set things up.
+        slave_timeout = slave_timeout + 20
+        if options.timeout == 0 or slave_timeout < options.timeout:
+          logging.info('Updating slave build timeout to %d seconds enforced '
+                       'by the master',
+                       slave_timeout)
+          options.timeout = slave_timeout
+      else:
+        logging.warning('Could not get master deadline for master-slave build. '
+                        'Can not set slave timeout.')
+
+    if options.timeout > 0:
+      stack.Add(timeout_util.FatalTimeout, options.timeout)
 
     _RunBuildStagesWrapper(options, build_config)

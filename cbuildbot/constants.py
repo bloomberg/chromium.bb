@@ -438,6 +438,16 @@ HWTEST_CHROME_PERF_POOL = 'chromeperf'
 HWTEST_TRYBOT_POOL = 'try-bot'
 
 
+# Master build timeouts in seconds. This is the overall timeout set by the
+# master for the lock-step master-slave builds.
+MASTER_BUILD_TIMEOUT_SECONDS = {
+    PFQ_TYPE: 20 * 60,
+    # Canaries are scheduled to run every 8 hours. Leave some gap.
+    CANARY_TYPE: (7 * 60 + 50) * 60,
+}
+MASTER_BUILD_TIMEOUT_DEFAULT_SECONDS = 4 * 60 * 60
+
+
 # Defines for the various hardware test suites:
 #   AU: Blocking suite run against all canaries; tests basic AU
 #       functionality.

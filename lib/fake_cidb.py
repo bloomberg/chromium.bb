@@ -38,7 +38,8 @@ class FakeCIDBConnection(object):
     return self.fake_time or datetime.datetime.now()
 
   def InsertBuild(self, builder_name, waterfall, build_number,
-                  build_config, bot_hostname, master_build_id=None):
+                  build_config, bot_hostname, master_build_id=None,
+                  deadline=None):
     """Insert a build row."""
     row = {'builder_name': builder_name,
            'buildbot_generation': constants.BUILDBOT_GENERATION,
@@ -47,7 +48,8 @@ class FakeCIDBConnection(object):
            'build_config' : build_config,
            'bot_hostname': bot_hostname,
            'start_time': datetime.datetime.now(),
-           'master_build_id' : master_build_id}
+           'master_build_id' : master_build_id,
+           'deadline': deadline}
     build_id = len(self.buildTable)
     self.buildTable.append(row)
     return build_id
@@ -92,6 +94,10 @@ class FakeCIDBConnection(object):
 
     self.buildStageTable[build_stage_id]['status'] = (
         constants.BUILDER_STATUS_INFLIGHT)
+
+  def ExtendDeadline(self, build_id, timeout):
+    # No sanity checking in fake object.
+    self.buildStageTable[build_id]['deadline'] = timeout
 
   def FinishBuildStage(self, build_stage_id, status):
     if build_stage_id > len(self.buildStageTable):

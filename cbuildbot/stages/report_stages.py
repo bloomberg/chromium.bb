@@ -103,6 +103,23 @@ class BuildStartStage(generic_stages.BuilderStage):
   build, and inserts the build into the database, if appropriate.
   """
 
+  def _GetBuildTimeoutSeconds(self):
+    """Get the overall build timeout to be published to cidb.
+
+    Returns:
+      Timeout in seconds. None if no sensible timeout can be inferred.
+    """
+    timeout_seconds = self._run.options.timeout
+    if self._run.config.master:
+      master_timeout = constants.MASTER_BUILD_TIMEOUT_SECONDS.get(
+          self._run.config.build_type,
+          constants.MASTER_BUILD_TIMEOUT_DEFAULT_SECONDS)
+      if timeout_seconds > 0:
+        master_timeout = min(master_timeout, timeout_seconds)
+      return master_timeout
+
+    return timeout_seconds if timeout_seconds > 0 else None
+
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     WriteBasicMetadata(self._run)
@@ -132,7 +149,8 @@ class BuildStartStage(generic_stages.BuilderStage):
             build_number=d['build-number'],
             build_config=d['bot-config'],
             bot_hostname=d['bot-hostname'],
-            master_build_id=d['master_build_id'])
+            master_build_id=d['master_build_id'],
+            timeout_seconds=self._GetBuildTimeoutSeconds())
         self._run.attrs.metadata.UpdateWithDict({'build_id': build_id,
                                                  'db_type': db_type})
         logging.info('Inserted build_id %s into cidb database type %s.',

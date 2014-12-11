@@ -45,9 +45,6 @@ from chromite.lib import timeout_util
 import mock
 
 
-MOCK_BUILD_ID = 69178
-
-
 class ManifestVersionedSyncStageTest(generic_stages_unittest.AbstractStageTest):
   """Tests the ManifestVersionedSync stage."""
   # pylint: disable=abstract-method
@@ -77,7 +74,6 @@ class ManifestVersionedSyncStageTest(generic_stages_unittest.AbstractStageTest):
     self.sync_stage = sync_stages.ManifestVersionedSyncStage(self._run)
     self.sync_stage.manifest_manager = self.manager
     self._run.attrs.manifest_manager = self.manager
-    self._run.attrs.metadata.UpdateWithDict({'build_id': MOCK_BUILD_ID})
 
   def testManifestVersionedSyncOnePartBranch(self):
     """Tests basic ManifestVersionedSyncStage with branch ooga_booga"""
@@ -191,6 +187,12 @@ class BaseCQTestCase(generic_stages_unittest.StageTest):
     super(BaseCQTestCase, self)._Prepare(bot_id, **kwargs)
     self._run.config.overlays = constants.PUBLIC_OVERLAYS
     self.sync_stage = sync_stages.CommitQueueSyncStage(self._run)
+
+    # BuildStart stage would have seeded the build.
+    build_id = self.fake_db.InsertBuild(
+        'test_builder', constants.WATERFALL_TRYBOT, 666, 'test_config',
+        'test_hostname')
+    self._run.attrs.metadata.UpdateWithDict({'build_id': build_id})
 
   def PerformSync(self, committed=False, num_patches=1, tree_open=True,
                   tree_throttled=False,

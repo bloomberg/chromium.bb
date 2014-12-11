@@ -138,14 +138,6 @@ class ImportantBuilderFailedException(failures_lib.StepFailure):
 class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
   """Stage that records whether we passed or failed to build/test manifest."""
 
-  # Max wait time for results from slaves.
-  SLAVE_STATUS_TIMEOUT_SECONDS = 4 * 60 * 60
-  # Max wait time for results for PFQ type builders. Note that this
-  # does not include Chrome PFQ or CQ.
-  PFQ_SLAVE_STATUS_TIMEOUT_SECONDS = 20 * 60
-  SLAVE_CHECKING_PERIOD_SECONDS = constants.SLEEP_TIMEOUT
-
-
   def __init__(self, *args, **kwargs):
     super(MasterSlaveSyncCompletionStage, self).__init__(*args, **kwargs)
     self._slave_statuses = {}
@@ -182,14 +174,21 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         return self._GetLocalBuildStatus()
       else:
         # Wait for the slaves to finish.
+        timeout = None
+        build_id, db = self._run.GetCIDBHandle()
+        if db:
+          timeout = db.GetTimeToDeadline(build_id)
+        if timeout is None:
+          # Catch-all: This could happen if cidb is not setup, or the deadline
+          # query fails.
+          timeout = constants.MASTER_BUILD_TIMEOUT_DEFAULT_SECONDS
+
         if self._run.options.debug:
           # For debug runs, wait for three minutes to ensure most code
           # paths are executed.
+          logging.info('Waiting for 3 minutes only for debug run. '
+                       'Would have waited for %s seconds.', timeout)
           timeout = 3 * 60
-        elif self._run.config.build_type == constants.PFQ_TYPE:
-          timeout = self.PFQ_SLAVE_STATUS_TIMEOUT_SECONDS
-        else:
-          timeout = self.SLAVE_STATUS_TIMEOUT_SECONDS
 
         manager = self._run.attrs.manifest_manager
         if sync_stages.MasterSlaveLKGMSyncStage.sub_manager:
@@ -384,10 +383,6 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 
 class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
   """Collect build slave statuses and handle the failures."""
-  # This is used in MasterSlaveSyncCompletionStage._FetchSlaveStatuses()
-  # as the max wait time for results from slaves. Canaries are scheduled
-  # to run every 8 hours, so this timeout must be smaller than that.
-  SLAVE_STATUS_TIMEOUT_SECONDS = (7 * 60 + 50) * 60
 
   def HandleFailure(self, failing, inflight, no_stat):
     """Handle a build failure or timeout in the Canary builders.
