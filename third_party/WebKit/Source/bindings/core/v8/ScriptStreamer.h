@@ -39,6 +39,9 @@ public:
     // streaming finishes.
     static void startStreaming(PendingScript&, Settings*, ScriptState*, PendingScript::Type);
 
+    // Returns false if we cannot stream the given encoding.
+    static bool convertEncoding(const char* encodingName, v8::ScriptCompiler::StreamedSource::Encoding*);
+
     bool isFinished() const
     {
         return m_loadingFinished && (m_parsingFinished || m_streamingSuppressed);
@@ -84,6 +87,8 @@ public:
     // Called by ScriptStreamingTask when it has streamed all data to V8 and V8
     // has processed it.
     void streamingCompleteOnBackgroundThread();
+
+    v8::ScriptCompiler::StreamedSource::Encoding encoding() const { return m_encoding; }
 
     static void setSmallScriptThresholdForTesting(size_t threshold)
     {
@@ -153,6 +158,9 @@ private:
     // the parsing task: if the main thread is waiting, the main thread should
     // do it, otherwise the parser thread should do it. Guarded by m_mutex.
     bool m_mainThreadWaitingForParserThread;
+
+    // Encoding of the streamed script. Saved for sanity checking purposes.
+    v8::ScriptCompiler::StreamedSource::Encoding m_encoding;
 };
 
 } // namespace blink

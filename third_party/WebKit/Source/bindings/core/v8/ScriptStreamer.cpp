@@ -230,6 +230,27 @@ void ScriptStreamer::startStreaming(PendingScript& script, Settings* settings, S
         blink::Platform::current()->histogramEnumeration(startedStreamingHistogramName(scriptType), 0, 2);
 }
 
+bool ScriptStreamer::convertEncoding(const char* encodingName, v8::ScriptCompiler::StreamedSource::Encoding* encoding)
+{
+    // Here's a list of encodings we can use for streaming. These are
+    // the canonical names.
+    if (strcmp(encodingName, "windows-1252") == 0
+        || strcmp(encodingName, "ISO-8859-1") == 0
+        || strcmp(encodingName, "US-ASCII") == 0) {
+        *encoding = v8::ScriptCompiler::StreamedSource::ONE_BYTE;
+        return true;
+    }
+    if (strcmp(encodingName, "UTF-8") == 0) {
+        *encoding = v8::ScriptCompiler::StreamedSource::UTF8;
+        return true;
+    }
+    // We don't stream other encodings; especially we don't stream two
+    // byte scripts to avoid the handling of endianness. Most scripts
+    // are Latin1 or UTF-8 anyway, so this should be enough for most
+    // real world purposes.
+    return false;
+}
+
 void ScriptStreamer::streamingCompleteOnBackgroundThread()
 {
     ASSERT(!isMainThread());
@@ -318,22 +339,7 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
 
         // Maybe the encoding changed because we saw the BOM; get the encoding
         // from the decoder.
-        const char* encodingName = decoder->encoding().name();
-
-        // Here's a list of encodings we can use for streaming. These are
-        // the canonical names.
-        v8::ScriptCompiler::StreamedSource::Encoding encoding;
-        if (strcmp(encodingName, "windows-1252") == 0
-            || strcmp(encodingName, "ISO-8859-1") == 0
-            || strcmp(encodingName, "US-ASCII") == 0) {
-            encoding = v8::ScriptCompiler::StreamedSource::ONE_BYTE;
-        } else if (strcmp(encodingName, "UTF-8") == 0) {
-            encoding = v8::ScriptCompiler::StreamedSource::UTF8;
-        } else {
-            // We don't stream other encodings; especially we don't stream two
-            // byte scripts to avoid the handling of endianness. Most scripts
-            // are Latin1 or UTF-8 anyway, so this should be enough for most
-            // real world purposes.
+        if (!convertEncoding(decoder->encoding().name(), &m_encoding)) {
             suppressStreaming();
             blink::Platform::current()->histogramEnumeration(histogramName, 0, 2);
             return;
@@ -358,7 +364,7 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
         ASSERT(!m_source);
         m_stream = new SourceStream(this);
         // m_source takes ownership of m_stream.
-        m_source = adoptPtr(new v8::ScriptCompiler::StreamedSource(m_stream, encoding));
+        m_source = adoptPtr(new v8::ScriptCompiler::StreamedSource(m_stream, m_encoding));
 
         ScriptState::Scope scope(m_scriptState.get());
         WTF::OwnPtr<v8::ScriptCompiler::ScriptStreamingTask> scriptStreamingTask(adoptPtr(v8::ScriptCompiler::StartStreamingScript(m_scriptState->isolate(), m_source.get(), m_compileOptions)));
@@ -447,6 +453,7 @@ ScriptStreamer::ScriptStreamer(ScriptResource* resource, PendingScript::Type scr
     , m_scriptType(scriptType)
     , m_scriptStreamingMode(mode)
     , m_mainThreadWaitingForParserThread(false)
+    , m_encoding(v8::ScriptCompiler::StreamedSource::TWO_BYTE) // Unfortunately there's no dummy encoding value in the enum; let's use one we don't stream.
 {
 }
 
