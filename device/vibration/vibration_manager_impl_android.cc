@@ -23,6 +23,9 @@ VibrationManagerImplAndroid* VibrationManagerImplAndroid::Create() {
 }
 
 VibrationManagerImplAndroid::VibrationManagerImplAndroid() {
+  j_vibration_provider_.Reset(
+      Java_VibrationProvider_create(AttachCurrentThread(),
+                                    base::android::GetApplicationContext()));
 }
 
 VibrationManagerImplAndroid::~VibrationManagerImplAndroid() {
@@ -34,13 +37,6 @@ bool VibrationManagerImplAndroid::Register(JNIEnv* env) {
 }
 
 void VibrationManagerImplAndroid::Vibrate(int64 milliseconds) {
-  if (j_vibration_provider_.is_null()) {
-    j_vibration_provider_.Reset(
-        Java_VibrationProvider_create(
-            AttachCurrentThread(),
-            base::android::GetApplicationContext()));
-  }
-
   // Though the Blink implementation already sanitizes vibration times, don't
   // trust any values passed from the client.
   int64 sanitized_milliseconds = std::max(kMinimumVibrationDurationMs,
@@ -52,10 +48,6 @@ void VibrationManagerImplAndroid::Vibrate(int64 milliseconds) {
 }
 
 void VibrationManagerImplAndroid::Cancel() {
-  // If somehow a cancel message is received before this object was
-  // instantiated, it means there is no current vibration anyway. Just return.
-  if (j_vibration_provider_.is_null())
-    return;
   Java_VibrationProvider_cancelVibration(AttachCurrentThread(),
                                          j_vibration_provider_.obj());
 }

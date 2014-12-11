@@ -1057,10 +1057,12 @@ void RendererBlinkPlatformImpl::SetMockDeviceOrientationDataForTesting(
 void RendererBlinkPlatformImpl::vibrate(unsigned int milliseconds) {
   GetConnectedVibrationManagerService()->Vibrate(
       base::checked_cast<int64>(milliseconds));
+  vibration_manager_.reset();
 }
 
 void RendererBlinkPlatformImpl::cancelVibration() {
   GetConnectedVibrationManagerService()->Cancel();
+  vibration_manager_.reset();
 }
 
 device::VibrationManagerPtr&
