@@ -11,6 +11,7 @@
 #include "ui/app_list/search_provider.h"
 
 class AppListControllerDelegate;
+class FaviconService;
 class Profile;
 
 namespace suggestions {
@@ -37,6 +38,7 @@ class SuggestionsSearchProvider : public SearchProvider {
 
   Profile* profile_;
   AppListControllerDelegate* list_controller_;
+  FaviconService* favicon_service_;
   suggestions::SuggestionsService* suggestions_service_;
 
   // For callbacks may be run after destruction.
