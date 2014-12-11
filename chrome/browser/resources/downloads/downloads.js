@@ -175,7 +175,7 @@ Downloads.prototype.updateResults = function() {
   noDownloadsOrResults.hidden = hasDownloads;
 
   if (loadTimeData.getBoolean('allow_deleting_history'))
-    $('clear-all').hidden = !hasDownloads || this.searchText_;
+    $('clear-all').hidden = !hasDownloads || this.searchText_.length > 0;
 };
 
 /**

@@ -98,6 +98,13 @@ cr.define('options', function() {
     },
 
     /**
+     * An abstract method for all subclasses to override to update their
+     * preference from existing state.
+     * @protected
+     */
+    updatePrefFromState: assertNotReached,
+
+    /**
      * See |updateDisabledState| above.
      */
     setDisabled: function(reason, disabled) {

@@ -33,14 +33,8 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Shows an informational bubble displaying |content| and pointing at the
-     * |target| element. If |content| has focusable elements, they join the
-     * current page's tab order as siblings of |domSibling|.
+     * Shows an informational bubble displaying |content|.
      * @param {HTMLDivElement} content The content of the bubble.
-     * @param {HTMLElement} target The element at which the bubble points.
-     * @param {HTMLElement} domSibling The element after which the bubble is
-     *     added to the DOM.
-     * @param {cr.ui.ArrowLocation} location The arrow location.
      */
     showBubble: function(content) {
       this.hideBubble();
@@ -81,8 +75,8 @@ cr.define('cr.ui', function() {
 
       if (this.hasAttribute('text' + this.controlledBy))
         text = this.getAttribute('text' + this.controlledBy);
-      else if (this.controlledBy == 'extension' && this.extensionName)
-        text = defaultStrings.extensionWithName;
+      else if (this.controlledBy == 'extension' && this['extensionName'])
+        text = defaultStrings['extensionWithName'];
 
       return text || '';
     },

@@ -103,7 +103,6 @@ cr.define('options', function() {
      */
     optionsShown_: false,
 
-    /** @override */
     decorate: function() {
       this.textContent = '';
 
@@ -370,7 +369,7 @@ cr.define('options', function() {
           var indicator = new cr.ui.ControlledIndicator();
           indicator.classList.add('controlled-extension-indicator');
           indicator.setAttribute('controlled-by', 'policy');
-          indicator.setAttribute('textpolicy', extension.policyText);
+          indicator.setAttribute('textpolicy', extension.policyText || '');
           node.querySelector('.enable-controls').appendChild(indicator);
         }
 

@@ -9,15 +9,6 @@ cr.define('options', function() {
    */
   var EditableTextField = cr.ui.define('div');
 
-  /**
-   * Decorates an element as an editable text field.
-   * @param {!HTMLElement} el The element to decorate.
-   */
-  EditableTextField.decorate = function(el) {
-    el.__proto__ = EditableTextField.prototype;
-    el.decorate();
-  };
-
   EditableTextField.prototype = {
     __proto__: HTMLDivElement.prototype,
 
@@ -50,7 +41,7 @@ cr.define('options', function() {
      */
     editCanceled_: true,
 
-    /** @override */
+    /** @protected */
     decorate: function() {
       this.classList.add('editable-text-field');
 

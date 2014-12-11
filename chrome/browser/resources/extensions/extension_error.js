@@ -44,7 +44,6 @@ cr.define('extensions', function() {
 
     /**
      * @param {RuntimeError} error
-     * @override
      */
     decorate: function(error) {
       // Add an additional class for the severity level.
@@ -109,7 +108,6 @@ cr.define('extensions', function() {
   ExtensionErrorList.prototype = {
     __proto__: HTMLDivElement.prototype,
 
-    /** @override */
     decorate: function() {
       this.contents_ = this.querySelector('.extension-error-list-contents');
       this.errors_.forEach(function(error) {

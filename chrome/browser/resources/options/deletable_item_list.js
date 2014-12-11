@@ -152,7 +152,7 @@ cr.define('options', function() {
     /**
      * Callback for onclick events.
      * @param {Event} e The click event object.
-     * @override
+     * @protected
      */
     handleClick: function(e) {
       if (this.disabled)

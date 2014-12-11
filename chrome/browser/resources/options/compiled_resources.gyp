@@ -18,6 +18,7 @@
           '../../../../ui/webui/resources/js/cr/ui/bubble.js',
           '../../../../ui/webui/resources/js/cr/ui/bubble_button.js',
           '../../../../ui/webui/resources/js/cr/ui/command.js',
+          '../../../../ui/webui/resources/js/cr/ui/controlled_indicator.js',
           '../../../../ui/webui/resources/js/cr/ui/focus_manager.js',
           '../../../../ui/webui/resources/js/cr/ui/focus_outline_manager.js',
           '../../../../ui/webui/resources/js/cr/ui/grid.js',

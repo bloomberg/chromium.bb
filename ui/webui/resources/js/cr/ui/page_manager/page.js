@@ -131,6 +131,13 @@ cr.define('cr.ui.pageManager', function() {
     didShowPage: function() {},
 
     /**
+     * Set this to handle cancelling an overlay (and skip some typical steps).
+     * @see {cr.ui.PageManager.prototype.cancelOverlay}
+     * @type {?Function}
+     */
+    handleCancel: null,
+
+    /**
      * Called before the page will be hidden, e.g., when a different root page
      * will be shown.
      */

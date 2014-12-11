@@ -2303,53 +2303,162 @@ chrome.browserAction = {};
 
 
 /**
- * @param {Object} details An object whose keys are 'color' and
- *     optionally 'tabId'.
+ * @typedef {?{
+ *   tabId: (number|undefined)
+ * }}
  */
-chrome.browserAction.setBadgeBackgroundColor = function(details) {};
+chrome.browserAction.Tab;
 
 
 /**
- * @param {Object} details An object whose keys are 'text' and
- *     optionally 'tabId'.
+ * @typedef {Array<number>}
+ * @see https://developer.chrome.com/extensions/browserAction#type-ColorArray
  */
-chrome.browserAction.setBadgeText = function(details) {};
+chrome.browserAction.ColorArray;
 
 
 /**
- * @param {Object} details An object which may have 'imageData',
- *     'path', or 'tabId' as keys.
+ * @typedef {{
+ *   imageData: (!ImageData|!Object.<number, !ImageData>|undefined),
+ *   path: (string|!Object.<number, string>|undefined),
+ *   tabId: (number|undefined)
+ * }}
  */
-chrome.browserAction.setIcon = function(details) {};
+chrome.browserAction.SetIconImageData;
 
 
 /**
- * @param {Object} details An object which may have 'popup' or 'tabId' as keys.
+ * @param {{
+ *   title: string,
+ *   tabId: (number|undefined)
+ * }} details
+ * @see https://developer.chrome.com/extensions/browserAction#method-setTitle
+ */
+chrome.browserAction.setTitle = function(details) {};
+
+
+/**
+ * @param {!chrome.browserAction.Tab} details
+ * @param {function(string): void} callback
+ * @see https://developer.chrome.com/extensions/browserAction#method-getTitle
+ */
+chrome.browserAction.getTitle = function(details, callback) {};
+
+
+/**
+ * @param {!chrome.browserAction.SetIconImageData} details
+ * @param {function(): void=} opt_callback
+ * @see https://developer.chrome.com/extensions/browserAction#method-setIcon
+ */
+chrome.browserAction.setIcon = function(details, opt_callback) {};
+
+
+/**
+ * @param {{
+ *   tabId: (number|undefined),
+ *   popup: string
+ * }} details
+ * @see https://developer.chrome.com/extensions/browserAction#method-setPopup
  */
 chrome.browserAction.setPopup = function(details) {};
 
 
 /**
- * @param {Object} details An object which has 'title' and optionally
- *     'tabId'.
+ * @param {!chrome.browserAction.Tab} details
+ * @param {function(string): void} callback
+ * @see https://developer.chrome.com/extensions/browserAction#method-getPopup
  */
-chrome.browserAction.setTitle = function(details) {};
+chrome.browserAction.getPopup = function(details, callback) {};
 
 
-/** @type {!ChromeEvent} */
+/**
+ * @param {{
+ *   text: string,
+ *   tabId: (number|undefined)
+ * }} details
+ * @see https://developer.chrome.com/extensions/browserAction#method-setBadgeText
+ */
+chrome.browserAction.setBadgeText = function(details) {};
+
+
+/**
+ * @param {!chrome.browserAction.Tab} details
+ * @param {function(string): void} callback
+ * @see https://developer.chrome.com/extensions/browserAction#method-getBadgeText
+ */
+chrome.browserAction.getBadgeText = function(details, callback) {};
+
+
+/**
+ * @param {{
+ *   color: (string|chrome.browserAction.ColorArray),
+ *   tabId: (number|undefined)
+ * }} details
+ * @see https://developer.chrome.com/extensions/browserAction#method-setBadgeBackgroundColor
+ */
+chrome.browserAction.setBadgeBackgroundColor = function(details) {};
+
+
+/**
+ * @param {!chrome.browserAction.Tab} details
+ * @param {function(chrome.browserAction.ColorArray): void} callback
+ * @see https://developer.chrome.com/extensions/browserAction#method-getBadgeBackgroundColor
+ */
+chrome.browserAction.getBadgeBackgroundColor = function(details, callback) {};
+
+
+/**
+ * @param {number=} opt_tabId
+ * @see https://developer.chrome.com/extensions/browserAction#method-enable
+ */
+chrome.browserAction.enable = function(opt_tabId) {};
+
+
+/**
+ * @param {number=} opt_tabId
+ * @see https://developer.chrome.com/extensions/browserAction#method-disable
+ */
+chrome.browserAction.disable = function(opt_tabId) {};
+
+
+/**
+ * @constructor
+ */
+chrome.browserAction.BrowserActionTabEvent = function() {};
+
+
+/**
+ * @param {function(!Tab): void} callback
+ */
+chrome.browserAction.BrowserActionTabEvent.prototype.addListener =
+    function(callback) {};
+
+
+/**
+ * @param {function(!Tab): void} callback
+ */
+chrome.browserAction.BrowserActionTabEvent.prototype.removeListener =
+    function(callback) {};
+
+
+/**
+ * @param {function(!Tab): void} callback
+ * @return {boolean}
+ */
+chrome.browserAction.BrowserActionTabEvent.prototype.hasListener =
+    function(callback) {};
+
+
+/** @return {boolean} */
+chrome.browserAction.BrowserActionTabEvent.prototype.hasListeners =
+    function() {};
+
+
+/**
+ * @type {!chrome.browserAction.BrowserActionTabEvent}
+ * @see https://developer.chrome.com/extensions/browserAction#event-onClicked
+ */
 chrome.browserAction.onClicked;
-
-
-/**
- * @param {number} tabId the ID of the tab on which to disable this action.
- */
-chrome.browserAction.disable = function(tabId) {};
-
-
-/**
- * @param {number} tabId the ID of the tab on which to enable this action.
- */
-chrome.browserAction.enable = function(tabId) {};
 
 
 /**
@@ -4187,6 +4296,318 @@ chrome.socket.getJoinedGroups = function(socketId, callback) {};
 
 
 /**
+  * @const
+  */
+chrome.sockets = {};
+
+
+/**
+  * @const
+  * @see https://developer.chrome.com/apps/sockets_tcp
+  */
+chrome.sockets.tcp = {};
+
+
+
+/**
+ * @constructor
+ * @see https://developer.chrome.com/apps/sockets_tcp#type-SocketInfo
+ */
+chrome.sockets.tcp.SocketInfo = function() {};
+
+
+/** @type {number} */
+chrome.sockets.tcp.SocketInfo.prototype.socketId;
+
+
+/** @type {boolean} */
+chrome.sockets.tcp.SocketInfo.prototype.persistent;
+
+
+/** @type {string|undefined} */
+chrome.sockets.tcp.SocketInfo.prototype.name;
+
+
+/** @type {number|undefined} */
+chrome.sockets.tcp.SocketInfo.prototype.bufferSize;
+
+
+/** @type {boolean} */
+chrome.sockets.tcp.SocketInfo.prototype.paused;
+
+
+/** @type {boolean} */
+chrome.sockets.tcp.SocketInfo.prototype.connected;
+
+
+/** @type {string|undefined} */
+chrome.sockets.tcp.SocketInfo.prototype.localAddress;
+
+
+/** @type {number|undefined} */
+chrome.sockets.tcp.SocketInfo.prototype.localPort;
+
+
+/** @type {string|undefined} */
+chrome.sockets.tcp.SocketInfo.prototype.peerAddress;
+
+
+/** @type {number|undefined} */
+chrome.sockets.tcp.SocketInfo.prototype.peerPort;
+
+
+/**
+ * @typedef {?{
+ *   persistent: (boolean|undefined),
+ *   name: (string|undefined),
+ *   bufferSize: (number|undefined)
+ * }}
+ * @see https://developer.chrome.com/apps/sockets_tcp#type-SocketProperties
+ */
+chrome.sockets.tcp.SocketProperties;
+
+
+/**
+ * @typedef {?{
+ *   min: (string|undefined),
+ *   max: (string|undefined)
+ * }}
+ * @see https://developer.chrome.com/apps/sockets_tcp#method-secure
+ */
+chrome.sockets.tcp.SecurePropertiesTlsVersion;
+
+
+/**
+ * @typedef {?{
+ *   tlsVersion: (chrome.sockets.tcp.SecurePropertiesTlsVersion|undefined)
+ * }}
+ * @see https://developer.chrome.com/apps/sockets_tcp#method-secure
+ */
+chrome.sockets.tcp.SecureProperties;
+
+
+/**
+ * @param {!chrome.sockets.tcp.SocketProperties|
+ *     function(!Object)} propertiesOrCallback
+ * @param {function(!Object)=} opt_callback
+ * @see https://developer.chrome.com/apps/sockets_tcp#method-create
+ */
+chrome.sockets.tcp.create = function(propertiesOrCallback, opt_callback) {};
+
+
+/**
+ * @param {number} socketId
+ * @param {!chrome.sockets.tcp.SocketProperties} properties
+ * @param {function()=} opt_callback
+ * @see https://developer.chrome.com/apps/sockets_tcp#method-update
+ */
+chrome.sockets.tcp.update = function(socketId, properties, opt_callback) {};
+
+
+/**
+ * @param {number} socketId
+ * @param {boolean} paused
+ * @param {function()=} opt_callback
+ * @see https://developer.chrome.com/apps/sockets_tcp#method-setPaused
+ */
+chrome.sockets.tcp.setPaused = function(socketId, paused, opt_callback) {};
+
+
+/**
+ * @param {number} socketId
+ * @param {boolean} enable
+ * @param {(number|function(number))} delayOrCallback
+ * @param {function(number)=} opt_callback
+ * @see https://developer.chrome.com/apps/sockets_tcp#method-setKeepAlive
+ */
+chrome.sockets.tcp.setKeepAlive = function(socketId, enable, delayOrCallback,
+    opt_callback) {};
+
+
+/**
+ * @param {number} socketId
+ * @param {boolean} noDelay
+ * @param {function(number)} callback
+ * @see https://developer.chrome.com/apps/sockets_tcp#method-setNoDelay
+ */
+chrome.sockets.tcp.setNoDelay = function(socketId, noDelay, callback) {};
+
+
+/**
+ * @param {number} socketId
+ * @param {string} peerAddress
+ * @param {number} peerPort
+ * @param {function(number)} callback
+ * @see https://developer.chrome.com/apps/sockets_tcp#method-connect
+ */
+chrome.sockets.tcp.connect = function(socketId, peerAddress, peerPort,
+    callback) {};
+
+
+/**
+ * @param {number} socketId The id of the socket to disconnect.
+ * @param {function()=} opt_callback
+ * @see https://developer.chrome.com/apps/sockets_tcp#method-disconnect
+ */
+chrome.sockets.tcp.disconnect = function(socketId, opt_callback) {};
+
+
+/**
+ * @param {number} socketId
+ * @param {!chrome.sockets.tcp.SecureProperties|function(number)}
+ *     optionsOrCallback
+ * @param {function(number)=} opt_callback
+ * @see https://developer.chrome.com/apps/sockets_tcp#method-secure
+ */
+chrome.sockets.tcp.secure = function(socketId, optionsOrCallback,
+    opt_callback) {};
+
+
+/**
+ * @param {number} socketId
+ * @param {!ArrayBuffer} data
+ * @param {function(!Object)} callback
+ * @see https://developer.chrome.com/apps/sockets_tcp#method-send
+ */
+chrome.sockets.tcp.send = function(socketId, data, callback) {};
+
+
+/**
+ * @param {number} socketId
+ * @param {function()=} opt_callback
+ * @see https://developer.chrome.com/apps/sockets_tcp#method-close
+ */
+chrome.sockets.tcp.close = function(socketId, opt_callback) {};
+
+
+/**
+ * @param {number} socketId
+ * @param {function(!chrome.sockets.tcp.SocketInfo)} callback
+ * @see https://developer.chrome.com/apps/sockets_tcp#method-getInfo
+ */
+chrome.sockets.tcp.getInfo = function(socketId, callback) {};
+
+
+/**
+ * @param {function(!Array.<!chrome.sockets.tcp.SocketInfo>)} callback
+ * @see https://developer.chrome.com/apps/sockets_tcp#method-getSockets
+ */
+chrome.sockets.tcp.getSockets = function(callback) {};
+
+
+
+/**
+ * @constructor
+ * @see https://developer.chrome.com/apps/sockets_tcp#event-onReceive
+ */
+chrome.sockets.tcp.ReceiveEventData = function() {};
+
+
+/** @type {number} */
+chrome.sockets.tcp.ReceiveEventData.prototype.socketId;
+
+
+/** @type {!ArrayBuffer} */
+chrome.sockets.tcp.ReceiveEventData.prototype.data;
+
+
+
+/**
+ * Event whose listeners take a ReceiveEventData parameter.
+ * @constructor
+ */
+chrome.sockets.tcp.ReceiveEvent = function() {};
+
+
+/**
+ * @param {function(!chrome.sockets.tcp.ReceiveEventData): void} callback
+ */
+chrome.sockets.tcp.ReceiveEvent.prototype.addListener =
+    function(callback) {};
+
+
+/**
+ * @param {function(!chrome.sockets.tcp.ReceiveEventData): void} callback
+ */
+chrome.sockets.tcp.ReceiveEvent.prototype.removeListener =
+    function(callback) {};
+
+
+/**
+ * @param {function(!chrome.sockets.tcp.ReceiveEventData): void} callback
+ * @return {boolean}
+ */
+chrome.sockets.tcp.ReceiveEvent.prototype.hasListener =
+    function(callback) {};
+
+
+/** @return {boolean} */
+chrome.sockets.tcp.ReceiveEvent.prototype.hasListeners = function() {};
+
+
+/** @type {!chrome.sockets.tcp.ReceiveEvent} */
+chrome.sockets.tcp.onReceive;
+
+
+
+/**
+ * @constructor
+ * @see https://developer.chrome.com/apps/sockets_tcp#event-onReceiveError
+ */
+chrome.sockets.tcp.ReceiveErrorEventData = function() {};
+
+
+/** @type {number} */
+chrome.sockets.tcp.ReceiveErrorEventData.prototype.socketId;
+
+
+/** @type {number} */
+chrome.sockets.tcp.ReceiveErrorEventData.prototype.resultCode;
+
+
+
+/**
+ * Event whose listeners take a ReceiveErrorEventData parameter.
+ * @constructor
+ */
+chrome.sockets.tcp.ReceiveErrorEvent = function() {};
+
+
+/**
+ * @param {function(
+ *     !chrome.sockets.tcp.ReceiveErrorEventData): void} callback
+ */
+chrome.sockets.tcp.ReceiveErrorEvent.prototype.addListener =
+    function(callback) {};
+
+
+/**
+ * @param {function(
+ *     !chrome.sockets.tcp.ReceiveErrorEventData): void} callback
+ */
+chrome.sockets.tcp.ReceiveErrorEvent.prototype.removeListener =
+    function(callback) {};
+
+
+/**
+ * @param {function(
+ *     !chrome.sockets.tcp.ReceiveErrorEventData): void} callback
+ * @return {boolean}
+ */
+chrome.sockets.tcp.ReceiveErrorEvent.prototype.hasListener =
+    function(callback) {};
+
+
+/** @return {boolean} */
+chrome.sockets.tcp.ReceiveErrorEvent.prototype.hasListeners =
+    function() {};
+
+
+/** @type {!chrome.sockets.tcp.ReceiveErrorEvent} */
+chrome.sockets.tcp.onReceiveError;
+
+
+/**
  * @const
  * @see https://developer.chrome.com/extensions/storage.html
  */
@@ -4570,6 +4991,10 @@ ExtensionInfo.prototype.name;
 
 
 /** @type {string} */
+ExtensionInfo.prototype.shortName;
+
+
+/** @type {string} */
 ExtensionInfo.prototype.description;
 
 
@@ -4591,6 +5016,10 @@ ExtensionInfo.prototype.disabledReason;
 
 /** @type {boolean} */
 ExtensionInfo.prototype.isApp;
+
+
+/** @type {string} */
+ExtensionInfo.prototype.type;
 
 
 /** @type {string|undefined} */
@@ -7316,17 +7745,25 @@ chrome.mdns = {};
 
 /**
  * Data type sent to the event handler of chrome.mdns.onServiceList.
- * TODO: This one event handler data type is being made a typedef
- * as an experiment. This allows us to create these objects in tests to pass
- * to the handlers which isn't possible by using the object form.
- * @typedef {{
- *     serviceName: string,
- *     serviceHostPort: string,
- *     ipAddress: string,
- *     serviceData: !Array.<string>}}
+ * @constructor
  */
-chrome.mdns.MdnsService;
+chrome.mdns.MdnsService = function() {};
 
+
+/** @type {string} */
+chrome.mdns.MdnsService.prototype.serviceName;
+
+
+/** @type {string} */
+chrome.mdns.MdnsService.prototype.serviceHostPort;
+
+
+/** @type {string} */
+chrome.mdns.MdnsService.prototype.ipAddress;
+
+
+/** @type {!Array.<string>} */
+chrome.mdns.MdnsService.prototype.serviceData;
 
 
 /**
@@ -7390,19 +7827,6 @@ chrome.gcdPrivate = {};
 chrome.gcdPrivate.Device;
 
 
-
-/** @constructor */
-chrome.gcdPrivate.ConfirmationInfo = function() {};
-
-
-/** @type {string} */
-chrome.gcdPrivate.ConfirmationInfo.prototype.type;
-
-
-/** @type {string|undefined} */
-chrome.gcdPrivate.ConfirmationInfo.prototype.code;
-
-
 /**
  * Returns the list of cloud devices visible locally or available in the
  * cloud for user account.
@@ -7434,20 +7858,26 @@ chrome.gcdPrivate.prefetchWifiPassword = function(ssid, callback) {};
  * Establish the session.
  * @param {string} ipAddress
  * @param {number} port
- * @param {function(number, string, !chrome.gcdPrivate.ConfirmationInfo): void}
+ * @param {function(number, string, !Array.<string>): void}
  *     callback Called when the session is established or on error. 1st param,
  *     |sessionId|, is the session ID (identifies the session for future calls).
  *     2nd param, |status|, is the status (success or type of error). 3rd param,
- *     |confirmationInfo|, is the info about how the device handles
- *     confirmation.
+ *     |pairingTypes|, is a list of pairing types supported by this device.
  */
 chrome.gcdPrivate.establishSession = function(ipAddress, port, callback) {};
 
 
 /**
- * Confirm that the code is correct. Device will still need to confirm. |code|
- * must be present and must match the code from the device, even when the code
- * is supplied in the |ConfirmationInfo| object.
+ * Start pairing with the selected method.
+ * @param {number} sessionId
+ * @param {string} pairingType
+ * @param {function(string): void} callback
+ */
+chrome.gcdPrivate.startPairing = function(sessionId, pairingType, callback) {};
+
+
+/**
+ * Confirm pairing code.
  * @param {number} sessionId
  * @param {string} code
  * @param {function(string): void} callback

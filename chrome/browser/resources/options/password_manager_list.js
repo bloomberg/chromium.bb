@@ -24,7 +24,8 @@ cr.define('options.passwordManager', function() {
     el.dataItem = entry;
     el.dataModel = dataModel;
     el.__proto__ = PasswordListItem.prototype;
-    el.decorate(showPasswords);
+    el.showPasswords_ = showPasswords;
+    el.decorate();
 
     return el;
   }
@@ -33,7 +34,7 @@ cr.define('options.passwordManager', function() {
     __proto__: DeletableItem.prototype,
 
     /** @override */
-    decorate: function(showPasswords) {
+    decorate: function() {
       DeletableItem.prototype.decorate.call(this);
 
       // The URL of the site.
@@ -69,12 +70,12 @@ cr.define('options.passwordManager', function() {
       passwordInput.type = 'password';
       passwordInput.className = 'inactive-password';
       passwordInput.readOnly = true;
-      passwordInput.value = showPasswords ? this.password : '********';
+      passwordInput.value = this.showPasswords_ ? this.password : '********';
       passwordInputDiv.appendChild(passwordInput);
       this.passwordField = passwordInput;
 
       // The show/hide button.
-      if (showPasswords) {
+      if (this.showPasswords_) {
         var button = this.ownerDocument.createElement('button');
         button.hidden = true;
         button.className = 'list-inline-button custom-appearance';
@@ -313,7 +314,7 @@ cr.define('options.passwordManager', function() {
   /**
    * Create a new passwords list.
    * @constructor
-   * @extends {cr.ui.List}
+   * @extends {options.DeletableItemList}
    */
   var PasswordExceptionsList = cr.ui.define('list');
 

@@ -154,8 +154,7 @@ cr.define('options', function() {
         action.classList.add('controlled-setting-bubble-action');
         action.textContent =
             loadTimeData.getString('controlledSettingFollowRecommendation');
-        action.addEventListener('click',
-                                function(event) { self.resetHandler_(); });
+        action.addEventListener('click', this.resetHandler_.bind(this));
         container.appendChild(action);
         content.appendChild(container);
       } else if (this.controlledBy == 'extension' && this.extensionName) {

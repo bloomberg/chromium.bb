@@ -40,7 +40,8 @@ function load() {
   $('cert-manager-header').hidden = true;
 
   PageManager.isDialog = true;
-  CertificateManager.getInstance().initializePage(true);
+  CertificateManager.getInstance().setIsKiosk(true);
+  certificateManager.getInstance().initializePage();
   PageManager.registerOverlay(AlertOverlay.getInstance(),
       CertificateManager.getInstance());
   PageManager.registerOverlay(CertificateBackupOverlay.getInstance(),

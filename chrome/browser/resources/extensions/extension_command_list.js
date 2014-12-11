@@ -212,7 +212,6 @@ cr.define('options', function() {
      */
     capturingElement_: null,
 
-    /** @override */
     decorate: function() {
       this.textContent = '';
 

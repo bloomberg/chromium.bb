@@ -172,7 +172,7 @@ cr.define('options', function() {
    * @constructor
    * @extends {cr.ui.pageManager.Page}
    */
-  function CertificateManager(model) {
+  function CertificateManager() {
     Page.call(this, 'certificates',
               loadTimeData.getString('certificateManagerPageTabTitle'),
               'certificateManagerPage');
@@ -183,15 +183,24 @@ cr.define('options', function() {
   CertificateManager.prototype = {
     __proto__: Page.prototype,
 
+    /** @private {boolean} */
+    isKiosk_: false,
+
+    /** @param {boolean} isKiosk */
+    setIsKiosk: function(isKiosk) {
+      this.isKiosk_ = isKiosk;
+    },
+
     /** @override */
-    initializePage: function(isKiosk) {
+    initializePage: function() {
       Page.prototype.initializePage.call(this);
 
       this.personalTab = new CertificateManagerTab('personalCertsTab',
-                                                   !!isKiosk);
-      this.serverTab = new CertificateManagerTab('serverCertsTab', !!isKiosk);
-      this.caTab = new CertificateManagerTab('caCertsTab', !!isKiosk);
-      this.otherTab = new CertificateManagerTab('otherCertsTab', !!isKiosk);
+                                                   this.isKiosk_);
+      this.serverTab = new CertificateManagerTab('serverCertsTab',
+                                                 this.isKiosk_);
+      this.caTab = new CertificateManagerTab('caCertsTab', this.isKiosk_);
+      this.otherTab = new CertificateManagerTab('otherCertsTab', this.isKiosk_);
 
       this.addEventListener('visibleChange', this.handleVisibleChange_);
 
