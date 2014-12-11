@@ -797,8 +797,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
             const AtomicString& value = state.element()->getAttribute(attr);
             state.style()->setContent(value.isNull() ? emptyString() : value.string(), didSet);
             didSet = true;
-            // register the fact that the attribute value affects the style
-            state.contentAttrValues().append(attr.localName());
         } else if (contentValue->isCounter()) {
             Counter* counterValue = contentValue->getCounterValue();
             EListStyleType listStyleType = NoneListStyle;

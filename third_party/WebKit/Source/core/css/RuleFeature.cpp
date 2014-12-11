@@ -32,7 +32,9 @@
 #include "core/HTMLNames.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSSelectorList.h"
+#include "core/css/CSSValueList.h"
 #include "core/css/RuleSet.h"
+#include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/invalidation/DescendantInvalidationSet.h"
 #include "core/dom/Element.h"
@@ -221,6 +223,8 @@ bool RuleFeatureSet::extractInvalidationSetFeature(const CSSSelector& selector, 
         features.attributes.append(selector.attribute().localName());
     else if (selector.isCustomPseudoElement())
         features.customPseudoElement = true;
+    else if (selector.pseudoType() == CSSSelector::PseudoBefore || selector.pseudoType() == CSSSelector::PseudoAfter)
+        features.hasBeforeOrAfter = true;
     else
         return false;
     return true;
@@ -268,21 +272,52 @@ DescendantInvalidationSet* RuleFeatureSet::invalidationSetForSelector(const CSSS
     return nullptr;
 }
 
-// Given a selector, update the descendant invalidation sets for the features found
-// in the selector. The first step is to extract the features from the rightmost
+// Given a rule, update the descendant invalidation sets for the features found
+// in its selector. The first step is to extract the features from the rightmost
 // compound selector (extractInvalidationSetFeatures). Secondly, add those features
 // to the invalidation sets for the features found in the other compound selectors
 // (addFeaturesToInvalidationSets). If we find a feature in the right-most compound
 // selector that requires a subtree recalc, we addFeaturesToInvalidationSets for the
 // rightmost compound selector as well.
 
-void RuleFeatureSet::updateInvalidationSets(const CSSSelector& selector)
+void RuleFeatureSet::updateInvalidationSets(const RuleData& ruleData)
 {
     InvalidationSetFeatures features;
-    auto result = extractInvalidationSetFeatures(selector, features, false);
+    auto result = extractInvalidationSetFeatures(ruleData.selector(), features, false);
     if (result.first) {
         features.forceSubtree = result.second == ForceSubtree;
         addFeaturesToInvalidationSets(*result.first, features);
+    }
+
+    // If any ::before and ::after rules specify 'content: attr(...)', we
+    // need to create invalidation sets for those attributes.
+    if (features.hasBeforeOrAfter)
+        updateInvalidationSetsForContentAttribute(ruleData);
+}
+
+void RuleFeatureSet::updateInvalidationSetsForContentAttribute(const RuleData& ruleData)
+{
+    const StylePropertySet& propertySet = ruleData.rule()->properties();
+
+    int propertyIndex = propertySet.findPropertyIndex(CSSPropertyContent);
+
+    if (propertyIndex == -1)
+        return;
+
+    StylePropertySet::PropertyReference contentProperty = propertySet.propertyAt(propertyIndex);
+    CSSValue* contentValue = contentProperty.value();
+
+    if (!contentValue->isValueList())
+        return;
+
+    for (CSSValueListIterator i = contentValue; i.hasMore(); i.advance()) {
+        CSSValue* item = i.value();
+        if (!item->isPrimitiveValue())
+            continue;
+        CSSPrimitiveValue* primitiveItem = toCSSPrimitiveValue(item);
+        if (!primitiveItem->isAttr())
+            continue;
+        ensureAttributeInvalidationSet(AtomicString(primitiveItem->getStringValue()));
     }
 }
 
@@ -392,14 +427,9 @@ void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector& selector, 
     }
 }
 
-void RuleFeatureSet::addContentAttr(const AtomicString& attributeName)
-{
-    ensureAttributeInvalidationSet(attributeName);
-}
-
 void RuleFeatureSet::collectFeaturesFromRuleData(const RuleData& ruleData)
 {
-    updateInvalidationSets(ruleData.selector());
+    updateInvalidationSets(ruleData);
 
     FeatureMetadata metadata;
     collectFeaturesFromSelector(ruleData.selector(), metadata);

@@ -95,9 +95,6 @@ public:
     bool applyPropertyToRegularStyle() const { return m_applyPropertyToRegularStyle; }
     bool applyPropertyToVisitedLinkStyle() const { return m_applyPropertyToVisitedLinkStyle; }
 
-    // Holds all attribute names found while applying "content" properties that contain an "attr()" value.
-    Vector<AtomicString>& contentAttrValues() { return m_contentAttrValues; }
-
     void cacheUserAgentBorderAndBackground()
     {
         // RenderTheme only needs the cached style if it has an appearance,
@@ -158,7 +155,6 @@ private:
     OwnPtr<CachedUAStyle> m_cachedUAStyle;
 
     ElementStyleResources m_elementStyleResources;
-    Vector<AtomicString> m_contentAttrValues;
 };
 
 } // namespace blink

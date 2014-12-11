@@ -50,7 +50,7 @@ namespace blink {
     //
     // The order of tagHistory() varies depending on the situation.
     // * Relations using combinators (http://www.w3.org/TR/css3-selectors/#combinators), such as descendant, sibling, etc., are parsed
-    //   right-to-left (in the example above, this is why .c is earlier in the tagHistory() chain than .a.b).
+    //   right-to-left (in the example above, this is why #c is earlier in the tagHistory() chain than .a.b).
     // * SubSelector relations are parsed left-to-right in most cases (such as the .a.b example above); a counter-example is the
     //   ::content pseudo-element. Most (all?) other pseudo elements and pseudo classes are parsed left-to-right.
     // * ShadowPseudo relations are parsed right-to-left. Example: summary::-webkit-details-marker is parsed as:

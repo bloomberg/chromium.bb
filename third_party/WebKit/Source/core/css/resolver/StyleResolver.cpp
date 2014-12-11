@@ -517,12 +517,6 @@ PassRefPtr<RenderStyle> StyleResolver::styleForDocument(Document& document)
     return documentStyle.release();
 }
 
-static void addContentAttrValuesToFeatures(const Vector<AtomicString>& contentAttrValues, RuleFeatureSet& features)
-{
-    for (size_t i = 0; i < contentAttrValues.size(); ++i)
-        features.addContentAttr(contentAttrValues[i]);
-}
-
 void StyleResolver::adjustRenderStyle(StyleResolverState& state, Element* element)
 {
     StyleAdjuster adjuster(document().inQuirksMode());
@@ -629,8 +623,6 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
 
         applyMatchedProperties(state, collector.matchedResult());
         applyCallbackSelectors(state);
-
-        addContentAttrValuesToFeatures(state.contentAttrValues(), m_features);
 
         // Cache our original display.
         state.style()->setOriginalDisplay(state.style()->display());
@@ -813,8 +805,6 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
         applyMatchedProperties(state, collector.matchedResult());
         applyCallbackSelectors(state);
 
-        addContentAttrValuesToFeatures(state.contentAttrValues(), m_features);
-
         // Cache our original display.
         state.style()->setOriginalDisplay(state.style()->display());
 
@@ -887,8 +877,6 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
     updateFont(state);
 
     applyMatchedProperties<LowPriorityProperties>(state, result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
-
-    addContentAttrValuesToFeatures(state.contentAttrValues(), m_features);
 
     loadPendingResources(state);
 

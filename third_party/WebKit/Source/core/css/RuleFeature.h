@@ -92,11 +92,6 @@ public:
         return m_idInvalidationSets.size() > 0;
     }
 
-    // Marks the given attribute name as "appearing in a selector". Used for
-    // CSS properties such as content: ... attr(...) ...
-    // FIXME: record these internally to this class instead calls from StyleResolver to here.
-    void addContentAttr(const AtomicString& attributeName);
-
     StyleInvalidator& styleInvalidator();
 
     void trace(Visitor*);
@@ -132,11 +127,13 @@ private:
     DescendantInvalidationSet& ensureIdInvalidationSet(const AtomicString& attributeName);
     DescendantInvalidationSet& ensurePseudoInvalidationSet(CSSSelector::PseudoType);
 
-    void updateInvalidationSets(const CSSSelector&);
+    void updateInvalidationSets(const RuleData&);
+    void updateInvalidationSetsForContentAttribute(const RuleData&);
 
     struct InvalidationSetFeatures {
         InvalidationSetFeatures()
             : customPseudoElement(false)
+            , hasBeforeOrAfter(false)
             , treeBoundaryCrossing(false)
             , adjacent(false)
             , insertionPointCrossing(false)
@@ -150,6 +147,7 @@ private:
         AtomicString id;
         AtomicString tagName;
         bool customPseudoElement;
+        bool hasBeforeOrAfter;
         bool treeBoundaryCrossing;
         bool adjacent;
         bool insertionPointCrossing;
