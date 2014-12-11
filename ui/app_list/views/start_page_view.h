@@ -44,6 +44,7 @@ class APP_LIST_EXPORT StartPageView : public SearchResultContainerView {
 
   // Overridden from views::View:
   void Layout() override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
 
   // Overridden from SearchResultContainerView:
   void OnContainerSelected(bool from_bottom) override;
