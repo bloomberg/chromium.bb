@@ -27,7 +27,7 @@ namespace {
 
 const char kBackgroundWorkerURL[] =
     "chrome://webrtc-device-provider/background_worker.html";
-const char kSerial[] = "clouddevices";
+const char kSerial[] = "webrtc";
 const char kPseudoDeviceName[] = "Remote browsers";
 const char kDeviceIdPrefix[] = "device-id:";
 

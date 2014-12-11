@@ -6,6 +6,7 @@ var MIN_VERSION_TAB_CLOSE = 25;
 var MIN_VERSION_TARGET_ID = 26;
 var MIN_VERSION_NEW_TAB = 29;
 var MIN_VERSION_TAB_ACTIVATE = 30;
+var WEBRTC_SERIAL = 'WEBRTC';
 
 var queryParamsObject = {};
 
@@ -189,8 +190,12 @@ function populateRemoteTargets(devices) {
 
       var deviceSerial = document.createElement('div');
       deviceSerial.className = 'device-serial';
-      deviceSerial.textContent = '#' + device.adbSerial.toUpperCase();
+      var serial = device.adbSerial.toUpperCase();
+      deviceSerial.textContent = '#' + serial;
       deviceHeader.appendChild(deviceSerial);
+
+      if (serial === WEBRTC_SERIAL)
+        deviceHeader.classList.add('hidden');
 
       var devicePorts = document.createElement('div');
       devicePorts.className = 'device-ports';
