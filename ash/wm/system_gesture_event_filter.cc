@@ -30,9 +30,10 @@ SystemGestureEventFilter::~SystemGestureEventFilter() {
 }
 
 void SystemGestureEventFilter::OnMouseEvent(ui::MouseEvent* event) {
-#if defined(OS_CHROMEOS)
-  if (event->type() == ui::ET_MOUSE_PRESSED &&
-      ui::TouchFactory::GetInstance()->IsTouchDevicePresent()) {
+#if defined(OS_CHROMEOS) && defined(USE_X11)
+  if (event->type() == ui::ET_MOUSE_PRESSED && event->HasNativeEvent() &&
+      ui::TouchFactory::GetInstance()->IsTouchDevicePresent() &&
+      Shell::GetInstance()->delegate()) {
     Shell::GetInstance()->metrics()->RecordUserMetricsAction(UMA_MOUSE_DOWN);
   }
 #endif
