@@ -346,10 +346,22 @@ bool ProxyResolvingClientSocket::IsConnectedAndIdle() const {
 
 int ProxyResolvingClientSocket::GetPeerAddress(
     net::IPEndPoint* address) const {
-  if (transport_.get() && transport_->socket())
+  if (!transport_.get() || !transport_->socket()) {
+    NOTREACHED();
+    return net::ERR_SOCKET_NOT_CONNECTED;
+  }
+  if (proxy_info_.is_direct())
     return transport_->socket()->GetPeerAddress(address);
-  NOTREACHED();
-  return net::ERR_SOCKET_NOT_CONNECTED;
+
+  net::IPAddressNumber ip_number;
+  if (net::ParseIPLiteralToNumber(dest_host_port_pair_.host(), &ip_number)) {
+    *address = net::IPEndPoint(ip_number, dest_host_port_pair_.port());
+  } else {
+    *address =
+        net::IPEndPoint(net::IPAddressNumber(), dest_host_port_pair_.port());
+  }
+
+  return net::OK;
 }
 
 int ProxyResolvingClientSocket::GetLocalAddress(

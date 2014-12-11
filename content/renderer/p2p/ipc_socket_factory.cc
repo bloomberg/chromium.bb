@@ -398,14 +398,18 @@ int IpcPacketSocket::SendTo(const void *data, size_t data_size,
   }
 
   net::IPEndPoint address_chrome;
-  if (!jingle_glue::SocketAddressToIPEndPoint(address, &address_chrome)) {
-    LOG(WARNING) << "Failed to convert remote address to IPEndPoint: address = "
-                 << address.ipaddr().ToSensitiveString()
-                 << ", remote_address_ = "
-                 << remote_address_.ipaddr().ToSensitiveString();
-    NOTREACHED();
-    error_ = EINVAL;
-    return -1;
+  if (address.IsUnresolvedIP()) {
+    address_chrome = net::IPEndPoint(net::IPAddressNumber(), address.port());
+  } else {
+    if (!jingle_glue::SocketAddressToIPEndPoint(address, &address_chrome)) {
+      LOG(WARNING) << "Failed to convert remote address to IPEndPoint: address="
+                   << address.ipaddr().ToSensitiveString()
+                   << ", remote_address_="
+                   << remote_address_.ipaddr().ToSensitiveString();
+      NOTREACHED();
+      error_ = EINVAL;
+      return -1;
+    }
   }
 
   send_bytes_available_ -= data_size;
@@ -530,14 +534,14 @@ void IpcPacketSocket::OnOpen(const net::IPEndPoint& local_address,
     // over the network.
     if (remote_address_.IsUnresolvedIP()) {
       rtc::SocketAddress jingle_socket_address;
-      if (!jingle_glue::IPEndPointToSocketAddress(
-            remote_address, &jingle_socket_address)) {
-        LOG(WARNING) << "Failed to convert remote IPEndPoint to SocketAddress: "
-                     << remote_address.ToString();
-        NOTREACHED();
+      // |remote_address| could be unresolved if the connection is behind a
+      // proxy.
+      if (!remote_address.address().empty() &&
+          jingle_glue::IPEndPointToSocketAddress(
+              remote_address, &jingle_socket_address)) {
+        // Set only the IP address.
+        remote_address_.SetResolvedIP(jingle_socket_address.ipaddr());
       }
-      // Set only the IP address.
-      remote_address_.SetResolvedIP(jingle_socket_address.ipaddr());
     }
 
     // SignalConnect after updating the |remote_address_| so that the listener
@@ -599,11 +603,18 @@ void IpcPacketSocket::OnDataReceived(const net::IPEndPoint& address,
   DCHECK_EQ(base::MessageLoop::current(), message_loop_);
 
   rtc::SocketAddress address_lj;
-  if (!jingle_glue::IPEndPointToSocketAddress(address, &address_lj)) {
-    // We should always be able to convert address here because we
-    // don't expect IPv6 address on IPv4 connections.
-    NOTREACHED();
-    return;
+
+  if (address.address().empty()) {
+    DCHECK(IsTcpClientSocket(type_));
+    // |address| could be empty for TCP connections behind a proxy.
+    address_lj = remote_address_;
+  } else {
+    if (!jingle_glue::IPEndPointToSocketAddress(address, &address_lj)) {
+      // We should always be able to convert address here because we
+      // don't expect IPv6 address on IPv4 connections.
+      NOTREACHED();
+      return;
+    }
   }
 
   rtc::PacketTime packet_time(timestamp.ToInternalValue(), 0);
