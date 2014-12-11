@@ -137,6 +137,7 @@ void InspectorController::trace(Visitor* visitor)
     visitor->trace(m_instrumentingAgents);
     visitor->trace(m_injectedScriptManager);
     visitor->trace(m_state);
+    visitor->trace(m_overlay);
     visitor->trace(m_domAgent);
     visitor->trace(m_animationAgent);
     visitor->trace(m_pageAgent);
@@ -288,7 +289,7 @@ void InspectorController::disconnectFrontend()
 
     m_inspectorFrontend.clear();
 
-    // relese overlay page resources
+    // Release overlay page resources
     m_overlay->freePage();
     InspectorInstrumentation::frontendDeleted();
     InspectorInstrumentation::unregisterInstrumentingAgents(m_instrumentingAgents.get());

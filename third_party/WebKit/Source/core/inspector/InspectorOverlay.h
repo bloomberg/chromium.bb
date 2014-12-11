@@ -72,15 +72,16 @@ public:
     bool showExtensionLines;
 };
 
-class InspectorOverlay {
-    WTF_MAKE_FAST_ALLOCATED;
+class InspectorOverlay final : public NoBaseWillBeGarbageCollectedFinalized<InspectorOverlay> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<InspectorOverlay> create(Page* page, InspectorClient* client)
+    static PassOwnPtrWillBeRawPtr<InspectorOverlay> create(Page* page, InspectorClient* client)
     {
-        return adoptPtr(new InspectorOverlay(page, client));
+        return adoptPtrWillBeNoop(new InspectorOverlay(page, client));
     }
 
     ~InspectorOverlay();
+    void trace(Visitor*);
 
     void update();
     void hide();
@@ -128,17 +129,17 @@ private:
     void evaluateInOverlay(const String& method, PassRefPtr<JSONValue> argument);
     void onTimer(Timer<InspectorOverlay>*);
 
-    Page* m_page;
+    RawPtrWillBeMember<Page> m_page;
     InspectorClient* m_client;
     String m_pausedInDebuggerMessage;
     bool m_inspectModeEnabled;
-    RefPtrWillBePersistent<Node> m_highlightNode;
-    RefPtrWillBePersistent<Node> m_eventTargetNode;
+    RefPtrWillBeMember<Node> m_highlightNode;
+    RefPtrWillBeMember<Node> m_eventTargetNode;
     HighlightConfig m_nodeHighlightConfig;
     OwnPtr<FloatQuad> m_highlightQuad;
-    OwnPtrWillBePersistent<Page> m_overlayPage;
+    OwnPtrWillBeMember<Page> m_overlayPage;
     OwnPtr<EmptyChromeClient> m_overlayChromeClient;
-    RefPtrWillBePersistent<InspectorOverlayHost> m_overlayHost;
+    RefPtrWillBeMember<InspectorOverlayHost> m_overlayHost;
     HighlightConfig m_quadHighlightConfig;
     bool m_drawViewSize;
     bool m_drawViewSizeWithGrid;

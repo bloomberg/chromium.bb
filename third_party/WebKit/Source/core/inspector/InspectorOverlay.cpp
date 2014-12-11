@@ -354,6 +354,15 @@ InspectorOverlay::~InspectorOverlay()
     ASSERT(!m_overlayPage);
 }
 
+void InspectorOverlay::trace(Visitor* visitor)
+{
+    visitor->trace(m_page);
+    visitor->trace(m_highlightNode);
+    visitor->trace(m_eventTargetNode);
+    visitor->trace(m_overlayPage);
+    visitor->trace(m_overlayHost);
+}
+
 void InspectorOverlay::paint(GraphicsContext& context)
 {
     if (isEmpty())

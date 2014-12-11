@@ -146,7 +146,7 @@ private:
     RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
     OwnPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     OwnPtrWillBeMember<InspectorCompositeState> m_state;
-    OwnPtr<InspectorOverlay> m_overlay;
+    OwnPtrWillBeMember<InspectorOverlay> m_overlay;
 
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
