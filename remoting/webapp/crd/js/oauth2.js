@@ -33,8 +33,6 @@ remoting.OAuth2.prototype.KEY_REFRESH_TOKEN_ = 'oauth2-refresh-token';
 /** @private */
 remoting.OAuth2.prototype.KEY_ACCESS_TOKEN_ = 'oauth2-access-token';
 /** @private */
-remoting.OAuth2.prototype.KEY_XSRF_TOKEN_ = 'oauth2-xsrf-token';
-/** @private */
 remoting.OAuth2.prototype.KEY_EMAIL_ = 'remoting-email';
 /** @private */
 remoting.OAuth2.prototype.KEY_FULLNAME_ = 'remoting-fullname';
@@ -239,16 +237,14 @@ remoting.OAuth2.prototype.onTokens_ =
 };
 
 /**
- * Redirect page to get a new OAuth2 Refresh Token.
+ * Redirect page to get a new OAuth2 authorization code
  *
- * @param {function():void} onDone Completion callback.
+ * @param {function(?string):void} onDone Completion callback to receive
+ *     the authorization code, or null on error.
  * @return {void} Nothing.
  */
-remoting.OAuth2.prototype.doAuthRedirect = function(onDone) {
-  /** @type {remoting.OAuth2} */
-  var that = this;
+remoting.OAuth2.prototype.getAuthorizationCode = function(onDone) {
   var xsrf_token = base.generateXsrfToken();
-  window.localStorage.setItem(this.KEY_XSRF_TOKEN_, xsrf_token);
   var GET_CODE_URL = this.getOAuth2AuthEndpoint_() + '?' +
     remoting.xhr.urlencodeParamHash({
           'client_id': this.getClientId_(),
@@ -268,8 +264,12 @@ remoting.OAuth2.prototype.doAuthRedirect = function(onDone) {
    */
   function oauth2MessageListener(message) {
     if ('code' in message && 'state' in message) {
-      that.exchangeCodeForToken(
-          message['code'], message['state'], onDone);
+      if (message['state'] == xsrf_token) {
+        onDone(message['code']);
+      } else {
+        console.error('Invalid XSRF token.');
+        onDone(null);
+      }
     } else {
       if ('error' in message) {
         console.error(
@@ -279,6 +279,7 @@ remoting.OAuth2.prototype.doAuthRedirect = function(onDone) {
         // it, we can't tell if it has sensitive data.
         console.error('Invalid oauth2 response.');
       }
+      onDone(null);
     }
     chrome.extension.onMessage.removeListener(oauth2MessageListener);
   }
@@ -287,20 +288,33 @@ remoting.OAuth2.prototype.doAuthRedirect = function(onDone) {
 };
 
 /**
+ * Redirect page to get a new OAuth Refresh Token.
+ *
+ * @param {function():void} onDone Completion callback.
+ * @return {void} Nothing.
+ */
+remoting.OAuth2.prototype.doAuthRedirect = function(onDone) {
+  /** @type {remoting.OAuth2} */
+  var that = this;
+  /** @param {?string} code */
+  var onAuthorizationCode = function(code) {
+    if (code) {
+      that.exchangeCodeForToken(code, onDone);
+    } else {
+      onDone();
+    }
+  };
+  this.getAuthorizationCode(onAuthorizationCode);
+};
+
+/**
  * Asynchronously exchanges an authorization code for a refresh token.
  *
  * @param {string} code The OAuth2 authorization code.
- * @param {string} state The state parameter received from the OAuth redirect.
  * @param {function():void} onDone Callback to invoke on completion.
  * @return {void} Nothing.
  */
-remoting.OAuth2.prototype.exchangeCodeForToken = function(code, state, onDone) {
-  var xsrf_token = window.localStorage.getItem(this.KEY_XSRF_TOKEN_);
-  window.localStorage.removeItem(this.KEY_XSRF_TOKEN_);
-  if (xsrf_token == undefined || state != xsrf_token) {
-    // Invalid XSRF token, or unexpected OAuth2 redirect. Abort.
-    onDone();
-  }
+remoting.OAuth2.prototype.exchangeCodeForToken = function(code, onDone) {
   /** @param {remoting.Error} error */
   var onError = function(error) {
     console.error('Unable to exchange code for token: ', error);
@@ -310,6 +324,26 @@ remoting.OAuth2.prototype.exchangeCodeForToken = function(code, state, onDone) {
       this.onTokens_.bind(this, onDone), onError,
       this.getClientId_(), this.getClientSecret_(), code,
       this.getRedirectUri_());
+};
+
+/**
+ * Print a command-line that can be used to register a host on Linux platforms.
+ */
+remoting.OAuth2.prototype.printStartHostCommandLine = function() {
+  /** @type {string} */
+  var redirectUri = this.getRedirectUri_();
+  /** @param {?string} code */
+  var onAuthorizationCode = function(code) {
+    if (code) {
+      console.log('Run the following command to register a host:');
+      console.log(
+          '%c/opt/google/chrome-remote-desktop/start-host' +
+          ' --code=' + code +
+          ' --redirect-url=' + redirectUri +
+          ' --name=$HOSTNAME', 'font-weight: bold;');
+    }
+  };
+  this.getAuthorizationCode(onAuthorizationCode);
 };
 
 /**
