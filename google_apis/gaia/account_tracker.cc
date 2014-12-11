@@ -6,7 +6,6 @@
 
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -85,11 +84,6 @@ AccountIds AccountTracker::FindAccountIdsByGaiaId(const std::string& gaia_id) {
 }
 
 void AccountTracker::OnRefreshTokenAvailable(const std::string& account_id) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 AccountTracker::OnRefreshTokenAvailable"));
-
   TRACE_EVENT1("identity",
                "AccountTracker::OnRefreshTokenAvailable",
                "account_key",
@@ -164,11 +158,6 @@ void AccountTracker::NotifyAccountRemoved(const AccountState& account) {
 }
 
 void AccountTracker::NotifySignInChanged(const AccountState& account) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 AccountTracker::NotifySignInChanged"));
-
   DCHECK(!account.ids.gaia.empty());
   FOR_EACH_OBSERVER(Observer,
                     observer_list_,
@@ -177,10 +166,6 @@ void AccountTracker::NotifySignInChanged(const AccountState& account) {
 
 void AccountTracker::UpdateSignInState(const std::string account_key,
                                        bool is_signed_in) {
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 AccountTracker::UpdateSignInState"));
-
   StartTrackingAccount(account_key);
   AccountState& account = accounts_[account_key];
   bool needs_gaia_id = account.ids.gaia.empty();
@@ -195,11 +180,6 @@ void AccountTracker::UpdateSignInState(const std::string account_key,
 }
 
 void AccountTracker::StartTrackingAccount(const std::string account_key) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 AccountTracker::StartTrackingAccount"));
-
   if (!ContainsKey(accounts_, account_key)) {
     DVLOG(1) << "StartTracking " << account_key;
     AccountState account_state;
@@ -231,38 +211,16 @@ void AccountTracker::StopTrackingAllAccounts() {
 }
 
 void AccountTracker::StartFetchingUserInfo(const std::string account_key) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 AccountTracker::StartFetchingUserInfo"));
-
-  if (ContainsKey(user_info_requests_, account_key)) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
-    tracked_objects::ScopedTracker tracking_profile1(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "422460 AccountTracker::StartFetchingUserInfo 1"));
-
+  if (ContainsKey(user_info_requests_, account_key))
     DeleteFetcher(user_info_requests_[account_key]);
-  }
 
   DVLOG(1) << "StartFetching " << account_key;
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 AccountTracker::StartFetchingUserInfo 2"));
-
   AccountIdFetcher* fetcher =
       new AccountIdFetcher(identity_provider_->GetTokenService(),
                            request_context_getter_.get(),
                            this,
                            account_key);
   user_info_requests_[account_key] = fetcher;
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 AccountTracker::StartFetchingUserInfo 3"));
-
   fetcher->Start();
 }
 

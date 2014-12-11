@@ -9,7 +9,6 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/prefs/scoped_user_pref_update.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/signin/core/browser/refresh_token_annotation_request.h"
 #include "components/signin/core/browser/signin_client.h"
@@ -272,11 +271,6 @@ AccountTrackerService::GetMigrationState(PrefService* pref_service) {
 
 void AccountTrackerService::OnRefreshTokenAvailable(
     const std::string& account_id) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 AccountTrackerService::OnRefreshTokenAvailable"));
-
   TRACE_EVENT1("AccountTrackerService",
                "AccountTracker::OnRefreshTokenAvailable",
                "account_id",

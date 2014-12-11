@@ -4,7 +4,6 @@
 
 #include "components/signin/core/browser/mutable_profile_oauth2_token_service.h"
 
-#include "base/profiler/scoped_tracker.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
@@ -188,11 +187,6 @@ void MutableProfileOAuth2TokenService::LoadCredentials(
 void MutableProfileOAuth2TokenService::OnWebDataServiceRequestDone(
     WebDataServiceBase::Handle handle,
     const WDTypedResult* result) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 MutableProfileOAuth2Token...::OnWebDataServiceRequestDone"));
-
   DCHECK_EQ(web_data_service_request_, handle);
   web_data_service_request_ = 0;
 
