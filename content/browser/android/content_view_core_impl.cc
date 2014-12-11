@@ -954,7 +954,8 @@ jboolean ContentViewCoreImpl::SendMouseWheelEvent(JNIEnv* env,
                                                   jlong time_ms,
                                                   jfloat x,
                                                   jfloat y,
-                                                  jfloat vertical_axis) {
+                                                  jfloat vertical_axis,
+                                                  jfloat horizontal_axis) {
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
   if (!rwhv)
     return false;
@@ -964,6 +965,10 @@ jboolean ContentViewCoreImpl::SendMouseWheelEvent(JNIEnv* env,
     direction = WebMouseWheelEventBuilder::DIRECTION_UP;
   } else if (vertical_axis < 0) {
     direction = WebMouseWheelEventBuilder::DIRECTION_DOWN;
+  } else if (horizontal_axis > 0) {
+    direction = WebMouseWheelEventBuilder::DIRECTION_RIGHT;
+  } else if (horizontal_axis < 0) {
+    direction = WebMouseWheelEventBuilder::DIRECTION_LEFT;
   } else {
     return false;
   }

@@ -119,7 +119,8 @@ class ContentViewCoreImpl : public ContentViewCore,
                                jlong time_ms,
                                jfloat x,
                                jfloat y,
-                               jfloat vertical_axis);
+                               jfloat vertical_axis,
+                               jfloat horizontal_axis);
   void ScrollBegin(JNIEnv* env, jobject obj, jlong time_ms,
                    jfloat x, jfloat y, jfloat hintx, jfloat hinty);
   void ScrollEnd(JNIEnv* env, jobject obj, jlong time_ms);
