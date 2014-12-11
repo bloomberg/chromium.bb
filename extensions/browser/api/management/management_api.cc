@@ -80,10 +80,7 @@ std::vector<management::LaunchType> GetAvailableLaunchTypes(
   }
 
   launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_REGULAR_TAB);
-
-#if !defined(OS_MACOSX)
   launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_WINDOW);
-#endif
 
   if (!delegate->IsStreamlinedHostedAppsEnabled()) {
     launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_PINNED_TAB);

@@ -308,20 +308,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, MAYBE_LaunchTabApp) {
   // If the ID changed, then the pref will not apply to the app.
   ASSERT_EQ(app_id, app_id_new);
 
-#if defined(OS_MACOSX)
-  // App windows are not yet implemented on mac os.  We should fall back
-  // to a normal tab.
-  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile(),
-                                        browser()->host_desktop_type()));
-  ASSERT_EQ(2, browser()->tab_strip_model()->count());
-#else
   // Find the app's browser.  Opening in a new window will create
   // a new browser.
   ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile(),
                                         browser()->host_desktop_type()));
   Browser* app_browser = FindOtherBrowser(browser());
   ASSERT_TRUE(app_browser->is_app());
-#endif
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchType) {

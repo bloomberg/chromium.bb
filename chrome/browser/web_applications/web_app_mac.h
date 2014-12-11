@@ -35,6 +35,12 @@ void MaybeLaunchShortcut(const ShortcutInfo& shortcut_info);
 // Rebuild the shortcut and relaunch it.
 bool MaybeRebuildShortcut(const base::CommandLine& command_line);
 
+// Reveals app shim in Finder given a profile and app.
+// Calls RevealAppShimInFinderForAppOnFileThread and schedules it
+// on the FILE thread.
+void RevealAppShimInFinderForApp(Profile* profile,
+                                 const extensions::Extension* app);
+
 // Creates a shortcut for a web application. The shortcut is a stub app
 // that simply loads the browser framework and runs the given app.
 class WebAppShortcutCreator {
@@ -66,14 +72,14 @@ class WebAppShortcutCreator {
   void DeleteShortcuts();
   bool UpdateShortcuts();
 
+  // Show the bundle we just generated in the Finder.
+  virtual void RevealAppShimInFinder() const;
+
  protected:
   // Returns a path to an app bundle with the given id. Or an empty path if no
   // matching bundle was found.
   // Protected and virtual so it can be mocked out for testing.
   virtual base::FilePath GetAppBundleById(const std::string& bundle_id) const;
-
-  // Show the bundle we just generated in the Finder.
-  virtual void RevealAppShimInFinder() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebAppShortcutCreatorTest, DeleteShortcuts);

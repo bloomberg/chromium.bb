@@ -13,11 +13,13 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "chrome/browser/web_applications/web_app_mac.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_metrics.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/mac/app_shim_messages.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/notification_details.h"
@@ -169,7 +171,10 @@ ExtensionAppShimHandler::Delegate::GetAppExtension(
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
   const extensions::Extension* extension =
       registry->GetExtensionById(extension_id, ExtensionRegistry::ENABLED);
-  return extension && extension->is_platform_app() ? extension : NULL;
+  return extension &&
+                 (extension->is_platform_app() || extension->is_hosted_app())
+             ? extension
+             : NULL;
 }
 
 void ExtensionAppShimHandler::Delegate::EnableExtension(
@@ -185,6 +190,12 @@ void ExtensionAppShimHandler::Delegate::LaunchApp(
     const std::vector<base::FilePath>& files) {
   extensions::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_CMD_LINE_APP, extension->GetType());
+  if (extension->is_hosted_app()) {
+    AppLaunchParams launch_params(profile, extension, NEW_FOREGROUND_TAB,
+                                  extensions::SOURCE_COMMAND_LINE);
+    OpenApplication(launch_params);
+    return;
+  }
   if (files.empty()) {
     apps::LaunchPlatformApp(
         profile, extension, extensions::SOURCE_COMMAND_LINE);
@@ -388,6 +399,9 @@ void ExtensionAppShimHandler::OnProfileLoaded(
       delegate_->GetAppExtension(profile, app_id);
   if (extension) {
     delegate_->LaunchApp(profile, extension, files);
+    // If it's a hosted app, just kill it immediately after opening for now.
+    if (extension->is_hosted_app())
+      host->OnAppLaunchComplete(APP_SHIM_LAUNCH_DUPLICATE_HOST);
     return;
   }
 

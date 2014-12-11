@@ -49,14 +49,6 @@ LaunchType GetLaunchType(const ExtensionPrefs* prefs,
   if (value >= LAUNCH_TYPE_FIRST && value < NUM_LAUNCH_TYPES)
     result = static_cast<LaunchType>(value);
 
-#if defined(OS_MACOSX)
-    // App windows are not yet supported on mac.  Pref sync could make
-    // the launch type LAUNCH_TYPE_WINDOW, even if there is no UI to set it
-    // on mac.
-    if (!extension->is_platform_app() && result == LAUNCH_TYPE_WINDOW)
-      result = LAUNCH_TYPE_REGULAR;
-#endif
-
   return result;
 }
 

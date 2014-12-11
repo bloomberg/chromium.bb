@@ -15,6 +15,9 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_shelf.h"
+#include "chrome/browser/extensions/bookmark_app_helper.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/fullscreen.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,6 +29,7 @@
 #include "chrome/browser/ui/browser_commands_mac.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
+#include "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #import "chrome/browser/ui/cocoa/browser/edit_search_engine_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
@@ -47,13 +51,19 @@
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_mac.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/translate/core/browser/language_state.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/constants.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/pref_names.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/rect.h"
 
@@ -67,6 +77,17 @@ using content::SSLStatus;
 using content::WebContents;
 
 namespace {
+
+// These UI constants are used in BrowserWindowCocoa::ShowBookmarkAppBubble.
+// Used for defining the layout of the NSAlert and NSTextField within the
+// accessory view.
+const int kAppTextFieldVerticalSpacing = 2;
+const int kAppTextFieldWidth = 200;
+const int kAppTextFieldHeight = 22;
+const int kBookmarkAppBubbleViewWidth = 200;
+const int kBookmarkAppBubbleViewHeight = 46;
+
+const int kIconPreviewTargetSize = 64;
 
 NSPoint GetPointForBubble(content::WebContents* web_contents,
                           int x_offset,
@@ -497,7 +518,87 @@ void BrowserWindowCocoa::ShowBookmarkBubble(const GURL& url,
 void BrowserWindowCocoa::ShowBookmarkAppBubble(
     const WebApplicationInfo& web_app_info,
     const std::string& extension_id) {
-  NOTIMPLEMENTED();
+  Profile* profile = browser_->profile();
+
+  base::scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
+  [alert setMessageText:l10n_util::GetNSString(IDS_BOOKMARK_APP_BUBBLE_TITLE)];
+  [alert setAlertStyle:NSInformationalAlertStyle];
+
+  NSButton* continue_button =
+      [alert addButtonWithTitle:l10n_util::GetNSString(IDS_OK)];
+  [continue_button setKeyEquivalent:kKeyEquivalentReturn];
+  NSButton* cancel_button =
+      [alert addButtonWithTitle:l10n_util::GetNSString(IDS_CANCEL)];
+  [cancel_button setKeyEquivalent:kKeyEquivalentEscape];
+
+  base::scoped_nsobject<NSButton> open_as_tab_checkbox(
+      [[NSButton alloc] initWithFrame:NSZeroRect]);
+  [open_as_tab_checkbox setButtonType:NSSwitchButton];
+  [open_as_tab_checkbox
+      setTitle:l10n_util::GetNSString(IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_TAB)];
+  [open_as_tab_checkbox setState:
+      profile->GetPrefs()->GetInteger(
+          extensions::pref_names::kBookmarkAppCreationLaunchType) ==
+      extensions::LAUNCH_TYPE_REGULAR];
+  [open_as_tab_checkbox sizeToFit];
+
+  base::scoped_nsobject<NSTextField> app_title([[NSTextField alloc]
+      initWithFrame:NSMakeRect(0, kAppTextFieldHeight +
+                                      kAppTextFieldVerticalSpacing,
+                               kAppTextFieldWidth, kAppTextFieldHeight)]);
+  NSString* original_title = SysUTF16ToNSString(web_app_info.title);
+  [[app_title cell] setWraps:NO];
+  [[app_title cell] setScrollable:YES];
+  [app_title setStringValue:original_title];
+
+  base::scoped_nsobject<NSView> view([[NSView alloc]
+      initWithFrame:NSMakeRect(0, 0, kBookmarkAppBubbleViewWidth,
+                               kBookmarkAppBubbleViewHeight)]);
+  [view addSubview:open_as_tab_checkbox];
+  [view addSubview:app_title];
+  [alert setAccessoryView:view];
+
+  // Find the image with target size.
+  // Assumes that the icons are sorted in ascending order of size.
+  if (!web_app_info.icons.empty()) {
+    const WebApplicationInfo::IconInfo& info = web_app_info.icons.back();
+    gfx::Image icon_image = gfx::Image::CreateFrom1xBitmap(info.data);
+    [icon_image.ToNSImage()
+        setSize:NSMakeSize(kIconPreviewTargetSize, kIconPreviewTargetSize)];
+    [alert setIcon:icon_image.ToNSImage()];
+  }
+
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  if ([alert runModal] == NSAlertFirstButtonReturn) {
+    // Save launch type preferences for later when creating another hosted app.
+    extensions::LaunchType launch_type =
+        [open_as_tab_checkbox state] == NSOnState
+            ? extensions::LAUNCH_TYPE_REGULAR
+            : extensions::LAUNCH_TYPE_WINDOW;
+    profile->GetPrefs()->SetInteger(
+        extensions::pref_names::kBookmarkAppCreationLaunchType, launch_type);
+    extensions::SetLaunchType(service, extension_id, launch_type);
+
+    // Update name of app.
+    NSString* new_title = [app_title stringValue];
+    if (![original_title isEqualToString:new_title]) {
+      WebApplicationInfo new_web_app_info(web_app_info);
+      new_web_app_info.title = base::SysNSStringToUTF16(new_title);
+      extensions::CreateOrUpdateBookmarkApp(service, new_web_app_info);
+    }
+
+    extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(profile);
+    const extensions::Extension* app = registry->GetExtensionById(
+        extension_id, extensions::ExtensionRegistry::ENABLED);
+
+    web_app::RevealAppShimInFinderForApp(profile, app);
+  } else {
+    service->UninstallExtension(extension_id,
+                                extensions::UNINSTALL_REASON_INSTALL_CANCELED,
+                                base::Bind(&base::DoNothing), NULL);
+  }
 }
 
 void BrowserWindowCocoa::ShowTranslateBubble(

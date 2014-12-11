@@ -12,8 +12,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -268,9 +270,18 @@ void GetShortcutInfoForApp(const extensions::Extension* extension,
 
 bool ShouldCreateShortcutFor(Profile* profile,
                              const extensions::Extension* extension) {
-  return extension->is_platform_app() &&
-         extension->location() != extensions::Manifest::COMPONENT &&
-         extensions::ui_util::CanDisplayInAppLauncher(extension, profile);
+  bool app_type_requires_shortcut = extension->is_platform_app();
+
+// An additional check here for OS X. We need app shims to be
+// able to show them in the dock.
+#if defined(OS_MACOSX)
+  app_type_requires_shortcut =
+      app_type_requires_shortcut || extension->is_hosted_app();
+#endif
+
+  return (app_type_requires_shortcut &&
+          extension->location() != extensions::Manifest::COMPONENT &&
+          extensions::ui_util::CanDisplayInAppLauncher(extension, profile));
 }
 
 base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
@@ -342,6 +353,21 @@ void CreateShortcutsWithInfo(
     const ShortcutInfo& shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // It's possible for the extension to be deleted before we get here.
+  // For example, creating a hosted app from a website. Double check that
+  // it still exists.
+  Profile* profile = g_browser_process->profile_manager()->GetProfileByPath(
+      shortcut_info.profile_path);
+  if (!profile)
+    return;
+
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile);
+  const extensions::Extension* extension = registry->GetExtensionById(
+      shortcut_info.extension_id, extensions::ExtensionRegistry::ENABLED);
+  if (!extension)
+    return;
 
   BrowserThread::PostTask(
       BrowserThread::FILE,

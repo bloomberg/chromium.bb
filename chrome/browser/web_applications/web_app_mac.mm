@@ -552,6 +552,14 @@ void UpdateFileTypes(NSMutableDictionary* plist,
             forKey:app_mode::kCFBundleDocumentTypesKey];
 }
 
+void RevealAppShimInFinderForAppOnFileThread(
+    const web_app::ShortcutInfo& shortcut_info,
+    const base::FilePath& app_path) {
+  web_app::WebAppShortcutCreator shortcut_creator(
+      app_path, shortcut_info, extensions::FileHandlersInfo());
+  shortcut_creator.RevealAppShimInFinder();
+}
+
 }  // namespace
 
 @interface CrCreateAppShortcutCheckboxObserver : NSObject {
@@ -966,6 +974,9 @@ void WebAppShortcutCreator::RevealAppShimInFinder() const {
   if (app_path.empty())
     return;
 
+  if (!base::PathExists(app_path))
+    app_path = app_path.DirName();
+
   [[NSWorkspace sharedWorkspace]
                     selectFile:base::mac::FilePathToNSString(app_path)
       inFileViewerRootedAtPath:nil];
@@ -1083,6 +1094,16 @@ void UpdateShortcutsForAllApps(Profile* profile,
   }
 
   callback.Run();
+}
+
+void RevealAppShimInFinderForApp(Profile* profile,
+                                 const extensions::Extension* app) {
+  const web_app::ShortcutInfo shortcut_info =
+      ShortcutInfoForExtensionAndProfile(app, profile);
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&RevealAppShimInFinderForAppOnFileThread, shortcut_info,
+                 app->path()));
 }
 
 namespace internals {
