@@ -1540,7 +1540,7 @@ class ValidationPool(object):
     self.PrintLinksToChanges(applied)
 
     if self.is_master and not self.pre_cq:
-      inputs = [[change] for change in applied]
+      inputs = [[change, self.build_log] for change in applied]
       parallel.RunTasksInProcessPool(self.HandleApplySuccess, inputs)
 
     failed_tot = self._FilterDependencyErrors(failed_tot)
