@@ -5,17 +5,17 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 {"key_ops":["encrypt","encrypt"]}:
-Failed importing with encrypt: DataError: The "key_ops" property of the JWK dictionary contains duplicate usages.
+Failed importing with encrypt: DataError: The "key_ops" member of the JWK dictionary contains duplicate usages.
 {"key_ops":["encrypt"]}:
 PASS key.usages is ["encrypt"]
 
 {"key_ops":["encrypt"]}:
-Failed importing with decrypt: DataError: The JWK "key_ops" property was inconsistent with that specified by the Web Crypto call. The JWK usage must be a superset of those requested
+Failed importing with decrypt: DataError: The JWK "key_ops" member was inconsistent with that specified by the Web Crypto call. The JWK usage must be a superset of those requested
 {"key_ops":["decrypt"]}:
 PASS key.usages is ["decrypt"]
 
 {"key_ops":["decrypt"]}:
-Failed importing with encrypt: DataError: The JWK "key_ops" property was inconsistent with that specified by the Web Crypto call. The JWK usage must be a superset of those requested
+Failed importing with encrypt: DataError: The JWK "key_ops" member was inconsistent with that specified by the Web Crypto call. The JWK usage must be a superset of those requested
 {"key_ops":["encrypt","decrypt"]}:
 PASS key.usages is ["encrypt","decrypt"]
 
@@ -23,12 +23,12 @@ PASS key.usages is ["encrypt","decrypt"]
 PASS key.usages is ["encrypt"]
 
 {"key_ops":["encrypt","decrypt"]}:
-Failed importing with unwrapKey: DataError: The JWK "key_ops" property was inconsistent with that specified by the Web Crypto call. The JWK usage must be a superset of those requested
+Failed importing with unwrapKey: DataError: The JWK "key_ops" member was inconsistent with that specified by the Web Crypto call. The JWK usage must be a superset of those requested
 {"key_ops":["wrapKey"]}:
 PASS key.usages is ["wrapKey"]
 
 {"key_ops":["wrapKey"]}:
-Failed importing with unwrapKey: DataError: The JWK "key_ops" property was inconsistent with that specified by the Web Crypto call. The JWK usage must be a superset of those requested
+Failed importing with unwrapKey: DataError: The JWK "key_ops" member was inconsistent with that specified by the Web Crypto call. The JWK usage must be a superset of those requested
 {"key_ops":["unwrapKey"]}:
 PASS key.usages is ["unwrapKey"]
 
@@ -51,12 +51,12 @@ PASS key.usages is ["encrypt","decrypt","unwrapKey"]
 PASS key.usages is ["sign"]
 
 {"key_ops":["sign"]}:
-Failed importing with verify: DataError: The JWK "key_ops" property was inconsistent with that specified by the Web Crypto call. The JWK usage must be a superset of those requested
+Failed importing with verify: DataError: The JWK "key_ops" member was inconsistent with that specified by the Web Crypto call. The JWK usage must be a superset of those requested
 {"key_ops":["verify"]}:
 PASS key.usages is ["verify"]
 
 {"key_ops":["verify"]}:
-Failed importing with sign: DataError: The JWK "key_ops" property was inconsistent with that specified by the Web Crypto call. The JWK usage must be a superset of those requested
+Failed importing with sign: DataError: The JWK "key_ops" member was inconsistent with that specified by the Web Crypto call. The JWK usage must be a superset of those requested
 {"use":"sig"}:
 PASS key.usages is ["sign","verify"]
 
@@ -73,11 +73,11 @@ PASS key.usages is ["decrypt"]
 PASS key.usages is ["decrypt"]
 
 {"key_ops":["'encrypt'","decrypt"]}:
-Failed importing with encrypt: DataError: The JWK "key_ops" property was inconsistent with that specified by the Web Crypto call. The JWK usage must be a superset of those requested
+Failed importing with encrypt: DataError: The JWK "key_ops" member was inconsistent with that specified by the Web Crypto call. The JWK usage must be a superset of those requested
 {"key_ops":["encrypt "]}:
-Failed importing with encrypt: DataError: The JWK "key_ops" property was inconsistent with that specified by the Web Crypto call. The JWK usage must be a superset of those requested
+Failed importing with encrypt: DataError: The JWK "key_ops" member was inconsistent with that specified by the Web Crypto call. The JWK usage must be a superset of those requested
 {"key_ops":["Encrypt"]}:
-Failed importing with encrypt: DataError: The JWK "key_ops" property was inconsistent with that specified by the Web Crypto call. The JWK usage must be a superset of those requested
+Failed importing with encrypt: DataError: The JWK "key_ops" member was inconsistent with that specified by the Web Crypto call. The JWK usage must be a superset of those requested
 PASS successfullyParsed is true
 
 TEST COMPLETE

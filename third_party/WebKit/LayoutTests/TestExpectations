@@ -537,11 +537,6 @@ crbug.com/338883 [ Linux ] crypto/ecdh-deriveBits.html [ Failure Pass ]
 crbug.com/338883 [ Linux ] crypto/ecdh-generate-key.html [ Failure Pass ]
 crbug.com/338883 [ Linux ] crypto/ecdh-import-jwk.html [ Failure Pass ]
 
-# Temporary while landing Chromium-side changes.
-crbug.com/3428949 crypto/aes-cbc-unwrap-failure.html [ Failure Pass ]
-crbug.com/3428949 crypto/import-jwk.html [ Failure Pass ]
-crbug.com/3428949 crypto/jwk-import-use-values.html [ Failure Pass ]
-
 # This test needs to be updated to use a non-svg font.
 crbug.com/242735 fast/css/ex-unit-with-no-x-height.html [ ImageOnlyFailure Failure ]
 

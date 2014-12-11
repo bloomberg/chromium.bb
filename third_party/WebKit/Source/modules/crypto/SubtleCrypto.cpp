@@ -142,7 +142,7 @@ static bool copyJwkDictionaryToJson(const Dictionary& dict, CString& jsonUtf8, C
     RefPtr<JSONObject> jsonObject = JSONObject::create();
 
     if (!copyStringProperty("kty", dict, jsonObject.get())) {
-        result->completeWithError(WebCryptoErrorTypeData, "The required JWK property \"kty\" was missing");
+        result->completeWithError(WebCryptoErrorTypeData, "The required JWK member \"kty\" was missing");
         return false;
     }
 
