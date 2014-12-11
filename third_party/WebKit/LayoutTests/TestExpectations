@@ -1262,6 +1262,8 @@ crbug.com/62435 [ Win ] svg/W3C-SVG-1.1/filters-color-01-b.svg [ NeedsRebaseline
 crbug.com/62435 [ Mac ] compositing/shadows/shadow-drawing.html [ NeedsRebaseline ]
 crbug.com/62435 [ Mac ] svg/hixie/perf/003.xml [ NeedsRebaseline ]
 
+crbug.com/62435 [ Mac ] virtual/antialiasedtext/fast/text/international/vertical-text-glyph-test.html [ NeedsRebaseline ]
+
 crbug.com/435870 fast/loader/open-in-srcdoc-unload.html [ Pass Failure ]
 
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/basic/016.html [ Failure ImageOnlyFailure ]
