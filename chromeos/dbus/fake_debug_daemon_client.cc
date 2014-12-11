@@ -18,7 +18,8 @@
 namespace chromeos {
 
 FakeDebugDaemonClient::FakeDebugDaemonClient()
-    : featues_mask_(DebugDaemonClient::DEV_FEATURE_NONE) {
+    : featues_mask_(DebugDaemonClient::DEV_FEATURE_NONE),
+      service_is_available_(true) {
 }
 
 FakeDebugDaemonClient::~FakeDebugDaemonClient() {}
@@ -131,10 +132,6 @@ void FakeDebugDaemonClient::EnableDebuggingFeatures(
                                          base::Bind(callback, true));
 }
 
-void FakeDebugDaemonClient::SetDebuggingFeaturesStatus(int featues_mask) {
-  featues_mask_ = featues_mask;
-}
-
 void FakeDebugDaemonClient::QueryDebuggingFeatures(
     const DebugDaemonClient::QueryDevFeaturesCallback& callback) {
   bool supported = base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -152,6 +149,31 @@ void FakeDebugDaemonClient::RemoveRootfsVerification(
     const DebugDaemonClient::EnableDebuggingCallback& callback) {
   base::MessageLoop::current()->PostTask(FROM_HERE,
                                          base::Bind(callback, true));
+}
+
+void FakeDebugDaemonClient::WaitForServiceToBeAvailable(
+    const WaitForServiceToBeAvailableCallback& callback) {
+  if (service_is_available_) {
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::Bind(callback, true));
+  } else {
+    pending_wait_for_service_to_be_available_callbacks_.push_back(callback);
+  }
+}
+
+void FakeDebugDaemonClient::SetDebuggingFeaturesStatus(int featues_mask) {
+  featues_mask_ = featues_mask;
+}
+
+void FakeDebugDaemonClient::SetServiceIsAvailable(bool is_available) {
+  service_is_available_ = is_available;
+  if (!is_available)
+    return;
+
+  std::vector<WaitForServiceToBeAvailableCallback> callbacks;
+  callbacks.swap(pending_wait_for_service_to_be_available_callbacks_);
+  for (size_t i = 0; i < callbacks.size(); ++i)
+    callbacks[i].Run(is_available);
 }
 
 }  // namespace chromeos

@@ -56,7 +56,9 @@ class EnableDebuggingScreenHandler : public EnableDebuggingScreenActor,
   void HandleOnSetup(const std::string& password);
 
   void ShowWithParams();
-  void EnableChromeDevFeatures(const std::string& password);
+
+  // Callback for DebugDaemonClient::WaitForServiceToBeAvailable
+  void OnServiceAvailabilityChecked(bool service_is_available);
 
   // Callback for DebugDaemonClient::EnableDebuggingFeatures().
   void OnEnableDebuggingFeatures(bool success);

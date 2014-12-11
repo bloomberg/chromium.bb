@@ -313,6 +313,26 @@ IN_PROC_BROWSER_TEST_F(EnableDebuggingTest, ShowOnTestImages) {
   EXPECT_EQ(debug_daemon_client_->num_remove_protection(), 0);
 }
 
+IN_PROC_BROWSER_TEST_F(EnableDebuggingTest, WaitForDebugDaemon) {
+  // Stat with service not ready.
+  debug_daemon_client_->SetServiceIsAvailable(false);
+  debug_daemon_client_->SetDebuggingFeaturesStatus(
+      DebugDaemonClient::DEV_FEATURE_NONE);
+  WaitUntilJSIsReady();
+
+  // Invoking UI and it should land on wait-view.
+  JSExpect("!!document.querySelector('#debugging.hidden')");
+  InvokeEnableDebuggingScreen();
+  JSExpect("!document.querySelector('#debugging.hidden')");
+  JSExpect("!!document.querySelector('#debugging.wait-view')");
+
+  // Mark service ready and it should proceed to remove protection view.
+  debug_daemon_client_->SetServiceIsAvailable(true);
+  debug_daemon_client_->WaitUntilCalled();
+  base::MessageLoop::current()->RunUntilIdle();
+  VerifyRemoveProtectionScreen();
+}
+
 class EnableDebuggingNonDevTest : public EnableDebuggingTest {
  public:
   EnableDebuggingNonDevTest() {

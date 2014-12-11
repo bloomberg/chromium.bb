@@ -53,11 +53,12 @@ void EnableDebuggingScreenHandler::ShowWithParams() {
 #endif
   ShowScreen(kEnableDebuggingScreen, &debugging_screen_params);
 
-  // Check the status of debugging features.
+  UpdateUIState(UI_STATE_WAIT);
+
   chromeos::DebugDaemonClient* client =
       chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
-  client->QueryDebuggingFeatures(
-      base::Bind(&EnableDebuggingScreenHandler::OnQueryDebuggingFeatures,
+  client->WaitForServiceToBeAvailable(
+      base::Bind(&EnableDebuggingScreenHandler::OnServiceAvailabilityChecked,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -171,6 +172,22 @@ void EnableDebuggingScreenHandler::HandleOnSetup(
   client->EnableDebuggingFeatures(
       password,
       base::Bind(&EnableDebuggingScreenHandler::OnEnableDebuggingFeatures,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void EnableDebuggingScreenHandler::OnServiceAvailabilityChecked(
+    bool service_is_available) {
+  if (!service_is_available) {
+    LOG(ERROR) << "Debug daemon is not available.";
+    UpdateUIState(UI_STATE_ERROR);
+    return;
+  }
+
+  // Check the status of debugging features.
+  chromeos::DebugDaemonClient* client =
+      chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
+  client->QueryDebuggingFeatures(
+      base::Bind(&EnableDebuggingScreenHandler::OnQueryDebuggingFeatures,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 

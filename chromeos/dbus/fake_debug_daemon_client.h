@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_DBUS_FAKE_DEBUG_DAEMON_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_DEBUG_DAEMON_CLIENT_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chromeos/dbus/debug_daemon_client.h"
@@ -57,12 +59,22 @@ class CHROMEOS_EXPORT FakeDebugDaemonClient : public DebugDaemonClient {
       const QueryDevFeaturesCallback& callback) override;
   virtual void RemoveRootfsVerification(
       const EnableDebuggingCallback& callback) override;
+  virtual void WaitForServiceToBeAvailable(
+      const WaitForServiceToBeAvailableCallback& callback) override;
 
   // Sets debugging features mask for testing.
   virtual void SetDebuggingFeaturesStatus(int featues_mask);
 
+  // Changes the behavior of WaitForServiceToBeAvailable(). This method runs
+  // pending callbacks if is_available is true.
+  void SetServiceIsAvailable(bool is_available);
+
  private:
   int featues_mask_;
+
+  bool service_is_available_;
+  std::vector<WaitForServiceToBeAvailableCallback>
+      pending_wait_for_service_to_be_available_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDebugDaemonClient);
 };

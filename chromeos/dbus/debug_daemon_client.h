@@ -188,6 +188,14 @@ class CHROMEOS_EXPORT DebugDaemonClient : public DBusClient {
   // Trigger uploading of crashes.
   virtual void UploadCrashes() = 0;
 
+  // A callback for WaitForServiceToBeAvailable().
+  typedef base::Callback<void(bool service_is_ready)>
+      WaitForServiceToBeAvailableCallback;
+
+  // Runs the callback as soon as the service becomes available.
+  virtual void WaitForServiceToBeAvailable(
+      const WaitForServiceToBeAvailableCallback& callback) = 0;
+
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
   static DebugDaemonClient* Create();

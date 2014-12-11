@@ -352,6 +352,11 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                    callback));
   }
 
+  virtual void WaitForServiceToBeAvailable(
+      const WaitForServiceToBeAvailableCallback& callback) override {
+    debugdaemon_proxy_->WaitForServiceToBeAvailable(callback);
+  }
+
  protected:
   virtual void Init(dbus::Bus* bus) override {
     debugdaemon_proxy_ =
