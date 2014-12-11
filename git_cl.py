@@ -1761,6 +1761,10 @@ def RietveldUpload(options, args, cl, change):
                                               'refs/heads/')
       elif remote_branch.startswith('refs/remotes/branch-heads'):
         remote_branch = remote_branch.replace('refs/remotes/', 'refs/')
+      pending_prefix = settings.GetPendingRefPrefix()
+      # If a pending prefix exists then replace refs/ with it.
+      if pending_prefix:
+        remote_branch = remote_branch.replace('refs/', pending_prefix)
       upload_args.extend(['--target_ref', remote_branch])
 
   project = settings.GetProject()
