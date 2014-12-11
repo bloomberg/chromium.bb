@@ -250,4 +250,8 @@ This directory contains the source code of ICU 52.1 for C/C++
    - No upstream bug was filed because the upstream code was completely
      rewritten during the ICU 53 cycle.
 
+14. Fix a bug in locid (getBaseName is wrong).
+   - patches/locid.patch
+   - Upstream bug: http://bugs.icu-project.org/trac/ticket/11421
+
 
