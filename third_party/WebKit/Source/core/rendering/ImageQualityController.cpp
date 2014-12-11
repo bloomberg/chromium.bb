@@ -67,11 +67,8 @@ bool ImageQualityController::has(RenderObject* renderer)
 
 InterpolationQuality ImageQualityController::chooseInterpolationQuality(GraphicsContext* context, RenderObject* object, Image* image, const void* layer, const LayoutSize& layoutSize)
 {
-    if (object->style()->imageRendering() == ImageRenderingPixelated
-        && image
-        && (layoutSize.width() > image->width() || layoutSize.height() > image->height() || layoutSize == image->size())) {
+    if (object->style()->imageRendering() == ImageRenderingPixelated)
         return InterpolationNone;
-    }
 
     if (InterpolationDefault == InterpolationLow)
         return InterpolationLow;
