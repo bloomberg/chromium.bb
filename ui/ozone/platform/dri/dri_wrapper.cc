@@ -15,15 +15,11 @@
 #include "base/stl_util.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/ozone/platform/dri/dri_util.h"
+#include "ui/ozone/platform/dri/hardware_display_plane_manager_legacy.h"
 
 namespace ui {
 
 namespace {
-
-uint32_t ToFixedPoint(double v) {
-  // This returns a number in a 16-bit.16-bit fixed point.
-  return v * 65536.0;
-}
 
 bool DrmCreateDumbBuffer(int fd,
                          const SkImageInfo& info,
@@ -63,6 +59,7 @@ void DrmDestroyDumbBuffer(int fd, uint32_t handle) {
 
 DriWrapper::DriWrapper(const char* device_path)
     : fd_(-1), device_path_(device_path) {
+  plane_manager_.reset(new HardwareDisplayPlaneManagerLegacy());
 }
 
 DriWrapper::~DriWrapper() {
@@ -74,6 +71,8 @@ void DriWrapper::Initialize() {
   fd_ = open(device_path_, O_RDWR | O_CLOEXEC);
   if (fd_ < 0)
     PLOG(FATAL) << "open: " << device_path_;
+  if (!plane_manager_->Initialize(this))
+    LOG(ERROR) << "Failed to initialize the plane manager";
 }
 
 ScopedDrmCrtcPtr DriWrapper::GetCrtc(uint32_t crtc_id) {
@@ -177,25 +176,16 @@ bool DriWrapper::PageFlip(uint32_t crtc_id,
 bool DriWrapper::PageFlipOverlay(uint32_t crtc_id,
                                  uint32_t framebuffer,
                                  const gfx::Rect& location,
-                                 const gfx::RectF& source,
+                                 const gfx::Rect& source,
                                  int overlay_plane) {
   DCHECK(fd_ >= 0);
   TRACE_EVENT2("dri", "DriWrapper::PageFlipOverlay",
                "crtc", crtc_id,
                "framebuffer", framebuffer);
-  return !drmModeSetPlane(fd_,
-                          overlay_plane,
-                          crtc_id,
-                          framebuffer,
-                          0,
-                          location.x(),
-                          location.y(),
-                          location.width(),
-                          location.height(),
-                          ToFixedPoint(source.x()),
-                          ToFixedPoint(source.y()),
-                          ToFixedPoint(source.width()),
-                          ToFixedPoint(source.height()));
+  return !drmModeSetPlane(fd_, overlay_plane, crtc_id, framebuffer, 0,
+                          location.x(), location.y(), location.width(),
+                          location.height(), source.x(), source.y(),
+                          source.width(), source.height());
 }
 
 ScopedDrmFramebufferPtr DriWrapper::GetFramebuffer(uint32_t framebuffer) {

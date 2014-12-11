@@ -38,7 +38,6 @@ struct OverlayPlane {
   gfx::OverlayTransform plane_transform;
   gfx::Rect display_bounds;
   gfx::RectF crop_rect;
-  int overlay_plane;
 };
 
 }  // namespace ui

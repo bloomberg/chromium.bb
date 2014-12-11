@@ -22,6 +22,7 @@ const drmModeModeInfo kDefaultMode =
 
 const uint32_t kDefaultCrtc = 1;
 const uint32_t kDefaultConnector = 2;
+const size_t kPlanesPerCrtc = 1;
 
 class MockDriWindowDelegate : public ui::DriWindowDelegate {
  public:
@@ -76,7 +77,9 @@ class DriSurfaceTest : public testing::Test {
 
 void DriSurfaceTest::SetUp() {
   message_loop_.reset(new base::MessageLoopForUI);
-  drm_.reset(new ui::MockDriWrapper(3));
+  std::vector<uint32_t> crtcs;
+  crtcs.push_back(kDefaultCrtc);
+  drm_.reset(new ui::MockDriWrapper(3, crtcs, kPlanesPerCrtc));
   window_delegate_.reset(new MockDriWindowDelegate(drm_.get()));
   surface_.reset(new ui::DriSurface(window_delegate_.get(), drm_.get()));
   surface_->ResizeCanvas(gfx::Size(kDefaultMode.hdisplay,

@@ -13,8 +13,7 @@ OverlayPlane::OverlayPlane(scoped_refptr<ScanoutBuffer> buffer)
     : buffer(buffer),
       z_order(0),
       display_bounds(gfx::Point(), buffer->GetSize()),
-      crop_rect(0, 0, 1, 1),
-      overlay_plane(0) {
+      crop_rect(0, 0, 1, 1) {
 }
 
 OverlayPlane::OverlayPlane(scoped_refptr<ScanoutBuffer> buffer,
@@ -26,8 +25,7 @@ OverlayPlane::OverlayPlane(scoped_refptr<ScanoutBuffer> buffer,
       z_order(z_order),
       plane_transform(plane_transform),
       display_bounds(display_bounds),
-      crop_rect(crop_rect),
-      overlay_plane(0) {
+      crop_rect(crop_rect) {
 }
 
 OverlayPlane::~OverlayPlane() {

@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/ozone/platform/dri/crtc_controller.h"
+#include "ui/ozone/platform/dri/hardware_display_plane_manager_legacy.h"
 
 namespace ui {
 
@@ -18,6 +19,24 @@ namespace {
 template<class Object> Object* DrmAllocator() {
   return static_cast<Object*>(drmMalloc(sizeof(Object)));
 }
+
+class MockHardwareDisplayPlaneManager
+    : public HardwareDisplayPlaneManagerLegacy {
+ public:
+  MockHardwareDisplayPlaneManager(DriWrapper* drm,
+                                  std::vector<uint32_t> crtcs,
+                                  size_t planes_per_crtc) {
+    const int kPlaneBaseId = 50;
+    drm_ = drm;
+    crtcs_.swap(crtcs);
+    for (size_t crtc_idx = 0; crtc_idx < crtcs_.size(); crtc_idx++) {
+      for (size_t i = 0; i < planes_per_crtc; i++) {
+        planes_.push_back(
+            new HardwareDisplayPlane(kPlaneBaseId + i, 1 << crtc_idx));
+      }
+    }
+  }
+};
 
 }  // namespace
 
@@ -37,6 +56,29 @@ MockDriWrapper::MockDriWrapper(int fd)
       create_dumb_buffer_expectation_(true),
       current_framebuffer_(0) {
   fd_ = fd;
+  plane_manager_.reset(new HardwareDisplayPlaneManagerLegacy());
+}
+
+MockDriWrapper::MockDriWrapper(int fd,
+                               std::vector<uint32_t> crtcs,
+                               size_t planes_per_crtc)
+    : DriWrapper(""),
+      get_crtc_call_count_(0),
+      set_crtc_call_count_(0),
+      restore_crtc_call_count_(0),
+      add_framebuffer_call_count_(0),
+      remove_framebuffer_call_count_(0),
+      page_flip_call_count_(0),
+      overlay_flip_call_count_(0),
+      handle_events_count_(0),
+      set_crtc_expectation_(true),
+      add_framebuffer_expectation_(true),
+      page_flip_expectation_(true),
+      create_dumb_buffer_expectation_(true),
+      current_framebuffer_(0) {
+  fd_ = fd;
+  plane_manager_.reset(
+      new MockHardwareDisplayPlaneManager(this, crtcs, planes_per_crtc));
 }
 
 MockDriWrapper::~MockDriWrapper() {
@@ -100,7 +142,7 @@ bool MockDriWrapper::PageFlip(uint32_t crtc_id,
 bool MockDriWrapper::PageFlipOverlay(uint32_t crtc_id,
                                      uint32_t framebuffer,
                                      const gfx::Rect& location,
-                                     const gfx::RectF& source,
+                                     const gfx::Rect& source,
                                      int overlay_plane) {
   overlay_flip_call_count_++;
   return true;

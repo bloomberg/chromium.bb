@@ -8,12 +8,15 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <xf86drmMode.h>
+#include <map>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/ozone/platform/dri/hardware_display_plane_manager.h"
 #include "ui/ozone/platform/dri/overlay_plane.h"
 
 namespace gfx {
@@ -24,6 +27,7 @@ namespace ui {
 
 class CrtcController;
 class ScanoutBuffer;
+class DriWrapper;
 
 // The HDCOz will handle modesettings and scannout operations for hardware
 // devices.
@@ -152,6 +156,9 @@ class HardwareDisplayController
   OverlayPlaneList current_planes_;
   OverlayPlaneList pending_planes_;
   scoped_refptr<ScanoutBuffer> cursor_buffer_;
+
+  base::ScopedPtrHashMap<DriWrapper*, HardwareDisplayPlaneList>
+      owned_hardware_planes_;
 
   // Stores the CRTC configuration. This is used to identify monitors and
   // configure them.

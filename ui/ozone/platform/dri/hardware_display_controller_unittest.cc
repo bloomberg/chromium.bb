@@ -21,6 +21,7 @@ const uint32_t kPrimaryCrtc = 1;
 const uint32_t kPrimaryConnector = 2;
 const uint32_t kSecondaryCrtc = 3;
 const uint32_t kSecondaryConnector = 4;
+const size_t kPlanesPerCrtc = 2;
 
 const gfx::Size kDefaultModeSize(kDefaultMode.hdisplay, kDefaultMode.vdisplay);
 const gfx::SizeF kDefaultModeSizeF(1.0, 1.0);
@@ -61,7 +62,10 @@ class HardwareDisplayControllerTest : public testing::Test {
 };
 
 void HardwareDisplayControllerTest::SetUp() {
-  drm_.reset(new ui::MockDriWrapper(3));
+  std::vector<uint32_t> crtcs;
+  crtcs.push_back(kPrimaryCrtc);
+  crtcs.push_back(kSecondaryCrtc);
+  drm_.reset(new ui::MockDriWrapper(3, crtcs, kPlanesPerCrtc));
   controller_.reset(new ui::HardwareDisplayController(
       scoped_ptr<ui::CrtcController>(new ui::CrtcController(
           drm_.get(), kPrimaryCrtc, kPrimaryConnector))));
@@ -156,7 +160,6 @@ TEST_F(HardwareDisplayControllerTest, CheckOverlayPresent) {
       gfx::OVERLAY_TRANSFORM_NONE,
       gfx::Rect(kDefaultModeSize),
       gfx::RectF(kDefaultModeSizeF));
-  plane2.overlay_plane = 1;  // Force association with a plane.
 
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
 

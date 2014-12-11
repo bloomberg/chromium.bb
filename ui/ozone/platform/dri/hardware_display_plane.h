@@ -7,7 +7,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <xf86drmMode.h>
 
 #include "base/basictypes.h"
 #include "ui/ozone/platform/dri/scoped_drm_types.h"
@@ -22,52 +21,24 @@ class DriWrapper;
 
 class HardwareDisplayPlane {
  public:
-  HardwareDisplayPlane(DriWrapper* drm,
-                       drmModePropertySetPtr atomic_property_set,
-                       ScopedDrmPlanePtr plane);
+  HardwareDisplayPlane(ScopedDrmPlanePtr plane);
+  HardwareDisplayPlane(uint32_t plane_id, uint32_t possible_crtcs);
 
-  ~HardwareDisplayPlane();
+  virtual ~HardwareDisplayPlane();
 
-  bool Initialize();
+  bool Initialize(DriWrapper* drm);
 
-  bool CanUseForCrtc(uint32_t crtc_id);
-  bool SetPlaneData(uint32_t crtc_id,
-                    uint32_t framebuffer,
-                    const gfx::Rect& crtc_rect,
-                    const gfx::Rect& src_rect);
+  bool CanUseForCrtc(uint32_t crtc_index);
 
   bool in_use() const { return in_use_; }
   void set_in_use(bool in_use) { in_use_ = in_use; }
 
- private:
-  struct Property {
-    Property();
-    bool Initialize(DriWrapper* drm,
-                    const char* name,
-                    const ScopedDrmObjectPropertyPtr& plane_properties);
-    uint32_t id_;
-  };
-  // Object containing the connection to the graphics device and wraps the API
-  // calls to control it.
-  DriWrapper* drm_;
+  uint32_t plane_id() const { return plane_id_; }
 
-  // Not owned.
-  drmModePropertySetPtr property_set_;
-
-  ScopedDrmPlanePtr plane_;
+ protected:
   uint32_t plane_id_;
+  uint32_t possible_crtcs_;
   bool in_use_;
-
-  Property crtc_prop_;
-  Property fb_prop_;
-  Property crtc_x_prop_;
-  Property crtc_y_prop_;
-  Property crtc_w_prop_;
-  Property crtc_h_prop_;
-  Property src_x_prop_;
-  Property src_y_prop_;
-  Property src_w_prop_;
-  Property src_h_prop_;
 
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayPlane);
 };

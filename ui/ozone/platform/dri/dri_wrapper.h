@@ -13,6 +13,7 @@
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
+#include "ui/ozone/platform/dri/hardware_display_plane_manager.h"
 #include "ui/ozone/platform/dri/scoped_drm_types.h"
 
 typedef struct _drmEventContext drmEventContext;
@@ -21,6 +22,8 @@ typedef struct _drmModeModeInfo drmModeModeInfo;
 struct SkImageInfo;
 
 namespace ui {
+
+class HardwareDisplayPlaneManager;
 
 // Wraps DRM calls into a nice interface. Used to provide different
 // implementations of the DRM calls. For the actual implementation the DRM API
@@ -86,7 +89,7 @@ class DriWrapper {
   virtual bool PageFlipOverlay(uint32_t crtc_id,
                                uint32_t framebuffer,
                                const gfx::Rect& location,
-                               const gfx::RectF& source,
+                               const gfx::Rect& source,
                                int overlay_plane);
 
   // Returns the property with name |name| associated with |connector|. Returns
@@ -140,10 +143,14 @@ class DriWrapper {
 
   int get_fd() const { return fd_; }
 
+  HardwareDisplayPlaneManager* plane_manager() { return plane_manager_.get(); }
+
  protected:
   // The file descriptor associated with this wrapper. All DRM operations will
   // be performed using this FD.
   int fd_;
+
+  scoped_ptr<HardwareDisplayPlaneManager> plane_manager_;
 
  private:
   // Path to DRM device.
