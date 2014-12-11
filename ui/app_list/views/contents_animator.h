@@ -62,6 +62,11 @@ class ContentsAnimator {
                                           int from_page,
                                           int to_page) const;
 
+  // Clips the drawing of the search results page to its onscreen bounds.
+  void ClipSearchResultsPageToOnscreenBounds(int page_index,
+                                             const gfx::Rect& current_bounds,
+                                             const gfx::Rect& onscreen_bounds);
+
  private:
   ContentsView* contents_view_;
 

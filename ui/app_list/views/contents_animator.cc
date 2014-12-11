@@ -100,6 +100,20 @@ void ContentsAnimator::UpdateSearchBoxForDefaultAnimation(double progress,
       contents_view()->ConvertRectToWidget(search_box_rect));
 }
 
+void ContentsAnimator::ClipSearchResultsPageToOnscreenBounds(
+    int page_index,
+    const gfx::Rect& current_bounds,
+    const gfx::Rect& onscreen_bounds) {
+  int search_results_index =
+      contents_view()->GetPageIndexForState(AppListModel::STATE_SEARCH_RESULTS);
+  if (page_index != search_results_index)
+    return;
+
+  contents_view()
+      ->GetPageView(page_index)
+      ->set_clip_insets(current_bounds.InsetsFrom(onscreen_bounds));
+}
+
 // DefaultAnimator
 
 DefaultAnimator::DefaultAnimator(ContentsView* contents_view)
@@ -123,7 +137,12 @@ void DefaultAnimator::Update(double progress, int from_page, int to_page) {
       gfx::Tween::RectValueBetween(progress, to_page_origin, to_page_onscreen));
 
   contents_view()->GetPageView(from_page)->SetBoundsRect(from_page_rect);
+  ClipSearchResultsPageToOnscreenBounds(from_page, from_page_rect,
+                                        from_page_onscreen);
+
   contents_view()->GetPageView(to_page)->SetBoundsRect(to_page_rect);
+  ClipSearchResultsPageToOnscreenBounds(to_page, to_page_rect,
+                                        to_page_onscreen);
 
   UpdateCustomPageForDefaultAnimation(progress, from_page, to_page);
   UpdateSearchBoxForDefaultAnimation(progress, from_page, to_page);
