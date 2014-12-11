@@ -213,6 +213,10 @@ PASS tagClassString('bdo') is "HTMLElement"
 FAIL tagPrototypeClassString('bdo') should be HTMLElementPrototype. Was Object.
 PASS tagConstructorClassString('bdo') is "Function"
 PASS tagConstructorName('bdo') is "HTMLElement"
+PASS tagClassString('bgsound') is "HTMLUnknownElement"
+FAIL tagPrototypeClassString('bgsound') should be HTMLUnknownElementPrototype. Was Object.
+PASS tagConstructorClassString('bgsound') is "Function"
+PASS tagConstructorName('bgsound') is "HTMLUnknownElement"
 PASS tagClassString('big') is "HTMLElement"
 FAIL tagPrototypeClassString('big') should be HTMLElementPrototype. Was Object.
 PASS tagConstructorClassString('big') is "Function"
