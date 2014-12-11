@@ -273,6 +273,11 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_LEGACY_PICTURE_DRAW_API
 #endif
 
+// If this goes well, we can have Skia respect DYNAMIC_ANNOTATIONS_ENABLED directly.
+#if DYNAMIC_ANNOTATIONS_ENABLED
+#    define SK_DYNAMIC_ANNOTATIONS_ENABLED 1
+#endif
+
 // ===== End Chrome-specific definitions =====
 
 #endif
