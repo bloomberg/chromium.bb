@@ -86,11 +86,12 @@ public:
 private:
     class SelectionOffsetsScope {
         WTF_MAKE_NONCOPYABLE(SelectionOffsetsScope);
+        STACK_ALLOCATED();
     public:
-        SelectionOffsetsScope(InputMethodController*);
+        explicit SelectionOffsetsScope(InputMethodController*);
         ~SelectionOffsetsScope();
     private:
-        InputMethodController* m_inputMethodController;
+        RawPtrWillBeMember<InputMethodController> m_inputMethodController;
         const PlainTextRange m_offsets;
     };
     friend class SelectionOffsetsScope;

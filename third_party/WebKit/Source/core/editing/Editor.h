@@ -226,11 +226,12 @@ public:
 
     class RevealSelectionScope {
         WTF_MAKE_NONCOPYABLE(RevealSelectionScope);
+        STACK_ALLOCATED();
     public:
-        RevealSelectionScope(Editor*);
+        explicit RevealSelectionScope(Editor*);
         ~RevealSelectionScope();
     private:
-        Editor* m_editor;
+        RawPtrWillBeMember<Editor> m_editor;
     };
     friend class RevealSelectionScope;
 
