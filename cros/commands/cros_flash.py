@@ -205,10 +205,12 @@ class USBImager(object):
     Returns:
       A string describing |device| (e.g. Patriot Memory 7918 MB).
     """
-    desc = []
-    desc.append(osutils.GetDeviceInfo(device, keyword='manufacturer'))
-    desc.append(osutils.GetDeviceInfo(device, keyword='product'))
-    desc.append(osutils.GetDeviceSize(self.DeviceNameToPath(device)))
+    desc = [
+        osutils.GetDeviceInfo(device, keyword='manufacturer'),
+        osutils.GetDeviceInfo(device, keyword='product'),
+        osutils.GetDeviceSize(self.DeviceNameToPath(device)),
+        '(%s)' % self.DeviceNameToPath(device),
+    ]
     return ' '.join([x for x in desc if x])
 
   def ListAllRemovableDevices(self):
