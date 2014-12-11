@@ -9,10 +9,7 @@
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
-
-#if defined(USE_X11) || defined(USE_OZONE)
 #include "ui/events/keycodes/dom4/keycode_converter.h"
-#endif
 
 namespace content {
 
@@ -26,7 +23,7 @@ blink::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
 blink::WebGestureEvent MakeWebGestureEventFromNativeEvent(
     const base::NativeEvent& native_event);
 #endif
-#if defined(USE_X11) || defined(USE_OZONE)
+
 blink::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
     const ui::KeyEvent& event) {
   blink::WebKeyboardEvent webkit_event;
@@ -118,8 +115,6 @@ blink::WebGestureEvent MakeWebGestureEventFromAuraEvent(
   webkit_event.timeStampSeconds = event.time_stamp().InSecondsF();
   return webkit_event;
 }
-
-#endif
 
 blink::WebMouseEvent MakeWebMouseEventFromAuraEvent(
     const ui::MouseEvent& event);
@@ -231,14 +226,12 @@ blink::WebKeyboardEvent MakeWebKeyboardEvent(const ui::KeyEvent& event) {
   // is_char() == true. We need to pass the ui::KeyEvent to the X11 function
   // to detect this case so the right event type can be constructed.
 #if defined(OS_WIN)
-  if (!event.HasNativeEvent())
-    return blink::WebKeyboardEvent();
-
-  // Key events require no translation by the aura system.
-  return MakeWebKeyboardEventFromNativeEvent(event.native_event());
-#else
-  return MakeWebKeyboardEventFromAuraEvent(event);
+  if (event.HasNativeEvent()) {
+    // Key events require no translation by the aura system.
+    return MakeWebKeyboardEventFromNativeEvent(event.native_event());
+  }
 #endif
+  return MakeWebKeyboardEventFromAuraEvent(event);
 }
 
 blink::WebGestureEvent MakeWebGestureEvent(const ui::GestureEvent& event) {

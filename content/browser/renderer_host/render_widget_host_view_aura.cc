@@ -1839,18 +1839,8 @@ void RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
     }
 
     // We don't have to communicate with an input method here.
-    if (!event->HasNativeEvent()) {
-      NativeWebKeyboardEvent webkit_event(
-          event->type(),
-          event->is_char(),
-          event->is_char() ? event->GetCharacter() : event->key_code(),
-          event->flags(),
-          ui::EventTimeForNow().InSecondsF());
-      ForwardKeyboardEvent(webkit_event);
-    } else {
-      NativeWebKeyboardEvent webkit_event(*event);
-      ForwardKeyboardEvent(webkit_event);
-    }
+    NativeWebKeyboardEvent webkit_event(*event);
+    ForwardKeyboardEvent(webkit_event);
   }
   event->SetHandled();
 }

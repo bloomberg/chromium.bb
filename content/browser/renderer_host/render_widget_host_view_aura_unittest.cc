@@ -55,6 +55,8 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
+#include "ui/events/keycodes/dom3/dom_code.h"
+#include "ui/events/keycodes/dom4/keycode_converter.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/default_screen_position_client.h"
@@ -132,6 +134,17 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
  public:
   MockRenderWidgetHostDelegate() {}
   ~MockRenderWidgetHostDelegate() override {}
+  const NativeWebKeyboardEvent* last_event() const { return last_event_.get(); }
+ protected:
+  // RenderWidgetHostDelegate:
+  bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                              bool* is_keyboard_shortcut) override {
+    last_event_.reset(new NativeWebKeyboardEvent(event));
+    return true;
+  }
+ private:
+  scoped_ptr<NativeWebKeyboardEvent> last_event_;
+  DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHostDelegate);
 };
 
 // Simple observer that keeps track of changes to a window for tests.
@@ -2967,6 +2980,24 @@ TEST_F(RenderWidgetHostViewAuraTest,
   // Invalid move is handled synchronously, but is consumed.
   EXPECT_FALSE(invalid_move.synchronous_handling_disabled());
   EXPECT_TRUE(invalid_move.stopped_propagation());
+}
+
+// Checks key event codes.
+TEST_F(RenderWidgetHostViewAuraTest, KeyEvent) {
+  view_->InitAsChild(NULL);
+  view_->Show();
+
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::DomCode::KEY_A,
+                         ui::EF_NONE);
+  view_->OnKeyEvent(&key_event);
+
+  const NativeWebKeyboardEvent* event = delegate_.last_event();
+  EXPECT_NE(nullptr, event);
+  if (event) {
+    EXPECT_EQ(key_event.key_code(), event->windowsKeyCode);
+    EXPECT_EQ(ui::KeycodeConverter::DomCodeToNativeKeycode(key_event.code()),
+              event->nativeKeyCode);
+  }
 }
 
 }  // namespace content
