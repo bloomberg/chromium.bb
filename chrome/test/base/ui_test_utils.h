@@ -29,7 +29,6 @@
 class Browser;
 class LocationBar;
 class Profile;
-class SkBitmap;
 class TemplateURLService;
 
 namespace app_modal {
@@ -45,15 +44,11 @@ struct NavigateParams;
 }
 
 namespace content {
-class MessageLoopRunner;
-class RenderViewHost;
-class RenderWidgetHost;
 class WebContents;
 }
 
 namespace gfx {
 class Rect;
-class Size;
 }
 
 // A collections of functions designed for use with InProcessBrowserTest.
@@ -266,12 +261,6 @@ class BrowserAddedObserver {
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAddedObserver);
 };
-
-// Takes a snapshot of the entire page, according to the width and height
-// properties of the DOM's document. Returns true on success. DOMAutomation
-// must be enabled.
-bool TakeEntirePageSnapshot(content::RenderViewHost* rvh,
-                            SkBitmap* bitmap) WARN_UNUSED_RESULT;
 
 // Configures the geolocation provider to always return the given position.
 void OverrideGeolocation(double latitude, double longitude);
