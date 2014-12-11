@@ -4,7 +4,10 @@
 
 #include "content/browser/renderer_host/render_widget_host_latency_tracker.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using blink::WebInputEvent;
 
 namespace content {
 namespace {
@@ -91,6 +94,67 @@ TEST(RenderWidgetHostLatencyTrackerTest,
     EXPECT_TRUE(touch_latency.FindLatency(
         ui::INPUT_EVENT_LATENCY_TERMINATED_TOUCH_COMPONENT, 0, nullptr));
     EXPECT_TRUE(touch_latency.terminated);
+  }
+}
+
+TEST(RenderWidgetHostLatencyTrackerTest, InputCoordinatesPopulated) {
+  RenderWidgetHostLatencyTracker tracker;
+  tracker.Initialize(kTestRoutingId, kTestProcessId);
+
+  {
+    auto event = SyntheticWebMouseWheelEventBuilder::Build(-5, 0, 0, true);
+    event.x = 100;
+    event.y = 200;
+    ui::LatencyInfo latency_info;
+    tracker.OnInputEvent(event, &latency_info);
+    EXPECT_EQ(1u, latency_info.input_coordinates_size);
+    EXPECT_EQ(100, latency_info.input_coordinates[0].x);
+    EXPECT_EQ(200, latency_info.input_coordinates[0].y);
+  }
+
+  {
+    auto event = SyntheticWebMouseEventBuilder::Build(WebInputEvent::MouseMove);
+    event.x = 300;
+    event.y = 400;
+    ui::LatencyInfo latency_info;
+    tracker.OnInputEvent(event, &latency_info);
+    EXPECT_EQ(1u, latency_info.input_coordinates_size);
+    EXPECT_EQ(300, latency_info.input_coordinates[0].x);
+    EXPECT_EQ(400, latency_info.input_coordinates[0].y);
+  }
+
+  {
+    auto event = SyntheticWebGestureEventBuilder::Build(
+        WebInputEvent::GestureScrollBegin, blink::WebGestureDeviceTouchscreen);
+    event.x = 500;
+    event.y = 600;
+    ui::LatencyInfo latency_info;
+    tracker.OnInputEvent(event, &latency_info);
+    EXPECT_EQ(1u, latency_info.input_coordinates_size);
+    EXPECT_EQ(500, latency_info.input_coordinates[0].x);
+    EXPECT_EQ(600, latency_info.input_coordinates[0].y);
+  }
+
+  {
+    SyntheticWebTouchEvent event;
+    event.PressPoint(700, 800);
+    event.PressPoint(900, 1000);
+    event.PressPoint(1100, 1200);  // LatencyInfo only holds two coordinates.
+    ui::LatencyInfo latency_info;
+    tracker.OnInputEvent(event, &latency_info);
+    EXPECT_EQ(2u, latency_info.input_coordinates_size);
+    EXPECT_EQ(700, latency_info.input_coordinates[0].x);
+    EXPECT_EQ(800, latency_info.input_coordinates[0].y);
+    EXPECT_EQ(900, latency_info.input_coordinates[1].x);
+    EXPECT_EQ(1000, latency_info.input_coordinates[1].y);
+  }
+
+  {
+    NativeWebKeyboardEvent event;
+    event.type = blink::WebKeyboardEvent::KeyDown;
+    ui::LatencyInfo latency_info;
+    tracker.OnInputEvent(event, &latency_info);
+    EXPECT_EQ(0u, latency_info.input_coordinates_size);
   }
 }
 

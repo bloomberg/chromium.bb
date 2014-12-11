@@ -547,7 +547,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Expose increment/decrement of the in-flight event count, so
   // RenderViewHostImpl can account for in-flight beforeunload/unload events.
   int increment_in_flight_event_count() { return ++in_flight_event_count_; }
-  int decrement_in_flight_event_count() { return --in_flight_event_count_; }
+  int decrement_in_flight_event_count() {
+    DCHECK_GT(in_flight_event_count_, 0);
+    return --in_flight_event_count_;
+  }
 
   // The View associated with the RenderViewHost. The lifetime of this object
   // is associated with the lifetime of the Render process. If the Renderer
