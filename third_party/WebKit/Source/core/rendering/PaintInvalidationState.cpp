@@ -44,15 +44,15 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& nex
     bool establishesPaintInvalidationContainer = renderer == m_paintInvalidationContainer;
     bool fixed = renderer.style()->position() == FixedPosition;
 
+    if (!renderer.supportsPaintInvalidationStateCachedOffsets() || !next.m_cachedOffsetsEnabled)
+        m_cachedOffsetsEnabled = false;
     if (establishesPaintInvalidationContainer) {
         // When we hit a new paint invalidation container, we don't need to
         // continue forcing a check for paint invalidation because movement
         // from our parents will just move the whole invalidation container.
         m_forceCheckForPaintInvalidation = false;
     } else {
-        if (!renderer.supportsPaintInvalidationStateCachedOffsets() || !next.m_cachedOffsetsEnabled) {
-            m_cachedOffsetsEnabled = false;
-        } else {
+        if (m_cachedOffsetsEnabled) {
             if (fixed) {
                 FloatPoint fixedOffset = renderer.localToContainerPoint(FloatPoint(), &m_paintInvalidationContainer, TraverseDocumentBoundaries);
                 m_paintOffset = LayoutSize(fixedOffset.x(), fixedOffset.y());
