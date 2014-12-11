@@ -54,6 +54,7 @@ Label::~Label() {
 }
 
 void Label::SetFontList(const gfx::FontList& font_list) {
+  is_first_paint_text_ = true;
   font_list_ = font_list;
   ResetCachedSize();
   PreferredSizeChanged();
@@ -66,6 +67,7 @@ void Label::SetText(const base::string16& text) {
 }
 
 void Label::SetTextInternal(const base::string16& text) {
+  is_first_paint_text_ = true;
   text_ = text;
 
   if (obscured_) {
@@ -82,38 +84,45 @@ void Label::SetTextInternal(const base::string16& text) {
 }
 
 void Label::SetAutoColorReadabilityEnabled(bool enabled) {
+  is_first_paint_text_ = true;
   auto_color_readability_ = enabled;
   RecalculateColors();
 }
 
 void Label::SetEnabledColor(SkColor color) {
+  is_first_paint_text_ = true;
   requested_enabled_color_ = color;
   enabled_color_set_ = true;
   RecalculateColors();
 }
 
 void Label::SetDisabledColor(SkColor color) {
+  is_first_paint_text_ = true;
   requested_disabled_color_ = color;
   disabled_color_set_ = true;
   RecalculateColors();
 }
 
 void Label::SetBackgroundColor(SkColor color) {
+  is_first_paint_text_ = true;
   background_color_ = color;
   background_color_set_ = true;
   RecalculateColors();
 }
 
 void Label::SetShadows(const gfx::ShadowValues& shadows) {
+  is_first_paint_text_ = true;
   shadows_ = shadows;
   text_size_valid_ = false;
 }
 
 void Label::SetSubpixelRenderingEnabled(bool subpixel_rendering_enabled) {
+  is_first_paint_text_ = true;
   subpixel_rendering_enabled_ = subpixel_rendering_enabled;
 }
 
 void Label::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
+  is_first_paint_text_ = true;
   // If the UI layout is right-to-left, flip the alignment direction.
   if (base::i18n::IsRTL() &&
       (alignment == gfx::ALIGN_LEFT || alignment == gfx::ALIGN_RIGHT)) {
@@ -136,6 +145,7 @@ gfx::HorizontalAlignment Label::GetHorizontalAlignment() const {
 }
 
 void Label::SetLineHeight(int height) {
+  is_first_paint_text_ = true;
   if (height != line_height_) {
     line_height_ = height;
     ResetCachedSize();
@@ -145,6 +155,7 @@ void Label::SetLineHeight(int height) {
 }
 
 void Label::SetMultiLine(bool multi_line) {
+  is_first_paint_text_ = true;
   DCHECK(!multi_line || (elide_behavior_ == gfx::ELIDE_TAIL ||
                          elide_behavior_ == gfx::NO_ELIDE));
   if (multi_line != multi_line_) {
@@ -156,6 +167,7 @@ void Label::SetMultiLine(bool multi_line) {
 }
 
 void Label::SetObscured(bool obscured) {
+  is_first_paint_text_ = true;
   if (obscured != obscured_) {
     obscured_ = obscured;
     SetTextInternal(text_);
@@ -163,6 +175,7 @@ void Label::SetObscured(bool obscured) {
 }
 
 void Label::SetAllowCharacterBreak(bool allow_character_break) {
+  is_first_paint_text_ = true;
   if (allow_character_break != allow_character_break_) {
     allow_character_break_ = allow_character_break;
     ResetCachedSize();
@@ -172,6 +185,7 @@ void Label::SetAllowCharacterBreak(bool allow_character_break) {
 }
 
 void Label::SetElideBehavior(gfx::ElideBehavior elide_behavior) {
+  is_first_paint_text_ = true;
   DCHECK(!multi_line_ || (elide_behavior_ == gfx::ELIDE_TAIL ||
                           elide_behavior_ == gfx::NO_ELIDE));
   if (elide_behavior != elide_behavior_) {
@@ -395,7 +409,20 @@ void Label::OnPaint(gfx::Canvas* canvas) {
   gfx::Rect text_bounds;
   int flags = 0;
   CalculateDrawStringParams(&paint_text, &text_bounds, &flags);
-  PaintText(canvas, paint_text, text_bounds, flags);
+  if (is_first_paint_text_) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("431326 Label::PaintText first"));
+
+    is_first_paint_text_ = false;
+    PaintText(canvas, paint_text, text_bounds, flags);
+  } else {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("431326 Label::PaintText not first"));
+
+    PaintText(canvas, paint_text, text_bounds, flags);
+  }
 }
 
 void Label::OnNativeThemeChanged(const ui::NativeTheme* theme) {
@@ -418,6 +445,7 @@ void Label::Init(const base::string16& text, const gfx::FontList& font_list) {
   collapse_when_hidden_ = false;
   cached_heights_.resize(kCachedSizeLimit);
   ResetCachedSize();
+  is_first_paint_text_ = true;
 
   SetText(text);
 }

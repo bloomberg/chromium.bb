@@ -863,6 +863,12 @@ void RenderTextHarfBuzz::EnsureLayout() {
     grapheme_iterator_.reset();
 
     if (!GetLayoutText().empty()) {
+      // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is
+      // fixed.
+      tracked_objects::ScopedTracker tracking_profile1(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "431326 RenderTextHarfBuzz::EnsureLayout1"));
+
       grapheme_iterator_.reset(new base::i18n::BreakIterator(GetLayoutText(),
           base::i18n::BreakIterator::BREAK_CHARACTER));
       if (!grapheme_iterator_->Init())
@@ -888,6 +894,11 @@ void RenderTextHarfBuzz::EnsureLayout() {
   }
 
   if (lines().empty()) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "431326 RenderTextHarfBuzz::EnsureLayout2"));
+
     std::vector<internal::Line> lines;
     lines.push_back(internal::Line());
     lines[0].baseline = font_list().GetBaseline();
@@ -895,6 +906,11 @@ void RenderTextHarfBuzz::EnsureLayout() {
 
     int current_x = 0;
     SkPaint paint;
+
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+    tracked_objects::ScopedTracker tracking_profile3(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "431326 RenderTextHarfBuzz::EnsureLayout3"));
 
     for (size_t i = 0; i < runs_.size(); ++i) {
       const internal::TextRunHarfBuzz& run = *runs_[visual_to_logical_[i]];
@@ -1201,6 +1217,11 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(internal::TextRunHarfBuzz* run,
       run->skia_face.get(), SkIntToScalar(run->font_size), run->render_params,
       background_is_transparent());
 
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 RenderTextHarfBuzz::ShapeRunWithFont1"));
+
   // Create a HarfBuzz buffer and add the string to be shaped. The HarfBuzz
   // buffer holds our text, run information to be used by the shaping engine,
   // and the resulting glyph data.
@@ -1216,6 +1237,11 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(internal::TextRunHarfBuzz* run,
   // Shape the text.
   hb_shape(harfbuzz_font, buffer, NULL, 0);
 
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 RenderTextHarfBuzz::ShapeRunWithFont2"));
+
   // Populate the run fields with the resulting glyph data in the buffer.
   unsigned int glyph_count = 0;
   hb_glyph_info_t* infos = hb_buffer_get_glyph_infos(buffer, &glyph_count);
@@ -1226,6 +1252,12 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(internal::TextRunHarfBuzz* run,
   run->glyph_to_char.resize(run->glyph_count);
   run->positions.reset(new SkPoint[run->glyph_count]);
   run->width = 0.0f;
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 RenderTextHarfBuzz::ShapeRunWithFont3"));
+
   for (size_t i = 0; i < run->glyph_count; ++i) {
     DCHECK_LE(infos[i].codepoint, std::numeric_limits<uint16>::max());
     run->glyphs[i] = static_cast<uint16>(infos[i].codepoint);

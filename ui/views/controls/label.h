@@ -221,6 +221,10 @@ class VIEWS_EXPORT Label : public View {
   mutable std::vector<gfx::Size> cached_heights_;
   mutable int cached_heights_cursor_;
 
+  // TODO(vadimt): Remove is_first_paint_text_ before crbug.com/431326 is
+  // closed.
+  bool is_first_paint_text_;
+
   DISALLOW_COPY_AND_ASSIGN(Label);
 };
 

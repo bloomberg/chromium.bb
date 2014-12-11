@@ -351,6 +351,12 @@ PaginationModel* AppListView::GetAppsPaginationModel() {
 }
 
 void AppListView::InitContents(gfx::NativeView parent, int initial_apps_page) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440224 and
+  // crbug.com/441028 are fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "440224, 441028 AppListView::InitContents"));
+
   app_list_main_view_ = new AppListMainView(delegate_);
   AddChildView(app_list_main_view_);
   app_list_main_view_->SetPaintToLayer(true);
@@ -364,7 +370,19 @@ void AppListView::InitContents(gfx::NativeView parent, int initial_apps_page) {
   search_box_view_->SetFillsBoundsOpaquely(false);
   search_box_view_->layer()->SetMasksToBounds(true);
 
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440224 and
+  // crbug.com/441028 are fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "440224, 441028 AppListView::InitContents1"));
+
   app_list_main_view_->Init(parent, initial_apps_page, search_box_view_);
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440224 and
+  // crbug.com/441028 are fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "440224, 441028 AppListView::InitContents2"));
 
   // Speech recognition is available only when the start page exists.
   if (delegate_ && delegate_->IsSpeechRecognitionEnabled()) {
@@ -432,10 +450,21 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
   set_border_accepts_events(border_accepts_events);
   set_shadow(SupportsShadow() ? views::BubbleBorder::BIG_SHADOW
                               : views::BubbleBorder::NO_SHADOW_OPAQUE_BORDER);
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2_1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 AppListView::InitAsBubbleInternal2_1"));
+
   // This creates the app list widget. (Before this, child widgets cannot be
   // created.)
   views::BubbleDelegateView::CreateBubble(this);
   SetBubbleArrow(arrow);
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2_2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 AppListView::InitAsBubbleInternal2_2"));
 
   // We can now create the internal widgets.
   InitChildWidgets();

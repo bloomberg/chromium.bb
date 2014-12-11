@@ -173,6 +173,12 @@ AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller)
   // Start observing all already-created SigninManagers.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   std::vector<Profile*> profiles = profile_manager->GetLoadedProfiles();
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 AppListViewDelegate::AppListViewDelegate1"));
+
   for (std::vector<Profile*>::iterator i = profiles.begin();
        i != profiles.end();
        ++i) {
@@ -184,8 +190,18 @@ AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller)
     }
   }
 
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 AppListViewDelegate::AppListViewDelegate2"));
+
   profile_manager->GetProfileInfoCache().AddObserver(this);
   speech_ui_.reset(new app_list::SpeechUIModel);
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 AppListViewDelegate::AppListViewDelegate3"));
 
 #if defined(GOOGLE_CHROME_BUILD)
   speech_ui_->set_logo(
@@ -221,6 +237,11 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
     return;
 
   if (profile_) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+    tracked_objects::ScopedTracker tracking_profile1(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "431326 AppListViewDelegate::SetProfile1"));
+
     // Note: |search_resource_manager_| has a reference to |speech_ui_| so must
     // be destroyed first.
     search_resource_manager_.reset();
@@ -239,9 +260,19 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
 
   profile_ = new_profile;
   if (!profile_) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "431326 AppListViewDelegate::SetProfile2"));
+
     speech_ui_->SetSpeechRecognitionState(app_list::SPEECH_RECOGNITION_OFF);
     return;
   }
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 AppListViewDelegate::SetProfile3"));
 
   model_ =
       app_list::AppListSyncableServiceFactory::GetForProfile(profile_)->model();
@@ -253,6 +284,11 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
   SetUpSearchUI();
   SetUpProfileSwitcher();
   SetUpCustomLauncherPages();
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile4(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 AppListViewDelegate::SetProfile4"));
 
   // Clear search query.
   model_->search_box()->SetText(base::string16());
