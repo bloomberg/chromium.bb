@@ -35977,6 +35977,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Response or error codes from downloading sync attachments.</summary>
 </histogram>
 
+<histogram name="Sync.Attachments.StoreInitResult"
+    enum="SyncAttachmentStoreResult">
+  <owner>maxbogue@chromium.org</owner>
+  <summary>The result of initializing the sync attachment store.</summary>
+</histogram>
+
 <histogram name="Sync.Attachments.UploadResponseCode"
     enum="CombinedHttpResponseAndNetErrorCode">
   <owner>maxbogue@chromium.org</owner>
@@ -56530,6 +56536,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="4" label="Failed to start"/>
   <int value="5" label="Registry exit code"/>
   <int value="6" label="Reset retries"/>
+</enum>
+
+<enum name="SyncAttachmentStoreResult" type="int">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="UNSPECIFIED_ERROR"/>
+  <int value="2" label="STORE_INITIALIZATION_FAILED"/>
 </enum>
 
 <enum name="SyncAuthError" type="int">

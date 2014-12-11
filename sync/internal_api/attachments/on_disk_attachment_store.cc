@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "sync/internal_api/attachments/proto/attachment_store.pb.h"
 #include "sync/internal_api/public/attachments/attachment_util.h"
@@ -92,6 +93,8 @@ OnDiskAttachmentStore::~OnDiskAttachmentStore() {
 void OnDiskAttachmentStore::Init(const InitCallback& callback) {
   DCHECK(CalledOnValidThread());
   Result result_code = OpenOrCreate(path_);
+  UMA_HISTOGRAM_ENUMERATION("Sync.Attachments.StoreInitResult",
+                            result_code, RESULT_SIZE);
   callback_task_runner_->PostTask(FROM_HERE, base::Bind(callback, result_code));
 }
 

@@ -33,11 +33,15 @@ class SYNC_EXPORT AttachmentStoreBase {
   // TODO(maniscalco): Consider udpating Read and Write methods to support
   // resumable transfers (bug 353292).
 
+  // The result status of an attachment store operation.
+  // Do not re-order or delete these entries; they are used in a UMA histogram.
   enum Result {
-    SUCCESS,            // No error, all completed successfully.
-    UNSPECIFIED_ERROR,  // An unspecified error occurred for one or more items.
-    STORE_INITIALIZATION_FAILED,  // AttachmentStore initialization failed.
+    SUCCESS = 0,            // No error, all completed successfully.
+    UNSPECIFIED_ERROR = 1,  // An unspecified error occurred for >= 1 item.
+    STORE_INITIALIZATION_FAILED = 2,  // AttachmentStore initialization failed.
+    // When adding a value here, you must increment RESULT_SIZE below.
   };
+  const int RESULT_SIZE = 10; // Size of the Result enum; used for histograms.
 
   typedef base::Callback<void(const Result&)> InitCallback;
   typedef base::Callback<void(const Result&,
