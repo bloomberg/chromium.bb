@@ -17,8 +17,6 @@ namespace ui {
 
 namespace {
 
-const size_t kMaxDisplayCount = 2;
-
 const char kContentProtection[] = "Content Protection";
 
 struct ContentProtectionMapping {
@@ -146,8 +144,7 @@ std::vector<DisplaySnapshot*> NativeDisplayDelegateDri::GetDisplays() {
 
   ScopedVector<HardwareDisplayControllerInfo> displays =
       GetAvailableDisplayControllerInfos(dri_->get_fd());
-  for (size_t i = 0;
-       i < displays.size() && cached_displays_.size() < kMaxDisplayCount; ++i) {
+  for (size_t i = 0; i < displays.size(); ++i) {
     DisplaySnapshotDri* display = new DisplaySnapshotDri(
         dri_, displays[i]->connector(), displays[i]->crtc(), i);
     cached_displays_.push_back(display);
