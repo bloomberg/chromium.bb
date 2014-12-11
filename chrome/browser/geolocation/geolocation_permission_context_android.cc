@@ -72,8 +72,7 @@ void GeolocationPermissionContextAndroid::CheckMasterLocation(
   // Check to see if the feature in its entirety has been disabled.
   // This must happen before other services (e.g. tabs, extensions)
   // get an opportunity to allow the geolocation request.
-  bool enabled =
-      google_location_settings_helper_->IsSystemLocationEnabled();
+  bool enabled = google_location_settings_helper_->IsLocationEnabled();
 
   base::Closure ui_closure;
   if (enabled) {

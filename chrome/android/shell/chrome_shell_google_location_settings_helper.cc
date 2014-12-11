@@ -18,6 +18,6 @@ ChromeShellGoogleLocationSettingsHelper::
     ~ChromeShellGoogleLocationSettingsHelper() {
 }
 
-bool ChromeShellGoogleLocationSettingsHelper::IsSystemLocationEnabled() {
+bool ChromeShellGoogleLocationSettingsHelper::IsLocationEnabled() {
   return true;
 }

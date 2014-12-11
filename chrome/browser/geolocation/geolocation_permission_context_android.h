@@ -13,7 +13,7 @@
 // CheckSystemLocation will in fact check several possible settings
 //     - The global system geolocation setting
 //     - The Google location settings on pre KK devices
-//     - An old internal Chrome setting on pre-JB MR1 devices
+//     - The internal Chrome location setting
 // With all that information it will decide if system location is enabled.
 // If enabled, it proceeds with the per site flow via
 // GeolocationPermissionContext (which will check per site permissions, create

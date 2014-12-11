@@ -7,24 +7,23 @@
 
 #include "base/values.h"
 
-// This class is needed to fetch the current system location
-// setting and update the infobar button label based on that information i.e,
-// display "Allow" if google apps setting is set as enabled else, display
-// "Settings" with a link to open the system location settings activity.
+// This class is needed to fetch the current location setting and provide it to
+// the infobar.
 class GoogleLocationSettingsHelper {
  public:
   virtual ~GoogleLocationSettingsHelper() {}
 
   static GoogleLocationSettingsHelper* Create();
 
-  virtual bool IsSystemLocationEnabled() = 0;
+  virtual bool IsLocationEnabled() { return IsSystemLocationEnabled(); }
+
+  // Soon to be deprecated, please use IsLocationEnabled instead.
+  virtual bool IsSystemLocationEnabled() { return false; }
 
  protected:
   GoogleLocationSettingsHelper() {}
 
-
  private:
-
   DISALLOW_COPY_AND_ASSIGN(GoogleLocationSettingsHelper);
 };
 
