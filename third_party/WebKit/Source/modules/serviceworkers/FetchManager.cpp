@@ -381,7 +381,8 @@ void FetchManager::stop()
 
 void FetchManager::onLoaderFinished(Loader* loader)
 {
-    m_loaders.remove(loader);
+    // We don't use remove here, becuase it may cause recursive deletion.
+    OwnPtr<Loader> p = m_loaders.take(loader);
 }
 
 } // namespace blink
