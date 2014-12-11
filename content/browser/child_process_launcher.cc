@@ -181,6 +181,18 @@ void ChildProcessLauncher::Context::Launch(
   client_ = client;
 
 #if defined(OS_ANDROID)
+  // We currently only support renderer and gpu child processes.
+  std::string process_type =
+      cmd_line->GetSwitchValueASCII(switches::kProcessType);
+  CHECK_NE(switches::kPluginProcess, process_type);
+  CHECK_NE(switches::kPpapiBrokerProcess, process_type);
+  CHECK_NE(switches::kPpapiPluginProcess, process_type);
+  CHECK_NE(switches::kSandboxIPCProcess, process_type);
+  CHECK_NE(switches::kUtilityProcess, process_type);
+  CHECK_NE(switches::kZygoteProcess, process_type);
+  CHECK(process_type == switches::kGpuProcess ||
+        process_type == switches::kRendererProcess);
+
   // We need to close the client end of the IPC channel to reliably detect
   // child termination. We will close this fd after we create the child
   // process which is asynchronous on Android.
