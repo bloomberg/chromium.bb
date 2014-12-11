@@ -141,7 +141,7 @@ void AwBrowserContext::PreMainMessageLoopRun() {
               data_reduction_proxy::DataReductionProxyParams::kAllowed)));
   data_reduction_proxy_event_store_.reset(
       new DataReductionProxyEventStore(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)));
   scoped_ptr<DataReductionProxyConfigService>
       data_reduction_proxy_config_service(
           new DataReductionProxyConfigService(

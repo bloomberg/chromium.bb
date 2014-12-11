@@ -23,46 +23,14 @@ namespace data_reduction_proxy {
 
 class DataReductionProxyEventStore;
 
-// Values of the UMA DataReductionProxy.BypassType{Primary|Fallback}
-// and DataReductionProxy.BlockType{Primary|Fallback} histograms.
-// This enum must remain synchronized with the enum of the same
-// name in metrics/histograms/histograms.xml.
+// Values of the UMA DataReductionProxy.BypassType{Primary|Fallback} and
+// DataReductionProxy.BlockType{Primary|Fallback} histograms. This enum must
+// remain synchronized with the enum of the same name in
+// metrics/histograms/histograms.xml.
 enum DataReductionProxyBypassType {
-  // Bypass due to explicit instruction for the current request.
-  BYPASS_EVENT_TYPE_CURRENT = 0,
-
-  // Bypass the proxy for less than one minute.
-  BYPASS_EVENT_TYPE_SHORT = 1,
-
-  // Bypass the proxy for one to five minutes.
-  BYPASS_EVENT_TYPE_MEDIUM = 2,
-
-  // Bypass the proxy for more than five minutes.
-  BYPASS_EVENT_TYPE_LONG = 3,
-
-  // Bypass due to a 4xx missing via header.
-  BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_4XX = 4,
-
-  // Bypass due to other missing via header, excluding 4xx errors.
-  BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER = 5,
-
-  // Bypass due to 407 response from proxy without a challenge.
-  BYPASS_EVENT_TYPE_MALFORMED_407 = 6,
-
-  // Bypass due to a 500 internal server error
-  BYPASS_EVENT_TYPE_STATUS_500_HTTP_INTERNAL_SERVER_ERROR = 7,
-
-  // Bypass because the request URI was too long.
-  BYPASS_EVENT_TYPE_STATUS_502_HTTP_BAD_GATEWAY = 8,
-
-  // Bypass due to a 503 response.
-  BYPASS_EVENT_TYPE_STATUS_503_HTTP_SERVICE_UNAVAILABLE = 9,
-
-  // Bypass due to any network error.
-  BYPASS_EVENT_TYPE_NETWORK_ERROR = 10,
-
-  // This must always be last.
-  BYPASS_EVENT_TYPE_MAX = 11
+#define BYPASS_EVENT_TYPE(label, value) BYPASS_EVENT_TYPE_ ## label = value,
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_bypass_type_list.h"
+#undef BYPASS_EVENT_TYPE
 };
 
 // Contains instructions contained in the Chrome-Proxy header.

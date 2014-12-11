@@ -660,7 +660,7 @@ void ProfileImpl::DoFinalInit() {
   // BrowserContextKeyedServices, including DataReductionProxyChromeSettings
   event_store.reset(
       new data_reduction_proxy::DataReductionProxyEventStore(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)));
   // The configurator is used by DataReductionProxyChromeSettings and
   // ProfileIOData. Ownership is passed to the latter via ProfileIOData::Handle,
   // which is only destroyed after BrowserContextKeyedServices,

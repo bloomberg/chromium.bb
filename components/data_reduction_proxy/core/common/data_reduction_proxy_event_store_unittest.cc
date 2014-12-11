@@ -86,6 +86,7 @@ TEST_F(DataReductionProxyEventStoreTest, TestAddProxyDisabledEvent) {
 
 TEST_F(DataReductionProxyEventStoreTest, TestAddBypassActionEvent) {
   EXPECT_EQ(0u, proxy()->stored_events_.size());
+  EXPECT_EQ(nullptr, proxy()->last_bypass_event_.get());
   proxy()->AddBypassActionEvent(bound_net_log(), "bypass", GURL(),
                                 base::TimeDelta::FromMinutes(1));
   task_runner()->RunPendingTasks();
@@ -93,10 +94,12 @@ TEST_F(DataReductionProxyEventStoreTest, TestAddBypassActionEvent) {
   net::CapturingNetLog::CapturedEntry entry = GetSingleEntry();
   EXPECT_EQ(net::NetLog::TYPE_DATA_REDUCTION_PROXY_BYPASS_REQUESTED,
             entry.type);
+  EXPECT_NE(nullptr, proxy()->last_bypass_event_.get());
 }
 
 TEST_F(DataReductionProxyEventStoreTest, TestAddBypassTypeEvent) {
   EXPECT_EQ(0u, proxy()->stored_events_.size());
+  EXPECT_EQ(nullptr, proxy()->last_bypass_event_.get());
   proxy()->AddBypassTypeEvent(bound_net_log(), BYPASS_EVENT_TYPE_LONG, GURL(),
                               base::TimeDelta::FromMinutes(1));
   task_runner()->RunPendingTasks();
@@ -105,10 +108,12 @@ TEST_F(DataReductionProxyEventStoreTest, TestAddBypassTypeEvent) {
   net::CapturingNetLog::CapturedEntry entry = GetSingleEntry();
   EXPECT_EQ(net::NetLog::TYPE_DATA_REDUCTION_PROXY_BYPASS_REQUESTED,
             entry.type);
+  EXPECT_NE(nullptr, proxy()->last_bypass_event_.get());
 }
 
 TEST_F(DataReductionProxyEventStoreTest, TestBeginCanaryRequest) {
   EXPECT_EQ(0u, proxy()->stored_events_.size());
+  EXPECT_EQ(PROBE_UNKNOWN, proxy()->probe_state_);
   proxy()->BeginCanaryRequest(bound_net_log(), GURL());
   task_runner()->RunPendingTasks();
   EXPECT_EQ(1u, proxy()->stored_events_.size());
@@ -116,10 +121,12 @@ TEST_F(DataReductionProxyEventStoreTest, TestBeginCanaryRequest) {
   net::CapturingNetLog::CapturedEntry entry = GetSingleEntry();
   EXPECT_EQ(net::NetLog::TYPE_DATA_REDUCTION_PROXY_CANARY_REQUEST,
             entry.type);
+  EXPECT_EQ(PROBE_PENDING, proxy()->probe_state_);
 }
 
 TEST_F(DataReductionProxyEventStoreTest, TestEndCanaryRequest) {
   EXPECT_EQ(0u, proxy()->stored_events_.size());
+  EXPECT_EQ(PROBE_UNKNOWN, proxy()->probe_state_);
   proxy()->EndCanaryRequest(bound_net_log(), 0);
   task_runner()->RunPendingTasks();
   EXPECT_EQ(1u, proxy()->stored_events_.size());
@@ -127,6 +134,7 @@ TEST_F(DataReductionProxyEventStoreTest, TestEndCanaryRequest) {
   net::CapturingNetLog::CapturedEntry entry = GetSingleEntry();
   EXPECT_EQ(net::NetLog::TYPE_DATA_REDUCTION_PROXY_CANARY_REQUEST,
             entry.type);
+  EXPECT_EQ(PROBE_SUCCESS, proxy()->probe_state_);
 }
 
 }  // namespace data_reduction_proxy

@@ -29,6 +29,23 @@ function BandwidthTask(expectedLength, faviconLength) {
   this.historicVerified = false;
 }
 
+/**
+ * The task loads data reduction proxy info.
+ *
+ * Checks that we see all relevant events and update the corresponding elements.
+ *
+ * @param {boolean} isEnabled The desired state of the data reduction proxy.
+ * @extends {NetInternalsTest.Task}
+ * @constructor
+ */
+function DataReductionProxyTask(isEnabled) {
+  NetInternalsTest.Task.call(this);
+  this.enabled_ = isEnabled;
+  this.dataReductionProxyInfoVerified_ = false;
+  this.proxySettingsReceived_ = false;
+  this.badProxyChangesReceived_ = false;
+}
+
 BandwidthTask.prototype = {
   __proto__: NetInternalsTest.Task.prototype,
 
@@ -52,7 +69,7 @@ BandwidthTask.prototype = {
    */
   getBandwidthTableCell_: function(row, col) {
     return parseFloat(NetInternalsTest.getTbodyText(
-        BandwidthView.MAIN_BOX_ID, row, col));
+        BandwidthView.STATS_BOX_ID, row, col));
   },
 
   /**
@@ -87,7 +104,7 @@ BandwidthTask.prototype = {
   completeIfDone: function() {
     if (this.historicVerified && this.sessionVerified) {
       // Check number of rows in the table.
-      NetInternalsTest.checkTbodyRows(BandwidthView.MAIN_BOX_ID, 4);
+      NetInternalsTest.checkTbodyRows(BandwidthView.STATS_BOX_ID, 4);
       this.onTaskDone();
     }
   },
@@ -136,6 +153,91 @@ BandwidthTask.prototype = {
   }
 };
 
+DataReductionProxyTask.prototype = {
+  __proto__: NetInternalsTest.Task.prototype,
+
+  /**
+   * Switches to the bandwidth tab and waits for arrival of data reduction
+   * proxy information.
+   */
+  start: function() {
+    chrome.send('enableDataReductionProxy', [this.enabled_]);
+    g_browser.addDataReductionProxyInfoObserver(this, true);
+    g_browser.addProxySettingsObserver(this, true);
+    g_browser.addBadProxiesObserver(this, true);
+    NetInternalsTest.switchToView('bandwidth');
+  },
+
+  /**
+   * A task is complete only when session and historic counters have been
+   * verified to reflect the expected number of bytes received.
+   */
+  completeIfDone: function() {
+    if (this.dataReductionProxyInfoVerified_) {
+      this.onTaskDone();
+    }
+  },
+
+  /**
+   * ProxySettingsObserver function.
+   *
+   * @param {object} proxySettings Proxy settings.
+   */
+  onProxySettingsChanged: function(proxySettings) {
+    if (this.isDone() || this.proxySettingsReceived_)
+      return;
+
+    this.proxySettingsReceived_ = true;
+  },
+
+  /**
+   * BadProxiesObserver function.
+   *
+   * @param {object} badProxies Bad proxies.
+   */
+  onBadProxiesChanged: function(badProxies) {
+    if (this.isDone() || this.badProxyChangesReceived_)
+      return;
+
+    this.badProxyChangesReceived_ = true;
+  },
+
+  /**
+   * DataReductionProxyInfoObserver function.  Sanity checks the received data
+   * and constructed table.
+
+   * @param {object} info State of the data reduction proxy.
+   */
+  onDataReductionProxyInfoChanged: function(info) {
+    if (this.isDone() ||
+        this.dataReductionProxyInfoVerified_ ||
+        !this.proxySettingsReceived_) {
+      return;
+    }
+
+    if (info) {
+      expectEquals(this.enabled_, info.enabled);
+      if (this.enabled_) {
+        expectEquals("Enabled", $(BandwidthView.ENABLED_ID).innerText);
+        expectNotEquals('', $(BandwidthView.PRIMARY_PROXY_ID).innerText);
+        expectNotEquals('', $(BandwidthView.SECONDARY_PROXY_ID).innerText);
+      } else {
+        expectEquals("Disabled", $(BandwidthView.ENABLED_ID).innerText);
+        expectEquals('', $(BandwidthView.PRIMARY_PROXY_ID).innerText);
+        expectEquals('', $(BandwidthView.SECONDARY_PROXY_ID).innerText);
+        // Each event results in 2 rows, and we get 2 events since the startup
+        // event starts as disabled, and we subsequently manually set it to the
+        // disabled state.
+        expectEquals(
+            4, NetInternalsTest.getTbodyNumRows(BandwidthView.EVENTS_TBODY_ID));
+      }
+
+      this.dataReductionProxyInfoVerified_ = true;
+      this.completeIfDone();
+    }
+  }
+};
+
 /**
  * Loads a page and checks bandwidth statistics.
  */
@@ -145,6 +247,25 @@ TEST_F('NetInternalsTest', 'netInternalsSessionBandwidthSucceed', function() {
       new NetInternalsTest.GetTestServerURLTask('files/title1.html'));
   // Load a page with a content length of 66 bytes and a 45-byte favicon.
   taskQueue.addTask(new BandwidthTask(66, 45));
+  taskQueue.run();
+});
+
+/**
+ * Checks data reduction proxy info when it is enabled.
+ */
+TEST_F('NetInternalsTest', 'netInternalsDataReductionProxyEnabled', function() {
+  var taskQueue = new NetInternalsTest.TaskQueue(true);
+  taskQueue.addTask(new DataReductionProxyTask(true));
+  taskQueue.run();
+});
+
+/**
+ * Checks data reduction proxy info when it is disabled.
+ */
+TEST_F('NetInternalsTest',
+    'netInternalsDataReductionProxyDisabled', function() {
+  var taskQueue = new NetInternalsTest.TaskQueue(true);
+  taskQueue.addTask(new DataReductionProxyTask(false));
   taskQueue.run();
 });
 

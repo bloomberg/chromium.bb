@@ -174,7 +174,7 @@ function checkViewsAfterLogLoaded() {
     hsts: false,
     logs: false,
     prerender: true,
-    bandwidth: false,
+    bandwidth: true,
     chromeos: false,
     visualizer: false
   };

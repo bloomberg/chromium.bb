@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -127,6 +129,10 @@ class NetInternalsTest::MessageHandler : public content::WebUIMessageHandler {
   // Javascript callback.
   void GetNetLogLoggerLog(const base::ListValue* list_value);
 
+  // Changes the data reduction proxy mode. A boolean is assumed to exist at
+  // index 0 which enables the proxy is set to true.
+  void EnableDataReductionProxy(const base::ListValue* list_value);
+
   Browser* browser() { return net_internals_test_->browser(); }
 
   NetInternalsTest* net_internals_test_;
@@ -166,6 +172,10 @@ void NetInternalsTest::MessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("getNetLogLoggerLog",
       base::Bind(
           &NetInternalsTest::MessageHandler::GetNetLogLoggerLog,
+          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("enableDataReductionProxy",
+      base::Bind(
+          &NetInternalsTest::MessageHandler::EnableDataReductionProxy,
           base::Unretained(this)));
 }
 
@@ -290,6 +300,14 @@ void NetInternalsTest::MessageHandler::GetNetLogLoggerLog(
   scoped_ptr<base::Value> log_contents_value(
       new base::StringValue(log_contents));
   RunJavascriptCallback(log_contents_value.get());
+}
+
+void NetInternalsTest::MessageHandler::EnableDataReductionProxy(
+    const base::ListValue* list_value) {
+  bool enable;
+  ASSERT_TRUE(list_value->GetBoolean(0, &enable));
+  browser()->profile()->GetPrefs()->SetBoolean(
+      data_reduction_proxy::prefs::kDataReductionProxyEnabled, enable);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

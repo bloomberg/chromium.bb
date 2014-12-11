@@ -74,6 +74,9 @@ var BrowserBridge = (function() {
     this.pollableDataHelpers_.extensionInfo =
         new PollableDataHelper('onExtensionInfoChanged',
                                this.sendGetExtensionInfo.bind(this));
+    this.pollableDataHelpers_.dataReductionProxyInfo =
+        new PollableDataHelper('onDataReductionProxyInfoChanged',
+                               this.sendGetDataReductionProxyInfo.bind(this));
     if (cr.isChromeOS) {
       this.pollableDataHelpers_.systemLog =
           new PollableDataHelper('onSystemLogChanged',
@@ -207,6 +210,10 @@ var BrowserBridge = (function() {
 
     sendGetExtensionInfo: function() {
       this.send('getExtensionInfo');
+    },
+
+    sendGetDataReductionProxyInfo: function() {
+      this.send('getDataReductionProxyInfo');
     },
 
     enableIPv6: function() {
@@ -352,6 +359,11 @@ var BrowserBridge = (function() {
 
     receivedExtensionInfo: function(extensionInfo) {
       this.pollableDataHelpers_.extensionInfo.update(extensionInfo);
+    },
+
+    receivedDataReductionProxyInfo: function(dataReductionProxyInfo) {
+      this.pollableDataHelpers_.dataReductionProxyInfo.update(
+          dataReductionProxyInfo);
     },
 
     getSystemLogCallback: function(systemLog) {
@@ -615,6 +627,17 @@ var BrowserBridge = (function() {
      */
     addExtensionInfoObserver: function(observer, ignoreWhenUnchanged) {
       this.pollableDataHelpers_.extensionInfo.addObserver(
+          observer, ignoreWhenUnchanged);
+    },
+
+    /**
+     * Adds a listener of the data reduction proxy info. |observer| will be
+     * called back when data is received, through:
+     *
+     *   observer.onDataReductionProxyInfoChanged(dataReductionProxyInfo)
+     */
+    addDataReductionProxyInfoObserver: function(observer, ignoreWhenUnchanged) {
+      this.pollableDataHelpers_.dataReductionProxyInfo.addObserver(
           observer, ignoreWhenUnchanged);
     },
 

@@ -22,6 +22,7 @@ var CertStatusFlag = null;
 var LoadState = null;
 var AddressFamily = null;
 var SdchProblemCode = null;
+var DataReductionProxyBypassEventType = null;
 
 /**
  * Dictionary of all constants, used for saving log files.
@@ -314,6 +315,8 @@ ConstantsObserver.prototype.onReceivedConstants = function(receivedConstants) {
   AddressFamily = Constants.addressFamily;
   LoadState = Constants.loadState;
   SdchProblemCode = Constants.sdchProblemCode;
+  DataReductionProxyBypassEventType =
+      Constants.dataReductionProxyBypassEventType;
   // certStatusFlag may not be present when loading old log Files
   if (typeof(Constants.certStatusFlag) == 'object')
     CertStatusFlag = Constants.certStatusFlag;

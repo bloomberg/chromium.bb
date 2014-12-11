@@ -181,6 +181,12 @@ class DataReductionProxySettings
   // called in response to creating or loading a new profile.
   void MaybeActivateDataReductionProxy(bool at_startup);
 
+  // Returns the event store being used. May be null if
+  // InitDataReductionProxySettings has not been called.
+  DataReductionProxyEventStore* GetEventStore() const {
+    return event_store_;
+  }
+
  protected:
   void InitPrefMembers();
 
