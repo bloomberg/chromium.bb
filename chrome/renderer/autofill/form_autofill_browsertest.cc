@@ -20,6 +20,7 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebElementCollection.h"
+#include "third_party/WebKit/public/web/WebExceptionCode.h"
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
@@ -29,6 +30,7 @@
 
 using base::ASCIIToUTF16;
 using blink::WebElement;
+using blink::WebExceptionCode;
 using blink::WebFormControlElement;
 using blink::WebFormElement;
 using blink::WebFrame;
@@ -37,6 +39,8 @@ using blink::WebSelectElement;
 using blink::WebString;
 using blink::WebTextAreaElement;
 using blink::WebVector;
+
+namespace autofill {
 
 namespace {
 
@@ -84,9 +88,54 @@ static const char kFormHtml[] =
     "  <INPUT type='submit' name='reply-send' value='Send'/>"
     "</FORM>";
 
-}  // namespace
+std::string RetrievalMethodToString(
+    const WebElementDescriptor::RetrievalMethod& method) {
+  switch (method) {
+    case WebElementDescriptor::CSS_SELECTOR:
+      return "CSS_SELECTOR";
+    case WebElementDescriptor::ID:
+      return "ID";
+    case WebElementDescriptor::NONE:
+      return "NONE";
+  }
+  NOTREACHED();
+  return "UNKNOWN";
+}
 
-namespace autofill {
+bool ClickElement(const blink::WebDocument& document,
+                  const WebElementDescriptor& element_descriptor) {
+  WebString web_descriptor = WebString::fromUTF8(element_descriptor.descriptor);
+  blink::WebElement element;
+
+  switch (element_descriptor.retrieval_method) {
+    case WebElementDescriptor::CSS_SELECTOR: {
+      WebExceptionCode ec = 0;
+      element = document.querySelector(web_descriptor, ec);
+      if (ec)
+        DVLOG(1) << "Query selector failed. Error code: " << ec << ".";
+      break;
+    }
+    case WebElementDescriptor::ID:
+      element = document.getElementById(web_descriptor);
+      break;
+    case WebElementDescriptor::NONE:
+      return true;
+  }
+
+  if (element.isNull()) {
+    DVLOG(1) << "Could not find "
+             << element_descriptor.descriptor
+             << " by "
+             << RetrievalMethodToString(element_descriptor.retrieval_method)
+             << ".";
+    return false;
+  }
+
+  element.simulateClick();
+  return true;
+}
+
+}  // namespace
 
 class FormAutofillTest : public ChromeRenderViewTest {
  public:
@@ -246,11 +295,6 @@ class FormAutofillTest : public ChromeRenderViewTest {
       EXPECT_EQ(expected_value.utf8(), value.utf8());
 
     EXPECT_EQ(field_case.should_be_autofilled, element.isAutofilled());
-  }
-
-  static void FillFormForAllFieldsWrapper(const FormData& form,
-                                       const WebInputElement& element) {
-    FillFormForAllElements(form, element.form());
   }
 
   static void FillFormIncludingNonFocusableElementsWrapper(

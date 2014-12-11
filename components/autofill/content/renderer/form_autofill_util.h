@@ -82,11 +82,6 @@ bool IsWebNodeVisible(const blink::WebNode& node);
 // attribute.
 const base::string16 GetFormIdentifier(const blink::WebFormElement& form);
 
-// Returns true if the element specified by |click_element| was successfully
-// clicked.
-bool ClickElement(const blink::WebDocument& document,
-                  const WebElementDescriptor& element_descriptor);
-
 // Returns all the auto-fillable form control elements in |control_elements|.
 std::vector<blink::WebFormControlElement> ExtractAutofillableElementsFromSet(
     const blink::WebVector<blink::WebFormControlElement>& control_elements,
@@ -146,12 +141,6 @@ void FillForm(const FormData& form,
 // Fills focusable and non-focusable form control elements within |form_element|
 // with field data from |form_data|.
 void FillFormIncludingNonFocusableElements(
-    const FormData& form_data,
-    const blink::WebFormElement& form_element);
-
-// Fills all (including disabled, read-only and non-focusable) form control
-// elements within |form_element| with field data from |form_data|.
-void FillFormForAllElements(
     const FormData& form_data,
     const blink::WebFormElement& form_element);
 

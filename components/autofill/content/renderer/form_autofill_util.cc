@@ -16,13 +16,11 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "components/autofill/core/common/web_element_descriptor.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebElementCollection.h"
-#include "third_party/WebKit/public/web/WebExceptionCode.h"
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
@@ -37,7 +35,6 @@
 using blink::WebDocument;
 using blink::WebElement;
 using blink::WebElementCollection;
-using blink::WebExceptionCode;
 using blink::WebFormControlElement;
 using blink::WebFormElement;
 using blink::WebFrame;
@@ -627,20 +624,6 @@ void PreviewFormField(const FormFieldData& data,
   }
 }
 
-std::string RetrievalMethodToString(
-    const WebElementDescriptor::RetrievalMethod& method) {
-  switch (method) {
-    case WebElementDescriptor::CSS_SELECTOR:
-      return "CSS_SELECTOR";
-    case WebElementDescriptor::ID:
-      return "ID";
-    case WebElementDescriptor::NONE:
-      return "NONE";
-  }
-  NOTREACHED();
-  return "UNKNOWN";
-}
-
 // Recursively checks whether |node| or any of its children have a non-empty
 // bounding box. The recursion depth is bounded by |depth|.
 bool IsWebNodeVisibleImpl(const blink::WebNode& node, const int depth) {
@@ -888,39 +871,6 @@ bool IsWebNodeVisible(const blink::WebNode& node) {
   return IsWebNodeVisibleImpl(node, kNodeSearchDepth);
 }
 
-bool ClickElement(const WebDocument& document,
-                  const WebElementDescriptor& element_descriptor) {
-  WebString web_descriptor = WebString::fromUTF8(element_descriptor.descriptor);
-  blink::WebElement element;
-
-  switch (element_descriptor.retrieval_method) {
-    case WebElementDescriptor::CSS_SELECTOR: {
-      WebExceptionCode ec = 0;
-      element = document.querySelector(web_descriptor, ec);
-      if (ec)
-        DVLOG(1) << "Query selector failed. Error code: " << ec << ".";
-      break;
-    }
-    case WebElementDescriptor::ID:
-      element = document.getElementById(web_descriptor);
-      break;
-    case WebElementDescriptor::NONE:
-      return true;
-  }
-
-  if (element.isNull()) {
-    DVLOG(1) << "Could not find "
-             << element_descriptor.descriptor
-             << " by "
-             << RetrievalMethodToString(element_descriptor.retrieval_method)
-             << ".";
-    return false;
-  }
-
-  element.simulateClick();
-  return true;
-}
-
 std::vector<blink::WebFormControlElement> ExtractAutofillableElementsFromSet(
     const WebVector<WebFormControlElement>& control_elements,
     RequirementsMask requirements) {
@@ -1128,19 +1078,6 @@ void FillFormIncludingNonFocusableElements(const FormData& form_data,
                            WebInputElement(),
                            form_data,
                            filter_mask,
-                           true, /* force override */
-                           &FillFormField);
-}
-
-void FillFormForAllElements(const FormData& form_data,
-                            const WebFormElement& form_element) {
-  if (form_element.isNull())
-    return;
-
-  ForEachMatchingFormField(form_element,
-                           WebInputElement(),
-                           form_data,
-                           FILTER_NONE,
                            true, /* force override */
                            &FillFormField);
 }
