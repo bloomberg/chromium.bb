@@ -66,7 +66,7 @@ ChromeDesktopImpl::ChromeDesktopImpl(
     scoped_ptr<DevToolsClient> websocket_client,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,
     scoped_ptr<PortReservation> port_reservation,
-    base::ProcessHandle process,
+    base::Process process,
     const CommandLine& command,
     base::ScopedTempDir* user_data_dir,
     base::ScopedTempDir* extension_dir)
@@ -74,7 +74,7 @@ ChromeDesktopImpl::ChromeDesktopImpl(
                  websocket_client.Pass(),
                  devtools_event_listeners,
                  port_reservation.Pass()),
-      process_(process),
+      process_(process.Pass()),
       command_(command) {
   if (user_data_dir->IsValid())
     CHECK(user_data_dir_.Set(user_data_dir->Take()));
@@ -94,7 +94,6 @@ ChromeDesktopImpl::~ChromeDesktopImpl() {
       LOG(WARNING) << "chromedriver automation extension directory: "
                    << extension_dir.value();
   }
-  base::CloseProcessHandle(process_);
 }
 
 Status ChromeDesktopImpl::WaitForPageToLoad(const std::string& url,
@@ -169,7 +168,7 @@ bool ChromeDesktopImpl::IsMobileEmulationEnabled() const {
 }
 
 Status ChromeDesktopImpl::QuitImpl() {
-  if (!KillProcess(process_))
+  if (!KillProcess(process_.Handle()))
     return Status(kUnknownError, "cannot kill Chrome");
   return Status(kOk);
 }

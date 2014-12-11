@@ -31,7 +31,7 @@ class ChromeDesktopImpl : public ChromeImpl {
       scoped_ptr<DevToolsClient> websocket_client,
       ScopedVector<DevToolsEventListener>& devtools_event_listeners,
       scoped_ptr<PortReservation> port_reservation,
-      base::ProcessHandle process,
+      base::Process process,
       const base::CommandLine& command,
       base::ScopedTempDir* user_data_dir,
       base::ScopedTempDir* extension_dir);
@@ -57,7 +57,7 @@ class ChromeDesktopImpl : public ChromeImpl {
   const base::CommandLine& command() const;
 
  private:
-  base::ProcessHandle process_;
+  base::Process process_;
   base::CommandLine command_;
   base::ScopedTempDir user_data_dir_;
   base::ScopedTempDir extension_dir_;

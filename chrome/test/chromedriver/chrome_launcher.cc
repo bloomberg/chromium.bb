@@ -352,8 +352,8 @@ Status LaunchDesktopChrome(
   std::string command_string = command.GetCommandLineString();
 #endif
   VLOG(0) << "Launching chrome: " << command_string;
-  base::ProcessHandle process;
-  if (!base::LaunchProcess(command, options, &process))
+  base::Process process = base::LaunchProcess(command, options);
+  if (!process.IsValid())
     return Status(kUnknownError, "chrome failed to start");
 
   scoped_ptr<DevToolsHttpClient> devtools_http_client;
@@ -364,7 +364,7 @@ Status LaunchDesktopChrome(
   if (status.IsError()) {
     int exit_code;
     base::TerminationStatus chrome_status =
-        base::GetTerminationStatus(process, &exit_code);
+        base::GetTerminationStatus(process.Handle(), &exit_code);
     if (chrome_status != base::TERMINATION_STATUS_STILL_RUNNING) {
       std::string termination_reason;
       switch (chrome_status) {
@@ -387,9 +387,9 @@ Status LaunchDesktopChrome(
       return Status(kUnknownError,
                     "Chrome failed to start: " + termination_reason);
     }
-    if (!base::KillProcess(process, 0, true)) {
+    if (!base::KillProcess(process.Handle(), 0, true)) {
       int exit_code;
-      if (base::GetTerminationStatus(process, &exit_code) ==
+      if (base::GetTerminationStatus(process.Handle(), &exit_code) ==
           base::TERMINATION_STATUS_STILL_RUNNING)
         return Status(kUnknownError, "cannot kill Chrome", status);
     }
@@ -410,7 +410,7 @@ Status LaunchDesktopChrome(
                             devtools_websocket_client.Pass(),
                             *devtools_event_listeners,
                             port_reservation.Pass(),
-                            process,
+                            process.Pass(),
                             command,
                             &user_data_dir,
                             &extension_dir));
