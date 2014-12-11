@@ -539,7 +539,6 @@
       'browser/process_info_snapshot_mac.cc',
       'browser/process_singleton.h',
       'browser/process_singleton_win.cc',
-      'browser/remove_rows_table_model.h',
       'browser/renderer_context_menu/context_menu_content_type_factory.cc',
       'browser/renderer_context_menu/context_menu_content_type_factory.h',
       'browser/renderer_context_menu/context_menu_content_type_panel.cc',
