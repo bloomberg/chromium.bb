@@ -12,7 +12,7 @@ class ChromeShellGoogleLocationSettingsHelper
     : public GoogleLocationSettingsHelper {
  public:
   // GoogleLocationSettingsHelper implementation:
-  virtual bool IsLocationEnabled() override;
+  virtual bool IsSystemLocationEnabled() override;
 
  protected:
   ChromeShellGoogleLocationSettingsHelper();
