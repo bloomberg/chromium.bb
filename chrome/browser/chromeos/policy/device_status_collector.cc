@@ -35,7 +35,6 @@
 
 using base::Time;
 using base::TimeDelta;
-using chromeos::VersionLoader;
 
 namespace em = enterprise_management;
 
@@ -146,13 +145,19 @@ DeviceStatusCollector::DeviceStatusCollector(
   UpdateReportingSettings();
 
   // Get the the OS and firmware version info.
-  version_loader_.GetVersion(
-      VersionLoader::VERSION_FULL,
-      base::Bind(&DeviceStatusCollector::OnOSVersion, base::Unretained(this)),
-      &tracker_);
-  version_loader_.GetFirmware(
-      base::Bind(&DeviceStatusCollector::OnOSFirmware, base::Unretained(this)),
-      &tracker_);
+  base::PostTaskAndReplyWithResult(
+      content::BrowserThread::GetBlockingPool(),
+      FROM_HERE,
+      base::Bind(&chromeos::version_loader::GetVersion,
+                 chromeos::version_loader::VERSION_FULL),
+      base::Bind(&DeviceStatusCollector::OnOSVersion,
+                 weak_factory_.GetWeakPtr()));
+  base::PostTaskAndReplyWithResult(
+      content::BrowserThread::GetBlockingPool(),
+      FROM_HERE,
+      base::Bind(&chromeos::version_loader::GetFirmware),
+      base::Bind(&DeviceStatusCollector::OnOSFirmware,
+                 weak_factory_.GetWeakPtr()));
 }
 
 DeviceStatusCollector::~DeviceStatusCollector() {

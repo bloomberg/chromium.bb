@@ -5,9 +5,12 @@
 #include "chrome/browser/ui/webui/version_handler_chromeos.h"
 
 #include "base/bind.h"
+#include "base/task_runner_util.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 
-VersionHandlerChromeOS::VersionHandlerChromeOS() {
+VersionHandlerChromeOS::VersionHandlerChromeOS()
+    : weak_factory_(this) {
 }
 
 VersionHandlerChromeOS::~VersionHandlerChromeOS() {
@@ -16,10 +19,13 @@ VersionHandlerChromeOS::~VersionHandlerChromeOS() {
 void VersionHandlerChromeOS::HandleRequestVersionInfo(
     const base::ListValue* args) {
   // Start the asynchronous load of the version.
-  loader_.GetVersion(
-      chromeos::VersionLoader::VERSION_FULL,
-      base::Bind(&VersionHandlerChromeOS::OnVersion, base::Unretained(this)),
-      &tracker_);
+  base::PostTaskAndReplyWithResult(
+      content::BrowserThread::GetBlockingPool(),
+      FROM_HERE,
+      base::Bind(&chromeos::version_loader::GetVersion,
+                 chromeos::version_loader::VERSION_FULL),
+      base::Bind(&VersionHandlerChromeOS::OnVersion,
+                 weak_factory_.GetWeakPtr()));
 
   // Parent class takes care of the rest.
   VersionHandler::HandleRequestVersionInfo(args);

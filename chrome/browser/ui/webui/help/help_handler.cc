@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -145,7 +146,8 @@ std::string ReadFCCLabelText() {
 }  // namespace
 
 HelpHandler::HelpHandler()
-    : version_updater_(VersionUpdater::Create(nullptr)), weak_factory_(this) {
+    : version_updater_(VersionUpdater::Create(nullptr)),
+      weak_factory_(this) {
 }
 
 HelpHandler::~HelpHandler() {
@@ -367,14 +369,19 @@ base::string16 HelpHandler::BuildBrowserVersionString() {
 
 void HelpHandler::OnPageLoaded(const base::ListValue* args) {
 #if defined(OS_CHROMEOS)
-  // Version information is loaded from a callback
-  loader_.GetVersion(
-      chromeos::VersionLoader::VERSION_FULL,
-      base::Bind(&HelpHandler::OnOSVersion, base::Unretained(this)),
-      &tracker_);
-  loader_.GetFirmware(
-      base::Bind(&HelpHandler::OnOSFirmware, base::Unretained(this)),
-      &tracker_);
+  base::PostTaskAndReplyWithResult(
+      content::BrowserThread::GetBlockingPool(),
+      FROM_HERE,
+      base::Bind(&chromeos::version_loader::GetVersion,
+                 chromeos::version_loader::VERSION_FULL),
+      base::Bind(&HelpHandler::OnOSVersion,
+                 weak_factory_.GetWeakPtr()));
+  base::PostTaskAndReplyWithResult(
+      content::BrowserThread::GetBlockingPool(),
+      FROM_HERE,
+      base::Bind(&chromeos::version_loader::GetFirmware),
+      base::Bind(&HelpHandler::OnOSFirmware,
+                 weak_factory_.GetWeakPtr()));
 
   web_ui()->CallJavascriptFunction(
       "help.HelpPage.updateEnableReleaseChannel",

@@ -153,9 +153,6 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider {
   base::RepeatingTimer<DeviceStatusCollector> idle_poll_timer_;
   base::OneShotTimer<DeviceStatusCollector> geolocation_update_timer_;
 
-  chromeos::VersionLoader version_loader_;
-  base::CancelableTaskTracker tracker_;
-
   std::string os_version_;
   std::string firmware_version_;
 

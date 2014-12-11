@@ -20,12 +20,12 @@ static const char kTest14[] = "version        | 0.2.3.3";
 static const char kTest15[] = "version             0.2.3.3";
 
 TEST_F(VersionLoaderTest, ParseFirmware) {
-  EXPECT_EQ("", VersionLoader::ParseFirmware(kTest10));
-  EXPECT_EQ("", VersionLoader::ParseFirmware(kTest11));
-  EXPECT_EQ("", VersionLoader::ParseFirmware(kTest12));
-  EXPECT_EQ("0.2.3.3", VersionLoader::ParseFirmware(kTest13));
-  EXPECT_EQ("0.2.3.3", VersionLoader::ParseFirmware(kTest14));
-  EXPECT_EQ("0.2.3.3", VersionLoader::ParseFirmware(kTest15));
+  EXPECT_EQ("", version_loader::ParseFirmware(kTest10));
+  EXPECT_EQ("", version_loader::ParseFirmware(kTest11));
+  EXPECT_EQ("", version_loader::ParseFirmware(kTest12));
+  EXPECT_EQ("0.2.3.3", version_loader::ParseFirmware(kTest13));
+  EXPECT_EQ("0.2.3.3", version_loader::ParseFirmware(kTest14));
+  EXPECT_EQ("0.2.3.3", version_loader::ParseFirmware(kTest15));
 }
 
 }  // namespace chromeos

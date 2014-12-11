@@ -65,12 +65,8 @@ class VersionInfoUpdater : public policy::CloudPolicyStore::Observer {
   // Callback from chromeos::VersionLoader giving the version.
   void OnVersion(const std::string& version);
 
-  // Handles asynchronously loading the version.
-  VersionLoader version_loader_;
   // Handles asynchronously loading the boot times.
   BootTimesLoader boot_times_loader_;
-  // Used to request version and boot times.
-  base::CancelableTaskTracker tracker_;
 
   // Information pieces for version label.
   std::string version_text_;

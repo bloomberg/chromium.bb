@@ -21,6 +21,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/sys_info.h"
+#include "base/task_runner_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -460,9 +461,12 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   WallpaperManager::Get()->AddObservers();
 #endif
 
-  cros_version_loader_.GetVersion(VersionLoader::VERSION_FULL,
-                                  base::Bind(&ChromeOSVersionCallback),
-                                  &tracker_);
+  base::PostTaskAndReplyWithResult(
+      content::BrowserThread::GetBlockingPool(),
+      FROM_HERE,
+      base::Bind(&version_loader::GetVersion,
+                 version_loader::VERSION_FULL),
+      base::Bind(&ChromeOSVersionCallback));
 
   // Make sure that wallpaper boot transition and other delays in OOBE
   // are disabled for tests and kiosk app launch by default.

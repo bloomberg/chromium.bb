@@ -92,8 +92,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
   scoped_ptr<base::MemoryPressureObserverChromeOS> memory_pressure_observer_;
 
-  VersionLoader cros_version_loader_;
-  base::CancelableTaskTracker tracker_;
   bool use_new_network_change_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
