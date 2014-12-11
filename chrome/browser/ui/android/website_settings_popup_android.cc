@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/website_settings/website_settings.h"
@@ -74,6 +75,26 @@ void WebsiteSettingsPopupAndroid::OnPermissionSettingChanged(JNIEnv* env,
   ContentSettingsType content_setting_type =
       static_cast<ContentSettingsType>(type);
   ContentSetting content_setting = static_cast<ContentSetting>(setting);
+
+  ContentSettingsTypeHistogram histogram_value =
+      ContentSettingTypeToHistogramValue(content_setting_type);
+  DCHECK_NE(histogram_value, CONTENT_SETTINGS_TYPE_HISTOGRAM_INVALID)
+      << "Invalid content setting type specified.";
+
+  UMA_HISTOGRAM_ENUMERATION("WebsiteSettings.OriginInfo.PermissionChanged",
+                            histogram_value,
+                            CONTENT_SETTINGS_HISTOGRAM_NUM_TYPES);
+
+  if (content_setting == ContentSetting::CONTENT_SETTING_ALLOW) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "WebsiteSettings.OriginInfo.PermissionChanged.Allowed", histogram_value,
+        CONTENT_SETTINGS_HISTOGRAM_NUM_TYPES);
+  } else if (content_setting == ContentSetting::CONTENT_SETTING_BLOCK) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "WebsiteSettings.OriginInfo.PermissionChanged.Blocked", histogram_value,
+        CONTENT_SETTINGS_HISTOGRAM_NUM_TYPES);
+  }
+
   presenter_->OnSitePermissionChanged(content_setting_type, content_setting);
 }
 

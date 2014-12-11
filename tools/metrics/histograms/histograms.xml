@@ -41114,8 +41114,39 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebsiteSettings.OriginInfo.PermissionChanged"
+    enum="ContentType">
+  <owner>sashab@chromium.org</owner>
+  <owner>felt@chromium.org</owner>
+  <summary>
+    Count of how often a specific content type (permission) is changed using the
+    Origin Info dialog on Android.
+  </summary>
+</histogram>
+
+<histogram name="WebsiteSettings.OriginInfo.PermissionChanged.Allowed"
+    enum="ContentType">
+  <owner>sashab@chromium.org</owner>
+  <owner>felt@chromium.org</owner>
+  <summary>
+    Count of how often a specific content type (permission) is set to 'Allowed'
+    using the Origin Info dialog on Android.
+  </summary>
+</histogram>
+
+<histogram name="WebsiteSettings.OriginInfo.PermissionChanged.Blocked"
+    enum="ContentType">
+  <owner>sashab@chromium.org</owner>
+  <owner>felt@chromium.org</owner>
+  <summary>
+    Count of how often a specific content type (permission) is set to 'Blocked'
+    using the Origin Info dialog on Android.
+  </summary>
+</histogram>
+
 <histogram name="WebsiteSettings.PermissionChanged" enum="ContentType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>lgarron@chromium.org</owner>
+  <owner>sashab@chromium.org</owner>
   <summary>
     Count of how often a specific content type (permission) is changed using the
     Website Settings UI.
@@ -42977,6 +43008,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="ContentType" type="int">
+  <int value="-1" label="Invalid setting"/>
   <int value="0" label="Cookies setting"/>
   <int value="1" label="Images setting"/>
   <int value="2" label="JavaScript setting"/>
@@ -42984,14 +43016,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="4" label="Popups setting"/>
   <int value="5" label="Location setting"/>
   <int value="6" label="Notifications setting"/>
-  <int value="7" label="Web Intents setting"/>
-  <int value="8" label="Auto Select Cert setting"/>
-  <int value="9" label="Fullscreen setting"/>
-  <int value="10" label="Mouselock setting"/>
-  <int value="11" label="Mixed Script setting"/>
-  <int value="12" label="Media setting"/>
-  <int value="13" label="Protocol Handler setting"/>
-  <int value="14" label="PPAPI Broker setting"/>
+  <int value="7" label="Auto Select Cert setting"/>
+  <int value="8" label="Fullscreen setting"/>
+  <int value="9" label="Mouselock setting"/>
+  <int value="10" label="Mixed Script setting"/>
+  <int value="11" label="Media setting (default for mic and camera)"/>
+  <int value="12" label="Media setting (mic)"/>
+  <int value="13" label="Media setting (camera)"/>
+  <int value="14" label="Protocol Handler setting"/>
+  <int value="15" label="PPAPI Broker setting"/>
+  <int value="16" label="Automatic downloads setting"/>
+  <int value="17" label="MIDI sysex setting"/>
+  <int value="18" label="Push messaging setting"/>
+  <int value="19" label="SSL Certificate Decisions setting"/>
+  <int value="20" label="Metro switch-to-desktop setting (Windows only)"/>
+  <int value="21"
+      label="Protected media identifier setting (Android/ChromeOS only)"/>
+  <int value="22" label="App banner setting (Android only)"/>
 </enum>
 
 <enum name="CookieDeletionCause" type="int">
