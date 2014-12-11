@@ -6361,12 +6361,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_SUPERVISED_USER_SAFESITES_DESCRIPTION" desc="Description for the flag to enable the supervised user SafeSites feature.">
         Enable SafeSites filtering for supervised users.
       </message>
-      <message name="IDS_FLAGS_ENABLE_SYNCED_NOTIFICATIONS_NAME" desc="Name of the flag to enable synced notifications.">
-        Enable Synced Notifications
-      </message>
-      <message name="IDS_FLAGS_ENABLE_SYNCED_NOTIFICATIONS_DESCRIPTION" desc="Description for the flag to enable synced notifications.">
-        Enable experimental Synchronized Notifications.
-      </message>
       <message name="IDS_FLAGS_ENABLE_SYNC_APP_LIST_NAME" desc="Name of the flag to enable syncing the app list.">
         Enable App Launcher sync
       </message>

@@ -1854,10 +1854,6 @@
       'browser/notifications/notification_ui_manager_desktop.cc',
       'browser/notifications/screen_lock_notification_blocker.cc',
       'browser/notifications/screen_lock_notification_blocker.h',
-      'browser/notifications/sync_notifier/chrome_notifier_service.cc',
-      'browser/notifications/sync_notifier/chrome_notifier_service_factory.cc',
-      'browser/notifications/sync_notifier/chrome_notifier_service_factory.h',
-      'browser/notifications/sync_notifier/chrome_notifier_service.h',
     ],
     'chrome_browser_nss_sources': [
       'browser/certificate_manager_model.cc',

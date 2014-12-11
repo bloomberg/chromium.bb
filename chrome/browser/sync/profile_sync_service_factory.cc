@@ -35,7 +35,6 @@
 #include "url/gurl.h"
 
 #if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service_factory.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 #endif
@@ -80,7 +79,6 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
 #if defined(ENABLE_EXTENSIONS)
   DependsOn(
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
-  DependsOn(notifier::ChromeNotifierServiceFactory::GetInstance());
 #endif
 
   // The following have not been converted to KeyedServices yet,

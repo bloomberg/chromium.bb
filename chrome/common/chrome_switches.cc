@@ -360,10 +360,6 @@ const char kDisableSupervisedUserSafeSites[] =
 // Disables syncing browser data to a Google Account.
 const char kDisableSync[]                   = "disable-sync";
 
-// Disable synced notifications.
-const char kDisableSyncSyncedNotifications[] =
-    "disable-sync-synced-notifications";
-
 // Disables syncing one or more sync data types that are on by default.
 // See sync/internal_api/public/base/model_type.h for possible types. Types
 // should be comma separated, and follow the naming convention for string
@@ -614,10 +610,6 @@ const char kEnableSupervisedUserBlacklist[] =
 // Enables SafeSites filtering for supervised users.
 const char kEnableSupervisedUserSafeSites[] =
     "enable-supervised-user-safesites";
-
-// Enables synced notifications.
-const char kEnableSyncSyncedNotifications[] =
-    "enable-sync-synced-notifications";
 
 // Enables synced articles.
 const char kEnableSyncArticles[]            = "enable-sync-articles";

@@ -144,7 +144,6 @@
 #include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
 #include "chrome/browser/android/new_tab_page_prefs.h"
 #else
-#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
 #include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
 #include "chrome/browser/ui/autofill/generated_credit_card_bubble_controller.h"
 #endif

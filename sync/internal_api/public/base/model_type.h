@@ -80,13 +80,13 @@ enum ModelType {
   // An extension setting from the extension settings API.
   EXTENSION_SETTINGS,
   // App notifications.
-  APP_NOTIFICATIONS,
+  APP_NOTIFICATIONS,  // Deprecated.
   // History delete directives.
   HISTORY_DELETE_DIRECTIVES,
   // Synced push notifications.
-  SYNCED_NOTIFICATIONS,
+  SYNCED_NOTIFICATIONS,   // Deprecated.
   // Synced Notification app info.
-  SYNCED_NOTIFICATION_APP_INFO,
+  SYNCED_NOTIFICATION_APP_INFO,  // Deprecated.
   // Custom spelling dictionary.
   DICTIONARY,
   // Favicon images.

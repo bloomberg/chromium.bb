@@ -9,8 +9,6 @@
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
-#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/pref_service_flags_storage.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
@@ -76,7 +74,6 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
-#include "chrome/browser/extensions/api/synced_notifications_private/synced_notifications_shim.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/sync/glue/extension_backed_data_type_controller.h"
 #include "chrome/browser/sync/glue/extension_data_type_controller.h"
@@ -143,9 +140,6 @@ syncer::ModelTypeSet GetDisabledTypesFromCommandLine(
 syncer::ModelTypeSet GetEnabledTypesFromCommandLine(
     const CommandLine& command_line) {
   syncer::ModelTypeSet enabled_types;
-  if (command_line.HasSwitch(switches::kEnableSyncSyncedNotifications)) {
-    enabled_types.Put(syncer::SYNCED_NOTIFICATIONS);
-  }
   return enabled_types;
 }
 
@@ -374,25 +368,6 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
   }
 #endif
 
-  // Synced Notifications are disabled by default.
-#if defined(ENABLE_EXTENSIONS) && defined(ENABLE_NOTIFICATIONS)
-  if (enabled_types.Has(syncer::SYNCED_NOTIFICATIONS)) {
-    pss->RegisterDataTypeController(
-        new ExtensionBackedDataTypeController(
-              syncer::SYNCED_NOTIFICATIONS,
-              "",  // TODO(dewittj): pass the extension hash here.
-              this,
-              profile_));
-
-    pss->RegisterDataTypeController(
-        new ExtensionBackedDataTypeController(
-              syncer::SYNCED_NOTIFICATION_APP_INFO,
-              "",  // TODO(dewittj): pass the extension hash here.
-              this,
-              profile_));
-  }
-#endif
-
 #if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS)
   // Dictionary sync is enabled by default.
   if (!disabled_types.Has(syncer::DICTIONARY)) {
@@ -506,15 +481,6 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
               profile_, Profile::EXPLICIT_ACCESS);
       return history ? history->AsWeakPtr() : base::WeakPtr<HistoryService>();
     }
-#if defined(ENABLE_EXTENSIONS)
-    case syncer::SYNCED_NOTIFICATIONS:
-    case syncer::SYNCED_NOTIFICATION_APP_INFO: {
-      return notifier::ChromeNotifierServiceFactory::GetForProfile(
-                 profile_, Profile::IMPLICIT_ACCESS)
-          ->GetSyncedNotificationsShim()
-          ->AsWeakPtr();
-    }
-#endif
 #if defined(ENABLE_SPELLCHECK)
     case syncer::DICTIONARY:
       return SpellcheckServiceFactory::GetForContext(profile_)->

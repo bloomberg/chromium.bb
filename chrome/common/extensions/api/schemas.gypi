@@ -77,7 +77,6 @@
       'sessions.json',
       'signed_in_devices.idl',
       'streams_private.idl',
-      'synced_notifications_private.idl',
       'sync_file_system.idl',
       'system_indicator.idl',
       'system_private.json',

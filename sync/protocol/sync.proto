@@ -116,8 +116,7 @@ message EntitySpecifics {
   optional AppSettingSpecifics app_setting = 103656;
   optional HistoryDeleteDirectiveSpecifics history_delete_directive = 150251;
   optional SyncedNotificationSpecifics synced_notification = 153108;
-  optional SyncedNotificationAppInfoSpecifics synced_notification_app_info =
-      235816;
+  optional SyncedNotificationAppInfoSpecifics synced_notification_app_info = 235816;
   optional DeviceInfoSpecifics device_info = 154522;
   optional ExperimentsSpecifics experiments = 161496;
   optional PriorityPreferenceSpecifics priority_preference = 163425;

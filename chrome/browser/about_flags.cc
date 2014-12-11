@@ -1124,14 +1124,6 @@ const Experiment kExperiments[] = {
     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSupervisedUserSafeSites,
                               switches::kDisableSupervisedUserSafeSites)
   },
-  {
-    "enable-sync-synced-notifications",
-    IDS_FLAGS_ENABLE_SYNCED_NOTIFICATIONS_NAME,
-    IDS_FLAGS_ENABLE_SYNCED_NOTIFICATIONS_DESCRIPTION,
-    kOsDesktop,
-    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSyncSyncedNotifications,
-                              switches::kDisableSyncSyncedNotifications)
-  },
 #if defined(ENABLE_APP_LIST)
   {
     "enable-sync-app-list",

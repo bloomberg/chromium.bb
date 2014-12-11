@@ -1,6 +1,9 @@
-// Copyright 2014 Google Inc. All Rights Reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 //
-// Sync protocol datatype extension for appInfo objects.
+// Sync protocol datatype extension for synced notification app info objects.
+// DO NOT USE: This datatype is deprecated.
 
 syntax = "proto2";
 
@@ -9,48 +12,6 @@ option retain_unknown_fields = true;
 
 package sync_pb;
 
-import "synced_notification_render.proto";
-
+// This message is kept around for backwards compatibility sake.
 message SyncedNotificationAppInfoSpecifics {
-  // Information of the list of apps we know about.
-  // NOTE: This may not be the comprehensive list of apps that send
-  // notifications. At best, it will contain all the first party apps and
-  // paging support is not needed.
-  // This is a static list sent from the server that is read only on the client.
-  repeated SyncedNotificationAppInfo synced_notification_app_info = 1;
-}
-
-message SyncedNotificationAppInfo {
-  // The application ID (the subservice within the sending service).
-  repeated string app_id = 1;
-
-  // The name to use in the settings screen for this app.
-  // Use app_name field instead.
-  optional string settings_display_name = 2 [deprecated = true];
-
-  // This field is deprecated. Use the app_icon field instead.
-  optional SyncedNotificationImage icon = 3 [deprecated = true];
-
-  optional string app_name = 4;
-
-  optional string settings_url = 5;
-
-  optional string info_url = 6;
-
-  message Icon {
-    enum Type {
-      GRAYSCALE_FAVICON_1X = 1; // Grayscale 16x16 px icon.
-      GRAYSCALE_FAVICON_2X = 2; // Grayscale 32x32 px icon.
-      COLOR_FAVICON_1X = 3;  // Color 16x16 px icon.
-      COLOR_FAVICON_2X = 4;  // Color 32x32 px icon.
-      COLOR_APPICON_1X = 5;  // Color 80x80 px icon.
-      COLOR_APPICON_2X = 6;  // Color 160x160 px icon.
-    };
-    optional Type type = 1;
-
-    optional string url = 2;
-  };
-
-  // A repeated set of icons of different resolutions and types.
-  repeated Icon app_icon = 7;
 }

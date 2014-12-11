@@ -612,10 +612,6 @@
     "dependencies": ["permission:syncFileSystem"],
     "contexts": ["blessed_extension"]
   },
-  "syncedNotificationsPrivate": {
-    "contexts": ["blessed_extension"],
-    "dependencies": ["permission:syncedNotificationsPrivate"]
-  },
   "systemIndicator": {
     "dependencies": ["manifest:system_indicator"],
     "contexts": ["blessed_extension"]

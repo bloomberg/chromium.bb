@@ -166,7 +166,6 @@ class APIPermission {
     kStorage,
     kStreamsPrivate,
     kSyncFileSystem,
-    kSyncedNotificationsPrivate,
     kSystemPrivate,
     kSystemDisplay,
     kSystemStorage,

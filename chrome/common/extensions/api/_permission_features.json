@@ -947,13 +947,6 @@
     "channel": "stable",
     "extension_types": ["platform_app"]
   },
-  "syncedNotificationsPrivate": {
-    "channel": "dev",
-    "extension_types": ["platform_app"],
-    "whitelist": [
-      "34967F9FA3C399E1EC380B443D7331AA93AC445B"  // http://crbug.com/400436
-    ]
-  },
   "systemPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],

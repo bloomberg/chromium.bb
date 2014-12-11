@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 //
 // Sync protocol datatype extension for synced notifications.
-
-// Update proto_value_conversions{.h,.cc,_unittest.cc} if you change
-// any fields in this file.
+// DO NOT USE: This datatype is deprecated.
 
 syntax = "proto2";
 
@@ -14,11 +12,6 @@ option retain_unknown_fields = true;
 
 package sync_pb;
 
-import "synced_notification_data.proto";
-import "synced_notification_render.proto";
-
-// Properties of SyncedNotificationSpecifics objects.
+// This message is kept around for backwards compatibility sake.
 message SyncedNotificationSpecifics {
-  // The notification from the server.
-  optional CoalescedSyncedNotification coalesced_notification = 1;
 }

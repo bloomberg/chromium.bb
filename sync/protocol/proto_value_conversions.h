@@ -27,7 +27,6 @@ class BookmarkSpecifics;
 class ClientConfigParams;
 class ClientToServerMessage;
 class ClientToServerResponse;
-class CoalescedSyncedNotification;
 class CollapsedInfo;
 class DatatypeAssociationStats;
 class DebugEventInfo;
@@ -64,14 +63,7 @@ class SessionWindow;
 class SimpleCollapsedLayout;
 class SyncCycleCompletedEventInfo;
 class SyncEntity;
-class SyncedNotification;
-class SyncedNotificationAction;
-class SyncedNotificationAppInfo;
 class SyncedNotificationAppInfoSpecifics;
-class SyncedNotificationDestination;
-class SyncedNotificationImage;
-class SyncedNotificationProfileImage;
-class SyncedNotificationRenderInfo;
 class SyncedNotificationSpecifics;
 class TabNavigation;
 class Target;
@@ -147,41 +139,8 @@ base::DictionaryValue* TimeRangeDirectiveToValue(
 base::DictionaryValue* KeystoreEncryptionToValue(
     const sync_pb::KeystoreEncryptionFlagsSpecifics& proto);
 
-// Sub protocols of SyncedNotifications.
-
-base::DictionaryValue* SimpleCollapsedLayoutToValue(
-    const sync_pb::SimpleCollapsedLayout& proto);
-
-base::DictionaryValue* CollapsedInfoToValue(
-    const sync_pb::CollapsedInfo& proto);
-
-base::DictionaryValue* RenderInfoToValue(
-    const sync_pb::SyncedNotificationRenderInfo& proto);
-
-base::DictionaryValue* CoalescedNotificationToValue(
-    const sync_pb::CoalescedSyncedNotification& proto);
-
-base::DictionaryValue* SyncedNotificationActionToValue(
-    const sync_pb::SyncedNotificationAction& action);
-
-base::DictionaryValue* SyncedNotificationDestinationToValue(
-    const sync_pb::SyncedNotificationDestination& destination);
-
-base::DictionaryValue* SyncedNotificationToValue(
-    const sync_pb::SyncedNotification& notification);
-
 SYNC_EXPORT_PRIVATE base::DictionaryValue* SessionSpecificsToValue(
     const sync_pb::SessionSpecifics& session_specifics);
-
-SYNC_EXPORT_PRIVATE base::DictionaryValue* SyncedNotificationImageToValue(
-    const sync_pb::SyncedNotificationImage& image);
-
-SYNC_EXPORT_PRIVATE base::DictionaryValue*
-    SyncedNotificationProfileImageToValue(
-        const sync_pb::SyncedNotificationProfileImage& image);
-
-SYNC_EXPORT_PRIVATE base::DictionaryValue* TargetToValue(
-    const sync_pb::Target& target);
 
 // Main *SpecificsToValue functions.
 

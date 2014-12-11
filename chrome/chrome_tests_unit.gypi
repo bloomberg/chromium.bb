@@ -363,7 +363,6 @@
       'browser/extensions/api/storage/policy_value_store_unittest.cc',
       'browser/extensions/api/storage/settings_sync_unittest.cc',
       'browser/extensions/api/streams_private/streams_private_manifest_unittest.cc',
-      'browser/extensions/api/synced_notifications_private/synced_notifications_shim_unittest.cc',
       'browser/extensions/api/web_navigation/frame_navigation_state_unittest.cc',
       'browser/extensions/api/web_request/web_request_api_unittest.cc',
       'browser/extensions/api/web_request/web_request_permissions_unittest.cc',
