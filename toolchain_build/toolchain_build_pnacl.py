@@ -623,10 +623,10 @@ def TargetLibCompiler(host, options):
   return compiler
 
 
-def Metadata(revisions, is_canonical):
+def Metadata(revisions):
   data = {
       'metadata': {
-          'type': 'build' if is_canonical else 'build_noncanonical',
+          'type': 'build',
           'inputs': { 'readme': os.path.join(NACL_DIR, 'pnacl', 'README'),
                       'COMPONENT_REVISIONS': GIT_DEPS_FILE,
                       'driver': PNACL_DRIVER_DIR },
@@ -869,12 +869,7 @@ def GetUploadPackageTargets():
   host_packages = {}
   for os_name, arch in (('win', 'x86-32'),
                         ('mac', 'x86-64'),
-  # These components are all supposed to be the same regardless of which bot is
-  # running, however the 32-bit linux bot is special because it builds and tests
-  # packages which are never uploaded. Because the package extraction is done by
-  # package_version, we still need to output the 32-bit version of the host
-  # packages on that bot.
-                        ('linux', pynacl.platform.GetArch3264())):
+                        ('linux', 'x86-64')):
     triple = pynacl.platform.PlatformTriple(os_name, arch)
     legal_triple = pynacl.gsd_storage.LegalizeName(triple)
     host_packages.setdefault(os_name, []).extend(
@@ -982,13 +977,13 @@ if __name__ == '__main__':
         packages.update(pnacl_targetlibs.SDKLibs(arch, is_canonical))
       for arch in TRANSLATOR_ARCHES:
         packages.update(pnacl_targetlibs.TranslatorLibs(arch, is_canonical))
-      packages.update(Metadata(rev, is_canonical))
+      packages.update(Metadata(rev))
       packages.update(pnacl_targetlibs.SDKCompiler(
                       ['le32'] + DIRECT_TO_NACL_ARCHES))
       packages.update(pnacl_targetlibs.SDKLibs('le32', is_canonical))
     if pynacl.platform.IsLinux() or pynacl.platform.IsMac():
       packages.update(pnacl_targetlibs.UnsandboxedIRT(
-          'x86-32-%s' % pynacl.platform.GetOS(), is_canonical))
+          'x86-32-%s' % pynacl.platform.GetOS()))
 
 
   tb = toolchain_main.PackageBuilder(packages,
