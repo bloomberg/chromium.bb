@@ -3,13 +3,17 @@
 # found in the LICENSE file.
 
 import("//native_client/build/config/sysroot.gni")
-import("//native_client/build/toolchain/gcc_toolchain.gni")
 import("//native_client/build/toolchain/nacl_toolchain.gni")
 
+declare_args() {
+  nacl_toolchain_dir = rebase_path("//native_client/toolchain", root_build_dir)
+}
+
+os_toolchain_dir = "${nacl_toolchain_dir}/${os}_x86"
+
 nacl_toolchain("newlib_arm") {
-  package = "nacl_arm_newlib"
   toolchain_cpu_arch = "arm"
-  toolprefix = "toolchain/${os}_x86/${package}/bin/arm-nacl-"
+  toolprefix = "${os_toolchain_dir}/nacl_arm_newlib/bin/arm-nacl-"
 
   cc = toolprefix + "gcc"
   cxx = toolprefix + "g++"
@@ -18,9 +22,8 @@ nacl_toolchain("newlib_arm") {
 }
 
 nacl_toolchain("newlib_x86") {
-  package = "nacl_x86_newlib"
   toolchain_cpu_arch = "x86"
-  toolprefix = "toolchain/${os}_x86/${package}/bin/i686-nacl-"
+  toolprefix = "${os_toolchain_dir}/nacl_x86_newlib/bin/i686-nacl-"
 
   cc = toolprefix + "gcc"
   cxx = toolprefix + "g++"
@@ -29,9 +32,8 @@ nacl_toolchain("newlib_x86") {
 }
 
 nacl_toolchain("newlib_x64") {
-  package = "nacl_x86_newlib"
   toolchain_cpu_arch = "x64"
-  toolprefix = "toolchain/${os}_x86/${package}/bin/x86_64-nacl-"
+  toolprefix = "${os_toolchain_dir}/nacl_x86_newlib/bin/x86_64-nacl-"
 
   cc = toolprefix + "gcc"
   cxx = toolprefix + "g++"
@@ -40,9 +42,8 @@ nacl_toolchain("newlib_x64") {
 }
 
 nacl_toolchain("glibc_x86") {
-  package = "nacl_x86_glibc"
   toolchain_cpu_arch = "x86"
-  toolprefix = "toolchain/${os}_x86/${package}/bin/i686-nacl-"
+  toolprefix = "${os_toolchain_dir}/nacl_x86_glibc/bin/i686-nacl-"
 
   cc = toolprefix + "gcc"
   cxx = toolprefix + "g++"
@@ -51,9 +52,8 @@ nacl_toolchain("glibc_x86") {
 }
 
 nacl_toolchain("glibc_x64") {
-  package = "nacl_x86_glibc"
   toolchain_cpu_arch = "x64"
-  toolprefix = "toolchain/${os}_x86/${package}/bin/x86_64-nacl-"
+  toolprefix = "${os_toolchain_dir}/nacl_x86_glibc/bin/x86_64-nacl-"
 
   cc = toolprefix + "gcc"
   cxx = toolprefix + "g++"
@@ -62,9 +62,8 @@ nacl_toolchain("glibc_x64") {
 }
 
 nacl_toolchain("clang_newlib_x86") {
-  package = "pnacl_newlib"
   toolchain_cpu_arch = "x86"
-  toolprefix = "toolchain/${os}_x86/${package}/bin/i686-nacl-"
+  toolprefix = "${os_toolchain_dir}/pnacl_newlib/bin/i686-nacl-"
   is_clang = true
 
   cc = toolprefix + "clang"
@@ -74,9 +73,8 @@ nacl_toolchain("clang_newlib_x86") {
 }
 
 nacl_toolchain("clang_newlib_x64") {
-  package = "pnacl_newlib"
   toolchain_cpu_arch = "x64"
-  toolprefix = "toolchain/${os}_x86/${package}/bin/x86_64-nacl-"
+  toolprefix = "${os_toolchain_dir}/pnacl_newlib/bin/x86_64-nacl-"
   is_clang = true
 
   cc = toolprefix + "clang"
@@ -88,9 +86,8 @@ nacl_toolchain("clang_newlib_x64") {
 link_irt = rebase_path("//native_client/build/link_irt.py", root_build_dir)
 
 nacl_toolchain("irt_x86") {
-  package = "pnacl_newlib"
   toolchain_cpu_arch = "x86"
-  toolprefix = "toolchain/${os}_x86/${package}/bin/i686-nacl-"
+  toolprefix = "${os_toolchain_dir}/pnacl_newlib/bin/i686-nacl-"
   is_clang = true
 
   cc = toolprefix + "clang"
@@ -107,9 +104,8 @@ nacl_toolchain("irt_x86") {
 }
 
 nacl_toolchain("irt_x64") {
-  package = "pnacl_newlib"
   toolchain_cpu_arch = "x64"
-  toolprefix = "toolchain/${os}_x86/${package}/bin/x86_64-nacl-"
+  toolprefix = "${os_toolchain_dir}/pnacl_newlib/bin/x86_64-nacl-"
   is_clang = true
 
   cc = toolprefix + "clang"
@@ -127,9 +123,8 @@ nacl_toolchain("irt_x64") {
 
 # Uses newlib to match the Chrome build.
 nacl_toolchain("irt_arm") {
-  package = "nacl_arm_newlib"
   toolchain_cpu_arch = "arm"
-  toolprefix = "toolchain/${os}_x86/${package}/bin/arm-nacl-"
+  toolprefix = "${os_toolchain_dir}/nacl_arm_newlib/bin/arm-nacl-"
 
   cc = toolprefix + "gcc"
   cxx = toolprefix + "g++"
@@ -142,17 +137,4 @@ nacl_toolchain("irt_arm") {
   deps = [
     "//native_client/src/tools/tls_edit:tls_edit($host_toolchain)",
   ]
-}
-
-# A fake toolchain to namespace the toolchain prep.
-# Doing toolchain prep inside a non-default toolchain prevents it from becoming
-# a default target, which means that it will only trigger if explicitly depended
-# upon.
-gcc_toolchain("toolchain_prep") {
-  cc = "clang"
-  cxx = "clang++"
-  ar = "ar"
-  ld = cxx
-  toolchain_cpu_arch = cpu_arch
-  toolchain_os = os
 }

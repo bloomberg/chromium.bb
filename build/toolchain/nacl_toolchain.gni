@@ -26,8 +26,6 @@ template("nacl_toolchain") {
   assert(defined(invoker.ld), "nacl_toolchain() must specify a \"ld\" value")
   assert(defined(invoker.toolchain_cpu_arch),
          "nacl_toolchain() must specify a \"toolchain_cpu_arch\"")
-  assert(defined(invoker.package),
-         "nacl_toolchain() must specify a \"package\" value")
 
   toolchain_os = "nacl"
   if (defined(invoker.is_clang)) {
@@ -39,25 +37,15 @@ template("nacl_toolchain") {
     executable_extension = ".nexe"
   }
   toolchain_cpu_arch = invoker.toolchain_cpu_arch
-  package = invoker.package
 
   cc = invoker.cc
   cxx = invoker.cxx
   ar = invoker.ar
   ld = invoker.ld
 
-  gcc_toolchain("raw_" + target_name) {
-    deps = [
-      "//native_client/build/toolchain:${package}_untar(//native_client/build/toolchain/nacl:toolchain_prep)",
-      "//native_client/build/toolchain:${package}_copies(//native_client/build/toolchain/nacl:toolchain_prep)"
-    ]
-  }
   gcc_toolchain(target_name) {
-    deps = [
-      "//native_client/build/toolchain:prep_${package}(//native_client/build/toolchain/nacl:toolchain_prep)"
-    ]
     if (defined(invoker.deps)) {
-      deps += invoker.deps
+      deps = invoker.deps
     }
   }
 }
