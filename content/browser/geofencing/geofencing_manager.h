@@ -16,7 +16,7 @@
 #include "content/browser/geofencing/geofencing_registration_delegate.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/content_export.h"
-#include "content/common/geofencing_status.h"
+#include "content/common/geofencing_types.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 
 template <typename T>
@@ -30,6 +30,7 @@ struct WebCircularGeofencingRegion;
 namespace content {
 
 class GeofencingService;
+class MockGeofencingService;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerRegistration;
 
@@ -88,6 +89,14 @@ class CONTENT_EXPORT GeofencingManager
   GeofencingStatus GetRegisteredRegions(
       int64 service_worker_registration_id,
       std::map<std::string, blink::WebCircularGeofencingRegion>* result);
+
+  // Enables or disables mock geofencing service.
+  void SetMockProvider(GeofencingMockState mock_state);
+
+  // Set the mock geofencing position.
+  // TODO(mek): Unify this mock position with the devtools exposed geolocation
+  // mock position (http://crbug.com/440902).
+  void SetMockPosition(double latitude, double longitude);
 
   void SetServiceForTesting(GeofencingService* service) {
     service_ = service;
@@ -169,6 +178,7 @@ class CONTENT_EXPORT GeofencingManager
   RegistrationIdRegistrationMap registrations_by_id_;
 
   GeofencingService* service_;
+  scoped_ptr<MockGeofencingService> mock_service_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 
   DISALLOW_COPY_AND_ASSIGN(GeofencingManager);

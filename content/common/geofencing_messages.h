@@ -4,7 +4,7 @@
 
 // IPC message for geofencing
 
-#include "content/common/geofencing_status.h"
+#include "content/common/geofencing_types.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/WebCircularGeofencingRegion.h"
 
@@ -22,6 +22,9 @@ typedef std::map<std::string, blink::WebCircularGeofencingRegion>
 
 IPC_ENUM_TRAITS_MAX_VALUE(content::GeofencingStatus,
                           content::GEOFENCING_STATUS_LAST)
+
+IPC_ENUM_TRAITS_MAX_VALUE(content::GeofencingMockState,
+                          content::GeofencingMockState::LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebCircularGeofencingRegion)
   IPC_STRUCT_TRAITS_MEMBER(latitude)
@@ -47,6 +50,13 @@ IPC_MESSAGE_CONTROL3(GeofencingHostMsg_GetRegisteredRegions,
                      int /* thread_id */,
                      int /* request_id */,
                      int64 /* serviceworker_registration_id */)
+
+IPC_MESSAGE_CONTROL1(GeofencingHostMsg_SetMockProvider,
+                     content::GeofencingMockState /* mock_state */)
+
+IPC_MESSAGE_CONTROL2(GeofencingHostMsg_SetMockPosition,
+                     double /* latitude */,
+                     double /* longitude */)
 
 // Messages sent from the browser to the child process.
 

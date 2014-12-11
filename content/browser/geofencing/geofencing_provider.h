@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
-#include "content/common/geofencing_status.h"
+#include "content/common/geofencing_types.h"
 
 namespace blink {
 struct WebCircularGeofencingRegion;

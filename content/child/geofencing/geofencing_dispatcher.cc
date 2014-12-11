@@ -121,6 +121,20 @@ void GeofencingDispatcher::GetRegisteredRegions(
       CurrentWorkerId(), request_id, serviceworker_registration_id));
 }
 
+void GeofencingDispatcher::SetMockProvider(bool service_available) {
+  Send(new GeofencingHostMsg_SetMockProvider(
+      service_available ? GeofencingMockState::SERVICE_AVAILABLE
+                        : GeofencingMockState::SERVICE_UNAVAILABLE));
+}
+
+void GeofencingDispatcher::ClearMockProvider() {
+  Send(new GeofencingHostMsg_SetMockProvider(GeofencingMockState::NONE));
+}
+
+void GeofencingDispatcher::SetMockPosition(double latitude, double longitude) {
+  Send(new GeofencingHostMsg_SetMockPosition(latitude, longitude));
+}
+
 GeofencingDispatcher* GeofencingDispatcher::GetOrCreateThreadSpecificInstance(
     ThreadSafeSender* thread_safe_sender) {
   if (g_dispatcher_tls.Pointer()->Get() == kHasBeenDeleted) {

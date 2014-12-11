@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "content/browser/geofencing/geofencing_service.h"
+#include "content/browser/geofencing/mock_geofencing_service.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -91,9 +92,8 @@ void GeofencingManager::ShutdownOnIO() {
   // TODO(mek): This will need to change to support geofence registrations that
   //     outlive the browser, although removing the references to this
   //     |GeofencingManager| from the |GeofencingService| will still be needed.
-  for (const auto& registration : registrations_by_id_) {
+  for (const auto& registration : registrations_by_id_)
     service_->UnregisterRegion(registration.first);
-  }
 }
 
 void GeofencingManager::RegisterRegion(
@@ -132,11 +132,8 @@ void GeofencingManager::RegisterRegion(
     return;
   }
 
-  AddRegistration(service_worker_registration_id,
-                  service_worker_origin,
-                  region_id,
-                  region,
-                  callback,
+  AddRegistration(service_worker_registration_id, service_worker_origin,
+                  region_id, region, callback,
                   service_->RegisterRegion(region, this));
 }
 
@@ -215,6 +212,37 @@ GeofencingStatus GeofencingManager::GetRegisteredRegions(
       (*result)[registration.first] = registration.second.region;
   }
   return GEOFENCING_STATUS_OK;
+}
+
+void GeofencingManager::SetMockProvider(GeofencingMockState mock_state) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // TODO(mek): It would be nice if enabling the mock geofencing service
+  // wouldn't completely delete all existing registrations but instead just
+  // somehow keep them around but inactive.
+  // For now mocking is only used in layout tests, so just clearing all
+  // registrations works good enough.
+  for (const auto& registration : registrations_by_id_)
+    service_->UnregisterRegion(registration.first);
+  registrations_by_id_.clear();
+  registrations_.clear();
+
+  // Then set or reset the mock service for the service worker.
+  if (mock_state == GeofencingMockState::NONE) {
+    service_ = GeofencingServiceImpl::GetInstance();
+    mock_service_.reset();
+  } else {
+    mock_service_.reset(new MockGeofencingService(
+        mock_state != GeofencingMockState::SERVICE_UNAVAILABLE));
+    service_ = mock_service_.get();
+  }
+}
+
+void GeofencingManager::SetMockPosition(double latitude, double longitude) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!mock_service_)
+    return;
+  mock_service_->SetMockPosition(latitude, longitude);
 }
 
 void GeofencingManager::RegistrationFinished(int64 geofencing_registration_id,

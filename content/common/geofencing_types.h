@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GEOFENCING_STATUS_H_
-#define CONTENT_COMMON_GEOFENCING_STATUS_H_
+#ifndef CONTENT_COMMON_GEOFENCING_TYPES_H_
+#define CONTENT_COMMON_GEOFENCING_TYPES_H_
 
 namespace content {
 
@@ -29,6 +29,20 @@ enum GeofencingStatus {
 
 const char* GeofencingStatusToString(GeofencingStatus status);
 
+enum class GeofencingMockState {
+  // Not currently mocking, use real geofencing service.
+  NONE,
+
+  // Mock a geofencing service that isn't available.
+  SERVICE_UNAVAILABLE,
+
+  // Mock a geofencing service that is available.
+  SERVICE_AVAILABLE,
+
+  // Used for IPC message range checks.
+  LAST = SERVICE_AVAILABLE
+};
+
 }  // namespace content
 
-#endif  // CONTENT_COMMON_GEOFENCING_STATUS_H_
+#endif  // CONTENT_COMMON_GEOFENCING_TYPES_H_

@@ -9,6 +9,7 @@
 #include "cc/blink/web_layer_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/child/bluetooth/web_bluetooth_impl.h"
+#include "content/child/geofencing/web_geofencing_provider_impl.h"
 #include "content/common/gpu/image_transport_surface.h"
 #include "content/public/common/page_state.h"
 #include "content/public/renderer/renderer_gamepad_provider.h"
@@ -316,6 +317,24 @@ void SetBluetoothMockDataSetForTesting(const std::string& name) {
       ->blink_platform_impl()
       ->BluetoothImplForTesting()
       ->SetBluetoothMockDataSetForTesting(name);
+}
+
+void SetGeofencingMockProvider(bool service_available) {
+  static_cast<WebGeofencingProviderImpl*>(
+      RenderThreadImpl::current()->blink_platform_impl()->geofencingProvider())
+          ->SetMockProvider(service_available);
+}
+
+void ClearGeofencingMockProvider() {
+  static_cast<WebGeofencingProviderImpl*>(
+      RenderThreadImpl::current()->blink_platform_impl()->geofencingProvider())
+          ->ClearMockProvider();
+}
+
+void SetGeofencingMockPosition(double latitude, double longitude) {
+  static_cast<WebGeofencingProviderImpl*>(
+      RenderThreadImpl::current()->blink_platform_impl()->geofencingProvider())
+          ->SetMockPosition(latitude, longitude);
 }
 
 void UseSynchronousResizeMode(RenderView* render_view, bool enable) {

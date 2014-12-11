@@ -7,17 +7,26 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebGeofencingProvider.h"
 
 namespace content {
 class GeofencingDispatcher;
 class ThreadSafeSender;
 
-class WebGeofencingProviderImpl
+class CONTENT_EXPORT WebGeofencingProviderImpl
     : NON_EXPORTED_BASE(public blink::WebGeofencingProvider) {
  public:
   explicit WebGeofencingProviderImpl(ThreadSafeSender* thread_safe_sender);
   virtual ~WebGeofencingProviderImpl();
+
+  // Enables mock geofencing service. |service_available| indicates if the
+  // mock service should mock geofencing being available or not.
+  void SetMockProvider(bool service_available);
+  // Disables mock geofencing service.
+  void ClearMockProvider();
+  // Set the mock geofencing position.
+  void SetMockPosition(double latitude, double longitude);
 
  private:
   // WebGeofencingProvider implementation.

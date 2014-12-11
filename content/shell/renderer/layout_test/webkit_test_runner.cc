@@ -454,6 +454,19 @@ void WebKitTestRunner::SetBluetoothMockDataSet(const std::string& name) {
   content::SetBluetoothMockDataSetForTesting(name);
 }
 
+void WebKitTestRunner::SetGeofencingMockProvider(bool service_available) {
+  content::SetGeofencingMockProvider(service_available);
+}
+
+void WebKitTestRunner::ClearGeofencingMockProvider() {
+  content::ClearGeofencingMockProvider();
+}
+
+void WebKitTestRunner::SetGeofencingMockPosition(double latitude,
+                                                 double longitude) {
+  content::SetGeofencingMockPosition(latitude, longitude);
+}
+
 void WebKitTestRunner::SetFocus(WebTestProxyBase* proxy, bool focus) {
   ProxyToRenderViewVisitor visitor(proxy);
   RenderView::ForEach(&visitor);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/geofencing_status.h"
+#include "content/common/geofencing_types.h"
 
 #include "base/logging.h"
 

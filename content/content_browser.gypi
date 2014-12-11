@@ -688,6 +688,8 @@
       'browser/geofencing/geofencing_registration_delegate.h',
       'browser/geofencing/geofencing_service.cc',
       'browser/geofencing/geofencing_service.h',
+      'browser/geofencing/mock_geofencing_service.cc',
+      'browser/geofencing/mock_geofencing_service.h',
       'browser/geolocation/empty_wifi_data_provider.cc',
       'browser/geolocation/empty_wifi_data_provider.h',
       'browser/geolocation/geolocation_provider_impl.cc',

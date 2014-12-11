@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/child/worker_task_runner.h"
-#include "content/common/geofencing_status.h"
+#include "content/common/geofencing_types.h"
 #include "third_party/WebKit/public/platform/WebGeofencingProvider.h"
 
 namespace base {
@@ -45,6 +45,14 @@ class GeofencingDispatcher : public WorkerTaskRunner::Observer {
   void GetRegisteredRegions(
       blink::WebServiceWorkerRegistration* service_worker_registration,
       blink::WebGeofencingRegionsCallbacks* callbacks);
+
+  // Enables mock geofencing service. |service_available| indicates if the
+  // mock service should mock geofencing being available or not.
+  void SetMockProvider(bool service_available);
+  // Disables mock geofencing service.
+  void ClearMockProvider();
+  // Set the mock geofencing position.
+  void SetMockPosition(double latitude, double longitude);
 
   // |thread_safe_sender| needs to be passed in because if the call leads to
   // construction it will be needed.

@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
-#include "content/common/geofencing_status.h"
+#include "content/common/geofencing_types.h"
 
 template <typename T>
 struct DefaultSingletonTraits;

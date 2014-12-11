@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_GEOFENCING_GEOFENCING_REGISTRATION_DELEGATE_H_
 
 #include "base/basictypes.h"
-#include "content/common/geofencing_status.h"
+#include "content/common/geofencing_types.h"
 
 namespace content {
 

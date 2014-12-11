@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_GEOFENCING_GEOFENCING_DISPATCHER_HOST_H_
 #define CONTENT_BROWSER_GEOFENCING_GEOFENCING_DISPATCHER_HOST_H_
 
-#include "content/common/geofencing_status.h"
+#include "content/common/geofencing_types.h"
 #include "content/public/browser/browser_message_filter.h"
 
 namespace blink {

@@ -17,6 +17,19 @@ WebGeofencingProviderImpl::WebGeofencingProviderImpl(
 WebGeofencingProviderImpl::~WebGeofencingProviderImpl() {
 }
 
+void WebGeofencingProviderImpl::SetMockProvider(bool service_available) {
+  GetDispatcher()->SetMockProvider(service_available);
+}
+
+void WebGeofencingProviderImpl::ClearMockProvider() {
+  GetDispatcher()->ClearMockProvider();
+}
+
+void WebGeofencingProviderImpl::SetMockPosition(double latitude,
+                                                double longitude) {
+  GetDispatcher()->SetMockPosition(latitude, longitude);
+}
+
 void WebGeofencingProviderImpl::registerRegion(
     const blink::WebString& regionId,
     const blink::WebCircularGeofencingRegion& region,

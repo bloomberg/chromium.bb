@@ -32,6 +32,10 @@ bool GeofencingDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(GeofencingHostMsg_UnregisterRegion, OnUnregisterRegion)
   IPC_MESSAGE_HANDLER(GeofencingHostMsg_GetRegisteredRegions,
                       OnGetRegisteredRegions)
+  IPC_MESSAGE_FORWARD(GeofencingHostMsg_SetMockProvider, manager_.get(),
+                      GeofencingManager::SetMockProvider)
+  IPC_MESSAGE_FORWARD(GeofencingHostMsg_SetMockPosition, manager_.get(),
+                      GeofencingManager::SetMockPosition)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
