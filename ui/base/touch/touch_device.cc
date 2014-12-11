@@ -17,23 +17,23 @@ int MaxTouchPoints() {
 }
 
 int GetAvailablePointerTypes() {
-  // TODO(mustaq): Replace the stub below
-  return POINTER_TYPE_NONE;
+  // Assume a non-touch-device with a keyboard and a mouse
+  return POINTER_TYPE_FINE | POINTER_TYPE_NONE;
 }
 
 PointerType GetPrimaryPointerType() {
-  // TODO(mustaq): Replace the stub below
-  return POINTER_TYPE_NONE;
+  // Assume a non-touch-device with a keyboard and a mouse
+  return POINTER_TYPE_FINE;
 }
 
 int GetAvailableHoverTypes() {
-  // TODO(mustaq): Replace the stub below
-  return HOVER_TYPE_NONE;
+  // Assume a non-touch-device with a keyboard and a mouse
+  return HOVER_TYPE_HOVER | HOVER_TYPE_NONE;
 }
 
 HoverType GetPrimaryHoverType() {
-  // TODO(mustaq): Replace the stub below
-  return HOVER_TYPE_NONE;
+  // Assume a non-touch-device with a keyboard and a mouse
+  return HOVER_TYPE_HOVER;
 }
 
 }  // namespace ui

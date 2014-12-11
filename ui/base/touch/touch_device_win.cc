@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/base/touch/touch_device.h"
+#include "base/logging.h"
 #include "base/win/windows_version.h"
 #include <windows.h>
 
@@ -22,22 +23,51 @@ int MaxTouchPoints() {
 }
 
 int GetAvailablePointerTypes() {
-  // TODO(mustaq): Replace the stub below
-  return POINTER_TYPE_NONE;
+  int available_pointer_types = 0;
+  if (IsTouchDevicePresent())
+    available_pointer_types |= POINTER_TYPE_COARSE;
+  if (GetSystemMetrics(SM_MOUSEPRESENT) != 0 &&
+      GetSystemMetrics(SM_CMOUSEBUTTONS) > 0)
+    available_pointer_types |= POINTER_TYPE_FINE;
+
+  // When no types are found, assume there's a POINTER_TYPE_NONE
+  if (available_pointer_types == 0)
+    available_pointer_types = POINTER_TYPE_NONE;
+
+  return available_pointer_types;
 }
 
 PointerType GetPrimaryPointerType() {
-  // TODO(mustaq): Replace the stub below
+  int available_pointer_types = GetAvailablePointerTypes();
+  if (available_pointer_types & POINTER_TYPE_FINE)
+    return POINTER_TYPE_FINE;
+  if (available_pointer_types & POINTER_TYPE_COARSE)
+    return POINTER_TYPE_COARSE;
+  DCHECK(available_pointer_types & POINTER_TYPE_NONE);
   return POINTER_TYPE_NONE;
 }
 
 int GetAvailableHoverTypes() {
-  // TODO(mustaq): Replace the stub below
-  return HOVER_TYPE_NONE;
+  int available_hover_types = 0;
+  if (IsTouchDevicePresent())
+    available_hover_types |= HOVER_TYPE_ON_DEMAND;
+  if (GetSystemMetrics(SM_MOUSEPRESENT) != 0)
+    available_hover_types |= HOVER_TYPE_HOVER;
+
+  // When no types are found, assume there's a HOVER_TYPE_NONE
+  if (available_hover_types == 0)
+    available_hover_types = HOVER_TYPE_NONE;
+
+  return available_hover_types;
 }
 
 HoverType GetPrimaryHoverType() {
-  // TODO(mustaq): Replace the stub below
+  int available_hover_types = GetAvailableHoverTypes();
+  if (available_hover_types & HOVER_TYPE_HOVER)
+    return HOVER_TYPE_HOVER;
+  if (available_hover_types & HOVER_TYPE_ON_DEMAND)
+    return HOVER_TYPE_ON_DEMAND;
+  DCHECK(available_hover_types & HOVER_TYPE_NONE);
   return HOVER_TYPE_NONE;
 }
 
