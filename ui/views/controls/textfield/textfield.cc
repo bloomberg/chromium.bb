@@ -712,7 +712,11 @@ void Textfield::OnGestureEvent(ui::GestureEvent* event) {
       break;
     case ui::ET_GESTURE_TAP:
       if (event->details().tap_count() == 1) {
-        if (!GetRenderText()->IsPointInSelection(event->location())) {
+        // If tap is on the selection and touch handles are not present, handles
+        // should be shown without changing selection. Otherwise, cursor should
+        // be moved to the tap location.
+        if (touch_selection_controller_ ||
+            !GetRenderText()->IsPointInSelection(event->location())) {
           OnBeforeUserAction();
           MoveCursorTo(event->location(), false);
           OnAfterUserAction();
