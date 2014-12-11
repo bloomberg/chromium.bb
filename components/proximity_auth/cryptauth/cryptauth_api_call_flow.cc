@@ -11,7 +11,7 @@ namespace proximity_auth {
 
 namespace {
 
-const char kNoResponseBodyError[] = "No response body";
+const char kResponseBodyError[] = "Failed to get response body";
 const char kRequestFailedError[] = "Request failed";
 const char kHttpStatusErrorPrefix[] = "HTTP status: ";
 
@@ -50,9 +50,8 @@ std::string CryptAuthApiCallFlow::CreateApiCallBodyContentType() {
 void CryptAuthApiCallFlow::ProcessApiCallSuccess(
     const net::URLFetcher* source) {
   std::string serialized_response;
-  if (!source->GetResponseAsString(&serialized_response) ||
-      serialized_response.empty()) {
-    error_callback_.Run(kNoResponseBodyError);
+  if (!source->GetResponseAsString(&serialized_response)) {
+    error_callback_.Run(kResponseBodyError);
     return;
   }
   result_callback_.Run(serialized_response);
