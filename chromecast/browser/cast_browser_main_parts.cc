@@ -139,11 +139,6 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 
   cast_browser_process_->SetBrowserContext(
       make_scoped_ptr(new CastBrowserContext(url_request_context_factory_)));
-  cast_browser_process_->SetMetricsServiceClient(
-      metrics::CastMetricsServiceClient::Create(
-          content::BrowserThread::GetBlockingPool(),
-          cast_browser_process_->pref_service(),
-          cast_browser_process_->browser_context()->GetRequestContext()));
 
 #if defined(OS_ANDROID)
   base::FilePath crash_dumps_dir;
@@ -168,6 +163,13 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
       base::Bind(
           &metrics::CastMetricsServiceClient::EnableMetricsService,
           base::Unretained(cast_browser_process_->metrics_service_client()))));
+
+  // Creating metrics service client must happen after Cast service is created.
+  cast_browser_process_->SetMetricsServiceClient(
+      metrics::CastMetricsServiceClient::Create(
+          content::BrowserThread::GetBlockingPool(),
+          cast_browser_process_->pref_service(),
+          cast_browser_process_->browser_context()->GetRequestContext()));
 
   // Initializing network delegates must happen after Cast service is created.
   url_request_context_factory_->InitializeNetworkDelegates();
