@@ -3,14 +3,14 @@ Tests generateKey() with bad HMAC parameters.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-error is: SyntaxError: HmacKeyGenParams: length: Outside of numeric range
+error is: TypeError: HmacKeyGenParams: length: Outside of numeric range
 error is: NotSupportedError: HmacKeyGenParams: hash: Algorithm: Unrecognized name
-error is: SyntaxError: HmacKeyGenParams: length: Outside of numeric range
-error is: SyntaxError: HmacKeyGenParams: length: Is not a number
-error is: SyntaxError: HmacKeyGenParams: length: Outside of numeric range
-error is: SyntaxError: HmacKeyGenParams: length: Outside of numeric range
-error is: SyntaxError: HmacKeyGenParams: length: Is not a number
-error is: SyntaxError: HmacKeyGenParams: length: Is not a number
+error is: TypeError: HmacKeyGenParams: length: Outside of numeric range
+error is: TypeError: HmacKeyGenParams: length: Is not a number
+error is: TypeError: HmacKeyGenParams: length: Outside of numeric range
+error is: TypeError: HmacKeyGenParams: length: Outside of numeric range
+error is: TypeError: HmacKeyGenParams: length: Is not a number
+error is: TypeError: HmacKeyGenParams: length: Is not a number
 PASS successfullyParsed is true
 
 TEST COMPLETE

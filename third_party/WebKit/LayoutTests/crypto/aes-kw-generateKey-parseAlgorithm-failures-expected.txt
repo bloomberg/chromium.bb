@@ -3,10 +3,10 @@ Tests generateKey() with bad AES-KW parameters.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-error is: SyntaxError: AesKeyGenParams: length: Missing required property
-error is: SyntaxError: AesKeyGenParams: length: Outside of numeric range
-error is: SyntaxError: AesKeyGenParams: length: Outside of numeric range
-error is: SyntaxError: AesKeyGenParams: length: Outside of numeric range
+error is: TypeError: AesKeyGenParams: length: Missing required property
+error is: TypeError: AesKeyGenParams: length: Outside of numeric range
+error is: TypeError: AesKeyGenParams: length: Outside of numeric range
+error is: TypeError: AesKeyGenParams: length: Outside of numeric range
 PASS successfullyParsed is true
 
 TEST COMPLETE

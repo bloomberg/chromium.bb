@@ -6,10 +6,10 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 error is: TypeError: Failed to execute 'generateKey' on 'SubtleCrypto': The 3rd argument is neither an array, nor does it have indexed properties.
 error is: TypeError: Failed to execute 'generateKey' on 'SubtleCrypto': The 3rd argument is neither an array, nor does it have indexed properties.
 error is: SyntaxError: Invalid keyUsages argument
-error is: SyntaxError: AesKeyGenParams: length: Missing required property
-error is: SyntaxError: AesKeyGenParams: length: Outside of numeric range
-error is: SyntaxError: AesKeyGenParams: length: Outside of numeric range
-error is: SyntaxError: AesKeyGenParams: length: Outside of numeric range
+error is: TypeError: AesKeyGenParams: length: Missing required property
+error is: TypeError: AesKeyGenParams: length: Outside of numeric range
+error is: TypeError: AesKeyGenParams: length: Outside of numeric range
+error is: TypeError: AesKeyGenParams: length: Outside of numeric range
 PASS successfullyParsed is true
 
 TEST COMPLETE

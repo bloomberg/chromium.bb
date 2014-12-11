@@ -35,6 +35,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/modules/v8/V8CryptoKey.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMArrayBuffer.h"
@@ -47,6 +48,17 @@
 #include "public/platform/WebCryptoAlgorithm.h"
 
 namespace blink {
+
+static void rejectWithTypeError(const String& errorDetails, ScriptPromiseResolver* resolver)
+{
+    // Duplicate some of the checks done by ScriptPromiseResolver.
+    if (!resolver->executionContext() || resolver->executionContext()->activeDOMObjectsAreStopped())
+        return;
+
+    ScriptState::Scope scope(resolver->scriptState());
+    v8::Isolate* isolate = resolver->scriptState()->isolate();
+    resolver->reject(v8::Exception::TypeError(v8String(isolate, errorDetails)));
+}
 
 class CryptoResultImpl::WeakResolver : public ScriptPromiseResolver {
 public:
@@ -90,10 +102,7 @@ ExceptionCode webCryptoErrorToExceptionCode(WebCryptoErrorType errorType)
     case WebCryptoErrorTypeOperation:
         return OperationError;
     case WebCryptoErrorTypeType:
-        // FIXME: This should construct a TypeError instead. For now do
-        //        something to facilitate refactor, but this will need to be
-        //        revisited.
-        return DataError;
+        return V8TypeError;
     }
 
     ASSERT_NOT_REACHED();
@@ -111,8 +120,16 @@ PassRefPtr<CryptoResultImpl> CryptoResultImpl::create(ScriptState* scriptState)
 
 void CryptoResultImpl::completeWithError(WebCryptoErrorType errorType, const WebString& errorDetails)
 {
-    if (m_resolver)
-        m_resolver->reject(DOMException::create(webCryptoErrorToExceptionCode(errorType), errorDetails));
+    if (m_resolver) {
+        ExceptionCode ec = webCryptoErrorToExceptionCode(errorType);
+
+        // Handle TypeError separately, as it cannot be created using
+        // DOMException.
+        if (ec == V8TypeError)
+            rejectWithTypeError(errorDetails, m_resolver.get());
+        else
+            m_resolver->reject(DOMException::create(ec, errorDetails));
+    }
 }
 
 void CryptoResultImpl::completeWithBuffer(const void* bytes, unsigned bytesSize)

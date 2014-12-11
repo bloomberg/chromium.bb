@@ -195,9 +195,9 @@ bool lookupAlgorithmIdByName(const String& algorithmName, WebCryptoAlgorithmId& 
     return true;
 }
 
-void setSyntaxError(const String& message, AlgorithmError* error)
+void setTypeError(const String& message, AlgorithmError* error)
 {
-    error->errorType = WebCryptoErrorTypeSyntax;
+    error->errorType = WebCryptoErrorTypeType;
     error->errorDetails = message;
 }
 
@@ -290,7 +290,7 @@ bool getOptionalBufferSource(const Dictionary& raw, const char* propertyName, bo
     }
 
     if (hasProperty) {
-        setSyntaxError(context.toString(propertyName, "Not a BufferSource"), error);
+        setTypeError(context.toString(propertyName, "Not a BufferSource"), error);
         return false;
     }
     return true;
@@ -301,7 +301,7 @@ bool getBufferSource(const Dictionary& raw, const char* propertyName, BufferSour
     bool hasProperty;
     bool ok = getOptionalBufferSource(raw, propertyName, hasProperty, buffer, context, error);
     if (!hasProperty) {
-        setSyntaxError(context.toString(propertyName, "Missing required property"), error);
+        setTypeError(context.toString(propertyName, "Missing required property"), error);
         return false;
     }
     return ok;
@@ -310,7 +310,7 @@ bool getBufferSource(const Dictionary& raw, const char* propertyName, BufferSour
 bool getUint8Array(const Dictionary& raw, const char* propertyName, RefPtr<DOMUint8Array>& array, const ErrorContext& context, AlgorithmError* error)
 {
     if (!DictionaryHelper::get(raw, propertyName, array) || !array) {
-        setSyntaxError(context.toString(propertyName, "Missing or not a Uint8Array"), error);
+        setTypeError(context.toString(propertyName, "Missing or not a Uint8Array"), error);
         return false;
     }
     return true;
@@ -342,14 +342,14 @@ bool getOptionalInteger(const Dictionary& raw, const char* propertyName, bool& h
         return true;
 
     if (!ok || std::isnan(number)) {
-        setSyntaxError(context.toString(propertyName, "Is not a number"), error);
+        setTypeError(context.toString(propertyName, "Is not a number"), error);
         return false;
     }
 
     number = trunc(number);
 
     if (std::isinf(number) || number < minValue || number > maxValue) {
-        setSyntaxError(context.toString(propertyName, "Outside of numeric range"), error);
+        setTypeError(context.toString(propertyName, "Outside of numeric range"), error);
         return false;
     }
 
@@ -364,7 +364,7 @@ bool getInteger(const Dictionary& raw, const char* propertyName, double& value, 
         return false;
 
     if (!hasProperty) {
-        setSyntaxError(context.toString(propertyName, "Missing required property"), error);
+        setTypeError(context.toString(propertyName, "Missing required property"), error);
         return false;
     }
 
@@ -433,7 +433,7 @@ bool getAlgorithmIdentifier(const Dictionary& raw, const char* propertyName, Alg
 
     String algorithmName;
     if (!DictionaryHelper::get(raw, propertyName, algorithmName)) {
-        setSyntaxError(context.toString(propertyName, "Missing or not an AlgorithmIdentifier"), error);
+        setTypeError(context.toString(propertyName, "Missing or not an AlgorithmIdentifier"), error);
         return false;
     }
 
@@ -690,7 +690,7 @@ bool parseNamedCurve(const Dictionary& raw, WebCryptoNamedCurve& namedCurve, Err
 {
     String namedCurveString;
     if (!DictionaryHelper::get(raw, "namedCurve", namedCurveString)) {
-        setSyntaxError(context.toString("namedCurve", "Missing or not a string"), error);
+        setTypeError(context.toString("namedCurve", "Missing or not a string"), error);
         return false;
     }
 
@@ -744,13 +744,13 @@ bool parseEcdhKeyDeriveParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmPa
 {
     v8::Local<v8::Value> v8Value;
     if (!raw.get("public", v8Value)) {
-        setSyntaxError(context.toString("public", "Missing required property"), error);
+        setTypeError(context.toString("public", "Missing required property"), error);
         return false;
     }
 
     CryptoKey* cryptoKey = V8CryptoKey::toImplWithTypeCheck(raw.isolate(), v8Value);
     if (!cryptoKey) {
-        setSyntaxError(context.toString("public", "Must be a CryptoKey"), error);
+        setTypeError(context.toString("public", "Must be a CryptoKey"), error);
         return false;
     }
 
@@ -899,13 +899,13 @@ bool parseAlgorithmIdentifier(const AlgorithmIdentifier& raw, WebCryptoOperation
 
     // Get the name of the algorithm from the AlgorithmIdentifier.
     if (!params.isObject()) {
-        setSyntaxError(context.toString("Not an object"), error);
+        setTypeError(context.toString("Not an object"), error);
         return false;
     }
 
     String algorithmName;
     if (!DictionaryHelper::get(params, "name", algorithmName)) {
-        setSyntaxError(context.toString("name", "Missing or not a string"), error);
+        setTypeError(context.toString("name", "Missing or not a string"), error);
         return false;
     }
 
