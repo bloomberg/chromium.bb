@@ -13,7 +13,7 @@
 }
 
 #downloads-actions > * ~ * {
-  -webkit-margin-end: 10px;
+  -webkit-margin-start: 10px;
 }
 
 #downloads-display,
