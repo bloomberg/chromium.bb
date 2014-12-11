@@ -115,26 +115,36 @@ TEST_F(VideoResourceUpdaterTest, ReuseResource) {
   // Expect exactly three texture uploads, one for each plane.
   EXPECT_EQ(3, context3d_->UploadCount());
 
-  const ResourceProvider::ResourceId y_resource =
-      resource_provider3d_->CreateResourceFromTextureMailbox(
-          resources.mailboxes[media::VideoFrame::kYPlane],
-          SingleReleaseCallbackImpl::Create(
-              resources.release_callbacks[media::VideoFrame::kYPlane]));
-  const ResourceProvider::ResourceId u_resource =
-      resource_provider3d_->CreateResourceFromTextureMailbox(
-          resources.mailboxes[media::VideoFrame::kUPlane],
-          SingleReleaseCallbackImpl::Create(
-              resources.release_callbacks[media::VideoFrame::kUPlane]));
-  const ResourceProvider::ResourceId v_resource =
-      resource_provider3d_->CreateResourceFromTextureMailbox(
-          resources.mailboxes[media::VideoFrame::kVPlane],
-          SingleReleaseCallbackImpl::Create(
-              resources.release_callbacks[media::VideoFrame::kVPlane]));
+  // Simulate the ResourceProvider releasing the resources back to the video
+  // updater.
+  for (ReleaseCallbackImpl& release_callback : resources.release_callbacks)
+    release_callback.Run(0, false, nullptr);
 
-  // Delete the resources.
-  resource_provider3d_->DeleteResource(y_resource);
-  resource_provider3d_->DeleteResource(u_resource);
-  resource_provider3d_->DeleteResource(v_resource);
+  // Allocate resources for the same frame.
+  context3d_->ResetUploadCount();
+  resources = updater.CreateExternalResourcesFromVideoFrame(video_frame);
+  EXPECT_EQ(VideoFrameExternalResources::YUV_RESOURCE, resources.type);
+  EXPECT_EQ(size_t(3), resources.mailboxes.size());
+  EXPECT_EQ(size_t(3), resources.release_callbacks.size());
+  // The data should be reused so expect no texture uploads.
+  EXPECT_EQ(0, context3d_->UploadCount());
+}
+
+TEST_F(VideoResourceUpdaterTest, ReuseResourceNoDelete) {
+  VideoResourceUpdater updater(output_surface3d_->context_provider(),
+                               resource_provider3d_.get());
+  scoped_refptr<media::VideoFrame> video_frame = CreateTestYUVVideoFrame();
+  video_frame->set_timestamp(base::TimeDelta::FromSeconds(1234));
+
+  // Allocate the resources for a YUV video frame.
+  context3d_->ResetUploadCount();
+  VideoFrameExternalResources resources =
+      updater.CreateExternalResourcesFromVideoFrame(video_frame);
+  EXPECT_EQ(VideoFrameExternalResources::YUV_RESOURCE, resources.type);
+  EXPECT_EQ(size_t(3), resources.mailboxes.size());
+  EXPECT_EQ(size_t(3), resources.release_callbacks.size());
+  // Expect exactly three texture uploads, one for each plane.
+  EXPECT_EQ(3, context3d_->UploadCount());
 
   // Allocate resources for the same frame.
   context3d_->ResetUploadCount();

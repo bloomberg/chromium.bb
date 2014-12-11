@@ -5,6 +5,7 @@
 #ifndef CC_RESOURCES_VIDEO_RESOURCE_UPDATER_H_
 #define CC_RESOURCES_VIDEO_RESOURCE_UPDATER_H_
 
+#include <list>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -78,6 +79,9 @@ class CC_EXPORT VideoResourceUpdater
     gfx::Size resource_size;
     ResourceFormat resource_format;
     gpu::Mailbox mailbox;
+    // The balance between the number of times this resource has been returned
+    // from CreateForSoftwarePlanes vs released in RecycleResource.
+    int ref_count;
     // These last three members will be used for identifying the data stored in
     // this resource, and uniquely identifies a media::VideoFrame plane. The
     // frame pointer will only be used for pointer comparison, i.e. the
@@ -100,7 +104,13 @@ class CC_EXPORT VideoResourceUpdater
                                        int plane_index,
                                        PlaneResource* plane_resource);
 
-  void DeleteResource(unsigned resource_id);
+  // This needs to be a container where iterators can be erased without
+  // invalidating other iterators.
+  typedef std::list<PlaneResource> ResourceList;
+  ResourceList::iterator AllocateResource(const gfx::Size& plane_size,
+                                          ResourceFormat format,
+                                          bool has_mailbox);
+  void DeleteResource(ResourceList::iterator resource_it);
   bool VerifyFrame(const scoped_refptr<media::VideoFrame>& video_frame);
   VideoFrameExternalResources CreateForHardwarePlanes(
       const scoped_refptr<media::VideoFrame>& video_frame);
@@ -108,7 +118,7 @@ class CC_EXPORT VideoResourceUpdater
       const scoped_refptr<media::VideoFrame>& video_frame);
 
   static void RecycleResource(base::WeakPtr<VideoResourceUpdater> updater,
-                              PlaneResource data,
+                              unsigned resource_id,
                               uint32 sync_point,
                               bool lost_resource,
                               BlockingTaskRunner* main_thread_task_runner);
@@ -122,10 +132,9 @@ class CC_EXPORT VideoResourceUpdater
   ResourceProvider* resource_provider_;
   scoped_ptr<media::SkCanvasVideoRenderer> video_renderer_;
 
-  std::vector<unsigned> all_resources_;
   // Recycle resources so that we can reduce the number of allocations and
   // data transfers.
-  std::vector<PlaneResource> recycled_resources_;
+  ResourceList all_resources_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoResourceUpdater);
 };
