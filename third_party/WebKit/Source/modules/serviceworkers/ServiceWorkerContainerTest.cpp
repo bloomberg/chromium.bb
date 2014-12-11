@@ -385,6 +385,12 @@ TEST_F(ServiceWorkerContainerTest, GetClientInfo)
     EXPECT_TRUE(info.isFocused);
     EXPECT_EQ(WebURL(KURL(KURL(), "http://localhost/x/index.html")), info.url);
     EXPECT_EQ(WebURLRequest::FrameTypeTopLevel, info.frameType);
+
+    setVisibilityState(PageVisibilityStateHidden);
+    setFocused(false);
+    ASSERT_TRUE(container->getClientInfo(&info));
+    EXPECT_EQ(WebString("hidden"), info.visibilityState);
+    EXPECT_FALSE(info.isFocused);
 }
 
 } // namespace

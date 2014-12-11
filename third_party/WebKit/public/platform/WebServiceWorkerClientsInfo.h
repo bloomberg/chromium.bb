@@ -26,8 +26,6 @@ struct WebServiceWorkerClientInfo {
 
 struct WebServiceWorkerClientsInfo {
     WebVector<WebServiceWorkerClientInfo> clients;
-    // FIXME: Remove this once the embedder stops using it.
-    WebVector<int> clientIDs;
 };
 
 typedef WebCallbacks<WebServiceWorkerClientsInfo, WebServiceWorkerError> WebServiceWorkerClientsCallbacks;
