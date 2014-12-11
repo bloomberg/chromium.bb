@@ -526,8 +526,8 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
       is_loading_(false),
       allow_pause_for_resize_or_repaint_(true),
       is_guest_view_hack_(is_guest_view_hack),
-      weak_factory_(this),
-      fullscreen_parent_host_view_(NULL) {
+      fullscreen_parent_host_view_(NULL),
+      weak_factory_(this) {
   // |cocoa_view_| owns us and we will be deleted when |cocoa_view_|
   // goes away.  Since we autorelease it, our caller must put
   // |GetNativeView()| into the view hierarchy right after calling us.

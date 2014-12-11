@@ -521,9 +521,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // RenderWidgetHostViewGuest.
   bool is_guest_view_hack_;
 
-  // Factory used to safely scope delayed calls to ShutdownHost().
-  base::WeakPtrFactory<RenderWidgetHostViewMac> weak_factory_;
-
   // selected text on the renderer.
   std::string selected_text_;
 
@@ -550,6 +547,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // The current caret bounds.
   gfx::Rect caret_rect_;
+
+  // Factory used to safely scope delayed calls to ShutdownHost().
+  base::WeakPtrFactory<RenderWidgetHostViewMac> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMac);
 };
