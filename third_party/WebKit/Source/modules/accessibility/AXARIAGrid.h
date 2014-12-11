@@ -34,14 +34,11 @@
 
 namespace blink {
 
-class AXObjectCacheImpl;
-
 class AXARIAGrid final : public AXTable {
 private:
-    AXARIAGrid(RenderObject*, AXObjectCacheImpl*);
-
+    explicit AXARIAGrid(RenderObject*);
 public:
-    static PassRefPtr<AXARIAGrid> create(RenderObject*, AXObjectCacheImpl*);
+    static PassRefPtr<AXARIAGrid> create(RenderObject*);
     virtual ~AXARIAGrid();
 
     virtual bool isAriaTable() const override { return true; }

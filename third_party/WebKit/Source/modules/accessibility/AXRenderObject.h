@@ -35,7 +35,6 @@
 
 namespace blink {
 
-class AXObjectCacheImpl;
 class AXSVGRoot;
 class Element;
 class FrameView;
@@ -47,10 +46,9 @@ class Widget;
 
 class AXRenderObject : public AXNodeObject {
 protected:
-    AXRenderObject(RenderObject*, AXObjectCacheImpl*);
-
+    explicit AXRenderObject(RenderObject*);
 public:
-    static PassRefPtr<AXRenderObject> create(RenderObject*, AXObjectCacheImpl*);
+    static PassRefPtr<AXRenderObject> create(RenderObject*);
     virtual ~AXRenderObject();
 
     // Public, overridden from AXObject.

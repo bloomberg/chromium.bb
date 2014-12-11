@@ -34,8 +34,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXMenuListPopup::AXMenuListPopup(AXObjectCacheImpl* axObjectCache)
-    : AXMockObject(axObjectCache)
+AXMenuListPopup::AXMenuListPopup()
 {
 }
 
@@ -71,7 +70,7 @@ AXMenuListOption* AXMenuListPopup::menuListOptionAXObject(HTMLElement* element) 
     if (!isHTMLOptionElement(*element))
         return 0;
 
-    AXObject* object = axObjectCache()->getOrCreate(MenuListOptionRole);
+    AXObject* object = toAXObjectCacheImpl(document()->axObjectCache())->getOrCreate(MenuListOptionRole);
     ASSERT_WITH_SECURITY_IMPLICATION(object->isMenuListOption());
 
     AXMenuListOption* option = toAXMenuListOption(object);

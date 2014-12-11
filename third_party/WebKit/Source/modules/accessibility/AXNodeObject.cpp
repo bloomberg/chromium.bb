@@ -53,8 +53,8 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXNodeObject::AXNodeObject(Node* node, AXObjectCacheImpl* axObjectCache)
-    : AXObject(axObjectCache)
+AXNodeObject::AXNodeObject(Node* node)
+    : AXObject()
     , m_ariaRole(UnknownRole)
     , m_childrenDirty(false)
 #if ENABLE(ASSERT)
@@ -64,9 +64,9 @@ AXNodeObject::AXNodeObject(Node* node, AXObjectCacheImpl* axObjectCache)
 {
 }
 
-PassRefPtr<AXNodeObject> AXNodeObject::create(Node* node, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXNodeObject> AXNodeObject::create(Node* node)
 {
-    return adoptRef(new AXNodeObject(node, axObjectCache));
+    return adoptRef(new AXNodeObject(node));
 }
 
 AXNodeObject::~AXNodeObject()

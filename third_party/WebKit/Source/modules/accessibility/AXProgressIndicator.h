@@ -25,13 +25,12 @@
 
 namespace blink {
 
-class AXObjectCacheImpl;
 class HTMLProgressElement;
 class RenderProgress;
 
 class AXProgressIndicator final : public AXRenderObject {
 public:
-    static PassRefPtr<AXProgressIndicator> create(RenderProgress*, AXObjectCacheImpl*);
+    static PassRefPtr<AXProgressIndicator> create(RenderProgress*);
 
 private:
     virtual AccessibilityRole roleValue() const override { return ProgressIndicatorRole; }
@@ -42,7 +41,7 @@ private:
     virtual float maxValueForRange() const override;
     virtual float minValueForRange() const override;
 
-    AXProgressIndicator(RenderProgress*, AXObjectCacheImpl*);
+    explicit AXProgressIndicator(RenderProgress*);
 
     HTMLProgressElement* element() const;
     virtual bool computeAccessibilityIsIgnored() const override;

@@ -29,15 +29,13 @@
 #include "config.h"
 #include "modules/accessibility/AXScrollbar.h"
 
-#include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/scroll/Scrollbar.h"
 
 namespace blink {
 
-AXScrollbar::AXScrollbar(Scrollbar* scrollbar, AXObjectCacheImpl* axObjectCache)
-    : AXMockObject(axObjectCache)
-    , m_scrollbar(scrollbar)
+AXScrollbar::AXScrollbar(Scrollbar* scrollbar)
+    : m_scrollbar(scrollbar)
 {
     ASSERT(scrollbar);
 }
@@ -48,9 +46,9 @@ void AXScrollbar::detachFromParent()
     AXMockObject::detachFromParent();
 }
 
-PassRefPtr<AXScrollbar> AXScrollbar::create(Scrollbar* scrollbar, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXScrollbar> AXScrollbar::create(Scrollbar* scrollbar)
 {
-    return adoptRef(new AXScrollbar(scrollbar, axObjectCache));
+    return adoptRef(new AXScrollbar(scrollbar));
 }
 
 LayoutRect AXScrollbar::elementRect() const

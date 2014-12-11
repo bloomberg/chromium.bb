@@ -30,13 +30,12 @@
 
 namespace blink {
 
-class AXObjectCacheImpl;
 class AXMenuListOption;
 class HTMLElement;
 
 class AXMenuListPopup final : public AXMockObject {
 public:
-    static PassRefPtr<AXMenuListPopup> create(AXObjectCacheImpl* axObjectCache) { return adoptRef(new AXMenuListPopup(axObjectCache)); }
+    static PassRefPtr<AXMenuListPopup> create() { return adoptRef(new AXMenuListPopup); }
 
     virtual bool isEnabled() const override;
     virtual bool isOffScreen() const override;
@@ -44,7 +43,7 @@ public:
     void didUpdateActiveOption(int optionIndex);
 
 private:
-    explicit AXMenuListPopup(AXObjectCacheImpl*);
+    AXMenuListPopup();
 
     virtual bool isMenuListPopup() const override { return true; }
 

@@ -33,15 +33,12 @@
 
 namespace blink {
 
-class AXObjectCacheImpl;
-
 class AXARIAGridCell final : public AXTableCell {
 
 private:
-    AXARIAGridCell(RenderObject*, AXObjectCacheImpl*);
-
+    explicit AXARIAGridCell(RenderObject*);
 public:
-    static PassRefPtr<AXARIAGridCell> create(RenderObject*, AXObjectCacheImpl*);
+    static PassRefPtr<AXARIAGridCell> create(RenderObject*);
     virtual ~AXARIAGridCell();
 
     // fills in the start location and row span of cell

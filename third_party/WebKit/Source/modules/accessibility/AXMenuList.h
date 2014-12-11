@@ -30,12 +30,11 @@
 
 namespace blink {
 
-class AXObjectCacheImpl;
 class RenderMenuList;
 
 class AXMenuList final : public AXRenderObject {
 public:
-    static PassRefPtr<AXMenuList> create(RenderMenuList* renderer, AXObjectCacheImpl*);
+    static PassRefPtr<AXMenuList> create(RenderMenuList* renderer);
 
     virtual bool isCollapsed() const override;
     virtual AccessibilityExpanded isExpanded() const override final;
@@ -44,7 +43,7 @@ public:
     void didUpdateActiveOption(int optionIndex);
 
 private:
-    AXMenuList(RenderMenuList*, AXObjectCacheImpl*);
+    explicit AXMenuList(RenderMenuList*);
 
     virtual bool isMenuList() const override { return true; }
     virtual AccessibilityRole roleValue() const override { return PopUpButtonRole; }

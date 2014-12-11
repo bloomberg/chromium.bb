@@ -35,16 +35,14 @@
 
 namespace blink {
 
-class AXObjectCacheImpl;
 class HTMLSelectElement;
 
 class AXListBoxOption final : public AXRenderObject {
 
 private:
-    AXListBoxOption(RenderObject*, AXObjectCacheImpl*);
-
+    AXListBoxOption(RenderObject*);
 public:
-    static PassRefPtr<AXListBoxOption> create(RenderObject*, AXObjectCacheImpl*);
+    static PassRefPtr<AXListBoxOption> create(RenderObject*);
     virtual ~AXListBoxOption();
 
     virtual AccessibilityRole roleValue() const override { return ListBoxOptionRole; }

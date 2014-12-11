@@ -34,17 +34,16 @@
 
 namespace blink {
 
-class AXObjectCacheImpl;
 class HTMLInputElement;
 
 class AXSlider : public AXRenderObject {
 
 public:
-    static PassRefPtr<AXSlider> create(RenderObject*, AXObjectCacheImpl*);
+    static PassRefPtr<AXSlider> create(RenderObject*);
     virtual ~AXSlider() { }
 
 protected:
-    AXSlider(RenderObject*, AXObjectCacheImpl*);
+    explicit AXSlider(RenderObject*);
 
 private:
     HTMLInputElement* element() const;
@@ -66,7 +65,7 @@ private:
 class AXSliderThumb final : public AXMockObject {
 
 public:
-    static PassRefPtr<AXSliderThumb> create(AXObjectCacheImpl*);
+    static PassRefPtr<AXSliderThumb> create();
     virtual ~AXSliderThumb() { }
 
     virtual AccessibilityRole roleValue() const override { return SliderThumbRole; }
@@ -74,7 +73,7 @@ public:
     virtual LayoutRect elementRect() const override;
 
 private:
-    explicit AXSliderThumb(AXObjectCacheImpl*);
+    AXSliderThumb();
 
     virtual bool computeAccessibilityIsIgnored() const override;
 };

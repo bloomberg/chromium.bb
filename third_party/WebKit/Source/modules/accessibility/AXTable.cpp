@@ -48,8 +48,8 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXTable::AXTable(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
-    : AXRenderObject(renderer, axObjectCache)
+AXTable::AXTable(RenderObject* renderer)
+    : AXRenderObject(renderer)
     , m_headerContainer(nullptr)
     , m_isAXTable(true)
 {
@@ -65,9 +65,9 @@ void AXTable::init()
     m_isAXTable = isTableExposableThroughAccessibility();
 }
 
-PassRefPtr<AXTable> AXTable::create(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXTable> AXTable::create(RenderObject* renderer)
 {
-    return adoptRef(new AXTable(renderer, axObjectCache));
+    return adoptRef(new AXTable(renderer));
 }
 
 bool AXTable::hasARIARole() const
@@ -371,7 +371,7 @@ void AXTable::addChildren()
         return;
 
     RenderTable* table = toRenderTable(m_renderer);
-    AXObjectCacheImpl* axCache = axObjectCache();
+    AXObjectCacheImpl* axCache = toAXObjectCacheImpl(m_renderer->document().axObjectCache());
 
     // Go through all the available sections to pull out the rows and add them as children.
     table->recalcSectionsIfNeeded();

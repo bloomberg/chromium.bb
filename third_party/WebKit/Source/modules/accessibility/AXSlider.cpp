@@ -39,14 +39,14 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXSlider::AXSlider(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
-    : AXRenderObject(renderer, axObjectCache)
+AXSlider::AXSlider(RenderObject* renderer)
+    : AXRenderObject(renderer)
 {
 }
 
-PassRefPtr<AXSlider> AXSlider::create(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXSlider> AXSlider::create(RenderObject* renderer)
 {
-    return adoptRef(new AXSlider(renderer, axObjectCache));
+    return adoptRef(new AXSlider(renderer));
 }
 
 AccessibilityOrientation AXSlider::orientation() const
@@ -83,7 +83,7 @@ void AXSlider::addChildren()
 
     m_haveChildren = true;
 
-    AXObjectCacheImpl* cache = axObjectCache();
+    AXObjectCacheImpl* cache = toAXObjectCacheImpl(m_renderer->document().axObjectCache());
 
     AXSliderThumb* thumb = static_cast<AXSliderThumb*>(cache->getOrCreate(SliderThumbRole));
     thumb->setParent(this);
@@ -130,14 +130,14 @@ HTMLInputElement* AXSlider::element() const
     return toHTMLInputElement(m_renderer->node());
 }
 
-AXSliderThumb::AXSliderThumb(AXObjectCacheImpl* axObjectCache)
-    : AXMockObject(axObjectCache)
+
+AXSliderThumb::AXSliderThumb()
 {
 }
 
-PassRefPtr<AXSliderThumb> AXSliderThumb::create(AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXSliderThumb> AXSliderThumb::create()
 {
-    return adoptRef(new AXSliderThumb(axObjectCache));
+    return adoptRef(new AXSliderThumb());
 }
 
 LayoutRect AXSliderThumb::elementRect() const

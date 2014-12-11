@@ -27,14 +27,12 @@
 #include "modules/accessibility/AXMenuListOption.h"
 
 #include "core/html/HTMLOptionElement.h"
-#include "modules/accessibility/AXObjectCacheImpl.h"
 
 namespace blink {
 
 using namespace HTMLNames;
 
-AXMenuListOption::AXMenuListOption(AXObjectCacheImpl* axObjectCache)
-    : AXMockObject(axObjectCache)
+AXMenuListOption::AXMenuListOption()
 {
 }
 

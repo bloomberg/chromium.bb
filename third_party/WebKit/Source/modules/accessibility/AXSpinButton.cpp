@@ -31,14 +31,13 @@
 
 namespace blink {
 
-PassRefPtr<AXSpinButton> AXSpinButton::create(AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXSpinButton> AXSpinButton::create()
 {
-    return adoptRef(new AXSpinButton(axObjectCache));
+    return adoptRef(new AXSpinButton);
 }
 
-AXSpinButton::AXSpinButton(AXObjectCacheImpl* axObjectCache)
-    : AXMockObject(axObjectCache)
-    , m_spinButtonElement(0)
+AXSpinButton::AXSpinButton()
+    : m_spinButtonElement(0)
 {
 }
 
@@ -82,15 +81,14 @@ void AXSpinButton::step(int amount)
 
 // AXSpinButtonPart
 
-AXSpinButtonPart::AXSpinButtonPart(AXObjectCacheImpl* axObjectCache)
-    : AXMockObject(axObjectCache)
-    , m_isIncrementor(false)
+AXSpinButtonPart::AXSpinButtonPart()
+    : m_isIncrementor(false)
 {
 }
 
-PassRefPtr<AXSpinButtonPart> AXSpinButtonPart::create(AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXSpinButtonPart> AXSpinButtonPart::create()
 {
-    return adoptRef(new AXSpinButtonPart(axObjectCache));
+    return adoptRef(new AXSpinButtonPart);
 }
 
 LayoutRect AXSpinButtonPart::elementRect() const

@@ -39,8 +39,8 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXListBoxOption::AXListBoxOption(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
-    : AXRenderObject(renderer, axObjectCache)
+AXListBoxOption::AXListBoxOption(RenderObject* renderer)
+    : AXRenderObject(renderer)
 {
 }
 
@@ -48,9 +48,9 @@ AXListBoxOption::~AXListBoxOption()
 {
 }
 
-PassRefPtr<AXListBoxOption> AXListBoxOption::create(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXListBoxOption> AXListBoxOption::create(RenderObject* renderer)
 {
-    return adoptRef(new AXListBoxOption(renderer, axObjectCache));
+    return adoptRef(new AXListBoxOption(renderer));
 }
 
 bool AXListBoxOption::isEnabled() const

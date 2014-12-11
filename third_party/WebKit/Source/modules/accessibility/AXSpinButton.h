@@ -32,18 +32,16 @@
 
 namespace blink {
 
-class AXObjectCacheImpl;
-
 class AXSpinButton final : public AXMockObject {
 public:
-    static PassRefPtr<AXSpinButton> create(AXObjectCacheImpl*);
+    static PassRefPtr<AXSpinButton> create();
     virtual ~AXSpinButton();
 
     void setSpinButtonElement(SpinButtonElement* spinButton) { m_spinButtonElement = spinButton; }
     void step(int amount);
 
 private:
-    explicit AXSpinButton(AXObjectCacheImpl*);
+    AXSpinButton();
 
     virtual AccessibilityRole roleValue() const override { return SpinButtonRole; }
     virtual bool isSpinButton() const override { return true; }
@@ -56,14 +54,14 @@ private:
 
 class AXSpinButtonPart final : public AXMockObject {
 public:
-    static PassRefPtr<AXSpinButtonPart> create(AXObjectCacheImpl*);
+    static PassRefPtr<AXSpinButtonPart> create();
     virtual ~AXSpinButtonPart() { }
 
     bool isIncrementor() const { return m_isIncrementor; }
     void setIsIncrementor(bool value) { m_isIncrementor = value; }
 
 private:
-    explicit AXSpinButtonPart(AXObjectCacheImpl*);
+    AXSpinButtonPart();
     bool m_isIncrementor : 1;
 
     virtual bool press() const override;

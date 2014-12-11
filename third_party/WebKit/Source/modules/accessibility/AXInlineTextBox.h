@@ -34,15 +34,13 @@
 
 namespace blink {
 
-class AXObjectCacheImpl;
-
 class AXInlineTextBox final : public AXObject {
 
 private:
-    AXInlineTextBox(PassRefPtr<AbstractInlineTextBox>, AXObjectCacheImpl*);
+    AXInlineTextBox(PassRefPtr<AbstractInlineTextBox>);
 
 public:
-    static PassRefPtr<AXInlineTextBox> create(PassRefPtr<AbstractInlineTextBox>, AXObjectCacheImpl*);
+    static PassRefPtr<AXInlineTextBox> create(PassRefPtr<AbstractInlineTextBox>);
     virtual ~AXInlineTextBox();
 
     virtual void init() override;
@@ -60,6 +58,7 @@ public:
 
 private:
     RefPtr<AbstractInlineTextBox> m_inlineTextBox;
+    AXObjectCacheImpl* m_axObjectCache;
 
     virtual bool computeAccessibilityIsIgnored() const override;
 };

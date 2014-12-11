@@ -29,15 +29,14 @@
 #include "config.h"
 #include "modules/accessibility/AXARIAGridCell.h"
 
-#include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/accessibility/AXTable.h"
 #include "modules/accessibility/AXTableRow.h"
 
 
 namespace blink {
 
-AXARIAGridCell::AXARIAGridCell(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
-    : AXTableCell(renderer, axObjectCache)
+AXARIAGridCell::AXARIAGridCell(RenderObject* renderer)
+    : AXTableCell(renderer)
 {
 }
 
@@ -45,9 +44,9 @@ AXARIAGridCell::~AXARIAGridCell()
 {
 }
 
-PassRefPtr<AXARIAGridCell> AXARIAGridCell::create(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXARIAGridCell> AXARIAGridCell::create(RenderObject* renderer)
 {
-    return adoptRef(new AXARIAGridCell(renderer, axObjectCache));
+    return adoptRef(new AXARIAGridCell(renderer));
 }
 
 AXObject* AXARIAGridCell::parentTable() const

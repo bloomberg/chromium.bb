@@ -32,14 +32,14 @@
 
 namespace blink {
 
-AXMenuList::AXMenuList(RenderMenuList* renderer, AXObjectCacheImpl* axObjectCache)
-    : AXRenderObject(renderer, axObjectCache)
+AXMenuList::AXMenuList(RenderMenuList* renderer)
+    : AXRenderObject(renderer)
 {
 }
 
-PassRefPtr<AXMenuList> AXMenuList::create(RenderMenuList* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXMenuList> AXMenuList::create(RenderMenuList* renderer)
 {
-    return adoptRef(new AXMenuList(renderer, axObjectCache));
+    return adoptRef(new AXMenuList(renderer));
 }
 
 bool AXMenuList::press() const
@@ -56,7 +56,7 @@ void AXMenuList::addChildren()
 {
     m_haveChildren = true;
 
-    AXObjectCacheImpl* cache = axObjectCache();
+    AXObjectCacheImpl* cache = toAXObjectCacheImpl(m_renderer->document().axObjectCache());
 
     AXObject* list = cache->getOrCreate(MenuListPopupRole);
     if (!list)

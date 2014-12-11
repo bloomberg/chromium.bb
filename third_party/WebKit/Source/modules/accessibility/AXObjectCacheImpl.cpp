@@ -123,7 +123,7 @@ AXObject* AXObjectCacheImpl::focusedImageMapUIElement(HTMLAreaElement* areaEleme
     if (!imageElement)
         return 0;
 
-    AXObject* axRenderImage = getOrCreate(imageElement);
+    AXObject* axRenderImage = toAXObjectCacheImpl(areaElement->document().axObjectCache())->getOrCreate(imageElement);
     if (!axRenderImage)
         return 0;
 
@@ -159,7 +159,7 @@ AXObject* AXObjectCacheImpl::focusedUIElementForPage(const Page* page)
     if (isHTMLAreaElement(*focusedNode))
         return focusedImageMapUIElement(toHTMLAreaElement(focusedNode));
 
-    AXObject* obj = getOrCreate(focusedNode);
+    AXObject* obj = toAXObjectCacheImpl(focusedNode->document().axObjectCache())->getOrCreate(focusedNode);
     if (!obj)
         return 0;
 
@@ -252,7 +252,7 @@ bool nodeHasRole(Node* node, const String& role)
     return equalIgnoringCase(toElement(node)->getAttribute(roleAttr), role);
 }
 
-PassRefPtr<AXObject> AXObjectCacheImpl::createFromRenderer(RenderObject* renderer)
+static PassRefPtr<AXObject> createFromRenderer(RenderObject* renderer)
 {
     // FIXME: How could renderer->node() ever not be an Element?
     Node* node = renderer->node();
@@ -261,61 +261,61 @@ PassRefPtr<AXObject> AXObjectCacheImpl::createFromRenderer(RenderObject* rendere
     // ul/ol/dl type (it shouldn't be a list if aria says otherwise).
     if (node && ((nodeHasRole(node, "list") || nodeHasRole(node, "directory"))
         || (nodeHasRole(node, nullAtom) && (isHTMLUListElement(*node) || isHTMLOListElement(*node) || isHTMLDListElement(*node)))))
-        return AXList::create(renderer, this);
+        return AXList::create(renderer);
 
     // aria tables
     if (nodeHasRole(node, "grid") || nodeHasRole(node, "treegrid"))
-        return AXARIAGrid::create(renderer, this);
+        return AXARIAGrid::create(renderer);
     if (nodeHasRole(node, "row"))
-        return AXARIAGridRow::create(renderer, this);
+        return AXARIAGridRow::create(renderer);
     if (nodeHasRole(node, "gridcell") || nodeHasRole(node, "columnheader") || nodeHasRole(node, "rowheader"))
-        return AXARIAGridCell::create(renderer, this);
+        return AXARIAGridCell::create(renderer);
 
     // media controls
     if (node && node->isMediaControlElement())
-        return AccessibilityMediaControl::create(renderer, this);
+        return AccessibilityMediaControl::create(renderer);
 
     if (isHTMLOptionElement(node))
-        return AXListBoxOption::create(renderer, this);
+        return AXListBoxOption::create(renderer);
 
     if (renderer->isSVGRoot())
-        return AXSVGRoot::create(renderer, this);
+        return AXSVGRoot::create(renderer);
 
     if (renderer->isBoxModelObject()) {
         RenderBoxModelObject* cssBox = toRenderBoxModelObject(renderer);
         if (cssBox->isListBox())
-            return AXListBox::create(toRenderListBox(cssBox), this);
+            return AXListBox::create(toRenderListBox(cssBox));
         if (cssBox->isMenuList())
-            return AXMenuList::create(toRenderMenuList(cssBox), this);
+            return AXMenuList::create(toRenderMenuList(cssBox));
 
         // standard tables
         if (cssBox->isTable())
-            return AXTable::create(toRenderTable(cssBox), this);
+            return AXTable::create(toRenderTable(cssBox));
         if (cssBox->isTableRow())
-            return AXTableRow::create(toRenderTableRow(cssBox), this);
+            return AXTableRow::create(toRenderTableRow(cssBox));
         if (cssBox->isTableCell())
-            return AXTableCell::create(toRenderTableCell(cssBox), this);
+            return AXTableCell::create(toRenderTableCell(cssBox));
 
         // progress bar
         if (cssBox->isProgress())
-            return AXProgressIndicator::create(toRenderProgress(cssBox), this);
+            return AXProgressIndicator::create(toRenderProgress(cssBox));
 
         // input type=range
         if (cssBox->isSlider())
-            return AXSlider::create(toRenderSlider(cssBox), this);
+            return AXSlider::create(toRenderSlider(cssBox));
     }
 
-    return AXRenderObject::create(renderer, this);
+    return AXRenderObject::create(renderer);
 }
 
-PassRefPtr<AXObject> AXObjectCacheImpl::createFromNode(Node* node)
+static PassRefPtr<AXObject> createFromNode(Node* node)
 {
-    return AXNodeObject::create(node, this);
+    return AXNodeObject::create(node);
 }
 
-PassRefPtr<AXObject> AXObjectCacheImpl::createFromInlineTextBox(AbstractInlineTextBox* inlineTextBox)
+static PassRefPtr<AXObject> createFromInlineTextBox(AbstractInlineTextBox* inlineTextBox)
 {
-    return AXInlineTextBox::create(inlineTextBox, this);
+    return AXInlineTextBox::create(inlineTextBox);
 }
 
 AXObject* AXObjectCacheImpl::getOrCreate(Widget* widget)
@@ -328,9 +328,9 @@ AXObject* AXObjectCacheImpl::getOrCreate(Widget* widget)
 
     RefPtr<AXObject> newObj = nullptr;
     if (widget->isFrameView())
-        newObj = AXScrollView::create(toFrameView(widget), this);
+        newObj = AXScrollView::create(toFrameView(widget));
     else if (widget->isScrollbar())
-        newObj = AXScrollbar::create(toScrollbar(widget), this);
+        newObj = AXScrollbar::create(toScrollbar(widget));
 
     // Will crash later if we have two objects for the same widget.
     ASSERT(!get(widget));
@@ -445,28 +445,28 @@ AXObject* AXObjectCacheImpl::getOrCreate(AccessibilityRole role)
     // will be filled in...
     switch (role) {
     case ImageMapLinkRole:
-        obj = AXImageMapLink::create(this);
+        obj = AXImageMapLink::create();
         break;
     case ColumnRole:
-        obj = AXTableColumn::create(this);
+        obj = AXTableColumn::create();
         break;
     case TableHeaderContainerRole:
-        obj = AXTableHeaderContainer::create(this);
+        obj = AXTableHeaderContainer::create();
         break;
     case SliderThumbRole:
-        obj = AXSliderThumb::create(this);
+        obj = AXSliderThumb::create();
         break;
     case MenuListPopupRole:
-        obj = AXMenuListPopup::create(this);
+        obj = AXMenuListPopup::create();
         break;
     case MenuListOptionRole:
-        obj = AXMenuListOption::create(this);
+        obj = AXMenuListOption::create();
         break;
     case SpinButtonRole:
-        obj = AXSpinButton::create(this);
+        obj = AXSpinButton::create();
         break;
     case SpinButtonPartRole:
-        obj = AXSpinButtonPart::create(this);
+        obj = AXSpinButtonPart::create();
         break;
     default:
         obj = nullptr;
@@ -931,27 +931,6 @@ const Element* AXObjectCacheImpl::rootAXEditableElement(const Node* node)
     return result;
 }
 
-AXObject* AXObjectCacheImpl::firstAccessibleObjectFromNode(const Node* node)
-{
-    if (!node)
-        return 0;
-
-    AXObject* accessibleObject = getOrCreate(node->renderer());
-    while (accessibleObject && accessibleObject->accessibilityIsIgnored()) {
-        node = NodeTraversal::next(*node);
-
-        while (node && !node->renderer())
-            node = NodeTraversal::nextSkippingChildren(*node);
-
-        if (!node)
-            return 0;
-
-        accessibleObject = getOrCreate(node->renderer());
-    }
-
-    return accessibleObject;
-}
-
 bool AXObjectCacheImpl::nodeIsTextControl(const Node* node)
 {
     if (!node)
@@ -1057,7 +1036,7 @@ void AXObjectCacheImpl::handleScrolledToAnchor(const Node* anchorNode)
 {
     // The anchor node may not be accessible. Post the notification for the
     // first accessible object.
-    postPlatformNotification(firstAccessibleObjectFromNode(anchorNode), AXScrolledToAnchor);
+    postPlatformNotification(AXObject::firstAccessibleObjectFromNode(anchorNode), AXScrolledToAnchor);
 }
 
 void AXObjectCacheImpl::handleScrollPositionChanged(FrameView* frameView)

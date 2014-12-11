@@ -166,8 +166,8 @@ static RenderBoxModelObject* nextContinuation(RenderObject* renderer)
     return 0;
 }
 
-AXRenderObject::AXRenderObject(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
-    : AXNodeObject(renderer->node(), axObjectCache)
+AXRenderObject::AXRenderObject(RenderObject* renderer)
+    : AXNodeObject(renderer->node())
     , m_renderer(renderer)
     , m_cachedElementRectDirty(true)
 {
@@ -176,9 +176,9 @@ AXRenderObject::AXRenderObject(RenderObject* renderer, AXObjectCacheImpl* axObje
 #endif
 }
 
-PassRefPtr<AXRenderObject> AXRenderObject::create(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXRenderObject> AXRenderObject::create(RenderObject* renderer)
 {
-    return adoptRef(new AXRenderObject(renderer, axObjectCache));
+    return adoptRef(new AXRenderObject(renderer));
 }
 
 AXRenderObject::~AXRenderObject()
@@ -1328,7 +1328,7 @@ AXObject* AXRenderObject::accessibilityHitTest(const IntPoint& point) const
     if (!obj)
         return 0;
 
-    AXObject* result = axObjectCache()->getOrCreate(obj);
+    AXObject* result = toAXObjectCacheImpl(obj->document().axObjectCache())->getOrCreate(obj);
     result->updateChildrenIfNecessary();
 
     // Allow the element to perform any hit-testing it might need to do to reach non-render children.
