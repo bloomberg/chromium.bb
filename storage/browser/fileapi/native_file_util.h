@@ -35,6 +35,7 @@ class STORAGE_EXPORT_PRIVATE NativeFileUtil {
     COPY_SYNC,
     MOVE
   };
+
   static CopyOrMoveMode CopyOrMoveModeForDestination(
       const FileSystemURL& dest_url, bool copy);
 

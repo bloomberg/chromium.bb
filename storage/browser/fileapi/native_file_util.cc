@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
+#include "storage/common/fileapi/file_system_mount_option.h"
 
 namespace storage {
 
@@ -115,8 +116,10 @@ bool NativeFileEnumerator::IsDirectory() {
 NativeFileUtil::CopyOrMoveMode NativeFileUtil::CopyOrMoveModeForDestination(
     const FileSystemURL& dest_url, bool copy) {
   if (copy) {
-    return dest_url.mount_option().copy_sync_option() == COPY_SYNC_OPTION_SYNC ?
-        COPY_SYNC : COPY_NOSYNC;
+    return dest_url.mount_option().flush_policy() ==
+                   FlushPolicy::FLUSH_ON_COMPLETION
+               ? COPY_SYNC
+               : COPY_NOSYNC;
   }
   return MOVE;
 }

@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "storage/browser/fileapi/file_system_url.h"
+#include "storage/common/fileapi/file_system_mount_option.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #define FPL FILE_PATH_LITERAL
@@ -472,14 +473,13 @@ TEST(ExternalMountPointsTest, MountOption) {
       storage::ExternalMountPoints::CreateRefCounted());
 
   mount_points->RegisterFileSystem(
-      "nosync",
-      storage::kFileSystemTypeNativeLocal,
-      storage::FileSystemMountOption(storage::COPY_SYNC_OPTION_NO_SYNC),
+      "nosync", storage::kFileSystemTypeNativeLocal,
+      storage::FileSystemMountOption(
+          storage::FlushPolicy::NO_FLUSH_ON_COMPLETION),
       base::FilePath(DRIVE FPL("/nosync")));
   mount_points->RegisterFileSystem(
-      "sync",
-      storage::kFileSystemTypeNativeLocal,
-      storage::FileSystemMountOption(storage::COPY_SYNC_OPTION_SYNC),
+      "sync", storage::kFileSystemTypeNativeLocal,
+      storage::FileSystemMountOption(storage::FlushPolicy::FLUSH_ON_COMPLETION),
       base::FilePath(DRIVE FPL("/sync")));
 
   std::string name;
@@ -490,11 +490,12 @@ TEST(ExternalMountPointsTest, MountOption) {
   EXPECT_TRUE(mount_points->CrackVirtualPath(
       base::FilePath(FPL("nosync/file")), &name, &type, &cracked_id, &path,
       &option));
-  EXPECT_EQ(storage::COPY_SYNC_OPTION_NO_SYNC, option.copy_sync_option());
+  EXPECT_EQ(storage::FlushPolicy::NO_FLUSH_ON_COMPLETION,
+            option.flush_policy());
   EXPECT_TRUE(mount_points->CrackVirtualPath(
       base::FilePath(FPL("sync/file")), &name, &type, &cracked_id, &path,
       &option));
-  EXPECT_EQ(storage::COPY_SYNC_OPTION_SYNC, option.copy_sync_option());
+  EXPECT_EQ(storage::FlushPolicy::FLUSH_ON_COMPLETION, option.flush_policy());
 }
 
 }  // namespace content

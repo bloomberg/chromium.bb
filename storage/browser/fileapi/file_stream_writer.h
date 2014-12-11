@@ -47,7 +47,8 @@ class FileStreamWriter {
   // has completed.
   //
   // After the last write, Flush() must be called if the file system written to
-  // was registered with the COPY_SYNC_OPTION_SYNC mount option.
+  // was registered with the FlushPolicy::FLUSH_ON_COMPLETION policy in mount
+  // options.
   //
   // This errors out (either synchronously or via callback) with:
   //   net::ERR_FILE_NOT_FOUND: When the target file is not found.

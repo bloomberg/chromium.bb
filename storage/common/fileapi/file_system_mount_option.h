@@ -7,17 +7,18 @@
 
 namespace storage {
 
-// Option for specifying if disk sync operation is wanted after copying.
-enum CopySyncOption {
-  // No syncing is required after an operation is completed.
-  COPY_SYNC_OPTION_NO_SYNC,
+// Option for specifying if flush or disk sync operation is wanted after
+// writing.
+enum class FlushPolicy {
+  // No flushing is required after a writing operation is completed.
+  FLUSH_ON_COMPLETION,
 
-  // Syncing is required in order to commit written data. Note, that syncing
+  // Flushing is required in order to commit written data. Note, that syncing
   // is only invoked via FileStreamWriter::Flush() and via base::File::Flush()
   // for native files. Hence, syncing will not be performed for copying within
   // non-native file systems as well as for non-native copies performed with
   // snapshots.
-  COPY_SYNC_OPTION_SYNC,
+  NO_FLUSH_ON_COMPLETION
 };
 
 // Conveys options for a mounted file systems.
@@ -25,18 +26,16 @@ class FileSystemMountOption {
  public:
   // Constructs with the default options.
   FileSystemMountOption()
-      : copy_sync_option_(COPY_SYNC_OPTION_NO_SYNC) {}
+      : flush_policy_(FlushPolicy::NO_FLUSH_ON_COMPLETION) {}
 
   // Constructs with the specified component.
-  explicit FileSystemMountOption(CopySyncOption copy_sync_option)
-      : copy_sync_option_(copy_sync_option) {}
+  explicit FileSystemMountOption(FlushPolicy flush_policy)
+      : flush_policy_(flush_policy) {}
 
-  CopySyncOption copy_sync_option() const {
-    return copy_sync_option_;
-  }
+  FlushPolicy flush_policy() const { return flush_policy_; }
 
  private:
-  CopySyncOption copy_sync_option_;
+  FlushPolicy flush_policy_;
 };
 
 }  // namespace storage

@@ -22,7 +22,7 @@ FileSystemURL::FileSystemURL()
     : is_valid_(false),
       mount_type_(kFileSystemTypeUnknown),
       type_(kFileSystemTypeUnknown),
-      mount_option_(COPY_SYNC_OPTION_NO_SYNC) {
+      mount_option_(FlushPolicy::NO_FLUSH_ON_COMPLETION) {
 }
 
 // static
@@ -58,7 +58,7 @@ FileSystemURL FileSystemURL::CreateForTest(
 FileSystemURL::FileSystemURL(const GURL& url)
     : mount_type_(kFileSystemTypeUnknown),
       type_(kFileSystemTypeUnknown),
-      mount_option_(COPY_SYNC_OPTION_NO_SYNC) {
+      mount_option_(FlushPolicy::NO_FLUSH_ON_COMPLETION) {
   is_valid_ = ParseFileSystemSchemeURL(url, &origin_, &mount_type_,
                                        &virtual_path_);
   path_ = virtual_path_;
@@ -74,7 +74,7 @@ FileSystemURL::FileSystemURL(const GURL& origin,
       virtual_path_(virtual_path.NormalizePathSeparators()),
       type_(mount_type),
       path_(virtual_path.NormalizePathSeparators()),
-      mount_option_(COPY_SYNC_OPTION_NO_SYNC) {
+      mount_option_(FlushPolicy::NO_FLUSH_ON_COMPLETION) {
 }
 
 FileSystemURL::FileSystemURL(const GURL& origin,

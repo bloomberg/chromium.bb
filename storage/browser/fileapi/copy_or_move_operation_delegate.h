@@ -21,6 +21,7 @@ class IOBufferWithSize;
 namespace storage {
 class FileStreamReader;
 class ShareableFileReference;
+enum class FlushPolicy;
 }
 
 namespace storage {
@@ -48,7 +49,7 @@ class CopyOrMoveOperationDelegate
     StreamCopyHelper(
         scoped_ptr<storage::FileStreamReader> reader,
         scoped_ptr<FileStreamWriter> writer,
-        bool need_flush,
+        FlushPolicy flush_policy,
         int buffer_size,
         const FileSystemOperation::CopyFileProgressCallback&
             file_progress_callback,
@@ -78,7 +79,7 @@ class CopyOrMoveOperationDelegate
 
     scoped_ptr<storage::FileStreamReader> reader_;
     scoped_ptr<FileStreamWriter> writer_;
-    const bool need_flush_;
+    const FlushPolicy flush_policy_;
     FileSystemOperation::CopyFileProgressCallback file_progress_callback_;
     scoped_refptr<net::IOBufferWithSize> io_buffer_;
     int64 num_copied_bytes_;

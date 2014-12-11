@@ -20,6 +20,7 @@
 #include "storage/browser/fileapi/file_system_operation.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
+#include "storage/common/fileapi/file_system_mount_option.h"
 
 namespace chromeos {
 
@@ -64,9 +65,8 @@ void FileSystemBackend::AddSystemMountPoints() {
       storage::FileSystemMountOption(),
       chromeos::CrosDisksClient::GetArchiveMountPoint());
   system_mount_points_->RegisterFileSystem(
-      "removable",
-      storage::kFileSystemTypeNativeLocal,
-      storage::FileSystemMountOption(storage::COPY_SYNC_OPTION_SYNC),
+      "removable", storage::kFileSystemTypeNativeLocal,
+      storage::FileSystemMountOption(storage::FlushPolicy::FLUSH_ON_COMPLETION),
       chromeos::CrosDisksClient::GetRemovableDiskMountPoint());
   system_mount_points_->RegisterFileSystem(
       "oem",

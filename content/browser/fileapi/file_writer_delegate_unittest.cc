@@ -24,6 +24,7 @@
 #include "storage/browser/fileapi/file_system_quota_util.h"
 #include "storage/browser/fileapi/file_writer_delegate.h"
 #include "storage/browser/fileapi/sandbox_file_stream_writer.h"
+#include "storage/common/fileapi/file_system_mount_option.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
 
@@ -124,7 +125,7 @@ class FileWriterDelegateTest : public PlatformTest {
             *file_system_context_->GetUpdateObservers(kFileSystemType));
     writer->set_default_quota(allowed_growth);
     return new FileWriterDelegate(scoped_ptr<storage::FileStreamWriter>(writer),
-                                  FileWriterDelegate::FLUSH_ON_COMPLETION);
+                                  storage::FlushPolicy::FLUSH_ON_COMPLETION);
   }
 
   FileWriterDelegate::DelegateWriteCallback GetWriteCallback(Result* result) {

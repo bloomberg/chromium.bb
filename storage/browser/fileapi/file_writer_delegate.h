@@ -18,15 +18,11 @@
 namespace storage {
 
 class FileStreamWriter;
+enum class FlushPolicy;
 
 class STORAGE_EXPORT_PRIVATE FileWriterDelegate
     : public net::URLRequest::Delegate {
  public:
-  enum FlushPolicy {
-    FLUSH_ON_COMPLETION,
-    NO_FLUSH_ON_COMPLETION,
-  };
-
   enum WriteProgressStatus {
     SUCCESS_IO_PENDING,
     SUCCESS_COMPLETED,

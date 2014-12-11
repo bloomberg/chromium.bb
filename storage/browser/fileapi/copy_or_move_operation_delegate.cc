@@ -496,19 +496,13 @@ class StreamCopyOrMoveImpl
       return;
     }
 
-    const bool need_flush = dest_url_.mount_option().copy_sync_option() ==
-                            storage::COPY_SYNC_OPTION_SYNC;
-
     NotifyOnStartUpdate(dest_url_);
     DCHECK(!copy_helper_);
-    copy_helper_.reset(
-        new CopyOrMoveOperationDelegate::StreamCopyHelper(
-            reader_.Pass(), writer_.Pass(),
-            need_flush,
-            kReadBufferSize,
-            file_progress_callback_,
-            base::TimeDelta::FromMilliseconds(
-                kMinProgressCallbackInvocationSpanInMilliseconds)));
+    copy_helper_.reset(new CopyOrMoveOperationDelegate::StreamCopyHelper(
+        reader_.Pass(), writer_.Pass(), dest_url_.mount_option().flush_policy(),
+        kReadBufferSize, file_progress_callback_,
+        base::TimeDelta::FromMilliseconds(
+            kMinProgressCallbackInvocationSpanInMilliseconds)));
     copy_helper_->Run(
         base::Bind(&StreamCopyOrMoveImpl::RunAfterStreamCopy,
                    weak_factory_.GetWeakPtr(), callback, last_modified));
@@ -592,13 +586,13 @@ class StreamCopyOrMoveImpl
 CopyOrMoveOperationDelegate::StreamCopyHelper::StreamCopyHelper(
     scoped_ptr<storage::FileStreamReader> reader,
     scoped_ptr<FileStreamWriter> writer,
-    bool need_flush,
+    storage::FlushPolicy flush_policy,
     int buffer_size,
     const FileSystemOperation::CopyFileProgressCallback& file_progress_callback,
     const base::TimeDelta& min_progress_callback_invocation_span)
     : reader_(reader.Pass()),
       writer_(writer.Pass()),
-      need_flush_(need_flush),
+      flush_policy_(flush_policy),
       file_progress_callback_(file_progress_callback),
       io_buffer_(new net::IOBufferWithSize(buffer_size)),
       num_copied_bytes_(0),
@@ -647,7 +641,7 @@ void CopyOrMoveOperationDelegate::StreamCopyHelper::DidRead(
 
   if (result == 0) {
     // Here is the EOF.
-    if (need_flush_)
+    if (flush_policy_ == storage::FlushPolicy::FLUSH_ON_COMPLETION)
       Flush(callback, true /* is_eof */);
     else
       callback.Run(base::File::FILE_OK);
@@ -700,7 +694,7 @@ void CopyOrMoveOperationDelegate::StreamCopyHelper::DidWrite(
     return;
   }
 
-  if (need_flush_ &&
+  if (flush_policy_ == storage::FlushPolicy::FLUSH_ON_COMPLETION &&
       (num_copied_bytes_ - previous_flush_offset_) > kFlushIntervalInBytes) {
     Flush(callback, false /* not is_eof */);
   } else {
