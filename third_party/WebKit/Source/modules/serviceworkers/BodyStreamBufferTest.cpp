@@ -140,14 +140,15 @@ TEST(BodyStreamBufferTest, CreateBlob)
     BodyStreamBuffer* buffer = new BodyStreamBuffer();
     BlobHandleCallback* callback1 = new BlobHandleCallback();
     BlobHandleCallback* callback2 = new BlobHandleCallback();
-    EXPECT_TRUE(buffer->readAllAndCreateBlobHandle(callback1));
-    EXPECT_FALSE(buffer->readAllAndCreateBlobHandle(callback2));
+    EXPECT_TRUE(buffer->readAllAndCreateBlobHandle("text/html", callback1));
+    EXPECT_FALSE(buffer->readAllAndCreateBlobHandle("text/html", callback2));
     buffer->write(DOMArrayBuffer::create("foobar", 6));
     EXPECT_FALSE(callback1->blobHandle());
     buffer->write(DOMArrayBuffer::create("piyo", 4));
     EXPECT_FALSE(callback1->blobHandle());
     buffer->close();
     EXPECT_TRUE(callback1->blobHandle());
+    EXPECT_EQ("text/html", callback1->blobHandle()->type());
     EXPECT_FALSE(callback2->blobHandle());
     EXPECT_EQ(10u, callback1->blobHandle()->size());
     WebVector<WebBlobData::Item*> items;
@@ -166,7 +167,7 @@ TEST(BodyStreamBufferTest, CreateBlobAfterWrite)
     BodyStreamBuffer* buffer = new BodyStreamBuffer();
     BlobHandleCallback* callback = new BlobHandleCallback();
     buffer->write(DOMArrayBuffer::create("foobar", 6));
-    EXPECT_TRUE(buffer->readAllAndCreateBlobHandle(callback));
+    EXPECT_TRUE(buffer->readAllAndCreateBlobHandle("", callback));
     buffer->close();
     EXPECT_TRUE(callback->blobHandle());
     EXPECT_EQ(6u, callback->blobHandle()->size());
@@ -183,7 +184,7 @@ TEST(BodyStreamBufferTest, CreateBlobAfterClose)
     BlobHandleCallback* callback = new BlobHandleCallback();
     buffer->write(DOMArrayBuffer::create("foobar", 6));
     buffer->close();
-    EXPECT_TRUE(buffer->readAllAndCreateBlobHandle(callback));
+    EXPECT_TRUE(buffer->readAllAndCreateBlobHandle("", callback));
     EXPECT_TRUE(callback->blobHandle());
     EXPECT_EQ(6u, callback->blobHandle()->size());
     WebVector<WebBlobData::Item*> items;
@@ -198,8 +199,8 @@ TEST(BodyStreamBufferTest, CreateBlobException)
     BodyStreamBuffer* buffer = new BodyStreamBuffer();
     BlobHandleCallback* callback1 = new BlobHandleCallback();
     BlobHandleCallback* callback2 = new BlobHandleCallback();
-    EXPECT_TRUE(buffer->readAllAndCreateBlobHandle(callback1));
-    EXPECT_FALSE(buffer->readAllAndCreateBlobHandle(callback2));
+    EXPECT_TRUE(buffer->readAllAndCreateBlobHandle("", callback1));
+    EXPECT_FALSE(buffer->readAllAndCreateBlobHandle("", callback2));
     buffer->write(DOMArrayBuffer::create("foobar", 6));
     buffer->write(DOMArrayBuffer::create("piyo", 4));
     EXPECT_FALSE(buffer->hasError());
@@ -218,7 +219,7 @@ TEST(BodyStreamBufferTest, CreateBlobExceptionAfterWrite)
     BodyStreamBuffer* buffer = new BodyStreamBuffer();
     BlobHandleCallback* callback = new BlobHandleCallback();
     buffer->write(DOMArrayBuffer::create("foobar", 6));
-    EXPECT_TRUE(buffer->readAllAndCreateBlobHandle(callback));
+    EXPECT_TRUE(buffer->readAllAndCreateBlobHandle("", callback));
     buffer->error(DOMException::create(NetworkError, "Error Message"));
     EXPECT_TRUE(callback->exception());
     EXPECT_EQ("NetworkError", callback->exception()->name());
@@ -231,7 +232,7 @@ TEST(BodyStreamBufferTest, CreateBlobExceptionAfterError)
     BlobHandleCallback* callback = new BlobHandleCallback();
     buffer->write(DOMArrayBuffer::create("foobar", 6));
     buffer->error(DOMException::create(NetworkError, "Error Message"));
-    EXPECT_TRUE(buffer->readAllAndCreateBlobHandle(callback));
+    EXPECT_TRUE(buffer->readAllAndCreateBlobHandle("", callback));
     EXPECT_TRUE(callback->exception());
     EXPECT_EQ("NetworkError", callback->exception()->name());
     EXPECT_EQ("Error Message", callback->exception()->message());

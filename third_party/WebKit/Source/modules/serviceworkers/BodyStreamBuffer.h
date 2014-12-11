@@ -10,6 +10,7 @@
 #include "platform/heap/Heap.h"
 #include "wtf/Deque.h"
 #include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -49,7 +50,7 @@ public:
 
     // This function registers an observer so it fails and returns false when an
     // observer was already registered
-    bool readAllAndCreateBlobHandle(BlobHandleCreatorClient*);
+    bool readAllAndCreateBlobHandle(const String& contentType, BlobHandleCreatorClient*);
 
     // When an observer was registered this function fails and returns false.
     bool registerObserver(Observer*);

@@ -13,11 +13,12 @@ namespace {
 
 class BlobCreator final : public BodyStreamBuffer::Observer {
 public:
-    BlobCreator(BodyStreamBuffer* buffer, BodyStreamBuffer::BlobHandleCreatorClient* client)
+    BlobCreator(BodyStreamBuffer* buffer, const String& contentType, BodyStreamBuffer::BlobHandleCreatorClient* client)
         : m_buffer(buffer)
         , m_client(client)
         , m_blobData(BlobData::create())
     {
+        m_blobData->setContentType(contentType);
     }
     ~BlobCreator() override { }
     void trace(Visitor* visitor) override
@@ -108,11 +109,11 @@ void BodyStreamBuffer::error(PassRefPtrWillBeRawPtr<DOMException> exception)
         m_observer->onError();
 }
 
-bool BodyStreamBuffer::readAllAndCreateBlobHandle(BlobHandleCreatorClient* client)
+bool BodyStreamBuffer::readAllAndCreateBlobHandle(const String& contentType, BlobHandleCreatorClient* client)
 {
     if (m_observer)
         return false;
-    BlobCreator* blobCreator = new BlobCreator(this, client);
+    BlobCreator* blobCreator = new BlobCreator(this, contentType, client);
     blobCreator->start();
     return true;
 }
