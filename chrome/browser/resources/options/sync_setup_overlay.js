@@ -29,7 +29,6 @@ cr.exportPath('options');
  *             preferencesRegistered: boolean,
  *             preferencesSynced: boolean,
  *             showPassphrase: boolean,
- *             showSyncEverythingPage: boolean,
  *             syncAllDataTypes: boolean,
  *             syncNothing: boolean,
  *             tabsEnforced: boolean,
@@ -157,6 +156,9 @@ cr.define('options', function() {
         chrome.send('SyncSetupStopSyncing', [deleteProfile]);
         self.closeOverlay_();
       };
+      $('use-default-link').onclick = function() {
+        self.showSyncEverythingPage_();
+      };
     },
 
     /** @private */
@@ -188,6 +190,7 @@ cr.define('options', function() {
     /** @private */
     onEncryptionRadioChanged_: function() {
       var visible = $('full-encryption-option').checked;
+      // TODO(dbeam): should sync-custom-passphrase-container be hidden instead?
       $('sync-custom-passphrase').hidden = !visible;
       chrome.send('coreOptionsUserMetricsAction',
                   ['Options_SyncSetEncryption']);
@@ -320,8 +323,6 @@ cr.define('options', function() {
       // configuration to the backend.
       this.setInputElementsDisabledState_(true);
       $('use-default-link').hidden = true;
-      $('use-default-link').disabled = true;
-      $('use-default-link').onclick = null;
 
       // These values need to be kept in sync with where they are read in
       // sync_setup_handler.cc:GetConfiguration().
@@ -567,15 +568,10 @@ cr.define('options', function() {
         // dialog or the advanced sync settings dialog, and assign focus to the
         // OK button, or to the passphrase field if a passphrase is required.
         this.usePassphrase_ = args.usePassphrase;
-        if (args.showSyncEverythingPage == false || this.usePassphrase_ ||
-            args.syncAllDataTypes == false || args.showPassphrase) {
-          var index = args.syncAllDataTypes ?
-                          options.DataTypeSelection.SYNC_EVERYTHING :
-                          options.DataTypeSelection.CHOOSE_WHAT_TO_SYNC;
-          this.showCustomizePage_(args, index);
-        } else {
-          this.showSyncEverythingPage_();
-        }
+        var index = args.syncAllDataTypes ?
+                        options.DataTypeSelection.SYNC_EVERYTHING :
+                        options.DataTypeSelection.CHOOSE_WHAT_TO_SYNC;
+        this.showCustomizePage_(args, index);
       }
     },
 
@@ -605,6 +601,7 @@ cr.define('options', function() {
       // The default state is to sync everything.
       this.setDataTypeCheckboxes_(options.DataTypeSelection.SYNC_EVERYTHING);
 
+      // TODO(dbeam): should hide sync-custom-passphrase-container instead?
       if (!this.usePassphrase_)
         $('sync-custom-passphrase').hidden = true;
 
@@ -634,8 +631,6 @@ cr.define('options', function() {
 
       // Hide the "use default settings" link.
       $('use-default-link').hidden = true;
-      $('use-default-link').disabled = true;
-      $('use-default-link').onclick = null;
     },
 
     /**
@@ -650,8 +645,6 @@ cr.define('options', function() {
       // Once we require a passphrase, we prevent the user from returning to
       // the Sync Everything pane.
       $('use-default-link').hidden = true;
-      $('use-default-link').disabled = true;
-      $('use-default-link').onclick = null;
       $('sync-custom-passphrase-container').hidden = true;
       $('sync-existing-passphrase-container').hidden = false;
 
@@ -705,11 +698,6 @@ cr.define('options', function() {
         // We only show the 'Use Default' link if we're not prompting for an
         // existing passphrase.
         $('use-default-link').hidden = false;
-        $('use-default-link').disabled = false;
-        $('use-default-link').onclick = function() {
-          SyncSetupOverlay.showSyncEverythingPage();
-          return false;
-        };
       }
     },
 
@@ -873,10 +861,6 @@ cr.define('options', function() {
 
   SyncSetupOverlay.showCustomizePage = function(args, index) {
     SyncSetupOverlay.getInstance().showCustomizePage_(args, index);
-  };
-
-  SyncSetupOverlay.showSyncEverythingPage = function() {
-    SyncSetupOverlay.getInstance().showSyncEverythingPage_();
   };
 
   SyncSetupOverlay.showStopSyncingUI = function() {

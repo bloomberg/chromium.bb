@@ -84,14 +84,6 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
 
   bool is_configuring_sync() const { return configuring_sync_; }
 
-  // Display the configure sync UI. If |show_advanced| is true, skip directly
-  // to the "advanced settings" dialog, otherwise give the user the simpler
-  // "Sync Everything" dialog. Overridden by subclasses to allow them to skip
-  // the sync setup dialog if desired.
-  // If |passphrase_failed| is true, then the user previously tried to enter an
-  // invalid passphrase.
-  virtual void DisplayConfigureSync(bool show_advanced, bool passphrase_failed);
-
   // Called when configuring sync is done to close the dialog and start syncing.
   void ConfigureSyncDone();
 
@@ -147,6 +139,10 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
 
   // If a wizard already exists, focus it and return true.
   bool FocusExistingWizardIfPresent();
+
+  // Display the configure sync UI. If |passphrase_failed| is true, the account
+  // requires a passphrase and one hasn't been provided or it was invalid.
+  void DisplayConfigureSync(bool passphrase_failed);
 
   // Helper object used to wait for the sync backend to startup.
   scoped_ptr<SyncStartupTracker> sync_startup_tracker_;

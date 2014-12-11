@@ -514,7 +514,6 @@ TEST_F(SyncSetupHandlerTest,
   base::DictionaryValue* dictionary;
   ASSERT_TRUE(data1.arg2->GetAsDictionary(&dictionary));
   CheckBool(dictionary, "passphraseFailed", false);
-  CheckBool(dictionary, "showSyncEverythingPage", false);
   CheckBool(dictionary, "syncAllDataTypes", true);
   CheckBool(dictionary, "encryptAllDataAllowed", true);
   CheckBool(dictionary, "encryptAllData", false);
@@ -919,7 +918,6 @@ TEST_F(SyncSetupHandlerTest, ShowSetupSyncEverything) {
   const TestWebUI::CallData& data = web_ui_.call_data()[0];
   base::DictionaryValue* dictionary;
   ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
-  CheckBool(dictionary, "showSyncEverythingPage", false);
   CheckBool(dictionary, "syncAllDataTypes", true);
   CheckBool(dictionary, "appsRegistered", true);
   CheckBool(dictionary, "autofillRegistered", true);
