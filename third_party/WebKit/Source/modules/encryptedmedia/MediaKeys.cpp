@@ -28,7 +28,6 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMArrayBuffer.h"
-#include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -130,19 +129,7 @@ MediaKeySession* MediaKeys::createSession(ScriptState* scriptState, const String
     return MediaKeySession::create(scriptState, this, sessionType);
 }
 
-ScriptPromise MediaKeys::setServerCertificate(ScriptState* scriptState, DOMArrayBuffer* serverCertificate)
-{
-    RefPtr<DOMArrayBuffer> serverCertificateCopy = DOMArrayBuffer::create(serverCertificate->data(), serverCertificate->byteLength());
-    return setServerCertificateInternal(scriptState, serverCertificateCopy.release());
-}
-
-ScriptPromise MediaKeys::setServerCertificate(ScriptState* scriptState, DOMArrayBufferView* serverCertificate)
-{
-    RefPtr<DOMArrayBuffer> serverCertificateCopy = DOMArrayBuffer::create(serverCertificate->baseAddress(), serverCertificate->byteLength());
-    return setServerCertificateInternal(scriptState, serverCertificateCopy.release());
-}
-
-ScriptPromise MediaKeys::setServerCertificateInternal(ScriptState* scriptState, PassRefPtr<DOMArrayBuffer> serverCertificate)
+ScriptPromise MediaKeys::setServerCertificate(ScriptState* scriptState, const DOMArrayPiece& serverCertificate)
 {
     // From https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-setservercertificate:
     // The setServerCertificate(serverCertificate) method provides a server
@@ -150,7 +137,7 @@ ScriptPromise MediaKeys::setServerCertificateInternal(ScriptState* scriptState, 
     // It must run the following steps:
     // 1. If serverCertificate is an empty array, return a promise rejected
     //    with a new DOMException whose name is "InvalidAccessError".
-    if (!serverCertificate->byteLength()) {
+    if (!serverCertificate.byteLength()) {
         return ScriptPromise::rejectWithDOMException(
             scriptState, DOMException::create(InvalidAccessError, "The serverCertificate parameter is empty."));
     }
@@ -162,14 +149,14 @@ ScriptPromise MediaKeys::setServerCertificateInternal(ScriptState* scriptState, 
 
     // 3. Let certificate be a copy of the contents of the serverCertificate
     //    parameter.
-    //    (Done in caller.)
+    RefPtr<DOMArrayBuffer> serverCertificateBuffer = DOMArrayBuffer::create(serverCertificate.data(), serverCertificate.byteLength());
 
     // 4. Let promise be a new promise.
     SimpleContentDecryptionModuleResultPromise* result = new SimpleContentDecryptionModuleResultPromise(scriptState);
     ScriptPromise promise = result->promise();
 
     // 5. Run the following steps asynchronously (documented in timerFired()).
-    m_pendingActions.append(PendingAction::CreatePendingSetServerCertificate(result, serverCertificate));
+    m_pendingActions.append(PendingAction::CreatePendingSetServerCertificate(result, serverCertificateBuffer.release()));
     if (!m_timer.isActive())
         m_timer.startOneShot(0, FROM_HERE);
 

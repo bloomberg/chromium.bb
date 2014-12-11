@@ -31,7 +31,6 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMArrayBuffer.h"
-#include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/events/Event.h"
 #include "core/events/GenericEventQueue.h"
@@ -363,19 +362,7 @@ ScriptPromise MediaKeySession::closed(ScriptState* scriptState)
     return m_closedPromise->promise(scriptState->world());
 }
 
-ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState, const String& initDataType, DOMArrayBuffer* initData)
-{
-    RefPtr<DOMArrayBuffer> initDataCopy = DOMArrayBuffer::create(initData->data(), initData->byteLength());
-    return generateRequestInternal(scriptState, initDataType, initDataCopy.release());
-}
-
-ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState, const String& initDataType, DOMArrayBufferView* initData)
-{
-    RefPtr<DOMArrayBuffer> initDataCopy = DOMArrayBuffer::create(initData->baseAddress(), initData->byteLength());
-    return generateRequestInternal(scriptState, initDataType, initDataCopy.release());
-}
-
-ScriptPromise MediaKeySession::generateRequestInternal(ScriptState* scriptState, const String& initDataType, PassRefPtr<DOMArrayBuffer> initData)
+ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState, const String& initDataType, const DOMArrayPiece& initData)
 {
     WTF_LOG(Media, "MediaKeySession(%p)::generateRequest %s", this, initDataType.ascii().data());
 
@@ -402,7 +389,7 @@ ScriptPromise MediaKeySession::generateRequestInternal(ScriptState* scriptState,
 
     // 4. If initData is an empty array, return a promise rejected with a new
     //    DOMException whose name is"InvalidAccessError".
-    if (!initData->byteLength()) {
+    if (!initData.byteLength()) {
         return ScriptPromise::rejectWithDOMException(
             scriptState, DOMException::create(InvalidAccessError, "The initData parameter is empty."));
     }
@@ -420,7 +407,7 @@ ScriptPromise MediaKeySession::generateRequestInternal(ScriptState* scriptState,
     }
 
     // 7. Let init data be a copy of the contents of the initData parameter.
-    //    (Done before calling this method.)
+    RefPtr<DOMArrayBuffer> initDataBuffer = DOMArrayBuffer::create(initData.data(), initData.byteLength());
 
     // 8. Let session type be this object's session type.
     //    (Done in constructor.)
@@ -431,7 +418,7 @@ ScriptPromise MediaKeySession::generateRequestInternal(ScriptState* scriptState,
 
     // 10. Run the following steps asynchronously (documented in
     //     actionTimerFired())
-    m_pendingActions.append(PendingAction::CreatePendingGenerateRequest(result, initDataType, initData));
+    m_pendingActions.append(PendingAction::CreatePendingGenerateRequest(result, initDataType, initDataBuffer.release()));
     ASSERT(!m_actionTimer.isActive());
     m_actionTimer.startOneShot(0, FROM_HERE);
 
@@ -495,19 +482,7 @@ ScriptPromise MediaKeySession::load(ScriptState* scriptState, const String& sess
     return promise;
 }
 
-ScriptPromise MediaKeySession::update(ScriptState* scriptState, DOMArrayBuffer* response)
-{
-    RefPtr<DOMArrayBuffer> responseCopy = DOMArrayBuffer::create(response->data(), response->byteLength());
-    return updateInternal(scriptState, responseCopy.release());
-}
-
-ScriptPromise MediaKeySession::update(ScriptState* scriptState, DOMArrayBufferView* response)
-{
-    RefPtr<DOMArrayBuffer> responseCopy = DOMArrayBuffer::create(response->baseAddress(), response->byteLength());
-    return updateInternal(scriptState, responseCopy.release());
-}
-
-ScriptPromise MediaKeySession::updateInternal(ScriptState* scriptState, PassRefPtr<DOMArrayBuffer> response)
+ScriptPromise MediaKeySession::update(ScriptState* scriptState, const DOMArrayPiece& response)
 {
     WTF_LOG(Media, "MediaKeySession(%p)::update", this);
     ASSERT(!m_isClosed);
@@ -519,13 +494,13 @@ ScriptPromise MediaKeySession::updateInternal(ScriptState* scriptState, PassRefP
     // 1. If response is an empty array, return a promise rejected with a new
     //    DOMException whose name is "InvalidAccessError" and that has the
     //    message "The response parameter is empty."
-    if (!response->byteLength()) {
+    if (!response.byteLength()) {
         return ScriptPromise::rejectWithDOMException(
             scriptState, DOMException::create(InvalidAccessError, "The response parameter is empty."));
     }
 
     // 2. Let message be a copy of the contents of the response parameter.
-    //    (Copied in the caller.)
+    RefPtr<DOMArrayBuffer> responseBuffer = DOMArrayBuffer::create(response.data(), response.byteLength());
 
     // 3. Let promise be a new promise.
     SimpleContentDecryptionModuleResultPromise* result = new SimpleContentDecryptionModuleResultPromise(scriptState);
@@ -533,7 +508,7 @@ ScriptPromise MediaKeySession::updateInternal(ScriptState* scriptState, PassRefP
 
     // 4. Run the following steps asynchronously (documented in
     //    actionTimerFired())
-    m_pendingActions.append(PendingAction::CreatePendingUpdate(result, response));
+    m_pendingActions.append(PendingAction::CreatePendingUpdate(result, responseBuffer.release()));
     if (!m_actionTimer.isActive())
         m_actionTimer.startOneShot(0, FROM_HERE);
 

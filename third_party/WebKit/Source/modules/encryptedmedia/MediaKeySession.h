@@ -28,6 +28,7 @@
 
 #include "bindings/core/v8/ScriptPromiseProperty.h"
 #include "core/dom/ActiveDOMObject.h"
+#include "core/dom/DOMArrayPiece.h"
 #include "core/dom/DOMException.h"
 #include "modules/EventTargetModules.h"
 #include "platform/Timer.h"
@@ -36,8 +37,6 @@
 
 namespace blink {
 
-class DOMArrayBuffer;
-class DOMArrayBufferView;
 class GenericEventQueue;
 class MediaKeyError;
 class MediaKeys;
@@ -71,12 +70,10 @@ public:
     double expiration() const { return m_expiration; }
     ScriptPromise closed(ScriptState*);
 
-    ScriptPromise generateRequest(ScriptState*, const String& initDataType, DOMArrayBuffer* initData);
-    ScriptPromise generateRequest(ScriptState*, const String& initDataType, DOMArrayBufferView* initData);
+    ScriptPromise generateRequest(ScriptState*, const String& initDataType, const DOMArrayPiece& initData);
     ScriptPromise load(ScriptState*, const String& sessionId);
 
-    ScriptPromise update(ScriptState*, DOMArrayBuffer* response);
-    ScriptPromise update(ScriptState*, DOMArrayBufferView* response);
+    ScriptPromise update(ScriptState*, const DOMArrayPiece& response);
     ScriptPromise close(ScriptState*);
     ScriptPromise remove(ScriptState*);
 
@@ -105,9 +102,6 @@ private:
     virtual void message(const unsigned char* message, size_t messageLength, const WebURL& destinationURL) override;
     virtual void close() override;
     virtual void expirationChanged(double updatedExpiryTimeInMS) override;
-
-    ScriptPromise generateRequestInternal(ScriptState*, const String& initDataType, PassRefPtr<DOMArrayBuffer> initData);
-    ScriptPromise updateInternal(ScriptState*, PassRefPtr<DOMArrayBuffer> response);
 
     // Called by NewSessionResult when the new session has been created.
     void finishGenerateRequest();
