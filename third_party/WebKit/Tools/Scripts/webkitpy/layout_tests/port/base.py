@@ -1562,6 +1562,7 @@ class Port(object):
             PhysicalTestSuite('fast', ['--enable-impl-side-painting']),
             PhysicalTestSuite('ietestcenter', ['--enable-impl-side-painting']),
             PhysicalTestSuite('svg', ['--enable-impl-side-painting']),
+            PhysicalTestSuite('transforms', ['--enable-impl-side-painting']),
         ]
 
     def virtual_test_suites(self):
