@@ -2150,7 +2150,6 @@ void Document::attach(const AttachContext& context)
 
 void Document::detach(const AttachContext& context)
 {
-    ScriptForbiddenScope forbidScript;
     ASSERT(isActive());
     m_lifecycle.advanceTo(DocumentLifecycle::Stopping);
 

@@ -64,6 +64,7 @@
 #include "core/svg/SVGDocumentExtensions.h"
 #include "platform/DragImage.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/ScriptForbiddenScope.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/text/TextStream.h"
@@ -266,11 +267,12 @@ void LocalFrame::detach()
     if (!client())
         return;
     m_loader.detach();
-    setView(nullptr);
-    willDetachFrameHost();
     // Notify ScriptController that the frame is closing, since its cleanup ends up calling
     // back to FrameLoaderClient via WindowProxy.
     script().clearForClose();
+    ScriptForbiddenScope forbidScript;
+    setView(nullptr);
+    willDetachFrameHost();
     InspectorInstrumentation::frameDetachedFromParent(this);
     Frame::detach();
 #if ENABLE(OILPAN)
