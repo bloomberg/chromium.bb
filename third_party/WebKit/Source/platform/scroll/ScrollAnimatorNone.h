@@ -49,6 +49,7 @@ public:
 
     virtual void cancelAnimations() override;
     virtual void serviceScrollAnimations() override;
+    virtual bool hasRunningAnimation() const override;
 
     virtual void willEndLiveResize() override;
     virtual void didAddVerticalScrollbar(Scrollbar*) override;

@@ -41,6 +41,7 @@ void ProgrammaticScrollAnimator::animateToOffset(FloatPoint offset)
     m_animationCurve = adoptPtr(Platform::current()->compositorSupport()->createScrollOffsetAnimationCurve(m_targetOffset, WebCompositorAnimationCurve::TimingFunctionTypeEaseInOut));
 
     m_animationCurve->setInitialValue(FloatPoint(m_scrollableArea->scrollPosition()));
+    m_scrollableArea->registerForAnimation();
     if (!m_scrollableArea->scheduleAnimation()) {
         resetAnimationState();
         m_scrollableArea->notifyScrollPositionChanged(IntPoint(offset.x(), offset.y()));
@@ -69,6 +70,11 @@ void ProgrammaticScrollAnimator::tickAnimation(double monotonicTime)
             resetAnimationState();
         }
     }
+}
+
+bool ProgrammaticScrollAnimator::hasRunningAnimation() const
+{
+    return !!m_animationCurve;
 }
 
 } // namespace blink

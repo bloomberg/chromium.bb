@@ -289,6 +289,10 @@ public:
     void removeScrollableArea(ScrollableArea*);
     const ScrollableAreaSet* scrollableAreas() const { return m_scrollableAreas.get(); }
 
+    void addAnimatingScrollableArea(ScrollableArea*);
+    void removeAnimatingScrollableArea(ScrollableArea*);
+    const ScrollableAreaSet* animatingScrollableAreas() const { return m_animatingScrollableAreas.get(); }
+
     // With CSS style "resize:" enabled, a little resizer handle will appear at the bottom
     // right of the object. We keep track of these resizer areas for checking if touches
     // (implemented using Scroll gesture) are targeting the resizer.
@@ -748,6 +752,7 @@ private:
     RawPtrWillBeMember<RenderScrollbarPart> m_scrollCorner;
 
     OwnPtr<ScrollableAreaSet> m_scrollableAreas;
+    OwnPtr<ScrollableAreaSet> m_animatingScrollableAreas;
     OwnPtr<ResizerAreaSet> m_resizerAreas;
     OwnPtr<ViewportConstrainedObjectSet> m_viewportConstrainedObjects;
     OwnPtrWillBeMember<FrameViewAutoSizeInfo> m_autoSizeInfo;

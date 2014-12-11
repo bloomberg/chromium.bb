@@ -115,6 +115,7 @@ RenderLayerScrollableArea::~RenderLayerScrollableArea()
     if (LocalFrame* frame = box().frame()) {
         if (FrameView* frameView = frame->view()) {
             frameView->removeScrollableArea(this);
+            frameView->removeAnimatingScrollableArea(this);
         }
     }
 
@@ -501,6 +502,22 @@ IntRect RenderLayerScrollableArea::scrollableAreaBoundingBox() const
     return box().absoluteBoundingBoxRect();
 }
 
+void RenderLayerScrollableArea::registerForAnimation()
+{
+    if (LocalFrame* frame = box().frame()) {
+        if (FrameView* frameView = frame->view())
+            frameView->addAnimatingScrollableArea(this);
+    }
+}
+
+void RenderLayerScrollableArea::deregisterForAnimation()
+{
+    if (LocalFrame* frame = box().frame()) {
+        if (FrameView* frameView = frame->view())
+            frameView->removeAnimatingScrollableArea(this);
+    }
+}
+
 bool RenderLayerScrollableArea::userInputScrollable(ScrollbarOrientation orientation) const
 {
     if (box().isIntristicallyScrollable(orientation))
@@ -572,13 +589,21 @@ void RenderLayerScrollableArea::computeScrollDimensions()
     setScrollOrigin(IntPoint(-scrollableLeftOverflow, -scrollableTopOverflow));
 }
 
-void RenderLayerScrollableArea::scrollToOffset(const DoubleSize& scrollOffset, ScrollOffsetClamping clamp)
+void RenderLayerScrollableArea::scrollToOffset(const DoubleSize& scrollOffset, ScrollOffsetClamping clamp, ScrollBehavior scrollBehavior)
 {
+    cancelProgrammaticScrollAnimation();
     DoubleSize newScrollOffset = clamp == ScrollOffsetClamped ? clampScrollOffset(scrollOffset) : scrollOffset;
     if (newScrollOffset != adjustedScrollOffset()) {
+        if (scrollBehavior == ScrollBehaviorAuto)
+            scrollBehavior = box().style()->scrollBehavior();
         DoublePoint origin(scrollOrigin());
-        // FIXME: Make scrollToOffsetWithoutAnimation take DoublePoint. crbug.com/414283.
-        scrollToOffsetWithoutAnimation(toFloatPoint(-origin + newScrollOffset));
+        if (scrollBehavior == ScrollBehaviorSmooth) {
+            // FIXME: Make programmaticallyScrollSmoothlyToOffset take DoublePoint. crbug.com/243871.
+            programmaticallyScrollSmoothlyToOffset(toFloatPoint(-origin + newScrollOffset));
+        } else {
+            // FIXME: Make scrollToOffsetWithoutAnimation take DoublePoint. crbug.com/414283.
+            scrollToOffsetWithoutAnimation(toFloatPoint(-origin + newScrollOffset));
+        }
     }
 }
 

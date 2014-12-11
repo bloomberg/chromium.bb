@@ -73,6 +73,7 @@ public:
 
     virtual void cancelAnimations() { }
     virtual void serviceScrollAnimations() { }
+    virtual bool hasRunningAnimation() const { return false; }
 
     virtual void contentAreaWillPaint() const { }
     virtual void mouseEnteredContentArea() const { }

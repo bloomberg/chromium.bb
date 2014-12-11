@@ -806,8 +806,7 @@ void Element::scrollRenderBoxBy(const ScrollToOptions& scrollToOptions)
         double currentScaledTop = rend->scrollTop();
         double newScaledLeft = left * rend->style()->effectiveZoom() + currentScaledLeft;
         double newScaledTop = top * rend->style()->effectiveZoom() + currentScaledTop;
-        // FIXME: Use scrollBehavior to decide whether to scroll smoothly or instantly.
-        rend->scrollToOffset(DoubleSize(newScaledLeft, newScaledTop));
+        rend->scrollToOffset(DoubleSize(newScaledLeft, newScaledTop), scrollBehavior);
     }
 }
 
@@ -828,8 +827,7 @@ void Element::scrollRenderBoxTo(const ScrollToOptions& scrollToOptions)
             scaledLeft = scrollToOptions.left() * rend->style()->effectiveZoom();
         if (scrollToOptions.hasTop())
             scaledTop = scrollToOptions.top() * rend->style()->effectiveZoom();
-        // FIXME: Use scrollBehavior to decide whether to scroll smoothly or instantly.
-        rend->scrollToOffset(DoubleSize(scaledLeft, scaledTop));
+        rend->scrollToOffset(DoubleSize(scaledLeft, scaledTop), scrollBehavior);
     }
 }
 

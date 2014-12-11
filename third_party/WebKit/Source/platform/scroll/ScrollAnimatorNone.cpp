@@ -428,6 +428,7 @@ bool ScrollAnimatorNone::scroll(ScrollbarOrientation orientation, ScrollGranular
         m_startTime = data.m_startTime;
         animationWillStart();
         animationTimerFired();
+        scrollableArea()->registerForAnimation();
     }
     return needToScroll;
 }
@@ -458,6 +459,11 @@ void ScrollAnimatorNone::serviceScrollAnimations()
 {
     if (m_animationActive)
         animationTimerFired();
+}
+
+bool ScrollAnimatorNone::hasRunningAnimation() const
+{
+    return m_animationActive;
 }
 
 void ScrollAnimatorNone::willEndLiveResize()

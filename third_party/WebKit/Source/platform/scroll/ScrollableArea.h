@@ -198,6 +198,8 @@ public:
     // animations.
     bool scheduleAnimation();
     void serviceScrollAnimations(double monotonicTime);
+    virtual void registerForAnimation() { }
+    virtual void deregisterForAnimation() { }
 
     virtual bool usesCompositedScrolling() const { return false; }
 

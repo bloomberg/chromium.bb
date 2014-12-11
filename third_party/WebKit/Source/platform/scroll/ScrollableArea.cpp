@@ -430,10 +430,19 @@ bool ScrollableArea::scheduleAnimation()
 
 void ScrollableArea::serviceScrollAnimations(double monotonicTime)
 {
-    if (ScrollAnimator* scrollAnimator = existingScrollAnimator())
+    bool hasRunningAnimation = false;
+    if (ScrollAnimator* scrollAnimator = existingScrollAnimator()) {
         scrollAnimator->serviceScrollAnimations();
-    if (ProgrammaticScrollAnimator* programmaticScrollAnimator = existingProgrammaticScrollAnimator())
+        if (scrollAnimator->hasRunningAnimation())
+            hasRunningAnimation = true;
+    }
+    if (ProgrammaticScrollAnimator* programmaticScrollAnimator = existingProgrammaticScrollAnimator()) {
         programmaticScrollAnimator->tickAnimation(monotonicTime);
+        if (programmaticScrollAnimator->hasRunningAnimation())
+            hasRunningAnimation = true;
+    }
+    if (!hasRunningAnimation)
+        deregisterForAnimation();
 }
 
 void ScrollableArea::cancelProgrammaticScrollAnimation()

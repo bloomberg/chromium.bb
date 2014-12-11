@@ -29,6 +29,7 @@ public:
     void animateToOffset(FloatPoint);
     void cancelAnimation();
     void tickAnimation(double monotonicTime);
+    bool hasRunningAnimation() const;
 
 private:
     explicit ProgrammaticScrollAnimator(ScrollableArea*);

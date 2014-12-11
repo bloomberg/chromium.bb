@@ -2913,6 +2913,21 @@ void FrameView::removeScrollableArea(ScrollableArea* scrollableArea)
     m_scrollableAreas->remove(scrollableArea);
 }
 
+void FrameView::addAnimatingScrollableArea(ScrollableArea* scrollableArea)
+{
+    ASSERT(scrollableArea);
+    if (!m_animatingScrollableAreas)
+        m_animatingScrollableAreas = adoptPtr(new ScrollableAreaSet);
+    m_animatingScrollableAreas->add(scrollableArea);
+}
+
+void FrameView::removeAnimatingScrollableArea(ScrollableArea* scrollableArea)
+{
+    if (!m_animatingScrollableAreas)
+        return;
+    m_animatingScrollableAreas->remove(scrollableArea);
+}
+
 void FrameView::setParent(Widget* parentView)
 {
     if (parentView == parent())

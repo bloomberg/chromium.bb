@@ -3,9 +3,9 @@ Test that setting scrollTop on an overflow:scroll element works with both scroll
 This is a testharness.js-based test.
 PASS Scroll x:0, y:2, smooth:false 
 PASS Scroll x:0, y:4, smooth:false 
-FAIL Scroll x:0, y:25, smooth:true assert_equals: expected "0, 4" but got "0, 25"
-FAIL Scroll x:0, y:45, smooth:true assert_equals: expected "0, 25" but got "0, 45"
-FAIL Scroll x:0, y:4100, smooth:true assert_equals: expected "0, 45" but got "0, 4100"
-FAIL Scroll x:0, y:20, smooth:true assert_equals: expected "0, 4100" but got "0, 20"
+PASS Scroll x:0, y:25, smooth:true 
+PASS Scroll x:0, y:45, smooth:true 
+PASS Scroll x:0, y:4100, smooth:true 
+PASS Scroll x:0, y:20, smooth:true 
 Harness: the test ran to completion.
 

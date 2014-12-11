@@ -109,6 +109,8 @@ public:
     virtual bool shouldSuspendScrollAnimations() const override;
     virtual bool scrollbarsCanBeActive() const override;
     virtual IntRect scrollableAreaBoundingBox() const override;
+    virtual void registerForAnimation() override;
+    virtual void deregisterForAnimation() override;
     virtual bool userInputScrollable(ScrollbarOrientation) const override;
     virtual bool shouldPlaceVerticalScrollbarOnLeft() const override;
     virtual int pageStep(ScrollbarOrientation) const override;
@@ -121,9 +123,17 @@ public:
     // FIXME: We shouldn't allow access to m_overflowRect outside this class.
     LayoutRect overflowRect() const { return m_overflowRect; }
 
-    void scrollToOffset(const DoubleSize& scrollOffset, ScrollOffsetClamping = ScrollOffsetUnclamped);
-    void scrollToXOffset(double x, ScrollOffsetClamping clamp = ScrollOffsetUnclamped) { scrollToOffset(DoubleSize(x, scrollYOffset()), clamp); }
-    void scrollToYOffset(double y, ScrollOffsetClamping clamp = ScrollOffsetUnclamped) { scrollToOffset(DoubleSize(scrollXOffset(), y), clamp); }
+    void scrollToOffset(const DoubleSize& scrollOffset, ScrollOffsetClamping = ScrollOffsetUnclamped, ScrollBehavior = ScrollBehaviorInstant);
+
+    void scrollToXOffset(double x, ScrollOffsetClamping clamp = ScrollOffsetUnclamped, ScrollBehavior scrollBehavior = ScrollBehaviorInstant)
+    {
+        scrollToOffset(DoubleSize(x, scrollYOffset()), clamp, scrollBehavior);
+    }
+
+    void scrollToYOffset(double y, ScrollOffsetClamping clamp = ScrollOffsetUnclamped, ScrollBehavior scrollBehavior = ScrollBehaviorInstant)
+    {
+        scrollToOffset(DoubleSize(scrollXOffset(), y), clamp, scrollBehavior);
+    }
 
     void updateAfterLayout();
     void updateAfterStyleChange(const RenderStyle*);
