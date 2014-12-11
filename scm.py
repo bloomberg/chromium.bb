@@ -443,16 +443,6 @@ class GIT(object):
       return False
 
   @staticmethod
-  def IsDirectoryVersioned(cwd, relative_dir):
-    """Checks whether the given |relative_dir| is part of cwd's repo."""
-    return bool(GIT.Capture(['ls-tree', 'HEAD', relative_dir], cwd=cwd))
-
-  @staticmethod
-  def CleanupDir(cwd, relative_dir):
-    """Cleans up untracked file inside |relative_dir|."""
-    return bool(GIT.Capture(['clean', '-df', relative_dir], cwd=cwd))
-
-  @staticmethod
   def GetGitSvnHeadRev(cwd):
     """Gets the most recently pulled git-svn revision."""
     try:

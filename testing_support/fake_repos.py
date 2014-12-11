@@ -828,40 +828,6 @@ class FakeRepoSkiaDEPS(FakeReposBase):
     })
 
 
-class FakeRepoBlinkDEPS(FakeReposBase):
-  """Simulates the Blink DEPS transition in Chrome."""
-
-  NB_GIT_REPOS = 2
-  DEPS_pre = 'deps = {"src/third_party/WebKit": "%(git_base)srepo_2",}'
-  DEPS_post = 'deps = {}'
-
-  def populateGit(self):
-    # Blink repo.
-    self._commit_git('repo_2', {
-        'OWNERS': 'OWNERS-pre',
-        'Source/exists_always': '_ignored_',
-        'Source/exists_before_but_not_after': '_ignored_',
-    })
-
-    # Chrome repo.
-    self._commit_git('repo_1', {
-        'DEPS': self.DEPS_pre % {'git_base': self.git_base},
-        'myfile': 'myfile@1',
-        '.gitignore': '/third_party/WebKit',
-    })
-    self._commit_git('repo_1', {
-        'DEPS': self.DEPS_post % {'git_base': self.git_base},
-        'myfile': 'myfile@2',
-        '.gitignore': '',
-        'third_party/WebKit/OWNERS': 'OWNERS-post',
-        'third_party/WebKit/Source/exists_always': '_ignored_',
-        'third_party/WebKit/Source/exists_after_but_not_before': '_ignored',
-    })
-
-  def populateSvn(self):
-    raise NotImplementedError()
-
-
 class FakeReposTestBase(trial_dir.TestCase):
   """This is vaguely inspired by twisted."""
   # Static FakeRepos instances. Lazy loaded.
