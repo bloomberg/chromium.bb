@@ -73,7 +73,7 @@ class PageCyclerMoz(_PageCycler):
   page_set = page_sets.MozPageSet
 
 
-@benchmark.Disabled('linux', 'win')  # crbug.com/353260
+@benchmark.Disabled('linux', 'win', 'mac')  # crbug.com/353260
 class PageCyclerNetsimTop10(_PageCycler):
   """Measures load time of the top 10 sites under simulated cable network."""
   tag = 'netsim'
