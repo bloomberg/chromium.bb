@@ -46,9 +46,6 @@ div {
     if (window.testRunner)
         testRunner.dumpAsText();
 
-    if (window.internals)
-        internals.settings.setLayerSquashingEnabled(true);
-
     function dump() {
         if (!window.internals)
             return;

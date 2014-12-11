@@ -22,10 +22,8 @@
     }
   </style>
   <script>
-    if (window.testRunner) {
+    if (window.testRunner)
       testRunner.dumpAsText();
-      internals.settings.setLayerSquashingEnabled(true);
-    }
     function runTest() {
       if (window.internals) {
         var pre = document.createElement('pre');

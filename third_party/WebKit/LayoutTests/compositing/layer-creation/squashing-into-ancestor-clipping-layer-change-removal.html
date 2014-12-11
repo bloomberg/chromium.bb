@@ -55,7 +55,6 @@ This test passes if it doesn't crash.
 if (window.testRunner) {
     testRunner.dumpAsText();
     internals.settings.setPreferCompositingToLCDTextEnabled(true);
-    internals.settings.setLayerSquashingEnabled(true);
 } else {
     alert('This test require window.testRunner.')
 }

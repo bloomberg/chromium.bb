@@ -5,9 +5,6 @@
 </div>
 <script src="../../fast/repaint/resources/text-based-repaint.js"></script>
 <script>
-if (window.internals)
-    internals.settings.setLayerSquashingEnabled(true);
-
 // Test that squashing works properly when inside of a transform-style: preserve-3d element. In the bug that this layout test
 // was added to fix, the coordinates of the squashing layer paint invalidation rects were not recorded correctly, because some of
 // the code computed transformed ancestors incorrectly (it should *not* include the preserve-3d element).

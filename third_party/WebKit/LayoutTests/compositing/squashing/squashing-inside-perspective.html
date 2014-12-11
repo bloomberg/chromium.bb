@@ -7,9 +7,6 @@
 </div>
 <script>
 // Tests that a squashed layer that is the child of an element with perspective on it uses that element as its transform ancestor.
-
-if (window.internals)
-    internals.settings.setLayerSquashingEnabled(true);
 if (window.testRunner) {
     testRunner.dumpAsText();
     testRunner.setCustomTextOutput(window.internals.layerTreeAsText(document));

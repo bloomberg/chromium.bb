@@ -87,7 +87,6 @@ private:
     bool needsOwnBacking(const RenderLayer*) const;
 
     RenderLayerCompositor* m_compositor;
-    bool m_layerSquashingEnabled;
     bool m_layersChanged;
 };
 

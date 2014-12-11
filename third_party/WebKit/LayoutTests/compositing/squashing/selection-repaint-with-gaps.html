@@ -39,10 +39,7 @@
         testRunner.dumpAsText();
         testRunner.waitUntilDone();
     }
-   
-    if (window.internals) 
-      window.internals.settings.setLayerSquashingEnabled(true);
- 
+
     runAfterDisplay(function()
     {
         if (window.internals)

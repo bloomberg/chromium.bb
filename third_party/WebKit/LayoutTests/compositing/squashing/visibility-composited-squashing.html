@@ -29,10 +29,9 @@
     }
   </style>
   <script>
-    if (window.testRunner) {
+    if (window.testRunner)
       testRunner.waitUntilDone();
-      internals.settings.setLayerSquashingEnabled(true);
-    }
+
     requestAnimationFrame(function() {
       requestAnimationFrame(function() {
         document.getElementById('target1').classList.add('visible');

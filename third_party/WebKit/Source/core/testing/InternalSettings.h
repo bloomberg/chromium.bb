@@ -107,10 +107,6 @@ public:
     void setTextAutosizingWindowSizeOverride(int width, int height, ExceptionState&);
     void setViewportEnabled(bool, ExceptionState&);
 
-    // FIXME: This is a temporary flag and should be removed once squashing is
-    // ready (crbug.com/261605).
-    void setLayerSquashingEnabled(bool, ExceptionState&);
-
     // FIXME: The following are RuntimeEnabledFeatures and likely
     // cannot be changed after process start. These setters should
     // be removed or moved onto internals.runtimeFlags:

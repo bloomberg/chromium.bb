@@ -2412,7 +2412,6 @@ CompositingState RenderLayer::compositingState() const
     // can get out of sync from the real actual compositing state.
 
     if (m_groupedMapping) {
-        ASSERT(compositor()->layerSquashingEnabled());
         ASSERT(!m_compositedLayerMapping);
         return PaintsIntoGroupedBacking;
     }

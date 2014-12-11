@@ -59,10 +59,8 @@ div:hover {
 
     var isInteractive = true;
 
-    if (window.internals) {
-        internals.settings.setLayerSquashingEnabled(true);
+    if (window.internals)
         isInteractive = false;
-    }
 
     function resetLayers()
     {

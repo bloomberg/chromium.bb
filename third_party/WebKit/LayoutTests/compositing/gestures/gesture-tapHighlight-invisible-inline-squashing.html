@@ -22,8 +22,6 @@
 <script>
 function runTest() {
     useMockHighlight();
-    if (window.internals)
-        internals.settings.setLayerSquashingEnabled(true);
 
     var clientRect = document.getElementById('targetLink').getBoundingClientRect();
     x = (clientRect.left + clientRect.right) / 2;

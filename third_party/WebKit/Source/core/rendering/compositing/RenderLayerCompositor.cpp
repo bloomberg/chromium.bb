@@ -154,15 +154,6 @@ void RenderLayerCompositor::updateAcceleratedCompositingSettings()
         rootRenderLayer()->setNeedsCompositingInputsUpdate();
 }
 
-bool RenderLayerCompositor::layerSquashingEnabled() const
-{
-    if (!RuntimeEnabledFeatures::layerSquashingEnabled())
-        return false;
-    if (Settings* settings = m_renderView.document().settings())
-        return settings->layerSquashingEnabled();
-    return true;
-}
-
 bool RenderLayerCompositor::preferCompositingToLCDTextEnabled() const
 {
     return m_compositingReasonFinder.hasOverflowScrollTrigger();

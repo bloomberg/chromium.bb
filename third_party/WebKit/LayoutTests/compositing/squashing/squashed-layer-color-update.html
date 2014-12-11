@@ -20,10 +20,8 @@
   </style>
   <script>
       onload = function() {
-          if (window.testRunner) {
+          if (window.testRunner)
               testRunner.waitUntilDone();
-              internals.settings.setLayerSquashingEnabled(true);
-          }
       
           var target = document.getElementById('target3');
           requestAnimationFrame(function() {

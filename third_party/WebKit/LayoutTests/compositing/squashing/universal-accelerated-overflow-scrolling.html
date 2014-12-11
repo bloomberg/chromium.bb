@@ -32,10 +32,8 @@
       if (window.testRunner)
           testRunner.dumpAsTextWithPixelResults();
 
-      if (window.internals) {
+      if (window.internals)
           window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
-          window.internals.settings.setLayerSquashingEnabled(true);
-      }
 
       function doTest() {
         var container = document.getElementById("container");

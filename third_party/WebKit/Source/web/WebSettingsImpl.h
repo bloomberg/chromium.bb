@@ -106,7 +106,6 @@ public:
     virtual void setJavaScriptCanAccessClipboard(bool) override;
     virtual void setJavaScriptCanOpenWindowsAutomatically(bool) override;
     virtual void setJavaScriptEnabled(bool) override;
-    virtual void setLayerSquashingEnabled(bool) override;
     virtual void setLoadsImagesAutomatically(bool) override;
     virtual void setLoadWithOverviewMode(bool) override;
     virtual void setLocalStorageEnabled(bool) override;

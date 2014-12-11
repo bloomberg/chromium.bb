@@ -35,9 +35,6 @@
     if (window.testRunner)
         testRunner.dumpAsText();
 
-    if (window.testRunner) {
-      internals.settings.setLayerSquashingEnabled(true);
-    }
     document.getElementById("target").classList.add("opaque");
 
     var layersResult = document.getElementById('layers');

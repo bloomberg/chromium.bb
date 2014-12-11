@@ -567,7 +567,6 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& off
 {
     if (!squashingLayer)
         return;
-    ASSERT(compositor()->layerSquashingEnabled());
 
     LayoutPoint offsetFromReferenceLayerToParentGraphicsLayer(offsetFromCompositedAncestor);
     offsetFromReferenceLayerToParentGraphicsLayer.moveBy(-graphicsLayerParentLocation);
@@ -1065,7 +1064,6 @@ void CompositedLayerMapping::updateInternalHierarchy()
 
     // The squashing containment layer, if it exists, becomes a no-op parent.
     if (m_squashingLayer) {
-        ASSERT(compositor()->layerSquashingEnabled());
         ASSERT((m_ancestorClippingLayer && !m_squashingContainmentLayer) || (!m_ancestorClippingLayer && m_squashingContainmentLayer));
 
         if (m_squashingContainmentLayer) {
@@ -1623,8 +1621,6 @@ bool CompositedLayerMapping::updateSquashingLayers(bool needsSquashingLayers)
     bool layersChanged = false;
 
     if (needsSquashingLayers) {
-        ASSERT(compositor()->layerSquashingEnabled());
-
         if (!m_squashingLayer) {
             m_squashingLayer = createGraphicsLayer(CompositingReasonLayerForSquashingContents);
             m_squashingLayer->setDrawsContent(true);
@@ -2092,7 +2088,6 @@ void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo
         if (paintInfo.renderLayer->containsDirtyOverlayScrollbars())
             LayerPainter(*paintInfo.renderLayer).paintLayerContents(context, paintingInfo, paintLayerFlags | PaintLayerPaintingOverlayScrollbars);
     } else {
-        ASSERT(compositor()->layerSquashingEnabled());
         LayerPaintingInfo paintingInfo(paintInfo.renderLayer, dirtyRect, PaintBehaviorNormal, paintInfo.renderLayer->subpixelAccumulation());
 
         // RenderLayer::paintLayer assumes that the caller clips to the passed rect. Squashed layers need to do this clipping in software,
@@ -2172,7 +2167,6 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
         // We have to use the same root as for hit testing, because both methods can compute and cache clipRects.
         doPaintTask(paintInfo, paintLayerFlags, &context, clip);
     } else if (graphicsLayer == m_squashingLayer.get()) {
-        ASSERT(compositor()->layerSquashingEnabled());
         for (size_t i = 0; i < m_squashedLayers.size(); ++i)
             doPaintTask(m_squashedLayers[i], paintLayerFlags, &context, clip);
     } else if (graphicsLayer == layerForHorizontalScrollbar()) {
@@ -2223,8 +2217,6 @@ IntRect CompositedLayerMapping::pixelSnappedCompositedBounds() const
 
 bool CompositedLayerMapping::updateSquashingLayerAssignment(RenderLayer* squashedLayer, const RenderLayer& owningLayer, size_t nextSquashedLayerIndex)
 {
-    ASSERT(compositor()->layerSquashingEnabled());
-
     GraphicsLayerPaintInfo paintInfo;
     paintInfo.renderLayer = squashedLayer;
     // NOTE: composited bounds are updated elsewhere
@@ -2267,8 +2259,6 @@ void CompositedLayerMapping::removeRenderLayerFromSquashingGraphicsLayer(const R
 
 void CompositedLayerMapping::finishAccumulatingSquashingLayers(size_t nextSquashedLayerIndex)
 {
-    ASSERT(compositor()->layerSquashingEnabled());
-
     // Any additional squashed RenderLayers in the array no longer exist, and removing invalidates the squashingLayer contents.
     if (nextSquashedLayerIndex < m_squashedLayers.size())
         m_squashedLayers.remove(nextSquashedLayerIndex, m_squashedLayers.size() - nextSquashedLayerIndex);

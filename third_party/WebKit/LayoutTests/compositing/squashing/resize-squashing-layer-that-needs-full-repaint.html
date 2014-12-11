@@ -9,9 +9,6 @@
 <script>
 // This test checks that resizing a squashing layer such that the offset of content squashed into it relative to the squashing
 // container causes a repaint of its bounds within the updated squashing layer geometry.
-if (window.internals)
-    internals.settings.setLayerSquashingEnabled(true);
-
 function repaintTest() {
     document.querySelector("#to-be-removed").style.display = 'none';
 }

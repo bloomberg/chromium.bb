@@ -73,7 +73,7 @@ public:
     // Return true if this RenderView is in "compositing mode" (i.e. has one or more
     // composited RenderLayers)
     bool inCompositingMode() const;
-    // FIXME: Replace all callers with inCompositingMdoe and remove this function.
+    // FIXME: Replace all callers with inCompositingMode and remove this function.
     bool staleInCompositingMode() const;
     // This will make a compositing layer at the root automatically, and hook up to
     // the native view/window system.
@@ -81,7 +81,6 @@ public:
 
     // Returns true if the accelerated compositing is enabled
     bool hasAcceleratedCompositing() const { return m_hasAcceleratedCompositing; }
-    bool layerSquashingEnabled() const;
 
     bool preferCompositingToLCDTextEnabled() const;
 

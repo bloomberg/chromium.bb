@@ -33,9 +33,6 @@
       if (window.testRunner)
         testRunner.dumpAsText();
 
-      if (window.internals)
-        window.internals.settings.setLayerSquashingEnabled(true);
-
       function doTest() {
         if (window.internals)
           window.internals.forceCompositingUpdate(document);

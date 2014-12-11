@@ -94,7 +94,6 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     RuntimeEnabledFeatures::setLangAttributeAwareFormControlUIEnabled(m_langAttributeAwareFormControlUIEnabled);
     settings->setImagesEnabled(m_imagesEnabled);
     settings->setDefaultVideoPosterURL(m_defaultVideoPosterURL);
-    settings->setLayerSquashingEnabled(m_originalLayerSquashingEnabled);
     settings->genericFontFamilySettings().reset();
     RuntimeEnabledFeatures::setPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled(m_originalPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled);
     RuntimeEnabledFeatures::setImageColorProfilesEnabled(m_originalImageColorProfilesEnabled);
@@ -213,14 +212,6 @@ void InternalSettings::setViewportEnabled(bool enabled, ExceptionState& exceptio
 {
     InternalSettingsGuardForSettings();
     settings()->setViewportEnabled(enabled);
-}
-
-// FIXME: This is a temporary flag and should be removed once squashing is
-// ready (crbug.com/261605).
-void InternalSettings::setLayerSquashingEnabled(bool enabled, ExceptionState& exceptionState)
-{
-    InternalSettingsGuardForSettings();
-    settings()->setLayerSquashingEnabled(enabled);
 }
 
 void InternalSettings::setStandardFontFamily(const AtomicString& family, const String& script, ExceptionState& exceptionState)

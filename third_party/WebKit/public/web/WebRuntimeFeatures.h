@@ -130,7 +130,7 @@ public:
 
     BLINK_EXPORT static void enablePreciseMemoryInfo(bool);
 
-    BLINK_EXPORT static void enableLayerSquashing(bool);
+    BLINK_EXPORT static void enableLayerSquashing(bool) { }
 
     BLINK_EXPORT static void enableShowModalDialog(bool);
 
