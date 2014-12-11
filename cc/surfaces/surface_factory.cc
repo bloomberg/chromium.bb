@@ -46,7 +46,7 @@ void SurfaceFactory::Destroy(SurfaceId surface_id) {
 
 void SurfaceFactory::SubmitFrame(SurfaceId surface_id,
                                  scoped_ptr<CompositorFrame> frame,
-                                 const base::Closure& callback) {
+                                 const DrawCallback& callback) {
   OwningSurfaceMap::iterator it = surface_map_.find(surface_id);
   DCHECK(it != surface_map_.end());
   DCHECK(it->second->factory().get() == this);

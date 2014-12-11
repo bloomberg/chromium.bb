@@ -46,7 +46,7 @@ class SurfaceDisplayOutputSurface : public cc::OutputSurface,
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
 
  private:
-  void SwapBuffersComplete();
+  void SwapBuffersComplete(bool drawn);
 
   OnscreenDisplayClient* display_client_;
   cc::SurfaceManager* surface_manager_;

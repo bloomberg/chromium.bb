@@ -33,10 +33,12 @@ Surface::~Surface() {
         &current_resources);
     factory_->UnrefResources(current_resources);
   }
+  if (!draw_callback_.is_null())
+    draw_callback_.Run(false);
 }
 
 void Surface::QueueFrame(scoped_ptr<CompositorFrame> frame,
-                         const base::Closure& callback) {
+                         const DrawCallback& callback) {
   DCHECK(factory_);
   ClearCopyRequests();
   TakeLatencyInfo(&frame->metadata.latency_info);
@@ -54,7 +56,7 @@ void Surface::QueueFrame(scoped_ptr<CompositorFrame> frame,
     factory_->UnrefResources(previous_resources);
   }
   if (!draw_callback_.is_null())
-    draw_callback_.Run();
+    draw_callback_.Run(false);
   draw_callback_ = callback;
   factory_->manager()->DidSatisfySequences(
       SurfaceIdAllocator::NamespaceForId(surface_id_),
@@ -106,9 +108,9 @@ void Surface::TakeLatencyInfo(std::vector<ui::LatencyInfo>* latency_info) {
 
 void Surface::RunDrawCallbacks() {
   if (!draw_callback_.is_null()) {
-    base::Closure callback = draw_callback_;
-    draw_callback_ = base::Closure();
-    callback.Run();
+    DrawCallback callback = draw_callback_;
+    draw_callback_ = DrawCallback();
+    callback.Run(true);
   }
 }
 

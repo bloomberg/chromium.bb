@@ -212,6 +212,7 @@ class CONTENT_EXPORT DelegatedFrameHost
       uint32 sync_point);
 
   void SendDelegatedFrameAck(uint32 output_surface_id);
+  void SurfaceDrawn(uint32 output_surface_id, bool drawn);
   void SendReturnedDelegatedResources(uint32 output_surface_id);
 
   // DelegatedFrameEvictorClient implementation.

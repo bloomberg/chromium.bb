@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/surfaces/surface.h"
@@ -58,7 +59,8 @@ class SurfaceFactoryTest : public testing::Test {
     }
     scoped_ptr<CompositorFrame> frame(new CompositorFrame);
     frame->delegated_frame_data = frame_data.Pass();
-    factory_.SubmitFrame(surface_id_, frame.Pass(), base::Closure());
+    factory_.SubmitFrame(surface_id_, frame.Pass(),
+                         SurfaceFactory::DrawCallback());
   }
 
   void UnrefResources(ResourceProvider::ResourceId* ids_to_unref,
@@ -358,6 +360,11 @@ TEST_F(SurfaceFactoryTest, ResourceLifetime) {
   }
 }
 
+void DrawCallback(bool* executed, bool* result, bool drawn) {
+  *executed = true;
+  *result = drawn;
+}
+
 // Tests doing a DestroyAll before shutting down the factory;
 TEST_F(SurfaceFactoryTest, DestroyAll) {
   SurfaceId id(7);
@@ -370,10 +377,17 @@ TEST_F(SurfaceFactoryTest, DestroyAll) {
   frame_data->resource_list.push_back(resource);
   scoped_ptr<CompositorFrame> frame(new CompositorFrame);
   frame->delegated_frame_data = frame_data.Pass();
-  factory_.SubmitFrame(id, frame.Pass(), base::Closure());
+  bool executed = false;
+  bool drawn = false;
+
+  factory_.SubmitFrame(id, frame.Pass(),
+                       base::Bind(&DrawCallback, &executed, &drawn));
 
   surface_id_ = SurfaceId();
+  EXPECT_FALSE(executed);
   factory_.DestroyAll();
+  EXPECT_TRUE(executed);
+  EXPECT_FALSE(drawn);
 }
 
 TEST_F(SurfaceFactoryTest, DestroySequence) {
@@ -391,7 +405,8 @@ TEST_F(SurfaceFactoryTest, DestroySequence) {
   frame->metadata.satisfies_sequences.push_back(4);
   frame->delegated_frame_data = frame_data.Pass();
   DCHECK(manager_.GetSurfaceForId(id2));
-  factory_.SubmitFrame(surface_id_, frame.Pass(), base::Closure());
+  factory_.SubmitFrame(surface_id_, frame.Pass(),
+                       SurfaceFactory::DrawCallback());
   DCHECK(!manager_.GetSurfaceForId(id2));
 
   // Check that waiting after the sequence is satisfied works.
