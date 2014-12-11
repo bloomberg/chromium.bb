@@ -187,6 +187,10 @@ void AwAutofillClient::ShowAutofillSettings() {
   NOTIMPLEMENTED();
 }
 
+void AwAutofillClient::ShowUnmaskPrompt() {
+  NOTIMPLEMENTED();
+}
+
 void AwAutofillClient::ConfirmSaveCreditCard(
     const base::Closure& save_card_callback) {
   NOTIMPLEMENTED();

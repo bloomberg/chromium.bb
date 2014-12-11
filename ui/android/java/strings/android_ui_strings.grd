@@ -216,6 +216,14 @@
       <message desc="Label for 'clear' button in date picker dialog and time picker dialog, used to replace the contents of a field with the empty string [CHAR-LIMIT=12]" name="IDS_DATE_PICKER_DIALOG_CLEAR">
         Clear
       </message>
+
+      <message desc="The text that explains the purpose of the card unmasking prompt." name="IDS_CARD_UNMASK_PROMPT_CONTENT_TEXT">
+        Enter the three digit verification code from the back of your card
+      </message>
+      <message desc="Placeholder/hint text for the CVC input in the card unmasking prompt." name="IDS_CARD_UNMASK_INPUT_HINT">
+        CVC
+      </message>
+
     </messages>
   </release>
 </grit>

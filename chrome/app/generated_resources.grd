@@ -14877,6 +14877,13 @@ Do you accept?
         Make autofill suggestions on initial mouse click on a form element.
       </message>
 
+      <message name="IDS_FLAGS_ENABLE_WALLET_CARD_IMPORT_NAME" desc="Name of a lab">
+        Import Wallet cards
+      </message>
+      <message name="IDS_FLAGS_ENABLE_WALLET_CARD_IMPORT_DESCRIPTION" desc="Description of a lab">
+        Import cards from my Wallet.
+      </message>
+
       <!-- Reader mode experiment flags -->
       <if expr="is_android">
         <message name="IDS_FLAGS_READER_MODE_EXPERIMENT_NAME" desc="An about:flags experiment for reading mode UI">

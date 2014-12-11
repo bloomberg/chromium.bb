@@ -49317,6 +49317,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1352447982" label="enable-lcd-text"/>
   <int value="1361047396" label="disable-click-delay"/>
   <int value="1367671275" label="enable-proximity-auth-proximity-detection"/>
+  <int value="1371907429" label="enable-wallet-card-import"/>
   <int value="1378310092" label="disable-suggestions-service"/>
   <int value="1381746642" label="enable-automatic-password-saving"/>
   <int value="1382500494" label="disable-drive-apps-in-app-list"/>

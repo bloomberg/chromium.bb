@@ -1692,6 +1692,13 @@ const Experiment kExperiments[] = {
         autofill::switches::kDisableSingleClickAutofill)
   },
   {
+    "enable-wallet-card-import",
+    IDS_FLAGS_ENABLE_WALLET_CARD_IMPORT_NAME,
+    IDS_FLAGS_ENABLE_WALLET_CARD_IMPORT_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(autofill::switches::kEnableWalletCardImport)
+  },
+  {
     "enable-permissions-bubbles",
     IDS_FLAGS_ENABLE_PERMISSIONS_BUBBLES_NAME,
     IDS_FLAGS_ENABLE_PERMISSIONS_BUBBLES_DESCRIPTION,

@@ -102,6 +102,15 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   // Add or hide warnings as appropriate.
   ApplyAutofillWarnings(&values, &labels, &icons, &ids);
 
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWalletCardImport)) {
+    // For now, add a fake masked card.
+    values.push_back(base::ASCIIToUTF16("Visa - 1111"));
+    labels.push_back(base::ASCIIToUTF16("[tap to unlock]"));
+    icons.push_back(base::string16());
+    ids.push_back(POPUP_ITEM_ID_FAKE_MASKED_INSTRUMENT);
+  }
+
   // Add a separator to go between the values and menu items.
   values.push_back(base::string16());
   labels.push_back(base::string16());
@@ -264,6 +273,8 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
   } else if (identifier == POPUP_ITEM_ID_SCAN_CREDIT_CARD) {
     manager_->client()->ScanCreditCard(base::Bind(
         &AutofillExternalDelegate::OnCreditCardScanned, GetWeakPtr()));
+  } else if (identifier == POPUP_ITEM_ID_FAKE_MASKED_INSTRUMENT) {
+    manager_->client()->ShowUnmaskPrompt();
   } else {
     FillAutofillFormData(identifier, false);
   }

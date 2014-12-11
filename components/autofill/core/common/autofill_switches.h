@@ -17,6 +17,7 @@ extern const char kDisambiguateAutofillServerNameTypes[];
 extern const char kEnableCreditCardScan[];
 extern const char kEnablePasswordGeneration[];
 extern const char kEnableSingleClickAutofill[];
+extern const char kEnableWalletCardImport[];
 extern const char kIgnoreAutocompleteOffForAutofill[];
 extern const char kLocalHeuristicsOnlyForPasswordGeneration[];
 extern const char kRespectAutocompleteOffForAutofill[];

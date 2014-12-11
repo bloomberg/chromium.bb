@@ -20,6 +20,9 @@ enum PopupItemId {
   POPUP_ITEM_ID_MAC_ACCESS_CONTACTS = -7,
   POPUP_ITEM_ID_SCAN_CREDIT_CARD = -8,
   POPUP_ITEM_ID_TITLE = -9,
+  // TODO(estade): remove this when real masked instruments
+  // are hooked up.
+  POPUP_ITEM_ID_FAKE_MASKED_INSTRUMENT = -10,
 };
 
 }  // namespace autofill

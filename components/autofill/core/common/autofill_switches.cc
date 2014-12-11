@@ -33,6 +33,9 @@ const char kEnablePasswordGeneration[]      = "enable-password-generation";
 // Enables/disables suggestions without typing anything (on first click).
 const char kEnableSingleClickAutofill[]     = "enable-single-click-autofill";
 
+// Enables the feature that imports Wallet cards for Chrome Autofill.
+const char kEnableWalletCardImport[] = "enable-wallet-card-import";
+
 // Ignores autocomplete="off" for Autofill data (profiles + credit cards).
 const char kIgnoreAutocompleteOffForAutofill[] =
     "ignore-autocomplete-off-autofill";
