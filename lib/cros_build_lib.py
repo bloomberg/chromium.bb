@@ -530,6 +530,13 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
   env.update(extra_env if extra_env else {})
   if enter_chroot and not IsInsideChroot():
     wrapper = ['cros_sdk']
+    if cwd:
+      # If the current working directory is set, try to find cros_sdk relative
+      # to cwd. Generally cwd will be the buildroot therefore we want to use
+      # {cwd}/chromite/bin/cros_sdk. For more info PTAL at crbug.com/432620
+      path = os.path.join(cwd, constants.CHROMITE_BIN_SUBDIR, 'cros_sdk')
+      if os.path.exists(path):
+        wrapper = [path]
 
     if chroot_args:
       wrapper += chroot_args
