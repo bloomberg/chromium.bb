@@ -367,6 +367,15 @@ int av_log_get_level(void)
 
 void av_log_set_level(int level)
 {
+#if defined(_WIN32) && defined(_M_X64)
+    // VS2013 has a bug where FMA3 instructions will be executed on CPUs that
+    // support them despite them being disabled at the OS level, causing illegal
+    // instruction exceptions. av_log_set_level() is Chromium's first call into
+    // ffmpegsumo.dll, so disable FMA3 here until we're on VS2015.
+    // See http://crbug.com/440892 for details.
+    _set_FMA3_enable(0);
+#endif
+
     av_log_level = level;
 }
 
