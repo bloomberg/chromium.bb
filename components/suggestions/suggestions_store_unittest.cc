@@ -17,7 +17,6 @@ namespace {
 
 const char kTestTitle[] = "Foo site";
 const char kTestUrl[] = "http://foo.com/";
-const int kTimeGapUsec = 100000;
 
 void AddSuggestion(SuggestionsProfile* suggestions, const char *title,
                    const char *url, int64 expiry_ts) {
@@ -39,15 +38,15 @@ SuggestionsProfile CreateTestSuggestionsProfileWithExpiry(int expired_count,
                                                           int valid_count) {
   int64 now_usec = (base::Time::NowFromSystemTime() - base::Time::UnixEpoch())
       .ToInternalValue();
-  srand(7);  // Constant seed for rand() function.
-  int64 offset_limit_usec = 30 * base::Time::kMicrosecondsPerDay;
-  int64 offset_usec = rand() % offset_limit_usec + kTimeGapUsec;
+  int64 offset_usec = 5 * base::Time::kMicrosecondsPerMinute;
 
   SuggestionsProfile suggestions;
-  for (int i = 0; i < valid_count; i++)
-    AddSuggestion(&suggestions, kTestTitle, kTestUrl, now_usec + offset_usec);
-  for (int i = 0; i < expired_count; i++)
-    AddSuggestion(&suggestions, kTestTitle, kTestUrl, now_usec - offset_usec);
+  for (int i = 1; i <= valid_count; i++)
+    AddSuggestion(&suggestions, kTestTitle, kTestUrl,
+        now_usec + offset_usec * i);
+  for (int i = 1; i <= expired_count; i++)
+    AddSuggestion(&suggestions, kTestTitle, kTestUrl,
+        now_usec - offset_usec * i);
 
   return suggestions;
 }
