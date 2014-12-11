@@ -1899,7 +1899,7 @@ void Document::updateRenderTreeForNodeIfNeeded(Node* node)
     if (!node->canParticipateInComposedTree())
         return;
 
-    bool needsRecalc = needsFullRenderTreeUpdate() || childNeedsDistributionRecalc() || node->needsStyleRecalc() || node->needsStyleInvalidation();
+    bool needsRecalc = needsFullRenderTreeUpdate() || node->needsStyleRecalc() || node->needsStyleInvalidation();
 
     if (!needsRecalc) {
         for (const ContainerNode* ancestor = NodeRenderingTraversal::parent(*node); ancestor && !needsRecalc; ancestor = NodeRenderingTraversal::parent(*ancestor))
