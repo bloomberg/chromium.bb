@@ -79,7 +79,7 @@ class RequestCacheNames
     WTF_MAKE_NONCOPYABLE(RequestCacheNames);
 
 public:
-    RequestCacheNames(PassRefPtr<RequestCacheNamesCallback> callback)
+    RequestCacheNames(PassRefPtrWillBeRawPtr<RequestCacheNamesCallback> callback)
         : m_callback(callback)
     {
     }
@@ -101,7 +101,7 @@ public:
     }
 
 private:
-    RefPtr<RequestCacheNamesCallback> m_callback;
+    RefPtrWillBePersistent<RequestCacheNamesCallback> m_callback;
 };
 
 struct DataRequestParams {
@@ -125,7 +125,7 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
     WTF_MAKE_NONCOPYABLE(ResponsesAccumulator);
 
 public:
-    ResponsesAccumulator(int numResponses, const DataRequestParams& params, PassRefPtr<RequestEntriesCallback> callback)
+    ResponsesAccumulator(int numResponses, const DataRequestParams& params, PassRefPtrWillBeRawPtr<RequestEntriesCallback> callback)
         : m_params(params)
         , m_numResponsesLeft(numResponses)
         , m_responses(static_cast<size_t>(numResponses))
@@ -169,7 +169,7 @@ private:
     DataRequestParams m_params;
     int m_numResponsesLeft;
     Vector<RequestResponse> m_responses;
-    RefPtr<RequestEntriesCallback> m_callback;
+    RefPtrWillBePersistent<RequestEntriesCallback> m_callback;
 };
 
 class GetCacheResponsesForRequestData : public WebServiceWorkerCache::CacheMatchCallbacks {
@@ -178,7 +178,7 @@ class GetCacheResponsesForRequestData : public WebServiceWorkerCache::CacheMatch
 public:
     GetCacheResponsesForRequestData(
         const DataRequestParams& params, const WebServiceWorkerRequest& request,
-        PassRefPtr<ResponsesAccumulator> accum, PassRefPtr<RequestEntriesCallback> callback)
+        PassRefPtr<ResponsesAccumulator> accum, PassRefPtrWillBeRawPtr<RequestEntriesCallback> callback)
         : m_params(params)
         , m_request(request)
         , m_accumulator(accum)
@@ -201,14 +201,14 @@ private:
     DataRequestParams m_params;
     WebServiceWorkerRequest m_request;
     RefPtr<ResponsesAccumulator> m_accumulator;
-    RefPtr<RequestEntriesCallback> m_callback;
+    RefPtrWillBePersistent<RequestEntriesCallback> m_callback;
 };
 
 class GetCacheKeysForRequestData : public WebServiceWorkerCache::CacheWithRequestsCallbacks {
     WTF_MAKE_NONCOPYABLE(GetCacheKeysForRequestData);
 
 public:
-    GetCacheKeysForRequestData(const DataRequestParams& params, PassOwnPtr<WebServiceWorkerCache> cache, PassRefPtr<RequestEntriesCallback> callback)
+    GetCacheKeysForRequestData(const DataRequestParams& params, PassOwnPtr<WebServiceWorkerCache> cache, PassRefPtrWillBeRawPtr<RequestEntriesCallback> callback)
         : m_params(params)
         , m_cache(cache)
         , m_callback(callback)
@@ -235,7 +235,7 @@ public:
 private:
     DataRequestParams m_params;
     OwnPtr<WebServiceWorkerCache> m_cache;
-    RefPtr<RequestEntriesCallback> m_callback;
+    RefPtrWillBePersistent<RequestEntriesCallback> m_callback;
 };
 
 class GetCacheForRequestData
@@ -243,7 +243,7 @@ class GetCacheForRequestData
     WTF_MAKE_NONCOPYABLE(GetCacheForRequestData);
 
 public:
-    GetCacheForRequestData(const DataRequestParams& params, PassRefPtr<RequestEntriesCallback> callback)
+    GetCacheForRequestData(const DataRequestParams& params, PassRefPtrWillBeRawPtr<RequestEntriesCallback> callback)
         : m_params(params)
         , m_callback(callback)
     {
@@ -263,14 +263,14 @@ public:
 
 private:
     DataRequestParams m_params;
-    RefPtr<RequestEntriesCallback> m_callback;
+    RefPtrWillBePersistent<RequestEntriesCallback> m_callback;
 };
 
 class DeleteCache : public WebServiceWorkerCacheStorage::CacheStorageCallbacks {
     WTF_MAKE_NONCOPYABLE(DeleteCache);
 
 public:
-    DeleteCache(PassRefPtr<DeleteCacheCallback> callback)
+    DeleteCache(PassRefPtrWillBeRawPtr<DeleteCacheCallback> callback)
         : m_callback(callback)
     {
     }
@@ -287,7 +287,7 @@ public:
     }
 
 private:
-    RefPtr<DeleteCacheCallback> m_callback;
+    RefPtrWillBePersistent<DeleteCacheCallback> m_callback;
 };
 
 } // namespace
