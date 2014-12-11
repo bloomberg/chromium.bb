@@ -923,8 +923,14 @@ _XMM_AVX_INSTRUCTIONS.update([
   'vbroadcastf128',
   'vbroadcastsd',
   'vbroadcastss',
+  'vcvtpd2psx',
+  'vcvtpd2psy',
+  'vcvtpd2dqx',
+  'vcvtpd2dqy',
   'vcvtph2ps',
   'vcvtps2ph',
+  'vcvttpd2dqx',
+  'vcvttpd2dqy',
   'vextractf128',
   'vfrczpd',
   'vfrczps',
@@ -1126,7 +1132,7 @@ def ValidateRegularInstruction(instruction, bitness):
          'btc', 'btr', 'bts', 'bt',
          'cmp', 'test',
          'imul', 'mul', 'div', 'idiv', 'push',
-        ]) or name in ['movd', 'vmovd']:
+        ]) or name in ['movd', 'vmovd', 'vmovq']:
       return Condition(), Condition()
 
     elif name in [

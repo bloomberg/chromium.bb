@@ -350,6 +350,8 @@ if ragel_involved:
      '20141118.avx1_remaining_3operand', '20141119.avx1_moves'),
     ('remaining_nonspecial_avx1_proof.py', ('32', '64'),
      '20141119.avx1_moves', '20141204.all_nonspecial_avx1'),
+    ('final_avx1_instrs_proof.py', ('32', '64'),
+     '20141204.all_nonspecial_avx1', '20141210.remaining_avx1'),
   ]
   for proof_file, bitnesses, old, new in trie_proofs:
     for bitness in bitnesses:

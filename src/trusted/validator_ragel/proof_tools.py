@@ -83,15 +83,30 @@ def AllYMMOperands(bitness):
               for i in xrange(8 if bitness == 32 else 16)])
 
 
-def GprOperands(bitness, operand_size, is_write_for_64_bit=True):
+def GprOperands(bitness, operand_size, is_write_for_64_bit=True,
+                can_restrict=False):
   """Returns all gpr operands as an operand set.
   Args:
     bitness: architecture bitness to distinguish x86_32/x86_64: (32, 64)
     operand_size: size of register to be used in write.
-    is_write_for_64_bit: if bitness == 64, exclude special
-                         registers rsp, rbp, r15 for sandbox reasons.
+    is_write_for_64_bit: if bitness == 64, and operand_size == 64,
+                         exclude special registers rsp, rbp, r15 for sandbox
+                         reasons. If bitness == 64 and operand_size == 32,
+                         exclude 'esp', 'ebp', and 'r15d' if it's
+                         not can_restrict. If can_restrict, then
+                         just exclude 'r15d'
+    can_restrict: if true and bitness == 64, and operand_size == 32, and
+                  is_write_for_64_bit == True, disallow r15 write, and
+                  produce restricted register.
   """
   regs = []
+  operand_to_restriction_map = {
+      '%eax': '%rax', '%ebx' : '%rbx', '%ecx' : '%rcx', '%edx': '%rdx',
+      '%ebp': '%rbp', '%edi': '%rdi', '%esi': '%rsi', '%esp': '%rsp',
+      '%r8d': '%r8', '%r9d': '%r9', '%r10d' : '%r10', '%r11d': '%r11',
+      '%r12d': '%r12', '%r13d': '%r13', '%r14d' : '%r14',
+  }
+  restricts = False
   if operand_size == 16 and bitness == 32:
     regs = ['%ax', '%bx', '%cx', '%dx', '%bp', '%sp', '%di', '%si']
   elif operand_size == 32 and bitness == 32:
@@ -103,9 +118,24 @@ def GprOperands(bitness, operand_size, is_write_for_64_bit=True):
     # is_write_for_64_bit == True.
     if is_write_for_64_bit == False:
       regs += ['%esp', '%ebp', '%r15d']
+    elif can_restrict == True:
+      regs += ['%esp', '%ebp']
+      restricts = True
+  elif bitness == 64 and operand_size == 64:
+    regs = ['%rax', '%rbx', '%rcx', '%rdi', '%rdx', '%rsi',
+            '%r8', '%r9', '%r10', '%r11', '%r12', '%r13', '%r14']
+    # Don't include '%ebp', '%esp', '%r15d' in allowed registers when
+    # is_write_for_64_bit == True.
+    if is_write_for_64_bit == False:
+      regs += ['%rsp', '%rbp', '%r15']
   else:
     raise AssertionError("Unimplemented")
-  return set([Operands(disasms=(reg,)) for reg in regs])
+  if restricts:
+    return set([
+        Operands(disasms=(reg,), output_rr=operand_to_restriction_map[reg])
+        for reg in regs])
+  else:
+    return set([Operands(disasms=(reg,)) for reg in regs])
 
 
 def MnemonicOp(name):

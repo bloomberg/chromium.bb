@@ -76,7 +76,7 @@ class WorkerState(object):
     self._asm_file.write('  .byte %s\n' % ','.join(map(hex, bytes)))
     self.total_instructions += 1
     self._num_instructions += 1
-    if self._num_instructions == 1000000:
+    if self._num_instructions == 2000000:
       self.Finish()
       self._StartNewFile()
 
