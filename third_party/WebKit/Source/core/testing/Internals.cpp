@@ -475,33 +475,53 @@ size_t Internals::countElementShadow(const Node* root, ExceptionState& exception
     return toShadowRoot(root)->childShadowRootCount();
 }
 
-Node* Internals::nextSiblingByWalker(Node* node)
+Node* Internals::nextSiblingByWalker(Node* node, ExceptionState& exceptionState)
 {
     ASSERT(node);
+    if (!node->canParticipateInComposedTree()) {
+        exceptionState.throwDOMException(InvalidAccessError, "The node argument doesn't particite in the composed tree.");
+        return 0;
+    }
     return ComposedTreeTraversal::nextSibling(*node);
 }
 
-Node* Internals::firstChildByWalker(Node* node)
+Node* Internals::firstChildByWalker(Node* node, ExceptionState& exceptionState)
 {
     ASSERT(node);
+    if (!node->canParticipateInComposedTree()) {
+        exceptionState.throwDOMException(InvalidAccessError, "The node argument doesn't particite in the composed tree");
+        return 0;
+    }
     return ComposedTreeTraversal::firstChild(*node);
 }
 
-Node* Internals::lastChildByWalker(Node* node)
+Node* Internals::lastChildByWalker(Node* node, ExceptionState& exceptionState)
 {
     ASSERT(node);
+    if (!node->canParticipateInComposedTree()) {
+        exceptionState.throwDOMException(InvalidAccessError, "The node argument doesn't particite in the composed tree.");
+        return 0;
+    }
     return ComposedTreeTraversal::lastChild(*node);
 }
 
-Node* Internals::nextNodeByWalker(Node* node)
+Node* Internals::nextNodeByWalker(Node* node, ExceptionState& exceptionState)
 {
     ASSERT(node);
+    if (!node->canParticipateInComposedTree()) {
+        exceptionState.throwDOMException(InvalidAccessError, "The node argument doesn't particite in the composed tree.");
+        return 0;
+    }
     return ComposedTreeTraversal::next(*node);
 }
 
-Node* Internals::previousNodeByWalker(Node* node)
+Node* Internals::previousNodeByWalker(Node* node, ExceptionState& exceptionState)
 {
     ASSERT(node);
+    if (!node->canParticipateInComposedTree()) {
+        exceptionState.throwDOMException(InvalidAccessError, "The node argument doesn't particite in the composed tree.");
+        return 0;
+    }
     return ComposedTreeTraversal::previous(*node);
 }
 

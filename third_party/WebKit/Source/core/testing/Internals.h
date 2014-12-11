@@ -119,11 +119,11 @@ public:
     unsigned short compareTreeScopePosition(const Node*, const Node*, ExceptionState&) const;
 
     // FIXME: Rename these functions if walker is preferred.
-    Node* nextSiblingByWalker(Node*);
-    Node* firstChildByWalker(Node*);
-    Node* lastChildByWalker(Node*);
-    Node* nextNodeByWalker(Node*);
-    Node* previousNodeByWalker(Node*);
+    Node* nextSiblingByWalker(Node*, ExceptionState&);
+    Node* firstChildByWalker(Node*, ExceptionState&);
+    Node* lastChildByWalker(Node*, ExceptionState&);
+    Node* nextNodeByWalker(Node*, ExceptionState&);
+    Node* previousNodeByWalker(Node*, ExceptionState&);
 
     unsigned updateStyleAndReturnAffectedElementCount(ExceptionState&) const;
     unsigned needsLayoutCount(ExceptionState&) const;
