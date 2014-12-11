@@ -38,18 +38,25 @@ class HidConnectionLinux::Helper : public base::MessagePumpLibevent::Watcher {
       : platform_file_(platform_file),
         connection_(connection),
         task_runner_(task_runner) {
-    if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
-            platform_file_, true, base::MessageLoopForIO::WATCH_READ,
-            &file_watcher_, this)) {
-      LOG(ERROR) << "Failed to start watching device file.";
-    }
-
     // Report buffers must always have room for the report ID.
     report_buffer_size_ = device_info.max_input_report_size + 1;
     has_report_id_ = device_info.has_report_id;
   }
 
   virtual ~Helper() { DCHECK(thread_checker_.CalledOnValidThread()); }
+
+  // Starts the FileDescriptorWatcher that reads input events from the device.
+  // Must be called on a thread that has a base::MessageLoopForIO. The helper
+  // object is owned by the thread where it was started.
+  void Start() {
+    base::ThreadRestrictions::AssertIOAllowed();
+    thread_checker_.DetachFromThread();
+    if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
+            platform_file_, true, base::MessageLoopForIO::WATCH_READ,
+            &file_watcher_, this)) {
+      LOG(ERROR) << "Failed to start watching device file.";
+    }
+  }
 
  private:
   // base::MessagePumpLibevent::Watcher implementation.
@@ -99,7 +106,7 @@ class HidConnectionLinux::Helper : public base::MessagePumpLibevent::Watcher {
 };
 
 HidConnectionLinux::HidConnectionLinux(
-    HidDeviceInfo device_info,
+    const HidDeviceInfo& device_info,
     base::File device_file,
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
     : HidConnection(device_info),
@@ -109,14 +116,15 @@ HidConnectionLinux::HidConnectionLinux(
   device_file_ = device_file.Pass();
 
   // The helper is passed a weak pointer to this connection so that it can be
-  // cleaned up after the connection is closed. The weak pointer must be
-  // constructed on this thread.
-  file_task_runner_->PostTask(FROM_HERE,
-                              base::Bind(&HidConnectionLinux::StartHelper, this,
-                                         weak_factory_.GetWeakPtr()));
+  // cleaned up after the connection is closed.
+  helper_ = new Helper(device_file_.GetPlatformFile(), device_info,
+                       weak_factory_.GetWeakPtr(), task_runner_);
+  file_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&Helper::Start, base::Unretained(helper_)));
 }
 
 HidConnectionLinux::~HidConnectionLinux() {
+  DCHECK(helper_ == nullptr);
 }
 
 void HidConnectionLinux::PlatformClose() {
@@ -124,7 +132,8 @@ void HidConnectionLinux::PlatformClose() {
   // base::File::Close is called on a thread where I/O is allowed is satisfied
   // and (2) any tasks posted to this task runner that refer to this file will
   // complete before it is closed.
-  file_task_runner_->DeleteSoon(FROM_HERE, helper_.release());
+  file_task_runner_->DeleteSoon(FROM_HERE, helper_);
+  helper_ = nullptr;
   file_task_runner_->PostTask(FROM_HERE,
                               base::Bind(&HidConnectionLinux::CloseDevice,
                                          base::Passed(&device_file_)));
@@ -235,14 +244,6 @@ void HidConnectionLinux::FinishSendFeatureReport(const WriteCallback& callback,
   } else {
     callback.Run(true);
   }
-}
-
-void HidConnectionLinux::StartHelper(
-    base::WeakPtr<HidConnectionLinux> weak_ptr) {
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  helper_.reset(new Helper(device_file_.GetPlatformFile(), device_info(),
-                           weak_ptr, task_runner_));
 }
 
 // static

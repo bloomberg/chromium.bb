@@ -20,7 +20,7 @@ namespace device {
 class HidConnectionLinux : public HidConnection {
  public:
   HidConnectionLinux(
-      HidDeviceInfo device_info,
+      const HidDeviceInfo& device_info,
       base::File device_file,
       scoped_refptr<base::SingleThreadTaskRunner> file_thread_runner);
 
@@ -56,10 +56,6 @@ class HidConnectionLinux : public HidConnection {
                               int result);
   void FinishSendFeatureReport(const WriteCallback& callback, int result);
 
-  // Starts the FileDescriptorWatcher that reads input events from the device.
-  // Must be called on a thread that has a base::MessageLoopForIO.
-  void StartHelper(base::WeakPtr<HidConnectionLinux> weak_ptr);
-
   // Writes to the device. This operation may block.
   static void BlockingWrite(
       base::PlatformFile platform_file,
@@ -82,7 +78,7 @@ class HidConnectionLinux : public HidConnection {
   void ProcessReadQueue();
 
   base::File device_file_;
-  scoped_ptr<Helper> helper_;
+  Helper* helper_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
