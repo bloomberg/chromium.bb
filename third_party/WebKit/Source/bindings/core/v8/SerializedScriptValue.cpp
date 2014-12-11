@@ -83,25 +83,20 @@ SerializedScriptValue::SerializedScriptValue()
 {
 }
 
-static void neuterArrayBufferInAllWorlds(DOMArrayBuffer* object)
+static void acculumateArrayBuffersForAllWorlds(v8::Isolate* isolate, DOMArrayBuffer* object, Vector<v8::Local<v8::ArrayBuffer>, 4>& buffers)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     if (isMainThread()) {
         Vector<RefPtr<DOMWrapperWorld> > worlds;
         DOMWrapperWorld::allWorldsInMainThread(worlds);
         for (size_t i = 0; i < worlds.size(); i++) {
             v8::Handle<v8::Object> wrapper = worlds[i]->domDataStore().get(object, isolate);
-            if (!wrapper.IsEmpty()) {
-                ASSERT(wrapper->IsArrayBuffer());
-                v8::Handle<v8::ArrayBuffer>::Cast(wrapper)->Neuter();
-            }
+            if (!wrapper.IsEmpty())
+                buffers.append(v8::Handle<v8::ArrayBuffer>::Cast(wrapper));
         }
     } else {
         v8::Handle<v8::Object> wrapper = DOMWrapperWorld::current(isolate).domDataStore().get(object, isolate);
-        if (!wrapper.IsEmpty()) {
-            ASSERT(wrapper->IsArrayBuffer());
-            v8::Handle<v8::ArrayBuffer>::Cast(wrapper)->Neuter();
-        }
+        if (!wrapper.IsEmpty())
+            buffers.append(v8::Handle<v8::ArrayBuffer>::Cast(wrapper));
     }
 }
 
@@ -124,13 +119,25 @@ PassOwnPtr<SerializedScriptValue::ArrayBufferContentsArray> SerializedScriptValu
             continue;
         visited.add(arrayBuffers[i].get());
 
-        bool result = arrayBuffers[i]->transfer(contents->at(i));
+        Vector<v8::Local<v8::ArrayBuffer>, 4> bufferHandles;
+        v8::HandleScope handleScope(isolate);
+        acculumateArrayBuffersForAllWorlds(isolate, arrayBuffers[i].get(), bufferHandles);
+        bool isNeuterable = true;
+        for (size_t j = 0; j < bufferHandles.size(); j++)
+            isNeuterable &= bufferHandles[j]->IsNeuterable();
+
+        RefPtr<DOMArrayBuffer> toTransfer = arrayBuffers[i];
+        if (!isNeuterable)
+            toTransfer = DOMArrayBuffer::create(arrayBuffers[i]->buffer());
+        bool result = toTransfer->transfer(contents->at(i));
         if (!result) {
             exceptionState.throwDOMException(DataCloneError, "ArrayBuffer at index " + String::number(i) + " could not be transferred.");
             return nullptr;
         }
 
-        neuterArrayBufferInAllWorlds(arrayBuffers[i].get());
+        if (isNeuterable)
+            for (size_t j = 0; j < bufferHandles.size(); j++)
+                bufferHandles[j]->Neuter();
     }
     return contents.release();
 }
