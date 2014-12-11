@@ -1,6 +1,7 @@
 include_rules = [
   "+chromecast/media",
   "+components/cdm/renderer",
+  "+components/dns_prefetch/renderer",
   "+content/public/renderer",
   "+media/base",
   "+third_party/WebKit/public/platform",

@@ -48,6 +48,10 @@ class URLRequestContextFactory {
     return app_network_delegate_.get();
   }
 
+  net::HostResolver* host_resolver() const {
+    return host_resolver_.get();
+  }
+
   // Initialize the CastNetworkDelegate objects. This needs to be done
   // after the CastService is created, but before any URL requests are made.
   void InitializeNetworkDelegates();

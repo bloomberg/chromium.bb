@@ -111,6 +111,8 @@
         '../components/components.gyp:cdm_renderer',
         '../components/components.gyp:component_metrics_proto',
         '../components/components.gyp:crash_component',
+        '../components/components.gyp:dns_prefetch_browser',
+        '../components/components.gyp:dns_prefetch_renderer',
         '../components/components.gyp:metrics',
         '../components/components.gyp:metrics_gpu',
         '../components/components.gyp:metrics_net',

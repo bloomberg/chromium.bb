@@ -7,6 +7,8 @@ source_set("renderer") {
   sources = [
     "predictor_queue.cc",
     "predictor_queue.h",
+    "prescient_networking_dispatcher.cc",
+    "prescient_networking_dispatcher.h",
     "renderer_net_predictor.cc",
     "renderer_net_predictor.h",
   ]
@@ -14,5 +16,6 @@ source_set("renderer") {
   public_deps = [
     "//components/dns_prefetch/common",
     "//content/public/renderer",
+    "//third_party/WebKit/public:blink",
   ]
 }

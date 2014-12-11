@@ -35,7 +35,7 @@ struct WebPluginInfo;
 }
 
 namespace dns_prefetch {
-class RendererNetPredictor;
+class PrescientNetworkingDispatcher;
 }
 
 namespace extensions {
@@ -221,8 +221,8 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       permissions_policy_delegate_;
 #endif
 
-  scoped_ptr<PrescientNetworkingDispatcher> prescient_networking_dispatcher_;
-  scoped_ptr<dns_prefetch::RendererNetPredictor> net_predictor_;
+  scoped_ptr<dns_prefetch::PrescientNetworkingDispatcher>
+      prescient_networking_dispatcher_;
   scoped_ptr<password_manager::CredentialManagerClient>
       credential_manager_client_;
 #if defined(ENABLE_SPELLCHECK)

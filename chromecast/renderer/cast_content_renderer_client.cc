@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "chromecast/renderer/key_systems_cast.h"
+#include "components/dns_prefetch/renderer/prescient_networking_dispatcher.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_view.h"
 #include "crypto/nss_util.h"
@@ -27,6 +28,12 @@ const blink::WebColor kColorBlack = 0xFF000000;
 
 }  // namespace
 
+CastContentRendererClient::CastContentRendererClient() {
+}
+
+CastContentRendererClient::~CastContentRendererClient() {
+}
+
 void CastContentRendererClient::RenderThreadStarted() {
 #if defined(USE_NSS)
   // Note: Copied from chrome_render_process_observer.cc to fix b/8676652.
@@ -38,6 +45,9 @@ void CastContentRendererClient::RenderThreadStarted() {
   if (!command_line->HasSwitch(switches::kSingleProcess))
     crypto::InitNSSSafely();
 #endif
+
+  prescient_networking_dispatcher_.reset(
+      new dns_prefetch::PrescientNetworkingDispatcher());
 }
 
 void CastContentRendererClient::RenderViewCreated(
@@ -57,6 +67,11 @@ void CastContentRendererClient::AddKeySystems(
     std::vector< ::media::KeySystemInfo>* key_systems) {
   AddChromecastKeySystems(key_systems);
   AddChromecastPlatformKeySystems(key_systems);
+}
+
+blink::WebPrescientNetworking*
+CastContentRendererClient::GetPrescientNetworking() {
+  return prescient_networking_dispatcher_.get();
 }
 
 }  // namespace shell

@@ -30,8 +30,6 @@
       'renderer/net/net_error_helper.h',
       'renderer/net/net_error_page_controller.cc',
       'renderer/net/net_error_page_controller.h',
-      'renderer/net/prescient_networking_dispatcher.cc',
-      'renderer/net/prescient_networking_dispatcher.h',
       'renderer/net_benchmarking_extension.cc',
       'renderer/net_benchmarking_extension.h',
       'renderer/playback_extension.cc',

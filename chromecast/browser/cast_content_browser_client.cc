@@ -18,6 +18,7 @@
 #include "chromecast/common/cast_paths.h"
 #include "chromecast/common/global_descriptors.h"
 #include "components/crash/app/breakpad_linux.h"
+#include "components/dns_prefetch/browser/net_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/render_process_host.h"
@@ -57,6 +58,10 @@ content::BrowserMainParts* CastContentBrowserClient::CreateBrowserMainParts(
 
 void CastContentBrowserClient::RenderProcessWillLaunch(
     content::RenderProcessHost* host) {
+  scoped_refptr<content::BrowserMessageFilter> net_message_filter(
+      new dns_prefetch::NetMessageFilter(
+          url_request_context_factory_->host_resolver()));
+  host->AddFilter(net_message_filter.get());
 }
 
 net::URLRequestContextGetter* CastContentBrowserClient::CreateRequestContext(

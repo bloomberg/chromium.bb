@@ -53,10 +53,13 @@
           'dependencies': [
             'dns_prefetch_common',
             '../content/content.gyp:content_renderer',
+            '../third_party/WebKit/public/blink.gyp:blink',
           ],
           'sources': [
             'dns_prefetch/renderer/predictor_queue.cc',
             'dns_prefetch/renderer/predictor_queue.h',
+            'dns_prefetch/renderer/prescient_networking_dispatcher.cc',
+            'dns_prefetch/renderer/prescient_networking_dispatcher.h',
             'dns_prefetch/renderer/renderer_net_predictor.cc',
             'dns_prefetch/renderer/renderer_net_predictor.h',
           ],
