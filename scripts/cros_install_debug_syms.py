@@ -35,6 +35,11 @@ from portage import create_trees
 DEBUG_SYMS_EXT = '.debug.tbz2'
 
 
+# We cache the package indexes. When the format of what we store changes,
+# bump the cache version to avoid problems.
+CACHE_VERSION = '1'
+
+
 class DebugSymbolsInstaller(object):
   """Container for enviromnent objects, needed to make multiprocessing work.
 
@@ -76,6 +81,12 @@ class DebugSymbolsInstaller(object):
     """
     archive = os.path.join(self._vartree.settings['PKGDIR'],
                            cpv + DEBUG_SYMS_EXT)
+    # GsContext does not understand file:// scheme so we need to extract the
+    # path ourselves.
+    parsed_url = urlparse.urlsplit(url)
+    if not parsed_url.scheme or parsed_url.scheme == 'file':
+      url = parsed_url.path
+
     if not os.path.isfile(archive):
       self._gs_context.Copy(url, archive, debug_level=logging.DEBUG)
 
@@ -163,6 +174,41 @@ def RemoteSymbols(vartree, binhost_cache=None):
   return symbols_mapping
 
 
+def GetPackageIndex(binhost, binhost_cache=None):
+  """Get the packages index for |binhost|.
+
+  If a cache is provided, use it to a cache remote packages index.
+
+  Args:
+    binhost: a portage binhost, local, google storage or http.
+    binhost_cache: a cache for the remote packages index.
+
+  Returns:
+    A PackageIndex object.
+  """
+  key = binhost.split('://')[-1]
+  key = key.rstrip('/').split('/')
+
+  if binhost_cache and binhost_cache.Lookup(key).Exists():
+    with open(binhost_cache.Lookup(key).path) as f:
+      return pickle.load(f)
+
+  pkgindex = binpkg.GrabRemotePackageIndex(binhost)
+  if pkgindex and binhost_cache:
+    # Only cache remote binhosts as local binhosts can change.
+    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+      pickle.dump(pkgindex, temp_file)
+      temp_file.file.close()
+      binhost_cache.Lookup(key).Assign(temp_file.name)
+  elif pkgindex is None:
+    binhost = urlparse.urlsplit(binhost).path
+    if not os.path.isdir(binhost):
+      raise ValueError('unrecognized binhost format for %s.')
+    pkgindex = binpkg.GrabLocalPackageIndex(binhost)
+
+  return pkgindex
+
+
 def ListBinhost(binhost, binhost_cache=None):
   """Return the cpv to debug symbols mapping for a given binhost.
 
@@ -178,37 +224,15 @@ def ListBinhost(binhost, binhost_cache=None):
   Returns:
     A cpv to debug symbols url mapping.
   """
-  key = binhost.split('://')[-1]
-  key = key.rstrip('/').split('/')
-
-  should_cache = True
-
-  if binhost_cache and binhost_cache.Lookup(key).Exists():
-    with open(binhost_cache.Lookup(key).path) as f:
-      return pickle.load(f)
-
-  pkgindex = binpkg.GrabRemotePackageIndex(binhost)
-  if pkgindex is None:
-    binhost = urlparse.urlsplit(binhost).path
-    if not os.path.isdir(binhost):
-      raise ValueError('unrecognized binhost format for %s. Supported formats: '
-                       'http, gs or local path.' % binhost)
-    pkgindex = binpkg.GrabLocalPackageIndex(binhost)
-    # If the package index is local, do not cache as the package index may
-    # change later (for example when reusing packages from other board).
-    should_cache = False
 
   symbols = {}
+  pkgindex = GetPackageIndex(binhost, binhost_cache)
   for p in pkgindex.packages:
     if p.get('DEBUG_SYMBOLS') == 'yes':
-      path = p.get('PATH', os.path.join(binhost, p['CPV'] + '.tbz2'))
-      symbols[p['CPV']] = path.replace('.tbz2', '.debug.tbz2')
-
-  if binhost_cache and should_cache:
-    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-      pickle.dump(symbols, temp_file)
-      temp_file.file.close()
-      binhost_cache.Lookup(key).Assign(temp_file.name)
+      path = p.get('PATH', p['CPV'] + '.tbz2')
+      base_url = pkgindex.header.get('URI', binhost)
+      symbols[p['CPV']] = os.path.join(base_url,
+                                       path.replace('.tbz2', DEBUG_SYMS_EXT))
 
   return symbols
 
@@ -247,7 +271,7 @@ def main(argv):
   vartree = trees[sysroot]['vartree']
 
   cache_dir = os.path.join(commandline.BaseParser.FindCacheDir(None, None),
-                           'cros_install_debug_syms')
+                           'cros_install_debug_syms-v' + CACHE_VERSION)
 
   if options.clearcache:
     osutils.RmDir(cache_dir, ignore_missing=True)
