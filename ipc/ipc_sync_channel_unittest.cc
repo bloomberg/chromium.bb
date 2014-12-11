@@ -1722,11 +1722,7 @@ class VerifiedServer : public Worker {
     VLOG(1) << __FUNCTION__ << " Sending reply: " << reply_text_;
     SyncChannelNestedTestMsg_String::WriteReplyParams(reply_msg, reply_text_);
     Send(reply_msg);
-#if defined(OS_LINUX) || defined(OS_NACL_NONSFI)
-    ASSERT_EQ(-1, channel()->GetPeerPID());
-#else
-    ASSERT_EQ(base::GetCurrentProcId(), channel()->GetPeerPID());
-#endif
+    ASSERT_EQ(channel()->GetPeerPID(), base::GetCurrentProcId());
     Done();
   }
 
@@ -1755,11 +1751,7 @@ class VerifiedClient : public Worker {
     (void)expected_text_;
 
     VLOG(1) << __FUNCTION__ << " Received reply: " << response;
-#if defined(OS_LINUX) || defined(OS_NACL_NONSFI)
-    ASSERT_EQ(-1, channel()->GetPeerPID());
-#else
-    ASSERT_EQ(base::GetCurrentProcId(), channel()->GetPeerPID());
-#endif
+    ASSERT_EQ(channel()->GetPeerPID(), base::GetCurrentProcId());
     Done();
   }
 
