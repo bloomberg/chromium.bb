@@ -23,3 +23,4 @@ Local changes:
 Cherry-picks:
   Revert patch f7fc4bc: dec/webp.c: don't wait for data before reporting w/h
   6638710 webp/types.h: use inline for clang++/-std=c++11
+  a3946b8 enc_neon: fix building with non-Xcode clang (iOS)
