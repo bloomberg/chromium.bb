@@ -34,6 +34,8 @@ namespace {
 const char kShutdownErrorMessage[] =
     "The Service Worker system has shutdown.";
 const char kDisabledErrorMessage[] = "The browser has disabled Service Worker.";
+const char kNoDocumentURLErrorMessage[] =
+    "No URL is associated with the caller's document.";
 
 const uint32 kFilteredMessageClasses[] = {
   ServiceWorkerMsgStart,
@@ -288,6 +290,18 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
     return;
   }
 
+  // TODO(ksakamoto): Currently, document_url is empty if the document is in an
+  // IFRAME using frame.contentDocument.write(...). We can remove this check
+  // once crbug.com/439697 is fixed.
+  if (provider_host->document_url().is_empty()) {
+    Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
+        thread_id,
+        request_id,
+        WebServiceWorkerError::ErrorTypeSecurity,
+        base::ASCIIToUTF16(kNoDocumentURLErrorMessage)));
+    return;
+  }
+
   if (!CanRegisterServiceWorker(
       provider_host->document_url(), pattern, script_url)) {
     BadMessageReceived();
@@ -355,6 +369,16 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
     return;
   }
 
+  // TODO(ksakamoto): This check can be removed once crbug.com/439697 is fixed.
+  if (provider_host->document_url().is_empty()) {
+    Send(new ServiceWorkerMsg_ServiceWorkerUnregistrationError(
+        thread_id,
+        request_id,
+        WebServiceWorkerError::ErrorTypeSecurity,
+        base::ASCIIToUTF16(kNoDocumentURLErrorMessage)));
+    return;
+  }
+
   if (!CanUnregisterServiceWorker(provider_host->document_url(), pattern)) {
     BadMessageReceived();
     return;
@@ -415,6 +439,16 @@ void ServiceWorkerDispatcherHost::OnGetRegistration(
         request_id,
         blink::WebServiceWorkerError::ErrorTypeAbort,
         base::ASCIIToUTF16(kShutdownErrorMessage)));
+    return;
+  }
+
+  // TODO(ksakamoto): This check can be removed once crbug.com/439697 is fixed.
+  if (provider_host->document_url().is_empty()) {
+    Send(new ServiceWorkerMsg_ServiceWorkerGetRegistrationError(
+        thread_id,
+        request_id,
+        WebServiceWorkerError::ErrorTypeSecurity,
+        base::ASCIIToUTF16(kNoDocumentURLErrorMessage)));
     return;
   }
 
