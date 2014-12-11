@@ -169,6 +169,7 @@ void ColorPicker::UpdateCursor() {
   SkBitmap result;
   result.allocN32Pixels(kCursorSize * device_scale_factor,
                         kCursorSize * device_scale_factor);
+  result.eraseARGB(0, 0, 0, 0);
 
   SkCanvas canvas(result);
   canvas.scale(device_scale_factor, device_scale_factor);
