@@ -8,7 +8,21 @@
 function WebRTCDeviceProvider() {
 }
 
+WebRTCDeviceProvider.prototype.handleCommandFailure = function() {
+  // TODO(serya): Remove debugging code and implement.
+  console.error('Command failed');
+};
+
+WebRTCDeviceProvider.prototype.handleCommandSuccess = function(result) {
+  // TODO(serya): Remove debugging code and implement.
+  console.log('Command succeded', result);
+};
+
+WebRTCDeviceProvider.prototype.startSessionIfNeeded = function(deviceId) {
+  // TODO(serya): Remove debugging code and implement.
+  this.lastDeviceId = deviceId;
+};
+
 addEventListener('DOMContentLoaded', function() {
   window.WebRTCDeviceProvider.instance = new WebRTCDeviceProvider();
-  chrome.send('loaded');
 }, false);

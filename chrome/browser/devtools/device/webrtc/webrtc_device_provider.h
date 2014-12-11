@@ -12,6 +12,7 @@ namespace content {
 class WebUI;
 }
 
+class DevToolsBridgeClient;
 class OAuth2TokenService;
 class Profile;
 class ProfileOAuth2TokenService;
@@ -47,9 +48,6 @@ class WebRTCDeviceProvider final : public AndroidDeviceManager::DeviceProvider {
                   const SocketCallback& callback) override;
 
  private:
-  class DevToolsBridgeClient;
-  class MessageHandler;
-
   ~WebRTCDeviceProvider() override;
 
   const base::WeakPtr<DevToolsBridgeClient> client_;

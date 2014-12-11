@@ -17,11 +17,6 @@ WebRTCDeviceProviderBrowserTest.prototype = {
    */
   browsePreload: 'chrome://webrtc-device-provider/background_worker.html',
 
-  preLoad: function() {
-    this.makeAndRegisterMockHandler(['loaded']);
-    this.mockHandler.expects(once()).loaded();
-  },
-
   isAsync: true,
 };
 
