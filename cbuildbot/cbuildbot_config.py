@@ -1234,6 +1234,7 @@ _arm_external_boards = frozenset([
 
 # TODO(akeshet) eliminate the need for this.
 _arm_internal_non_release_boards = frozenset([
+  'daisy_winter',
   'storm',
 ])
 
