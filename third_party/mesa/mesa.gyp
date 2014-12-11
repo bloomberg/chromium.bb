@@ -132,6 +132,7 @@
       'variables': {
         'clang_warning_flags': [
           '-Wno-tautological-constant-out-of-range-compare',
+          '-Wno-mismatched-tags',  # Fixed upstream.
         ],
         'clang_warning_flags_unset': [
           # Don't warn about string->bool used in asserts.
@@ -269,6 +270,8 @@
       'variables': {
         'clang_warning_flags': [
           '-Wno-tautological-constant-out-of-range-compare',
+          '-Wno-absolute-value',  # Fires on st_atom_array.c, might be a bug
+          '-Wno-mismatched-tags',  # Fixed upstream.
         ],
         'clang_warning_flags_unset': [
           # Don't warn about string->bool used in asserts.
