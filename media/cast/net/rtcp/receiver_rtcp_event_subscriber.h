@@ -5,7 +5,8 @@
 #ifndef MEDIA_CAST_RTCP_RECEIVER_RTCP_EVENT_SUBSCRIBER_H_
 #define MEDIA_CAST_RTCP_RECEIVER_RTCP_EVENT_SUBSCRIBER_H_
 
-#include <map>
+#include <deque>
+#include <vector>
 
 #include "base/threading/thread_checker.h"
 #include "media/cast/logging/logging_defines.h"
@@ -14,6 +15,10 @@
 
 namespace media {
 namespace cast {
+
+static const size_t kNumResends = 3;
+static const size_t kResendDelay = 10;
+static const size_t kMaxEventsPerRTCP = 20;
 
 // A RawEventSubscriber implementation with the following properties:
 // - Only processes raw event types that are relevant for sending from cast
@@ -26,7 +31,8 @@ namespace cast {
 //   timestamp) up to the size limit.
 class ReceiverRtcpEventSubscriber : public RawEventSubscriber {
  public:
-  typedef std::multimap<RtpTimestamp, RtcpEvent> RtcpEventMultiMap;
+  typedef std::pair<RtpTimestamp, RtcpEvent> RtcpEventPair;
+  typedef std::vector<std::pair<RtpTimestamp, RtcpEvent> > RtcpEvents;
 
   // |max_size_to_retain|: The object will keep up to |max_size_to_retain|
   // events
@@ -43,9 +49,9 @@ class ReceiverRtcpEventSubscriber : public RawEventSubscriber {
   void OnReceiveFrameEvent(const FrameEvent& frame_event) override;
   void OnReceivePacketEvent(const PacketEvent& packet_event) override;
 
-  // Assigns events collected to |rtcp_events| and clears them from this
-  // object.
-  void GetRtcpEventsAndReset(RtcpEventMultiMap* rtcp_events);
+  // Assigns events collected to |rtcp_events|. If there is space, some
+  // older events will be added for redundancy as well.
+  void GetRtcpEventsWithRedundancy(RtcpEvents* rtcp_events);
 
  private:
   // If |rtcp_events_.size()| exceeds |max_size_to_retain_|, remove an oldest
@@ -65,7 +71,24 @@ class ReceiverRtcpEventSubscriber : public RawEventSubscriber {
   // to differentiate between video and audio frames, but since the
   // implementation doesn't mix audio and video frame events, RTP timestamp
   // only as key is fine.
-  RtcpEventMultiMap rtcp_events_;
+  std::deque<RtcpEventPair> rtcp_events_;
+
+  // Counts how many events have been removed from rtcp_events_.
+  uint64 popped_events_;
+
+  // Events greater than send_ptrs_[0] have not been sent yet.
+  // Events greater than send_ptrs_[1] have been transmit once.
+  // Note that these counters use absolute numbers, so you need
+  // to subtract popped_events_ before looking up the events in
+  // rtcp_events_.
+  uint64 send_ptrs_[kNumResends];
+
+  // For each frame, we push how many events have been added to
+  // rtcp_events_ so far. We use this to make sure that
+  // send_ptrs_[N+1] is always at least kResendDelay frames behind
+  // send_ptrs_[N]. Old information is removed so that information
+  // for (kNumResends + 1) * kResendDelay frames remain.
+  std::deque<uint64> event_levels_for_past_frames_;
 
   // Ensures methods are only called on the main thread.
   base::ThreadChecker thread_checker_;

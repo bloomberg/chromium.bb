@@ -12,6 +12,15 @@
 namespace media {
 namespace cast {
 
+// static
+bool RtpParser::ParseSsrc(const uint8* packet,
+                          size_t length,
+                          uint32* ssrc) {
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(packet), length);
+  return big_endian_reader.Skip(8) && big_endian_reader.ReadU32(ssrc);
+}
+
 RtpParser::RtpParser(uint32 expected_sender_ssrc, uint8 expected_payload_type)
     : expected_sender_ssrc_(expected_sender_ssrc),
       expected_payload_type_(expected_payload_type) {}

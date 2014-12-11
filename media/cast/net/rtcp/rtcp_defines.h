@@ -109,6 +109,37 @@ typedef base::Callback<void(base::TimeDelta)> RtcpRttCallback;
 typedef
 base::Callback<void(const RtcpReceiverLogMessage&)> RtcpLogMessageCallback;
 
+// TODO(hubbe): Document members of this struct.
+struct RtpReceiverStatistics {
+  RtpReceiverStatistics();
+  uint8 fraction_lost;
+  uint32 cumulative_lost;  // 24 bits valid.
+  uint32 extended_high_sequence_number;
+  uint32 jitter;
+};
+
+// These are intended to only be created using Rtcp::ConvertToNTPAndSave.
+struct RtcpTimeData {
+  uint32 ntp_seconds;
+  uint32 ntp_fraction;
+  base::TimeTicks timestamp;
+};
+
+// This struct is used to encapsulate all the parameters of the
+// SendRtcpFromRtpReceiver for IPC transportation.
+struct SendRtcpFromRtpReceiver_Params {
+  SendRtcpFromRtpReceiver_Params();
+  ~SendRtcpFromRtpReceiver_Params();
+  uint32 ssrc;
+  uint32 sender_ssrc;
+  RtcpTimeData time_data;
+  scoped_ptr<RtcpCastMessage> cast_message;
+  base::TimeDelta target_delay;
+  scoped_ptr<std::vector<std::pair<RtpTimestamp, RtcpEvent> > > rtcp_events;
+  scoped_ptr<RtpReceiverStatistics> rtp_receiver_statistics;
+};
+
+
 }  // namespace cast
 }  // namespace media
 

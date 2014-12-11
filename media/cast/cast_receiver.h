@@ -16,6 +16,7 @@
 #include "media/base/audio_bus.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/net/cast_transport_sender.h"
 
 namespace media {
 class VideoFrame;
@@ -51,13 +52,11 @@ class CastReceiver {
       scoped_refptr<CastEnvironment> cast_environment,
       const FrameReceiverConfig& audio_config,
       const FrameReceiverConfig& video_config,
-      PacketSender* const packet_sender);
+      CastTransportSender* const transport);
 
   // All received RTP and RTCP packets for the call should be sent to this
   // PacketReceiver.  Can be called from any thread.
-  // TODO(hubbe): Replace with:
-  //   virtual void ReceivePacket(scoped_ptr<Packet> packet) = 0;
-  virtual PacketReceiverCallback packet_receiver() = 0;
+  virtual void ReceivePacket(scoped_ptr<Packet> packet) = 0;
 
   // Polling interface to get audio and video frames from the CastReceiver.  The
   // the RequestDecodedXXXXXFrame() methods utilize internal software-based

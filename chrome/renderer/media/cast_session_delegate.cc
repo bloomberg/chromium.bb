@@ -100,8 +100,10 @@ void CastSessionDelegate::StartUDP(const net::IPEndPoint& remote_endpoint,
   // Rationale for using unretained: The callback cannot be called after the
   // destruction of CastTransportSenderIPC, and they both share the same thread.
   cast_transport_.reset(new CastTransportSenderIPC(
+      net::IPEndPoint(),
       remote_endpoint,
       options.Pass(),
+      media::cast::PacketReceiverCallback(),
       base::Bind(&CastSessionDelegate::StatusNotificationCB,
                  base::Unretained(this)),
       base::Bind(&CastSessionDelegate::LogRawEvents, base::Unretained(this))));

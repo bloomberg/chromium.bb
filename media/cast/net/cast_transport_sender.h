@@ -40,6 +40,8 @@ class NetLog;
 
 namespace media {
 namespace cast {
+struct RtpReceiverStatistics;
+struct RtcpTimeData;
 
 // Following the initialization of either audio or video an initialization
 // status will be sent via this callback.
@@ -56,11 +58,13 @@ class CastTransportSender : public base::NonThreadSafe {
   static scoped_ptr<CastTransportSender> Create(
       net::NetLog* net_log,
       base::TickClock* clock,
+      const net::IPEndPoint& local_end_point,
       const net::IPEndPoint& remote_end_point,
       scoped_ptr<base::DictionaryValue> options,
       const CastTransportStatusCallback& status_callback,
       const BulkRawEventsCallback& raw_events_callback,
       base::TimeDelta raw_events_callback_interval,
+      const PacketReceiverCallback& packet_callback,
       const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner);
 
   virtual ~CastTransportSender() {}
@@ -100,6 +104,23 @@ class CastTransportSender : public base::NonThreadSafe {
 
   // Returns a callback for receiving packets for testing purposes.
   virtual PacketReceiverCallback PacketReceiverForTesting();
+
+  // The following functions are needed for receving.
+
+  // Add a valid SSRC. This is used to verify that incoming packets
+  // come from the right sender. Without valid SSRCs, the return address cannot
+  // be automatically established.
+  virtual void AddValidSsrc(uint32 ssrc) = 0;
+
+  // Send an RTCP message from receiver to sender.
+  virtual void SendRtcpFromRtpReceiver(
+      uint32 ssrc,
+      uint32 sender_ssrc,
+      const RtcpTimeData& time_data,
+      const RtcpCastMessage* cast_message,
+      base::TimeDelta target_delay,
+      const ReceiverRtcpEventSubscriber::RtcpEvents* rtcp_events,
+      const RtpReceiverStatistics* rtp_receiver_statistics) = 0;
 };
 
 }  // namespace cast

@@ -53,13 +53,6 @@ std::pair<uint64, uint64> GetReceiverEventKey(
 
 }  // namespace
 
-RtpReceiverStatistics::RtpReceiverStatistics() :
-    fraction_lost(0),
-    cumulative_lost(0),
-    extended_high_sequence_number(0),
-    jitter(0) {
-}
-
 Rtcp::Rtcp(const RtcpCastMessageCallback& cast_callback,
            const RtcpRttCallback& rtt_callback,
            const RtcpLogMessageCallback& log_callback,
@@ -198,19 +191,27 @@ bool Rtcp::DedupeReceiverLog(RtcpReceiverLogMessage* receiver_log) {
   return !receiver_log->empty();
 }
 
-void Rtcp::SendRtcpFromRtpReceiver(
-    const RtcpCastMessage* cast_message,
-    base::TimeDelta target_delay,
-    const ReceiverRtcpEventSubscriber::RtcpEventMultiMap* rtcp_events,
-    RtpReceiverStatistics* rtp_receiver_statistics) {
-  base::TimeTicks now = clock_->NowTicks();
-  RtcpReportBlock report_block;
-  RtcpReceiverReferenceTimeReport rrtr;
+RtcpTimeData Rtcp::ConvertToNTPAndSave(base::TimeTicks now) {
+  RtcpTimeData ret;
+  ret.timestamp = now;
 
   // Attach our NTP to all RTCP packets; with this information a "smart" sender
   // can make decisions based on how old the RTCP message is.
-  ConvertTimeTicksToNtp(now, &rrtr.ntp_seconds, &rrtr.ntp_fraction);
-  SaveLastSentNtpTime(now, rrtr.ntp_seconds, rrtr.ntp_fraction);
+  ConvertTimeTicksToNtp(now, &ret.ntp_seconds, &ret.ntp_fraction);
+  SaveLastSentNtpTime(now, ret.ntp_seconds, ret.ntp_fraction);
+  return ret;
+}
+
+void Rtcp::SendRtcpFromRtpReceiver(
+    RtcpTimeData time_data,
+    const RtcpCastMessage* cast_message,
+    base::TimeDelta target_delay,
+    const ReceiverRtcpEventSubscriber::RtcpEvents* rtcp_events,
+    const RtpReceiverStatistics* rtp_receiver_statistics) const {
+  RtcpReportBlock report_block;
+  RtcpReceiverReferenceTimeReport rrtr;
+  rrtr.ntp_seconds = time_data.ntp_seconds;
+  rrtr.ntp_fraction = time_data.ntp_fraction;
 
   if (rtp_receiver_statistics) {
     report_block.remote_ssrc = 0;            // Not needed to set send side.
@@ -224,7 +225,7 @@ void Rtcp::SendRtcpFromRtpReceiver(
     if (!time_last_report_received_.is_null()) {
       uint32 delay_seconds = 0;
       uint32 delay_fraction = 0;
-      base::TimeDelta delta = now - time_last_report_received_;
+      base::TimeDelta delta = time_data.timestamp - time_last_report_received_;
       ConvertTimeToFractions(delta.InMicroseconds(), &delay_seconds,
                              &delay_fraction);
       report_block.delay_since_last_sr =
@@ -233,9 +234,10 @@ void Rtcp::SendRtcpFromRtpReceiver(
       report_block.delay_since_last_sr = 0;
     }
   }
+  RtcpBuilder rtcp_builder(local_ssrc_);
   packet_sender_->SendRtcpPacket(
       local_ssrc_,
-      rtcp_builder_.BuildRtcpFromReceiver(
+      rtcp_builder.BuildRtcpFromReceiver(
           rtp_receiver_statistics ? &report_block : NULL,
           &rrtr,
           cast_message,

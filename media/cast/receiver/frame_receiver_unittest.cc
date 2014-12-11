@@ -12,7 +12,8 @@
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/logging/simple_event_subscriber.h"
-#include "media/cast/net/pacing/mock_paced_packet_sender.h"
+#include "media/cast/net/cast_transport_sender_impl.h"
+#include "media/cast/net/mock_cast_transport_sender.h"
 #include "media/cast/net/rtcp/test_rtcp_packet_builder.h"
 #include "media/cast/receiver/frame_receiver.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
@@ -136,7 +137,7 @@ class FrameReceiverTest : public ::testing::Test {
   RtpCastHeader rtp_header_;
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   base::TimeTicks start_time_;
-  MockPacedPacketSender mock_transport_;
+  MockCastTransportSender mock_transport_;
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_;
   FakeFrameClient frame_client_;
@@ -171,8 +172,8 @@ TEST_F(FrameReceiverTest, ReceivesOneFrame) {
   SimpleEventSubscriber event_subscriber;
   cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber);
 
-  EXPECT_CALL(mock_transport_, SendRtcpPacket(_, _))
-      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(mock_transport_, SendRtcpFromRtpReceiver(_, _, _, _, _, _, _))
+      .WillRepeatedly(testing::Return());
 
   FeedLipSyncInfoIntoReceiver();
   task_runner_->RunTasks();
@@ -212,8 +213,8 @@ TEST_F(FrameReceiverTest, ReceivesFramesSkippingWhenAppropriate) {
   SimpleEventSubscriber event_subscriber;
   cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber);
 
-  EXPECT_CALL(mock_transport_, SendRtcpPacket(_, _))
-      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(mock_transport_, SendRtcpFromRtpReceiver(_, _, _, _, _, _, _))
+      .WillRepeatedly(testing::Return());
 
   const uint32 rtp_advance_per_frame =
       config_.frequency / config_.max_frame_rate;
@@ -315,8 +316,8 @@ TEST_F(FrameReceiverTest, ReceivesFramesRefusingToSkipAny) {
   SimpleEventSubscriber event_subscriber;
   cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber);
 
-  EXPECT_CALL(mock_transport_, SendRtcpPacket(_, _))
-      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(mock_transport_, SendRtcpFromRtpReceiver(_, _, _, _, _, _, _))
+      .WillRepeatedly(testing::Return());
 
   const uint32 rtp_advance_per_frame =
       config_.frequency / config_.max_frame_rate;

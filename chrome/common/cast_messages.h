@@ -81,7 +81,42 @@ IPC_STRUCT_TRAITS_BEGIN(media::cast::RtcpCastMessage)
   IPC_STRUCT_TRAITS_MEMBER(missing_frames_and_packets)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(media::cast::RtpReceiverStatistics)
+  IPC_STRUCT_TRAITS_MEMBER(fraction_lost)
+  IPC_STRUCT_TRAITS_MEMBER(cumulative_lost)
+  IPC_STRUCT_TRAITS_MEMBER(extended_high_sequence_number)
+  IPC_STRUCT_TRAITS_MEMBER(jitter)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(media::cast::RtcpEvent)
+  IPC_STRUCT_TRAITS_MEMBER(type)
+  IPC_STRUCT_TRAITS_MEMBER(timestamp)
+  IPC_STRUCT_TRAITS_MEMBER(delay_delta)
+  IPC_STRUCT_TRAITS_MEMBER(packet_id)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(media::cast::RtcpTimeData)
+  IPC_STRUCT_TRAITS_MEMBER(ntp_seconds)
+  IPC_STRUCT_TRAITS_MEMBER(ntp_fraction)
+  IPC_STRUCT_TRAITS_MEMBER(timestamp)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(media::cast::SendRtcpFromRtpReceiver_Params)
+  IPC_STRUCT_TRAITS_MEMBER(ssrc)
+  IPC_STRUCT_TRAITS_MEMBER(sender_ssrc)
+  IPC_STRUCT_TRAITS_MEMBER(time_data)
+  IPC_STRUCT_TRAITS_MEMBER(cast_message)
+  IPC_STRUCT_TRAITS_MEMBER(target_delay)
+  IPC_STRUCT_TRAITS_MEMBER(rtcp_events)
+  IPC_STRUCT_TRAITS_MEMBER(rtp_receiver_statistics)
+IPC_STRUCT_TRAITS_END()
+
+
 // Cast messages sent from the browser to the renderer.
+
+IPC_MESSAGE_CONTROL2(CastMsg_ReceivedPacket,
+                     int32 /* channel_id */,
+                     media::cast::Packet /* packet */)
 
 IPC_MESSAGE_CONTROL3(CastMsg_Rtt,
                      int32 /* channel_id */,
@@ -140,9 +175,20 @@ IPC_MESSAGE_CONTROL3(
     uint32 /* ssrc */,
     uint32 /* frame_id */)
 
-IPC_MESSAGE_CONTROL3(
+IPC_MESSAGE_CONTROL2(
+    CastHostMsg_AddValidSsrc,
+    int32 /* channel id */,
+    uint32 /* ssrc */);
+
+IPC_MESSAGE_CONTROL2(
+    CastHostMsg_SendRtcpFromRtpReceiver,
+    int32 /* channel id */,
+    media::cast::SendRtcpFromRtpReceiver_Params /* data */);
+
+IPC_MESSAGE_CONTROL4(
     CastHostMsg_New,
     int32 /* channel_id */,
+    net::IPEndPoint /* local_end_point */,
     net::IPEndPoint /* remote_end_point */,
     base::DictionaryValue /* options */)
 

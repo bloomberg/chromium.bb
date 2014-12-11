@@ -11,6 +11,7 @@
 #include "media/base/audio_bus.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/net/cast_transport_config.h"
+#include "media/cast/net/cast_transport_sender.h"
 #include "net/base/ip_endpoint.h"
 
 namespace base {
@@ -100,13 +101,15 @@ class InProcessReceiver {
   void PullNextAudioFrame();
   void PullNextVideoFrame();
 
+  void ReceivePacket(scoped_ptr<Packet> packet);
+
   const scoped_refptr<CastEnvironment> cast_environment_;
   const net::IPEndPoint local_end_point_;
   const net::IPEndPoint remote_end_point_;
   const FrameReceiverConfig audio_config_;
   const FrameReceiverConfig video_config_;
 
-  scoped_ptr<UdpTransport> transport_;
+  scoped_ptr<CastTransportSender> transport_;
   scoped_ptr<CastReceiver> cast_receiver_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.

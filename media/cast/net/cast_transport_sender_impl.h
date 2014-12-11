@@ -24,6 +24,8 @@
 #ifndef MEDIA_CAST_NET_CAST_TRANSPORT_SENDER_IMPL_H_
 #define MEDIA_CAST_NET_CAST_TRANSPORT_SENDER_IMPL_H_
 
+#include <set>
+
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
@@ -38,6 +40,7 @@
 #include "media/cast/net/cast_transport_sender.h"
 #include "media/cast/net/pacing/paced_sender.h"
 #include "media/cast/net/rtcp/rtcp.h"
+#include "media/cast/net/rtp/rtp_parser.h"
 #include "media/cast/net/rtp/rtp_sender.h"
 
 namespace media {
@@ -65,19 +68,23 @@ class CastTransportSenderImpl : public CastTransportSender {
   //   "disable_wifi_scan" (value ignored) - disable wifi scans while streaming
   //   "media_streaming_mode" (value ignored) - turn media streaming mode on
   // Note, these options may be ignored on some platforms.
+  // TODO(hubbe): Too many callbacks, replace with an interface.
   CastTransportSenderImpl(
       net::NetLog* net_log,
       base::TickClock* clock,
+      const net::IPEndPoint& local_end_point,
       const net::IPEndPoint& remote_end_point,
       scoped_ptr<base::DictionaryValue> options,
       const CastTransportStatusCallback& status_callback,
       const BulkRawEventsCallback& raw_events_callback,
       base::TimeDelta raw_events_callback_interval,
       const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner,
+      const PacketReceiverCallback& packet_callback,
       PacketSender* external_transport);
 
   ~CastTransportSenderImpl() override;
 
+  // CastTransportSender implementation.
   void InitializeAudio(const CastTransportRtpConfig& config,
                        const RtcpCastMessageCallback& cast_message_cb,
                        const RtcpRttCallback& rtt_cb) override;
@@ -96,6 +103,18 @@ class CastTransportSenderImpl : public CastTransportSender {
   void ResendFrameForKickstart(uint32 ssrc, uint32 frame_id) override;
 
   PacketReceiverCallback PacketReceiverForTesting() override;
+
+  // CastTransportReceiver implementation.
+  void AddValidSsrc(uint32 ssrc) override;
+
+  void SendRtcpFromRtpReceiver(
+      uint32 ssrc,
+      uint32 sender_ssrc,
+      const RtcpTimeData& time_data,
+      const RtcpCastMessage* cast_message,
+      base::TimeDelta target_delay,
+      const ReceiverRtcpEventSubscriber::RtcpEvents* rtcp_events,
+      const RtpReceiverStatistics* rtp_receiver_statistics) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CastTransportSenderImplTest, NacksCancelRetransmits);
@@ -118,7 +137,7 @@ class CastTransportSenderImpl : public CastTransportSender {
   void SendRawEvents();
 
   // Called when a packet is received.
-  void OnReceivedPacket(scoped_ptr<Packet> packet);
+  bool OnReceivedPacket(scoped_ptr<Packet> packet);
 
   // Called when a log message is received.
   void OnReceivedLogMessage(EventMediaType media_type,
@@ -166,6 +185,13 @@ class CastTransportSenderImpl : public CastTransportSender {
   // socket. We record the corresponding bytes sent for the most recent ACKed
   // audio packet.
   int64 last_byte_acked_for_audio_;
+
+  // Packets that don't match these ssrcs are ignored.
+  std::set<uint32> valid_ssrcs_;
+
+  // Called with incoming packets. (Unless they match the
+  // channels created by Initialize{Audio,Video}.
+  PacketReceiverCallback packet_callback_;
 
   scoped_ptr<net::ScopedWifiOptions> wifi_options_autoreset_;
 

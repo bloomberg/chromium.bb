@@ -582,23 +582,42 @@ class End2EndTest : public ::testing::Test {
     }
   }
 
-  void Create() {
-    cast_receiver_ = CastReceiver::Create(cast_environment_receiver_,
-                                          audio_receiver_config_,
-                                          video_receiver_config_,
-                                          &receiver_to_sender_);
+  void ReceivePacket(scoped_ptr<Packet> packet) {
+    cast_receiver_->ReceivePacket(packet.Pass());
+  }
 
+  void Create() {
     net::IPEndPoint dummy_endpoint;
     transport_sender_.reset(new CastTransportSenderImpl(
         NULL,
         testing_clock_sender_,
+        dummy_endpoint,
         dummy_endpoint,
         make_scoped_ptr(new base::DictionaryValue),
         base::Bind(&UpdateCastTransportStatus),
         base::Bind(&End2EndTest::LogRawEvents, base::Unretained(this)),
         base::TimeDelta::FromMilliseconds(1),
         task_runner_sender_,
+        PacketReceiverCallback(),
         &sender_to_receiver_));
+
+    transport_receiver_.reset(new CastTransportSenderImpl(
+        NULL,
+        testing_clock_sender_,
+        dummy_endpoint,
+        dummy_endpoint,
+        make_scoped_ptr(new base::DictionaryValue),
+        base::Bind(&UpdateCastTransportStatus),
+        base::Bind(&End2EndTest::LogRawEvents, base::Unretained(this)),
+        base::TimeDelta::FromMilliseconds(1),
+        task_runner_sender_,
+        base::Bind(&End2EndTest::ReceivePacket, base::Unretained(this)),
+        &receiver_to_sender_));
+
+    cast_receiver_ = CastReceiver::Create(cast_environment_receiver_,
+                                          audio_receiver_config_,
+                                          video_receiver_config_,
+                                          transport_receiver_.get());
 
     cast_sender_ =
         CastSender::Create(cast_environment_sender_, transport_sender_.get());
@@ -616,9 +635,10 @@ class End2EndTest : public ::testing::Test {
         transport_sender_->PacketReceiverForTesting(),
         task_runner_,
         &testing_clock_);
-    sender_to_receiver_.SetPacketReceiver(cast_receiver_->packet_receiver(),
-                                          task_runner_,
-                                          &testing_clock_);
+    sender_to_receiver_.SetPacketReceiver(
+        transport_receiver_->PacketReceiverForTesting(),
+        task_runner_,
+        &testing_clock_);
 
     audio_frame_input_ = cast_sender_->audio_frame_input();
     video_frame_input_ = cast_sender_->video_frame_input();
@@ -792,6 +812,7 @@ class End2EndTest : public ::testing::Test {
   LoopBackTransport receiver_to_sender_;
   LoopBackTransport sender_to_receiver_;
   scoped_ptr<CastTransportSenderImpl> transport_sender_;
+  scoped_ptr<CastTransportSenderImpl> transport_receiver_;
 
   scoped_ptr<CastReceiver> cast_receiver_;
   scoped_ptr<CastSender> cast_sender_;

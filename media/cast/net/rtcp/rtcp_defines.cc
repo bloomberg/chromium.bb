@@ -33,5 +33,17 @@ RtcpReceiverReferenceTimeReport::~RtcpReceiverReferenceTimeReport() {}
 RtcpEvent::RtcpEvent() : type(UNKNOWN), packet_id(0u) {}
 RtcpEvent::~RtcpEvent() {}
 
+RtpReceiverStatistics::RtpReceiverStatistics() :
+    fraction_lost(0),
+    cumulative_lost(0),
+    extended_high_sequence_number(0),
+    jitter(0) {}
+
+SendRtcpFromRtpReceiver_Params::SendRtcpFromRtpReceiver_Params()
+    : ssrc(0),
+      sender_ssrc(0) {}
+
+SendRtcpFromRtpReceiver_Params::~SendRtcpFromRtpReceiver_Params() {}
+
 }  // namespace cast
 }  // namespace media

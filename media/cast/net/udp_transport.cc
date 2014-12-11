@@ -65,7 +65,7 @@ UdpTransport::UdpTransport(
 UdpTransport::~UdpTransport() {}
 
 void UdpTransport::StartReceiving(
-    const PacketReceiverCallback& packet_receiver) {
+    const PacketReceiverCallbackWithStatus& packet_receiver) {
   DCHECK(io_thread_proxy_->RunsTasksOnCurrentThread());
 
   packet_receiver_ = packet_receiver;
@@ -99,6 +99,12 @@ void UdpTransport::StartReceiving(
   ScheduleReceiveNextPacket();
 }
 
+void UdpTransport::StopReceiving() {
+  DCHECK(io_thread_proxy_->RunsTasksOnCurrentThread());
+  packet_receiver_ = PacketReceiverCallbackWithStatus();
+}
+
+
 void UdpTransport::SetDscp(net::DiffServCodePoint dscp) {
   DCHECK(io_thread_proxy_->RunsTasksOnCurrentThread());
   next_dscp_value_ = dscp;
@@ -117,6 +123,9 @@ void UdpTransport::ScheduleReceiveNextPacket() {
 
 void UdpTransport::ReceiveNextPacket(int length_or_status) {
   DCHECK(io_thread_proxy_->RunsTasksOnCurrentThread());
+
+  if (packet_receiver_.is_null())
+    return;
 
   // Loop while UdpSocket is delivering data synchronously.  When it responds
   // with a "pending" status, break and expect this method to be called back in
@@ -155,15 +164,18 @@ void UdpTransport::ReceiveNextPacket(int length_or_status) {
       remote_addr_ = recv_addr_;
       VLOG(1) << "Setting remote address from first received packet: "
               << remote_addr_.ToString();
+      next_packet_->resize(length_or_status);
+      if (!packet_receiver_.Run(next_packet_.Pass())) {
+        VLOG(1) << "Packet was not valid, resetting remote address.";
+        remote_addr_ = net::IPEndPoint();
+      }
     } else if (!IsEqual(remote_addr_, recv_addr_)) {
       VLOG(1) << "Ignoring packet received from an unrecognized address: "
               << recv_addr_.ToString() << ".";
-      length_or_status = net::ERR_IO_PENDING;
-      continue;
+    } else {
+      next_packet_->resize(length_or_status);
+      packet_receiver_.Run(next_packet_.Pass());
     }
-
-    next_packet_->resize(length_or_status);
-    packet_receiver_.Run(next_packet_.Pass());
     length_or_status = net::ERR_IO_PENDING;
   }
 }

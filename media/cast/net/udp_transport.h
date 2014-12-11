@@ -46,7 +46,8 @@ class UdpTransport : public PacketSender {
   ~UdpTransport() override;
 
   // Start receiving packets. Packets are submitted to |packet_receiver|.
-  void StartReceiving(const PacketReceiverCallback& packet_receiver);
+  void StartReceiving(const PacketReceiverCallbackWithStatus& packet_receiver);
+  void StopReceiving();
 
   // Set a new DSCP value to the socket. The value will be set right before
   // the next send.
@@ -82,7 +83,7 @@ class UdpTransport : public PacketSender {
   scoped_ptr<Packet> next_packet_;
   scoped_refptr<net::WrappedIOBuffer> recv_buf_;
   net::IPEndPoint recv_addr_;
-  PacketReceiverCallback packet_receiver_;
+  PacketReceiverCallbackWithStatus packet_receiver_;
   int32 send_buffer_size_;
   const CastTransportStatusCallback status_callback_;
   int bytes_sent_;

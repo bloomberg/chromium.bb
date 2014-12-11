@@ -127,6 +127,8 @@ typedef scoped_refptr<base::RefCountedData<Packet> > PacketRef;
 typedef std::vector<PacketRef> PacketList;
 
 typedef base::Callback<void(scoped_ptr<Packet> packet)> PacketReceiverCallback;
+typedef base::Callback<bool(scoped_ptr<Packet> packet)>
+    PacketReceiverCallbackWithStatus;
 
 class PacketSender {
  public:

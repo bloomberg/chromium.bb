@@ -77,12 +77,14 @@ class AudioSenderTest : public ::testing::Test {
     transport_sender_.reset(new CastTransportSenderImpl(
         NULL,
         testing_clock_,
+        net::IPEndPoint(),
         dummy_endpoint,
         make_scoped_ptr(new base::DictionaryValue),
         base::Bind(&UpdateCastTransportStatus),
         BulkRawEventsCallback(),
         base::TimeDelta(),
         task_runner_,
+        PacketReceiverCallback(),
         &transport_));
     audio_sender_.reset(new AudioSender(
         cast_environment_, audio_config_, transport_sender_.get()));

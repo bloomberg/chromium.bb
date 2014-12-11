@@ -38,14 +38,6 @@ typedef std::pair<uint32, base::TimeTicks> RtcpSendTimePair;
 typedef std::map<uint32, base::TimeTicks> RtcpSendTimeMap;
 typedef std::queue<RtcpSendTimePair> RtcpSendTimeQueue;
 
-struct RtpReceiverStatistics {
-  RtpReceiverStatistics();
-  uint8 fraction_lost;
-  uint32 cumulative_lost;  // 24 bits valid.
-  uint32 extended_high_sequence_number;
-  uint32 jitter;
-};
-
 // TODO(hclam): This should be renamed to RtcpSession.
 class Rtcp {
  public:
@@ -70,16 +62,25 @@ class Rtcp {
       uint32 send_packet_count,
       size_t send_octet_count);
 
-  // |cast_message| and |rtcp_events| is optional; if |cast_message| is
-  // provided the RTCP receiver report will append a Cast message containing
-  // Acks and Nacks; |target_delay| is sent together with |cast_message|.
-  // If |rtcp_events| is provided the RTCP receiver report will append the
-  // log messages.
+  // This function is meant to be used in conjunction with
+  // SendRtcpFromRtpReceiver.
+  // |now| is converted to NTP and saved internally for
+  // future round-trip/lip-sync calculations.
+  // This is done in a separate method so that SendRtcpFromRtpReceiver can
+  // be done on a separate (temporary) RTCP object.
+  RtcpTimeData ConvertToNTPAndSave(base::TimeTicks now);
+
+  // |cast_message|, |rtcp_events| and |rtp_receiver_statistics| are optional;
+  // if |cast_message| is provided the RTCP receiver report will append a Cast
+  // message containing Acks and Nacks; |target_delay| is sent together with
+  // |cast_message|. If |rtcp_events| is provided the RTCP receiver report will
+  // append the log messages.
   void SendRtcpFromRtpReceiver(
+      RtcpTimeData time_data,
       const RtcpCastMessage* cast_message,
       base::TimeDelta target_delay,
-      const ReceiverRtcpEventSubscriber::RtcpEventMultiMap* rtcp_events,
-      RtpReceiverStatistics* rtp_receiver_statistics);
+      const ReceiverRtcpEventSubscriber::RtcpEvents* rtcp_events,
+      const RtpReceiverStatistics* rtp_receiver_statistics) const;
 
   // Submit a received packet to this object. The packet will be parsed
   // and used to maintain a RTCP session.
@@ -104,6 +105,9 @@ class Rtcp {
 
   static bool IsRtcpPacket(const uint8* packet, size_t length);
   static uint32 GetSsrcOfSender(const uint8* rtcp_buffer, size_t length);
+
+  uint32 GetLocalSsrc() const { return local_ssrc_; }
+  uint32 GetRemoteSsrc() const { return remote_ssrc_; }
 
  protected:
   void OnReceivedNtp(uint32 ntp_seconds, uint32 ntp_fraction);

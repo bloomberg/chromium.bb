@@ -11,9 +11,14 @@ namespace cast {
 
 ReceiverRtcpEventSubscriber::ReceiverRtcpEventSubscriber(
     const size_t max_size_to_retain, EventMediaType type)
-    : max_size_to_retain_(max_size_to_retain), type_(type) {
+    : max_size_to_retain_(
+          max_size_to_retain * (kResendDelay * kNumResends + 1)),
+      type_(type) {
   DCHECK(max_size_to_retain_ > 0u);
   DCHECK(type_ == AUDIO_EVENT || type_ == VIDEO_EVENT);
+  for (size_t i = 0; i < kNumResends; i++) {
+    send_ptrs_[i] = 0;
+  }
 }
 
 ReceiverRtcpEventSubscriber::~ReceiverRtcpEventSubscriber() {
@@ -33,7 +38,7 @@ void ReceiverRtcpEventSubscriber::OnReceiveFrameEvent(
       case FRAME_DECODED:
         rtcp_event.type = frame_event.type;
         rtcp_event.timestamp = frame_event.timestamp;
-        rtcp_events_.insert(
+        rtcp_events_.push_back(
             std::make_pair(frame_event.rtp_timestamp, rtcp_event));
         break;
       default:
@@ -42,8 +47,6 @@ void ReceiverRtcpEventSubscriber::OnReceiveFrameEvent(
   }
 
   TruncateMapIfNeeded();
-
-  DCHECK(rtcp_events_.size() <= max_size_to_retain_);
 }
 
 void ReceiverRtcpEventSubscriber::OnReceivePacketEvent(
@@ -56,22 +59,58 @@ void ReceiverRtcpEventSubscriber::OnReceivePacketEvent(
       rtcp_event.type = packet_event.type;
       rtcp_event.timestamp = packet_event.timestamp;
       rtcp_event.packet_id = packet_event.packet_id;
-      rtcp_events_.insert(
+      rtcp_events_.push_back(
           std::make_pair(packet_event.rtp_timestamp, rtcp_event));
     }
   }
 
   TruncateMapIfNeeded();
-
-  DCHECK(rtcp_events_.size() <= max_size_to_retain_);
 }
 
-void ReceiverRtcpEventSubscriber::GetRtcpEventsAndReset(
-    RtcpEventMultiMap* rtcp_events) {
+struct CompareByFirst {
+  bool operator()(const std::pair<RtpTimestamp, RtcpEvent>& a,
+                  const std::pair<RtpTimestamp, RtcpEvent>& b) {
+    return a.first < b.first;
+  }
+};
+
+void ReceiverRtcpEventSubscriber::GetRtcpEventsWithRedundancy(
+    RtcpEvents* rtcp_events) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(rtcp_events);
-  rtcp_events->swap(rtcp_events_);
-  rtcp_events_.clear();
+
+  uint64 event_level = rtcp_events_.size() + popped_events_;
+  event_levels_for_past_frames_.push_back(event_level);
+
+  for (size_t i = 0; i < kNumResends; i++) {
+    size_t resend_delay = kResendDelay * i;
+    if (event_levels_for_past_frames_.size() < resend_delay + 1)
+      break;
+
+    uint64 send_limit = event_levels_for_past_frames_[
+        event_levels_for_past_frames_.size() - 1 - resend_delay];
+
+    if (send_ptrs_[i] < popped_events_) {
+      send_ptrs_[i] = popped_events_;
+    }
+
+    while (send_ptrs_[i] < send_limit &&
+           rtcp_events->size() < kMaxEventsPerRTCP) {
+      rtcp_events->push_back(rtcp_events_[send_ptrs_[i] - popped_events_]);
+      send_ptrs_[i]++;
+    }
+    send_limit = send_ptrs_[i];
+  }
+
+  if (event_levels_for_past_frames_.size() > kResendDelay * (kNumResends + 1)) {
+    while (popped_events_ < event_levels_for_past_frames_[0]) {
+      rtcp_events_.pop_front();
+      popped_events_++;
+    }
+    event_levels_for_past_frames_.pop_front();
+  }
+
+  std::sort(rtcp_events->begin(), rtcp_events->end(), CompareByFirst());
 }
 
 void ReceiverRtcpEventSubscriber::TruncateMapIfNeeded() {
@@ -81,8 +120,11 @@ void ReceiverRtcpEventSubscriber::TruncateMapIfNeeded() {
     DVLOG(3) << "RTCP event map exceeded size limit; "
              << "removing oldest entry";
     // This is fine since we only insert elements one at a time.
-    rtcp_events_.erase(rtcp_events_.begin());
+    rtcp_events_.pop_front();
+    popped_events_++;
   }
+
+  DCHECK(rtcp_events_.size() <= max_size_to_retain_);
 }
 
 bool ReceiverRtcpEventSubscriber::ShouldProcessEvent(

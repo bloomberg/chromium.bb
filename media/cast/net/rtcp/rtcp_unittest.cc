@@ -180,6 +180,7 @@ TEST_F(RtcpTest, RoundTripTimesDeterminedFromReportPingPong) {
     // Receiver --> Sender
     RtpReceiverStatistics stats;
     rtcp_for_receiver_.SendRtcpFromRtpReceiver(
+        rtcp_for_receiver_.ConvertToNTPAndSave(receiver_clock_->NowTicks()),
         NULL, base::TimeDelta(), NULL, &stats);
     expected_rtt_according_to_sender = one_way_trip_time * 2;
     EXPECT_EQ(expected_rtt_according_to_sender,

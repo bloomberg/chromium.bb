@@ -115,8 +115,6 @@
         'net/rtp/framer.h',
         'net/rtp/receiver_stats.cc',
         'net/rtp/receiver_stats.h',
-        'net/rtp/rtp_parser.cc',
-        'net/rtp/rtp_parser.h',
         'net/rtp/rtp_receiver_defines.cc',
         'net/rtp/rtp_receiver_defines.h',
       ], # source
@@ -235,6 +233,8 @@
         'net/rtp/packet_storage.h',
         'net/rtp/rtp_packetizer.cc',
         'net/rtp/rtp_packetizer.h',
+        'net/rtp/rtp_parser.cc',
+        'net/rtp/rtp_parser.h',
         'net/rtp/rtp_sender.cc',
         'net/rtp/rtp_sender.h',
         'net/udp_transport.cc',

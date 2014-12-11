@@ -7,6 +7,7 @@
 #include "base/bind_helpers.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
@@ -76,19 +77,23 @@ void InProcessReceiver::StartOnMainThread() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
   DCHECK(!transport_ && !cast_receiver_);
-  transport_.reset(
-      new UdpTransport(NULL,
-                       cast_environment_->GetTaskRunner(CastEnvironment::MAIN),
-                       local_end_point_,
-                       remote_end_point_,
-                       65536,
-                       base::Bind(&InProcessReceiver::UpdateCastTransportStatus,
-                                  base::Unretained(this))));
+
+  transport_ = CastTransportSender::Create(
+      NULL,
+      cast_environment_->Clock(),
+      local_end_point_,
+      remote_end_point_,
+      scoped_ptr<base::DictionaryValue>(new base::DictionaryValue),
+      base::Bind(&InProcessReceiver::UpdateCastTransportStatus,
+                 base::Unretained(this)),
+      BulkRawEventsCallback(),
+      base::TimeDelta(),
+      base::Bind(&InProcessReceiver::ReceivePacket,
+                 base::Unretained(this)),
+      cast_environment_->GetTaskRunner(CastEnvironment::MAIN));
+
   cast_receiver_ = CastReceiver::Create(
       cast_environment_, audio_config_, video_config_, transport_.get());
-
-  // TODO(hubbe): Make the cast receiver do this automatically.
-  transport_->StartReceiving(cast_receiver_->packet_receiver());
 
   PullNextAudioFrame();
   PullNextVideoFrame();
@@ -124,6 +129,11 @@ void InProcessReceiver::PullNextVideoFrame() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   cast_receiver_->RequestDecodedVideoFrame(base::Bind(
       &InProcessReceiver::GotVideoFrame, weak_factory_.GetWeakPtr()));
+}
+
+void InProcessReceiver::ReceivePacket(scoped_ptr<Packet> packet) {
+  // TODO(Hubbe): Make an InsertPacket method instead.
+  cast_receiver_->ReceivePacket(packet.Pass());
 }
 
 }  // namespace cast

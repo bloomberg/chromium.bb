@@ -38,6 +38,7 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
   void SendCastMessage(int32 channel_id,
                        uint32 ssrc,
                        const media::cast::RtcpCastMessage& cast_message);
+  void ReceivedPacket(int32 channel_id, scoped_ptr<media::cast::Packet> packet);
 
   // BrowserMessageFilter implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -62,8 +63,14 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
                              const std::vector<uint32>& frame_ids);
   void OnResendFrameForKickstart(int32 channel_id, uint32 ssrc,
                                  uint32 frame_id);
+  void OnAddValidSsrc(int32 channel_id, uint32 ssrc);
+  void OnSendRtcpFromRtpReceiver(
+      int32 channel_id,
+      const media::cast::SendRtcpFromRtpReceiver_Params& params);
+
   void OnNew(
       int32 channel_id,
+      const net::IPEndPoint& local_end_point,
       const net::IPEndPoint& remote_end_point,
       const base::DictionaryValue& options);
   void OnDelete(int32 channel_id);

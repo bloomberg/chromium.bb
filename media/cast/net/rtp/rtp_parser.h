@@ -33,6 +33,8 @@ class RtpParser {
                    const uint8** payload_data,
                    size_t* payload_size);
 
+  static bool ParseSsrc(const uint8* packet, size_t length, uint32* ssrc);
+
  private:
   const uint32 expected_sender_ssrc_;
   const uint8 expected_payload_type_;

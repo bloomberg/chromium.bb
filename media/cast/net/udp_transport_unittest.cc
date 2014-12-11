@@ -25,14 +25,15 @@ class MockPacketReceiver {
   MockPacketReceiver(const base::Closure& callback)
       : packet_callback_(callback) {}
 
-  void ReceivedPacket(scoped_ptr<Packet> packet) {
+  bool ReceivedPacket(scoped_ptr<Packet> packet) {
     packet_ = std::string(packet->size(), '\0');
     std::copy(packet->begin(), packet->end(), packet_.begin());
     packet_callback_.Run();
+    return true;
   }
 
   std::string packet() const { return packet_; }
-  PacketReceiverCallback packet_receiver() {
+  PacketReceiverCallbackWithStatus packet_receiver() {
     return base::Bind(&MockPacketReceiver::ReceivedPacket,
                       base::Unretained(this));
   }

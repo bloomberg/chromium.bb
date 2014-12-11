@@ -50,7 +50,7 @@ class FrameReceiver : public RtpPayloadFeedback,
   FrameReceiver(const scoped_refptr<CastEnvironment>& cast_environment,
                 const FrameReceiverConfig& config,
                 EventMediaType event_media_type,
-                PacedPacketSender* const packet_sender);
+                CastTransportSender* const transport);
 
   ~FrameReceiver() override;
 
@@ -63,10 +63,6 @@ class FrameReceiver : public RtpPayloadFeedback,
   // Called to deliver another packet, possibly a duplicate, and possibly
   // out-of-order.  Returns true if the parsing of the packet succeeded.
   bool ProcessPacket(scoped_ptr<Packet> packet);
-
-  // TODO(miu): This is the wrong place for this, but the (de)serialization
-  // implementation needs to be consolidated first.
-  static bool ParseSenderSsrc(const uint8* packet, size_t length, uint32* ssrc);
 
  protected:
   friend class FrameReceiverTest;  // Invokes ProcessParsedPacket().
@@ -114,6 +110,9 @@ class FrameReceiver : public RtpPayloadFeedback,
   void SendNextRtcpReport();
 
   const scoped_refptr<CastEnvironment> cast_environment_;
+
+  // Transport used to send data back.
+  CastTransportSender* const transport_;
 
   // Deserializes a packet into a RtpHeader + payload bytes.
   RtpParser packet_parser_;
