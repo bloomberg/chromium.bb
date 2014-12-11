@@ -314,7 +314,7 @@ def ustrftime(somedate, fmt='%Y-%m-%d'):
 def utcdatetime(dt):
     if dt.tzinfo is None:
         return dt
-    return datetime(*dt.utctimetuple()[:7])
+    return (dt.replace(tzinfo=None) - dt.utcoffset())
 
 def utctime(dt):
     if dt.tzinfo is None:

@@ -16,6 +16,7 @@
 """
 generic classes/functions for pyreverse core/extensions
 """
+from __future__ import print_function
 
 import sys
 import re
@@ -118,8 +119,8 @@ class FilterMixIn(object):
         for nummod in mode.split('+'):
             try:
                 __mode += MODES[nummod]
-            except KeyError, ex:
-                print >> sys.stderr, 'Unknown filter mode %s' % ex
+            except KeyError as ex:
+                print('Unknown filter mode %s' % ex, file=sys.stderr)
         self.__mode = __mode
 
 
@@ -127,5 +128,5 @@ class FilterMixIn(object):
         """return true if the node should be treated
         """
         visibility = get_visibility(getattr(node, 'name', node))
-        return not (self.__mode & VIS_MOD[visibility])
+        return not self.__mode & VIS_MOD[visibility]
 

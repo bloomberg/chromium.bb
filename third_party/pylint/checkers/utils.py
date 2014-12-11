@@ -30,6 +30,11 @@ BUILTINS_NAME = builtins.__name__
 COMP_NODE_TYPES = astroid.ListComp, astroid.SetComp, astroid.DictComp, astroid.GenExpr
 PY3K = sys.version_info[0] == 3
 
+if not PY3K:
+    EXCEPTIONS_MODULE = "exceptions"
+else:
+    EXCEPTIONS_MODULE = "builtins"
+
 
 class NoSuchArgumentError(Exception):
     pass
@@ -82,11 +87,11 @@ def safe_infer(node):
     """
     try:
         inferit = node.infer()
-        value = inferit.next()
+        value = next(inferit)
     except astroid.InferenceError:
         return
     try:
-        inferit.next()
+        next(inferit)
         return # None if there is ambiguity on the inferred node
     except astroid.InferenceError:
         return # there is some kind of ambiguity
@@ -152,12 +157,12 @@ def is_defined_before(var_node):
                 if ass_node.name == varname:
                     return True
         elif isinstance(_node, astroid.With):
-            for expr, vars in _node.items:
+            for expr, ids in _node.items:
                 if expr.parent_of(var_node):
                     break
-                if (vars and
-                        isinstance(vars, astroid.AssName) and
-                        vars.name == varname):
+                if (ids and
+                        isinstance(ids, astroid.AssName) and
+                        ids.name == varname):
                     return True
         elif isinstance(_node, (astroid.Lambda, astroid.Function)):
             if _node.args.is_argument(varname):
@@ -412,10 +417,85 @@ def get_argument_from_call(callfunc_node, position=None, keyword=None):
     try:
         if position is not None and not isinstance(callfunc_node.args[position], astroid.Keyword):
             return callfunc_node.args[position]
-    except IndexError, error:
+    except IndexError as error:
         raise NoSuchArgumentError(error)
     if keyword:
         for arg in callfunc_node.args:
             if isinstance(arg, astroid.Keyword) and arg.arg == keyword:
                 return arg.value
     raise NoSuchArgumentError
+
+def inherit_from_std_ex(node):
+    """
+    Return true if the given class node is subclass of
+    exceptions.Exception.
+    """
+    if node.name in ('Exception', 'BaseException') \
+            and node.root().name == EXCEPTIONS_MODULE:
+        return True
+    return any(inherit_from_std_ex(parent)
+               for parent in node.ancestors(recurs=False))
+
+def is_import_error(handler):
+    """
+    Check if the given exception handler catches
+    ImportError.
+
+    :param handler: A node, representing an ExceptHandler node.
+    :returns: True if the handler catches ImportError, False otherwise.
+    """
+    names = None
+    if isinstance(handler.type, astroid.Tuple):
+        names = [name for name in handler.type.elts
+                 if isinstance(name, astroid.Name)]
+    elif isinstance(handler.type, astroid.Name):
+        names = [handler.type]
+    else:
+        # Don't try to infer that.
+        return
+    for name in names:
+        try:
+            for infered in name.infer():
+                if (isinstance(infered, astroid.Class) and
+                        inherit_from_std_ex(infered) and
+                        infered.name == 'ImportError'):
+                    return True
+        except astroid.InferenceError:
+            continue
+
+def has_known_bases(klass):
+    """Returns true if all base classes of a class could be inferred."""
+    try:
+        return klass._all_bases_known
+    except AttributeError:
+        pass
+    for base in klass.bases:
+        result = safe_infer(base)
+        # TODO: check for A->B->A->B pattern in class structure too?
+        if (not isinstance(result, astroid.Class) or
+                result is klass or
+                not has_known_bases(result)):
+            klass._all_bases_known = False
+            return False
+    klass._all_bases_known = True
+    return True
+
+def decorated_with_property(node):
+    """ Detect if the given function node is decorated with a property. """
+    if not node.decorators:
+        return False
+    for decorator in node.decorators.nodes:
+        if not isinstance(decorator, astroid.Name):
+            continue
+        try:
+            for infered in decorator.infer():
+                if isinstance(infered, astroid.Class):
+                    if (infered.root().name == BUILTINS_NAME and
+                            infered.name == 'property'):
+                        return True
+                    for ancestor in infered.ancestors():
+                        if (ancestor.name == 'property' and
+                                ancestor.root().name == BUILTINS_NAME):
+                            return True
+        except astroid.InferenceError:
+            pass

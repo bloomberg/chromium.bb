@@ -119,12 +119,14 @@ from time import time, clock
 import warnings
 import types
 from inspect import isgeneratorfunction, isclass
+from contextlib import contextmanager
 
 from logilab.common.fileutils import abspath_listdir
 from logilab.common import textutils
 from logilab.common import testlib, STD_BLACKLIST
 # use the same unittest module as testlib
 from logilab.common.testlib import unittest, start_interactive_mode
+from logilab.common.deprecation import deprecated
 import doctest
 
 import unittest as unittest_legacy
@@ -145,28 +147,41 @@ except ImportError:
 
 CONF_FILE = 'pytestconf.py'
 
-## coverage hacks, do not read this, do not read this, do not read this
+## coverage pausing tools
 
-# hey, but this is an aspect, right ?!!!
+@contextmanager
+def replace_trace(trace=None):
+    """A context manager that temporary replaces the trace function"""
+    oldtrace = sys.gettrace()
+    sys.settrace(trace)
+    try:
+        yield
+    finally:
+        # specific hack to work around a bug in pycoverage, see
+        # https://bitbucket.org/ned/coveragepy/issue/123
+        if (oldtrace is not None and not callable(oldtrace) and
+            hasattr(oldtrace, 'pytrace')):
+            oldtrace = oldtrace.pytrace
+        sys.settrace(oldtrace)
+
+
+def pause_trace():
+    """A context manager that temporary pauses any tracing"""
+    return replace_trace()
+
 class TraceController(object):
-    nesting = 0
+    ctx_stack = []
 
+    @classmethod
+    @deprecated('[lgc 0.63.1] Use the pause_trace() context manager')
     def pause_tracing(cls):
-        if not cls.nesting:
-            cls.tracefunc = staticmethod(getattr(sys, '__settrace__', sys.settrace))
-            cls.oldtracer = getattr(sys, '__tracer__', None)
-            sys.__notrace__ = True
-            cls.tracefunc(None)
-        cls.nesting += 1
-    pause_tracing = classmethod(pause_tracing)
+        cls.ctx_stack.append(pause_trace())
+        cls.ctx_stack[-1].__enter__()
 
+    @classmethod
+    @deprecated('[lgc 0.63.1] Use the pause_trace() context manager')
     def resume_tracing(cls):
-        cls.nesting -= 1
-        assert cls.nesting >= 0
-        if not cls.nesting:
-            cls.tracefunc(cls.oldtracer)
-            delattr(sys, '__notrace__')
-    resume_tracing = classmethod(resume_tracing)
+        cls.ctx_stack.pop().__exit__(None, None, None)
 
 
 pause_tracing = TraceController.pause_tracing
@@ -174,20 +189,18 @@ resume_tracing = TraceController.resume_tracing
 
 
 def nocoverage(func):
+    """Function decorator that pauses tracing functions"""
     if hasattr(func, 'uncovered'):
         return func
     func.uncovered = True
+
     def not_covered(*args, **kwargs):
-        pause_tracing()
-        try:
+        with pause_trace():
             return func(*args, **kwargs)
-        finally:
-            resume_tracing()
     not_covered.uncovered = True
     return not_covered
 
-
-## end of coverage hacks
+## end of coverage pausing tools
 
 
 TESTFILE_RE = re.compile("^((unit)?test.*|smoketest)\.py$")
@@ -1082,8 +1095,14 @@ class NonStrictTestLoader(unittest.TestLoader):
                 testCaseClass)
         return [testname for testname in testnames if not is_skipped(testname)]
 
+
+# The 2 functions below are modified versions of the TestSuite.run method
+# that is provided with unittest2 for python 2.6, in unittest2/suite.py
+# It is used to monkeypatch the original implementation to support
+# extra runcondition and options arguments (see in testlib.py)
+
 def _ts_run(self, result, runcondition=None, options=None):
-    self._wrapped_run(result,runcondition=runcondition, options=options)
+    self._wrapped_run(result, runcondition=runcondition, options=options)
     self._tearDownPreviousClass(None, result)
     self._handleModuleTearDown(result)
     return result
@@ -1097,10 +1116,17 @@ def _ts_wrapped_run(self, result, debug=False, runcondition=None, options=None):
             self._handleModuleFixture(test, result)
             self._handleClassSetUp(test, result)
             result._previousTestClass = test.__class__
-            if (getattr(test.__class__, '_classSetupFailed', False) or 
+            if (getattr(test.__class__, '_classSetupFailed', False) or
                 getattr(result, '_moduleSetUpFailed', False)):
                 continue
 
+        # --- modifications to deal with _wrapped_run ---
+        # original code is:
+        #
+        # if not debug:
+        #     test(result)
+        # else:
+        #     test.debug()
         if hasattr(test, '_wrapped_run'):
             try:
                 test._wrapped_run(result, debug, runcondition=runcondition, options=options)
@@ -1113,6 +1139,25 @@ def _ts_wrapped_run(self, result, debug=False, runcondition=None, options=None):
                 test(result)
         else:
             test.debug()
+        # --- end of modifications to deal with _wrapped_run ---
+    return result
+
+if sys.version_info >= (2, 7):
+    # The function below implements a modified version of the
+    # TestSuite.run method that is provided with python 2.7, in
+    # unittest/suite.py
+    def _ts_run(self, result, debug=False, runcondition=None, options=None):
+        topLevel = False
+        if getattr(result, '_testRunEntered', False) is False:
+            result._testRunEntered = topLevel = True
+
+        self._wrapped_run(result, debug, runcondition, options)
+
+        if topLevel:
+            self._tearDownPreviousClass(None, result)
+            self._handleModuleTearDown(result)
+            result._testRunEntered = False
+        return result
 
 
 def enable_dbc(*args):

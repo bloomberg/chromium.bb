@@ -16,13 +16,17 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 """a similarities / code duplication command line tool and pylint checker
 """
+from __future__ import print_function
 import sys
-from itertools import izip
+from collections import defaultdict
 
 from logilab.common.ureports import Table
 
 from pylint.interfaces import IRawChecker
 from pylint.checkers import BaseChecker, table_lines_from_stats
+
+import six
+from six.moves import zip
 
 
 class Similar(object):
@@ -58,9 +62,9 @@ class Similar(object):
 
     def _compute_sims(self):
         """compute similarities in appended files"""
-        no_duplicates = {}
+        no_duplicates = defaultdict(list)
         for num, lineset1, idx1, lineset2, idx2 in self._iter_sims():
-            duplicate = no_duplicates.setdefault(num, [])
+            duplicate = no_duplicates[num]
             for couples in duplicate:
                 if (lineset1, idx1) in couples or (lineset2, idx2) in couples:
                     couples.add((lineset1, idx1))
@@ -69,7 +73,7 @@ class Similar(object):
             else:
                 duplicate.append(set([(lineset1, idx1), (lineset2, idx2)]))
         sims = []
-        for num, ensembles in no_duplicates.iteritems():
+        for num, ensembles in six.iteritems(no_duplicates):
             for couples in ensembles:
                 sims.append((num, couples))
         sims.sort()
@@ -80,19 +84,19 @@ class Similar(object):
         """display computed similarities on stdout"""
         nb_lignes_dupliquees = 0
         for num, couples in sims:
-            print
-            print num, "similar lines in", len(couples), "files"
+            print()
+            print(num, "similar lines in", len(couples), "files")
             couples = sorted(couples)
             for lineset, idx in couples:
-                print "==%s:%s" % (lineset.name, idx)
+                print("==%s:%s" % (lineset.name, idx))
             # pylint: disable=W0631
             for line in lineset._real_lines[idx:idx+num]:
-                print "  ", line.rstrip()
+                print("  ", line.rstrip())
             nb_lignes_dupliquees += num * (len(couples)-1)
         nb_total_lignes = sum([len(lineset) for lineset in self.linesets])
-        print "TOTAL lines=%s duplicates=%s percent=%.2f" \
+        print("TOTAL lines=%s duplicates=%s percent=%.2f" \
             % (nb_total_lignes, nb_lignes_dupliquees,
-               nb_lignes_dupliquees*100. / nb_total_lignes)
+               nb_lignes_dupliquees*100. / nb_total_lignes))
 
     def _find_common(self, lineset1, lineset2):
         """find similarities in the two given linesets"""
@@ -107,7 +111,7 @@ class Similar(object):
             for index2 in find(lineset1[index1]):
                 non_blank = 0
                 for num, ((_, line1), (_, line2)) in enumerate(
-                        izip(lines1(index1), lines2(index2))):
+                        zip(lines1(index1), lines2(index2))):
                     if line1 != line2:
                         if non_blank > min_lines:
                             yield num, lineset1, index1, lineset2, index2
@@ -207,10 +211,10 @@ class LineSet(object):
 
     def _mk_index(self):
         """create the index for this set"""
-        index = {}
+        index = defaultdict(list)
         for line_no, line in enumerate(self._stripped_lines):
             if line:
-                index.setdefault(line, []).append(line_no)
+                index[line].append(line_no)
         return index
 
 
@@ -323,10 +327,10 @@ def register(linter):
 
 def usage(status=0):
     """display command line usage information"""
-    print "finds copy pasted blocks in a set of files"
-    print
-    print 'Usage: symilar [-d|--duplicates min_duplicated_lines] \
-[-i|--ignore-comments] [--ignore-docstrings] [--ignore-imports] file1...'
+    print("finds copy pasted blocks in a set of files")
+    print()
+    print('Usage: symilar [-d|--duplicates min_duplicated_lines] \
+[-i|--ignore-comments] [--ignore-docstrings] [--ignore-imports] file1...')
     sys.exit(status)
 
 def Run(argv=None):

@@ -16,6 +16,10 @@
 """imports checkers for Python code"""
 
 import sys
+from collections import defaultdict
+
+import six
+from six.moves import map # pylint: disable=redefined-builtin
 
 from logilab.common.graph import get_cycles, DotBackend
 from logilab.common.ureports import VerbatimText, Paragraph
@@ -27,8 +31,16 @@ from astroid.modutils import get_module_part, is_standard_module
 from pylint.interfaces import IAstroidChecker
 from pylint.utils import EmptyReport
 from pylint.checkers import BaseChecker
-from pylint.checkers.utils import check_messages
+from pylint.checkers.utils import check_messages, is_import_error
 
+def _except_import_error(node):
+    """
+    Check if the try-except node has an ImportError handler.
+    Return True if an ImportError handler was infered, False otherwise.
+    """
+    if not isinstance(node, astroid.TryExcept):
+        return
+    return any(map(is_import_error, node.handlers))
 
 def get_first_import(node, context, name, base, level):
     """return the node where [base.]<name> is imported or None if not found
@@ -98,14 +110,14 @@ def dependencies_graph(filename, dep_info):
     done = {}
     printer = DotBackend(filename[:-4], rankdir='LR')
     printer.emit('URL="." node[shape="box"]')
-    for modname, dependencies in sorted(dep_info.iteritems()):
+    for modname, dependencies in sorted(six.iteritems(dep_info)):
         done[modname] = 1
         printer.emit_node(modname)
         for modname in dependencies:
             if modname not in done:
                 done[modname] = 1
                 printer.emit_node(modname)
-    for depmodname, dependencies in sorted(dep_info.iteritems()):
+    for depmodname, dependencies in sorted(six.iteritems(dep_info)):
         for modname in dependencies:
             printer.emit_edge(modname, depmodname)
     printer.generate(filename)
@@ -220,20 +232,21 @@ given file (report RP0402 must not be disabled)'}
         self.linter.add_stats(dependencies={})
         self.linter.add_stats(cycles=[])
         self.stats = self.linter.stats
-        self.import_graph = {}
+        self.import_graph = defaultdict(set)
 
     def close(self):
         """called before visiting project (i.e set of modules)"""
         # don't try to compute cycles if the associated message is disabled
         if self.linter.is_message_enabled('cyclic-import'):
-            for cycle in get_cycles(self.import_graph):
+            vertices = list(self.import_graph)
+            for cycle in get_cycles(self.import_graph, vertices=vertices):
                 self.add_message('cyclic-import', args=' -> '.join(cycle))
 
     def visit_import(self, node):
         """triggered when an import statement is seen"""
         modnode = node.root()
         for name, _ in node.names:
-            importedmodnode = self.get_imported_module(modnode, node, name)
+            importedmodnode = self.get_imported_module(node, name)
             if importedmodnode is None:
                 continue
             self._check_relative_import(modnode, node, importedmodnode, name)
@@ -260,7 +273,7 @@ given file (report RP0402 must not be disabled)'}
             if name == '*':
                 self.add_message('wildcard-import', args=basename, node=node)
         modnode = node.root()
-        importedmodnode = self.get_imported_module(modnode, node, basename)
+        importedmodnode = self.get_imported_module(node, basename)
         if importedmodnode is None:
             return
         self._check_relative_import(modnode, node, importedmodnode, basename)
@@ -270,15 +283,16 @@ given file (report RP0402 must not be disabled)'}
                 self._add_imported_module(node, '%s.%s' % (importedmodnode.name, name))
                 self._check_reimport(node, name, basename, node.level)
 
-    def get_imported_module(self, modnode, importnode, modname):
+    def get_imported_module(self, importnode, modname):
         try:
             return importnode.do_import_module(modname)
-        except astroid.InferenceError, ex:
+        except astroid.InferenceError as ex:
             if str(ex) != modname:
                 args = '%r (%s)' % (modname, ex)
             else:
                 args = repr(modname)
-            self.add_message("import-error", args=args, node=importnode)
+            if not _except_import_error(importnode.parent):
+                self.add_message("import-error", args=args, node=importnode)
 
     def _check_relative_import(self, modnode, importnode, importedmodnode,
                                importedasname):
@@ -295,7 +309,8 @@ given file (report RP0402 must not be disabled)'}
             return False
         if importedmodnode.name != importedasname:
             # this must be a relative import...
-            self.add_message('relative-import', args=(importedasname, importedmodnode.name),
+            self.add_message('relative-import',
+                             args=(importedasname, importedmodnode.name),
                              node=importnode)
 
     def _add_imported_module(self, node, importedmodname):
@@ -315,8 +330,8 @@ given file (report RP0402 must not be disabled)'}
             if not context_name in importedmodnames:
                 importedmodnames.add(context_name)
             # update import graph
-            mgraph = self.import_graph.setdefault(context_name, set())
-            if not importedmodname in mgraph:
+            mgraph = self.import_graph[context_name]
+            if importedmodname not in mgraph:
                 mgraph.add(importedmodname)
 
     def _check_deprecated_module(self, node, mod_path):
@@ -343,7 +358,7 @@ given file (report RP0402 must not be disabled)'}
 
     def report_external_dependencies(self, sect, _, dummy):
         """return a verbatim layout for displaying dependencies"""
-        dep_info = make_tree_defs(self._external_dependencies_info().iteritems())
+        dep_info = make_tree_defs(six.iteritems(self._external_dependencies_info()))
         if not dep_info:
             raise EmptyReport()
         tree_str = repr_tree_defs(dep_info)
@@ -375,7 +390,7 @@ given file (report RP0402 must not be disabled)'}
         if self.__ext_dep_info is None:
             package = self.linter.current_name
             self.__ext_dep_info = result = {}
-            for importee, importers in self.stats['dependencies'].iteritems():
+            for importee, importers in six.iteritems(self.stats['dependencies']):
                 if not importee.startswith(package):
                     result[importee] = importers
         return self.__ext_dep_info
@@ -387,7 +402,7 @@ given file (report RP0402 must not be disabled)'}
         if self.__int_dep_info is None:
             package = self.linter.current_name
             self.__int_dep_info = result = {}
-            for importee, importers in self.stats['dependencies'].iteritems():
+            for importee, importers in six.iteritems(self.stats['dependencies']):
                 if importee.startswith(package):
                     result[importee] = importers
         return self.__int_dep_info

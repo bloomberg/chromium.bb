@@ -16,13 +16,21 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 """basic checker for Python code"""
 
+import collections
+import itertools
 import sys
-import astroid
-from logilab.common.ureports import Table
-from astroid import are_exclusive, InferenceError
-import astroid.bases
+import re
 
-from pylint.interfaces import IAstroidChecker
+import six
+from six.moves import zip  # pylint: disable=redefined-builtin
+
+from logilab.common.ureports import Table
+
+import astroid
+import astroid.bases
+from astroid import are_exclusive, InferenceError
+
+from pylint.interfaces import IAstroidChecker, INFERENCE, INFERENCE_FAILURE, HIGH
 from pylint.utils import EmptyReport
 from pylint.reporters import diff_string
 from pylint.checkers import BaseChecker
@@ -34,11 +42,11 @@ from pylint.checkers.utils import (
     overrides_a_method,
     safe_infer,
     get_argument_from_call,
+    has_known_bases,
     NoSuchArgumentError,
+    is_import_error,
     )
 
-
-import re
 
 # regex for class/function/variable/constant name
 CLASS_NAME_RGX = re.compile('[A-Z_][a-zA-Z0-9]+$')
@@ -54,15 +62,41 @@ REVERSED_METHODS = (('__getitem__', '__len__'),
 
 PY33 = sys.version_info >= (3, 3)
 PY3K = sys.version_info >= (3, 0)
-BAD_FUNCTIONS = ['map', 'filter', 'apply']
+BAD_FUNCTIONS = ['map', 'filter']
 if sys.version_info < (3, 0):
     BAD_FUNCTIONS.append('input')
-    BAD_FUNCTIONS.append('file')
 
 # Name categories that are always consistent with all naming conventions.
 EXEMPT_NAME_CATEGORIES = set(('exempt', 'ignore'))
 
+# A mapping from builtin-qname -> symbol, to be used when generating messages
+# about dangerous default values as arguments
+DEFAULT_ARGUMENT_SYMBOLS = dict(
+    zip(['.'.join([astroid.bases.BUILTINS, x]) for x in ('set', 'dict', 'list')],
+        ['set()', '{}', '[]'])
+)
+
 del re
+
+def _redefines_import(node):
+    """ Detect that the given node (AssName) is inside an
+    exception handler and redefines an import from the tryexcept body.
+    Returns True if the node redefines an import, False otherwise.
+    """
+    current = node
+    while current and not isinstance(current.parent, astroid.ExceptHandler):
+        current = current.parent
+    if not current or not is_import_error(current.parent):
+        return False
+    try_block = current.parent.parent
+    for import_node in try_block.nodes_of_class((astroid.From, astroid.Import)):
+        for name, alias in import_node.names:
+            if alias:
+                if alias == node.name:
+                    return True
+            elif name == node.name:
+                return True
+    return False
 
 def in_loop(node):
     """return True if the node is inside a kind of for loop"""
@@ -94,6 +128,7 @@ def _loop_exits_early(loop):
     for child in loop.body:
         if isinstance(child, loop_nodes):
             # break statement may be in orelse of child loop.
+            # pylint: disable=superfluous-parens
             for orelse in (child.orelse or ()):
                 for _ in orelse.nodes_of_class(astroid.Break, skip_klass=loop_nodes):
                     return True
@@ -101,6 +136,13 @@ def _loop_exits_early(loop):
         for _ in child.nodes_of_class(astroid.Break, skip_klass=loop_nodes):
             return True
     return False
+
+def _is_multi_naming_match(match, node_type, confidence):
+    return (match is not None and
+            match.lastgroup is not None and
+            match.lastgroup not in EXEMPT_NAME_CATEGORIES
+            and (node_type != 'method' or confidence != INFERENCE_FAILURE))
+
 
 if sys.version_info < (3, 0):
     PROPERTY_CLASSES = set(('__builtin__.property', 'abc.abstractproperty'))
@@ -144,18 +186,19 @@ def decorated_with_abc(func):
     if func.decorators:
         for node in func.decorators.nodes:
             try:
-                infered = node.infer().next()
+                infered = next(node.infer())
             except InferenceError:
                 continue
             if infered and infered.qname() in ABC_METHODS:
                 return True
 
 def has_abstract_methods(node):
-    """ Determine if the given `node` has
+    """
+    Determine if the given `node` has
     abstract methods, defined with `abc` module.
     """
     return any(decorated_with_abc(meth)
-               for meth in node.mymethods())
+               for meth in node.methods())
 
 def report_by_type_stats(sect, stats, old_stats):
     """make a report of
@@ -258,8 +301,7 @@ class BasicErrorChecker(_BasicChecker):
         'E0110': ('Abstract class with abstract methods instantiated',
                   'abstract-class-instantiated',
                   'Used when an abstract class with `abc.ABCMeta` as metaclass '
-                  'has abstract methods and is instantiated.',
-                  {'minversion': (3, 0)}),
+                  'has abstract methods and is instantiated.'),
         'W0120': ('Else clause on loop without a break statement',
                   'useless-else-on-loop',
                   'Loops should only have an else clause if they can exit early '
@@ -349,24 +391,23 @@ class BasicErrorChecker(_BasicChecker):
         abc.ABCMeta as metaclass.
         """
         try:
-            infered = node.func.infer().next()
+            infered = next(node.func.infer())
         except astroid.InferenceError:
             return
         if not isinstance(infered, astroid.Class):
             return
         # __init__ was called
         metaclass = infered.metaclass()
+        abstract_methods = has_abstract_methods(infered)
         if metaclass is None:
             # Python 3.4 has `abc.ABC`, which won't be detected
             # by ClassNode.metaclass()
             for ancestor in infered.ancestors():
-                if (ancestor.qname() == 'abc.ABC' and
-                        has_abstract_methods(infered)):
+                if ancestor.qname() == 'abc.ABC' and abstract_methods:
                     self.add_message('abstract-class-instantiated', node=node)
                     break
             return
-        if (metaclass.qname() == 'abc.ABCMeta' and
-                has_abstract_methods(infered)):
+        if metaclass.qname() == 'abc.ABCMeta' and abstract_methods:
             self.add_message('abstract-class-instantiated', node=node)
 
     def _check_else_on_loop(self, node):
@@ -446,8 +487,9 @@ functions, methods
                   'times.'),
         'W0122': ('Use of exec',
                   'exec-used',
-                  'Used when you use the "exec" statement (function for Python 3), to discourage its '
-                  'usage. That doesn\'t mean you can not use it !'),
+                  'Used when you use the "exec" statement (function for Python '
+                  '3), to discourage its usage. That doesn\'t '
+                  'mean you can not use it !'),
         'W0123': ('Use of eval',
                   'eval-used',
                   'Used when you use the "eval" function, to discourage its '
@@ -476,12 +518,6 @@ functions, methods
                   'A call of assert on a tuple will always evaluate to true if '
                   'the tuple is not empty, and will always evaluate to false if '
                   'it is.'),
-        'W0121': ('Use raise ErrorClass(args) instead of raise ErrorClass, args.',
-                  'old-raise-syntax',
-                  "Used when the alternate raise syntax 'raise foo, bar' is used "
-                  "instead of 'raise foo(bar)'.",
-                  {'maxversion': (3, 0)}),
-
         'C0121': ('Missing required attribute "%s"', # W0103
                   'missing-module-attribute',
                   'Used when an attribute required for modules is missing.'),
@@ -523,6 +559,7 @@ functions, methods
         self._tryfinallys = []
         self.stats = self.linter.add_stats(module=0, function=0,
                                            method=0, class_=0)
+
     @check_messages('missing-module-attribute')
     def visit_module(self, node):
         """check module name, docstring and required arguments
@@ -532,7 +569,7 @@ functions, methods
             if attr not in node:
                 self.add_message('missing-module-attribute', node=node, args=attr)
 
-    def visit_class(self, node):
+    def visit_class(self, node): # pylint: disable=unused-argument
         """check module name, docstring and redefinition
         increment branch counter
         """
@@ -544,7 +581,7 @@ functions, methods
         """check for various kind of statements without effect"""
         expr = node.value
         if isinstance(expr, astroid.Const) and isinstance(expr.value,
-                                                          basestring):
+                                                          six.string_types):
             # treat string statement in a separated message
             # Handle PEP-257 attribute docstrings.
             # An attribute docstring is defined as being a string right after
@@ -621,13 +658,13 @@ functions, methods
         # ordinary_args[i].name == call.args[i].name.
         if len(ordinary_args) != len(call.args):
             return
-        for i in xrange(len(ordinary_args)):
+        for i in range(len(ordinary_args)):
             if not isinstance(call.args[i], astroid.Name):
                 return
             if node.args.args[i].name != call.args[i].name:
                 return
         if (isinstance(node.body.func, astroid.Getattr) and
-            isinstance(node.body.func.expr, astroid.CallFunc)):
+                isinstance(node.body.func.expr, astroid.CallFunc)):
             # Chained call, the intermediate call might
             # return something else (but we don't check that, yet).
             return
@@ -642,18 +679,26 @@ functions, methods
         # check for dangerous default values as arguments
         for default in node.args.defaults:
             try:
-                value = default.infer().next()
+                value = next(default.infer())
             except astroid.InferenceError:
                 continue
-            builtins = astroid.bases.BUILTINS
+
             if (isinstance(value, astroid.Instance) and
-                    value.qname() in ['.'.join([builtins, x]) for x in ('set', 'dict', 'list')]):
+                    value.qname() in DEFAULT_ARGUMENT_SYMBOLS):
                 if value is default:
-                    msg = default.as_string()
+                    msg = DEFAULT_ARGUMENT_SYMBOLS[value.qname()]
                 elif type(value) is astroid.Instance:
-                    msg = '%s (%s)' % (default.as_string(), value.qname())
+                    if isinstance(default, astroid.CallFunc):
+                        # this argument is direct call to list() or dict() etc
+                        msg = '%s() (%s)' % (value.name, value.qname())
+                    else:
+                        # this argument is a variable from somewhere else which turns
+                        # out to be a list or dict
+                        msg = '%s (%s)' % (default.as_string(), value.qname())
                 else:
-                    msg = '%s (%s)' % (default.as_string(), value.as_string())
+                    # this argument is a name
+                    msg = '%s (%s)' % (default.as_string(),
+                                       DEFAULT_ARGUMENT_SYMBOLS[value.qname()])
                 self.add_message('dangerous-default-value', node=node, args=(msg,))
 
     @check_messages('unreachable', 'lost-exception')
@@ -686,16 +731,12 @@ functions, methods
         # 2 - Is it inside final body of a try...finally bloc ?
         self._check_not_in_finally(node, 'break', (astroid.For, astroid.While,))
 
-    @check_messages('unreachable', 'old-raise-syntax')
+    @check_messages('unreachable')
     def visit_raise(self, node):
         """check if the node has a right sibling (if so, that's some unreachable
         code)
         """
         self._check_unreachable(node)
-        if sys.version_info >= (3, 0):
-            return
-        if node.exc is not None and node.inst is not None and node.tback is None:
-            self.add_message('old-raise-syntax', node=node)
 
     @check_messages('exec-used')
     def visit_exec(self, node):
@@ -758,7 +799,7 @@ functions, methods
         """update try...finally flag"""
         self._tryfinallys.append(node)
 
-    def leave_tryfinally(self, node):
+    def leave_tryfinally(self, node): # pylint: disable=unused-argument
         """update try...finally flag"""
         self._tryfinallys.pop()
 
@@ -796,11 +837,11 @@ functions, methods
             if argument is astroid.YES:
                 return
             if argument is None:
-                # nothing was infered
-                # try to see if we have iter()
+                # Nothing was infered.
+                # Try to see if we have iter().
                 if isinstance(node.args[0], astroid.CallFunc):
                     try:
-                        func = node.args[0].func.infer().next()
+                        func = next(node.args[0].func.infer())
                     except InferenceError:
                         return
                     if (getattr(func, 'name', None) == 'iter' and
@@ -828,9 +869,9 @@ functions, methods
                     else:
                         break
                 else:
-                    # check if it is a .deque. It doesn't seem that
+                    # Check if it is a .deque. It doesn't seem that
                     # we can retrieve special methods
-                    # from C implemented constructs
+                    # from C implemented constructs.
                     if argument._proxied.qname().endswith(".deque"):
                         return
                     self.add_message('bad-reversed-sequence', node=node)
@@ -853,7 +894,7 @@ _NAME_TYPES = {
 
 def _create_naming_options():
     name_options = []
-    for name_type, (rgx, human_readable_name) in _NAME_TYPES.iteritems():
+    for name_type, (rgx, human_readable_name) in six.iteritems(_NAME_TYPES):
         name_type = name_type.replace('_', '-')
         name_options.append((
             '%s-rgx' % (name_type,),
@@ -907,6 +948,7 @@ class NameChecker(_BasicChecker):
         _BasicChecker.__init__(self, linter)
         self._name_category = {}
         self._name_group = {}
+        self._bad_names = {}
 
     def open(self):
         self.stats = self.linter.add_stats(badname_module=0,
@@ -924,11 +966,30 @@ class NameChecker(_BasicChecker):
     @check_messages('blacklisted-name', 'invalid-name')
     def visit_module(self, node):
         self._check_name('module', node.name.split('.')[-1], node)
+        self._bad_names = {}
+
+    def leave_module(self, node): # pylint: disable=unused-argument
+        for all_groups in six.itervalues(self._bad_names):
+            if len(all_groups) < 2:
+                continue
+            groups = collections.defaultdict(list)
+            min_warnings = sys.maxsize
+            for group in six.itervalues(all_groups):
+                groups[len(group)].append(group)
+                min_warnings = min(len(group), min_warnings)
+            if len(groups[min_warnings]) > 1:
+                by_line = sorted(groups[min_warnings],
+                                 key=lambda group: min(warning[0].lineno for warning in group))
+                warnings = itertools.chain(*by_line[1:])
+            else:
+                warnings = groups[min_warnings][0]
+            for args in warnings:
+                self._raise_name_warning(*args)
 
     @check_messages('blacklisted-name', 'invalid-name')
     def visit_class(self, node):
         self._check_name('class', node.name, node)
-        for attr, anodes in node.instance_attrs.iteritems():
+        for attr, anodes in six.iteritems(node.instance_attrs):
             if not list(node.instance_attr_ancestors(attr)):
                 self._check_name('attr', attr, anodes[0])
 
@@ -936,10 +997,15 @@ class NameChecker(_BasicChecker):
     def visit_function(self, node):
         # Do not emit any warnings if the method is just an implementation
         # of a base class method.
-        if node.is_method() and overrides_a_method(node.parent.frame(), node.name):
-            return
+        confidence = HIGH
+        if node.is_method():
+            if overrides_a_method(node.parent.frame(), node.name):
+                return
+            confidence = (INFERENCE if has_known_bases(node.parent.frame())
+                          else INFERENCE_FAILURE)
+
         self._check_name(_determine_function_name_type(node),
-                         node.name, node)
+                         node.name, node, confidence)
         # Check argument names
         args = node.args.args
         if args is not None:
@@ -962,13 +1028,17 @@ class NameChecker(_BasicChecker):
                 if isinstance(safe_infer(ass_type.value), astroid.Class):
                     self._check_name('class', node.name, node)
                 else:
-                    self._check_name('const', node.name, node)
+                    if not _redefines_import(node):
+                        # Don't emit if the name redefines an import
+                        # in an ImportError except handler.
+                        self._check_name('const', node.name, node)
             elif isinstance(ass_type, astroid.ExceptHandler):
                 self._check_name('variable', node.name, node)
         elif isinstance(frame, astroid.Function):
             # global introduced variable aren't in the function locals
             if node.name in frame and node.name not in frame.argnames():
-                self._check_name('variable', node.name, node)
+                if not _redefines_import(node):
+                    self._check_name('variable', node.name, node)
         elif isinstance(frame, astroid.Class):
             if not list(frame.local_attr_ancestors(node.name)):
                 self._check_name('class_attribute', node.name, node)
@@ -984,12 +1054,16 @@ class NameChecker(_BasicChecker):
     def _find_name_group(self, node_type):
         return self._name_group.get(node_type, node_type)
 
-    def _is_multi_naming_match(self, match):
-        return (match is not None and
-                match.lastgroup is not None and
-                match.lastgroup not in EXEMPT_NAME_CATEGORIES)
+    def _raise_name_warning(self, node, node_type, name, confidence):
+        type_label = _NAME_TYPES[node_type][1]
+        hint = ''
+        if self.config.include_naming_hint:
+            hint = ' (hint: %s)' % (getattr(self.config, node_type + '_name_hint'))
+        self.add_message('invalid-name', node=node, args=(type_label, name, hint),
+                         confidence=confidence)
+        self.stats['badname_' + node_type] += 1
 
-    def _check_name(self, node_type, name, node):
+    def _check_name(self, node_type, name, node, confidence=HIGH):
         """check for a name using the type's regexp"""
         if is_inside_except(node):
             clobbering, _ = clobber_in_except(node)
@@ -1004,20 +1078,14 @@ class NameChecker(_BasicChecker):
         regexp = getattr(self.config, node_type + '_rgx')
         match = regexp.match(name)
 
-        if self._is_multi_naming_match(match):
+        if _is_multi_naming_match(match, node_type, confidence):
             name_group = self._find_name_group(node_type)
-            if name_group not in self._name_category:
-                self._name_category[name_group] = match.lastgroup
-            elif self._name_category[name_group] != match.lastgroup:
-                match = None
+            bad_name_group = self._bad_names.setdefault(name_group, {})
+            warnings = bad_name_group.setdefault(match.lastgroup, [])
+            warnings.append((node, node_type, name, confidence))
 
         if match is None:
-            type_label = _NAME_TYPES[node_type][1]
-            hint = ''
-            if self.config.include_naming_hint:
-                hint = ' (hint: %s)' % (getattr(self.config, node_type + '_name_hint'))
-            self.add_message('invalid-name', node=node, args=(type_label, name, hint))
-            self.stats['badname_' + node_type] += 1
+            self._raise_name_warning(node, node_type, name, confidence)
 
 
 class DocStringChecker(_BasicChecker):
@@ -1061,12 +1129,15 @@ class DocStringChecker(_BasicChecker):
     def visit_class(self, node):
         if self.config.no_docstring_rgx.match(node.name) is None:
             self._check_docstring('class', node)
+
     @check_messages('missing-docstring', 'empty-docstring')
     def visit_function(self, node):
         if self.config.no_docstring_rgx.match(node.name) is None:
             ftype = node.is_method() and 'method' or 'function'
             if isinstance(node.parent.frame(), astroid.Class):
                 overridden = False
+                confidence = (INFERENCE if has_known_bases(node.parent.frame())
+                              else INFERENCE_FAILURE)
                 # check if node is from a method overridden by its ancestor
                 for ancestor in node.parent.frame().ancestors():
                     if node.name in ancestor and \
@@ -1074,11 +1145,13 @@ class DocStringChecker(_BasicChecker):
                         overridden = True
                         break
                 self._check_docstring(ftype, node,
-                                      report_missing=not overridden)
+                                      report_missing=not overridden,
+                                      confidence=confidence)
             else:
                 self._check_docstring(ftype, node)
 
-    def _check_docstring(self, node_type, node, report_missing=True):
+    def _check_docstring(self, node_type, node, report_missing=True,
+                         confidence=HIGH):
         """check the node has a non empty docstring"""
         docstring = node.doc
         if docstring is None:
@@ -1094,20 +1167,22 @@ class DocStringChecker(_BasicChecker):
                 return
             self.stats['undocumented_'+node_type] += 1
             if (node.body and isinstance(node.body[0], astroid.Discard) and
-                isinstance(node.body[0].value, astroid.CallFunc)):
+                    isinstance(node.body[0].value, astroid.CallFunc)):
                 # Most likely a string with a format call. Let's see.
                 func = safe_infer(node.body[0].value.func)
                 if (isinstance(func, astroid.BoundMethod)
-                    and isinstance(func.bound, astroid.Instance)):
+                        and isinstance(func.bound, astroid.Instance)):
                     # Strings in Python 3, others in Python 2.
                     if PY3K and func.bound.name == 'str':
                         return
                     elif func.bound.name in ('str', 'unicode', 'bytes'):
                         return
-            self.add_message('missing-docstring', node=node, args=(node_type,))
+            self.add_message('missing-docstring', node=node, args=(node_type,),
+                             confidence=confidence)
         elif not docstring.strip():
             self.stats['undocumented_'+node_type] += 1
-            self.add_message('empty-docstring', node=node, args=(node_type,))
+            self.add_message('empty-docstring', node=node, args=(node_type,),
+                             confidence=confidence)
 
 
 class PassChecker(_BasicChecker):

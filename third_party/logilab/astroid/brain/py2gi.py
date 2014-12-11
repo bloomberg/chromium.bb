@@ -4,6 +4,7 @@ Helps with understanding everything imported from 'gi.repository'
 """
 
 import inspect
+import itertools
 import sys
 import re
 
@@ -111,40 +112,33 @@ def _gi_build_stub(parent):
 
     return ret
 
-# Overwrite Module.module_import to _actually_ import the introspected module if
-# it's a gi module, then build stub code by examining its info and get an astng
-# from that
-
-from astroid.scoped_nodes import Module
-_orig_import_module = Module.import_module
-
-def _new_import_module(self, modname, relative_only=False, level=None):
-    # Could be a static piece of gi.repository or whatever unrelated module,
-    # let that fall through
-    try:
-        return _orig_import_module(self, modname, relative_only, level)
-    except AstroidBuildingException:
-        # we only consider gi.repository submodules
-        if not modname.startswith('gi.repository.'):
-            if relative_only and level is None:
-                level = 0
-            modname = self.relative_to_absolute_name(modname, level)
-        if not modname.startswith('gi.repository.'):
-            raise
+def _import_gi_module(modname):
+    # we only consider gi.repository submodules
+    if not modname.startswith('gi.repository.'):
+        raise AstroidBuildingException()
     # build astroid representation unless we already tried so
     if modname not in _inspected_modules:
         modnames = [modname]
-        # GLib and GObject have some special case handling
-        # in pygobject that we need to cope with
+        optional_modnames = []
+
+        # GLib and GObject may have some special case handling
+        # in pygobject that we need to cope with. However at
+        # least as of pygobject3-3.13.91 the _glib module doesn't
+        # exist anymore, so if treat these modules as optional.
         if modname == 'gi.repository.GLib':
-            modnames.append('gi._glib')
+            optional_modnames.append('gi._glib')
         elif modname == 'gi.repository.GObject':
-            modnames.append('gi._gobject')
+            optional_modnames.append('gi._gobject')
+
         try:
             modcode = ''
-            for m in modnames:
-                __import__(m)
-                modcode += _gi_build_stub(sys.modules[m])
+            for m in itertools.chain(modnames, optional_modnames):
+                try:
+                    __import__(m)
+                    modcode += _gi_build_stub(sys.modules[m])
+                except ImportError:
+                    if m not in optional_modnames:
+                        raise
         except ImportError:
             astng = _inspected_modules[modname] = None
         else:
@@ -156,4 +150,6 @@ def _new_import_module(self, modname, relative_only=False, level=None):
         raise AstroidBuildingException('Failed to import module %r' % modname)
     return astng
 
-Module.import_module = _new_import_module
+
+MANAGER.register_failed_import_hook(_import_gi_module)
+

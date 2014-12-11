@@ -25,6 +25,7 @@ import sys
 from os.path import abspath
 from inspect import (getargspec, isdatadescriptor, isfunction, ismethod,
                      ismethoddescriptor, isclass, isbuiltin, ismodule)
+import six
 
 from astroid.node_classes import CONST_CLS
 from astroid.nodes import (Module, Class, Const, const_factory, From,
@@ -57,7 +58,10 @@ def attach_dummy_node(node, name, object=_marker):
     enode.object = object
     _attach_local_node(node, enode, name)
 
-EmptyNode.has_underlying_object = lambda self: self.object is not _marker
+def _has_underlying_object(self):
+    return hasattr(self, 'object') and self.object is not _marker
+
+EmptyNode.has_underlying_object = _has_underlying_object
 
 def attach_const_node(node, name, value):
     """create a Const node and register it in the locals of the given
@@ -247,10 +251,11 @@ class InspectBuilder(object):
                 attach_dummy_node(node, name)
                 continue
             if ismethod(member):
-                member = member.im_func
+                member = six.get_method_function(member)
             if isfunction(member):
                 # verify this is not an imported function
-                filename = getattr(member.func_code, 'co_filename', None)
+                filename = getattr(six.get_function_code(member),
+                                   'co_filename', None)
                 if filename is None:
                     assert isinstance(member, object)
                     object_build_methoddescriptor(node, member, name)
@@ -261,8 +266,6 @@ class InspectBuilder(object):
             elif isbuiltin(member):
                 if (not _io_discrepancy(member) and
                         self.imported_member(node, member, name)):
-                    #if obj is object:
-                    #    print 'skippp', obj, name, member
                     continue
                 object_build_methoddescriptor(node, member, name)
             elif isclass(member):
@@ -299,7 +302,7 @@ class InspectBuilder(object):
             modname = getattr(member, '__module__', None)
         except:
             # XXX use logging
-            print 'unexpected error while building astroid from living object'
+            print('unexpected error while building astroid from living object')
             import traceback
             traceback.print_exc()
             modname = None

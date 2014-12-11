@@ -30,6 +30,7 @@ Usage:
 http://www.physics.ox.ac.uk/users/santoso/Software.Repository.html
 page says code is "available as is without any warranty or support".
 """
+from __future__ import print_function
 
 import struct
 import os, os.path
@@ -79,7 +80,7 @@ class Dbase:
     def open(self, db_name):
         filesize = os.path.getsize(db_name)
         if filesize <= 68:
-            raise IOError, 'The file is not large enough to be a dbf file'
+            raise IOError('The file is not large enough to be a dbf file')
 
         self.fdb = open(db_name, 'rb')
 
@@ -152,7 +153,7 @@ class Dbase:
         This function accept record number from 0 to N-1
         """
         if rec_no < 0 or rec_no > self.num_records:
-            raise Exception, 'Unable to extract data outside the range'
+            raise Exception('Unable to extract data outside the range')
 
         offset = self.header['Record Size'] * rec_no
         data = self.db_data[offset:offset+self.row_len]
@@ -227,4 +228,4 @@ def readDbf(filename):
 if __name__=='__main__':
     rec = readDbf('dbf/sptable.dbf')
     for line in rec:
-        print '%s %s' % (line['GENUS'].strip(), line['SPECIES'].strip())
+        print('%s %s' % (line['GENUS'].strip(), line['SPECIES'].strip()))

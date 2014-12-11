@@ -30,7 +30,9 @@ Base id of standard checkers (used in msg and report ids):
 12: logging
 13: string_format
 14: string_constant
-15-50: not yet used: reserved for future internal checkers.
+15: stdlib
+16: python3
+17-50: not yet used: reserved for future internal checkers.
 51-99: perhaps used: reserved for external checkers
 
 The raw_metrics checker has no number associated since it doesn't emit any
@@ -46,6 +48,8 @@ from logilab.common.configuration import OptionsProviderMixIn
 
 from pylint.reporters import diff_string
 from pylint.utils import register_plugins
+from pylint.interfaces import UNDEFINED
+
 
 def table_lines_from_stats(stats, old_stats, columns):
     """get values listed in <columns> from <stats> and <old_stats>,
@@ -55,7 +59,7 @@ def table_lines_from_stats(stats, old_stats, columns):
     lines = []
     for m_type in columns:
         new = stats[m_type]
-        format = str
+        format = str # pylint: disable=redefined-builtin
         if isinstance(new, float):
             format = lambda num: '%.3f' % num
         old = old_stats.get(m_type)
@@ -80,6 +84,8 @@ class BaseChecker(OptionsProviderMixIn):
     msgs = {}
     # reports issued by this checker
     reports = ()
+    # mark this checker as enabled or not.
+    enabled = True
 
     def __init__(self, linter=None):
         """checker instances should have the linter as argument
@@ -90,9 +96,9 @@ class BaseChecker(OptionsProviderMixIn):
         OptionsProviderMixIn.__init__(self)
         self.linter = linter
 
-    def add_message(self, msg_id, line=None, node=None, args=None):
+    def add_message(self, msg_id, line=None, node=None, args=None, confidence=UNDEFINED):
         """add a message of a given type"""
-        self.linter.add_message(msg_id, line, node, args)
+        self.linter.add_message(msg_id, line, node, args, confidence)
 
     # dummy methods implementing the IChecker interface
 
@@ -101,31 +107,6 @@ class BaseChecker(OptionsProviderMixIn):
 
     def close(self):
         """called after visiting project (i.e set of modules)"""
-
-
-class BaseRawChecker(BaseChecker):
-    """base class for raw checkers"""
-
-    def process_module(self, node):
-        """process a module
-
-        the module's content is accessible via the stream object
-
-        stream must implement the readline method
-        """
-        warnings.warn("Modules that need access to the tokens should "
-                      "use the ITokenChecker interface.",
-                      DeprecationWarning)
-        stream = node.file_stream
-        stream.seek(0) # XXX may be removed with astroid > 0.23
-        if sys.version_info <= (3, 0):
-            self.process_tokens(tokenize.generate_tokens(stream.readline))
-        else:
-            self.process_tokens(tokenize.tokenize(stream.readline))
-
-    def process_tokens(self, tokens):
-        """should be overridden by subclasses"""
-        raise NotImplementedError()
 
 
 class BaseTokenChecker(BaseChecker):

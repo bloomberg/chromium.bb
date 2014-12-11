@@ -44,7 +44,7 @@ if sys.version_info >= (3, 0):
     def open_source_file(filename):
         with open(filename, 'rb') as byte_stream:
             encoding = detect_encoding(byte_stream.readline)[0]
-        stream = open(filename, 'rU', encoding=encoding)
+        stream = open(filename, 'r', newline=None, encoding=encoding)
         try:
             data = stream.read()
         except UnicodeError: # wrong encodingg
@@ -115,23 +115,24 @@ class AstroidBuilder(InspectBuilder):
         path is expected to be a python source file
         """
         try:
-            _, encoding, data = open_source_file(path)
-        except IOError, exc:
+            stream, encoding, data = open_source_file(path)
+        except IOError as exc:
             msg = 'Unable to load file %r (%s)' % (path, exc)
             raise AstroidBuildingException(msg)
-        except SyntaxError, exc: # py3k encoding specification error
+        except SyntaxError as exc: # py3k encoding specification error
             raise AstroidBuildingException(exc)
-        except LookupError, exc: # unknown encoding
+        except LookupError as exc: # unknown encoding
             raise AstroidBuildingException(exc)
-        # get module name if necessary
-        if modname is None:
-            try:
-                modname = '.'.join(modpath_from_file(path))
-            except ImportError:
-                modname = splitext(basename(path))[0]
-        # build astroid representation
-        module = self._data_build(data, modname, path)
-        return self._post_build(module, encoding)
+        with stream:
+            # get module name if necessary
+            if modname is None:
+                try:
+                    modname = '.'.join(modpath_from_file(path))
+                except ImportError:
+                    modname = splitext(basename(path))[0]
+            # build astroid representation
+            module = self._data_build(data, modname, path)
+            return self._post_build(module, encoding)
 
     def string_build(self, data, modname='', path=None):
         """build astroid from source code string and return rebuilded astroid"""
@@ -159,7 +160,10 @@ class AstroidBuilder(InspectBuilder):
     def _data_build(self, data, modname, path):
         """build tree node from data and add some informations"""
         # this method could be wrapped with a pickle/cache function
-        node = parse(data + '\n')
+        try:
+            node = parse(data + '\n')
+        except TypeError as exc:
+            raise AstroidBuildingException(exc)
         if path is not None:
             node_file = abspath(path)
         else:
@@ -170,8 +174,7 @@ class AstroidBuilder(InspectBuilder):
         else:
             package = path and path.find('__init__.py') > -1 or False
         rebuilder = TreeRebuilder(self._manager)
-        module = rebuilder.visit_module(node, modname, package)
-        module.file = module.path = node_file
+        module = rebuilder.visit_module(node, modname, node_file, package)
         module._from_nodes = rebuilder._from_nodes
         module._delayed_assattr = rebuilder._delayed_assattr
         return module

@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import logging
 import urllib2
 
@@ -84,4 +86,4 @@ if __name__ == '__main__':
     # test with url sys.argv[1]
     h = HTTPGssapiAuthHandler()
     response = urllib2.build_opener(h, ch).open(sys.argv[1])
-    print '\nresponse: %s\n--------------\n' % response.code, response.info()
+    print('\nresponse: %s\n--------------\n' % response.code, response.info())

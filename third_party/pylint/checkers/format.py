@@ -24,9 +24,10 @@ Some parts of the process_token method is based from The Tab Nanny std module.
 import keyword
 import sys
 import tokenize
+from functools import reduce # pylint: disable=redefined-builtin
 
-if not hasattr(tokenize, 'NL'):
-    raise ValueError("tokenize.NL doesn't exist -- tokenize module too old")
+import six
+from six.moves import zip, map, filter # pylint: disable=redefined-builtin
 
 from astroid import nodes
 
@@ -65,7 +66,7 @@ MSGS = {
     'C0301': ('Line too long (%s/%s)',
               'line-too-long',
               'Used when a line is longer than a given number of characters.'),
-    'C0302': ('Too many lines in module (%s)', # was W0302
+    'C0302': ('Too many lines in module (%s/%s)', # was W0302
               'too-many-lines',
               'Used when a module has too much lines, reducing its readability.'
              ),
@@ -105,22 +106,18 @@ MSGS = {
               {'old_names': [('C0323', 'no-space-after-operator'),
                              ('C0324', 'no-space-after-comma'),
                              ('C0322', 'no-space-before-operator')]}),
-    'W0331': ('Use of the <> operator',
-              'old-ne-operator',
-              'Used when the deprecated "<>" operator is used instead '
-              'of "!=".',
-              {'maxversion': (3, 0)}),
     'W0332': ('Use of "l" as long integer identifier',
               'lowercase-l-suffix',
               'Used when a lower case "l" is used to mark a long integer. You '
               'should use a upper case "L" since the letter "l" looks too much '
               'like the digit "1"',
               {'maxversion': (3, 0)}),
-    'W0333': ('Use of the `` operator',
-              'backtick',
-              'Used when the deprecated "``" (backtick) operator is used '
-              'instead  of the str() function.',
-              {'scope': WarningScope.NODE, 'maxversion': (3, 0)}),
+    'C0327': ('Mixed line endings LF and CRLF',
+              'mixed-line-endings',
+              'Used when there are mixed (LF and CRLF) newline signs in a file.'),
+    'C0328': ('Unexpected line ending format. There is \'%s\' while it should be \'%s\'.',
+              'unexpected-line-ending-format',
+              'Used when there is different newline than expected.'),
     }
 
 
@@ -336,7 +333,8 @@ class ContinuedLineState(object):
             # current indent level
             paren_align = self._cont_stack[-1].valid_outdent_offsets
             next_align = self._cont_stack[-1].valid_continuation_offsets.copy()
-            next_align[next_align.keys()[0] + self._continuation_size] = True
+            next_align_keys = list(next_align.keys())
+            next_align[next_align_keys[0] + self._continuation_size] = True
             # Note that the continuation of
             # d = {
             #       'a': 'b'
@@ -401,7 +399,6 @@ class FormatChecker(BaseTokenChecker):
     * unauthorized constructions
     * strict indentation
     * line length
-    * use of <> instead of !=
     """
 
     __implements__ = (ITokenChecker, IAstroidChecker, IRawChecker)
@@ -413,7 +410,7 @@ class FormatChecker(BaseTokenChecker):
     # configuration options
     # for available dict keys/values see the optik parser 'add_option' method
     options = (('max-line-length',
-                {'default' : 80, 'type' : "int", 'metavar' : '<int>',
+                {'default' : 100, 'type' : "int", 'metavar' : '<int>',
                  'help' : 'Maximum number of characters on a single line.'}),
                ('ignore-long-lines',
                 {'type': 'regexp', 'metavar': '<regexp>',
@@ -442,6 +439,10 @@ class FormatChecker(BaseTokenChecker):
                 {'type': 'int', 'metavar': '<int>', 'default': 4,
                  'help': 'Number of spaces of indent required inside a hanging '
                          ' or continued line.'}),
+               ('expected-line-ending-format',
+                {'type': 'choice', 'metavar': '<empty or LF or CRLF>', 'default': '',
+                 'choices': ['', 'LF', 'CRLF'],
+                 'help': 'Expected format of line ending, e.g. empty (any line ending), LF or CRLF.'}),
               )
 
     def __init__(self, linter=None):
@@ -496,7 +497,7 @@ class FormatChecker(BaseTokenChecker):
         keyword_token = tokens[start][1]
         line_num = tokens[start][2][0]
 
-        for i in xrange(start, len(tokens) - 1):
+        for i in range(start, len(tokens) - 1):
             token = tokens[i]
 
             # If we hit a newline, then assume any parens were for continuation.
@@ -622,13 +623,13 @@ class FormatChecker(BaseTokenChecker):
                 return 'No', 'allowed'
 
         def _name_construct(token):
-            if tokens[i][1] == ',':
+            if token[1] == ',':
                 return 'comma'
-            elif tokens[i][1] == ':':
+            elif token[1] == ':':
                 return ':'
-            elif tokens[i][1] in '()[]{}':
+            elif token[1] in '()[]{}':
                 return 'bracket'
-            elif tokens[i][1] in ('<', '>', '<=', '>=', '!=', '=='):
+            elif token[1] in ('<', '>', '<=', '>=', '!=', '=='):
                 return 'comparison'
             else:
                 if self._inside_brackets('('):
@@ -637,7 +638,8 @@ class FormatChecker(BaseTokenChecker):
                     return 'assignment'
 
         good_space = [True, True]
-        pairs = [(tokens[i-1], tokens[i]), (tokens[i], tokens[i+1])]
+        token = tokens[i]
+        pairs = [(tokens[i-1], token), (token, tokens[i+1])]
 
         for other_idx, (policy, token_pair) in enumerate(zip(policies, pairs)):
             if token_pair[other_idx][0] in _EOL or policy == _IGNORE:
@@ -658,18 +660,14 @@ class FormatChecker(BaseTokenChecker):
                 if not ok:
                     warnings.append((policy, position))
         for policy, position in warnings:
-            construct = _name_construct(tokens[i])
+            construct = _name_construct(token)
             count, state = _policy_string(policy)
-            self.add_message('bad-whitespace', line=tokens[i][2][0],
+            self.add_message('bad-whitespace', line=token[2][0],
                              args=(count, state, position, construct,
-                                   _underline_token(tokens[i])))
+                                   _underline_token(token)))
 
     def _inside_brackets(self, left):
         return self._bracket_stack[-1] == left
-
-    def _handle_old_ne_operator(self, tokens, i):
-        if tokens[i][1] == '<>':
-            self.add_message('old-ne-operator', line=tokens[i][2][0])
 
     def _prepare_token_dispatcher(self):
         raw = [
@@ -690,7 +688,6 @@ class FormatChecker(BaseTokenChecker):
 
             (['lambda'], self._open_lambda),
 
-            (['<>'], self._handle_old_ne_operator),
             ]
 
         dispatch = {}
@@ -715,6 +712,7 @@ class FormatChecker(BaseTokenChecker):
         self._lines = {}
         self._visited_lines = {}
         token_handlers = self._prepare_token_dispatcher()
+        self._last_line_ending = None
 
         self._current_line = ContinuedLineState(tokens, self.config)
         for idx, (tok_type, token, start, _, line) in enumerate(tokens):
@@ -737,6 +735,7 @@ class FormatChecker(BaseTokenChecker):
                 check_equal = True
                 self._process_retained_warnings(TokenWrapper(tokens), idx)
                 self._current_line.next_logical_line()
+                self._check_line_ending(token, line_num)
             elif tok_type == tokenize.INDENT:
                 check_equal = False
                 self.check_indent_level(token, indents[-1]+1, line_num)
@@ -776,14 +775,39 @@ class FormatChecker(BaseTokenChecker):
 
         line_num -= 1 # to be ok with "wc -l"
         if line_num > self.config.max_module_lines:
-            self.add_message('too-many-lines', args=line_num, line=1)
+            # Get the line where the too-many-lines (or its message id)
+            # was disabled or default to 1.
+            symbol = self.linter.msgs_store.check_message_id('too-many-lines')
+            names = (symbol.msgid, 'too-many-lines')
+            line = next(filter(None,
+                               map(self.linter._pragma_lineno.get, names)), 1)
+            self.add_message('too-many-lines',
+                             args=(line_num, self.config.max_module_lines),
+                             line=line)
+
+    def _check_line_ending(self, line_ending, line_num):
+        # check if line endings are mixed
+        if self._last_line_ending is not None:
+            if line_ending != self._last_line_ending:
+                self.add_message('mixed-line-endings', line=line_num)
+
+        self._last_line_ending = line_ending
+
+        # check if line ending is as expected
+        expected = self.config.expected_line_ending_format
+        if expected:
+            line_ending = reduce(lambda x, y: x + y if x != y else x, line_ending, "")  # reduce multiple \n\n\n\n to one \n
+            line_ending = 'LF' if line_ending == '\n' else 'CRLF'
+            if line_ending != expected:
+                self.add_message('unexpected-line-ending-format', args=(line_ending, expected), line=line_num)
+
 
     def _process_retained_warnings(self, tokens, current_pos):
         single_line_block_stmt = not _last_token_on_line_is(tokens, current_pos, ':')
 
         for indent_pos, state, offsets in self._current_line.retained_warnings:
             block_type = offsets[tokens.start_col(indent_pos)]
-            hints = dict((k, v) for k, v in offsets.iteritems()
+            hints = dict((k, v) for k, v in six.iteritems(offsets)
                          if v != block_type)
             if single_line_block_stmt and block_type == WITH_BODY:
                 self._add_continuation_message(state, hints, tokens, indent_pos)
@@ -857,7 +881,7 @@ class FormatChecker(BaseTokenChecker):
             tolineno = node.tolineno
         assert tolineno, node
         lines = []
-        for line in xrange(line, tolineno + 1):
+        for line in range(line, tolineno + 1):
             self._visited_lines[line] = 1
             try:
                 lines.append(self._lines[line].rstrip())
@@ -880,10 +904,6 @@ class FormatChecker(BaseTokenChecker):
             return
         self.add_message('multiple-statements', node=node)
         self._visited_lines[line] = 2
-
-    @check_messages('backtick')
-    def visit_backquote(self, node):
-        self.add_message('backtick', node=node)
 
     def check_lines(self, lines, i):
         """check lines have less than a maximum number of characters

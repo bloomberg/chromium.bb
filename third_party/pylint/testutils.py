@@ -14,26 +14,32 @@
 # this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 """functional/non regression tests for pylint"""
-from __future__ import with_statement
+from __future__ import print_function
 
 import collections
 import contextlib
 import functools
+import os
 import sys
 import re
+import unittest
+import tempfile
+import tokenize
 
 from glob import glob
-from os import linesep
+from os import linesep, getcwd, sep
 from os.path import abspath, basename, dirname, isdir, join, splitext
-from cStringIO import StringIO
 
-from logilab.common import testlib
+from astroid import test_utils
 
 from pylint import checkers
 from pylint.utils import PyLintASTWalker
 from pylint.reporters import BaseReporter
 from pylint.interfaces import IReporter
 from pylint.lint import PyLinter
+
+import six
+from six.moves import StringIO
 
 
 # Utils
@@ -89,9 +95,11 @@ class TestReporter(BaseReporter):
 
     __implements____ = IReporter
 
-    def __init__(self):
+    def __init__(self): # pylint: disable=super-init-not-called
+
         self.message_ids = {}
         self.reset()
+        self.path_strip_prefix = getcwd() + sep
 
     def reset(self):
         self.out = StringIO()
@@ -113,7 +121,7 @@ class TestReporter(BaseReporter):
     def finalize(self):
         self.messages.sort()
         for msg in self.messages:
-            print >> self.out, msg
+            print(msg, file=self.out)
         result = self.out.getvalue()
         self.reset()
         return result
@@ -122,34 +130,15 @@ class TestReporter(BaseReporter):
         """ignore layouts"""
 
 
-if sys.version_info < (2, 6):
-    class Message(tuple):
-        def __new__(cls, msg_id, line=None, node=None, args=None):
-            return tuple.__new__(cls, (msg_id, line, node, args))
-
-        @property
-        def msg_id(self):
-            return self[0]
-        @property
-        def line(self):
-            return self[1]
-        @property
-        def node(self):
-            return self[2]
-        @property
-        def args(self):
-            return self[3]
-
-
-else:
-    class Message(collections.namedtuple('Message',
-                                         ['msg_id', 'line', 'node', 'args'])):
-        def __new__(cls, msg_id, line=None, node=None, args=None):
-            return tuple.__new__(cls, (msg_id, line, node, args))
+class Message(collections.namedtuple('Message',
+                                     ['msg_id', 'line', 'node', 'args'])):
+    def __new__(cls, msg_id, line=None, node=None, args=None):
+        return tuple.__new__(cls, (msg_id, line, node, args))
 
 
 class UnittestLinter(object):
     """A fake linter class to capture checker messages."""
+    # pylint: disable=unused-argument, no-self-use
 
     def __init__(self):
         self._messages = []
@@ -161,14 +150,15 @@ class UnittestLinter(object):
         finally:
             self._messages = []
 
-    def add_message(self, msg_id, line=None, node=None, args=None):
+    def add_message(self, msg_id, line=None, node=None, args=None,
+                    confidence=None):
         self._messages.append(Message(msg_id, line, node, args))
 
     def is_message_enabled(self, *unused_args):
         return True
 
     def add_stats(self, **kwargs):
-        for name, value in kwargs.iteritems():
+        for name, value in six.iteritems(kwargs):
             self.stats[name] = value
         return self.stats
 
@@ -181,7 +171,7 @@ def set_config(**kwargs):
     def _Wrapper(fun):
         @functools.wraps(fun)
         def _Forward(self):
-            for key, value in kwargs.iteritems():
+            for key, value in six.iteritems(kwargs):
                 setattr(self.checker.config, key, value)
             if isinstance(self, CheckerTestCase):
                 # reopen checker in case, it may be interested in configuration change
@@ -192,7 +182,7 @@ def set_config(**kwargs):
     return _Wrapper
 
 
-class CheckerTestCase(testlib.TestCase):
+class CheckerTestCase(unittest.TestCase):
     """A base testcase class for unittesting individual checker classes."""
     CHECKER_CLASS = None
     CONFIG = {}
@@ -200,7 +190,7 @@ class CheckerTestCase(testlib.TestCase):
     def setUp(self):
         self.linter = UnittestLinter()
         self.checker = self.CHECKER_CLASS(self.linter) # pylint: disable=not-callable
-        for key, value in self.CONFIG.iteritems():
+        for key, value in six.iteritems(self.CONFIG):
             setattr(self.checker.config, key, value)
         self.checker.open()
 
@@ -250,13 +240,13 @@ else:
 
 INFO_TEST_RGX = re.compile(r'^func_i\d\d\d\d$')
 
-def exception_str(self, ex):
+def exception_str(self, ex): # pylint: disable=unused-argument
     """function used to replace default __str__ method of exception instances"""
     return 'in %s\n:: %s' % (ex.file, ', '.join(ex.args))
 
 # Test classes
 
-class LintTestUsingModule(testlib.TestCase):
+class LintTestUsingModule(unittest.TestCase):
     INPUT_DIR = None
     DEFAULT_PACKAGE = 'input'
     package = DEFAULT_PACKAGE
@@ -265,6 +255,7 @@ class LintTestUsingModule(testlib.TestCase):
     depends = None
     output = None
     _TEST_TYPE = 'module'
+    maxDiff = None
 
     def shortDescription(self):
         values = {'mode' : self._TEST_TYPE,
@@ -296,11 +287,11 @@ class LintTestUsingModule(testlib.TestCase):
             self.linter.disable('I')
         try:
             self.linter.check(tocheck)
-        except Exception, ex:
+        except Exception as ex:
             # need finalization to restore a correct state
             self.linter.reporter.finalize()
             ex.file = tocheck
-            print ex
+            print(ex)
             ex.__str__ = exception_str
             raise
         self._check_result(self.linter.reporter.finalize())
@@ -347,11 +338,11 @@ class LintTestUpdate(LintTestUsingModule):
 
 def cb_test_gen(base_class):
     def call(input_dir, msg_dir, module_file, messages_file, dependencies):
+        # pylint: disable=no-init
         class LintTC(base_class):
             module = module_file.replace('.py', '')
             output = messages_file
             depends = dependencies or None
-            tags = testlib.Tags(('generated', 'pylint_input_%s' % module))
             INPUT_DIR = input_dir
             MSG_DIR = msg_dir
         return LintTC
@@ -372,7 +363,7 @@ def make_tests(input_dir, msg_dir, filter_rgx, callbacks):
     for module_file, messages_file in (
             get_tests_info(input_dir, msg_dir, 'func_', '')
     ):
-        if not is_to_run(module_file):
+        if not is_to_run(module_file) or module_file.endswith('.pyc'):
             continue
         base = module_file.replace('func_', '').replace('.py', '')
 
@@ -384,3 +375,38 @@ def make_tests(input_dir, msg_dir, filter_rgx, callbacks):
             if test:
                 tests.append(test)
     return tests
+
+def tokenize_str(code):
+    return list(tokenize.generate_tokens(StringIO(code).readline))
+
+@contextlib.contextmanager
+def create_tempfile(content=None):
+    """Create a new temporary file.
+
+    If *content* parameter is given, then it will be written
+    in the temporary file, before passing it back.
+    This is a context manager and should be used with a *with* statement.
+    """
+    # Can't use tempfile.NamedTemporaryFile here
+    # because on Windows the file must be closed before writing to it,
+    # see http://bugs.python.org/issue14243
+    fd, tmp = tempfile.mkstemp()
+    if content:
+        if sys.version_info >= (3, 0):
+            # erff
+            os.write(fd, bytes(content, 'ascii'))
+        else:
+            os.write(fd, content)
+    try:
+        yield tmp
+    finally:
+        os.close(fd)
+        os.remove(tmp)
+
+@contextlib.contextmanager
+def create_file_backed_module(code):
+    """Create an astroid module for the given code, backed by a real file."""
+    with create_tempfile() as temp:
+        module = test_utils.build_module(code)
+        module.file = temp
+        yield module

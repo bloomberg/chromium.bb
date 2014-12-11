@@ -23,23 +23,21 @@ import astroid
 from astroid import InferenceError, NotFoundError, YES, Instance
 from astroid.bases import BUILTINS
 
-from pylint.interfaces import IAstroidChecker
+from pylint.interfaces import IAstroidChecker, INFERENCE, INFERENCE_FAILURE
 from pylint.checkers import BaseChecker
-from pylint.checkers.utils import safe_infer, is_super, check_messages
+from pylint.checkers.utils import (
+    safe_infer, is_super,
+    check_messages, decorated_with_property)
 
 MSGS = {
     'E1101': ('%s %r has no %r member',
               'no-member',
-              'Used when a variable is accessed for an unexistent member.'),
+              'Used when a variable is accessed for an unexistent member.',
+              {'old_names': [('E1103', 'maybe-no-member')]}),
     'E1102': ('%s is not callable',
               'not-callable',
               'Used when an object being called has been inferred to a non \
               callable object'),
-    'E1103': ('%s %r has no %r member (but some types could not be inferred)',
-              'maybe-no-member',
-              'Used when a variable is accessed for an unexistent member, but \
-              astroid was not able to interpret all possible types of this \
-              variable.'),
     'E1111': ('Assigning to function call which doesn\'t return',
               'assignment-from-no-return',
               'Used when an assignment is done on a function call but the \
@@ -56,11 +54,6 @@ MSGS = {
               'too-many-function-args',
               'Used when a function call passes too many positional \
               arguments.'),
-    'E1122': ('Duplicate keyword argument %r in %s call',
-              'duplicate-keyword-arg',
-              'Used when a function call passes the same keyword argument \
-              multiple times.',
-              {'maxversion': (2, 6)}),
     'E1123': ('Unexpected keyword argument %r in %s call',
               'unexpected-keyword-arg',
               'Used when a function call passes a keyword argument that \
@@ -192,7 +185,7 @@ accessed. Python regular expressions are accepted.'}
     def visit_delattr(self, node):
         self.visit_getattr(node)
 
-    @check_messages('no-member', 'maybe-no-member')
+    @check_messages('no-member')
     def visit_getattr(self, node):
         """check that the accessed attribute exists
 
@@ -254,6 +247,20 @@ accessed. Python regular expressions are accepted.'}
                 # explicit skipping of module member access
                 if owner.root().name in self.config.ignored_modules:
                     continue
+                if isinstance(owner, astroid.Class):
+                    # Look up in the metaclass only if the owner is itself
+                    # a class.
+                    # TODO: getattr doesn't return by default members
+                    # from the metaclass, because handling various cases
+                    # of methods accessible from the metaclass itself
+                    # and/or subclasses only is too complicated for little to
+                    # no benefit.
+                    metaclass = owner.metaclass()
+                    try:
+                        if metaclass and metaclass.getattr(node.attrname):
+                            continue
+                    except NotFoundError:
+                        pass
                 missingattr.add((owner, name))
                 continue
             # stop on the first found
@@ -270,13 +277,11 @@ accessed. Python regular expressions are accepted.'}
                 if actual in done:
                     continue
                 done.add(actual)
-                if inference_failure:
-                    msgid = 'maybe-no-member'
-                else:
-                    msgid = 'no-member'
-                self.add_message(msgid, node=node,
+                confidence = INFERENCE if not inference_failure else INFERENCE_FAILURE
+                self.add_message('no-member', node=node,
                                  args=(owner.display_type(), name,
-                                       node.attrname))
+                                       node.attrname),
+                                 confidence=confidence)
 
     @check_messages('assignment-from-no-return', 'assignment-from-none')
     def visit_assign(self, node):
@@ -333,43 +338,17 @@ accessed. Python regular expressions are accepted.'}
         except astroid.NotFoundError:
             return
 
-        stop_checking = False
         for attr in attrs:
             if attr is astroid.YES:
                 continue
-            if stop_checking:
-                break
             if not isinstance(attr, astroid.Function):
                 continue
 
             # Decorated, see if it is decorated with a property
-            if not attr.decorators:
-                continue
-            for decorator in attr.decorators.nodes:
-                if not isinstance(decorator, astroid.Name):
-                    continue
-                try:
-                    for infered in decorator.infer():
-                        property_like = False
-                        if isinstance(infered, astroid.Class):
-                            if (infered.root().name == BUILTINS and
-                                    infered.name == 'property'):
-                                property_like = True
-                            else:
-                                for ancestor in infered.ancestors():
-                                    if (ancestor.name == 'property' and
-                                            ancestor.root().name == BUILTINS):
-                                        property_like = True
-                                        break
-                            if property_like:
-                                self.add_message('not-callable', node=node,
-                                                 args=node.func.as_string())
-                                stop_checking = True
-                                break
-                except InferenceError:
-                    pass
-                if stop_checking:
-                    break
+            if decorated_with_property(attr):
+                self.add_message('not-callable', node=node,
+                                 args=node.func.as_string())
+                break
 
     @check_messages(*(list(MSGS.keys())))
     def visit_callfunc(self, node):
@@ -383,11 +362,7 @@ accessed. Python regular expressions are accepted.'}
         num_positional_args = 0
         for arg in node.args:
             if isinstance(arg, astroid.Keyword):
-                keyword = arg.arg
-                if keyword in keyword_args:
-                    self.add_message('duplicate-keyword-arg', node=node,
-                                     args=(keyword, 'function'))
-                keyword_args.add(keyword)
+                keyword_args.add(arg.arg)
             else:
                 num_positional_args += 1
 
@@ -549,7 +524,6 @@ accessed. Python regular expressions are accepted.'}
         # slice or instances with __index__.
 
         parent_type = safe_infer(node.parent.value)
-
         if not isinstance(parent_type, (astroid.Class, astroid.Instance)):
             return
 
@@ -578,13 +552,10 @@ accessed. Python regular expressions are accepted.'}
 
         if not isinstance(itemmethod, astroid.Function):
             return
-
         if itemmethod.root().name != BUILTINS:
             return
-
         if not itemmethod.parent:
             return
-
         if itemmethod.parent.name not in SEQUENCE_TYPES:
             return
 
@@ -595,7 +566,6 @@ accessed. Python regular expressions are accepted.'}
             index_type = node
         else:
             index_type = safe_infer(node)
-
         if index_type is None or index_type is astroid.YES:
             return
 
@@ -607,7 +577,6 @@ accessed. Python regular expressions are accepted.'}
         elif isinstance(index_type, astroid.Instance):
             if index_type.pytype() in (BUILTINS + '.int', BUILTINS + '.slice'):
                 return
-
             try:
                 index_type.getattr('__index__')
                 return
@@ -625,7 +594,6 @@ accessed. Python regular expressions are accepted.'}
                 continue
 
             index_type = safe_infer(index)
-
             if index_type is None or index_type is astroid.YES:
                 continue
 

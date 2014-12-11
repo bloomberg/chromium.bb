@@ -17,6 +17,7 @@
 * pylint.d (PYLINTHOME)
 """
 from __future__ import with_statement
+from __future__ import print_function
 
 import pickle
 import os
@@ -52,7 +53,7 @@ def load_results(base):
     try:
         with open(data_file, _PICK_LOAD) as stream:
             return pickle.load(stream)
-    except:
+    except Exception: # pylint: disable=broad-except
         return {}
 
 if sys.version_info < (3, 0):
@@ -66,13 +67,13 @@ def save_results(results, base):
         try:
             os.mkdir(PYLINT_HOME)
         except OSError:
-            print >> sys.stderr, 'Unable to create directory %s' % PYLINT_HOME
+            print('Unable to create directory %s' % PYLINT_HOME, file=sys.stderr)
     data_file = get_pdata_path(base, 1)
     try:
         with open(data_file, _PICK_DUMP) as stream:
             pickle.dump(results, stream)
-    except (IOError, OSError), ex:
-        print >> sys.stderr, 'Unable to create file %s: %s' % (data_file, ex)
+    except (IOError, OSError) as ex:
+        print('Unable to create file %s: %s' % (data_file, ex), file=sys.stderr)
 
 # location of the configuration file ##########################################
 

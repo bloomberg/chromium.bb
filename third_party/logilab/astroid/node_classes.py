@@ -20,6 +20,9 @@
 
 import sys
 
+import six
+from logilab.common.decorators import cachedproperty
+
 from astroid.exceptions import NoDefault
 from astroid.bases import (NodeNG, Statement, Instance, InferenceContext,
                            _infer_stmts, YES, BUILTINS)
@@ -39,7 +42,7 @@ def unpack_infer(stmt, context=None):
                 yield infered_elt
         return
     # if infered is a final node, return it and stop
-    infered = stmt.infer(context).next()
+    infered = next(stmt.infer(context))
     if infered is stmt:
         yield infered
         return
@@ -127,8 +130,7 @@ class LookupMixIn(object):
         the lookup method
         """
         frame, stmts = self.lookup(name)
-        context = InferenceContext()
-        return _infer_stmts(stmts, context, frame)
+        return _infer_stmts(stmts, None, frame)
 
     def _filter_stmts(self, stmts, frame, offset):
         """filter statements to remove ignorable statements.
@@ -146,6 +148,20 @@ class LookupMixIn(object):
             myframe = self.frame().parent.frame()
         else:
             myframe = self.frame()
+            # If the frame of this node is the same as the statement
+            # of this node, then the node is part of a class or
+            # a function definition and the frame of this node should be the
+            # the upper frame, not the frame of the definition.
+            # For more information why this is important,
+            # see Pylint issue #295.
+            # For example, for 'b', the statement is the same
+            # as the frame / scope:
+            #
+            # def test(b=1):
+            #     ...
+
+            if self.statement() is myframe and myframe.parent:
+                myframe = myframe.parent.frame()
         if not myframe is frame or self is frame:
             return stmts
         mystmt = self.statement()
@@ -288,6 +304,11 @@ class Arguments(NodeNG, AssignTypeMixin):
         if self.parent is frame:
             return name
         return None
+
+    @cachedproperty
+    def fromlineno(self):
+        lineno = super(Arguments, self).fromlineno
+        return max(lineno, self.parent.fromlineno)
 
     def format_args(self):
         """return arguments formatted as string"""
@@ -475,7 +496,7 @@ class Const(NodeNG, Instance):
         self.value = value
 
     def getitem(self, index, context=None):
-        if isinstance(self.value, basestring):
+        if isinstance(self.value, six.string_types):
             return Const(self.value[index])
         raise TypeError('%r (value=%s)' % (self, self.value))
 
@@ -483,7 +504,7 @@ class Const(NodeNG, Instance):
         return False
 
     def itered(self):
-        if isinstance(self.value, basestring):
+        if isinstance(self.value, six.string_types):
             return self.value
         raise TypeError()
 
@@ -528,7 +549,7 @@ class Dict(NodeNG, Instance):
             self.items = []
         else:
             self.items = [(const_factory(k), const_factory(v))
-                          for k, v in items.iteritems()]
+                          for k, v in items.items()]
 
     def pytype(self):
         return '%s.dict' % BUILTINS
@@ -583,18 +604,14 @@ class ExceptHandler(Statement, AssignTypeMixin):
     name = None
     body = None
 
-    def _blockstart_toline(self):
+    @cachedproperty
+    def blockstart_tolineno(self):
         if self.name:
             return self.name.tolineno
         elif self.type:
             return self.type.tolineno
         else:
             return self.lineno
-
-    def set_line_info(self, lastchild):
-        self.fromlineno = self.lineno
-        self.tolineno = lastchild.tolineno
-        self.blockstart_tolineno = self._blockstart_toline()
 
     def catch(self, exceptions):
         if self.type is None or exceptions is None:
@@ -626,7 +643,8 @@ class For(BlockRangeMixIn, AssignTypeMixin, Statement):
     orelse = None
 
     optional_assign = True
-    def _blockstart_toline(self):
+    @cachedproperty
+    def blockstart_tolineno(self):
         return self.iter.tolineno
 
 
@@ -661,7 +679,8 @@ class If(BlockRangeMixIn, Statement):
     body = None
     orelse = None
 
-    def _blockstart_toline(self):
+    @cachedproperty
+    def blockstart_tolineno(self):
         return self.test.tolineno
 
     def block_range(self, lineno):
@@ -812,9 +831,6 @@ class TryExcept(BlockRangeMixIn, Statement):
     def _infer_name(self, frame, name):
         return name
 
-    def _blockstart_toline(self):
-        return self.lineno
-
     def block_range(self, lineno):
         """handle block line numbers range for try/except statements"""
         last = None
@@ -833,9 +849,6 @@ class TryFinally(BlockRangeMixIn, Statement):
     _astroid_fields = ('body', 'finalbody',)
     body = None
     finalbody = None
-
-    def _blockstart_toline(self):
-        return self.lineno
 
     def block_range(self, lineno):
         """handle block line numbers range for try/finally statements"""
@@ -880,7 +893,8 @@ class While(BlockRangeMixIn, Statement):
     body = None
     orelse = None
 
-    def _blockstart_toline(self):
+    @cachedproperty
+    def blockstart_tolineno(self):
         return self.test.tolineno
 
     def block_range(self, lineno):
@@ -894,7 +908,8 @@ class With(BlockRangeMixIn, AssignTypeMixin, Statement):
     items = None
     body = None
 
-    def _blockstart_toline(self):
+    @cachedproperty
+    def blockstart_tolineno(self):
         return self.items[-1][0].tolineno
 
     def get_children(self):

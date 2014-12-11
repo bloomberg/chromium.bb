@@ -21,10 +21,7 @@
 import sys
 import tokenize
 import string
-try:
-    import numbers
-except ImportError:
-    numbers = None
+import numbers
 
 import astroid
 
@@ -32,6 +29,9 @@ from pylint.interfaces import ITokenChecker, IAstroidChecker, IRawChecker
 from pylint.checkers import BaseChecker, BaseTokenChecker
 from pylint.checkers import utils
 from pylint.checkers.utils import check_messages
+
+import six
+
 
 _PY3K = sys.version_info[:2] >= (3, 0)
 _PY27 = sys.version_info[:2] == (2, 7)
@@ -145,8 +145,8 @@ def collect_string_fields(format_string):
     """
 
     formatter = string.Formatter()
-    parseiterator = formatter.parse(format_string)
     try:
+        parseiterator = formatter.parse(format_string)
         for result in parseiterator:
             if all(item is None for item in result[1:]):
                 # not a replacement format
@@ -181,6 +181,7 @@ def parse_format_method_string(format_string):
             if isinstance(keyname, numbers.Number):
                 # In Python 2 it will return long which will lead
                 # to different output between 2 and 3
+                manual_pos_arg.add(keyname)
                 keyname = int(keyname)
             keys.append((keyname, list(fielditerator)))
         else:
@@ -233,13 +234,13 @@ class StringFormatChecker(BaseChecker):
         args = node.right
 
         if not (isinstance(left, astroid.Const)
-                and isinstance(left.value, basestring)):
+                and isinstance(left.value, six.string_types)):
             return
         format_string = left.value
         try:
             required_keys, required_num_args = \
                 utils.parse_format_string(format_string)
-        except utils.UnsupportedFormatCharacter, e:
+        except utils.UnsupportedFormatCharacter as e:
             c = format_string[e.index]
             self.add_message('bad-format-character',
                              node=node, args=(c, ord(c), e.index))
@@ -262,7 +263,7 @@ class StringFormatChecker(BaseChecker):
                 for k, _ in args.items:
                     if isinstance(k, astroid.Const):
                         key = k.value
-                        if isinstance(key, basestring):
+                        if isinstance(key, six.string_types):
                             keys.add(key)
                         else:
                             self.add_message('bad-format-string-key',
@@ -345,10 +346,17 @@ class StringMethodsChecker(BaseChecker):
         #       We do this because our inference engine can't properly handle
         #       redefinitions of the original string.
         #       For more details, see issue 287.
-        if not isinstance(node.func.expr, astroid.Const):
+        #
+        # Note that there may not be any left side at all, if the format method
+        # has been assigned to another variable. See issue 351. For example:
+        #
+        #    fmt = 'some string {}'.format
+        #    fmt('arg')
+        if (isinstance(node.func, astroid.Getattr)
+                and not isinstance(node.func.expr, astroid.Const)):
             return
         try:
-            strnode = func.bound.infer().next()
+            strnode = next(func.bound.infer())
         except astroid.InferenceError:
             return
         if not isinstance(strnode, astroid.Const):
@@ -366,10 +374,8 @@ class StringMethodsChecker(BaseChecker):
             self.add_message('bad-format-string', node=node)
             return
 
-        manual_fields = set(field[0] for field in fields
-                            if isinstance(field[0], numbers.Number))
         named_fields = set(field[0] for field in fields
-                           if isinstance(field[0], basestring))
+                           if isinstance(field[0], six.string_types))
         if num_args and manual_pos:
             self.add_message('format-combined-specification',
                              node=node)
@@ -408,12 +414,7 @@ class StringMethodsChecker(BaseChecker):
             # num_args can be 0 if manual_pos is not.
             num_args = num_args or manual_pos
             if positional > num_args:
-                # We can have two possibilities:
-                # * "{0} {1}".format(a, b)
-                # * "{} {} {}".format(a, b, c, d)
-                # We can check the manual keys for the first one.
-                if len(manual_fields) != positional:
-                    self.add_message('too-many-format-args', node=node)
+                self.add_message('too-many-format-args', node=node)
             elif positional < num_args:
                 self.add_message('too-few-format-args', node=node)
 
@@ -444,7 +445,7 @@ class StringMethodsChecker(BaseChecker):
             if argname in (astroid.YES, None):
                 continue
             try:
-                argument = argname.infer().next()
+                argument = next(argname.infer())
             except astroid.InferenceError:
                 continue
             if not specifiers or argument is astroid.YES:
@@ -452,12 +453,9 @@ class StringMethodsChecker(BaseChecker):
                 # use attribute / item access
                 continue
             if argument.parent and isinstance(argument.parent, astroid.Arguments):
-                # Check to see if our argument is kwarg or vararg,
-                # and skip the check for this argument if so, because when inferring,
-                # astroid will return empty objects (dicts and tuples) and
-                # that can lead to false positives.
-                if argname.name in (argument.parent.kwarg, argument.parent.vararg):
-                    continue
+                # Ignore any object coming from an argument,
+                # because we can't infer its value properly.
+                continue
             previous = argument
             parsed = []
             for is_attribute, specifier in specifiers:
@@ -501,7 +499,7 @@ class StringMethodsChecker(BaseChecker):
                         break
 
                 try:
-                    previous = previous.infer().next()
+                    previous = next(previous.infer())
                 except astroid.InferenceError:
                     # can't check further if we can't infer it
                     break
@@ -540,17 +538,18 @@ class StringConstantChecker(BaseTokenChecker):
         self._unicode_literals = 'unicode_literals' in module.future_imports
 
     def process_tokens(self, tokens):
-        for (tok_type, token, (start_row, start_col), _, _) in tokens:
+        for (tok_type, token, (start_row, _), _, _) in tokens:
             if tok_type == tokenize.STRING:
                 # 'token' is the whole un-parsed token; we can look at the start
                 # of it to see whether it's a raw or unicode string etc.
-                self.process_string_token(token, start_row, start_col)
+                self.process_string_token(token, start_row)
 
-    def process_string_token(self, token, start_row, start_col):
+    def process_string_token(self, token, start_row):
         for i, c in enumerate(token):
             if c in '\'\"':
                 quote_char = c
                 break
+        # pylint: disable=undefined-loop-variable
         prefix = token[:i].lower() #  markers like u, b, r.
         after_prefix = token[i:]
         if after_prefix[:3] == after_prefix[-3:] == 3 * quote_char:
@@ -559,18 +558,15 @@ class StringConstantChecker(BaseTokenChecker):
             string_body = after_prefix[1:-1]  # Chop off quotes
         # No special checks on raw strings at the moment.
         if 'r' not in prefix:
-            self.process_non_raw_string_token(prefix, string_body,
-                                              start_row, start_col)
+            self.process_non_raw_string_token(prefix, string_body, start_row)
 
-    def process_non_raw_string_token(self, prefix, string_body, start_row,
-                                     start_col):
+    def process_non_raw_string_token(self, prefix, string_body, start_row):
         """check for bad escapes in a non-raw string.
 
         prefix: lowercase string of eg 'ur' string prefix markers.
         string_body: the un-parsed body of the string, not including the quote
         marks.
         start_row: integer line number in the source.
-        start_col: integer column number in the source.
         """
         # Walk through the string; if we see a backslash then escape the next
         # character, and skip over it.  If we see a non-escaped character,

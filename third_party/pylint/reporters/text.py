@@ -16,6 +16,7 @@
 :text: the default one grouping messages by module
 :colorized: an ANSI colorized text reporter
 """
+from __future__ import print_function
 
 import warnings
 
@@ -23,7 +24,8 @@ from logilab.common.ureports import TextWriter
 from logilab.common.textutils import colorize_ansi
 
 from pylint.interfaces import IReporter
-from pylint.reporters import BaseReporter, Message
+from pylint.reporters import BaseReporter
+import six
 
 TITLE_UNDERLINES = ['', '=', '-', '.']
 
@@ -42,26 +44,25 @@ class TextReporter(BaseReporter):
         self._template = None
 
     def on_set_current_module(self, module, filepath):
-        self._template = unicode(self.linter.config.msg_template or self.line_format)
+        self._template = six.text_type(self.linter.config.msg_template or self.line_format)
 
     def write_message(self, msg):
         """Convenience method to write a formated message with class default template"""
         self.writeln(msg.format(self._template))
 
-    def add_message(self, msg_id, location, msg):
+    def handle_message(self, msg):
         """manage message of different type and in the context of path"""
-        m = Message(self, msg_id, location, msg)
-        if m.module not in self._modules:
-            if m.module:
-                self.writeln('************* Module %s' % m.module)
-                self._modules.add(m.module)
+        if msg.module not in self._modules:
+            if msg.module:
+                self.writeln('************* Module %s' % msg.module)
+                self._modules.add(msg.module)
             else:
                 self.writeln('************* ')
-        self.write_message(m)
+        self.write_message(msg)
 
     def _display(self, layout):
         """launch layouts display"""
-        print >> self.out
+        print(file=self.out)
         TextWriter().format(layout, self.out)
 
 
@@ -114,11 +115,10 @@ class ColorizedTextReporter(TextReporter):
         except KeyError:
             return None, None
 
-    def add_message(self, msg_id, location, msg):
+    def handle_message(self, msg):
         """manage message of different types, and colorize output
         using ansi escape codes
         """
-        msg = Message(self, msg_id, location, msg)
         if msg.module not in self._modules:
             color, style = self._get_decoration('S')
             if msg.module:
@@ -130,8 +130,10 @@ class ColorizedTextReporter(TextReporter):
             self.writeln(modsep)
             self._modules.add(msg.module)
         color, style = self._get_decoration(msg.C)
-        for attr in ('msg', 'symbol', 'category', 'C'):
-            setattr(msg, attr, colorize_ansi(getattr(msg, attr), color, style))
+
+        msg = msg._replace(
+            **{attr: colorize_ansi(getattr(msg, attr), color, style)
+               for attr in ('msg', 'symbol', 'category', 'C')})
         self.write_message(msg)
 
 

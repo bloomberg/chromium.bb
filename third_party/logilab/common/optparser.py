@@ -29,6 +29,8 @@ Example:
 
 With mymod.build that defines two functions run and add_options
 """
+from __future__ import print_function
+
 __docformat__ = "restructuredtext en"
 
 from warnings import warn
@@ -55,9 +57,9 @@ class OptionParser(optparse.OptionParser):
 
     def print_main_help(self):
         optparse.OptionParser.print_help(self)
-        print '\ncommands:'
+        print('\ncommands:')
         for cmdname, (_, help) in self._commands.items():
-            print '% 10s - %s' % (cmdname, help)
+            print('% 10s - %s' % (cmdname, help))
 
     def parse_command(self, args):
         if len(args) == 0:
@@ -78,7 +80,7 @@ class OptionParser(optparse.OptionParser):
         # optparse inserts self.description between usage and options help
         self.description = help
         if isinstance(mod_or_f, str):
-            exec 'from %s import run, add_options' % mod_or_f
+            exec('from %s import run, add_options' % mod_or_f)
         else:
             run, add_options = mod_or_f
         add_options(self)

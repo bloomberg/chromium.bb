@@ -12,12 +12,12 @@
 # this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 """utilities methods and classes for reporters"""
+from __future__ import print_function
 
 import sys
 import locale
 import os
 
-from pylint.utils import MSG_TYPES
 
 from pylint import utils
 
@@ -25,12 +25,8 @@ CMPS = ['=', '-', '+']
 
 # py3k has no more cmp builtin
 if sys.version_info >= (3, 0):
-    def cmp(a, b):
+    def cmp(a, b): # pylint: disable=redefined-builtin
         return (a > b) - (a < b)
-
-if sys.version_info < (2, 6):
-    import stringformat
-    stringformat.init(True)
 
 def diff_string(old, new):
     """given a old and new int value, return a string representing the
@@ -39,27 +35,6 @@ def diff_string(old, new):
     diff = abs(old - new)
     diff_str = "%s%s" % (CMPS[cmp(old, new)], diff and ('%.2f' % diff) or '')
     return diff_str
-
-
-class Message(object):
-    """This class represent a message to be issued by the reporters"""
-
-    def __init__(self, reporter, msg_id, location, msg):
-        self.msg_id = msg_id
-        self.abspath, self.module, self.obj, self.line, self.column = location
-        self.path = self.abspath.replace(reporter.path_strip_prefix, '')
-        self.msg = msg
-        self.C = msg_id[0]
-        self.category = MSG_TYPES[msg_id[0]]
-        self.symbol = reporter.linter.msgs_store.check_message_id(msg_id).symbol
-
-    def format(self, template):
-        """Format the message according to the given template.
-
-        The template format is the one of the format method :
-        cf. http://docs.python.org/2/library/string.html#formatstrings
-        """
-        return template.format(**(self.__dict__))
 
 
 class BaseReporter(object):
@@ -82,9 +57,16 @@ class BaseReporter(object):
         # Build the path prefix to strip to get relative paths
         self.path_strip_prefix = os.getcwd() + os.sep
 
+    def handle_message(self, msg):
+        """Handle a new message triggered on the current file.
+
+        Invokes the legacy add_message API by default."""
+        self.add_message(
+            msg.msg_id, (msg.abspath, msg.module, msg.obj, msg.line, msg.column),
+            msg.msg)
+
     def add_message(self, msg_id, location, msg):
-        """Client API to send a message"""
-        # Shall we store the message objects somewhere, do some validity checking ?
+        """Deprecated, do not use."""
         raise NotImplementedError
 
     def set_output(self, output=None):
@@ -109,7 +91,7 @@ class BaseReporter(object):
 
     def writeln(self, string=''):
         """write a line in the output buffer"""
-        print >> self.out, self.encode(string)
+        print(self.encode(string), file=self.out)
 
     def display_results(self, layout):
         """display results encapsulated in the layout tree"""
@@ -131,6 +113,19 @@ class BaseReporter(object):
     def on_close(self, stats, previous_stats):
         """global end of analyzis"""
         pass
+
+
+class CollectingReporter(BaseReporter):
+    """collects messages"""
+
+    name = 'collector'
+
+    def __init__(self):
+        BaseReporter.__init__(self)
+        self.messages = []
+
+    def handle_message(self, msg):
+        self.messages.append(msg)
 
 
 def initialize(linter):

@@ -27,8 +27,8 @@ from logilab.common.textutils import linesep
 from logilab.common.ureports import BaseWriter
 
 
-TITLE_UNDERLINES = ['', '=', '-', '`', '.', '~', '^']
-BULLETS = ['*', '-']
+TITLE_UNDERLINES = [u'', u'=', u'-', u'`', u'.', u'~', u'^']
+BULLETS = [u'*', u'-']
 
 class TextWriter(BaseWriter):
     """format layouts as text
@@ -48,13 +48,13 @@ class TextWriter(BaseWriter):
         if self.pending_urls:
             self.writeln()
             for label, url in self.pending_urls:
-                self.writeln('.. _`%s`: %s' % (label, url))
+                self.writeln(u'.. _`%s`: %s' % (label, url))
             self.pending_urls = []
         self.section -= 1
         self.writeln()
 
     def visit_title(self, layout):
-        title = ''.join(list(self.compute_content(layout)))
+        title = u''.join(list(self.compute_content(layout)))
         self.writeln(title)
         try:
             self.writeln(TITLE_UNDERLINES[self.section] * len(title))
@@ -88,19 +88,19 @@ class TextWriter(BaseWriter):
     def default_table(self, layout, table_content, cols_width):
         """format a table"""
         cols_width = [size+1 for size in cols_width]
-        format_strings = ' '.join(['%%-%ss'] * len(cols_width))
+        format_strings = u' '.join([u'%%-%ss'] * len(cols_width))
         format_strings = format_strings % tuple(cols_width)
         format_strings = format_strings.split(' ')
-        table_linesep = '\n+' + '+'.join(['-'*w for w in cols_width]) + '+\n'
-        headsep = '\n+' + '+'.join(['='*w for w in cols_width]) + '+\n'
+        table_linesep = u'\n+' + u'+'.join([u'-'*w for w in cols_width]) + u'+\n'
+        headsep = u'\n+' + u'+'.join([u'='*w for w in cols_width]) + u'+\n'
         # FIXME: layout.cheaders
         self.write(table_linesep)
         for i in range(len(table_content)):
-            self.write('|')
+            self.write(u'|')
             line = table_content[i]
             for j in range(len(line)):
                 self.write(format_strings[j] % line[j])
-                self.write('|')
+                self.write(u'|')
             if i == 0 and layout.rheaders:
                 self.write(headsep)
             else:
@@ -109,7 +109,7 @@ class TextWriter(BaseWriter):
     def field_table(self, layout, table_content, cols_width):
         """special case for field table"""
         assert layout.cols == 2
-        format_string = '%s%%-%ss: %%s' % (linesep, cols_width[0])
+        format_string = u'%s%%-%ss: %%s' % (linesep, cols_width[0])
         for field, value in table_content:
             self.write(format_string % (field, value))
 
@@ -120,14 +120,14 @@ class TextWriter(BaseWriter):
         indent = '  ' * self.list_level
         self.list_level += 1
         for child in layout.children:
-            self.write('%s%s%s ' % (linesep, indent, bullet))
+            self.write(u'%s%s%s ' % (linesep, indent, bullet))
             child.accept(self)
         self.list_level -= 1
 
     def visit_link(self, layout):
         """add a hyperlink"""
         if layout.label != layout.url:
-            self.write('`%s`_' % layout.label)
+            self.write(u'`%s`_' % layout.label)
             self.pending_urls.append( (layout.label, layout.url) )
         else:
             self.write(layout.url)
@@ -135,11 +135,11 @@ class TextWriter(BaseWriter):
     def visit_verbatimtext(self, layout):
         """display a verbatim layout as text (so difficult ;)
         """
-        self.writeln('::\n')
+        self.writeln(u'::\n')
         for line in layout.data.splitlines():
-            self.writeln('    ' + line)
+            self.writeln(u'    ' + line)
         self.writeln()
 
     def visit_text(self, layout):
         """add some text"""
-        self.write(layout.data)
+        self.write(u'%s' % layout.data)

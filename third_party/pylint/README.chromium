@@ -1,5 +1,5 @@
 URL: http://www.pylint.org/
-Version: 1.3.1
+Version: 1.4.0
 License: GPL
 License File: LICENSE.txt
 
@@ -7,4 +7,4 @@ Description:
 This directory contains the pylint module.
 
 Local Modifications:
-None
+- applied upstream fix https://bitbucket.org/logilab/pylint/commits/5df347467ee0

@@ -409,21 +409,20 @@ def rest_format_section(stream, section, options, encoding=None, doc=None):
     """format an options section using as ReST formatted output"""
     encoding = _get_encoding(encoding, stream)
     if section:
-        print >> stream, '%s\n%s' % (section, "'"*len(section))
+        print('%s\n%s' % (section, "'"*len(section)), file=stream)
     if doc:
-        print >> stream, _encode(normalize_text(doc, line_len=79, indent=''),
-                                 encoding)
-        print >> stream
+        print(_encode(normalize_text(doc, line_len=79, indent=''), encoding), file=stream)
+        print(file=stream)
     for optname, optdict, value in options:
         help = optdict.get('help')
-        print >> stream, ':%s:' % optname
+        print(':%s:' % optname, file=stream)
         if help:
             help = normalize_text(help, line_len=79, indent='  ')
-            print >> stream, _encode(help, encoding)
+            print(_encode(help, encoding), file=stream)
         if value:
             value = _encode(format_option_value(optdict, value), encoding)
-            print >> stream, ''
-            print >> stream, '  Default: ``%s``' % value.replace("`` ", "```` ``")
+            print(file=stream)
+            print('  Default: ``%s``' % value.replace("`` ", "```` ``"), file=stream)
 
 # Options Manager ##############################################################
 
