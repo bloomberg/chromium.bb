@@ -58,7 +58,7 @@ public:
 private:
     MediaDevicesRequest(ExecutionContext*, UserMediaController*, MediaDeviceInfoCallback*);
 
-    UserMediaController* m_controller;
+    RawPtrWillBeMember<UserMediaController> m_controller;
 
     Member<MediaDeviceInfoCallback> m_callback;
 };

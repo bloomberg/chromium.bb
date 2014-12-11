@@ -79,7 +79,7 @@ private:
     WebMediaConstraints m_audio;
     WebMediaConstraints m_video;
 
-    UserMediaController* m_controller;
+    RawPtrWillBeMember<UserMediaController> m_controller;
 
     Member<NavigatorUserMediaSuccessCallback> m_successCallback;
     Member<NavigatorUserMediaErrorCallback> m_errorCallback;

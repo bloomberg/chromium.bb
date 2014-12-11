@@ -38,6 +38,7 @@ class UserMediaController final : public NoBaseWillBeGarbageCollected<UserMediaC
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(UserMediaController);
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(UserMediaController);
 public:
+    static PassOwnPtrWillBeRawPtr<UserMediaController> create(UserMediaClient*);
 
     UserMediaClient* client() const { return m_client; }
 
@@ -49,16 +50,12 @@ public:
 
     void requestSources(MediaStreamTrackSourcesRequest*);
 
-    static PassOwnPtrWillBeRawPtr<UserMediaController> create(UserMediaClient*);
     static const char* supplementName();
     static UserMediaController* from(LocalFrame* frame) { return static_cast<UserMediaController*>(WillBeHeapSupplement<LocalFrame>::from(frame, supplementName())); }
 
-    virtual void trace(Visitor* visitor) override { WillBeHeapSupplement<LocalFrame>::trace(visitor); }
-
-protected:
+private:
     explicit UserMediaController(UserMediaClient*);
 
-private:
     UserMediaClient* m_client;
 };
 
