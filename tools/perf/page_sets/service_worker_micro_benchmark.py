@@ -37,6 +37,3 @@ class ServiceWorkerMicroBenchmarkPageSet(page_set.PageSet):
     # Why: to measure performance of many concurrent fetches
     self.AddPage(ServiceWorkerBenchmarkPage(
         'http://localhost:8091/index.html', self))
-    # Why: to measure performance of registrations
-    self.AddPage(ServiceWorkerBenchmarkPage(
-        'http://localhost:8091/many-registration.html', self))
