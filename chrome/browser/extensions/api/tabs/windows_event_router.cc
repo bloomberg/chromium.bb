@@ -94,7 +94,7 @@ void WindowsEventRouter::Observe(
 #endif
 }
 
-static void WillDispatchWindowFocusedEvent(BrowserContext* new_active_context,
+static bool WillDispatchWindowFocusedEvent(BrowserContext* new_active_context,
                                            int window_id,
                                            BrowserContext* context,
                                            const Extension* extension,
@@ -112,6 +112,7 @@ static void WillDispatchWindowFocusedEvent(BrowserContext* new_active_context,
     event_args->Clear();
     event_args->Append(new base::FundamentalValue(window_id));
   }
+  return true;
 }
 
 void WindowsEventRouter::OnActiveWindowChanged(

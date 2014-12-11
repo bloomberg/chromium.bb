@@ -126,7 +126,7 @@ ExtensionFunction::ResponseAction HidConnectFunction::Run() {
     return RespondNow(Error(kErrorInvalidDeviceId));
   }
 
-  if (!device_manager->HasPermission(extension(), device_info)) {
+  if (!HidDeviceManager::HasPermission(extension(), device_info)) {
     return RespondNow(Error(kErrorPermissionDenied));
   }
 

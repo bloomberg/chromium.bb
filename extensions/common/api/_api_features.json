@@ -158,6 +158,16 @@
     "dependencies": ["permission:hid"],
     "contexts": ["blessed_extension"]
   },
+  "hid.onDeviceAdded": {
+    "channel": "dev",
+    "dependencies": ["permission:hid"],
+    "contexts": ["blessed_extension"]
+  },
+  "hid.onDeviceRemoved": {
+    "channel": "dev",
+    "dependencies": ["permission:hid"],
+    "contexts": ["blessed_extension"]
+  },
   "management": {
     "dependencies": ["permission:management"],
     "contexts": ["blessed_extension"]

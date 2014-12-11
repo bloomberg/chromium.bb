@@ -51,6 +51,16 @@ void PopulateHidDeviceInfo(hid::HidDeviceInfo* output,
   }
 }
 
+bool WillDispatchDeviceEvent(const HidDeviceInfo& device_info,
+                             content::BrowserContext* context,
+                             const Extension* extension,
+                             base::ListValue* event_args) {
+  if (extension) {
+    return HidDeviceManager::HasPermission(extension, device_info);
+  }
+  return false;
+}
+
 }  // namespace
 
 struct HidDeviceManager::GetApiDevicesParams {
@@ -72,6 +82,11 @@ HidDeviceManager::HidDeviceManager(content::BrowserContext* context)
       hid_service_observer_(this),
       enumeration_ready_(false),
       next_resource_id_(0) {
+  event_router_ = EventRouter::Get(context);
+  if (event_router_) {
+    event_router_->RegisterObserver(this, hid::OnDeviceAdded::kEventName);
+    event_router_->RegisterObserver(this, hid::OnDeviceRemoved::kEventName);
+  }
 }
 
 HidDeviceManager::~HidDeviceManager() {
@@ -119,9 +134,9 @@ bool HidDeviceManager::GetDeviceInfo(int resource_id,
   return hid_service->GetDeviceInfo(device_iter->second, device_info);
 }
 
+// static
 bool HidDeviceManager::HasPermission(const Extension* extension,
-                                     const device::HidDeviceInfo& device_info) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+                                     const HidDeviceInfo& device_info) {
   UsbDevicePermission::CheckParam usbParam(
       device_info.vendor_id,
       device_info.product_id,
@@ -143,6 +158,16 @@ bool HidDeviceManager::HasPermission(const Extension* extension,
   return false;
 }
 
+void HidDeviceManager::Shutdown() {
+  if (event_router_) {
+    event_router_->UnregisterObserver(this);
+  }
+}
+
+void HidDeviceManager::OnListenerAdded(const EventListenerInfo& details) {
+  LazyInitialize();
+}
+
 void HidDeviceManager::OnDeviceAdded(const HidDeviceInfo& device_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_LT(next_resource_id_, std::numeric_limits<int>::max());
@@ -150,6 +175,19 @@ void HidDeviceManager::OnDeviceAdded(const HidDeviceInfo& device_info) {
   DCHECK(!ContainsKey(resource_ids_, device_info.device_id));
   resource_ids_[device_info.device_id] = new_id;
   device_ids_[new_id] = device_info.device_id;
+
+  // Don't generate events during the initial enumeration.
+  if (enumeration_ready_ && event_router_) {
+    core_api::hid::HidDeviceInfo api_device_info;
+    api_device_info.device_id = new_id;
+    PopulateHidDeviceInfo(&api_device_info, device_info);
+
+    if (api_device_info.collections.size() > 0) {
+      scoped_ptr<base::ListValue> args(
+          hid::OnDeviceAdded::Create(api_device_info));
+      DispatchEvent(hid::OnDeviceAdded::kEventName, args.Pass(), device_info);
+    }
+  }
 }
 
 void HidDeviceManager::OnDeviceRemoved(const HidDeviceInfo& device_info) {
@@ -161,6 +199,12 @@ void HidDeviceManager::OnDeviceRemoved(const HidDeviceInfo& device_info) {
   DCHECK(device_entry != device_ids_.end());
   resource_ids_.erase(resource_entry);
   device_ids_.erase(device_entry);
+
+  if (event_router_) {
+    DCHECK(enumeration_ready_);
+    scoped_ptr<base::ListValue> args(hid::OnDeviceRemoved::Create(resource_id));
+    DispatchEvent(hid::OnDeviceRemoved::kEventName, args.Pass(), device_info);
+  }
 }
 
 void HidDeviceManager::LazyInitialize() {
@@ -232,6 +276,15 @@ void HidDeviceManager::OnEnumerationComplete(
     params->callback.Run(devices.Pass());
   }
   pending_enumerations_.clear();
+}
+
+void HidDeviceManager::DispatchEvent(const std::string& event_name,
+                                     scoped_ptr<base::ListValue> event_args,
+                                     const HidDeviceInfo& device_info) {
+  scoped_ptr<Event> event(new Event(event_name, event_args.Pass()));
+  event->will_dispatch_callback =
+      base::Bind(&WillDispatchDeviceEvent, device_info);
+  event_router_->BroadcastEvent(event.Pass());
 }
 
 }  // namespace extensions

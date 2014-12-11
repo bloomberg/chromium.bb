@@ -129,4 +129,14 @@ namespace hid {
                                   ArrayBuffer data,
                                   SendCallback callback);
   };
+
+  interface Events {
+    // Event generated when a device is added to the system.
+    static void onDeviceAdded(HidDeviceInfo device);
+
+    // Event generated when a device is removed from the system.
+    // |deviceId|: The <code>deviceId</code> property of the device passed to
+    // $(ref:onDeviceAdded).
+    static void onDeviceRemoved(long deviceId);
+  };
 };

@@ -11,6 +11,7 @@
 #include "device/hid/hid_service.h"
 #include "device/hid/hid_usage_and_page.h"
 #include "extensions/shell/test/shell_apitest.h"
+#include "extensions/test/extension_test_message_listener.h"
 #include "net/base/io_buffer.h"
 
 namespace extensions {
@@ -148,6 +149,10 @@ class MockHidService : public HidService {
     }
     HidService::AddDevice(device_info);
   }
+
+  void RemoveDevice(const std::string& device_id) {
+    HidService::RemoveDevice(device_id);
+  }
 };
 
 }  // namespace
@@ -156,12 +161,49 @@ class HidApiTest : public ShellApiTest {
  public:
   void SetUpOnMainThread() override {
     ShellApiTest::SetUpOnMainThread();
-    HidService::SetInstanceForTest(new MockHidService());
+    hid_service_ = new MockHidService();
+    HidService::SetInstanceForTest(hid_service_);
   }
+
+ protected:
+  MockHidService* hid_service_;
 };
 
 IN_PROC_BROWSER_TEST_F(HidApiTest, HidApp) {
   ASSERT_TRUE(RunAppTest("api_test/hid/api")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(HidApiTest, OnDeviceAdded) {
+  ExtensionTestMessageListener load_listener("loaded", false);
+  ExtensionTestMessageListener result_listener("success", false);
+  result_listener.set_failure_message("failure");
+
+  ASSERT_TRUE(LoadApp("api_test/hid/add_event"));
+  ASSERT_TRUE(load_listener.WaitUntilSatisfied());
+
+  // Add a blocked device first so that the test will fail if a notification is
+  // received.
+  hid_service_->AddDevice("D", 0x18D1, 0x58F1, false);
+  hid_service_->AddDevice("E", 0x18D1, 0x58F0, false);
+  ASSERT_TRUE(result_listener.WaitUntilSatisfied());
+  EXPECT_EQ("success", result_listener.message());
+}
+
+IN_PROC_BROWSER_TEST_F(HidApiTest, OnDeviceRemoved) {
+  ExtensionTestMessageListener load_listener("loaded", false);
+  ExtensionTestMessageListener result_listener("success", false);
+  result_listener.set_failure_message("failure");
+
+  ASSERT_TRUE(LoadApp("api_test/hid/remove_event"));
+  ASSERT_TRUE(load_listener.WaitUntilSatisfied());
+
+  // Device C was not returned by chrome.usb.getDevices, the app will not get
+  // a notification.
+  hid_service_->RemoveDevice("C");
+  // Device A was returned, the app will get a notification.
+  hid_service_->RemoveDevice("A");
+  ASSERT_TRUE(result_listener.WaitUntilSatisfied());
+  EXPECT_EQ("success", result_listener.message());
 }
 
 }  // namespace extensions

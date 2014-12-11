@@ -315,7 +315,9 @@ class EventRouter : public content::NotificationObserver,
 };
 
 struct Event {
-  typedef base::Callback<void(content::BrowserContext*,
+  // This callback should return true if the event should be dispatched to the
+  // given context and extension, and false otherwise.
+  typedef base::Callback<bool(content::BrowserContext*,
                               const Extension*,
                               base::ListValue*)> WillDispatchCallback;
 

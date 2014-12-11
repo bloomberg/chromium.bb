@@ -592,9 +592,10 @@ void EventRouter::DispatchEventToProcess(const std::string& extension_id,
     return;
   }
 
-  if (!event->will_dispatch_callback.is_null()) {
-    event->will_dispatch_callback.Run(
-        listener_context, extension, event->event_args.get());
+  if (!event->will_dispatch_callback.is_null() &&
+      !event->will_dispatch_callback.Run(listener_context, extension,
+                                         event->event_args.get())) {
+    return;
   }
 
   DispatchExtensionMessage(process,
@@ -640,8 +641,11 @@ bool EventRouter::MaybeLoadLazyBackgroundPageToDispatchEvent(
     // last until the event is dispatched.
     if (!event->will_dispatch_callback.is_null()) {
       dispatched_event.reset(event->DeepCopy());
-      dispatched_event->will_dispatch_callback.Run(
-          context, extension, dispatched_event->event_args.get());
+      if (!dispatched_event->will_dispatch_callback.Run(
+              context, extension, dispatched_event->event_args.get())) {
+        // The event has been canceled.
+        return true;
+      }
       // Ensure we don't call it again at dispatch time.
       dispatched_event->will_dispatch_callback.Reset();
     }

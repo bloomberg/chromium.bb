@@ -923,7 +923,7 @@ class ManagerDestructionObserver : public DownloadManager::Observer {
 std::map<DownloadManager*, ManagerDestructionObserver*>*
   ManagerDestructionObserver::manager_file_existence_last_checked_ = NULL;
 
-void OnDeterminingFilenameWillDispatchCallback(
+bool OnDeterminingFilenameWillDispatchCallback(
     bool* any_determiners,
     ExtensionDownloadsEventRouterData* data,
     content::BrowserContext* context,
@@ -933,6 +933,7 @@ void OnDeterminingFilenameWillDispatchCallback(
   base::Time installed =
       ExtensionPrefs::Get(context)->GetInstallTime(extension->id());
   data->AddPendingDeterminer(extension->id(), installed);
+  return true;
 }
 
 bool Fault(bool error,

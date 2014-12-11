@@ -16,6 +16,7 @@
 #include "device/hid/hid_device_info.h"
 #include "device/hid/hid_service.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/common/api/hid.h"
 
 namespace device {
@@ -29,7 +30,8 @@ class Extension;
 // This service maps devices enumerated by device::HidService to resource IDs
 // returned by the chrome.hid API.
 class HidDeviceManager : public BrowserContextKeyedAPI,
-                         public device::HidService::Observer {
+                         public device::HidService::Observer,
+                         public EventRouter::Observer {
  public:
   typedef base::Callback<void(scoped_ptr<base::ListValue>)>
       GetApiDevicesCallback;
@@ -55,8 +57,8 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
 
   bool GetDeviceInfo(int resource_id, device::HidDeviceInfo* device_info);
 
-  bool HasPermission(const Extension* extension,
-                     const device::HidDeviceInfo& device_info);
+  static bool HasPermission(const Extension* extension,
+                            const device::HidDeviceInfo& device_info);
 
  private:
   friend class BrowserContextKeyedAPIFactory<HidDeviceManager>;
@@ -66,16 +68,24 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
 
   struct GetApiDevicesParams;
 
+  // KeyedService:
+  void Shutdown() override;
+
   // BrowserContextKeyedAPI:
   static const char* service_name() { return "HidDeviceManager"; }
   static const bool kServiceHasOwnInstanceInIncognito = true;
+  static const bool kServiceIsNULLWhileTesting = true;
+
+  // EventRouter::Observer:
+  void OnListenerAdded(const EventListenerInfo& details) override;
 
   // HidService::Observer:
   void OnDeviceAdded(const device::HidDeviceInfo& device_info) override;
   void OnDeviceRemoved(const device::HidDeviceInfo& device_info) override;
 
   // Wait to perform an initial enumeration and register a HidService::Observer
-  // until the first API customer makes a request.
+  // until the first API customer makes a request or registers an event
+  // listener.
   void LazyInitialize();
 
   // Builds a list of device info objects representing the currently enumerated
@@ -86,8 +96,13 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
       const std::vector<device::HidDeviceFilter>& filters);
   void OnEnumerationComplete(const std::vector<device::HidDeviceInfo>& devices);
 
+  void DispatchEvent(const std::string& event_name,
+                     scoped_ptr<base::ListValue> event_args,
+                     const device::HidDeviceInfo& device_info);
+
   base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<HidDeviceManager> weak_factory_;
+  EventRouter* event_router_;
   bool initialized_;
   ScopedObserver<device::HidService, device::HidService::Observer>
       hid_service_observer_;
