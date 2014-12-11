@@ -12,10 +12,8 @@ import android.util.Log;
 
 import com.google.ipc.invalidation.external.client.contrib.MultiplexingGcmListener;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.sync.SyncSwitches;
 
 public class ChromeSigninController {
     public interface Listener {
@@ -116,11 +114,6 @@ public class ChromeSigninController {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... arg0) {
-                if (CommandLine.getInstance().hasSwitch(
-                        SyncSwitches.DISABLE_SYNC_GCM_IN_ORDER_TO_TRY_PUSH_API)) {
-                    Log.w(TAG, "Sync GCM notifications disabled in order to try Push API!");
-                    return null;
-                }
                 try {
                     String regId = MultiplexingGcmListener.initializeGcm(mApplicationContext);
                     if (!regId.isEmpty())
