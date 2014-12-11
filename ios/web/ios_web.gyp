@@ -45,6 +45,29 @@
       ],
     },
     {
+      'target_name': 'js_resources',
+      'type': 'none',
+      'sources': [
+        'web_state/js/resources/base.js',
+        'web_state/js/resources/common.js',
+        'web_state/js/resources/message.js',
+        'web_state/js/resources/message_dynamic_ui.js',
+        'web_state/js/resources/message_dynamic_wk.js',
+      ],
+      'link_settings': {
+        'mac_bundle_resources': [
+          '<(SHARED_INTERMEDIATE_DIR)/base.js',
+          '<(SHARED_INTERMEDIATE_DIR)/common.js',
+          '<(SHARED_INTERMEDIATE_DIR)/message.js',
+          '<(SHARED_INTERMEDIATE_DIR)/message_dynamic_ui.js',
+          '<(SHARED_INTERMEDIATE_DIR)/message_dynamic_wk.js',
+        ],
+      },
+      'includes': [
+        'js_compile.gypi'
+      ],
+    },
+    {
       'target_name': 'test_support_ios_web',
       'type': 'static_library',
       'dependencies': [
