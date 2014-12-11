@@ -61,6 +61,7 @@
 #include "remoting/host/pairing_registry_delegate.h"
 #include "remoting/host/policy_hack/policy_watcher.h"
 #include "remoting/host/session_manager_factory.h"
+#include "remoting/host/shutdown_watchdog.h"
 #include "remoting/host/signaling_connector.h"
 #include "remoting/host/single_window_desktop_environment.h"
 #include "remoting/host/token_validator_factory_impl.h"
@@ -134,6 +135,10 @@ const char kStdinConfigPath[] = "-";
 
 const char kWindowIdSwitchName[] = "window-id";
 
+// Maximum time to wait for clean shutdown to occur, before forcing termination
+// of the process.
+const int kShutdownTimeoutSeconds = 15;
+
 }  // namespace
 
 namespace remoting {
@@ -144,8 +149,12 @@ class HostProcess
       public IPC::Listener,
       public base::RefCountedThreadSafe<HostProcess> {
  public:
+  // |shutdown_watchdog| is armed when shutdown is started, and should be kept
+  // alive as long as possible until the process exits (since destroying the
+  // watchdog disarms it).
   HostProcess(scoped_ptr<ChromotingHostContext> context,
-              int* exit_code_out);
+              int* exit_code_out,
+              ShutdownWatchdog* shutdown_watchdog);
 
   // ConfigWatcher::Delegate interface.
   void OnConfigUpdated(const std::string& serialized_config) override;
@@ -340,10 +349,13 @@ class HostProcess
   bool signal_parent_;
 
   scoped_ptr<PairingRegistry::Delegate> pairing_registry_delegate_;
+
+  ShutdownWatchdog* shutdown_watchdog_;
 };
 
 HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
-                         int* exit_code_out)
+                         int* exit_code_out,
+                         ShutdownWatchdog* shutdown_watchdog)
     : context_(context.Pass()),
       state_(HOST_INITIALIZING),
       use_service_account_(false),
@@ -364,7 +376,8 @@ HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
 #endif  // defined(REMOTING_MULTI_PROCESS)
       self_(this),
       exit_code_out_(exit_code_out),
-      signal_parent_(false) {
+      signal_parent_(false),
+      shutdown_watchdog_(shutdown_watchdog) {
   StartOnUiThread();
 }
 
@@ -1416,6 +1429,9 @@ void HostProcess::ShutdownOnNetworkThread() {
   } else if (state_ == HOST_STOPPING) {
     state_ = HOST_STOPPED;
 
+    shutdown_watchdog_->SetExitCode(*exit_code_out_);
+    shutdown_watchdog_->Arm();
+
     if (policy_watcher_.get()) {
       policy_watcher_->StopWatching(
           base::Bind(&HostProcess::OnPolicyWatcherShutdown, this));
@@ -1479,7 +1495,9 @@ int HostProcessMain() {
   // TODO(wez): The HostProcess holds a reference to itself until Shutdown().
   // Remove this hack as part of the multi-process refactoring.
   int exit_code = kSuccessExitCode;
-  new HostProcess(context.Pass(), &exit_code);
+  ShutdownWatchdog shutdown_watchdog(
+      base::TimeDelta::FromSeconds(kShutdownTimeoutSeconds));
+  new HostProcess(context.Pass(), &exit_code, &shutdown_watchdog);
 
   // Run the main (also UI) message loop until the host no longer needs it.
   message_loop.Run();

@@ -209,6 +209,8 @@
       'host/session_manager_factory.h',
       'host/shaped_desktop_capturer.cc',
       'host/shaped_desktop_capturer.h',
+      'host/shutdown_watchdog.cc',
+      'host/shutdown_watchdog.h',
       'host/signaling_connector.cc',
       'host/signaling_connector.h',
       'host/single_window_desktop_environment.cc',
