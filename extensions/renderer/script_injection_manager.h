@@ -63,7 +63,14 @@ class ScriptInjectionManager : public UserScriptSetManager::Observer {
   // Invalidate any pending tasks associated with |frame|.
   void InvalidateForFrame(blink::WebFrame* frame);
 
-  // Inject appropriate scripts into |frame|.
+  // Returns true if the given |frame| is still valid.
+  bool IsFrameValid(blink::WebFrame* frame) const;
+
+  // Starts the process to inject appropriate scripts into |frame|.
+  void StartInjectScripts(blink::WebFrame* frame,
+                          UserScript::RunLocation run_location);
+
+  // Actually injects the scripts into |frame|.
   void InjectScripts(blink::WebFrame* frame,
                      UserScript::RunLocation run_location);
 
@@ -90,6 +97,9 @@ class ScriptInjectionManager : public UserScriptSetManager::Observer {
 
   // The collection of RVOHelpers.
   ScopedVector<RVOHelper> rvo_helpers_;
+
+  // True when the manager is actively injecting scripts into a web frame.
+  bool injecting_scripts_;
 
   // The set of UserScripts associated with extensions. Owned by the Dispatcher.
   UserScriptSetManager* user_script_set_manager_;

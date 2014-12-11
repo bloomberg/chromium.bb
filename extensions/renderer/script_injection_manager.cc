@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/script_injection_manager.h"
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
@@ -30,6 +31,25 @@ namespace {
 // The length of time to wait after the DOM is complete to try and run user
 // scripts.
 const int kScriptIdleTimeoutInMs = 200;
+
+// Returns the RunLocation that follows |run_location|.
+UserScript::RunLocation NextRunLocation(UserScript::RunLocation run_location) {
+  switch (run_location) {
+    case UserScript::DOCUMENT_START:
+      return UserScript::DOCUMENT_END;
+    case UserScript::DOCUMENT_END:
+      return UserScript::DOCUMENT_IDLE;
+    case UserScript::DOCUMENT_IDLE:
+      return UserScript::RUN_LOCATION_LAST;
+    case UserScript::UNDEFINED:
+    case UserScript::RUN_DEFERRED:
+    case UserScript::BROWSER_DRIVEN:
+    case UserScript::RUN_LOCATION_LAST:
+      break;
+  }
+  NOTREACHED();
+  return UserScript::RUN_LOCATION_LAST;
+}
 
 }  // namespace
 
@@ -112,12 +132,12 @@ void ScriptInjectionManager::RVOHelper::DidCreateNewDocument(
 
 void ScriptInjectionManager::RVOHelper::DidCreateDocumentElement(
     blink::WebLocalFrame* frame) {
-  manager_->InjectScripts(frame, UserScript::DOCUMENT_START);
+  manager_->StartInjectScripts(frame, UserScript::DOCUMENT_START);
 }
 
 void ScriptInjectionManager::RVOHelper::DidFinishDocumentLoad(
     blink::WebLocalFrame* frame) {
-  manager_->InjectScripts(frame, UserScript::DOCUMENT_END);
+  manager_->StartInjectScripts(frame, UserScript::DOCUMENT_END);
   pending_idle_frames_.insert(frame);
   // We try to run idle in two places: here and DidFinishLoad.
   // DidFinishDocumentLoad() corresponds to completing the document's load,
@@ -191,7 +211,7 @@ void ScriptInjectionManager::RVOHelper::RunIdle(blink::WebFrame* frame) {
   // Only notify the manager if the frame hasn't either been removed or already
   // had idle run since the task to RunIdle() was posted.
   if (pending_idle_frames_.count(frame) > 0) {
-    manager_->InjectScripts(frame, UserScript::DOCUMENT_IDLE);
+    manager_->StartInjectScripts(frame, UserScript::DOCUMENT_IDLE);
     pending_idle_frames_.erase(frame);
   }
 }
@@ -206,6 +226,7 @@ ScriptInjectionManager::ScriptInjectionManager(
     const ExtensionSet* extensions,
     UserScriptSetManager* user_script_set_manager)
     : extensions_(extensions),
+      injecting_scripts_(false),
       user_script_set_manager_(user_script_set_manager),
       user_script_set_manager_observer_(this) {
   user_script_set_manager_observer_.Add(user_script_set_manager_);
@@ -256,7 +277,11 @@ void ScriptInjectionManager::InvalidateForFrame(blink::WebFrame* frame) {
   frame_statuses_.erase(frame);
 }
 
-void ScriptInjectionManager::InjectScripts(
+bool ScriptInjectionManager::IsFrameValid(blink::WebFrame* frame) const {
+  return frame_statuses_.find(frame) != frame_statuses_.end();
+}
+
+void ScriptInjectionManager::StartInjectScripts(
     blink::WebFrame* frame, UserScript::RunLocation run_location) {
   FrameStatusMap::iterator iter = frame_statuses_.find(frame);
   // We also don't execute if we detect that the run location is somehow out of
@@ -267,14 +292,18 @@ void ScriptInjectionManager::InjectScripts(
   // We don't want to run because extensions may have requirements that scripts
   // running in an earlier run location have run by the time a later script
   // runs. Better to just not run.
+  // Note that we check run_location > NextRunLocation() in the second clause
+  // (as opposed to !=) because earlier signals (like DidCreateDocumentElement)
+  // can happen multiple times, so we can receive earlier/equal run locations.
   if ((iter == frame_statuses_.end() &&
            run_location != UserScript::DOCUMENT_START) ||
-      (iter != frame_statuses_.end() && run_location - iter->second > 1)) {
+      (iter != frame_statuses_.end() &&
+           run_location > NextRunLocation(iter->second))) {
     // We also invalidate the frame, because the run order of pending injections
     // may also be bad.
     InvalidateForFrame(frame);
     return;
-  } else if (iter != frame_statuses_.end() && iter->second > run_location) {
+  } else if (iter != frame_statuses_.end() && iter->second >= run_location) {
     // Certain run location signals (like DidCreateDocumentElement) can happen
     // multiple times. Ignore the subsequent signals.
     return;
@@ -285,11 +314,37 @@ void ScriptInjectionManager::InjectScripts(
 
   frame_statuses_[frame] = run_location;
 
+  // If a content script injects blocking code (such as a javascript alert()),
+  // then there is a chance that we are running in a nested message loop, and
+  // shouldn't inject scripts right now (to avoid conflicts).
+  if (!injecting_scripts_) {
+    InjectScripts(frame, run_location);
+    // As above, we might have been blocked, but that means that, in the mean
+    // time, it's possible the frame advanced. Inject any scripts for run
+    // locations that were registered, but never ran.
+    while ((iter = frame_statuses_.find(frame)) != frame_statuses_.end() &&
+           iter->second > run_location) {
+      run_location = NextRunLocation(run_location);
+      DCHECK_LE(run_location, UserScript::DOCUMENT_IDLE);
+      InjectScripts(frame, run_location);
+    }
+  }
+}
+
+void ScriptInjectionManager::InjectScripts(
+    blink::WebFrame* frame,
+    UserScript::RunLocation run_location) {
+  DCHECK(!injecting_scripts_);
+  base::AutoReset<bool>(&injecting_scripts_, true);
   // Inject any scripts that were waiting for the right run location.
   ScriptsRunInfo scripts_run_info;
   for (ScopedVector<ScriptInjection>::iterator iter =
            pending_injections_.begin();
        iter != pending_injections_.end();) {
+    // If a blocking script was injected, there is potentially a possibility
+    // that the frame has been invalidated in the time since. Check.
+    if (!IsFrameValid(frame))
+      return;
     if ((*iter)->web_frame() == frame &&
         (*iter)->TryToInject(run_location,
                              extensions_->GetByID((*iter)->extension_id()),
@@ -311,6 +366,10 @@ void ScriptInjectionManager::InjectScripts(
   for (ScopedVector<ScriptInjection>::iterator iter =
            user_script_injections.begin();
        iter != user_script_injections.end();) {
+    // If a blocking script was injected, there is potentially a possibility
+    // that the frame has been invalidated in the time since. Check.
+    if (!IsFrameValid(frame))
+      return;
     scoped_ptr<ScriptInjection> injection(*iter);
     iter = user_script_injections.weak_erase(iter);
     if (!injection->TryToInject(run_location,
@@ -320,7 +379,8 @@ void ScriptInjectionManager::InjectScripts(
     }
   }
 
-  scripts_run_info.LogRun(frame, run_location);
+  if (IsFrameValid(frame))
+    scripts_run_info.LogRun(frame, run_location);
 }
 
 void ScriptInjectionManager::HandleExecuteCode(
