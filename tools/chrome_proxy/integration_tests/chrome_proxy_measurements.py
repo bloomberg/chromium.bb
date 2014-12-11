@@ -310,6 +310,9 @@ class ChromeProxyHTTPToDirectFallback(ChromeProxyValidation):
         'nonexistent.googlezip.net:80',
         self._metrics.effective_proxies['fallback'],
         self._metrics.effective_proxies['direct']]
+    # TODO(sclittle): Remove this dependency on net-internals#proxy once an
+    # alternative method of verifying that Chrome is on the fallback proxy
+    # exists.
     self._metrics.VerifyProxyInfo(tab, proxies, proxies[:1])
 
   def AddResults(self, tab, results):

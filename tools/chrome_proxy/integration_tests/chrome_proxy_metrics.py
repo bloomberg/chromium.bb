@@ -353,7 +353,6 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
                 r.url, r.GetHeader('Via'), r.GetHeader('Referer'), r.status))
       bypass_count += 1
 
-    self.VerifyAllProxiesBypassed(tab)
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'bypass', 'count', bypass_count))
 
@@ -403,13 +402,6 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
         eligible_response_count += 1
         if not resp.HasChromeProxyViaHeader():
           bypass_count += 1
-
-    if tab:
-      info = GetProxyInfoFromNetworkInternals(tab)
-      if not info['enabled']:
-        raise ChromeProxyMetricException, (
-            'Chrome proxy should be enabled. proxy info: %s' % info)
-      self.VerifyBadProxies(info['badProxies'], [])
 
     if eligible_response_count <= 1:
       raise ChromeProxyMetricException, (
@@ -479,14 +471,27 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     if not expected_bad_proxies:
       expected_bad_proxies = []
 
+    # TODO(sclittle): Remove this dependency on net-internals#proxy once an
+    # alternative method of verifying that Chrome is on the fallback proxy
+    # exists.
     self.VerifyProxyInfo(tab, expected_proxies, expected_bad_proxies)
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'http_fallback', 'boolean', True))
 
   def AddResultsForHTTPToDirectFallback(self, tab, results):
-    self.VerifyAllProxiesBypassed(tab)
+    bypass_count = 0
+    for resp in self.IterResponses(tab):
+      if resp.HasChromeProxyViaHeader():
+        r = resp.response
+        raise ChromeProxyMetricException, (
+            'Response for %s should not have via header. '
+            'Reponse: status=(%d, %s)\nHeaders:\n %s' % (
+                r.url, r.status, r.status_text, r.headers))
+      else:
+        bypass_count += 1
+
     results.AddValue(scalar.ScalarValue(
-        results.current_page, 'direct_fallback', 'boolean', True))
+        results.current_page, 'bypass', 'count', bypass_count))
 
   def AddResultsForExplicitBypass(self, tab, results, expected_bad_proxies):
     """Verify results for an explicit bypass test.
@@ -502,6 +507,9 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     if not 'enabled' in info or not info['enabled']:
       raise ChromeProxyMetricException, (
           'Chrome proxy should be enabled. proxy info: %s' % info)
+    # TODO(sclittle): Remove this dependency on net-internals#proxy once an
+    # alternative method of verifying that Chrome is on the fallback proxy
+    # exists.
     self.VerifyBadProxies(info['badProxies'],
                           expected_bad_proxies)
     results.AddValue(scalar.ScalarValue(
