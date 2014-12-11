@@ -15,5 +15,4 @@ abstract class GraphicsUtils {
 
     private static native long nativeGetDrawSWFunctionTable();
     private static native long nativeGetDrawGLFunctionTable();
-
 }

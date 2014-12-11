@@ -4,10 +4,10 @@
 
 package com.android.webview.chromium;
 
-import org.chromium.content_public.browser.NavigationHistory;
-
 import android.webkit.WebBackForwardList;
 import android.webkit.WebHistoryItem;
+
+import org.chromium.content_public.browser.NavigationHistory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,12 +20,11 @@ public class WebBackForwardListChromium extends WebBackForwardList {
     private final List<WebHistoryItemChromium> mHistroryItemList;
     private final int mCurrentIndex;
 
-    /* package */ WebBackForwardListChromium(NavigationHistory nav_history) {
-        mCurrentIndex = nav_history.getCurrentEntryIndex();
-        mHistroryItemList = new ArrayList<WebHistoryItemChromium>(nav_history.getEntryCount());
-        for (int i = 0; i < nav_history.getEntryCount(); ++i) {
-            mHistroryItemList.add(
-                    new WebHistoryItemChromium(nav_history.getEntryAtIndex(i)));
+    /* package */ WebBackForwardListChromium(NavigationHistory navHistory) {
+        mCurrentIndex = navHistory.getCurrentEntryIndex();
+        mHistroryItemList = new ArrayList<WebHistoryItemChromium>(navHistory.getEntryCount());
+        for (int i = 0; i < navHistory.getEntryCount(); ++i) {
+            mHistroryItemList.add(new WebHistoryItemChromium(navHistory.getEntryAtIndex(i)));
         }
     }
 
@@ -70,8 +69,7 @@ public class WebBackForwardListChromium extends WebBackForwardList {
     }
 
     // Clone constructor.
-    private WebBackForwardListChromium(List<WebHistoryItemChromium> list,
-                                       int currentIndex) {
+    private WebBackForwardListChromium(List<WebHistoryItemChromium> list, int currentIndex) {
         mHistroryItemList = list;
         mCurrentIndex = currentIndex;
     }
@@ -81,8 +79,7 @@ public class WebBackForwardListChromium extends WebBackForwardList {
      */
     @Override
     protected synchronized WebBackForwardListChromium clone() {
-        List<WebHistoryItemChromium> list =
-                new ArrayList<WebHistoryItemChromium>(getSize());
+        List<WebHistoryItemChromium> list = new ArrayList<WebHistoryItemChromium>(getSize());
         for (int i = 0; i < getSize(); ++i) {
             list.add(mHistroryItemList.get(i).clone());
         }

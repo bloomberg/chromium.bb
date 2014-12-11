@@ -4,21 +4,21 @@
 
 package com.android.webview.chromium;
 
-import android.view.View;
 import android.graphics.Canvas;
-import android.util.Log;
+import android.view.View;
 
 import com.android.webview.chromium.WebViewDelegateFactory.WebViewDelegate;
 
 import org.chromium.content.common.CleanupReference;
 
-// Simple Java abstraction and wrapper for the native DrawGLFunctor flow.
-// An instance of this class can be constructed, bound to a single view context (i.e. AwContennts)
-// and then drawn and detached from the view tree any number of times (using requestDrawGL and
-// detach respectively). Then when finished with, it can be explicitly released by calling
-// destroy() or will clean itself up as required via finalizer / CleanupReference.
+/**
+ * Simple Java abstraction and wrapper for the native DrawGLFunctor flow.
+ * An instance of this class can be constructed, bound to a single view context (i.e. AwContennts)
+ * and then drawn and detached from the view tree any number of times (using requestDrawGL and
+ * detach respectively). Then when finished with, it can be explicitly released by calling
+ * destroy() or will clean itself up as required via finalizer / CleanupReference.
+ */
 class DrawGLFunctor {
-
     private static final String TAG = DrawGLFunctor.class.getSimpleName();
 
     // Pointer to native side instance
@@ -46,14 +46,14 @@ class DrawGLFunctor {
         mDestroyRunnable.detachNativeFunctor();
     }
 
-    public boolean requestDrawGL(Canvas canvas, View containerView,
-            boolean waitForCompletion) {
+    public boolean requestDrawGL(Canvas canvas, View containerView, boolean waitForCompletion) {
         if (mDestroyRunnable.mNativeDrawGLFunctor == 0) {
             throw new RuntimeException("requested DrawGL on already destroyed DrawGLFunctor");
         }
 
         if (canvas != null && waitForCompletion) {
-            throw new IllegalArgumentException("requested a blocking DrawGL with a not null canvas.");
+            throw new IllegalArgumentException(
+                    "requested a blocking DrawGL with a not null canvas.");
         }
 
         if (!mWebViewDelegate.canInvokeDrawGlFunctor(containerView)) {
@@ -63,8 +63,8 @@ class DrawGLFunctor {
         mDestroyRunnable.mContainerView = containerView;
 
         if (canvas == null) {
-            mWebViewDelegate.invokeDrawGlFunctor(containerView,
-                    mDestroyRunnable.mNativeDrawGLFunctor, waitForCompletion);
+            mWebViewDelegate.invokeDrawGlFunctor(
+                    containerView, mDestroyRunnable.mNativeDrawGLFunctor, waitForCompletion);
             return true;
         }
 
@@ -97,8 +97,7 @@ class DrawGLFunctor {
         }
 
         void detachNativeFunctor() {
-            if (mNativeDrawGLFunctor != 0 && mContainerView != null
-                    && mWebViewDelegate != null) {
+            if (mNativeDrawGLFunctor != 0 && mContainerView != null && mWebViewDelegate != null) {
                 mWebViewDelegate.detachDrawGlFunctor(mContainerView, mNativeDrawGLFunctor);
             }
             mContainerView = null;

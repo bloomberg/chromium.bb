@@ -5,7 +5,6 @@
 package com.android.webview.chromium;
 
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -13,12 +12,11 @@ import android.graphics.Paint;
 import android.graphics.Picture;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.net.http.SslCertificate;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Looper;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.print.PrintDocumentAdapter;
 import android.text.TextUtils;
@@ -27,7 +25,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -40,35 +37,31 @@ import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
+import android.webkit.WebChromeClient.CustomViewCallback;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.webkit.WebViewFactory;
 import android.webkit.WebViewProvider;
-import android.webkit.WebChromeClient.CustomViewCallback;
 import android.widget.TextView;
 
-import org.chromium.android_webview.AwBrowserContext;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsStatics;
-import org.chromium.android_webview.AwLayoutSizer;
-import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.AwPrintDocumentAdapter;
+import org.chromium.android_webview.AwSettings;
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.SmartClipProvider;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.net.NetworkChangeNotifier;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.lang.annotation.Annotation;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Queue;
 
 /**
  * This class is the delegate to which WebViewProxy forwards all API calls.
@@ -78,9 +71,9 @@ import java.util.Queue;
  * adapters (otherwise org.chromium.content would depend on the webview.chromium package)
  * and a small set of no-op deprecated APIs.
  */
-class WebViewChromium implements WebViewProvider,
-          WebViewProvider.ScrollDelegate, WebViewProvider.ViewDelegate, SmartClipProvider {
-
+@SuppressWarnings("deprecation")
+class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate,
+                                 WebViewProvider.ViewDelegate, SmartClipProvider {
     private class WebViewChromiumRunQueue {
         public WebViewChromiumRunQueue() {
             mQueue = new ConcurrentLinkedQueue<Runnable>();
@@ -104,7 +97,7 @@ class WebViewChromium implements WebViewProvider,
             }
 
             Runnable task = mQueue.poll();
-            while(task != null) {
+            while (task != null) {
                 task.run();
                 task = mQueue.poll();
             }
@@ -175,7 +168,7 @@ class WebViewChromium implements WebViewProvider,
             return task.get(4, TimeUnit.SECONDS);
         } catch (java.util.concurrent.TimeoutException e) {
             throw new RuntimeException("Probable deadlock detected due to WebView API being called "
-                    + "on incorrect thread while the UI thread is blocked.", e);
+                            + "on incorrect thread while the UI thread is blocked.", e);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -208,8 +201,7 @@ class WebViewChromium implements WebViewProvider,
             } else {
                 Log.w(TAG, msg);
                 TextView warningLabel = new TextView(mContext);
-                warningLabel.setText(mContext.getString(
-                        R.string.webviewchromium_private_browsing_warning));
+                warningLabel.setText(mContext.getString(R.string.private_browsing_warning));
                 mWebView.addView(warningLabel);
             }
         }
@@ -229,14 +221,12 @@ class WebViewChromium implements WebViewProvider,
 
         final boolean isAccessFromFileURLsGrantedByDefault =
                 mAppTargetSdkVersion < Build.VERSION_CODES.JELLY_BEAN;
-        final boolean areLegacyQuirksEnabled =
-                mAppTargetSdkVersion < Build.VERSION_CODES.KITKAT;
+        final boolean areLegacyQuirksEnabled = mAppTargetSdkVersion < Build.VERSION_CODES.KITKAT;
 
-        mContentsClientAdapter = new WebViewContentsClientAdapter(
-                mWebView, mContext, mFactory.getWebViewDelegate());
+        mContentsClientAdapter =
+                new WebViewContentsClientAdapter(mWebView, mContext, mFactory.getWebViewDelegate());
         mWebSettings = new ContentSettingsAdapter(new AwSettings(
-                mContext, isAccessFromFileURLsGrantedByDefault,
-                areLegacyQuirksEnabled));
+                mContext, isAccessFromFileURLsGrantedByDefault, areLegacyQuirksEnabled));
 
         if (mAppTargetSdkVersion < Build.VERSION_CODES.LOLLIPOP) {
             // Prior to Lollipop we always allowed third party cookies and mixed content.
@@ -246,24 +236,24 @@ class WebViewChromium implements WebViewProvider,
         }
 
         mRunQueue.addTask(new Runnable() {
-                @Override
-                public void run() {
-                    initForReal();
-                    if (privateBrowsing) {
-                        // Intentionally irreversibly disable the webview instance, so that private
-                        // user data cannot leak through misuse of a non-privateBrowing WebView
-                        // instance. Can't just null out mAwContents as we never null-check it
-                        // before use.
-                        destroy();
-                    }
+            @Override
+            public void run() {
+                initForReal();
+                if (privateBrowsing) {
+                    // Intentionally irreversibly disable the webview instance, so that private
+                    // user data cannot leak through misuse of a non-privateBrowing WebView
+                    // instance. Can't just null out mAwContents as we never null-check it
+                    // before use.
+                    destroy();
                 }
+            }
         });
     }
 
     private void initForReal() {
         mAwContents = new AwContents(mFactory.getBrowserContext(), mWebView, mContext,
-                new InternalAccessAdapter(), new WebViewNativeGLDelegate(),
-                mContentsClientAdapter, mWebSettings.getAwSettings());
+                new InternalAccessAdapter(), new WebViewNativeGLDelegate(), mContentsClientAdapter,
+                mWebSettings.getAwSettings());
 
         if (mAppTargetSdkVersion >= Build.VERSION_CODES.KITKAT) {
             // On KK and above, favicons are automatically downloaded as the method
@@ -271,8 +261,8 @@ class WebViewChromium implements WebViewProvider,
             AwContents.setShouldDownloadFavicons();
         }
 
-        AwContentsStatics.setRecordFullDocument(sRecordWholeDocumentEnabledByApi ||
-                mAppTargetSdkVersion < Build.VERSION_CODES.LOLLIPOP);
+        AwContentsStatics.setRecordFullDocument(sRecordWholeDocumentEnabledByApi
+                || mAppTargetSdkVersion < Build.VERSION_CODES.LOLLIPOP);
 
         if (mAppTargetSdkVersion < Build.VERSION_CODES.LOLLIPOP) {
             // Prior to Lollipop, JavaScript objects injected via addJavascriptInterface
@@ -296,8 +286,7 @@ class WebViewChromium implements WebViewProvider,
     private boolean checkNeedsPost() {
         boolean needsPost = !mFactory.hasStarted() || !ThreadUtils.runningOnUiThread();
         if (!needsPost && mAwContents == null) {
-            throw new IllegalStateException(
-                    "AwContents must be created if we are not posting!");
+            throw new IllegalStateException("AwContents must be created if we are not posting!");
         }
         return needsPost;
     }
@@ -406,8 +395,8 @@ class WebViewChromium implements WebViewProvider,
     }
 
     @Override
-    public void setHttpAuthUsernamePassword(final String host, final String realm,
-            final String username, final String password) {
+    public void setHttpAuthUsernamePassword(
+            final String host, final String realm, final String username, final String password) {
         if (checkNeedsPost()) {
             mRunQueue.addTask(new Runnable() {
                 @Override
@@ -524,21 +513,21 @@ class WebViewChromium implements WebViewProvider,
         // directly and any result of the evaluation will not replace the current page content.
         // Matching Chrome behavior more closely; apps targetting >= K that load a JS URL will
         // have the result of that URL replace the content of the current page.
-        final String JAVASCRIPT_SCHEME = "javascript:";
-        if (mAppTargetSdkVersion < Build.VERSION_CODES.KITKAT &&
-                url != null && url.startsWith(JAVASCRIPT_SCHEME)) {
+        final String javaScriptScheme = "javascript:";
+        if (mAppTargetSdkVersion < Build.VERSION_CODES.KITKAT && url != null
+                && url.startsWith(javaScriptScheme)) {
             mFactory.startYourEngines(true);
             if (checkNeedsPost()) {
                 mRunQueue.addTask(new Runnable() {
                     @Override
                     public void run() {
                         mAwContents.evaluateJavaScriptEvenIfNotYetNavigated(
-                                url.substring(JAVASCRIPT_SCHEME.length()));
+                                url.substring(javaScriptScheme.length()));
                     }
                 });
             } else {
                 mAwContents.evaluateJavaScriptEvenIfNotYetNavigated(
-                        url.substring(JAVASCRIPT_SCHEME.length()));
+                        url.substring(javaScriptScheme.length()));
             }
             return;
         }
@@ -560,7 +549,7 @@ class WebViewChromium implements WebViewProvider,
     @Override
     public void postUrl(String url, byte[] postData) {
         LoadUrlParams params = LoadUrlParams.createLoadHttpPostParams(url, postData);
-        Map<String,String> headers = new HashMap<String,String>();
+        Map<String, String> headers = new HashMap<String, String>();
         headers.put("Content-Type", "application/x-www-form-urlencoded");
         params.setExtraHeaders(headers);
         loadUrlOnUiThread(params);
@@ -880,13 +869,13 @@ class WebViewChromium implements WebViewProvider,
     public WebView.HitTestResult getHitTestResult() {
         mFactory.startYourEngines(true);
         if (checkNeedsPost()) {
-            WebView.HitTestResult ret = runOnUiThreadBlocking(
-                    new Callable<WebView.HitTestResult>() {
-                @Override
-                public WebView.HitTestResult call() {
-                    return getHitTestResult();
-                }
-            });
+            WebView.HitTestResult ret =
+                    runOnUiThreadBlocking(new Callable<WebView.HitTestResult>() {
+                        @Override
+                        public WebView.HitTestResult call() {
+                            return getHitTestResult();
+                        }
+                    });
             return ret;
         }
         AwContents.HitTestData data = mAwContents.getLastHitTestResult();
@@ -935,7 +924,7 @@ class WebViewChromium implements WebViewProvider,
             });
             return ret;
         }
-        String url =  mAwContents.getUrl();
+        String url = mAwContents.getUrl();
         if (url == null || url.trim().isEmpty()) return null;
         return url;
     }
@@ -952,7 +941,7 @@ class WebViewChromium implements WebViewProvider,
             });
             return ret;
         }
-        String url =  mAwContents.getOriginalUrl();
+        String url = mAwContents.getOriginalUrl();
         if (url == null || url.trim().isEmpty()) return null;
         return url;
     }
@@ -1161,8 +1150,7 @@ class WebViewChromium implements WebViewProvider,
             });
             return ret;
         }
-        return new WebBackForwardListChromium(
-                mAwContents.getNavigationHistory());
+        return new WebBackForwardListChromium(mAwContents.getNavigationHistory());
     }
 
     @Override
@@ -1307,17 +1295,21 @@ class WebViewChromium implements WebViewProvider,
         while (clientClass != WebChromeClient.class && (!foundShowMethod || !foundHideMethod)) {
             if (!foundShowMethod) {
                 try {
-                    clientClass.getDeclaredMethod("onShowCustomView", View.class,
-                            CustomViewCallback.class);
+                    clientClass.getDeclaredMethod(
+                            "onShowCustomView", View.class, CustomViewCallback.class);
                     foundShowMethod = true;
-                } catch (NoSuchMethodException e) { }
+                } catch (NoSuchMethodException e) {
+                    // Intentionally empty.
+                }
             }
 
             if (!foundHideMethod) {
                 try {
                     clientClass.getDeclaredMethod("onHideCustomView");
                     foundHideMethod = true;
-                } catch (NoSuchMethodException e) { }
+                } catch (NoSuchMethodException e) {
+                    // Intentionally empty.
+                }
             }
             clientClass = clientClass.getSuperclass();
         }
@@ -1325,6 +1317,7 @@ class WebViewChromium implements WebViewProvider,
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void setPictureListener(final WebView.PictureListener listener) {
         if (checkNeedsPost()) {
             mRunQueue.addTask(new Runnable() {
@@ -1336,8 +1329,8 @@ class WebViewChromium implements WebViewProvider,
             return;
         }
         mContentsClientAdapter.setPictureListener(listener);
-        mAwContents.enableOnNewPicture(listener != null,
-                mAppTargetSdkVersion >= Build.VERSION_CODES.JELLY_BEAN_MR2);
+        mAwContents.enableOnNewPicture(
+                listener != null, mAppTargetSdkVersion >= Build.VERSION_CODES.JELLY_BEAN_MR2);
     }
 
     @Override
@@ -1353,7 +1346,7 @@ class WebViewChromium implements WebViewProvider,
         }
         Class<? extends Annotation> requiredAnnotation = null;
         if (mAppTargetSdkVersion >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-           requiredAnnotation = JavascriptInterface.class;
+            requiredAnnotation = JavascriptInterface.class;
         }
         mAwContents.addPossiblyUnsafeJavascriptInterface(obj, interfaceName, requiredAnnotation);
     }
@@ -1488,12 +1481,11 @@ class WebViewChromium implements WebViewProvider,
         return this;
     }
 
-
     // WebViewProvider.ViewDelegate implementation ------------------------------------------------
 
     // TODO: remove from WebViewProvider and use default implementation from
     // ViewGroup.
-    // @Override
+    @Override
     public boolean shouldDelayChildPressedState() {
         mFactory.startYourEngines(false);
         if (checkNeedsPost()) {
@@ -1508,17 +1500,17 @@ class WebViewChromium implements WebViewProvider,
         return true;
     }
 
-//    @Override
+    @Override
     public AccessibilityNodeProvider getAccessibilityNodeProvider() {
         mFactory.startYourEngines(false);
         if (checkNeedsPost()) {
-            AccessibilityNodeProvider ret = runOnUiThreadBlocking(
-                    new Callable<AccessibilityNodeProvider>() {
-                @Override
-                public AccessibilityNodeProvider call() {
-                    return getAccessibilityNodeProvider();
-                }
-            });
+            AccessibilityNodeProvider ret =
+                    runOnUiThreadBlocking(new Callable<AccessibilityNodeProvider>() {
+                        @Override
+                        public AccessibilityNodeProvider call() {
+                            return getAccessibilityNodeProvider();
+                        }
+                    });
             return ret;
         }
         return mAwContents.getAccessibilityNodeProvider();
@@ -1616,8 +1608,8 @@ class WebViewChromium implements WebViewProvider,
     }
 
     @Override
-    public void onOverScrolled(final int scrollX, final int scrollY, final boolean clampedX,
-            final boolean clampedY) {
+    public void onOverScrolled(final int scrollX, final int scrollY,
+            final boolean clampedX, final boolean clampedY) {
         if (checkNeedsPost()) {
             mRunQueue.addTask(new Runnable() {
                 @Override
@@ -1693,7 +1685,7 @@ class WebViewChromium implements WebViewProvider,
     public InputConnection onCreateInputConnection(final EditorInfo outAttrs) {
         mFactory.startYourEngines(false);
         if (checkNeedsPost()) {
-           return null;
+            return null;
         }
         return mAwContents.onCreateInputConnection(outAttrs);
     }
@@ -1803,8 +1795,8 @@ class WebViewChromium implements WebViewProvider,
     }
 
     @Override
-    public void onFocusChanged(final boolean focused, final int direction,
-            final Rect previouslyFocusedRect) {
+    public void onFocusChanged(
+            final boolean focused, final int direction, final Rect previouslyFocusedRect) {
         if (checkNeedsPost()) {
             mRunQueue.addTask(new Runnable() {
                 @Override
@@ -1948,8 +1940,8 @@ class WebViewChromium implements WebViewProvider,
     }
 
     @Override
-    public boolean requestChildRectangleOnScreen(final View child, final Rect rect,
-            final boolean immediate) {
+    public boolean requestChildRectangleOnScreen(
+            final View child, final Rect rect, final boolean immediate) {
         mFactory.startYourEngines(false);
         if (checkNeedsPost()) {
             boolean ret = runOnUiThreadBlocking(new Callable<Boolean>() {
@@ -2101,12 +2093,7 @@ class WebViewChromium implements WebViewProvider,
         mAwContents.computeScroll();
     }
 
-    // TODO(sgurun) this is only to have master-gpl compiling.
-    public PrintDocumentAdapter createPrintDocumentAdapter() {
-         return createPrintDocumentAdapter("default");
-    }
-
-    //@Override TODO(sgurun) commenting this out to have master-gpl compiling.
+    @Override
     public PrintDocumentAdapter createPrintDocumentAdapter(String documentName) {
         checkThread();
         return new AwPrintDocumentAdapter(mAwContents.getPdfExporter(), documentName);
@@ -2115,11 +2102,10 @@ class WebViewChromium implements WebViewProvider,
     // AwContents.NativeGLDelegate implementation --------------------------------------
     private class WebViewNativeGLDelegate implements AwContents.NativeGLDelegate {
         @Override
-        public boolean requestDrawGL(Canvas canvas, boolean waitForCompletion,
-                View containerView) {
+        public boolean requestDrawGL(Canvas canvas, boolean waitForCompletion, View containerView) {
             if (mGLfunctor == null) {
-                mGLfunctor = new DrawGLFunctor(mAwContents.getAwDrawGLViewContext(),
-                        mFactory.getWebViewDelegate());
+                mGLfunctor = new DrawGLFunctor(
+                        mAwContents.getAwDrawGLViewContext(), mFactory.getWebViewDelegate());
             }
             return mGLfunctor.requestDrawGL(canvas, containerView, waitForCompletion);
         }
@@ -2194,13 +2180,10 @@ class WebViewChromium implements WebViewProvider,
         }
 
         @Override
-        public void overScrollBy(int deltaX, int deltaY,
-            int scrollX, int scrollY,
-            int scrollRangeX, int scrollRangeY,
-            int maxOverScrollX, int maxOverScrollY,
-            boolean isTouchEvent) {
-            mWebViewPrivate.overScrollBy(deltaX, deltaY, scrollX, scrollY,
-                    scrollRangeX, scrollRangeY, maxOverScrollX, maxOverScrollY, isTouchEvent);
+        public void overScrollBy(int deltaX, int deltaY, int scrollX, int scrollY, int scrollRangeX,
+                int scrollRangeY, int maxOverScrollX, int maxOverScrollY, boolean isTouchEvent) {
+            mWebViewPrivate.overScrollBy(deltaX, deltaY, scrollX, scrollY, scrollRangeX,
+                    scrollRangeY, maxOverScrollX, maxOverScrollY, isTouchEvent);
         }
 
         @Override
@@ -2232,5 +2215,4 @@ class WebViewChromium implements WebViewProvider,
         checkThread();
         mAwContents.setSmartClipResultHandler(resultHandler);
     }
-
 }

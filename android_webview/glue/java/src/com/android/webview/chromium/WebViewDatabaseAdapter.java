@@ -4,7 +4,6 @@
 
 package com.android.webview.chromium;
 
-import android.content.Context;
 import android.webkit.WebViewDatabase;
 
 import org.chromium.android_webview.AwFormDatabase;
@@ -14,8 +13,8 @@ import org.chromium.android_webview.HttpAuthDatabase;
  * Chromium implementation of WebViewDatabase -- forwards calls to the
  * chromium internal implementation.
  */
+@SuppressWarnings("deprecation")
 final class WebViewDatabaseAdapter extends WebViewDatabase {
-
     private AwFormDatabase mFormDatabase;
     private HttpAuthDatabase mHttpAuthDatabase;
 

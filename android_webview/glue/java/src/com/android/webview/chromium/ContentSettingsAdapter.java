@@ -8,13 +8,16 @@ import android.util.Log;
 import android.webkit.WebSettings.LayoutAlgorithm;
 import android.webkit.WebSettings.PluginState;
 import android.webkit.WebSettings.RenderPriority;
-import android.webkit.WebSettings.TextSize;
 import android.webkit.WebSettings.ZoomDensity;
 
 import org.chromium.android_webview.AwSettings;
 
+/**
+ * Type adaptation layer between {@link android.webkit.WebSettings} and
+ * {@link org.chromium.android_webview.AwSettings}.
+ */
+@SuppressWarnings("deprecation")
 public class ContentSettingsAdapter extends android.webkit.WebSettings {
-
     private static final String LOGTAG = ContentSettingsAdapter.class.getSimpleName();
     private static final boolean TRACE = false;
 
@@ -239,10 +242,10 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
     public synchronized void setLayoutAlgorithm(LayoutAlgorithm l) {
         // TODO: Remove the upstream enum and mapping once the new value is in the public API.
         final AwSettings.LayoutAlgorithm[] chromiumValues = {
-            AwSettings.LayoutAlgorithm.NORMAL,
-            AwSettings.LayoutAlgorithm.SINGLE_COLUMN,
-            AwSettings.LayoutAlgorithm.NARROW_COLUMNS,
-            AwSettings.LayoutAlgorithm.TEXT_AUTOSIZING
+                AwSettings.LayoutAlgorithm.NORMAL,
+                AwSettings.LayoutAlgorithm.SINGLE_COLUMN,
+                AwSettings.LayoutAlgorithm.NARROW_COLUMNS,
+                AwSettings.LayoutAlgorithm.TEXT_AUTOSIZING
         };
         mAwSettings.setLayoutAlgorithm(chromiumValues[l.ordinal()]);
     }
@@ -251,10 +254,10 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
     public synchronized LayoutAlgorithm getLayoutAlgorithm() {
         // TODO: Remove the upstream enum and mapping once the new value is in the public API.
         final LayoutAlgorithm[] webViewValues = {
-            LayoutAlgorithm.NORMAL,
-            LayoutAlgorithm.SINGLE_COLUMN,
-            LayoutAlgorithm.NARROW_COLUMNS,
-            LayoutAlgorithm.TEXT_AUTOSIZING
+                LayoutAlgorithm.NORMAL,
+                LayoutAlgorithm.SINGLE_COLUMN,
+                LayoutAlgorithm.NARROW_COLUMNS,
+                LayoutAlgorithm.TEXT_AUTOSIZING
         };
         return webViewValues[mAwSettings.getLayoutAlgorithm().ordinal()];
     }
@@ -584,22 +587,22 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
         return mAwSettings.getMediaPlaybackRequiresUserGesture();
     }
 
-//    @Override
+    @Override
     public void setMixedContentMode(int mode) {
         mAwSettings.setMixedContentMode(mode);
     }
 
-//    @Override
+    @Override
     public int getMixedContentMode() {
         return mAwSettings.getMixedContentMode();
     }
 
-//    @Override
+    @Override
     public void setVideoOverlayForEmbeddedEncryptedVideoEnabled(boolean flag) {
         mAwSettings.setVideoOverlayForEmbeddedVideoEnabled(flag);
     }
 
-//    @Override
+    @Override
     public boolean getVideoOverlayForEmbeddedEncryptedVideoEnabled() {
         return mAwSettings.getVideoOverlayForEmbeddedVideoEnabled();
     }

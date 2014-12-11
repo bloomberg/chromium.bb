@@ -7,15 +7,16 @@ package com.android.webview.chromium;
 import android.webkit.ValueCallback;
 import android.webkit.WebStorage;
 
+import org.chromium.android_webview.AwQuotaManagerBridge;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import org.chromium.android_webview.AwQuotaManagerBridge;
 
 /**
  * Chromium implementation of WebStorage -- forwards calls to the
  * chromium internal implementation.
  */
+@SuppressWarnings("deprecation")
 final class WebStorageAdapter extends WebStorage {
     private final AwQuotaManagerBridge mQuotaManagerBridge;
     WebStorageAdapter(AwQuotaManagerBridge quotaManagerBridge) {

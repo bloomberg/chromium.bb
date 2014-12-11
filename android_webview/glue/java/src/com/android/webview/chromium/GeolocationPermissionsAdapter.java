@@ -16,7 +16,6 @@ import java.util.Set;
  * chromium internal implementation.
  */
 final class GeolocationPermissionsAdapter extends GeolocationPermissions {
-
     private AwGeolocationPermissions mChromeGeolocationPermissions;
 
     public GeolocationPermissionsAdapter(AwGeolocationPermissions chromeGeolocationPermissions) {

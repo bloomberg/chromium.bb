@@ -12,6 +12,9 @@ import android.webkit.WebChromeClient.FileChooserParams;
 
 import org.chromium.android_webview.AwContentsClient;
 
+/**
+ * Type adaptation class for FileChooserParams.
+ */
 public class FileChooserParamsAdapter extends FileChooserParams {
     private AwContentsClient.FileChooserParams mParams;
 
@@ -19,8 +22,7 @@ public class FileChooserParamsAdapter extends FileChooserParams {
         if (resultCode == Activity.RESULT_CANCELED) {
             return null;
         }
-        Uri result = intent == null || resultCode != Activity.RESULT_OK ? null
-                : intent.getData();
+        Uri result = intent == null || resultCode != Activity.RESULT_OK ? null : intent.getData();
 
         Uri[] uris = null;
         if (result != null) {
@@ -41,8 +43,9 @@ public class FileChooserParamsAdapter extends FileChooserParams {
 
     @Override
     public String[] getAcceptTypes() {
-        if (mParams.acceptTypes == null)
+        if (mParams.acceptTypes == null) {
             return new String[0];
+        }
         return mParams.acceptTypes.split(";");
     }
 

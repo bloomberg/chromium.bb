@@ -13,6 +13,7 @@ import org.chromium.android_webview.AwContents;
 /**
  * Chromium implementation of WebIconDatabase -- big old no-op (base class is deprecated).
  */
+@SuppressWarnings("deprecation")
 final class WebIconDatabaseAdapter extends WebIconDatabase {
     @Override
     public void open(String path) {
@@ -35,8 +36,7 @@ final class WebIconDatabaseAdapter extends WebIconDatabase {
     }
 
     @Override
-    public void bulkRequestIconForPageUrl(ContentResolver cr, String where,
-            IconListener listener) {
+    public void bulkRequestIconForPageUrl(ContentResolver cr, String where, IconListener listener) {
         // Intentional no-op: hidden in base class.
     }
 

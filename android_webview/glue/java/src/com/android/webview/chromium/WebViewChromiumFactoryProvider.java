@@ -4,14 +4,12 @@
 
 package com.android.webview.chromium;
 
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.app.ActivityManager;
 import android.content.ComponentCallbacks2;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Looper;
@@ -19,7 +17,6 @@ import android.os.StrictMode;
 import android.util.Log;
 import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
-import android.webkit.WebIconDatabase;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.WebViewDatabase;
@@ -35,8 +32,6 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwCookieManager;
 import org.chromium.android_webview.AwDevToolsServer;
-import org.chromium.android_webview.AwFormDatabase;
-import org.chromium.android_webview.AwGeolocationPermissions;
 import org.chromium.android_webview.AwQuotaManagerBridge;
 import org.chromium.android_webview.AwResource;
 import org.chromium.android_webview.AwSettings;
@@ -56,8 +51,12 @@ import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
+/**
+ * Entry point to the WebView. The system framework talks to this class to get instances of the
+ * implementation classes.
+ */
+@SuppressWarnings("deprecation")
 public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
-
     private static final String TAG = "WebViewChromiumFactoryProvider";
 
     private static final String CHROMIUM_PREFS_NAME = "WebViewChromiumPrefs";
@@ -79,7 +78,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     private AwDevToolsServer mDevToolsServer;
 
     private ArrayList<WeakReference<WebViewChromium>> mWebViewsToStart =
-              new ArrayList<WeakReference<WebViewChromium>>();
+            new ArrayList<WeakReference<WebViewChromium>>();
 
     // Read/write protected by mLock.
     private boolean mStarted;
@@ -134,15 +133,15 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
         // Use shared preference to check for package downgrade.
         mWebViewPrefs = mWebViewDelegate.getApplication().getSharedPreferences(
-                            CHROMIUM_PREFS_NAME, Context.MODE_PRIVATE);
+                CHROMIUM_PREFS_NAME, Context.MODE_PRIVATE);
         int lastVersion = mWebViewPrefs.getInt(VERSION_CODE_PREF, 0);
         int currentVersion = packageInfo.versionCode;
         if (lastVersion > currentVersion) {
             // The WebView package has been downgraded since we last ran in this application.
             // Delete the WebView data directory's contents.
             String dataDir = PathUtils.getDataDirectory(mWebViewDelegate.getApplication());
-            Log.i(TAG, "WebView package downgraded from " + lastVersion + " to " + currentVersion +
-                       "; deleting contents of " + dataDir);
+            Log.i(TAG, "WebView package downgraded from " + lastVersion + " to " + currentVersion
+                            + "; deleting contents of " + dataDir);
             deleteContents(new File(dataDir));
         }
         if (lastVersion != currentVersion) {
@@ -178,14 +177,14 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     private void ensureChromiumStartedLocked(boolean onMainThread) {
         assert Thread.holdsLock(mLock);
 
-        if (mStarted) {  // Early-out for the common case.
+        if (mStarted) { // Early-out for the common case.
             return;
         }
 
         Looper looper = !onMainThread ? Looper.myLooper() : Looper.getMainLooper();
-        Log.v(TAG, "Binding Chromium to " +
-                (Looper.getMainLooper().equals(looper) ? "main":"background") +
-                " looper " + looper);
+        Log.v(TAG, "Binding Chromium to "
+                        + (Looper.getMainLooper().equals(looper) ? "main" : "background")
+                        + " looper " + looper);
         ThreadUtils.setUiThread(looper);
 
         if (ThreadUtils.runningOnUiThread()) {
@@ -213,6 +212,12 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         }
     }
 
+    // TODO: DIR_RESOURCE_PAKS_ANDROID needs to live somewhere sensible,
+    // inlined here for simplicity setting up the HTMLViewer demo. Unfortunately
+    // it can't go into base.PathService, as the native constant it refers to
+    // lives in the ui/ layer. See ui/base/ui_base_paths.h
+    private static final int DIR_RESOURCE_PAKS_ANDROID = 3003;
+
     private void startChromiumLocked() {
         assert Thread.holdsLock(mLock) && ThreadUtils.runningOnUiThread();
 
@@ -230,18 +235,12 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
         try {
             LibraryLoader.ensureInitialized();
-        } catch(ProcessInitException e) {
+        } catch (ProcessInitException e) {
             throw new RuntimeException("Error initializing WebView library", e);
         }
 
         PathService.override(PathService.DIR_MODULE, "/system/lib/");
-        // TODO: DIR_RESOURCE_PAKS_ANDROID needs to live somewhere sensible,
-        // inlined here for simplicity setting up the HTMLViewer demo. Unfortunately
-        // it can't go into base.PathService, as the native constant it refers to
-        // lives in the ui/ layer. See ui/base/ui_base_paths.h
-        final int DIR_RESOURCE_PAKS_ANDROID = 3003;
-        PathService.override(DIR_RESOURCE_PAKS_ANDROID,
-                "/system/framework/webview/paks");
+        PathService.override(DIR_RESOURCE_PAKS_ANDROID, "/system/framework/webview/paks");
 
         // Make sure that ResourceProvider is initialized before starting the browser process.
         Context context = getWrappedCurrentApplicationContext();
@@ -280,7 +279,6 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     void startYourEngines(boolean onMainThread) {
         synchronized (mLock) {
             ensureChromiumStartedLocked(onMainThread);
-
         }
     }
 
@@ -318,14 +316,13 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     private void setUpResources(Context context) {
         // The resources are always called com.android.webview even if the manifest has had the
         // package renamed.
+        final String packageName = WebViewFactory.getLoadedPackageInfo().packageName;
         ResourceRewriter.rewriteRValues(
-                mWebViewDelegate.getPackageId(context.getResources(), "com.android.webview"));
+                mWebViewDelegate.getPackageId(context.getResources(), packageName));
 
         AwResource.setResources(context.getResources());
-        AwResource.setErrorPageResources(android.R.raw.loaderror,
-                android.R.raw.nodomain);
-        AwResource.setConfigKeySystemUuidMapping(
-                android.R.array.config_keySystemUuidMapping);
+        AwResource.setErrorPageResources(android.R.raw.loaderror, android.R.raw.nodomain);
+        AwResource.setConfigKeySystemUuidMapping(android.R.array.config_keySystemUuidMapping);
     }
 
     @Override
@@ -351,8 +348,8 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                     public void setWebContentsDebuggingEnabled(boolean enable) {
                         // Web Contents debugging is always enabled on debug builds.
                         if (!isBuildDebuggable()) {
-                            WebViewChromiumFactoryProvider.this.
-                                    setWebContentsDebuggingEnabled(enable);
+                            WebViewChromiumFactoryProvider.this.setWebContentsDebuggingEnabled(
+                                    enable);
                         }
                     }
 
@@ -428,7 +425,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     }
 
     @Override
-    public WebIconDatabase getWebIconDatabase() {
+    public android.webkit.WebIconDatabase getWebIconDatabase() {
         synchronized (mLock) {
             if (mWebIconDatabase == null) {
                 ensureChromiumStartedLocked(true);
@@ -455,8 +452,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             if (mWebViewDatabase == null) {
                 ensureChromiumStartedLocked(true);
                 AwBrowserContext browserContext = getBrowserContextLocked();
-                mWebViewDatabase = new WebViewDatabaseAdapter(
-                        browserContext.getFormDatabase(),
+                mWebViewDatabase = new WebViewDatabaseAdapter(browserContext.getFormDatabase(),
                         browserContext.getHttpAuthDatabase(context));
             }
         }

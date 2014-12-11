@@ -13,8 +13,12 @@ import android.webkit.WebView;
 
 import org.chromium.android_webview.AwCookieManager;
 
+/**
+ * Chromium implementation of CookieManager -- forwards calls to the
+ * chromium internal implementation.
+ */
+@SuppressWarnings("deprecation")
 public class CookieManagerAdapter extends CookieManager {
-
     private static final String LOGTAG = "CookieManager";
 
     AwCookieManager mChromeCookieManager;
@@ -144,5 +148,4 @@ public class CookieManagerAdapter extends CookieManager {
         // do the same normalisation before entering the chromium stack.
         return new WebAddress(url).toString();
     }
-
 }

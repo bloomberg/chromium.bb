@@ -11,12 +11,9 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.os.Trace;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
-import android.webkit.WebViewFactory;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
@@ -36,7 +33,6 @@ import java.lang.reflect.Method;
  * {@link android.webkit.WebViewDelegate android.webkit.WebViewDelegate} directly instead.
  */
 class WebViewDelegateFactory {
-
     /**
      * Copy of {@link android.webkit.WebViewDelegate android.webkit.WebViewDelegate}'s interface.
      * See {@link WebViewDelegateFactory} for the reasons why this copy is needed.
@@ -57,8 +53,8 @@ class WebViewDelegateFactory {
         boolean canInvokeDrawGlFunctor(View containerView);
 
         /** @see android.webkit.WebViewDelegate#invokeDrawGlFunctor */
-        void invokeDrawGlFunctor(View containerView, long nativeDrawGLFunctor,
-                boolean waitForCompletion);
+        void invokeDrawGlFunctor(
+                View containerView, long nativeDrawGLFunctor, boolean waitForCompletion);
 
         /** @see android.webkit.WebViewDelegate#callDrawGlFunction */
         void callDrawGlFunction(Canvas canvas, long nativeDrawGLFunctor);
@@ -106,69 +102,67 @@ class WebViewDelegateFactory {
      * to a {@link android.webkit.WebViewDelegate android.webkit.WebViewDelegate}.
      */
     private static class ProxyDelegate implements WebViewDelegate {
-
-        android.webkit.WebViewDelegate delegate;
+        android.webkit.WebViewDelegate mDelegate;
 
         ProxyDelegate(android.webkit.WebViewDelegate delegate) {
-            this.delegate = delegate;
+            mDelegate = delegate;
         }
 
         @Override
         public void setOnTraceEnabledChangeListener(final OnTraceEnabledChangeListener listener) {
-            delegate.setOnTraceEnabledChangeListener(
+            mDelegate.setOnTraceEnabledChangeListener(
                     new android.webkit.WebViewDelegate.OnTraceEnabledChangeListener() {
                         @Override
                         public void onTraceEnabledChange(boolean enabled) {
                             listener.onTraceEnabledChange(enabled);
-                            ;
                         }
                     });
         }
 
         @Override
         public boolean isTraceTagEnabled() {
-            return delegate.isTraceTagEnabled();
+            return mDelegate.isTraceTagEnabled();
         }
 
         @Override
         public boolean canInvokeDrawGlFunctor(View containerView) {
-            return delegate.canInvokeDrawGlFunctor(containerView);
+            return mDelegate.canInvokeDrawGlFunctor(containerView);
         }
 
         @Override
-        public void invokeDrawGlFunctor(View containerView, long nativeDrawGLFunctor,
-                boolean waitForCompletion) {
-            delegate.invokeDrawGlFunctor(containerView, nativeDrawGLFunctor, waitForCompletion);
+        public void invokeDrawGlFunctor(
+                View containerView, long nativeDrawGLFunctor, boolean waitForCompletion) {
+            mDelegate.invokeDrawGlFunctor(containerView, nativeDrawGLFunctor, waitForCompletion);
         }
 
         @Override
         public void callDrawGlFunction(Canvas canvas, long nativeDrawGLFunctor) {
-            delegate.callDrawGlFunction(canvas, nativeDrawGLFunctor);
+            mDelegate.callDrawGlFunction(canvas, nativeDrawGLFunctor);
         }
 
         @Override
         public void detachDrawGlFunctor(View containerView, long nativeDrawGLFunctor) {
-            delegate.detachDrawGlFunctor(containerView, nativeDrawGLFunctor);
+            mDelegate.detachDrawGlFunctor(containerView, nativeDrawGLFunctor);
         }
 
         @Override
         public int getPackageId(Resources resources, String packageName) {
-            return delegate.getPackageId(resources, packageName);
+            return mDelegate.getPackageId(resources, packageName);
         }
 
         @Override
         public Application getApplication() {
-            return delegate.getApplication();
+            return mDelegate.getApplication();
         }
 
         @Override
         public String getErrorString(Context context, int errorCode) {
-            return delegate.getErrorString(context, errorCode);
+            return mDelegate.getErrorString(context, errorCode);
         }
 
         @Override
         public void addWebViewAssetPath(Context context) {
-            delegate.addWebViewAssetPath(context);
+            mDelegate.addWebViewAssetPath(context);
         }
     }
 
@@ -185,7 +179,7 @@ class WebViewDelegateFactory {
      */
     private static class Api21CompatibilityDelegate implements WebViewDelegate {
         /** Copy of Trace.TRACE_TAG_WEBVIEW */
-        private final static long TRACE_TAG_WEBVIEW = 1L << 4;
+        private static final long TRACE_TAG_WEBVIEW = 1L << 4;
 
         /** Hidden APIs released in the API 21 version of the framework */
         private final Method mIsTagEnabledMethod;
@@ -207,24 +201,24 @@ class WebViewDelegateFactory {
                 // should not be changed even if those hidden APIs change in future releases.
                 mIsTagEnabledMethod = Trace.class.getMethod("isTagEnabled", long.class);
                 mAddChangeCallbackMethod = Class.forName("android.os.SystemProperties")
-                        .getMethod("addChangeCallback", Runnable.class);
+                                                   .getMethod("addChangeCallback", Runnable.class);
                 mGetViewRootImplMethod = View.class.getMethod("getViewRootImpl");
-                mInvokeFunctorMethod = Class.forName("android.view.ViewRootImpl")
-                        .getMethod("invokeFunctor", long.class, boolean.class);
+                mInvokeFunctorMethod =
+                        Class.forName("android.view.ViewRootImpl")
+                                .getMethod("invokeFunctor", long.class, boolean.class);
                 mDetachFunctorMethod = Class.forName("android.view.ViewRootImpl")
-                        .getMethod("detachFunctor", long.class);
+                                               .getMethod("detachFunctor", long.class);
                 mCallDrawGLFunctionMethod = Class.forName("android.view.HardwareCanvas")
-                        .getMethod("callDrawGLFunction", long.class);
-                mGetAssignedPackageIdentifiersMethod = AssetManager.class.getMethod(
-                        "getAssignedPackageIdentifiers");
-                mAddAssetPathMethod = AssetManager.class.getMethod(
-                        "addAssetPath", String.class);
-                mCurrentApplicationMethod = Class.forName("android.app.ActivityThread")
-                        .getMethod("currentApplication");
+                                                    .getMethod("callDrawGLFunction", long.class);
+                mGetAssignedPackageIdentifiersMethod =
+                        AssetManager.class.getMethod("getAssignedPackageIdentifiers");
+                mAddAssetPathMethod = AssetManager.class.getMethod("addAssetPath", String.class);
+                mCurrentApplicationMethod =
+                        Class.forName("android.app.ActivityThread").getMethod("currentApplication");
                 mGetStringMethod = Class.forName("android.net.http.ErrorStrings")
-                        .getMethod("getString", int.class, Context.class);
+                                           .getMethod("getString", int.class, Context.class);
                 mGetLoadedPackageInfoMethod = Class.forName("android.webkit.WebViewFactory")
-                        .getMethod("getLoadedPackageInfo");
+                                                      .getMethod("getLoadedPackageInfo");
             } catch (Exception e) {
                 throw new RuntimeException("Invalid reflection", e);
             }
@@ -257,7 +251,7 @@ class WebViewDelegateFactory {
         public boolean canInvokeDrawGlFunctor(View containerView) {
             try {
                 Object viewRootImpl = mGetViewRootImplMethod.invoke(containerView);
-                 // viewRootImpl can be null during teardown when window is leaked.
+                // viewRootImpl can be null during teardown when window is leaked.
                 return viewRootImpl != null;
             } catch (Exception e) {
                 throw new RuntimeException("Invalid reflection", e);
@@ -265,12 +259,13 @@ class WebViewDelegateFactory {
         }
 
         @Override
-        public void invokeDrawGlFunctor(View containerView, long nativeDrawGLFunctor,
-                boolean waitForCompletion) {
+        public void invokeDrawGlFunctor(
+                View containerView, long nativeDrawGLFunctor, boolean waitForCompletion) {
             try {
                 Object viewRootImpl = mGetViewRootImplMethod.invoke(containerView);
                 if (viewRootImpl != null) {
-                    mInvokeFunctorMethod.invoke(viewRootImpl, nativeDrawGLFunctor, waitForCompletion);
+                    mInvokeFunctorMethod.invoke(
+                            viewRootImpl, nativeDrawGLFunctor, waitForCompletion);
                 }
             } catch (Exception e) {
                 throw new RuntimeException("Invalid reflection", e);
@@ -346,4 +341,3 @@ class WebViewDelegateFactory {
         }
     }
 }
-

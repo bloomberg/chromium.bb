@@ -7,8 +7,6 @@ package com.android.webview.chromium;
 import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.ContextWrapper;
-import android.content.res.AssetManager;
-import android.content.res.Resources;
 import android.view.LayoutInflater;
 
 import java.util.WeakHashMap;
@@ -20,12 +18,11 @@ import java.util.WeakHashMap;
  * or doubly wrapping contexts.
  */
 public class ResourcesContextWrapperFactory {
-    private static WeakHashMap<Context,ContextWrapper> sCtxToWrapper
-            = new WeakHashMap<Context,ContextWrapper>();
+    private static WeakHashMap<Context, ContextWrapper> sCtxToWrapper =
+            new WeakHashMap<Context, ContextWrapper>();
     private static final Object sLock = new Object();
 
-    private ResourcesContextWrapperFactory() {
-    }
+    private ResourcesContextWrapperFactory() {}
 
     public static Context get(Context ctx) {
         ContextWrapper wrappedCtx;
@@ -41,7 +38,7 @@ public class ResourcesContextWrapperFactory {
 
     private static ContextWrapper createWrapper(final Context ctx) {
         return new ContextWrapper(ctx) {
-            private Context applicationContext;
+            private Context mApplicationContext;
 
             @Override
             public ClassLoader getClassLoader() {
@@ -54,7 +51,8 @@ public class ResourcesContextWrapperFactory {
                         try {
                             return webViewCl.loadClass(name);
                         } catch (ClassNotFoundException e) {
-                            // Look in the app class loader; allowing it to throw ClassNotFoundException.
+                            // Look in the app class loader; allowing it to throw
+                            // ClassNotFoundException.
                             return appCl.loadClass(name);
                         }
                     }
@@ -73,9 +71,9 @@ public class ResourcesContextWrapperFactory {
 
             @Override
             public Context getApplicationContext() {
-                if (applicationContext == null)
-                    applicationContext = get(ctx.getApplicationContext());
-                return applicationContext;
+                if (mApplicationContext == null)
+                    mApplicationContext = get(ctx.getApplicationContext());
+                return mApplicationContext;
             }
 
             @Override

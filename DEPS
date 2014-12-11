@@ -454,11 +454,6 @@ deps_os = {
     'src/third_party/android_protobuf/src':
      Var('chromium_git') + '/external/android_protobuf.git' + '@' + '94f522f907e3f34f70d9e7816b947e62fddbb267',
 
-    # Whenever you roll this please also change frameworks/webview in
-    # src/android_webview/buildbot/aosp_manifest.xml to point to the same revision.
-    'src/third_party/android_webview_glue/src':
-     Var('chromium_git') + '/external/android_webview_glue.git' + '@' + 'a770a09ca3346d8ec7cb4cdff90aaf83c8d2c5ff',
-
     'src/third_party/android_tools':
      Var('chromium_git') + '/android_tools.git' + '@' + '4f723e2a5fa5b7b8a198072ac19b92344be2b271',
 

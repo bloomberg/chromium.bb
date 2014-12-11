@@ -13,11 +13,10 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Picture;
-import android.net.http.SslError;
 import android.net.Uri;
+import android.net.http.SslError;
 import android.os.Build;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.provider.Browser;
 import android.util.Log;
@@ -35,8 +34,8 @@ import android.webkit.SslErrorHandler;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebChromeClient.CustomViewCallback;
-import android.webkit.WebResourceResponse;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -81,6 +80,7 @@ import java.util.WeakHashMap;
  * allow the source WebView to be injected by ContentViewClientAdapter. We
  * choose the latter, because it makes for a cleaner design.
  */
+@SuppressWarnings("deprecation")
 public class WebViewContentsClientAdapter extends AwContentsClient {
     // TAG is chosen for consistency with classic webview tracing.
     private static final String TAG = "WebViewCallback";
@@ -130,23 +130,22 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
         setWebViewClient(null);
 
         mUiThreadHandler = new Handler() {
-
             @Override
             public void handleMessage(Message msg) {
-                switch(msg.what) {
+                switch (msg.what) {
                     case NEW_WEBVIEW_CREATED:
                         WebView.WebViewTransport t = (WebView.WebViewTransport) msg.obj;
                         WebView newWebView = t.getWebView();
                         if (newWebView == mWebView) {
                             throw new IllegalArgumentException(
-                                    "Parent WebView cannot host it's own popup window. Please " +
-                                    "use WebSettings.setSupportMultipleWindows(false)");
+                                    "Parent WebView cannot host it's own popup window. Please "
+                                    + "use WebSettings.setSupportMultipleWindows(false)");
                         }
 
                         if (newWebView != null && newWebView.copyBackForwardList().getSize() != 0) {
                             throw new IllegalArgumentException(
-                                    "New WebView for popup window must not have been previously " +
-                                    "navigated.");
+                                    "New WebView for popup window must not have been previously "
+                                    + "navigated.");
                         }
 
                         WebViewChromium.completeWindowCreation(mWebView, newWebView);
@@ -156,7 +155,6 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
                 }
             }
         };
-
     }
 
     // WebViewClassic is coded in such a way that even if a null WebViewClient is set,
@@ -194,8 +192,7 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
             }
             // Pass the package name as application ID so that the intent from the
             // same application can be opened in the same tab.
-            intent.putExtra(Browser.EXTRA_APPLICATION_ID,
-                    view.getContext().getPackageName());
+            intent.putExtra(Browser.EXTRA_APPLICATION_ID, view.getContext().getPackageName());
 
             Context context = view.getContext();
             if (!(context instanceof Activity)) {
@@ -317,15 +314,14 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
     public AwWebResourceResponse shouldInterceptRequest(ShouldInterceptRequestParams params) {
         TraceEvent.begin();
         if (TRACE) Log.d(TAG, "shouldInterceptRequest=" + params.url);
-        WebResourceResponse response = mWebViewClient.shouldInterceptRequest(mWebView,
-                new WebResourceRequestImpl(params));
+        WebResourceResponse response =
+                mWebViewClient.shouldInterceptRequest(mWebView, new WebResourceRequestImpl(params));
         TraceEvent.end();
         if (response == null) return null;
 
         // AwWebResourceResponse should support null headers. b/16332774.
         Map<String, String> responseHeaders = response.getResponseHeaders();
-        if (responseHeaders == null)
-            responseHeaders = new HashMap<String, String>();
+        if (responseHeaders == null) responseHeaders = new HashMap<String, String>();
 
         return new AwWebResourceResponse(
                 response.getMimeType(),
@@ -559,7 +555,6 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
         TraceEvent.end();
     }
 
-
     /**
      * @see ContentViewClient#shouldOverrideKeyEvent(KeyEvent)
      */
@@ -577,7 +572,6 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
         TraceEvent.end();
         return result;
     }
-
 
     /**
      * @see ContentViewClient#onStartContentIntent(Context, String)
@@ -618,8 +612,8 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
         if (mWebChromeClient != null) {
             if (TRACE) Log.d(TAG, "onPermissionRequest");
             if (mOngoingPermissionRequests == null) {
-                mOngoingPermissionRequests =
-                    new WeakHashMap<AwPermissionRequest, WeakReference<PermissionRequestAdapter>>();
+                mOngoingPermissionRequests = new WeakHashMap<AwPermissionRequest,
+                        WeakReference<PermissionRequestAdapter>>();
             }
             PermissionRequestAdapter adapter = new PermissionRequestAdapter(permissionRequest);
             mOngoingPermissionRequests.put(
@@ -760,8 +754,8 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
     public void onReceivedHttpAuthRequest(AwHttpAuthHandler handler, String host, String realm) {
         TraceEvent.begin();
         if (TRACE) Log.d(TAG, "onReceivedHttpAuthRequest=" + host);
-        mWebViewClient.onReceivedHttpAuthRequest(mWebView,
-                new AwHttpAuthHandlerAdapter(handler), host, realm);
+        mWebViewClient.onReceivedHttpAuthRequest(
+                mWebView, new AwHttpAuthHandlerAdapter(handler), host, realm);
         TraceEvent.end();
     }
 
@@ -784,16 +778,15 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
     }
 
     private static class ClientCertRequestImpl extends ClientCertRequest {
-
-        final private AwContentsClientBridge.ClientCertificateRequestCallback mCallback;
-        final private String[] mKeyTypes;
-        final private Principal[] mPrincipals;
-        final private String mHost;
-        final private int mPort;
+        private final AwContentsClientBridge.ClientCertificateRequestCallback mCallback;
+        private final String[] mKeyTypes;
+        private final Principal[] mPrincipals;
+        private final String mHost;
+        private final int mPort;
 
         public ClientCertRequestImpl(
-                AwContentsClientBridge.ClientCertificateRequestCallback callback,
-                String[] keyTypes, Principal[] principals, String host, int port) {
+                AwContentsClientBridge.ClientCertificateRequestCallback callback, String[] keyTypes,
+                Principal[] principals, String host, int port) {
             mCallback = callback;
             mKeyTypes = keyTypes;
             mPrincipals = principals;
@@ -841,12 +834,12 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
 
     @Override
     public void onReceivedClientCertRequest(
-            AwContentsClientBridge.ClientCertificateRequestCallback callback,
-            String[] keyTypes, Principal[] principals, String host, int port) {
+            AwContentsClientBridge.ClientCertificateRequestCallback callback, String[] keyTypes,
+            Principal[] principals, String host, int port) {
         if (TRACE) Log.d(TAG, "onReceivedClientCertRequest");
         TraceEvent.begin();
-        final ClientCertRequestImpl request = new ClientCertRequestImpl(callback,
-            keyTypes, principals, host, port);
+        final ClientCertRequestImpl request =
+                new ClientCertRequestImpl(callback, keyTypes, principals, host, port);
         mWebViewClient.onReceivedClientCertRequest(mWebView, request);
         TraceEvent.end();
     }
@@ -868,19 +861,17 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
     }
 
     @Override
-    public void onDownloadStart(String url,
-                                String userAgent,
-                                String contentDisposition,
-                                String mimeType,
-                                long contentLength) {
+    public void onDownloadStart(
+            String url,
+            String userAgent,
+            String contentDisposition,
+            String mimeType,
+            long contentLength) {
         if (mDownloadListener != null) {
             TraceEvent.begin();
             if (TRACE) Log.d(TAG, "onDownloadStart");
-            mDownloadListener.onDownloadStart(url,
-                                              userAgent,
-                                              contentDisposition,
-                                              mimeType,
-                                              contentLength);
+            mDownloadListener.onDownloadStart(
+                    url, userAgent, contentDisposition, mimeType, contentLength);
             TraceEvent.end();
         }
     }
@@ -893,8 +884,8 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
             return;
         }
         TraceEvent.begin();
-        FileChooserParamsAdapter adapter = new FileChooserParamsAdapter(
-                fileChooserParams, mContext);
+        FileChooserParamsAdapter adapter =
+                new FileChooserParamsAdapter(fileChooserParams, mContext);
         if (TRACE) Log.d(TAG, "showFileChooser");
         ValueCallback<Uri[]> callbackAdapter = new ValueCallback<Uri[]>() {
             private boolean mCompleted;
@@ -907,7 +898,7 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
                 String s[] = null;
                 if (uriList != null) {
                     s = new String[uriList.length];
-                    for(int i = 0; i < uriList.length; i++) {
+                    for (int i = 0; i < uriList.length; i++) {
                         s[i] = uriList[i].toString();
                     }
                 }
@@ -923,8 +914,7 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
 
         // If the app did not handle it and we are running on Lollipop or newer, then
         // abort.
-        if (mContext.getApplicationInfo().targetSdkVersion >=
-                Build.VERSION_CODES.LOLLIPOP) {
+        if (mContext.getApplicationInfo().targetSdkVersion >= Build.VERSION_CODES.LOLLIPOP) {
             uploadFileCallback.onReceiveValue(null);
             return;
         }
@@ -940,12 +930,12 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
                 }
                 mCompleted = true;
                 uploadFileCallback.onReceiveValue(
-                        uri == null ? null : new String[] { uri.toString() });
+                        uri == null ? null : new String[] {uri.toString()});
             }
         };
         if (TRACE) Log.d(TAG, "openFileChooser");
-        mWebChromeClient.openFileChooser(innerCallback, fileChooserParams.acceptTypes,
-                fileChooserParams.capture ? "*" : "");
+        mWebChromeClient.openFileChooser(
+                innerCallback, fileChooserParams.acceptTypes, fileChooserParams.capture ? "*" : "");
         TraceEvent.end();
     }
 
@@ -1003,8 +993,7 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
             // The ic_media_video_poster icon is transparent so we need to draw it on a gray
             // background.
             Bitmap poster = BitmapFactory.decodeResource(
-                    mContext.getResources(),
-                    R.drawable.ic_media_video_poster);
+                    mContext.getResources(), R.drawable.ic_media_video_poster);
             result = Bitmap.createBitmap(poster.getWidth(), poster.getHeight(), poster.getConfig());
             result.eraseColor(Color.GRAY);
             Canvas canvas = new Canvas(result);
@@ -1045,12 +1034,15 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
         }
     }
 
-    // TODO: Move to the upstream once the PermissionRequest is part of SDK.
+    /**
+     * Type adaptation class for PermissionRequest.
+     * TODO: Move to the upstream once the PermissionRequest is part of SDK.
+     */
     public static class PermissionRequestAdapter extends PermissionRequest {
         // TODO: Move the below definitions to AwPermissionRequest.
-        private static long BITMASK_RESOURCE_VIDEO_CAPTURE = 1 << 1;
-        private static long BITMASK_RESOURCE_AUDIO_CAPTURE = 1 << 2;
-        private static long BITMASK_RESOURCE_PROTECTED_MEDIA_ID = 1 << 3;
+        private static final long BITMASK_RESOURCE_VIDEO_CAPTURE = 1 << 1;
+        private static final long BITMASK_RESOURCE_AUDIO_CAPTURE = 1 << 2;
+        private static final long BITMASK_RESOURCE_PROTECTED_MEDIA_ID = 1 << 3;
 
         public static long toAwPermissionResources(String[] resources) {
             long result = 0;
@@ -1113,6 +1105,5 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
         public void deny() {
             mAwPermissionRequest.deny();
         }
-
     }
 }

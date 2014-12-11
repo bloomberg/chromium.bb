@@ -4,15 +4,16 @@
 
 package com.android.webview.chromium;
 
-import org.chromium.content_public.browser.NavigationEntry;
-
 import android.graphics.Bitmap;
 import android.webkit.WebHistoryItem;
+
+import org.chromium.content_public.browser.NavigationEntry;
 
 /**
  * WebView Chromium implementation of WebHistoryItem. Simple immutable wrapper
  * around NavigationEntry
  */
+@SuppressWarnings("deprecation")
 public class WebHistoryItemChromium extends WebHistoryItem {
     private final String mUrl;
     private final String mOriginalUrl;
@@ -68,8 +69,7 @@ public class WebHistoryItemChromium extends WebHistoryItem {
     }
 
     // Clone constructor.
-    private WebHistoryItemChromium(
-            String url, String originalUrl, String title, Bitmap favicon) {
+    private WebHistoryItemChromium(String url, String originalUrl, String title, Bitmap favicon) {
         mUrl = url;
         mOriginalUrl = originalUrl;
         mTitle = title;

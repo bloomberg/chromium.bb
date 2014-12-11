@@ -6,8 +6,6 @@
   <default remote="aosp"
            sync-j="6" />
 
-  <!-- Whenever you roll this please also change frameworks/webview in DEPS to point to the
-       same revision. -->
   <project name="platform/frameworks/webview" path="frameworks/webview" revision="a770a09ca3346d8ec7cb4cdff90aaf83c8d2c5ff"/>
 
   <project groups="device,flo" name="device/asus/deb" revision="f7bd9fa832e3256aa4eb940d1e844f07d966b7ab"/>

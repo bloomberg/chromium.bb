@@ -4,8 +4,6 @@
 
 package com.android.webview.chromium;
 
-import android.content.Context;
-
 /**
  * Helper class used to fix up resource ids.
  * This is mostly a copy of the code in frameworks/base/core/java/android/app/LoadedApk.java.
@@ -13,7 +11,6 @@ import android.content.Context;
  * this code).
  */
 class ResourceRewriter {
-
     /**
      * Rewrite the R 'constants' for the WebView library apk.
      */

@@ -1,0 +1,101 @@
+# Most of the flags in this file are duplicated to refer to both the pre- and
+# post-jarjar remapping versions of the class names. This enables the same
+# config file to be used whether jarjar is enabled or not.
+
+
+# Keep the factory and its public members; it's the main entry point used by the
+# framework.
+-keep class com.android.webview.chromium.WebViewChromiumFactoryProvider {
+    public *;
+}
+
+# Keep the native methods bound to plat_support.
+-keepclasseswithmembers class com.android.webview.chromium.** {
+  native <methods>;
+}
+
+# Keep everything related to the org.chromium JNI interface.
+-keepclasseswithmembers class com.android.org.chromium.** {
+  @**.AccessedByNative <fields>;
+}
+-keepclasseswithmembers class com.android.org.chromium.** {
+  @**.CalledByNative <methods>;
+}
+-keepclasseswithmembers class com.android.org.chromium.** {
+  @**.CalledByNativeUnchecked <methods>;
+}
+-keepclasseswithmembers class com.android.org.chromium.** {
+  native <methods>;
+}
+
+# Keep methods which get bound to JS interfaces via reflection.
+-keepclasseswithmembers class com.android.org.chromium.** {
+  @**.JavascriptInterface <methods>;
+}
+
+# Silence notes caused by use of @VisibleForTesting inside guava. This doesn't
+# happen when using jarjar because @VisibleForTesting gets renamed as well.
+-dontnote com.google.common.annotations.VisibleForTesting
+
+# MediaPlayerBridge uses reflection to access internal metadata.
+-dontnote com.android.org.chromium.media.MediaPlayerBridge
+
+# AndroidKeyStore uses reflection to access internal OpenSSL state.
+-dontnote com.android.org.chromium.net.AndroidKeyStore
+
+# TraceEvent uses reflection to access internal trace info.
+-dontnote com.android.org.chromium.content.common.TraceEvent
+
+# ProxyChangeListener$ProxyReceiver uses reflection to access internal
+# android.net.ProxyProperties.
+-dontnote com.android.org.chromium.net.ProxyChangeListener$ProxyReceiver
+
+# com.android.org.chromium.content.app.Linker dynamically casts to $TestRunner
+# when running tests. We don't run these tests in WebView.
+-dontnote com.android.org.chromium.content.app.Linker$TestRunner
+
+# We need to keep these explicitly as they are parameters to methods which
+# are entry points via @calledByNative.
+-keep class com.android.org.chromium.ui.autofill.AutofillSuggestion
+-keep class com.android.org.chromium.content.browser.ContentVideoViewClient
+-keep class com.android.org.chromium.ui.ColorSuggestion
+-keep class com.android.org.chromium.content.browser.input.DateTimeSuggestion
+-keep class com.android.org.chromium.content.browser.ContentViewCore$JavaScriptCallback
+-keep class com.android.org.chromium.content_public.browser.NavigationController
+
+# Keep these classes as they are parameters to methods that are native entry points.
+-keep class com.android.org.chromium.android_webview.AwBrowserContext
+-keep class com.android.org.chromium.base.library_loader.Linker$LibInfo
+
+# Keep this class and members as accessed via reflection
+-keep class com.android.webview.chromium.Drp {
+  public *;
+}
+
+# Keep finalizer stuff from google-common used via reflection
+-keepclassmembers class com.android.org.chromium.com.google.common.** {
+  *** finalizeReferent();
+}
+-keepclassmembers class com.android.org.chromium.com.google.common.** {
+  *** startFinalizer(java.lang.Class,java.lang.Object);
+}
+
+# Keep support framework support for SmartClip.
+-keep class com.android.webview.chromium.WebViewChromium {
+  public void extractSmartClipData(int,int,int,int);
+  public void setSmartClipResultHandler(android.os.Handler);
+}
+
+# We need to explicitly keep classes and constructors referenced only in
+# layout resources.
+-keep class com.android.org.chromium.ui.ColorPickerAdvanced {
+  <init>(...);
+}
+
+-keep class com.android.org.chromium.ui.ColorPickerSimple {
+  <init>(...);
+}
+
+-keep class com.android.org.chromium.ui.ColorPickerMoreButton {
+  <init>(...);
+}

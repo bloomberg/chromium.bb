@@ -266,7 +266,7 @@
     ['android_webview_build==0', {
       'includes': [
         'android_webview_tests.gypi',
-        '../third_party/android_webview_glue/android_webview_glue.gypi',
+        'glue/android_webview_glue.gypi',
       ],
       'targets': [
         {
