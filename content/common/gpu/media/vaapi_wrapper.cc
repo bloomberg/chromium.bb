@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/sys_info.h"
 // Auto-generated for dlopen libva libraries
 #include "content/common/gpu/media/va_stubs.h"
 #include "third_party/libyuv/include/libyuv.h"
@@ -204,7 +205,17 @@ bool VaapiWrapper::VaInitialize(Display* x_display,
                                 const base::Closure& report_error_to_uma_cb) {
   static bool vaapi_functions_initialized = PostSandboxInitialization();
   if (!vaapi_functions_initialized) {
-    LOG(ERROR) << "Failed to initialize VAAPI libs";
+    bool running_on_chromeos = false;
+#if defined(OS_CHROMEOS)
+    // When chrome runs on linux with chromeos=1, do not log error message
+    // without VAAPI libraries.
+    running_on_chromeos = base::SysInfo::IsRunningOnChromeOS();
+#endif
+    static const char kErrorMsg[] = "Failed to initialize VAAPI libs";
+    if (running_on_chromeos)
+      LOG(ERROR) << kErrorMsg;
+    else
+      DVLOG(1) << kErrorMsg;
     return false;
   }
 
