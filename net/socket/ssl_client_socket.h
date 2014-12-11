@@ -212,7 +212,7 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   // Serializes |next_protos| in the wire format for ALPN: protocols are listed
   // in order, each prefixed by a one-byte length.
   static std::vector<uint8_t> SerializeNextProtos(
-      const std::vector<std::string>& next_protos);
+      const NextProtoVector& next_protos);
 
   // For unit testing only.
   // Returns the unverified certificate chain as presented by server.

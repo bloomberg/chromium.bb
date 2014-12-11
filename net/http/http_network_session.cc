@@ -166,7 +166,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
     // Add the protocol to the TLS next protocol list, except for QUIC
     // since it uses UDP.
     if (proto != kProtoQUIC1SPDY3) {
-      next_protos_.push_back(SSLClientSocket::NextProtoToString(proto));
+      next_protos_.push_back(proto);
     }
 
     // Enable the corresponding alternate protocol, except for HTTP
@@ -284,8 +284,7 @@ bool HttpNetworkSession::IsProtocolEnabled(AlternateProtocol protocol) const {
       protocol - ALTERNATE_PROTOCOL_MINIMUM_VALID_VERSION];
 }
 
-void HttpNetworkSession::GetNextProtos(
-    std::vector<std::string>* next_protos) const {
+void HttpNetworkSession::GetNextProtos(NextProtoVector* next_protos) const {
   if (HttpStreamFactory::spdy_enabled()) {
     *next_protos = next_protos_;
   } else {

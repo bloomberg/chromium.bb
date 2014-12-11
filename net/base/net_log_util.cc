@@ -33,6 +33,7 @@
 #include "net/proxy/proxy_service.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
+#include "net/socket/ssl_client_socket.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
@@ -447,10 +448,17 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
         "force_spdy_always",
         http_network_session->params().force_spdy_always);
 
-    std::vector<std::string> next_protos;
+    NextProtoVector next_protos;
     http_network_session->GetNextProtos(&next_protos);
-    std::string next_protos_string = JoinString(next_protos, ',');
-    status_dict->SetString("next_protos", next_protos_string);
+    if (!next_protos.empty()) {
+      std::string next_protos_string;
+      for (const NextProto proto : next_protos) {
+        if (!next_protos_string.empty())
+          next_protos_string.append(",");
+        next_protos_string.append(SSLClientSocket::NextProtoToString(proto));
+      }
+      status_dict->SetString("next_protos", next_protos_string);
+    }
 
     net_info_dict->Set(NetInfoSourceToString(NET_INFO_SPDY_STATUS),
                         status_dict);

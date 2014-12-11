@@ -1782,11 +1782,10 @@ int SSLClientSocketOpenSSL::SelectNextProtoCallback(unsigned char** out,
 
   // For each protocol in server preference order, see if we support it.
   for (unsigned int i = 0; i < inlen; i += in[i] + 1) {
-    for (std::vector<std::string>::const_iterator
-             j = ssl_config_.next_protos.begin();
-         j != ssl_config_.next_protos.end(); ++j) {
-      if (in[i] == j->size() &&
-          memcmp(&in[i + 1], j->data(), in[i]) == 0) {
+    for (NextProto next_proto : ssl_config_.next_protos) {
+      const std::string proto = NextProtoToString(next_proto);
+      if (in[i] == proto.size() &&
+          memcmp(&in[i + 1], proto.data(), in[i]) == 0) {
         // We found a match.
         *out = const_cast<unsigned char*>(in) + i + 1;
         *outlen = in[i];
@@ -1800,9 +1799,9 @@ int SSLClientSocketOpenSSL::SelectNextProtoCallback(unsigned char** out,
 
   // If we didn't find a protocol, we select the first one from our list.
   if (npn_status_ == kNextProtoNoOverlap) {
-    *out = reinterpret_cast<uint8*>(const_cast<char*>(
-        ssl_config_.next_protos[0].data()));
-    *outlen = ssl_config_.next_protos[0].size();
+    const std::string proto = NextProtoToString(ssl_config_.next_protos[0]);
+    *out = reinterpret_cast<uint8*>(const_cast<char*>(proto.data()));
+    *outlen = proto.size();
   }
 
   npn_proto_.assign(reinterpret_cast<const char*>(*out), *outlen);

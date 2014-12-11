@@ -2889,7 +2889,7 @@ TEST_F(SSLClientSocketFalseStartTest,
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
   server_options.enable_npn = true;
   SSLConfig client_config;
-  client_config.next_protos.push_back("http/1.1");
+  client_config.next_protos.push_back(kProtoHTTP11);
   monitor_handshake_callback_ = true;
   fail_handshake_after_false_start_ = true;
   ASSERT_NO_FATAL_FAILURE(TestFalseStart(server_options, client_config, true));
@@ -2904,7 +2904,7 @@ TEST_F(SSLClientSocketFalseStartTest,
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
   server_options.enable_npn = true;
   SSLConfig client_config;
-  client_config.next_protos.push_back("http/1.1");
+  client_config.next_protos.push_back(kProtoHTTP11);
   monitor_handshake_callback_ = true;
   ASSERT_NO_FATAL_FAILURE(TestFalseStart(server_options, client_config, true));
   ASSERT_TRUE(ran_handshake_completion_callback_);
@@ -2918,7 +2918,7 @@ TEST_F(SSLClientSocketFalseStartTest, FalseStartEnabled) {
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
   server_options.enable_npn = true;
   SSLConfig client_config;
-  client_config.next_protos.push_back("http/1.1");
+  client_config.next_protos.push_back(kProtoHTTP11);
   ASSERT_NO_FATAL_FAILURE(
       TestFalseStart(server_options, client_config, true));
 }
@@ -2941,7 +2941,7 @@ TEST_F(SSLClientSocketFalseStartTest, NoForwardSecrecy) {
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_RSA;
   server_options.enable_npn = true;
   SSLConfig client_config;
-  client_config.next_protos.push_back("http/1.1");
+  client_config.next_protos.push_back(kProtoHTTP11);
   ASSERT_NO_FATAL_FAILURE(
       TestFalseStart(server_options, client_config, false));
 }
@@ -2954,7 +2954,7 @@ TEST_F(SSLClientSocketFalseStartTest, SessionResumption) {
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
   server_options.enable_npn = true;
   SSLConfig client_config;
-  client_config.next_protos.push_back("http/1.1");
+  client_config.next_protos.push_back(kProtoHTTP11);
 
   // Let a full handshake complete with False Start.
   ASSERT_NO_FATAL_FAILURE(
@@ -2987,7 +2987,7 @@ TEST_F(SSLClientSocketFalseStartTest, NoSessionResumptionBeforeFinish) {
   ASSERT_TRUE(StartTestServer(server_options));
 
   SSLConfig client_config;
-  client_config.next_protos.push_back("http/1.1");
+  client_config.next_protos.push_back(kProtoHTTP11);
 
   // Start a handshake up to the server Finished message.
   TestCompletionCallback callback;

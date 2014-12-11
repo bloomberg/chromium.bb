@@ -205,7 +205,8 @@ class NET_EXPORT HttpNetworkSession
 
   bool IsProtocolEnabled(AlternateProtocol protocol) const;
 
-  void GetNextProtos(std::vector<std::string>* next_protos) const;
+  // Populates |*next_protos| with protocols.
+  void GetNextProtos(NextProtoVector* next_protos) const;
 
   // Convenience function for searching through |params_| for
   // |forced_spdy_exclusions|.
@@ -242,7 +243,7 @@ class NET_EXPORT HttpNetworkSession
   // TODO(jgraettinger): Remove when Huffman collection is complete.
   scoped_ptr<HpackHuffmanAggregator> huffman_aggregator_;
 
-  std::vector<std::string> next_protos_;
+  NextProtoVector next_protos_;
   bool enabled_protocols_[NUM_VALID_ALTERNATE_PROTOCOLS];
 
   Params params_;

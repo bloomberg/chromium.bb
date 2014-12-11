@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "net/base/net_export.h"
 #include "net/cert/x509_certificate.h"
+#include "net/socket/next_proto.h"
 
 namespace net {
 
@@ -155,7 +156,7 @@ struct NET_EXPORT SSLConfig {
   // Protocol Negotiation, but there is no overlap between the server's and
   // client's protocol sets, then the first protocol in this list will be
   // requested by the client.
-  std::vector<std::string> next_protos;
+  NextProtoVector next_protos;
 
   scoped_refptr<X509Certificate> client_cert;
 };

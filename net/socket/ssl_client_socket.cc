@@ -235,34 +235,34 @@ bool SSLClientSocket::IsChannelIDEnabled(
 
 // static
 std::vector<uint8_t> SSLClientSocket::SerializeNextProtos(
-    const std::vector<std::string>& next_protos) {
+    const NextProtoVector& next_protos) {
   // Do a first pass to determine the total length.
   size_t wire_length = 0;
-  for (std::vector<std::string>::const_iterator i = next_protos.begin();
-       i != next_protos.end(); ++i) {
-    if (i->size() > 255) {
-      LOG(WARNING) << "Ignoring overlong NPN/ALPN protocol: " << *i;
+  std::vector<std::string> next_proto_strings;
+  for (const NextProto next_proto : next_protos) {
+    const std::string proto = NextProtoToString(next_proto);
+    if (proto.size() > 255) {
+      LOG(WARNING) << "Ignoring overlong NPN/ALPN protocol: " << proto;
       continue;
     }
-    if (i->size() == 0) {
+    if (proto.size() == 0) {
       LOG(WARNING) << "Ignoring empty NPN/ALPN protocol";
       continue;
     }
-    wire_length += i->size();
+    next_proto_strings.push_back(proto);
+    wire_length += proto.size();
     wire_length++;
   }
 
   // Allocate memory for the result and fill it in.
   std::vector<uint8_t> wire_protos;
   wire_protos.reserve(wire_length);
-  for (std::vector<std::string>::const_iterator i = next_protos.begin();
-       i != next_protos.end(); i++) {
-    if (i->size() == 0 || i->size() > 255)
-      continue;
-    wire_protos.push_back(i->size());
-    wire_protos.resize(wire_protos.size() + i->size());
-    memcpy(&wire_protos[wire_protos.size() - i->size()],
-           i->data(), i->size());
+  for (const std::string& proto : next_proto_strings) {
+    wire_protos.push_back(proto.size());
+    // TODO(bnc): Rewrite.
+    wire_protos.resize(wire_protos.size() + proto.size());
+    memcpy(&wire_protos[wire_protos.size() - proto.size()], proto.data(),
+           proto.size());
   }
   DCHECK_EQ(wire_protos.size(), wire_length);
 
