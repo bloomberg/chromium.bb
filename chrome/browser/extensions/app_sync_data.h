@@ -9,6 +9,7 @@
 #include "extensions/common/constants.h"
 #include "sync/api/string_ordinal.h"
 #include "sync/api/sync_change.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace syncer {
 class SyncData;
@@ -70,6 +71,10 @@ class AppSyncData {
     return bookmark_app_description_;
   }
 
+  const std::string& bookmark_app_icon_color() const {
+    return bookmark_app_icon_color_;
+  }
+
  private:
   // Convert an AppSyncData back out to a sync structure.
   void PopulateAppSpecifics(sync_pb::AppSpecifics* specifics) const;
@@ -85,6 +90,7 @@ class AppSyncData {
   extensions::LaunchType launch_type_;
   std::string bookmark_app_url_;
   std::string bookmark_app_description_;
+  std::string bookmark_app_icon_color_;
 };
 
 }  // namespace extensions

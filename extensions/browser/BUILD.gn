@@ -412,8 +412,6 @@ source_set("browser") {
       "image_loader.h",
       "image_loader_factory.cc",
       "image_loader_factory.h",
-      "image_util.cc",
-      "image_util.h",
       "info_map.cc",
       "info_map.h",
       "install/crx_installer_error.h",

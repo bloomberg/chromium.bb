@@ -443,7 +443,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, BookmarkApp) {
         extensions::NOTIFICATION_CRX_INSTALLER_DONE,
         content::NotificationService::AllSources());
     extensions::CreateOrUpdateBookmarkApp(GetExtensionService(GetProfile(0)),
-                                          web_app_info);
+                                          &web_app_info);
     windowed_observer.Wait();
     EXPECT_EQ(num_extensions,
               GetExtensionRegistry(GetProfile(0))->enabled_extensions().size());
@@ -453,7 +453,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, BookmarkApp) {
         extensions::NOTIFICATION_CRX_INSTALLER_DONE,
         content::NotificationService::AllSources());
     extensions::CreateOrUpdateBookmarkApp(GetExtensionService(verifier()),
-                                          web_app_info);
+                                          &web_app_info);
     windowed_observer.Wait();
     EXPECT_EQ(num_extensions,
               GetExtensionRegistry(verifier())->enabled_extensions().size());

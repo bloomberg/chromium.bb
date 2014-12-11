@@ -273,5 +273,5 @@ void BookmarkAppBubbleView::ApplyEdits() {
   install_info.title = title_tf_->text();
 
   extensions::CreateOrUpdateBookmarkApp(GetExtensionService(profile_),
-                                        install_info);
+                                        &install_info);
 }

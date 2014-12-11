@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_IMAGE_UTIL_H_
-#define EXTENSIONS_BROWSER_IMAGE_UTIL_H_
+#ifndef EXTENSIONS_COMMON_IMAGE_UTIL_H_
+#define EXTENSIONS_COMMON_IMAGE_UTIL_H_
 
 #include <string>
 
@@ -15,6 +15,9 @@ namespace image_util {
 
 // Parses a string like #FF9982 or #EEE to a color. Returns true for success.
 bool ParseCSSColorString(const std::string& color_string, SkColor* result);
+
+// Creates a string like #FF9982 from a color.
+std::string GenerateCSSColorString(SkColor color);
 
 }  // namespace image_util
 }  // namespace extensions

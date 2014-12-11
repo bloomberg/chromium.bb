@@ -104,6 +104,8 @@ if (enable_extensions) {
       "file_util.h",
       "guest_view/guest_view_constants.cc",
       "guest_view/guest_view_constants.h",
+      "image_util.cc",
+      "image_util.h",
       "install_warning.cc",
       "install_warning.h",
       "manifest.cc",

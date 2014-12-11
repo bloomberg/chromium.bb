@@ -26,10 +26,10 @@
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/image_util.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/image_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 

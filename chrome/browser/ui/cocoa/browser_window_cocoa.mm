@@ -585,7 +585,7 @@ void BrowserWindowCocoa::ShowBookmarkAppBubble(
     if (![original_title isEqualToString:new_title]) {
       WebApplicationInfo new_web_app_info(web_app_info);
       new_web_app_info.title = base::SysNSStringToUTF16(new_title);
-      extensions::CreateOrUpdateBookmarkApp(service, new_web_app_info);
+      extensions::CreateOrUpdateBookmarkApp(service, &new_web_app_info);
     }
 
     extensions::ExtensionRegistry* registry =

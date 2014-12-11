@@ -12,6 +12,7 @@ include_rules = [
   "+grit/extensions_renderer_resources.h",
   "+grit/extensions_resources.h",
   "+mojo/public",
+  "+third_party/skia/include",
   "+testing",
 
   # Minimal UI dependencies. There are two good rules for UI dependencies here:

@@ -107,7 +107,7 @@ class BookmarkAppHelper : public content::NotificationObserver {
 // Creates or updates a bookmark app from the given |web_app_info|. Icons will
 // not be downloaded so only supplied icon data will be used.
 void CreateOrUpdateBookmarkApp(ExtensionService* service,
-                               WebApplicationInfo& web_app_info);
+                               WebApplicationInfo* web_app_info);
 
 // Retrieves the WebApplicationInfo that represents a given bookmark app.
 // |callback| will be called with a WebApplicationInfo which is populated with

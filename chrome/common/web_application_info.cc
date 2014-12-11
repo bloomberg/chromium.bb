@@ -11,7 +11,8 @@ WebApplicationInfo::IconInfo::~IconInfo() {
 }
 
 WebApplicationInfo::WebApplicationInfo()
-    : mobile_capable(MOBILE_CAPABLE_UNSPECIFIED) {
+    : mobile_capable(MOBILE_CAPABLE_UNSPECIFIED),
+      generated_icon_color(SK_ColorTRANSPARENT) {
 }
 
 WebApplicationInfo::~WebApplicationInfo() {

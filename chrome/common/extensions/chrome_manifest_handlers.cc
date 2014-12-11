@@ -18,6 +18,7 @@
 #include "chrome/common/extensions/api/system_indicator/system_indicator_handler.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/chrome_manifest_url_handlers.h"
+#include "chrome/common/extensions/manifest_handlers/app_icon_color_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/automation.h"
@@ -37,6 +38,7 @@ namespace extensions {
 void RegisterChromeManifestHandlers() {
   DCHECK(!ManifestHandler::IsRegistrationFinalized());
   (new AboutPageHandler)->Register();
+  (new AppIconColorHandler)->Register();
   (new AppIsolationHandler)->Register();
   (new AppLaunchManifestHandler)->Register();
   (new AutomationHandler)->Register();

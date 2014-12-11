@@ -12,6 +12,7 @@ const char kAboutPage[] = "about_page";
 const char kAllFrames[] = "all_frames";
 const char kAltKey[] = "altKey";
 const char kApp[] = "app";
+const char kAppIconColor[] = "app.icon_color";
 const char kAutomation[] = "automation";
 const char kBackgroundAllowJsAccess[] = "background.allow_js_access";
 const char kBackgroundPage[] = "background.page";
@@ -279,6 +280,7 @@ const char kInvalidAboutPageExpectRelativePath[] =
     "Invalid value for 'about_page'. Value must be a relative path.";
 const char kInvalidAllFrames[] =
     "Invalid value for 'content_scripts[*].all_frames'.";
+const char kInvalidAppIconColor[] = "Invalid value for app.icon_color.";
 const char kInvalidBackground[] =
     "Invalid value for 'background_page'.";
 const char kInvalidBackgroundAllowJsAccess[] =

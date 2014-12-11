@@ -32,6 +32,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/image_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "sync/api/sync_change.h"
@@ -56,7 +57,7 @@ void OnWebApplicationInfoLoaded(
 
   // Use the old icons if they exist.
   synced_info.icons = loaded_info.icons;
-  CreateOrUpdateBookmarkApp(extension_service.get(), synced_info);
+  CreateOrUpdateBookmarkApp(extension_service.get(), &synced_info);
 }
 
 }  // namespace
@@ -388,10 +389,15 @@ void ExtensionSyncService::ProcessBookmarkAppSyncData(
       base::UTF8ToUTF16(app_sync_data.extension_sync_data().name());
   web_app_info.description =
       base::UTF8ToUTF16(app_sync_data.bookmark_app_description());
+  if (!app_sync_data.bookmark_app_icon_color().empty()) {
+    extensions::image_util::ParseCSSColorString(
+        app_sync_data.bookmark_app_icon_color(),
+        &web_app_info.generated_icon_color);
+  }
 
   // If the bookmark app already exists, keep the old icons.
   if (!extension) {
-    CreateOrUpdateBookmarkApp(extension_service_, web_app_info);
+    CreateOrUpdateBookmarkApp(extension_service_, &web_app_info);
   } else {
     app_sync_data.extension_sync_data().name();
     GetWebApplicationInfoFromApp(profile_,

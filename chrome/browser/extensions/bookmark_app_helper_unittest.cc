@@ -83,14 +83,6 @@ SkBitmap CreateSquareBitmapWithColor(int size, SkColor color) {
   return bitmap;
 }
 
-void ValidateBitmapSizeAndColor(SkBitmap bitmap, int size, SkColor color) {
-  // Obtain pixel lock to access pixels.
-  SkAutoLockPixels lock(bitmap);
-  EXPECT_EQ(color, bitmap.getColor(0, 0));
-  EXPECT_EQ(size, bitmap.width());
-  EXPECT_EQ(size, bitmap.height());
-}
-
 WebApplicationInfo::IconInfo CreateIconInfoWithBitmap(int size, SkColor color) {
   WebApplicationInfo::IconInfo icon_info;
   icon_info.width = size;
@@ -234,9 +226,10 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppNoContents) {
   EXPECT_EQ(kAppTitle, extension->name());
   EXPECT_EQ(kAppDescription, extension->description());
   EXPECT_EQ(GURL(kAppUrl), AppLaunchInfo::GetLaunchWebURL(extension));
-  EXPECT_FALSE(
-      IconsInfo::GetIconResource(
-          extension, kIconSizeTiny, ExtensionIconSet::MATCH_EXACTLY).empty());
+  // The tiny icon should have been removed and only the generated ones used.
+  EXPECT_TRUE(
+      IconsInfo::GetIconResource(extension, kIconSizeTiny,
+                                 ExtensionIconSet::MATCH_EXACTLY).empty());
   EXPECT_FALSE(
       IconsInfo::GetIconResource(
           extension, kIconSizeSmall, ExtensionIconSet::MATCH_EXACTLY).empty());
@@ -262,7 +255,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateAndUpdateBookmarkApp) {
   web_app_info.icons.push_back(
       CreateIconInfoWithBitmap(kIconSizeSmall, SK_ColorRED));
 
-  extensions::CreateOrUpdateBookmarkApp(service_, web_app_info);
+  extensions::CreateOrUpdateBookmarkApp(service_, &web_app_info);
   base::RunLoop().RunUntilIdle();
 
   {
@@ -281,7 +274,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateAndUpdateBookmarkApp) {
   web_app_info.title = base::UTF8ToUTF16(kAlternativeAppTitle);
   web_app_info.icons[0] = CreateIconInfoWithBitmap(kIconSizeLarge, SK_ColorRED);
 
-  extensions::CreateOrUpdateBookmarkApp(service_, web_app_info);
+  extensions::CreateOrUpdateBookmarkApp(service_, &web_app_info);
   base::RunLoop().RunUntilIdle();
 
   {
@@ -312,7 +305,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, GetWebApplicationInfo) {
   web_app_info.icons.push_back(
       CreateIconInfoWithBitmap(kIconSizeLarge, SK_ColorRED));
 
-  extensions::CreateOrUpdateBookmarkApp(service_, web_app_info);
+  extensions::CreateOrUpdateBookmarkApp(service_, &web_app_info);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
@@ -362,45 +355,6 @@ TEST_F(BookmarkAppHelperTest, UpdateWebAppInfoFromManifest) {
   EXPECT_EQ(2u, web_app_info.icons.size());
   EXPECT_EQ(GURL(kAppIcon2), web_app_info.icons[0].url);
   EXPECT_EQ(GURL(kAppIcon3), web_app_info.icons[1].url);
-}
-
-TEST_F(BookmarkAppHelperTest, ConstrainBitmapsToSizes) {
-  std::set<int> desired_sizes;
-  desired_sizes.insert(16);
-  desired_sizes.insert(32);
-  desired_sizes.insert(128);
-  desired_sizes.insert(256);
-
-  {
-    std::vector<SkBitmap> bitmaps;
-    bitmaps.push_back(CreateSquareBitmapWithColor(16, SK_ColorRED));
-    bitmaps.push_back(CreateSquareBitmapWithColor(32, SK_ColorGREEN));
-    bitmaps.push_back(CreateSquareBitmapWithColor(48, SK_ColorBLUE));
-    bitmaps.push_back(CreateSquareBitmapWithColor(144, SK_ColorYELLOW));
-
-    std::map<int, SkBitmap> results(
-        BookmarkAppHelper::ConstrainBitmapsToSizes(bitmaps, desired_sizes));
-
-    EXPECT_EQ(3u, results.size());
-    ValidateBitmapSizeAndColor(results[16], 16, SK_ColorRED);
-    ValidateBitmapSizeAndColor(results[32], 32, SK_ColorGREEN);
-    ValidateBitmapSizeAndColor(results[128], 128, SK_ColorYELLOW);
-  }
-  {
-    std::vector<SkBitmap> bitmaps;
-    bitmaps.push_back(CreateSquareBitmapWithColor(512, SK_ColorRED));
-    bitmaps.push_back(CreateSquareBitmapWithColor(18, SK_ColorGREEN));
-    bitmaps.push_back(CreateSquareBitmapWithColor(33, SK_ColorBLUE));
-    bitmaps.push_back(CreateSquareBitmapWithColor(17, SK_ColorYELLOW));
-
-    std::map<int, SkBitmap> results(
-        BookmarkAppHelper::ConstrainBitmapsToSizes(bitmaps, desired_sizes));
-
-    EXPECT_EQ(3u, results.size());
-    ValidateBitmapSizeAndColor(results[16], 16, SK_ColorYELLOW);
-    ValidateBitmapSizeAndColor(results[32], 32, SK_ColorBLUE);
-    ValidateBitmapSizeAndColor(results[256], 256, SK_ColorRED);
-  }
 }
 
 TEST_F(BookmarkAppHelperTest, IsValidBookmarkAppUrl) {

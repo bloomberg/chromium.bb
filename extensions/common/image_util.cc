@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/image_util.h"
+#include "extensions/common/image_util.h"
 
 #include <stdint.h>
 #include <vector>
 
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace extensions {
@@ -39,6 +40,11 @@ bool ParseCSSColorString(const std::string& color_string, SkColor* result) {
 
   *result = SkColorSetARGB(255, color_bytes[0], color_bytes[1], color_bytes[2]);
   return true;
+}
+
+std::string GenerateCSSColorString(SkColor color) {
+  return base::StringPrintf("#%02X%02X%02X", SkColorGetR(color),
+                            SkColorGetG(color), SkColorGetB(color));
 }
 
 }  // namespace image_util

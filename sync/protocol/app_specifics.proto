@@ -75,4 +75,8 @@ message AppSpecifics {
 
   // This is the description of a bookmark app.
   optional string bookmark_app_description = 7;
+
+  // This is the color to use when generating bookmark app icons. The string is
+  // in #rrggbb or #rgb syntax, e.g. #d8d8d8.
+  optional string bookmark_app_icon_color = 8;
 }
