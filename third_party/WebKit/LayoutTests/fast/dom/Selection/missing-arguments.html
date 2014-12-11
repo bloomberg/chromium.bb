@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+var selection = getSelection();
+shouldThrow("selection.addRange()");
+shouldThrow("selection.getRangeAt()");
+shouldThrow("selection.selectAllChildren()");
+</script>
+</body>
+</html>

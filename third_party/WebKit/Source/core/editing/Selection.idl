@@ -53,12 +53,12 @@
     // http://crbug.com/384966
     [RaisesException, TypeChecking=Interface] void extend(Node node, optional long offset = 0);
 
-    [RaisesException] void selectAllChildren([Default=Undefined] optional Node node);
+    [RaisesException] void selectAllChildren(Node node);
     [CustomElementCallbacks] void deleteFromDocument();
 
     readonly attribute long rangeCount;
-    [RaisesException] Range getRangeAt([Default=Undefined] optional long index);
-    void addRange([Default=Undefined] optional Range range);
+    [RaisesException] Range getRangeAt(long index);
+    void addRange(Range range);
     void removeAllRanges();
 
     [NotEnumerable] stringifier;

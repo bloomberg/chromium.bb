@@ -298,7 +298,7 @@ shouldBe("nonNumericPolicy('getSelection().setBaseAndExtent(document, x, documen
 shouldBe("nonNumericPolicy('getSelection().setBaseAndExtent(document, 0, document, x)')", "'any type allowed'");
 shouldBe("nonNumericPolicy('getSelection().collapse(document, x)')", "'any type allowed'");
 shouldBe("nonNumericPolicy('getSelection().extend(document, x)')", "'any type allowed'");
-shouldBe("nonNumericPolicy('getSelection().getRangeAt(x)')", "'any type allowed'");
+shouldBe("nonNumericPolicy('getSelection().getRangeAt(x)')", "'any type allowed (but not omitted)'");
 
 // SQLResultSetRowList
 
