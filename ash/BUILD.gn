@@ -67,12 +67,6 @@ component("ash") {
     configs += [ "//build/config/linux:xfixes" ]
   } else {
     sources -= [
-      "accelerators/key_hold_detector.cc",
-      "accelerators/key_hold_detector.h",
-      "accelerators/magnifier_key_scroller.cc",
-      "accelerators/magnifier_key_scroller.h",
-      "accelerators/spoken_feedback_toggler.cc",
-      "accelerators/spoken_feedback_toggler.h",
       "host/ash_window_tree_host_x11.cc",
       "host/ash_window_tree_host_x11.h",
       "wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.cc",
@@ -93,6 +87,12 @@ component("ash") {
     ]
   } else {
     sources -= [
+      "accelerators/key_hold_detector.cc",
+      "accelerators/key_hold_detector.h",
+      "accelerators/magnifier_key_scroller.cc",
+      "accelerators/magnifier_key_scroller.h",
+      "accelerators/spoken_feedback_toggler.cc",
+      "accelerators/spoken_feedback_toggler.h",
       "display/display_configurator_animation.cc",
       "display/display_configurator_animation.h",
       "display/resolution_notification_controller.cc",
@@ -297,11 +297,7 @@ test("ash_unittests") {
   }
 
   if (!use_x11) {
-    sources -= [
-      "accelerators/magnifier_key_scroller_unittest.cc",
-      "accelerators/spoken_feedback_toggler_unittest.cc",
-      "host/ash_window_tree_host_x11_unittest.cc",
-    ]
+    sources -= [ "host/ash_window_tree_host_x11_unittest.cc" ]
   }
   if (is_chromeos) {
     sources += [ "first_run/first_run_helper_unittest.cc" ]
@@ -315,6 +311,8 @@ test("ash_unittests") {
     ]
   } else {
     sources -= [
+      "accelerators/magnifier_key_scroller_unittest.cc",
+      "accelerators/spoken_feedback_toggler_unittest.cc",
       "display/resolution_notification_controller_unittest.cc",
       "touch/touchscreen_util_unittest.cc",
     ]

@@ -738,10 +738,8 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   scoped_ptr<TouchTransformerController> touch_transformer_controller_;
 
-#if defined(USE_X11)
   scoped_ptr<ui::EventHandler> magnifier_key_scroll_handler_;
   scoped_ptr<ui::EventHandler> speech_feedback_handler_;
-#endif  // defined(USE_X11)
 #endif  // defined(OS_CHROMEOS)
 
   scoped_ptr<MaximizeModeController> maximize_mode_controller_;

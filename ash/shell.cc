@@ -116,10 +116,10 @@
 
 #if defined(OS_CHROMEOS)
 #if defined(USE_X11)
-#include "ash/accelerators/magnifier_key_scroller.h"
-#include "ash/accelerators/spoken_feedback_toggler.h"
 #include "ui/gfx/x/x11_types.h"
 #endif  // defined(USE_X11)
+#include "ash/accelerators/magnifier_key_scroller.h"
+#include "ash/accelerators/spoken_feedback_toggler.h"
 #include "ash/ash_constants.h"
 #include "ash/content/display/screen_orientation_delegate_chromeos.h"
 #include "ash/display/display_change_observer_chromeos.h"
@@ -673,7 +673,7 @@ Shell::~Shell() {
   // Please keep in same order as in Init() because it's easy to miss one.
   if (window_modality_controller_)
     window_modality_controller_.reset();
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
   RemovePreTargetHandler(magnifier_key_scroll_handler_.get());
   magnifier_key_scroll_handler_.reset();
 
@@ -902,10 +902,10 @@ void Shell::Init(const ShellInitParams& init_params) {
   accelerator_controller_.reset(new AcceleratorController);
   maximize_mode_controller_.reset(new MaximizeModeController());
 
-#if defined(OS_CHROMEOS) && defined(USE_X11)
-  magnifier_key_scroll_handler_ = MagnifierKeyScroller::CreateHandler().Pass();
+#if defined(OS_CHROMEOS)
+  magnifier_key_scroll_handler_ = MagnifierKeyScroller::CreateHandler();
   AddPreTargetHandler(magnifier_key_scroll_handler_.get());
-  speech_feedback_handler_ = SpokenFeedbackToggler::CreateHandler().Pass();
+  speech_feedback_handler_ = SpokenFeedbackToggler::CreateHandler();
   AddPreTargetHandler(speech_feedback_handler_.get());
 #endif
 

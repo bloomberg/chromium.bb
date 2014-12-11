@@ -934,17 +934,7 @@
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
         }],
-        ['use_x11!=1', {
-          'sources!': [
-            # Note: sources list duplicated in GN build.
-            'accelerators/key_hold_detector.cc',
-            'accelerators/key_hold_detector.h',
-            'accelerators/magnifier_key_scroller.cc',
-            'accelerators/magnifier_key_scroller.h',
-            'accelerators/spoken_feedback_toggler.cc',
-            'accelerators/spoken_feedback_toggler.h',
-          ],
-        }, { # else: use_x11==1
+        ['use_x11==1', {
           'dependencies': [
             '../build/linux/system.gyp:xfixes',
            ],
@@ -963,6 +953,12 @@
           ],
         }, { # else: chromeos!=1
           'sources!': [
+            'accelerators/key_hold_detector.cc',
+            'accelerators/key_hold_detector.h',
+            'accelerators/magnifier_key_scroller.cc',
+            'accelerators/magnifier_key_scroller.h',
+            'accelerators/spoken_feedback_toggler.cc',
+            'accelerators/spoken_feedback_toggler.h',
             'display/display_configurator_animation.cc',
             'display/display_configurator_animation.h',
             'display/resolution_notification_controller.cc',
@@ -1133,12 +1129,6 @@
             '../base/allocator/allocator.gyp:allocator',
           ],
         }],
-        ['use_x11!=1', {
-          'sources!': [
-            'accelerators/magnifier_key_scroller_unittest.cc',
-            'accelerators/spoken_feedback_toggler_unittest.cc',
-          ],
-        }],
         ['chromeos==1', {
           'dependencies': [
             '../chromeos/chromeos.gyp:chromeos_test_support_without_gmock',
@@ -1153,6 +1143,8 @@
           ],
         }, { # else: chromeos!=1
           'sources!': [
+            'accelerators/magnifier_key_scroller_unittest.cc',
+            'accelerators/spoken_feedback_toggler_unittest.cc',
             'display/resolution_notification_controller_unittest.cc',
             'touch/touch_transformer_controller_unittest.cc',
             'touch/touchscreen_util_unittest.cc',

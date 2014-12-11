@@ -56,14 +56,12 @@ void InitAfterSessionStart() {
   if (!mru_list.empty())
     mru_list.front()->Focus();
 
-#if defined(USE_X11)
   // Enable magnifier scroll keys as there may be no mouse cursor in kiosk mode.
   ash::MagnifierKeyScroller::SetEnabled(chrome::IsRunningInForcedAppMode());
 
   // Enable long press action to toggle spoken feedback with hotrod
   // remote which can't handle shortcut.
   ash::SpokenFeedbackToggler::SetEnabled(chrome::IsRunningInForcedAppMode());
-#endif
 }
 
 #if !defined(USE_ATHENA)
