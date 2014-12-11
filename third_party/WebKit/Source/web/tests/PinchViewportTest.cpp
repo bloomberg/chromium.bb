@@ -1294,7 +1294,16 @@ TEST_F(PinchViewportTest, ElementBoundsInRootViewSpaceAccountsForViewport)
 
 // Tests that when a new frame is created, it is created with the intended
 // size (i.e. the contentWidth).
-TEST_F(PinchViewportTest, TestMainFrameInitializationSizing)
+#if defined(ADDRESS_SANITIZER) && defined(WTF_OS_MACOSX)
+// AddressSanitizer reports a use-after-free in this test,
+// http://crbug.com/439932.
+#define MAYBE_TestMainFrameInitializationSizing \
+    DISABLED_TestMainFrameInitializationSizing
+#else
+#define MAYBE_TestMainFrameInitializationSizing \
+    TestMainFrameInitializationSizing
+#endif
+TEST_F(PinchViewportTest, MAYBE_TestMainFrameInitializationSizing)
 {
     initializeWithAndroidSettings();
 
