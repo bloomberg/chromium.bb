@@ -12,22 +12,25 @@ namespace blink {
 
 class ScriptPromise;
 class ScriptState;
+class ServiceWorkerRegistration;
 
 class PushManager final : public GarbageCollected<PushManager>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PushManager* create()
+    static PushManager* create(ServiceWorkerRegistration* registration)
     {
-        return new PushManager();
+        return new PushManager(registration);
     }
 
     ScriptPromise registerPushMessaging(ScriptState*);
     ScriptPromise hasPermission(ScriptState*);
 
-    void trace(Visitor*) { }
+    void trace(Visitor*);
 
 private:
-    PushManager();
+    explicit PushManager(ServiceWorkerRegistration*);
+
+    Member<ServiceWorkerRegistration> m_registration;
 };
 
 } // namespace blink

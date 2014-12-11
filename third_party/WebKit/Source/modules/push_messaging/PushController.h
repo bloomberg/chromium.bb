@@ -23,7 +23,7 @@ public:
     static PassOwnPtrWillBeRawPtr<PushController> create(WebPushClient*);
     static const char* supplementName();
     static PushController* from(LocalFrame* frame) { return static_cast<PushController*>(WillBeHeapSupplement<LocalFrame>::from(frame, supplementName())); }
-    static WebPushClient* clientFrom(LocalFrame*);
+    static WebPushClient& clientFrom(LocalFrame*);
 
     virtual void trace(Visitor* visitor) override { WillBeHeapSupplement<LocalFrame>::trace(visitor); }
 
