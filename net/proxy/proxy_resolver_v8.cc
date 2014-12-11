@@ -334,6 +334,17 @@ bool IsInNetEx(const std::string& ip_address, const std::string& ip_prefix) {
   return IPNumberMatchesPrefix(address, prefix, prefix_length_in_bits);
 }
 
+// Consider only single component domains like 'foo' as plain host names.
+bool IsPlainHostName(const std::string& hostname_utf8) {
+  if (hostname_utf8.find('.') != std::string::npos)
+    return false;
+
+  // IPv6 addresses may not contain periods, however are not be considered a
+  // plain host name.
+  IPAddressNumber unused;
+  return !ParseIPLiteralToNumber(hostname_utf8, &unused);
+}
+
 }  // namespace
 
 // ProxyResolverV8::Context ---------------------------------------------------
@@ -438,6 +449,11 @@ class ProxyResolverV8::Context {
         v8::FunctionTemplate::New(isolate_, &DnsResolveCallback, v8_this);
     global_template->Set(ASCIILiteralToV8String(isolate_, "dnsResolve"),
                          dns_resolve_template);
+
+    v8::Local<v8::FunctionTemplate> is_plain_host_name_template =
+        v8::FunctionTemplate::New(isolate_, &IsPlainHostNameCallback, v8_this);
+    global_template->Set(ASCIILiteralToV8String(isolate_, "isPlainHostName"),
+                         is_plain_host_name_template);
 
     // Microsoft's PAC extensions:
 
@@ -696,6 +712,22 @@ class ProxyResolverV8::Context {
       return;
     }
     args.GetReturnValue().Set(IsInNetEx(ip_address, ip_prefix));
+  }
+
+  // V8 callback for when "isPlainHostName()" is invoked by the PAC script.
+  static void IsPlainHostNameCallback(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
+    // Need at least 1 string arguments.
+    if (args.Length() < 1 || args[0].IsEmpty() || !args[0]->IsString()) {
+      args.GetIsolate()->ThrowException(
+          v8::Exception::TypeError(ASCIIStringToV8String(
+              args.GetIsolate(), "Requires 1 string parameter")));
+      return;
+    }
+
+    std::string hostname_utf8 =
+        V8StringToUTF8(v8::Local<v8::String>::Cast(args[0]));
+    args.GetReturnValue().Set(IsPlainHostName(hostname_utf8));
   }
 
   mutable base::Lock lock_;

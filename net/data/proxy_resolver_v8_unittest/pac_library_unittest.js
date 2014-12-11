@@ -1,3 +1,7 @@
+// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // This should output "PROXY success:80" if all the tests pass.
 // Otherwise it will output "PROXY failure:<num-failures>".
 //
@@ -61,6 +65,56 @@ Tests.testIsInNet = function(t) {
 Tests.testIsPlainHostName = function(t) {
   t.expectTrue(isPlainHostName("google"));
   t.expectFalse(isPlainHostName("google.com"));
+  t.expectFalse(isPlainHostName("192.168.1.1"));
+  t.expectFalse(isPlainHostName("."));
+  t.expectFalse(isPlainHostName(".:"));
+
+  // Valid IPv6 address
+  t.expectFalse(isPlainHostName("::1"));
+
+  // Not a valid IPv6 address
+  t.expectTrue(isPlainHostName("foopy::1"));
+  t.expectTrue(isPlainHostName("foo:112"));
+  t.expectTrue(isPlainHostName(":"));
+  t.expectTrue(isPlainHostName("[:]"));
+
+  // Not considered a valid IPv6 address because of surrounding brackets.
+  t.expectTrue(isPlainHostName("[::1]"));
+
+  // Calling with more than 1 argument is allowed.
+  t.expectTrue(isPlainHostName("foo", "foo", "foo"));
+
+  // Calling with no arguments is an error.
+  try {
+    isPlainHostName();
+    t.expectTrue(false);  // Not reached.
+  } catch (e) {
+    t.expectEquals('TypeError: Requires 1 string parameter', e.toString());
+  }
+
+  // Calling with the wrong argument type is an error.
+  try {
+    isPlainHostName(null);
+    t.expectTrue(false);  // Not reached.
+  } catch (e) {
+    t.expectEquals('TypeError: Requires 1 string parameter', e.toString());
+  }
+
+  // Calling with the wrong argument type is an error.
+  try {
+    isPlainHostName(1);
+    t.expectTrue(false);  // Not reached.
+  } catch (e) {
+    t.expectEquals('TypeError: Requires 1 string parameter', e.toString());
+  }
+
+  // Calling with the wrong argument type is an error.
+  try {
+    isPlainHostName(function() {});
+    t.expectTrue(false);  // Not reached.
+  } catch (e) {
+    t.expectEquals('TypeError: Requires 1 string parameter', e.toString());
+  }
 };
 
 Tests.testLocalHostOrDomainIs = function(t) {

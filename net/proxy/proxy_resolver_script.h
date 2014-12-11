@@ -1,3 +1,10 @@
+// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef NET_PROXY_PROXY_RESOLVER_SCRIPT_H_
+#define NET_PROXY_PROXY_RESOLVER_SCRIPT_H_
+
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
@@ -37,9 +44,6 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef NET_PROXY_PROXY_RESOLVER_SCRIPT_H_
-#define NET_PROXY_PROXY_RESOLVER_SCRIPT_H_
-
 // The following code was formatted from:
 //   'mozilla/netwerk/base/src/nsProxyAutoConfig.js' (1.55)
 //
@@ -51,6 +55,8 @@
 //       sed -e 's/"$/" \\/g' |
 //       sed -e 's/\/(ipaddr);/\/.exec(ipaddr);/g' |
 //       grep -v '^var pacUtils ='
+//
+// isPlainHost() was removed.
 #define PROXY_RESOLVER_SCRIPT \
   "function dnsDomainIs(host, domain) {\n" \
   "    return (host.length >= domain.length &&\n" \
@@ -85,10 +91,6 @@
   "    var mask = convert_addr(maskstr);\n" \
   "    return ((host & mask) == (pat & mask));\n" \
   "    \n" \
-  "}\n" \
-  "" \
-  "function isPlainHostName(host) {\n" \
-  "    return (host.search('\\\\.') == -1);\n" \
   "}\n" \
   "" \
   "function isResolvable(host) {\n" \
