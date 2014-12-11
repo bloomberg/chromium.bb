@@ -8556,6 +8556,11 @@ should be able to be added at any place in this file.
   <description>Settings: Device: Display settings: Orientation</description>
 </action>
 
+<action name="Options_DisplaySetOverscan">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Device: Display settings: Overscan</description>
+</action>
+
 <action name="Options_DisplaySetPrimary">
   <owner>stevenjb@chromium.org</owner>
   <description>Settings: Device: Display settings: Make primary</description>
@@ -9244,9 +9249,9 @@ should be able to be added at any place in this file.
   <description>Settings: Show advanced settings</description>
 </action>
 
-<action name="Options_ShowAutoFillSettings">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+<action name="Options_ShowAutofillSettings">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Show autofill settings</description>
 </action>
 
 <action name="Options_ShowBatterySettings">
@@ -9267,6 +9272,11 @@ should be able to be added at any place in this file.
 <action name="Options_ShowCookies">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="Options_ShowFontSettings">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Setings: Customize fonts</description>
 </action>
 
 <action name="Options_ShowKeyboardSettings">

@@ -568,7 +568,8 @@ cr.define('options', function() {
       // Web Content section.
       $('fontSettingsCustomizeFontsButton').onclick = function(event) {
         PageManager.showPageByName('fonts');
-        chrome.send('coreOptionsUserMetricsAction', ['Options_FontSettings']);
+        chrome.send('coreOptionsUserMetricsAction',
+                    ['Options_ShowFontSettings']);
       };
       $('defaultFontSize').onchange = function(event) {
         var value = event.target.options[event.target.selectedIndex].value;
