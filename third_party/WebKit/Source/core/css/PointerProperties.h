@@ -7,23 +7,20 @@
 
 namespace blink {
 
-// The values of these enums must match their corresponding enums in
-// WebSettings.h.
-
-// Used as a bitfield so enums must be powers of 2.
+// Bit field values indicating available pointer types.
 enum PointerType {
-    PointerTypeNone = 1,
-    PointerTypeCoarse = 2,
-    PointerTypeFine = 4
+    PointerTypeNone = 1 << 0,
+    PointerTypeCoarse = 1 << 1,
+    PointerTypeFine = 1 << 2
 };
 
-// Used as a bitfield so enums must be powers of 2.
+// Bit field values indicating available hover types.
 enum HoverType {
-    HoverTypeNone = 1,
+    HoverTypeNone = 1 << 0,
     // Indicates that the primary pointing system can hover, but it requires
     // a significant action on the user’s part. e.g. hover on “long press”.
-    HoverTypeOnDemand = 2,
-    HoverTypeHover = 4
+    HoverTypeOnDemand = 1 << 1,
+    HoverTypeHover = 1 << 2
 };
 
 }

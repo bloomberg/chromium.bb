@@ -42,40 +42,38 @@
 
     function runTests()
     {
-        log("------------- default configuration -------------");
+        if (!window.internals)
+            return;
+
+        log("------------- with 'on-demand' hover -------------");
+        internals.settings.setPrimaryHoverType('on-demand');
+        internals.settings.setAvailableHoverTypes('on-demand');
         testQueries();
 
-        if (window.internals) {
-            log("------------- with 'on-demand' hover -------------");
-            internals.settings.setPrimaryHoverType('on-demand');
-            internals.settings.setAvailableHoverTypes('on-demand');
-            testQueries();
+        log("------------- with 'hover' hover -------------");
+        internals.settings.setPrimaryHoverType('hover');
+        internals.settings.setAvailableHoverTypes('hover');
+        testQueries();
 
-            log("------------- with 'hover' hover -------------");
-            internals.settings.setPrimaryHoverType('hover');
-            internals.settings.setAvailableHoverTypes('hover');
-            testQueries();
+        log("------------- with 'on-demand' and 'hover' hover, 'hover' is primary -------------");
+        internals.settings.setPrimaryHoverType('hover');
+        internals.settings.setAvailableHoverTypes('on-demand,hover');
+        testQueries();
 
-            log("------------- with 'on-demand' and 'hover' hover, 'hover' is primary -------------");
-            internals.settings.setPrimaryHoverType('hover');
-            internals.settings.setAvailableHoverTypes('on-demand,hover');
-            testQueries();
+        log("------------- with 'on-demand' and 'hover' hover, 'on-demand' is primary -------------");
+        internals.settings.setPrimaryHoverType('on-demand');
+        internals.settings.setAvailableHoverTypes('on-demand,hover');
+        testQueries();
 
-            log("------------- with 'on-demand' and 'hover' hover, 'on-demand' is primary -------------");
-            internals.settings.setPrimaryHoverType('on-demand');
-            internals.settings.setAvailableHoverTypes('on-demand,hover');
-            testQueries();
+        log("------------- with 'none', 'on-demand' and 'hover' hover, 'none' is primary -------------");
+        internals.settings.setPrimaryHoverType('none');
+        internals.settings.setAvailableHoverTypes('none,on-demand,hover');
+        testQueries();
 
-            log("------------- with 'none', 'on-demand' and 'hover' hover, 'none' is primary -------------");
-            internals.settings.setPrimaryHoverType('none');
-            internals.settings.setAvailableHoverTypes('none,on-demand,hover');
-            testQueries();
-
-            log("------------- with 'none' hover -------------");
-            internals.settings.setPrimaryHoverType('none');
-            internals.settings.setAvailableHoverTypes('none');
-            testQueries();
-        }
+        log("------------- with 'none' hover -------------");
+        internals.settings.setPrimaryHoverType('none');
+        internals.settings.setAvailableHoverTypes('none');
+        testQueries();
     }
 
 </script>

@@ -42,40 +42,38 @@
 
     function runTests()
     {
-        log("------------- default configuration -------------");
+        if (!window.internals)
+            return;
+
+        log("------------- with 'coarse' pointer -------------");
+        internals.settings.setPrimaryPointerType('coarse');
+        internals.settings.setAvailablePointerTypes('coarse');
         testQueries();
 
-        if (window.internals) {
-            log("------------- with 'coarse' pointer -------------");
-            internals.settings.setPrimaryPointerType('coarse');
-            internals.settings.setAvailablePointerTypes('coarse');
-            testQueries();
+        log("------------- with 'fine' pointer -------------");
+        internals.settings.setPrimaryPointerType('fine');
+        internals.settings.setAvailablePointerTypes('fine');
+        testQueries();
 
-            log("------------- with 'fine' pointer -------------");
-            internals.settings.setPrimaryPointerType('fine');
-            internals.settings.setAvailablePointerTypes('fine');
-            testQueries();
+        log("------------- with 'fine' and 'coarse' pointer, 'fine' is primary -------------");
+        internals.settings.setPrimaryPointerType('fine');
+        internals.settings.setAvailablePointerTypes('fine,coarse');
+        testQueries();
 
-            log("------------- with 'fine' and 'coarse' pointer, 'fine' is primary -------------");
-            internals.settings.setPrimaryPointerType('fine');
-            internals.settings.setAvailablePointerTypes('fine,coarse');
-            testQueries();
+        log("------------- with 'fine' and 'coarse' pointer, 'coarse' is primary -------------");
+        internals.settings.setPrimaryPointerType('coarse');
+        internals.settings.setAvailablePointerTypes('fine,coarse');
+        testQueries();
 
-            log("------------- with 'fine' and 'coarse' pointer, 'coarse' is primary -------------");
-            internals.settings.setPrimaryPointerType('coarse');
-            internals.settings.setAvailablePointerTypes('fine,coarse');
-            testQueries();
+        log("------------- with 'none', 'fine' and 'coarse' pointer, 'none' is primary -------------");
+        internals.settings.setPrimaryPointerType('none');
+        internals.settings.setAvailablePointerTypes('none,fine,coarse');
+        testQueries();
 
-            log("------------- with 'none', 'fine' and 'coarse' pointer, 'none' is primary -------------");
-            internals.settings.setPrimaryPointerType('none');
-            internals.settings.setAvailablePointerTypes('none,fine,coarse');
-            testQueries();
-
-            log("------------- with 'none' pointer -------------");
-            internals.settings.setPrimaryPointerType('none');
-            internals.settings.setAvailablePointerTypes('none');
-            testQueries();
-        }
+        log("------------- with 'none' pointer -------------");
+        internals.settings.setPrimaryPointerType('none');
+        internals.settings.setAvailablePointerTypes('none');
+        testQueries();
     }
 
 </script>
