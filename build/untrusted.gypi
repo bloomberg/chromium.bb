@@ -582,6 +582,7 @@
                   '>@(extra_deps_newlib32_nonsfi)',
                   '^(source_list_newlib32_nonsfi)',
                   '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib/stamp.prep',
+                  '>(tc_lib_dir_nonsfi_helper32)/libnacl_sys_private.a',
                 ],
                 'outputs': ['>(out_newlib32_nonsfi)'],
                 'action': [
