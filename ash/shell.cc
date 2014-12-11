@@ -410,7 +410,7 @@ void Shell::OnLockStateChanged(bool locked) {
 }
 
 void Shell::OnCastingSessionStartedOrStopped(bool started) {
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
   if (projecting_observer_)
     projecting_observer_->OnCastingSessionStartedOrStopped(started);
 #endif
