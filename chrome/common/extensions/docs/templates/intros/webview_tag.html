@@ -106,13 +106,23 @@ onload = function() {
     </p>
   </div>
 
+<h3 id="allowtransparency">allowtransparency</h3>
+  <div class="summary">
+    <pre>&lt;webview id="foo" src="http://www.google.com/" style="width:640px; height:480px" <strong>allowtransparency="on"</strong>>&lt;/webview></pre>
+  </div>
+  <div class="description">
+    <p>
+    If "on", transparent elements within the <code>webview</code> will be shown as transparent. Without <code>allowtransparency</code> enabled, there will be no transparency within the <code>webview</code>, even if elements exist that are specified as transparent.
+    </p>
+  </div>
+
 <h3 id="autosize">autosize</h3>
   <div class="summary">
     <pre>&lt;webview id="foo" src="http://www.google.com/" style="width:640px; height:480px" <strong>autosize="on" minwidth="576" minheight="432"</strong>>&lt;/webview></pre>
   </div>
   <div class="description">
     <p>
-    If "on", the <code>webview</code> will container will automatically resize within the bounds specified
+    If "on", the <code>webview</code> container will automatically resize within the bounds specified
     by the attributes <code>minwidth</code>, <code>minheight</code>,
     <code>maxwidth</code>, and <code>maxheight</code>.
     These contraints do not impact the <code>webview</code> UNLESS <code>autosize</code> is enabled.
