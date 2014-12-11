@@ -152,6 +152,11 @@ void NaClDebugExceptionHandlerRun(HANDLE process_handle,
         break;
       case CREATE_PROCESS_DEBUG_EVENT:
         CloseHandle(debug_event.u.CreateProcessInfo.hFile);
+        /*
+         * The handle CreateProcessInfo.hThread is owned by the debugging API,
+         * and will be closed automatically by ContinueDebugEvent after handling
+         * EXIT_THREAD_DEBUG_EVENT.
+         */
         if (!ThreadHandleMapPut(map, debug_event.dwThreadId,
                                 debug_event.u.CreateProcessInfo.hThread)) {
           error = 1;
@@ -161,15 +166,23 @@ void NaClDebugExceptionHandlerRun(HANDLE process_handle,
         CloseHandle(debug_event.u.LoadDll.hFile);
         break;
       case CREATE_THREAD_DEBUG_EVENT:
+        /*
+         * The handle CreateThread.hThread is owned by the debugging API, and
+         * will be closed automatically by ContinueDebugEvent after handling
+         * EXIT_THREAD_DEBUG_EVENT.
+         */
         if (!ThreadHandleMapPut(map, debug_event.dwThreadId,
                                 debug_event.u.CreateThread.hThread)) {
           error = 1;
         }
         break;
       case EXIT_THREAD_DEBUG_EVENT:
+        /* This event is sent for all but the last thread in the process. */
         ThreadHandleMapDelete(map, debug_event.dwThreadId);
         break;
       case EXIT_PROCESS_DEBUG_EVENT:
+        /* This event is sent for the last thread in the process. */
+        ThreadHandleMapDelete(map, debug_event.dwThreadId);
         process_exited = 1;
         break;
       case EXCEPTION_DEBUG_EVENT:

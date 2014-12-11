@@ -11,8 +11,8 @@
 #include "native_client/src/trusted/service_runtime/win/thread_handle_map.h"
 
 /*
- * Map from thread IDs to thread handles. Thread handles are owned by this map
- * and so are closed automatically on deletions and overwrites.
+ * Map from thread IDs to thread handles. The map does not take ownership of the
+ * handles themselves.
  * map->size - number of entries.
  * map->data - pointer to array of entries.
  * map->capacity - number of entries allocated.
@@ -41,10 +41,7 @@ ThreadHandleMap *CreateThreadHandleMap(void) {
  * Free map.
  */
 void DestroyThreadHandleMap(ThreadHandleMap *map) {
-  int i;
-  for (i = 0; i < map->size; ++i) {
-    CloseHandle(map->data[i].handle);
-  }
+  /* No need to close the handles, as the map does not own them. */
   free(map->data);
   free(map);
 }
@@ -74,7 +71,7 @@ static int AddEntry(ThreadHandleMap *map) {
  * Add entry to the free list.
  */
 static void FreeEntry(ThreadHandleMap *map, int entry) {
-  CloseHandle(map->data[entry].handle);
+  /* No need to close the handle, as the map does not own it. */
   map->data[entry] = map->data[map->size - 1];
   map->size--;
 }
@@ -88,9 +85,10 @@ int ThreadHandleMapPut(ThreadHandleMap *map,
   int i;
   for (i = 0; i < map->size; ++i) {
     if (map->data[i].id == thread_id) {
-      if (map->data[i].handle != thread_handle) {
-        CloseHandle(map->data[i].handle);
-      }
+      /*
+       * Overwrite the existing handle value without closing it, as the map does
+       * not own it.
+       */
       map->data[i].handle = thread_handle;
       return 1;
     }
