@@ -1086,7 +1086,13 @@ class ValidationPool(object):
       self.build_log = tree_status.ConstructDashboardURL(
           waterfall, builder_name, build_number)
     self.dryrun = bool(dryrun) or self.GLOBAL_DRYRUN
-    self.queue = 'A trybot' if pre_cq else 'The Commit Queue'
+    if pre_cq:
+      self.queue = 'A trybot'
+    elif builder_name == constants.PRE_CQ_LAUNCHER_NAME:
+      self.queue = 'The Pre-Commit Queue'
+    else:
+      self.queue = 'The Commit Queue'
+
     self.bot = PRE_CQ if pre_cq else CQ
 
     # See optional args for types of changes.
