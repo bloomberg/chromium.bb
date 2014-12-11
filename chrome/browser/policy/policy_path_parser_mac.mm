@@ -14,6 +14,7 @@
 #import <Cocoa/Cocoa.h>
 #import <SystemConfiguration/SCDynamicStore.h>
 #import <SystemConfiguration/SCDynamicStoreCopySpecific.h>
+#import <SystemConfiguration/SystemConfiguration.h>
 
 #include <string>
 
@@ -87,7 +88,9 @@ base::FilePath::StringType ExpandPathVariables(
                      base::SysCFStringRefToUTF8(machinename));
       CFRelease(machinename);
     } else {
-      LOG(ERROR) << "Machine name variable can not be resolved.";
+      int error = SCError();
+      LOG(ERROR) << "Machine name variable can not be resolved. Error: "
+                 << error << " - " << SCErrorString(error);
     }
     CFRelease(store);
   }

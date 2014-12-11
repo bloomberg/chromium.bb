@@ -20,13 +20,10 @@ class PolicyPathParserTests : public testing::Test {
   }
 };
 
-#if defined(OS_MACOSX)
-// http://crbug.com/327520
-#define MAYBE_AllPlatformVariables DISABLED_AllPlatformVariables
-#else
-#define MAYBE_AllPlatformVariables AllPlatformVariables
-#endif
-TEST_F(PolicyPathParserTests, MAYBE_AllPlatformVariables) {
+// TODO(pastarmovj): Modify test or change the logic after investigating why it
+// is flaky. Please only redisable after it has had a chance to run for a few
+// times. See bug http://crbug.com/327520 for context.
+TEST_F(PolicyPathParserTests, AllPlatformVariables) {
   // No vars whatsoever no substitution should occur.
   base::FilePath::StringType no_vars(FILE_PATH_LITERAL("//$C/shares"));
   base::FilePath::StringType no_vars_result =
