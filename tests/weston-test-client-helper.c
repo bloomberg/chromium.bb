@@ -90,7 +90,7 @@ move_client(struct client *client, int x, int y)
 	client->surface->y = y;
 	wl_test_move_surface(client->test->wl_test, surface->wl_surface,
 			     surface->x, surface->y);
-	/* The attach here is necessary because commit() will call congfigure
+	/* The attach here is necessary because commit() will call configure
 	 * only on surfaces newly attached, and the one that sets the surface
 	 * position is the configure. */
 	wl_surface_attach(surface->wl_surface, surface->wl_buffer, 0, 0);
