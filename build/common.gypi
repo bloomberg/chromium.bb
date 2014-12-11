@@ -619,7 +619,7 @@
       # completion, but only actually requires them for layout tests. However,
       # we need to maintain all the old behaviors while the plumbing is put in
       # place on both sides of the repo boundary.
-      'enable_load_completion_hacks%': 1,
+      'enable_load_completion_hacks%': 0,
 
       # Automatically select platforms under ozone. Turn this off to
       # build only explicitly selected platforms.

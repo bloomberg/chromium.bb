@@ -1213,9 +1213,7 @@ void WebTestProxyBase::DidFinishResourceLoad(blink::WebLocalFrame* frame,
     delegate_->PrintMessage(" - didFinishLoading\n");
   }
   resource_identifier_map_.erase(identifier);
-#if !defined(ENABLE_LOAD_COMPLETION_HACKS)
   CheckDone(frame, ResourceLoadCompleted);
-#endif
 }
 
 void WebTestProxyBase::DidAddMessageToConsole(
@@ -1264,17 +1262,9 @@ void WebTestProxyBase::CheckDone(blink::WebLocalFrame* frame,
                                  CheckDoneReason reason) {
   if (frame != test_interfaces_->GetTestRunner()->topLoadingFrame())
     return;
-
-#if !defined(ENABLE_LOAD_COMPLETION_HACKS)
-  // Quirk for MHTML prematurely completing on resource load completion.
-  std::string mime_type = frame->dataSource()->response().mimeType().utf8();
-  if (reason == ResourceLoadCompleted && mime_type == "multipart/related")
-    return;
-
   if (reason != MainResourceLoadFailed &&
       (frame->isResourceLoadInProgress() || frame->isLoading()))
     return;
-#endif
   test_interfaces_->GetTestRunner()->setTopLoadingFrame(frame, true);
 }
 
