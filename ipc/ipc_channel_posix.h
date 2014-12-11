@@ -85,9 +85,6 @@ class IPC_EXPORT ChannelPosix : public Channel,
   void CloseClientFileDescriptor();
 
   static bool IsNamedServerInitialized(const std::string& channel_id);
-#if defined(OS_LINUX)
-  static void SetGlobalPid(int pid);
-#endif  // OS_LINUX
 
  private:
   bool CreatePipe(const IPC::ChannelHandle& channel_handle);
@@ -211,11 +208,6 @@ class IPC_EXPORT ChannelPosix : public Channel,
 
   // True if we are responsible for unlinking the unix domain socket file.
   bool must_unlink_;
-
-#if defined(OS_LINUX)
-  // If non-zero, overrides the process ID sent in the hello message.
-  static int global_pid_;
-#endif  // OS_LINUX
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ChannelPosix);
 };

@@ -176,10 +176,6 @@ void Channel::NotifyProcessForkedForTesting() {
 
 //------------------------------------------------------------------------------
 
-#if defined(OS_LINUX)
-int ChannelPosix::global_pid_ = 0;
-#endif  // OS_LINUX
-
 ChannelPosix::ChannelPosix(const IPC::ChannelHandle& channel_handle,
                            Mode mode, Listener* listener)
     : ChannelReader(listener),
@@ -645,13 +641,6 @@ bool ChannelPosix::IsNamedServerInitialized(
   return base::PathExists(base::FilePath(channel_id));
 }
 
-#if defined(OS_LINUX)
-// static
-void ChannelPosix::SetGlobalPid(int pid) {
-  global_pid_ = pid;
-}
-#endif  // OS_LINUX
-
 // Called by libevent when we can read from the pipe without blocking.
 void ChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
   if (fd == server_listen_pipe_.get()) {
@@ -771,14 +760,15 @@ void ChannelPosix::ClosePipeOnError() {
 }
 
 int ChannelPosix::GetHelloMessageProcId() const {
-  int pid = base::GetCurrentProcId();
-#if defined(OS_LINUX)
-  // Our process may be in a sandbox with a separate PID namespace.
-  if (global_pid_) {
-    pid = global_pid_;
-  }
+#if defined(OS_LINUX) || defined(OS_NACL_NONSFI)
+  // On Linux platform, PID does not play any security role.
+  // In nacl_helper_nonsfi, getpid() invoked by GetCurrentProcId() is not
+  // allowed and would cause a SIGSYS crash because of the seccomp sandbox.
+  // So, for both cases, we provide a dummy PID.
+  return -1;
+#else
+  return base::GetCurrentProcId();
 #endif
-  return pid;
 }
 
 void ChannelPosix::QueueHelloMessage() {
@@ -1106,12 +1096,5 @@ bool Channel::IsNamedServerInitialized(
     const std::string& channel_id) {
   return ChannelPosix::IsNamedServerInitialized(channel_id);
 }
-
-#if defined(OS_LINUX)
-// static
-void Channel::SetGlobalPid(int pid) {
-  ChannelPosix::SetGlobalPid(pid);
-}
-#endif  // OS_LINUX
 
 }  // namespace IPC

@@ -395,9 +395,6 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
       LOG(FATAL) << "Invalid pid from parent zygote";
     }
 #if defined(OS_LINUX)
-    // Sandboxed processes need to send the global, non-namespaced PID when
-    // setting up an IPC channel to their parent.
-    IPC::Channel::SetGlobalPid(real_pid);
     // Force the real PID so chrome event data have a PID that corresponds
     // to system trace event data.
     base::debug::TraceLog::GetInstance()->SetProcessID(

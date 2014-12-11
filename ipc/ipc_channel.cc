@@ -29,7 +29,14 @@ std::string Channel::GenerateUniqueRandomChannelID() {
   // component. The strong random component prevents other processes from
   // hijacking or squatting on predictable channel names.
 
+#if defined(OS_LINUX) || defined(OS_NACL_NONSFI)
+  // On Linux platform, PID does not play any security role.
+  // In nacl_helper_nonsfi, the seccomp sandbox disallows the use of getpid().
+  // So, for both cases, we provide a dummy PID.
+  int process_id = -1;
+#else
   int process_id = base::GetCurrentProcId();
+#endif
   return base::StringPrintf("%d.%u.%d",
       process_id,
       g_last_id.GetNext(),

@@ -211,13 +211,6 @@ class IPC_EXPORT Channel : public Sender {
   static std::string GenerateVerifiedChannelID(const std::string& prefix);
 #endif
 
-#if defined(OS_LINUX)
-  // Sandboxed processes live in a PID namespace, so when sending the IPC hello
-  // message from client to server we need to send the PID from the global
-  // PID namespace.
-  static void SetGlobalPid(int pid);
-#endif
-
 #if defined(OS_ANDROID)
   // Most tests are single process and work the same on all platforms. However
   // in some cases we want to test multi-process, and Android differs in that it
