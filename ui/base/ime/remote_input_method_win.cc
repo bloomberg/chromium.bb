@@ -392,7 +392,7 @@ RemoteInputMethodPrivateWin::RemoteInputMethodPrivateWin() {}
 
 scoped_ptr<InputMethod> CreateRemoteInputMethodWin(
     internal::InputMethodDelegate* delegate) {
-  return scoped_ptr<InputMethod>(new RemoteInputMethodWin(delegate));
+  return make_scoped_ptr(new RemoteInputMethodWin(delegate));
 }
 
 // static

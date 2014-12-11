@@ -25,7 +25,7 @@ std::vector<gfx::ImageSkia> ImageIdsToImages(const int image_ids[]) {
 
 scoped_ptr<gfx::NineImagePainter> CreateNineImagePainter(
     const int image_ids[]) {
-  return scoped_ptr<gfx::NineImagePainter>(
+  return make_scoped_ptr(
       new gfx::NineImagePainter(ImageIdsToImages(image_ids)));
 }
 

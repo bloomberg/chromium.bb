@@ -24,7 +24,7 @@ scoped_ptr<PlatformAccelerator> PlatformAcceleratorCocoa::CreateCopy() const {
   scoped_ptr<PlatformAcceleratorCocoa> copy(new PlatformAcceleratorCocoa);
   copy->characters_.reset([characters_ copy]);
   copy->modifier_mask_ = modifier_mask_;
-  return scoped_ptr<PlatformAccelerator>(copy.release());
+  return make_scoped_ptr(copy.release());
 }
 
 bool PlatformAcceleratorCocoa::Equals(const PlatformAccelerator& rhs) const {

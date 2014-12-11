@@ -54,10 +54,10 @@ scoped_ptr<icu::PluralFormat> BuildPluralFormat(
       pattern += UNICODE_STRING_SIMPLE("}");
     }
   }
-  scoped_ptr<icu::PluralFormat> format = scoped_ptr<icu::PluralFormat>(
-      new icu::PluralFormat(*rules, pattern, err));
+  scoped_ptr<icu::PluralFormat> format =
+      make_scoped_ptr(new icu::PluralFormat(*rules, pattern, err));
   if (!U_SUCCESS(err)) {
-    return scoped_ptr<icu::PluralFormat>();
+    return nullptr;
   }
   return format.Pass();
 }

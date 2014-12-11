@@ -10,12 +10,10 @@ namespace ui {
 
 FakeInputMethodContextFactory::FakeInputMethodContextFactory() {}
 
-// Overriden from ui::LinuxInputMethodContextFactory
-
 scoped_ptr<LinuxInputMethodContext>
 FakeInputMethodContextFactory::CreateInputMethodContext(
     LinuxInputMethodContextDelegate* /* delegate */) const {
-  return scoped_ptr<LinuxInputMethodContext>(new FakeInputMethodContext());
+  return make_scoped_ptr(new FakeInputMethodContext());
 }
 
 }  // namespace ui

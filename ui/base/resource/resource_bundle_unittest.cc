@@ -90,7 +90,7 @@ class MockResourceBundleDelegate : public ui::ResourceBundle::Delegate {
                gfx::Font*(ui::ResourceBundle::FontStyle style));
   virtual scoped_ptr<gfx::Font> GetFont(
       ui::ResourceBundle::FontStyle style) override {
-    return scoped_ptr<gfx::Font>(GetFontMock(style));
+    return make_scoped_ptr(GetFontMock(style));
   }
 };
 

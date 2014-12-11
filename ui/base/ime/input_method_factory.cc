@@ -37,20 +37,20 @@ scoped_ptr<InputMethod> CreateInputMethod(
     g_create_input_method_called = true;
 
   if (g_input_method_set_for_testing)
-    return scoped_ptr<InputMethod>(new MockInputMethod(delegate));
+    return make_scoped_ptr(new MockInputMethod(delegate));
 
 #if defined(OS_CHROMEOS)
-  return scoped_ptr<InputMethod>(new InputMethodChromeOS(delegate));
+  return make_scoped_ptr(new InputMethodChromeOS(delegate));
 #elif defined(OS_WIN)
   if (IsRemoteInputMethodWinRequired(widget))
     return CreateRemoteInputMethodWin(delegate);
-  return scoped_ptr<InputMethod>(new InputMethodWin(delegate, widget));
+  return make_scoped_ptr(new InputMethodWin(delegate, widget));
 #elif defined(OS_MACOSX)
-  return scoped_ptr<InputMethod>(new InputMethodMac(delegate));
+  return make_scoped_ptr(new InputMethodMac(delegate));
 #elif defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  return scoped_ptr<InputMethod>(new InputMethodAuraLinux(delegate));
+  return make_scoped_ptr(new InputMethodAuraLinux(delegate));
 #else
-  return scoped_ptr<InputMethod>(new InputMethodMinimal(delegate));
+  return make_scoped_ptr(new InputMethodMinimal(delegate));
 #endif
 }
 
