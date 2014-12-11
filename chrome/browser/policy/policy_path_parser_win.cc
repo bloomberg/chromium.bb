@@ -38,6 +38,7 @@ const WCHAR* kWinProgramDataFolderVarName = L"${global_app_data}";
 const WCHAR* kWinProgramFilesFolderVarName = L"${program_files}";
 const WCHAR* kWinWindowsFolderVarName = L"${windows}";
 const WCHAR* kWinClientName = L"${client_name}";
+const WCHAR* kWinSessionName = L"${session_name}";
 
 struct WinFolderNamesToCSIDLMapping {
   const WCHAR* name;
@@ -122,6 +123,21 @@ base::FilePath::StringType ExpandPathVariables(
       ::WTSFreeMemory(buffer);
     }
   }
+  position = result.find(kWinSessionName);
+  if (position != std::wstring::npos) {
+    LPWSTR buffer = NULL;
+    DWORD buffer_length = 0;
+    if (::WTSQuerySessionInformation(WTS_CURRENT_SERVER, WTS_CURRENT_SESSION,
+                                     WTSWinStationName,
+                                     &buffer, &buffer_length)) {
+      std::wstring sessionname_string(buffer);
+      result.replace(position, wcslen(kWinSessionName), sessionname_string);
+      ::WTSFreeMemory(buffer);
+    }
+  }
+  // TODO(pastarmovj): Consider reorganizing this code once there are even more
+  // variables to be supported. The search for the var and its replacement can
+  // be extracted as common functionality.
 
   return result;
 }

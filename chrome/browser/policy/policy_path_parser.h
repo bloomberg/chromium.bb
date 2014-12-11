@@ -38,6 +38,10 @@ namespace path_parser {
 //                        (example : "C:\Program Files (x86)")
 //   ${windows}         - The Windows folder
 //                        (example : "C:\WINNT" or "C:\Windows")
+//   ${client_name}     - The name of the client as reported by the WTS system.
+//                        (example : "clientone")
+//   ${session_name}    - The name of the session as reported by the WTS system.
+//                        (example : "WinSta0", "RDP-Tcp#1")
 // MacOS only:
 //   ${users}           - The folder where users profiles are stored
 //                        (example : "/Users")

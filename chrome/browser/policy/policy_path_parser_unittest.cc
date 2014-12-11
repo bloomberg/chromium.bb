@@ -107,6 +107,8 @@ TEST_F(PolicyPathParserTests, WinVariables) {
                        FILE_PATH_LITERAL("${windows}"));
   CheckForSubstitution(FILE_PATH_LITERAL("//$C/${client_name}"),
                        FILE_PATH_LITERAL("${client_name}"));
+  CheckForSubstitution(FILE_PATH_LITERAL("//$C/${session_name}"),
+                       FILE_PATH_LITERAL("${session_name}"));
 }
 
 #endif  // OS_WIN
