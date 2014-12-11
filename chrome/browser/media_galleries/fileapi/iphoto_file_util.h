@@ -86,9 +86,9 @@ class IPhotoFileUtil : public NativeMediaFileUtil {
 
   virtual IPhotoDataProvider* GetDataProvider();
 
-  base::WeakPtrFactory<IPhotoFileUtil> weak_factory_;
-
   ImportedMediaGalleryRegistry* imported_registry_;
+
+  base::WeakPtrFactory<IPhotoFileUtil> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IPhotoFileUtil);
 };

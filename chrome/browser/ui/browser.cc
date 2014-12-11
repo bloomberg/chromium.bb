@@ -352,9 +352,9 @@ Browser::Browser(const CreateParams& params)
       bookmark_bar_state_(BookmarkBar::HIDDEN),
       command_controller_(new chrome::BrowserCommandController(this)),
       window_has_shown_(false),
-      chrome_updater_factory_(this),
       translate_driver_observer_(
           new BrowserContentTranslateDriverObserver(this)),
+      chrome_updater_factory_(this),
       weak_factory_(this) {
   // If this causes a crash then a window is being opened using a profile type
   // that is disallowed by policy. The crash prevents the disabled window type

@@ -960,12 +960,12 @@ class Browser : public TabStripModelObserver,
   // True if the browser window has been shown at least once.
   bool window_has_shown_;
 
-  // The following factory is used for chrome update coalescing.
-  base::WeakPtrFactory<Browser> chrome_updater_factory_;
-
   scoped_ptr<BrowserContentTranslateDriverObserver> translate_driver_observer_;
 
   scoped_ptr<chrome::ValidationMessageBubble> validation_message_bubble_;
+
+  // The following factory is used for chrome update coalescing.
+  base::WeakPtrFactory<Browser> chrome_updater_factory_;
 
   // The following factory is used to close the frame at a later time.
   base::WeakPtrFactory<Browser> weak_factory_;
