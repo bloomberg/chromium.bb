@@ -318,6 +318,8 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
 
     var videoElementInitializePromise;
     if (this.currentCast_) {
+      metrics.recordPlayType(metrics.PLAY_TYPE.CAST);
+
       videoPlayerElement.setAttribute('casting', true);
 
       document.querySelector('#cast-name').textContent =
@@ -342,6 +344,7 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
             }.bind(this));
           }.bind(this));
     } else {
+      metrics.recordPlayType(metrics.PLAY_TYPE.LOCAL);
       videoPlayerElement.removeAttribute('casting');
 
       this.videoElement_ = document.createElement('video');
@@ -390,6 +393,9 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
         }.bind(this))
         // In case of error.
         .catch(function(error) {
+          if (this.currentCast_)
+            metrics.recordCastVideoErrorAction();
+
           videoPlayerElement.removeAttribute('loading');
           console.error('Failed to initialize the video element.',
                         error.stack || error);
@@ -668,6 +674,10 @@ var initPromise = Promise.all(
 
 initPromise.then(function(results) {
   var videos = results[0];
+
+  metrics.recordOpenVideoPlayerAction();
+  metrics.recordNumberOfOpenedFiles(videos.length);
+
   player.prepare(videos);
   return new Promise(player.playFirstVideo.wrap(player));
 }.wrap(null));

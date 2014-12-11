@@ -39541,6 +39541,45 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="VideoPlayer.CastAPIExtensionStatus"
+    enum="VideoPlayerCastAPIExtensionStatus">
+  <owner>yoshiki@chromium.org</owner>
+  <summary>
+    Chrome OS Video Player: the results of the cast API extension load. This is
+    recorded after the initialization of the extension is finished.
+  </summary>
+</histogram>
+
+<histogram name="VideoPlayer.CastedVideoLength" units="seconds">
+  <owner>yoshiki@chromium.org</owner>
+  <summary>
+    Chrome OS Video Player: the length of casted video (in seconds).
+  </summary>
+</histogram>
+
+<histogram name="VideoPlayer.NumberOfCastDevices">
+  <owner>yoshiki@chromium.org</owner>
+  <summary>
+    Chrome OS Video Player: the number of cast devices. This is recorded when
+    the cast extension finishes the discovery.
+  </summary>
+</histogram>
+
+<histogram name="VideoPlayer.NumberOfOpenedFiles">
+  <owner>yoshiki@chromium.org</owner>
+  <summary>
+    Chrome OS Video Player: the number of files being opened on launch.
+  </summary>
+</histogram>
+
+<histogram name="VideoPlayer.PlayType" enum="VideoPlayerPlayType">
+  <owner>yoshiki@chromium.org</owner>
+  <summary>
+    Chrome OS Video Player: type of playback (eg. local play, cast). This is
+    recorded when a video starts playing.
+  </summary>
+</histogram>
+
 <histogram name="Viewport.MetaTagType" enum="MetaTagTypeEnum">
   <owner>bokan@chromium.org</owner>
   <summary>
@@ -57131,6 +57170,19 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5" label="HOLE"/>
   <int value="6" label="NATIVE_TEXTURE"/>
   <int value="7" label="YV12J"/>
+</enum>
+
+<enum name="VideoPlayerCastAPIExtensionStatus" type="int">
+  <int value="0" label="Skipped (Cast extension is unavailable)"/>
+  <int value="1" label="Installation failed"/>
+  <int value="2" label="Load failed"/>
+  <int value="3" label="Loaded successfully (newly installed)"/>
+  <int value="4" label="Loaded successfully (already installed)"/>
+</enum>
+
+<enum name="VideoPlayerPlayType" type="int">
+  <int value="0" label="Local playback"/>
+  <int value="1" label="Play on cast device"/>
 </enum>
 
 <enum name="VideoRotation" type="int">

@@ -10,6 +10,9 @@
 
 //<include src="error_util.js">
 
+//<include src="../../file_manager/foreground/js/metrics_base.js">
+//<include src="video_player_metrics.js">
+
 //<include src="../../../webui/resources/js/cr.js">
 //<include src="../../../webui/resources/js/load_time_data.js">
 

@@ -486,6 +486,8 @@ CastVideoElement.prototype = {
     }
 
     if (this.currentMediaDuration_ !== media.media.duration) {
+      metrics.recordCastedVideoLength(this.currentMediaDuration_);
+
       this.currentMediaDuration_ = media.media.duration;
       this.dispatchEvent(new Event('durationchange'));
     }

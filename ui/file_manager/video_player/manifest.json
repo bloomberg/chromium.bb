@@ -23,6 +23,7 @@
     "fileManagerPrivate",
     "fullscreen",
     "mediaPlayerPrivate",
+    "metricsPrivate",
     "power",
     "storage",
     "chrome://resources/",
