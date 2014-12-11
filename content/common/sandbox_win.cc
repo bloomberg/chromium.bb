@@ -605,11 +605,11 @@ base::Process StartSandboxedProcess(
   if ((delegate && !delegate->ShouldSandbox()) ||
       browser_command_line.HasSwitch(switches::kNoSandbox) ||
       cmd_line->HasSwitch(switches::kNoSandbox)) {
-    base::ProcessHandle handle = 0;
-    base::LaunchProcess(*cmd_line, base::LaunchOptions(), &handle);
+    base::Process process =
+        base::LaunchProcess(*cmd_line, base::LaunchOptions());
     // TODO(rvargas) crbug.com/417532: Don't share a raw handle.
-    g_broker_services->AddTargetPeer(handle);
-    return base::Process(handle);
+    g_broker_services->AddTargetPeer(process.Handle());
+    return process.Pass();
   }
 
   sandbox::TargetPolicy* policy = g_broker_services->CreatePolicy();

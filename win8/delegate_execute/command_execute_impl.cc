@@ -102,7 +102,7 @@ bool LaunchChromeBrowserProcess() {
   base::LaunchOptions launch_options;
   launch_options.start_hidden = true;
 
-  return base::LaunchProcess(cl, launch_options, NULL);
+  return base::LaunchProcess(cl, launch_options).IsValid();
 }
 
 }  // namespace
