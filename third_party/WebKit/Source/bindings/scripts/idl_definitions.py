@@ -650,6 +650,17 @@ class IdlImplement(object):
 # Extended attributes
 ################################################################################
 
+class Exposure:
+    """An Exposure holds one Exposed or RuntimeEnabled condition.
+    Each exposure has two properties: exposed and runtime_enabled.
+    Exposure(e, r) corresponds to [Exposed(e r)]. Exposure(e) corresponds to
+    [Exposed=e].
+    """
+    def __init__(self, exposed, runtime_enabled=None):
+        self.exposed = exposed
+        self.runtime_enabled = runtime_enabled
+
+
 def ext_attributes_node_to_extended_attributes(idl_name, node):
     """
     Returns:
@@ -706,6 +717,21 @@ def ext_attributes_node_to_extended_attributes(idl_name, node):
             if child_class != 'Arguments':
                 raise ValueError('[SetWrapperReferenceTo] only supports Arguments as child, but has child of class: %s' % child_class)
             extended_attributes[name] = arguments_node_to_arguments(idl_name, child)
+        elif name == 'Exposed':
+            if child_class and child_class != 'Arguments':
+                raise ValueError('[Exposed] only supports Arguments as child, but has child of class: %s' % child_class)
+            exposures = []
+            if child_class == 'Arguments':
+                exposures = [Exposure(exposed=str(arg.idl_type),
+                                      runtime_enabled=arg.name)
+                             for arg in arguments_node_to_arguments('*', child)]
+            else:
+                value = extended_attribute_node.GetProperty('VALUE')
+                if type(value) is str:
+                    exposures = [Exposure(exposed=value)]
+                else:
+                    exposures = [Exposure(exposed=v) for v in value]
+            extended_attributes[name] = exposures
         elif child:
             raise ValueError('ExtAttributes node with unexpected children: %s' % name)
         else:

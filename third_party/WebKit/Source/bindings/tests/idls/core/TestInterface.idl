@@ -92,6 +92,8 @@
     [Exposed=Window, RuntimeEnabled=FeatureName] void overloadMethodWithExposedAndRuntimeEnabledFlag(DOMString string);
     [Exposed=Window, RuntimeEnabled=FeatureName2] void overloadMethodWithExposedAndRuntimeEnabledFlag(Window window);
 
+    [Exposed(Window FeatureName, Worker FeatureName2)] void methodWithExposedHavingRuntimeEnabldFlag();
+
     [Exposed=(Window,ServiceWorker)] void windowAndServiceWorkerExposedMethod();
 
     void voidMethodPartialOverload();

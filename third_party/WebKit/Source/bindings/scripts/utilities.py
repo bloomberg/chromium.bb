@@ -136,7 +136,7 @@ def is_callback_interface_from_idl(file_contents):
     return bool(match)
 
 
-def get_interface_extended_attributes_from_idl(file_contents):
+def match_interface_extended_attributes_from_idl(file_contents):
     # Strip comments
     # re.compile needed b/c Python 2.6 doesn't support flags in re.sub
     single_line_comment_re = re.compile(r'//.*$', flags=re.MULTILINE)
@@ -151,6 +151,11 @@ def get_interface_extended_attributes_from_idl(file_contents):
                       r'(:\s*\w+\s*)?'
                       r'{',
                       file_contents, flags=re.DOTALL)
+    return match
+
+
+def get_interface_extended_attributes_from_idl(file_contents):
+    match = match_interface_extended_attributes_from_idl(file_contents)
     if not match:
         return {}
 
@@ -166,3 +171,20 @@ def get_interface_extended_attributes_from_idl(file_contents):
         name, _, value = map(string.strip, part.partition('='))
         extended_attributes[name] = value
     return extended_attributes
+
+
+def get_interface_exposed_arguments(file_contents):
+    match = match_interface_extended_attributes_from_idl(file_contents)
+    if not match:
+        return None
+
+    extended_attributes_string = match.group(1)
+    match = re.search(r'[^=]\bExposed\(([^)]*)\)', file_contents)
+    if not match:
+        return None
+    arguments = []
+    for argument in map(string.strip, match.group(1).split(',')):
+        exposed, runtime_enabled = argument.split()
+        arguments.append({'exposed': exposed, 'runtime_enabled': runtime_enabled})
+
+    return arguments

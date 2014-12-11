@@ -37,6 +37,7 @@ import re
 
 from idl_types import IdlTypeBase
 import idl_types
+from idl_definitions import Exposure
 from v8_globals import includes
 import v8_types
 
@@ -253,36 +254,87 @@ EXPOSED_EXECUTION_CONTEXT_METHOD = {
 }
 
 
-def exposed(definition_or_member, interface):
-    exposure_set = extended_attribute_value_as_list(definition_or_member, 'Exposed')
-    if not exposure_set:
-        return None
+EXPOSED_WORKERS = set([
+    'DedicatedWorker',
+    'SharedWorker',
+    'ServiceWorker',
+])
 
-    interface_exposure_set = expanded_exposure_set_for_interface(interface)
+
+class ExposureSet:
+    """An ExposureSet is a collection of Exposure instructions."""
+    def __init__(self, exposures=None):
+        self.exposures = set(exposures) if exposures else set()
+
+    def issubset(self, other):
+        """Returns true if |self|'s exposure set is a subset of
+        |other|'s exposure set. This function doesn't care about
+        RuntimeEnabled."""
+        self_set = self._extended(set(e.exposed for e in self.exposures))
+        other_set = self._extended(set(e.exposed for e in other.exposures))
+        return self_set.issubset(other_set)
+
+    @staticmethod
+    def _extended(target):
+        if EXPOSED_WORKERS.issubset(target):
+            return target | set(['Worker'])
+        elif 'Worker' in target:
+            return target | EXPOSED_WORKERS
+        return target
+
+    def add(self, exposure):
+        self.exposures.add(exposure)
+
+    def __len__(self):
+        return len(self.exposures)
+
+    def __iter__(self):
+        return self.exposures.__iter__()
+
+    @staticmethod
+    def _code(exposure):
+        exposed = ('context->%s()' %
+                   EXPOSED_EXECUTION_CONTEXT_METHOD[exposure.exposed])
+        if exposure.runtime_enabled is not None:
+            runtime_enabled = ('RuntimeEnabledFeatures::%sEnabled()' %
+                               uncapitalize(exposure.runtime_enabled))
+            return '({0} && {1})'.format(exposed, runtime_enabled)
+        return exposed
+
+    def code(self):
+        if len(self.exposures) == 0:
+            return None
+        # We use sorted here to deflake output.
+        return ' || '.join(sorted(self._code(e) for e in self.exposures))
+
+
+def exposed(member, interface):
+    """Returns a C++ code that checks if a method/attribute/etc is exposed.
+
+    When the Exposed attribute contains RuntimeEnabledFeatures (i.e.
+    Exposed(Arguments) form is given), the code contains check for them as
+    well.
+
+    EXAMPLE: [Exposed=Window, RuntimeEnabledFeature=Feature1]
+      => context->isDocument()
+
+    EXAMPLE: [Exposed(Window Feature1, Window Feature2)]
+      => context->isDocument() && RuntimeEnabledFeatures::feature1Enabled() ||
+         context->isDocument() && RuntimeEnabledFeatures::feature2Enabled()
+    """
+    exposure_set = ExposureSet(
+        extended_attribute_value_as_list(member, 'Exposed'))
+    interface_exposure_set = ExposureSet(
+        extended_attribute_value_as_list(interface, 'Exposed'))
+    for e in exposure_set:
+        if e.exposed not in EXPOSED_EXECUTION_CONTEXT_METHOD:
+            raise ValueError('Invalid execution context: %s' % e.exposed)
 
     # Methods must not be exposed to a broader scope than their interface.
-    if not set(exposure_set).issubset(interface_exposure_set):
+    if not exposure_set.issubset(interface_exposure_set):
         raise ValueError('Interface members\' exposure sets must be a subset of the interface\'s.')
 
-    exposure_checks = []
-    for environment in exposure_set:
-        # Methods must be exposed on one of the scopes known to Blink.
-        if environment not in EXPOSED_EXECUTION_CONTEXT_METHOD:
-            raise ValueError('Values for the [Exposed] annotation must reflect to a valid exposure scope.')
-
-        exposure_checks.append('context->%s()' % EXPOSED_EXECUTION_CONTEXT_METHOD[environment])
-
-    return ' || '.join(exposure_checks)
-
-
-def expanded_exposure_set_for_interface(interface):
-    exposure_set = extended_attribute_value_as_list(interface, 'Exposed')
-
-    # "Worker" is an aggregation for the different kinds of workers.
-    if 'Worker' in exposure_set:
-        exposure_set.extend(('DedicatedWorker', 'SharedWorker', 'ServiceWorker'))
-
-    return sorted(set(exposure_set))
+    return exposure_set.code()
 
 
 # [GarbageCollected], [WillBeGarbageCollected]

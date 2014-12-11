@@ -1205,6 +1205,19 @@ static void overloadMethodWithExposedAndRuntimeEnabledFlagMethodCallback(const v
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void methodWithExposedHavingRuntimeEnabldFlagMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+    impl->methodWithExposedHavingRuntimeEnabldFlag();
+}
+
+static void methodWithExposedHavingRuntimeEnabldFlagMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestInterfaceImplementationV8Internal::methodWithExposedHavingRuntimeEnabldFlagMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void windowAndServiceWorkerExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
@@ -2156,6 +2169,9 @@ void V8TestInterface::installConditionallyEnabledMethods(v8::Handle<v8::Object> 
     }
     if (context && (context->isDocument())) {
         prototypeObject->Set(v8AtomicString(isolate, "overloadMethodWithExposedAndRuntimeEnabledFlag"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::overloadMethodWithExposedAndRuntimeEnabledFlagMethodCallback, v8Undefined(), defaultSignature, 1)->GetFunction());
+    }
+    if (context && ((context->isDocument() && RuntimeEnabledFeatures::featureNameEnabled()) || (context->isWorkerGlobalScope() && RuntimeEnabledFeatures::featureName2Enabled()))) {
+        prototypeObject->Set(v8AtomicString(isolate, "methodWithExposedHavingRuntimeEnabldFlag"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::methodWithExposedHavingRuntimeEnabldFlagMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
     }
     if (context && (context->isDocument() || context->isServiceWorkerGlobalScope())) {
         prototypeObject->Set(v8AtomicString(isolate, "windowAndServiceWorkerExposedMethod"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::windowAndServiceWorkerExposedMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
