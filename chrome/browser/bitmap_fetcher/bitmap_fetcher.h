@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_BITMAP_FETCHER_BITMAP_FETCHER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/bitmap_fetcher_delegate.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_delegate.h"
 #include "chrome/browser/image_decoder.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request.h"

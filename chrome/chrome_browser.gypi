@@ -156,7 +156,7 @@
       'browser/autofill/validation_rules_storage_factory.h',
       'browser/bitmap_fetcher/bitmap_fetcher.cc',
       'browser/bitmap_fetcher/bitmap_fetcher.h',
-      'browser/bitmap_fetcher_delegate.h',
+      'browser/bitmap_fetcher/bitmap_fetcher_delegate.h',
       'browser/browser_about_handler.cc',
       'browser/browser_about_handler.h',
       'browser/browser_shutdown.cc',
