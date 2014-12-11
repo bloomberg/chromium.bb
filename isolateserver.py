@@ -5,7 +5,7 @@
 
 """Archives a set of files or directories to an Isolate Server."""
 
-__version__ = '0.3.4'
+__version__ = '0.4'
 
 import functools
 import logging
@@ -351,11 +351,7 @@ class Storage(object):
 
   @property
   def location(self):
-    """Location of a backing store that this class is using.
-
-    Exact meaning depends on the storage_api type. For IsolateServer it is
-    an URL of isolate server, for FileSystem is it a path in file system.
-    """
+    """URL of the backing store that this class is using."""
     return self._storage_api.location
 
   @property
@@ -834,11 +830,7 @@ class StorageApi(object):
 
   @property
   def location(self):
-    """Location of a backing store that this class is using.
-
-    Exact meaning depends on the type. For IsolateServer it is an URL of isolate
-    server, for FileSystem is it a path in file system.
-    """
+    """URL of the backing store that this class is using."""
     raise NotImplementedError()
 
   @property
@@ -934,7 +926,7 @@ class IsolateServer(StorageApi):
 
   def __init__(self, base_url, namespace):
     super(IsolateServer, self).__init__()
-    assert base_url.startswith('http'), base_url
+    assert file_path.is_url(base_url), base_url
     self._base_url = base_url.rstrip('/')
     self._namespace = namespace
     self._lock = threading.Lock()
@@ -1189,56 +1181,6 @@ class IsolateServer(StorageApi):
           content_type='application/octet-stream',
           method='PUT')
     return response is not None
-
-
-class FileSystem(StorageApi):
-  """StorageApi implementation that fetches data from the file system.
-
-  The common use case is a NFS/CIFS file server that is mounted locally that is
-  used to fetch the file on a local partition.
-  """
-
-  # Used for push_state instead of None. That way caller is forced to
-  # call 'contains' before 'push'. Naively passing None in 'push' will not work.
-  _DUMMY_PUSH_STATE = object()
-
-  def __init__(self, base_path, namespace):
-    super(FileSystem, self).__init__()
-    self._base_path = base_path
-    self._namespace = namespace
-
-  @property
-  def location(self):
-    return self._base_path
-
-  @property
-  def namespace(self):
-    return self._namespace
-
-  def get_fetch_url(self, digest):
-    return None
-
-  def fetch(self, digest, offset=0):
-    assert isinstance(digest, basestring)
-    return file_read(os.path.join(self._base_path, digest), offset=offset)
-
-  def push(self, item, push_state, content=None):
-    assert isinstance(item, Item)
-    assert item.digest is not None
-    assert item.size is not None
-    assert push_state is self._DUMMY_PUSH_STATE
-    content = item.content() if content is None else content
-    if isinstance(content, basestring):
-      assert not isinstance(content, unicode), 'Unicode string is not allowed'
-      content = [content]
-    file_write(os.path.join(self._base_path, item.digest), content)
-
-  def contains(self, items):
-    assert all(i.digest is not None and i.size is not None for i in items)
-    return dict(
-        (item, self._DUMMY_PUSH_STATE) for item in items
-        if not os.path.exists(os.path.join(self._base_path, item.digest))
-    )
 
 
 class LocalCache(object):
@@ -1753,7 +1695,7 @@ def set_storage_api_class(cls):
   _storage_api_cls = cls
 
 
-def get_storage_api(file_or_url, namespace):
+def get_storage_api(url, namespace):
   """Returns an object that implements low-level StorageApi interface.
 
   It is used by Storage to work with single isolate |namespace|. It should
@@ -1761,8 +1703,7 @@ def get_storage_api(file_or_url, namespace):
   a better alternative.
 
   Arguments:
-    file_or_url: a file path to use file system based storage, or URL of isolate
-        service to use shared cloud based storage.
+    url: URL of isolate service to use shared cloud based storage.
     namespace: isolate namespace to operate in, also defines hashing and
         compression scheme used, i.e. namespace names that end with '-gzip'
         store compressed data.
@@ -1770,19 +1711,15 @@ def get_storage_api(file_or_url, namespace):
   Returns:
     Instance of StorageApi subclass.
   """
-  if file_path.is_url(file_or_url):
-    cls = _storage_api_cls or IsolateServer
-    return cls(file_or_url, namespace)
-  else:
-    return FileSystem(file_or_url, namespace)
+  cls = _storage_api_cls or IsolateServer
+  return cls(url, namespace)
 
 
-def get_storage(file_or_url, namespace):
+def get_storage(url, namespace):
   """Returns Storage class that can upload and download from |namespace|.
 
   Arguments:
-    file_or_url: a file path to use file system based storage, or URL of isolate
-        service to use shared cloud based storage.
+    url: URL of isolate service to use shared cloud based storage.
     namespace: isolate namespace to operate in, also defines hashing and
         compression scheme used, i.e. namespace names that end with '-gzip'
         store compressed data.
@@ -1790,7 +1727,7 @@ def get_storage(file_or_url, namespace):
   Returns:
     Instance of Storage.
   """
-  return Storage(get_storage_api(file_or_url, namespace))
+  return Storage(get_storage_api(url, namespace))
 
 
 def upload_tree(base_url, infiles, namespace):
