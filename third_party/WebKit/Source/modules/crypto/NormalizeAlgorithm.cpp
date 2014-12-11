@@ -408,6 +408,16 @@ bool getOptionalUint32(const Dictionary& raw, const char* propertyName, bool& ha
     return true;
 }
 
+bool getOptionalUint8(const Dictionary& raw, const char* propertyName, bool& hasValue, uint8_t& value, const ErrorContext& context, AlgorithmError* error)
+{
+    double number;
+    if (!getOptionalInteger(raw, propertyName, hasValue, number, 0, 0xFF, context, error))
+        return false;
+    if (hasValue)
+        value = number;
+    return true;
+}
+
 bool getAlgorithmIdentifier(const Dictionary& raw, const char* propertyName, AlgorithmIdentifier& value, const ErrorContext& context, AlgorithmError* error)
 {
     // FIXME: This is not correct: http://crbug.com/438060
@@ -590,7 +600,7 @@ bool parseAesCtrParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& 
 //     dictionary AesGcmParams : Algorithm {
 //       required BufferSource iv;
 //       BufferSource additionalData;
-//       [EnforceRange] octet tagLength;  // May be 0-128
+//       [EnforceRange] octet tagLength;
 //     }
 bool parseAesGcmParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
@@ -603,10 +613,9 @@ bool parseAesGcmParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& 
     if (!getOptionalBufferSource(raw, "additionalData", hasAdditionalData, additionalDataBufferSource, context, error))
         return false;
 
-    double tagLength;
+    uint8_t tagLength = 0;
     bool hasTagLength;
-    // FIXME: Layering -- should only enforce the WebIDL's "octet" range here, not the AES-CTR tagLength.
-    if (!getOptionalInteger(raw, "tagLength", hasTagLength, tagLength, 0, 128, context, error))
+    if (!getOptionalUint8(raw, "tagLength", hasTagLength, tagLength, context, error))
         return false;
 
     DOMArrayPiece iv(ivBufferSource);
