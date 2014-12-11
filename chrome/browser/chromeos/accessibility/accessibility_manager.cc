@@ -484,8 +484,7 @@ void AccessibilityManager::UpdateLargeCursorFromPref() {
 bool AccessibilityManager::IsIncognitoAllowed() {
   // Supervised users can't create incognito-mode windows.
   return !user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser() &&
-         !user_manager::UserManager::Get()->
-               IsLoggedInAsRegularSupervisedUser();
+         !user_manager::UserManager::Get()->IsLoggedInAsChildUser();
 }
 
 bool AccessibilityManager::IsLargeCursorEnabled() {

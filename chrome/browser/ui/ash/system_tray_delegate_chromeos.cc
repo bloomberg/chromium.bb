@@ -837,7 +837,7 @@ void SystemTrayDelegateChromeOS::UserAddedToSession(
     const user_manager::User* active_user) {
 }
 
-void SystemTrayDelegateChromeOS::UserChangedSupervisedStatus(
+void SystemTrayDelegateChromeOS::UserChangedChildStatus(
     user_manager::User* user) {
   Profile* user_profile = ProfileHelper::Get()->GetProfileByUser(user);
 

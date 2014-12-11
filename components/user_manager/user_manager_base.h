@@ -90,7 +90,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   virtual bool CanCurrentUserLock() const override;
   virtual bool IsUserLoggedIn() const override;
   virtual bool IsLoggedInAsUserWithGaiaAccount() const override;
-  virtual bool IsLoggedInAsRegularSupervisedUser() const override;
+  virtual bool IsLoggedInAsChildUser() const override;
   virtual bool IsLoggedInAsDemoUser() const override;
   virtual bool IsLoggedInAsPublicAccount() const override;
   virtual bool IsLoggedInAsGuest() const override;
@@ -107,8 +107,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   virtual void RemoveSessionStateObserver(
       UserManager::UserSessionStateObserver* obs) override;
   virtual void NotifyLocalStateChanged() override;
-  virtual void ChangeUserSupervisedStatus(User* user, bool is_supervised)
-      override;
+  virtual void ChangeUserChildStatus(User* user, bool is_child) override;
 
   // Helper function that copies users from |users_list| to |users_vector| and
   // |users_set|. Duplicates and users already present in |existing_users| are

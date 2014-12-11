@@ -254,8 +254,7 @@ void ChildAccountService::PropagateChildStatusToUser(bool is_child) {
   user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
   if (user) {
-    user_manager::UserManager::Get()->ChangeUserSupervisedStatus(
-        user, is_child);
+    user_manager::UserManager::Get()->ChangeUserChildStatus(user, is_child);
   } else {
     LOG(WARNING) <<
         "User instance wasn't found while setting child account flag.";

@@ -136,7 +136,7 @@ class SystemTrayDelegateChromeOS
   // Overridden from user_manager::UserManager::UserSessionStateObserver:
   void UserAddedToSession(const user_manager::User* active_user) override;
 
-  void UserChangedSupervisedStatus(user_manager::User* user) override;
+  void UserChangedChildStatus(user_manager::User* user) override;
 
   // browser tests need to call ShouldUse24HourClock().
   bool GetShouldUse24HourClockForTesting() const;

@@ -52,8 +52,8 @@ class USER_MANAGER_EXPORT UserManager {
     // on user_id hash would be accessing up-to-date value.
     virtual void ActiveUserHashChanged(const std::string& hash);
 
-    // Called when supervised status has changed.
-    virtual void UserChangedSupervisedStatus(User* user);
+    // Called when child status has changed.
+    virtual void UserChangedChildStatus(User* user);
 
    protected:
     virtual ~UserSessionStateObserver();
@@ -267,8 +267,8 @@ class USER_MANAGER_EXPORT UserManager {
   // Returns true if we're logged in as a user with gaia account.
   virtual bool IsLoggedInAsUserWithGaiaAccount() const = 0;
 
-  // Returns true if we're logged in as a regular supervised user.
-  virtual bool IsLoggedInAsRegularSupervisedUser() const = 0;
+  // Returns true if we're logged in as a child user.
+  virtual bool IsLoggedInAsChildUser() const = 0;
 
   // Returns true if we're logged in as a demo user.
   virtual bool IsLoggedInAsDemoUser() const = 0;
@@ -279,7 +279,7 @@ class USER_MANAGER_EXPORT UserManager {
   // Returns true if we're logged in as a Guest.
   virtual bool IsLoggedInAsGuest() const = 0;
 
-  // Returns true if we're logged in as a supervised user.
+  // Returns true if we're logged in as a legacy supervised user.
   virtual bool IsLoggedInAsSupervisedUser() const = 0;
 
   // Returns true if we're logged in as a kiosk app.
@@ -307,8 +307,8 @@ class USER_MANAGER_EXPORT UserManager {
 
   virtual void NotifyLocalStateChanged() = 0;
 
-  // Makes the supervised status change and notifies observers.
-  virtual void ChangeUserSupervisedStatus(User* user, bool is_supervised) = 0;
+  // Changes the child status and notifies observers.
+  virtual void ChangeUserChildStatus(User* user, bool is_child) = 0;
 
 
   // Returns true if supervised users allowed.

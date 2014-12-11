@@ -581,10 +581,9 @@ bool UserManagerBase::IsLoggedInAsUserWithGaiaAccount() const {
   return IsUserLoggedIn() && active_user_->HasGaiaAccount();
 }
 
-bool UserManagerBase::IsLoggedInAsRegularSupervisedUser() const {
+bool UserManagerBase::IsLoggedInAsChildUser() const {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  return IsUserLoggedIn() && active_user_->GetType() ==
-      USER_TYPE_REGULAR_SUPERVISED;
+  return IsUserLoggedIn() && active_user_->GetType() == USER_TYPE_CHILD;
 }
 
 bool UserManagerBase::IsLoggedInAsDemoUser() const {
@@ -784,8 +783,8 @@ void UserManagerBase::EnsureUsersLoaded() {
       user = User::CreateRegularUser(*it);
       int user_type;
       if (prefs_user_types->GetIntegerWithoutPathExpansion(*it, &user_type) &&
-          user_type == USER_TYPE_REGULAR_SUPERVISED) {
-        ChangeUserSupervisedStatus(user, true /* is supervised */);
+          user_type == USER_TYPE_CHILD) {
+        ChangeUserChildStatus(user, true /* is child */);
       }
     }
     user->set_oauth_token_status(LoadUserOAuthStatus(*it));
@@ -990,16 +989,15 @@ void UserManagerBase::NotifyActiveUserHashChanged(const std::string& hash) {
                     ActiveUserHashChanged(hash));
 }
 
-void UserManagerBase::ChangeUserSupervisedStatus(User* user,
-                                                 bool is_supervised) {
+void UserManagerBase::ChangeUserChildStatus(User* user, bool is_child) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  user->SetIsSupervised(is_supervised);
-  SaveUserType(user->email(), is_supervised
-                                  ? user_manager::USER_TYPE_REGULAR_SUPERVISED
+  user->SetIsChild(is_child);
+  SaveUserType(user->email(), is_child
+                                  ? user_manager::USER_TYPE_CHILD
                                   : user_manager::USER_TYPE_REGULAR);
   FOR_EACH_OBSERVER(UserManager::UserSessionStateObserver,
                     session_state_observer_list_,
-                    UserChangedSupervisedStatus(user));
+                    UserChangedChildStatus(user));
 }
 
 void UserManagerBase::UpdateLoginState() {
