@@ -115,7 +115,20 @@ static Mutex& encodingRegistryMutex()
 
 static TextEncodingNameMap* textEncodingNameMap;
 static TextCodecMap* textCodecMap;
-static bool didExtendTextCodecMaps;
+
+namespace {
+static unsigned didExtendTextCodecMaps = 0;
+
+ALWAYS_INLINE unsigned atomicDidExtendTextCodecMaps()
+{
+    return acquireLoad(&didExtendTextCodecMaps);
+}
+
+ALWAYS_INLINE void atomicSetDidExtendTextCodemMaps()
+{
+    releaseStore(&didExtendTextCodecMaps, 1);
+}
+} // namespace
 
 static const char textEncodingNameBlacklist[][6] = { "UTF-7" };
 
@@ -244,6 +257,7 @@ PassOwnPtr<TextCodec> newTextCodec(const TextEncoding& encoding)
 {
     MutexLocker lock(encodingRegistryMutex());
 
+
     ASSERT(textCodecMap);
     TextCodecFactory factory = textCodecMap->get(encoding.name());
     ASSERT(factory.function);
@@ -261,10 +275,10 @@ const char* atomicCanonicalTextEncodingName(const char* name)
 
     if (const char* atomicName = textEncodingNameMap->get(name))
         return atomicName;
-    if (didExtendTextCodecMaps)
+    if (atomicDidExtendTextCodecMaps())
         return 0;
     extendTextCodecMaps();
-    didExtendTextCodecMaps = true;
+    atomicSetDidExtendTextCodemMaps();
     return textEncodingNameMap->get(name);
 }
 
@@ -296,8 +310,7 @@ const char* atomicCanonicalTextEncodingName(const String& alias)
 
 bool noExtendedTextEncodingNameUsed()
 {
-    MutexLocker lock(encodingRegistryMutex());
-    return !didExtendTextCodecMaps;
+    return !atomicDidExtendTextCodecMaps();
 }
 
 #ifndef NDEBUG
