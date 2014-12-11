@@ -29,12 +29,25 @@ inline float LargerRatio(float float1, float float2) {
 
 // static
 scoped_ptr<PictureLayerTilingSet> PictureLayerTilingSet::Create(
-    PictureLayerTilingClient* client) {
-  return make_scoped_ptr(new PictureLayerTilingSet(client));
+    PictureLayerTilingClient* client,
+    size_t max_tiles_for_interest_area,
+    float skewport_target_time_in_seconds,
+    int skewport_extrapolation_limit_in_content_pixels) {
+  return make_scoped_ptr(new PictureLayerTilingSet(
+      client, max_tiles_for_interest_area, skewport_target_time_in_seconds,
+      skewport_extrapolation_limit_in_content_pixels));
 }
 
-PictureLayerTilingSet::PictureLayerTilingSet(PictureLayerTilingClient* client)
-    : client_(client) {
+PictureLayerTilingSet::PictureLayerTilingSet(
+    PictureLayerTilingClient* client,
+    size_t max_tiles_for_interest_area,
+    float skewport_target_time_in_seconds,
+    int skewport_extrapolation_limit_in_content_pixels)
+    : max_tiles_for_interest_area_(max_tiles_for_interest_area),
+      skewport_target_time_in_seconds_(skewport_target_time_in_seconds),
+      skewport_extrapolation_limit_in_content_pixels_(
+          skewport_extrapolation_limit_in_content_pixels),
+      client_(client) {
 }
 
 PictureLayerTilingSet::~PictureLayerTilingSet() {
@@ -57,8 +70,10 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSource(
 
       PictureLayerTiling* this_tiling = FindTilingWithScale(contents_scale);
       if (!this_tiling) {
-        scoped_ptr<PictureLayerTiling> new_tiling =
-            PictureLayerTiling::Create(contents_scale, layer_bounds, client_);
+        scoped_ptr<PictureLayerTiling> new_tiling = PictureLayerTiling::Create(
+            contents_scale, layer_bounds, client_, max_tiles_for_interest_area_,
+            skewport_target_time_in_seconds_,
+            skewport_extrapolation_limit_in_content_pixels_);
         tilings_.push_back(new_tiling.Pass());
         this_tiling = tilings_.back();
       }
@@ -222,9 +237,9 @@ bool PictureLayerTilingSet::SyncTilingsForTesting(
       continue;
     }
     scoped_ptr<PictureLayerTiling> new_tiling = PictureLayerTiling::Create(
-        contents_scale,
-        new_layer_bounds,
-        client_);
+        contents_scale, new_layer_bounds, client_, max_tiles_for_interest_area_,
+        skewport_target_time_in_seconds_,
+        skewport_extrapolation_limit_in_content_pixels_);
     new_tiling->set_resolution(other.tilings_[i]->resolution());
     if (new_tiling->resolution() == HIGH_RESOLUTION)
       have_high_res_tiling = true;
@@ -241,8 +256,10 @@ PictureLayerTiling* PictureLayerTilingSet::AddTiling(
   for (size_t i = 0; i < tilings_.size(); ++i)
     DCHECK_NE(tilings_[i]->contents_scale(), contents_scale);
 
-  tilings_.push_back(
-      PictureLayerTiling::Create(contents_scale, layer_bounds, client_));
+  tilings_.push_back(PictureLayerTiling::Create(
+      contents_scale, layer_bounds, client_, max_tiles_for_interest_area_,
+      skewport_target_time_in_seconds_,
+      skewport_extrapolation_limit_in_content_pixels_));
   PictureLayerTiling* appended = tilings_.back();
 
   tilings_.sort(LargestToSmallestScaleFunctor());

@@ -75,9 +75,6 @@ class CC_EXPORT PictureLayerImpl
   PictureLayerTiling* GetRecycledTwinTiling(
       const PictureLayerTiling* tiling) override;
   TilePriority::PriorityBin GetMaxTilePriorityBin() const override;
-  size_t GetMaxTilesForInterestArea() const override;
-  float GetSkewportTargetTimeInSeconds() const override;
-  int GetSkewportExtrapolationLimitInContentPixels() const override;
   WhichTree GetTree() const override;
   bool RequiresHighResToDraw() const override;
 
@@ -148,6 +145,7 @@ class CC_EXPORT PictureLayerImpl
 
   virtual void UpdateIdealScales();
   float MaximumTilingContentsScale() const;
+  scoped_ptr<PictureLayerTilingSet> CreatePictureLayerTilingSet();
 
   PictureLayerImpl* twin_layer_;
 

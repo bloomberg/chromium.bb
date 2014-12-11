@@ -25,10 +25,6 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
                                  const gfx::Rect& rect) override;
   gfx::Size CalculateTileSize(const gfx::Size& content_bounds) const override;
   TilePriority::PriorityBin GetMaxTilePriorityBin() const override;
-  size_t GetMaxTilesForInterestArea() const override;
-  float GetSkewportTargetTimeInSeconds() const override;
-  int GetSkewportExtrapolationLimitInContentPixels() const override;
-  bool RequiresHighResToDraw() const override;
 
   void SetTileSize(const gfx::Size& tile_size);
   gfx::Size TileSize() const { return tile_size_; }
@@ -38,6 +34,7 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
       const PictureLayerTiling* tiling) const override;
   PictureLayerTiling* GetRecycledTwinTiling(
       const PictureLayerTiling* tiling) override;
+  bool RequiresHighResToDraw() const override;
   WhichTree GetTree() const override;
 
   void set_twin_tiling(PictureLayerTiling* tiling) { twin_tiling_ = tiling; }
@@ -49,15 +46,6 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
   void set_invalidation(const Region& region) { invalidation_ = region; }
   void set_max_tile_priority_bin(TilePriority::PriorityBin bin) {
     max_tile_priority_bin_ = bin;
-  }
-  void set_max_tiles_for_interest_area(size_t area) {
-    max_tiles_for_interest_area_ = area;
-  }
-  void set_skewport_target_time_in_seconds(float time) {
-    skewport_target_time_in_seconds_ = time;
-  }
-  void set_skewport_extrapolation_limit_in_content_pixels(int limit) {
-    skewport_extrapolation_limit_in_content_pixels_ = limit;
   }
   void set_tree(WhichTree tree) { tree_ = tree; }
   RasterSource* raster_source() { return pile_.get(); }
@@ -78,9 +66,6 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
   bool allow_create_tile_;
   Region invalidation_;
   TilePriority::PriorityBin max_tile_priority_bin_;
-  size_t max_tiles_for_interest_area_;
-  float skewport_target_time_in_seconds_;
-  int skewport_extrapolation_limit_in_content_pixels_;
   WhichTree tree_;
 };
 

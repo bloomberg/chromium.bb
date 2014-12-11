@@ -15,6 +15,7 @@
 #include "cc/resources/tile_task_worker_pool.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
@@ -121,18 +122,6 @@ class FixedInvalidationPictureLayerTilingClient
     return base_client_->GetMaxTilePriorityBin();
   }
 
-  size_t GetMaxTilesForInterestArea() const override {
-    return base_client_->GetMaxTilesForInterestArea();
-  }
-
-  float GetSkewportTargetTimeInSeconds() const override {
-    return base_client_->GetSkewportTargetTimeInSeconds();
-  }
-
-  int GetSkewportExtrapolationLimitInContentPixels() const override {
-    return base_client_->GetSkewportExtrapolationLimitInContentPixels();
-  }
-
   WhichTree GetTree() const override { return base_client_->GetTree(); }
 
   bool RequiresHighResToDraw() const override {
@@ -215,7 +204,15 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
 
   FixedInvalidationPictureLayerTilingClient client(
       layer, gfx::Rect(layer->content_bounds()));
-  auto tiling_set = PictureLayerTilingSet::Create(&client);
+
+  // In this benchmark, we will create a local tiling set and measure how long
+  // it takes to rasterize content. As such, the actual settings used here don't
+  // really matter.
+  const LayerTreeSettings& settings = layer->layer_tree_impl()->settings();
+  auto tiling_set = PictureLayerTilingSet::Create(
+      &client, settings.max_tiles_for_interest_area,
+      settings.skewport_target_time_in_seconds,
+      settings.skewport_extrapolation_limit_in_content_pixels);
 
   PictureLayerTiling* tiling =
       tiling_set->AddTiling(layer->contents_scale_x(), layer->bounds());

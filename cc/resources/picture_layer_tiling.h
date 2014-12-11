@@ -48,9 +48,6 @@ class CC_EXPORT PictureLayerTilingClient {
   virtual PictureLayerTiling* GetRecycledTwinTiling(
       const PictureLayerTiling* tiling) = 0;
   virtual TilePriority::PriorityBin GetMaxTilePriorityBin() const = 0;
-  virtual size_t GetMaxTilesForInterestArea() const = 0;
-  virtual float GetSkewportTargetTimeInSeconds() const = 0;
-  virtual int GetSkewportExtrapolationLimitInContentPixels() const = 0;
   virtual WhichTree GetTree() const = 0;
   virtual bool RequiresHighResToDraw() const = 0;
 
@@ -126,7 +123,11 @@ class CC_EXPORT PictureLayerTiling {
   static scoped_ptr<PictureLayerTiling> Create(
       float contents_scale,
       const gfx::Size& layer_bounds,
-      PictureLayerTilingClient* client);
+      PictureLayerTilingClient* client,
+      size_t max_tiles_for_interest_area,
+      float skewport_target_time_in_seconds,
+      int skewport_extrapolation_limit_in_content_pixels);
+
   gfx::Size layer_bounds() const { return layer_bounds_; }
   void Resize(const gfx::Size& new_layer_bounds);
   void Invalidate(const Region& layer_invalidation);
@@ -290,7 +291,10 @@ class CC_EXPORT PictureLayerTiling {
 
   PictureLayerTiling(float contents_scale,
                      const gfx::Size& layer_bounds,
-                     PictureLayerTilingClient* client);
+                     PictureLayerTilingClient* client,
+                     size_t max_tiles_for_interest_area,
+                     float skewport_target_time_in_seconds,
+                     int skewport_extrapolation_limit_in_content_pixels);
   void SetLiveTilesRect(const gfx::Rect& live_tiles_rect);
   void VerifyLiveTilesRect();
   Tile* CreateTile(int i, int j, const PictureLayerTiling* twin_tiling);
@@ -319,6 +323,10 @@ class CC_EXPORT PictureLayerTiling {
 
   void UpdateTileAndTwinPriority(Tile* tile) const;
   void UpdateTilePriority(Tile* tile) const;
+
+  const size_t max_tiles_for_interest_area_;
+  const float skewport_target_time_in_seconds_;
+  const int skewport_extrapolation_limit_in_content_pixels_;
 
   // Given properties.
   float contents_scale_;

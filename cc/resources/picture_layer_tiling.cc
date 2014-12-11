@@ -59,16 +59,28 @@ class TileEvictionOrder {
 scoped_ptr<PictureLayerTiling> PictureLayerTiling::Create(
     float contents_scale,
     const gfx::Size& layer_bounds,
-    PictureLayerTilingClient* client) {
-  return make_scoped_ptr(new PictureLayerTiling(contents_scale,
-                                                layer_bounds,
-                                                client));
+    PictureLayerTilingClient* client,
+    size_t max_tiles_for_interest_area,
+    float skewport_target_time_in_seconds,
+    int skewport_extrapolation_limit_in_content_pixels) {
+  return make_scoped_ptr(new PictureLayerTiling(
+      contents_scale, layer_bounds, client, max_tiles_for_interest_area,
+      skewport_target_time_in_seconds,
+      skewport_extrapolation_limit_in_content_pixels));
 }
 
-PictureLayerTiling::PictureLayerTiling(float contents_scale,
-                                       const gfx::Size& layer_bounds,
-                                       PictureLayerTilingClient* client)
-    : contents_scale_(contents_scale),
+PictureLayerTiling::PictureLayerTiling(
+    float contents_scale,
+    const gfx::Size& layer_bounds,
+    PictureLayerTilingClient* client,
+    size_t max_tiles_for_interest_area,
+    float skewport_target_time_in_seconds,
+    int skewport_extrapolation_limit_in_content_pixels)
+    : max_tiles_for_interest_area_(max_tiles_for_interest_area),
+      skewport_target_time_in_seconds_(skewport_target_time_in_seconds),
+      skewport_extrapolation_limit_in_content_pixels_(
+          skewport_extrapolation_limit_in_content_pixels),
+      contents_scale_(contents_scale),
       layer_bounds_(layer_bounds),
       resolution_(NON_IDEAL_RESOLUTION),
       client_(client),
@@ -541,10 +553,8 @@ gfx::Rect PictureLayerTiling::ComputeSkewport(
   if (time_delta == 0.0)
     return skewport;
 
-  float skewport_target_time_in_seconds =
-      client_->GetSkewportTargetTimeInSeconds();
   double extrapolation_multiplier =
-      skewport_target_time_in_seconds / time_delta;
+      skewport_target_time_in_seconds_ / time_delta;
 
   int old_x = last_visible_rect_in_content_space_.x();
   int old_y = last_visible_rect_in_content_space_.y();
@@ -556,12 +566,11 @@ gfx::Rect PictureLayerTiling::ComputeSkewport(
   int new_right = visible_rect_in_content_space.right();
   int new_bottom = visible_rect_in_content_space.bottom();
 
-  int skewport_limit = client_->GetSkewportExtrapolationLimitInContentPixels();
-
-  // Compute the maximum skewport based on |skewport_limit|.
+  // Compute the maximum skewport based on
+  // |skewport_extrapolation_limit_in_content_pixels_|.
   gfx::Rect max_skewport = skewport;
-  max_skewport.Inset(
-      -skewport_limit, -skewport_limit, -skewport_limit, -skewport_limit);
+  max_skewport.Inset(-skewport_extrapolation_limit_in_content_pixels_,
+                     -skewport_extrapolation_limit_in_content_pixels_);
 
   // Inset the skewport by the needed adjustment.
   skewport.Inset(extrapolation_multiplier * (new_x - old_x),
@@ -605,11 +614,9 @@ void PictureLayerTiling::ComputeTilePriorityRects(
   DCHECK(skewport.Contains(visible_rect_in_content_space));
 
   // Calculate the eventually/live tiles rect.
-  size_t max_tiles_for_interest_area = client_->GetMaxTilesForInterestArea();
-
   gfx::Size tile_size = tiling_data_.max_texture_size();
   int64 eventually_rect_area =
-      max_tiles_for_interest_area * tile_size.width() * tile_size.height();
+      max_tiles_for_interest_area_ * tile_size.width() * tile_size.height();
 
   gfx::Rect eventually_rect =
       ExpandRectEquallyToAreaBoundedBy(visible_rect_in_content_space,

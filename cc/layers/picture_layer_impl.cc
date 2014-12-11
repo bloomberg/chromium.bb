@@ -68,7 +68,7 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl,
                                    bool is_mask)
     : LayerImpl(tree_impl, id),
       twin_layer_(nullptr),
-      tilings_(PictureLayerTilingSet::Create(this)),
+      tilings_(CreatePictureLayerTilingSet()),
       // TODO(danakj): Can this be null to start?
       raster_source_(PicturePileImpl::Create()),
       ideal_page_scale_(0.f),
@@ -624,9 +624,10 @@ void PictureLayerImpl::DidBeginTracing() {
 }
 
 void PictureLayerImpl::ReleaseResources() {
+  // Recreate tilings with new settings, since some of those might change when
+  // we release resources. If tilings_ is null, then leave it as null.
   if (tilings_)
-    RemoveAllTilings();
-
+    tilings_ = CreatePictureLayerTilingSet();
   ResetRasterScale();
 
   // To avoid an edge case after lost context where the tree is up to date but
@@ -687,22 +688,6 @@ TilePriority::PriorityBin PictureLayerImpl::GetMaxTilePriorityBin() const {
   if (!HasValidTilePriorities())
     return TilePriority::EVENTUALLY;
   return TilePriority::NOW;
-}
-
-size_t PictureLayerImpl::GetMaxTilesForInterestArea() const {
-  return layer_tree_impl()->settings().max_tiles_for_interest_area;
-}
-
-float PictureLayerImpl::GetSkewportTargetTimeInSeconds() const {
-  return layer_tree_impl()->use_gpu_rasterization()
-             ? 0.f
-             : layer_tree_impl()->settings().skewport_target_time_in_seconds;
-}
-
-int PictureLayerImpl::GetSkewportExtrapolationLimitInContentPixels() const {
-  return layer_tree_impl()
-      ->settings()
-      .skewport_extrapolation_limit_in_content_pixels;
 }
 
 bool PictureLayerImpl::RequiresHighResToDraw() const {
@@ -1152,6 +1137,17 @@ bool PictureLayerImpl::ShouldAdjustRasterScaleDuringScaleAnimations() const {
 float PictureLayerImpl::MaximumTilingContentsScale() const {
   float max_contents_scale = tilings_->GetMaximumContentsScale();
   return std::max(max_contents_scale, MinimumContentsScale());
+}
+
+scoped_ptr<PictureLayerTilingSet>
+PictureLayerImpl::CreatePictureLayerTilingSet() {
+  const LayerTreeSettings& settings = layer_tree_impl()->settings();
+  return PictureLayerTilingSet::Create(
+      this, settings.max_tiles_for_interest_area,
+      layer_tree_impl()->use_gpu_rasterization()
+          ? 0.f
+          : settings.skewport_target_time_in_seconds,
+      settings.skewport_extrapolation_limit_in_content_pixels);
 }
 
 void PictureLayerImpl::UpdateIdealScales() {

@@ -1589,11 +1589,13 @@ void LayerTreeHostImpl::SetUseGpuRasterization(bool use_gpu) {
   if (use_gpu == use_gpu_rasterization_)
     return;
 
+  // Note that this must happen first, in case the rest of the calls want to
+  // query the new state of |use_gpu_rasterization_|.
   use_gpu_rasterization_ = use_gpu;
-  ReleaseTreeResources();
 
-  // Replace existing tile manager with another one that uses appropriate
-  // rasterizer.
+  // Clean up and replace existing tile manager with another one that uses
+  // appropriate rasterizer.
+  ReleaseTreeResources();
   if (tile_manager_) {
     DestroyTileManager();
     CreateAndSetTileManager();

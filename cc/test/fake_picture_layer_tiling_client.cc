@@ -17,10 +17,7 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient()
       twin_tiling_(NULL),
       recycled_twin_tiling_(NULL),
       allow_create_tile_(true),
-      max_tile_priority_bin_(TilePriority::NOW),
-      max_tiles_for_interest_area_(10000),
-      skewport_target_time_in_seconds_(1.0f),
-      skewport_extrapolation_limit_in_content_pixels_(2000) {
+      max_tile_priority_bin_(TilePriority::NOW) {
 }
 
 FakePictureLayerTilingClient::FakePictureLayerTilingClient(
@@ -33,9 +30,7 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient(
       twin_tiling_(NULL),
       recycled_twin_tiling_(NULL),
       allow_create_tile_(true),
-      max_tile_priority_bin_(TilePriority::NOW),
-      max_tiles_for_interest_area_(10000),
-      skewport_target_time_in_seconds_(1.0f) {
+      max_tile_priority_bin_(TilePriority::NOW) {
 }
 
 FakePictureLayerTilingClient::~FakePictureLayerTilingClient() {
@@ -61,19 +56,6 @@ gfx::Size FakePictureLayerTilingClient::CalculateTileSize(
 TilePriority::PriorityBin FakePictureLayerTilingClient::GetMaxTilePriorityBin()
     const {
   return max_tile_priority_bin_;
-}
-
-size_t FakePictureLayerTilingClient::GetMaxTilesForInterestArea() const {
-  return max_tiles_for_interest_area_;
-}
-
-float FakePictureLayerTilingClient::GetSkewportTargetTimeInSeconds() const {
-  return skewport_target_time_in_seconds_;
-}
-
-int FakePictureLayerTilingClient::GetSkewportExtrapolationLimitInContentPixels()
-    const {
-  return skewport_extrapolation_limit_in_content_pixels_;
 }
 
 const Region* FakePictureLayerTilingClient::GetPendingInvalidation() {

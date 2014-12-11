@@ -38,7 +38,10 @@ class CC_EXPORT PictureLayerTilingSet {
   };
 
   static scoped_ptr<PictureLayerTilingSet> Create(
-      PictureLayerTilingClient* client);
+      PictureLayerTilingClient* client,
+      size_t max_tiles_for_interest_area,
+      float skewport_target_time_in_seconds,
+      int skewport_extrapolation_limit_in_content);
 
   ~PictureLayerTilingSet();
 
@@ -166,13 +169,21 @@ class CC_EXPORT PictureLayerTilingSet {
   TilingRange GetTilingRange(TilingRangeType type) const;
 
  private:
-  explicit PictureLayerTilingSet(PictureLayerTilingClient* client);
+  explicit PictureLayerTilingSet(
+      PictureLayerTilingClient* client,
+      size_t max_tiles_for_interest_area,
+      float skewport_target_time_in_seconds,
+      int skewport_extrapolation_limit_in_content_pixels);
 
   // Remove one tiling.
   void Remove(PictureLayerTiling* tiling);
 
-  PictureLayerTilingClient* client_;
   ScopedPtrVector<PictureLayerTiling> tilings_;
+
+  const size_t max_tiles_for_interest_area_;
+  const float skewport_target_time_in_seconds_;
+  const int skewport_extrapolation_limit_in_content_pixels_;
+  PictureLayerTilingClient* client_;
 
   friend class Iterator;
   DISALLOW_COPY_AND_ASSIGN(PictureLayerTilingSet);

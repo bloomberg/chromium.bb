@@ -18,10 +18,19 @@
 namespace cc {
 namespace {
 
+scoped_ptr<PictureLayerTilingSet> CreateTilingSet(
+    PictureLayerTilingClient* client) {
+  LayerTreeSettings defaults;
+  return PictureLayerTilingSet::Create(
+      client, defaults.max_tiles_for_interest_area,
+      defaults.skewport_target_time_in_seconds,
+      defaults.skewport_extrapolation_limit_in_content_pixels);
+}
+
 TEST(PictureLayerTilingSetTest, NoResources) {
   FakePictureLayerTilingClient client;
   gfx::Size layer_bounds(1000, 800);
-  auto set = PictureLayerTilingSet::Create(&client);
+  auto set = CreateTilingSet(&client);
   client.SetTileSize(gfx::Size(256, 256));
 
   set->AddTiling(1.0, layer_bounds);
@@ -59,7 +68,7 @@ TEST(PictureLayerTilingSetTest, TilingRange) {
   PictureLayerTiling* high_res_tiling;
   PictureLayerTiling* low_res_tiling;
 
-  auto set = PictureLayerTilingSet::Create(&client);
+  auto set = CreateTilingSet(&client);
   set->AddTiling(2.0, layer_bounds);
   high_res_tiling = set->AddTiling(1.0, layer_bounds);
   high_res_tiling->set_resolution(HIGH_RESOLUTION);
@@ -91,7 +100,7 @@ TEST(PictureLayerTilingSetTest, TilingRange) {
   EXPECT_EQ(4u, lower_than_low_res_range.start);
   EXPECT_EQ(5u, lower_than_low_res_range.end);
 
-  auto set_without_low_res = PictureLayerTilingSet::Create(&client);
+  auto set_without_low_res = CreateTilingSet(&client);
   set_without_low_res->AddTiling(2.0, layer_bounds);
   high_res_tiling = set_without_low_res->AddTiling(1.0, layer_bounds);
   high_res_tiling->set_resolution(HIGH_RESOLUTION);
@@ -121,7 +130,7 @@ TEST(PictureLayerTilingSetTest, TilingRange) {
       PictureLayerTilingSet::LOWER_THAN_LOW_RES);
   EXPECT_EQ(0u, lower_than_low_res_range.end - lower_than_low_res_range.start);
 
-  auto set_with_only_high_and_low_res = PictureLayerTilingSet::Create(&client);
+  auto set_with_only_high_and_low_res = CreateTilingSet(&client);
   high_res_tiling =
       set_with_only_high_and_low_res->AddTiling(1.0, layer_bounds);
   high_res_tiling->set_resolution(HIGH_RESOLUTION);
@@ -153,7 +162,7 @@ TEST(PictureLayerTilingSetTest, TilingRange) {
       PictureLayerTilingSet::LOWER_THAN_LOW_RES);
   EXPECT_EQ(0u, lower_than_low_res_range.end - lower_than_low_res_range.start);
 
-  auto set_with_only_high_res = PictureLayerTilingSet::Create(&client);
+  auto set_with_only_high_res = CreateTilingSet(&client);
   high_res_tiling = set_with_only_high_res->AddTiling(1.0, layer_bounds);
   high_res_tiling->set_resolution(HIGH_RESOLUTION);
 
@@ -209,7 +218,7 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
     client.SetTileSize(gfx::Size(256, 256));
     client.set_tree(PENDING_TREE);
     gfx::Size layer_bounds(1000, 800);
-    auto set = PictureLayerTilingSet::Create(&client);
+    auto set = CreateTilingSet(&client);
 
     float scale = min_scale;
     for (int i = 0; i < num_tilings; ++i, scale += scale_increment) {
@@ -288,8 +297,8 @@ class PictureLayerTilingSetSyncTest : public testing::Test {
     source_client_.set_tree(PENDING_TREE);
     target_client_.SetTileSize(tile_size_);
     target_client_.set_tree(PENDING_TREE);
-    source_ = PictureLayerTilingSet::Create(&source_client_);
-    target_ = PictureLayerTilingSet::Create(&target_client_);
+    source_ = CreateTilingSet(&source_client_);
+    target_ = CreateTilingSet(&target_client_);
   }
 
   // Sync from source to target.
