@@ -28,6 +28,7 @@
 
 #include "platform/Timer.h"
 #include "platform/Widget.h"
+#include "platform/graphics/paint/DisplayItem.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
@@ -107,7 +108,7 @@ public:
     void setProportion(int visibleSize, int totalSize);
     void setPressedPos(int p) { m_pressedPos = p; }
 
-    virtual void paint(GraphicsContext*, const IntRect& damageRect) override;
+    virtual void paint(GraphicsContext*, const IntRect& damageRect) final;
 
     virtual bool isOverlayScrollbar() const override;
     bool shouldParticipateInHitTesting();
@@ -145,6 +146,8 @@ public:
 
     bool overlapsResizer() const { return m_overlapsResizer; }
     void setOverlapsResizer(bool overlapsResizer) { m_overlapsResizer = overlapsResizer; }
+
+    DisplayItemClient displayItemClient() const { return static_cast<DisplayItemClientInternalVoid*>((void*)this); }
 
 protected:
     Scrollbar(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize, ScrollbarTheme* = 0);

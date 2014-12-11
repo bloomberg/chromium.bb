@@ -13,6 +13,7 @@
 #include "core/rendering/RenderView.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 
 namespace blink {
 
@@ -25,6 +26,8 @@ void ScrollableAreaPainter::paintResizer(GraphicsContext* context, const IntPoin
     absRect.moveBy(paintOffset);
     if (!absRect.intersects(damageRect))
         return;
+
+    DrawingRecorder recorder(context, m_renderLayerScrollableArea.box().displayItemClient(), DisplayItem::Resizer, damageRect);
 
     if (m_renderLayerScrollableArea.resizer()) {
         ScrollbarPainter::paintIntoRect(m_renderLayerScrollableArea.resizer(), context, paintOffset, absRect);

@@ -33,6 +33,7 @@
 
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/mac/ThemeMac.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
 #include "public/platform/Platform.h"
@@ -77,6 +78,8 @@ void ScrollbarThemeMacNonOverlayAPI::updateButtonPlacement()
 //     - Skia specific changes
 bool ScrollbarThemeMacNonOverlayAPI::paint(ScrollbarThemeClient* scrollbar, GraphicsContext* context, const IntRect& damageRect)
 {
+    DrawingRecorder recorder(context, displayItemClient(), DisplayItem::Scrollbar, damageRect);
+
     // Get the tickmarks for the frameview.
     Vector<IntRect> tickmarks;
     scrollbar->getTickmarks(tickmarks);

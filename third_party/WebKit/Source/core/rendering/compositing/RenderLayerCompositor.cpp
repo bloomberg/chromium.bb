@@ -59,6 +59,9 @@
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
+#include "platform/graphics/paint/TransformDisplayItem.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -774,13 +777,31 @@ static void paintScrollbar(Scrollbar* scrollbar, GraphicsContext& context, const
     if (!scrollbar)
         return;
 
-    context.save();
-    const IntRect& scrollbarRect = scrollbar->frameRect();
-    context.translate(-scrollbarRect.x(), -scrollbarRect.y());
+    // Frame scrollbars are painted in the space of the containing frame, not the local space of the scrollbar.
+    const IntPoint& paintOffset = scrollbar->frameRect().location();
     IntRect transformedClip = clip;
-    transformedClip.moveBy(scrollbarRect.location());
+    transformedClip.moveBy(paintOffset);
+    {
+        TransformationMatrix translation;
+        translation.translate(-paintOffset.x(), -paintOffset.y());
+        OwnPtr<DisplayItem> beginTransformDisplayItem = BeginTransformDisplayItem::create(scrollbar->displayItemClient(), translation);
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+            ASSERT(context.displayItemList());
+            context.displayItemList()->add(beginTransformDisplayItem.release());
+        } else {
+            beginTransformDisplayItem->replay(&context);
+        }
+    }
+
     scrollbar->paint(&context, transformedClip);
-    context.restore();
+
+    OwnPtr<DisplayItem> endTransformDisplayItem = EndTransformDisplayItem::create(scrollbar->displayItemClient());
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        ASSERT(context.displayItemList());
+        context.displayItemList()->add(endTransformDisplayItem.release());
+    } else {
+        endTransformDisplayItem->replay(&context);
+    }
 }
 
 void RenderLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase, const IntRect& clip)
@@ -789,15 +810,8 @@ void RenderLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, Gr
         paintScrollbar(m_renderView.frameView()->horizontalScrollbar(), context, clip);
     else if (graphicsLayer == layerForVerticalScrollbar())
         paintScrollbar(m_renderView.frameView()->verticalScrollbar(), context, clip);
-    else if (graphicsLayer == layerForScrollCorner()) {
-        const IntRect& scrollCorner = m_renderView.frameView()->scrollCornerRect();
-        context.save();
-        context.translate(-scrollCorner.x(), -scrollCorner.y());
-        IntRect transformedClip = clip;
-        transformedClip.moveBy(scrollCorner.location());
-        FramePainter(*m_renderView.frameView()).paintScrollCorner(&context, transformedClip);
-        context.restore();
-    }
+    else if (graphicsLayer == layerForScrollCorner())
+        FramePainter(*m_renderView.frameView()).paintScrollCorner(&context, clip);
 }
 
 bool RenderLayerCompositor::supportsFixedRootBackgroundCompositing() const

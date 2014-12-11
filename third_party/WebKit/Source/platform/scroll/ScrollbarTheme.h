@@ -28,6 +28,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/graphics/paint/DisplayItem.h"
 #include "platform/scroll/ScrollTypes.h"
 
 namespace blink {
@@ -45,6 +46,7 @@ public:
     virtual void updateEnabledState(ScrollbarThemeClient*) { }
 
     virtual bool paint(ScrollbarThemeClient*, GraphicsContext*, const IntRect& damageRect);
+
     virtual ScrollbarPart hitTest(ScrollbarThemeClient*, const IntPoint&);
 
     virtual int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) { return 0; }
@@ -132,6 +134,11 @@ public:
 
     static void setMockScrollbarsEnabled(bool flag);
     static bool mockScrollbarsEnabled();
+
+    DisplayItemClient displayItemClient() const { return static_cast<DisplayItemClientInternalVoid*>((void*)this); }
+
+protected:
+    bool paintInternal(ScrollbarThemeClient*, GraphicsContext*, const IntRect& damageRect);
 
 private:
     static ScrollbarTheme* nativeTheme(); // Must be implemented to return the correct theme subclass.

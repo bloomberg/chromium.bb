@@ -30,6 +30,9 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/DrawingDisplayItem.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
 #include "platform/scroll/ScrollbarThemeMock.h"
 #include "platform/scroll/ScrollbarThemeOverlayMock.h"
@@ -48,6 +51,12 @@ namespace blink {
 bool ScrollbarTheme::gMockScrollbarsEnabled = false;
 
 bool ScrollbarTheme::paint(ScrollbarThemeClient* scrollbar, GraphicsContext* graphicsContext, const IntRect& damageRect)
+{
+    DrawingRecorder recorder(graphicsContext, displayItemClient(), DisplayItem::Scrollbar, damageRect);
+    return paintInternal(scrollbar, graphicsContext, damageRect);
+}
+
+bool ScrollbarTheme::paintInternal(ScrollbarThemeClient* scrollbar, GraphicsContext* graphicsContext, const IntRect& damageRect)
 {
     // Create the ScrollbarControlPartMask based on the damageRect
     ScrollbarControlPartMask scrollMask = NoPart;
@@ -206,6 +215,8 @@ void ScrollbarTheme::paintScrollCorner(GraphicsContext* context, const IntRect& 
 {
     if (cornerRect.isEmpty())
         return;
+
+    DrawingRecorder recorder(context, displayItemClient(), DisplayItem::ScrollbarCorner, cornerRect);
 
 #if OS(MACOSX)
     context->fillRect(cornerRect, Color::white);

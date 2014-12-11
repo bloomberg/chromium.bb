@@ -55,6 +55,9 @@ WTF::String DisplayItem::typeAsDebugString(DisplayItem::Type type)
     case ClipBoxClippingMask: return "ClipBoxClippingMask";
     case BeginTransform: return "BeginTransform";
     case EndTransform: return "EndTransform";
+    case ScrollbarCorner: return "ScrollbarCorner";
+    case Scrollbar: return "Scrollbar";
+    case Resizer: return "Resizer";
     }
     ASSERT_NOT_REACHED();
     return "Unknown";

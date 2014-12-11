@@ -29,6 +29,7 @@
 #include "core/paint/ScrollbarPainter.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
 #include "wtf/StdLibExtras.h"
 
@@ -110,8 +111,14 @@ IntRect RenderScrollbarTheme::constrainTrackRectToTrackPieces(ScrollbarThemeClie
     return result;
 }
 
+bool RenderScrollbarTheme::paint(ScrollbarThemeClient* scrollbar, GraphicsContext* graphicsContext, const IntRect& damageRect)
+{
+    return paintInternal(scrollbar, graphicsContext, damageRect);
+}
+
 void RenderScrollbarTheme::paintScrollCorner(GraphicsContext* context, const IntRect& cornerRect)
 {
+    DrawingRecorder recorder(context, displayItemClient(), DisplayItem::ScrollbarCorner, cornerRect);
     // FIXME: Implement.
     context->fillRect(cornerRect, Color::white);
 }
