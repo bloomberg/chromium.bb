@@ -6,35 +6,26 @@
 
 #include "android_webview/browser/browser_view_renderer.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "content/public/test/test_synchronous_compositor_android.h"
 
 namespace android_webview {
 
 RenderingTest::RenderingTest() : message_loop_(new base::MessageLoop) {
+  ui_proxy_ = base::MessageLoopProxy::current();
 }
 
 RenderingTest::~RenderingTest() {
+  if (window_.get())
+    window_->Detach();
 }
 
 void RenderingTest::SetUpTestHarness() {
   DCHECK(!browser_view_renderer_.get());
   browser_view_renderer_.reset(
       new BrowserViewRenderer(this, base::MessageLoopProxy::current()));
+  InitializeCompositor();
+  Attach();
 }
-
-class RenderingTest::ScopedInitializeCompositor {
- public:
-  explicit ScopedInitializeCompositor(RenderingTest* test) : test_(test) {
-    test_->InitializeCompositor();
-  }
-
-  ~ScopedInitializeCompositor() { test_->TeardownCompositor(); }
-
- private:
-  RenderingTest* test_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedInitializeCompositor);
-};
 
 void RenderingTest::InitializeCompositor() {
   DCHECK(!compositor_.get());
@@ -43,25 +34,43 @@ void RenderingTest::InitializeCompositor() {
   compositor_->SetClient(browser_view_renderer_.get());
 }
 
-void RenderingTest::TeardownCompositor() {
-  DCHECK(compositor_.get());
-  DCHECK(browser_view_renderer_.get());
-  compositor_.reset();
+void RenderingTest::Attach() {
+  window_.reset(
+      new FakeWindow(browser_view_renderer_.get(), this, gfx::Rect(100, 100)));
 }
 
 void RenderingTest::RunTest() {
-  ScopedInitializeCompositor initialize_compositor(this);
-  StartTest();
+  SetUpTestHarness();
+
+  ui_proxy_->PostTask(
+      FROM_HERE, base::Bind(&RenderingTest::StartTest, base::Unretained(this)));
+  message_loop_->Run();
+}
+
+void RenderingTest::StartTest() {
+  EndTest();
+}
+
+void RenderingTest::EndTest() {
+  ui_proxy_->PostTask(FROM_HERE, base::Bind(&RenderingTest::QuitMessageLoop,
+                                            base::Unretained(this)));
+}
+
+void RenderingTest::QuitMessageLoop() {
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_.get());
+  message_loop_->QuitWhenIdle();
 }
 
 bool RenderingTest::RequestDrawGL(bool wait_for_completion) {
-  return false;
+  window_->RequestDrawGL(wait_for_completion);
+  return true;
 }
 
 void RenderingTest::OnNewPicture() {
 }
 
 void RenderingTest::PostInvalidate() {
+  window_->PostInvalidate();
 }
 
 void RenderingTest::InvalidateOnFunctorDestroy() {

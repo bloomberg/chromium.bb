@@ -6,7 +6,9 @@
 #define ANDROID_WEBVIEW_BROWSER_TEST_RENDERING_TEST_H_
 
 #include "android_webview/browser/browser_view_renderer_client.h"
+#include "android_webview/browser/test/fake_window.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -20,8 +22,11 @@ class TestSynchronousCompositor;
 namespace android_webview {
 
 class BrowserViewRenderer;
+class FakeWindow;
 
-class RenderingTest : public testing::Test, public BrowserViewRendererClient {
+class RenderingTest : public testing::Test,
+                      public BrowserViewRendererClient,
+                      public WindowHooks {
  public:
   // BrowserViewRendererClient overrides.
   bool RequestDrawGL(bool wait_for_completion) override;
@@ -38,26 +43,44 @@ class RenderingTest : public testing::Test, public BrowserViewRendererClient {
                          float max_page_scale_factor) override {}
   void DidOverscroll(gfx::Vector2d overscroll_delta) override {}
 
+  // WindowHooks overrides.
+  void WillOnDraw() override {}
+  void DidOnDraw() override {}
+  void WillSyncOnRT(SharedRendererState* functor) override {}
+  void DidSyncOnRT(SharedRendererState* functor) override {}
+  void WillProcessOnRT(SharedRendererState* functor) override {}
+  void DidProcessOnRT(SharedRendererState* functor) override {}
+  void WillDrawOnRT(SharedRendererState* functor) override {}
+  void DidDrawOnRT(SharedRendererState* functor) override {}
+
  protected:
   RenderingTest();
   ~RenderingTest() override;
 
-  void SetUpTestHarness();
-  void RunTest();
+  virtual void SetUpTestHarness();
+  virtual void StartTest();
 
-  virtual void StartTest() {}
+  void RunTest();
+  void InitializeCompositor();
+  void Attach();
+  void EndTest();
+
+  scoped_refptr<base::MessageLoopProxy> ui_proxy_;
+  scoped_ptr<BrowserViewRenderer> browser_view_renderer_;
+  scoped_ptr<content::TestSynchronousCompositor> compositor_;
+  scoped_ptr<FakeWindow> window_;
 
  private:
-  class ScopedInitializeCompositor;
-  void InitializeCompositor();
-  void TeardownCompositor();
+  void QuitMessageLoop();
 
   const scoped_ptr<base::MessageLoop> message_loop_;
-  scoped_ptr<content::TestSynchronousCompositor> compositor_;
-  scoped_ptr<BrowserViewRenderer> browser_view_renderer_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderingTest);
 };
+
+#define RENDERING_TEST_F(TEST_FIXTURE_NAME)         \
+  TEST_F(TEST_FIXTURE_NAME, RunTest) { RunTest(); } \
+  class NeedsSemicolon##TEST_FIXTURE_NAME {}
 
 }  // namespace android_webview
 
