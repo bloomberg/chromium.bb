@@ -3,28 +3,28 @@
 // found in the LICENSE file.
 
 /**
- * @param {Object.<string, string>} stringData String data.
- * @param {VolumeManager} volumeManager Volume manager.
+ * @param {!Object.<string, string>} stringData String data.
+ * @param {!VolumeManager} volumeManager Volume manager.
+ * @constructor
+ * @struct
  */
 function BackgroundComponents(stringData, volumeManager) {
   /**
    * String data.
-   * @type {Object.<string, string>}
+   * @type {!Object.<string, string>}
    */
   this.stringData = stringData;
 
   /**
    * Volume manager.
-   * @type {VolumeManager}
+   * @type {!VolumeManager}
    */
   this.volumeManager = volumeManager;
-
-  Object.freeze(this);
 }
 
 /**
  * Loads background component.
- * @return {Promise} Promise fulfilled with BackgroundComponents.
+ * @return {!Promise} Promise fulfilled with BackgroundComponents.
  */
 BackgroundComponents.load = function() {
   var stringDataPromise = new Promise(function(fulfill) {
@@ -49,8 +49,8 @@ BackgroundComponents.load = function() {
 
 /**
  * Resolves file system names and obtains entries.
- * @param {Array.<FileEntry>} entries Names of isolated file system.
- * @return {Promise} Promise to be fulfilled with an entry array.
+ * @param {!Array.<!FileEntry>} entries Names of isolated file system.
+ * @return {!Promise} Promise to be fulfilled with an entry array.
  */
 function resolveEntries(entries) {
   return new Promise(function(fulfill, reject) {
@@ -73,7 +73,7 @@ function resolveEntries(entries) {
  *
  * @param {!Array.<!FileEntry>} originalEntries Entries passed from onLaunched
  *     events.
- * @return {Promise} Promise to be fulfilled with entry array.
+ * @return {!Promise} Promise to be fulfilled with entry array.
  */
 function createEntrySet(originalEntries) {
   var entriesPromise;
@@ -133,10 +133,10 @@ var reopenEntriesPromsie = null;
 /**
  * Launches the application with entries.
  *
- * @param {Promise} selectedEntriesPromise Promise to be fulfilled with the
+ * @param {!Promise} selectedEntriesPromise Promise to be fulfilled with the
  *     entries that are stored in the external file system (not in the isolated
  *     file system).
- * @return {Promise} Promise to be fulfilled after the application is launched.
+ * @return {!Promise} Promise to be fulfilled after the application is launched.
  */
 function launch(selectedEntriesPromise) {
   // If there is the previous window, close the window.
@@ -179,14 +179,16 @@ function launch(selectedEntriesPromise) {
   // Initialize the window document.
   return Promise.all([
     appWindowPromise,
-    backgroundComponentsPromise,
+    backgroundComponentsPromise
   ]).then(function(args) {
-    args[0].contentWindow.initialize(args[1]);
+    var appWindow = /** @type {!AppWindow} */ (args[0]);
+    var galleryWindow = /** @type {!GalleryWindow} */ (appWindow.contentWindow);
+    galleryWindow.initialize(args[1]);
     return Promise.all([
       allEntriesPromise,
       selectedEntriesPromise
     ]).then(function(entries) {
-      args[0].contentWindow.loadEntries(entries[0], entries[1]);
+      galleryWindow.loadEntries(entries[0], entries[1]);
     });
   });
 }
