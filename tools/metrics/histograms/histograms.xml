@@ -55173,6 +55173,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="Low battery"/>
   <int value="3" label="Suspend failures"/>
   <int value="4" label="Dark resume"/>
+  <int value="5" label="System update"/>
+  <int value="6" label="Dark resume failed"/>
 </enum>
 
 <enum name="SideloadUIEvents" type="int">
