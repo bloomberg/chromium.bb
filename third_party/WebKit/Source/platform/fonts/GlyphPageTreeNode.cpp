@@ -414,22 +414,33 @@ void GlyphPageTreeNode::pruneFontData(const SimpleFontData* fontData, unsigned l
         it->value->pruneFontData(fontData, level);
 }
 
-void SystemFallbackGlyphPageTreeNode::pruneFontData(const SimpleFontData* fontData)
+GlyphPage* SystemFallbackGlyphPageTreeNode::page(UScriptCode script)
 {
-    m_page->removePerGlyphFontData(fontData);
+    PageByScriptMap::iterator it = m_pagesByScript.find(script);
+    if (it != m_pagesByScript.end())
+        return it->value.get();
+
+    RefPtr<GlyphPage> newPage = initializePage();
+    m_pagesByScript.set(script, newPage);
+    return newPage.get();
 }
 
-void SystemFallbackGlyphPageTreeNode::initializePage()
+void SystemFallbackGlyphPageTreeNode::pruneFontData(const SimpleFontData* fontData)
+{
+    PageByScriptMap::iterator end = m_pagesByScript.end();
+    for (PageByScriptMap::iterator it = m_pagesByScript.begin(); it != end; ++it)
+        it->value->removePerGlyphFontData(fontData);
+}
+
+PassRefPtr<GlyphPage> SystemFallbackGlyphPageTreeNode::initializePage()
 {
     // System fallback page is initialized with the parent's page, as individual
     // entries may use different fonts depending on character. If the Font
     // ever finds it needs a glyph out of the system fallback page, it will
     // ask the system for the best font to use and fill that glyph in for us.
-    if (GlyphPage* parentPage = m_parent->page()) {
-        m_page = parentPage->createCopiedSystemFallbackPage(this);
-        return;
-    }
-    m_page = GlyphPage::createForMixedFontData(this);
+    if (GlyphPage* parentPage = m_parent->page())
+        return parentPage->createCopiedSystemFallbackPage(this);
+    return GlyphPage::createForMixedFontData(this);
 }
 
 } // namespace blink

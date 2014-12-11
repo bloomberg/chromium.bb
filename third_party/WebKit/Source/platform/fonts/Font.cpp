@@ -452,7 +452,7 @@ std::pair<GlyphData, GlyphPage*> Font::glyphDataAndPageForCharacter(UChar32& c, 
     if (variant == NormalVariant) {
         // Fastest loop, for the common case (normal variant).
         while (true) {
-            page = node->page();
+            page = node->page(m_fontDescription.script());
             if (page) {
                 GlyphData data = page->glyphDataForCharacter(c);
                 if (data.fontData && (data.fontData->platformData().orientation() == Horizontal || data.fontData->isTextOrientationFallback()))
@@ -484,7 +484,7 @@ std::pair<GlyphData, GlyphPage*> Font::glyphDataAndPageForCharacter(UChar32& c, 
     }
     if (variant != NormalVariant) {
         while (true) {
-            page = node->page();
+            page = node->page(m_fontDescription.script());
             if (page) {
                 GlyphData data = page->glyphDataForCharacter(c);
                 if (data.fontData) {
@@ -565,7 +565,7 @@ bool Font::primaryFontHasGlyphForCharacter(UChar32 character) const
 {
     unsigned pageNumber = (character / GlyphPage::size);
 
-    GlyphPageTreeNodeBase* node = GlyphPageTreeNode::getRootChild(primaryFont(), pageNumber);
+    GlyphPageTreeNode* node = GlyphPageTreeNode::getNormalRootChild(primaryFont(), pageNumber);
     GlyphPage* page = node->page();
 
     return page && page->glyphForCharacter(character);

@@ -223,4 +223,27 @@ TEST(GlyphPageTreeNode, systemFallback)
     EXPECT_EQ(pageCountBeforeTest, GlyphPageTreeNode::treeGlyphPageCount());
 }
 
+TEST(GlyphPageTreeNode, systemFallbackScriptIsolation)
+{
+    const unsigned kPageNumber = 0;
+    RefPtr<TestSimpleFontData> defaultData = TestSimpleFontData::create('A', 'B');
+    GlyphPageTreeNode* node1 = GlyphPageTreeNode::getNormalRootChild(defaultData.get(), kPageNumber);
+    SystemFallbackGlyphPageTreeNode* node2 = node1->getSystemFallbackChild(kPageNumber);
+
+    EXPECT_TRUE(node2->isSystemFallback());
+
+    GlyphPage* commonPage = node2->page(USCRIPT_COMMON);
+    GlyphPage* latinPage = node2->page(USCRIPT_LATIN);
+    GlyphPage* simplifiedChinesePage = node2->page(USCRIPT_SIMPLIFIED_HAN);
+    GlyphPage* traditionalChinesePage = node2->page(USCRIPT_TRADITIONAL_HAN);
+    GlyphPage* japanesePage = node2->page(USCRIPT_KATAKANA_OR_HIRAGANA);
+    EXPECT_NE(commonPage, latinPage);
+    EXPECT_NE(commonPage, simplifiedChinesePage);
+    EXPECT_NE(commonPage, traditionalChinesePage);
+    EXPECT_NE(simplifiedChinesePage, traditionalChinesePage);
+    EXPECT_NE(commonPage, japanesePage);
+    EXPECT_NE(japanesePage, simplifiedChinesePage);
+    EXPECT_NE(japanesePage, traditionalChinesePage);
+}
+
 } // namespace blink
