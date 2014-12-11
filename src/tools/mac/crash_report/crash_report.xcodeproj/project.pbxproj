@@ -64,6 +64,7 @@
 		F44DDD8719C85CD50047280E /* dump_context.cc in Sources */ = {isa = PBXBuildFile; fileRef = F44DDD8419C85CD50047280E /* dump_context.cc */; };
 		F44DDD8819C85CD50047280E /* dump_object.cc in Sources */ = {isa = PBXBuildFile; fileRef = F44DDD8519C85CD50047280E /* dump_object.cc */; };
 		F44DDD8919C85CD50047280E /* microdump_processor.cc in Sources */ = {isa = PBXBuildFile; fileRef = F44DDD8619C85CD50047280E /* microdump_processor.cc */; };
+		F4D43B2F1A38490700C290B2 /* microdump.cc in Sources */ = {isa = PBXBuildFile; fileRef = F4D43B2E1A38490700C290B2 /* microdump.cc */; };
 		F9C7ECE50E8ABCA600E953AD /* bytereader.cc in Sources */ = {isa = PBXBuildFile; fileRef = F9C7ECE20E8ABCA600E953AD /* bytereader.cc */; };
 		F9C7ECE60E8ABCA600E953AD /* dwarf2reader.cc in Sources */ = {isa = PBXBuildFile; fileRef = F9C7ECE30E8ABCA600E953AD /* dwarf2reader.cc */; };
 		F9C7ECE70E8ABCA600E953AD /* functioninfo.cc in Sources */ = {isa = PBXBuildFile; fileRef = F9C7ECE40E8ABCA600E953AD /* functioninfo.cc */; };
@@ -179,6 +180,8 @@
 		F44DDD8B19C85CFB0047280E /* dump_object.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = dump_object.h; path = ../../../google_breakpad/processor/dump_object.h; sourceTree = "<group>"; };
 		F44DDD8C19C85CFC0047280E /* microdump_processor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = microdump_processor.h; path = ../../../google_breakpad/processor/microdump_processor.h; sourceTree = "<group>"; };
 		F44DDD8D19C85CFC0047280E /* process_result.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = process_result.h; path = ../../../google_breakpad/processor/process_result.h; sourceTree = "<group>"; };
+		F4D43B2E1A38490700C290B2 /* microdump.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = microdump.cc; path = ../../../processor/microdump.cc; sourceTree = "<group>"; };
+		F4D43B301A38492000C290B2 /* microdump.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = microdump.h; path = ../../../google_breakpad/processor/microdump.h; sourceTree = "<group>"; };
 		F9C7ECE20E8ABCA600E953AD /* bytereader.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = bytereader.cc; path = ../../../common/dwarf/bytereader.cc; sourceTree = SOURCE_ROOT; };
 		F9C7ECE30E8ABCA600E953AD /* dwarf2reader.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dwarf2reader.cc; path = ../../../common/dwarf/dwarf2reader.cc; sourceTree = SOURCE_ROOT; };
 		F9C7ECE40E8ABCA600E953AD /* functioninfo.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = functioninfo.cc; path = ../../../common/dwarf/functioninfo.cc; sourceTree = SOURCE_ROOT; };
@@ -224,6 +227,8 @@
 				F44DDD8A19C85CFB0047280E /* dump_context.h */,
 				F44DDD8519C85CD50047280E /* dump_object.cc */,
 				F44DDD8B19C85CFB0047280E /* dump_object.h */,
+				F4D43B2E1A38490700C290B2 /* microdump.cc */,
+				F4D43B301A38492000C290B2 /* microdump.h */,
 				F44DDD8619C85CD50047280E /* microdump_processor.cc */,
 				F44DDD8C19C85CFC0047280E /* microdump_processor.h */,
 				9BDF176C0B1B8CB100F8391B /* on_demand_symbol_supplier.mm */,
@@ -482,6 +487,7 @@
 				D2A5DD4D1188651100081F03 /* cfi_frame_info.cc in Sources */,
 				D2A5DD631188658B00081F03 /* tokenize.cc in Sources */,
 				8B31FF2A11F0C62700FCF3E4 /* dwarf_cfi_to_module.cc in Sources */,
+				F4D43B2F1A38490700C290B2 /* microdump.cc in Sources */,
 				8B31FF2B11F0C62700FCF3E4 /* dwarf_cu_to_module.cc in Sources */,
 				F44DDD8819C85CD50047280E /* dump_object.cc in Sources */,
 				8B31FF2C11F0C62700FCF3E4 /* dwarf_line_to_module.cc in Sources */,
