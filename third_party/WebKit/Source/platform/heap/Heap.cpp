@@ -65,10 +65,8 @@ namespace blink {
 #if ENABLE(GC_PROFILE_MARKING)
 static String classOf(const void* object)
 {
-    const GCInfo* gcInfo = Heap::findGCInfo(reinterpret_cast<Address>(const_cast<void*>(object)));
-    if (gcInfo)
+    if (const GCInfo* gcInfo = Heap::findGCInfo(reinterpret_cast<Address>(const_cast<void*>(object))))
         return gcInfo->m_className;
-
     return "unknown";
 }
 #endif
@@ -203,7 +201,7 @@ public:
     {
         ASSERT(contains(address));
         if (!m_inUse[index(address)])
-            return 0;
+            return nullptr;
         if (m_isLargePage)
             return pageFromObject(base());
         return pageFromObject(address);
@@ -249,7 +247,7 @@ private:
             RELEASE_ASSERT(!error);
         }
         size_t allocationSize = size + blinkPageSize;
-        for (int attempt = 0; attempt < 10; attempt++) {
+        for (int attempt = 0; attempt < 10; ++attempt) {
             base = static_cast<Address>(mmap(alignedRandomAddress, allocationSize, PROT_NONE, MAP_ANON | MAP_PRIVATE, -1, 0));
             if (base != MAP_FAILED)
                 break;
@@ -287,7 +285,7 @@ private:
         // returned as a whole and then allocate an aligned region
         // inside this larger region.
         size_t allocationSize = size + blinkPageSize;
-        for (int attempt = 0; attempt < 3; attempt++) {
+        for (int attempt = 0; attempt < 3; ++attempt) {
             base = static_cast<Address>(VirtualAlloc(0, allocationSize, MEM_RESERVE, PAGE_NOACCESS));
             RELEASE_ASSERT(base);
             VirtualFree(base, 0, MEM_RELEASE);
@@ -324,7 +322,7 @@ private:
 // The representation keeps track of two memory regions:
 //
 // 1. The virtual memory reserved from the system in order to be able
-//    to free all the virtual memory reserved. Multiple PageMemory
+//    to free all the virtual memory reserved.  Multiple PageMemory
 //    instances can share the same reserved memory region and
 //    therefore notify the reserved memory region on destruction so
 //    that the system memory can be given back when all PageMemory
@@ -399,7 +397,7 @@ private:
         ASSERT(reserved->contains(writable));
 
         // Register the writable area of the memory as part of the LSan root set.
-        // Only the writable area is mapped and can contain C++ objects. Those
+        // Only the writable area is mapped and can contain C++ objects.  Those
         // C++ objects can contain pointers to objects outside of the heap and
         // should therefore be part of the LSan root set.
         __lsan_register_root_region(m_writable.base(), m_writable.size());
@@ -506,11 +504,11 @@ void HeapObjectHeader::finalize(const GCInfo* gcInfo, Address object, size_t obj
     }
 
 #if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
-    // In Debug builds, memory is zapped when it's freed, and the zapped memory is
-    // zeroed out when the memory is reused. Memory is also zapped when using Leak
-    // Sanitizer because the heap is used as a root region for LSan and therefore
-    // pointers in unreachable memory could hide leaks.
-    for (size_t i = 0; i < objectSize; i++)
+    // In Debug builds, memory is zapped when it's freed, and the zapped memory
+    // is zeroed out when the memory is reused.  Memory is also zapped when
+    // using Leak Sanitizer because the heap is used as a root region for LSan
+    // and therefore pointers in unreachable memory could hide leaks.
+    for (size_t i = 0; i < objectSize; ++i)
         object[i] = finalizedZapValue;
 
     // Zap the primary vTable entry (secondary vTable entries are not zapped).
@@ -518,8 +516,9 @@ void HeapObjectHeader::finalize(const GCInfo* gcInfo, Address object, size_t obj
         *(reinterpret_cast<uintptr_t*>(object)) = zappedVTable;
     }
 #endif
-    // In Release builds, the entire object is zeroed out when it is added to the free list.
-    // This happens right after sweeping the page and before the thread commences execution.
+    // In Release builds, the entire object is zeroed out when it is added to
+    // the free list.  This happens right after sweeping the page and before the
+    // thread commences execution.
 }
 
 NO_SANITIZE_ADDRESS
@@ -620,15 +619,15 @@ void LargeObject<HeapObjectHeader>::finalize()
 
 template<typename Header>
 ThreadHeap<Header>::ThreadHeap(ThreadState* state, int index)
-    : m_currentAllocationPoint(0)
+    : m_currentAllocationPoint(nullptr)
     , m_remainingAllocationSize(0)
     , m_lastRemainingAllocationSize(0)
-    , m_firstPage(0)
-    , m_firstLargeObject(0)
-    , m_firstPageAllocatedDuringSweeping(0)
-    , m_lastPageAllocatedDuringSweeping(0)
-    , m_firstLargeObjectAllocatedDuringSweeping(0)
-    , m_lastLargeObjectAllocatedDuringSweeping(0)
+    , m_firstPage(nullptr)
+    , m_firstLargeObject(nullptr)
+    , m_firstPageAllocatedDuringSweeping(nullptr)
+    , m_lastPageAllocatedDuringSweeping(nullptr)
+    , m_firstLargeObjectAllocatedDuringSweeping(nullptr)
+    , m_lastLargeObjectAllocatedDuringSweeping(nullptr)
     , m_threadState(state)
     , m_index(index)
     , m_promptlyFreedCount(0)
@@ -659,13 +658,13 @@ void ThreadHeap<Header>::cleanupPages()
         Heap::decreaseAllocatedSpace(blinkPageSize);
         Heap::orphanedPagePool()->addOrphanedPage(m_index, page);
     }
-    m_firstPage = 0;
+    m_firstPage = nullptr;
 
     for (LargeObject<Header>* largeObject = m_firstLargeObject; largeObject; largeObject = largeObject->m_next) {
         Heap::decreaseAllocatedSpace(largeObject->size());
         Heap::orphanedPagePool()->addOrphanedPage(m_index, largeObject);
     }
-    m_firstLargeObject = 0;
+    m_firstLargeObject = nullptr;
 }
 
 template<typename Header>
@@ -688,7 +687,7 @@ Address ThreadHeap<Header>::outOfLineAllocate(size_t payloadSize, size_t allocat
     updateRemainingAllocationSize();
     threadState()->scheduleGCOrForceConservativeGCIfNeeded();
 
-    setAllocationPoint(0, 0);
+    setAllocationPoint(nullptr, 0);
     ASSERT(allocationSize >= allocationGranularity);
     if (allocateFromFreeList(allocationSize))
         return allocate(payloadSize, gcInfo);
@@ -760,7 +759,7 @@ BaseHeapPage* ThreadHeap<Header>::pageFromAddress(Address address)
         if (largeObject->contains(address))
             return largeObject;
     }
-    return 0;
+    return nullptr;
 }
 
 #if ENABLE(GC_PROFILE_MARKING)
@@ -771,7 +770,7 @@ const GCInfo* ThreadHeap<Header>::findGCInfoOfLargeObject(Address address)
         if (largeObject->contains(address))
             return largeObject->gcInfo();
     }
-    return 0;
+    return nullptr;
 }
 #endif
 
@@ -829,9 +828,10 @@ void FreeList<Header>::addToFreeList(Address address, size_t size)
     }
     entry = new (NotNull, address) FreeListEntry(size);
 #if defined(ADDRESS_SANITIZER)
-    // For ASan we don't add the entry to the free lists until the asanDeferMemoryReuseCount
-    // reaches zero. However we always add entire pages to ensure that adding a new page will
-    // increase the allocation space.
+    // For ASan we don't add the entry to the free lists until the
+    // asanDeferMemoryReuseCount reaches zero.  However we always add entire
+    // pages to ensure that adding a new page will increase the allocation
+    // space.
     if (HeapPage<Header>::payloadSize() != size && !entry->shouldAddToFreeList())
         return;
 #endif
@@ -961,9 +961,10 @@ bool ThreadHeap<Header>::coalesce(size_t allocationSize)
     size_t pageCount = 0;
     HeapPage<Header>* page = m_firstPage;
     while (page) {
-        // Only consider one of the first 'n' pages. A "younger" page is more likely to have freed backings.
+        // Only consider one of the first 'n' pages.  A "younger" page is more
+        // likely to have freed backings.
         if (++pageCount > numberOfPagesToConsiderForCoalescing) {
-            page = 0;
+            page = nullptr;
             break;
         }
         // Only coalesce pages with "sufficient" promptly freed space.
@@ -973,7 +974,8 @@ bool ThreadHeap<Header>::coalesce(size_t allocationSize)
         page = page->next();
     }
 
-    // If we found a likely candidate, fully coalesce all its promptly-freed entries.
+    // If we found a likely candidate, fully coalesce all its promptly-freed
+    // entries.
     if (page) {
         page->clearObjectStartBitMap();
         page->resetPromptlyFreedSize();
@@ -1014,7 +1016,8 @@ bool ThreadHeap<Header>::coalesce(size_t allocationSize)
                 foundFreeEntrySize = size;
         }
 
-        // Check before subtracting because freedCount might not be balanced with freed entries.
+        // Check before subtracting because freedCount might not be balanced
+        // with freed entries.
         if (freedCount < m_promptlyFreedCount)
             m_promptlyFreedCount -= freedCount;
         else
@@ -1024,7 +1027,8 @@ bool ThreadHeap<Header>::coalesce(size_t allocationSize)
     TRACE_EVENT_END1("blink_gc", "ThreadHeap::coalesce", "foundFreeEntrySize", (unsigned)foundFreeEntrySize);
 
     if (foundFreeEntrySize < neededFreeEntrySize) {
-        // If coalescing failed, reset the freed count to delay coalescing again.
+        // If coalescing failed, reset the freed count to delay coalescing
+        // again.
         m_promptlyFreedCount = 0;
         return false;
     }
@@ -1035,18 +1039,19 @@ bool ThreadHeap<Header>::coalesce(size_t allocationSize)
 template<typename Header>
 Address ThreadHeap<Header>::allocateLargeObject(size_t size, const GCInfo* gcInfo)
 {
-    // Caller already added space for object header and rounded up to allocation alignment
+    // Caller already added space for object header and rounded up to allocation
+    // alignment
     ASSERT(!(size & allocationMask));
 
     size_t allocationSize = sizeof(LargeObject<Header>) + size;
 
-    // Ensure that there is enough space for alignment. If the header
+    // Ensure that there is enough space for alignment.  If the header
     // is not a multiple of 8 bytes we will allocate an extra
     // headerPadding<Header> bytes to ensure it 8 byte aligned.
     allocationSize += headerPadding<Header>();
 
-    // If ASan is supported we add allocationGranularity bytes to the allocated space and
-    // poison that to detect overflows
+    // If ASan is supported we add allocationGranularity bytes to the allocated
+    // space and poison that to detect overflows
 #if defined(ADDRESS_SANITIZER)
     allocationSize += allocationGranularity;
 #endif
@@ -1101,13 +1106,13 @@ void ThreadHeap<Header>::freeLargeObject(LargeObject<Header>* object, LargeObjec
     if (object->terminating()) {
         ASSERT(ThreadState::current()->isTerminating());
         // The thread is shutting down and this page is being removed as a part
-        // of the thread local GC. In that case the object could be traced in
+        // of the thread local GC.  In that case the object could be traced in
         // the next global GC if there is a dangling pointer from a live thread
-        // heap to this dead thread heap. To guard against this, we put the page
-        // into the orphaned page pool and zap the page memory. This ensures
-        // that tracing the dangling pointer in the next global GC just
-        // crashes instead of causing use-after-frees. After the next global GC,
-        // the orphaned pages are removed.
+        // heap to this dead thread heap.  To guard against this, we put the
+        // page into the orphaned page pool and zap the page memory.  This
+        // ensures that tracing the dangling pointer in the next global GC just
+        // crashes instead of causing use-after-frees.  After the next global
+        // GC, the orphaned pages are removed.
         Heap::orphanedPagePool()->addOrphanedPage(m_index, object);
     } else {
         ASSERT(!ThreadState::current()->isTerminating());
@@ -1121,7 +1126,7 @@ template<typename DataType>
 PagePool<DataType>::PagePool()
 {
     for (int i = 0; i < NumberOfHeaps; ++i) {
-        m_pool[i] = 0;
+        m_pool[i] = nullptr;
     }
 }
 
@@ -1141,7 +1146,7 @@ FreePagePool::~FreePagePool()
 void FreePagePool::addFreePage(int index, PageMemory* memory)
 {
     // When adding a page to the pool we decommit it to ensure it is unused
-    // while in the pool. This also allows the physical memory, backing the
+    // while in the pool.  This also allows the physical memory, backing the
     // page, to be given back to the OS.
     memory->decommit();
     MutexLocker locker(m_mutex[index]);
@@ -1163,7 +1168,7 @@ PageMemory* FreePagePool::takeFreePage(int index)
         // We got some memory, but failed to commit it, try again.
         delete memory;
     }
-    return 0;
+    return nullptr;
 }
 
 BaseHeapPage::BaseHeapPage(PageMemory* storage, const GCInfo* gcInfo, ThreadState* state)
@@ -1177,8 +1182,8 @@ BaseHeapPage::BaseHeapPage(PageMemory* storage, const GCInfo* gcInfo, ThreadStat
 
 void BaseHeapPage::markOrphaned()
 {
-    m_threadState = 0;
-    m_gcInfo = 0;
+    m_threadState = nullptr;
+    m_gcInfo = nullptr;
     m_terminating = false;
     // Since we zap the page payload for orphaned pages we need to mark it as
     // unused so a conservative pointer won't interpret the object headers.
@@ -1214,9 +1219,8 @@ void OrphanedPagePool::decommitOrphanedPages()
 
 #if ENABLE(ASSERT)
     // No locking needed as all threads are at safepoints at this point in time.
-    ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
-    for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it)
-        ASSERT((*it)->isAtSafePoint());
+    for (ThreadState* state : ThreadState::attachedThreads())
+        ASSERT(state->isAtSafePoint());
 #endif
 
     for (int index = 0; index < NumberOfHeaps; ++index) {
@@ -1256,7 +1260,7 @@ void OrphanedPagePool::clearMemory(PageMemory* memory)
     // only works for code in this method and not for calls to memset.
     Address base = memory->writableStart();
     for (Address current = base; current < base + blinkPagePayloadSize(); ++current)
-        *current = 0;
+        *current = nullptr;
 #else
     memset(memory->writableStart(), 0, blinkPagePayloadSize());
 #endif
@@ -1279,16 +1283,16 @@ bool OrphanedPagePool::contains(void* object)
 template<>
 void ThreadHeap<GeneralHeapObjectHeader>::addPageToHeap(const GCInfo* gcInfo)
 {
-    // When adding a page to the ThreadHeap using GeneralHeapObjectHeaders the GCInfo on
-    // the heap should be unused (ie. 0).
-    allocatePage(0);
+    // When adding a page to the ThreadHeap using GeneralHeapObjectHeaders the
+    // GCInfo on the heap should be unused (ie. nullptr).
+    allocatePage(nullptr);
 }
 
 template<>
 void ThreadHeap<HeapObjectHeader>::addPageToHeap(const GCInfo* gcInfo)
 {
-    // When adding a page to the ThreadHeap using HeapObjectHeaders store the GCInfo on the heap
-    // since it is the same for all objects
+    // When adding a page to the ThreadHeap using HeapObjectHeaders store the
+    // GCInfo on the heap since it is the same for all objects
     ASSERT(gcInfo);
     allocatePage(gcInfo);
 }
@@ -1300,13 +1304,13 @@ void ThreadHeap<Header>::removePageFromHeap(HeapPage<Header>* page)
 
     if (page->terminating()) {
         // The thread is shutting down and this page is being removed as a part
-        // of the thread local GC. In that case the object could be traced in
+        // of the thread local GC.  In that case the object could be traced in
         // the next global GC if there is a dangling pointer from a live thread
-        // heap to this dead thread heap. To guard against this, we put the page
-        // into the orphaned page pool and zap the page memory. This ensures
-        // that tracing the dangling pointer in the next global GC just
-        // crashes instead of causing use-after-frees. After the next global GC,
-        // the orphaned pages are removed.
+        // heap to this dead thread heap.  To guard against this, we put the
+        // page into the orphaned page pool and zap the page memory.  This
+        // ensures that tracing the dangling pointer in the next global GC just
+        // crashes instead of causing use-after-frees.  After the next global
+        // GC, the orphaned pages are removed.
         Heap::orphanedPagePool()->addOrphanedPage(m_index, page);
     } else {
         PageMemory* memory = page->storage();
@@ -1330,10 +1334,9 @@ void ThreadHeap<Header>::allocatePage(const GCInfo* gcInfo)
         PageMemoryRegion* region = PageMemoryRegion::allocateNormalPages();
         m_threadState->allocatedRegionsSinceLastGC().append(region);
 
-        // Setup the PageMemory object for each of the pages in the
-        // region.
+        // Setup the PageMemory object for each of the pages in the region.
         size_t offset = 0;
-        for (size_t i = 0; i < blinkPagesPerRegion; i++) {
+        for (size_t i = 0; i < blinkPagesPerRegion; ++i) {
             PageMemory* memory = PageMemory::setupPageMemoryInRegion(region, offset, blinkPagePayloadSize());
             // Take the first possible page ensuring that this thread actually
             // gets a page and add the rest to the page pool.
@@ -1442,7 +1445,7 @@ void ThreadHeap<Header>::sweepLargePages()
 
 
 // STRICT_ASAN_FINALIZATION_CHECKING turns on poisoning of all objects during
-// sweeping to catch cases where dead objects touch each other. This is not
+// sweeping to catch cases where dead objects touch each other.  This is not
 // turned on by default because it also triggers for cases that are safe.
 // Examples of such safe cases are context life cycle observers and timers
 // embedded in garbage collected objects.
@@ -1454,7 +1457,7 @@ void ThreadHeap<Header>::sweep()
     ASSERT(isConsistentForSweeping());
 #if defined(ADDRESS_SANITIZER) && STRICT_ASAN_FINALIZATION_CHECKING
     // When using ASan do a pre-sweep where all unmarked objects are
-    // poisoned before calling their finalizer methods. This can catch
+    // poisoned before calling their finalizer methods.  This can catch
     // the case where the finalizer of an object tries to modify
     // another object as part of finalization.
     for (HeapPage<Header>* page = m_firstPage; page; page = page->next())
@@ -1472,14 +1475,14 @@ void ThreadHeap<Header>::postSweepProcessing()
     if (m_firstPageAllocatedDuringSweeping) {
         m_lastPageAllocatedDuringSweeping->m_next = m_firstPage;
         m_firstPage = m_firstPageAllocatedDuringSweeping;
-        m_lastPageAllocatedDuringSweeping = 0;
-        m_firstPageAllocatedDuringSweeping = 0;
+        m_lastPageAllocatedDuringSweeping = nullptr;
+        m_firstPageAllocatedDuringSweeping = nullptr;
     }
     if (m_firstLargeObjectAllocatedDuringSweeping) {
         m_lastLargeObjectAllocatedDuringSweeping->m_next = m_firstLargeObject;
         m_firstLargeObject = m_firstLargeObjectAllocatedDuringSweeping;
-        m_lastLargeObjectAllocatedDuringSweeping = 0;
-        m_firstLargeObjectAllocatedDuringSweeping = 0;
+        m_lastLargeObjectAllocatedDuringSweeping = nullptr;
+        m_firstLargeObjectAllocatedDuringSweeping = nullptr;
     }
 }
 
@@ -1487,10 +1490,9 @@ void ThreadHeap<Header>::postSweepProcessing()
 template<typename Header>
 bool ThreadHeap<Header>::isConsistentForSweeping()
 {
-    // A thread heap is consistent for sweeping if none of the pages to
-    // be swept contain a freelist block or the current allocation
-    // point.
-    for (size_t i = 0; i < blinkPageSizeLog2; i++) {
+    // A thread heap is consistent for sweeping if none of the pages to be swept
+    // contain a freelist block or the current allocation point.
+    for (size_t i = 0; i < blinkPageSizeLog2; ++i) {
         for (FreeListEntry* freeListEntry = m_freeList.m_freeLists[i]; freeListEntry; freeListEntry = freeListEntry->next()) {
             if (pagesToBeSweptContains(freeListEntry->address()))
                 return false;
@@ -1509,7 +1511,7 @@ bool ThreadHeap<Header>::isConsistentForSweeping()
 template<typename Header>
 void ThreadHeap<Header>::makeConsistentForSweeping()
 {
-    setAllocationPoint(0, 0);
+    setAllocationPoint(nullptr, 0);
     clearFreeLists();
 }
 
@@ -1536,8 +1538,8 @@ template<typename Header>
 void FreeList<Header>::clear()
 {
     m_biggestFreeListIndex = 0;
-    for (size_t i = 0; i < blinkPageSizeLog2; i++)
-        m_freeLists[i] = 0;
+    for (size_t i = 0; i < blinkPageSizeLog2; ++i)
+        m_freeLists[i] = nullptr;
 }
 
 template<typename Header>
@@ -1555,7 +1557,7 @@ int FreeList<Header>::bucketIndexForSize(size_t size)
 template<typename Header>
 HeapPage<Header>::HeapPage(PageMemory* storage, ThreadHeap<Header>* heap, const GCInfo* gcInfo)
     : BaseHeapPage(storage, gcInfo, heap->threadState())
-    , m_next(0)
+    , m_next(nullptr)
 {
     COMPILE_ASSERT(!(sizeof(HeapPage<Header>) & allocationMask), page_header_incorrectly_aligned);
     m_objectStartBitMapComputed = false;
@@ -1620,9 +1622,10 @@ void HeapPage<Header>::sweep(ThreadHeap<Header>* heap)
         header->checkHeader();
 
         if (!header->isMarked()) {
-            // For ASan we unpoison the specific object when calling the finalizer and
-            // poison it again when done to allow the object's own finalizer to operate
-            // on the object, but not have other finalizers be allowed to access it.
+            // For ASan we unpoison the specific object when calling the
+            // finalizer and poison it again when done to allow the object's own
+            // finalizer to operate on the object, but not have other finalizers
+            // be allowed to access it.
             ASAN_UNPOISON_MEMORY_REGION(header->payload(), header->payloadSize());
             finalize(header);
             size_t size = header->size();
@@ -1714,7 +1717,7 @@ template<typename Header>
 Header* HeapPage<Header>::findHeaderFromAddress(Address address)
 {
     if (address < payload())
-        return 0;
+        return nullptr;
     if (!isObjectStartBitMapComputed())
         populateObjectStartBitMap();
     size_t objectOffset = address - payload();
@@ -1733,7 +1736,7 @@ Header* HeapPage<Header>::findHeaderFromAddress(Address address)
     Address objectAddress = objectOffset + payload();
     Header* header = reinterpret_cast<Header*>(objectAddress);
     if (header->isFree())
-        return 0;
+        return nullptr;
     header->checkHeader();
     return header;
 }
@@ -1762,14 +1765,14 @@ template<typename Header>
 const GCInfo* HeapPage<Header>::findGCInfo(Address address)
 {
     if (address < payload())
-        return 0;
+        return nullptr;
 
     if (gcInfo()) // For non GeneralHeapObjects.
         return gcInfo();
 
     Header* header = findHeaderFromAddress(address);
     if (!header)
-        return 0;
+        return nullptr;
 
     return header->gcInfo();
 }
@@ -1779,7 +1782,7 @@ const GCInfo* HeapPage<Header>::findGCInfo(Address address)
 template<typename Header>
 void HeapPage<Header>::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
 {
-    Header* header = 0;
+    Header* header = nullptr;
     for (Address addr = payload(); addr < end(); addr += header->size()) {
         header = reinterpret_cast<Header*>(addr);
         if (json)
@@ -1905,8 +1908,8 @@ void LargeObject<Header>::snapshot(TracedValue* json, ThreadState::SnapshotInfo*
 void HeapDoesNotContainCache::flush()
 {
     if (m_hasEntries) {
-        for (int i = 0; i < numberOfEntries; i++)
-            m_entries[i] = 0;
+        for (int i = 0; i < numberOfEntries; ++i)
+            m_entries[i] = nullptr;
         m_hasEntries = false;
     }
 }
@@ -1931,7 +1934,7 @@ bool HeapDoesNotContainCache::lookup(Address address)
         return m_entries[index];
     if (m_entries[index + 1] == cachePage)
         return m_entries[index + 1];
-    return 0;
+    return false;
 }
 
 void HeapDoesNotContainCache::addEntry(Address address)
@@ -1965,9 +1968,9 @@ template<MarkingMode Mode>
 class MarkingVisitor final : public Visitor {
 public:
 #if ENABLE(GC_PROFILE_MARKING)
-    typedef HashSet<uintptr_t> LiveObjectSet;
-    typedef HashMap<String, LiveObjectSet> LiveObjectMap;
-    typedef HashMap<uintptr_t, std::pair<uintptr_t, String> > ObjectGraph;
+    using LiveObjectSet = HashSet<uintptr_t>;
+    using LiveObjectMap = HashMap<String, LiveObjectSet>;
+    using ObjectGraph = HashMap<uintptr_t, std::pair<uintptr_t, String>>;
 #endif
 
     explicit MarkingVisitor(CallbackStack* markingStack)
@@ -1980,9 +1983,9 @@ public:
         ASSERT(header);
         ASSERT(objectPointer);
         // Check that we are not marking objects that are outside
-        // the heap by calling Heap::contains. However we cannot
+        // the heap by calling Heap::contains.  However we cannot
         // call Heap::contains when outside a GC and we call mark
-        // when doing weakness for ephemerons. Hence we only check
+        // when doing weakness for ephemerons.  Hence we only check
         // when called within.
         ASSERT(!ThreadState::current()->isInGC() || Heap::containedInHeapOrOrphanedPage(header));
 
@@ -1990,7 +1993,7 @@ public:
             return;
 
         // If you hit this ASSERT, it means that there is a dangling pointer
-        // from a live thread heap to a dead thread heap. We must eliminate
+        // from a live thread heap to a dead thread heap.  We must eliminate
         // the dangling pointer.
         // Release builds don't have the ASSERT, but it is OK because
         // release builds will crash in the following header->isMarked()
@@ -2016,7 +2019,8 @@ public:
             Heap::pushTraceCallback(m_markingStack, const_cast<void*>(objectPointer), callback);
     }
 
-    // We need both HeapObjectHeader and GeneralHeapObjectHeader versions to correctly find the payload.
+    // We need both HeapObjectHeader and GeneralHeapObjectHeader versions to
+    // correctly find the payload.
     virtual void mark(HeapObjectHeader* header, TraceCallback callback) override
     {
         visitHeader(header, header->payload(), callback);
@@ -2151,8 +2155,8 @@ public:
         previouslyLive().swap(currentlyLive());
         currentlyLive().clear();
 
-        for (HashSet<uintptr_t>::iterator it = objectsToFindPath().begin(), end = objectsToFindPath().end(); it != end; ++it) {
-            dumpPathToObjectFromObjectGraph(objectGraph(), *it);
+        for (uintptr_t object : objectsToFindPath()) {
+            dumpPathToObjectFromObjectGraph(objectGraph(), object);
         }
     }
 
@@ -2161,8 +2165,8 @@ public:
         int count = 0;
 
         fprintf(stderr, " [previously %u]", previous.size());
-        for (LiveObjectSet::iterator it = current.begin(), end = current.end(); it != end; ++it) {
-            if (previous.find(*it) == previous.end())
+        for (uintptr_t object : current) {
+            if (previous.find(object) == previous.end())
                 continue;
             count++;
         }
@@ -2171,10 +2175,10 @@ public:
             return;
 
         fprintf(stderr, " {survived 2GCs %d: ", count);
-        for (LiveObjectSet::iterator it = current.begin(), end = current.end(); it != end; ++it) {
-            if (previous.find(*it) == previous.end())
+        for (uintptr_t object : current) {
+            if (previous.find(object) == previous.end())
                 continue;
-            fprintf(stderr, "%ld", *it);
+            fprintf(stderr, "%ld", object);
             if (--count)
                 fprintf(stderr, ", ");
         }
@@ -2281,23 +2285,23 @@ void Heap::doShutdown()
 
     ASSERT(!ThreadState::attachedThreads().size());
     delete s_markingVisitor;
-    s_markingVisitor = 0;
+    s_markingVisitor = nullptr;
     delete s_heapDoesNotContainCache;
-    s_heapDoesNotContainCache = 0;
+    s_heapDoesNotContainCache = nullptr;
     delete s_freePagePool;
-    s_freePagePool = 0;
+    s_freePagePool = nullptr;
     delete s_orphanedPagePool;
-    s_orphanedPagePool = 0;
+    s_orphanedPagePool = nullptr;
     delete s_weakCallbackStack;
-    s_weakCallbackStack = 0;
+    s_weakCallbackStack = nullptr;
     delete s_postMarkingCallbackStack;
-    s_postMarkingCallbackStack = 0;
+    s_postMarkingCallbackStack = nullptr;
     delete s_markingStack;
-    s_markingStack = 0;
+    s_markingStack = nullptr;
     delete s_ephemeronStack;
-    s_ephemeronStack = 0;
+    s_ephemeronStack = nullptr;
     delete s_regionTree;
-    s_regionTree = 0;
+    s_regionTree = nullptr;
     ThreadState::shutdown();
     ASSERT(Heap::allocatedSpace() == 0);
 }
@@ -2305,13 +2309,11 @@ void Heap::doShutdown()
 BaseHeapPage* Heap::contains(Address address)
 {
     ASSERT(ThreadState::current()->isInGC());
-    ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
-    for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it) {
-        BaseHeapPage* page = (*it)->contains(address);
-        if (page)
+    for (ThreadState* state : ThreadState::attachedThreads()) {
+        if (BaseHeapPage* page = state->contains(address))
             return page;
     }
-    return 0;
+    return nullptr;
 }
 
 #if ENABLE(ASSERT)
@@ -2327,7 +2329,7 @@ Address Heap::checkAndMarkPointer(Visitor* visitor, Address address)
 
 #if !ENABLE(ASSERT)
     if (s_heapDoesNotContainCache->lookup(address))
-        return 0;
+        return nullptr;
 #endif
 
     if (BaseHeapPage* page = lookup(address)) {
@@ -2335,7 +2337,8 @@ Address Heap::checkAndMarkPointer(Visitor* visitor, Address address)
         ASSERT(!page->orphaned());
         ASSERT(!s_heapDoesNotContainCache->lookup(address));
         page->checkAndMarkPointer(visitor, address);
-        // FIXME: We only need to set the conservative flag if checkAndMarkPointer actually marked the pointer.
+        // FIXME: We only need to set the conservative flag if
+        // checkAndMarkPointer actually marked the pointer.
         s_lastGCWasConservative = true;
         return address;
     }
@@ -2346,7 +2349,7 @@ Address Heap::checkAndMarkPointer(Visitor* visitor, Address address)
     if (!s_heapDoesNotContainCache->lookup(address))
         s_heapDoesNotContainCache->addEntry(address);
 #endif
-    return 0;
+    return nullptr;
 }
 
 #if ENABLE(GC_PROFILE_MARKING)
@@ -2367,7 +2370,7 @@ String Heap::createBacktraceString()
     int framesToShow = 3;
     int stackFrameSize = 16;
     ASSERT(stackFrameSize >= framesToShow);
-    typedef void* FramePointer;
+    using FramePointer = void*;
     FramePointer* stackFrame = static_cast<FramePointer*>(alloca(sizeof(FramePointer) * stackFrameSize));
     WTFGetBacktrace(stackFrame, &stackFrameSize);
 
@@ -2455,8 +2458,8 @@ bool Heap::popAndInvokeWeakPointerCallback(Visitor* visitor)
 {
     // For weak processing we should never reach orphaned pages since orphaned
     // pages are not traced and thus objects on those pages are never be
-    // registered as objects on orphaned pages. We cannot assert this here since
-    // we might have an off-heap collection. We assert it in
+    // registered as objects on orphaned pages.  We cannot assert this here
+    // since we might have an off-heap collection.  We assert it in
     // Heap::pushWeakPointerCallback.
     if (CallbackStack::Item* item = s_weakCallbackStack->pop()) {
         item->call(visitor);
@@ -2468,8 +2471,8 @@ bool Heap::popAndInvokeWeakPointerCallback(Visitor* visitor)
 void Heap::registerWeakTable(void* table, EphemeronCallback iterationCallback, EphemeronCallback iterationDoneCallback)
 {
     {
-        // Check that the ephemeron table being pushed onto the stack is not on an
-        // orphaned page.
+        // Check that the ephemeron table being pushed onto the stack is not on
+        // an orphaned page.
         ASSERT(!Heap::orphanedPagePool()->contains(table));
         CallbackStack::Item* slot = s_ephemeronStack->allocateEntry();
         *slot = CallbackStack::Item(table, iterationCallback);
@@ -2491,17 +2494,15 @@ bool Heap::weakTableRegistered(const void* table)
 void Heap::preGC()
 {
     ASSERT(!ThreadState::current()->isInGC());
-    ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
-    for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it)
-        (*it)->preGC();
+    for (ThreadState* state : ThreadState::attachedThreads())
+        state->preGC();
 }
 
 void Heap::postGC()
 {
     ASSERT(ThreadState::current()->isInGC());
-    ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
-    for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it)
-        (*it)->postGC();
+    for (ThreadState* state : ThreadState::attachedThreads())
+        state->postGC();
 }
 
 void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCType gcType)
@@ -2510,7 +2511,8 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     state->setGCState(ThreadState::StoppingOtherThreads);
 
     GCScope gcScope(stackState);
-    // Check if we successfully parked the other threads. If not we bail out of the GC.
+    // Check if we successfully parked the other threads.  If not we bail out of
+    // the GC.
     if (!gcScope.allThreadsParked()) {
         state->scheduleGC();
         return;
@@ -2530,9 +2532,8 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     static_cast<MarkingVisitor<GlobalMarking>*>(s_markingVisitor)->objectGraph().clear();
 #endif
 
-    // Disallow allocation during garbage collection (but not
-    // during the finalization that happens when the gcScope is
-    // torn down).
+    // Disallow allocation during garbage collection (but not during the
+    // finalization that happens when the gcScope is torn down).
     ThreadState::NoAllocationScope noAllocationScope(state);
 
     preGC();
@@ -2540,17 +2541,18 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     Heap::resetMarkedObjectSize();
     Heap::resetAllocatedObjectSize();
 
-    // 1. trace persistent roots.
+    // 1. Trace persistent roots.
     ThreadState::visitPersistentRoots(s_markingVisitor);
 
-    // 2. trace objects reachable from the persistent roots including ephemerons.
+    // 2. Trace objects reachable from the persistent roots including
+    // ephemerons.
     processMarkingStack(s_markingVisitor);
 
-    // 3. trace objects reachable from the stack. We do this independent of the
+    // 3. Trace objects reachable from the stack.  We do this independent of the
     // given stackState since other threads might have a different stack state.
     ThreadState::visitStackRoots(s_markingVisitor);
 
-    // 4. trace objects reachable from the stack "roots" including ephemerons.
+    // 4. Trace objects reachable from the stack "roots" including ephemerons.
     // Only do the processing if we found a pointer to an object on one of the
     // thread stacks.
     if (lastGCWasConservative())
@@ -2560,7 +2562,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     globalWeakProcessing(s_markingVisitor);
 
     // Now we can delete all orphaned pages because there are no dangling
-    // pointers to the orphaned pages. (If we have such dangling pointers,
+    // pointers to the orphaned pages.  (If we have such dangling pointers,
     // we should have crashed during marking before getting here.)
     orphanedPagePool()->decommitOrphanedPages();
 
@@ -2592,19 +2594,19 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
 
         state->preGC();
 
-        // 1. trace the thread local persistent roots. For thread local GCs we
+        // 1. Trace the thread local persistent roots. For thread local GCs we
         // don't trace the stack (ie. no conservative scanning) since this is
         // only called during thread shutdown where there should be no objects
         // on the stack.
         // We also assume that orphaned pages have no objects reachable from
-        // persistent handles on other threads or CrossThreadPersistents. The
+        // persistent handles on other threads or CrossThreadPersistents.  The
         // only cases where this could happen is if a subsequent conservative
         // global GC finds a "pointer" on the stack or due to a programming
         // error where an object has a dangling cross-thread pointer to an
         // object on this heap.
         state->visitPersistents(&markingVisitor);
 
-        // 2. trace objects reachable from the thread's persistent roots
+        // 2. Trace objects reachable from the thread's persistent roots
         // including ephemerons.
         processMarkingStack(&markingVisitor);
 
@@ -2628,8 +2630,8 @@ void Heap::processMarkingStack(Visitor* markingVisitor)
         }
 
         {
-            // Mark any strong pointers that have now become reachable in ephemeron
-            // maps.
+            // Mark any strong pointers that have now become reachable in
+            // ephemeron maps.
             TRACE_EVENT0("blink_gc", "Heap::processEphemeronStack");
             s_ephemeronStack->invokeEphemeronCallbacks(markingVisitor);
         }
@@ -2659,8 +2661,7 @@ void Heap::postMarkingProcessing(Visitor* markingVisitor)
 void Heap::globalWeakProcessing(Visitor* markingVisitor)
 {
     TRACE_EVENT0("blink_gc", "Heap::globalWeakProcessing");
-    // Call weak callbacks on objects that may now be pointing to dead
-    // objects.
+    // Call weak callbacks on objects that may now be pointing to dead objects.
     while (popAndInvokeWeakPointerCallback(markingVisitor)) { }
 
     // It is not permitted to trace pointers of live objects in the weak
@@ -2670,12 +2671,12 @@ void Heap::globalWeakProcessing(Visitor* markingVisitor)
 
 void Heap::collectAllGarbage()
 {
-    // FIXME: oilpan: we should perform a single GC and everything
+    // FIXME: Oilpan: we should perform a single GC and everything
     // should die. Unfortunately it is not the case for all objects
     // because the hierarchy was not completely moved to the heap and
     // some heap allocated objects own objects that contain persistents
     // pointing to other heap allocated objects.
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 5; ++i)
         collectGarbage(ThreadState::NoHeapPointersOnStack);
 }
 
@@ -2693,15 +2694,13 @@ void ThreadHeap<Header>::prepareHeapForTermination()
 size_t Heap::objectPayloadSizeForTesting()
 {
     size_t objectPayloadSize = 0;
-    ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
-    typedef ThreadState::AttachedThreadStateSet::iterator ThreadStateIterator;
-    for (ThreadStateIterator it = threads.begin(), end = threads.end(); it != end; ++it) {
-        (*it)->setGCState(ThreadState::GCRunning);
-        (*it)->makeConsistentForSweeping();
-        objectPayloadSize += (*it)->objectPayloadSizeForTesting();
-        (*it)->setGCState(ThreadState::SweepScheduled);
-        (*it)->setGCState(ThreadState::Sweeping);
-        (*it)->setGCState(ThreadState::NoGCScheduled);
+    for (ThreadState* state : ThreadState::attachedThreads()) {
+        state->setGCState(ThreadState::GCRunning);
+        state->makeConsistentForSweeping();
+        objectPayloadSize += state->objectPayloadSizeForTesting();
+        state->setGCState(ThreadState::SweepScheduled);
+        state->setGCState(ThreadState::Sweeping);
+        state->setGCState(ThreadState::NoGCScheduled);
     }
     return objectPayloadSize;
 }
@@ -2733,10 +2732,8 @@ void HeapAllocator::backingFree(void* address)
 
 void HeapAllocator::freeVectorBacking(void* address)
 {
-    typedef HeapIndexTrait<VectorBackingHeap> HeapTraits;
-    typedef HeapTraits::HeapType HeapType;
-    typedef HeapTraits::HeaderType HeaderType;
-    backingFree<HeapTraits, HeapType, HeaderType>(address);
+    using HeapTraits = HeapIndexTrait<VectorBackingHeap>;
+    backingFree<HeapTraits, HeapTraits::HeapType, HeapTraits::HeaderType>(address);
 }
 
 void HeapAllocator::freeInlineVectorBacking(void* address)
@@ -2747,10 +2744,8 @@ void HeapAllocator::freeInlineVectorBacking(void* address)
 
 void HeapAllocator::freeHashTableBacking(void* address)
 {
-    typedef HeapIndexTrait<HashTableBackingHeap> HeapTraits;
-    typedef HeapTraits::HeapType HeapType;
-    typedef HeapTraits::HeaderType HeaderType;
-    backingFree<HeapTraits, HeapType, HeaderType>(address);
+    using HeapTraits = HeapIndexTrait<HashTableBackingHeap>;
+    backingFree<HeapTraits, HeapTraits::HeapType, HeapTraits::HeaderType>(address);
 }
 
 template<typename HeapTraits, typename HeapType, typename HeaderType>
@@ -2779,10 +2774,8 @@ bool HeapAllocator::backingExpand(void* address, size_t newSize)
 
 bool HeapAllocator::expandVectorBacking(void* address, size_t newSize)
 {
-    typedef HeapIndexTrait<VectorBackingHeap> HeapTraits;
-    typedef HeapTraits::HeapType HeapType;
-    typedef HeapTraits::HeaderType HeaderType;
-    return backingExpand<HeapTraits, HeapType, HeaderType>(address, newSize);
+    using HeapTraits = HeapIndexTrait<VectorBackingHeap>;
+    return backingExpand<HeapTraits, HeapTraits::HeapType, HeapTraits::HeaderType>(address, newSize);
 }
 
 bool HeapAllocator::expandInlineVectorBacking(void* address, size_t newSize)
@@ -2839,12 +2832,12 @@ BaseHeapPage* Heap::lookup(Address address)
 {
     ASSERT(ThreadState::current()->isInGC());
     if (!s_regionTree)
-        return 0;
+        return nullptr;
     if (PageMemoryRegion* region = s_regionTree->lookup(address)) {
         BaseHeapPage* page = region->pageFromAddress(address);
-        return page && !page->orphaned() ? page : 0;
+        return page && !page->orphaned() ? page : nullptr;
     }
-    return 0;
+    return nullptr;
 }
 
 static Mutex& regionTreeMutex()
@@ -2855,9 +2848,10 @@ static Mutex& regionTreeMutex()
 
 void Heap::removePageMemoryRegion(PageMemoryRegion* region)
 {
-    // Deletion of large objects (and thus their regions) can happen concurrently
-    // on sweeper threads. Removal can also happen during thread shutdown, but
-    // that case is safe. Regardless, we make all removals mutually exclusive.
+    // Deletion of large objects (and thus their regions) can happen
+    // concurrently on sweeper threads.  Removal can also happen during thread
+    // shutdown, but that case is safe.  Regardless, we make all removals
+    // mutually exclusive.
     MutexLocker locker(regionTreeMutex());
     RegionTree::remove(region, &s_regionTree);
 }
@@ -2883,7 +2877,7 @@ PageMemoryRegion* Heap::RegionTree::lookup(Address address)
         ASSERT(current->m_region->contains(address));
         return current->m_region;
     }
-    return 0;
+    return nullptr;
 }
 
 void Heap::RegionTree::add(RegionTree* newTree, RegionTree** context)
@@ -2913,14 +2907,14 @@ void Heap::RegionTree::remove(PageMemoryRegion* region, RegionTree** context)
     if (!current)
         return;
 
-    *context = 0;
+    *context = nullptr;
     if (current->m_left) {
         add(current->m_left, context);
-        current->m_left = 0;
+        current->m_left = nullptr;
     }
     if (current->m_right) {
         add(current->m_right, context);
-        current->m_right = 0;
+        current->m_right = nullptr;
     }
     delete current;
 }
@@ -2941,7 +2935,7 @@ bool Heap::s_shutdownCalled = false;
 bool Heap::s_lastGCWasConservative = false;
 FreePagePool* Heap::s_freePagePool;
 OrphanedPagePool* Heap::s_orphanedPagePool;
-Heap::RegionTree* Heap::s_regionTree = 0;
+Heap::RegionTree* Heap::s_regionTree = nullptr;
 size_t Heap::s_allocatedObjectSize = 0;
 size_t Heap::s_allocatedSpace = 0;
 size_t Heap::s_markedObjectSize = 0;

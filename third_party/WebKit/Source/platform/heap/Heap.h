@@ -45,7 +45,6 @@
 #include "wtf/PageAllocator.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
-
 #include <stdint.h>
 
 namespace blink {
@@ -100,14 +99,13 @@ const int numberOfPagesToConsiderForCoalescing = 100;
 class CallbackStack;
 class PageMemory;
 template<ThreadAffinity affinity> class ThreadLocalPersistents;
-template<typename T, typename RootsAccessor = ThreadLocalPersistents<ThreadingTrait<T>::Affinity > > class Persistent;
+template<typename T, typename RootsAccessor = ThreadLocalPersistents<ThreadingTrait<T>::Affinity>> class Persistent;
 
 #if ENABLE(GC_PROFILE_HEAP)
 class TracedValue;
 #endif
 
-// Blink heap pages are set up with a guard page before and after the
-// payload.
+// Blink heap pages are set up with a guard page before and after the payload.
 inline size_t blinkPagePayloadSize()
 {
     return blinkPageSize - 2 * WTF::kSystemPageSize;
@@ -151,22 +149,21 @@ inline bool isPageHeaderAddress(Address address)
 }
 #endif
 
-// Mask an address down to the enclosing oilpan heap base page.
-// All oilpan heap pages are aligned at blinkPageBase plus an OS page size.
-// FIXME: Remove PLATFORM_EXPORT once we get a proper public interface to our typed heaps.
-// This is only exported to enable tests in HeapTest.cpp.
+// Mask an address down to the enclosing oilpan heap base page.  All oilpan heap
+// pages are aligned at blinkPageBase plus an OS page size.
+// FIXME: Remove PLATFORM_EXPORT once we get a proper public interface to our
+// typed heaps.  This is only exported to enable tests in HeapTest.cpp.
 PLATFORM_EXPORT inline BaseHeapPage* pageFromObject(const void* object)
 {
     Address address = reinterpret_cast<Address>(const_cast<void*>(object));
     return reinterpret_cast<BaseHeapPage*>(blinkPageAddress(address) + WTF::kSystemPageSize);
 }
 
-// Large allocations are allocated as separate objects and linked in a
-// list.
+// Large allocations are allocated as separate objects and linked in a list.
 //
-// In order to use the same memory allocation routines for everything
-// allocated in the heap, large objects are considered heap pages
-// containing only one object.
+// In order to use the same memory allocation routines for everything allocated
+// in the heap, large objects are considered heap pages containing only one
+// object.
 //
 // The layout of a large heap object is as follows:
 //
@@ -186,7 +183,7 @@ public:
     virtual const GCInfo* findGCInfo(Address address)
     {
         if (!objectContains(address))
-            return 0;
+            return nullptr;
         return gcInfo();
     }
 #endif
@@ -283,7 +280,7 @@ public:
     {
         // sizeof(HeapObjectHeader) must be equal to or smaller than
         // allocationGranurarity, because HeapObjectHeader is used as a header
-        // for an freed entry. Given that the smallest entry size is
+        // for an freed entry.  Given that the smallest entry size is
         // allocationGranurarity, HeapObjectHeader must fit into the size.
         COMPILE_ASSERT(sizeof(HeapObjectHeader) <= allocationGranularity, SizeOfHeapObjectHeaderMustBeSmallerThanAllocationGranularity);
     }
@@ -317,7 +314,7 @@ public:
     inline void mark();
     inline void unmark();
 
-    inline const GCInfo* gcInfo() { return 0; }
+    inline const GCInfo* gcInfo() { return nullptr; }
 
     inline Address payload();
     inline size_t payloadSize();
@@ -363,8 +360,7 @@ private:
 #endif
 };
 
-inline
-HeapObjectHeader* HeapObjectHeader::fromPayload(const void* payload)
+inline HeapObjectHeader* HeapObjectHeader::fromPayload(const void* payload)
 {
     Address addr = reinterpret_cast<Address>(const_cast<void*>(payload));
     HeapObjectHeader* header =
@@ -406,8 +402,7 @@ private:
     const GCInfo* m_gcInfo;
 };
 
-inline
-GeneralHeapObjectHeader* GeneralHeapObjectHeader::fromPayload(const void* payload)
+inline GeneralHeapObjectHeader* GeneralHeapObjectHeader::fromPayload(const void* payload)
 {
     Address addr = reinterpret_cast<Address>(const_cast<void*>(payload));
     GeneralHeapObjectHeader* header =
@@ -420,12 +415,12 @@ public:
     NO_SANITIZE_ADDRESS
     explicit FreeListEntry(size_t size)
         : HeapObjectHeader(freeListEncodedSize(size))
-        , m_next(0)
+        , m_next(nullptr)
     {
 #if ENABLE(ASSERT) && !defined(ADDRESS_SANITIZER)
         // Zap free area with asterisks, aka 0x2a2a2a2a.
         // For ASan don't zap since we keep accounting in the freelist entry.
-        for (size_t i = sizeof(*this); i < size; i++)
+        for (size_t i = sizeof(*this); i < size; ++i)
             reinterpret_cast<Address>(this)[i] = freelistZapValue;
         ASSERT(size >= sizeof(HeapObjectHeader));
         zapMagic();
@@ -438,7 +433,7 @@ public:
     void unlink(FreeListEntry** prevNext)
     {
         *prevNext = m_next;
-        m_next = 0;
+        m_next = nullptr;
     }
 
     NO_SANITIZE_ADDRESS
@@ -483,12 +478,12 @@ private:
 
 // Representation of Blink heap pages.
 //
-// Pages are specialized on the type of header on the object they
-// contain. If a heap page only contains a certain type of object all
-// of the objects will have the same GCInfo pointer and therefore that
-// pointer can be stored in the HeapPage instead of in the header of
-// each object. In that case objects have only a HeapObjectHeader and
-// not a GeneralHeapObjectHeader saving a word per object.
+// Pages are specialized on the type of header on the object they contain.  If a
+// heap page only contains a certain type of object all of the objects will have
+// the same GCInfo pointer and therefore that pointer can be stored in the
+// HeapPage instead of in the header of each object.  In that case objects have
+// only a HeapObjectHeader and not a GeneralHeapObjectHeader saving a word per
+// object.
 template<typename Header>
 class HeapPage final : public BaseHeapPage {
 public:
@@ -580,17 +575,17 @@ protected:
 };
 
 // A HeapDoesNotContainCache provides a fast way of taking an arbitrary
-// pointer-sized word, and determining whether it cannot be interpreted
-// as a pointer to an area that is managed by the garbage collected
-// Blink heap. This is a cache of 'pages' that have previously been
-// determined to be wholly outside of the heap. The size of these pages must be
-// smaller than the allocation alignment of the heap pages. We determine
-// off-heap-ness by rounding down the pointer to the nearest page and looking up
-// the page in the cache. If there is a miss in the cache we can determine the
-// status of the pointer precisely using the heap RegionTree.
+// pointer-sized word, and determining whether it cannot be interpreted as a
+// pointer to an area that is managed by the garbage collected Blink heap.  This
+// is a cache of 'pages' that have previously been determined to be wholly
+// outside of the heap.  The size of these pages must be smaller than the
+// allocation alignment of the heap pages.  We determine off-heap-ness by
+// rounding down the pointer to the nearest page and looking up the page in the
+// cache.  If there is a miss in the cache we can determine the status of the
+// pointer precisely using the heap RegionTree.
 //
-// The HeapDoesNotContainCache is a negative cache, so it must be
-// flushed when memory is added to the heap.
+// The HeapDoesNotContainCache is a negative cache, so it must be flushed when
+// memory is added to the heap.
 class HeapDoesNotContainCache {
 public:
     HeapDoesNotContainCache()
@@ -598,8 +593,8 @@ public:
         , m_hasEntries(false)
     {
         // Start by flushing the cache in a non-empty state to initialize all the cache entries.
-        for (int i = 0; i < numberOfEntries; i++)
-            m_entries[i] = 0;
+        for (int i = 0; i < numberOfEntries; ++i)
+            m_entries[i] = nullptr;
     }
 
     void flush();
@@ -648,11 +643,11 @@ protected:
 };
 
 // Once pages have been used for one type of thread heap they will never be
-// reused for another type of thread heap. Instead of unmapping, we add the
+// reused for another type of thread heap.  Instead of unmapping, we add the
 // pages to a pool of pages to be reused later by a thread heap of the same
-// type. This is done as a security feature to avoid type confusion. The
+// type. This is done as a security feature to avoid type confusion.  The
 // heaps are type segregated by having separate thread heaps for different
-// types of objects. Holding on to pages ensures that the same virtual address
+// types of objects.  Holding on to pages ensures that the same virtual address
 // space cannot be used for objects of another type than the type contained
 // in this page to begin with.
 class FreePagePool : public PagePool<PageMemory> {
@@ -684,7 +679,7 @@ public:
     virtual void cleanupPages() = 0;
 
     // Find the page in this thread heap containing the given
-    // address. Returns 0 if the address is not contained in any
+    // address.  Returns 0 if the address is not contained in any
     // page in this thread heap.
     virtual BaseHeapPage* pageFromAddress(Address) = 0;
 
@@ -696,7 +691,7 @@ public:
     virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*) = 0;
 #endif
 
-    // Sweep this part of the Blink heap. This finalizes dead objects
+    // Sweep this part of the Blink heap.  This finalizes dead objects
     // and builds freelists for all the unused memory.
     virtual void sweep() = 0;
     virtual void postSweepProcessing() = 0;
@@ -722,9 +717,8 @@ public:
     void clear();
 
 private:
-    // Returns a bucket number for inserting a FreeListEntry of a
-    // given size. All FreeListEntries in the given bucket, n, have
-    // size >= 2^n.
+    // Returns a bucket number for inserting a FreeListEntry of a given size.
+    // All FreeListEntries in the given bucket, n, have size >= 2^n.
     static int bucketIndexForSize(size_t);
 
     int m_biggestFreeListIndex;
@@ -845,7 +839,7 @@ private:
 
     FreeList<Header> m_freeList;
 
-    // Index into the page pools. This is used to ensure that the pages of the
+    // Index into the page pools.  This is used to ensure that the pages of the
     // same type go into the correct page pool and thus avoid type confusion.
     int m_index;
 
@@ -870,14 +864,15 @@ public:
     // Push a trace callback on the marking stack.
     static void pushTraceCallback(CallbackStack*, void* containerObject, TraceCallback);
 
-    // Push a trace callback on the post-marking callback stack. These callbacks
-    // are called after normal marking (including ephemeron iteration).
+    // Push a trace callback on the post-marking callback stack.  These
+    // callbacks are called after normal marking (including ephemeron
+    // iteration).
     static void pushPostMarkingCallback(void*, TraceCallback);
 
-    // Add a weak pointer callback to the weak callback work list. General
+    // Add a weak pointer callback to the weak callback work list.  General
     // object pointer callbacks are added to a thread local weak callback work
     // list and the callback is called on the thread that owns the object, with
-    // the closure pointer as an argument. Most of the time, the closure and
+    // the closure pointer as an argument.  Most of the time, the closure and
     // the containerObject can be the same thing, but the containerObject is
     // constrained to be on the heap, since the heap is used to identify the
     // correct thread.
@@ -885,21 +880,21 @@ public:
 
     // Similar to the more general pushWeakPointerCallback, but cell
     // pointer callbacks are added to a static callback work list and the weak
-    // callback is performed on the thread performing garbage collection. This
+    // callback is performed on the thread performing garbage collection.  This
     // is OK because cells are just cleared and no deallocation can happen.
     static void pushWeakCellPointerCallback(void** cell, WeakPointerCallback);
 
     // Pop the top of a marking stack and call the callback with the visitor
-    // and the object. Returns false when there is nothing more to do.
+    // and the object.  Returns false when there is nothing more to do.
     static bool popAndInvokeTraceCallback(CallbackStack*, Visitor*);
 
     // Remove an item from the post-marking callback stack and call
-    // the callback with the visitor and the object pointer. Returns
+    // the callback with the visitor and the object pointer.  Returns
     // false when there is nothing more to do.
     static bool popAndInvokePostMarkingCallback(Visitor*);
 
     // Remove an item from the weak callback work list and call the callback
-    // with the visitor and the closure pointer. Returns false when there is
+    // with the visitor and the closure pointer.  Returns false when there is
     // nothing more to do.
     static bool popAndInvokeWeakPointerCallback(Visitor*);
 
@@ -927,17 +922,18 @@ public:
     static void preGC();
     static void postGC();
 
-    // Conservatively checks whether an address is a pointer in any of the thread
-    // heaps. If so marks the object pointed to as live.
+    // Conservatively checks whether an address is a pointer in any of the
+    // thread heaps.  If so marks the object pointed to as live.
     static Address checkAndMarkPointer(Visitor*, Address);
 
 #if ENABLE(GC_PROFILE_MARKING)
-    // Dump the path to specified object on the next GC. This method is to be invoked from GDB.
+    // Dump the path to specified object on the next GC.  This method is to be
+    // invoked from GDB.
     static void dumpPathToObjectOnNextGC(void* p);
 
-    // Forcibly find GCInfo of the object at Address.
-    // This is slow and should only be used for debug purposes.
-    // It involves finding the heap page and scanning the heap page for an object header.
+    // Forcibly find GCInfo of the object at Address.  This is slow and should
+    // only be used for debug purposes.  It involves finding the heap page and
+    // scanning the heap page for an object header.
     static const GCInfo* findGCInfo(Address);
 
     static String createBacktraceString();
@@ -975,7 +971,7 @@ private:
     // by base addresses.
     class RegionTree {
     public:
-        explicit RegionTree(PageMemoryRegion* region) : m_region(region), m_left(0), m_right(0) { }
+        explicit RegionTree(PageMemoryRegion* region) : m_region(region), m_left(nullptr), m_right(nullptr) { }
         ~RegionTree()
         {
             delete m_left;
@@ -1010,27 +1006,25 @@ private:
     friend class ThreadState;
 };
 
-// Base class for objects allocated in the Blink garbage-collected
-// heap.
+// Base class for objects allocated in the Blink garbage-collected heap.
 //
-// Defines a 'new' operator that allocates the memory in the
-// heap. 'delete' should not be called on objects that inherit from
-// GarbageCollected.
+// Defines a 'new' operator that allocates the memory in the heap.  'delete'
+// should not be called on objects that inherit from GarbageCollected.
 //
-// Instances of GarbageCollected will *NOT* get finalized. Their
-// destructor will not be called. Therefore, only classes that have
-// trivial destructors with no semantic meaning (including all their
-// subclasses) should inherit from GarbageCollected. If there are
-// non-trival destructors in a given class or any of its subclasses,
-// GarbageCollectedFinalized should be used which guarantees that the
-// destructor is called on an instance when the garbage collector
-// determines that it is no longer reachable.
+// Instances of GarbageCollected will *NOT* get finalized.  Their destructor
+// will not be called.  Therefore, only classes that have trivial destructors
+// with no semantic meaning (including all their subclasses) should inherit from
+// GarbageCollected.  If there are non-trival destructors in a given class or
+// any of its subclasses, GarbageCollectedFinalized should be used which
+// guarantees that the destructor is called on an instance when the garbage
+// collector determines that it is no longer reachable.
 template<typename T>
 class GarbageCollected {
     WTF_MAKE_NONCOPYABLE(GarbageCollected);
 
     // For now direct allocation of arrays on the heap is not allowed.
     void* operator new[](size_t size);
+
 #if OS(WIN) && COMPILER(MSVC)
     // Due to some quirkiness in the MSVC compiler we have to provide
     // the delete[] operator in the GarbageCollected subclasses as it
@@ -1043,8 +1037,9 @@ protected:
 #else
     void operator delete[](void* p);
 #endif
+
 public:
-    typedef T GarbageCollectedBase;
+    using GarbageCollectedBase = T;
 
     void* operator new(size_t size)
     {
@@ -1062,28 +1057,24 @@ protected:
     }
 };
 
-// Base class for objects allocated in the Blink garbage-collected
-// heap.
+// Base class for objects allocated in the Blink garbage-collected heap.
 //
-// Defines a 'new' operator that allocates the memory in the
-// heap. 'delete' should not be called on objects that inherit from
-// GarbageCollected.
+// Defines a 'new' operator that allocates the memory in the heap.  'delete'
+// should not be called on objects that inherit from GarbageCollected.
 //
-// Instances of GarbageCollectedFinalized will have their destructor
-// called when the garbage collector determines that the object is no
-// longer reachable.
+// Instances of GarbageCollectedFinalized will have their destructor called when
+// the garbage collector determines that the object is no longer reachable.
 template<typename T>
 class GarbageCollectedFinalized : public GarbageCollected<T> {
     WTF_MAKE_NONCOPYABLE(GarbageCollectedFinalized);
 
 protected:
-    // finalizeGarbageCollectedObject is called when the object is
-    // freed from the heap. By default finalization means calling the
-    // destructor on the object. finalizeGarbageCollectedObject can be
-    // overridden to support calling the destructor of a
-    // subclass. This is useful for objects without vtables that
-    // require explicit dispatching. The name is intentionally a bit
-    // long to make name conflicts less likely.
+    // finalizeGarbageCollectedObject is called when the object is freed from
+    // the heap.  By default finalization means calling the destructor on the
+    // object.  finalizeGarbageCollectedObject can be overridden to support
+    // calling the destructor of a subclass.  This is useful for objects without
+    // vtables that require explicit dispatching.  The name is intentionally a
+    // bit long to make name conflicts less likely.
     void finalizeGarbageCollectedObject()
     {
         static_cast<T*>(this)->~T();
@@ -1105,8 +1096,8 @@ protected:
 //
 // While the current reference counting keeps one of these objects
 // alive it will have a Persistent handle to itself allocated so we
-// will not reclaim the memory. When the reference count reaches 0 the
-// persistent handle will be deleted. When the garbage collector
+// will not reclaim the memory.  When the reference count reaches 0 the
+// persistent handle will be deleted.  When the garbage collector
 // determines that there are no other references to the object it will
 // be reclaimed and the destructor of the reclaimed object will be
 // called at that time.
@@ -1120,12 +1111,10 @@ public:
     {
     }
 
-    // Implement method to increase reference count for use with
-    // RefPtrs.
+    // Implement method to increase reference count for use with RefPtrs.
     //
-    // In contrast to the normal WTF::RefCounted, the reference count
-    // can reach 0 and increase again. This happens in the following
-    // scenario:
+    // In contrast to the normal WTF::RefCounted, the reference count can reach
+    // 0 and increase again.  This happens in the following scenario:
     //
     // (1) The reference count becomes 0, but members, persistents, or
     //     on-stack pointers keep references to the object.
@@ -1143,12 +1132,11 @@ public:
         ++m_refCount;
     }
 
-    // Implement method to decrease reference count for use with
-    // RefPtrs.
+    // Implement method to decrease reference count for use with RefPtrs.
     //
     // In contrast to the normal WTF::RefCounted implementation, the
     // object itself is not deleted when the reference count reaches
-    // 0. Instead, the keep-alive persistent handle is deallocated so
+    // 0.  Instead, the keep-alive persistent handle is deallocated so
     // that the object can be reclaimed when the garbage collector
     // determines that there are no other references to the object.
     void deref()
@@ -1179,26 +1167,25 @@ private:
     Persistent<T>* m_keepAlive;
 };
 
-// Classes that contain heap references but aren't themselves heap
-// allocated, have some extra macros available which allows their use
-// to be restricted to cases where the garbage collector is able
-// to discover their heap references.
+// Classes that contain heap references but aren't themselves heap allocated,
+// have some extra macros available which allows their use to be restricted to
+// cases where the garbage collector is able to discover their heap references.
 //
-// STACK_ALLOCATED(): Use if the object is only stack allocated. Heap objects
-// should be in Members but you do not need the trace method as they are on
-// the stack. (Down the line these might turn in to raw pointers, but for
-// now Members indicates that we have thought about them and explicitly
-// taken care of them.)
+// STACK_ALLOCATED(): Use if the object is only stack allocated.  Heap objects
+// should be in Members but you do not need the trace method as they are on the
+// stack.  (Down the line these might turn in to raw pointers, but for now
+// Members indicates that we have thought about them and explicitly taken care
+// of them.)
 //
-// DISALLOW_ALLOCATION(): Cannot be allocated with new operators but can
-// be a part object. If it has Members you need a trace method and the
-// containing object needs to call that trace method.
+// DISALLOW_ALLOCATION(): Cannot be allocated with new operators but can be a
+// part object.  If it has Members you need a trace method and the containing
+// object needs to call that trace method.
 //
-// ALLOW_ONLY_INLINE_ALLOCATION(): Allows only placement new operator.
-// This disallows general allocation of this object but allows to put
-// the object as a value object in collections. If these have Members you
-// need to have a trace method. That trace method will be called
-// automatically by the Heap collections.
+// ALLOW_ONLY_INLINE_ALLOCATION(): Allows only placement new operator.  This
+// disallows general allocation of this object but allows to put the object as a
+// value object in collections.  If these have Members you need to have a trace
+// method. That trace method will be called automatically by the Heap
+// collections.
 //
 #define DISALLOW_ALLOCATION()                                   \
     private:                                                    \
@@ -1218,11 +1205,11 @@ private:
         Type() = delete;
 
 // These macros insert annotations that the Blink GC plugin for clang uses for
-// verification. STACK_ALLOCATED is used to declare that objects of this type
-// are always stack allocated. GC_PLUGIN_IGNORE is used to make the plugin
-// ignore a particular class or field when checking for proper usage. When using
-// GC_PLUGIN_IGNORE a bug-number should be provided as an argument where the
-// bug describes what needs to happen to remove the GC_PLUGIN_IGNORE again.
+// verification.  STACK_ALLOCATED is used to declare that objects of this type
+// are always stack allocated.  GC_PLUGIN_IGNORE is used to make the plugin
+// ignore a particular class or field when checking for proper usage.  When
+// using GC_PLUGIN_IGNORE a bug-number should be provided as an argument where
+// the bug describes what needs to happen to remove the GC_PLUGIN_IGNORE again.
 #if COMPILER(CLANG)
 #define STACK_ALLOCATED()                                       \
     private:                                                    \
@@ -1272,10 +1259,9 @@ size_t GeneralHeapObjectHeader::payloadSize()
 template<typename Header>
 size_t ThreadHeap<Header>::allocationSizeFromSize(size_t size)
 {
-    // Check the size before computing the actual allocation size. The
-    // allocation size calculation can overflow for large sizes and
-    // the check therefore has to happen before any calculation on the
-    // size.
+    // Check the size before computing the actual allocation size.  The
+    // allocation size calculation can overflow for large sizes and the check
+    // therefore has to happen before any calculation on the size.
     RELEASE_ASSERT(size < maxHeapObjectSize);
 
     // Add space for header.
@@ -1322,25 +1308,23 @@ Address Heap::allocate(size_t size)
 template<typename T>
 Address Heap::allocate(size_t size)
 {
-    return allocate<T, HeapTypeTrait<T> >(size);
+    return allocate<T, HeapTypeTrait<T>>(size);
 }
 
 template<typename T>
 Address Heap::reallocate(void* previous, size_t size)
 {
     if (!size) {
-        // If the new size is 0 this is equivalent to either
-        // free(previous) or malloc(0). In both cases we do
-        // nothing and return 0.
-        return 0;
+        // If the new size is 0 this is equivalent to either free(previous) or
+        // malloc(0).  In both cases we do nothing and return nullptr.
+        return nullptr;
     }
     ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
     ASSERT(state->isAllocationAllowed());
     const GCInfo* gcInfo = GCInfoTrait<T>::get();
     int heapIndex = HeapTypeTrait<T>::index(gcInfo->hasFinalizer(), size);
-    // FIXME: Currently only supports raw allocation on the
-    // GeneralHeap. Hence we assume the header is a
-    // GeneralHeapObjectHeader.
+    // FIXME: Currently only supports raw allocation on the GeneralHeap.  Hence
+    // we assume the header is a GeneralHeapObjectHeader.
     ASSERT((General1Heap <= heapIndex && heapIndex <= General4Heap)
         || (General1HeapNonFinalized <= heapIndex && heapIndex <= General4HeapNonFinalized));
     BaseHeap* heap = state->heap(heapIndex);
@@ -1370,12 +1354,12 @@ public:
     static const size_t kMaxUnquantizedAllocation = maxHeapObjectSize;
 };
 
-// This is a static-only class used as a trait on collections to make them heap allocated.
-// However see also HeapListHashSetAllocator.
+// This is a static-only class used as a trait on collections to make them heap
+// allocated.  However see also HeapListHashSetAllocator.
 class HeapAllocator {
 public:
-    typedef HeapAllocatorQuantizer Quantizer;
-    typedef blink::Visitor Visitor;
+    using Quantizer = HeapAllocatorQuantizer;
+    using Visitor = blink::Visitor;
     static const bool isGarbageCollected = true;
 
     template <typename T>
@@ -1476,12 +1460,12 @@ public:
 
     template<typename T>
     struct ResultType {
-        typedef T* Type;
+        using Type = T*;
     };
 
     template<typename T>
     struct OtherType {
-        typedef T* Type;
+        using Type = T*;
     };
 
     template<typename T>
@@ -1528,39 +1512,39 @@ static void traceListHashSetValue(Visitor* visitor, Value& value)
     // (there's an assert elsewhere), but we have to specify some value for the
     // strongify template argument, so we specify WTF::WeakPointersActWeak,
     // arbitrarily.
-    CollectionBackingTraceTrait<WTF::ShouldBeTraced<WTF::HashTraits<Value> >::value, WTF::NoWeakHandlingInCollections, WTF::WeakPointersActWeak, Value, WTF::HashTraits<Value> >::trace(visitor, value);
+    CollectionBackingTraceTrait<WTF::ShouldBeTraced<WTF::HashTraits<Value>>::value, WTF::NoWeakHandlingInCollections, WTF::WeakPointersActWeak, Value, WTF::HashTraits<Value>>::trace(visitor, value);
 }
 
 // The inline capacity is just a dummy template argument to match the off-heap
 // allocator.
 // This inherits from the static-only HeapAllocator trait class, but we do
-// declare pointers to instances. These pointers are always null, and no
+// declare pointers to instances.  These pointers are always null, and no
 // objects are instantiated.
 template<typename ValueArg, size_t inlineCapacity>
 struct HeapListHashSetAllocator : public HeapAllocator {
-    typedef HeapAllocator TableAllocator;
-    typedef WTF::ListHashSetNode<ValueArg, HeapListHashSetAllocator> Node;
+    using TableAllocator = HeapAllocator;
+    using Node = WTF::ListHashSetNode<ValueArg, HeapListHashSetAllocator>;
 
 public:
     class AllocatorProvider {
     public:
-        // For the heap allocation we don't need an actual allocator object, so we just
-        // return null.
+        // For the heap allocation we don't need an actual allocator object, so
+        // we just return null.
         HeapListHashSetAllocator* get() const { return 0; }
 
         // No allocator object is needed.
         void createAllocatorIfNeeded() { }
 
-        // There is no allocator object in the HeapListHashSet (unlike in
-        // the regular ListHashSet) so there is nothing to swap.
+        // There is no allocator object in the HeapListHashSet (unlike in the
+        // regular ListHashSet) so there is nothing to swap.
         void swap(AllocatorProvider& other) { }
     };
 
     void deallocate(void* dummy) { }
 
-    // This is not a static method even though it could be, because it
-    // needs to match the one that the (off-heap) ListHashSetAllocator
-    // has. The 'this' pointer will always be null.
+    // This is not a static method even though it could be, because it needs to
+    // match the one that the (off-heap) ListHashSetAllocator has.  The 'this'
+    // pointer will always be null.
     void* allocateNode()
     {
         COMPILE_ASSERT(!WTF::IsWeak<ValueArg>::value, WeakPointersInAListHashSetWillJustResultInNullEntriesInTheSetThatsNotWhatYouWantConsiderUsingLinkedHashSetInstead);
@@ -1701,78 +1685,78 @@ template<typename T, typename U, typename V>
 inline void swap(HeapHashCountedSet<T, U, V>& a, HeapHashCountedSet<T, U, V>& b) { a.swap(b); }
 
 template<typename T>
-struct ThreadingTrait<Member<T> > {
+struct ThreadingTrait<Member<T>> {
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 
 template<typename T>
-struct ThreadingTrait<WeakMember<T> > {
+struct ThreadingTrait<WeakMember<T>> {
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 
 template<typename Key, typename Value, typename T, typename U, typename V>
-struct ThreadingTrait<HashMap<Key, Value, T, U, V, HeapAllocator> > {
+struct ThreadingTrait<HashMap<Key, Value, T, U, V, HeapAllocator>> {
     static const ThreadAffinity Affinity =
         (ThreadingTrait<Key>::Affinity == MainThreadOnly)
         && (ThreadingTrait<Value>::Affinity == MainThreadOnly) ? MainThreadOnly : AnyThread;
 };
 
 template<typename First, typename Second>
-struct ThreadingTrait<WTF::KeyValuePair<First, Second> > {
+struct ThreadingTrait<WTF::KeyValuePair<First, Second>> {
     static const ThreadAffinity Affinity =
         (ThreadingTrait<First>::Affinity == MainThreadOnly)
         && (ThreadingTrait<Second>::Affinity == MainThreadOnly) ? MainThreadOnly : AnyThread;
 };
 
 template<typename T, typename U, typename V>
-struct ThreadingTrait<HashSet<T, U, V, HeapAllocator> > {
+struct ThreadingTrait<HashSet<T, U, V, HeapAllocator>> {
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 
 
 template<typename T, size_t inlineCapacity>
-struct ThreadingTrait<Vector<T, inlineCapacity, HeapAllocator> > {
+struct ThreadingTrait<Vector<T, inlineCapacity, HeapAllocator>> {
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 
 template<typename T, typename Traits>
-struct ThreadingTrait<HeapVectorBacking<T, Traits> > {
+struct ThreadingTrait<HeapVectorBacking<T, Traits>> {
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 
 template<typename T, size_t inlineCapacity>
-struct ThreadingTrait<Deque<T, inlineCapacity, HeapAllocator> > {
+struct ThreadingTrait<Deque<T, inlineCapacity, HeapAllocator>> {
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 
 template<typename T, typename U, typename V>
-struct ThreadingTrait<HashCountedSet<T, U, V, HeapAllocator> > {
+struct ThreadingTrait<HashCountedSet<T, U, V, HeapAllocator>> {
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 
 template<typename Table>
-struct ThreadingTrait<HeapHashTableBacking<Table> > {
-    typedef typename Table::KeyType Key;
-    typedef typename Table::ValueType Value;
+struct ThreadingTrait<HeapHashTableBacking<Table>> {
+    using Key = typename Table::KeyType;
+    using Value = typename Table::ValueType;
     static const ThreadAffinity Affinity =
         (ThreadingTrait<Key>::Affinity == MainThreadOnly)
         && (ThreadingTrait<Value>::Affinity == MainThreadOnly) ? MainThreadOnly : AnyThread;
 };
 
 template<typename T, typename U, typename V, typename W, typename X>
-struct ThreadingTrait<HeapHashMap<T, U, V, W, X> > : public ThreadingTrait<HashMap<T, U, V, W, X, HeapAllocator> > { };
+struct ThreadingTrait<HeapHashMap<T, U, V, W, X>> : public ThreadingTrait<HashMap<T, U, V, W, X, HeapAllocator>> { };
 
 template<typename T, typename U, typename V>
-struct ThreadingTrait<HeapHashSet<T, U, V> > : public ThreadingTrait<HashSet<T, U, V, HeapAllocator> > { };
+struct ThreadingTrait<HeapHashSet<T, U, V>> : public ThreadingTrait<HashSet<T, U, V, HeapAllocator>> { };
 
 template<typename T, size_t inlineCapacity>
-struct ThreadingTrait<HeapVector<T, inlineCapacity> > : public ThreadingTrait<Vector<T, inlineCapacity, HeapAllocator> > { };
+struct ThreadingTrait<HeapVector<T, inlineCapacity>> : public ThreadingTrait<Vector<T, inlineCapacity, HeapAllocator>> { };
 
 template<typename T, size_t inlineCapacity>
-struct ThreadingTrait<HeapDeque<T, inlineCapacity> > : public ThreadingTrait<Deque<T, inlineCapacity, HeapAllocator> > { };
+struct ThreadingTrait<HeapDeque<T, inlineCapacity>> : public ThreadingTrait<Deque<T, inlineCapacity, HeapAllocator>> { };
 
 template<typename T, typename U, typename V>
-struct ThreadingTrait<HeapHashCountedSet<T, U, V> > : public ThreadingTrait<HashCountedSet<T, U, V, HeapAllocator> > { };
+struct ThreadingTrait<HeapHashCountedSet<T, U, V>> : public ThreadingTrait<HashCountedSet<T, U, V, HeapAllocator>> { };
 
 // The standard implementation of GCInfoTrait<T>::get() just returns a static
 // from the class T, but we can't do that for HashMap, HashSet, Vector, etc.
@@ -1780,13 +1764,13 @@ struct ThreadingTrait<HeapHashCountedSet<T, U, V> > : public ThreadingTrait<Hash
 // specialization of GCInfoTrait for these four classes here.
 
 template<typename Key, typename Value, typename T, typename U, typename V>
-struct GCInfoTrait<HashMap<Key, Value, T, U, V, HeapAllocator> > {
+struct GCInfoTrait<HashMap<Key, Value, T, U, V, HeapAllocator>> {
     static const GCInfo* get()
     {
-        typedef HashMap<Key, Value, T, U, V, HeapAllocator> TargetType;
+        using TargetType = HashMap<Key, Value, T, U, V, HeapAllocator>;
         static const GCInfo info = {
             TraceTrait<TargetType>::trace,
-            0,
+            nullptr,
             false, // HashMap needs no finalizer.
             WTF::IsPolymorphic<TargetType>::value,
 #if ENABLE(GC_PROFILING)
@@ -1798,13 +1782,13 @@ struct GCInfoTrait<HashMap<Key, Value, T, U, V, HeapAllocator> > {
 };
 
 template<typename T, typename U, typename V>
-struct GCInfoTrait<HashSet<T, U, V, HeapAllocator> > {
+struct GCInfoTrait<HashSet<T, U, V, HeapAllocator>> {
     static const GCInfo* get()
     {
-        typedef HashSet<T, U, V, HeapAllocator> TargetType;
+        using TargetType = HashSet<T, U, V, HeapAllocator>;
         static const GCInfo info = {
             TraceTrait<TargetType>::trace,
-            0,
+            nullptr,
             false, // HashSet needs no finalizer.
             WTF::IsPolymorphic<TargetType>::value,
 #if ENABLE(GC_PROFILING)
@@ -1816,10 +1800,10 @@ struct GCInfoTrait<HashSet<T, U, V, HeapAllocator> > {
 };
 
 template<typename T, typename U, typename V>
-struct GCInfoTrait<LinkedHashSet<T, U, V, HeapAllocator> > {
+struct GCInfoTrait<LinkedHashSet<T, U, V, HeapAllocator>> {
     static const GCInfo* get()
     {
-        typedef LinkedHashSet<T, U, V, HeapAllocator> TargetType;
+        using TargetType = LinkedHashSet<T, U, V, HeapAllocator>;
         static const GCInfo info = {
             TraceTrait<TargetType>::trace,
             LinkedHashSet<T, U, V, HeapAllocator>::finalize,
@@ -1834,13 +1818,13 @@ struct GCInfoTrait<LinkedHashSet<T, U, V, HeapAllocator> > {
 };
 
 template<typename ValueArg, size_t inlineCapacity, typename U>
-struct GCInfoTrait<ListHashSet<ValueArg, inlineCapacity, U, HeapListHashSetAllocator<ValueArg, inlineCapacity> > > {
+struct GCInfoTrait<ListHashSet<ValueArg, inlineCapacity, U, HeapListHashSetAllocator<ValueArg, inlineCapacity>>> {
     static const GCInfo* get()
     {
-        typedef WTF::ListHashSet<ValueArg, inlineCapacity, U, HeapListHashSetAllocator<ValueArg, inlineCapacity> > TargetType;
+        using TargetType = WTF::ListHashSet<ValueArg, inlineCapacity, U, HeapListHashSetAllocator<ValueArg, inlineCapacity>>;
         static const GCInfo info = {
             TraceTrait<TargetType>::trace,
-            0,
+            nullptr,
             false, // ListHashSet needs no finalization though its backing might.
             false, // no vtable.
 #if ENABLE(GC_PROFILING)
@@ -1852,10 +1836,10 @@ struct GCInfoTrait<ListHashSet<ValueArg, inlineCapacity, U, HeapListHashSetAlloc
 };
 
 template<typename T, typename Allocator>
-struct GCInfoTrait<WTF::ListHashSetNode<T, Allocator> > {
+struct GCInfoTrait<WTF::ListHashSetNode<T, Allocator>> {
     static const GCInfo* get()
     {
-        typedef WTF::ListHashSetNode<T, Allocator> TargetType;
+        using TargetType = WTF::ListHashSetNode<T, Allocator>;
         static const GCInfo info = {
             TraceTrait<TargetType>::trace,
             TargetType::finalize,
@@ -1870,17 +1854,17 @@ struct GCInfoTrait<WTF::ListHashSetNode<T, Allocator> > {
 };
 
 template<typename T>
-struct GCInfoTrait<Vector<T, 0, HeapAllocator> > {
+struct GCInfoTrait<Vector<T, 0, HeapAllocator>> {
     static const GCInfo* get()
     {
 #if ENABLE(GC_PROFILING)
-        typedef Vector<T, 0, HeapAllocator> TargetType;
+        using TargetType = Vector<T, 0, HeapAllocator>;
 #endif
         static const GCInfo info = {
-            TraceTrait<Vector<T, 0, HeapAllocator> >::trace,
-            0,
+            TraceTrait<Vector<T, 0, HeapAllocator>>::trace,
+            nullptr,
             false, // Vector needs no finalizer if it has no inline capacity.
-            WTF::IsPolymorphic<Vector<T, 0, HeapAllocator> >::value,
+            WTF::IsPolymorphic<Vector<T, 0, HeapAllocator>>::value,
 #if ENABLE(GC_PROFILING)
             TypenameStringTrait<TargetType>::get()
 #endif
@@ -1890,13 +1874,13 @@ struct GCInfoTrait<Vector<T, 0, HeapAllocator> > {
 };
 
 template<typename T, size_t inlineCapacity>
-struct FinalizerTrait<Vector<T, inlineCapacity, HeapAllocator> > : public FinalizerTraitImpl<Vector<T, inlineCapacity, HeapAllocator>, true> { };
+struct FinalizerTrait<Vector<T, inlineCapacity, HeapAllocator>> : public FinalizerTraitImpl<Vector<T, inlineCapacity, HeapAllocator>, true> { };
 
 template<typename T, size_t inlineCapacity>
-struct GCInfoTrait<Vector<T, inlineCapacity, HeapAllocator> > {
+struct GCInfoTrait<Vector<T, inlineCapacity, HeapAllocator>> {
     static const GCInfo* get()
     {
-        typedef Vector<T, inlineCapacity, HeapAllocator> TargetType;
+        using TargetType = Vector<T, inlineCapacity, HeapAllocator>;
         static const GCInfo info = {
             TraceTrait<TargetType>::trace,
             FinalizerTrait<TargetType>::finalize,
@@ -1912,13 +1896,13 @@ struct GCInfoTrait<Vector<T, inlineCapacity, HeapAllocator> > {
 };
 
 template<typename T>
-struct GCInfoTrait<Deque<T, 0, HeapAllocator> > {
+struct GCInfoTrait<Deque<T, 0, HeapAllocator>> {
     static const GCInfo* get()
     {
-        typedef Deque<T, 0, HeapAllocator> TargetType;
+        using TargetType = Deque<T, 0, HeapAllocator>;
         static const GCInfo info = {
             TraceTrait<TargetType>::trace,
-            0,
+            nullptr,
             false, // Deque needs no finalizer if it has no inline capacity.
             WTF::IsPolymorphic<TargetType>::value,
 #if ENABLE(GC_PROFILING)
@@ -1931,13 +1915,13 @@ struct GCInfoTrait<Deque<T, 0, HeapAllocator> > {
 };
 
 template<typename T, typename U, typename V>
-struct GCInfoTrait<HashCountedSet<T, U, V, HeapAllocator> > {
+struct GCInfoTrait<HashCountedSet<T, U, V, HeapAllocator>> {
     static const GCInfo* get()
     {
-        typedef HashCountedSet<T, U, V, HeapAllocator> TargetType;
+        using TargetType = HashCountedSet<T, U, V, HeapAllocator>;
         static const GCInfo info = {
             TraceTrait<TargetType>::trace,
-            0,
+            nullptr,
             false, // HashCountedSet is just a HashTable, and needs no finalizer.
             WTF::IsPolymorphic<TargetType>::value,
 #if ENABLE(GC_PROFILING)
@@ -1950,13 +1934,13 @@ struct GCInfoTrait<HashCountedSet<T, U, V, HeapAllocator> > {
 };
 
 template<typename T, size_t inlineCapacity>
-struct FinalizerTrait<Deque<T, inlineCapacity, HeapAllocator> > : public FinalizerTraitImpl<Deque<T, inlineCapacity, HeapAllocator>, true> { };
+struct FinalizerTrait<Deque<T, inlineCapacity, HeapAllocator>> : public FinalizerTraitImpl<Deque<T, inlineCapacity, HeapAllocator>, true> { };
 
 template<typename T, size_t inlineCapacity>
-struct GCInfoTrait<Deque<T, inlineCapacity, HeapAllocator> > {
+struct GCInfoTrait<Deque<T, inlineCapacity, HeapAllocator>> {
     static const GCInfo* get()
     {
-        typedef Deque<T, inlineCapacity, HeapAllocator> TargetType;
+        using TargetType = Deque<T, inlineCapacity, HeapAllocator>;
         static const GCInfo info = {
             TraceTrait<TargetType>::trace,
             FinalizerTrait<TargetType>::finalize,
@@ -1973,10 +1957,10 @@ struct GCInfoTrait<Deque<T, inlineCapacity, HeapAllocator> > {
 };
 
 template<typename T, typename Traits>
-struct GCInfoTrait<HeapVectorBacking<T, Traits> > {
+struct GCInfoTrait<HeapVectorBacking<T, Traits>> {
     static const GCInfo* get()
     {
-        typedef HeapVectorBacking<T, Traits> TargetType;
+        using TargetType = HeapVectorBacking<T, Traits>;
         static const GCInfo info = {
             TraceTrait<TargetType>::trace,
             FinalizerTrait<TargetType>::finalize,
@@ -1991,10 +1975,10 @@ struct GCInfoTrait<HeapVectorBacking<T, Traits> > {
 };
 
 template<typename Table>
-struct GCInfoTrait<HeapHashTableBacking<Table> > {
+struct GCInfoTrait<HeapHashTableBacking<Table>> {
     static const GCInfo* get()
     {
-        typedef HeapHashTableBacking<Table> TargetType;
+        using TargetType = HeapHashTableBacking<Table>;
         static const GCInfo info = {
             TraceTrait<TargetType>::trace,
             HeapHashTableBacking<Table>::finalize,
@@ -2013,9 +1997,9 @@ struct GCInfoTrait<HeapHashTableBacking<Table> > {
 namespace WTF {
 
 // Catch-all for types that have a way to trace that don't have special
-// handling for weakness in collections. This means that if this type
+// handling for weakness in collections.  This means that if this type
 // contains WeakMember fields, they will simply be zeroed, but the entry
-// will not be removed from the collection. This always happens for
+// will not be removed from the collection.  This always happens for
 // things in vectors, which don't currently support special handling of
 // weak elements.
 template<ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits>
@@ -2042,9 +2026,9 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Hea
     static bool trace(blink::Visitor* visitor, void* self)
     {
         // The allocator can oversize the allocation a little, according to
-        // the allocation granularity. The extra size is included in the
+        // the allocation granularity.  The extra size is included in the
         // payloadSize call below, since there is nowhere to store the
-        // originally allocated memory. This assert ensures that visiting the
+        // originally allocated memory.  This assert ensures that visiting the
         // last bit of memory can't cause trouble.
         COMPILE_ASSERT(!ShouldBeTraced<Traits>::value || sizeof(T) > blink::allocationGranularity || Traits::canInitializeWithMemset, HeapOverallocationCanCauseSpuriousVisits);
 
@@ -2053,7 +2037,7 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Hea
         // Use the payload size as recorded by the heap to determine how many
         // elements to mark.
         size_t length = header->payloadSize() / sizeof(T);
-        for (size_t i = 0; i < length; i++)
+        for (size_t i = 0; i < length; ++i)
             blink::CollectionBackingTraceTrait<ShouldBeTraced<Traits>::value, Traits::weakHandlingFlag, WeakPointersActStrong, T, Traits>::trace(visitor, array[i]);
         return false;
     }
@@ -2062,14 +2046,14 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Hea
 // Almost all hash table backings are visited with this specialization.
 template<ShouldWeakPointersBeMarkedStrongly strongify, typename Table>
 struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::HeapHashTableBacking<Table>, void> {
-    typedef typename Table::ValueType Value;
-    typedef typename Table::ValueTraits Traits;
+    using Value = typename Table::ValueType;
+    using Traits = typename Table::ValueTraits;
     static bool trace(blink::Visitor* visitor, void* self)
     {
         Value* array = reinterpret_cast<Value*>(self);
         blink::GeneralHeapObjectHeader* header = blink::GeneralHeapObjectHeader::fromPayload(self);
         size_t length = header->payloadSize() / sizeof(Value);
-        for (size_t i = 0; i < length; i++) {
+        for (size_t i = 0; i < length; ++i) {
             if (!HashTableHelper<Value, typename Table::ExtractorType, typename Table::KeyTraitsType>::isEmptyOrDeletedBucket(array[i]))
                 blink::CollectionBackingTraceTrait<ShouldBeTraced<Traits>::value, Traits::weakHandlingFlag, strongify, Value, Traits>::trace(visitor, array[i]);
         }
@@ -2078,20 +2062,20 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Hea
 };
 
 // This specialization of TraceInCollectionTrait is for the backing of
-// HeapListHashSet. This is for the case that we find a reference to the
-// backing from the stack. That probably means we have a GC while we are in a
+// HeapListHashSet.  This is for the case that we find a reference to the
+// backing from the stack.  That probably means we have a GC while we are in a
 // ListHashSet method since normal API use does not put pointers to the backing
 // on the stack.
 template<ShouldWeakPointersBeMarkedStrongly strongify, typename NodeContents, size_t inlineCapacity, typename T, typename U, typename V, typename W, typename X, typename Y>
-struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::HeapHashTableBacking<HashTable<ListHashSetNode<NodeContents, blink::HeapListHashSetAllocator<T, inlineCapacity> >*, U, V, W, X, Y, blink::HeapAllocator> >, void> {
-    typedef ListHashSetNode<NodeContents, blink::HeapListHashSetAllocator<T, inlineCapacity> > Node;
-    typedef HashTable<Node*, U, V, W, X, Y, blink::HeapAllocator> Table;
+struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::HeapHashTableBacking<HashTable<ListHashSetNode<NodeContents, blink::HeapListHashSetAllocator<T, inlineCapacity>>*, U, V, W, X, Y, blink::HeapAllocator>>, void> {
+    using Node = ListHashSetNode<NodeContents, blink::HeapListHashSetAllocator<T, inlineCapacity>>;
+    using Table = HashTable<Node*, U, V, W, X, Y, blink::HeapAllocator>;
     static bool trace(blink::Visitor* visitor, void* self)
     {
         Node** array = reinterpret_cast<Node**>(self);
         blink::GeneralHeapObjectHeader* header = blink::GeneralHeapObjectHeader::fromPayload(self);
         size_t length = header->payloadSize() / sizeof(Node*);
-        for (size_t i = 0; i < length; i++) {
+        for (size_t i = 0; i < length; ++i) {
             if (!HashTableHelper<Node*, typename Table::ExtractorType, typename Table::KeyTraitsType>::isEmptyOrDeletedBucket(array[i])) {
                 traceListHashSetValue(visitor, array[i]->m_value);
                 // Just mark the node without tracing because we already traced
@@ -2105,7 +2089,7 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Hea
     }
 };
 
-// Key value pairs, as used in HashMap. To disambiguate template choice we have
+// Key value pairs, as used in HashMap.  To disambiguate template choice we have
 // to have two versions, first the one with no special weak handling, then the
 // one with weak handling.
 template<ShouldWeakPointersBeMarkedStrongly strongify, typename Key, typename Value, typename Traits>
@@ -2123,19 +2107,19 @@ template<ShouldWeakPointersBeMarkedStrongly strongify, typename Key, typename Va
 struct TraceInCollectionTrait<WeakHandlingInCollections, strongify, KeyValuePair<Key, Value>, Traits> {
     static bool trace(blink::Visitor* visitor, KeyValuePair<Key, Value>& self)
     {
-        // This is the core of the ephemeron-like functionality. If there is
+        // This is the core of the ephemeron-like functionality.  If there is
         // weakness on the key side then we first check whether there are
         // dead weak pointers on that side, and if there are we don't mark the
-        // value side (yet). Conversely if there is weakness on the value side
+        // value side (yet).  Conversely if there is weakness on the value side
         // we check that first and don't mark the key side yet if we find dead
         // weak pointers.
         // Corner case: If there is weakness on both the key and value side,
         // and there are also strong pointers on the both sides then we could
-        // unexpectedly leak. The scenario is that the weak pointer on the key
+        // unexpectedly leak.  The scenario is that the weak pointer on the key
         // side is alive, which causes the strong pointer on the key side to be
-        // marked. If that then results in the object pointed to by the weak
+        // marked.  If that then results in the object pointed to by the weak
         // pointer on the value side being marked live, then the whole
-        // key-value entry is leaked. To avoid unexpected leaking, we disallow
+        // key-value entry is leaked.  To avoid unexpected leaking, we disallow
         // this case, but if you run into this assert, please reach out to Blink
         // reviewers, and we may relax it.
         const bool keyIsWeak = Traits::KeyTraits::weakHandlingFlag == WeakHandlingInCollections;
@@ -2158,7 +2142,7 @@ struct TraceInCollectionTrait<WeakHandlingInCollections, strongify, KeyValuePair
     }
 };
 
-// Nodes used by LinkedHashSet. Again we need two versions to disambiguate the
+// Nodes used by LinkedHashSet.  Again we need two versions to disambiguate the
 // template.
 template<ShouldWeakPointersBeMarkedStrongly strongify, typename Value, typename Allocator, typename Traits>
 struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, LinkedHashSetNode<Value, Allocator>, Traits> {
@@ -2178,10 +2162,11 @@ struct TraceInCollectionTrait<WeakHandlingInCollections, strongify, LinkedHashSe
     }
 };
 
-// ListHashSetNode pointers (a ListHashSet is implemented as a hash table of these pointers).
+// ListHashSetNode pointers (a ListHashSet is implemented as a hash table of
+// these pointers).
 template<ShouldWeakPointersBeMarkedStrongly strongify, typename Value, size_t inlineCapacity, typename Traits>
-struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, ListHashSetNode<Value, blink::HeapListHashSetAllocator<Value, inlineCapacity> >*, Traits> {
-    typedef ListHashSetNode<Value, blink::HeapListHashSetAllocator<Value, inlineCapacity> > Node;
+struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, ListHashSetNode<Value, blink::HeapListHashSetAllocator<Value, inlineCapacity>>*, Traits> {
+    using Node = ListHashSetNode<Value, blink::HeapListHashSetAllocator<Value, inlineCapacity>>;
     static bool trace(blink::Visitor* visitor, Node* node)
     {
         traceListHashSetValue(visitor, node->m_value);
@@ -2198,11 +2183,11 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, ListHashSe
 
 namespace blink {
 
-// CollectionBackingTraceTrait. Do nothing for things in collections that don't
+// CollectionBackingTraceTrait.  Do nothing for things in collections that don't
 // need tracing, or call TraceInCollectionTrait for those that do.
 
-// Specialization for things that don't need marking and have no weak pointers. We
-// do nothing, even if WTF::WeakPointersActStrong.
+// Specialization for things that don't need marking and have no weak pointers.
+// We do nothing, even if WTF::WeakPointersActStrong.
 template<WTF::ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits>
 struct CollectionBackingTraceTrait<false, WTF::NoWeakHandlingInCollections, strongify, T, Traits> {
     static bool trace(Visitor*, T&) { return false; }
@@ -2237,17 +2222,17 @@ template<typename T> struct WeakHandlingHashTraits : WTF::SimpleClassHashTraits<
     // Normally whether or not an object needs tracing is inferred
     // automatically from the presence of the trace method, but we don't
     // necessarily have a trace method, and we may not need one because T
-    // can perhaps only be allocated inside collections, never as indpendent
-    // objects. Explicitly mark this as needing tracing and it will be traced
+    // can perhaps only be allocated inside collections, never as independent
+    // objects.  Explicitly mark this as needing tracing and it will be traced
     // in collections using the traceInCollection method, which it must have.
     template<typename U = void> struct NeedsTracingLazily {
         static const bool value = true;
     };
     // The traceInCollection method traces differently depending on whether we
-    // are strongifying the trace operation. We strongify the trace operation
-    // when there are active iterators on the object. In this case all
+    // are strongifying the trace operation.  We strongify the trace operation
+    // when there are active iterators on the object.  In this case all
     // WeakMembers are marked like strong members so that elements do not
-    // suddenly disappear during iteration. Returns true if weak pointers to
+    // suddenly disappear during iteration.  Returns true if weak pointers to
     // dead objects were found: In this case any strong pointers were not yet
     // traced and the entry should be removed from the collection.
     static bool traceInCollection(Visitor* visitor, T& t, WTF::ShouldWeakPointersBeMarkedStrongly strongify)
@@ -2257,8 +2242,8 @@ template<typename T> struct WeakHandlingHashTraits : WTF::SimpleClassHashTraits<
 };
 
 template<typename T, typename Traits>
-struct TraceTrait<HeapVectorBacking<T, Traits> > {
-    typedef HeapVectorBacking<T, Traits> Backing;
+struct TraceTrait<HeapVectorBacking<T, Traits>> {
+    using Backing = HeapVectorBacking<T, Traits>;
     static void trace(Visitor* visitor, void* self)
     {
         COMPILE_ASSERT(!WTF::IsWeak<T>::value, WeDontSupportWeaknessInHeapVectorsOrDeques);
@@ -2278,15 +2263,15 @@ struct TraceTrait<HeapVectorBacking<T, Traits> > {
 };
 
 // The trace trait for the heap hashtable backing is used when we find a
-// direct pointer to the backing from the conservative stack scanner. This
+// direct pointer to the backing from the conservative stack scanner.  This
 // normally indicates that there is an ongoing iteration over the table, and so
-// we disable weak processing of table entries. When the backing is found
+// we disable weak processing of table entries.  When the backing is found
 // through the owning hash table we mark differently, in order to do weak
 // processing.
 template<typename Table>
-struct TraceTrait<HeapHashTableBacking<Table> > {
-    typedef HeapHashTableBacking<Table> Backing;
-    typedef typename Table::ValueTraits Traits;
+struct TraceTrait<HeapHashTableBacking<Table>> {
+    using Backing = HeapHashTableBacking<Table>;
+    using Traits = typename Table::ValueTraits;
     static void trace(Visitor* visitor, void* self)
     {
         if (WTF::ShouldBeTraced<Traits>::value || Traits::weakHandlingFlag == WTF::WeakHandlingInCollections)
@@ -2310,33 +2295,33 @@ struct TraceTrait<HeapHashTableBacking<Table> > {
 template<typename Table>
 void HeapHashTableBacking<Table>::finalize(void* pointer)
 {
-    typedef typename Table::ValueType Value;
+    using Value = typename Table::ValueType;
     ASSERT(Table::ValueTraits::needsDestruction);
     GeneralHeapObjectHeader* header = GeneralHeapObjectHeader::fromPayload(pointer);
     // Use the payload size as recorded by the heap to determine how many
     // elements to finalize.
     size_t length = header->payloadSize() / sizeof(Value);
     Value* table = reinterpret_cast<Value*>(pointer);
-    for (unsigned i = 0; i < length; i++) {
+    for (unsigned i = 0; i < length; ++i) {
         if (!Table::isEmptyOrDeletedBucket(table[i]))
             table[i].~Value();
     }
 }
 
 template<typename T, typename U, typename V, typename W, typename X>
-struct GCInfoTrait<HeapHashMap<T, U, V, W, X> > : public GCInfoTrait<HashMap<T, U, V, W, X, HeapAllocator> > { };
+struct GCInfoTrait<HeapHashMap<T, U, V, W, X>> : public GCInfoTrait<HashMap<T, U, V, W, X, HeapAllocator>> { };
 template<typename T, typename U, typename V>
-struct GCInfoTrait<HeapHashSet<T, U, V> > : public GCInfoTrait<HashSet<T, U, V, HeapAllocator> > { };
+struct GCInfoTrait<HeapHashSet<T, U, V>> : public GCInfoTrait<HashSet<T, U, V, HeapAllocator>> { };
 template<typename T, typename U, typename V>
-struct GCInfoTrait<HeapLinkedHashSet<T, U, V> > : public GCInfoTrait<LinkedHashSet<T, U, V, HeapAllocator> > { };
+struct GCInfoTrait<HeapLinkedHashSet<T, U, V>> : public GCInfoTrait<LinkedHashSet<T, U, V, HeapAllocator>> { };
 template<typename T, size_t inlineCapacity, typename U>
-struct GCInfoTrait<HeapListHashSet<T, inlineCapacity, U> > : public GCInfoTrait<ListHashSet<T, inlineCapacity, U, HeapListHashSetAllocator<T, inlineCapacity> > > { };
+struct GCInfoTrait<HeapListHashSet<T, inlineCapacity, U>> : public GCInfoTrait<ListHashSet<T, inlineCapacity, U, HeapListHashSetAllocator<T, inlineCapacity>> > { };
 template<typename T, size_t inlineCapacity>
-struct GCInfoTrait<HeapVector<T, inlineCapacity> > : public GCInfoTrait<Vector<T, inlineCapacity, HeapAllocator> > { };
+struct GCInfoTrait<HeapVector<T, inlineCapacity>> : public GCInfoTrait<Vector<T, inlineCapacity, HeapAllocator>> { };
 template<typename T, size_t inlineCapacity>
-struct GCInfoTrait<HeapDeque<T, inlineCapacity> > : public GCInfoTrait<Deque<T, inlineCapacity, HeapAllocator> > { };
+struct GCInfoTrait<HeapDeque<T, inlineCapacity>> : public GCInfoTrait<Deque<T, inlineCapacity, HeapAllocator>> { };
 template<typename T, typename U, typename V>
-struct GCInfoTrait<HeapHashCountedSet<T, U, V> > : public GCInfoTrait<HashCountedSet<T, U, V, HeapAllocator> > { };
+struct GCInfoTrait<HeapHashCountedSet<T, U, V>> : public GCInfoTrait<HashCountedSet<T, U, V, HeapAllocator>> { };
 
 } // namespace blink
 
