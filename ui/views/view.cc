@@ -51,6 +51,8 @@
 #include "base/win/scoped_gdi_object.h"
 #endif
 
+namespace views {
+
 namespace {
 
 #if defined(OS_WIN)
@@ -68,20 +70,14 @@ const int kDefaultHorizontalDragThreshold = 8;
 const int kDefaultVerticalDragThreshold = 8;
 
 // Returns the top view in |view|'s hierarchy.
-const views::View* GetHierarchyRoot(const views::View* view) {
-  const views::View* root = view;
+const View* GetHierarchyRoot(const View* view) {
+  const View* root = view;
   while (root && root->parent())
     root = root->parent();
   return root;
 }
 
 }  // namespace
-
-namespace views {
-
-namespace internal {
-
-}  // namespace internal
 
 // static
 ViewsDelegate* ViewsDelegate::views_delegate = NULL;
