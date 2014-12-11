@@ -2036,7 +2036,7 @@ def CMDarchive(parser, args):
   add_isolate_server_options(parser)
   add_archive_options(parser)
   options, files = parser.parse_args(args)
-  process_isolate_server_options(parser, options)
+  process_isolate_server_options(parser, options, True)
   try:
     archive(options.isolate_server, options.namespace, files, options.blacklist)
   except Error as e:
@@ -2066,7 +2066,7 @@ def CMDdownload(parser, args):
   if args:
     parser.error('Unsupported arguments: %s' % args)
 
-  process_isolate_server_options(parser, options)
+  process_isolate_server_options(parser, options, True)
   if bool(options.isolated) == bool(options.file):
     parser.error('Use one of --isolated or --file, and only one.')
 
@@ -2130,7 +2130,7 @@ def add_isolate_server_options(parser):
       help='The namespace to use on the Isolate Server, default: %default')
 
 
-def process_isolate_server_options(parser, options):
+def process_isolate_server_options(parser, options, set_exception_handler):
   """Processes the --isolate-server option and aborts if not specified.
 
   Returns the identity as determined by the server.
@@ -2141,7 +2141,8 @@ def process_isolate_server_options(parser, options):
     options.isolate_server = net.fix_url(options.isolate_server)
   except ValueError as e:
     parser.error('--isolate-server %s' % e)
-  on_error.report_on_exception_exit(options.isolate_server)
+  if set_exception_handler:
+    on_error.report_on_exception_exit(options.isolate_server)
   try:
     return auth.ensure_logged_in(options.isolate_server)
   except ValueError as e:

@@ -853,7 +853,7 @@ def add_trigger_options(parser):
 def process_trigger_options(parser, options, args):
   if len(args) != 1:
     parser.error('Must pass one .isolated file or its hash (sha1).')
-  isolateserver.process_isolate_server_options(parser, options)
+  isolateserver.process_isolate_server_options(parser, options, False)
   process_filter_options(parser, options)
 
 

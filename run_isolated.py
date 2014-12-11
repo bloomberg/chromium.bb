@@ -271,7 +271,7 @@ def main(args):
   if not options.hash:
     parser.error('--hash is required.')
   auth.process_auth_options(parser, options)
-  isolateserver.process_isolate_server_options(parser, options)
+  isolateserver.process_isolate_server_options(parser, options, True)
 
   cache = isolateserver.process_cache_options(options)
   with isolateserver.get_storage(
