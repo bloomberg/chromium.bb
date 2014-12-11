@@ -187,9 +187,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnableCredentialManagerAPI))
     WebRuntimeFeatures::enableCredentialManagerAPI(true);
 
-  if (command_line.HasSwitch(switches::kEnableViewport))
-    WebRuntimeFeatures::enableCSSViewport(true);
-
   if (command_line.HasSwitch(switches::kDisableSVG1DOM)) {
     WebRuntimeFeatures::enableSVG1DOM(false);
   }
