@@ -12,8 +12,7 @@ enum RequestCredentials { "omit", "same-origin", "include" };
 [
     Constructor(RequestInfo input, optional Dictionary requestInitDict),
     ConstructorCallWith=ExecutionContext,
-    RuntimeEnabled=ServiceWorker,
-    Exposed=ServiceWorker,
+    Exposed(Window GlobalFetch, DedicatedWorker GlobalFetch, SharedWorker GlobalFetch, ServiceWorker ServiceWorker),
     RaisesException=Constructor,
     ActiveDOMObject,
     GarbageCollected,

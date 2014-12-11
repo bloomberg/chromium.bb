@@ -976,6 +976,14 @@ interface HTMLVideoElement
 interface HashChangeEvent
     method constructor
     method initHashChangeEvent
+interface Headers
+    method append
+    method constructor
+    method delete
+    method get
+    method getAll
+    method has
+    method set
 interface History
     method back
     method constructor
@@ -1478,6 +1486,20 @@ interface RegExp
     method toString
 interface RelatedEvent
     method constructor
+interface Request
+    method arrayBuffer
+    method blob
+    method clone
+    method constructor
+    method json
+    method text
+interface Response
+    method arrayBuffer
+    method blob
+    method clone
+    method constructor
+    method json
+    method text
 interface SVGAElement
     method constructor
 interface SVGAngle
