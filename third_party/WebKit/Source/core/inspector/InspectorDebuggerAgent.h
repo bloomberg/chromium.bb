@@ -274,7 +274,7 @@ private:
     unsigned m_cachedSkipStackGeneration;
     OwnPtrWillBeMember<AsyncCallStackTracker> m_asyncCallStackTracker;
     OwnPtrWillBeMember<PromiseTracker> m_promiseTracker;
-    HashSet<RefPtr<AsyncCallStackTracker::AsyncCallChain> > m_asyncOperationsForStepInto;
+    WillBeHeapHashSet<RefPtrWillBeMember<AsyncCallStackTracker::AsyncCallChain> > m_asyncOperationsForStepInto;
 };
 
 } // namespace blink

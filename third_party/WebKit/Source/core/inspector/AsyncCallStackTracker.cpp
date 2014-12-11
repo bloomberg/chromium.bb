@@ -60,8 +60,9 @@ namespace blink {
 
 template <class K>
 class AsyncCallStackTracker::AsyncCallChainMap final {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
-    typedef HashMap<K, RefPtr<AsyncCallStackTracker::AsyncCallChain> > MapType;
+    using MapType = WillBeHeapHashMap<K, RefPtrWillBeMember<AsyncCallStackTracker::AsyncCallChain>>;
     explicit AsyncCallChainMap(AsyncCallStackTracker* tracker) : m_tracker(tracker) { }
 
     ~AsyncCallChainMap()
@@ -97,9 +98,14 @@ public:
 
     void remove(typename MapType::KeyPeekInType key)
     {
-        RefPtr<AsyncCallStackTracker::AsyncCallChain> chain = m_asyncCallChains.take(key);
+        RefPtrWillBeRawPtr<AsyncCallStackTracker::AsyncCallChain> chain = m_asyncCallChains.take(key);
         if (chain && m_tracker->m_listener)
             m_tracker->m_listener->didRemoveAsyncCallChain(chain.get());
+    }
+
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(m_asyncCallChains);
     }
 
 private:

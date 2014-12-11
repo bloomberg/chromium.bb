@@ -1504,6 +1504,7 @@ void InspectorDebuggerAgent::trace(Visitor* visitor)
     visitor->trace(m_asyncCallStackTracker);
 #if ENABLE(OILPAN)
     visitor->trace(m_promiseTracker);
+    visitor->trace(m_asyncOperationsForStepInto);
 #endif
     InspectorBaseAgent::trace(visitor);
 }
