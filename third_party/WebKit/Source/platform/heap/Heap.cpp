@@ -1260,7 +1260,7 @@ void OrphanedPagePool::clearMemory(PageMemory* memory)
     // only works for code in this method and not for calls to memset.
     Address base = memory->writableStart();
     for (Address current = base; current < base + blinkPagePayloadSize(); ++current)
-        *current = nullptr;
+        *current = 0;
 #else
     memset(memory->writableStart(), 0, blinkPagePayloadSize());
 #endif
