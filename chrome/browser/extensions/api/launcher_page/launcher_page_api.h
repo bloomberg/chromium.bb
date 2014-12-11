@@ -65,6 +65,22 @@ class LauncherPageShowFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(LauncherPageShowFunction);
 };
 
+class LauncherPageSetEnabledFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("launcherPage.setEnabled",
+                             LAUNCHERPAGE_SETENABLED);
+
+  LauncherPageSetEnabledFunction();
+
+ protected:
+  ~LauncherPageSetEnabledFunction() override {}
+
+  ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LauncherPageSetEnabledFunction);
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_LAUNCHER_PAGE_LAUNCHER_PAGE_API_H_

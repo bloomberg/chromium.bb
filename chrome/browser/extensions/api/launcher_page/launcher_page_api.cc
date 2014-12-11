@@ -65,4 +65,22 @@ ExtensionFunction::ResponseAction LauncherPageShowFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+LauncherPageSetEnabledFunction::LauncherPageSetEnabledFunction() {
+}
+
+ExtensionFunction::ResponseAction LauncherPageSetEnabledFunction::Run() {
+  scoped_ptr<api::launcher_page::SetEnabled::Params> params(
+      api::launcher_page::SetEnabled::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  app_list::AppListSyncableService* service =
+      LauncherPageAPI::GetFactoryInstance()
+          ->Get(browser_context())
+          ->GetService();
+  app_list::AppListModel* model = service->model();
+  model->SetCustomLauncherPageEnabled(params->enabled);
+
+  return RespondNow(NoArguments());
+}
+
 }  // namespace extensions

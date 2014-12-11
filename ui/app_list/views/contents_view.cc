@@ -407,7 +407,8 @@ gfx::Rect ContentsView::GetCustomPageCollapsedBounds() const {
 }
 
 bool ContentsView::ShouldShowCustomPageClickzone() const {
-  return custom_page_view_ && IsStateActive(AppListModel::STATE_START);
+  return custom_page_view_ && IsStateActive(AppListModel::STATE_START) &&
+         app_list_main_view_->model()->custom_launcher_page_enabled();
 }
 
 bool ContentsView::Back() {

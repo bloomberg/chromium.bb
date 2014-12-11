@@ -19,4 +19,16 @@ chrome.launcherPage.onPopSubpage.addListener(function() {
   chrome.test.sendMessage('onPopSubpage');
 });
 
+function disableCustomLauncherPage() {
+  chrome.launcherPage.setEnabled(false, function() {
+      chrome.test.sendMessage('launcherPageDisabled');
+  });
+}
+
+function enableCustomLauncherPage() {
+  chrome.launcherPage.setEnabled(true, function() {
+      chrome.test.sendMessage('launcherPageEnabled');
+  });
+}
+
 chrome.test.sendMessage('Launched');

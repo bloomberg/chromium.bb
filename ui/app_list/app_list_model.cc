@@ -19,7 +19,8 @@ AppListModel::AppListModel()
       results_(new SearchResults),
       status_(STATUS_NORMAL),
       state_(INVALID_STATE),
-      folders_enabled_(false) {
+      folders_enabled_(false),
+      custom_launcher_page_enabled_(true) {
   top_level_item_list_->AddObserver(this);
 }
 
@@ -306,6 +307,12 @@ void AppListModel::SetFoldersEnabled(bool folders_enabled) {
   // Delete folders.
   for (size_t i = 0; i < folder_ids.size(); ++i)
     DeleteItem(folder_ids[i]);
+}
+
+void AppListModel::SetCustomLauncherPageEnabled(bool enabled) {
+  custom_launcher_page_enabled_ = enabled;
+  FOR_EACH_OBSERVER(AppListModelObserver, observers_,
+                    OnCustomLauncherPageEnabledStateChanged(enabled));
 }
 
 std::vector<SearchResult*> AppListModel::FilterSearchResultsByDisplayType(

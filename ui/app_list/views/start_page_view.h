@@ -51,6 +51,9 @@ class APP_LIST_EXPORT StartPageView : public SearchResultContainerView {
   // Returns search box bounds to use when the start page is active.
   gfx::Rect GetSearchBoxBounds() const;
 
+  // Updates whether the custom page clickzone is visible.
+  void UpdateCustomPageClickzoneVisibility();
+
  private:
   // Overridden from SearchResultContainerView:
   int Update() override;

@@ -145,23 +145,14 @@ TileItemView* StartPageView::all_apps_button() const {
 }
 
 void StartPageView::OnShow() {
-  // This can get called before InitWidgets(), so we cannot guarantee that
-  // custom_page_clickzone_ will not be null.
-  views::Widget* custom_page_clickzone =
-      app_list_main_view_->GetCustomPageClickzone();
-  if (!custom_page_clickzone)
-    return;
-
-  custom_page_clickzone->ShowInactive();
+  DCHECK(app_list_main_view_->contents_view()->ShouldShowCustomPageClickzone());
+  UpdateCustomPageClickzoneVisibility();
 }
 
 void StartPageView::OnHide() {
-  views::Widget* custom_page_clickzone =
-      app_list_main_view_->GetCustomPageClickzone();
-  if (!custom_page_clickzone)
-    return;
-
-  custom_page_clickzone->Hide();
+  DCHECK(
+      !app_list_main_view_->contents_view()->ShouldShowCustomPageClickzone());
+  UpdateCustomPageClickzoneVisibility();
 }
 
 void StartPageView::Layout() {
@@ -180,6 +171,22 @@ void StartPageView::OnContainerSelected(bool from_bottom) {
 
 gfx::Rect StartPageView::GetSearchBoxBounds() const {
   return search_box_spacer_view_->bounds();
+}
+
+void StartPageView::UpdateCustomPageClickzoneVisibility() {
+  // This can get called before InitWidgets(), so we cannot guarantee that
+  // custom_page_clickzone_ will not be null.
+  views::Widget* custom_page_clickzone =
+      app_list_main_view_->GetCustomPageClickzone();
+  if (!custom_page_clickzone)
+    return;
+
+  if (app_list_main_view_->contents_view()->ShouldShowCustomPageClickzone()) {
+    custom_page_clickzone->ShowInactive();
+    return;
+  }
+
+  custom_page_clickzone->Hide();
 }
 
 int StartPageView::Update() {

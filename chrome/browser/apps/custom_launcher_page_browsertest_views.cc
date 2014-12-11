@@ -209,3 +209,47 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
         app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE));
   }
 }
+
+IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest, LauncherPageSetEnabled) {
+  const base::string16 kLauncherPageDisableScript =
+      base::ASCIIToUTF16("disableCustomLauncherPage();");
+  const base::string16 kLauncherPageEnableScript =
+      base::ASCIIToUTF16("enableCustomLauncherPage();");
+
+  LoadAndLaunchPlatformApp(kCustomLauncherPagePath, "Launched");
+  app_list::AppListView* app_list_view = GetAppListView();
+  app_list::AppListModel* model = app_list_view->app_list_main_view()->model();
+  app_list::ContentsView* contents_view =
+      app_list_view->app_list_main_view()->contents_view();
+
+  views::WebView* custom_page_view =
+      static_cast<views::WebView*>(contents_view->custom_page_view());
+
+  content::RenderFrameHost* custom_page_frame =
+      custom_page_view->GetWebContents()->GetMainFrame();
+  views::Widget* custom_page_click_zone =
+      app_list_view->app_list_main_view()->GetCustomPageClickzone();
+
+  ASSERT_TRUE(
+      contents_view->IsStateActive(app_list::AppListModel::STATE_START));
+
+  EXPECT_TRUE(custom_page_click_zone->GetLayer()->visible());
+  EXPECT_TRUE(model->custom_launcher_page_enabled());
+  {
+    ExtensionTestMessageListener listener("launcherPageDisabled", false);
+    custom_page_frame->ExecuteJavaScript(kLauncherPageDisableScript);
+
+    listener.WaitUntilSatisfied();
+    EXPECT_FALSE(custom_page_click_zone->GetLayer()->visible());
+    EXPECT_FALSE(model->custom_launcher_page_enabled());
+  }
+
+  {
+    ExtensionTestMessageListener listener("launcherPageEnabled", false);
+    custom_page_frame->ExecuteJavaScript(kLauncherPageEnableScript);
+
+    listener.WaitUntilSatisfied();
+    EXPECT_TRUE(custom_page_click_zone->GetLayer()->visible());
+    EXPECT_TRUE(model->custom_launcher_page_enabled());
+  }
+}

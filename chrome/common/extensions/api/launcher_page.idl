@@ -7,6 +7,7 @@
 namespace launcherPage {
   callback PushSubpageCallback = void();
   callback ShowCallback = void();
+  callback SetEnabledCallback = void();
 
   interface Functions {
     // Pushes a subpage state onto a state stack for the launcher page. This
@@ -22,6 +23,16 @@ namespace launcherPage {
     // Opens the launcher if it isn't currently open and shows the launcher
     // page.
     static void show(optional ShowCallback callback);
+
+    // Sets whether the launcher page is enabled in the launcher. If disabled,
+    // the launcher page will not be shown when the area at the bottom of the
+    // launcher is pressed.
+    //
+    // Note: The launcher page will still be displayed at the bottom of the
+    // launcher's start page and launcherPage.show() will still show the
+    // launcher page.
+    static void setEnabled(boolean enabled,
+                           optional SetEnabledCallback callback);
   };
 
   interface Events {

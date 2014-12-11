@@ -125,9 +125,13 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   // Call OnExtensionPreferenceChanged() for all items in the model.
   void NotifyExtensionPreferenceChanged();
 
-  // Sets wither or not folder UI should be enabled. If |folders_enabled| is
-  // false, removes any non-OEM folders.
+  // Sets whether or not the folder UI should be enabled. If |folders_enabled|
+  // is false, removes any non-OEM folders.
   void SetFoldersEnabled(bool folders_enabled);
+
+  // Sets whether or not the custom launcher page should be enabled.
+  void SetCustomLauncherPageEnabled(bool enabled);
+  bool custom_launcher_page_enabled() { return custom_launcher_page_enabled_; }
 
   // Pushes a custom launcher page's subpage into the state stack in the model.
   void PushCustomLauncherPageSubpage();
@@ -198,6 +202,7 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   State state_;
   ObserverList<AppListModelObserver, true> observers_;
   bool folders_enabled_;
+  bool custom_launcher_page_enabled_;
 
   // The current number of subpages the custom launcher page has pushed.
   int custom_launcher_page_subpage_depth_;
