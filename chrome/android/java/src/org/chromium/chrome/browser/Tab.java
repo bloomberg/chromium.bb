@@ -1034,6 +1034,14 @@ public class Tab {
     }
 
     /**
+     * Called when the background color for the content changes.
+     * @param color The current for the background.
+     */
+    protected void onBackgroundColorChanged(int color) {
+        for (TabObserver observer : mObservers) observer.onBackgroundColorChanged(this, color);
+    }
+
+    /**
      * Destroys the current {@link ContentViewCore}.
      * @param deleteNativeWebContents Whether or not to delete the native WebContents pointer.
      */

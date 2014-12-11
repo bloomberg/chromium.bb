@@ -195,6 +195,13 @@ public interface TabObserver {
      */
     public void onDidDetachInterstitialPage(Tab tab);
 
+    /**
+     * Called when the background color for the tab has changed.
+     * @param tab The notifying {@link Tab}.
+     * @param color The current background color.
+     */
+    public void onBackgroundColorChanged(Tab tab, int color);
+
     public void webContentsCreated(Tab tab, long sourceWebContents, long openerRenderFrameId,
             String frameName, String targetUrl, long newWebContents);
 }

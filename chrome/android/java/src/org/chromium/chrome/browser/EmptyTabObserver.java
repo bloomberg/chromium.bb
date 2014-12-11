@@ -83,6 +83,9 @@ public class EmptyTabObserver implements TabObserver {
     public void onDidDetachInterstitialPage(Tab tab) { }
 
     @Override
+    public void onBackgroundColorChanged(Tab tab, int color) { }
+
+    @Override
     public void webContentsCreated(Tab tab, long sourceWebContents, long openerRenderFrameId,
             String frameName, String targetUrl, long newWebContents) { }
 }
