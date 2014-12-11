@@ -50,6 +50,7 @@
 namespace blink {
 
 class DocumentLoader;
+class Event;
 class FetchContext;
 class FormState;
 class Frame;
@@ -206,7 +207,7 @@ private:
 
     // Calls continueLoadAfterNavigationPolicy
     void loadWithNavigationAction(const NavigationAction&, FrameLoadType, PassRefPtrWillBeRawPtr<FormState>,
-        const SubstituteData&, ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy, ClientRedirectPolicy = NotClientRedirect);
+        const SubstituteData&, ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy, ClientRedirectPolicy = NotClientRedirect, Event* triggeringEvent = nullptr);
 
     bool validateTransitionNavigationMode();
     bool dispatchNavigationTransitionData();

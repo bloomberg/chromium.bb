@@ -85,7 +85,7 @@ public:
     virtual void dispatchDidReceiveServerRedirectForProvisionalLoad() override;
     virtual void dispatchDidNavigateWithinPage(HistoryItem*, HistoryCommitType) override;
     virtual void dispatchWillClose() override;
-    virtual void dispatchDidStartProvisionalLoad(bool isTransitionNavigation) override;
+    virtual void dispatchDidStartProvisionalLoad(bool isTransitionNavigation, double triggeringEventTime) override;
     virtual void dispatchDidReceiveTitle(const String&) override;
     virtual void dispatchDidChangeIcons(IconType) override;
     virtual void dispatchDidCommitLoad(LocalFrame*, HistoryItem*, HistoryCommitType) override;
