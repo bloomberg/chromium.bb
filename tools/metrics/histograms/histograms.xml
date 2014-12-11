@@ -40963,6 +40963,54 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.BitrateReceivedInKbps" units="kbps">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The number of received bits per second for a received video stream. Recorded
+    when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.BitrateSentInKbps" units="kbps">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The number of sent bits per second for a sent video stream. Recorded when a
+    stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.CompleteFramesReceivedPerSecond" units="fps">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The number of complete frames received per second for a received video
+    stream. Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.DecodedFramesPerSecond" units="fps">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The number of decoded frames per second for a received video stream.
+    Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.DelayedFramesToRenderer" units="%">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    Percentage of delayed frames to renderer for a received video stream.
+    Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.DelayedFramesToRenderer_AvgDelayInMs" units="ms">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The average delay of delayed frames to renderer for a received video stream.
+    Recorded when a stream is removed.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.DiscardedPacketsInPercent" units="%">
   <owner>asapersson@chromium.org</owner>
   <summary>
@@ -41014,6 +41062,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.MediaBitrateReceivedInKbps" units="kbps">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The number of received media payload bits per second for a received video
+    stream. Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.MediaBitrateSentInKbps" units="kbps">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The number of sent media payload bits per second for a sent video stream.
+    Recorded when a stream is removed.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.NackPacketsReceivedPerMinute"
     units="packets/minute">
   <owner>asapersson@chromium.org</owner>
@@ -41033,6 +41097,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.PaddingBitrateReceivedInKbps" units="kbps">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The number of received padding bits per second for a received video stream.
+    Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.PaddingBitrateSentInKbps" units="kbps">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The number of sent padding bits per second for a sent video stream. Recorded
+    when a stream is removed.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.PliPacketsReceivedPerMinute"
     units="packets/minute">
   <owner>asapersson@chromium.org</owner>
@@ -41049,6 +41129,38 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     The number of sent RTCP PLI packets per minute for a received video stream.
     Recorded when a stream is removed. The total number of packets is divided by
     the time the video stream exists.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.RetransmittedBitrateReceivedInKbps" units="kbps">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The number of retransmitted bits per second for a received video stream.
+    Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.RetransmittedBitrateSentInKbps" units="kbps">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The number of retransmitted bits per second for a sent video stream.
+    Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.RtxBitrateReceivedInKbps" units="kbps">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The number of received bits over RTX per second for a received video stream.
+    Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.RtxBitrateSentInKbps" units="kbps">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The number of sent bits over RTX per second for a sent video stream.
+    Recorded when a stream is removed.
   </summary>
 </histogram>
 
