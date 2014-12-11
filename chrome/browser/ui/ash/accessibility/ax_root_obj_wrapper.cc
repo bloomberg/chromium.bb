@@ -10,6 +10,7 @@
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/aura/window.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
+#include "ui/views/accessibility/ax_window_obj_wrapper.h"
 
 AXRootObjWrapper::AXRootObjWrapper(int32 id)
     : id_(id), alert_window_(new aura::Window(NULL)) {
@@ -25,7 +26,11 @@ AXRootObjWrapper::~AXRootObjWrapper() {
 views::AXAuraObjWrapper* AXRootObjWrapper::GetAlertForText(
     const std::string& text) {
   alert_window_->SetTitle(base::UTF8ToUTF16((text)));
-  return views::AXAuraObjCache::GetInstance()->GetOrCreate(alert_window_);
+  views::AXWindowObjWrapper* window_obj =
+      static_cast<views::AXWindowObjWrapper*>(
+          views::AXAuraObjCache::GetInstance()->GetOrCreate(alert_window_));
+  window_obj->set_is_alert(true);
+  return window_obj;
 }
 
 bool AXRootObjWrapper::HasChild(views::AXAuraObjWrapper* child) {

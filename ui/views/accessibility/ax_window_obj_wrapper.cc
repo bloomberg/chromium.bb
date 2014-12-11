@@ -12,8 +12,8 @@
 
 namespace views {
 
-AXWindowObjWrapper::AXWindowObjWrapper(
-    aura::Window* window) : window_(window) {
+AXWindowObjWrapper::AXWindowObjWrapper(aura::Window* window)
+    : window_(window), is_alert_(false) {
   window->AddObserver(this);
 }
 
@@ -45,7 +45,7 @@ void AXWindowObjWrapper::GetChildren(
 
 void AXWindowObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   out_node_data->id = GetID();
-  out_node_data->role = ui::AX_ROLE_WINDOW;
+  out_node_data->role = is_alert_ ? ui::AX_ROLE_ALERT : ui::AX_ROLE_WINDOW;
   // TODO(dtseng): Set better states.
   out_node_data->state = 0;
   out_node_data->location = window_->bounds();

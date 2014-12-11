@@ -21,6 +21,12 @@ class AXWindowObjWrapper : public AXAuraObjWrapper,
   explicit AXWindowObjWrapper(aura::Window* window);
   ~AXWindowObjWrapper() override;
 
+  // Whether this window is an alert window.
+  bool is_alert() { return is_alert_; }
+
+  // Sets whether this window is an alert window.
+  void set_is_alert(bool is_alert) { is_alert = is_alert_; }
+
   // AXAuraObjWrapper overrides.
   AXAuraObjWrapper* GetParent() override;
   void GetChildren(std::vector<AXAuraObjWrapper*>* out_children) override;
@@ -32,6 +38,8 @@ class AXWindowObjWrapper : public AXAuraObjWrapper,
 
  private:
   aura::Window* window_;
+
+  bool is_alert_;
 
   DISALLOW_COPY_AND_ASSIGN(AXWindowObjWrapper);
 };
