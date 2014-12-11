@@ -22,7 +22,7 @@ class CopyOutputResult;
 class Layer;
 }
 
-namespace content {
+namespace ui {
 class UIResourceProvider;
 }
 
@@ -52,7 +52,7 @@ class TabContentManager : public ThumbnailStoreObserver {
   void SetUIResourceProvider(JNIEnv* env,
                              jobject obj,
                              jlong ui_resource_provider_ptr);
-  void SetUIResourceProvider(content::UIResourceProvider* ui_resource_provider);
+  void SetUIResourceProvider(ui::UIResourceProvider* ui_resource_provider);
 
   // Get the live layer from the cache.
   scoped_refptr<cc::Layer> GetLiveLayer(int tab_id);

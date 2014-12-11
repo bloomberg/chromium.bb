@@ -6,7 +6,7 @@
 
 #include "cc/layers/ui_resource_layer.h"
 #include "content/browser/android/animation_utils.h"
-#include "ui/base/android/system_ui_resource_manager.h"
+#include "ui/android/resources/resource_manager.h"
 
 namespace content {
 
@@ -41,11 +41,11 @@ const float kPullDistanceAlphaGlowFactor = 0.8f;
 
 const int kVelocityGlowFactor = 6;
 
-const ui::SystemUIResourceType kResourceType = ui::OVERSCROLL_GLOW_L;
+const ui::SystemUIResourceType kResourceId = ui::OVERSCROLL_GLOW_L;
 
 }  // namespace
 
-EdgeEffectL::EdgeEffectL(ui::SystemUIResourceManager* resource_manager)
+EdgeEffectL::EdgeEffectL(ui::ResourceManager* resource_manager)
     : resource_manager_(resource_manager),
       glow_(cc::UIResourceLayer::Create()),
       glow_alpha_(0),
@@ -234,7 +234,8 @@ void EdgeEffectL::ApplyToLayers(const gfx::SizeF& size,
       r, std::min(1.f, glow_scale_y_) * base_glow_scale * bounds_.height());
 
   glow_->SetIsDrawable(true);
-  glow_->SetUIResourceId(resource_manager_->GetUIResourceId(kResourceType));
+  glow_->SetUIResourceId(resource_manager_->GetUIResourceId(
+      ui::ANDROID_RESOURCE_TYPE_SYSTEM, kResourceId));
   glow_->SetTransformOrigin(gfx::Point3F(bounds_.width() * 0.5f, 0, 0));
   glow_->SetBounds(image_bounds);
   glow_->SetContentsOpaque(false);
@@ -255,10 +256,10 @@ void EdgeEffectL::SetParent(cc::Layer* parent) {
 }
 
 // static
-void EdgeEffectL::PreloadResources(
-    ui::SystemUIResourceManager* resource_manager) {
+void EdgeEffectL::PreloadResources(ui::ResourceManager* resource_manager) {
   DCHECK(resource_manager);
-  resource_manager->PreloadResource(kResourceType);
+  resource_manager->PreloadResource(ui::ANDROID_RESOURCE_TYPE_SYSTEM,
+                                    kResourceId);
 }
 
 }  // namespace content

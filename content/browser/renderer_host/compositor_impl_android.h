@@ -12,14 +12,13 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
-#include "content/browser/android/ui_resource_provider_impl.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/public/browser/android/compositor.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/android/resources/resource_manager.h"
-#include "ui/base/android/system_ui_resource_manager.h"
+#include "ui/android/resources/ui_resource_provider.h"
 #include "ui/base/android/window_android_compositor.h"
 
 class SkBitmap;
@@ -34,7 +33,6 @@ class SurfaceIdAllocator;
 namespace content {
 class CompositorClient;
 class OnscreenDisplayClient;
-class UIResourceProvider;
 
 // -----------------------------------------------------------------------------
 // Browser-side compositor that manages a tree of content and UI layers.
@@ -61,7 +59,7 @@ class CONTENT_EXPORT CompositorImpl
   virtual void SetWindowBounds(const gfx::Size& size) override;
   virtual void SetHasTransparentBackground(bool flag) override;
   virtual void SetNeedsComposite() override;
-  virtual UIResourceProvider& GetUIResourceProvider() override;
+  virtual ui::UIResourceProvider& GetUIResourceProvider() override;
   virtual ui::ResourceManager& GetResourceManager() override;
 
   // LayerTreeHostClient implementation.
@@ -100,7 +98,6 @@ class CONTENT_EXPORT CompositorImpl
   virtual void OnVSync(base::TimeTicks frame_time,
                        base::TimeDelta vsync_period) override;
   virtual void SetNeedsAnimate() override;
-  virtual ui::SystemUIResourceManager& GetSystemUIResourceManager() override;
 
   void SetWindowSurface(ANativeWindow* window);
 
@@ -143,7 +140,7 @@ class CONTENT_EXPORT CompositorImpl
   scoped_refptr<cc::Layer> subroot_layer_;
 
   scoped_ptr<cc::LayerTreeHost> host_;
-  content::UIResourceProviderImpl ui_resource_provider_;
+  ui::UIResourceProvider ui_resource_provider_;
   ui::ResourceManager resource_manager_;
 
   scoped_ptr<OnscreenDisplayClient> display_client_;

@@ -16,11 +16,11 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/thumbnail/thumbnail.h"
 #include "content/public/browser/android/content_view_core.h"
-#include "content/public/browser/android/ui_resource_provider.h"
 #include "content/public/browser/readback_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/TabContentManager_jni.h"
+#include "ui/android/resources/ui_resource_provider.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
@@ -156,13 +156,13 @@ void TabContentManager::Destroy(JNIEnv* env, jobject obj) {
 void TabContentManager::SetUIResourceProvider(JNIEnv* env,
                                               jobject obj,
                                               jlong ui_resource_provider_ptr) {
-  content::UIResourceProvider* ui_resource_provider =
-      reinterpret_cast<content::UIResourceProvider*>(ui_resource_provider_ptr);
+  ui::UIResourceProvider* ui_resource_provider =
+      reinterpret_cast<ui::UIResourceProvider*>(ui_resource_provider_ptr);
   SetUIResourceProvider(ui_resource_provider);
 }
 
 void TabContentManager::SetUIResourceProvider(
-    content::UIResourceProvider* ui_resource_provider) {
+    ui::UIResourceProvider* ui_resource_provider) {
   thumbnail_cache_->SetUIResourceProvider(ui_resource_provider);
 }
 

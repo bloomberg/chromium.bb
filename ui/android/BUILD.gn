@@ -9,6 +9,9 @@ component("android") {
     "resources/resource_manager.h",
     "resources/ui_resource_android.cc",
     "resources/ui_resource_android.h",
+    "resources/ui_resource_client_android.h",
+    "resources/ui_resource_provider.cc",
+    "resources/ui_resource_provider.h",
     "ui_android_export.h",
     "ui_android_jni_registrar.cc",
     "ui_android_jni_registrar.h",
@@ -130,4 +133,31 @@ android_library("ui_javatests") {
     "//base:base_java",
     "//base:base_java_test_support",
   ]
+}
+
+test("ui_android_unittests") {
+  sources = [
+    "resources/resource_manager_unittest.cc",
+    "run_all_unittests.cc",
+  ]
+  deps = [
+    ":android",
+    "//base",
+    "//base/test:test_support",
+    "//cc",
+    "//skia",
+    "//testing/android:native_test_native_code",
+    "//testing/gtest",
+    "//ui/base",
+    "//ui/gfx",
+    "//ui/resources:ui_test_pak",
+  ]
+}
+
+unittest_apk("ui_android_unittests_apk") {
+  deps = [
+    ":ui_android_unittests",
+    ":ui_java",
+  ]
+  unittests_dep = ":ui_android_unittests"
 }

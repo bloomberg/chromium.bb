@@ -13,7 +13,7 @@ class Layer;
 }
 
 namespace ui {
-class SystemUIResourceManager;
+class ResourceManager;
 }
 
 namespace content {
@@ -24,7 +24,7 @@ namespace content {
 // All coordinates and dimensions are in device pixels.
 class EdgeEffect : public EdgeEffectBase {
  public:
-  explicit EdgeEffect(ui::SystemUIResourceManager* resource_manager,
+  explicit EdgeEffect(ui::ResourceManager* resource_manager,
                       float device_scale_factor);
   virtual ~EdgeEffect();
 
@@ -43,7 +43,7 @@ class EdgeEffect : public EdgeEffectBase {
   virtual void SetParent(cc::Layer* parent) override;
 
   // Thread-safe trigger to load resources.
-  static void PreloadResources(ui::SystemUIResourceManager* resource_manager);
+  static void PreloadResources(ui::ResourceManager* resource_manager);
 
  private:
   class EffectLayer;

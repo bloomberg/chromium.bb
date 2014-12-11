@@ -9,19 +9,19 @@
 #include "base/time/time.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/resources/ui_resource_client.h"
-#include "content/public/browser/android/ui_resource_client_android.h"
+#include "ui/android/resources/ui_resource_client_android.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
 class Time;
 }
 
-namespace content {
-class UIResourceProvider;
-}
-
 namespace gfx {
 class Size;
+}
+
+namespace ui {
+class UIResourceProvider;
 }
 
 typedef int TabId;
@@ -34,13 +34,13 @@ class ThumbnailDelegate {
   virtual ~ThumbnailDelegate() {}
 };
 
-class Thumbnail : public content::UIResourceClientAndroid {
+class Thumbnail : public ui::UIResourceClientAndroid {
  public:
   static scoped_ptr<Thumbnail> Create(
       TabId tab_id,
       const base::Time& time_stamp,
       float scale,
-      content::UIResourceProvider* ui_resource_provider,
+      ui::UIResourceProvider* ui_resource_provider,
       ThumbnailDelegate* thumbnail_delegate);
   virtual ~Thumbnail();
 
@@ -60,14 +60,14 @@ class Thumbnail : public content::UIResourceClientAndroid {
   virtual cc::UIResourceBitmap GetBitmap(cc::UIResourceId uid,
                                          bool resource_lost) override;
 
-  // content::UIResourceClientAndroid implementation.
+  // ui::UIResourceClientAndroid implementation.
   virtual void UIResourceIsInvalid() override;
 
  protected:
   Thumbnail(TabId tab_id,
             const base::Time& time_stamp,
             float scale,
-            content::UIResourceProvider* ui_resource_provider,
+            ui::UIResourceProvider* ui_resource_provider,
             ThumbnailDelegate* thumbnail_delegate);
 
   void ClearUIResourceId();
@@ -84,7 +84,7 @@ class Thumbnail : public content::UIResourceClientAndroid {
 
   bool retrieved_;
 
-  content::UIResourceProvider* ui_resource_provider_;
+  ui::UIResourceProvider* ui_resource_provider_;
   ThumbnailDelegate* thumbnail_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(Thumbnail);

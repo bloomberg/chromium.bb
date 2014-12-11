@@ -50,7 +50,6 @@
         'accelerators/platform_accelerator.h',
         'accelerators/platform_accelerator_cocoa.h',
         'accelerators/platform_accelerator_cocoa.mm',
-        'android/system_ui_resource_manager.h',
         'android/system_ui_resource_type.h',
         'android/ui_base_jni_registrar.cc',
         'android/ui_base_jni_registrar.h',

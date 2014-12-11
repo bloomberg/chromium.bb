@@ -1,10 +1,12 @@
 include_rules = [
   "+cc/resources/ui_resource_client.h",
   "+cc/resources/ui_resource_bitmap.h",
-  "+content/public/browser/android/ui_resource_client_android.h",
-  "+content/public/browser/android/ui_resource_provider.h",
+  "+cc/trees/layer_tree_host.h",
   "+jni",
   "+skia/ext",
   "+third_party/skia",
+  "+ui/base/android/system_ui_resource_type.h",
+  "+ui/base/resource/resource_bundle.h",
+  "+ui/base/ui_base_paths.h",
   "+ui/gfx",
 ]

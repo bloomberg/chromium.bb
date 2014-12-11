@@ -319,16 +319,12 @@ void CompositorImpl::Composite(CompositingTrigger trigger) {
   root_window_->RequestVSyncUpdate();
 }
 
-UIResourceProvider& CompositorImpl::GetUIResourceProvider() {
+ui::UIResourceProvider& CompositorImpl::GetUIResourceProvider() {
   return ui_resource_provider_;
 }
 
 ui::ResourceManager& CompositorImpl::GetResourceManager() {
   return resource_manager_;
-}
-
-ui::SystemUIResourceManager& CompositorImpl::GetSystemUIResourceManager() {
-  return ui_resource_provider_.GetSystemUIResourceManager();
 }
 
 void CompositorImpl::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {

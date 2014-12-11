@@ -5,7 +5,7 @@
 #include "cc/layers/layer.h"
 #include "content/browser/android/overscroll_refresh.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/android/system_ui_resource_manager.h"
+#include "ui/android/resources/resource_manager.h"
 
 namespace content {
 
@@ -16,10 +16,11 @@ gfx::SizeF DefaultViewportSize() {
 }
 
 class OverscrollRefreshTest : public OverscrollRefreshClient,
-                              public ui::SystemUIResourceManager,
+                              public ui::ResourceManager,
                               public testing::Test {
  public:
-  OverscrollRefreshTest() : refresh_triggered_(false) {}
+  OverscrollRefreshTest()
+      : ui::ResourceManager(nullptr), refresh_triggered_(false) {}
 
   // OverscrollRefreshClient implementation.
   void TriggerRefresh() override {
@@ -29,8 +30,8 @@ class OverscrollRefreshTest : public OverscrollRefreshClient,
 
   bool IsStillRefreshing() const override { return still_refreshing_; }
 
-  // SystemUIResoruceManager implementation.
-  void PreloadResource(ui::SystemUIResourceType) override {}
+  // ResoruceManager implementation.
+  void PreloadResource(ui::AndroidResourceType res_type, int res_id) override {}
 
   bool GetAndResetRefreshTriggered() {
     bool triggered = refresh_triggered_;
@@ -41,7 +42,8 @@ class OverscrollRefreshTest : public OverscrollRefreshClient,
  protected:
   void SignalRefreshCompleted() { still_refreshing_ = false; }
 
-  cc::UIResourceId GetUIResourceId(ui::SystemUIResourceType) override {
+  cc::UIResourceId GetUIResourceId(ui::AndroidResourceType res_type,
+                                   int res_id) override {
     return 0;
   }
 

@@ -12,8 +12,8 @@
       'target_name': 'ui_android',
       'type': '<(component)',
       'dependencies': [
-        '../../cc/cc.gyp:cc',
         '../../base/base.gyp:base',
+        '../../cc/cc.gyp:cc',
         '../../skia/skia.gyp:skia',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
@@ -27,6 +27,9 @@
         'resources/resource_manager.h',
         'resources/ui_resource_android.cc',
         'resources/ui_resource_android.h',
+        'resources/ui_resource_client_android.h',
+        'resources/ui_resource_provider.cc',
+        'resources/ui_resource_provider.h',
         'ui_android_export.h',
         'ui_android_jni_registrar.cc',
         'ui_android_jni_registrar.h',
@@ -144,6 +147,39 @@
       'includes': [
         '../../build/java_strings_grd.gypi',
       ],
+    },
+    {
+      # GN version: //ui/android:ui_android_unittests
+      'target_name': 'ui_android_unittests',
+      'type': '<(gtest_target_type)',
+      'dependencies': [
+        '../../base/base.gyp:base',
+        '../../base/base.gyp:test_support_base',
+        '../../cc/cc.gyp:cc',
+        '../../skia/skia.gyp:skia',
+        '../../testing/android/native_test.gyp:native_test_native_code',
+        '../../testing/gtest.gyp:gtest',
+        '../base/ui_base.gyp:ui_base',
+        '../gfx/gfx.gyp:gfx',
+        '../resources/ui_resources.gyp:ui_test_pak',
+        'ui_android',
+      ],
+      'sources': [
+        'resources/resource_manager_unittest.cc',
+        'run_all_unittests.cc',
+      ],
+    },
+    {
+      'target_name': 'ui_android_unittests_apk',
+      'type': 'none',
+      'dependencies': [
+        'ui_android_unittests',
+        'ui_java',
+      ],
+      'variables': {
+        'test_suite_name': 'ui_android_unittests',
+      },
+      'includes': [ '../../build/apk_test.gypi' ],
     },
   ],
 }

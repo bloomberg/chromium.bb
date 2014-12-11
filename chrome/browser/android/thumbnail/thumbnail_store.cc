@@ -15,7 +15,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/time.h"
-#include "content/public/browser/android/ui_resource_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/android_opengl/etc1/etc1.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -23,6 +22,7 @@
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
+#include "ui/android/resources/ui_resource_provider.h"
 #include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
@@ -136,7 +136,7 @@ ThumbnailStore::~ThumbnailStore() {
 }
 
 void ThumbnailStore::SetUIResourceProvider(
-    content::UIResourceProvider* ui_resource_provider) {
+    ui::UIResourceProvider* ui_resource_provider) {
   if (ui_resource_provider_ == ui_resource_provider)
     return;
 

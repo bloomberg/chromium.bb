@@ -17,9 +17,9 @@
 #include "base/time/time.h"
 #include "chrome/browser/android/thumbnail/scoped_ptr_expiring_cache.h"
 #include "chrome/browser/android/thumbnail/thumbnail.h"
-#include "content/public/browser/android/ui_resource_client_android.h"
-#include "content/public/browser/android/ui_resource_provider.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/android/resources/ui_resource_client_android.h"
+#include "ui/android/resources/ui_resource_provider.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -52,7 +52,7 @@ class ThumbnailStore : ThumbnailDelegate {
 
   virtual ~ThumbnailStore();
 
-  void SetUIResourceProvider(content::UIResourceProvider* ui_resource_provider);
+  void SetUIResourceProvider(ui::UIResourceProvider* ui_resource_provider);
 
   void AddThumbnailStoreObserver(ThumbnailStoreObserver* observer);
   void RemoveThumbnailStoreObserver(
@@ -159,7 +159,7 @@ class ThumbnailStore : ThumbnailDelegate {
   TabIdList read_queue_;
   TabIdList visible_ids_;
 
-  content::UIResourceProvider* ui_resource_provider_;
+  ui::UIResourceProvider* ui_resource_provider_;
 
   base::WeakPtrFactory<ThumbnailStore> weak_factory_;
 

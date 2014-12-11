@@ -3,33 +3,42 @@
 // found in the LICENSE file.
 
 #include "cc/resources/ui_resource_bitmap.h"
-#include "content/browser/android/system_ui_resource_manager_impl.h"
-#include "content/public/browser/android/ui_resource_client_android.h"
-#include "content/public/browser/android/ui_resource_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/android/resources/resource_manager.h"
+#include "ui/android/resources/ui_resource_client_android.h"
+#include "ui/android/resources/ui_resource_provider.h"
+#include "ui/gfx/android/java_bitmap.h"
 
-namespace content {
+namespace ui {
 
-class TestSystemUIResourceManagerImpl
-    : public content::SystemUIResourceManagerImpl {
+class TestResourceManager : public ResourceManager {
  public:
-  TestSystemUIResourceManagerImpl(content::UIResourceProvider* provider)
-      : SystemUIResourceManagerImpl(provider) {}
+  TestResourceManager(UIResourceProvider* provider)
+      : ResourceManager(provider) {}
 
-  virtual ~TestSystemUIResourceManagerImpl() {}
+  virtual ~TestResourceManager() {}
 
-  virtual void BuildResource(ui::SystemUIResourceType type) override {}
+  virtual void PreloadResourceFromJava(AndroidResourceType res_type,
+                                       int res_id) override {}
 
-  void SetResourceAsLoaded(ui::SystemUIResourceType type) {
+  virtual void RequestResourceFromJava(AndroidResourceType res_type,
+                                       int res_id) override {
+    SetResourceAsLoaded(res_type, res_id);
+  }
+
+  void SetResourceAsLoaded(AndroidResourceType res_type, int res_id) {
     SkBitmap small_bitmap;
     SkCanvas canvas(small_bitmap);
     small_bitmap.allocPixels(
         SkImageInfo::Make(1, 1, kRGBA_8888_SkColorType, kOpaque_SkAlphaType));
     canvas.drawColor(SK_ColorWHITE);
     small_bitmap.setImmutable();
-    OnFinishedLoadBitmap(type, &small_bitmap);
+
+    OnResourceReady(NULL, NULL, res_type, res_id,
+                    gfx::ConvertToJavaBitmap(&small_bitmap).obj(), 0, 0, 0, 0,
+                    0, 0, 0, 0);
   }
 };
 
@@ -37,17 +46,17 @@ namespace {
 
 const ui::SystemUIResourceType kTestResourceType = ui::OVERSCROLL_GLOW;
 
-class MockUIResourceProvider : public content::UIResourceProvider {
+class MockUIResourceProvider : public ui::UIResourceProvider {
  public:
   MockUIResourceProvider()
       : next_ui_resource_id_(1),
         has_layer_tree_host_(true),
-        system_ui_resource_manager_(this) {}
+        resource_manager_(this) {}
 
   virtual ~MockUIResourceProvider() {}
 
   virtual cc::UIResourceId CreateUIResource(
-      content::UIResourceClientAndroid* client) override {
+      ui::UIResourceClientAndroid* client) override {
     if (!has_layer_tree_host_)
       return 0;
     cc::UIResourceId id = next_ui_resource_id_++;
@@ -68,43 +77,41 @@ class MockUIResourceProvider : public content::UIResourceProvider {
     UIResourceClientMap client_map = ui_resource_client_map_;
     ui_resource_client_map_.clear();
     for (UIResourceClientMap::iterator iter = client_map.begin();
-         iter != client_map.end();
-         iter++) {
+         iter != client_map.end(); iter++) {
       iter->second->UIResourceIsInvalid();
     }
   }
 
   void LayerTreeHostReturned() { has_layer_tree_host_ = true; }
 
-  TestSystemUIResourceManagerImpl& GetSystemUIResourceManager() {
-    return system_ui_resource_manager_;
-  }
+  TestResourceManager& GetResourceManager() { return resource_manager_; }
 
   cc::UIResourceId next_ui_resource_id() const { return next_ui_resource_id_; }
 
  private:
-  typedef base::hash_map<cc::UIResourceId, content::UIResourceClientAndroid*>
+  typedef base::hash_map<cc::UIResourceId, ui::UIResourceClientAndroid*>
       UIResourceClientMap;
 
   cc::UIResourceId next_ui_resource_id_;
   UIResourceClientMap ui_resource_client_map_;
   bool has_layer_tree_host_;
 
-  // The UIResourceProvider owns the SystemUIResourceManager.
-  TestSystemUIResourceManagerImpl system_ui_resource_manager_;
+  // The UIResourceProvider owns the ResourceManager.
+  TestResourceManager resource_manager_;
 };
 
 }  // namespace
 
-class SystemUIResourceManagerImplTest : public testing::Test {
+class ResourceManagerTest : public testing::Test {
  public:
   void PreloadResource(ui::SystemUIResourceType type) {
-    ui_resource_provider_.GetSystemUIResourceManager().PreloadResource(type);
+    ui_resource_provider_.GetResourceManager().PreloadResource(
+        ui::ANDROID_RESOURCE_TYPE_SYSTEM, type);
   }
 
   cc::UIResourceId GetUIResourceId(ui::SystemUIResourceType type) {
-    return ui_resource_provider_.GetSystemUIResourceManager().GetUIResourceId(
-        type);
+    return ui_resource_provider_.GetResourceManager().GetUIResourceId(
+        ui::ANDROID_RESOURCE_TYPE_SYSTEM, type);
   }
 
   void LayerTreeHostCleared() { ui_resource_provider_.LayerTreeHostCleared(); }
@@ -114,8 +121,8 @@ class SystemUIResourceManagerImplTest : public testing::Test {
   }
 
   void SetResourceAsLoaded(ui::SystemUIResourceType type) {
-    ui_resource_provider_.GetSystemUIResourceManager().SetResourceAsLoaded(
-        type);
+    ui_resource_provider_.GetResourceManager().SetResourceAsLoaded(
+        ui::ANDROID_RESOURCE_TYPE_SYSTEM, type);
   }
 
   cc::UIResourceId GetNextUIResourceId() const {
@@ -126,18 +133,11 @@ class SystemUIResourceManagerImplTest : public testing::Test {
   MockUIResourceProvider ui_resource_provider_;
 };
 
-TEST_F(SystemUIResourceManagerImplTest, GetResourceAfterBitmapLoaded) {
-  SetResourceAsLoaded(kTestResourceType);
+TEST_F(ResourceManagerTest, GetResource) {
   EXPECT_NE(0, GetUIResourceId(kTestResourceType));
 }
 
-TEST_F(SystemUIResourceManagerImplTest, GetResourceBeforeLoadBitmap) {
-  EXPECT_EQ(0, GetUIResourceId(kTestResourceType));
-  SetResourceAsLoaded(kTestResourceType);
-  EXPECT_NE(0, GetUIResourceId(kTestResourceType));
-}
-
-TEST_F(SystemUIResourceManagerImplTest, PreloadEnsureResource) {
+TEST_F(ResourceManagerTest, PreloadEnsureResource) {
   // Preloading the resource should trigger bitmap loading, but the actual
   // resource id will not be generated until it is explicitly requested.
   cc::UIResourceId first_resource_id = GetNextUIResourceId();
@@ -148,14 +148,7 @@ TEST_F(SystemUIResourceManagerImplTest, PreloadEnsureResource) {
   EXPECT_NE(first_resource_id, GetNextUIResourceId());
 }
 
-TEST_F(SystemUIResourceManagerImplTest, ResetLayerTreeHost) {
-  EXPECT_EQ(0, GetUIResourceId(kTestResourceType));
-  LayerTreeHostCleared();
-  EXPECT_EQ(0, GetUIResourceId(kTestResourceType));
-  LayerTreeHostReturned();
-  EXPECT_EQ(0, GetUIResourceId(kTestResourceType));
-
-  SetResourceAsLoaded(kTestResourceType);
+TEST_F(ResourceManagerTest, ResetLayerTreeHost) {
   EXPECT_NE(0, GetUIResourceId(kTestResourceType));
   LayerTreeHostCleared();
   EXPECT_EQ(0, GetUIResourceId(kTestResourceType));
@@ -163,4 +156,4 @@ TEST_F(SystemUIResourceManagerImplTest, ResetLayerTreeHost) {
   EXPECT_NE(0, GetUIResourceId(kTestResourceType));
 }
 
-}  // namespace content
+}  // namespace ui

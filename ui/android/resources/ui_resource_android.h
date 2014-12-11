@@ -7,19 +7,20 @@
 
 #include "base/basictypes.h"
 #include "cc/resources/ui_resource_bitmap.h"
-#include "content/public/browser/android/ui_resource_client_android.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/android/resources/ui_resource_android.h"
+#include "ui/android/resources/ui_resource_client_android.h"
 #include "ui/android/ui_android_export.h"
 #include "ui/gfx/android/java_bitmap.h"
 
 namespace ui {
 
-class UI_ANDROID_EXPORT UIResourceAndroid
-    : public content::UIResourceClientAndroid {
+class UIResourceProvider;
+
+class UI_ANDROID_EXPORT UIResourceAndroid : public ui::UIResourceClientAndroid {
  public:
   static scoped_ptr<UIResourceAndroid> CreateFromJavaBitmap(
-      content::UIResourceProvider* provider,
+      ui::UIResourceProvider* provider,
       const gfx::JavaBitmap& java_bitmap);
 
   ~UIResourceAndroid() override;
@@ -28,16 +29,15 @@ class UI_ANDROID_EXPORT UIResourceAndroid
   cc::UIResourceBitmap GetBitmap(cc::UIResourceId uid,
                                  bool resource_lost) override;
 
-  // UIResourceClientAndroid implementation.
+  // ui::UIResourceClientAndroid implementation.
   void UIResourceIsInvalid() override;
 
   cc::UIResourceId id();
 
  private:
-  UIResourceAndroid(content::UIResourceProvider* provider,
-                    const SkBitmap& skbitmap);
+  UIResourceAndroid(ui::UIResourceProvider* provider, const SkBitmap& skbitmap);
 
-  content::UIResourceProvider* provider_;
+  ui::UIResourceProvider* provider_;
   SkBitmap bitmap_;
   cc::UIResourceId id_;
 

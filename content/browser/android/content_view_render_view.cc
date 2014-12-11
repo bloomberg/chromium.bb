@@ -16,7 +16,6 @@
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/content_view_layer_renderer.h"
 #include "content/public/browser/android/layer_tree_build_helper.h"
-#include "content/public/browser/android/ui_resource_provider.h"
 #include "jni/ContentViewRenderView_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/size.h"

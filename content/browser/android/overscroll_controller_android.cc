@@ -15,6 +15,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/android/resources/resource_manager.h"
 #include "ui/base/android/window_android_compositor.h"
 
 namespace content {
@@ -28,7 +29,7 @@ const int kAndroidLSDKVersion = 21;
 const int kDefaultRefreshDragTargetDips = 64;
 
 scoped_ptr<EdgeEffectBase> CreateGlowEdgeEffect(
-    ui::SystemUIResourceManager* resource_manager,
+    ui::ResourceManager* resource_manager,
     float dpi_scale) {
   DCHECK(resource_manager);
   static bool use_l_flavoured_effect =
@@ -60,7 +61,7 @@ scoped_ptr<OverscrollRefresh> CreateRefreshEffect(
   }
 
   return make_scoped_ptr(
-      new OverscrollRefresh(&compositor->GetSystemUIResourceManager(), client,
+      new OverscrollRefresh(&compositor->GetResourceManager(), client,
                             kDefaultRefreshDragTargetDips * dpi_scale));
 }
 
@@ -284,8 +285,7 @@ bool OverscrollControllerAndroid::IsStillRefreshing() const {
 }
 
 scoped_ptr<EdgeEffectBase> OverscrollControllerAndroid::CreateEdgeEffect() {
-  return CreateGlowEdgeEffect(&compositor_->GetSystemUIResourceManager(),
-                              dpi_scale_);
+  return CreateGlowEdgeEffect(&compositor_->GetResourceManager(), dpi_scale_);
 }
 
 void OverscrollControllerAndroid::SetNeedsAnimate() {

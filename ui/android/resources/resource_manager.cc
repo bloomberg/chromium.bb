@@ -4,9 +4,10 @@
 
 #include "ui/android/resources/resource_manager.h"
 
-#include "content/public/browser/android/ui_resource_provider.h"
+#include "base/android/jni_string.h"
 #include "jni/ResourceManager_jni.h"
 #include "ui/android/resources/ui_resource_android.h"
+#include "ui/android/resources/ui_resource_provider.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/insets_f.h"
 
@@ -45,8 +46,7 @@ ResourceManager* ResourceManager::FromJavaObject(jobject jobj) {
       base::android::AttachCurrentThread(), jobj));
 }
 
-ResourceManager::ResourceManager(
-    content::UIResourceProvider* ui_resource_provider)
+ResourceManager::ResourceManager(ui::UIResourceProvider* ui_resource_provider)
     : ui_resource_provider_(ui_resource_provider) {
   JNIEnv* env = base::android::AttachCurrentThread();
   java_obj_.Reset(env, Java_ResourceManager_create(
@@ -65,6 +65,14 @@ base::android::ScopedJavaLocalRef<jobject> ResourceManager::GetJavaObject(
   return base::android::ScopedJavaLocalRef<jobject>(java_obj_);
 }
 
+cc::UIResourceId ResourceManager::GetUIResourceId(AndroidResourceType res_type,
+                                                  int res_id) {
+  ui::ResourceManager::Resource* resource = GetResource(res_type, res_id);
+  if (!resource->ui_resource)
+    return 0;
+  return resource->ui_resource->id();
+}
+
 ResourceManager::Resource* ResourceManager::GetResource(
     AndroidResourceType res_type,
     int res_id) {
@@ -75,8 +83,7 @@ ResourceManager::Resource* ResourceManager::GetResource(
 
   if (!resource || res_type == ANDROID_RESOURCE_TYPE_DYNAMIC ||
       res_type == ANDROID_RESOURCE_TYPE_DYNAMIC_BITMAP) {
-    Java_ResourceManager_resourceRequested(base::android::AttachCurrentThread(),
-                                           java_obj_.obj(), res_type, res_id);
+    RequestResourceFromJava(res_type, res_id);
     resource = resources_[res_type].Lookup(res_id);
   }
 
@@ -92,8 +99,7 @@ void ResourceManager::PreloadResource(AndroidResourceType res_type,
   if (resources_[res_type].Lookup(res_id))
     return;
 
-  Java_ResourceManager_preloadResource(base::android::AttachCurrentThread(),
-                                       java_obj_.obj(), res_type, res_id);
+  PreloadResourceFromJava(res_type, res_id);
 }
 
 void ResourceManager::OnResourceReady(JNIEnv* env,
@@ -133,6 +139,18 @@ void ResourceManager::OnResourceReady(JNIEnv* env,
 // static
 bool ResourceManager::RegisterResourceManager(JNIEnv* env) {
   return RegisterNativesImpl(env);
+}
+
+void ResourceManager::PreloadResourceFromJava(AndroidResourceType res_type,
+                                              int res_id) {
+  Java_ResourceManager_preloadResource(base::android::AttachCurrentThread(),
+                                       java_obj_.obj(), res_type, res_id);
+}
+
+void ResourceManager::RequestResourceFromJava(AndroidResourceType res_type,
+                                              int res_id) {
+  Java_ResourceManager_resourceRequested(base::android::AttachCurrentThread(),
+                                         java_obj_.obj(), res_type, res_id);
 }
 
 }  // namespace ui

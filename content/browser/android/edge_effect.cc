@@ -7,7 +7,7 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "content/browser/android/animation_utils.h"
-#include "ui/base/android/system_ui_resource_manager.h"
+#include "ui/android/resources/resource_manager.h"
 
 namespace content {
 
@@ -58,7 +58,7 @@ const float kGlowHeightAtMdpi = 128.f;
 class EdgeEffect::EffectLayer {
  public:
   EffectLayer(ui::SystemUIResourceType resource_type,
-              ui::SystemUIResourceManager* resource_manager)
+              ui::ResourceManager* resource_manager)
       : ui_resource_layer_(cc::UIResourceLayer::Create()),
         resource_type_(resource_type),
         resource_manager_(resource_manager) {}
@@ -75,8 +75,8 @@ class EdgeEffect::EffectLayer {
   void Update(const gfx::Size& size,
               const gfx::Transform& transform,
               float opacity) {
-    ui_resource_layer_->SetUIResourceId(
-        resource_manager_->GetUIResourceId(resource_type_));
+    ui_resource_layer_->SetUIResourceId(resource_manager_->GetUIResourceId(
+        ui::ANDROID_RESOURCE_TYPE_SYSTEM, resource_type_));
     ui_resource_layer_->SetIsDrawable(true);
     ui_resource_layer_->SetTransformOrigin(
         gfx::Point3F(size.width() * 0.5f, 0, 0));
@@ -87,12 +87,12 @@ class EdgeEffect::EffectLayer {
 
   scoped_refptr<cc::UIResourceLayer> ui_resource_layer_;
   ui::SystemUIResourceType resource_type_;
-  ui::SystemUIResourceManager* resource_manager_;
+  ui::ResourceManager* resource_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(EffectLayer);
 };
 
-EdgeEffect::EdgeEffect(ui::SystemUIResourceManager* resource_manager,
+EdgeEffect::EdgeEffect(ui::ResourceManager* resource_manager,
                        float device_scale_factor)
     : edge_(new EffectLayer(ui::OVERSCROLL_EDGE, resource_manager)),
       glow_(new EffectLayer(ui::OVERSCROLL_GLOW, resource_manager)),
@@ -335,11 +335,12 @@ void EdgeEffect::SetParent(cc::Layer* parent) {
 }
 
 // static
-void EdgeEffect::PreloadResources(
-    ui::SystemUIResourceManager* resource_manager) {
+void EdgeEffect::PreloadResources(ui::ResourceManager* resource_manager) {
   DCHECK(resource_manager);
-  resource_manager->PreloadResource(ui::OVERSCROLL_EDGE);
-  resource_manager->PreloadResource(ui::OVERSCROLL_GLOW);
+  resource_manager->PreloadResource(ui::ANDROID_RESOURCE_TYPE_SYSTEM,
+                                    ui::OVERSCROLL_EDGE);
+  resource_manager->PreloadResource(ui::ANDROID_RESOURCE_TYPE_SYSTEM,
+                                    ui::OVERSCROLL_GLOW);
 }
 
 }  // namespace content

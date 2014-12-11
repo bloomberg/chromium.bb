@@ -16,7 +16,7 @@ class Layer;
 }
 
 namespace ui {
-class SystemUIResourceManager;
+class ResourceManager;
 }
 
 namespace content {
@@ -47,7 +47,7 @@ class CONTENT_EXPORT OverscrollRefresh {
   // Both |resource_manager| and |client| must not be null.
   // |target_drag_offset_pixels| is the threshold beyond which the effect
   // will trigger a refresh action when released.
-  OverscrollRefresh(ui::SystemUIResourceManager* resource_manager,
+  OverscrollRefresh(ui::ResourceManager* resource_manager,
                     OverscrollRefreshClient* client,
                     float target_drag_offset_pixels);
   ~OverscrollRefresh();

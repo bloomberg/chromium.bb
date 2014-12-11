@@ -4,9 +4,9 @@
 
 #include "base/logging.h"
 #include "chrome/browser/android/thumbnail/thumbnail.h"
-#include "content/public/browser/android/ui_resource_provider.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/android/resources/ui_resource_provider.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 namespace {
@@ -27,7 +27,7 @@ scoped_ptr<Thumbnail> Thumbnail::Create(
     TabId tab_id,
     const base::Time& time_stamp,
     float scale,
-    content::UIResourceProvider* ui_resource_provider,
+    ui::UIResourceProvider* ui_resource_provider,
     ThumbnailDelegate* thumbnail_delegate) {
   return make_scoped_ptr(new Thumbnail(
       tab_id, time_stamp, scale, ui_resource_provider, thumbnail_delegate));
@@ -36,7 +36,7 @@ scoped_ptr<Thumbnail> Thumbnail::Create(
 Thumbnail::Thumbnail(TabId tab_id,
                      const base::Time& time_stamp,
                      float scale,
-                     content::UIResourceProvider* ui_resource_provider,
+                     ui::UIResourceProvider* ui_resource_provider,
                      ThumbnailDelegate* thumbnail_delegate)
     : tab_id_(tab_id),
       time_stamp_(time_stamp),

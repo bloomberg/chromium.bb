@@ -17,7 +17,7 @@ class UIResourceLayer;
 }
 
 namespace ui {
-class SystemUIResourceManager;
+class ResourceManager;
 }
 
 namespace content {
@@ -28,7 +28,7 @@ namespace content {
 // All coordinates and dimensions are in device pixels.
 class EdgeEffectL : public EdgeEffectBase {
  public:
-  explicit EdgeEffectL(ui::SystemUIResourceManager* resource_manager);
+  explicit EdgeEffectL(ui::ResourceManager* resource_manager);
   virtual ~EdgeEffectL();
 
   virtual void Pull(base::TimeTicks current_time,
@@ -46,10 +46,10 @@ class EdgeEffectL : public EdgeEffectBase {
   virtual void SetParent(cc::Layer* parent) override;
 
   // Thread-safe trigger to load resources.
-  static void PreloadResources(ui::SystemUIResourceManager* resource_manager);
+  static void PreloadResources(ui::ResourceManager* resource_manager);
 
  private:
-  ui::SystemUIResourceManager* const resource_manager_;
+  ui::ResourceManager* const resource_manager_;
 
   scoped_refptr<cc::UIResourceLayer> glow_;
 

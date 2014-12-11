@@ -12,6 +12,7 @@ import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.RectF;
 
+import org.chromium.ui.R;
 import org.chromium.ui.base.SystemUIResourceType;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 import org.chromium.ui.resources.Resource;
@@ -52,6 +53,15 @@ public class SystemResourceLoader extends AsyncPreloadResourceLoader {
                         getResourceId("android:drawable/overscroll_glow"), 128, 64);
             case SystemUIResourceType.OVERSCROLL_GLOW_L:
                 return createOverscrollGlowLBitmap(context);
+
+            // TODO(jdduke): Make refresh resources be of type ANDROID_RESOURCE_TYPE_STATIC.
+            case SystemUIResourceType.OVERSCROLL_REFRESH_IDLE:
+                return StaticResource.create(context.getResources(), R.drawable.refresh_gray, 0, 0);
+            case SystemUIResourceType.OVERSCROLL_REFRESH_ACTIVE:
+                return StaticResource.create(context.getResources(), R.drawable.refresh_blue, 0, 0);
+
+            default:
+                assert false;
         }
         return null;
     }
