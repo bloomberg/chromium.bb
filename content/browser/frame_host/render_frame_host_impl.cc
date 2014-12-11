@@ -175,6 +175,10 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // Notify the FrameTree that this RFH is going away, allowing it to shut down
   // the corresponding RenderViewHost if it is no longer needed.
   frame_tree_->UnregisterRenderFrameHost(this);
+
+  // NULL out the swapout timer; in crash dumps this member will be null only if
+  // the dtor has run.
+  swapout_event_monitor_timeout_.reset();
 }
 
 int RenderFrameHostImpl::GetRoutingID() {
