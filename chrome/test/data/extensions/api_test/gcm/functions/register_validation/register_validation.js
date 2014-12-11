@@ -20,9 +20,12 @@ function toArrayDefinitionString(senderIds) {
   return idsString;
 }
 
+var registrationCount = 0;
+
 function registerSuccessfully(senderIds) {
   chrome.gcm.register(senderIds, function(registrationId) {
-    chrome.test.assertEq("" + senderIds.length, registrationId);
+    var expectedRegistrationId = senderIds.length + "-" + (registrationCount++);
+    chrome.test.assertEq("" + expectedRegistrationId, registrationId);
     chrome.test.succeed();
   });
 }

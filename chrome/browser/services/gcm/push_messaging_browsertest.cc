@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, RegisterSuccess) {
   ASSERT_EQ("permission status - granted", script_result);
 
   ASSERT_TRUE(RunScript("registerPush()", &script_result));
-  EXPECT_EQ(std::string(kPushMessagingEndpoint) + " - 1", script_result);
+  EXPECT_EQ(std::string(kPushMessagingEndpoint) + " - 1-0", script_result);
 
   PushMessagingApplicationId app_id(https_server()->GetURL(""), 0L);
   EXPECT_EQ(app_id.ToString(), gcm_service()->last_registered_app_id());
@@ -244,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventSuccess) {
   ASSERT_EQ("permission status - granted", script_result);
 
   ASSERT_TRUE(RunScript("registerPush()", &script_result));
-  EXPECT_EQ(std::string(kPushMessagingEndpoint) + " - 1", script_result);
+  EXPECT_EQ(std::string(kPushMessagingEndpoint) + " - 1-0", script_result);
 
   PushMessagingApplicationId app_id(https_server()->GetURL(""), 0L);
   EXPECT_EQ(app_id.ToString(), gcm_service()->last_registered_app_id());
@@ -278,7 +278,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoServiceWorker) {
   ASSERT_EQ("permission status - granted", script_result);
 
   ASSERT_TRUE(RunScript("registerPush()", &script_result));
-  EXPECT_EQ(std::string(kPushMessagingEndpoint) + " - 1", script_result);
+  EXPECT_EQ(std::string(kPushMessagingEndpoint) + " - 1-0", script_result);
 
   PushMessagingApplicationId app_id(https_server()->GetURL(""), 0L);
   EXPECT_EQ(app_id.ToString(), gcm_service()->last_registered_app_id());
@@ -327,7 +327,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoPermission) {
   ASSERT_EQ("permission status - granted", script_result);
 
   ASSERT_TRUE(RunScript("registerPush()", &script_result));
-  EXPECT_EQ(std::string(kPushMessagingEndpoint) + " - 1", script_result);
+  EXPECT_EQ(std::string(kPushMessagingEndpoint) + " - 1-0", script_result);
 
   PushMessagingApplicationId app_id(https_server()->GetURL(""), 0L);
   EXPECT_EQ(app_id.ToString(), gcm_service()->last_registered_app_id());
@@ -386,7 +386,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, HasPermissionSaysGranted) {
   EXPECT_EQ("permission status - granted", script_result);
 
   ASSERT_TRUE(RunScript("registerPush()", &script_result));
-  EXPECT_EQ(std::string(kPushMessagingEndpoint) + " - 1", script_result);
+  EXPECT_EQ(std::string(kPushMessagingEndpoint) + " - 1-0", script_result);
 
   ASSERT_TRUE(RunScript("hasPermission()", &script_result));
   EXPECT_EQ("permission status - granted", script_result);

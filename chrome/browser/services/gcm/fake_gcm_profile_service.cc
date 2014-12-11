@@ -5,8 +5,10 @@
 #include "chrome/browser/services/gcm/fake_gcm_profile_service.h"
 
 #include "base/bind.h"
+#include "base/format_macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/gcm_driver/fake_gcm_client_factory.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
@@ -111,7 +113,8 @@ KeyedService* FakeGCMProfileService::Build(content::BrowserContext* context) {
 }
 
 FakeGCMProfileService::FakeGCMProfileService(Profile* profile)
-    : collect_(false) {
+    : collect_(false),
+      registration_count_(0) {
   static_cast<PushMessagingServiceImpl*>(push_messaging_service())
       ->SetProfileForTesting(profile);
 }
@@ -126,11 +129,18 @@ void FakeGCMProfileService::RegisterFinished(
     last_registered_sender_ids_ = sender_ids;
   }
 
+  // Generate fake registration IDs, encoding the number of sender IDs (used by
+  // GcmApiTest.RegisterValidation), then an incrementing count (even for the
+  // same app_id - there's no caching) so tests can distinguish registrations.
+  std::string registration_id = base::StringPrintf("%" PRIuS "-%d",
+                                                   sender_ids.size(),
+                                                   registration_count_);
+  ++registration_count_;
+
   CustomFakeGCMDriver* custom_driver =
       static_cast<CustomFakeGCMDriver*>(driver());
-  custom_driver->OnRegisterFinished(app_id,
-                           base::UintToString(sender_ids.size()),
-                           GCMClient::SUCCESS);
+  custom_driver->OnRegisterFinished(
+      app_id, registration_id, GCMClient::SUCCESS);
 }
 
 void FakeGCMProfileService::UnregisterFinished(const std::string& app_id) {

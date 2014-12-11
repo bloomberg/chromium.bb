@@ -64,6 +64,9 @@ class FakeGCMProfileService : public GCMProfileService {
   // Indicates whether the service will collect paramters of the calls for
   // furter verification in tests.
   bool collect_;
+  // Used to give each registration a unique registration id. Does not decrease
+  // when unregister is called.
+  int registration_count_;
   std::string last_registered_app_id_;
   std::vector<std::string> last_registered_sender_ids_;
   std::list<GCMClient::Result> unregister_responses_;
