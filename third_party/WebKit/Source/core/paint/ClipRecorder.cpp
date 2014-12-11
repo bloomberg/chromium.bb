@@ -6,23 +6,19 @@
 #include "core/paint/ClipRecorder.h"
 
 #include "core/rendering/PaintInfo.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerModelObject.h"
-#include "core/rendering/RenderView.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/ClipDisplayItem.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 
 namespace blink {
 
-ClipRecorder::ClipRecorder(RenderLayerModelObject& canvas, const PaintInfo& paintInfo, const LayoutRect& clipRect)
-    : m_clipRect(clipRect)
-    , m_paintInfo(paintInfo)
-    , m_canvas(canvas)
+ClipRecorder::ClipRecorder(RenderLayerModelObject& renderer, const PaintInfo& paintInfo, const LayoutRect& clipRect)
+    : m_paintInfo(paintInfo)
+    , m_renderer(renderer)
 {
     DisplayItem::Type type = paintPhaseToClipType(paintInfo.phase);
-    OwnPtr<ClipDisplayItem> clipDisplayItem = ClipDisplayItem::create(m_canvas.displayItemClient(), type, pixelSnappedIntRect(clipRect));
+    OwnPtr<ClipDisplayItem> clipDisplayItem = ClipDisplayItem::create(m_renderer.displayItemClient(), type, pixelSnappedIntRect(clipRect));
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_paintInfo.context->displayItemList());
@@ -33,7 +29,7 @@ ClipRecorder::ClipRecorder(RenderLayerModelObject& canvas, const PaintInfo& pain
 
 ClipRecorder::~ClipRecorder()
 {
-    OwnPtr<EndClipDisplayItem> endClipDisplayItem = EndClipDisplayItem::create(m_canvas.displayItemClient());
+    OwnPtr<EndClipDisplayItem> endClipDisplayItem = EndClipDisplayItem::create(m_renderer.displayItemClient());
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_paintInfo.context->displayItemList());

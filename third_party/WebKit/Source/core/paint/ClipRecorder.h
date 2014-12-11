@@ -11,20 +11,16 @@
 
 namespace blink {
 
-class RenderLayer;
-class RoundedRect;
-struct PaintInfo;
-
 class ClipRecorder {
 public:
-    ClipRecorder(RenderLayerModelObject&, const PaintInfo&, const LayoutRect& clipRect);
+    ClipRecorder(RenderLayerModelObject&, const PaintInfo&, const LayoutRect&);
     ~ClipRecorder();
 
     static DisplayItem::Type paintPhaseToClipType(PaintPhase);
+
 private:
-    LayoutRect m_clipRect;
     const PaintInfo& m_paintInfo;
-    RenderLayerModelObject& m_canvas;
+    RenderLayerModelObject& m_renderer;
 };
 
 } // namespace blink
