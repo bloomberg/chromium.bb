@@ -6,16 +6,18 @@
  * ImageEditor is the top level object that holds together and connects
  * everything needed for image editing.
  *
- * @param {Viewport} viewport The viewport.
- * @param {ImageView} imageView The ImageView containing the images to edit.
- * @param {ImageEditor.Prompt} prompt Prompt instance.
- * @param {Object} DOMContainers Various DOM containers required for the editor.
- * @param {Array.<ImageEditor.Mode>} modes Available editor modes.
+ * @param {!Viewport} viewport The viewport.
+ * @param {!ImageView} imageView The ImageView containing the images to edit.
+ * @param {!ImageEditor.Prompt} prompt Prompt instance.
+ * @param {!Object} DOMContainers Various DOM containers required for the
+ *     editor.
+ * @param {!Array.<!ImageEditor.Mode>} modes Available editor modes.
  * @param {function(string, ...[string])} displayStringFunction String
  *     formatting function.
  * @param {function()} onToolsVisibilityChanged Callback to be called, when
  *     some of the UI elements have been dimmed or revealed.
  * @constructor
+ * @struct
  */
 function ImageEditor(
     viewport, imageView, prompt, DOMContainers, modes, displayStringFunction,
@@ -25,6 +27,36 @@ function ImageEditor(
   this.modes_ = modes;
   this.displayStringFunction_ = displayStringFunction;
   this.onToolsVisibilityChanged_ = onToolsVisibilityChanged;
+
+  /**
+   * @type {ImageEditor.Mode}
+   * @private
+   */
+  this.currentMode_ = null;
+
+  /**
+   * @type {HTMLElement}
+   * @private
+   */
+  this.currentTool_ = null;
+
+  /**
+   * @type {HTMLElement}
+   * @private
+   */
+  this.undoButton_ = null;
+
+  /**
+   * @type {HTMLElement}
+   * @private
+   */
+  this.redoButton_ = null;
+
+  /**
+   * @type {!Array.<string>}
+   * @private
+   */
+  this.actionNames_ = [];
 
   ImageUtil.removeChildren(this.container_);
 
@@ -105,7 +137,8 @@ ImageEditor.prototype.onContentUpdate_ = function() {
  * @param {!ImageView.Effect} effect Transition effect object.
  * @param {function(function())} saveFunction Image save function.
  * @param {function()} displayCallback Display callback.
- * @param {function(number, number, *=)} loadCallback Load callback.
+ * @param {function(!ImageView.LoadType, number, *=)} loadCallback Load
+ *     callback.
  */
 ImageEditor.prototype.openSession = function(
     item, effect, saveFunction, displayCallback, loadCallback) {
@@ -119,8 +152,7 @@ ImageEditor.prototype.openSession = function(
       item, effect, displayCallback, function(loadType, delay, error) {
         self.lockUI(false);
         self.commandQueue_ = new CommandQueue(
-            self.container_.ownerDocument,
-            self.imageView_.getCanvas(),
+            self.container_.ownerDocument, assert(self.imageView_.getCanvas()),
             saveFunction);
         self.commandQueue_.attachUI(
             self.getImageView(), self.getPrompt(), self.lockUI.bind(self));
@@ -176,7 +208,7 @@ ImageEditor.prototype.executeWhenReady = function(callback) {
  * @return {boolean} True if undo queue is not empty.
  */
 ImageEditor.prototype.canUndo = function() {
-  return this.commandQueue_ && this.commandQueue_.canUndo();
+  return !!this.commandQueue_ && this.commandQueue_.canUndo();
 };
 
 /**
@@ -228,7 +260,7 @@ ImageEditor.prototype.getCanvas = function() {
 };
 
 /**
- * @return {ImageBuffer} ImageBuffer instance.
+ * @return {!ImageBuffer} ImageBuffer instance.
  */
 ImageEditor.prototype.getBuffer = function() { return this.buffer_; };
 
@@ -238,12 +270,12 @@ ImageEditor.prototype.getBuffer = function() { return this.buffer_; };
 ImageEditor.prototype.getImageView = function() { return this.imageView_; };
 
 /**
- * @return {Viewport} Viewport instance.
+ * @return {!Viewport} Viewport instance.
  */
 ImageEditor.prototype.getViewport = function() { return this.viewport_; };
 
 /**
- * @return {ImageEditor.Prompt} Prompt instance.
+ * @return {!ImageEditor.Prompt} Prompt instance.
  */
 ImageEditor.prototype.getPrompt = function() { return this.prompt_; };
 
@@ -268,12 +300,22 @@ ImageEditor.prototype.onOptionsChange = function(options) {
  * @param {string} title The mode title.
  * @constructor
  * @struct
+ * @extends {ImageBuffer.Overlay}
  */
-
 ImageEditor.Mode = function(name, title) {
   this.name = name;
   this.title = title;
   this.message_ = 'GALLERY_ENTER_WHEN_DONE';
+
+  /**
+   * @type {boolean}
+   */
+  this.implicitCommit = false;
+
+  /**
+   * @type {boolean}
+   */
+  this.instant = false;
 
   /**
    * @type {ImageEditor}
@@ -286,9 +328,27 @@ ImageEditor.Mode = function(name, title) {
    * @private
    */
   this.viewport_ = null;
+
+  /**
+   * @type {HTMLElement}
+   * @private
+   */
+  this.button_ = null;
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.updated_ = false;
+
+  /**
+   * @type {ImageView}
+   * @private
+   */
+  this.imageView_ = null;
 };
 
-ImageEditor.Mode.prototype = {__proto__: ImageBuffer.Overlay.prototype };
+ImageEditor.Mode.prototype = { __proto__: ImageBuffer.Overlay.prototype };
 
 /**
  * @return {Viewport} Viewport instance.
@@ -315,8 +375,8 @@ ImageEditor.Mode.prototype.isApplicable = function() { return true; };
 /**
  * Called once after creating the mode button.
  *
- * @param {ImageEditor} editor The editor instance.
- * @param {HTMLElement} button The mode button.
+ * @param {!ImageEditor} editor The editor instance.
+ * @param {!HTMLElement} button The mode button.
  */
 
 ImageEditor.Mode.prototype.bind = function(editor, button) {
@@ -382,12 +442,21 @@ ImageEditor.Mode.prototype.reset = function() {
 };
 
 /**
+ * @return {Command} Command.
+ */
+ImageEditor.Mode.prototype.getCommand = function() {
+  return null;
+};
+
+/**
  * One-click editor tool, requires no interaction, just executes the command.
  *
  * @param {string} name The mode name.
  * @param {string} title The mode title.
- * @param {Command} command The command to execute on click.
+ * @param {!Command} command The command to execute on click.
  * @constructor
+ * @extends {ImageEditor.Mode}
+ * @struct
  */
 ImageEditor.Mode.OneClick = function(name, title, command) {
   ImageEditor.Mode.call(this, name, title);
@@ -398,7 +467,7 @@ ImageEditor.Mode.OneClick = function(name, title, command) {
 ImageEditor.Mode.OneClick.prototype = {__proto__: ImageEditor.Mode.prototype};
 
 /**
- * @return {Command} command.
+ * @override
  */
 ImageEditor.Mode.OneClick.prototype.getCommand = function() {
   return this.command_;
@@ -421,6 +490,13 @@ ImageEditor.prototype.createToolButtons = function() {
   this.actionNames_ = [];
 
   var self = this;
+
+  /**
+   * @param {string} name Button name.
+   * @param {string} title Button title.
+   * @param {function(Event)} handler onClick handler.
+   * @return {!HTMLElement} A created button.
+   */
   function createButton(name, title, handler) {
     return self.mainToolbar_.addButton(name,
                                        title,
@@ -454,7 +530,7 @@ ImageEditor.prototype.getMode = function() { return this.currentMode_; };
 /**
  * The user clicked on the mode button.
  *
- * @param {ImageEditor.Mode} mode The new mode.
+ * @param {!ImageEditor.Mode} mode The new mode.
  */
 ImageEditor.prototype.enterMode = function(mode) {
   if (this.isLocked()) return;
@@ -477,7 +553,7 @@ ImageEditor.prototype.enterMode = function(mode) {
 /**
  * Set up the new editing mode.
  *
- * @param {ImageEditor.Mode} mode The mode.
+ * @param {!ImageEditor.Mode} mode The mode.
  * @private
  */
 ImageEditor.prototype.setUpMode_ = function(mode) {
@@ -533,7 +609,7 @@ ImageEditor.prototype.leaveMode = function(commit) {
  * Leave the mode, commit only if required by the current mode.
  */
 ImageEditor.prototype.leaveModeGently = function() {
-  this.leaveMode(this.currentMode_ &&
+  this.leaveMode(!!this.currentMode_ &&
                  this.currentMode_.updated_ &&
                  this.currentMode_.implicitCommit);
 };
@@ -545,9 +621,9 @@ ImageEditor.prototype.leaveModeGently = function() {
  * @private
  */
 ImageEditor.prototype.enterModeByName_ = function(name) {
-  for (var i = 0; i != this.modes_.length; i++) {
+  for (var i = 0; i !== this.modes_.length; i++) {
     var mode = this.modes_[i];
-    if (mode.name == name) {
+    if (mode.name === name) {
       if (!mode.button_.hasAttribute('disabled'))
         this.enterMode(mode);
       return;
@@ -558,7 +634,7 @@ ImageEditor.prototype.enterModeByName_ = function(name) {
 
 /**
  * Key down handler.
- * @param {Event} event The keydown event.
+ * @param {!Event} event The keydown event.
  * @return {boolean} True if handled.
  */
 ImageEditor.prototype.onKeyDown = function(event) {
@@ -642,8 +718,8 @@ ImageEditor.prototype.hideOverlappingTools = function(
     var tool = tools[i];
     var toolRect = tool.getBoundingClientRect();
     var overlapping =
-        (frame && frame.intersects(toolRect)) &&
-        !(transparent && transparent.contains(toolRect));
+        (!!frame && frame.intersects(toolRect)) &&
+        !(!!transparent && transparent.contains(toolRect));
     if (overlapping && !tool.hasAttribute('dimmed') ||
         !overlapping && tool.hasAttribute('dimmed')) {
       ImageUtil.setAttribute(tool, 'dimmed', overlapping);
@@ -657,10 +733,11 @@ ImageEditor.prototype.hideOverlappingTools = function(
 /**
  * A helper object for panning the ImageBuffer.
  *
- * @param {HTMLElement} rootContainer The top-level container.
- * @param {HTMLElement} container The container for mouse events.
- * @param {ImageBuffer} buffer Image buffer.
+ * @param {!HTMLElement} rootContainer The top-level container.
+ * @param {!HTMLElement} container The container for mouse events.
+ * @param {!ImageBuffer} buffer Image buffer.
  * @constructor
+ * @struct
  */
 ImageEditor.MouseControl = function(rootContainer, container, buffer) {
   this.rootContainer_ = rootContainer;
@@ -684,17 +761,43 @@ ImageEditor.MouseControl = function(rootContainer, container, buffer) {
   // Mouse move handler has to be attached to the window to receive events
   // from outside of the window. See: http://crbug.com/155705
   window.addEventListener('mousemove', this.onMouseMove.bind(this), false);
+
+  /**
+   * @type {?ImageBuffer.DragHandler}
+   * @private
+   */
+  this.dragHandler_ = null;
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.dragHappened_ = false;
+
+  /**
+   * @type {?{x: number, y: number, time:number}}
+   * @private
+   */
+  this.touchStartInfo_ = null;
+
+  /**
+   * @type {?{x: number, y: number, time:number}}
+   * @private
+   */
+  this.previousTouchStartInfo_ = null;
 };
 
 /**
  * Maximum movement for touch to be detected as a tap (in pixels).
  * @private
+ * @const
  */
 ImageEditor.MouseControl.MAX_MOVEMENT_FOR_TAP_ = 8;
 
 /**
  * Maximum time for touch to be detected as a tap (in milliseconds).
  * @private
+ * @const
  */
 ImageEditor.MouseControl.MAX_TAP_DURATION_ = 500;
 
@@ -702,20 +805,22 @@ ImageEditor.MouseControl.MAX_TAP_DURATION_ = 500;
  * Maximum distance from the first tap to the second tap to be considered
  * as a double tap.
  * @private
+ * @const
  */
 ImageEditor.MouseControl.MAX_DISTANCE_FOR_DOUBLE_TAP_ = 32;
 
 /**
  * Maximum time for touch to be detected as a double tap (in milliseconds).
  * @private
+ * @const
  */
 ImageEditor.MouseControl.MAX_DOUBLE_TAP_DURATION_ = 1000;
 
 /**
  * Returns an event's position.
  *
- * @param {MouseEvent|Touch} e Pointer position.
- * @return {Object} A pair of x,y in page coordinates.
+ * @param {!(MouseEvent|Touch)} e Pointer position.
+ * @return {!Object} A pair of x,y in page coordinates.
  * @private
  */
 ImageEditor.MouseControl.getPosition_ = function(e) {
@@ -728,7 +833,7 @@ ImageEditor.MouseControl.getPosition_ = function(e) {
 /**
  * Returns touch position or null if there is more than one touch position.
  *
- * @param {TouchEvent} e Event.
+ * @param {!TouchEvent} e Event.
  * @return {Object?} A pair of x,y in page coordinates.
  * @private
  */
@@ -741,7 +846,7 @@ ImageEditor.MouseControl.prototype.getTouchPosition_ = function(e) {
 
 /**
  * Touch start handler.
- * @param {TouchEvent} e Event.
+ * @param {!TouchEvent} e Event.
  */
 ImageEditor.MouseControl.prototype.onTouchStart = function(e) {
   var position = this.getTouchPosition_(e);
@@ -760,7 +865,7 @@ ImageEditor.MouseControl.prototype.onTouchStart = function(e) {
 
 /**
  * Touch end handler.
- * @param {TouchEvent} e Event.
+ * @param {!TouchEvent} e Event.
  */
 ImageEditor.MouseControl.prototype.onTouchEnd = function(e) {
   if (!this.dragHappened_ &&
@@ -784,7 +889,7 @@ ImageEditor.MouseControl.prototype.onTouchEnd = function(e) {
   } else {
     this.previousTouchStartInfo_ = null;
   }
-  this.onTouchCancel(e);
+  this.onTouchCancel();
 };
 
 /**
@@ -815,7 +920,7 @@ ImageEditor.MouseControl.prototype.onTouchCancel = function() {
 
 /**
  * Touch move handler.
- * @param {TouchEvent} e Event.
+ * @param {!TouchEvent} e Event.
  */
 ImageEditor.MouseControl.prototype.onTouchMove = function(e) {
   var position = this.getTouchPosition_(e);
@@ -836,7 +941,7 @@ ImageEditor.MouseControl.prototype.onTouchMove = function(e) {
 
 /**
  * Mouse down handler.
- * @param {MouseEvent} e Event.
+ * @param {!MouseEvent} e Event.
  */
 ImageEditor.MouseControl.prototype.onMouseDown = function(e) {
   var position = ImageEditor.MouseControl.getPosition_(e);
@@ -849,7 +954,7 @@ ImageEditor.MouseControl.prototype.onMouseDown = function(e) {
 
 /**
  * Mouse up handler.
- * @param {MouseEvent} e Event.
+ * @param {!MouseEvent} e Event.
  */
 ImageEditor.MouseControl.prototype.onMouseUp = function(e) {
   var position = ImageEditor.MouseControl.getPosition_(e);
@@ -864,9 +969,10 @@ ImageEditor.MouseControl.prototype.onMouseUp = function(e) {
 
 /**
  * Mouse move handler.
- * @param {MouseEvent} e Event.
+ * @param {!Event} e Event.
  */
 ImageEditor.MouseControl.prototype.onMouseMove = function(e) {
+  e = assertInstanceof(e, MouseEvent);
   var position = ImageEditor.MouseControl.getPosition_(e);
 
   if (this.dragHandler_ && !e.which) {
@@ -895,7 +1001,7 @@ ImageEditor.MouseControl.prototype.lockMouse_ = function(on) {
 /**
  * Update the cursor.
  *
- * @param {Object} position An object holding x and y properties.
+ * @param {!Object} position An object holding x and y properties.
  * @private
  */
 ImageEditor.MouseControl.prototype.updateCursor_ = function(position) {
@@ -908,23 +1014,31 @@ ImageEditor.MouseControl.prototype.updateCursor_ = function(position) {
 
 /**
  * A toolbar for the ImageEditor.
- * @param {HTMLElement} parent The parent element.
+ * @param {!HTMLElement} parent The parent element.
  * @param {function(string)} displayStringFunction A string formatting function.
- * @param {function(Object)} updateCallback The callback called when controls
- *     change.
+ * @param {function(Object)=} opt_updateCallback The callback called when
+ *     controls change.
  * @constructor
+ * @struct
  */
-ImageEditor.Toolbar = function(parent, displayStringFunction, updateCallback) {
+ImageEditor.Toolbar = function(
+    parent, displayStringFunction, opt_updateCallback) {
   this.wrapper_ = parent;
   this.displayStringFunction_ = displayStringFunction;
-  this.updateCallback_ = updateCallback;
-  Object.seal(this);
+
+  /**
+   * @type {?function(Object)}
+   * @private
+   */
+  this.updateCallback_ = opt_updateCallback || null;
 };
 
-ImageEditor.Toolbar.prototype = {
-  get element() {
-    return this.wrapper_;
-  }
+/**
+ * Returns the parent element.
+ * @return {!HTMLElement}
+ */
+ImageEditor.Toolbar.prototype.getElement = function() {
+  return this.wrapper_;
 };
 
 /**
@@ -937,17 +1051,18 @@ ImageEditor.Toolbar.prototype.clear = function() {
 /**
  * Create a control.
  * @param {string} tagName The element tag name.
- * @return {HTMLElement} The created control element.
+ * @return {!HTMLElement} The created control element.
  * @private
  */
 ImageEditor.Toolbar.prototype.create_ = function(tagName) {
-  return this.wrapper_.ownerDocument.createElement(tagName);
+  return assertInstanceof(this.wrapper_.ownerDocument.createElement(tagName),
+      HTMLElement);
 };
 
 /**
  * Add a control.
- * @param {HTMLElement} element The control to add.
- * @return {HTMLElement} The added element.
+ * @param {!HTMLElement} element The control to add.
+ * @return {!HTMLElement} The added element.
  */
 ImageEditor.Toolbar.prototype.add = function(element) {
   this.wrapper_.appendChild(element);
@@ -957,7 +1072,7 @@ ImageEditor.Toolbar.prototype.add = function(element) {
 /**
  * Add a text label.
  * @param {string} name Label name.
- * @return {HTMLElement} The added label.
+ * @return {!HTMLElement} The added label.
  */
 ImageEditor.Toolbar.prototype.addLabel = function(name) {
   var label = this.create_('span');
@@ -972,7 +1087,7 @@ ImageEditor.Toolbar.prototype.addLabel = function(name) {
  * @param {string} title Button title.
  * @param {function(Event)} handler onClick handler.
  * @param {string=} opt_class Extra class name.
- * @return {HTMLElement} The added button.
+ * @return {!HTMLElement} The added button.
  */
 ImageEditor.Toolbar.prototype.addButton = function(
     name, title, handler, opt_class) {
@@ -999,7 +1114,7 @@ ImageEditor.Toolbar.prototype.addButton = function(
  * @param {number=} opt_scale A number to multiply by when setting
  *     min/value/max in DOM.
  * @param {boolean=} opt_showNumeric True if numeric value should be displayed.
- * @return {HTMLElement} Range element.
+ * @return {!HTMLElement} Range element.
  */
 ImageEditor.Toolbar.prototype.addRange = function(
     name, title, min, value, max, opt_scale, opt_showNumeric) {
@@ -1037,7 +1152,8 @@ ImageEditor.Toolbar.prototype.addRange = function(
   range.addEventListener('change',
       function() {
         mirror();
-        self.updateCallback_(self.getOptions());
+        if (self.updateCallback_)
+          self.updateCallback_(self.getOptions());
       },
       false);
 
@@ -1063,7 +1179,7 @@ ImageEditor.Toolbar.prototype.addRange = function(
 };
 
 /**
- * @return {Object} options A map of options.
+ * @return {!Object} options A map of options.
  */
 ImageEditor.Toolbar.prototype.getOptions = function() {
   var values = {};
@@ -1096,14 +1212,33 @@ ImageEditor.Toolbar.prototype.show = function(on) {
 
 /** A prompt panel for the editor.
  *
- * @param {HTMLElement} container Container element.
+ * @param {!HTMLElement} container Container element.
  * @param {function(string, ...[string])} displayStringFunction A formatting
  *     function.
  * @constructor
+ * @struct
  */
 ImageEditor.Prompt = function(container, displayStringFunction) {
   this.container_ = container;
   this.displayStringFunction_ = displayStringFunction;
+
+  /**
+   * @type {HTMLDivElement}
+   * @private
+   */
+  this.wrapper_ = null;
+
+  /**
+   * @type {HTMLDivElement}
+   * @private
+   */
+  this.prompt_ = null;
+
+  /**
+   * @type {number}
+   * @private
+   */
+  this.timer_ = 0;
 };
 
 /**
@@ -1124,7 +1259,7 @@ ImageEditor.Prompt.prototype.reset = function() {
 ImageEditor.Prompt.prototype.cancelTimer = function() {
   if (this.timer_) {
     clearTimeout(this.timer_);
-    this.timer_ = null;
+    this.timer_ = 0;
   }
 };
 
@@ -1137,7 +1272,7 @@ ImageEditor.Prompt.prototype.setTimer = function(callback, timeout) {
   this.cancelTimer();
   var self = this;
   this.timer_ = setTimeout(function() {
-    self.timer_ = null;
+    self.timer_ = 0;
     callback();
   }, timeout);
 };
@@ -1146,13 +1281,13 @@ ImageEditor.Prompt.prototype.setTimer = function(callback, timeout) {
  * Show the prompt.
  *
  * @param {string} text The prompt text.
- * @param {number} timeout Timeout in ms.
+ * @param {number=} opt_timeout Timeout in ms.
  * @param {...Object} var_args varArgs for the formatting function.
  */
-ImageEditor.Prompt.prototype.show = function(text, timeout, var_args) {
+ImageEditor.Prompt.prototype.show = function(text, opt_timeout, var_args) {
   var args = [text].concat(Array.prototype.slice.call(arguments, 2));
   var message = this.displayStringFunction_.apply(null, args);
-  this.showStringAt('center', message, timeout);
+  this.showStringAt('center', message, opt_timeout);
 };
 
 /**
@@ -1175,20 +1310,22 @@ ImageEditor.Prompt.prototype.showAt = function(
  *
  * @param {string} pos The 'pos' attribute value.
  * @param {string} text The prompt text.
- * @param {number} timeout Timeout in ms.
+ * @param {number=} opt_timeout Timeout in ms.
  */
-ImageEditor.Prompt.prototype.showStringAt = function(pos, text, timeout) {
+ImageEditor.Prompt.prototype.showStringAt = function(pos, text, opt_timeout) {
   this.reset();
   if (!text)
     return;
 
   var document = this.container_.ownerDocument;
-  this.wrapper_ = document.createElement('div');
+  this.wrapper_ = assertInstanceof(document.createElement('div'),
+      HTMLDivElement);
   this.wrapper_.className = 'prompt-wrapper';
   this.wrapper_.setAttribute('pos', pos);
   this.container_.appendChild(this.wrapper_);
 
-  this.prompt_ = document.createElement('div');
+  this.prompt_ = assertInstanceof(document.createElement('div'),
+      HTMLDivElement);
   this.prompt_.className = 'prompt';
 
   // Create an extra wrapper which opacity can be manipulated separately.
@@ -1207,8 +1344,8 @@ ImageEditor.Prompt.prototype.showStringAt = function(pos, text, timeout) {
   setTimeout(
       this.prompt_.setAttribute.bind(this.prompt_, 'state', 'fadein'), 0);
 
-  if (timeout)
-    this.setTimer(this.hide.bind(this), timeout);
+  if (opt_timeout)
+    this.setTimer(this.hide.bind(this), opt_timeout);
 };
 
 /**

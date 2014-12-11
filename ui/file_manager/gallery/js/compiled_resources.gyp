@@ -47,6 +47,7 @@
           '<(CLOSURE_DIR)/externs/file_manager_private.js',
           '<(CLOSURE_DIR)/externs/metrics_private.js',
           '../../externs/exif_entry.js',
+          '../../externs/gallery.js',
         ],
       },
       'includes': [

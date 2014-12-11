@@ -156,7 +156,7 @@ ImageEditor.Mode.Crop.prototype.createTools = function(toolbar) {
             this.cropRect_.fixedAspectRatio = null;
           } else {
             var selectedButtons =
-                toolbar.element.querySelectorAll('button.selected');
+                toolbar.getElement().querySelectorAll('button.selected');
             for (var i = 0; i < selectedButtons.length; i++) {
               selectedButtons[i].classList.remove('selected');
             }
@@ -167,8 +167,8 @@ ImageEditor.Mode.Crop.prototype.createTools = function(toolbar) {
             this.cropRect_.forceAspectRatio(aspect, clipRect);
             this.markUpdated();
             this.positionDOM();
-            this.toolbar_.element.classList.remove('dimmable');
-            this.toolbar_.element.removeAttribute('dimmed');
+            this.toolbar_.getElement().classList.remove('dimmable');
+            this.toolbar_.getElement().removeAttribute('dimmed');
           }
         }.bind(this, aspects[name]));
   }
@@ -190,7 +190,7 @@ ImageEditor.Mode.Crop.prototype.reset = function() {
   ImageEditor.Mode.prototype.reset.call(this);
   this.createDefaultCrop();
   if (this.toolbar_) {
-    this.toolbar_.element.classList.add('dimmable');
+    this.toolbar_.getElement().classList.add('dimmable');
     this.toolbar_ = null;
   }
 };
@@ -303,7 +303,7 @@ ImageEditor.Mode.Crop.prototype.getDragHandler = function(x, y, touch) {
 
   return function(x, y, shiftKey) {
     if (this.toolbar_)
-      this.toolbar_.element.classList.add('dimmable');
+      this.toolbar_.getElement().classList.add('dimmable');
     cropDragHandler(x, y, shiftKey);
     this.markUpdated();
     this.positionDOM();

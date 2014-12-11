@@ -338,7 +338,7 @@ ImageView.prototype.cancelLoad = function() {
  * @param {!ImageView.Effect} effect Transition effect object.
  * @param {function()} displayCallback Called when the image is displayed
  *     (possibly as a preview).
- * @param {function(ImageView.LoadType, number, *=)} loadCallback Called when
+ * @param {function(!ImageView.LoadType, number, *=)} loadCallback Called when
  *     the image is fully loaded. The first parameter is the load type.
  */
 ImageView.prototype.load =

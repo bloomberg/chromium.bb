@@ -84,7 +84,7 @@ ImageBuffer.prototype.onClick = function(x, y) {
  * @param {number} x Event X coordinate.
  * @param {number} y Event Y coordinate.
  * @param {boolean} touch True if it's a touch event, false if mouse.
- * @return {?function(number,number)} A function to be called on mouse drag.
+ * @return {?ImageBuffer.DragHandler} A function to be called on mouse drag.
  */
 ImageBuffer.prototype.getDragHandler = function(x, y, touch) {
   for (var i = this.overlays_.length - 1; i >= 0; i--) {
@@ -167,7 +167,7 @@ ImageBuffer.Overlay.prototype.onClick = function(x, y) {
  * @param {number} x Event X coordinate.
  * @param {number} y Event Y coordinate.
  * @param {boolean} touch True if it's a touch event, false if mouse.
- * @return {?function(number,number)} A function to be called on mouse drag.
+ * @return {?ImageBuffer.DragHandler} A function to be called on mouse drag.
  */
 ImageBuffer.Overlay.prototype.getDragHandler = function(x, y, touch) {
   return null;
