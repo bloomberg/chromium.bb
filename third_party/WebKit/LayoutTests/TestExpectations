@@ -753,13 +753,6 @@ crbug.com/437078 fast/text/international/rtl-negative-letter-spacing.html [ Pass
 # Recheck this when rebaseline lands.
 crbug.com/334269 [ Mac ] virtual/slimmingpaint/fast/inline/justify-emphasis-inline-box.html [ NeedsManualRebaseline ]
 
-crbug.com/381919 transforms/3d/general/perspective-units.html [ NeedsRebaseline ]
-crbug.com/381919 transforms/3d/point-mapping/3d-point-mapping-deep.html [ NeedsRebaseline ]
-crbug.com/381919 transforms/3d/point-mapping/3d-point-mapping.html [ NeedsRebaseline ]
-crbug.com/381919 transforms/3d/point-mapping/3d-point-mapping-origins.html [ NeedsRebaseline ]
-crbug.com/381919 transforms/svg-vs-css.xhtml [ NeedsRebaseline ]
-crbug.com/381919 transforms/2d/hindi-rotated.html [ NeedsRebaseline ]
-
 # Heap buffer overflow failures on Linux ASAN
 crbug.com/347365 [ Linux ] dom/xhtml/level3/core/canonicalform08.xhtml [ Crash Pass ]
 crbug.com/347365 [ Linux ] dom/xhtml/level3/core/canonicalform09.xhtml [ Crash Pass ]
