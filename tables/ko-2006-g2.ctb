@@ -1,11 +1,11 @@
-# liblouis: Korean Grade 2 (Conntracted)
+# liblouis: Korean Grade 2 (Contracted, 2006 edition)
 #
 # Based on the braille contraction table in BRLTTY
 #
 # Copyright (C) 1995-2012 by The BRLTTY Team. 
 # Copyright (C) 2012 by Samuel Thibault <samuel.thibault@ens-lyon.org>
 # Copyright (C) 2012 by Mesar Hameed <mhameed@src.gnome.org>
-# Copyright (C) 2013 by Joseph Lee <joseph.lee22590@gmail.com>
+# Copyright (C) 2014 by Joseph Lee <joseph.lee22590@gmail.com>
 #
 # This file is part of liblouis.
 #
@@ -23,7 +23,7 @@
 # License along with liblouis. If not, see
 # <http://www.gnu.org/licenses/>.
 
-#Rules specific to grade 2:
-include ko.cti
+#Same as ko-g2.ctb except it includes ko-2006 dictionary.
+include ko-2006.cti
 include ko-g2-rules.cti
 
