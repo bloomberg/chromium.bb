@@ -642,19 +642,9 @@ cr.define('options', function() {
         $('accessibility-settings-button').onclick = function(unused_event) {
           window.open(loadTimeData.getString('accessibilitySettingsURL'));
         };
-        $('accessibility-spoken-feedback-check').onchange = function(
-            unused_event) {
-          chrome.send('spokenFeedbackChange',
-                      [$('accessibility-spoken-feedback-check').checked]);
-          updateAccessibilitySettingsButton();
-        };
+        $('accessibility-spoken-feedback-check').onchange =
+            updateAccessibilitySettingsButton;
         updateAccessibilitySettingsButton();
-
-        $('accessibility-high-contrast-check').onchange = function(
-            unused_event) {
-          chrome.send('highContrastChange',
-                      [$('accessibility-high-contrast-check').checked]);
-        };
 
         var updateDelayDropdown = function() {
           $('accessibility-autoclick-dropdown').disabled =
