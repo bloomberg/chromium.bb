@@ -67,6 +67,8 @@ class Visitor;
 template <typename T> struct IsGarbageCollectedType;
 #define COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, ErrorMessage) \
     COMPILE_ASSERT(IsGarbageCollectedType<T>::value, ErrorMessage)
+#define COMPILE_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, ErrorMessage) \
+    COMPILE_ASSERT(!IsGarbageCollectedType<T>::value, ErrorMessage)
 
 template<bool needsTracing, WTF::WeakHandlingFlag weakHandlingFlag, WTF::ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits> struct CollectionBackingTraceTrait;
 
@@ -365,6 +367,44 @@ public:
     template<typename T> void trace(const RefPtr<T>&) { }
     template<typename T> void trace(const RawPtr<T>&) { }
     template<typename T> void trace(const WeakPtr<T>&) { }
+
+    // On non-oilpan builds, it is convenient to allow calling trace on
+    // WillBeHeap{Vector,Deque}<FooPtrWillBeMember<T>>.
+    // Forbid tracing on-heap objects in off-heap collections.
+    // This is forbidden because convservative marking cannot identify
+    // those off-heap collection backing stores.
+    template<typename T, size_t inlineCapacity> void trace(const Vector<OwnPtr<T>, inlineCapacity>& vector)
+    {
+        COMPILE_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, AttemptedToTraceGarbageCollectedObjectInsideVector);
+    }
+    template<typename T, size_t inlineCapacity> void trace(const Vector<RefPtr<T>, inlineCapacity>& vector)
+    {
+        COMPILE_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, AttemptedToTraceGarbageCollectedObjectInsideVector);
+    }
+    template<typename T, size_t inlineCapacity> void trace(const Vector<RawPtr<T>, inlineCapacity>& vector)
+    {
+        COMPILE_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, AttemptedToTraceGarbageCollectedObjectInsideVector);
+    }
+    template<typename T, size_t inlineCapacity> void trace(const Vector<WeakPtr<T>, inlineCapacity>& vector)
+    {
+        COMPILE_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, AttemptedToTraceGarbageCollectedObjectInsideVector);
+    }
+    template<typename T, size_t N> void trace(const Deque<OwnPtr<T>, N>& deque)
+    {
+        COMPILE_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, AttemptedToTraceGarbageCollectedObjectInsideDeque);
+    }
+    template<typename T, size_t N> void trace(const Deque<RefPtr<T>, N>& deque)
+    {
+        COMPILE_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, AttemptedToTraceGarbageCollectedObjectInsideDeque);
+    }
+    template<typename T, size_t N> void trace(const Deque<RawPtr<T>, N>& deque)
+    {
+        COMPILE_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, AttemptedToTraceGarbageCollectedObjectInsideDeque);
+    }
+    template<typename T, size_t N> void trace(const Deque<WeakPtr<T>, N>& deque)
+    {
+        COMPILE_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, AttemptedToTraceGarbageCollectedObjectInsideDeque);
+    }
 #endif
 
     // This method marks an object and adds it to the set of objects

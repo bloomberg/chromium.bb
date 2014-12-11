@@ -2011,6 +2011,15 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, T, Traits>
     }
 };
 
+template<ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits>
+struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Member<T>, Traits> {
+    static bool trace(blink::Visitor* visitor, blink::Member<T>& t)
+    {
+        blink::TraceTrait<T>::mark(visitor, const_cast<typename RemoveConst<T>::Type*>(t.get()));
+        return false;
+    }
+};
+
 // Catch-all for things that have HashTrait support for tracing with weakness.
 template<ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits>
 struct TraceInCollectionTrait<WeakHandlingInCollections, strongify, T, Traits> {
@@ -2149,8 +2158,7 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, LinkedHash
     static bool trace(blink::Visitor* visitor, LinkedHashSetNode<Value, Allocator>& self)
     {
         ASSERT(ShouldBeTraced<Traits>::value);
-        blink::TraceTrait<Value>::trace(visitor, &self.m_value);
-        return false;
+        return TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, Value, typename Traits::ValueTraits>::trace(visitor, self.m_value);
     }
 };
 

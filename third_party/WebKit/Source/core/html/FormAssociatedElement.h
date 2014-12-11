@@ -92,10 +92,11 @@ public:
 
     typedef WillBeHeapVector<RawPtrWillBeMember<FormAssociatedElement>> List;
 
+    virtual void trace(Visitor*);
+
 protected:
     FormAssociatedElement();
 
-    virtual void trace(Visitor*);
     void insertedInto(ContainerNode*);
     void removedFrom(ContainerNode*);
     void didMoveToNewDocument(Document& oldDocument);

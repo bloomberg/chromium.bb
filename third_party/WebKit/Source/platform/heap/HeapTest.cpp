@@ -2023,52 +2023,37 @@ public:
     static OffHeapContainer* create() { return new OffHeapContainer(); }
 
     static const int iterations = 300;
-    static const int deadWrappers = 1200;
+    static const int deadWrappers = 600;
 
     OffHeapContainer()
     {
         for (int i = 0; i < iterations; i++) {
             m_deque1.append(ShouldBeTraced(IntWrapper::create(i)));
             m_vector1.append(ShouldBeTraced(IntWrapper::create(i)));
-            m_deque2.append(IntWrapper::create(i));
-            m_vector2.append(IntWrapper::create(i));
         }
 
         Deque<ShouldBeTraced>::iterator d1Iterator(m_deque1.begin());
         Vector<ShouldBeTraced>::iterator v1Iterator(m_vector1.begin());
-        Deque<Member<IntWrapper> >::iterator d2Iterator(m_deque2.begin());
-        Vector<Member<IntWrapper> >::iterator v2Iterator(m_vector2.begin());
 
         for (int i = 0; i < iterations; i++) {
             EXPECT_EQ(i, m_vector1[i].m_wrapper->value());
-            EXPECT_EQ(i, m_vector2[i]->value());
             EXPECT_EQ(i, d1Iterator->m_wrapper->value());
             EXPECT_EQ(i, v1Iterator->m_wrapper->value());
-            EXPECT_EQ(i, d2Iterator->get()->value());
-            EXPECT_EQ(i, v2Iterator->get()->value());
             ++d1Iterator;
             ++v1Iterator;
-            ++d2Iterator;
-            ++v2Iterator;
         }
         EXPECT_EQ(d1Iterator, m_deque1.end());
         EXPECT_EQ(v1Iterator, m_vector1.end());
-        EXPECT_EQ(d2Iterator, m_deque2.end());
-        EXPECT_EQ(v2Iterator, m_vector2.end());
     }
 
     void trace(Visitor* visitor)
     {
         visitor->trace(m_deque1);
         visitor->trace(m_vector1);
-        visitor->trace(m_deque2);
-        visitor->trace(m_vector2);
     }
 
     Deque<ShouldBeTraced> m_deque1;
     Vector<ShouldBeTraced> m_vector1;
-    Deque<Member<IntWrapper> > m_deque2;
-    Vector<Member<IntWrapper> > m_vector2;
 };
 
 const int OffHeapContainer::iterations;

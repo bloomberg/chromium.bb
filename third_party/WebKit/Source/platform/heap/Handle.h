@@ -631,35 +631,6 @@ protected:
     friend class Visitor;
 };
 
-template<typename T>
-class TraceTrait<Member<T> > {
-public:
-    static void trace(Visitor* visitor, void* self)
-    {
-        TraceTrait<T>::mark(visitor, *static_cast<Member<T>*>(self));
-    }
-};
-
-// TraceTrait to allow compilation of trace method bodies when oilpan is disabled.
-// This should never be called, but is needed to compile.
-template<typename T>
-class TraceTrait<RefPtr<T> > {
-public:
-    static void trace(Visitor*, void*)
-    {
-        ASSERT_NOT_REACHED();
-    }
-};
-
-template<typename T>
-class TraceTrait<OwnPtr<T> > {
-public:
-    static void trace(Visitor* visitor, OwnPtr<T>* ptr)
-    {
-        ASSERT_NOT_REACHED();
-    }
-};
-
 template<typename T, bool needsTracing>
 struct TraceIfEnabled;
 
