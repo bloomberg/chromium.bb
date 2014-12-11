@@ -13,7 +13,8 @@ ReceiverRtcpEventSubscriber::ReceiverRtcpEventSubscriber(
     const size_t max_size_to_retain, EventMediaType type)
     : max_size_to_retain_(
           max_size_to_retain * (kResendDelay * kNumResends + 1)),
-      type_(type) {
+      type_(type),
+      popped_events_(0) {
   DCHECK(max_size_to_retain_ > 0u);
   DCHECK(type_ == AUDIO_EVENT || type_ == VIDEO_EVENT);
   for (size_t i = 0; i < kNumResends; i++) {
