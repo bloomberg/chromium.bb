@@ -875,8 +875,8 @@ void IOThread::ConfigureSpdyFromTrial(base::StringPiece spdy_trial_group,
     globals->next_protos = net::NextProtosSpdy31();
     globals->use_alternate_protocols.set(true);
   } else {
-    // Use the current SPDY default (SPDY/3.1).
-    globals->next_protos = net::NextProtosSpdy31();
+    // By default, enable HTTP/2.
+    globals->next_protos = net::NextProtosSpdy4Http2();
     globals->use_alternate_protocols.set(true);
   }
 }

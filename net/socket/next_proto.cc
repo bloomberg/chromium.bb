@@ -16,6 +16,8 @@ NextProtoVector NextProtosDefaults() {
   NextProtoVector next_protos;
   next_protos.push_back(kProtoHTTP11);
   next_protos.push_back(kProtoSPDY31);
+  next_protos.push_back(kProtoSPDY4_14);
+  next_protos.push_back(kProtoSPDY4_15);
   return next_protos;
 }
 
@@ -27,6 +29,8 @@ NextProtoVector NextProtosWithSpdyAndQuic(bool spdy_enabled,
     next_protos.push_back(kProtoQUIC1SPDY3);
   if (spdy_enabled) {
     next_protos.push_back(kProtoSPDY31);
+    next_protos.push_back(kProtoSPDY4_14);
+    next_protos.push_back(kProtoSPDY4_15);
   }
   return next_protos;
 }
