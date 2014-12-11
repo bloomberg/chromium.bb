@@ -704,6 +704,7 @@ nonsfi_test_whitelist = set([
     'run_signal_sigbus_test',
     'run_signal_test',
     'run_socket_test',
+    'run_stack_alignment_asm_test',
     'run_stack_alignment_test',
     'run_syscall_test',
     'run_thread_test',

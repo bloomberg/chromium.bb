@@ -95,10 +95,10 @@ static int nacl_irt_thread_create(void (*start_func)(void), void *stack,
                        /*
                         * In child thread. Clear the frame pointer to
                         * prevent debuggers from unwinding beyond this,
-                        * pop the stack to get start_func and call it.
+                        * load start_func from the stack and call it.
                         */
                        "mov fp, #0\n"
-                       "pop {r0}\n"
+                       "ldr r0, [sp]\n"
                        "blx r0\n"
                        /* start_func never finishes. */
                        "bkpt #0\n"
