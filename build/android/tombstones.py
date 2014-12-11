@@ -63,8 +63,7 @@ def _GetTombstoneData(device, tombstone_file):
   Returns:
     A list of lines
   """
-  return device.ReadFile(
-      '/data/tombstones/' + tombstone_file, as_root=True).splitlines()
+  return device.ReadFile('/data/tombstones/' + tombstone_file, as_root=True)
 
 
 def _EraseTombstone(device, tombstone_file):
