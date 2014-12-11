@@ -13,6 +13,7 @@
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/InspectorWorkerAgent.h"
+#include "core/page/Page.h"
 #include "platform/TraceEvent.h"
 
 namespace blink {
@@ -33,6 +34,13 @@ InspectorTracingAgent::InspectorTracingAgent(InspectorClient* client, InspectorW
     , m_workerAgent(workerAgent)
     , m_page(page)
 {
+}
+
+void InspectorTracingAgent::trace(Visitor* visitor)
+{
+    visitor->trace(m_workerAgent);
+    visitor->trace(m_page);
+    InspectorBaseAgent<InspectorTracingAgent>::trace(visitor);
 }
 
 void InspectorTracingAgent::restore()

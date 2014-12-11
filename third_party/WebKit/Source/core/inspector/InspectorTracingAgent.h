@@ -28,6 +28,8 @@ public:
         return adoptPtrWillBeNoop(new InspectorTracingAgent(client, workerAgent, page));
     }
 
+    void trace(Visitor*) override;
+
     // Base agent methods.
     virtual void restore() override;
     virtual void setFrontend(InspectorFrontend*) override;
@@ -50,10 +52,10 @@ private:
     int m_layerTreeId;
     InspectorClient* m_client;
     InspectorFrontend::Tracing* m_frontend;
-    InspectorWorkerAgent* m_workerAgent;
-    Page* m_page;
+    RawPtrWillBeMember<InspectorWorkerAgent> m_workerAgent;
+    RawPtrWillBeMember<Page> m_page;
 };
 
-}
+} // namespace blink
 
 #endif // InspectorTracingAgent_h
