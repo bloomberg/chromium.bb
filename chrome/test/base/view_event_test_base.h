@@ -15,9 +15,9 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/ui/views/chrome_views_delegate.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/views/test/test_views_delegate.h"
 #include "ui/views/widget/widget_delegate.h"
 
 #if defined(OS_WIN)
@@ -148,7 +148,7 @@ class ViewEventTestBase : public views::WidgetDelegate,
 
   scoped_ptr<ViewEventTestPlatformPart> platform_part_;
 
-  ChromeViewsDelegate views_delegate_;
+  views::TestViewsDelegate views_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewEventTestBase);
 };
