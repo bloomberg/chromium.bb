@@ -58,6 +58,9 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/ClipDisplayItem.h"
+#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/TransformDisplayItem.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -2052,14 +2055,18 @@ void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo
 {
     FontCachePurgePreventer fontCachePurgePreventer;
 
-    // Note carefully: in theory it is appropriate to invoke context->save() here
-    // and restore the context after painting. For efficiency, we are assuming that
-    // it is equivalent to manually undo this offset translation, which means we are
-    // assuming that the context's space was not affected by the RenderLayer
-    // painting code.
-
     IntSize offset = paintInfo.offsetFromRenderer;
-    context->translate(-offset.width(), -offset.height());
+    {
+        TransformationMatrix translation;
+        translation.translate(-offset.width(), -offset.height());
+        OwnPtr<DisplayItem> beginTransformDisplayItem = BeginTransformDisplayItem::create(displayItemClient(), translation);
+        if (context->displayItemList()) {
+            ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
+            context->displayItemList()->add(beginTransformDisplayItem.release());
+        } else {
+            beginTransformDisplayItem->replay(context);
+        }
+    }
 
     // The dirtyRect is in the coords of the painting root.
     IntRect dirtyRect(clip);
@@ -2093,15 +2100,37 @@ void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo
         // RenderLayer::paintLayer assumes that the caller clips to the passed rect. Squashed layers need to do this clipping in software,
         // since there is no graphics layer to clip them precisely. Furthermore, in some cases we squash layers that need clipping in software
         // from clipping ancestors (see CompositedLayerMapping::localClipRectForSquashedLayer()).
-        context->save();
         dirtyRect.intersect(paintInfo.localClipRectForSquashedLayer);
-        context->clip(dirtyRect);
+        {
+            OwnPtr<DisplayItem> clipDisplayItem = ClipDisplayItem::create(displayItemClient(), DisplayItem::ClipLayerOverflowControls, dirtyRect);
+            if (context->displayItemList()) {
+                ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
+                context->displayItemList()->add(clipDisplayItem.release());
+            } else {
+                clipDisplayItem->replay(context);
+            }
+        }
         LayerPainter(*paintInfo.renderLayer).paintLayer(context, paintingInfo, paintLayerFlags);
-        context->restore();
+        {
+            OwnPtr<DisplayItem> endClipDisplayItem = EndClipDisplayItem::create(displayItemClient());
+            if (context->displayItemList()) {
+                ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
+                context->displayItemList()->add(endClipDisplayItem.release());
+            } else {
+                endClipDisplayItem->replay(context);
+            }
+        }
     }
 
-    // Manually restore the context to its original state by applying the opposite translation.
-    context->translate(offset.width(), offset.height());
+    {
+        OwnPtr<DisplayItem> endTransformDisplayItem = EndTransformDisplayItem::create(displayItemClient());
+        if (context->displayItemList()) {
+            ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
+            context->displayItemList()->add(endTransformDisplayItem.release());
+        } else {
+            endTransformDisplayItem->replay(context);
+        }
+    }
 }
 
 static void paintScrollbar(Scrollbar* scrollbar, GraphicsContext& context, const IntRect& clip)

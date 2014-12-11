@@ -280,13 +280,9 @@ void GraphicsLayer::paintGraphicsLayerContents(GraphicsContext& context, const I
 #ifndef NDEBUG
         context.fillRect(clip, Color(0xFF, 0, 0));
 #endif
-        // FIXME: This is incorrect for squashed layers.
-        // We should do proper translation in CompositedLayerMapping once transform paint item is implemented.
-        context.translate(-m_offsetFromRenderer.width(), -m_offsetFromRenderer.height());
         const PaintList& paintList = m_displayItemList->paintList();
         for (PaintList::const_iterator it = paintList.begin(); it != paintList.end(); ++it)
             (*it)->replay(&context);
-        context.translate(m_offsetFromRenderer.width(), m_offsetFromRenderer.height());
     }
 }
 

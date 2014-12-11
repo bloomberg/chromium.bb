@@ -43,7 +43,6 @@ class PLATFORM_EXPORT GraphicsContextPainter {
 public:
     virtual void paint(GraphicsContext&, const IntRect& clip) = 0;
     virtual DisplayItemList* displayItemList() = 0;
-    virtual IntSize displayItemListOffset() const = 0;
 
 protected:
     virtual ~GraphicsContextPainter() { }

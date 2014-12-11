@@ -96,18 +96,8 @@ void ContentLayerDelegate::paintContents(
     }
 
     const PaintList& paintList = displayItemList->paintList();
-    IntSize offset = m_painter->displayItemListOffset();
-    if (offset != IntSize()) {
-        TransformationMatrix matrix;
-        matrix.translate(-offset.width(), -offset.height());
-        webDisplayItemList->appendTransformItem(TransformationMatrix::toSkMatrix44(matrix));
-    }
-
     for (PaintList::const_iterator it = paintList.begin(); it != paintList.end(); ++it)
         (*it)->appendToWebDisplayItemList(webDisplayItemList);
-
-    if (offset != IntSize())
-        webDisplayItemList->appendEndTransformItem();
 }
 
 } // namespace blink
