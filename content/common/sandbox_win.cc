@@ -620,10 +620,9 @@ base::Process StartSandboxedProcess(
                                          sandbox::MITIGATION_DEP_NO_ATL_THUNK |
                                          sandbox::MITIGATION_SEHOP;
 
- if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-     type_str == switches::kRendererProcess &&
-     browser_command_line.HasSwitch(
-        switches::kEnableWin32kRendererLockDown)) {
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+      type_str == switches::kRendererProcess &&
+      switches::IsWin32kRendererLockdownEnabled()) {
     if (policy->AddRule(sandbox::TargetPolicy::SUBSYS_WIN32K_LOCKDOWN,
                         sandbox::TargetPolicy::FAKE_USER_GDI_INIT,
                         NULL) != sandbox::SBOX_ALL_OK) {

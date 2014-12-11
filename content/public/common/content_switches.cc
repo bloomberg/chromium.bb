@@ -5,6 +5,7 @@
 #include "content/public/common/content_switches.h"
 
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 
 namespace switches {
 
@@ -981,11 +982,13 @@ const char kDeviceScaleFactor[]     = "device-scale-factor";
 // Disable the Legacy Window which corresponds to the size of the WebContents.
 const char kDisableLegacyIntermediateWindow[] = "disable-legacy-window";
 
-// Enable the Win32K process mitigation policy for renderer processes which
-// prevents them from invoking user32 and gdi32 system calls which enter
-// the kernel. This is only supported on Windows 8 and beyond.
-const char kEnableWin32kRendererLockDown[]
-    = "enable_win32k_renderer_lockdown";
+// Enables or disables the Win32K process mitigation policy for renderer
+// processes which prevents them from invoking user32 and gdi32 system calls
+// which enter the kernel. This is only supported on Windows 8 and beyond.
+const char kDisableWin32kRendererLockDown[] =
+    "disable-win32k-renderer-lockdown";
+const char kEnableWin32kRendererLockDown[] =
+    "enable-win32k-renderer-lockdown";
 
 // DirectWrite FontCache is shared by browser to renderers using shared memory.
 // This switch allows specifying suffix to shared memory section name to avoid
@@ -996,6 +999,20 @@ const char kFontCacheSharedMemSuffix[] = "font-cache-shared-mem-suffix";
 #if defined(ENABLE_PLUGINS)
 // Enables the plugin power saver feature.
 const char kEnablePluginPowerSaver[] = "enable-plugin-power-saver";
+#endif
+
+#if defined(OS_WIN)
+bool IsWin32kRendererLockdownEnabled() {
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("Win32kLockdown");
+  const base::CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(kEnableWin32kRendererLockDown))
+    return true;
+  if (cmd_line->HasSwitch(kDisableWin32kRendererLockDown))
+    return false;
+  // Default.
+  return group_name == "Enabled";
+}
 #endif
 
 // Don't dump stuff here, follow the same order as the header.

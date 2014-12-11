@@ -237,8 +237,7 @@ int ChromeBrowserMainPartsWin::PreCreateThreads() {
   // launched for the plugin does not have the Win32K lockdown mode enabled.
   // TODO(ananta)
   // Revisit this when the pdf plugin uses skia and stops using GDI.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWin32kRendererLockDown) &&
+  if (switches::IsWin32kRendererLockdownEnabled() &&
       base::win::GetVersion() >= base::win::VERSION_WIN8) {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableOutOfProcessPdf);
@@ -275,6 +274,8 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
   ChromeBrowserMainParts::PostBrowserStart();
 
   UMA_HISTOGRAM_BOOLEAN("Windows.Tablet", base::win::IsTabletDevice());
+  UMA_HISTOGRAM_BOOLEAN("Windows.Win32kRendererLockdown",
+                        switches::IsWin32kRendererLockdownEnabled());
 
   // Set up a task to verify installed modules in the current process. Use a
   // delay to reduce the impact on startup time.

@@ -41306,6 +41306,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Count of browser launches from a Windows tablet pc.</summary>
 </histogram>
 
+<histogram name="Windows.Win32kRendererLockdown" enum="BooleanEnabled">
+  <owner>wfh@chromium.org</owner>
+  <summary>
+    Count of browser launches where Win32k renderer lockdown is enabled.
+  </summary>
+</histogram>
+
 <histogram name="WinJumplist.Action" enum="WinJumplistCategory">
   <owner>noms@chromium.org</owner>
   <summary>The type of category clicked in the Windows Jumplist</summary>
@@ -49397,6 +49404,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-418868128" label="enable-experimental-web-platform-features"/>
   <int value="-385337473" label="enable-fast-unload"/>
   <int value="-384589459" label="disable-supervised-user-safesites"/>
+  <int value="-378033324" label="disable-win32k-renderer-lockdown"/>
   <int value="-349057743" label="extensions-on-chrome-urls"/>
   <int value="-344343842" label="disable-experimental-app-list"/>
   <int value="-340622848" label="disable-javascript-harmony-shipping"/>
@@ -49598,6 +49606,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2121776031" label="auto-virtual-keyboard"/>
   <int value="2122876605" label="enable-bleeding-edge-rendering-fast-paths"/>
   <int value="2137347307" label="enable-drive-apps-in-app-list"/>
+  <int value="2137599770" label="enable-win32k-renderer-lockdown"/>
 </enum>
 
 <enum name="LoginFailureReason" type="int">

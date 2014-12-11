@@ -140,8 +140,7 @@ PP_Resource ResourceCreationImpl::CreateImageData(PP_Instance instance,
   // TODO(ananta)
   // Look into whether this causes a loss of functionality. From cursory
   // testing things seem to work well.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWin32kRendererLockDown) &&
+  if (switches::IsWin32kRendererLockdownEnabled() &&
       base::win::GetVersion() >= base::win::VERSION_WIN8) {
     return CreateImageDataSimple(instance, format, size, init_to_zero);
   }

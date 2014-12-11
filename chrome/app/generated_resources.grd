@@ -5807,6 +5807,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_DISABLE_DIRECT_WRITE_DESCRIPTION" desc="Description of the 'Disable DirectWrite' lab.">
           Disables the use of experimental DirectWrite font rendering system.
         </message>
+        <message name="IDS_FLAGS_ENABLE_WIN32K_RENDERER_LOCKDOWN_NAME" desc="Name of the 'Enable win32k renderer lockdown' lab.">
+          Enable win32k renderer lockdown
+        </message>
+        <message name="IDS_FLAGS_ENABLE_WIN32K_RENDERER_LOCKDOWN_DESCRIPTION" desc="Description of the 'Enable win32k renderer lockdown' lab.">
+          Enables the win32k renderer lockdown, which is only available on Windows 8 and above.
+        </message>
       </if>
       <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_CANVAS_FEATURES_NAME" desc="Name of the 'Enable experimental canvas features' lab.">
         Enable experimental canvas features
