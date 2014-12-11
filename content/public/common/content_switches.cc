@@ -105,10 +105,6 @@ const char kDisableBlinkScheduler[]         = "disable-blink-scheduler";
 const char kDisablePreferCompositingToLCDText[] =
     "disable-prefer-compositing-to-lcd-text";
 
-// See comment for kEnableCompositingForTransition.
-const char kDisableCompositingForTransition[] =
-     "disable-transition-compositing";
-
 // Disables HTML5 DB support.
 const char kDisableDatabases[]              = "disable-databases";
 
@@ -324,16 +320,6 @@ const char kEnablePreferCompositingToLCDText[] =
 
 // PlzNavigate: Use the experimental browser-side navigation path.
 const char kEnableBrowserSideNavigation[]   = "enable-browser-side-navigation";
-
-// Enable/Disable the creation of compositing layers for RenderLayers with a
-// transition on a property that supports accelerated animation (that is,
-// opacity, -webkit-transform, and -webkit-filter), even when no animation is
-// running. These options allow for three possible scenarios:
-//  1. Default (enabled only if we dectect a highDPI display)
-//  2. Enabled always.
-//  3. Disabled always.
-const char kEnableCompositingForTransition[] =
-     "enable-transition-compositing";
 
 // Defer image decoding in WebKit until painting.
 const char kEnableDeferredImageDecoding[]   = "enable-deferred-image-decoding";

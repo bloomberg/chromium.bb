@@ -533,14 +533,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableWebAudio)
   },
 #endif
-  {
-    "enable-compositing-for-transition",
-    IDS_FLAGS_COMPOSITING_FOR_TRANSITION_NAME,
-    IDS_FLAGS_COMPOSITING_FOR_TRANSITION_DESCRIPTION,
-    kOsAll,
-    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableCompositingForTransition,
-                              switches::kDisableCompositingForTransition)
-  },
   // Native client is compiled out when DISABLE_NACL is defined.
 #if !defined(DISABLE_NACL)
   {

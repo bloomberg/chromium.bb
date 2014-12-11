@@ -6009,12 +6009,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_COMPOSITING_FOR_FIXED_POSITION_HIGH_DPI" desc="Description of the 'Compositing for fixed position elements on high DPI' experiment.">
         Enabled only for high-DPI displays
       </message>
-      <message name="IDS_FLAGS_COMPOSITING_FOR_TRANSITION_NAME" desc="Name of the 'Compositing for RenderLayers with transitions' lab.">
-        Compositing for RenderLayers with transitions.
-      </message>
-      <message name="IDS_FLAGS_COMPOSITING_FOR_TRANSITION_DESCRIPTION" desc="Description for the flag to make RenderLayers with transitions become composited layers.">
-        Enabling this option will make RenderLayers with a transition on opacity, transform, or filter have their own composited layer.
-      </message>
       <message name="IDS_FLAGS_ACCELERATED_FIXED_ROOT_BACKGROUND_NAME" desc="Name of the 'Accelerated fixed root background' lab.">
         Compositing for fixed root backgrounds.
       </message>

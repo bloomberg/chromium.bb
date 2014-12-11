@@ -399,21 +399,6 @@ static bool PreferCompositingToLCDText(float device_scale_factor) {
   return DeviceScaleEnsuresTextQuality(device_scale_factor);
 }
 
-static bool ShouldUseTransitionCompositing(float device_scale_factor) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-
-  if (command_line.HasSwitch(switches::kDisableCompositingForTransition))
-    return false;
-
-  if (command_line.HasSwitch(switches::kEnableCompositingForTransition))
-    return true;
-
-  // TODO(ajuma): Re-enable this by default for high-DPI once the problem
-  // of excessive layer promotion caused by overlap has been addressed.
-  // http://crbug.com/178119.
-  return false;
-}
-
 static FaviconURL::IconType ToFaviconType(blink::WebIconURL::Type type) {
   switch (type) {
     case blink::WebIconURL::TypeFavicon:
@@ -750,8 +735,6 @@ void RenderViewImpl::Initialize(
   webview()->setDeviceScaleFactor(device_scale_factor_);
   webview()->settings()->setPreferCompositingToLCDTextEnabled(
       PreferCompositingToLCDText(device_scale_factor_));
-  webview()->settings()->setAcceleratedCompositingForTransitionEnabled(
-      ShouldUseTransitionCompositing(device_scale_factor_));
   webview()->settings()->setThreadedScrollingEnabled(
       !command_line.HasSwitch(switches::kDisableThreadedScrolling));
   webview()->settings()->setRootLayerScrolls(
@@ -3610,8 +3593,6 @@ void RenderViewImpl::SetDeviceScaleFactor(float device_scale_factor) {
     webview()->setDeviceScaleFactor(device_scale_factor);
     webview()->settings()->setPreferCompositingToLCDTextEnabled(
         PreferCompositingToLCDText(device_scale_factor_));
-    webview()->settings()->setAcceleratedCompositingForTransitionEnabled(
-        ShouldUseTransitionCompositing(device_scale_factor_));
   }
   if (auto_resize_mode_)
     AutoResizeCompositor();
