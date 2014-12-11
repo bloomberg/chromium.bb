@@ -292,12 +292,16 @@ int QuicStreamFactory::Job::DoLoop(int rv) {
 }
 
 void QuicStreamFactory::Job::OnIOComplete(int rv) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "436634 QuicStreamFactory::Job::OnIOComplete"));
+          "422516 QuicStreamFactory::Job::OnIOComplete1"));
 
   rv = DoLoop(rv);
+
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicStreamFactory::Job::OnIOComplete2"));
 
   if (rv != ERR_IO_PENDING && !callback_.is_null()) {
     callback_.Run(rv);
@@ -647,6 +651,11 @@ bool QuicStreamFactory::OnResolution(
 
 void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
   if (rv == OK) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+    tracked_objects::ScopedTracker tracking_profile1(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "422516 QuicStreamFactory::OnJobComplete1"));
+
     if (!always_require_handshake_confirmation_)
       set_require_confirmation(false);
 
@@ -658,6 +667,12 @@ void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
                                               (*it)->net_log()));
     }
   }
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicStreamFactory::OnJobComplete2"));
+
   while (!job_requests_map_[job].empty()) {
     RequestSet::iterator it = job_requests_map_[job].begin();
     QuicStreamRequest* request = *it;
@@ -668,6 +683,12 @@ void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
     // profile which can not be deleted via callbacks.
     request->OnRequestComplete(rv);
   }
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicStreamFactory::OnJobComplete3"));
+
   active_jobs_.erase(job->server_id());
   job_requests_map_.erase(job);
   delete job;
