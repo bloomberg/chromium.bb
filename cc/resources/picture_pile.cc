@@ -693,9 +693,10 @@ void PicturePile::DetermineIfSolidColor() {
     if (it->second.GetPicture() != picture)
       return;
   }
-  skia::AnalysisCanvas canvas(recorded_viewport_.width(),
-                              recorded_viewport_.height());
-  canvas.translate(-recorded_viewport_.x(), -recorded_viewport_.y());
+
+  gfx::Size layer_size = GetSize();
+  skia::AnalysisCanvas canvas(layer_size.width(), layer_size.height());
+
   picture->Raster(&canvas, nullptr, Region(), 1.0f);
   is_solid_color_ = canvas.GetColorIfSolid(&solid_color_);
 }

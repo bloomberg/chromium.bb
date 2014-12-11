@@ -142,9 +142,8 @@ void DisplayListRecordingSource::DetermineIfSolidColor() {
   if (display_list_->ApproximateOpCount() > kOpCountThatIsOkToAnalyze)
     return;
 
-  skia::AnalysisCanvas canvas(recorded_viewport_.width(),
-                              recorded_viewport_.height());
-  canvas.translate(-recorded_viewport_.x(), -recorded_viewport_.y());
+  gfx::Size layer_size = GetSize();
+  skia::AnalysisCanvas canvas(layer_size.width(), layer_size.height());
   display_list_->Raster(&canvas, nullptr, 1.f);
   is_solid_color_ = canvas.GetColorIfSolid(&solid_color_);
 }
