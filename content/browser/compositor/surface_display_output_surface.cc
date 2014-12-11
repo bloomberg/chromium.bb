@@ -84,7 +84,8 @@ void SurfaceDisplayOutputSurface::ReturnResources(
 }
 
 void SurfaceDisplayOutputSurface::SwapBuffersComplete(bool drawn) {
-  client_->DidSwapBuffersComplete();
+  if (client_)
+    client_->DidSwapBuffersComplete();
 }
 
 }  // namespace content
