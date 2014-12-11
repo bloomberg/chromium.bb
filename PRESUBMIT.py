@@ -1262,6 +1262,26 @@ def _CheckJavaStyle(input_api, output_api):
       input_api, output_api, 'tools/android/checkstyle/chromium-style-5.0.xml')
 
 
+def _CheckForCopyrightedCode(input_api, output_api):
+  """Verifies that newly added code doesn't contain copyrighted material
+  and is properly licensed under the standard Chromium license.
+
+  As there can be false positives, we maintain a whitelist file. This check
+  also verifies that the whitelist file is up to date.
+  """
+  import sys
+  original_sys_path = sys.path
+  try:
+    sys.path = sys.path + [input_api.os_path.join(
+        input_api.PresubmitLocalPath(), 'android_webview', 'tools')]
+    import copyright_scanner
+  finally:
+    # Restore sys.path to what it was before.
+    sys.path = original_sys_path
+
+  return copyright_scanner.ScanAtPresubmit(input_api, output_api)
+
+
 _DEPRECATED_CSS = [
   # Values
   ( "-webkit-box", "flex" ),
@@ -1377,6 +1397,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckNoDeprecatedJS(input_api, output_api))
   results.extend(_CheckParseErrors(input_api, output_api))
   results.extend(_CheckForIPCRules(input_api, output_api))
+  results.extend(_CheckForCopyrightedCode(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
