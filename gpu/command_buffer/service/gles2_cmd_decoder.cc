@@ -2960,6 +2960,10 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   if (workarounds().regenerate_struct_names)
     driver_bug_workarounds |= SH_REGENERATE_STRUCT_NAMES;
 
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEmulateShaderPrecision))
+    resources.WEBGL_debug_shader_precision = true;
+
   vertex_translator_ = shader_translator_cache()->GetTranslator(
       GL_VERTEX_SHADER,
       shader_spec,
