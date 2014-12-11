@@ -257,10 +257,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_PUBLIC_IMAGEINFO_FIELDS
 #endif
 
-#ifndef    SK_SUPPORT_LEGACY_PICTURE_CLONE
-#   define SK_SUPPORT_LEGACY_PICTURE_CLONE
-#endif
-
 #ifndef    SK_IGNORE_ETC1_SUPPORT
 #   define SK_IGNORE_ETC1_SUPPORT
 #endif
@@ -276,17 +272,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #ifndef    SK_LEGACY_PICTURE_DRAW_API
 #   define SK_LEGACY_PICTURE_DRAW_API
 #endif
-
-
-// Turns SkPicture::clone() into a simple "return SkRef(this);" as a way to
-// test the threadsafety of SkPicture playback.
-#define SK_PICTURE_CLONE_NOOP 1
-
-// Turns on new (nicer, hopefully faster) SkPicture backend.
-#define SK_PICTURE_USE_SK_RECORD 1
-
-// Run a few optimization passes over the SkRecord after recording.
-#define SK_PICTURE_OPTIMIZE_SK_RECORD 1
 
 // ===== End Chrome-specific definitions =====
 
