@@ -75,6 +75,7 @@
 #include "client/linux/minidump_writer/proc_cpuinfo_reader.h"
 #include "client/minidump_file_writer.h"
 #include "common/linux/linux_libc_support.h"
+#include "common/minidump_type_helper.h"
 #include "google_breakpad/common/minidump_format.h"
 #include "third_party/lss/linux_syscall_support.h"
 
@@ -86,6 +87,7 @@ using google_breakpad::CpuSet;
 using google_breakpad::LineReader;
 using google_breakpad::LinuxDumper;
 using google_breakpad::LinuxPtraceDumper;
+using google_breakpad::MDTypeHelper;
 using google_breakpad::MappingEntry;
 using google_breakpad::MappingInfo;
 using google_breakpad::MappingList;
@@ -100,6 +102,8 @@ using google_breakpad::UContextReader;
 using google_breakpad::UntypedMDRVA;
 using google_breakpad::wasteful_vector;
 
+typedef MDTypeHelper<sizeof(void*)>::MDRawDebug MDRawDebug;
+typedef MDTypeHelper<sizeof(void*)>::MDRawLinkMap MDRawLinkMap;
 
 class MinidumpWriter {
  public:
@@ -733,8 +737,8 @@ class MinidumpWriter {
           return false;
         MDRawLinkMap entry;
         entry.name = location.rva;
-        entry.addr = reinterpret_cast<void*>(map.l_addr);
-        entry.ld = reinterpret_cast<void*>(map.l_ld);
+        entry.addr = map.l_addr;
+        entry.ld = reinterpret_cast<uintptr_t>(map.l_ld);
         linkmap.CopyIndex(idx++, &entry);
       }
     }
@@ -750,9 +754,9 @@ class MinidumpWriter {
     debug.get()->version = debug_entry.r_version;
     debug.get()->map = linkmap_rva;
     debug.get()->dso_count = dso_count;
-    debug.get()->brk = reinterpret_cast<void*>(debug_entry.r_brk);
-    debug.get()->ldbase = reinterpret_cast<void*>(debug_entry.r_ldbase);
-    debug.get()->dynamic = dynamic;
+    debug.get()->brk = debug_entry.r_brk;
+    debug.get()->ldbase = debug_entry.r_ldbase;
+    debug.get()->dynamic = reinterpret_cast<uintptr_t>(dynamic);
 
     wasteful_vector<char> dso_debug_data(dumper_->allocator(), dynamic_length);
     // The passed-in size to the constructor (above) is only a hint.
