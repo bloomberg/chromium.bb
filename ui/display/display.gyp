@@ -45,6 +45,8 @@
       ],
       'sources': [
         # Note: file list duplicated in GN build.
+        'chromeos/configure_displays_task.cc',
+        'chromeos/configure_displays_task.h',
         'chromeos/display_configurator.cc',
         'chromeos/display_configurator.h',
         'chromeos/ozone/display_configurator_ozone.cc',
@@ -179,6 +181,7 @@
         '../..',
       ],
       'sources': [
+        'chromeos/configure_displays_task_unittest.cc',
         'chromeos/display_configurator_unittest.cc',
         'chromeos/x11/display_util_x11_unittest.cc',
         'chromeos/x11/native_display_event_dispatcher_x11_unittest.cc',

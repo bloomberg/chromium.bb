@@ -83,6 +83,10 @@ class DISPLAY_EXPORT NativeDisplayDelegateX11 : public NativeDisplayDelegate {
   virtual bool Configure(const DisplaySnapshot& output,
                          const DisplayMode* mode,
                          const gfx::Point& origin) override;
+  virtual void Configure(const DisplaySnapshot& output,
+                         const DisplayMode* mode,
+                         const gfx::Point& origin,
+                         const ConfigureCallback& callback) override;
   virtual void CreateFrameBuffer(const gfx::Size& size) override;
   virtual bool GetHDCPState(const DisplaySnapshot& output,
                             HDCPState* state) override;

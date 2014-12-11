@@ -68,6 +68,14 @@ bool NativeDisplayDelegateOzone::Configure(const ui::DisplaySnapshot& output,
   return true;
 }
 
+void NativeDisplayDelegateOzone::Configure(const ui::DisplaySnapshot& output,
+                                           const ui::DisplayMode* mode,
+                                           const gfx::Point& origin,
+                                           const ConfigureCallback& callback) {
+  NOTIMPLEMENTED();
+  callback.Run(true);
+}
+
 void NativeDisplayDelegateOzone::CreateFrameBuffer(const gfx::Size& size) {
   NOTIMPLEMENTED();
 }

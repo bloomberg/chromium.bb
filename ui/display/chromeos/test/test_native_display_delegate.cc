@@ -4,6 +4,8 @@
 
 #include "ui/display/chromeos/test/test_native_display_delegate.h"
 
+#include "base/bind.h"
+#include "base/message_loop/message_loop.h"
 #include "ui/display/chromeos/test/action_logger.h"
 #include "ui/display/types/display_mode.h"
 
@@ -13,6 +15,7 @@ namespace test {
 TestNativeDisplayDelegate::TestNativeDisplayDelegate(ActionLogger* log)
     : max_configurable_pixels_(0),
       hdcp_state_(HDCP_STATE_UNDESIRED),
+      run_async_(false),
       log_(log) {
 }
 
@@ -74,6 +77,19 @@ bool TestNativeDisplayDelegate::Configure(const DisplaySnapshot& output,
     return false;
 
   return mode->size().GetArea() <= max_configurable_pixels_;
+}
+
+void TestNativeDisplayDelegate::Configure(const DisplaySnapshot& output,
+                                          const DisplayMode* mode,
+                                          const gfx::Point& origin,
+                                          const ConfigureCallback& callback) {
+  bool result = Configure(output, mode, origin);
+  if (run_async_) {
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::Bind(callback, result));
+  } else {
+    callback.Run(result);
+  }
 }
 
 void TestNativeDisplayDelegate::CreateFrameBuffer(const gfx::Size& size) {

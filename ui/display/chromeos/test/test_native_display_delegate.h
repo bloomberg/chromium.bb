@@ -37,6 +37,8 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
 
   void set_hdcp_state(HDCPState state) { hdcp_state_ = state; }
 
+  void set_run_async(bool run_async) { run_async_ = run_async; }
+
   // NativeDisplayDelegate overrides:
   void Initialize() override;
   void GrabServer() override;
@@ -51,6 +53,10 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
   bool Configure(const DisplaySnapshot& output,
                  const DisplayMode* mode,
                  const gfx::Point& origin) override;
+  void Configure(const DisplaySnapshot& output,
+                 const DisplayMode* mode,
+                 const gfx::Point& origin,
+                 const ConfigureCallback& callback) override;
   void CreateFrameBuffer(const gfx::Size& size) override;
   bool GetHDCPState(const DisplaySnapshot& output, HDCPState* state) override;
   bool SetHDCPState(const DisplaySnapshot& output, HDCPState state) override;
@@ -76,6 +82,9 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
 
   // Result value of GetHDCPState().
   HDCPState hdcp_state_;
+
+  // If true, the callbacks are posted on the message loop.
+  bool run_async_;
 
   ActionLogger* log_;  // Not owned.
 

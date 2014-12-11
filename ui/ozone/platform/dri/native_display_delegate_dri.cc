@@ -195,6 +195,13 @@ bool NativeDisplayDelegateDri::Configure(const DisplaySnapshot& output,
   return true;
 }
 
+void NativeDisplayDelegateDri::Configure(const DisplaySnapshot& output,
+                                         const DisplayMode* mode,
+                                         const gfx::Point& origin,
+                                         const ConfigureCallback& callback) {
+  callback.Run(Configure(output, mode, origin));
+}
+
 void NativeDisplayDelegateDri::CreateFrameBuffer(const gfx::Size& size) {
 }
 

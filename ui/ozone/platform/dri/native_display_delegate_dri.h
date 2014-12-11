@@ -41,6 +41,10 @@ class NativeDisplayDelegateDri : public NativeDisplayDelegate {
   bool Configure(const DisplaySnapshot& output,
                  const DisplayMode* mode,
                  const gfx::Point& origin) override;
+  void Configure(const DisplaySnapshot& output,
+                 const DisplayMode* mode,
+                 const gfx::Point& origin,
+                 const ConfigureCallback& callback) override;
   void CreateFrameBuffer(const gfx::Size& size) override;
   bool GetHDCPState(const DisplaySnapshot& output, HDCPState* state) override;
   bool SetHDCPState(const DisplaySnapshot& output, HDCPState state) override;

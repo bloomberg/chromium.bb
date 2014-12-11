@@ -31,6 +31,10 @@ class NativeDisplayDelegateOzone : public NativeDisplayDelegate {
   bool Configure(const ui::DisplaySnapshot& output,
                  const ui::DisplayMode* mode,
                  const gfx::Point& origin) override;
+  void Configure(const ui::DisplaySnapshot& output,
+                 const ui::DisplayMode* mode,
+                 const gfx::Point& origin,
+                 const ConfigureCallback& callback) override;
   void CreateFrameBuffer(const gfx::Size& size) override;
   bool GetHDCPState(const ui::DisplaySnapshot& output,
                     ui::HDCPState* state) override;

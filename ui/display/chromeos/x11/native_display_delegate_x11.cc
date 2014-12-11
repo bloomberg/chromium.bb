@@ -219,6 +219,13 @@ bool NativeDisplayDelegateX11::Configure(const DisplaySnapshot& output,
       x11_output.crtc(), mode_id, x11_output.output(), origin.x(), origin.y());
 }
 
+void NativeDisplayDelegateX11::Configure(const DisplaySnapshot& output,
+                                         const DisplayMode* mode,
+                                         const gfx::Point& origin,
+                                         const ConfigureCallback& callback) {
+  callback.Run(Configure(output, mode, origin));
+}
+
 bool NativeDisplayDelegateX11::ConfigureCrtc(RRCrtc crtc,
                                              RRMode mode,
                                              RROutput output,

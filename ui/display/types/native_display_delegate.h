@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_types_export.h"
 
@@ -22,6 +23,8 @@ class DisplayMode;
 class DisplaySnapshot;
 
 class NativeDisplayObserver;
+
+typedef base::Callback<void(bool)> ConfigureCallback;
 
 // Interface for classes that perform display configuration actions on behalf
 // of DisplayConfigurator.
@@ -69,6 +72,11 @@ class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
   virtual bool Configure(const ui::DisplaySnapshot& output,
                          const ui::DisplayMode* mode,
                          const gfx::Point& origin) = 0;
+
+  virtual void Configure(const ui::DisplaySnapshot& output,
+                         const ui::DisplayMode* mode,
+                         const gfx::Point& origin,
+                         const ConfigureCallback& callback) = 0;
 
   // Called to set the frame buffer (underlying XRR "screen") size.
   virtual void CreateFrameBuffer(const gfx::Size& size) = 0;

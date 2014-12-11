@@ -119,6 +119,13 @@ bool NativeDisplayDelegateProxy::Configure(const DisplaySnapshot& output,
   return true;
 }
 
+void NativeDisplayDelegateProxy::Configure(const DisplaySnapshot& output,
+                                           const DisplayMode* mode,
+                                           const gfx::Point& origin,
+                                           const ConfigureCallback& callback) {
+  callback.Run(Configure(output, mode, origin));
+}
+
 void NativeDisplayDelegateProxy::CreateFrameBuffer(const gfx::Size& size) {
 }
 
