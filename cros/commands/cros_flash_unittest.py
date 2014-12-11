@@ -141,8 +141,7 @@ class UpdateRunThroughTest(cros_test_lib.MockTempDirTestCase,
     self.PatchObject(cros_flash, 'GetImagePathWithXbuddy',
                      return_value='taco-paladin/R36/chromiumos_test_image.bin')
     self.PatchObject(remote_access, 'CHECK_INTERVAL', new=0)
-    self.PatchObject(remote_access.ChromiumOSDevice, '_LearnBoard',
-                     return_value='peppy')
+    self.PatchObject(remote_access, 'ChromiumOSDevice')
 
   def testUpdateAll(self):
     """Tests that update methods are called correctly."""

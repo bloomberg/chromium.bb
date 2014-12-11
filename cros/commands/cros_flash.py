@@ -748,9 +748,12 @@ class RemoteDeviceUpdater(object):
     """Performs remote device update."""
     old_root_dev, new_root_dev = None, None
     try:
+      device_connected = False
+
       with remote_access.ChromiumOSDeviceHandler(
           self.ssh_hostname, port=self.ssh_port,
           base_dir=self.DEVICE_BASE_DIR, ping=self.ping) as device:
+        device_connected = True
 
         board = cros_build_lib.GetBoard(device_board=device.board,
                                         override_board=self.board,
@@ -852,6 +855,10 @@ class RemoteDeviceUpdater(object):
 
     except Exception:
       logging.error('Device update failed.')
+      if device_connected and device.lsb_release:
+        lsb_entries = sorted(device.lsb_release.items())
+        logging.info('Following are the LSB version details of the device:\n%s',
+                     '\n'.join('%s=%s' % (k, v) for k, v in lsb_entries))
       raise
     else:
       logging.info('Update performed successfully.')

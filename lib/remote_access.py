@@ -664,22 +664,38 @@ class ChromiumOSDevice(RemoteDevice):
   MAKE_DEV_SSD_BIN = '/usr/share/vboot/bin/make_dev_ssd.sh'
   MOUNT_ROOTFS_RW_CMD = ['mount', '-o', 'remount,rw', '/']
   LIST_MOUNTS_CMD = ['cat', '/proc/mounts']
-  GET_BOARD_CMD = ['grep', 'CHROMEOS_RELEASE_BOARD', '/etc/lsb-release']
 
   def __init__(self, *args, **kwargs):
     super(ChromiumOSDevice, self).__init__(*args, **kwargs)
-    self.board = self._LearnBoard()
     self.path = self._GetPath()
+    self.lsb_release = self._GetLSBRelease()
+    self.board = self.lsb_release.get('CHROMEOS_RELEASE_BOARD', '')
 
   def _GetPath(self):
     """Gets $PATH on the device and prepend it with DEV_BIN_PATHS."""
     try:
       result = self.BaseRunCommand(['echo', "${PATH}"])
-    except cros_build_lib.RunCommandError:
-      logging.warning('Error detecting $PATH on the device.')
+    except cros_build_lib.RunCommandError as e:
+      logging.error('Failed to get $PATH on the device: %s', e.result.error)
       raise
 
     return '%s:%s' % (DEV_BIN_PATHS, result.output.strip())
+
+  def _GetLSBRelease(self):
+    """Gets /etc/lsb-release on the device.
+
+    Returns a dict of entries in /etc/lsb-release file. If multiple entries
+    have the same key, only the first entry is recorded. Returns an empty dict
+    if the reading command failed or the file is corrupted (i.e., does not have
+    the format of <key>=<value> for every line).
+    """
+    try:
+      result = self.BaseRunCommand(['cat', '/etc/lsb-release'])
+      return dict(e.split('=', 1) for e in reversed(result.output.splitlines()))
+    except Exception as e:
+      logging.error('Failed to read "/etc/lsb-release" on the device or the'
+                    'file may be corrupted: %s', e.result.error)
+      return {}
 
   def _RemountRootfsAsWritable(self):
     """Attempts to Remount the root partition."""
@@ -733,25 +749,6 @@ class ChromiumOSDevice(RemoteDevice):
     self.DisableRootfsVerification()
 
     return not self._RootfsIsReadOnly()
-
-  def _LearnBoard(self):
-    """Grab the board reported by the remote device.
-
-    In the case of multiple matches, uses the first one.  In the case of no
-    entry or if the command failed, returns an empty string.
-    """
-    try:
-      result = self.BaseRunCommand(self.GET_BOARD_CMD, capture_output=True)
-    except cros_build_lib.RunCommandError:
-      logging.warning('Error detecting the board.')
-      return ''
-
-    # In the case of multiple matches, use the first one.
-    output = result.output.splitlines()
-    if len(output) > 1:
-      logging.debug('More than one board entry found!  Using the first one.')
-
-    return output[0].strip().partition('=')[-1]
 
   def RunCommand(self, cmd, **kwargs):
     """Executes a shell command on the device with output captured by default.

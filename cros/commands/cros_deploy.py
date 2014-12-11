@@ -257,10 +257,14 @@ For more information of cros build usage:
     cros_build_lib.AssertInsideChroot()
     self._ReadOptions()
     try:
+      device_connected = False
+
       with remote_access.ChromiumOSDeviceHandler(
           self.ssh_hostname, port=self.ssh_port, username=self.ssh_username,
           private_key=self.ssh_private_key, base_dir=self.DEVICE_BASE_DIR,
           ping=self.ping) as device:
+        device_connected = True
+
         self.board = cros_build_lib.GetBoard(device_board=device.board,
                                              override_board=self.options.board)
         logging.info('Board is %s', self.board)
@@ -284,6 +288,10 @@ For more information of cros build usage:
     except (Exception, KeyboardInterrupt) as e:
       logging.error(e)
       logging.error('Cros Deploy terminated before completing!')
+      if device_connected and device.lsb_release:
+        lsb_entries = sorted(device.lsb_release.items())
+        logging.info('Following are the LSB version details of the device:\n%s',
+                     '\n'.join('%s=%s' % (k, v) for k, v in lsb_entries))
       if self.options.debug:
         raise
     else:
