@@ -86,7 +86,7 @@
   "memory.reload.2012Q3":{
     "description":"Memory consumption for a set of top pages from 2012, reloading and garbage collecting on each page load."
   },
-  "memory.top_25":{
+  "memory.top_7_stress":{
     "description":"Use (recorded versions of) real world web sites and measure memory consumption."
   },
   "memory_test":{
@@ -167,7 +167,7 @@
       "chrome/tools/build/scripts/slave/chromium/sizes.py"
     ]
   },
-  "smoothness.top_25":{
+  "smoothness.top_25_smooth":{
     "description":"Measures frame rate and a variety of other statistics while scrolling down the top 25 web pages. [Documentation](http://www.chromium.org/developers/design-documents/rendering-benchmarks)."
   },
   "smoothness.tough_canvas_cases":{
