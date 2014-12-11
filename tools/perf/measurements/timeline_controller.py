@@ -7,6 +7,7 @@ from telemetry.core.platform import tracing_category_filter
 from telemetry.core.platform import tracing_options
 from telemetry.timeline.model import TimelineModel
 from telemetry.page.actions import action_runner
+from telemetry.value import trace
 from telemetry.web_perf import timeline_interaction_record as tir_module
 
 
@@ -46,11 +47,13 @@ class TimelineController(object):
     self._interaction = runner.BeginInteraction(
         RUN_SMOOTH_ACTIONS, is_smooth=True)
 
-  def Stop(self, tab):
+  def Stop(self, tab, results):
     # End the smooth marker for all actions.
     self._interaction.End()
     # Stop tracing.
     timeline_data = tab.browser.platform.tracing_controller.Stop()
+    results.AddValue(trace.TraceValue(
+        results.current_page, timeline_data))
     self._model = TimelineModel(timeline_data)
     self._renderer_process = self._model.GetRendererProcessFromTabId(tab.id)
     renderer_thread = self.model.GetRendererThreadFromTabId(tab.id)

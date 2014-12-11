@@ -26,10 +26,8 @@ class ThreadTimes(page_test.PageTest):
   def WillRunActions(self, page, tab):
     self._timeline_controller.Start(tab)
 
-  def DidRunActions(self, page, tab):
-    self._timeline_controller.Stop(tab)
-
   def ValidateAndMeasurePage(self, page, tab, results):
+    self._timeline_controller.Stop(tab, results)
     metric = timeline.ThreadTimesTimelineMetric()
     renderer_thread = \
         self._timeline_controller.model.GetRendererThreadFromTabId(tab.id)

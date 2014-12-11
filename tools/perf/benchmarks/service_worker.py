@@ -103,7 +103,7 @@ class _ServiceWorkerMeasurement(page_test.PageTest):
 
   def ValidateAndMeasurePage(self, page, tab, results):
     tab.WaitForDocumentReadyStateToBeComplete(40)
-    self._timeline_controller.Stop(tab)
+    self._timeline_controller.Stop(tab, results)
 
     # Retrieve TRACE_EVENTs
     timeline_metric = _ServiceWorkerTimelineMetric()
@@ -153,7 +153,7 @@ class _ServiceWorkerMicroBenchmarkMeasurement(page_test.PageTest):
 
   def ValidateAndMeasurePage(self, page, tab, results):
     tab.WaitForJavaScriptExpression('window.done', 40)
-    self._timeline_controller.Stop(tab)
+    self._timeline_controller.Stop(tab, results)
 
     # Measure JavaScript-land
     json = tab.EvaluateJavaScript('window.results || {}')
