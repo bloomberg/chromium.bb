@@ -475,60 +475,6 @@ class RealSvnTest(fake_repos.FakeReposTestBase):
     self.assertTrue(scm.SVN.IsValidRevision(url_at_rev % 2))
     self.assertTrue(scm.SVN.IsValidRevision(url_at_rev % 'HEAD'))
 
-  def testRevert(self):
-    if not self.enabled:
-      return
-    # Mess around and make sure revert works for all corner cases.
-    # - svn add a file
-    # - svn add a file and delete it
-    # - Delete a file
-    # - svn delete a file
-    # - svn move a directory and svn rename files in it
-    # - add a directory tree.
-    def join(*args):
-      return scm.os.path.join(self.svn_root, *args)
-    self._capture(['move', 'foo', 'foo2'])
-    self._capture(
-        ['move',
-         scm.os.path.join('foo2', 'origin'),
-         scm.os.path.join('foo2', 'o')])
-    scm.os.remove(join('origin'))
-    self._capture(['propset', 'foo', 'bar', join('prout', 'origin')])
-    fake_repos.gclient_utils.rmtree(join('prout'))
-    with open(join('faa'), 'w') as f:
-      f.write('eh')
-    with open(join('faala'), 'w') as f:
-      f.write('oh')
-    self._capture(['add', join('faala')])
-    added_and_removed = join('added_and_removed')
-    with open(added_and_removed, 'w') as f:
-      f.write('oh')
-    self._capture(['add', added_and_removed])
-    scm.os.remove(added_and_removed)
-    # Make sure a tree of directories can be removed.
-    scm.os.makedirs(join('new_dir', 'subdir'))
-    with open(join('new_dir', 'subdir', 'newfile'), 'w') as f:
-      f.write('ah!')
-    self._capture(['add', join('new_dir')])
-    self._capture(['add', join('new_dir', 'subdir')])
-    self._capture(['add', join('new_dir', 'subdir', 'newfile')])
-    # A random file in an added directory confuses svn.
-    scm.os.makedirs(join('new_dir2', 'subdir'))
-    with open(join('new_dir2', 'subdir', 'newfile'), 'w') as f:
-      f.write('ah!')
-    self._capture(['add', join('new_dir2')])
-    self._capture(['add', join('new_dir2', 'subdir')])
-    self._capture(['add', join('new_dir2', 'subdir', 'newfile')])
-    with open(join('new_dir2', 'subdir', 'unversionedfile'), 'w') as f:
-      f.write('unadded file!')
-
-    scm.SVN.Revert(self.svn_root)
-    self._capture(['update', '--revision', 'base'])
-
-    self.assertTree(self.tree, self.svn_root)
-    # Asserting the tree is not sufficient, svn status must come out clear too.
-    self.assertEquals('', self._capture(['status']))
-
 
 if __name__ == '__main__':
   if '-v' in sys.argv:

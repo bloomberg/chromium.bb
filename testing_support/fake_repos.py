@@ -917,7 +917,7 @@ class FakeReposTestBase(trial_dir.TestCase):
       logging.debug('Actual %s\n%s' % (tree_root, pprint.pformat(actual)))
       logging.debug('Expected\n%s' % pprint.pformat(tree))
       logging.debug('Diff\n%s' % pprint.pformat(diff))
-      self.assertEquals(diff, [])
+    self.assertEquals(diff, {})
 
   def mangle_svn_tree(self, *args):
     """Creates a 'virtual directory snapshot' to compare with the actual result

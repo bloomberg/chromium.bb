@@ -1705,8 +1705,11 @@ class GClientSmokeFromCheckout(GClientSmokeBase):
     results = self.gclient(['revert', '--deps', 'mac', '--jobs', '1'])
     out = self.splitBlock(results[0])
     self.assertEquals(2, len(out))
-    self.checkString(2, len(out[0]))
-    self.checkString(2, len(out[1]))
+    # This value varies depending on the version of svn being run.
+    # New vesions (the one in Trust) print "Updating '.':" and "At revision 1.".
+    # Older versions (the one in Precise) print just "At revision 1.".
+    #self.assertEquals(3, len(out[0]))
+    self.assertEquals(2, len(out[1]))
     self.checkString('foo', out[1][1])
     self.checkString('', results[1])
     self.assertEquals(0, results[2])

@@ -9,14 +9,14 @@ set -e
 
 export DEPOT_TOOLS_UPDATE=0
 
-PWD=`pwd`
+PWD=$(pwd)
 REPO_URL=file://$PWD/svnrepo
 TRUNK_URL=$REPO_URL/trunk
 BRANCH_URL=$REPO_URL/branches/some_branch
 GITREPO_PATH=$PWD/gitrepo
 GITREPO_URL=file://$GITREPO_PATH
-PATH="$PWD/..:$PATH"
-GIT_CL=$PWD/../git-cl
+PATH="$(dirname $PWD):$PATH"
+GIT_CL=$(dirname $PWD)/git-cl
 GIT_CL_STATUS="$GIT_CL status -f"
 
 # Set up an SVN repo that has a few commits to trunk.
@@ -49,6 +49,8 @@ setup_gitsvn() {
   rm -rf git-svn
   # There appears to be no way to make git-svn completely shut up, so we
   # redirect its output.
+  # clone with --prefix origin/ to ensure the same behaviour with old and new
+  # versions of git (The default prefix was "" prior to Git 2.0)
   git svn --prefix origin/ -q clone -s $REPO_URL git-svn >/dev/null 2>&1
   (
     cd git-svn
@@ -63,7 +65,9 @@ setup_gitsvn() {
 setup_gitsvn_submodule() {
   echo "Setting up test remote git-svn-submodule repo..."
   rm -rf git-svn-submodule
-  git svn -q clone -s $REPO_URL git-svn-submodule >/dev/null 2>&1
+  # clone with --prefix origin/ to ensure the same behaviour with old and new
+  # versions of git (The default prefix was "" prior to Git 2.0)
+  git svn --prefix origin/ -q clone -s $REPO_URL git-svn-submodule >/dev/null 2>&1
   svn_revision=`svn info file://$PWD/svnrepo | grep ^Revision | \
                 sed s/^.*:// | xargs`
   (
@@ -72,7 +76,7 @@ setup_gitsvn_submodule() {
     git config user.email 'TestDood@example.com'
     echo 'merge-file line 1' > merge-file
     git add merge-file; git commit -q -m 'First non-svn commit on master'
-    git checkout -q refs/remotes/trunk
+    git checkout -q refs/remotes/origin/trunk
     git merge -q --no-commit --no-ff refs/heads/master >/dev/null 2>&1
     echo 'merge-edit-file line 1' > merge-edit-file
     git add merge-edit-file
