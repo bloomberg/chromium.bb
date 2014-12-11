@@ -93,7 +93,7 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
 
   // If we do not have an anchor view, parent the bubble to the content area.
   if (!anchor_to_view)
-    zoom_bubble_->set_parent_window(web_contents->GetNativeView());
+    zoom_bubble_->set_parent_window(web_contents->GetTopLevelNativeWindow());
 
   views::BubbleDelegateView::CreateBubble(zoom_bubble_);
 

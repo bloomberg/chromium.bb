@@ -6,15 +6,15 @@
 #define UI_VIEWS_EVENT_MONITOR_MAC_H_
 
 #include "base/macros.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/views/event_monitor.h"
+
+#import <Cocoa/Cocoa.h>
 
 namespace views {
 
 class EventMonitorMac : public EventMonitor {
  public:
-  EventMonitorMac(ui::EventHandler* event_handler,
-                  gfx::NativeWindow target_window);
+  explicit EventMonitorMac(ui::EventHandler* event_handler);
   virtual ~EventMonitorMac();
 
  private:

@@ -28,9 +28,6 @@ ui::test::EventGenerator* g_active_generator = NULL;
 // Donate +[NSEvent pressedMouseButtons] by retrieving the flags from the
 // active generator.
 + (NSUInteger)pressedMouseButtons {
-  if (!g_active_generator)
-    return [NSEventDonor pressedMouseButtons];  // Call original implementation.
-
   int flags = g_active_generator->flags();
   NSUInteger bitmask = 0;
   if (flags & ui::EF_LEFT_MOUSE_BUTTON)
@@ -200,10 +197,10 @@ void EmulateSendEvent(NSWindow* window, NSEvent* event) {
   }
 }
 
-NSEvent* CreateMouseEventInWindow(NSWindow* window,
-                                  ui::EventType event_type,
-                                  const gfx::Point& point_in_root,
-                                  int flags) {
+void DispatchMouseEventInWindow(NSWindow* window,
+                                ui::EventType event_type,
+                                const gfx::Point& point_in_root,
+                                int flags) {
   NSUInteger click_count = 0;
   if (event_type == ui::ET_MOUSE_PRESSED ||
       event_type == ui::ET_MOUSE_RELEASED) {
@@ -217,15 +214,19 @@ NSEvent* CreateMouseEventInWindow(NSWindow* window,
   NSPoint point = ConvertRootPointToTarget(window, point_in_root);
   NSUInteger modifiers = 0;
   NSEventType type = EventTypeToNative(event_type, flags, &modifiers);
-  return [NSEvent mouseEventWithType:type
-                            location:point
-                       modifierFlags:modifiers
-                           timestamp:0
-                        windowNumber:[window windowNumber]
-                             context:nil
-                         eventNumber:0
-                          clickCount:click_count
-                            pressure:1.0];
+  NSEvent* event = [NSEvent mouseEventWithType:type
+                                      location:point
+                                 modifierFlags:modifiers
+                                     timestamp:0
+                                  windowNumber:[window windowNumber]
+                                       context:nil
+                                   eventNumber:0
+                                    clickCount:click_count
+                                      pressure:1.0];
+
+  // Typically events go through NSApplication. For tests, dispatch the event
+  // directly to make things more predicatble.
+  EmulateSendEvent(window, event);
 }
 
 // Implementation of ui::test::EventGeneratorDelegate for Mac. Everything
@@ -318,14 +319,10 @@ EventGeneratorDelegateMac::GetChildIterator() const {
 void EventGeneratorDelegateMac::OnMouseEvent(ui::MouseEvent* event) {
   // For mouse drag events, ensure the swizzled methods return the right flags.
   base::AutoReset<ui::test::EventGenerator*> reset(&g_active_generator, owner_);
-  NSEvent* ns_event = CreateMouseEventInWindow(window_,
-                                               event->type(),
-                                               event->location(),
-                                               event->changed_button_flags());
-  if (owner_->targeting_application())
-    [NSApp sendEvent:ns_event];
-  else
-    EmulateSendEvent(window_, ns_event);
+  DispatchMouseEventInWindow(window_,
+                             event->type(),
+                             event->location(),
+                             event->changed_button_flags());
 }
 
 void EventGeneratorDelegateMac::SetContext(ui::test::EventGenerator* owner,

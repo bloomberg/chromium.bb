@@ -25,7 +25,7 @@ class MouseWatcher::Observer : public ui::EventHandler {
  public:
   explicit Observer(MouseWatcher* mouse_watcher)
       : mouse_watcher_(mouse_watcher),
-        event_monitor_(EventMonitor::CreateApplicationMonitor(this)),
+        event_monitor_(views::EventMonitor::Create(this)),
         notify_listener_factory_(this) {
   }
 

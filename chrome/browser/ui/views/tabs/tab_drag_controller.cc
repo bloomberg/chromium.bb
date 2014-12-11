@@ -147,7 +147,7 @@ class EscapeTracker : public ui::EventHandler {
  public:
   explicit EscapeTracker(const base::Closure& callback)
       : escape_callback_(callback),
-        event_monitor_(views::EventMonitor::CreateApplicationMonitor(this)) {
+        event_monitor_(views::EventMonitor::Create(this)) {
   }
 
  private:

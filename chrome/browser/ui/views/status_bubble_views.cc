@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/wm/window_state.h"
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop/message_loop.h"
@@ -16,6 +17,7 @@
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkRect.h"
+#include "ui/aura/window.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"
@@ -32,10 +34,6 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
-
-#if defined(USE_ASH)
-#include "ash/wm/window_state.h"
-#endif
 
 // The alpha and color of the bubble's shadow.
 static const SkColor kShadowColor = SkColorSetARGB(30, 0, 0, 0);
@@ -582,14 +580,13 @@ void StatusBubbleViews::Init() {
     params.parent = frame->GetNativeView();
     params.context = frame->GetNativeWindow();
     popup_->Init(params);
+    popup_->GetNativeView()->SetName("StatusBubbleViews");
     // We do our own animation and don't want any from the system.
     popup_->SetVisibilityChangedAnimationsEnabled(false);
     popup_->SetOpacity(0x00);
     popup_->SetContentsView(view_);
-#if defined(USE_ASH)
     ash::wm::GetWindowState(popup_->GetNativeWindow())->
         set_ignored_by_shelf(true);
-#endif
     RepositionPopup();
   }
 }

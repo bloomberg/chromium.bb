@@ -537,7 +537,7 @@
       'controls/textfield/textfield_unittest.cc',
       'controls/textfield/textfield_model_unittest.cc',
       'controls/tree/tree_view_unittest.cc',
-      'event_monitor_unittest.cc',
+      'event_monitor_mac_unittest.mm',
       'focus/focus_manager_unittest.cc',
       'focus/focus_traversal_unittest.cc',
       'ime/input_method_bridge_unittest.cc',
