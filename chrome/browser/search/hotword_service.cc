@@ -237,6 +237,11 @@ class HotwordNotificationDelegate : public NotificationDelegate {
       return;
 
     hotword_service->LaunchHotwordAudioVerificationApp(launch_mode);
+
+    // Close the notification after it's been clicked on to remove it
+    // from the notification tray.
+    g_browser_process->notification_ui_manager()->CancelById(
+        id(), NotificationUIManager::GetProfileID(profile_));
   }
 
   // Overridden from NotificationDelegate:
