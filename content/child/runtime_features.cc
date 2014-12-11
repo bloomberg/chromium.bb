@@ -175,9 +175,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnablePreciseMemoryInfo))
     WebRuntimeFeatures::enablePreciseMemoryInfo(true);
 
-  if (command_line.HasSwitch(switches::kEnableLayerSquashing))
-    WebRuntimeFeatures::enableLayerSquashing(true);
-
   if (command_line.HasSwitch(switches::kEnableNetworkInformation) ||
       command_line.HasSwitch(
           switches::kEnableExperimentalWebPlatformFeatures)) {
