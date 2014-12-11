@@ -4,7 +4,9 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="../serviceworker/resources/test-helpers.js"></script>
 <script>
+testRunner.setGeofencingMockProvider(false);
+
 service_worker_test(
-    'resources/worker.js',
+    'resources/worker-service-not-available.js',
     'Verifies that all geofencing methods always reject.');
 </script>

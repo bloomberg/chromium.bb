@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<title>Tests that all geofencing methods exposed on a service worker registration always reject.</title>
+<title>Tests that all geofencing methods exposed on a service worker registration always reject if no geofencing service is available.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="../resources/testharness-helpers.js"></script>
@@ -7,6 +7,8 @@
 <script>
 var sw_url = 'resources/emptyworker.js';
 var sw_scope = 'resources/service-worker-scope' + window.location.pathname;
+
+testRunner.setGeofencingMockProvider(false);
 
 promise_test(function(test) {
     return assert_promise_rejects(
