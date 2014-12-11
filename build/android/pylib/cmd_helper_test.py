@@ -5,10 +5,9 @@
 """Tests for the cmd_helper module."""
 
 import unittest
+import subprocess
 
 from pylib import cmd_helper
-
-# TODO(jbudorick) Make these tests run on the bots.
 
 
 class CmdHelperSingleQuoteTest(unittest.TestCase):
@@ -51,3 +50,34 @@ class CmdHelperDoubleQuoteTest(unittest.TestCase):
     cmd = 'TEST_VAR=world; echo %s' % cmd_helper.DoubleQuote(test_string)
     self.assertEquals('hello world',
                       cmd_helper.GetCmdOutput(cmd, shell=True).rstrip())
+
+
+class CmdHelperIterCmdOutputLinesTest(unittest.TestCase):
+  """Test IterCmdOutputLines with some calls to the unix 'seq' command."""
+
+  def testIterCmdOutputLines_success(self):
+    for num, line in enumerate(
+        cmd_helper.IterCmdOutputLines(['seq', '10']), 1):
+      self.assertEquals(num, int(line))
+
+  def testIterCmdOutputLines_exitStatusFail(self):
+    with self.assertRaises(subprocess.CalledProcessError):
+      for num, line in enumerate(
+          cmd_helper.IterCmdOutputLines('seq 10 && false', shell=True), 1):
+        self.assertEquals(num, int(line))
+      # after reading all the output we get an exit status of 1
+
+  def testIterCmdOutputLines_exitStatusIgnored(self):
+    for num, line in enumerate(
+        cmd_helper.IterCmdOutputLines('seq 10 && false', shell=True,
+                                      check_status=False), 1):
+      self.assertEquals(num, int(line))
+
+  def testIterCmdOutputLines_exitStatusSkipped(self):
+    for num, line in enumerate(
+        cmd_helper.IterCmdOutputLines('seq 10 && false', shell=True), 1):
+      self.assertEquals(num, int(line))
+      # no exception will be raised because we don't attempt to read past
+      # the end of the output and, thus, the status never gets checked
+      if num == 10:
+        break

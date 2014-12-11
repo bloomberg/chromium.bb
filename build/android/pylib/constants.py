@@ -187,6 +187,7 @@ PYTHON_UNIT_TEST_SUITES = {
   'pylib_py_unittests': {
     'path': os.path.join(DIR_SOURCE_ROOT, 'build', 'android'),
     'test_modules': [
+      'pylib.cmd_helper_test',
       'pylib.device.device_utils_test',
       'pylib.results.json_results_test',
       'pylib.utils.md5sum_test',

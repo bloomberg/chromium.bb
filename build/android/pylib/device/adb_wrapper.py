@@ -56,15 +56,22 @@ class AdbWrapper(object):
 
   # pylint: disable=unused-argument
   @classmethod
-  @decorators.WithTimeoutAndRetries
-  def _RunAdbCmd(cls, args, timeout=None, retries=None, device_serial=None,
-                 check_error=True):
+  def _BuildAdbCmd(cls, args, device_serial):
     cmd = [constants.GetAdbPath()]
     if device_serial is not None:
       cmd.extend(['-s', device_serial])
     cmd.extend(args)
+    return cmd
+  # pylint: enable=unused-argument
+
+  # pylint: disable=unused-argument
+  @classmethod
+  @decorators.WithTimeoutAndRetries
+  def _RunAdbCmd(cls, args, timeout=None, retries=None, device_serial=None,
+                 check_error=True):
     status, output = cmd_helper.GetCmdStatusAndOutputWithTimeout(
-        cmd, timeout_retry.CurrentTimeoutThread().GetRemainingTime())
+        cls._BuildAdbCmd(args, device_serial),
+        timeout_retry.CurrentTimeoutThread().GetRemainingTime())
     if status != 0:
       raise device_errors.AdbCommandFailedError(
           args, output, status, device_serial)
@@ -92,6 +99,19 @@ class AdbWrapper(object):
     return self._RunAdbCmd(args, timeout=timeout, retries=retries,
                            device_serial=self._device_serial,
                            check_error=check_error)
+
+  def _IterRunDeviceAdbCmd(self, args, timeout):
+    """Runs an adb command and returns an iterator over its output lines.
+
+    Args:
+      args: A list of arguments to adb.
+      timeout: Timeout in seconds.
+
+    Yields:
+      The output of the command line by line.
+    """
+    return cmd_helper.IterCmdOutputLines(
+      self._BuildAdbCmd(args, self._device_serial), timeout=timeout)
 
   def __eq__(self, other):
     """Consider instances equal if they refer to the same device.
@@ -242,22 +262,20 @@ class AdbWrapper(object):
           cmd, 'path does not specify an accessible directory in the device',
           device_serial=self._device_serial)
 
-  def Logcat(self, filter_spec=None, timeout=_DEFAULT_TIMEOUT,
-             retries=_DEFAULT_RETRIES):
-    """Get the logcat output.
+  def Logcat(self, filter_spec=None, timeout=None):
+    """Get an iterator over the logcat output.
 
     Args:
       filter_spec: (optional) Spec to filter the logcat.
       timeout: (optional) Timeout per try in seconds.
-      retries: (optional) Number of retries to attempt.
 
-    Returns:
-      logcat output as a string.
+    Yields:
+      logcat output line by line.
     """
     cmd = ['logcat']
     if filter_spec is not None:
       cmd.append(filter_spec)
-    return self._RunDeviceAdbCmd(cmd, timeout, retries, check_error=False)
+    return self._IterRunDeviceAdbCmd(cmd, timeout)
 
   def Forward(self, local, remote, timeout=_DEFAULT_TIMEOUT,
               retries=_DEFAULT_RETRIES):
