@@ -39,6 +39,8 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::JavaScriptMessageType,
                               content::JAVASCRIPT_MESSAGE_TYPE_PROMPT)
 IPC_ENUM_TRAITS_MAX_VALUE(FrameMsg_Navigate_Type::Value,
                           FrameMsg_Navigate_Type::NAVIGATE_TYPE_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(FrameMsg_UILoadMetricsReportType::Value,
+                          FrameMsg_UILoadMetricsReportType::REPORT_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContextMenuData::MediaType,
                           blink::WebContextMenuData::MediaTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::MenuSourceType, ui::MENU_SOURCE_TYPE_LAST)
@@ -193,6 +195,13 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
   // Origin of the frame.  This will be replicated to any associated
   // RenderFrameProxies.
   IPC_STRUCT_MEMBER(url::Origin, origin)
+
+  // How navigation metrics starting on UI action for this load should be
+  // reported.
+  IPC_STRUCT_MEMBER(FrameMsg_UILoadMetricsReportType::Value, report_type)
+
+  // Timestamp at which the UI action that triggered the navigation originated.
+  IPC_STRUCT_MEMBER(base::TimeTicks, ui_timestamp)
 IPC_STRUCT_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::CommonNavigationParams)
@@ -604,8 +613,12 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_DidFinishLoad,
                     GURL /* validated_url */)
 
 // Sent when after the onload handler has been invoked for the document
-// in this frame. Sent for top-level frames.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_DocumentOnLoadCompleted)
+// in this frame. Sent for top-level frames. |report_type| and |ui_timestamp|
+// are used to report navigation metrics starting on the ui input event that
+// triggered the navigation timestamp.
+IPC_MESSAGE_ROUTED2(FrameHostMsg_DocumentOnLoadCompleted,
+                    FrameMsg_UILoadMetricsReportType::Value /* report_type */,
+                    base::TimeTicks /* ui_timestamp */)
 
 // Notifies that the initial empty document of a view has been accessed.
 // After this, it is no longer safe to show a pending navigation's URL without

@@ -2537,8 +2537,17 @@ void RenderFrameImpl::didFinishDocumentLoad(blink::WebLocalFrame* frame) {
 
 void RenderFrameImpl::didHandleOnloadEvents(blink::WebLocalFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
-  if (!frame->parent())
-    Send(new FrameHostMsg_DocumentOnLoadCompleted(routing_id_));
+  if (!frame->parent()) {
+    FrameMsg_UILoadMetricsReportType::Value report_type =
+        static_cast<FrameMsg_UILoadMetricsReportType::Value>(
+            frame->dataSource()->request().inputPerfMetricReportPolicy());
+    base::TimeTicks ui_timestamp = base::TimeTicks() +
+        base::TimeDelta::FromSecondsD(
+            frame->dataSource()->request().uiStartTime());
+
+    Send(new FrameHostMsg_DocumentOnLoadCompleted(
+        routing_id_, report_type, ui_timestamp));
+  }
 }
 
 void RenderFrameImpl::didFailLoad(blink::WebLocalFrame* frame,
@@ -3609,6 +3618,11 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(blink::WebFrame* frame) {
     params.history_list_was_cleared =
         navigation_state->history_list_was_cleared();
 
+    params.report_type = static_cast<FrameMsg_UILoadMetricsReportType::Value>(
+        frame->dataSource()->request().inputPerfMetricReportPolicy());
+    params.ui_timestamp = base::TimeTicks() + base::TimeDelta::FromSecondsD(
+        frame->dataSource()->request().uiStartTime());
+
     // Save some histogram data so we can compute the average memory used per
     // page load of the glyphs.
     UMA_HISTOGRAM_COUNTS_10000("Memory.GlyphPagesPerLoad",
@@ -3633,6 +3647,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(blink::WebFrame* frame) {
 
     DCHECK(!navigation_state->history_list_was_cleared());
     params.history_list_was_cleared = false;
+    params.report_type = FrameMsg_UILoadMetricsReportType::NO_REPORT;
 
     // Don't send this message while the subframe is swapped out.
     if (!is_swapped_out())

@@ -18,6 +18,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/common/accessibility_mode_enums.h"
 #include "content/common/content_export.h"
+#include "content/common/frame_message_enums.h"
 #include "content/common/mojo/service_registry_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/javascript_message_type.h"
@@ -411,7 +412,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDetach();
   void OnFrameFocused();
   void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
-  void OnDocumentOnLoadCompleted();
+  void OnDocumentOnLoadCompleted(
+      FrameMsg_UILoadMetricsReportType::Value report_type,
+      base::TimeTicks ui_timestamp);
   void OnDidStartProvisionalLoadForFrame(const GURL& url,
                                          bool is_transition_navigation);
   void OnDidFailProvisionalLoadWithError(

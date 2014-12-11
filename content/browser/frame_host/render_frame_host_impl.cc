@@ -594,7 +594,13 @@ void RenderFrameHostImpl::OnOpenURL(
       params.should_replace_current_entry, params.user_gesture);
 }
 
-void RenderFrameHostImpl::OnDocumentOnLoadCompleted() {
+void RenderFrameHostImpl::OnDocumentOnLoadCompleted(
+    FrameMsg_UILoadMetricsReportType::Value report_type,
+    base::TimeTicks ui_timestamp) {
+  if (report_type == FrameMsg_UILoadMetricsReportType::REPORT_LINK) {
+    UMA_HISTOGRAM_TIMES("Navigation.UI_OnLoadComplete.Link",
+                        base::TimeTicks::Now() - ui_timestamp);
+  }
   // This message is only sent for top-level frames. TODO(avi): when frame tree
   // mirroring works correctly, add a check here to enforce it.
   delegate_->DocumentOnLoadCompleted(this);
@@ -663,6 +669,12 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   // have already committed to closing this renderer.
   if (IsWaitingForUnloadACK())
     return;
+
+  if (validated_params.report_type ==
+      FrameMsg_UILoadMetricsReportType::REPORT_LINK) {
+    UMA_HISTOGRAM_TIMES("Navigation.UI_OnCommitProvisionalLoad.Link",
+                        base::TimeTicks::Now() - validated_params.ui_timestamp);
+  }
 
   RenderProcessHost* process = GetProcess();
 

@@ -37,4 +37,17 @@ struct FrameMsg_Navigate_Type {
   };
 };
 
+struct FrameMsg_UILoadMetricsReportType {
+ public:
+  enum Value {
+    // Do not report metrics for this load.
+    NO_REPORT,
+
+    // Report metrics for this load, that originated from clicking on a link.
+    REPORT_LINK,
+
+    REPORT_TYPE_LAST = REPORT_LINK,
+  };
+};
+
 #endif  // CONTENT_COMMON_FRAME_MESSAGES_ENUMS_H_
