@@ -1540,8 +1540,7 @@ class ValidationPool(object):
     self.PrintLinksToChanges(applied)
 
     if self.is_master and not self.pre_cq:
-      # PreCQ configs do not comment on gerrit individually.
-      inputs = [[change, None] for change in applied]
+      inputs = [[change] for change in applied]
       parallel.RunTasksInProcessPool(self.HandleApplySuccess, inputs)
 
     failed_tot = self._FilterDependencyErrors(failed_tot)
@@ -2126,7 +2125,8 @@ class ValidationPool(object):
         self.RemoveReady(change)
 
   def SendNotification(self, change, msg, **kwargs):
-    kwargs.setdefault('build_log', self.build_log)
+    if not kwargs.get('build_log'):
+      kwargs['build_log'] = self.build_log
     kwargs.setdefault('queue', self.queue)
     d = dict(**kwargs)
     try:
