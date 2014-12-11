@@ -1964,8 +1964,7 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
                                     : settings_.scheduled_raster_task_limit;
   tile_manager_ = TileManager::Create(
       this, task_runner, resource_pool_.get(),
-      tile_task_worker_pool_->AsTileTaskRunner(),
-      rendering_stats_instrumentation_, scheduled_raster_task_limit);
+      tile_task_worker_pool_->AsTileTaskRunner(), scheduled_raster_task_limit);
 
   UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
 }

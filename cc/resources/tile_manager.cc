@@ -41,7 +41,6 @@ class RasterTaskImpl : public RasterTask {
       const void* tile_id,
       int source_frame_number,
       bool analyze_picture,
-      RenderingStatsInstrumentation* rendering_stats,
       const base::Callback<void(const RasterSource::SolidColorAnalysis&, bool)>&
           reply,
       ImageDecodeTask::Vector* dependencies)
@@ -54,7 +53,6 @@ class RasterTaskImpl : public RasterTask {
         tile_id_(tile_id),
         source_frame_number_(source_frame_number),
         analyze_picture_(analyze_picture),
-        rendering_stats_(rendering_stats),
         reply_(reply) {}
 
   // Overridden from Task:
@@ -128,7 +126,6 @@ class RasterTaskImpl : public RasterTask {
   const void* tile_id_;
   int source_frame_number_;
   bool analyze_picture_;
-  RenderingStatsInstrumentation* rendering_stats_;
   const base::Callback<void(const RasterSource::SolidColorAnalysis&, bool)>
       reply_;
   scoped_ptr<RasterBuffer> raster_buffer_;
@@ -140,11 +137,9 @@ class ImageDecodeTaskImpl : public ImageDecodeTask {
  public:
   ImageDecodeTaskImpl(SkPixelRef* pixel_ref,
                       int layer_id,
-                      RenderingStatsInstrumentation* rendering_stats,
                       const base::Callback<void(bool was_canceled)>& reply)
       : pixel_ref_(skia::SharePtr(pixel_ref)),
         layer_id_(layer_id),
-        rendering_stats_(rendering_stats),
         reply_(reply) {}
 
   // Overridden from Task:
@@ -169,7 +164,6 @@ class ImageDecodeTaskImpl : public ImageDecodeTask {
  private:
   skia::RefPtr<SkPixelRef> pixel_ref_;
   int layer_id_;
-  RenderingStatsInstrumentation* rendering_stats_;
   const base::Callback<void(bool was_canceled)> reply_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecodeTaskImpl);
@@ -209,11 +203,10 @@ scoped_ptr<TileManager> TileManager::Create(
     base::SequencedTaskRunner* task_runner,
     ResourcePool* resource_pool,
     TileTaskRunner* tile_task_runner,
-    RenderingStatsInstrumentation* rendering_stats_instrumentation,
     size_t scheduled_raster_task_limit) {
-  return make_scoped_ptr(new TileManager(
-      client, task_runner, resource_pool, tile_task_runner,
-      rendering_stats_instrumentation, scheduled_raster_task_limit));
+  return make_scoped_ptr(new TileManager(client, task_runner, resource_pool,
+                                         tile_task_runner,
+                                         scheduled_raster_task_limit));
 }
 
 TileManager::TileManager(
@@ -221,7 +214,6 @@ TileManager::TileManager(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     ResourcePool* resource_pool,
     TileTaskRunner* tile_task_runner,
-    RenderingStatsInstrumentation* rendering_stats_instrumentation,
     size_t scheduled_raster_task_limit)
     : client_(client),
       task_runner_(task_runner),
@@ -229,7 +221,6 @@ TileManager::TileManager(
       tile_task_runner_(tile_task_runner),
       scheduled_raster_task_limit_(scheduled_raster_task_limit),
       all_tiles_that_need_to_be_rasterized_are_scheduled_(true),
-      rendering_stats_instrumentation_(rendering_stats_instrumentation),
       did_check_for_completed_tasks_since_last_schedule_tasks_(true),
       did_oom_on_last_assign_(false),
       ready_to_activate_check_notifier_(
@@ -719,7 +710,6 @@ scoped_refptr<ImageDecodeTask> TileManager::CreateImageDecodeTask(
   return make_scoped_refptr(new ImageDecodeTaskImpl(
       pixel_ref,
       tile->layer_id(),
-      rendering_stats_instrumentation_,
       base::Bind(&TileManager::OnImageDecodeTaskCompleted,
                  base::Unretained(this),
                  tile->layer_id(),
@@ -766,7 +756,6 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(Tile* tile) {
                          static_cast<const void*>(tile),
                          tile->source_frame_number(),
                          tile->use_picture_analysis(),
-                         rendering_stats_instrumentation_,
                          base::Bind(&TileManager::OnRasterTaskCompleted,
                                     base::Unretained(this),
                                     tile->id(),

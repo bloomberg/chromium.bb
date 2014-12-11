@@ -67,7 +67,6 @@ FakeTileManager::FakeTileManager(TileManagerClient* client)
                   base::MessageLoopProxy::current(),
                   NULL,
                   g_fake_tile_task_runner.Pointer(),
-                  NULL,
                   std::numeric_limits<size_t>::max()) {
 }
 
@@ -77,7 +76,6 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                   base::MessageLoopProxy::current(),
                   resource_pool,
                   g_fake_tile_task_runner.Pointer(),
-                  NULL,
                   std::numeric_limits<size_t>::max()) {
 }
 

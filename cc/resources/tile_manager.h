@@ -16,7 +16,6 @@
 #include "base/values.h"
 #include "cc/base/ref_counted_managed.h"
 #include "cc/base/unique_notifier.h"
-#include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/resources/eviction_tile_priority_queue.h"
 #include "cc/resources/managed_tile_state.h"
 #include "cc/resources/memory_history.h"
@@ -102,7 +101,6 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
       base::SequencedTaskRunner* task_runner,
       ResourcePool* resource_pool,
       TileTaskRunner* tile_task_runner,
-      RenderingStatsInstrumentation* rendering_stats_instrumentation,
       size_t scheduled_raster_task_limit);
   ~TileManager() override;
 
@@ -176,7 +174,6 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
               const scoped_refptr<base::SequencedTaskRunner>& task_runner,
               ResourcePool* resource_pool,
               TileTaskRunner* tile_task_runner,
-              RenderingStatsInstrumentation* rendering_stats_instrumentation,
               size_t scheduled_raster_task_limit);
 
   void FreeResourcesForReleasedTiles();
@@ -259,8 +256,6 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
 
   bool all_tiles_that_need_to_be_rasterized_are_scheduled_;
   MemoryHistory::Entry memory_stats_from_last_assign_;
-
-  RenderingStatsInstrumentation* rendering_stats_instrumentation_;
 
   bool did_check_for_completed_tasks_since_last_schedule_tasks_;
   bool did_oom_on_last_assign_;
