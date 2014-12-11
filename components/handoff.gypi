@@ -18,15 +18,6 @@
             'handoff/handoff_utility.mm',
           ],
         }],
-        ['OS=="mac"', {
-          'sources': [
-            'handoff/handoff_manager.h',
-            'handoff/handoff_manager.mm',
-          ],
-          'dependencies': [
-            '../base/base.gyp:base',
-          ],
-        }],
       ],
     },
   ],

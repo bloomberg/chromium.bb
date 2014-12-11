@@ -82,8 +82,6 @@ per-file gcm*=zea@chromium.org
 per-file google*=isherman@chromium.org
 per-file google*=pkasting@chromium.org
 
-per-file handoff.gypi=erikchen@chromium.org
-
 per-file history.gypi=sky@chromium.org
 # Temporary for the duration of the history componentization.
 per-file history.gypi=sdefresne@chromium.org

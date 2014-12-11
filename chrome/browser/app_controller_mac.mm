@@ -63,8 +63,6 @@
 #import "chrome/browser/ui/cocoa/confirm_quit.h"
 #import "chrome/browser/ui/cocoa/confirm_quit_panel_controller.h"
 #import "chrome/browser/ui/cocoa/encoding_menu_controller_delegate_mac.h"
-#include "chrome/browser/ui/cocoa/handoff_active_url_observer.h"
-#include "chrome/browser/ui/cocoa/handoff_active_url_observer_delegate.h"
 #import "chrome/browser/ui/cocoa/history_menu_bridge.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/profiles/profile_menu_controller.h"
@@ -85,7 +83,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/handoff/handoff_manager.h"
 #include "components/handoff/handoff_utility.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
@@ -212,50 +209,9 @@ bool IsProfileSignedOut(Profile* profile) {
   return cache.ProfileIsSigninRequiredAtIndex(profile_index);
 }
 
-}  // namespace
+}  // anonymous namespace
 
-// A protocol that allows ObjC objects to receive delegate callbacks from
-// HandoffActiveURLObserver.
-@protocol HandoffActiveURLObserverBridgeDelegate
-- (void)handoffActiveURLChanged:(content::WebContents*)webContents;
-@end
-
-namespace {
-
-// This class allows an ObjC object to receive the delegate callbacks from an
-// HandoffActiveURLObserver.
-class HandoffActiveURLObserverBridge : public HandoffActiveURLObserverDelegate {
- public:
-  HandoffActiveURLObserverBridge(
-      NSObject<HandoffActiveURLObserverBridgeDelegate>* delegate)
-      : delegate_(delegate) {
-    DCHECK(delegate_);
-    observer_.reset(new HandoffActiveURLObserver(this));
-  }
-
-  ~HandoffActiveURLObserverBridge() override{};
-
- private:
-  void HandoffActiveURLChanged(content::WebContents* web_contents) override {
-    [delegate_ handoffActiveURLChanged:web_contents];
-  }
-
-  // Instances of this class should be owned by their |delegate_|.
-  NSObject<HandoffActiveURLObserverBridgeDelegate>* delegate_;
-
-  // The C++ object that this class acts as a bridge for.
-  scoped_ptr<HandoffActiveURLObserver> observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(HandoffActiveURLObserverBridge);
-};
-
-}  // namespace
-
-@interface AppController () <HandoffActiveURLObserverBridgeDelegate> {
-  scoped_ptr<HandoffActiveURLObserverBridge>
-      active_web_contents_observer_bridge_;
-}
-
+@interface AppController (Private)
 - (void)initMenuState;
 - (void)initProfileMenu;
 - (void)updateConfirmToQuitPrefMenuItem:(NSMenuItem*)item;
@@ -284,25 +240,6 @@ class HandoffActiveURLObserverBridge : public HandoffActiveURLObserverDelegate {
 // this method is called, and that tab is the NTP, then this method closes the
 // NTP after all the |urls| have been opened.
 - (void)openUrlsReplacingNTP:(const std::vector<GURL>&)urls;
-
-// Whether instances of this class should use the Handoff feature.
-- (BOOL)shouldUseHandoff;
-
-// This method passes |handoffURL| to |handoffManager_|.
-- (void)passURLToHandoffManager:(const GURL&)handoffURL;
-
-// Lazily creates the Handoff Manager. Updates the state of the Handoff
-// Manager. This method is idempotent. This should be called:
-// - During initialization.
-// - When the current tab navigates to a new URL.
-// - When the active browser changes.
-// - When the active browser's active tab switches.
-// |webContents| should be the new, active WebContents.
-- (void)updateHandoffManager:(content::WebContents*)webContents;
-
-// Given |webContents|, extracts a GURL to be used for Handoff. This may return
-// the empty GURL.
-- (GURL)handoffURLFromWebContents:(content::WebContents*)webContents;
 @end
 
 class AppControllerProfileObserver : public ProfileInfoCacheObserver {
@@ -839,12 +776,6 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 
   startupComplete_ = YES;
 
-  Browser* browser =
-      FindLastActiveWithHostDesktopType(chrome::HOST_DESKTOP_TYPE_NATIVE);
-  content::WebContents* activeWebContents = nullptr;
-  if (browser)
-    activeWebContents = browser->tab_strip_model()->GetActiveWebContents();
-  [self updateHandoffManager:activeWebContents];
   [self openStartupUrls];
 
   PrefService* localState = g_browser_process->local_state();
@@ -855,9 +786,6 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
         base::Bind(&chrome::BrowserCommandController::UpdateOpenFileState,
                    menuState_.get()));
   }
-
-  active_web_contents_observer_bridge_.reset(
-      new HandoffActiveURLObserverBridge(self));
 }
 
 // This is called after profiles have been loaded and preferences registered.
@@ -1708,53 +1636,6 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 - (void)application:(NSApplication*)application
     didFailToContinueUserActivityWithType:(NSString*)userActivityType
                                     error:(NSError*)error {
-}
-
-#pragma mark - Handoff Manager
-
-- (BOOL)shouldUseHandoff {
-  return base::mac::IsOSYosemiteOrLater();
-}
-
-- (void)passURLToHandoffManager:(const GURL&)handoffURL {
-  [handoffManager_ updateActiveURL:handoffURL];
-}
-
-- (void)updateHandoffManager:(content::WebContents*)webContents {
-  if (![self shouldUseHandoff])
-    return;
-
-  if (!handoffManager_)
-    handoffManager_.reset([[HandoffManager alloc] init]);
-
-  GURL handoffURL = [self handoffURLFromWebContents:webContents];
-  [self passURLToHandoffManager:handoffURL];
-}
-
-- (GURL)handoffURLFromWebContents:(content::WebContents*)webContents {
-  if (!webContents)
-    return GURL();
-
-  Profile* profile =
-      Profile::FromBrowserContext(webContents->GetBrowserContext());
-  if (!profile)
-    return GURL();
-
-  // Handoff is not allowed from an incognito profile. To err on the safe side,
-  // also disallow Handoff from a guest profile.
-  if (profile->GetProfileType() != Profile::REGULAR_PROFILE)
-    return GURL();
-
-  if (!webContents)
-    return GURL();
-
-  return webContents->GetVisibleURL();
-}
-
-#pragma mark - HandoffActiveURLObserverBridgeDelegate
-
-- (void)handoffActiveURLChanged:(content::WebContents*)webContents {
-  [self updateHandoffManager:webContents];
 }
 
 @end  // @implementation AppController
