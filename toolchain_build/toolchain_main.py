@@ -84,11 +84,15 @@ class PackageBuilder(object):
                 key name>},
           },
           '<package name>': {
-            'type': 'build',
+            'type': 'build', [or 'build_noncanonical']
                 # Build packages are memoized, and will build only if their
                 # inputs have changed. Their inputs consist of the output of
                 # their package dependencies plus any file or directory inputs
                 # given by their 'inputs' member
+                # build_noncanonical packages are memoized in the same way, but
+                # their cache storage keys get the build platform name appended.
+                # This means they can be built by multiple bots without
+                # collisions, but only one will be canonical.
             'dependencies':  # optional
               [<list of package depdenencies>],
             'inputs': # optional
@@ -184,11 +188,15 @@ class PackageBuilder(object):
     if 'type' not in package_info:
       raise Exception('package %s does not have a type' % package)
     type_text = package_info['type']
-    if type_text not in ('source', 'build', 'work'):
+    if type_text not in ('source', 'build', 'build_noncanonical', 'work'):
       raise Exception('package %s has unrecognized type: %s' %
                       (package, type_text))
     is_source_target = type_text == 'source'
-    is_build_target = type_text == 'build'
+    is_build_target = type_text in ('build', 'build_noncanonical')
+    build_signature_key_extra = ''
+    if type_text == 'build_noncanonical':
+      build_signature_key_extra = '_' + pynacl.gsd_storage.LegalizeName(
+          pynacl.platform.PlatformTriple())
 
     if 'commands' not in package_info:
       raise Exception('package %s does not have any commands' % package)
@@ -202,6 +210,10 @@ class PackageBuilder(object):
     if is_source_target and not (
         self._options.sync_sources or self._options.sync_sources_only):
       logging.debug('Sync skipped: not running commands for %s' % package)
+      return
+
+    if type_text == 'build_noncanonical' and self._options.canonical_only:
+      logging.debug('Non-canonical build of %s skipped' % package)
       return
 
     pynacl.log_tools.WriteAnnotatorLine(
@@ -260,7 +272,8 @@ class PackageBuilder(object):
         working_dir=work_dir,
         memoize=is_build_target,
         signature_file=self._signature_file,
-        subdir=output_subdir)
+        subdir=output_subdir,
+        bskey_extra = build_signature_key_extra)
 
     if not is_source_target and self._options.install:
       install = pynacl.platform.CygPath(self._options.install)
@@ -444,6 +457,10 @@ class PackageBuilder(object):
         '-i', '--ignore-dependencies', dest='ignore_dependencies',
         default=False, action='store_true',
         help='Ignore target dependencies and build only the specified target.')
+    parser.add_option(
+        '--canonical-only', dest='canonical_only',
+        default=False, action='store_true',
+        help='Do not build build_noncanonical targets')
     parser.add_option('--install', dest='install',
                       help='After building, copy contents of build packages' +
                       ' to the specified directory')
