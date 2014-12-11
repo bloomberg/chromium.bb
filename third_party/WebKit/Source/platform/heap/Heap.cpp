@@ -701,30 +701,38 @@ Address ThreadHeap<Header>::outOfLineAllocate(size_t payloadSize, size_t allocat
 }
 
 template<typename Header>
-bool ThreadHeap<Header>::allocateFromFreeList(size_t allocationSize)
+FreeListEntry* FreeList<Header>::takeEntry(size_t allocationSize)
 {
-    ASSERT(!hasCurrentAllocationArea());
-    size_t bucketSize = 1 << m_freeList.m_biggestFreeListIndex;
-    int i = m_freeList.m_biggestFreeListIndex;
+    size_t bucketSize = 1 << m_biggestFreeListIndex;
+    int i = m_biggestFreeListIndex;
     for (; i > 0; i--, bucketSize >>= 1) {
         if (bucketSize < allocationSize) {
             // A FreeListEntry for bucketSize might be larger than allocationSize.
             // FIXME: We check only the first FreeListEntry because searching
             // the entire list is costly.
-            if (!m_freeList.m_freeLists[i] || m_freeList.m_freeLists[i]->size() < allocationSize)
+            if (!m_freeLists[i] || m_freeLists[i]->size() < allocationSize)
                 break;
         }
-        FreeListEntry* entry = m_freeList.m_freeLists[i];
-        if (entry) {
-            m_freeList.m_biggestFreeListIndex = i;
-            entry->unlink(&m_freeList.m_freeLists[i]);
-            setAllocationPoint(entry->address(), entry->size());
-            ASSERT(hasCurrentAllocationArea());
-            ASSERT(remainingAllocationSize() >= allocationSize);
-            return true;
+        if (FreeListEntry* entry = m_freeLists[i]) {
+            m_biggestFreeListIndex = i;
+            entry->unlink(&m_freeLists[i]);
+            return entry;
         }
     }
-    m_freeList.m_biggestFreeListIndex = i;
+    m_biggestFreeListIndex = i;
+    return nullptr;
+}
+
+template<typename Header>
+bool ThreadHeap<Header>::allocateFromFreeList(size_t allocationSize)
+{
+    ASSERT(!hasCurrentAllocationArea());
+    if (FreeListEntry* entry = m_freeList.takeEntry(allocationSize)) {
+        setAllocationPoint(entry->address(), entry->size());
+        ASSERT(hasCurrentAllocationArea());
+        ASSERT(remainingAllocationSize() >= allocationSize);
+        return true;
+    }
     return false;
 }
 

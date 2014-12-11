@@ -715,18 +715,21 @@ public:
 
     void addToFreeList(Address, size_t);
     void clear();
+    FreeListEntry* takeEntry(size_t allocationSize);
 
-private:
     // Returns a bucket number for inserting a FreeListEntry of a given size.
     // All FreeListEntries in the given bucket, n, have size >= 2^n.
     static int bucketIndexForSize(size_t);
 
+private:
     int m_biggestFreeListIndex;
 
     // All FreeListEntries in the nth list have size >= 2^n.
     FreeListEntry* m_freeLists[blinkPageSizeLog2];
 
+#if ENABLE(ASSERT)
     friend class ThreadHeap<Header>;
+#endif
 };
 
 // Thread heaps represent a part of the per-thread Blink heap.
