@@ -211,18 +211,6 @@ void ReplayingCanvas::onDrawTextBlob(const SkTextBlob* blob, SkScalar x, SkScala
     this->SkCanvas::onDrawTextBlob(blob, x, y, paint);
 }
 
-void ReplayingCanvas::onPushCull(const SkRect& cullRect)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::onPushCull(cullRect);
-}
-
-void ReplayingCanvas::onPopCull()
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::onPopCull();
-}
-
 void ReplayingCanvas::onClipRect(const SkRect& rect, SkRegion::Op op, ClipEdgeStyle edgeStyle)
 {
     AutoReplayer replayer(this);

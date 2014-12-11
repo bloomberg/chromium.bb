@@ -197,18 +197,6 @@ void ProfilingCanvas::onDrawTextBlob(const SkTextBlob *blob, SkScalar x, SkScala
     this->SkCanvas::onDrawTextBlob(blob, x, y, paint);
 }
 
-void ProfilingCanvas::onPushCull(const SkRect& cullRect)
-{
-    AutoStamper stamper(this);
-    this->SkCanvas::onPushCull(cullRect);
-}
-
-void ProfilingCanvas::onPopCull()
-{
-    AutoStamper stamper(this);
-    this->SkCanvas::onPopCull();
-}
-
 void ProfilingCanvas::onClipRect(const SkRect& rect, SkRegion::Op op, ClipEdgeStyle edgeStyle)
 {
     AutoStamper stamper(this);

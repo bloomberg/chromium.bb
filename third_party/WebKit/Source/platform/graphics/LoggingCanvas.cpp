@@ -294,21 +294,6 @@ void LoggingCanvas::onDrawTextBlob(const SkTextBlob *blob, SkScalar x, SkScalar 
     this->SkCanvas::onDrawTextBlob(blob, x, y, paint);
 }
 
-void LoggingCanvas::onPushCull(const SkRect& cullRect)
-{
-    AutoLogger logger(this);
-    RefPtr<JSONObject> params = logger.logItemWithParams("pushCull");
-    params->setObject("cullRect", objectForSkRect(cullRect));
-    this->SkCanvas::onPushCull(cullRect);
-}
-
-void LoggingCanvas::onPopCull()
-{
-    AutoLogger logger(this);
-    logger.logItem("popCull");
-    this->SkCanvas::onPopCull();
-}
-
 void LoggingCanvas::onClipRect(const SkRect& rect, SkRegion::Op op, ClipEdgeStyle style)
 {
     AutoLogger logger(this);
