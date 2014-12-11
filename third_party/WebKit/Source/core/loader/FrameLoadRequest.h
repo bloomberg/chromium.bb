@@ -69,7 +69,7 @@ public:
     {
     }
 
-    FrameLoadRequest(Document* originDocument, const ResourceRequest& resourceRequest, const AtomicString& frameName, ContentSecurityPolicyCheck shouldCheckMainWorldContentSecurityPolicy)
+    FrameLoadRequest(Document* originDocument, const ResourceRequest& resourceRequest, const AtomicString& frameName, ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy)
         : m_originDocument(originDocument)
         , m_resourceRequest(resourceRequest)
         , m_frameName(frameName)
@@ -116,7 +116,7 @@ public:
     ShouldSendReferrer shouldSendReferrer() const { return m_shouldSendReferrer; }
     void setShouldSendReferrer(ShouldSendReferrer shouldSendReferrer) { m_shouldSendReferrer = shouldSendReferrer; }
 
-    ContentSecurityPolicyCheck shouldCheckMainWorldContentSecurityPolicy() const { return m_shouldCheckMainWorldContentSecurityPolicy; }
+    ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy() const { return m_shouldCheckMainWorldContentSecurityPolicy; }
 
 private:
     RefPtrWillBeMember<Document> m_originDocument;
@@ -128,7 +128,7 @@ private:
     RefPtrWillBeMember<Event> m_triggeringEvent;
     RefPtrWillBeMember<FormState> m_formState;
     ShouldSendReferrer m_shouldSendReferrer;
-    ContentSecurityPolicyCheck m_shouldCheckMainWorldContentSecurityPolicy;
+    ContentSecurityPolicyDisposition m_shouldCheckMainWorldContentSecurityPolicy;
 };
 
 }

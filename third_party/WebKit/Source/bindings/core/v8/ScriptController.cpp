@@ -535,8 +535,9 @@ bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url)
     if (!protocolIsJavaScript(url))
         return false;
 
+    bool shouldBypassMainWorldContentSecurityPolicy = ContentSecurityPolicy::shouldBypassMainWorld(m_frame->document());
     if (!m_frame->page()
-        || !m_frame->document()->contentSecurityPolicy()->allowJavaScriptURLs(m_frame->document()->url(), eventHandlerPosition().m_line))
+        || (!shouldBypassMainWorldContentSecurityPolicy && !m_frame->document()->contentSecurityPolicy()->allowJavaScriptURLs(m_frame->document()->url(), eventHandlerPosition().m_line)))
         return true;
 
     if (m_frame->loader().stateMachine()->isDisplayingInitialEmptyDocument())

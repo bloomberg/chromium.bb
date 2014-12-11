@@ -1652,7 +1652,7 @@ PassRefPtrWillBeRawPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const Fra
     if (childItem)
         child->loader().loadHistoryItem(childItem.get(), FrameLoadTypeInitialHistoryLoad);
     else
-        child->loader().load(FrameLoadRequest(request.originDocument(), request.resourceRequest(), "_self"));
+        child->loader().load(FrameLoadRequest(request.originDocument(), request.resourceRequest(), "_self", request.shouldCheckMainWorldContentSecurityPolicy()));
 
     // Note a synchronous navigation (about:blank) would have already processed
     // onload, so it is possible for the child frame to have already been

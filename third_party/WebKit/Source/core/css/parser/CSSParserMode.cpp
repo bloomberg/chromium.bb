@@ -29,6 +29,7 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/Settings.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 
 namespace blink {
 
@@ -36,6 +37,7 @@ CSSParserContext::CSSParserContext(CSSParserMode mode, UseCounter* useCounter)
     : m_mode(mode)
     , m_isHTMLDocument(false)
     , m_useLegacyBackgroundSizeShorthandBehavior(false)
+    , m_shouldCheckContentSecurityPolicy(DoNotCheckContentSecurityPolicy)
     , m_useCounter(useCounter)
 {
 }
@@ -47,8 +49,13 @@ CSSParserContext::CSSParserContext(const Document& document, UseCounter* useCoun
     , m_referrer(m_baseURL.strippedForUseAsReferrer(), document.referrerPolicy())
     , m_isHTMLDocument(document.isHTMLDocument())
     , m_useLegacyBackgroundSizeShorthandBehavior(document.settings() ? document.settings()->useLegacyBackgroundSizeShorthandBehavior() : false)
+    , m_shouldCheckContentSecurityPolicy(DoNotCheckContentSecurityPolicy)
     , m_useCounter(useCounter)
 {
+    if (ContentSecurityPolicy::shouldBypassMainWorld(&document))
+        m_shouldCheckContentSecurityPolicy = DoNotCheckContentSecurityPolicy;
+    else
+        m_shouldCheckContentSecurityPolicy = CheckContentSecurityPolicy;
 }
 
 CSSParserContext::CSSParserContext(const CSSParserContext& other, UseCounter* useCounter)
@@ -58,6 +65,7 @@ CSSParserContext::CSSParserContext(const CSSParserContext& other, UseCounter* us
     , m_referrer(other.m_referrer)
     , m_isHTMLDocument(other.m_isHTMLDocument)
     , m_useLegacyBackgroundSizeShorthandBehavior(other.m_useLegacyBackgroundSizeShorthandBehavior)
+    , m_shouldCheckContentSecurityPolicy(other.m_shouldCheckContentSecurityPolicy)
     , m_useCounter(useCounter)
 {
 }

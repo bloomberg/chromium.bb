@@ -857,10 +857,10 @@ bool ContentSecurityPolicy::protocolMatchesSelf(const KURL& url) const
     return equalIgnoringCase(url.protocol(), m_selfProtocol);
 }
 
-bool ContentSecurityPolicy::shouldBypassMainWorld(ExecutionContext* context)
+bool ContentSecurityPolicy::shouldBypassMainWorld(const ExecutionContext* context)
 {
     if (context && context->isDocument()) {
-        Document* document = toDocument(context);
+        const Document* document = toDocument(context);
         if (document->frame())
             return document->frame()->script().shouldBypassMainWorldCSP();
     }

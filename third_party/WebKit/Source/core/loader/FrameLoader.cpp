@@ -1262,7 +1262,7 @@ bool FrameLoader::dispatchNavigationTransitionData()
     return true;
 }
 
-void FrameLoader::loadWithNavigationAction(const NavigationAction& action, FrameLoadType type, PassRefPtrWillBeRawPtr<FormState> formState, const SubstituteData& substituteData, ContentSecurityPolicyCheck shouldCheckMainWorldContentSecurityPolicy, ClientRedirectPolicy clientRedirect)
+void FrameLoader::loadWithNavigationAction(const NavigationAction& action, FrameLoadType type, PassRefPtrWillBeRawPtr<FormState> formState, const SubstituteData& substituteData, ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy, ClientRedirectPolicy clientRedirect)
 {
     ASSERT(client()->hasWebView());
     if (m_frame->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal)

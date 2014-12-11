@@ -192,7 +192,7 @@ public:
 
     bool experimentalFeaturesEnabled() const;
 
-    static bool shouldBypassMainWorld(ExecutionContext*);
+    static bool shouldBypassMainWorld(const ExecutionContext*);
 
     static bool isDirectiveName(const String&);
 

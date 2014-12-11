@@ -82,6 +82,7 @@ FontResource* CSSFontFaceSrcValue::fetch(Document* document)
 {
     if (!m_fetched) {
         FetchRequest request(ResourceRequest(document->completeURL(m_resource)), FetchInitiatorTypeNames::css);
+        request.setContentSecurityCheck(m_shouldCheckContentSecurityPolicy);
         SecurityOrigin* securityOrigin = document->securityOrigin();
         if (shouldSetCrossOriginAccessControl(request.url(), securityOrigin)) {
             request.setCrossOriginAccessControl(securityOrigin, DoNotAllowStoredCredentials);
@@ -106,6 +107,7 @@ void CSSFontFaceSrcValue::restoreCachedResourceIfNeeded(Document* document)
         return;
 
     FetchRequest request(ResourceRequest(resourceURL), FetchInitiatorTypeNames::css);
+    request.setContentSecurityCheck(m_shouldCheckContentSecurityPolicy);
     document->fetcher()->maybeNotifyInsecureContent(m_fetched.get());
     document->fetcher()->requestLoadStarted(m_fetched.get(), request, ResourceFetcher::ResourceLoadingFromCache);
 }

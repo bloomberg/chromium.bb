@@ -238,7 +238,7 @@ Widget* HTMLFrameOwnerElement::ownedWidget() const
     return m_widget.get();
 }
 
-bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const AtomicString& frameName, bool lockBackForwardList)
+bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const AtomicString& frameName, bool lockBackForwardList, ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy)
 {
     RefPtrWillBeRawPtr<LocalFrame> parentFrame = document().frame();
     if (contentFrame()) {
@@ -254,7 +254,7 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const Atomic
     if (!SubframeLoadingDisabler::canLoadFrame(*this))
         return false;
 
-    return parentFrame->loader().client()->createFrame(url, frameName, this);
+    return parentFrame->loader().client()->createFrame(url, frameName, this, shouldCheckContentSecurityPolicy);
 }
 
 void HTMLFrameOwnerElement::trace(Visitor* visitor)

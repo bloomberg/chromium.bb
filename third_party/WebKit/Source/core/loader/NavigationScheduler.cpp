@@ -121,7 +121,7 @@ protected:
 private:
     RefPtrWillBePersistent<Document> m_originDocument;
     String m_url;
-    ContentSecurityPolicyCheck m_shouldCheckMainWorldContentSecurityPolicy;
+    ContentSecurityPolicyDisposition m_shouldCheckMainWorldContentSecurityPolicy;
 };
 
 class ScheduledRedirect final : public ScheduledURLNavigation {

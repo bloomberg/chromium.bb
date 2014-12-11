@@ -206,7 +206,7 @@ private:
 
     // Calls continueLoadAfterNavigationPolicy
     void loadWithNavigationAction(const NavigationAction&, FrameLoadType, PassRefPtrWillBeRawPtr<FormState>,
-        const SubstituteData&, ContentSecurityPolicyCheck shouldCheckMainWorldContentSecurityPolicy, ClientRedirectPolicy = NotClientRedirect);
+        const SubstituteData&, ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy, ClientRedirectPolicy = NotClientRedirect);
 
     bool validateTransitionNavigationMode();
     bool dispatchNavigationTransitionData();

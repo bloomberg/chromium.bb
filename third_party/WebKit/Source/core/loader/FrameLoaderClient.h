@@ -32,6 +32,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/IconURL.h"
+#include "core/fetch/ResourceLoaderOptions.h"
 #include "core/frame/FrameClient.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/NavigationPolicy.h"
@@ -142,7 +143,7 @@ namespace blink {
 
         virtual void transitionToCommittedForNewPage() = 0;
 
-        virtual PassRefPtrWillBeRawPtr<LocalFrame> createFrame(const KURL&, const AtomicString& name, HTMLFrameOwnerElement*) = 0;
+        virtual PassRefPtrWillBeRawPtr<LocalFrame> createFrame(const KURL&, const AtomicString& name, HTMLFrameOwnerElement*, ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy) = 0;
         // Whether or not plugin creation should fail if the HTMLPlugInElement isn't in the DOM after plugin initialization.
         enum DetachedPluginPolicy {
             FailOnDetachedPlugin,

@@ -9,6 +9,11 @@ window.addEventListener("message", function(message) {
     test();
 }, false);
 
+// This is needed because isolated worlds are not reset between test runs and a
+// previous test's CSP may interfere with this test. See
+// https://crbug.com/415845.
+testRunner.setIsolatedWorldContentSecurityPolicy(1, '');
+
 function test() {
     function injectInlineScript(isolated) {
         var script = document.createElement('script');

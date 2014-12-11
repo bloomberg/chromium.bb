@@ -15,6 +15,10 @@
     }, false);
 
     function setup() {
+        // This is needed because isolated worlds are not reset between test
+        // runs and a previous test's CSP may interfere with this test. See
+        // https://crbug.com/415845.
+        testRunner.setIsolatedWorldContentSecurityPolicy(1, '');
         var img = document.getElementById('testimg');
         img.onload = function () {
             alert('LOADED');

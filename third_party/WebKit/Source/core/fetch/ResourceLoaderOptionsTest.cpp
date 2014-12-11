@@ -23,7 +23,7 @@ TEST(ResourceLoaderOptionsTest, DeepCopy)
     COMPILE_ASSERT(WTF::IsConvertibleToInteger<DataBufferingPolicy>::value, DataBufferingPolicy_is_enum);
     COMPILE_ASSERT(WTF::IsConvertibleToInteger<StoredCredentials>::value, StoredCredentials_is_enum);
     COMPILE_ASSERT(WTF::IsConvertibleToInteger<CredentialRequest>::value, CredentialRequest_is_enum);
-    COMPILE_ASSERT(WTF::IsConvertibleToInteger<ContentSecurityPolicyCheck>::value, ContentSecurityPolicyCheck_is_enum);
+    COMPILE_ASSERT(WTF::IsConvertibleToInteger<ContentSecurityPolicyDisposition>::value, ContentSecurityPolicyDisposition_is_enum);
     COMPILE_ASSERT(WTF::IsConvertibleToInteger<RequestInitiatorContext>::value, RequestInitiatorContext_is_enum);
     COMPILE_ASSERT(WTF::IsConvertibleToInteger<MixedContentBlockingTreatment>::value, MixedContentBlockingTreatment_is_enum);
     COMPILE_ASSERT(WTF::IsConvertibleToInteger<SynchronousPolicy>::value, SynchronousPolicy_is_enum);

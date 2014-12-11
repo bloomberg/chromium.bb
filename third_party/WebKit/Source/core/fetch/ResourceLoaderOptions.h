@@ -42,7 +42,7 @@ enum DataBufferingPolicy {
     DoNotBufferData
 };
 
-enum ContentSecurityPolicyCheck {
+enum ContentSecurityPolicyDisposition {
     CheckContentSecurityPolicy,
     DoNotCheckContentSecurityPolicy
 };
@@ -102,7 +102,7 @@ struct ResourceLoaderOptions {
         DataBufferingPolicy dataBufferingPolicy,
         StoredCredentials allowCredentials,
         CredentialRequest credentialsRequested,
-        ContentSecurityPolicyCheck contentSecurityPolicyOption,
+        ContentSecurityPolicyDisposition contentSecurityPolicyOption,
         RequestInitiatorContext requestInitiatorContext)
         : dataBufferingPolicy(dataBufferingPolicy)
         , allowCredentials(allowCredentials)
@@ -137,7 +137,7 @@ struct ResourceLoaderOptions {
     DataBufferingPolicy dataBufferingPolicy;
     StoredCredentials allowCredentials; // Whether HTTP credentials and cookies are sent with the request.
     CredentialRequest credentialsRequested; // Whether the client (e.g. XHR) wanted credentials in the first place.
-    ContentSecurityPolicyCheck contentSecurityPolicyOption;
+    ContentSecurityPolicyDisposition contentSecurityPolicyOption;
     FetchInitiatorInfo initiatorInfo;
     RequestInitiatorContext requestInitiatorContext;
     MixedContentBlockingTreatment mixedContentBlockingTreatment;
@@ -179,7 +179,7 @@ struct CrossThreadResourceLoaderOptionsData {
     DataBufferingPolicy dataBufferingPolicy;
     StoredCredentials allowCredentials;
     CredentialRequest credentialsRequested;
-    ContentSecurityPolicyCheck contentSecurityPolicyOption;
+    ContentSecurityPolicyDisposition contentSecurityPolicyOption;
     CrossThreadFetchInitiatorInfoData initiatorInfo;
     RequestInitiatorContext requestInitiatorContext;
     MixedContentBlockingTreatment mixedContentBlockingTreatment;

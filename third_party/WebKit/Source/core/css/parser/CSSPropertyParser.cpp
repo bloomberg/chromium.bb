@@ -4752,7 +4752,7 @@ bool CSSPropertyParser::parseFontWeight(bool important)
 
 bool CSSPropertyParser::parseFontFaceSrcURI(CSSValueList* valueList)
 {
-    RefPtrWillBeRawPtr<CSSFontFaceSrcValue> uriValue(CSSFontFaceSrcValue::create(completeURL(m_valueList->current()->string)));
+    RefPtrWillBeRawPtr<CSSFontFaceSrcValue> uriValue(CSSFontFaceSrcValue::create(completeURL(m_valueList->current()->string), m_context.shouldCheckContentSecurityPolicy()));
     uriValue->setReferrer(m_context.referrer());
 
     CSSParserValue* value = m_valueList->next();
@@ -4788,8 +4788,9 @@ bool CSSPropertyParser::parseFontFaceSrcLocal(CSSValueList* valueList)
     if (!args || !args->size())
         return false;
 
+    ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy = m_context.shouldCheckContentSecurityPolicy();
     if (args->size() == 1 && args->current()->unit == CSSPrimitiveValue::CSS_STRING)
-        valueList->append(CSSFontFaceSrcValue::createLocal(args->current()->string));
+        valueList->append(CSSFontFaceSrcValue::createLocal(args->current()->string, shouldCheckContentSecurityPolicy));
     else if (args->current()->unit == CSSPrimitiveValue::CSS_IDENT) {
         StringBuilder builder;
         for (CSSParserValue* localValue = args->current(); localValue; localValue = args->next()) {
@@ -4799,7 +4800,7 @@ bool CSSPropertyParser::parseFontFaceSrcLocal(CSSValueList* valueList)
                 builder.append(' ');
             builder.append(localValue->string);
         }
-        valueList->append(CSSFontFaceSrcValue::createLocal(builder.toString()));
+        valueList->append(CSSFontFaceSrcValue::createLocal(builder.toString(), shouldCheckContentSecurityPolicy));
     } else
         return false;
 

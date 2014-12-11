@@ -301,7 +301,7 @@ bool DocumentLoader::isRedirectAfterPost(const ResourceRequest& newRequest, cons
     return false;
 }
 
-bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& request, ContentSecurityPolicyCheck shouldCheckMainWorldContentSecurityPolicy, bool isTransitionNavigation)
+bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& request, ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy, bool isTransitionNavigation)
 {
     // Don't ask if we are loading an empty URL.
     if (request.url().isEmpty() || m_substituteData.isValid())
