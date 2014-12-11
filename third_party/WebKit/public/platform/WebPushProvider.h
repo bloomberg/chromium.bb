@@ -26,6 +26,14 @@ public:
     // Does not take ownership of the WebServiceWorkerRegistration.
     virtual void registerPushMessaging(WebServiceWorkerRegistration*, WebPushRegistrationCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
 
+    // Takes ownership of the WebPushRegistrationCallbacks.
+    // Does not take ownership of the WebServiceWorkerRegistration.
+    virtual void unregister(WebServiceWorkerRegistration*, WebPushRegistrationCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
+
+    // Takes ownership of the WebPushRegistrationCallbacks.
+    // Does not take ownership of the WebServiceWorkerRegistration.
+    virtual void getRegistration(WebServiceWorkerRegistration*, WebPushRegistrationCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
+
     // Takes ownership of the WebPushPermissionStatusCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.
     virtual void getPermissionStatus(WebServiceWorkerRegistration*, WebPushPermissionStatusCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }

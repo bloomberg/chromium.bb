@@ -12,6 +12,7 @@ namespace blink {
 struct WebPushError {
     enum ErrorType {
         ErrorTypeAbort = 0,
+        ErrorTypeNotFound,
         ErrorTypeUnknown,
         ErrorTypeLast = ErrorTypeUnknown
     };
