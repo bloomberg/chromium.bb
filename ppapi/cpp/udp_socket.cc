@@ -18,13 +18,20 @@ template <> const char* interface_name<PPB_UDPSocket_1_0>() {
   return PPB_UDPSOCKET_INTERFACE_1_0;
 }
 
+template <> const char* interface_name<PPB_UDPSocket_1_1>() {
+  return PPB_UDPSOCKET_INTERFACE_1_1;
+}
+
 }  // namespace
 
 UDPSocket::UDPSocket() {
 }
 
 UDPSocket::UDPSocket(const InstanceHandle& instance) {
-  if (has_interface<PPB_UDPSocket_1_0>()) {
+  if (has_interface<PPB_UDPSocket_1_1>()) {
+    PassRefFromConstructor(get_interface<PPB_UDPSocket_1_1>()->Create(
+        instance.pp_instance()));
+  } else if (has_interface<PPB_UDPSocket_1_0>()) {
     PassRefFromConstructor(get_interface<PPB_UDPSocket_1_0>()->Create(
         instance.pp_instance()));
   }
@@ -47,11 +54,16 @@ UDPSocket& UDPSocket::operator=(const UDPSocket& other) {
 
 // static
 bool UDPSocket::IsAvailable() {
-  return has_interface<PPB_UDPSocket_1_0>();
+  return has_interface<PPB_UDPSocket_1_1>() ||
+         has_interface<PPB_UDPSocket_1_0>();
 }
 
 int32_t UDPSocket::Bind(const NetAddress& addr,
                         const CompletionCallback& callback) {
+  if (has_interface<PPB_UDPSocket_1_1>()) {
+    return get_interface<PPB_UDPSocket_1_1>()->Bind(
+        pp_resource(), addr.pp_resource(), callback.pp_completion_callback());
+  }
   if (has_interface<PPB_UDPSocket_1_0>()) {
     return get_interface<PPB_UDPSocket_1_0>()->Bind(
         pp_resource(), addr.pp_resource(), callback.pp_completion_callback());
@@ -60,6 +72,11 @@ int32_t UDPSocket::Bind(const NetAddress& addr,
 }
 
 NetAddress UDPSocket::GetBoundAddress() {
+  if (has_interface<PPB_UDPSocket_1_1>()) {
+    return NetAddress(
+        PASS_REF,
+        get_interface<PPB_UDPSocket_1_1>()->GetBoundAddress(pp_resource()));
+  }
   if (has_interface<PPB_UDPSocket_1_0>()) {
     return NetAddress(
         PASS_REF,
@@ -72,6 +89,11 @@ int32_t UDPSocket::RecvFrom(
     char* buffer,
     int32_t num_bytes,
     const CompletionCallbackWithOutput<NetAddress>& callback) {
+  if (has_interface<PPB_UDPSocket_1_1>()) {
+    return get_interface<PPB_UDPSocket_1_1>()->RecvFrom(
+        pp_resource(), buffer, num_bytes, callback.output(),
+        callback.pp_completion_callback());
+  }
   if (has_interface<PPB_UDPSocket_1_0>()) {
     return get_interface<PPB_UDPSocket_1_0>()->RecvFrom(
         pp_resource(), buffer, num_bytes, callback.output(),
@@ -84,6 +106,11 @@ int32_t UDPSocket::SendTo(const char* buffer,
                           int32_t num_bytes,
                           const NetAddress& addr,
                           const CompletionCallback& callback) {
+  if (has_interface<PPB_UDPSocket_1_1>()) {
+    return get_interface<PPB_UDPSocket_1_1>()->SendTo(
+        pp_resource(), buffer, num_bytes, addr.pp_resource(),
+        callback.pp_completion_callback());
+  }
   if (has_interface<PPB_UDPSocket_1_0>()) {
     return get_interface<PPB_UDPSocket_1_0>()->SendTo(
         pp_resource(), buffer, num_bytes, addr.pp_resource(),
@@ -93,6 +120,8 @@ int32_t UDPSocket::SendTo(const char* buffer,
 }
 
 void UDPSocket::Close() {
+  if (has_interface<PPB_UDPSocket_1_1>())
+    return get_interface<PPB_UDPSocket_1_1>()->Close(pp_resource());
   if (has_interface<PPB_UDPSocket_1_0>())
     return get_interface<PPB_UDPSocket_1_0>()->Close(pp_resource());
 }
@@ -100,6 +129,10 @@ void UDPSocket::Close() {
 int32_t UDPSocket::SetOption(PP_UDPSocket_Option name,
                              const Var& value,
                              const CompletionCallback& callback) {
+  if (has_interface<PPB_UDPSocket_1_1>()) {
+    return get_interface<PPB_UDPSocket_1_1>()->SetOption(
+        pp_resource(), name, value.pp_var(), callback.pp_completion_callback());
+  }
   if (has_interface<PPB_UDPSocket_1_0>()) {
     return get_interface<PPB_UDPSocket_1_0>()->SetOption(
         pp_resource(), name, value.pp_var(), callback.pp_completion_callback());

@@ -41,7 +41,9 @@ int32_t UDPSocketPrivateResource::SetSocketFeature(
       NOTREACHED();
       return PP_ERROR_BADARGUMENT;
   }
-  int32_t result = SetOptionImpl(public_name, value, NULL);
+  int32_t result = SetOptionImpl(public_name, value,
+                                 true,  // Check bind() state.
+                                 NULL);
   return result == PP_OK_COMPLETIONPENDING ? PP_OK : result;
 }
 

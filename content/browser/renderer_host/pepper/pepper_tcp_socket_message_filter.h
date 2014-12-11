@@ -63,6 +63,12 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
   static size_t GetNumInstances();
 
  private:
+  enum SocketOption {
+    SOCKET_OPTION_NODELAY = 1 << 0,
+    SOCKET_OPTION_RCVBUF_SIZE = 1 << 1,
+    SOCKET_OPTION_SNDBUF_SIZE = 1 << 2
+  };
+
   ~PepperTCPSocketMessageFilter() override;
 
   // ppapi::host::ResourceMessageFilter overrides.
@@ -184,6 +190,14 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
   PP_NetAddress_Private bind_input_addr_;
 
   scoped_ptr<net::SingleRequestHostResolver> resolver_;
+
+  // Bitwise-or of SocketOption flags. This stores the state about whether
+  // each option is set before Connect() is called.
+  int socket_options_;
+
+  // Locally cached value of buffer size.
+  int32_t rcvbuf_size_;
+  int32_t sndbuf_size_;
 
   // |address_list_| may store multiple addresses when
   // PPB_TCPSocket_Private.Connect() is used, which involves name resolution.

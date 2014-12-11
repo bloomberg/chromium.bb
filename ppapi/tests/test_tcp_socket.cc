@@ -140,7 +140,7 @@ std::string TestTCPSocket::TestSetOption() {
   TestCompletionCallback cb_2(instance_->pp_instance(), callback_type());
   TestCompletionCallback cb_3(instance_->pp_instance(), callback_type());
 
-  // These options cannot be set before the socket is connected.
+  // These options can be set even before the socket is connected.
   int32_t result_1 = socket.SetOption(PP_TCPSOCKET_OPTION_NO_DELAY,
                                       true, cb_1.GetCallback());
   int32_t result_2 = socket.SetOption(PP_TCPSOCKET_OPTION_SEND_BUFFER_SIZE,
@@ -150,15 +150,15 @@ std::string TestTCPSocket::TestSetOption() {
 
   cb_1.WaitForResult(result_1);
   CHECK_CALLBACK_BEHAVIOR(cb_1);
-  ASSERT_EQ(PP_ERROR_FAILED, cb_1.result());
+  ASSERT_EQ(PP_OK, cb_1.result());
 
   cb_2.WaitForResult(result_2);
   CHECK_CALLBACK_BEHAVIOR(cb_2);
-  ASSERT_EQ(PP_ERROR_FAILED, cb_2.result());
+  ASSERT_EQ(PP_OK, cb_2.result());
 
   cb_3.WaitForResult(result_3);
   CHECK_CALLBACK_BEHAVIOR(cb_3);
-  ASSERT_EQ(PP_ERROR_FAILED, cb_3.result());
+  ASSERT_EQ(PP_OK, cb_3.result());
 
   cb_1.WaitForResult(socket.Connect(addr_, cb_1.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(cb_1);
@@ -458,4 +458,3 @@ std::string TestTCPSocket::StartListen(pp::TCPSocket* socket, int32_t backlog) {
 
   PASS();
 }
-

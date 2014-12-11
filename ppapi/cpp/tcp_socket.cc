@@ -21,13 +21,20 @@ template <> const char* interface_name<PPB_TCPSocket_1_1>() {
   return PPB_TCPSOCKET_INTERFACE_1_1;
 }
 
+template <> const char* interface_name<PPB_TCPSocket_1_2>() {
+  return PPB_TCPSOCKET_INTERFACE_1_2;
+}
+
 }  // namespace
 
 TCPSocket::TCPSocket() {
 }
 
 TCPSocket::TCPSocket(const InstanceHandle& instance) {
-  if (has_interface<PPB_TCPSocket_1_1>()) {
+  if (has_interface<PPB_TCPSocket_1_2>()) {
+    PassRefFromConstructor(get_interface<PPB_TCPSocket_1_2>()->Create(
+        instance.pp_instance()));
+  } else if (has_interface<PPB_TCPSocket_1_1>()) {
     PassRefFromConstructor(get_interface<PPB_TCPSocket_1_1>()->Create(
         instance.pp_instance()));
   } else if (has_interface<PPB_TCPSocket_1_0>()) {
@@ -53,12 +60,17 @@ TCPSocket& TCPSocket::operator=(const TCPSocket& other) {
 
 // static
 bool TCPSocket::IsAvailable() {
-  return has_interface<PPB_TCPSocket_1_1>() ||
+  return has_interface<PPB_TCPSocket_1_2>() ||
+         has_interface<PPB_TCPSocket_1_1>() ||
          has_interface<PPB_TCPSocket_1_0>();
 }
 
 int32_t TCPSocket::Bind(const NetAddress& addr,
                         const CompletionCallback& callback) {
+  if (has_interface<PPB_TCPSocket_1_2>()) {
+    return get_interface<PPB_TCPSocket_1_2>()->Bind(
+        pp_resource(), addr.pp_resource(), callback.pp_completion_callback());
+  }
   if (has_interface<PPB_TCPSocket_1_1>()) {
     return get_interface<PPB_TCPSocket_1_1>()->Bind(
         pp_resource(), addr.pp_resource(), callback.pp_completion_callback());
@@ -68,6 +80,10 @@ int32_t TCPSocket::Bind(const NetAddress& addr,
 
 int32_t TCPSocket::Connect(const NetAddress& addr,
                            const CompletionCallback& callback) {
+  if (has_interface<PPB_TCPSocket_1_2>()) {
+    return get_interface<PPB_TCPSocket_1_2>()->Connect(
+        pp_resource(), addr.pp_resource(), callback.pp_completion_callback());
+  }
   if (has_interface<PPB_TCPSocket_1_1>()) {
     return get_interface<PPB_TCPSocket_1_1>()->Connect(
         pp_resource(), addr.pp_resource(), callback.pp_completion_callback());
@@ -80,6 +96,11 @@ int32_t TCPSocket::Connect(const NetAddress& addr,
 }
 
 NetAddress TCPSocket::GetLocalAddress() const {
+  if (has_interface<PPB_TCPSocket_1_2>()) {
+    return NetAddress(
+        PASS_REF,
+        get_interface<PPB_TCPSocket_1_2>()->GetLocalAddress(pp_resource()));
+  }
   if (has_interface<PPB_TCPSocket_1_1>()) {
     return NetAddress(
         PASS_REF,
@@ -94,6 +115,11 @@ NetAddress TCPSocket::GetLocalAddress() const {
 }
 
 NetAddress TCPSocket::GetRemoteAddress() const {
+  if (has_interface<PPB_TCPSocket_1_2>()) {
+    return NetAddress(
+        PASS_REF,
+        get_interface<PPB_TCPSocket_1_2>()->GetRemoteAddress(pp_resource()));
+  }
   if (has_interface<PPB_TCPSocket_1_1>()) {
     return NetAddress(
         PASS_REF,
@@ -110,6 +136,11 @@ NetAddress TCPSocket::GetRemoteAddress() const {
 int32_t TCPSocket::Read(char* buffer,
                         int32_t bytes_to_read,
                         const CompletionCallback& callback) {
+  if (has_interface<PPB_TCPSocket_1_2>()) {
+    return get_interface<PPB_TCPSocket_1_2>()->Read(
+        pp_resource(), buffer, bytes_to_read,
+        callback.pp_completion_callback());
+  }
   if (has_interface<PPB_TCPSocket_1_1>()) {
     return get_interface<PPB_TCPSocket_1_1>()->Read(
         pp_resource(), buffer, bytes_to_read,
@@ -126,6 +157,11 @@ int32_t TCPSocket::Read(char* buffer,
 int32_t TCPSocket::Write(const char* buffer,
                          int32_t bytes_to_write,
                          const CompletionCallback& callback) {
+  if (has_interface<PPB_TCPSocket_1_2>()) {
+    return get_interface<PPB_TCPSocket_1_2>()->Write(
+        pp_resource(), buffer, bytes_to_write,
+        callback.pp_completion_callback());
+  }
   if (has_interface<PPB_TCPSocket_1_1>()) {
     return get_interface<PPB_TCPSocket_1_1>()->Write(
         pp_resource(), buffer, bytes_to_write,
@@ -141,6 +177,10 @@ int32_t TCPSocket::Write(const char* buffer,
 
 int32_t TCPSocket::Listen(int32_t backlog,
                           const CompletionCallback& callback) {
+  if (has_interface<PPB_TCPSocket_1_2>()) {
+    return get_interface<PPB_TCPSocket_1_2>()->Listen(
+        pp_resource(), backlog, callback.pp_completion_callback());
+  }
   if (has_interface<PPB_TCPSocket_1_1>()) {
     return get_interface<PPB_TCPSocket_1_1>()->Listen(
         pp_resource(), backlog, callback.pp_completion_callback());
@@ -150,6 +190,10 @@ int32_t TCPSocket::Listen(int32_t backlog,
 
 int32_t TCPSocket::Accept(
     const CompletionCallbackWithOutput<TCPSocket>& callback) {
+  if (has_interface<PPB_TCPSocket_1_2>()) {
+    return get_interface<PPB_TCPSocket_1_2>()->Accept(
+        pp_resource(), callback.output(), callback.pp_completion_callback());
+  }
   if (has_interface<PPB_TCPSocket_1_1>()) {
     return get_interface<PPB_TCPSocket_1_1>()->Accept(
         pp_resource(), callback.output(), callback.pp_completion_callback());
@@ -158,7 +202,9 @@ int32_t TCPSocket::Accept(
 }
 
 void TCPSocket::Close() {
-  if (has_interface<PPB_TCPSocket_1_1>()) {
+  if (has_interface<PPB_TCPSocket_1_2>()) {
+    get_interface<PPB_TCPSocket_1_2>()->Close(pp_resource());
+  } else if (has_interface<PPB_TCPSocket_1_1>()) {
     get_interface<PPB_TCPSocket_1_1>()->Close(pp_resource());
   } else if (has_interface<PPB_TCPSocket_1_0>()) {
     get_interface<PPB_TCPSocket_1_0>()->Close(pp_resource());
@@ -168,6 +214,10 @@ void TCPSocket::Close() {
 int32_t TCPSocket::SetOption(PP_TCPSocket_Option name,
                              const Var& value,
                              const CompletionCallback& callback) {
+  if (has_interface<PPB_TCPSocket_1_2>()) {
+    return get_interface<PPB_TCPSocket_1_2>()->SetOption(
+        pp_resource(), name, value.pp_var(), callback.pp_completion_callback());
+  }
   if (has_interface<PPB_TCPSocket_1_1>()) {
     return get_interface<PPB_TCPSocket_1_1>()->SetOption(
         pp_resource(), name, value.pp_var(), callback.pp_completion_callback());

@@ -36,6 +36,9 @@ class PPAPI_THUNK_EXPORT PPB_TCPSocket_API {
   virtual int32_t Accept(PP_Resource* accepted_tcp_socket,
                          scoped_refptr<TrackedCallback> callback) = 0;
   virtual void Close() = 0;
+  virtual int32_t SetOption1_1(PP_TCPSocket_Option name,
+                               const PP_Var& value,
+                               scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t SetOption(PP_TCPSocket_Option name,
                             const PP_Var& value,
                             scoped_refptr<TrackedCallback> callback) = 0;

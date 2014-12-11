@@ -34,6 +34,7 @@ UDPSocketResourceBase::UDPSocketResourceBase(Connection connection,
                                              bool private_api)
     : PluginResource(connection, instance),
       private_api_(private_api),
+      bind_called_(false),
       bound_(false),
       closed_(false),
       read_buffer_(NULL),
@@ -61,6 +62,7 @@ UDPSocketResourceBase::~UDPSocketResourceBase() {
 int32_t UDPSocketResourceBase::SetOptionImpl(
     PP_UDPSocket_Option name,
     const PP_Var& value,
+    bool check_bind_state,
     scoped_refptr<TrackedCallback> callback) {
   if (closed_)
     return PP_ERROR_FAILED;
@@ -69,8 +71,14 @@ int32_t UDPSocketResourceBase::SetOptionImpl(
   switch (name) {
     case PP_UDPSOCKET_OPTION_ADDRESS_REUSE:
     case PP_UDPSOCKET_OPTION_BROADCAST: {
-      if (bound_)
+      if ((check_bind_state || name == PP_UDPSOCKET_OPTION_ADDRESS_REUSE) &&
+          bind_called_) {
+        // SetOption should fail in this case in order to give predictable
+        // behavior while binding. Note that we use |bind_called_| rather
+        // than |bound_| since the latter is only set on successful completion
+        // of Bind().
         return PP_ERROR_FAILED;
+      }
       if (value.type != PP_VARTYPE_BOOL)
         return PP_ERROR_BADARGUMENT;
       option_data.SetBool(PP_ToBool(value.value.as_bool));
@@ -78,7 +86,7 @@ int32_t UDPSocketResourceBase::SetOptionImpl(
     }
     case PP_UDPSOCKET_OPTION_SEND_BUFFER_SIZE:
     case PP_UDPSOCKET_OPTION_RECV_BUFFER_SIZE: {
-      if (!bound_)
+      if (check_bind_state && !bound_)
         return PP_ERROR_FAILED;
       if (value.type != PP_VARTYPE_INT32)
         return PP_ERROR_BADARGUMENT;
@@ -111,6 +119,7 @@ int32_t UDPSocketResourceBase::BindImpl(
   if (TrackedCallback::IsPending(bind_callback_))
     return PP_ERROR_INPROGRESS;
 
+  bind_called_ = true;
   bind_callback_ = callback;
 
   // Send the request, the browser will call us back via BindReply.

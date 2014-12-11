@@ -36,6 +36,10 @@ class PPAPI_PROXY_EXPORT UDPSocketResource : public UDPSocketResourceBase,
                          PP_Resource addr,
                          scoped_refptr<TrackedCallback> callback) override;
   virtual void Close() override;
+  virtual int32_t SetOption1_0(
+      PP_UDPSocket_Option name,
+      const PP_Var& value,
+      scoped_refptr<TrackedCallback> callback) override;
   virtual int32_t SetOption(PP_UDPSocket_Option name,
                             const PP_Var& value,
                             scoped_refptr<TrackedCallback> callback) override;

@@ -318,11 +318,12 @@ void TCPSocketResourceBase::CloseImpl() {
 int32_t TCPSocketResourceBase::SetOptionImpl(
     PP_TCPSocket_Option name,
     const PP_Var& value,
+    bool check_connect_state,
     scoped_refptr<TrackedCallback> callback) {
   SocketOptionData option_data;
   switch (name) {
     case PP_TCPSOCKET_OPTION_NO_DELAY: {
-      if (!state_.IsConnected())
+      if (check_connect_state && !state_.IsConnected())
         return PP_ERROR_FAILED;
 
       if (value.type != PP_VARTYPE_BOOL)
@@ -332,7 +333,7 @@ int32_t TCPSocketResourceBase::SetOptionImpl(
     }
     case PP_TCPSOCKET_OPTION_SEND_BUFFER_SIZE:
     case PP_TCPSOCKET_OPTION_RECV_BUFFER_SIZE: {
-      if (!state_.IsConnected())
+      if (check_connect_state && !state_.IsConnected())
         return PP_ERROR_FAILED;
 
       if (value.type != PP_VARTYPE_INT32)

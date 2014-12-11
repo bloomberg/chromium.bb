@@ -132,6 +132,19 @@ void Close(PP_Resource tcp_socket) {
   enter.object()->Close();
 }
 
+int32_t SetOption1_1(PP_Resource tcp_socket,
+                     PP_TCPSocket_Option name,
+                     struct PP_Var value,
+                     struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_TCPSocket::SetOption1_1()";
+  EnterResource<PPB_TCPSocket_API> enter(tcp_socket, callback, true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.SetResult(enter.object()->SetOption1_1(name,
+                                                      value,
+                                                      enter.callback()));
+}
+
 int32_t SetOption(PP_Resource tcp_socket,
                   PP_TCPSocket_Option name,
                   struct PP_Var value,
@@ -154,10 +167,25 @@ const PPB_TCPSocket_1_0 g_ppb_tcpsocket_thunk_1_0 = {
   &Read,
   &Write,
   &Close,
-  &SetOption
+  &SetOption1_1
 };
 
 const PPB_TCPSocket_1_1 g_ppb_tcpsocket_thunk_1_1 = {
+  &Create,
+  &IsTCPSocket,
+  &Bind,
+  &Connect,
+  &GetLocalAddress,
+  &GetRemoteAddress,
+  &Read,
+  &Write,
+  &Listen,
+  &Accept,
+  &Close,
+  &SetOption1_1
+};
+
+const PPB_TCPSocket_1_2 g_ppb_tcpsocket_thunk_1_2 = {
   &Create,
   &IsTCPSocket,
   &Bind,
@@ -180,6 +208,10 @@ const PPB_TCPSocket_1_0* GetPPB_TCPSocket_1_0_Thunk() {
 
 const PPB_TCPSocket_1_1* GetPPB_TCPSocket_1_1_Thunk() {
   return &g_ppb_tcpsocket_thunk_1_1;
+}
+
+const PPB_TCPSocket_1_2* GetPPB_TCPSocket_1_2_Thunk() {
+  return &g_ppb_tcpsocket_thunk_1_2;
 }
 
 }  // namespace thunk

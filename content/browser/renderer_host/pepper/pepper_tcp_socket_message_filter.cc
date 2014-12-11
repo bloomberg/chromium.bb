@@ -64,6 +64,9 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
       state_(TCPSocketState::INITIAL),
       end_of_file_reached_(false),
       bind_input_addr_(NetAddressPrivateImpl::kInvalidNetAddress),
+      socket_options_(SOCKET_OPTION_NODELAY),
+      rcvbuf_size_(0),
+      sndbuf_size_(0),
       address_index_(0),
       socket_(new net::TCPSocket(NULL, net::NetLog::Source())),
       ssl_context_helper_(host->ssl_context_helper()),
@@ -91,6 +94,9 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
       state_(TCPSocketState::CONNECTED),
       end_of_file_reached_(false),
       bind_input_addr_(NetAddressPrivateImpl::kInvalidNetAddress),
+      socket_options_(SOCKET_OPTION_NODELAY),
+      rcvbuf_size_(0),
+      sndbuf_size_(0),
       address_index_(0),
       socket_(socket.Pass()),
       ssl_context_helper_(host->ssl_context_helper()),
@@ -457,35 +463,57 @@ int32_t PepperTCPSocketMessageFilter::OnMsgSetOption(
 
   switch (name) {
     case PP_TCPSOCKET_OPTION_NO_DELAY: {
-      if (state_.state() != TCPSocketState::CONNECTED)
-        return PP_ERROR_FAILED;
-
       bool boolean_value = false;
       if (!value.GetBool(&boolean_value))
         return PP_ERROR_BADARGUMENT;
-      return socket_->SetNoDelay(boolean_value) ? PP_OK : PP_ERROR_FAILED;
-    }
-    case PP_TCPSOCKET_OPTION_SEND_BUFFER_SIZE:
-    case PP_TCPSOCKET_OPTION_RECV_BUFFER_SIZE: {
-      if (state_.state() != TCPSocketState::CONNECTED)
-        return PP_ERROR_FAILED;
 
+      // If the socket is already connected, proxy the value to TCPSocket.
+      if (state_.state() == TCPSocketState::CONNECTED)
+        return socket_->SetNoDelay(boolean_value) ? PP_OK : PP_ERROR_FAILED;
+
+      // TCPSocket instance is not yet created. So remember the value here.
+      if (boolean_value) {
+        socket_options_ |= SOCKET_OPTION_NODELAY;
+      } else {
+        socket_options_ &= ~SOCKET_OPTION_NODELAY;
+      }
+      return PP_OK;
+    }
+    case PP_TCPSOCKET_OPTION_SEND_BUFFER_SIZE: {
       int32_t integer_value = 0;
-      if (!value.GetInt32(&integer_value) || integer_value <= 0)
+      if (!value.GetInt32(&integer_value) ||
+          integer_value <= 0 ||
+          integer_value > TCPSocketResourceBase::kMaxSendBufferSize)
         return PP_ERROR_BADARGUMENT;
 
-      int net_result = net::ERR_UNEXPECTED;
-      if (name == PP_TCPSOCKET_OPTION_SEND_BUFFER_SIZE) {
-        if (integer_value > TCPSocketResourceBase::kMaxSendBufferSize)
-          return PP_ERROR_BADARGUMENT;
-        net_result = socket_->SetSendBufferSize(integer_value);
-      } else {
-        if (integer_value > TCPSocketResourceBase::kMaxReceiveBufferSize)
-          return PP_ERROR_BADARGUMENT;
-        net_result = socket_->SetReceiveBufferSize(integer_value);
+      // If the socket is already connected, proxy the value to TCPSocket.
+      if (state_.state() == TCPSocketState::CONNECTED) {
+        return NetErrorToPepperError(
+            socket_->SetSendBufferSize(integer_value));
       }
-      // TODO(wtc): Add error mapping code.
-      return (net_result == net::OK) ? PP_OK : PP_ERROR_FAILED;
+
+      // TCPSocket instance is not yet created. So remember the value here.
+      socket_options_ |= SOCKET_OPTION_SNDBUF_SIZE;
+      sndbuf_size_ = integer_value;
+      return PP_OK;
+    }
+    case PP_TCPSOCKET_OPTION_RECV_BUFFER_SIZE: {
+      int32_t integer_value = 0;
+      if (!value.GetInt32(&integer_value) ||
+          integer_value <= 0 ||
+          integer_value > TCPSocketResourceBase::kMaxReceiveBufferSize)
+        return PP_ERROR_BADARGUMENT;
+
+      // If the socket is already connected, proxy the value to TCPSocket.
+      if (state_.state() == TCPSocketState::CONNECTED) {
+        return NetErrorToPepperError(
+            socket_->SetReceiveBufferSize(integer_value));
+      }
+
+      // TCPSocket instance is not yet created. So remember the value here.
+      socket_options_ |= SOCKET_OPTION_RCVBUF_SIZE;
+      rcvbuf_size_ = integer_value;
+      return PP_OK;
     }
     default: {
       NOTREACHED();
@@ -696,17 +724,42 @@ void PepperTCPSocketMessageFilter::StartConnect(
   DCHECK(state_.IsPending(TCPSocketState::CONNECT));
   DCHECK_LT(address_index_, address_list_.size());
 
-  int net_result = net::OK;
-  if (!socket_->IsValid())
-    net_result = socket_->Open(address_list_[address_index_].GetFamily());
-
-  if (net_result == net::OK) {
-    net_result = socket_->Connect(
-        address_list_[address_index_],
-        base::Bind(&PepperTCPSocketMessageFilter::OnConnectCompleted,
-                   base::Unretained(this),
-                   context));
+  if (!socket_->IsValid()) {
+    int net_result = socket_->Open(address_list_[address_index_].GetFamily());
+    if (net_result != net::OK) {
+      OnConnectCompleted(context, net_result);
+      return;
+    }
   }
+
+  socket_->SetDefaultOptionsForClient();
+
+  if (!(socket_options_ & SOCKET_OPTION_NODELAY)) {
+    if (!socket_->SetNoDelay(false)) {
+      OnConnectCompleted(context, net::ERR_FAILED);
+      return;
+    }
+  }
+  if (socket_options_ & SOCKET_OPTION_RCVBUF_SIZE) {
+    int net_result = socket_->SetReceiveBufferSize(rcvbuf_size_);
+    if (net_result != net::OK) {
+      OnConnectCompleted(context, net_result);
+      return;
+    }
+  }
+  if (socket_options_ & SOCKET_OPTION_SNDBUF_SIZE) {
+    int net_result = socket_->SetSendBufferSize(sndbuf_size_);
+    if (net_result != net::OK) {
+      OnConnectCompleted(context, net_result);
+      return;
+    }
+  }
+
+  int net_result = socket_->Connect(
+      address_list_[address_index_],
+      base::Bind(&PepperTCPSocketMessageFilter::OnConnectCompleted,
+                 base::Unretained(this),
+                 context));
   if (net_result != net::ERR_IO_PENDING)
     OnConnectCompleted(context, net_result);
 }
@@ -754,7 +807,6 @@ void PepperTCPSocketMessageFilter::OnConnectCompleted(
       break;
     }
 
-    socket_->SetDefaultOptionsForClient();
     SendConnectReply(context, PP_OK, local_addr, remote_addr);
     state_.CompletePendingTransition(true);
     return;

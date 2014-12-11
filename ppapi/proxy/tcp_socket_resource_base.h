@@ -95,6 +95,7 @@ class PPAPI_PROXY_EXPORT TCPSocketResourceBase : public PluginResource {
   void CloseImpl();
   int32_t SetOptionImpl(PP_TCPSocket_Option name,
                         const PP_Var& value,
+                        bool check_connect_state,
                         scoped_refptr<TrackedCallback> callback);
 
   void PostAbortIfNecessary(scoped_refptr<TrackedCallback>* callback);

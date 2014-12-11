@@ -115,10 +115,21 @@ void TCPSocketResource::Close() {
   CloseImpl();
 }
 
+int32_t TCPSocketResource::SetOption1_1(
+    PP_TCPSocket_Option name,
+    const PP_Var& value,
+    scoped_refptr<TrackedCallback> callback) {
+  return SetOptionImpl(name, value,
+                       true,  // Check connect() state.
+                       callback);
+}
+
 int32_t TCPSocketResource::SetOption(PP_TCPSocket_Option name,
                                      const PP_Var& value,
                                      scoped_refptr<TrackedCallback> callback) {
-  return SetOptionImpl(name, value, callback);
+  return SetOptionImpl(name, value,
+                       false,  // Do not check connect() state.
+                       callback);
 }
 
 PP_Resource TCPSocketResource::CreateAcceptedSocket(

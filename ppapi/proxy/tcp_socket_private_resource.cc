@@ -101,7 +101,9 @@ int32_t TCPSocketPrivateResource::SetOption(
     case PP_TCPSOCKETOPTION_PRIVATE_INVALID:
       return PP_ERROR_BADARGUMENT;
     case PP_TCPSOCKETOPTION_PRIVATE_NO_DELAY:
-      return SetOptionImpl(PP_TCPSOCKET_OPTION_NO_DELAY, value, callback);
+      return SetOptionImpl(PP_TCPSOCKET_OPTION_NO_DELAY, value,
+                           true,  // Check connect() state.
+                           callback);
     default:
       NOTREACHED();
       return PP_ERROR_BADARGUMENT;

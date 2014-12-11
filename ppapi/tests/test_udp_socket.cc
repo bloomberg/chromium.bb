@@ -272,36 +272,35 @@ std::string TestUDPSocket::TestSetOption() {
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
 
-  // SEND_BUFFER_SIZE and RECV_BUFFER_SIZE shouldn't be set before the socket is
-  // bound.
   callback.WaitForResult(socket.SetOption(
       PP_UDPSOCKET_OPTION_SEND_BUFFER_SIZE, pp::Var(4096),
       callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
-  ASSERT_EQ(PP_ERROR_FAILED, callback.result());
+  ASSERT_EQ(PP_OK, callback.result());
 
   callback.WaitForResult(socket.SetOption(
       PP_UDPSOCKET_OPTION_RECV_BUFFER_SIZE, pp::Var(512),
       callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
-  ASSERT_EQ(PP_ERROR_FAILED, callback.result());
+  ASSERT_EQ(PP_OK, callback.result());
 
   pp::NetAddress address;
   ASSERT_SUBTEST_SUCCESS(LookupPortAndBindUDPSocket(&socket, &address));
 
-  // ADDRESS_REUSE and BROADCAST won't take effect after the socket is bound.
+  // ADDRESS_REUSE won't take effect after the socket is bound.
   callback.WaitForResult(socket.SetOption(
       PP_UDPSOCKET_OPTION_ADDRESS_REUSE, pp::Var(true),
       callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_ERROR_FAILED, callback.result());
 
+  // BROADCAST, SEND_BUFFER_SIZE and RECV_BUFFER_SIZE can be set after the
+  // socket is bound.
   callback.WaitForResult(socket.SetOption(
       PP_UDPSOCKET_OPTION_BROADCAST, pp::Var(true), callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
-  ASSERT_EQ(PP_ERROR_FAILED, callback.result());
+  ASSERT_EQ(PP_OK, callback.result());
 
-  // SEND_BUFFER_SIZE and RECV_BUFFER_SIZE can be set after the socket is bound.
   callback.WaitForResult(socket.SetOption(
       PP_UDPSOCKET_OPTION_SEND_BUFFER_SIZE, pp::Var(2048),
       callback.GetCallback()));

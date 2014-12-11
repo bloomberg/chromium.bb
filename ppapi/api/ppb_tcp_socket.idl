@@ -9,7 +9,8 @@
 
 label Chrome {
   M29 = 1.0,
-  M31 = 1.1
+  M31 = 1.1,
+  M41 = 1.2
 };
 
 /**
@@ -20,14 +21,18 @@ enum PP_TCPSocket_Option {
   /**
    * Disables coalescing of small writes to make TCP segments, and instead
    * delivers data immediately. Value's type is <code>PP_VARTYPE_BOOL</code>.
-   * This option can only be set after a successful <code>Connect()</code> call.
+   * On version 1.1 or earlier, this option can only be set after a successful
+   * <code>Connect()</code> call. On version 1.2 or later, there is no such
+   * limitation.
    */
   PP_TCPSOCKET_OPTION_NO_DELAY = 0,
 
   /**
    * Specifies the total per-socket buffer space reserved for sends. Value's
    * type should be <code>PP_VARTYPE_INT32</code>.
-   * This option can only be set after a successful <code>Connect()</code> call.
+   * On version 1.1 or earlier, this option can only be set after a successful
+   * <code>Connect()</code> call. On version 1.2 or later, there is no such
+   * limitation.
    *
    * Note: This is only treated as a hint for the browser to set the buffer
    * size. Even if <code>SetOption()</code> succeeds, the browser doesn't
@@ -38,7 +43,9 @@ enum PP_TCPSocket_Option {
   /**
    * Specifies the total per-socket buffer space reserved for receives. Value's
    * type should be <code>PP_VARTYPE_INT32</code>.
-   * This option can only be set after a successful <code>Connect()</code> call.
+   * On version 1.1 or earlier, this option can only be set after a successful
+   * <code>Connect()</code> call. On version 1.2 or later, there is no such
+   * limitation.
    *
    * Note: This is only treated as a hint for the browser to set the buffer
    * size. Even if <code>SetOption()</code> succeeds, the browser doesn't
@@ -257,6 +264,26 @@ interface PPB_TCPSocket {
    *
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
    */
+  int32_t SetOption([in] PP_Resource tcp_socket,
+                    [in] PP_TCPSocket_Option name,
+                    [in] PP_Var value,
+                    [in] PP_CompletionCallback callback);
+
+  /**
+   * Sets a socket option on the TCP socket.
+   * Please see the <code>PP_TCPSocket_Option</code> description for option
+   * names, value types and allowed values.
+   *
+   * @param[in] tcp_socket A <code>PP_Resource</code> corresponding to a TCP
+   * socket.
+   * @param[in] name The option to set.
+   * @param[in] value The option value to set.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
+   * completion.
+   *
+   * @return An int32_t containing an error code from <code>pp_errors.h</code>.
+   */
+  [version=1.2]
   int32_t SetOption([in] PP_Resource tcp_socket,
                     [in] PP_TCPSocket_Option name,
                     [in] PP_Var value,

@@ -54,6 +54,7 @@ class PPAPI_PROXY_EXPORT UDPSocketResourceBase: public PluginResource {
 
   int32_t SetOptionImpl(PP_UDPSocket_Option name,
                         const PP_Var& value,
+                        bool check_bind_state,
                         scoped_refptr<TrackedCallback> callback);
   int32_t BindImpl(const PP_NetAddress_Private* addr,
                    scoped_refptr<TrackedCallback> callback);
@@ -106,6 +107,11 @@ class PPAPI_PROXY_EXPORT UDPSocketResourceBase: public PluginResource {
                             PP_Resource* output_addr);
 
   bool private_api_;
+
+  // |bind_called_| is true after Bind() is called, while |bound_| is true,
+  // after Bind() succeeds. Bind() is an asynchronous method, so the timing
+  // on which of these is set is slightly different.
+  bool bind_called_;
   bool bound_;
   bool closed_;
 

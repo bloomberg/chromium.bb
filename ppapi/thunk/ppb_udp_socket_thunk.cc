@@ -83,6 +83,18 @@ void Close(PP_Resource udp_socket) {
   enter.object()->Close();
 }
 
+int32_t SetOption1_0(PP_Resource udp_socket,
+                     PP_UDPSocket_Option name,
+                     struct PP_Var value,
+                     struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_UDPSocket::SetOption1_0()";
+  EnterResource<PPB_UDPSocket_API> enter(udp_socket, callback, true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.SetResult(
+      enter.object()->SetOption1_0(name, value, enter.callback()));
+}
+
 int32_t SetOption(PP_Resource udp_socket,
                   PP_UDPSocket_Option name,
                   struct PP_Var value,
@@ -95,19 +107,36 @@ int32_t SetOption(PP_Resource udp_socket,
       enter.object()->SetOption(name, value, enter.callback()));
 }
 
-const PPB_UDPSocket_1_0 g_ppb_udpsocket_thunk_1_0 = {&Create,
-                                                     &IsUDPSocket,
-                                                     &Bind,
-                                                     &GetBoundAddress,
-                                                     &RecvFrom,
-                                                     &SendTo,
-                                                     &Close,
-                                                     &SetOption};
+const PPB_UDPSocket_1_0 g_ppb_udpsocket_thunk_1_0 = {
+  &Create,
+  &IsUDPSocket,
+  &Bind,
+  &GetBoundAddress,
+  &RecvFrom,
+  &SendTo,
+  &Close,
+  &SetOption1_0
+};
+
+const PPB_UDPSocket_1_1 g_ppb_udpsocket_thunk_1_1 = {
+  &Create,
+  &IsUDPSocket,
+  &Bind,
+  &GetBoundAddress,
+  &RecvFrom,
+  &SendTo,
+  &Close,
+  &SetOption
+};
 
 }  // namespace
 
 PPAPI_THUNK_EXPORT const PPB_UDPSocket_1_0* GetPPB_UDPSocket_1_0_Thunk() {
   return &g_ppb_udpsocket_thunk_1_0;
+}
+
+PPAPI_THUNK_EXPORT const PPB_UDPSocket_1_1* GetPPB_UDPSocket_1_1_Thunk() {
+  return &g_ppb_udpsocket_thunk_1_1;
 }
 
 }  // namespace thunk

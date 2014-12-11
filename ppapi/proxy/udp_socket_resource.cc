@@ -75,11 +75,22 @@ void UDPSocketResource::Close() {
   CloseImpl();
 }
 
+int32_t UDPSocketResource::SetOption1_0(
+    PP_UDPSocket_Option name,
+    const PP_Var& value,
+    scoped_refptr<TrackedCallback> callback) {
+  return SetOptionImpl(name, value,
+                       true,  // Check bind() state.
+                       callback);
+}
+
 int32_t UDPSocketResource::SetOption(
     PP_UDPSocket_Option name,
     const PP_Var& value,
     scoped_refptr<TrackedCallback> callback) {
-  return SetOptionImpl(name, value, callback);
+  return SetOptionImpl(name, value,
+                       false,  // Check bind() state.
+                       callback);
 }
 
 }  // namespace proxy

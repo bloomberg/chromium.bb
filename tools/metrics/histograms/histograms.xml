@@ -52517,6 +52517,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1008493701" label="PPB_UDPSocket;1.0"/>
   <int value="1017579801" label="PPB_OpenGLES2FramebufferBlit;1.0"/>
   <int value="1032125598" label="PPB_HostResolver;1.0"/>
+  <int value="1032205959" label="PPB_UDPSocket;1.1"/>
   <int value="1039206341" label="PPB_UDPSocket_Private;0.2"/>
   <int value="1042058362" label="PPB_Core;1.0"/>
   <int value="1050892821" label="PPB_OpenGLES2InstancedArrays;1.0"/>
@@ -52559,6 +52560,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1645591549" label="PPB_Widget(Dev);0.3"/>
   <int value="1677958987" label="PPB_ImageData;1.0"/>
   <int value="1680873803" label="PPB_Console;1.0"/>
+  <int value="1681523535" label="PPB_TCPSocket;1.2"/>
   <int value="1703245231" label="PPB_NetworkList;1.0"/>
   <int value="1721408268" label="PPB_URLLoader;1.0"/>
   <int value="1753813390" label="PPB_Flash_Clipboard;4.0"/>

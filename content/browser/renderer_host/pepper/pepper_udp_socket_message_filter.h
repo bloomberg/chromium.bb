@@ -16,6 +16,7 @@
 #include "content/public/common/process_type.h"
 #include "net/base/completion_callback.h"
 #include "net/base/ip_endpoint.h"
+#include "net/udp/udp_socket.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/ppb_udp_socket.h"
@@ -26,7 +27,6 @@ struct PP_NetAddress_Private;
 namespace net {
 class IOBuffer;
 class IOBufferWithSize;
-class UDPServerSocket;
 }
 
 namespace ppapi {
@@ -56,6 +56,13 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
   ~PepperUDPSocketMessageFilter() override;
 
  private:
+  enum SocketOption {
+    SOCKET_OPTION_ADDRESS_REUSE = 1 << 0,
+    SOCKET_OPTION_BROADCAST = 1 << 1,
+    SOCKET_OPTION_RCVBUF_SIZE = 1 << 2,
+    SOCKET_OPTION_SNDBUF_SIZE = 1 << 3
+  };
+
   // ppapi::host::ResourceMessageFilter overrides.
   scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
       const IPC::Message& message) override;
@@ -103,10 +110,15 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
   void SendSendToError(const ppapi::host::ReplyMessageContext& context,
                        int32_t result);
 
-  bool allow_address_reuse_;
-  bool allow_broadcast_;
+  // Bitwise-or of SocketOption flags. This stores the state about whether
+  // each option is set before Bind() is called.
+  int socket_options_;
 
-  scoped_ptr<net::UDPServerSocket> socket_;
+  // Locally cached value of buffer size.
+  int32_t rcvbuf_size_;
+  int32_t sndbuf_size_;
+
+  scoped_ptr<net::UDPSocket> socket_;
   bool closed_;
 
   scoped_refptr<net::IOBuffer> recvfrom_buffer_;
