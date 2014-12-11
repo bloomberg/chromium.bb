@@ -38,6 +38,9 @@ class NativeProcessLauncher {
                               base::File read_file,
                               base::File write_file)> LaunchedCallback;
 
+  // Creates default launcher for the current OS. |native_view| refers to the
+  // window that contains calling page. Can be nullptr, e.g. for background
+  // pages.
   static scoped_ptr<NativeProcessLauncher> CreateDefault(
       bool allow_user_level_hosts,
       gfx::NativeView native_view);

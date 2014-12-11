@@ -403,9 +403,11 @@ void MessageService::OpenChannelToNativeApp(
                                                  source_extension_id));
 
   // Get handle of the native view and pass it to the native messaging host.
+  content::RenderWidgetHost* render_widget_host =
+      content::RenderWidgetHost::FromID(source_process_id, source_routing_id);
   gfx::NativeView native_view =
-      content::RenderWidgetHost::FromID(source_process_id, source_routing_id)->
-          GetView()->GetNativeView();
+      render_widget_host ? render_widget_host->GetView()->GetNativeView()
+                         : nullptr;
 
   std::string error = kReceivingEndDoesntExistError;
   scoped_ptr<NativeMessageHost> native_host = NativeMessageHost::Create(
@@ -418,8 +420,7 @@ void MessageService::OpenChannelToNativeApp(
   // Abandon the channel.
   if (!native_host.get()) {
     LOG(ERROR) << "Failed to create native process.";
-    DispatchOnDisconnect(
-        source, receiver_port_id, error);
+    DispatchOnDisconnect(source, receiver_port_id, error);
     return;
   }
   channel->receiver.reset(new NativeMessagePort(
