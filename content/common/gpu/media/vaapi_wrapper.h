@@ -185,6 +185,8 @@ class CONTENT_EXPORT VaapiWrapper {
   // Created for the current set of va_surface_ids_ in CreateSurfaces() and
   // valid until DestroySurfaces().
   VAContextID va_context_id_;
+  // True if vaInitialize has been called successfully.
+  bool va_initialized_;
 
   // Data queued up for HW codec, to be committed on next execution.
   std::vector<VABufferID> pending_slice_bufs_;

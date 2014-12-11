@@ -136,7 +136,8 @@ VASurface::~VASurface() {
 VaapiWrapper::VaapiWrapper()
     : va_display_(NULL),
       va_config_id_(VA_INVALID_ID),
-      va_context_id_(VA_INVALID_ID) {
+      va_context_id_(VA_INVALID_ID),
+      va_initialized_(false) {
 }
 
 VaapiWrapper::~VaapiWrapper() {
@@ -231,6 +232,7 @@ bool VaapiWrapper::VaInitialize(Display* x_display,
 
   VAStatus va_res = vaInitialize(va_display_, &major_version_, &minor_version_);
   VA_SUCCESS_OR_RETURN(va_res, "vaInitialize failed", false);
+  va_initialized_ = true;
   DVLOG(1) << "VAAPI version: " << major_version_ << "." << minor_version_;
 
   if (VAAPIVersionLessThan(0, 34)) {
@@ -361,13 +363,19 @@ void VaapiWrapper::Deinitialize() {
     VA_LOG_ON_ERROR(va_res, "vaDestroyConfig failed");
   }
 
-  if (va_display_) {
+  // Must check if vaInitialize completed successfully, to work around a bug in
+  // libva. The bug was fixed upstream:
+  // http://lists.freedesktop.org/archives/libva/2013-July/001807.html
+  // TODO(mgiuca): Remove this check, and the |va_initialized_| variable, once
+  // the fix has rolled out sufficiently.
+  if (va_initialized_ && va_display_) {
     VAStatus va_res = vaTerminate(va_display_);
     VA_LOG_ON_ERROR(va_res, "vaTerminate failed");
   }
 
   va_config_id_ = VA_INVALID_ID;
   va_display_ = NULL;
+  va_initialized_ = false;
 }
 
 bool VaapiWrapper::VAAPIVersionLessThan(int major, int minor) {
