@@ -83,6 +83,13 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   // Called by the view code to notify about chosen credential.
   void OnChooseCredentials(const autofill::PasswordForm& password_form);
 
+  // Called by the view code to open the Help Center about setting up an OS
+  // password.
+  void OnShowOSPasswordHelpArticle();
+
+  // Called by the view code before hiding the OS password bubble.
+  void OnHideOSPasswordBubble(bool permanently);
+
   GURL origin() const { return origin_; }
 
   password_manager::ui::State state() const { return state_; }
@@ -122,11 +129,15 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   void set_state(password_manager::ui::State state) { state_ = state; }
 #endif
 
-// Upper limits on the size of the username and password fields.
+  // Upper limits on the size of the username and password fields.
   static int UsernameFieldWidth();
   static int PasswordFieldWidth();
 
  private:
+  // Returns true if the user should see "You don't have an OS password" bubble
+  // once he saves a password.
+  bool ShouldShowOSPasswordBubble();
+
   // URL of the page from where this bubble was triggered.
   GURL origin_;
   password_manager::ui::State state_;

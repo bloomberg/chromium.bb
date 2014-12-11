@@ -60,6 +60,7 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   class ManageView;
   class PendingView;
   class SaveConfirmationView;
+  class SetupOSPasswordView;
 
   ManagePasswordsBubbleView(content::WebContents* web_contents,
                             ManagePasswordsIconView* anchor_view,

@@ -52,6 +52,9 @@ enum State {
 
   // "Allow to collect URL?" bubble is showing.
   ASK_USER_REPORT_URL_BUBBLE_SHOWN_STATE,
+
+  // The user sees the bubble suggesting to set up an OS password.
+  SETUP_OS_PASSWORD_BUBBLE_STATE,
 };
 
 // The position of a password item in a list of credentials.

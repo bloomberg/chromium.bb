@@ -7579,6 +7579,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_PASSWORD_MANAGER_EMPTY_LOGIN" desc="A placeholder for the 'Manage Passwords' bubble's empty username label">
           (No username)
         </message>
+        <message name="IDS_PASSWORD_MANAGER_SETUP_OS_LINK_BUTTON" desc="Text for the button leading to the Help Center article about setting up an OS password">
+          Read more on how to set one up
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_DISMISS_OS_BUBBLE_BUTTON" desc="Text for the button disabling the warning about a missing OS password">
+          I like living dangerously
+        </message>
       </if>
       <if expr="is_android">
         <message name="IDS_PASSWORD_MANAGER_SAVE_BUTTON" desc="Mobile: Button text for the 'Save Password' infobar's 'Remember password' option">
@@ -13355,6 +13361,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_MANAGE_PASSWORDS_CHOOSE_TITLE" desc="The title of the password bubble when a credential should be chosen.">
       Choose an account from your Google Smart Lock
+      </message>
+      <message name="IDS_MANAGE_PASSWORDS_OS_PASSWORD_TITLE" desc="The title of the password bubble when the user is prompted to set up an OS password.">
+      You don't have an OS password. Everybody can come to your computer and look up your credentials.
       </message>
 
       <message name="IDS_ALLOW_AUTOFILL_SYNC_CREDENTIAL" desc="The text for the choice to allow autofilling in about:flags">

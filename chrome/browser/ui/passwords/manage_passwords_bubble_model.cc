@@ -273,7 +273,12 @@ void ManagePasswordsBubbleModel::OnSaveClicked() {
   ManagePasswordsUIController* manage_passwords_ui_controller =
       ManagePasswordsUIController::FromWebContents(web_contents());
   manage_passwords_ui_controller->SavePassword();
-  state_ = password_manager::ui::MANAGE_STATE;
+  if (ShouldShowOSPasswordBubble()) {
+    state_ = password_manager::ui::SETUP_OS_PASSWORD_BUBBLE_STATE;
+    title_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_OS_PASSWORD_TITLE);
+  } else {
+    state_ = password_manager::ui::MANAGE_STATE;
+  }
 }
 
 void ManagePasswordsBubbleModel::OnDoneClicked() {
@@ -319,6 +324,14 @@ void ManagePasswordsBubbleModel::OnChooseCredentials(
   state_ = password_manager::ui::INACTIVE_STATE;
 }
 
+void ManagePasswordsBubbleModel::OnShowOSPasswordHelpArticle() {
+  // TODO(vasilii): open the Help Article.
+}
+
+void ManagePasswordsBubbleModel::OnHideOSPasswordBubble(bool permanently) {
+  // TODO(vasilii): Save the decision to prefs.
+}
+
 // static
 int ManagePasswordsBubbleModel::UsernameFieldWidth() {
   return GetFieldWidth(USERNAME_FIELD);
@@ -327,4 +340,8 @@ int ManagePasswordsBubbleModel::UsernameFieldWidth() {
 // static
 int ManagePasswordsBubbleModel::PasswordFieldWidth() {
   return GetFieldWidth(PASSWORD_FIELD);
+}
+
+bool ManagePasswordsBubbleModel::ShouldShowOSPasswordBubble() {
+  return false;
 }
