@@ -518,7 +518,8 @@ static bool executeInsertImage(LocalFrame& frame, Event*, EditorCommandSource, c
 {
     ASSERT(frame.document());
     RefPtrWillBeRawPtr<HTMLImageElement> image = HTMLImageElement::create(*frame.document());
-    image->setSrc(value);
+    if (!value.isEmpty())
+        image->setSrc(value);
     return executeInsertElement(frame, image.release());
 }
 
