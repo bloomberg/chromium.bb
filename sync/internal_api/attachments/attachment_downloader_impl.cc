@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/sys_byteorder.h"
 #include "net/base/load_flags.h"
@@ -167,6 +168,8 @@ void AttachmentDownloaderImpl::OnURLFetchComplete(
     } else {
       result = DOWNLOAD_SUCCESS;
     }
+    UMA_HISTOGRAM_BOOLEAN("Sync.Attachments.DownloadChecksumResult",
+                          result == DOWNLOAD_SUCCESS);
   } else if (response_code == net::HTTP_UNAUTHORIZED) {
     // Server tells us we've got a bad token so invalidate it.
     OAuth2TokenServiceRequest::InvalidateToken(token_service_provider_.get(),
