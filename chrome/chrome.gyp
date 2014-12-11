@@ -617,6 +617,7 @@
             '../sync/sync.gyp:sync_java',
             '../third_party/android_tools/android_tools.gyp:android_support_v7_appcompat_javalib',
             '../third_party/android_tools/android_tools.gyp:android_support_v13_javalib',
+            '../third_party/libaddressinput/libaddressinput.gyp:android_addressinput_widget',
             '../ui/android/ui_android.gyp:ui_java',
           ],
           'variables': {

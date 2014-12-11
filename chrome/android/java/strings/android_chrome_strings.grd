@@ -97,9 +97,76 @@
         Chromium
       </message>
 
+      <!-- Generic strings -->
+      <message name="IDS_OK" desc="Label for a confirm button. Used in multiple contexts. [CHAR-LIMIT=20]">
+        OK
+      </message>
+      <message name="IDS_CANCEL" desc="Label for a cancel button. Used in multiple contexts. [CHAR-LIMIT=20]">
+        Cancel
+      </message>
+      <message name="IDS_SAVE" desc="Label for a button to save a change. Used in multiple contexts. [CHAR-LIMIT=20]">
+        Save
+      </message>
+      <message name="IDS_DELETE" desc="Label for a delete button. Used in multiple contexts. [CHAR-LIMIT=20]">
+        Delete
+      </message>
+      <message name="IDS_TEXT_ON" desc="Text indicating that an option is turned on. [CHAR-LIMIT=20]">
+        On
+      </message>
+      <message name="IDS_TEXT_OFF" desc="Text indicating that an option is turned off. [CHAR-LIMIT=20]">
+        Off
+      </message>
+
       <!-- Main Preferences -->
       <message name="IDS_PREFERENCES" desc="Title for Chrome's Settings.">
         Settings
+      </message>
+      <message name="IDS_MANAGED_BY_YOUR_ADMINISTRATOR" desc="Popup message when the user clicks a UI element that has been disabled by enterprise policy.">
+        Managed by your administrator
+      </message>
+
+      <!-- Autofill preferences -->
+      <message name="IDS_PREFS_AUTOFILL" desc="Title for 'Autofill forms' settings, which control what personal data can be automatically filled into web page forms. [CHAR-LIMIT=32]">
+        Autofill forms
+      </message>
+      <message name="IDS_AUTOFILL_PROFILES_TITLE" desc="Header above the list of profiles (which contain the user's name, address, etc) that can be automatically filled into web page forms. [CHAR-LIMIT=32]">
+        Autofill profiles
+      </message>
+      <message name="IDS_AUTOFILL_CREDIT_CARDS_TITLE" desc="Header above the list of the user's credit cards that can be automatically filled into web page forms. [CHAR-LIMIT=32]">
+        Autofill credit cards
+      </message>
+      <message name="IDS_AUTOFILL_CREATE_PROFILE" desc="Button that allows the user to create a new profile (which contains the user's name, address, etc) that will be automatically filled into web page forms. [CHAR-LIMIT=32]">
+        Add profile
+      </message>
+      <message name="IDS_AUTOFILL_CREATE_CREDIT_CARD" desc="Button that allows the user to add a new credit card that will be automatically filled into web page forms. [CHAR-LIMIT=32]">
+        Add credit card
+      </message>
+      <message name="IDS_AUTOFILL_PROFILE_EDITOR_EMAIL_ADDRESS" desc="Label for text input field containing an e-mail address. [CHAR-LIMIT=32]">
+        Email
+      </message>
+      <message name="IDS_AUTOFILL_PROFILE_EDITOR_PHONE_NUMBER" desc="Label for text input field containing a phone number. [CHAR-LIMIT=32]">
+        Phone
+      </message>
+      <message name="IDS_AUTOFILL_CREDIT_CARD_EDITOR_NAME" desc="Label for text input field containing the name on a credit card. [CHAR-LIMIT=32]">
+        Name on card
+      </message>
+      <message name="IDS_AUTOFILL_CREDIT_CARD_EDITOR_NUMBER" desc="Label for text input field containing a credit card number. [CHAR-LIMIT=32]">
+        Credit card number
+      </message>
+      <message name="IDS_AUTOFILL_CREDIT_CARD_EDITOR_EXPIRATION_DATE" desc="Label for text input field containing a credit card expiration date. [CHAR-LIMIT=32]">
+        Expiration date
+      </message>
+      <message name="IDS_ACCESSIBILITY_AUTOFILL_CC_NAME_TEXTBOX" desc="Content description for text input field containing the name on a credit card.">
+        Name on card
+      </message>
+      <message name="IDS_ACCESSIBILITY_AUTOFILL_CC_NUMBER_TEXTBOX" desc="Content description for text input field containing a credit card number.">
+        Card number
+      </message>
+      <message name="IDS_ACCESSIBILITY_AUTOFILL_CC_MONTH" desc="Content description for text input field containing a credit card expiration month.">
+        Card expiration month
+      </message>
+      <message name="IDS_ACCESSIBILITY_AUTOFILL_CC_YEAR" desc="Content description for text input field containing a credit card expiration year.">
+        Card expiration year
       </message>
 
       <!-- Accessibility preferences -->

@@ -93,6 +93,8 @@ android_library("chrome_java") {
     "//third_party/cacheinvalidation:cacheinvalidation_javalib",
     "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
     "//third_party/jsr-305:jsr_305_javalib",
+    "//third_party/libaddressinput:android_addressinput_widget_java",
+    "//third_party/libaddressinput:android_addressinput_widget_resources",
     "//ui/android:ui_java",
     "//ui/android:ui_java_resources",
   ]

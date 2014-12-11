@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2014 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <org.chromium.chrome.browser.preferences.ChromeSwitchPreference
+        android:key="autofill_switch"
+        android:summaryOn="@string/text_on"
+        android:summaryOff="@string/text_off" />
+
+    <PreferenceCategory
+       android:key="autofill_profiles"
+       android:enabled="true"
+       android:title="@string/autofill_profiles_title" />
+    <Preference
+       android:fragment="org.chromium.chrome.browser.preferences.autofill.AutofillProfileEditor"
+       android:key="autofill_create_profile"
+       android:title="@string/autofill_create_profile" />
+    <PreferenceCategory
+       android:key="autofill_credit_cards"
+       android:enabled="true"
+       android:title="@string/autofill_credit_cards_title" />
+    <Preference
+       android:fragment="org.chromium.chrome.browser.preferences.autofill.AutofillCreditCardEditor"
+       android:key="autofill_create_credit_card"
+       android:title="@string/autofill_create_credit_card" />
+</PreferenceScreen>

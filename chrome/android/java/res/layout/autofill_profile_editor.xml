@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2014 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:focusableInTouchMode="true" >
+
+        <LinearLayout
+            style="@style/PreferenceScreenLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Editable fields for the profile -->
+
+            <LinearLayout
+                android:id="@+id/autofill_profile_widget_root"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+            </LinearLayout>
+
+            <TextView
+                style="@style/BoldTextFieldLabel"
+                android:text="@string/autofill_profile_editor_phone_number" />
+
+            <EditText
+                android:id="@+id/autofill_profile_editor_phone_number_edit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:imeOptions="flagNoExtractUi"
+                android:inputType="phone"
+                android:singleLine="true" />
+
+            <TextView
+                style="@style/BoldTextFieldLabel"
+                android:text="@string/autofill_profile_editor_email_address" />
+
+            <EditText
+                android:id="@+id/autofill_profile_editor_email_address_edit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:imeOptions="flagNoExtractUi"
+                android:inputType="textEmailAddress"
+                android:singleLine="true" />
+
+        </LinearLayout>
+
+        <View style="@style/ButtonBarTopSpacer" />
+        <View style="@style/ButtonBarTopDivider" />
+
+        <LinearLayout style="@style/ButtonBar" >
+            <Button
+                android:id="@+id/autofill_profile_delete"
+                style="@style/ButtonBarButton"
+                android:text="@string/delete" />
+
+            <Button
+                android:id="@+id/autofill_profile_cancel"
+                style="@style/ButtonBarButton"
+                android:text="@string/cancel" />
+
+            <Button
+                android:id="@+id/autofill_profile_save"
+                style="@style/ButtonBarButton"
+                android:text="@string/save" />
+        </LinearLayout>
+    </LinearLayout>
+
+</ScrollView>
