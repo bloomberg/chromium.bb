@@ -10,6 +10,7 @@
 
 from __future__ import print_function
 
+import mock
 import mox
 import os
 import shutil
@@ -30,7 +31,7 @@ from chromite.lib.paygen import urilib
 
 
 # We access a lot of protected members during testing.
-# pylint: disable=W0212
+# pylint: disable=protected-access
 
 
 class PaygenPayloadLibTest(mox.MoxTestBase):
@@ -579,11 +580,14 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     metadata_signatures = ('1',)
 
     expected_json = (
-        '{"metadata_signature": "MQ==", "sha1_hex": "FDwoNOUO+kNwrQJMSLnLDY7i'
-        'Z/E=", "sha256_hex": "gkm9207E7xbqpNRBFjEPO43nxyp/MNGQfyH3IYrq2kE=",'
+        '{"metadata_signature": "MQ==", "metadata_size": 10,'
+        ' "sha1_hex": "FDwoNOUO+kNwrQJMSLnLDY7iZ/E=",'
+        ' "sha256_hex": "gkm9207E7xbqpNRBFjEPO43nxyp/MNGQfyH3IYrq2kE=",'
         ' "version": 1}')
 
-    gen._StorePayloadJson(metadata_signatures)
+    # To really look up the metadata size, we'd need a real payload for parsing.
+    with mock.patch.object(gen, '_MetadataSize', return_value=10):
+      gen._StorePayloadJson(metadata_signatures)
 
     # Validate the results.
     self.assertEqual(osutils.ReadFile(gen.description_file), expected_json)
@@ -770,7 +774,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
         paygen_payload_lib.FindExistingPayloads(self.full_payload),
         ['foo_result'])
 
-
   def testFindCacheDir(self):
     """Test calculating the location of the cache directory."""
     # Test default dir in /tmp.
@@ -789,6 +792,7 @@ class PaygenPayloadLibEndToEndTest(PaygenPayloadLibTest):
     """Helper test function for validating end to end payload generation."""
     output_uri = os.path.join(self.tempdir, 'expected_payload_out')
     output_metadata_uri = output_uri + '.metadata-signature'
+    output_metadata_json = output_uri + '.json'
 
     payload = gspaths.Payload(tgt_image=tgt_image,
                               src_image=src_image,
@@ -802,6 +806,7 @@ class PaygenPayloadLibEndToEndTest(PaygenPayloadLibTest):
 
     self.assertTrue(os.path.exists(output_uri))
     self.assertEqual(os.path.exists(output_metadata_uri), sign)
+    self.assertTrue(os.path.exists(output_metadata_json))
 
   @cros_test_lib.NetworkTest()
   @osutils.TempDirDecorator

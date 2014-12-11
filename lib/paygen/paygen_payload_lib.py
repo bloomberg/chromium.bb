@@ -350,6 +350,21 @@ class _PaygenPayload(object):
       self._RunGeneratorCmd(cmd)
       return payload_hash_file.read()
 
+  def _MetadataSize(self):
+    """Discover the metadata size.
+
+    The payload generator should return this information when calculating the
+    metadata hash, but would require a lot of new plumbing. Instead we just
+    look it up ourselves.
+
+    Returns:
+      int value of the metadata size.
+    """
+    with open(self.payload_file) as payload_file:
+      payload = self._update_payload.Payload(payload_file)
+      payload.Init()
+      return payload.data_offset
+
   def _GenMetadataHash(self):
     """Generate a hash of payload and metadata.
 
@@ -504,6 +519,7 @@ class _PaygenPayload(object):
       'version': DESCRIPTION_FILE_VERSION,
       'sha1_hex': sha1_hex,
       'sha256_hex': sha256_hex,
+      'metadata_size': self._MetadataSize(),
       'metadata_signature': metadata_signature,
     }
 
@@ -536,8 +552,10 @@ class _PaygenPayload(object):
     metadata_hash = self._GenMetadataHash()
 
     # Sign them.
+    # pylint: disable=unpacking-non-sequence
     payload_signatures, metadata_signatures = self._SignHashes(
         [payload_hash, metadata_hash])
+    # pylint: enable=unpacking-non-sequence
 
     # Insert payload signature(s).
     self._InsertPayloadSignatures(payload_signatures)
