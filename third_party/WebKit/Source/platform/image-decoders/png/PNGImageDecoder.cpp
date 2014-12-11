@@ -212,7 +212,6 @@ PNGImageDecoder::PNGImageDecoder(ImageSource::AlphaOption alphaOption,
     ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption,
     size_t maxDecodedBytes)
     : ImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes)
-    , m_doNothingOnFailure(false)
     , m_hasColorProfile(false)
 {
 }
@@ -248,14 +247,6 @@ ImageFrame* PNGImageDecoder::frameBufferAtIndex(size_t index)
 
     frame.notifyBitmapIfPixelsChanged();
     return &frame;
-}
-
-bool PNGImageDecoder::setFailed()
-{
-    if (m_doNothingOnFailure)
-        return false;
-    m_reader.clear();
-    return ImageDecoder::setFailed();
 }
 
 #if USE(QCMSLIB)
@@ -304,15 +295,8 @@ void PNGImageDecoder::headerAvailable()
         return;
     }
 
-    // We can fill in the size now that the header is available.  Avoid memory
-    // corruption issues by neutering setFailed() during this call; if we don't
-    // do this, failures will cause |m_reader| to be deleted, and our jmpbuf
-    // will cease to exist.  Note that we'll still properly set the failure flag
-    // in this case as soon as we longjmp().
-    m_doNothingOnFailure = true;
-    bool result = setSize(width, height);
-    m_doNothingOnFailure = false;
-    if (!result) {
+    // Set the image size now that the image header is available.
+    if (!setSize(width, height)) {
         longjmp(JMPBUF(png), 1);
         return;
     }
@@ -529,19 +513,23 @@ void PNGImageDecoder::complete()
 
 void PNGImageDecoder::decode(bool onlySize)
 {
-    if (failed())
+    if (failed()) {
+        ASSERT(!m_reader);
         return;
+    }
 
-    if (!m_reader)
+    if (!m_reader) {
         m_reader = adoptPtr(new PNGImageReader(this));
+        ASSERT(!isComplete());
+    }
 
-    // If we couldn't decode the image but we've received all the data, decoding
+    // If we couldn't decode the image but have received all the data, decoding
     // has failed.
     if (!m_reader->decode(*m_data, onlySize) && isAllDataReceived())
         setFailed();
-    // If we're done decoding the image, we don't need the PNGImageReader
-    // anymore.  (If we failed, |m_reader| has already been cleared.)
-    else if (isComplete())
+
+    // If decoding is done or failed, we don't need the PNGImageReader anymore.
+    if (isComplete() || failed())
         m_reader.clear();
 }
 

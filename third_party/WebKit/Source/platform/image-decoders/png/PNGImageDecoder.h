@@ -34,7 +34,6 @@ namespace blink {
 
 class PNGImageReader;
 
-// This class decodes the PNG image format.
 class PLATFORM_EXPORT PNGImageDecoder : public ImageDecoder {
     WTF_MAKE_NONCOPYABLE(PNGImageDecoder);
 public:
@@ -46,10 +45,6 @@ public:
     virtual bool isSizeAvailable() override;
     virtual bool hasColorProfile() const override { return m_hasColorProfile; }
     virtual ImageFrame* frameBufferAtIndex(size_t) override;
-    // CAUTION: setFailed() deletes |m_reader|.  Be careful to avoid
-    // accessing deleted memory, especially when calling this from inside
-    // PNGImageReader!
-    virtual bool setFailed() override;
 
     // Callbacks from libpng
     void headerAvailable();
@@ -68,7 +63,6 @@ private:
     void decode(bool onlySize);
 
     OwnPtr<PNGImageReader> m_reader;
-    bool m_doNothingOnFailure;
     bool m_hasColorProfile;
 };
 
