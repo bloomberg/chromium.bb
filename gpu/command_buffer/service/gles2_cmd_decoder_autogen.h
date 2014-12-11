@@ -80,6 +80,20 @@ error::Error GLES2DecoderImpl::HandleBindRenderbuffer(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleBindSampler(uint32_t immediate_data_size,
+                                                 const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::BindSampler& c =
+      *static_cast<const gles2::cmds::BindSampler*>(cmd_data);
+  (void)c;
+  GLuint unit = static_cast<GLuint>(c.unit);
+  GLuint sampler = c.sampler;
+  group_->GetSamplerServiceId(sampler, &sampler);
+  glBindSampler(unit, sampler);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleBindTexture(uint32_t immediate_data_size,
                                                  const void* cmd_data) {
   const gles2::cmds::BindTexture& c =
@@ -616,6 +630,34 @@ error::Error GLES2DecoderImpl::HandleDeleteRenderbuffersImmediate(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleDeleteSamplersImmediate(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::DeleteSamplersImmediate& c =
+      *static_cast<const gles2::cmds::DeleteSamplersImmediate*>(cmd_data);
+  (void)c;
+  GLsizei n = static_cast<GLsizei>(c.n);
+  uint32_t data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
+  const GLuint* samplers =
+      GetImmediateDataAs<const GLuint*>(c, data_size, immediate_data_size);
+  if (samplers == NULL) {
+    return error::kOutOfBounds;
+  }
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    GLuint service_id = 0;
+    if (group_->GetSamplerServiceId(samplers[ii], &service_id)) {
+      glDeleteSamplers(1, &service_id);
+      group_->RemoveSamplerId(samplers[ii]);
+    }
+  }
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleDeleteTexturesImmediate(
     uint32_t immediate_data_size,
     const void* cmd_data) {
@@ -930,6 +972,37 @@ error::Error GLES2DecoderImpl::HandleGenRenderbuffersImmediate(
   }
   if (!GenRenderbuffersHelper(n, renderbuffers)) {
     return error::kInvalidArguments;
+  }
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleGenSamplersImmediate(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::GenSamplersImmediate& c =
+      *static_cast<const gles2::cmds::GenSamplersImmediate*>(cmd_data);
+  (void)c;
+  GLsizei n = static_cast<GLsizei>(c.n);
+  uint32_t data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
+  GLuint* samplers =
+      GetImmediateDataAs<GLuint*>(c, data_size, immediate_data_size);
+  if (samplers == NULL) {
+    return error::kOutOfBounds;
+  }
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    if (group_->GetSamplerServiceId(samplers[ii], NULL)) {
+      return error::kInvalidArguments;
+    }
+  }
+  scoped_ptr<GLuint[]> service_ids(new GLuint[n]);
+  glGenSamplers(n, service_ids.get());
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    group_->AddSamplerId(samplers[ii], service_ids[ii]);
   }
   return error::kNoError;
 }
@@ -1269,6 +1342,76 @@ error::Error GLES2DecoderImpl::HandleGetRenderbufferParameteriv(
     result->SetNumResults(num_values);
   } else {
     LOCAL_SET_GL_ERROR(error, "GetRenderbufferParameteriv", "");
+  }
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleGetSamplerParameterfv(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::GetSamplerParameterfv& c =
+      *static_cast<const gles2::cmds::GetSamplerParameterfv*>(cmd_data);
+  (void)c;
+  GLuint sampler = c.sampler;
+  GLenum pname = static_cast<GLenum>(c.pname);
+  typedef cmds::GetSamplerParameterfv::Result Result;
+  GLsizei num_values = 0;
+  GetNumValuesReturnedForGLGet(pname, &num_values);
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+  GLfloat* params = result ? result->GetData() : NULL;
+  if (params == NULL) {
+    return error::kOutOfBounds;
+  }
+  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetSamplerParameterfv");
+  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
+  group_->GetSamplerServiceId(sampler, &sampler);
+  glGetSamplerParameterfv(sampler, pname, params);
+  GLenum error = glGetError();
+  if (error == GL_NO_ERROR) {
+    result->SetNumResults(num_values);
+  } else {
+    LOCAL_SET_GL_ERROR(error, "GetSamplerParameterfv", "");
+  }
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleGetSamplerParameteriv(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::GetSamplerParameteriv& c =
+      *static_cast<const gles2::cmds::GetSamplerParameteriv*>(cmd_data);
+  (void)c;
+  GLuint sampler = c.sampler;
+  GLenum pname = static_cast<GLenum>(c.pname);
+  typedef cmds::GetSamplerParameteriv::Result Result;
+  GLsizei num_values = 0;
+  GetNumValuesReturnedForGLGet(pname, &num_values);
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+  GLint* params = result ? result->GetData() : NULL;
+  if (params == NULL) {
+    return error::kOutOfBounds;
+  }
+  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetSamplerParameteriv");
+  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
+  group_->GetSamplerServiceId(sampler, &sampler);
+  glGetSamplerParameteriv(sampler, pname, params);
+  GLenum error = glGetError();
+  if (error == GL_NO_ERROR) {
+    result->SetNumResults(num_values);
+  } else {
+    LOCAL_SET_GL_ERROR(error, "GetSamplerParameteriv", "");
   }
   return error::kNoError;
 }
@@ -1646,6 +1789,24 @@ error::Error GLES2DecoderImpl::HandleIsRenderbuffer(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleIsSampler(uint32_t immediate_data_size,
+                                               const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::IsSampler& c =
+      *static_cast<const gles2::cmds::IsSampler*>(cmd_data);
+  (void)c;
+  GLuint sampler = c.sampler;
+  typedef cmds::IsSampler::Result Result;
+  Result* result_dst = GetSharedMemoryAs<Result*>(
+      c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
+  if (!result_dst) {
+    return error::kOutOfBounds;
+  }
+  *result_dst = glIsSampler(sampler);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleIsShader(uint32_t immediate_data_size,
                                               const void* cmd_data) {
   const gles2::cmds::IsShader& c =
@@ -1783,6 +1944,91 @@ error::Error GLES2DecoderImpl::HandleSampleCoverage(
   GLclampf value = static_cast<GLclampf>(c.value);
   GLboolean invert = static_cast<GLboolean>(c.invert);
   DoSampleCoverage(value, invert);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleSamplerParameterf(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::SamplerParameterf& c =
+      *static_cast<const gles2::cmds::SamplerParameterf*>(cmd_data);
+  (void)c;
+  GLuint sampler = c.sampler;
+  GLenum pname = static_cast<GLenum>(c.pname);
+  GLfloat param = static_cast<GLfloat>(c.param);
+  group_->GetSamplerServiceId(sampler, &sampler);
+  glSamplerParameterf(sampler, pname, param);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleSamplerParameterfvImmediate(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::SamplerParameterfvImmediate& c =
+      *static_cast<const gles2::cmds::SamplerParameterfvImmediate*>(cmd_data);
+  (void)c;
+  GLuint sampler = c.sampler;
+  GLenum pname = static_cast<GLenum>(c.pname);
+  uint32_t data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 1, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
+  const GLfloat* params =
+      GetImmediateDataAs<const GLfloat*>(c, data_size, immediate_data_size);
+  if (params == NULL) {
+    return error::kOutOfBounds;
+  }
+  group_->GetSamplerServiceId(sampler, &sampler);
+  DoSamplerParameterfv(sampler, pname, params);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleSamplerParameteri(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::SamplerParameteri& c =
+      *static_cast<const gles2::cmds::SamplerParameteri*>(cmd_data);
+  (void)c;
+  GLuint sampler = c.sampler;
+  GLenum pname = static_cast<GLenum>(c.pname);
+  GLint param = static_cast<GLint>(c.param);
+  group_->GetSamplerServiceId(sampler, &sampler);
+  glSamplerParameteri(sampler, pname, param);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleSamplerParameterivImmediate(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::SamplerParameterivImmediate& c =
+      *static_cast<const gles2::cmds::SamplerParameterivImmediate*>(cmd_data);
+  (void)c;
+  GLuint sampler = c.sampler;
+  GLenum pname = static_cast<GLenum>(c.pname);
+  uint32_t data_size;
+  if (!ComputeDataSize(1, sizeof(GLint), 1, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
+  const GLint* params =
+      GetImmediateDataAs<const GLint*>(c, data_size, immediate_data_size);
+  if (params == NULL) {
+    return error::kOutOfBounds;
+  }
+  DoSamplerParameteriv(sampler, pname, params);
   return error::kNoError;
 }
 

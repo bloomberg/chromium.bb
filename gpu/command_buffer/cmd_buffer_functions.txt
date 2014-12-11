@@ -10,6 +10,7 @@ GL_APICALL void         GL_APIENTRY glBindAttribLocation (GLidProgram program, G
 GL_APICALL void         GL_APIENTRY glBindBuffer (GLenumBufferTarget target, GLidBindBuffer buffer);
 GL_APICALL void         GL_APIENTRY glBindFramebuffer (GLenumFrameBufferTarget target, GLidBindFramebuffer framebuffer);
 GL_APICALL void         GL_APIENTRY glBindRenderbuffer (GLenumRenderBufferTarget target, GLidBindRenderbuffer renderbuffer);
+GL_APICALL void         GL_APIENTRY glBindSampler (GLuint unit, GLidBindSampler sampler);
 GL_APICALL void         GL_APIENTRY glBindTexture (GLenumTextureBindTarget target, GLidBindTexture texture);
 GL_APICALL void         GL_APIENTRY glBlendColor (GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
 GL_APICALL void         GL_APIENTRY glBlendEquation ( GLenumEquation mode );
@@ -37,6 +38,7 @@ GL_APICALL void         GL_APIENTRY glDeleteBuffers (GLsizeiNotNegative n, const
 GL_APICALL void         GL_APIENTRY glDeleteFramebuffers (GLsizeiNotNegative n, const GLuint* framebuffers);
 GL_APICALL void         GL_APIENTRY glDeleteProgram (GLidProgram program);
 GL_APICALL void         GL_APIENTRY glDeleteRenderbuffers (GLsizeiNotNegative n, const GLuint* renderbuffers);
+GL_APICALL void         GL_APIENTRY glDeleteSamplers (GLsizeiNotNegative n, const GLuint* samplers);
 GL_APICALL void         GL_APIENTRY glDeleteShader (GLidShader shader);
 GL_APICALL void         GL_APIENTRY glDeleteTextures (GLsizeiNotNegative n, const GLuint* textures);
 GL_APICALL void         GL_APIENTRY glDepthFunc (GLenumCmpFunction func);
@@ -59,6 +61,7 @@ GL_APICALL void         GL_APIENTRY glGenBuffers (GLsizeiNotNegative n, GLuint* 
 GL_APICALL void         GL_APIENTRY glGenerateMipmap (GLenumTextureBindTarget target);
 GL_APICALL void         GL_APIENTRY glGenFramebuffers (GLsizeiNotNegative n, GLuint* framebuffers);
 GL_APICALL void         GL_APIENTRY glGenRenderbuffers (GLsizeiNotNegative n, GLuint* renderbuffers);
+GL_APICALL void         GL_APIENTRY glGenSamplers (GLsizeiNotNegative n, GLuint* samplers);
 GL_APICALL void         GL_APIENTRY glGenTextures (GLsizeiNotNegative n, GLuint* textures);
 GL_APICALL void         GL_APIENTRY glGetActiveAttrib (GLidProgram program, GLuint index, GLsizeiNotNegative bufsize, GLsizeiOptional* length, GLint* size, GLenum* type, char* name);
 GL_APICALL void         GL_APIENTRY glGetActiveUniform (GLidProgram program, GLuint index, GLsizeiNotNegative bufsize, GLsizeiOptional* length, GLint* size, GLenum* type, char* name);
@@ -74,6 +77,8 @@ GL_APICALL void         GL_APIENTRY glGetInternalformativ (GLenumRenderBufferTar
 GL_APICALL void         GL_APIENTRY glGetProgramiv (GLidProgram program, GLenumProgramParameter pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetProgramInfoLog (GLidProgram program, GLsizeiNotNegative bufsize, GLsizeiOptional* length, char* infolog);
 GL_APICALL void         GL_APIENTRY glGetRenderbufferParameteriv (GLenumRenderBufferTarget target, GLenumRenderBufferParameter pname, GLint* params);
+GL_APICALL void         GL_APIENTRY glGetSamplerParameterfv (GLidSampler sampler, GLenumSamplerParameter pname, GLfloat* params);
+GL_APICALL void         GL_APIENTRY glGetSamplerParameteriv (GLidSampler sampler, GLenumSamplerParameter pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetShaderiv (GLidShader shader, GLenumShaderParameter pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetShaderInfoLog (GLidShader shader, GLsizeiNotNegative bufsize, GLsizeiOptional* length, char* infolog);
 GL_APICALL void         GL_APIENTRY glGetShaderPrecisionFormat (GLenumShaderType shadertype, GLenumShaderPrecision precisiontype, GLint* range, GLint* precision);
@@ -95,6 +100,7 @@ GL_APICALL GLboolean    GL_APIENTRY glIsEnabled (GLenumCapability cap);
 GL_APICALL GLboolean    GL_APIENTRY glIsFramebuffer (GLidFramebuffer framebuffer);
 GL_APICALL GLboolean    GL_APIENTRY glIsProgram (GLidProgram program);
 GL_APICALL GLboolean    GL_APIENTRY glIsRenderbuffer (GLidRenderbuffer renderbuffer);
+GL_APICALL GLboolean    GL_APIENTRY glIsSampler (GLidSampler sampler);
 GL_APICALL GLboolean    GL_APIENTRY glIsShader (GLidShader shader);
 GL_APICALL GLboolean    GL_APIENTRY glIsTexture (GLidTexture texture);
 GL_APICALL void         GL_APIENTRY glLineWidth (GLfloat width);
@@ -106,6 +112,10 @@ GL_APICALL void         GL_APIENTRY glReadPixels (GLint x, GLint y, GLsizei widt
 GL_APICALL void         GL_APIENTRY glReleaseShaderCompiler (void);
 GL_APICALL void         GL_APIENTRY glRenderbufferStorage (GLenumRenderBufferTarget target, GLenumRenderBufferFormat internalformat, GLsizei width, GLsizei height);
 GL_APICALL void         GL_APIENTRY glSampleCoverage (GLclampf value, GLboolean invert);
+GL_APICALL void         GL_APIENTRY glSamplerParameterf (GLidBindSampler sampler, GLenumSamplerParameter pname, GLfloat param);
+GL_APICALL void         GL_APIENTRY glSamplerParameterfv (GLidBindSampler sampler, GLenumSamplerParameter pname, const GLfloat* params);
+GL_APICALL void         GL_APIENTRY glSamplerParameteri (GLidBindSampler sampler, GLenumSamplerParameter pname, GLint param);
+GL_APICALL void         GL_APIENTRY glSamplerParameteriv (GLidBindSampler sampler, GLenumSamplerParameter pname, const GLint* params);
 GL_APICALL void         GL_APIENTRY glScissor (GLint x, GLint y, GLsizei width, GLsizei height);
 GL_APICALL void         GL_APIENTRY glShaderBinary (GLsizeiNotNegative n, const GLuint* shaders, GLenumShaderBinaryFormat binaryformat, const void* binary, GLsizeiNotNegative length);
 GL_APICALL void         GL_APIENTRY glShaderSource (GLidShader shader, GLsizeiNotNegative count, const GLchar* const* str, const GLint* length);

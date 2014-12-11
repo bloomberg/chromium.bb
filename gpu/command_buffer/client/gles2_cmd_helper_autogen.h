@@ -57,6 +57,13 @@ void BindRenderbuffer(GLenum target, GLuint renderbuffer) {
   }
 }
 
+void BindSampler(GLuint unit, GLuint sampler) {
+  gles2::cmds::BindSampler* c = GetCmdSpace<gles2::cmds::BindSampler>();
+  if (c) {
+    c->Init(unit, sampler);
+  }
+}
+
 void BindTexture(GLenum target, GLuint texture) {
   gles2::cmds::BindTexture* c = GetCmdSpace<gles2::cmds::BindTexture>();
   if (c) {
@@ -342,6 +349,15 @@ void DeleteRenderbuffersImmediate(GLsizei n, const GLuint* renderbuffers) {
   }
 }
 
+void DeleteSamplersImmediate(GLsizei n, const GLuint* samplers) {
+  const uint32_t size = gles2::cmds::DeleteSamplersImmediate::ComputeSize(n);
+  gles2::cmds::DeleteSamplersImmediate* c =
+      GetImmediateCmdSpaceTotalSize<gles2::cmds::DeleteSamplersImmediate>(size);
+  if (c) {
+    c->Init(n, samplers);
+  }
+}
+
 void DeleteShader(GLuint shader) {
   gles2::cmds::DeleteShader* c = GetCmdSpace<gles2::cmds::DeleteShader>();
   if (c) {
@@ -524,6 +540,15 @@ void GenRenderbuffersImmediate(GLsizei n, GLuint* renderbuffers) {
   }
 }
 
+void GenSamplersImmediate(GLsizei n, GLuint* samplers) {
+  const uint32_t size = gles2::cmds::GenSamplersImmediate::ComputeSize(n);
+  gles2::cmds::GenSamplersImmediate* c =
+      GetImmediateCmdSpaceTotalSize<gles2::cmds::GenSamplersImmediate>(size);
+  if (c) {
+    c->Init(n, samplers);
+  }
+}
+
 void GenTexturesImmediate(GLsizei n, GLuint* textures) {
   const uint32_t size = gles2::cmds::GenTexturesImmediate::ComputeSize(n);
   gles2::cmds::GenTexturesImmediate* c =
@@ -674,6 +699,28 @@ void GetRenderbufferParameteriv(GLenum target,
       GetCmdSpace<gles2::cmds::GetRenderbufferParameteriv>();
   if (c) {
     c->Init(target, pname, params_shm_id, params_shm_offset);
+  }
+}
+
+void GetSamplerParameterfv(GLuint sampler,
+                           GLenum pname,
+                           uint32_t params_shm_id,
+                           uint32_t params_shm_offset) {
+  gles2::cmds::GetSamplerParameterfv* c =
+      GetCmdSpace<gles2::cmds::GetSamplerParameterfv>();
+  if (c) {
+    c->Init(sampler, pname, params_shm_id, params_shm_offset);
+  }
+}
+
+void GetSamplerParameteriv(GLuint sampler,
+                           GLenum pname,
+                           uint32_t params_shm_id,
+                           uint32_t params_shm_offset) {
+  gles2::cmds::GetSamplerParameteriv* c =
+      GetCmdSpace<gles2::cmds::GetSamplerParameteriv>();
+  if (c) {
+    c->Init(sampler, pname, params_shm_id, params_shm_offset);
   }
 }
 
@@ -886,6 +933,15 @@ void IsRenderbuffer(GLuint renderbuffer,
   }
 }
 
+void IsSampler(GLuint sampler,
+               uint32_t result_shm_id,
+               uint32_t result_shm_offset) {
+  gles2::cmds::IsSampler* c = GetCmdSpace<gles2::cmds::IsSampler>();
+  if (c) {
+    c->Init(sampler, result_shm_id, result_shm_offset);
+  }
+}
+
 void IsShader(GLuint shader,
               uint32_t result_shm_id,
               uint32_t result_shm_offset) {
@@ -980,6 +1036,46 @@ void SampleCoverage(GLclampf value, GLboolean invert) {
   gles2::cmds::SampleCoverage* c = GetCmdSpace<gles2::cmds::SampleCoverage>();
   if (c) {
     c->Init(value, invert);
+  }
+}
+
+void SamplerParameterf(GLuint sampler, GLenum pname, GLfloat param) {
+  gles2::cmds::SamplerParameterf* c =
+      GetCmdSpace<gles2::cmds::SamplerParameterf>();
+  if (c) {
+    c->Init(sampler, pname, param);
+  }
+}
+
+void SamplerParameterfvImmediate(GLuint sampler,
+                                 GLenum pname,
+                                 const GLfloat* params) {
+  const uint32_t size = gles2::cmds::SamplerParameterfvImmediate::ComputeSize();
+  gles2::cmds::SamplerParameterfvImmediate* c =
+      GetImmediateCmdSpaceTotalSize<gles2::cmds::SamplerParameterfvImmediate>(
+          size);
+  if (c) {
+    c->Init(sampler, pname, params);
+  }
+}
+
+void SamplerParameteri(GLuint sampler, GLenum pname, GLint param) {
+  gles2::cmds::SamplerParameteri* c =
+      GetCmdSpace<gles2::cmds::SamplerParameteri>();
+  if (c) {
+    c->Init(sampler, pname, param);
+  }
+}
+
+void SamplerParameterivImmediate(GLuint sampler,
+                                 GLenum pname,
+                                 const GLint* params) {
+  const uint32_t size = gles2::cmds::SamplerParameterivImmediate::ComputeSize();
+  gles2::cmds::SamplerParameterivImmediate* c =
+      GetImmediateCmdSpaceTotalSize<gles2::cmds::SamplerParameterivImmediate>(
+          size);
+  if (c) {
+    c->Init(sampler, pname, params);
   }
 }
 

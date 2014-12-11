@@ -90,7 +90,8 @@ GLES2DecoderTestBase::GLES2DecoderTestBase()
       client_framebuffer_id_(101),
       client_program_id_(102),
       client_renderbuffer_id_(103),
-      client_shader_id_(104),
+      client_sampler_id_(104),
+      client_shader_id_(105),
       client_texture_id_(106),
       client_element_buffer_id_(107),
       client_vertex_shader_id_(121),
@@ -412,6 +413,20 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
 
   DoCreateProgram(client_program_id_, kServiceProgramId);
   DoCreateShader(GL_VERTEX_SHADER, client_shader_id_, kServiceShaderId);
+
+  // Unsafe commands.
+  bool reset_unsafe_es3_apis_enabled = false;
+  if (!decoder_->unsafe_es3_apis_enabled()) {
+    decoder_->set_unsafe_es3_apis_enabled(true);
+    reset_unsafe_es3_apis_enabled = true;
+  }
+  EXPECT_CALL(*gl_, GenSamplers(_, _))
+      .WillOnce(SetArgumentPointee<1>(kServiceSamplerId))
+      .RetiresOnSaturation();
+  GenHelper<cmds::GenSamplersImmediate>(client_sampler_id_);
+  if (reset_unsafe_es3_apis_enabled) {
+    decoder_->set_unsafe_es3_apis_enabled(false);
+  }
 
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -1245,6 +1260,7 @@ const GLuint GLES2DecoderTestBase::kServiceFixedAttribBufferId;
 const GLuint GLES2DecoderTestBase::kServiceBufferId;
 const GLuint GLES2DecoderTestBase::kServiceFramebufferId;
 const GLuint GLES2DecoderTestBase::kServiceRenderbufferId;
+const GLuint GLES2DecoderTestBase::kServiceSamplerId;
 const GLuint GLES2DecoderTestBase::kServiceTextureId;
 const GLuint GLES2DecoderTestBase::kServiceProgramId;
 const GLuint GLES2DecoderTestBase::kServiceShaderId;

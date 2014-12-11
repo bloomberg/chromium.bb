@@ -1473,6 +1473,11 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // Wrapper for glReleaseShaderCompiler.
   void DoReleaseShaderCompiler() { }
 
+  // Wrappers for glSamplerParameter*v functions.
+  void DoSamplerParameterfv(
+      GLuint sampler, GLenum pname, const GLfloat* params);
+  void DoSamplerParameteriv(GLuint sampler, GLenum pname, const GLint* params);
+
   // Wrappers for glTexParameter functions.
   void DoTexParameterf(GLenum target, GLenum pname, GLfloat param);
   void DoTexParameteri(GLenum target, GLenum pname, GLint param);
@@ -5857,6 +5862,18 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program_id) {
   // context preemption and GPU watchdog checks.
   ExitCommandProcessingEarly();
 };
+
+void GLES2DecoderImpl::DoSamplerParameterfv(
+    GLuint sampler, GLenum pname, const GLfloat* params) {
+  DCHECK(params);
+  glSamplerParameterf(sampler, pname, params[0]);
+}
+
+void GLES2DecoderImpl::DoSamplerParameteriv(
+    GLuint sampler, GLenum pname, const GLint* params) {
+  DCHECK(params);
+  glSamplerParameteri(sampler, pname, params[0]);
+}
 
 void GLES2DecoderImpl::DoTexParameterf(
     GLenum target, GLenum pname, GLfloat param) {

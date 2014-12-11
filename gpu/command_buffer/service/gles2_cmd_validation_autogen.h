@@ -49,6 +49,7 @@ ValueValidator<GLenum> render_buffer_format;
 ValueValidator<GLenum> render_buffer_parameter;
 ValueValidator<GLenum> render_buffer_target;
 ValueValidator<GLenum> reset_status;
+ValueValidator<GLenum> sampler_parameter;
 ValueValidator<GLenum> shader_binary_format;
 ValueValidator<GLenum> shader_parameter;
 ValueValidator<GLenum> shader_precision;

@@ -2314,6 +2314,10 @@ void GLES2Implementation::GenValuebuffersCHROMIUMHelper(
     const GLuint* /* valuebuffers */) {
 }
 
+void GLES2Implementation::GenSamplersHelper(
+    GLsizei /* n */, const GLuint* /* samplers */) {
+}
+
 // NOTE #1: On old versions of OpenGL, calling glBindXXX with an unused id
 // generates a new resource. On newer versions of OpenGL they don't. The code
 // related to binding below will need to change if we switch to the new OpenGL
@@ -2681,6 +2685,22 @@ void GLES2Implementation::DeleteValuebuffersCHROMIUMHelper(
     if (valuebuffers[ii] == bound_valuebuffer_) {
       bound_valuebuffer_ = 0;
     }
+  }
+}
+
+void GLES2Implementation::DeleteSamplersStub(
+    GLsizei n, const GLuint* samplers) {
+  helper_->DeleteSamplersImmediate(n, samplers);
+}
+
+void GLES2Implementation::DeleteSamplersHelper(
+    GLsizei n, const GLuint* samplers) {
+  if (!GetIdHandler(id_namespaces::kSamplers)->FreeIds(
+      this, n, samplers, &GLES2Implementation::DeleteSamplersStub)) {
+    SetGLError(
+        GL_INVALID_VALUE,
+        "glDeleteSamplers", "id not created by this context.");
+    return;
   }
 }
 
@@ -3983,6 +4003,18 @@ bool GLES2Implementation::ValidateOffset(const char* func, GLintptr offset) {
     return false;
   }
   return true;
+}
+
+bool GLES2Implementation::GetSamplerParameterfvHelper(
+    GLuint /* sampler */, GLenum /* pname */, GLfloat* /* params */) {
+  // TODO(zmo): Implement client side caching.
+  return false;
+}
+
+bool GLES2Implementation::GetSamplerParameterivHelper(
+    GLuint /* sampler */, GLenum /* pname */, GLint* /* params */) {
+  // TODO(zmo): Implement client side caching.
+  return false;
 }
 
 // Include the auto-generated part of this file. We split this because it means

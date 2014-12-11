@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_CONTEXT_GROUP_H_
 #define GPU_COMMAND_BUFFER_SERVICE_CONTEXT_GROUP_H_
 
+#include <map>
 #include <string>
 #include <vector>
 #include "base/basictypes.h"
@@ -174,6 +175,24 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     draw_buffer_ = buf;
   }
 
+  void AddSamplerId(GLuint client_id, GLuint service_id) {
+    samplers_id_map_[client_id] = service_id;
+  }
+
+  bool GetSamplerServiceId(GLuint client_id, GLuint* service_id) const {
+    std::map<GLuint, GLuint>::const_iterator iter =
+        samplers_id_map_.find(client_id);
+    if (iter == samplers_id_map_.end())
+      return false;
+    if (service_id)
+      *service_id = iter->second;
+    return true;
+  }
+
+  void RemoveSamplerId(GLuint client_id) {
+    samplers_id_map_.erase(client_id);
+  }
+
  private:
   friend class base::RefCounted<ContextGroup>;
   ~ContextGroup();
@@ -222,6 +241,9 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   scoped_refptr<FeatureInfo> feature_info_;
 
   std::vector<base::WeakPtr<gles2::GLES2Decoder> > decoders_;
+
+  // Mappings from client side IDs to service side IDs.
+  std::map<GLuint, GLuint> samplers_id_map_;
 
   GLenum draw_buffer_;
 

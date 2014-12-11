@@ -67,6 +67,17 @@ TEST_F(GLES2ImplementationTest, BindRenderbuffer) {
   EXPECT_TRUE(NoCommandsWritten());
 }
 
+TEST_F(GLES2ImplementationTest, BindSampler) {
+  struct Cmds {
+    cmds::BindSampler cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1, 2);
+
+  gl_->BindSampler(1, 2);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, BlendColor) {
   struct Cmds {
     cmds::BlendColor cmd;
@@ -312,6 +323,20 @@ TEST_F(GLES2ImplementationTest, DeleteRenderbuffers) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, DeleteSamplers) {
+  GLuint ids[2] = {kSamplersStartId, kSamplersStartId + 1};
+  struct Cmds {
+    cmds::DeleteSamplersImmediate del;
+    GLuint data[2];
+  };
+  Cmds expected;
+  expected.del.Init(arraysize(ids), &ids[0]);
+  expected.data[0] = kSamplersStartId;
+  expected.data[1] = kSamplersStartId + 1;
+  gl_->DeleteSamplers(arraysize(ids), &ids[0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, DeleteShader) {
   struct Cmds {
     cmds::DeleteShader cmd;
@@ -543,6 +568,24 @@ TEST_F(GLES2ImplementationTest, GenRenderbuffers) {
   EXPECT_EQ(kRenderbuffersStartId + 1, ids[1]);
 }
 
+TEST_F(GLES2ImplementationTest, GenSamplers) {
+  GLuint ids[2] = {
+      0,
+  };
+  struct Cmds {
+    cmds::GenSamplersImmediate gen;
+    GLuint data[2];
+  };
+  Cmds expected;
+  expected.gen.Init(arraysize(ids), &ids[0]);
+  expected.data[0] = kSamplersStartId;
+  expected.data[1] = kSamplersStartId + 1;
+  gl_->GenSamplers(arraysize(ids), &ids[0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_EQ(kSamplersStartId, ids[0]);
+  EXPECT_EQ(kSamplersStartId + 1, ids[1]);
+}
+
 TEST_F(GLES2ImplementationTest, GenTextures) {
   GLuint ids[2] = {
       0,
@@ -703,6 +746,40 @@ TEST_F(GLES2ImplementationTest, GetRenderbufferParameteriv) {
       .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
       .RetiresOnSaturation();
   gl_->GetRenderbufferParameteriv(123, GL_RENDERBUFFER_RED_SIZE, &result);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_EQ(static_cast<Result::Type>(1), result);
+}
+
+TEST_F(GLES2ImplementationTest, GetSamplerParameterfv) {
+  struct Cmds {
+    cmds::GetSamplerParameterfv cmd;
+  };
+  typedef cmds::GetSamplerParameterfv::Result Result;
+  Result::Type result = 0;
+  Cmds expected;
+  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  expected.cmd.Init(123, GL_TEXTURE_MAG_FILTER, result1.id, result1.offset);
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
+      .RetiresOnSaturation();
+  gl_->GetSamplerParameterfv(123, GL_TEXTURE_MAG_FILTER, &result);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_EQ(static_cast<Result::Type>(1), result);
+}
+
+TEST_F(GLES2ImplementationTest, GetSamplerParameteriv) {
+  struct Cmds {
+    cmds::GetSamplerParameteriv cmd;
+  };
+  typedef cmds::GetSamplerParameteriv::Result Result;
+  Result::Type result = 0;
+  Cmds expected;
+  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  expected.cmd.Init(123, GL_TEXTURE_MAG_FILTER, result1.id, result1.offset);
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
+      .RetiresOnSaturation();
+  gl_->GetSamplerParameteriv(123, GL_TEXTURE_MAG_FILTER, &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_EQ(static_cast<Result::Type>(1), result);
 }
@@ -941,6 +1018,25 @@ TEST_F(GLES2ImplementationTest, IsRenderbuffer) {
   EXPECT_TRUE(result);
 }
 
+TEST_F(GLES2ImplementationTest, IsSampler) {
+  struct Cmds {
+    cmds::IsSampler cmd;
+  };
+
+  Cmds expected;
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(cmds::IsSampler::Result));
+  expected.cmd.Init(1, result1.id, result1.offset);
+
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, uint32_t(1)))
+      .RetiresOnSaturation();
+
+  GLboolean result = gl_->IsSampler(1);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_TRUE(result);
+}
+
 TEST_F(GLES2ImplementationTest, IsShader) {
   struct Cmds {
     cmds::IsShader cmd;
@@ -1064,6 +1160,60 @@ TEST_F(GLES2ImplementationTest, SampleCoverage) {
   expected.cmd.Init(1, true);
 
   gl_->SampleCoverage(1, true);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, SamplerParameterf) {
+  struct Cmds {
+    cmds::SamplerParameterf cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+  gl_->SamplerParameterf(1, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, SamplerParameterfv) {
+  GLfloat data[1] = {0};
+  struct Cmds {
+    cmds::SamplerParameterfvImmediate cmd;
+    GLfloat data[1];
+  };
+
+  for (int jj = 0; jj < 1; ++jj) {
+    data[jj] = static_cast<GLfloat>(jj);
+  }
+  Cmds expected;
+  expected.cmd.Init(1, GL_TEXTURE_MAG_FILTER, &data[0]);
+  gl_->SamplerParameterfv(1, GL_TEXTURE_MAG_FILTER, &data[0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, SamplerParameteri) {
+  struct Cmds {
+    cmds::SamplerParameteri cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+  gl_->SamplerParameteri(1, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, SamplerParameteriv) {
+  GLint data[1] = {0};
+  struct Cmds {
+    cmds::SamplerParameterivImmediate cmd;
+    GLint data[1];
+  };
+
+  for (int jj = 0; jj < 1; ++jj) {
+    data[jj] = static_cast<GLint>(jj);
+  }
+  Cmds expected;
+  expected.cmd.Init(1, GL_TEXTURE_MAG_FILTER, &data[0]);
+  gl_->SamplerParameteriv(1, GL_TEXTURE_MAG_FILTER, &data[0]);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 

@@ -4938,6 +4938,22 @@ std::string GLES2Util::GetStringResetStatus(uint32_t value) {
                                            arraysize(string_table), value);
 }
 
+std::string GLES2Util::GetStringSamplerParameter(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_TEXTURE_MAG_FILTER, "GL_TEXTURE_MAG_FILTER"},
+      {GL_TEXTURE_MIN_FILTER, "GL_TEXTURE_MIN_FILTER"},
+      {GL_TEXTURE_MIN_LOD, "GL_TEXTURE_MIN_LOD"},
+      {GL_TEXTURE_MAX_LOD, "GL_TEXTURE_MAX_LOD"},
+      {GL_TEXTURE_WRAP_S, "GL_TEXTURE_WRAP_S"},
+      {GL_TEXTURE_WRAP_T, "GL_TEXTURE_WRAP_T"},
+      {GL_TEXTURE_WRAP_R, "GL_TEXTURE_WRAP_R"},
+      {GL_TEXTURE_COMPARE_MODE, "GL_TEXTURE_COMPARE_MODE"},
+      {GL_TEXTURE_COMPARE_FUNC, "GL_TEXTURE_COMPARE_FUNC"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
 std::string GLES2Util::GetStringShaderBinaryFormat(uint32_t value) {
   return GLES2Util::GetQualifiedEnumString(NULL, 0, value);
 }

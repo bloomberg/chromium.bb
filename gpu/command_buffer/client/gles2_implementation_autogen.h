@@ -27,6 +27,8 @@ void BindFramebuffer(GLenum target, GLuint framebuffer) override;
 
 void BindRenderbuffer(GLenum target, GLuint renderbuffer) override;
 
+void BindSampler(GLuint unit, GLuint sampler) override;
+
 void BindTexture(GLenum target, GLuint texture) override;
 
 void BlendColor(GLclampf red,
@@ -132,6 +134,8 @@ void DeleteProgram(GLuint program) override;
 
 void DeleteRenderbuffers(GLsizei n, const GLuint* renderbuffers) override;
 
+void DeleteSamplers(GLsizei n, const GLuint* samplers) override;
+
 void DeleteShader(GLuint shader) override;
 
 void DeleteTextures(GLsizei n, const GLuint* textures) override;
@@ -185,6 +189,8 @@ void GenerateMipmap(GLenum target) override;
 void GenFramebuffers(GLsizei n, GLuint* framebuffers) override;
 
 void GenRenderbuffers(GLsizei n, GLuint* renderbuffers) override;
+
+void GenSamplers(GLsizei n, GLuint* samplers) override;
 
 void GenTextures(GLsizei n, GLuint* textures) override;
 
@@ -243,6 +249,14 @@ void GetRenderbufferParameteriv(GLenum target,
                                 GLenum pname,
                                 GLint* params) override;
 
+void GetSamplerParameterfv(GLuint sampler,
+                           GLenum pname,
+                           GLfloat* params) override;
+
+void GetSamplerParameteriv(GLuint sampler,
+                           GLenum pname,
+                           GLint* params) override;
+
 void GetShaderiv(GLuint shader, GLenum pname, GLint* params) override;
 
 void GetShaderInfoLog(GLuint shader,
@@ -300,6 +314,8 @@ GLboolean IsProgram(GLuint program) override;
 
 GLboolean IsRenderbuffer(GLuint renderbuffer) override;
 
+GLboolean IsSampler(GLuint sampler) override;
+
 GLboolean IsShader(GLuint shader) override;
 
 GLboolean IsTexture(GLuint texture) override;
@@ -330,6 +346,18 @@ void RenderbufferStorage(GLenum target,
                          GLsizei height) override;
 
 void SampleCoverage(GLclampf value, GLboolean invert) override;
+
+void SamplerParameterf(GLuint sampler, GLenum pname, GLfloat param) override;
+
+void SamplerParameterfv(GLuint sampler,
+                        GLenum pname,
+                        const GLfloat* params) override;
+
+void SamplerParameteri(GLuint sampler, GLenum pname, GLint param) override;
+
+void SamplerParameteriv(GLuint sampler,
+                        GLenum pname,
+                        const GLint* params) override;
 
 void Scissor(GLint x, GLint y, GLsizei width, GLsizei height) override;
 

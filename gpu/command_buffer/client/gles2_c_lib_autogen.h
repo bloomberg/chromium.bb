@@ -30,6 +30,9 @@ void GLES2BindFramebuffer(GLenum target, GLuint framebuffer) {
 void GLES2BindRenderbuffer(GLenum target, GLuint renderbuffer) {
   gles2::GetGLContext()->BindRenderbuffer(target, renderbuffer);
 }
+void GLES2BindSampler(GLuint unit, GLuint sampler) {
+  gles2::GetGLContext()->BindSampler(unit, sampler);
+}
 void GLES2BindTexture(GLenum target, GLuint texture) {
   gles2::GetGLContext()->BindTexture(target, texture);
 }
@@ -167,6 +170,9 @@ void GLES2DeleteProgram(GLuint program) {
 void GLES2DeleteRenderbuffers(GLsizei n, const GLuint* renderbuffers) {
   gles2::GetGLContext()->DeleteRenderbuffers(n, renderbuffers);
 }
+void GLES2DeleteSamplers(GLsizei n, const GLuint* samplers) {
+  gles2::GetGLContext()->DeleteSamplers(n, samplers);
+}
 void GLES2DeleteShader(GLuint shader) {
   gles2::GetGLContext()->DeleteShader(shader);
 }
@@ -250,6 +256,9 @@ void GLES2GenFramebuffers(GLsizei n, GLuint* framebuffers) {
 void GLES2GenRenderbuffers(GLsizei n, GLuint* renderbuffers) {
   gles2::GetGLContext()->GenRenderbuffers(n, renderbuffers);
 }
+void GLES2GenSamplers(GLsizei n, GLuint* samplers) {
+  gles2::GetGLContext()->GenSamplers(n, samplers);
+}
 void GLES2GenTextures(GLsizei n, GLuint* textures) {
   gles2::GetGLContext()->GenTextures(n, textures);
 }
@@ -325,6 +334,12 @@ void GLES2GetRenderbufferParameteriv(GLenum target,
                                      GLenum pname,
                                      GLint* params) {
   gles2::GetGLContext()->GetRenderbufferParameteriv(target, pname, params);
+}
+void GLES2GetSamplerParameterfv(GLuint sampler, GLenum pname, GLfloat* params) {
+  gles2::GetGLContext()->GetSamplerParameterfv(sampler, pname, params);
+}
+void GLES2GetSamplerParameteriv(GLuint sampler, GLenum pname, GLint* params) {
+  gles2::GetGLContext()->GetSamplerParameteriv(sampler, pname, params);
 }
 void GLES2GetShaderiv(GLuint shader, GLenum pname, GLint* params) {
   gles2::GetGLContext()->GetShaderiv(shader, pname, params);
@@ -408,6 +423,9 @@ GLboolean GLES2IsProgram(GLuint program) {
 GLboolean GLES2IsRenderbuffer(GLuint renderbuffer) {
   return gles2::GetGLContext()->IsRenderbuffer(renderbuffer);
 }
+GLboolean GLES2IsSampler(GLuint sampler) {
+  return gles2::GetGLContext()->IsSampler(sampler);
+}
 GLboolean GLES2IsShader(GLuint shader) {
   return gles2::GetGLContext()->IsShader(shader);
 }
@@ -450,6 +468,22 @@ void GLES2RenderbufferStorage(GLenum target,
 }
 void GLES2SampleCoverage(GLclampf value, GLboolean invert) {
   gles2::GetGLContext()->SampleCoverage(value, invert);
+}
+void GLES2SamplerParameterf(GLuint sampler, GLenum pname, GLfloat param) {
+  gles2::GetGLContext()->SamplerParameterf(sampler, pname, param);
+}
+void GLES2SamplerParameterfv(GLuint sampler,
+                             GLenum pname,
+                             const GLfloat* params) {
+  gles2::GetGLContext()->SamplerParameterfv(sampler, pname, params);
+}
+void GLES2SamplerParameteri(GLuint sampler, GLenum pname, GLint param) {
+  gles2::GetGLContext()->SamplerParameteri(sampler, pname, param);
+}
+void GLES2SamplerParameteriv(GLuint sampler,
+                             GLenum pname,
+                             const GLint* params) {
+  gles2::GetGLContext()->SamplerParameteriv(sampler, pname, params);
 }
 void GLES2Scissor(GLint x, GLint y, GLsizei width, GLsizei height) {
   gles2::GetGLContext()->Scissor(x, y, width, height);
@@ -1124,6 +1158,10 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glBindRenderbuffer),
     },
     {
+     "glBindSampler",
+     reinterpret_cast<GLES2FunctionPointer>(glBindSampler),
+    },
+    {
      "glBindTexture",
      reinterpret_cast<GLES2FunctionPointer>(glBindTexture),
     },
@@ -1232,6 +1270,10 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glDeleteRenderbuffers),
     },
     {
+     "glDeleteSamplers",
+     reinterpret_cast<GLES2FunctionPointer>(glDeleteSamplers),
+    },
+    {
      "glDeleteShader",
      reinterpret_cast<GLES2FunctionPointer>(glDeleteShader),
     },
@@ -1320,6 +1362,10 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glGenRenderbuffers),
     },
     {
+     "glGenSamplers",
+     reinterpret_cast<GLES2FunctionPointer>(glGenSamplers),
+    },
+    {
      "glGenTextures",
      reinterpret_cast<GLES2FunctionPointer>(glGenTextures),
     },
@@ -1379,6 +1425,14 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glGetRenderbufferParameteriv",
      reinterpret_cast<GLES2FunctionPointer>(glGetRenderbufferParameteriv),
+    },
+    {
+     "glGetSamplerParameterfv",
+     reinterpret_cast<GLES2FunctionPointer>(glGetSamplerParameterfv),
+    },
+    {
+     "glGetSamplerParameteriv",
+     reinterpret_cast<GLES2FunctionPointer>(glGetSamplerParameteriv),
     },
     {
      "glGetShaderiv",
@@ -1465,6 +1519,10 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glIsRenderbuffer),
     },
     {
+     "glIsSampler",
+     reinterpret_cast<GLES2FunctionPointer>(glIsSampler),
+    },
+    {
      "glIsShader",
      reinterpret_cast<GLES2FunctionPointer>(glIsShader),
     },
@@ -1507,6 +1565,22 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glSampleCoverage",
      reinterpret_cast<GLES2FunctionPointer>(glSampleCoverage),
+    },
+    {
+     "glSamplerParameterf",
+     reinterpret_cast<GLES2FunctionPointer>(glSamplerParameterf),
+    },
+    {
+     "glSamplerParameterfv",
+     reinterpret_cast<GLES2FunctionPointer>(glSamplerParameterfv),
+    },
+    {
+     "glSamplerParameteri",
+     reinterpret_cast<GLES2FunctionPointer>(glSamplerParameteri),
+    },
+    {
+     "glSamplerParameteriv",
+     reinterpret_cast<GLES2FunctionPointer>(glSamplerParameteriv),
     },
     {
      "glScissor",

@@ -232,6 +232,42 @@ COMPILE_ASSERT(offsetof(BindRenderbuffer, target) == 4,
 COMPILE_ASSERT(offsetof(BindRenderbuffer, renderbuffer) == 8,
                OffsetOf_BindRenderbuffer_renderbuffer_not_8);
 
+struct BindSampler {
+  typedef BindSampler ValueType;
+  static const CommandId kCmdId = kBindSampler;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _unit, GLuint _sampler) {
+    SetHeader();
+    unit = _unit;
+    sampler = _sampler;
+  }
+
+  void* Set(void* cmd, GLuint _unit, GLuint _sampler) {
+    static_cast<ValueType*>(cmd)->Init(_unit, _sampler);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t unit;
+  uint32_t sampler;
+};
+
+COMPILE_ASSERT(sizeof(BindSampler) == 12, Sizeof_BindSampler_is_not_12);
+COMPILE_ASSERT(offsetof(BindSampler, header) == 0,
+               OffsetOf_BindSampler_header_not_0);
+COMPILE_ASSERT(offsetof(BindSampler, unit) == 4,
+               OffsetOf_BindSampler_unit_not_4);
+COMPILE_ASSERT(offsetof(BindSampler, sampler) == 8,
+               OffsetOf_BindSampler_sampler_not_8);
+
 struct BindTexture {
   typedef BindTexture ValueType;
   static const CommandId kCmdId = kBindTexture;
@@ -1631,6 +1667,48 @@ COMPILE_ASSERT(offsetof(DeleteRenderbuffersImmediate, header) == 0,
 COMPILE_ASSERT(offsetof(DeleteRenderbuffersImmediate, n) == 4,
                OffsetOf_DeleteRenderbuffersImmediate_n_not_4);
 
+struct DeleteSamplersImmediate {
+  typedef DeleteSamplersImmediate ValueType;
+  static const CommandId kCmdId = kDeleteSamplersImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeDataSize(GLsizei n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
+  }
+
+  static uint32_t ComputeSize(GLsizei n) {
+    return static_cast<uint32_t>(sizeof(ValueType) +
+                                 ComputeDataSize(n));  // NOLINT
+  }
+
+  void SetHeader(GLsizei n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(n));
+  }
+
+  void Init(GLsizei _n, const GLuint* _samplers) {
+    SetHeader(_n);
+    n = _n;
+    memcpy(ImmediateDataAddress(this), _samplers, ComputeDataSize(_n));
+  }
+
+  void* Set(void* cmd, GLsizei _n, const GLuint* _samplers) {
+    static_cast<ValueType*>(cmd)->Init(_n, _samplers);
+    const uint32_t size = ComputeSize(_n);
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  int32_t n;
+};
+
+COMPILE_ASSERT(sizeof(DeleteSamplersImmediate) == 8,
+               Sizeof_DeleteSamplersImmediate_is_not_8);
+COMPILE_ASSERT(offsetof(DeleteSamplersImmediate, header) == 0,
+               OffsetOf_DeleteSamplersImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(DeleteSamplersImmediate, n) == 4,
+               OffsetOf_DeleteSamplersImmediate_n_not_4);
+
 struct DeleteShader {
   typedef DeleteShader ValueType;
   static const CommandId kCmdId = kDeleteShader;
@@ -2457,6 +2535,48 @@ COMPILE_ASSERT(offsetof(GenRenderbuffersImmediate, header) == 0,
 COMPILE_ASSERT(offsetof(GenRenderbuffersImmediate, n) == 4,
                OffsetOf_GenRenderbuffersImmediate_n_not_4);
 
+struct GenSamplersImmediate {
+  typedef GenSamplersImmediate ValueType;
+  static const CommandId kCmdId = kGenSamplersImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeDataSize(GLsizei n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
+  }
+
+  static uint32_t ComputeSize(GLsizei n) {
+    return static_cast<uint32_t>(sizeof(ValueType) +
+                                 ComputeDataSize(n));  // NOLINT
+  }
+
+  void SetHeader(GLsizei n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(n));
+  }
+
+  void Init(GLsizei _n, GLuint* _samplers) {
+    SetHeader(_n);
+    n = _n;
+    memcpy(ImmediateDataAddress(this), _samplers, ComputeDataSize(_n));
+  }
+
+  void* Set(void* cmd, GLsizei _n, GLuint* _samplers) {
+    static_cast<ValueType*>(cmd)->Init(_n, _samplers);
+    const uint32_t size = ComputeSize(_n);
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  int32_t n;
+};
+
+COMPILE_ASSERT(sizeof(GenSamplersImmediate) == 8,
+               Sizeof_GenSamplersImmediate_is_not_8);
+COMPILE_ASSERT(offsetof(GenSamplersImmediate, header) == 0,
+               OffsetOf_GenSamplersImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(GenSamplersImmediate, n) == 4,
+               OffsetOf_GenSamplersImmediate_n_not_4);
+
 struct GenTexturesImmediate {
   typedef GenTexturesImmediate ValueType;
   static const CommandId kCmdId = kGenTexturesImmediate;
@@ -3260,6 +3380,116 @@ COMPILE_ASSERT(offsetof(GetRenderbufferParameteriv, params_shm_id) == 12,
                OffsetOf_GetRenderbufferParameteriv_params_shm_id_not_12);
 COMPILE_ASSERT(offsetof(GetRenderbufferParameteriv, params_shm_offset) == 16,
                OffsetOf_GetRenderbufferParameteriv_params_shm_offset_not_16);
+
+struct GetSamplerParameterfv {
+  typedef GetSamplerParameterfv ValueType;
+  static const CommandId kCmdId = kGetSamplerParameterfv;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  typedef SizedResult<GLfloat> Result;
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _sampler,
+            GLenum _pname,
+            uint32_t _params_shm_id,
+            uint32_t _params_shm_offset) {
+    SetHeader();
+    sampler = _sampler;
+    pname = _pname;
+    params_shm_id = _params_shm_id;
+    params_shm_offset = _params_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLuint _sampler,
+            GLenum _pname,
+            uint32_t _params_shm_id,
+            uint32_t _params_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_sampler, _pname, _params_shm_id, _params_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t sampler;
+  uint32_t pname;
+  uint32_t params_shm_id;
+  uint32_t params_shm_offset;
+};
+
+COMPILE_ASSERT(sizeof(GetSamplerParameterfv) == 20,
+               Sizeof_GetSamplerParameterfv_is_not_20);
+COMPILE_ASSERT(offsetof(GetSamplerParameterfv, header) == 0,
+               OffsetOf_GetSamplerParameterfv_header_not_0);
+COMPILE_ASSERT(offsetof(GetSamplerParameterfv, sampler) == 4,
+               OffsetOf_GetSamplerParameterfv_sampler_not_4);
+COMPILE_ASSERT(offsetof(GetSamplerParameterfv, pname) == 8,
+               OffsetOf_GetSamplerParameterfv_pname_not_8);
+COMPILE_ASSERT(offsetof(GetSamplerParameterfv, params_shm_id) == 12,
+               OffsetOf_GetSamplerParameterfv_params_shm_id_not_12);
+COMPILE_ASSERT(offsetof(GetSamplerParameterfv, params_shm_offset) == 16,
+               OffsetOf_GetSamplerParameterfv_params_shm_offset_not_16);
+
+struct GetSamplerParameteriv {
+  typedef GetSamplerParameteriv ValueType;
+  static const CommandId kCmdId = kGetSamplerParameteriv;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  typedef SizedResult<GLint> Result;
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _sampler,
+            GLenum _pname,
+            uint32_t _params_shm_id,
+            uint32_t _params_shm_offset) {
+    SetHeader();
+    sampler = _sampler;
+    pname = _pname;
+    params_shm_id = _params_shm_id;
+    params_shm_offset = _params_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLuint _sampler,
+            GLenum _pname,
+            uint32_t _params_shm_id,
+            uint32_t _params_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_sampler, _pname, _params_shm_id, _params_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t sampler;
+  uint32_t pname;
+  uint32_t params_shm_id;
+  uint32_t params_shm_offset;
+};
+
+COMPILE_ASSERT(sizeof(GetSamplerParameteriv) == 20,
+               Sizeof_GetSamplerParameteriv_is_not_20);
+COMPILE_ASSERT(offsetof(GetSamplerParameteriv, header) == 0,
+               OffsetOf_GetSamplerParameteriv_header_not_0);
+COMPILE_ASSERT(offsetof(GetSamplerParameteriv, sampler) == 4,
+               OffsetOf_GetSamplerParameteriv_sampler_not_4);
+COMPILE_ASSERT(offsetof(GetSamplerParameteriv, pname) == 8,
+               OffsetOf_GetSamplerParameteriv_pname_not_8);
+COMPILE_ASSERT(offsetof(GetSamplerParameteriv, params_shm_id) == 12,
+               OffsetOf_GetSamplerParameteriv_params_shm_id_not_12);
+COMPILE_ASSERT(offsetof(GetSamplerParameteriv, params_shm_offset) == 16,
+               OffsetOf_GetSamplerParameteriv_params_shm_offset_not_16);
 
 struct GetShaderiv {
   typedef GetShaderiv ValueType;
@@ -4322,6 +4552,54 @@ COMPILE_ASSERT(offsetof(IsRenderbuffer, result_shm_id) == 8,
 COMPILE_ASSERT(offsetof(IsRenderbuffer, result_shm_offset) == 12,
                OffsetOf_IsRenderbuffer_result_shm_offset_not_12);
 
+struct IsSampler {
+  typedef IsSampler ValueType;
+  static const CommandId kCmdId = kIsSampler;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  typedef uint32_t Result;
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _sampler,
+            uint32_t _result_shm_id,
+            uint32_t _result_shm_offset) {
+    SetHeader();
+    sampler = _sampler;
+    result_shm_id = _result_shm_id;
+    result_shm_offset = _result_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLuint _sampler,
+            uint32_t _result_shm_id,
+            uint32_t _result_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_sampler, _result_shm_id, _result_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t sampler;
+  uint32_t result_shm_id;
+  uint32_t result_shm_offset;
+};
+
+COMPILE_ASSERT(sizeof(IsSampler) == 16, Sizeof_IsSampler_is_not_16);
+COMPILE_ASSERT(offsetof(IsSampler, header) == 0,
+               OffsetOf_IsSampler_header_not_0);
+COMPILE_ASSERT(offsetof(IsSampler, sampler) == 4,
+               OffsetOf_IsSampler_sampler_not_4);
+COMPILE_ASSERT(offsetof(IsSampler, result_shm_id) == 8,
+               OffsetOf_IsSampler_result_shm_id_not_8);
+COMPILE_ASSERT(offsetof(IsSampler, result_shm_offset) == 12,
+               OffsetOf_IsSampler_result_shm_offset_not_12);
+
 struct IsShader {
   typedef IsShader ValueType;
   static const CommandId kCmdId = kIsShader;
@@ -4795,6 +5073,176 @@ COMPILE_ASSERT(offsetof(SampleCoverage, value) == 4,
                OffsetOf_SampleCoverage_value_not_4);
 COMPILE_ASSERT(offsetof(SampleCoverage, invert) == 8,
                OffsetOf_SampleCoverage_invert_not_8);
+
+struct SamplerParameterf {
+  typedef SamplerParameterf ValueType;
+  static const CommandId kCmdId = kSamplerParameterf;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _sampler, GLenum _pname, GLfloat _param) {
+    SetHeader();
+    sampler = _sampler;
+    pname = _pname;
+    param = _param;
+  }
+
+  void* Set(void* cmd, GLuint _sampler, GLenum _pname, GLfloat _param) {
+    static_cast<ValueType*>(cmd)->Init(_sampler, _pname, _param);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t sampler;
+  uint32_t pname;
+  float param;
+};
+
+COMPILE_ASSERT(sizeof(SamplerParameterf) == 16,
+               Sizeof_SamplerParameterf_is_not_16);
+COMPILE_ASSERT(offsetof(SamplerParameterf, header) == 0,
+               OffsetOf_SamplerParameterf_header_not_0);
+COMPILE_ASSERT(offsetof(SamplerParameterf, sampler) == 4,
+               OffsetOf_SamplerParameterf_sampler_not_4);
+COMPILE_ASSERT(offsetof(SamplerParameterf, pname) == 8,
+               OffsetOf_SamplerParameterf_pname_not_8);
+COMPILE_ASSERT(offsetof(SamplerParameterf, param) == 12,
+               OffsetOf_SamplerParameterf_param_not_12);
+
+struct SamplerParameterfvImmediate {
+  typedef SamplerParameterfvImmediate ValueType;
+  static const CommandId kCmdId = kSamplerParameterfvImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeDataSize() {
+    return static_cast<uint32_t>(sizeof(GLfloat) * 1);  // NOLINT
+  }
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType) +
+                                 ComputeDataSize());  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
+
+  void Init(GLuint _sampler, GLenum _pname, const GLfloat* _params) {
+    SetHeader();
+    sampler = _sampler;
+    pname = _pname;
+    memcpy(ImmediateDataAddress(this), _params, ComputeDataSize());
+  }
+
+  void* Set(void* cmd, GLuint _sampler, GLenum _pname, const GLfloat* _params) {
+    static_cast<ValueType*>(cmd)->Init(_sampler, _pname, _params);
+    const uint32_t size = ComputeSize();
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t sampler;
+  uint32_t pname;
+};
+
+COMPILE_ASSERT(sizeof(SamplerParameterfvImmediate) == 12,
+               Sizeof_SamplerParameterfvImmediate_is_not_12);
+COMPILE_ASSERT(offsetof(SamplerParameterfvImmediate, header) == 0,
+               OffsetOf_SamplerParameterfvImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(SamplerParameterfvImmediate, sampler) == 4,
+               OffsetOf_SamplerParameterfvImmediate_sampler_not_4);
+COMPILE_ASSERT(offsetof(SamplerParameterfvImmediate, pname) == 8,
+               OffsetOf_SamplerParameterfvImmediate_pname_not_8);
+
+struct SamplerParameteri {
+  typedef SamplerParameteri ValueType;
+  static const CommandId kCmdId = kSamplerParameteri;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _sampler, GLenum _pname, GLint _param) {
+    SetHeader();
+    sampler = _sampler;
+    pname = _pname;
+    param = _param;
+  }
+
+  void* Set(void* cmd, GLuint _sampler, GLenum _pname, GLint _param) {
+    static_cast<ValueType*>(cmd)->Init(_sampler, _pname, _param);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t sampler;
+  uint32_t pname;
+  int32_t param;
+};
+
+COMPILE_ASSERT(sizeof(SamplerParameteri) == 16,
+               Sizeof_SamplerParameteri_is_not_16);
+COMPILE_ASSERT(offsetof(SamplerParameteri, header) == 0,
+               OffsetOf_SamplerParameteri_header_not_0);
+COMPILE_ASSERT(offsetof(SamplerParameteri, sampler) == 4,
+               OffsetOf_SamplerParameteri_sampler_not_4);
+COMPILE_ASSERT(offsetof(SamplerParameteri, pname) == 8,
+               OffsetOf_SamplerParameteri_pname_not_8);
+COMPILE_ASSERT(offsetof(SamplerParameteri, param) == 12,
+               OffsetOf_SamplerParameteri_param_not_12);
+
+struct SamplerParameterivImmediate {
+  typedef SamplerParameterivImmediate ValueType;
+  static const CommandId kCmdId = kSamplerParameterivImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeDataSize() {
+    return static_cast<uint32_t>(sizeof(GLint) * 1);  // NOLINT
+  }
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType) +
+                                 ComputeDataSize());  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
+
+  void Init(GLuint _sampler, GLenum _pname, const GLint* _params) {
+    SetHeader();
+    sampler = _sampler;
+    pname = _pname;
+    memcpy(ImmediateDataAddress(this), _params, ComputeDataSize());
+  }
+
+  void* Set(void* cmd, GLuint _sampler, GLenum _pname, const GLint* _params) {
+    static_cast<ValueType*>(cmd)->Init(_sampler, _pname, _params);
+    const uint32_t size = ComputeSize();
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t sampler;
+  uint32_t pname;
+};
+
+COMPILE_ASSERT(sizeof(SamplerParameterivImmediate) == 12,
+               Sizeof_SamplerParameterivImmediate_is_not_12);
+COMPILE_ASSERT(offsetof(SamplerParameterivImmediate, header) == 0,
+               OffsetOf_SamplerParameterivImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(SamplerParameterivImmediate, sampler) == 4,
+               OffsetOf_SamplerParameterivImmediate_sampler_not_4);
+COMPILE_ASSERT(offsetof(SamplerParameterivImmediate, pname) == 8,
+               OffsetOf_SamplerParameterivImmediate_pname_not_8);
 
 struct Scissor {
   typedef Scissor ValueType;

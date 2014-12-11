@@ -29,6 +29,8 @@ void GLES2InterfaceStub::BindFramebuffer(GLenum /* target */,
 void GLES2InterfaceStub::BindRenderbuffer(GLenum /* target */,
                                           GLuint /* renderbuffer */) {
 }
+void GLES2InterfaceStub::BindSampler(GLuint /* unit */, GLuint /* sampler */) {
+}
 void GLES2InterfaceStub::BindTexture(GLenum /* target */,
                                      GLuint /* texture */) {
 }
@@ -143,6 +145,9 @@ void GLES2InterfaceStub::DeleteRenderbuffers(
     GLsizei /* n */,
     const GLuint* /* renderbuffers */) {
 }
+void GLES2InterfaceStub::DeleteSamplers(GLsizei /* n */,
+                                        const GLuint* /* samplers */) {
+}
 void GLES2InterfaceStub::DeleteShader(GLuint /* shader */) {
 }
 void GLES2InterfaceStub::DeleteTextures(GLsizei /* n */,
@@ -209,6 +214,8 @@ void GLES2InterfaceStub::GenFramebuffers(GLsizei /* n */,
 void GLES2InterfaceStub::GenRenderbuffers(GLsizei /* n */,
                                           GLuint* /* renderbuffers */) {
 }
+void GLES2InterfaceStub::GenSamplers(GLsizei /* n */, GLuint* /* samplers */) {
+}
 void GLES2InterfaceStub::GenTextures(GLsizei /* n */, GLuint* /* textures */) {
 }
 void GLES2InterfaceStub::GetActiveAttrib(GLuint /* program */,
@@ -274,6 +281,14 @@ void GLES2InterfaceStub::GetProgramInfoLog(GLuint /* program */,
 void GLES2InterfaceStub::GetRenderbufferParameteriv(GLenum /* target */,
                                                     GLenum /* pname */,
                                                     GLint* /* params */) {
+}
+void GLES2InterfaceStub::GetSamplerParameterfv(GLuint /* sampler */,
+                                               GLenum /* pname */,
+                                               GLfloat* /* params */) {
+}
+void GLES2InterfaceStub::GetSamplerParameteriv(GLuint /* sampler */,
+                                               GLenum /* pname */,
+                                               GLint* /* params */) {
 }
 void GLES2InterfaceStub::GetShaderiv(GLuint /* shader */,
                                      GLenum /* pname */,
@@ -360,6 +375,9 @@ GLboolean GLES2InterfaceStub::IsProgram(GLuint /* program */) {
 GLboolean GLES2InterfaceStub::IsRenderbuffer(GLuint /* renderbuffer */) {
   return 0;
 }
+GLboolean GLES2InterfaceStub::IsSampler(GLuint /* sampler */) {
+  return 0;
+}
 GLboolean GLES2InterfaceStub::IsShader(GLuint /* shader */) {
   return 0;
 }
@@ -394,6 +412,22 @@ void GLES2InterfaceStub::RenderbufferStorage(GLenum /* target */,
 }
 void GLES2InterfaceStub::SampleCoverage(GLclampf /* value */,
                                         GLboolean /* invert */) {
+}
+void GLES2InterfaceStub::SamplerParameterf(GLuint /* sampler */,
+                                           GLenum /* pname */,
+                                           GLfloat /* param */) {
+}
+void GLES2InterfaceStub::SamplerParameterfv(GLuint /* sampler */,
+                                            GLenum /* pname */,
+                                            const GLfloat* /* params */) {
+}
+void GLES2InterfaceStub::SamplerParameteri(GLuint /* sampler */,
+                                           GLenum /* pname */,
+                                           GLint /* param */) {
+}
+void GLES2InterfaceStub::SamplerParameteriv(GLuint /* sampler */,
+                                            GLenum /* pname */,
+                                            const GLint* /* params */) {
 }
 void GLES2InterfaceStub::Scissor(GLint /* x */,
                                  GLint /* y */,
