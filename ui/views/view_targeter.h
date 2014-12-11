@@ -42,10 +42,6 @@ class VIEWS_EXPORT ViewTargeter : public ui::EventTargeter {
                                  const ui::LocatedEvent& event) const override;
 
  private:
-  // TODO(tdanderson): Un-friend RootView once RootView::DispatchGestureEvent()
-  //                   has been removed.
-  friend class internal::RootView;
-
   View* FindTargetForKeyEvent(View* root, const ui::KeyEvent& key);
   View* FindTargetForScrollEvent(View* root, const ui::ScrollEvent& scroll);
 
