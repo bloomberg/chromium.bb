@@ -10,6 +10,7 @@ import os
 import os.path
 import sys
 import re
+import platform
 from optparse import OptionParser
 from subprocess import call
 
@@ -9060,8 +9061,11 @@ const size_t GLES2Util::enum_to_string_table_len_ =
     self.generated_cpp_filenames.append(file.filename)
 
 def Format(generated_files):
+  formatter = "clang-format"
+  if platform.system() == "Windows":
+    formatter += ".bat"
   for filename in generated_files:
-    call(["clang-format", "-i", "-style=chromium", filename])
+    call([formatter, "-i", "-style=chromium", filename])
 
 def main(argv):
   """This is the main function."""
