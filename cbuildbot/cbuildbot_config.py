@@ -1978,6 +1978,7 @@ _paladin_important_boards = frozenset([
   'stout',
   'stumpy',
   'stumpy_moblab',
+  'veyron_pinky',
   'wolf',
   'x86-alex',
   'x86-generic',

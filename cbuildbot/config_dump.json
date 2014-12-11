@@ -42351,6 +42351,7 @@
         "chrome_sdk": true,
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
+        "important": true,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
