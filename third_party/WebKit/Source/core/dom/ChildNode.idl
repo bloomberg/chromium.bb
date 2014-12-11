@@ -20,13 +20,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// http://dom.spec.whatwg.org/#interface-childnode
+// https://dom.spec.whatwg.org/#interface-childnode
 
 [
     LegacyTreatAsPartialInterface,
     NoInterfaceObject, // Always used on target of 'implements'
 ] interface ChildNode {
-    [PerWorldBindings] readonly attribute Element previousElementSibling;
-    [PerWorldBindings] readonly attribute Element nextElementSibling;
     [RaisesException, CustomElementCallbacks] void remove();
 };

@@ -465,6 +465,7 @@
             'dom/DocumentFullscreen.idl',
             'dom/ElementFullscreen.idl',
             'dom/GlobalEventHandlers.idl',
+            'dom/NonDocumentTypeChildNode.idl',
             'dom/ParentNode.idl',
             'dom/URLUtils.idl',
             'dom/URLUtilsReadOnly.idl',

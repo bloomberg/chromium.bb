@@ -1,4 +1,4 @@
-This tests the ChildNode interface nextElementSibling property on a Text node.
+This tests the NonDocumentTypeChildNode interface nextElementSibling property on a Text node.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

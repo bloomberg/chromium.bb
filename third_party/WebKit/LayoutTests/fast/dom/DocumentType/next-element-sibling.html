@@ -2,11 +2,9 @@
 <script src="../../../resources/js-test.js"></script>
 <script>
 
-description('This tests the ChildNode interface nextElementSibling property on a DocumentType node.');
+description('This tests the NonDocumentTypeChildNode interface nextElementSibling property on a DocumentType node.');
 
 var doctype = document.doctype;
-shouldBe('doctype.nextElementSibling', 'document.documentElement');
-document.insertBefore(new Comment(), document.documentElement);
-shouldBe('doctype.nextElementSibling', 'document.documentElement');
+shouldBeUndefined('doctype.nextElementSibling');
 
 </script>

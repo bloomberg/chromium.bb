@@ -135,3 +135,4 @@ interface Element : Node {
 
 Element implements ParentNode;
 Element implements ChildNode;
+Element implements NonDocumentTypeChildNode;
