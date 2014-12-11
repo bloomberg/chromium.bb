@@ -59,15 +59,15 @@ static void ReleaseCallback(
   *release_main_thread_task_runner = main_thread_task_runner;
 }
 
-static void SharedMemoryReleaseCallback(
-    scoped_ptr<base::SharedMemory> memory,
+static void SharedBitmapReleaseCallback(
+    scoped_ptr<SharedBitmap> bitmap,
     uint32 sync_point,
     bool lost_resource,
     BlockingTaskRunner* main_thread_task_runner) {
 }
 
-static void ReleaseSharedMemoryCallback(
-    scoped_ptr<base::SharedMemory> shared_memory,
+static void ReleaseSharedBitmapCallback(
+    scoped_ptr<SharedBitmap> shared_bitmap,
     bool* release_called,
     uint32* release_sync_point,
     bool* lost_resource_result,
@@ -79,15 +79,16 @@ static void ReleaseSharedMemoryCallback(
   *lost_resource_result = lost_resource;
 }
 
-static scoped_ptr<base::SharedMemory> CreateAndFillSharedMemory(
+static scoped_ptr<SharedBitmap> CreateAndFillSharedBitmap(
+    SharedBitmapManager* manager,
     const gfx::Size& size,
     uint32_t value) {
-  scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
-  CHECK(shared_memory->CreateAndMapAnonymous(4 * size.GetArea()));
-  uint32_t* pixels = reinterpret_cast<uint32_t*>(shared_memory->memory());
+  scoped_ptr<SharedBitmap> shared_bitmap = manager->AllocateSharedBitmap(size);
+  CHECK(shared_bitmap);
+  uint32_t* pixels = reinterpret_cast<uint32_t*>(shared_bitmap->pixels());
   CHECK(pixels);
   std::fill_n(pixels, size.GetArea(), value);
-  return shared_memory.Pass();
+  return shared_bitmap.Pass();
 }
 
 class TextureStateTrackingContext : public TestWebGraphicsContext3D {
@@ -466,32 +467,26 @@ class ResourceProviderTest
       *sync_point = child_context_->insertSyncPoint();
       EXPECT_LT(0u, *sync_point);
 
-      scoped_ptr<base::SharedMemory> shared_memory;
+      scoped_ptr<SharedBitmap> shared_bitmap;
       scoped_ptr<SingleReleaseCallbackImpl> callback =
-          SingleReleaseCallbackImpl::Create(
-              base::Bind(ReleaseSharedMemoryCallback,
-                         base::Passed(&shared_memory),
-                         release_called,
-                         release_sync_point,
-                         lost_resource));
+          SingleReleaseCallbackImpl::Create(base::Bind(
+              ReleaseSharedBitmapCallback, base::Passed(&shared_bitmap),
+              release_called, release_sync_point, lost_resource));
       return child_resource_provider_->CreateResourceFromTextureMailbox(
           TextureMailbox(gpu_mailbox, GL_TEXTURE_2D, *sync_point),
           callback.Pass());
     } else {
       gfx::Size size(64, 64);
-      scoped_ptr<base::SharedMemory> shared_memory(
-          CreateAndFillSharedMemory(size, 0));
+      scoped_ptr<SharedBitmap> shared_bitmap(
+          CreateAndFillSharedBitmap(shared_bitmap_manager_.get(), size, 0));
 
-      base::SharedMemory* shared_memory_ptr = shared_memory.get();
+      SharedBitmap* shared_bitmap_ptr = shared_bitmap.get();
       scoped_ptr<SingleReleaseCallbackImpl> callback =
-          SingleReleaseCallbackImpl::Create(
-              base::Bind(ReleaseSharedMemoryCallback,
-                         base::Passed(&shared_memory),
-                         release_called,
-                         release_sync_point,
-                         lost_resource));
+          SingleReleaseCallbackImpl::Create(base::Bind(
+              ReleaseSharedBitmapCallback, base::Passed(&shared_bitmap),
+              release_called, release_sync_point, lost_resource));
       return child_resource_provider_->CreateResourceFromTextureMailbox(
-          TextureMailbox(shared_memory_ptr, size), callback.Pass());
+          TextureMailbox(shared_bitmap_ptr, size), callback.Pass());
     }
   }
 
@@ -982,14 +977,14 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
   uint8_t data2[4] = { 5, 5, 5, 5 };
   child_resource_provider_->SetPixels(id2, data2, rect, rect, gfx::Vector2d());
 
-  scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
-  shared_memory->CreateAndMapAnonymous(1);
-  base::SharedMemory* shared_memory_ptr = shared_memory.get();
+  scoped_ptr<SharedBitmap> shared_bitmap(CreateAndFillSharedBitmap(
+      shared_bitmap_manager_.get(), gfx::Size(1, 1), 0));
+  SharedBitmap* shared_bitmap_ptr = shared_bitmap.get();
   ResourceProvider::ResourceId id3 =
       child_resource_provider_->CreateResourceFromTextureMailbox(
-          TextureMailbox(shared_memory_ptr, gfx::Size(1, 1)),
+          TextureMailbox(shared_bitmap_ptr, gfx::Size(1, 1)),
           SingleReleaseCallbackImpl::Create(base::Bind(
-              &SharedMemoryReleaseCallback, base::Passed(&shared_memory))));
+              &SharedBitmapReleaseCallback, base::Passed(&shared_bitmap))));
 
   ReturnedResourceArray returned_to_child;
   int child_id =
@@ -2556,8 +2551,8 @@ TEST_P(ResourceProviderTest, TextureMailbox_SharedMemory) {
 
   gfx::Size size(64, 64);
   const uint32_t kBadBeef = 0xbadbeef;
-  scoped_ptr<base::SharedMemory> shared_memory(
-      CreateAndFillSharedMemory(size, kBadBeef));
+  scoped_ptr<SharedBitmap> shared_bitmap(
+      CreateAndFillSharedBitmap(shared_bitmap_manager_.get(), size, kBadBeef));
 
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(
@@ -2582,7 +2577,7 @@ TEST_P(ResourceProviderTest, TextureMailbox_SharedMemory) {
                                                    &release_sync_point,
                                                    &lost_resource,
                                                    &main_thread_task_runner));
-  TextureMailbox mailbox(shared_memory.get(), size);
+  TextureMailbox mailbox(shared_bitmap.get(), size);
 
   ResourceProvider::ResourceId id =
       resource_provider->CreateResourceFromTextureMailbox(

@@ -298,9 +298,8 @@ void TestPlugin::updateGeometry(
       texture_mailbox_ = cc::TextureMailbox();
     } else {
       DrawSceneSoftware(bitmap->pixels());
-      DCHECK(bitmap->memory());
       texture_mailbox_ = cc::TextureMailbox(
-          bitmap->memory(), gfx::Size(rect_.width, rect_.height));
+          bitmap.get(), gfx::Size(rect_.width, rect_.height));
       shared_bitmap_ = bitmap.Pass();
     }
   }

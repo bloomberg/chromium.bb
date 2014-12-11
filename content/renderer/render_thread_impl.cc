@@ -273,8 +273,10 @@ void AddHistogramSample(void* hist, int sample) {
   histogram->Add(sample);
 }
 
-scoped_ptr<base::SharedMemory> AllocateSharedMemoryFunction(size_t size) {
-  return RenderThreadImpl::Get()->HostAllocateSharedMemoryBuffer(size);
+scoped_ptr<cc::SharedBitmap> AllocateSharedBitmapFunction(
+    const gfx::Size& size) {
+  return ChildThread::current()->shared_bitmap_manager()->AllocateSharedBitmap(
+      size);
 }
 
 void EnableBlinkPlatformLogChannels(const std::string& channels) {
@@ -1004,7 +1006,7 @@ const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
     ScheduleIdleHandler(kLongIdleHandlerDelayMs);
 
-  cc_blink::SetSharedMemoryAllocationFunction(AllocateSharedMemoryFunction);
+  cc_blink::SetSharedBitmapAllocationFunction(AllocateSharedBitmapFunction);
 
   // Limit use of the scaled image cache to when deferred image decoding is
   // enabled.

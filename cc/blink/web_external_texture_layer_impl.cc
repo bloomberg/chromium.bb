@@ -84,7 +84,7 @@ bool WebExternalTextureLayerImpl::PrepareTextureMailbox(
   gpu::Mailbox name;
   name.SetName(client_mailbox.name);
   if (bitmap) {
-    *mailbox = cc::TextureMailbox(bitmap->shared_memory(), bitmap->size());
+    *mailbox = cc::TextureMailbox(bitmap->shared_bitmap(), bitmap->size());
   } else {
     *mailbox =
         cc::TextureMailbox(name, GL_TEXTURE_2D, client_mailbox.syncPoint);

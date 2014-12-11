@@ -101,7 +101,7 @@ class MockMailboxCallback {
                     uint32 sync_point,
                     bool lost_resource));
   MOCK_METHOD3(Release2,
-               void(base::SharedMemory* shared_memory,
+               void(SharedBitmap* shared_bitmap,
                     uint32 sync_point,
                     bool lost_resource));
   MOCK_METHOD4(ReleaseImpl,
@@ -110,19 +110,18 @@ class MockMailboxCallback {
                     bool lost_resource,
                     BlockingTaskRunner* main_thread_task_runner));
   MOCK_METHOD4(ReleaseImpl2,
-               void(base::SharedMemory* shared_memory,
+               void(SharedBitmap* shared_bitmap,
                     uint32 sync_point,
                     bool lost_resource,
                     BlockingTaskRunner* main_thread_task_runner));
 };
 
 struct CommonMailboxObjects {
-  CommonMailboxObjects()
+  explicit CommonMailboxObjects(SharedBitmapManager* manager)
       : mailbox_name1_(MailboxFromChar('1')),
         mailbox_name2_(MailboxFromChar('2')),
         sync_point1_(1),
-        sync_point2_(2),
-        shared_memory_(new base::SharedMemory) {
+        sync_point2_(2) {
     release_mailbox1_ = base::Bind(&MockMailboxCallback::Release,
                                    base::Unretained(&mock_callback_),
                                    mailbox_name1_);
@@ -140,14 +139,15 @@ struct CommonMailboxObjects {
     mailbox1_ = TextureMailbox(mailbox_name1_, arbitrary_target1, sync_point1_);
     mailbox2_ = TextureMailbox(mailbox_name2_, arbitrary_target2, sync_point2_);
     gfx::Size size(128, 128);
-    EXPECT_TRUE(shared_memory_->CreateAndMapAnonymous(4 * size.GetArea()));
-    release_mailbox3_ = base::Bind(&MockMailboxCallback::Release2,
-                                   base::Unretained(&mock_callback_),
-                                   shared_memory_.get());
-    release_mailbox3_impl_ = base::Bind(&MockMailboxCallback::ReleaseImpl2,
-                                        base::Unretained(&mock_callback_),
-                                        shared_memory_.get());
-    mailbox3_ = TextureMailbox(shared_memory_.get(), size);
+    shared_bitmap_ = manager->AllocateSharedBitmap(size);
+    DCHECK(shared_bitmap_);
+    release_mailbox3_ =
+        base::Bind(&MockMailboxCallback::Release2,
+                   base::Unretained(&mock_callback_), shared_bitmap_.get());
+    release_mailbox3_impl_ =
+        base::Bind(&MockMailboxCallback::ReleaseImpl2,
+                   base::Unretained(&mock_callback_), shared_bitmap_.get());
+    mailbox3_ = TextureMailbox(shared_bitmap_.get(), size);
   }
 
   gpu::Mailbox mailbox_name1_;
@@ -164,7 +164,7 @@ struct CommonMailboxObjects {
   TextureMailbox mailbox3_;
   uint32 sync_point1_;
   uint32 sync_point2_;
-  scoped_ptr<base::SharedMemory> shared_memory_;
+  scoped_ptr<SharedBitmap> shared_bitmap_;
 };
 
 class TextureLayerTest : public testing::Test {
@@ -172,7 +172,8 @@ class TextureLayerTest : public testing::Test {
   TextureLayerTest()
       : fake_client_(
             FakeLayerTreeHostClient(FakeLayerTreeHostClient::DIRECT_3D)),
-        host_impl_(&proxy_, &shared_bitmap_manager_) {}
+        host_impl_(&proxy_, &shared_bitmap_manager_),
+        test_data_(&shared_bitmap_manager_) {}
 
  protected:
   virtual void SetUp() {
@@ -195,6 +196,7 @@ class TextureLayerTest : public testing::Test {
   FakeLayerTreeHostClient fake_client_;
   TestSharedBitmapManager shared_bitmap_manager_;
   FakeLayerTreeHostImpl host_impl_;
+  CommonMailboxObjects test_data_;
 };
 
 TEST_F(TextureLayerTest, CheckPropertyChangeCausesCorrectBehavior) {
@@ -309,8 +311,6 @@ class TextureLayerWithMailboxTest : public TextureLayerTest {
                         false)).Times(1);
     TextureLayerTest::TearDown();
   }
-
-  CommonMailboxObjects test_data_;
 };
 
 TEST_F(TextureLayerWithMailboxTest, ReplaceMailboxOnMainThreadBeforeCommit) {
@@ -359,9 +359,7 @@ TEST_F(TextureLayerWithMailboxTest, ReplaceMailboxOnMainThreadBeforeCommit) {
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AtLeast(1));
   EXPECT_CALL(test_data_.mock_callback_,
-              Release2(test_data_.shared_memory_.get(),
-                       0, false))
-      .Times(1);
+              Release2(test_data_.shared_bitmap_.get(), 0, false)).Times(1);
   test_layer->SetTextureMailbox(TextureMailbox(), nullptr);
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
   Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
@@ -452,7 +450,6 @@ class TextureLayerMailboxHolderTest : public TextureLayerTest {
       main_ref_;
   base::Thread main_thread_;
   scoped_ptr<BlockingTaskRunner> main_thread_task_runner_;
-  CommonMailboxObjects test_data_;
 };
 
 TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_BothReleaseThenMain) {
@@ -946,7 +943,6 @@ class TextureLayerImplWithMailboxTest : public TextureLayerTest {
     return will_draw;
   }
 
-  CommonMailboxObjects test_data_;
   FakeLayerTreeHostClient fake_client_;
 };
 
@@ -958,7 +954,7 @@ TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
       ReleaseImpl(test_data_.mailbox_name1_, test_data_.sync_point1_, false, _))
       .Times(AnyNumber());
   EXPECT_CALL(test_data_.mock_callback_,
-              ReleaseImpl2(test_data_.shared_memory_.get(), 0, false, _))
+              ReleaseImpl2(test_data_.shared_bitmap_.get(), 0, false, _))
       .Times(AnyNumber());
   // Hardware mode.
   {

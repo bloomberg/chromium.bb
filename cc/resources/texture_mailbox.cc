@@ -9,25 +9,28 @@
 
 namespace cc {
 
-TextureMailbox::TextureMailbox() : shared_memory_(NULL) {}
+TextureMailbox::TextureMailbox() : shared_bitmap_(NULL) {
+}
 
 TextureMailbox::TextureMailbox(const gpu::MailboxHolder& mailbox_holder)
     : mailbox_holder_(mailbox_holder),
-      shared_memory_(NULL),
+      shared_bitmap_(NULL),
       allow_overlay_(false),
-      nearest_neighbor_(false) {}
+      nearest_neighbor_(false) {
+}
 
 TextureMailbox::TextureMailbox(const gpu::Mailbox& mailbox,
                                uint32 target,
                                uint32 sync_point)
     : mailbox_holder_(mailbox, target, sync_point),
-      shared_memory_(NULL),
+      shared_bitmap_(NULL),
       allow_overlay_(false),
-      nearest_neighbor_(false) {}
+      nearest_neighbor_(false) {
+}
 
-TextureMailbox::TextureMailbox(base::SharedMemory* shared_memory,
+TextureMailbox::TextureMailbox(SharedBitmap* shared_bitmap,
                                const gfx::Size& size)
-    : shared_memory_(shared_memory),
+    : shared_bitmap_(shared_bitmap),
       shared_memory_size_(size),
       allow_overlay_(false),
       nearest_neighbor_(false) {
@@ -44,8 +47,7 @@ bool TextureMailbox::Equals(const TextureMailbox& other) const {
                                   other.mailbox_holder_.mailbox.name,
                                   sizeof(mailbox_holder_.mailbox.name));
   } else if (other.IsSharedMemory()) {
-    return IsSharedMemory() &&
-           shared_memory_->handle() == other.shared_memory_->handle();
+    return IsSharedMemory() && (shared_bitmap_ == other.shared_bitmap_);
   }
 
   DCHECK(!other.IsValid());

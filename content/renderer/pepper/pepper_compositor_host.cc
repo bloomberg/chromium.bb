@@ -11,6 +11,8 @@
 #include "cc/layers/texture_layer.h"
 #include "cc/resources/texture_mailbox.h"
 #include "cc/trees/layer_tree_host.h"
+#include "content/child/child_shared_bitmap_manager.h"
+#include "content/child/child_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/gfx_conversion.h"
 #include "content/renderer/pepper/host_globals.h"
@@ -170,9 +172,12 @@ void PepperCompositorHost::ViewInitiatedPaint() {
 
 void PepperCompositorHost::ImageReleased(
     int32_t id,
-    const scoped_ptr<base::SharedMemory>& shared_memory,
+    scoped_ptr<base::SharedMemory> shared_memory,
+    scoped_ptr<cc::SharedBitmap> bitmap,
     uint32_t sync_point,
     bool is_lost) {
+  bitmap.reset();
+  shared_memory.reset();
   ResourceReleased(id, sync_point, is_lost);
 }
 
@@ -282,15 +287,18 @@ void PepperCompositorHost::UpdateLayer(
       DCHECK_EQ(rv, PP_TRUE);
       DCHECK_EQ(desc.stride, desc.size.width * 4);
       DCHECK_EQ(desc.format, PP_IMAGEDATAFORMAT_RGBA_PREMUL);
+      scoped_ptr<cc::SharedBitmap> bitmap =
+          ChildThread::current()
+              ->shared_bitmap_manager()
+              ->GetBitmapForSharedMemory(image_shm.get());
 
-      cc::TextureMailbox mailbox(image_shm.get(),
-                                 PP_ToGfxSize(desc.size));
-      image_layer->SetTextureMailbox(mailbox,
-          cc::SingleReleaseCallback::Create(
-              base::Bind(&PepperCompositorHost::ImageReleased,
-                         weak_factory_.GetWeakPtr(),
-                         new_layer->common.resource_id,
-                         base::Passed(&image_shm))));
+      cc::TextureMailbox mailbox(bitmap.get(), PP_ToGfxSize(desc.size));
+      image_layer->SetTextureMailbox(
+          mailbox,
+          cc::SingleReleaseCallback::Create(base::Bind(
+              &PepperCompositorHost::ImageReleased, weak_factory_.GetWeakPtr(),
+              new_layer->common.resource_id, base::Passed(&image_shm),
+              base::Passed(&bitmap))));
       // TODO(penghuang): get a damage region from the application and
       // pass it to SetNeedsDisplayRect().
       image_layer->SetNeedsDisplay();

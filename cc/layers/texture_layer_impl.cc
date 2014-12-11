@@ -111,8 +111,7 @@ bool TextureLayerImpl::WillDraw(DrawMode draw_mode,
 
     if (texture_copy_->id()) {
       std::vector<uint8> swizzled;
-      uint8* pixels =
-          static_cast<uint8*>(texture_mailbox_.shared_memory()->memory());
+      uint8* pixels = texture_mailbox_.shared_bitmap()->pixels();
 
       if (!PlatformColor::SameComponentOrder(texture_copy_->format())) {
         // Swizzle colors. This is slow, but should be really uncommon.

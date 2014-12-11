@@ -4,18 +4,18 @@
 
 #include "cc/blink/web_external_bitmap_impl.h"
 
-#include "base/memory/shared_memory.h"
+#include "cc/resources/shared_bitmap.h"
 
 namespace cc_blink {
 
 namespace {
 
-SharedMemoryAllocationFunction g_memory_allocator;
+SharedBitmapAllocationFunction g_memory_allocator;
 
 }  // namespace
 
-void SetSharedMemoryAllocationFunction(
-    SharedMemoryAllocationFunction allocator) {
+void SetSharedBitmapAllocationFunction(
+    SharedBitmapAllocationFunction allocator) {
   g_memory_allocator = allocator;
 }
 
@@ -27,10 +27,7 @@ WebExternalBitmapImpl::~WebExternalBitmapImpl() {
 
 void WebExternalBitmapImpl::setSize(blink::WebSize size) {
   if (size != size_) {
-    size_t byte_size = size.width * size.height * 4;
-    shared_memory_ = g_memory_allocator(byte_size);
-    if (shared_memory_)
-      shared_memory_->Map(byte_size);
+    shared_bitmap_ = g_memory_allocator(gfx::Size(size));
     size_ = size;
   }
 }
@@ -40,7 +37,7 @@ blink::WebSize WebExternalBitmapImpl::size() {
 }
 
 uint8* WebExternalBitmapImpl::pixels() {
-  return static_cast<uint8*>(shared_memory_->memory());
+  return shared_bitmap_->pixels();
 }
 
 }  // namespace cc_blink
