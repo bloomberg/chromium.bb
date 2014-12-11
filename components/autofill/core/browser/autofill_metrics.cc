@@ -273,6 +273,14 @@ void AutofillMetrics::LogCreditCardInfoBarMetric(InfoBarMetric metric) {
 }
 
 // static
+void AutofillMetrics::LogScanCreditCardPromptMetric(
+    ScanCreditCardPromptMetric metric) {
+  DCHECK_LT(metric, NUM_SCAN_CREDIT_CARD_PROMPT_METRICS);
+  UMA_HISTOGRAM_ENUMERATION("Autofill.ScanCreditCardPrompt", metric,
+                            NUM_SCAN_CREDIT_CARD_PROMPT_METRICS);
+}
+
+// static
 void AutofillMetrics::LogDialogDismissalState(DialogDismissalState state) {
   UMA_HISTOGRAM_ENUMERATION("RequestAutocomplete.DismissalState",
                             state, NUM_DIALOG_DISMISSAL_STATES);

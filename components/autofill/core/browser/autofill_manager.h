@@ -100,8 +100,8 @@ class AutofillManager : public AutofillDownloadManager::Observer {
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
   // Whether the |field| should show an entry to scan a credit card.
-  bool ShouldShowScanCreditCard(const FormData& form,
-                                const FormFieldData& field);
+  virtual bool ShouldShowScanCreditCard(const FormData& form,
+                                        const FormFieldData& field);
 
   // Called from our external delegate so they cannot be private.
   virtual void FillOrPreviewForm(AutofillDriver::RendererFormDataAction action,

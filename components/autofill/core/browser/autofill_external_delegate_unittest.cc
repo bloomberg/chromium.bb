@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
@@ -85,6 +86,9 @@ class MockAutofillManager : public AutofillManager {
       : AutofillManager(driver, client, NULL) {}
   virtual ~MockAutofillManager() {}
 
+  MOCK_METHOD2(ShouldShowScanCreditCard,
+               bool(const FormData& form, const FormFieldData& field));
+
   MOCK_METHOD5(FillOrPreviewForm,
                void(AutofillDriver::RendererFormDataAction action,
                     int query_id,
@@ -107,7 +111,7 @@ class MockAutofillManager : public AutofillManager {
 class AutofillExternalDelegateUnitTest : public testing::Test {
  protected:
   void SetUp() override {
-    autofill_driver_.reset(new MockAutofillDriver());
+    autofill_driver_.reset(new testing::NiceMock<MockAutofillDriver>());
     autofill_manager_.reset(
         new MockAutofillManager(autofill_driver_.get(), &autofill_client_));
     external_delegate_.reset(
@@ -134,8 +138,17 @@ class AutofillExternalDelegateUnitTest : public testing::Test {
     external_delegate_->OnQuery(query_id, form, field, element_bounds, true);
   }
 
-  MockAutofillClient autofill_client_;
-  scoped_ptr<MockAutofillDriver> autofill_driver_;
+  void IssueOnSuggestionsReturned() {
+    std::vector<base::string16> autofill_item;
+    autofill_item.push_back(base::string16());
+    std::vector<int> autofill_ids;
+    autofill_ids.push_back(kAutofillProfileId);
+    external_delegate_->OnSuggestionsReturned(
+        kQueryId, autofill_item, autofill_item, autofill_item, autofill_ids);
+  }
+
+  testing::NiceMock<MockAutofillClient> autofill_client_;
+  scoped_ptr<testing::NiceMock<MockAutofillDriver>> autofill_driver_;
   scoped_ptr<MockAutofillManager> autofill_manager_;
   scoped_ptr<AutofillExternalDelegate> external_delegate_;
 
@@ -445,6 +458,65 @@ TEST_F(AutofillExternalDelegateUnitTest, ScanCreditCardMenuItem) {
   EXPECT_CALL(autofill_client_, HideAutofillPopup());
   external_delegate_->DidAcceptSuggestion(base::string16(),
                                           POPUP_ITEM_ID_SCAN_CREDIT_CARD);
+}
+
+TEST_F(AutofillExternalDelegateUnitTest, ScanCreditCardPromptMetricsTest) {
+  // Log that the scan card item was shown, although nothing was selected.
+  {
+    EXPECT_CALL(*autofill_manager_, ShouldShowScanCreditCard(_, _))
+        .WillOnce(testing::Return(true));
+    base::HistogramTester histogram;
+    IssueOnQuery(kQueryId);
+    IssueOnSuggestionsReturned();
+    external_delegate_->OnPopupHidden();
+    histogram.ExpectUniqueSample("Autofill.ScanCreditCardPrompt",
+                                 AutofillMetrics::SCAN_CARD_ITEM_SHOWN, 1);
+  }
+  // Log that the scan card item was selected.
+  {
+    EXPECT_CALL(*autofill_manager_, ShouldShowScanCreditCard(_, _))
+        .WillOnce(testing::Return(true));
+    base::HistogramTester histogram;
+    IssueOnQuery(kQueryId);
+    IssueOnSuggestionsReturned();
+    external_delegate_->DidAcceptSuggestion(base::string16(),
+                                            POPUP_ITEM_ID_SCAN_CREDIT_CARD);
+    histogram.ExpectBucketCount("Autofill.ScanCreditCardPrompt",
+                                AutofillMetrics::SCAN_CARD_ITEM_SHOWN, 1);
+    histogram.ExpectBucketCount("Autofill.ScanCreditCardPrompt",
+                                AutofillMetrics::SCAN_CARD_ITEM_SELECTED, 1);
+    histogram.ExpectBucketCount("Autofill.ScanCreditCardPrompt",
+                                AutofillMetrics::SCAN_CARD_OTHER_ITEM_SELECTED,
+                                0);
+  }
+  // Log that something else was selected.
+  {
+    EXPECT_CALL(*autofill_manager_, ShouldShowScanCreditCard(_, _))
+        .WillOnce(testing::Return(true));
+    base::HistogramTester histogram;
+    IssueOnQuery(kQueryId);
+    IssueOnSuggestionsReturned();
+    external_delegate_->DidAcceptSuggestion(base::string16(),
+                                            POPUP_ITEM_ID_CLEAR_FORM);
+    histogram.ExpectBucketCount("Autofill.ScanCreditCardPrompt",
+                                AutofillMetrics::SCAN_CARD_ITEM_SHOWN, 1);
+    histogram.ExpectBucketCount("Autofill.ScanCreditCardPrompt",
+                                AutofillMetrics::SCAN_CARD_ITEM_SELECTED, 0);
+    histogram.ExpectBucketCount("Autofill.ScanCreditCardPrompt",
+                                AutofillMetrics::SCAN_CARD_OTHER_ITEM_SELECTED,
+                                1);
+  }
+  // Nothing is logged when the item isn't shown.
+  {
+    EXPECT_CALL(*autofill_manager_, ShouldShowScanCreditCard(_, _))
+        .WillOnce(testing::Return(false));
+    base::HistogramTester histogram;
+    IssueOnQuery(kQueryId);
+    IssueOnSuggestionsReturned();
+    external_delegate_->DidAcceptSuggestion(base::string16(),
+                                            POPUP_ITEM_ID_CLEAR_FORM);
+    histogram.ExpectTotalCount("Autofill.ScanCreditCardPrompt", 0);
+  }
 }
 
 // Test that autofill manager will fill the credit card form after user scans a

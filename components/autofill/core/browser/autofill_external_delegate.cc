@@ -63,6 +63,7 @@ AutofillExternalDelegate::AutofillExternalDelegate(AutofillManager* manager,
       display_warning_if_disabled_(false),
       has_suggestion_(false),
       has_shown_popup_for_current_edit_(false),
+      should_show_scan_credit_card_(false),
       has_shown_address_book_prompt(false),
       weak_ptr_factory_(this) {
   DCHECK(manager);
@@ -83,6 +84,8 @@ void AutofillExternalDelegate::OnQuery(int query_id,
   display_warning_if_disabled_ = display_warning_if_disabled;
   query_id_ = query_id;
   element_bounds_ = element_bounds;
+  should_show_scan_credit_card_ =
+      manager_->ShouldShowScanCreditCard(query_form_, query_field_);
 }
 
 void AutofillExternalDelegate::OnSuggestionsReturned(
@@ -117,11 +120,16 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   icons.push_back(base::string16());
   ids.push_back(POPUP_ITEM_ID_SEPARATOR);
 
-  if (manager_->ShouldShowScanCreditCard(query_form_, query_field_)) {
+  if (should_show_scan_credit_card_) {
     values.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_SCAN_CREDIT_CARD));
     labels.push_back(base::string16());
     icons.push_back(base::string16());
     ids.push_back(POPUP_ITEM_ID_SCAN_CREDIT_CARD);
+
+    if (!has_shown_popup_for_current_edit_) {
+      AutofillMetrics::LogScanCreditCardPromptMetric(
+          AutofillMetrics::SCAN_CARD_ITEM_SHOWN);
+    }
   }
 
   // Only include "Autofill Options" special menu item if we have Autofill
@@ -277,6 +285,13 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
     manager_->client()->ShowUnmaskPrompt();
   } else {
     FillAutofillFormData(identifier, false);
+  }
+
+  if (should_show_scan_credit_card_) {
+    AutofillMetrics::LogScanCreditCardPromptMetric(
+        identifier == POPUP_ITEM_ID_SCAN_CREDIT_CARD
+            ? AutofillMetrics::SCAN_CARD_ITEM_SELECTED
+            : AutofillMetrics::SCAN_CARD_OTHER_ITEM_SELECTED);
   }
 
   manager_->client()->HideAutofillPopup();

@@ -195,6 +195,17 @@ class AutofillMetrics {
     NUM_SERVER_QUERY_METRICS,
   };
 
+  // Logs usage of "Scan card" control item.
+  enum ScanCreditCardPromptMetric {
+    // "Scan card" was presented to the user.
+    SCAN_CARD_ITEM_SHOWN,
+    // "Scan card" was selected by the user.
+    SCAN_CARD_ITEM_SELECTED,
+    // The user selected something in the dropdown besides "scan card".
+    SCAN_CARD_OTHER_ITEM_SELECTED,
+    NUM_SCAN_CREDIT_CARD_PROMPT_METRICS,
+  };
+
   // Each of these metrics is logged only for potentially autofillable forms,
   // i.e. forms with at least three fields, etc.
   // These are used to derive certain "user happiness" metrics.  For example, we
@@ -311,6 +322,7 @@ class AutofillMetrics {
   virtual ~AutofillMetrics();
 
   static void LogCreditCardInfoBarMetric(InfoBarMetric metric);
+  static void LogScanCreditCardPromptMetric(ScanCreditCardPromptMetric metric);
 
   virtual void LogDeveloperEngagementMetric(
       DeveloperEngagementMetric metric) const;

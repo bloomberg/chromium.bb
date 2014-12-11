@@ -153,13 +153,16 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   // currently editing?  Used to keep track of state for metrics logging.
   bool has_shown_popup_for_current_edit_;
 
-  // The current data list values.
-  std::vector<base::string16> data_list_values_;
-  std::vector<base::string16> data_list_labels_;
+  // FIXME
+  bool should_show_scan_credit_card_;
 
   // Whether the access Address Book prompt has ever been shown for the current
   // |query_form_|. This variable is only used on OSX.
   bool has_shown_address_book_prompt;
+
+  // The current data list values.
+  std::vector<base::string16> data_list_values_;
+  std::vector<base::string16> data_list_labels_;
 
   base::WeakPtrFactory<AutofillExternalDelegate> weak_ptr_factory_;
 
