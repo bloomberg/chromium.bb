@@ -52,7 +52,6 @@ class WebMIDIClient;
 class WebMIDIClientMock;
 class WebNode;
 class WebPlugin;
-class WebPushClient;
 class WebRange;
 class WebSerializedScriptValue;
 class WebSpeechRecognizer;
@@ -78,7 +77,6 @@ namespace content {
 
 class MockCredentialManagerClient;
 class MockScreenOrientationClient;
-class MockWebPushClient;
 class MockWebSpeechRecognizer;
 class MockWebUserMediaClient;
 class RenderFrame;
@@ -141,8 +139,6 @@ class WebTestProxyBase {
   void PostSpellCheckEvent(const blink::WebString& event_name);
 
   void SetAcceptLanguages(const std::string& accept_languages);
-
-  MockWebPushClient* GetPushClientMock();
 
  protected:
   WebTestProxyBase();
@@ -234,7 +230,6 @@ class WebTestProxyBase {
   void ResetInputMethod();
 
   blink::WebString acceptLanguages();
-  blink::WebPushClient* GetWebPushClient();
 
  private:
   template <class, typename, typename>
@@ -271,7 +266,6 @@ class WebTestProxyBase {
   scoped_ptr<MockCredentialManagerClient> credential_manager_client_;
   scoped_ptr<blink::WebMIDIClientMock> midi_client_;
   scoped_ptr<MockWebSpeechRecognizer> speech_recognizer_;
-  scoped_ptr<MockWebPushClient> push_client_;
   scoped_ptr<MockScreenOrientationClient> screen_orientation_client_;
 
   std::string accept_languages_;

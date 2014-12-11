@@ -11,7 +11,6 @@
 #include "content/shell/common/test_runner/test_preferences.h"
 #include "content/shell/renderer/binding_helpers.h"
 #include "content/shell/renderer/test_runner/mock_credential_manager_client.h"
-#include "content/shell/renderer/test_runner/mock_web_push_client.h"
 #include "content/shell/renderer/test_runner/mock_web_speech_recognizer.h"
 #include "content/shell/renderer/test_runner/test_interfaces.h"
 #include "content/shell/renderer/test_runner/web_permissions.h"
@@ -294,9 +293,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
                                             v8::Handle<v8::Function> callback);
   void SetCustomTextOutput(std::string output);
   void SetViewSourceForFrame(const std::string& name, bool enabled);
-  void SetMockPushClientSuccess(const std::string& endpoint,
-                                const std::string& registration_id);
-  void SetMockPushClientError(const std::string& message);
   void SetPushMessagingPermission(const std::string& origin, bool allowed);
   void ClearPushMessagingPermissions();
   void SetBluetoothMockDataSet(const std::string& dataset_name);
@@ -545,10 +541,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetCustomTextOutput)
       .SetMethod("setViewSourceForFrame",
                  &TestRunnerBindings::SetViewSourceForFrame)
-      .SetMethod("setMockPushClientSuccess",
-                 &TestRunnerBindings::SetMockPushClientSuccess)
-      .SetMethod("setMockPushClientError",
-                 &TestRunnerBindings::SetMockPushClientError)
       .SetMethod("setPushMessagingPermission",
                  &TestRunnerBindings::SetPushMessagingPermission)
       .SetMethod("clearPushMessagingPermissions",
@@ -1416,20 +1408,6 @@ void TestRunnerBindings::SetViewSourceForFrame(const std::string& name,
     if (target_frame)
       target_frame->enableViewSourceMode(enabled);
   }
-}
-
-void TestRunnerBindings::SetMockPushClientSuccess(
-    const std::string& endpoint,
-    const std::string& registration_id) {
-  if (!runner_)
-    return;
-  runner_->SetMockPushClientSuccess(endpoint, registration_id);
-}
-
-void TestRunnerBindings::SetMockPushClientError(const std::string& message) {
-  if (!runner_)
-    return;
-  runner_->SetMockPushClientError(message);
 }
 
 void TestRunnerBindings::SetPushMessagingPermission(const std::string& origin,
@@ -2963,15 +2941,6 @@ void TestRunner::CapturePixelsCallback(scoped_ptr<InvokeCallbackTask> task,
 
   task->SetArguments(3, argv);
   InvokeCallback(task.Pass());
-}
-
-void TestRunner::SetMockPushClientSuccess(const std::string& endpoint,
-                                          const std::string& registration_id) {
-  proxy_->GetPushClientMock()->SetMockSuccessValues(endpoint, registration_id);
-}
-
-void TestRunner::SetMockPushClientError(const std::string& message) {
-  proxy_->GetPushClientMock()->SetMockErrorValues(message);
 }
 
 void TestRunner::SetPushMessagingPermission(const GURL& origin, bool allowed) {

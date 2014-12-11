@@ -237,8 +237,6 @@
         'shell/renderer/test_runner/mock_web_media_stream_center.h',
         'shell/renderer/test_runner/mock_web_midi_accessor.cc',
         'shell/renderer/test_runner/mock_web_midi_accessor.h',
-        'shell/renderer/test_runner/mock_web_push_client.cc',
-        'shell/renderer/test_runner/mock_web_push_client.h',
         'shell/renderer/test_runner/mock_web_speech_recognizer.cc',
         'shell/renderer/test_runner/mock_web_speech_recognizer.h',
         'shell/renderer/test_runner/mock_web_theme_engine.cc',
