@@ -289,8 +289,8 @@ void PNGImageDecoder::headerAvailable()
     png_uint_32 height = png_get_image_height(png, info);
 
     // Protect against large PNGs. See http://bugzil.la/251381 for more details.
-    const unsigned long cMaxPNGSize = 1000000UL;
-    if (width > cMaxPNGSize || height > cMaxPNGSize) {
+    const unsigned long maxPNGSize = 1000000UL;
+    if (width > maxPNGSize || height > maxPNGSize) {
         longjmp(JMPBUF(png), 1);
         return;
     }
