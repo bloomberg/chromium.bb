@@ -37,8 +37,8 @@
 
 namespace blink {
 
-AXARIAGrid::AXARIAGrid(RenderObject* renderer)
-    : AXTable(renderer)
+AXARIAGrid::AXARIAGrid(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+    : AXTable(renderer, axObjectCache)
 {
 }
 
@@ -46,9 +46,9 @@ AXARIAGrid::~AXARIAGrid()
 {
 }
 
-PassRefPtr<AXARIAGrid> AXARIAGrid::create(RenderObject* renderer)
+PassRefPtr<AXARIAGrid> AXARIAGrid::create(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
 {
-    return adoptRef(new AXARIAGrid(renderer));
+    return adoptRef(new AXARIAGrid(renderer, axObjectCache));
 }
 
 bool AXARIAGrid::addTableCellChild(AXObject* child, HashSet<AXObject*>& appendedRows, unsigned& columnCount)
@@ -92,7 +92,7 @@ void AXARIAGrid::addChildren()
     if (!m_renderer)
         return;
 
-    AXObjectCacheImpl* axCache = toAXObjectCacheImpl(m_renderer->document().axObjectCache());
+    AXObjectCacheImpl* axCache = axObjectCache();
 
     // add only rows that are labeled as aria rows
     HashSet<AXObject*> appendedRows;

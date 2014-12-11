@@ -34,6 +34,7 @@
 
 namespace blink {
 
+class AXObjectCacheImpl;
 class Element;
 class HTMLLabelElement;
 class LayoutRect;
@@ -41,10 +42,10 @@ class Node;
 
 class AXNodeObject : public AXObject {
 protected:
-    explicit AXNodeObject(Node*);
+    AXNodeObject(Node*, AXObjectCacheImpl*);
 
 public:
-    static PassRefPtr<AXNodeObject> create(Node*);
+    static PassRefPtr<AXNodeObject> create(Node*, AXObjectCacheImpl*);
     virtual ~AXNodeObject();
 
 protected:

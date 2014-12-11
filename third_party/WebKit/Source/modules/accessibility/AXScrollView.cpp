@@ -34,8 +34,9 @@
 
 namespace blink {
 
-AXScrollView::AXScrollView(FrameView* view)
-    : m_scrollView(view)
+AXScrollView::AXScrollView(FrameView* view, AXObjectCacheImpl* axObjectCache)
+    : AXObject(axObjectCache)
+    , m_scrollView(view)
     , m_childrenDirty(false)
 {
 }
@@ -51,9 +52,9 @@ void AXScrollView::detach()
     m_scrollView = 0;
 }
 
-PassRefPtr<AXScrollView> AXScrollView::create(FrameView* view)
+PassRefPtr<AXScrollView> AXScrollView::create(FrameView* view, AXObjectCacheImpl* axObjectCache)
 {
-    return adoptRef(new AXScrollView(view));
+    return adoptRef(new AXScrollView(view, axObjectCache));
 }
 
 AXObject* AXScrollView::scrollBar(AccessibilityOrientation orientation)

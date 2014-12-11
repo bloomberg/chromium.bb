@@ -34,14 +34,16 @@
 
 namespace blink {
 
+class AXObjectCacheImpl;
 class RenderTableSection;
 
 class AXTableColumn final : public AXMockObject {
 
 private:
-    AXTableColumn();
+    explicit AXTableColumn(AXObjectCacheImpl*);
+
 public:
-    static PassRefPtr<AXTableColumn> create();
+    static PassRefPtr<AXTableColumn> create(AXObjectCacheImpl*);
     virtual ~AXTableColumn();
 
     AXObject* headerObject();

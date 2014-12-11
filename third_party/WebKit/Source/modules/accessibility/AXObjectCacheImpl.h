@@ -59,7 +59,7 @@ public:
     explicit AXObjectCacheImpl(Document&);
     ~AXObjectCacheImpl();
 
-    static AXObject* focusedUIElementForPage(const Page*);
+    AXObject* focusedUIElementForPage(const Page*);
 
     virtual void selectionChanged(Node*) override;
     virtual void childrenChanged(Node*) override;
@@ -122,6 +122,8 @@ public:
     AXObject* get(Widget*);
     AXObject* get(AbstractInlineTextBox*);
 
+    AXObject* firstAccessibleObjectFromNode(const Node*);
+
     void remove(AXID);
     void remove(AbstractInlineTextBox*);
 
@@ -142,8 +144,6 @@ public:
 
     AXID platformGenerateAXID() const;
 
-    bool nodeHasRole(Node*, const AtomicString& role);
-
     // Counts the number of times the document has been modified. Some attribute values are cached
     // as long as the modification count hasn't changed.
     int modificationCount() const { return m_modificationCount; }
@@ -162,6 +162,10 @@ protected:
     void removeNodeForUse(Node* n) { m_textMarkerNodes.remove(n); }
     bool isNodeInUse(Node* n) { return m_textMarkerNodes.contains(n); }
 
+    PassRefPtr<AXObject> createFromRenderer(RenderObject*);
+    PassRefPtr<AXObject> createFromNode(Node*);
+    PassRefPtr<AXObject> createFromInlineTextBox(AbstractInlineTextBox*);
+
 private:
     Document& m_document;
     HashMap<AXID, RefPtr<AXObject> > m_objects;
@@ -178,7 +182,7 @@ private:
     Vector<pair<RefPtr<AXObject>, AXNotification> > m_notificationsToPost;
     void notificationPostTimerFired(Timer<AXObjectCacheImpl>*);
 
-    static AXObject* focusedImageMapUIElement(HTMLAreaElement*);
+    AXObject* focusedImageMapUIElement(HTMLAreaElement*);
 
     AXID getAXID(AXObject*);
 

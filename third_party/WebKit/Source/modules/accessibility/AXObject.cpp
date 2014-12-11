@@ -130,7 +130,7 @@ static ARIARoleMap* createARIARoleMap()
     return roleMap;
 }
 
-AXObject::AXObject()
+AXObject::AXObject(AXObjectCacheImpl* axObjectCache)
     : m_id(0)
     , m_haveChildren(false)
     , m_role(UnknownRole)
@@ -140,6 +140,7 @@ AXObject::AXObject()
     , m_lastModificationCount(-1)
     , m_cachedIsIgnored(false)
     , m_cachedLiveRegionRoot(0)
+    , m_axObjectCache(axObjectCache)
 {
 }
 
@@ -160,14 +161,6 @@ void AXObject::detach()
 bool AXObject::isDetached() const
 {
     return m_detached;
-}
-
-AXObjectCacheImpl* AXObject::axObjectCache() const
-{
-    Document* doc = document();
-    if (doc)
-        return toAXObjectCacheImpl(doc->axObjectCache());
-    return 0;
 }
 
 bool AXObject::isARIATextControl() const
@@ -562,27 +555,6 @@ AXObject* AXObject::parentObjectUnignored() const
     return parent;
 }
 
-AXObject* AXObject::firstAccessibleObjectFromNode(const Node* node)
-{
-    if (!node)
-        return 0;
-
-    AXObjectCacheImpl* cache = toAXObjectCacheImpl(node->document().axObjectCache());
-    AXObject* accessibleObject = cache->getOrCreate(node->renderer());
-    while (accessibleObject && accessibleObject->accessibilityIsIgnored()) {
-        node = NodeTraversal::next(*node);
-
-        while (node && !node->renderer())
-            node = NodeTraversal::nextSkippingChildren(*node);
-
-        if (!node)
-            return 0;
-
-        accessibleObject = cache->getOrCreate(node->renderer());
-    }
-
-    return accessibleObject;
-}
 
 void AXObject::updateChildrenIfNecessary()
 {
@@ -611,7 +583,7 @@ AXObject* AXObject::focusedUIElement() const
     if (!page)
         return 0;
 
-    return AXObjectCacheImpl::focusedUIElementForPage(page);
+    return axObjectCache()->focusedUIElementForPage(page);
 }
 
 Document* AXObject::document() const

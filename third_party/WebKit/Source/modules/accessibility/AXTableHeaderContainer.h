@@ -34,12 +34,15 @@
 
 namespace blink {
 
+class AXObjectCacheImpl;
+
 class AXTableHeaderContainer final : public AXMockObject {
 
 private:
-    AXTableHeaderContainer();
+    explicit AXTableHeaderContainer(AXObjectCacheImpl*);
+
 public:
-    static PassRefPtr<AXTableHeaderContainer> create();
+    static PassRefPtr<AXTableHeaderContainer> create(AXObjectCacheImpl*);
     virtual ~AXTableHeaderContainer();
 
     virtual AccessibilityRole roleValue() const override { return TableHeaderContainerRole; }

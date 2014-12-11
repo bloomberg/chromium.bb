@@ -30,6 +30,7 @@
 #include "modules/accessibility/AXTableRow.h"
 
 #include "core/rendering/RenderTableRow.h"
+#include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/accessibility/AXTableCell.h"
 
 
@@ -37,8 +38,8 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXTableRow::AXTableRow(RenderObject* renderer)
-    : AXRenderObject(renderer)
+AXTableRow::AXTableRow(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+    : AXRenderObject(renderer, axObjectCache)
 {
 }
 
@@ -46,9 +47,9 @@ AXTableRow::~AXTableRow()
 {
 }
 
-PassRefPtr<AXTableRow> AXTableRow::create(RenderObject* renderer)
+PassRefPtr<AXTableRow> AXTableRow::create(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
 {
-    return adoptRef(new AXTableRow(renderer));
+    return adoptRef(new AXTableRow(renderer, axObjectCache));
 }
 
 AccessibilityRole AXTableRow::determineAccessibilityRole()

@@ -23,20 +23,21 @@
 
 #include "core/html/HTMLProgressElement.h"
 #include "core/rendering/RenderProgress.h"
+#include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/FloatConversion.h"
 
 namespace blink {
 
 using namespace HTMLNames;
 
-AXProgressIndicator::AXProgressIndicator(RenderProgress* renderer)
-    : AXRenderObject(renderer)
+AXProgressIndicator::AXProgressIndicator(RenderProgress* renderer, AXObjectCacheImpl* axObjectCache)
+    : AXRenderObject(renderer, axObjectCache)
 {
 }
 
-PassRefPtr<AXProgressIndicator> AXProgressIndicator::create(RenderProgress* renderer)
+PassRefPtr<AXProgressIndicator> AXProgressIndicator::create(RenderProgress* renderer, AXObjectCacheImpl* axObjectCache)
 {
-    return adoptRef(new AXProgressIndicator(renderer));
+    return adoptRef(new AXProgressIndicator(renderer, axObjectCache));
 }
 
 bool AXProgressIndicator::computeAccessibilityIsIgnored() const

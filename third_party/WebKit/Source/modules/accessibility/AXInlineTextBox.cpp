@@ -39,11 +39,10 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXInlineTextBox::AXInlineTextBox(PassRefPtr<AbstractInlineTextBox> inlineTextBox)
-    : m_inlineTextBox(inlineTextBox)
+AXInlineTextBox::AXInlineTextBox(PassRefPtr<AbstractInlineTextBox> inlineTextBox, AXObjectCacheImpl* axObjectCache)
+    : AXObject(axObjectCache)
+    , m_inlineTextBox(inlineTextBox)
 {
-    RenderText* renderText = m_inlineTextBox->renderText();
-    m_axObjectCache = toAXObjectCacheImpl(renderText->document().axObjectCache());
 }
 
 AXInlineTextBox::~AXInlineTextBox()
@@ -52,9 +51,9 @@ AXInlineTextBox::~AXInlineTextBox()
         m_axObjectCache->remove(m_inlineTextBox.get());
 }
 
-PassRefPtr<AXInlineTextBox> AXInlineTextBox::create(PassRefPtr<AbstractInlineTextBox> inlineTextBox)
+PassRefPtr<AXInlineTextBox> AXInlineTextBox::create(PassRefPtr<AbstractInlineTextBox> inlineTextBox, AXObjectCacheImpl* axObjectCache)
 {
-    return adoptRef(new AXInlineTextBox(inlineTextBox));
+    return adoptRef(new AXInlineTextBox(inlineTextBox, axObjectCache));
 }
 
 void AXInlineTextBox::init()

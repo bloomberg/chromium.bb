@@ -33,12 +33,15 @@
 
 namespace blink {
 
+class AXObjectCacheImpl;
+
 class AXListBox final : public AXRenderObject {
 
 private:
-    explicit AXListBox(RenderObject*);
+    AXListBox(RenderObject*, AXObjectCacheImpl*);
+
 public:
-    static PassRefPtr<AXListBox> create(RenderObject*);
+    static PassRefPtr<AXListBox> create(RenderObject*, AXObjectCacheImpl*);
     virtual ~AXListBox();
 
     virtual AccessibilityRole roleValue() const override { return ListBoxRole; }

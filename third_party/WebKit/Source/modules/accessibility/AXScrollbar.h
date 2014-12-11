@@ -33,16 +33,17 @@
 
 namespace blink {
 
+class AXObjectCacheImpl;
 class Scrollbar;
 
 class AXScrollbar final : public AXMockObject {
 public:
-    static PassRefPtr<AXScrollbar> create(Scrollbar*);
+    static PassRefPtr<AXScrollbar> create(Scrollbar*, AXObjectCacheImpl*);
 
     Scrollbar* scrollbar() const { return m_scrollbar.get(); }
 
 private:
-    explicit AXScrollbar(Scrollbar*);
+    AXScrollbar(Scrollbar*, AXObjectCacheImpl*);
 
     virtual void detachFromParent() override;
 
