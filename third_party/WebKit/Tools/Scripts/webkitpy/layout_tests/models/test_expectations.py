@@ -161,6 +161,10 @@ class TestExpectationParser(object):
                 if self._port.reference_files(test):
                     expectation_line.warnings.append('A reftest cannot be marked as NeedsRebaseline/NeedsManualRebaseline')
 
+        specifiers = [specifier.lower() for specifier in expectation_line.specifiers]
+        if (self.REBASELINE_MODIFIER in expectations or self.NEEDS_REBASELINE_MODIFIER in expectations) and ('debug' in specifiers or 'release' in specifiers):
+            expectation_line.warnings.append('A test cannot be rebaselined for Debug/Release.')
+
     def _parse_expectations(self, expectation_line):
         result = set()
         for part in expectation_line.expectations:

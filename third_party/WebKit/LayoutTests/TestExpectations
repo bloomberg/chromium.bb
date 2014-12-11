@@ -1383,9 +1383,9 @@ crbug.com/439840 [ Win Linux Debug ] svg/custom/relative-sized-image.xhtml [ Pas
 crbug.com/418091 [ Mac ] fast/text/aat-morx.html [ Pass Failure ]
 
 crbug.com/436445 fast/css-grid-layout/flex-and-minmax-content-resolution-rows.html [ Failure ]
-crbug.com/390488 [ SnowLeopard Debug ] svg/custom/foreign-object-skew.svg [ NeedsRebaseline ]
-crbug.com/440272 [ SnowLeopard Debug ] virtual/slimmingpaint/fast/block/float/float-avoidance.html [ NeedsRebaseline ]
-crbug.com/440272 [ SnowLeopard Debug ] virtual/slimmingpaint/fast/text/international/vertical-text-glyph-test.html [ NeedsRebaseline ]
+crbug.com/390488 [ SnowLeopard ] svg/custom/foreign-object-skew.svg [ NeedsRebaseline ]
+crbug.com/440272 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/float-avoidance.html [ NeedsRebaseline ]
+crbug.com/440272 [ SnowLeopard ] virtual/slimmingpaint/fast/text/international/vertical-text-glyph-test.html [ NeedsRebaseline ]
 crbug.com/440277 crypto/abandon-crypto-operation.html [ Pass Crash ]
 crbug.com/439492 [ XP ] svg/batik/masking/maskRegions.svg [ NeedsRebaseline ]
 crbug.com/410929 virtual/gpu/fast/canvas/canvas-toDataURL-jpeg-maximum-quality.html [ Pass ImageOnlyFailure ]

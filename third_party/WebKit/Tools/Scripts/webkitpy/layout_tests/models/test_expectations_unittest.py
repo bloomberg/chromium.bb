@@ -190,14 +190,17 @@ expectations:2 A reftest cannot be marked as NeedsRebaseline/NeedsManualRebaseli
         try:
             filesystem = self._port.host.filesystem
             filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(), 'disabled-test.html-disabled'), 'content')
+            filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(), 'test-to-rebaseline.html'), 'content')
             'disabled-test.html-disabled',
             self.parse_exp("Bug(user) [ FOO ] failures/expected/text.html [ Failure ]\n"
-                "Bug(user) non-existent-test.html [ Failure ]\n"
-                "Bug(user) disabled-test.html-disabled [ ImageOnlyFailure ]", is_lint_mode=True)
+                           "Bug(user) non-existent-test.html [ Failure ]\n"
+                           "Bug(user) disabled-test.html-disabled [ ImageOnlyFailure ]\n"
+                           "Bug(user) [ Release ] test-to-rebaseline.html [ NeedsRebaseline ]", is_lint_mode=True)
             self.assertFalse(True, "ParseError wasn't raised")
         except ParseError, e:
             warnings = ("expectations:1 Unrecognized specifier 'foo' failures/expected/text.html\n"
-                        "expectations:2 Path does not exist. non-existent-test.html")
+                        "expectations:2 Path does not exist. non-existent-test.html\n"
+                        "expectations:4 A test cannot be rebaselined for Debug/Release. test-to-rebaseline.html")
             self.assertEqual(str(e), warnings)
 
     def test_parse_warnings_are_logged_if_not_in_lint_mode(self):
