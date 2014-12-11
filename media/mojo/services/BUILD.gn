@@ -35,6 +35,8 @@ source_set("renderer_proxy") {
   sources = [
     "mojo_demuxer_stream_impl.cc",
     "mojo_demuxer_stream_impl.h",
+    "mojo_renderer_factory.cc",
+    "mojo_renderer_factory.h",
     "mojo_renderer_impl.cc",
     "mojo_renderer_impl.h",
   ]

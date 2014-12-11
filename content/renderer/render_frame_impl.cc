@@ -95,11 +95,11 @@
 #include "content/renderer/websharedworker_proxy.h"
 #include "gin/modules/module_registry.h"
 #include "media/base/audio_renderer_mixer_input.h"
-#include "media/base/renderer.h"
-#include "media/blink/encrypted_media_player_support.h"
+#include "media/base/media_log.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/blink/webmediaplayer_impl.h"
 #include "media/blink/webmediaplayer_params.h"
+#include "media/filters/default_renderer_factory.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
 #include "mojo/edk/js/core.h"
 #include "mojo/edk/js/support.h"
@@ -1781,6 +1781,8 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
 #if defined(OS_ANDROID)
   return CreateAndroidWebMediaPlayer(url, client, initial_cdm);
 #else
+  scoped_refptr<media::MediaLog> media_log(new RenderMediaLog());
+
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   media::WebMediaPlayerParams params(
       base::Bind(&ContentRendererClient::DeferMediaLoad,
@@ -1788,12 +1790,8 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
                  static_cast<RenderFrame*>(this)),
       render_thread->GetAudioRendererMixerManager()->CreateInput(
           render_view_->routing_id_, routing_id_),
-      *render_thread->GetAudioHardwareConfig(),
-      new RenderMediaLog(),
-      render_thread->GetGpuFactories(),
-      render_thread->GetMediaThreadTaskRunner(),
-      render_thread->compositor_message_loop_proxy(),
-      initial_cdm);
+      media_log, render_thread->GetMediaThreadTaskRunner(),
+      render_thread->compositor_message_loop_proxy(), initial_cdm);
 
 #if defined(ENABLE_PEPPER_CDMS)
   scoped_ptr<media::CdmFactory> cdm_factory(
@@ -1805,12 +1803,17 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
   scoped_ptr<media::CdmFactory> cdm_factory(new RenderCdmFactory());
 #endif
 
-  scoped_ptr<media::Renderer> media_renderer =
-      GetContentClient()->renderer()->CreateMediaRenderer(
-          this, render_thread->GetMediaThreadTaskRunner());
+  scoped_ptr<media::RendererFactory> media_renderer_factory =
+      GetContentClient()->renderer()->CreateMediaRendererFactory(this);
+
+  if (!media_renderer_factory.get()) {
+    media_renderer_factory.reset(new media::DefaultRendererFactory(
+        media_log, render_thread->GetGpuFactories(),
+        *render_thread->GetAudioHardwareConfig()));
+  }
 
   return new media::WebMediaPlayerImpl(
-      frame, client, weak_factory_.GetWeakPtr(), media_renderer.Pass(),
+      frame, client, weak_factory_.GetWeakPtr(), media_renderer_factory.Pass(),
       cdm_factory.Pass(), params);
 #endif  // defined(OS_ANDROID)
 }

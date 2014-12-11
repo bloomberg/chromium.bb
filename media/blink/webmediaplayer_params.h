@@ -20,9 +20,7 @@ class WebMediaPlayerClient;
 
 namespace media {
 
-class AudioHardwareConfig;
 class AudioRendererSink;
-class GpuVideoAcceleratorFactories;
 class MediaLog;
 
 // Holds parameters for constructing WebMediaPlayerImpl without having
@@ -36,9 +34,7 @@ class MEDIA_EXPORT WebMediaPlayerParams {
   WebMediaPlayerParams(
       const DeferLoadCB& defer_load_cb,
       const scoped_refptr<AudioRendererSink>& audio_renderer_sink,
-      const AudioHardwareConfig& audio_hardware_config,
       const scoped_refptr<MediaLog>& media_log,
-      const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
       blink::WebContentDecryptionModule* initial_cdm);
@@ -53,26 +49,16 @@ class MEDIA_EXPORT WebMediaPlayerParams {
     return audio_renderer_sink_;
   }
 
-  const AudioHardwareConfig& audio_hardware_config() const {
-    return audio_hardware_config_;
-  }
-
   const scoped_refptr<MediaLog>& media_log() const {
     return media_log_;
   }
 
-  const scoped_refptr<GpuVideoAcceleratorFactories>&
-  gpu_factories() const {
-    return gpu_factories_;
-  }
-
-  const scoped_refptr<base::SingleThreadTaskRunner>&
-  media_task_runner() const {
+  const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner() const {
     return media_task_runner_;
   }
 
-  const scoped_refptr<base::SingleThreadTaskRunner>&
-  compositor_task_runner() const {
+  const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner()
+      const {
     return compositor_task_runner_;
   }
 
@@ -83,9 +69,7 @@ class MEDIA_EXPORT WebMediaPlayerParams {
  private:
   base::Callback<void(const base::Closure&)> defer_load_cb_;
   scoped_refptr<AudioRendererSink> audio_renderer_sink_;
-  const AudioHardwareConfig& audio_hardware_config_;
   scoped_refptr<MediaLog> media_log_;
-  scoped_refptr<GpuVideoAcceleratorFactories> gpu_factories_;
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   blink::WebContentDecryptionModule* initial_cdm_;

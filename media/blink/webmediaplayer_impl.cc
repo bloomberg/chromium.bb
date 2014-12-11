@@ -25,7 +25,6 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/audio/null_audio_sink.h"
-#include "media/base/audio_hardware_config.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_context.h"
 #include "media/base/limits.h"
@@ -43,17 +42,8 @@
 #include "media/blink/webmediaplayer_params.h"
 #include "media/blink/webmediaplayer_util.h"
 #include "media/blink/webmediasource_impl.h"
-#include "media/filters/audio_renderer_impl.h"
 #include "media/filters/chunk_demuxer.h"
-#include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer.h"
-#include "media/filters/ffmpeg_video_decoder.h"
-#include "media/filters/gpu_video_accelerator_factories.h"
-#include "media/filters/gpu_video_decoder.h"
-#include "media/filters/opus_audio_decoder.h"
-#include "media/filters/renderer_impl.h"
-#include "media/filters/video_renderer_impl.h"
-#include "media/filters/vpx_video_decoder.h"
 #include "third_party/WebKit/public/platform/WebMediaSource.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -140,7 +130,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
     blink::WebLocalFrame* frame,
     blink::WebMediaPlayerClient* client,
     base::WeakPtr<WebMediaPlayerDelegate> delegate,
-    scoped_ptr<Renderer> renderer,
+    scoped_ptr<RendererFactory> renderer_factory,
     scoped_ptr<CdmFactory> cdm_factory,
     const WebMediaPlayerParams& params)
     : frame_(frame),
@@ -163,7 +153,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       client_(client),
       delegate_(delegate),
       defer_load_cb_(params.defer_load_cb()),
-      gpu_factories_(params.gpu_factories()),
       supports_save_(true),
       chunk_demuxer_(NULL),
       compositor_task_runner_(params.compositor_task_runner()),
@@ -175,8 +164,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
           cdm_factory.Pass(),
           client,
           base::Bind(&WebMediaPlayerImpl::SetCdm, AsWeakPtr())),
-      audio_hardware_config_(params.audio_hardware_config()),
-      renderer_(renderer.Pass()) {
+      renderer_factory_(renderer_factory.Pass()) {
   // Threaded compositing isn't enabled universally yet.
   if (!compositor_task_runner_.get())
     compositor_task_runner_ = base::MessageLoopProxy::current();
@@ -191,15 +179,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   }
 
   // TODO(xhwang): When we use an external Renderer, many methods won't work,
-  // e.g. GetCurrentFrameFromCompositor(). Fix this in a future CL.
-  if (renderer_)
-    return;
-
-  // |gpu_factories_| requires that its entry points be called on its
-  // |GetTaskRunner()|.  Since |pipeline_| will own decoders created from the
-  // factories, require that their message loops are identical.
-  DCHECK(!gpu_factories_.get() ||
-         (gpu_factories_->GetTaskRunner() == media_task_runner_.get()));
+  // e.g. GetCurrentFrameFromCompositor(). See http://crbug.com/434861
 
   // Use the null sink if no sink was provided.
   audio_source_provider_ = new WebAudioSourceProviderImpl(
@@ -226,7 +206,7 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
     chunk_demuxer_ = NULL;
   }
 
-  gpu_factories_ = NULL;
+  renderer_factory_.reset();
 
   // Make sure to kill the pipeline so there's no more media threads running.
   // Note: stopping the pipeline might block for a long time.
@@ -890,40 +870,6 @@ void WebMediaPlayerImpl::NotifyDownloading(bool is_downloading) {
           "is_downloading_data", is_downloading));
 }
 
-// TODO(xhwang): Move this to a factory class so that we can create different
-// renderers.
-scoped_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer() {
-  // Create our audio decoders and renderer.
-  ScopedVector<AudioDecoder> audio_decoders;
-
-  audio_decoders.push_back(new FFmpegAudioDecoder(
-      media_task_runner_, base::Bind(&LogMediaSourceError, media_log_)));
-  audio_decoders.push_back(new OpusAudioDecoder(media_task_runner_));
-
-  scoped_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(
-      media_task_runner_, audio_source_provider_.get(), audio_decoders.Pass(),
-      audio_hardware_config_, media_log_));
-
-  // Create our video decoders and renderer.
-  ScopedVector<VideoDecoder> video_decoders;
-
-  if (gpu_factories_.get())
-    video_decoders.push_back(new GpuVideoDecoder(gpu_factories_));
-
-#if !defined(MEDIA_DISABLE_LIBVPX)
-  video_decoders.push_back(new VpxVideoDecoder(media_task_runner_));
-#endif  // !defined(MEDIA_DISABLE_LIBVPX)
-
-  video_decoders.push_back(new FFmpegVideoDecoder(media_task_runner_));
-
-  scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
-      media_task_runner_, video_decoders.Pass(), true, media_log_));
-
-  // Create renderer.
-  return scoped_ptr<Renderer>(new RendererImpl(
-      media_task_runner_, audio_renderer.Pass(), video_renderer.Pass()));
-}
-
 void WebMediaPlayerImpl::StartPipeline() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
@@ -957,12 +903,10 @@ void WebMediaPlayerImpl::StartPipeline() {
   // ... and we're ready to go!
   seeking_ = true;
 
-  if (!renderer_)
-    renderer_ = CreateRenderer();
-
   pipeline_.Start(
       demuxer_.get(),
-      renderer_.Pass(),
+      renderer_factory_->CreateRenderer(media_task_runner_,
+                                        audio_source_provider_.get()),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineEnded),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineError),
       BIND_TO_RENDER_LOOP1(&WebMediaPlayerImpl::OnPipelineSeeked, false),

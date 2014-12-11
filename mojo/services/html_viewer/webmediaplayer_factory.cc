@@ -14,12 +14,12 @@
 #include "media/base/audio_hardware_config.h"
 #include "media/base/media.h"
 #include "media/base/media_log.h"
-#include "media/base/renderer.h"
 #include "media/blink/webmediaplayer_impl.h"
 #include "media/blink/webmediaplayer_params.h"
+#include "media/filters/default_renderer_factory.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
 #include "media/mojo/interfaces/media_renderer.mojom.h"
-#include "media/mojo/services/mojo_renderer_impl.h"
+#include "media/mojo/services/mojo_renderer_factory.h"
 #include "mojo/public/cpp/application/connect.h"
 #include "mojo/public/interfaces/application/shell.mojom.h"
 
@@ -53,37 +53,32 @@ blink::WebMediaPlayer* WebMediaPlayerFactory::CreateMediaPlayer(
     blink::WebMediaPlayerClient* client,
     Shell* shell) {
 #if defined(OS_ANDROID)
-  return NULL;
+  return nullptr;
 #else
-  scoped_ptr<media::Renderer> renderer;
+  scoped_refptr<media::MediaLog> media_log(new media::MediaLog());
+  scoped_ptr<media::RendererFactory> media_renderer_factory;
 
   if (enable_mojo_media_renderer_) {
     ServiceProviderPtr media_renderer_service_provider;
     shell->ConnectToApplication("mojo:media",
                                 GetProxy(&media_renderer_service_provider));
-
-    MediaRendererPtr mojo_media_renderer;
-    ConnectToService(media_renderer_service_provider.get(),
-                     &mojo_media_renderer);
-
-    renderer.reset(new media::MojoRendererImpl(GetMediaThreadTaskRunner(),
-                                               mojo_media_renderer.Pass()));
+    media_renderer_factory.reset(
+        new media::MojoRendererFactory(media_renderer_service_provider.Pass()));
+  } else {
+    media_renderer_factory.reset(
+        new media::DefaultRendererFactory(media_log,
+                                          nullptr,  // No GPU factory.
+                                          GetAudioHardwareConfig()));
   }
 
   media::WebMediaPlayerParams params(
-      media::WebMediaPlayerParams::DeferLoadCB(),
-      CreateAudioRendererSink(),
-      GetAudioHardwareConfig(),
-      new media::MediaLog(),
-      scoped_refptr<media::GpuVideoAcceleratorFactories>(),
-      GetMediaThreadTaskRunner(),
-      compositor_task_runner_,
-      NULL);
+      media::WebMediaPlayerParams::DeferLoadCB(), CreateAudioRendererSink(),
+      media_log, GetMediaThreadTaskRunner(), compositor_task_runner_, nullptr);
   base::WeakPtr<media::WebMediaPlayerDelegate> delegate;
 
   // TODO(xhwang): Provide a media based CdmFactory implementation.
-  return new media::WebMediaPlayerImpl(frame, client, delegate, renderer.Pass(),
-                                       nullptr, params);
+  return new media::WebMediaPlayerImpl(
+      frame, client, delegate, media_renderer_factory.Pass(), nullptr, params);
 #endif
 }
 
