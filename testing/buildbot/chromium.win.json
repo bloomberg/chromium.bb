@@ -1,7 +1,12 @@
 {
   "XP Tests (1)": {
     "gtest_tests": [
-      "accessibility_unittests",
+      {
+        "test": "accessibility_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       {
         "test": "base_unittests",
         "swarming": {
@@ -39,10 +44,20 @@
       },
       "courgette_unittests",
       "crypto_unittests",
-      "events_unittests",
+      {
+        "test": "events_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "extensions_unittests",
       "gcm_unit_tests",
-      "gfx_unittests",
+      {
+        "test": "gfx_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "google_apis_unittests",
       "gpu_unittests",
       "installer_util_unittests",
@@ -82,7 +97,12 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "ui_base_unittests",
+      {
+        "test": "ui_base_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "ui_touch_selection_unittests",
       "url_unittests",
       "views_unittests",
@@ -105,7 +125,12 @@
   },
   "Vista Tests (1)": {
     "gtest_tests": [
-      "accessibility_unittests",
+      {
+        "test": "accessibility_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "app_shell_browsertests",
       "app_shell_unittests",
       "aura_unittests",
@@ -144,9 +169,19 @@
       "courgette_unittests",
       "crypto_unittests",
       "extensions_unittests",
-      "events_unittests",
+      {
+        "test": "events_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "gcm_unit_tests",
-      "gfx_unittests",
+      {
+        "test": "gfx_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "google_apis_unittests",
       "gpu_unittests",
       "installer_util_unittests",
@@ -192,7 +227,12 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "ui_base_unittests",
+      {
+        "test": "ui_base_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "ui_touch_selection_unittests",
       "url_unittests",
       "views_unittests",
@@ -212,8 +252,18 @@
   "Win7 Tests (1)": {
     "gtest_tests": [
       "app_installer_unittests",
-      "app_list_unittests",
-      "accessibility_unittests",
+      {
+        "test": "app_list_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
+        "test": "accessibility_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       {
         "test": "ash_unittests",
         "swarming": {
@@ -259,10 +309,20 @@
       "courgette_unittests",
       "crypto_unittests",
       "device_unittests",
-      "events_unittests",
+      {
+        "test": "events_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "extensions_unittests",
       "gcm_unit_tests",
-      "gfx_unittests",
+      {
+        "test": "gfx_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "google_apis_unittests",
       "gpu_unittests",
       "installer_util_unittests",
@@ -277,7 +337,12 @@
       "jingle_unittests",
       "keyboard_unittests",
       "media_unittests",
-      "message_center_unittests",
+      {
+        "test": "message_center_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "mojo_common_unittests",
       "mojo_public_bindings_unittests",
       "mojo_public_environment_unittests",
@@ -304,7 +369,12 @@
         }
       },
       "sync_unit_tests",
-      "ui_base_unittests",
+      {
+        "test": "ui_base_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "ui_touch_selection_unittests",
       {
         "test": "unit_tests",
@@ -333,7 +403,12 @@
   },
   "Win 7 Tests x64 (1)": {
     "gtest_tests": [
-      "accessibility_unittests",
+      {
+        "test": "accessibility_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       {
         "test": "base_unittests",
         "swarming": {
@@ -348,7 +423,12 @@
         }
       },
       "app_installer_unittests",
-      "app_list_unittests",
+      {
+        "test": "app_list_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "app_shell_browsertests",
       "app_shell_unittests",
       {
@@ -381,10 +461,20 @@
       "courgette_unittests",
       "crypto_unittests",
       "device_unittests",
-      "events_unittests",
+      {
+        "test": "events_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "extensions_unittests",
       "gcm_unit_tests",
-      "gfx_unittests",
+      {
+        "test": "gfx_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "google_apis_unittests",
       "gpu_unittests",
       "installer_util_unittests",
@@ -399,7 +489,12 @@
       "jingle_unittests",
       "keyboard_unittests",
       "media_unittests",
-      "message_center_unittests",
+      {
+        "test": "message_center_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "mojo_common_unittests",
       "mojo_public_bindings_unittests",
       "mojo_public_environment_unittests",
@@ -426,7 +521,12 @@
       },
       "sql_unittests",
       "sync_unit_tests",
-      "ui_base_unittests",
+      {
+        "test": "ui_base_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "ui_touch_selection_unittests",
       {
         "test": "unit_tests",
@@ -455,7 +555,12 @@
   },
   "Win7 Tests (dbg)(1)": {
     "gtest_tests": [
-      "accessibility_unittests",
+      {
+        "test": "accessibility_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       {
         "test": "ash_unittests",
         "swarming": {
@@ -500,7 +605,12 @@
       },
       "courgette_unittests",
       "crypto_unittests",
-      "events_unittests",
+      {
+        "test": "events_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "extensions_unittests",
       "gcm_unit_tests",
       "gpu_unittests",
@@ -542,7 +652,12 @@
         }
       },
       "sync_unit_tests",
-      "ui_base_unittests",
+      {
+        "test": "ui_base_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "ui_touch_selection_unittests",
       {
         "test": "unit_tests",

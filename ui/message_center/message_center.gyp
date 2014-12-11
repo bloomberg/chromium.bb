@@ -255,4 +255,30 @@
       ],
     },  # target_name: message_center_unittests
   ],
+  'conditions': [
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'message_center_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'message_center_unittests',
+          ],
+          'includes': [
+            '../../build/isolate.gypi',
+          ],
+          'sources': [
+            'message_center_unittests.isolate',
+          ],
+          'conditions': [
+            ['use_x11 == 1', {
+              'dependencies': [
+                '../../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+              ],
+            }],
+          ],
+        },
+      ],
+    }],
+  ],
 }

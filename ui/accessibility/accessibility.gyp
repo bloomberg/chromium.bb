@@ -112,4 +112,30 @@
       },
     },
   ],
+  'conditions': [
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'accessibility_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'accessibility_unittests',
+          ],
+          'includes': [
+            '../../build/isolate.gypi',
+          ],
+          'sources': [
+            'accessibility_unittests.isolate',
+          ],
+          'conditions': [
+            ['use_x11 == 1', {
+              'dependencies': [
+                '../../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+              ],
+            }],
+          ],
+        },
+      ],
+    }],
+  ],
 }
