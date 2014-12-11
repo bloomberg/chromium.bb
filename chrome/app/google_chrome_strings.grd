@@ -709,7 +709,7 @@ For Google Chrome, processes used to display diagnostics information (such as th
         <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Warning:<ph name="END_BOLD">&lt;/b&gt;</ph> Google Chrome cannot prevent extensions from recording your browsing history. To disable this extension in incognito mode, unselect this option.
       </message>
       <message name="IDS_EXTENSIONS_UNINSTALL" desc="The link for uninstalling extensions.">
-        Remove from Chrome
+        Remove from Chrome...
       </message>
 
       <if expr="enable_extensions">
