@@ -138,7 +138,7 @@ EXTRA_ENV = {
   # Module split scheduling. 'dynamic' will produce non-deterministic results
   # with faster compilation, whereas 'static' will still use multiple cores but
   # will be deterministic and slightly slower.
-  'SPLIT_MODULE_SCHED' : 'static',
+  'SPLIT_MODULE_SCHED' : '${SANDBOXED ? dynamic : static}',
 }
 
 
@@ -200,7 +200,7 @@ TranslatorPatterns = [
   ( '(--build-id)',    "env.append('LD_FLAGS', $0)"),
   ( '-bitcode-stream-rate=([0-9]+)', "env.set('BITCODE_STREAM_RATE', $0)"),
   ( '-split-module=([0-9]+)', "env.set('SPLIT_MODULE', $0)"),
-  ( '(-split-module-sched=.*)', "env.set('SPLIT_MODULE_SCHED', $0)"),
+  ( '-split-module-sched=(.*)', "env.set('SPLIT_MODULE_SCHED', $0)"),
   ( '-no-stream-bitcode', "env.set('STREAM_BITCODE', '0')"),
 
   # Treat general linker flags as inputs so they don't get re-ordered
