@@ -226,6 +226,14 @@ void ContentBrowserClient::RequestPermission(
   result_callback.Run(true);
 }
 
+PermissionStatus ContentBrowserClient::GetPermissionStatus(
+    PermissionType permission,
+    BrowserContext* browser_context,
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) {
+  return PERMISSION_STATUS_DENIED;
+}
+
 bool ContentBrowserClient::CanCreateWindow(
     const GURL& opener_url,
     const GURL& opener_top_level_frame_url,

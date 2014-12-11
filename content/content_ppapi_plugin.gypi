@@ -12,6 +12,7 @@
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../third_party/WebKit/public/blink.gyp:blink',
+        'content_common_mojo_bindings.gyp:content_common_mojo_bindings',
       ],
       'sources': [
         'ppapi_plugin/broker_process_dispatcher.cc',

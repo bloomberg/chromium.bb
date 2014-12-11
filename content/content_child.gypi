@@ -13,6 +13,7 @@
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/gfx/gfx.gyp:gfx_geometry',
     '../url/url.gyp:url_lib',
+    'content_common_mojo_bindings.gyp:content_common_mojo_bindings',
   ],
   'include_dirs': [
     '..',

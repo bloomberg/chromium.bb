@@ -189,6 +189,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const GURL& requesting_frame,
       bool user_gesture,
       const base::Callback<void(bool)>& result_callback) override;
+  content::PermissionStatus GetPermissionStatus(
+      content::PermissionType permission,
+      content::BrowserContext* browser_context,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin) override;
   void CancelPermissionRequest(content::PermissionType permission,
                                content::WebContents* web_contents,
                                int bridge_id,

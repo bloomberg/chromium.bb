@@ -599,6 +599,24 @@ void GetGuestViewDefaultContentSettingRules(
 }
 #endif  // defined(ENALBE_EXTENSIONS)
 
+content::PermissionStatus
+ContentSettingToPermissionStatus(ContentSetting setting) {
+  switch (setting) {
+    case CONTENT_SETTING_ALLOW:
+    case CONTENT_SETTING_SESSION_ONLY:
+      return content::PERMISSION_STATUS_GRANTED;
+    case CONTENT_SETTING_BLOCK:
+      return content::PERMISSION_STATUS_DENIED;
+    case CONTENT_SETTING_ASK:
+      return content::PERMISSION_STATUS_ASK;
+    case CONTENT_SETTING_DEFAULT:
+    case CONTENT_SETTING_NUM_SETTINGS:
+      break;
+  }
+  NOTREACHED();
+  return content::PERMISSION_STATUS_DENIED;
+}
+
 }  // namespace
 
 namespace chrome {
@@ -1915,6 +1933,49 @@ void ChromeContentBrowserClient::RequestPermission(
       NOTREACHED() << "Invalid RequestPermission for " << permission;
       break;
   }
+}
+
+content::PermissionStatus ChromeContentBrowserClient::GetPermissionStatus(
+    content::PermissionType permission,
+    content::BrowserContext* browser_context,
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) {
+  DCHECK(browser_context);
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+
+  PermissionContextBase* context = nullptr;
+  switch (permission) {
+    case content::PERMISSION_MIDI_SYSEX:
+      context = MidiPermissionContextFactory::GetForProfile(profile);
+      break;
+    case content::PERMISSION_NOTIFICATIONS:
+#if defined(ENABLE_NOTIFICATIONS)
+      context = DesktopNotificationServiceFactory::GetForProfile(profile);
+#else
+      NOTIMPLEMENTED();
+#endif
+      break;
+    case content::PERMISSION_GEOLOCATION:
+      context = GeolocationPermissionContextFactory::GetForProfile(profile);
+      break;
+    case content::PERMISSION_PROTECTED_MEDIA:
+      NOTIMPLEMENTED();
+      break;
+    case content::PERMISSION_PUSH_MESSAGING:
+      context = gcm::PushMessagingPermissionContextFactory::GetForProfile(
+          profile);
+      break;
+    case content::PERMISSION_NUM:
+      NOTREACHED() << "Invalid RequestPermission for " << permission;
+      break;
+  }
+
+  ContentSetting result = context
+      ? context->GetPermissionStatus(requesting_origin.GetOrigin(),
+                                     embedding_origin.GetOrigin())
+      : CONTENT_SETTING_DEFAULT;
+
+  return ContentSettingToPermissionStatus(result);
 }
 
 void ChromeContentBrowserClient::CancelPermissionRequest(

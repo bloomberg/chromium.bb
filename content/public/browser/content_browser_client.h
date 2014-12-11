@@ -19,6 +19,7 @@
 #include "content/public/browser/permission_type.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/media_stream_request.h"
+#include "content/public/common/permission_status.mojom.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/socket_permission_request.h"
 #include "content/public/common/window_container_type.h"
@@ -437,6 +438,12 @@ class CONTENT_EXPORT ContentBrowserClient {
                                        WebContents* web_contents,
                                        const GURL& frame_url,
                                        const GURL& main_frame_url) {}
+
+  virtual PermissionStatus GetPermissionStatus(
+      PermissionType permission,
+      BrowserContext* browser_context,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin);
 
   // Returns true if the given page is allowed to open a window of the given
   // type. If true is returned, |no_javascript_access| will indicate whether
