@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerCache.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerCacheError.h"
@@ -127,6 +128,8 @@ class ServiceWorkerCacheStorageDispatcher
   typedef IDMap<CacheStorageMatchCallbacks, IDMapOwnPointer>
       StorageMatchCallbacksMap;
 
+  typedef base::hash_map<int32, base::TimeTicks> TimeMap;
+
   typedef IDMap<blink::WebServiceWorkerCache::CacheMatchCallbacks,
                 IDMapOwnPointer> MatchCallbacksMap;
   typedef IDMap<blink::WebServiceWorkerCache::CacheWithResponsesCallbacks,
@@ -150,6 +153,12 @@ class ServiceWorkerCacheStorageDispatcher
   KeysCallbacksMap keys_callbacks_;
   StorageMatchCallbacksMap match_callbacks_;
 
+  TimeMap has_times_;
+  TimeMap open_times_;
+  TimeMap delete_times_;
+  TimeMap keys_times_;
+  TimeMap match_times_;
+
   // The individual caches created under this CacheStorage object.
   IDMap<WebCache, IDMapExternalPointer> web_caches_;
 
@@ -159,6 +168,11 @@ class ServiceWorkerCacheStorageDispatcher
   WithResponsesCallbacksMap cache_match_all_callbacks_;
   WithRequestsCallbacksMap cache_keys_callbacks_;
   WithResponsesCallbacksMap cache_batch_callbacks_;
+
+  TimeMap cache_match_times_;
+  TimeMap cache_match_all_times_;
+  TimeMap cache_keys_times_;
+  TimeMap cache_batch_times_;
 
   base::WeakPtrFactory<ServiceWorkerCacheStorageDispatcher> weak_factory_;
 
