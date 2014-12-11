@@ -9,6 +9,9 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/heap/Heap.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebUnitTestSupport.h"
+#include "public/platform/WebVector.h"
 #include "wtf/RefPtr.h"
 #include "wtf/testing/WTFTestHelpers.h"
 #include <gtest/gtest.h>
@@ -147,7 +150,13 @@ TEST(BodyStreamBufferTest, CreateBlob)
     EXPECT_TRUE(callback1->blobHandle());
     EXPECT_FALSE(callback2->blobHandle());
     EXPECT_EQ(10u, callback1->blobHandle()->size());
-    // FIXME: Check the content of the blob.
+    WebVector<WebBlobData::Item*> items;
+    EXPECT_TRUE(Platform::current()->unitTestSupport()->getBlobItems(callback1->blobHandle()->uuid(), &items));
+    EXPECT_EQ(2u, items.size());
+    EXPECT_EQ(6u, items[0]->data.size());
+    EXPECT_EQ(0, memcmp(items[0]->data.data(), "foobar", 6));
+    EXPECT_EQ(4u, items[1]->data.size());
+    EXPECT_EQ(0, memcmp(items[1]->data.data(), "piyo", 4));
     EXPECT_FALSE(callback1->exception());
     EXPECT_FALSE(callback2->exception());
 }
@@ -161,7 +170,11 @@ TEST(BodyStreamBufferTest, CreateBlobAfterWrite)
     buffer->close();
     EXPECT_TRUE(callback->blobHandle());
     EXPECT_EQ(6u, callback->blobHandle()->size());
-    // FIXME: Check the content of the blob.
+    WebVector<WebBlobData::Item*> items;
+    EXPECT_TRUE(Platform::current()->unitTestSupport()->getBlobItems(callback->blobHandle()->uuid(), &items));
+    EXPECT_EQ(1u, items.size());
+    EXPECT_EQ(6u, items[0]->data.size());
+    EXPECT_EQ(0, memcmp(items[0]->data.data(), "foobar", 6));
 }
 
 TEST(BodyStreamBufferTest, CreateBlobAfterClose)
@@ -173,7 +186,11 @@ TEST(BodyStreamBufferTest, CreateBlobAfterClose)
     EXPECT_TRUE(buffer->readAllAndCreateBlobHandle(callback));
     EXPECT_TRUE(callback->blobHandle());
     EXPECT_EQ(6u, callback->blobHandle()->size());
-    // FIXME: Check the content of the blob.
+    WebVector<WebBlobData::Item*> items;
+    EXPECT_TRUE(Platform::current()->unitTestSupport()->getBlobItems(callback->blobHandle()->uuid(), &items));
+    EXPECT_EQ(1u, items.size());
+    EXPECT_EQ(6u, items[0]->data.size());
+    EXPECT_EQ(0, memcmp(items[0]->data.data(), "foobar", 6));
 }
 
 TEST(BodyStreamBufferTest, CreateBlobException)
