@@ -41,7 +41,7 @@ class GPU_EXPORT GLContextVirtual : public gfx::GLContext {
   void ReleaseCurrent(gfx::GLSurface* surface) override;
   bool IsCurrent(gfx::GLSurface* surface) override;
   void* GetHandle() override;
-  void SetSwapInterval(int interval) override;
+  void OnSetSwapInterval(int interval) override;
   std::string GetExtensions() override;
   bool GetTotalGpuMemory(size_t* bytes) override;
   void SetSafeToForceGpuSwitch() override;

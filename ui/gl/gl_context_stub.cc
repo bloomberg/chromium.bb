@@ -33,7 +33,7 @@ void* GLContextStub::GetHandle() {
   return NULL;
 }
 
-void GLContextStub::SetSwapInterval(int interval) {
+void GLContextStub::OnSetSwapInterval(int interval) {
 }
 
 std::string GLContextStub::GetExtensions() {

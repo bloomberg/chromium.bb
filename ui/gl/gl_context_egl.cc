@@ -172,7 +172,7 @@ void* GLContextEGL::GetHandle() {
   return context_;
 }
 
-void GLContextEGL::SetSwapInterval(int interval) {
+void GLContextEGL::OnSetSwapInterval(int interval) {
   DCHECK(IsCurrent(NULL) && GLSurface::GetCurrent());
 
   // This is a surfaceless context. eglSwapInterval doesn't take any effect in

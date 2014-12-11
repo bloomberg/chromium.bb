@@ -238,7 +238,7 @@ void* GLContextCGL::GetHandle() {
   return context_;
 }
 
-void GLContextCGL::SetSwapInterval(int interval) {
+void GLContextCGL::OnSetSwapInterval(int interval) {
   DCHECK(IsCurrent(NULL));
 }
 

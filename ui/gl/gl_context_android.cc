@@ -33,7 +33,7 @@ class GLNonOwnedContext : public GLContextReal {
   virtual void ReleaseCurrent(GLSurface* surface) override {}
   virtual bool IsCurrent(GLSurface* surface) override { return true; }
   virtual void* GetHandle() override { return NULL; }
-  virtual void SetSwapInterval(int interval) override {}
+  virtual void OnSetSwapInterval(int interval) override {}
   virtual std::string GetExtensions() override;
 
  protected:

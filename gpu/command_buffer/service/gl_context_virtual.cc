@@ -82,7 +82,7 @@ void* GLContextVirtual::GetHandle() {
   return shared_context_->GetHandle();
 }
 
-void GLContextVirtual::SetSwapInterval(int interval) {
+void GLContextVirtual::OnSetSwapInterval(int interval) {
   shared_context_->SetSwapInterval(interval);
 }
 

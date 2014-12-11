@@ -163,7 +163,7 @@ void* GLContextGLX::GetHandle() {
   return context_;
 }
 
-void GLContextGLX::SetSwapInterval(int interval) {
+void GLContextGLX::OnSetSwapInterval(int interval) {
   DCHECK(IsCurrent(NULL));
   if (HasExtension("GLX_EXT_swap_control") &&
       g_driver_glx.fn.glXSwapIntervalEXTFn) {

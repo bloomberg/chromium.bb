@@ -123,7 +123,7 @@ void* GLContextOSMesa::GetHandle() {
   return context_;
 }
 
-void GLContextOSMesa::SetSwapInterval(int interval) {
+void GLContextOSMesa::OnSetSwapInterval(int interval) {
   DCHECK(IsCurrent(NULL));
 }
 

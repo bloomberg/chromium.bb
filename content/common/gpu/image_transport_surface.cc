@@ -141,12 +141,12 @@ void ImageTransportHelper::SetSwapInterval(gfx::GLContext* context) {
   // If Aero Glass is enabled, then the renderer will handle ratelimiting and
   // there's no tearing, so waiting for vsync is unnecessary.
   if (ui::win::IsAeroGlassEnabled()) {
-    context->SetSwapInterval(0);
+    context->ForceSwapIntervalZero(true);
     return;
   }
 #endif
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync))
-    context->SetSwapInterval(0);
+    context->ForceSwapIntervalZero(true);
   else
     context->SetSwapInterval(1);
 }

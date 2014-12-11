@@ -52,7 +52,10 @@ bool GLContext::FlushEvent::IsSignaled() {
   return flag_.IsSet();
 }
 
-GLContext::GLContext(GLShareGroup* share_group) : share_group_(share_group) {
+GLContext::GLContext(GLShareGroup* share_group) :
+    share_group_(share_group),
+    swap_interval_(1),
+    force_swap_interval_zero_(false) {
   if (!share_group_.get())
     share_group_ = new GLShareGroup;
 
@@ -176,6 +179,16 @@ GLStateRestorer* GLContext::GetGLStateRestorer() {
 
 void GLContext::SetGLStateRestorer(GLStateRestorer* state_restorer) {
   state_restorer_ = make_scoped_ptr(state_restorer);
+}
+
+void GLContext::SetSwapInterval(int interval) {
+  swap_interval_ = interval;
+  OnSetSwapInterval(force_swap_interval_zero_ ? 0 : swap_interval_);
+}
+
+void GLContext::ForceSwapIntervalZero(bool force) {
+  force_swap_interval_zero_ = force;
+  OnSetSwapInterval(force_swap_interval_zero_ ? 0 : swap_interval_);
 }
 
 bool GLContext::WasAllocatedUsingRobustnessExtension() {

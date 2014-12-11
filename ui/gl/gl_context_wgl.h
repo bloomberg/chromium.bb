@@ -28,7 +28,7 @@ class GLContextWGL : public GLContextReal {
   virtual void ReleaseCurrent(GLSurface* surface);
   virtual bool IsCurrent(GLSurface* surface);
   virtual void* GetHandle();
-  virtual void SetSwapInterval(int interval);
+  virtual void OnSetSwapInterval(int interval);
   virtual std::string GetExtensions();
 
  private:
