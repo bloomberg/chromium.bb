@@ -76,6 +76,7 @@ java_strings_grd("chrome_strings_grd") {
 android_library("chrome_java") {
   deps = [
     ":chrome_java_resources",
+    ":document_tab_model_info_proto_java",
     "//base:base_java",
     "//net/android:net_java",
     "//components/bookmarks/common/android:bookmarks_java",
@@ -142,6 +143,14 @@ java_cpp_template("app_banner_metrics_ids_javagen") {
   package_name = "org/chromium/chrome/browser/banners"
   inputs = [
     "../browser/android/banners/app_banner_metrics_id_list.h",
+  ]
+}
+
+# GYP: //chrome/chrome_browser.gypi:document_tab_model_info_proto_java
+proto_java_library("document_tab_model_info_proto_java") {
+  proto_path = "java/src/org/chromium/chrome/browser/tabmodel/document"
+  sources = [
+    "$proto_path/document_tab_model_info.proto",
   ]
 }
 

@@ -3704,6 +3704,20 @@
           },
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
+        {
+          # Protobuf compiler / generator for Android's DocumentTabModel
+          # protocol buffer.
+          # GN: //chrome/android: document_tab_model_info_proto_java
+          'target_name': 'document_tab_model_info_proto_java',
+          'type': 'none',
+          'variables': {
+            'proto_in_dir': 'android/java/src/org/chromium/chrome/browser/tabmodel/document',
+          },
+          'sources': [
+            '<(proto_in_dir)/document_tab_model_info.proto',
+          ],
+          'includes': ['../build/protoc_java.gypi'],
+        },
       ],
     },],
     ['enable_extensions==1', {
