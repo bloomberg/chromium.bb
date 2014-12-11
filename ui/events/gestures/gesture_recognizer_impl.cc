@@ -83,10 +83,13 @@ GestureConsumer* GestureRecognizerImpl::GetTouchLockedTarget(
 
 GestureConsumer* GestureRecognizerImpl::GetTargetForGestureEvent(
     const GestureEvent& event) {
-  GestureConsumer* target = NULL;
   int touch_id = event.details().oldest_touch_id();
-  target = touch_id_target_for_gestures_[touch_id];
-  return target;
+  if (!touch_id_target_for_gestures_.count(touch_id)) {
+    NOTREACHED() << "Touch ID does not map to a valid GestureConsumer.";
+    return nullptr;
+  }
+
+  return touch_id_target_for_gestures_.at(touch_id);
 }
 
 GestureConsumer* GestureRecognizerImpl::GetTargetForLocation(
