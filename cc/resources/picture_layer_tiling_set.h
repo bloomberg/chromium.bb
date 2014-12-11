@@ -42,27 +42,35 @@ class CC_EXPORT PictureLayerTilingSet {
 
   ~PictureLayerTilingSet();
 
-  void SetClient(PictureLayerTilingClient* client);
   const PictureLayerTilingClient* client() const { return client_; }
 
-  void RemoveTilesInRegion(const Region& region);
   void CleanUpTilings(float min_acceptable_high_res_scale,
                       float max_acceptable_high_res_scale,
                       const std::vector<PictureLayerTiling*>& needed_tilings,
                       bool should_have_low_res,
                       PictureLayerTilingSet* twin_set,
                       PictureLayerTilingSet* recycled_twin_set);
-
+  void RemoveNonIdealTilings();
   // Make this set of tilings match the same set of content scales from |other|.
   // Delete any tilings that don't meet |minimum_contents_scale|.  Recreate
   // any tiles that intersect |layer_invalidation|.  Update the size of all
   // tilings to |new_layer_bounds|.
   // Returns true if we had at least one high res tiling synced.
-  bool SyncTilings(const PictureLayerTilingSet& other,
-                   const gfx::Size& new_layer_bounds,
-                   const Region& layer_invalidation,
-                   float minimum_contents_scale,
-                   RasterSource* raster_source);
+  // TODO(danakj): Remove this !!!
+  bool SyncTilingsForTesting(const PictureLayerTilingSet& other,
+                             const gfx::Size& new_layer_bounds,
+                             const Region& layer_invalidation,
+                             float minimum_contents_scale,
+                             RasterSource* raster_source);
+
+  void UpdateTilingsToCurrentRasterSource(
+      RasterSource* raster_source,
+      const PictureLayerTilingSet* twin_set,
+      // TODO(danakj): Don't need to pass layer bounds here, we have the raster
+      // source already, and they are the same as the raster source size.
+      const gfx::Size& layer_bounds,
+      const Region& layer_invalidation,
+      float minimum_contents_scale);
 
   PictureLayerTiling* AddTiling(float contents_scale,
                                 const gfx::Size& layer_bounds);
@@ -88,6 +96,9 @@ class CC_EXPORT PictureLayerTilingSet {
   // Returns the maximum contents scale of all tilings, or 0 if no tilings
   // exist.
   float GetMaximumContentsScale() const;
+
+  // Removes all tilings with a contents scale < |minimum_scale|.
+  void RemoveTilingsBelowScale(float minimum_scale);
 
   // Remove all tilings.
   void RemoveAllTilings();

@@ -39,8 +39,10 @@ class CC_EXPORT PictureLayerImpl
     PictureLayerImpl* pending;
   };
 
-  static scoped_ptr<PictureLayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
-    return make_scoped_ptr(new PictureLayerImpl(tree_impl, id));
+  static scoped_ptr<PictureLayerImpl> Create(LayerTreeImpl* tree_impl,
+                                             int id,
+                                             bool is_mask) {
+    return make_scoped_ptr(new PictureLayerImpl(tree_impl, id, is_mask));
   }
   ~PictureLayerImpl() override;
 
@@ -85,7 +87,6 @@ class CC_EXPORT PictureLayerImpl
   // Mask-related functions.
   void GetContentsResourceId(ResourceProvider::ResourceId* resource_id,
                              gfx::Size* resource_size) const override;
-  void set_is_mask(bool is_mask) { is_mask_ = is_mask; }
 
   size_t GPUMemoryUsageInBytes() const override;
 
@@ -108,10 +109,9 @@ class CC_EXPORT PictureLayerImpl
   friend class LayerRasterTileIterator;
   using TileRequirementCheck = bool (PictureLayerTiling::*)(const Tile*) const;
 
-  PictureLayerImpl(LayerTreeImpl* tree_impl, int id);
+  PictureLayerImpl(LayerTreeImpl* tree_impl, int id, bool is_mask);
   PictureLayerTiling* AddTiling(float contents_scale);
   void RemoveAllTilings();
-  void SyncFromActiveLayer(const PictureLayerImpl* other);
   void AddTilingsForRasterScale();
   void UpdateTilePriorities(const Occlusion& occlusion_in_content_space);
   virtual bool ShouldAdjustRasterScale() const;
@@ -122,7 +122,9 @@ class CC_EXPORT PictureLayerImpl
   void ResetRasterScale();
   gfx::Rect GetViewportForTilePriorityInContentSpace() const;
   PictureLayerImpl* GetRecycledTwinLayer() const;
-  void UpdateRasterSource(scoped_refptr<RasterSource> raster_source);
+  void UpdateRasterSource(scoped_refptr<RasterSource> raster_source,
+                          Region* new_invalidation,
+                          const PictureLayerTilingSet* pending_set);
 
   void DoPostCommitInitializationIfNeeded() {
     if (needs_post_commit_initialization_)
@@ -171,7 +173,7 @@ class CC_EXPORT PictureLayerImpl
   // after a CalculateContentsScale/ManageTilings.
   bool should_update_tile_priorities_;
   bool only_used_low_res_last_append_quads_;
-  bool is_mask_;
+  const bool is_mask_;
 
   // Any draw properties derived from |transform|, |viewport|, and |clip|
   // parameters in LayerTreeHostImpl::SetExternalDrawConstraints are not valid

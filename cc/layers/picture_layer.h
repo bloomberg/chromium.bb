@@ -50,9 +50,12 @@ class CC_EXPORT PictureLayer : public Layer {
   ~PictureLayer() override;
 
   bool HasDrawableContent() const override;
-  bool UpdateCanUseLCDText();
+
+  bool is_mask() const { return is_mask_; }
 
  private:
+  bool UpdateCanUseLCDText();
+
   ContentLayerClient* client_;
   scoped_ptr<RecordingSource> recording_source_;
   devtools_instrumentation::

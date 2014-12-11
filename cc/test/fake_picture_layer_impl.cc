@@ -13,36 +13,40 @@ namespace cc {
 FakePictureLayerImpl::FakePictureLayerImpl(
     LayerTreeImpl* tree_impl,
     int id,
-    scoped_refptr<RasterSource> raster_source)
-    : PictureLayerImpl(tree_impl, id),
+    scoped_refptr<RasterSource> raster_source,
+    bool is_mask)
+    : PictureLayerImpl(tree_impl, id, is_mask),
       append_quads_count_(0),
       did_become_active_call_count_(0),
       has_valid_tile_priorities_(false),
       use_set_valid_tile_priorities_flag_(false),
       release_resources_count_(0) {
-  raster_source_ = raster_source;
-  SetBounds(raster_source_->GetSize());
-  SetContentBounds(raster_source_->GetSize());
+  SetBounds(raster_source->GetSize());
+  SetContentBounds(raster_source->GetSize());
+  SetRasterSourceOnPending(raster_source, Region());
 }
 
 FakePictureLayerImpl::FakePictureLayerImpl(
     LayerTreeImpl* tree_impl,
     int id,
     scoped_refptr<RasterSource> raster_source,
+    bool is_mask,
     const gfx::Size& layer_bounds)
-    : PictureLayerImpl(tree_impl, id),
+    : PictureLayerImpl(tree_impl, id, is_mask),
       append_quads_count_(0),
       did_become_active_call_count_(0),
       has_valid_tile_priorities_(false),
       use_set_valid_tile_priorities_flag_(false),
       release_resources_count_(0) {
-  raster_source_ = raster_source;
   SetBounds(layer_bounds);
   SetContentBounds(layer_bounds);
+  SetRasterSourceOnPending(raster_source, Region());
 }
 
-FakePictureLayerImpl::FakePictureLayerImpl(LayerTreeImpl* tree_impl, int id)
-    : PictureLayerImpl(tree_impl, id),
+FakePictureLayerImpl::FakePictureLayerImpl(LayerTreeImpl* tree_impl,
+                                           int id,
+                                           bool is_mask)
+    : PictureLayerImpl(tree_impl, id, is_mask),
       append_quads_count_(0),
       did_become_active_call_count_(0),
       has_valid_tile_priorities_(false),
@@ -52,7 +56,14 @@ FakePictureLayerImpl::FakePictureLayerImpl(LayerTreeImpl* tree_impl, int id)
 
 scoped_ptr<LayerImpl> FakePictureLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return make_scoped_ptr(new FakePictureLayerImpl(tree_impl, id()));
+  return make_scoped_ptr(new FakePictureLayerImpl(tree_impl, id(), is_mask_));
+}
+
+void FakePictureLayerImpl::PushPropertiesTo(LayerImpl* layer_impl) {
+  FakePictureLayerImpl* picture_layer_impl =
+      static_cast<FakePictureLayerImpl*>(layer_impl);
+  picture_layer_impl->fixed_tile_size_ = fixed_tile_size_;
+  PictureLayerImpl::PushPropertiesTo(layer_impl);
 }
 
 void FakePictureLayerImpl::AppendQuads(
@@ -99,15 +110,13 @@ PictureLayerTiling* FakePictureLayerImpl::LowResTiling() const {
   return result;
 }
 
-void FakePictureLayerImpl::SetRasterSource(
-    scoped_refptr<RasterSource> raster_source) {
-  raster_source_.swap(raster_source);
-  if (tilings()) {
-    for (size_t i = 0; i < num_tilings(); ++i) {
-      tilings()->tiling_at(i)->UpdateTilesToCurrentRasterSource(
-          raster_source_.get(), Region(), raster_source_->GetSize());
-    }
-  }
+void FakePictureLayerImpl::SetRasterSourceOnPending(
+    scoped_refptr<RasterSource> raster_source,
+    const Region& invalidation) {
+  DCHECK(layer_tree_impl()->IsPendingTree());
+  Region invalidation_temp = invalidation;
+  const PictureLayerTilingSet* pending_set = nullptr;
+  UpdateRasterSource(raster_source, &invalidation_temp, pending_set);
 }
 
 void FakePictureLayerImpl::SetAllTilesVisible() {

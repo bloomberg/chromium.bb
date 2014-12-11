@@ -22,8 +22,7 @@ namespace {
 class TestablePictureImageLayerImpl : public PictureImageLayerImpl {
  public:
   TestablePictureImageLayerImpl(LayerTreeImpl* tree_impl, int id)
-      : PictureImageLayerImpl(tree_impl, id) {
-  }
+      : PictureImageLayerImpl(tree_impl, id, false) {}
   using PictureLayerImpl::UpdateIdealScales;
   using PictureLayerImpl::MaximumTilingContentsScale;
   using PictureLayerImpl::DoPostCommitInitializationIfNeeded;

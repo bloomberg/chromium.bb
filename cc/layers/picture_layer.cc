@@ -37,12 +37,14 @@ PictureLayer::~PictureLayer() {
 }
 
 scoped_ptr<LayerImpl> PictureLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
-  return PictureLayerImpl::Create(tree_impl, id());
+  return PictureLayerImpl::Create(tree_impl, id(), is_mask_);
 }
 
 void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   Layer::PushPropertiesTo(base_layer);
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
+  // TODO(danakj): Make is_mask_ a constructor parameter for PictureLayer.
+  DCHECK_EQ(layer_impl->is_mask_, is_mask_);
 
   int source_frame_number = layer_tree_host()->source_frame_number();
   gfx::Size impl_bounds = layer_impl->bounds();
@@ -63,17 +65,14 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
     recording_source_->SetEmptyBounds();
   }
 
-  // Unlike other properties, invalidation must always be set on layer_impl.
-  // See PictureLayerImpl::PushPropertiesTo for more details.
-  layer_impl->invalidation_.Clear();
-  layer_impl->invalidation_.Swap(&recording_invalidation_);
-  layer_impl->set_is_mask(is_mask_);
   scoped_refptr<RasterSource> raster_source =
       recording_source_->CreateRasterSource();
   raster_source->SetBackgoundColor(SafeOpaqueBackgroundColor());
   raster_source->SetRequiresClear(!contents_opaque() &&
                                   !client_->FillsBoundsCompletely());
-  layer_impl->UpdateRasterSource(raster_source);
+  layer_impl->UpdateRasterSource(raster_source, &recording_invalidation_,
+                                 nullptr);
+  DCHECK(recording_invalidation_.IsEmpty());
 }
 
 void PictureLayer::SetLayerTreeHost(LayerTreeHost* host) {

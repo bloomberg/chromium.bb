@@ -11,8 +11,10 @@
 
 namespace cc {
 
-PictureImageLayerImpl::PictureImageLayerImpl(LayerTreeImpl* tree_impl, int id)
-    : PictureLayerImpl(tree_impl, id) {
+PictureImageLayerImpl::PictureImageLayerImpl(LayerTreeImpl* tree_impl,
+                                             int id,
+                                             bool is_mask)
+    : PictureLayerImpl(tree_impl, id, is_mask) {
 }
 
 PictureImageLayerImpl::~PictureImageLayerImpl() {
@@ -24,7 +26,7 @@ const char* PictureImageLayerImpl::LayerTypeAsString() const {
 
 scoped_ptr<LayerImpl> PictureImageLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return PictureImageLayerImpl::Create(tree_impl, id());
+  return PictureImageLayerImpl::Create(tree_impl, id(), is_mask_);
 }
 
 void PictureImageLayerImpl::GetDebugBorderProperties(

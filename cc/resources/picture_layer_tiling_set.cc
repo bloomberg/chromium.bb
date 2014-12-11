@@ -40,15 +40,70 @@ PictureLayerTilingSet::PictureLayerTilingSet(PictureLayerTilingClient* client)
 PictureLayerTilingSet::~PictureLayerTilingSet() {
 }
 
-void PictureLayerTilingSet::SetClient(PictureLayerTilingClient* client) {
-  client_ = client;
-  for (size_t i = 0; i < tilings_.size(); ++i)
-    tilings_[i]->SetClient(client_);
-}
+void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSource(
+    RasterSource* raster_source,
+    const PictureLayerTilingSet* twin_set,
+    const gfx::Size& layer_bounds,
+    const Region& layer_invalidation,
+    float minimum_contents_scale) {
+  RemoveTilingsBelowScale(minimum_contents_scale);
 
-void PictureLayerTilingSet::RemoveTilesInRegion(const Region& region) {
-  for (size_t i = 0; i < tilings_.size(); ++i)
-    tilings_[i]->RemoveTilesInRegion(region);
+  // Copy over tilings that are shared with the |twin_set| tiling set (if it
+  // exists).
+  if (twin_set) {
+    for (PictureLayerTiling* twin_tiling : twin_set->tilings_) {
+      float contents_scale = twin_tiling->contents_scale();
+      DCHECK_GE(contents_scale, minimum_contents_scale);
+
+      PictureLayerTiling* this_tiling = FindTilingWithScale(contents_scale);
+      if (!this_tiling) {
+        scoped_ptr<PictureLayerTiling> new_tiling =
+            PictureLayerTiling::Create(contents_scale, layer_bounds, client_);
+        tilings_.push_back(new_tiling.Pass());
+        this_tiling = tilings_.back();
+      }
+      this_tiling->CloneTilesAndPropertiesFrom(*twin_tiling);
+    }
+  }
+
+  // For unshared tilings, invalidate tiles and update them to the new raster
+  // source.
+  for (PictureLayerTiling* tiling : tilings_) {
+    if (twin_set && twin_set->FindTilingWithScale(tiling->contents_scale()))
+      continue;
+
+    tiling->Resize(layer_bounds);
+    tiling->Invalidate(layer_invalidation);
+    tiling->SetRasterSource(raster_source);
+    // TODO(danakj): Is this needed anymore? Won't they already exist?
+    tiling->CreateMissingTilesInLiveTilesRect();
+
+    // If |twin_set| is present, use the resolutions from there. Otherwise leave
+    // all resolutions as they are.
+    if (twin_set)
+      tiling->set_resolution(NON_IDEAL_RESOLUTION);
+  }
+
+  tilings_.sort(LargestToSmallestScaleFunctor());
+
+#if DCHECK_IS_ON
+  for (PictureLayerTiling* tiling : tilings_) {
+    DCHECK(tiling->tile_size() ==
+           client_->CalculateTileSize(tiling->tiling_size()))
+        << "tile_size: " << tiling->tile_size().ToString()
+        << " tiling_size: " << tiling->tiling_size().ToString()
+        << " CalculateTileSize: "
+        << client_->CalculateTileSize(tiling->tiling_size()).ToString();
+  }
+
+  if (!tilings_.empty()) {
+    size_t num_high_res = std::count_if(tilings_.begin(), tilings_.end(),
+                                        [](PictureLayerTiling* tiling) {
+      return tiling->resolution() == HIGH_RESOLUTION;
+    });
+    DCHECK_EQ(1u, num_high_res);
+  }
+#endif
 }
 
 void PictureLayerTilingSet::CleanUpTilings(
@@ -91,14 +146,6 @@ void PictureLayerTilingSet::CleanUpTilings(
   }
 
   for (auto* tiling : to_remove) {
-    PictureLayerTiling* twin_tiling =
-        twin_set ? twin_set->FindTilingWithScale(tiling->contents_scale())
-                 : nullptr;
-    // Only remove tilings from the twin layer if they have
-    // NON_IDEAL_RESOLUTION.
-    if (twin_tiling && twin_tiling->resolution() == NON_IDEAL_RESOLUTION)
-      twin_set->Remove(twin_tiling);
-
     PictureLayerTiling* recycled_twin_tiling =
         recycled_twin_set
             ? recycled_twin_set->FindTilingWithScale(tiling->contents_scale())
@@ -113,16 +160,24 @@ void PictureLayerTilingSet::CleanUpTilings(
   }
 }
 
+void PictureLayerTilingSet::RemoveNonIdealTilings() {
+  auto to_remove = tilings_.remove_if([](PictureLayerTiling* t) {
+    return t->resolution() == NON_IDEAL_RESOLUTION;
+  });
+  tilings_.erase(to_remove, tilings_.end());
+}
+
 void PictureLayerTilingSet::MarkAllTilingsNonIdeal() {
   for (auto* tiling : tilings_)
     tiling->set_resolution(NON_IDEAL_RESOLUTION);
 }
 
-bool PictureLayerTilingSet::SyncTilings(const PictureLayerTilingSet& other,
-                                        const gfx::Size& new_layer_bounds,
-                                        const Region& layer_invalidation,
-                                        float minimum_contents_scale,
-                                        RasterSource* raster_source) {
+bool PictureLayerTilingSet::SyncTilingsForTesting(
+    const PictureLayerTilingSet& other,
+    const gfx::Size& new_layer_bounds,
+    const Region& layer_invalidation,
+    float minimum_contents_scale,
+    RasterSource* raster_source) {
   if (new_layer_bounds.IsEmpty()) {
     RemoveAllTilings();
     return false;
@@ -151,8 +206,9 @@ bool PictureLayerTilingSet::SyncTilings(const PictureLayerTilingSet& other,
     if (PictureLayerTiling* this_tiling = FindTilingWithScale(contents_scale)) {
       this_tiling->set_resolution(other.tilings_[i]->resolution());
 
-      this_tiling->UpdateTilesToCurrentRasterSource(
-          raster_source, layer_invalidation, new_layer_bounds);
+      this_tiling->Resize(new_layer_bounds);
+      this_tiling->Invalidate(layer_invalidation);
+      this_tiling->SetRasterSource(raster_source);
       this_tiling->CreateMissingTilesInLiveTilesRect();
       if (this_tiling->resolution() == HIGH_RESOLUTION)
         have_high_res_tiling = true;
@@ -220,6 +276,14 @@ PictureLayerTiling* PictureLayerTilingSet::FindTilingWithResolution(
   if (iter == tilings_.end())
     return NULL;
   return *iter;
+}
+
+void PictureLayerTilingSet::RemoveTilingsBelowScale(float minimum_scale) {
+  auto to_remove =
+      tilings_.remove_if([minimum_scale](PictureLayerTiling* tiling) {
+        return tiling->contents_scale() < minimum_scale;
+      });
+  tilings_.erase(to_remove, tilings_.end());
 }
 
 void PictureLayerTilingSet::RemoveAllTilings() {

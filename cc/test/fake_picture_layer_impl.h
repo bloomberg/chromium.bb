@@ -14,7 +14,8 @@ class FakePictureLayerImpl : public PictureLayerImpl {
  public:
   static scoped_ptr<FakePictureLayerImpl> Create(
       LayerTreeImpl* tree_impl, int id) {
-    return make_scoped_ptr(new FakePictureLayerImpl(tree_impl, id));
+    bool is_mask = false;
+    return make_scoped_ptr(new FakePictureLayerImpl(tree_impl, id, is_mask));
   }
 
   // Create layer from a raster source that covers the entire layer.
@@ -22,8 +23,9 @@ class FakePictureLayerImpl : public PictureLayerImpl {
       LayerTreeImpl* tree_impl,
       int id,
       scoped_refptr<RasterSource> raster_source) {
+    bool is_mask = false;
     return make_scoped_ptr(
-        new FakePictureLayerImpl(tree_impl, id, raster_source));
+        new FakePictureLayerImpl(tree_impl, id, raster_source, is_mask));
   }
 
   // Create layer from a raster source that only covers part of the layer.
@@ -32,11 +34,24 @@ class FakePictureLayerImpl : public PictureLayerImpl {
       int id,
       scoped_refptr<RasterSource> raster_source,
       const gfx::Size& layer_bounds) {
+    bool is_mask = false;
+    return make_scoped_ptr(new FakePictureLayerImpl(
+        tree_impl, id, raster_source, is_mask, layer_bounds));
+  }
+
+  // Create layer from a raster source that covers the entire layer and is a
+  // mask.
+  static scoped_ptr<FakePictureLayerImpl> CreateMaskWithRasterSource(
+      LayerTreeImpl* tree_impl,
+      int id,
+      scoped_refptr<RasterSource> raster_source) {
+    bool is_mask = true;
     return make_scoped_ptr(
-        new FakePictureLayerImpl(tree_impl, id, raster_source, layer_bounds));
+        new FakePictureLayerImpl(tree_impl, id, raster_source, is_mask));
   }
 
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  void PushPropertiesTo(LayerImpl* layer_impl) override;
   void AppendQuads(RenderPass* render_pass,
                    const Occlusion& occlusion_in_content_space,
                    AppendQuadsData* append_quads_data) override;
@@ -91,7 +106,8 @@ class FakePictureLayerImpl : public PictureLayerImpl {
 
   PictureLayerTilingSet* tilings() { return tilings_.get(); }
   RasterSource* raster_source() { return raster_source_.get(); }
-  void SetRasterSource(scoped_refptr<RasterSource> raster_source);
+  void SetRasterSourceOnPending(scoped_refptr<RasterSource> raster_source,
+                                const Region& invalidation);
   size_t append_quads_count() { return append_quads_count_; }
 
   const Region& invalidation() const { return invalidation_; }
@@ -103,7 +119,9 @@ class FakePictureLayerImpl : public PictureLayerImpl {
 
   void set_fixed_tile_size(const gfx::Size& size) { fixed_tile_size_ = size; }
 
+  // TODO(danakj): Remove this darn thing.
   void CreateDefaultTilingsAndTiles();
+
   void SetAllTilesVisible();
   void SetAllTilesReady();
   void SetAllTilesReadyInTiling(PictureLayerTiling* tiling);
@@ -123,12 +141,14 @@ class FakePictureLayerImpl : public PictureLayerImpl {
  protected:
   FakePictureLayerImpl(LayerTreeImpl* tree_impl,
                        int id,
-                       scoped_refptr<RasterSource> raster_source);
+                       scoped_refptr<RasterSource> raster_source,
+                       bool is_mask);
   FakePictureLayerImpl(LayerTreeImpl* tree_impl,
                        int id,
                        scoped_refptr<RasterSource> raster_source,
+                       bool is_mask,
                        const gfx::Size& layer_bounds);
-  FakePictureLayerImpl(LayerTreeImpl* tree_impl, int id);
+  FakePictureLayerImpl(LayerTreeImpl* tree_impl, int id, bool is_mask);
 
  private:
   gfx::Size fixed_tile_size_;

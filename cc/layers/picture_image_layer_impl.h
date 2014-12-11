@@ -12,8 +12,9 @@ namespace cc {
 class CC_EXPORT PictureImageLayerImpl : public PictureLayerImpl {
  public:
   static scoped_ptr<PictureImageLayerImpl> Create(LayerTreeImpl* tree_impl,
-                                                  int id) {
-    return make_scoped_ptr(new PictureImageLayerImpl(tree_impl, id));
+                                                  int id,
+                                                  bool is_mask) {
+    return make_scoped_ptr(new PictureImageLayerImpl(tree_impl, id, is_mask));
   }
   ~PictureImageLayerImpl() override;
 
@@ -22,7 +23,7 @@ class CC_EXPORT PictureImageLayerImpl : public PictureLayerImpl {
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
  protected:
-  PictureImageLayerImpl(LayerTreeImpl* tree_impl, int id);
+  PictureImageLayerImpl(LayerTreeImpl* tree_impl, int id, bool is_mask);
 
   bool ShouldAdjustRasterScale() const override;
   void RecalculateRasterScales() override;

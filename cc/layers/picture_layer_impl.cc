@@ -63,9 +63,13 @@ PictureLayerImpl::Pair::Pair(PictureLayerImpl* active_layer,
 PictureLayerImpl::Pair::~Pair() {
 }
 
-PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
+PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl,
+                                   int id,
+                                   bool is_mask)
     : LayerImpl(tree_impl, id),
       twin_layer_(nullptr),
+      tilings_(PictureLayerTilingSet::Create(this)),
+      // TODO(danakj): Can this be null to start?
       raster_source_(PicturePileImpl::Create()),
       ideal_page_scale_(0.f),
       ideal_device_scale_(0.f),
@@ -81,7 +85,7 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
       needs_post_commit_initialization_(true),
       should_update_tile_priorities_(false),
       only_used_low_res_last_append_quads_(false),
-      is_mask_(false) {
+      is_mask_(is_mask) {
   layer_tree_impl()->RegisterPictureLayerImpl(this);
 }
 
@@ -113,7 +117,7 @@ const char* PictureLayerImpl::LayerTypeAsString() const {
 
 scoped_ptr<LayerImpl> PictureLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return PictureLayerImpl::Create(tree_impl, id());
+  return PictureLayerImpl::Create(tree_impl, id(), is_mask_);
 }
 
 void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
@@ -121,6 +125,7 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   // a descendant of an opacity 0 layer).
   DoPostCommitInitializationIfNeeded();
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
+  DCHECK_EQ(layer_impl->is_mask_, is_mask_);
 
   LayerImpl::PushPropertiesTo(base_layer);
 
@@ -134,52 +139,35 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   twin_layer_ = layer_impl;
   layer_impl->twin_layer_ = this;
 
-  layer_impl->set_is_mask(is_mask_);
-  layer_impl->UpdateRasterSource(raster_source_);
-
+  // Solid color layers have no tilings.
   DCHECK_IMPLIES(raster_source_->IsSolidColor(), tilings_->num_tilings() == 0);
-  // Tilings would be expensive to push, so we swap.
-  layer_impl->tilings_.swap(tilings_);
-  layer_impl->tilings_->SetClient(layer_impl);
-  if (tilings_)
-    tilings_->SetClient(this);
+  // The pending tree should only have a high res (and possibly low res) tiling.
+  DCHECK_LE(tilings_->num_tilings(),
+            layer_tree_impl()->create_low_res_tiling() ? 2u : 1u);
 
-  // Ensure that the recycle tree doesn't have any unshared tiles.
-  if (tilings_ && raster_source_->IsSolidColor())
-    tilings_->RemoveAllTilings();
+  layer_impl->UpdateRasterSource(raster_source_, &invalidation_,
+                                 tilings_.get());
+  DCHECK(invalidation_.IsEmpty());
 
-  // Remove invalidated tiles from what will become a recycle tree.
-  if (tilings_)
-    tilings_->RemoveTilesInRegion(invalidation_);
+  // After syncing a solid color layer, the active layer has no tilings.
+  DCHECK_IMPLIES(raster_source_->IsSolidColor(),
+                 layer_impl->tilings_->num_tilings() == 0);
 
   layer_impl->raster_page_scale_ = raster_page_scale_;
   layer_impl->raster_device_scale_ = raster_device_scale_;
   layer_impl->raster_source_scale_ = raster_source_scale_;
   layer_impl->raster_contents_scale_ = raster_contents_scale_;
   layer_impl->low_res_raster_contents_scale_ = low_res_raster_contents_scale_;
-  layer_impl->needs_post_commit_initialization_ = false;
 
-  // The invalidation on this soon-to-be-recycled layer must be cleared to
-  // mirror clearing the invalidation in PictureLayer's version of this function
-  // in case push properties is skipped.
-  layer_impl->invalidation_.Swap(&invalidation_);
-  invalidation_.Clear();
+  layer_impl->SanityCheckTilingState();
+
+  layer_impl->needs_post_commit_initialization_ = false;
   needs_post_commit_initialization_ = true;
 
   // We always need to push properties.
   // See http://crbug.com/303943
+  // TODO(danakj): Stop always pushing properties since we don't swap tilings.
   needs_push_properties_ = true;
-}
-
-void PictureLayerImpl::UpdateRasterSource(
-    scoped_refptr<RasterSource> raster_source) {
-  bool could_have_tilings = CanHaveTilings();
-  raster_source_.swap(raster_source);
-
-  // Need to call UpdateTiles again if CanHaveTilings changed.
-  if (could_have_tilings != CanHaveTilings()) {
-    layer_tree_impl()->set_needs_update_draw_properties();
-  }
 }
 
 void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
@@ -485,8 +473,6 @@ void PictureLayerImpl::UpdateTiles(const Occlusion& occlusion_in_content_space,
 
   UpdateIdealScales();
 
-  DCHECK_IMPLIES(tilings_->num_tilings() == 0, raster_contents_scale_ == 0.f)
-      << "A layer with no tilings shouldn't have valid raster scales";
   if (!raster_contents_scale_ || ShouldAdjustRasterScale()) {
     RecalculateRasterScales();
     AddTilingsForRasterScale();
@@ -581,6 +567,44 @@ PictureLayerImpl* PictureLayerImpl::GetRecycledTwinLayer() const {
   return twin_layer_;
 }
 
+void PictureLayerImpl::UpdateRasterSource(
+    scoped_refptr<RasterSource> raster_source,
+    Region* new_invalidation,
+    const PictureLayerTilingSet* pending_set) {
+  // The bounds and the pile size may differ if the pile wasn't updated (ie.
+  // PictureLayer::Update didn't happen). In that case the pile will be empty.
+  DCHECK_IMPLIES(!raster_source->GetSize().IsEmpty(),
+                 bounds() == raster_source->GetSize())
+      << " bounds " << bounds().ToString() << " pile "
+      << raster_source->GetSize().ToString();
+
+  bool could_have_tilings = CanHaveTilings();
+  raster_source_.swap(raster_source);
+
+  // The |new_invalidation| must be cleared before updating tilings since they
+  // access the invalidation through the PictureLayerTilingClient interface.
+  invalidation_.Clear();
+  invalidation_.Swap(new_invalidation);
+
+  bool can_have_tilings = CanHaveTilings();
+
+  // Need to call UpdateTiles again if CanHaveTilings changed.
+  if (could_have_tilings != can_have_tilings)
+    layer_tree_impl()->set_needs_update_draw_properties();
+
+  if (!can_have_tilings) {
+    RemoveAllTilings();
+    return;
+  }
+
+  // We could do this after doing UpdateTiles, which would avoid doing this for
+  // tilings that are going to disappear on the pending tree (if scale changed).
+  // But that would also be more complicated, so we just do it here for now.
+  tilings_->UpdateTilingsToCurrentRasterSource(
+      raster_source_.get(), pending_set, raster_source_->GetSize(),
+      invalidation_, MinimumContentsScale());
+}
+
 void PictureLayerImpl::NotifyTileStateChanged(const Tile* tile) {
   if (layer_tree_impl()->IsActiveTree()) {
     gfx::RectF layer_damage_rect =
@@ -647,9 +671,6 @@ const PictureLayerTiling* PictureLayerImpl::GetPendingOrActiveTwinTiling(
     const PictureLayerTiling* tiling) const {
   PictureLayerImpl* twin_layer = GetPendingOrActiveTwinLayer();
   if (!twin_layer)
-    return nullptr;
-  // TODO(danakj): Remove this when no longer swapping tilings.
-  if (!twin_layer->tilings_)
     return nullptr;
   return twin_layer->tilings_->FindTilingWithScale(tiling->contents_scale());
 }
@@ -765,69 +786,15 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
   return gfx::Size(tile_width, tile_height);
 }
 
-void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
-  DCHECK(!other->needs_post_commit_initialization_);
-  DCHECK(other->tilings_);
-
-  if (!DrawsContent()) {
-    RemoveAllTilings();
-    return;
-  }
-
-  raster_page_scale_ = other->raster_page_scale_;
-  raster_device_scale_ = other->raster_device_scale_;
-  raster_source_scale_ = other->raster_source_scale_;
-  raster_contents_scale_ = other->raster_contents_scale_;
-  low_res_raster_contents_scale_ = other->low_res_raster_contents_scale_;
-
-  bool synced_high_res_tiling = false;
-  if (CanHaveTilings()) {
-    synced_high_res_tiling = tilings_->SyncTilings(
-        *other->tilings_, raster_source_->GetSize(), invalidation_,
-        MinimumContentsScale(), raster_source_.get());
-  } else {
-    RemoveAllTilings();
-  }
-
-  // If our MinimumContentsScale has changed to prevent the twin's high res
-  // tiling from being synced, we should reset the raster scale and let it be
-  // recalculated (1) again. This can happen if our bounds shrink to the point
-  // where min contents scale grows.
-  // (1) - TODO(vmpstr) Instead of hoping that this will be recalculated, we
-  // should refactor this code a little bit and actually recalculate this.
-  // However, this is a larger undertaking, so this will work for now.
-  if (!synced_high_res_tiling)
-    ResetRasterScale();
-  else
-    SanityCheckTilingState();
-}
-
-void PictureLayerImpl::SyncTiling(
-    const PictureLayerTiling* tiling) {
-  if (!tilings_)
-    return;
-  if (!CanHaveTilingWithScale(tiling->contents_scale()))
-    return;
-  tilings_->AddTiling(tiling->contents_scale(), raster_source_->GetSize());
-
-  // If this tree needs update draw properties, then the tiling will
-  // get updated prior to drawing or activation.  If this tree does not
-  // need update draw properties, then its transforms are up to date and
-  // we can create tiles for this tiling immediately.
-  if (!layer_tree_impl()->needs_update_draw_properties() &&
-      should_update_tile_priorities_) {
-    // TODO(danakj): Add a DCHECK() that we are not using occlusion tracking
-    // when we stop using the pending tree in the browser compositor. If we want
-    // to support occlusion tracking here, we need to dirty the draw properties
-    // or save occlusion as a draw property.
-    UpdateTilePriorities(Occlusion());
-  }
-}
-
 void PictureLayerImpl::GetContentsResourceId(
     ResourceProvider::ResourceId* resource_id,
     gfx::Size* resource_size) const {
-  DCHECK_EQ(bounds().ToString(), raster_source_->GetSize().ToString());
+  // The bounds and the pile size may differ if the pile wasn't updated (ie.
+  // PictureLayer::Update didn't happen). In that case the pile will be empty.
+  DCHECK_IMPLIES(!raster_source_->GetSize().IsEmpty(),
+                 bounds() == raster_source_->GetSize())
+      << " bounds " << bounds().ToString() << " pile "
+      << raster_source_->GetSize().ToString();
   gfx::Rect content_rect(bounds());
   PictureLayerTilingSet::CoverageIterator iter(
       tilings_.get(), 1.f, content_rect, ideal_contents_scale_);
@@ -855,20 +822,9 @@ void PictureLayerImpl::GetContentsResourceId(
 }
 
 void PictureLayerImpl::DoPostCommitInitialization() {
+  // TODO(danakj): Remove this.
   DCHECK(needs_post_commit_initialization_);
   DCHECK(layer_tree_impl()->IsPendingTree());
-
-  if (!tilings_)
-    tilings_ = PictureLayerTilingSet::Create(this);
-
-  PictureLayerImpl* twin_layer = GetPendingOrActiveTwinLayer();
-  if (twin_layer) {
-    // If the twin has never been pushed to, do not sync from it.
-    // This can happen if this function is called during activation.
-    if (!twin_layer->needs_post_commit_initialization_)
-      SyncFromActiveLayer(twin_layer);
-  }
-
   needs_post_commit_initialization_ = false;
 }
 
@@ -880,9 +836,6 @@ PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {
       tilings_->AddTiling(contents_scale, raster_source_->GetSize());
 
   DCHECK(raster_source_->HasRecordings());
-
-  if (PictureLayerImpl* twin_layer = GetPendingOrActiveTwinLayer())
-    twin_layer->SyncTiling(tiling);
 
   return tiling;
 }
@@ -928,6 +881,12 @@ void PictureLayerImpl::AddTilingsForRasterScale() {
 
   // Make sure we always have one high-res (even if high == low).
   high_res->set_resolution(HIGH_RESOLUTION);
+
+  if (layer_tree_impl()->IsPendingTree()) {
+    // On the pending tree, drop any tilings that are non-ideal since we don't
+    // need them to activate anyway.
+    tilings_->RemoveNonIdealTilings();
+  }
 
   SanityCheckTilingState();
 }
@@ -1113,9 +1072,6 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
                            layer_tree_impl()->create_low_res_tiling(), twin_set,
                            recycled_twin_set);
 
-  if (twin_set && twin_set->num_tilings() == 0)
-    twin->ResetRasterScale();
-
   if (recycled_twin_set && recycled_twin_set->num_tilings() == 0)
     recycled_twin->ResetRasterScale();
 
@@ -1158,6 +1114,8 @@ bool PictureLayerImpl::CanHaveTilings() const {
     return false;
   if (!raster_source_->HasRecordings())
     return false;
+  // If the |raster_source_| has a recording it should have non-empty bounds.
+  DCHECK(!raster_source_->GetSize().IsEmpty());
   return true;
 }
 

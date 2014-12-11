@@ -301,8 +301,9 @@ class PictureLayerTilingSetSyncTest : public testing::Test {
     for (size_t i = 0; i < target_->num_tilings(); ++i)
       target_->tiling_at(i)->CreateAllTilesForTesting();
 
-    target_->SyncTilings(*source_.get(), new_bounds, invalidation,
-                         minimum_scale, target_client_.raster_source());
+    target_->SyncTilingsForTesting(*source_.get(), new_bounds, invalidation,
+                                   minimum_scale,
+                                   target_client_.raster_source());
   }
   void SyncTilings(const gfx::Size& new_bounds) {
     Region invalidation;

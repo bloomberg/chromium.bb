@@ -16,20 +16,25 @@ namespace {
 // These tests deal with picture layers.
 class LayerTreeHostPictureTest : public LayerTreeTest {
  protected:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    // PictureLayer can only be used with impl side painting enabled.
-    settings->impl_side_painting = true;
+  void SetupTreeWithSinglePictureLayer(const gfx::Size& size) {
+    scoped_refptr<Layer> root = Layer::Create();
+    root->SetBounds(size);
+
+    root_picture_layer_ = FakePictureLayer::Create(&client_);
+    root_picture_layer_->SetBounds(size);
+    root->AddChild(root_picture_layer_);
+
+    layer_tree_host()->SetRootLayer(root);
   }
+
+  scoped_refptr<FakePictureLayer> root_picture_layer_;
+  FakeContentLayerClient client_;
 };
 
 class LayerTreeHostPictureTestTwinLayer
     : public LayerTreeHostPictureTest {
   void SetupTree() override {
-    LayerTreeHostPictureTest::SetupTree();
-
-    scoped_refptr<FakePictureLayer> picture =
-        FakePictureLayer::Create(&client_);
-    layer_tree_host()->root_layer()->AddChild(picture);
+    SetupTreeWithSinglePictureLayer(gfx::Size(1, 1));
   }
 
   void BeginTest() override {
@@ -117,11 +122,10 @@ class LayerTreeHostPictureTestTwinLayer
 
   void AfterTest() override {}
 
-  FakeContentLayerClient client_;
   int activates_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostPictureTestTwinLayer);
+SINGLE_AND_MULTI_THREAD_IMPL_TEST_F(LayerTreeHostPictureTestTwinLayer);
 
 class LayerTreeHostPictureTestResizeViewportWithGpuRaster
     : public LayerTreeHostPictureTest {

@@ -7795,7 +7795,7 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
 TEST_F(LayerTreeHostImplTest, GetPictureLayerImplPairs) {
   host_impl_->CreatePendingTree();
   host_impl_->pending_tree()->SetRootLayer(
-      PictureLayerImpl::Create(host_impl_->pending_tree(), 10));
+      PictureLayerImpl::Create(host_impl_->pending_tree(), 10, false));
 
   LayerTreeImpl* pending_tree = host_impl_->pending_tree();
   LayerImpl* pending_layer = pending_tree->root_layer();
@@ -7836,7 +7836,7 @@ TEST_F(LayerTreeHostImplTest, GetPictureLayerImplPairs) {
   // should get two pairs.
   host_impl_->CreatePendingTree();
   host_impl_->pending_tree()->root_layer()->AddChild(
-      PictureLayerImpl::Create(host_impl_->pending_tree(), 11));
+      PictureLayerImpl::Create(host_impl_->pending_tree(), 11, false));
 
   LayerImpl* new_pending_layer = pending_tree->root_layer()->children()[0];
 

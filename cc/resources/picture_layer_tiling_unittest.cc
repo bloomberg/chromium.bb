@@ -208,8 +208,9 @@ TEST_F(PictureLayerTilingIteratorTest, ResizeDeletesTiles) {
 
   Region invalidation =
       SubtractRegions(gfx::Rect(tile_size), gfx::Rect(original_layer_size));
-  tiling_->UpdateTilesToCurrentRasterSource(client_.raster_source(),
-                                            invalidation, gfx::Size(200, 200));
+  tiling_->Resize(gfx::Size(200, 200));
+  EXPECT_TRUE(tiling_->TileAt(0, 0));
+  tiling_->Invalidate(invalidation);
   EXPECT_FALSE(tiling_->TileAt(0, 0));
 }
 
@@ -263,9 +264,7 @@ TEST_F(PictureLayerTilingIteratorTest, ResizeTilingOverTileBorders) {
 
   // Shrink the tiling so that the last tile row/column is entirely in the
   // border pixels of the interior tiles. That row/column is removed.
-  Region invalidation;
-  tiling_->UpdateTilesToCurrentRasterSource(
-      client_.raster_source(), invalidation, gfx::Size(right + 1, bottom + 1));
+  tiling_->Resize(gfx::Size(right + 1, bottom + 1));
   EXPECT_EQ(2, tiling_->TilingDataForTesting().num_tiles_x());
   EXPECT_EQ(3, tiling_->TilingDataForTesting().num_tiles_y());
 
@@ -282,8 +281,7 @@ TEST_F(PictureLayerTilingIteratorTest, ResizeTilingOverTileBorders) {
 
   // Growing outside the current right/bottom tiles border pixels should create
   // the tiles again, even though the live rect has not changed size.
-  tiling_->UpdateTilesToCurrentRasterSource(
-      client_.raster_source(), invalidation, gfx::Size(right + 2, bottom + 2));
+  tiling_->Resize(gfx::Size(right + 2, bottom + 2));
   EXPECT_EQ(3, tiling_->TilingDataForTesting().num_tiles_x());
   EXPECT_EQ(4, tiling_->TilingDataForTesting().num_tiles_y());
 
@@ -419,8 +417,9 @@ TEST_F(PictureLayerTilingIteratorTest, ResizeOverBorderPixelsDeletesTiles) {
 
   Region invalidation =
       SubtractRegions(gfx::Rect(tile_size), gfx::Rect(original_layer_size));
-  tiling_->UpdateTilesToCurrentRasterSource(client_.raster_source(),
-                                            invalidation, gfx::Size(200, 200));
+  tiling_->Resize(gfx::Size(200, 200));
+  EXPECT_TRUE(tiling_->TileAt(0, 0));
+  tiling_->Invalidate(invalidation);
   EXPECT_FALSE(tiling_->TileAt(0, 0));
 
   // The original tile was the same size after resize, but it would include new
@@ -1369,8 +1368,8 @@ TEST_F(PictureLayerTilingIteratorTest, AddTilingsToMatchScale) {
   // Add the same tilings to the pending set.
   auto pending_set = PictureLayerTilingSet::Create(&client_);
   Region invalidation;
-  pending_set->SyncTilings(*active_set, layer_bounds, invalidation, 0.f,
-                           client_.raster_source());
+  pending_set->SyncTilingsForTesting(*active_set, layer_bounds, invalidation,
+                                     0.f, client_.raster_source());
 
   // The pending tiling starts with no tiles.
   VerifyTiles(pending_set->tiling_at(0), 1.f, gfx::Rect(layer_bounds),
@@ -2050,9 +2049,7 @@ TEST_F(PictureLayerTilingIteratorTest, ResizeTilesAndUpdateToCurrent) {
   EXPECT_EQ(150, tiling_->TilingDataForTesting().max_texture_size().width());
   EXPECT_EQ(100, tiling_->TilingDataForTesting().max_texture_size().height());
 
-  Region invalidation;
-  tiling_->UpdateTilesToCurrentRasterSource(client_.raster_source(),
-                                            invalidation, gfx::Size(250, 150));
+  tiling_->Resize(gfx::Size(250, 150));
 
   // Tile size in the tiling should be resized to 250x200.
   EXPECT_EQ(250, tiling_->TilingDataForTesting().max_texture_size().width());

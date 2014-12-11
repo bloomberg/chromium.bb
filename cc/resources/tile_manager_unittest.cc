@@ -109,7 +109,7 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
     if (old_pending_root) {
       pending_layer.reset(
           static_cast<FakePictureLayerImpl*>(old_pending_root.release()));
-      pending_layer->SetRasterSource(pile);
+      pending_layer->SetRasterSourceOnPending(pile, Region());
     } else {
       pending_layer =
           FakePictureLayerImpl::CreateWithRasterSource(pending_tree, id_, pile);
@@ -122,14 +122,6 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
     pending_layer_ = static_cast<FakePictureLayerImpl*>(
         host_impl_.pending_tree()->LayerById(id_));
     pending_layer_->DoPostCommitInitializationIfNeeded();
-  }
-
-  void CreateHighLowResAndSetAllTilesVisible() {
-    // Active layer must get updated first so pending layer can share from it.
-    active_layer_->CreateDefaultTilingsAndTiles();
-    active_layer_->SetAllTilesVisible();
-    pending_layer_->CreateDefaultTilingsAndTiles();
-    pending_layer_->SetAllTilesVisible();
   }
 
   TileManager* tile_manager() { return host_impl_.tile_manager(); }
@@ -195,10 +187,8 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
 
   // Invalidate the pending tree.
   pending_layer_->set_invalidation(invalidation);
-  pending_layer_->HighResTiling()->UpdateTilesToCurrentRasterSource(
-      pending_layer_->raster_source(), invalidation, gfx::Size(1000, 1000));
-  pending_layer_->LowResTiling()->UpdateTilesToCurrentRasterSource(
-      pending_layer_->raster_source(), invalidation, gfx::Size(1000, 1000));
+  pending_layer_->HighResTiling()->Invalidate(invalidation);
+  pending_layer_->LowResTiling()->Invalidate(invalidation);
 
   active_layer_->ResetAllTilesPriorities();
   pending_layer_->ResetAllTilesPriorities();
@@ -445,10 +435,8 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
 
   // Invalidate the pending tree.
   pending_layer_->set_invalidation(invalidation);
-  pending_layer_->HighResTiling()->UpdateTilesToCurrentRasterSource(
-      pending_layer_->raster_source(), invalidation, gfx::Size(1000, 1000));
-  pending_layer_->LowResTiling()->UpdateTilesToCurrentRasterSource(
-      pending_layer_->raster_source(), invalidation, gfx::Size(1000, 1000));
+  pending_layer_->HighResTiling()->Invalidate(invalidation);
+  pending_layer_->LowResTiling()->Invalidate(invalidation);
 
   active_layer_->ResetAllTilesPriorities();
   pending_layer_->ResetAllTilesPriorities();
