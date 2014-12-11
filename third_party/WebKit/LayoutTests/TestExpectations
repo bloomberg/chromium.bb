@@ -1156,6 +1156,19 @@ crbug.com/407915 virtual/implsidepainting/inspector/tracing/timeline-event-dispa
 
 crbug.com/407993 [ Win ] media/encrypted-media/prefixed/encrypted-media-events.html [ Crash Pass ]
 
+crbug.com/381919 virtual/display_list_2d_canvas/fast/canvas/image-object-in-canvas.html [ NeedsRebaseline ]
+crbug.com/381919 virtual/display_list_2d_canvas/fast/canvas/canvas-ellipse-circumference.html [ NeedsRebaseline ]
+crbug.com/381919 virtual/display_list_2d_canvas/fast/canvas/canvas-ellipse-circumference-fill.html [ NeedsRebaseline ]
+crbug.com/381919 virtual/display_list_2d_canvas/fast/canvas/canvas-composite.html [ NeedsRebaseline ]
+crbug.com/381919 virtual/display_list_2d_canvas/fast/canvas/fillrect_gradient.html [ NeedsRebaseline ]
+crbug.com/381919 virtual/display_list_2d_canvas/fast/canvas/canvas-arc-circumference-fill.html [ NeedsRebaseline ]
+crbug.com/381919 virtual/display_list_2d_canvas/fast/canvas/arc360.html [ NeedsRebaseline ]
+crbug.com/381919 virtual/display_list_2d_canvas/fast/canvas/canvas-arc-circumference.html [ NeedsRebaseline ]
+crbug.com/381919 virtual/display_list_2d_canvas/fast/canvas/canvas-toDataURL-jpeg-maximum-quality.html [ NeedsRebaseline ]
+crbug.com/381919 virtual/display_list_2d_canvas/fast/canvas/canvas-text-alignment.html [ NeedsRebaseline ]
+crbug.com/381919 virtual/display_list_2d_canvas/fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
+crbug.com/381919 virtual/display_list_2d_canvas/fast/canvas/canvas-composite-transformclip.html [ NeedsRebaseline ]
+
 #crbug.com/409715 [ Win ] svg/W3C-SVG-1.1/text-intro-04-t.svg [ Crash Pass ]
 crbug.com/409712 http/tests/filesystem/workers/resolve-url.html [ Pass Timeout ]
 crbug.com/409767 crypto/worker-subtle-crypto-concurrent.html [ Crash Pass Timeout ]
