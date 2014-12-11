@@ -33,7 +33,7 @@ typedef struct {
 // on US keyboard layout.
 const KeyCodeMap key_code_map[] = {
 
-//lower UPPER Code  KeyboardCode
+// lower UPPER Code  KeyboardCode
   {'a', 'A', "KeyA", ui::VKEY_A},  // aA
   {'b', 'B', "KeyB", ui::VKEY_B},  // bB
   {'c', 'C', "KeyC", ui::VKEY_C},  // cC
@@ -60,16 +60,16 @@ const KeyCodeMap key_code_map[] = {
   {'x', 'X', "KeyX", ui::VKEY_X},  // xX
   {'y', 'Y', "KeyY", ui::VKEY_Y},  // yY
   {'z', 'Z', "KeyZ", ui::VKEY_Z},  // zZ
-  {'1', '1', "Digit1", ui::VKEY_0},  // 1!
-  {'2', '2', "Digit2", ui::VKEY_1},  // 2@
-  {'3', '3', "Digit3", ui::VKEY_2},  // 3#
-  {'4', '4', "Digit4", ui::VKEY_3},  // 4$
-  {'5', '5', "Digit5", ui::VKEY_4},  // 5%
-  {'6', '6', "Digit6", ui::VKEY_5},  // 6^
-  {'7', '7', "Digit7", ui::VKEY_6},  // 7&
-  {'8', '8', "Digit8", ui::VKEY_7},  // 8*
-  {'9', '9', "Digit9", ui::VKEY_8},  // 9(
-  {'0', '0', "Digit0", ui::VKEY_9},  // 0)
+  {'1', '1', "Digit1", ui::VKEY_1},  // 1!
+  {'2', '2', "Digit2", ui::VKEY_2},  // 2@
+  {'3', '3', "Digit3", ui::VKEY_3},  // 3#
+  {'4', '4', "Digit4", ui::VKEY_4},  // 4$
+  {'5', '5', "Digit5", ui::VKEY_5},  // 5%
+  {'6', '6', "Digit6", ui::VKEY_6},  // 6^
+  {'7', '7', "Digit7", ui::VKEY_7},  // 7&
+  {'8', '8', "Digit8", ui::VKEY_8},  // 8*
+  {'9', '9', "Digit9", ui::VKEY_9},  // 9(
+  {'0', '0', "Digit0", ui::VKEY_0},  // 0)
 
   {'\n', '\n', "Enter", ui::VKEY_RETURN},  // Return
   { 0 ,  0 , "Escape", ui::VKEY_UNKNOWN},  // Escape
