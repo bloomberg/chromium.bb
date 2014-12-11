@@ -254,7 +254,13 @@ class BlinkIDLParser(IDLParser):
         # ExceptionFields, and Attribute removed from this rule.
         p[0] = p[1]
 
-    # [b47.1]
+    # [b47.1] FIXME: rename to ExceptionAttribute
+    def p_Attribute(self, p):
+        """Attribute : ReadOnly ATTRIBUTE Type identifier ';'"""
+        p[0] = self.BuildNamed('Attribute', p, 4,
+                               ListFromConcat(p[1], p[3]))
+
+    # [b47.2]
     def p_ExceptionOperation(self, p):
         """ExceptionOperation : Type identifier '(' ')' ';'"""
         # Needed to handle one case in DOMException.idl:
