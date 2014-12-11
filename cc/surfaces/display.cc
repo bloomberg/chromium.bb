@@ -118,6 +118,13 @@ bool Display::Draw() {
 
   TRACE_EVENT0("cc", "Display::Draw");
   benchmark_instrumentation::IssueDisplayRenderingStatsEvent();
+
+  // Run callbacks early to allow pipelining.
+  for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
+    Surface* surface = manager_->GetSurfaceForId(id_entry.first);
+    if (surface)
+      surface->RunDrawCallbacks();
+  }
   DelegatedFrameData* frame_data = frame->delegated_frame_data.get();
 
   gfx::Size surface_size =
@@ -134,23 +141,13 @@ bool Display::Draw() {
                        device_clip_rect,
                        disable_picture_quad_image_filtering);
 
-  bool disable_swap = surface_size != current_surface_size_;
-  if (disable_swap) {
+  if (surface_size != current_surface_size_) {
     DidSwapBuffers();
+    DidSwapBuffersComplete();
   } else {
     renderer_->SwapBuffers(frame->metadata);
   }
 
-  for (SurfaceAggregator::SurfaceIndexMap::iterator it =
-           aggregator_->previous_contained_surfaces().begin();
-       it != aggregator_->previous_contained_surfaces().end();
-       ++it) {
-    Surface* surface = manager_->GetSurfaceForId(it->first);
-    if (surface)
-      surface->RunDrawCallbacks();
-  }
-  if (disable_swap)
-    DidSwapBuffersComplete();
   return true;
 }
 
