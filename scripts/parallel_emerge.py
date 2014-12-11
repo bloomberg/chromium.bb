@@ -1896,6 +1896,12 @@ def real_main(argv):
     # Now upgrade the rest.
     os.execvp(args[0], args)
 
+  # Attempt to solve crbug.com/433482
+  # The file descriptor error appears only when getting userpriv_groups
+  # (lazily generated). Loading userpriv_groups here will reduce the number of
+  # calls from few hundreds to one.
+  portage.data._get_global('userpriv_groups')
+
   # Run the queued emerges.
   scheduler = EmergeQueue(deps_graph, emerge, deps.package_db, deps.show_output,
                           deps.unpack_only)
