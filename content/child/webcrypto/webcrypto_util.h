@@ -130,6 +130,16 @@ Status GetHmacKeyLength(const blink::WebCryptoAlgorithm& key_length_algorithm,
                         bool* has_length_bits,
                         unsigned int* length_bits);
 
+// Splits the combined usages given to GenerateKey() into the respective usages
+// for the public key and private key. Returns an error if the usages are
+// invalid.
+Status GetUsagesForGenerateAsymmetricKey(
+    blink::WebCryptoKeyUsageMask combined_usages,
+    blink::WebCryptoKeyUsageMask all_public_usages,
+    blink::WebCryptoKeyUsageMask all_private_usages,
+    blink::WebCryptoKeyUsageMask* public_usages,
+    blink::WebCryptoKeyUsageMask* private_usages);
+
 }  // namespace webcrypto
 
 }  // namespace content

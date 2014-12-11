@@ -381,6 +381,26 @@ Status GetHmacKeyLength(const blink::WebCryptoAlgorithm& key_length_algorithm,
   return GetShaBlockSizeBits(params->hash(), length_bits);
 }
 
+Status GetUsagesForGenerateAsymmetricKey(
+    blink::WebCryptoKeyUsageMask combined_usages,
+    blink::WebCryptoKeyUsageMask all_public_usages,
+    blink::WebCryptoKeyUsageMask all_private_usages,
+    blink::WebCryptoKeyUsageMask* public_usages,
+    blink::WebCryptoKeyUsageMask* private_usages) {
+  Status status = CheckKeyCreationUsages(all_public_usages | all_private_usages,
+                                         combined_usages);
+  if (status.IsError())
+    return status;
+
+  *public_usages = combined_usages & all_public_usages;
+  *private_usages = combined_usages & all_private_usages;
+
+  if (*private_usages == 0)
+    return Status::ErrorCreateKeyEmptyUsages();
+
+  return Status::Success();
+}
+
 }  // namespace webcrypto
 
 }  // namespace content

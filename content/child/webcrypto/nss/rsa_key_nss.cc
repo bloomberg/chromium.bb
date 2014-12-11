@@ -503,18 +503,14 @@ Status RsaHashedAlgorithm::GenerateKey(
     bool extractable,
     blink::WebCryptoKeyUsageMask combined_usages,
     GenerateKeyResult* result) const {
-  Status status = CheckKeyCreationUsages(
-      all_public_key_usages_ | all_private_key_usages_, combined_usages);
+  blink::WebCryptoKeyUsageMask public_usages = 0;
+  blink::WebCryptoKeyUsageMask private_usages = 0;
+
+  Status status = GetUsagesForGenerateAsymmetricKey(
+      combined_usages, all_public_key_usages_, all_private_key_usages_,
+      &public_usages, &private_usages);
   if (status.IsError())
     return status;
-
-  const blink::WebCryptoKeyUsageMask public_usages =
-      combined_usages & all_public_key_usages_;
-  const blink::WebCryptoKeyUsageMask private_usages =
-      combined_usages & all_private_key_usages_;
-
-  if (private_usages == 0)
-    return Status::ErrorCreateKeyEmptyUsages();
 
   unsigned int public_exponent = 0;
   unsigned int modulus_length_bits = 0;
