@@ -22,6 +22,7 @@ class AppControllerProfileObserver;
 class BookmarkMenuBridge;
 class CommandUpdater;
 class GURL;
+@class HandoffManager;
 class HistoryMenuBridge;
 class Profile;
 @class ProfileMenuController;
@@ -97,6 +98,9 @@ class WorkAreaWatcherObserver;
 
   // Displays a notification when quitting while apps are running.
   scoped_refptr<QuitWithAppsController> quitWithAppsController_;
+
+  // Responsible for maintaining all state related to the Handoff feature.
+  base::scoped_nsobject<HandoffManager> handoffManager_;
 }
 
 @property(readonly, nonatomic) BOOL startupComplete;
