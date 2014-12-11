@@ -723,10 +723,6 @@ void Scheduler::ProcessScheduledActions() {
   RescheduleBeginImplFrameDeadlineIfNeeded();
 }
 
-bool Scheduler::WillDrawIfNeeded() const {
-  return !state_machine_.PendingDrawsShouldBeAborted();
-}
-
 scoped_refptr<base::debug::ConvertableToTraceFormat> Scheduler::AsValue()
     const {
   scoped_refptr<base::debug::TracedValue> state =

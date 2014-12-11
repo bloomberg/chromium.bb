@@ -153,8 +153,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn,
     return !begin_impl_frame_deadline_task_.IsCancelled();
   }
 
-  bool WillDrawIfNeeded() const;
-
   base::TimeTicks AnticipatedDrawTime() const;
 
   void NotifyBeginMainFrameStarted();
