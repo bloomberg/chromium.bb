@@ -84,19 +84,17 @@ void ConnectionFactoryImpl::Initialize(
     const ConnectionHandler::ProtoReceivedCallback& read_callback,
     const ConnectionHandler::ProtoSentCallback& write_callback) {
   DCHECK(!connection_handler_);
+  DCHECK(read_callback_.is_null());
+  DCHECK(write_callback_.is_null());
 
   previous_backoff_ = CreateBackoffEntry(&backoff_policy_);
   backoff_entry_ = CreateBackoffEntry(&backoff_policy_);
   request_builder_ = request_builder;
+  read_callback_ = read_callback;
+  write_callback_ = write_callback;
 
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   waiting_for_network_online_ = net::NetworkChangeNotifier::IsOffline();
-  connection_handler_ = CreateConnectionHandler(
-      base::TimeDelta::FromMilliseconds(kReadTimeoutMs),
-      read_callback,
-      write_callback,
-      base::Bind(&ConnectionFactoryImpl::ConnectionHandlerCallback,
-                 weak_ptr_factory_.GetWeakPtr())).Pass();
 }
 
 ConnectionHandler* ConnectionFactoryImpl::GetConnectionHandler() const {
@@ -104,7 +102,14 @@ ConnectionHandler* ConnectionFactoryImpl::GetConnectionHandler() const {
 }
 
 void ConnectionFactoryImpl::Connect() {
-  DCHECK(connection_handler_);
+  if (!connection_handler_) {
+    connection_handler_ = CreateConnectionHandler(
+        base::TimeDelta::FromMilliseconds(kReadTimeoutMs),
+        read_callback_,
+        write_callback_,
+        base::Bind(&ConnectionFactoryImpl::ConnectionHandlerCallback,
+                   weak_ptr_factory_.GetWeakPtr())).Pass();
+  }
 
   if (connecting_ || waiting_for_backoff_)
     return;  // Connection attempt already in progress or pending.
@@ -163,6 +168,11 @@ std::string ConnectionFactoryImpl::GetConnectionStateString() const {
 
 void ConnectionFactoryImpl::SignalConnectionReset(
     ConnectionResetReason reason) {
+  if (!connection_handler_) {
+    // No initial connection has been made. No need to do anything.
+    return;
+  }
+
   // A failure can trigger multiple resets, so no need to do anything if a
   // connection is already in progress.
   if (connecting_) {

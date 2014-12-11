@@ -198,7 +198,6 @@ void MCSClient::Initialize(
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&MCSClient::MaybeSendMessage,
                  weak_ptr_factory_.GetWeakPtr()));
-  connection_handler_ = connection_factory_->GetConnectionHandler();
 
   stream_id_out_ = 1;  // Login request is hardcoded to id 1.
 
@@ -291,6 +290,7 @@ void MCSClient::Login(uint64 android_id, uint64 security_token) {
 
   state_ = CONNECTING;
   connection_factory_->Connect();
+  connection_handler_ = connection_factory_->GetConnectionHandler();
 }
 
 void MCSClient::SendMessage(const MCSMessage& message) {

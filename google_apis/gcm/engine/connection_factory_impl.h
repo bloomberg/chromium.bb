@@ -9,6 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "google_apis/gcm/engine/connection_handler.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/network_change_notifier.h"
@@ -173,6 +174,11 @@ class GCM_EXPORT ConnectionFactoryImpl :
   // The time of the last login completion. Used for calculating whether to
   // restore a previous backoff entry and for measuring uptime.
   base::TimeTicks last_login_time_;
+
+  // Cached callbacks. Set at |Initialize| time, consumed at first |Connect|
+  // time.
+  ConnectionHandler::ProtoReceivedCallback read_callback_;
+  ConnectionHandler::ProtoSentCallback write_callback_;
 
   // The current connection handler, if one exists.
   scoped_ptr<ConnectionHandler> connection_handler_;
