@@ -29,6 +29,7 @@
 #include "third_party/WebKit/public/web/WebTextAreaElement.h"
 
 using base::ASCIIToUTF16;
+using blink::WebDocument;
 using blink::WebElement;
 using blink::WebExceptionCode;
 using blink::WebFormControlElement;
@@ -102,7 +103,7 @@ std::string RetrievalMethodToString(
   return "UNKNOWN";
 }
 
-bool ClickElement(const blink::WebDocument& document,
+bool ClickElement(const WebDocument& document,
                   const WebElementDescriptor& element_descriptor) {
   WebString web_descriptor = WebString::fromUTF8(element_descriptor.descriptor);
   blink::WebElement element;
@@ -228,8 +229,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
     ASSERT_EQ(1U, forms.size());
 
     // Get the input element we want to find.
-    WebElement element = web_frame->document().getElementById("firstname");
-    WebInputElement input_element = element.to<WebInputElement>();
+    WebInputElement input_element = GetInputElementById("firstname");
 
     // Find the form that contains the input element.
     FormData form_data;
@@ -277,8 +277,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     SCOPED_TRACE(base::StringPrintf("Verify autofilled value for field %s",
                                     field_case.name));
     WebString value;
-    WebFormControlElement element = GetMainFrame()->document().getElementById(
-        ASCIIToUTF16(field_case.name)).to<WebFormControlElement>();
+    WebFormControlElement element =
+        GetFormControlElementById(ASCIIToUTF16(field_case.name));
     if ((element.formControlType() == "select-one") ||
         (element.formControlType() == "textarea")) {
       value = get_value_function(element);
@@ -295,6 +295,16 @@ class FormAutofillTest : public ChromeRenderViewTest {
       EXPECT_EQ(expected_value.utf8(), value.utf8());
 
     EXPECT_EQ(field_case.should_be_autofilled, element.isAutofilled());
+  }
+
+  WebFormControlElement GetFormControlElementById(const WebString& id) {
+    return GetMainFrame()->document().getElementById(
+        id).to<WebFormControlElement>();
+  }
+
+  WebInputElement GetInputElementById(const WebString& id) {
+    return GetMainFrame()->document().getElementById(
+        id).to<WebInputElement>();
   }
 
   static void FillFormIncludingNonFocusableElementsWrapper(
@@ -334,8 +344,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormField) {
   WebFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
-  WebElement web_element = frame->document().getElementById("element");
-  WebFormControlElement element = web_element.to<WebFormControlElement>();
+  WebFormControlElement element = GetFormControlElementById("element");
   FormFieldData result1;
   WebFormControlElementToFormField(element, autofill::EXTRACT_NONE, &result1);
 
@@ -363,8 +372,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldAutocompleteOff) {
   WebFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
-  WebElement web_element = frame->document().getElementById("element");
-  WebFormControlElement element = web_element.to<WebFormControlElement>();
+  WebFormControlElement element = GetFormControlElementById("element");
   FormFieldData result;
   WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result);
 
@@ -385,8 +393,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldMaxLength) {
   WebFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
-  WebElement web_element = frame->document().getElementById("element");
-  WebFormControlElement element = web_element.to<WebFormControlElement>();
+  WebFormControlElement element = GetFormControlElementById("element");
   FormFieldData result;
   WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result);
 
@@ -405,8 +412,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldAutofilled) {
   WebFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
-  WebElement web_element = frame->document().getElementById("element");
-  WebInputElement element = web_element.to<WebInputElement>();
+  WebInputElement element = GetInputElementById("element");
   element.setAutofilled(true);
   FormFieldData result;
   WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result);
@@ -429,8 +435,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToClickableFormField) {
   WebFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
-  WebElement web_element = frame->document().getElementById("checkbox");
-  WebInputElement element = web_element.to<WebInputElement>();
+  WebInputElement element = GetInputElementById("checkbox");
   element.setAutofilled(true);
   FormFieldData result;
   WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result);
@@ -444,8 +449,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToClickableFormField) {
   expected.is_checked = true;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, result);
 
-  web_element = frame->document().getElementById("radio");
-  element = web_element.to<WebInputElement>();
+  element = GetInputElementById("radio");
   element.setAutofilled(true);
   WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result);
   expected.name = ASCIIToUTF16("radio");
@@ -467,8 +471,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldSelect) {
   WebFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
-  WebElement web_element = frame->document().getElementById("element");
-  WebFormControlElement element = web_element.to<WebFormControlElement>();
+  WebFormControlElement element = GetFormControlElementById("element");
   FormFieldData result1;
   WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result1);
 
@@ -517,8 +520,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldLongSelect) {
   WebFrame* frame = GetMainFrame();
   ASSERT_TRUE(frame);
 
-  WebElement web_element = frame->document().getElementById("element");
-  WebFormControlElement element = web_element.to<WebFormControlElement>();
+  WebFormControlElement element = GetFormControlElementById("element");
   FormFieldData result;
   WebFormControlElementToFormField(element, autofill::EXTRACT_OPTIONS, &result);
 
@@ -536,8 +538,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldTextArea) {
   WebFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
-  WebElement web_element = frame->document().getElementById("element");
-  WebFormControlElement element = web_element.to<WebFormControlElement>();
+  WebFormControlElement element = GetFormControlElementById("element");
   FormFieldData result_sans_value;
   WebFormControlElementToFormField(element, autofill::EXTRACT_NONE,
                                    &result_sans_value);
@@ -563,8 +564,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldMonthInput) {
   WebFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
-  WebElement web_element = frame->document().getElementById("element");
-  WebFormControlElement element = web_element.to<WebFormControlElement>();
+  WebFormControlElement element = GetFormControlElementById("element");
   FormFieldData result_sans_value;
   WebFormControlElementToFormField(element, autofill::EXTRACT_NONE,
                                    &result_sans_value);
@@ -592,8 +592,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldInvalidType) {
   WebFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
-  WebElement web_element = frame->document().getElementById("hidden");
-  WebFormControlElement element = web_element.to<WebFormControlElement>();
+  WebFormControlElement element = GetFormControlElementById("hidden");
   FormFieldData result;
   WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result);
 
@@ -604,8 +603,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldInvalidType) {
   expected.form_control_type = "hidden";
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, result);
 
-  web_element = frame->document().getElementById("submit");
-  element = web_element.to<WebFormControlElement>();
+  element = GetFormControlElementById("submit");
   WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result);
   expected.name = ASCIIToUTF16("submit");
   expected.form_control_type = "submit";
@@ -621,8 +619,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToPasswordFormField) {
   WebFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
-  WebElement web_element = frame->document().getElementById("password");
-  WebFormControlElement element = web_element.to<WebFormControlElement>();
+  WebFormControlElement element = GetFormControlElementById("password");
   FormFieldData result;
   WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result);
 
@@ -694,10 +691,10 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldAutocompletetype) {
     { "malicious", "text", "x-max-data-length-exceeded" },
   };
 
+  WebDocument document = frame->document();
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
-    WebElement web_element = frame->document().getElementById(
-        ASCIIToUTF16(test_cases[i].element_id));
-    WebFormControlElement element = web_element.to<WebFormControlElement>();
+    WebFormControlElement element =
+        GetFormControlElementById(ASCIIToUTF16(test_cases[i].element_id));
     FormFieldData result;
     WebFormControlElementToFormField(element, autofill::EXTRACT_NONE, &result);
 
@@ -724,8 +721,7 @@ TEST_F(FormAutofillTest, DetectTextDirectionFromDirectStyle) {
   WebFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
-  WebElement web_element = frame->document().getElementById("element");
-  WebFormControlElement element = web_element.to<WebFormControlElement>();
+  WebFormControlElement element = GetFormControlElementById("element");
 
   FormFieldData result;
   WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result);
@@ -740,8 +736,7 @@ TEST_F(FormAutofillTest, DetectTextDirectionFromDirectDIRAttribute) {
   WebFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
-  WebElement web_element = frame->document().getElementById("element");
-  WebFormControlElement element = web_element.to<WebFormControlElement>();
+  WebFormControlElement element = GetFormControlElementById("element");
 
   FormFieldData result;
   WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result);
@@ -757,8 +752,7 @@ TEST_F(FormAutofillTest, DetectTextDirectionFromParentStyle) {
   WebFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
-  WebElement web_element = frame->document().getElementById("element");
-  WebFormControlElement element = web_element.to<WebFormControlElement>();
+  WebFormControlElement element = GetFormControlElementById("element");
 
   FormFieldData result;
   WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result);
@@ -773,8 +767,7 @@ TEST_F(FormAutofillTest, DetectTextDirectionFromParentDIRAttribute) {
   WebFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
-  WebElement web_element = frame->document().getElementById("element");
-  WebFormControlElement element = web_element.to<WebFormControlElement>();
+  WebFormControlElement element = GetFormControlElementById("element");
 
   FormFieldData result;
   WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result);
@@ -790,8 +783,7 @@ TEST_F(FormAutofillTest, DetectTextDirectionWhenStyleAndDIRAttributMixed) {
   WebFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
-  WebElement web_element = frame->document().getElementById("element");
-  WebFormControlElement element = web_element.to<WebFormControlElement>();
+  WebFormControlElement element = GetFormControlElementById("element");
 
   FormFieldData result;
   WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result);
@@ -808,8 +800,7 @@ TEST_F(FormAutofillTest,
   WebFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
-  WebElement web_element = frame->document().getElementById("element");
-  WebFormControlElement element = web_element.to<WebFormControlElement>();
+  WebFormControlElement element = GetFormControlElementById("element");
 
   FormFieldData result;
   WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result);
@@ -826,8 +817,7 @@ TEST_F(FormAutofillTest, DetectTextDirectionWhenAncestorHasInlineStyle) {
   WebFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
-  WebElement web_element = frame->document().getElementById("element");
-  WebFormControlElement element = web_element.to<WebFormControlElement>();
+  WebFormControlElement element = GetFormControlElementById("element");
 
   FormFieldData result;
   WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result);
@@ -867,8 +857,7 @@ TEST_F(FormAutofillTest, WebFormElementToFormData) {
   frame->document().forms(forms);
   ASSERT_EQ(1U, forms.size());
 
-  WebElement element = frame->document().getElementById("firstname");
-  WebInputElement input_element = element.to<WebInputElement>();
+  WebInputElement input_element = GetInputElementById("firstname");
 
   FormData form;
   FormFieldData field;
@@ -946,8 +935,7 @@ TEST_F(FormAutofillTest, WebFormElementToFormDataTooManyFields) {
   frame->document().forms(forms);
   ASSERT_EQ(1U, forms.size());
 
-  WebElement element = frame->document().getElementById("firstname");
-  WebInputElement input_element = element.to<WebInputElement>();
+  WebInputElement input_element = GetInputElementById("firstname");
 
   FormData form;
   FormFieldData field;
@@ -1297,8 +1285,7 @@ TEST_F(FormAutofillTest, FindFormForInputElement) {
   ASSERT_EQ(1U, forms.size());
 
   // Get the input element we want to find.
-  WebElement element = web_frame->document().getElementById("firstname");
-  WebInputElement input_element = element.to<WebInputElement>();
+  WebInputElement input_element = GetInputElementById("firstname");
 
   // Find the form and verify it's the correct form.
   FormData form;
@@ -1536,8 +1523,7 @@ TEST_F(FormAutofillTest, FillForm) {
   TestFormFillFunctions(kFormHtml, field_cases, arraysize(field_cases),
                         FillForm, &GetValueWrapper);
   // Verify preview selection.
-  WebInputElement firstname = GetMainFrame()->document().
-      getElementById("firstname").to<WebInputElement>();
+  WebInputElement firstname = GetInputElementById("firstname");
   EXPECT_EQ(16, firstname.selectionStart());
   EXPECT_EQ(16, firstname.selectionEnd());
 }
@@ -1694,8 +1680,7 @@ TEST_F(FormAutofillTest, PreviewForm) {
                         &PreviewForm, &GetSuggestedValueWrapper);
 
   // Verify preview selection.
-  WebInputElement firstname = GetMainFrame()->document().
-      getElementById("firstname").to<WebInputElement>();
+  WebInputElement firstname = GetInputElementById("firstname");
   EXPECT_EQ(0, firstname.selectionStart());
   EXPECT_EQ(19, firstname.selectionEnd());
 }
@@ -2576,8 +2561,7 @@ TEST_F(FormAutofillTest, FillFormMaxLength) {
   ASSERT_EQ(1U, forms.size());
 
   // Get the input element we want to find.
-  WebElement element = web_frame->document().getElementById("firstname");
-  WebInputElement input_element = element.to<WebInputElement>();
+  WebInputElement input_element = GetInputElementById("firstname");
 
   // Find the form that contains the input element.
   FormData form;
@@ -2675,8 +2659,7 @@ TEST_F(FormAutofillTest, FillFormNegativeMaxLength) {
   ASSERT_EQ(1U, forms.size());
 
   // Get the input element we want to find.
-  WebElement element = web_frame->document().getElementById("firstname");
-  WebInputElement input_element = element.to<WebInputElement>();
+  WebInputElement input_element = GetInputElementById("firstname");
 
   // Find the form that contains the input element.
   FormData form;
@@ -2755,8 +2738,7 @@ TEST_F(FormAutofillTest, FillFormEmptyName) {
   ASSERT_EQ(1U, forms.size());
 
   // Get the input element we want to find.
-  WebElement element = web_frame->document().getElementById("firstname");
-  WebInputElement input_element = element.to<WebInputElement>();
+  WebInputElement input_element = GetInputElementById("firstname");
 
   // Find the form that contains the input element.
   FormData form;
@@ -2844,8 +2826,7 @@ TEST_F(FormAutofillTest, FillFormEmptyFormNames) {
   ASSERT_EQ(2U, forms.size());
 
   // Get the input element we want to find.
-  WebElement element = web_frame->document().getElementById("apple");
-  WebInputElement input_element = element.to<WebInputElement>();
+  WebInputElement input_element = GetInputElementById("apple");
 
   // Find the form that contains the input element.
   FormData form;
@@ -3066,8 +3047,7 @@ TEST_F(FormAutofillTest, FillFormNonEmptyField) {
   ASSERT_EQ(1U, forms.size());
 
   // Get the input element we want to find.
-  WebElement element = web_frame->document().getElementById("firstname");
-  WebInputElement input_element = element.to<WebInputElement>();
+  WebInputElement input_element = GetInputElementById("firstname");
 
   // Simulate typing by modifying the field value.
   input_element.setValue(ASCIIToUTF16("Wy"));
@@ -3180,22 +3160,17 @@ TEST_F(FormAutofillTest, ClearFormWithNode) {
   ASSERT_EQ(1U, forms.size());
 
   // Set the auto-filled attribute.
-  WebInputElement firstname =
-      web_frame->document().getElementById("firstname").to<WebInputElement>();
+  WebInputElement firstname = GetInputElementById("firstname");
   firstname.setAutofilled(true);
-  WebInputElement lastname =
-      web_frame->document().getElementById("lastname").to<WebInputElement>();
+  WebInputElement lastname = GetInputElementById("lastname");
   lastname.setAutofilled(true);
-  WebInputElement month =
-      web_frame->document().getElementById("month").to<WebInputElement>();
+  WebInputElement month = GetInputElementById("month");
   month.setAutofilled(true);
-  WebInputElement textarea =
-      web_frame->document().getElementById("textarea").to<WebInputElement>();
+  WebInputElement textarea = GetInputElementById("textarea");
   textarea.setAutofilled(true);
 
   // Set the value of the disabled text input element.
-  WebInputElement notenabled =
-      web_frame->document().getElementById("notenabled").to<WebInputElement>();
+  WebInputElement notenabled = GetInputElementById("notenabled");
   notenabled.setValue(WebString::fromUTF8("no clear"));
 
   // Clear the form.
@@ -3292,11 +3267,9 @@ TEST_F(FormAutofillTest, ClearFormWithNodeContainingSelectOne) {
   ASSERT_EQ(1U, forms.size());
 
   // Set the auto-filled attribute.
-  WebInputElement firstname =
-      web_frame->document().getElementById("firstname").to<WebInputElement>();
+  WebInputElement firstname = GetInputElementById("firstname");
   firstname.setAutofilled(true);
-  WebInputElement lastname =
-      web_frame->document().getElementById("lastname").to<WebInputElement>();
+  WebInputElement lastname = GetInputElementById("lastname");
   lastname.setAutofilled(true);
 
   // Set the value and auto-filled attribute of the state element.
@@ -3368,20 +3341,15 @@ TEST_F(FormAutofillTest, ClearPreviewedFormWithElement) {
   ASSERT_EQ(1U, forms.size());
 
   // Set the auto-filled attribute.
-  WebInputElement firstname =
-      web_frame->document().getElementById("firstname").to<WebInputElement>();
+  WebInputElement firstname = GetInputElementById("firstname");
   firstname.setAutofilled(true);
-  WebInputElement lastname =
-      web_frame->document().getElementById("lastname").to<WebInputElement>();
+  WebInputElement lastname = GetInputElementById("lastname");
   lastname.setAutofilled(true);
-  WebInputElement email =
-      web_frame->document().getElementById("email").to<WebInputElement>();
+  WebInputElement email = GetInputElementById("email");
   email.setAutofilled(true);
-  WebInputElement email2 =
-      web_frame->document().getElementById("email2").to<WebInputElement>();
+  WebInputElement email2 = GetInputElementById("email2");
   email2.setAutofilled(true);
-  WebInputElement phone =
-      web_frame->document().getElementById("phone").to<WebInputElement>();
+  WebInputElement phone = GetInputElementById("phone");
   phone.setAutofilled(true);
 
   // Set the suggested values on two of the elements.
@@ -3435,20 +3403,15 @@ TEST_F(FormAutofillTest, ClearPreviewedFormWithNonEmptyInitiatingNode) {
   ASSERT_EQ(1U, forms.size());
 
   // Set the auto-filled attribute.
-  WebInputElement firstname =
-      web_frame->document().getElementById("firstname").to<WebInputElement>();
+  WebInputElement firstname = GetInputElementById("firstname");
   firstname.setAutofilled(true);
-  WebInputElement lastname =
-      web_frame->document().getElementById("lastname").to<WebInputElement>();
+  WebInputElement lastname = GetInputElementById("lastname");
   lastname.setAutofilled(true);
-  WebInputElement email =
-      web_frame->document().getElementById("email").to<WebInputElement>();
+  WebInputElement email = GetInputElementById("email");
   email.setAutofilled(true);
-  WebInputElement email2 =
-      web_frame->document().getElementById("email2").to<WebInputElement>();
+  WebInputElement email2 = GetInputElementById("email2");
   email2.setAutofilled(true);
-  WebInputElement phone =
-      web_frame->document().getElementById("phone").to<WebInputElement>();
+  WebInputElement phone = GetInputElementById("phone");
   phone.setAutofilled(true);
 
 
@@ -3502,20 +3465,15 @@ TEST_F(FormAutofillTest, ClearPreviewedFormWithAutofilledInitiatingNode) {
   ASSERT_EQ(1U, forms.size());
 
   // Set the auto-filled attribute.
-  WebInputElement firstname =
-      web_frame->document().getElementById("firstname").to<WebInputElement>();
+  WebInputElement firstname = GetInputElementById("firstname");
   firstname.setAutofilled(true);
-  WebInputElement lastname =
-      web_frame->document().getElementById("lastname").to<WebInputElement>();
+  WebInputElement lastname = GetInputElementById("lastname");
   lastname.setAutofilled(true);
-  WebInputElement email =
-      web_frame->document().getElementById("email").to<WebInputElement>();
+  WebInputElement email = GetInputElementById("email");
   email.setAutofilled(true);
-  WebInputElement email2 =
-      web_frame->document().getElementById("email2").to<WebInputElement>();
+  WebInputElement email2 = GetInputElementById("email2");
   email2.setAutofilled(true);
-  WebInputElement phone =
-      web_frame->document().getElementById("phone").to<WebInputElement>();
+  WebInputElement phone = GetInputElementById("phone");
   phone.setAutofilled(true);
 
   // Set the suggested values on all of the elements.
@@ -3570,17 +3528,13 @@ TEST_F(FormAutofillTest, ClearOnlyAutofilledFields) {
   ASSERT_EQ(1U, forms.size());
 
   // Set the autofilled attribute.
-  WebInputElement firstname =
-      web_frame->document().getElementById("firstname").to<WebInputElement>();
+  WebInputElement firstname = GetInputElementById("firstname");
   firstname.setAutofilled(false);
-  WebInputElement lastname =
-      web_frame->document().getElementById("lastname").to<WebInputElement>();
+  WebInputElement lastname = GetInputElementById("lastname");
   lastname.setAutofilled(true);
-  WebInputElement email =
-      web_frame->document().getElementById("email").to<WebInputElement>();
+  WebInputElement email = GetInputElementById("email");
   email.setAutofilled(true);
-  WebInputElement phone =
-      web_frame->document().getElementById("phone").to<WebInputElement>();
+  WebInputElement phone = GetInputElementById("phone");
   phone.setAutofilled(true);
 
   // Clear the fields.
