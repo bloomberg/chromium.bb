@@ -327,7 +327,7 @@ void ServiceWorkerScriptContext::OnPostMessage(
 }
 
 void ServiceWorkerScriptContext::OnDidGetClientDocuments(
-    int request_id, const std::vector<int>& client_ids) {
+    int request_id, const std::vector<ServiceWorkerClientInfo>& clients) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerScriptContext::OnDidGetClientDocuments");
   blink::WebServiceWorkerClientsCallbacks* callbacks =
@@ -338,7 +338,18 @@ void ServiceWorkerScriptContext::OnDidGetClientDocuments(
   }
   scoped_ptr<blink::WebServiceWorkerClientsInfo> info(
       new blink::WebServiceWorkerClientsInfo);
-  info->clientIDs = client_ids;
+  blink::WebVector<blink::WebServiceWorkerClientInfo> convertedClients(
+      clients.size());
+  for (size_t i = 0; i < clients.size(); ++i) {
+    convertedClients[i].clientID = clients[i].client_id;
+    convertedClients[i].visibilityState =
+        blink::WebString::fromUTF8(clients[i].visibility_state);
+    convertedClients[i].isFocused = clients[i].is_focused;
+    convertedClients[i].url = clients[i].url;
+    convertedClients[i].frameType =
+        static_cast<blink::WebURLRequest::FrameType>(clients[i].frame_type);
+  }
+  info->clients.swap(convertedClients);
   callbacks->onSuccess(info.release());
   pending_clients_callbacks_.Remove(request_id);
 }

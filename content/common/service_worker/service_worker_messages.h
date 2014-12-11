@@ -103,6 +103,14 @@ IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerVersionAttributes)
   IPC_STRUCT_TRAITS_MEMBER(active)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerClientInfo)
+  IPC_STRUCT_TRAITS_MEMBER(client_id)
+  IPC_STRUCT_TRAITS_MEMBER(visibility_state)
+  IPC_STRUCT_TRAITS_MEMBER(is_focused)
+  IPC_STRUCT_TRAITS_MEMBER(url)
+  IPC_STRUCT_TRAITS_MEMBER(frame_type)
+IPC_STRUCT_TRAITS_END()
+
 IPC_ENUM_TRAITS_MAX_VALUE(
     blink::WebServiceWorkerCacheError,
     blink::WebServiceWorkerCacheErrorLast)
@@ -215,6 +223,15 @@ IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_PostMessageToDocument,
 IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_FocusClient,
                     int /* request_id */,
                     int /* client_id */)
+
+// Response to ServiceWorkerMsg_GetClientInfo.
+IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_GetClientInfoSuccess,
+                    int /* request_id */,
+                    content::ServiceWorkerClientInfo)
+
+// Response to ServiceWorkerMsg_GetClientInfo.
+IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_GetClientInfoError,
+                    int /* request_id */)
 
 // CacheStorage operations in the browser.
 IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_CacheStorageHas,
@@ -365,6 +382,13 @@ IPC_MESSAGE_CONTROL5(ServiceWorkerMsg_MessageToDocument,
                      std::vector<int> /* sent_message_port_ids */,
                      std::vector<int> /* new_routing_ids */)
 
+// Sent to client documents to request document properties.
+IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_GetClientInfo,
+                     int /* thread_id */,
+                     int /* embedded_worker_id */,
+                     int /* request_id */,
+                     int /* provider_id */)
+
 // Sent via EmbeddedWorker to dispatch events.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_InstallEvent,
                      int /* request_id */,
@@ -396,7 +420,7 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_MessageToWorker,
 // Sent via EmbeddedWorker as a response of GetClientDocuments.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DidGetClientDocuments,
                      int /* request_id */,
-                     std::vector<int> /* client_ids */)
+                     std::vector<content::ServiceWorkerClientInfo>)
 
 // Sent via EmbeddedWorker as a response of FocusClient.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_FocusClientResponse,

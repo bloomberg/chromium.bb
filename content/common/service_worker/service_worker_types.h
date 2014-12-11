@@ -193,6 +193,14 @@ class ChangedVersionAttributesMask {
   int changed_;
 };
 
+struct ServiceWorkerClientInfo {
+  int client_id;
+  std::string visibility_state;
+  bool is_focused;
+  GURL url;
+  RequestContextFrameType frame_type;
+};
+
 }  // namespace content
 
 #endif  // CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_TYPES_H_

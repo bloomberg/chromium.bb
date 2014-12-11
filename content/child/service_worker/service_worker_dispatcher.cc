@@ -18,6 +18,7 @@
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/common/url_utils.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerClientsInfo.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerProviderClient.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
@@ -79,6 +80,8 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnSetControllerServiceWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_MessageToDocument,
                         OnPostMessage)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_GetClientInfo,
+                        OnGetClientInfo)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << "Unhandled message:" << msg.type();
@@ -686,6 +689,30 @@ void ServiceWorkerDispatcher::OnPostMessage(
   }
 
   found->second->dispatchMessageEvent(message, ports);
+}
+
+void ServiceWorkerDispatcher::OnGetClientInfo(int thread_id,
+                                              int embedded_worker_id,
+                                              int request_id,
+                                              int provider_id) {
+  blink::WebServiceWorkerClientInfo info;
+  ScriptClientMap::iterator found = script_clients_.find(provider_id);
+  // TODO(ksakamoto): Could we track these values in the browser side? Except
+  // for |isFocused|, it would be pretty easy.
+  if (found != script_clients_.end() && found->second->getClientInfo(&info)) {
+    ServiceWorkerClientInfo result;
+    result.client_id = info.clientID;
+    result.visibility_state = info.visibilityState.utf8();
+    result.is_focused = info.isFocused;
+    result.url = info.url;
+    result.frame_type = static_cast<RequestContextFrameType>(info.frameType);
+
+    thread_safe_sender_->Send(new ServiceWorkerHostMsg_GetClientInfoSuccess(
+        embedded_worker_id, request_id, result));
+  } else {
+    thread_safe_sender_->Send(new ServiceWorkerHostMsg_GetClientInfoError(
+        embedded_worker_id, request_id));
+  }
 }
 
 void ServiceWorkerDispatcher::AddServiceWorker(

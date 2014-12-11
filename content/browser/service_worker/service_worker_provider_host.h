@@ -137,6 +137,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // focusing action was successful.
   void Focus(const FocusCallback& callback);
 
+  // Asks the renderer to send back the document information.
+  void GetClientInfo(int embedded_worker_id, int request_id);
+
   // Adds reference of this host's process to the |pattern|, the reference will
   // be removed in destructor.
   void AddScopedProcessReferenceToPattern(const GURL& pattern);

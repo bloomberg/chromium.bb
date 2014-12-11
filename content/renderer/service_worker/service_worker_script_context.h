@@ -106,7 +106,7 @@ class ServiceWorkerScriptContext {
                      const std::vector<int>& sent_message_port_ids,
                      const std::vector<int>& new_routing_ids);
   void OnDidGetClientDocuments(
-      int request_id, const std::vector<int>& client_ids);
+      int request_id, const std::vector<ServiceWorkerClientInfo>& clients);
   void OnFocusClientResponse(int request_id, bool result);
 
   scoped_ptr<ServiceWorkerCacheStorageDispatcher> cache_storage_dispatcher_;

@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_version.h"
 
 #include "base/command_line.h"
+#include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "content/browser/message_port_message_filter.h"
@@ -22,6 +23,61 @@ namespace content {
 
 typedef ServiceWorkerVersion::StatusCallback StatusCallback;
 typedef ServiceWorkerVersion::MessageCallback MessageCallback;
+
+class ServiceWorkerVersion::GetClientDocumentsCallback
+    : public base::RefCounted<GetClientDocumentsCallback> {
+ public:
+  GetClientDocumentsCallback(int request_id, int pending_requests)
+      : request_id_(request_id),
+        pending_requests_(pending_requests) {}
+  void AddClientInfo(int client_id, const ServiceWorkerClientInfo& info) {
+    clients_.push_back(info);
+    clients_.back().client_id = client_id;
+  }
+  void DecrementPendingRequests(ServiceWorkerVersion* version) {
+    if (--pending_requests_ > 0)
+      return;
+    // Don't bother if it's no longer running.
+    if (version->running_status() == RUNNING) {
+      version->embedded_worker_->SendMessage(
+          ServiceWorkerMsg_DidGetClientDocuments(request_id_, clients_));
+    }
+  }
+
+ private:
+  friend class base::RefCounted<GetClientDocumentsCallback>;
+  virtual ~GetClientDocumentsCallback() {}
+
+  std::vector<ServiceWorkerClientInfo> clients_;
+  int request_id_;
+  size_t pending_requests_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetClientDocumentsCallback);
+};
+
+class ServiceWorkerVersion::GetClientInfoCallback {
+ public:
+  GetClientInfoCallback(
+      int client_id,
+      const scoped_refptr<GetClientDocumentsCallback>& callback)
+      : client_id_(client_id),
+        callback_(callback) {}
+
+  void OnSuccess(ServiceWorkerVersion* version,
+                 const ServiceWorkerClientInfo& info) {
+    callback_->AddClientInfo(client_id_, info);
+    callback_->DecrementPendingRequests(version);
+  }
+  void OnError(ServiceWorkerVersion* version) {
+    callback_->DecrementPendingRequests(version);
+  }
+
+ private:
+  int client_id_;
+  scoped_refptr<GetClientDocumentsCallback> callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetClientInfoCallback);
+};
 
 namespace {
 
@@ -581,6 +637,8 @@ void ServiceWorkerVersion::OnStopped(
   RunIDMapCallbacks(&geofencing_callbacks_,
                     SERVICE_WORKER_ERROR_FAILED);
 
+  get_client_info_callbacks_.Clear();
+
   FOR_EACH_OBSERVER(Listener, listeners_, OnWorkerStopped(this));
 
   // There should be no more communication from/to a stopped worker. Deleting
@@ -648,6 +706,10 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
                         OnPostMessageToDocument)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_FocusClient,
                         OnFocusClient)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_GetClientInfoSuccess,
+                        OnGetClientInfoSuccess)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_GetClientInfoError,
+                        OnGetClientInfoError)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -689,19 +751,50 @@ void ServiceWorkerVersion::DispatchActivateEventAfterStartWorker(
 }
 
 void ServiceWorkerVersion::OnGetClientDocuments(int request_id) {
-  std::vector<int> client_ids;
+  if (controllee_by_id_.IsEmpty()) {
+    if (running_status() == RUNNING) {
+      embedded_worker_->SendMessage(
+          ServiceWorkerMsg_DidGetClientDocuments(request_id,
+              std::vector<ServiceWorkerClientInfo>()));
+    }
+    return;
+  }
+  scoped_refptr<GetClientDocumentsCallback> callback(
+      new GetClientDocumentsCallback(request_id, controllee_by_id_.size()));
   ControlleeByIDMap::iterator it(&controllee_by_id_);
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerVersion::OnGetClientDocuments");
   while (!it.IsAtEnd()) {
-    client_ids.push_back(it.GetCurrentKey());
+    int client_request_id = get_client_info_callbacks_.Add(
+        new GetClientInfoCallback(it.GetCurrentKey(), callback));
+    it.GetCurrentValue()->GetClientInfo(embedded_worker_->embedded_worker_id(),
+                                        client_request_id);
     it.Advance();
   }
-  // Don't bother if it's no longer running.
-  if (running_status() == RUNNING) {
-    embedded_worker_->SendMessage(
-        ServiceWorkerMsg_DidGetClientDocuments(request_id, client_ids));
+}
+
+void ServiceWorkerVersion::OnGetClientInfoSuccess(
+    int request_id,
+    const ServiceWorkerClientInfo& info) {
+  GetClientInfoCallback* callback =
+      get_client_info_callbacks_.Lookup(request_id);
+  if (!callback) {
+    // The callback may already have been cleared by OnStopped, just ignore.
+    return;
   }
+  callback->OnSuccess(this, info);
+  get_client_info_callbacks_.Remove(request_id);
+}
+
+void ServiceWorkerVersion::OnGetClientInfoError(int request_id) {
+  GetClientInfoCallback* callback =
+      get_client_info_callbacks_.Lookup(request_id);
+  if (!callback) {
+    // The callback may already have been cleared by OnStopped, just ignore.
+    return;
+  }
+  callback->OnError(this);
+  get_client_info_callbacks_.Remove(request_id);
 }
 
 void ServiceWorkerVersion::OnActivateEventFinished(

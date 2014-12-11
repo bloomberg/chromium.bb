@@ -227,6 +227,13 @@ void ServiceWorkerProviderHost::Focus(const FocusCallback& callback) {
                  callback));
 }
 
+void ServiceWorkerProviderHost::GetClientInfo(
+    int embedded_worker_id,
+    int request_id) {
+  dispatcher_host_->Send(new ServiceWorkerMsg_GetClientInfo(
+      kDocumentMainThreadId, embedded_worker_id, request_id, provider_id()));
+}
+
 void ServiceWorkerProviderHost::AddScopedProcessReferenceToPattern(
     const GURL& pattern) {
   associated_patterns_.push_back(pattern);

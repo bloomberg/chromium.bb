@@ -197,6 +197,10 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
                      const base::string16& message,
                      const std::vector<int>& sent_message_port_ids,
                      const std::vector<int>& new_routing_ids);
+  void OnGetClientInfo(int thread_id,
+                       int embedded_worker_id,
+                       int request_id,
+                       int provider_id);
 
   void SetInstallingServiceWorker(
       int provider_id,
