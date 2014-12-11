@@ -669,39 +669,6 @@ TEST(StringUtilTest, HexDigitToInt) {
   EXPECT_EQ(15, HexDigitToInt('f'));
 }
 
-// This checks where we can use the assignment operator for a va_list. We need
-// a way to do this since Visual C doesn't support va_copy, but assignment on
-// va_list is not guaranteed to be a copy. See StringAppendVT which uses this
-// capability.
-static void VariableArgsFunc(const char* format, ...) {
-  va_list org;
-  va_start(org, format);
-
-  va_list dup;
-  GG_VA_COPY(dup, org);
-  int i1 = va_arg(org, int);
-  int j1 = va_arg(org, int);
-  char* s1 = va_arg(org, char*);
-  double d1 = va_arg(org, double);
-  va_end(org);
-
-  int i2 = va_arg(dup, int);
-  int j2 = va_arg(dup, int);
-  char* s2 = va_arg(dup, char*);
-  double d2 = va_arg(dup, double);
-
-  EXPECT_EQ(i1, i2);
-  EXPECT_EQ(j1, j2);
-  EXPECT_STREQ(s1, s2);
-  EXPECT_EQ(d1, d2);
-
-  va_end(dup);
-}
-
-TEST(StringUtilTest, VAList) {
-  VariableArgsFunc("%d %d %s %lf", 45, 92, "This is interesting", 9.21);
-}
-
 // Test for Tokenize
 template <typename STR>
 void TokenizeTest() {

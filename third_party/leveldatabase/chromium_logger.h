@@ -54,7 +54,7 @@ class ChromiumLogger : public Logger {
       // Print the message
       if (p < limit) {
         va_list backup_ap;
-        GG_VA_COPY(backup_ap, ap);
+        va_copy(backup_ap, ap);
         p += vsnprintf(p, limit - p, format, backup_ap);
         va_end(backup_ap);
       }
