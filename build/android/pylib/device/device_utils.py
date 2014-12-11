@@ -67,6 +67,13 @@ def RestartServer():
   pylib.android_commands.AndroidCommands().RestartAdbServer()
 
 
+def _JoinLines(lines):
+  # makes sure that the last line is also terminated, and is more memory
+  # efficient than first appending an end-line to each line and then joining
+  # all of them together.
+  return ''.join(s for line in lines for s in (line, '\n'))
+
+
 class DeviceUtils(object):
 
   _VALID_SHELL_VARIABLE = re.compile('^[a-zA-Z_][a-zA-Z0-9_]*$')
@@ -858,7 +865,8 @@ class DeviceUtils(object):
     self.adb.Pull(device_path, host_path)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
-  def ReadFile(self, device_path, as_root=False, timeout=None, retries=None):
+  def ReadFile(self, device_path, as_root=False,
+               timeout=None, retries=None):
     """Reads the contents of a file from the device.
 
     Args:
@@ -870,22 +878,17 @@ class DeviceUtils(object):
       retries: number of retries
 
     Returns:
-      The contents of the file at |device_path| as a list of lines.
+      The contents of |device_path| as a string. Contents are intepreted using
+      universal newlines, so the caller will see them encoded as '\n'. Also,
+      all lines will be terminated.
 
     Raises:
-      CommandFailedError if the file can't be read.
+      AdbCommandFailedError if the file can't be read.
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    # TODO(jbudorick) Evaluate whether we want to return a list of lines after
-    # the implementation switch, and if file not found should raise exception.
-    if as_root:
-      if not self.old_interface.CanAccessProtectedFileContents():
-        raise device_errors.CommandFailedError(
-          'Cannot read from %s with root privileges.' % device_path)
-      return self.old_interface.GetProtectedFileContents(device_path)
-    else:
-      return self.old_interface.GetFileContents(device_path)
+    return _JoinLines(self.RunShellCommand(
+        ['cat', device_path], as_root=as_root, check_return=True))
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def WriteFile(self, device_path, contents, as_root=False, force_push=False,

@@ -235,10 +235,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
           '/data/data/com.google.android.apps.chrome/files/PerfTestData.txt',
           as_root=True)
 
-      if json_string:
-        json_string = '\n'.join(json_string)
-      else:
-        raise Exception('Perf file does not exist or is empty')
+      if not json_string:
+        raise Exception('Perf file is empty')
 
       if self.options.save_perf_json:
         json_local_file = '/tmp/chromium-android-perf-json-' + raw_test_name
