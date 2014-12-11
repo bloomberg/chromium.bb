@@ -2293,11 +2293,7 @@ class ValidationPool(object):
     if changes is None:
       changes = self.changes
 
-    # Reload the changes to get latest statuses of the changes.
-    changes = self.ReloadChanges(changes)
-
     candidates = []
-
     if self.pre_cq:
       _, db = self._run.GetCIDBHandle()
       action_history = []

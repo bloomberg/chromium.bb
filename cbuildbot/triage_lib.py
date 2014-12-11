@@ -16,6 +16,7 @@ from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
@@ -389,7 +390,11 @@ class CalculateSuspects(object):
       A list of |changes| that were marked verified: -1 or
       code-review: -2.
     """
-    return [x for x in changes if x.WasVetoed()]
+    # Load the latest info about whether the changes were vetoed, in case they
+    # were vetoed in the middle of a cbuildbot run. That said, be careful not to
+    # return info about newer patchsets.
+    reloaded_changes = gerrit.GetGerritPatchInfoWithPatchQueries(changes)
+    return [x for x, y in zip(changes, reloaded_changes) if y.WasVetoed()]
 
   @classmethod
   def _FindPackageBuildFailureSuspects(cls, changes, messages):

@@ -665,8 +665,8 @@ class ValidationFailureOrTimeout(MoxBase):
         return_value=self._PATCH_MESSAGE)
     self.PatchObject(validation_pool.ValidationPool, 'SendNotification')
     self.PatchObject(validation_pool.ValidationPool, 'RemoveReady')
-    self.PatchObject(validation_pool.ValidationPool, 'ReloadChanges',
-                     return_value=self._patches)
+    self.PatchObject(gerrit, 'GetGerritPatchInfoWithPatchQueries',
+                     lambda x: x)
     self.PatchObject(triage_lib.CalculateSuspects, 'OnlyLabFailures',
                      return_value=False)
     self.PatchObject(triage_lib.CalculateSuspects, 'OnlyInfraFailures',
@@ -711,7 +711,7 @@ class TestCoreLogic(MoxBase):
     funcs = ['SendNotification', '_SubmitChange']
     for func in funcs:
       self.mox.StubOutWithMock(validation_pool.ValidationPool, func)
-    self.PatchObject(validation_pool.ValidationPool, 'ReloadChanges',
+    self.PatchObject(gerrit, 'GetGerritPatchInfoWithPatchQueries',
                      side_effect=lambda x: x)
     self.StartPatcher(parallel_unittest.ParallelMock())
 
@@ -1272,7 +1272,7 @@ class MockValidationPool(partial_mock.PartialMock):
   """Mock out a ValidationPool instance."""
 
   TARGET = 'chromite.cbuildbot.validation_pool.ValidationPool'
-  ATTRS = ('ReloadChanges', 'RemoveReady', '_SubmitChange', 'SendNotification')
+  ATTRS = ('RemoveReady', '_SubmitChange', 'SendNotification')
 
   def __init__(self, manager):
     partial_mock.PartialMock.__init__(self)
@@ -1280,6 +1280,10 @@ class MockValidationPool(partial_mock.PartialMock):
     self.max_submits = manager.Value('i', -1)
     self.submitted = manager.list()
     self.notification_calls = manager.list()
+
+  def PreStart(self):
+    self.PatchObject(gerrit, 'GetGerritPatchInfoWithPatchQueries',
+                     side_effect=lambda x: x)
 
   def GetSubmittedChanges(self):
     return list(self.submitted)
@@ -1297,10 +1301,6 @@ class MockValidationPool(partial_mock.PartialMock):
 
   def SendNotification(self, *args, **kwargs):
     self.notification_calls.append((args, kwargs))
-
-  @classmethod
-  def ReloadChanges(cls, changes):
-    return changes
 
   RemoveReady = None
 
@@ -1452,8 +1452,8 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
       reloaded = copy.deepcopy(patches)
       self.PatchObject(reloaded[1], 'HasApproval', return_value=False)
       return reloaded
-    self.PatchObject(validation_pool.ValidationPool, 'ReloadChanges',
-                     side_effect=_ReloadPatches)
+    self.PatchObject(gerrit, 'GetGerritPatchInfoWithPatchQueries',
+                     _ReloadPatches)
     self.SubmitPool(submitted=self.patches[:1], rejected=self.patches[1:])
     error = validation_pool.PatchNotCommitReady(self.patches[1])
     self.assertEqualNotifyArg(error, self.patches[1], 'error')
@@ -1469,8 +1469,8 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
       reloaded = copy.deepcopy(patches)
       reloaded[1].patch_number += 1
       return reloaded
-    self.PatchObject(validation_pool.ValidationPool, 'ReloadChanges',
-                     side_effect=_ReloadPatches)
+    self.PatchObject(gerrit, 'GetGerritPatchInfoWithPatchQueries',
+                     _ReloadPatches)
     self.SubmitPool(submitted=self.patches[:1], rejected=self.patches[1:])
     error = validation_pool.PatchModified(self.patches[1])
     self.assertEqualNotifyArg(error, self.patches[1], 'error')

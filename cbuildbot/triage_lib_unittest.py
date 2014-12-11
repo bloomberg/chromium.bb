@@ -20,6 +20,7 @@ from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import triage_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import gerrit
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
@@ -63,6 +64,8 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
                                         remote=constants.INTERNAL_REMOTE)
     self.PatchObject(cros_patch.GitRepoPatch, 'GetCheckout')
     self.PatchObject(cros_patch.GitRepoPatch, 'GetDiffStatus')
+    self.PatchObject(gerrit, 'GetGerritPatchInfoWithPatchQueries',
+                     side_effect=lambda x: x)
 
   @staticmethod
   def _GetBuildFailure(pkg):
