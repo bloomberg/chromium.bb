@@ -46,6 +46,9 @@ class TestDataReductionProxyParams : public DataReductionProxyParams {
   static std::string FlagAltFallbackOrigin();
   static std::string FlagProbeURL();
 
+  void set_origin(const GURL& origin);
+  void set_fallback_origin(const GURL& fallback_origin);
+
  protected:
   std::string GetDefaultDevOrigin() const override;
 
@@ -69,7 +72,6 @@ class TestDataReductionProxyParams : public DataReductionProxyParams {
 
   unsigned int has_definitions_;
   bool init_result_;
-
 };
 }  // namespace data_reduction_proxy
 #endif  // COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_PARAMS_TEST_UTILS_H_

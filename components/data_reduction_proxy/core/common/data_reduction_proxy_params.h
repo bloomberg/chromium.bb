@@ -280,6 +280,10 @@ class DataReductionProxyParams {
   virtual std::string GetDefaultProbeURL() const;
   virtual std::string GetDefaultWarmupURL() const;
 
+ protected:
+  GURL origin_;
+  GURL fallback_origin_;
+
  private:
   // Checks if the primary and fallback data reduction proxies are in the retry
   // map. Returns true if the request is bypassed by both data reduction
@@ -293,8 +297,6 @@ class DataReductionProxyParams {
 
   DataReductionProxyParams& operator=(const DataReductionProxyParams& params);
 
-  GURL origin_;
-  GURL fallback_origin_;
   GURL ssl_origin_;
   GURL alt_origin_;
   GURL alt_fallback_origin_;

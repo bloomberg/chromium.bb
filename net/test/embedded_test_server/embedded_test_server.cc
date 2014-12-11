@@ -49,8 +49,15 @@ scoped_ptr<HttpResponse> HandleFileRequest(
   // This is a test-only server. Ignore I/O thread restrictions.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 
+  std::string relative_url(request.relative_url);
+  // A proxy request will have an absolute path. Simulate the proxy by stripping
+  // the scheme, host, and port.
+  GURL relative_gurl(relative_url);
+  if (relative_gurl.is_valid())
+    relative_url = relative_gurl.PathForRequest();
+
   // Trim the first byte ('/').
-  std::string request_path(request.relative_url.substr(1));
+  std::string request_path = relative_url.substr(1);
 
   // Remove the query string if present.
   size_t query_pos = request_path.find('?');

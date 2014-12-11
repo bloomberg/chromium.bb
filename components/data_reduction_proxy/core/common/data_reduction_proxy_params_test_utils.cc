@@ -96,6 +96,15 @@ std::string TestDataReductionProxyParams::FlagProbeURL() {
   return kFlagProbeURL;
 }
 
+void TestDataReductionProxyParams::set_origin(const GURL& origin) {
+  origin_ = origin;
+}
+
+void TestDataReductionProxyParams::set_fallback_origin(
+    const GURL& fallback_origin) {
+ fallback_origin_ = fallback_origin;
+}
+
 std::string TestDataReductionProxyParams::GetDefaultDevOrigin() const {
   return GetDefinition(
       TestDataReductionProxyParams::HAS_DEV_ORIGIN, kDefaultDevOrigin);
