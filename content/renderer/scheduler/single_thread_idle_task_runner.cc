@@ -4,6 +4,7 @@
 
 #include "content/renderer/scheduler/single_thread_idle_task_runner.h"
 
+#include "base/debug/trace_event.h"
 #include "base/location.h"
 
 namespace content {
@@ -32,7 +33,18 @@ void SingleThreadIdleTaskRunner::PostIdleTask(
 void SingleThreadIdleTaskRunner::RunTask(IdleTask idle_task) {
   base::TimeTicks deadline;
   deadline_supplier_.Run(&deadline);
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "SingleThreadIdleTaskRunner::RunTask", "allotted_time_ms",
+               (deadline - base::TimeTicks::Now()).InMillisecondsF());
   idle_task.Run(deadline);
+  bool is_tracing;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
+      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), &is_tracing);
+  if (is_tracing && base::TimeTicks::Now() > deadline) {
+    TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+                         "SingleThreadIdleTaskRunner::DidOverrunDeadline",
+                         TRACE_EVENT_SCOPE_THREAD);
+  }
 }
 
 }  // namespace content
