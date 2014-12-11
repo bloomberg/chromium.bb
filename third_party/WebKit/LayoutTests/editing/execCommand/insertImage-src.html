@@ -20,7 +20,7 @@ function insertImageTest(value, innerHTML) {
     }, 'document.execCommand("insertImage", false, ' + value + ')');
 }
 insertImageTest(undefined, "<img>");
-insertImageTest(null, "<img>");
+insertImageTest(null, '<img src="null">');
 insertImageTest("", "<img>");
 insertImageTest(" ", '<img src=" ">');
 insertImageTest("image", '<img src="image">');

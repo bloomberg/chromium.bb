@@ -19,13 +19,19 @@
     "createProcessingInstruction('xml')",
     "createProcessingInstruction()",
     "createTextNode()",
+    "execCommand()",
     "getElementById()",
     "getElementsByClassName()",
     "getElementsByName()",
     "getElementsByTagName()",
     "getElementsByTagNameNS('http://www.w3.org/2000/svg')",
     "getElementsByTagNameNS()",
-    "importNode()"
+    "importNode()",
+    "queryCommandEnabled()",
+    "queryCommandIndeterm()",
+    "queryCommandState()",
+    "queryCommandSupported()",
+    "queryCommandValue()",
 ].forEach(function(expr)
 {
     shouldThrow("document." + expr);

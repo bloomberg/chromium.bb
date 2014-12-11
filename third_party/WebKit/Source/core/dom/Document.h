@@ -793,7 +793,7 @@ public:
 
     DocumentMarkerController& markers() const { return *m_markers; }
 
-    bool execCommand(const String& command, bool userInterface = false, const String& value = String());
+    bool execCommand(const String& command, bool showUI, const String& value);
     bool queryCommandEnabled(const String& command);
     bool queryCommandIndeterm(const String& command);
     bool queryCommandState(const String& command);
