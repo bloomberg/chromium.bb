@@ -191,7 +191,8 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
                      const ServiceWorkerRegistrationObjectInfo& info);
   void OnSetControllerServiceWorker(int thread_id,
                                     int provider_id,
-                                    const ServiceWorkerObjectInfo& info);
+                                    const ServiceWorkerObjectInfo& info,
+                                    bool should_notify_controllerchange);
   void OnPostMessage(int thread_id,
                      int provider_id,
                      const base::string16& message,

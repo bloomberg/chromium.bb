@@ -86,6 +86,7 @@ void ServiceWorkerScriptContext::OnMessageReceived(
                         OnDidGetClientDocuments)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_FocusClientResponse,
                         OnFocusClientResponse)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidSkipWaiting, OnDidSkipWaiting)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -194,6 +195,13 @@ void ServiceWorkerScriptContext::FocusClient(
   int request_id = pending_focus_client_callbacks_.Add(callback);
   Send(new ServiceWorkerHostMsg_FocusClient(
       GetRoutingID(), request_id, client_id));
+}
+
+void ServiceWorkerScriptContext::SkipWaiting(
+    blink::WebServiceWorkerSkipWaitingCallbacks* callbacks) {
+  DCHECK(callbacks);
+  int request_id = pending_skip_waiting_callbacks_.Add(callbacks);
+  Send(new ServiceWorkerHostMsg_SkipWaiting(GetRoutingID(), request_id));
 }
 
 void ServiceWorkerScriptContext::Send(IPC::Message* message) {
@@ -366,6 +374,19 @@ void ServiceWorkerScriptContext::OnFocusClientResponse(int request_id,
   }
   callback->onSuccess(&result);
   pending_focus_client_callbacks_.Remove(request_id);
+}
+
+void ServiceWorkerScriptContext::OnDidSkipWaiting(int request_id) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerScriptContext::OnDidSkipWaiting");
+  blink::WebServiceWorkerSkipWaitingCallbacks* callbacks =
+      pending_skip_waiting_callbacks_.Lookup(request_id);
+  if (!callbacks) {
+    NOTREACHED() << "Got stray response: " << request_id;
+    return;
+  }
+  callbacks->onSuccess();
+  pending_skip_waiting_callbacks_.Remove(request_id);
 }
 
 }  // namespace content

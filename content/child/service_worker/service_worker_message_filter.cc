@@ -111,7 +111,8 @@ void ServiceWorkerMessageFilter::OnStaleSetVersionAttributes(
 void ServiceWorkerMessageFilter::OnStaleSetControllerServiceWorker(
     int thread_id,
     int provider_id,
-    const ServiceWorkerObjectInfo& info) {
+    const ServiceWorkerObjectInfo& info,
+    bool should_notify_controllerchange) {
   SendServiceWorkerObjectDestroyed(thread_safe_sender_.get(), info.handle_id);
 }
 

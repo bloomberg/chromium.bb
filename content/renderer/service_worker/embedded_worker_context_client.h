@@ -13,6 +13,7 @@
 #include "third_party/WebKit/public/platform/WebServiceWorkerClientFocusCallback.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerClientsInfo.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerEventResult.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerSkipWaitingCallbacks.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebServiceWorkerContextClient.h"
 #include "url/gurl.h"
@@ -106,6 +107,8 @@ class EmbeddedWorkerContextClient
       blink::WebMessagePortChannelArray* channels);
   virtual void focus(int client_id,
                      blink::WebServiceWorkerClientFocusCallback*);
+  virtual void skipWaiting(
+      blink::WebServiceWorkerSkipWaitingCallbacks* callbacks);
 
   // TODO: Implement DevTools related method overrides.
 

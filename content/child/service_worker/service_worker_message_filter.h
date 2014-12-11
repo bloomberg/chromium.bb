@@ -49,7 +49,8 @@ class CONTENT_EXPORT ServiceWorkerMessageFilter
   void OnStaleSetControllerServiceWorker(
       int thread_id,
       int provider_id,
-      const ServiceWorkerObjectInfo& info);
+      const ServiceWorkerObjectInfo& info,
+      bool should_notify_controllerchange);
 
   scoped_refptr<base::MessageLoopProxy> main_thread_loop_proxy_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;

@@ -46,6 +46,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
         ServiceWorkerRegistration* registration) {}
     virtual void OnUpdateFound(
         ServiceWorkerRegistration* registration) {}
+    virtual void OnSkippedWaiting(ServiceWorkerRegistration* registation) {}
   };
 
   ServiceWorkerRegistration(const GURL& pattern,
@@ -104,7 +105,8 @@ class CONTENT_EXPORT ServiceWorkerRegistration
 
   // Triggers the [[Activate]] algorithm when the currently active version
   // has no controllees. If there are no controllees at the time the method
-  // is called, activation is initiated immediately.
+  // is called or when version's skip waiting flag is set, activation is
+  // initiated immediately.
   void ActivateWaitingVersionWhenReady();
 
   // Triggers the [[ClearRegistration]] algorithm when the currently

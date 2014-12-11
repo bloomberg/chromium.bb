@@ -169,6 +169,7 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       context_(context),
       script_cache_map_(this, context),
       is_doomed_(false),
+      skip_waiting_(false),
       weak_factory_(this) {
   DCHECK(context_);
   DCHECK(registration);
@@ -197,6 +198,12 @@ void ServiceWorkerVersion::SetStatus(Status status) {
     ScheduleStopWorker();
 
   status_ = status;
+
+  if (skip_waiting_ && status_ == ACTIVATED) {
+    for (int request_id : pending_skip_waiting_requests_)
+      DidSkipWaiting(request_id);
+    pending_skip_waiting_requests_.clear();
+  }
 
   std::vector<base::Closure> callbacks;
   callbacks.swap(status_change_callbacks_);
@@ -710,6 +717,8 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
                         OnGetClientInfoSuccess)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_GetClientInfoError,
                         OnGetClientInfoError)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_SkipWaiting,
+                        OnSkipWaiting)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -970,6 +979,27 @@ void ServiceWorkerVersion::OnFocusClientFinished(int request_id, bool result) {
 
   embedded_worker_->SendMessage(ServiceWorkerMsg_FocusClientResponse(
       request_id, result));
+}
+
+void ServiceWorkerVersion::OnSkipWaiting(int request_id) {
+  skip_waiting_ = true;
+  if (status_ != INSTALLED)
+    return DidSkipWaiting(request_id);
+
+  if (!context_)
+    return;
+  ServiceWorkerRegistration* registration =
+      context_->GetLiveRegistration(registration_id_);
+  if (!registration)
+    return;
+  pending_skip_waiting_requests_.push_back(request_id);
+  if (pending_skip_waiting_requests_.size() == 1)
+    registration->ActivateWaitingVersionWhenReady();
+}
+
+void ServiceWorkerVersion::DidSkipWaiting(int request_id) {
+  if (running_status() == STARTING || running_status() == RUNNING)
+    embedded_worker_->SendMessage(ServiceWorkerMsg_DidSkipWaiting(request_id));
 }
 
 void ServiceWorkerVersion::ScheduleStopWorker() {

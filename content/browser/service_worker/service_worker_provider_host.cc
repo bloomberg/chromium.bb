@@ -81,6 +81,14 @@ void ServiceWorkerProviderHost::OnRegistrationFailed(
   DisassociateRegistration();
 }
 
+void ServiceWorkerProviderHost::OnSkippedWaiting(
+    ServiceWorkerRegistration* registration) {
+  DCHECK_EQ(associated_registration_.get(), registration);
+  ServiceWorkerVersion* active_version = registration->active_version();
+  DCHECK_EQ(active_version->status(), ServiceWorkerVersion::ACTIVATING);
+  SetControllerVersionAttribute(active_version);
+}
+
 void ServiceWorkerProviderHost::SetDocumentUrl(const GURL& url) {
   DCHECK(!url.has_ref());
   document_url_ = url;
@@ -105,8 +113,12 @@ void ServiceWorkerProviderHost::SetControllerVersionAttribute(
   if (!dispatcher_host_)
     return;  // Could be NULL in some tests.
 
+  bool should_notify_controllerchange =
+      previous_version && version && version->skip_waiting();
+
   dispatcher_host_->Send(new ServiceWorkerMsg_SetControllerServiceWorker(
-      kDocumentMainThreadId, provider_id(), CreateHandleAndPass(version)));
+      kDocumentMainThreadId, provider_id(), CreateHandleAndPass(version),
+      should_notify_controllerchange));
 }
 
 bool ServiceWorkerProviderHost::SetHostedVersionId(int64 version_id) {
@@ -277,7 +289,8 @@ void ServiceWorkerProviderHost::CompleteCrossSiteTransfer(
     if (dispatcher_host_ && associated_registration_->active_version()) {
       dispatcher_host_->Send(new ServiceWorkerMsg_SetControllerServiceWorker(
           kDocumentMainThreadId, provider_id(),
-          CreateHandleAndPass(associated_registration_->active_version())));
+          CreateHandleAndPass(associated_registration_->active_version()),
+          false /* shouldNotifyControllerChange */));
     }
   }
 }

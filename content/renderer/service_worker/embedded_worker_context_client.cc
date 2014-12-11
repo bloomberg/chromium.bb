@@ -374,6 +374,12 @@ void EmbeddedWorkerContextClient::focus(
   script_context_->FocusClient(client_id, callback);
 }
 
+void EmbeddedWorkerContextClient::skipWaiting(
+    blink::WebServiceWorkerSkipWaitingCallbacks* callbacks) {
+  DCHECK(script_context_);
+  script_context_->SkipWaiting(callbacks);
+}
+
 void EmbeddedWorkerContextClient::OnMessageToWorker(
     int thread_id,
     int embedded_worker_id,

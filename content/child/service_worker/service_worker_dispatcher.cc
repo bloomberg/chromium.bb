@@ -639,7 +639,8 @@ void ServiceWorkerDispatcher::SetReadyRegistration(
 void ServiceWorkerDispatcher::OnSetControllerServiceWorker(
     int thread_id,
     int provider_id,
-    const ServiceWorkerObjectInfo& info) {
+    const ServiceWorkerObjectInfo& info,
+    bool should_notify_controllerchange) {
   TRACE_EVENT2("ServiceWorker",
                "ServiceWorkerDispatcher::OnSetControllerServiceWorker",
                "Thread ID", thread_id,
@@ -654,7 +655,8 @@ void ServiceWorkerDispatcher::OnSetControllerServiceWorker(
   ScriptClientMap::iterator found = script_clients_.find(provider_id);
   if (found != script_clients_.end()) {
     // Populate the .controller field with the new worker object.
-    found->second->setController(GetServiceWorker(info, false));
+    found->second->setController(GetServiceWorker(info, false),
+                                 should_notify_controllerchange);
   }
 }
 

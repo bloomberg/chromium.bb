@@ -251,6 +251,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void Doom();
   bool is_doomed() const { return is_doomed_; }
 
+  bool skip_waiting() const { return skip_waiting_; }
+
  private:
   class GetClientDocumentsCallback;
   class GetClientInfoCallback;
@@ -312,8 +314,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
                                const base::string16& message,
                                const std::vector<int>& sent_message_port_ids);
   void OnFocusClient(int request_id, int client_id);
+  void OnSkipWaiting(int request_id);
 
   void OnFocusClientFinished(int request_id, bool result);
+  void DidSkipWaiting(int request_id);
   void ScheduleStopWorker();
   void DoomInternal();
 
@@ -346,6 +350,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   base::OneShotTimer<ServiceWorkerVersion> stop_worker_timer_;
   base::OneShotTimer<ServiceWorkerVersion> update_timer_;
   bool is_doomed_;
+  std::vector<int> pending_skip_waiting_requests_;
+  bool skip_waiting_;
 
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_;
 

@@ -233,6 +233,10 @@ IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_GetClientInfoSuccess,
 IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_GetClientInfoError,
                     int /* request_id */)
 
+// Asks the browser to force this worker to become activated.
+IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_SkipWaiting,
+                    int /* request_id */)
+
 // CacheStorage operations in the browser.
 IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_CacheStorageHas,
                     int /* request_id */,
@@ -369,10 +373,11 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_UpdateFound,
 
 // Tells the child process to set the controller ServiceWorker for the given
 // provider.
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_SetControllerServiceWorker,
+IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_SetControllerServiceWorker,
                      int /* thread_id */,
                      int /* provider_id */,
-                     content::ServiceWorkerObjectInfo)
+                     content::ServiceWorkerObjectInfo,
+                     bool /* should_notify_controllerchange */)
 
 // Sends a 'message' event to a client document (browser->renderer).
 IPC_MESSAGE_CONTROL5(ServiceWorkerMsg_MessageToDocument,
@@ -416,6 +421,8 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_MessageToWorker,
                      base::string16 /* message */,
                      std::vector<int> /* sent_message_port_ids */,
                      std::vector<int> /* new_routing_ids */)
+IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_DidSkipWaiting,
+                     int /* request_id */)
 
 // Sent via EmbeddedWorker as a response of GetClientDocuments.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DidGetClientDocuments,

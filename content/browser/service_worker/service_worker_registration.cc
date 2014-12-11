@@ -125,6 +125,8 @@ void ServiceWorkerRegistration::SetVersionInternal(
   ChangedVersionAttributesMask mask;
   if (version)
     UnsetVersionInternal(version, &mask);
+  if (*data_member && *data_member == active_version_)
+    active_version_->RemoveListener(this);
   *data_member = version;
   if (active_version_.get() && active_version_.get() == version)
     active_version_->AddListener(this);
@@ -154,7 +156,8 @@ void ServiceWorkerRegistration::UnsetVersionInternal(
 void ServiceWorkerRegistration::ActivateWaitingVersionWhenReady() {
   DCHECK(waiting_version());
   should_activate_when_ready_ = true;
-  if (!active_version() || !active_version()->HasControllee())
+  if (!active_version() || !active_version()->HasControllee() ||
+      waiting_version()->skip_waiting())
     ActivateWaitingVersion();
 }
 
@@ -243,9 +246,8 @@ void ServiceWorkerRegistration::ActivateWaitingVersion() {
     return;  // Activation is no longer relevant.
   }
 
-  // "4. If exitingWorker is not null,
+  // "5. If exitingWorker is not null,
   if (exiting_version.get()) {
-    DCHECK(!exiting_version->HasControllee());
     // TODO(michaeln): should wait for events to be complete
     // "1. Wait for exitingWorker to finish handling any in-progress requests."
     // "2. Terminate exitingWorker."
@@ -256,17 +258,19 @@ void ServiceWorkerRegistration::ActivateWaitingVersion() {
     exiting_version->SetStatus(ServiceWorkerVersion::REDUNDANT);
   }
 
-  // "5. Set serviceWorkerRegistration.activeWorker to activatingWorker."
-  // "6. Set serviceWorkerRegistration.waitingWorker to null."
+  // "6. Set serviceWorkerRegistration.activeWorker to activatingWorker."
+  // "7. Set serviceWorkerRegistration.waitingWorker to null."
   SetActiveVersion(activating_version.get());
 
-  // "7. Run the [[UpdateState]] algorithm passing registration.activeWorker and
+  // "8. Run the [[UpdateState]] algorithm passing registration.activeWorker and
   // "activating" as arguments."
   activating_version->SetStatus(ServiceWorkerVersion::ACTIVATING);
+  // "9. Fire a simple event named controllerchange..."
+  // Notify associated provider hosts to change the controller.
+  if (activating_version->skip_waiting())
+    FOR_EACH_OBSERVER(Listener, listeners_, OnSkippedWaiting(this));
 
-  // TODO(nhiroki): "8. Fire a simple event named controllerchange..."
-
-  // "9. Queue a task to fire an event named activate..."
+  // "10. Queue a task to fire an event named activate..."
   activating_version->DispatchActivateEvent(
       base::Bind(&ServiceWorkerRegistration::OnActivateEventFinished,
                  this, activating_version));

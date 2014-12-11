@@ -75,7 +75,8 @@ void WebServiceWorkerProviderImpl::setClient(
 
   if (context_->controller_handle_id() != kInvalidServiceWorkerHandleId) {
     client->setController(GetDispatcher()->GetServiceWorker(
-        context_->controller()->info(), false));
+        context_->controller()->info(), false),
+        false /* shouldNotifyControllerChange */);
   }
 }
 

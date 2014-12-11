@@ -426,10 +426,9 @@ void ServiceWorkerRegisterJob::OnStoreRegistrationComplete(
   // and "installed" as the arguments."
   new_version()->SetStatus(ServiceWorkerVersion::INSTALLED);
 
-  // TODO(michaeln): "13. If activateImmediate is true, then..."
-
-  // "14. Wait until no document is using registration as their
-  // Service Worker registration."
+  // "If registration's waiting worker's skip waiting flag is set:" then
+  // activate the worker immediately otherwise "wait until no service worker
+  // client is using registration as their service worker registration."
   registration()->ActivateWaitingVersionWhenReady();
 
   Complete(SERVICE_WORKER_OK);
