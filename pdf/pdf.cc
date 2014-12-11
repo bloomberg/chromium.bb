@@ -56,6 +56,17 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason_for_call, LPVOID reserved) {
     // and crash in a way interceptable by breakpad of parent module.
     _set_invalid_parameter_handler(HandleInvalidParameter);
     _set_purecall_handler(HandlePureVirtualCall);
+
+#if defined(ARCH_CPU_X86_64) && _MSC_VER <= 1800
+    // VS2013's CRT only checks the existence of FMA3 instructions, not the
+    // enabled-ness of them at the OS level (this is fixed in VS2015). We force
+    // off usage of FMA3 instructions in the CRT to avoid using that path and
+    // hitting illegal instructions when running on CPUs that support FMA3, but
+    // OSs that don't. Because we use the static library CRT we have to call
+    // this function once in each DLL.
+    // See http://crbug.com/436603.
+    _set_FMA3_enable(0);
+#endif  // ARCH_CPU_X86_64 && _MSC_VER <= 1800
   }
   return TRUE;
 }
