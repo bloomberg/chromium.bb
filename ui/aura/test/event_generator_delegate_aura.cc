@@ -72,6 +72,8 @@ EventGeneratorDelegateAura::~EventGeneratorDelegateAura() {
 
 ui::EventTarget* EventGeneratorDelegateAura::GetTargetAt(
     const gfx::Point& location) {
+  // TODO(andresantoso): Add support for EventGenerator::targeting_application()
+  // if needed for Ash.
   return GetHostAt(location)->window();
 }
 

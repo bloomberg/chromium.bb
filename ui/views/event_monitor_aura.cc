@@ -6,12 +6,24 @@
 
 #include "base/logging.h"
 #include "ui/aura/env.h"
+#include "ui/aura/window.h"
+#include "ui/events/event_target.h"
 
 namespace views {
 
 // static
-EventMonitor* EventMonitor::Create(ui::EventHandler* event_handler) {
-  return new EventMonitorAura(event_handler);
+scoped_ptr<EventMonitor> EventMonitor::CreateApplicationMonitor(
+    ui::EventHandler* event_handler) {
+  return scoped_ptr<EventMonitor>(
+      new EventMonitorAura(event_handler, aura::Env::GetInstance()));
+}
+
+// static
+scoped_ptr<EventMonitor> EventMonitor::CreateWindowMonitor(
+    ui::EventHandler* event_handler,
+    gfx::NativeWindow target_window) {
+  return scoped_ptr<EventMonitor>(
+      new EventMonitorAura(event_handler, target_window));
 }
 
 // static
@@ -19,14 +31,16 @@ gfx::Point EventMonitor::GetLastMouseLocation() {
   return aura::Env::GetInstance()->last_mouse_location();
 }
 
-EventMonitorAura::EventMonitorAura(ui::EventHandler* event_handler)
-    : event_handler_(event_handler) {
+EventMonitorAura::EventMonitorAura(ui::EventHandler* event_handler,
+                                   ui::EventTarget* event_target)
+    : event_handler_(event_handler), event_target_(event_target) {
   DCHECK(event_handler_);
-  aura::Env::GetInstance()->AddPreTargetHandler(event_handler_);
+  DCHECK(event_target_);
+  event_target_->AddPreTargetHandler(event_handler_);
 }
 
 EventMonitorAura::~EventMonitorAura() {
-  aura::Env::GetInstance()->RemovePreTargetHandler(event_handler_);
+  event_target_->RemovePreTargetHandler(event_handler_);
 }
 
 }  // namespace views
