@@ -38,16 +38,19 @@
                 return textWidth;
             }
 
-            var optionPaddingStart = 3;
-            var optionPaddingEnd = 2;
-
             function testListbox(id)
             {
                 var element = document.getElementById(id);
+	        var dropDownStyle = window.getComputedStyle(element.firstChild.nextSibling);
+                var paddingRight = dropDownStyle["padding-right"];
+	        paddingRight = parseInt(paddingRight.substring(0, paddingRight.length - 2));
+                var paddingLeft = dropDownStyle["padding-left"];
+	        paddingLeft = parseInt(paddingLeft.substring(0, paddingLeft.length - 2));
+	        var padding = paddingRight + paddingLeft;
                 var emptyWidth = widthForEmptySelect(element.size);
                 var textWidth = widthForText(element.firstElementChild.textContent);
                 var dropdownWidth = element.getBoundingClientRect().width;
-                var expectedWidth = emptyWidth + textWidth + optionPaddingStart + optionPaddingEnd;
+                var expectedWidth = emptyWidth + textWidth + padding;
                 if (Math.abs(dropdownWidth - expectedWidth) <= 1)
                     testPassed('Width of ' + id + ' matches width of text plus width of empty ' + id + '.');
                 else
