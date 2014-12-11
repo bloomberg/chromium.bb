@@ -87,6 +87,16 @@ class AlgorithmImplementation {
                             unsigned int length_bits,
                             std::vector<uint8_t>* derived_bytes) const;
 
+  // This method corresponds with Web Crypto's "Get key length" operation.
+  //
+  // In the Web Crypto spec the operation returns either "null" or an
+  // "Integer". In this code "null" is represented by setting
+  // |*has_length_bits = false|.
+  virtual Status GetKeyLength(
+      const blink::WebCryptoAlgorithm& key_length_algorithm,
+      bool* has_length_bits,
+      unsigned int* length_bits) const;
+
   // -----------------------------------------------
   // Key import
   // -----------------------------------------------

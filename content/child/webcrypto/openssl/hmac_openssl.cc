@@ -224,6 +224,12 @@ class HmacImplementation : public AlgorithmImplementation {
         CreateHmacImportAlgorithm(params->hash().id(), params->lengthBits()),
         extractable, usages, key);
   }
+
+  Status GetKeyLength(const blink::WebCryptoAlgorithm& key_length_algorithm,
+                      bool* has_length_bits,
+                      unsigned int* length_bits) const override {
+    return GetHmacKeyLength(key_length_algorithm, has_length_bits, length_bits);
+  }
 };
 
 }  // namespace

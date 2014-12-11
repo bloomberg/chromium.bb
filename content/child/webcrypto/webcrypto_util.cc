@@ -40,6 +40,22 @@ bool BigIntegerToUint(const uint8_t* data,
   return true;
 }
 
+Status GetShaBlockSizeBits(const blink::WebCryptoAlgorithm& algorithm,
+                           unsigned int* block_size_bits) {
+  switch (algorithm.id()) {
+    case blink::WebCryptoAlgorithmIdSha1:
+    case blink::WebCryptoAlgorithmIdSha256:
+      *block_size_bits = 512;
+      return Status::Success();
+    case blink::WebCryptoAlgorithmIdSha384:
+    case blink::WebCryptoAlgorithmIdSha512:
+      *block_size_bits = 1024;
+      return Status::Success();
+    default:
+      return Status::ErrorUnsupported();
+  }
+}
+
 }  // namespace
 
 struct JwkToWebCryptoUsage {
@@ -199,20 +215,8 @@ Status GetAesKeyGenLengthInBits(const blink::WebCryptoAesKeyGenParams* params,
 
 Status GetHmacKeyGenLengthInBits(const blink::WebCryptoHmacKeyGenParams* params,
                                  unsigned int* keylen_bits) {
-  if (!params->hasLengthBits()) {
-    switch (params->hash().id()) {
-      case blink::WebCryptoAlgorithmIdSha1:
-      case blink::WebCryptoAlgorithmIdSha256:
-        *keylen_bits = 512;
-        return Status::Success();
-      case blink::WebCryptoAlgorithmIdSha384:
-      case blink::WebCryptoAlgorithmIdSha512:
-        *keylen_bits = 1024;
-        return Status::Success();
-      default:
-        return Status::ErrorUnsupported();
-    }
-  }
+  if (!params->hasLengthBits())
+    return GetShaBlockSizeBits(params->hash(), keylen_bits);
 
   *keylen_bits = params->optionalLengthBits();
 
@@ -338,6 +342,43 @@ void TruncateToBitLength(size_t length_bits, std::vector<uint8_t>* bytes) {
   // Zero any "unused bits" in the final byte
   if (remainder_bits)
     (*bytes)[bytes->size() - 1] &= ~((0xFF) >> remainder_bits);
+}
+
+Status GetAesKeyLength(const blink::WebCryptoAlgorithm& key_length_algorithm,
+                       bool* has_length_bits,
+                       unsigned int* length_bits) {
+  const blink::WebCryptoAesDerivedKeyParams* params =
+      key_length_algorithm.aesDerivedKeyParams();
+
+  *has_length_bits = true;
+  *length_bits = params->lengthBits();
+
+  if (*length_bits == 128 || *length_bits == 256)
+    return Status::Success();
+
+  // BoringSSL does not support 192-bit AES.
+  if (*length_bits == 192)
+    return Status::ErrorAes192BitUnsupported();
+
+  return Status::ErrorGetAesKeyLength();
+}
+
+Status GetHmacKeyLength(const blink::WebCryptoAlgorithm& key_length_algorithm,
+                        bool* has_length_bits,
+                        unsigned int* length_bits) {
+  const blink::WebCryptoHmacImportParams* params =
+      key_length_algorithm.hmacImportParams();
+
+  if (params->hasLengthBits()) {
+    *has_length_bits = true;
+    *length_bits = params->optionalLengthBits();
+    if (*length_bits == 0)
+      return Status::ErrorGetHmacKeyLengthZero();
+    return Status::Success();
+  }
+
+  *has_length_bits = true;
+  return GetShaBlockSizeBits(params->hash(), length_bits);
 }
 
 }  // namespace webcrypto

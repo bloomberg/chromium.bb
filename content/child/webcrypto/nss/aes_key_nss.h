@@ -72,6 +72,10 @@ class AesAlgorithm : public AlgorithmImplementation {
                                 const CryptoData& key_data,
                                 blink::WebCryptoKey* key) const override;
 
+  Status GetKeyLength(const blink::WebCryptoAlgorithm& key_length_algorithm,
+                      bool* has_length_bits,
+                      unsigned int* length_bits) const override;
+
  private:
   const CK_MECHANISM_TYPE import_mechanism_;
   const blink::WebCryptoKeyUsageMask all_key_usages_;

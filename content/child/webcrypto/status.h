@@ -136,6 +136,9 @@ class CONTENT_EXPORT Status {
   // AES.
   static Status ErrorImportAesKeyLength();
 
+  // The length specified when deriving an AES key was not 128 or 256 bits.
+  static Status ErrorGetAesKeyLength();
+
   // Attempted to generate an AES key with an invalid length.
   static Status ErrorGenerateAesKeyLength();
 
@@ -210,6 +213,9 @@ class CONTENT_EXPORT Status {
 
   // Attempted to generate an HMAC key using a key length of 0.
   static Status ErrorGenerateHmacKeyLengthZero();
+
+  // Attempted to derive an HMAC key with zero length.
+  static Status ErrorGetHmacKeyLengthZero();
 
   // Attempted to import an HMAC key using a bad optional length.
   static Status ErrorHmacImportBadLength();

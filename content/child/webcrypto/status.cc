@@ -145,6 +145,11 @@ Status Status::ErrorImportAesKeyLength() {
                 "AES key data must be 128 or 256 bits");
 }
 
+Status Status::ErrorGetAesKeyLength() {
+  return Status(blink::WebCryptoErrorTypeOperation,
+                "AES key length must be 128 or 256 bits");
+}
+
 Status Status::ErrorGenerateAesKeyLength() {
   return Status(blink::WebCryptoErrorTypeOperation,
                 "AES key length must be 128 or 256 bits");
@@ -243,6 +248,11 @@ Status Status::ErrorKeyNotExtractable() {
 
 Status Status::ErrorGenerateHmacKeyLengthZero() {
   return Status(blink::WebCryptoErrorTypeOperation,
+                "HMAC key length must not be zero");
+}
+
+Status Status::ErrorGetHmacKeyLengthZero() {
+  return Status(blink::WebCryptoErrorTypeType,
                 "HMAC key length must not be zero");
 }
 

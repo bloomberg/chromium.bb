@@ -68,6 +68,13 @@ Status AlgorithmImplementation::DeriveBits(
   return Status::ErrorUnsupported();
 }
 
+Status AlgorithmImplementation::GetKeyLength(
+    const blink::WebCryptoAlgorithm& key_length_algorithm,
+    bool* has_length_bits,
+    unsigned int* length_bits) const {
+  return Status::ErrorUnsupported();
+}
+
 Status AlgorithmImplementation::VerifyKeyUsagesBeforeImportKey(
     blink::WebCryptoKeyFormat format,
     blink::WebCryptoKeyUsageMask usages) const {

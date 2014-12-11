@@ -120,6 +120,16 @@ T NumBitsToBytes(T x) {
   return (x / 8) + (7 + (x % 8)) / 8;
 }
 
+// The "get key length" operation for AES keys.
+Status GetAesKeyLength(const blink::WebCryptoAlgorithm& key_length_algorithm,
+                       bool* has_length_bits,
+                       unsigned int* length_bits);
+
+// The "get key length" operation for HMAC keys.
+Status GetHmacKeyLength(const blink::WebCryptoAlgorithm& key_length_algorithm,
+                        bool* has_length_bits,
+                        unsigned int* length_bits);
+
 }  // namespace webcrypto
 
 }  // namespace content
