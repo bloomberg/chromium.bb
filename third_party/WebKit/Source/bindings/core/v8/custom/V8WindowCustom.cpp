@@ -440,13 +440,11 @@ v8::Handle<v8::Value> toV8(DOMWindow* window, v8::Handle<v8::Object> creationCon
 {
     // Notice that we explicitly ignore creationContext because the LocalDOMWindow is its own creationContext.
 
-    // FIXME: Eventually, this needs to handle RemoteDOMWindows, since this is
-    // on the code path for getting window.self, window.top, etc.
-    if (!window || !window->isLocalDOMWindow())
+    if (!window)
         return v8::Null(isolate);
     // Initializes environment of a frame, and return the global object
     // of the frame.
-    LocalFrame* frame = toLocalDOMWindow(window)->frame();
+    Frame * frame = window->frame();
     if (!frame)
         return v8Undefined();
 

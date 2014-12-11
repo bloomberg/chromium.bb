@@ -809,11 +809,11 @@ v8::Local<v8::Context> toV8Context(ExecutionContext* context, DOMWrapperWorld& w
     return v8::Local<v8::Context>();
 }
 
-v8::Local<v8::Context> toV8Context(LocalFrame* frame, DOMWrapperWorld& world)
+v8::Local<v8::Context> toV8Context(Frame* frame, DOMWrapperWorld& world)
 {
-    if (!frame)
+    if (!frame || frame->isRemoteFrame())
         return v8::Local<v8::Context>();
-    v8::Local<v8::Context> context = frame->script().windowProxy(world)->context();
+    v8::Local<v8::Context> context = toLocalFrame(frame)->script().windowProxy(world)->context();
     if (context.IsEmpty())
         return v8::Local<v8::Context>();
     LocalFrame* attachedFrame = toFrameIfNotDetached(context);
