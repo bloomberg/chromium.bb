@@ -1,37 +1,19 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-<html>
-<head>
+<!DOCTYPE html>
 <script src="/js-test-resources/js-test.js"></script>
-</head>
-<body>
-<div id="description"></div>
-<div id="console"></div>
-<script type="text/javascript">
-description("Test whether WebSocket request contains no-cache headers");
+<script src="resources/get-request-header.js"></script>
+<script>
+description('Test whether WebSocket request contains no-cache headers');
 
 window.jsTestIsAsync = true;
 
-var ws = new WebSocket("ws://localhost:8880/nocache-test");
-var closeEvent;
-var message;
+var pragma;
+var cache_control;
 
-ws.onopen = function() {
-    debug("onopen() was called.");
-};
-
-ws.onmessage = function(event) {
-    message = event.data;
-    shouldBeEqualToString("message", "PASS");
-    ws.close();
-};
-
-ws.onclose = function(event) {
-    debug("onclose() was called.");
-    closeEvent = event;
-    shouldBeTrue("closeEvent.wasClean");
+connectAndGetRequestHeaders().then(function(headers) {
+    pragma = headers['pragma'];
+    cache_control = headers['cache-control'];
+    shouldBeEqualToString('pragma', 'no-cache');
+    shouldBeEqualToString('cache_control', 'no-cache');
     finishJSTest();
-};
-
+}, finishAsFailed);
 </script>
-</body>
-</html>

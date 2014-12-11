@@ -2,33 +2,28 @@
 use strict;
 
 if ($ENV{"QUERY_STRING"} eq "clear=1") {
-    print "Content-Type: text/plain\r\n";
-    print "Set-Cookie: WK-websocket-test=0; Path=/; Max-Age=0\r\n";
-    print "Set-Cookie: WK-websocket-test-httponly=0; Path=/; HttpOnly; Max-Age=0\r\n";
-    print "\r\n";
-    print "Cookies are cleared.";
+    print "Content-Type: text/plain\r\n",
+          "Set-Cookie: WK-websocket-test=0; Path=/; Max-Age=0\r\n",
+          "Set-Cookie: WK-websocket-test-httponly=0; Path=/; HttpOnly; Max-Age=0\r\n",
+          "\r\n",
+          "Cookies are cleared.";
     exit;
 }
 
-print "Content-Type: text/html\r\n";
-# The "Path" attribute is set to "/" so that the WebSocket created below can
-# pass "Path" check so that we can test if "HttpOnly" check is working.
-print "Set-Cookie: WK-websocket-test=1; Path=/\r\n";
-print "Set-Cookie: WK-websocket-test-httponly=1; Path=/; HttpOnly\r\n";
-print "\r\n";
-print <<HTML
-<html>
-<head>
+print "Content-Type: text/html\r\n",
+# The "Path" attribute is set to "/" so that the WebSocket created below
+# will receive these cookies.
+      "Set-Cookie: WK-websocket-test=1; Path=/\r\n",
+      "Set-Cookie: WK-websocket-test-httponly=1; Path=/; HttpOnly\r\n",
+      "\r\n";
+print <<'HTML';
+<!DOCTYPE html>
 <script src="/js-test-resources/js-test.js"></script>
-</head>
-<body>
-<p>Test WebSocket sends HttpOnly cookies.</p>
-<p>On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".</p>
-<div id="console"></div>
+<script src="resources/get-request-header.js"></script>
 <script>
-window.jsTestIsAsync = true;
+description('Test that WebSocket sends HttpOnly cookies.');
 
-var cookie;
+window.jsTestIsAsync = true;
 
 // Normalize a cookie string
 function normalizeCookie(cookie)
@@ -39,28 +34,30 @@ function normalizeCookie(cookie)
 
 function clearCookies()
 {
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", "httponly-cookie.pl?clear=1", false);
-    xhr.send(null);
+    return new Promise(function(resolve, reject)
+    {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "httponly-cookie.pl?clear=1");
+        xhr.onreadystatechange = function()
+        {
+            if (xhr.readyState == 4) {
+                resolve();
+            }
+        };
+        xhr.send(null);
+    });
 }
 
-var ws = new WebSocket("ws://127.0.0.1:8880/echo-cookie");
-ws.onopen = function() {
-    debug("WebSocket open");
-};
-ws.onmessage = function(evt) {
-    cookie = evt.data;
-    ws.close();
-};
-ws.onclose = function() {
-    debug("WebSocket closed");
+var cookie;
+connectAndGetRequestHeader('cookie').then(function(value)
+{
+    cookie = value;
     cookie = normalizeCookie(cookie);
-    shouldBe("cookie", '"WK-websocket-test-httponly=1; WK-websocket-test=1"');
-    clearCookies();
-    finishJSTest();
-};
+    shouldBeEqualToString('cookie', 'WK-websocket-test-httponly=1; WK-websocket-test=1');
+    clearCookies().then(finishJSTest);
+}, finishAsFailed);
+
+setTimeout(finishJSTest, 1000);
 
 </script>
-</body>
-</html>
 HTML

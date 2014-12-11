@@ -1,65 +1,38 @@
-<html>
-<head>
+<!DOCTYPE html>
 <script src="/js-test-resources/js-test.js"></script>
-</head>
-<body>
-<p>Test send cookies to a WebSocket handshake which is set by another WebSocket handshake.</p>
-<p>On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".</p>
-<div id="console"></div>
+<script src="resources/get-request-header.js"></script>
 <script>
+description('Test receiving cookies in a WebSocket handshake which were set by another WebSocket handshake.');
+
 window.jsTestIsAsync = true;
 
-function checkCookie(expected, actual) {
-    expected = expected.split('; ').sort().join('; ');
-    actual = actual.split('; ').sort().join('; ');
-    if (expected === actual) {
-        debug('PASS cookie is "' + expected + '"');
-    } else {
-        debug('FAIL cookie should be ' + expected + '. Was ' + actual + '.');
-    }
+// Normalize a cookie string
+function normalizeCookie(cookie) {
+    // Split the cookie string, sort it and then put it back together.
+    return cookie.split('; ').sort().join('; ');
 }
 
 var cookie;
-var url_set_cookie = 'ws://127.0.0.1:8880/set-cookie';
-var url_echo_cookie = 'ws://127.0.0.1:8880/echo-cookie';
-var ws_set_cookie = new WebSocket(url_set_cookie);
+var URL_SET_COOKIE = 'ws://127.0.0.1:8880/set-cookie';
+var ws_set_cookie = new WebSocket(URL_SET_COOKIE);
 
 ws_set_cookie.onopen = function () {
-    debug('A WebSocket connection to ' + url_set_cookie + ' is opened.');
     ws_set_cookie.close();
 };
 ws_set_cookie.onclose = function (e) {
-    debug('A WebSocket connection to ' + url_set_cookie + ' is closed.');
-    var ws_echo_cookie = new WebSocket(url_echo_cookie);
-    ws_echo_cookie.onopen = function () {
-        debug('A WebSocket connection to ' + url_echo_cookie + ' is opened.');
-    };
-    ws_echo_cookie.onmessage = function (e) {
-        cookie = e.data;
-        ws_echo_cookie.close();
-    };
-    ws_echo_cookie.onerror = function () {
-        debug('FAIL: A WebSocket connection has an error.');
+    connectAndGetRequestHeader('cookie').then(function(value) {
+        cookie = normalizeCookie(value);
+        shouldBeEqualToString('cookie', 'WK-WebSocket-test-domain-pass=1; WK-WebSocket-test-path-pass=1; WK-WebSocket-test=1');
         clear();
-    };
-    ws_echo_cookie.onclose = function (e) {
-        debug('A WebSocket connection to ' + url_echo_cookie + ' is closed.');
-        checkCookie('WK-WebSocket-test-domain-pass=1; WK-WebSocket-test-path-pass=1; WK-WebSocket-test=1', cookie);
-        clear();
-    };
-};
-ws_set_cookie.onerror = function () {
-    debug('FAIL: A WebSocket connection has an error.');
-    clear();
+    }, finishAsFailed);
 };
 
 function clear() {
-    var ws = new WebSocket(url_set_cookie + '?clear=1');
+    var ws = new WebSocket(URL_SET_COOKIE + '?clear=1');
     ws.onopen = function () {
         ws.close();
     };
     ws.onclose = finishJSTest;
 }
+setTimeout(finishJSTest, 1000);
 </script>
-</body>
-</html>

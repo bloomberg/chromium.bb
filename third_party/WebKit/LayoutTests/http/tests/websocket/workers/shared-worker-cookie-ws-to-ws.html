@@ -1,9 +1,7 @@
-<!DOCTYPE HTML>
-<html>
-<head></head>
+<!DOCTYPE html>
 <script src="/js-test-resources/testharness.js"></script>
 <script src="/js-test-resources/testharnessreport.js"></script>
-<script type="text/javascript">
+<script>
 
 var test = async_test("Test that cookies set by one WebSocket on opening handshake are sent by another WebSocket on opening handshake");
 test.step(function()
@@ -14,10 +12,7 @@ test.step(function()
         assert_equals(evt.data, "DONE", "evt.data");
         test.done();
     });
+    worker.onerror = test.unreached_func("onerror event should not fire");
 });
 
 </script>
-</head>
-<body>
-</body>
-</html>

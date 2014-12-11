@@ -1,3 +1,5 @@
+importScripts('../../resources/get-request-header.js');
+
 if (self.postMessage)
     runTests();
 else
@@ -37,28 +39,14 @@ function setCookie() {
 }
 
 function echoCookie() {
-    return new Promise(function (resolve, reject)
-    {
-        var ws = new WebSocket('ws://127.0.0.1:8880/echo-cookie');
-        ws.onmessage = function (evt) {
-            resolve(evt.data);
-        };
-        ws.onerror = function () {
-            reject('Error on echo-cookie socket');
-        };
-        ws.onclose = function (evt) {
-            reject('Close event handler is called on echo-cookie socket before receiving any message event');
-        };
-    });
+    return connectAndGetRequestHeader('cookie');
 }
 
 function runTests()
 {
-    setCookie().then(
-        function () {
-            return echoCookie();
-        }
-    ).then(
+    setCookie()
+        .then(echoCookie)
+        .then(
         function (cookie) {
             if (cookie != 'WK-WebSocket-test-domain-pass=1; WK-WebSocket-test-path-pass=1; WK-WebSocket-test=1')
                 return Promise.reject('Echoed cookie is incorrect');
