@@ -694,6 +694,8 @@ cr.define('options', function() {
 
       if (args.showPassphrase) {
         this.showPassphraseContainer_(args);
+        // TODO(dbeam): add an #updatePassphrase and only focus with that hash?
+        $('passphrase').focus();
       } else {
         // We only show the 'Use Default' link if we're not prompting for an
         // existing passphrase.
