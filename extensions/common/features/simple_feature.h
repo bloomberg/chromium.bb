@@ -41,6 +41,10 @@ class SimpleFeature : public Feature {
 
   // Accessors defined for testing. See comment above about not directly using
   // SimpleFeature in production code.
+  std::set<std::string>* blacklist() { return &blacklist_; }
+  std::set<std::string>* whitelist() { return &whitelist_; }
+  std::set<Manifest::Type>* extension_types() { return &extension_types_; }
+  std::set<Context>* contexts() { return &contexts_; }
   Location location() const { return location_; }
   void set_location(Location location) { location_ = location; }
   int min_manifest_version() const { return min_manifest_version_; }
@@ -51,11 +55,12 @@ class SimpleFeature : public Feature {
   void set_max_manifest_version(int max_manifest_version) {
     max_manifest_version_ = max_manifest_version;
   }
-
-  std::set<std::string>* blacklist() { return &blacklist_; }
-  std::set<std::string>* whitelist() { return &whitelist_; }
-  std::set<Manifest::Type>* extension_types() { return &extension_types_; }
-  std::set<Context>* contexts() { return &contexts_; }
+  const std::string& command_line_switch() const {
+    return command_line_switch_;
+  }
+  void set_command_line_switch(const std::string& command_line_switch) {
+    command_line_switch_ = command_line_switch;
+  }
 
   // Dependency resolution is a property of Features that is preferrably
   // handled internally to avoid temptation, but FeatureFilters may need
@@ -141,8 +146,8 @@ class SimpleFeature : public Feature {
   std::set<Platform> platforms_;
   int min_manifest_version_;
   int max_manifest_version_;
-  bool has_parent_;
   bool component_extensions_auto_granted_;
+  std::string command_line_switch_;
 
   typedef std::vector<linked_ptr<SimpleFeatureFilter> > FilterList;
   FilterList filters_;

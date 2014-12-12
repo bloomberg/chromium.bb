@@ -379,6 +379,7 @@
   },
   "experimental": {
     "channel": "stable",
+    "command_line_switch": "experimental-extension-apis",
     "extension_types": [
       "extension", "legacy_packaged_app", "hosted_app", "platform_app"
     ]

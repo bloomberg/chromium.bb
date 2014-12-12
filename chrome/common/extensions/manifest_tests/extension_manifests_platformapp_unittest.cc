@@ -129,10 +129,12 @@ TEST_F(PlatformAppsManifestTest, CertainApisRequirePlatformApps) {
     manifests.push_back(make_linked_ptr(manifest->DeepCopy()));
   }
 
-  // First try to load without any flags. This should fail for every API.
+  // First try to load without any flags. This should warn for every API.
   for (size_t i = 0; i < arraysize(kPlatformAppExperimentalApis); ++i) {
-    LoadAndExpectError(ManifestData(manifests[i].get(), ""),
-                       errors::kExperimentalFlagRequired);
+    LoadAndExpectWarning(
+        ManifestData(manifests[i].get(), ""),
+        "'experimental' requires the 'experimental-extension-apis' "
+        "command line switch to be enabled.");
   }
 
   // Now try again with the experimental flag set.

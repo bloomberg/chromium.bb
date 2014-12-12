@@ -46,26 +46,6 @@ ManifestPermissions::ManifestPermissions(
 ManifestPermissions::~ManifestPermissions() {
 }
 
-// Custom checks for the experimental permission that can't be expressed in
-// _permission_features.json.
-bool CanSpecifyExperimentalPermission(const Extension* extension) {
-  if (extension->location() == Manifest::COMPONENT)
-    return true;
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalExtensionApis)) {
-    return true;
-  }
-
-  // We rely on the webstore to check access to experimental. This way we can
-  // whitelist extensions to have access to experimental in just the store, and
-  // not have to push a new version of the client.
-  if (extension->from_webstore())
-    return true;
-
-  return false;
-}
-
 // Checks whether the host |pattern| is allowed for the given |extension|,
 // given API permissions |permissions|.
 bool CanSpecifyHostPermission(const Extension* extension,
@@ -146,6 +126,16 @@ bool ParseHelper(Extension* extension,
       continue;
     }
 
+    // Sneaky check for "experimental", which we always allow for extensions
+    // installed from the Webstore. This way we can whitelist extensions to
+    // have access to experimental in just the store, and not have to push a
+    // new version of the client. Otherwise, experimental goes through the
+    // usual features check.
+    if (iter->id() == APIPermission::kExperimental &&
+        extension->from_webstore()) {
+      continue;
+    }
+
     Feature::Availability availability =
         feature->IsAvailableToExtension(extension);
     if (!availability.is_available()) {
@@ -156,13 +146,6 @@ bool ParseHelper(Extension* extension,
           InstallWarning(availability.message(), feature->name()));
       to_remove.push_back(iter->id());
       continue;
-    }
-
-    if (iter->id() == APIPermission::kExperimental) {
-      if (!CanSpecifyExperimentalPermission(extension)) {
-        *error = base::ASCIIToUTF16(errors::kExperimentalFlagRequired);
-        return false;
-      }
     }
   }
 

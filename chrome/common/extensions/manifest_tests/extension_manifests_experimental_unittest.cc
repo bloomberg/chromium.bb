@@ -14,7 +14,10 @@
 namespace errors = extensions::manifest_errors;
 
 TEST_F(ChromeManifestTest, ExperimentalPermission) {
-  LoadAndExpectError("experimental.json", errors::kExperimentalFlagRequired);
+  LoadAndExpectWarning(
+      "experimental.json",
+      "'experimental' requires the 'experimental-extension-apis' "
+      "command line switch to be enabled.");
   LoadAndExpectSuccess("experimental.json", extensions::Manifest::COMPONENT);
   LoadAndExpectSuccess("experimental.json", extensions::Manifest::INTERNAL,
                        extensions::Extension::FROM_WEBSTORE);

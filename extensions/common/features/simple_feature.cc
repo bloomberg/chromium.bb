@@ -248,13 +248,21 @@ std::string HashExtensionId(const std::string& extension_id) {
   return base::HexEncode(id_hash.c_str(), id_hash.length());
 }
 
+bool IsCommandLineSwitchEnabled(const std::string& switch_name) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switch_name + "=1"))
+    return true;
+  if (command_line->HasSwitch(std::string("enable-") + switch_name))
+    return true;
+  return false;
+}
+
 }  // namespace
 
 SimpleFeature::SimpleFeature()
     : location_(UNSPECIFIED_LOCATION),
       min_manifest_version_(0),
       max_manifest_version_(0),
-      has_parent_(false),
       component_extensions_auto_granted_(true) {}
 
 SimpleFeature::~SimpleFeature() {}
@@ -286,9 +294,10 @@ std::string SimpleFeature::Parse(const base::DictionaryValue* value) {
   no_parent_ = false;
   value->GetBoolean("noparent", &no_parent_);
 
-  component_extensions_auto_granted_ = true;
   value->GetBoolean("component_extensions_auto_granted",
                     &component_extensions_auto_granted_);
+
+  value->GetString("command_line_switch", &command_line_switch_);
 
   // NOTE: ideally we'd sanity check that "matches" can be specified if and
   // only if there's a "web_page" or "webui" context, but without
@@ -366,6 +375,11 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
 
   if (max_manifest_version_ != 0 && manifest_version > max_manifest_version_)
     return CreateAvailability(INVALID_MAX_MANIFEST_VERSION, type);
+
+  if (!command_line_switch_.empty() &&
+      !IsCommandLineSwitchEnabled(command_line_switch_)) {
+    return CreateAvailability(MISSING_COMMAND_LINE_SWITCH, type);
+  }
 
   for (FilterList::const_iterator filter_iter = filters_.begin();
        filter_iter != filters_.end();
@@ -481,6 +495,10 @@ std::string SimpleFeature::GetAvailabilityMessage(
       return base::StringPrintf(
           "'%s' is unsupported in this version of the platform.",
           name().c_str());
+    case MISSING_COMMAND_LINE_SWITCH:
+      return base::StringPrintf(
+          "'%s' requires the '%s' command line switch to be enabled.",
+          name().c_str(), command_line_switch_.c_str());
   }
 
   NOTREACHED();

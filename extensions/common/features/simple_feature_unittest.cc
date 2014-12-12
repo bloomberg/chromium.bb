@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/values.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/value_builder.h"
@@ -36,6 +37,21 @@ bool LocationIsAvailable(SimpleFeature::Location feature_location,
                                     Feature::UNSPECIFIED_PLATFORM).result();
   return availability_result == Feature::IS_AVAILABLE;
 }
+
+class ScopedCommandLineSwitch {
+ public:
+  explicit ScopedCommandLineSwitch(const std::string& arg)
+      : original_command_line_(*base::CommandLine::ForCurrentProcess()) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(arg);
+  }
+
+  ~ScopedCommandLineSwitch() {
+    *base::CommandLine::ForCurrentProcess() = original_command_line_;
+  }
+
+ private:
+  base::CommandLine original_command_line_;
+};
 
 }  // namespace
 
@@ -647,6 +663,40 @@ TEST(SimpleFeatureTest, Inheritance) {
             feature.contexts()->count(Feature::UNBLESSED_EXTENSION_CONTEXT));
   EXPECT_EQ(2, feature.min_manifest_version());
   EXPECT_EQ(3, feature.max_manifest_version());
+}
+
+TEST(SimpleFeatureTest, CommandLineSwitch) {
+  SimpleFeature feature;
+  feature.set_command_line_switch("laser-beams");
+  {
+    EXPECT_EQ(Feature::MISSING_COMMAND_LINE_SWITCH,
+              feature.IsAvailableToEnvironment().result());
+  }
+  {
+    ScopedCommandLineSwitch scoped_switch("laser-beams");
+    EXPECT_EQ(Feature::MISSING_COMMAND_LINE_SWITCH,
+              feature.IsAvailableToEnvironment().result());
+  }
+  {
+    ScopedCommandLineSwitch scoped_switch("enable-laser-beams");
+    EXPECT_EQ(Feature::IS_AVAILABLE,
+              feature.IsAvailableToEnvironment().result());
+  }
+  {
+    ScopedCommandLineSwitch scoped_switch("disable-laser-beams");
+    EXPECT_EQ(Feature::MISSING_COMMAND_LINE_SWITCH,
+              feature.IsAvailableToEnvironment().result());
+  }
+  {
+    ScopedCommandLineSwitch scoped_switch("laser-beams=1");
+    EXPECT_EQ(Feature::IS_AVAILABLE,
+              feature.IsAvailableToEnvironment().result());
+  }
+  {
+    ScopedCommandLineSwitch scoped_switch("laser-beams=0");
+    EXPECT_EQ(Feature::MISSING_COMMAND_LINE_SWITCH,
+              feature.IsAvailableToEnvironment().result());
+  }
 }
 
 }  // namespace extensions

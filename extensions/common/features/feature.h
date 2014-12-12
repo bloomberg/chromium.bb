@@ -73,6 +73,7 @@ class Feature {
     NOT_PRESENT,
     UNSUPPORTED_CHANNEL,
     FOUND_IN_BLACKLIST,
+    MISSING_COMMAND_LINE_SWITCH,
   };
 
   // Container for AvailabiltyResult that also exposes a user-visible error
@@ -148,6 +149,17 @@ class Feature {
                                              Manifest::Type type,
                                              const GURL& url,
                                              Context context) const = 0;
+
+  // Returns true if the feature is available to the current environment,
+  // without needing to know information about an Extension or any other
+  // contextual information. Typically used when the Feature is purely
+  // configured by command line flags and/or Chrome channel.
+  //
+  // Generally try not to use this function. Even if you don't think a Feature
+  // relies on an Extension now - maybe it will, one day, so if there's an
+  // Extension available (or a runtime context, etc) then use the more targeted
+  // method instead.
+  Availability IsAvailableToEnvironment() const;
 
   virtual bool IsIdInBlacklist(const std::string& extension_id) const = 0;
   virtual bool IsIdInWhitelist(const std::string& extension_id) const = 0;

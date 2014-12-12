@@ -19,9 +19,10 @@ class IsolatedAppsManifestTest : public ChromeManifestTest {
 };
 
 TEST_F(IsolatedAppsManifestTest, IsolatedApps) {
-  // Requires --enable-experimental-extension-apis
-  LoadAndExpectError("isolated_app_valid.json",
-                     errors::kExperimentalFlagRequired);
+  LoadAndExpectWarning(
+      "isolated_app_valid.json",
+      "'experimental' requires the 'experimental-extension-apis' "
+      "command line switch to be enabled.");
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
       extensions::switches::kEnableExperimentalExtensionApis);
