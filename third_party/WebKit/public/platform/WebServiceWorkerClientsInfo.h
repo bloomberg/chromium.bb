@@ -15,6 +15,13 @@ namespace blink {
 struct WebServiceWorkerError;
 
 struct WebServiceWorkerClientInfo {
+    WebServiceWorkerClientInfo()
+        : clientID(0)
+        , isFocused(false)
+        , frameType(WebURLRequest::FrameTypeNone)
+    {
+    }
+
     int clientID;
     // FIXME: Use WebPageVisibilityState? That will require moving
     // WebPageVisibilityState from public/web to public/platform.
