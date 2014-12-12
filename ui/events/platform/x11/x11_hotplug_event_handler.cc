@@ -36,12 +36,6 @@ namespace ui {
 
 namespace {
 
-// The name of the xinput device corresponding to the AT internal keyboard.
-const char kATKeyboardName[] = "AT Translated Set 2 keyboard";
-
-// The prefix of xinput devices corresponding to CrOS EC internal keyboards.
-const char kCrosEcKeyboardPrefix[] = "cros-ec";
-
 // Names of all known internal devices that should not be considered as
 // keyboards.
 // TODO(rsadam@): Identify these devices using udev rules. (Crbug.com/420728.)
@@ -154,17 +148,6 @@ bool IsKnownInvalidKeyboardDevice(const std::string& name) {
   return false;
 }
 
-// Returns true if |name| is the name of a known internal keyboard device. Note,
-// this may return false negatives.
-bool IsInternalKeyboard(const std::string& name) {
-  // TODO(rsadam@): Come up with a more generic way of identifying internal
-  // keyboards. See crbug.com/420728.
-  if (name == kATKeyboardName)
-    return true;
-  return name.compare(
-             0u, strlen(kCrosEcKeyboardPrefix), kCrosEcKeyboardPrefix) == 0;
-}
-
 // Returns true if |name| is the name of a known XTEST device. Note, this may
 // return false negatives.
 bool IsTestKeyboard(const std::string& name) {
@@ -240,14 +223,9 @@ void HandleKeyboardDevicesInWorker(
     base::TrimWhitespaceASCII(device_name, base::TRIM_TRAILING, &device_name);
     if (IsTestKeyboard(device_name))
       continue;  // Skip test devices.
-    InputDeviceType type;
-    if (IsInternalKeyboard(device_name)) {
-      type = InputDeviceType::INPUT_DEVICE_INTERNAL;
-    } else if (IsKnownInvalidKeyboardDevice(device_name)) {
-      type = InputDeviceType::INPUT_DEVICE_UNKNOWN;
-    } else {
-      type = InputDeviceType::INPUT_DEVICE_EXTERNAL;
-    }
+    if (IsKnownInvalidKeyboardDevice(device_name))
+      continue;  // Skip invalid devices.
+    InputDeviceType type = GetInputDeviceTypeFromPath(device_info.path);
     devices.push_back(
         KeyboardDevice(device_info.id, type, device_name));
   }
