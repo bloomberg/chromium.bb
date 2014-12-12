@@ -607,15 +607,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(autofill::switches::kShowAutofillTypePredictions)
   },
   {
-    "disambiguate-autofill-server-name-types",
-    IDS_FLAGS_DISAMBIGUATE_SERVER_NAME_TYPES_NAME,
-    IDS_FLAGS_DISAMBIGUATE_SERVER_NAME_TYPES_DESCRIPTION,
-    kOsAll,
-    ENABLE_DISABLE_VALUE_TYPE(
-        autofill::switches::kDisambiguateAutofillServerNameTypes,
-        autofill::switches::kTrustAutofillServerNameTypes)
-  },
-  {
     "enable-smooth-scrolling",  // FLAGS:RECORD_UMA
     IDS_FLAGS_ENABLE_SMOOTH_SCROLLING_NAME,
     IDS_FLAGS_ENABLE_SMOOTH_SCROLLING_DESCRIPTION,

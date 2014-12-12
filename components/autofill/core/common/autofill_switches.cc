@@ -18,10 +18,6 @@ const char kDisablePasswordGeneration[]     = "disable-password-generation";
 // The "disable" flag for kEnableSingleClickAutofill.
 const char kDisableSingleClickAutofill[]    = "disable-single-click-autofill";
 
-// Local heuristics override server predictions for name types.
-const char kDisambiguateAutofillServerNameTypes[] =
-    "disambiguate-autofill-server-name-types";
-
 // Enables using device's camera to scan a new credit card when filling out a
 // credit card form.
 const char kEnableCreditCardScan[]          = "enable-credit-card-scan";
@@ -51,9 +47,6 @@ const char kRespectAutocompleteOffForAutofill[] =
 
 // Annotates forms with Autofill field type predictions.
 const char kShowAutofillTypePredictions[]   = "show-autofill-type-predictions";
-
-// Always trust server predictions for name types.
-const char kTrustAutofillServerNameTypes[] = "trust-autofill-server-name-types";
 
 // Secure service URL for Online Wallet service. Used as the base url to escrow
 // credit card numbers.
