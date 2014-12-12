@@ -14,6 +14,7 @@
         '../..',
       ],
       'dependencies': [
+        'webp_decoder',
         '../../base/base.gyp:base',
         '../../content/content.gyp:content_browser',
         '../../net/net.gyp:net',
@@ -65,6 +66,21 @@
       },
       'includes': [
         'js_compile.gypi'
+      ],
+    },
+    {
+      'target_name': 'webp_decoder',
+      'type': 'static_library',
+      'include_dirs': [
+        '../..',
+      ],
+      'dependencies': [
+        '../../base/base.gyp:base',
+        '../../third_party/libwebp/libwebp.gyp:libwebp_dec',
+      ],
+      'sources': [
+        'public/webp_decoder.h',
+        'public/webp_decoder.mm',
       ],
     },
     {

@@ -22,7 +22,25 @@
       'sources': [
         'web/browser_state_unittest.cc',
         'web/navigation/navigation_item_impl_unittest.mm',
+        'web/public/webp_decoder_unittest.mm',
         'web/string_util_unittest.cc',
+      ],
+      'actions': [
+        {
+          'action_name': 'copy_test_data',
+          'variables': {
+            'test_data_files': [
+              'web/test/data/test.jpg',
+              'web/test/data/test.webp',
+              'web/test/data/test_alpha.webp',
+              'web/test/data/test_alpha.png',
+              'web/test/data/test_small.tiff',
+              'web/test/data/test_small.webp',
+            ],
+            'test_data_prefix': 'ios',
+          },
+          'includes': [ '../build/copy_test_data_ios.gypi' ],
+        },
       ],
     },
   ],
