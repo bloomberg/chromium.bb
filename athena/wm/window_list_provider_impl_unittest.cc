@@ -11,6 +11,7 @@
 #include "athena/test/base/test_windows.h"
 #include "athena/wm/public/window_list_provider_observer.h"
 #include "athena/wm/public/window_manager.h"
+#include "base/strings/string_number_conversions.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
@@ -50,7 +51,7 @@ std::string GetWindowOrder(const aura::Window::Windows& original,
     for (size_t i = 0; i < original.size(); i++) {
       if ((*it) == original[i]) {
         output += (output.size() ? " " : std::string()) +
-                  std::to_string(i + 1);
+                  base::IntToString(i + 1);
         break;
       }
     }
