@@ -334,6 +334,10 @@ BASE_EXPORT extern "C" NSString* const kCWSSIDDidChangeNotification;
 @property (copy) NSDictionary* userInfo;
 @property (copy) NSURL* webpageURL;
 
+- (instancetype)initWithActivityType:(NSString*)activityType;
+- (void)becomeCurrent;
+- (void)invalidate;
+
 @end
 
 BASE_EXPORT extern "C" NSString* const NSUserActivityTypeBrowsingWeb;
