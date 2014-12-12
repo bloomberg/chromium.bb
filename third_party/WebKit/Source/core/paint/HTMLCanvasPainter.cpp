@@ -6,11 +6,11 @@
 #include "core/paint/HTMLCanvasPainter.h"
 
 #include "core/html/HTMLCanvasElement.h"
-#include "core/paint/ClipRecorder.h"
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderHTMLCanvas.h"
 #include "platform/geometry/LayoutPoint.h"
+#include "platform/graphics/paint/ClipRecorder.h"
 
 namespace blink {
 
@@ -27,7 +27,7 @@ void HTMLCanvasPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPo
     OwnPtr<ClipRecorder> clipRecorder;
     bool clip = !contentRect.contains(paintRect);
     if (clip)
-        clipRecorder = adoptPtr(new ClipRecorder(m_renderHTMLCanvas, paintInfo, contentRect));
+        clipRecorder = adoptPtr(new ClipRecorder(m_renderHTMLCanvas.displayItemClient(), paintInfo.context, paintInfo.displayItemTypeForClipping(), contentRect));
 
     RenderDrawingRecorder recorder(context, m_renderHTMLCanvas, localPaintInfo.phase, pixelSnappedIntRect(paintRect));
     if (recorder.canUseCachedDrawing())

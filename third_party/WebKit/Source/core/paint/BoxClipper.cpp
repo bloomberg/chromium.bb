@@ -5,7 +5,6 @@
 #include "config.h"
 #include "core/paint/BoxClipper.h"
 
-#include "core/paint/ClipRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderLayer.h"
@@ -54,7 +53,7 @@ BoxClipper::BoxClipper(RenderBox& box, const PaintInfo& paintInfo, const LayoutP
 
     DisplayItem::Type clipType = DisplayItem::ClipBoxForeground;
     if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        clipType = ClipRecorder::paintPhaseToClipType(m_paintInfo.phase);
+        clipType = m_paintInfo.displayItemTypeForClipping();
 
     OwnPtr<ClipDisplayItem> clipDisplayItem = ClipDisplayItem::create(m_box.displayItemClient(), clipType, pixelSnappedIntRect(clipRect));
     if (hasBorderRadius)

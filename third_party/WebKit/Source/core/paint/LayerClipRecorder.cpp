@@ -5,7 +5,6 @@
 #include "config.h"
 #include "core/paint/LayerClipRecorder.h"
 
-#include "core/paint/ClipRecorder.h"
 #include "core/rendering/ClipRect.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
@@ -13,7 +12,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/paint/ClipDisplayItem.h"
+#include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 
 namespace blink {

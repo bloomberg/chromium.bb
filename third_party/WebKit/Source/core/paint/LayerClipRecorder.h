@@ -7,6 +7,7 @@
 
 #include "core/rendering/LayerPaintingInfo.h"
 #include "core/rendering/PaintPhase.h"
+#include "platform/graphics/paint/ClipDisplayItem.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "wtf/Vector.h"
 

@@ -5,22 +5,20 @@
 #ifndef ClipRecorder_h
 #define ClipRecorder_h
 
-#include "core/rendering/RenderLayerModelObject.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/paint/DisplayItem.h"
 
 namespace blink {
 
-class ClipRecorder {
+class GraphicsContext;
+
+class PLATFORM_EXPORT ClipRecorder {
 public:
-    ClipRecorder(RenderLayerModelObject&, const PaintInfo&, const LayoutRect&);
+    ClipRecorder(DisplayItemClient, GraphicsContext*, DisplayItem::Type, const LayoutRect& clipRect);
     ~ClipRecorder();
-
-    static DisplayItem::Type paintPhaseToClipType(PaintPhase);
-
 private:
-    const PaintInfo& m_paintInfo;
-    RenderLayerModelObject& m_renderer;
+    DisplayItemClient m_client;
+    GraphicsContext* m_context;
 };
 
 } // namespace blink

@@ -32,6 +32,7 @@
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/paint/DisplayItem.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
@@ -45,10 +46,6 @@ class RenderPart;
 
 typedef HashMap<RenderPart*, IntRect> OverlapTestRequestMap;
 
-/*
- * Paint the object and its children, clipped by (x|y|w|h).
- * (tx|ty) is the calculated position of the parent
- */
 struct PaintInfo {
     PaintInfo(GraphicsContext* newContext, const IntRect& newRect, PaintPhase newPhase, PaintBehavior newPaintBehavior,
         RenderObject* newPaintingRoot = 0, ListHashSet<RenderInline*>* newOutlineObjects = 0,
@@ -106,6 +103,8 @@ struct PaintInfo {
             rect.setSize(IntSize(0, 0));
     }
 
+    DisplayItem::Type displayItemTypeForClipping() const;
+
     const RenderLayerModelObject* paintContainer() const { return m_paintContainer; }
 
     ListHashSet<RenderInline*>* outlineObjects() const { return m_outlineObjects; }
@@ -113,7 +112,7 @@ struct PaintInfo {
 
     // FIXME: Introduce setters/getters at some point. Requires a lot of changes throughout rendering/.
     GraphicsContext* context;
-    IntRect rect;
+    IntRect rect; // dirty rect used for culling non-intersecting renderers
     PaintPhase phase;
     PaintBehavior paintBehavior;
     RenderObject* paintingRoot; // used to draw just one element and its visual kids
