@@ -812,6 +812,7 @@ public class ContentViewCore
 
             mContainerView = containerView;
             mPositionObserver = new ViewPositionObserver(mContainerView);
+            mContainerView.setWillNotDraw(false); // TODO(epenner): Remove (http://crbug.com/436689)
             mContainerView.setClickable(true);
             mViewAndroidDelegate.updateCurrentContainerView();
         } finally {
