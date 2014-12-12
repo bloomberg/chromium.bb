@@ -34,7 +34,6 @@ public:
 
     Animation* animation() const { return m_animation; }
     unsigned sequenceNumber() const { return m_sequenceNumber; }
-    Animation::Priority priority() const { return m_priority; }
 
     void removeReplacedInterpolationsIfNeeded(const BitArray<numCSSProperties>&);
 
@@ -49,7 +48,6 @@ private:
 #endif
     OwnPtrWillBeMember<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> m_interpolations;
     const unsigned m_sequenceNumber;
-    Animation::Priority m_priority;
 };
 
 } // namespace blink

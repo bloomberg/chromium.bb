@@ -103,7 +103,7 @@ WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > AnimationSt
         animationStack->simplifyEffects();
         for (size_t i = 0; i < effects.size(); ++i) {
             const SampledEffect& effect = *effects[i];
-            if (effect.priority() != priority || (cancelledAnimationPlayers && effect.animation() && cancelledAnimationPlayers->contains(effect.animation()->player())))
+            if (effect.animation()->priority() != priority || (cancelledAnimationPlayers && cancelledAnimationPlayers->contains(effect.animation()->player())))
                 continue;
             copyToActiveInterpolationMap(effect.interpolations(), result);
         }
