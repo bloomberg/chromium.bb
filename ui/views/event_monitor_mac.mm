@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/event_monitor_mac.h"
+#import "ui/views/event_monitor_mac.h"
+
+#import <Cocoa/Cocoa.h>
 
 #include "base/logging.h"
 #include "ui/events/event.h"
@@ -12,8 +14,17 @@
 namespace views {
 
 // static
-EventMonitor* EventMonitor::Create(ui::EventHandler* event_handler) {
-  return new EventMonitorMac(event_handler);
+scoped_ptr<EventMonitor> EventMonitor::CreateApplicationMonitor(
+    ui::EventHandler* event_handler) {
+  return scoped_ptr<EventMonitor>(new EventMonitorMac(event_handler, nullptr));
+}
+
+// static
+scoped_ptr<EventMonitor> EventMonitor::CreateWindowMonitor(
+    ui::EventHandler* event_handler,
+    gfx::NativeWindow target_window) {
+  return scoped_ptr<EventMonitor>(
+      new EventMonitorMac(event_handler, target_window));
 }
 
 // static
@@ -25,14 +36,17 @@ gfx::Point EventMonitor::GetLastMouseLocation() {
   return gfx::Point(mouseLocation.x, mouseLocation.y);
 }
 
-EventMonitorMac::EventMonitorMac(ui::EventHandler* event_handler) {
+EventMonitorMac::EventMonitorMac(ui::EventHandler* event_handler,
+                                 gfx::NativeWindow target_window) {
   DCHECK(event_handler);
   monitor_ = [NSEvent addLocalMonitorForEventsMatchingMask:NSAnyEventMask
-      handler:^NSEvent*(NSEvent* event){
-                  scoped_ptr<ui::Event> ui_event = ui::EventFromNative(event);
-                  event_handler->OnEvent(ui_event.get());
-                  return event;
-              }];
+      handler:^NSEvent*(NSEvent* event) {
+          if (!target_window || [event window] == target_window) {
+            scoped_ptr<ui::Event> ui_event = ui::EventFromNative(event);
+            event_handler->OnEvent(ui_event.get());
+          }
+          return event;
+      }];
 }
 
 EventMonitorMac::~EventMonitorMac() {
