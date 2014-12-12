@@ -428,7 +428,7 @@ const AtomicString HTMLCanvasElement::imageSourceURL() const
 
 String HTMLCanvasElement::toDataURLInternal(const String& mimeType, const double* quality, SourceDrawingBuffer sourceBuffer) const
 {
-    if (!canCreateImageBuffer(size()))
+    if (!isPaintable())
         return String("data:,");
 
     String encodingMimeType = toEncodingMimeType(mimeType);
@@ -701,7 +701,7 @@ void HTMLCanvasElement::ensureUnacceleratedImageBuffer()
 
 PassRefPtr<Image> HTMLCanvasElement::copiedImage(SourceDrawingBuffer sourceBuffer) const
 {
-    if (!canCreateImageBuffer(size()))
+    if (!isPaintable())
         return nullptr;
     if (!m_context)
         return createTransparentImage(size());
