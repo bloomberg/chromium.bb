@@ -103,6 +103,9 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   // iteration. Protected rather than private for use in tests.
   void ScheduleSendCurrentDownloads();
 
+  // Protected for testing.
+  virtual content::DownloadManager* GetMainNotifierManager();
+
  private:
   // Shorthand for |observing_items_|, which tracks all items that this is
   // observing so that RemoveObserver will be called for all of them.

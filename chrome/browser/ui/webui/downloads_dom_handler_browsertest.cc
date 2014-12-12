@@ -14,6 +14,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/mock_download_item.h"
+#include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_utils.h"
 
 namespace {
@@ -53,7 +55,8 @@ class MockDownloadsDOMHandler : public DownloadsDOMHandler {
   explicit MockDownloadsDOMHandler(content::DownloadManager* dlm)
     : DownloadsDOMHandler(dlm),
       waiting_list_(false),
-      waiting_updated_(false) {
+      waiting_updated_(false),
+      manager_(nullptr) {
   }
   ~MockDownloadsDOMHandler() override {}
 
@@ -81,6 +84,8 @@ class MockDownloadsDOMHandler : public DownloadsDOMHandler {
   void reset_downloads_list() { downloads_list_.reset(); }
   void reset_download_updated() { download_updated_.reset(); }
 
+  void set_manager(content::DownloadManager* manager) { manager_ = manager; }
+
  protected:
   content::WebContents* GetWebUIWebContents() override { return NULL; }
 
@@ -102,11 +107,16 @@ class MockDownloadsDOMHandler : public DownloadsDOMHandler {
     }
   }
 
+  content::DownloadManager* GetMainNotifierManager() override {
+    return manager_ ? manager_ : DownloadsDOMHandler::GetMainNotifierManager();
+  }
+
  private:
   scoped_ptr<base::ListValue> downloads_list_;
   scoped_ptr<base::ListValue> download_updated_;
   bool waiting_list_;
   bool waiting_updated_;
+  content::DownloadManager* manager_;  // weak.
 
   DISALLOW_COPY_AND_ASSIGN(MockDownloadsDOMHandler);
 };
@@ -221,6 +231,23 @@ IN_PROC_BROWSER_TEST_F(DownloadsDOMHandlerTest, RemoveOneItem) {
   mock_handler_->HandleRemove(&item);
   mock_handler_->WaitForDownloadsList();
   EXPECT_EQ(0, static_cast<int>(mock_handler_->downloads_list()->GetSize()));
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadsDOMHandlerTest, ClearAllSkipsInProgress) {
+  content::MockDownloadManager manager;
+  mock_handler_->set_manager(&manager);
+
+  content::MockDownloadItem item;
+  EXPECT_CALL(item, GetState()).WillRepeatedly(
+      testing::Return(content::DownloadItem::IN_PROGRESS));
+  EXPECT_CALL(item, UpdateObservers()).Times(0);
+
+  std::vector<content::DownloadItem*> items;
+  items.push_back(&item);
+  EXPECT_CALL(manager, GetAllDownloads(testing::_)).WillOnce(
+      testing::SetArgPointee<0>(items));
+
+  mock_handler_->HandleClearAll(NULL);
 }
 
 // Tests that DownloadsDOMHandler detects new downloads and relays them to the

@@ -532,8 +532,8 @@ void DownloadsDOMHandler::HandleClearAll(const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_CLEAR_ALL);
 
   std::vector<content::DownloadItem*> downloads;
-  if (main_notifier_.GetManager())
-    main_notifier_.GetManager()->GetAllDownloads(&downloads);
+  if (GetMainNotifierManager())
+    GetMainNotifierManager()->GetAllDownloads(&downloads);
   if (original_notifier_ && original_notifier_->GetManager())
     original_notifier_->GetManager()->GetAllDownloads(&downloads);
   RemoveDownloads(downloads);
@@ -543,8 +543,10 @@ void DownloadsDOMHandler::RemoveDownloads(
     const std::vector<content::DownloadItem*>& to_remove) {
   std::set<uint32> ids;
   for (auto* download : to_remove) {
-    if (IsRemoved(*download))
+    if (IsRemoved(*download) ||
+        download->GetState() == content::DownloadItem::IN_PROGRESS) {
       continue;
+    }
 
     DownloadsDOMHandlerData::Create(download)->set_is_removed(true);
     ids.insert(download->GetId());
@@ -577,6 +579,10 @@ void DownloadsDOMHandler::ScheduleSendCurrentDownloads() {
       BrowserThread::UI, FROM_HERE,
       base::Bind(&DownloadsDOMHandler::SendCurrentDownloads,
                  weak_ptr_factory_.GetWeakPtr()));
+}
+
+content::DownloadManager* DownloadsDOMHandler::GetMainNotifierManager() {
+  return main_notifier_.GetManager();
 }
 
 void DownloadsDOMHandler::SendCurrentDownloads() {
