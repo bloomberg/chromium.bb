@@ -8,6 +8,7 @@ import("//third_party/protobuf/proto_library.gni")
 proto_library("proto") {
   sources = [
     "codes.proto",
+    "config_data.proto",
     "data.proto",
     "enums.proto",
     "identity.proto",

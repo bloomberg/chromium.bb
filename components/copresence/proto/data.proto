@@ -1,6 +1,7 @@
 syntax = "proto2";
 package copresence;
 option optimize_for = LITE_RUNTIME;
+import "config_data.proto";
 import "enums.proto";
 import "identity.proto";
 message ClientVersion {
@@ -58,6 +59,7 @@ message Directive {
   optional int64 ttl_millis = 4;
   optional string published_message_id = 5;
   optional string subscription_id = 6;
+  optional DirectiveConfiguration configuration = 7;
 }
 message DeviceState {
   optional DeviceCapabilities capabilities = 1;

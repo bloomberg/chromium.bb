@@ -2,6 +2,7 @@ syntax = "proto2";
 package copresence;
 option optimize_for = LITE_RUNTIME;
 import "codes.proto";
+import "config_data.proto";
 import "enums.proto";
 import "data.proto";
 message RequestHeader {
@@ -16,6 +17,7 @@ message RequestHeader {
 message ResponseHeader {
   optional DebugInfo debug_info = 2;
   optional Status status = 3;
+  optional Configuration configuration = 4;
 }
 message RegisterDeviceRequest {
   optional RequestHeader header = 1;

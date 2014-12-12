@@ -91,6 +91,7 @@
       'type': 'static_library',
       'sources': [
         'copresence/proto/codes.proto',
+        'copresence/proto/config_data.proto',
         'copresence/proto/data.proto',
         'copresence/proto/enums.proto',
         'copresence/proto/identity.proto',
