@@ -15,16 +15,7 @@ class ExceptionState;
 class TrackDefault final : public GarbageCollectedFinalized<TrackDefault>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    enum TrackDefaultTypeCode {
-        TrackDefaultTypeAudio,
-        TrackDefaultTypeVideo,
-        TrackDefaultTypeText
-    };
-
-    static TrackDefault* create(const AtomicString& type, const String& language, const String& label, const Vector<String>& kinds, const String& byteStreamTrackID, ExceptionState& exceptionState)
-    {
-        return new TrackDefault(type, language, label, kinds, byteStreamTrackID, exceptionState);
-    }
+    static TrackDefault* create(const AtomicString& type, const String& language, const String& label, const Vector<String>& kinds, const String& byteStreamTrackID, ExceptionState&);
 
     virtual ~TrackDefault();
 
@@ -38,13 +29,13 @@ public:
     void trace(Visitor*) { }
 
 private:
-    TrackDefault(const AtomicString& type, const String& language, const String& label, const Vector<String>& kinds, const String& byteStreamTrackID, ExceptionState&);
+    TrackDefault(const AtomicString& type, const String& language, const String& label, const Vector<String>& kinds, const String& byteStreamTrackID);
 
-    AtomicString m_type;
-    String m_byteStreamTrackID;
-    String m_language;
-    String m_label;
-    Vector<String> m_kinds;
+    const AtomicString m_type;
+    const String m_byteStreamTrackID;
+    const String m_language;
+    const String m_label;
+    const Vector<String> m_kinds;
 };
 
 } // namespace blink

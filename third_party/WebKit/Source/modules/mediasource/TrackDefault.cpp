@@ -31,7 +31,7 @@ static const AtomicString& textKeyword()
     return text;
 }
 
-TrackDefault::TrackDefault(const AtomicString& type, const String& language, const String& label, const Vector<String>& kinds, const String& byteStreamTrackID, ExceptionState& exceptionState)
+TrackDefault* TrackDefault::create(const AtomicString& type, const String& language, const String& label, const Vector<String>& kinds, const String& byteStreamTrackID, ExceptionState& exceptionState)
 {
     // Per 11 Nov 2014 Editor's Draft
     // https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#idl-def-TrackDefault
@@ -50,7 +50,7 @@ TrackDefault::TrackDefault(const AtomicString& type, const String& language, con
         for (const String& kind : kinds) {
             if (!AudioTrack::isValidKindKeyword(kind)) {
                 exceptionState.throwTypeError("Invalid audio track default kind '" + kind + "'");
-                return;
+                return nullptr;
             }
         }
     } else if (type == videoKeyword()) {
@@ -61,7 +61,7 @@ TrackDefault::TrackDefault(const AtomicString& type, const String& language, con
         for (const String& kind : kinds) {
             if (!VideoTrack::isValidKindKeyword(kind)) {
                 exceptionState.throwTypeError("Invalid video track default kind '" + kind + "'");
-                return;
+                return nullptr;
             }
         }
     } else if (type == textKeyword()) {
@@ -72,31 +72,34 @@ TrackDefault::TrackDefault(const AtomicString& type, const String& language, con
         for (const String& kind : kinds) {
             if (!TextTrack::isValidKindKeyword(kind)) {
                 exceptionState.throwTypeError("Invalid text track default kind '" + kind + "'");
-                return;
+                return nullptr;
             }
         }
     } else {
         ASSERT_NOT_REACHED(); // IDL enforcement should prevent this case.
+        return nullptr;
     }
 
     // 3. Set the type attribute on this new object to |type|.
-    m_type = type;
-
     // 4. Set the language attribute on this new object to |language|.
-    m_language = language;
-
     // 5. Set the label attribute on this new object to |label|.
-    m_label = label;
-
     // 6. Set the kinds attribute on this new object to |kinds|.
-    m_kinds = kinds;
-
     // 7. Set the byteStreamTrackID attribute on this new object to
     //    |byteStreamTrackID|.
-    m_byteStreamTrackID = byteStreamTrackID;
+    // These steps are done as constructor initializers.
+    return new TrackDefault(type, language, label, kinds, byteStreamTrackID);
 }
 
 TrackDefault::~TrackDefault()
+{
+}
+
+TrackDefault::TrackDefault(const AtomicString& type, const String& language, const String& label, const Vector<String>& kinds, const String& byteStreamTrackID)
+    : m_type(type)
+    , m_byteStreamTrackID(byteStreamTrackID)
+    , m_language(language)
+    , m_label(label)
+    , m_kinds(kinds)
 {
 }
 
