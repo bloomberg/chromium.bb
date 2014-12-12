@@ -6,6 +6,7 @@ import logging
 
 from pylib import constants
 from pylib import content_settings
+from pylib.device import device_errors
 
 _LOCK_SCREEN_SETTINGS_PATH = '/data/system/locksettings.db'
 _ALTERNATE_LOCK_SCREEN_SETTINGS_PATH = (
@@ -29,17 +30,16 @@ def ConfigureContentSettings(device, desired_settings):
         settings to configure.
   """
   try:
-    sdk_version = int(device.GetProp('ro.build.version.sdk'))
-  except ValueError:
-    logging.error('Skipping content settings configuration, unknown sdk %s',
-                  device.GetProp('ro.build.version.sdk'))
+    sdk_version = device.build_version_sdk
+  except device_errors.CommandFailedError as exc:
+    logging.error('Skipping content settings configuration: %s', str(exc))
     return
 
   if sdk_version < constants.ANDROID_SDK_VERSION_CODES.JELLY_BEAN:
     logging.error('Skipping content settings configuration due to outdated sdk')
     return
 
-  if device.GetProp('ro.build.type') == 'userdebug':
+  if device.build_type == 'userdebug':
     for table, key_value in desired_settings:
       settings = content_settings.ContentSettings(table, device)
       for key, value in key_value:
@@ -68,7 +68,7 @@ def SetLockScreenSettings(device):
   Raises:
     Exception if the setting was not properly set.
   """
-  if device.GetProp('ro.build.type') != 'userdebug':
+  if device.build_type != 'userdebug':
     logging.warning('Unable to disable lockscreen on user builds.')
     return
 

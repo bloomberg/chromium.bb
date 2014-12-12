@@ -46,10 +46,10 @@ def DeviceInfo(serial, options):
   """
 
   device_adb = device_utils.DeviceUtils(serial)
-  device_type = device_adb.GetProp('ro.build.product')
-  device_build = device_adb.GetProp('ro.build.id')
-  device_build_type = device_adb.GetProp('ro.build.type')
-  device_product_name = device_adb.GetProp('ro.product.name')
+  device_type = device_adb.build_product
+  device_build = device_adb.build_id
+  device_build_type = device_adb.build_type
+  device_product_name = device_adb.product_name
 
   try:
     battery_info = device_adb.old_interface.GetBatteryInfo()
@@ -71,7 +71,7 @@ def DeviceInfo(serial, options):
                         lambda x: x[-6:])
   report = ['Device %s (%s)' % (serial, device_type),
             '  Build: %s (%s)' %
-              (device_build, device_adb.GetProp('ro.build.fingerprint')),
+              (device_build, device_adb.build_fingerprint),
             '  Current Battery Service state: ',
             '\n'.join(['    %s: %s' % (k, v)
                        for k, v in battery_info.iteritems()]),

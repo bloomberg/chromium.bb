@@ -36,7 +36,7 @@ class PerfControl(object):
       atexit.register(logging.warning, message)
       return
 
-    product_model = self._device.old_interface.GetProductModel()
+    product_model = self._device.product_model
     # TODO(epenner): Enable on all devices (http://crbug.com/383566)
     if 'Nexus 4' == product_model:
       self._ForceAllCpusOnline(True)
@@ -66,7 +66,7 @@ class PerfControl(object):
     """Sets the performance mode for the device to its default mode."""
     if not self._device.old_interface.IsRootEnabled():
       return
-    product_model = self._device.old_interface.GetProductModel()
+    product_model = self._device.product_model
     if 'Nexus 5' == product_model:
       if self._AllCpusAreOnline():
         self._SetScalingMaxFreq(2265600)

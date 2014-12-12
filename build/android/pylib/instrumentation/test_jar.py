@@ -215,12 +215,10 @@ class TestJar(object):
 
     # Filter out any tests with SDK level requirements that don't match the set
     # of attached devices.
-    sdk_versions = [
-        int(v) for v in
-        device_utils.DeviceUtils.parallel().GetProp(
-            'ro.build.version.sdk').pGet(None)]
+    devices = device_utils.DeviceUtils.parallel()
+    min_sdk_version = min(devices.build_version_sdk.pGet(None))
     tests = [t for t in tests
-             if self._IsTestValidForSdkRange(t, min(sdk_versions))]
+             if self._IsTestValidForSdkRange(t, min_sdk_version)]
 
     return tests
 
