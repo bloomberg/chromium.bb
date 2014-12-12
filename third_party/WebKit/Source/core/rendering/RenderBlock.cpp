@@ -605,67 +605,69 @@ void RenderBlock::splitBlocks(RenderBlock* fromBlock, RenderBlock* toBlock,
                               RenderBlock* middleBlock,
                               RenderObject* beforeChild, RenderBoxModelObject* oldCont)
 {
-    // Create a clone of this inline.
-    RenderBlock* cloneBlock = clone();
-    if (!isAnonymousBlock())
-        cloneBlock->setContinuation(oldCont);
+    ASSERT(isDescendantOf(fromBlock));
 
     if (!beforeChild && isAfterContent(lastChild()))
         beforeChild = lastChild();
 
-    // Now take all of the children from beforeChild to the end and remove
-    // them from |this| and place them in the clone.
-    moveChildrenTo(cloneBlock, beforeChild, 0, true);
+    Vector<RenderBlock*> blocksToClone;
+    for (RenderObject* o = this; o != fromBlock; o = o->parent())
+        blocksToClone.append(toRenderBlock(o));
 
-    // Hook |clone| up as the continuation of the middle block.
-    if (!cloneBlock->isAnonymousBlock())
-        middleBlock->setContinuation(cloneBlock);
+    // Create a new clone of the top-most block.
+    RenderBlock* topMostBlockToClone = blocksToClone.last();
+    RenderBlock* cloneBlock = topMostBlockToClone->clone();
 
-    // We have been reparented and are now under the fromBlock.  We need
-    // to walk up our block parent chain until we hit the containing anonymous columns block.
-    // Once we hit the anonymous columns block we're done.
-    RenderBoxModelObject* curr = toRenderBoxModelObject(parent());
-    RenderBoxModelObject* currChild = this;
-    RenderObject* currChildNextSibling = currChild->nextSibling();
+    // Put |cloneBlock| as a child of |toBlock|.
+    toBlock->children()->appendChildNode(toBlock, cloneBlock);
 
-    while (curr && curr->isDescendantOf(fromBlock) && curr != fromBlock) {
-        ASSERT_WITH_SECURITY_IMPLICATION(curr->isRenderBlock());
+    // Now take all the children after |topMostBlockToClone| and remove them from the |fromBlock|
+    // and put them in the |toBlock|.
+    fromBlock->moveChildrenTo(toBlock, topMostBlockToClone->nextSibling(), nullptr, true);
 
-        RenderBlock* blockCurr = toRenderBlock(curr);
+    RenderBlock* currentBlockParent = topMostBlockToClone;
+    RenderBlock* cloneBlockParent = cloneBlock;
 
-        // Create a new clone.
-        RenderBlock* cloneChild = cloneBlock;
-        cloneBlock = blockCurr->clone();
-
-        // Insert our child clone as the first child.
-        cloneBlock->addChildIgnoringContinuation(cloneChild, 0);
-
-        // Hook the clone up as a continuation of |curr|.  Note we do encounter
-        // anonymous blocks possibly as we walk up the block chain.  When we split an
+    // Clone the blocks from top to down to ensure any new object will be added into a rooted tree.
+    // Note that we have already cloned the top-most one, so the loop begins from size - 2.
+    for (int i = static_cast<int>(blocksToClone.size()) - 2; i >= 0; --i) {
+        // Hook the clone up as a continuation of |currentBlockParent|. Note we do encounter
+        // anonymous blocks possibly as we walk down the block chain.  When we split an
         // anonymous block, there's no need to do any continuation hookup, since we haven't
         // actually split a real element.
-        if (!blockCurr->isAnonymousBlock()) {
-            oldCont = blockCurr->continuation();
-            blockCurr->setContinuation(cloneBlock);
+        if (!currentBlockParent->isAnonymousBlock()) {
+            RenderBoxModelObject* oldCont = currentBlockParent->continuation();
+            currentBlockParent->setContinuation(cloneBlock);
             cloneBlock->setContinuation(oldCont);
         }
 
-        // Now we need to take all of the children starting from the first child
-        // *after* currChild and append them all to the clone.
-        blockCurr->moveChildrenTo(cloneBlock, currChildNextSibling, 0, true);
+        // Create a new clone.
+        RenderBlock* currentBlock = blocksToClone[i];
+        cloneBlock = currentBlock->clone();
 
-        // Keep walking up the chain.
-        currChild = curr;
-        currChildNextSibling = currChild->nextSibling();
-        curr = toRenderBoxModelObject(curr->parent());
+        // Insert the |cloneBlock| as the first child of |cloneBlockParent|.
+        cloneBlockParent->addChildIgnoringContinuation(cloneBlock, nullptr);
+
+        // Take all the children after |currentBlock| and remove them from the |currentBlockParent|
+        // and put them to the end of the |cloneParent|.
+        currentBlockParent->moveChildrenTo(cloneBlockParent, currentBlock->nextSibling(), nullptr, true);
+
+        cloneBlockParent = cloneBlock;
+        currentBlockParent = currentBlock;
     }
 
-    // Now we are at the columns block level. We need to put the clone into the toBlock.
-    toBlock->children()->appendChildNode(toBlock, cloneBlock);
+    // The last block to clone is |this|, and the current |cloneBlock| is cloned from |this|.
+    ASSERT(this == blocksToClone.first());
 
-    // Now take all the children after currChild and remove them from the fromBlock
-    // and put them in the toBlock.
-    fromBlock->moveChildrenTo(toBlock, currChildNextSibling, 0, true);
+    // Hook |cloneBlock| up as the continuation of the |middleBlock|.
+    if (!isAnonymousBlock()) {
+        cloneBlock->setContinuation(oldCont);
+        middleBlock->setContinuation(cloneBlock);
+    }
+
+    // Now take all of the children from |beforeChild| to the end and remove
+    // them from |this| and place them in the |cloneBlock|.
+    moveChildrenTo(cloneBlock, beforeChild, nullptr, true);
 }
 
 void RenderBlock::splitFlow(RenderObject* beforeChild, RenderBlock* newBlockBox,
