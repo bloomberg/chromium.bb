@@ -23,6 +23,40 @@ crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.htm
 crbug.com/148816 [ Mac Win Linux ] fast/dom/Window/window-scaled-viewport-properties.html [ Pass Failure ]
 crbug.com/148816 [ Mac Win Linux ] fast/dom/element-bounding-client-rect-relative-to-viewport.html [ Pass Failure ]
 
+# Need to be rebaselined once virtual-viewport pinch to zoom is turned on.
+crbug.com/148816 fast/dom/window-inner-size-scaling.html [ NeedsManualRebaseline ]
+crbug.com/148816 inspector/device-emulation/device-emulation-320-2x.html [ NeedsManualRebaseline ]
+crbug.com/148816 inspector/device-emulation/device-emulation-320.html [ NeedsManualRebaseline ]
+crbug.com/148816 inspector/device-emulation/device-emulation-restore.html [ NeedsManualRebaseline ]
+crbug.com/148816 inspector/layers/layer-tree-model.html [ NeedsManualRebaseline ]
+crbug.com/148816 compositing/geometry/fixed-position-composited-page-scale-down.html [ NeedsManualRebaseline ]
+crbug.com/148816 compositing/geometry/fixed-position-composited-page-scale.html [ NeedsManualRebaseline ]
+crbug.com/148816 compositing/geometry/fixed-position-iframe-composited-page-scale-down.html [ NeedsManualRebaseline ]
+crbug.com/148816 compositing/geometry/fixed-position-iframe-composited-page-scale.html [ NeedsManualRebaseline ]
+crbug.com/148816 compositing/geometry/fixed-position-transform-composited-page-scale-down.html [ NeedsManualRebaseline ]
+crbug.com/148816 compositing/geometry/fixed-position-transform-composited-page-scale.html [ NeedsManualRebaseline ]
+crbug.com/148816 compositing/layer-creation/fixed-position-out-of-view-scaled-scroll.html [ NeedsManualRebaseline ]
+crbug.com/148816 compositing/fixed-body-background-positioned.html [ NeedsManualRebaseline ]
+
+# Failing with virtual-viewport mode on, disable for now and fix ASAP
+crbug.com/428980 css3/viewport-percentage-lengths/viewport-percentage-lengths-resize.html [ Failure ]
+crbug.com/428980 fast/dom/partial-layout-non-overlay-scrollbars.html [ Failure ]
+crbug.com/428980 fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
+crbug.com/428980 fast/events/drag-and-drop-autoscroll-mainframe.html [ Timeout ]
+crbug.com/428980 fast/dom/focus-contenteditable.html [ Failure ]
+crbug.com/428980 fast/events/autoscroll.html [ Failure ]
+crbug.com/428980 fast/events/reveal-link-when-focused.html [ Failure ]
+crbug.com/428980 [ Win ] http/tests/inspector/extensions-useragent.html [ Timeout ]
+crbug.com/428980 [ Win Mac ] fast/events/attempt-scroll-with-no-scrollbars.html [ Failure ]
+crbug.com/428980 [ Win Mac ] svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html [ Failure ]
+crbug.com/428980 [ Win Mac ] fast/frames/transparent-scrollbar.html [ Failure ]
+crbug.com/428980 [ Win ] fast/forms/focus-selection-textarea.html [ Failure ]
+crbug.com/428980 [ Win ] http/tests/media/media-source/mediasource-play-then-seek-back.html [ Failure ]
+crbug.com/428980 [ Win ] plugins/overlay-scrollbar-mouse-capture.html [ Failure ]
+crbug.com/428980 [ Win ] fast/pagination/div-x-horizontal-bt-rtl.html [ Crash ]
+crbug.com/428980 [ Mac ] rubberbanding/content-size-change.html [ Failure ]
+crbug.com/428980 [ Mac ] rubberbanding/scroll-bounce-fix.html [ Failure ]
+
 crbug.com/437743 virtual/slimmingpaint/fast/block/basic/013.html [ ImageOnlyFailure ]
 crbug.com/437743 virtual/slimmingpaint/fast/block/positioning/window-height-change.html [ ImageOnlyFailure ]
 crbug.com/437743 virtual/slimmingpaint/fast/block/float/overhanging-tall-block.html [ Skip ]
@@ -84,7 +118,7 @@ crbug.com/304953 fast/css/font-face-download-error.html [ Pass Timeout ]
 crbug.com/411175 [ XP ] svg/custom/svg-fonts-without-missing-glyph.xhtml [ Failure Pass ]
 
 # This batch were marked as NeedsRebaseline for crbug.com/133097 but are flaky:
-crbug.com/310679 [ Mac ] compositing/fixed-body-background-positioned.html [ Failure Pass ]
+# crbug.com/310679 [ Mac ] compositing/fixed-body-background-positioned.html [ Failure Pass ]
 crbug.com/310679 [ Mac ] compositing/rubberbanding/transform-overhang-e.html [ ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] compositing/rubberbanding/transform-overhang-n.html [ ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] compositing/rubberbanding/transform-overhang-ne.html [ ImageOnlyFailure Pass ]
@@ -242,7 +276,7 @@ crbug.com/381684 [ Win Android Mac ] fonts/family-fallback-gardiner.html [ Skip 
 
 # Untriaged Mavericks failures
 
-crbug.com/314947 [ Mavericks ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
+# crbug.com/314947 [ Mavericks ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 # crbug.com/331583 [ Mavericks ] fast/parser/fonts.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/repaint/text-emphasis-v.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/shapes/shape-outside-floats/shape-outside-boxes-001.html [ Pass ImageOnlyFailure ]
@@ -416,7 +450,7 @@ crbug.com/265650 compositing/repaint/transform-style-change.html [ Pass ImageOnl
 
 crbug.com/266754 fast/ruby/ruby-svg-crash.html [ ImageOnlyFailure Pass ]
 
-crbug.com/267206 [ Lion MountainLion Retina ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
+# crbug.com/267206 [ Lion MountainLion Retina ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
 crbug.com/267302 [ Win ] http/tests/htmlimports/import-script-block-crossorigin-dynamic.html [ Pass Failure ]
 
