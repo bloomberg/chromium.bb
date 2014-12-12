@@ -162,7 +162,6 @@ GpuMemoryBufferFactoryOzoneNativeBuffer::CreateImageForGpuMemoryBuffer(
     pixmap = it->second.get();
   }
   if (pixmap->GetEGLClientBuffer()) {
-    DCHECK_EQ(-1, pixmap->GetDmaBufFd());
     scoped_refptr<GLImageOzoneNativePixmap> image =
         new GLImageOzoneNativePixmap(size);
     if (!image->Initialize(pixmap)) {
