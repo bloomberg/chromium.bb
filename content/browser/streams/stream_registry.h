@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_STREAMS_STREAM_REGISTRY_H_
 
 #include <map>
+#include <set>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -25,7 +26,7 @@ class CONTENT_EXPORT StreamRegistry : public base::NonThreadSafe {
   virtual ~StreamRegistry();
 
   // Registers a stream, and sets its URL.
-  void RegisterStream(scoped_refptr<Stream> stream);
+  void RegisterStream(Stream* stream);
 
   // Clones a stream.  Returns true on success, or false if |src_url| doesn't
   // exist.
@@ -53,11 +54,17 @@ class CONTENT_EXPORT StreamRegistry : public base::NonThreadSafe {
   void SetRegisterObserver(const GURL& url, StreamRegisterObserver* observer);
   void RemoveRegisterObserver(const GURL& url);
 
+  // If the reader is aborted before the stream is registered, call this method
+  // to reduce the memory consumption. After this method is called,
+  // RegisterStream doesn't register the stream of the URL.
+  void AbortPendingStream(const GURL& url);
+
  private:
   typedef std::map<GURL, scoped_refptr<Stream> > StreamMap;
 
   StreamMap streams_;
   std::map<GURL, StreamRegisterObserver*> register_observers_;
+  std::set<GURL> reader_aborted_urls_;
 
   size_t total_memory_usage_;
 

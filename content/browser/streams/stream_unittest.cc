@@ -107,7 +107,7 @@ class TestStreamWriter : public StreamWriteObserver {
 class TestStreamObserver : public StreamRegisterObserver {
  public:
   TestStreamObserver(const GURL& url, StreamRegistry* registry)
-      : url_(url), registry_(registry), registered_(false), stream_(NULL) {
+      : url_(url), registry_(registry), registered_(false), stream_(nullptr) {
     registry->SetRegisterObserver(url, this);
   }
   ~TestStreamObserver() override { registry_->RemoveRegisterObserver(url_); }
@@ -312,12 +312,12 @@ TEST_F(StreamTest, MemoryExceedMemoryUsageLimit) {
 
   // Written data (1000000 * 2) exceeded limit (1500000). |stream2| should be
   // unregistered with |registry_|.
-  EXPECT_EQ(NULL, registry_->GetStream(url2).get());
+  EXPECT_EQ(nullptr, registry_->GetStream(url2).get());
 
   writer1.Write(stream1.get(), buffer, kMaxMemoryUsage - kBufferSize);
   // Should be accepted since stream2 is unregistered and the new data is not
   // so big to exceed the limit.
-  EXPECT_FALSE(registry_->GetStream(url1).get() == NULL);
+  EXPECT_FALSE(registry_->GetStream(url1).get() == nullptr);
 }
 
 TEST_F(StreamTest, UnderMemoryUsageLimit) {
@@ -368,6 +368,15 @@ TEST_F(StreamTest, Flush) {
   EXPECT_EQ(kBufferSize, reader.buffer()->capacity());
 
   EXPECT_EQ(stream.get(), registry_->GetStream(url).get());
+}
+
+TEST_F(StreamTest, AbortPendingStream) {
+  TestStreamWriter writer;
+
+  GURL url("blob://stream");
+  registry_->AbortPendingStream(url);
+  scoped_refptr<Stream> stream1(new Stream(registry_.get(), &writer, url));
+  ASSERT_EQ(nullptr, registry_->GetStream(url).get());
 }
 
 }  // namespace content
