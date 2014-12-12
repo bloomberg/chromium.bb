@@ -27,7 +27,6 @@
         'infobars/core/confirm_infobar_delegate.h',
         'infobars/core/infobar.cc',
         'infobars/core/infobar.h',
-        'infobars/core/infobar_android.cc',
         'infobars/core/infobar_container.cc',
         'infobars/core/infobar_container.h',
         'infobars/core/infobar_delegate.cc',

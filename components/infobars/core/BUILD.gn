@@ -8,7 +8,6 @@ static_library("core") {
     "confirm_infobar_delegate.h",
     "infobar.cc",
     "infobar.h",
-    "infobar_android.cc",
     "infobar_container.cc",
     "infobar_container.h",
     "infobar_delegate.cc",

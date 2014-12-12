@@ -10,6 +10,7 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
+#include "chrome/browser/ui/infobar_container_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/nsview_additions.h"
@@ -58,7 +59,7 @@
 
 - (void)drawRect:(NSRect)rect {
   NSRect bounds = [self bounds];
-  bounds.size.height = infobars::InfoBar::kDefaultBarTargetHeight;
+  bounds.size.height = InfoBarContainerDelegate::kDefaultBarTargetHeight;
 
   CGFloat tipXOffset = arrowX_ - arrowHalfWidth_;
 

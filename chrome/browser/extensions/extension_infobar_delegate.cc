@@ -10,6 +10,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/infobar_container_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -55,9 +56,10 @@ ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(
                  content::Source<Profile>(browser->profile()));
 
   height_ = std::max(0, height);
-  height_ = std::min(2 * infobars::InfoBar::kDefaultBarTargetHeight, height_);
+  height_ =
+      std::min(2 * InfoBarContainerDelegate::kDefaultBarTargetHeight, height_);
   if (height_ == 0)
-    height_ = infobars::InfoBar::kDefaultBarTargetHeight;
+    height_ = InfoBarContainerDelegate::kDefaultBarTargetHeight;
 }
 
 content::WebContents* ExtensionInfoBarDelegate::GetWebContents() {

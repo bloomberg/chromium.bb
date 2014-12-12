@@ -957,10 +957,10 @@ void BrowserView::FullscreenStateChanged() {
 }
 
 void BrowserView::ToolbarSizeChanged(bool is_animating) {
-  // The call to InfoBarContainer::SetMaxTopArrowHeight() below can result in
-  // reentrancy; |call_state| tracks whether we're reentrant.  We can't just
-  // early-return in this case because we need to layout again so the infobar
-  // container's bounds are set correctly.
+  // The call to SetMaxTopArrowHeight() below can result in reentrancy;
+  // |call_state| tracks whether we're reentrant.  We can't just early-return in
+  // this case because we need to layout again so the infobar container's bounds
+  // are set correctly.
   static CallState call_state = NORMAL;
 
   // A reentrant call can (and should) use the fast resize path unless both it
@@ -979,7 +979,7 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
   {
     base::AutoReset<CallState> resetter(&call_state,
         is_animating ? REENTRANT_FORCE_FAST_RESIZE : REENTRANT);
-    infobar_container_->SetMaxTopArrowHeight(GetMaxTopInfoBarArrowHeight());
+    SetMaxTopArrowHeight(GetMaxTopInfoBarArrowHeight(), infobar_container_);
   }
 
   // When transitioning from animating to not animating we need to make sure the
@@ -1899,11 +1899,15 @@ bool BrowserView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, OmniboxPopupModelObserver overrides:
 void BrowserView::OnOmniboxPopupShownOrHidden() {
-  infobar_container_->SetMaxTopArrowHeight(GetMaxTopInfoBarArrowHeight());
+  SetMaxTopArrowHeight(GetMaxTopInfoBarArrowHeight(), infobar_container_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserView, InfoBarContainer::Delegate overrides:
+// BrowserView, InfoBarContainerDelegate overrides:
+
+const int InfoBarContainerDelegate::kSeparatorLineHeight =
+    views::NonClientFrameView::kClientEdgeThickness;
+const int InfoBarContainerDelegate::kDefaultArrowTargetHeight = 9;
 
 SkColor BrowserView::GetInfoBarSeparatorColor() const {
   // NOTE: Keep this in sync with ToolbarView::OnPaint()!

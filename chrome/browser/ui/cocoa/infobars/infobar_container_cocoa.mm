@@ -7,6 +7,9 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 
+const int InfoBarContainerDelegate::kSeparatorLineHeight = 1;
+const int InfoBarContainerDelegate::kDefaultArrowTargetHeight = 11;
+
 InfoBarContainerCocoa::InfoBarContainerCocoa(
     InfoBarContainerController* controller)
     : infobars::InfoBarContainer(this),

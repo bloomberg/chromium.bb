@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/ui/infobar_container_delegate.h"
 #include "chrome/browser/ui/views/extensions/extension_view_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "extensions/browser/image_loader.h"
@@ -105,10 +106,12 @@ void ExtensionInfoBar::Layout() {
   // but the NativeViewHost inside does not seem to be clipped by the ClipRect()
   // call in InfoBarView::PaintChildren(), so we have to manually clamp the size
   // here.
-  extension_view->SetSize(
-      gfx::Size(std::max(0, EndX() - StartX() - NonExtensionViewWidth()),
-                std::min(height() - kSeparatorLineHeight - arrow_height(),
-                         GetDelegate()->height())));
+  extension_view->SetSize(gfx::Size(
+      std::max(0, EndX() - StartX() - NonExtensionViewWidth()),
+      std::min(
+          height() - InfoBarContainerDelegate::kSeparatorLineHeight -
+              arrow_height(),
+          GetDelegate()->height())));
   // We do SetPosition() separately after SetSize() so OffsetY() will work.
   extension_view->SetPosition(
       gfx::Point(infobar_icon_->bounds().right() + kIconHorizontalMargin,

@@ -1428,6 +1428,8 @@
       'browser/ui/fullscreen/fullscreen_exit_bubble_type.h',
       'browser/ui/fullscreen/fullscreen_within_tab_helper.cc',
       'browser/ui/fullscreen/fullscreen_within_tab_helper.h',
+      'browser/ui/infobar_container_delegate.cc',
+      'browser/ui/infobar_container_delegate.h',
       'browser/ui/location_bar/location_bar.cc',
       'browser/ui/location_bar/location_bar.h',
       'browser/ui/location_bar/location_bar_util.cc',

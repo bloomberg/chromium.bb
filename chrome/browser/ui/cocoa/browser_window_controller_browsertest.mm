@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
+#include "chrome/browser/ui/infobar_container_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
@@ -603,8 +604,9 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   EXPECT_FALSE([[controller() infoBarContainerController]
       shouldSuppressTopInfoBarTip]);
 
-  NSInteger max_tip_height = infobars::InfoBar::kMaximumArrowTargetHeight +
-      infobars::InfoBar::kSeparatorLineHeight;
+  NSInteger max_tip_height =
+      InfoBarContainerDelegate::kMaximumArrowTargetHeight +
+          InfoBarContainerDelegate::kSeparatorLineHeight;
 
   chrome::ExecuteCommand(browser(), IDC_SHOW_BOOKMARK_BAR);
   WaitForBookmarkBarAnimationToFinish();

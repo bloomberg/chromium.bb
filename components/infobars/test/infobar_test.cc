@@ -13,17 +13,6 @@
 // defining; instead, this information should be obtained via a client,
 // which can have a test implementation. crbug.com/386171
 
-// On Android, these variables are defined in ../core/infobar_android.cc.
-#if !defined(OS_ANDROID)
-const int infobars::InfoBar::kSeparatorLineHeight = 1;
-const int infobars::InfoBar::kDefaultArrowTargetHeight = 9;
-const int infobars::InfoBar::kMaximumArrowTargetHeight = 24;
-const int infobars::InfoBar::kDefaultArrowTargetHalfWidth =
-    kDefaultArrowTargetHeight;
-const int infobars::InfoBar::kMaximumArrowTargetHalfWidth = 14;
-const int infobars::InfoBar::kDefaultBarTargetHeight = 36;
-#endif
-
 // Some components' unittests exercise code that requires that
 // ConfirmInfoBarDelegate::CreateInfoBar() return a non-NULL infobar.
 scoped_ptr<infobars::InfoBar> ConfirmInfoBarDelegate::CreateInfoBar(

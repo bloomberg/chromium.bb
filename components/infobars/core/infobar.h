@@ -40,16 +40,6 @@ class InfoBar : public gfx::AnimationDelegate {
   typedef InfoBar AddedDetails;
   typedef std::pair<InfoBar*, bool> RemovedDetails;
 
-  // Platforms must define these.
-  static const int kDefaultBarTargetHeight;
-  static const int kSeparatorLineHeight;
-  static const int kDefaultArrowTargetHeight;
-  static const int kMaximumArrowTargetHeight;
-  // The half-width (see comments on |arrow_half_width_| below) scales to its
-  // default and maximum values proportionally to how the height scales to its.
-  static const int kDefaultArrowTargetHalfWidth;
-  static const int kMaximumArrowTargetHalfWidth;
-
   explicit InfoBar(scoped_ptr<InfoBarDelegate> delegate);
   ~InfoBar() override;
 
@@ -136,12 +126,13 @@ class InfoBar : public gfx::AnimationDelegate {
 
   // The current and target heights of the arrow and bar portions, and half the
   // current arrow width.  (It's easier to work in half-widths as we draw the
-  // arrow as two halves on either side of a center point.)
+  // arrow as two halves on either side of a center point.)  All these values
+  // scale in unison to the container delegate's default and maximum values.
   int arrow_height_;         // Includes both fill and top stroke.
-  int arrow_target_height_;
+  int arrow_target_height_;  // Should always be set by the time we read it.
   int arrow_half_width_;     // Includes only fill.
   int bar_height_;           // Includes both fill and bottom separator.
-  int bar_target_height_;
+  int bar_target_height_;    // May be left as -1, meaning "use default".
 
   DISALLOW_COPY_AND_ASSIGN(InfoBar);
 };

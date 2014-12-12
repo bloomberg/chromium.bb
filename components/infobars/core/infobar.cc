@@ -20,10 +20,10 @@ InfoBar::InfoBar(scoped_ptr<InfoBarDelegate> delegate)
       container_(NULL),
       animation_(this),
       arrow_height_(0),
-      arrow_target_height_(kDefaultArrowTargetHeight),
+      arrow_target_height_(0),
       arrow_half_width_(0),
       bar_height_(0),
-      bar_target_height_(kDefaultBarTargetHeight) {
+      bar_target_height_(-1) {
   DCHECK(delegate_ != NULL);
   animation_.SetTweenType(gfx::Tween::LINEAR);
   delegate_->set_infobar(this);
@@ -85,7 +85,6 @@ void InfoBar::Hide(bool animate) {
 }
 
 void InfoBar::SetArrowTargetHeight(int height) {
-  DCHECK_LE(height, kMaximumArrowTargetHeight);
   // Once the closing animation starts, we ignore further requests to change the
   // target height.
   if ((arrow_target_height_ != height) && !animation_.IsClosing()) {
@@ -126,36 +125,20 @@ void InfoBar::AnimationEnded(const gfx::Animation* animation) {
 }
 
 void InfoBar::RecalculateHeights(bool force_notify) {
+  // If there's no container delegate, there's no way to compute new element
+  // sizes, so return immediately.  We don't need to worry that this might leave
+  // us with bogus sizes, because if we're ever re-added to a container, it will
+  // call Show(false) while re-adding us, which will compute a correct set of
+  // sizes.
+  if (!container_ || !container_->delegate())
+    return;
+
   int old_arrow_height = arrow_height_;
   int old_bar_height = bar_height_;
 
-  // Find the desired arrow height/half-width.  The arrow area is
-  // |arrow_height_| * |arrow_half_width_|.  When the bar is opening or closing,
-  // scaling each of these with the square root of the animation value causes a
-  // linear animation of the area, which matches the perception of the animation
-  // of the bar portion.
-  double scale_factor = sqrt(animation_.GetCurrentValue());
-  arrow_height_ = static_cast<int>(arrow_target_height_ * scale_factor);
-  if (animation_.is_animating()) {
-    arrow_half_width_ = static_cast<int>(std::min(arrow_target_height_,
-        kMaximumArrowTargetHalfWidth) * scale_factor);
-  } else {
-    // When the infobar is not animating (i.e. fully open), we set the
-    // half-width to be proportionally the same distance between its default and
-    // maximum values as the height is between its.
-    arrow_half_width_ = kDefaultArrowTargetHalfWidth +
-        ((kMaximumArrowTargetHalfWidth - kDefaultArrowTargetHalfWidth) *
-         ((arrow_height_ - kDefaultArrowTargetHeight) /
-          (kMaximumArrowTargetHeight - kDefaultArrowTargetHeight)));
-  }
-  // Add pixels for the stroke, if the arrow is to be visible at all.  Without
-  // this, changing the arrow height from 0 to kSeparatorLineHeight would
-  // produce no visible effect, because the stroke would paint atop the divider
-  // line above the infobar.
-  if (arrow_height_)
-    arrow_height_ += kSeparatorLineHeight;
-
-  bar_height_ = animation_.CurrentValueBetween(0, bar_target_height_);
+  container_->delegate()->ComputeInfoBarElementSizes(
+      animation_, arrow_target_height_, bar_target_height_, &arrow_height_,
+      &arrow_half_width_, &bar_height_);
 
   // Don't re-layout if nothing has changed, e.g. because the animation step was
   // not large enough to actually change the heights by at least a pixel.
@@ -164,7 +147,7 @@ void InfoBar::RecalculateHeights(bool force_notify) {
   if (heights_differ)
     PlatformSpecificOnHeightsRecalculated();
 
-  if (container_ && (heights_differ || force_notify))
+  if (heights_differ || force_notify)
     container_->OnInfoBarStateChanged(animation_.is_animating());
 }
 

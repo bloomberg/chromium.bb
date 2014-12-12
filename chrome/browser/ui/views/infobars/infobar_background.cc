@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 
+#include "chrome/browser/ui/infobar_container_delegate.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 #include "components/infobars/core/infobar.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
@@ -32,7 +33,8 @@ void InfoBarBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
       SkGradientShader::CreateLinear(gradient_points, gradient_colors, NULL, 2,
                                      SkShader::kClamp_TileMode));
   SkPaint paint;
-  paint.setStrokeWidth(SkIntToScalar(infobars::InfoBar::kSeparatorLineHeight));
+  paint.setStrokeWidth(
+      SkIntToScalar(InfoBarContainerDelegate::kSeparatorLineHeight));
   paint.setStyle(SkPaint::kFill_Style);
   paint.setStrokeCap(SkPaint::kRound_Cap);
   paint.setShader(gradient_shader.get());
@@ -54,7 +56,8 @@ void InfoBarBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
 
   // Now draw the separator at the bottom.
   canvas->FillRect(
-      gfx::Rect(0, view->height() - infobars::InfoBar::kSeparatorLineHeight,
-                view->width(), infobars::InfoBar::kSeparatorLineHeight),
+      gfx::Rect(0,
+                view->height() - InfoBarContainerDelegate::kSeparatorLineHeight,
+                view->width(), InfoBarContainerDelegate::kSeparatorLineHeight),
       separator_color_);
 }

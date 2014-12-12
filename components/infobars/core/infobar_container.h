@@ -12,6 +12,10 @@
 #include "components/infobars/core/infobar_manager.h"
 #include "third_party/skia/include/core/SkColor.h"
 
+namespace gfx {
+class SlideAnimation;
+}
+
 namespace infobars {
 
 class InfoBar;
@@ -38,6 +42,24 @@ class InfoBarContainer : public InfoBarManager::Observer {
     // drawn, and if so, at what |x| coordinate.  |x| may be NULL.
     virtual bool DrawInfoBarArrows(int* x) const = 0;
 
+    // Computes the target arrow height for infobar number |index|, given its
+    // animation.
+    virtual int ArrowTargetHeightForInfoBar(
+        size_t index,
+        const gfx::SlideAnimation& animation) const = 0;
+
+    // Computes the sizes of the infobar arrow (height and half width) and bar
+    // (height) given the infobar's animation and its target element heights.
+    // |bar_target_height| may be -1, which means "use the default bar target
+    // height".
+    virtual void ComputeInfoBarElementSizes(
+        const gfx::SlideAnimation& animation,
+        int arrow_target_height,
+        int bar_target_height,
+        int* arrow_height,
+        int* arrow_half_width,
+        int* bar_height) const = 0;
+
    protected:
     virtual ~Delegate();
   };
@@ -56,16 +78,12 @@ class InfoBarContainer : public InfoBarManager::Observer {
   // (including overlap).
   int GetVerticalOverlap(int* total_height) const;
 
-  // Called by the delegate when the distance between what the top infobar's
-  // "unspoofable" arrow would point to and the top infobar itself changes.
-  // This enables the top infobar to show a longer arrow (e.g. because of a
-  // visible bookmark bar) or shorter (e.g. due to being in a popup window) if
-  // desired.
+  // Triggers a recalculation of all infobar arrow heights.
   //
   // IMPORTANT: This MUST NOT result in a call back to
   // Delegate::InfoBarContainerStateChanged() unless it causes an actual
   // change, lest we infinitely recurse.
-  void SetMaxTopArrowHeight(int height);
+  void UpdateInfoBarArrowTargetHeights();
 
   // Called when a contained infobar has animated or by some other means changed
   // its height, or when it stops animating.  The container is expected to do
@@ -109,24 +127,18 @@ class InfoBarContainer : public InfoBarManager::Observer {
 
   // Adds |infobar| to this container before the existing infobar at position
   // |position| and calls Show() on it.  |animate| is passed along to
-  // infobar->Show().  Depending on the value of |callback_status|, this calls
-  // infobar->set_container(this) either before or after the call to Show() so
-  // that OnInfoBarStateChanged() either will or won't be called as a result.
-  enum CallbackStatus { NO_CALLBACK, WANT_CALLBACK };
-  void AddInfoBar(InfoBar* infobar,
-                  size_t position,
-                  bool animate,
-                  CallbackStatus callback_status);
-
-  void UpdateInfoBarArrowTargetHeights();
-  int ArrowTargetHeightForInfoBar(size_t infobar_index) const;
+  // infobar->Show().
+  void AddInfoBar(InfoBar* infobar, size_t position, bool animate);
 
   Delegate* delegate_;
   InfoBarManager* infobar_manager_;
   InfoBars infobars_;
 
-  // Calculated in SetMaxTopArrowHeight().
-  int top_arrow_target_height_;
+  // Normally false.  When true, OnInfoBarStateChanged() becomes a no-op.  We
+  // use this to ensure that ChangeInfoBarManager() only executes the
+  // functionality in OnInfoBarStateChanged() once, to minimize unnecessary
+  // layout and painting.
+  bool ignore_infobar_state_changed_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarContainer);
 };

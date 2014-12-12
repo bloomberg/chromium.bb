@@ -154,7 +154,7 @@
 }
 
 - (void)setMaxTopArrowHeight:(NSInteger)height {
-  containerCocoa_->SetMaxTopArrowHeight(height);
+  containerCocoa_->SetMaxTopArrowHeight(height, containerCocoa_.get());
 }
 
 - (CGFloat)heightOfInfoBars {
