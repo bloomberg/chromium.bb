@@ -74,7 +74,10 @@ void NotificationMessageFilter::OnCheckNotificationPermission(
 }
 
 void NotificationMessageFilter::OnShowPlatformNotification(
-    int notification_id, const ShowDesktopNotificationHostMsgParams& params) {
+    int notification_id,
+    const GURL& origin,
+    const SkBitmap& icon,
+    const PlatformNotificationData& notification_data) {
   scoped_ptr<DesktopNotificationDelegate> delegate(
       new PageNotificationDelegate(process_id_, notification_id));
 
@@ -82,11 +85,13 @@ void NotificationMessageFilter::OnShowPlatformNotification(
       GetContentClient()->browser()->GetPlatformNotificationService();
   DCHECK(service);
 
-  // TODO(peter): Verify that permission has been granted for params.origin.
+  // TODO(peter): Verify that permission has been granted for |origin|.
 
   base::Closure close_closure;
   service->DisplayNotification(browser_context_,
-                               params,
+                               origin,
+                               icon,
+                               notification_data,
                                delegate.Pass(),
                                process_id_,
                                &close_closure);
@@ -98,18 +103,22 @@ void NotificationMessageFilter::OnShowPlatformNotification(
 void NotificationMessageFilter::OnShowPersistentNotification(
     int request_id,
     int64 service_worker_registration_id,
-    const ShowDesktopNotificationHostMsgParams& params) {
+    const GURL& origin,
+    const SkBitmap& icon,
+    const PlatformNotificationData& notification_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   PlatformNotificationService* service =
       GetContentClient()->browser()->GetPlatformNotificationService();
   DCHECK(service);
 
-  // TODO(peter): Verify that permission has been granted for params.origin.
+  // TODO(peter): Verify that permission has been granted for |origin|.
 
   service->DisplayPersistentNotification(browser_context_,
                                          service_worker_registration_id,
-                                         params,
+                                         origin,
+                                         icon,
+                                         notification_data,
                                          process_id_);
 
   Send(new PlatformNotificationMsg_DidShowPersistent(request_id));

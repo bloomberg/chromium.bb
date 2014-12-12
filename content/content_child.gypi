@@ -105,6 +105,8 @@
       'child/mojo/mojo_application.h',
       'child/multipart_response_delegate.cc',
       'child/multipart_response_delegate.h',
+      'child/notifications/notification_data_conversions.cc',
+      'child/notifications/notification_data_conversions.h',
       'child/notifications/notification_dispatcher.cc',
       'child/notifications/notification_dispatcher.h',
       'child/notifications/notification_image_loader.cc',

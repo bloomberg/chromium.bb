@@ -35,11 +35,11 @@ struct WebCircularGeofencingRegion;
 namespace content {
 
 class EmbeddedWorkerRegistry;
+struct PlatformNotificationData;
 class ServiceWorkerContextCore;
 class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
 class ServiceWorkerVersionInfo;
-struct ShowDesktopNotificationHostMsgParams;
 
 // This class corresponds to a specific version of a ServiceWorker
 // script for a given pattern. When a script is upgraded, there may be
@@ -208,7 +208,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void DispatchNotificationClickEvent(
       const StatusCallback& callback,
       const std::string& notification_id,
-      const ShowDesktopNotificationHostMsgParams& notification_data);
+      const PlatformNotificationData& notification_data);
 
   // Sends push event to the associated embedded worker and asynchronously calls
   // |callback| when it errors out or it gets a response from the worker to

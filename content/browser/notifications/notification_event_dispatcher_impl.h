@@ -22,7 +22,7 @@ class NotificationEventDispatcherImpl : public NotificationEventDispatcher {
       const GURL& origin,
       int64 service_worker_registration_id,
       const std::string& notification_id,
-      const ShowDesktopNotificationHostMsgParams& notification_data,
+      const PlatformNotificationData& notification_data,
       const NotificationClickDispatchCompleteCallback&
           dispatch_complete_callback) override;
 

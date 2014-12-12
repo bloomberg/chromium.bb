@@ -15,7 +15,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_notification_delegate.h"
-#include "content/public/common/show_desktop_notification_params.h"
+#include "content/public/common/platform_notification_data.h"
 #include "ui/message_center/notifier_settings.h"
 
 #if defined(ENABLE_EXTENSIONS)
@@ -96,7 +96,9 @@ PlatformNotificationServiceImpl::CheckPermission(
 
 void PlatformNotificationServiceImpl::DisplayNotification(
     content::BrowserContext* browser_context,
-    const content::ShowDesktopNotificationHostMsgParams& params,
+    const GURL& origin,
+    const SkBitmap& icon,
+    const content::PlatformNotificationData& notification_data,
     scoped_ptr<content::DesktopNotificationDelegate> delegate,
     int render_process_id,
     base::Closure* cancel_callback) {
@@ -107,15 +109,15 @@ void PlatformNotificationServiceImpl::DisplayNotification(
 
   NotificationObjectProxy* proxy = new NotificationObjectProxy(delegate.Pass());
   base::string16 display_source = DisplayNameForOriginInProcessId(
-      profile, params.origin, render_process_id);
+      profile, origin, render_process_id);
 
   // TODO(peter): Icons for Web Notifications are currently always requested for
   // 1x scale, whereas the displays on which they can be displayed can have a
   // different pixel density. Be smarter about this when the API gets updated
   // with a way for developers to specify images of different resolutions.
-  Notification notification(params.origin, params.title, params.body,
-      gfx::Image::CreateFrom1xBitmap(params.icon),
-      display_source, params.replace_id, proxy);
+  Notification notification(origin, notification_data.title,
+      notification_data.body, gfx::Image::CreateFrom1xBitmap(icon),
+      display_source, notification_data.tag, proxy);
 
   // Web Notifications do not timeout.
   notification.set_never_timeout(true);
@@ -128,13 +130,15 @@ void PlatformNotificationServiceImpl::DisplayNotification(
                    NotificationUIManager::GetProfileID(profile));
 
   profile->GetHostContentSettingsMap()->UpdateLastUsage(
-      params.origin, params.origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+      origin, origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }
 
 void PlatformNotificationServiceImpl::DisplayPersistentNotification(
     content::BrowserContext* browser_context,
     int64 service_worker_registration_id,
-    const content::ShowDesktopNotificationHostMsgParams& params,
+    const GURL& origin,
+    const SkBitmap& icon,
+    const content::PlatformNotificationData& notification_data,
     int render_process_id) {
   NOTIMPLEMENTED();
 }

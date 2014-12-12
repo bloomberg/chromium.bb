@@ -19,8 +19,6 @@
 #include "components/content_settings/core/common/permission_request_id.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/desktop_notification_delegate.h"
-#include "content/public/common/show_desktop_notification_params.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/message_center/notifier_settings.h"
 

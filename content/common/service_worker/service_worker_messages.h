@@ -10,7 +10,7 @@
 #include "base/strings/string16.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/common/show_desktop_notification_params.h"
+#include "content/public/common/platform_notification_data.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 #include "third_party/WebKit/public/platform/WebCircularGeofencingRegion.h"
@@ -408,7 +408,7 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_SyncEvent,
 IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_NotificationClickEvent,
                      int /* request_id */,
                      std::string /* notification_id */,
-                     content::ShowDesktopNotificationHostMsgParams)
+                     content::PlatformNotificationData /* notification_data */)
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_PushEvent,
                      int /* request_id */,
                      std::string /* data */)

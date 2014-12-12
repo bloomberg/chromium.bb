@@ -10,7 +10,7 @@
 #include "content/public/browser/desktop_notification_delegate.h"
 #include "content/public/browser/notification_event_dispatcher.h"
 #include "content/public/common/persistent_notification_status.h"
-#include "content/public/common/show_desktop_notification_params.h"
+#include "content/public/common/platform_notification_data.h"
 
 namespace content {
 namespace {
@@ -62,19 +62,21 @@ void LayoutTestNotificationManager::ClearPermissions() {
 
 void LayoutTestNotificationManager::DisplayNotification(
     BrowserContext* browser_context,
-    const ShowDesktopNotificationHostMsgParams& params,
+    const GURL& origin,
+    const SkBitmap& icon,
+    const PlatformNotificationData& notification_data,
     scoped_ptr<DesktopNotificationDelegate> delegate,
     int render_process_id,
     base::Closure* cancel_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::string title = base::UTF16ToUTF8(params.title);
+  std::string title = base::UTF16ToUTF8(notification_data.title);
 
   DCHECK(cancel_callback);
   *cancel_callback = base::Bind(&LayoutTestNotificationManager::Close,
                                 weak_factory_.GetWeakPtr(),
                                 title);
 
-  ReplaceNotificationIfNeeded(params);
+  ReplaceNotificationIfNeeded(notification_data);
 
   page_notifications_[title] = delegate.release();
   page_notifications_[title]->NotificationDisplayed();
@@ -83,16 +85,19 @@ void LayoutTestNotificationManager::DisplayNotification(
 void LayoutTestNotificationManager::DisplayPersistentNotification(
     BrowserContext* browser_context,
     int64 service_worker_registration_id,
-    const ShowDesktopNotificationHostMsgParams& params,
+    const GURL& origin,
+    const SkBitmap& icon,
+    const PlatformNotificationData& notification_data,
     int render_process_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::string title = base::UTF16ToUTF8(params.title);
+  std::string title = base::UTF16ToUTF8(notification_data.title);
 
-  ReplaceNotificationIfNeeded(params);
+  ReplaceNotificationIfNeeded(notification_data);
 
   PersistentNotification notification;
   notification.browser_context = browser_context;
-  notification.notification_data = params;
+  notification.origin = origin;
+  notification.notification_data = notification_data;
   notification.service_worker_registration_id = service_worker_registration_id;
   notification.persistent_id = base::GenerateGUID();
 
@@ -130,7 +135,7 @@ void LayoutTestNotificationManager::SimulateClick(const std::string& title) {
   content::NotificationEventDispatcher::GetInstance()
       ->DispatchNotificationClickEvent(
           notification.browser_context,
-          notification.notification_data.origin,
+          notification.origin,
           notification.service_worker_registration_id,
           notification.persistent_id,
           notification.notification_data,
@@ -147,11 +152,11 @@ void LayoutTestNotificationManager::Close(const std::string& title) {
 }
 
 void LayoutTestNotificationManager::ReplaceNotificationIfNeeded(
-    const ShowDesktopNotificationHostMsgParams& params) {
-  if (!params.replace_id.length())
+    const PlatformNotificationData& notification_data) {
+  if (!notification_data.tag.length())
     return;
 
-  std::string replace_id = base::UTF16ToUTF8(params.replace_id);
+  std::string replace_id = base::UTF16ToUTF8(notification_data.tag);
   const auto& replace_iter = replacements_.find(replace_id);
   if (replace_iter != replacements_.end()) {
     const std::string& previous_title = replace_iter->second;
@@ -174,7 +179,7 @@ void LayoutTestNotificationManager::ReplaceNotificationIfNeeded(
       persistent_notifications_.erase(persistent_notification_iter);
   }
 
-  replacements_[replace_id] = base::UTF16ToUTF8(params.title);
+  replacements_[replace_id] = base::UTF16ToUTF8(notification_data.title);
 }
 
 }  // namespace content

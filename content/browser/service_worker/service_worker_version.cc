@@ -460,7 +460,7 @@ void ServiceWorkerVersion::DispatchSyncEvent(const StatusCallback& callback) {
 void ServiceWorkerVersion::DispatchNotificationClickEvent(
     const StatusCallback& callback,
     const std::string& notification_id,
-    const ShowDesktopNotificationHostMsgParams& notification_data) {
+    const PlatformNotificationData& notification_data) {
   DCHECK_EQ(ACTIVATED, status()) << status();
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(

@@ -11,13 +11,14 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/platform_notification_service.h"
-#include "content/public/common/show_desktop_notification_params.h"
+#include "content/public/common/platform_notification_data.h"
 #include "third_party/WebKit/public/platform/WebNotificationPermission.h"
 #include "url/gurl.h"
 
 namespace content {
 
 class DesktopNotificationDelegate;
+struct PlatformNotificationData;
 
 // Responsible for tracking active notifications and allowed origins for the
 // Web Notification API when running layout tests.
@@ -49,14 +50,18 @@ class LayoutTestNotificationManager : public PlatformNotificationService {
       const GURL& origin,
       int render_process_id) override;
   void DisplayNotification(BrowserContext* browser_context,
-                           const ShowDesktopNotificationHostMsgParams& params,
+                           const GURL& origin,
+                           const SkBitmap& icon,
+                           const PlatformNotificationData& notification_data,
                            scoped_ptr<DesktopNotificationDelegate> delegate,
                            int render_process_id,
                            base::Closure* cancel_callback) override;
   void DisplayPersistentNotification(
       BrowserContext* browser_context,
       int64 service_worker_registration_id,
-      const ShowDesktopNotificationHostMsgParams& params,
+      const GURL& origin,
+      const SkBitmap& icon,
+      const PlatformNotificationData& notification_data,
       int render_process_id) override;
   void ClosePersistentNotification(
       BrowserContext* browser_context,
@@ -70,15 +75,16 @@ class LayoutTestNotificationManager : public PlatformNotificationService {
   // and a previous notification has been displayed using the same tag. All
   // notifications, both page and persistent ones, will be considered for this.
   void ReplaceNotificationIfNeeded(
-      const ShowDesktopNotificationHostMsgParams& params);
+      const PlatformNotificationData& notification_data);
 
   // Structure to represent the information of a persistent notification.
   struct PersistentNotification {
     PersistentNotification();
 
     BrowserContext* browser_context;
+    GURL origin;
     int64 service_worker_registration_id;
-    ShowDesktopNotificationHostMsgParams notification_data;
+    PlatformNotificationData notification_data;
     std::string persistent_id;
   };
 

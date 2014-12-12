@@ -7,8 +7,10 @@
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/desktop_notification_delegate.h"
+#include "content/public/common/platform_notification_data.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {
 
@@ -64,16 +66,17 @@ class PlatformNotificationServiceTest : public testing::Test {
   // The close closure may be specified if so desired.
   MockDesktopNotificationDelegate* CreateSimplePageNotificationWithCloseClosure(
       base::Closure* close_closure) const {
-    content::ShowDesktopNotificationHostMsgParams params;
-    params.origin = GURL("https://example.com/");
-    params.title = base::ASCIIToUTF16("My Notification");
-    params.body = base::ASCIIToUTF16("Hello, world!");
+    content::PlatformNotificationData notification_data;
+    notification_data.title = base::ASCIIToUTF16("My Notification");
+    notification_data.body = base::ASCIIToUTF16("Hello, world!");
 
     MockDesktopNotificationDelegate* delegate =
         new MockDesktopNotificationDelegate();
 
     service()->DisplayNotification(profile(),
-                                   params,
+                                   GURL("https://example.com/"),
+                                   SkBitmap(),
+                                   notification_data,
                                    make_scoped_ptr(delegate),
                                    0 /* render_process_id */,
                                    close_closure);
@@ -122,15 +125,16 @@ TEST_F(PlatformNotificationServiceTest, DisplayPageCloseClosure) {
 }
 
 TEST_F(PlatformNotificationServiceTest, DisplayPageNotificationMatches) {
-  content::ShowDesktopNotificationHostMsgParams params;
-  params.origin = GURL("https://chrome.com/");
-  params.title = base::ASCIIToUTF16("My notification's title");
-  params.body = base::ASCIIToUTF16("Hello, world!");
+  content::PlatformNotificationData notification_data;
+  notification_data.title = base::ASCIIToUTF16("My notification's title");
+  notification_data.body = base::ASCIIToUTF16("Hello, world!");
 
   MockDesktopNotificationDelegate* delegate
       = new MockDesktopNotificationDelegate();
   service()->DisplayNotification(profile(),
-                                 params,
+                                 GURL("https://chrome.com/"),
+                                 SkBitmap(),
+                                 notification_data,
                                  make_scoped_ptr(delegate),
                                  0 /* render_process_id */,
                                  nullptr);

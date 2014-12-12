@@ -16,7 +16,7 @@ class GURL;
 namespace content {
 
 class BrowserContext;
-struct ShowDesktopNotificationHostMsgParams;
+struct PlatformNotificationData;
 
 // This is the dispatcher to be used for firing events related to persistent
 // notifications on a Service Worker. This class is a singleton, the instance of
@@ -37,7 +37,7 @@ class CONTENT_EXPORT NotificationEventDispatcher {
       const GURL& origin,
       int64 service_worker_registration_id,
       const std::string& notification_id,
-      const ShowDesktopNotificationHostMsgParams& notification_data,
+      const PlatformNotificationData& notification_data,
       const NotificationClickDispatchCompleteCallback&
           dispatch_complete_callback) = 0;
 

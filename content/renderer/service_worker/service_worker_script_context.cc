@@ -7,6 +7,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "content/child/notifications/notification_data_conversions.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
@@ -267,25 +268,14 @@ void ServiceWorkerScriptContext::OnSyncEvent(int request_id) {
 void ServiceWorkerScriptContext::OnNotificationClickEvent(
     int request_id,
     const std::string& notification_id,
-    const ShowDesktopNotificationHostMsgParams& notification_data) {
+    const PlatformNotificationData& notification_data) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerScriptContext::OnNotificationClickEvent");
   notification_click_start_timings_[request_id] = base::TimeTicks::Now();
-
-  // TODO(peter): Set the appropriate direction once it's been plumbed through.
-  // TODO(peter): Store the notification's language and icon URL in the struct.
-  blink::WebNotificationData notification(
-      blink::WebString(notification_data.title),
-      blink::WebNotificationData::DirectionLeftToRight,
-      blink::WebString() /* lang */,
-      blink::WebString(notification_data.body),
-      blink::WebString(notification_data.replace_id),
-      blink::WebURL() /* icon_url */);
-
   proxy_->dispatchNotificationClickEvent(
       request_id,
       blink::WebString::fromUTF8(notification_id),
-      notification);
+      ToWebNotificationData(notification_data));
 }
 
 void ServiceWorkerScriptContext::OnPushEvent(int request_id,

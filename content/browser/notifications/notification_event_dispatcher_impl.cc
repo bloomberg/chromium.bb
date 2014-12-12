@@ -11,7 +11,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/show_desktop_notification_params.h"
+#include "content/public/common/platform_notification_data.h"
 
 namespace content {
 namespace {
@@ -59,7 +59,7 @@ void NotificationClickEventFinished(
 // registration was available. Must be called on the IO thread.
 void DispatchNotificationClickEventOnRegistration(
     const std::string& notification_id,
-    const ShowDesktopNotificationHostMsgParams& notification_data,
+    const PlatformNotificationData& notification_data,
     const NotificationClickDispatchCompleteCallback& dispatch_complete_callback,
     ServiceWorkerStatusCode service_worker_status,
     const scoped_refptr<ServiceWorkerRegistration>&
@@ -111,7 +111,7 @@ void FindServiceWorkerRegistration(
     const GURL& origin,
     int64 service_worker_registration_id,
     const std::string& notification_id,
-    const ShowDesktopNotificationHostMsgParams& notification_data,
+    const PlatformNotificationData& notification_data,
     const NotificationClickDispatchCompleteCallback& dispatch_complete_callback,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -146,7 +146,7 @@ void NotificationEventDispatcherImpl::DispatchNotificationClickEvent(
     const GURL& origin,
     int64 service_worker_registration_id,
     const std::string& notification_id,
-    const ShowDesktopNotificationHostMsgParams& notification_data,
+    const PlatformNotificationData& notification_data,
     const NotificationClickDispatchCompleteCallback&
         dispatch_complete_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

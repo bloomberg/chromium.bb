@@ -7,6 +7,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/singleton.h"
+#include "base/strings/string16.h"
 #include "content/public/browser/platform_notification_service.h"
 
 class NotificationUIManager;
@@ -29,17 +30,21 @@ class PlatformNotificationServiceImpl
   blink::WebNotificationPermission CheckPermission(
       content::ResourceContext* resource_context,
       const GURL& origin,
-      int render_process_id) override;;
+      int render_process_id) override;
   void DisplayNotification(
       content::BrowserContext* browser_context,
-      const content::ShowDesktopNotificationHostMsgParams& params,
+      const GURL& origin,
+      const SkBitmap& icon,
+      const content::PlatformNotificationData& notification_data,
       scoped_ptr<content::DesktopNotificationDelegate> delegate,
       int render_process_id,
       base::Closure* cancel_callback) override;
   void DisplayPersistentNotification(
       content::BrowserContext* browser_context,
       int64 service_worker_registration_id,
-      const content::ShowDesktopNotificationHostMsgParams& params,
+      const GURL& origin,
+      const SkBitmap& icon,
+      const content::PlatformNotificationData& notification_data,
       int render_process_id) override;
   void ClosePersistentNotification(
       content::BrowserContext* browser_context,

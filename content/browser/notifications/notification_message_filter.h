@@ -12,12 +12,13 @@
 #include "third_party/WebKit/public/platform/WebNotificationPermission.h"
 
 class GURL;
+class SkBitmap;
 
 namespace content {
 
 class BrowserContext;
+struct PlatformNotificationData;
 class ResourceContext;
-struct ShowDesktopNotificationHostMsgParams;
 
 class NotificationMessageFilter : public BrowserMessageFilter {
  public:
@@ -42,11 +43,16 @@ class NotificationMessageFilter : public BrowserMessageFilter {
   void OnCheckNotificationPermission(
       const GURL& origin, blink::WebNotificationPermission* permission);
   void OnShowPlatformNotification(
-      int notification_id, const ShowDesktopNotificationHostMsgParams& params);
+      int notification_id,
+      const GURL& origin,
+      const SkBitmap& icon,
+      const PlatformNotificationData& notification_data);
   void OnShowPersistentNotification(
       int request_id,
       int64 service_worker_registration_id,
-      const ShowDesktopNotificationHostMsgParams& params);
+      const GURL& origin,
+      const SkBitmap& icon,
+      const PlatformNotificationData& notification_data);
   void OnClosePlatformNotification(int notification_id);
   void OnClosePersistentNotification(
       const std::string& persistent_notification_id);

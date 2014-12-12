@@ -672,6 +672,7 @@
         'child/indexed_db/indexed_db_dispatcher_unittest.cc',
         'child/indexed_db/webidbcursor_impl_unittest.cc',
         'child/multipart_response_delegate_unittest.cc',
+        'child/notifications/notification_data_conversions_unittest.cc',
         'child/npapi/plugin_lib_unittest.cc',
         'child/power_monitor_broadcast_source_unittest.cc',
         'child/resource_dispatcher_unittest.cc',
