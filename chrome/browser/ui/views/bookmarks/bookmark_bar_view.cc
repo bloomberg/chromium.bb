@@ -106,6 +106,12 @@ static const int kNewTabHorizontalPadding = 2;
 // Maximum size of buttons on the bookmark bar.
 static const int kMaxButtonWidth = 150;
 
+// The color gradient start value close to the edge of the divider.
+static const SkColor kEdgeDividerColor = SkColorSetRGB(222, 234, 248);
+
+// The color gradient value for the middle of the divider.
+static const SkColor kMiddleDividerColor = SkColorSetRGB(194, 205, 212);
+
 // Number of pixels the attached bookmark bar overlaps with the toolbar.
 static const int kToolbarAttachedBookmarkBarOverlap = 3;
 
@@ -421,9 +427,12 @@ class BookmarkBarView::ButtonSeparatorView : public views::View {
 
   void OnPaint(gfx::Canvas* canvas) override {
     DetachableToolbarView::PaintVerticalDivider(
-        canvas, kSeparatorStartX, height(), 1,
-        DetachableToolbarView::kEdgeDividerColor,
-        DetachableToolbarView::kMiddleDividerColor,
+        canvas,
+        kSeparatorStartX,
+        height(),
+        1,
+        kEdgeDividerColor,
+        kMiddleDividerColor,
         GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR));
   }
 

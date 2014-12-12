@@ -14,11 +14,6 @@ struct SkRect;
 // from the Chrome frame, such as the BookmarkBarView and the Extension shelf.
 class DetachableToolbarView : public views::AccessiblePaneView {
  public:
-  // The color gradient start value close to the edge of the divider.
-  static const SkColor kEdgeDividerColor;
-  // The color gradient value for the middle of the divider.
-  static const SkColor kMiddleDividerColor;
-
   DetachableToolbarView() {}
   ~DetachableToolbarView() override {}
 
@@ -41,38 +36,12 @@ class DetachableToolbarView : public views::AccessiblePaneView {
       const gfx::Point& background_origin,
       chrome::HostDesktopType host_desktop_type);
 
-  // Calculate the rect for the content area of the bar/shelf. This is only
-  // needed when the bar/shelf is detached from the Chrome frame (otherwise the
-  // content area is the whole area of the bar/shelf. When detached, however,
-  // only a small round rectangle is for drawing our content on. This calculates
-  // how big this area is, where it is located within the shelf and how round
-  // the edges should be.
-  static void CalculateContentArea(double animation_state,
-                                   double horizontal_padding,
-                                   double vertical_padding,
-                                   SkRect* rect,
-                                   double* roundness,
-                                   views::View* view);
-
   // Paint the horizontal border separating the shelf/bar from the toolbar or
   // page content according to |at_top| with |color|.
   static void PaintHorizontalBorder(gfx::Canvas* canvas,
                                     DetachableToolbarView* view,
                                     bool at_top,
                                     SkColor color);
-
-  // Paint the background of the content area (the surface behind the
-  // bookmarks). |rect| is the rectangle to paint the background within.
-  // |roundness| describes the roundness of the corners.
-  static void PaintContentAreaBackground(gfx::Canvas* canvas,
-                                         ui::ThemeProvider* theme_provider,
-                                         const SkRect& rect,
-                                         double roundness);
-  // Paint the border around the content area (when in detached mode).
-  static void PaintContentAreaBorder(gfx::Canvas* canvas,
-                                     ui::ThemeProvider* theme_provider,
-                                     const SkRect& rect,
-                                     double roundness);
 
   // Paint a themed gradient divider at location |x|. |height| is the full
   // height of the view you want to paint the divider into, not the height of

@@ -14,18 +14,6 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/views/window/non_client_view.h"
 
-namespace {
-
-// How round the 'new tab' style bookmarks bar is.
-const int kNewTabBarRoundness = 5;
-
-}  // namespace
-
-const SkColor DetachableToolbarView::kEdgeDividerColor =
-    SkColorSetRGB(222, 234, 248);
-const SkColor DetachableToolbarView::kMiddleDividerColor =
-    SkColorSetRGB(194, 205, 212);
-
 // static
 void DetachableToolbarView::PaintBackgroundAttachedMode(
     gfx::Canvas* canvas,
@@ -36,38 +24,30 @@ void DetachableToolbarView::PaintBackgroundAttachedMode(
   canvas->FillRect(bounds,
                    theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR));
   canvas->TileImageInt(*theme_provider->GetImageSkiaNamed(IDR_THEME_TOOLBAR),
-                       background_origin.x(), background_origin.y(), bounds.x(),
-                       bounds.y(), bounds.width(), bounds.height());
+                       background_origin.x(),
+                       background_origin.y(),
+                       bounds.x(),
+                       bounds.y(),
+                       bounds.width(),
+                       bounds.height());
 
   if (host_desktop_type == chrome::HOST_DESKTOP_TYPE_ASH) {
     // Ash provides additional lightening at the edges of the toolbar.
     gfx::ImageSkia* toolbar_left =
         theme_provider->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_LEFT);
     canvas->TileImageInt(*toolbar_left,
-                         bounds.x(), bounds.y(),
-                         toolbar_left->width(), bounds.height());
+                         bounds.x(),
+                         bounds.y(),
+                         toolbar_left->width(),
+                         bounds.height());
     gfx::ImageSkia* toolbar_right =
         theme_provider->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_RIGHT);
     canvas->TileImageInt(*toolbar_right,
-                         bounds.right() - toolbar_right->width(), bounds.y(),
-                         toolbar_right->width(), bounds.height());
+                         bounds.right() - toolbar_right->width(),
+                         bounds.y(),
+                         toolbar_right->width(),
+                         bounds.height());
   }
-}
-
-// static
-void DetachableToolbarView::CalculateContentArea(double animation_state,
-                                                 double horizontal_padding,
-                                                 double vertical_padding,
-                                                 SkRect* rect,
-                                                 double* roundness,
-                                                 views::View* view) {
-  // The 0.5 is to correct for Skia's "draw on pixel boundaries"ness.
-  rect->set(SkDoubleToScalar(horizontal_padding - 0.5),
-           SkDoubleToScalar(vertical_padding - 0.5),
-           SkDoubleToScalar(view->width() - horizontal_padding - 0.5),
-           SkDoubleToScalar(view->height() - vertical_padding - 0.5));
-
-  *roundness = static_cast<double>(kNewTabBarRoundness) * animation_state;
 }
 
 // static
@@ -78,38 +58,6 @@ void DetachableToolbarView::PaintHorizontalBorder(gfx::Canvas* canvas,
   int thickness = views::NonClientFrameView::kClientEdgeThickness;
   int y = at_top ? 0 : (view->height() - thickness);
   canvas->FillRect(gfx::Rect(0, y, view->width(), thickness), color);
-}
-
-// static
-void DetachableToolbarView::PaintContentAreaBackground(
-    gfx::Canvas* canvas,
-    ui::ThemeProvider* theme_provider,
-    const SkRect& rect,
-    double roundness) {
-  SkPaint paint;
-  paint.setAntiAlias(true);
-  paint.setColor(theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR));
-
-  canvas->sk_canvas()->drawRoundRect(
-      rect, SkDoubleToScalar(roundness), SkDoubleToScalar(roundness), paint);
-}
-
-// static
-void DetachableToolbarView::PaintContentAreaBorder(
-    gfx::Canvas* canvas,
-    ui::ThemeProvider* theme_provider,
-    const SkRect& rect,
-    double roundness) {
-  SkPaint border_paint;
-  border_paint.setColor(
-      theme_provider->GetColor(ThemeProperties::COLOR_NTP_HEADER));
-  border_paint.setStyle(SkPaint::kStroke_Style);
-  border_paint.setAlpha(96);
-  border_paint.setAntiAlias(true);
-
-  canvas->sk_canvas()->drawRoundRect(
-      rect, SkDoubleToScalar(roundness), SkDoubleToScalar(roundness),
-      border_paint);
 }
 
 // static
