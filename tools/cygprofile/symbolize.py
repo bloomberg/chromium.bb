@@ -62,6 +62,10 @@ def ParseLogLines(log_file_lines):
 
   return call_info
 
+def GetStdOutputLines(cmd):
+  p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+  output = p.communicate()[0]
+  return output.split('\n')
 
 def ParseLibSymbols(lib_file):
   """Get output from running nm and greping for text symbols.
@@ -74,9 +78,7 @@ def ParseLibSymbols(lib_file):
     in lib_file and map of addresses to all symbols at a particular address
   """
   cmd = ['nm', '-S', '-n', lib_file]
-  nm_p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-  output = nm_p.communicate()[0]
-  nm_lines = output.split('\n')
+  nm_lines = GetStdOutputLines(cmd)
 
   nm_symbols = []
   for nm_line in nm_lines:
@@ -170,15 +172,66 @@ def FindFunctions(addr, unique_addrs, address_map):
 def AddrToLine(addr, lib_file):
   """Use addr2line to determine line info of a particular address."""
   cmd = ['addr2line', '-f', '-e', lib_file, hex(addr)]
-  p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-  output = (p.communicate()[0]).split('\n')
-  line = output[0]
-  index = 1
-  while index < len(output):
-    line = line + ':' + output[index]
-    index += 1
-  return line
+  output = GetStdOutputLines(cmd)
+  assert(len(output) == 2)
+  return ':'.join(output)
 
+def GetObjectFileNames(obj_dir):
+  """ Gets the list of object files in the output directory. """
+  obj_files = []
+  for (dirpath, _, filenames) in os.walk(obj_dir):
+    for file_name in filenames:
+      if file_name.endswith('.o'):
+        obj_files.append(os.path.join(dirpath, file_name))
+  return obj_files
+
+class WarningCollector(object):
+  def __init__(self, max_warnings):
+    self._warnings = 0
+    self._max_warnings = max_warnings
+
+  def Write(self, message):
+    if self._warnings < self._max_warnings:
+      sys.stderr.write(message + '\n')
+    self._warnings += 1
+
+  def WriteEnd(self, message):
+    if self._warnings > self._max_warnings:
+      sys.stderr.write(str(self._warnings - self._max_warnings) +
+                       ' more warnings for: ' + message + '\n')
+
+def SymbolToSection(obj_dir):
+  """ Gets a mapping from symbol to linker section name by scanning all
+      of the object files. """
+  object_files = GetObjectFileNames(obj_dir)
+  symbol_to_section_map = {}
+  symbol_warnings = WarningCollector(300)
+  for obj_file in object_files:
+    cmd = ['objdump', '-w', '-t', obj_file]
+    symbol_lines = GetStdOutputLines(cmd)
+    for symbol_line in symbol_lines:
+      items = symbol_line.split()
+      # All of the symbol lines we care about are in the form
+      # 0000000000  g    F   .text.foo     000000000 [.hidden] foo
+      # where g (global) might also be l (local) or w (weak).
+      if len(items) > 4 and items[2] == 'F':
+        # This symbol is a function
+        symbol = items[len(items) - 1]
+        if symbol.startswith('.LTHUNK'):
+          continue
+        section = items[3]
+        if ((symbol in symbol_to_section_map) and
+            (symbol_to_section_map[symbol] != section)):
+          symbol_warnings.Write('WARNING: Symbol ' + symbol +
+                                ' in conflicting sections ' + section +
+                                ' and ' + symbol_to_section_map[symbol])
+        elif not section.startswith('.text.'):
+          symbol_warnings.Write('WARNING: Symbol ' + symbol +
+                                ' in incorrect section ' + section)
+        else:
+          symbol_to_section_map[symbol] = section
+  symbol_warnings.WriteEnd('bad sections')
+  return symbol_to_section_map
 
 def main():
   """Write output for profiled run to standard out.
@@ -201,6 +254,8 @@ def main():
   (log_file, lib_file) = args
   output_type = options.output_type
 
+  obj_dir = os.path.abspath(os.path.join(os.path.dirname(lib_file), '../obj'))
+
   log_file_lines = map(string.rstrip, open(log_file).readlines())
   call_info = ParseLogLines(log_file_lines)
   (unique_addrs, address_map) = ParseLibSymbols(lib_file)
@@ -217,23 +272,33 @@ def main():
       print('WARNING: Address ' + hex(addr) + ' (line= ' +
             AddrToLine(addr, lib_file) + ') already profiled.')
 
+  symbol_to_section_map = SymbolToSection(obj_dir)
+
+  unknown_symbol_warnings = WarningCollector(300)
+  symbol_not_found_warnings = WarningCollector(300)
   for call in call_info:
+    addr = call[3]
     if output_type == 'lineize':
-      symbol = AddrToLine(call[3], lib_file)
+      symbol = AddrToLine(addr, lib_file)
       print(str(call[0]) + ' ' + str(call[1]) + '\t' + str(call[2]) + '\t'
             + symbol)
     elif output_type == 'orderfile':
       try:
-        symbols = FindFunctions(call[3], unique_addrs, address_map)
+        symbols = FindFunctions(addr, unique_addrs, address_map)
         for symbol in symbols:
-          print '.text.' + symbol
+          if symbol in symbol_to_section_map:
+            print symbol_to_section_map[symbol]
+          else:
+            unknown_symbol_warnings.Write(
+                'WARNING: No known section for symbol ' + symbol)
         print ''
       except SymbolNotFoundException:
-        sys.stderr.write('WARNING: Did not find function in binary. addr: '
-                      + hex(addr) + '\n')
+        symbol_not_found_warnings.Write(
+            'WARNING: Did not find function in binary. addr: '
+            + hex(addr))
     else:
       try:
-        symbols = FindFunctions(call[3], unique_addrs, address_map)
+        symbols = FindFunctions(addr, unique_addrs, address_map)
         print(str(call[0]) + ' ' + str(call[1]) + '\t' + str(call[2]) + '\t'
               + symbols[0])
         first_symbol = True
@@ -243,8 +308,11 @@ def main():
           else:
             first_symbol = False
       except SymbolNotFoundException:
-        sys.stderr.write('WARNING: Did not find function in binary. addr: '
-                      + hex(addr) + '\n')
+        symbol_not_found_warnings.Write(
+            'WARNING: Did not find function in binary. addr: '
+            + hex(addr))
+  unknown_symbol_warnings.WriteEnd('no known section for symbol')
+  symbol_not_found_warnings.WriteEnd('did not find function')
 
 if __name__ == '__main__':
   main()
