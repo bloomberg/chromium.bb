@@ -273,29 +273,5 @@
         },
       ],
     }],
-    ['test_isolation_mode != "noop"', {
-      'targets': [
-        {
-          'target_name': 'ui_base_unittests_run',
-          'type': 'none',
-          'dependencies': [
-            'ui_base_unittests',
-          ],
-          'includes': [
-            '../../build/isolate.gypi',
-          ],
-          'sources': [
-            'ui_base_unittests.isolate',
-          ],
-          'conditions': [
-            ['use_x11 == 1', {
-              'dependencies': [
-                '../../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
-              ],
-            }],
-          ],
-        },
-      ],
-    }],
   ],
 }

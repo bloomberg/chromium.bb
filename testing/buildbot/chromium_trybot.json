@@ -3,22 +3,12 @@
     "all"
   ],
   "gtest_tests": [
-    {
-      "test": "accessibility_unittests",
-      "swarming": {
-        "can_use_on_swarming_builders": true
-      }
-    },
+    "accessibility_unittests",
     {
       "test": "app_installer_unittests",
       "platforms": ["win"]
     },
-    {
-      "test": "app_list_unittests",
-      "swarming": {
-        "can_use_on_swarming_builders": true
-      }
-    },
+    "app_list_unittests",
     {
       "test": "ash_unittests",
       "chromium_configs": [
@@ -94,23 +84,13 @@
       "platforms": ["linux"]
     },
     "device_unittests",
-    {
-      "test": "events_unittests",
-      "swarming": {
-        "can_use_on_swarming_builders": true
-      }
-    },
+    "events_unittests",
     {
       "test": "extensions_unittests",
       "platforms": ["win", "mac", "linux"]
     },
     "gcm_unit_tests",
-    {
-      "test": "gfx_unittests",
-      "swarming": {
-        "can_use_on_swarming_builders": true
-      }
-    },
+    "gfx_unittests",
     "google_apis_unittests",
     "gpu_unittests",
     {
@@ -136,12 +116,7 @@
     },
     "media_perftests",
     "media_unittests",
-    {
-      "test": "message_center_unittests",
-      "swarming": {
-        "can_use_on_swarming_builders": true
-      }
-    },
+    "message_center_unittests",
     "mojo_common_unittests",
     "mojo_public_bindings_unittests",
     "mojo_public_environment_unittests",
@@ -182,12 +157,7 @@
       }
     },
     "sync_unit_tests",
-    {
-      "test": "ui_base_unittests",
-      "swarming": {
-        "can_use_on_swarming_builders": true
-      }
-    },
+    "ui_base_unittests",
     "ui_touch_selection_unittests",
     {
       "test": "unit_tests",

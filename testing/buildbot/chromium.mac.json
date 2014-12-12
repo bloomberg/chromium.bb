@@ -1,18 +1,8 @@
 {
   "Mac10.6 Tests": {
     "gtest_tests": [
-      {
-        "test": "accessibility_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
-      {
-        "test": "app_list_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "accessibility_unittests",
+      "app_list_unittests",
       {
         "test": "base_unittests",
         "swarming": {
@@ -46,12 +36,7 @@
       "crypto_unittests",
       "extensions_unittests",
       "gcm_unit_tests",
-      {
-        "test": "gfx_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "gfx_unittests",
       "gpu_unittests",
       "google_apis_unittests",
       {
@@ -63,12 +48,7 @@
       "ipc_tests",
       "jingle_unittests",
       "media_unittests",
-      {
-        "test": "message_center_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "message_center_unittests",
       "mojo_common_unittests",
       "mojo_public_bindings_unittests",
       "mojo_public_environment_unittests",
@@ -93,12 +73,7 @@
         }
       },
       "sync_unit_tests",
-      {
-        "test": "ui_base_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "ui_base_unittests",
       {
         "test": "unit_tests",
         "swarming": {
@@ -124,18 +99,8 @@
   },
   "Mac10.8 Tests": {
     "gtest_tests": [
-      {
-        "test": "accessibility_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
-      {
-        "test": "app_list_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "accessibility_unittests",
+      "app_list_unittests",
       {
         "test": "base_unittests",
         "swarming": {
@@ -169,12 +134,7 @@
       "crypto_unittests",
       "extensions_unittests",
       "gcm_unit_tests",
-      {
-        "test": "gfx_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "gfx_unittests",
       "gpu_unittests",
       "google_apis_unittests",
       {
@@ -186,12 +146,7 @@
       "ipc_tests",
       "jingle_unittests",
       "media_unittests",
-      {
-        "test": "message_center_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "message_center_unittests",
       "mojo_common_unittests",
       "mojo_public_bindings_unittests",
       "mojo_public_environment_unittests",
@@ -216,12 +171,7 @@
         }
       },
       "sync_unit_tests",
-      {
-        "test": "ui_base_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "ui_base_unittests",
       {
         "test": "unit_tests",
         "swarming": {
@@ -247,18 +197,8 @@
   },
   "Mac10.9 Tests": {
     "gtest_tests": [
-      {
-        "test": "accessibility_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
-      {
-        "test": "app_list_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "accessibility_unittests",
+      "app_list_unittests",
       {
         "test": "base_unittests",
         "swarming": {
@@ -292,12 +232,7 @@
       "crypto_unittests",
       "extensions_unittests",
       "gcm_unit_tests",
-      {
-        "test": "gfx_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "gfx_unittests",
       "gpu_unittests",
       "google_apis_unittests",
       {
@@ -309,12 +244,7 @@
       "ipc_tests",
       "jingle_unittests",
       "media_unittests",
-      {
-        "test": "message_center_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "message_center_unittests",
       "mojo_common_unittests",
       "mojo_public_bindings_unittests",
       "mojo_public_environment_unittests",
@@ -339,12 +269,7 @@
         }
       },
       "sync_unit_tests",
-      {
-        "test": "ui_base_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "ui_base_unittests",
       {
         "test": "unit_tests",
         "swarming": {
@@ -370,18 +295,8 @@
   },
   "Mac10.9 Tests (dbg)": {
     "gtest_tests": [
-      {
-        "test": "accessibility_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
-      {
-        "test": "app_list_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "accessibility_unittests",
+      "app_list_unittests",
       {
         "test": "base_unittests",
         "swarming": {
@@ -415,12 +330,7 @@
       "crypto_unittests",
       "extensions_unittests",
       "gcm_unit_tests",
-      {
-        "test": "gfx_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "gfx_unittests",
       "gpu_unittests",
       "google_apis_unittests",
       {
@@ -433,12 +343,7 @@
       "ipc_tests",
       "jingle_unittests",
       "media_unittests",
-      {
-        "test": "message_center_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "message_center_unittests",
       "mojo_common_unittests",
       "mojo_public_bindings_unittests",
       "mojo_public_environment_unittests",
@@ -463,12 +368,7 @@
         }
       },
       "sync_unit_tests",
-      {
-        "test": "ui_base_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "ui_base_unittests",
       {
         "test": "unit_tests",
         "swarming": {

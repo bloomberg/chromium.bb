@@ -371,29 +371,5 @@
         },
       ],
     }],  # toolkit_views==1
-    ['test_isolation_mode != "noop"', {
-      'targets': [
-        {
-          'target_name': 'app_list_unittests_run',
-          'type': 'none',
-          'dependencies': [
-            'app_list_unittests',
-          ],
-          'includes': [
-            '../../build/isolate.gypi',
-          ],
-          'sources': [
-            'app_list_unittests.isolate',
-          ],
-          'conditions': [
-            ['use_x11 == 1', {
-              'dependencies': [
-                '../../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
-              ],
-            }],
-          ],
-        },
-      ],
-    }],
   ],
 }
