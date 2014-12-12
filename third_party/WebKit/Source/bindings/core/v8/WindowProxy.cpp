@@ -250,11 +250,6 @@ bool WindowProxy::initialize()
 
 void WindowProxy::createContext()
 {
-    // The documentLoader pointer could be 0 during frame shutdown.
-    // FIXME: Can we remove this check?
-    if (!m_frame->loader().documentLoader())
-        return;
-
     // Create a new environment using an empty template for the shadow
     // object. Reuse the global object if one has been created earlier.
     v8::Handle<v8::ObjectTemplate> globalTemplate = V8Window::getShadowObjectTemplate(m_isolate);
