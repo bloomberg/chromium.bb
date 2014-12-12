@@ -63,17 +63,13 @@ bool CrtcController::SchedulePageFlip(HardwareDisplayPlaneList* plane_list,
                                       const OverlayPlaneList& overlays) {
   DCHECK(!page_flip_pending_);
   DCHECK(!is_disabled_);
-  const OverlayPlane* primary = OverlayPlane::GetPrimaryPlane(overlays);
-  if (!primary) {
-    LOG(ERROR) << "No primary plane to display on crtc " << crtc_;
-    return true;
-  }
-  DCHECK(primary->buffer.get());
+  const OverlayPlane& primary = OverlayPlane::GetPrimaryPlane(overlays);
+  DCHECK(primary.buffer.get());
 
-  if (primary->buffer->GetSize() != gfx::Size(mode_.hdisplay, mode_.vdisplay)) {
+  if (primary.buffer->GetSize() != gfx::Size(mode_.hdisplay, mode_.vdisplay)) {
     LOG(WARNING) << "Trying to pageflip a buffer with the wrong size. Expected "
                  << mode_.hdisplay << "x" << mode_.vdisplay << " got "
-                 << primary->buffer->GetSize().ToString() << " for"
+                 << primary.buffer->GetSize().ToString() << " for"
                  << " crtc=" << crtc_ << " connector=" << connector_;
     return true;
   }
