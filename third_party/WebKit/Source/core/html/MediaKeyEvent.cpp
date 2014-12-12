@@ -28,25 +28,28 @@
 
 namespace blink {
 
-MediaKeyEventInit::MediaKeyEventInit()
-    : systemCode(0)
-{
-}
-
 MediaKeyEvent::MediaKeyEvent()
 {
 }
 
 MediaKeyEvent::MediaKeyEvent(const AtomicString& type, const MediaKeyEventInit& initializer)
     : Event(type, initializer)
-    , m_keySystem(initializer.keySystem)
-    , m_sessionId(initializer.sessionId)
-    , m_initData(initializer.initData)
-    , m_message(initializer.message)
-    , m_defaultURL(initializer.defaultURL)
-    , m_errorCode(initializer.errorCode)
-    , m_systemCode(initializer.systemCode)
+    , m_systemCode(0)
 {
+    if (initializer.hasKeySystem())
+        m_keySystem = initializer.keySystem();
+    if (initializer.hasSessionId())
+        m_sessionId = initializer.sessionId();
+    if (initializer.hasInitData())
+        m_initData = initializer.initData();
+    if (initializer.hasMessage())
+        m_message = initializer.message();
+    if (initializer.hasDefaultURL())
+        m_defaultURL = initializer.defaultURL();
+    if (initializer.hasErrorCode())
+        m_errorCode = initializer.errorCode();
+    if (initializer.hasSystemCode())
+        m_systemCode = initializer.systemCode();
 }
 
 MediaKeyEvent::~MediaKeyEvent()

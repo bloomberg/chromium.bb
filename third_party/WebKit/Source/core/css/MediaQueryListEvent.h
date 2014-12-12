@@ -6,16 +6,10 @@
 #define MediaQueryListEvent_h
 
 #include "core/css/MediaQueryList.h"
+#include "core/css/MediaQueryListEventInit.h"
 #include "core/events/Event.h"
 
 namespace blink {
-
-struct MediaQueryListEventInit : public EventInit {
-    MediaQueryListEventInit() : matches(false) { }
-
-    String media;
-    bool matches;
-};
 
 class MediaQueryListEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
@@ -67,8 +61,13 @@ private:
 
     MediaQueryListEvent(const AtomicString& eventType, const MediaQueryListEventInit& initializer)
         : Event(eventType, initializer)
-        , m_media(initializer.media)
-        , m_matches(initializer.matches) { }
+        , m_matches(false)
+    {
+        if (initializer.hasMedia())
+            m_media = initializer.media();
+        if (initializer.hasMatches())
+            m_matches = initializer.matches();
+    }
 
     // We have m_media/m_matches for JS-created events; we use m_mediaQueryList
     // for events that blink generates.

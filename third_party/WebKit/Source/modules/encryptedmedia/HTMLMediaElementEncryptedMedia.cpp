@@ -309,11 +309,7 @@ static PassRefPtrWillBeRawPtr<Event> createEncryptedEvent(const String& initData
 static PassRefPtrWillBeRawPtr<Event> createWebkitNeedKeyEvent(const unsigned char* initData, unsigned initDataLength)
 {
     MediaKeyEventInit webkitInitializer;
-    webkitInitializer.keySystem = String();
-    webkitInitializer.sessionId = String();
-    webkitInitializer.initData = DOMUint8Array::create(initData, initDataLength);
-    webkitInitializer.bubbles = false;
-    webkitInitializer.cancelable = false;
+    webkitInitializer.setInitData(DOMUint8Array::create(initData, initDataLength));
 
     return MediaKeyEvent::create(EventTypeNames::webkitneedkey, webkitInitializer);
 }
@@ -441,10 +437,8 @@ void HTMLMediaElementEncryptedMedia::keyAdded(HTMLMediaElement& element, const S
     WTF_LOG(Media, "HTMLMediaElementEncryptedMedia::mediaPlayerKeyAdded");
 
     MediaKeyEventInit initializer;
-    initializer.keySystem = keySystem;
-    initializer.sessionId = sessionId;
-    initializer.bubbles = false;
-    initializer.cancelable = false;
+    initializer.setKeySystem(keySystem);
+    initializer.setSessionId(sessionId);
 
     RefPtrWillBeRawPtr<Event> event = MediaKeyEvent::create(EventTypeNames::webkitkeyadded, initializer);
     event->setTarget(&element);
@@ -478,12 +472,10 @@ void HTMLMediaElementEncryptedMedia::keyError(HTMLMediaElement& element, const S
     }
 
     MediaKeyEventInit initializer;
-    initializer.keySystem = keySystem;
-    initializer.sessionId = sessionId;
-    initializer.errorCode = MediaKeyError::create(mediaKeyErrorCode);
-    initializer.systemCode = systemCode;
-    initializer.bubbles = false;
-    initializer.cancelable = false;
+    initializer.setKeySystem(keySystem);
+    initializer.setSessionId(sessionId);
+    initializer.setErrorCode(MediaKeyError::create(mediaKeyErrorCode));
+    initializer.setSystemCode(systemCode);
 
     RefPtrWillBeRawPtr<Event> event = MediaKeyEvent::create(EventTypeNames::webkitkeyerror, initializer);
     event->setTarget(&element);
@@ -495,12 +487,10 @@ void HTMLMediaElementEncryptedMedia::keyMessage(HTMLMediaElement& element, const
     WTF_LOG(Media, "HTMLMediaElementEncryptedMedia::mediaPlayerKeyMessage: sessionID=%s", sessionId.utf8().data());
 
     MediaKeyEventInit initializer;
-    initializer.keySystem = keySystem;
-    initializer.sessionId = sessionId;
-    initializer.message = DOMUint8Array::create(message, messageLength);
-    initializer.defaultURL = KURL(defaultURL);
-    initializer.bubbles = false;
-    initializer.cancelable = false;
+    initializer.setKeySystem(keySystem);
+    initializer.setSessionId(sessionId);
+    initializer.setMessage(DOMUint8Array::create(message, messageLength));
+    initializer.setDefaultURL(KURL(defaultURL));
 
     RefPtrWillBeRawPtr<Event> event = MediaKeyEvent::create(EventTypeNames::webkitkeymessage, initializer);
     event->setTarget(&element);

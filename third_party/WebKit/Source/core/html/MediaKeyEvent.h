@@ -29,20 +29,9 @@
 #include "core/dom/DOMTypedArray.h"
 #include "core/events/Event.h"
 #include "core/html/MediaKeyError.h"
+#include "core/html/MediaKeyEventInit.h"
 
 namespace blink {
-
-struct MediaKeyEventInit : public EventInit {
-    MediaKeyEventInit();
-
-    String keySystem;
-    String sessionId;
-    RefPtr<DOMUint8Array> initData;
-    RefPtr<DOMUint8Array> message;
-    String defaultURL;
-    RefPtrWillBeMember<MediaKeyError> errorCode;
-    unsigned short systemCode;
-};
 
 class MediaKeyEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();

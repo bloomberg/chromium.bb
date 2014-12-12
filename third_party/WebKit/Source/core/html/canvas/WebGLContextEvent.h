@@ -27,14 +27,9 @@
 #define WebGLContextEvent_h
 
 #include "core/events/Event.h"
+#include "core/html/canvas/WebGLContextEventInit.h"
 
 namespace blink {
-
-struct WebGLContextEventInit : public EventInit {
-    WebGLContextEventInit();
-
-    String statusMessage;
-};
 
 class WebGLContextEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
