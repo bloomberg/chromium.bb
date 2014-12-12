@@ -239,7 +239,7 @@ class TouchSelectionControllerImpl::EditingHandleView
     window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
         new TouchHandleWindowTargeter(window, this)));
 
-    // We are owned by the TouchSelectionController.
+    // We are owned by the TouchSelectionControllerImpl.
     set_owned_by_client();
   }
 
@@ -261,7 +261,7 @@ class TouchSelectionControllerImpl::EditingHandleView
   }
 
   void DeleteDelegate() override {
-    // We are owned and deleted by TouchSelectionController.
+    // We are owned and deleted by TouchSelectionControllerImpl.
   }
 
   // Overridden from views::View:

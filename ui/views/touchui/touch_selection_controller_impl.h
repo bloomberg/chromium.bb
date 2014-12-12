@@ -20,10 +20,11 @@ namespace test {
 class WidgetTestInteractive;
 }
 
-// Touch specific implementation of TouchSelectionController. Responsible for
-// displaying selection handles and menu elements relevant in a touch interface.
+// Touch specific implementation of TouchEditingControllerDeprecated.
+// Responsible for displaying selection handles and menu elements relevant in a
+// touch interface.
 class VIEWS_EXPORT TouchSelectionControllerImpl
-    : public ui::TouchSelectionController,
+    : public ui::TouchEditingControllerDeprecated,
       public TouchEditingMenuController,
       public aura::WindowObserver,
       public WidgetObserver,

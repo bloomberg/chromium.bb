@@ -6,10 +6,11 @@
 
 namespace views {
 
-ViewsTouchSelectionControllerFactory::ViewsTouchSelectionControllerFactory() {
+ViewsTouchEditingControllerFactory::ViewsTouchEditingControllerFactory() {
 }
 
-ui::TouchSelectionController* ViewsTouchSelectionControllerFactory::create(
+ui::TouchEditingControllerDeprecated*
+ViewsTouchEditingControllerFactory::Create(
     ui::TouchEditable* client_view) {
   return NULL;
 }

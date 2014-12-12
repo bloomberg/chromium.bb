@@ -9,10 +9,11 @@
 
 namespace views {
 
-ViewsTouchSelectionControllerFactory::ViewsTouchSelectionControllerFactory() {
+ViewsTouchEditingControllerFactory::ViewsTouchEditingControllerFactory() {
 }
 
-ui::TouchSelectionController* ViewsTouchSelectionControllerFactory::create(
+ui::TouchEditingControllerDeprecated*
+ViewsTouchEditingControllerFactory::Create(
     ui::TouchEditable* client_view) {
   if (switches::IsTouchEditingEnabled())
     return new views::TouchSelectionControllerImpl(client_view);

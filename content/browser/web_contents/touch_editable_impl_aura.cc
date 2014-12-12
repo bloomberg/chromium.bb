@@ -79,7 +79,7 @@ void TouchEditableImplAura::StartTouchEditing() {
 
   if (!touch_selection_controller_) {
     touch_selection_controller_.reset(
-        ui::TouchSelectionController::create(this));
+        ui::TouchEditingControllerDeprecated::Create(this));
   }
   if (touch_selection_controller_)
     touch_selection_controller_->SelectionChanged();

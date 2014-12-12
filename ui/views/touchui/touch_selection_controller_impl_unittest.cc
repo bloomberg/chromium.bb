@@ -65,14 +65,14 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
       : textfield_widget_(nullptr),
         widget_(nullptr),
         textfield_(nullptr),
-        views_tsc_factory_(new ViewsTouchSelectionControllerFactory) {
+        views_tsc_factory_(new ViewsTouchEditingControllerFactory) {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableTouchEditing);
-    ui::TouchSelectionControllerFactory::SetInstance(views_tsc_factory_.get());
+    ui::TouchEditingControllerFactory::SetInstance(views_tsc_factory_.get());
   }
 
   ~TouchSelectionControllerImplTest() override {
-    ui::TouchSelectionControllerFactory::SetInstance(nullptr);
+    ui::TouchEditingControllerFactory::SetInstance(nullptr);
   }
 
   void SetUp() override {
@@ -117,7 +117,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
 
  protected:
   static bool IsCursorHandleVisibleFor(
-      ui::TouchSelectionController* controller) {
+      ui::TouchEditingControllerDeprecated* controller) {
     TouchSelectionControllerImpl* impl =
         static_cast<TouchSelectionControllerImpl*>(controller);
     return impl->IsCursorHandleVisible();
@@ -276,7 +276,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
 
   Textfield* textfield_;
   scoped_ptr<TextfieldTestApi> textfield_test_api_;
-  scoped_ptr<ViewsTouchSelectionControllerFactory> views_tsc_factory_;
+  scoped_ptr<ViewsTouchEditingControllerFactory> views_tsc_factory_;
   scoped_ptr<aura::test::TestCursorClient> test_cursor_client_;
 
  private:
@@ -685,8 +685,8 @@ TEST_F(TouchSelectionControllerImplTest,
   CreateWidget();
 
   TestTouchEditable touch_editable(widget_->GetNativeView());
-  scoped_ptr<ui::TouchSelectionController> touch_selection_controller(
-      ui::TouchSelectionController::create(&touch_editable));
+  scoped_ptr<ui::TouchEditingControllerDeprecated> touch_selection_controller(
+      ui::TouchEditingControllerDeprecated::Create(&touch_editable));
 
   touch_editable.set_bounds(gfx::Rect(0, 0, 100, 20));
 

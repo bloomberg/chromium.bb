@@ -152,7 +152,7 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
     return touch_editable->rwhva_;
   }
 
-  ui::TouchSelectionController* GetTouchSelectionController(
+  ui::TouchEditingControllerDeprecated* GetTouchSelectionController(
       TouchEditableImplAura* touch_editable) {
     return touch_editable->touch_selection_controller_.get();
   }

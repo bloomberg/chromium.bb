@@ -41,7 +41,7 @@ namespace views {
 
 class NativeWidget;
 class NonClientFrameView;
-class ViewsTouchSelectionControllerFactory;
+class ViewsTouchEditingControllerFactory;
 class View;
 class Widget;
 namespace internal {
@@ -148,7 +148,7 @@ class VIEWS_EXPORT ViewsDelegate {
   static ViewsDelegate* views_delegate;
 
  private:
-  scoped_ptr<ViewsTouchSelectionControllerFactory> views_tsc_factory_;
+  scoped_ptr<ViewsTouchEditingControllerFactory> views_tsc_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewsDelegate);
 };

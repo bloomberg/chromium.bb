@@ -90,7 +90,7 @@ class CONTENT_EXPORT TouchEditableImplAura
   ui::TextInputType text_input_type_;
 
   RenderWidgetHostViewAura* rwhva_;
-  scoped_ptr<ui::TouchSelectionController> touch_selection_controller_;
+  scoped_ptr<ui::TouchEditingControllerDeprecated> touch_selection_controller_;
 
   // True if |rwhva_| is currently handling a gesture that could result in a
   // change in selection (long press, double tap or triple tap).

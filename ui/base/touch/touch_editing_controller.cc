@@ -7,19 +7,19 @@
 namespace ui {
 
 namespace {
-TouchSelectionControllerFactory* g_shared_instance = NULL;
+TouchEditingControllerFactory* g_shared_instance = NULL;
 }  // namespace
 
-TouchSelectionController* TouchSelectionController::create(
+TouchEditingControllerDeprecated* TouchEditingControllerDeprecated::Create(
     TouchEditable* client_view) {
   if (g_shared_instance)
-    return g_shared_instance->create(client_view);
+    return g_shared_instance->Create(client_view);
   return NULL;
 }
 
 // static
-void TouchSelectionControllerFactory::SetInstance(
-    TouchSelectionControllerFactory* instance) {
+void TouchEditingControllerFactory::SetInstance(
+    TouchEditingControllerFactory* instance) {
   g_shared_instance = instance;
 }
 

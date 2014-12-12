@@ -454,7 +454,7 @@ class VIEWS_EXPORT Textfield : public View,
   gfx::Point last_click_location_;
   gfx::Range double_click_word_;
 
-  scoped_ptr<ui::TouchSelectionController> touch_selection_controller_;
+  scoped_ptr<ui::TouchEditingControllerDeprecated> touch_selection_controller_;
 
   // Used to track touch drag starting location and offset to enable touch
   // scrolling.
