@@ -102,6 +102,7 @@ CL_STATUS_PASSED = BUILDER_STATUS_PASSED
 CL_STATUS_LAUNCHING = 'launching'
 CL_STATUS_WAITING = 'waiting'
 CL_STATUS_READY_TO_SUBMIT = 'ready-to-submit'
+CL_STATUS_FULLY_VERIFIED = 'fully-verified'
 
 # Change sources
 CHANGE_SOURCE_INTERNAL = 'internal'
@@ -580,6 +581,7 @@ CL_ACTION_PRE_CQ_PASSED = 'pre_cq_passed'
 CL_ACTION_PRE_CQ_FAILED = 'pre_cq_failed'
 CL_ACTION_PRE_CQ_LAUNCHING = 'pre_cq_launching'
 CL_ACTION_PRE_CQ_WAITING = 'pre_cq_waiting'
+CL_ACTION_PRE_CQ_FULLY_VERIFIED = 'pre_cq_fully_verified'
 CL_ACTION_PRE_CQ_READY_TO_SUBMIT = 'pre_cq_ready_to_submit'
 
 # Miscellaneous actions
@@ -630,7 +632,8 @@ CL_ACTIONS = [CL_ACTION_PICKED_UP,
               CL_ACTION_IRRELEVANT_TO_SLAVE,
               CL_ACTION_TRYBOT_LAUNCHING,
               CL_ACTION_SPECULATIVE,
-              CL_ACTION_FORGIVEN]
+              CL_ACTION_FORGIVEN,
+              CL_ACTION_PRE_CQ_FULLY_VERIFIED]
 
 # Per-config status strings for a CL.
 CL_PRECQ_CONFIG_STATUS_PENDING = 'pending'

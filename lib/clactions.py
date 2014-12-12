@@ -14,6 +14,8 @@ from chromite.cbuildbot import constants
 # Bidirectional mapping between pre-cq status strings and CL action strings.
 _PRECQ_STATUS_TO_ACTION = {
     constants.CL_STATUS_INFLIGHT: constants.CL_ACTION_PRE_CQ_INFLIGHT,
+    constants.CL_STATUS_FULLY_VERIFIED: \
+        constants.CL_ACTION_PRE_CQ_FULLY_VERIFIED,
     constants.CL_STATUS_PASSED: constants.CL_ACTION_PRE_CQ_PASSED,
     constants.CL_STATUS_FAILED: constants.CL_ACTION_PRE_CQ_FAILED,
     constants.CL_STATUS_LAUNCHING: constants.CL_ACTION_PRE_CQ_LAUNCHING,
