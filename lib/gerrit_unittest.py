@@ -322,6 +322,17 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     """Test case where we submit C implicitly, via submitting D."""
     self.test010SubmitUsingGit('test011', submitC=False)
 
+  @cros_test_lib.NetworkTest()
+  def test012ResetReviewLabels(self):
+    """Tests that we can remove a code review label."""
+    project = self.createProject('test012')
+    helper = self._GetHelper()
+    clone_path = self.cloneProject(project, 'p1')
+    gpatch = self.createPatch(clone_path, project, msg='Init')
+    helper.SetReview(gpatch.gerrit_number, labels={'Code-Review':'+2'})
+    gob_util.ResetReviewLabels(helper.host, gpatch.gerrit_number,
+                               label='Code-Review', notify='OWNER')
+
 
 if __name__ == '__main__':
   cros_test_lib.main()
