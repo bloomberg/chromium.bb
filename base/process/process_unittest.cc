@@ -135,6 +135,34 @@ TEST_F(ProcessTest, Terminate) {
 #endif
 }
 
+MULTIPROCESS_TEST_MAIN(FastSleepyChildProcess) {
+  PlatformThread::Sleep(TestTimeouts::tiny_timeout() * 10);
+  return 0;
+}
+
+TEST_F(ProcessTest, WaitForExit) {
+  Process process(SpawnChild("FastSleepyChildProcess"));
+  ASSERT_TRUE(process.IsValid());
+
+  const int kDummyExitCode = 42;
+  int exit_code = kDummyExitCode;
+  EXPECT_TRUE(process.WaitForExit(&exit_code));
+  EXPECT_EQ(0, exit_code);
+}
+
+TEST_F(ProcessTest, WaitForExitWithTimeout) {
+  Process process(SpawnChild("SleepyChildProcess"));
+  ASSERT_TRUE(process.IsValid());
+
+  const int kDummyExitCode = 42;
+  int exit_code = kDummyExitCode;
+  TimeDelta timeout = TestTimeouts::tiny_timeout();
+  EXPECT_FALSE(process.WaitForExitWithTimeout(timeout, &exit_code));
+  EXPECT_EQ(kDummyExitCode, exit_code);
+
+  process.Terminate(kDummyExitCode);
+}
+
 // Ensure that the priority of a process is restored correctly after
 // backgrounding and restoring.
 // Note: a platform may not be willing or able to lower the priority of

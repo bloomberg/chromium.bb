@@ -89,6 +89,18 @@ void Process::Terminate(int result_code) {
   KillProcess(process_, result_code, false);
 }
 
+bool Process::WaitForExit(int* exit_code) {
+  // TODO(rvargas) crbug.com/417532: Remove this constant.
+  const int kNoTimeout = -1;
+  return WaitForExitWithTimeout(TimeDelta::FromMilliseconds(kNoTimeout),
+                                exit_code);
+}
+
+bool Process::WaitForExitWithTimeout(TimeDelta timeout, int* exit_code) {
+  // TODO(rvargas) crbug.com/417532: Move the implementation here.
+  return base::WaitForExitCodeWithTimeout(Handle(), exit_code, timeout);
+}
+
 #if !defined(OS_LINUX)
 bool Process::IsProcessBackgrounded() const {
   // See SetProcessBackgrounded().
