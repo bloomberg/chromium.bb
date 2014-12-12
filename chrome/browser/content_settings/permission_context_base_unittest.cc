@@ -82,7 +82,7 @@ class TestPermissionContext : public PermissionContextBase {
 // saved for future use.
 TEST_F(PermissionContextBaseTests, TestAskAndGrant) {
   TestPermissionContext permission_context(profile(),
-                      CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
+                      CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   GURL url("http://www.google.com");
   content::WebContentsTester::For(web_contents())->NavigateAndCommit(url);
 
@@ -105,7 +105,7 @@ TEST_F(PermissionContextBaseTests, TestAskAndGrant) {
   ContentSetting setting =
       profile()->GetHostContentSettingsMap()->GetContentSetting(
           url.GetOrigin(), url.GetOrigin(),
-          CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, std::string());
+          CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string());
   EXPECT_EQ(CONTENT_SETTING_ALLOW , setting);
 };
 

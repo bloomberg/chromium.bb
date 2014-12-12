@@ -143,7 +143,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 
   void loadTestPage() {
     ui_test_utils::NavigateToURL(
-        browser(), https_server_->GetURL("files/push_messaging/test.html"));
+        browser(), https_server_->GetURL(GetTestURL()));
   }
 
   bool RunScript(const std::string& script, std::string* result) {
@@ -162,6 +162,11 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
         gcm_service_->push_messaging_service());
   }
 
+ protected:
+  virtual std::string GetTestURL() {
+    return "files/push_messaging/test.html";
+  }
+
  private:
   scoped_ptr<net::SpawnedTestServer> https_server_;
   FakeGCMProfileService* gcm_service_;
@@ -169,7 +174,25 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(PushMessagingBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, RegisterSuccess) {
+class PushMessagingBadManifestBrowserTest : public PushMessagingBrowserTest {
+  std::string GetTestURL() override {
+    return "files/push_messaging/test_bad_manifest.html";
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBadManifestBrowserTest,
+                       RegisterFailsNotVisibleMessages) {
+  std::string script_result;
+
+  ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
+  ASSERT_EQ("ok - service worker registered", script_result);
+  ASSERT_TRUE(RunScript("registerPush()", &script_result));
+  EXPECT_EQ("AbortError - Registration failed - permission denied",
+            script_result);
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
+                       RegisterSuccessNotificationsGranted) {
   std::string script_result;
 
   ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
@@ -188,15 +211,19 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, RegisterSuccess) {
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
-                       RegisterFailureNoPushPermission) {
+                       RegisterSuccessNotificationsPrompt) {
   std::string script_result;
 
   ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
   ASSERT_EQ("ok - service worker registered", script_result);
 
+  InfoBarResponder accepting_responder(browser(), true);
   ASSERT_TRUE(RunScript("registerPush()", &script_result));
-  EXPECT_EQ("AbortError - Registration failed - permission denied",
-            script_result);
+  EXPECT_EQ(std::string(kPushMessagingEndpoint) + " - 1-0", script_result);
+
+  PushMessagingApplicationId app_id(https_server()->GetURL(""), 0L);
+  EXPECT_EQ(app_id.ToString(), gcm_service()->last_registered_app_id());
+  EXPECT_EQ("1234567890", gcm_service()->last_registered_sender_ids()[0]);
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
@@ -215,7 +242,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
             script_result);
 }
 
-IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, RegisterFailureNoSenderId) {
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, RegisterFailureNoManifest) {
   std::string script_result;
 
   ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));

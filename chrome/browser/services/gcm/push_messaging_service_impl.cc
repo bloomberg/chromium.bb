@@ -275,7 +275,7 @@ void PushMessagingServiceImpl::RegisterFromDocument(
   gcm::PushMessagingPermissionContext* permission_context =
       gcm::PushMessagingPermissionContextFactory::GetForProfile(profile_);
 
-  if (permission_context == NULL) {
+  if (permission_context == NULL || !user_visible_only) {
     RegisterEnd(callback,
                 std::string(),
                 content::PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);

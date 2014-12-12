@@ -9,6 +9,7 @@
 
 #include "components/content_settings/core/common/content_settings_types.h"
 
+class PermissionRequestID;
 class Profile;
 
 namespace gcm {
@@ -34,7 +35,22 @@ class PushMessagingPermissionContext : public PermissionContextBase {
                         const BrowserPermissionCallback& callback) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(PushMessagingPermissionContextTest,
+                           DecidePushPermission);
+
+  // Used to decide the permission for push, once the permission for
+  // Notification has been granted/denied.
+  void DecidePushPermission(const PermissionRequestID& id,
+                            const GURL& requesting_origin,
+                            const GURL& embedding_origin,
+                            const BrowserPermissionCallback& callback,
+                            bool notifications_permission_granted);
+
   Profile* profile_;
+
+  // Must be the last member, to ensure that it will be
+  // destroyed first, which will invalidate weak pointers
+  base::WeakPtrFactory<PushMessagingPermissionContext> weak_factory_ui_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingPermissionContext);
 };

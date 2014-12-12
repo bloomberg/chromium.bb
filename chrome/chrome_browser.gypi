@@ -2460,8 +2460,6 @@
       'browser/services/gcm/push_messaging_application_id.h',
       'browser/services/gcm/push_messaging_constants.cc',
       'browser/services/gcm/push_messaging_constants.h',
-      'browser/services/gcm/push_messaging_infobar_delegate.cc',
-      'browser/services/gcm/push_messaging_infobar_delegate.h',
       'browser/services/gcm/push_messaging_permission_context.cc',
       'browser/services/gcm/push_messaging_permission_context.h',
       'browser/services/gcm/push_messaging_permission_context_factory.cc',
