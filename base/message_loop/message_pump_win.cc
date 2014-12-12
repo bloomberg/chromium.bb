@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/process/memory.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/wrapped_window_proc.h"
 
@@ -319,6 +320,11 @@ void MessagePumpForUI::HandleTimerMessage() {
 }
 
 bool MessagePumpForUI::ProcessNextWindowsMessage() {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "440919 <<MessagePumpForUI::ProcessNextWindowsMessage>>"));
+
   // If there are sent messages in the queue then PeekMessage internally
   // dispatches the message and returns false. We return true in this
   // case to ensure that the message loop peeks again instead of calling
