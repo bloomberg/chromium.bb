@@ -318,6 +318,9 @@ def LibcxxDirectoryCmds(bias_arch):
   ]
 
 
+def TargetLibBuildType(is_canonical):
+  return 'build' if is_canonical else 'build_noncanonical'
+
 def TargetLibs(bias_arch, is_canonical):
   def T(component_name):
     return GSDJoin(component_name, bias_arch)
@@ -328,7 +331,7 @@ def TargetLibs(bias_arch, is_canonical):
   libc_libdir = os.path.join('%(output)s', MultilibLibDir(bias_arch))
   libs = {
       T('newlib'): {
-          'type': 'build' if is_canonical else 'work',
+          'type': TargetLibBuildType(is_canonical),
           'dependencies': [ 'newlib_src', 'target_lib_compiler'],
           'commands' : [
               command.SkipForIncrementalCommand(
@@ -355,7 +358,7 @@ def TargetLibs(bias_arch, is_canonical):
           ] + NewlibDirectoryCmds(bias_arch, newlib_triple)
       },
       T('libcxx'): {
-          'type': 'build' if is_canonical else 'work',
+          'type': TargetLibBuildType(is_canonical),
           'dependencies': ['libcxx_src', 'libcxxabi_src', 'llvm_src', 'gcc_src',
                            'target_lib_compiler', T('newlib'),
                            GSDJoin('newlib', MultilibArch(bias_arch)),
@@ -408,7 +411,7 @@ def TargetLibs(bias_arch, is_canonical):
           ] + LibcxxDirectoryCmds(bias_arch)
       },
       T('libstdcxx'): {
-          'type': 'build' if is_canonical else 'work',
+          'type': TargetLibBuildType(is_canonical),
           'dependencies': ['gcc_src', 'gcc_src', 'target_lib_compiler',
                            T('newlib')],
           'commands' : [
@@ -463,7 +466,7 @@ def TargetLibs(bias_arch, is_canonical):
   if IsBCArch(bias_arch):
     libs.update({
       T('libs_support'): {
-          'type': 'build' if is_canonical else 'work',
+          'type': TargetLibBuildType(is_canonical),
           'dependencies': [ T('newlib'), 'target_lib_compiler'],
           'inputs': { 'src': os.path.join(NACL_DIR,
                                           'pnacl', 'support', 'bitcode')},
@@ -514,7 +517,7 @@ def TargetLibs(bias_arch, is_canonical):
       return os.path.join('%(' + TL(lib) + ')s', filename)
     libs.update({
       T('libs_support'): {
-          'type': 'build' if is_canonical else 'work',
+          'type': TargetLibBuildType(is_canonical),
           'dependencies': [ GSDJoin('newlib', MultilibArch(bias_arch)),
                             TL('compiler_rt'), TL('libgcc_eh'),
                             'target_lib_compiler'],
@@ -564,7 +567,7 @@ def TranslatorLibs(arch, is_canonical):
 
   libs = {
       GSDJoin('libs_support_translator', arch): {
-          'type': 'build' if is_canonical else 'work',
+          'type': TargetLibBuildType(is_canonical),
           'output_subdir': translator_lib_dir,
           'dependencies': [ 'newlib_src', 'newlib_le32',
                             'target_lib_compiler'],
@@ -619,7 +622,7 @@ def TranslatorLibs(arch, is_canonical):
           ],
       },
       GSDJoin('compiler_rt', arch): {
-          'type': 'build' if is_canonical else 'work',
+          'type': TargetLibBuildType(is_canonical),
           'output_subdir': translator_lib_dir,
           'dependencies': ['compiler_rt_src', 'target_lib_compiler',
                            'newlib_le32'],
@@ -642,7 +645,7 @@ def TranslatorLibs(arch, is_canonical):
   if not arch.endswith('-nonsfi'):
     libs.update({
       GSDJoin('libgcc_eh', arch): {
-          'type': 'build' if is_canonical else 'work',
+          'type': TargetLibBuildType(is_canonical),
           'output_subdir': translator_lib_dir,
           'dependencies': [ 'gcc_src', 'target_lib_compiler'],
           'inputs': { 'scripts': os.path.join(NACL_DIR, 'pnacl', 'scripts')},
@@ -668,10 +671,10 @@ def TranslatorLibs(arch, is_canonical):
     })
   return libs
 
-def UnsandboxedIRT(arch):
+def UnsandboxedIRT(arch, is_canonical):
   libs = {
       GSDJoin('unsandboxed_irt', arch): {
-          'type': 'build',
+          'type': TargetLibBuildType(is_canonical),
           'output_subdir': os.path.join('translator', arch, 'lib'),
           # This lib #includes
           # arbitrary stuff from native_client/src/{include,untrusted,trusted}
@@ -740,7 +743,7 @@ def SDKLibs(arch, is_canonical):
     raise ValueError('Should not be building SDK libs for', arch)
   libs = {
       GSDJoin('core_sdk_libs', arch): {
-          'type': 'build' if is_canonical else 'work',
+          'type': TargetLibBuildType(is_canonical),
           'dependencies': ['sdk_compiler', 'target_lib_compiler'],
           'inputs': {
               'src_untrusted': os.path.join(NACL_DIR, 'src', 'untrusted'),

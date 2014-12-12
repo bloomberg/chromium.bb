@@ -141,6 +141,11 @@ def GetConsoleLogger():
   return CONSOLE_LOGGER or ROOT_LOGGER
 
 
+def GetAnnotatorLogger():
+  """Returns the annotator logger or the console logger if not initialized."""
+  return ANNOTATOR_LOGGER or GetConsoleLogger()
+
+
 def SetupFileLogHandler(log_file=None):
   if log_file:
     file_handler = logging.FileHandler(log_file, mode='w')
@@ -162,7 +167,7 @@ def WriteAnnotatorLine(text):
 
   Leading and trailing newlines are added.
   """
-  ANNOTATOR_LOGGER.info(text)
+  GetAnnotatorLogger().info(text)
 
 
 def CheckCall(command, stdout=None, logger=None, **kwargs):

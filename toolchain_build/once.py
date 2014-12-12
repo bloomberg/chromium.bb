@@ -99,16 +99,17 @@ class Once(object):
     """
     return 'object/%s_%s.tgz' % (package, output_hash)
 
-  def KeyForBuildSignature(self, build_signature):
+  def KeyForBuildSignature(self, build_signature, extra):
     """Compute the key to store a computation result in the data-store.
 
     Args:
       build_signature: Stable hash of the computation.
+      extra: extra text to be appended to the key.
     Returns:
       Key that this instance of the computation result should be
       stored/retrieved.
     """
-    return 'computed/%s.txt' % build_signature
+    return 'computed/%s%s.txt' % (build_signature, extra if extra else '')
 
   def KeyForLog(self, package, output_hash):
     """Compute the key to store a given log file in the data-store.
@@ -174,7 +175,8 @@ class Once(object):
     if self._print_url is not None:
       self._print_url(cloud_item)
 
-  def WriteResultToCache(self, work_dir, package, build_signature, output):
+  def WriteResultToCache(self, work_dir, package, build_signature, bskey_extra,
+                         output):
     """Cache a computed result by key.
 
     Also prints URLs when appropriate.
@@ -182,6 +184,7 @@ class Once(object):
       work_dir: work directory for the package builder.
       package: Package name (for tgz name).
       build_signature: The input hash of the computation.
+      bskey_extra: Extra text to append to build signature storage key.
       output: A path containing the output of the computation.
     """
     if not self._cache_results:
@@ -225,7 +228,7 @@ class Once(object):
 
       # Upload an entry mapping from computation input to output hash.
       self._storage.PutData(
-          out_hash, self.KeyForBuildSignature(build_signature))
+          out_hash, self.KeyForBuildSignature(build_signature, bskey_extra))
 
       cloud_item = CloudStorageItem(dir_item, log_url)
       self._ProcessCloudItem(package, cloud_item)
@@ -234,7 +237,7 @@ class Once(object):
       raise
 
   def ReadMemoizedResultFromCache(self, work_dir, package,
-                                  build_signature, output):
+                                  build_signature, bskey_extra, output):
     """Read a cached result (if it exists) from the cache.
 
     Also prints URLs when appropriate.
@@ -242,6 +245,7 @@ class Once(object):
       work_dir: Working directory for the build.
       package: Package name (for tgz name).
       build_signature: Build signature of the computation.
+      bskey_extra: Extra text to append to build signature storage key.
       output: Output path.
     Returns:
       Boolean indicating successful retrieval.
@@ -249,12 +253,14 @@ class Once(object):
     # Check if its in the cache.
     if self._use_cached_results:
       out_hash = self._storage.GetData(
-          self.KeyForBuildSignature(build_signature))
+          self.KeyForBuildSignature(build_signature, bskey_extra))
       if out_hash is not None:
         cloud_item = self.WriteOutputFromHash(work_dir, package,
                                               out_hash, output)
         if cloud_item is not None:
           logging.info('Retrieved cached result.')
+          pynacl.log_tools.WriteAnnotatorLine(
+              '@@@STEP_TEXT@(cache hit)@@@')
           self._ProcessCloudItem(package, cloud_item)
           return True
     return False
@@ -268,7 +274,8 @@ class Once(object):
     return self._cached_cloud_items.get(package, None)
 
   def Run(self, package, inputs, output, commands, cmd_options=None,
-          working_dir=None, memoize=True, signature_file=None, subdir=None):
+          working_dir=None, memoize=True, signature_file=None, subdir=None,
+          bskey_extra=None):
     """Run an operation once, possibly hitting cache.
 
     Args:
@@ -281,6 +288,7 @@ class Once(object):
       signature_file: File to write human readable build signatures to or None.
       subdir: If not None, use this directory instead of the output dir as the
               substituter's output path. Must be a subdirectory of output.
+      bskey_extra: Extra text to append to build signature storage key.
     """
     if working_dir is None:
       wdm = pynacl.working_directory.TemporaryWorkingDirectory()
@@ -305,7 +313,7 @@ class Once(object):
       # We're done if it's in the cache.
       if (memoize and self.ReadMemoizedResultFromCache(work_dir, package,
                                                        build_signature,
-                                                       output)):
+                                                       bskey_extra, output)):
         return
 
       if subdir:
@@ -361,7 +369,8 @@ class Once(object):
               (package, path))
 
       if memoize:
-        self.WriteResultToCache(work_dir, package, build_signature, output)
+        self.WriteResultToCache(work_dir, package, build_signature, bskey_extra,
+                                output)
 
   def SystemSummary(self):
     """Gather a string describing intrinsic properties of the current machine.
