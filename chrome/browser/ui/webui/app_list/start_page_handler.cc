@@ -195,14 +195,13 @@ void StartPageHandler::HandleInitialize(const base::ListValue* args) {
   }
 #endif
 
-  if (!app_list::switches::IsExperimentalAppListEnabled()) {
-    // If experimental hotwording is enabled, don't enable hotwording in the
-    // start page, since the hotword extension is taking care of this.
-    bool hotword_enabled = service->HotwordEnabled() &&
-        !HotwordService::IsExperimentalHotwordingEnabled();
+  // If v2 hotwording is enabled, don't tell the start page that the app list is
+  // being shown. V2 hotwording doesn't use the start page for anything.
+  if (!app_list::switches::IsExperimentalAppListEnabled() &&
+      !HotwordService::IsExperimentalHotwordingEnabled()) {
     web_ui()->CallJavascriptFunction(
         "appList.startPage.onAppListShown",
-        base::FundamentalValue(hotword_enabled));
+        base::FundamentalValue(service->HotwordEnabled()));
   }
 }
 
