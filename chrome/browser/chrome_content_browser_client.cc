@@ -1793,7 +1793,8 @@ void ChromeContentBrowserClient::SelectClientCertificate(
       render_process_id, render_frame_id);
   WebContents* tab = WebContents::FromRenderFrameHost(rfh);
   if (!tab) {
-    NOTREACHED();
+    // TODO(davidben): This makes the request hang, but returning no certificate
+    // also breaks. It should abort the request. See https://crbug.com/417092
     return;
   }
 

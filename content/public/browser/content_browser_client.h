@@ -400,7 +400,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       int render_process_id,
       int render_frame_id,
       net::SSLCertRequestInfo* cert_request_info,
-      const base::Callback<void(net::X509Certificate*)>& callback) {}
+      const base::Callback<void(net::X509Certificate*)>& callback);
 
   // Adds a new installable certificate or private key.
   // Typically used to install an X.509 user certificate.

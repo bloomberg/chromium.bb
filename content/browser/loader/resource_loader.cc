@@ -97,8 +97,7 @@ ResourceLoader::ResourceLoader(scoped_ptr<net::URLRequest> request,
 ResourceLoader::~ResourceLoader() {
   if (login_delegate_.get())
     login_delegate_->OnRequestCancelled();
-  if (ssl_client_auth_handler_.get())
-    ssl_client_auth_handler_->OnRequestCancelled();
+  ssl_client_auth_handler_.reset();
 
   // Run ResourceHandler destructor before we tear-down the rest of our state
   // as the ResourceHandler may want to inspect the URLRequest and other state.
@@ -307,14 +306,12 @@ void ResourceLoader::OnCertificateRequested(
     return;
   }
 
-  DCHECK(!ssl_client_auth_handler_.get())
+  DCHECK(!ssl_client_auth_handler_)
       << "OnCertificateRequested called with ssl_client_auth_handler pending";
-  ssl_client_auth_handler_ = new SSLClientAuthHandler(
-      GetRequestInfo()->GetContext()->CreateClientCertStore(),
-      request_.get(),
-      cert_info,
-      base::Bind(&ResourceLoader::ContinueWithCertificate,
-                 weak_ptr_factory_.GetWeakPtr()));
+  ssl_client_auth_handler_.reset(new SSLClientAuthHandler(
+      GetRequestInfo()->GetContext()->CreateClientCertStore(), request_.get(),
+      cert_info, base::Bind(&ResourceLoader::ContinueWithCertificate,
+                            weak_ptr_factory_.GetWeakPtr())));
   ssl_client_auth_handler_->SelectCertificate();
 }
 
@@ -587,10 +584,7 @@ void ResourceLoader::CancelRequestInternal(int error, bool from_renderer) {
     login_delegate_->OnRequestCancelled();
     login_delegate_ = NULL;
   }
-  if (ssl_client_auth_handler_.get()) {
-    ssl_client_auth_handler_->OnRequestCancelled();
-    ssl_client_auth_handler_ = NULL;
-  }
+  ssl_client_auth_handler_.reset();
 
   request_->CancelWithError(error);
 
@@ -857,7 +851,7 @@ void ResourceLoader::RecordHistograms() {
 }
 
 void ResourceLoader::ContinueWithCertificate(net::X509Certificate* cert) {
-  ssl_client_auth_handler_ = NULL;
+  ssl_client_auth_handler_.reset();
   request_->ContinueWithCertificate(cert);
 }
 

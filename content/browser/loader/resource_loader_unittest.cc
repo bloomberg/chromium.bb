@@ -41,10 +41,12 @@ namespace {
 class ClientCertStoreStub : public net::ClientCertStore {
  public:
   ClientCertStoreStub(const net::CertificateList& certs)
-      : response_(certs),
-        request_count_(0) {}
+      : response_(certs), async_(false), request_count_(0) {}
 
   ~ClientCertStoreStub() override {}
+
+  // Configures whether the certificates are returned asynchronously or not.
+  void set_async(bool async) { async_ = async; }
 
   // Returns |cert_authorities| field of the certificate request passed in the
   // most recent call to GetClientCerts().
@@ -68,11 +70,16 @@ class ClientCertStoreStub : public net::ClientCertStore {
     ++request_count_;
     requested_authorities_ = cert_request_info.cert_authorities;
     *selected_certs = response_;
-    callback.Run();
+    if (async_) {
+      base::MessageLoop::current()->PostTask(FROM_HERE, callback);
+    } else {
+      callback.Run();
+    }
   }
 
  private:
   const net::CertificateList response_;
+  bool async_;
   int request_count_;
   std::vector<std::string> requested_authorities_;
 };
@@ -435,6 +442,39 @@ TEST_F(ResourceLoaderTest, ClientCertStoreNull) {
   // client.
   EXPECT_EQ(1, test_client.call_count());
   EXPECT_EQ(net::CertificateList(), test_client.passed_certs());
+}
+
+TEST_F(ResourceLoaderTest, ClientCertStoreAsyncCancel) {
+  // Set up the test client cert store.
+  scoped_ptr<ClientCertStoreStub> test_store(
+      new ClientCertStoreStub(net::CertificateList()));
+  test_store->set_async(true);
+  EXPECT_EQ(0, test_store->request_count());
+
+  // Ownership of the |test_store| is about to be turned over to ResourceLoader.
+  // We need to keep raw pointer copies to access these objects later.
+  ClientCertStoreStub* raw_ptr_to_store = test_store.get();
+  resource_context_.SetClientCertStore(test_store.Pass());
+
+  // Prepare a dummy certificate request.
+  scoped_refptr<net::SSLCertRequestInfo> cert_request_info(
+      new net::SSLCertRequestInfo());
+  std::vector<std::string> dummy_authority(1, "dummy");
+  cert_request_info->cert_authorities = dummy_authority;
+
+  // Everything is set up. Trigger the resource loader certificate request
+  // event.
+  loader_->OnCertificateRequested(raw_ptr_to_request_, cert_request_info.get());
+
+  // Check if the test store was queried against correct |cert_authorities|.
+  EXPECT_EQ(1, raw_ptr_to_store->request_count());
+  EXPECT_EQ(dummy_authority, raw_ptr_to_store->requested_authorities());
+
+  // Cancel the request before the store calls the callback.
+  loader_.reset();
+
+  // Pump the event loop. There shouldn't be a crash when the callback is run.
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ResourceLoaderTest, ResumeCancelledRequest) {
