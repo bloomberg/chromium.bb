@@ -173,8 +173,6 @@ WebNotificationPermission NotificationManager::checkPermission(
 bool NotificationManager::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NotificationManager, message)
-    IPC_MESSAGE_HANDLER(PlatformNotificationMsg_DidShowPersistent,
-                        OnDidShowPersistent)
     IPC_MESSAGE_HANDLER(PlatformNotificationMsg_DidShow, OnDidShow);
     IPC_MESSAGE_HANDLER(PlatformNotificationMsg_DidClose, OnDidClose);
     IPC_MESSAGE_HANDLER(PlatformNotificationMsg_DidClick, OnDidClick);
@@ -182,18 +180,6 @@ bool NotificationManager::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 
   return handled;
-}
-
-void NotificationManager::OnDidShowPersistent(int request_id) {
-  blink::WebNotificationShowCallbacks* callbacks =
-      persistent_notification_requests_.Lookup(request_id);
-  DCHECK(callbacks);
-
-  // There currently isn't a case in which the promise would be rejected per
-  // our implementation, so always resolve it here.
-  callbacks->onSuccess();
-
-  persistent_notification_requests_.Remove(request_id);
 }
 
 void NotificationManager::OnDidShow(int notification_id) {
@@ -268,6 +254,10 @@ void NotificationManager::DisplayPersistentNotification(
     int64 service_worker_registration_id,
     int request_id,
     scoped_refptr<NotificationImageLoader> image_loader) {
+  blink::WebNotificationShowCallbacks* callbacks =
+      persistent_notification_requests_.Lookup(request_id);
+  DCHECK(callbacks);
+
   SkBitmap icon;
   if (image_loader) {
     pending_persistent_notifications_.erase(image_loader);
@@ -276,11 +266,16 @@ void NotificationManager::DisplayPersistentNotification(
 
   thread_safe_sender_->Send(
       new PlatformNotificationHostMsg_ShowPersistent(
-          request_id,
           service_worker_registration_id,
           GURL(origin.string()),
           icon,
           ToPlatformNotificationData(notification_data)));
+
+  // There currently isn't a case in which the promise would be rejected per
+  // our implementation, so always resolve it here.
+  callbacks->onSuccess();
+
+  persistent_notification_requests_.Remove(request_id);
 }
 
 bool NotificationManager::RemovePendingPageNotification(

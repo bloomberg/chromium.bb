@@ -101,7 +101,6 @@ void NotificationMessageFilter::OnShowPlatformNotification(
 }
 
 void NotificationMessageFilter::OnShowPersistentNotification(
-    int request_id,
     int64 service_worker_registration_id,
     const GURL& origin,
     const SkBitmap& icon,
@@ -120,8 +119,6 @@ void NotificationMessageFilter::OnShowPersistentNotification(
                                          icon,
                                          notification_data,
                                          process_id_);
-
-  Send(new PlatformNotificationMsg_DidShowPersistent(request_id));
 }
 
 void NotificationMessageFilter::OnClosePlatformNotification(

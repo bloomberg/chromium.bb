@@ -30,11 +30,6 @@ IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the browser to the renderer.
 
-// Informs the renderer that the browser has displayed the persistent
-// notification.
-IPC_MESSAGE_CONTROL1(PlatformNotificationMsg_DidShowPersistent,
-                     int /* request_id */)
-
 // Informs the renderer that the browser has displayed the notification.
 IPC_MESSAGE_CONTROL1(PlatformNotificationMsg_DidShow,
                      int /* notification_id */)
@@ -55,8 +50,7 @@ IPC_MESSAGE_CONTROL4(PlatformNotificationHostMsg_Show,
                      SkBitmap /* icon */,
                      content::PlatformNotificationData /* notification_data */)
 
-IPC_MESSAGE_CONTROL5(PlatformNotificationHostMsg_ShowPersistent,
-                     int /* request_id */,
+IPC_MESSAGE_CONTROL4(PlatformNotificationHostMsg_ShowPersistent,
                      int64 /* service_worker_provider_id */,
                      GURL /* origin */,
                      SkBitmap /* icon */,

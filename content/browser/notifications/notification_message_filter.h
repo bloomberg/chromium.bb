@@ -48,7 +48,6 @@ class NotificationMessageFilter : public BrowserMessageFilter {
       const SkBitmap& icon,
       const PlatformNotificationData& notification_data);
   void OnShowPersistentNotification(
-      int request_id,
       int64 service_worker_registration_id,
       const GURL& origin,
       const SkBitmap& icon,
