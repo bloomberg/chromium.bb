@@ -10,7 +10,6 @@
 #include "base/sys_info.h"
 #include "base/time/time.h"
 #include "ui/display/chromeos/display_util.h"
-#include "ui/display/chromeos/update_display_configuration_task.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
@@ -54,347 +53,6 @@ bool DisplayConfigurator::TestApi::TriggerConfigureTimeout() {
     return false;
   }
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// DisplayConfigurator::DisplayLayoutManagerImpl implementation
-
-class DisplayConfigurator::DisplayLayoutManagerImpl
-    : public DisplayLayoutManager {
- public:
-  DisplayLayoutManagerImpl(DisplayConfigurator* configurator);
-  ~DisplayLayoutManagerImpl() override;
-
-  // DisplayConfigurator::DisplayLayoutManager:
-  SoftwareMirroringController* GetSoftwareMirroringController() const override;
-  StateController* GetStateController() const override;
-  MultipleDisplayState GetDisplayState() const override;
-  chromeos::DisplayPowerState GetPowerState() const override;
-  std::vector<DisplayState> ParseDisplays(
-      const std::vector<DisplaySnapshot*>& displays) const override;
-  bool GetDisplayLayout(const std::vector<DisplayState>& displays,
-                        MultipleDisplayState new_display_state,
-                        chromeos::DisplayPowerState new_power_state,
-                        std::vector<DisplayConfigureRequest>* requests,
-                        gfx::Size* framebuffer_size) const override;
-
- private:
-  // Helper method for ParseDisplays() that initializes the passed-in
-  // displays' |mirror_mode| fields by looking for a mode in |internal_display|
-  // and |external_display| having the same resolution. Returns false if a
-  // shared mode wasn't found or created.
-  //
-  // |try_panel_fitting| allows creating a panel-fitting mode for
-  // |internal_display| instead of only searching for a matching mode (note that
-  // it may lead to a crash if |internal_display| is not capable of panel
-  // fitting).
-  //
-  // |preserve_aspect| limits the search/creation only to the modes having the
-  // native aspect ratio of |external_display|.
-  bool FindMirrorMode(DisplayState* internal_display,
-                      DisplayState* external_display,
-                      bool try_panel_fitting,
-                      bool preserve_aspect) const;
-
-  DisplayConfigurator* configurator_;  // Not owned.
-
-  DISALLOW_COPY_AND_ASSIGN(DisplayLayoutManagerImpl);
-};
-
-DisplayConfigurator::DisplayLayoutManagerImpl::DisplayLayoutManagerImpl(
-    DisplayConfigurator* configurator)
-    : configurator_(configurator) {
-}
-
-DisplayConfigurator::DisplayLayoutManagerImpl::~DisplayLayoutManagerImpl() {
-}
-
-DisplayConfigurator::SoftwareMirroringController*
-DisplayConfigurator::DisplayLayoutManagerImpl::GetSoftwareMirroringController()
-    const {
-  return configurator_->mirroring_controller_;
-}
-
-DisplayConfigurator::StateController*
-DisplayConfigurator::DisplayLayoutManagerImpl::GetStateController() const {
-  return configurator_->state_controller_;
-}
-
-MultipleDisplayState
-DisplayConfigurator::DisplayLayoutManagerImpl::GetDisplayState() const {
-  return configurator_->current_display_state_;
-}
-
-chromeos::DisplayPowerState
-DisplayConfigurator::DisplayLayoutManagerImpl::GetPowerState() const {
-  return configurator_->current_power_state_;
-}
-
-std::vector<DisplayConfigurator::DisplayState>
-DisplayConfigurator::DisplayLayoutManagerImpl::ParseDisplays(
-    const std::vector<DisplaySnapshot*>& snapshots) const {
-  std::vector<DisplayState> cached_displays;
-  for (auto snapshot : snapshots) {
-    DisplayState display_state;
-    display_state.display = snapshot;
-    cached_displays.push_back(display_state);
-  }
-
-  // Set |selected_mode| fields.
-  for (size_t i = 0; i < cached_displays.size(); ++i) {
-    DisplayState* display_state = &cached_displays[i];
-    gfx::Size size;
-    if (GetStateController() &&
-        GetStateController()->GetResolutionForDisplayId(
-            display_state->display->display_id(), &size)) {
-      display_state->selected_mode =
-          FindDisplayModeMatchingSize(*display_state->display, size);
-    }
-
-    // Fall back to native mode.
-    if (!display_state->selected_mode)
-      display_state->selected_mode = display_state->display->native_mode();
-  }
-
-  // Set |mirror_mode| fields.
-  if (cached_displays.size() == 2) {
-    bool one_is_internal =
-        cached_displays[0].display->type() == DISPLAY_CONNECTION_TYPE_INTERNAL;
-    bool two_is_internal =
-        cached_displays[1].display->type() == DISPLAY_CONNECTION_TYPE_INTERNAL;
-    int internal_displays =
-        (one_is_internal ? 1 : 0) + (two_is_internal ? 1 : 0);
-    DCHECK_LT(internal_displays, 2);
-    LOG_IF(WARNING, internal_displays >= 2)
-        << "At least two internal displays detected.";
-
-    bool can_mirror = false;
-    for (int attempt = 0; !can_mirror && attempt < 2; ++attempt) {
-      // Try preserving external display's aspect ratio on the first attempt.
-      // If that fails, fall back to the highest matching resolution.
-      bool preserve_aspect = attempt == 0;
-
-      if (internal_displays == 1) {
-        can_mirror = FindMirrorMode(&cached_displays[one_is_internal ? 0 : 1],
-                                    &cached_displays[one_is_internal ? 1 : 0],
-                                    configurator_->is_panel_fitting_enabled_,
-                                    preserve_aspect);
-      } else {  // if (internal_displays == 0)
-        // No panel fitting for external displays, so fall back to exact match.
-        can_mirror = FindMirrorMode(&cached_displays[0], &cached_displays[1],
-                                    false, preserve_aspect);
-        if (!can_mirror && preserve_aspect) {
-          // FindMirrorMode() will try to preserve aspect ratio of what it
-          // thinks is external display, so if it didn't succeed with one, maybe
-          // it will succeed with the other.  This way we will have the correct
-          // aspect ratio on at least one of them.
-          can_mirror = FindMirrorMode(&cached_displays[1], &cached_displays[0],
-                                      false, preserve_aspect);
-        }
-      }
-    }
-  }
-
-  return cached_displays;
-}
-
-bool DisplayConfigurator::DisplayLayoutManagerImpl::GetDisplayLayout(
-    const std::vector<DisplayState>& displays,
-    MultipleDisplayState new_display_state,
-    chromeos::DisplayPowerState new_power_state,
-    std::vector<DisplayConfigureRequest>* requests,
-    gfx::Size* framebuffer_size) const {
-  std::vector<bool> display_power;
-  int num_on_displays =
-      GetDisplayPower(displays, new_power_state, &display_power);
-  VLOG(1) << "EnterState: display="
-          << MultipleDisplayStateToString(new_display_state)
-          << " power=" << DisplayPowerStateToString(new_power_state);
-
-  // Framebuffer dimensions.
-  gfx::Size size;
-
-  for (size_t i = 0; i < displays.size(); ++i) {
-    requests->push_back(DisplayConfigureRequest(
-        displays[i].display, displays[i].display->current_mode(),
-        gfx::Point()));
-  }
-
-  switch (new_display_state) {
-    case MULTIPLE_DISPLAY_STATE_INVALID:
-      NOTREACHED() << "Ignoring request to enter invalid state with "
-                   << displays.size() << " connected display(s)";
-      return false;
-    case MULTIPLE_DISPLAY_STATE_HEADLESS:
-      if (displays.size() != 0) {
-        LOG(WARNING) << "Ignoring request to enter headless mode with "
-                     << displays.size() << " connected display(s)";
-        return false;
-      }
-      break;
-    case MULTIPLE_DISPLAY_STATE_SINGLE: {
-      // If there are multiple displays connected, only one should be turned on.
-      if (displays.size() != 1 && num_on_displays != 1) {
-        LOG(WARNING) << "Ignoring request to enter single mode with "
-                     << displays.size() << " connected displays and "
-                     << num_on_displays << " turned on";
-        return false;
-      }
-
-      for (size_t i = 0; i < displays.size(); ++i) {
-        const DisplayConfigurator::DisplayState* state = &displays[i];
-        (*requests)[i].mode = display_power[i] ? state->selected_mode : NULL;
-
-        if (display_power[i] || displays.size() == 1) {
-          const DisplayMode* mode_info = state->selected_mode;
-          if (!mode_info) {
-            LOG(WARNING) << "No selected mode when configuring display: "
-                         << state->display->ToString();
-            return false;
-          }
-          if (mode_info->size() == gfx::Size(1024, 768)) {
-            VLOG(1) << "Potentially misdetecting display(1024x768):"
-                    << " displays size=" << displays.size()
-                    << ", num_on_displays=" << num_on_displays
-                    << ", current size:" << size.width() << "x" << size.height()
-                    << ", i=" << i << ", display=" << state->display->ToString()
-                    << ", display_mode=" << mode_info->ToString();
-          }
-          size = mode_info->size();
-        }
-      }
-      break;
-    }
-    case MULTIPLE_DISPLAY_STATE_DUAL_MIRROR: {
-      if (displays.size() != 2 ||
-          (num_on_displays != 0 && num_on_displays != 2)) {
-        LOG(WARNING) << "Ignoring request to enter mirrored mode with "
-                     << displays.size() << " connected display(s) and "
-                     << num_on_displays << " turned on";
-        return false;
-      }
-
-      const DisplayMode* mode_info = displays[0].mirror_mode;
-      if (!mode_info) {
-        LOG(WARNING) << "No mirror mode when configuring display: "
-                     << displays[0].display->ToString();
-        return false;
-      }
-      size = mode_info->size();
-
-      for (size_t i = 0; i < displays.size(); ++i) {
-        const DisplayConfigurator::DisplayState* state = &displays[i];
-        (*requests)[i].mode = display_power[i] ? state->mirror_mode : NULL;
-      }
-      break;
-    }
-    case MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED:
-    case MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED: {
-      if ((new_display_state == MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED &&
-           displays.size() != 2) ||
-          (new_display_state == MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED &&
-           displays.size() <= 2) ||
-          (num_on_displays != 0 &&
-           num_on_displays != static_cast<int>(displays.size()))) {
-        LOG(WARNING) << "Ignoring request to enter extended mode with "
-                     << displays.size() << " connected display(s) and "
-                     << num_on_displays << " turned on";
-        return false;
-      }
-
-      for (size_t i = 0; i < displays.size(); ++i) {
-        const DisplayConfigurator::DisplayState* state = &displays[i];
-        (*requests)[i].origin.set_y(size.height() ? size.height() + kVerticalGap
-                                                  : 0);
-        (*requests)[i].mode = display_power[i] ? state->selected_mode : NULL;
-
-        // Retain the full screen size even if all displays are off so the
-        // same desktop configuration can be restored when the displays are
-        // turned back on.
-        const DisplayMode* mode_info = displays[i].selected_mode;
-        if (!mode_info) {
-          LOG(WARNING) << "No selected mode when configuring display: "
-                       << state->display->ToString();
-          return false;
-        }
-
-        size.set_width(std::max<int>(size.width(), mode_info->size().width()));
-        size.set_height(size.height() + (size.height() ? kVerticalGap : 0) +
-                        mode_info->size().height());
-      }
-      break;
-    }
-  }
-
-  *framebuffer_size = size;
-  return true;
-}
-
-bool DisplayConfigurator::DisplayLayoutManagerImpl::FindMirrorMode(
-    DisplayState* internal_display,
-    DisplayState* external_display,
-    bool try_panel_fitting,
-    bool preserve_aspect) const {
-  const DisplayMode* internal_native_info =
-      internal_display->display->native_mode();
-  const DisplayMode* external_native_info =
-      external_display->display->native_mode();
-  if (!internal_native_info || !external_native_info)
-    return false;
-
-  // Check if some external display resolution can be mirrored on internal.
-  // Prefer the modes in the order they're present in DisplaySnapshot, assuming
-  // this is the order in which they look better on the monitor.
-  for (DisplayModeList::const_iterator external_it =
-           external_display->display->modes().begin();
-       external_it != external_display->display->modes().end(); ++external_it) {
-    const DisplayMode& external_info = **external_it;
-    bool is_native_aspect_ratio =
-        external_native_info->size().width() * external_info.size().height() ==
-        external_native_info->size().height() * external_info.size().width();
-    if (preserve_aspect && !is_native_aspect_ratio)
-      continue;  // Allow only aspect ratio preserving modes for mirroring.
-
-    // Try finding an exact match.
-    for (DisplayModeList::const_iterator internal_it =
-             internal_display->display->modes().begin();
-         internal_it != internal_display->display->modes().end();
-         ++internal_it) {
-      const DisplayMode& internal_info = **internal_it;
-      if (internal_info.size().width() == external_info.size().width() &&
-          internal_info.size().height() == external_info.size().height() &&
-          internal_info.is_interlaced() == external_info.is_interlaced()) {
-        internal_display->mirror_mode = *internal_it;
-        external_display->mirror_mode = *external_it;
-        return true;  // Mirror mode found.
-      }
-    }
-
-    // Try to create a matching internal display mode by panel fitting.
-    if (try_panel_fitting) {
-      // We can downscale by 1.125, and upscale indefinitely. Downscaling looks
-      // ugly, so, can fit == can upscale. Also, internal panels don't support
-      // fitting interlaced modes.
-      bool can_fit = internal_native_info->size().width() >=
-                         external_info.size().width() &&
-                     internal_native_info->size().height() >=
-                         external_info.size().height() &&
-                     !external_info.is_interlaced();
-      if (can_fit) {
-        configurator_->native_display_delegate_->AddMode(
-            *internal_display->display, *external_it);
-        internal_display->display->add_mode(*external_it);
-        internal_display->mirror_mode = *external_it;
-        external_display->mirror_mode = *external_it;
-        return true;  // Mirror mode created.
-      }
-    }
-  }
-
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// DisplayConfigurator implementation
 
 // static
 const DisplayMode* DisplayConfigurator::FindDisplayModeMatchingSize(
@@ -444,17 +102,11 @@ DisplayConfigurator::DisplayConfigurator()
       mirroring_controller_(NULL),
       is_panel_fitting_enabled_(false),
       configure_display_(base::SysInfo::IsRunningOnChromeOS()),
-      current_display_state_(MULTIPLE_DISPLAY_STATE_INVALID),
-      current_power_state_(chromeos::DISPLAY_POWER_ALL_ON),
-      requested_display_state_(MULTIPLE_DISPLAY_STATE_INVALID),
+      display_state_(MULTIPLE_DISPLAY_STATE_INVALID),
       requested_power_state_(chromeos::DISPLAY_POWER_ALL_ON),
-      requested_power_state_change_(false),
-      requested_power_flags_(kSetDisplayPowerNoFlags),
-      force_configure_(false),
+      current_power_state_(chromeos::DISPLAY_POWER_ALL_ON),
       next_display_protection_client_id_(1),
-      display_externally_controlled_(false),
-      layout_manager_(new DisplayLayoutManagerImpl(this)),
-      weak_ptr_factory_(this) {
+      display_externally_controlled_(false) {
 }
 
 DisplayConfigurator::~DisplayConfigurator() {
@@ -472,7 +124,7 @@ void DisplayConfigurator::SetDelegateForTesting(
 
 void DisplayConfigurator::SetInitialDisplayPower(
     chromeos::DisplayPowerState power_state) {
-  DCHECK_EQ(current_display_state_, MULTIPLE_DISPLAY_STATE_INVALID);
+  DCHECK_EQ(display_state_, MULTIPLE_DISPLAY_STATE_INVALID);
   requested_power_state_ = current_power_state_ = power_state;
 }
 
@@ -521,25 +173,28 @@ void DisplayConfigurator::ForceInitialConfigure(
   if (!configure_display_ || display_externally_controlled_)
     return;
 
+  native_display_delegate_->GrabServer();
   native_display_delegate_->Initialize();
 
-  // ForceInitialConfigure should be the first configuration so there shouldn't
-  // be anything scheduled.
-  DCHECK(!configuration_task_);
+  UpdateCachedDisplays();
+  if (cached_displays_.size() > 1 && background_color_argb)
+    native_display_delegate_->SetBackgroundColor(background_color_argb);
+  const MultipleDisplayState new_state = ChooseDisplayState(
+      requested_power_state_);
+  const bool success = EnterStateOrFallBackToSoftwareMirroring(
+      new_state, requested_power_state_);
 
-  configuration_task_.reset(new UpdateDisplayConfigurationTask(
-      native_display_delegate_.get(), layout_manager_.get(),
-      requested_display_state_, requested_power_state_,
-      kSetDisplayPowerForceProbe, background_color_argb, true,
-      base::Bind(&DisplayConfigurator::OnConfigured,
-                 weak_ptr_factory_.GetWeakPtr())));
-  configuration_task_->Run();
+  // Force the DPMS on chrome startup as the driver doesn't always detect
+  // that all displays are on when signing out.
+  native_display_delegate_->ForceDPMSOn();
+  native_display_delegate_->UngrabServer();
+  NotifyObservers(success, new_state);
 }
 
 bool DisplayConfigurator::IsMirroring() const {
-  return current_display_state_ == MULTIPLE_DISPLAY_STATE_DUAL_MIRROR ||
-         (mirroring_controller_ &&
-          mirroring_controller_->SoftwareMirroringEnabled());
+  return display_state_ == MULTIPLE_DISPLAY_STATE_DUAL_MIRROR ||
+      (mirroring_controller_ &&
+       mirroring_controller_->SoftwareMirroringEnabled());
 }
 
 bool DisplayConfigurator::ApplyProtections(const ContentProtections& requests) {
@@ -761,34 +416,55 @@ void DisplayConfigurator::PrepareForExit() {
   configure_display_ = false;
 }
 
-void DisplayConfigurator::SetDisplayPower(
+bool DisplayConfigurator::SetDisplayPower(
     chromeos::DisplayPowerState power_state,
     int flags) {
   if (!configure_display_ || display_externally_controlled_)
-    return;
+    return false;
 
   VLOG(1) << "SetDisplayPower: power_state="
           << DisplayPowerStateToString(power_state) << " flags=" << flags
           << ", configure timer="
           << (configure_timer_.IsRunning() ? "Running" : "Stopped");
-  if (power_state == requested_power_state_ &&
+  if (power_state == current_power_state_ &&
       !(flags & kSetDisplayPowerForceProbe))
-    return;
+    return true;
 
-  requested_power_state_ = power_state;
-  requested_power_state_change_ = true;
-  requested_power_flags_ = flags;
+  native_display_delegate_->GrabServer();
+  UpdateCachedDisplays();
 
-  RunPendingConfiguration();
+  const MultipleDisplayState new_state = ChooseDisplayState(power_state);
+  bool attempted_change = false;
+  bool success = false;
+
+  bool only_if_single_internal_display =
+      flags & kSetDisplayPowerOnlyIfSingleInternalDisplay;
+  bool single_internal_display =
+      cached_displays_.size() == 1 &&
+      cached_displays_[0].display->type() == DISPLAY_CONNECTION_TYPE_INTERNAL;
+  if (single_internal_display || !only_if_single_internal_display) {
+    success = EnterStateOrFallBackToSoftwareMirroring(new_state, power_state);
+    attempted_change = true;
+
+    // Force the DPMS on since the driver doesn't always detect that it
+    // should turn on. This is needed when coming back from idle suspend.
+    if (success && power_state != chromeos::DISPLAY_POWER_ALL_OFF)
+      native_display_delegate_->ForceDPMSOn();
+  }
+
+  native_display_delegate_->UngrabServer();
+  if (attempted_change)
+    NotifyObservers(success, new_state);
+  return success;
 }
 
-void DisplayConfigurator::SetDisplayMode(MultipleDisplayState new_state) {
+bool DisplayConfigurator::SetDisplayMode(MultipleDisplayState new_state) {
   if (!configure_display_ || display_externally_controlled_)
-    return;
+    return false;
 
   VLOG(1) << "SetDisplayMode: state="
           << MultipleDisplayStateToString(new_state);
-  if (current_display_state_ == new_state) {
+  if (display_state_ == new_state) {
     // Cancel software mirroring if the state is moving from
     // MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED to
     // MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED.
@@ -796,12 +472,17 @@ void DisplayConfigurator::SetDisplayMode(MultipleDisplayState new_state) {
         new_state == MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED)
       mirroring_controller_->SetSoftwareMirroring(false);
     NotifyObservers(true, new_state);
-    return;
+    return true;
   }
 
-  requested_display_state_ = new_state;
+  native_display_delegate_->GrabServer();
+  UpdateCachedDisplays();
+  const bool success = EnterStateOrFallBackToSoftwareMirroring(
+      new_state, requested_power_state_);
+  native_display_delegate_->UngrabServer();
 
-  RunPendingConfiguration();
+  NotifyObservers(success, new_state);
+  return success;
 }
 
 void DisplayConfigurator::OnConfigurationChanged() {
@@ -857,90 +538,160 @@ void DisplayConfigurator::ResumeDisplays() {
                  base::Unretained(this)));
 }
 
+void DisplayConfigurator::UpdateCachedDisplays() {
+  std::vector<DisplaySnapshot*> snapshots =
+      native_display_delegate_->GetDisplays();
+
+  cached_displays_.clear();
+  for (size_t i = 0; i < snapshots.size(); ++i) {
+    DisplayState display_state;
+    display_state.display = snapshots[i];
+    cached_displays_.push_back(display_state);
+  }
+
+  // Set |selected_mode| fields.
+  for (size_t i = 0; i < cached_displays_.size(); ++i) {
+    DisplayState* display_state = &cached_displays_[i];
+    gfx::Size size;
+    if (state_controller_ &&
+        state_controller_->GetResolutionForDisplayId(
+            display_state->display->display_id(), &size)) {
+      display_state->selected_mode =
+          FindDisplayModeMatchingSize(*display_state->display, size);
+    }
+
+    // Fall back to native mode.
+    if (!display_state->selected_mode)
+      display_state->selected_mode = display_state->display->native_mode();
+  }
+
+  // Set |mirror_mode| fields.
+  if (cached_displays_.size() == 2) {
+    bool one_is_internal =
+        cached_displays_[0].display->type() == DISPLAY_CONNECTION_TYPE_INTERNAL;
+    bool two_is_internal =
+        cached_displays_[1].display->type() == DISPLAY_CONNECTION_TYPE_INTERNAL;
+    int internal_displays =
+        (one_is_internal ? 1 : 0) + (two_is_internal ? 1 : 0);
+    DCHECK_LT(internal_displays, 2);
+    LOG_IF(WARNING, internal_displays == 2)
+        << "Two internal displays detected.";
+
+    bool can_mirror = false;
+    for (int attempt = 0; !can_mirror && attempt < 2; ++attempt) {
+      // Try preserving external display's aspect ratio on the first attempt.
+      // If that fails, fall back to the highest matching resolution.
+      bool preserve_aspect = attempt == 0;
+
+      if (internal_displays == 1) {
+        if (one_is_internal) {
+          can_mirror = FindMirrorMode(&cached_displays_[0],
+                                      &cached_displays_[1],
+                                      is_panel_fitting_enabled_,
+                                      preserve_aspect);
+        } else {
+          DCHECK(two_is_internal);
+          can_mirror = FindMirrorMode(&cached_displays_[1],
+                                      &cached_displays_[0],
+                                      is_panel_fitting_enabled_,
+                                      preserve_aspect);
+        }
+      } else {  // if (internal_displays == 0)
+        // No panel fitting for external displays, so fall back to exact match.
+        can_mirror = FindMirrorMode(
+            &cached_displays_[0], &cached_displays_[1], false, preserve_aspect);
+        if (!can_mirror && preserve_aspect) {
+          // FindMirrorMode() will try to preserve aspect ratio of what it
+          // thinks is external display, so if it didn't succeed with one, maybe
+          // it will succeed with the other.  This way we will have the correct
+          // aspect ratio on at least one of them.
+          can_mirror = FindMirrorMode(&cached_displays_[1],
+                                      &cached_displays_[0],
+                                      false,
+                                      preserve_aspect);
+        }
+      }
+    }
+  }
+}
+
+bool DisplayConfigurator::FindMirrorMode(DisplayState* internal_display,
+                                         DisplayState* external_display,
+                                         bool try_panel_fitting,
+                                         bool preserve_aspect) {
+  const DisplayMode* internal_native_info =
+      internal_display->display->native_mode();
+  const DisplayMode* external_native_info =
+      external_display->display->native_mode();
+  if (!internal_native_info || !external_native_info)
+    return false;
+
+  // Check if some external display resolution can be mirrored on internal.
+  // Prefer the modes in the order they're present in DisplaySnapshot, assuming
+  // this is the order in which they look better on the monitor.
+  for (DisplayModeList::const_iterator external_it =
+           external_display->display->modes().begin();
+       external_it != external_display->display->modes().end();
+       ++external_it) {
+    const DisplayMode& external_info = **external_it;
+    bool is_native_aspect_ratio =
+        external_native_info->size().width() * external_info.size().height() ==
+        external_native_info->size().height() * external_info.size().width();
+    if (preserve_aspect && !is_native_aspect_ratio)
+      continue;  // Allow only aspect ratio preserving modes for mirroring.
+
+    // Try finding an exact match.
+    for (DisplayModeList::const_iterator internal_it =
+             internal_display->display->modes().begin();
+         internal_it != internal_display->display->modes().end();
+         ++internal_it) {
+      const DisplayMode& internal_info = **internal_it;
+      if (internal_info.size().width() == external_info.size().width() &&
+          internal_info.size().height() == external_info.size().height() &&
+          internal_info.is_interlaced() == external_info.is_interlaced()) {
+        internal_display->mirror_mode = *internal_it;
+        external_display->mirror_mode = *external_it;
+        return true;  // Mirror mode found.
+      }
+    }
+
+    // Try to create a matching internal display mode by panel fitting.
+    if (try_panel_fitting) {
+      // We can downscale by 1.125, and upscale indefinitely. Downscaling looks
+      // ugly, so, can fit == can upscale. Also, internal panels don't support
+      // fitting interlaced modes.
+      bool can_fit = internal_native_info->size().width() >=
+                         external_info.size().width() &&
+                     internal_native_info->size().height() >=
+                         external_info.size().height() &&
+                     !external_info.is_interlaced();
+      if (can_fit) {
+        native_display_delegate_->AddMode(*internal_display->display,
+                                          *external_it);
+        internal_display->display->add_mode(*external_it);
+        internal_display->mirror_mode = *external_it;
+        external_display->mirror_mode = *external_it;
+        return true;  // Mirror mode created.
+      }
+    }
+  }
+
+  return false;
+}
+
 void DisplayConfigurator::ConfigureDisplays() {
   if (!configure_display_ || display_externally_controlled_)
     return;
 
-  force_configure_ = true;
-  RunPendingConfiguration();
-}
+  native_display_delegate_->GrabServer();
+  UpdateCachedDisplays();
+  const MultipleDisplayState new_state = ChooseDisplayState(
+      requested_power_state_);
+  const bool success = EnterStateOrFallBackToSoftwareMirroring(
+      new_state, requested_power_state_);
+  native_display_delegate_->UngrabServer();
 
-void DisplayConfigurator::RunPendingConfiguration() {
-  // Configuration task is currently running. Do not start a second
-  // configuration.
-  if (configuration_task_)
-    return;
-
-  if (!ShouldRunConfigurationTask()) {
-    LOG(ERROR) << "Called RunPendingConfiguration without any changes"
-                  " requested";
-    return;
-  }
-
-  configuration_task_.reset(new UpdateDisplayConfigurationTask(
-      native_display_delegate_.get(), layout_manager_.get(),
-      requested_display_state_, requested_power_state_, requested_power_flags_,
-      0, force_configure_, base::Bind(&DisplayConfigurator::OnConfigured,
-                                      weak_ptr_factory_.GetWeakPtr())));
-
-  // Reset the flags before running the task; otherwise it may end up scheduling
-  // another configuration.
-  force_configure_ = false;
-  requested_power_flags_ = kSetDisplayPowerNoFlags;
-  requested_power_state_change_ = false;
-  requested_display_state_ = MULTIPLE_DISPLAY_STATE_INVALID;
-
-  configuration_task_->Run();
-}
-
-void DisplayConfigurator::OnConfigured(
-    bool success,
-    const std::vector<DisplayState>& displays,
-    const gfx::Size& framebuffer_size,
-    MultipleDisplayState new_display_state,
-    chromeos::DisplayPowerState new_power_state) {
-  VLOG(1) << "OnConfigured: success=" << success << " new_display_state="
-          << MultipleDisplayStateToString(new_display_state)
-          << " new_power_state=" << DisplayPowerStateToString(new_power_state);
-
-  cached_displays_ = displays;
-  if (success) {
-    current_display_state_ = new_display_state;
-    current_power_state_ = new_power_state;
-    framebuffer_size_ = framebuffer_size;
-    // If the requested power state hasn't changed then make sure that value
-    // gets updated as well since the last requested value may have been
-    // dependent on certain conditions (ie: if only the internal monitor was
-    // present).
-    if (!requested_power_state_change_)
-      requested_power_state_ = new_power_state;
-  }
-
-  configuration_task_.reset();
-  NotifyObservers(success, new_display_state);
-
-  if (success && !configure_timer_.IsRunning() &&
-      ShouldRunConfigurationTask()) {
-    configure_timer_.Start(FROM_HERE,
-                           base::TimeDelta::FromMilliseconds(kConfigureDelayMs),
-                           this, &DisplayConfigurator::RunPendingConfiguration);
-  }
-}
-
-bool DisplayConfigurator::ShouldRunConfigurationTask() const {
-  if (force_configure_)
-    return true;
-
-  // Schedule if there is a request to change the display state.
-  if (requested_display_state_ != current_display_state_ &&
-      requested_display_state_ != MULTIPLE_DISPLAY_STATE_INVALID)
-    return true;
-
-  // Schedule if there is a request to change the power state.
-  if (requested_power_state_change_)
-    return true;
-
-  return false;
+  NotifyObservers(success, new_state);
 }
 
 void DisplayConfigurator::RestoreRequestedPowerStateAfterResume() {
@@ -959,6 +710,245 @@ void DisplayConfigurator::NotifyObservers(
     FOR_EACH_OBSERVER(
         Observer, observers_, OnDisplayModeChangeFailed(attempted_state));
   }
+}
+
+bool DisplayConfigurator::EnterStateOrFallBackToSoftwareMirroring(
+    MultipleDisplayState display_state,
+    chromeos::DisplayPowerState power_state) {
+  bool success = EnterState(display_state, power_state);
+  if (mirroring_controller_) {
+    bool enable_software_mirroring = false;
+    if (!success && display_state == MULTIPLE_DISPLAY_STATE_DUAL_MIRROR) {
+      if (display_state_ != MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED ||
+          current_power_state_ != power_state)
+        EnterState(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED, power_state);
+      enable_software_mirroring = success =
+          display_state_ == MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
+    }
+    mirroring_controller_->SetSoftwareMirroring(enable_software_mirroring);
+  }
+  return success;
+}
+
+bool DisplayConfigurator::EnterState(MultipleDisplayState display_state,
+                                     chromeos::DisplayPowerState power_state) {
+  std::vector<bool> display_power;
+  int num_on_displays =
+      GetDisplayPower(cached_displays_, power_state, &display_power);
+  VLOG(1) << "EnterState: display="
+          << MultipleDisplayStateToString(display_state)
+          << " power=" << DisplayPowerStateToString(power_state);
+
+  // Save the requested state so we'll try to use it next time even if we fail.
+  requested_power_state_ = power_state;
+
+  // Framebuffer dimensions.
+  gfx::Size size;
+
+  std::vector<gfx::Point> new_origins(cached_displays_.size(), gfx::Point());
+  std::vector<const DisplayMode*> new_mode;
+  for (size_t i = 0; i < cached_displays_.size(); ++i)
+    new_mode.push_back(cached_displays_[i].display->current_mode());
+
+  switch (display_state) {
+    case MULTIPLE_DISPLAY_STATE_INVALID:
+      NOTREACHED() << "Ignoring request to enter invalid state with "
+                   << cached_displays_.size() << " connected display(s)";
+      return false;
+    case MULTIPLE_DISPLAY_STATE_HEADLESS:
+      if (cached_displays_.size() != 0) {
+        LOG(WARNING) << "Ignoring request to enter headless mode with "
+                     << cached_displays_.size() << " connected display(s)";
+        return false;
+      }
+      break;
+    case MULTIPLE_DISPLAY_STATE_SINGLE: {
+      // If there are multiple displays connected, only one should be turned on.
+      if (cached_displays_.size() != 1 && num_on_displays != 1) {
+        LOG(WARNING) << "Ignoring request to enter single mode with "
+                     << cached_displays_.size() << " connected displays and "
+                     << num_on_displays << " turned on";
+        return false;
+      }
+
+      for (size_t i = 0; i < cached_displays_.size(); ++i) {
+        DisplayState* state = &cached_displays_[i];
+        new_mode[i] = display_power[i] ? state->selected_mode : NULL;
+
+        if (display_power[i] || cached_displays_.size() == 1) {
+          const DisplayMode* mode_info = state->selected_mode;
+          if (!mode_info) {
+            LOG(WARNING) << "No selected mode when configuring display: "
+                         << state->display->ToString();
+            return false;
+          }
+          if (mode_info->size() == gfx::Size(1024, 768)) {
+            VLOG(1) << "Potentially misdetecting display(1024x768):"
+                    << " displays size=" << cached_displays_.size()
+                    << ", num_on_displays=" << num_on_displays
+                    << ", current size:" << size.width() << "x" << size.height()
+                    << ", i=" << i << ", display=" << state->display->ToString()
+                    << ", display_mode=" << mode_info->ToString();
+          }
+          size = mode_info->size();
+        }
+      }
+      break;
+    }
+    case MULTIPLE_DISPLAY_STATE_DUAL_MIRROR: {
+      if (cached_displays_.size() != 2 ||
+          (num_on_displays != 0 && num_on_displays != 2)) {
+        LOG(WARNING) << "Ignoring request to enter mirrored mode with "
+                     << cached_displays_.size() << " connected display(s) and "
+                     << num_on_displays << " turned on";
+        return false;
+      }
+
+      const DisplayMode* mode_info = cached_displays_[0].mirror_mode;
+      if (!mode_info) {
+        LOG(WARNING) << "No mirror mode when configuring display: "
+                     << cached_displays_[0].display->ToString();
+        return false;
+      }
+      size = mode_info->size();
+
+      for (size_t i = 0; i < cached_displays_.size(); ++i) {
+        DisplayState* state = &cached_displays_[i];
+        new_mode[i] = display_power[i] ? state->mirror_mode : NULL;
+      }
+      break;
+    }
+    case MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED:
+    case MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED: {
+      if ((display_state == MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED &&
+           cached_displays_.size() != 2) ||
+          (display_state == MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED &&
+           cached_displays_.size() <= 2) ||
+          (num_on_displays != 0 &&
+           num_on_displays != static_cast<int>(cached_displays_.size()))) {
+        LOG(WARNING) << "Ignoring request to enter extended mode with "
+                     << cached_displays_.size() << " connected display(s) and "
+                     << num_on_displays << " turned on";
+        return false;
+      }
+
+      for (size_t i = 0; i < cached_displays_.size(); ++i) {
+        DisplayState* state = &cached_displays_[i];
+        new_origins[i].set_y(size.height() ? size.height() + kVerticalGap : 0);
+        new_mode[i] = display_power[i] ? state->selected_mode : NULL;
+
+        // Retain the full screen size even if all displays are off so the
+        // same desktop configuration can be restored when the displays are
+        // turned back on.
+        const DisplayMode* mode_info = cached_displays_[i].selected_mode;
+        if (!mode_info) {
+          LOG(WARNING) << "No selected mode when configuring display: "
+                       << state->display->ToString();
+          return false;
+        }
+
+        size.set_width(std::max<int>(size.width(), mode_info->size().width()));
+        size.set_height(size.height() + (size.height() ? kVerticalGap : 0) +
+                        mode_info->size().height());
+      }
+      break;
+    }
+  }
+
+  // Finally, apply the desired changes.
+  bool all_succeeded = true;
+  if (!cached_displays_.empty()) {
+    native_display_delegate_->CreateFrameBuffer(size);
+    for (size_t i = 0; i < cached_displays_.size(); ++i) {
+      const DisplayState& state = cached_displays_[i];
+      bool configure_succeeded = false;
+
+      while (true) {
+        if (native_display_delegate_->Configure(
+                *state.display, new_mode[i], new_origins[i])) {
+          state.display->set_current_mode(new_mode[i]);
+          state.display->set_origin(new_origins[i]);
+
+          configure_succeeded = true;
+          break;
+        }
+
+        const DisplayMode* mode_info = new_mode[i];
+        if (!mode_info)
+          break;
+
+        // Find the mode with the next-best resolution and see if that can
+        // be set.
+        int best_mode_pixels = 0;
+
+        int current_mode_pixels = mode_info->size().GetArea();
+        for (DisplayModeList::const_iterator it =
+                 state.display->modes().begin();
+             it != state.display->modes().end();
+             it++) {
+          int pixel_count = (*it)->size().GetArea();
+          if ((pixel_count < current_mode_pixels) &&
+              (pixel_count > best_mode_pixels)) {
+            new_mode[i] = *it;
+            best_mode_pixels = pixel_count;
+          }
+        }
+
+        if (best_mode_pixels == 0)
+          break;
+      }
+
+      if (!configure_succeeded)
+        all_succeeded = false;
+
+      // If we are trying to set mirror mode and one of the modesets fails,
+      // then the two monitors will be mis-matched.  In this case, return
+      // false to let the observers be aware.
+      if (display_state == MULTIPLE_DISPLAY_STATE_DUAL_MIRROR &&
+          display_power[i] &&
+          state.display->current_mode() != state.mirror_mode)
+        all_succeeded = false;
+    }
+  }
+
+  if (all_succeeded) {
+    display_state_ = display_state;
+    current_power_state_ = power_state;
+    framebuffer_size_ = size;
+  }
+  return all_succeeded;
+}
+
+MultipleDisplayState DisplayConfigurator::ChooseDisplayState(
+    chromeos::DisplayPowerState power_state) const {
+  int num_on_displays = GetDisplayPower(cached_displays_, power_state, NULL);
+  switch (cached_displays_.size()) {
+    case 0:
+      return MULTIPLE_DISPLAY_STATE_HEADLESS;
+    case 1:
+      return MULTIPLE_DISPLAY_STATE_SINGLE;
+    default: {
+      if (num_on_displays == 1) {
+        // If only one display is currently turned on, return the "single"
+        // state so that its native mode will be used.
+        return MULTIPLE_DISPLAY_STATE_SINGLE;
+      } if (num_on_displays >= 3) {
+        return MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED;
+      } else if (cached_displays_.size() == 2) {
+        if (!state_controller_)
+          return MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
+        // With either both displays on or both displays off, use one of the
+        // dual modes.
+        std::vector<int64_t> display_ids;
+        for (size_t i = 0; i < cached_displays_.size(); ++i)
+          display_ids.push_back(cached_displays_[i].display->display_id());
+
+        return state_controller_->GetStateForDisplayIds(display_ids);
+      }
+      NOTREACHED();
+    }
+  }
+  return MULTIPLE_DISPLAY_STATE_INVALID;
 }
 
 }  // namespace ui
