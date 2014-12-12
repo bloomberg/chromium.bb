@@ -44,15 +44,15 @@
 
 namespace blink {
 
-class LocalFrame;
+class Frame;
 class HTMLDocument;
 class SecurityOrigin;
 
-// WindowProxy represents all the per-global object state for a LocalFrame that
+// WindowProxy represents all the per-global object state for a Frame that
 // persist between navigations.
 class WindowProxy final : public NoBaseWillBeGarbageCollectedFinalized<WindowProxy> {
 public:
-    static PassOwnPtrWillBeRawPtr<WindowProxy> create(LocalFrame*, DOMWrapperWorld&, v8::Isolate*);
+    static PassOwnPtrWillBeRawPtr<WindowProxy> create(Frame*, DOMWrapperWorld&, v8::Isolate*);
 
     ~WindowProxy();
     void trace(Visitor*);
@@ -82,7 +82,7 @@ public:
     DOMWrapperWorld& world() { return *m_world; }
 
 private:
-    WindowProxy(LocalFrame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
+    WindowProxy(Frame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
     bool initialize();
 
     enum GlobalDetachmentBehavior {
@@ -106,7 +106,7 @@ private:
     void createContext();
     bool installDOMWindow();
 
-    RawPtrWillBeMember<LocalFrame> m_frame;
+    RawPtrWillBeMember<Frame> m_frame;
     v8::Isolate* m_isolate;
     RefPtr<ScriptState> m_scriptState;
     RefPtr<DOMWrapperWorld> m_world;
