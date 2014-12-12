@@ -450,8 +450,8 @@ class SchemaVersionedMySQLConnection(object):
                  os.getpid(), repr(query)[:100])
     return retry_util.GenericRetry(
         handler=_IsRetryableException,
-        max_retry=4,
-        sleep=1,
+        max_retry=8,
+        sleep=4,
         functor=f)
 
   def _GetEngine(self):
