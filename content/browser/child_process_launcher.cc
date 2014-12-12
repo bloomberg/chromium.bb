@@ -184,12 +184,6 @@ void ChildProcessLauncher::Context::Launch(
   // We currently only support renderer and gpu child processes.
   std::string process_type =
       cmd_line->GetSwitchValueASCII(switches::kProcessType);
-  CHECK_NE(switches::kPluginProcess, process_type);
-  CHECK_NE(switches::kPpapiBrokerProcess, process_type);
-  CHECK_NE(switches::kPpapiPluginProcess, process_type);
-  CHECK_NE(switches::kSandboxIPCProcess, process_type);
-  CHECK_NE(switches::kUtilityProcess, process_type);
-  CHECK_NE(switches::kZygoteProcess, process_type);
   CHECK(process_type == switches::kGpuProcess ||
         process_type == switches::kRendererProcess);
 
