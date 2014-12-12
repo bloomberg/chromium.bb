@@ -385,8 +385,10 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     dst->AddBoolAttribute(ui::AX_ATTR_LIVE_BUSY, src.liveRegionBusy());
     if (src.liveRegionBusy())
       dst->state |= (1 << ui::AX_STATE_BUSY);
-    dst->AddStringAttribute(ui::AX_ATTR_LIVE_STATUS,
-                            UTF16ToUTF8(src.liveRegionStatus()));
+    if (!src.liveRegionStatus().isEmpty()) {
+      dst->AddStringAttribute(ui::AX_ATTR_LIVE_STATUS,
+                              UTF16ToUTF8(src.liveRegionStatus()));
+    }
     dst->AddStringAttribute(ui::AX_ATTR_LIVE_RELEVANT,
                             UTF16ToUTF8(src.liveRegionRelevant()));
     dst->AddBoolAttribute(ui::AX_ATTR_CONTAINER_LIVE_ATOMIC,

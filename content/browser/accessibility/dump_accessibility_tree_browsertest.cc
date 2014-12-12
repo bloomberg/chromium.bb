@@ -475,6 +475,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaLive) {
   RunTest(FILE_PATH_LITERAL("aria-live.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaLiveWithContent) {
+  RunTest(FILE_PATH_LITERAL("aria-live-with-content.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaLog) {
   RunTest(FILE_PATH_LITERAL("aria-log.html"));
 }
