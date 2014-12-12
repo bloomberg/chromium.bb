@@ -170,6 +170,35 @@ private:
     WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
 };
 
+template<>
+class CallbackPromiseAdapter<void, void> final : public blink::WebCallbacks<void, void> {
+public:
+    explicit CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver)
+        : m_resolver(resolver)
+    {
+        ASSERT(m_resolver);
+    }
+    virtual ~CallbackPromiseAdapter() { }
+
+    virtual void onSuccess() override
+    {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+            return;
+        m_resolver->resolve();
+    }
+
+    virtual void onError() override
+    {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+            return;
+        m_resolver->reject();
+    }
+
+private:
+    RefPtr<ScriptPromiseResolver> m_resolver;
+    WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
+};
+
 } // namespace blink
 
 #endif
