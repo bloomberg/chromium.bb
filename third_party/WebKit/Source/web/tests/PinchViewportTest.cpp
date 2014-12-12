@@ -1044,6 +1044,35 @@ TEST_F(PinchViewportTest, TestScrollingDocumentRegionIntoView)
 }
 
 #if OS(ANDROID)
+
+// Top controls can make an unscrollable page temporarily scrollable, causing
+// a scroll clamp when the page is resized. Make sure this bug is fixed.
+// crbug.com/437620
+TEST_F(PinchViewportTest, TestResizeDoesntChangeScrollOffset)
+{
+    initializeWithAndroidSettings();
+    webViewImpl()->resize(IntSize(100, 150));
+
+    navigateTo("about:blank");
+
+    PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
+    FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
+
+    pinchViewport.setScale(2);
+    pinchViewport.move(FloatPoint(0, 40));
+
+    // Simulate bringing down the top controls by 20px but counterscrolling the outer viewport.
+    webViewImpl()->applyViewportDeltas(WebSize(), WebSize(0, 20), WebFloatSize(), 1, 20);
+
+    EXPECT_EQ(20, frameView.scrollPosition().y());
+
+    webViewImpl()->setTopControlsLayoutHeight(20);
+    webViewImpl()->resize(WebSize(100, 130));
+
+    EXPECT_EQ(0, frameView.scrollPosition().y());
+    EXPECT_EQ(60, pinchViewport.location().y());
+}
+
 static IntPoint expectedMaxFrameViewScrollOffset(PinchViewport& pinchViewport, FrameView& frameView)
 {
     float aspectRatio = pinchViewport.visibleRect().width() / pinchViewport.visibleRect().height();

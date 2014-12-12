@@ -1756,6 +1756,9 @@ void WebViewImpl::resize(const WebSize& newSize)
     m_fullscreenController->updateSize();
 
     if (settings()->viewportEnabled()) {
+        PinchViewport& pinchViewport = page()->frameHost().pinchViewport();
+        FloatPoint viewportOffsetBeforeResize = pinchViewport.visibleRectInDocument().location();
+
         // Relayout immediately to recalculate the minimum scale limit.
         if (view->needsLayout())
             view->layout();
@@ -1772,6 +1775,9 @@ void WebViewImpl::resize(const WebSize& newSize)
             viewportAnchor.computeOrigins(*view, pinchViewportSize,
                 mainFrameOrigin, pinchViewportOrigin);
             scrollAndRescaleViewports(newPageScaleFactor, mainFrameOrigin, pinchViewportOrigin);
+        } else {
+            FloatSize deltaFromResize = viewportOffsetBeforeResize - pinchViewport.visibleRectInDocument().location();
+            pinchViewport.move(FloatPoint(deltaFromResize));
         }
     }
 
