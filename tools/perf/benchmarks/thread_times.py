@@ -23,6 +23,11 @@ class ThreadTimesKeySilkCases(_ThreadTimes):
   cases."""
   page_set = page_sets.KeySilkCasesPageSet
 
+@benchmark.Enabled('android')
+class ThreadTimesKeyHitTestCases(_ThreadTimes):
+  """Measure timeline metrics while performing smoothness action on key hit
+  testing cases."""
+  page_set = page_sets.KeyHitTestCasesPageSet
 
 @benchmark.Disabled
 class LegacySilkBenchmark(ThreadTimesKeySilkCases):
