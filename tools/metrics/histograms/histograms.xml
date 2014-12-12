@@ -49584,6 +49584,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1466380480" label="enable-device-discovery-notifications"/>
   <int value="1469407485" label="disable-accelerated-2d-canvas"/>
   <int value="1481562816" label="disable-password-link"/>
+  <int value="1486171015" label="disable-fill-on-account-select"/>
+  <int value="1490043732" label="enable-fill-on-account-select"/>
   <int value="1490255042" label="enable-overlay-scrollbar"/>
   <int value="1497924954" label="js-flags"/>
   <int value="1505194447" label="disable-transition-compositing"/>

@@ -11,6 +11,10 @@ namespace switches {
 // credit card form.
 const char kDisableCreditCardScan[]         = "disable-credit-card-scan";
 
+// Disables the experiment for the password manager to only fill on account
+// selection, rather than autofilling on page load.
+const char kDisableFillOnAccountSelect[]    = "disable-fill-on-account-select";
+
 // Disables password generation when we detect that the user is going through
 // account creation.
 const char kDisablePasswordGeneration[]     = "disable-password-generation";
@@ -21,6 +25,10 @@ const char kDisableSingleClickAutofill[]    = "disable-single-click-autofill";
 // Enables using device's camera to scan a new credit card when filling out a
 // credit card form.
 const char kEnableCreditCardScan[]          = "enable-credit-card-scan";
+
+// Enables the experiment for the password manager to only fill on account
+// selection, rather than autofilling on page load.
+const char kEnableFillOnAccountSelect[]     = "enable-fill-on-account-select";
 
 // Enables password generation when we detect that the user is going through
 // account creation.

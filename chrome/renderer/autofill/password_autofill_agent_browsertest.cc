@@ -11,6 +11,7 @@
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/test_password_autofill_agent.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "content/public/renderer/render_frame.h"
@@ -416,8 +417,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     AutofillHostMsg_ShowPasswordSuggestions::Read(message, &args);
     EXPECT_EQ(kPasswordFillFormDataId, args.a);
     EXPECT_EQ(ASCIIToUTF16(username), args.c);
-    int options = args.d;
-    EXPECT_EQ(show_all, static_cast<bool>(options & autofill::SHOW_ALL));
+    EXPECT_EQ(show_all, static_cast<bool>(args.d & autofill::SHOW_ALL));
 
     render_thread_->sink().ClearMessages();
   }
@@ -1408,6 +1408,89 @@ TEST_F(PasswordAutofillAgentTest, CredentialsOnClick) {
   CheckSuggestions(kAliceUsername, true);
 }
 
+// Tests that there are no autosuggestions from the password manager when the
+// user clicks on the password field and the username field is editable when
+// FillOnAccountSelect is enabled.
+TEST_F(PasswordAutofillAgentTest,
+       FillOnAccountSelectOnlyNoCredentialsOnPasswordClick) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      autofill::switches::kEnableFillOnAccountSelect);
+
+  // Simulate the browser sending back the login info.
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // Clear the text fields to start fresh.
+  ClearUsernameAndPasswordFields();
+
+  // Call SimulateElementClick() to produce a user gesture on the page so
+  // autofill will actually fill.
+  SimulateElementClick(kUsernameName);
+
+  // Simulate a user clicking on the password element. This should produce no
+  // message.
+  render_thread_->sink().ClearMessages();
+  static_cast<PageClickListener*>(autofill_agent_)
+      ->FormControlElementClicked(password_element_, false);
+  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_ShowPasswordSuggestions::ID));
+}
+
+// Tests the autosuggestions that are given when a password element is clicked,
+// the username element is not editable, and FillOnAccountSelect is enabled.
+// Specifically, tests when the user clicks on the password element after page
+// load, and the corresponding username element is readonly (and thus
+// uneditable), that the credentials for the already-filled username are
+// suggested.
+TEST_F(PasswordAutofillAgentTest,
+       FillOnAccountSelectOnlyCredentialsOnPasswordClick) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      autofill::switches::kEnableFillOnAccountSelect);
+
+  // Simulate the browser sending back the login info.
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // Clear the text fields to start fresh.
+  ClearUsernameAndPasswordFields();
+
+  // Simulate the page loading with a prefilled username element that is
+  // uneditable.
+  username_element_.setValue("alicia");
+  SetElementReadOnly(username_element_, true);
+
+  // Call SimulateElementClick() to produce a user gesture on the page so
+  // autofill will actually fill.
+  SimulateElementClick(kUsernameName);
+
+  // Simulate a user clicking on the password element. This should produce a
+  // message with "alicia" suggested as the credential.
+  render_thread_->sink().ClearMessages();
+  static_cast<PageClickListener*>(autofill_agent_)
+      ->FormControlElementClicked(password_element_, false);
+  CheckSuggestions("alicia", false);
+}
+
+// Tests that there are no autosuggestions from the password manager when the
+// user clicks on the password field (not the username field).
+TEST_F(PasswordAutofillAgentTest, NoCredentialsOnPasswordClick) {
+  // Simulate the browser sending back the login info.
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // Clear the text fields to start fresh.
+  ClearUsernameAndPasswordFields();
+
+  // Call SimulateElementClick() to produce a user gesture on the page so
+  // autofill will actually fill.
+  SimulateElementClick(kUsernameName);
+
+  // Simulate a user clicking on the password element. This should produce no
+  // message.
+  render_thread_->sink().ClearMessages();
+  static_cast<PageClickListener*>(autofill_agent_)
+      ->FormControlElementClicked(password_element_, false);
+  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_ShowPasswordSuggestions::ID));
+}
+
 #endif  // !defined(OS_ANDROID)
 
 // The user types in a username and a password, but then just before sending
@@ -1543,6 +1626,44 @@ TEST_F(PasswordAutofillAgentTest,
   SimulateUsernameChange(kAliceUsername, true);
   // The autofileld password should replace the typed one.
   CheckTextFieldsDOMState(kAliceUsername, true, kAlicePassword, true);
+}
+
+TEST_F(PasswordAutofillAgentTest, FormFillDataMustHaveUsername) {
+  ClearUsernameAndPasswordFields();
+
+  PasswordFormFillData no_username_fill_data = fill_data_;
+  no_username_fill_data.username_field.name = base::string16();
+  SimulateOnFillPasswordForm(no_username_fill_data);
+
+  // The username and password should not have been autocompleted.
+  CheckTextFieldsState("", false, "", false);
+}
+
+TEST_F(PasswordAutofillAgentTest, FillOnAccountSelectOnly) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      autofill::switches::kEnableFillOnAccountSelect);
+
+  ClearUsernameAndPasswordFields();
+
+  // Simulate the browser sending back the login info for an initial page load.
+  SimulateOnFillPasswordForm(fill_data_);
+
+  CheckTextFieldsState(std::string(), true, std::string(), false);
+}
+
+TEST_F(PasswordAutofillAgentTest, FillOnAccountSelectOnlyReadonlyUsername) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      autofill::switches::kEnableFillOnAccountSelect);
+
+  ClearUsernameAndPasswordFields();
+
+  username_element_.setValue("alicia");
+  SetElementReadOnly(username_element_, true);
+
+  // Simulate the browser sending back the login info for an initial page load.
+  SimulateOnFillPasswordForm(fill_data_);
+
+  CheckTextFieldsState(std::string("alicia"), false, std::string(), true);
 }
 
 }  // namespace autofill

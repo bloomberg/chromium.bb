@@ -2054,6 +2054,14 @@ const Experiment kExperiments[] = {
     kOsAndroid,
     SINGLE_VALUE_TYPE("enable-touch-hover")
   },
+  {
+    "enable-fill-on-account-select",
+    IDS_FILL_ON_ACCOUNT_SELECT_NAME,
+    IDS_FILL_ON_ACCOUNT_SELECT_DESCRIPTION,
+    kOsAll,
+    ENABLE_DISABLE_VALUE_TYPE(autofill::switches::kEnableFillOnAccountSelect,
+                              autofill::switches::kDisableFillOnAccountSelect)
+  },
 
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in

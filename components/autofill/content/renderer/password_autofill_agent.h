@@ -99,9 +99,10 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
     bool password_was_edited_last;
     PasswordInfo();
   };
-  typedef std::map<blink::WebElement, PasswordInfo> LoginToPasswordInfoMap;
+  typedef std::map<blink::WebInputElement, PasswordInfo> LoginToPasswordInfoMap;
   typedef std::map<blink::WebElement, int> LoginToPasswordInfoKeyMap;
-  typedef std::map<blink::WebElement, blink::WebElement> PasswordToLoginMap;
+  typedef std::map<blink::WebInputElement, blink::WebInputElement>
+      PasswordToLoginMap;
 
   // This class keeps track of autofilled password input elements and makes sure
   // the autofilled password value is not accessible to JavaScript code until
@@ -194,7 +195,18 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
 
   bool ShowSuggestionPopup(const PasswordFormFillData& fill_data,
                            const blink::WebInputElement& user_input,
-                           bool show_all);
+                           bool show_all,
+                           bool show_on_password_field);
+
+  // Finds the PasswordInfo that corresponds to the passed in element. The
+  // passed in element can be either a username element or a password element.
+  // If a PasswordInfo was found, returns |true| and also assigns the
+  // corresponding username WebInputElement and PasswordInfo into
+  // username_element and pasword_info, respectively.
+  bool FindPasswordInfoForElement(
+      const blink::WebInputElement& element,
+      const blink::WebInputElement** username_element,
+      PasswordInfo** password_info);
 
   // Fills |login_input| and |password| with the most relevant suggestion from
   // |fill_data| and shows a popup with other suggestions.
