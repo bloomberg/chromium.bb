@@ -89,10 +89,9 @@ void expectDoubleValue(double expectedValue, PassRefPtrWillBeRawPtr<Interpolatio
 
 Interpolation* findValue(WillBeHeapVector<RefPtrWillBeMember<Interpolation> >& values, CSSPropertyID id)
 {
-    for (size_t i = 0; i < values.size(); ++i) {
-        LegacyStyleInterpolation* value = toLegacyStyleInterpolation(values.at(i).get());
-        if (value->id() == id)
-            return value;
+    for (auto& value : values) {
+        if (toLegacyStyleInterpolation(value.get())->id() == id)
+            return value.get();
     }
     return 0;
 }

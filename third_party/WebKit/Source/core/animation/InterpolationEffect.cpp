@@ -15,8 +15,7 @@ void InterpolationEffect::getActiveInterpolations(double fraction, double iterat
     size_t existingSize = result->size();
     size_t resultIndex = 0;
 
-    for (size_t i = 0; i < m_interpolations.size(); ++i) {
-        const InterpolationRecord* record = m_interpolations[i].get();
+    for (const auto& record : m_interpolations) {
         if (fraction >= record->m_applyFrom && fraction < record->m_applyTo) {
             RefPtrWillBeRawPtr<Interpolation> interpolation = record->m_interpolation;
             double localFraction = (fraction - record->m_start) / (record->m_end - record->m_start);

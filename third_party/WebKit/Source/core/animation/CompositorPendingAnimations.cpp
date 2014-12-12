@@ -68,16 +68,15 @@ bool CompositorPendingAnimations::update(bool startOnCompositor)
         compositorGroup = ++m_compositorGroup;
     }
 
-    for (size_t i = 0; i < players.size(); ++i) {
-        AnimationPlayer& player = *players[i].get();
-        bool hadCompositorAnimation = player.hasActiveAnimationsOnCompositor();
-        player.preCommit(compositorGroup, startOnCompositor);
-        if (player.hasActiveAnimationsOnCompositor() && !hadCompositorAnimation) {
+    for (auto& player : players) {
+        bool hadCompositorAnimation = player->hasActiveAnimationsOnCompositor();
+        player->preCommit(compositorGroup, startOnCompositor);
+        if (player->hasActiveAnimationsOnCompositor() && !hadCompositorAnimation) {
             startedSynchronizedOnCompositor = true;
         }
 
-        if (player.playing() && !player.hasStartTime()) {
-            waitingForStartTime.append(&player);
+        if (player->playing() && !player->hasStartTime()) {
+            waitingForStartTime.append(player.get());
         }
     }
 
@@ -85,24 +84,22 @@ bool CompositorPendingAnimations::update(bool startOnCompositor)
     // remaning synchronized animations need to wait for the synchronized
     // start time. Otherwise they may start immediately.
     if (startedSynchronizedOnCompositor) {
-        for (size_t i = 0; i < waitingForStartTime.size(); ++i) {
-            if (!waitingForStartTime[i]->hasStartTime()) {
-                m_waitingForCompositorAnimationStart.append(waitingForStartTime[i]);
+        for (auto& player : waitingForStartTime) {
+            if (!player->hasStartTime()) {
+                m_waitingForCompositorAnimationStart.append(player);
             }
         }
     } else {
-        for (size_t i = 0; i < waitingForStartTime.size(); ++i) {
-            if (!waitingForStartTime[i]->hasStartTime()) {
-                waitingForStartTime[i]->notifyCompositorStartTime(waitingForStartTime[i]->timeline()->currentTimeInternal());
+        for (auto& player : waitingForStartTime) {
+            if (!player->hasStartTime()) {
+                player->notifyCompositorStartTime(player->timeline()->currentTimeInternal());
             }
         }
     }
 
     // FIXME: The postCommit should happen *after* the commit, not before.
-    for (size_t i = 0; i < players.size(); ++i) {
-        AnimationPlayer& player = *players[i].get();
-        player.postCommit(player.timeline()->currentTimeInternal());
-    }
+    for (auto& player : players)
+        player->postCommit(player->timeline()->currentTimeInternal());
 
     ASSERT(m_pending.isEmpty());
 
@@ -113,8 +110,8 @@ bool CompositorPendingAnimations::update(bool startOnCompositor)
         return false;
 
     // Check if we're still waiting for any compositor animations to start.
-    for (size_t i = 0; i < m_waitingForCompositorAnimationStart.size(); ++i) {
-        if (m_waitingForCompositorAnimationStart[i].get()->hasActiveAnimationsOnCompositor())
+    for (auto& player : m_waitingForCompositorAnimationStart) {
+        if (player->hasActiveAnimationsOnCompositor())
             return true;
     }
 
@@ -131,8 +128,7 @@ void CompositorPendingAnimations::notifyCompositorAnimationStarted(double monoto
     WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > players;
     players.swap(m_waitingForCompositorAnimationStart);
 
-    for (size_t i = 0; i < players.size(); ++i) {
-        AnimationPlayer* player = players[i].get();
+    for (auto player : players) {
         if (player->hasStartTime() || player->playStateInternal() != AnimationPlayer::Pending) {
             // Already started or no longer relevant.
             continue;

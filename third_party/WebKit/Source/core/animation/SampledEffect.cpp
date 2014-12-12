@@ -47,9 +47,9 @@ void SampledEffect::removeReplacedInterpolationsIfNeeded(const BitArray<numCSSPr
         return;
 
     size_t dest = 0;
-    for (size_t i = 0; i < m_interpolations->size(); i++) {
-        if (!replacedProperties.get(toStyleInterpolation(m_interpolations->at(i).get())->id()))
-            m_interpolations->at(dest++) = m_interpolations->at(i);
+    for (auto& interpolation : *m_interpolations) {
+        if (!replacedProperties.get(toStyleInterpolation(interpolation.get())->id()))
+            m_interpolations->at(dest++) = interpolation;
     }
     m_interpolations->shrink(dest);
 }

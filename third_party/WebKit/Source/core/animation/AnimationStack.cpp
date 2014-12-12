@@ -44,9 +44,8 @@ namespace {
 
 void copyToActiveInterpolationMap(const WillBeHeapVector<RefPtrWillBeMember<blink::Interpolation> >& source, WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<blink::Interpolation> >& target)
 {
-    for (size_t i = 0; i < source.size(); ++i) {
-        Interpolation* interpolation = source[i].get();
-        target.set(toStyleInterpolation(interpolation)->id(), interpolation);
+    for (const auto& interpolation : source) {
+        target.set(toStyleInterpolation(interpolation.get())->id(), interpolation.get());
     }
 }
 
@@ -58,9 +57,9 @@ bool compareEffects(const OwnPtrWillBeMember<SampledEffect>& effect1, const OwnP
 
 void copyNewAnimationsToActiveInterpolationMap(const WillBeHeapVector<RawPtrWillBeMember<InertAnimation> >& newAnimations, WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& result)
 {
-    for (size_t i = 0; i < newAnimations.size(); ++i) {
+    for (const auto& newAnimation : newAnimations) {
         OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> sample = nullptr;
-        newAnimations[i]->sample(0, sample);
+        newAnimation->sample(0, sample);
         if (sample)
             copyToActiveInterpolationMap(*sample, result);
     }
@@ -74,8 +73,8 @@ AnimationStack::AnimationStack()
 
 bool AnimationStack::affects(CSSPropertyID property) const
 {
-    for (size_t i = 0; i < m_effects.size(); ++i) {
-        if (m_effects[i]->animation() && m_effects[i]->animation()->affects(property))
+    for (const auto& effect : m_effects) {
+        if (effect->animation() && effect->animation()->affects(property))
             return true;
     }
     return false;
@@ -83,8 +82,8 @@ bool AnimationStack::affects(CSSPropertyID property) const
 
 bool AnimationStack::hasActiveAnimationsOnCompositor(CSSPropertyID property) const
 {
-    for (size_t i = 0; i < m_effects.size(); ++i) {
-        if (m_effects[i]->animation() && m_effects[i]->animation()->hasActiveAnimationsOnCompositor(property))
+    for (const auto& effect : m_effects) {
+        if (effect->animation() && effect->animation()->hasActiveAnimationsOnCompositor(property))
             return true;
     }
     return false;
@@ -101,11 +100,10 @@ WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > AnimationSt
         // std::sort doesn't work with OwnPtrs
         nonCopyingSort(effects.begin(), effects.end(), compareEffects);
         animationStack->simplifyEffects();
-        for (size_t i = 0; i < effects.size(); ++i) {
-            const SampledEffect& effect = *effects[i];
-            if (effect.animation()->priority() != priority || (cancelledAnimationPlayers && cancelledAnimationPlayers->contains(effect.animation()->player())))
+        for (const auto& effect : effects) {
+            if (effect->animation()->priority() != priority || (cancelledAnimationPlayers && cancelledAnimationPlayers->contains(effect->animation()->player())))
                 continue;
-            copyToActiveInterpolationMap(effect.interpolations(), result);
+            copyToActiveInterpolationMap(effect->interpolations(), result);
         }
     }
 
@@ -124,19 +122,19 @@ void AnimationStack::simplifyEffects()
         SampledEffect& effect = *m_effects[i];
         effect.removeReplacedInterpolationsIfNeeded(replacedProperties);
         if (!effect.canChange()) {
-            for (size_t i = 0; i < effect.interpolations().size(); ++i)
-                replacedProperties.set(toStyleInterpolation(effect.interpolations()[i].get())->id());
+            for (const auto& interpolation : effect.interpolations())
+                replacedProperties.set(toStyleInterpolation(interpolation.get())->id());
         }
     }
 
     size_t dest = 0;
-    for (size_t i = 0; i < m_effects.size(); ++i) {
-        if (!m_effects[i]->interpolations().isEmpty()) {
-            m_effects[dest++].swap(m_effects[i]);
+    for (auto& effect : m_effects) {
+        if (!effect->interpolations().isEmpty()) {
+            m_effects[dest++].swap(effect);
             continue;
         }
-        if (m_effects[i]->animation())
-            m_effects[i]->animation()->notifySampledEffectRemovedFromAnimationStack();
+        if (effect->animation())
+            effect->animation()->notifySampledEffectRemovedFromAnimationStack();
     }
     m_effects.shrink(dest);
 }
@@ -149,9 +147,9 @@ void AnimationStack::trace(Visitor* visitor)
 bool AnimationStack::getAnimatedBoundingBox(FloatBox& box, CSSPropertyID property) const
 {
     FloatBox originalBox(box);
-    for (size_t i = 0; i < m_effects.size(); ++i) {
-        if (m_effects[i]->animation() && m_effects[i]->animation()->affects(property)) {
-            Animation* anim = m_effects[i]->animation();
+    for (const auto& effect : m_effects) {
+        if (effect->animation() && effect->animation()->affects(property)) {
+            Animation* anim = effect->animation();
             if (!anim)
                 continue;
             const Timing& timing = anim->specifiedTiming();

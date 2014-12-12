@@ -291,8 +291,8 @@ void Animation::cancelAnimationOnCompositor()
         return;
     if (!m_target || !m_target->renderer())
         return;
-    for (size_t i = 0; i < m_compositorAnimationIds.size(); ++i)
-        CompositorAnimations::instance()->cancelAnimationOnCompositor(*m_target, m_compositorAnimationIds[i]);
+    for (const auto& compositorAnimationId : m_compositorAnimationIds)
+        CompositorAnimations::instance()->cancelAnimationOnCompositor(*m_target, compositorAnimationId);
     m_compositorAnimationIds.clear();
     player()->setCompositorPending(true);
 }
@@ -302,8 +302,8 @@ void Animation::pauseAnimationForTestingOnCompositor(double pauseTime)
     ASSERT(hasActiveAnimationsOnCompositor());
     if (!m_target || !m_target->renderer())
         return;
-    for (size_t i = 0; i < m_compositorAnimationIds.size(); ++i)
-        CompositorAnimations::instance()->pauseAnimationForTestingOnCompositor(*m_target, m_compositorAnimationIds[i], pauseTime);
+    for (const auto& compositorAnimationId : m_compositorAnimationIds)
+        CompositorAnimations::instance()->pauseAnimationForTestingOnCompositor(*m_target, compositorAnimationId, pauseTime);
 }
 
 void Animation::trace(Visitor* visitor)

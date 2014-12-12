@@ -96,12 +96,10 @@ public:
         if (!element.hasActiveAnimations())
             return animationPlayers;
 
-        const AnimationPlayerCountedSet& players = element.activeAnimations()->players();
-
-        for (AnimationPlayerCountedSet::const_iterator it = players.begin(); it != players.end(); ++it) {
-            ASSERT(it->key->source());
-            if (it->key->source()->isCurrent())
-                animationPlayers.append(it->key);
+        for (const auto& player : element.activeAnimations()->players()) {
+            ASSERT(player.key->source());
+            if (player.key->source()->isCurrent())
+                animationPlayers.append(player.key);
         }
         return animationPlayers;
     }
