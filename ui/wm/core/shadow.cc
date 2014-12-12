@@ -12,10 +12,9 @@
 
 namespace {
 
-// Shadow opacity for different styles.
-const float kActiveShadowOpacity = 1.0f;
-const float kInactiveShadowOpacity = 0.2f;
-const float kSmallShadowOpacity = 1.0f;
+// The opacity used for active shadow when animating between
+// inactive/active shadow.
+const float kInactiveShadowAnimationOpacity = 0.2f;
 
 // Shadow aperture for different styles.
 // Note that this may be greater than interior inset to allow shadows with
@@ -31,18 +30,6 @@ const int kSmallInteriorInset = 4;
 
 // Duration for opacity animation in milliseconds.
 const int kShadowAnimationDurationMs = 100;
-
-float GetOpacityForStyle(wm::Shadow::Style style) {
-  switch (style) {
-    case wm::Shadow::STYLE_ACTIVE:
-      return kActiveShadowOpacity;
-    case wm::Shadow::STYLE_INACTIVE:
-      return kInactiveShadowOpacity;
-    case wm::Shadow::STYLE_SMALL:
-      return kSmallShadowOpacity;
-  }
-  return 1.0f;
-}
 
 int GetShadowApertureForStyle(wm::Shadow::Style style) {
   switch (style) {
@@ -89,7 +76,6 @@ void Shadow::Init(Style style) {
   shadow_layer_->set_name("Shadow");
   shadow_layer_->SetVisible(true);
   shadow_layer_->SetFillsBoundsOpaquely(false);
-  shadow_layer_->SetOpacity(GetOpacityForStyle(style_));
 }
 
 void Shadow::SetContentBounds(const gfx::Rect& content_bounds) {
@@ -111,7 +97,8 @@ void Shadow::SetStyle(Style style) {
   // animations.
   if (style == STYLE_SMALL || old_style == STYLE_SMALL) {
     UpdateImagesForStyle();
-    shadow_layer_->SetOpacity(GetOpacityForStyle(style));
+    // Make sure the shadow is fully opaque.
+    shadow_layer_->SetOpacity(1.0f);
     return;
   }
 
@@ -121,7 +108,7 @@ void Shadow::SetStyle(Style style) {
   if (style == STYLE_ACTIVE) {
     UpdateImagesForStyle();
     // Opacity was baked into inactive image, start opacity low to match.
-    shadow_layer_->SetOpacity(kInactiveShadowOpacity);
+    shadow_layer_->SetOpacity(kInactiveShadowAnimationOpacity);
   }
 
   {
@@ -132,10 +119,13 @@ void Shadow::SetStyle(Style style) {
         base::TimeDelta::FromMilliseconds(kShadowAnimationDurationMs));
     switch (style_) {
       case STYLE_ACTIVE:
-        shadow_layer_->SetOpacity(kActiveShadowOpacity);
+        // Animate the active shadow from kInactiveShadowAnimationOpacity to
+        // 1.0f.
+        shadow_layer_->SetOpacity(1.0f);
         break;
       case STYLE_INACTIVE:
-        shadow_layer_->SetOpacity(kInactiveShadowOpacity);
+        // The opacity will be reset to 1.0f when animation is completed.
+        shadow_layer_->SetOpacity(kInactiveShadowAnimationOpacity);
         break;
       default:
         NOTREACHED() << "Unhandled style " << style_;
