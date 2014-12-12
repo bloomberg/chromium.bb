@@ -253,7 +253,7 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
     EXPECT_TRUE(extension);
 
     OpenApplication(AppLaunchParams(profile(), extension, container,
-                                    disposition, extensions::SOURCE_UNTRACKED));
+                                    disposition, extensions::SOURCE_TEST));
     return extension;
   }
 
@@ -2118,7 +2118,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, V1AppNavigation) {
   // Create a windowed application.
   AppLaunchParams params(
       profile(), controller_->GetExtensionForAppID(extensions::kWebStoreAppId),
-      CURRENT_TAB, chrome::HOST_DESKTOP_TYPE_ASH, extensions::SOURCE_UNTRACKED);
+      CURRENT_TAB, chrome::HOST_DESKTOP_TYPE_ASH, extensions::SOURCE_TEST);
   params.container = extensions::LAUNCH_CONTAINER_WINDOW;
   OpenApplication(params);
   EXPECT_EQ(ash::STATUS_ACTIVE, model_->ItemByID(id)->status);

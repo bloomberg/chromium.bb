@@ -180,7 +180,7 @@ void RemoteDesktopBrowserTest::LaunchChromotingApp() {
                                       ? extensions::LAUNCH_CONTAINER_NONE
                                       : extensions::LAUNCH_CONTAINER_TAB,
                                   is_platform_app() ? NEW_WINDOW : CURRENT_TAB,
-                                  extensions::SOURCE_UNTRACKED));
+                                  extensions::SOURCE_TEST));
 
   observer.Wait();
 

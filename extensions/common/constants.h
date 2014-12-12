@@ -112,7 +112,7 @@ extern const char kWebStoreAppId[];
 // Note the enumeration is used in UMA histogram so entries
 // should not be re-ordered or removed.
 enum AppLaunchSource {
-  SOURCE_UNTRACKED = 0,  // Should be used in test.
+  SOURCE_UNTRACKED = 0,
   SOURCE_APP_LAUNCHER,
   SOURCE_NEW_TAB_PAGE,
   SOURCE_RELOAD,
@@ -130,6 +130,7 @@ enum AppLaunchSource {
   SOURCE_BACKGROUND,
   SOURCE_KIOSK,
   SOURCE_CHROME_INTERNAL,
+  SOURCE_TEST,
 
   NUM_APP_LAUNCH_SOURCES
 };

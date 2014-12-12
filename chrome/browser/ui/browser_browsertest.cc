@@ -1338,7 +1338,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
   // Launch it in a window, as AppLauncherHandler::HandleLaunchApp() would.
   WebContents* app_window = OpenApplication(AppLaunchParams(
       browser()->profile(), extension_app, extensions::LAUNCH_CONTAINER_WINDOW,
-      NEW_WINDOW, extensions::SOURCE_UNTRACKED));
+      NEW_WINDOW, extensions::SOURCE_TEST));
   ASSERT_TRUE(app_window);
 
   DevToolsWindow* devtools_window =
@@ -1607,7 +1607,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
   // Launch it in a window, as AppLauncherHandler::HandleLaunchApp() would.
   WebContents* app_window = OpenApplication(AppLaunchParams(
       browser()->profile(), extension_app, extensions::LAUNCH_CONTAINER_WINDOW,
-      NEW_WINDOW, extensions::SOURCE_UNTRACKED));
+      NEW_WINDOW, extensions::SOURCE_TEST));
   ASSERT_TRUE(app_window);
 
   // Apps launched in a window from the NTP have an extensions tab helper but

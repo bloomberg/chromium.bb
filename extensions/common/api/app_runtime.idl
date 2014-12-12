@@ -33,7 +33,8 @@ namespace app.runtime {
     ephemeral_app,
     background,
     kiosk,
-    chrome_internal
+    chrome_internal,
+    test
   };
 
   // Optional data for the launch. Either <code>items</code>, or

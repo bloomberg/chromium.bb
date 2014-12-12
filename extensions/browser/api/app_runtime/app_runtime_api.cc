@@ -101,6 +101,8 @@ app_runtime::LaunchSource getLaunchSourceEnum(
       return app_runtime::LAUNCH_SOURCE_KIOSK;
     case extensions::SOURCE_CHROME_INTERNAL:
       return app_runtime::LAUNCH_SOURCE_CHROME_INTERNAL;
+    case extensions::SOURCE_TEST:
+      return app_runtime::LAUNCH_SOURCE_TEST;
 
     default:
       return app_runtime::LAUNCH_SOURCE_NONE;

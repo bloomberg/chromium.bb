@@ -512,7 +512,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithRelativeFile) {
 
   // Run the test
   AppLaunchParams params(browser()->profile(), extension, LAUNCH_CONTAINER_NONE,
-                         NEW_WINDOW, extensions::SOURCE_UNTRACKED);
+                         NEW_WINDOW, extensions::SOURCE_TEST);
   params.command_line = *CommandLine::ForCurrentProcess();
   params.current_directory = test_data_dir_;
   OpenApplication(params);
@@ -843,7 +843,7 @@ void PlatformAppDevToolsBrowserTest::RunTestWithDevTools(
         content::NotificationService::AllSources());
     OpenApplication(AppLaunchParams(browser()->profile(), extension,
                                     LAUNCH_CONTAINER_NONE, NEW_WINDOW,
-                                    extensions::SOURCE_UNTRACKED));
+                                    extensions::SOURCE_TEST));
     app_loaded_observer.Wait();
     window = GetFirstAppWindow();
     ASSERT_TRUE(window);
@@ -989,7 +989,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   ExtensionTestMessageListener launched_listener("Launched", false);
   OpenApplication(AppLaunchParams(browser()->profile(), extension,
                                   LAUNCH_CONTAINER_NONE, NEW_WINDOW,
-                                  extensions::SOURCE_UNTRACKED));
+                                  extensions::SOURCE_TEST));
 
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 }
@@ -1013,7 +1013,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   ExtensionTestMessageListener launched_listener("Launched", false);
   OpenApplication(AppLaunchParams(browser()->profile(), extension,
                                   LAUNCH_CONTAINER_NONE, NEW_WINDOW,
-                                  extensions::SOURCE_UNTRACKED));
+                                  extensions::SOURCE_TEST));
 
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
   ASSERT_FALSE(should_not_install.seen());
@@ -1051,7 +1051,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ComponentAppBackgroundPage) {
   ExtensionTestMessageListener launched_listener("Launched", false);
   OpenApplication(AppLaunchParams(browser()->profile(), extension,
                                   LAUNCH_CONTAINER_NONE, NEW_WINDOW,
-                                  extensions::SOURCE_UNTRACKED));
+                                  extensions::SOURCE_TEST));
 
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 }
@@ -1075,7 +1075,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
     ExtensionTestMessageListener launched_listener("Launched", false);
     OpenApplication(AppLaunchParams(browser()->profile(), extension,
                                     LAUNCH_CONTAINER_NONE, NEW_WINDOW,
-                                    extensions::SOURCE_UNTRACKED));
+                                    extensions::SOURCE_TEST));
     ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
   }
 
@@ -1227,7 +1227,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppIncognitoBrowserTest, IncognitoComponentApp) {
 
   OpenApplication(AppLaunchParams(incognito_profile, file_manager, CURRENT_TAB,
                                   chrome::HOST_DESKTOP_TYPE_NATIVE,
-                                  extensions::SOURCE_UNTRACKED));
+                                  extensions::SOURCE_TEST));
 
   while (!ContainsKey(opener_app_ids_, file_manager->id())) {
     content::RunAllPendingInMessageLoop();

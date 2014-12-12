@@ -41681,6 +41681,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="15" label="SOURCE_BACKGROUND"/>
   <int value="16" label="SOURCE_KIOSK"/>
   <int value="17" label="SOURCE_CHROME_INTERNAL"/>
+  <int value="18" label="SOURCE_TEST"/>
 </enum>
 
 <enum name="AppListEnableSource" type="int">

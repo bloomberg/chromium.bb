@@ -36,7 +36,7 @@ class NativeAppWindowCocoaBrowserTest : public PlatformAppBrowserTest {
           content::NotificationService::AllSources());
       OpenApplication(
           AppLaunchParams(profile(), app_, extensions::LAUNCH_CONTAINER_NONE,
-                          NEW_WINDOW, extensions::SOURCE_UNTRACKED));
+                          NEW_WINDOW, extensions::SOURCE_TEST));
       app_loaded_observer.Wait();
     }
   }

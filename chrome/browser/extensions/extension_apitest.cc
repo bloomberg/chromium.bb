@@ -312,7 +312,7 @@ bool ExtensionApiTest::RunExtensionTestImpl(const std::string& extension_name,
   } else if (launch_platform_app) {
     AppLaunchParams params(browser()->profile(), extension,
                            extensions::LAUNCH_CONTAINER_NONE, NEW_WINDOW,
-                           extensions::SOURCE_UNTRACKED);
+                           extensions::SOURCE_TEST);
     params.command_line = *CommandLine::ForCurrentProcess();
     OpenApplication(params);
   }

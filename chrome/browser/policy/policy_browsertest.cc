@@ -2636,7 +2636,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FullscreenAllowedApp) {
       extensions::AppWindowRegistry::Get(browser()->profile()));
   OpenApplication(AppLaunchParams(browser()->profile(), extension,
                                   extensions::LAUNCH_CONTAINER_NONE, NEW_WINDOW,
-                                  extensions::SOURCE_UNTRACKED));
+                                  extensions::SOURCE_TEST));
   extensions::AppWindow* window = add_window_observer.WaitForAppWindow();
   ASSERT_TRUE(window);
 

@@ -1341,7 +1341,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
   run_loop_.reset(new base::RunLoop);
   OpenApplication(AppLaunchParams(profile, app,
                                   extensions::LAUNCH_CONTAINER_NONE, NEW_WINDOW,
-                                  extensions::SOURCE_UNTRACKED));
+                                  extensions::SOURCE_TEST));
   run_loop_->Run();
   EXPECT_EQ(1U, app_window_registry->app_windows().size());
 
