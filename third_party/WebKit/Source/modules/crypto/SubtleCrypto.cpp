@@ -473,4 +473,38 @@ ScriptPromise SubtleCrypto::deriveBits(ScriptState* scriptState, const Algorithm
     return promise;
 }
 
+ScriptPromise SubtleCrypto::deriveKey(ScriptState* scriptState, const AlgorithmIdentifier& rawAlgorithm, CryptoKey* baseKey, const AlgorithmIdentifier& rawDerivedKeyType, bool extractable, const Vector<String>& rawKeyUsages)
+{
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
+    ScriptPromise promise = result->promise();
+
+    if (!canAccessWebCrypto(scriptState, result.get()))
+        return promise;
+
+    if (!ensureNotNull(baseKey, "baseKey", result.get()))
+        return promise;
+
+    WebCryptoKeyUsageMask keyUsages;
+    if (!CryptoKey::parseUsageMask(rawKeyUsages, keyUsages, result.get()))
+        return promise;
+
+    WebCryptoAlgorithm algorithm;
+    if (!parseAlgorithm(rawAlgorithm, WebCryptoOperationDeriveBits, algorithm, result.get()))
+        return promise;
+
+    if (!baseKey->canBeUsedForAlgorithm(algorithm, WebCryptoKeyUsageDeriveKey, result.get()))
+        return promise;
+
+    WebCryptoAlgorithm importAlgorithm;
+    if (!parseAlgorithm(rawDerivedKeyType, WebCryptoOperationImportKey, importAlgorithm, result.get()))
+        return promise;
+
+    WebCryptoAlgorithm keyLengthAlgorithm;
+    if (!parseAlgorithm(rawDerivedKeyType, WebCryptoOperationGetKeyLength, keyLengthAlgorithm, result.get()))
+        return promise;
+
+    Platform::current()->crypto()->deriveKey(algorithm, baseKey->key(), importAlgorithm, keyLengthAlgorithm, extractable, keyUsages, result->result());
+    return promise;
+}
+
 } // namespace blink

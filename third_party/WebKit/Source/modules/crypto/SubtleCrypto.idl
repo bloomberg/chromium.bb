@@ -48,6 +48,7 @@ typedef (ArrayBuffer or ArrayBufferView) BufferSource;
     [CallWith=ScriptState] Promise importKey(KeyFormat format, (ArrayBuffer or ArrayBufferView or Dictionary) keyData, AlgorithmIdentifier algorithm, boolean extractable, sequence<KeyUsage> keyUsages);
     [CallWith=ScriptState] Promise exportKey(KeyFormat format, CryptoKey key);
     [CallWith=ScriptState] Promise deriveBits(AlgorithmIdentifier algorithm, CryptoKey baseKey, unsigned long length);
+    [CallWith=ScriptState] Promise deriveKey(AlgorithmIdentifier algorithm, CryptoKey baseKey, AlgorithmIdentifier derivedKeyType, boolean extractable, sequence<KeyUsage> keyUsages);
     [CallWith=ScriptState] Promise wrapKey(KeyFormat format, CryptoKey key, CryptoKey wrappingKey, AlgorithmIdentifier wrapAlgorithm);
     [CallWith=ScriptState] Promise unwrapKey(KeyFormat format, BufferSource wrappedKey, CryptoKey unwrappingKey, AlgorithmIdentifier unwrapAlgorithm, AlgorithmIdentifier unwrappedKeyAlgorithm, boolean extractable, sequence<KeyUsage> keyUsages);
 };

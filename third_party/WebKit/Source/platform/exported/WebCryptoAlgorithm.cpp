@@ -52,7 +52,7 @@ const WebCryptoAlgorithmInfo algorithmIdToInfo[] = {
             WebCryptoAlgorithmInfo::Undefined, // Digest
             WebCryptoAlgorithmParamsTypeAesKeyGenParams, // GenerateKey
             WebCryptoAlgorithmParamsTypeNone, // ImportKey
-            WebCryptoAlgorithmInfo::Undefined, // DeriveKey
+            WebCryptoAlgorithmParamsTypeAesDerivedKeyParams, // GetKeyLength
             WebCryptoAlgorithmInfo::Undefined, // DeriveBits
             WebCryptoAlgorithmParamsTypeAesCbcParams, // WrapKey
             WebCryptoAlgorithmParamsTypeAesCbcParams // UnwrapKey
@@ -66,7 +66,7 @@ const WebCryptoAlgorithmInfo algorithmIdToInfo[] = {
             WebCryptoAlgorithmInfo::Undefined, // Digest
             WebCryptoAlgorithmParamsTypeHmacKeyGenParams, // GenerateKey
             WebCryptoAlgorithmParamsTypeHmacImportParams, // ImportKey
-            WebCryptoAlgorithmInfo::Undefined, // DeriveKey
+            WebCryptoAlgorithmParamsTypeHmacImportParams, // GetKeyLength
             WebCryptoAlgorithmInfo::Undefined, // DeriveBits
             WebCryptoAlgorithmInfo::Undefined, // WrapKey
             WebCryptoAlgorithmInfo::Undefined // UnwrapKey
@@ -80,7 +80,7 @@ const WebCryptoAlgorithmInfo algorithmIdToInfo[] = {
             WebCryptoAlgorithmInfo::Undefined, // Digest
             WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams, // GenerateKey
             WebCryptoAlgorithmParamsTypeRsaHashedImportParams, // ImportKey
-            WebCryptoAlgorithmInfo::Undefined, // DeriveKey
+            WebCryptoAlgorithmInfo::Undefined, // GetKeyLength
             WebCryptoAlgorithmInfo::Undefined, // DeriveBits
             WebCryptoAlgorithmInfo::Undefined, // WrapKey
             WebCryptoAlgorithmInfo::Undefined // UnwrapKey
@@ -94,7 +94,7 @@ const WebCryptoAlgorithmInfo algorithmIdToInfo[] = {
             WebCryptoAlgorithmParamsTypeNone, // Digest
             WebCryptoAlgorithmInfo::Undefined, // GenerateKey
             WebCryptoAlgorithmInfo::Undefined, // ImportKey
-            WebCryptoAlgorithmInfo::Undefined, // DeriveKey
+            WebCryptoAlgorithmInfo::Undefined, // GetKeyLength
             WebCryptoAlgorithmInfo::Undefined, // DeriveBits
             WebCryptoAlgorithmInfo::Undefined, // WrapKey
             WebCryptoAlgorithmInfo::Undefined // UnwrapKey
@@ -108,7 +108,7 @@ const WebCryptoAlgorithmInfo algorithmIdToInfo[] = {
             WebCryptoAlgorithmParamsTypeNone, // Digest
             WebCryptoAlgorithmInfo::Undefined, // GenerateKey
             WebCryptoAlgorithmInfo::Undefined, // ImportKey
-            WebCryptoAlgorithmInfo::Undefined, // DeriveKey
+            WebCryptoAlgorithmInfo::Undefined, // GetKeyLength
             WebCryptoAlgorithmInfo::Undefined, // DeriveBits
             WebCryptoAlgorithmInfo::Undefined, // WrapKey
             WebCryptoAlgorithmInfo::Undefined // UnwrapKey
@@ -122,7 +122,7 @@ const WebCryptoAlgorithmInfo algorithmIdToInfo[] = {
             WebCryptoAlgorithmParamsTypeNone, // Digest
             WebCryptoAlgorithmInfo::Undefined, // GenerateKey
             WebCryptoAlgorithmInfo::Undefined, // ImportKey
-            WebCryptoAlgorithmInfo::Undefined, // DeriveKey
+            WebCryptoAlgorithmInfo::Undefined, // GetKeyLength
             WebCryptoAlgorithmInfo::Undefined, // DeriveBits
             WebCryptoAlgorithmInfo::Undefined, // WrapKey
             WebCryptoAlgorithmInfo::Undefined // UnwrapKey
@@ -136,7 +136,7 @@ const WebCryptoAlgorithmInfo algorithmIdToInfo[] = {
             WebCryptoAlgorithmParamsTypeNone, // Digest
             WebCryptoAlgorithmInfo::Undefined, // GenerateKey
             WebCryptoAlgorithmInfo::Undefined, // ImportKey
-            WebCryptoAlgorithmInfo::Undefined, // DeriveKey
+            WebCryptoAlgorithmInfo::Undefined, // GetKeyLength
             WebCryptoAlgorithmInfo::Undefined, // DeriveBits
             WebCryptoAlgorithmInfo::Undefined, // WrapKey
             WebCryptoAlgorithmInfo::Undefined // UnwrapKey
@@ -150,7 +150,7 @@ const WebCryptoAlgorithmInfo algorithmIdToInfo[] = {
             WebCryptoAlgorithmInfo::Undefined, // Digest
             WebCryptoAlgorithmParamsTypeAesKeyGenParams, // GenerateKey
             WebCryptoAlgorithmParamsTypeNone, // ImportKey
-            WebCryptoAlgorithmInfo::Undefined, // DeriveKey
+            WebCryptoAlgorithmParamsTypeAesDerivedKeyParams, // GetKeyLength
             WebCryptoAlgorithmInfo::Undefined, // DeriveBits
             WebCryptoAlgorithmParamsTypeAesGcmParams, // WrapKey
             WebCryptoAlgorithmParamsTypeAesGcmParams // UnwrapKey
@@ -164,7 +164,7 @@ const WebCryptoAlgorithmInfo algorithmIdToInfo[] = {
             WebCryptoAlgorithmInfo::Undefined, // Digest
             WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams, // GenerateKey
             WebCryptoAlgorithmParamsTypeRsaHashedImportParams, // ImportKey
-            WebCryptoAlgorithmInfo::Undefined, // DeriveKey
+            WebCryptoAlgorithmInfo::Undefined, // GetKeyLength
             WebCryptoAlgorithmInfo::Undefined, // DeriveBits
             WebCryptoAlgorithmParamsTypeRsaOaepParams, // WrapKey
             WebCryptoAlgorithmParamsTypeRsaOaepParams // UnwrapKey
@@ -178,7 +178,7 @@ const WebCryptoAlgorithmInfo algorithmIdToInfo[] = {
             WebCryptoAlgorithmInfo::Undefined, // Digest
             WebCryptoAlgorithmParamsTypeAesKeyGenParams, // GenerateKey
             WebCryptoAlgorithmParamsTypeNone, // ImportKey
-            WebCryptoAlgorithmInfo::Undefined, // DeriveKey
+            WebCryptoAlgorithmParamsTypeAesDerivedKeyParams, // GetKeyLength
             WebCryptoAlgorithmInfo::Undefined, // DeriveBits
             WebCryptoAlgorithmParamsTypeAesCtrParams, // WrapKey
             WebCryptoAlgorithmParamsTypeAesCtrParams // UnwrapKey
@@ -192,7 +192,7 @@ const WebCryptoAlgorithmInfo algorithmIdToInfo[] = {
             WebCryptoAlgorithmInfo::Undefined, // Digest
             WebCryptoAlgorithmParamsTypeAesKeyGenParams, // GenerateKey
             WebCryptoAlgorithmParamsTypeNone, // ImportKey
-            WebCryptoAlgorithmInfo::Undefined, // DeriveKey
+            WebCryptoAlgorithmParamsTypeAesDerivedKeyParams, // GetKeyLength
             WebCryptoAlgorithmInfo::Undefined, // DeriveBits
             WebCryptoAlgorithmParamsTypeNone, // WrapKey
             WebCryptoAlgorithmParamsTypeNone // UnwrapKey
@@ -206,7 +206,7 @@ const WebCryptoAlgorithmInfo algorithmIdToInfo[] = {
             WebCryptoAlgorithmInfo::Undefined, // Digest
             WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams, // GenerateKey
             WebCryptoAlgorithmParamsTypeRsaHashedImportParams, // ImportKey
-            WebCryptoAlgorithmInfo::Undefined, // DeriveKey
+            WebCryptoAlgorithmInfo::Undefined, // GetKeyLength
             WebCryptoAlgorithmInfo::Undefined, // DeriveBits
             WebCryptoAlgorithmParamsTypeNone, // WrapKey
             WebCryptoAlgorithmParamsTypeNone // UnwrapKey
@@ -220,7 +220,7 @@ const WebCryptoAlgorithmInfo algorithmIdToInfo[] = {
             WebCryptoAlgorithmInfo::Undefined, // Digest
             WebCryptoAlgorithmParamsTypeEcKeyGenParams, // GenerateKey
             WebCryptoAlgorithmParamsTypeEcKeyImportParams, // ImportKey
-            WebCryptoAlgorithmInfo::Undefined, // DeriveKey
+            WebCryptoAlgorithmInfo::Undefined, // GetKeyLength
             WebCryptoAlgorithmInfo::Undefined, // DeriveBits
             WebCryptoAlgorithmParamsTypeNone, // WrapKey
             WebCryptoAlgorithmParamsTypeNone // UnwrapKey
@@ -234,7 +234,7 @@ const WebCryptoAlgorithmInfo algorithmIdToInfo[] = {
             WebCryptoAlgorithmInfo::Undefined, // Digest
             WebCryptoAlgorithmParamsTypeEcKeyGenParams, // GenerateKey
             WebCryptoAlgorithmParamsTypeEcKeyImportParams, // ImportKey
-            WebCryptoAlgorithmParamsTypeNone, // DeriveKey
+            WebCryptoAlgorithmInfo::Undefined, // GetKeyLength
             WebCryptoAlgorithmParamsTypeEcdhKeyDeriveParams, // DeriveBits
             WebCryptoAlgorithmParamsTypeNone, // WrapKey
             WebCryptoAlgorithmParamsTypeNone // UnwrapKey

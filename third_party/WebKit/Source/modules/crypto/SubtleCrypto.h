@@ -68,6 +68,8 @@ public:
     ScriptPromise unwrapKey(ScriptState*, const String&, const DOMArrayPiece&, CryptoKey*, const AlgorithmIdentifier&, const AlgorithmIdentifier&, bool, const Vector<String>&);
 
     ScriptPromise deriveBits(ScriptState*, const AlgorithmIdentifier&, CryptoKey*, unsigned);
+    ScriptPromise deriveKey(ScriptState*, const AlgorithmIdentifier&, CryptoKey*, const AlgorithmIdentifier&, bool extractable, const Vector<String>&);
+
     void trace(Visitor*) { }
 
 private:

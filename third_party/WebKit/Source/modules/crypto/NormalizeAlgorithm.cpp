@@ -845,8 +845,8 @@ const char* operationToString(WebCryptoOperation op)
         return "generateKey";
     case WebCryptoOperationImportKey:
         return "importKey";
-    case WebCryptoOperationDeriveKey:
-        return "deriveKey";
+    case WebCryptoOperationGetKeyLength:
+        return "get key length";
     case WebCryptoOperationDeriveBits:
         return "deriveBits";
     case WebCryptoOperationWrapKey:

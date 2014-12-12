@@ -48,7 +48,7 @@ enum WebCryptoOperation {
     WebCryptoOperationDigest,
     WebCryptoOperationGenerateKey,
     WebCryptoOperationImportKey,
-    WebCryptoOperationDeriveKey,
+    WebCryptoOperationGetKeyLength,
     WebCryptoOperationDeriveBits,
     WebCryptoOperationWrapKey,
     WebCryptoOperationUnwrapKey,
