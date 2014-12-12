@@ -61,7 +61,7 @@ void SurroundingText::initialize(const Position& startPosition, const Position& 
 
     Document* document = startPosition.document();
     // The position will have no document if it is null (as in no position).
-    if (!document)
+    if (!document || !document->documentElement())
         return;
 
     // The forward range starts at the selection end and ends at the document's
