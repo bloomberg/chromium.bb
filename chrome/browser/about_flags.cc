@@ -835,13 +835,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(proximity_auth::switches::kDisableEasyUnlock)
   },
   {
-    "disable-easy-signin",
-    IDS_FLAGS_DISABLE_EASY_SIGNIN_NAME,
-    IDS_FLAGS_DISABLE_EASY_SIGNIN_DESCRIPTION,
-    kOsCrOSOwnerOnly,
-    SINGLE_VALUE_TYPE(proximity_auth::switches::kDisableEasySignin)
-  },
-  {
     "enable-easy-unlock-proximity-detection",
     IDS_FLAGS_ENABLE_EASY_UNLOCK_PROXIMITY_DETECTION_NAME,
     IDS_FLAGS_ENABLE_EASY_UNLOCK_PROXIMITY_DETECTION_DESCRIPTION,

@@ -6583,13 +6583,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Disable Smart Lock
         </message>
         <message name="IDS_FLAGS_DISABLE_EASY_UNLOCK_DESCRIPTION" desc="Description of the flag to disable Easy unlock.">
-          Do not use Smart Lock, which allows you to unlock your Chromebook when in proximity to your phone.
-        </message>
-        <message name="IDS_FLAGS_DISABLE_EASY_SIGNIN_NAME" desc="Name of the flag to disable Easy sign-in.">
-          Disable Smart Lock on sign-in screen.
-        </message>
-        <message name="IDS_FLAGS_DISABLE_EASY_SIGNIN_DESCRIPTION" desc="Description of the flag to disable Easy sign-in.">
-          Do not use Smart Lock on sign-in screen, which allows you to sign in to your Chromebook when in proximity to your phone.
+          Do not use Smart Lock, which allows you to unlock your Chromebook when in proximity to your phone. If you are the owner of the device, this also turns off Smart Lock on sign-in screen.
         </message>
       </if>
       <message name="IDS_FLAGS_DISABLE_NEW_BOOKMARK_APPS_NAME" desc="Name of the flag to disable the new bookmark app system.">

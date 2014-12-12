@@ -82,7 +82,7 @@ EasyUnlockService* EasyUnlockService::GetForUser(
 // static
 bool EasyUnlockService::IsSignInEnabled() {
   return !CommandLine::ForCurrentProcess()->HasSwitch(
-      proximity_auth::switches::kDisableEasySignin);
+      proximity_auth::switches::kDisableEasyUnlock);
 }
 
 class EasyUnlockService::BluetoothDetector

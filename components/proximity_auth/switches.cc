@@ -11,9 +11,6 @@ namespace switches {
 // by CryptAuth.
 const char kCryptAuthHTTPHost[] = "cryptauth-http-host";
 
-// Disable Easy sign-in.
-const char kDisableEasySignin[] = "disable-easy-signin";
-
 // Disable Easy unlock.
 const char kDisableEasyUnlock[] = "disable-easy-unlock";
 
