@@ -1587,6 +1587,7 @@
       'server/http_connection_unittest.cc',
       'server/http_server_response_info_unittest.cc',
       'server/http_server_unittest.cc',
+      'server/web_socket_encoder_unittest.cc',
       'socket/client_socket_pool_base_unittest.cc',
       'socket/deterministic_socket_data_unittest.cc',
       'socket/mock_client_socket_pool_manager.cc',

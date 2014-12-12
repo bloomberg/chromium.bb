@@ -4,10 +4,7 @@
 
 #include "net/server/web_socket.h"
 
-#include <limits>
-
 #include "base/base64.h"
-#include "base/rand_util.h"
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/sha1.h"
@@ -18,6 +15,7 @@
 #include "net/server/http_server.h"
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
+#include "net/server/web_socket_encoder.h"
 
 namespace net {
 
@@ -152,31 +150,6 @@ class WebSocketHixie76 : public net::WebSocket {
 
 const int WebSocketHixie76::kWebSocketHandshakeBodyLen = 8;
 
-
-// Constants for hybi-10 frame format.
-
-typedef int OpCode;
-
-const OpCode kOpCodeContinuation = 0x0;
-const OpCode kOpCodeText = 0x1;
-const OpCode kOpCodeBinary = 0x2;
-const OpCode kOpCodeClose = 0x8;
-const OpCode kOpCodePing = 0x9;
-const OpCode kOpCodePong = 0xA;
-
-const unsigned char kFinalBit = 0x80;
-const unsigned char kReserved1Bit = 0x40;
-const unsigned char kReserved2Bit = 0x20;
-const unsigned char kReserved3Bit = 0x10;
-const unsigned char kOpCodeMask = 0xF;
-const unsigned char kMaskBit = 0x80;
-const unsigned char kPayloadLengthMask = 0x7F;
-
-const size_t kMaxSingleBytePayloadLength = 125;
-const size_t kTwoBytePayloadLengthField = 126;
-const size_t kEightBytePayloadLengthField = 127;
-const size_t kMaskingKeyWidthInBytes = 4;
-
 class WebSocketHybi17 : public WebSocket {
  public:
   static WebSocket* Create(HttpServer* server,
@@ -207,22 +180,22 @@ class WebSocketHybi17 : public WebSocket {
     std::string encoded_hash;
     base::Base64Encode(base::SHA1HashString(data), &encoded_hash);
 
-    server_->SendRaw(
-        connection_->id(),
-        base::StringPrintf("HTTP/1.1 101 WebSocket Protocol Handshake\r\n"
-                           "Upgrade: WebSocket\r\n"
-                           "Connection: Upgrade\r\n"
-                           "Sec-WebSocket-Accept: %s\r\n"
-                           "\r\n",
-                           encoded_hash.c_str()));
+    server_->SendRaw(connection_->id(),
+                     base::StringPrintf(
+                         "HTTP/1.1 101 WebSocket Protocol Handshake\r\n"
+                         "Upgrade: WebSocket\r\n"
+                         "Connection: Upgrade\r\n"
+                         "Sec-WebSocket-Accept: %s\r\n"
+                         "%s"
+                         "\r\n",
+                         encoded_hash.c_str(), response_extensions_.c_str()));
   }
 
   ParseResult Read(std::string* message) override {
     HttpConnection::ReadIOBuffer* read_buf = connection_->read_buf();
     base::StringPiece frame(read_buf->StartOfBuffer(), read_buf->GetSize());
     int bytes_consumed = 0;
-    ParseResult result =
-        WebSocket::DecodeFrameHybi17(frame, true, &bytes_consumed, message);
+    ParseResult result = encoder_->DecodeFrame(frame, &bytes_consumed, message);
     if (result == FRAME_OK)
       read_buf->DidConsume(bytes_consumed);
     if (result == FRAME_CLOSE)
@@ -233,8 +206,9 @@ class WebSocketHybi17 : public WebSocket {
   void Send(const std::string& message) override {
     if (closed_)
       return;
-    server_->SendRaw(connection_->id(),
-                     WebSocket::EncodeFrameHybi17(message, 0));
+    std::string encoded;
+    encoder_->EncodeFrame(message, 0, &encoded);
+    server_->SendRaw(connection_->id(), encoded);
   }
 
  private:
@@ -243,27 +217,19 @@ class WebSocketHybi17 : public WebSocket {
                   const HttpServerRequestInfo& request,
                   size_t* pos)
       : WebSocket(server, connection),
-        op_code_(0),
-        final_(false),
-        reserved1_(false),
-        reserved2_(false),
-        reserved3_(false),
-        masked_(false),
-        payload_(0),
-        payload_length_(0),
-        frame_end_(0),
         closed_(false) {
+    std::string request_extensions =
+        request.GetHeaderValue("sec-websocket-extensions");
+    encoder_.reset(WebSocketEncoder::CreateServer(request_extensions,
+                                                  &response_extensions_));
+    if (!response_extensions_.empty()) {
+      response_extensions_ =
+          "Sec-WebSocket-Extensions: " + response_extensions_ + "\r\n";
+    }
   }
 
-  OpCode op_code_;
-  bool final_;
-  bool reserved1_;
-  bool reserved2_;
-  bool reserved3_;
-  bool masked_;
-  const char* payload_;
-  size_t payload_length_;
-  const char* frame_end_;
+  scoped_ptr<WebSocketEncoder> encoder_;
+  std::string response_extensions_;
   bool closed_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketHybi17);
@@ -282,142 +248,12 @@ WebSocket* WebSocket::CreateWebSocket(HttpServer* server,
   return WebSocketHixie76::Create(server, connection, request, pos);
 }
 
-// static
-WebSocket::ParseResult WebSocket::DecodeFrameHybi17(
-    const base::StringPiece& frame,
-    bool client_frame,
-    int* bytes_consumed,
-    std::string* output) {
-  size_t data_length = frame.length();
-  if (data_length < 2)
-    return FRAME_INCOMPLETE;
-
-  const char* buffer_begin = const_cast<char*>(frame.data());
-  const char* p = buffer_begin;
-  const char* buffer_end = p + data_length;
-
-  unsigned char first_byte = *p++;
-  unsigned char second_byte = *p++;
-
-  bool final = (first_byte & kFinalBit) != 0;
-  bool reserved1 = (first_byte & kReserved1Bit) != 0;
-  bool reserved2 = (first_byte & kReserved2Bit) != 0;
-  bool reserved3 = (first_byte & kReserved3Bit) != 0;
-  int op_code = first_byte & kOpCodeMask;
-  bool masked = (second_byte & kMaskBit) != 0;
-  if (!final || reserved1 || reserved2 || reserved3)
-    return FRAME_ERROR;  // Extensions and not supported.
-
-  bool closed = false;
-  switch (op_code) {
-  case kOpCodeClose:
-    closed = true;
-    break;
-  case kOpCodeText:
-    break;
-  case kOpCodeBinary: // We don't support binary frames yet.
-  case kOpCodeContinuation: // We don't support binary frames yet.
-  case kOpCodePing: // We don't support binary frames yet.
-  case kOpCodePong: // We don't support binary frames yet.
-  default:
-    return FRAME_ERROR;
-  }
-
-  if (client_frame && !masked) // In Hybi-17 spec client MUST mask his frame.
-    return FRAME_ERROR;
-
-  uint64 payload_length64 = second_byte & kPayloadLengthMask;
-  if (payload_length64 > kMaxSingleBytePayloadLength) {
-    int extended_payload_length_size;
-    if (payload_length64 == kTwoBytePayloadLengthField)
-      extended_payload_length_size = 2;
-    else {
-      DCHECK(payload_length64 == kEightBytePayloadLengthField);
-      extended_payload_length_size = 8;
-    }
-    if (buffer_end - p < extended_payload_length_size)
-      return FRAME_INCOMPLETE;
-    payload_length64 = 0;
-    for (int i = 0; i < extended_payload_length_size; ++i) {
-      payload_length64 <<= 8;
-      payload_length64 |= static_cast<unsigned char>(*p++);
-    }
-  }
-
-  size_t actual_masking_key_length = masked ? kMaskingKeyWidthInBytes : 0;
-  static const uint64 max_payload_length = 0x7FFFFFFFFFFFFFFFull;
-  static size_t max_length = std::numeric_limits<size_t>::max();
-  if (payload_length64 > max_payload_length ||
-      payload_length64 + actual_masking_key_length > max_length) {
-    // WebSocket frame length too large.
-    return FRAME_ERROR;
-  }
-  size_t payload_length = static_cast<size_t>(payload_length64);
-
-  size_t total_length = actual_masking_key_length + payload_length;
-  if (static_cast<size_t>(buffer_end - p) < total_length)
-    return FRAME_INCOMPLETE;
-
-  if (masked) {
-    output->resize(payload_length);
-    const char* masking_key = p;
-    char* payload = const_cast<char*>(p + kMaskingKeyWidthInBytes);
-    for (size_t i = 0; i < payload_length; ++i)  // Unmask the payload.
-      (*output)[i] = payload[i] ^ masking_key[i % kMaskingKeyWidthInBytes];
-  } else {
-    output->assign(p, p + payload_length);
-  }
-
-  size_t pos = p + actual_masking_key_length + payload_length - buffer_begin;
-  *bytes_consumed = pos;
-  return closed ? FRAME_CLOSE : FRAME_OK;
-}
-
-// static
-std::string WebSocket::EncodeFrameHybi17(const std::string& message,
-                                         int masking_key) {
-  std::vector<char> frame;
-  OpCode op_code = kOpCodeText;
-  size_t data_length = message.length();
-
-  frame.push_back(kFinalBit | op_code);
-  char mask_key_bit = masking_key != 0 ? kMaskBit : 0;
-  if (data_length <= kMaxSingleBytePayloadLength)
-    frame.push_back(data_length | mask_key_bit);
-  else if (data_length <= 0xFFFF) {
-    frame.push_back(kTwoBytePayloadLengthField | mask_key_bit);
-    frame.push_back((data_length & 0xFF00) >> 8);
-    frame.push_back(data_length & 0xFF);
-  } else {
-    frame.push_back(kEightBytePayloadLengthField | mask_key_bit);
-    char extended_payload_length[8];
-    size_t remaining = data_length;
-    // Fill the length into extended_payload_length in the network byte order.
-    for (int i = 0; i < 8; ++i) {
-      extended_payload_length[7 - i] = remaining & 0xFF;
-      remaining >>= 8;
-    }
-    frame.insert(frame.end(),
-                 extended_payload_length,
-                 extended_payload_length + 8);
-    DCHECK(!remaining);
-  }
-
-  const char* data = const_cast<char*>(message.data());
-  if (masking_key != 0) {
-    const char* mask_bytes = reinterpret_cast<char*>(&masking_key);
-    frame.insert(frame.end(), mask_bytes, mask_bytes + 4);
-    for (size_t i = 0; i < data_length; ++i)  // Mask the payload.
-      frame.push_back(data[i] ^ mask_bytes[i % kMaskingKeyWidthInBytes]);
-  } else {
-    frame.insert(frame.end(), data, data + data_length);
-  }
-  return std::string(&frame[0], frame.size());
-}
-
 WebSocket::WebSocket(HttpServer* server, HttpConnection* connection)
     : server_(server),
       connection_(connection) {
+}
+
+WebSocket::~WebSocket() {
 }
 
 }  // namespace net

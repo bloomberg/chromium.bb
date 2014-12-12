@@ -665,6 +665,10 @@
         [ 'enable_websockets != 1', {
             'sources/': [
               ['exclude', '^websockets/'],
+              ['exclude', '^server/'],
+            ],
+            'dependencies!': [
+              'http_server',
             ],
         }],
         ['disable_file_support==1', {
@@ -1075,6 +1079,8 @@
         'server/http_server_response_info.h',
         'server/web_socket.cc',
         'server/web_socket.h',
+        'server/web_socket_encoder.cc',
+        'server/web_socket_encoder.h',
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],

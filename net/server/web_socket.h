@@ -30,18 +30,10 @@ class WebSocket {
                                     const HttpServerRequestInfo& request,
                                     size_t* pos);
 
-  static ParseResult DecodeFrameHybi17(const base::StringPiece& frame,
-                                       bool client_frame,
-                                       int* bytes_consumed,
-                                       std::string* output);
-
-  static std::string EncodeFrameHybi17(const std::string& data,
-                                       int masking_key);
-
   virtual void Accept(const HttpServerRequestInfo& request) = 0;
   virtual ParseResult Read(std::string* message) = 0;
   virtual void Send(const std::string& message) = 0;
-  virtual ~WebSocket() {}
+  virtual ~WebSocket();
 
  protected:
   WebSocket(HttpServer* server, HttpConnection* connection);
