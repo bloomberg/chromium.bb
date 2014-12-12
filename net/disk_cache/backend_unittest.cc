@@ -6,6 +6,7 @@
 #include "base/files/file_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/port.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
@@ -3281,6 +3282,10 @@ TEST_F(DiskCacheBackendTest, SimpleCacheOpenBadFile) {
   ASSERT_NE(null, entry);
   entry->Close();
   entry = NULL;
+
+  // The entry is being closed on the Simple Cache worker pool
+  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  base::RunLoop().RunUntilIdle();
 
   // Write an invalid header for stream 0 and stream 1.
   base::FilePath entry_file1_path = cache_path_.AppendASCII(
