@@ -1601,9 +1601,6 @@ public class AwContents implements SmartClipProvider {
         if (!isDestroyed()) mNavigationController.clearSslPreferences();
     }
 
-    // TODO(sgurun) remove after this rolls in. To keep internal tree happy.
-    public void clearClientCertPreferences() { }
-
     /**
      * Method to return all hit test values relevant to public WebView API.
      * Note that this expose more data than needed for WebView.getHitTestResult.
