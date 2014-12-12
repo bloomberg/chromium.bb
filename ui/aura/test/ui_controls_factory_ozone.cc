@@ -100,14 +100,18 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
       screen_position_client->ConvertPointFromScreen(host_->window(),
                                                      &root_location);
     }
-    gfx::Point root_current_location =
-        QueryLatestMousePositionRequestInHost(host_);
-    host_->ConvertPointFromHost(&root_current_location);
+
+    gfx::Point host_location = root_location;
+    host_->ConvertPointToHost(&host_location);
+
+    ui::EventType event_type;
 
     if (button_down_mask_)
-      PostMouseEvent(ui::ET_MOUSE_DRAGGED, root_location, 0, 0);
+      event_type = ui::ET_MOUSE_DRAGGED;
     else
-      PostMouseEvent(ui::ET_MOUSE_MOVED, root_location, 0, 0);
+      event_type = ui::ET_MOUSE_MOVED;
+
+    PostMouseEvent(event_type, host_location, 0, 0);
 
     RunClosureAfterAllPendingUIEvents(closure);
     return true;
@@ -120,12 +124,17 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
       ui_controls::MouseButton type,
       int state,
       const base::Closure& closure) override {
-    gfx::Point loc = aura::Env::GetInstance()->last_mouse_location();
+    gfx::Point root_location = aura::Env::GetInstance()->last_mouse_location();
     aura::client::ScreenPositionClient* screen_position_client =
         aura::client::GetScreenPositionClient(host_->window());
     if (screen_position_client) {
-      screen_position_client->ConvertPointFromScreen(host_->window(), &loc);
+      screen_position_client->ConvertPointFromScreen(host_->window(),
+                                                     &root_location);
     }
+
+    gfx::Point host_location = root_location;
+    host_->ConvertPointToHost(&host_location);
+
     int flag = 0;
 
     switch (type) {
@@ -145,12 +154,13 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
 
     if (state & ui_controls::DOWN) {
       button_down_mask_ |= flag;
-      PostMouseEvent(ui::ET_MOUSE_PRESSED, loc, button_down_mask_ | flag, flag);
+      PostMouseEvent(ui::ET_MOUSE_PRESSED, host_location,
+                     button_down_mask_ | flag, flag);
     }
     if (state & ui_controls::UP) {
       button_down_mask_ &= ~flag;
-      PostMouseEvent(
-          ui::ET_MOUSE_RELEASED, loc, button_down_mask_ | flag, flag);
+      PostMouseEvent(ui::ET_MOUSE_RELEASED, host_location,
+                     button_down_mask_ | flag, flag);
     }
 
     RunClosureAfterAllPendingUIEvents(closure);
@@ -195,25 +205,21 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
   }
 
   void PostMouseEvent(ui::EventType type,
-                      const gfx::PointF& location,
+                      const gfx::PointF& host_location,
                       int flags,
                       int changed_button_flags) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&UIControlsOzone::PostMouseEventTask,
-                   base::Unretained(this),
-                   type,
-                   location,
-                   flags,
-                   changed_button_flags));
+        base::Bind(&UIControlsOzone::PostMouseEventTask, base::Unretained(this),
+                   type, host_location, flags, changed_button_flags));
   }
 
   void PostMouseEventTask(ui::EventType type,
-                          const gfx::PointF& location,
+                          const gfx::PointF& host_location,
                           int flags,
                           int changed_button_flags) {
-    ui::MouseEvent mouse_event(
-        type, location, location, flags, changed_button_flags);
+    ui::MouseEvent mouse_event(type, host_location, host_location, flags,
+                               changed_button_flags);
 
     // This hack is necessary to set the repeat count for clicks.
     ui::MouseEvent mouse_event2(&mouse_event);
