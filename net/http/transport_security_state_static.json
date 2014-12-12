@@ -1217,7 +1217,6 @@
     { "name": "cloudstoragemaus.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "comdurav.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "digitaldaddy.net", "include_subdomains": true, "mode": "force-https" },
-    { "name": "eldietista.es", "include_subdomains": true, "mode": "force-https" },
     { "name": "elnutricionista.es", "include_subdomains": true, "mode": "force-https" },
     { "name": "fronteers.nl", "include_subdomains": true, "mode": "force-https" },
     { "name": "getssl.uz", "include_subdomains": true, "mode": "force-https" },
