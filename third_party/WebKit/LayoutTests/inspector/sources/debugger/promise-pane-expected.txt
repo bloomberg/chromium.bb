@@ -1,0 +1,10 @@
+CONSOLE ERROR: line 16: Uncaught (in promise) Error: EXPECTED
+Tests promise pane view.
+
+Set timer for test function.
+Is drawer visible: true
+Selected view in drawer: promises
+promise-pane.html:16   | rejected | <number> ms | |
+  promise-pane.html:36 | resolved | <number> ms | |
+promise-pane.html:24   | resolved | <number> ms | |
+

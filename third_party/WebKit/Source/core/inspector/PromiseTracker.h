@@ -28,7 +28,7 @@ public:
     }
 
     bool isEnabled() const { return m_isEnabled; }
-    void setEnabled(bool);
+    void setEnabled(bool enabled, bool captureStacks);
 
     void clear();
 
@@ -57,6 +57,7 @@ private:
     int m_circularSequentialId;
     PromiseDataMap m_promiseDataMap;
     bool m_isEnabled;
+    bool m_captureStacks;
     PromiseIdToDataMap m_promiseIdToDataMap;
 };
 

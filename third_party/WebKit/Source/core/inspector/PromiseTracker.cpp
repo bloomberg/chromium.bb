@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "core/inspector/ScriptAsyncCallStack.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/WeakPtr.h"
@@ -46,6 +47,7 @@ public:
     void trace(Visitor* visitor)
     {
         visitor->trace(m_callStack);
+        visitor->trace(m_settlementStack);
     }
 
 private:
@@ -73,6 +75,7 @@ private:
     int m_parentPromiseId;
     int m_status;
     RefPtrWillBeMember<ScriptCallStack> m_callStack;
+    RefPtrWillBeMember<ScriptCallStack> m_settlementStack;
     ScopedPersistent<v8::Object> m_parentPromise;
     double m_creationTime;
     double m_settlementTime;
@@ -168,6 +171,7 @@ private:
 PromiseTracker::PromiseTracker()
     : m_circularSequentialId(0)
     , m_isEnabled(false)
+    , m_captureStacks(false)
 {
 }
 
@@ -181,9 +185,10 @@ void PromiseTracker::trace(Visitor* visitor)
 #endif
 }
 
-void PromiseTracker::setEnabled(bool enabled)
+void PromiseTracker::setEnabled(bool enabled, bool captureStacks)
 {
     m_isEnabled = enabled;
+    m_captureStacks = captureStacks;
     if (!enabled)
         clear();
 }
@@ -238,6 +243,9 @@ PassRefPtrWillBeRawPtr<PromiseTracker::PromiseData> PromiseTracker::createPromis
 void PromiseTracker::didReceiveV8PromiseEvent(ScriptState* scriptState, v8::Local<v8::Object> promise, v8::Local<v8::Value> parentPromise, int status)
 {
     ASSERT(isEnabled());
+    ASSERT(scriptState->contextIsValid());
+
+    ScriptState::Scope scope(scriptState);
 
     RefPtrWillBeRawPtr<PromiseData> data = createPromiseDataIfNeeded(scriptState, promise);
     if (!parentPromise.IsEmpty() && parentPromise->IsObject()) {
@@ -252,12 +260,17 @@ void PromiseTracker::didReceiveV8PromiseEvent(ScriptState* scriptState, v8::Loca
             if (!data->m_creationTime)
                 data->m_creationTime = currentTimeMS();
             if (!data->m_callStack) {
-                RefPtrWillBeRawPtr<ScriptCallStack> stack = createScriptCallStack(1, true);
+                RefPtrWillBeRawPtr<ScriptCallStack> stack = createScriptCallStack(m_captureStacks ? ScriptCallStack::maxCallStackSizeToCapture : 1, true);
                 if (stack && stack->size())
                     data->m_callStack = stack;
             }
         } else if (!data->m_settlementTime) {
             data->m_settlementTime = currentTimeMS();
+            if (m_captureStacks) {
+                RefPtrWillBeRawPtr<ScriptCallStack> stack = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture, true);
+                if (stack && stack->size())
+                    data->m_settlementStack = stack;
+            }
         }
     }
 }
@@ -289,6 +302,20 @@ PassRefPtr<Array<PromiseDetails> > PromiseTracker::promises()
                 promiseDetails->setCreationTime(data->m_creationTime);
             if (data->m_settlementTime)
                 promiseDetails->setSettlementTime(data->m_settlementTime);
+            if (m_captureStacks) {
+                if (data->m_callStack) {
+                    promiseDetails->setCreationStack(data->m_callStack->buildInspectorArray());
+                    RefPtrWillBeRawPtr<ScriptAsyncCallStack> asyncCallStack = data->m_callStack->asyncCallStack();
+                    if (asyncCallStack)
+                        promiseDetails->setAsyncCreationStack(asyncCallStack->buildInspectorObject());
+                }
+                if (data->m_settlementStack) {
+                    promiseDetails->setSettlementStack(data->m_settlementStack->buildInspectorArray());
+                    RefPtrWillBeRawPtr<ScriptAsyncCallStack> asyncCallStack = data->m_settlementStack->asyncCallStack();
+                    if (asyncCallStack)
+                        promiseDetails->setAsyncSettlementStack(asyncCallStack->buildInspectorObject());
+                }
+            }
             result->addItem(promiseDetails);
         }
     }

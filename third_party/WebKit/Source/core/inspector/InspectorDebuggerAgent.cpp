@@ -78,6 +78,7 @@ static const char javaScriptBreakpoints[] = "javaScriptBreakopints";
 static const char pauseOnExceptionsState[] = "pauseOnExceptionsState";
 static const char asyncCallStackDepth[] = "asyncCallStackDepth";
 static const char promiseTrackerEnabled[] = "promiseTrackerEnabled";
+static const char promiseTrackerCaptureStacks[] = "promiseTrackerCaptureStacks";
 
 // Breakpoint properties.
 static const char url[] = "url";
@@ -252,7 +253,7 @@ void InspectorDebuggerAgent::restore()
             m_state->setBoolean(DebuggerAgentState::skipAllPauses, false);
         }
         internalSetAsyncCallStackDepth(m_state->getLong(DebuggerAgentState::asyncCallStackDepth));
-        promiseTracker().setEnabled(m_state->getBoolean(DebuggerAgentState::promiseTrackerEnabled));
+        promiseTracker().setEnabled(m_state->getBoolean(DebuggerAgentState::promiseTrackerEnabled), m_state->getBoolean(DebuggerAgentState::promiseTrackerCaptureStacks));
     }
 }
 
@@ -1052,16 +1053,17 @@ void InspectorDebuggerAgent::setAsyncCallStackDepth(ErrorString*, int depth)
         clearStepIntoAsync();
 }
 
-void InspectorDebuggerAgent::enablePromiseTracker(ErrorString*)
+void InspectorDebuggerAgent::enablePromiseTracker(ErrorString*, const bool* captureStacks)
 {
     m_state->setBoolean(DebuggerAgentState::promiseTrackerEnabled, true);
-    promiseTracker().setEnabled(true);
+    m_state->setBoolean(DebuggerAgentState::promiseTrackerCaptureStacks, asBool(captureStacks));
+    promiseTracker().setEnabled(true, asBool(captureStacks));
 }
 
 void InspectorDebuggerAgent::disablePromiseTracker(ErrorString*)
 {
     m_state->setBoolean(DebuggerAgentState::promiseTrackerEnabled, false);
-    promiseTracker().setEnabled(false);
+    promiseTracker().setEnabled(false, false);
 }
 
 void InspectorDebuggerAgent::getPromises(ErrorString* errorString, RefPtr<Array<PromiseDetails> >& promises)

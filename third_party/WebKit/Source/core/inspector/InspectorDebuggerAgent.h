@@ -137,7 +137,7 @@ public:
     void setVariableValue(ErrorString*, int in_scopeNumber, const String& in_variableName, const RefPtr<JSONObject>& in_newValue, const String* in_callFrame, const String* in_functionObjectId) final;
     void skipStackFrames(ErrorString*, const String* pattern, const bool* skipContentScripts) final;
     void setAsyncCallStackDepth(ErrorString*, int depth) final;
-    void enablePromiseTracker(ErrorString*) final;
+    void enablePromiseTracker(ErrorString*, const bool* captureStacks) final;
     void disablePromiseTracker(ErrorString*) final;
     void getPromises(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::PromiseDetails> >& promises) final;
     void getPromiseById(ErrorString*, int promiseId, const String* objectGroup, RefPtr<TypeBuilder::Runtime::RemoteObject>& promise) final;

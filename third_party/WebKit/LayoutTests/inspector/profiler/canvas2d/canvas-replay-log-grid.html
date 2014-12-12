@@ -90,10 +90,9 @@ function test()
         testControlButtons();
 
         InspectorTest.addResult("");
-        dumpTableData(dataGrid.element);
+        InspectorTest.dumpDataGrid(dataGrid);
         InspectorTest.completeTest();
     }
-
 
     function testControlButtons()
     {
@@ -192,50 +191,6 @@ function test()
         for (var i = 0; i < expected.length + 5; ++i) {
             profileView._onReplayDrawingCallClick(true);
             InspectorTest.assertEquals(expected[i] || expected.peekLast(), dataGrid.selectedNode, "error on index " + i);
-        }
-    }
-
-    function dumpTableData(tableElement)
-    {
-        var textRows = [];
-        var textWidths = [];
-        var rows = tableElement.getElementsByTagName("tr");
-        for (var i = 0, row; row = rows[i]; ++i) {
-            if (!row.offsetHeight || !row.textContent)
-                continue;
-            var textCols = [];
-            var cols = row.getElementsByTagName("td");
-            for (var j = 0, col; col = cols[j]; ++j) {
-                if (!col.offsetHeight)
-                    continue;
-                var index = textCols.length;
-                var text = col.textContent;
-                textWidths[index] = Math.max(textWidths[index] || 0, text.length);
-                textCols[index] = text;
-            }
-            if (textCols.length)
-                textRows.push(textCols);
-        }
-
-        function alignText(text, width)
-        {
-            var result = "";
-            var spaces = width - text.length;
-            while (spaces-- > 0)
-                result += " ";
-            result += text;
-            return result;
-        }
-
-        for (var i = 0; i < textRows.length; ++i) {
-            var line = "";
-            for (var j = 0; j < textRows[i].length; ++j) {
-                if (j)
-                    line += " | ";
-                line += alignText(textRows[i][j], textWidths[j]);
-            }
-            line += "|";
-            InspectorTest.addResult(line);
         }
     }
 }
