@@ -337,9 +337,6 @@ void WebViewGuest::DidAttachToEmbedder() {
   // We need to set the background opaque flag after navigation to ensure that
   // there is a RenderWidgetHostView available.
   SetAllowTransparency(allow_transparency);
-
-  if (web_view_guest_delegate_)
-    web_view_guest_delegate_->OnDidAttachToEmbedder();
 }
 
 void WebViewGuest::DidInitialize() {
@@ -372,9 +369,6 @@ void WebViewGuest::DidStopLoading() {
 }
 
 void WebViewGuest::EmbedderWillBeDestroyed() {
-  if (web_view_guest_delegate_)
-    web_view_guest_delegate_->OnEmbedderWillBeDestroyed();
-
   // Clean up rules registries for the webview.
   RulesRegistryService::Get(browser_context())
       ->RemoveRulesRegistriesByID(rules_registry_id_);
@@ -620,12 +614,6 @@ void WebViewGuest::Observe(int type,
   }
 }
 
-double WebViewGuest::GetZoom() {
-  if (!web_view_guest_delegate_)
-    return 1.0;
-  return web_view_guest_delegate_->GetZoom();
-}
-
 void WebViewGuest::StartFinding(
     const base::string16& search_text,
     const blink::WebFindOptions& options,
@@ -712,6 +700,7 @@ WebViewGuest::WebViewGuest(content::BrowserContext* browser_context,
       is_overriding_user_agent_(false),
       guest_opaque_(true),
       javascript_dialog_helper_(this),
+      current_zoom_factor_(1.0),
       weak_ptr_factory_(this) {
   web_view_guest_delegate_.reset(
       ExtensionsAPIClient::Get()->CreateWebViewGuestDelegate(this));
@@ -745,6 +734,14 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
       new GuestViewBase::Event(webview::kEventLoadCommit, args.Pass()));
 
   find_helper_.CancelAllFindSessions();
+
+  // Update the current zoom factor for the new page.
+  ui_zoom::ZoomController* zoom_controller =
+      ui_zoom::ZoomController::FromWebContents(web_contents());
+  DCHECK(zoom_controller);
+  current_zoom_factor_ =
+      content::ZoomLevelToZoomFactor(zoom_controller->GetZoomLevel());
+
   if (web_view_guest_delegate_) {
     web_view_guest_delegate_->OnDidCommitProvisionalLoadForFrame(
         !render_frame_host->GetParent());
@@ -1067,8 +1064,18 @@ void WebViewGuest::SetName(const std::string& name) {
 }
 
 void WebViewGuest::SetZoom(double zoom_factor) {
-  if (web_view_guest_delegate_)
-    web_view_guest_delegate_->OnSetZoom(zoom_factor);
+  ui_zoom::ZoomController* zoom_controller =
+      ui_zoom::ZoomController::FromWebContents(web_contents());
+  DCHECK(zoom_controller);
+  double zoom_level = content::ZoomFactorToZoomLevel(zoom_factor);
+  zoom_controller->SetZoomLevel(zoom_level);
+
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  args->SetDouble(webview::kOldZoomFactor, current_zoom_factor_);
+  args->SetDouble(webview::kNewZoomFactor, zoom_factor);
+  DispatchEventToEmbedder(
+      new GuestViewBase::Event(webview::kEventZoomChange, args.Pass()));
+  current_zoom_factor_ = zoom_factor;
 }
 
 void WebViewGuest::SetAllowTransparency(bool allow) {

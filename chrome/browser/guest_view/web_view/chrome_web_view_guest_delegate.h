@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_CHROME_WEB_VIEW_GUEST_DELEGATE_H_
 
 #include "chrome/browser/extensions/api/web_view/chrome_web_view_internal_api.h"
-#include "components/ui/zoom/zoom_observer.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest_delegate.h"
 
@@ -22,29 +21,20 @@ class SimpleMenuModel;
 
 namespace extensions {
 
-class ChromeWebViewGuestDelegate : public WebViewGuestDelegate,
-                                   public ui_zoom::ZoomObserver {
+class ChromeWebViewGuestDelegate : public WebViewGuestDelegate {
  public :
   explicit ChromeWebViewGuestDelegate(WebViewGuest* web_view_guest);
   ~ChromeWebViewGuestDelegate() override;
 
   // WebViewGuestDelegate implementation.
-  double GetZoom() override;
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
   void OnAttachWebViewHelpers(content::WebContents* contents) override;
-  void OnDidAttachToEmbedder() override;
   void OnDidCommitProvisionalLoadForFrame(bool is_main_frame) override;
   void OnDidInitialize() override;
   void OnDocumentLoadedInFrame(
       content::RenderFrameHost* render_frame_host) override;
-  void OnEmbedderWillBeDestroyed() override;
   void OnGuestDestroyed() override;
-  void OnSetZoom(double zoom_factor) override;
   void OnShowContextMenu(int request_id, const MenuItemVector* items) override;
-
-  // ZoomObserver implementation.
-  void OnZoomChanged(
-      const ui_zoom::ZoomController::ZoomChangedEventData& data) override;
 
   WebViewGuest* web_view_guest() const { return web_view_guest_; }
 
@@ -71,9 +61,6 @@ class ChromeWebViewGuestDelegate : public WebViewGuestDelegate,
 
   // Set to |true| if ChromeVox was already injected in main frame.
   bool chromevox_injected_;
-
-  // Stores the current zoom factor.
-  double current_zoom_factor_;
 
   // Holds the RenderViewContextMenuBase that has been built but yet to be
   // shown. This is .reset() after ShowContextMenu().

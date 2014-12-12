@@ -174,7 +174,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
                const content::NotificationDetails& details) override;
 
   // Returns the current zoom factor.
-  double GetZoom();
+  double zoom() const { return current_zoom_factor_; }
 
   // Begin or continue a find request.
   void StartFinding(const base::string16& search_text,
@@ -367,6 +367,9 @@ class WebViewGuest : public GuestView<WebViewGuest>,
 
   typedef std::map<WebViewGuest*, NewWindowInfo> PendingWindowMap;
   PendingWindowMap pending_new_windows_;
+
+  // Stores the current zoom factor.
+  double current_zoom_factor_;
 
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.

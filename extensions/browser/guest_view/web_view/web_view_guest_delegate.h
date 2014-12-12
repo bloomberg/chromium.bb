@@ -31,18 +31,11 @@ class WebViewGuestDelegate {
   typedef std::vector<linked_ptr<api::web_view_internal::ContextMenuItem> >
       MenuItemVector;
 
-  // Returns the current zoom factor.
-  virtual double GetZoom() = 0;
-
   // Called when context menu operation was handled.
   virtual bool HandleContextMenu(const content::ContextMenuParams& params) = 0;
 
   // Called to attach helpers just after additional initialization is performed.
   virtual void OnAttachWebViewHelpers(content::WebContents* contents) = 0;
-
-  // Called after the guest has been attached to an embedder and suspended
-  // resource loads have been resumed.
-  virtual void OnDidAttachToEmbedder() = 0;
 
   // Called when the guest WebContents commits a provisional load in any frame.
   virtual void OnDidCommitProvisionalLoadForFrame(bool is_main_frame) = 0;
@@ -53,14 +46,8 @@ class WebViewGuestDelegate {
   virtual void OnDocumentLoadedInFrame(
       content::RenderFrameHost* render_frame_host) = 0;
 
-  // Called before the embedder is destroyed.
-  virtual void OnEmbedderWillBeDestroyed() = 0;
-
   // Called immediately after the guest WebContents has been destroyed.
   virtual void OnGuestDestroyed() = 0;
-
-  // Called when to set the zoom factor.
-  virtual void OnSetZoom(double zoom_factor) = 0;
 
   // Shows the context menu for the guest.
   // |items| acts as a filter. This restricts the current context's default

@@ -213,7 +213,7 @@ bool WebViewInternalGetZoomFunction::RunAsyncSafe(WebViewGuest* guest) {
       webview::GetZoom::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  double zoom_factor = guest->GetZoom();
+  double zoom_factor = guest->zoom();
   SetResult(new base::FundamentalValue(zoom_factor));
   SendResponse(true);
   return true;

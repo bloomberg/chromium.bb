@@ -12,8 +12,6 @@
 #include "chrome/common/chrome_version_info.h"
 #include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "components/renderer_context_menu/context_menu_delegate.h"
-#include "components/ui/zoom/zoom_controller.h"
-#include "content/public/common/page_zoom.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 
@@ -28,22 +26,15 @@
 
 namespace extensions {
 
-using ui_zoom::ZoomController;
-
 ChromeWebViewGuestDelegate::ChromeWebViewGuestDelegate(
     WebViewGuest* web_view_guest)
     : pending_context_menu_request_id_(0),
       chromevox_injected_(false),
-      current_zoom_factor_(1.0),
       web_view_guest_(web_view_guest),
       weak_ptr_factory_(this) {
 }
 
 ChromeWebViewGuestDelegate::~ChromeWebViewGuestDelegate() {
-}
-
-double ChromeWebViewGuestDelegate::GetZoom() {
-  return current_zoom_factor_;
 }
 
 bool ChromeWebViewGuestDelegate::HandleContextMenu(
@@ -70,14 +61,6 @@ bool ChromeWebViewGuestDelegate::HandleContextMenu(
 // extension module in the future.
 void ChromeWebViewGuestDelegate::OnAttachWebViewHelpers(
     content::WebContents* contents) {
-  // Create a zoom controller for the guest contents give it access to
-  // GetZoomLevel() and and SetZoomLevel() in WebViewGuest.
-  // TODO(wjmaclean) This currently uses the same HostZoomMap as the browser
-  // context, but we eventually want to isolate the guest contents from zoom
-  // changes outside the guest (e.g. in the main browser), so we should
-  // create a separate HostZoomMap for the guest.
-  ZoomController::CreateForWebContents(contents);
-
   FaviconTabHelper::CreateForWebContents(contents);
   ChromeExtensionWebContentsObserver::CreateForWebContents(contents);
 #if defined(ENABLE_PRINTING)
@@ -94,28 +77,8 @@ void ChromeWebViewGuestDelegate::OnAttachWebViewHelpers(
           new ChromePDFWebContentsHelperClient()));
 }
 
-void ChromeWebViewGuestDelegate::OnDidAttachToEmbedder() {
-  // TODO(fsamuel): This code should be implemented in GuestViewBase once the
-  // ZoomController moves to the extensions module.
-  ZoomController* zoom_controller = ZoomController::FromWebContents(
-      web_view_guest()->embedder_web_contents());
-  if (!zoom_controller)
-    return;
-  // Listen to the embedder's zoom changes.
-  zoom_controller->AddObserver(this);
-  // Set the guest's initial zoom level to be equal to the embedder's.
-  ZoomController::FromWebContents(guest_web_contents())->
-      SetZoomLevel(zoom_controller->GetZoomLevel());
-}
-
 void ChromeWebViewGuestDelegate::OnDidCommitProvisionalLoadForFrame(
     bool is_main_frame) {
-  // Update the current zoom factor for the new page.
-  ZoomController* zoom_controller =
-      ZoomController::FromWebContents(guest_web_contents());
-  DCHECK(zoom_controller);
-  current_zoom_factor_ =
-      content::ZoomLevelToZoomFactor(zoom_controller->GetZoomLevel());
   if (is_main_frame)
     chromevox_injected_ = false;
 }
@@ -135,18 +98,6 @@ void ChromeWebViewGuestDelegate::OnDocumentLoadedInFrame(
     content::RenderFrameHost* render_frame_host) {
   if (!render_frame_host->GetParent())
     InjectChromeVoxIfNeeded(render_frame_host->GetRenderViewHost());
-}
-
-void ChromeWebViewGuestDelegate::OnEmbedderWillBeDestroyed() {
-  content::WebContents* embedder_web_contents =
-      web_view_guest()->embedder_web_contents();
-  if (!embedder_web_contents)
-    return;
-
-  ZoomController* zoom_controller =
-      ZoomController::FromWebContents(embedder_web_contents);
-  if (zoom_controller)
-    zoom_controller->RemoveObserver(this);
 }
 
 void ChromeWebViewGuestDelegate::OnGuestDestroyed() {
@@ -172,21 +123,6 @@ scoped_ptr<base::ListValue> ChromeWebViewGuestDelegate::MenuModelToValue(
     items->Append(item_value);
   }
   return items.Pass();
-}
-
-void ChromeWebViewGuestDelegate::OnSetZoom(double zoom_factor) {
-  ZoomController* zoom_controller =
-      ZoomController::FromWebContents(guest_web_contents());
-  DCHECK(zoom_controller);
-  double zoom_level = content::ZoomFactorToZoomLevel(zoom_factor);
-  zoom_controller->SetZoomLevel(zoom_level);
-
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  args->SetDouble(webview::kOldZoomFactor, current_zoom_factor_);
-  args->SetDouble(webview::kNewZoomFactor, zoom_factor);
-  web_view_guest()->DispatchEventToEmbedder(
-      new GuestViewBase::Event(webview::kEventZoomChange, args.Pass()));
-  current_zoom_factor_ = zoom_factor;
 }
 
 void ChromeWebViewGuestDelegate::OnShowContextMenu(
@@ -235,11 +171,5 @@ void ChromeWebViewGuestDelegate::OnAccessibilityStatusChanged(
   }
 }
 #endif
-
-void ChromeWebViewGuestDelegate::OnZoomChanged(
-    const ZoomController::ZoomChangedEventData& data) {
-  ZoomController::FromWebContents(guest_web_contents())->
-      SetZoomLevel(data.new_zoom_level);
-}
 
 }  // namespace extensions

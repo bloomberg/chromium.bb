@@ -9,6 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "components/ui/zoom/zoom_observer.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents.h"
@@ -28,7 +29,8 @@ namespace extensions {
 // it is attached to a container within the owner's WebContents.
 class GuestViewBase : public content::BrowserPluginGuestDelegate,
                       public content::WebContentsDelegate,
-                      public content::WebContentsObserver {
+                      public content::WebContentsObserver,
+                      public ui_zoom::ZoomObserver {
  public:
   class Event {
    public:
@@ -246,6 +248,10 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
                   int browser_plugin_instance_id,
                   bool is_full_page_plugin) final;
 
+  // ui_zoom::ZoomObserver implementation.
+  void OnZoomChanged(
+      const ui_zoom::ZoomController::ZoomChangedEventData& data) override;
+
   // Dispatches an event |event_name| to the embedder with the |event| fields.
   void DispatchEventToEmbedder(Event* event);
 
@@ -266,6 +272,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void CompleteInit(const std::string& owner_extension_id,
                     const WebContentsCreatedCallback& callback,
                     content::WebContents* guest_web_contents);
+
+  void StartObservingOwnersZoomController();
+  void StopObservingOwnersZoomControllerIfNecessary();
 
   static void RegisterGuestViewTypes();
 
@@ -351,6 +360,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   // Whether the guest view is inside a plugin document.
   bool is_full_page_plugin_;
+
+  bool observing_owners_zoom_controller_;
 
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.
