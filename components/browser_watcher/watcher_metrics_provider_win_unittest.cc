@@ -12,6 +12,7 @@
 #include "base/test/histogram_tester.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
+#include "components/browser_watcher/exit_funnel_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_watcher {
@@ -54,6 +55,15 @@ class WatcherMetricsProviderWinTest : public testing::Test {
   size_t ExitCodeRegistryPathValueCount() {
     base::win::RegKey key(HKEY_CURRENT_USER, kRegistryPath, KEY_READ);
     return key.GetValueCount();
+  }
+
+  void AddExitFunnelEvent(int pid, const base::char16* name, int64 value) {
+    base::string16 key_name =
+        base::StringPrintf(L"%ls\\%d-%d", kRegistryPath, pid, pid);
+
+    base::win::RegKey key(HKEY_CURRENT_USER, key_name.c_str(), KEY_WRITE);
+    ASSERT_EQ(key.WriteValue(name, &value, sizeof(value), REG_QWORD),
+              ERROR_SUCCESS);
   }
 
  protected:
@@ -101,6 +111,52 @@ TEST_F(WatcherMetricsProviderWinTest, DoesNotReportOwnProcessId) {
 
   // Verify that the reported values are gone.
   EXPECT_EQ(ExitCodeRegistryPathValueCount(), 1);
+}
+
+TEST_F(WatcherMetricsProviderWinTest, RecordsOrderedExitFunnelEvents) {
+  // Record an exit funnel with a given set of timings and check that the
+  // ordering is correct on the reported histograms.
+  // Note the recorded times are in microseconds, but the reporting is in
+  // milliseconds, hence the times 1000.
+  AddExitFunnelEvent(100, L"One", 1000 * 1000);
+  AddExitFunnelEvent(100, L"Two", 1010 * 1000);
+  AddExitFunnelEvent(100, L"Three", 990 * 1000);
+
+  WatcherMetricsProviderWin provider(kRegistryPath);
+
+  provider.ProvideStabilityMetrics(NULL);
+  histogram_tester_.ExpectUniqueSample("Stability.ExitFunnel.Three", 0, 1);
+  histogram_tester_.ExpectUniqueSample("Stability.ExitFunnel.One", 10, 1);
+  histogram_tester_.ExpectUniqueSample("Stability.ExitFunnel.Two", 20, 1);
+
+  // Make sure the subkey is deleted on reporting.
+  base::win::RegistryKeyIterator it(HKEY_CURRENT_USER, kRegistryPath);
+  ASSERT_EQ(it.SubkeyCount(), 0);
+}
+
+TEST_F(WatcherMetricsProviderWinTest, ReadsExitFunnelWrites) {
+  // Test that the metrics provider picks up the writes from
+  ExitFunnel funnel;
+
+  ASSERT_TRUE(funnel.Init(kRegistryPath, base::GetCurrentProcessHandle()));
+
+  // Each named event can only exist in a single copy.
+  ASSERT_TRUE(funnel.RecordEvent(L"One"));
+  ASSERT_TRUE(funnel.RecordEvent(L"One"));
+  ASSERT_TRUE(funnel.RecordEvent(L"One"));
+  ASSERT_TRUE(funnel.RecordEvent(L"Two"));
+  ASSERT_TRUE(funnel.RecordEvent(L"Three"));
+
+  WatcherMetricsProviderWin provider(kRegistryPath);
+
+  provider.ProvideStabilityMetrics(NULL);
+  histogram_tester_.ExpectTotalCount("Stability.ExitFunnel.One", 1);
+  histogram_tester_.ExpectTotalCount("Stability.ExitFunnel.Two", 1);
+  histogram_tester_.ExpectTotalCount("Stability.ExitFunnel.Three", 1);
+
+  // Make sure the subkey has been deleted on reporting.
+  base::win::RegistryKeyIterator it(HKEY_CURRENT_USER, kRegistryPath);
+  ASSERT_EQ(it.SubkeyCount(), 0);
 }
 
 }  // namespace browser_watcher

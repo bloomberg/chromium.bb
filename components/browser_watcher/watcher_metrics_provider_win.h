@@ -12,10 +12,20 @@
 namespace browser_watcher {
 
 // Provides stability data captured by the Chrome Watcher, namely the browser
-// process exit codes.
+// process exit codes, as well as exit funnel metrics.
+// The exit funnel records a trace of named, timed events in registry per
+// process. For reporting, the trace is recorded as a sequence of events
+// named Stability.ExitFunnel.<eventname>, associated to the time
+// (in milliseconds) from first event in a trace. For a normal process exit,
+// the sequence might look like this:
+// - Stability.ExitFunnel.Logoff: 0
+// - Stability.ExitFunnel.NotifyShutdown: 10
+// - Stability.ExitFunnel.EndSession: 20
+// - Stability.ExitFunnel.KillProcess: 30
 class WatcherMetricsProviderWin : public metrics::MetricsProvider {
  public:
   static const char kBrowserExitCodeHistogramName[];
+  static const char kExitFunnelHistogramPrefix[];
 
   explicit WatcherMetricsProviderWin(const base::char16* registry_path);
   ~WatcherMetricsProviderWin();

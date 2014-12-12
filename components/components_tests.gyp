@@ -72,6 +72,7 @@
             'bookmarks/browser/bookmark_index_unittest.cc',
             'bookmarks/browser/bookmark_model_unittest.cc',
             'bookmarks/browser/bookmark_utils_unittest.cc',
+            'browser_watcher/exit_funnel_win_unittest.cc',
             'browser_watcher/exit_code_watcher_win_unittest.cc',
             'browser_watcher/watcher_client_win_unittest.cc',
             'browser_watcher/watcher_metrics_provider_win_unittest.cc',
