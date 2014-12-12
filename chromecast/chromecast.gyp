@@ -243,7 +243,7 @@
             '<(version_py_path)',
             '-e', 'VERSION_FULL="<(version_full)"',
             # Revision is taken from buildbot if available; otherwise, a dev string is used.
-            '-e', 'CAST_BUILD_REVISION="<!(echo ${BUILD_NUMBER:="local.${USER}"})"',
+            '-e', 'CAST_BUILD_REVISION="<!(echo ${CAST_BUILD_REVISION:="eng.${USER}.<!(date +%Y%m%d.%H%M%S)"})"',
             '-e', 'CAST_IS_DEBUG_BUILD=1 if "<(CONFIGURATION_NAME)" == "Debug" else 0',
             'common/version.h.in',
             '<@(_outputs)',
