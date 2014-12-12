@@ -19007,6 +19007,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.SSLSessionVersionMatch" enum="BooleanMatched">
+  <owner>davidben@chromium.org</owner>
+  <summary>
+    For each SSL connection that resumed a session, whether the session was
+    resumed at the same version it was established at. This is only recorded in
+    BoringSSL ports.
+  </summary>
+</histogram>
+
 <histogram name="Net.SSLv3FallbackToRenegoPatchedServer"
     enum="TLSRenegotiationPatched">
   <obsolete>
