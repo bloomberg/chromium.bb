@@ -90,7 +90,9 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSource(
     tiling->Resize(layer_bounds);
     tiling->Invalidate(layer_invalidation);
     tiling->SetRasterSource(raster_source);
-    // TODO(danakj): Is this needed anymore? Won't they already exist?
+    // This is needed for cases where the live tiles rect didn't change but
+    // recordings exist in the raster source that did not exist on the last
+    // raster source.
     tiling->CreateMissingTilesInLiveTilesRect();
 
     // If |twin_set| is present, use the resolutions from there. Otherwise leave

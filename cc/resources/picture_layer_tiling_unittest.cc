@@ -2013,9 +2013,9 @@ TEST(PictureLayerTilingTest, RecycledTilesCleared) {
   active_tiling->ComputeTilePriorityRects(gfx::Rect(0, 0, 100, 100), 1.0f, 3.0,
                                           Occlusion());
 
-  // Ensure that we now have a tile here, but the recycle tiling does not.
+  // Ensure that we now have a tile here on both tilings again.
   EXPECT_TRUE(active_tiling->TileAt(0, 0));
-  EXPECT_FALSE(recycle_tiling->TileAt(0, 0));
+  EXPECT_TRUE(recycle_tiling->TileAt(0, 0));
 }
 
 TEST(PictureLayerTilingTest, RecycledTilesClearedOnReset) {

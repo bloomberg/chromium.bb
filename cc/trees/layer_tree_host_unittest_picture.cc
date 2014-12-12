@@ -191,5 +191,131 @@ class LayerTreeHostPictureTestResizeViewportWithGpuRaster
 SINGLE_AND_MULTI_THREAD_IMPL_TEST_F(
     LayerTreeHostPictureTestResizeViewportWithGpuRaster);
 
+class LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree
+    : public LayerTreeHostPictureTest {
+  void SetupTree() override {
+    frame_ = 0;
+    did_post_commit_ = false;
+
+    scoped_refptr<Layer> root = Layer::Create();
+    root->SetBounds(gfx::Size(100, 100));
+
+    // The layer is big enough that the live tiles rect won't cover the full
+    // layer.
+    client_.set_fill_with_nonsolid_color(true);
+    picture_ = FakePictureLayer::Create(&client_);
+    picture_->SetBounds(gfx::Size(100, 100000));
+    root->AddChild(picture_);
+
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeHostPictureTest::SetupTree();
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    LayerImpl* child = impl->active_tree()->root_layer()->children()[0];
+    FakePictureLayerImpl* picture_impl =
+        static_cast<FakePictureLayerImpl*>(child);
+    FakePictureLayerImpl* recycled_impl = static_cast<FakePictureLayerImpl*>(
+        picture_impl->GetRecycledTwinLayer());
+
+    switch (++frame_) {
+      case 1: {
+        PictureLayerTiling* tiling = picture_impl->HighResTiling();
+        PictureLayerTiling* recycled_tiling = recycled_impl->HighResTiling();
+        int num_tiles_y = tiling->TilingDataForTesting().num_tiles_y();
+
+        // There should be tiles at the top of the picture layer but not at the
+        // bottom.
+        EXPECT_TRUE(tiling->TileAt(0, 0));
+        EXPECT_FALSE(tiling->TileAt(0, num_tiles_y));
+
+        // The recycled tiling matches it.
+        EXPECT_TRUE(recycled_tiling->TileAt(0, 0));
+        EXPECT_FALSE(recycled_tiling->TileAt(0, num_tiles_y));
+
+        // The live tiles rect matches on the recycled tree.
+        EXPECT_EQ(tiling->live_tiles_rect(),
+                  recycled_tiling->live_tiles_rect());
+
+        // Make the bottom of the layer visible.
+        picture_impl->SetPosition(gfx::PointF(0.f, -100000.f + 100.f));
+        impl->SetNeedsRedraw();
+        break;
+      }
+      case 2: {
+        PictureLayerTiling* tiling = picture_impl->HighResTiling();
+        PictureLayerTiling* recycled_tiling = recycled_impl->HighResTiling();
+
+        // There not be tiles at the top of the layer now.
+        EXPECT_FALSE(tiling->TileAt(0, 0));
+
+        // The recycled twin tiling should not have unshared tiles at the top
+        // either.
+        EXPECT_FALSE(recycled_tiling->TileAt(0, 0));
+
+        // The live tiles rect matches on the recycled tree.
+        EXPECT_EQ(tiling->live_tiles_rect(),
+                  recycled_tiling->live_tiles_rect());
+
+        // Make the top of the layer visible again.
+        picture_impl->SetPosition(gfx::PointF());
+        impl->SetNeedsRedraw();
+        break;
+      }
+      case 3: {
+        PictureLayerTiling* tiling = picture_impl->HighResTiling();
+        PictureLayerTiling* recycled_tiling = recycled_impl->HighResTiling();
+        int num_tiles_y = tiling->TilingDataForTesting().num_tiles_y();
+
+        // There should be tiles at the top of the picture layer again.
+        EXPECT_TRUE(tiling->TileAt(0, 0));
+        EXPECT_FALSE(tiling->TileAt(0, num_tiles_y));
+
+        // The recycled tiling should also have tiles at the top.
+        EXPECT_TRUE(recycled_tiling->TileAt(0, 0));
+        EXPECT_FALSE(recycled_tiling->TileAt(0, num_tiles_y));
+
+        // The live tiles rect matches on the recycled tree.
+        EXPECT_EQ(tiling->live_tiles_rect(),
+                  recycled_tiling->live_tiles_rect());
+
+        // Make a new main frame without changing the picture layer at all, so
+        // it won't need to update or push properties.
+        did_post_commit_ = true;
+        PostSetNeedsCommitToMainThread();
+        break;
+      }
+    }
+  }
+
+  void WillActivateTreeOnThread(LayerTreeHostImpl* impl) override {
+    LayerImpl* child = impl->sync_tree()->root_layer()->children()[0];
+    FakePictureLayerImpl* picture_impl =
+        static_cast<FakePictureLayerImpl*>(child);
+    PictureLayerTiling* tiling = picture_impl->HighResTiling();
+    int num_tiles_y = tiling->TilingDataForTesting().num_tiles_y();
+
+    // The pending layer should always have tiles at the top of it each commit.
+    // The tile is part of the required for activation set so it should exist.
+    EXPECT_TRUE(tiling->TileAt(0, 0));
+    EXPECT_FALSE(tiling->TileAt(0, num_tiles_y));
+
+    if (did_post_commit_)
+      EndTest();
+  }
+
+  void AfterTest() override {}
+
+  int frame_;
+  bool did_post_commit_;
+  FakeContentLayerClient client_;
+  scoped_refptr<FakePictureLayer> picture_;
+};
+
+SINGLE_AND_MULTI_THREAD_IMPL_TEST_F(
+    LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree);
+
 }  // namespace
 }  // namespace cc

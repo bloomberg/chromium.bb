@@ -88,7 +88,11 @@ PictureLayerTiling::~PictureLayerTiling() {
 
 Tile* PictureLayerTiling::CreateTile(int i,
                                      int j,
-                                     const PictureLayerTiling* twin_tiling) {
+                                     const PictureLayerTiling* twin_tiling,
+                                     PictureLayerTiling* recycled_twin) {
+  // Can't have both a (pending or active) twin and a recycled twin tiling.
+  DCHECK_IMPLIES(twin_tiling, !recycled_twin);
+  DCHECK_IMPLIES(recycled_twin, !twin_tiling);
   TileMapKey key(i, j);
   DCHECK(tiles_.find(key) == tiles_.end());
 
@@ -121,6 +125,13 @@ Tile* PictureLayerTiling::CreateTile(int i,
     DCHECK(!tile->is_shared());
     tile->set_tiling_index(i, j);
     tiles_[key] = tile;
+
+    if (recycled_twin) {
+      DCHECK(recycled_twin->tiles_.find(key) == recycled_twin->tiles_.end());
+      // Do what recycled_twin->CreateTile() would do.
+      tile->set_shared(true);
+      recycled_twin->tiles_[key] = tile;
+    }
   }
   return tile.get();
 }
@@ -128,6 +139,10 @@ Tile* PictureLayerTiling::CreateTile(int i,
 void PictureLayerTiling::CreateMissingTilesInLiveTilesRect() {
   const PictureLayerTiling* twin_tiling =
       client_->GetPendingOrActiveTwinTiling(this);
+  // There is no recycled twin during commit from the main thread which is when
+  // this occurs.
+  PictureLayerTiling* null_recycled_twin = nullptr;
+  DCHECK_EQ(null_recycled_twin, client_->GetRecycledTwinTiling(this));
   bool include_borders = false;
   for (TilingData::Iterator iter(
            &tiling_data_, live_tiles_rect_, include_borders);
@@ -137,10 +152,10 @@ void PictureLayerTiling::CreateMissingTilesInLiveTilesRect() {
     TileMap::iterator find = tiles_.find(key);
     if (find != tiles_.end())
       continue;
-    CreateTile(key.first, key.second, twin_tiling);
+    CreateTile(key.first, key.second, twin_tiling, null_recycled_twin);
   }
 
-  VerifyLiveTilesRect();
+  VerifyLiveTilesRect(false);
 }
 
 void PictureLayerTiling::CloneTilesAndPropertiesFrom(
@@ -170,13 +185,22 @@ void PictureLayerTiling::CloneTilesAndPropertiesFrom(
   DCHECK_EQ(null_recycled_twin, client_->GetRecycledTwinTiling(this));
   for (const auto& key : to_remove) {
     RemoveTileAt(key.first, key.second, null_recycled_twin);
-    CreateTile(key.first, key.second, &twin_tiling);
+    CreateTile(key.first, key.second, &twin_tiling, null_recycled_twin);
+  }
+
+  // Create any missing tiles from the |twin_tiling|.
+  for (const auto& tile_map_pair : twin_tiling.tiles_) {
+    TileMapKey key = tile_map_pair.first;
+    Tile* tile = tile_map_pair.second.get();
+    if (!tile->is_shared())
+      CreateTile(key.first, key.second, &twin_tiling, null_recycled_twin);
   }
 
   DCHECK_EQ(twin_tiling.tiles_.size(), tiles_.size());
 #if DCHECK_IS_ON
   for (const auto& tile_map_pair : tiles_)
     DCHECK(tile_map_pair.second->is_shared());
+  VerifyLiveTilesRect(false);
 #endif
 
   UpdateTilePriorityRects(twin_tiling.current_content_to_screen_scale_,
@@ -245,17 +269,17 @@ void PictureLayerTiling::Resize(const gfx::Size& new_layer_bounds) {
 
   // There is no recycled twin since this is run on the pending tiling
   // during commit, and on the active tree during activate.
-  PictureLayerTiling* recycled_twin = NULL;
-  DCHECK_EQ(recycled_twin, client_->GetRecycledTwinTiling(this));
+  PictureLayerTiling* null_recycled_twin = nullptr;
+  DCHECK_EQ(null_recycled_twin, client_->GetRecycledTwinTiling(this));
 
   // Drop tiles outside the new layer bounds if the layer shrank.
   for (int i = after_right + 1; i <= before_right; ++i) {
     for (int j = before_top; j <= before_bottom; ++j)
-      RemoveTileAt(i, j, recycled_twin);
+      RemoveTileAt(i, j, null_recycled_twin);
   }
   for (int i = before_left; i <= after_right; ++i) {
     for (int j = after_bottom + 1; j <= before_bottom; ++j)
-      RemoveTileAt(i, j, recycled_twin);
+      RemoveTileAt(i, j, null_recycled_twin);
   }
 
   // If the layer grew, the live_tiles_rect_ is not changed, but a new row
@@ -265,12 +289,12 @@ void PictureLayerTiling::Resize(const gfx::Size& new_layer_bounds) {
   if (after_right > before_right) {
     DCHECK_EQ(after_right, before_right + 1);
     for (int j = before_top; j <= after_bottom; ++j)
-      CreateTile(after_right, j, twin_tiling);
+      CreateTile(after_right, j, twin_tiling, null_recycled_twin);
   }
   if (after_bottom > before_bottom) {
     DCHECK_EQ(after_bottom, before_bottom + 1);
     for (int i = before_left; i <= before_right; ++i)
-      CreateTile(i, after_bottom, twin_tiling);
+      CreateTile(i, after_bottom, twin_tiling, null_recycled_twin);
   }
 }
 
@@ -304,7 +328,7 @@ void PictureLayerTiling::Invalidate(const Region& layer_invalidation) {
          ++iter) {
       // There is no recycled twin for the pending tree during commit, or for
       // the active tree during activation.
-      PictureLayerTiling* null_recycled_twin = NULL;
+      PictureLayerTiling* null_recycled_twin = nullptr;
       DCHECK_EQ(null_recycled_twin, client_->GetRecycledTwinTiling(this));
       if (RemoveTileAt(iter.index_x(), iter.index_y(), null_recycled_twin))
         new_tile_keys.push_back(iter.index());
@@ -314,9 +338,14 @@ void PictureLayerTiling::Invalidate(const Region& layer_invalidation) {
   if (!new_tile_keys.empty()) {
     // During commit from the main thread, invalidations can never be shared
     // with the active tree since the active tree has different content there.
-    const PictureLayerTiling* twin_tiling = nullptr;
+    // And when invalidating an active-tree tiling, it means there was no
+    // pending tiling to clone from.
+    const PictureLayerTiling* null_twin_tiling = nullptr;
+    PictureLayerTiling* null_recycled_twin = nullptr;
+    DCHECK_EQ(null_recycled_twin, client_->GetRecycledTwinTiling(this));
     for (size_t i = 0; i < new_tile_keys.size(); ++i) {
-      CreateTile(new_tile_keys[i].first, new_tile_keys[i].second, twin_tiling);
+      CreateTile(new_tile_keys[i].first, new_tile_keys[i].second,
+                 null_twin_tiling, null_recycled_twin);
     }
   }
 }
@@ -328,7 +357,7 @@ void PictureLayerTiling::SetRasterSource(
   // source will remain valid for shared tiles in the active tree.
   for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
     it->second->set_raster_source(raster_source);
-  VerifyLiveTilesRect();
+  VerifyLiveTilesRect(false);
 }
 
 PictureLayerTiling::CoverageIterator::CoverageIterator()
@@ -490,8 +519,8 @@ bool PictureLayerTiling::RemoveTileAt(int i,
   found->second->set_shared(false);
   tiles_.erase(found);
   if (recycled_twin) {
-    // Recycled twin does not also have a recycled twin, so pass NULL.
-    recycled_twin->RemoveTileAt(i, j, NULL);
+    // Recycled twin does not also have a recycled twin, so pass null.
+    recycled_twin->RemoveTileAt(i, j, nullptr);
   }
   return true;
 }
@@ -502,7 +531,7 @@ void PictureLayerTiling::Reset() {
   for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
     it->second->set_shared(false);
     if (recycled_twin)
-      recycled_twin->RemoveTileAt(it->first.first, it->first.second, NULL);
+      recycled_twin->RemoveTileAt(it->first.first, it->first.second, nullptr);
   }
   tiles_.clear();
 }
@@ -642,8 +671,9 @@ void PictureLayerTiling::SetLiveTilesRect(
   if (live_tiles_rect_ == new_live_tiles_rect)
     return;
 
-  // Iterate to delete all tiles outside of our new live_tiles rect.
   PictureLayerTiling* recycled_twin = client_->GetRecycledTwinTiling(this);
+
+  // Iterate to delete all tiles outside of our new live_tiles rect.
   for (TilingData::DifferenceIterator iter(&tiling_data_,
                                            live_tiles_rect_,
                                            new_live_tiles_rect);
@@ -662,16 +692,20 @@ void PictureLayerTiling::SetLiveTilesRect(
        iter;
        ++iter) {
     TileMapKey key(iter.index());
-    CreateTile(key.first, key.second, twin_tiling);
+    CreateTile(key.first, key.second, twin_tiling, recycled_twin);
   }
 
   live_tiles_rect_ = new_live_tiles_rect;
-  VerifyLiveTilesRect();
+  VerifyLiveTilesRect(false);
+  if (recycled_twin) {
+    recycled_twin->live_tiles_rect_ = live_tiles_rect_;
+    recycled_twin->VerifyLiveTilesRect(true);
+  }
 }
 
-void PictureLayerTiling::VerifyLiveTilesRect() {
+void PictureLayerTiling::VerifyLiveTilesRect(bool is_on_recycle_tree) const {
 #if DCHECK_IS_ON
-  for (TileMap::iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
+  for (auto it = tiles_.begin(); it != tiles_.end(); ++it) {
     if (!it->second.get())
       continue;
     DCHECK(it->first.first < tiling_data_.num_tiles_x())
@@ -688,6 +722,7 @@ void PictureLayerTiling::VerifyLiveTilesRect() {
         << " tile bounds "
         << tiling_data_.TileBounds(it->first.first, it->first.second).ToString()
         << " live_tiles_rect " << live_tiles_rect_.ToString();
+    DCHECK_IMPLIES(is_on_recycle_tree, it->second->is_shared());
   }
 #endif
 }

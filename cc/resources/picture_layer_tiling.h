@@ -287,8 +287,11 @@ class CC_EXPORT PictureLayerTiling {
                      float skewport_target_time_in_seconds,
                      int skewport_extrapolation_limit_in_content_pixels);
   void SetLiveTilesRect(const gfx::Rect& live_tiles_rect);
-  void VerifyLiveTilesRect();
-  Tile* CreateTile(int i, int j, const PictureLayerTiling* twin_tiling);
+  void VerifyLiveTilesRect(bool is_on_recycle_tree) const;
+  Tile* CreateTile(int i,
+                   int j,
+                   const PictureLayerTiling* twin_tiling,
+                   PictureLayerTiling* recycled_twin);
   // Returns true if the Tile existed and was removed from the tiling.
   bool RemoveTileAt(int i, int j, PictureLayerTiling* recycled_twin);
 

@@ -4637,6 +4637,66 @@ TEST_F(PictureLayerImplTest, ChangeInViewportAllowsTilingUpdates) {
   EXPECT_TRUE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
 }
 
+TEST_F(PictureLayerImplTest, CloneMissingRecordings) {
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(400, 400);
+
+  scoped_refptr<FakePicturePileImpl> filled_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> partial_pile =
+      FakePicturePileImpl::CreateEmptyPile(tile_size, layer_bounds);
+  for (int i = 1; i < partial_pile->tiling().num_tiles_x(); ++i) {
+    for (int j = 1; j < partial_pile->tiling().num_tiles_y(); ++j)
+      partial_pile->AddRecordingAt(i, j);
+  }
+
+  SetupPendingTreeWithFixedTileSize(filled_pile, tile_size, Region());
+  ActivateTree();
+
+  PictureLayerTiling* pending_tiling = old_pending_layer_->HighResTiling();
+  PictureLayerTiling* active_tiling = active_layer_->HighResTiling();
+
+  // We should have all tiles in both tile sets.
+  EXPECT_EQ(5u * 5u, pending_tiling->AllTilesForTesting().size());
+  EXPECT_EQ(5u * 5u, active_tiling->AllTilesForTesting().size());
+
+  // Now put a partially-recorded pile on the pending tree (and invalidate
+  // everything, since the main thread PicturePile will invalidate dropped
+  // recordings). This will cause us to be missing some tiles.
+  SetupPendingTreeWithFixedTileSize(partial_pile, tile_size,
+                                    Region(gfx::Rect(layer_bounds)));
+  EXPECT_EQ(3u * 3u, pending_tiling->AllTilesForTesting().size());
+  EXPECT_FALSE(pending_tiling->TileAt(0, 0));
+  EXPECT_FALSE(pending_tiling->TileAt(1, 1));
+  EXPECT_TRUE(pending_tiling->TileAt(2, 2));
+
+  // Active is not affected yet.
+  EXPECT_EQ(5u * 5u, active_tiling->AllTilesForTesting().size());
+
+  // Activate the tree. The same tiles go missing on the active tree.
+  ActivateTree();
+  EXPECT_EQ(3u * 3u, active_tiling->AllTilesForTesting().size());
+  EXPECT_FALSE(active_tiling->TileAt(0, 0));
+  EXPECT_FALSE(active_tiling->TileAt(1, 1));
+  EXPECT_TRUE(active_tiling->TileAt(2, 2));
+
+  // Now put a full recording on the pending tree again. We'll get all our tiles
+  // back.
+  SetupPendingTreeWithFixedTileSize(filled_pile, tile_size,
+                                    Region(gfx::Rect(layer_bounds)));
+  EXPECT_EQ(5u * 5u, pending_tiling->AllTilesForTesting().size());
+
+  // Active is not affected yet.
+  EXPECT_EQ(3u * 3u, active_tiling->AllTilesForTesting().size());
+
+  // Activate the tree. The tiles are created and shared on the active tree.
+  ActivateTree();
+  EXPECT_EQ(5u * 5u, active_tiling->AllTilesForTesting().size());
+  EXPECT_TRUE(active_tiling->TileAt(0, 0)->is_shared());
+  EXPECT_TRUE(active_tiling->TileAt(1, 1)->is_shared());
+  EXPECT_TRUE(active_tiling->TileAt(2, 2)->is_shared());
+}
+
 class TileSizeSettings : public ImplSidePaintingSettings {
  public:
   TileSizeSettings() {
