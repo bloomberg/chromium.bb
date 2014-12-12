@@ -38,7 +38,9 @@
             target.style.visibility = "visible";
         };
         var container = document.getElementsByClassName("container")[0];
-        container.scrollTop = 0;
-        runRepaintTest();
+        runAfterDisplay(function() {
+            container.scrollTop = 0;
+            runRepaintTest();
+        });
     </script>
 </body></html>

@@ -51,6 +51,16 @@ function runRepaintAndPixelTest()
     runRepaintTest();
 }
 
+function runAfterDisplay(callback)
+{
+    if (!window.testRunner) {
+        setTimeout(callback, 500);
+    } else {
+        testRunner.waitUntilDone();
+        testRunner.displayAsyncThen(callback);
+    }
+}
+
 function forceStyleRecalc()
 {
     if (document.body)
