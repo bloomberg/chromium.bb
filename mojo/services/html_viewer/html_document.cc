@@ -101,6 +101,7 @@ HTMLDocument::HTMLDocument(
   exported_services_.AddService(this);
   exported_services_.AddService(&view_manager_client_factory_);
   WeakBindToPipe(&exported_services_, provider.PassMessagePipe());
+  Load(response_.Pass());
 }
 
 HTMLDocument::~HTMLDocument() {
@@ -120,8 +121,6 @@ void HTMLDocument::OnEmbed(
   root_ = root;
   embedder_service_provider_ = embedder_service_provider.Pass();
   navigator_host_.set_service_provider(embedder_service_provider_.get());
-
-  Load(response_.Pass());
 
   blink::WebSize root_size(root_->bounds().width, root_->bounds().height);
   web_view_->resize(root_size);
