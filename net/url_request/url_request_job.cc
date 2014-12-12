@@ -97,18 +97,32 @@ bool URLRequestJob::Read(IOBuffer* buf, int buf_size, int *bytes_read) {
     filtered_read_buffer_ = buf;
     filtered_read_buffer_len_ = buf_size;
 
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("423948 URLRequestJob::Read2"));
+
     if (ReadFilteredData(bytes_read)) {
       rv = true;   // We have data to return.
 
       // It is fine to call DoneReading even if ReadFilteredData receives 0
       // bytes from the net, but we avoid making that call if we know for
       // sure that's the case (ReadRawDataHelper path).
+      // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is
+      // fixed.
+      tracked_objects::ScopedTracker tracking_profile3(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION("423948 URLRequestJob::Read3"));
+
       if (*bytes_read == 0)
         DoneReading();
     } else {
       rv = false;  // Error, or a new IO is pending.
     }
   }
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile4(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("423948 URLRequestJob::Read4"));
+
   if (rv && *bytes_read == 0)
     NotifyDone(URLRequestStatus());
   return rv;
@@ -487,6 +501,10 @@ void URLRequestJob::NotifyHeadersComplete() {
 }
 
 void URLRequestJob::NotifyReadComplete(int bytes_read) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("URLRequestJob::NotifyReadComplete"));
+
   if (!request_ || !request_->has_delegate())
     return;  // The request was destroyed, so there is no more work to do.
 
@@ -801,6 +819,11 @@ bool URLRequestJob::ReadRawDataForFilter(int* bytes_read) {
 
 bool URLRequestJob::ReadRawDataHelper(IOBuffer* buf, int buf_size,
                                       int* bytes_read) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 URLRequestJob::ReadRawDataHelper"));
+
   DCHECK(!request_->status().is_io_pending());
   DCHECK(raw_read_buffer_.get() == NULL);
 
