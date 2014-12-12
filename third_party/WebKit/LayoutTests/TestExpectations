@@ -1388,3 +1388,5 @@ crbug.com/441705 fast/media/media-svg-crash.html [ Pass Failure ]
 
 crbug.com/441736 svg/as-image/svg-invalid-image-1.html [ Pass Failure ]
 crbug.com/441738 inspector/extensions/extensions-network.html [ Pass Failure ]
+
+crbug.com/441743 [ Mac Win ] plugins/js-from-destroy.html [ Timeout Crash ]
