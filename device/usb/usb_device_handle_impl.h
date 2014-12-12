@@ -149,10 +149,10 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   // before this handle.
   scoped_refptr<UsbContext> context_;
 
-  base::WeakPtrFactory<UsbDeviceHandleImpl> weak_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   base::ThreadChecker thread_checker_;
+  base::WeakPtrFactory<UsbDeviceHandleImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbDeviceHandleImpl);
 };

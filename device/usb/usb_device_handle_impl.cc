@@ -479,8 +479,8 @@ UsbDeviceHandleImpl::UsbDeviceHandleImpl(scoped_refptr<UsbContext> context,
       handle_(handle),
       config_(config),
       context_(context),
-      weak_factory_(this),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      weak_factory_(this) {
   DCHECK(handle) << "Cannot create device with NULL handle.";
 }
 
