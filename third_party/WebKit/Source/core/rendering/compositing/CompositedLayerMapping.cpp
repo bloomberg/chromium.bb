@@ -43,6 +43,7 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/LayerPainter.h"
 #include "core/paint/ScrollableAreaPainter.h"
+#include "core/paint/TransformRecorder.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/FilterEffectRenderer.h"
 #include "core/rendering/RenderEmbeddedObject.h"
@@ -2056,17 +2057,9 @@ void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo
     FontCachePurgePreventer fontCachePurgePreventer;
 
     IntSize offset = paintInfo.offsetFromRenderer;
-    {
-        TransformationMatrix translation;
-        translation.translate(-offset.width(), -offset.height());
-        OwnPtr<DisplayItem> beginTransformDisplayItem = BeginTransformDisplayItem::create(displayItemClient(), translation);
-        if (context->displayItemList()) {
-            ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
-            context->displayItemList()->add(beginTransformDisplayItem.release());
-        } else {
-            beginTransformDisplayItem->replay(context);
-        }
-    }
+    AffineTransform translation;
+    translation.translate(-offset.width(), -offset.height());
+    TransformRecorder transformRecorder(*context, displayItemClient(), translation);
 
     // The dirtyRect is in the coords of the painting root.
     IntRect dirtyRect(clip);
@@ -2119,16 +2112,6 @@ void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo
             } else {
                 endClipDisplayItem->replay(context);
             }
-        }
-    }
-
-    {
-        OwnPtr<DisplayItem> endTransformDisplayItem = EndTransformDisplayItem::create(displayItemClient());
-        if (context->displayItemList()) {
-            ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
-            context->displayItemList()->add(endTransformDisplayItem.release());
-        } else {
-            endTransformDisplayItem->replay(context);
         }
     }
 }

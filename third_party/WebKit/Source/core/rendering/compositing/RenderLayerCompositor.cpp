@@ -42,6 +42,7 @@
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/FramePainter.h"
+#include "core/paint/TransformRecorder.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderLayerStackingNode.h"
 #include "core/rendering/RenderLayerStackingNodeIterator.h"
@@ -781,27 +782,12 @@ static void paintScrollbar(Scrollbar* scrollbar, GraphicsContext& context, const
     const IntPoint& paintOffset = scrollbar->frameRect().location();
     IntRect transformedClip = clip;
     transformedClip.moveBy(paintOffset);
-    {
-        TransformationMatrix translation;
-        translation.translate(-paintOffset.x(), -paintOffset.y());
-        OwnPtr<DisplayItem> beginTransformDisplayItem = BeginTransformDisplayItem::create(scrollbar->displayItemClient(), translation);
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-            ASSERT(context.displayItemList());
-            context.displayItemList()->add(beginTransformDisplayItem.release());
-        } else {
-            beginTransformDisplayItem->replay(&context);
-        }
-    }
+
+    AffineTransform translation;
+    translation.translate(-paintOffset.x(), -paintOffset.y());
+    TransformRecorder transformRecorder(context, scrollbar->displayItemClient(), translation);
 
     scrollbar->paint(&context, transformedClip);
-
-    OwnPtr<DisplayItem> endTransformDisplayItem = EndTransformDisplayItem::create(scrollbar->displayItemClient());
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        ASSERT(context.displayItemList());
-        context.displayItemList()->add(endTransformDisplayItem.release());
-    } else {
-        endTransformDisplayItem->replay(&context);
-    }
 }
 
 void RenderLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase, const IntRect& clip)

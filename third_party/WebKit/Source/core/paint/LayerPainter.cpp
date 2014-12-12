@@ -10,6 +10,7 @@
 #include "core/paint/FilterPainter.h"
 #include "core/paint/LayerClipRecorder.h"
 #include "core/paint/ScrollableAreaPainter.h"
+#include "core/paint/TransformRecorder.h"
 #include "core/paint/TransparencyRecorder.h"
 #include "core/rendering/ClipPathOperation.h"
 #include "core/rendering/FilterEffectRenderer.h"
@@ -390,32 +391,12 @@ void LayerPainter::paintFragmentByApplyingTransform(GraphicsContext* context, co
     transform.translateRight(roundedDelta.x(), roundedDelta.y());
     LayoutSize adjustedSubPixelAccumulation = paintingInfo.subPixelAccumulation + (delta - roundedDelta);
 
-    if (!transform.isIdentity()) {
-        ASSERT(m_renderLayer.renderer());
-        OwnPtr<BeginTransformDisplayItem> beginTransformDisplayItem = BeginTransformDisplayItem::create(m_renderLayer.renderer()->displayItemClient(), transform);
-        // FIXME: we shouldn't be calling replay when Slimming Paint is on. However, replay() currently has an important side-effect that it stores
-        // the current matrix on the GraphicsContext, which is used for making conditional painting decisions such as anti-aliasing rotated borders.
-        beginTransformDisplayItem->replay(context);
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-            ASSERT(context->displayItemList());
-            context->displayItemList()->add(beginTransformDisplayItem.release());
-        }
-    }
+    TransformRecorder transformRecorder(*context, m_renderLayer.renderer()->displayItemClient(), transform.toAffineTransform());
 
     // Now do a paint with the root layer shifted to be us.
     LayerPaintingInfo transformedPaintingInfo(&m_renderLayer, enclosingIntRect(transform.inverse().mapRect(paintingInfo.paintDirtyRect)), paintingInfo.paintBehavior,
         adjustedSubPixelAccumulation, paintingInfo.paintingRoot);
     paintLayerContentsAndReflection(context, transformedPaintingInfo, paintFlags);
-
-    if (!transform.isIdentity()) {
-        OwnPtr<EndTransformDisplayItem> endTransformDisplayItem = EndTransformDisplayItem::create(m_renderLayer.renderer()->displayItemClient());
-        // FIXME: the same fix applies are as in the FIXME for BeginTransformDisplayItem above.
-        endTransformDisplayItem->replay(context);
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-            ASSERT(context->displayItemList());
-            context->displayItemList()->add(endTransformDisplayItem.release());
-        }
-    }
 }
 
 void LayerPainter::paintChildren(unsigned childrenToVisit, GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)

@@ -6,25 +6,23 @@
 #define TransformDisplayItem_h
 
 #include "platform/graphics/paint/DisplayItem.h"
-#include "platform/transforms/TransformationMatrix.h"
+#include "platform/transforms/AffineTransform.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
-class TransformationMatrix;
-
 class PLATFORM_EXPORT BeginTransformDisplayItem : public DisplayItem {
 public:
-    static PassOwnPtr<BeginTransformDisplayItem> create(DisplayItemClient client, const TransformationMatrix& matrix) { return adoptPtr(new BeginTransformDisplayItem(client, matrix)); }
+    static PassOwnPtr<BeginTransformDisplayItem> create(DisplayItemClient client, const AffineTransform& transform) { return adoptPtr(new BeginTransformDisplayItem(client, transform)); }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 protected:
-    BeginTransformDisplayItem(DisplayItemClient, const TransformationMatrix&);
+    BeginTransformDisplayItem(DisplayItemClient, const AffineTransform&);
 
 private:
-    const TransformationMatrix m_transform;
+    const AffineTransform m_transform;
 };
 
 class PLATFORM_EXPORT EndTransformDisplayItem : public DisplayItem {
