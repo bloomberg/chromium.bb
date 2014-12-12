@@ -258,7 +258,7 @@ class WorkQueue(object):
       if added_dir:
         self.resolver.RemoveOneDirectory(scan_dir)
       scan_name = self.PopIfAvail()
-    return sorted(self.added_set)
+    return self.added_set
 
 
 def DoMain(argv):
@@ -288,7 +288,14 @@ def DoMain(argv):
   for filename in files:
     workQ.PushIfNew(filename)
 
-  sorted_list = workQ.Run()
+  sources_set = workQ.Run()
+
+  # If any of the original files requested aren't found, add them anyway.
+  # This is so that source files that will be generated are still returned in
+  # the program output.
+  sources_set = sources_set.union(set(files))
+
+  sorted_list = sorted(sources_set)
   return '\n'.join(sorted_list) + '\n'
 
 
