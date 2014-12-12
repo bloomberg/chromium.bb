@@ -74,6 +74,7 @@ class ImageTransportSurfaceFBO
   void* GetHandle() override;
   void* GetDisplay() override;
   bool OnMakeCurrent(gfx::GLContext* context) override;
+  void NotifyWasBound() override;
   unsigned int GetBackingFrameBufferObject() override;
   bool SetBackbufferAllocation(bool allocated) override;
   void SetFrontbufferAllocation(bool allocated) override;

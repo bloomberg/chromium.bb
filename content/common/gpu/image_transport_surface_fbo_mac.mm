@@ -81,6 +81,42 @@ bool ImageTransportSurfaceFBO::OnMakeCurrent(gfx::GLContext* context) {
   return true;
 }
 
+void ImageTransportSurfaceFBO::NotifyWasBound() {
+  // Sometimes calling glBindFramebuffer doesn't seem to be enough to get
+  // rendered contents to show up in the color attachment. It appears that doing
+  // a glBegin/End pair with program 0 is enough to tickle the driver into
+  // actually effecting the binding.
+  // http://crbug.com/435786
+  DCHECK(has_complete_framebuffer_);
+
+  // We will restore the current program after the dummy glBegin/End pair.
+  // Ensure that we will be able to restore this state before attempting to
+  // change it.
+  GLint old_program_signed = 0;
+  glGetIntegerv(GL_CURRENT_PROGRAM, &old_program_signed);
+  GLuint old_program = static_cast<GLuint>(old_program_signed);
+  if (old_program && glIsProgram(old_program)) {
+    // A deleted program cannot be re-bound.
+    GLint delete_status = GL_FALSE;
+    glGetProgramiv(old_program, GL_DELETE_STATUS, &delete_status);
+    if (delete_status == GL_TRUE)
+      return;
+    // A program which has had the most recent link fail cannot be re-bound.
+    GLint link_status = GL_FALSE;
+    glGetProgramiv(old_program, GL_LINK_STATUS, &link_status);
+    if (link_status != GL_TRUE)
+      return;
+  }
+
+  // Issue the dummy call and then restore the state.
+  glUseProgram(0);
+  GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+  DCHECK(status == GL_FRAMEBUFFER_COMPLETE);
+  glBegin(GL_TRIANGLES);
+  glEnd();
+  glUseProgram(old_program);
+}
+
 unsigned int ImageTransportSurfaceFBO::GetBackingFrameBufferObject() {
   return fbo_id_;
 }

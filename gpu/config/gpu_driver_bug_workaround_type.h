@@ -54,6 +54,8 @@
          force_gl_finish_after_compositing)                  \
   GPU_OP(FORCE_INTEGRATED_GPU,                               \
          force_integrated_gpu)                               \
+  GPU_OP(GL_BEGIN_GL_END_ON_FBO_CHANGE_TO_BACKBUFFER,        \
+         gl_begin_gl_end_on_fbo_change_to_backbuffer)        \
   GPU_OP(GL_CLEAR_BROKEN,                                    \
          gl_clear_broken)                                    \
   GPU_OP(INIT_GL_POSITION_IN_VERTEX_SHADER,                  \
