@@ -692,7 +692,7 @@ class ValidationFailureOrTimeout(MoxBase):
   def testPreCQ(self):
     for change in self._patches:
       self._pool.UpdateCLPreCQStatus(change, constants.CL_STATUS_PASSED)
-    self._pool.pre_cq = True
+    self._pool.pre_cq_trybot = True
     self._pool.HandleValidationFailure([self._BUILD_MESSAGE])
     self.assertEqual(0, self._pool.RemoveReady.call_count)
 

@@ -1019,7 +1019,7 @@ class ValidationPool(object):
 
   def __init__(self, overlays, build_root, build_number, builder_name,
                is_master, dryrun, changes=None, non_os_changes=None,
-               conflicting_changes=None, pre_cq=False, builder_run=None):
+               conflicting_changes=None, pre_cq_trybot=False, builder_run=None):
     """Initializes an instance by setting default variables to instance vars.
 
     Generally use AcquirePool as an entry pool to a pool rather than this
@@ -1038,8 +1038,8 @@ class ValidationPool(object):
         pool but aren't part of the cros checkout.
       conflicting_changes: Changes that failed to apply but we're keeping around
         because they conflict with other changes in flight.
-      pre_cq: If set to True, this builder is verifying CLs before they go to
-        the commit queue.
+      pre_cq_trybot: If set to True, this is a Pre-CQ trybot. (Note: The Pre-CQ
+        launcher is NOT considered a Pre-CQ trybot.)
       builder_run: Optional BuilderRun instance used to fetch cidb handle and
         metadata instance.
     """
@@ -1078,7 +1078,7 @@ class ValidationPool(object):
           % (conflicting_changes,))
 
     self.is_master = bool(is_master)
-    self.pre_cq = pre_cq
+    self.pre_cq_trybot = pre_cq_trybot
     self._run = builder_run
     self.build_log = None
     if self._run:
@@ -1086,14 +1086,12 @@ class ValidationPool(object):
       self.build_log = tree_status.ConstructDashboardURL(
           waterfall, builder_name, build_number)
     self.dryrun = bool(dryrun) or self.GLOBAL_DRYRUN
-    if pre_cq:
+    if pre_cq_trybot:
       self.queue = 'A trybot'
     elif builder_name == constants.PRE_CQ_LAUNCHER_NAME:
       self.queue = 'The Pre-Commit Queue'
     else:
       self.queue = 'The Commit Queue'
-
-    self.bot = PRE_CQ if pre_cq else CQ
 
     # See optional args for types of changes.
     self.changes = changes or []
@@ -1136,13 +1134,13 @@ class ValidationPool(object):
             self.is_master, self.dryrun, self.changes,
             self.non_manifest_changes,
             self.changes_that_failed_to_apply_earlier,
-            self.pre_cq))
+            self.pre_cq_trybot))
 
   @classmethod
   @failures_lib.SetFailureType(failures_lib.BuilderFailure)
   def AcquirePreCQPool(cls, *args, **kwargs):
     """See ValidationPool.__init__ for arguments."""
-    kwargs.setdefault('pre_cq', True)
+    kwargs.setdefault('pre_cq_trybot', True)
     kwargs.setdefault('is_master', True)
     pool = cls(*args, **kwargs)
     pool.RecordPatchesInMetadataAndDatabase()
@@ -1517,7 +1515,7 @@ class ValidationPool(object):
 
     self.PrintLinksToChanges(applied)
 
-    if self.is_master and not self.pre_cq:
+    if self.is_master and not self.pre_cq_trybot:
       inputs = [[change, self.build_log] for change in applied]
       parallel.RunTasksInProcessPool(self.HandleApplySuccess, inputs)
 
@@ -1662,7 +1660,7 @@ class ValidationPool(object):
       TreeIsClosedException: if the tree is closed.
     """
     assert self.is_master, 'Non-master builder calling SubmitPool'
-    assert not self.pre_cq, 'Trybot calling SubmitPool'
+    assert not self.pre_cq_trybot, 'Trybot calling SubmitPool'
 
     if (check_tree_open and not self.dryrun and not
         tree_status.IsTreeOpen(period=self.SLEEP_TIMEOUT,
@@ -1844,7 +1842,7 @@ class ValidationPool(object):
       if db:
         self._InsertCLActionToDatabase(change, constants.CL_ACTION_KICKED_OUT,
                                        reason)
-        if self.pre_cq:
+        if self.pre_cq_trybot:
           self._InsertCLActionToDatabase(
               change, constants.CL_ACTION_PRE_CQ_FAILED)
 
@@ -2162,13 +2160,14 @@ class ValidationPool(object):
     self.RemoveReady(change)
 
   @staticmethod
-  def _CreateValidationFailureMessage(pre_cq, change, suspects, messages,
+  def _CreateValidationFailureMessage(pre_cq_trybot, change, suspects, messages,
                                       sanity=True, infra_fail=False,
                                       lab_fail=False, no_stat=None):
     """Create a message explaining why a validation failure occurred.
 
     Args:
-      pre_cq: Whether this builder is a Pre-CQ builder.
+      pre_cq_trybot: Whether the builder is a Pre-CQ trybot. (Note: The Pre-CQ
+        launcher is NOT considered a Pre-CQ trybot.)
       change: The change we want to create a message for.
       suspects: The set of suspect changes that we think broke the build.
       messages: A list of build failure messages from supporting builders.
@@ -2239,7 +2238,7 @@ class ValidationPool(object):
           msg.append('One of the following changes is probably at fault: %s'
                      % other_suspects_str)
 
-        will_retry_automatically = not pre_cq
+        will_retry_automatically = not pre_cq_trybot
 
     if will_retry_automatically:
       msg.insert(
@@ -2264,7 +2263,7 @@ class ValidationPool(object):
         status.
     """
     msg = self._CreateValidationFailureMessage(
-        self.pre_cq, change, suspects, messages,
+        self.pre_cq_trybot, change, suspects, messages,
         sanity, infra_fail, lab_fail, no_stat)
     self.SendNotification(change, '%(details)s', details=msg)
     if sanity:
@@ -2294,7 +2293,8 @@ class ValidationPool(object):
       changes = self.changes
 
     candidates = []
-    if self.pre_cq:
+
+    if self.pre_cq_trybot:
       _, db = self._run.GetCIDBHandle()
       action_history = []
       if db:
