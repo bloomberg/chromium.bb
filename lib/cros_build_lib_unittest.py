@@ -644,6 +644,20 @@ class TestRetries(cros_test_lib.MockTestCase):
     self.assertRaises(StopIteration, retry_util.RetryException,
                       ValueError, 3, f)
 
+  def testRetryWithBackoff(self):
+    sleep_history = []
+    def mock_sleep(x):
+      sleep_history.append(x)
+    self.PatchObject(time, 'sleep', new=mock_sleep)
+    def always_fails():
+      raise ValueError()
+    handler = lambda x: True
+    with self.assertRaises(ValueError):
+      retry_util.GenericRetry(handler, 5, always_fails, sleep=1,
+                              backoff_factor=2)
+
+    self.assertEqual(sleep_history, [1, 2, 4, 8, 16])
+
   @osutils.TempDirDecorator
   def testBasicRetry(self):
     # pylint: disable=E1101

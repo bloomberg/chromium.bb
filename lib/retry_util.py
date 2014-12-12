@@ -31,6 +31,9 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
     sleep: Optional keyword.  Multiplier for how long to sleep between
       retries; will delay (1*sleep) the first time, then (2*sleep),
       continuing via attempt * sleep.
+    backoff_factor: Optional keyword. If supplied and > 1, subsequent sleeps
+                    will be of length (backoff_factor ^ (attempt - 1)) * sleep,
+                    rather than the default behavior of attempt * sleep.
 
   Returns:
     Whatever functor(*args, **kwargs) returns.
@@ -45,10 +48,19 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
   if max_retry < 0:
     raise ValueError('max_retry needs to be zero or more: %s' % max_retry)
 
+  backoff_factor = kwargs.pop('backoff_factor', 1)
+  if backoff_factor < 1:
+    raise ValueError('backoff_factor must be 1 or greater: %s'
+                     % backoff_factor)
+
   exc_info = None
   for attempt in xrange(max_retry + 1):
     if attempt and sleep:
-      time.sleep(sleep * attempt)
+      if backoff_factor > 1:
+        sleep_time = sleep * backoff_factor ** (attempt - 1)
+      else:
+        sleep_time = sleep * attempt
+      time.sleep(sleep_time)
     try:
       return functor(*args, **kwargs)
     except Exception as e:

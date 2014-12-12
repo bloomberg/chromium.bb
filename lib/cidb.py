@@ -452,6 +452,7 @@ class SchemaVersionedMySQLConnection(object):
         handler=_IsRetryableException,
         max_retry=8,
         sleep=4,
+        backoff_factor=2,
         functor=f)
 
   def _GetEngine(self):
