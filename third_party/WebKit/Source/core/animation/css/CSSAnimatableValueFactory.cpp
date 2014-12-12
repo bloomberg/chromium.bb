@@ -499,6 +499,8 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
         return AnimatableTransform::create(style.transform());
     case CSSPropertyTransformOrigin:
         return createFromTransformOrigin(style.transformOrigin(), style);
+    case CSSPropertyMotionPosition:
+        return createFromLength(style.motionPosition(), style);
     case CSSPropertyWidows:
         return createFromDouble(style.widows());
     case CSSPropertyWidth:

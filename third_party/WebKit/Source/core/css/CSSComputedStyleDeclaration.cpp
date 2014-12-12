@@ -37,6 +37,7 @@
 #include "core/css/CSSGridLineNamesValue.h"
 #include "core/css/CSSGridTemplateAreasValue.h"
 #include "core/css/CSSLineBoxContainValue.h"
+#include "core/css/CSSPathValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSPropertyMetadata.h"
@@ -59,6 +60,7 @@
 #include "core/rendering/RenderGrid.h"
 #include "core/rendering/style/ContentData.h"
 #include "core/rendering/style/CounterContent.h"
+#include "core/rendering/style/PathStyleMotionPath.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/ShadowList.h"
 #include "core/rendering/style/ShapeValue.h"
@@ -1505,6 +1507,9 @@ static bool isLayoutDependent(CSSPropertyID propertyID, PassRefPtr<RenderStyle> 
     case CSSPropertyWebkitTransform:
     case CSSPropertyTransformOrigin:
     case CSSPropertyWebkitTransformOrigin:
+    case CSSPropertyMotionPath:
+    case CSSPropertyMotionPosition:
+    case CSSPropertyMotionRotation:
     case CSSPropertyWidth:
     case CSSPropertyWebkitFilter:
         return true;
@@ -2720,6 +2725,48 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         case CSSPropertyBackgroundRepeatX:
         case CSSPropertyBackgroundRepeatY:
             break;
+
+        case CSSPropertyMotion:
+            ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
+            return valuesForShorthandProperty(motionShorthand());
+
+        case CSSPropertyMotionPath: {
+            ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
+            const StyleMotionPath* styleMotionPath = style->motionPath();
+            if (!styleMotionPath)
+                return cssValuePool().createIdentifierValue(CSSValueNone);
+
+            ASSERT(styleMotionPath->isPathStyleMotionPath());
+            return CSSPathValue::create(toPathStyleMotionPath(styleMotionPath)->pathString());
+        }
+
+        case CSSPropertyMotionPosition:
+            ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
+            return zoomAdjustedPixelValueForLength(style->motionPosition(), *style);
+
+        case CSSPropertyMotionRotation: {
+            ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
+
+            CSSValueID rotationType;
+            switch (style->motionRotationType()) {
+            case MotionRotationAuto:
+                rotationType = CSSValueAuto;
+                break;
+            case MotionRotationReverse:
+                rotationType = CSSValueReverse;
+                break;
+            case MotionRotationFixed:
+                return cssValuePool().createValue(style->motionRotation(), CSSPrimitiveValue::CSS_DEG);
+            default:
+                ASSERT_NOT_REACHED();
+                return nullptr;
+            }
+
+            RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+            list->append(cssValuePool().createIdentifierValue(rotationType));
+            list->append(cssValuePool().createValue(style->motionRotation(), CSSPrimitiveValue::CSS_DEG));
+            return list.release();
+        }
 
         /* Unimplemented CSS 3 properties (including CSS3 shorthand properties) */
         case CSSPropertyWebkitTextEmphasis:

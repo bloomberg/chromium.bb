@@ -601,6 +601,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyTransformOrigin:
         style->setTransformOrigin(animatableValueToTransformOrigin(value, state));
         return;
+    case CSSPropertyMotionPosition:
+        style->setMotionPosition(animatableValueToLength(value, state, ValueRangeNonNegative));
+        return;
     case CSSPropertyWidows:
         style->setWidows(animatableValueRoundClampTo<unsigned short>(value, 1));
         return;

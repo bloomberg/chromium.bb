@@ -1526,6 +1526,17 @@ void RenderStyle::setMarginEnd(const Length& margin)
     }
 }
 
+void RenderStyle::setMotionPath(PassRefPtr<StyleMotionPath> path)
+{
+    ASSERT(path);
+    rareNonInheritedData.access()->m_transform.access()->m_motion.m_path = path;
+}
+
+void RenderStyle::resetMotionPath()
+{
+    rareNonInheritedData.access()->m_transform.access()->m_motion.m_path = nullptr;
+}
+
 TextEmphasisMark RenderStyle::textEmphasisMark() const
 {
     TextEmphasisMark mark = static_cast<TextEmphasisMark>(rareInheritedData->textEmphasisMark);

@@ -25,6 +25,7 @@
 #ifndef StyleTransformData_h
 #define StyleTransformData_h
 
+#include "core/rendering/style/StyleMotionData.h"
 #include "core/rendering/style/TransformOrigin.h"
 #include "platform/transforms/TransformOperations.h"
 #include "wtf/PassRefPtr.h"
@@ -45,6 +46,7 @@ public:
 
     TransformOperations m_operations;
     TransformOrigin m_origin;
+    StyleMotionData m_motion;
 
 private:
     StyleTransformData();

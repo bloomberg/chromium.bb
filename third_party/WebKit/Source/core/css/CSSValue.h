@@ -70,6 +70,7 @@ public:
     bool isUnsetValue() const { return m_classType == UnsetClass; }
     bool isInitialValue() const { return m_classType == InitialClass; }
     bool isLinearGradientValue() const { return m_classType == LinearGradientClass; }
+    bool isPathValue() const { return m_classType == PathClass; }
     bool isRadialGradientValue() const { return m_classType == RadialGradientClass; }
     bool isReflectValue() const { return m_classType == ReflectClass; }
     bool isShadowValue() const { return m_classType == ShadowClass; }
@@ -130,6 +131,7 @@ protected:
         LineBoxContainClass,
         CalculationClass,
         GridTemplateAreasClass,
+        PathClass,
 
         // SVG classes.
         CSSSVGDocumentClass,

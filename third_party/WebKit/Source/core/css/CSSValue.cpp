@@ -46,6 +46,7 @@
 #include "core/css/CSSInheritedValue.h"
 #include "core/css/CSSInitialValue.h"
 #include "core/css/CSSLineBoxContainValue.h"
+#include "core/css/CSSPathValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSReflectValue.h"
 #include "core/css/CSSSVGDocumentValue.h"
@@ -128,6 +129,8 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSGridLineNamesValue>(*this, other);
         case GridTemplateAreasClass:
             return compareCSSValues<CSSGridTemplateAreasValue>(*this, other);
+        case PathClass:
+            return compareCSSValues<CSSPathValue>(*this, other);
         case PrimitiveClass:
             return compareCSSValues<CSSPrimitiveValue>(*this, other);
         case ReflectClass:
@@ -202,6 +205,8 @@ String CSSValue::cssText() const
         return toCSSGridLineNamesValue(this)->customCSSText();
     case GridTemplateAreasClass:
         return toCSSGridTemplateAreasValue(this)->customCSSText();
+    case PathClass:
+        return toCSSPathValue(this)->customCSSText();
     case PrimitiveClass:
         return toCSSPrimitiveValue(this)->customCSSText();
     case ReflectClass:
@@ -285,6 +290,9 @@ void CSSValue::destroy()
         return;
     case GridTemplateAreasClass:
         delete toCSSGridTemplateAreasValue(this);
+        return;
+    case PathClass:
+        delete toCSSPathValue(this);
         return;
     case PrimitiveClass:
         delete toCSSPrimitiveValue(this);
@@ -383,6 +391,9 @@ void CSSValue::finalizeGarbageCollectedObject()
     case GridTemplateAreasClass:
         toCSSGridTemplateAreasValue(this)->~CSSGridTemplateAreasValue();
         return;
+    case PathClass:
+        toCSSPathValue(this)->~CSSPathValue();
+        return;
     case PrimitiveClass:
         toCSSPrimitiveValue(this)->~CSSPrimitiveValue();
         return;
@@ -479,6 +490,9 @@ void CSSValue::trace(Visitor* visitor)
         return;
     case GridTemplateAreasClass:
         toCSSGridTemplateAreasValue(this)->traceAfterDispatch(visitor);
+        return;
+    case PathClass:
+        toCSSPathValue(this)->traceAfterDispatch(visitor);
         return;
     case PrimitiveClass:
         toCSSPrimitiveValue(this)->traceAfterDispatch(visitor);

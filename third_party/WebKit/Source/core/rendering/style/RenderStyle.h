@@ -48,6 +48,7 @@
 #include "core/rendering/style/StyleGridData.h"
 #include "core/rendering/style/StyleGridItemData.h"
 #include "core/rendering/style/StyleInheritedData.h"
+#include "core/rendering/style/StyleMotionPath.h"
 #include "core/rendering/style/StyleMultiColData.h"
 #include "core/rendering/style/StyleRareInheritedData.h"
 #include "core/rendering/style/StyleRareNonInheritedData.h"
@@ -826,6 +827,11 @@ public:
     bool hasTransform() const { return !rareNonInheritedData->m_transform->m_operations.operations().isEmpty(); }
     bool transformDataEquivalent(const RenderStyle& otherStyle) const { return rareNonInheritedData->m_transform == otherStyle.rareNonInheritedData->m_transform; }
 
+    StyleMotionPath* motionPath() const { return rareNonInheritedData->m_transform->m_motion.m_path.get(); }
+    const Length& motionPosition() const { return rareNonInheritedData->m_transform->m_motion.m_position; }
+    float motionRotation() const { return rareNonInheritedData->m_transform->m_motion.m_rotation; }
+    MotionRotationType motionRotationType() const { return rareNonInheritedData->m_transform->m_motion.m_rotationType; }
+
     TextEmphasisFill textEmphasisFill() const { return static_cast<TextEmphasisFill>(rareInheritedData->textEmphasisFill); }
     TextEmphasisMark textEmphasisMark() const;
     const AtomicString& textEmphasisCustomMark() const { return rareInheritedData->textEmphasisCustomMark; }
@@ -1285,6 +1291,12 @@ public:
     void setTextEmphasisPosition(TextEmphasisPosition position) { SET_VAR(rareInheritedData, textEmphasisPosition, position); }
     bool setTextOrientation(TextOrientation);
 
+    void setMotionPath(PassRefPtr<StyleMotionPath>);
+    void resetMotionPath();
+    void setMotionPosition(const Length& motionPosition) { SET_VAR(rareNonInheritedData.access()->m_transform, m_motion.m_position, motionPosition); }
+    void setMotionRotation(float motionRotation) { SET_VAR(rareNonInheritedData.access()->m_transform, m_motion.m_rotation, motionRotation); }
+    void setMotionRotationType(MotionRotationType motionRotationType) { SET_VAR(rareNonInheritedData.access()->m_transform, m_motion.m_rotationType, motionRotationType); }
+
     void setObjectFit(ObjectFit f) { SET_VAR(rareNonInheritedData, m_objectFit, f); }
     void setObjectPosition(LengthPoint position) { SET_VAR(rareNonInheritedData, m_objectPosition, position); }
 
@@ -1575,6 +1587,10 @@ public:
     static TransformOrigin initialTransformOrigin() { return TransformOrigin(Length(50.0, Percent), Length(50.0, Percent), 0); }
     static EPointerEvents initialPointerEvents() { return PE_AUTO; }
     static ETransformStyle3D initialTransformStyle3D() { return TransformStyle3DFlat; }
+    static const StyleMotionPath* initialMotionPath() { return nullptr; }
+    static Length initialMotionPosition() { return Length(0, Fixed); }
+    static float initialMotionRotation() { return 0; }
+    static MotionRotationType initialMotionRotationType() { return MotionRotationAuto; }
     static EBackfaceVisibility initialBackfaceVisibility() { return BackfaceVisibilityVisible; }
     static float initialPerspective() { return 0; }
     static Length initialPerspectiveOriginX() { return Length(50.0, Percent); }

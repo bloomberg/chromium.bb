@@ -161,6 +161,10 @@ minHeight
 minWidth
 minZoom
 mixBlendMode
+motion
+motionPath
+motionPosition
+motionRotation
 objectFit
 objectPosition
 opacity

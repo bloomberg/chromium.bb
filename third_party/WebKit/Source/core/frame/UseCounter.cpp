@@ -499,6 +499,10 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyAll: return 454;
     case CSSPropertyJustifyItems: return 455;
     case CSSPropertyScrollBlocksOn: return 456;
+    case CSSPropertyMotionPath: return 457;
+    case CSSPropertyMotionPosition: return 458;
+    case CSSPropertyMotionRotation: return 459;
+    case CSSPropertyMotion: return 460;
 
     // 1. Add new features above this line (don't change the assigned numbers of the existing
     // items).
@@ -515,7 +519,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     return 0;
 }
 
-static int maximumCSSSampleId() { return 456; }
+static int maximumCSSSampleId() { return 460; }
 
 void UseCounter::muteForInspector()
 {

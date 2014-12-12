@@ -87,6 +87,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyMaxWidth:
     case CSSPropertyMinHeight:
     case CSSPropertyMinWidth:
+    case CSSPropertyMotionPosition:
     case CSSPropertyOutlineWidth:
     case CSSPropertyPaddingBottom:
     case CSSPropertyPaddingLeft:

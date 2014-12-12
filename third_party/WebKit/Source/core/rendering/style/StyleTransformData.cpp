@@ -29,6 +29,7 @@ namespace blink {
 StyleTransformData::StyleTransformData()
     : m_operations(RenderStyle::initialTransform())
     , m_origin(RenderStyle::initialTransformOrigin())
+    , m_motion(nullptr, RenderStyle::initialMotionPosition(), RenderStyle::initialMotionRotation(), RenderStyle::initialMotionRotationType())
 {
 }
 
@@ -36,12 +37,13 @@ StyleTransformData::StyleTransformData(const StyleTransformData& o)
     : RefCounted<StyleTransformData>()
     , m_operations(o.m_operations)
     , m_origin(o.m_origin)
+    , m_motion(o.m_motion)
 {
 }
 
 bool StyleTransformData::operator==(const StyleTransformData& o) const
 {
-    return m_origin == o.m_origin && m_operations == o.m_operations;
+    return m_origin == o.m_origin && m_operations == o.m_operations && m_motion == o.m_motion;
 }
 
 } // namespace blink

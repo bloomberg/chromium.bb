@@ -288,6 +288,11 @@ String StylePropertySerializer::asText() const
         case CSSPropertyMarginLeft:
             shorthandPropertyID = CSSPropertyMargin;
             break;
+        case CSSPropertyMotionPath:
+        case CSSPropertyMotionPosition:
+        case CSSPropertyMotionRotation:
+            shorthandPropertyID = CSSPropertyMotion;
+            break;
         case CSSPropertyOutlineWidth:
         case CSSPropertyOutlineStyle:
         case CSSPropertyOutlineColor:
@@ -433,6 +438,8 @@ String StylePropertySerializer::getPropertyValue(CSSPropertyID propertyID) const
         return fontValue();
     case CSSPropertyMargin:
         return get4Values(marginShorthand());
+    case CSSPropertyMotion:
+        return getShorthandValue(motionShorthand());
     case CSSPropertyWebkitMarginCollapse:
         return getShorthandValue(webkitMarginCollapseShorthand());
     case CSSPropertyOverflow:

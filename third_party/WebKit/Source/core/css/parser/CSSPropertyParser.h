@@ -234,6 +234,9 @@ private:
     PassRefPtrWillBeRawPtr<CSSValueList> parseTransform(CSSPropertyID);
     PassRefPtrWillBeRawPtr<CSSValue> parseTransformValue(CSSPropertyID, CSSParserValue*);
 
+    PassRefPtrWillBeRawPtr<CSSValue> parseMotionPath();
+    PassRefPtrWillBeRawPtr<CSSValue> parseMotionRotation();
+
     bool parseTextEmphasisStyle(bool important);
 
     PassRefPtrWillBeRawPtr<CSSValue> parseTouchAction();
