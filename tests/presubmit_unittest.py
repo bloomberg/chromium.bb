@@ -1861,6 +1861,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
+      'DEFAULT_LINT_FILTERS',
       'CheckBuildbotPendingBuilds',
       'CheckChangeHasBugField', 'CheckChangeHasDescription',
       'CheckChangeHasNoStrayWhitespace',

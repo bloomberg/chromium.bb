@@ -7,6 +7,27 @@
 import os as _os
 _HERE = _os.path.dirname(_os.path.abspath(__file__))
 
+# Justifications for each filter:
+#
+# - build/include       : Too many; fix in the future.
+# - build/include_order : Not happening; #ifdefed includes.
+# - build/namespace     : I'm surprised by how often we violate this rule.
+# - readability/casting : Mistakes a whole bunch of function pointer.
+# - runtime/int         : Can be fixed long term; volume of errors too high
+# - runtime/virtual     : Broken now, but can be fixed in the future?
+# - whitespace/braces   : We have a lot of explicit scoping in chrome code.
+# - readability/inheritance : Temporary, while the OVERRIDE and FINAL fixup
+#                             is in progress.
+DEFAULT_LINT_FILTERS = [
+  '-build/include',
+  '-build/include_order',
+  '-build/namespace',
+  '-readability/casting',
+  '-runtime/int',
+  '-runtime/virtual',
+  '-whitespace/braces',
+  '-readability/inheritance'
+]
 
 ### Description checks
 
@@ -90,7 +111,8 @@ def CheckDoNotSubmitInFiles(input_api, output_api):
   return []
 
 
-def CheckChangeLintsClean(input_api, output_api, source_file_filter=None):
+def CheckChangeLintsClean(input_api, output_api, source_file_filter=None,
+                          lint_filters=None):
   """Checks that all '.cc' and '.h' files pass cpplint.py."""
   _RE_IS_TEST = input_api.re.compile(r'.*tests?.(cc|h)$')
   result = []
@@ -100,20 +122,8 @@ def CheckChangeLintsClean(input_api, output_api, source_file_filter=None):
   # pylint: disable=W0212
   cpplint._cpplint_state.ResetErrorCounts()
 
-  # Justifications for each filter:
-  #
-  # - build/include       : Too many; fix in the future.
-  # - build/include_order : Not happening; #ifdefed includes.
-  # - build/namespace     : I'm surprised by how often we violate this rule.
-  # - readability/casting : Mistakes a whole bunch of function pointer.
-  # - runtime/int         : Can be fixed long term; volume of errors too high
-  # - runtime/virtual     : Broken now, but can be fixed in the future?
-  # - whitespace/braces   : We have a lot of explicit scoping in chrome code.
-  # - readability/inheritance : Temporary, while the OVERRIDE and FINAL fixup
-  #                             is in progress.
-  cpplint._SetFilters('-build/include,-build/include_order,-build/namespace,'
-                      '-readability/casting,-runtime/int,-runtime/virtual,'
-                      '-whitespace/braces,-readability/inheritance')
+  lint_filters = lint_filters or DEFAULT_LINT_FILTERS
+  cpplint._SetFilters(','.join(lint_filters))
 
   # We currently are more strict with normal code than unit tests; 4 and 5 are
   # the verbosity level that would normally be passed to cpplint.py through
