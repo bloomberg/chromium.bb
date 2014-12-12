@@ -300,7 +300,6 @@ void RenderLayerClipper::calculateClipRects(const ClipRectsContext& context, Cli
 
     adjustClipRectsForChildren(m_renderer, clipRects);
 
-    // FIXME: This logic looks wrong. We'll apply overflow clip rects even if we were told to IgnoreOverflowClip if m_renderer.hasClip().
     if ((m_renderer.hasOverflowClip() && (context.respectOverflowClip == RespectOverflowClip || !isClippingRoot)) || m_renderer.hasClip()) {
         // This offset cannot use convertToLayerCoords, because sometimes our rootLayer may be across
         // some transformed layer boundary, for example, in the RenderLayerCompositor overlapMap, where
