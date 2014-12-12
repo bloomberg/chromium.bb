@@ -42,9 +42,12 @@ class GtestTestInstance(test_instance.TestInstance):
 
   def __init__(self, options, isolate_delegate):
     super(GtestTestInstance, self).__init__()
+    # TODO(jbudorick): Support multiple test suites.
+    if len(options.suite_name) > 1:
+      raise ValueError('Platform mode currently supports only 1 gtest suite')
     self._apk_path = os.path.join(
-        constants.GetOutDirectory(), '%s_apk' % options.suite_name,
-        '%s-debug.apk' % options.suite_name)
+        constants.GetOutDirectory(), '%s_apk' % options.suite_name[0],
+        '%s-debug.apk' % options.suite_name[0])
     self._data_deps = []
     self._gtest_filter = options.test_filter
     if options.isolate_file_path:

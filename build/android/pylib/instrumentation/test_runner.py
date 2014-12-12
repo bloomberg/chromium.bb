@@ -299,8 +299,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
     if 'SmallTest' in annotations:
       return 1 * 60
 
-    logging.warn(("Test size not found in annotations for test '{0}', using " +
-                  "1 minute for timeout.").format(test))
+    logging.warn(("Test size not found in annotations for test '%s', using " +
+                  "1 minute for timeout.") % test)
     return 1 * 60
 
   def _RunTest(self, test, timeout):

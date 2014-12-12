@@ -119,6 +119,47 @@ def ProcessCommonOptions(args):
     os.environ['PATH'] = adb_dir + os.pathsep + os.environ['PATH']
 
 
+def AddRemoteDeviceOptions(parser):
+  group = parser.add_argument_group('Remote Device Options')
+
+  group.add_argument('--trigger', default='',
+                   help=('Only triggers the test if set. Stores test_run_id '
+                         'in given file path. '))
+  group.add_argument('--collect', default='',
+                   help=('Only collects the test results if set. '
+                         'Gets test_run_id from given file path.'))
+  group.add_argument('--remote-device', default='Nexus 5',
+                   help=('Device type to run test on.'))
+  group.add_argument('--remote-device-os', default='4.4.2',
+                   help=('OS to have on the device.'))
+  group.add_argument('--results-path', default='',
+                   help=('File path to download results to.'))
+  group.add_argument('--api-protocol', default='http',
+                   help=('HTTP protocol to use. (http or https)'))
+  group.add_argument('--api-address', default='172.22.21.180',
+                   help=('Address to send HTTP requests.'))
+  group.add_argument('--api-port', default='80',
+                   help=('Port to send HTTP requests to.'))
+  group.add_argument('--runner-type', default='',
+                   help=('Type of test to run as.'))
+  group.add_argument('--runner-package', default='',
+                   help=('Package name of test.'))
+  group.add_argument('--apk-under-test', default='apks/Chrome.apk',
+                   help=('APK to run tests on.'))
+
+  api_secret_group = group.add_mutually_exclusive_group()
+  api_secret_group.add_argument('--api-secret', default='',
+                   help=('API secret for remote devices.'))
+  api_secret_group.add_argument('--api-secret-file', default='',
+                   help=('Path to file that contains API secret.'))
+
+  api_key_group = group.add_mutually_exclusive_group()
+  api_key_group.add_argument('--api-key', default='',
+                   help=('API key for remote devices.'))
+  api_key_group.add_argument('--api-key-file', default='',
+                   help=('Path to file that contains API key.'))
+
+
 def AddDeviceOptions(parser):
   """Adds device options to |parser|."""
   group = parser.add_argument_group(title='Device Options')
@@ -166,6 +207,7 @@ def AddGTestOptions(parser):
                           'path')
   AddDeviceOptions(parser)
   AddCommonOptions(parser)
+  AddRemoteDeviceOptions(parser)
 
 
 def AddLinkerTestOptions(parser):
@@ -426,7 +468,6 @@ def AddMonkeyTestOptions(parser):
   AddCommonOptions(parser)
   AddDeviceOptions(parser)
 
-
 def ProcessMonkeyTestOptions(args):
   """Processes all monkey test options.
 
@@ -452,6 +493,17 @@ def ProcessMonkeyTestOptions(args):
       args.seed,
       args.extra_args)
 
+def AddUirobotTestOptions(parser):
+  """Adds uirobot test options to |option_parser|."""
+  group = parser.add_argument_group('Uirobot Test Options')
+
+  group.add_argument(
+      '--minutes', default=5, type=int,
+      help='Number of minutes to run uirobot test [default: %default].')
+
+  AddCommonOptions(parser)
+  AddDeviceOptions(parser)
+  AddRemoteDeviceOptions(parser)
 
 def AddPerfTestOptions(parser):
   """Adds perf test options to |parser|."""
@@ -812,7 +864,7 @@ def RunTestsCommand(args, parser):
   ProcessCommonOptions(args)
 
   if args.enable_platform_mode:
-    return RunTestsInPlatformMode(args, parser.error)
+    return RunTestsInPlatformMode(args, parser)
 
   if command in constants.LOCAL_MACHINE_TESTS:
     devices = []
@@ -845,7 +897,7 @@ def RunTestsCommand(args, parser):
 
 _SUPPORTED_IN_PLATFORM_MODE = [
   # TODO(jbudorick): Add support for more test types.
-  'gtest',
+  'gtest', 'uirobot',
 ]
 
 
@@ -860,6 +912,9 @@ def RunTestsInPlatformMode(args, parser):
           args, env, test, parser.error) as test_run:
         results = test_run.RunTests()
 
+        if args.trigger:
+          return 0 # Not returning results, only triggering.
+
         report_results.LogFull(
             results=results,
             test_type=test.TestType(),
@@ -871,7 +926,7 @@ def RunTestsInPlatformMode(args, parser):
           json_results.GenerateJsonResultsFile(
               results, args.json_results_file)
 
-  return results
+  return 0 if results.DidRunPass() else 1
 
 
 CommandConfigTuple = collections.namedtuple(
@@ -902,6 +957,9 @@ VALID_COMMANDS = {
     'linker': CommandConfigTuple(
         AddLinkerTestOptions,
         'Linker tests'),
+    'uirobot': CommandConfigTuple(
+        AddUirobotTestOptions,
+        'Uirobot test'),
 }
 
 

@@ -24,7 +24,7 @@ class TestRun(object):
   def SetUp(self):
     raise NotImplementedError
 
-  def RunTest(self):
+  def RunTests(self):
     raise NotImplementedError
 
   def TearDown(self):
