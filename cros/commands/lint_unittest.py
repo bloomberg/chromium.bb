@@ -73,6 +73,9 @@ class DocStringCheckerTest(cros_test_lib.TestCase):
       """
       bad first line
       """,
+      """The first line is good
+      but the second one isn't
+      """,
       """ whitespace is wrong""",
       """whitespace is wrong	""",
       """ whitespace is wrong
@@ -206,6 +209,32 @@ class DocStringCheckerTest(cros_test_lib.TestCase):
       self.results = []
       node = TestNode(doc=dc)
       self.checker._check_first_line(node, node.lines)
+      self.assertEqual(len(self.results), 1)
+
+  def testGood_check_second_line_blank(self):
+    """Verify _check_second_line_blank accepts good inputs"""
+    # pylint: disable=protected-access
+    docstrings = (
+        'Some string\n\nThis is the third line',
+        'Some string',
+    )
+    for dc in docstrings:
+      self.results = []
+      node = TestNode(doc=dc)
+      self.checker._check_second_line_blank(node, node.lines)
+      self.assertEqual(self.results, [],
+                       msg='docstring was not accepted:\n"""%s"""' % dc)
+
+  def testBad_check_second_line_blank(self):
+    """Verify _check_second_line_blank rejects bad inputs"""
+    # pylint: disable=protected-access
+    docstrings = (
+        'Some string\nnonempty secondline',
+    )
+    for dc in docstrings:
+      self.results = []
+      node = TestNode(doc=dc)
+      self.checker._check_second_line_blank(node, node.lines)
       self.assertEqual(len(self.results), 1)
 
   def testGoodFuncVarKwArg(self):

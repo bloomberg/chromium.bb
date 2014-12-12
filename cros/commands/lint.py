@@ -53,6 +53,7 @@ class DocStringChecker(BaseChecker):
   class _MessageCP011(object): pass
   class _MessageCP012(object): pass
   class _MessageCP013(object): pass
+  class _MessageCP014(object): pass
   # pylint: enable=too-few-public-methods,multiple-statements
   # pylint: enable=class-missing-docstring
 
@@ -90,6 +91,8 @@ class DocStringChecker(BaseChecker):
                 ('docstring-arg-spacing'), _MessageCP012),
       'C9013': ('Too many blank lines in a row: %s' % MSG_ARGS,
                 ('docstring-too-many-newlines'), _MessageCP013),
+      'C9014': ('Second line should be blank',
+                ('docstring-second-line-blank'), _MessageCP014),
   }
   options = ()
 
@@ -133,6 +136,7 @@ class DocStringChecker(BaseChecker):
 
     funcs = (
         self._check_first_line,
+        self._check_second_line_blank,
         self._check_whitespace,
         self._check_last_line,
     )
@@ -143,6 +147,11 @@ class DocStringChecker(BaseChecker):
     """Make sure first line is a short summary by itself"""
     if lines[0] == '':
       self.add_message('C9009', node=node, line=node.fromlineno)
+
+  def _check_second_line_blank(self, node, lines):
+    """Make sure the second line is blank"""
+    if len(lines) > 1 and lines[1] != '':
+      self.add_message('C9014', node=node, line=node.fromlineno)
 
   def _check_whitespace(self, node, lines):
     """Verify whitespace is sane"""
