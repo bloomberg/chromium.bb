@@ -140,7 +140,7 @@ if [ "X$DEPOT_TOOLS_UPDATE" != "X0" -a -e "$base_dir/.svn" ]
 then
   # Update the root directory to stay up-to-date with the latest depot_tools.
   BEFORE_REVISION=$(get_svn_revision)
-  if echo $* | grep "--force" > /dev/null; then
+  if echo $* | grep -e --force > /dev/null; then
     "$SVN" -q revert -R "$base_dir"
   fi
   "$SVN" -q up "$base_dir"
