@@ -7,10 +7,9 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
+#include "ui/display/chromeos/display_util.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
@@ -31,69 +30,6 @@ const int kConfigureDelayMs = 500;
 // is used to wait until the hardware had a chance to update the display state
 // such that we read an up to date state.
 const int kResumeDelayMs = 500;
-
-// Returns a string describing |state|.
-std::string DisplayPowerStateToString(chromeos::DisplayPowerState state) {
-  switch (state) {
-    case chromeos::DISPLAY_POWER_ALL_ON:
-      return "ALL_ON";
-    case chromeos::DISPLAY_POWER_ALL_OFF:
-      return "ALL_OFF";
-    case chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON:
-      return "INTERNAL_OFF_EXTERNAL_ON";
-    case chromeos::DISPLAY_POWER_INTERNAL_ON_EXTERNAL_OFF:
-      return "INTERNAL_ON_EXTERNAL_OFF";
-    default:
-      return "unknown (" + base::IntToString(state) + ")";
-  }
-}
-
-// Returns a string describing |state|.
-std::string DisplayStateToString(MultipleDisplayState state) {
-  switch (state) {
-    case MULTIPLE_DISPLAY_STATE_INVALID:
-      return "INVALID";
-    case MULTIPLE_DISPLAY_STATE_HEADLESS:
-      return "HEADLESS";
-    case MULTIPLE_DISPLAY_STATE_SINGLE:
-      return "SINGLE";
-    case MULTIPLE_DISPLAY_STATE_DUAL_MIRROR:
-      return "DUAL_MIRROR";
-    case MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED:
-      return "DUAL_EXTENDED";
-    case MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED:
-      return "MULTI_EXTENDED";
-  }
-  NOTREACHED() << "Unknown state " << state;
-  return "INVALID";
-}
-
-// Returns the number of displays in |displays| that should be turned on, per
-// |state|.  If |display_power| is non-NULL, it is updated to contain the
-// on/off state of each corresponding entry in |displays|.
-int GetDisplayPower(
-    const std::vector<DisplayConfigurator::DisplayState>& display_states,
-    chromeos::DisplayPowerState state,
-    std::vector<bool>* display_power) {
-  int num_on_displays = 0;
-  if (display_power)
-    display_power->resize(display_states.size());
-
-  for (size_t i = 0; i < display_states.size(); ++i) {
-    bool internal =
-        display_states[i].display->type() == DISPLAY_CONNECTION_TYPE_INTERNAL;
-    bool on =
-        state == chromeos::DISPLAY_POWER_ALL_ON ||
-        (state == chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON &&
-         !internal) ||
-        (state == chromeos::DISPLAY_POWER_INTERNAL_ON_EXTERNAL_OFF && internal);
-    if (display_power)
-      (*display_power)[i] = on;
-    if (on)
-      num_on_displays++;
-  }
-  return num_on_displays;
-}
 
 }  // namespace
 
@@ -526,7 +462,8 @@ bool DisplayConfigurator::SetDisplayMode(MultipleDisplayState new_state) {
   if (!configure_display_ || display_externally_controlled_)
     return false;
 
-  VLOG(1) << "SetDisplayMode: state=" << DisplayStateToString(new_state);
+  VLOG(1) << "SetDisplayMode: state="
+          << MultipleDisplayStateToString(new_state);
   if (display_state_ == new_state) {
     // Cancel software mirroring if the state is moving from
     // MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED to
@@ -798,7 +735,8 @@ bool DisplayConfigurator::EnterState(MultipleDisplayState display_state,
   std::vector<bool> display_power;
   int num_on_displays =
       GetDisplayPower(cached_displays_, power_state, &display_power);
-  VLOG(1) << "EnterState: display=" << DisplayStateToString(display_state)
+  VLOG(1) << "EnterState: display="
+          << MultipleDisplayStateToString(display_state)
           << " power=" << DisplayPowerStateToString(power_state);
 
   // Save the requested state so we'll try to use it next time even if we fail.

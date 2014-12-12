@@ -102,6 +102,11 @@ std::vector<DisplaySnapshot*> NativeDisplayDelegateProxy::GetDisplays() {
   return displays_.get();
 }
 
+void NativeDisplayDelegateProxy::GetDisplays(
+    const GetDisplaysCallback& callback) {
+  callback.Run(GetDisplays());
+}
+
 void NativeDisplayDelegateProxy::AddMode(const DisplaySnapshot& output,
                                          const DisplayMode* mode) {
 }

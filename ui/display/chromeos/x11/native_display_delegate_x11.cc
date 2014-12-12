@@ -192,6 +192,11 @@ std::vector<DisplaySnapshot*> NativeDisplayDelegateX11::GetDisplays() {
   return cached_outputs_.get();
 }
 
+void NativeDisplayDelegateX11::GetDisplays(
+    const GetDisplaysCallback& callback) {
+  callback.Run(GetDisplays());
+}
+
 void NativeDisplayDelegateX11::AddMode(const DisplaySnapshot& output,
                                        const DisplayMode* mode) {
   CHECK(screen_) << "Server not grabbed";

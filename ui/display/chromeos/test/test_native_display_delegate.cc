@@ -60,6 +60,17 @@ std::vector<DisplaySnapshot*> TestNativeDisplayDelegate::GetDisplays() {
   return outputs_;
 }
 
+void TestNativeDisplayDelegate::GetDisplays(
+    const GetDisplaysCallback& callback) {
+  auto result = GetDisplays();
+  if (run_async_) {
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::Bind(callback, result));
+  } else {
+    callback.Run(result);
+  }
+}
+
 void TestNativeDisplayDelegate::AddMode(const DisplaySnapshot& output,
                                         const DisplayMode* mode) {
   log_->AppendAction(GetAddOutputModeAction(output, mode));

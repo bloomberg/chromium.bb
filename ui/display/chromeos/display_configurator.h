@@ -27,6 +27,7 @@ class Size;
 }
 
 namespace ui {
+struct DisplayConfigureRequest;
 class DisplayMode;
 class DisplaySnapshot;
 class NativeDisplayDelegate;
@@ -92,6 +93,41 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
     // Called when the hardware mirroring failed.
     virtual void SetSoftwareMirroring(bool enabled) = 0;
     virtual bool SoftwareMirroringEnabled() const = 0;
+  };
+
+  class DisplayLayoutManager {
+   public:
+    virtual ~DisplayLayoutManager() {}
+
+    virtual SoftwareMirroringController* GetSoftwareMirroringController()
+        const = 0;
+
+    virtual StateController* GetStateController() const = 0;
+
+    // Returns the current display state.
+    virtual MultipleDisplayState GetDisplayState() const = 0;
+
+    // Returns the current power state.
+    virtual chromeos::DisplayPowerState GetPowerState() const = 0;
+
+    // Parses the |displays| into a list of DisplayStates. This effectively adds
+    // |mirror_mode| and |selected_mode| to the returned results.
+    // TODO(dnicoara): This operation doesn't depend on state and could be done
+    // directly in |GetDisplayLayout()|. Though I need to make sure that there
+    // are no uses for those fields outside DisplayConfigurator.
+    virtual std::vector<DisplayState> ParseDisplays(
+        const std::vector<DisplaySnapshot*>& displays) const = 0;
+
+    // Based on the given |displays|, display state and power state, it will
+    // create display configuration requests which will then be used to
+    // configure the hardware. The requested configuration is stored in
+    // |requests| and |framebuffer_size|.
+    virtual bool GetDisplayLayout(
+        const std::vector<DisplayState>& displays,
+        MultipleDisplayState new_display_state,
+        chromeos::DisplayPowerState new_power_state,
+        std::vector<DisplayConfigureRequest>* requests,
+        gfx::Size* framebuffer_size) const = 0;
   };
 
   // Helper class used by tests.

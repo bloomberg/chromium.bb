@@ -56,6 +56,11 @@ std::vector<ui::DisplaySnapshot*> NativeDisplayDelegateOzone::GetDisplays() {
   return displays_.get();
 }
 
+void NativeDisplayDelegateOzone::GetDisplays(
+    const GetDisplaysCallback& callback) {
+  callback.Run(GetDisplays());
+}
+
 void NativeDisplayDelegateOzone::AddMode(const ui::DisplaySnapshot& output,
                                          const ui::DisplayMode* mode) {
   NOTIMPLEMENTED();

@@ -159,6 +159,11 @@ std::vector<DisplaySnapshot*> NativeDisplayDelegateDri::GetDisplays() {
   return generic_displays;
 }
 
+void NativeDisplayDelegateDri::GetDisplays(
+    const GetDisplaysCallback& callback) {
+  callback.Run(GetDisplays());
+}
+
 void NativeDisplayDelegateDri::AddMode(const DisplaySnapshot& output,
                                        const DisplayMode* mode) {
 }

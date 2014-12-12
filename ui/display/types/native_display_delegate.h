@@ -24,6 +24,8 @@ class DisplaySnapshot;
 
 class NativeDisplayObserver;
 
+typedef base::Callback<void(const std::vector<ui::DisplaySnapshot*>&)>
+    GetDisplaysCallback;
 typedef base::Callback<void(bool)> ConfigureCallback;
 
 // Interface for classes that perform display configuration actions on behalf
@@ -61,6 +63,8 @@ class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
   // NativeDisplayDelegate maintains ownership of the ui::DisplaySnapshot
   // pointers.
   virtual std::vector<ui::DisplaySnapshot*> GetDisplays() = 0;
+
+  virtual void GetDisplays(const GetDisplaysCallback& callback) = 0;
 
   // Adds |mode| to |output|. |mode| must be a valid display mode pointer.
   virtual void AddMode(const ui::DisplaySnapshot& output,
