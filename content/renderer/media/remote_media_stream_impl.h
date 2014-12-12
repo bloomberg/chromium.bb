@@ -91,12 +91,13 @@ class CONTENT_EXPORT RemoteMediaStreamImpl {
                  scoped_ptr<RemoteVideoTrackAdapters> video_tracks);
 
   const scoped_refptr<base::SingleThreadTaskRunner> signaling_thread_;
-  base::WeakPtrFactory<RemoteMediaStreamImpl> weak_factory_;
-  const scoped_refptr<Observer> observer_;  // must be after weak_factory_
+  scoped_refptr<Observer> observer_;
 
   RemoteVideoTrackAdapters video_track_observers_;
   RemoteAudioTrackAdapters audio_track_observers_;
   blink::WebMediaStream webkit_stream_;
+
+  base::WeakPtrFactory<RemoteMediaStreamImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteMediaStreamImpl);
 };

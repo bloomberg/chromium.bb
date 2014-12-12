@@ -101,7 +101,6 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
                      const device::HidDeviceInfo& device_info);
 
   base::ThreadChecker thread_checker_;
-  base::WeakPtrFactory<HidDeviceManager> weak_factory_;
   EventRouter* event_router_;
   bool initialized_;
   ScopedObserver<device::HidService, device::HidService::Observer>
@@ -111,6 +110,7 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
   int next_resource_id_;
   ResourceIdToDeviceIdMap device_ids_;
   DeviceIdToResourceIdMap resource_ids_;
+  base::WeakPtrFactory<HidDeviceManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HidDeviceManager);
 };

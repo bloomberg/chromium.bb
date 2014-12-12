@@ -92,9 +92,9 @@ class ServiceDiscoveryClientMdns::Proxy {
 
  private:
   scoped_refptr<ServiceDiscoveryClientMdns> client_;
-  base::WeakPtrFactory<Proxy> weak_ptr_factory_;
   // Delayed |mdns_runner_| tasks.
   std::vector<base::Closure> delayed_tasks_;
+  base::WeakPtrFactory<Proxy> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(Proxy);
 };
 

@@ -170,10 +170,10 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
   base::CancelableTaskTracker local_tab_cancelable_task_tracker_;
   base::CancelableTaskTracker other_devices_tab_cancelable_task_tracker_;
 
-  base::WeakPtrFactory<RecentTabsSubMenuModel> weak_ptr_factory_;
-
   // Time the menu is open for until a recent tab is selected.
   base::ElapsedTimer menu_opened_timer_;
+
+  base::WeakPtrFactory<RecentTabsSubMenuModel> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RecentTabsSubMenuModel);
 };

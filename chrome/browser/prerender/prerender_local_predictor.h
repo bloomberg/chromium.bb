@@ -232,12 +232,12 @@ class PrerenderLocalPredictor : public history::HistoryServiceObserver,
 
   base::hash_set<int64> url_whitelist_;
 
-  base::WeakPtrFactory<PrerenderLocalPredictor> weak_factory_;
-
   scoped_ptr<PrefetchList> prefetch_list_;
 
   ScopedObserver<HistoryService, HistoryServiceObserver>
       history_service_observer_;
+
+  base::WeakPtrFactory<PrerenderLocalPredictor> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderLocalPredictor);
 };

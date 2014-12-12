@@ -136,9 +136,9 @@ class ImageManager : public ImageFetcherDelegate {
 
   bool database_ready_;
 
-  base::WeakPtrFactory<ImageManager> weak_ptr_factory_;
-
   base::ThreadChecker thread_checker_;
+
+  base::WeakPtrFactory<ImageManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageManager);
 };

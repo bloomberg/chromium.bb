@@ -21,8 +21,8 @@ using blink::WebGamepads;
 class UserGestureListener {
  public:
   UserGestureListener()
-      : weak_factory_(this),
-        has_user_gesture_(false) {
+      : has_user_gesture_(false),
+        weak_factory_(this) {
   }
 
   base::Closure GetClosure() {
@@ -37,8 +37,8 @@ class UserGestureListener {
     has_user_gesture_ = true;
   }
 
-  base::WeakPtrFactory<UserGestureListener> weak_factory_;
   bool has_user_gesture_;
+  base::WeakPtrFactory<UserGestureListener> weak_factory_;
 };
 
 // Main test fixture

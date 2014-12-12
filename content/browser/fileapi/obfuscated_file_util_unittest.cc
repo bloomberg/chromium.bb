@@ -146,10 +146,10 @@ class ObfuscatedFileUtilTest : public testing::Test {
   ObfuscatedFileUtilTest()
       : origin_(GURL("http://www.example.com")),
         type_(storage::kFileSystemTypeTemporary),
-        weak_factory_(this),
         sandbox_file_system_(origin_, type_),
         quota_status_(storage::kQuotaStatusUnknown),
-        usage_(-1) {}
+        usage_(-1),
+        weak_factory_(this) {}
 
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
@@ -802,12 +802,12 @@ class ObfuscatedFileUtilTest : public testing::Test {
   scoped_refptr<FileSystemContext> file_system_context_;
   GURL origin_;
   storage::FileSystemType type_;
-  base::WeakPtrFactory<ObfuscatedFileUtilTest> weak_factory_;
   SandboxFileSystemTestHelper sandbox_file_system_;
   storage::QuotaStatusCode quota_status_;
   int64 usage_;
   storage::MockFileChangeObserver change_observer_;
   storage::ChangeObserverList change_observers_;
+  base::WeakPtrFactory<ObfuscatedFileUtilTest> weak_factory_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileUtilTest);

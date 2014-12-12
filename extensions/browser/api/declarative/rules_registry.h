@@ -260,10 +260,6 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   RuleIdentifiersMap used_rule_identifiers_;
   int last_generated_rule_identifier_id_;
 
-  // The factory needs to be declared before |cache_delegate_|, so that it can
-  // produce a pointer as a construction argument for |cache_delegate_|.
-  base::WeakPtrFactory<RulesRegistry> weak_ptr_factory_;
-
   // |cache_delegate_| is owned by the registry service. If |cache_delegate_| is
   // NULL, then the storage functionality is disabled (this is used in tests).
   // This registry cannot own |cache_delegate_| because during the time after
@@ -272,6 +268,8 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   // safe. The registry only ever associates with one RulesCacheDelegate
   // instance.
   base::WeakPtr<RulesCacheDelegate> cache_delegate_;
+
+  base::WeakPtrFactory<RulesRegistry> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesRegistry);
 };

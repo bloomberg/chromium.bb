@@ -119,9 +119,9 @@ class UserManagerScreenHandler : public content::WebUIMessageHandler,
       UserAuthTypeMap;
   UserAuthTypeMap user_auth_type_map_;
 
-  base::WeakPtrFactory<UserManagerScreenHandler> weak_ptr_factory_;
-
   content::NotificationRegistrar registrar_;
+
+  base::WeakPtrFactory<UserManagerScreenHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerScreenHandler);
 };

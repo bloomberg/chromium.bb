@@ -44,7 +44,6 @@ class CONTENT_EXPORT StreamURLRequestJob
   void HeadersCompleted(net::HttpStatusCode status_code);
   void ClearStream();
 
-  base::WeakPtrFactory<StreamURLRequestJob> weak_factory_;
   scoped_refptr<content::Stream> stream_;
   bool headers_set_;
   scoped_refptr<net::IOBuffer> pending_buffer_;
@@ -54,6 +53,8 @@ class CONTENT_EXPORT StreamURLRequestJob
   int total_bytes_read_;
   int max_range_;
   bool request_failed_;
+
+  base::WeakPtrFactory<StreamURLRequestJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamURLRequestJob);
 };

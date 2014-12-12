@@ -160,8 +160,6 @@ class CONTENT_EXPORT P2PSocketHost {
   bool dump_outgoing_rtp_packet_;
   RenderProcessHost::WebRtcRtpPacketCallback packet_dump_callback_;
 
-  base::WeakPtrFactory<P2PSocketHost> weak_ptr_factory_;
-
   ProtocolType protocol_type_;
 
  private:
@@ -174,6 +172,8 @@ class CONTENT_EXPORT P2PSocketHost {
   // EWOULDBLOCK.
   int32 send_bytes_delayed_max_;
   int32 send_bytes_delayed_cur_;
+
+  base::WeakPtrFactory<P2PSocketHost> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketHost);
 };

@@ -352,9 +352,9 @@ RemoteMediaStreamImpl::RemoteMediaStreamImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
     webrtc::MediaStreamInterface* webrtc_stream)
     : signaling_thread_(base::ThreadTaskRunnerHandle::Get()),
-      weak_factory_(this),
-      observer_(new RemoteMediaStreamImpl::Observer(weak_factory_.GetWeakPtr(),
-                main_thread, webrtc_stream)) {
+      weak_factory_(this) {
+  observer_ = new RemoteMediaStreamImpl::Observer(
+      weak_factory_.GetWeakPtr(), main_thread, webrtc_stream);
   CreateAdaptersForTracks(webrtc_stream->GetAudioTracks(),
       &audio_track_observers_, main_thread);
   CreateAdaptersForTracks(webrtc_stream->GetVideoTracks(),

@@ -50,8 +50,8 @@ class HidServiceLinux : public HidService {
 
   // The helper lives on the FILE thread and holds a weak reference back to the
   // service that owns it.
-  base::WeakPtrFactory<HidServiceLinux> weak_factory_;
   scoped_ptr<Helper> helper_;
+  base::WeakPtrFactory<HidServiceLinux> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HidServiceLinux);
 };

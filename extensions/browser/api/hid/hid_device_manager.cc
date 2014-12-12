@@ -77,11 +77,11 @@ struct HidDeviceManager::GetApiDevicesParams {
 };
 
 HidDeviceManager::HidDeviceManager(content::BrowserContext* context)
-    : weak_factory_(this),
-      initialized_(false),
+    : initialized_(false),
       hid_service_observer_(this),
       enumeration_ready_(false),
-      next_resource_id_(0) {
+      next_resource_id_(0),
+      weak_factory_(this) {
   event_router_ = EventRouter::Get(context);
   if (event_router_) {
     event_router_->RegisterObserver(this, hid::OnDeviceAdded::kEventName);

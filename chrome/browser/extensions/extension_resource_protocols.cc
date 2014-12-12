@@ -43,9 +43,9 @@ class ExtensionResourcesJob : public net::URLRequestFileJob {
   void ResolvePathDone(const base::FilePath& resolved_path);
 
  private:
-  base::WeakPtrFactory<ExtensionResourcesJob> weak_ptr_factory_;
-
   base::ThreadChecker thread_checker_;
+
+  base::WeakPtrFactory<ExtensionResourcesJob> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionResourcesJob);
 };

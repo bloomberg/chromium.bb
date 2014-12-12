@@ -173,9 +173,9 @@ class DownloadFileWithDelayFactory : public DownloadFileFactory {
   void WaitForSomeCallback();
 
  private:
-  base::WeakPtrFactory<DownloadFileWithDelayFactory> weak_ptr_factory_;
   std::vector<base::Closure> rename_callbacks_;
   bool waiting_;
+  base::WeakPtrFactory<DownloadFileWithDelayFactory> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFileWithDelayFactory);
 };
@@ -228,8 +228,9 @@ void DownloadFileWithDelay::RenameCallbackWrapper(
 }
 
 DownloadFileWithDelayFactory::DownloadFileWithDelayFactory()
-    : weak_ptr_factory_(this),
-      waiting_(false) {}
+    : waiting_(false),
+      weak_ptr_factory_(this) {}
+
 DownloadFileWithDelayFactory::~DownloadFileWithDelayFactory() {}
 
 DownloadFile* DownloadFileWithDelayFactory::CreateFile(

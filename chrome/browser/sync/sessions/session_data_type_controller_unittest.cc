@@ -83,8 +83,8 @@ class SessionDataTypeControllerTest
   SessionDataTypeControllerTest()
       : load_finished_(false),
         thread_bundle_(content::TestBrowserThreadBundle::DEFAULT),
-        weak_ptr_factory_(this),
-        last_type_(syncer::UNSPECIFIED) {}
+        last_type_(syncer::UNSPECIFIED),
+        weak_ptr_factory_(this) {}
   ~SessionDataTypeControllerTest() override {}
 
   void SetUp() override {
@@ -162,9 +162,9 @@ class SessionDataTypeControllerTest
   content::TestBrowserThreadBundle thread_bundle_;
   ProfileSyncComponentsFactoryMock profile_sync_factory_;
   TestingProfile profile_;
-  base::WeakPtrFactory<SessionDataTypeControllerTest> weak_ptr_factory_;
   syncer::ModelType last_type_;
   syncer::SyncError last_error_;
+  base::WeakPtrFactory<SessionDataTypeControllerTest> weak_ptr_factory_;
 };
 
 TEST_F(SessionDataTypeControllerTest, StartModels) {

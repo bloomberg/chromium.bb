@@ -293,8 +293,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
         pingback_enabled_(service_->enabled()),
         finished_(false),
         type_(ClientDownloadRequest::WIN_EXECUTABLE),
-        weakptr_factory_(this),
-        start_time_(base::TimeTicks::Now()) {
+        start_time_(base::TimeTicks::Now()),
+        weakptr_factory_(this) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     item_->AddObserver(this);
   }
@@ -905,10 +905,10 @@ class DownloadProtectionService::CheckClientDownloadRequest
   ClientDownloadRequest::DownloadType type_;
   std::string client_download_request_data_;
   base::CancelableTaskTracker request_tracker_;  // For HistoryService lookup.
-  base::WeakPtrFactory<CheckClientDownloadRequest> weakptr_factory_;
   base::TimeTicks start_time_;  // Used for stats.
   base::TimeTicks timeout_start_time_;
   base::TimeTicks request_start_time_;
+  base::WeakPtrFactory<CheckClientDownloadRequest> weakptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CheckClientDownloadRequest);
 };

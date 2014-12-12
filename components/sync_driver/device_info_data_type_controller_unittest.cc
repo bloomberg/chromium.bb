@@ -22,8 +22,8 @@ class DeviceInfoDataTypeControllerTest : public testing::Test,
  public:
   DeviceInfoDataTypeControllerTest()
       : load_finished_(false),
-        weak_ptr_factory_(this),
-        last_type_(syncer::UNSPECIFIED) {}
+        last_type_(syncer::UNSPECIFIED),
+        weak_ptr_factory_(this) {}
   ~DeviceInfoDataTypeControllerTest() override {}
 
   void SetUp() override {
@@ -108,9 +108,9 @@ class DeviceInfoDataTypeControllerTest : public testing::Test,
 
  private:
   base::MessageLoopForUI message_loop_;
-  base::WeakPtrFactory<DeviceInfoDataTypeControllerTest> weak_ptr_factory_;
   syncer::ModelType last_type_;
   syncer::SyncError last_error_;
+  base::WeakPtrFactory<DeviceInfoDataTypeControllerTest> weak_ptr_factory_;
 };
 
 TEST_F(DeviceInfoDataTypeControllerTest, StartModels) {

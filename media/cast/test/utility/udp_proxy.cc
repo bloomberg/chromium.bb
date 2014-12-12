@@ -283,8 +283,8 @@ class RandomSortedDelay : public PacketPipe {
   double random_delay_;
   double extra_delay_;
   double seconds_between_extra_delay_;
-  base::WeakPtrFactory<RandomSortedDelay> weak_factory_;
   base::TimeTicks next_send_;
+  base::WeakPtrFactory<RandomSortedDelay> weak_factory_;
 };
 
 scoped_ptr<PacketPipe> NewRandomSortedDelay(

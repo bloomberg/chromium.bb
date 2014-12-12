@@ -169,8 +169,8 @@ PluginObject::PluginObject(PepperPluginInstanceImpl* instance,
       instance_(instance),
       ppp_class_(ppp_class),
       ppp_class_data_(ppp_class_data),
-      weak_factory_(this),
-      template_cache_(instance->GetIsolate()) {
+      template_cache_(instance->GetIsolate()),
+      weak_factory_(this) {
   instance_->AddPluginObject(this);
 }
 

@@ -21,13 +21,13 @@ StreamURLRequestJob::StreamURLRequestJob(
     net::NetworkDelegate* network_delegate,
     scoped_refptr<Stream> stream)
     : net::URLRequestJob(request, network_delegate),
-      weak_factory_(this),
       stream_(stream),
       headers_set_(false),
       pending_buffer_size_(0),
       total_bytes_read_(0),
       max_range_(0),
-      request_failed_(false) {
+      request_failed_(false),
+      weak_factory_(this) {
   DCHECK(stream_.get());
   stream_->SetReadObserver(this);
 }

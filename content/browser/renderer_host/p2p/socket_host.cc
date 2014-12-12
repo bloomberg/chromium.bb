@@ -463,12 +463,12 @@ P2PSocketHost::P2PSocketHost(IPC::Sender* message_sender,
       state_(STATE_UNINITIALIZED),
       dump_incoming_rtp_packet_(false),
       dump_outgoing_rtp_packet_(false),
-      weak_ptr_factory_(this),
       protocol_type_(protocol_type),
       send_packets_delayed_total_(0),
       send_packets_total_(0),
       send_bytes_delayed_max_(0),
-      send_bytes_delayed_cur_(0) {
+      send_bytes_delayed_cur_(0),
+      weak_ptr_factory_(this) {
 }
 
 P2PSocketHost::~P2PSocketHost() {

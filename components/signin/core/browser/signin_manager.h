@@ -226,13 +226,13 @@ class SigninManager : public SigninManagerBase,
   // Helper to merge signed in account into the content area.
   scoped_ptr<MergeSessionHelper> merge_session_helper_;
 
-  base::WeakPtrFactory<SigninManager> weak_pointer_factory_;
-
   // Two gate conditions for when PostSignedIn should be called. Verify
   // that the SigninManager has reached OnSignedIn() and the AccountTracker
   // has completed calling GetUserInfo.
   bool signin_manager_signed_in_;
   bool user_info_fetched_by_account_tracker_;
+
+  base::WeakPtrFactory<SigninManager> weak_pointer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninManager);
 };

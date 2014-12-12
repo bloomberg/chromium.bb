@@ -129,9 +129,9 @@ class SerialConnection : public ApiResource,
    private:
     void Run() const;
 
-    base::WeakPtrFactory<TimeoutTask> weak_factory_;
     base::Closure closure_;
     base::TimeDelta delay_;
+    base::WeakPtrFactory<TimeoutTask> weak_factory_;
   };
 
   // Handles a receive timeout.

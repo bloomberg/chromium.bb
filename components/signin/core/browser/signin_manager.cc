@@ -68,9 +68,9 @@ SigninManager::SigninManager(SigninClient* client,
       client_(client),
       token_service_(token_service),
       account_tracker_service_(account_tracker_service),
-      weak_pointer_factory_(this),
       signin_manager_signed_in_(false),
-      user_info_fetched_by_account_tracker_(false) {}
+      user_info_fetched_by_account_tracker_(false),
+      weak_pointer_factory_(this) {}
 
 void SigninManager::AddMergeSessionObserver(
     MergeSessionHelper::Observer* observer) {

@@ -173,8 +173,6 @@ class StatusBubbleViews::StatusView : public views::View {
   BubbleState state_;
   BubbleStyle style_;
 
-  base::WeakPtrFactory<StatusBubbleViews::StatusView> timer_factory_;
-
   scoped_ptr<StatusViewAnimation> animation_;
 
   // Handle to the widget that contains us.
@@ -186,6 +184,8 @@ class StatusBubbleViews::StatusView : public views::View {
   // Holds the theme provider of the frame that created us.
   ui::ThemeProvider* theme_service_;
 
+  base::WeakPtrFactory<StatusBubbleViews::StatusView> timer_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(StatusView);
 };
 
@@ -193,10 +193,10 @@ StatusBubbleViews::StatusView::StatusView(views::Widget* popup,
                                           ui::ThemeProvider* theme_provider)
     : state_(BUBBLE_HIDDEN),
       style_(STYLE_STANDARD),
-      timer_factory_(this),
       animation_(new StatusViewAnimation(this, 0, 0)),
       popup_(popup),
-      theme_service_(theme_provider) {
+      theme_service_(theme_provider),
+      timer_factory_(this) {
 }
 
 StatusBubbleViews::StatusView::~StatusView() {

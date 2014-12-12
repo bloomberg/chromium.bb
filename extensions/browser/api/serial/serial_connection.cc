@@ -380,7 +380,7 @@ void SerialConnection::OnAsyncWriteComplete(int bytes_sent,
 
 SerialConnection::TimeoutTask::TimeoutTask(const base::Closure& closure,
                                            const base::TimeDelta& delay)
-    : weak_factory_(this), closure_(closure), delay_(delay) {
+    : closure_(closure), delay_(delay), weak_factory_(this) {
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&TimeoutTask::Run, weak_factory_.GetWeakPtr()),
