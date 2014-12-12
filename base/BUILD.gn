@@ -773,6 +773,12 @@ component("base") {
     "//third_party/modp_b64",
   ]
 
+  # Allow more direct string conversions on platforms with native utf8
+  # strings
+  if (is_mac || is_ios || is_chromeos) {
+    defines += [ "SYSTEM_NATIVE_UTF8" ]
+  }
+
   if (is_android) {
     sources += [
       "memory/discardable_memory_ashmem_allocator.cc",

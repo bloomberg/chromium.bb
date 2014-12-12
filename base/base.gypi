@@ -981,6 +981,11 @@
           ['OS == "win" and >(nacl_untrusted_build)==1', {
               'sources/': [ ['exclude', '\\.h$'] ],
           }],
+          # Enable more direct string conversions on platforms with native utf8
+          # strings
+          ['OS=="mac" or OS=="ios" or <(chromeos)==1 or <(chromecast)==1', {
+            'defines': ['SYSTEM_NATIVE_UTF8'],
+          }],
         ],
       }],
       ['base_i18n_target==1', {

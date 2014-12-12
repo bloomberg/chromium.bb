@@ -48,6 +48,25 @@ base::FilePath WStringAsFilePath(const std::wstring& str) {
 #endif
 }
 
+std::string GetLocaleWarningString() {
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
+  // The generate filename tests can fail on certain OS_POSIX platforms when
+  // LC_CTYPE is not "utf8" or "utf-8" because some of the string conversions
+  // fail.
+  // This warning text is appended to any test failures to save people time if
+  // this happens to be the cause of failure :)
+  // Note: some platforms (MACOSX, Chromecast) don't have this problem:
+  // setlocale returns "c" but it functions as utf8.  And Android doesn't
+  // have setlocale at all.
+  std::string locale = setlocale(LC_CTYPE, NULL);
+  return " this test may have failed because the current LC_CTYPE locale is "
+         "not utf8 (currently set to " +
+         locale + ")";
+#else
+  return "";
+#endif
+}
+
 void RunGenerateFileNameTestCase(const GenerateFilenameCase* test_case) {
   std::string default_filename(base::WideToUTF8(test_case->default_filename));
   base::FilePath file_path = GenerateFileName(
@@ -55,7 +74,8 @@ void RunGenerateFileNameTestCase(const GenerateFilenameCase* test_case) {
       test_case->referrer_charset, test_case->suggested_filename,
       test_case->mime_type, default_filename);
   EXPECT_EQ(test_case->expected_filename, FilePathAsWString(file_path))
-      << "test case at line number: " << test_case->lineno;
+      << "test case at line number: " << test_case->lineno << "; "
+      << GetLocaleWarningString();
 }
 
 }  // namespace
@@ -418,18 +438,6 @@ TEST(FilenameUtilTest, GenerateSafeFileName) {
 }
 
 TEST(FilenameUtilTest, GenerateFileName) {
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
-  // This test doesn't run when the locale is not UTF-8 because some of the
-  // string conversions fail. This is OK (we have the default value) but they
-  // don't match our expectations.
-  std::string locale = setlocale(LC_CTYPE, NULL);
-  base::StringToLowerASCII(&locale);
-  EXPECT_TRUE(locale.find("utf-8") != std::string::npos ||
-              locale.find("utf8") != std::string::npos)
-      << "Your locale (" << locale << ") must be set to UTF-8 "
-      << "for this test to pass!";
-#endif
-
   // Tests whether the correct filename is selected from the the given
   // parameters and that Content-Disposition headers are properly
   // handled including failovers when the header is malformed.

@@ -593,7 +593,7 @@ std::string FilePath::MaybeAsASCII() const {
 }
 
 std::string FilePath::AsUTF8Unsafe() const {
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(SYSTEM_NATIVE_UTF8)
   return value();
 #else
   return WideToUTF8(SysNativeMBToWide(value()));
@@ -601,7 +601,7 @@ std::string FilePath::AsUTF8Unsafe() const {
 }
 
 string16 FilePath::AsUTF16Unsafe() const {
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(SYSTEM_NATIVE_UTF8)
   return UTF8ToUTF16(value());
 #else
   return WideToUTF16(SysNativeMBToWide(value()));
@@ -610,7 +610,7 @@ string16 FilePath::AsUTF16Unsafe() const {
 
 // static
 FilePath FilePath::FromUTF8Unsafe(const std::string& utf8) {
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(SYSTEM_NATIVE_UTF8)
   return FilePath(utf8);
 #else
   return FilePath(SysWideToNativeMB(UTF8ToWide(utf8)));
@@ -619,7 +619,7 @@ FilePath FilePath::FromUTF8Unsafe(const std::string& utf8) {
 
 // static
 FilePath FilePath::FromUTF16Unsafe(const string16& utf16) {
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(SYSTEM_NATIVE_UTF8)
   return FilePath(UTF16ToUTF8(utf16));
 #else
   return FilePath(SysWideToNativeMB(UTF16ToWide(utf16)));
