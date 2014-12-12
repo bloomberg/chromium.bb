@@ -32,15 +32,14 @@ OverlayPlane::~OverlayPlane() {
 }
 
 // static
-const OverlayPlane& OverlayPlane::GetPrimaryPlane(
+const OverlayPlane* OverlayPlane::GetPrimaryPlane(
     const OverlayPlaneList& overlays) {
   for (size_t i = 0; i < overlays.size(); ++i) {
     if (overlays[i].z_order == 0)
-      return overlays[i];
+      return &overlays[i];
   }
 
-  NOTREACHED();
-  return overlays[0];
+  return nullptr;
 }
 
 }  // namespace ui
