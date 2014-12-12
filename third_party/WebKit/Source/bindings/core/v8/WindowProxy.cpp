@@ -355,6 +355,7 @@ void WindowProxy::clearDocumentProperty()
         return;
     v8::HandleScope handleScope(m_isolate);
     m_scriptState->context()->Global()->ForceDelete(v8AtomicString(m_isolate, "document"));
+    V8HiddenValue::deleteHiddenValue(m_isolate, toInnerGlobalObject(m_scriptState->context()), V8HiddenValue::document(m_isolate));
 }
 
 void WindowProxy::updateActivityLogger()
