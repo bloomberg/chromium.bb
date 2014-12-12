@@ -235,8 +235,10 @@ void DesktopVideoCaptureMachine::Stop(const base::Closure& callback) {
 
   // Stop observing compositor and window events.
   if (desktop_window_) {
-    if (desktop_window_->GetHost())
-      desktop_window_->GetHost()->compositor()->RemoveObserver(this);
+    aura::WindowTreeHost* window_host = desktop_window_->GetHost();
+    // In the host destructor the compositor is destroyed before the window.
+    if (window_host && window_host->compositor())
+      window_host->compositor()->RemoveObserver(this);
     desktop_window_->RemoveObserver(this);
     desktop_window_ = NULL;
   }
