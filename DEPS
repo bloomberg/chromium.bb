@@ -96,7 +96,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling NaCl
   # and whatever else without interference from each other.
-  'nacl_revision': '973134d8f0a715488a1b34c054044d17f3af5279', # from svn revision r14178
+  'nacl_revision': '7f9d07cb539bd51073ccc1ef2d83a4794502ba83', # from svn revision r14201
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
