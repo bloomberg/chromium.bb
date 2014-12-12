@@ -75,6 +75,7 @@ ScriptPromise NavigatorConnect::connect(ScriptState* scriptState, const String& 
     OwnPtr<WebMessagePortChannel> webchannel = channel->port2()->disentangle();
     provider->connect(
         scriptState->executionContext()->completeURL(url),
+        scriptState->executionContext()->securityOrigin()->toString(),
         webchannel.leakPtr(),
         new ConnectCallbacks(resolver, channel->port1()));
     return promise;
