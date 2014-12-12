@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src=video-test.js></script>
+    </head>
+    <body>
+        <p>Verify there is a 'durationchange' event just before 'ended' event if the initially reported duration exceeds the actual data.</p>
+        <script>
+            var initialReportedDuration = -1;
+
+            video = document.createElement('video');
+            document.body.appendChild(video);
+            video.src = "content/truncated.webm";
+            video.play();
+            waitForEvent('durationchange', function() {
+                // Note the initial reported duration
+                if (initialReportedDuration == -1)
+                    initialReportedDuration = video.duration;
+            });
+
+            waitForEventAndEnd('ended', function() {
+                // Verify that the actual duration is less than
+                // the initial reported duration
+                testExpected("video.duration < initialReportedDuration", true);
+            });
+        </script>
+    </body>
+</html>
