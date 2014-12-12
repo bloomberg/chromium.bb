@@ -1137,6 +1137,7 @@
       'browser/ui/cocoa/wrench_menu/wrench_menu_controller_unittest.mm',
       'browser/ui/content_settings/content_setting_bubble_model_unittest.cc',
       'browser/ui/content_settings/content_setting_image_model_unittest.cc',
+      'browser/ui/elide_url_unittest.cc',
       'browser/ui/find_bar/find_backend_unittest.cc',
       'browser/ui/fullscreen/fullscreen_controller_state_unittest.cc',
       'browser/ui/global_error/global_error_service_unittest.cc',
@@ -1175,7 +1176,6 @@
       'browser/ui/tabs/tab_strip_model_unittest.cc',
       'browser/ui/tabs/test_tab_strip_model_delegate.cc',
       'browser/ui/tabs/test_tab_strip_model_delegate.h',
-      'browser/ui/tests/elide_url_unittest.cc',
       'browser/ui/tests/ui_gfx_image_unittest.cc',
       'browser/ui/tests/ui_gfx_image_unittest.mm',
       'browser/ui/toolbar/back_forward_menu_model_unittest.cc',
@@ -1533,7 +1533,6 @@
         'browser/browsing_data/mock_browsing_data_quota_helper.h',
         'browser/browsing_data/mock_browsing_data_service_worker_helper.cc',
         'browser/browsing_data/mock_browsing_data_service_worker_helper.h',
-        # The only thing used from browser is Browser::Type.
         'browser/download/download_test_file_activity_observer.cc',
         'browser/download/download_test_file_activity_observer.h',
         'browser/download/test_download_shelf.cc',
@@ -2601,21 +2600,23 @@
             'browser/extensions/extension_test_message_listener_unittest.cc',
             'browser/font_family_cache_unittest.cc',
             'browser/policy/policy_path_parser_unittest.cc',
+            'browser/power/process_power_collector_unittest.cc',
             'browser/process_singleton_posix_unittest.cc',
             'browser/profiles/profile_list_desktop_unittest.cc',
-            'browser/power/process_power_collector_unittest.cc',
             'browser/renderer_context_menu/render_view_context_menu_unittest.cc',
             'browser/search/instant_service_unittest.cc',
             'browser/search/search_unittest.cc',
             'browser/sync/sessions/sessions_sync_manager_unittest.cc',
             'browser/sync/sync_global_error_unittest.cc',
             'browser/translate/translate_manager_render_view_host_unittest.cc',
-            'browser/ui/browser_instant_controller_unittest.cc',
             'browser/ui/bookmarks/bookmark_bubble_sign_in_delegate_unittest.cc',
             'browser/ui/bookmarks/bookmark_context_menu_controller_unittest.cc',
             'browser/ui/bookmarks/bookmark_unittest.cc',
             'browser/ui/browser_command_controller_unittest.cc',
+            'browser/ui/browser_instant_controller_unittest.cc',
             'browser/ui/browser_iterator_unittest.cc',
+            # URL elider is not used on android.
+            'browser/ui/elide_url_unittest.cc',
             'browser/ui/fullscreen/fullscreen_controller_state_unittest.cc',
             'browser/ui/fullscreen/fullscreen_controller_unittest.cc',
             'browser/ui/search/instant_page_unittest.cc',
@@ -2660,9 +2661,6 @@
             # Bookmark undo is not used on Android.
            'browser/undo/bookmark_undo_service_test.cc',
            'browser/undo/undo_manager_test.cc',
-
-            # URL elider is not used on android.
-           'browser/ui/tests/elide_url_unittest.cc',
 
             # GCMDriverAndroid is not yet implemented.
             'browser/extensions/extension_gcm_app_handler_unittest.cc',
