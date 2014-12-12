@@ -70,14 +70,7 @@ enum WebTextInputType {
 
 // Separate on/off flags are defined so that the input mechanism can choose
 // an appropriate default based on other things (like InputType and direct
-// knowledge of the actual input system) if there are no overrides.  This
-// effectively makes these "flags" to be tri-state enumerations (unset/on/off)
-// that are manually coded into the bits of an integer.  As new attributes
-// have been required with more states than on/off, enumerations have been
-// bit-coded with more explicit values and mask.  This is still kept within
-// a single integer because of the difficulty in adding fields that must
-// pass through messages (renderer => host) and across language barriers
-// (C++ => Java).
+// knowledge of the actual input system) if there are no overrides.
 enum WebTextInputFlags {
     WebTextInputFlagNone = 0,
     WebTextInputFlagAutocompleteOn = 1 << 0,
@@ -85,14 +78,7 @@ enum WebTextInputFlags {
     WebTextInputFlagAutocorrectOn = 1 << 2,
     WebTextInputFlagAutocorrectOff = 1 << 3,
     WebTextInputFlagSpellcheckOn = 1 << 4,
-    WebTextInputFlagSpellcheckOff = 1 << 5,
-
-    WebTextInputFlagAutocapitalizeMask = 7 << 24,
-    WebTextInputFlagAutocapitalizeUnset = 0 << 24,
-    WebTextInputFlagAutocapitalizeNone = 1 << 24,
-    WebTextInputFlagAutocapitalizeSentences = 2 << 24,
-    WebTextInputFlagAutocapitalizeWords = 3 << 24,
-    WebTextInputFlagAutocapitalizeCharacters = 4 << 24,
+    WebTextInputFlagSpellcheckOff = 1 << 5
 };
 
 } // namespace blink

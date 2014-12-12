@@ -2390,7 +2390,6 @@ int WebViewImpl::textInputFlags()
 
     DEFINE_STATIC_LOCAL(AtomicString, autocompleteString, ("autocomplete", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, autocorrectString, ("autocorrect", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, autocapitalizeString, ("autocapitalize", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, spellcheckString, ("spellcheck", AtomicString::ConstructFromLiteral));
     int flags = 0;
 
@@ -2405,20 +2404,6 @@ int WebViewImpl::textInputFlags()
         flags |= WebTextInputFlagAutocorrectOn;
     else if (autocorrect == "off")
         flags |= WebTextInputFlagAutocorrectOff;
-
-    const AtomicString& autocapitalize = element->getAttribute(autocapitalizeString);
-    if (autocapitalize == "none")
-        flags |= WebTextInputFlagAutocapitalizeNone;
-    else if (autocapitalize == "sentences")
-        flags |= WebTextInputFlagAutocapitalizeSentences;
-    else if (autocapitalize == "words")
-        flags |= WebTextInputFlagAutocapitalizeWords;
-    else if (autocapitalize == "characters")
-        flags |= WebTextInputFlagAutocapitalizeCharacters;
-    else if (autocapitalize == "on") // deprecated
-        flags |= WebTextInputFlagAutocapitalizeSentences;
-    else if (autocapitalize == "off") // deprecated
-        flags |= WebTextInputFlagAutocapitalizeNone;
 
     const AtomicString& spellcheck = element->getAttribute(spellcheckString);
     if (spellcheck == "on")
