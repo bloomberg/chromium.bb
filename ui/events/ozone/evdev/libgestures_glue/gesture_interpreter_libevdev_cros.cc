@@ -12,6 +12,7 @@
 #include "base/timer/timer.h"
 #include "ui/events/event.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
+#include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/event_device_util.h"
 #include "ui/events/ozone/evdev/event_modifiers_evdev.h"
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
@@ -112,6 +113,7 @@ GestureInterpreterLibevdevCros::GestureInterpreterLibevdevCros(
     GesturePropertyProvider* property_provider,
     const EventDispatchCallback& callback)
     : id_(id),
+      is_mouse_(false),
       modifiers_(modifiers),
       button_map_(button_map),
       cursor_(cursor),
@@ -156,6 +158,7 @@ void GestureInterpreterLibevdevCros::OnLibEvdevCrosOpen(
   HardwareProperties hwprops =
       GestureHardwareProperties(evdev, device_properties_.get());
   GestureInterpreterDeviceClass devclass = GestureDeviceClass(evdev);
+  is_mouse_ = property_provider_->IsDeviceIdOfType(id_, DT_MOUSE);
 
   // Create & initialize GestureInterpreter.
   DCHECK(!interpreter_);
@@ -213,17 +216,20 @@ void GestureInterpreterLibevdevCros::OnLibEvdevCrosEvent(Evdev* evdev,
   hwstate.fingers = fingers;
 
   // Buttons.
+  //
+  // We do button mapping for physical clicks only when the device is
+  // mouse-like (e.g., normal mouse and multi-touch mouse).
   if (Event_Get_Button_Left(evdev)) {
-    hwstate.buttons_down |=
-        GetGestureButton(button_map_->GetMappedButton(BTN_LEFT));
+    hwstate.buttons_down |= GetGestureButton(
+        is_mouse_ ? button_map_->GetMappedButton(BTN_LEFT) : BTN_LEFT);
   }
   if (Event_Get_Button_Middle(evdev)) {
-    hwstate.buttons_down |=
-        GetGestureButton(button_map_->GetMappedButton(BTN_MIDDLE));
+    hwstate.buttons_down |= GetGestureButton(
+        is_mouse_ ? button_map_->GetMappedButton(BTN_MIDDLE) : BTN_MIDDLE);
   }
   if (Event_Get_Button_Right(evdev)) {
-    hwstate.buttons_down |=
-        GetGestureButton(button_map_->GetMappedButton(BTN_RIGHT));
+    hwstate.buttons_down |= GetGestureButton(
+        is_mouse_ ? button_map_->GetMappedButton(BTN_RIGHT) : BTN_RIGHT);
   }
 
   GestureInterpreterPushHardwareState(interpreter_, &hwstate);

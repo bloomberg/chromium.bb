@@ -85,6 +85,10 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
   // The unique device id.
   int id_;
 
+  // True if the device may be regarded as a mouse. This includes normal mice
+  // and multi-touch mice.
+  bool is_mouse_;
+
   // Shared modifier state.
   EventModifiersEvdev* modifiers_;
 

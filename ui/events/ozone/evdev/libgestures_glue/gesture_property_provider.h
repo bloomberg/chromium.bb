@@ -82,6 +82,11 @@ class EVENTS_OZONE_EVDEV_EXPORT GesturePropertyProvider {
   bool GetDeviceIdsByType(const EventDeviceType type,
                           std::vector<DeviceId>* device_ids);
 
+  // Check if a device id matches a device type. Return true if it matches.
+  // Return false if it doesn't match or if it doesn't use
+  // the GesturePropertyProvider.
+  bool IsDeviceIdOfType(const DeviceId device_id, const EventDeviceType type);
+
   // Get the GesturesProp object. Returns NULL if not found.
   //
   // The user may use the object returned to set/get the property value in the

@@ -864,6 +864,14 @@ bool GesturePropertyProvider::GetDeviceIdsByType(
   return exists;
 }
 
+bool GesturePropertyProvider::IsDeviceIdOfType(const DeviceId device_id,
+                                               const EventDeviceType type) {
+  DeviceMap::const_iterator it = device_map_.find(device_id);
+  if (it == device_map_.end())
+    return false;
+  return IsDeviceOfType(it->second, type);
+}
+
 GesturesProp* GesturePropertyProvider::GetProperty(const DeviceId device_id,
                                                    const std::string& name) {
   return FindProperty(device_id, name);
