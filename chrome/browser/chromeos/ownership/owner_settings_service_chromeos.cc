@@ -20,7 +20,7 @@
 #include "chrome/browser/chromeos/settings/session_manager_operation.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/tpm_token_loader.h"
+#include "chromeos/tpm/tpm_token_loader.h"
 #include "components/ownership/owner_key_util.h"
 #include "components/user_manager/user.h"
 #include "content/public/browser/browser_thread.h"

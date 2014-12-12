@@ -15,7 +15,7 @@
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/tpm_token_loader.h"
+#include "chromeos/tpm/tpm_token_loader.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_test_nss_chromeos_user.h"
 #include "net/base/crypto_module.h"

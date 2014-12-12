@@ -401,12 +401,12 @@
       'system/name_value_pairs_parser.h',
       'system/statistics_provider.cc',
       'system/statistics_provider.h',
-      'tpm_password_fetcher.cc',
-      'tpm_password_fetcher.h',
-      'tpm_token_info_getter.cc',
-      'tpm_token_info_getter.h',
-      'tpm_token_loader.cc',
-      'tpm_token_loader.h'
+      'tpm/tpm_password_fetcher.cc',
+      'tpm/tpm_password_fetcher.h',
+      'tpm/tpm_token_info_getter.cc',
+      'tpm/tpm_token_info_getter.h',
+      'tpm/tpm_token_loader.cc',
+      'tpm/tpm_token_loader.h'
     ],
     'chromeos_test_sources': [
       'app_mode/kiosk_oem_manifest_parser_unittest.cc',
@@ -465,7 +465,7 @@
       'process_proxy/process_output_watcher_unittest.cc',
       'process_proxy/process_proxy_unittest.cc',
       'system/name_value_pairs_parser_unittest.cc',
-      'tpm_token_info_getter_unittest.cc',
+      'tpm/tpm_token_info_getter_unittest.cc',
     ],
   },
   'includes': [

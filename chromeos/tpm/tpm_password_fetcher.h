@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_TPM_PASSWORD_FETCHER_H_
-#define CHROMEOS_TPM_PASSWORD_FETCHER_H_
+#ifndef CHROMEOS_TPM_TPM_PASSWORD_FETCHER_H_
+#define CHROMEOS_TPM_TPM_PASSWORD_FETCHER_H_
 
 #include <string>
 
@@ -54,4 +54,4 @@ class CHROMEOS_EXPORT TpmPasswordFetcher {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_TPM_PASSWORD_FETCHER_H_
+#endif  // CHROMEOS_TPM_TPM_PASSWORD_FETCHER_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_TPM_TOKEN_LOADER_H_
-#define CHROMEOS_TPM_TOKEN_LOADER_H_
+#ifndef CHROMEOS_TPM_TPM_TOKEN_LOADER_H_
+#define CHROMEOS_TPM_TPM_TOKEN_LOADER_H_
 
 #include <string>
 #include <vector>
@@ -128,4 +128,4 @@ class CHROMEOS_EXPORT TPMTokenLoader : public LoginState::Observer {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_TPM_TOKEN_LOADER_H_
+#endif  // CHROMEOS_TPM_TPM_TOKEN_LOADER_H_

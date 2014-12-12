@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/tpm_token_loader.h"
+#include "chromeos/tpm/tpm_token_loader.h"
 
 #include <algorithm>
 
@@ -14,7 +14,7 @@
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/tpm_token_info_getter.h"
+#include "chromeos/tpm/tpm_token_info_getter.h"
 #include "crypto/nss_util.h"
 
 namespace chromeos {

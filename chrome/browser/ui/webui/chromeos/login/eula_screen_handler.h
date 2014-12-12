@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/login/screens/eula_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
-#include "chromeos/tpm_password_fetcher.h"
+#include "chromeos/tpm/tpm_password_fetcher.h"
 #include "content/public/browser/web_ui.h"
 
 namespace base {
