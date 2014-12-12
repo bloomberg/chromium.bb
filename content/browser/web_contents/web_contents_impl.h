@@ -406,6 +406,7 @@ class CONTENT_EXPORT WebContentsImpl
                             int error_code) override;
   void RenderViewDeleted(RenderViewHost* render_view_host) override;
   void UpdateState(RenderViewHost* render_view_host,
+                   int32 rvh_page_id,
                    int32 page_id,
                    const PageState& page_state) override;
   void UpdateTargetURL(const GURL& url) override;
