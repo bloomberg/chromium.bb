@@ -34,6 +34,11 @@ SharedUserScriptMaster* MockExtensionSystem::shared_user_script_master() {
   return nullptr;
 }
 
+DeclarativeUserScriptManager*
+MockExtensionSystem::declarative_user_script_manager() {
+  return nullptr;
+}
+
 StateStore* MockExtensionSystem::state_store() {
   return nullptr;
 }
@@ -71,12 +76,6 @@ const OneShotEvent& MockExtensionSystem::ready() const {
 }
 
 ContentVerifier* MockExtensionSystem::content_verifier() {
-  return nullptr;
-}
-
-DeclarativeUserScriptMaster*
-      MockExtensionSystem::GetDeclarativeUserScriptMasterByExtension(
-          const ExtensionId& extension_id) {
   return nullptr;
 }
 

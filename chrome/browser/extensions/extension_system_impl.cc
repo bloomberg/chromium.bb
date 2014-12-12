@@ -16,7 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/extensions/component_loader.h"
-#include "chrome/browser/extensions/declarative_user_script_master.h"
+#include "chrome/browser/extensions/declarative_user_script_manager.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_management.h"
@@ -302,6 +302,8 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   ExtensionErrorReporter::Init(allow_noisy_errors);
 
   shared_user_script_master_.reset(new SharedUserScriptMaster(profile_));
+  declarative_user_script_manager_.reset(
+      new DeclarativeUserScriptManager(profile_));
 
   // ExtensionService depends on RuntimeData.
   runtime_data_.reset(new RuntimeData(ExtensionRegistry::Get(profile_)));
@@ -431,6 +433,11 @@ ExtensionSystemImpl::Shared::shared_user_script_master() {
   return shared_user_script_master_.get();
 }
 
+DeclarativeUserScriptManager*
+ExtensionSystemImpl::Shared::declarative_user_script_manager() {
+  return declarative_user_script_manager_.get();
+}
+
 InfoMap* ExtensionSystemImpl::Shared::info_map() {
   if (!extension_info_map_.get())
     extension_info_map_ = new InfoMap();
@@ -460,27 +467,6 @@ QuotaService* ExtensionSystemImpl::Shared::quota_service() {
 
 ContentVerifier* ExtensionSystemImpl::Shared::content_verifier() {
   return content_verifier_.get();
-}
-
-DeclarativeUserScriptMaster*
-ExtensionSystemImpl::Shared::GetDeclarativeUserScriptMasterByExtension(
-    const ExtensionId& extension_id) {
-  DCHECK(ready().is_signaled());
-  DeclarativeUserScriptMaster* master = NULL;
-  for (ScopedVector<DeclarativeUserScriptMaster>::iterator it =
-           declarative_user_script_masters_.begin();
-       it != declarative_user_script_masters_.end();
-       ++it) {
-    if ((*it)->extension_id() == extension_id) {
-      master = *it;
-      break;
-    }
-  }
-  if (!master) {
-    master = new DeclarativeUserScriptMaster(profile_, extension_id);
-    declarative_user_script_masters_.push_back(master);
-  }
-  return master;
 }
 
 //
@@ -528,6 +514,11 @@ SharedUserScriptMaster* ExtensionSystemImpl::shared_user_script_master() {
   return shared_->shared_user_script_master();
 }
 
+DeclarativeUserScriptManager*
+ExtensionSystemImpl::declarative_user_script_manager() {
+  return shared_->declarative_user_script_manager();
+}
+
 StateStore* ExtensionSystemImpl::state_store() {
   return shared_->state_store();
 }
@@ -570,12 +561,6 @@ scoped_ptr<ExtensionSet> ExtensionSystemImpl::GetDependentExtensions(
     const Extension* extension) {
   return extension_service()->shared_module_service()->GetDependentExtensions(
       extension);
-}
-
-DeclarativeUserScriptMaster*
-ExtensionSystemImpl::GetDeclarativeUserScriptMasterByExtension(
-    const ExtensionId& extension_id) {
-  return shared_->GetDeclarativeUserScriptMasterByExtension(extension_id);
 }
 
 void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(

@@ -23,7 +23,7 @@ class BrowserContext;
 
 namespace extensions {
 
-class DeclarativeUserScriptMaster;
+class DeclarativeUserScriptManager;
 class EventRouter;
 class InfoMap;
 class LazyBackgroundTaskQueue;
@@ -57,6 +57,7 @@ class ShellExtensionSystem : public ExtensionSystem {
   RuntimeData* runtime_data() override;
   ManagementPolicy* management_policy() override;
   SharedUserScriptMaster* shared_user_script_master() override;
+  DeclarativeUserScriptManager* declarative_user_script_manager() override;
   StateStore* state_store() override;
   StateStore* rules_store() override;
   InfoMap* info_map() override;
@@ -74,8 +75,6 @@ class ShellExtensionSystem : public ExtensionSystem {
   ContentVerifier* content_verifier() override;
   scoped_ptr<ExtensionSet> GetDependentExtensions(
       const Extension* extension) override;
-  DeclarativeUserScriptMaster* GetDeclarativeUserScriptMasterByExtension(
-      const ExtensionId& extension_id) override;
 
  private:
   content::BrowserContext* browser_context_;  // Not owned.

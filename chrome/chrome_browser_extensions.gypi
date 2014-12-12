@@ -557,6 +557,8 @@
       'browser/extensions/crx_installer.h',
       'browser/extensions/data_deleter.cc',
       'browser/extensions/data_deleter.h',
+      'browser/extensions/declarative_user_script_manager.cc',
+      'browser/extensions/declarative_user_script_manager.h',
       'browser/extensions/declarative_user_script_master.cc',
       'browser/extensions/declarative_user_script_master.h',
       'browser/extensions/dev_mode_bubble_controller.cc',

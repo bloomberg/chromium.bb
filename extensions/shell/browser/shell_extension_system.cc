@@ -106,7 +106,7 @@ void ShellExtensionSystem::InitForRegularProfile(bool extensions_enabled) {
 }
 
 ExtensionService* ShellExtensionSystem::extension_service() {
-  return NULL;
+  return nullptr;
 }
 
 RuntimeData* ShellExtensionSystem::runtime_data() {
@@ -114,19 +114,24 @@ RuntimeData* ShellExtensionSystem::runtime_data() {
 }
 
 ManagementPolicy* ShellExtensionSystem::management_policy() {
-  return NULL;
+  return nullptr;
 }
 
 SharedUserScriptMaster* ShellExtensionSystem::shared_user_script_master() {
-  return NULL;
+  return nullptr;
+}
+
+DeclarativeUserScriptManager*
+ShellExtensionSystem::declarative_user_script_manager() {
+  return nullptr;
 }
 
 StateStore* ShellExtensionSystem::state_store() {
-  return NULL;
+  return nullptr;
 }
 
 StateStore* ShellExtensionSystem::rules_store() {
-  return NULL;
+  return nullptr;
 }
 
 InfoMap* ShellExtensionSystem::info_map() {
@@ -144,11 +149,11 @@ EventRouter* ShellExtensionSystem::event_router() {
 }
 
 ErrorConsole* ShellExtensionSystem::error_console() {
-  return NULL;
+  return nullptr;
 }
 
 InstallVerifier* ShellExtensionSystem::install_verifier() {
-  return NULL;
+  return nullptr;
 }
 
 QuotaService* ShellExtensionSystem::quota_service() {
@@ -177,18 +182,12 @@ const OneShotEvent& ShellExtensionSystem::ready() const {
 }
 
 ContentVerifier* ShellExtensionSystem::content_verifier() {
-  return NULL;
+  return nullptr;
 }
 
 scoped_ptr<ExtensionSet> ShellExtensionSystem::GetDependentExtensions(
     const Extension* extension) {
   return make_scoped_ptr(new ExtensionSet());
-}
-
-DeclarativeUserScriptMaster*
-ShellExtensionSystem::GetDeclarativeUserScriptMasterByExtension(
-    const ExtensionId& extension_id) {
-  return NULL;
 }
 
 }  // namespace extensions

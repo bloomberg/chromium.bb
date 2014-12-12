@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/blacklist.h"
-#include "chrome/browser/extensions/declarative_user_script_master.h"
+#include "chrome/browser/extensions/declarative_user_script_manager.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -87,6 +87,8 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
   scoped_ptr<TestingValueStore> value_store(new TestingValueStore());
   value_store_ = value_store.get();
   state_store_.reset(new StateStore(profile_, value_store.Pass()));
+  declarative_user_script_manager_.reset(
+      new DeclarativeUserScriptManager(profile_));
   management_policy_.reset(new ManagementPolicy());
   management_policy_->RegisterProviders(
       ExtensionManagementFactory::GetForBrowserContext(profile_)
@@ -122,6 +124,11 @@ void TestExtensionSystem::SetExtensionService(ExtensionService* service) {
 
 SharedUserScriptMaster* TestExtensionSystem::shared_user_script_master() {
   return NULL;
+}
+
+DeclarativeUserScriptManager*
+TestExtensionSystem::declarative_user_script_manager() {
+  return declarative_user_script_manager_.get();
 }
 
 StateStore* TestExtensionSystem::state_store() {
@@ -169,27 +176,6 @@ scoped_ptr<ExtensionSet> TestExtensionSystem::GetDependentExtensions(
     const Extension* extension) {
   return extension_service()->shared_module_service()->GetDependentExtensions(
       extension);
-}
-
-DeclarativeUserScriptMaster*
-TestExtensionSystem::GetDeclarativeUserScriptMasterByExtension(
-    const ExtensionId& extension_id) {
-  DCHECK(ready().is_signaled());
-  DeclarativeUserScriptMaster* master = NULL;
-  for (ScopedVector<DeclarativeUserScriptMaster>::iterator it =
-           declarative_user_script_masters_.begin();
-       it != declarative_user_script_masters_.end();
-       ++it) {
-    if ((*it)->extension_id() == extension_id) {
-      master = *it;
-      break;
-    }
-  }
-  if (!master) {
-    master = new DeclarativeUserScriptMaster(profile_, extension_id);
-    declarative_user_script_masters_.push_back(master);
-  }
-  return master;
 }
 
 // static

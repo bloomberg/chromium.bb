@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_content/content_constants.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
+#include "chrome/browser/extensions/declarative_user_script_manager.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -351,9 +352,9 @@ RequestContentScript::RequestContentScript(
     const ScriptData& script_data) {
   InitScript(extension, script_data);
 
-  master_ =
-      ExtensionSystem::Get(browser_context)->
-      GetDeclarativeUserScriptMasterByExtension(extension->id());
+  master_ = ExtensionSystem::Get(browser_context)
+                ->declarative_user_script_manager()
+                ->GetDeclarativeUserScriptMasterByID(extension->id());
   AddScript();
 }
 
