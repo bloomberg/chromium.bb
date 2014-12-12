@@ -316,8 +316,12 @@ void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValueFast(info, openedWindow.release(), impl);
 }
 
-void V8Window::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    if (!name->IsString())
+        return;
+
+    auto nameString = name.As<v8::String>();
     LocalDOMWindow* window = toLocalDOMWindow(V8Window::toImpl(info.Holder()));
     if (!window)
         return;
@@ -328,7 +332,7 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::P
         return;
 
     // Search sub-frames.
-    AtomicString propName = toCoreAtomicString(name);
+    AtomicString propName = toCoreAtomicString(nameString);
     Frame* child = frame->tree().scopedChild(propName);
     if (child) {
         v8SetReturnValueFast(info, child->domWindow(), window);
@@ -336,7 +340,7 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::P
     }
 
     // Search IDL functions defined in the prototype
-    if (!info.Holder()->GetRealNamedProperty(name).IsEmpty())
+    if (!info.Holder()->GetRealNamedProperty(nameString).IsEmpty())
         return;
 
     // Search named items in the document.

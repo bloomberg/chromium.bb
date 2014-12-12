@@ -114,34 +114,46 @@ void setScriptableObjectProperty(PropertyType property, v8::Local<v8::Value> val
 }
 } // namespace
 
-void V8HTMLAppletElement::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8HTMLAppletElement::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    getScriptableObjectProperty<V8HTMLAppletElement>(name, info);
+    if (!name->IsString())
+        return;
+    getScriptableObjectProperty<V8HTMLAppletElement>(name.As<v8::String>(), info);
 }
 
-void V8HTMLEmbedElement::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8HTMLEmbedElement::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    getScriptableObjectProperty<V8HTMLEmbedElement>(name, info);
+    if (!name->IsString())
+        return;
+    getScriptableObjectProperty<V8HTMLEmbedElement>(name.As<v8::String>(), info);
 }
 
-void V8HTMLObjectElement::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8HTMLObjectElement::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    getScriptableObjectProperty<V8HTMLObjectElement>(name, info);
+    if (!name->IsString())
+        return;
+    getScriptableObjectProperty<V8HTMLObjectElement>(name.As<v8::String>(), info);
 }
 
-void V8HTMLAppletElement::namedPropertySetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8HTMLAppletElement::namedPropertySetterCustom(v8::Local<v8::Name> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    setScriptableObjectProperty<V8HTMLAppletElement>(name, value, info);
+    if (!name->IsString())
+        return;
+    setScriptableObjectProperty<V8HTMLAppletElement>(name.As<v8::String>(), value, info);
 }
 
-void V8HTMLEmbedElement::namedPropertySetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8HTMLEmbedElement::namedPropertySetterCustom(v8::Local<v8::Name> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    setScriptableObjectProperty<V8HTMLEmbedElement>(name, value, info);
+    if (!name->IsString())
+        return;
+    setScriptableObjectProperty<V8HTMLEmbedElement>(name.As<v8::String>(), value, info);
 }
 
-void V8HTMLObjectElement::namedPropertySetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8HTMLObjectElement::namedPropertySetterCustom(v8::Local<v8::Name> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    setScriptableObjectProperty<V8HTMLObjectElement>(name, value, info);
+    if (!name->IsString())
+        return;
+    setScriptableObjectProperty<V8HTMLObjectElement>(name.As<v8::String>(), value, info);
 }
 
 void V8HTMLAppletElement::indexedPropertyGetterCustom(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
