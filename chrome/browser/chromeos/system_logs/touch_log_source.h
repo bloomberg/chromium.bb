@@ -11,8 +11,8 @@ namespace system_logs {
 
 class TouchLogSource : public SystemLogsSource {
  public:
-  TouchLogSource();
-  virtual ~TouchLogSource();
+  TouchLogSource() : SystemLogsSource("Touch") {}
+  virtual ~TouchLogSource() {}
 
  private:
   // Overridden from SystemLogsSource:

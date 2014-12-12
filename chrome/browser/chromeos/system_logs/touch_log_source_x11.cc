@@ -18,7 +18,7 @@ namespace {
 
 const char kHUDLogDataKey[] = "hud_log";
 
-void GetTouchLogs(system_logs::SystemLogsResponse* response) {
+void GetTouchLogsX11(system_logs::SystemLogsResponse* response) {
   scoped_ptr<base::DictionaryValue> dictionary =
       ash::TouchHudDebug::GetAllAsDictionary();
   if (!dictionary->empty()) {
@@ -29,18 +29,16 @@ void GetTouchLogs(system_logs::SystemLogsResponse* response) {
       (*response)[kHUDLogDataKey] = touch_log;
   }
 
-  std::vector<std::pair<std::string, CommandLine> > commands;
+  std::vector<std::pair<std::string, CommandLine>> commands;
   CommandLine command =
-    CommandLine(base::FilePath("/opt/google/input/inputcontrol"));
+      CommandLine(base::FilePath("/opt/google/input/inputcontrol"));
   command.AppendArg("--status");
   commands.push_back(std::make_pair("hack-33025-touchpad", command));
 
-  command =
-    CommandLine(base::FilePath("/opt/google/input/cmt_feedback"));
+  command = CommandLine(base::FilePath("/opt/google/input/cmt_feedback"));
   commands.push_back(std::make_pair("hack-33025-touchpad_activity", command));
 
-  command = CommandLine(
-      base::FilePath("/opt/google/input/evdev_feedback"));
+  command = CommandLine(base::FilePath("/opt/google/input/evdev_feedback"));
   commands.push_back(
       std::make_pair("hack-33025-touchscreen_activity", command));
 
@@ -55,20 +53,13 @@ void GetTouchLogs(system_logs::SystemLogsResponse* response) {
 
 namespace system_logs {
 
-TouchLogSource::TouchLogSource() : SystemLogsSource("Touch") {
-}
-
-TouchLogSource::~TouchLogSource() {
-}
-
 void TouchLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   SystemLogsResponse* response = new SystemLogsResponse;
   BrowserThread::PostBlockingPoolTaskAndReply(
-      FROM_HERE,
-      base::Bind(&GetTouchLogs, response),
+      FROM_HERE, base::Bind(&GetTouchLogsX11, response),
       base::Bind(callback, base::Owned(response)));
 }
 

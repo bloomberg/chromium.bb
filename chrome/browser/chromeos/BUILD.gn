@@ -145,7 +145,10 @@ source_set("chromeos") {
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
     deps += [ "//ui/events/devices" ]
-    sources -= [ "system/input_device_settings_impl_ozone.cc" ]
+    sources -= [
+      "system/input_device_settings_impl_ozone.cc",
+      "system_logs/touch_log_source_ozone.cc",
+    ]
   } else {
     assert(use_ozone, "Either use_x11 or use_ozone has to be specified.")
     deps += [ "//ui/ozone" ]
@@ -157,6 +160,7 @@ source_set("chromeos") {
       "events/xinput_hierarchy_changed_event_listener.cc",
       "events/xinput_hierarchy_changed_event_listener.h",
       "system/input_device_settings_impl_x11.cc",
+      "system_logs/touch_log_source_x11.cc",
     ]
   }
 
