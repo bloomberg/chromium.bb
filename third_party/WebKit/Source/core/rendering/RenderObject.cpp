@@ -64,6 +64,7 @@
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderListItem.h"
+#include "core/rendering/RenderMultiColumnSpannerPlaceholder.h"
 #include "core/rendering/RenderObjectInlines.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderScrollbarPart.h"
@@ -835,6 +836,8 @@ RenderBlock* RenderObject::containingBlock() const
 
         while (o && o->isAnonymousBlock())
             o = o->containingBlock();
+    } else if (isColumnSpanAll()) {
+        o = spannerPlaceholder()->containingBlock();
     } else {
         while (o && ((o->isInline() && !o->isReplaced()) || !o->isRenderBlock()))
             o = o->parent();
@@ -2230,6 +2233,19 @@ RenderObject* RenderObject::container(const RenderLayerModelObject* paintInvalid
 
             o = o->parent();
         }
+    } else if (isColumnSpanAll()) {
+        RenderObject* multicolContainer = spannerPlaceholder()->container();
+        if (paintInvalidationContainerSkipped && paintInvalidationContainer) {
+            // We jumped directly from the spanner to the multicol container. Need to check if
+            // we skipped |paintInvalidationContainer| on the way.
+            for (RenderObject* walker = parent(); walker && walker != multicolContainer; walker = walker->parent()) {
+                if (walker == paintInvalidationContainer) {
+                    *paintInvalidationContainerSkipped = true;
+                    break;
+                }
+            }
+        }
+        return multicolContainer;
     }
 
     return o;
@@ -2383,6 +2399,9 @@ void RenderObject::removeFromRenderFlowThreadRecursive(RenderFlowThread* renderF
         for (RenderObject* child = children->firstChild(); child; child = child->nextSibling())
             child->removeFromRenderFlowThreadRecursive(renderFlowThread);
     }
+
+    if (renderFlowThread && renderFlowThread != this)
+        renderFlowThread->flowThreadDescendantWillBeRemoved(this);
     setFlowThreadState(NotInsideFlowThread);
 }
 

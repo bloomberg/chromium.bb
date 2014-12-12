@@ -31,6 +31,8 @@
 
 namespace blink {
 
+class RenderMultiColumnSpannerPlaceholder;
+
 struct PaintInfo;
 
 enum SizeType { MainOrPreferredSize, MinSize, MaxSize };
@@ -50,6 +52,7 @@ struct RenderBoxRareData {
 public:
     RenderBoxRareData()
         : m_inlineBoxWrapper(0)
+        , m_spannerPlaceholder(0)
         , m_overrideLogicalContentHeight(-1)
         , m_overrideLogicalContentWidth(-1)
         , m_previousBorderBoxSize(-1, -1)
@@ -58,6 +61,9 @@ public:
 
     // For inline replaced elements, the inline box that owns us.
     InlineBox* m_inlineBoxWrapper;
+
+    // For spanners, the spanner placeholder that lays us out within the multicol container.
+    RenderMultiColumnSpannerPlaceholder* m_spannerPlaceholder;
 
     LayoutUnit m_overrideLogicalContentHeight;
     LayoutUnit m_overrideLogicalContentWidth;
@@ -188,6 +194,11 @@ public:
     RenderBox* nextSiblingBox() const;
     RenderBox* nextInFlowSiblingBox() const;
     RenderBox* parentBox() const;
+
+    // Return the previous sibling column set or spanner placeholder. Only to be used on multicol container children.
+    RenderBox* previousSiblingMultiColumnBox() const;
+    // Return the next sibling column set or spanner placeholder. Only to be used on multicol container children.
+    RenderBox* nextSiblingMultiColumnBox() const;
 
     bool canResize() const;
 
@@ -404,6 +415,10 @@ public:
     InlineBox* inlineBoxWrapper() const { return m_rareData ? m_rareData->m_inlineBoxWrapper : 0; }
     void setInlineBoxWrapper(InlineBox*);
     void deleteLineBoxWrapper();
+
+    void setSpannerPlaceholder(RenderMultiColumnSpannerPlaceholder&);
+    void clearSpannerPlaceholder();
+    virtual RenderMultiColumnSpannerPlaceholder* spannerPlaceholder() const final { return m_rareData ? m_rareData->m_spannerPlaceholder : 0; }
 
     virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override;
     virtual void mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
@@ -663,8 +678,8 @@ public:
 
     void setIntrinsicContentLogicalHeight(LayoutUnit intrinsicContentLogicalHeight) const { m_intrinsicContentLogicalHeight = intrinsicContentLogicalHeight; }
 protected:
+    virtual void willBeRemovedFromTree() override;
     virtual void willBeDestroyed() override;
-
 
     virtual void styleWillChange(StyleDifference, const RenderStyle& newStyle) override;
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
@@ -826,6 +841,21 @@ inline RenderBox* RenderBox::firstChildBox() const
 inline RenderBox* RenderBox::lastChildBox() const
 {
     return toRenderBox(slowLastChild());
+}
+
+inline RenderBox* RenderBox::previousSiblingMultiColumnBox() const
+{
+    ASSERT(isRenderMultiColumnSpannerPlaceholder() || isRenderMultiColumnSet());
+    RenderBox* previousBox = previousSiblingBox();
+    if (previousBox->isRenderFlowThread())
+        return 0;
+    return previousBox;
+}
+
+inline RenderBox* RenderBox::nextSiblingMultiColumnBox() const
+{
+    ASSERT(isRenderMultiColumnSpannerPlaceholder() || isRenderMultiColumnSet());
+    return nextSiblingBox();
 }
 
 inline void RenderBox::setInlineBoxWrapper(InlineBox* boxWrapper)

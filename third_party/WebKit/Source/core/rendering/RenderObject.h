@@ -67,6 +67,7 @@ class RenderFlowThread;
 class RenderGeometryMap;
 class RenderLayer;
 class RenderLayerModelObject;
+class RenderMultiColumnSpannerPlaceholder;
 class RenderView;
 class TransformState;
 
@@ -357,7 +358,7 @@ public:
     bool isRenderIFrame() const { return isOfType(RenderObjectRenderIFrame); }
     bool isRenderImage() const { return isOfType(RenderObjectRenderImage); }
     bool isRenderMultiColumnSet() const { return isOfType(RenderObjectRenderMultiColumnSet); }
-    bool isRenderMultiColumnSpannerSet() const { return isOfType(RenderObjectRenderMultiColumnSpannerSet); }
+    bool isRenderMultiColumnSpannerPlaceholder() const { return isOfType(RenderObjectRenderMultiColumnSpannerPlaceholder); }
     bool isRenderRegion() const { return isOfType(RenderObjectRenderRegion); }
     bool isRenderScrollbarPart() const { return isOfType(RenderObjectRenderScrollbarPart); }
     bool isRenderTableCol() const { return isOfType(RenderObjectRenderTableCol); }
@@ -639,6 +640,9 @@ public:
 
     Document& document() const { return m_node->document(); }
     LocalFrame* frame() const { return document().frame(); }
+
+    virtual RenderMultiColumnSpannerPlaceholder* spannerPlaceholder() const { return 0; }
+    bool isColumnSpanAll() const { return style()->columnSpan() == ColumnSpanAll && spannerPlaceholder(); }
 
     // Returns the object containing this one. Can be different from parent for positioned elements.
     // If paintInvalidationContainer and paintInvalidationContainerSkipped are not null, on return *paintInvalidationContainerSkipped
@@ -1090,7 +1094,7 @@ protected:
         RenderObjectRenderImage,
         RenderObjectRenderInline,
         RenderObjectRenderMultiColumnSet,
-        RenderObjectRenderMultiColumnSpannerSet,
+        RenderObjectRenderMultiColumnSpannerPlaceholder,
         RenderObjectRenderPart,
         RenderObjectRenderRegion,
         RenderObjectRenderScrollbarPart,

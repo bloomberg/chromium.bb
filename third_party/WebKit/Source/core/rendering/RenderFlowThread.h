@@ -65,6 +65,7 @@ public:
     virtual LayerType layerTypeRequired() const override final { return NormalLayer; }
 
     virtual void flowThreadDescendantWasInserted(RenderObject*) { }
+    virtual void flowThreadDescendantWillBeRemoved(RenderObject*) { }
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override final;
 

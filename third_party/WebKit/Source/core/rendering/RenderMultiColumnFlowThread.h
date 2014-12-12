@@ -28,12 +28,11 @@
 #define RenderMultiColumnFlowThread_h
 
 #include "core/rendering/RenderFlowThread.h"
-#include "wtf/HashMap.h"
 
 namespace blink {
 
 class RenderMultiColumnSet;
-class RenderMultiColumnSpannerSet;
+class RenderMultiColumnSpannerPlaceholder;
 
 // Flow thread implementation for CSS multicol. This will be inserted as an anonymous child block of
 // the actual multicol container (i.e. the RenderBlockFlow whose style computes to non-auto
@@ -57,7 +56,9 @@ class RenderMultiColumnSpannerSet;
 // RenderMultiColumnSet. We only need to create multiple sets if there are spanners
 // (column-span:all) in the multicol container. When a spanner is inserted, content preceding it
 // gets its own set, and content succeeding it will get another set. The spanner itself will also
-// get its own set (RenderMultiColumnSpannerSet).
+// get its own placeholder between the sets (RenderMultiColumnSpannerPlaceholder), so that it gets
+// positioned and sized correctly. The column-span:all element is inside the flow thread, but its
+// containing block is the multicol container.
 //
 // The width of the flow thread is the same as the column width. The width of a column set is the
 // same as the content box width of the multicol container; in other words exactly enough to hold
@@ -106,9 +107,23 @@ public:
     RenderMultiColumnSet* firstMultiColumnSet() const;
     RenderMultiColumnSet* lastMultiColumnSet() const;
 
-    // Return the spanner set (if any) that contains the specified renderer. This includes the
-    // renderer for the element that actually establishes the spanner too.
-    RenderMultiColumnSpannerSet* containingColumnSpannerSet(const RenderObject* descendant) const;
+    // Return the first column set or spanner placeholder.
+    RenderBox* firstMultiColumnBox() const
+    {
+        return nextSiblingBox();
+    }
+    // Return the last column set or spanner placeholder.
+    RenderBox* lastMultiColumnBox() const
+    {
+        RenderBox* lastSiblingBox = multiColumnBlockFlow()->lastChildBox();
+        // The flow thread is the first child of the multicol container. If the flow thread is also
+        // the last child, it means that there are no siblings; i.e. we have no column boxes.
+        return lastSiblingBox != this ? lastSiblingBox : 0;
+    }
+
+    // Return the spanner placeholder that belongs to the spanner in the containing block chain, if
+    // any. This includes the renderer for the element that actually establishes the spanner too.
+    RenderMultiColumnSpannerPlaceholder* containingColumnSpannerPlaceholder(const RenderObject* descendant) const;
 
     // Populate the flow thread with what's currently its siblings. Called when a regular block
     // becomes a multicol container.
@@ -143,13 +158,14 @@ protected:
 private:
     void calculateColumnCountAndWidth(LayoutUnit& width, unsigned& count) const;
     void createAndInsertMultiColumnSet();
-    void createAndInsertSpannerSet(RenderBox* spanner);
+    void createAndInsertSpannerPlaceholder(RenderBox* spanner);
     virtual bool descendantIsValidColumnSpanner(RenderObject* descendant) const;
 
     virtual const char* renderName() const override;
     virtual void addRegionToThread(RenderMultiColumnSet*) override;
     virtual void willBeRemovedFromTree() override;
     virtual void flowThreadDescendantWasInserted(RenderObject*) override;
+    virtual void flowThreadDescendantWillBeRemoved(RenderObject*) override;
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
     virtual void updateLogicalWidth() override;
     virtual void setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage) override;
@@ -158,17 +174,14 @@ private:
     virtual bool addForcedRegionBreak(LayoutUnit, RenderObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = 0) override;
     virtual bool isPageLogicalHeightKnown() const override;
 
-    typedef HashMap<const RenderObject*, RenderMultiColumnSpannerSet*> SpannerMap;
-    SpannerMap m_spannerMap;
-
     unsigned m_columnCount; // The used value of column-count
     LayoutUnit m_columnHeightAvailable; // Total height available to columns, or 0 if auto.
     bool m_inBalancingPass; // Set when relayouting for column balancing.
     bool m_needsColumnHeightsRecalculation; // Set when we need to recalculate the column set heights after layout.
     bool m_progressionIsInline; // Always true for regular multicol. False for paged-y overflow.
+    bool m_isBeingEvacuated;
 };
 
 } // namespace blink
 
 #endif // RenderMultiColumnFlowThread_h
-

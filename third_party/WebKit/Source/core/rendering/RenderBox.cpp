@@ -52,6 +52,7 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderListBox.h"
 #include "core/rendering/RenderListMarker.h"
+#include "core/rendering/RenderMultiColumnSpannerPlaceholder.h"
 #include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
@@ -99,6 +100,15 @@ RenderBox::RenderBox(ContainerNode* node)
     , m_maxPreferredLogicalWidth(-1)
 {
     setIsBox();
+}
+
+void RenderBox::willBeRemovedFromTree()
+{
+    if (m_rareData && m_rareData->m_spannerPlaceholder) {
+        m_rareData->m_spannerPlaceholder->spannerWillBeRemoved();
+        m_rareData->m_spannerPlaceholder = 0;
+    }
+    RenderBoxModelObject::willBeRemovedFromTree();
 }
 
 void RenderBox::willBeDestroyed()
@@ -1699,6 +1709,19 @@ void RenderBox::deleteLineBoxWrapper()
         ASSERT(m_rareData);
         m_rareData->m_inlineBoxWrapper = 0;
     }
+}
+
+void RenderBox::setSpannerPlaceholder(RenderMultiColumnSpannerPlaceholder& placeholder)
+{
+    RELEASE_ASSERT(!m_rareData || !m_rareData->m_spannerPlaceholder); // not expected to change directly from one spanner to another.
+    ensureRareData().m_spannerPlaceholder = &placeholder;
+}
+
+void RenderBox::clearSpannerPlaceholder()
+{
+    if (!m_rareData)
+        return;
+    m_rareData->m_spannerPlaceholder = 0;
 }
 
 LayoutRect RenderBox::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const

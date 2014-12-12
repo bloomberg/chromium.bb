@@ -27,7 +27,7 @@
 #include "core/rendering/RenderMultiColumnFlowThread.h"
 
 #include "core/rendering/RenderMultiColumnSet.h"
-#include "core/rendering/RenderMultiColumnSpannerSet.h"
+#include "core/rendering/RenderMultiColumnSpannerPlaceholder.h"
 
 namespace blink {
 
@@ -37,6 +37,7 @@ RenderMultiColumnFlowThread::RenderMultiColumnFlowThread()
     , m_inBalancingPass(false)
     , m_needsColumnHeightsRecalculation(false)
     , m_progressionIsInline(true)
+    , m_isBeingEvacuated(false)
 {
     setFlowThreadState(InsideInFlowThread);
 }
@@ -71,20 +72,20 @@ RenderMultiColumnSet* RenderMultiColumnFlowThread::lastMultiColumnSet() const
     return 0;
 }
 
-RenderMultiColumnSpannerSet* RenderMultiColumnFlowThread::containingColumnSpannerSet(const RenderObject* descendant) const
+RenderMultiColumnSpannerPlaceholder* RenderMultiColumnFlowThread::containingColumnSpannerPlaceholder(const RenderObject* descendant) const
 {
     ASSERT(descendant->isDescendantOf(this));
 
     // Before we spend time on searching the ancestry, see if there's a quick way to determine
     // whether there might be any spanners at all.
-    RenderMultiColumnSet* firstSet = firstMultiColumnSet();
-    if (!firstSet || (firstSet == lastMultiColumnSet() && !firstSet->isRenderMultiColumnSpannerSet()))
+    RenderBox* firstBox = firstMultiColumnBox();
+    if (!firstBox || (firstBox == lastMultiColumnBox() && firstBox->isRenderMultiColumnSet()))
         return 0;
 
     // We have spanners. See if the renderer in question is one or inside of one then.
     for (const RenderObject* ancestor = descendant; ancestor && ancestor != this; ancestor = ancestor->parent()) {
-        if (RenderMultiColumnSpannerSet* spanner = m_spannerMap.get(ancestor))
-            return spanner;
+        if (RenderMultiColumnSpannerPlaceholder* placeholder = ancestor->spannerPlaceholder())
+            return placeholder;
     }
     return 0;
 }
@@ -102,10 +103,13 @@ void RenderMultiColumnFlowThread::populate()
 void RenderMultiColumnFlowThread::evacuateAndDestroy()
 {
     RenderBlockFlow* multicolContainer = multiColumnBlockFlow();
+    m_isBeingEvacuated = true;
 
-    // Remove all sets.
-    while (RenderMultiColumnSet* columnSet = firstMultiColumnSet())
-        columnSet->destroy();
+    // Remove all sets and spanners.
+    while (RenderBox* columnBox = firstMultiColumnBox()) {
+        ASSERT(columnBox->isAnonymous());
+        columnBox->destroy();
+    }
 
     ASSERT(!previousSibling());
     ASSERT(!nextSibling());
@@ -162,7 +166,12 @@ void RenderMultiColumnFlowThread::layoutColumns(bool relayoutChildren, SubtreeLa
         return;
     }
 
-    for (RenderMultiColumnSet* columnSet = firstMultiColumnSet(); columnSet; columnSet = columnSet->nextSiblingMultiColumnSet()) {
+    for (RenderBox* columnBox = firstMultiColumnBox(); columnBox; columnBox = columnBox->nextSiblingBox()) {
+        if (!columnBox->isRenderMultiColumnSet()) {
+            ASSERT(columnBox->isRenderMultiColumnSpannerPlaceholder()); // no other type is expected.
+            continue;
+        }
+        RenderMultiColumnSet* columnSet = toRenderMultiColumnSet(columnBox);
         if (!m_inBalancingPass) {
             // This is the initial layout pass. We need to reset the column height, because contents
             // typically have changed.
@@ -238,23 +247,26 @@ void RenderMultiColumnFlowThread::createAndInsertMultiColumnSet()
 
     // We cannot handle immediate column set siblings (and there's no need for it, either).
     // There has to be at least one spanner separating them.
-    ASSERT(!newSet->previousSiblingMultiColumnSet() || newSet->previousSiblingMultiColumnSet()->isRenderMultiColumnSpannerSet());
-    ASSERT(!newSet->nextSiblingMultiColumnSet() || newSet->nextSiblingMultiColumnSet()->isRenderMultiColumnSpannerSet());
+    ASSERT(!newSet->previousSiblingMultiColumnBox() || !newSet->previousSiblingMultiColumnBox()->isRenderMultiColumnSet());
+    ASSERT(!newSet->nextSiblingMultiColumnBox() || !newSet->nextSiblingMultiColumnBox()->isRenderMultiColumnSet());
 }
 
-void RenderMultiColumnFlowThread::createAndInsertSpannerSet(RenderBox* spanner)
+void RenderMultiColumnFlowThread::createAndInsertSpannerPlaceholder(RenderBox* spanner)
 {
     RenderBlockFlow* multicolContainer = multiColumnBlockFlow();
-    RenderMultiColumnSpannerSet* newSpannerSet = RenderMultiColumnSpannerSet::createAnonymous(this, multicolContainer->style(), spanner);
-    multicolContainer->RenderBlock::addChild(newSpannerSet);
-    m_spannerMap.add(spanner, newSpannerSet);
-    invalidateRegions();
+    RenderMultiColumnSpannerPlaceholder* newPlaceholder = RenderMultiColumnSpannerPlaceholder::createAnonymous(multicolContainer->style(), spanner);
+    multicolContainer->RenderBlock::addChild(newPlaceholder);
+    spanner->setSpannerPlaceholder(*newPlaceholder);
 }
 
 bool RenderMultiColumnFlowThread::descendantIsValidColumnSpanner(RenderObject* descendant) const
 {
     // We assume that we're inside the flow thread. This function is not to be called otherwise.
     ASSERT(descendant->isDescendantOf(this));
+
+    // We're evaluating if the descendant should be turned into a proper spanner. It shouldn't
+    // already be one.
+    ASSERT(!descendant->spannerPlaceholder());
 
     // The spec says that column-span only applies to in-flow block-level elements.
     if (descendant->style()->columnSpan() != ColumnSpanAll || !descendant->isBox() || descendant->isInline() || descendant->isFloatingOrOutOfFlowPositioned())
@@ -266,12 +278,12 @@ bool RenderMultiColumnFlowThread::descendantIsValidColumnSpanner(RenderObject* d
     }
 
     // This looks like a spanner, but if we're inside something unbreakable, it's not to be treated as one.
-    for (RenderBlock* ancestor = descendant->containingBlock(); ancestor && ancestor->flowThreadContainingBlock() == this; ancestor = ancestor->containingBlock()) {
+    for (RenderBlock* ancestor = descendant->containingBlock(); ancestor; ancestor = ancestor->containingBlock()) {
         if (ancestor->isRenderFlowThread()) {
             ASSERT(ancestor == this);
             return true;
         }
-        if (m_spannerMap.get(ancestor)) {
+        if (ancestor->spannerPlaceholder()) {
             // FIXME: do we want to support nested spanners in a different way? The outer spanner
             // has already broken out from the columns to become sized by the multicol container,
             // which may be good enough for the inner spanner. But margins, borders, padding and
@@ -306,7 +318,6 @@ void RenderMultiColumnFlowThread::addRegionToThread(RenderMultiColumnSet* column
 
 void RenderMultiColumnFlowThread::willBeRemovedFromTree()
 {
-    m_spannerMap.clear();
     // Detach all column sets from the flow thread. Cannot destroy them at this point, since they
     // are siblings of this object, and there may be pointers to this object's sibling somewhere
     // further up on the call stack.
@@ -318,20 +329,48 @@ void RenderMultiColumnFlowThread::willBeRemovedFromTree()
 
 void RenderMultiColumnFlowThread::flowThreadDescendantWasInserted(RenderObject* descendant)
 {
+    ASSERT(!m_isBeingEvacuated);
     // Go through the subtree that was just inserted and create column sets (needed by regular
-    // column content) and spanner sets (one needed by each spanner).
+    // column content) and spanner placeholders (one needed by each spanner).
     for (RenderObject* renderer = descendant; renderer; renderer = renderer->nextInPreOrder(descendant)) {
-        if (containingColumnSpannerSet(renderer))
-            continue; // Inside a column spanner set. Nothing to do, then.
+        if (containingColumnSpannerPlaceholder(renderer))
+            continue; // Inside a column spanner. Nothing to do, then.
         if (descendantIsValidColumnSpanner(renderer)) {
-            // This renderer is a spanner, so it needs to establish a spanner set.
-            createAndInsertSpannerSet(toRenderBox(renderer));
+            // This renderer is a spanner, so it needs to establish a spanner placeholder.
+            createAndInsertSpannerPlaceholder(toRenderBox(renderer));
             continue;
         }
         // This renderer is regular column content (i.e. not a spanner). Create a set if necessary.
-        RenderMultiColumnSet* lastSet = lastMultiColumnSet();
-        if (!lastSet || lastSet->isRenderMultiColumnSpannerSet())
+        RenderBox* lastColumnBox = lastMultiColumnBox();
+        if (!lastColumnBox || !lastColumnBox->isRenderMultiColumnSet())
             createAndInsertMultiColumnSet();
+    }
+}
+
+void RenderMultiColumnFlowThread::flowThreadDescendantWillBeRemoved(RenderObject* descendant)
+{
+    if (m_isBeingEvacuated)
+        return;
+    RenderObject* next;
+    // Remove spanner placeholders that are no longer needed, and merge column sets around them.
+    for (RenderObject* renderer = descendant; renderer; renderer = next) {
+        RenderMultiColumnSpannerPlaceholder* placeholder = renderer->spannerPlaceholder();
+        if (!placeholder) {
+            next = renderer->nextInPreOrder(descendant);
+            continue;
+        }
+        next = renderer->nextInPreOrderAfterChildren(descendant); // It's a spanner. Its children are of no interest to us.
+        if (RenderBox* nextColumnBox = placeholder->nextSiblingMultiColumnBox()) {
+            RenderBox* previousColumnBox = placeholder->previousSiblingMultiColumnBox();
+            if (nextColumnBox && nextColumnBox->isRenderMultiColumnSet()
+                && previousColumnBox && previousColumnBox->isRenderMultiColumnSet()) {
+                // Need to merge two column sets.
+                nextColumnBox->destroy();
+                previousColumnBox->setNeedsLayout();
+                invalidateRegions();
+            }
+        }
+        placeholder->destroy();
     }
 }
 
@@ -352,8 +391,10 @@ void RenderMultiColumnFlowThread::updateLogicalWidth()
 void RenderMultiColumnFlowThread::layout()
 {
     RenderFlowThread::layout();
-    if (RenderMultiColumnSet* lastSet = lastMultiColumnSet())
-        lastSet->expandToEncompassFlowThreadContentsIfNeeded();
+    if (RenderMultiColumnSet* lastSet = lastMultiColumnSet()) {
+        if (!lastSet->nextSiblingMultiColumnBox())
+            lastSet->expandToEncompassFlowThreadContentsIfNeeded();
+    }
 }
 
 void RenderMultiColumnFlowThread::setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage)

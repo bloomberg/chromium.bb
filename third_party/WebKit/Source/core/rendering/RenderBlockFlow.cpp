@@ -42,6 +42,7 @@
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderMultiColumnFlowThread.h"
+#include "core/rendering/RenderMultiColumnSpannerPlaceholder.h"
 #include "core/rendering/RenderPagedFlowThread.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderView.h"
@@ -1057,6 +1058,11 @@ void RenderBlockFlow::layoutBlockChildren(bool relayoutChildren, SubtreeLayoutSc
             adjustFloatingBlock(marginInfo);
             continue;
         }
+        if (child->isColumnSpanAll()) {
+            // This is not the containing block of the spanner. The spanner's placeholder will lay
+            // it out in due course.
+            continue;
+        }
 
         // Lay out the child.
         layoutBlockChild(*child, marginInfo, previousFloatLogicalBottom);
@@ -1969,6 +1975,16 @@ void RenderBlockFlow::styleDidChange(StyleDifference diff, const RenderStyle* ol
 
     if (diff.needsFullLayout() || !oldStyle)
         createOrDestroyMultiColumnFlowThreadIfNeeded(oldStyle);
+}
+
+void RenderBlockFlow::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, RenderBox& child)
+{
+    if (child.isRenderMultiColumnSpannerPlaceholder() && toRenderMultiColumnSpannerPlaceholder(child).rendererInFlowThread()->needsLayout()) {
+        // The containing block of a spanner is the multicol container (|this| block), but the spanner
+        // is laid out via its spanner set (|child|), so we need to make sure that we enter it.
+        child.setChildNeedsLayout(MarkOnlyThis);
+    }
+    RenderBlock::updateBlockChildDirtyBitsBeforeLayout(relayoutChildren, child);
 }
 
 void RenderBlockFlow::updateStaticInlinePositionForChild(RenderBox& child, LayoutUnit logicalTop)

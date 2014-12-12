@@ -245,6 +245,8 @@ protected:
     virtual void styleWillChange(StyleDifference, const RenderStyle& newStyle) override;
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
 
+    void updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, RenderBox&);
+
     void addOverflowFromFloats();
 
     LayoutUnit logicalRightOffsetForLine(LayoutUnit logicalTop, LayoutUnit fixedOffset, bool applyTextIndent, LayoutUnit logicalHeight = 0) const
