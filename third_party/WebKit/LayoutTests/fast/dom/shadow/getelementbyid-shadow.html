@@ -30,6 +30,7 @@ shadowRootC.appendChild(D);
 
 container.appendChild(A);
 shouldBe('document.getElementById("A")', 'A');
+shouldThrow('shadowRootA.getElementById()');
 shouldBe('shadowRootA.getElementById("B")', 'B');
 shouldBe('shadowRootB.getElementById("C")', 'C');
 shouldBe('shadowRootC.getElementById("D")', 'D');

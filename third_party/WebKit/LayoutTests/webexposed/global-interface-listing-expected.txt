@@ -2073,7 +2073,6 @@ interface ShadowRoot
     method cloneNode
     method constructor
     method elementFromPoint
-    method getElementById
     method getElementsByClassName
     method getElementsByTagName
     method getElementsByTagNameNS

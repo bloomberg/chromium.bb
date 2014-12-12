@@ -33,7 +33,6 @@ interface ShadowRoot : DocumentFragment {
 
     [RaisesException] Node cloneNode([Default=Undefined] optional boolean deep);
     Selection getSelection();
-    Element getElementById([Default=Undefined] optional DOMString elementId);
     HTMLCollection getElementsByClassName([Default=Undefined] optional DOMString className);
     HTMLCollection getElementsByTagName([Default=Undefined] optional DOMString tagName);
     HTMLCollection getElementsByTagNameNS([Default=Undefined] optional DOMString? namespaceURI,
