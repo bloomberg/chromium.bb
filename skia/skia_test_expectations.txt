@@ -49,3 +49,6 @@
 # START OVERRIDES HERE
 
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
+
+# will remove after blink rolls (with the same suppression)
+svg/batik/text/textProperties.svg [ NeedsManualRebaseline ]
