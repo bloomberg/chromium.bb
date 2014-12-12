@@ -147,8 +147,8 @@ void ParseWebAppFromWebDocument(WebFrame* frame,
       // "apple-touch-icon-precomposed".
       if (LowerCaseEqualsASCII(rel, "icon") ||
           LowerCaseEqualsASCII(rel, "shortcut icon") ||
-          (CommandLine::ForCurrentProcess()->
-              HasSwitch(switches::kEnableStreamlinedHostedApps) &&
+          (!CommandLine::ForCurrentProcess()->
+              HasSwitch(switches::kDisableNewBookmarkApps) &&
             (LowerCaseEqualsASCII(rel, "apple-touch-icon") ||
              LowerCaseEqualsASCII(rel, "apple-touch-icon-precomposed")))) {
         AddInstallIcon(elem, &app_info->icons);

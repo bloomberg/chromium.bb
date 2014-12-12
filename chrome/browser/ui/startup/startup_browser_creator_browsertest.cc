@@ -320,18 +320,14 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutNoPref) {
   ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false,
                             browser()->host_desktop_type()));
 
-  // No pref was set, so the app should have opened in a window.
+  // No pref was set, so the app should have opened in a tab in a new window.
   // The launch should have created a new browser.
   Browser* new_browser = FindOneOtherBrowser(browser());
   ASSERT_TRUE(new_browser);
 
-  // Expect an app window.
-  EXPECT_TRUE(new_browser->is_app());
-
-  // The browser's app_name should include the app's ID.
-  EXPECT_NE(
-      new_browser->app_name_.find(extension_app->id()),
-      std::string::npos) << new_browser->app_name_;
+  // It should be a standard tabbed window, not an app window.
+  EXPECT_FALSE(new_browser->is_app());
+  EXPECT_TRUE(new_browser->is_type_tabbed());
 }
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutWindowPref) {

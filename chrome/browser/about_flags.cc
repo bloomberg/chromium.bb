@@ -1520,11 +1520,11 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "enable-streamlined-hosted-apps",
-    IDS_FLAGS_ENABLE_STREAMLINED_HOSTED_APPS_NAME,
-    IDS_FLAGS_ENABLE_STREAMLINED_HOSTED_APPS_DESCRIPTION,
+    "disable-new-bookmark-apps",
+    IDS_FLAGS_DISABLE_NEW_BOOKMARK_APPS_NAME,
+    IDS_FLAGS_DISABLE_NEW_BOOKMARK_APPS_DESCRIPTION,
     kOsWin | kOsCrOS | kOsLinux | kOsMac,
-    SINGLE_VALUE_TYPE(switches::kEnableStreamlinedHostedApps)
+    SINGLE_VALUE_TYPE(switches::kDisableNewBookmarkApps)
   },
   {
     "enable-ephemeral-apps-in-webstore",

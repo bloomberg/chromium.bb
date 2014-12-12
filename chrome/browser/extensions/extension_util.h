@@ -124,6 +124,12 @@ const gfx::ImageSkia& GetDefaultExtensionIcon();
 const gfx::ImageSkia& GetDefaultAppIcon();
 
 // Returns true if the experimental streamlined hosted apps feature is enabled.
+//
+// TODO(benwells): http://crbug.com/441127: Rename this to
+// IsNewBookmarkAppsEnabled.
+//
+// TODO(benwells): http://crbug.com/441128: Remove this entirely once the
+// feature is stable.
 bool IsStreamlinedHostedAppsEnabled();
 
 }  // namespace util

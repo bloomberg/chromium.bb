@@ -360,8 +360,8 @@ const gfx::ImageSkia& GetDefaultExtensionIcon() {
 }
 
 bool IsStreamlinedHostedAppsEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableStreamlinedHostedApps);
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableNewBookmarkApps);
 }
 
 }  // namespace util

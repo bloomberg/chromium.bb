@@ -323,21 +323,3 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchType) {
 
   ASSERT_TRUE(RunExtensionSubtest("management/test", "launchType.html"));
 }
-
-class ExtensionManagementApiStreamlinedAppsTest
-    : public ExtensionManagementApiTest {
- public:
-  void SetUpCommandLine(CommandLine* command_line) override {
-    ExtensionManagementApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableStreamlinedHostedApps);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(ExtensionManagementApiStreamlinedAppsTest, LaunchType) {
-  LoadExtensions();
-  base::FilePath basedir = test_data_dir_.AppendASCII("management");
-  LoadNamedExtension(basedir, "packaged_app");
-
-  ASSERT_TRUE(RunExtensionSubtest("management/test",
-                                  "launchType.html?streamlined-hosted-apps"));
-}

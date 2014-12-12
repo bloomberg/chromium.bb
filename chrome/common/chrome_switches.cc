@@ -280,6 +280,9 @@ const char kDisableIPv6[]                   = "disable-ipv6";
 const char kDisableMinimizeOnSecondLauncherItemClick[] =
     "disable-minimize-on-second-launcher-item-click";
 
+// Disables the new bookmark app system.
+const char kDisableNewBookmarkApps[]   = "disable-new-bookmark-apps";
+
 // Disables the menu on the NTP for accessing sessions from other devices.
 const char kDisableNTPOtherSessionsMenu[]   = "disable-ntp-other-sessions-menu";
 
@@ -596,9 +599,6 @@ const char kEnableSSLConnectJobWaiting[] = "enable-ssl-connect-job-waiting";
 // which permits servers to allow the use of stale resources while revalidation
 // proceeds in the background.
 const char kEnableStaleWhileRevalidate[]    = "enable-stale-while-revalidate";
-
-// Enables an experimental hosted app experience.
-const char kEnableStreamlinedHostedApps[]   = "enable-streamlined-hosted-apps";
 
 // Enables the suggestions service.
 const char kEnableSuggestionsService[]      = "enable-suggestions-service";

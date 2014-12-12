@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 var enabled_app, disabled_app, enabled_extension, packaged_app;
-var streamlinedHostedAppsEnabled =
-    (location.href.indexOf("streamlined-hosted-apps") != -1);
 var allLaunchTypes = ["OPEN_AS_REGULAR_TAB",
                       "OPEN_AS_PINNED_TAB",
                       "OPEN_AS_WINDOW",
@@ -34,10 +32,6 @@ function getAvailableLaunchTypes(app) {
   types.push("OPEN_AS_REGULAR_TAB");
   types.push("OPEN_AS_WINDOW");
 
-  if (!streamlinedHostedAppsEnabled) {
-    types.push("OPEN_AS_PINNED_TAB");
-    types.push("OPEN_FULL_SCREEN");
-  }
   return types;
 }
 

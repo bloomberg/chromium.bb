@@ -32,9 +32,6 @@ class WebAppLeftHeaderViewTest : public TestWithBrowserView {
 
   // TestWithBrowserView override:
   void SetUp() override {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableStreamlinedHostedApps);
-
     TestWithBrowserView::SetUp();
 
     // Setup a fake toolbar to enable testing.

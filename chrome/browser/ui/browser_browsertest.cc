@@ -1296,9 +1296,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TabClosingWhenRemovingExtension) {
 }
 
 #if !defined(OS_MACOSX)
-// Open with --app-id=<id>, and see that an app window opens.
+// Open with --app-id=<id>, and see that an application tab opens by default.
 IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
   ASSERT_TRUE(test_server()->Start());
+
+  // There should be one tab to start with.
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
 
   // Load an app.
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
@@ -1311,26 +1314,15 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
   chrome::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
       chrome::startup::IS_FIRST_RUN : chrome::startup::IS_NOT_FIRST_RUN;
   StartupBrowserCreatorImpl launch(base::FilePath(), command_line, first_run);
-  ASSERT_TRUE(launch.OpenApplicationWindow(browser()->profile(), NULL));
+  EXPECT_FALSE(launch.OpenApplicationWindow(browser()->profile(), NULL));
+  EXPECT_TRUE(launch.OpenApplicationTab(browser()->profile()));
 
-  // Check that the new browser has an app name.
-  // The launch should have created a new browser.
-  ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile(),
+  // Check that a new browser wasn't opened.
+  EXPECT_EQ(1u, chrome::GetBrowserCount(browser()->profile(),
                                         browser()->host_desktop_type()));
 
-  // Find the new browser.
-  Browser* new_browser = NULL;
-  for (chrome::BrowserIterator it; !it.done() && !new_browser; it.Next()) {
-    if (*it != browser())
-      new_browser = *it;
-  }
-  ASSERT_TRUE(new_browser);
-  ASSERT_TRUE(new_browser != browser());
-
-  // The browser's app_name should include the app's ID.
-  ASSERT_NE(
-      new_browser->app_name_.find(extension_app->id()),
-      std::string::npos) << new_browser->app_name_;
+  // Check that a new tab was opened.
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
 }
 
 // Open an app window and the dev tools window and ensure that the location
@@ -1386,9 +1378,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
 // window and a dev tools window, and check that the web app frame feature is
 // supported correctly.
 IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldUseWebAppFrame) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableStreamlinedHostedApps);
-
   ASSERT_TRUE(test_server()->Start());
 
   // Load a hosted app.
