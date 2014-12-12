@@ -444,12 +444,14 @@ void ChromeContentRendererClient::RenderFrameCreated(
     content::RenderFrame* render_frame) {
   new ChromeRenderFrameObserver(render_frame);
 
+  bool should_whitelist_for_content_settings =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kInstantProcess);
   extensions::Dispatcher* ext_dispatcher = NULL;
 #if defined(ENABLE_EXTENSIONS)
   ext_dispatcher = extension_dispatcher_.get();
 #endif
-  ContentSettingsObserver* content_settings =
-      new ContentSettingsObserver(render_frame, ext_dispatcher);
+  ContentSettingsObserver* content_settings = new ContentSettingsObserver(
+      render_frame, ext_dispatcher, should_whitelist_for_content_settings);
   if (chrome_observer_.get()) {
     content_settings->SetContentSettingRules(
         chrome_observer_->content_setting_rules());

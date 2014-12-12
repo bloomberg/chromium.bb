@@ -33,8 +33,11 @@ class ContentSettingsObserver
       public content::RenderFrameObserverTracker<ContentSettingsObserver>,
       public blink::WebPermissionClient {
  public:
+  // Set |should_whitelist| to true if |render_frame()| contains content that
+  // should be whitelisted for content settings.
   ContentSettingsObserver(content::RenderFrame* render_frame,
-                          extensions::Dispatcher* extension_dispatcher);
+                          extensions::Dispatcher* extension_dispatcher,
+                          bool should_whitelist);
   ~ContentSettingsObserver() override;
 
   // Sets the content setting rules which back |AllowImage()|, |AllowScript()|,
@@ -119,8 +122,9 @@ class ContentSettingsObserver
 #endif
 
   // Helpers.
-  // True if |frame| contains content that is white-listed for content settings.
-  static bool IsWhitelistedForContentSettings(content::RenderFrame* frame);
+  // True if |render_frame()| contains content that is white-listed for content
+  // settings.
+  bool IsWhitelistedForContentSettings() const;
   static bool IsWhitelistedForContentSettings(
       const blink::WebSecurityOrigin& origin,
       const GURL& document_url);
@@ -157,6 +161,9 @@ class ContentSettingsObserver
   int current_request_id_;
   typedef std::map<int, blink::WebPermissionCallbacks> PermissionRequestMap;
   PermissionRequestMap permission_requests_;
+
+  // If true, IsWhitelistedForContentSettings will always return true.
+  const bool should_whitelist_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsObserver);
 };

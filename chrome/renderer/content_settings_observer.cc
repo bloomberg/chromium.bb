@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/renderer/document_state.h"
@@ -150,7 +149,8 @@ ContentSetting GetContentSettingFromRules(
 
 ContentSettingsObserver::ContentSettingsObserver(
     content::RenderFrame* render_frame,
-    extensions::Dispatcher* extension_dispatcher)
+    extensions::Dispatcher* extension_dispatcher,
+    bool should_whitelist)
     : content::RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<ContentSettingsObserver>(
           render_frame),
@@ -162,7 +162,8 @@ ContentSettingsObserver::ContentSettingsObserver(
       content_setting_rules_(NULL),
       is_interstitial_page_(false),
       npapi_plugins_blocked_(false),
-      current_request_id_(0) {
+      current_request_id_(0),
+      should_whitelist_(should_whitelist) {
   ClearBlockedContentSettings();
   render_frame->GetWebFrame()->setPermissionClient(this);
 
@@ -312,7 +313,7 @@ bool ContentSettingsObserver::allowImage(bool enabled_per_settings,
     if (is_interstitial_page_)
       return true;
 
-    if (IsWhitelistedForContentSettings(render_frame()))
+    if (IsWhitelistedForContentSettings())
       return true;
 
     if (content_setting_rules_) {
@@ -370,7 +371,7 @@ bool ContentSettingsObserver::allowScript(bool enabled_per_settings) {
         GURL(frame->document().securityOrigin().toString()));
     allow = setting != CONTENT_SETTING_BLOCK;
   }
-  allow = allow || IsWhitelistedForContentSettings(render_frame());
+  allow = allow || IsWhitelistedForContentSettings();
 
   cached_script_permissions_[frame] = allow;
   return allow;
@@ -392,7 +393,7 @@ bool ContentSettingsObserver::allowScriptFromSource(
                                    GURL(script_url));
     allow = setting != CONTENT_SETTING_BLOCK;
   }
-  return allow || IsWhitelistedForContentSettings(render_frame());
+  return allow || IsWhitelistedForContentSettings();
 }
 
 bool ContentSettingsObserver::allowStorage(bool local) {
@@ -674,18 +675,16 @@ const extensions::Extension* ContentSettingsObserver::GetExtension(
 }
 #endif
 
-bool ContentSettingsObserver::IsWhitelistedForContentSettings(
-    content::RenderFrame* frame) {
-  // Whitelist Instant processes.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInstantProcess))
+bool ContentSettingsObserver::IsWhitelistedForContentSettings() const {
+  if (should_whitelist_)
     return true;
 
   // Whitelist ftp directory listings, as they require JavaScript to function
   // properly.
-  if (frame->IsFTPDirectoryListing())
+  if (render_frame()->IsFTPDirectoryListing())
     return true;
 
-  WebFrame* web_frame = frame->GetWebFrame();
+  WebFrame* web_frame = render_frame()->GetWebFrame();
   return IsWhitelistedForContentSettings(web_frame->document().securityOrigin(),
                                          web_frame->document().url());
 }

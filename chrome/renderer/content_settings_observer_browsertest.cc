@@ -34,7 +34,7 @@ class MockContentSettingsObserver : public ContentSettingsObserver {
 
 MockContentSettingsObserver::MockContentSettingsObserver(
     content::RenderFrame* render_frame)
-    : ContentSettingsObserver(render_frame, NULL),
+    : ContentSettingsObserver(render_frame, NULL, false),
       image_url_("http://www.foo.com/image.jpg"),
       image_origin_("http://www.foo.com") {
 }
