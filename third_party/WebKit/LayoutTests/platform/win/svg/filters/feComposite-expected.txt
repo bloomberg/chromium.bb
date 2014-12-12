@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 400x400
-  RenderSVGRoot {svg} at (10,10) size 185x183
+  RenderSVGRoot {svg} at (10,10) size 242x183
     RenderSVGHiddenContainer {defs} at (0,0) size 0x0
       RenderSVGResourceFilter {filter} [id="over"] [filterUnits=objectBoundingBox] [primitiveUnits=objectBoundingBox]
         [feComposite operation="OVER"]
@@ -27,6 +27,10 @@ layer at (0,0) size 400x400
         [feComposite operation="ARITHMETIC" k1="0.50" k2="0.50" k3="0.50" k4="0.50"]
           [feFlood flood-color="#0000FF" flood-opacity="0.50"]
           [feFlood flood-color="#FF0000" flood-opacity="0.20"]
+      RenderSVGResourceFilter {filter} [id="lighter"] [filterUnits=objectBoundingBox] [primitiveUnits=objectBoundingBox]
+        [feComposite operation="LIGHTER"]
+          [feFlood flood-color="#0000FF" flood-opacity="0.50"]
+          [feFlood flood-color="#FF0000" flood-opacity="0.50"]
     RenderSVGRect {rect} at (10,10) size 50x50 [fill={[type=SOLID] [color=#000000]}] [x=10.00] [y=10.00] [width=50.00] [height=50.00]
       [filter="over"] RenderSVGResourceFilter {filter} at (10,10) size 50x50
     RenderSVGText {text} at (10,76) size 29x17 contains 1 chunk(s)
@@ -57,3 +61,8 @@ layer at (0,0) size 400x400
     RenderSVGText {text} at (130,176) size 65x17 contains 1 chunk(s)
       RenderSVGInlineText {#text} at (0,0) size 65x17
         chunk 1 text run 1 at (130.00,190.00) startOffset 0 endOffset 10 width 64.86: "arithmetic"
+    RenderSVGRect {rect} at (200,110) size 50x50 [fill={[type=SOLID] [color=#000000]}] [x=200.00] [y=110.00] [width=50.00] [height=50.00]
+      [filter="lighter"] RenderSVGResourceFilter {filter} at (200,110) size 50x50
+    RenderSVGText {text} at (210,176) size 42x17 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 42x17
+        chunk 1 text run 1 at (210.00,190.00) startOffset 0 endOffset 7 width 41.77: "lighter"
