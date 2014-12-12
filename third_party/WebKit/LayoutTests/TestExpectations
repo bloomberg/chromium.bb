@@ -1385,3 +1385,6 @@ crbug.com/396013 inspector/console/console-error-on-call-frame.html [ Skip ]
 crbug.com/396013 inspector/sources/debugger/debugger-eval-on-call-frame-inside-iframe.html [ Skip ]
 
 crbug.com/441705 fast/media/media-svg-crash.html [ Pass Failure ]
+
+crbug.com/441736 svg/as-image/svg-invalid-image-1.html [ Pass Failure ]
+
