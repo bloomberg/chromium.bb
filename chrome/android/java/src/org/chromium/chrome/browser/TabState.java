@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import android.os.Handler;
 import android.util.Log;
+import android.util.Pair;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.util.StreamUtil;
@@ -32,6 +33,9 @@ import javax.crypto.CipherOutputStream;
  */
 public class TabState {
     private static final String TAG = "TabState";
+
+    public static final String SAVED_TAB_STATE_FILE_PREFIX = "tab";
+    public static final String SAVED_TAB_STATE_FILE_PREFIX_INCOGNITO = "cryptonito";
 
     /**
      * Version number of the format used to save the WebContents navigation history, as returned by
@@ -240,7 +244,7 @@ public class TabState {
     /**
      * Writes the TabState to disk. This method may be called on either the UI or background thread.
      * @param output Stream to write the tab's state to.
-     * @param state State object obtained from from {@link ChromeTab#getState()}.
+     * @param state State object obtained from from {@link Tab#getState()}.
      * @param encrypted Whether or not the TabState should be encrypted.
      */
     public static void saveState(FileOutputStream output, TabState state, boolean encrypted)
@@ -325,6 +329,40 @@ public class TabState {
      */
     public static ByteBuffer getContentsStateAsByteBuffer(Tab tab) {
         return nativeGetContentsStateAsByteBuffer(tab);
+    }
+
+    /**
+     * Generates the name of the state file that should represent the Tab specified by {@code id}
+     * and {@code encrypted}.
+     * @param id        The id of the {@link Tab} to save.
+     * @param encrypted Whether or not the tab is incognito and should be encrypted.
+     * @return          The name of the file the Tab state should be saved to.
+     */
+    public static String getTabStateFilename(int id, boolean encrypted) {
+        return (encrypted ? SAVED_TAB_STATE_FILE_PREFIX_INCOGNITO : SAVED_TAB_STATE_FILE_PREFIX)
+                + id;
+    }
+
+    /**
+     * Parse the tab id and whether the tab is incognito from the tab state filename.
+     * @param name The given filename for the tab state file.
+     * @return A {@link Pair} with tab id and incognito state read from the filename.
+     */
+    public static Pair<Integer, Boolean> parseInfoFromFilename(String name) {
+        try {
+            if (name.startsWith(SAVED_TAB_STATE_FILE_PREFIX_INCOGNITO)) {
+                int id = Integer.parseInt(
+                        name.substring(SAVED_TAB_STATE_FILE_PREFIX_INCOGNITO.length()));
+                return Pair.create(id, true);
+            } else if (name.startsWith(SAVED_TAB_STATE_FILE_PREFIX)) {
+                int id = Integer.parseInt(
+                        name.substring(SAVED_TAB_STATE_FILE_PREFIX.length()));
+                return Pair.create(id, false);
+            }
+        } catch (NumberFormatException ex) {
+            // Expected for files not related to tab state.
+        }
+        return null;
     }
 
     /**
