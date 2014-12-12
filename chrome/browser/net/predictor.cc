@@ -1166,6 +1166,11 @@ void Predictor::StartSomeQueuedResolutions() {
 
   while (!work_queue_.IsEmpty() &&
          pending_lookups_.size() < max_concurrent_dns_lookups_) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
+    tracked_objects::ScopedTracker tracking_profile1(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "436671 Predictor::StartSomeQueuedResolutions1"));
+
     const GURL url(work_queue_.Pop());
     UrlInfo* info = &results_[url];
     DCHECK(info->HasUrl(url));
@@ -1177,7 +1182,19 @@ void Predictor::StartSomeQueuedResolutions() {
     }
 
     LookupRequest* request = new LookupRequest(this, host_resolver_, url);
+
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "436671 Predictor::StartSomeQueuedResolutions2"));
+
     int status = request->Start();
+
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
+    tracked_objects::ScopedTracker tracking_profile3(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "436671 Predictor::StartSomeQueuedResolutions3"));
+
     if (status == net::ERR_IO_PENDING) {
       // Will complete asynchronously.
       pending_lookups_.insert(request);

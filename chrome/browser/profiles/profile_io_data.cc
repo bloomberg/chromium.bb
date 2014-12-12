@@ -1023,9 +1023,17 @@ void ProfileIOData::Init(
   IOThread::Globals* const io_thread_globals = io_thread->globals();
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("436671 ProfileIOData::Init1"));
+
   // Create the common request contexts.
   main_request_context_.reset(new net::URLRequestContext());
   extensions_request_context_.reset(new net::URLRequestContext());
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("436671 ProfileIOData::Init2"));
 
   scoped_ptr<ChromeNetworkDelegate> network_delegate(
       new ChromeNetworkDelegate(
@@ -1056,6 +1064,10 @@ void ProfileIOData::Init(
       new chrome_browser_net::ChromeFraudulentCertificateReporter(
           main_request_context_.get()));
 
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("436671 ProfileIOData::Init3"));
+
   // NOTE: Proxy service uses the default io thread network delegate, not the
   // delegate just created.
   proxy_service_.reset(
@@ -1073,6 +1085,10 @@ void ProfileIOData::Init(
           profile_params_->path,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
           IsOffTheRecord()));
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
+  tracked_objects::ScopedTracker tracking_profile4(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("436671 ProfileIOData::Init4"));
 
   // Take ownership over these parameters.
   cookie_settings_ = profile_params_->cookie_settings;
@@ -1116,6 +1132,10 @@ void ProfileIOData::Init(
   main_request_context_->set_cert_verifier(
       io_thread_globals->cert_verifier.get());
 #endif
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
+  tracked_objects::ScopedTracker tracking_profile5(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("436671 ProfileIOData::Init5"));
 
   InitializeInternal(
       network_delegate.Pass(), profile_params_.get(),
