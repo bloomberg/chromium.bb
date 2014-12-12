@@ -1133,6 +1133,10 @@ crbug.com/392762 fast/js/nested-object-gc.html [ Pass Crash ]
 
 # Flaky
 crbug.com/395127 http/tests/w3c/webperf/approved/UserTiming/test_user_timing_measure_navigation_timing.htm [ Failure Pass ]
+crbug.com/305036 fast/multicol/span/span-as-immediate-child-generated-content.html [ Failure Pass ]
+crbug.com/305036 fast/multicol/span/span-as-immediate-child-property-removal.html [ Failure Pass ]
+crbug.com/305036 fast/multicol/span/span-as-immediate-columns-child-dynamic.html [ Failure Pass ]
+crbug.com/305036 fast/multicol/span/span-as-immediate-columns-child-removal.html [ Failure Pass ]
 
 crbug.com/396791 [ Debug ] virtual/threaded/printing/print-close-crash.html [ Pass Crash ]
 
