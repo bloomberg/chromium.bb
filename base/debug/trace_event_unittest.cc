@@ -1615,6 +1615,22 @@ TEST_F(TraceEventTestFixture, DisabledCategories) {
     EXPECT_FIND_("disabled-by-default-cc");
     EXPECT_FIND_("other_included");
   }
+
+  Clear();
+
+  BeginSpecificTrace("other_included");
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("cc") ",other_included",
+                       "first", TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("other_included," TRACE_DISABLED_BY_DEFAULT("cc"),
+                       "second", TRACE_EVENT_SCOPE_THREAD);
+  EndTraceAndFlush();
+
+  {
+    const DictionaryValue* item = NULL;
+    ListValue& trace_parsed = trace_parsed_;
+    EXPECT_FIND_("disabled-by-default-cc,other_included");
+    EXPECT_FIND_("other_included,disabled-by-default-cc");
+  }
 }
 
 TEST_F(TraceEventTestFixture, NormallyNoDeepCopy) {

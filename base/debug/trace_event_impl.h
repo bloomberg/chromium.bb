@@ -320,8 +320,8 @@ class BASE_EXPORT CategoryFilter {
   // categories are distinguished from included categories by the prefix '-'.
   std::string ToString() const;
 
-  // Determines whether category group would be enabled or
-  // disabled by this category filter.
+  // Returns true if at least one category in the list is enabled by this
+  // category filter.
   bool IsCategoryGroupEnabled(const char* category_group) const;
 
   // Return a list of the synthetic delays specified in this category filter.
@@ -341,6 +341,9 @@ class BASE_EXPORT CategoryFilter {
  private:
   FRIEND_TEST_ALL_PREFIXES(TraceEventTestFixture, CategoryFilter);
 
+  // Returns true if category is enable according to this filter.
+  bool IsCategoryEnabled(const char* category_name) const;
+
   static bool IsEmptyOrContainsLeadingOrTrailingWhitespace(
       const std::string& str);
 
@@ -350,9 +353,6 @@ class BASE_EXPORT CategoryFilter {
                    bool included) const;
   void WriteString(const StringList& delays, std::string* out) const;
   bool HasIncludedPatterns() const;
-
-  bool DoesCategoryGroupContainCategory(const char* category_group,
-                                        const char* category) const;
 
   StringList included_;
   StringList disabled_;

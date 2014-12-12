@@ -2358,24 +2358,6 @@ bool CategoryFilter::IsEmptyOrContainsLeadingOrTrailingWhitespace(
           str.at(str.length() - 1) == ' ';
 }
 
-bool CategoryFilter::DoesCategoryGroupContainCategory(
-    const char* category_group,
-    const char* category) const {
-  DCHECK(category);
-  CStringTokenizer category_group_tokens(category_group,
-                          category_group + strlen(category_group), ",");
-  while (category_group_tokens.GetNext()) {
-    std::string category_group_token = category_group_tokens.token();
-    // Don't allow empty tokens, nor tokens with leading or trailing space.
-    DCHECK(!CategoryFilter::IsEmptyOrContainsLeadingOrTrailingWhitespace(
-        category_group_token))
-        << "Disallowed category string";
-    if (MatchPattern(category_group_token.c_str(), category))
-      return true;
-  }
-  return false;
-}
-
 CategoryFilter::CategoryFilter(const std::string& filter_string) {
   if (!filter_string.empty())
     Initialize(filter_string);
@@ -2483,30 +2465,61 @@ bool CategoryFilter::IsCategoryGroupEnabled(
     const char* category_group_name) const {
   // TraceLog should call this method only as  part of enabling/disabling
   // categories.
+
+  bool had_enabled_by_default = false;
+  DCHECK(category_group_name);
+  CStringTokenizer category_group_tokens(
+      category_group_name, category_group_name + strlen(category_group_name),
+      ",");
+  while (category_group_tokens.GetNext()) {
+    std::string category_group_token = category_group_tokens.token();
+    // Don't allow empty tokens, nor tokens with leading or trailing space.
+    DCHECK(!CategoryFilter::IsEmptyOrContainsLeadingOrTrailingWhitespace(
+               category_group_token))
+        << "Disallowed category string";
+    if (IsCategoryEnabled(category_group_token.c_str())) {
+      return true;
+    }
+    if (!MatchPattern(category_group_token.c_str(),
+                      TRACE_DISABLED_BY_DEFAULT("*")))
+      had_enabled_by_default = true;
+  }
+  // Do a second pass to check for explicitly disabled categories
+  // (those explicitly enabled have priority due to first pass).
+  category_group_tokens.Reset();
+  while (category_group_tokens.GetNext()) {
+    std::string category_group_token = category_group_tokens.token();
+    for (StringList::const_iterator ci = excluded_.begin();
+         ci != excluded_.end(); ++ci) {
+      if (MatchPattern(category_group_token.c_str(), ci->c_str()))
+        return false;
+    }
+  }
+  // If the category group is not excluded, and there are no included patterns
+  // we consider this category group enabled, as long as it had categories
+  // other than disabled-by-default.
+  return included_.empty() && had_enabled_by_default;
+}
+
+bool CategoryFilter::IsCategoryEnabled(const char* category_name) const {
   StringList::const_iterator ci;
 
   // Check the disabled- filters and the disabled-* wildcard first so that a
   // "*" filter does not include the disabled.
   for (ci = disabled_.begin(); ci != disabled_.end(); ++ci) {
-    if (DoesCategoryGroupContainCategory(category_group_name, ci->c_str()))
+    if (MatchPattern(category_name, ci->c_str()))
       return true;
   }
-  if (DoesCategoryGroupContainCategory(category_group_name,
-                                       TRACE_DISABLED_BY_DEFAULT("*")))
+
+  if (MatchPattern(category_name, TRACE_DISABLED_BY_DEFAULT("*")))
     return false;
 
   for (ci = included_.begin(); ci != included_.end(); ++ci) {
-    if (DoesCategoryGroupContainCategory(category_group_name, ci->c_str()))
+    if (MatchPattern(category_name, ci->c_str()))
       return true;
   }
 
-  for (ci = excluded_.begin(); ci != excluded_.end(); ++ci) {
-    if (DoesCategoryGroupContainCategory(category_group_name, ci->c_str()))
-      return false;
-  }
-  // If the category group is not excluded, and there are no included patterns
-  // we consider this pattern enabled.
-  return included_.empty();
+  return false;
 }
 
 bool CategoryFilter::HasIncludedPatterns() const {
