@@ -218,7 +218,7 @@ TEST_F(PictureLayerTilingIteratorTest, ResizeDeletesTiles) {
 
 TEST_F(PictureLayerTilingIteratorTest, CreateMissingTilesStaysInsideLiveRect) {
   // The tiling has three rows and columns.
-  Initialize(gfx::Size(100, 100), 1, gfx::Size(250, 250));
+  Initialize(gfx::Size(100, 100), 1.f, gfx::Size(250, 250));
   EXPECT_EQ(3, tiling_->TilingDataForTesting().num_tiles_x());
   EXPECT_EQ(3, tiling_->TilingDataForTesting().num_tiles_y());
 
@@ -246,7 +246,7 @@ TEST_F(PictureLayerTilingIteratorTest, CreateMissingTilesStaysInsideLiveRect) {
 
 TEST_F(PictureLayerTilingIteratorTest, ResizeTilingOverTileBorders) {
   // The tiling has four rows and three columns.
-  Initialize(gfx::Size(100, 100), 1, gfx::Size(250, 350));
+  Initialize(gfx::Size(100, 100), 1.f, gfx::Size(250, 350));
   EXPECT_EQ(3, tiling_->TilingDataForTesting().num_tiles_x());
   EXPECT_EQ(4, tiling_->TilingDataForTesting().num_tiles_y());
 
@@ -306,7 +306,7 @@ TEST_F(PictureLayerTilingIteratorTest, ResizeTilingOverTileBorders) {
 
 TEST_F(PictureLayerTilingIteratorTest, ResizeLiveTileRectOverTileBorders) {
   // The tiling has three rows and columns.
-  Initialize(gfx::Size(100, 100), 1, gfx::Size(250, 350));
+  Initialize(gfx::Size(100, 100), 1.f, gfx::Size(250, 350));
   EXPECT_EQ(3, tiling_->TilingDataForTesting().num_tiles_x());
   EXPECT_EQ(4, tiling_->TilingDataForTesting().num_tiles_y());
 
@@ -371,7 +371,7 @@ TEST_F(PictureLayerTilingIteratorTest, ResizeLiveTileRectOverTileBorders) {
 
 TEST_F(PictureLayerTilingIteratorTest, ResizeLiveTileRectOverSameTiles) {
   // The tiling has four rows and three columns.
-  Initialize(gfx::Size(100, 100), 1, gfx::Size(250, 350));
+  Initialize(gfx::Size(100, 100), 1.f, gfx::Size(250, 350));
   EXPECT_EQ(3, tiling_->TilingDataForTesting().num_tiles_x());
   EXPECT_EQ(4, tiling_->TilingDataForTesting().num_tiles_y());
 
@@ -431,7 +431,7 @@ TEST_F(PictureLayerTilingIteratorTest, ResizeOverBorderPixelsDeletesTiles) {
 }
 
 TEST_F(PictureLayerTilingIteratorTest, LiveTilesExactlyCoverLiveTileRect) {
-  Initialize(gfx::Size(100, 100), 1, gfx::Size(1099, 801));
+  Initialize(gfx::Size(100, 100), 1.f, gfx::Size(1099, 801));
   SetLiveRectAndVerifyTiles(gfx::Rect(100, 100));
   SetLiveRectAndVerifyTiles(gfx::Rect(101, 99));
   SetLiveRectAndVerifyTiles(gfx::Rect(1099, 1));
@@ -441,13 +441,13 @@ TEST_F(PictureLayerTilingIteratorTest, LiveTilesExactlyCoverLiveTileRect) {
 }
 
 TEST_F(PictureLayerTilingIteratorTest, IteratorCoversLayerBoundsNoScale) {
-  Initialize(gfx::Size(100, 100), 1, gfx::Size(1099, 801));
+  Initialize(gfx::Size(100, 100), 1.f, gfx::Size(1099, 801));
   VerifyTilesExactlyCoverRect(1, gfx::Rect());
   VerifyTilesExactlyCoverRect(1, gfx::Rect(0, 0, 1099, 801));
   VerifyTilesExactlyCoverRect(1, gfx::Rect(52, 83, 789, 412));
 
   // With borders, a size of 3x3 = 1 pixel of content.
-  Initialize(gfx::Size(3, 3), 1, gfx::Size(10, 10));
+  Initialize(gfx::Size(3, 3), 1.f, gfx::Size(10, 10));
   VerifyTilesExactlyCoverRect(1, gfx::Rect(0, 0, 1, 1));
   VerifyTilesExactlyCoverRect(1, gfx::Rect(0, 0, 2, 2));
   VerifyTilesExactlyCoverRect(1, gfx::Rect(1, 1, 2, 2));
@@ -2065,7 +2065,7 @@ TEST(PictureLayerTilingTest, RecycledTilesClearedOnReset) {
 
 TEST_F(PictureLayerTilingIteratorTest, ResizeTilesAndUpdateToCurrent) {
   // The tiling has four rows and three columns.
-  Initialize(gfx::Size(150, 100), 1, gfx::Size(250, 150));
+  Initialize(gfx::Size(150, 100), 1.f, gfx::Size(250, 150));
   tiling_->CreateAllTilesForTesting();
   EXPECT_EQ(150, tiling_->TilingDataForTesting().max_texture_size().width());
   EXPECT_EQ(100, tiling_->TilingDataForTesting().max_texture_size().height());
