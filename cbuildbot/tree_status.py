@@ -383,4 +383,3 @@ def ConstructDashboardURL(waterfall, builder_name, build_number, stage=None):
     url_suffix += '/steps/%s/logs/stdio' % (stage,)
   url_suffix = urllib.quote(url_suffix)
   return os.path.join(build_dashboard, url_suffix)
-

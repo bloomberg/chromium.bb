@@ -658,9 +658,11 @@ class _BuilderRunBase(object):
     """Gets the waterfall of the current build."""
     # Metadata dictionary may not have been written at this time (it
     # should be written in the BuildStartStage), fall back to get the
-    # environment variable in that case.
+    # environment variable in that case. Assume we are on the trybot
+    # waterfall no waterfall can be found.
     return (self.attrs.metadata.GetDict().get('buildbot-master-name') or
-            os.environ.get('BUILDBOT_MASTERNAME', ''))
+            os.environ.get('BUILDBOT_MASTERNAME') or
+            constants.WATERFALL_TRYBOT)
 
   def ConstructDashboardURL(self, stage=None):
     """Return the dashboard URL
