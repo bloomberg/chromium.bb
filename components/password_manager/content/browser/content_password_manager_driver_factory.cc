@@ -101,6 +101,14 @@ void ContentPasswordManagerDriverFactory::DidNavigateAnyFrame(
     content::RenderFrameHost* render_frame_host,
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
+  // This shouldn't happen, but is causing a lot of crashes.
+  // See http://crbug.com/438951
+  if (frame_driver_map_.find(render_frame_host) == frame_driver_map_.end()) {
+    LOG(ERROR) << "Could not find ContentPasswordManagerDriver for frame " <<
+        render_frame_host;
+    return;
+  }
+
   frame_driver_map_[render_frame_host]->DidNavigateFrame(details, params);
 }
 

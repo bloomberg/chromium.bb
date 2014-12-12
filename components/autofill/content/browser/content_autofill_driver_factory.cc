@@ -90,6 +90,14 @@ void ContentAutofillDriverFactory::RenderFrameDeleted(
 void ContentAutofillDriverFactory::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
+  // This shouldn't happen, but is causing a lot of crashes.
+  // See http://crbug.com/438951
+  if (frame_driver_map_.find(web_contents()->GetMainFrame()) ==
+          frame_driver_map_.end()) {
+    LOG(ERROR) << "Could not find ContentAutofillDriver for main frame";
+    return;
+  }
+
   frame_driver_map_[web_contents()->GetMainFrame()]->DidNavigateFrame(details,
                                                                       params);
 }
