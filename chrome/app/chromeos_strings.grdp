@@ -2775,7 +2775,7 @@ Press any key to continue exploring.
     Enable
   </message>
   <message name="IDS_ENABLE_DEBUGGING_SETUP_MESSAGE" desc="Setup message in dialog for enabling debugging features.">
-   You are enabling Chrome OS debugging features which will setup sshd daemon and enable booting from USB drives.
+   You are enabling Chrome OS debugging features which will set up sshd daemon and enable booting from USB drives.
   </message>
   <message name="IDS_ENABLE_DEBUGGING_DONE_MESSAGE" desc="Completion message in dialog for enabling debugging features.">
     You have successfully enabled debugging features on this <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device.
