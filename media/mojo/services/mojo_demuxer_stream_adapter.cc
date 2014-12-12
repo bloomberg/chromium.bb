@@ -133,7 +133,8 @@ void MojoDemuxerStreamAdapter::OnBufferReady(
       if (video_config_queue_.empty())
         return;
     }
-  } else if (status == mojo::DemuxerStream::STATUS_OK) {
+  } else if (status == mojo::DemuxerStream::STATUS_OK &&
+             !media_buffer->end_of_stream()) {
     DCHECK_GT(media_buffer->data_size(), 0);
 
     // Read the inner data for the DecoderBuffer from our DataPipe.

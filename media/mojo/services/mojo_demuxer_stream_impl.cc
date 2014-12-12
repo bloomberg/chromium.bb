@@ -46,12 +46,14 @@ void MojoDemuxerStreamImpl::OnBufferReady(
     }
   }
 
-  // Serialize the data section of the DecoderBuffer into our pipe.
-  uint32_t num_bytes = buffer->data_size();
-  CHECK_EQ(WriteDataRaw(stream_pipe_.get(), buffer->data(), &num_bytes,
-                        MOJO_READ_DATA_FLAG_ALL_OR_NONE),
-           MOJO_RESULT_OK);
-  CHECK_EQ(num_bytes, static_cast<uint32_t>(buffer->data_size()));
+  if (!buffer->end_of_stream()) {
+    // Serialize the data section of the DecoderBuffer into our pipe.
+    uint32_t num_bytes = buffer->data_size();
+    CHECK_EQ(WriteDataRaw(stream_pipe_.get(), buffer->data(), &num_bytes,
+                          MOJO_READ_DATA_FLAG_ALL_OR_NONE),
+             MOJO_RESULT_OK);
+    CHECK_EQ(num_bytes, static_cast<uint32_t>(buffer->data_size()));
+  }
 
   // TODO(dalecurtis): Once we can write framed data to the DataPipe, fill via
   // the producer handle and then read more to keep the pipe full.  Waiting for
