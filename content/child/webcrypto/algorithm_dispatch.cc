@@ -58,18 +58,7 @@ Status ExportKeyDontCheckExtractability(blink::WebCryptoKeyFormat format,
   if (status.IsError())
     return status;
 
-  switch (format) {
-    case blink::WebCryptoKeyFormatRaw:
-      return impl->ExportKeyRaw(key, buffer);
-    case blink::WebCryptoKeyFormatSpki:
-      return impl->ExportKeySpki(key, buffer);
-    case blink::WebCryptoKeyFormatPkcs8:
-      return impl->ExportKeyPkcs8(key, buffer);
-    case blink::WebCryptoKeyFormatJwk:
-      return impl->ExportKeyJwk(key, buffer);
-    default:
-      return Status::ErrorUnsupported();
-  }
+  return impl->ExportKey(format, key, buffer);
 }
 
 }  // namespace
@@ -148,19 +137,7 @@ Status ImportKey(blink::WebCryptoKeyFormat format,
   if (status.IsError())
     return status;
 
-  switch (format) {
-    case blink::WebCryptoKeyFormatRaw:
-      return impl->ImportKeyRaw(key_data, algorithm, extractable, usages, key);
-    case blink::WebCryptoKeyFormatSpki:
-      return impl->ImportKeySpki(key_data, algorithm, extractable, usages, key);
-    case blink::WebCryptoKeyFormatPkcs8:
-      return impl->ImportKeyPkcs8(key_data, algorithm, extractable, usages,
-                                  key);
-    case blink::WebCryptoKeyFormatJwk:
-      return impl->ImportKeyJwk(key_data, algorithm, extractable, usages, key);
-    default:
-      return Status::ErrorUnsupported();
-  }
+  return impl->ImportKey(format, key_data, algorithm, extractable, usages, key);
 }
 
 Status ExportKey(blink::WebCryptoKeyFormat format,
