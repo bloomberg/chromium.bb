@@ -7,7 +7,7 @@
 #include "ash/ash_constants.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/canvas.h"
+#include "ui/views/background.h"
 #include "ui/views/painter.h"
 
 namespace ash {
@@ -53,15 +53,13 @@ gfx::Size TrayPopupHeaderButton::GetPreferredSize() const {
   return gfx::Size(ash::kTrayPopupItemHeight, ash::kTrayPopupItemHeight);
 }
 
-void TrayPopupHeaderButton::OnPaintBorder(gfx::Canvas* canvas) {
-  // Just the left border.
-  const int kBorderHeight = 25;
-  int padding = (height() - kBorderHeight) / 2;
-  canvas->FillRect(gfx::Rect(0, padding, 1, height() - padding * 2),
-      ash::kBorderDarkColor);
-}
-
 void TrayPopupHeaderButton::StateChanged() {
+  if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
+    set_background(views::Background::CreateSolidBackground(
+        kTrayPopupHoverBackgroundColor));
+  } else {
+    set_background(nullptr);
+  }
   SchedulePaint();
 }
 

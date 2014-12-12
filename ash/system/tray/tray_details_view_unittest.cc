@@ -12,13 +12,15 @@
 #include "ash/system/tray/special_popup_row.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_item.h"
-#include "ash/system/tray/tray_details_view.h"
+#include "ash/system/tray/tray_popup_header_button.h"
 #include "ash/system/tray/view_click_listener.h"
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
+#include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -32,24 +34,42 @@ SystemTray* GetSystemTray() {
       status_area_widget()->system_tray();
 }
 
-class TestDetailsView : public TrayDetailsView, public ViewClickListener {
+class TestDetailsView : public TrayDetailsView,
+                        public ViewClickListener,
+                        public views::ButtonListener {
  public:
   explicit TestDetailsView(SystemTrayItem* owner) : TrayDetailsView(owner) {
     // Uses bluetooth label for testing purpose. It can be changed to any
     // string_id.
     CreateSpecialRow(IDS_ASH_STATUS_TRAY_BLUETOOTH, this);
+    tray_popup_header_button_ =
+        new TrayPopupHeaderButton(this, IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED,
+                                  IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED,
+                                  IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED_HOVER,
+                                  IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED_HOVER,
+                                  IDS_ASH_STATUS_TRAY_BLUETOOTH);
+    footer()->AddButton(tray_popup_header_button_);
   }
 
   ~TestDetailsView() override {}
+
+  TrayPopupHeaderButton* tray_popup_header_button() {
+    return tray_popup_header_button_;
+  }
 
   void FocusFooter() {
     footer()->content()->RequestFocus();
   }
 
-  // Overridden from ViewClickListener:
+  // ViewClickListener:
   void OnViewClicked(views::View* sender) override {}
 
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override {}
+
  private:
+  TrayPopupHeaderButton* tray_popup_header_button_;
+
   DISALLOW_COPY_AND_ASSIGN(TestDetailsView);
 };
 
@@ -106,6 +126,18 @@ class TrayDetailsViewTest : public AshTestBase {
 
     return static_cast<HoverHighlightView*>(test_item->detailed_view()->
         footer()->content());
+  }
+
+  TrayPopupHeaderButton* CreateAndShowTrayPopupHeaderButton() {
+    SystemTray* tray = GetSystemTray();
+    TestItem* test_item = new TestItem;
+    tray->AddTrayItem(test_item);
+    tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+    RunAllPendingInMessageLoop();
+    tray->ShowDetailedView(test_item, 0, true, BUBBLE_USE_EXISTING);
+    RunAllPendingInMessageLoop();
+
+    return test_item->detailed_view()->tray_popup_header_button();
   }
 
  private:
@@ -198,6 +230,61 @@ TEST_F(TrayDetailsViewTest, HoverHighlightViewTouchFeedbackCancellation) {
   generator.ReleaseTouch();
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(view->hover());
+}
+
+// Tests that TrayPopupHeaderButton renders a background in response to touch.
+TEST_F(TrayDetailsViewTest, TrayPopupHeaderButtonTouchFeedback) {
+  TrayPopupHeaderButton* button = CreateAndShowTrayPopupHeaderButton();
+  EXPECT_FALSE(button->background());
+
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  generator.set_current_location(button->GetBoundsInScreen().CenterPoint());
+  generator.PressTouch();
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(button->background());
+
+  generator.ReleaseTouch();
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(button->background());
+}
+
+// Tests that touch events leaving TrayPopupHeaderButton cancel the touch
+// feedback background.
+TEST_F(TrayDetailsViewTest, TrayPopupHeaderButtonTouchFeedbackCancellation) {
+  TrayPopupHeaderButton* button = CreateAndShowTrayPopupHeaderButton();
+  EXPECT_FALSE(button->background());
+
+  gfx::Rect view_bounds = button->GetBoundsInScreen();
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  generator.set_current_location(view_bounds.CenterPoint());
+  generator.PressTouch();
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(button->background());
+
+  gfx::Point move_point(view_bounds.x(), view_bounds.CenterPoint().y());
+  generator.MoveTouch(move_point);
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(button->background());
+
+  generator.set_current_location(move_point);
+  generator.ReleaseTouch();
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(button->background());
+}
+
+// Tests that a mouse entering TrayPopupHeaderButton renders a background as
+// visual feedback.
+TEST_F(TrayDetailsViewTest, TrayPopupHeaderButtonMouseHoverFeedback) {
+  TrayPopupHeaderButton* button = CreateAndShowTrayPopupHeaderButton();
+  EXPECT_FALSE(button->background());
+
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  gfx::Rect bounds = button->GetBoundsInScreen();
+  gfx::Point initial_point(bounds.x() - 1, bounds.y());
+  generator.set_current_location(initial_point);
+  generator.MoveMouseBy(1, 0);
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(button->background());
 }
 
 }  // namespace test

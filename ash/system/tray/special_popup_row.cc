@@ -12,9 +12,11 @@
 #include "grit/ash_strings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/painter.h"
 
@@ -22,15 +24,16 @@ namespace ash {
 namespace {
 
 const int kIconPaddingLeft = 5;
+const int kSeparatorInset = 10;
 const int kSpecialPopupRowHeight = 55;
 const int kBorderHeight = 1;
 const SkColor kBorderColor = SkColorSetRGB(0xaa, 0xaa, 0xaa);
 
 views::View* CreatePopupHeaderButtonsContainer() {
   views::View* view = new views::View;
-  view->SetLayoutManager(new
-      views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, -1));
-  view->SetBorder(views::Border::CreateEmptyBorder(0, 0, 0, 5));
+  view->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
+  view->SetBorder(views::Border::CreateEmptyBorder(4, 0, 4, 5));
   return view;
 }
 
@@ -85,6 +88,12 @@ void SpecialPopupRow::AddButton(TrayPopupHeaderButton* button) {
     button_container_ = CreatePopupHeaderButtonsContainer();
     AddChildView(button_container_);
   }
+  views::Separator* separator =
+      new views::Separator(views::Separator::VERTICAL);
+  separator->SetColor(ash::kBorderDarkColor);
+  separator->SetBorder(
+      views::Border::CreateEmptyBorder(kSeparatorInset, 0, kSeparatorInset, 0));
+  button_container_->AddChildView(separator);
   button_container_->AddChildView(button);
 }
 
