@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_URL_COLLECTION_EXPERIMENT_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_URL_COLLECTION_EXPERIMENT_H_
 
+#include "base/time/time.h"
+
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -18,17 +20,31 @@ namespace urls_collection_experiment {
 
 void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry);
 
+// Implements an algorithm determining when the period starts, in which "Allow
+// to collect URL?" bubble can be shown.
+base::Time DetermineStartOfActivityPeriod(PrefService* prefs,
+                                          int experiment_length_in_days);
 // Based on |prefs| and experiment settings, decides whether to show the
 // "Allow to collect URL?" bubble and should be called before showing it.
 // The default value is false.
 bool ShouldShowBubble(PrefService* prefs);
-
 // Should be called when user dismisses the "Allow to collect URL?" bubble.
 // It stores the statistics about interactions with the bubble in |prefs|.
 void RecordBubbleClosed(PrefService* prefs);
 
 // The name of the finch experiment controlling the algorithm.
 extern const char kExperimentName[];
+
+// The name of the experiment parameter, value of which determines determines
+// how long the experiment is active.
+extern const char kParamExperimentLengthInDays[];
+
+// The bubble is shown only once and only within a certain period. The length of
+// the period is the value of the experiment parameter |kParamTimePeriodInDays|.
+extern const char kParamActivePeriodInDays[];
+/// The name of the experiment parameter, value of which defines whether
+// the bubble should appear or not.
+extern const char kParamBubbleStatus[];
 
 }  // namespace urls_collection_experiment
 }  // namespace password_manager

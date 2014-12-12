@@ -135,6 +135,7 @@ bool ChromePasswordManagerClient::IsPasswordManagerEnabledForCurrentPage()
 
 bool ChromePasswordManagerClient::ShouldAskUserToSubmitURL(const GURL& url) {
   return url.is_valid() && !url.is_empty() && url.has_host() &&
+         password_manager_.IsSavingEnabledForCurrentPage() &&
          password_manager::urls_collection_experiment::ShouldShowBubble(
              GetPrefs());
 }

@@ -43,10 +43,14 @@ const char kPasswordManagerGroupsForDomains[] =
 const char kLocalProfileId[] = "profile.local_profile_id";
 #endif
 
-// Boolean that indicates whether "Allow to collect URL?" bubble was shown or
-// not.
-const char kWasAllowToCollectURLBubbleShown[] =
+// The value of this parameter is boolean that indicates whether
+// "Allow to collect URL?" bubble was shown or not.
+const char kAllowToCollectURLBubbleWasShown[] =
     "password_manager_url_collection_bubble.appearance_flag";
+// The value of this parameter is used to calculate the start day of the
+// period, in which the "Allow to collect URL?" bubble can be shown.
+const char kAllowToCollectURLBubbleActivePeriodStartFactor[] =
+    "password_manager_url_collection_bubble.active_period_start_id";
 }  // namespace prefs
 
 }  // namespace password_manager
