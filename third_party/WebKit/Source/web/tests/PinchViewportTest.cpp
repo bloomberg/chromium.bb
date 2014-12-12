@@ -1043,6 +1043,7 @@ TEST_F(PinchViewportTest, TestScrollingDocumentRegionIntoView)
     EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 10), pinchViewport.visibleRect().location());
 }
 
+#if OS(ANDROID)
 static IntPoint expectedMaxFrameViewScrollOffset(PinchViewport& pinchViewport, FrameView& frameView)
 {
     float aspectRatio = pinchViewport.visibleRect().width() / pinchViewport.visibleRect().height();
@@ -1199,25 +1200,6 @@ TEST_F(PinchViewportTest, TestTopControlsAdjustmentAndResize)
     EXPECT_POINT_EQ(pinchViewportExpected, pinchViewport.location());
 }
 
-// Tests that the layout viewport's scroll layer bounds are updated in a compositing
-// change update. crbug.com/423188.
-TEST_F(PinchViewportTest, TestChangingContentSizeAffectsScrollBounds)
-{
-    initializeWithAndroidSettings();
-    webViewImpl()->resize(IntSize(100, 150));
-
-    registerMockedHttpURLLoad("content-width-1000.html");
-    navigateTo(m_baseURL + "content-width-1000.html");
-
-    FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
-    WebLayer* scrollLayer = frameView.layerForScrolling()->platformLayer();
-
-    frameView.setContentsSize(IntSize(1500, 2400));
-    frameView.updateLayoutAndStyleForPainting();
-
-    EXPECT_SIZE_EQ(IntSize(1500, 2400), IntSize(scrollLayer->bounds()));
-}
-
 // Tests that a resize due to top controls hiding doesn't incorrectly clamp the
 // main frame's scroll offset. crbug.com/428193.
 TEST_F(PinchViewportTest, TestTopControlHidingResizeDoesntClampMainFrame)
@@ -1242,6 +1224,26 @@ TEST_F(PinchViewportTest, TestTopControlHidingResizeDoesntClampMainFrame)
     webViewImpl()->setTopControlsLayoutHeight(0);
     webViewImpl()->resize(IntSize(1000, 1500));
     EXPECT_EQ(500, frameView.scrollPositionDouble().y());
+}
+#endif
+
+// Tests that the layout viewport's scroll layer bounds are updated in a compositing
+// change update. crbug.com/423188.
+TEST_F(PinchViewportTest, TestChangingContentSizeAffectsScrollBounds)
+{
+    initializeWithAndroidSettings();
+    webViewImpl()->resize(IntSize(100, 150));
+
+    registerMockedHttpURLLoad("content-width-1000.html");
+    navigateTo(m_baseURL + "content-width-1000.html");
+
+    FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
+    WebLayer* scrollLayer = frameView.layerForScrolling()->platformLayer();
+
+    frameView.setContentsSize(IntSize(1500, 2400));
+    frameView.updateLayoutAndStyleForPainting();
+
+    EXPECT_SIZE_EQ(IntSize(1500, 2400), IntSize(scrollLayer->bounds()));
 }
 
 // Tests that resizing the pinch viepwort keeps its bounds within the outer
