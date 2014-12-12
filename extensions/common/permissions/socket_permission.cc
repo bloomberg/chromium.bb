@@ -21,18 +21,34 @@ SocketPermission::SocketPermission(const APIPermissionInfo* info)
 
 SocketPermission::~SocketPermission() {}
 
-PermissionMessages SocketPermission::GetMessages() const {
-  DCHECK(HasMessages());
-  PermissionMessages result;
-  if (!AddAnyHostMessage(result)) {
-    AddSpecificHostMessage(result);
-    AddSubdomainHostMessage(result);
-  }
-  AddNetworkListMessage(result);
-  return result;
+PermissionIDSet SocketPermission::GetPermissions() const {
+  PermissionMessages messages;
+  PermissionIDSet ids;
+  AddAllHostMessages(messages, ids);
+  return ids;
 }
 
-bool SocketPermission::AddAnyHostMessage(PermissionMessages& messages) const {
+PermissionMessages SocketPermission::GetMessages() const {
+  DCHECK(HasMessages());
+  PermissionMessages messages;
+  PermissionIDSet ids;
+  AddAllHostMessages(messages, ids);
+  return messages;
+}
+
+void SocketPermission::AddAllHostMessages(PermissionMessages& messages,
+                                          PermissionIDSet& ids) const {
+  // TODO(rpaquay): This function and callees is (almost) a copy/paste from
+  // extensions::SocketsManifestPermission.
+  if (!AddAnyHostMessage(messages, ids)) {
+    AddSpecificHostMessage(messages, ids);
+    AddSubdomainHostMessage(messages, ids);
+  }
+  AddNetworkListMessage(messages, ids);
+}
+
+bool SocketPermission::AddAnyHostMessage(PermissionMessages& messages,
+                                         PermissionIDSet& ids) const {
   std::set<SocketPermissionData>::const_iterator i;
   for (i = data_set_.begin(); i != data_set_.end(); ++i) {
     if (i->entry().IsAddressBoundType() &&
@@ -41,14 +57,15 @@ bool SocketPermission::AddAnyHostMessage(PermissionMessages& messages) const {
           PermissionMessage(PermissionMessage::kSocketAnyHost,
                             l10n_util::GetStringUTF16(
                                 IDS_EXTENSION_PROMPT_WARNING_SOCKET_ANY_HOST)));
+      ids.insert(APIPermission::kSocketAnyHost);
       return true;
     }
   }
   return false;
 }
 
-void SocketPermission::AddSubdomainHostMessage(
-    PermissionMessages& messages) const {
+void SocketPermission::AddSubdomainHostMessage(PermissionMessages& messages,
+                                               PermissionIDSet& ids) const {
   std::set<base::string16> domains;
   std::set<SocketPermissionData>::const_iterator i;
   for (i = data_set_.begin(); i != data_set_.end(); ++i) {
@@ -66,11 +83,13 @@ void SocketPermission::AddSubdomainHostMessage(
             JoinString(
                 std::vector<base::string16>(domains.begin(), domains.end()),
                 ' '))));
+    for (const auto& domain : domains)
+      ids.insert(APIPermission::kSocketDomainHosts, domain);
   }
 }
 
-void SocketPermission::AddSpecificHostMessage(
-    PermissionMessages& messages) const {
+void SocketPermission::AddSpecificHostMessage(PermissionMessages& messages,
+                                              PermissionIDSet& ids) const {
   std::set<base::string16> hostnames;
   std::set<SocketPermissionData>::const_iterator i;
   for (i = data_set_.begin(); i != data_set_.end(); ++i) {
@@ -88,11 +107,13 @@ void SocketPermission::AddSpecificHostMessage(
             JoinString(
                 std::vector<base::string16>(hostnames.begin(), hostnames.end()),
                 ' '))));
+    for (const auto& hostname : hostnames)
+      ids.insert(APIPermission::kSocketSpecificHosts, hostname);
   }
 }
 
-void SocketPermission::AddNetworkListMessage(
-    PermissionMessages& messages) const {
+void SocketPermission::AddNetworkListMessage(PermissionMessages& messages,
+                                             PermissionIDSet& ids) const {
   std::set<SocketPermissionData>::const_iterator i;
   for (i = data_set_.begin(); i != data_set_.end(); ++i) {
     if (i->entry().pattern().type ==
@@ -101,6 +122,7 @@ void SocketPermission::AddNetworkListMessage(
           PermissionMessage(PermissionMessage::kNetworkState,
                             l10n_util::GetStringUTF16(
                                 IDS_EXTENSION_PROMPT_WARNING_NETWORK_STATE)));
+      ids.insert(APIPermission::kNetworkState);
     }
   }
 }

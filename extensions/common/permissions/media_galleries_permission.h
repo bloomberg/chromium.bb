@@ -43,6 +43,7 @@ class MediaGalleriesPermission
                  std::vector<std::string>* unhandled_permissions) override;
 
   // APIPermission overrides.
+  PermissionIDSet GetPermissions() const override;
   PermissionMessages GetMessages() const override;
 
   // Permission strings.

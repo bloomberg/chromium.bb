@@ -20,6 +20,7 @@ class SettingsOverrideAPIPermission : public APIPermission {
   ~SettingsOverrideAPIPermission() override;
 
   // APIPermission overrides.
+  PermissionIDSet GetPermissions() const override;
   bool HasMessages() const override;
   PermissionMessages GetMessages() const override;
   bool Check(const APIPermission::CheckParam* param) const override;

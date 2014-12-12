@@ -589,9 +589,10 @@ TEST_F(PermissionMessageCombinationsUnittest, HostsPermissionMessages) {
   ASSERT_TRUE(CheckManifestProducesHostPermissions());
 }
 
-// Check that permission messages are generated correctly for the sockets
-// permission, which has host-like permission messages.
-TEST_F(PermissionMessageCombinationsUnittest, SocketsPermissionMessages) {
+// Check that permission messages are generated correctly for
+// SocketsManifestPermission, which has host-like permission messages.
+TEST_F(PermissionMessageCombinationsUnittest,
+       SocketsManifestPermissionMessages) {
   CreateAndInstall(
       "{"
       "  'app': {"
@@ -754,6 +755,311 @@ TEST_F(PermissionMessageCombinationsUnittest, SocketsPermissionMessages) {
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Exchange data with any computer on the local network or internet"));
   ASSERT_TRUE(CheckManifestProducesHostPermissions());
+}
+
+// Check that permission messages are generated correctly for
+// MediaGalleriesPermission (an API permission with custom messages).
+TEST_F(PermissionMessageCombinationsUnittest,
+       MediaGalleriesPermissionMessages) {
+  CreateAndInstall(
+      "{"
+      "  'app': {"
+      "    'background': {"
+      "      'scripts': ['background.js']"
+      "    }"
+      "  },"
+      "  'permissions': ["
+      "    { 'mediaGalleries': ['read'] }"
+      "  ]"
+      "}");
+  ASSERT_TRUE(CheckManifestProducesPermissions());
+  ASSERT_TRUE(CheckManifestProducesHostPermissions());
+
+  CreateAndInstall(
+      "{"
+      "  'app': {"
+      "    'background': {"
+      "      'scripts': ['background.js']"
+      "    }"
+      "  },"
+      "  'permissions': ["
+      "    { 'mediaGalleries': ['read', 'allAutoDetected'] }"
+      "  ]"
+      "}");
+  ASSERT_TRUE(CheckManifestProducesPermissions(
+      "Access photos, music, and other media from your computer"));
+  ASSERT_TRUE(CheckManifestProducesHostPermissions());
+
+  // TODO(sashab): Add a test for the
+  // IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_WRITE message (generated
+  // with the 'read' and 'copyTo' permissions, but not the 'delete' permission),
+  // if it's possible to get this message. Otherwise, remove it from the code.
+
+  CreateAndInstall(
+      "{"
+      "  'app': {"
+      "    'background': {"
+      "      'scripts': ['background.js']"
+      "    }"
+      "  },"
+      "  'permissions': ["
+      "    { 'mediaGalleries': ['read', 'delete', 'allAutoDetected'] }"
+      "  ]"
+      "}");
+  ASSERT_TRUE(CheckManifestProducesPermissions(
+      "Read and delete photos, music, and other media from your computer"));
+  ASSERT_TRUE(CheckManifestProducesHostPermissions());
+
+  CreateAndInstall(
+      "{"
+      "  'app': {"
+      "    'background': {"
+      "      'scripts': ['background.js']"
+      "    }"
+      "  },"
+      "  'permissions': ["
+      "    { 'mediaGalleries':"
+      "      [ 'read', 'delete', 'copyTo', 'allAutoDetected' ] }"
+      "  ]"
+      "}");
+  ASSERT_TRUE(CheckManifestProducesPermissions(
+      "Read, change and delete photos, music, and other media from your "
+      "computer"));
+  ASSERT_TRUE(CheckManifestProducesHostPermissions());
+
+  // Without the allAutoDetected permission, there should be no install-time
+  // permission messages.
+  CreateAndInstall(
+      "{"
+      "  'app': {"
+      "    'background': {"
+      "      'scripts': ['background.js']"
+      "    }"
+      "  },"
+      "  'permissions': ["
+      "    { 'mediaGalleries': ['read', 'delete', 'copyTo'] }"
+      "  ]"
+      "}");
+  ASSERT_TRUE(CheckManifestProducesPermissions());
+  ASSERT_TRUE(CheckManifestProducesHostPermissions());
+}
+
+// TODO(sashab): Add tests for SettingsOverrideAPIPermission (an API permission
+// with custom messages).
+
+// Check that permission messages are generated correctly for SocketPermission
+// (an API permission with custom messages).
+TEST_F(PermissionMessageCombinationsUnittest, SocketPermissionMessages) {
+  CreateAndInstall(
+      "{"
+      "  'app': {"
+      "    'background': {"
+      "      'scripts': ['background.js']"
+      "    }"
+      "  },"
+      "  'permissions': ["
+      "    { 'socket': ['tcp-connect:*:*'] }"
+      "  ]"
+      "}");
+  ASSERT_TRUE(CheckManifestProducesPermissions(
+      "Exchange data with any computer on the local network or internet"));
+  ASSERT_TRUE(CheckManifestProducesHostPermissions());
+
+  CreateAndInstall(
+      "{"
+      "  'app': {"
+      "    'background': {"
+      "      'scripts': ['background.js']"
+      "    }"
+      "  },"
+      "  'permissions': ["
+      "    { 'socket': ["
+      "      'tcp-connect:*:443',"
+      "      'tcp-connect:*:50032',"
+      "      'tcp-connect:*:23',"
+      "    ] }"
+      "  ]"
+      "}");
+  ASSERT_TRUE(CheckManifestProducesPermissions(
+      "Exchange data with any computer on the local network or internet"));
+  ASSERT_TRUE(CheckManifestProducesHostPermissions());
+
+  CreateAndInstall(
+      "{"
+      "  'app': {"
+      "    'background': {"
+      "      'scripts': ['background.js']"
+      "    }"
+      "  },"
+      "  'permissions': ["
+      "    { 'socket': ['tcp-connect:foo.example.com:443'] }"
+      "  ]"
+      "}");
+  ASSERT_TRUE(CheckManifestProducesPermissions(
+      "Exchange data with the computer named foo.example.com"));
+  ASSERT_TRUE(CheckManifestProducesHostPermissions());
+
+  CreateAndInstall(
+      "{"
+      "  'app': {"
+      "    'background': {"
+      "      'scripts': ['background.js']"
+      "    }"
+      "  },"
+      "  'permissions': ["
+      "    { 'socket': ['tcp-connect:foo.example.com:443', 'udp-send-to'] }"
+      "  ]"
+      "}");
+  ASSERT_TRUE(CheckManifestProducesPermissions(
+      "Exchange data with any computer on the local network or internet"));
+  ASSERT_TRUE(CheckManifestProducesHostPermissions());
+
+  CreateAndInstall(
+      "{"
+      "  'app': {"
+      "    'background': {"
+      "      'scripts': ['background.js']"
+      "    }"
+      "  },"
+      "  'permissions': ["
+      "    { 'socket': ["
+      "      'tcp-connect:foo.example.com:443',"
+      "      'udp-send-to:test.ping.com:50032',"
+      "    ] }"
+      "  ]"
+      "}");
+  ASSERT_TRUE(CheckManifestProducesPermissions(
+      "Exchange data with the computers named: foo.example.com test.ping.com"));
+  ASSERT_TRUE(CheckManifestProducesHostPermissions());
+
+  CreateAndInstall(
+      "{"
+      "  'app': {"
+      "    'background': {"
+      "      'scripts': ['background.js']"
+      "    }"
+      "  },"
+      "  'permissions': ["
+      "    { 'socket': ["
+      "      'tcp-connect:foo.example.com:443',"
+      "      'udp-send-to:test.ping.com:50032',"
+      "      'udp-send-to:www.ping.com:50032',"
+      "      'udp-send-to:test2.ping.com:50032',"
+      "      'udp-bind:test.ping.com:50032',"
+      "      'udp-listen:other.ping.com:50032',"
+      "      'udp-listen:www.google.com:50032',"
+      "    ] }"
+      "  ]"
+      "}");
+  ASSERT_TRUE(CheckManifestProducesPermissions(
+      "Exchange data with the computers named: foo.example.com test.ping.com "
+      "test2.ping.com www.ping.com"));
+  ASSERT_TRUE(CheckManifestProducesHostPermissions());
+
+  CreateAndInstall(
+      "{"
+      "  'app': {"
+      "    'background': {"
+      "      'scripts': ['background.js']"
+      "    }"
+      "  },"
+      "  'permissions': ["
+      "    { 'socket': ["
+      "      'tcp-connect:foo.example.com:443',"
+      "      'udp-send-to:test.ping.com:50032',"
+      "      'tcp-connect:*:23',"
+      "    ] }"
+      "  ]"
+      "}");
+  ASSERT_TRUE(CheckManifestProducesPermissions(
+      "Exchange data with any computer on the local network or internet"));
+  ASSERT_TRUE(CheckManifestProducesHostPermissions());
+}
+
+// Check that permission messages are generated correctly for
+// USBDevicePermission (an API permission with custom messages).
+TEST_F(PermissionMessageCombinationsUnittest, USBDevicePermissionMessages) {
+  CreateAndInstall(
+      "{"
+      "  'app': {"
+      "    'background': {"
+      "      'scripts': ['background.js']"
+      "    }"
+      "  },"
+      "  'permissions': ["
+      "    { 'usbDevices': ["
+      "      { 'vendorId': 0, 'productId': 0 },"
+      "    ] }"
+      "  ]"
+      "}");
+  ASSERT_TRUE(CheckManifestProducesPermissions(
+      "Access USB devices from an unknown vendor"));
+  ASSERT_TRUE(CheckManifestProducesHostPermissions());
+
+  CreateAndInstall(
+      "{"
+      "  'app': {"
+      "    'background': {"
+      "      'scripts': ['background.js']"
+      "    }"
+      "  },"
+      "  'permissions': ["
+      "    { 'usbDevices': ["
+      "      { 'vendorId': 4179, 'productId': 529 },"
+      "    ] }"
+      "  ]"
+      "}");
+  ASSERT_TRUE(CheckManifestProducesPermissions(
+      "Access USB devices from Immanuel Electronics Co., Ltd"));
+  ASSERT_TRUE(CheckManifestProducesHostPermissions());
+
+  CreateAndInstall(
+      "{"
+      "  'app': {"
+      "    'background': {"
+      "      'scripts': ['background.js']"
+      "    }"
+      "  },"
+      "  'permissions': ["
+      "    { 'usbDevices': ["
+      "      { 'vendorId': 6353, 'productId': 20194 },"
+      "    ] }"
+      "  ]"
+      "}");
+  ASSERT_TRUE(
+      CheckManifestProducesPermissions("Access USB devices from Google Inc."));
+  ASSERT_TRUE(CheckManifestProducesHostPermissions());
+
+  CreateAndInstall(
+      "{"
+      "  'app': {"
+      "    'background': {"
+      "      'scripts': ['background.js']"
+      "    }"
+      "  },"
+      "  'permissions': ["
+      "    { 'usbDevices': ["
+      "      { 'vendorId': 4179, 'productId': 529 },"
+      "      { 'vendorId': 6353, 'productId': 20194 },"
+      "    ] }"
+      "  ]"
+      "}");
+  ASSERT_TRUE(
+      CheckManifestProducesPermissions("Access any of these USB devices"));
+
+  // Although technically not host permissions, devices are currently stored in
+  // the 'host permissions' (details list) for the USB permission, in the same
+  // format.
+  // TODO(sashab): Rename host permissions to 'details list' or 'nested
+  // permissions', and change this test system to allow specifying each message
+  // as well as its corresponding nested messages, if any. Also add a test that
+  // uses this to test an app with multiple nested permission lists (e.g. both
+  // USB and host permissions).
+  ASSERT_TRUE(CheckManifestProducesHostPermissions(
+      "unknown devices from Immanuel Electronics Co., Ltd",
+      "unknown devices from Google Inc."));
+
+  // TODO(sashab): Add a test with a valid product/vendor USB device.
 }
 
 // Test that hosted apps are not given any messages for host permissions.

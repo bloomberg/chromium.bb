@@ -5,11 +5,9 @@
 #ifndef EXTENSIONS_COMMON_PERMISSIONS_COALESCED_PERMISSION_MESSAGE_H_
 #define EXTENSIONS_COMMON_PERMISSIONS_COALESCED_PERMISSION_MESSAGE_H_
 
-#include <set>
+#include <list>
 #include <string>
 
-#include "base/memory/scoped_vector.h"
-#include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/api_permission_set.h"
 
 namespace extensions {
@@ -59,11 +57,11 @@ class CoalescedPermissionMessage {
   const base::string16 message_;
   const PermissionIDSet permissions_;
   const std::vector<base::string16> submessages_;
-
-  DISALLOW_COPY_AND_ASSIGN(CoalescedPermissionMessage);
 };
 
-typedef std::vector<CoalescedPermissionMessage> CoalescedPermissionMessages;
+// Use a linked list to store our list of messages, since we will commonly be
+// iterating/removing elements but should never be accessing by index.
+typedef std::list<CoalescedPermissionMessage> CoalescedPermissionMessages;
 
 }  // namespace extensions
 

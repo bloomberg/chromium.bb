@@ -21,6 +21,7 @@ class Message;
 
 namespace extensions {
 
+class PermissionIDSet;
 class APIPermissionInfo;
 class ChromeAPIPermissions;
 
@@ -214,13 +215,18 @@ class APIPermission {
     kHostReadWrite,
     kHostsAll,
     kHostsAllReadOnly,
-    kOverrideBookmarksUI,
-    kSocketAnyHost,
-    kSocketDomainHostsSingular,
-    kSocketDomainHostsPlural,
-    kSocketSpecificHostsSingular,
-    kSocketSpecificHostsPlural,
+    kMediaGalleriesAllGalleriesCopyTo,
+    kMediaGalleriesAllGalleriesDelete,
+    kMediaGalleriesAllGalleriesRead,
     kNetworkState,
+    kOverrideBookmarksUI,
+    kShouldWarnAllHosts,
+    kSocketAnyHost,
+    kSocketDomainHosts,
+    kSocketSpecificHosts,
+    kUsbDeviceList,
+    kUsbDeviceUnknownProduct,
+    kUsbDeviceUnknownVendor,
 
     kEnumBoundary
   };
@@ -243,10 +249,33 @@ class APIPermission {
     return info_;
   }
 
+  // The set of permissions an app/extension with this API permission has. These
+  // permissions are used by PermissionMessageProvider to generate meaningful
+  // permission messages for the app/extension.
+  //
+  // For simple API permissions, this will return a set containing only the ID
+  // of the permission. More complex permissions might have multiple IDs, one
+  // for each of the capabilities the API permission has (e.g. read, write and
+  // copy, in the case of the media gallery permission). Permissions that
+  // require parameters may also contain a parameter string (along with the
+  // permission's ID) which can be substituted into the permission message if a
+  // rule is defined to do so.
+  //
+  // Permissions with multiple values, such as host permissions, are represented
+  // by multiple entries in this set. Each permission in the subset has the same
+  // ID (e.g. kHostReadOnly) but a different parameter (e.g. google.com). These
+  // are grouped to form different kinds of permission messages (e.g. 'Access to
+  // 2 hosts') depending on the number that are in the set. The rules that
+  // define the grouping of related permissions with the same ID is defined in
+  // ChromePermissionMessageProvider.
+  virtual PermissionIDSet GetPermissions() const = 0;
+
   // Returns true if this permission has any PermissionMessages.
+  // TODO(sashab): Deprecate this in favor of GetPermissions() above.
   virtual bool HasMessages() const = 0;
 
   // Returns the localized permission messages of this permission.
+  // TODO(sashab): Deprecate this in favor of GetPermissions() above.
   virtual PermissionMessages GetMessages() const = 0;
 
   // Returns true if the given permission is allowed.

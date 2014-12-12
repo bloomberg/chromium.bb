@@ -19,59 +19,80 @@
 
 namespace extensions {
 
-UsbDevicePermission::UsbDevicePermission(
-    const APIPermissionInfo* info)
-  : SetDisjunctionPermission<UsbDevicePermissionData,
-                             UsbDevicePermission>(info) {
-}
+namespace {
 
-UsbDevicePermission::~UsbDevicePermission() {
-}
-
-PermissionMessages UsbDevicePermission::GetMessages() const {
-  DCHECK(HasMessages());
-  PermissionMessages result;
-
-  if (data_set_.size() == 1) {
-    const UsbDevicePermissionData& data = *data_set_.begin();
+// Adds the permissions from the |data_set| to the permission lists that are
+// not NULL. If NULL, that list is ignored.
+void AddPermissionsToLists(const std::set<UsbDevicePermissionData>& data_set,
+                           PermissionIDSet* ids,
+                           PermissionMessages* messages) {
+  // TODO(sashab): Once GetMessages() is deprecated, move this logic back into
+  // GetPermissions().
+  // TODO(sashab, reillyg): Once GetMessages() is deprecated, rework the
+  // permission message logic for USB devices to generate more meaningful
+  // messages and better fit the current rules system.
+  if (data_set.size() == 1) {
+    const UsbDevicePermissionData& data = *data_set.begin();
 
     const char* vendor = device::UsbIds::GetVendorName(data.vendor_id());
     if (vendor) {
       const char* product =
           device::UsbIds::GetProductName(data.vendor_id(), data.product_id());
       if (product) {
-        result.push_back(PermissionMessage(
-            PermissionMessage::kUsbDevice,
-            l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE,
-                                       base::UTF8ToUTF16(product),
-                                       base::UTF8ToUTF16(vendor))));
+        base::string16 product_name_and_vendor = l10n_util::GetStringFUTF16(
+            IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_PRODUCT_NAME_AND_VENDOR,
+            base::UTF8ToUTF16(product), base::UTF8ToUTF16(vendor));
+
+        if (messages) {
+          messages->push_back(
+              PermissionMessage(PermissionMessage::kUsbDevice,
+                                l10n_util::GetStringFUTF16(
+                                    IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE,
+                                    product_name_and_vendor)));
+        }
+        if (ids)
+          ids->insert(APIPermission::kUsbDevice, product_name_and_vendor);
       } else {
-        result.push_back(PermissionMessage(
-            PermissionMessage::kUsbDevice,
-            l10n_util::GetStringFUTF16(
-                IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_UNKNOWN_PRODUCT,
-                base::UTF8ToUTF16(vendor))));
+        if (messages) {
+          messages->push_back(PermissionMessage(
+              PermissionMessage::kUsbDevice,
+              l10n_util::GetStringFUTF16(
+                  IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_UNKNOWN_PRODUCT,
+                  base::UTF8ToUTF16(vendor))));
+        }
+        if (ids) {
+          ids->insert(APIPermission::kUsbDeviceUnknownProduct,
+                      base::UTF8ToUTF16(vendor));
+        }
       }
     } else {
-      result.push_back(PermissionMessage(
-          PermissionMessage::kUsbDevice,
-          l10n_util::GetStringUTF16(
-              IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_UNKNOWN_VENDOR)));
+      if (messages) {
+        messages->push_back(PermissionMessage(
+            PermissionMessage::kUsbDevice,
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_UNKNOWN_VENDOR)));
+      }
+      if (ids) {
+        ids->insert(APIPermission::kUsbDeviceUnknownVendor);
     }
-  } else if (data_set_.size() > 1) {
+    }
+  } else if (data_set.size() > 1) {
     std::vector<base::string16> details;
     std::set<uint16> unknown_product_vendors;
     bool found_unknown_vendor = false;
 
-    for (const UsbDevicePermissionData& data : data_set_) {
+    for (const UsbDevicePermissionData& data : data_set) {
       const char* vendor = device::UsbIds::GetVendorName(data.vendor_id());
       if (vendor) {
         const char* product =
             device::UsbIds::GetProductName(data.vendor_id(), data.product_id());
         if (product) {
+          base::string16 product_name_and_vendor = l10n_util::GetStringFUTF16(
+              IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_PRODUCT_NAME_AND_VENDOR,
+              base::UTF8ToUTF16(product), base::UTF8ToUTF16(vendor));
           details.push_back(l10n_util::GetStringFUTF16(
               IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST_ITEM,
-              base::UTF8ToUTF16(product), base::UTF8ToUTF16(vendor)));
+              product_name_and_vendor));
         } else {
           unknown_product_vendors.insert(data.vendor_id());
         }
@@ -95,13 +116,41 @@ PermissionMessages UsbDevicePermission::GetMessages() const {
           IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST_ITEM_UNKNOWN_VENDOR));
     }
 
-    result.push_back(PermissionMessage(
-        PermissionMessage::kUsbDevice,
-        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST),
-        JoinString(details, base::char16('\n'))));
+    if (messages) {
+      messages->push_back(
+          PermissionMessage(PermissionMessage::kUsbDevice,
+                            l10n_util::GetStringUTF16(
+                                IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST),
+                            JoinString(details, base::char16('\n'))));
+    }
+    if (ids) {
+      for (const auto& detail : details)
+        ids->insert(APIPermission::kUsbDeviceList, detail);
+    }
   }
+}
 
-  return result;
+}  // namespace
+
+UsbDevicePermission::UsbDevicePermission(const APIPermissionInfo* info)
+    : SetDisjunctionPermission<UsbDevicePermissionData, UsbDevicePermission>(
+          info) {
+}
+
+UsbDevicePermission::~UsbDevicePermission() {
+}
+
+PermissionIDSet UsbDevicePermission::GetPermissions() const {
+  PermissionIDSet ids;
+  AddPermissionsToLists(data_set_, &ids, NULL);
+  return ids;
+}
+
+PermissionMessages UsbDevicePermission::GetMessages() const {
+  DCHECK(HasMessages());
+  PermissionMessages messages;
+  AddPermissionsToLists(data_set_, NULL, &messages);
+  return messages;
 }
 
 }  // namespace extensions

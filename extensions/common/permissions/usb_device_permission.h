@@ -30,6 +30,7 @@ class UsbDevicePermission
   ~UsbDevicePermission() override;
 
   // APIPermission overrides
+  PermissionIDSet GetPermissions() const override;
   PermissionMessages GetMessages() const override;
 };
 

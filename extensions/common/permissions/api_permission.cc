@@ -4,6 +4,7 @@
 
 #include "extensions/common/permissions/api_permission.h"
 
+#include "extensions/common/permissions/api_permission_set.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -19,6 +20,10 @@ class SimpleAPIPermission : public APIPermission {
     : APIPermission(permission) { }
 
   ~SimpleAPIPermission() override {}
+
+  extensions::PermissionIDSet GetPermissions() const override {
+    return extensions::PermissionIDSet(id());
+  }
 
   bool HasMessages() const override {
     return info()->message_id() > PermissionMessage::kNone;

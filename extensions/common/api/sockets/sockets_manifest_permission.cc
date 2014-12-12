@@ -318,15 +318,11 @@ void SocketsManifestPermission::AddSubdomainHostMessage(
                 std::vector<base::string16>(domains.begin(), domains.end()),
                 ' '))));
     // TODO(sashab): Add rules to ChromePermissionMessageProvider:
-    // kSocketDomainHostsSingular ->
-    //         IDS_EXTENSION_PROMPT_WARNING_SOCKET_HOSTS_IN_DOMAIN
-    // kSocketDomainHostsPlural ->
-    //         IDS_EXTENSION_PROMPT_WARNING_SOCKET_HOSTS_IN_DOMAINS
-    APIPermission::ID pid = (domains.size() == 1)
-                                ? APIPermission::kSocketDomainHostsSingular
-                                : APIPermission::kSocketDomainHostsPlural;
+    // kSocketDomainHosts ->
+    //         IDS_EXTENSION_PROMPT_WARNING_SOCKET_HOSTS_IN_DOMAIN if 1
+    //         IDS_EXTENSION_PROMPT_WARNING_SOCKET_HOSTS_IN_DOMAINS if many
     for (const auto& domain : domains)
-      ids.insert(pid, domain);
+      ids.insert(APIPermission::kSocketDomainHosts, domain);
   }
 }
 
@@ -354,15 +350,11 @@ void SocketsManifestPermission::AddSpecificHostMessage(
                 std::vector<base::string16>(hostnames.begin(), hostnames.end()),
                 ' '))));
     // TODO(sashab): Add rules to ChromePermissionMessageProvider:
-    // kSocketSpecificHostsSingular ->
-    //         IDS_EXTENSION_PROMPT_WARNING_SOCKET_SPECIFIC_HOST
-    // kSocketSpecificHostsPlural ->
-    //         IDS_EXTENSION_PROMPT_WARNING_SOCKET_SPECIFIC_HOSTS
-    APIPermission::ID pid = (hostnames.size() == 1)
-                                ? APIPermission::kSocketSpecificHostsSingular
-                                : APIPermission::kSocketSpecificHostsPlural;
+    // kSocketSpecificHosts ->
+    //         IDS_EXTENSION_PROMPT_WARNING_SOCKET_SPECIFIC_HOST if 1
+    //         IDS_EXTENSION_PROMPT_WARNING_SOCKET_SPECIFIC_HOSTS if many
     for (const auto& hostname : hostnames)
-      ids.insert(pid, hostname);
+      ids.insert(APIPermission::kSocketSpecificHosts, hostname);
   }
 }
 

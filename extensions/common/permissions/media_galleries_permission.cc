@@ -13,6 +13,8 @@
 #include "grit/extensions_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace extensions {
+
 namespace {
 
 // copyTo permission requires delete permission as a prerequisite.
@@ -36,9 +38,83 @@ bool IsValidPermissionSet(bool has_read, bool has_copy_to, bool has_delete,
   return true;
 }
 
-}  // namespace
+// Adds the permissions from the |data_set| to the permission lists that are
+// not NULL. If NULL, that list is ignored.
+void AddPermissionsToLists(
+    const std::set<MediaGalleriesPermissionData>& data_set,
+    PermissionIDSet* ids,
+    PermissionMessages* messages) {
+  // TODO(sashab): Once GetMessages() is deprecated, move this logic back into
+  // GetPermissions().
+  bool has_all_auto_detected = false;
+  bool has_read = false;
+  bool has_copy_to = false;
+  bool has_delete = false;
 
-namespace extensions {
+  for (std::set<MediaGalleriesPermissionData>::const_iterator it =
+           data_set.begin();
+       it != data_set.end(); ++it) {
+    if (it->permission() ==
+        MediaGalleriesPermission::kAllAutoDetectedPermission)
+      has_all_auto_detected = true;
+    else if (it->permission() == MediaGalleriesPermission::kReadPermission)
+      has_read = true;
+    else if (it->permission() == MediaGalleriesPermission::kCopyToPermission)
+      has_copy_to = true;
+    else if (it->permission() == MediaGalleriesPermission::kDeletePermission)
+      has_delete = true;
+  }
+
+  if (!IsValidPermissionSet(has_read, has_copy_to, has_delete, NULL)) {
+    NOTREACHED();
+    return;
+  }
+
+  // If |has_all_auto_detected| is false, then Chrome will prompt the user at
+  // runtime when the extension call the getMediaGalleries API.
+  if (!has_all_auto_detected)
+    return;
+  // No access permission case.
+  if (!has_read)
+    return;
+
+  // Separate PermissionMessage IDs for read, copyTo, and delete. Otherwise an
+  // extension can silently gain new access capabilities.
+  if (messages) {
+    messages->push_back(PermissionMessage(
+        PermissionMessage::kMediaGalleriesAllGalleriesRead,
+        l10n_util::GetStringUTF16(
+            IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ)));
+  }
+  if (ids)
+    ids->insert(APIPermission::kMediaGalleriesAllGalleriesRead);
+
+  // For copyTo and delete, the proper combined permission message will be
+  // derived in ChromePermissionMessageProvider::GetWarningMessages(), such
+  // that the user get 1 entry for all media galleries access permissions,
+  // rather than several separate entries.
+  if (has_copy_to) {
+    if (messages) {
+      messages->push_back(PermissionMessage(
+          PermissionMessage::kMediaGalleriesAllGalleriesCopyTo,
+          base::string16()));
+    }
+    if (ids)
+      ids->insert(APIPermission::kMediaGalleriesAllGalleriesCopyTo);
+  }
+  if (has_delete) {
+    if (messages) {
+      messages->push_back(PermissionMessage(
+          PermissionMessage::kMediaGalleriesAllGalleriesDelete,
+          base::string16()));
+    }
+    if (ids)
+      ids->insert(APIPermission::kMediaGalleriesAllGalleriesDelete);
+  }
+  return;
+}
+
+}  // namespace
 
 const char MediaGalleriesPermission::kAllAutoDetectedPermission[] =
     "allAutoDetected";
@@ -110,61 +186,17 @@ bool MediaGalleriesPermission::FromValue(
   return IsValidPermissionSet(has_read, has_copy_to, has_delete, error);
 }
 
+PermissionIDSet MediaGalleriesPermission::GetPermissions() const {
+  DCHECK(HasMessages());
+  PermissionIDSet result;
+  AddPermissionsToLists(data_set_, &result, NULL);
+  return result;
+}
+
 PermissionMessages MediaGalleriesPermission::GetMessages() const {
   DCHECK(HasMessages());
   PermissionMessages result;
-
-  bool has_all_auto_detected = false;
-  bool has_read = false;
-  bool has_copy_to = false;
-  bool has_delete = false;
-
-  for (std::set<MediaGalleriesPermissionData>::const_iterator it =
-      data_set_.begin(); it != data_set_.end(); ++it) {
-    if (it->permission() == kAllAutoDetectedPermission)
-      has_all_auto_detected = true;
-    else if (it->permission() == kReadPermission)
-      has_read = true;
-    else if (it->permission() == kCopyToPermission)
-      has_copy_to = true;
-    else if (it->permission() == kDeletePermission)
-      has_delete = true;
-  }
-
-  if (!IsValidPermissionSet(has_read, has_copy_to, has_delete, NULL)) {
-    NOTREACHED();
-    return result;
-  }
-
-  // If |has_all_auto_detected| is false, then Chrome will prompt the user at
-  // runtime when the extension call the getMediaGalleries API.
-  if (!has_all_auto_detected)
-    return result;
-  // No access permission case.
-  if (!has_read)
-    return result;
-
-  // Separate PermissionMessage IDs for read, copyTo, and delete. Otherwise an
-  // extension can silently gain new access capabilities.
-  result.push_back(PermissionMessage(
-      PermissionMessage::kMediaGalleriesAllGalleriesRead,
-      l10n_util::GetStringUTF16(
-          IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ)));
-
-  // For copyTo and delete, the proper combined permission message will be
-  // derived in ChromePermissionMessageProvider::GetWarningMessages(), such
-  // that the user get 1 entry for all media galleries access permissions,
-  // rather than several separate entries.
-  if (has_copy_to) {
-    result.push_back(PermissionMessage(
-        PermissionMessage::kMediaGalleriesAllGalleriesCopyTo,
-        base::string16()));
-  }
-  if (has_delete) {
-    result.push_back(PermissionMessage(
-        PermissionMessage::kMediaGalleriesAllGalleriesDelete,
-        base::string16()));
-  }
+  AddPermissionsToLists(data_set_, NULL, &result);
   return result;
 }
 
