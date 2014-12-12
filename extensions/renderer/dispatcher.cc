@@ -32,6 +32,7 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+#include "extensions/common/manifest_handlers/content_capabilities_handler.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/manifest_handlers/sandboxed_page_info.h"
@@ -1104,35 +1105,17 @@ void Dispatcher::UpdateBindingsForContext(ScriptContext* context) {
   switch (context->context_type()) {
     case Feature::UNSPECIFIED_CONTEXT:
     case Feature::WEB_PAGE_CONTEXT:
-    case Feature::BLESSED_WEB_PAGE_CONTEXT: {
+    case Feature::BLESSED_WEB_PAGE_CONTEXT:
       // Web page context; it's too expensive to run the full bindings code.
       // Hard-code that the app and webstore APIs are available...
       if (context->GetAvailability("app").is_available())
         RegisterBinding("app", context);
-
       if (context->GetAvailability("webstore").is_available())
         RegisterBinding("webstore", context);
-
-      // ... and that the runtime API might be available if any extension can
-      // connect to it.
-      bool runtime_is_available =
-          extensions::FeatureSwitch::worker_frame()->IsEnabled() &&
-              context->GetAvailability("workerFrameInternal").is_available();
-      for (ExtensionSet::const_iterator it = extensions_.begin();
-           it != extensions_.end();
-           ++it) {
-        ExternallyConnectableInfo* info =
-            static_cast<ExternallyConnectableInfo*>(
-                (*it)->GetManifestData(manifest_keys::kExternallyConnectable));
-        if (info && info->matches.MatchesURL(context->GetURL())) {
-          runtime_is_available = true;
-          break;
-        }
-      }
-      if (runtime_is_available)
+      if (IsRuntimeAvailableToContext(context))
         RegisterBinding("runtime", context);
+      UpdateContentCapabilities(context);
       break;
-    }
 
     case Feature::BLESSED_EXTENSION_CONTEXT:
     case Feature::UNBLESSED_EXTENSION_CONTEXT:
@@ -1242,6 +1225,34 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
           send_request_disabled)));
 
   delegate_->RegisterNativeHandlers(this, module_system, context);
+}
+
+bool Dispatcher::IsRuntimeAvailableToContext(ScriptContext* context) {
+  if (extensions::FeatureSwitch::worker_frame()->IsEnabled() &&
+      context->GetAvailability("workerFrameInternal").is_available()) {
+    return true;
+  }
+  for (const auto& extension : extensions_) {
+    ExternallyConnectableInfo* info = static_cast<ExternallyConnectableInfo*>(
+        extension->GetManifestData(manifest_keys::kExternallyConnectable));
+    if (info && info->matches.MatchesURL(context->GetURL()))
+      return true;
+  }
+  return false;
+}
+
+void Dispatcher::UpdateContentCapabilities(ScriptContext* context) {
+  APIPermissionSet permissions;
+  for (const auto& extension : extensions_) {
+    const ContentCapabilitiesInfo& info =
+        ContentCapabilitiesInfo::Get(extension.get());
+    if (info.url_patterns.MatchesURL(context->GetURL())) {
+      APIPermissionSet new_permissions;
+      APIPermissionSet::Union(permissions, info.permissions, &new_permissions);
+      permissions = new_permissions;
+    }
+  }
+  context->SetContentCapabilities(permissions);
 }
 
 void Dispatcher::PopulateSourceMap() {

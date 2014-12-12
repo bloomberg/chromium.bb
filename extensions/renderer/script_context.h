@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "extensions/common/features/feature.h"
+#include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/request_sender.h"
 #include "extensions/renderer/safe_builtins.h"
@@ -150,6 +151,15 @@ class ScriptContext : public RequestSender::Source, public gin::Runner {
                              v8::Handle<v8::Value> argv[]) override;
   gin::ContextHolder* GetContextHolder() override;
 
+  // Grants a set of content capabilities to this context.
+  void SetContentCapabilities(const APIPermissionSet& permissions);
+
+  // Indicates if this context has an effective API permission either by being
+  // a context for an extension which has that permission, or by being a web
+  // context which has been granted the corresponding capability by an
+  // extension.
+  bool HasAPIPermission(APIPermission::ID permission) const;
+
  protected:
   // The v8 context the bindings are accessible to.
   ScopedPersistent<v8::Context> v8_context_;
@@ -179,6 +189,9 @@ class ScriptContext : public RequestSender::Source, public gin::Runner {
 
   // Contains safe copies of builtin objects like Function.prototype.
   SafeBuiltins safe_builtins_;
+
+  // The set of capabilities granted to this context by extensions.
+  APIPermissionSet content_capabilities_;
 
   v8::Isolate* isolate_;
 

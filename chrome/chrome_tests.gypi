@@ -357,6 +357,7 @@
       'browser/extensions/browsertest_util_browsertest.cc',
       'browser/extensions/chrome_app_api_browsertest.cc',
       'browser/extensions/chrome_ui_overrides_browsertest.cc',
+      'browser/extensions/content_capabilities_browsertest.cc',
       'browser/extensions/content_verifier_browsertest.cc',
       'browser/extensions/content_script_apitest.cc',
       'browser/extensions/content_security_policy_apitest.cc',

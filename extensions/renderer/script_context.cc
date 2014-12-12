@@ -17,6 +17,7 @@
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/features/base_feature_provider.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "gin/per_context_data.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -271,6 +272,25 @@ v8::Handle<v8::Value> ScriptContext::Call(v8::Handle<v8::Function> function,
 gin::ContextHolder* ScriptContext::GetContextHolder() {
   v8::HandleScope handle_scope(isolate());
   return gin::PerContextData::From(v8_context())->context_holder();
+}
+
+void ScriptContext::SetContentCapabilities(
+    const APIPermissionSet& permissions) {
+  content_capabilities_ = permissions;
+}
+
+bool ScriptContext::HasAPIPermission(APIPermission::ID permission) const {
+  if (effective_extension_.get()) {
+    return effective_extension_->permissions_data()->HasAPIPermission(
+        permission);
+  } else if (context_type() == Feature::WEB_PAGE_CONTEXT) {
+    // Only web page contexts may be granted content capabilities. Other
+    // contexts are either privileged WebUI or extensions with their own set of
+    // permissions.
+    if (content_capabilities_.find(permission) != content_capabilities_.end())
+      return true;
+  }
+  return false;
 }
 
 }  // namespace extensions

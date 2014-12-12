@@ -423,11 +423,8 @@ bool ContentSettingsObserver::allowReadFromClipboard(bool default_value) {
   extensions::ScriptContext* calling_context =
       extension_dispatcher_->script_context_set().GetCalling();
   if (calling_context) {
-    const extensions::Extension* extension =
-        calling_context->effective_extension();
-    allowed = extension &&
-              extension->permissions_data()->HasAPIPermission(
-                  extensions::APIPermission::kClipboardRead);
+    allowed = calling_context->HasAPIPermission(
+        extensions::APIPermission::kClipboardRead);
   }
 #endif
   return allowed;
@@ -445,11 +442,8 @@ bool ContentSettingsObserver::allowWriteToClipboard(bool default_value) {
         extensions::Feature::BLESSED_EXTENSION_CONTEXT) {
       allowed = true;
     } else {
-      const extensions::Extension* extension =
-          calling_context->effective_extension();
-      allowed = extension &&
-                extension->permissions_data()->HasAPIPermission(
-                    extensions::APIPermission::kClipboardWrite);
+      allowed = calling_context->HasAPIPermission(
+          extensions::APIPermission::kClipboardWrite);
     }
   }
 #endif

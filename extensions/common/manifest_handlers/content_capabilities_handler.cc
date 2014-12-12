@@ -4,11 +4,13 @@
 
 #include "extensions/common/manifest_handlers/content_capabilities_handler.h"
 
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "content/public/common/content_switches.h"
 #include "extensions/common/api/extensions_manifest_types.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/install_warning.h"
@@ -61,11 +63,17 @@ bool ContentCapabilitiesHandler::Parse(Extension* extension,
   if (!capabilities)
     return false;
 
+  int supported_schemes = URLPattern::SCHEME_HTTPS;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
+    // We don't have a suitable HTTPS test server, so this will have to do.
+    supported_schemes |= URLPattern::SCHEME_HTTP;
+  }
+
   std::string url_error;
   URLPatternSet potential_url_patterns;
-  if (!potential_url_patterns.Populate(capabilities->matches,
-          URLPattern::SCHEME_HTTPS, false /* allow_file_access */,
-          &url_error)) {
+  if (!potential_url_patterns.Populate(capabilities->matches, supported_schemes,
+                                       false /* allow_file_access */,
+                                       &url_error)) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidContentCapabilitiesMatch, url_error);
     return false;

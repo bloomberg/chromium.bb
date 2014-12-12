@@ -220,6 +220,14 @@ class Dispatcher : public content::RenderProcessObserver,
   void RegisterNativeHandlers(ModuleSystem* module_system,
                               ScriptContext* context);
 
+  // Determines if a ScriptContext can connect to any externally_connectable-
+  // enabled extension.
+  bool IsRuntimeAvailableToContext(ScriptContext* context);
+
+  // Updates a web page context with any content capabilities granted by active
+  // extensions.
+  void UpdateContentCapabilities(ScriptContext* context);
+
   // Inserts static source code into |source_map_|.
   void PopulateSourceMap();
 
