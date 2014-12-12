@@ -601,6 +601,17 @@ public:
     // Access the embedder API for speech recognition services.
     virtual WebSpeechRecognizer* speechRecognizer() { return 0; }
 
+
+    // Fullscreen ----------------------------------------------------------
+
+    // Called to enter/exit fullscreen mode. If enterFullScreen returns true,
+    // then WebWidget::{will,Did}EnterFullScreen should bound resizing the
+    // WebWidget into fullscreen mode. Similarly, when exitFullScreen is
+    // called, WebWidget::{will,Did}ExitFullScreen should bound resizing the
+    // WebWidget out of fullscreen mode.
+    virtual bool enterFullscreen() { return false; }
+    virtual bool exitFullscreen() { return false; }
+
 protected:
     virtual ~WebFrameClient() { }
 };

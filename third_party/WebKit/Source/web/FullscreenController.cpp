@@ -38,8 +38,9 @@
 #include "core/html/HTMLVideoElement.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "public/web/WebFrame.h"
+#include "public/web/WebFrameClient.h"
 #include "public/web/WebViewClient.h"
+#include "web/WebLocalFrameImpl.h"
 #include "web/WebSettingsImpl.h"
 #include "web/WebViewImpl.h"
 
@@ -146,7 +147,12 @@ void FullscreenController::enterFullScreenForElement(Element* element)
     }
 
     // We need to transition to fullscreen mode.
-    if (WebViewClient* client = m_webViewImpl->client()) {
+    // FIXME: temporarily try to use WebFrameClient and WebViewClient while
+    // Chromium switches from one to the other, see https://crbug.com/374854
+    WebLocalFrameImpl* frame = WebLocalFrameImpl::fromFrame(element->document().frame());
+    if (frame && frame->client() && frame->client()->enterFullscreen()) {
+        m_provisionalFullScreenElement = element;
+    } else if (WebViewClient* client = m_webViewImpl->client()) {
         if (client->enterFullScreen())
             m_provisionalFullScreenElement = element;
     }
@@ -159,6 +165,13 @@ void FullscreenController::exitFullScreenForElement(Element* element)
     // The client is exiting full screen, so don't send a notification.
     if (m_isCancelingFullScreen)
         return;
+
+    // FIXME: temporarily try to use WebFrameClient and WebViewClient while
+    // Chromium switches from one to the other, see https://crbug.com/374854
+    WebLocalFrameImpl* frame = WebLocalFrameImpl::fromFrame(element->document().frame());
+    if (frame && frame->client() && frame->client()->exitFullscreen())
+        return;
+
     if (WebViewClient* client = m_webViewImpl->client())
         client->exitFullScreen();
 }
