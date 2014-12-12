@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/url_request_info_resource.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_file_ref_api.h"
@@ -65,6 +66,14 @@ PP_Bool URLRequestInfoResource::SetProperty(PP_URLRequestProperty property,
     }
     default:
       break;
+  }
+  if (!result) {
+    std::string error_msg("PPB_URLRequestInfo.SetProperty: Attempted to set a "
+                          "value for PP_URLRequestProperty ");
+    error_msg += base::IntToString(property);
+    error_msg += ", but either this property type is invalid or its parameter "
+                 "was inappropriate (e.g., the wrong type of PP_Var).";
+    Log(PP_LOGLEVEL_ERROR, error_msg);
   }
   return result;
 }
