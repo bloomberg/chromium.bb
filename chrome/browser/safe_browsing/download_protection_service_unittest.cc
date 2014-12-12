@@ -306,6 +306,10 @@ class DownloadProtectionServiceTest : public testing::Test {
     return certs.empty() ? NULL : certs[0];
   }
 
+  const ClientDownloadRequest* GetClientDownloadRequest() const {
+    return last_client_download_request_.get();
+  }
+
   bool HasClientDownloadRequest() const {
     return last_client_download_request_.get() != NULL;
   }
@@ -922,6 +926,89 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadBlob) {
 #if defined(OS_WIN) || defined(OS_MACOSX)
   // OSX sends pings for evaluation purposes.
   EXPECT_TRUE(HasClientDownloadRequest());
+  ClearClientDownloadRequest();
+#else
+  EXPECT_FALSE(HasClientDownloadRequest());
+#endif
+}
+
+TEST_F(DownloadProtectionServiceTest, CheckClientDownloadData) {
+  ClientDownloadResponse response;
+  response.set_verdict(ClientDownloadResponse::DANGEROUS);
+  net::FakeURLFetcherFactory factory(NULL);
+  factory.SetFakeResponse(DownloadProtectionService::GetDownloadRequestUrl(),
+                          response.SerializeAsString(), net::HTTP_OK,
+                          net::URLRequestStatus::SUCCESS);
+
+  base::FilePath a_tmp(FILE_PATH_LITERAL("a.tmp"));
+  base::FilePath a_exe(FILE_PATH_LITERAL("a.exe"));
+  std::vector<GURL> url_chain;
+  url_chain.push_back(
+      GURL("data:text/html:base64,"));
+  url_chain.push_back(
+      GURL("data:text/html:base64,blahblahblah"));
+  url_chain.push_back(
+      GURL("data:application/octet-stream:base64,blahblah"));
+  GURL referrer("data:text/html:base64,foobar");
+  std::string hash = "hash";
+
+  content::MockDownloadItem item;
+  EXPECT_CALL(item, GetFullPath()).WillRepeatedly(ReturnRef(a_tmp));
+  EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_exe));
+  EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
+  EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
+  EXPECT_CALL(item, GetTabUrl()).WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+  EXPECT_CALL(item, GetTabReferrerUrl())
+      .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+  EXPECT_CALL(item, GetHash()).WillRepeatedly(ReturnRef(hash));
+  EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(100));
+  EXPECT_CALL(item, HasUserGesture()).WillRepeatedly(Return(true));
+  EXPECT_CALL(item, GetRemoteAddress()).WillRepeatedly(Return(""));
+
+  EXPECT_CALL(*sb_service_->mock_database_manager(),
+              MatchDownloadWhitelistUrl(_)).WillRepeatedly(Return(false));
+  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(a_tmp, _))
+      .Times(1);
+  EXPECT_CALL(*binary_feature_extractor_.get(), ExtractImageHeaders(a_tmp, _))
+      .Times(1);
+
+  download_service_->CheckClientDownload(
+      &item,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  MessageLoop::current()->Run();
+#if defined(OS_WIN)
+  EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
+#else
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+#endif
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  // OSX sends pings for evaluation purposes.
+  ASSERT_TRUE(HasClientDownloadRequest());
+  const ClientDownloadRequest& request = *GetClientDownloadRequest();
+  const char kExpectedUrl[] =
+      "data:application/octet-stream:base64,"
+      "ACBF6DFC6F907662F566CA0241DFE8690C48661F440BA1BBD0B86C582845CCC8";
+  const char kExpectedRedirect1[] = "data:text/html:base64,";
+  const char kExpectedRedirect2[] =
+      "data:text/html:base64,"
+      "620680767E15717A57DB11D94D1BEBD32B3344EBC5994DF4FB07B0D473F4EF6B";
+  const char kExpectedReferrer[] =
+      "data:text/html:base64,"
+      "06E2C655B9F7130B508FFF86FD19B57E6BF1A1CFEFD6EFE1C3EB09FE24EF456A";
+  EXPECT_EQ(hash, request.digests().sha256());
+  EXPECT_EQ(kExpectedUrl, request.url());
+  EXPECT_EQ(3, request.resources_size());
+  EXPECT_TRUE(RequestContainsResource(request,
+                                      ClientDownloadRequest::DOWNLOAD_REDIRECT,
+                                      kExpectedRedirect1, ""));
+  EXPECT_TRUE(RequestContainsResource(request,
+                                      ClientDownloadRequest::DOWNLOAD_REDIRECT,
+                                      kExpectedRedirect2, ""));
+  EXPECT_TRUE(RequestContainsResource(request,
+                                      ClientDownloadRequest::DOWNLOAD_URL,
+                                      kExpectedUrl, kExpectedReferrer));
   ClearClientDownloadRequest();
 #else
   EXPECT_FALSE(HasClientDownloadRequest());
