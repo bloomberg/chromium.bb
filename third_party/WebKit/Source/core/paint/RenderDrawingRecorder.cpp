@@ -11,8 +11,8 @@
 
 namespace blink {
 
-RenderDrawingRecorder::RenderDrawingRecorder(GraphicsContext* context, const RenderObject* renderer, PaintPhase phase, const FloatRect& clip)
-    : drawingRecorder(context, renderer->displayItemClient(), (DisplayItem::Type)phase, clip)
+RenderDrawingRecorder::RenderDrawingRecorder(GraphicsContext* context, const RenderObject& renderer, PaintPhase phase, const FloatRect& clip)
+    : m_drawingRecorder(context, renderer.displayItemClient(), (DisplayItem::Type)phase, clip)
 #ifndef NDEBUG
     , m_renderer(renderer)
 #endif
@@ -24,10 +24,7 @@ RenderDrawingRecorder::~RenderDrawingRecorder()
         return;
 
 #ifndef NDEBUG
-    if (!m_renderer)
-        drawingRecorder.setClientDebugString("nullptr");
-    else
-        drawingRecorder.setClientDebugString(String::format("renderer: \"%p %s\"", m_renderer, m_renderer->debugName().utf8().data()));
+    m_drawingRecorder.setClientDebugString(String::format("renderer: \"%p %s\"", &m_renderer, m_renderer.debugName().utf8().data()));
 #endif
 }
 

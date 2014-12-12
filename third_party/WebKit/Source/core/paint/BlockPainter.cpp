@@ -177,14 +177,16 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
     }
 
     if (paintPhase == PaintPhaseMask && m_renderBlock.style()->visibility() == VISIBLE) {
-        RenderDrawingRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase, bounds);
-        m_renderBlock.paintMask(paintInfo, paintOffset);
+        RenderDrawingRecorder recorder(paintInfo.context, m_renderBlock, paintPhase, bounds);
+        if (!recorder.canUseCachedDrawing())
+            m_renderBlock.paintMask(paintInfo, paintOffset);
         return;
     }
 
     if (paintPhase == PaintPhaseClippingMask && m_renderBlock.style()->visibility() == VISIBLE) {
-        RenderDrawingRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase, bounds);
-        m_renderBlock.paintClippingMask(paintInfo, paintOffset);
+        RenderDrawingRecorder recorder(paintInfo.context, m_renderBlock, paintPhase, bounds);
+        if (!recorder.canUseCachedDrawing())
+            m_renderBlock.paintClippingMask(paintInfo, paintOffset);
         return;
     }
 
@@ -224,8 +226,9 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
     // If the caret's node's render object's containing block is this block, and the paint action is PaintPhaseForeground,
     // then paint the caret.
     if (paintPhase == PaintPhaseForeground) {
-        RenderDrawingRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase, bounds);
-        paintCarets(paintInfo, paintOffset);
+        RenderDrawingRecorder recorder(paintInfo.context, m_renderBlock, paintPhase, bounds);
+        if (!recorder.canUseCachedDrawing())
+            paintCarets(paintInfo, paintOffset);
     }
 }
 

@@ -38,7 +38,9 @@ void InlinePainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
         bounds = cb->visualOverflowRect();
         bounds.moveBy(paintOffset);
     }
-    RenderDrawingRecorder recorder(paintInfo.context, &m_renderInline, paintInfo.phase, bounds);
+    RenderDrawingRecorder recorder(paintInfo.context, m_renderInline, paintInfo.phase, bounds);
+    if (recorder.canUseCachedDrawing())
+        return;
 
     if (styleToUse->outlineStyleIsAuto()) {
         if (RenderTheme::theme().shouldDrawDefaultFocusRing(&m_renderInline)) {

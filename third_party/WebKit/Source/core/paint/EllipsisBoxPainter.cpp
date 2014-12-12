@@ -25,18 +25,20 @@ void EllipsisBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pa
 void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, RenderStyle* style)
 {
     GraphicsContext* context = paintInfo.context;
-    const Font& font = style->font();
     FloatPoint boxOrigin = m_ellipsisBox.locationIncludingFlipping();
     boxOrigin.moveBy(FloatPoint(paintOffset));
     if (!m_ellipsisBox.isHorizontal())
         boxOrigin.move(0, -m_ellipsisBox.virtualLogicalHeight());
     FloatRect boxRect(boxOrigin, FloatSize(m_ellipsisBox.logicalWidth(), m_ellipsisBox.virtualLogicalHeight()));
 
-    RenderDrawingRecorder recorder(paintInfo.context, &m_ellipsisBox.renderer(), paintInfo.phase, boxRect);
+    RenderDrawingRecorder recorder(context, m_ellipsisBox.renderer(), paintInfo.phase, boxRect);
+    if (recorder.canUseCachedDrawing())
+        return;
 
     GraphicsContextStateSaver stateSaver(*context);
     if (!m_ellipsisBox.isHorizontal())
         context->concatCTM(TextPainter::rotation(boxRect, TextPainter::Clockwise));
+    const Font& font = style->font();
     FloatPoint textOrigin(boxOrigin.x(), boxOrigin.y() + font.fontMetrics().ascent());
 
     bool isPrinting = m_ellipsisBox.renderer().document().printing();

@@ -29,13 +29,16 @@ void HTMLCanvasPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPo
     if (clip)
         clipRecorder = adoptPtr(new ClipRecorder(m_renderHTMLCanvas, paintInfo, contentRect));
 
+    RenderDrawingRecorder recorder(context, m_renderHTMLCanvas, localPaintInfo.phase, pixelSnappedIntRect(paintRect));
+    if (recorder.canUseCachedDrawing())
+        return;
+
     // FIXME: InterpolationNone should be used if ImageRenderingOptimizeContrast is set.
     // See bug for more details: crbug.com/353716.
     InterpolationQuality interpolationQuality = m_renderHTMLCanvas.style()->imageRendering() == ImageRenderingOptimizeContrast ? InterpolationLow : CanvasDefaultInterpolationQuality;
     if (m_renderHTMLCanvas.style()->imageRendering() == ImageRenderingPixelated)
         interpolationQuality = InterpolationNone;
 
-    RenderDrawingRecorder recorder(context, &m_renderHTMLCanvas, localPaintInfo.phase, pixelSnappedIntRect(paintRect));
     InterpolationQuality previousInterpolationQuality = context->imageInterpolationQuality();
     context->setImageInterpolationQuality(interpolationQuality);
     toHTMLCanvasElement(m_renderHTMLCanvas.node())->paint(context, paintRect);

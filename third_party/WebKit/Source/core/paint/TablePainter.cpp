@@ -87,8 +87,9 @@ void TablePainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& pain
 
     LayoutRect rect(paintOffset, m_renderTable.size());
     m_renderTable.subtractCaptionRect(rect);
-    RenderDrawingRecorder recorder(paintInfo.context, &m_renderTable, paintInfo.phase, pixelSnappedIntRect(rect));
-    BoxPainter(m_renderTable).paintMaskImages(paintInfo, rect);
+    RenderDrawingRecorder recorder(paintInfo.context, m_renderTable, paintInfo.phase, pixelSnappedIntRect(rect));
+    if (!recorder.canUseCachedDrawing())
+        BoxPainter(m_renderTable).paintMaskImages(paintInfo, rect);
 }
 
 } // namespace blink

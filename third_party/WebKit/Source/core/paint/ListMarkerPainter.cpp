@@ -36,7 +36,10 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
     if (!paintInfo.rect.intersects(pixelSnappedOverflowRect))
         return;
 
-    RenderDrawingRecorder recorder(paintInfo.context, &m_renderListMarker, paintInfo.phase, pixelSnappedOverflowRect);
+    RenderDrawingRecorder recorder(paintInfo.context, m_renderListMarker, paintInfo.phase, pixelSnappedOverflowRect);
+    if (recorder.canUseCachedDrawing())
+        return;
+
     LayoutRect box(boxOrigin, m_renderListMarker.size());
 
     IntRect marker = m_renderListMarker.getRelativeMarkerRect();

@@ -69,10 +69,12 @@ LayoutRect BoxPainter::boundsForDrawingRecorder(const LayoutPoint& paintOffset)
 
 void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutRect& paintRect)
 {
+    RenderDrawingRecorder recorder(paintInfo.context, m_renderBox, paintInfo.phase, boundsForDrawingRecorder(paintOffset));
+    if (recorder.canUseCachedDrawing())
+        return;
+
     RenderStyle* style = m_renderBox.style();
     BoxDecorationData boxDecorationData(*style, m_renderBox.canRenderBorderImage(), m_renderBox.backgroundHasOpaqueTopLayer(), m_renderBox.backgroundShouldAlwaysBeClipped(), paintInfo.context);
-
-    RenderDrawingRecorder recorder(paintInfo.context, &m_renderBox, paintInfo.phase, boundsForDrawingRecorder(paintOffset));
 
     // FIXME: Should eventually give the theme control over whether the box shadow should paint, since controls could have
     // custom shadows of their own.

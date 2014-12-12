@@ -171,23 +171,24 @@ void TableSectionPainter::paintCell(RenderTableCell* cell, const PaintInfo& pain
 
         TableCellPainter tableCellPainter(*cell);
 
-        RenderDrawingRecorder recorder(paintInfo.context, &m_renderTableSection, paintPhase, tableCellPainter.paintBounds(paintOffset, TableCellPainter::AddOffsetFromParent));
+        RenderDrawingRecorder recorder(paintInfo.context, m_renderTableSection, paintPhase, tableCellPainter.paintBounds(paintOffset, TableCellPainter::AddOffsetFromParent));
+        if (!recorder.canUseCachedDrawing()) {
+            // Column groups and columns first.
+            // FIXME: Columns and column groups do not currently support opacity, and they are being painted "too late" in
+            // the stack, since we have already opened a transparency layer (potentially) for the table row group.
+            // Note that we deliberately ignore whether or not the cell has a layer, since these backgrounds paint "behind" the
+            // cell.
+            tableCellPainter.paintBackgroundsBehindCell(paintInfo, cellPoint, columnGroup);
+            tableCellPainter.paintBackgroundsBehindCell(paintInfo, cellPoint, column);
 
-        // Column groups and columns first.
-        // FIXME: Columns and column groups do not currently support opacity, and they are being painted "too late" in
-        // the stack, since we have already opened a transparency layer (potentially) for the table row group.
-        // Note that we deliberately ignore whether or not the cell has a layer, since these backgrounds paint "behind" the
-        // cell.
-        tableCellPainter.paintBackgroundsBehindCell(paintInfo, cellPoint, columnGroup);
-        tableCellPainter.paintBackgroundsBehindCell(paintInfo, cellPoint, column);
+            // Paint the row group next.
+            tableCellPainter.paintBackgroundsBehindCell(paintInfo, cellPoint, &m_renderTableSection);
 
-        // Paint the row group next.
-        tableCellPainter.paintBackgroundsBehindCell(paintInfo, cellPoint, &m_renderTableSection);
-
-        // Paint the row next, but only if it doesn't have a layer. If a row has a layer, it will be responsible for
-        // painting the row background for the cell.
-        if (!row->hasSelfPaintingLayer())
-            tableCellPainter.paintBackgroundsBehindCell(paintInfo, cellPoint, row);
+            // Paint the row next, but only if it doesn't have a layer. If a row has a layer, it will be responsible for
+            // painting the row background for the cell.
+            if (!row->hasSelfPaintingLayer())
+                tableCellPainter.paintBackgroundsBehindCell(paintInfo, cellPoint, row);
+        }
     }
     if ((!cell->hasSelfPaintingLayer() && !row->hasSelfPaintingLayer()))
         cell->paint(paintInfo, cellPoint);

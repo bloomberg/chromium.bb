@@ -35,9 +35,13 @@ DrawingRecorder::DrawingRecorder(GraphicsContext* context, const DisplayItemClie
 #endif
 
     m_canUseCachedDrawing = context->displayItemList()->clientCacheIsValid(displayItemClient);
-    // FIXME: beginRecording only if !m_canUseCachedDrawing or ENABLE(ASSERT)
-    // after all painters call canUseCachedDrawing().
+#if ENABLE(ASSERT)
+    // Enable recording to check if any painter is still doing unnecessary painting when we can use cache.
     m_context->beginRecording(bounds);
+#else
+    if (!m_canUseCachedDrawing)
+        m_context->beginRecording(bounds);
+#endif
 }
 
 DrawingRecorder::~DrawingRecorder()
@@ -52,10 +56,10 @@ DrawingRecorder::~DrawingRecorder()
     OwnPtr<DisplayItem> displayItem;
 
     if (m_canUseCachedDrawing) {
-        // FIXME: endRecording only if ENABLE(ASSERT), and enable the following ASSERT
-        // after all painters call canUseCachedDrawing().
+#if ENABLE(ASSERT)
         RefPtr<const SkPicture> picture = m_context->endRecording();
-        // ASSERT(!picture || !picture->approximateOpCount());
+        ASSERT(!picture || !picture->approximateOpCount());
+#endif
         displayItem = CachedDisplayItem::create(m_displayItemClient, m_displayItemType);
     } else {
         RefPtr<const SkPicture> picture = m_context->endRecording();

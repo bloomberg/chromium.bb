@@ -131,7 +131,9 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
     if (!m_renderTableCell.table()->currentBorderValue())
         return;
 
-    RenderDrawingRecorder recorder(paintInfo.context, &m_renderTableCell, paintInfo.phase, paintRect);
+    RenderDrawingRecorder recorder(paintInfo.context, m_renderTableCell, paintInfo.phase, paintRect);
+    if (recorder.canUseCachedDrawing())
+        return;
 
     const RenderStyle* styleForCellFlow = m_renderTableCell.styleForCellFlow();
     CollapsedBorderValue leftVal = cachedCollapsedLeftBorder(styleForCellFlow);
@@ -223,7 +225,10 @@ void TableCellPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, 
         return;
 
     LayoutRect paintRect = paintBounds(paintOffset, DoNotAddOffsetFromParent);
-    RenderDrawingRecorder recorder(paintInfo.context, &m_renderTableCell, paintInfo.phase, pixelSnappedIntRect(paintRect));
+    RenderDrawingRecorder recorder(paintInfo.context, m_renderTableCell, paintInfo.phase, pixelSnappedIntRect(paintRect));
+    if (recorder.canUseCachedDrawing())
+        return;
+
     BoxPainter::paintBoxShadow(paintInfo, paintRect, m_renderTableCell.style(), Normal);
 
     // Paint our cell background.

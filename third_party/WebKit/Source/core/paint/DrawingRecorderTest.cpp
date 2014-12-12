@@ -41,12 +41,14 @@ private:
 
 void drawNothing(GraphicsContext* context, RenderView* renderer, PaintPhase phase, const FloatRect& bound)
 {
-    RenderDrawingRecorder drawingRecorder(context, renderer, phase, bound);
+    RenderDrawingRecorder drawingRecorder(context, *renderer, phase, bound);
 }
 
 void drawRect(GraphicsContext* context, RenderView* renderer, PaintPhase phase, const FloatRect& bound)
 {
-    RenderDrawingRecorder drawingRecorder(context, renderer, phase, bound);
+    RenderDrawingRecorder drawingRecorder(context, *renderer, phase, bound);
+    if (drawingRecorder.canUseCachedDrawing())
+        return;
     IntRect rect(0, 0, 10, 10);
     context->drawRect(rect);
 }

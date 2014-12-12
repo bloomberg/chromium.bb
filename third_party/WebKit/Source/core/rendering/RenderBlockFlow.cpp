@@ -2824,8 +2824,9 @@ LayoutRect RenderBlockFlow::blockSelectionGap(const RenderBlock* rootBlock, cons
     LayoutRect gapRect = rootBlock->logicalRectToPhysicalRect(rootBlockPhysicalPosition, LayoutRect(logicalLeft, logicalTop, logicalWidth, logicalHeight));
     if (paintInfo) {
         IntRect selectionGapRect = alignSelectionRectToDevicePixels(gapRect);
-        RenderDrawingRecorder recorder(paintInfo->context, this, paintInfo->phase, selectionGapRect);
-        paintInfo->context->fillRect(selectionGapRect, selectionBackgroundColor());
+        RenderDrawingRecorder recorder(paintInfo->context, *this, paintInfo->phase, selectionGapRect);
+        if (!recorder.canUseCachedDrawing())
+            paintInfo->context->fillRect(selectionGapRect, selectionBackgroundColor());
     }
     return gapRect;
 }
@@ -2907,8 +2908,9 @@ LayoutRect RenderBlockFlow::logicalLeftSelectionGap(const RenderBlock* rootBlock
     LayoutRect gapRect = rootBlock->logicalRectToPhysicalRect(rootBlockPhysicalPosition, LayoutRect(rootBlockLogicalLeft, rootBlockLogicalTop, rootBlockLogicalWidth, logicalHeight));
     if (paintInfo) {
         IntRect selectionGapRect = alignSelectionRectToDevicePixels(gapRect);
-        RenderDrawingRecorder recorder(paintInfo->context, this, paintInfo->phase, selectionGapRect);
-        paintInfo->context->fillRect(selectionGapRect, selObj->selectionBackgroundColor());
+        RenderDrawingRecorder recorder(paintInfo->context, *this, paintInfo->phase, selectionGapRect);
+        if (!recorder.canUseCachedDrawing())
+            paintInfo->context->fillRect(selectionGapRect, selObj->selectionBackgroundColor());
     }
     return gapRect;
 }
@@ -2926,8 +2928,9 @@ LayoutRect RenderBlockFlow::logicalRightSelectionGap(const RenderBlock* rootBloc
     LayoutRect gapRect = rootBlock->logicalRectToPhysicalRect(rootBlockPhysicalPosition, LayoutRect(rootBlockLogicalLeft, rootBlockLogicalTop, rootBlockLogicalWidth, logicalHeight));
     if (paintInfo) {
         IntRect selectionGapRect = alignSelectionRectToDevicePixels(gapRect);
-        RenderDrawingRecorder recorder(paintInfo->context, this, paintInfo->phase, selectionGapRect);
-        paintInfo->context->fillRect(selectionGapRect, selObj->selectionBackgroundColor());
+        RenderDrawingRecorder recorder(paintInfo->context, *this, paintInfo->phase, selectionGapRect);
+        if (!recorder.canUseCachedDrawing())
+            paintInfo->context->fillRect(selectionGapRect, selObj->selectionBackgroundColor());
     }
     return gapRect;
 }
