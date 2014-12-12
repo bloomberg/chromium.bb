@@ -1,8 +1,18 @@
 {
   "Linux Tests": {
     "gtest_tests": [
-      "accessibility_unittests",
-      "app_list_unittests",
+      {
+        "test": "accessibility_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
+        "test": "app_list_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "app_shell_browsertests",
       "app_shell_unittests",
       "aura_unittests",
@@ -41,10 +51,20 @@
       "dbus_unittests",
       "device_unittests",
       "display_unittests",
-      "events_unittests",
+      {
+        "test": "events_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "extensions_unittests",
       "gcm_unit_tests",
-      "gfx_unittests",
+      {
+        "test": "gfx_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "google_apis_unittests",
       "gpu_unittests",
       {
@@ -75,7 +95,12 @@
       "remoting_unittests",
       "sandbox_linux_unittests",
       "sql_unittests",
-      "ui_base_unittests",
+      {
+        "test": "ui_base_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "ui_touch_selection_unittests",
       {
         "test": "sync_integration_tests",
@@ -111,8 +136,18 @@
   },
   "Linux Tests (dbg)(1)(32)": {
     "gtest_tests": [
-      "accessibility_unittests",
-      "app_list_unittests",
+      {
+        "test": "accessibility_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
+        "test": "app_list_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "app_shell_browsertests",
       "app_shell_unittests",
       "aura_unittests",
@@ -151,10 +186,20 @@
       "dbus_unittests",
       "device_unittests",
       "display_unittests",
-      "events_unittests",
+      {
+        "test": "events_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "extensions_unittests",
       "gcm_unit_tests",
-      "gfx_unittests",
+      {
+        "test": "gfx_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "google_apis_unittests",
       "gpu_unittests",
       {
@@ -185,7 +230,12 @@
       "remoting_unittests",
       "sandbox_linux_unittests",
       "sql_unittests",
-      "ui_base_unittests",
+      {
+        "test": "ui_base_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "ui_touch_selection_unittests",
       {
         "test": "sync_integration_tests",
@@ -213,8 +263,18 @@
   },
   "Linux Tests (dbg)(1)": {
     "gtest_tests": [
-      "accessibility_unittests",
-      "app_list_unittests",
+      {
+        "test": "accessibility_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
+        "test": "app_list_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "app_shell_browsertests",
       "app_shell_unittests",
       "aura_unittests",
@@ -253,10 +313,20 @@
       "dbus_unittests",
       "device_unittests",
       "display_unittests",
-      "events_unittests",
+      {
+        "test": "events_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "extensions_unittests",
       "gcm_unit_tests",
-      "gfx_unittests",
+      {
+        "test": "gfx_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "google_apis_unittests",
       "gpu_unittests",
       {
@@ -291,7 +361,12 @@
         "args": ["--test-launcher-print-test-stdio=always"]
       },
       "sql_unittests",
-      "ui_base_unittests",
+      {
+        "test": "ui_base_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "ui_touch_selection_unittests",
       {
         "test": "sync_integration_tests",
