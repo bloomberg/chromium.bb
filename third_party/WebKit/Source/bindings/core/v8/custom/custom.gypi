@@ -40,7 +40,6 @@
             'V8WorkerCustom.cpp',
             'V8WorkerGlobalScopeCustom.cpp',
             'V8XMLHttpRequestCustom.cpp',
-            'V8XSLTProcessorCustom.cpp',
         ],
     },
 }

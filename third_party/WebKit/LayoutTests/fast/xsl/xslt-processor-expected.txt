@@ -83,14 +83,16 @@ Success
 4.2 pass undefined namespace:
 Success
 4.3 pass setParameter an undefined name:
-****Failure**** (expected exception, instead got result: "undefined")
-4.4 pass unsupported value to setParameter:
+Success
+4.4 pass undefined value to setParameter:
+Success
+4.5 pass unsupported value to setParameter:
 ****Failure**** (expected exception, instead got result: "undefined")
 
 5.0 Value getParameter(in DOMString namespaceURI, in DOMString localName):
 
 5.1 pass getParameter an undefined name:
-****Failure**** (expected exception, instead got result: "undefined")
+Success
 5.2 pass getParameter a name which has not been set:
 Success
 5.3 verify getParameter actually gets (and set sets):

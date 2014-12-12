@@ -219,12 +219,14 @@ addResultExpectValue("pass undefined namespace", processor.getParameter(undefine
 // 4.3 pass setParameter an undefined name
 
 var testname = "pass setParameter an undefined name";
-addResultExpectException(testname, function () { return processor.setParameter(undefined, undefined , "Success"); } );
+processor.setParameter(undefined, undefined , "Success");
+addResultExpectValue(testname, processor.getParameter(undefined, undefined), "Success");
 
 // 4.4 pass undefined value
 
 processor.setParameter(undefined, "foo", undefined);
-var testname = "pass undefined value";
+var testname = "pass undefined value to setParameter";
+addResultExpectValue(testname, processor.getParameter(undefined, "foo"), "undefined");
 
 
 // 4.5 pass unsupported value to setParameter (object, for instance?)
@@ -239,7 +241,7 @@ addSectionHeader("Value getParameter(in DOMString namespaceURI, in DOMString loc
 // 5.1 pass undefined name
 
 var testname = "pass getParameter an undefined name";
-addResultExpectException(testname, function () { return processor.getParameter(undefined, undefined); } );
+addResultExpectValue(testname, processor.getParameter(undefined, undefined), "Success");
 
 // 5.2 pass getParameter a name which has not been set
 
@@ -274,7 +276,7 @@ addResultExpectValue(testname, processor.getParameter(null, "test"), undefined);
 processor.setParameter(undefined, "undefined", "Success");
 processor.removeParameter(undefined, undefined);
 var testname = "pass removeParameter undefined name";
-addResultExpectValue(testname, processor.getParameter(undefined, "undefined"), "Success");
+addResultExpectValue(testname, processor.getParameter(undefined, "undefined"), undefined);
 
 // 6.4 pass removeParameter a name which has not been set
 

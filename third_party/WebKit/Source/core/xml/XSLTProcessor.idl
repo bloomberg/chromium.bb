@@ -42,9 +42,9 @@
     [CustomElementCallbacks] DocumentFragment transformToFragment([Default=Undefined] optional Node source, [Default=Undefined] optional Document docVal);
     [CustomElementCallbacks] Document transformToDocument([Default=Undefined] optional Node source);
 
-    [Custom] void setParameter(DOMString namespaceURI, DOMString localName, DOMString value);
-    [Custom, TreatReturnedNullStringAs=Undefined] DOMString getParameter(DOMString namespaceURI, DOMString localName);
-    [Custom] void removeParameter(DOMString namespaceURI, DOMString localName);
+    void setParameter(DOMString? namespaceURI, DOMString localName, DOMString value);
+    [TreatReturnedNullStringAs=Undefined] DOMString getParameter(DOMString? namespaceURI, DOMString localName);
+    void removeParameter(DOMString? namespaceURI, DOMString localName);
     void clearParameters();
 
     void reset();
