@@ -142,7 +142,7 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_Host)
 
     helper.addCSSRules(":host { }");
     RuleSet& ruleSet = helper.ruleSet();
-    const Vector<RuleData>* rules = ruleSet.shadowHostRules();
+    const WillBeHeapVector<RuleData>* rules = ruleSet.shadowHostRules();
     ASSERT_EQ(1u, rules->size());
 }
 
@@ -152,7 +152,7 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_HostWithId)
 
     helper.addCSSRules(":host(#x) { }");
     RuleSet& ruleSet = helper.ruleSet();
-    const Vector<RuleData>* rules = ruleSet.shadowHostRules();
+    const WillBeHeapVector<RuleData>* rules = ruleSet.shadowHostRules();
     ASSERT_EQ(1u, rules->size());
 }
 
@@ -162,7 +162,7 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_HostContext)
 
     helper.addCSSRules(":host-context(*) { }");
     RuleSet& ruleSet = helper.ruleSet();
-    const Vector<RuleData>* rules = ruleSet.shadowHostRules();
+    const WillBeHeapVector<RuleData>* rules = ruleSet.shadowHostRules();
     ASSERT_EQ(1u, rules->size());
 }
 
@@ -172,7 +172,7 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_HostContextWithId)
 
     helper.addCSSRules(":host-context(#x) { }");
     RuleSet& ruleSet = helper.ruleSet();
-    const Vector<RuleData>* rules = ruleSet.shadowHostRules();
+    const WillBeHeapVector<RuleData>* rules = ruleSet.shadowHostRules();
     ASSERT_EQ(1u, rules->size());
 }
 
@@ -182,7 +182,7 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_HostAndHostContextNotInRightmost)
 
     helper.addCSSRules(":host-context(#x) .y, :host(.a) > #b  { }");
     RuleSet& ruleSet = helper.ruleSet();
-    const Vector<RuleData>* shadowRules = ruleSet.shadowHostRules();
+    const WillBeHeapVector<RuleData>* shadowRules = ruleSet.shadowHostRules();
     const TerminatedArray<RuleData>* idRules = ruleSet.idRules("b");
     const TerminatedArray<RuleData>* classRules = ruleSet.classRules("y");
     ASSERT_EQ(0u, shadowRules->size());
@@ -196,7 +196,7 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_HostAndClass)
 
     helper.addCSSRules(".foo:host { }");
     RuleSet& ruleSet = helper.ruleSet();
-    const Vector<RuleData>* rules = ruleSet.shadowHostRules();
+    const WillBeHeapVector<RuleData>* rules = ruleSet.shadowHostRules();
     ASSERT_EQ(0u, rules->size());
 }
 
@@ -206,7 +206,7 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_HostContextAndClass)
 
     helper.addCSSRules(".foo:host-context(*) { }");
     RuleSet& ruleSet = helper.ruleSet();
-    const Vector<RuleData>* rules = ruleSet.shadowHostRules();
+    const WillBeHeapVector<RuleData>* rules = ruleSet.shadowHostRules();
     ASSERT_EQ(0u, rules->size());
 }
 
