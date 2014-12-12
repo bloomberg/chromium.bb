@@ -35,6 +35,11 @@ class ChildAccountService : public KeyedService,
 
   void Init();
 
+  // Sets whether the signed-in account is a child account.
+  // Public so it can be called on platforms where child account detection
+  // happens outside of this class (like Android).
+  void SetIsChildAccount(bool is_child_account);
+
   // KeyedService:
   virtual void Shutdown() override;
 
@@ -66,8 +71,6 @@ class ChildAccountService : public KeyedService,
   void CancelFetchingServiceFlags();
   void OnFlagsFetched(AccountServiceFlagFetcher::ResultCode,
                       const std::vector<std::string>& flags);
-
-  void SetIsChildAccount(bool is_child_account);
 
   void PropagateChildStatusToUser(bool is_child);
 

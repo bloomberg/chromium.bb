@@ -42,6 +42,19 @@ ChildAccountService::ChildAccountService(Profile* profile)
 
 ChildAccountService::~ChildAccountService() {}
 
+void ChildAccountService::SetIsChildAccount(bool is_child_account) {
+  if (profile_->IsChild() == is_child_account)
+    return;
+
+  if (is_child_account) {
+    profile_->GetPrefs()->SetString(prefs::kSupervisedUserId,
+                                    supervised_users::kChildAccountSUID);
+  } else {
+    profile_->GetPrefs()->ClearPref(prefs::kSupervisedUserId);
+  }
+  PropagateChildStatusToUser(is_child_account);
+}
+
 void ChildAccountService::Init() {
   SigninManagerFactory::GetForProfile(profile_)->AddObserver(this);
   SupervisedUserServiceFactory::GetForProfile(profile_)->SetDelegate(this);
@@ -234,19 +247,6 @@ void ChildAccountService::OnFlagsFetched(
       std::find(flags.begin(), flags.end(),
                 kIsChildAccountServiceFlagName) != flags.end();
   SetIsChildAccount(is_child_account);
-}
-
-void ChildAccountService::SetIsChildAccount(bool is_child_account) {
-  if (profile_->IsChild() == is_child_account)
-    return;
-
-  if (is_child_account) {
-    profile_->GetPrefs()->SetString(prefs::kSupervisedUserId,
-                                    supervised_users::kChildAccountSUID);
-  } else {
-    profile_->GetPrefs()->ClearPref(prefs::kSupervisedUserId);
-  }
-  PropagateChildStatusToUser(is_child_account);
 }
 
 void ChildAccountService::PropagateChildStatusToUser(bool is_child) {

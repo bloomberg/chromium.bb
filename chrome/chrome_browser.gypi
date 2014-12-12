@@ -1575,6 +1575,7 @@
       'android/java/src/org/chromium/chrome/browser/BookmarksBridge.java',
       'android/java/src/org/chromium/chrome/browser/banners/AppBannerManager.java',
       'android/java/src/org/chromium/chrome/browser/CertificateViewer.java',
+      'android/java/src/org/chromium/chrome/browser/child_accounts/ChildAccountService.java',
       'android/java/src/org/chromium/chrome/browser/ChromiumApplication.java',
       'android/java/src/org/chromium/chrome/browser/ChromeBrowserProvider.java',
       'android/java/src/org/chromium/chrome/browser/ChromeHttpAuthHandler.java',
@@ -2577,6 +2578,8 @@
     'chrome_browser_supervised_user_sources': [
       'browser/supervised_user/child_accounts/child_account_service.cc',
       'browser/supervised_user/child_accounts/child_account_service.h',
+      'browser/supervised_user/child_accounts/child_account_service_android.cc',
+      'browser/supervised_user/child_accounts/child_account_service_android.h',
       'browser/supervised_user/child_accounts/child_account_service_factory.cc',
       'browser/supervised_user/child_accounts/child_account_service_factory.h',
       'browser/supervised_user/child_accounts/family_info_fetcher.cc',

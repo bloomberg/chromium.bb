@@ -1018,7 +1018,7 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   }
 
 #endif
-#if defined(ENABLE_SUPERVISED_USERS) && !defined(OS_ANDROID)
+#if defined(ENABLE_SUPERVISED_USERS)
   // Initialization needs to happen after extension system initialization (for
   // extension::ManagementPolicy) and InitProfileUserPrefs (for setting the
   // initializing the supervised flag if necessary).

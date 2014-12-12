@@ -12,6 +12,9 @@ public abstract class ChromeSwitches {
     // Switches used from Java.  Please continue switch style used Chrome where
     // options-have-hypens and are_not_split_with_underscores.
 
+    /** Testing: pretend that the switch value is the name of a child account. */
+    public static final String CHILD_ACCOUNT = "child-account";
+
     // Disables the new Website Settings dialog, which replaces the old one.
     // TODO(sashab): Once the new WebsiteSettingsPopup is ready to be permanent,
     // remove this flag and delete WebsiteSettingsLegacyPopup and all it's
