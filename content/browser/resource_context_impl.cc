@@ -68,14 +68,14 @@ void ResourceContext::CreateKeygenHandler(
 }
 
 ChromeBlobStorageContext* GetChromeBlobStorageContextForResourceContext(
-    ResourceContext* resource_context) {
+    const ResourceContext* resource_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return UserDataAdapter<ChromeBlobStorageContext>::Get(
       resource_context, kBlobStorageContextKeyName);
 }
 
 StreamContext* GetStreamContextForResourceContext(
-    ResourceContext* resource_context) {
+    const ResourceContext* resource_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return UserDataAdapter<StreamContext>::Get(
       resource_context, kStreamContextKeyName);

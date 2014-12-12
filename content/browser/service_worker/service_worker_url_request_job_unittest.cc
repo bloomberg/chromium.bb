@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/fileapi/mock_url_request_delegate.h"
+#include "content/browser/resource_context_impl.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -17,12 +18,16 @@
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/browser/streams/stream.h"
+#include "content/browser/streams/stream_context.h"
+#include "content/browser/streams/stream_registry.h"
 #include "content/common/resource_request_body.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
+#include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/io_buffer.h"
@@ -52,8 +57,10 @@ class MockHttpProtocolHandler
  public:
   MockHttpProtocolHandler(
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+      const ResourceContext* resource_context,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context)
       : provider_host_(provider_host),
+        resource_context_(resource_context),
         blob_storage_context_(blob_storage_context) {}
   ~MockHttpProtocolHandler() override {}
 
@@ -65,6 +72,7 @@ class MockHttpProtocolHandler
                                        network_delegate,
                                        provider_host_,
                                        blob_storage_context_,
+                                       resource_context_,
                                        FETCH_REQUEST_MODE_NO_CORS,
                                        FETCH_CREDENTIALS_MODE_OMIT,
                                        REQUEST_CONTEXT_TYPE_HYPERLINK,
@@ -76,6 +84,7 @@ class MockHttpProtocolHandler
 
  private:
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
+  const ResourceContext* resource_context_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
 };
 
@@ -100,6 +109,7 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
 
   void SetUp() override {
     browser_context_.reset(new TestBrowserContext);
+    InitializeResourceContext(browser_context_.get());
     SetUpWithHelper(new EmbeddedWorkerTestHelper(kProcessID));
   }
 
@@ -137,6 +147,7 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
     url_request_job_factory_->SetProtocolHandler(
         "http",
         new MockHttpProtocolHandler(provider_host->AsWeakPtr(),
+                                    browser_context_->GetResourceContext(),
                                     blob_storage_context->AsWeakPtr()));
     url_request_job_factory_->SetProtocolHandler(
         "blob", CreateMockBlobProtocolHandler(blob_storage_context));
@@ -234,6 +245,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, BlobResponse) {
   ChromeBlobStorageContext* blob_storage_context =
       ChromeBlobStorageContext::GetFor(browser_context_.get());
   std::string expected_response;
+  expected_response.reserve((sizeof(kTestData) - 1) * 1024);
   for (int i = 0; i < 1024; ++i) {
     blob_data_->AppendData(kTestData);
     expected_response += kTestData;
@@ -251,6 +263,251 @@ TEST_F(ServiceWorkerURLRequestJobTest, NonExistentBlobUUIDResponse) {
   SetUpWithHelper(new BlobResponder(kProcessID, "blob-id:nothing-is-here", 0));
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   TestRequest(500, "Service Worker Response Error", std::string());
+}
+
+// Responds to fetch events with a stream.
+class StreamResponder : public EmbeddedWorkerTestHelper {
+ public:
+  StreamResponder(int mock_render_process_id,
+                  const GURL& stream_url)
+      : EmbeddedWorkerTestHelper(mock_render_process_id),
+        stream_url_(stream_url) {}
+  ~StreamResponder() override {}
+
+ protected:
+  void OnFetchEvent(int embedded_worker_id,
+                    int request_id,
+                    const ServiceWorkerFetchRequest& request) override {
+    SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
+        embedded_worker_id,
+        request_id,
+        SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
+        ServiceWorkerResponse(GURL(),
+                              200,
+                              "OK",
+                              blink::WebServiceWorkerResponseTypeDefault,
+                              ServiceWorkerHeaderMap(),
+                              "",
+                              0,
+                              stream_url_)));
+  }
+
+  const GURL stream_url_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StreamResponder);
+};
+
+TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse) {
+  const GURL stream_url("blob://stream");
+  StreamContext* stream_context =
+      GetStreamContextForResourceContext(
+          browser_context_->GetResourceContext());
+  scoped_refptr<Stream> stream =
+      new Stream(stream_context->registry(), nullptr, stream_url);
+  SetUpWithHelper(new StreamResponder(kProcessID, stream_url));
+
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  request_ = url_request_context_.CreateRequest(
+      GURL("http://example.com/foo.html"),
+      net::DEFAULT_PRIORITY,
+      &url_request_delegate_,
+      nullptr);
+  request_->set_method("GET");
+  request_->Start();
+
+  std::string expected_response;
+  expected_response.reserve((sizeof(kTestData) - 1) * 1024);
+  for (int i = 0; i < 1024; ++i) {
+    expected_response += kTestData;
+    stream->AddData(kTestData, sizeof(kTestData) - 1);
+  }
+  stream->Finalize();
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(request_->status().is_success());
+  EXPECT_EQ(200,
+            request_->response_headers()->response_code());
+  EXPECT_EQ("OK",
+            request_->response_headers()->GetStatusText());
+  EXPECT_EQ(expected_response, url_request_delegate_.response_data());
+}
+
+TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_DelayedRegistration) {
+  const GURL stream_url("blob://stream");
+  StreamContext* stream_context =
+      GetStreamContextForResourceContext(
+          browser_context_->GetResourceContext());
+  SetUpWithHelper(new StreamResponder(kProcessID, stream_url));
+
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  request_ = url_request_context_.CreateRequest(
+      GURL("http://example.com/foo.html"),
+      net::DEFAULT_PRIORITY,
+      &url_request_delegate_,
+      nullptr);
+  request_->set_method("GET");
+  request_->Start();
+
+  scoped_refptr<Stream> stream =
+      new Stream(stream_context->registry(), nullptr, stream_url);
+  std::string expected_response;
+  expected_response.reserve((sizeof(kTestData) - 1) * 1024);
+  for (int i = 0; i < 1024; ++i) {
+    expected_response += kTestData;
+    stream->AddData(kTestData, sizeof(kTestData) - 1);
+  }
+  stream->Finalize();
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(request_->status().is_success());
+  EXPECT_EQ(200,
+            request_->response_headers()->response_code());
+  EXPECT_EQ("OK",
+            request_->response_headers()->GetStatusText());
+  EXPECT_EQ(expected_response, url_request_delegate_.response_data());
+}
+
+
+TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_QuickFinalize) {
+  const GURL stream_url("blob://stream");
+  StreamContext* stream_context =
+      GetStreamContextForResourceContext(
+          browser_context_->GetResourceContext());
+  scoped_refptr<Stream> stream =
+      new Stream(stream_context->registry(), nullptr, stream_url);
+  std::string expected_response;
+  expected_response.reserve((sizeof(kTestData) - 1) * 1024);
+  for (int i = 0; i < 1024; ++i) {
+    expected_response += kTestData;
+    stream->AddData(kTestData, sizeof(kTestData) - 1);
+  }
+  stream->Finalize();
+  SetUpWithHelper(new StreamResponder(kProcessID, stream_url));
+
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  request_ = url_request_context_.CreateRequest(
+      GURL("http://example.com/foo.html"),
+      net::DEFAULT_PRIORITY,
+      &url_request_delegate_,
+      nullptr);
+  request_->set_method("GET");
+  request_->Start();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(request_->status().is_success());
+  EXPECT_EQ(200,
+            request_->response_headers()->response_code());
+  EXPECT_EQ("OK",
+            request_->response_headers()->GetStatusText());
+  EXPECT_EQ(expected_response, url_request_delegate_.response_data());
+}
+
+
+TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_Flush) {
+  const GURL stream_url("blob://stream");
+  StreamContext* stream_context =
+      GetStreamContextForResourceContext(
+          browser_context_->GetResourceContext());
+  scoped_refptr<Stream> stream =
+      new Stream(stream_context->registry(), nullptr, stream_url);
+  SetUpWithHelper(new StreamResponder(kProcessID, stream_url));
+
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  request_ = url_request_context_.CreateRequest(
+      GURL("http://example.com/foo.html"),
+      net::DEFAULT_PRIORITY,
+      &url_request_delegate_,
+      nullptr);
+  request_->set_method("GET");
+  request_->Start();
+  std::string expected_response;
+  expected_response.reserve((sizeof(kTestData) - 1) * 1024);
+  for (int i = 0; i < 1024; ++i) {
+    expected_response += kTestData;
+    stream->AddData(kTestData, sizeof(kTestData) - 1);;
+    stream->Flush();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(expected_response, url_request_delegate_.response_data());
+  }
+  stream->Finalize();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(request_->status().is_success());
+  EXPECT_EQ(200,
+            request_->response_headers()->response_code());
+  EXPECT_EQ("OK",
+            request_->response_headers()->GetStatusText());
+  EXPECT_EQ(expected_response, url_request_delegate_.response_data());
+}
+
+TEST_F(ServiceWorkerURLRequestJobTest, StreamResponseAndCancel) {
+  const GURL stream_url("blob://stream");
+  StreamContext* stream_context =
+      GetStreamContextForResourceContext(
+          browser_context_->GetResourceContext());
+  scoped_refptr<Stream> stream =
+      new Stream(stream_context->registry(), nullptr, stream_url);
+  ASSERT_EQ(stream.get(),
+            stream_context->registry()->GetStream(stream_url).get());
+  SetUpWithHelper(new StreamResponder(kProcessID, stream_url));
+
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  request_ = url_request_context_.CreateRequest(
+      GURL("http://example.com/foo.html"),
+      net::DEFAULT_PRIORITY,
+      &url_request_delegate_,
+      nullptr);
+  request_->set_method("GET");
+  request_->Start();
+  base::RunLoop().RunUntilIdle();
+
+  std::string expected_response;
+  expected_response.reserve((sizeof(kTestData) - 1) * 1024);
+  for (int i = 0; i < 512; ++i) {
+    expected_response += kTestData;
+    stream->AddData(kTestData, sizeof(kTestData) - 1);
+  }
+  ASSERT_TRUE(stream_context->registry()->GetStream(stream_url).get());
+  request_->Cancel();
+  ASSERT_FALSE(stream_context->registry()->GetStream(stream_url).get());
+  for (int i = 0; i < 512; ++i) {
+    expected_response += kTestData;
+    stream->AddData(kTestData, sizeof(kTestData) - 1);
+  }
+  stream->Finalize();
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(request_->status().is_success());
+}
+
+TEST_F(ServiceWorkerURLRequestJobTest,
+       StreamResponse_DelayedRegistrationAndCancel) {
+  const GURL stream_url("blob://stream");
+  StreamContext* stream_context =
+      GetStreamContextForResourceContext(
+          browser_context_->GetResourceContext());
+  SetUpWithHelper(new StreamResponder(kProcessID, stream_url));
+
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  request_ = url_request_context_.CreateRequest(
+      GURL("http://example.com/foo.html"),
+      net::DEFAULT_PRIORITY,
+      &url_request_delegate_,
+      nullptr);
+  request_->set_method("GET");
+  request_->Start();
+  base::RunLoop().RunUntilIdle();
+  request_->Cancel();
+
+  scoped_refptr<Stream> stream =
+      new Stream(stream_context->registry(), nullptr, stream_url);
+  // The stream should not be registered to the stream registry.
+  ASSERT_FALSE(stream_context->registry()->GetStream(stream_url).get());
+  for (int i = 0; i < 1024; ++i)
+    stream->AddData(kTestData, sizeof(kTestData) - 1);
+  stream->Finalize();
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(request_->status().is_success());
 }
 
 // TODO(kinuko): Add more tests with different response data and also for

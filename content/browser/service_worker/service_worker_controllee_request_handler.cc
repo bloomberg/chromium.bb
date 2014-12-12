@@ -91,6 +91,7 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
                                         network_delegate,
                                         provider_host_,
                                         blob_storage_context_,
+                                        resource_context,
                                         request_mode_,
                                         credentials_mode_,
                                         request_context_type_,

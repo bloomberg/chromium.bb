@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_RESOURCE_CONTEXT_IMPL_H_
 #define CONTENT_BROWSER_RESOURCE_CONTEXT_IMPL_H_
 
+#include "content/common/content_export.h"
 #include "content/public/browser/resource_context.h"
 
 namespace content {
@@ -19,16 +20,16 @@ class URLDataManagerBackend;
 // public API.
 
 ChromeBlobStorageContext* GetChromeBlobStorageContextForResourceContext(
-    ResourceContext* resource_context);
+    const ResourceContext* resource_context);
 
-StreamContext* GetStreamContextForResourceContext(
-    ResourceContext* resource_context);
+CONTENT_EXPORT StreamContext* GetStreamContextForResourceContext(
+    const ResourceContext* resource_context);
 
 URLDataManagerBackend* GetURLDataManagerForResourceContext(
     ResourceContext* context);
 
 // Initialize the above data on the ResourceContext from a given BrowserContext.
-void InitializeResourceContext(BrowserContext* browser_context);
+CONTENT_EXPORT void InitializeResourceContext(BrowserContext* browser_context);
 
 }  // namespace content
 
