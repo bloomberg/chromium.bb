@@ -222,6 +222,7 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
       const = 0;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SSLClientSocket, SerializeNextProtos);
   // For signed_cert_timestamps_received_ and stapled_ocsp_response_received_.
   FRIEND_TEST_ALL_PREFIXES(SSLClientSocketTest,
                            ConnectSignedCertTimestampsEnabledTLSExtension);
