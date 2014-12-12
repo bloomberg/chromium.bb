@@ -159,7 +159,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       compositor_(new VideoFrameCompositor(
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNaturalSizeChanged),
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnOpacityChanged))),
-      text_track_index_(0),
       encrypted_media_support_(
           cdm_factory.Pass(),
           client,
@@ -851,8 +850,7 @@ void WebMediaPlayerImpl::OnAddTextTrack(
       blink::WebString::fromUTF8(config.id());
 
   scoped_ptr<WebInbandTextTrackImpl> web_inband_text_track(
-      new WebInbandTextTrackImpl(web_kind, web_label, web_language, web_id,
-                                 text_track_index_++));
+      new WebInbandTextTrackImpl(web_kind, web_label, web_language, web_id));
 
   scoped_ptr<TextTrack> text_track(new TextTrackImpl(
       main_task_runner_, client_, web_inband_text_track.Pass()));

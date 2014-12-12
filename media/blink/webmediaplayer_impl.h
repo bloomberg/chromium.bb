@@ -306,9 +306,6 @@ class MEDIA_EXPORT WebMediaPlayerImpl
   // playback.
   scoped_ptr<cc_blink::WebLayerImpl> video_weblayer_;
 
-  // Text track objects get a unique index value when they're created.
-  int text_track_index_;
-
   EncryptedMediaPlayerSupport encrypted_media_support_;
 
   scoped_ptr<RendererFactory> renderer_factory_;

@@ -12,14 +12,12 @@ WebInbandTextTrackImpl::WebInbandTextTrackImpl(
     Kind kind,
     const blink::WebString& label,
     const blink::WebString& language,
-    const blink::WebString& id,
-    int index)
+    const blink::WebString& id)
     : client_(NULL),
       kind_(kind),
       label_(label),
       language_(language),
-      id_(id),
-      index_(index) {
+      id_(id) {
 }
 
 WebInbandTextTrackImpl::~WebInbandTextTrackImpl() {
@@ -49,10 +47,6 @@ blink::WebString WebInbandTextTrackImpl::language() const {
 
 blink::WebString WebInbandTextTrackImpl::id() const {
   return id_;
-}
-
-int WebInbandTextTrackImpl::textTrackIndex() const {
-  return index_;
 }
 
 }  // namespace media
