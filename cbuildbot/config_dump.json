@@ -19779,6 +19779,7 @@
             "mipsel-o32-generic"
         ],
         "build_type": "full",
+        "chrome_sdk": true,
         "chroot_replace": true,
         "description": "Full Builds",
         "git_sync": true,
@@ -19789,7 +19790,7 @@
             "factory_install"
         ],
         "name": "mipsel-o32-generic-full",
-        "sync_chrome": false,
+        "prebuilts": "public",
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,

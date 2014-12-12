@@ -1492,10 +1492,6 @@ def _CreateConfigsForBoards(config_base, boards, name_suffix):
                            _base_configs[board])
 
 
-full.add_config('mipsel-o32-generic-full',
-  _base_configs['mipsel-o32-generic'],
-)
-
 def _AddFullConfigs():
   """Add x86 and arm full configs."""
   for board in _all_full_boards:
