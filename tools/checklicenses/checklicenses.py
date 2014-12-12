@@ -211,14 +211,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/lcov/contrib/galaxy/genflat.pl': [
         'GPL (v2 or later)',
     ],
-    'third_party/libc++/trunk/include/support/solaris': [
-        # http://llvm.org/bugs/show_bug.cgi?id=18291
-        'UNKNOWN',
-    ],
-    'third_party/libc++/trunk/src/support/solaris/xlocale.c': [
-        # http://llvm.org/bugs/show_bug.cgi?id=18291
-        'UNKNOWN',
-    ],
     'third_party/libc++/trunk/test': [
         # http://llvm.org/bugs/show_bug.cgi?id=18291
         'UNKNOWN',
