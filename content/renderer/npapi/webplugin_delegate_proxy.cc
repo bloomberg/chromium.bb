@@ -543,12 +543,12 @@ void WebPluginDelegateProxy::SendUpdateGeometry(
   {
     if (transport_stores_[0].bitmap)
       CopySharedMemoryHandleForMessage(
-          transport_stores_[0].bitmap->memory()->handle(),
+          transport_stores_[0].bitmap->shared_memory()->handle(),
           &param.windowless_buffer0, channel_host_->peer_pid());
 
     if (transport_stores_[1].bitmap)
       CopySharedMemoryHandleForMessage(
-          transport_stores_[1].bitmap->memory()->handle(),
+          transport_stores_[1].bitmap->shared_memory()->handle(),
           &param.windowless_buffer1, channel_host_->peer_pid());
   }
 
@@ -642,14 +642,14 @@ bool WebPluginDelegateProxy::CreateLocalBitmap(
 #endif
 
 bool WebPluginDelegateProxy::CreateSharedBitmap(
-    scoped_ptr<cc::SharedBitmap>* memory,
+    scoped_ptr<SharedMemoryBitmap>* memory,
     scoped_ptr<skia::PlatformCanvas>* canvas) {
-  *memory =
-      ChildThread::current()->shared_bitmap_manager()->AllocateSharedBitmap(
-          plugin_rect_.size());
+  *memory = ChildThread::current()
+                ->shared_bitmap_manager()
+                ->AllocateSharedMemoryBitmap(plugin_rect_.size());
   if (!memory->get())
     return false;
-  DCHECK((*memory)->memory());
+  DCHECK((*memory)->shared_memory());
 #if defined(OS_POSIX)
   canvas->reset(skia::CreatePlatformCanvas(
       plugin_rect_.width(), plugin_rect_.height(), true, (*memory)->pixels(),
@@ -657,7 +657,7 @@ bool WebPluginDelegateProxy::CreateSharedBitmap(
 #else
   canvas->reset(skia::CreatePlatformCanvas(
       plugin_rect_.width(), plugin_rect_.height(), true,
-      (*memory)->memory()->handle(), skia::RETURN_NULL_ON_FAILURE));
+      (*memory)->shared_memory()->handle(), skia::RETURN_NULL_ON_FAILURE));
 #endif
   return !!canvas->get();
 }

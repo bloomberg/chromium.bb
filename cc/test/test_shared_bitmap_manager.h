@@ -10,6 +10,10 @@
 #include "base/synchronization/lock.h"
 #include "cc/resources/shared_bitmap_manager.h"
 
+namespace base {
+class SharedMemory;
+}  // namespace base
+
 namespace cc {
 
 class TestSharedBitmapManager : public SharedBitmapManager {

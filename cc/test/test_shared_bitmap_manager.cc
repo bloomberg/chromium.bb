@@ -18,26 +18,10 @@ class OwnedSharedBitmap : public SharedBitmap {
 
   ~OwnedSharedBitmap() override {}
 
-  base::SharedMemory* memory() override { return shared_memory_.get(); }
-
  private:
   scoped_ptr<base::SharedMemory> shared_memory_;
 };
 
-class UnownedSharedBitmap : public SharedBitmap {
- public:
-  UnownedSharedBitmap(base::SharedMemory* shared_memory,
-                      const SharedBitmapId& id)
-      : SharedBitmap(static_cast<uint8*>(shared_memory->memory()), id),
-        shared_memory_(shared_memory) {}
-
-  ~UnownedSharedBitmap() override {}
-
-  base::SharedMemory* memory() override { return shared_memory_; }
-
- private:
-  base::SharedMemory* shared_memory_;
-};
 }  // namespace
 
 TestSharedBitmapManager::TestSharedBitmapManager() {}
@@ -60,7 +44,8 @@ scoped_ptr<SharedBitmap> TestSharedBitmapManager::GetSharedBitmapFromId(
   base::AutoLock lock(lock_);
   if (bitmap_map_.find(id) == bitmap_map_.end())
     return nullptr;
-  return make_scoped_ptr(new UnownedSharedBitmap(bitmap_map_[id], id));
+  uint8* pixels = static_cast<uint8*>(bitmap_map_[id]->memory());
+  return make_scoped_ptr(new SharedBitmap(pixels, id));
 }
 
 }  // namespace cc

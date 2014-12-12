@@ -6,12 +6,9 @@
 #define CC_RESOURCES_SHARED_BITMAP_H_
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "ui/gfx/geometry/size.h"
-
-namespace base { class SharedMemory; }
 
 namespace cc {
 typedef gpu::Mailbox SharedBitmapId;
@@ -23,8 +20,6 @@ class CC_EXPORT SharedBitmap {
   virtual ~SharedBitmap();
 
   uint8* pixels() { return pixels_; }
-
-  virtual base::SharedMemory* memory() = 0;
 
   const SharedBitmapId& id() { return id_; }
 

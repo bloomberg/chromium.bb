@@ -34,15 +34,13 @@ namespace base {
 class WaitableEvent;
 }
 
-namespace cc {
-class SharedBitmap;
-}
 
 namespace content {
 class NPObjectStub;
 class PluginChannelHost;
 class RenderFrameImpl;
 class RenderViewImpl;
+class SharedMemoryBitmap;
 class WebPluginImpl;
 
 // An implementation of WebPluginDelegate that proxies all calls to
@@ -158,7 +156,7 @@ class WebPluginDelegateProxy
     SharedBitmap();
     ~SharedBitmap();
 
-    scoped_ptr<cc::SharedBitmap> bitmap;
+    scoped_ptr<SharedMemoryBitmap> bitmap;
     scoped_ptr<SkCanvas> canvas;
   };
 
@@ -232,11 +230,11 @@ class WebPluginDelegateProxy
     return transport_stores_[back_buffer_index()].canvas.get();
   }
 
-  cc::SharedBitmap* front_buffer_bitmap() const {
+  SharedMemoryBitmap* front_buffer_bitmap() const {
     return transport_stores_[front_buffer_index()].bitmap.get();
   }
 
-  cc::SharedBitmap* back_buffer_bitmap() const {
+  SharedMemoryBitmap* back_buffer_bitmap() const {
     return transport_stores_[back_buffer_index()].bitmap.get();
   }
 
@@ -248,7 +246,7 @@ class WebPluginDelegateProxy
 #endif
 
   // Creates a shared memory section and canvas.
-  bool CreateSharedBitmap(scoped_ptr<cc::SharedBitmap>* memory,
+  bool CreateSharedBitmap(scoped_ptr<SharedMemoryBitmap>* memory,
                           scoped_ptr<SkCanvas>* canvas);
 
   // Called for cleanup during plugin destruction. Normally right before the

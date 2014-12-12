@@ -45,8 +45,6 @@ class HostSharedBitmap : public cc::SharedBitmap {
       manager_->FreeSharedMemoryFromMap(id());
   }
 
-  base::SharedMemory* memory() override { return bitmap_data_->memory.get(); }
-
  private:
   scoped_refptr<BitmapData> bitmap_data_;
   HostSharedBitmapManager* manager_;

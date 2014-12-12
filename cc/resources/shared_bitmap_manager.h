@@ -6,6 +6,7 @@
 #define CC_RESOURCES_SHARED_BITMAP_MANAGER_H_
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/resources/shared_bitmap.h"
 #include "ui/gfx/geometry/size.h"
