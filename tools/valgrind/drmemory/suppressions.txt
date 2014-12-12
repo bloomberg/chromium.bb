@@ -673,17 +673,11 @@ content.dll!content::MessageRouter::RouteMessage
 HANDLE LEAK
 name=http://crbug.com/441785
 system call NtCreateSection
-KERNELBASE.dll!CreateFileMappingW
-base.dll!base::SharedMemory::Create
-base.dll!base::SharedMemory::CreateAnonymous
-content.dll!content::ChildThread::AllocateSharedMemory
-content.dll!content::ChildSharedBitmapManager::AllocateSharedMemoryBitmap
-content.dll!content::ChildSharedBitmapManager::AllocateSharedBitmap
-cc.dll!cc::ResourceProvider::CreateBitmap
-cc.dll!cc::ResourceProvider::CreateManagedResource
-cc.dll!cc::ScopedResource::AllocateManaged
-cc.dll!cc::ResourcePool::AcquireResource
-cc.dll!cc::TileManager::CreateRasterTask
-cc.dll!cc::TileManager::ScheduleTasks
-cc.dll!cc::TileManager::PrepareTiles
-cc.dll!cc::LayerTreeHostImpl::PrepareTiles
+*!CreateFileMappingW
+*!base::SharedMemory::Create
+*!base::SharedMemory::CreateAnonymous
+*!content::ChildThread::AllocateSharedMemory
+*!content::ChildSharedBitmapManager::AllocateSharedMemoryBitmap
+*!content::ChildSharedBitmapManager::AllocateSharedBitmap
+*!cc::ResourceProvider::CreateBitmap
+*!cc::ResourceProvider::Create*Resource
