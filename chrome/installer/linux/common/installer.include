@@ -138,8 +138,10 @@ stage_install_common() {
 
   # V8 snapshot files; only necessary when v8_use_external_startup_data is
   # set to 1 in build/common.gypi.
-  install -m 644 "${BUILDDIR}/natives_blob.bin" "${STAGEDIR}/${INSTALLDIR}/"
-  install -m 644 "${BUILDDIR}/snapshot_blob.bin" "${STAGEDIR}/${INSTALLDIR}/"
+  if [ -f "${BUILDDIR}/natives_blob.bin" ]; then
+    install -m 644 "${BUILDDIR}/natives_blob.bin" "${STAGEDIR}/${INSTALLDIR}/"
+    install -m 644 "${BUILDDIR}/snapshot_blob.bin" "${STAGEDIR}/${INSTALLDIR}/"
+  fi
 
   # sandbox
   # Rename sandbox binary with hyphen instead of underscore because that's what
