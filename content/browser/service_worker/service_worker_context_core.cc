@@ -409,31 +409,28 @@ ServiceWorkerContextCore::TransferProviderHostOut(
     int process_id, int provider_id) {
   ProviderMap* map = GetProviderMapForProcess(process_id);
   ServiceWorkerProviderHost* transferee = map->Lookup(provider_id);
-  int frame_id = transferee->frame_id();
-  transferee->PrepareForCrossSiteTransfer();
-
   ServiceWorkerProviderHost* replacement =
       new ServiceWorkerProviderHost(process_id,
-                                    frame_id,
+                                    transferee->frame_id(),
                                     provider_id,
                                     AsWeakPtr(),
                                     transferee->dispatcher_host());
   map->Replace(provider_id, replacement);
-
+  transferee->PrepareForCrossSiteTransfer();
   return make_scoped_ptr(transferee);
 }
 
 void ServiceWorkerContextCore::TransferProviderHostIn(
     int new_process_id, int new_provider_id,
-    scoped_ptr<ServiceWorkerProviderHost> transferree) {
+    scoped_ptr<ServiceWorkerProviderHost> transferee) {
   ProviderMap* map = GetProviderMapForProcess(new_process_id);
   ServiceWorkerProviderHost* temp = map->Lookup(new_provider_id);
   DCHECK(temp->document_url().is_empty());
-  transferree->CompleteCrossSiteTransfer(new_process_id,
-                                         temp->frame_id(),
-                                         new_provider_id,
-                                         temp->dispatcher_host());
-  map->Replace(new_provider_id, transferree.release());
+  transferee->CompleteCrossSiteTransfer(new_process_id,
+                                        temp->frame_id(),
+                                        new_provider_id,
+                                        temp->dispatcher_host());
+  map->Replace(new_provider_id, transferee.release());
   delete temp;
 }
 

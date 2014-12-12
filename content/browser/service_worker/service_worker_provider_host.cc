@@ -258,8 +258,13 @@ void ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
   for (const GURL& pattern : associated_patterns_)
     DecreaseProcessReference(pattern);
 
-  if (associated_registration_.get())
+  if (associated_registration_.get()) {
     DecreaseProcessReference(associated_registration_->pattern());
+    if (dispatcher_host_) {
+      dispatcher_host_->Send(new ServiceWorkerMsg_DisassociateRegistration(
+          kDocumentMainThreadId, provider_id()));
+    }
+  }
 
   render_process_id_ = ChildProcessHost::kInvalidUniqueID;
   render_frame_id_ = MSG_ROUTING_NONE;
