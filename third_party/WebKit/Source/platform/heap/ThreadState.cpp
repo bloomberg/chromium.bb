@@ -92,7 +92,7 @@ static void* getStackStart()
     return __libc_stack_end;
 #else
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 #endif
 #elif OS(MACOSX)
     return pthread_get_stackaddr_np(pthread_self());
@@ -134,11 +134,11 @@ static size_t getUnderestimatedStackSize()
 #endif
 }
 
-WTF::ThreadSpecific<ThreadState*>* ThreadState::s_threadSpecific = 0;
+WTF::ThreadSpecific<ThreadState*>* ThreadState::s_threadSpecific = nullptr;
 uintptr_t ThreadState::s_mainThreadStackStart = 0;
 uintptr_t ThreadState::s_mainThreadUnderestimatedStackSize = 0;
 uint8_t ThreadState::s_mainThreadStateStorage[sizeof(ThreadState)];
-SafePointBarrier* ThreadState::s_safePointBarrier = 0;
+SafePointBarrier* ThreadState::s_safePointBarrier = nullptr;
 
 static Mutex& threadAttachMutex()
 {
@@ -153,7 +153,7 @@ static double lockingTimeout()
 }
 
 
-typedef void (*PushAllRegistersCallback)(SafePointBarrier*, ThreadState*, intptr_t*);
+using PushAllRegistersCallback = void (*)(SafePointBarrier*, ThreadState*, intptr_t*);
 extern "C" void pushAllRegisters(SafePointBarrier*, ThreadState*, PushAllRegistersCallback);
 
 class SafePointBarrier {
@@ -176,13 +176,12 @@ public:
         releaseStore(&m_canResume, 0);
 
         ThreadState* current = ThreadState::current();
-        for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it) {
-            if (*it == current)
+        for (ThreadState* state : threads) {
+            if (state == current)
                 continue;
 
-            const Vector<ThreadState::Interruptor*>& interruptors = (*it)->interruptors();
-            for (size_t i = 0; i < interruptors.size(); i++)
-                interruptors[i]->requestInterrupt();
+            for (ThreadState::Interruptor* interruptor : state->interruptors())
+                interruptor->requestInterrupt();
         }
 
         while (acquireLoad(&m_unparkedThreadCount) > 0) {
@@ -217,20 +216,19 @@ public:
         }
 
         ThreadState* current = ThreadState::current();
-        for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it) {
-            if (*it == current)
+        for (ThreadState* state : threads) {
+            if (state == current)
                 continue;
 
-            const Vector<ThreadState::Interruptor*>& interruptors = (*it)->interruptors();
-            for (size_t i = 0; i < interruptors.size(); i++)
-                interruptors[i]->clearInterrupt();
+            for (ThreadState::Interruptor* interruptor : state->interruptors())
+                interruptor->clearInterrupt();
         }
 
         threadAttachMutex().unlock();
         ASSERT(ThreadState::current()->isAtSafePoint());
     }
 
-    void checkAndPark(ThreadState* state, SafePointAwareMutexLocker* locker = 0)
+    void checkAndPark(ThreadState* state, SafePointAwareMutexLocker* locker = nullptr)
     {
         ASSERT(!state->sweepForbidden());
         if (!acquireLoad(&m_canResume)) {
@@ -251,7 +249,7 @@ public:
         pushAllRegisters(this, state, enterSafePointAfterPushRegisters);
     }
 
-    void leaveSafePoint(ThreadState* state, SafePointAwareMutexLocker* locker = 0)
+    void leaveSafePoint(ThreadState* state, SafePointAwareMutexLocker* locker = nullptr)
     {
         if (atomicIncrement(&m_unparkedThreadCount) > 0)
             checkAndPark(state, locker);
@@ -323,7 +321,7 @@ ThreadState::ThreadState()
     , m_persistents(adoptPtr(new PersistentAnchor()))
     , m_startOfStack(reinterpret_cast<intptr_t*>(getStackStart()))
     , m_endOfStack(reinterpret_cast<intptr_t*>(getStackStart()))
-    , m_safePointScopeMarker(0)
+    , m_safePointScopeMarker(nullptr)
     , m_atSafePoint(false)
     , m_interruptors()
     , m_didV8GCAfterLastGC(false)
@@ -333,7 +331,7 @@ ThreadState::ThreadState()
     , m_shouldFlushHeapDoesNotContainCache(false)
     , m_collectionRate(1.0)
     , m_gcState(NoGCScheduled)
-    , m_traceDOMWrappers(0)
+    , m_traceDOMWrappers(nullptr)
 #if defined(ADDRESS_SANITIZER)
     , m_asanFakeStack(__asan_get_current_fake_stack())
 #endif
@@ -357,11 +355,11 @@ ThreadState::~ThreadState()
     checkThread();
     ASSERT(gcState() == NoGCScheduled);
     delete m_weakCallbackStack;
-    m_weakCallbackStack = 0;
-    for (int i = 0; i < NumberOfHeaps; i++)
+    m_weakCallbackStack = nullptr;
+    for (int i = 0; i < NumberOfHeaps; ++i)
         delete m_heaps[i];
     deleteAllValues(m_interruptors);
-    **s_threadSpecific = 0;
+    **s_threadSpecific = nullptr;
     if (isMainThread()) {
         s_mainThreadStackStart = 0;
         s_mainThreadUnderestimatedStackSize = 0;
@@ -377,7 +375,7 @@ void ThreadState::init()
 void ThreadState::shutdown()
 {
     delete s_safePointBarrier;
-    s_safePointBarrier = 0;
+    s_safePointBarrier = nullptr;
 
     // Thread-local storage shouldn't be disposed, so we don't call ~ThreadSpecific().
 }
@@ -484,8 +482,8 @@ void ThreadState::cleanup()
         attachedThreads().remove(this);
     }
 
-    for (size_t i = 0; i < m_cleanupTasks.size(); i++)
-        m_cleanupTasks[i]->postCleanup();
+    for (auto& task : m_cleanupTasks)
+        task->postCleanup();
     m_cleanupTasks.clear();
 }
 
@@ -508,17 +506,15 @@ void ThreadState::visitPersistentRoots(Visitor* visitor)
         globalRoots()->trace(visitor);
     }
 
-    AttachedThreadStateSet& threads = attachedThreads();
-    for (AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it)
-        (*it)->visitPersistents(visitor);
+    for (ThreadState* state : attachedThreads())
+        state->visitPersistents(visitor);
 }
 
 void ThreadState::visitStackRoots(Visitor* visitor)
 {
     TRACE_EVENT0("blink_gc", "ThreadState::visitStackRoots");
-    AttachedThreadStateSet& threads = attachedThreads();
-    for (AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it)
-        (*it)->visitStack(visitor);
+    for (ThreadState* state : attachedThreads())
+        state->visitStack(visitor);
 }
 
 NO_SANITIZE_ADDRESS
@@ -527,8 +523,8 @@ void ThreadState::visitAsanFakeStackForPointer(Visitor* visitor, Address ptr)
 #if defined(ADDRESS_SANITIZER)
     Address* start = reinterpret_cast<Address*>(m_startOfStack);
     Address* end = reinterpret_cast<Address*>(m_endOfStack);
-    Address* fakeFrameStart = 0;
-    Address* fakeFrameEnd = 0;
+    Address* fakeFrameStart = nullptr;
+    Address* fakeFrameEnd = nullptr;
     Address* maybeFakeFrame = reinterpret_cast<Address*>(ptr);
     Address* realFrameForFakeFrame =
         reinterpret_cast<Address*>(
@@ -542,7 +538,7 @@ void ThreadState::visitAsanFakeStackForPointer(Visitor* visitor, Address ptr)
             // The real stack address for the asan fake frame is
             // within the stack range that we need to scan so we need
             // to visit the values in the fake frame.
-            for (Address* p = fakeFrameStart; p < fakeFrameEnd; p++)
+            for (Address* p = fakeFrameStart; p < fakeFrameEnd; ++p)
                 Heap::checkAndMarkPointer(visitor, *p);
         }
     }
@@ -583,8 +579,7 @@ void ThreadState::visitStack(Visitor* visitor)
         visitAsanFakeStackForPointer(visitor, ptr);
     }
 
-    for (Vector<Address>::iterator it = m_safePointStackCopy.begin(); it != m_safePointStackCopy.end(); ++it) {
-        Address ptr = *it;
+    for (Address ptr : m_safePointStackCopy) {
 #if defined(MEMORY_SANITIZER)
         // See the comment above.
         __msan_unpoison(&ptr, sizeof(ptr));
@@ -606,11 +601,9 @@ void ThreadState::visitPersistents(Visitor* visitor)
 #if ENABLE(GC_PROFILE_MARKING)
 const GCInfo* ThreadState::findGCInfo(Address address)
 {
-    BaseHeapPage* page = pageFromAddress(address);
-    if (page) {
+    if (BaseHeapPage* page = pageFromAddress(address))
         return page->findGCInfo(address);
-    }
-    return 0;
+    return nullptr;
 }
 #endif
 
@@ -782,7 +775,9 @@ void ThreadState::setGCState(GCState gcState)
     case GCScheduled:
     case GCScheduledForTesting:
         checkThread();
-        RELEASE_ASSERT(m_gcState != GCRunning && m_gcState != SweepScheduled && m_gcState != Sweeping);
+        RELEASE_ASSERT(m_gcState != GCRunning);
+        RELEASE_ASSERT(m_gcState != SweepScheduled);
+        RELEASE_ASSERT(m_gcState != Sweeping);
         break;
     case StoppingOtherThreads:
         checkThread();
@@ -828,15 +823,15 @@ void ThreadState::runScheduledGC(StackState stackState)
 void ThreadState::makeConsistentForSweeping()
 {
     ASSERT(isInGC());
-    for (int i = 0; i < NumberOfHeaps; i++)
+    for (int i = 0; i < NumberOfHeaps; ++i)
         m_heaps[i]->makeConsistentForSweeping();
 }
 
 void ThreadState::prepareRegionTree()
 {
     // Add the regions allocated by this thread to the region search tree.
-    for (size_t i = 0; i < m_allocatedRegionsSinceLastGC.size(); ++i)
-        Heap::addPageMemoryRegion(m_allocatedRegionsSinceLastGC[i]);
+    for (PageMemoryRegion* region : m_allocatedRegionsSinceLastGC)
+        Heap::addPageMemoryRegion(region);
     m_allocatedRegionsSinceLastGC.clear();
 }
 
@@ -851,7 +846,7 @@ void ThreadState::flushHeapDoesNotContainCacheIfNeeded()
 void ThreadState::preGC()
 {
     ASSERT(!isInGC());
-    for (int i = 0; i < NumberOfHeaps; i++) {
+    for (int i = 0; i < NumberOfHeaps; ++i) {
         BaseHeap* heap = m_heaps[i];
         heap->makeConsistentForSweeping();
         // If a new GC is requested before this thread got around to sweep, ie. due to the
@@ -877,23 +872,23 @@ void ThreadState::postGC()
 void ThreadState::prepareHeapForTermination()
 {
     checkThread();
-    for (int i = 0; i < NumberOfHeaps; i++)
+    for (int i = 0; i < NumberOfHeaps; ++i)
         m_heaps[i]->prepareHeapForTermination();
 }
 
 BaseHeapPage* ThreadState::pageFromAddress(Address address)
 {
-    for (int i = 0; i < NumberOfHeaps; i++) {
+    for (int i = 0; i < NumberOfHeaps; ++i) {
         if (BaseHeapPage* page = m_heaps[i]->pageFromAddress(address))
             return page;
     }
-    return 0;
+    return nullptr;
 }
 
 size_t ThreadState::objectPayloadSizeForTesting()
 {
     size_t objectPayloadSize = 0;
-    for (int i = 0; i < NumberOfHeaps; i++)
+    for (int i = 0; i < NumberOfHeaps; ++i)
         objectPayloadSize += m_heaps[i]->objectPayloadSizeForTesting();
     return objectPayloadSize;
 }
@@ -1045,19 +1040,19 @@ void ThreadState::performPendingSweep()
 
         {
             TRACE_EVENT0("blink_gc", "ThreadState::sweepNonFinalizedHeaps");
-            for (int i = 0; i < NumberOfNonFinalizedHeaps; i++) {
+            for (int i = 0; i < NumberOfNonFinalizedHeaps; ++i) {
                 m_heaps[FirstNonFinalizedHeap + i]->sweep();
             }
         }
 
         {
             TRACE_EVENT0("blink_gc", "ThreadState::sweepFinalizedHeaps");
-            for (int i = 0; i < NumberOfFinalizedHeaps; i++) {
+            for (int i = 0; i < NumberOfFinalizedHeaps; ++i) {
                 m_heaps[FirstFinalizedHeap + i]->sweep();
             }
         }
 
-        for (int i = 0; i < NumberOfHeaps; i++)
+        for (int i = 0; i < NumberOfHeaps; ++i)
             m_heaps[i]->postSweepProcessing();
     }
 
@@ -1150,9 +1145,8 @@ const GCInfo* ThreadState::findGCInfoFromAllThreads(Address address)
     if (needLockForIteration)
         threadAttachMutex().lock();
 
-    ThreadState::AttachedThreadStateSet& threads = attachedThreads();
-    for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it) {
-        if (const GCInfo* gcInfo = (*it)->findGCInfo(address)) {
+    for (ThreadState* state : attachedThreads()) {
+        if (const GCInfo* gcInfo = state->findGCInfo(address)) {
             if (needLockForIteration)
                 threadAttachMutex().unlock();
             return gcInfo;
@@ -1160,7 +1154,7 @@ const GCInfo* ThreadState::findGCInfoFromAllThreads(Address address)
     }
     if (needLockForIteration)
         threadAttachMutex().unlock();
-    return 0;
+    return nullptr;
 }
 #endif
 

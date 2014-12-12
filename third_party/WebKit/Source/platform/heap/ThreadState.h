@@ -63,13 +63,13 @@ template<typename Header> class ThreadHeap;
 class CallbackStack;
 class PageMemoryRegion;
 
-typedef uint8_t* Address;
+using Address = uint8_t*;
 
-typedef void (*FinalizationCallback)(void*);
-typedef void (*VisitorCallback)(Visitor*, void* self);
-typedef VisitorCallback TraceCallback;
-typedef VisitorCallback WeakPointerCallback;
-typedef VisitorCallback EphemeronCallback;
+using FinalizationCallback = void (*)(void*);
+using VisitorCallback = void (*)(Visitor*, void* self);
+using TraceCallback = VisitorCallback;
+using WeakPointerCallback = VisitorCallback;
+using EphemeronCallback = VisitorCallback;
 
 // ThreadAffinity indicates which threads objects can be used on. We
 // distinguish between objects that can be used on the main thread
@@ -159,7 +159,7 @@ template<typename U> class ThreadingTrait<const U> : public ThreadingTrait<U> { 
             self->method(); \
             return true; \
         } \
-        typedef char UsingPreFinazlizerMacroNeedsTrailingSemiColon
+        using UsingPreFinazlizerMacroNeedsTrailingSemiColon = char
 
 // List of typed heaps. The list is used to generate the implementation
 // of typed heap related methods.
@@ -204,8 +204,8 @@ enum TypedHeaps {
 // Base implementation for HeapIndexTrait found below.
 template<int heapIndex>
 struct HeapIndexTraitBase {
-    typedef GeneralHeapObjectHeader HeaderType;
-    typedef ThreadHeap<HeaderType> HeapType;
+    using HeaderType = GeneralHeapObjectHeader;
+    using HeapType = ThreadHeap<HeaderType>;
     static const int finalizedIndex = heapIndex;
     static const int nonFinalizedIndex = heapIndex + static_cast<int>(NonFinalizedHeapOffset);
     static int index(bool isFinalized, size_t)
@@ -223,8 +223,8 @@ class ThreadState;
 // Objects whose size is more than 15 words go to the fourth general type heap.
 template<int heapIndex>
 struct GeneralHeapIndexTraitBase {
-    typedef GeneralHeapObjectHeader HeaderType;
-    typedef ThreadHeap<HeaderType> HeapType;
+    using HeaderType = GeneralHeapObjectHeader;
+    using HeapType = ThreadHeap<HeaderType>;
     static const int finalizedIndex = heapIndex;
     static const int nonFinalizedIndex = heapIndex + static_cast<int>(NonFinalizedHeapOffset);
     static int index(bool isFinalized, size_t size)
@@ -283,8 +283,8 @@ struct HeapIndexTrait<HashTableBackingHeapNonFinalized> : public HeapIndexTrait<
 #define DEFINE_TYPED_HEAP_INDEX_TRAIT(Type)                                     \
     template<>                                                                  \
     struct HeapIndexTrait<Type##Heap> : public HeapIndexTraitBase<Type##Heap> { \
-        typedef HeapObjectHeader HeaderType;                                    \
-        typedef ThreadHeap<HeaderType> HeapType;                                \
+        using HeaderType = HeapObjectHeader;                                    \
+        using HeapType = ThreadHeap<HeaderType>;                                \
     };                                                                          \
     template<>                                                                  \
     struct HeapIndexTrait<Type##HeapNonFinalized> : public HeapIndexTrait<Type##Heap> { };
@@ -371,7 +371,7 @@ public:
 
     // The set of ThreadStates for all threads attached to the Blink
     // garbage collector.
-    typedef HashSet<ThreadState*> AttachedThreadStateSet;
+    using AttachedThreadStateSet = HashSet<ThreadState*>;
     static AttachedThreadStateSet& attachedThreads();
 
     // Initialize threading infrastructure. Should be called from the main
@@ -447,7 +447,7 @@ public:
 
     // If you specify ForcedGC, you can force a precise GC at the end of the
     // current event loop. This is used for layout tests that trigger GCs and
-    // check if objects aredead at a given point in time. That only reliably
+    // check if objects are dead at a given point in time. That only reliably
     // works when we get precise GCs with no conservative stack scanning.
     void scheduleGC(GCType gcType = NormalGC)
     {
@@ -510,9 +510,9 @@ public:
     void safePoint(StackState);
 
     // Mark current thread as running inside safepoint.
-    void enterSafePointWithoutPointers() { enterSafePoint(NoHeapPointersOnStack, 0); }
+    void enterSafePointWithoutPointers() { enterSafePoint(NoHeapPointersOnStack, nullptr); }
     void enterSafePointWithPointers(void* scopeMarker) { enterSafePoint(HeapPointersOnStack, scopeMarker); }
-    void leaveSafePoint(SafePointAwareMutexLocker* = 0);
+    void leaveSafePoint(SafePointAwareMutexLocker* = nullptr);
     bool isAtSafePoint() const { return m_atSafePoint; }
 
     class SafePointScope {
@@ -529,7 +529,7 @@ public:
                 RELEASE_ASSERT(nesting == AllowNesting);
                 // We can ignore stackState because there should be no heap object
                 // pointers manipulation after outermost safepoint was entered.
-                m_state = 0;
+                m_state = nullptr;
             } else {
                 m_state->enterSafePoint(stackState, this);
             }
@@ -652,7 +652,7 @@ public:
         // Map from class-id (index) to a vector of generation counts.
         // For i < 7, the count is the number of objects that died after surviving |i| GCs.
         // For i == 7, the count is the number of objects that survived at least 7 GCs.
-        Vector<Vector<int, 8> > generations;
+        Vector<Vector<int, 8>> generations;
 
         explicit SnapshotInfo(ThreadState* state) : state(state), freeSize(0), pageCount(0) { }
 
@@ -716,13 +716,13 @@ private:
     void clearSafePointScopeMarker()
     {
         m_safePointStackCopy.clear();
-        m_safePointScopeMarker = 0;
+        m_safePointScopeMarker = nullptr;
     }
 
     void runScheduledGC(StackState);
 
     // Finds the Blink HeapPage in this thread-specific heap
-    // corresponding to a given address. Return 0 if the address is
+    // corresponding to a given address. Return nullptr if the address is
     // not contained in any of the pages.
     BaseHeapPage* pageFromAddress(Address);
 
@@ -767,7 +767,7 @@ private:
     size_t m_noAllocationCount;
     BaseHeap* m_heaps[NumberOfHeaps];
 
-    Vector<OwnPtr<CleanupTask> > m_cleanupTasks;
+    Vector<OwnPtr<CleanupTask>> m_cleanupTasks;
     bool m_isTerminating;
 
     bool m_shouldFlushHeapDoesNotContainCache;
