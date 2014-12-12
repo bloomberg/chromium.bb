@@ -25,6 +25,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/manifest_handlers/content_capabilities_handler.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/common/quota/quota_status_code.h"
@@ -96,7 +97,9 @@ bool ExtensionSpecialStoragePolicy::IsStorageUnlimited(const GURL& origin) {
     return true;
 
   base::AutoLock locker(lock_);
-  return unlimited_extensions_.Contains(origin);
+  return unlimited_extensions_.Contains(origin) ||
+         content_capabilities_unlimited_extensions_.GrantsCapabilitiesTo(
+             origin);
 }
 
 bool ExtensionSpecialStoragePolicy::IsStorageSessionOnly(const GURL& origin) {
@@ -151,20 +154,23 @@ ExtensionSpecialStoragePolicy::ExtensionsProtectingOrigin(
 void ExtensionSpecialStoragePolicy::GrantRightsForExtension(
     const extensions::Extension* extension,
     content::BrowserContext* browser_context) {
+  base::AutoLock locker(lock_);
   DCHECK(extension);
-  if (!(NeedsProtection(extension) ||
-        extension->permissions_data()->HasAPIPermission(
-            APIPermission::kUnlimitedStorage) ||
-        extension->permissions_data()->HasAPIPermission(
-            APIPermission::kFileBrowserHandler) ||
-        extensions::AppIsolationInfo::HasIsolatedStorage(extension) ||
-        extension->is_app())) {
-    return;
-  }
 
   int change_flags = 0;
-  {
-    base::AutoLock locker(lock_);
+  if (extensions::ContentCapabilitiesInfo::Get(extension)
+          .permissions.count(APIPermission::kUnlimitedStorage) > 0) {
+    content_capabilities_unlimited_extensions_.Add(extension);
+    change_flags |= SpecialStoragePolicy::STORAGE_UNLIMITED;
+  }
+
+  if (NeedsProtection(extension) ||
+      extension->permissions_data()->HasAPIPermission(
+          APIPermission::kUnlimitedStorage) ||
+      extension->permissions_data()->HasAPIPermission(
+          APIPermission::kFileBrowserHandler) ||
+      extensions::AppIsolationInfo::HasIsolatedStorage(extension) ||
+      extension->is_app()) {
     if (NeedsProtection(extension) && protected_apps_.Add(extension))
       change_flags |= SpecialStoragePolicy::STORAGE_PROTECTED;
     // FIXME: Does GrantRightsForExtension imply |extension| is installed?
@@ -176,7 +182,6 @@ void ExtensionSpecialStoragePolicy::GrantRightsForExtension(
         unlimited_extensions_.Add(extension)) {
       if (extension->is_hosted_app())
         LogHostedAppUnlimitedStorageUsage(extension, browser_context);
-
       change_flags |= SpecialStoragePolicy::STORAGE_UNLIMITED;
     }
 
@@ -196,19 +201,23 @@ void ExtensionSpecialStoragePolicy::GrantRightsForExtension(
 
 void ExtensionSpecialStoragePolicy::RevokeRightsForExtension(
     const extensions::Extension* extension) {
+  base::AutoLock locker(lock_);
   DCHECK(extension);
-  if (!(NeedsProtection(extension) ||
-        extension->permissions_data()->HasAPIPermission(
-            APIPermission::kUnlimitedStorage) ||
-        extension->permissions_data()->HasAPIPermission(
-            APIPermission::kFileBrowserHandler) ||
-        extensions::AppIsolationInfo::HasIsolatedStorage(extension) ||
-        extension->is_app())) {
-    return;
-  }
+
   int change_flags = 0;
-  {
-    base::AutoLock locker(lock_);
+  if (extensions::ContentCapabilitiesInfo::Get(extension)
+          .permissions.count(APIPermission::kUnlimitedStorage) > 0) {
+    content_capabilities_unlimited_extensions_.Remove(extension);
+    change_flags |= SpecialStoragePolicy::STORAGE_UNLIMITED;
+  }
+
+  if (NeedsProtection(extension) ||
+      extension->permissions_data()->HasAPIPermission(
+          APIPermission::kUnlimitedStorage) ||
+      extension->permissions_data()->HasAPIPermission(
+          APIPermission::kFileBrowserHandler) ||
+      extensions::AppIsolationInfo::HasIsolatedStorage(extension) ||
+      extension->is_app()) {
     if (NeedsProtection(extension) && protected_apps_.Remove(extension))
       change_flags |= SpecialStoragePolicy::STORAGE_PROTECTED;
 
@@ -242,6 +251,7 @@ void ExtensionSpecialStoragePolicy::RevokeRightsForAllExtensions() {
     unlimited_extensions_.Clear();
     file_handler_extensions_.Clear();
     isolated_extensions_.Clear();
+    content_capabilities_unlimited_extensions_.Clear();
   }
 
   NotifyCleared();
@@ -296,6 +306,17 @@ ExtensionSpecialStoragePolicy::SpecialCollection::~SpecialCollection() {
 bool ExtensionSpecialStoragePolicy::SpecialCollection::Contains(
     const GURL& origin) {
   return !ExtensionsContaining(origin)->is_empty();
+}
+
+bool ExtensionSpecialStoragePolicy::SpecialCollection::GrantsCapabilitiesTo(
+    const GURL& origin) {
+  for (scoped_refptr<const Extension> extension : extensions_) {
+    if (extensions::ContentCapabilitiesInfo::Get(extension.get())
+            .url_patterns.MatchesURL(origin)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 const extensions::ExtensionSet*

@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -24,6 +25,7 @@
 #include "extensions/common/url_pattern.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "storage/browser/quota/special_storage_policy.h"
 
 using extensions::DictionaryBuilder;
 using extensions::Extension;
@@ -44,7 +46,8 @@ class ContentCapabilitiesTest : public ExtensionApiTest {
   // and permissions. The extension always has the same (whitelisted) ID.
   scoped_refptr<const Extension> LoadExtensionWithCapabilities(
       const std::string& matches,
-      const std::string& permissions) {
+      const std::string& permissions,
+      const std::string& extension_permissions = "[]") {
     std::string manifest = base::StringPrintf(
         "{\n"
         "  \"name\": \"content_capabilities test extensions\",\n"
@@ -53,9 +56,10 @@ class ContentCapabilitiesTest : public ExtensionApiTest {
         "  \"content_capabilities\": {\n"
         "    \"matches\": %s,\n"
         "    \"permissions\": %s\n"
-        "  }\n"
+        "  },\n"
+        "  \"permissions\": %s\n"
         "}\n",
-        matches.c_str(), permissions.c_str());
+        matches.c_str(), permissions.c_str(), extension_permissions.c_str());
     test_extension_dir_.WriteManifest(manifest);
     return LoadExtension(test_extension_dir_.unpacked_path());
   }
@@ -103,22 +107,33 @@ class ContentCapabilitiesTest : public ExtensionApiTest {
   // the given extension. This is used to wrap calls into the JS test functions
   // defined by
   // $(DIR_TEST_DATA)/extensions/content_capabilities/capability_tests.js.
-  bool TestContentCapability(const Extension* extension,
-                             const char* origin,
-                             const char* code) {
-    ui_test_utils::NavigateToURL(browser(), GetTestURLFor(origin));
+  testing::AssertionResult TestScriptResult(const Extension* extension,
+                                            const GURL& url,
+                                            const char* code) {
+    ui_test_utils::NavigateToURL(browser(), url);
     bool result = false;
-    CHECK(content::ExecuteScriptAndExtractBool(web_contents(), code, &result));
-    return result;
+    if (!content::ExecuteScriptAndExtractBool(web_contents(), code, &result))
+      return testing::AssertionFailure() << "Could not execute test script.";
+    if (!result)
+      return testing::AssertionFailure();
+    return testing::AssertionSuccess();
   }
 
-  bool CanReadClipboard(const Extension* extension, const char* origin) {
-    return TestContentCapability(extension, origin, "tests.canReadClipboard()");
+  testing::AssertionResult CanReadClipboard(const Extension* extension,
+                                            const GURL& url) {
+    return TestScriptResult(extension, url, "tests.canReadClipboard()");
   }
 
-  bool CanWriteClipboard(const Extension* extension, const char* origin) {
-    return TestContentCapability(extension, origin,
-                                 "tests.canWriteClipboard()");
+  testing::AssertionResult CanWriteClipboard(const Extension* extension,
+                                             const GURL& url) {
+    return TestScriptResult(extension, url, "tests.canWriteClipboard()");
+  }
+
+  testing::AssertionResult HasUnlimitedStorage(const Extension* extension,
+                                               const GURL& url) {
+    if (profile()->GetSpecialStoragePolicy()->IsStorageUnlimited(url))
+      return testing::AssertionSuccess();
+    return testing::AssertionFailure();
   }
 
  private:
@@ -129,26 +144,36 @@ IN_PROC_BROWSER_TEST_F(ContentCapabilitiesTest, NoCapabilities) {
   InitializeTestServer();
   scoped_refptr<const Extension> extension = LoadExtensionWithCapabilities(
       MakeJSONList("http://foo.example.com/*"), MakeJSONList());
-  EXPECT_FALSE(CanReadClipboard(extension.get(), "foo.example.com"));
-  EXPECT_FALSE(CanWriteClipboard(extension.get(), "foo.example.com"));
+  EXPECT_FALSE(
+      CanReadClipboard(extension.get(), GetTestURLFor("foo.example.com")));
+  EXPECT_FALSE(
+      CanWriteClipboard(extension.get(), GetTestURLFor("foo.example.com")));
+  EXPECT_FALSE(
+      HasUnlimitedStorage(extension.get(), GetTestURLFor("foo.example.com")));
 }
 
 IN_PROC_BROWSER_TEST_F(ContentCapabilitiesTest, ClipboardRead) {
   InitializeTestServer();
   scoped_refptr<const Extension> extension = LoadExtensionWithCapabilities(
       MakeJSONList("http://foo.example.com/*"), MakeJSONList("clipboardRead"));
-  EXPECT_TRUE(CanReadClipboard(extension.get(), "foo.example.com"));
-  EXPECT_FALSE(CanReadClipboard(extension.get(), "bar.example.com"));
-  EXPECT_FALSE(CanWriteClipboard(extension.get(), "foo.example.com"));
+  EXPECT_TRUE(
+      CanReadClipboard(extension.get(), GetTestURLFor("foo.example.com")));
+  EXPECT_FALSE(
+      CanReadClipboard(extension.get(), GetTestURLFor("bar.example.com")));
+  EXPECT_FALSE(
+      CanWriteClipboard(extension.get(), GetTestURLFor("foo.example.com")));
 }
 
 IN_PROC_BROWSER_TEST_F(ContentCapabilitiesTest, ClipboardWrite) {
   InitializeTestServer();
   scoped_refptr<const Extension> extension = LoadExtensionWithCapabilities(
       MakeJSONList("http://foo.example.com/*"), MakeJSONList("clipboardWrite"));
-  EXPECT_TRUE(CanWriteClipboard(extension.get(), "foo.example.com"));
-  EXPECT_FALSE(CanWriteClipboard(extension.get(), "bar.example.com"));
-  EXPECT_FALSE(CanReadClipboard(extension.get(), "foo.example.com"));
+  EXPECT_TRUE(
+      CanWriteClipboard(extension.get(), GetTestURLFor("foo.example.com")));
+  EXPECT_FALSE(
+      CanWriteClipboard(extension.get(), GetTestURLFor("bar.example.com")));
+  EXPECT_FALSE(
+      CanReadClipboard(extension.get(), GetTestURLFor("foo.example.com")));
 }
 
 IN_PROC_BROWSER_TEST_F(ContentCapabilitiesTest, ClipboardReadWrite) {
@@ -156,8 +181,50 @@ IN_PROC_BROWSER_TEST_F(ContentCapabilitiesTest, ClipboardReadWrite) {
   scoped_refptr<const Extension> extension = LoadExtensionWithCapabilities(
       MakeJSONList("http://foo.example.com/*"),
       MakeJSONList("clipboardRead", "clipboardWrite"));
-  EXPECT_TRUE(CanReadClipboard(extension.get(), "foo.example.com"));
-  EXPECT_TRUE(CanWriteClipboard(extension.get(), "foo.example.com"));
-  EXPECT_FALSE(CanReadClipboard(extension.get(), "bar.example.com"));
-  EXPECT_FALSE(CanWriteClipboard(extension.get(), "bar.example.com"));
+  EXPECT_TRUE(
+      CanReadClipboard(extension.get(), GetTestURLFor("foo.example.com")));
+  EXPECT_TRUE(
+      CanWriteClipboard(extension.get(), GetTestURLFor("foo.example.com")));
+  EXPECT_FALSE(
+      CanReadClipboard(extension.get(), GetTestURLFor("bar.example.com")));
+  EXPECT_FALSE(
+      CanWriteClipboard(extension.get(), GetTestURLFor("bar.example.com")));
+}
+
+IN_PROC_BROWSER_TEST_F(ContentCapabilitiesTest, UnlimitedStorage) {
+  InitializeTestServer();
+  scoped_refptr<const Extension> extension =
+      LoadExtensionWithCapabilities(MakeJSONList("http://foo.example.com/*"),
+                                    MakeJSONList("unlimitedStorage"));
+  EXPECT_TRUE(
+      HasUnlimitedStorage(extension.get(), GetTestURLFor("foo.example.com")));
+  EXPECT_FALSE(
+      HasUnlimitedStorage(extension.get(), GetTestURLFor("bar.example.com")));
+}
+
+IN_PROC_BROWSER_TEST_F(ContentCapabilitiesTest, WebUnlimitedStorageIsIsolated) {
+  InitializeTestServer();
+  // This extension grants unlimited storage to bar.example.com but does not
+  // have unlimitedStorage itself.
+  scoped_refptr<const Extension> extension = LoadExtensionWithCapabilities(
+      MakeJSONList("http://bar.example.com/*"),
+      MakeJSONList("unlimitedStorage"), MakeJSONList("storage"));
+  EXPECT_FALSE(
+      HasUnlimitedStorage(extension.get(), extension->GetResourceURL("")));
+  EXPECT_TRUE(
+      HasUnlimitedStorage(extension.get(), GetTestURLFor("bar.example.com")));
+}
+
+IN_PROC_BROWSER_TEST_F(ContentCapabilitiesTest,
+                       ExtensionUnlimitedStorageIsIsolated) {
+  InitializeTestServer();
+  // This extension has unlimitedStorage but doesn't grant it to foo.example.com
+  scoped_refptr<const Extension> extension = LoadExtensionWithCapabilities(
+      MakeJSONList("http://foo.example.com/*"), MakeJSONList("clipboardRead"),
+      MakeJSONList("unlimitedStorage"));
+
+  EXPECT_TRUE(
+      HasUnlimitedStorage(extension.get(), extension->GetResourceURL("")));
+  EXPECT_FALSE(
+      HasUnlimitedStorage(extension.get(), GetTestURLFor("foo.example.com")));
 }

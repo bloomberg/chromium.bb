@@ -64,6 +64,7 @@ class ExtensionSpecialStoragePolicy : public storage::SpecialStoragePolicy {
     ~SpecialCollection();
 
     bool Contains(const GURL& origin);
+    bool GrantsCapabilitiesTo(const GURL& origin);
     const extensions::ExtensionSet* ExtensionsContaining(const GURL& origin);
     bool ContainsExtension(const std::string& extension_id);
     bool Add(const extensions::Extension* extension);
@@ -89,6 +90,7 @@ class ExtensionSpecialStoragePolicy : public storage::SpecialStoragePolicy {
   SpecialCollection unlimited_extensions_;
   SpecialCollection file_handler_extensions_;
   SpecialCollection isolated_extensions_;
+  SpecialCollection content_capabilities_unlimited_extensions_;
   scoped_refptr<CookieSettings> cookie_settings_;
 };
 
