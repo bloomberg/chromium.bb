@@ -236,9 +236,7 @@ bool SSLClientSocket::IsChannelIDEnabled(
 // static
 std::vector<uint8_t> SSLClientSocket::SerializeNextProtos(
     const NextProtoVector& next_protos) {
-  // Do a first pass to determine the total length.
-  size_t wire_length = 0;
-  std::vector<std::string> next_proto_strings;
+  std::vector<uint8_t> wire_protos;
   for (const NextProto next_proto : next_protos) {
     const std::string proto = NextProtoToString(next_proto);
     if (proto.size() > 255) {
@@ -249,22 +247,11 @@ std::vector<uint8_t> SSLClientSocket::SerializeNextProtos(
       LOG(WARNING) << "Ignoring empty NPN/ALPN protocol";
       continue;
     }
-    next_proto_strings.push_back(proto);
-    wire_length += proto.size();
-    wire_length++;
-  }
-
-  // Allocate memory for the result and fill it in.
-  std::vector<uint8_t> wire_protos;
-  wire_protos.reserve(wire_length);
-  for (const std::string& proto : next_proto_strings) {
     wire_protos.push_back(proto.size());
-    // TODO(bnc): Rewrite.
-    wire_protos.resize(wire_protos.size() + proto.size());
-    memcpy(&wire_protos[wire_protos.size() - proto.size()], proto.data(),
-           proto.size());
+    for (const char ch : proto) {
+      wire_protos.push_back(static_cast<uint8_t>(ch));
+    }
   }
-  DCHECK_EQ(wire_protos.size(), wire_length);
 
   return wire_protos;
 }
