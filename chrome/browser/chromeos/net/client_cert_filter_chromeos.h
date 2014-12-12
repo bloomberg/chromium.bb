@@ -23,6 +23,7 @@ class ClientCertFilterChromeOS
   // The internal NSSProfileFilterChromeOS will be initialized with the public
   // and private slot of the user with |username_hash| and with the system slot
   // if |use_system_slot| is true.
+  // If |username_hash| is empty, no public and no private slot will be used.
   ClientCertFilterChromeOS(bool use_system_slot,
                            const std::string& username_hash);
   ~ClientCertFilterChromeOS() override;
@@ -63,6 +64,11 @@ class ClientCertFilterChromeOS
   // Used to store the private slot for initialization. Will be null after the
   // filter is initialized.
   crypto::ScopedPK11Slot private_slot_;
+
+  // If a private slot is requested but the slot, maybe null, is not obtained
+  // yet, this is equal true. As long as this is true, the NSSProfileFilter will
+  // not be initialized.
+  bool waiting_for_private_slot_;
 
   net::NSSProfileFilterChromeOS nss_profile_filter_;
   base::WeakPtrFactory<ClientCertFilterChromeOS> weak_ptr_factory_;

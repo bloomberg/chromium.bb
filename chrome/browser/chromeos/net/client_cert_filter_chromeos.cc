@@ -16,6 +16,7 @@ ClientCertFilterChromeOS::ClientCertFilterChromeOS(
     : init_called_(false),
       use_system_slot_(use_system_slot),
       username_hash_(username_hash),
+      waiting_for_private_slot_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -26,15 +27,24 @@ bool ClientCertFilterChromeOS::Init(const base::Closure& callback) {
   DCHECK(!init_called_);
   init_called_ = true;
 
+  waiting_for_private_slot_ = true;
+
   if (use_system_slot_) {
     system_slot_ = crypto::GetSystemNSSKeySlot(
                        base::Bind(&ClientCertFilterChromeOS::GotSystemSlot,
                                   weak_ptr_factory_.GetWeakPtr())).Pass();
   }
+
   private_slot_ =
       crypto::GetPrivateSlotForChromeOSUser(
           username_hash_, base::Bind(&ClientCertFilterChromeOS::GotPrivateSlot,
                                      weak_ptr_factory_.GetWeakPtr())).Pass();
+
+  // If the returned slot is null, GotPrivateSlot will be called back
+  // eventually. If it is not null, the private slot was available synchronously
+  // and the callback will not be called.
+  if (private_slot_)
+    waiting_for_private_slot_ = false;
 
   // Do not call back if we initialized synchronously.
   if (InitIfSlotsAvailable())
@@ -60,6 +70,7 @@ void ClientCertFilterChromeOS::GotSystemSlot(
 
 void ClientCertFilterChromeOS::GotPrivateSlot(
     crypto::ScopedPK11Slot private_slot) {
+  waiting_for_private_slot_ = false;
   private_slot_ = private_slot.Pass();
   if (InitIfSlotsAvailable() && !init_callback_.is_null()) {
     init_callback_.Run();
@@ -68,7 +79,7 @@ void ClientCertFilterChromeOS::GotPrivateSlot(
 }
 
 bool ClientCertFilterChromeOS::InitIfSlotsAvailable() {
-  if ((use_system_slot_ && !system_slot_) || !private_slot_)
+  if ((use_system_slot_ && !system_slot_) || waiting_for_private_slot_)
     return false;
   nss_profile_filter_.Init(crypto::GetPublicSlotForChromeOSUser(username_hash_),
                            private_slot_.Pass(),
