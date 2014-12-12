@@ -272,6 +272,26 @@
       ],
     },
     {
+      'target_name': 'leveldb_fault_injection_test',
+      'type': 'executable',
+      'dependencies': [
+        'leveldb_testutil',
+      ],
+      'sources': [
+        'src/db/fault_injection_test.cc',
+      ],
+    },
+    {
+      'target_name': 'leveldb_recovery_test',
+      'type': 'executable',
+      'dependencies': [
+        'leveldb_testutil',
+      ],
+      'sources': [
+        'src/db/recovery_test.cc',
+      ],
+    },
+    {
       'target_name': 'leveldb_crc32c_test',
       'type': 'executable',
       'dependencies': [
