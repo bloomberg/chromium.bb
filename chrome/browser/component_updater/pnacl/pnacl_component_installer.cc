@@ -65,7 +65,7 @@ void SetPnaclHash(CrxComponent* component) {
 
 // If we don't have Pnacl installed, this is the version we claim.
 const char kNullVersion[] = "0.0.0.0";
-const char kMinPnaclVersion[] = "0.1.0.13367";
+const char kMinPnaclVersion[] = "0.1.0.14173";
 
 // Initially say that we do not need OnDemand updates. This should be
 // updated by CheckVersionCompatiblity(), before doing any URLRequests
