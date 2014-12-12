@@ -24,11 +24,10 @@ void BeginTransparencyDisplayItem::appendToWebDisplayItemList(WebDisplayItemList
 }
 
 #ifndef NDEBUG
-WTF::String BeginTransparencyDisplayItem::asDebugString() const
+void BeginTransparencyDisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder) const
 {
-    return String::format("{%s, type: \"%s\", hasBlendMode: %d, blendMode: %d, opacity: %f}",
-        clientDebugString().utf8().data(), typeAsDebugString(type()).utf8().data(),
-        hasBlendMode(), m_blendMode, m_opacity);
+    DisplayItem::dumpPropertiesAsDebugString(stringBuilder);
+    stringBuilder.append(WTF::String::format(", hasBlendMode: %d, blendMode: %d, opacity: %f", hasBlendMode(), m_blendMode, m_opacity));
 }
 #endif
 
@@ -41,13 +40,5 @@ void EndTransparencyDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* 
 {
     list->appendEndTransparencyItem();
 }
-
-#ifndef NDEBUG
-WTF::String EndTransparencyDisplayItem::asDebugString() const
-{
-    return String::format("{%s, type: \"%s\"}",
-        clientDebugString().utf8().data(), typeAsDebugString(type()).utf8().data());
-}
-#endif
 
 } // namespace blink

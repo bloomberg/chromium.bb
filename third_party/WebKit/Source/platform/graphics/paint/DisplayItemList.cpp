@@ -123,11 +123,11 @@ WTF::String DisplayItemList::paintListAsDebugString(const PaintList& list) const
     bool isFirst = true;
     for (auto& displayItem : list) {
         if (!isFirst)
-            stringBuilder.append(", ");
+            stringBuilder.append(",\n");
         isFirst = false;
-        String displayItemDebugString = displayItem->asDebugString();
-        stringBuilder.append(displayItemDebugString, 0, displayItemDebugString.length() - 1); // Omit the closing '}'.
-        stringBuilder.append(", cached: ");
+        stringBuilder.append('{');
+        displayItem->dumpPropertiesAsDebugString(stringBuilder);
+        stringBuilder.append(", cacheIsValid: ");
         stringBuilder.append(clientCacheIsValid(displayItem->client()) ? "true" : "false");
         stringBuilder.append('}');
     }

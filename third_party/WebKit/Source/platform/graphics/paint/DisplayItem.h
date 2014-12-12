@@ -9,6 +9,7 @@
 #include "wtf/Assertions.h"
 
 #ifndef NDEBUG
+#include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 #endif
 
@@ -89,7 +90,8 @@ public:
     void setClientDebugString(const WTF::String& clientDebugString) { m_clientDebugString = clientDebugString; }
     const WTF::String& clientDebugString() const { return m_clientDebugString; }
 
-    virtual WTF::String asDebugString() const;
+    WTF::String asDebugString() const;
+    virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const;
 #endif
 
     virtual bool isCached() const { return false; }

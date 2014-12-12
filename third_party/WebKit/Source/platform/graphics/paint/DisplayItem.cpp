@@ -65,7 +65,24 @@ WTF::String DisplayItem::typeAsDebugString(DisplayItem::Type type)
 
 WTF::String DisplayItem::asDebugString() const
 {
-    return String::format("{%s, type: \"%s\"}", clientDebugString().utf8().data(), typeAsDebugString(type()).utf8().data());
+    WTF::StringBuilder stringBuilder;
+    stringBuilder.append('{');
+    dumpPropertiesAsDebugString(stringBuilder);
+    stringBuilder.append('}');
+    return stringBuilder.toString();
+}
+
+void DisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder) const
+{
+    if (!clientDebugString().isEmpty()) {
+        stringBuilder.append(clientDebugString());
+        stringBuilder.append(", ");
+    }
+    stringBuilder.append("type: \"");
+    if (isCached())
+        stringBuilder.append("Cached-");
+    stringBuilder.append(typeAsDebugString(type()));
+    stringBuilder.append('"');
 }
 
 #endif

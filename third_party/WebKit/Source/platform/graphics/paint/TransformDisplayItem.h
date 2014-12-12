@@ -20,10 +20,6 @@ public:
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
-#ifndef NDEBUG
-    virtual WTF::String asDebugString() const override;
-#endif
-
 protected:
     BeginTransformDisplayItem(DisplayItemClient, const TransformationMatrix&);
 
@@ -37,10 +33,6 @@ public:
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
-
-#ifndef NDEBUG
-    virtual WTF::String asDebugString() const override;
-#endif
 
 protected:
     EndTransformDisplayItem(DisplayItemClient client)

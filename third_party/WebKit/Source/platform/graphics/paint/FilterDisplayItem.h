@@ -23,15 +23,15 @@ public:
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
-#ifndef NDEBUG
-    virtual WTF::String asDebugString() const override;
-#endif
-
 protected:
     BeginFilterDisplayItem(DisplayItemClient client, Type type, PassRefPtr<ImageFilter> imageFilter, const LayoutRect& bounds)
         : DisplayItem(client, type), m_imageFilter(imageFilter), m_bounds(bounds) { }
 
 private:
+#ifndef NDEBUG
+    virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
+#endif
+
     RefPtr<ImageFilter> m_imageFilter;
     const LayoutRect m_bounds;
 };
@@ -42,10 +42,6 @@ public:
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
-
-#ifndef NDEBUG
-    virtual WTF::String asDebugString() const override;
-#endif
 
 protected:
     EndFilterDisplayItem(DisplayItemClient client)

@@ -27,15 +27,6 @@ void BeginTransformDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* l
     list->appendTransformItem(affineTransformToSkMatrix(m_transform.toAffineTransform()));
 }
 
-#ifndef NDEBUG
-WTF::String BeginTransformDisplayItem::asDebugString() const
-{
-    return String::format("{%s, type: \"%s\"}",
-        clientDebugString().utf8().data(), typeAsDebugString(type()).utf8().data());
-
-}
-#endif
-
 void EndTransformDisplayItem::replay(GraphicsContext* context)
 {
     context->restore();
@@ -45,14 +36,5 @@ void EndTransformDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* lis
 {
     list->appendEndTransformItem();
 }
-
-#ifndef NDEBUG
-WTF::String EndTransformDisplayItem::asDebugString() const
-{
-    return String::format("{%s, type: \"%s\"}",
-        clientDebugString().utf8().data(), typeAsDebugString(type()).utf8().data());
-
-}
-#endif
 
 } // namespace blink

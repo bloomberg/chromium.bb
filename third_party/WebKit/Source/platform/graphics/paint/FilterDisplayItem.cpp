@@ -26,11 +26,11 @@ void BeginFilterDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list
 }
 
 #ifndef NDEBUG
-WTF::String BeginFilterDisplayItem::asDebugString() const
+void BeginFilterDisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder) const
 {
-    return String::format("{%s, type: \"%s\", filter bounds: [%f,%f,%f,%f]}",
-        clientDebugString().utf8().data(), typeAsDebugString(type()).utf8().data(),
-        m_bounds.x().toFloat(), m_bounds.y().toFloat(), m_bounds.width().toFloat(), m_bounds.height().toFloat());
+    DisplayItem::dumpPropertiesAsDebugString(stringBuilder);
+    stringBuilder.append(WTF::String::format(", filter bounds: [%f,%f,%f,%f]",
+        m_bounds.x().toFloat(), m_bounds.y().toFloat(), m_bounds.width().toFloat(), m_bounds.height().toFloat()));
 }
 #endif
 
@@ -44,13 +44,5 @@ void EndFilterDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) 
 {
     list->appendEndFilterItem();
 }
-
-#ifndef NDEBUG
-WTF::String EndFilterDisplayItem::asDebugString() const
-{
-    return String::format("{%s, type: \"%s\"}",
-        clientDebugString().utf8().data(), typeAsDebugString(type()).utf8().data());
-}
-#endif
 
 } // namespace blink

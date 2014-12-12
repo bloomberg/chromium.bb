@@ -25,7 +25,7 @@ public:
 
 private:
 #ifndef NDEBUG
-    virtual WTF::String asDebugString() const override;
+    virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
 
     bool hasBlendMode() const { return m_blendMode != WebBlendModeNormal; }
@@ -53,11 +53,6 @@ public:
 protected:
     EndTransparencyDisplayItem(DisplayItemClient client, Type type)
         : DisplayItem(client, type) { }
-
-private:
-#ifndef NDEBUG
-    virtual WTF::String asDebugString() const override;
-#endif
 };
 
 } // namespace blink

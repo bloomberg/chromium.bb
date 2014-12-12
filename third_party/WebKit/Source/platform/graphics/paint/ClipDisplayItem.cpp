@@ -52,11 +52,11 @@ void EndClipDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) co
 }
 
 #ifndef NDEBUG
-WTF::String ClipDisplayItem::asDebugString() const
+void ClipDisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder) const
 {
-    return String::format("{%s, type: \"%s\", clipRect: [%d,%d,%d,%d]}",
-        clientDebugString().utf8().data(), typeAsDebugString(type()).utf8().data(),
-        m_clipRect.x(), m_clipRect.y(), m_clipRect.width(), m_clipRect.height());
+    DisplayItem::dumpPropertiesAsDebugString(stringBuilder);
+    stringBuilder.append(WTF::String::format(", clipRect: [%d,%d,%d,%d]",
+        m_clipRect.x(), m_clipRect.y(), m_clipRect.width(), m_clipRect.height()));
 }
 #endif
 

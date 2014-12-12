@@ -23,11 +23,10 @@ void DrawingDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) co
 }
 
 #ifndef NDEBUG
-WTF::String DrawingDisplayItem::asDebugString() const
+void DrawingDisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder) const
 {
-    return String::format("{%s, type: \"%s\", location: [%f,%f]}",
-        clientDebugString().utf8().data(), typeAsDebugString(type()).utf8().data(),
-        m_picture->cullRect().x(), m_picture->cullRect().y());
+    DisplayItem::dumpPropertiesAsDebugString(stringBuilder);
+    stringBuilder.append(WTF::String::format(", location: [%f,%f]", m_picture->cullRect().x(), m_picture->cullRect().y()));
 }
 #endif
 

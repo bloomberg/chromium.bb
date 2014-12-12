@@ -29,11 +29,11 @@ protected:
         : DisplayItem(client, type), m_clipRect(clipRect) { }
 
 private:
+#ifndef NDEBUG
+    virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
+#endif
     IntRect m_clipRect;
     Vector<RoundedRect> m_roundedRectClips;
-#ifndef NDEBUG
-    virtual WTF::String asDebugString() const override;
-#endif
 };
 
 class PLATFORM_EXPORT EndClipDisplayItem : public DisplayItem {

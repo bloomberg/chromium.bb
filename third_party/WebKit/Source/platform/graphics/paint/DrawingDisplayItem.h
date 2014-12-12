@@ -30,11 +30,11 @@ protected:
         : DisplayItem(client, type), m_picture(picture) { ASSERT(m_picture); }
 
 private:
+#ifndef NDEBUG
+    virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
+#endif
 
     RefPtr<const SkPicture> m_picture;
-#ifndef NDEBUG
-    virtual WTF::String asDebugString() const override;
-#endif
 };
 
 } // namespace blink
