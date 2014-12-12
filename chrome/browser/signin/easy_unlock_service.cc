@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -147,6 +148,18 @@ class EasyUnlockService::PowerMonitor
         RemoveObserver(this);
   }
 
+  // Called when the remote device has been authenticated to record the time
+  // delta from waking up. No time will be recorded if the start-up time has
+  // already been recorded or if the system never went to sleep previously.
+  void RecordStartUpTime() {
+    if (wake_up_time_.is_null())
+      return;
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "EasyUnlock.StartupTimeFromSuspend",
+        base::Time::Now() - wake_up_time_);
+    wake_up_time_ = base::Time();
+  }
+
   bool waking_up() const { return waking_up_; }
 
  private:
@@ -157,6 +170,7 @@ class EasyUnlockService::PowerMonitor
 
   virtual void SuspendDone(const base::TimeDelta& sleep_duration) override {
     waking_up_ = true;
+    wake_up_time_ = base::Time::Now();
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&PowerMonitor::ResetWakingUp,
@@ -173,6 +187,7 @@ class EasyUnlockService::PowerMonitor
 
   EasyUnlockService* service_;
   bool waking_up_;
+  base::Time wake_up_time_;
   base::WeakPtrFactory<PowerMonitor> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerMonitor);
@@ -333,8 +348,14 @@ bool EasyUnlockService::UpdateScreenlockState(
 
   handler->ChangeState(state);
 
-  if (state != EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED &&
-      auth_attempt_.get()) {
+  if (state == EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED) {
+#if defined(OS_CHROMEOS)
+    if (power_monitor_)
+      power_monitor_->RecordStartUpTime();
+#endif
+  } else if (auth_attempt_.get()) {
+    // Clean up existing auth attempt if we can no longer authenticate the
+    // remote device.
     auth_attempt_.reset();
 
     if (!handler->InStateValidOnRemoteAuthFailure())
