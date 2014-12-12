@@ -62,6 +62,7 @@ char *drivers[] = {
 	"nouveau",
 	"vmwgfx",
 	"exynos",
+	"imx-drm",
 	NULL
 };
 
