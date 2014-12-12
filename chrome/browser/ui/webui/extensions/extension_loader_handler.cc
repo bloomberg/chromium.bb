@@ -99,11 +99,16 @@ void ExtensionLoaderHandler::FileHelper::ChooseFile() {
   static const ui::SelectFileDialog::Type kSelectType =
       ui::SelectFileDialog::SELECT_FOLDER;
 
+  gfx::NativeWindow parent_window =
+      loader_handler_->web_ui()->GetWebContents()->GetTopLevelNativeWindow();
   if (!load_extension_dialog_.get()) {
     load_extension_dialog_ = ui::SelectFileDialog::Create(
         this,
         new ChromeSelectFilePolicy(
             loader_handler_->web_ui()->GetWebContents()));
+  } else if (load_extension_dialog_->IsRunning(parent_window)) {
+    // File chooser dialog is already running; ignore the click.
+    return;
   }
 
   load_extension_dialog_->SelectFile(
@@ -113,7 +118,7 @@ void ExtensionLoaderHandler::FileHelper::ChooseFile() {
       NULL,
       kFileTypeIndex,
       base::FilePath::StringType(),
-      loader_handler_->web_ui()->GetWebContents()->GetTopLevelNativeWindow(),
+      parent_window,
       NULL);
 
   content::RecordComputedAction("Options_LoadUnpackedExtension");
