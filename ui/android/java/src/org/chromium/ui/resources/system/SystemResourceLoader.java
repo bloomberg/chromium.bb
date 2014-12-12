@@ -89,7 +89,7 @@ public class SystemResourceLoader extends AsyncPreloadResourceLoader {
         arcPaint.setAlpha(0xBB);
         arcPaint.setStyle(Style.FILL);
 
-        Bitmap bitmap = Bitmap.createBitmap((int) arcWidth, (int) height, Bitmap.Config.ARGB_8888);
+        Bitmap bitmap = Bitmap.createBitmap((int) arcWidth, (int) height, Bitmap.Config.ALPHA_8);
         Canvas canvas = new Canvas(bitmap);
         canvas.drawArc(arcRect, 45, 90, true, arcPaint);
 

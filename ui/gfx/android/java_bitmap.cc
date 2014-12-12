@@ -86,19 +86,28 @@ ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(const SkBitmap* skbitmap) {
 }
 
 SkBitmap CreateSkBitmapFromJavaBitmap(const JavaBitmap& jbitmap) {
-  // TODO(jdduke): Convert to DCHECK's when sufficient data has been capture for
-  // crbug.com/341406.
-  CHECK_EQ(jbitmap.format(), ANDROID_BITMAP_FORMAT_RGBA_8888);
-  CHECK(!jbitmap.size().IsEmpty());
-  CHECK_GT(jbitmap.stride(), 0U);
-  CHECK(jbitmap.pixels());
+  DCHECK(!jbitmap.size().IsEmpty());
+  DCHECK_GT(jbitmap.stride(), 0U);
+  DCHECK(jbitmap.pixels());
 
   gfx::Size src_size = jbitmap.size();
 
   SkBitmap skbitmap;
-  skbitmap.allocPixels(SkImageInfo::MakeN32Premul(src_size.width(),
-                                                  src_size.height()),
-                       jbitmap.stride());
+  switch (jbitmap.format()) {
+    case ANDROID_BITMAP_FORMAT_RGBA_8888:
+      skbitmap.allocPixels(SkImageInfo::MakeN32Premul(src_size.width(),
+                                                      src_size.height()),
+                           jbitmap.stride());
+      break;
+    case ANDROID_BITMAP_FORMAT_A_8:
+      skbitmap.allocPixels(SkImageInfo::MakeA8(src_size.width(),
+                                               src_size.height()),
+                           jbitmap.stride());
+      break;
+    default:
+      CHECK(false) << "Invalid Java bitmap format: " << jbitmap.format();
+      break;
+  }
   const void* src_pixels = jbitmap.pixels();
   void* dst_pixels = skbitmap.getPixels();
   memcpy(dst_pixels, src_pixels, skbitmap.getSize());
