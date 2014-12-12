@@ -453,9 +453,10 @@ PassRefPtr<JSONArray> LoggingCanvas::arrayForSkPoints(size_t count, const SkPoin
 
 PassRefPtr<JSONObject> LoggingCanvas::objectForSkPicture(const SkPicture& picture)
 {
+    const SkIRect bounds = picture.cullRect().roundOut();
     RefPtr<JSONObject> pictureItem = JSONObject::create();
-    pictureItem->setNumber("width", picture.width());
-    pictureItem->setNumber("height", picture.height());
+    pictureItem->setNumber("width", bounds.width());
+    pictureItem->setNumber("height", bounds.height());
     return pictureItem.release();
 }
 
