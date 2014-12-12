@@ -604,13 +604,12 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
 
     self.PerformSync(pre_cq_status=None, changes=changes, patch_objects=False)
 
-    # We defer writing the pre-cq status of a change until it is ready for CQ.
     self.assertEqual(self._GetPreCQStatus(changes[0]),
                      constants.CL_STATUS_FAILED)
     self.assertEqual(self._GetPreCQStatus(changes[1]),
                      constants.CL_STATUS_PASSED)
     self.assertEqual(self._GetPreCQStatus(changes[2]),
-                     constants.CL_STATUS_INFLIGHT)
+                     constants.CL_STATUS_FULLY_VERIFIED)
     for change in changes[3:5]:
       self.assertEqual(self._GetPreCQStatus(change),
                        constants.CL_STATUS_FAILED)
@@ -633,6 +632,18 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
                      constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED)
     self.assertEqual(progress_map[changes[4]]['banana'][0],
                      constants.CL_PRECQ_CONFIG_STATUS_FAILED)
+
+    # These actions should only be recorded at most once for every
+    # patch. We did not upload any new patch for changes, so there
+    # should not be dupulicated actions.
+    unique_actions = (constants.CL_ACTION_PRE_CQ_FULLY_VERIFIED,
+                      constants.CL_ACTION_PRE_CQ_READY_TO_SUBMIT,
+                      constants.CL_ACTION_PRE_CQ_PASSED)
+    for change in changes:
+      actions = self.fake_db.GetActionsForChanges([change])
+      for action_type in unique_actions:
+        self.assertTrue(
+            len([x for x in actions if x.action == action_type]) <= 1)
 
   def testSpeculativePreCQ(self):
     changes = self._PrepareChangesWithPendingVerifications()
@@ -692,9 +703,9 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
 
     self.PerformSync(pre_cq_status=None, changes=changes, patch_objects=False)
 
-    # Verify that we don't mark the change as passed.
+    # Verify that we don't mark the change as fully verified (not passed).
     self.assertEqual(self._GetPreCQStatus(changes[0]),
-                     constants.CL_STATUS_INFLIGHT)
+                     constants.CL_STATUS_FULLY_VERIFIED)
 
     # Mark our changes as ready, and see if they are immediately passed.
     for change in changes:

@@ -1181,6 +1181,19 @@ class PreCQLauncherStage(SyncStage):
     # Changes that cannot be submitted are marked as passed.
     return set(), set([change])
 
+  def UpdateChangeStatuses(self, changes, status):
+    """Update |changes| to |status|.
+
+    Args:
+      changes: A set of GerritPatch instances.
+      status: One of constants.CL_STATUS_* statuses.
+    """
+    if changes:
+      build_id, db = self._run.GetCIDBHandle()
+      a = clactions.TranslatePreCQStatusToAction(status)
+      actions = [clactions.CLAction.FromGerritPatchAndAction(c, a)
+                 for c in changes]
+      db.InsertCLActions(build_id, actions)
 
   def ProcessChanges(self, pool, changes, _non_manifest_changes):
     """Process a list of changes that were marked as Ready.
@@ -1192,7 +1205,7 @@ class PreCQLauncherStage(SyncStage):
     Non-manifest changes are just submitted here because they don't need to be
     verified by either the Pre-CQ or CQ.
     """
-    build_id, db = self._run.GetCIDBHandle()
+    _, db = self._run.GetCIDBHandle()
     action_history = db.GetActionsForChanges(changes)
     status_map = {c: clactions.GetCLPreCQStatus(c, action_history)
                   for c in changes}
@@ -1200,13 +1213,17 @@ class PreCQLauncherStage(SyncStage):
     _, inflight, verified = clactions.GetPreCQCategories(progress_map)
     current_db_time = db.GetTime()
 
-    # TODO(akeshet): Once this change lands, we will no longer mark changes
-    # with pre-cq status READY_TO_SUBMIT, so simplify the status check below.
-    passed_statuses = (constants.CL_STATUS_PASSED,
-                       constants.CL_STATUS_READY_TO_SUBMIT)
-    already_passed = set(c for c in changes
-                         if status_map[c] in passed_statuses)
-    to_process = set(changes) - already_passed
+    to_process = set(c for c in changes
+                     if status_map[c] != constants.CL_STATUS_PASSED)
+
+    # Mark verified changes verified.
+    to_mark_verified = [c for c in verified.intersection(to_process) if
+                        status_map[c] != constants.CL_STATUS_FULLY_VERIFIED]
+    self.UpdateChangeStatuses(to_mark_verified,
+                              constants.CL_STATUS_FULLY_VERIFIED)
+    # Send notifications to the fully verified changes.
+    if to_mark_verified:
+      pool.HandlePreCQSuccess(to_mark_verified)
 
     # Changes that can be submitted, if their dependencies can be too. Only
     # include changes that have not already been marked as passed.
@@ -1225,7 +1242,7 @@ class PreCQLauncherStage(SyncStage):
       if status_map[change] != constants.CL_STATUS_INFLIGHT:
         build_ids = [x for _, _, x in progress_map[change].values()]
         # Change the status to inflight.
-        pool.UpdateCLPreCQStatus(change, constants.CL_STATUS_INFLIGHT)
+        self.UpdateChangeStatuses([change], constants.CL_STATUS_INFLIGHT)
         build_dicts = db.GetBuildStatuses(build_ids)
         urls = []
         for b in build_dicts:
@@ -1262,19 +1279,8 @@ class PreCQLauncherStage(SyncStage):
         pool, launchable_progress_map):
       self.LaunchTrybot(plan, config)
 
-    # Send notifications to all successfully verified changes.
-    success = will_pass.union(will_submit)
-    if success:
-      pool.HandlePreCQSuccess(success)
-
     # Mark passed changes as passed
-    if will_pass:
-      # TODO(akeshet) Refactor this into a general purpose method somewhere to
-      # atomically update CL statuses.
-      a = clactions.TranslatePreCQStatusToAction(constants.CL_STATUS_PASSED)
-      actions = [clactions.CLAction.FromGerritPatchAndAction(c, a)
-                 for c in will_pass]
-      db.InsertCLActions(build_id, actions)
+    self.UpdateChangeStatuses(will_pass, constants.CL_STATUS_PASSED)
 
     # Submit changes that are ready to submit, if we can.
     if tree_status.IsTreeOpen():
