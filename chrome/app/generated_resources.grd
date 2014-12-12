@@ -1115,7 +1115,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <if expr="not is_macosx">
         <if expr="not use_titlecase">
           <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="The name of the Spellcheck Options submenu in the content area context menu">
-            &amp;Spell-checker options
+            Spell-checker &amp;options
           </message>
           <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="The name of the Language Settings command in the content area context menu">
             &amp;Language settings...
@@ -1123,7 +1123,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         </if>
         <if expr="use_titlecase">
           <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="In Title Case: The name of the Spellcheck Options submenu in the content area context menu">
-            &amp;Spell-checker Options
+            Spell-checker &amp;Options
           </message>
           <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="In Title Case: The name of the Language Settings command in the content area context menu">
             &amp;Language Settings...
