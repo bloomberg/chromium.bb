@@ -486,6 +486,8 @@ const char kBgscanSignalThresholdProperty[] = "BgscanSignalThreshold";
 const char kWakeToScanFrequencyProperty[] = "WakeToScanFrequency";
 // The name of the network interface, ie. wlan0, eth0, etc.
 const char kInterfaceProperty[] = "Interface";
+const char kSelectedServiceProperty[] = "SelectedService";
+const char kIPConfigsProperty[] = "IPConfigs";
 
 // Flimflam Cellular Device property names.
 const char kCarrierProperty[] = "Cellular.Carrier";
@@ -506,7 +508,6 @@ const char kPRLVersionProperty[] = "Cellular.PRLVersion";
 const char kSelectedNetworkProperty[] = "Cellular.SelectedNetwork";
 const char kSupportNetworkScanProperty[] = "Cellular.SupportNetworkScan";
 const char kFoundNetworksProperty[] = "Cellular.FoundNetworks";
-const char kIPConfigsProperty[] = "IPConfigs";
 
 // Flimflam state options.
 const char kStateIdle[] = "idle";
