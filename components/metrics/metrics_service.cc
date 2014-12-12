@@ -1052,6 +1052,8 @@ void MetricsService::OnLogUploadComplete(int response_code) {
                             ResponseCodeToStatus(response_code),
                             NUM_RESPONSE_STATUSES);
 
+  bool suppress_reschedule = false;
+
   bool upload_succeeded = response_code == 200;
 
   // Provide boolean for error recovery (allow us to ignore response_code).
@@ -1085,6 +1087,7 @@ void MetricsService::OnLogUploadComplete(int response_code) {
           log_manager_.StageNextLogForUpload();
           SendStagedLog();
           state_ = SENDING_INITIAL_METRICS_LOG;
+          suppress_reschedule = true;
         }
         break;
 
@@ -1113,10 +1116,10 @@ void MetricsService::OnLogUploadComplete(int response_code) {
   // Error 400 indicates a problem with the log, not with the server, so
   // don't consider that a sign that the server is in trouble.
   bool server_is_healthy = upload_succeeded || response_code == 400;
-  // Don't notify the scheduler that the upload is finished if we've only sent
-  // the initial stability log, but not yet the initial metrics log (treat the
-  // two as a single unit of work as far as the scheduler is concerned).
-  if (state_ != SENDING_INITIAL_METRICS_LOG) {
+  // Don't notify the scheduler that the upload is finished if we've only just
+  // sent the initial stability log, but not yet the initial metrics log (treat
+  // the two as a single unit of work as far as the scheduler is concerned).
+  if (!suppress_reschedule) {
     scheduler_->UploadFinished(server_is_healthy,
                                log_manager_.has_unsent_logs());
   }
