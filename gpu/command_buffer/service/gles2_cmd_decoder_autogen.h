@@ -109,6 +109,21 @@ error::Error GLES2DecoderImpl::HandleBindTexture(uint32_t immediate_data_size,
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleBindTransformFeedback(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::BindTransformFeedback& c =
+      *static_cast<const gles2::cmds::BindTransformFeedback*>(cmd_data);
+  (void)c;
+  GLenum target = static_cast<GLenum>(c.target);
+  GLuint transformfeedback = c.transformfeedback;
+  group_->GetTransformFeedbackServiceId(transformfeedback, &transformfeedback);
+  glBindTransformFeedback(target, transformfeedback);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleBlendColor(uint32_t immediate_data_size,
                                                 const void* cmd_data) {
   const gles2::cmds::BlendColor& c =
@@ -678,6 +693,35 @@ error::Error GLES2DecoderImpl::HandleDeleteTexturesImmediate(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleDeleteTransformFeedbacksImmediate(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::DeleteTransformFeedbacksImmediate& c =
+      *static_cast<const gles2::cmds::DeleteTransformFeedbacksImmediate*>(
+          cmd_data);
+  (void)c;
+  GLsizei n = static_cast<GLsizei>(c.n);
+  uint32_t data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
+  const GLuint* ids =
+      GetImmediateDataAs<const GLuint*>(c, data_size, immediate_data_size);
+  if (ids == NULL) {
+    return error::kOutOfBounds;
+  }
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    GLuint service_id = 0;
+    if (group_->GetTransformFeedbackServiceId(ids[ii], &service_id)) {
+      glDeleteTransformFeedbacks(1, &service_id);
+      group_->RemoveTransformFeedbackId(ids[ii]);
+    }
+  }
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleDepthFunc(uint32_t immediate_data_size,
                                                const void* cmd_data) {
   const gles2::cmds::DepthFunc& c =
@@ -1025,6 +1069,37 @@ error::Error GLES2DecoderImpl::HandleGenTexturesImmediate(
   }
   if (!GenTexturesHelper(n, textures)) {
     return error::kInvalidArguments;
+  }
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleGenTransformFeedbacksImmediate(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::GenTransformFeedbacksImmediate& c =
+      *static_cast<const gles2::cmds::GenTransformFeedbacksImmediate*>(
+          cmd_data);
+  (void)c;
+  GLsizei n = static_cast<GLsizei>(c.n);
+  uint32_t data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
+  GLuint* ids = GetImmediateDataAs<GLuint*>(c, data_size, immediate_data_size);
+  if (ids == NULL) {
+    return error::kOutOfBounds;
+  }
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    if (group_->GetTransformFeedbackServiceId(ids[ii], NULL)) {
+      return error::kInvalidArguments;
+    }
+  }
+  scoped_ptr<GLuint[]> service_ids(new GLuint[n]);
+  glGenTransformFeedbacks(n, service_ids.get());
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    group_->AddTransformFeedbackId(ids[ii], service_ids[ii]);
   }
   return error::kNoError;
 }
@@ -1803,6 +1878,7 @@ error::Error GLES2DecoderImpl::HandleIsSampler(uint32_t immediate_data_size,
   if (!result_dst) {
     return error::kOutOfBounds;
   }
+  group_->GetSamplerServiceId(sampler, &sampler);
   *result_dst = glIsSampler(sampler);
   return error::kNoError;
 }
@@ -1839,6 +1915,26 @@ error::Error GLES2DecoderImpl::HandleIsTexture(uint32_t immediate_data_size,
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleIsTransformFeedback(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::IsTransformFeedback& c =
+      *static_cast<const gles2::cmds::IsTransformFeedback*>(cmd_data);
+  (void)c;
+  GLuint transformfeedback = c.transformfeedback;
+  typedef cmds::IsTransformFeedback::Result Result;
+  Result* result_dst = GetSharedMemoryAs<Result*>(
+      c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
+  if (!result_dst) {
+    return error::kOutOfBounds;
+  }
+  group_->GetTransformFeedbackServiceId(transformfeedback, &transformfeedback);
+  *result_dst = glIsTransformFeedback(transformfeedback);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleLineWidth(uint32_t immediate_data_size,
                                                const void* cmd_data) {
   const gles2::cmds::LineWidth& c =
@@ -1863,6 +1959,18 @@ error::Error GLES2DecoderImpl::HandleLinkProgram(uint32_t immediate_data_size,
   (void)c;
   GLuint program = c.program;
   DoLinkProgram(program);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandlePauseTransformFeedback(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::PauseTransformFeedback& c =
+      *static_cast<const gles2::cmds::PauseTransformFeedback*>(cmd_data);
+  (void)c;
+  glPauseTransformFeedback();
   return error::kNoError;
 }
 
@@ -1932,6 +2040,18 @@ error::Error GLES2DecoderImpl::HandleRenderbufferStorage(
     return error::kNoError;
   }
   DoRenderbufferStorage(target, internalformat, width, height);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleResumeTransformFeedback(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::ResumeTransformFeedback& c =
+      *static_cast<const gles2::cmds::ResumeTransformFeedback*>(cmd_data);
+  (void)c;
+  glResumeTransformFeedback();
   return error::kNoError;
 }
 
@@ -3659,6 +3779,31 @@ error::Error GLES2DecoderImpl::HandleDeleteQueriesEXTImmediate(
     return error::kOutOfBounds;
   }
   DeleteQueriesEXTHelper(n, queries);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleBeginTransformFeedback(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::BeginTransformFeedback& c =
+      *static_cast<const gles2::cmds::BeginTransformFeedback*>(cmd_data);
+  (void)c;
+  GLenum primitivemode = static_cast<GLenum>(c.primitivemode);
+  glBeginTransformFeedback(primitivemode);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleEndTransformFeedback(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::EndTransformFeedback& c =
+      *static_cast<const gles2::cmds::EndTransformFeedback*>(cmd_data);
+  (void)c;
+  glEndTransformFeedback();
   return error::kNoError;
 }
 

@@ -386,6 +386,7 @@ class GLES2ImplementationTest : public testing::Test {
   static const GLuint kRenderbuffersStartId = 1;
   static const GLuint kSamplersStartId = 1;
   static const GLuint kTexturesStartId = 1;
+  static const GLuint kTransformFeedbacksStartId = 1;
   static const GLuint kQueriesStartId = 1;
   static const GLuint kVertexArraysStartId = 1;
   static const GLuint kValuebuffersStartId = 1;
@@ -757,6 +758,7 @@ const GLuint GLES2ImplementationTest::kProgramsAndShadersStartId;
 const GLuint GLES2ImplementationTest::kRenderbuffersStartId;
 const GLuint GLES2ImplementationTest::kSamplersStartId;
 const GLuint GLES2ImplementationTest::kTexturesStartId;
+const GLuint GLES2ImplementationTest::kTransformFeedbacksStartId;
 const GLuint GLES2ImplementationTest::kQueriesStartId;
 const GLuint GLES2ImplementationTest::kVertexArraysStartId;
 const GLuint GLES2ImplementationTest::kValuebuffersStartId;

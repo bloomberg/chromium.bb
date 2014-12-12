@@ -61,6 +61,7 @@ enum IdNamespaces {
   kVertexArrays,
   kValuebuffers,
   kSamplers,
+  kTransformFeedbacks,
   kNumIdNamespaces
 };
 

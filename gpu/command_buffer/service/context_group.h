@@ -193,6 +193,25 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     samplers_id_map_.erase(client_id);
   }
 
+  void AddTransformFeedbackId(GLuint client_id, GLuint service_id) {
+    transformfeedbacks_id_map_[client_id] = service_id;
+  }
+
+  bool GetTransformFeedbackServiceId(
+      GLuint client_id, GLuint* service_id) const {
+    std::map<GLuint, GLuint>::const_iterator iter =
+        transformfeedbacks_id_map_.find(client_id);
+    if (iter == transformfeedbacks_id_map_.end())
+      return false;
+    if (service_id)
+      *service_id = iter->second;
+    return true;
+  }
+
+  void RemoveTransformFeedbackId(GLuint client_id) {
+    transformfeedbacks_id_map_.erase(client_id);
+  }
+
  private:
   friend class base::RefCounted<ContextGroup>;
   ~ContextGroup();
@@ -244,6 +263,7 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 
   // Mappings from client side IDs to service side IDs.
   std::map<GLuint, GLuint> samplers_id_map_;
+  std::map<GLuint, GLuint> transformfeedbacks_id_map_;
 
   GLenum draw_buffer_;
 

@@ -31,6 +31,8 @@ void BindSampler(GLuint unit, GLuint sampler) override;
 
 void BindTexture(GLenum target, GLuint texture) override;
 
+void BindTransformFeedback(GLenum target, GLuint transformfeedback) override;
+
 void BlendColor(GLclampf red,
                 GLclampf green,
                 GLclampf blue,
@@ -140,6 +142,8 @@ void DeleteShader(GLuint shader) override;
 
 void DeleteTextures(GLsizei n, const GLuint* textures) override;
 
+void DeleteTransformFeedbacks(GLsizei n, const GLuint* ids) override;
+
 void DepthFunc(GLenum func) override;
 
 void DepthMask(GLboolean flag) override;
@@ -193,6 +197,8 @@ void GenRenderbuffers(GLsizei n, GLuint* renderbuffers) override;
 void GenSamplers(GLsizei n, GLuint* samplers) override;
 
 void GenTextures(GLsizei n, GLuint* textures) override;
+
+void GenTransformFeedbacks(GLsizei n, GLuint* ids) override;
 
 void GetActiveAttrib(GLuint program,
                      GLuint index,
@@ -320,9 +326,13 @@ GLboolean IsShader(GLuint shader) override;
 
 GLboolean IsTexture(GLuint texture) override;
 
+GLboolean IsTransformFeedback(GLuint transformfeedback) override;
+
 void LineWidth(GLfloat width) override;
 
 void LinkProgram(GLuint program) override;
+
+void PauseTransformFeedback() override;
 
 void PixelStorei(GLenum pname, GLint param) override;
 
@@ -344,6 +354,8 @@ void RenderbufferStorage(GLenum target,
                          GLenum internalformat,
                          GLsizei width,
                          GLsizei height) override;
+
+void ResumeTransformFeedback() override;
 
 void SampleCoverage(GLclampf value, GLboolean invert) override;
 
@@ -627,7 +639,11 @@ GLboolean IsQueryEXT(GLuint id) override;
 
 void BeginQueryEXT(GLenum target, GLuint id) override;
 
+void BeginTransformFeedback(GLenum primitivemode) override;
+
 void EndQueryEXT(GLenum target) override;
+
+void EndTransformFeedback() override;
 
 void GetQueryivEXT(GLenum target, GLenum pname, GLint* params) override;
 

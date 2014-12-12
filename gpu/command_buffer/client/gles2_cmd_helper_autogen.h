@@ -71,6 +71,14 @@ void BindTexture(GLenum target, GLuint texture) {
   }
 }
 
+void BindTransformFeedback(GLenum target, GLuint transformfeedback) {
+  gles2::cmds::BindTransformFeedback* c =
+      GetCmdSpace<gles2::cmds::BindTransformFeedback>();
+  if (c) {
+    c->Init(target, transformfeedback);
+  }
+}
+
 void BlendColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) {
   gles2::cmds::BlendColor* c = GetCmdSpace<gles2::cmds::BlendColor>();
   if (c) {
@@ -374,6 +382,17 @@ void DeleteTexturesImmediate(GLsizei n, const GLuint* textures) {
   }
 }
 
+void DeleteTransformFeedbacksImmediate(GLsizei n, const GLuint* ids) {
+  const uint32_t size =
+      gles2::cmds::DeleteTransformFeedbacksImmediate::ComputeSize(n);
+  gles2::cmds::DeleteTransformFeedbacksImmediate* c =
+      GetImmediateCmdSpaceTotalSize<
+          gles2::cmds::DeleteTransformFeedbacksImmediate>(size);
+  if (c) {
+    c->Init(n, ids);
+  }
+}
+
 void DepthFunc(GLenum func) {
   gles2::cmds::DepthFunc* c = GetCmdSpace<gles2::cmds::DepthFunc>();
   if (c) {
@@ -555,6 +574,17 @@ void GenTexturesImmediate(GLsizei n, GLuint* textures) {
       GetImmediateCmdSpaceTotalSize<gles2::cmds::GenTexturesImmediate>(size);
   if (c) {
     c->Init(n, textures);
+  }
+}
+
+void GenTransformFeedbacksImmediate(GLsizei n, GLuint* ids) {
+  const uint32_t size =
+      gles2::cmds::GenTransformFeedbacksImmediate::ComputeSize(n);
+  gles2::cmds::GenTransformFeedbacksImmediate* c =
+      GetImmediateCmdSpaceTotalSize<
+          gles2::cmds::GenTransformFeedbacksImmediate>(size);
+  if (c) {
+    c->Init(n, ids);
   }
 }
 
@@ -960,6 +990,16 @@ void IsTexture(GLuint texture,
   }
 }
 
+void IsTransformFeedback(GLuint transformfeedback,
+                         uint32_t result_shm_id,
+                         uint32_t result_shm_offset) {
+  gles2::cmds::IsTransformFeedback* c =
+      GetCmdSpace<gles2::cmds::IsTransformFeedback>();
+  if (c) {
+    c->Init(transformfeedback, result_shm_id, result_shm_offset);
+  }
+}
+
 void LineWidth(GLfloat width) {
   gles2::cmds::LineWidth* c = GetCmdSpace<gles2::cmds::LineWidth>();
   if (c) {
@@ -971,6 +1011,14 @@ void LinkProgram(GLuint program) {
   gles2::cmds::LinkProgram* c = GetCmdSpace<gles2::cmds::LinkProgram>();
   if (c) {
     c->Init(program);
+  }
+}
+
+void PauseTransformFeedback() {
+  gles2::cmds::PauseTransformFeedback* c =
+      GetCmdSpace<gles2::cmds::PauseTransformFeedback>();
+  if (c) {
+    c->Init();
   }
 }
 
@@ -1029,6 +1077,14 @@ void RenderbufferStorage(GLenum target,
       GetCmdSpace<gles2::cmds::RenderbufferStorage>();
   if (c) {
     c->Init(target, internalformat, width, height);
+  }
+}
+
+void ResumeTransformFeedback() {
+  gles2::cmds::ResumeTransformFeedback* c =
+      GetCmdSpace<gles2::cmds::ResumeTransformFeedback>();
+  if (c) {
+    c->Init();
   }
 }
 
@@ -1785,10 +1841,26 @@ void BeginQueryEXT(GLenum target,
   }
 }
 
+void BeginTransformFeedback(GLenum primitivemode) {
+  gles2::cmds::BeginTransformFeedback* c =
+      GetCmdSpace<gles2::cmds::BeginTransformFeedback>();
+  if (c) {
+    c->Init(primitivemode);
+  }
+}
+
 void EndQueryEXT(GLenum target, GLuint submit_count) {
   gles2::cmds::EndQueryEXT* c = GetCmdSpace<gles2::cmds::EndQueryEXT>();
   if (c) {
     c->Init(target, submit_count);
+  }
+}
+
+void EndTransformFeedback() {
+  gles2::cmds::EndTransformFeedback* c =
+      GetCmdSpace<gles2::cmds::EndTransformFeedback>();
+  if (c) {
+    c->Init();
   }
 }
 

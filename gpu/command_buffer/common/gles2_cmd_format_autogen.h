@@ -304,6 +304,43 @@ COMPILE_ASSERT(offsetof(BindTexture, target) == 4,
 COMPILE_ASSERT(offsetof(BindTexture, texture) == 8,
                OffsetOf_BindTexture_texture_not_8);
 
+struct BindTransformFeedback {
+  typedef BindTransformFeedback ValueType;
+  static const CommandId kCmdId = kBindTransformFeedback;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _target, GLuint _transformfeedback) {
+    SetHeader();
+    target = _target;
+    transformfeedback = _transformfeedback;
+  }
+
+  void* Set(void* cmd, GLenum _target, GLuint _transformfeedback) {
+    static_cast<ValueType*>(cmd)->Init(_target, _transformfeedback);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t target;
+  uint32_t transformfeedback;
+};
+
+COMPILE_ASSERT(sizeof(BindTransformFeedback) == 12,
+               Sizeof_BindTransformFeedback_is_not_12);
+COMPILE_ASSERT(offsetof(BindTransformFeedback, header) == 0,
+               OffsetOf_BindTransformFeedback_header_not_0);
+COMPILE_ASSERT(offsetof(BindTransformFeedback, target) == 4,
+               OffsetOf_BindTransformFeedback_target_not_4);
+COMPILE_ASSERT(offsetof(BindTransformFeedback, transformfeedback) == 8,
+               OffsetOf_BindTransformFeedback_transformfeedback_not_8);
+
 struct BlendColor {
   typedef BlendColor ValueType;
   static const CommandId kCmdId = kBlendColor;
@@ -1783,6 +1820,48 @@ COMPILE_ASSERT(offsetof(DeleteTexturesImmediate, header) == 0,
 COMPILE_ASSERT(offsetof(DeleteTexturesImmediate, n) == 4,
                OffsetOf_DeleteTexturesImmediate_n_not_4);
 
+struct DeleteTransformFeedbacksImmediate {
+  typedef DeleteTransformFeedbacksImmediate ValueType;
+  static const CommandId kCmdId = kDeleteTransformFeedbacksImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeDataSize(GLsizei n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
+  }
+
+  static uint32_t ComputeSize(GLsizei n) {
+    return static_cast<uint32_t>(sizeof(ValueType) +
+                                 ComputeDataSize(n));  // NOLINT
+  }
+
+  void SetHeader(GLsizei n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(n));
+  }
+
+  void Init(GLsizei _n, const GLuint* _ids) {
+    SetHeader(_n);
+    n = _n;
+    memcpy(ImmediateDataAddress(this), _ids, ComputeDataSize(_n));
+  }
+
+  void* Set(void* cmd, GLsizei _n, const GLuint* _ids) {
+    static_cast<ValueType*>(cmd)->Init(_n, _ids);
+    const uint32_t size = ComputeSize(_n);
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  int32_t n;
+};
+
+COMPILE_ASSERT(sizeof(DeleteTransformFeedbacksImmediate) == 8,
+               Sizeof_DeleteTransformFeedbacksImmediate_is_not_8);
+COMPILE_ASSERT(offsetof(DeleteTransformFeedbacksImmediate, header) == 0,
+               OffsetOf_DeleteTransformFeedbacksImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(DeleteTransformFeedbacksImmediate, n) == 4,
+               OffsetOf_DeleteTransformFeedbacksImmediate_n_not_4);
+
 struct DepthFunc {
   typedef DepthFunc ValueType;
   static const CommandId kCmdId = kDepthFunc;
@@ -2618,6 +2697,48 @@ COMPILE_ASSERT(offsetof(GenTexturesImmediate, header) == 0,
                OffsetOf_GenTexturesImmediate_header_not_0);
 COMPILE_ASSERT(offsetof(GenTexturesImmediate, n) == 4,
                OffsetOf_GenTexturesImmediate_n_not_4);
+
+struct GenTransformFeedbacksImmediate {
+  typedef GenTransformFeedbacksImmediate ValueType;
+  static const CommandId kCmdId = kGenTransformFeedbacksImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeDataSize(GLsizei n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
+  }
+
+  static uint32_t ComputeSize(GLsizei n) {
+    return static_cast<uint32_t>(sizeof(ValueType) +
+                                 ComputeDataSize(n));  // NOLINT
+  }
+
+  void SetHeader(GLsizei n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(n));
+  }
+
+  void Init(GLsizei _n, GLuint* _ids) {
+    SetHeader(_n);
+    n = _n;
+    memcpy(ImmediateDataAddress(this), _ids, ComputeDataSize(_n));
+  }
+
+  void* Set(void* cmd, GLsizei _n, GLuint* _ids) {
+    static_cast<ValueType*>(cmd)->Init(_n, _ids);
+    const uint32_t size = ComputeSize(_n);
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  int32_t n;
+};
+
+COMPILE_ASSERT(sizeof(GenTransformFeedbacksImmediate) == 8,
+               Sizeof_GenTransformFeedbacksImmediate_is_not_8);
+COMPILE_ASSERT(offsetof(GenTransformFeedbacksImmediate, header) == 0,
+               OffsetOf_GenTransformFeedbacksImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(GenTransformFeedbacksImmediate, n) == 4,
+               OffsetOf_GenTransformFeedbacksImmediate_n_not_4);
 
 struct GetActiveAttrib {
   typedef GetActiveAttrib ValueType;
@@ -4694,6 +4815,55 @@ COMPILE_ASSERT(offsetof(IsTexture, result_shm_id) == 8,
 COMPILE_ASSERT(offsetof(IsTexture, result_shm_offset) == 12,
                OffsetOf_IsTexture_result_shm_offset_not_12);
 
+struct IsTransformFeedback {
+  typedef IsTransformFeedback ValueType;
+  static const CommandId kCmdId = kIsTransformFeedback;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  typedef uint32_t Result;
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _transformfeedback,
+            uint32_t _result_shm_id,
+            uint32_t _result_shm_offset) {
+    SetHeader();
+    transformfeedback = _transformfeedback;
+    result_shm_id = _result_shm_id;
+    result_shm_offset = _result_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLuint _transformfeedback,
+            uint32_t _result_shm_id,
+            uint32_t _result_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_transformfeedback, _result_shm_id, _result_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t transformfeedback;
+  uint32_t result_shm_id;
+  uint32_t result_shm_offset;
+};
+
+COMPILE_ASSERT(sizeof(IsTransformFeedback) == 16,
+               Sizeof_IsTransformFeedback_is_not_16);
+COMPILE_ASSERT(offsetof(IsTransformFeedback, header) == 0,
+               OffsetOf_IsTransformFeedback_header_not_0);
+COMPILE_ASSERT(offsetof(IsTransformFeedback, transformfeedback) == 4,
+               OffsetOf_IsTransformFeedback_transformfeedback_not_4);
+COMPILE_ASSERT(offsetof(IsTransformFeedback, result_shm_id) == 8,
+               OffsetOf_IsTransformFeedback_result_shm_id_not_8);
+COMPILE_ASSERT(offsetof(IsTransformFeedback, result_shm_offset) == 12,
+               OffsetOf_IsTransformFeedback_result_shm_offset_not_12);
+
 struct LineWidth {
   typedef LineWidth ValueType;
   static const CommandId kCmdId = kLineWidth;
@@ -4756,6 +4926,33 @@ COMPILE_ASSERT(offsetof(LinkProgram, header) == 0,
                OffsetOf_LinkProgram_header_not_0);
 COMPILE_ASSERT(offsetof(LinkProgram, program) == 4,
                OffsetOf_LinkProgram_program_not_4);
+
+struct PauseTransformFeedback {
+  typedef PauseTransformFeedback ValueType;
+  static const CommandId kCmdId = kPauseTransformFeedback;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init() { SetHeader(); }
+
+  void* Set(void* cmd) {
+    static_cast<ValueType*>(cmd)->Init();
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+};
+
+COMPILE_ASSERT(sizeof(PauseTransformFeedback) == 4,
+               Sizeof_PauseTransformFeedback_is_not_4);
+COMPILE_ASSERT(offsetof(PauseTransformFeedback, header) == 0,
+               OffsetOf_PauseTransformFeedback_header_not_0);
 
 struct PixelStorei {
   typedef PixelStorei ValueType;
@@ -5037,6 +5234,33 @@ COMPILE_ASSERT(offsetof(RenderbufferStorage, width) == 12,
                OffsetOf_RenderbufferStorage_width_not_12);
 COMPILE_ASSERT(offsetof(RenderbufferStorage, height) == 16,
                OffsetOf_RenderbufferStorage_height_not_16);
+
+struct ResumeTransformFeedback {
+  typedef ResumeTransformFeedback ValueType;
+  static const CommandId kCmdId = kResumeTransformFeedback;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init() { SetHeader(); }
+
+  void* Set(void* cmd) {
+    static_cast<ValueType*>(cmd)->Init();
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+};
+
+COMPILE_ASSERT(sizeof(ResumeTransformFeedback) == 4,
+               Sizeof_ResumeTransformFeedback_is_not_4);
+COMPILE_ASSERT(offsetof(ResumeTransformFeedback, header) == 0,
+               OffsetOf_ResumeTransformFeedback_header_not_0);
 
 struct SampleCoverage {
   typedef SampleCoverage ValueType;
@@ -8712,6 +8936,39 @@ COMPILE_ASSERT(offsetof(BeginQueryEXT, sync_data_shm_id) == 12,
 COMPILE_ASSERT(offsetof(BeginQueryEXT, sync_data_shm_offset) == 16,
                OffsetOf_BeginQueryEXT_sync_data_shm_offset_not_16);
 
+struct BeginTransformFeedback {
+  typedef BeginTransformFeedback ValueType;
+  static const CommandId kCmdId = kBeginTransformFeedback;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _primitivemode) {
+    SetHeader();
+    primitivemode = _primitivemode;
+  }
+
+  void* Set(void* cmd, GLenum _primitivemode) {
+    static_cast<ValueType*>(cmd)->Init(_primitivemode);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t primitivemode;
+};
+
+COMPILE_ASSERT(sizeof(BeginTransformFeedback) == 8,
+               Sizeof_BeginTransformFeedback_is_not_8);
+COMPILE_ASSERT(offsetof(BeginTransformFeedback, header) == 0,
+               OffsetOf_BeginTransformFeedback_header_not_0);
+COMPILE_ASSERT(offsetof(BeginTransformFeedback, primitivemode) == 4,
+               OffsetOf_BeginTransformFeedback_primitivemode_not_4);
+
 struct EndQueryEXT {
   typedef EndQueryEXT ValueType;
   static const CommandId kCmdId = kEndQueryEXT;
@@ -8747,6 +9004,33 @@ COMPILE_ASSERT(offsetof(EndQueryEXT, target) == 4,
                OffsetOf_EndQueryEXT_target_not_4);
 COMPILE_ASSERT(offsetof(EndQueryEXT, submit_count) == 8,
                OffsetOf_EndQueryEXT_submit_count_not_8);
+
+struct EndTransformFeedback {
+  typedef EndTransformFeedback ValueType;
+  static const CommandId kCmdId = kEndTransformFeedback;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init() { SetHeader(); }
+
+  void* Set(void* cmd) {
+    static_cast<ValueType*>(cmd)->Init();
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+};
+
+COMPILE_ASSERT(sizeof(EndTransformFeedback) == 4,
+               Sizeof_EndTransformFeedback_is_not_4);
+COMPILE_ASSERT(offsetof(EndTransformFeedback, header) == 0,
+               OffsetOf_EndTransformFeedback_header_not_0);
 
 struct InsertEventMarkerEXT {
   typedef InsertEventMarkerEXT ValueType;

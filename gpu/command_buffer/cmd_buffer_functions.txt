@@ -12,6 +12,7 @@ GL_APICALL void         GL_APIENTRY glBindFramebuffer (GLenumFrameBufferTarget t
 GL_APICALL void         GL_APIENTRY glBindRenderbuffer (GLenumRenderBufferTarget target, GLidBindRenderbuffer renderbuffer);
 GL_APICALL void         GL_APIENTRY glBindSampler (GLuint unit, GLidBindSampler sampler);
 GL_APICALL void         GL_APIENTRY glBindTexture (GLenumTextureBindTarget target, GLidBindTexture texture);
+GL_APICALL void         GL_APIENTRY glBindTransformFeedback (GLenumTransformFeedbackBindTarget target, GLidBindTransformFeedback transformfeedback);
 GL_APICALL void         GL_APIENTRY glBlendColor (GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
 GL_APICALL void         GL_APIENTRY glBlendEquation ( GLenumEquation mode );
 GL_APICALL void         GL_APIENTRY glBlendEquationSeparate (GLenumEquation modeRGB, GLenumEquation modeAlpha);
@@ -41,6 +42,7 @@ GL_APICALL void         GL_APIENTRY glDeleteRenderbuffers (GLsizeiNotNegative n,
 GL_APICALL void         GL_APIENTRY glDeleteSamplers (GLsizeiNotNegative n, const GLuint* samplers);
 GL_APICALL void         GL_APIENTRY glDeleteShader (GLidShader shader);
 GL_APICALL void         GL_APIENTRY glDeleteTextures (GLsizeiNotNegative n, const GLuint* textures);
+GL_APICALL void         GL_APIENTRY glDeleteTransformFeedbacks (GLsizeiNotNegative n, const GLuint* ids);
 GL_APICALL void         GL_APIENTRY glDepthFunc (GLenumCmpFunction func);
 GL_APICALL void         GL_APIENTRY glDepthMask (GLboolean flag);
 GL_APICALL void         GL_APIENTRY glDepthRangef (GLclampf zNear, GLclampf zFar);
@@ -63,6 +65,7 @@ GL_APICALL void         GL_APIENTRY glGenFramebuffers (GLsizeiNotNegative n, GLu
 GL_APICALL void         GL_APIENTRY glGenRenderbuffers (GLsizeiNotNegative n, GLuint* renderbuffers);
 GL_APICALL void         GL_APIENTRY glGenSamplers (GLsizeiNotNegative n, GLuint* samplers);
 GL_APICALL void         GL_APIENTRY glGenTextures (GLsizeiNotNegative n, GLuint* textures);
+GL_APICALL void         GL_APIENTRY glGenTransformFeedbacks (GLsizeiNotNegative n, GLuint* ids);
 GL_APICALL void         GL_APIENTRY glGetActiveAttrib (GLidProgram program, GLuint index, GLsizeiNotNegative bufsize, GLsizeiOptional* length, GLint* size, GLenum* type, char* name);
 GL_APICALL void         GL_APIENTRY glGetActiveUniform (GLidProgram program, GLuint index, GLsizeiNotNegative bufsize, GLsizeiOptional* length, GLint* size, GLenum* type, char* name);
 GL_APICALL void         GL_APIENTRY glGetAttachedShaders (GLidProgram program, GLsizeiNotNegative maxcount, GLsizeiOptional* count, GLuint* shaders);
@@ -103,14 +106,17 @@ GL_APICALL GLboolean    GL_APIENTRY glIsRenderbuffer (GLidRenderbuffer renderbuf
 GL_APICALL GLboolean    GL_APIENTRY glIsSampler (GLidSampler sampler);
 GL_APICALL GLboolean    GL_APIENTRY glIsShader (GLidShader shader);
 GL_APICALL GLboolean    GL_APIENTRY glIsTexture (GLidTexture texture);
+GL_APICALL GLboolean    GL_APIENTRY glIsTransformFeedback (GLidTransformFeedback transformfeedback);
 GL_APICALL void         GL_APIENTRY glLineWidth (GLfloat width);
 GL_APICALL void         GL_APIENTRY glLinkProgram (GLidProgram program);
+GL_APICALL void         GL_APIENTRY glPauseTransformFeedback (void);
 GL_APICALL void         GL_APIENTRY glPixelStorei (GLenumPixelStore pname, GLintPixelStoreAlignment param);
 GL_APICALL void         GL_APIENTRY glPolygonOffset (GLfloat factor, GLfloat units);
 GL_APICALL void         GL_APIENTRY glReadBuffer (GLenum src);
 GL_APICALL void         GL_APIENTRY glReadPixels (GLint x, GLint y, GLsizei width, GLsizei height, GLenumReadPixelFormat format, GLenumPixelType type, void* pixels);
 GL_APICALL void         GL_APIENTRY glReleaseShaderCompiler (void);
 GL_APICALL void         GL_APIENTRY glRenderbufferStorage (GLenumRenderBufferTarget target, GLenumRenderBufferFormat internalformat, GLsizei width, GLsizei height);
+GL_APICALL void         GL_APIENTRY glResumeTransformFeedback (void);
 GL_APICALL void         GL_APIENTRY glSampleCoverage (GLclampf value, GLboolean invert);
 GL_APICALL void         GL_APIENTRY glSamplerParameterf (GLidBindSampler sampler, GLenumSamplerParameter pname, GLfloat param);
 GL_APICALL void         GL_APIENTRY glSamplerParameterfv (GLidBindSampler sampler, GLenumSamplerParameter pname, const GLfloat* params);
@@ -193,7 +199,9 @@ GL_APICALL void         GL_APIENTRY glGenQueriesEXT (GLsizeiNotNegative n, GLuin
 GL_APICALL void         GL_APIENTRY glDeleteQueriesEXT (GLsizeiNotNegative n, const GLuint* queries);
 GL_APICALL GLboolean    GL_APIENTRY glIsQueryEXT (GLidQuery id);
 GL_APICALL void         GL_APIENTRY glBeginQueryEXT (GLenumQueryTarget target, GLidQuery id);
+GL_APICALL void         GL_APIENTRY glBeginTransformFeedback (GLenumTransformFeedbackPrimitiveMode primitivemode);
 GL_APICALL void         GL_APIENTRY glEndQueryEXT (GLenumQueryTarget target);
+GL_APICALL void         GL_APIENTRY glEndTransformFeedback (void);
 GL_APICALL void         GL_APIENTRY glGetQueryivEXT (GLenumQueryTarget target, GLenumQueryParameter pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetQueryObjectuivEXT (GLidQuery id, GLenumQueryObjectParameter pname, GLuint* params);
 GL_APICALL void         GL_APIENTRY glInsertEventMarkerEXT (GLsizei length, const GLchar* marker);

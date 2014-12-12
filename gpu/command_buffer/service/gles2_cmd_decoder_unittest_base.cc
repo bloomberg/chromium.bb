@@ -99,6 +99,7 @@ GLES2DecoderTestBase::GLES2DecoderTestBase()
       client_query_id_(123),
       client_vertexarray_id_(124),
       client_valuebuffer_id_(125),
+      client_transformfeedback_id_(126),
       service_renderbuffer_id_(0),
       service_renderbuffer_valid_(false),
       ignore_cached_state_for_test_(GetParam()),
@@ -424,6 +425,10 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
       .WillOnce(SetArgumentPointee<1>(kServiceSamplerId))
       .RetiresOnSaturation();
   GenHelper<cmds::GenSamplersImmediate>(client_sampler_id_);
+  EXPECT_CALL(*gl_, GenTransformFeedbacks(_, _))
+      .WillOnce(SetArgumentPointee<1>(kServiceTransformFeedbackId))
+      .RetiresOnSaturation();
+  GenHelper<cmds::GenTransformFeedbacksImmediate>(client_transformfeedback_id_);
   if (reset_unsafe_es3_apis_enabled) {
     decoder_->set_unsafe_es3_apis_enabled(false);
   }
@@ -1267,6 +1272,7 @@ const GLuint GLES2DecoderTestBase::kServiceShaderId;
 const GLuint GLES2DecoderTestBase::kServiceElementBufferId;
 const GLuint GLES2DecoderTestBase::kServiceQueryId;
 const GLuint GLES2DecoderTestBase::kServiceVertexArrayId;
+const GLuint GLES2DecoderTestBase::kServiceTransformFeedbackId;
 
 const int32 GLES2DecoderTestBase::kSharedMemoryId;
 const size_t GLES2DecoderTestBase::kSharedBufferSize;

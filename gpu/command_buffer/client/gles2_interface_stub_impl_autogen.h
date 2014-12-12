@@ -34,6 +34,9 @@ void GLES2InterfaceStub::BindSampler(GLuint /* unit */, GLuint /* sampler */) {
 void GLES2InterfaceStub::BindTexture(GLenum /* target */,
                                      GLuint /* texture */) {
 }
+void GLES2InterfaceStub::BindTransformFeedback(GLenum /* target */,
+                                               GLuint /* transformfeedback */) {
+}
 void GLES2InterfaceStub::BlendColor(GLclampf /* red */,
                                     GLclampf /* green */,
                                     GLclampf /* blue */,
@@ -153,6 +156,9 @@ void GLES2InterfaceStub::DeleteShader(GLuint /* shader */) {
 void GLES2InterfaceStub::DeleteTextures(GLsizei /* n */,
                                         const GLuint* /* textures */) {
 }
+void GLES2InterfaceStub::DeleteTransformFeedbacks(GLsizei /* n */,
+                                                  const GLuint* /* ids */) {
+}
 void GLES2InterfaceStub::DepthFunc(GLenum /* func */) {
 }
 void GLES2InterfaceStub::DepthMask(GLboolean /* flag */) {
@@ -217,6 +223,9 @@ void GLES2InterfaceStub::GenRenderbuffers(GLsizei /* n */,
 void GLES2InterfaceStub::GenSamplers(GLsizei /* n */, GLuint* /* samplers */) {
 }
 void GLES2InterfaceStub::GenTextures(GLsizei /* n */, GLuint* /* textures */) {
+}
+void GLES2InterfaceStub::GenTransformFeedbacks(GLsizei /* n */,
+                                               GLuint* /* ids */) {
 }
 void GLES2InterfaceStub::GetActiveAttrib(GLuint /* program */,
                                          GLuint /* index */,
@@ -384,9 +393,15 @@ GLboolean GLES2InterfaceStub::IsShader(GLuint /* shader */) {
 GLboolean GLES2InterfaceStub::IsTexture(GLuint /* texture */) {
   return 0;
 }
+GLboolean GLES2InterfaceStub::IsTransformFeedback(
+    GLuint /* transformfeedback */) {
+  return 0;
+}
 void GLES2InterfaceStub::LineWidth(GLfloat /* width */) {
 }
 void GLES2InterfaceStub::LinkProgram(GLuint /* program */) {
+}
+void GLES2InterfaceStub::PauseTransformFeedback() {
 }
 void GLES2InterfaceStub::PixelStorei(GLenum /* pname */, GLint /* param */) {
 }
@@ -409,6 +424,8 @@ void GLES2InterfaceStub::RenderbufferStorage(GLenum /* target */,
                                              GLenum /* internalformat */,
                                              GLsizei /* width */,
                                              GLsizei /* height */) {
+}
+void GLES2InterfaceStub::ResumeTransformFeedback() {
 }
 void GLES2InterfaceStub::SampleCoverage(GLclampf /* value */,
                                         GLboolean /* invert */) {
@@ -777,7 +794,11 @@ GLboolean GLES2InterfaceStub::IsQueryEXT(GLuint /* id */) {
 }
 void GLES2InterfaceStub::BeginQueryEXT(GLenum /* target */, GLuint /* id */) {
 }
+void GLES2InterfaceStub::BeginTransformFeedback(GLenum /* primitivemode */) {
+}
 void GLES2InterfaceStub::EndQueryEXT(GLenum /* target */) {
+}
+void GLES2InterfaceStub::EndTransformFeedback() {
 }
 void GLES2InterfaceStub::GetQueryivEXT(GLenum /* target */,
                                        GLenum /* pname */,

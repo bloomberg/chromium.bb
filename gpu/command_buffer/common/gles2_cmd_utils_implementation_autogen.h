@@ -5184,6 +5184,24 @@ std::string GLES2Util::GetStringTextureWrapMode(uint32_t value) {
                                            arraysize(string_table), value);
 }
 
+std::string GLES2Util::GetStringTransformFeedbackBindTarget(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_TRANSFORM_FEEDBACK, "GL_TRANSFORM_FEEDBACK"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
+std::string GLES2Util::GetStringTransformFeedbackPrimitiveMode(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_POINTS, "GL_POINTS"},
+      {GL_LINES, "GL_LINES"},
+      {GL_TRIANGLES, "GL_TRIANGLES"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
 std::string GLES2Util::GetStringValueBufferTarget(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_SUBSCRIBED_VALUES_BUFFER_CHROMIUM,

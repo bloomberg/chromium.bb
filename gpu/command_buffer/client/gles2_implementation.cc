@@ -2318,6 +2318,10 @@ void GLES2Implementation::GenSamplersHelper(
     GLsizei /* n */, const GLuint* /* samplers */) {
 }
 
+void GLES2Implementation::GenTransformFeedbacksHelper(
+    GLsizei /* n */, const GLuint* /* transformfeedbacks */) {
+}
+
 // NOTE #1: On old versions of OpenGL, calling glBindXXX with an unused id
 // generates a new resource. On newer versions of OpenGL they don't. The code
 // related to binding below will need to change if we switch to the new OpenGL
@@ -2700,6 +2704,23 @@ void GLES2Implementation::DeleteSamplersHelper(
     SetGLError(
         GL_INVALID_VALUE,
         "glDeleteSamplers", "id not created by this context.");
+    return;
+  }
+}
+
+void GLES2Implementation::DeleteTransformFeedbacksStub(
+    GLsizei n, const GLuint* transformfeedbacks) {
+  helper_->DeleteTransformFeedbacksImmediate(n, transformfeedbacks);
+}
+
+void GLES2Implementation::DeleteTransformFeedbacksHelper(
+    GLsizei n, const GLuint* transformfeedbacks) {
+  if (!GetIdHandler(id_namespaces::kTransformFeedbacks)->FreeIds(
+      this, n, transformfeedbacks,
+      &GLES2Implementation::DeleteTransformFeedbacksStub)) {
+    SetGLError(
+        GL_INVALID_VALUE,
+        "glDeleteTransformFeedbacks", "id not created by this context.");
     return;
   }
 }

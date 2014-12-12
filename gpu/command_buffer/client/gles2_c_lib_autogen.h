@@ -36,6 +36,9 @@ void GLES2BindSampler(GLuint unit, GLuint sampler) {
 void GLES2BindTexture(GLenum target, GLuint texture) {
   gles2::GetGLContext()->BindTexture(target, texture);
 }
+void GLES2BindTransformFeedback(GLenum target, GLuint transformfeedback) {
+  gles2::GetGLContext()->BindTransformFeedback(target, transformfeedback);
+}
 void GLES2BlendColor(GLclampf red,
                      GLclampf green,
                      GLclampf blue,
@@ -179,6 +182,9 @@ void GLES2DeleteShader(GLuint shader) {
 void GLES2DeleteTextures(GLsizei n, const GLuint* textures) {
   gles2::GetGLContext()->DeleteTextures(n, textures);
 }
+void GLES2DeleteTransformFeedbacks(GLsizei n, const GLuint* ids) {
+  gles2::GetGLContext()->DeleteTransformFeedbacks(n, ids);
+}
 void GLES2DepthFunc(GLenum func) {
   gles2::GetGLContext()->DepthFunc(func);
 }
@@ -261,6 +267,9 @@ void GLES2GenSamplers(GLsizei n, GLuint* samplers) {
 }
 void GLES2GenTextures(GLsizei n, GLuint* textures) {
   gles2::GetGLContext()->GenTextures(n, textures);
+}
+void GLES2GenTransformFeedbacks(GLsizei n, GLuint* ids) {
+  gles2::GetGLContext()->GenTransformFeedbacks(n, ids);
 }
 void GLES2GetActiveAttrib(GLuint program,
                           GLuint index,
@@ -432,11 +441,17 @@ GLboolean GLES2IsShader(GLuint shader) {
 GLboolean GLES2IsTexture(GLuint texture) {
   return gles2::GetGLContext()->IsTexture(texture);
 }
+GLboolean GLES2IsTransformFeedback(GLuint transformfeedback) {
+  return gles2::GetGLContext()->IsTransformFeedback(transformfeedback);
+}
 void GLES2LineWidth(GLfloat width) {
   gles2::GetGLContext()->LineWidth(width);
 }
 void GLES2LinkProgram(GLuint program) {
   gles2::GetGLContext()->LinkProgram(program);
+}
+void GLES2PauseTransformFeedback() {
+  gles2::GetGLContext()->PauseTransformFeedback();
 }
 void GLES2PixelStorei(GLenum pname, GLint param) {
   gles2::GetGLContext()->PixelStorei(pname, param);
@@ -465,6 +480,9 @@ void GLES2RenderbufferStorage(GLenum target,
                               GLsizei height) {
   gles2::GetGLContext()->RenderbufferStorage(target, internalformat, width,
                                              height);
+}
+void GLES2ResumeTransformFeedback() {
+  gles2::GetGLContext()->ResumeTransformFeedback();
 }
 void GLES2SampleCoverage(GLclampf value, GLboolean invert) {
   gles2::GetGLContext()->SampleCoverage(value, invert);
@@ -833,8 +851,14 @@ GLboolean GLES2IsQueryEXT(GLuint id) {
 void GLES2BeginQueryEXT(GLenum target, GLuint id) {
   gles2::GetGLContext()->BeginQueryEXT(target, id);
 }
+void GLES2BeginTransformFeedback(GLenum primitivemode) {
+  gles2::GetGLContext()->BeginTransformFeedback(primitivemode);
+}
 void GLES2EndQueryEXT(GLenum target) {
   gles2::GetGLContext()->EndQueryEXT(target);
+}
+void GLES2EndTransformFeedback() {
+  gles2::GetGLContext()->EndTransformFeedback();
 }
 void GLES2GetQueryivEXT(GLenum target, GLenum pname, GLint* params) {
   gles2::GetGLContext()->GetQueryivEXT(target, pname, params);
@@ -1166,6 +1190,10 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glBindTexture),
     },
     {
+     "glBindTransformFeedback",
+     reinterpret_cast<GLES2FunctionPointer>(glBindTransformFeedback),
+    },
+    {
      "glBlendColor",
      reinterpret_cast<GLES2FunctionPointer>(glBlendColor),
     },
@@ -1282,6 +1310,10 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glDeleteTextures),
     },
     {
+     "glDeleteTransformFeedbacks",
+     reinterpret_cast<GLES2FunctionPointer>(glDeleteTransformFeedbacks),
+    },
+    {
      "glDepthFunc",
      reinterpret_cast<GLES2FunctionPointer>(glDepthFunc),
     },
@@ -1368,6 +1400,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glGenTextures",
      reinterpret_cast<GLES2FunctionPointer>(glGenTextures),
+    },
+    {
+     "glGenTransformFeedbacks",
+     reinterpret_cast<GLES2FunctionPointer>(glGenTransformFeedbacks),
     },
     {
      "glGetActiveAttrib",
@@ -1531,12 +1567,20 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glIsTexture),
     },
     {
+     "glIsTransformFeedback",
+     reinterpret_cast<GLES2FunctionPointer>(glIsTransformFeedback),
+    },
+    {
      "glLineWidth",
      reinterpret_cast<GLES2FunctionPointer>(glLineWidth),
     },
     {
      "glLinkProgram",
      reinterpret_cast<GLES2FunctionPointer>(glLinkProgram),
+    },
+    {
+     "glPauseTransformFeedback",
+     reinterpret_cast<GLES2FunctionPointer>(glPauseTransformFeedback),
     },
     {
      "glPixelStorei",
@@ -1561,6 +1605,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glRenderbufferStorage",
      reinterpret_cast<GLES2FunctionPointer>(glRenderbufferStorage),
+    },
+    {
+     "glResumeTransformFeedback",
+     reinterpret_cast<GLES2FunctionPointer>(glResumeTransformFeedback),
     },
     {
      "glSampleCoverage",
@@ -1894,8 +1942,16 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glBeginQueryEXT),
     },
     {
+     "glBeginTransformFeedback",
+     reinterpret_cast<GLES2FunctionPointer>(glBeginTransformFeedback),
+    },
+    {
      "glEndQueryEXT",
      reinterpret_cast<GLES2FunctionPointer>(glEndQueryEXT),
+    },
+    {
+     "glEndTransformFeedback",
+     reinterpret_cast<GLES2FunctionPointer>(glEndTransformFeedback),
     },
     {
      "glGetQueryivEXT",

@@ -78,6 +78,17 @@ TEST_F(GLES2ImplementationTest, BindSampler) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, BindTransformFeedback) {
+  struct Cmds {
+    cmds::BindTransformFeedback cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(GL_TRANSFORM_FEEDBACK, 2);
+
+  gl_->BindTransformFeedback(GL_TRANSFORM_FEEDBACK, 2);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, BlendColor) {
   struct Cmds {
     cmds::BlendColor cmd;
@@ -362,6 +373,20 @@ TEST_F(GLES2ImplementationTest, DeleteTextures) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, DeleteTransformFeedbacks) {
+  GLuint ids[2] = {kTransformFeedbacksStartId, kTransformFeedbacksStartId + 1};
+  struct Cmds {
+    cmds::DeleteTransformFeedbacksImmediate del;
+    GLuint data[2];
+  };
+  Cmds expected;
+  expected.del.Init(arraysize(ids), &ids[0]);
+  expected.data[0] = kTransformFeedbacksStartId;
+  expected.data[1] = kTransformFeedbacksStartId + 1;
+  gl_->DeleteTransformFeedbacks(arraysize(ids), &ids[0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, DepthFunc) {
   struct Cmds {
     cmds::DepthFunc cmd;
@@ -602,6 +627,24 @@ TEST_F(GLES2ImplementationTest, GenTextures) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_EQ(kTexturesStartId, ids[0]);
   EXPECT_EQ(kTexturesStartId + 1, ids[1]);
+}
+
+TEST_F(GLES2ImplementationTest, GenTransformFeedbacks) {
+  GLuint ids[2] = {
+      0,
+  };
+  struct Cmds {
+    cmds::GenTransformFeedbacksImmediate gen;
+    GLuint data[2];
+  };
+  Cmds expected;
+  expected.gen.Init(arraysize(ids), &ids[0]);
+  expected.data[0] = kTransformFeedbacksStartId;
+  expected.data[1] = kTransformFeedbacksStartId + 1;
+  gl_->GenTransformFeedbacks(arraysize(ids), &ids[0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_EQ(kTransformFeedbacksStartId, ids[0]);
+  EXPECT_EQ(kTransformFeedbacksStartId + 1, ids[1]);
 }
 // TODO: Implement unit test for GetActiveAttrib
 // TODO: Implement unit test for GetActiveUniform
@@ -1075,6 +1118,25 @@ TEST_F(GLES2ImplementationTest, IsTexture) {
   EXPECT_TRUE(result);
 }
 
+TEST_F(GLES2ImplementationTest, IsTransformFeedback) {
+  struct Cmds {
+    cmds::IsTransformFeedback cmd;
+  };
+
+  Cmds expected;
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(cmds::IsTransformFeedback::Result));
+  expected.cmd.Init(1, result1.id, result1.offset);
+
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, uint32_t(1)))
+      .RetiresOnSaturation();
+
+  GLboolean result = gl_->IsTransformFeedback(1);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_TRUE(result);
+}
+
 TEST_F(GLES2ImplementationTest, LineWidth) {
   struct Cmds {
     cmds::LineWidth cmd;
@@ -1094,6 +1156,17 @@ TEST_F(GLES2ImplementationTest, LinkProgram) {
   expected.cmd.Init(1);
 
   gl_->LinkProgram(1);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, PauseTransformFeedback) {
+  struct Cmds {
+    cmds::PauseTransformFeedback cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init();
+
+  gl_->PauseTransformFeedback();
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
@@ -1149,6 +1222,17 @@ TEST_F(GLES2ImplementationTest, RenderbufferStorage) {
   expected.cmd.Init(GL_RENDERBUFFER, GL_RGBA4, 3, 4);
 
   gl_->RenderbufferStorage(GL_RENDERBUFFER, GL_RGBA4, 3, 4);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, ResumeTransformFeedback) {
+  struct Cmds {
+    cmds::ResumeTransformFeedback cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init();
+
+  gl_->ResumeTransformFeedback();
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
@@ -2272,6 +2356,28 @@ TEST_F(GLES2ImplementationTest, DeleteQueriesEXT) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 // TODO: Implement unit test for BeginQueryEXT
+
+TEST_F(GLES2ImplementationTest, BeginTransformFeedback) {
+  struct Cmds {
+    cmds::BeginTransformFeedback cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(GL_POINTS);
+
+  gl_->BeginTransformFeedback(GL_POINTS);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, EndTransformFeedback) {
+  struct Cmds {
+    cmds::EndTransformFeedback cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init();
+
+  gl_->EndTransformFeedback();
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
 // TODO: Implement unit test for InsertEventMarkerEXT
 // TODO: Implement unit test for PushGroupMarkerEXT
 

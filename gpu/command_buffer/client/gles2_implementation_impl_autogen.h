@@ -83,6 +83,16 @@ void GLES2Implementation::BindTexture(GLenum target, GLuint texture) {
   CheckGLError();
 }
 
+void GLES2Implementation::BindTransformFeedback(GLenum target,
+                                                GLuint transformfeedback) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBindTransformFeedback("
+                     << GLES2Util::GetStringTransformFeedbackBindTarget(target)
+                     << ", " << transformfeedback << ")");
+  helper_->BindTransformFeedback(target, transformfeedback);
+  CheckGLError();
+}
+
 void GLES2Implementation::BlendColor(GLclampf red,
                                      GLclampf green,
                                      GLclampf blue,
@@ -457,6 +467,29 @@ void GLES2Implementation::DeleteTextures(GLsizei n, const GLuint* textures) {
   CheckGLError();
 }
 
+void GLES2Implementation::DeleteTransformFeedbacks(GLsizei n,
+                                                   const GLuint* ids) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glDeleteTransformFeedbacks(" << n
+                     << ", " << static_cast<const void*>(ids) << ")");
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < n; ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << ids[i]);
+    }
+  });
+  GPU_CLIENT_DCHECK_CODE_BLOCK({
+    for (GLsizei i = 0; i < n; ++i) {
+      DCHECK(ids[i] != 0);
+    }
+  });
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE, "glDeleteTransformFeedbacks", "n < 0");
+    return;
+  }
+  DeleteTransformFeedbacksHelper(n, ids);
+  CheckGLError();
+}
+
 void GLES2Implementation::DepthFunc(GLenum func) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glDepthFunc("
@@ -655,6 +688,27 @@ void GLES2Implementation::GenTextures(GLsizei n, GLuint* textures) {
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
       GPU_CLIENT_LOG("  " << i << ": " << textures[i]);
+    }
+  });
+  CheckGLError();
+}
+
+void GLES2Implementation::GenTransformFeedbacks(GLsizei n, GLuint* ids) {
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glGenTransformFeedbacks(" << n
+                     << ", " << static_cast<const void*>(ids) << ")");
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE, "glGenTransformFeedbacks", "n < 0");
+    return;
+  }
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GetIdHandler(id_namespaces::kTransformFeedbacks)->MakeIds(this, 0, n, ids);
+  GenTransformFeedbacksHelper(n, ids);
+  helper_->GenTransformFeedbacksImmediate(n, ids);
+  if (share_group_->bind_generates_resource())
+    helper_->CommandBufferHelper::Flush();
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < n; ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << ids[i]);
     }
   });
   CheckGLError();
@@ -1318,10 +1372,38 @@ GLboolean GLES2Implementation::IsTexture(GLuint texture) {
   return result_value;
 }
 
+GLboolean GLES2Implementation::IsTransformFeedback(GLuint transformfeedback) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  TRACE_EVENT0("gpu", "GLES2Implementation::IsTransformFeedback");
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glIsTransformFeedback("
+                     << transformfeedback << ")");
+  typedef cmds::IsTransformFeedback::Result Result;
+  Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return GL_FALSE;
+  }
+  *result = 0;
+  helper_->IsTransformFeedback(transformfeedback, GetResultShmId(),
+                               GetResultShmOffset());
+  WaitForCmd();
+  GLboolean result_value = *result != 0;
+  GPU_CLIENT_LOG("returned " << result_value);
+  CheckGLError();
+  return result_value;
+}
+
 void GLES2Implementation::LineWidth(GLfloat width) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glLineWidth(" << width << ")");
   helper_->LineWidth(width);
+  CheckGLError();
+}
+
+void GLES2Implementation::PauseTransformFeedback() {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glPauseTransformFeedback("
+                     << ")");
+  helper_->PauseTransformFeedback();
   CheckGLError();
 }
 
@@ -1367,6 +1449,14 @@ void GLES2Implementation::RenderbufferStorage(GLenum target,
     return;
   }
   helper_->RenderbufferStorage(target, internalformat, width, height);
+  CheckGLError();
+}
+
+void GLES2Implementation::ResumeTransformFeedback() {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glResumeTransformFeedback("
+                     << ")");
+  helper_->ResumeTransformFeedback();
   CheckGLError();
 }
 
@@ -2562,6 +2652,23 @@ void GLES2Implementation::DeleteQueriesEXT(GLsizei n, const GLuint* queries) {
     return;
   }
   DeleteQueriesEXTHelper(n, queries);
+  CheckGLError();
+}
+
+void GLES2Implementation::BeginTransformFeedback(GLenum primitivemode) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBeginTransformFeedback("
+                     << GLES2Util::GetStringTransformFeedbackPrimitiveMode(
+                            primitivemode) << ")");
+  helper_->BeginTransformFeedback(primitivemode);
+  CheckGLError();
+}
+
+void GLES2Implementation::EndTransformFeedback() {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glEndTransformFeedback("
+                     << ")");
+  helper_->EndTransformFeedback();
   CheckGLError();
 }
 

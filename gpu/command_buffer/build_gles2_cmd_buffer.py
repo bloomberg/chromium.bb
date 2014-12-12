@@ -710,6 +710,26 @@ _NAMED_TYPE_INFO = {
       'GL_TEXTURE_3D',
     ],
   },
+  'TransformFeedbackBindTarget': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_TRANSFORM_FEEDBACK',
+    ],
+    'invalid': [
+      'GL_TEXTURE_2D',
+    ],
+  },
+  'TransformFeedbackPrimitiveMode': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_POINTS',
+      'GL_LINES',
+      'GL_TRIANGLES',
+    ],
+    'invalid': [
+      'GL_LINE_LOOP',
+    ],
+  },
   'ShaderType': {
     'type': 'GLenum',
     'valid': [
@@ -1350,7 +1370,6 @@ _PEPPER_INTERFACES = [
 # unit_test:    If False no service side unit test will be generated.
 # client_test:  If False no client side unit test will be generated.
 # expectation:  If False the unit test will have no expected calls.
-# match_all:    If True the unit test's EXPECT_GL will use _ for any args.
 # gen_func:     Name of function that generates GL resource for corresponding
 #               bind function.
 # states:       array of states that get set by this function corresponding to
@@ -1424,6 +1443,11 @@ _FUNCTION_INFO = {
     # TODO(gman): remove this once client side caching works.
     'client_test': False,
     'trace_level': 1,
+  },
+  'BindTransformFeedback': {
+    'type': 'Bind',
+    'id_mapping': [ 'TransformFeedback' ],
+    'unsafe': True,
   },
   'BlitFramebufferCHROMIUM': {
     'decoder_func': 'DoBlitFramebufferCHROMIUM',
@@ -1728,6 +1752,12 @@ _FUNCTION_INFO = {
     'resource_type': 'Texture',
     'resource_types': 'Textures',
   },
+  'DeleteTransformFeedbacks': {
+    'type': 'DELn',
+    'resource_type': 'TransformFeedback',
+    'resource_types': 'TransformFeedbacks',
+    'unsafe': True,
+  },
   'DepthRangef': {
     'decoder_func': 'DoDepthRangef',
     'gl_test_func': 'glDepthRange',
@@ -1841,6 +1871,13 @@ _FUNCTION_INFO = {
     'gl_test_func': 'glGenTextures',
     'resource_type': 'Texture',
     'resource_types': 'Textures',
+  },
+  'GenTransformFeedbacks': {
+    'type': 'GENn',
+    'gl_test_func': 'glGenTransformFeedbacks',
+    'resource_type': 'TransformFeedback',
+    'resource_types': 'TransformFeedbacks',
+    'unsafe': True,
   },
   'GetActiveAttrib': {
     'type': 'Custom',
@@ -2115,13 +2152,18 @@ _FUNCTION_INFO = {
   },
   'IsSampler': {
     'type': 'Is',
-    'match_all': True,
+    'id_mapping': [ 'Sampler' ],
     'unsafe': True,
   },
   'IsTexture': {
     'type': 'Is',
     'decoder_func': 'DoIsTexture',
     'expectation': False,
+  },
+  'IsTransformFeedback': {
+    'type': 'Is',
+    'id_mapping': [ 'TransformFeedback' ],
+    'unsafe': True,
   },
   'LinkProgram': {
     'decoder_func': 'DoLinkProgram',
@@ -2146,6 +2188,9 @@ _FUNCTION_INFO = {
     'chromium': True,
     'client_test': False,
     'pepper_interface': 'ChromiumMapSub',
+  },
+  'PauseTransformFeedback': {
+    'unsafe': True,
   },
   'PixelStorei': {'type': 'Manual'},
   'PostSubBufferCHROMIUM': {
@@ -2227,6 +2272,9 @@ _FUNCTION_INFO = {
   'ReleaseShaderCompiler': {
     'decoder_func': 'DoReleaseShaderCompiler',
     'unit_test': False,
+  },
+  'ResumeTransformFeedback': {
+    'unsafe': True,
   },
   'SamplerParameterf': {
     'valid_args': {
@@ -2688,12 +2736,18 @@ _FUNCTION_INFO = {
     'gl_test_func': 'glBeginQuery',
     'pepper_interface': 'Query',
   },
+  'BeginTransformFeedback': {
+    'unsafe': True,
+  },
   'EndQueryEXT': {
     'type': 'Manual',
     'cmd_args': 'GLenumQueryTarget target, GLuint submit_count',
     'gl_test_func': 'glEndnQuery',
     'client_test': False,
     'pepper_interface': 'Query',
+  },
+  'EndTransformFeedback': {
+    'unsafe': True,
   },
   'GetQueryivEXT': {
     'gen_cmd': False,
@@ -3310,7 +3364,7 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
       for arg in func.GetOriginalArgs() if not arg.IsConstant()
     ]
     gl_arg_strings = [
-      "_" if func.MatchAll() else arg.GetValidGLArg(func) \
+      arg.GetValidGLArg(func) \
       for arg in func.GetOriginalArgs()
     ]
     gl_func_name = func.GetGLTestFunctionName()
@@ -3330,6 +3384,8 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
 
   def WriteInvalidUnitTest(self, func, file, test, *extras):
     """Writes an invalid unit test for the service implementation."""
+    if func.IsUnsafe():
+      return
     for invalid_arg_index, invalid_arg in enumerate(func.GetOriginalArgs()):
       # Service implementation does not test constants, as they are not part of
       # the call in the service side.
@@ -6336,6 +6392,10 @@ TEST_P(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
 """
     file.Write(code % {'func_name': func.name})
     func.WriteHandlerValidation(file)
+    if func.IsUnsafe() and func.GetInfo('id_mapping'):
+      for id_type in func.GetInfo('id_mapping'):
+        file.Write("  group_->Get%sServiceId(%s, &%s);\n" %
+                   (id_type, id_type.lower(), id_type.lower()))
     file.Write("  *result_dst = %s(%s);\n" %
                (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
     file.Write("  return error::kNoError;\n")
@@ -7317,10 +7377,6 @@ class Function(object):
   def IsUnsafe(self):
     """Returns whether the function has service side validation or not."""
     return self.GetInfo('unsafe', False)
-
-  def MatchAll(self):
-    """ Returns whether an EXPECT_GL arg matches any input value."""
-    return self.GetInfo('match_all', False)
 
   def GetInfo(self, name, default = None):
     """Returns a value from the function info for this function."""

@@ -23,6 +23,7 @@ virtual void BindFramebuffer(GLenum target, GLuint framebuffer) = 0;
 virtual void BindRenderbuffer(GLenum target, GLuint renderbuffer) = 0;
 virtual void BindSampler(GLuint unit, GLuint sampler) = 0;
 virtual void BindTexture(GLenum target, GLuint texture) = 0;
+virtual void BindTransformFeedback(GLenum target, GLuint transformfeedback) = 0;
 virtual void BlendColor(GLclampf red,
                         GLclampf green,
                         GLclampf blue,
@@ -103,6 +104,7 @@ virtual void DeleteRenderbuffers(GLsizei n, const GLuint* renderbuffers) = 0;
 virtual void DeleteSamplers(GLsizei n, const GLuint* samplers) = 0;
 virtual void DeleteShader(GLuint shader) = 0;
 virtual void DeleteTextures(GLsizei n, const GLuint* textures) = 0;
+virtual void DeleteTransformFeedbacks(GLsizei n, const GLuint* ids) = 0;
 virtual void DepthFunc(GLenum func) = 0;
 virtual void DepthMask(GLboolean flag) = 0;
 virtual void DepthRangef(GLclampf zNear, GLclampf zFar) = 0;
@@ -139,6 +141,7 @@ virtual void GenFramebuffers(GLsizei n, GLuint* framebuffers) = 0;
 virtual void GenRenderbuffers(GLsizei n, GLuint* renderbuffers) = 0;
 virtual void GenSamplers(GLsizei n, GLuint* samplers) = 0;
 virtual void GenTextures(GLsizei n, GLuint* textures) = 0;
+virtual void GenTransformFeedbacks(GLsizei n, GLuint* ids) = 0;
 virtual void GetActiveAttrib(GLuint program,
                              GLuint index,
                              GLsizei bufsize,
@@ -233,8 +236,10 @@ virtual GLboolean IsRenderbuffer(GLuint renderbuffer) = 0;
 virtual GLboolean IsSampler(GLuint sampler) = 0;
 virtual GLboolean IsShader(GLuint shader) = 0;
 virtual GLboolean IsTexture(GLuint texture) = 0;
+virtual GLboolean IsTransformFeedback(GLuint transformfeedback) = 0;
 virtual void LineWidth(GLfloat width) = 0;
 virtual void LinkProgram(GLuint program) = 0;
+virtual void PauseTransformFeedback() = 0;
 virtual void PixelStorei(GLenum pname, GLint param) = 0;
 virtual void PolygonOffset(GLfloat factor, GLfloat units) = 0;
 virtual void ReadBuffer(GLenum src) = 0;
@@ -250,6 +255,7 @@ virtual void RenderbufferStorage(GLenum target,
                                  GLenum internalformat,
                                  GLsizei width,
                                  GLsizei height) = 0;
+virtual void ResumeTransformFeedback() = 0;
 virtual void SampleCoverage(GLclampf value, GLboolean invert) = 0;
 virtual void SamplerParameterf(GLuint sampler, GLenum pname, GLfloat param) = 0;
 virtual void SamplerParameterfv(GLuint sampler,
@@ -456,7 +462,9 @@ virtual void GenQueriesEXT(GLsizei n, GLuint* queries) = 0;
 virtual void DeleteQueriesEXT(GLsizei n, const GLuint* queries) = 0;
 virtual GLboolean IsQueryEXT(GLuint id) = 0;
 virtual void BeginQueryEXT(GLenum target, GLuint id) = 0;
+virtual void BeginTransformFeedback(GLenum primitivemode) = 0;
 virtual void EndQueryEXT(GLenum target) = 0;
+virtual void EndTransformFeedback() = 0;
 virtual void GetQueryivEXT(GLenum target, GLenum pname, GLint* params) = 0;
 virtual void GetQueryObjectuivEXT(GLuint id, GLenum pname, GLuint* params) = 0;
 virtual void InsertEventMarkerEXT(GLsizei length, const GLchar* marker) = 0;
