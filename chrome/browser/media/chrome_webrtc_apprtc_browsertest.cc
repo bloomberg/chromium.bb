@@ -49,10 +49,7 @@ const char kIsApprtcCallUpJavascript[] =
 // call gets up when connecting to the same room from two tabs in a browser.
 class WebRtcApprtcBrowserTest : public WebRtcTestBase {
  public:
-  WebRtcApprtcBrowserTest()
-      : dev_appserver_(base::kNullProcessHandle),
-        firefox_(base::kNullProcessHandle) {
-  }
+  WebRtcApprtcBrowserTest() {}
 
   void SetUpCommandLine(CommandLine* command_line) override {
     EXPECT_FALSE(command_line->HasSwitch(switches::kUseFakeUIForMediaStream));
@@ -66,11 +63,11 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
   void TearDown() override {
     // Kill any processes we may have brought up.
     LOG(INFO) << "Entering TearDown";
-    if (dev_appserver_ != base::kNullProcessHandle)
-      base::KillProcess(dev_appserver_, 0, false);
+    if (dev_appserver_.IsValid())
+      base::KillProcess(dev_appserver_.Handle(), 0, false);
     // TODO(phoglund): Find some way to shut down Firefox cleanly on Windows.
-    if (firefox_ != base::kNullProcessHandle)
-      base::KillProcess(firefox_, 0, false);
+    if (firefox_.IsValid())
+      base::KillProcess(firefox_.Handle(), 0, false);
     LOG(INFO) << "Exiting TearDown";
   }
 
@@ -104,8 +101,8 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
     command_line.AppendArg("--clear_datastore=yes");
 
     DVLOG(1) << "Running " << command_line.GetCommandLineString();
-    return base::LaunchProcess(command_line, base::LaunchOptions(),
-                               &dev_appserver_);
+    dev_appserver_ = base::LaunchProcess(command_line, base::LaunchOptions());
+    return dev_appserver_.IsValid();
   }
 
   bool LocalApprtcInstanceIsUp() {
@@ -197,8 +194,8 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
     command_line.AppendSwitchASCII("--webpage", url.spec());
 
     DVLOG(1) << "Running " << command_line.GetCommandLineString();
-    return base::LaunchProcess(command_line, base::LaunchOptions(),
-                               &firefox_);
+    firefox_ = base::LaunchProcess(command_line, base::LaunchOptions());
+    return firefox_.IsValid();
   }
 
   bool HasWebcamOnSystem() {
@@ -218,8 +215,8 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
   }
 
  private:
-  base::ProcessHandle dev_appserver_;
-  base::ProcessHandle firefox_;
+  base::Process dev_appserver_;
+  base::Process firefox_;
 };
 
 IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {

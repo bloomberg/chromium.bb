@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/process/launch.h"
+#include "base/process/process.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/webrtc_browsertest_base.h"
@@ -174,14 +175,14 @@ class MAYBE_WebRtcAudioQualityBrowserTest : public WebRtcTestBase {
 
 class AudioRecorder {
  public:
-  AudioRecorder(): recording_application_(base::kNullProcessHandle) {}
+  AudioRecorder() {}
   ~AudioRecorder() {}
 
   // Starts the recording program for the specified duration. Returns true
   // on success.
   bool StartRecording(int duration_sec, const base::FilePath& output_file,
                       bool mono) {
-    EXPECT_EQ(base::kNullProcessHandle, recording_application_)
+    EXPECT_FALSE(recording_application_.IsValid())
         << "Tried to record, but is already recording.";
 
     CommandLine command_line(CommandLine::NO_PROGRAM);
@@ -244,18 +245,19 @@ class AudioRecorder {
 #endif
 
     DVLOG(0) << "Running " << command_line.GetCommandLineString();
-    return base::LaunchProcess(command_line, base::LaunchOptions(),
-                               &recording_application_);
+    recording_application_ =
+        base::LaunchProcess(command_line, base::LaunchOptions());
+    return recording_application_.IsValid();
   }
 
   // Joins the recording program. Returns true on success.
   bool WaitForRecordingToEnd() {
     int exit_code = -1;
-    base::WaitForExitCode(recording_application_, &exit_code);
+    recording_application_.WaitForExit(&exit_code);
     return exit_code == 0;
   }
  private:
-  base::ProcessHandle recording_application_;
+  base::Process recording_application_;
 };
 
 bool ForceMicrophoneVolumeTo100Percent() {

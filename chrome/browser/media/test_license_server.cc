@@ -13,8 +13,7 @@
 
 TestLicenseServer::TestLicenseServer(
   scoped_ptr<TestLicenseServerConfig> server_config)
-    : server_config_(server_config.Pass()),
-      license_server_process_(base::kNullProcessHandle) {
+    : server_config_(server_config.Pass()) {
 }
 
 TestLicenseServer::~TestLicenseServer() {
@@ -22,7 +21,7 @@ TestLicenseServer::~TestLicenseServer() {
 }
 
 bool TestLicenseServer::Start() {
-  if (license_server_process_ != base::kNullProcessHandle)
+  if (license_server_process_.IsValid())
     return true;
 
   if (!server_config_->IsPlatformSupported()) {
@@ -38,24 +37,24 @@ bool TestLicenseServer::Start() {
 
   DVLOG(0) << "Starting test license server " <<
       command_line.GetCommandLineString();
-  if (!base::LaunchProcess(command_line, base::LaunchOptions(),
-                           &license_server_process_)) {
+  license_server_process_ =
+      base::LaunchProcess(command_line, base::LaunchOptions());
+  if (!license_server_process_.IsValid()) {
     DVLOG(0) << "Failed to start test license server!";
     return false;
   }
-  DCHECK_NE(license_server_process_, base::kNullProcessHandle);
   return true;
 }
 
 bool TestLicenseServer::Stop() {
-  if (license_server_process_ == base::kNullProcessHandle)
+  if (!license_server_process_.IsValid())
     return true;
   DVLOG(0) << "Killing license server.";
-  bool kill_succeeded = base::KillProcess(license_server_process_, 1, true);
+  bool kill_succeeded =
+      base::KillProcess(license_server_process_.Handle(), 1, true);
 
   if (kill_succeeded) {
-    base::CloseProcessHandle(license_server_process_);
-    license_server_process_ = base::kNullProcessHandle;
+    license_server_process_.Close();
   } else {
     DVLOG(1) << "Kill failed?!";
   }

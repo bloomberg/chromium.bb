@@ -7,7 +7,7 @@
 
 #include <string>
 #include "base/memory/scoped_ptr.h"
-#include "base/process/process_handle.h"
+#include "base/process/process.h"
 
 class TestLicenseServerConfig;
 
@@ -27,8 +27,8 @@ class TestLicenseServer {
  private:
   // License server configuration class used to obtain server paths, etc.
   scoped_ptr<TestLicenseServerConfig> server_config_;
-  // Process handle for the license server.
-  base::ProcessHandle license_server_process_;
+  // Process for the license server.
+  base::Process license_server_process_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLicenseServer);
 };
