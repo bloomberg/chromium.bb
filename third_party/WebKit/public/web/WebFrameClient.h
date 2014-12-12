@@ -518,7 +518,7 @@ public:
 
     // Encrypted Media -------------------------------------------------
 
-    virtual WebEncryptedMediaClient* encryptedMediaClient(blink::WebLocalFrame*) { return 0; }
+    virtual WebEncryptedMediaClient* encryptedMediaClient() { return 0; }
 
 
     // Web MIDI -------------------------------------------------------------

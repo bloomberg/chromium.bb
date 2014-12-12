@@ -29,7 +29,7 @@ WebEncryptedMediaClient* MediaKeysClientImpl::encryptedMediaClient(ExecutionCont
 {
     Document* document = toDocument(executionContext);
     WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
-    return webFrame->client()->encryptedMediaClient(webFrame);
+    return webFrame->client()->encryptedMediaClient();
 }
 
 } // namespace blink
