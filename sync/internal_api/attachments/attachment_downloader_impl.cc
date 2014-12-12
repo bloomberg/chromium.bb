@@ -8,8 +8,10 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/sys_byteorder.h"
+#include "base/time/time.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -35,6 +37,7 @@ struct AttachmentDownloaderImpl::DownloadState {
   std::string access_token;
   scoped_ptr<net::URLFetcher> url_fetcher;
   std::vector<DownloadCallback> user_callbacks;
+  base::TimeTicks start_time;
 };
 
 AttachmentDownloaderImpl::DownloadState::DownloadState(
@@ -109,6 +112,7 @@ void AttachmentDownloaderImpl::OnGetTokenSuccess(
     download_state->access_token = access_token;
     download_state->url_fetcher =
         CreateFetcher(download_state->attachment_url, access_token).Pass();
+    download_state->start_time = base::TimeTicks::Now();
     download_state->url_fetcher->Start();
   }
   requests_waiting_for_access_token_.clear();
@@ -158,6 +162,9 @@ void AttachmentDownloaderImpl::OnURLFetchComplete(
     std::string data_as_string;
     source->GetResponseAsString(&data_as_string);
     attachment_data = base::RefCountedString::TakeString(&data_as_string);
+
+    UMA_HISTOGRAM_LONG_TIMES("Sync.Attachments.DownloadTotalTime",
+        base::TimeTicks::Now() - download_state.start_time);
 
     attachment_crc32c = ComputeCrc32c(attachment_data);
     uint32_t crc32c_from_headers = 0;

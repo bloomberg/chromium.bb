@@ -35992,6 +35992,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Response or error codes from downloading sync attachments.</summary>
 </histogram>
 
+<histogram name="Sync.Attachments.DownloadTotalTime" units="milliseconds">
+  <owner>maxbogue@chromium.org</owner>
+  <summary>
+    The total time a download takes including request and server overhead.
+  </summary>
+</histogram>
+
 <histogram name="Sync.Attachments.StoreInitResult"
     enum="SyncAttachmentStoreResult">
   <owner>maxbogue@chromium.org</owner>
