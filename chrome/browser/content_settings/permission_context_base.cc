@@ -168,6 +168,10 @@ PermissionQueueController* PermissionContextBase::GetQueueController() {
   return permission_queue_controller_.get();
 }
 
+Profile* PermissionContextBase::profile() const {
+  return profile_;
+}
+
 void PermissionContextBase::NotifyPermissionSet(
     const PermissionRequestID& id,
     const GURL& requesting_origin,

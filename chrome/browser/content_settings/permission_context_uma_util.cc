@@ -78,10 +78,14 @@ void RecordPermissionAction(
             "ContentSettings.PermissionActionsInsecureOrigin_PushMessaging",
             action);
         break;
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
       case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
-        // TODO(miguelg): support protected media through
-        // the generic permission class.
+        PERMISSION_ACTION_UMA(
+            secure_origin,
+            "ContentSettings.PermissionActions_ProtectedMedia",
+            "ContentSettings.PermissionActionsSecureOrigin_ProtectedMedia",
+            "ContentSettings.PermissionActionsInsecureOrigin_ProtectedMedia",
+            action);
         break;
 #endif
       default:
@@ -105,6 +109,11 @@ void RecordPermissionRequest(
     case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
       type = content::PERMISSION_PUSH_MESSAGING;
       break;
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
+      type = content::PERMISSION_PROTECTED_MEDIA;
+      break;
+#endif
     default:
       NOTREACHED() << "PERMISSION " << permission << " not accounted for";
       return;

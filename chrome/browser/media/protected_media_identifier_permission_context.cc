@@ -4,22 +4,12 @@
 
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
 
-#include <functional>
-#include <string>
-#include <vector>
-
-#include "base/bind.h"
 #include "base/prefs/pref_service.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/pref_names.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/permission_request_id.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
 #if defined(ENABLE_EXTENSIONS)
@@ -34,30 +24,23 @@ using extensions::APIPermission;
 
 ProtectedMediaIdentifierPermissionContext::
     ProtectedMediaIdentifierPermissionContext(Profile* profile)
-    : profile_(profile), shutting_down_(false) {}
+    : PermissionContextBase(profile,
+                            CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER) {
+}
 
 ProtectedMediaIdentifierPermissionContext::
     ~ProtectedMediaIdentifierPermissionContext() {
-  // ProtectedMediaIdentifierPermissionContext may be destroyed on either
-  // the UI thread or the IO thread, but the PermissionQueueController must have
-  // been destroyed on the UI thread.
-  DCHECK(!permission_queue_controller_.get());
 }
 
-void ProtectedMediaIdentifierPermissionContext::
-    RequestProtectedMediaIdentifierPermission(
-        content::WebContents* web_contents,
-        const GURL& origin,
-        base::Callback<void(bool)> result_callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (shutting_down_)
-    return;
+void ProtectedMediaIdentifierPermissionContext::RequestPermission(
+    content::WebContents* web_contents,
+    const PermissionRequestID& id,
+    const GURL& requesting_frame_origin,
+    bool user_gesture,
+    const BrowserPermissionCallback& callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  int render_process_id = web_contents->GetRenderProcessHost()->GetID();
-  int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
-
-  const PermissionRequestID id(
-      render_process_id, render_view_id, 0, origin);
+  GURL embedder = web_contents->GetLastCommittedURL().GetOrigin();
 
 #if defined(ENABLE_EXTENSIONS)
   if (extensions::GetViewType(web_contents) !=
@@ -67,102 +50,42 @@ void ProtectedMediaIdentifierPermissionContext::
         << "Attempt to use protected media identifier in tabless renderer: "
         << id.ToString()
         << " (can't prompt user without a visible tab)";
-    NotifyPermissionSet(id, origin, result_callback, false);
+    NotifyPermissionSet(id, origin, embedder, callback, false, false);
     return;
   }
 #endif
 
-  GURL embedder = web_contents->GetLastCommittedURL();
-  if (!origin.is_valid() || !embedder.is_valid()) {
+  if (!requesting_frame_origin.is_valid() || !embedder.is_valid()) {
     LOG(WARNING)
         << "Attempt to use protected media identifier from an invalid URL: "
-        << origin << "," << embedder
+        << requesting_frame_origin << "," << embedder
         << " (proteced media identifier is not supported in popups)";
-    NotifyPermissionSet(id, origin, result_callback, false);
+    NotifyPermissionSet(id, requesting_frame_origin, embedder,
+                        callback, false, false);
     return;
   }
-
-  content::RenderViewHost* rvh = web_contents->GetRenderViewHost();
-  DecidePermission(id, origin, embedder, rvh, result_callback);
-}
-
-void ProtectedMediaIdentifierPermissionContext::
-    CancelProtectedMediaIdentifierPermissionRequests(
-        int render_process_id,
-        int render_view_id,
-        const GURL& origin) {
-  CancelPendingInfobarRequests(
-      render_process_id, render_view_id, origin);
-}
-
-void ProtectedMediaIdentifierPermissionContext::DecidePermission(
-    const PermissionRequestID& id,
-    const GURL& origin,
-    const GURL& embedder,
-    content::RenderViewHost* rvh,
-    const base::Callback<void(bool)>& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
 #if defined(OS_ANDROID)
   // Check if the protected media identifier master switch is disabled.
   if (!profile()->GetPrefs()->GetBoolean(
         prefs::kProtectedMediaIdentifierEnabled)) {
-    PermissionDecided(id, origin, embedder, callback, false);
+    NotifyPermissionSet(id, requesting_frame_origin, embedder, callback,
+                        false, false);
     return;
   }
 #endif
 
-  ContentSetting content_setting =
-     profile_->GetHostContentSettingsMap()->GetContentSetting(
-          origin,
-          embedder,
-          CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
-          std::string());
-  switch (content_setting) {
-    case CONTENT_SETTING_BLOCK:
-      PermissionDecided(id, origin, embedder, callback, false);
-      break;
-    case CONTENT_SETTING_ALLOW:
-      PermissionDecided(id, origin, embedder, callback, true);
-      break;
-    case CONTENT_SETTING_ASK:
-      QueueController()->CreateInfoBarRequest(
-          id,
-          origin,
-          embedder,
-          base::Bind(&ProtectedMediaIdentifierPermissionContext::
-                          NotifyPermissionSet,
-                     base::Unretained(this),
-                     id,
-                     origin,
-                     callback));
-      break;
-    default:
-      NOTREACHED();
-  }
+  PermissionContextBase::RequestPermission(web_contents, id,
+                                           requesting_frame_origin,
+                                           user_gesture,
+                                           callback);
 }
 
-void ProtectedMediaIdentifierPermissionContext::ShutdownOnUIThread() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  permission_queue_controller_.reset();
-  shutting_down_ = true;
-}
-
-void ProtectedMediaIdentifierPermissionContext::PermissionDecided(
+void ProtectedMediaIdentifierPermissionContext::UpdateTabContext(
     const PermissionRequestID& id,
-    const GURL& origin,
-    const GURL& embedder,
-    const base::Callback<void(bool)>& callback,
+    const GURL& requesting_frame,
     bool allowed) {
-  NotifyPermissionSet(id, origin, callback, allowed);
-}
-
-void ProtectedMediaIdentifierPermissionContext::NotifyPermissionSet(
-    const PermissionRequestID& id,
-    const GURL& origin,
-    const base::Callback<void(bool)>& callback,
-    bool allowed) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // WebContents may have gone away.
   TabSpecificContentSettings* content_settings =
@@ -170,49 +93,7 @@ void ProtectedMediaIdentifierPermissionContext::NotifyPermissionSet(
                                       id.render_view_id());
   if (content_settings) {
     content_settings->OnProtectedMediaIdentifierPermissionSet(
-        origin.GetOrigin(), allowed);
+        requesting_frame.GetOrigin(), allowed);
   }
 
-  callback.Run(allowed);
-}
-
-PermissionQueueController*
-    ProtectedMediaIdentifierPermissionContext::QueueController() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  DCHECK(!shutting_down_);
-  if (!permission_queue_controller_)
-    permission_queue_controller_.reset(CreateQueueController());
-  return permission_queue_controller_.get();
-}
-
-PermissionQueueController*
-    ProtectedMediaIdentifierPermissionContext::CreateQueueController() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  return new PermissionQueueController(
-      profile(), CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER);
-}
-
-void
-ProtectedMediaIdentifierPermissionContext::CancelPendingInfobarRequests(
-    int render_process_id,
-    int render_view_id,
-    const GURL& origin) {
-  if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&ProtectedMediaIdentifierPermissionContext::
-                        CancelPendingInfobarRequests,
-                   this,
-                   render_process_id,
-                   render_view_id,
-                   origin));
-    return;
-  }
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (shutting_down_)
-    return;
-  QueueController()->CancelInfoBarRequest(
-      PermissionRequestID(render_process_id, render_view_id, 0,
-                          origin));
 }

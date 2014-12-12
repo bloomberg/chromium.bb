@@ -109,6 +109,9 @@ class PermissionContextBase : public KeyedService {
   // Return an instance of the infobar queue controller, creating it if needed.
   PermissionQueueController* GetQueueController();
 
+  // Returns the profile associated with this permission context.
+  Profile* profile() const;
+
   // Store the decided permission as a content setting.
   // virtual since the permission might be stored with different restrictions
   // (for example for desktop notifications).
