@@ -166,14 +166,6 @@ bool MessageCenterNotificationManager::Update(const Notification& notification,
       // the immediate update allowed in the message center.
       std::string old_id = old_notification->notification().id();
 
-      // The W3C Web Notifications specification states that replacing a
-      // notification should fire the "close" event on the old one. The WHATWG
-      // version does not include the "close" event at all anymore, so this
-      // will eventually become redundant.
-      // TODO(peter): Remove this call when removing the Close() event from
-      // Web Notifications. See http://crbug.com/437286.
-      old_notification->notification().delegate()->Close(false /* by_user */);
-
       // Add/remove notification in the local list but just update the same
       // one in MessageCenter.
       delete old_notification;

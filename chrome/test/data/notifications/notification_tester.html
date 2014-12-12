@@ -7,8 +7,6 @@ Also can be used to request permission for notifications.
 
 // Array of all notifications this page has created.
 var g_notifications = [];
-// Object of notifications which have been closed.
-var g_closed_notifications = {};
 // Whether the site has requested and been granted permission.
 var g_permissionGranted = false;
 
@@ -66,31 +64,18 @@ function onPermissionGranted() {
 // back on error. If |waitForDisplay| is true, the response will not be sent
 // until the notification is actually displayed.
 function createNotificationHelper(note, waitForDisplay) {
-  var notification_id = g_notifications.length;
-
-  g_notifications.push(note);
-  g_closed_notifications[notification_id] = false;
-
   function sendNotificationIdToTest() {
-    sendResultToTest(notification_id);
+    sendResultToTest(g_notifications.length - 1);
   }
-
+  g_notifications.push(note);
   if (waitForDisplay)
     note.onshow = sendNotificationIdToTest;
   note.onerror = function() {
     sendResultToTest(-1);
   }
-  note.onclose = function() {
-    g_closed_notifications[notification_id] = true;
-  }
 
   if (!waitForDisplay)
     sendNotificationIdToTest();
-}
-
-// Returns whether the notification with Id has been closed.
-function hasBeenClosed(notification_id) {
-  sendResultToTest(g_closed_notifications[notification_id]);
 }
 
 // Sends a result back to the main test logic.
