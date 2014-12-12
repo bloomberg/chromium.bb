@@ -1529,8 +1529,8 @@ Press any key to continue exploring.
   <message name="IDS_CREATE_SUPERVISED_USER_CREATION_RESTRICTED_TEXT" desc="Text shown when supervised user can be created, but owner of the device restricted supervised user creation or whitelist has been enabled for this device.">
     Creation of supervised users is restricted by the owner of this device.
   </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_NO_MANAGER_EXCEPT_SUPERVISED_TEXT" desc="Text shown when supervised user can be created, but no users except regular supervised that can be manager exist.">
-    Sorry, you need to add at least one Google Account to this device before you can create a supervised user.
+  <message name="IDS_CREATE_SUPERVISED_USER_NO_MANAGER_EXCEPT_KIDS_TEXT" desc="Text shown when supervised user can be created, but no users except kids that can be manager exist.">
+    Sorry, you need to add at least one Google account to this device before you can create a supervised user. Google accounts for kids cannot be used to create a supervised user.
   </message>
   <message name="IDS_CREATE_SUPERVISED_INTRO_TEXT_TITLE" desc="Supervised user dialog, intro page, title">
     What is a supervised user?
