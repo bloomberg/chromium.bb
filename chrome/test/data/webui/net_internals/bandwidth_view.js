@@ -253,7 +253,9 @@ TEST_F('NetInternalsTest', 'netInternalsSessionBandwidthSucceed', function() {
 /**
  * Checks data reduction proxy info when it is enabled.
  */
-TEST_F('NetInternalsTest', 'netInternalsDataReductionProxyEnabled', function() {
+TEST_F('NetInternalsTest',
+       'DISABLED_netInternalsDataReductionProxyEnabled',
+       function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(new DataReductionProxyTask(true));
   taskQueue.run();
