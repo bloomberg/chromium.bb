@@ -72,6 +72,25 @@ Notification* Notification::create(ExecutionContext* context, const String& titl
         ? UseCounter::NotificationSecureOrigin : UseCounter::NotificationInsecureOrigin;
     UseCounter::count(context, feature);
 
+    notification->scheduleShow();
+    notification->suspendIfNeeded();
+    return notification;
+}
+
+Notification* Notification::create(ExecutionContext* context, const String& persistentId, const WebNotificationData& data)
+{
+    Notification* notification = new Notification(data.title, context);
+
+    notification->setPersistentId(persistentId);
+    notification->setDir(data.direction == WebNotificationData::DirectionLeftToRight ? "ltr" : "rtl");
+    notification->setLang(data.lang);
+    notification->setBody(data.body);
+    notification->setTag(data.tag);
+
+    if (!data.icon.isEmpty())
+        notification->setIconUrl(data.icon);
+
+    notification->setState(NotificationStateShowing);
     notification->suspendIfNeeded();
     return notification;
 }
@@ -84,12 +103,18 @@ Notification::Notification(const String& title, ExecutionContext* context)
     , m_asyncRunner(this, &Notification::show)
 {
     ASSERT(notificationManager());
-
-    m_asyncRunner.runAsync();
 }
 
 Notification::~Notification()
 {
+}
+
+void Notification::scheduleShow()
+{
+    ASSERT(m_state == NotificationStateIdle);
+    ASSERT(!m_asyncRunner.isActive());
+
+    m_asyncRunner.runAsync();
 }
 
 void Notification::show()
@@ -117,7 +142,10 @@ void Notification::close()
         return;
 
     m_state = NotificationStateClosed;
-    notificationManager()->close(this);
+    if (!m_persistentId.isEmpty())
+        notificationManager()->closePersistent(m_persistentId);
+    else
+        notificationManager()->close(this);
 }
 
 void Notification::dispatchShowEvent()

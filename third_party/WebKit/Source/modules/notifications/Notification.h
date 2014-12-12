@@ -47,13 +47,19 @@ namespace blink {
 class ExecutionContext;
 class NotificationOptions;
 class NotificationPermissionCallback;
+struct WebNotificationData;
 
 class Notification : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<Notification>, public ActiveDOMObject, public EventTargetWithInlineData, public WebNotificationDelegate {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<Notification>);
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Notification);
 public:
+    // Used for JavaScript instantiations of the Notification object. Will automatically schedule for
+    // the notification to be displayed to the user.
     static Notification* create(ExecutionContext*, const String& title, const NotificationOptions&);
+
+    // Used for embedder-created Notification objects. Will initialize the Notification's state as showing.
+    static Notification* create(ExecutionContext*, const String& persistentId, const WebNotificationData&);
 
     virtual ~Notification();
 
@@ -97,6 +103,8 @@ public:
 private:
     Notification(const String& title, ExecutionContext*);
 
+    void scheduleShow();
+
     // Calling show() may start asynchronous operation. If this object has
     // a V8 wrapper, hasPendingActivity() prevents the wrapper from being
     // collected while m_state is Showing, and so this instance stays alive
@@ -110,6 +118,8 @@ private:
     void setIconUrl(KURL iconUrl) { m_iconUrl = iconUrl; }
     void setTag(const String& tag) { m_tag = tag; }
 
+    void setPersistentId(const String& persistentId) { m_persistentId = persistentId; }
+
 private:
     String m_title;
     String m_dir;
@@ -119,11 +129,20 @@ private:
 
     KURL m_iconUrl;
 
+    // Notifications can either be bound to the page, which means they're identified by
+    // their delegate, or persistent, which means they're identified by a persistent Id
+    // given to us by the embedder. This influences how we close the notification.
+    String m_persistentId;
+
     enum NotificationState {
         NotificationStateIdle,
         NotificationStateShowing,
         NotificationStateClosed
     };
+
+    // Only to be used by the Notification::create() method when notifications were created
+    // by the embedder rather than by Blink.
+    void setState(NotificationState state) { m_state = state; }
 
     NotificationState m_state;
 
