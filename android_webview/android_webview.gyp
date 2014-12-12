@@ -164,6 +164,8 @@
         'browser/aw_request_interceptor.h',
         'browser/aw_resource_context.cc',
         'browser/aw_resource_context.h',
+        'browser/aw_ssl_host_state_delegate.cc',
+        'browser/aw_ssl_host_state_delegate.h',
         'browser/aw_result_codes.h',
         'browser/aw_web_preferences_populater.cc',
         'browser/aw_web_preferences_populater.h',

@@ -500,7 +500,7 @@ public class AwContentsTest extends AwTestBase {
         }
     }
 
-    // This is a meta test that we don't accidentally turn of hardware
+    // This is a meta test that we don't accidentally turn off hardware
     // acceleration in instrumentation tests without notice. Do not add the
     // @DisableHardwareAccelerationForTest annotation for this test.
     @Feature({"AndroidWebView"})
@@ -510,5 +510,56 @@ public class AwContentsTest extends AwTestBase {
                 createAwTestContainerViewOnMainSync(mContentsClient);
         assertTrue(testContainer.isHardwareAccelerated());
         assertTrue(testContainer.isBackedByHardwareView());
+    }
+
+    // TODO(hush): more ssl tests. And put the ssl tests into a separate test
+    // class.
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    // If the user allows the ssl error, the same ssl error will not trigger
+    // the onReceivedSslError callback; If the user denies it, the same ssl
+    // error will still trigger the onReceivedSslError callback.
+    public void testSslPreferences() throws Throwable {
+        final AwTestContainerView testContainer =
+                createAwTestContainerViewOnMainSync(mContentsClient);
+        final AwContents awContents = testContainer.getAwContents();
+        TestWebServer webServer = TestWebServer.startSsl();
+        final String pagePath = "/hello.html";
+        final String pageUrl =
+                webServer.setResponse(pagePath, "<html><body>hello world</body></html>", null);
+        final CallbackHelper onReceivedSslErrorHelper =
+                mContentsClient.getOnReceivedSslErrorHelper();
+        int onSslErrorCallCount = onReceivedSslErrorHelper.getCallCount();
+
+        loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+
+        assertEquals(onSslErrorCallCount + 1, onReceivedSslErrorHelper.getCallCount());
+        assertEquals(1, webServer.getRequestCount(pagePath));
+
+        // Now load the page again. This time, we expect no ssl error, because
+        // user's decision should be remembered.
+        onSslErrorCallCount = onReceivedSslErrorHelper.getCallCount();
+        loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+        assertEquals(onSslErrorCallCount, onReceivedSslErrorHelper.getCallCount());
+
+        // Now clear the ssl preferences then load the same url again. Expect to see
+        // onReceivedSslError getting called again.
+        awContents.clearSslPreferences();
+        onSslErrorCallCount = onReceivedSslErrorHelper.getCallCount();
+        loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+        assertEquals(onSslErrorCallCount + 1, onReceivedSslErrorHelper.getCallCount());
+
+        // Now clear the stored decisions and tell the client to deny ssl errors.
+        awContents.clearSslPreferences();
+        mContentsClient.setAllowSslError(false);
+        onSslErrorCallCount = onReceivedSslErrorHelper.getCallCount();
+        loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+        assertEquals(onSslErrorCallCount + 1, onReceivedSslErrorHelper.getCallCount());
+
+        // Now load the same page again. This time, we still expect onReceivedSslError,
+        // because we only remember user's decision if it is "allow".
+        onSslErrorCallCount = onReceivedSslErrorHelper.getCallCount();
+        loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+        assertEquals(onSslErrorCallCount + 1, onReceivedSslErrorHelper.getCallCount());
     }
 }

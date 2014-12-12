@@ -347,7 +347,10 @@ content::PushMessagingService* AwBrowserContext::GetPushMessagingService() {
 }
 
 content::SSLHostStateDelegate* AwBrowserContext::GetSSLHostStateDelegate() {
-  return NULL;
+  if (!ssl_host_state_delegate_.get()) {
+    ssl_host_state_delegate_.reset(new AwSSLHostStateDelegate());
+  }
+  return ssl_host_state_delegate_.get();
 }
 
 void AwBrowserContext::RebuildTable(
