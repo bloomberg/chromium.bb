@@ -7,10 +7,7 @@
 
 #include <jni.h>
 
-#include <vector>
-
 #include "base/android/jni_weak_ref.h"
-#include "ui/gfx/geometry/rect.h"
 
 namespace content {
 
@@ -67,7 +64,6 @@ class ImeAdapterAndroid {
   // Called from native -> java
   void CancelComposition();
   void FocusedNodeChanged(bool is_editable_node);
-  void SetCharacterBounds(const std::vector<gfx::Rect>& rects);
 
  private:
   RenderWidgetHostImpl* GetRenderWidgetHostImpl();

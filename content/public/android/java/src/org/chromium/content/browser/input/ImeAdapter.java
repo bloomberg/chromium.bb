@@ -705,11 +705,6 @@ public class ImeAdapter {
     }
 
     @CalledByNative
-    private void setCharacterBounds(float[] characterBounds) {
-        // TODO(yukawa): Implement this.
-    }
-
-    @CalledByNative
     void detach() {
         if (mDismissInput != null) {
             mHandler.removeCallbacks(mDismissInput);

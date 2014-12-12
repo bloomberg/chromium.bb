@@ -11,7 +11,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -266,36 +265,6 @@ void ImeAdapterAndroid::FocusedNodeChanged(bool is_editable_node) {
                                        obj.obj(),
                                        is_editable_node);
   }
-}
-
-void ImeAdapterAndroid::SetCharacterBounds(
-    const std::vector<gfx::Rect>& character_bounds) {
-  JNIEnv* env = AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jobject> obj = java_ime_adapter_.get(env);
-  if (obj.is_null())
-    return;
-
-  const size_t coordinates_array_size = character_bounds.size() * 4;
-  base::android::ScopedJavaLocalRef<jfloatArray> coordinates_dest_array(
-      env, env->NewFloatArray(coordinates_array_size));
-  if (coordinates_dest_array.is_null())
-    return;
-
-  scoped_ptr<jfloat[]> coordinates_array(new jfloat[coordinates_array_size]);
-  for (size_t i = 0; i < character_bounds.size(); ++i) {
-    const gfx::Rect& rect = character_bounds[i];
-    const size_t coordinates_array_index = i * 4;
-    coordinates_array[coordinates_array_index + 0] = rect.x();
-    coordinates_array[coordinates_array_index + 1] = rect.y();
-    coordinates_array[coordinates_array_index + 2] = rect.right();
-    coordinates_array[coordinates_array_index + 3] = rect.bottom();
-  }
-  // TODO(yukawa): Consider to move this to base/android/jni_array.h
-  env->SetFloatArrayRegion(coordinates_dest_array.obj(), 0,
-                           coordinates_array_size, coordinates_array.get());
-  base::android::CheckException(env);
-  Java_ImeAdapter_setCharacterBounds(env, obj.obj(),
-                                     coordinates_dest_array.obj());
 }
 
 void ImeAdapterAndroid::SetEditableSelectionOffsets(JNIEnv*, jobject,
