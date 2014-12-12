@@ -862,12 +862,17 @@ def _CheckHardcodedGoogleHostsInLowerLayers(input_api, output_api):
 
 def _CheckNoAbbreviationInPngFileName(input_api, output_api):
   """Makes sure there are no abbreviations in the name of PNG files.
+  The native_client_sdk directory is excluded because it has auto-generated PNG
+  files for documentation.
   """
-  pattern = input_api.re.compile(r'.*_[a-z]_.*\.png$|.*_[a-z]\.png$')
   errors = []
-  for f in input_api.AffectedFiles(include_deletes=False):
-    if pattern.match(f.LocalPath()):
-      errors.append('    %s' % f.LocalPath())
+  white_list = (r'.*_[a-z]_.*\.png$|.*_[a-z]\.png$',)
+  black_list = (r'^native_client_sdk[\\\/]',)
+  file_filter = lambda f: input_api.FilterSourceFile(
+      f, white_list=white_list, black_list=black_list)
+  for f in input_api.AffectedFiles(include_deletes=False,
+                                   file_filter=file_filter):
+    errors.append('    %s' % f.LocalPath())
 
   results = []
   if errors:
