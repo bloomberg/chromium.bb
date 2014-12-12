@@ -1905,10 +1905,6 @@ void BrowserView::OnOmniboxPopupShownOrHidden() {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, InfoBarContainerDelegate overrides:
 
-const int InfoBarContainerDelegate::kSeparatorLineHeight =
-    views::NonClientFrameView::kClientEdgeThickness;
-const int InfoBarContainerDelegate::kDefaultArrowTargetHeight = 9;
-
 SkColor BrowserView::GetInfoBarSeparatorColor() const {
   // NOTE: Keep this in sync with ToolbarView::OnPaint()!
   return (IsTabStripVisible() || !frame_->ShouldUseNativeFrame()) ?

@@ -5,6 +5,21 @@
 #include "chrome/browser/ui/infobar_container_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 
+#if defined(TOOLKIT_VIEWS)
+#include "ui/views/window/non_client_view.h"
+#endif
+
+// static
+#if defined(TOOLKIT_VIEWS)
+// Views comes first since Mac may eventually be Views-based.
+const int InfoBarContainerDelegate::kSeparatorLineHeight =
+    views::NonClientFrameView::kClientEdgeThickness;
+const int InfoBarContainerDelegate::kDefaultArrowTargetHeight = 9;
+#elif defined(OS_MACOSX)
+const int InfoBarContainerDelegate::kSeparatorLineHeight = 1;
+const int InfoBarContainerDelegate::kDefaultArrowTargetHeight = 11;
+#endif
+
 const int InfoBarContainerDelegate::kDefaultBarTargetHeight = 36;
 const int InfoBarContainerDelegate::kMaximumArrowTargetHeight = 24;
 const int InfoBarContainerDelegate::kDefaultArrowTargetHalfWidth =
