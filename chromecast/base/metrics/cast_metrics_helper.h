@@ -45,6 +45,16 @@ class CastMetricsHelper {
                              int num_buckets) = 0;
   };
 
+  // Decodes action_name/app_id/session_id/sdk_version from metrics name.
+  // Return false if the metrics name is not generated from
+  // EncodeAppInfoIntoMetricsName() with correct format.
+  static bool DecodeAppInfoFromMetricsName(
+      const std::string& metrics_name,
+      std::string* action_name,
+      std::string* app_id,
+      std::string* session_id,
+      std::string* sdk_version);
+
   static CastMetricsHelper* GetInstance();
 
   explicit CastMetricsHelper(
@@ -53,6 +63,10 @@ class CastMetricsHelper {
 
   // This function stores the name and startup time of the active application.
   virtual void TagAppStart(const std::string& app_name);
+  // This function updates the info for current active application.
+  virtual void UpdateCurrentAppInfo(const std::string& app_id,
+                                    const std::string& session_id,
+                                    const std::string& sdk_version);
 
   // Logs UMA record for media play/pause user actions.
   virtual void LogMediaPlay();
@@ -101,6 +115,12 @@ class CastMetricsHelper {
   CastMetricsHelper();
 
  private:
+  static std::string EncodeAppInfoIntoMetricsName(
+      const std::string& action_name,
+      const std::string& app_id,
+      const std::string& session_id,
+      const std::string& sdk_version);
+
   void LogEnumerationHistogramEvent(const std::string& name,
                                     int value, int num_buckets);
   void LogTimeHistogramEvent(const std::string& name,
@@ -118,6 +138,9 @@ class CastMetricsHelper {
 
   // Currently running app name. Used to construct histogram name.
   std::string app_name_;
+  std::string app_id_;
+  std::string session_id_;
+  std::string sdk_version_;
 
   // Whether a new app start time has been stored but not recorded.
   // After the startup time has been used to generate an UMA event,

@@ -10,6 +10,8 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "chromecast/base/metrics/cast_histograms.h"
 #include "chromecast/base/metrics/grouped_histogram.h"
 
@@ -36,8 +38,55 @@ const int kDisplayedFramesPerSecondPeriod = 1000000;
 // Sample every 5 seconds, represented in microseconds.
 const int kNominalVideoSamplePeriod = 5000000;
 
+const char kMetricsNameAppInfoDelimiter = '#';
+
 }  // namespace
 
+// static
+
+// NOTE(gfhuang): This is a hacky way to encode/decode app infos into a
+// string. Mainly because it's hard to add another metrics serialization type
+// into components/metrics/serialization/.
+// static
+bool CastMetricsHelper::DecodeAppInfoFromMetricsName(
+    const std::string& metrics_name,
+    std::string* action_name,
+    std::string* app_id,
+    std::string* session_id,
+    std::string* sdk_version) {
+  DCHECK(action_name);
+  DCHECK(app_id);
+  DCHECK(session_id);
+  DCHECK(sdk_version);
+  if (metrics_name.find(kMetricsNameAppInfoDelimiter) == std::string::npos)
+    return false;
+
+  std::vector<std::string> tokens;
+  base::SplitString(metrics_name, kMetricsNameAppInfoDelimiter, &tokens);
+  DCHECK_EQ(tokens.size(), 4u);
+  // The order of tokens should match EncodeAppInfoIntoMetricsName().
+  *action_name = tokens[0];
+  *app_id = tokens[1];
+  *session_id = tokens[2];
+  *sdk_version = tokens[3];
+  return true;
+}
+
+// static
+std::string CastMetricsHelper::EncodeAppInfoIntoMetricsName(
+    const std::string& action_name,
+    const std::string& app_id,
+    const std::string& session_id,
+    const std::string& sdk_version) {
+  std::vector<std::string> parts;
+  parts.push_back(action_name);
+  parts.push_back(app_id);
+  parts.push_back(session_id);
+  parts.push_back(sdk_version);
+  return JoinString(parts, kMetricsNameAppInfoDelimiter);
+}
+
+// static
 CastMetricsHelper* CastMetricsHelper::GetInstance() {
   DCHECK(g_instance);
   return g_instance;
@@ -71,14 +120,29 @@ void CastMetricsHelper::TagAppStart(const std::string& arg_app_name) {
   new_startup_time_ = true;
 
   TagAppStartForGroupedHistograms(app_name_);
+  // Clear app info
+  UpdateCurrentAppInfo("", "", "");
+}
+
+void CastMetricsHelper::UpdateCurrentAppInfo(const std::string& app_id,
+                                             const std::string& session_id,
+                                             const std::string& sdk_version) {
+  MAKE_SURE_THREAD(UpdateCurrentAppInfo, app_id, session_id, sdk_version);
+  app_id_ = app_id;
+  session_id_ = session_id;
+  sdk_version_ = sdk_version;
 }
 
 void CastMetricsHelper::LogMediaPlay() {
-  RecordSimpleAction(GetMetricsNameWithAppName("MediaPlay", ""));
+  MAKE_SURE_THREAD(LogMediaPlay);
+  RecordSimpleAction(EncodeAppInfoIntoMetricsName(
+      "MediaPlay", app_id_, session_id_, sdk_version_));
 }
 
 void CastMetricsHelper::LogMediaPause() {
-  RecordSimpleAction(GetMetricsNameWithAppName("MediaPause", ""));
+  MAKE_SURE_THREAD(LogMediaPause);
+  RecordSimpleAction(EncodeAppInfoIntoMetricsName(
+      "MediaPause", app_id_, session_id_, sdk_version_));
 }
 
 void CastMetricsHelper::LogTimeToDisplayVideo() {
