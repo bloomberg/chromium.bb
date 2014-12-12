@@ -80,15 +80,11 @@ static std::string ErrorTypeToString(blink::WebCryptoErrorType type) {
       return "SyntaxError";
     case blink::WebCryptoErrorTypeOperation:
       return "OperationError";
-    case blink::WebCryptoErrorTypeUnknown:
-      return "UnknownError";
-    case blink::WebCryptoErrorTypeInvalidState:
-      return "InvalidState";
     case blink::WebCryptoErrorTypeInvalidAccess:
       return "InvalidAccess";
+    default:
+      return "?";
   }
-
-  return "?";
 }
 
 std::string StatusToString(const Status& status) {

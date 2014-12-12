@@ -204,7 +204,7 @@ Status Status::ErrorUnsupported(const std::string& message) {
 }
 
 Status Status::ErrorUnexpected() {
-  return Status(blink::WebCryptoErrorTypeUnknown,
+  return Status(blink::WebCryptoErrorTypeOperation,
                 "Something unexpected happened...");
 }
 
