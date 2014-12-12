@@ -1363,8 +1363,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // We postpone the initial navigation of the tab using an empty GURL, so that
   // we can add a watcher for crashes.
   Shell* shell2 = Shell::CreateNewWindow(
-      shell()->web_contents()->GetBrowserContext(), GURL(), NULL,
-      MSG_ROUTING_NONE, gfx::Size());
+      shell()->web_contents()->GetBrowserContext(), GURL(), NULL, gfx::Size());
   RenderProcessHostWatcher crash_observer2(
       shell2->web_contents(),
       RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);

@@ -34,7 +34,6 @@ ShellDevToolsFrontend* ShellDevToolsFrontend::Show(
   Shell* shell = Shell::CreateNewWindow(inspected_contents->GetBrowserContext(),
                                         GURL(),
                                         NULL,
-                                        MSG_ROUTING_NONE,
                                         gfx::Size());
   ShellDevToolsFrontend* devtools_frontend = new ShellDevToolsFrontend(
       shell,

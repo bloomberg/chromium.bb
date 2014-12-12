@@ -163,6 +163,7 @@ class DriveWebContentsManager : public content::WebContentsObserver,
   virtual bool ShouldCreateWebContents(
       content::WebContents* web_contents,
       int route_id,
+      int main_frame_route_id,
       WindowContainerType window_container_type,
       const base::string16& frame_name,
       const GURL& target_url,
@@ -276,6 +277,7 @@ void DriveWebContentsManager::DidFailLoad(
 bool DriveWebContentsManager::ShouldCreateWebContents(
     content::WebContents* web_contents,
     int route_id,
+    int main_frame_route_id,
     WindowContainerType window_container_type,
     const base::string16& frame_name,
     const GURL& target_url,
@@ -305,6 +307,7 @@ bool DriveWebContentsManager::ShouldCreateWebContents(
   BackgroundContents* contents = background_contents_service
       ->CreateBackgroundContents(content::SiteInstance::Create(profile_),
                                  route_id,
+                                 main_frame_route_id,
                                  profile_,
                                  frame_name,
                                  base::ASCIIToUTF16(app_id_),

@@ -46,6 +46,7 @@ class BackgroundContents : public content::WebContentsDelegate,
   BackgroundContents(
       content::SiteInstance* site_instance,
       int routing_id,
+      int main_frame_routing_id,
       Delegate* delegate,
       const std::string& partition_id,
       content::SessionStorageNamespace* session_storage_namespace);

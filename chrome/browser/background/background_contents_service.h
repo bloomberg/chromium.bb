@@ -109,6 +109,7 @@ class BackgroundContentsService : private content::NotificationObserver,
   BackgroundContents* CreateBackgroundContents(
       content::SiteInstance* site,
       int route_id,
+      int main_frame_route_id,
       Profile* profile,
       const base::string16& frame_name,
       const base::string16& application_id,

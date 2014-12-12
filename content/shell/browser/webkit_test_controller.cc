@@ -260,7 +260,6 @@ bool WebKitTestController::PrepareForLayoutTest(
         browser_context,
         GURL(),
         NULL,
-        MSG_ROUTING_NONE,
         initial_size_);
     WebContentsObserver::Observe(main_window_->web_contents());
     send_configuration_to_next_host_ = true;
@@ -351,7 +350,6 @@ void WebKitTestController::OpenURL(const GURL& url) {
   Shell::CreateNewWindow(main_window_->web_contents()->GetBrowserContext(),
                          url,
                          main_window_->web_contents()->GetSiteInstance(),
-                         MSG_ROUTING_NONE,
                          gfx::Size());
 }
 

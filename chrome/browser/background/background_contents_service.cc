@@ -622,6 +622,7 @@ void BackgroundContentsService::LoadBackgroundContents(
   BackgroundContents* contents = CreateBackgroundContents(
       SiteInstance::CreateForURL(profile, url),
       MSG_ROUTING_NONE,
+      MSG_ROUTING_NONE,
       profile,
       frame_name,
       application_id,
@@ -637,13 +638,15 @@ void BackgroundContentsService::LoadBackgroundContents(
 BackgroundContents* BackgroundContentsService::CreateBackgroundContents(
     SiteInstance* site,
     int routing_id,
+    int main_frame_route_id,
     Profile* profile,
     const base::string16& frame_name,
     const base::string16& application_id,
     const std::string& partition_id,
     content::SessionStorageNamespace* session_storage_namespace) {
   BackgroundContents* contents = new BackgroundContents(
-      site, routing_id, this, partition_id, session_storage_namespace);
+      site, routing_id, main_frame_route_id, this, partition_id,
+      session_storage_namespace);
 
   // Register the BackgroundContents internally, then send out a notification
   // to external listeners.

@@ -1549,6 +1549,7 @@ void Browser::ShowRepostFormWarningDialog(WebContents* source) {
 bool Browser::ShouldCreateWebContents(
     WebContents* web_contents,
     int route_id,
+    int main_frame_route_id,
     WindowContainerType window_container_type,
     const base::string16& frame_name,
     const GURL& target_url,
@@ -1557,6 +1558,7 @@ bool Browser::ShouldCreateWebContents(
   if (window_container_type == WINDOW_CONTAINER_TYPE_BACKGROUND) {
     // If a BackgroundContents is created, suppress the normal WebContents.
     return !MaybeCreateBackgroundContents(route_id,
+                                          main_frame_route_id,
                                           web_contents,
                                           frame_name,
                                           target_url,
@@ -2431,6 +2433,7 @@ bool Browser::ShouldHideUIForFullscreen() const {
 
 bool Browser::MaybeCreateBackgroundContents(
     int route_id,
+    int main_frame_route_id,
     WebContents* opener_web_contents,
     const base::string16& frame_name,
     const GURL& target_url,
@@ -2496,6 +2499,7 @@ bool Browser::MaybeCreateBackgroundContents(
   BackgroundContents* contents =
       service->CreateBackgroundContents(site_instance.get(),
                                         route_id,
+                                        main_frame_route_id,
                                         profile_,
                                         frame_name,
                                         base::ASCIIToUTF16(extension->id()),

@@ -103,6 +103,10 @@ class WebContents : public PageNavigator,
     // If the opener is suppressed, then the new WebContents doesn't hold a
     // reference to its opener.
     bool opener_suppressed;
+
+    // The routing ids of the RenderView and of the main RenderFrame. Either
+    // both must be provided, or both must be MSG_ROUTING_NONE to have the
+    // WebContents make the assignment.
     int routing_id;
     int main_frame_routing_id;
 

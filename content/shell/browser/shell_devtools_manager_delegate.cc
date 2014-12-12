@@ -263,7 +263,6 @@ ShellDevToolsManagerDelegate::CreateNewTarget(const GURL& url) {
   Shell* shell = Shell::CreateNewWindow(browser_context_,
                                         url,
                                         NULL,
-                                        MSG_ROUTING_NONE,
                                         gfx::Size());
   return scoped_ptr<DevToolsTarget>(
       new Target(DevToolsAgentHost::GetOrCreateFor(shell->web_contents())));

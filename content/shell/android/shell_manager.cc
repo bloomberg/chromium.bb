@@ -63,7 +63,6 @@ void LaunchShell(JNIEnv* env, jclass clazz, jstring jurl) {
   Shell::CreateNewWindow(browserContext,
                          url,
                          NULL,
-                         MSG_ROUTING_NONE,
                          gfx::Size());
 }
 

@@ -124,7 +124,6 @@ void ShellBrowserMainParts::InitializeMessageLoopContext() {
   Shell::CreateNewWindow(browser_context_.get(),
                          GetStartupURL(),
                          NULL,
-                         MSG_ROUTING_NONE,
                          gfx::Size());
 }
 

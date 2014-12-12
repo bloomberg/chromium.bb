@@ -582,6 +582,7 @@ class Browser : public TabStripModelObserver,
   bool ShouldCreateWebContents(
       content::WebContents* web_contents,
       int route_id,
+      int main_frame_route_id,
       WindowContainerType window_container_type,
       const base::string16& frame_name,
       const GURL& target_url,
@@ -816,6 +817,7 @@ class Browser : public TabStripModelObserver,
   // created.
   bool MaybeCreateBackgroundContents(
       int route_id,
+      int main_frame_route_id,
       content::WebContents* opener_web_contents,
       const base::string16& frame_name,
       const GURL& target_url,

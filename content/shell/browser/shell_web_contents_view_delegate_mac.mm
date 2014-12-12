@@ -241,7 +241,6 @@ void ShellWebContentsViewDelegate::ActionPerformed(int tag) {
       Shell::CreateNewWindow(browser_context,
                              params_.link_url,
                              NULL,
-                             MSG_ROUTING_NONE,
                              gfx::Size());
       break;
     }

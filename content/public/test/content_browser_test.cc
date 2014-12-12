@@ -161,7 +161,6 @@ Shell* ContentBrowserTest::CreateBrowser() {
       ShellContentBrowserClient::Get()->browser_context(),
       GURL(url::kAboutBlankURL),
       NULL,
-      MSG_ROUTING_NONE,
       gfx::Size());
 }
 
@@ -170,7 +169,6 @@ Shell* ContentBrowserTest::CreateOffTheRecordBrowser() {
       ShellContentBrowserClient::Get()->off_the_record_browser_context(),
       GURL(url::kAboutBlankURL),
       NULL,
-      MSG_ROUTING_NONE,
       gfx::Size());
 }
 

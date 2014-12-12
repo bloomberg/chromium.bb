@@ -24,7 +24,6 @@ LayoutTestDevToolsFrontend* LayoutTestDevToolsFrontend::Show(
   Shell* shell = Shell::CreateNewWindow(inspected_contents->GetBrowserContext(),
                                         GURL(),
                                         NULL,
-                                        MSG_ROUTING_NONE,
                                         gfx::Size());
   LayoutTestDevToolsFrontend* devtools_frontend =
       new LayoutTestDevToolsFrontend(shell, agent.get());

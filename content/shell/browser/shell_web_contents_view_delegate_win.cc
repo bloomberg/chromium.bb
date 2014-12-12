@@ -209,7 +209,6 @@ void ShellWebContentsViewDelegate::MenuItemSelected(int selection) {
       Shell::CreateNewWindow(browser_context,
                              params_.link_url,
                              NULL,
-                             MSG_ROUTING_NONE,
                              gfx::Size());
       break;
     }

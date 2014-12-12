@@ -84,7 +84,6 @@ class Shell : public WebContentsDelegate,
   static Shell* CreateNewWindow(BrowserContext* browser_context,
                                 const GURL& url,
                                 SiteInstance* site_instance,
-                                int routing_id,
                                 const gfx::Size& initial_size);
 
   // Returns the Shell object corresponding to the given RenderViewHost.

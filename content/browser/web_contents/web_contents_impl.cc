@@ -1148,6 +1148,11 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   // it should be hidden.
   should_normally_be_visible_ = !params.initially_hidden;
 
+  // Either both routing ids can be given, or neither can be.
+  DCHECK((params.routing_id == MSG_ROUTING_NONE &&
+              params.main_frame_routing_id == MSG_ROUTING_NONE) ||
+         (params.routing_id != MSG_ROUTING_NONE &&
+              params.main_frame_routing_id != MSG_ROUTING_NONE));
   GetRenderManager()->Init(
       params.browser_context, params.site_instance, params.routing_id,
       params.main_frame_routing_id);
@@ -1505,6 +1510,7 @@ void WebContentsImpl::CreateNewWindow(
   if (delegate_ &&
       !delegate_->ShouldCreateWebContents(this,
                                           route_id,
+                                          main_frame_route_id,
                                           params.window_container_type,
                                           params.frame_name,
                                           params.target_url,

@@ -32,7 +32,6 @@
   content::Shell::CreateNewWindow(browserContext,
                                   GURL(url::kAboutBlankURL),
                                   NULL,
-                                  MSG_ROUTING_NONE,
                                   gfx::Size());
 }
 
