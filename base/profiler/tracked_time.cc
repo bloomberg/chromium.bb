@@ -46,7 +46,7 @@ int32 Duration::InMilliseconds() const { return ms_; }
 TrackedTime::TrackedTime() : ms_(0) {}
 TrackedTime::TrackedTime(int32 ms) : ms_(ms) {}
 TrackedTime::TrackedTime(const base::TimeTicks& time)
-    : ms_((time - base::TimeTicks()).InMilliseconds()) {
+    : ms_(static_cast<int32>((time - base::TimeTicks()).InMilliseconds())) {
 }
 
 // static

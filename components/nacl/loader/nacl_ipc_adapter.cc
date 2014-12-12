@@ -824,7 +824,7 @@ void NaClIPCAdapter::SaveMessage(const IPC::Message& msg,
   header.routing = msg.routing_id();
   header.type = msg.type();
   header.flags = msg.flags();
-  header.num_fds = static_cast<int>(rewritten_msg->desc_count());
+  header.num_fds = static_cast<uint16>(rewritten_msg->desc_count());
 
   rewritten_msg->SetData(header, msg.payload(), msg.payload_size());
   locked_data_.to_be_received_.push(rewritten_msg);

@@ -60,10 +60,6 @@ class WorkerThreadTicker {
     tick_interval_ = base::TimeDelta::FromMilliseconds(tick_interval);
   }
 
-  int tick_interval() const {
-    return tick_interval_.InMilliseconds();
-  }
-
  private:
   void ScheduleTimerTask();
 

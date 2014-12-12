@@ -92,7 +92,8 @@ bool CorruptSizeInHeader(const base::FilePath& db_path) {
   const unsigned page_size = ReadBigEndian(header + kPageSizeOffset, 2);
 
   // One larger than the expected size.
-  const unsigned page_count = (db_size + page_size) / page_size;
+  const unsigned page_count =
+      static_cast<unsigned>((db_size + page_size) / page_size);
   WriteBigEndian(page_count, header + kPageCountOffset, 4);
 
   // Update change count so outstanding readers know the info changed.
@@ -212,7 +213,7 @@ bool CountTableRows(sql::Connection* db, const char* table, size_t* count) {
   if (!s.Step())
     return false;
 
-  *count = s.ColumnInt64(0);
+  *count = static_cast<size_t>(s.ColumnInt64(0));
   return true;
 }
 
