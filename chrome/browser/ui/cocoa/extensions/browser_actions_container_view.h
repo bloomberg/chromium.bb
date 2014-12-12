@@ -32,10 +32,6 @@ extern NSString* const kTranslationWithDelta;
   // The frame encompasing the grippy used for resizing the container.
   NSRect grippyRect_;
 
-  // The end frame of the animation currently running for this container or
-  // NSZeroRect if none is in progress.
-  NSRect animationEndFrame_;
-
   // Used to cache the original position within the container that initiated the
   // drag.
   NSPoint initialDragPoint_;
@@ -79,7 +75,10 @@ extern NSString* const kTranslationWithDelta;
 // placement of surrounding elements.
 - (CGFloat)resizeDeltaX;
 
-@property(nonatomic, readonly) NSRect animationEndFrame;
+// Returns the frame of the container after the running animation has finished.
+// If no animation is running, returns the container's current frame.
+- (NSRect)animationEndFrame;
+
 @property(nonatomic) BOOL canDragLeft;
 @property(nonatomic) BOOL canDragRight;
 @property(nonatomic) BOOL grippyPinned;

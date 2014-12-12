@@ -63,9 +63,6 @@ BrowserActionsContainer::DropPosition::DropPosition(
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserActionsContainer
 
-// static
-bool BrowserActionsContainer::disable_animations_during_testing_ = false;
-
 BrowserActionsContainer::BrowserActionsContainer(
     Browser* browser,
     BrowserActionsContainer* main_container)
@@ -288,9 +285,7 @@ void BrowserActionsContainer::ResizeAndAnimate(
     gfx::Tween::Type tween_type,
     int target_width,
     bool suppress_chevron) {
-  if (resize_animation_ &&
-      !disable_animations_during_testing_ &&
-      !toolbar_actions_bar_->suppress_animation()) {
+  if (resize_animation_ && !toolbar_actions_bar_->suppress_animation()) {
     // Animate! We have to set the animation_target_size_ after calling Reset(),
     // because that could end up calling AnimationEnded which clears the value.
     resize_animation_->Reset();

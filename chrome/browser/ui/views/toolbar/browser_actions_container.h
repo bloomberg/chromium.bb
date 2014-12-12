@@ -255,11 +255,6 @@ class BrowserActionsContainer
   // Retrieve the current popup.  This should only be used by unit tests.
   gfx::NativeView TestGetPopup();
 
-  // During testing we can disable animations by setting this flag to true,
-  // so that the bar resizes instantly, instead of having to poll it while it
-  // animates to open/closed status.
-  static bool disable_animations_during_testing_;
-
  protected:
   // Overridden from views::View:
   void ViewHierarchyChanged(

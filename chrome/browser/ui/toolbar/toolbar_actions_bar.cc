@@ -61,6 +61,9 @@ int GetIconDimension(DimensionType type) {
 
 }  // namespace
 
+// static
+bool ToolbarActionsBar::disable_animations_for_testing_ = false;
+
 ToolbarActionsBar::PlatformSettings::PlatformSettings(bool in_overflow_mode)
     : left_padding(in_overflow_mode ? kOverflowLeftPadding : kLeftPadding),
       right_padding(in_overflow_mode ? kOverflowRightPadding : kRightPadding),
@@ -525,6 +528,7 @@ void ToolbarActionsBar::OnToolbarModelInitialized() {
   // We shouldn't have any actions before the model is initialized.
   DCHECK(toolbar_actions_.empty());
   CreateActions();
+  ResizeDelegate(gfx::Tween::EASE_OUT, false);
 }
 
 Browser* ToolbarActionsBar::GetBrowser() {

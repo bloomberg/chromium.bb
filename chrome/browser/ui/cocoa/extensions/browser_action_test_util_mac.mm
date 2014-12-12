@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
@@ -118,10 +119,12 @@ bool BrowserActionTestUtil::HidePopup() {
 
 // static
 void BrowserActionTestUtil::DisableAnimations() {
+  ToolbarActionsBar::disable_animations_for_testing_ = true;
 }
 
 // static
 void BrowserActionTestUtil::EnableAnimations() {
+  ToolbarActionsBar::disable_animations_for_testing_ = false;
 }
 
 // static

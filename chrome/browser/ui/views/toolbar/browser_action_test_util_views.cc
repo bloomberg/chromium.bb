@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/browser_window_testing_views.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
@@ -113,12 +114,12 @@ void BrowserActionTestUtil::SetIconVisibilityCount(size_t icons) {
 
 // static
 void BrowserActionTestUtil::DisableAnimations() {
-  BrowserActionsContainer::disable_animations_during_testing_ = true;
+  ToolbarActionsBar::disable_animations_for_testing_ = true;
 }
 
 // static
 void BrowserActionTestUtil::EnableAnimations() {
-  BrowserActionsContainer::disable_animations_during_testing_ = false;
+  ToolbarActionsBar::disable_animations_for_testing_ = false;
 }
 
 // static

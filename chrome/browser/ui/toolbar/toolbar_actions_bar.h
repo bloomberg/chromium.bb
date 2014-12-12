@@ -119,13 +119,20 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer,
   }
   bool enabled() const { return model_ != nullptr; }
   bool suppress_layout() const { return suppress_layout_; }
-  bool suppress_animation() const { return suppress_animation_; }
+  bool suppress_animation() const {
+    return suppress_animation_ || disable_animations_for_testing_;
+  }
   bool is_highlighting() const { return model_ && model_->is_highlighting(); }
   const PlatformSettings& platform_settings() const {
     return platform_settings_;
   }
 
   ToolbarActionsBarDelegate* delegate_for_test() { return delegate_; }
+
+  // During testing we can disable animations by setting this flag to true,
+  // so that the bar resizes instantly, instead of having to poll it while it
+  // animates to open/closed status.
+  static bool disable_animations_for_testing_;
 
  private:
   using ToolbarActions = ScopedVector<ToolbarActionViewController>;

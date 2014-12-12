@@ -669,11 +669,8 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
     CGFloat edgeXPos = [wrenchButton_ frame].origin.x;
     leftDistance = edgeXPos - locationBarXPos - kWrenchMenuLeftPadding;
   } else {
-    NSRect containerFrame = animate ?
-        [browserActionsContainerView_ animationEndFrame] :
-        [browserActionsContainerView_ frame];
-
-    leftDistance = containerFrame.origin.x - locationBarXPos;
+    leftDistance = NSMinX([browserActionsContainerView_ animationEndFrame]) -
+        locationBarXPos;
   }
   if (leftDistance != 0.0)
     [self adjustLocationSizeBy:leftDistance animate:animate];

@@ -36,7 +36,6 @@ const CGFloat kMinimumContainerWidth = 10.0;
 
 @implementation BrowserActionsContainerView
 
-@synthesize animationEndFrame = animationEndFrame_;
 @synthesize canDragLeft = canDragLeft_;
 @synthesize canDragRight = canDragRight_;
 @synthesize grippyPinned = grippyPinned_;
@@ -174,7 +173,6 @@ const CGFloat kMinimumContainerWidth = 10.0;
     [[NSAnimationContext currentContext] setDuration:kAnimationDuration];
     [[self animator] setFrame:newFrame];
     [NSAnimationContext endGrouping];
-    animationEndFrame_ = newFrame;
 
     [[NSNotificationCenter defaultCenter]
         postNotificationName:kBrowserActionsContainerWillAnimate
@@ -187,6 +185,10 @@ const CGFloat kMinimumContainerWidth = 10.0;
 
 - (CGFloat)resizeDeltaX {
   return [self frame].origin.x - lastXPos_;
+}
+
+- (NSRect)animationEndFrame {
+  return [[self animator] frame];
 }
 
 #pragma mark -

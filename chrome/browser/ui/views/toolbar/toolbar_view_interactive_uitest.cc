@@ -4,6 +4,7 @@
 
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h"
@@ -126,7 +127,7 @@ void ToolbarViewInteractiveUITest::SetUpCommandLine(
   // are constructed.
   feature_override_.reset(new extensions::FeatureSwitch::ScopedOverride(
       extensions::FeatureSwitch::extension_action_redesign(), true));
-  BrowserActionsContainer::disable_animations_during_testing_ = true;
+  ToolbarActionsBar::disable_animations_for_testing_ = true;
   WrenchToolbarButton::g_open_wrench_immediately_for_testing = true;
 }
 
@@ -138,7 +139,7 @@ void ToolbarViewInteractiveUITest::SetUpOnMainThread() {
 }
 
 void ToolbarViewInteractiveUITest::TearDownOnMainThread() {
-  BrowserActionsContainer::disable_animations_during_testing_ = false;
+  ToolbarActionsBar::disable_animations_for_testing_ = false;
   WrenchToolbarButton::g_open_wrench_immediately_for_testing = false;
 }
 
