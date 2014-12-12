@@ -48,7 +48,7 @@ public:
 
     // Callbacks from libpng
     void headerAvailable();
-    void rowAvailable(unsigned char* rowBuffer, unsigned rowIndex, int interlacePass);
+    void rowAvailable(unsigned char* row, unsigned rowIndex, int);
     void complete();
 
     bool isComplete() const;
