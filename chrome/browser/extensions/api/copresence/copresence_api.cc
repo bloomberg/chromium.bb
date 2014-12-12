@@ -58,14 +58,23 @@ copresence::WhispernetClient* CopresenceService::whispernet_client() {
   return whispernet_client_.get();
 }
 
+const std::string CopresenceService::auth_token(const std::string& app_id)
+    const {
+  // This won't be const if we use map[]
+  const auto& key = auth_tokens_by_app_.find(app_id);
+  return key == auth_tokens_by_app_.end() ? std::string() : key->second;
+}
+
 void CopresenceService::set_api_key(const std::string& app_id,
                                     const std::string& api_key) {
   DCHECK(!app_id.empty());
   api_keys_by_app_[app_id] = api_key;
 }
 
-void CopresenceService::set_auth_token(const std::string& token) {
-  auth_token_ = token;
+void CopresenceService::set_auth_token(const std::string& app_id,
+                                       const std::string& token) {
+  DCHECK(!app_id.empty());
+  auth_tokens_by_app_[app_id] = token;
 }
 
 void CopresenceService::set_manager_for_testing(
@@ -184,7 +193,7 @@ ExtensionFunction::ResponseAction CopresenceExecuteFunction::Run() {
   service->manager()->ExecuteReportRequest(
       request,
       extension_id(),
-      service->auth_token(),
+      service->auth_token(extension_id()),
       base::Bind(&CopresenceExecuteFunction::SendResult, this));
   return RespondLater();
 }
@@ -216,9 +225,8 @@ ExtensionFunction::ResponseAction CopresenceSetAuthTokenFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   // The token may be set to empty, to clear it.
-  // TODO(ckehoe): Scope the auth token appropriately (crbug/423517).
   CopresenceService::GetFactoryInstance()->Get(browser_context())
-      ->set_auth_token(params->token);
+      ->set_auth_token(extension_id(), params->token);
   return RespondNow(NoArguments());
 }
 

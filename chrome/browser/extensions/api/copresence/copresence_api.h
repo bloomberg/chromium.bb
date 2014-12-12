@@ -49,14 +49,13 @@ class CopresenceService final : public BrowserContextKeyedAPI,
     return apps_by_subscription_id_;
   }
 
+  const std::string auth_token(const std::string& app_id) const;
+
   void set_api_key(const std::string& app_id,
                    const std::string& api_key);
 
-  std::string auth_token() const {
-    return auth_token_;
-  }
-
-  void set_auth_token(const std::string& token);
+  void set_auth_token(const std::string& app_id,
+                      const std::string& token);
 
   // Manager override for testing.
   void set_manager_for_testing(
@@ -83,14 +82,12 @@ class CopresenceService final : public BrowserContextKeyedAPI,
   static const char* service_name() { return "CopresenceService"; }
 
   bool is_shutting_down_;
+  content::BrowserContext* const browser_context_;
+
   std::map<std::string, std::string> apps_by_subscription_id_;
 
-  content::BrowserContext* const browser_context_;
   std::map<std::string, std::string> api_keys_by_app_;
-
-  // TODO(ckehoe): This is a temporary hack.
-  // Auth tokens from different apps needs to be separated properly.
-  std::string auth_token_;
+  std::map<std::string, std::string> auth_tokens_by_app_;
 
   scoped_ptr<copresence::CopresenceManager> manager_;
   scoped_ptr<ChromeWhispernetClient> whispernet_client_;
