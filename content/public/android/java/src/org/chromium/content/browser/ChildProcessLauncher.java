@@ -40,9 +40,11 @@ public class ChildProcessLauncher {
     static final int CALLBACK_FOR_UNKNOWN_PROCESS = 0;
     static final int CALLBACK_FOR_GPU_PROCESS = 1;
     static final int CALLBACK_FOR_RENDERER_PROCESS = 2;
+    static final int CALLBACK_FOR_UTILITY_PROCESS = 3;
 
     private static final String SWITCH_PROCESS_TYPE = "type";
     private static final String SWITCH_RENDERER_PROCESS = "renderer";
+    private static final String SWITCH_UTILITY_PROCESS = "utility";
     private static final String SWITCH_GPU_PROCESS = "gpu-process";
 
     private static class ChildConnectionAllocator {
@@ -403,6 +405,9 @@ public class ChildProcessLauncher {
             } else if (SWITCH_GPU_PROCESS.equals(processType)) {
                 callbackType = CALLBACK_FOR_GPU_PROCESS;
                 inSandbox = false;
+            } else if (SWITCH_UTILITY_PROCESS.equals(processType)) {
+                // We only support sandboxed right now.
+                callbackType = CALLBACK_FOR_UTILITY_PROCESS;
             } else {
                 assert false;
             }
@@ -459,9 +464,7 @@ public class ChildProcessLauncher {
                     }
                 };
 
-        // TODO(sievers): Revisit this as it doesn't correctly handle the utility process
-        // assert callbackType != CALLBACK_FOR_UNKNOWN_PROCESS;
-
+        assert callbackType != CALLBACK_FOR_UNKNOWN_PROCESS;
         connection.setupConnection(commandLine,
                                    filesToBeMapped,
                                    createCallback(childProcessId, callbackType),

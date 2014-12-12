@@ -181,11 +181,17 @@ void ChildProcessLauncher::Context::Launch(
   client_ = client;
 
 #if defined(OS_ANDROID)
-  // We currently only support renderer and gpu child processes.
+  // Android only supports renderer, sandboxed utility and gpu.
   std::string process_type =
       cmd_line->GetSwitchValueASCII(switches::kProcessType);
   CHECK(process_type == switches::kGpuProcess ||
-        process_type == switches::kRendererProcess);
+        process_type == switches::kRendererProcess ||
+        process_type == switches::kUtilityProcess)
+      << "Unsupported process type: " << process_type;
+
+  // Non-sandboxed utility or renderer process are currently not supported.
+  DCHECK(process_type == switches::kGpuProcess ||
+         !cmd_line->HasSwitch(switches::kNoSandbox));
 
   // We need to close the client end of the IPC channel to reliably detect
   // child termination. We will close this fd after we create the child
