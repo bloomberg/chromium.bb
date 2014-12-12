@@ -6,6 +6,7 @@
 #define UI_EVENTS_DEVICES_DEVICE_UTIL_LINUX_H_
 
 #include "ui/events/devices/events_devices_export.h"
+#include "ui/events/devices/input_device.h"
 
 namespace base {
 class FilePath;
@@ -13,8 +14,9 @@ class FilePath;
 
 namespace ui {
 
-// Returns true if the device described by |path| is an internal device.
-EVENTS_DEVICES_EXPORT bool IsTouchscreenInternal(const base::FilePath& path);
+// Finds device type (internal or external) based on device path.
+EVENTS_DEVICES_EXPORT InputDeviceType
+GetInputDeviceTypeFromPath(const base::FilePath& path);
 
 }  // namespace ui
 

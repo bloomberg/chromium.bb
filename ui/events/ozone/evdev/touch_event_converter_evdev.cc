@@ -80,7 +80,7 @@ TouchEventConverterEvdev::TouchEventConverterEvdev(
       syn_dropped_(false),
       is_type_a_(false),
       current_slot_(0),
-      is_internal_(IsTouchscreenInternal(path)) {
+      is_internal_(GetInputDeviceTypeFromPath(path) == INPUT_DEVICE_INTERNAL) {
 }
 
 TouchEventConverterEvdev::~TouchEventConverterEvdev() {

@@ -14,12 +14,11 @@
 
 namespace ui {
 
-// We consider the touchscreen to be internal if it is an I2c device.
-bool IsTouchscreenInternal(const base::FilePath& path) {
+InputDeviceType GetInputDeviceTypeFromPath(const base::FilePath& path) {
   DCHECK(!base::MessageLoopForUI::IsCurrent());
   std::string event_node = path.BaseName().value();
   if (event_node.empty() || !StartsWithASCII(event_node, "event", false))
-    return false;
+    return InputDeviceType::INPUT_DEVICE_UNKNOWN;
 
   // Find sysfs device path for this device.
   base::FilePath sysfs_path =
@@ -29,19 +28,37 @@ bool IsTouchscreenInternal(const base::FilePath& path) {
 
   // Device does not exist.
   if (sysfs_path.empty())
-    return false;
+    return InputDeviceType::INPUT_DEVICE_UNKNOWN;
 
-  // Check all parent devices. If any of them is the "i2c" subsystem,
-  // consider the device internal. Otherwise consider it external.
-  const base::FilePath i2c_subsystem(FILE_PATH_LITERAL("/sys/bus/i2c"));
+  // Check ancestor devices for a known bus attachment.
   for (base::FilePath path = sysfs_path; path != base::FilePath("/");
        path = path.DirName()) {
-    if (base::MakeAbsoluteFilePath(
-          path.Append(FILE_PATH_LITERAL("subsystem"))) == i2c_subsystem)
-      return true;
+    std::string subsystem_path =
+        base::MakeAbsoluteFilePath(path.Append(FILE_PATH_LITERAL("subsystem")))
+            .value();
+    if (subsystem_path.empty())
+      continue;
+
+    // Internal bus attachments.
+    if (subsystem_path == "/sys/bus/pci")
+      return InputDeviceType::INPUT_DEVICE_INTERNAL;
+    if (subsystem_path == "/sys/bus/i2c")
+      return InputDeviceType::INPUT_DEVICE_INTERNAL;
+    if (subsystem_path == "/sys/bus/acpi")
+      return InputDeviceType::INPUT_DEVICE_INTERNAL;
+    if (subsystem_path == "/sys/bus/serio")
+      return InputDeviceType::INPUT_DEVICE_INTERNAL;
+    if (subsystem_path == "/sys/bus/platform")
+      return InputDeviceType::INPUT_DEVICE_INTERNAL;
+
+    // External bus attachments.
+    if (subsystem_path == "/sys/bus/usb")
+      return InputDeviceType::INPUT_DEVICE_EXTERNAL;
+    if (subsystem_path == "/sys/class/bluetooth")
+      return InputDeviceType::INPUT_DEVICE_EXTERNAL;
   }
 
-  return false;
+  return InputDeviceType::INPUT_DEVICE_UNKNOWN;
 }
 
 }  // namespace

@@ -299,9 +299,7 @@ void HandleTouchscreenDevicesInWorker(
     // Touchscreens should have absolute X and Y axes, and be direct touch
     // devices.
     if (max_x > 0.0 && max_y > 0.0 && is_direct_touch) {
-      InputDeviceType type = IsTouchscreenInternal(device_info.path)
-              ? InputDeviceType::INPUT_DEVICE_INTERNAL
-              : InputDeviceType::INPUT_DEVICE_EXTERNAL;
+      InputDeviceType type = GetInputDeviceTypeFromPath(device_info.path);
       // |max_x| and |max_y| are inclusive values, so we need to add 1 to get
       // the size.
       devices.push_back(TouchscreenDevice(
