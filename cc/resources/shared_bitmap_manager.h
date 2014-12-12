@@ -21,8 +21,6 @@ class CC_EXPORT SharedBitmapManager {
   virtual scoped_ptr<SharedBitmap> GetSharedBitmapFromId(
       const gfx::Size&,
       const SharedBitmapId&) = 0;
-  virtual scoped_ptr<SharedBitmap> GetBitmapForSharedMemory(
-      base::SharedMemory*) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SharedBitmapManager);

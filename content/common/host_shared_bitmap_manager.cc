@@ -113,11 +113,6 @@ scoped_ptr<cc::SharedBitmap> HostSharedBitmapManager::GetSharedBitmapFromId(
       static_cast<uint8*>(data->memory->memory()), data, id, nullptr));
 }
 
-scoped_ptr<cc::SharedBitmap> HostSharedBitmapManager::GetBitmapForSharedMemory(
-    base::SharedMemory*) {
-  return scoped_ptr<cc::SharedBitmap>();
-}
-
 void HostSharedBitmapManager::ChildAllocatedSharedBitmap(
     size_t buffer_size,
     const base::SharedMemoryHandle& handle,

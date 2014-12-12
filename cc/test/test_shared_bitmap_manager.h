@@ -23,9 +23,6 @@ class TestSharedBitmapManager : public SharedBitmapManager {
       const gfx::Size&,
       const SharedBitmapId& id) override;
 
-  scoped_ptr<SharedBitmap> GetBitmapForSharedMemory(
-      base::SharedMemory* memory) override;
-
  private:
   base::Lock lock_;
   std::map<SharedBitmapId, base::SharedMemory*> bitmap_map_;
