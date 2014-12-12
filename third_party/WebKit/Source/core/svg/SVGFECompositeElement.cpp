@@ -38,8 +38,14 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<CompositeOp
         entries.append(std::make_pair(FECOMPOSITE_OPERATOR_ATOP, "atop"));
         entries.append(std::make_pair(FECOMPOSITE_OPERATOR_XOR, "xor"));
         entries.append(std::make_pair(FECOMPOSITE_OPERATOR_ARITHMETIC, "arithmetic"));
+        entries.append(std::make_pair(FECOMPOSITE_OPERATOR_LIGHTER, "lighter"));
     }
     return entries;
+}
+
+template<> unsigned short getMaxExposedEnumValue<CompositeOperationType>()
+{
+    return FECOMPOSITE_OPERATOR_ARITHMETIC;
 }
 
 inline SVGFECompositeElement::SVGFECompositeElement(Document& document)

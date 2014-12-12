@@ -49,6 +49,10 @@ Switch to 'over'
 PASS feCompositeElement.operator.baseVal = SVGFECompositeElement.SVG_FECOMPOSITE_OPERATOR_OVER is SVGFECompositeElement.SVG_FECOMPOSITE_OPERATOR_OVER
 PASS feCompositeElement.operator.baseVal is SVGFECompositeElement.SVG_FECOMPOSITE_OPERATOR_OVER
 PASS feCompositeElement.getAttribute('operator') is "over"
+
+Switch to 'lighter'
+PASS SVGFECompositeElement.SVG_FECOMPOSITE_OPERATOR_LIGHTER is undefined.
+PASS feCompositeElement.operator.baseVal is SVGFECompositeElement.SVG_FECOMPOSITE_OPERATOR_UNKNOWN
 PASS successfullyParsed is true
 
 TEST COMPLETE

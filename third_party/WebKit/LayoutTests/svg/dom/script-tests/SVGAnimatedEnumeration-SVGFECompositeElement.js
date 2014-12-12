@@ -59,4 +59,10 @@ shouldBe("feCompositeElement.operator.baseVal = SVGFECompositeElement.SVG_FECOMP
 shouldBe("feCompositeElement.operator.baseVal", "SVGFECompositeElement.SVG_FECOMPOSITE_OPERATOR_OVER");
 shouldBeEqualToString("feCompositeElement.getAttribute('operator')", "over");
 
+debug("");
+debug("Switch to 'lighter'");
+shouldBeUndefined("SVGFECompositeElement.SVG_FECOMPOSITE_OPERATOR_LIGHTER");
+feCompositeElement.setAttribute("operator", "lighter");
+shouldBe("feCompositeElement.operator.baseVal", "SVGFECompositeElement.SVG_FECOMPOSITE_OPERATOR_UNKNOWN");
+
 successfullyParsed = true;
