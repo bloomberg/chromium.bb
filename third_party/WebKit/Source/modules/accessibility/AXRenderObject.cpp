@@ -694,7 +694,7 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
                 return true;
         }
 
-        if (isNativeImage() && isImageOrAltText(toRenderBoxModelObject(m_renderer), node)) {
+        if (isNativeImage() && m_renderer->isImage()) {
             // check for one-dimensional image
             RenderImage* image = toRenderImage(m_renderer);
             if (image->size().height() <= 1 || image->size().width() <= 1)
