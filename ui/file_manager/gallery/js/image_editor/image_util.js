@@ -3,12 +3,17 @@
 // found in the LICENSE file.
 
 // Namespace object for the utilities.
-function ImageUtil() {}
+var ImageUtil = {};
 
 /**
  * Performance trace.
  */
 ImageUtil.trace = (function() {
+  /**
+   * Performance trace.
+   * @constructor
+   * @struct
+   */
   function PerformanceTrace() {
     this.lines_ = {};
     this.timers_ = {};
@@ -74,75 +79,50 @@ ImageUtil.between = function(min, value, max) {
 
 /**
  * Rectangle class.
- */
-
-/**
- * Rectangle constructor takes 0, 1, 2 or 4 arguments.
- * Supports following variants:
- *   new ImageRect(left, top, width, height)
- *   new ImageRect(width, height)
- *   new ImageRect(rect)         // anything with left, top, width, height.
- *   new ImageRect(bounds)       // anything with left, top, right, bottom.
- *   new ImageRect(canvas|image) // anything with width and height.
- *   new ImageRect()             // empty rectangle.
+ *
+ * @param {number} left Left.
+ * @param {number} top Top.
+ * @param {number} width Width.
+ * @param {number} height Height.
  * @constructor
+ * @struct
  */
-function ImageRect() {
-  switch (arguments.length) {
-    case 4:
-      this.left = arguments[0];
-      this.top = arguments[1];
-      this.width = arguments[2];
-      this.height = arguments[3];
-      return;
-
-    case 2:
-      this.left = 0;
-      this.top = 0;
-      this.width = arguments[0];
-      this.height = arguments[1];
-      return;
-
-    case 1: {
-      var source = arguments[0];
-      if ('left' in source && 'top' in source) {
-        this.left = source.left;
-        this.top = source.top;
-        if ('right' in source && 'bottom' in source) {
-          this.width = source.right - source.left;
-          this.height = source.bottom - source.top;
-          return;
-        }
-      } else {
-        this.left = 0;
-        this.top = 0;
-      }
-      if ('width' in source && 'height' in source) {
-        this.width = source.width;
-        this.height = source.height;
-        return;
-      }
-      break; // Fall through to the error message.
-    }
-
-    case 0:
-      this.left = 0;
-      this.top = 0;
-      this.width = 0;
-      this.height = 0;
-      return;
-  }
-  console.error('Invalid ImageRect constructor arguments:',
-                Array.apply(null, arguments));
+function ImageRect(left, top, width, height) {
+  this.left = left;
+  this.top = top;
+  this.width = width;
+  this.height = height;
 }
 
 /**
  * Creates an image rect with a canvas.
  * @param {!HTMLCanvasElement} canvas A canvas.
  * @return {!ImageRect}
+ *
+ * TODO(yawano): Since createFromImage accepts HTMLCanvasElement, delete this
+ *     method later.
  */
 ImageRect.createFromCanvas = function(canvas) {
-  return new ImageRect(canvas);
+  return ImageRect.createFromImage(canvas);
+};
+
+/**
+ * Creates an image rect with an image or a canvas.
+ * @param {!(HTMLImageElement|HTMLCanvasElement)} image An image or a canvas.
+ * @return {!ImageRect}
+ */
+ImageRect.createFromImage = function(image) {
+  return new ImageRect(0, 0, image.width, image.height);
+};
+
+/**
+ * Clone an image rect.
+ * @param {!ImageRect} imageRect An image rect.
+ * @return {!ImageRect}
+ */
+ImageRect.clone = function(imageRect) {
+  return new ImageRect(imageRect.left, imageRect.top, imageRect.width,
+      imageRect.height);
 };
 
 /**
@@ -152,7 +132,8 @@ ImageRect.createFromCanvas = function(canvas) {
  * @return {!ImageRect}
  */
 ImageRect.createFromBounds = function(bound) {
-  return new ImageRect(bound);
+  return new ImageRect(bound.left, bound.top,
+      bound.right - bound.left, bound.bottom - bound.top);
 };
 
 /**
@@ -162,7 +143,7 @@ ImageRect.createFromBounds = function(bound) {
  * @return {!ImageRect}
  */
 ImageRect.createFromWidthAndHeight = function(width, height) {
-  return new ImageRect(width, height);
+  return new ImageRect(0, 0, width, height);
 };
 
 /**
@@ -172,12 +153,16 @@ ImageRect.createFromWidthAndHeight = function(width, height) {
  * @param {number} width Width.
  * @param {number} height Height.
  * @return {!ImageRect}
+ *
+ * TODO(yawano): Remove createWith calls and call constructor directly.
  */
 ImageRect.createWith = function(left, top, width, height) {
   return new ImageRect(left, top, width, height);
 };
 
-ImageRect.prototype = {
+ImageRect.prototype = /** @struct */ ({
+  // TODO(yawano): Change getters to methods (e.g. getRight()).
+
   /**
    * Obtains the x coordinate of right edge. The most right pixels in the
    * rectangle are (x = right - 1) and the pixels (x = right) are not included
@@ -197,11 +182,11 @@ ImageRect.prototype = {
   get bottom() {
     return this.top + this.height;
   }
-};
+});
 
 /**
  * @param {number} factor Factor to scale.
- * @return {ImageRect} A rectangle with every dimension scaled.
+ * @return {!ImageRect} A rectangle with every dimension scaled.
  */
 ImageRect.prototype.scale = function(factor) {
   return new ImageRect(
@@ -214,7 +199,7 @@ ImageRect.prototype.scale = function(factor) {
 /**
  * @param {number} dx Difference in X.
  * @param {number} dy Difference in Y.
- * @return {ImageRect} A rectangle shifted by (dx,dy), same size.
+ * @return {!ImageRect} A rectangle shifted by (dx,dy), same size.
  */
 ImageRect.prototype.shift = function(dx, dy) {
   return new ImageRect(this.left + dx, this.top + dy, this.width, this.height);
@@ -223,7 +208,7 @@ ImageRect.prototype.shift = function(dx, dy) {
 /**
  * @param {number} x Coordinate of the left top corner.
  * @param {number} y Coordinate of the left top corner.
- * @return {ImageRect} A rectangle with left==x and top==y, same size.
+ * @return {!ImageRect} A rectangle with left==x and top==y, same size.
  */
 ImageRect.prototype.moveTo = function(x, y) {
   return new ImageRect(x, y, this.width, this.height);
@@ -250,7 +235,7 @@ ImageRect.prototype.inside = function(x, y) {
 };
 
 /**
- * @param {ImageRect} rect Rectangle to check.
+ * @param {!ImageRect} rect Rectangle to check.
  * @return {boolean} True if this rectangle intersects with the |rect|.
  */
 ImageRect.prototype.intersects = function(rect) {
@@ -261,7 +246,7 @@ ImageRect.prototype.intersects = function(rect) {
 };
 
 /**
- * @param {ImageRect} rect Rectangle to check.
+ * @param {!ImageRect} rect Rectangle to check.
  * @return {boolean} True if this rectangle containing the |rect|.
  */
 ImageRect.prototype.contains = function(rect) {
@@ -281,11 +266,11 @@ ImageRect.prototype.isEmpty = function() {
 /**
  * Clamp the rectangle to the bounds by moving it.
  * Decrease the size only if necessary.
- * @param {ImageRect} bounds Bounds.
- * @return {ImageRect} Calculated rectangle.
+ * @param {!ImageRect} bounds Bounds.
+ * @return {!ImageRect} Calculated rectangle.
  */
 ImageRect.prototype.clamp = function(bounds) {
-  var rect = new ImageRect(this);
+  var rect = ImageRect.clone(this);
 
   if (rect.width > bounds.width) {
     rect.left = bounds.left;
@@ -323,7 +308,7 @@ ImageRect.prototype.toString = function() {
 
 /**
  * Draw the image in context with appropriate scaling.
- * @param {CanvasRenderingContext2D} context Context to draw.
+ * @param {!CanvasRenderingContext2D} context Context to draw.
  * @param {!(HTMLCanvasElement|HTMLImageElement)} image Image to draw.
  * @param {ImageRect=} opt_dstRect Rectangle in the canvas (whole canvas by
  *     default).
@@ -331,8 +316,9 @@ ImageRect.prototype.toString = function() {
  *     default).
  */
 ImageRect.drawImage = function(context, image, opt_dstRect, opt_srcRect) {
-  opt_dstRect = opt_dstRect || new ImageRect(context.canvas);
-  opt_srcRect = opt_srcRect || new ImageRect(image);
+  opt_dstRect = opt_dstRect ||
+      ImageRect.createFromImage(assert(context.canvas));
+  opt_srcRect = opt_srcRect || ImageRect.createFromImage(image);
   if (opt_dstRect.isEmpty() || opt_srcRect.isEmpty())
     return;
   context.drawImage(image,
@@ -342,8 +328,8 @@ ImageRect.drawImage = function(context, image, opt_dstRect, opt_srcRect) {
 
 /**
  * Draw a box around the rectangle.
- * @param {CanvasRenderingContext2D} context Context to draw.
- * @param {ImageRect} rect Rectangle.
+ * @param {!CanvasRenderingContext2D} context Context to draw.
+ * @param {!ImageRect} rect Rectangle.
  */
 ImageRect.outline = function(context, rect) {
   context.strokeRect(
@@ -352,8 +338,8 @@ ImageRect.outline = function(context, rect) {
 
 /**
  * Fill the rectangle.
- * @param {CanvasRenderingContext2D} context Context to draw.
- * @param {ImageRect} rect Rectangle.
+ * @param {!CanvasRenderingContext2D} context Context to draw.
+ * @param {!ImageRect} rect Rectangle.
  */
 ImageRect.fill = function(context, rect) {
   context.fillRect(rect.left, rect.top, rect.width, rect.height);
@@ -361,9 +347,9 @@ ImageRect.fill = function(context, rect) {
 
 /**
  * Fills the space between the two rectangles.
- * @param {CanvasRenderingContext2D} context Context to draw.
- * @param {ImageRect} inner Inner rectangle.
- * @param {ImageRect} outer Outer rectangle.
+ * @param {!CanvasRenderingContext2D} context Context to draw.
+ * @param {!ImageRect} inner Inner rectangle.
+ * @param {!ImageRect} outer Outer rectangle.
  */
 ImageRect.fillBetween = function(context, inner, outer) {
   var innerRight = inner.left + inner.width;
@@ -416,8 +402,8 @@ Circle.prototype.inside = function(x, y) {
 /**
  * Copy an image applying scaling and rotation.
  *
- * @param {HTMLCanvasElement} dst Destination.
- * @param {HTMLCanvasElement|HTMLImageElement} src Source.
+ * @param {!HTMLCanvasElement} dst Destination.
+ * @param {!(HTMLCanvasElement|HTMLImageElement)} src Source.
  * @param {number} scaleX Y scale transformation.
  * @param {number} scaleY X scale transformation.
  * @param {number} angle (in radians).
@@ -434,7 +420,7 @@ ImageUtil.drawImageTransformed = function(dst, src, scaleX, scaleY, angle) {
 
 /**
  * Adds or removes an attribute to/from an HTML element.
- * @param {HTMLElement} element To be applied to.
+ * @param {!HTMLElement} element To be applied to.
  * @param {string} attribute Name of attribute.
  * @param {boolean} on True if add, false if remove.
  */
@@ -447,7 +433,7 @@ ImageUtil.setAttribute = function(element, attribute, on) {
 
 /**
  * Adds or removes CSS class to/from an HTML element.
- * @param {HTMLElement} element To be applied to.
+ * @param {!HTMLElement} element To be applied to.
  * @param {string} className Name of CSS class.
  * @param {boolean} on True if add, false if remove.
  */
@@ -466,13 +452,32 @@ ImageUtil.setClass = function(element, className, on) {
  *    stripe-by-stripe to avoid freezing up the UI. The transform is taken into
  *    account.
  *
- * @param {HTMLDocument} document Owner document.
+ * @param {!HTMLDocument} document Owner document.
  * @constructor
+ * @struct
  */
 ImageUtil.ImageLoader = function(document) {
   this.document_ = document;
   this.image_ = new Image();
   this.generation_ = 0;
+
+  /**
+   * @type {number}
+   * @private
+   */
+  this.timeout_ = 0;
+
+  /**
+   * @type {?function(!HTMLCanvasElement, string=)}
+   * @private
+   */
+  this.callback_ = null;
+
+  /**
+   * @type {FileEntry}
+   * @private
+   */
+  this.entry_ = null;
 };
 
 /**
@@ -480,7 +485,7 @@ ImageUtil.ImageLoader = function(document) {
  * TODO(mtomasz): Simplify, or even get rid of this class and merge with the
  * ThumbnaiLoader class.
  *
- * @param {Gallery.Item} item Item representing the image to be loaded.
+ * @param {!Gallery.Item} item Item representing the image to be loaded.
  * @param {function(!HTMLCanvasElement, string=)} callback Callback to be
  *     called when loaded. The second optional argument is an error identifier.
  * @param {number=} opt_delay Load delay in milliseconds, useful to let the
@@ -495,23 +500,34 @@ ImageUtil.ImageLoader.prototype.load = function(item, callback, opt_delay) {
 
   // The transform fetcher is not cancellable so we need a generation counter.
   var generation = ++this.generation_;
-  var onTransform = function(image, transform) {
+
+  /**
+   * @param {!HTMLImageElement} image Image to be transformed.
+   * @param {Object=} opt_transform Transformation.
+   */
+  var onTransform = function(image, opt_transform) {
     if (generation === this.generation_) {
       this.convertImage_(
-          image, transform || { scaleX: 1, scaleY: 1, rotate90: 0});
+          image, opt_transform || { scaleX: 1, scaleY: 1, rotate90: 0});
     }
-  }.bind(this);
+  };
+  onTransform = onTransform.bind(this);
 
+  /**
+   * @param {string=} opt_error Error.
+   */
   var onError = function(opt_error) {
     this.image_.onerror = null;
     this.image_.onload = null;
     var tmpCallback = this.callback_;
     this.callback_ = null;
-    var emptyCanvas = this.document_.createElement('canvas');
+    var emptyCanvas = assertInstanceof(this.document_.createElement('canvas'),
+        HTMLCanvasElement);
     emptyCanvas.width = 0;
     emptyCanvas.height = 0;
     tmpCallback(emptyCanvas, opt_error);
-  }.bind(this);
+  };
+  onError = onError.bind(this);
 
   var loadImage = function() {
     ImageUtil.metrics.startInterval(ImageUtil.getMetricName('LoadTime'));
@@ -521,7 +537,10 @@ ImageUtil.ImageLoader.prototype.load = function(item, callback, opt_delay) {
       this.image_.onerror = null;
       this.image_.onload = null;
       item.getFetchedMedia().then(function(fetchedMediaMetadata) {
-        onTransform(this.image_, fetchedMediaMetadata.imageTransform);
+        if (fetchedMediaMetadata.imageTransform)
+          onTransform(this.image_, fetchedMediaMetadata.imageTransform);
+        else
+          onTransform(this.image_);
       }.bind(this)).catch(function(error) {
         console.error(error.stack || error);
       });
@@ -609,7 +628,7 @@ ImageUtil.ImageLoader.prototype.cancel = function() {
   this.callback_ = null;
   if (this.timeout_) {
     clearTimeout(this.timeout_);
-    this.timeout_ = null;
+    this.timeout_ = 0;
   }
   if (this.image_) {
     this.image_.onload = function() {};
@@ -620,8 +639,8 @@ ImageUtil.ImageLoader.prototype.cancel = function() {
 };
 
 /**
- * @param {HTMLImageElement} image Image to be transformed.
- * @param {Object} transform transformation description to apply to the image.
+ * @param {!HTMLImageElement} image Image to be transformed.
+ * @param {!Object} transform transformation description to apply to the image.
  * @private
  */
 ImageUtil.ImageLoader.prototype.convertImage_ = function(image, transform) {
@@ -648,8 +667,8 @@ ImageUtil.ImageLoader.prototype.convertImage_ = function(image, transform) {
 };
 
 /**
- * @param {CanvasRenderingContext2D} context Context to draw.
- * @param {HTMLImageElement} image Image to draw.
+ * @param {!CanvasRenderingContext2D} context Context to draw.
+ * @param {!HTMLImageElement} image Image to draw.
  * @param {number} firstRow Number of the first pixel row to draw.
  * @param {number} rowCount Count of pixel rows to draw.
  * @private
@@ -678,14 +697,14 @@ ImageUtil.ImageLoader.prototype.copyStrip_ = function(
     var self = this;
     this.timeout_ = setTimeout(
         function() {
-          self.timeout_ = null;
+          self.timeout_ = 0;
           self.copyStrip_(context, image, lastRow, rowCount);
         }, 0);
   }
 };
 
 /**
- * @param {HTMLElement} element To remove children from.
+ * @param {!HTMLElement} element To remove children from.
  */
 ImageUtil.removeChildren = function(element) {
   element.textContent = '';
@@ -717,7 +736,7 @@ ImageUtil.getExtensionFromFullName = function(name) {
 
 /**
  * Metrics (from metrics.js) itnitialized by the File Manager from owner frame.
- * @type {Object?}
+ * @type {Object}
  */
 ImageUtil.metrics = null;
 
@@ -731,5 +750,7 @@ ImageUtil.getMetricName = function(name) {
 
 /**
  * Used for metrics reporting, keep in sync with the histogram description.
+ * @type {Array.<string>}
+ * @const
  */
 ImageUtil.FILE_TYPES = ['jpg', 'png', 'gif', 'bmp', 'webp'];
