@@ -142,12 +142,10 @@ std::vector<IndexedDBInfo> IndexedDBContextImpl::GetAllOriginsInfo() {
   std::vector<GURL> origins = GetAllOrigins();
   std::vector<IndexedDBInfo> result;
   for (const auto& origin_url : origins) {
-    base::FilePath idb_directory = GetLevelDBPath(origin_url);
     size_t connection_count = GetConnectionCount(origin_url);
     result.push_back(IndexedDBInfo(origin_url,
                                    GetOriginDiskUsage(origin_url),
                                    GetOriginLastModified(origin_url),
-                                   idb_directory,
                                    connection_count));
   }
   return result;

@@ -147,8 +147,7 @@ void CannedBrowsingDataIndexedDBHelper::StartFetching(
   for (std::set<PendingIndexedDBInfo>::const_iterator
        pending_info = pending_indexed_db_info_.begin();
        pending_info != pending_indexed_db_info_.end(); ++pending_info) {
-    IndexedDBInfo info(
-        pending_info->origin, 0, base::Time(), base::FilePath(), 0);
+    IndexedDBInfo info(pending_info->origin, 0, base::Time(), 0);
     result.push_back(info);
   }
 

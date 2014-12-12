@@ -39,10 +39,10 @@ void MockBrowsingDataIndexedDBHelper::DeleteIndexedDB(
 void MockBrowsingDataIndexedDBHelper::AddIndexedDBSamples() {
   const GURL kOrigin1("http://idbhost1:1/");
   const GURL kOrigin2("http://idbhost2:2/");
-  content::IndexedDBInfo info1(kOrigin1, 1, base::Time(), base::FilePath(), 0);
+  content::IndexedDBInfo info1(kOrigin1, 1, base::Time(), 0);
   response_.push_back(info1);
   origins_[kOrigin1] = true;
-  content::IndexedDBInfo info2(kOrigin2, 2, base::Time(), base::FilePath(), 0);
+  content::IndexedDBInfo info2(kOrigin2, 2, base::Time(), 0);
   response_.push_back(info2);
   origins_[kOrigin2] = true;
 }
