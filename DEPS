@@ -186,6 +186,9 @@ deps = {
   'src/third_party/skia':
    Var('chromium_git') + '/skia.git' + '@' +  Var('skia_revision'),
 
+  'src/third_party/ots':
+    Var('chromium_git') + '/external/ots.git' + '@' + '98897009f3ea8a5fa3e20a4a74977da7aaa8e61a',
+
   'src/third_party/brotli/src':
    Var('chromium_git') + '/external/font-compression-reference.git' + '@' + '8c9c83426beb4a58da34be76ea1fccb4054c4703',
 

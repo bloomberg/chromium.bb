@@ -339,6 +339,7 @@ v8.log
 /third_party/omaha/src/omaha
 /third_party/openmax_dl/
 /third_party/opus/src
+/third_party/ots
 /third_party/pdfsqueeze
 /third_party/pdfium
 /third_party/pefile
