@@ -825,7 +825,7 @@ def ArchiveVMFiles(buildroot, test_results_dir, archive_path):
 @failures_lib.SetFailureType(SuiteTimedOut, timeout_util.TimeoutError)
 def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
                    wait_for_results=None, priority=None, timeout_mins=None,
-                   retry=None, minimum_duts=0, debug=True):
+                   retry=None, minimum_duts=0, suite_min_duts=0, debug=True):
   """Run the test suite in the Autotest lab.
 
   Args:
@@ -845,6 +845,9 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     minimum_duts: The minimum number of DUTs should be available in lab for the
                   suite job to be created. If it's set to 0, the check will be
                   skipped.
+    suite_min_duts: Preferred minimum duts, lab will prioritize on getting
+                    such many duts even if the suite is competing with
+                    a suite that has higher priority.
     debug: Whether we are in debug mode.
   """
   # TODO(scottz): RPC client option names are misnomers crosbug.com/26445.
@@ -879,6 +882,9 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
 
   if minimum_duts != 0:
     cmd += ['--minimum_duts', str(minimum_duts)]
+
+  if suite_min_duts != 0:
+    cmd += ['--suite_min_duts', str(suite_min_duts)]
 
   if debug:
     cros_build_lib.Info('RunHWTestSuite would run: %s',

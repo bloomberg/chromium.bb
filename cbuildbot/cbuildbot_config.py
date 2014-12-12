@@ -687,6 +687,9 @@ class HWTestConfig(object):
     num: Maximum number of DUTs to use when scheduling tests in the hw lab.
     minimum_duts: minimum number of DUTs required for testing in the hw lab.
     retry: Whether we should retry tests that fail in a suite run.
+    suite_min_duts: Preferred minimum duts. Lab will prioritize on getting such
+                    number of duts even if the suite is competing with
+                    other suites that have higher priority.
 
   Some combinations of member settings are invalid:
     * A suite config may not specify both blocking and async.
@@ -798,7 +801,7 @@ class HWTestConfig(object):
                pool=constants.HWTEST_MACH_POOL, timeout=DEFAULT_HW_TEST_TIMEOUT,
                async=False, warn_only=False, critical=False, blocking=False,
                file_bugs=False, priority=constants.HWTEST_BUILD_PRIORITY,
-               retry=True, minimum_duts=0):
+               retry=True, minimum_duts=0, suite_min_duts=0):
     """Constructor -- see members above."""
     assert not async or (not blocking and not retry)
     assert not warn_only or not critical
@@ -814,6 +817,7 @@ class HWTestConfig(object):
     self.priority = priority
     self.retry = retry
     self.minimum_duts = minimum_duts
+    self.suite_min_duts = suite_min_duts
 
   def SetBranchedValues(self):
     """Changes the HW Test timeout/priority values to branched values."""
