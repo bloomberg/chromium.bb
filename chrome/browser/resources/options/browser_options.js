@@ -1193,7 +1193,7 @@ cr.define('options', function() {
      * @param {boolean} visible Whether to show hotword sections.
      * @private
      */
-    setHotwordSectionVisible_: function(visible) {
+    setAllHotwordSectionsVisible_: function(visible) {
       $('hotword-search').hidden = !visible;
       $('hotword-always-on-search').hidden = !visible;
       $('hotword-no-dsp-search').hidden = !visible;
@@ -1222,10 +1222,12 @@ cr.define('options', function() {
     /**
      * Activates the Audio History section of the Settings page.
      * @param {boolean} alwaysOn Whether always-on hotwording is available.
+     * @param {string} labelText Text describing current audio history state.
      * @private
      */
-    showAudioHistorySection_: function(alwaysOn) {
+    showAudioHistorySection_: function(alwaysOn, labelText) {
       $('audio-history').hidden = false;
+      $('audio-history-label').textContent = labelText;
       $('audio-history-always-on-description').hidden = !alwaysOn;
     },
 
@@ -2118,7 +2120,7 @@ cr.define('options', function() {
     'setNativeThemeButtonEnabled',
     'setNetworkPredictionValue',
     'setHighContrastCheckboxState',
-    'setHotwordSectionVisible',
+    'setAllHotwordSectionsVisible',
     'setMetricsReportingCheckboxState',
     'setMetricsReportingSettingVisibility',
     'setProfilesInfo',
