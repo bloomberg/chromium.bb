@@ -47,7 +47,7 @@ static CSSPrimitiveValue::UnitType toUnitType(int lengthUnitType)
     return static_cast<CSSPrimitiveValue::UnitType>(CSSPrimitiveValue::lengthUnitTypeToUnitType(static_cast<CSSPrimitiveValue::LengthUnitType>(lengthUnitType)));
 }
 
-static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> constructCalcExpression(PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> previous, InterpolableList* list, size_t position)
+static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> constructCalcExpression(PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> previous, const InterpolableList* list, size_t position)
 {
     while (position != CSSPrimitiveValue::LengthUnitTypeCount) {
         const InterpolableNumber *subValue = toInterpolableNumber(list->get(position));
@@ -66,9 +66,9 @@ static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> constructCalcExpression(Pas
 
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> LengthStyleInterpolation::interpolableValueToLength(InterpolableValue* value, ValueRange range)
+PassRefPtrWillBeRawPtr<CSSValue> LengthStyleInterpolation::interpolableValueToLength(const InterpolableValue* value, ValueRange range)
 {
-    InterpolableList* listValue = toInterpolableList(value);
+    const InterpolableList* listValue = toInterpolableList(value);
     unsigned unitCount = 0;
     for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++) {
         const InterpolableNumber* subValue = toInterpolableNumber(listValue->get(i));

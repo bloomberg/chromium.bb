@@ -27,14 +27,15 @@ private:
     LengthStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id,  ValueRange range)
         : StyleInterpolation(start, end, id)
         , m_range(range)
-    { }
+        { }
 
     static PassOwnPtrWillBeRawPtr<InterpolableValue> lengthToInterpolableValue(const CSSValue&);
-    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToLength(InterpolableValue*, ValueRange);
+    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToLength(const InterpolableValue*, ValueRange);
 
     ValueRange m_range;
 
     friend class AnimationLengthStyleInterpolationTest;
+    friend class LengthBoxStyleInterpolation;
 };
 
 }
