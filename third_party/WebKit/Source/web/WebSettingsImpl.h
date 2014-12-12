@@ -80,10 +80,9 @@ public:
     virtual void setDefaultVideoPosterURL(const WebString&) override;
     virtual void setDeferredImageDecodingEnabled(bool) override;
     virtual void setDeviceScaleAdjustment(float) override;
-    virtual void setDeviceSupportsMouse(bool) override;
 
-    // FIXME: Remove once the pointer/hover features are converted to use the
-    // new APIs (e.g. setPrimaryPointerType) on the chromium side
+    // FIXME: Replace these two with pointer/hover queries? crbug.com/441813
+    virtual void setDeviceSupportsMouse(bool) override;
     virtual void setDeviceSupportsTouch(bool) override;
 
     virtual void setDoubleTapToZoomEnabled(bool) override;

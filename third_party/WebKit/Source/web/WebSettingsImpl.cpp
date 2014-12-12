@@ -139,16 +139,6 @@ void WebSettingsImpl::setMinimumLogicalFontSize(int size)
 void WebSettingsImpl::setDeviceSupportsTouch(bool deviceSupportsTouch)
 {
     m_settings->setDeviceSupportsTouch(deviceSupportsTouch);
-
-    // FIXME: Until the embedder is converted to using the new APIs, set them
-    // here to keep the media queries working unchanged.
-    if (deviceSupportsTouch) {
-        m_settings->setPrimaryPointerType(blink::PointerTypeCoarse);
-        m_settings->setPrimaryHoverType(blink::HoverTypeOnDemand);
-    } else {
-        m_settings->setPrimaryPointerType(blink::PointerTypeNone);
-        m_settings->setPrimaryHoverType(blink::HoverTypeNone);
-    }
 }
 
 void WebSettingsImpl::setDeviceSupportsMouse(bool deviceSupportsMouse)
