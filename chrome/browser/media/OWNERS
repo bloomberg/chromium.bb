@@ -11,5 +11,8 @@ per-file cast_*=hubbe@chromium.org
 per-file cast_*=mikhal@chromium.org
 per-file cast_*=pwestin@google.com
 
+# For WebRTC browser tests, etc.
+per-file *webrtc*browsertest*=phoglund@google.com
+
 # For changes related to the tab media indicators.
 per-file media_stream_capture_indicator*=miu@chromium.org
