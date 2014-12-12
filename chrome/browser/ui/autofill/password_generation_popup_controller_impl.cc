@@ -149,10 +149,7 @@ void PasswordGenerationPopupControllerImpl::PasswordAccepted() {
   if (!display_password_)
     return;
 
-  web_contents()->GetRenderViewHost()->Send(
-      new AutofillMsg_GeneratedPasswordAccepted(
-          web_contents()->GetRenderViewHost()->GetRoutingID(),
-          current_password_));
+  driver_->GeneratedPasswordAccepted(current_password_);
   password_manager_->SetFormHasGeneratedPassword(driver_, form_);
   Hide();
 }

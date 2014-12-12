@@ -50,6 +50,7 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver {
       const autofill::PasswordForm& form) override;
   void AccountCreationFormsFound(
       const std::vector<autofill::FormData>& forms) override;
+  void GeneratedPasswordAccepted(const base::string16& password) override;
   void FillSuggestion(const base::string16& username,
                       const base::string16& password) override;
   void PreviewSuggestion(const base::string16& username,

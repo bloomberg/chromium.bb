@@ -24,6 +24,10 @@ void StubPasswordManagerDriver::AccountCreationFormsFound(
     const std::vector<autofill::FormData>& forms) {
 }
 
+void StubPasswordManagerDriver::GeneratedPasswordAccepted(
+    const base::string16& password) {
+}
+
 void StubPasswordManagerDriver::FillSuggestion(const base::string16& username,
                                                const base::string16& password) {
 }
