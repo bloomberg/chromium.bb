@@ -11,15 +11,13 @@
   width: 100%;
 }
 
-.entry-key {
-  font-size: small;
-}
-
+.entry-key,
 .entry-value {
   font-size: small;
 }
 
-.bold {
+p,
+span {
   font-weight: bold;
 }
 

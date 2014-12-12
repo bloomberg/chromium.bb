@@ -91,19 +91,19 @@ function handleKeyPress(e) {
     applyTreatment(selectedTreatment);
 }
 
-function applyTreatment(treatment_number) {
-  if (treatment_number < 0)
-    treatment_number = 0;
-  if (treatment_number >= treatments.length)
-    treatment_number = treatments.length;
+function applyTreatment(treatmentNumber) {
+  if (treatmentNumber < 0)
+    treatmentNumber = 0;
+  if (treatmentNumber >= treatments.length)
+    treatmentNumber = treatments.length;
 
   $('treatment' + currentTreatment).className = 'treatment';
-  currentTreatment = treatment_number;
+  currentTreatment = treatmentNumber;
   $('treatment' + currentTreatment).className = 'selected treatment';
 
-  for (var i = 0; i < treatments[treatment_number].length; i++) {
-    var key = treatments[treatment_number][i].key;
-    var value = treatments[treatment_number][i].value;
+  for (var i = 0; i < treatments[treatmentNumber].length; i++) {
+    var key = treatments[treatmentNumber][i].key;
+    var value = treatments[treatmentNumber][i].value;
     setPreferenceValue(key, value);
   }
 }
@@ -133,8 +133,8 @@ function initialize() {
     applyTreatment(0);
   } else {
     // Make the error message visible and hide everything else
-    $('invalid_treatment_info').removeAttribute('hidden');
-    var div = $('valid_treatment_info');
+    $('invalid-treatment-info').hidden = false;
+    var div = $('valid-treatment-info');
     div.parentNode.removeChild(div);
   }
 }
