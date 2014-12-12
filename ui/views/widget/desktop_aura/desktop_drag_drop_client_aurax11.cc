@@ -405,6 +405,7 @@ DesktopDragDropClientAuraX11::DesktopDragDropClientAuraX11(
     Display* xdisplay,
     ::Window xwindow)
     : root_window_(root_window),
+      cursor_manager_(cursor_manager),
       xdisplay_(xdisplay),
       xwindow_(xwindow),
       atom_cache_(xdisplay_, kAtomsToCache),
@@ -417,9 +418,6 @@ DesktopDragDropClientAuraX11::DesktopDragDropClientAuraX11(
       source_state_(SOURCE_STATE_OTHER),
       drag_operation_(0),
       negotiated_operation_(ui::DragDropTypes::DRAG_NONE),
-      grab_cursor_(cursor_manager->GetInitializedCursor(ui::kCursorGrabbing)),
-      copy_grab_cursor_(cursor_manager->GetInitializedCursor(ui::kCursorCopy)),
-      move_grab_cursor_(cursor_manager->GetInitializedCursor(ui::kCursorMove)),
       weak_ptr_factory_(this) {
   // Some tests change the DesktopDragDropClientAuraX11 associated with an
   // |xwindow|.
@@ -538,17 +536,19 @@ void DesktopDragDropClientAuraX11::OnXdndStatus(
     return;
   }
 
+  int cursor_type = ui::kCursorNull;
   switch (negotiated_operation_) {
     case ui::DragDropTypes::DRAG_COPY:
-      move_loop_->UpdateCursor(copy_grab_cursor_);
+      cursor_type = ui::kCursorCopy;
       break;
     case ui::DragDropTypes::DRAG_MOVE:
-      move_loop_->UpdateCursor(move_grab_cursor_);
+      cursor_type = ui::kCursorMove;
       break;
     default:
-      move_loop_->UpdateCursor(grab_cursor_);
+      cursor_type = ui::kCursorGrabbing;
       break;
   }
+  move_loop_->UpdateCursor(cursor_manager_->GetInitializedCursor(cursor_type));
 
   // Note: event.data.[2,3] specify a rectangle. It is a request by the other
   // window to not send further XdndPosition messages while the cursor is
@@ -693,7 +693,9 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
   // Windows has a specific method, DoDragDrop(), which performs the entire
   // drag. We have to emulate this, so we spin off a nested runloop which will
   // track all cursor movement and reroute events to a specific handler.
-  move_loop_->RunMoveLoop(source_window, grab_cursor_);
+  move_loop_->RunMoveLoop(
+      source_window,
+      cursor_manager_->GetInitializedCursor(ui::kCursorGrabbing));
 
   if (alive) {
     drag_widget_.reset();

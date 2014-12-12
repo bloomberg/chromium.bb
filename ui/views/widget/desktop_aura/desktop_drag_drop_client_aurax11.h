@@ -204,6 +204,8 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
 
   aura::Window* root_window_;
 
+  DesktopNativeCursorManager* cursor_manager_;
+
   Display* xdisplay_;
   ::Window xwindow_;
 
@@ -276,11 +278,6 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
 
   // The offset of |drag_widget_| relative to the mouse position.
   gfx::Vector2d drag_widget_offset_;
-
-  // We use these cursors while dragging.
-  gfx::NativeCursor grab_cursor_;
-  gfx::NativeCursor copy_grab_cursor_;
-  gfx::NativeCursor move_grab_cursor_;
 
   base::WeakPtrFactory<DesktopDragDropClientAuraX11> weak_ptr_factory_;
 

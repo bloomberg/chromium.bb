@@ -37,7 +37,8 @@ class VIEWS_EXPORT DesktopNativeCursorManager
       scoped_ptr<DesktopCursorLoaderUpdater> cursor_loader_updater);
   ~DesktopNativeCursorManager() override;
 
-  // Builds a cursor and sets the internal platform representation.
+  // Builds a cursor and sets the internal platform representation. The return
+  // value should not be cached.
   gfx::NativeCursor GetInitializedCursor(int type);
 
   // Adds |host| to the set |hosts_|.
