@@ -8,14 +8,22 @@ import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Context;
 import android.content.Intent;
+import android.preference.Preference;
+import android.preference.PreferenceFragment;
+import android.preference.PreferenceScreen;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
+import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
 import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.shell.preferences.ChromeShellMainPreferences;
+import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.UiUtils;
 
+import java.lang.reflect.Method;
 import java.text.NumberFormat;
 
 /**
@@ -40,6 +48,74 @@ public class PreferencesTest extends ChromeShellTestBase {
         Activity activity = instrumentation.startActivitySync(intent);
         assertTrue(activity instanceof Preferences);
         return (Preferences) activity;
+    }
+
+    public static void clickPreference(PreferenceFragment fragment, Preference preference) {
+        try {
+            Method performClick = Preference.class.getDeclaredMethod("performClick",
+                    PreferenceScreen.class);
+            performClick.invoke(preference, fragment.getPreferenceScreen());
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Change search engine and make sure it works correctly.
+     */
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testSearchEnginePreference() throws Exception {
+        // Make sure the template_url_service is loaded.
+        final CallbackHelper onTemplateUrlServiceLoadedHelper = new CallbackHelper();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                if (TemplateUrlService.getInstance().isLoaded()) {
+                    onTemplateUrlServiceLoadedHelper.notifyCalled();
+                } else {
+                    TemplateUrlService.getInstance().registerLoadListener(new LoadListener() {
+                        @Override
+                        public void onTemplateUrlServiceLoaded() {
+                            onTemplateUrlServiceLoadedHelper.notifyCalled();
+                        }
+                    });
+                    TemplateUrlService.getInstance().load();
+                }
+            }
+        });
+        onTemplateUrlServiceLoadedHelper.waitForCallback(0);
+
+        // Set the second search engine as the default using TemplateUrlService.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                TemplateUrlService.getInstance().setSearchEngine(1);
+            }
+        });
+
+        final Preferences prefActivity = startPreferences(getInstrumentation(),
+                ChromeShellMainPreferences.class.getName());
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                // Ensure that the second search engine in the list is selected.
+                PreferenceFragment fragment = (PreferenceFragment)
+                        prefActivity.getFragmentForTest();
+                SearchEnginePreference pref = (SearchEnginePreference)
+                        fragment.findPreference(SearchEnginePreference.PREF_SEARCH_ENGINE);
+                assertNotNull(pref);
+                assertEquals("1", pref.getValue());
+
+                // Simulate selecting the third search engine and ensure that TemplateUrlService
+                // is updated.
+                if (pref.getOnPreferenceChangeListener().onPreferenceChange(pref, "2")) {
+                    pref.setValue("2");
+                }
+                assertEquals(2, TemplateUrlService.getInstance().getDefaultSearchEngineIndex());
+            }
+        });
     }
 
     /**

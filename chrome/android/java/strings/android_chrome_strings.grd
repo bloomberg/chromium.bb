@@ -125,6 +125,14 @@
         Managed by your administrator
       </message>
 
+      <!-- Search engine preferences -->
+      <message name="IDS_PREFS_SEARCH_ENGINE" desc="Title for Search Engine preferences. [CHAR-LIMIT=32]">
+        Search engine
+      </message>
+      <message name="IDS_SEARCH_ENGINE_NAME_AND_DOMAIN" desc="Label for a search engine, that includes its name and its domain, e.g. Google (google.co.uk).">
+        <ph name="SEARCH_ENGINE_NAME">%1$s<ex>Google</ex></ph> (<ph name="SEARCH_ENGINE_DOMAIN">%2$s<ex>google.co.uk</ex></ph>)
+      </message>
+
       <!-- Autofill preferences -->
       <message name="IDS_PREFS_AUTOFILL" desc="Title for 'Autofill forms' settings, which control what personal data can be automatically filled into web page forms. [CHAR-LIMIT=32]">
         Autofill forms
@@ -167,6 +175,26 @@
       </message>
       <message name="IDS_ACCESSIBILITY_AUTOFILL_CC_YEAR" desc="Content description for text input field containing a credit card expiration year.">
         Card expiration year
+      </message>
+
+      <!-- Save passwords preferences -->
+      <message name="IDS_PREFS_SAVED_PASSWORDS" desc="Title for the Saved Passwords preferences. [CHAR-LIMIT=32]">
+        Save passwords
+      </message>
+      <message name="IDS_SECTION_SAVED_PASSWORDS" desc="Header for the list of passwords that have been saved in Chrome. [CHAR-LIMIT=32]">
+        Passwords
+      </message>
+      <message name="IDS_SECTION_SAVED_PASSWORDS_EXCEPTIONS" desc="Header for the list of websites for which user selected to never save passwords. [CHAR-LIMIT=32]">
+        Never saved
+      </message>
+      <message name="IDS_MANAGE_PASSWORDS_TEXT" desc="Text for link to manage passwords on Account Central.">
+        Manage saved passwords in your <ph name="BEGIN_LINK">&lt;link&gt;</ph>Google Account<ph name="END_LINK">&lt;/link&gt;</ph>
+      </message>
+      <message name="IDS_SAVED_PASSWORDS_NONE_TEXT" desc="Text when there are no saved passwords/exceptions.">
+        Saved passwords will appear here.
+      </message>
+      <message name="IDS_PASSWORD_ENTRY_EDITOR_TITLE" desc='Title of the "edit a name/password" screen.'>
+        Edit saved name/password or exception
       </message>
 
       <!-- Accessibility preferences -->

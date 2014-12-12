@@ -4,9 +4,15 @@
      found in the LICENSE file. -->
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <org.chromium.chrome.browser.preferences.SearchEnginePreference
+        android:key="search_engine"
+        android:title="@string/prefs_search_engine"/>
     <Preference
         android:fragment="org.chromium.chrome.browser.preferences.autofill.AutofillPreferences"
         android:title="@string/prefs_autofill" />
+    <Preference
+        android:fragment="org.chromium.chrome.browser.preferences.password.ManageSavedPasswordsPreferences"
+        android:title="@string/prefs_saved_passwords" />
     <Preference
         android:fragment="org.chromium.chrome.browser.preferences.AccessibilityPreferences"
         android:title="@string/prefs_accessibility" />
