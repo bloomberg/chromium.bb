@@ -6,7 +6,7 @@
   <default remote="aosp"
            sync-j="6" />
 
-  <project name="platform/frameworks/webview" path="frameworks/webview" revision="a770a09ca3346d8ec7cb4cdff90aaf83c8d2c5ff"/>
+  <project name="platform/frameworks/webview" path="frameworks/webview" revision="f989a7846d5fe4116de1a0635a8aade09d2be7b2"/>
 
   <project groups="device,flo" name="device/asus/deb" revision="f7bd9fa832e3256aa4eb940d1e844f07d966b7ab"/>
   <project groups="device,flo" name="device/asus/flo" revision="b0c2235b2bc90ee99f609b31e58eb3afb7f9e070"/>
