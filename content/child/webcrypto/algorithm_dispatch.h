@@ -92,6 +92,34 @@ CONTENT_EXPORT Status DeriveBits(const blink::WebCryptoAlgorithm& algorithm,
                                  unsigned int length_bits,
                                  std::vector<uint8_t>* derived_bytes);
 
+// Derives a key by calling the underlying deriveBits/getKeyLength/importKey
+// operations.
+//
+// Note that whereas the WebCrypto spec uses a single "derivedKeyType"
+// AlgorithmIdentifier in its specification of deriveKey(), here two separate
+// AlgorithmIdentifiers are used:
+//
+//   * |import_algorithm|  -- The parameters required by the derived key's
+//                            "importKey" operation.
+//
+//   * |key_length_algorithm| -- The parameters required by the derived key's
+//                               "get key length" operation.
+//
+// WebCryptoAlgorithm is not a flexible type like AlgorithmIdentifier (it cannot
+// be easily re-interpreted as a different parameter type).
+//
+// Therefore being provided with separate parameter types for the import
+// parameters and the key length parameters simplifies passing the right
+// parameters onto ImportKey() and GetKeyLength() respectively.
+CONTENT_EXPORT Status
+DeriveKey(const blink::WebCryptoAlgorithm& algorithm,
+          const blink::WebCryptoKey& base_key,
+          const blink::WebCryptoAlgorithm& import_algorithm,
+          const blink::WebCryptoAlgorithm& key_length_algorithm,
+          bool extractable,
+          blink::WebCryptoKeyUsageMask usages,
+          blink::WebCryptoKey* derived_key);
+
 CONTENT_EXPORT scoped_ptr<blink::WebCryptoDigestor> CreateDigestor(
     blink::WebCryptoAlgorithmId algorithm);
 

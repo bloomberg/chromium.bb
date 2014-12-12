@@ -49,7 +49,8 @@ class EcdhImplementation : public EcAlgorithm {
 
   Status DeriveBits(const blink::WebCryptoAlgorithm& algorithm,
                     const blink::WebCryptoKey& base_key,
-                    unsigned int length_bits,
+                    bool has_optional_length_bits,
+                    unsigned int optional_length_bits,
                     std::vector<uint8_t>* derived_bytes) const override {
     if (base_key.type() != blink::WebCryptoKeyTypePrivate)
       return Status::ErrorUnexpectedKeyType();
@@ -78,13 +79,6 @@ class EcdhImplementation : public EcAlgorithm {
       return Status::ErrorEcdhCurveMismatch();
     }
 
-    // Handle the empty length case now to avoid calling an undefined
-    // |&derived_bytes->front()| later.
-    if (length_bits == 0) {
-      derived_bytes->clear();
-      return Status::Success();
-    }
-
     crypto::ScopedEC_KEY public_key_ec(
         EVP_PKEY_get1_EC_KEY(AsymKeyOpenSsl::Cast(public_key)->key()));
 
@@ -99,6 +93,18 @@ class EcdhImplementation : public EcAlgorithm {
     // secret are zero. So for P-521, the maximum length is 528 bits, not 521.
     int field_size_bytes = NumBitsToBytes(
         EC_GROUP_get_degree(EC_KEY_get0_group(private_key_ec.get())));
+
+    // If a desired key length was not specified, default to the field size
+    // (rounded up to nearest byte).
+    unsigned int length_bits =
+        has_optional_length_bits ? optional_length_bits : field_size_bytes * 8;
+
+    // Handle the empty length case now to avoid calling an undefined
+    // |&derived_bytes->front()| later.
+    if (length_bits == 0) {
+      derived_bytes->clear();
+      return Status::Success();
+    }
 
     if (length_bits > static_cast<unsigned int>(field_size_bytes * 8))
       return Status::ErrorEcdhLengthTooBig(field_size_bytes * 8);

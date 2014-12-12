@@ -63,7 +63,8 @@ Status AlgorithmImplementation::GenerateKey(
 Status AlgorithmImplementation::DeriveBits(
     const blink::WebCryptoAlgorithm& algorithm,
     const blink::WebCryptoKey& base_key,
-    unsigned int length_bits,
+    bool has_optional_length_bits,
+    unsigned int optional_length_bits,
     std::vector<uint8_t>* derived_bytes) const {
   return Status::ErrorUnsupported();
 }
