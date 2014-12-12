@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/stats_counters.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -865,6 +866,11 @@ bool ClientSocketPoolBaseHelper::FindTopStalledGroup(
 
 void ClientSocketPoolBaseHelper::OnConnectJobComplete(
     int result, ConnectJob* job) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436634 ClientSocketPoolBaseHelper::OnConnectJobComplete"));
+
   DCHECK_NE(ERR_IO_PENDING, result);
   const std::string group_name = job->group_name();
   GroupMap::iterator group_it = group_map_.find(group_name);

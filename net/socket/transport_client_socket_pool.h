@@ -326,6 +326,12 @@ void TransportConnectJobHelper::OnIOComplete(T* job, int result) {
           "436634 TransportConnectJobHelper::OnIOComplete"));
 
   result = this->DoLoop(job, result);
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436634 TransportConnectJobHelper::OnIOComplete1"));
+
   if (result != ERR_IO_PENDING)
     job->NotifyDelegateOfCompletion(result);  // Deletes |job| and |this|
 }
