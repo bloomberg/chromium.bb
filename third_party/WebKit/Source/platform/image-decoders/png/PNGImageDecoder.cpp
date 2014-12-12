@@ -208,10 +208,8 @@ private:
 #endif
 };
 
-PNGImageDecoder::PNGImageDecoder(ImageSource::AlphaOption alphaOption,
-    ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption,
-    size_t maxDecodedBytes)
-    : ImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes)
+PNGImageDecoder::PNGImageDecoder(ImageSource::AlphaOption alphaOption, ImageSource::GammaAndColorProfileOption colorOptions, size_t maxDecodedBytes)
+    : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes)
     , m_hasColorProfile(false)
 {
 }
