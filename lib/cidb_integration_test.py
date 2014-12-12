@@ -23,6 +23,7 @@ import glob
 import logging
 import os
 import sys
+import time
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))
 
@@ -176,10 +177,9 @@ def GetTestDataSeries(test_data_path):
 class DataSeries0Test(CIDBIntegrationTest):
   """Simulate a set of 630 master/slave CQ builds."""
 
-  def testCQWithSchema31(self):
-    """Run the CQ test with schema version 31."""
-    # Run the CQ test at schema version 31
-    self._PrepareFreshDatabase(31)
+  def testCQWithSchema32(self):
+    """Run the CQ test with schema version 32."""
+    self._PrepareFreshDatabase(32)
     self._runCQTest()
 
   def _runCQTest(self):
@@ -392,7 +392,7 @@ class BuildStagesAndFailureTest(CIDBIntegrationTest):
 
   def runTest(self):
     """Test basic buildStageTable and failureTable functionality."""
-    self._PrepareFreshDatabase(29)
+    self._PrepareFreshDatabase(32)
 
     bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
 
@@ -427,6 +427,47 @@ class BuildStagesAndFailureTest(CIDBIntegrationTest):
       bot_db.InsertFailure(build_stage_id, e, category)
 
 
+class BuildTableTest(CIDBIntegrationTest):
+  """Test buildTable functionality not tested by the DataSeries tests."""
+
+  def testDeadlineAPI(self):
+    """Test deadline setting/querying API."""
+    self._PrepareFreshDatabase(32)
+    bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
+
+    build_id = bot_db.InsertBuild('build_name',
+                                  constants.WATERFALL_INTERNAL,
+                                  1,
+                                  'build_config',
+                                  'bot_hostname',
+                                  timeout_seconds=30 * 60)
+    time_remaining = bot_db.GetTimeToDeadline(build_id)
+    # This will flake if the few cidb calls above take hours. Unlikely.
+    self.assertGreater(time_remaining, 10)
+
+    build_id = bot_db.InsertBuild('build_name',
+                                  constants.WATERFALL_INTERNAL,
+                                  2,
+                                  'build_config',
+                                  'bot_hostname',
+                                  timeout_seconds=1)
+    # Sleep till the deadline expires.
+    time.sleep(3)
+    time_remaining = bot_db.GetTimeToDeadline(build_id)
+    self.assertEqual(0, time_remaining)
+
+    build_id = bot_db.InsertBuild('build_name',
+                                  constants.WATERFALL_INTERNAL,
+                                  3,
+                                  'build_config',
+                                  'bot_hostname')
+    time_remaining = bot_db.GetTimeToDeadline(build_id)
+    self.assertEqual(None, time_remaining)
+
+    time_remaining = bot_db.GetTimeToDeadline(-1)
+    self.assertEqual(None, time_remaining)
+
+
 class DataSeries1Test(CIDBIntegrationTest):
   """Simulate a single set of canary builds."""
 
@@ -439,7 +480,7 @@ class DataSeries1Test(CIDBIntegrationTest):
     # Migrate db to specified version. As new schema versions are added,
     # migrations to later version can be applied after the test builds are
     # simulated, to test that db contents are correctly migrated.
-    self._PrepareFreshDatabase(28)
+    self._PrepareFreshDatabase(32)
 
     bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
 
@@ -527,7 +568,7 @@ def _TranslateStatus(status):
 
 
 def _SimulateBuildStart(db, metadata, master_build_id=None):
-  """Returns (build_id, metadata_id) tuple."""
+  """Returns build_id for the inserted buildTable entry."""
   metadata_dict = metadata.GetDict()
   # TODO(akeshet): We are pretending that all these builds were on the internal
   # waterfall at the moment, for testing purposes. This is because we don't

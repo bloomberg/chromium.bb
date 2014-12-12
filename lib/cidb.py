@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import datetime
 import glob
 import logging
 import os
@@ -508,9 +509,10 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     """
     return self._Execute('SELECT NOW()').fetchall()[0][0]
 
-  @minimum_schema(2)
+  @minimum_schema(32)
   def InsertBuild(self, builder_name, waterfall, build_number,
-                  build_config, bot_hostname, master_build_id=None):
+                  build_config, bot_hostname, master_build_id=None,
+                  timeout_seconds=None):
     """Insert a build row.
 
     Args:
@@ -520,17 +522,24 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       build_config: cbuildbot config of build
       bot_hostname: hostname of bot running the build
       master_build_id: (Optional) primary key of master build to this build.
+      timeout_seconds: (Optional) If provided, total time allocated for this
+          build. A deadline is recorded in cidb for the current build to end.
     """
-    return self._Insert('buildTable', {'builder_name': builder_name,
-                                       'buildbot_generation':
-                                           constants.BUILDBOT_GENERATION,
-                                       'waterfall': waterfall,
-                                       'build_number': build_number,
-                                       'build_config': build_config,
-                                       'bot_hostname': bot_hostname,
-                                       'start_time':
-                                           sqlalchemy.func.current_timestamp(),
-                                       'master_build_id': master_build_id})
+    values = {
+        'builder_name': builder_name,
+        'buildbot_generation': constants.BUILDBOT_GENERATION,
+        'waterfall': waterfall,
+        'build_number': build_number,
+        'build_config': build_config,
+        'bot_hostname': bot_hostname,
+        'start_time': sqlalchemy.func.current_timestamp(),
+        'master_build_id': master_build_id}
+    if timeout_seconds is not None:
+      now = self.GetTime()
+      duration = datetime.timedelta(seconds=timeout_seconds)
+      values.update({'deadline': now + duration})
+
+    return self._Insert('buildTable', values)
 
   @minimum_schema(3)
   def InsertCLActions(self, build_id, cl_actions):
@@ -803,6 +812,38 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                              'master_build_id = %s' % master_build_id,
                              ['id', 'build_config', 'start_time',
                               'finish_time', 'status'])
+
+  @minimum_schema(32)
+  def GetTimeToDeadline(self, build_id):
+    """Gets the time remaining till the deadline for given build_id.
+
+    Always use this function to find time remaining to a deadline. This function
+    computes all times on the database. You run the risk of hitting timezone
+    issues if you compute remaining time locally.
+
+    Args:
+      build_id: The build_id of the build to query.
+
+    Returns:
+      The time remaining to the deadline in seconds.
+      0 if the deadline is already past.
+      None if no deadline is found.
+    """
+    # Sign information is lost in the timediff coercion into python
+    # datetime.timedelta type. So, we must find out if the deadline is past
+    # separately.
+    r = self._Execute(
+        'SELECT deadline >= NOW(), TIMEDIFF(deadline, NOW()) '
+        'from buildTable where id = %s' % build_id).fetchall()
+    if not r:
+      return None
+
+    time_remaining = r[0][1]
+    if time_remaining is None:
+      return None
+
+    deadline_past = (r[0][0] == 0)
+    return 0 if deadline_past else abs(time_remaining.total_seconds())
 
   @minimum_schema(2)
   def GetLastBuildStatuses(self, build_config, number):
