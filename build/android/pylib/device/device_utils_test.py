@@ -370,19 +370,25 @@ class DeviceUtilsGetExternalStoragePathTest(DeviceUtilsNewImplTest):
 class DeviceUtilsGetApplicationPathTest(DeviceUtilsNewImplTest):
 
   def testGetApplicationPath_exists(self):
-    with self.assertCall(self.call.adb.Shell('pm path android'),
-                         'package:/path/to/android.apk\n'):
+    with self.assertCalls(
+        (self.call.adb.Shell('getprop ro.build.version.sdk'), '19\n'),
+        (self.call.adb.Shell('pm path android'),
+         'package:/path/to/android.apk\n')):
       self.assertEquals('/path/to/android.apk',
                         self.device.GetApplicationPath('android'))
 
   def testGetApplicationPath_notExists(self):
-    with self.assertCall(self.call.adb.Shell('pm path not.installed.app'), ''):
+    with self.assertCalls(
+        (self.call.adb.Shell('getprop ro.build.version.sdk'), '19\n'),
+        (self.call.adb.Shell('pm path not.installed.app'), '')):
       self.assertEquals(None,
                         self.device.GetApplicationPath('not.installed.app'))
 
   def testGetApplicationPath_fails(self):
-    with self.assertCall(self.call.adb.Shell('pm path android'),
-        self.CommandError('ERROR. Is package manager running?\n')):
+    with self.assertCalls(
+        (self.call.adb.Shell('getprop ro.build.version.sdk'), '19\n'),
+        (self.call.adb.Shell('pm path android'),
+         self.CommandError('ERROR. Is package manager running?\n'))):
       with self.assertRaises(device_errors.CommandFailedError):
         self.device.GetApplicationPath('android')
 

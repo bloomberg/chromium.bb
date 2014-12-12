@@ -256,8 +256,14 @@ class DeviceUtils(object):
     Returns:
       Path to the apk on the device if it exists, None otherwise.
     """
+    # 'pm path' is liable to incorrectly exit with a nonzero number starting
+    # in Lollipop.
+    # TODO(jbudorick): Check if this is fixed as new Android versions are
+    # released to put an upper bound on this.
+    should_check_return = (self.build_version_sdk <
+                           constants.ANDROID_SDK_VERSION_CODES.LOLLIPOP)
     output = self.RunShellCommand(['pm', 'path', package], single_line=True,
-                                  check_return=True)
+                                  check_return=should_check_return)
     if not output:
       return None
     if not output.startswith('package:'):
