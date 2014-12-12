@@ -154,6 +154,8 @@ void FullscreenController::enterFullScreenForElement(Element* element)
 
 void FullscreenController::exitFullScreenForElement(Element* element)
 {
+    ASSERT(element);
+
     // The client is exiting full screen, so don't send a notification.
     if (m_isCancelingFullScreen)
         return;
