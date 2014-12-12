@@ -206,10 +206,12 @@ class DevToolsManagerTest : public RenderViewHostImplTestHarness {
     RenderViewHostImplTestHarness::SetUp();
     TestDevToolsClientHost::ResetCounters();
     old_browser_client_ = SetBrowserClientForTesting(&browser_client_);
+    DevToolsManager::GetInstance()->SetUpForTest(DevToolsManager::Scheduler());
   }
 
   void TearDown() override {
     SetBrowserClientForTesting(old_browser_client_);
+    DevToolsManager::GetInstance()->SetUpForTest(DevToolsManager::Scheduler());
     RenderViewHostImplTestHarness::TearDown();
   }
 
@@ -385,7 +387,7 @@ TEST_F(DevToolsManagerTest, TestObserver) {
 
   TestDevToolsManagerScheduler scheduler;
   DevToolsManager* manager = DevToolsManager::GetInstance();
-  manager->SetSchedulerForTest(scheduler.callback());
+  manager->SetUpForTest(scheduler.callback());
 
   contents()->NavigateAndCommit(url1);
   RunAllPendingInMessageLoop();
@@ -454,7 +456,6 @@ TEST_F(DevToolsManagerTest, TestObserver) {
   manager->RemoveObserver(observer.get());
 
   EXPECT_TRUE(scheduler.IsEmpty());
-  manager->SetSchedulerForTest(DevToolsManager::Scheduler());
 }
 
 }  // namespace content

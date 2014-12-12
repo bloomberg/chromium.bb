@@ -55,7 +55,7 @@ class CONTENT_EXPORT DevToolsManager {
   void AgentHostChanged(scoped_refptr<DevToolsAgentHost> agent_host);
 
   typedef base::Callback<void(base::Closure)> Scheduler;
-  void SetSchedulerForTest(Scheduler scheduler);
+  void SetUpForTest(Scheduler scheduler);
 
  private:
   friend struct DefaultSingletonTraits<DevToolsManager>;

@@ -123,8 +123,9 @@ void DevToolsManager::NotifyTargetListChanged(
   STLDeleteContainerPointers(targets.begin(), targets.end());
 }
 
-void DevToolsManager::SetSchedulerForTest(Scheduler scheduler) {
+void DevToolsManager::SetUpForTest(Scheduler scheduler) {
   scheduler_ = scheduler;
+  delegate_.reset(GetContentClient()->browser()->GetDevToolsManagerDelegate());
 }
 
 }  // namespace content
