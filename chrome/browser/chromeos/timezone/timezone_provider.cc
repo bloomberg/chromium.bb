@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/geolocation/geoposition.h"
+#include "chromeos/geolocation/geoposition.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 

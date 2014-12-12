@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GEOLOCATION_SIMPLE_GEOLOCATION_PROVIDER_H_
-#define CHROME_BROWSER_CHROMEOS_GEOLOCATION_SIMPLE_GEOLOCATION_PROVIDER_H_
+#ifndef CHROMEOS_GEOLOCATION_SIMPLE_GEOLOCATION_PROVIDER_H_
+#define CHROMEOS_GEOLOCATION_SIMPLE_GEOLOCATION_PROVIDER_H_
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/geolocation/simple_geolocation_request.h"
+#include "chromeos/chromeos_export.h"
+#include "chromeos/geolocation/simple_geolocation_request.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -26,7 +27,7 @@ namespace chromeos {
 // Note: this should probably be a singleton to monitor requests rate.
 // But as it is used only diring ChromeOS Out-of-Box, it can be owned by
 // WizardController for now.
-class SimpleGeolocationProvider {
+class CHROMEOS_EXPORT SimpleGeolocationProvider {
  public:
   SimpleGeolocationProvider(net::URLRequestContextGetter* url_context_getter,
                             const GURL& url);
@@ -69,4 +70,4 @@ class SimpleGeolocationProvider {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_GEOLOCATION_SIMPLE_GEOLOCATION_PROVIDER_H_
+#endif  // CHROMEOS_GEOLOCATION_SIMPLE_GEOLOCATION_PROVIDER_H_

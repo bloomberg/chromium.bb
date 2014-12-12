@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GEOLOCATION_SIMPLE_GEOLOCATION_REQUEST_H_
-#define CHROME_BROWSER_CHROMEOS_GEOLOCATION_SIMPLE_GEOLOCATION_REQUEST_H_
+#ifndef CHROMEOS_GEOLOCATION_SIMPLE_GEOLOCATION_REQUEST_H_
+#define CHROMEOS_GEOLOCATION_SIMPLE_GEOLOCATION_REQUEST_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/chromeos/geolocation/geoposition.h"
+#include "chromeos/geolocation/geoposition.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
@@ -122,4 +122,4 @@ class SimpleGeolocationRequest : private net::URLFetcherDelegate {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_GEOLOCATION_SIMPLE_GEOLOCATION_REQUEST_H_
+#endif  // CHROMEOS_GEOLOCATION_SIMPLE_GEOLOCATION_REQUEST_H_

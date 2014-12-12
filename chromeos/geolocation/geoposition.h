@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GEOLOCATION_GEOPOSITION_H_
-#define CHROME_BROWSER_CHROMEOS_GEOLOCATION_GEOPOSITION_H_
+#ifndef CHROMEOS_GEOLOCATION_GEOPOSITION_H_
+#define CHROMEOS_GEOLOCATION_GEOPOSITION_H_
 
 #include <string>
 
 #include "base/time/time.h"
+#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 
 // This structure represents Google Maps Geolocation response.
 // Based on content/public/common/geoposition.h .
-struct Geoposition {
+struct CHROMEOS_EXPORT Geoposition {
   // Geolocation API client status.
   // (Server status is reported in "error_code" field.)
   enum Status {
@@ -62,4 +63,4 @@ struct Geoposition {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_GEOLOCATION_GEOPOSITION_H_
+#endif  // CHROMEOS_GEOLOCATION_GEOPOSITION_H_

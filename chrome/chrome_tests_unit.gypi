@@ -180,7 +180,6 @@
       'browser/chromeos/fileapi/external_file_url_util_unittest.cc',
       'browser/chromeos/fileapi/file_access_permissions_unittest.cc',
       'browser/chromeos/fileapi/file_system_backend_unittest.cc',
-      'browser/chromeos/geolocation/simple_geolocation_unittest.cc',
       'browser/chromeos/input_method/browser_state_monitor_unittest.cc',
       'browser/chromeos/input_method/input_method_configuration_unittest.cc',
       'browser/chromeos/input_method/input_method_engine_unittest.cc',

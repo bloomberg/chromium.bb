@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/geolocation/simple_geolocation_request.h"
+#include "chromeos/geolocation/simple_geolocation_request.h"
 
 #include <algorithm>
 #include <string>
@@ -14,8 +14,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/geolocation/geoposition.h"
-#include "chrome/browser/chromeos/geolocation/simple_geolocation_provider.h"
+#include "chromeos/geolocation/geoposition.h"
+#include "chromeos/geolocation/simple_geolocation_provider.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
