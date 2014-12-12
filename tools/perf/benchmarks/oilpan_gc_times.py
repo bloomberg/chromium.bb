@@ -8,7 +8,6 @@ import page_sets
 from benchmarks import blink_perf
 from benchmarks import silk_flags
 from measurements import oilpan_gc_times
-from measurements import smoothness
 from telemetry import benchmark
 from telemetry.core import util
 from telemetry import page
@@ -38,5 +37,16 @@ class OilpanGCTimesSmoothnessAnimation(benchmark.Benchmark):
   page_set = page_sets.ToughAnimationCasesPageSet
 
 
-# TODO(peria): Add more page sets.  'key_silk_cases' and
-# 'smoothness.sync_scroll.key_mobile_sites' are wanted for now.
+@benchmark.Enabled('android')
+class OilpanGCTimesKeySilkCases(benchmark.Benchmark):
+  test = oilpan_gc_times.OilpanGCTimesForSmoothness
+  page_set = page_sets.KeySilkCasesPageSet
+
+
+@benchmark.Enabled('android')
+class OilpanGCTimesSyncScrollKeyMobileSites(benchmark.Benchmark):
+  tag = 'sync_scroll'
+  test = oilpan_gc_times.OilpanGCTimesForSmoothness
+  page_set = page_sets.KeyMobileSitesPageSet
+  def CustomizeBrowserOptions(self, options):
+    silk_flags.CustomizeBrowserOptionsForSyncScrolling(options)
