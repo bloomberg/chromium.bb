@@ -228,6 +228,10 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector& component, RuleData& rule
         return true;
     }
 
+    if (component.isHostPseudoClass()) {
+        m_shadowHostRules.append(ruleData);
+        return true;
+    }
     return false;
 }
 
@@ -354,6 +358,7 @@ void RuleSet::compactRules()
     m_cuePseudoRules.shrinkToFit();
     m_focusPseudoClassRules.shrinkToFit();
     m_universalRules.shrinkToFit();
+    m_shadowHostRules.shrinkToFit();
     m_pageRules.shrinkToFit();
     m_viewportRules.shrinkToFit();
     m_fontFaceRules.shrinkToFit();
@@ -393,6 +398,7 @@ void RuleSet::trace(Visitor* visitor)
     visitor->trace(m_cuePseudoRules);
     visitor->trace(m_focusPseudoClassRules);
     visitor->trace(m_universalRules);
+    visitor->trace(m_shadowHostRules);
     visitor->trace(m_features);
     visitor->trace(m_pageRules);
     visitor->trace(m_viewportRules);

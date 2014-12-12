@@ -128,6 +128,18 @@ void ScopedStyleResolver::collectMatchingAuthorRules(ElementRuleCollector& colle
     collector.setScopeContainsLastMatchedElement(false);
 }
 
+void ScopedStyleResolver::collectMatchingShadowHostRules(ElementRuleCollector& collector, bool includeEmptyRules, CascadeScope cascadeScope, CascadeOrder cascadeOrder)
+{
+    RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
+    ASSERT(!collector.scopeContainsLastMatchedElement());
+    collector.setScopeContainsLastMatchedElement(true);
+    for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
+        MatchRequest matchRequest(&m_authorStyleSheets[i]->contents()->ruleSet(), includeEmptyRules, &m_scope->rootNode(), m_authorStyleSheets[i], i);
+        collector.collectMatchingShadowHostRules(matchRequest, ruleRange, cascadeScope, cascadeOrder);
+    }
+    collector.setScopeContainsLastMatchedElement(false);
+}
+
 void ScopedStyleResolver::matchPageRules(PageRuleCollector& collector)
 {
     // Only consider the global author RuleSet for @page rules, as per the HTML5 spec.

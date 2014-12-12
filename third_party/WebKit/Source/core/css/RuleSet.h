@@ -142,6 +142,7 @@ public:
     const WillBeHeapVector<RuleData>* cuePseudoRules() const { ASSERT(!m_pendingRules); return &m_cuePseudoRules; }
     const WillBeHeapVector<RuleData>* focusPseudoClassRules() const { ASSERT(!m_pendingRules); return &m_focusPseudoClassRules; }
     const WillBeHeapVector<RuleData>* universalRules() const { ASSERT(!m_pendingRules); return &m_universalRules; }
+    const WillBeHeapVector<RuleData>* shadowHostRules() const { ASSERT(!m_pendingRules); return &m_shadowHostRules; }
     const WillBeHeapVector<RawPtrWillBeMember<StyleRulePage> >& pageRules() const { ASSERT(!m_pendingRules); return m_pageRules; }
     const WillBeHeapVector<RawPtrWillBeMember<StyleRuleViewport> >& viewportRules() const { ASSERT(!m_pendingRules); return m_viewportRules; }
     const WillBeHeapVector<RawPtrWillBeMember<StyleRuleFontFace> >& fontFaceRules() const { return m_fontFaceRules; }
@@ -216,6 +217,7 @@ private:
     WillBeHeapVector<RuleData> m_cuePseudoRules;
     WillBeHeapVector<RuleData> m_focusPseudoClassRules;
     WillBeHeapVector<RuleData> m_universalRules;
+    WillBeHeapVector<RuleData> m_shadowHostRules;
     RuleFeatureSet m_features;
     WillBeHeapVector<RawPtrWillBeMember<StyleRulePage> > m_pageRules;
     WillBeHeapVector<RawPtrWillBeMember<StyleRuleViewport> > m_viewportRules;

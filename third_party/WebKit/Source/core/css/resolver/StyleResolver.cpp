@@ -378,7 +378,7 @@ void StyleResolver::matchAuthorRulesForShadowHost(Element* element, ElementRuleC
     CascadeOrder cascadeOrder = 0;
 
     for (int j = resolversInShadowTree.size() - 1; j >= 0; --j)
-        resolversInShadowTree.at(j)->collectMatchingAuthorRules(collector, includeEmptyRules, cascadeScope, cascadeOrder++);
+        resolversInShadowTree.at(j)->collectMatchingShadowHostRules(collector, includeEmptyRules, cascadeScope, cascadeOrder++);
 
     if (resolvers.isEmpty() || resolvers.first()->treeScope() != element->treeScope())
         ++cascadeScope;

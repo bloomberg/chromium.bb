@@ -170,6 +170,11 @@ void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest
     collectMatchingRulesForList(matchRequest.ruleSet->universalRules(), cascadeScope, cascadeOrder, matchRequest, ruleRange);
 }
 
+void ElementRuleCollector::collectMatchingShadowHostRules(const MatchRequest& matchRequest, RuleRange& ruleRange, CascadeScope cascadeScope, CascadeOrder cascadeOrder, bool matchingTreeBoundaryRules)
+{
+    collectMatchingRulesForList(matchRequest.ruleSet->shadowHostRules(), cascadeScope, cascadeOrder, matchRequest, ruleRange);
+}
+
 CSSRuleList* ElementRuleCollector::nestedRuleList(CSSRule* rule)
 {
     switch (rule->type()) {

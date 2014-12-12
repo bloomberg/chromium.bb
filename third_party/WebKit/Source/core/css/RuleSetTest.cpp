@@ -136,4 +136,78 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_DivWithContent)
     ASSERT_EQ(valueStr, rules->at(0).selector().value());
 }
 
+TEST(RuleSetTest, findBestRuleSetAndAdd_Host)
+{
+    CSSTestHelper helper;
+
+    helper.addCSSRules(":host { }");
+    RuleSet& ruleSet = helper.ruleSet();
+    const Vector<RuleData>* rules = ruleSet.shadowHostRules();
+    ASSERT_EQ(1u, rules->size());
+}
+
+TEST(RuleSetTest, findBestRuleSetAndAdd_HostWithId)
+{
+    CSSTestHelper helper;
+
+    helper.addCSSRules(":host(#x) { }");
+    RuleSet& ruleSet = helper.ruleSet();
+    const Vector<RuleData>* rules = ruleSet.shadowHostRules();
+    ASSERT_EQ(1u, rules->size());
+}
+
+TEST(RuleSetTest, findBestRuleSetAndAdd_HostContext)
+{
+    CSSTestHelper helper;
+
+    helper.addCSSRules(":host-context(*) { }");
+    RuleSet& ruleSet = helper.ruleSet();
+    const Vector<RuleData>* rules = ruleSet.shadowHostRules();
+    ASSERT_EQ(1u, rules->size());
+}
+
+TEST(RuleSetTest, findBestRuleSetAndAdd_HostContextWithId)
+{
+    CSSTestHelper helper;
+
+    helper.addCSSRules(":host-context(#x) { }");
+    RuleSet& ruleSet = helper.ruleSet();
+    const Vector<RuleData>* rules = ruleSet.shadowHostRules();
+    ASSERT_EQ(1u, rules->size());
+}
+
+TEST(RuleSetTest, findBestRuleSetAndAdd_HostAndHostContextNotInRightmost)
+{
+    CSSTestHelper helper;
+
+    helper.addCSSRules(":host-context(#x) .y, :host(.a) > #b  { }");
+    RuleSet& ruleSet = helper.ruleSet();
+    const Vector<RuleData>* shadowRules = ruleSet.shadowHostRules();
+    const TerminatedArray<RuleData>* idRules = ruleSet.idRules("b");
+    const TerminatedArray<RuleData>* classRules = ruleSet.classRules("y");
+    ASSERT_EQ(0u, shadowRules->size());
+    ASSERT_EQ(1u, idRules->size());
+    ASSERT_EQ(1u, classRules->size());
+}
+
+TEST(RuleSetTest, findBestRuleSetAndAdd_HostAndClass)
+{
+    CSSTestHelper helper;
+
+    helper.addCSSRules(".foo:host { }");
+    RuleSet& ruleSet = helper.ruleSet();
+    const Vector<RuleData>* rules = ruleSet.shadowHostRules();
+    ASSERT_EQ(0u, rules->size());
+}
+
+TEST(RuleSetTest, findBestRuleSetAndAdd_HostContextAndClass)
+{
+    CSSTestHelper helper;
+
+    helper.addCSSRules(".foo:host-context(*) { }");
+    RuleSet& ruleSet = helper.ruleSet();
+    const Vector<RuleData>* rules = ruleSet.shadowHostRules();
+    ASSERT_EQ(0u, rules->size());
+}
+
 } // namespace blink
