@@ -14,8 +14,10 @@ namespace net {
 
 class SSLCertRequestInfo;
 
-// The caller is expected to keep the ClientCertStore alive until the callback
-// supplied to GetClientCerts has been run.
+// A handle to a client certificate store to query matching certificates when a
+// server requests client auth. Note that there may be multiple ClientCertStore
+// objects corresponding to the same platform certificate store; each request
+// gets its own uniquely owned handle.
 class NET_EXPORT ClientCertStore {
  public:
   virtual ~ClientCertStore() {}
@@ -23,8 +25,8 @@ class NET_EXPORT ClientCertStore {
   // Get client certs matching the |cert_request_info|. On completion, the
   // results will be stored in |selected_certs| and the |callback| will be run.
   // The |callback| may be called sychronously. The caller must ensure the
-  // ClientCertStore and the |selected_certs| object remain alive until the
-  // callback has been run.
+  // ClientCertStore, |cert_request_info|, and |selected_certs| remain alive
+  // until the callback has been run.
   virtual void GetClientCerts(const SSLCertRequestInfo& cert_request_info,
                               CertificateList* selected_certs,
                               const base::Closure& callback) = 0;
