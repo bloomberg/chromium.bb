@@ -197,10 +197,11 @@ void LocalFrame::createView(const IntSize& viewportSize, const Color& background
 
 LocalFrame::~LocalFrame()
 {
-#if ENABLE(OILPAN)
     // Verify that the FrameView has been cleared as part of detaching
     // the frame owner.
     ASSERT(!m_view);
+
+#if !ENABLE(OILPAN)
     // Oilpan: see setDOMWindow() comment why it is acceptable not to
     // mirror the non-Oilpan call below.
     //
@@ -208,11 +209,6 @@ LocalFrame::~LocalFrame()
     // frame object keep weak references to the frame; those will be
     // automatically cleared by the garbage collector. Hence, explicit
     // frameDestroyed() notifications aren't needed.
-#else
-    // FIXME: follow Oilpan and clear the FrameView and FrameLoader
-    // during FrameOwner detachment instead, see LocalFrame::disconnectOwnerElement().
-    setView(nullptr);
-    m_loader.clear();
     setDOMWindow(nullptr);
 
     for (const auto& frameDestructionObserver : m_destructionObservers)
@@ -275,12 +271,10 @@ void LocalFrame::detach()
     willDetachFrameHost();
     InspectorInstrumentation::frameDetachedFromParent(this);
     Frame::detach();
-#if ENABLE(OILPAN)
     // Clear the FrameLoader right here rather than during
     // finalization. Too late to access various heap objects at that
     // stage.
-    loader().clear();
-#endif
+    m_loader.clear();
 }
 
 SecurityContext* LocalFrame::securityContext() const
