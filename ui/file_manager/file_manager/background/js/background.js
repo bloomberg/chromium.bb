@@ -86,7 +86,9 @@ function FileBrowserBackground() {
    * @type {!importer.MediaImportHandler}
    */
   this.mediaImportHandler =
-      new importer.MediaImportHandler(this.fileOperationManager);
+      new importer.MediaImportHandler(
+          this.fileOperationManager,
+          new importer.DefaultMediaScanner());
 
   /**
    * Promise of string data.

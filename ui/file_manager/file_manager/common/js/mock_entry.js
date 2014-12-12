@@ -176,7 +176,7 @@ MockEntry.prototype.clone = function(fullpath) {
  */
 function MockFileEntry(filesystem, fullPath, metadata) {
   MockEntry.call(this, filesystem, fullPath);
-  this.metadata_ = metadata;
+  this.metadata = metadata;
   this.isFile = true;
   this.isDirectory = false;
 }
@@ -187,14 +187,16 @@ MockFileEntry.prototype = {
 
 /**
  * Obtains metadata of the entry.
- * @param {function(Object)} callback Function to take the metadata.
+ *
+ * @param {function(!Metadata)} onSuccess Function to take the metadata.
+ * @param {function(Error)} onError
  */
 MockFileEntry.prototype.getMetadata = function(onSuccess, onError) {
   new Promise(function(fulfill, reject) {
     if (this.filesystem && !this.filesystem.entries[this.fullPath])
       reject(new DOMError('NotFoundError'));
     else
-      onSuccess(this.metadata_);
+      onSuccess(this.metadata);
   }.bind(this)).then(onSuccess, onError);
 };
 

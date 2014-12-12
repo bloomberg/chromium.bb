@@ -3,27 +3,68 @@
 // found in the LICENSE file.
 
 /**
- * A fake media scanner for testing.
+ * importer.MediaScanner and importer.ScanResult test double.
+ *
  * @constructor
  * @struct
+ * @implements {importer.MediaScanner}
+ * @implements {importer.ScanResult}
  */
-function MockMediaScanner() {
-  /** @private {!Array<!FileEntry>} */
-  this.results_ = [];
+function TestMediaScanner() {
+  /**
+   * List of file entries found while scanning.
+   * @type {!Array.<!FileEntry>}
+   */
+  this.fileEntries = [];
+
+  /** @type {number} */
+  this.totalBytes = 100;
+
+  /** @type {number} */
+  this.scanDuration = 100;
+
+  /** @type {!Promise.<!importer.ScanResult>} */
+  this.whenFinished;
 }
 
-/**
- * Returns scan "results".
- * @return {!Promise<!Array<!FileEntry>>}
- */
-MockMediaScanner.prototype.scan = function(entries) {
-  return Promise.resolve(this.results_);
+/** @override */
+TestMediaScanner.prototype.scan = function(entries) {
+  var result = new TestScanResult(this);
+  this.whenFinished = Promise.resolve(result);
+  return result;
 };
 
 /**
- * Sets the entries that the scanner will return.
- * @param {!Array<!FileEntry>} entries
+ * importer.MediaScanner and importer.ScanResult test double.
+ *
+ * @constructor
+ * @struct
+ * @implements {importer.MediaScanner}
+ * @implements {importer.ScanResult}
+ *
+ * @param {!TestMediaScanner} scanner
  */
-MockMediaScanner.prototype.setScanResults = function(entries) {
-  this.results_ = entries;
+function TestScanResult(scanner) {
+  /** @private {!TestMediaScanner} */
+  this.scanner_ = scanner;
+}
+
+/** @override */
+TestScanResult.prototype.getFileEntries = function() {
+  return this.scanner_.fileEntries;
+};
+
+/** @override */
+TestScanResult.prototype.getTotalBytes = function() {
+  return this.scanner_.totalBytes;
+};
+
+/** @override */
+TestScanResult.prototype.getScanDurationMs = function() {
+  return this.scanner_.scanDuration;
+};
+
+/** @override */
+TestScanResult.prototype.whenFinished = function() {
+  return this.scanner_.whenFinished;
 };

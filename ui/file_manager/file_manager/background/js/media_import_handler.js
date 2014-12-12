@@ -7,17 +7,25 @@ var importer = importer || {};
 
 /**
  * Handler for importing media from removable devices into the user's Drive.
- * @param {!FileOperationManager} fileOperationManager
- * @param {!MediaScanner=} opt_scanner
+ *
  * @constructor
  * @struct
+ *
+ * @param {!FileOperationManager} fileOperationManager
+ * @param {!importer.MediaScanner} scanner
  */
-importer.MediaImportHandler = function(fileOperationManager, opt_scanner) {
+importer.MediaImportHandler = function(fileOperationManager, scanner) {
   /** @private {!FileOperationManager} */
   this.fileOperationManager_ = fileOperationManager;
 
-  /** @private {!MediaScanner} */
-  this.scanner_ = opt_scanner || new MediaScanner();
+  /** @private {!importer.MediaScanner} */
+  this.scanner_ = scanner;
+
+  /**
+   * If there is an active scan, this field will be set to a non-null value.
+   * @type {?importer.ScanResult}
+   */
+  this.activeScanResult_ = null;
 };
 
 /**
@@ -35,11 +43,20 @@ importer.MediaImportHandler.DestinationFactory;
  */
 importer.MediaImportHandler.prototype.importMedia =
     function(source, opt_destination) {
+
+  var scanResult = this.scanner_.scan([source]);
+  this.activeScanResult_ = scanResult;
+  scanResult.whenFinished()
+      .then(
+          function() {
+            this.activeScanResult_ = null;
+          }.bind(this));
+
   var destination = opt_destination ||
       importer.MediaImportHandler.defaultDestination.getImportDestination;
   return new importer.MediaImportHandler.ImportTask(
       this.fileOperationManager_,
-      this.scanner_,
+      scanResult,
       source,
       destination);
 };
@@ -53,21 +70,19 @@ importer.MediaImportHandler.prototype.importMedia =
  * FileOperationManager, but instead actually performs the copy using the
  * fileManagerPrivate API directly.
  *
+ * @constructor
+ * @struct
+ *
  * @param {!FileOperationManager} fileOperationManager
- * @param {!MediaScanner} mediaScanner
+ * @param {!importer.ScanResult} scanResult
  * @param {!DirectoryEntry} source Source dir containing media for import.
  * @param {!importer.MediaImportHandler.DestinationFactory} destination A
  *     function that returns the directory into which media will be imported.
- * @constructor
- * @struct
  */
 importer.MediaImportHandler.ImportTask =
-    function(fileOperationManager, mediaScanner, source, destination) {
+    function(fileOperationManager, scanResult, source, destination) {
   /** @private {!DirectoryEntry} */
   this.source_ = source;
-
-  /** @private {!MediaScanner} */
-  this.scanner_ = mediaScanner;
 
   // Call fileOperationManager.requestTaskCancel to cancel this task.
   // TODO(kenobi): Add task cancellation.
@@ -75,16 +90,17 @@ importer.MediaImportHandler.ImportTask =
 
   Promise.all([
     destination(),
-    this.scanner_.scan([source])
+    scanResult.whenFinished()
   ]).then(
       function(args) {
         /** @type {!DirectoryEntry} */
         var destinationDir = args[0];
-        /** @type {!Array<!FileEntry>} */
-        var media = args[1];
+
+        /** @type {!importer.ScanResult} */
+        var scanResult = args[1];
 
         fileOperationManager.paste(
-            media,
+            scanResult.getFileEntries(),
             destinationDir,
             /* isMove */ false,
             /* opt_taskId */ this.taskId_);

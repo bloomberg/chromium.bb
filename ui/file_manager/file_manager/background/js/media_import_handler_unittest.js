@@ -8,7 +8,7 @@
 var fileOperationManager;
 
 /**
- * @type {!MockMediaScanner}
+ * @type {!TestMediaScanner}
  */
 var mediaScanner;
 
@@ -31,8 +31,6 @@ function setUp() {
 
   fileOperationManager = new MockFileOperationManager();
 
-  mediaScanner = new MockMediaScanner();
-
   var volumeManager = new MockVolumeManager();
   drive = volumeManager.getCurrentProfileVolumeInfo(
       VolumeManagerCommon.VolumeType.DRIVE);
@@ -44,11 +42,13 @@ function setUp() {
 
   MockVolumeManager.installMockSingleton(volumeManager);
 
-  mediaImporter =
-      new importer.MediaImportHandler(fileOperationManager, mediaScanner);
+  mediaScanner = new TestMediaScanner();
+  mediaImporter = new importer.MediaImportHandler(
+      fileOperationManager,
+      mediaScanner);
 }
 
-function testImportFrom(callback) {
+function testImportMedia(callback) {
   // Set up a filesystem with some files.
   var fileSystem = new MockFileSystem('fake-media-volume');
   var filenames = [
@@ -68,10 +68,11 @@ function testImportFrom(callback) {
   var media = filenames.map(function(filename) {
     return fileSystem.entries[filename];
   });
-  mediaScanner.setScanResults(media);
+  mediaScanner.fileEntries = media;
 
   // Verify the results when the import operation is kicked off.
   reportPromise(
+      // Looks like we're using a "paste" operation to copy imported files.
       fileOperationManager.whenPasteCalled().then(
           function(args) {
             // Verify that the task ID is correct.
@@ -79,31 +80,11 @@ function testImportFrom(callback) {
             // Verify that we're copying, not moving, files.
             assertFalse(args.isMove);
             // Verify that the sources are correct.
-            assertEntryListEquals(media, args.sourceEntries);
+            assertFileEntryListEquals(media, args.sourceEntries);
             // Verify that the destination is correct.
             assertEquals(destinationFileSystem.root, args.targetEntry);
           }),
       callback);
   // Kick off an import
   var importTask = mediaImporter.importMedia(fileSystem.root, destination);
-}
-
-/**
- * Asserts that two lists contain the same set of Entries.  Entries are deemed
- * to be the same if they point to the same full path.
- */
-function assertEntryListEquals(list0, list1) {
-  assertEquals(list0.length, list1.length);
-
-  /** @param {!FileEntry} entry */
-  var entryToPath = function(entry) { return entry.fullPath; };
-
-  var paths0 = list0.map(entryToPath);
-  var paths1 = list1.map(entryToPath);
-  paths0.sort();
-  paths1.sort();
-
-  paths0.forEach(function(path, index) {
-    assertEquals(path, paths1[index]);
-  });
 }

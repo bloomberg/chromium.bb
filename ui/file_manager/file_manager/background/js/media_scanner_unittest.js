@@ -15,13 +15,13 @@ var timeoutCallbacks;
 
 
 /**
- * @type {!MediaScanner}
+ * @type {!importer.DefaultMediaScanner}
  */
 var scanner;
 
 // Set up the test components.
 function setUp() {
-  scanner = new MediaScanner();
+  scanner = new importer.DefaultMediaScanner();
 }
 
 /**
@@ -29,7 +29,7 @@ function setUp() {
  * @param {string} directoryName Name of the test directory to create.  Must be
  *     unique within this test suite.
  */
-function makeTestFilesystemRoot(directoryName) {
+function makeTestFileSystemRoot(directoryName) {
   function makeTestFilesystem() {
     return new Promise(function(resolve, reject) {
       window.webkitRequestFileSystem(
@@ -83,11 +83,33 @@ function populateDir(filenames, dir) {
 /**
  * Verifies that scanning an empty filesystem produces an empty list.
  */
-function testEmptyList(callback) {
+function testEmptySourceList() {
+  assertThrows(
+    function() {
+      scanner.scan([]);
+    });
+}
+
+/**
+ * Verifies that scanning a simple single-level directory structure works.
+ */
+function testEmptyScanResults(callback) {
+  var filenames = [
+    'happy',
+    'thoughts'
+  ];
   reportPromise(
-      scanner.scan([]).then(function(files) {
-        assertEquals(0, files.length);
-      }),
+      makeTestFileSystemRoot('testEmptyScanResults')
+          .then(populateDir.bind(null, filenames))
+          .then(
+              /**
+               * Scans the directory.
+               * @param {!DirectoryEntry} root
+               */
+              function(root) {
+                return scanner.scan([root]).whenFinished();
+              })
+          .then(assertResults.bind(null, [])),
       callback);
 }
 
@@ -96,20 +118,20 @@ function testEmptyList(callback) {
  */
 function testSingleLevel(callback) {
   var filenames = [
-      'foo',
-      'foo.jpg',
-      'bar.gif',
-      'baz.avi',
-      'foo.mp3',
-      'bar.txt'
+    'foo',
+    'foo.jpg',
+    'bar.gif',
+    'baz.avi',
+    'foo.mp3',
+    'bar.txt'
   ];
   var expectedFiles = [
-      '/testSingleLevel/foo.jpg',
-      '/testSingleLevel/bar.gif',
-      '/testSingleLevel/baz.avi'
+    '/testSingleLevel/foo.jpg',
+    '/testSingleLevel/bar.gif',
+    '/testSingleLevel/baz.avi'
   ];
   reportPromise(
-      makeTestFilesystemRoot('testSingleLevel')
+      makeTestFileSystemRoot('testSingleLevel')
           .then(populateDir.bind(null, filenames))
           .then(
               /**
@@ -117,51 +139,38 @@ function testSingleLevel(callback) {
                * @param {!DirectoryEntry} root
                */
               function(root) {
-                return scanner.scan([root]);
+                return scanner.scan([root]).whenFinished();
               })
-          .then(
-              /**
-               * Verifies the results of the media scan.
-               * @param {!Array.<!FileEntry>} scanResults
-               */
-              function(scanResults) {
-                assertEquals(expectedFiles.length, scanResults.length);
-                scanResults.forEach(function(result) {
-                  // Verify that the scanner only returns files.
-                  assertTrue(result.isFile, result.fullPath + ' is not a file');
-                  assertTrue(expectedFiles.indexOf(result.fullPath) != -1,
-                      result.fullPath + ' not found in control set');
-                });
-              }),
-          callback);
+          .then(assertResults.bind(null, expectedFiles)),
+      callback);
 }
 
 function testMultiLevel(callback) {
   var filenames = [
-      'foo.jpg',
-      'bar',
+    'foo.jpg',
+    'bar',
+    [
+      'foo.0',
+      'bar.0.jpg'
+    ],
+    [
+      'foo.1',
+      'bar.1.gif',
       [
-          'foo.0',
-          'bar.0.jpg'
-      ],
-      [
-          'foo.1',
-          'bar.1.gif',
-          [
-              'foo.1.0',
-              'bar.1.0.avi'
-          ]
+        'foo.1.0',
+        'bar.1.0.avi'
       ]
+    ]
   ];
   var expectedFiles = [
-      '/testMultiLevel/foo.jpg',
-      '/testMultiLevel/foo.0/bar.0.jpg',
-      '/testMultiLevel/foo.1/bar.1.gif',
-      '/testMultiLevel/foo.1/foo.1.0/bar.1.0.avi'
+    '/testMultiLevel/foo.jpg',
+    '/testMultiLevel/foo.0/bar.0.jpg',
+    '/testMultiLevel/foo.1/bar.1.gif',
+    '/testMultiLevel/foo.1/foo.1.0/bar.1.0.avi'
   ];
 
   reportPromise(
-      makeTestFilesystemRoot('testMultiLevel')
+      makeTestFileSystemRoot('testMultiLevel')
           .then(populateDir.bind(null, filenames))
           .then(
               /**
@@ -169,43 +178,30 @@ function testMultiLevel(callback) {
                * @param {!DirectoryEntry} root
                */
               function(root) {
-                return scanner.scan([root]);
+                return scanner.scan([root]).whenFinished();
               })
-          .then(
-              /**
-               * Verifies the results of the media scan.
-               * @param {!Array.<!FileEntry>} scanResults
-               */
-              function(scanResults) {
-                assertEquals(expectedFiles.length, scanResults.length);
-                scanResults.forEach(function(result) {
-                  // Verify that the scanner only returns files.
-                  assertTrue(result.isFile, result.fullPath + ' is not a file');
-                  assertTrue(expectedFiles.indexOf(result.fullPath) != -1,
-                      result.fullPath + ' not found in control set');
-                });
-              }),
+          .then(assertResults.bind(null, expectedFiles)),
       callback);
 }
 
 function testMultipleDirectories(callback) {
   var filenames = [
-      'foo',
-      'bar',
-      [
-          'foo.0',
-          'bar.0.jpg'
-      ],
-      [
-          'foo.1',
-          'bar.1.jpg',
-      ]
+    'foo',
+    'bar',
+    [
+      'foo.0',
+      'bar.0.jpg'
+    ],
+    [
+      'foo.1',
+      'bar.1.jpg',
+    ]
   ];
   // Expected file paths from the scan.  We're scanning the two subdirectories
   // only.
   var expectedFiles = [
-      '/testMultipleDirectories/foo.0/bar.0.jpg',
-      '/testMultipleDirectories/foo.1/bar.1.jpg'
+    '/testMultipleDirectories/foo.0/bar.0.jpg',
+    '/testMultipleDirectories/foo.1/bar.1.jpg'
   ];
 
   var getDirectory = function(root, dirname) {
@@ -216,7 +212,7 @@ function testMultipleDirectories(callback) {
   };
 
   reportPromise(
-      makeTestFilesystemRoot('testMultipleDirectories')
+      makeTestFileSystemRoot('testMultipleDirectories')
           .then(populateDir.bind(null, filenames))
           .then(
               /**
@@ -227,22 +223,19 @@ function testMultipleDirectories(callback) {
                 return Promise.all(['foo.0', 'foo.1'].map(
                     getDirectory.bind(null, root))).then(
                         function(directories) {
-                          return scanner.scan(directories);
+                          return scanner.scan(directories).whenFinished();
                         });
               })
-          .then(
-              /**
-               * Verifies the results of the media scan.
-               * @param {!Array.<!FileEntry>} scanResults
-               */
-              function(scanResults) {
-                assertEquals(expectedFiles.length, scanResults.length);
-                scanResults.forEach(function(result) {
-                  // Verify that the scanner only returns files.
-                  assertTrue(result.isFile, result.fullPath + ' is not a file');
-                  assertTrue(expectedFiles.indexOf(result.fullPath) != -1,
-                      result.fullPath + ' not found in control set');
-                });
-              }),
+          .then(assertResults.bind(null, expectedFiles)),
       callback);
+}
+
+/**
+ * Verifies the results of the media scan are as expected.
+ * @param {!impoter.ScanResults} results
+ */
+function assertResults(expected, results) {
+  assertFileEntryPathsEqual(expected, results.getFileEntries());
+  assertTrue(results.getScanDurationMs() > 0);
+  // TODO(smckay): Add coverage for getTotalBytes.
 }

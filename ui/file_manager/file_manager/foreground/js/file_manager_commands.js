@@ -1040,11 +1040,10 @@ CommandHandler.COMMANDS_['cloud-import'] = /** @type {Command} */ ({
    */
   execute: function(event, fileManager) {
     metrics.recordEnum('CloudImport.UserAction', 'IMPORT_INITIATED');
-    var currentDirectory = fileManager.getCurrentDirectoryEntry();
-    if (currentDirectory !== null) {
-      var importer = fileManager.mediaImportHandler;
-      importer.importMedia(currentDirectory);
-    }
+    var importer = fileManager.mediaImportHandler;
+    importer.importMedia(
+        /** @type {!DirectoryEntry} */ (
+            fileManager.getCurrentDirectoryEntry()));
   },
   /**
    * @param {!Event} event Command event.
