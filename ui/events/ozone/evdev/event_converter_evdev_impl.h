@@ -7,6 +7,7 @@
 
 #include "base/files/file_path.h"
 #include "base/message_loop/message_pump_libevent.h"
+#include "ui/events/devices/input_device.h"
 #include "ui/events/event.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
@@ -25,6 +26,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
   EventConverterEvdevImpl(int fd,
                           base::FilePath path,
                           int id,
+                          InputDeviceType type,
                           EventModifiersEvdev* modifiers,
                           MouseButtonMapEvdev* button_map,
                           CursorDelegateEvdev* cursor,

@@ -16,11 +16,12 @@ TabletEventConverterEvdev::TabletEventConverterEvdev(
     int fd,
     base::FilePath path,
     int id,
+    InputDeviceType type,
     EventModifiersEvdev* modifiers,
     CursorDelegateEvdev* cursor,
     const EventDeviceInfo& info,
     const EventDispatchCallback& callback)
-    : EventConverterEvdev(fd, path, id),
+    : EventConverterEvdev(fd, path, id, type),
       cursor_(cursor),
       modifiers_(modifiers),
       callback_(callback),

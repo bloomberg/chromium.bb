@@ -82,6 +82,7 @@ MockTouchEventConverterEvdev::MockTouchEventConverterEvdev(int fd,
           fd,
           path,
           1,
+          INPUT_DEVICE_UNKNOWN,
           base::Bind(&MockTouchEventConverterEvdev::DispatchCallback,
                      base::Unretained(this))) {
   pressure_min_ = 30;

@@ -28,8 +28,9 @@ std::string FormatLog(const char* fmt, va_list args) {
 EventReaderLibevdevCros::EventReaderLibevdevCros(int fd,
                                                  const base::FilePath& path,
                                                  int id,
+                                                 InputDeviceType type,
                                                  scoped_ptr<Delegate> delegate)
-    : EventConverterEvdev(fd, path, id), delegate_(delegate.Pass()) {
+    : EventConverterEvdev(fd, path, id, type), delegate_(delegate.Pass()) {
   memset(&evdev_, 0, sizeof(evdev_));
   evdev_.log = OnLogMessage;
   evdev_.log_udata = this;

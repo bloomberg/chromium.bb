@@ -108,6 +108,7 @@ MockTabletEventConverterEvdev::MockTabletEventConverterEvdev(
           fd,
           path,
           1,
+          INPUT_DEVICE_UNKNOWN,
           modifiers,
           cursor,
           EventDeviceInfo(),

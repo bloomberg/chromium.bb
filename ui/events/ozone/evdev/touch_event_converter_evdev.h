@@ -28,13 +28,13 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   TouchEventConverterEvdev(int fd,
                            base::FilePath path,
                            int id,
+                           InputDeviceType type,
                            const EventDispatchCallback& dispatch);
   ~TouchEventConverterEvdev() override;
 
   // EventConverterEvdev:
   bool HasTouchscreen() const override;
   gfx::Size GetTouchscreenSize() const override;
-  bool IsInternal() const override;
 
   // Unsafe part of initialization.
   virtual void Initialize(const EventDeviceInfo& info);
@@ -102,8 +102,6 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
 
   // In-progress touch points.
   InProgressEvents events_[MAX_FINGERS];
-
-  bool is_internal_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchEventConverterEvdev);
 };

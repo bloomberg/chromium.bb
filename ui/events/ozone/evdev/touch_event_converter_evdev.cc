@@ -74,13 +74,13 @@ TouchEventConverterEvdev::TouchEventConverterEvdev(
     int fd,
     base::FilePath path,
     int id,
+    InputDeviceType type,
     const EventDispatchCallback& callback)
-    : EventConverterEvdev(fd, path, id),
+    : EventConverterEvdev(fd, path, id, type),
       callback_(callback),
       syn_dropped_(false),
       is_type_a_(false),
-      current_slot_(0),
-      is_internal_(GetInputDeviceTypeFromPath(path) == INPUT_DEVICE_INTERNAL) {
+      current_slot_(0) {
 }
 
 TouchEventConverterEvdev::~TouchEventConverterEvdev() {
@@ -97,7 +97,7 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
   y_num_tuxels_ = info.GetAbsMaximum(ABS_MT_POSITION_Y) - y_min_tuxels_ + 1;
 
   // Apply --touch-calibration.
-  if (is_internal_) {
+  if (type() == INPUT_DEVICE_INTERNAL) {
     TouchCalibration cal = {};
     GetTouchCalibration(&cal);
     x_min_tuxels_ += cal.bezel_left;
@@ -142,10 +142,6 @@ bool TouchEventConverterEvdev::HasTouchscreen() const {
 
 gfx::Size TouchEventConverterEvdev::GetTouchscreenSize() const {
   return native_size_;
-}
-
-bool TouchEventConverterEvdev::IsInternal() const {
-  return is_internal_;
 }
 
 void TouchEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {

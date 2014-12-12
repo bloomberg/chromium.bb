@@ -13,6 +13,8 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "ui/events/devices/device_data_manager.h"
+#include "ui/events/devices/device_util_linux.h"
+#include "ui/events/devices/input_device.h"
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
@@ -74,6 +76,7 @@ bool UseGesturesLibraryForDevice(const EventDeviceInfo& devinfo) {
 scoped_ptr<EventConverterEvdev> CreateConverter(
     const OpenInputDeviceParams& params,
     int fd,
+    InputDeviceType type,
     const EventDeviceInfo& devinfo) {
 #if defined(USE_EVDEV_GESTURES)
   // Touchpad or mouse: use gestures library.
@@ -85,14 +88,14 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
             params.keyboard, params.gesture_property_provider,
             params.dispatch_callback));
     return make_scoped_ptr(new EventReaderLibevdevCros(
-          fd, params.path, params.id, gesture_interp.Pass()));
+        fd, params.path, params.id, type, gesture_interp.Pass()));
   }
 #endif
 
   // Touchscreen: use TouchEventConverterEvdev.
   if (devinfo.HasMTAbsXY()) {
     scoped_ptr<TouchEventConverterEvdev> converter(new TouchEventConverterEvdev(
-        fd, params.path, params.id, params.dispatch_callback));
+        fd, params.path, params.id, type, params.dispatch_callback));
     converter->Initialize(devinfo);
     return converter.Pass();
   }
@@ -100,13 +103,14 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
   // Graphics tablet
   if (devinfo.HasAbsXY())
     return make_scoped_ptr<EventConverterEvdev>(new TabletEventConverterEvdev(
-        fd, params.path, params.id, params.modifiers, params.cursor, devinfo,
-        params.dispatch_callback));
+        fd, params.path, params.id, type, params.modifiers, params.cursor,
+        devinfo, params.dispatch_callback));
 
   // Everything else: use EventConverterEvdevImpl.
   return make_scoped_ptr<EventConverterEvdevImpl>(new EventConverterEvdevImpl(
-      fd, params.path, params.id, params.modifiers, params.button_map,
-      params.cursor, params.keyboard, params.dispatch_callback));
+      fd, params.path, params.id, type, params.modifiers,
+      params.button_map, params.cursor, params.keyboard,
+      params.dispatch_callback));
 }
 
 // Open an input device. Opening may put the calling thread to sleep, and
@@ -142,8 +146,10 @@ void OpenInputDevice(scoped_ptr<OpenInputDeviceParams> params,
     return;
   }
 
+  InputDeviceType type = GetInputDeviceTypeFromPath(path);
+
   scoped_ptr<EventConverterEvdev> converter =
-      CreateConverter(*params, fd, devinfo);
+      CreateConverter(*params, fd, type, devinfo);
 
   // Reply with the constructed converter.
   reply_runner->PostTask(FROM_HERE,
@@ -318,13 +324,9 @@ void EventFactoryEvdev::NotifyHotplugEventObserver(
   std::vector<TouchscreenDevice> touchscreens;
   for (auto it = converters_.begin(); it != converters_.end(); ++it) {
     if (it->second->HasTouchscreen()) {
-      InputDeviceType device_type = InputDeviceType::INPUT_DEVICE_EXTERNAL;
-      if (it->second->IsInternal())
-        device_type = InputDeviceType::INPUT_DEVICE_INTERNAL;
-
       touchscreens.push_back(
           TouchscreenDevice(it->second->id(),
-                            device_type,
+                            it->second->type(),
                             std::string(), /* Device name */
                             it->second->GetTouchscreenSize()));
     }
