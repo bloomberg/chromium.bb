@@ -519,6 +519,7 @@
         'i18n/time_formatting_unittest.cc',
         'i18n/timezone_unittest.cc',
         'ios/device_util_unittest.mm',
+        'ios/weak_nsobject_unittest.mm',
         'json/json_parser_unittest.cc',
         'json/json_reader_unittest.cc',
         'json/json_value_converter_unittest.cc',

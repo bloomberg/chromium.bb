@@ -253,6 +253,8 @@
           'ios/ios_util.mm',
           'ios/scoped_critical_action.h',
           'ios/scoped_critical_action.mm',
+          'ios/weak_nsobject.h',
+          'ios/weak_nsobject.mm',
           'json/json_file_value_serializer.cc',
           'json/json_file_value_serializer.h',
           'json/json_parser.cc',
