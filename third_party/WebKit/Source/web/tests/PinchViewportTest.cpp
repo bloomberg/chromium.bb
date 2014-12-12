@@ -1240,7 +1240,10 @@ TEST_F(PinchViewportTest, TestChangingContentSizeAffectsScrollBounds)
     FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
     WebLayer* scrollLayer = frameView.layerForScrolling()->platformLayer();
 
-    frameView.setContentsSize(IntSize(1500, 2400));
+    webViewImpl()->mainFrame()->executeScript(WebScriptSource(
+        "var content = document.getElementById(\"content\");"
+        "content.style.width = \"1500px\";"
+        "content.style.height = \"2400px\";"));
     frameView.updateLayoutAndStyleForPainting();
 
     EXPECT_SIZE_EQ(IntSize(1500, 2400), IntSize(scrollLayer->bounds()));

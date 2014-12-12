@@ -646,8 +646,13 @@ private:
     static bool computeCompositedSelectionBounds(LocalFrame&, CompositedSelectionBound& start, CompositedSelectionBound& end);
     void updateCompositedSelectionBoundsIfNeeded();
 
-    bool hasCustomScrollbars() const;
-    bool shouldUseCustomScrollbars(Element*& customScrollbarElement, LocalFrame*& customScrollbarFrame);
+    // Returns true if the FrameView's own scrollbars overlay its content when visible.
+    bool hasOverlayScrollbars() const;
+
+    // Returns true if the frame should use custom scrollbars. If true, one of
+    // either |customScrollbarElement| or |customScrollbarFrame| will be set to
+    // the element or frame which owns the scrollbar with the other set to null.
+    bool shouldUseCustomScrollbars(Element*& customScrollbarElement, LocalFrame*& customScrollbarFrame) const;
 
     void updateScrollCorner();
 

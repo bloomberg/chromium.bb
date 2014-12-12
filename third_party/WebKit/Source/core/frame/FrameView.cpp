@@ -85,7 +85,6 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerDebugInfo.h"
 #include "platform/scroll/ScrollAnimator.h"
-#include "platform/scroll/ScrollbarTheme.h"
 #include "platform/text/TextStream.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/StdLibExtras.h"
@@ -473,7 +472,7 @@ void FrameView::setCanHaveScrollbars(bool canHaveScrollbars)
     setScrollbarModes(newHorizontalMode, newVerticalMode);
 }
 
-bool FrameView::shouldUseCustomScrollbars(Element*& customScrollbarElement, LocalFrame*& customScrollbarFrame)
+bool FrameView::shouldUseCustomScrollbars(Element*& customScrollbarElement, LocalFrame*& customScrollbarFrame) const
 {
     customScrollbarElement = 0;
     customScrollbarFrame = 0;
@@ -1745,22 +1744,17 @@ void FrameView::scrollbarExistenceDidChange()
     if (!frame().view())
         return;
 
-    // Note that simply having overlay scrollbars is not sufficient to be
-    // certain that scrollbars' presence does not impact layout. This should
-    // also check if custom scrollbars (as reported by shouldUseCustomScrollbars)
-    // are in use as well.
-    // http://crbug.com/269692
-    bool useOverlayScrollbars = ScrollbarTheme::theme()->usesOverlayScrollbars();
+    bool hasOverlayScrollbars = this->hasOverlayScrollbars();
 
     // FIXME: this call to layout() could be called within FrameView::layout(), but before performLayout(),
     // causing double-layout. See also crbug.com/429242.
-    if (!useOverlayScrollbars && needsLayout())
+    if (!hasOverlayScrollbars && needsLayout())
         layout();
 
     if (renderView() && renderView()->usesCompositing()) {
         renderView()->compositor()->frameViewScrollbarsExistenceDidChange();
 
-        if (!useOverlayScrollbars)
+        if (!hasOverlayScrollbars)
             renderView()->compositor()->frameViewDidChangeSize();
     }
 }
@@ -2469,23 +2463,6 @@ Color FrameView::documentBackgroundColor() const
         result = result.blend(bodyElement->renderer()->resolveColor(CSSPropertyBackgroundColor));
 
     return result;
-}
-
-bool FrameView::hasCustomScrollbars() const
-{
-    const ChildrenWidgetSet* viewChildren = children();
-    for (const RefPtrWillBeMember<Widget>& child : *viewChildren) {
-        Widget* widget = child.get();
-        if (widget->isFrameView()) {
-            if (toFrameView(widget)->hasCustomScrollbars())
-                return true;
-        } else if (widget->isScrollbar()) {
-            if (toScrollbar(widget)->isCustomScrollbar())
-                return true;
-        }
-    }
-
-    return false;
 }
 
 FrameView* FrameView::parentFrameView() const
@@ -3311,10 +3288,11 @@ void FrameView::windowResizerRectChanged()
     updateScrollbars(scrollOffsetDouble());
 }
 
-static bool useOverlayScrollbars()
+bool FrameView::hasOverlayScrollbars() const
 {
-    // FIXME: Need to detect the presence of CSS custom scrollbars, which are non-overlay regardless the ScrollbarTheme.
-    return ScrollbarTheme::theme()->usesOverlayScrollbars();
+
+    return (m_horizontalScrollbar && m_horizontalScrollbar->isOverlayScrollbar())
+        || (m_verticalScrollbar && m_verticalScrollbar->isOverlayScrollbar());
 }
 
 void FrameView::computeScrollbarExistence(bool& newHasHorizontalScrollbar, bool& newHasVerticalScrollbar, const IntSize& docSize, ComputeScrollbarExistenceOption option) const
@@ -3344,7 +3322,7 @@ void FrameView::computeScrollbarExistence(bool& newHasHorizontalScrollbar, bool&
     if (vScroll == ScrollbarAuto)
         newHasVerticalScrollbar = docSize.height() > visibleHeight();
 
-    if (useOverlayScrollbars())
+    if (hasOverlayScrollbars())
         return;
 
     IntSize fullVisibleSize = visibleContentRect(IncludeScrollbars).size();
@@ -3460,7 +3438,7 @@ bool FrameView::adjustScrollbarExistence(ComputeScrollbarExistenceOption option)
     if (m_scrollbarsSuppressed)
         return true;
 
-    if (!useOverlayScrollbars())
+    if (!hasOverlayScrollbars())
         contentsResized();
     scrollbarExistenceDidChange();
     return true;
@@ -3480,7 +3458,7 @@ void FrameView::updateScrollbars(const DoubleSize& desiredOffset)
     IntSize oldVisibleSize = visibleSize();
 
     bool scrollbarExistenceChanged = false;
-    int maxUpdateScrollbarsPass = useOverlayScrollbars() || m_scrollbarsSuppressed ? 1 : 3;
+    int maxUpdateScrollbarsPass = hasOverlayScrollbars() || m_scrollbarsSuppressed ? 1 : 3;
     for (int updateScrollbarsPass = 0; updateScrollbarsPass < maxUpdateScrollbarsPass; updateScrollbarsPass++) {
         if (!adjustScrollbarExistence(updateScrollbarsPass ? Incremental : FirstPass))
             break;
