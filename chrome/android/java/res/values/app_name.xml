@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2014 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- The application name.
+
+         The value of this string may be overridden in an APK by including a
+         string with the same name but a different value (e.g. "Chrome Shell").
+
+         Note: this must live in app_name.xml rather than
+         android_chrome_strings.grd so the string isn't copied into every
+         language (which makes it impossible to override the string from a
+         single strings.xml file). -->
+    <string name="app_name">Chromium</string>
+</resources>

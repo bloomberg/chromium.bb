@@ -93,10 +93,6 @@
   </translations>
   <release allow_pseudo="false" seq="1">
     <messages fallback_to_english="true">
-      <message name="IDS_APP_NAME" desc="The application name" translateable="false">
-        Chromium
-      </message>
-
       <!-- Generic strings -->
       <message name="IDS_OK" desc="Label for a confirm button. Used in multiple contexts. [CHAR-LIMIT=20]">
         OK
