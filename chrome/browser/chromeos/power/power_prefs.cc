@@ -26,9 +26,13 @@ namespace chromeos {
 
 PowerPrefs::PowerPrefs(PowerPolicyController* power_policy_controller)
     : power_policy_controller_(power_policy_controller),
-      profile_(NULL) {
+      profile_(NULL),
+      screen_is_locked_(false) {
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+                              content::NotificationService::AllSources());
+  notification_registrar_.Add(this,
+                              chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
                               content::NotificationService::AllSources());
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_SESSION_STARTED,
@@ -82,6 +86,12 @@ void PowerPrefs::Observe(int type,
         SetProfile(ProfileHelper::GetSigninProfile());
       break;
     }
+    case chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED:
+      // Update the policy in case different delays have been set for the lock
+      // screen.
+      screen_is_locked_ = *content::Details<bool>(details).ptr();
+      UpdatePowerPolicyFromPrefs();
+      break;
     case chrome::NOTIFICATION_SESSION_STARTED:
       // Update |profile_| when entering a session.
       SetProfile(ProfileManager::GetPrimaryUserProfile());
@@ -108,9 +118,11 @@ void PowerPrefs::UpdatePowerPolicyFromPrefs() {
   const PrefService* prefs = pref_change_registrar_->prefs();
   PowerPolicyController::PrefValues values;
   values.ac_screen_dim_delay_ms =
-      prefs->GetInteger(prefs::kPowerAcScreenDimDelayMs);
+      prefs->GetInteger(screen_is_locked_ ? prefs::kPowerLockScreenDimDelayMs :
+          prefs::kPowerAcScreenDimDelayMs);
   values.ac_screen_off_delay_ms =
-      prefs->GetInteger(prefs::kPowerAcScreenOffDelayMs);
+      prefs->GetInteger(screen_is_locked_ ? prefs::kPowerLockScreenOffDelayMs :
+          prefs::kPowerAcScreenOffDelayMs);
   values.ac_screen_lock_delay_ms =
       prefs->GetInteger(prefs::kPowerAcScreenLockDelayMs);
   values.ac_idle_warning_delay_ms =
@@ -118,9 +130,11 @@ void PowerPrefs::UpdatePowerPolicyFromPrefs() {
   values.ac_idle_delay_ms =
       prefs->GetInteger(prefs::kPowerAcIdleDelayMs);
   values.battery_screen_dim_delay_ms =
-      prefs->GetInteger(prefs::kPowerBatteryScreenDimDelayMs);
+      prefs->GetInteger(screen_is_locked_ ? prefs::kPowerLockScreenDimDelayMs :
+          prefs::kPowerBatteryScreenDimDelayMs);
   values.battery_screen_off_delay_ms =
-      prefs->GetInteger(prefs::kPowerBatteryScreenOffDelayMs);
+      prefs->GetInteger(screen_is_locked_ ? prefs::kPowerLockScreenOffDelayMs :
+          prefs::kPowerBatteryScreenOffDelayMs);
   values.battery_screen_lock_delay_ms =
       prefs->GetInteger(prefs::kPowerBatteryScreenLockDelayMs);
   values.battery_idle_warning_delay_ms =
@@ -195,6 +209,14 @@ void PowerPrefs::RegisterProfilePrefs(
       600000,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(
+      prefs::kPowerLockScreenDimDelayMs,
+      30000,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kPowerLockScreenOffDelayMs,
+      40000,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(
       prefs::kPowerAcIdleAction,
       PowerPolicyController::ACTION_SUSPEND,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
@@ -261,6 +283,10 @@ void PowerPrefs::SetProfile(Profile* profile) {
   pref_change_registrar_->Add(prefs::kPowerBatteryIdleWarningDelayMs,
                               update_callback);
   pref_change_registrar_->Add(prefs::kPowerBatteryIdleDelayMs, update_callback);
+  pref_change_registrar_->Add(prefs::kPowerLockScreenDimDelayMs,
+                              update_callback);
+  pref_change_registrar_->Add(prefs::kPowerLockScreenOffDelayMs,
+                              update_callback);
   pref_change_registrar_->Add(prefs::kPowerAcIdleAction, update_callback);
   pref_change_registrar_->Add(prefs::kPowerBatteryIdleAction, update_callback);
   pref_change_registrar_->Add(prefs::kPowerLidClosedAction, update_callback);

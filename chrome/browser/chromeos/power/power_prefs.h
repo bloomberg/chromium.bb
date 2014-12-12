@@ -60,6 +60,9 @@ class PowerPrefs : public content::NotificationObserver {
   Profile* profile_;  // Not owned.
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
+  // True while the screen is locked (but not while the login screen is shown).
+  bool screen_is_locked_;
+
   DISALLOW_COPY_AND_ASSIGN(PowerPrefs);
 };
 

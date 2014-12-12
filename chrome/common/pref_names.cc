@@ -715,6 +715,11 @@ const char kPowerBatteryIdleWarningDelayMs[] =
 const char kPowerBatteryIdleDelayMs[] =
     "power.battery_idle_delay_ms";
 
+// Inactivity delays used to dim the screen or turn it off while the screen is
+// locked.
+const char kPowerLockScreenDimDelayMs[] = "power.lock_screen_dim_delay_ms";
+const char kPowerLockScreenOffDelayMs[] = "power.lock_screen_off_delay_ms";
+
 // Action that should be performed when the idle delay is reached while the
 // system is on AC power or battery power.
 // Values are from the chromeos::PowerPolicyController::Action enum.

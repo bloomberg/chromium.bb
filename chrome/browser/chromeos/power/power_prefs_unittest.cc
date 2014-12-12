@@ -38,6 +38,13 @@ namespace chromeos {
 
 class PowerPrefsTest : public testing::Test {
  protected:
+  // Screen lock state that determines which delays are used by
+  // GetExpectedPowerPolicyForProfile().
+  enum ScreenLockState {
+    LOCKED,
+    UNLOCKED,
+  };
+
   PowerPrefsTest();
 
   // testing::Test:
@@ -46,7 +53,9 @@ class PowerPrefsTest : public testing::Test {
 
   const Profile* GetProfile() const;
 
-  std::string GetExpectedPowerPolicyForProfile(Profile* profile) const;
+  std::string GetExpectedPowerPolicyForProfile(
+      Profile* profile,
+      ScreenLockState screen_lock_state) const;
   std::string GetCurrentPowerPolicy() const;
   bool GetExpectedAllowScreenWakeLocksForProfile(Profile* profile) const;
   bool GetCurrentAllowScreenWakeLocks() const;
@@ -92,23 +101,28 @@ const Profile* PowerPrefsTest::GetProfile() const {
 }
 
 std::string PowerPrefsTest::GetExpectedPowerPolicyForProfile(
-    Profile* profile) const {
+    Profile* profile,
+    ScreenLockState screen_lock_state) const {
   const PrefService* prefs = profile->GetPrefs();
   power_manager::PowerManagementPolicy expected_policy;
-  expected_policy.mutable_ac_delays()->set_screen_dim_ms(
-      prefs->GetInteger(prefs::kPowerAcScreenDimDelayMs));
-  expected_policy.mutable_ac_delays()->set_screen_off_ms(
-      prefs->GetInteger(prefs::kPowerAcScreenOffDelayMs));
+  expected_policy.mutable_ac_delays()->set_screen_dim_ms(prefs->GetInteger(
+      screen_lock_state == LOCKED ? prefs::kPowerLockScreenDimDelayMs
+                                  : prefs::kPowerAcScreenDimDelayMs));
+  expected_policy.mutable_ac_delays()->set_screen_off_ms(prefs->GetInteger(
+      screen_lock_state == LOCKED ? prefs::kPowerLockScreenOffDelayMs
+                                  : prefs::kPowerAcScreenOffDelayMs));
   expected_policy.mutable_ac_delays()->set_screen_lock_ms(
       prefs->GetInteger(prefs::kPowerAcScreenLockDelayMs));
   expected_policy.mutable_ac_delays()->set_idle_warning_ms(
       prefs->GetInteger(prefs::kPowerAcIdleWarningDelayMs));
   expected_policy.mutable_ac_delays()->set_idle_ms(
       prefs->GetInteger(prefs::kPowerAcIdleDelayMs));
-  expected_policy.mutable_battery_delays()->set_screen_dim_ms(
-      prefs->GetInteger(prefs::kPowerBatteryScreenDimDelayMs));
-  expected_policy.mutable_battery_delays()->set_screen_off_ms(
-      prefs->GetInteger(prefs::kPowerBatteryScreenOffDelayMs));
+  expected_policy.mutable_battery_delays()->set_screen_dim_ms(prefs->GetInteger(
+      screen_lock_state == LOCKED ? prefs::kPowerLockScreenDimDelayMs
+                                  : prefs::kPowerBatteryScreenDimDelayMs));
+  expected_policy.mutable_battery_delays()->set_screen_off_ms(prefs->GetInteger(
+      screen_lock_state == LOCKED ? prefs::kPowerLockScreenOffDelayMs
+                                  : prefs::kPowerBatteryScreenOffDelayMs));
   expected_policy.mutable_battery_delays()->set_screen_lock_ms(
       prefs->GetInteger(prefs::kPowerBatteryScreenLockDelayMs));
   expected_policy.mutable_battery_delays()->set_idle_warning_ms(
@@ -170,7 +184,7 @@ TEST_F(PowerPrefsTest, LoginScreen) {
                         content::NotificationService::NoDetails());
 
   EXPECT_EQ(login_profile, GetProfile());
-  EXPECT_EQ(GetExpectedPowerPolicyForProfile(login_profile),
+  EXPECT_EQ(GetExpectedPowerPolicyForProfile(login_profile, UNLOCKED),
             GetCurrentPowerPolicy());
   EXPECT_EQ(GetExpectedAllowScreenWakeLocksForProfile(login_profile),
             GetCurrentAllowScreenWakeLocks());
@@ -185,10 +199,26 @@ TEST_F(PowerPrefsTest, LoginScreen) {
 
   // Verify that the login profile's power prefs are still being used.
   EXPECT_EQ(login_profile, GetProfile());
-  EXPECT_EQ(GetExpectedPowerPolicyForProfile(login_profile),
+  EXPECT_EQ(GetExpectedPowerPolicyForProfile(login_profile, UNLOCKED),
             GetCurrentPowerPolicy());
   EXPECT_EQ(GetExpectedAllowScreenWakeLocksForProfile(login_profile),
             GetCurrentAllowScreenWakeLocks());
+
+  // Lock the screen and check that the expected delays are used.
+  bool screen_is_locked = true;
+  power_prefs_->Observe(chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
+                        content::Source<Profile>(login_profile),
+                        content::Details<bool>(&screen_is_locked));
+  EXPECT_EQ(GetExpectedPowerPolicyForProfile(login_profile, LOCKED),
+            GetCurrentPowerPolicy());
+
+  // Unlock the screen.
+  screen_is_locked = false;
+  power_prefs_->Observe(chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
+                        content::Source<Profile>(login_profile),
+                        content::Details<bool>(&screen_is_locked));
+  EXPECT_EQ(GetExpectedPowerPolicyForProfile(login_profile, UNLOCKED),
+            GetCurrentPowerPolicy());
 
   // Inform power_prefs_ that the login profile has been destroyed.
   power_prefs_->Observe(chrome::NOTIFICATION_PROFILE_DESTROYED,
@@ -197,7 +227,7 @@ TEST_F(PowerPrefsTest, LoginScreen) {
 
   // The login profile's prefs should still be used.
   EXPECT_FALSE(GetProfile());
-  EXPECT_EQ(GetExpectedPowerPolicyForProfile(login_profile),
+  EXPECT_EQ(GetExpectedPowerPolicyForProfile(login_profile, UNLOCKED),
             GetCurrentPowerPolicy());
 }
 
@@ -220,7 +250,7 @@ TEST_F(PowerPrefsTest, UserSession) {
                         content::NotificationService::NoDetails());
 
   EXPECT_EQ(user_profile, GetProfile());
-  EXPECT_EQ(GetExpectedPowerPolicyForProfile(user_profile),
+  EXPECT_EQ(GetExpectedPowerPolicyForProfile(user_profile, UNLOCKED),
             GetCurrentPowerPolicy());
   EXPECT_EQ(GetExpectedAllowScreenWakeLocksForProfile(user_profile),
             GetCurrentAllowScreenWakeLocks());
@@ -238,7 +268,7 @@ TEST_F(PowerPrefsTest, UserSession) {
 
   // Verify that the user profile's power prefs are still being used.
   EXPECT_EQ(user_profile, GetProfile());
-  EXPECT_EQ(GetExpectedPowerPolicyForProfile(user_profile),
+  EXPECT_EQ(GetExpectedPowerPolicyForProfile(user_profile, UNLOCKED),
             GetCurrentPowerPolicy());
   EXPECT_EQ(GetExpectedAllowScreenWakeLocksForProfile(user_profile),
             GetCurrentAllowScreenWakeLocks());
@@ -250,7 +280,7 @@ TEST_F(PowerPrefsTest, UserSession) {
 
   // Verify that power policy didn't revert to login screen settings.
   EXPECT_EQ(user_profile, GetProfile());
-  EXPECT_EQ(GetExpectedPowerPolicyForProfile(user_profile),
+  EXPECT_EQ(GetExpectedPowerPolicyForProfile(user_profile, UNLOCKED),
             GetCurrentPowerPolicy());
   EXPECT_EQ(GetExpectedAllowScreenWakeLocksForProfile(user_profile),
             GetCurrentAllowScreenWakeLocks());
@@ -263,7 +293,7 @@ TEST_F(PowerPrefsTest, UserSession) {
 
   // The user profile's prefs should still be used.
   EXPECT_FALSE(GetProfile());
-  EXPECT_EQ(GetExpectedPowerPolicyForProfile(user_profile),
+  EXPECT_EQ(GetExpectedPowerPolicyForProfile(user_profile, UNLOCKED),
             GetCurrentPowerPolicy());
 }
 

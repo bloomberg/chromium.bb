@@ -244,6 +244,8 @@ extern const char kPowerBatteryScreenOffDelayMs[];
 extern const char kPowerBatteryScreenLockDelayMs[];
 extern const char kPowerBatteryIdleWarningDelayMs[];
 extern const char kPowerBatteryIdleDelayMs[];
+extern const char kPowerLockScreenDimDelayMs[];
+extern const char kPowerLockScreenOffDelayMs[];
 extern const char kPowerAcIdleAction[];
 extern const char kPowerBatteryIdleAction[];
 extern const char kPowerLidClosedAction[];
