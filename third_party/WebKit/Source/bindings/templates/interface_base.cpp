@@ -358,7 +358,7 @@ static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functio
     {% set indexed_property_enumerator_callback =
            'indexedPropertyEnumerator<%s>' % cpp_class
            if indexed_property_getter.is_enumerable else '0' %}
-    functionTemplate->{{set_on_template}}()->SetIndexedPropertyHandler({{indexed_property_getter_callback}}, {{indexed_property_setter_callback}}, {{indexed_property_query_callback}}, {{indexed_property_deleter_callback}}, {{indexed_property_enumerator_callback}});
+    functionTemplate->{{set_on_template}}()->SetHandler(v8::IndexedPropertyHandlerConfiguration({{indexed_property_getter_callback}}, {{indexed_property_setter_callback}}, {{indexed_property_query_callback}}, {{indexed_property_deleter_callback}}, {{indexed_property_enumerator_callback}}));
     {% endif %}
     {% if named_property_getter %}
     {# if have named properties, MUST have a named property getter #}
@@ -376,7 +376,7 @@ static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functio
     {% set named_property_enumerator_callback =
            '%sV8Internal::namedPropertyEnumeratorCallback' % cpp_class
            if named_property_getter.is_enumerable else '0' %}
-    functionTemplate->{{set_on_template}}()->SetNamedPropertyHandler({{named_property_getter_callback}}, {{named_property_setter_callback}}, {{named_property_query_callback}}, {{named_property_deleter_callback}}, {{named_property_enumerator_callback}});
+    functionTemplate->{{set_on_template}}()->SetHandler(v8::NamedPropertyHandlerConfiguration({{named_property_getter_callback}}, {{named_property_setter_callback}}, {{named_property_query_callback}}, {{named_property_deleter_callback}}, {{named_property_enumerator_callback}}));
     {% endif %}
     {% if iterator_method %}
     static const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, {{cpp_class_or_partial}}V8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };

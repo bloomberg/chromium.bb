@@ -183,24 +183,28 @@ void V8CSSStyleDeclaration::namedPropertyEnumeratorCustom(const v8::PropertyCall
     v8SetReturnValue(info, properties);
 }
 
-void V8CSSStyleDeclaration::namedPropertyQueryCustom(v8::Local<v8::String> v8Name, const v8::PropertyCallbackInfo<v8::Integer>& info)
+void V8CSSStyleDeclaration::namedPropertyQueryCustom(v8::Local<v8::Name> v8Name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
+    if (!v8Name->IsString())
+        return;
     // NOTE: cssPropertyInfo lookups incur several mallocs.
     // Successful lookups have the same cost the first time, but are cached.
-    if (cssPropertyInfo(v8Name, info.GetIsolate())) {
+    if (cssPropertyInfo(v8Name.As<v8::String>(), info.GetIsolate())) {
         v8SetReturnValueInt(info, 0);
         return;
     }
 }
 
-void V8CSSStyleDeclaration::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8CSSStyleDeclaration::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    if (!name->IsString())
+        return;
     // First look for API defined attributes on the style declaration object.
-    if (info.Holder()->HasRealNamedCallbackProperty(name))
+    if (info.Holder()->HasRealNamedCallbackProperty(name.As<v8::String>()))
         return;
 
     // Search the style declaration.
-    CSSPropertyInfo* propInfo = cssPropertyInfo(name, info.GetIsolate());
+    CSSPropertyInfo* propInfo = cssPropertyInfo(name.As<v8::String>(), info.GetIsolate());
 
     // Do not handle non-property names.
     if (!propInfo)
@@ -217,10 +221,12 @@ void V8CSSStyleDeclaration::namedPropertyGetterCustom(v8::Local<v8::String> name
     v8SetReturnValueString(info, result, info.GetIsolate());
 }
 
-void V8CSSStyleDeclaration::namedPropertySetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8CSSStyleDeclaration::namedPropertySetterCustom(v8::Local<v8::Name> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    if (!name->IsString())
+        return;
     CSSStyleDeclaration* impl = V8CSSStyleDeclaration::toImpl(info.Holder());
-    CSSPropertyInfo* propInfo = cssPropertyInfo(name, info.GetIsolate());
+    CSSPropertyInfo* propInfo = cssPropertyInfo(name.As<v8::String>(), info.GetIsolate());
     if (!propInfo)
         return;
 
