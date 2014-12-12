@@ -723,6 +723,8 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                           'R39-6225.0.0-rc1/metadata.json')
     """
     self._ReflectToMetadata()
+    if summary:
+      summary = summary[:1024]
     # The current timestamp is evaluated on the database, not locally.
     current_timestamp = sqlalchemy.func.current_timestamp()
     self._Update('buildTable', build_id, {'finish_time': current_timestamp,
