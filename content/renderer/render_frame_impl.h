@@ -370,7 +370,8 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void didCreateDataSource(blink::WebLocalFrame* frame,
                                    blink::WebDataSource* datasource);
   virtual void didStartProvisionalLoad(blink::WebLocalFrame* frame,
-                                       bool is_transition_navigation);
+                                       bool is_transition_navigation,
+                                       double triggering_event_time);
   virtual void didReceiveServerRedirectForProvisionalLoad(
       blink::WebLocalFrame* frame);
   virtual void didFailProvisionalLoad(

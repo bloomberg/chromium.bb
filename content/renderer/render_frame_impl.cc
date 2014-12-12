@@ -2173,7 +2173,8 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
 }
 
 void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
-                                              bool is_transition_navigation) {
+                                              bool is_transition_navigation,
+                                              double triggering_event_time) {
   DCHECK(!frame_ || frame_ == frame);
   WebDataSource* ds = frame->provisionalDataSource();
 
@@ -2192,10 +2193,9 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
         "Heard swappedout:// when not swapped out.";
 
   // Update the request time if WebKit has better knowledge of it.
-  if (document_state->request_time().is_null()) {
-    double event_time = ds->triggeringEventTime();
-    if (event_time != 0.0)
-      document_state->set_request_time(Time::FromDoubleT(event_time));
+  if (document_state->request_time().is_null() &&
+          triggering_event_time != 0.0) {
+    document_state->set_request_time(Time::FromDoubleT(triggering_event_time));
   }
 
   // Start time is only set after request time.

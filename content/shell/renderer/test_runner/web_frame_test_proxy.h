@@ -67,9 +67,11 @@ class WebFrameTestProxy : public Base {
   }
 
   virtual void didStartProvisionalLoad(blink::WebLocalFrame* frame,
-                                       bool isTransitionNavigation) {
+                                       bool isTransitionNavigation,
+                                       double triggeringEventTime) {
     base_proxy_->DidStartProvisionalLoad(frame);
-    Base::didStartProvisionalLoad(frame, isTransitionNavigation);
+    Base::didStartProvisionalLoad(
+        frame, isTransitionNavigation, triggeringEventTime);
   }
 
   virtual void didReceiveServerRedirectForProvisionalLoad(
