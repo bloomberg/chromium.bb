@@ -287,19 +287,12 @@ bool IsForceGpuRasterizationEnabled() {
 bool UseSurfacesEnabled() {
 #if defined(OS_ANDROID)
   return false;
-#endif
-  bool enabled = false;
-#if (defined(USE_AURA) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
-  enabled = true;
-#endif
-
+#else
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
-  // Flags override.
-  enabled |= command_line.HasSwitch(switches::kUseSurfaces);
-  enabled &= !command_line.HasSwitch(switches::kDisableSurfaces);
-  return enabled;
+  return command_line.HasSwitch(switches::kUseSurfaces);
+#endif
 }
 
 base::DictionaryValue* GetFeatureStatus() {
