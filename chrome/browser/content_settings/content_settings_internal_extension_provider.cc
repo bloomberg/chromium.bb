@@ -24,13 +24,30 @@ using extensions::UnloadedExtensionInfo;
 
 namespace content_settings {
 
+namespace {
+
+// This is the set of extensions that are allowed to access the internal
+// remoting viewer plugin.
+const char* kRemotingViewerWhitelist[] = {
+    "gbchcmhmhahfdphkhkmpfmihenigjmpp",  // Chrome Remote Desktop
+    "kgngmbheleoaphbjbaiobfdepmghbfah",  // Pre-release Chrome Remote Desktop
+    "odkaodonbgfohohmklejpjiejmcipmib",  // Dogfood Chrome Remote Desktop
+    "ojoimpklfciegopdfgeenehpalipignm",  // Chromoting canary
+};
+
+}  // namespace
+
+
 InternalExtensionProvider::InternalExtensionProvider(Profile* profile)
     : registrar_(new content::NotificationRegistrar) {
+  for (size_t i = 0; i < arraysize(kRemotingViewerWhitelist); ++i)
+    chrome_remote_desktop_.insert(kRemotingViewerWhitelist[i]);
+
   // Whitelist all extensions loaded so far.
   for (const scoped_refptr<const extensions::Extension>& extension :
        extensions::ExtensionRegistry::Get(profile)->enabled_extensions()) {
-    if (extensions::PluginInfo::HasPlugins(extension.get()))
-      SetContentSettingForExtension(extension.get(), CONTENT_SETTING_ALLOW);
+    ApplyPluginContentSettingsForExtension(extension.get(),
+                                           CONTENT_SETTING_ALLOW);
   }
   registrar_->Add(this,
                   extensions::NOTIFICATION_EXTENSION_HOST_CREATED,
@@ -135,15 +152,14 @@ void InternalExtensionProvider::Observe(int type,
     case extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       const extensions::Extension* extension =
           content::Details<extensions::Extension>(details).ptr();
-      if (extensions::PluginInfo::HasPlugins(extension))
-        SetContentSettingForExtension(extension, CONTENT_SETTING_ALLOW);
+      ApplyPluginContentSettingsForExtension(extension, CONTENT_SETTING_ALLOW);
       break;
     }
     case extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       const UnloadedExtensionInfo& info =
           *(content::Details<UnloadedExtensionInfo>(details).ptr());
-      if (extensions::PluginInfo::HasPlugins(info.extension))
-        SetContentSettingForExtension(info.extension, CONTENT_SETTING_DEFAULT);
+      ApplyPluginContentSettingsForExtension(info.extension,
+                                             CONTENT_SETTING_DEFAULT);
       break;
     }
     default:
@@ -155,6 +171,21 @@ void InternalExtensionProvider::ShutdownOnUIThread() {
   DCHECK(CalledOnValidThread());
   RemoveAllObservers();
   registrar_.reset();
+}
+
+void InternalExtensionProvider::ApplyPluginContentSettingsForExtension(
+    const extensions::Extension* extension,
+    ContentSetting setting) {
+  if (extensions::PluginInfo::HasPlugins(extension))
+    SetContentSettingForExtension(extension, setting);
+
+  // Chrome Remove Desktop relies on the remoting viewer plugin. The
+  // above check does not catch this, as the plugin is a builtin plugin.
+  if (chrome_remote_desktop_.find(extension->id()) !=
+      chrome_remote_desktop_.end()) {
+    SetContentSettingForExtensionAndResource(
+        extension, ChromeContentClient::kRemotingViewerPluginPath, setting);
+  }
 }
 
 void InternalExtensionProvider::SetContentSettingForExtension(
