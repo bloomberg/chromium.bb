@@ -8,7 +8,6 @@
 #include "native_client/src/public/irt_core.h"
 #include "native_client/src/trusted/service_runtime/include/sys/unistd.h"
 #include "native_client/src/untrusted/irt/irt.h"
-#include "native_client/src/untrusted/irt/irt_private.h"
 #include "ppapi/nacl_irt/irt_manifest.h"
 #include "ppapi/nacl_irt/irt_ppapi.h"
 #include "ppapi/nacl_irt/plugin_main.h"
@@ -18,14 +17,6 @@
 static struct PP_StartFunctions g_pp_functions;
 
 int irt_ppapi_start(const struct PP_StartFunctions* funcs) {
-#if !defined(OS_NACL_NONSFI)
-  // Disable NaCl's open_resource() interface on this thread.
-  // TODO(hidehiko): This flag is no longer used because, even in SFI mode,
-  // we switched from SRPC to Chrome IPC for open_resource() implementation.
-  // Remove this flag.
-  g_is_main_thread = 1;
-#endif
-
   g_pp_functions = *funcs;
   return PpapiPluginMain();
 }

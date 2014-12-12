@@ -9,7 +9,6 @@ include_rules = [
   "+native_client/src/public",
   "+native_client/src/shared/srpc/nacl_srpc.h",
   "+native_client/src/untrusted/irt/irt.h",
-  "+native_client/src/untrusted/irt/irt_private.h",
   # The IRT also needs to know the errno and sysconf enums.
   "+native_client/src/trusted/service_runtime/include/sys/errno.h",
   "+native_client/src/trusted/service_runtime/include/sys/unistd.h",
