@@ -113,8 +113,7 @@ bool DriWindow::CanDispatchEvent(const PlatformEvent& ne) {
 
   if (event->IsLocatedEvent()) {
     LocatedEvent* located_event = static_cast<LocatedEvent*>(event);
-    return bounds_.Contains(
-        gfx::ToFlooredPoint(located_event->root_location()));
+    return bounds_.Contains(gfx::ToFlooredPoint(located_event->location()));
   }
 
   // TODO(spang): For non-ash builds we would need smarter keyboard focus.
@@ -128,9 +127,10 @@ uint32_t DriWindow::DispatchEvent(const PlatformEvent& native_event) {
   if (event->IsLocatedEvent()) {
     // Make the event location relative to this window's origin.
     LocatedEvent* located_event = static_cast<LocatedEvent*>(event);
-    gfx::PointF location = located_event->root_location();
+    gfx::PointF location = located_event->location();
     location -= bounds_.OffsetFromOrigin();
     located_event->set_location(location);
+    located_event->set_root_location(location);
   }
   DispatchEventFromNativeUiEvent(
       native_event, base::Bind(&PlatformWindowDelegate::DispatchEvent,
