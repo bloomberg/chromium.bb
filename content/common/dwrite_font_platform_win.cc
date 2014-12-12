@@ -84,9 +84,9 @@ const double kArbitraryCacheFileSizeLimit = (20 * 1024 * 1024);
 // that file directly from system fonts folder.
 const unsigned int kMaxFontFileNameLength = 34;
 
-const DWORD kCacheFileVersion = 101;
-const DWORD kFileSignature = 0x4D4F5243;  // CROM
-const DWORD kMagicCompletionSignature = 0x454E4F44;  // DONE
+const DWORD kCacheFileVersion = 102;
+const DWORD kFileSignature = 0x4D4F5243; // CROM
+const DWORD kMagicCompletionSignature = 0x454E4F44; // DONE
 
 const DWORD kUndefinedDWORDS = 36;
 
@@ -1025,16 +1025,11 @@ IDWriteFontCollection* GetCustomFontCollection(IDWriteFactory* factory) {
 
   bool cache_file_loaded = g_font_loader->LoadCacheFile();
 
-  // We try here to put arbitrary limit on max number of fonts that could
-  // be loaded, otherwise we fallback to restricted set of fonts.
-  const UINT32 kMaxFontThreshold = 1750;
   HRESULT hr = E_FAIL;
-  if (g_font_loader->GetFontMapSize() < kMaxFontThreshold) {
-    g_font_loader->EnableCollectionBuildingMode(true);
-    hr = factory->CreateCustomFontCollection(
-        g_font_loader.Get(), NULL, 0, g_font_collection.GetAddressOf());
-    g_font_loader->EnableCollectionBuildingMode(false);
-  }
+  g_font_loader->EnableCollectionBuildingMode(true);
+  hr = factory->CreateCustomFontCollection(
+      g_font_loader.Get(), NULL, 0, g_font_collection.GetAddressOf());
+  g_font_loader->EnableCollectionBuildingMode(false);
 
   bool loading_restricted = false;
   if (FAILED(hr) || !g_font_collection.Get()) {
@@ -1102,16 +1097,11 @@ bool BuildFontCacheInternal(const WCHAR* file_name) {
 
   mswr::ComPtr<IDWriteFontCollection> font_collection;
 
-  // We try here to put arbitrary limit on max number of fonts that could
-  // be loaded, otherwise we fallback to restricted set of fonts.
-  const UINT32 kMaxFontThreshold = 1750;
   HRESULT hr = E_FAIL;
-  if (g_font_loader->GetFontMapSize() < kMaxFontThreshold) {
-    g_font_loader->EnableCollectionBuildingMode(true);
-    hr = factory->CreateCustomFontCollection(
-        g_font_loader.Get(), NULL, 0, font_collection.GetAddressOf());
-    g_font_loader->EnableCollectionBuildingMode(false);
-  }
+  g_font_loader->EnableCollectionBuildingMode(true);
+  hr = factory->CreateCustomFontCollection(
+      g_font_loader.Get(), NULL, 0, font_collection.GetAddressOf());
+  g_font_loader->EnableCollectionBuildingMode(false);
 
   bool loading_restricted = false;
   if (FAILED(hr) || !font_collection.Get()) {
