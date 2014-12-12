@@ -724,8 +724,10 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         parseMinLengthAttribute(value);
     } else if (name == sizeAttr) {
         int oldSize = m_size;
-        int valueAsInteger = value.toInt();
-        m_size = valueAsInteger > 0 ? valueAsInteger : defaultSize;
+        m_size = defaultSize;
+        int valueAsInteger;
+        if (!value.isEmpty() && parseHTMLInteger(value, valueAsInteger) && valueAsInteger > 0)
+            m_size = valueAsInteger;
         if (m_size != oldSize && renderer())
             renderer()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
     } else if (name == altAttr)
