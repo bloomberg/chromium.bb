@@ -296,19 +296,16 @@ static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCal
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void namedPropertyGetter(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    if (!name->IsString())
+    if (info.Holder()->HasRealNamedProperty(name))
         return;
-    auto nameString = name.As<v8::String>();
-    if (info.Holder()->HasRealNamedProperty(nameString))
-        return;
-    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(nameString).IsEmpty())
+    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
         return;
 
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
-    AtomicString propertyName = toCoreAtomicString(nameString);
-    v8::String::Utf8Value namedProperty(nameString);
+    AtomicString propertyName = toCoreAtomicString(name);
+    v8::String::Utf8Value namedProperty(name);
     ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "TestInterface2", info.Holder(), info.GetIsolate());
     RefPtr<TestInterfaceEmpty> result = impl->namedItem(propertyName, exceptionState);
     if (exceptionState.throwIfNeeded())
@@ -318,27 +315,24 @@ static void namedPropertyGetter(v8::Local<v8::Name> name, const v8::PropertyCall
     v8SetReturnValueFast(info, WTF::getPtr(result.release()), impl);
 }
 
-static void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMNamedProperty");
     TestInterface2V8Internal::namedPropertyGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void namedPropertySetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    if (!name->IsString())
+    if (info.Holder()->HasRealNamedProperty(name))
         return;
-    auto nameString = name.As<v8::String>();
-    if (info.Holder()->HasRealNamedProperty(nameString))
-        return;
-    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(nameString).IsEmpty())
+    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
         return;
 
-    v8::String::Utf8Value namedProperty(nameString);
+    v8::String::Utf8Value namedProperty(name);
     ExceptionState exceptionState(ExceptionState::SetterContext, *namedProperty, "TestInterface2", info.Holder(), info.GetIsolate());
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
-    TOSTRING_VOID(V8StringResource<>, propertyName, nameString);
+    TOSTRING_VOID(V8StringResource<>, propertyName, name);
     TOSTRING_VOID(V8StringResource<>, propertyValue, v8Value);
     bool result = impl->setNamedItem(propertyName, propertyValue, exceptionState);
     if (exceptionState.throwIfNeeded())
@@ -348,19 +342,17 @@ static void namedPropertySetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v
     v8SetReturnValue(info, v8Value);
 }
 
-static void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMNamedProperty");
     TestInterface2V8Internal::namedPropertySetter(name, v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void namedPropertyQuery(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
+static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
-    if (!name->IsString())
-        return;
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
-    AtomicString propertyName = toCoreAtomicString(name.As<v8::String>());
+    AtomicString propertyName = toCoreAtomicString(name);
     v8::String::Utf8Value namedProperty(name);
     ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "TestInterface2", info.Holder(), info.GetIsolate());
     bool result = impl->namedPropertyQuery(propertyName, exceptionState);
@@ -371,19 +363,17 @@ static void namedPropertyQuery(v8::Local<v8::Name> name, const v8::PropertyCallb
     v8SetReturnValueInt(info, v8::None);
 }
 
-static void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
+static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMNamedProperty");
     TestInterface2V8Internal::namedPropertyQuery(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void namedPropertyDeleter(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
-    if (!name->IsString())
-        return;
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
-    AtomicString propertyName = toCoreAtomicString(name.As<v8::String>());
+    AtomicString propertyName = toCoreAtomicString(name);
     v8::String::Utf8Value namedProperty(name);
     ExceptionState exceptionState(ExceptionState::DeletionContext, *namedProperty, "TestInterface2", info.Holder(), info.GetIsolate());
     DeleteResult result = impl->deleteNamedItem(propertyName, exceptionState);
@@ -393,7 +383,7 @@ static void namedPropertyDeleter(v8::Local<v8::Name> name, const v8::PropertyCal
         return v8SetReturnValueBool(info, result == DeleteSuccess);
 }
 
-static void namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMNamedProperty");
     TestInterface2V8Internal::namedPropertyDeleter(name, info);
@@ -482,8 +472,8 @@ static void installV8TestInterface2Template(v8::Handle<v8::FunctionTemplate> fun
         V8DOMConfiguration::installConstants(isolate, functionTemplate, prototypeTemplate, &constantConfiguration, 1);
     }
     COMPILE_ASSERT(1 == TestInterface2::CONST_VALUE_1, TheValueOfTestInterface2_CONST_VALUE_1DoesntMatchWithImplementation);
-    functionTemplate->InstanceTemplate()->SetHandler(v8::IndexedPropertyHandlerConfiguration(TestInterface2V8Internal::indexedPropertyGetterCallback, TestInterface2V8Internal::indexedPropertySetterCallback, 0, TestInterface2V8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestInterface2>));
-    functionTemplate->InstanceTemplate()->SetHandler(v8::NamedPropertyHandlerConfiguration(TestInterface2V8Internal::namedPropertyGetterCallback, TestInterface2V8Internal::namedPropertySetterCallback, TestInterface2V8Internal::namedPropertyQueryCallback, TestInterface2V8Internal::namedPropertyDeleterCallback, TestInterface2V8Internal::namedPropertyEnumeratorCallback));
+    functionTemplate->InstanceTemplate()->SetIndexedPropertyHandler(TestInterface2V8Internal::indexedPropertyGetterCallback, TestInterface2V8Internal::indexedPropertySetterCallback, 0, TestInterface2V8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestInterface2>);
+    functionTemplate->InstanceTemplate()->SetNamedPropertyHandler(TestInterface2V8Internal::namedPropertyGetterCallback, TestInterface2V8Internal::namedPropertySetterCallback, TestInterface2V8Internal::namedPropertyQueryCallback, TestInterface2V8Internal::namedPropertyDeleterCallback, TestInterface2V8Internal::namedPropertyEnumeratorCallback);
 
     // Custom toString template
     functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::from(isolate)->toStringTemplate());

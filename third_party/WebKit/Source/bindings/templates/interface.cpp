@@ -152,22 +152,19 @@ static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCal
 {% block named_property_getter %}
 {% if named_property_getter and not named_property_getter.is_custom %}
 {% set getter = named_property_getter %}
-static void namedPropertyGetter(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    if (!name->IsString())
-        return;
-    auto nameString = name.As<v8::String>();
     {% if not is_override_builtins %}
-    if (info.Holder()->HasRealNamedProperty(nameString))
+    if (info.Holder()->HasRealNamedProperty(name))
         return;
-    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(nameString).IsEmpty())
+    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
         return;
 
     {% endif %}
     {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
-    AtomicString propertyName = toCoreAtomicString(nameString);
+    AtomicString propertyName = toCoreAtomicString(name);
     {% if getter.is_raises_exception %}
-    v8::String::Utf8Value namedProperty(nameString);
+    v8::String::Utf8Value namedProperty(name);
     ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
     {% if getter.use_output_parameter_for_result %}
@@ -193,7 +190,7 @@ static void namedPropertyGetter(v8::Local<v8::Name> name, const v8::PropertyCall
 {% block named_property_getter_callback %}
 {% if named_property_getter %}
 {% set getter = named_property_getter %}
-static void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMNamedProperty");
     {% if getter.is_custom %}
@@ -212,25 +209,22 @@ static void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::Prop
 {% block named_property_setter %}
 {% if named_property_setter and not named_property_setter.is_custom %}
 {% set setter = named_property_setter %}
-static void namedPropertySetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    if (!name->IsString())
-        return;
-    auto nameString = name.As<v8::String>();
     {% if not is_override_builtins %}
-    if (info.Holder()->HasRealNamedProperty(nameString))
+    if (info.Holder()->HasRealNamedProperty(name))
         return;
-    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(nameString).IsEmpty())
+    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
         return;
 
     {% endif %}
     {% if setter.has_exception_state %}
-    v8::String::Utf8Value namedProperty(nameString);
+    v8::String::Utf8Value namedProperty(name);
     ExceptionState exceptionState(ExceptionState::SetterContext, *namedProperty, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
     {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
-    {# v8_value_to_local_cpp_value('DOMString', 'nameString', 'propertyName') #}
-    TOSTRING_VOID(V8StringResource<>, propertyName, nameString);
+    {# v8_value_to_local_cpp_value('DOMString', 'name', 'propertyName') #}
+    TOSTRING_VOID(V8StringResource<>, propertyName, name);
     {{setter.v8_value_to_local_cpp_value}};
     {% set setter_name = setter.name or 'anonymousNamedSetter' %}
     {% set setter_arguments =
@@ -255,7 +249,7 @@ static void namedPropertySetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v
 {% block named_property_setter_callback %}
 {% if named_property_setter %}
 {% set setter = named_property_setter %}
-static void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMNamedProperty");
     {% if setter.is_custom %}
@@ -276,12 +270,10 @@ static void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::
       not named_property_getter.is_custom_property_query %}
 {# If there is an enumerator, there MUST be a query method to properly
    communicate property attributes. #}
-static void namedPropertyQuery(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
+static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
-    if (!name->IsString())
-        return;
     {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
-    AtomicString propertyName = toCoreAtomicString(name.As<v8::String>());
+    AtomicString propertyName = toCoreAtomicString(name);
     v8::String::Utf8Value namedProperty(name);
     ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "{{interface_name}}", info.Holder(), info.GetIsolate());
     bool result = impl->namedPropertyQuery(propertyName, exceptionState);
@@ -300,7 +292,7 @@ static void namedPropertyQuery(v8::Local<v8::Name> name, const v8::PropertyCallb
 {% block named_property_query_callback %}
 {% if named_property_getter and named_property_getter.is_enumerable %}
 {% set getter = named_property_getter %}
-static void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
+static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMNamedProperty");
     {% if getter.is_custom_property_query %}
@@ -319,12 +311,10 @@ static void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::Prope
 {% block named_property_deleter %}
 {% if named_property_deleter and not named_property_deleter.is_custom %}
 {% set deleter = named_property_deleter %}
-static void namedPropertyDeleter(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
-    if (!name->IsString())
-        return;
     {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
-    AtomicString propertyName = toCoreAtomicString(name.As<v8::String>());
+    AtomicString propertyName = toCoreAtomicString(name);
     {% if deleter.is_raises_exception %}
     v8::String::Utf8Value namedProperty(name);
     ExceptionState exceptionState(ExceptionState::DeletionContext, *namedProperty, "{{interface_name}}", info.Holder(), info.GetIsolate());
@@ -349,7 +339,7 @@ static void namedPropertyDeleter(v8::Local<v8::Name> name, const v8::PropertyCal
 {% block named_property_deleter_callback %}
 {% if named_property_deleter %}
 {% set deleter = named_property_deleter %}
-static void namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMNamedProperty");
     {% if deleter.is_custom %}
