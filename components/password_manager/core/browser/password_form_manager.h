@@ -106,13 +106,11 @@ class PasswordFormManager : public PasswordStoreConsumer {
   bool HasGeneratedPassword();
   void SetHasGeneratedPassword();
 
-  // Determines if we need to autofill given the results of the query.
-  // Takes ownership of the elements in |result|.
-  void OnRequestDone(const std::vector<autofill::PasswordForm*>& result);
-
-  // If reasonable, non-blacklisted, candidates were found by the password
-  // store, this will trigger the autofill through PasswordManager.
-  void MaybeTriggerAutofill();
+  // Through |driver|, supply the associated frame with appropriate information
+  // (fill data, whether to allow password generation, etc.). If this is called
+  // before |this| has data from the PasswordStore, the execution will be
+  // delayed until the data arrives.
+  void ProcessFrame(const base::WeakPtr<PasswordManagerDriver>& driver);
 
   void OnGetPasswordStoreResults(
       const std::vector<autofill::PasswordForm*>& results) override;
@@ -216,6 +214,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // This is used when recording the actions taken by the form in UMA.
   static const int kMaxNumActionsTaken = kManagerActionMax * kUserActionMax *
                                          kSubmitResultMax;
+
+  // Determines if we need to autofill given the results of the query.
+  // Takes ownership of the elements in |result|.
+  void OnRequestDone(const std::vector<autofill::PasswordForm*>& result);
 
   // Helper for OnGetPasswordStoreResults to determine whether or not
   // the given result form is worth scoring.
@@ -328,17 +330,14 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // The client which implements embedder-specific PasswordManager operations.
   PasswordManagerClient* client_;
 
-  // The driver for frame-specific operations. Note that while |driver_| lives
-  // only as long as its associated frame, |this| is kept alive at least until
-  // main frame navigation or even past that (if it carries a provisionally
-  // saved password). Normally, |this| requests stored credentials from
-  // PasswordStore, and only needs |driver_| to update the frame with those as
-  // soon as the store calls back with the results. But because the store
-  // retrieval involves UI->DB->UI thread communication, the frame (and
-  // |driver_|) might get deleted sooner than the store calls back. In that
-  // case, the updates of the frame are no longer needed, and calls to |driver_|
-  // should silently be omitted.
-  const base::WeakPtr<PasswordManagerDriver> driver_;
+  // When |this| is created, it is because a form has been found in a frame,
+  // represented by a driver. For that frame, and for all others with an
+  // equivalent form, the associated drivers are needed to perform
+  // frame-specific operations (filling etc.). While |this| waits for the
+  // matching credentials from the PasswordStore, the drivers for frames needing
+  // fill information are buffered in |drivers_|, and served once the results
+  // arrive, if the drivers are still valid.
+  std::vector<base::WeakPtr<PasswordManagerDriver>> drivers_;
 
   // These three fields record the "ActionsTaken" by the browser and
   // the user with this form, and the result. They are combined and

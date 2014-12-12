@@ -84,10 +84,10 @@ PasswordFormManager::PasswordFormManager(
       preferred_match_(NULL),
       state_(PRE_MATCHING_PHASE),
       client_(client),
-      driver_(driver),
       manager_action_(kManagerActionNone),
       user_action_(kUserActionNone),
       submit_result_(kSubmitResultNotSubmitted) {
+  drivers_.push_back(driver);
   if (observed_form_.origin.is_valid())
     base::SplitString(observed_form_.origin.path(), '/', &form_path_tokens_);
 }
@@ -462,8 +462,6 @@ void PasswordFormManager::OnRequestDone(
     preferred_match_ = logins_result[i]->preferred ? logins_result[i]
                                                    : preferred_match_;
   }
-  // We're done matching now.
-  state_ = POST_MATCHING_PHASE;
 
   client_->AutofillResultsComputed();
 
@@ -471,10 +469,6 @@ void PasswordFormManager::OnRequestDone(
   // be equivalent for the moment, but it's less clear and may not be
   // equivalent in the future.
   if (best_score <= 0) {
-    // If no saved forms can be used, then it isn't blacklisted and generation
-    // should be allowed.
-    if (driver_)
-      driver_->AllowPasswordGenerationForForm(observed_form_);
     if (logger)
       logger->LogNumber(Logger::STRING_BEST_SCORE, best_score);
     return;
@@ -505,23 +499,24 @@ void PasswordFormManager::OnRequestDone(
   if (preferred_match_->blacklisted_by_user) {
     client_->PasswordAutofillWasBlocked(best_matches_);
     manager_action_ = kManagerActionBlacklisted;
-    return;
   }
-
-  // If not blacklisted, inform the driver that password generation is allowed
-  // for |observed_form_|.
-  if (driver_)
-    driver_->AllowPasswordGenerationForForm(observed_form_);
-
-  MaybeTriggerAutofill();
 }
 
-void PasswordFormManager::MaybeTriggerAutofill() {
-  DCHECK_EQ(POST_MATCHING_PHASE, state_);
-  if (!driver_ || best_matches_.empty() ||
-      manager_action_ == kManagerActionBlacklisted) {
+void PasswordFormManager::ProcessFrame(
+    const base::WeakPtr<PasswordManagerDriver>& driver) {
+  if (state_ != POST_MATCHING_PHASE) {
+    drivers_.push_back(driver);
     return;
   }
+
+  if (!driver || manager_action_ == kManagerActionBlacklisted)
+    return;
+
+  // Allow generation for any non-blacklisted form.
+  driver->AllowPasswordGenerationForForm(observed_form_);
+
+  if (best_matches_.empty())
+    return;
 
   // Proceed to autofill.
   // Note that we provide the choices but don't actually prefill a value if:
@@ -535,7 +530,7 @@ void PasswordFormManager::MaybeTriggerAutofill() {
     manager_action_ = kManagerActionNone;
   else
     manager_action_ = kManagerActionAutofilled;
-  password_manager_->Autofill(driver_.get(), observed_form_, best_matches_,
+  password_manager_->Autofill(driver.get(), observed_form_, best_matches_,
                               *preferred_match_, wait_for_username);
 }
 
@@ -550,16 +545,15 @@ void PasswordFormManager::OnGetPasswordStoreResults(
     logger->LogNumber(Logger::STRING_NUMBER_RESULTS, results.size());
   }
 
-  if (results.empty()) {
-    state_ = POST_MATCHING_PHASE;
-    // No result means that we visit this site the first time so we don't need
-    // to check whether this site is blacklisted or not. Just send a message
-    // to allow password generation.
-    if (driver_)
-      driver_->AllowPasswordGenerationForForm(observed_form_);
-    return;
+  if (!results.empty())
+    OnRequestDone(results);
+  state_ = POST_MATCHING_PHASE;
+
+  if (manager_action_ != kManagerActionBlacklisted) {
+    for (auto const& driver : drivers_)
+      ProcessFrame(driver);
   }
-  OnRequestDone(results);
+  drivers_.clear();
 }
 
 bool PasswordFormManager::ShouldIgnoreResult(const PasswordForm& form) const {

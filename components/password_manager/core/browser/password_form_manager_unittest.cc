@@ -952,7 +952,7 @@ TEST_F(PasswordFormManagerTest, TestUpdateIncompleteCredentials) {
   // Feed the incomplete credentials to the manager.
   std::vector<PasswordForm*> results;
   results.push_back(incomplete_form);  // Takes ownership.
-  form_manager.OnRequestDone(results);
+  form_manager.OnGetPasswordStoreResults(results);
 
   form_manager.ProvisionallySave(
       complete_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
@@ -1344,7 +1344,7 @@ TEST_F(PasswordFormManagerTest, DriverDeletedBeforeStoreDone) {
 
   std::vector<PasswordForm*> results;
   results.push_back(form.release());
-  form_manager.OnRequestDone(results);
+  form_manager.OnGetPasswordStoreResults(results);
 }
 
 }  // namespace password_manager

@@ -566,7 +566,7 @@ TEST_F(PasswordManagerTest, InitiallyInvisibleForm) {
   result.push_back(existing);
   EXPECT_CALL(driver_, FillPasswordForm(_));
   EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
-      .WillRepeatedly(DoAll(WithArg<2>(InvokeConsumer(result)), Return()));
+      .WillOnce(DoAll(WithArg<2>(InvokeConsumer(result)), Return()));
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
@@ -603,7 +603,7 @@ TEST_F(PasswordManagerTest, FillPasswordsOnDisabledManager) {
   EXPECT_CALL(driver_, FillPasswordForm(_));
   EXPECT_CALL(*store_.get(),
               GetLogins(_, testing::Eq(PasswordStore::DISALLOW_PROMPT), _))
-      .WillRepeatedly(DoAll(WithArg<2>(InvokeConsumer(result)), Return()));
+      .WillOnce(DoAll(WithArg<2>(InvokeConsumer(result)), Return()));
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
@@ -889,6 +889,32 @@ TEST_F(PasswordManagerTest, FormSubmitWithOnlyPassowrdField) {
 
   // Simulate saving the form, as if the info bar was accepted.
   form_to_save->Save();
+}
+
+TEST_F(PasswordManagerTest, FillPasswordOnManyFrames) {
+  // If one password form appears in more frames, it should be filled in all of
+  // them.
+  PasswordForm form(MakeSimpleForm());  // The observed and saved form.
+
+  // "Save" the form.
+  std::vector<PasswordForm*> result;
+  result.push_back(new PasswordForm(form));  // Calee owns the form.
+  EXPECT_CALL(*store_.get(),
+              GetLogins(_, testing::Eq(PasswordStore::DISALLOW_PROMPT), _))
+      .WillOnce(DoAll(WithArg<2>(InvokeConsumer(result)), Return()));
+
+  // The form will be seen the first time.
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(1);
+  std::vector<PasswordForm> observed;
+  observed.push_back(form);
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+
+  // Now the form will be seen the second time, in a different frame. The driver
+  // for that frame should be told to fill it, but the store should not be asked
+  // for it again.
+  MockPasswordManagerDriver driver_b;
+  EXPECT_CALL(driver_b, FillPasswordForm(_)).Times(1);
+  manager()->OnPasswordFormsParsed(&driver_b, observed);
 }
 
 }  // namespace password_manager

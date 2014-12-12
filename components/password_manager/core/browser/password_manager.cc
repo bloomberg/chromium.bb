@@ -435,7 +435,7 @@ void PasswordManager::CreatePendingLoginManagers(
       }
       old_manager_found = true;
       if (old_manager->HasCompletedMatching())
-        old_manager->MaybeTriggerAutofill();
+        old_manager->ProcessFrame(driver->AsWeakPtr());
       break;
     }
     if (old_manager_found)
