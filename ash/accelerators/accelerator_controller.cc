@@ -1274,9 +1274,10 @@ void  AcceleratorController::PerformAction(AcceleratorAction action,
 
 bool AcceleratorController::ShouldActionConsumeKeyEvent(
     AcceleratorAction action) {
-  if (action == NEXT_IME) {
-    // NEXT_IME is bound to Alt-Shift key up event. To be consistent with
-    // Windows behavior, do not consume the key event here.
+  if (action == NEXT_IME || action == SWITCH_IME) {
+    // NEXT_IME is bound to Alt-Shift key up event. SWITCH_IME is bound to
+    // HANKAKU_ZENKAKU, HENKAN, MUHENKAN keys.  To be consistent with Windows
+    // behavior, do not consume the key event here.
     return false;
   }
 #if defined(OS_CHROMEOS)

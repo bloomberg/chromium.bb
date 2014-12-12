@@ -1054,15 +1054,15 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
     EXPECT_TRUE(ProcessInController(control_space_up));
     EXPECT_EQ(1, delegate->handle_previous_ime_count());
     EXPECT_EQ(0, delegate->handle_switch_ime_count());
-    EXPECT_TRUE(ProcessInController(convert));
+    EXPECT_FALSE(ProcessInController(convert));
     EXPECT_EQ(1, delegate->handle_switch_ime_count());
-    EXPECT_TRUE(ProcessInController(non_convert));
+    EXPECT_FALSE(ProcessInController(non_convert));
     EXPECT_EQ(2, delegate->handle_switch_ime_count());
-    EXPECT_TRUE(ProcessInController(wide_half_1));
+    EXPECT_FALSE(ProcessInController(wide_half_1));
     EXPECT_EQ(3, delegate->handle_switch_ime_count());
-    EXPECT_TRUE(ProcessInController(wide_half_2));
+    EXPECT_FALSE(ProcessInController(wide_half_2));
     EXPECT_EQ(4, delegate->handle_switch_ime_count());
-    EXPECT_TRUE(ProcessInController(hangul));
+    EXPECT_FALSE(ProcessInController(hangul));
     EXPECT_EQ(5, delegate->handle_switch_ime_count());
   }
 
