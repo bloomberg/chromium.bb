@@ -1901,6 +1901,10 @@ class BisectPerformanceMetrics(object):
     cwd = self.depot_registry.GetDepotDir(target_depot)
     good_position = source_control.GetCommitPosition(good_revision, cwd)
     bad_position = source_control.GetCommitPosition(bad_revision, cwd)
+    # Compare commit timestamp for repos that don't support commit position.
+    if not (bad_position and good_position):
+      good_position = source_control.GetCommitTime(good_revision, cwd=cwd)
+      bad_position = source_control.GetCommitTime(bad_revision, cwd=cwd)
 
     return good_position <= bad_position
 

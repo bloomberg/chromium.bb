@@ -404,6 +404,14 @@ class BisectPerfRegressionTest(unittest.TestCase):
     self.assertEqual(
         181660, source_control.GetCommitPosition(wk_rev, depot_path))
 
+  def testGetCommitPositionForSkia(self):
+    bisect_instance = _GetBisectPerformanceMetricsInstance(DEFAULT_OPTIONS)
+    skia_rev = 'a94d028e0f2c77f159b3dac95eb90c3b4cf48c61'
+    depot_path = os.path.join(bisect_instance.src_cwd, 'third_party', 'skia')
+    # Skia doesn't use commit positions, and GetCommitPosition should
+    # return None for repos that don't use commit positions.
+    self.assertIsNone(source_control.GetCommitPosition(skia_rev, depot_path))
+
   def testUpdateDepsContent(self):
     bisect_instance = _GetBisectPerformanceMetricsInstance(DEFAULT_OPTIONS)
     deps_file = 'DEPS'

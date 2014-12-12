@@ -12,22 +12,6 @@ def IsInGitRepository():
   return output.strip() == 'true'
 
 
-def SyncToRevisionWithGClient(revision):
-  """Uses gclient to sync to the specified revision.
-
-  This is like running gclient sync --revision <revision>.
-
-  Args:
-    revision: A git SHA1 hash or SVN revision number (depending on workflow).
-
-  Returns:
-    The return code of the call.
-  """
-  return bisect_utils.RunGClient(
-      ['sync', '--verbose', '--reset', '--force',
-      '--delete_unversioned_trees', '--nohooks', '--revision', revision])
-
-
 def GetRevisionList(end_revision_hash, start_revision_hash, cwd=None):
   """Retrieves a list of git commit hashes in a range.
 
@@ -53,7 +37,7 @@ def SyncToRevision(revision, sync_client=None):
   if not sync_client:
     _, return_code = bisect_utils.RunGit(['checkout', revision])
   elif sync_client == 'gclient':
-    return_code = SyncToRevisionWithGClient(revision)
+    return_code = bisect_utils.RunGClientAndSync(revision)
   else:
     raise NotImplementedError('Unsupported sync_client: "%s"' % sync_client)
 
@@ -139,18 +123,20 @@ def GetCommitPosition(git_revision, cwd=None):
   """
   # Some of the respositories are pure git based, unlike other repositories
   # they doesn't have commit position. e.g., skia, angle.
-  no_commit_position_repos = ['angle', 'skia']
-  if cwd and any(repo in cwd for repo in no_commit_position_repos):
-    return None
-
   cmd = ['footers', '--position-num', git_revision]
-  output = bisect_utils.CheckRunGit(cmd, cwd)
-  commit_position = output.strip()
-
-  if bisect_utils.IsStringInt(commit_position):
-    return int(commit_position)
-
+  output, return_code  = bisect_utils.RunGit(cmd, cwd)
+  if not return_code:
+    commit_position = output.strip()
+    if bisect_utils.IsStringInt(commit_position):
+      return int(commit_position)
   return None
+
+
+def GetCommitTime(git_revision, cwd=None):
+  """Returns commit time for the given revision in UNIX timestamp."""
+  cmd = ['log', '--format=%ct', '-1', git_revision]
+  output = bisect_utils.CheckRunGit(cmd, cwd=cwd)
+  return int(output)
 
 
 def QueryRevisionInfo(revision, cwd=None):
