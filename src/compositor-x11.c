@@ -1470,6 +1470,7 @@ x11_compositor_create(struct wl_display *display,
 	struct x11_compositor *c;
 	struct x11_output *output;
 	struct weston_config_section *section;
+	struct wl_event_loop *loop;
 	xcb_screen_iterator_t s;
 	int i, x = 0, output_count = 0;
 	int width, height, scale, count;
@@ -1595,8 +1596,9 @@ x11_compositor_create(struct wl_display *display,
 		x = pixman_region32_extents(&output->base.region)->x2;
 	}
 
+	loop = wl_display_get_event_loop(c->base.wl_display);
 	c->xcb_source =
-		wl_event_loop_add_fd(c->base.input_loop,
+		wl_event_loop_add_fd(loop,
 				     xcb_get_file_descriptor(c->conn),
 				     WL_EVENT_READABLE,
 				     x11_compositor_handle_event, c);
