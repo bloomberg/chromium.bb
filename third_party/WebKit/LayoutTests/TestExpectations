@@ -1383,3 +1383,5 @@ crbug.com/410929 virtual/gpu/fast/canvas/canvas-toDataURL-jpeg-maximum-quality.h
 
 crbug.com/396013 inspector/console/console-error-on-call-frame.html [ Skip ]
 crbug.com/396013 inspector/sources/debugger/debugger-eval-on-call-frame-inside-iframe.html [ Skip ]
+
+crbug.com/441705 fast/media/media-svg-crash.html [ Pass Failure ]
