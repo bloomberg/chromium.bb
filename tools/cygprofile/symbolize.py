@@ -39,7 +39,6 @@ def ParseLogLines(log_file_lines):
     function address called)
   """
   call_lines = []
-  has_started = False
   vm_start = 0
   line = log_file_lines[0]
   assert("r-xp" in line)
@@ -113,6 +112,7 @@ def ParseLibSymbols(lib_file):
 
 class SymbolNotFoundException(Exception):
   def __init__(self,value):
+    super(SymbolNotFoundException,self).__init__(value)
     self.value = value
   def __str__(self):
     return repr(self.value)
@@ -201,7 +201,6 @@ def main():
   (log_file, lib_file) = args
   output_type = options.output_type
 
-  lib_name = lib_file.split('/')[-1].strip()
   log_file_lines = map(string.rstrip, open(log_file).readlines())
   call_info = ParseLogLines(log_file_lines)
   (unique_addrs, address_map) = ParseLibSymbols(lib_file)
@@ -229,7 +228,7 @@ def main():
         for symbol in symbols:
           print '.text.' + symbol
         print ''
-      except SymbolNotFoundException as e:
+      except SymbolNotFoundException:
         sys.stderr.write('WARNING: Did not find function in binary. addr: '
                       + hex(addr) + '\n')
     else:
@@ -243,7 +242,7 @@ def main():
             print '\t\t\t\t\t' + symbol
           else:
             first_symbol = False
-      except SymbolNotFoundException as e:
+      except SymbolNotFoundException:
         sys.stderr.write('WARNING: Did not find function in binary. addr: '
                       + hex(addr) + '\n')
 

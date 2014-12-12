@@ -38,26 +38,27 @@ while nm_index < len(nmlines):
   else:
     nm_index = nm_index + 1
 
-def binary_search (addr, start, end):
+def binary_search (search_addr, start, end):
   if start >= end or start == end - 1:
-    (nm_addr, size) = uniqueAddrs[start]
-    if not (addr >= nm_addr and addr < nm_addr + size):
-      sys.stderr.write ("ERROR: did not find function in binary: addr: " +
-          hex(addr) + " nm_addr: " + str(nm_addr) + " start: " + str(start) +
-          " end: " + str(end) + "\n")
-      raise Error("error")
-    return (addressMap[nm_addr], size)
+    (nm_addr, sym_size) = uniqueAddrs[start]
+    if not (search_addr >= nm_addr and search_addr < nm_addr + sym_size):
+      error_message = ('ERROR: did not find function in binary: addr: ' +
+                       hex(addr) + ' nm_addr: ' + str(nm_addr) + ' start: ' +
+                       str(start) + ' end: ' + str(end))
+      sys.stderr.write(error_message + "\n")
+      raise Exception(error_message)
+    return (addressMap[nm_addr], sym_size)
   else:
     halfway = start + ((end - start) / 2)
-    (nm_addr, size) = uniqueAddrs[halfway]
-    if (addr >= nm_addr and addr < nm_addr + size):
-      return (addressMap[nm_addr], size)
+    nm_addr = uniqueAddrs[halfway][0]
+    if (addr >= nm_addr and addr < nm_addr + sym_size):
+      return (addressMap[nm_addr], sym_size)
     elif (addr < nm_addr):
       return binary_search (addr, start, halfway)
-    elif (addr >= nm_addr + size):
+    elif (addr >= nm_addr + sym_size):
       return binary_search (addr, halfway, end)
     else:
-      raise "ERROR: did not expect this case"
+      raise Exception("ERROR: did not expect this case")
 
 f = open (orderfile)
 lines = f.readlines()
@@ -77,13 +78,13 @@ functionAddressMap = {}
 for line in nmlines:
   try:
     functionName = line.split()[3]
-  except:
+  except Exception:
     functionName = line.split()[2]
   functionName = functionName.split('.clone.')[0]
   functionAddress = int (line.split()[0].strip(), 16)
   try:
     functionAddressMap[functionName].append(functionAddress)
-  except:
+  except Exception:
     functionAddressMap[functionName] = [functionAddress]
     functions.append(functionName)
 
@@ -94,7 +95,7 @@ for function in profiled_list:
    try:
      addrs = functionAddressMap[function]
      symbols_found = symbols_found + 1
-   except:
+   except Exception:
      addrs = []
      # sys.stderr.write ("WARNING: could not find symbol " + function + "\n")
    for addr in addrs:
