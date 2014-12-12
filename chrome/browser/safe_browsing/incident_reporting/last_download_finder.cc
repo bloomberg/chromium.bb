@@ -246,23 +246,6 @@ void LastDownloadFinder::OnMetadataQuery(
   }
 }
 
-void LastDownloadFinder::OnProfileHistoryLoaded(
-    Profile* profile,
-    HistoryService* history_service) {
-  auto iter = profile_states_.find(profile);
-  if (iter == profile_states_.end())
-    return;
-
-  // Start the query in the history service if the finder was waiting for the
-  // service to load.
-  if (iter->second == WAITING_FOR_HISTORY) {
-    history_service->QueryDownloads(
-        base::Bind(&LastDownloadFinder::OnDownloadQuery,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   profile));
-  }
-}
-
 void LastDownloadFinder::AbandonSearchInProfile(Profile* profile) {
   // |profile| may not be present in the set of profiles.
   auto iter = profile_states_.find(profile);
@@ -339,7 +322,21 @@ void LastDownloadFinder::Observe(int type,
 
 void LastDownloadFinder::OnHistoryServiceLoaded(
     HistoryService* history_service) {
-  OnProfileHistoryLoaded(history_service->profile(), history_service);
+  for (const auto& pair : profile_states_) {
+    HistoryService* hs = HistoryServiceFactory::GetForProfileIfExists(
+        pair.first, Profile::EXPLICIT_ACCESS);
+    if (hs == history_service) {
+      // Start the query in the history service if the finder was waiting for
+      // the service to load.
+      if (pair.second == WAITING_FOR_HISTORY) {
+        history_service->QueryDownloads(
+            base::Bind(&LastDownloadFinder::OnDownloadQuery,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       pair.first));
+      }
+      return;
+    }
+  }
 }
 
 void LastDownloadFinder::HistoryServiceBeingDeleted(

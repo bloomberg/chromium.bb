@@ -53,10 +53,6 @@ class FilePath;
 class Thread;
 }
 
-namespace safe_browsing {
-class LastDownloadFinder;
-}
-
 namespace visitedlink {
 class VisitedLinkMaster;
 }
@@ -543,7 +539,6 @@ class HistoryService : public content::NotificationObserver,
   friend class HistoryURLProviderTest;
   friend class history::InMemoryURLIndexTest;
   template<typename Info, typename Callback> friend class DownloadRequest;
-  friend class safe_browsing::LastDownloadFinder;
   friend class PageUsageRequest;
   friend class RedirectRequest;
   friend class SyncBookmarkDataTypeControllerTest;
@@ -857,9 +852,6 @@ class HistoryService : public content::NotificationObserver,
     ScheduleTask(priority, base::Bind(func, history_backend_.get(),
                                       a, b, c, d, e));
   }
-
-  // TODO(sdefresne): http://crbug.com/430070 remove this method.
-  Profile* profile() { return profile_; }
 
   base::ThreadChecker thread_checker_;
 

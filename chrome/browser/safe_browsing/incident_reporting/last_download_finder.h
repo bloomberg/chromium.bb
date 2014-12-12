@@ -90,11 +90,6 @@ class LastDownloadFinder : public content::NotificationObserver,
       Profile* profile,
       scoped_ptr<ClientIncidentReport_DownloadDetails> details);
 
-  // Initiates a search in |profile| if it is in the set of profiles to be
-  // searched.
-  void OnProfileHistoryLoaded(Profile* profile,
-                              HistoryService* history_service);
-
   // Abandons the search for downloads in |profile|, reporting results if there
   // are no more pending queries.
   void AbandonSearchInProfile(Profile* profile);
