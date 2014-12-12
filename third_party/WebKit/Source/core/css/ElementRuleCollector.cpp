@@ -81,16 +81,12 @@ PassRefPtrWillBeRawPtr<CSSRuleList> ElementRuleCollector::matchedCSSRuleList()
 
 inline void ElementRuleCollector::addMatchedRule(const RuleData* rule, unsigned specificity, CascadeScope cascadeScope, CascadeOrder cascadeOrder, unsigned styleSheetIndex, const CSSStyleSheet* parentStyleSheet)
 {
-    if (!m_matchedRules)
-        m_matchedRules = adoptPtrWillBeNoop(new WillBeHeapVector<MatchedRule, 32>);
-    m_matchedRules->append(MatchedRule(rule, specificity, cascadeScope, cascadeOrder, styleSheetIndex, parentStyleSheet));
+    m_matchedRules.append(MatchedRule(rule, specificity, cascadeScope, cascadeOrder, styleSheetIndex, parentStyleSheet));
 }
 
 void ElementRuleCollector::clearMatchedRules()
 {
-    if (!m_matchedRules)
-        return;
-    m_matchedRules->clear();
+    m_matchedRules.clear();
 }
 
 inline StyleRuleList* ElementRuleCollector::ensureStyleRuleList()
@@ -227,28 +223,27 @@ void ElementRuleCollector::appendCSSOMWrapperForRule(CSSStyleSheet* parentStyleS
 
 void ElementRuleCollector::sortAndTransferMatchedRules()
 {
-    if (!m_matchedRules || m_matchedRules->isEmpty())
+    if (m_matchedRules.isEmpty())
         return;
 
     sortMatchedRules();
 
-    WillBeHeapVector<MatchedRule, 32>& matchedRules = *m_matchedRules;
     if (m_mode == SelectorChecker::CollectingStyleRules) {
-        for (unsigned i = 0; i < matchedRules.size(); ++i)
-            ensureStyleRuleList()->m_list.append(matchedRules[i].ruleData()->rule());
+        for (unsigned i = 0; i < m_matchedRules.size(); ++i)
+            ensureStyleRuleList()->m_list.append(m_matchedRules[i].ruleData()->rule());
         return;
     }
 
     if (m_mode == SelectorChecker::CollectingCSSRules) {
-        for (unsigned i = 0; i < matchedRules.size(); ++i)
-            appendCSSOMWrapperForRule(const_cast<CSSStyleSheet*>(matchedRules[i].parentStyleSheet()), matchedRules[i].ruleData()->rule());
+        for (unsigned i = 0; i < m_matchedRules.size(); ++i)
+            appendCSSOMWrapperForRule(const_cast<CSSStyleSheet*>(m_matchedRules[i].parentStyleSheet()), m_matchedRules[i].ruleData()->rule());
         return;
     }
 
     // Now transfer the set of matched rules over to our list of declarations.
-    for (unsigned i = 0; i < matchedRules.size(); i++) {
+    for (unsigned i = 0; i < m_matchedRules.size(); i++) {
         // FIXME: Matching should not modify the style directly.
-        const RuleData* ruleData = matchedRules[i].ruleData();
+        const RuleData* ruleData = m_matchedRules[i].ruleData();
         if (m_style && ruleData->containsUncommonAttributeSelector())
             m_style->setUnique();
         m_result.addMatchedProperties(&ruleData->rule()->properties(), ruleData->linkMatchType(), ruleData->propertyWhitelistType(m_matchingUARules));
@@ -330,8 +325,7 @@ static inline bool compareRules(const MatchedRule& matchedRule1, const MatchedRu
 
 void ElementRuleCollector::sortMatchedRules()
 {
-    ASSERT(m_matchedRules);
-    std::sort(m_matchedRules->begin(), m_matchedRules->end(), compareRules);
+    std::sort(m_matchedRules.begin(), m_matchedRules.end(), compareRules);
 }
 
 bool ElementRuleCollector::hasAnyMatchingRules(RuleSet* ruleSet)
@@ -347,7 +341,7 @@ bool ElementRuleCollector::hasAnyMatchingRules(RuleSet* ruleSet)
     // FIXME: Verify whether it's ok to ignore CascadeScope here.
     collectMatchingRules(MatchRequest(ruleSet), ruleRange);
 
-    return m_matchedRules && !m_matchedRules->isEmpty();
+    return !m_matchedRules.isEmpty();
 }
 
 } // namespace blink

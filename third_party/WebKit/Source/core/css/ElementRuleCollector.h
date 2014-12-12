@@ -170,7 +170,7 @@ private:
     bool m_matchingUARules;
     bool m_scopeContainsLastMatchedElement;
 
-    OwnPtrWillBeMember<WillBeHeapVector<MatchedRule, 32> > m_matchedRules;
+    WillBeHeapVector<MatchedRule, 32> m_matchedRules;
 
     // Output.
     RefPtrWillBeMember<StaticCSSRuleList> m_cssRuleList;
