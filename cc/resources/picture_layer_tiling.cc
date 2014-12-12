@@ -25,35 +25,6 @@ namespace {
 
 const float kSoonBorderDistanceInScreenPixels = 312.f;
 
-class TileEvictionOrder {
- public:
-  explicit TileEvictionOrder(TreePriority tree_priority)
-      : tree_priority_(tree_priority) {}
-  ~TileEvictionOrder() {}
-
-  bool operator()(const Tile* a, const Tile* b) {
-    const TilePriority& a_priority =
-        a->priority_for_tree_priority(tree_priority_);
-    const TilePriority& b_priority =
-        b->priority_for_tree_priority(tree_priority_);
-
-    DCHECK(a_priority.priority_bin == b_priority.priority_bin);
-    DCHECK(a->required_for_activation() == b->required_for_activation());
-
-    // Or if a is occluded and b is unoccluded.
-    bool a_is_occluded = a->is_occluded_for_tree_priority(tree_priority_);
-    bool b_is_occluded = b->is_occluded_for_tree_priority(tree_priority_);
-    if (a_is_occluded != b_is_occluded)
-      return a_is_occluded;
-
-    // Or if a is farther away from visible.
-    return a_priority.distance_to_visible > b_priority.distance_to_visible;
-  }
-
- private:
-  TreePriority tree_priority_;
-};
-
 }  // namespace
 
 scoped_ptr<PictureLayerTiling> PictureLayerTiling::Create(
@@ -91,9 +62,7 @@ PictureLayerTiling::PictureLayerTiling(
       has_visible_rect_tiles_(false),
       has_skewport_rect_tiles_(false),
       has_soon_border_rect_tiles_(false),
-      has_eventually_rect_tiles_(false),
-      eviction_tiles_cache_valid_(false),
-      eviction_cache_tree_priority_(SAME_PRIORITY_FOR_BOTH_TREES) {
+      has_eventually_rect_tiles_(false) {
   gfx::Size content_bounds =
       gfx::ToCeiledSize(gfx::ScaleSize(layer_bounds, contents_scale));
   gfx::Size tile_size = client_->CalculateTileSize(content_bounds);
@@ -153,7 +122,6 @@ Tile* PictureLayerTiling::CreateTile(int i,
     tile->set_tiling_index(i, j);
     tiles_[key] = tile;
   }
-  eviction_tiles_cache_valid_ = false;
   return tile.get();
 }
 
@@ -521,7 +489,6 @@ bool PictureLayerTiling::RemoveTileAt(int i,
     return false;
   found->second->set_shared(false);
   tiles_.erase(found);
-  eviction_tiles_cache_valid_ = false;
   if (recycled_twin) {
     // Recycled twin does not also have a recycled twin, so pass NULL.
     recycled_twin->RemoveTileAt(i, j, NULL);
@@ -538,7 +505,6 @@ void PictureLayerTiling::Reset() {
       recycled_twin->RemoveTileAt(it->first.first, it->first.second, NULL);
   }
   tiles_.clear();
-  eviction_tiles_cache_valid_ = false;
 }
 
 gfx::Rect PictureLayerTiling::ComputeSkewport(
@@ -665,8 +631,6 @@ void PictureLayerTiling::UpdateTilePriorityRects(
   has_soon_border_rect_tiles_ =
       tiling_rect.Intersects(current_soon_border_rect_);
   has_eventually_rect_tiles_ = tiling_rect.Intersects(current_eventually_rect_);
-
-  eviction_tiles_cache_valid_ = false;
 }
 
 void PictureLayerTiling::SetLiveTilesRect(
@@ -1053,92 +1017,6 @@ gfx::Rect PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
   if (cache)
     cache->previous_result = result;
   return result;
-}
-
-void PictureLayerTiling::UpdateEvictionCacheIfNeeded(
-    TreePriority tree_priority) {
-  if (eviction_tiles_cache_valid_ &&
-      eviction_cache_tree_priority_ == tree_priority)
-    return;
-
-  eviction_tiles_now_.clear();
-  eviction_tiles_now_and_required_for_activation_.clear();
-  eviction_tiles_soon_.clear();
-  eviction_tiles_soon_and_required_for_activation_.clear();
-  eviction_tiles_eventually_.clear();
-  eviction_tiles_eventually_and_required_for_activation_.clear();
-
-  for (TileMap::iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
-    Tile* tile = it->second.get();
-    UpdateTileAndTwinPriority(tile);
-    const TilePriority& priority =
-        tile->priority_for_tree_priority(tree_priority);
-    switch (priority.priority_bin) {
-      case TilePriority::EVENTUALLY:
-        if (tile->required_for_activation())
-          eviction_tiles_eventually_and_required_for_activation_.push_back(
-              tile);
-        else
-          eviction_tiles_eventually_.push_back(tile);
-        break;
-      case TilePriority::SOON:
-        if (tile->required_for_activation())
-          eviction_tiles_soon_and_required_for_activation_.push_back(tile);
-        else
-          eviction_tiles_soon_.push_back(tile);
-        break;
-      case TilePriority::NOW:
-        if (tile->required_for_activation())
-          eviction_tiles_now_and_required_for_activation_.push_back(tile);
-        else
-          eviction_tiles_now_.push_back(tile);
-        break;
-    }
-  }
-
-  // TODO(vmpstr): Do this lazily. One option is to have a "sorted" flag that
-  // can be updated for each of the queues.
-  TileEvictionOrder sort_order(tree_priority);
-  std::sort(eviction_tiles_now_.begin(), eviction_tiles_now_.end(), sort_order);
-  std::sort(eviction_tiles_now_and_required_for_activation_.begin(),
-            eviction_tiles_now_and_required_for_activation_.end(),
-            sort_order);
-  std::sort(
-      eviction_tiles_soon_.begin(), eviction_tiles_soon_.end(), sort_order);
-  std::sort(eviction_tiles_soon_and_required_for_activation_.begin(),
-            eviction_tiles_soon_and_required_for_activation_.end(),
-            sort_order);
-  std::sort(eviction_tiles_eventually_.begin(),
-            eviction_tiles_eventually_.end(),
-            sort_order);
-  std::sort(eviction_tiles_eventually_and_required_for_activation_.begin(),
-            eviction_tiles_eventually_and_required_for_activation_.end(),
-            sort_order);
-
-  eviction_tiles_cache_valid_ = true;
-  eviction_cache_tree_priority_ = tree_priority;
-}
-
-const std::vector<Tile*>* PictureLayerTiling::GetEvictionTiles(
-    TreePriority tree_priority,
-    EvictionCategory category) {
-  UpdateEvictionCacheIfNeeded(tree_priority);
-  switch (category) {
-    case EVENTUALLY:
-      return &eviction_tiles_eventually_;
-    case EVENTUALLY_AND_REQUIRED_FOR_ACTIVATION:
-      return &eviction_tiles_eventually_and_required_for_activation_;
-    case SOON:
-      return &eviction_tiles_soon_;
-    case SOON_AND_REQUIRED_FOR_ACTIVATION:
-      return &eviction_tiles_soon_and_required_for_activation_;
-    case NOW:
-      return &eviction_tiles_now_;
-    case NOW_AND_REQUIRED_FOR_ACTIVATION:
-      return &eviction_tiles_now_and_required_for_activation_;
-  }
-  NOTREACHED();
-  return &eviction_tiles_eventually_;
 }
 
 PictureLayerTiling::TilingRasterTileIterator::TilingRasterTileIterator()

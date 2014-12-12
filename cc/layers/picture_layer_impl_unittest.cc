@@ -2910,6 +2910,8 @@ TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
   size_t scale_index = 0;
   bool reached_visible = false;
   Tile* last_tile = nullptr;
+  size_t distance_decreasing = 0;
+  size_t distance_increasing = 0;
   queue = pending_layer_->CreateEvictionQueue(SAME_PRIORITY_FOR_BOTH_TREES);
   while (!queue->IsEmpty()) {
     Tile* tile = queue->Top();
@@ -2937,16 +2939,17 @@ TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
     EXPECT_FLOAT_EQ(tile->contents_scale(), expected_scales[scale_index]);
     unique_tiles.insert(tile);
 
-    // If the tile is the same rough bin as last tile (same activation, bin, and
-    // scale), then distance should be decreasing.
     if (tile->required_for_activation() ==
             last_tile->required_for_activation() &&
         priority.priority_bin ==
             last_tile->priority(PENDING_TREE).priority_bin &&
         std::abs(tile->contents_scale() - last_tile->contents_scale()) <
             std::numeric_limits<float>::epsilon()) {
-      EXPECT_LE(priority.distance_to_visible,
-                last_tile->priority(PENDING_TREE).distance_to_visible);
+      if (priority.distance_to_visible <=
+          last_tile->priority(PENDING_TREE).distance_to_visible)
+        ++distance_decreasing;
+      else
+        ++distance_increasing;
     }
 
     last_tile = tile;
@@ -2956,6 +2959,8 @@ TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
   // 4 high res tiles are inside the viewport, the rest are evicted.
   EXPECT_TRUE(reached_visible);
   EXPECT_EQ(12u, unique_tiles.size());
+  EXPECT_EQ(1u, distance_increasing);
+  EXPECT_EQ(11u, distance_decreasing);
 
   scale_index = 0;
   bool reached_required = false;
@@ -3712,14 +3717,17 @@ class OcclusionTrackingPictureLayerImplTest : public PictureLayerImplTest {
   OcclusionTrackingPictureLayerImplTest()
       : PictureLayerImplTest(OcclusionTrackingSettings()) {}
 
-  void VerifyEvictionConsidersOcclusion(
-      PictureLayerImpl* layer,
-      size_t expected_occluded_tile_count[NUM_TREE_PRIORITIES]) {
+  void VerifyEvictionConsidersOcclusion(FakePictureLayerImpl* layer,
+                                        FakePictureLayerImpl* twin_layer,
+                                        WhichTree tree,
+                                        size_t expected_occluded_tile_count) {
+    WhichTree twin_tree = tree == ACTIVE_TREE ? PENDING_TREE : ACTIVE_TREE;
     for (int priority_count = 0; priority_count < NUM_TREE_PRIORITIES;
          ++priority_count) {
       TreePriority tree_priority = static_cast<TreePriority>(priority_count);
       size_t occluded_tile_count = 0u;
       Tile* last_tile = nullptr;
+      std::set<Tile*> shared_tiles;
 
       scoped_ptr<TilingSetEvictionQueue> queue =
           layer->CreateEvictionQueue(tree_priority);
@@ -3727,23 +3735,22 @@ class OcclusionTrackingPictureLayerImplTest : public PictureLayerImplTest {
         Tile* tile = queue->Top();
         if (!last_tile)
           last_tile = tile;
+        if (tile->is_shared())
+          EXPECT_TRUE(shared_tiles.insert(tile).second);
 
         // The only way we will encounter an occluded tile after an unoccluded
         // tile is if the priorty bin decreased, the tile is required for
         // activation, or the scale changed.
-        bool tile_is_occluded =
-            tile->is_occluded_for_tree_priority(tree_priority);
+        bool tile_is_occluded = tile->is_occluded(tree);
         if (tile_is_occluded) {
           occluded_tile_count++;
 
-          bool last_tile_is_occluded =
-              last_tile->is_occluded_for_tree_priority(tree_priority);
+          bool last_tile_is_occluded = last_tile->is_occluded(tree);
           if (!last_tile_is_occluded) {
             TilePriority::PriorityBin tile_priority_bin =
-                tile->priority_for_tree_priority(tree_priority).priority_bin;
+                tile->priority(tree).priority_bin;
             TilePriority::PriorityBin last_tile_priority_bin =
-                last_tile->priority_for_tree_priority(tree_priority)
-                    .priority_bin;
+                last_tile->priority(tree).priority_bin;
 
             EXPECT_TRUE(
                 (tile_priority_bin < last_tile_priority_bin) ||
@@ -3754,8 +3761,74 @@ class OcclusionTrackingPictureLayerImplTest : public PictureLayerImplTest {
         last_tile = tile;
         queue->Pop();
       }
-      EXPECT_EQ(expected_occluded_tile_count[priority_count],
-                occluded_tile_count);
+      // Count also shared tiles which are occluded in the tree but which were
+      // not returned by the tiling set eviction queue. Those shared tiles
+      // shall be returned by the twin tiling set eviction queue.
+      queue = twin_layer->CreateEvictionQueue(tree_priority);
+      while (!queue->IsEmpty()) {
+        Tile* tile = queue->Top();
+        if (tile->is_shared()) {
+          EXPECT_TRUE(shared_tiles.insert(tile).second);
+          if (tile->is_occluded(tree))
+            ++occluded_tile_count;
+          // Check the reasons why the shared tile was not returned by
+          // the first tiling set eviction queue.
+          switch (tree_priority) {
+            case SAME_PRIORITY_FOR_BOTH_TREES: {
+              const TilePriority& priority = tile->priority(tree);
+              const TilePriority& priority_for_tree_priority =
+                  tile->priority_for_tree_priority(tree_priority);
+              const TilePriority& twin_priority = tile->priority(twin_tree);
+              // Check if the shared tile was not returned by the first tiling
+              // set eviction queue because it was out of order for the first
+              // tiling set eviction queue but not for the twin tiling set
+              // eviction queue.
+              if (priority.priority_bin != twin_priority.priority_bin) {
+                EXPECT_LT(priority_for_tree_priority.priority_bin,
+                          priority.priority_bin);
+                EXPECT_EQ(priority_for_tree_priority.priority_bin,
+                          twin_priority.priority_bin);
+                EXPECT_TRUE(priority_for_tree_priority.priority_bin <
+                            priority.priority_bin);
+              } else if (tile->is_occluded(tree) !=
+                         tile->is_occluded(twin_tree)) {
+                EXPECT_TRUE(tile->is_occluded(tree));
+                EXPECT_FALSE(tile->is_occluded(twin_tree));
+                EXPECT_FALSE(
+                    tile->is_occluded_for_tree_priority(tree_priority));
+              } else if (priority.distance_to_visible !=
+                         twin_priority.distance_to_visible) {
+                EXPECT_LT(priority_for_tree_priority.distance_to_visible,
+                          priority.distance_to_visible);
+                EXPECT_EQ(priority_for_tree_priority.distance_to_visible,
+                          twin_priority.distance_to_visible);
+                EXPECT_TRUE(priority_for_tree_priority.distance_to_visible <
+                            priority.distance_to_visible);
+              } else {
+                // Shared tiles having the same active and pending priorities
+                // should be returned only by a pending tree eviction queue.
+                EXPECT_EQ(ACTIVE_TREE, tree);
+              }
+              break;
+            }
+            case SMOOTHNESS_TAKES_PRIORITY:
+              // Shared tiles should be returned only by an active tree
+              // eviction queue.
+              EXPECT_EQ(PENDING_TREE, tree);
+              break;
+            case NEW_CONTENT_TAKES_PRIORITY:
+              // Shared tiles should be returned only by a pending tree
+              // eviction queue.
+              EXPECT_EQ(ACTIVE_TREE, tree);
+              break;
+            case NUM_TREE_PRIORITIES:
+              NOTREACHED();
+              break;
+          }
+        }
+        queue->Pop();
+      }
+      EXPECT_EQ(expected_occluded_tile_count, occluded_tile_count);
     }
   }
 };
@@ -4227,11 +4300,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   size_t expected_occluded_tile_count_on_active[] = {30u, 3u};
   size_t expected_occluded_tile_count_on_pending[] = {30u, 3u};
 
-  // The total expected number of occluded tiles on all tilings for each of the
-  // 3 tree priorities.
-  size_t total_expected_occluded_tile_count[] = {10u, 33u, 33u};
-
-  ASSERT_EQ(arraysize(total_expected_occluded_tile_count), NUM_TREE_PRIORITIES);
+  size_t total_expected_occluded_tile_count_on_trees[] = {33u, 33u};
 
   // Verify number of occluded tiles on the pending layer for each tiling.
   for (size_t i = 0; i < pending_layer_->num_tilings(); ++i) {
@@ -4311,10 +4380,30 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
 
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(all_tiles);
 
-  VerifyEvictionConsidersOcclusion(pending_layer_,
-                                   total_expected_occluded_tile_count);
-  VerifyEvictionConsidersOcclusion(active_layer_,
-                                   total_expected_occluded_tile_count);
+  VerifyEvictionConsidersOcclusion(
+      pending_layer_, active_layer_, PENDING_TREE,
+      total_expected_occluded_tile_count_on_trees[PENDING_TREE]);
+  VerifyEvictionConsidersOcclusion(
+      active_layer_, pending_layer_, ACTIVE_TREE,
+      total_expected_occluded_tile_count_on_trees[ACTIVE_TREE]);
+
+  // Repeat the tests without valid active tree priorities.
+  active_layer_->set_has_valid_tile_priorities(false);
+  VerifyEvictionConsidersOcclusion(
+      pending_layer_, active_layer_, PENDING_TREE,
+      total_expected_occluded_tile_count_on_trees[PENDING_TREE]);
+  VerifyEvictionConsidersOcclusion(
+      active_layer_, pending_layer_, ACTIVE_TREE, 0u);
+  active_layer_->set_has_valid_tile_priorities(true);
+
+  // Repeat the tests without valid pending tree priorities.
+  pending_layer_->set_has_valid_tile_priorities(false);
+  VerifyEvictionConsidersOcclusion(
+      active_layer_, pending_layer_, ACTIVE_TREE,
+      total_expected_occluded_tile_count_on_trees[ACTIVE_TREE]);
+  VerifyEvictionConsidersOcclusion(
+      pending_layer_, active_layer_, PENDING_TREE, 0u);
+  pending_layer_->set_has_valid_tile_priorities(true);
 }
 
 TEST_F(PictureLayerImplTest, PendingOrActiveTwinLayer) {

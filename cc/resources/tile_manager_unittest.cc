@@ -483,6 +483,8 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
   // Here we expect to get increasing ACTIVE_TREE priority_bin.
   queue.Reset();
   host_impl_.BuildEvictionQueue(&queue, SMOOTHNESS_TAKES_PRIORITY);
+  int distance_increasing = 0;
+  int distance_decreasing = 0;
   while (!queue.IsEmpty()) {
     Tile* tile = queue.Top();
     EXPECT_TRUE(tile);
@@ -499,8 +501,11 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
                 tile->required_for_activation());
       if (last_tile->required_for_activation() ==
           tile->required_for_activation()) {
-        EXPECT_GE(last_tile->priority(ACTIVE_TREE).distance_to_visible,
-                  tile->priority(ACTIVE_TREE).distance_to_visible);
+        if (last_tile->priority(ACTIVE_TREE).distance_to_visible >=
+            tile->priority(ACTIVE_TREE).distance_to_visible)
+          ++distance_decreasing;
+        else
+          ++distance_increasing;
       }
     }
 
@@ -510,6 +515,8 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
     queue.Pop();
   }
 
+  EXPECT_EQ(3, distance_increasing);
+  EXPECT_EQ(16, distance_decreasing);
   EXPECT_EQ(tile_count, smoothness_tiles.size());
   EXPECT_EQ(all_tiles, smoothness_tiles);
 
@@ -518,6 +525,8 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
   // Here we expect to get increasing PENDING_TREE priority_bin.
   queue.Reset();
   host_impl_.BuildEvictionQueue(&queue, NEW_CONTENT_TAKES_PRIORITY);
+  distance_decreasing = 0;
+  distance_increasing = 0;
   while (!queue.IsEmpty()) {
     Tile* tile = queue.Top();
     EXPECT_TRUE(tile);
@@ -533,8 +542,11 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
                 tile->required_for_activation());
       if (last_tile->required_for_activation() ==
           tile->required_for_activation()) {
-        EXPECT_GE(last_tile->priority(PENDING_TREE).distance_to_visible,
-                  tile->priority(PENDING_TREE).distance_to_visible);
+        if (last_tile->priority(PENDING_TREE).distance_to_visible >=
+            tile->priority(PENDING_TREE).distance_to_visible)
+          ++distance_decreasing;
+        else
+          ++distance_increasing;
       }
     }
 
@@ -543,6 +555,8 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
     queue.Pop();
   }
 
+  EXPECT_EQ(3, distance_increasing);
+  EXPECT_EQ(16, distance_decreasing);
   EXPECT_EQ(tile_count, new_content_tiles.size());
   EXPECT_EQ(all_tiles, new_content_tiles);
 }

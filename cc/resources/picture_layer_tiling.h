@@ -59,15 +59,6 @@ class CC_EXPORT PictureLayerTiling {
  public:
   static const int kBorderTexels = 1;
 
-  enum EvictionCategory {
-    EVENTUALLY,
-    EVENTUALLY_AND_REQUIRED_FOR_ACTIVATION,
-    SOON,
-    SOON_AND_REQUIRED_FOR_ACTIVATION,
-    NOW,
-    NOW_AND_REQUIRED_FOR_ACTIVATION
-  };
-
   class CC_EXPORT TilingRasterTileIterator {
    public:
     TilingRasterTileIterator();
@@ -309,10 +300,6 @@ class CC_EXPORT PictureLayerTiling {
                             const gfx::Rect& visible_rect_in_content_space)
       const;
 
-  void UpdateEvictionCacheIfNeeded(TreePriority tree_priority);
-  const std::vector<Tile*>* GetEvictionTiles(TreePriority tree_priority,
-                                             EvictionCategory category);
-
   // Save the required data for computing tile priorities later.
   void UpdateTilePriorityRects(float content_to_screen_scale_,
                                const gfx::Rect& visible_rect_in_content_space,
@@ -359,19 +346,6 @@ class CC_EXPORT PictureLayerTiling {
   bool has_skewport_rect_tiles_;
   bool has_soon_border_rect_tiles_;
   bool has_eventually_rect_tiles_;
-
-  // TODO(reveman): Remove this in favour of an array of eviction_tiles_ when we
-  // change all enums to have a consistent way of getting the count/last
-  // element.
-  std::vector<Tile*> eviction_tiles_now_;
-  std::vector<Tile*> eviction_tiles_now_and_required_for_activation_;
-  std::vector<Tile*> eviction_tiles_soon_;
-  std::vector<Tile*> eviction_tiles_soon_and_required_for_activation_;
-  std::vector<Tile*> eviction_tiles_eventually_;
-  std::vector<Tile*> eviction_tiles_eventually_and_required_for_activation_;
-
-  bool eviction_tiles_cache_valid_;
-  TreePriority eviction_cache_tree_priority_;
 
  private:
   DISALLOW_ASSIGN(PictureLayerTiling);

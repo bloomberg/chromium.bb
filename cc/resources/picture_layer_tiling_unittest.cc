@@ -64,9 +64,6 @@ class TestablePictureLayerTiling : public PictureLayerTiling {
   }
 
   gfx::Rect live_tiles_rect() const { return live_tiles_rect_; }
-  bool eviction_tiles_cache_valid() const {
-    return eviction_tiles_cache_valid_;
-  }
 
   using PictureLayerTiling::ComputeSkewport;
   using PictureLayerTiling::RemoveTileAt;
