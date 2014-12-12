@@ -10,8 +10,6 @@
 #include "core/css/Rect.h"
 #include "core/css/StylePropertySet.h"
 
-#include "stdio.h"
-
 #include <gtest/gtest.h>
 
 namespace blink {
@@ -52,7 +50,7 @@ protected:
 
 TEST_F(AnimationLengthBoxStyleInterpolationTest, ZeroLengthBox)
 {
-    RefPtr<Rect> rectPx = Rect::create();
+    RefPtrWillBeRawPtr<Rect> rectPx = Rect::create();
     rectPx->setLeft(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PX));
     rectPx->setRight(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PX));
     rectPx->setTop(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PX));
@@ -60,7 +58,7 @@ TEST_F(AnimationLengthBoxStyleInterpolationTest, ZeroLengthBox)
     RefPtrWillBeRawPtr<CSSValue> value = roundTrip(CSSPrimitiveValue::create(rectPx.release()));
     testPrimitiveValue(value, 0, 0, 0, 0, CSSPrimitiveValue::CSS_PX);
 
-    RefPtr<Rect> rectEms = Rect::create();
+    RefPtrWillBeRawPtr<Rect> rectEms = Rect::create();
     rectEms->setLeft(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_EMS));
     rectEms->setRight(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_EMS));
     rectEms->setTop(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_EMS));
@@ -72,7 +70,7 @@ TEST_F(AnimationLengthBoxStyleInterpolationTest, ZeroLengthBox)
 
 TEST_F(AnimationLengthBoxStyleInterpolationTest, SingleUnitBox)
 {
-    RefPtr<Rect> rectPx = Rect::create();
+    RefPtrWillBeRawPtr<Rect> rectPx = Rect::create();
     rectPx->setLeft(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX));
     rectPx->setRight(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX));
     rectPx->setTop(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX));
@@ -81,7 +79,7 @@ TEST_F(AnimationLengthBoxStyleInterpolationTest, SingleUnitBox)
     RefPtrWillBeRawPtr<CSSValue> value = roundTrip(CSSPrimitiveValue::create(rectPx.release()));
     testPrimitiveValue(value, 10, 10, 10, 10, CSSPrimitiveValue::CSS_PX);
 
-    RefPtr<Rect> rectPer = Rect::create();
+    RefPtrWillBeRawPtr<Rect> rectPer = Rect::create();
     rectPer->setLeft(CSSPrimitiveValue::create(30, CSSPrimitiveValue::CSS_PERCENTAGE));
     rectPer->setRight(CSSPrimitiveValue::create(30, CSSPrimitiveValue::CSS_PERCENTAGE));
     rectPer->setTop(CSSPrimitiveValue::create(30, CSSPrimitiveValue::CSS_PERCENTAGE));
@@ -90,7 +88,7 @@ TEST_F(AnimationLengthBoxStyleInterpolationTest, SingleUnitBox)
     value = roundTrip(CSSPrimitiveValue::create(rectPer.release()));
     testPrimitiveValue(value, 30, 30, 30, 30, CSSPrimitiveValue::CSS_PERCENTAGE);
 
-    RefPtr<Rect> rectEms = Rect::create();
+    RefPtrWillBeRawPtr<Rect> rectEms = Rect::create();
     rectEms->setLeft(CSSPrimitiveValue::create(-10, CSSPrimitiveValue::CSS_EMS));
     rectEms->setRight(CSSPrimitiveValue::create(-10, CSSPrimitiveValue::CSS_EMS));
     rectEms->setTop(CSSPrimitiveValue::create(-10, CSSPrimitiveValue::CSS_EMS));
@@ -102,7 +100,7 @@ TEST_F(AnimationLengthBoxStyleInterpolationTest, SingleUnitBox)
 
 TEST_F(AnimationLengthBoxStyleInterpolationTest, MultipleValues)
 {
-    RefPtr<Rect> rectPx = Rect::create();
+    RefPtrWillBeRawPtr<Rect> rectPx = Rect::create();
     rectPx->setLeft(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX));
     rectPx->setRight(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PX));
     rectPx->setTop(CSSPrimitiveValue::create(20, CSSPrimitiveValue::CSS_PX));
@@ -111,7 +109,7 @@ TEST_F(AnimationLengthBoxStyleInterpolationTest, MultipleValues)
     RefPtrWillBeRawPtr<CSSValue> value = roundTrip(CSSPrimitiveValue::create(rectPx.release()));
     testPrimitiveValue(value, 10, 0, 20, 40, CSSPrimitiveValue::CSS_PX);
 
-    RefPtr<Rect> rectPer = Rect::create();
+    RefPtrWillBeRawPtr<Rect> rectPer = Rect::create();
     rectPer->setLeft(CSSPrimitiveValue::create(30, CSSPrimitiveValue::CSS_PERCENTAGE));
     rectPer->setRight(CSSPrimitiveValue::create(-30, CSSPrimitiveValue::CSS_PERCENTAGE));
     rectPer->setTop(CSSPrimitiveValue::create(30, CSSPrimitiveValue::CSS_PERCENTAGE));

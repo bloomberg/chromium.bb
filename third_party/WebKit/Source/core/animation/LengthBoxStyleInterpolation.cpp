@@ -24,7 +24,7 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> LengthBoxStyleInterpolation::lengthBox
     Rect* rect = toCSSPrimitiveValue(lengthBox).getRectValue();
     CSSPrimitiveValue* side[numberOfSides] = { rect->left(), rect->right(), rect->top(), rect->bottom() };
 
-    for (size_t i = 0; i < numberOfSides; i ++) {
+    for (size_t i = 0; i < numberOfSides; i++) {
         result->set(i, LengthStyleInterpolation::lengthToInterpolableValue(*side[i]));
     }
     return result.release();
@@ -32,13 +32,13 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> LengthBoxStyleInterpolation::lengthBox
 
 static inline PassRefPtrWillBeRawPtr<CSSPrimitiveValue> toPrimitiveValue(PassRefPtrWillBeRawPtr<CSSValue> value)
 {
-    return adoptRef(toCSSPrimitiveValue(value.leakRef()));
+    return adoptRefWillBeNoop(toCSSPrimitiveValue(value.leakRef()));
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> LengthBoxStyleInterpolation::interpolableValueToLengthBox(InterpolableValue* value)
 {
     InterpolableList* lengthBox = toInterpolableList(value);
-    RefPtr<Rect> result = Rect::create();
+    RefPtrWillBeRawPtr<Rect> result = Rect::create();
 
     result->setLeft(toPrimitiveValue(LengthStyleInterpolation::interpolableValueToLength(lengthBox->get(0), ValueRangeNonNegative)));
     result->setRight(toPrimitiveValue(LengthStyleInterpolation::interpolableValueToLength(lengthBox->get(1), ValueRangeNonNegative)));
@@ -59,5 +59,3 @@ void LengthBoxStyleInterpolation::trace(Visitor* visitor)
 }
 
 }
-
-
