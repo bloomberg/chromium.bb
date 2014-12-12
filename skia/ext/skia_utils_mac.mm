@@ -376,16 +376,9 @@ void SkiaBitLocker::releaseIfNeeded() {
     if (!bitmap_.extractSubset(&subset, bounds)) {
         return;
     }
-    // Neutralize the global matrix by concatenating the inverse. In the
-    // future, Skia may provide some mechanism to set the device portion of
-    // the matrix to identity without clobbering any hosting matrix (e.g., the
-    // picture's matrix).
-    const SkMatrix& skMatrix = canvas_->getTotalMatrix();
-    SkMatrix inverse;
-    if (!skMatrix.invert(&inverse))
-      return;
+    subset.setImmutable();  // Prevents a defensive copy inside Skia.
     canvas_->save();
-    canvas_->concat(inverse);
+    canvas_->setMatrix(SkMatrix::I());  // Reset back to device space.
     canvas_->translate(bounds.x() + bitmapOffset_.x(),
                        bounds.y() + bitmapOffset_.y());
     canvas_->scale(1.f / bitmapScaleFactor_, 1.f / bitmapScaleFactor_);
