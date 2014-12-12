@@ -4,6 +4,9 @@
   source code is governed by a BSD-style license that can be found in the
   LICENSE file.
 -->
+
+<!-- Please keep this in sync with the downstream android_webview manifest.
+-->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.android.webview">
     <uses-sdk android:minSdkVersion="21"
