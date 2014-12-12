@@ -1113,16 +1113,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   base::OneShotTimer<ProfileSyncService> request_access_token_retry_timer_;
   net::BackoffEntry request_access_token_backoff_;
 
-  base::WeakPtrFactory<ProfileSyncService> weak_factory_;
-
-  // We don't use |weak_factory_| for the StartupController because the weak
-  // ptrs should be bound to the lifetime of ProfileSyncService and not to the
-  // [Initialize -> sync disabled/shutdown] lifetime.  We don't pass
-  // StartupController an Unretained reference to future-proof against
-  // the controller impl changing to post tasks. Therefore, we have a separate
-  // factory.
-  base::WeakPtrFactory<ProfileSyncService> startup_controller_weak_factory_;
-
   // States related to sync token and connection.
   base::Time connection_status_update_time_;
   syncer::ConnectionStatus connection_status_;
@@ -1139,9 +1129,10 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   scoped_ptr<syncer::NetworkResources> network_resources_;
 
-  browser_sync::StartupController startup_controller_;
+  scoped_ptr<browser_sync::StartupController> startup_controller_;
 
-  browser_sync::BackupRollbackController backup_rollback_controller_;
+  scoped_ptr<browser_sync::BackupRollbackController>
+      backup_rollback_controller_;
 
   // Mode of current backend.
   BackendMode backend_mode_;
@@ -1166,6 +1157,16 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   // The full path to the sync data directory.
   base::FilePath directory_path_;
+
+  base::WeakPtrFactory<ProfileSyncService> weak_factory_;
+
+  // We don't use |weak_factory_| for the StartupController because the weak
+  // ptrs should be bound to the lifetime of ProfileSyncService and not to the
+  // [Initialize -> sync disabled/shutdown] lifetime.  We don't pass
+  // StartupController an Unretained reference to future-proof against
+  // the controller impl changing to post tasks. Therefore, we have a separate
+  // factory.
+  base::WeakPtrFactory<ProfileSyncService> startup_controller_weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };
