@@ -134,12 +134,10 @@ def AddRemoteDeviceOptions(parser):
                    help=('OS to have on the device.'))
   group.add_argument('--results-path', default='',
                    help=('File path to download results to.'))
-  group.add_argument('--api-protocol', default='http',
+  group.add_argument('--api-protocol',
                    help=('HTTP protocol to use. (http or https)'))
-  group.add_argument('--api-address', default='172.22.21.180',
-                   help=('Address to send HTTP requests.'))
-  group.add_argument('--api-port', default='80',
-                   help=('Port to send HTTP requests to.'))
+  group.add_argument('--api-address', help=('Address to send HTTP requests.'))
+  group.add_argument('--api-port', help=('Port to send HTTP requests to.'))
   group.add_argument('--runner-type', default='',
                    help=('Type of test to run as.'))
   group.add_argument('--runner-package', default='',

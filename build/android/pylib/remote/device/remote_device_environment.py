@@ -46,9 +46,18 @@ class RemoteDeviceEnvironment(environment.Environment):
     else:
       error_func('Must set api secret with --api-secret or --api-secret-file')
 
+    if not args.api_protocol:
+      error_func('Must set api protocol with --api-protocol. Example: http')
     self._api_protocol = args.api_protocol
+
+    if not args.api_address:
+      error_func('Must set api address with --api-address')
     self._api_address = args.api_address
+
+    if not args.api_port:
+      error_func('Must set api port with --api-port.')
     self._api_port = args.api_port
+
     self._access_token = ''
     self._results_path = args.results_path
     self._remote_device = args.remote_device
