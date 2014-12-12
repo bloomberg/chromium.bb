@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/clock.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -46,10 +47,12 @@ class AppSearchProvider::App {
 };
 
 AppSearchProvider::AppSearchProvider(Profile* profile,
-                                     AppListControllerDelegate* list_controller)
+                                     AppListControllerDelegate* list_controller,
+                                     scoped_ptr<base::Clock> clock)
     : profile_(profile),
       list_controller_(list_controller),
-      extension_registry_observer_(this) {
+      extension_registry_observer_(this),
+      clock_(clock.Pass()) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   RefreshApps();
 }
@@ -57,16 +60,10 @@ AppSearchProvider::AppSearchProvider(Profile* profile,
 AppSearchProvider::~AppSearchProvider() {}
 
 void AppSearchProvider::Start(const base::string16& query) {
-  StartImpl(base::Time::Now(), query);
-}
-
-void AppSearchProvider::Stop() {
-}
-
-void AppSearchProvider::StartImpl(const base::Time& current_time,
-                                  const base::string16& query) {
   query_ = query;
-  search_time_ = current_time;
+  const TokenizedString query_terms(query);
+
+  ClearResults();
 
   bool show_recommendations = query.empty();
   // Refresh list of apps to ensure we have the latest launch time information.
@@ -75,6 +72,9 @@ void AppSearchProvider::StartImpl(const base::Time& current_time,
     RefreshApps();
 
   UpdateResults();
+}
+
+void AppSearchProvider::Stop() {
 }
 
 void AppSearchProvider::UpdateResults() {
@@ -89,7 +89,7 @@ void AppSearchProvider::UpdateResults() {
         new AppResult(profile_, (*app_it)->app_id(), list_controller_));
     if (show_recommendations) {
       result->set_title((*app_it)->indexed_name().text());
-      result->UpdateFromLastLaunched(search_time_,
+      result->UpdateFromLastLaunched(clock_->Now(),
                                      (*app_it)->last_launch_time());
     } else {
       TokenizedStringMatch match;

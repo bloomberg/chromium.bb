@@ -14,6 +14,10 @@
 class AppListControllerDelegate;
 class Profile;
 
+namespace base {
+class Clock;
+}
+
 namespace extensions {
 class ExtensionRegistry;
 class ExtensionSet;
@@ -29,7 +33,8 @@ class AppSearchProvider : public SearchProvider,
                           public extensions::ExtensionRegistryObserver {
  public:
   AppSearchProvider(Profile* profile,
-                    AppListControllerDelegate* list_controller);
+                    AppListControllerDelegate* list_controller,
+                    scoped_ptr<base::Clock> clock);
   ~AppSearchProvider() override;
 
   // SearchProvider overrides:
@@ -40,9 +45,6 @@ class AppSearchProvider : public SearchProvider,
   class App;
   typedef ScopedVector<App> Apps;
 
-  friend test::AppSearchProviderTest;
-
-  void StartImpl(const base::Time& current_time, const base::string16& query);
   void UpdateResults();
 
   // Adds extensions to apps container if they should be displayed.
@@ -60,13 +62,14 @@ class AppSearchProvider : public SearchProvider,
   AppListControllerDelegate* list_controller_;
 
   base::string16 query_;
-  base::Time search_time_;
 
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
       extension_registry_observer_;
 
   Apps apps_;
+
+  scoped_ptr<base::Clock> clock_;
 
   DISALLOW_COPY_AND_ASSIGN(AppSearchProvider);
 };

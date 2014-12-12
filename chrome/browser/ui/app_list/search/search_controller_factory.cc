@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
+#include "base/time/default_clock.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
 #include "chrome/browser/ui/app_list/search/history_factory.h"
@@ -45,8 +46,9 @@ scoped_ptr<SearchController> CreateSearchController(
       search_box, results, HistoryFactory::GetForBrowserContext(profile)));
 
   controller->AddProvider(Mixer::MAIN_GROUP,
-                          scoped_ptr<SearchProvider>(
-                              new AppSearchProvider(profile, list_controller)));
+                          scoped_ptr<SearchProvider>(new AppSearchProvider(
+                              profile, list_controller,
+                              make_scoped_ptr(new base::DefaultClock()))));
   controller->AddProvider(Mixer::OMNIBOX_GROUP,
                           scoped_ptr<SearchProvider>(
                               new OmniboxProvider(profile, list_controller)));

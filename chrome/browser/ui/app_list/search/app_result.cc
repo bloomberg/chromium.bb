@@ -81,7 +81,13 @@ void AppResult::UpdateFromMatch(const TokenizedString& title,
 void AppResult::UpdateFromLastLaunched(const base::Time& current_time,
                                        const base::Time& last_launched) {
   base::TimeDelta delta = current_time - last_launched;
-  DCHECK_LE(0, delta.InSeconds());
+  // |current_time| can be before |last_launched| in weird cases such as users
+  // playing with their clocks. Handle this gracefully.
+  if (current_time < last_launched) {
+    set_relevance(1.0);
+    return;
+  }
+
   const int kSecondsInWeek = 60 * 60 * 24 * 7;
 
   // Set the relevance to a value between 0 and 1. This function decays as the
