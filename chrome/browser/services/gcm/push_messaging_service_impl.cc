@@ -372,7 +372,7 @@ void PushMessagingServiceImpl::RegisterEnd(
     const std::string& registration_id,
     content::PushRegistrationStatus status) {
   callback.Run(registration_id, status);
-  if (status == content::PUSH_REGISTRATION_STATUS_SUCCESS)
+  if (status == content::PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE)
     IncreasePushRegistrationCount(1);
 }
 
@@ -382,7 +382,7 @@ void PushMessagingServiceImpl::DidRegister(
     GCMClient::Result result) {
   content::PushRegistrationStatus status =
       result == GCMClient::SUCCESS
-          ? content::PUSH_REGISTRATION_STATUS_SUCCESS
+          ? content::PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE
           : content::PUSH_REGISTRATION_STATUS_SERVICE_ERROR;
   RegisterEnd(callback, registration_id, status);
 }

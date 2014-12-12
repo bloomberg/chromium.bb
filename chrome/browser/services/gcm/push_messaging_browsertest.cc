@@ -136,14 +136,17 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
             browser()->profile(), &FakeGCMProfileService::Build));
     gcm_service_->set_collect(true);
 
-    loadTestPage();
+    LoadTestPage();
 
     InProcessBrowserTest::SetUpOnMainThread();
   }
 
-  void loadTestPage() {
-    ui_test_utils::NavigateToURL(
-        browser(), https_server_->GetURL(GetTestURL()));
+  void LoadTestPage(const std::string& path) {
+    ui_test_utils::NavigateToURL(browser(), https_server_->GetURL(path));
+  }
+
+  void LoadTestPage() {
+    LoadTestPage(GetTestURL());
   }
 
   bool RunScript(const std::string& script, std::string* result) {
@@ -152,6 +155,9 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
         script,
         result);
   }
+
+  void TryToRegisterSuccessfully(
+      const std::string& expected_push_registration_id);
 
   net::SpawnedTestServer* https_server() const { return https_server_.get(); }
 
@@ -191,21 +197,28 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBadManifestBrowserTest,
             script_result);
 }
 
-IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
-                       RegisterSuccessNotificationsGranted) {
+void PushMessagingBrowserTest::TryToRegisterSuccessfully(
+    const std::string& expected_push_registration_id) {
   std::string script_result;
 
-  ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
-  ASSERT_EQ("ok - service worker registered", script_result);
+  EXPECT_TRUE(RunScript("registerServiceWorker()", &script_result));
+  EXPECT_EQ("ok - service worker registered", script_result);
 
   InfoBarResponder accepting_responder(browser(), true);
-  ASSERT_TRUE(RunScript("requestNotificationPermission()", &script_result));
-  ASSERT_EQ("permission status - granted", script_result);
+  EXPECT_TRUE(RunScript("requestNotificationPermission()", &script_result));
+  EXPECT_EQ("permission status - granted", script_result);
 
-  ASSERT_TRUE(RunScript("registerPush()", &script_result));
-  EXPECT_EQ(std::string(kPushMessagingEndpoint) + " - 1-0", script_result);
+  EXPECT_TRUE(RunScript("registerPush()", &script_result));
+  EXPECT_EQ(std::string(kPushMessagingEndpoint) + " - "
+            + expected_push_registration_id, script_result);
+}
 
-  PushMessagingApplicationId app_id(https_server()->GetURL(""), 0L);
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
+                       RegisterSuccessNotificationsGranted) {
+  TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
+
+  PushMessagingApplicationId app_id(https_server()->GetURL(""),
+                                    0LL /* service_worker_registration_id */);
   EXPECT_EQ(app_id.ToString(), gcm_service()->last_registered_app_id());
   EXPECT_EQ("1234567890", gcm_service()->last_registered_sender_ids()[0]);
 }
@@ -221,7 +234,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_TRUE(RunScript("registerPush()", &script_result));
   EXPECT_EQ(std::string(kPushMessagingEndpoint) + " - 1-0", script_result);
 
-  PushMessagingApplicationId app_id(https_server()->GetURL(""), 0L);
+  PushMessagingApplicationId app_id(https_server()->GetURL(""), 0LL);
   EXPECT_EQ(app_id.ToString(), gcm_service()->last_registered_app_id());
   EXPECT_EQ("1234567890", gcm_service()->last_registered_sender_ids()[0]);
 }
@@ -260,27 +273,75 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, RegisterFailureNoManifest) {
             script_result);
 }
 
-IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventSuccess) {
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, RegisterPersisted) {
   std::string script_result;
 
+  // An app ID for each Service Worker registration ID we'll use.
+  PushMessagingApplicationId app_id_sw0(https_server()->GetURL(""), 0LL);
+  PushMessagingApplicationId app_id_sw1(https_server()->GetURL(""), 1LL);
+  PushMessagingApplicationId app_id_sw2(https_server()->GetURL(""), 2LL);
+
+  // First, test that Service Worker registration IDs are assigned in order of
+  // registering the Service Workers, and the (fake) push registration ids are
+  // assigned in order of push registration (even when these orders are
+  // different).
+
+  TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
+  EXPECT_EQ(app_id_sw0.ToString(), gcm_service()->last_registered_app_id());
+
+  LoadTestPage("files/push_messaging/subscope1/test.html");
   ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
   ASSERT_EQ("ok - service worker registered", script_result);
 
-  InfoBarResponder accepting_responder(browser(), true);
-  ASSERT_TRUE(RunScript("requestNotificationPermission();", &script_result));
-  ASSERT_EQ("permission status - granted", script_result);
+  LoadTestPage("files/push_messaging/subscope2/test.html");
+  ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
+  ASSERT_EQ("ok - service worker registered", script_result);
 
-  ASSERT_TRUE(RunScript("registerPush()", &script_result));
-  EXPECT_EQ(std::string(kPushMessagingEndpoint) + " - 1-0", script_result);
+  // Note that we need to reload the page after registering, otherwise
+  // navigator.serviceWorker.ready is going to be resolved with the parent
+  // Service Worker which still controls the page.
+  LoadTestPage("files/push_messaging/subscope2/test.html");
+  TryToRegisterSuccessfully("1-1" /* expected_push_registration_id */);
+  EXPECT_EQ(app_id_sw2.ToString(), gcm_service()->last_registered_app_id());
 
-  PushMessagingApplicationId app_id(https_server()->GetURL(""), 0L);
+  LoadTestPage("files/push_messaging/subscope1/test.html");
+  TryToRegisterSuccessfully("1-2" /* expected_push_registration_id */);
+  EXPECT_EQ(app_id_sw1.ToString(), gcm_service()->last_registered_app_id());
+
+  // Now test that the Service Worker registration IDs and push registration IDs
+  // generated above were persisted to SW storage, by checking that they are
+  // unchanged despite requesting them in a different order.
+  // TODO(johnme): Ideally we would restart the browser at this point to check
+  // they were persisted to disk, but that's not currently possible since the
+  // test server uses random port numbers for each test (even PRE_Foo and Foo),
+  // so we wouldn't be able to load the test pages with the same origin.
+
+  LoadTestPage("files/push_messaging/subscope1/test.html");
+  TryToRegisterSuccessfully("1-2" /* expected_push_registration_id */);
+  EXPECT_EQ(app_id_sw1.ToString(), gcm_service()->last_registered_app_id());
+
+  LoadTestPage("files/push_messaging/subscope2/test.html");
+  TryToRegisterSuccessfully("1-1" /* expected_push_registration_id */);
+  EXPECT_EQ(app_id_sw1.ToString(), gcm_service()->last_registered_app_id());
+
+  LoadTestPage();
+  TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
+  EXPECT_EQ(app_id_sw1.ToString(), gcm_service()->last_registered_app_id());
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventSuccess) {
+  std::string script_result;
+
+  TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
+
+  PushMessagingApplicationId app_id(https_server()->GetURL(""), 0LL);
   EXPECT_EQ(app_id.ToString(), gcm_service()->last_registered_app_id());
   EXPECT_EQ("1234567890", gcm_service()->last_registered_sender_ids()[0]);
 
   ASSERT_TRUE(RunScript("isControlled()", &script_result));
   ASSERT_EQ("false - is not controlled", script_result);
 
-  loadTestPage();  // Reload to become controlled.
+  LoadTestPage();  // Reload to become controlled.
 
   ASSERT_TRUE(RunScript("isControlled()", &script_result));
   ASSERT_EQ("true - is controlled", script_result);
@@ -297,24 +358,16 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventSuccess) {
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoServiceWorker) {
   std::string script_result;
 
-  ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
-  ASSERT_EQ("ok - service worker registered", script_result);
+  TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
 
-  InfoBarResponder accepting_responder(browser(), true);
-  ASSERT_TRUE(RunScript("requestNotificationPermission();", &script_result));
-  ASSERT_EQ("permission status - granted", script_result);
-
-  ASSERT_TRUE(RunScript("registerPush()", &script_result));
-  EXPECT_EQ(std::string(kPushMessagingEndpoint) + " - 1-0", script_result);
-
-  PushMessagingApplicationId app_id(https_server()->GetURL(""), 0L);
+  PushMessagingApplicationId app_id(https_server()->GetURL(""), 0LL);
   EXPECT_EQ(app_id.ToString(), gcm_service()->last_registered_app_id());
   EXPECT_EQ("1234567890", gcm_service()->last_registered_sender_ids()[0]);
 
   ASSERT_TRUE(RunScript("isControlled()", &script_result));
   ASSERT_EQ("false - is not controlled", script_result);
 
-  loadTestPage();  // Reload to become controlled.
+  LoadTestPage();  // Reload to become controlled.
 
   ASSERT_TRUE(RunScript("isControlled()", &script_result));
   ASSERT_EQ("true - is controlled", script_result);
@@ -346,24 +399,16 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoServiceWorker) {
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoPermission) {
   std::string script_result;
 
-  ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
-  ASSERT_EQ("ok - service worker registered", script_result);
+  TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
 
-  InfoBarResponder accepting_responder(browser(), true);
-  ASSERT_TRUE(RunScript("requestNotificationPermission();", &script_result));
-  ASSERT_EQ("permission status - granted", script_result);
-
-  ASSERT_TRUE(RunScript("registerPush()", &script_result));
-  EXPECT_EQ(std::string(kPushMessagingEndpoint) + " - 1-0", script_result);
-
-  PushMessagingApplicationId app_id(https_server()->GetURL(""), 0L);
+  PushMessagingApplicationId app_id(https_server()->GetURL(""), 0LL);
   EXPECT_EQ(app_id.ToString(), gcm_service()->last_registered_app_id());
   EXPECT_EQ("1234567890", gcm_service()->last_registered_sender_ids()[0]);
 
   ASSERT_TRUE(RunScript("isControlled()", &script_result));
   ASSERT_EQ("false - is not controlled", script_result);
 
-  loadTestPage();  // Reload to become controlled.
+  LoadTestPage();  // Reload to become controlled.
 
   ASSERT_TRUE(RunScript("isControlled()", &script_result));
   ASSERT_EQ("true - is controlled", script_result);

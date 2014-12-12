@@ -61,6 +61,9 @@ function requestNotificationPermission() {
 }
 
 function registerServiceWorker() {
+  // The base dir used to resolve service_worker.js and the scope depends on
+  // whether this script is included from an html file in ./, subscope1/, or
+  // subscope2/.
   navigator.serviceWorker.register('service_worker.js', {scope: './'}).then(
       function(swRegistration) {
         sendResultToTest('ok - service worker registered');

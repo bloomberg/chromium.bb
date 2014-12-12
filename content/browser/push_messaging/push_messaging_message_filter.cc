@@ -136,10 +136,7 @@ void PushMessagingMessageFilter::OnRegisterFromDocument(
   data.render_frame_id = render_frame_id;
   data.user_visible_only = user_visible_only;
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&PushMessagingMessageFilter::RegisterOnUI,
-                 this, data, sender_id));
+  CheckForExistingRegistration(data, sender_id);
 }
 
 void PushMessagingMessageFilter::OnRegisterFromWorker(
@@ -162,10 +159,7 @@ void PushMessagingMessageFilter::OnRegisterFromWorker(
   data.requesting_origin = service_worker_registration->pattern().GetOrigin();
   data.service_worker_registration_id = service_worker_registration_id;
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&PushMessagingMessageFilter::RegisterOnUI,
-                 this, data, sender_id));
+  CheckForExistingRegistration(data, sender_id);
 }
 
 void PushMessagingMessageFilter::OnPermissionStatusRequest(
@@ -209,6 +203,43 @@ void PushMessagingMessageFilter::OnGetPermissionStatus(
                  this,
                  service_worker_registration->pattern().GetOrigin(),
                  request_id));
+}
+
+void PushMessagingMessageFilter::CheckForExistingRegistration(
+    const RegisterData& data,
+    const std::string& sender_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  service_worker_context_->context()->storage()->GetUserData(
+      data.service_worker_registration_id,
+      kPushRegistrationIdServiceWorkerKey,
+      base::Bind(&PushMessagingMessageFilter::DidCheckForExistingRegistration,
+                 weak_factory_io_to_io_.GetWeakPtr(),
+                 data, sender_id));
+}
+
+void PushMessagingMessageFilter::DidCheckForExistingRegistration(
+    const RegisterData& data,
+    const std::string& sender_id,
+    const std::string& push_registration_id,
+    ServiceWorkerStatusCode service_worker_status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (service_worker_status == SERVICE_WORKER_OK) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&PushMessagingMessageFilter::SendRegisterSuccessOnUI,
+                   this, data, PUSH_REGISTRATION_STATUS_SUCCESS_FROM_CACHE,
+                   push_registration_id));
+    return;
+  }
+  // TODO(johnme): The spec allows the register algorithm to reject with an
+  // AbortError when accessing storage fails. Perhaps we should do that if
+  // service_worker_status != SERVICE_WORKER_ERROR_NOT_FOUND instead of
+  // attempting to do a fresh registration?
+  // https://w3c.github.io/push-api/#widl-PushRegistrationManager-register-Promise-PushRegistration
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&PushMessagingMessageFilter::RegisterOnUI,
+                 this, data, sender_id));
 }
 
 void PushMessagingMessageFilter::RegisterOnUI(
@@ -272,7 +303,7 @@ void PushMessagingMessageFilter::DidRegister(
     const std::string& push_registration_id,
     PushRegistrationStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (status == PUSH_REGISTRATION_STATUS_SUCCESS) {
+  if (status == PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE) {
     GURL push_endpoint(service()->GetPushEndpoint());
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -304,10 +335,14 @@ void PushMessagingMessageFilter::DidPersistRegistrationOnIO(
     const std::string& push_registration_id,
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (service_worker_status == SERVICE_WORKER_OK)
-    SendRegisterSuccess(data, push_endpoint, push_registration_id);
-  else
+  if (service_worker_status == SERVICE_WORKER_OK) {
+    SendRegisterSuccess(data,
+                        PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE,
+                        push_endpoint, push_registration_id);
+  } else {
+    // TODO(johnme): Unregister, so PushMessagingServiceImpl can decrease count.
     SendRegisterError(data, PUSH_REGISTRATION_STATUS_STORAGE_ERROR);
+  }
 }
 
 void PushMessagingMessageFilter::SendRegisterError(
@@ -325,9 +360,10 @@ void PushMessagingMessageFilter::SendRegisterError(
 
 void PushMessagingMessageFilter::SendRegisterSuccess(
     const RegisterData& data,
+    PushRegistrationStatus status,
     const GURL& push_endpoint,
     const std::string& push_registration_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // May be called from both IO and UI threads.
   if (data.FromDocument()) {
     Send(new PushMessagingMsg_RegisterFromDocumentSuccess(
         data.render_frame_id,
@@ -336,7 +372,16 @@ void PushMessagingMessageFilter::SendRegisterSuccess(
     Send(new PushMessagingMsg_RegisterFromWorkerSuccess(
         data.request_id, push_endpoint, push_registration_id));
   }
-  RecordRegistrationStatus(PUSH_REGISTRATION_STATUS_SUCCESS);
+  RecordRegistrationStatus(status);
+}
+
+void PushMessagingMessageFilter::SendRegisterSuccessOnUI(
+    const RegisterData& data,
+    PushRegistrationStatus status,
+    const std::string& push_registration_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  GURL push_endpoint(service()->GetPushEndpoint());
+  SendRegisterSuccess(data, status, push_endpoint, push_registration_id);
 }
 
 PushMessagingService* PushMessagingMessageFilter::service() {

@@ -47,7 +47,8 @@ void LayoutTestPushMessagingService::RegisterFromWorker(
     const PushMessagingService::RegisterCallback& callback) {
   if (GetPermissionStatus(requesting_origin, requesting_origin) ==
       blink::WebPushPermissionStatusGranted) {
-    callback.Run("layoutTestRegistrationId", PUSH_REGISTRATION_STATUS_SUCCESS);
+    callback.Run("layoutTestRegistrationId",
+                 PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE);
   } else {
     callback.Run("registration_id", PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
   }

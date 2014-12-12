@@ -9,8 +9,13 @@ namespace content {
 
 // Push registration success / error codes for internal use & reporting in UMA.
 enum PushRegistrationStatus {
-  // Registration was successful.
-  PUSH_REGISTRATION_STATUS_SUCCESS = 0,
+  // New successful registration (there was not yet a registration cached in
+  // Service Worker storage, so the browser successfully registered with the
+  // push service. This is likely to be a new push registration, though it's
+  // possible that the push service had its own cache (for example if Chrome's
+  // app data was cleared, we might have forgotten about a registration that the
+  // push service still stores).
+  PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE = 0,
 
   // Registration failed because there is no Service Worker.
   PUSH_REGISTRATION_STATUS_NO_SERVICE_WORKER = 1,
@@ -34,13 +39,16 @@ enum PushRegistrationStatus {
   // Registration succeeded, but we failed to persist it.
   PUSH_REGISTRATION_STATUS_STORAGE_ERROR = 7,
 
+  // A successful registration was already cached in Service Worker storage.
+  PUSH_REGISTRATION_STATUS_SUCCESS_FROM_CACHE = 8,
+
   // NOTE: Do not renumber these as that would confuse interpretation of
   // previously logged data. When making changes, also update the enum list
   // in tools/metrics/histograms/histograms.xml to keep it in sync, and
   // update PUSH_REGISTRATION_STATUS_LAST below.
 
   // Used for IPC message range checks.
-  PUSH_REGISTRATION_STATUS_LAST = PUSH_REGISTRATION_STATUS_STORAGE_ERROR
+  PUSH_REGISTRATION_STATUS_LAST = PUSH_REGISTRATION_STATUS_SUCCESS_FROM_CACHE
 };
 
 // Push message delivery success / error codes for internal use.

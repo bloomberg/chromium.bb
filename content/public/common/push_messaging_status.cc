@@ -10,8 +10,8 @@ namespace content {
 
 const char* PushRegistrationStatusToString(PushRegistrationStatus status) {
   switch (status) {
-    case PUSH_REGISTRATION_STATUS_SUCCESS:
-      return "Registration successful";
+    case PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE:
+      return "Registration successful - from push service";
 
     case PUSH_REGISTRATION_STATUS_NO_SERVICE_WORKER:
       return "Registration failed - no Service Worker";
@@ -33,6 +33,9 @@ const char* PushRegistrationStatusToString(PushRegistrationStatus status) {
 
     case PUSH_REGISTRATION_STATUS_STORAGE_ERROR:
       return "Registration failed - storage error";
+
+    case PUSH_REGISTRATION_STATUS_SUCCESS_FROM_CACHE:
+      return "Registration successful - from cache";
   }
   NOTREACHED();
   return "";
