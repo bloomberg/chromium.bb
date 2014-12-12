@@ -118,12 +118,11 @@ public:
     bool hasSelectorForPseudoClassInShadow(Element* host, const String& pseudoClass, ExceptionState&);
     unsigned short compareTreeScopePosition(const Node*, const Node*, ExceptionState&) const;
 
-    // FIXME: Rename these functions if walker is preferred.
-    Node* nextSiblingByWalker(Node*, ExceptionState&);
-    Node* firstChildByWalker(Node*, ExceptionState&);
-    Node* lastChildByWalker(Node*, ExceptionState&);
-    Node* nextNodeByWalker(Node*, ExceptionState&);
-    Node* previousNodeByWalker(Node*, ExceptionState&);
+    Node* nextSiblingInComposedTree(Node*, ExceptionState&);
+    Node* firstChildInComposedTree(Node*, ExceptionState&);
+    Node* lastChildInComposedTree(Node*, ExceptionState&);
+    Node* nextInComposedTree(Node*, ExceptionState&);
+    Node* previousInComposedTree(Node*, ExceptionState&);
 
     unsigned updateStyleAndReturnAffectedElementCount(ExceptionState&) const;
     unsigned needsLayoutCount(ExceptionState&) const;

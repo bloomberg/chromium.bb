@@ -68,11 +68,11 @@
     // CSS Animation and Transition testing.
     [RaisesException] void pauseAnimations(double pauseTime);
 
-    [RaisesException, TypeChecking=Interface] Node nextSiblingByWalker(Node node);
-    [RaisesException, TypeChecking=Interface] Node firstChildByWalker(Node node);
-    [RaisesException, TypeChecking=Interface] Node lastChildByWalker(Node node);
-    [RaisesException, TypeChecking=Interface] Node nextNodeByWalker(Node node);
-    [RaisesException, TypeChecking=Interface] Node previousNodeByWalker(Node node);
+    [RaisesException, TypeChecking=Interface] Node nextSiblingInComposedTree(Node node);
+    [RaisesException, TypeChecking=Interface] Node firstChildInComposedTree(Node node);
+    [RaisesException, TypeChecking=Interface] Node lastChildInComposedTree(Node node);
+    [RaisesException, TypeChecking=Interface] Node nextInComposedTree(Node node);
+    [RaisesException, TypeChecking=Interface] Node previousInComposedTree(Node node);
 
     DOMString visiblePlaceholder(Element element);
 

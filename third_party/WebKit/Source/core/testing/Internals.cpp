@@ -475,7 +475,7 @@ size_t Internals::countElementShadow(const Node* root, ExceptionState& exception
     return toShadowRoot(root)->childShadowRootCount();
 }
 
-Node* Internals::nextSiblingByWalker(Node* node, ExceptionState& exceptionState)
+Node* Internals::nextSiblingInComposedTree(Node* node, ExceptionState& exceptionState)
 {
     ASSERT(node);
     if (!node->canParticipateInComposedTree()) {
@@ -485,7 +485,7 @@ Node* Internals::nextSiblingByWalker(Node* node, ExceptionState& exceptionState)
     return ComposedTreeTraversal::nextSibling(*node);
 }
 
-Node* Internals::firstChildByWalker(Node* node, ExceptionState& exceptionState)
+Node* Internals::firstChildInComposedTree(Node* node, ExceptionState& exceptionState)
 {
     ASSERT(node);
     if (!node->canParticipateInComposedTree()) {
@@ -495,7 +495,7 @@ Node* Internals::firstChildByWalker(Node* node, ExceptionState& exceptionState)
     return ComposedTreeTraversal::firstChild(*node);
 }
 
-Node* Internals::lastChildByWalker(Node* node, ExceptionState& exceptionState)
+Node* Internals::lastChildInComposedTree(Node* node, ExceptionState& exceptionState)
 {
     ASSERT(node);
     if (!node->canParticipateInComposedTree()) {
@@ -505,7 +505,7 @@ Node* Internals::lastChildByWalker(Node* node, ExceptionState& exceptionState)
     return ComposedTreeTraversal::lastChild(*node);
 }
 
-Node* Internals::nextNodeByWalker(Node* node, ExceptionState& exceptionState)
+Node* Internals::nextInComposedTree(Node* node, ExceptionState& exceptionState)
 {
     ASSERT(node);
     if (!node->canParticipateInComposedTree()) {
@@ -515,7 +515,7 @@ Node* Internals::nextNodeByWalker(Node* node, ExceptionState& exceptionState)
     return ComposedTreeTraversal::next(*node);
 }
 
-Node* Internals::previousNodeByWalker(Node* node, ExceptionState& exceptionState)
+Node* Internals::previousInComposedTree(Node* node, ExceptionState& exceptionState)
 {
     ASSERT(node);
     if (!node->canParticipateInComposedTree()) {

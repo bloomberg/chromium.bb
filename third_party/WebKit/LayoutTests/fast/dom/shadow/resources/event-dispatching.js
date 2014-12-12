@@ -121,7 +121,7 @@ function dumpComposedShadowTree(node, indent)
     indent = indent || "";
     var output = indent + dumpNode(node) + "\n";
     var child;
-    for (child = internals.firstChildByWalker(node); child; child = internals.nextSiblingByWalker(child))
+    for (child = internals.firstChildInComposedTree(node); child; child = internals.nextSiblingInComposedTree(child))
          output += dumpComposedShadowTree(child, indent + "\t");
     return output;
 }
