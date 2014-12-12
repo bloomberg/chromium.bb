@@ -63,15 +63,26 @@ class AsyncCallStackTracker::AsyncCallChainMap final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     using MapType = WillBeHeapHashMap<K, RefPtrWillBeMember<AsyncCallStackTracker::AsyncCallChain>>;
-    explicit AsyncCallChainMap(AsyncCallStackTracker* tracker) : m_tracker(tracker) { }
+    explicit AsyncCallChainMap(AsyncCallStackTracker* tracker)
+        : m_tracker(tracker)
+    {
+    }
 
     ~AsyncCallChainMap()
     {
+        // Verify that this object has been explicitly cleared already.
+        ASSERT(!m_tracker);
+    }
+
+    void dispose()
+    {
         clear();
+        m_tracker = nullptr;
     }
 
     void clear()
     {
+        ASSERT(m_tracker);
         for (auto it : m_asyncCallChains) {
             if (AsyncCallStackTracker::Listener* listener = m_tracker->m_listener)
                 listener->didRemoveAsyncCallChain(it.value.get());
@@ -98,6 +109,7 @@ public:
 
     void remove(typename MapType::KeyPeekInType key)
     {
+        ASSERT(m_tracker);
         RefPtrWillBeRawPtr<AsyncCallStackTracker::AsyncCallChain> chain = m_asyncCallChains.take(key);
         if (chain && m_tracker->m_listener)
             m_tracker->m_listener->didRemoveAsyncCallChain(chain.get());
@@ -105,11 +117,12 @@ public:
 
     void trace(Visitor* visitor)
     {
+        visitor->trace(m_tracker);
         visitor->trace(m_asyncCallChains);
     }
 
 private:
-    AsyncCallStackTracker* m_tracker;
+    RawPtrWillBeMember<AsyncCallStackTracker> m_tracker;
     MapType m_asyncCallChains;
 };
 
@@ -137,6 +150,7 @@ public:
         OwnPtrWillBeRawPtr<ExecutionContextData> self = m_tracker->m_executionContextDataMap.take(executionContext());
         ASSERT_UNUSED(self, self == this);
         ContextLifecycleObserver::contextDestroyed();
+        dispose();
     }
 
     int nextAsyncOperationUniqueId()
@@ -162,6 +176,18 @@ public:
         visitor->trace(m_v8AsyncTaskCallChains);
         visitor->trace(m_asyncOperationCallChains);
 #endif
+    }
+
+    void dispose()
+    {
+        m_timerCallChains.dispose();
+        m_animationFrameCallChains.dispose();
+        m_eventCallChains.dispose();
+        m_xhrCallChains.dispose();
+        m_mutationObserverCallChains.dispose();
+        m_executionContextTaskCallChains.dispose();
+        m_v8AsyncTaskCallChains.dispose();
+        m_asyncOperationCallChains.dispose();
     }
 
     RawPtrWillBeMember<AsyncCallStackTracker> m_tracker;
@@ -598,6 +624,8 @@ void AsyncCallStackTracker::clear()
 {
     m_currentAsyncCallChain.clear();
     m_nestedAsyncCallCount = 0;
+    for (auto& it : m_executionContextDataMap)
+        it.value->dispose();
     m_executionContextDataMap.clear();
 }
 

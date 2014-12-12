@@ -70,7 +70,7 @@ public:
         ScriptValue m_callFrames;
     };
 
-    typedef WillBeHeapDeque<RefPtrWillBeMember<AsyncCallStack>, 4> AsyncCallStackVector;
+    using AsyncCallStackVector = WillBeHeapDeque<RefPtrWillBeMember<AsyncCallStack>, 4>;
 
     class AsyncCallChain final : public RefCountedWillBeGarbageCollectedFinalized<AsyncCallChain> {
     public:
@@ -159,8 +159,10 @@ private:
     unsigned m_maxAsyncCallStackDepth;
     RefPtrWillBeMember<AsyncCallChain> m_currentAsyncCallChain;
     unsigned m_nestedAsyncCallCount;
-    typedef WillBeHeapHashMap<RawPtrWillBeMember<ExecutionContext>, OwnPtrWillBeMember<ExecutionContextData> > ExecutionContextDataMap;
+
+    using ExecutionContextDataMap = WillBeHeapHashMap<RawPtrWillBeMember<ExecutionContext>, OwnPtrWillBeMember<ExecutionContextData>>;
     ExecutionContextDataMap m_executionContextDataMap;
+
     Listener* m_listener;
     ScriptDebugServer* m_scriptDebugServer;
 };
