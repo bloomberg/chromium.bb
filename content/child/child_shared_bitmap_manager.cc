@@ -55,7 +55,13 @@ ChildSharedBitmapManager::~ChildSharedBitmapManager() {}
 
 scoped_ptr<cc::SharedBitmap> ChildSharedBitmapManager::AllocateSharedBitmap(
     const gfx::Size& size) {
-  return AllocateSharedMemoryBitmap(size);
+  scoped_ptr<SharedMemoryBitmap> bitmap = AllocateSharedMemoryBitmap(size);
+#if defined(OS_POSIX)
+  // Close file descriptor to avoid running out.
+  if (bitmap)
+    bitmap->shared_memory()->Close();
+#endif
+  return bitmap.Pass();
 }
 
 scoped_ptr<SharedMemoryBitmap>
