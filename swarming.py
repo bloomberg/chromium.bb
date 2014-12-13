@@ -5,9 +5,9 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.5.3'
+__version__ = '0.6'
 
-import hashlib
+import collections
 import json
 import logging
 import os
@@ -41,7 +41,318 @@ import run_isolated
 
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-TOOLS_PATH = os.path.join(ROOT_DIR, 'tools')
+
+
+class Failure(Exception):
+  """Generic failure."""
+  pass
+
+
+### Isolated file handling.
+
+
+def isolated_upload_zip_bundle(isolate_server, bundle):
+  """Uploads a zip package to Isolate Server and returns raw fetch URL.
+
+  Args:
+    isolate_server: URL of an Isolate Server.
+    bundle: instance of ZipPackage to upload.
+
+  Returns:
+    URL to get the file from.
+  """
+  # Swarming bot needs to be able to grab the file from the Isolate Server using
+  # a simple HTTPS GET. Use 'default' namespace so that the raw data returned to
+  # a bot is not zipped, since the swarming_bot doesn't understand compressed
+  # data. This namespace have nothing to do with |namespace| passed to
+  # run_isolated.py that is used to store files for isolated task.
+  logging.info('Zipping up and uploading files...')
+  start_time = time.time()
+  isolate_item = isolateserver.BufferItem(bundle.zip_into_buffer())
+  with isolateserver.get_storage(isolate_server, 'default') as storage:
+    uploaded = storage.upload_items([isolate_item])
+    bundle_url = storage.get_fetch_url(isolate_item)
+  elapsed = time.time() - start_time
+  if isolate_item in uploaded:
+    logging.info('Upload complete, time elapsed: %f', elapsed)
+  else:
+    logging.info('Zip file already on server, time elapsed: %f', elapsed)
+  return bundle_url
+
+
+def isolated_get_data(isolate_server):
+  """Returns the 'data' section with all files necessary to bootstrap a task
+  execution running an isolated task.
+
+  It's mainly zipping run_isolated.zip over and over again.
+  TODO(maruel): Get rid of this with.
+  https://code.google.com/p/swarming/issues/detail?id=173
+  """
+  bundle = zip_package.ZipPackage(ROOT_DIR)
+  bundle.add_buffer(
+      'run_isolated.zip',
+      run_isolated.get_as_zip_package().zip_into_buffer(compress=False))
+  bundle_url = isolated_upload_zip_bundle(isolate_server, bundle)
+  return [(bundle_url, 'swarm_data.zip')]
+
+
+def isolated_get_run_commands(
+    isolate_server, namespace, isolated_hash, extra_args, verbose):
+  """Returns the 'commands' to run an isolated task via run_isolated.zip.
+
+  Returns:
+    commands list to be added to the request.
+  """
+  run_cmd = [
+    'python', 'run_isolated.zip',
+    '--hash', isolated_hash,
+    '--isolate-server', isolate_server,
+    '--namespace', namespace,
+  ]
+  if verbose:
+    run_cmd.append('--verbose')
+  # Pass all extra args for run_isolated.py, it will pass them to the command.
+  if extra_args:
+    run_cmd.append('--')
+    run_cmd.extend(extra_args)
+  return run_cmd
+
+
+def isolated_archive(isolate_server, namespace, isolated, algo, verbose):
+  """Archives a .isolated and all the dependencies on the Isolate Server."""
+  logging.info(
+      'isolated_archive(%s, %s, %s)', isolate_server, namespace, isolated)
+  print('Archiving: %s' % isolated)
+  cmd = [
+    sys.executable,
+    os.path.join(ROOT_DIR, 'isolate.py'),
+    'archive',
+    '--isolate-server', isolate_server,
+    '--namespace', namespace,
+    '--isolated', isolated,
+  ]
+  cmd.extend(['--verbose'] * verbose)
+  logging.info(' '.join(cmd))
+  if subprocess.call(cmd, verbose):
+    return None
+  return isolated_format.hash_file(isolated, algo)
+
+
+def isolated_to_hash(isolate_server, namespace, arg, algo, verbose):
+  """Archives a .isolated file if needed.
+
+  Returns the file hash to trigger and a bool specifying if it was a file (True)
+  or a hash (False).
+  """
+  if arg.endswith('.isolated'):
+    file_hash = isolated_archive(isolate_server, namespace, arg, algo, verbose)
+    if not file_hash:
+      on_error.report('Archival failure %s' % arg)
+      return None, True
+    return file_hash, True
+  elif isolated_format.is_valid_hash(arg, algo):
+    return arg, False
+  else:
+    on_error.report('Invalid hash %s' % arg)
+    return None, False
+
+
+def isolated_handle_options(options, args):
+  """Handles isolated arguments.
+
+  Returns:
+    tuple(command, data).
+  """
+  isolated_cmd_args = []
+  if '--' in args:
+    index = args.index('--')
+    isolated_cmd_args = args[index+1:]
+    args = args[:index]
+  else:
+    # optparse eats '--' sometimes.
+    isolated_cmd_args = args[1:]
+    args = args[:1]
+  if len(args) != 1:
+    raise ValueError('Must pass one .isolated file or its hash (sha1).')
+
+  isolated_hash, is_file = isolated_to_hash(
+      options.isolate_server, options.namespace, args[0],
+      isolated_format.get_hash_algo(options.namespace), options.verbose)
+  if not isolated_hash:
+    raise ValueError('Invalid argument %s' % args[0])
+
+  command = isolated_get_run_commands(
+      options.isolate_server, options.namespace, isolated_hash,
+      isolated_cmd_args, options.verbose)
+
+  # If a file name was passed, use its base name of the isolated hash.
+  # Otherwise, use user name as an approximation of a task name.
+  if not options.task_name:
+    if is_file:
+      key = os.path.splitext(os.path.basename(args[0]))[0]
+    else:
+      key = options.user
+    options.task_name = '%s/%s/%s' % (
+        key,
+        '_'.join(
+            '%s=%s' % (k, v)
+            for k, v in sorted(options.dimensions.iteritems())),
+        isolated_hash)
+
+  try:
+    data = isolated_get_data(options.isolate_server)
+  except (IOError, OSError):
+    on_error.report('Failed to upload the zip file')
+    raise ValueError('Failed to upload the zip file')
+
+  return command, data
+
+
+### Triggering.
+
+
+TaskRequest = collections.namedtuple(
+    'TaskRequest',
+    [
+      'command',
+      'data',
+      'dimensions',
+      'env',
+      'expiration',
+      'hard_timeout',
+      'idempotent',
+      'io_timeout',
+      'name',
+      'priority',
+      'tags',
+      'user',
+      'verbose',
+    ])
+
+
+def task_request_to_raw_request(task_request):
+  """Returns the json dict expected by the Swarming server for new request.
+
+  This is for the v1 client Swarming API.
+  """
+  return {
+    'name': task_request.name,
+    'priority': task_request.priority,
+    'properties': {
+      'commands': [task_request.command],
+      'data': task_request.data,
+      'dimensions': task_request.dimensions,
+      'env': task_request.env,
+      'execution_timeout_secs': task_request.hard_timeout,
+      'io_timeout_secs': task_request.io_timeout,
+      'idempotent': task_request.idempotent,
+    },
+    'scheduling_expiration_secs': task_request.expiration,
+    'tags': task_request.tags,
+    'user': task_request.user,
+  }
+
+
+def swarming_handshake(swarming):
+  """Initiates the connection to the Swarming server."""
+  headers = {'X-XSRF-Token-Request': '1'}
+  response = net.url_read_json(
+      swarming + '/swarming/api/v1/client/handshake',
+      headers=headers,
+      data={})
+  if not response:
+    logging.error('Failed to handshake with server')
+    return None
+  logging.info('Connected to server version: %s', response['server_version'])
+  return response['xsrf_token']
+
+
+def swarming_trigger(swarming, raw_request, xsrf_token):
+  """Triggers a request on the Swarming server and returns the json data.
+
+  It's the low-level function.
+
+  Returns:
+    {
+      'request': {
+        'created_ts': u'2010-01-02 03:04:05',
+        'name': ..
+      },
+      'task_id': '12300',
+    }
+  """
+  logging.info('Triggering: %s', raw_request['name'])
+
+  headers = {'X-XSRF-Token': xsrf_token}
+  result = net.url_read_json(
+      swarming + '/swarming/api/v1/client/request',
+      data=raw_request,
+      headers=headers)
+  if not result:
+    on_error.report('Failed to trigger task %s' % raw_request['name'])
+    return None
+  return result
+
+
+def setup_googletest(env, shards, index):
+  """Sets googletest specific environment variables."""
+  if shards > 1:
+    env = env.copy()
+    env['GTEST_SHARD_INDEX'] = str(index)
+    env['GTEST_TOTAL_SHARDS'] = str(shards)
+  return env
+
+
+def trigger_task_shards(swarming, task_request, shards):
+  """Triggers one or many subtasks of a sharded task.
+
+  Returns:
+    Dict with task details, returned to caller as part of --dump-json output.
+    None in case of failure.
+  """
+  def convert(index):
+    req = task_request
+    if shards > 1:
+      req = req._replace(
+          env=setup_googletest(req.env, shards, index),
+          name='%s:%s:%s' % (req.name, index, shards))
+    return task_request_to_raw_request(req)
+
+  requests = [convert(index) for index in xrange(shards)]
+  xsrf_token = swarming_handshake(swarming)
+  if not xsrf_token:
+    return None
+  tasks = {}
+  priority_warning = False
+  for index, request in enumerate(requests):
+    task = swarming_trigger(swarming, request, xsrf_token)
+    if not task:
+      break
+    logging.info('Request result: %s', task)
+    if (not priority_warning and
+        task['request']['priority'] != task_request.priority):
+      priority_warning = True
+      print >> sys.stderr, (
+          'Priority was reset to %s' % task['request']['priority'])
+    tasks[request['name']] = {
+      'shard_index': index,
+      'task_id': task['task_id'],
+      'view_url': '%s/user/task/%s' % (swarming, task['task_id']),
+    }
+
+  # Some shards weren't triggered. Abort everything.
+  if len(tasks) != len(requests):
+    if tasks:
+      print >> sys.stderr, 'Only %d shard(s) out of %d were triggered' % (
+          len(tasks), len(requests))
+      for task_dict in tasks.itervalues():
+        abort_task(swarming, task_dict['task_id'])
+    return None
+
+  return tasks
+
+
+### Collection.
 
 
 # How often to print status updates to stdout in 'collect'.
@@ -86,11 +397,6 @@ class State(object):
     if state not in cls._NAMES:
       raise ValueError('Invalid state %s' % state)
     return cls._NAMES[state]
-
-
-class Failure(Exception):
-  """Generic failure."""
-  pass
 
 
 class TaskOutputCollector(object):
@@ -210,11 +516,6 @@ class TaskOutputCollector(object):
       return self._storage
 
 
-def now():
-  """Exists so it can be mocked easily."""
-  return time.time()
-
-
 def extract_output_files_location(task_log):
   """Task log -> location of task output files to fetch.
 
@@ -260,6 +561,11 @@ def extract_output_files_location(task_log):
     logging.warning(
         'Unexpected value of run_isolated_out_hack: %s', match.group(1))
     return None
+
+
+def now():
+  """Exists so it can be mocked easily."""
+  return time.time()
 
 
 def retrieve_results(
@@ -391,315 +697,6 @@ def yield_results(
       should_stop.set()
 
 
-def get_data(isolate_server):
-  """Returns the 'data' section with all files necessary to bootstrap a task
-  execution.
-  """
-  bundle = zip_package.ZipPackage(ROOT_DIR)
-  bundle.add_buffer(
-      'run_isolated.zip',
-      run_isolated.get_as_zip_package().zip_into_buffer(compress=False))
-
-  # TODO(maruel): Get rid of this.
-  bundle_url = upload_zip_bundle(isolate_server, bundle)
-  return [(bundle_url, 'swarm_data.zip')]
-
-
-def get_run_isolated_commands(
-    isolate_server, namespace, isolated_hash, extra_args, profile, verbose):
-  """Returns the 'commands' to run an isolated task via run_isolated.py.
-
-  Returns:
-    commands list to be added to the request.
-  """
-  run_cmd = [
-    'python', 'run_isolated.zip',
-    '--hash', isolated_hash,
-    '--isolate-server', isolate_server,
-    '--namespace', namespace,
-  ]
-  # TODO(maruel): Decide what to do with profile.
-  if verbose or profile:
-    run_cmd.append('--verbose')
-  # Pass all extra args for run_isolated.py, it will pass them to the command.
-  if extra_args:
-    run_cmd.append('--')
-    run_cmd.extend(extra_args)
-  return [run_cmd]
-
-
-def setup_googletest(env, shards, index):
-  """Sets googletest specific environment variables."""
-  if shards > 1:
-    env = env.copy()
-    env['GTEST_SHARD_INDEX'] = str(index)
-    env['GTEST_TOTAL_SHARDS'] = str(shards)
-  return env
-
-
-def archive(isolate_server, namespace, isolated, algo, verbose):
-  """Archives a .isolated and all the dependencies on the CAC."""
-  logging.info('archive(%s, %s, %s)', isolate_server, namespace, isolated)
-  tempdir = None
-  if file_path.is_url(isolate_server):
-    command = 'archive'
-    flag = '--isolate-server'
-  else:
-    command = 'hashtable'
-    flag = '--outdir'
-
-  print('Archiving: %s' % isolated)
-  try:
-    cmd = [
-      sys.executable,
-      os.path.join(ROOT_DIR, 'isolate.py'),
-      command,
-      flag, isolate_server,
-      '--namespace', namespace,
-      '--isolated', isolated,
-    ]
-    cmd.extend(['--verbose'] * verbose)
-    logging.info(' '.join(cmd))
-    if subprocess.call(cmd, verbose):
-      return
-    return isolated_format.hash_file(isolated, algo)
-  finally:
-    if tempdir:
-      shutil.rmtree(tempdir)
-
-
-def get_shard_task_name(task_name, index, shards):
-  """Returns a task name to use for a single shard of a task."""
-  if shards == 1:
-    return task_name
-  return '%s:%s:%s' % (task_name, index, shards)
-
-
-def upload_zip_bundle(isolate_server, bundle):
-  """Uploads a zip package to isolate storage and returns raw fetch URL.
-
-  Args:
-    isolate_server: URL of an isolate server.
-    bundle: instance of ZipPackage to upload.
-
-  Returns:
-    URL to get the file from.
-  """
-  # Swarming bot would need to be able to grab the file from the storage
-  # using raw HTTP GET. Use 'default' namespace so that the raw data returned
-  # to a bot is not zipped, since swarm_bot doesn't understand compressed
-  # data yet. This namespace have nothing to do with |namespace| passed to
-  # run_isolated.py that is used to store files for isolated task.
-  logging.info('Zipping up and uploading files...')
-  start_time = now()
-  isolate_item = isolateserver.BufferItem(
-      bundle.zip_into_buffer(), high_priority=True)
-  with isolateserver.get_storage(isolate_server, 'default') as storage:
-    uploaded = storage.upload_items([isolate_item])
-    bundle_url = storage.get_fetch_url(isolate_item)
-  elapsed = now() - start_time
-  if isolate_item in uploaded:
-    logging.info('Upload complete, time elapsed: %f', elapsed)
-  else:
-    logging.info('Zip file already on server, time elapsed: %f', elapsed)
-  return bundle_url
-
-
-def trigger_request(swarming, request, xsrf_token):
-  """Triggers a requests on the Swarming server and returns the json data.
-
-  Returns:
-    {
-      'request': {
-        'created_ts': u'2010-01-02 03:04:05',
-        'name': ..
-      },
-      'task_id': '12300',
-    }
-  """
-  logging.info('Triggering: %s', request['name'])
-
-  headers = {'X-XSRF-Token': xsrf_token}
-  result = net.url_read_json(
-      swarming + '/swarming/api/v1/client/request',
-      data=request,
-      headers=headers)
-  if not result:
-    on_error.report('Failed to trigger task %s' % request['name'])
-    return None
-  return result
-
-
-def abort_task(_swarming, _manifest):
-  """Given a task manifest that was triggered, aborts its execution."""
-  # TODO(vadimsh): No supported by the server yet.
-
-
-def trigger_task_shards(
-    swarming, isolate_server, namespace, isolated_hash, task_name, extra_args,
-    shards, dimensions, env, expiration, io_timeout, hard_timeout, idempotent,
-    verbose, profile, priority, tags, user):
-  """Triggers multiple subtasks of a sharded task.
-
-  Returns:
-    Dict with task details, returned to caller as part of --dump-json output.
-    None in case of failure.
-  """
-  try:
-    data = get_data(isolate_server)
-  except (IOError, OSError):
-    on_error.report('Failed to upload the zip file for task %s' % task_name)
-    return None
-
-  def gen_request(env, index):
-    """Returns the json dict expected by the Swarming server for new request."""
-    return {
-      'name': get_shard_task_name(task_name, index, shards),
-      'priority': priority,
-      'properties': {
-        'commands': get_run_isolated_commands(
-            isolate_server, namespace, isolated_hash, extra_args, profile,
-            verbose),
-        'data': data,
-        'dimensions': dimensions,
-        'env': env,
-        'execution_timeout_secs': hard_timeout,
-        'io_timeout_secs': io_timeout,
-        'idempotent': idempotent,
-      },
-      'scheduling_expiration_secs': expiration,
-      'tags': tags,
-      'user': user,
-    }
-
-  requests = [
-    gen_request(setup_googletest(env, shards, index), index)
-    for index in xrange(shards)
-  ]
-
-  headers = {'X-XSRF-Token-Request': '1'}
-  response = net.url_read_json(
-      swarming + '/swarming/api/v1/client/handshake',
-      headers=headers,
-      data={})
-  if not response:
-    logging.error('Failed to handshake with server')
-    return None
-  logging.info('Connected to server version: %s', response['server_version'])
-  xsrf_token = response['xsrf_token']
-
-  tasks = {}
-  priority_warning = False
-  for index, request in enumerate(requests):
-    task = trigger_request(swarming, request, xsrf_token)
-    if not task:
-      break
-    logging.info('Request result: %s', task)
-    priority = task['request']['priority']
-    if not priority_warning and priority != request['priority']:
-      priority_warning = True
-      print >> sys.stderr, 'Priority was reset to %s' % priority
-    tasks[request['name']] = {
-      'shard_index': index,
-      'task_id': task['task_id'],
-      'view_url': '%s/user/task/%s' % (swarming, task['task_id']),
-    }
-
-  # Some shards weren't triggered. Abort everything.
-  if len(tasks) != len(requests):
-    if tasks:
-      print >> sys.stderr, 'Only %d shard(s) out of %d were triggered' % (
-          len(tasks), len(requests))
-      for task_dict in tasks.itervalues():
-        abort_task(swarming, task_dict['task_id'])
-    return None
-
-  return tasks
-
-
-def isolated_to_hash(isolate_server, namespace, arg, algo, verbose):
-  """Archives a .isolated file if needed.
-
-  Returns the file hash to trigger and a bool specifying if it was a file (True)
-  or a hash (False).
-  """
-  if arg.endswith('.isolated'):
-    file_hash = archive(isolate_server, namespace, arg, algo, verbose)
-    if not file_hash:
-      on_error.report('Archival failure %s' % arg)
-      return None, True
-    return file_hash, True
-  elif isolated_format.is_valid_hash(arg, algo):
-    return arg, False
-  else:
-    on_error.report('Invalid hash %s' % arg)
-    return None, False
-
-
-def trigger(
-    swarming,
-    isolate_server,
-    namespace,
-    file_hash_or_isolated,
-    task_name,
-    extra_args,
-    shards,
-    dimensions,
-    env,
-    expiration,
-    io_timeout,
-    hard_timeout,
-    idempotent,
-    verbose,
-    profile,
-    priority,
-    tags,
-    user):
-  """Sends off the hash swarming task requests.
-
-  Returns:
-    tuple(dict(task_name: task_id), base task name). The dict of tasks is None
-    in case of failure.
-  """
-  file_hash, is_file = isolated_to_hash(
-      isolate_server, namespace, file_hash_or_isolated, hashlib.sha1, verbose)
-  if not file_hash:
-    return None, ''
-  if not task_name:
-    # If a file name was passed, use its base name of the isolated hash.
-    # Otherwise, use user name as an approximation of a task name.
-    if is_file:
-      key = os.path.splitext(os.path.basename(file_hash_or_isolated))[0]
-    else:
-      key = user
-    task_name = '%s/%s/%s/%d' % (
-        key,
-        '_'.join('%s=%s' % (k, v) for k, v in sorted(dimensions.iteritems())),
-        file_hash,
-        now() * 1000)
-
-  tasks = trigger_task_shards(
-      swarming=swarming,
-      isolate_server=isolate_server,
-      namespace=namespace,
-      isolated_hash=file_hash,
-      task_name=task_name,
-      extra_args=extra_args,
-      shards=shards,
-      dimensions=dimensions,
-      expiration=expiration,
-      io_timeout=io_timeout,
-      hard_timeout=hard_timeout,
-      idempotent=idempotent,
-      env=env,
-      verbose=verbose,
-      profile=profile,
-      priority=priority,
-      tags=tags,
-      user=user)
-  return tasks, task_name
-
-
 def decorate_shard_output(
     swarming, shard_index, result, shard_exit_code, shard_duration):
   """Returns wrapped output for swarming task shard."""
@@ -777,6 +774,14 @@ def collect(
   return exit_code
 
 
+### Commands.
+
+
+def abort_task(_swarming, _manifest):
+  """Given a task manifest that was triggered, aborts its execution."""
+  # TODO(vadimsh): No supported by the server yet.
+
+
 def add_filter_options(parser):
   parser.filter_group = tools.optparse.OptionGroup(parser, 'Filtering slaves')
   parser.filter_group.add_option(
@@ -784,12 +789,6 @@ def add_filter_options(parser):
       dest='dimensions', metavar='FOO bar',
       help='dimension to filter on')
   parser.add_option_group(parser.filter_group)
-
-
-def process_filter_options(parser, options):
-  options.dimensions = dict(options.dimensions)
-  if not options.dimensions:
-    parser.error('Please at least specify one --dimension')
 
 
 def add_sharding_options(parser):
@@ -842,19 +841,58 @@ def add_trigger_options(parser):
   parser.task_group.add_option(
       '--io-timeout', type='int', default=20*60,
       help='Seconds to allow the task to be silent.')
+  parser.task_group.add_option(
+      '--raw-cmd', action='store_true', default=False,
+      help='When set, the command after -- is used as-is without run_isolated. '
+           'In this case, no .isolated file is expected.')
   parser.add_option_group(parser.task_group)
-  # TODO(maruel): This is currently written in a chromium-specific way.
-  parser.group_logging.add_option(
-      '--profile', action='store_true',
-      default=bool(os.environ.get('ISOLATE_DEBUG')),
-      help='Have run_isolated.py print profiling info')
 
 
 def process_trigger_options(parser, options, args):
-  if len(args) != 1:
-    parser.error('Must pass one .isolated file or its hash (sha1).')
-  isolateserver.process_isolate_server_options(parser, options, False)
-  process_filter_options(parser, options)
+  """Processes trigger options and uploads files to isolate server if necessary.
+  """
+  options.dimensions = dict(options.dimensions)
+  options.env = dict(options.env)
+
+  data = []
+  if not options.dimensions:
+    parser.error('Please at least specify one --dimension')
+  if options.raw_cmd:
+    if not args:
+      parser.error(
+          'Arguments with --raw-cmd should be passed after -- as command '
+          'delimiter.')
+    if options.isolate_server:
+      parser.error('Can\'t use both --raw-cmd and --isolate-server.')
+
+    command = args
+    if not options.task_name:
+      options.task_name = '%s/%s' % (
+          options.user,
+          '_'.join(
+            '%s=%s' % (k, v)
+            for k, v in sorted(options.dimensions.iteritems())))
+  else:
+    isolateserver.process_isolate_server_options(parser, options, False)
+    try:
+      command, data = isolated_handle_options(options, args)
+    except ValueError as e:
+      parser.error(str(e))
+
+  return TaskRequest(
+      command=command,
+      data=data,
+      dimensions=options.dimensions,
+      env=options.env,
+      expiration=options.expiration,
+      hard_timeout=options.hard_timeout,
+      idempotent=options.idempotent,
+      io_timeout=options.io_timeout,
+      name=options.task_name,
+      priority=options.priority,
+      tags=options.tags,
+      user=options.user,
+      verbose=options.verbose)
 
 
 def add_collect_options(parser):
@@ -883,14 +921,6 @@ def add_collect_options(parser):
            'directory contains per-shard directory with output files produced '
            'by shards: <task-output-dir>/<zero-based-shard-index>/.')
   parser.add_option_group(parser.task_output_group)
-
-
-def extract_isolated_command_extra_args(args):
-  try:
-    index = args.index('--')
-  except ValueError:
-    return (args, [])
-  return (args[:index], args[index+1:])
 
 
 def CMDbots(parser, args):
@@ -1067,29 +1097,11 @@ def CMDrun(parser, args):
   add_trigger_options(parser)
   add_collect_options(parser)
   add_sharding_options(parser)
-  args, isolated_cmd_args = extract_isolated_command_extra_args(args)
   options, args = parser.parse_args(args)
-  process_trigger_options(parser, options, args)
+  task_request = process_trigger_options(parser, options, args)
   try:
-    tasks, task_name = trigger(
-        swarming=options.swarming,
-        isolate_server=options.isolate_server,
-        namespace=options.namespace,
-        file_hash_or_isolated=args[0],
-        task_name=options.task_name,
-        extra_args=isolated_cmd_args,
-        shards=options.shards,
-        dimensions=options.dimensions,
-        env=dict(options.env),
-        expiration=options.expiration,
-        io_timeout=options.io_timeout,
-        hard_timeout=options.hard_timeout,
-        idempotent=options.idempotent,
-        verbose=options.verbose,
-        profile=options.profile,
-        priority=options.priority,
-        tags=options.tags,
-        user=options.user)
+    tasks = trigger_task_shards(
+        options.swarming, task_request, options.shards)
   except Failure as e:
     on_error.report(
         'Failed to trigger %s(%s): %s' %
@@ -1098,8 +1110,7 @@ def CMDrun(parser, args):
   if not tasks:
     on_error.report('Failed to trigger the task.')
     return 1
-  if task_name != options.task_name:
-    print('Triggered task: %s' % task_name)
+  print('Triggered task: %s' % options.task_name)
   task_ids = [
     t['task_id']
     for t in sorted(tasks.itervalues(), key=lambda x: x['shard_index'])
@@ -1107,7 +1118,7 @@ def CMDrun(parser, args):
   try:
     return collect(
         options.swarming,
-        task_name,
+        options.task_name,
         task_ids,
         options.timeout,
         options.decorate,
@@ -1173,7 +1184,7 @@ def CMDreproduce(parser, args):
   return exit_code
 
 
-@subcommand.usage("(hash|isolated) [-- extra_args]")
+@subcommand.usage("(hash|isolated) [-- extra_args|raw command]")
 def CMDtrigger(parser, args):
   """Triggers a Swarming task.
 
@@ -1187,41 +1198,22 @@ def CMDtrigger(parser, args):
   """
   add_trigger_options(parser)
   add_sharding_options(parser)
-  args, isolated_cmd_args = extract_isolated_command_extra_args(args)
   parser.add_option(
       '--dump-json',
       metavar='FILE',
       help='Dump details about the triggered task(s) to this file as json')
   options, args = parser.parse_args(args)
-  process_trigger_options(parser, options, args)
+  task_request = process_trigger_options(parser, options, args)
   try:
-    tasks, task_name = trigger(
-        swarming=options.swarming,
-        isolate_server=options.isolate_server,
-        namespace=options.namespace,
-        file_hash_or_isolated=args[0],
-        task_name=options.task_name,
-        extra_args=isolated_cmd_args,
-        shards=options.shards,
-        dimensions=options.dimensions,
-        env=dict(options.env),
-        expiration=options.expiration,
-        io_timeout=options.io_timeout,
-        hard_timeout=options.hard_timeout,
-        idempotent=options.idempotent,
-        verbose=options.verbose,
-        profile=options.profile,
-        priority=options.priority,
-        tags=options.tags,
-        user=options.user)
+    tasks = trigger_task_shards(
+        options.swarming, task_request, options.shards)
     if tasks:
-      if task_name != options.task_name:
-        print('Triggered task: %s' % task_name)
+      print('Triggered task: %s' % options.task_name)
       tasks_sorted = sorted(
           tasks.itervalues(), key=lambda x: x['shard_index'])
       if options.dump_json:
         data = {
-          'base_task_name': task_name,
+          'base_task_name': options.task_name,
           'tasks': tasks,
         }
         tools.write_json(options.dump_json, data, True)

@@ -40,7 +40,7 @@ class IsolateServerHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
   def do_GET(self):
     logging.info('GET %s', self.path)
-    if self.path == '/on/quit':
+    if self.path in ('/on/load', '/on/quit'):
       self._octet_stream('')
     elif self.path == '/auth/api/v1/server/oauth_config':
       self._json(
@@ -114,6 +114,11 @@ class MockIsolateServer(object):
     self._thread = threading.Thread(target=self._run, name='httpd')
     self._thread.daemon = True
     self._thread.start()
+    logging.info('%s', self.url)
+
+  @property
+  def contents(self):
+    return self._server.contents
 
   def add_content(self, namespace, content):
     h = hash_content(content)

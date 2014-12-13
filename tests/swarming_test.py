@@ -8,12 +8,12 @@ import hashlib
 import json
 import logging
 import os
-import shutil
 import StringIO
 import subprocess
 import sys
 import tempfile
 import threading
+import time
 import unittest
 
 # net_utils adjusts sys.path.
@@ -21,14 +21,17 @@ import net_utils
 
 from depot_tools import auto_stub
 
+import auth
 import isolateserver
 import swarming
 import test_utils
 
+from utils import file_path
 from utils import tools
 
+import isolateserver_mock
 
-ALGO = hashlib.sha1
+
 FILE_HASH = u'1' * 40
 TEST_NAME = u'unit_tests'
 
@@ -38,9 +41,6 @@ OUTPUT = 'Ran stuff\n'
 SHARD_OUTPUT_1 = 'Shard 1 of 3.'
 SHARD_OUTPUT_2 = 'Shard 2 of 3.'
 SHARD_OUTPUT_3 = 'Shard 3 of 3.'
-
-
-FAKE_BUNDLE_URL = 'https://localhost:1/fetch_url'
 
 
 def gen_yielded_data(index, **kwargs):
@@ -72,7 +72,7 @@ def collect(url, task_name, task_ids):
 
 
 def main(args):
-  """Bypassies swarming.main()'s exception handling.
+  """Bypasses swarming.main()'s exception handling.
 
   It gets in the way when debugging test failures.
   """
@@ -151,6 +151,17 @@ def gen_result_response(**kwargs):
   return out
 
 
+def gen_run_isolated_out_hack_log(isolate_server, namespace, isolated_hash):
+  data = {
+    'hash': isolated_hash,
+    'namespace': namespace,
+    'storage': isolate_server,
+  }
+  return (OUTPUT +
+      '[run_isolated_out_hack]%s[/run_isolated_out_hack]\n' % (
+          json.dumps(data, sort_keys=True, separators=(',',':'))))
+
+
 # Silence pylint 'Access to a protected member _Event of a client class'.
 class NonBlockingEvent(threading._Event):  # pylint: disable=W0212
   """Just like threading.Event, but a class and ignores timeout in 'wait'.
@@ -162,41 +173,33 @@ class NonBlockingEvent(threading._Event):  # pylint: disable=W0212
     return super(NonBlockingEvent, self).wait(0)
 
 
-class MockedStorage(object):
-  def __init__(self, warm_cache):
-    self._warm_cache = warm_cache
-
-  def __enter__(self):
-    return self
-
-  def __exit__(self, *_args):
-    pass
-
-  def upload_items(self, items):
-    return [] if self._warm_cache else items
-
-  def get_fetch_url(self, _item):  # pylint: disable=R0201
-    return FAKE_BUNDLE_URL
-
-
-class TestCase(net_utils.TestCase):
+class NetTestCase(net_utils.TestCase):
   """Base class that defines the url_open mock."""
   def setUp(self):
-    super(TestCase, self).setUp()
-    self._lock = threading.Lock()
-    self.mock(swarming.auth, 'ensure_logged_in', lambda _: None)
-    self.mock(swarming.time, 'sleep', lambda _: None)
+    super(NetTestCase, self).setUp()
+    self._tempdir = None
+    self.mock(auth, 'ensure_logged_in', lambda _: None)
+    self.mock(time, 'sleep', lambda _: None)
     self.mock(subprocess, 'call', lambda *_: self.fail())
-    self.mock(swarming.threading, 'Event', NonBlockingEvent)
+    self.mock(threading, 'Event', NonBlockingEvent)
     self.mock(sys, 'stdout', StringIO.StringIO())
     self.mock(sys, 'stderr', StringIO.StringIO())
 
   def tearDown(self):
     try:
+      if self._tempdir:
+        file_path.rmtree(self._tempdir)
       if not self.has_failed():
         self._check_output('', '')
     finally:
-      super(TestCase, self).tearDown()
+      super(NetTestCase, self).tearDown()
+
+  @property
+  def tempdir(self):
+    """Creates the directory on first reference."""
+    if not self._tempdir:
+      self._tempdir = tempfile.mkdtemp(prefix='swarming_test')
+    return self._tempdir
 
   def _check_output(self, out, err):
     self.assertEqual(
@@ -209,7 +212,212 @@ class TestCase(net_utils.TestCase):
     self.mock(sys, 'stderr', StringIO.StringIO())
 
 
-class TestGetResults(TestCase):
+class TestIsolated(auto_stub.TestCase):
+  """Test functions with isolated_ prefix."""
+  def setUp(self):
+    super(TestIsolated, self).setUp()
+    self._server = None
+
+  def tearDown(self):
+    try:
+      if self._server:
+        self._server.close_start()
+      if self._server:
+        self._server.close_end()
+    finally:
+      super(TestIsolated, self).tearDown()
+
+  @property
+  def server(self):
+    """Creates the Isolate Server mock on first reference."""
+    if not self._server:
+      self._server = isolateserver_mock.MockIsolateServer()
+    return self._server
+
+  # Test isolated related code.
+  def test_isolated_get_data(self):
+    data = swarming.isolated_get_data(self.server.url)
+    self.assertEqual(['default'], self.server.contents.keys())
+    self.assertEqual(1, len(self.server.contents['default']))
+    h = self.server.contents['default'].popitem()[0]
+    expected = [
+      (
+        '%s/content-gs/retrieve/default/%s' % (self.server.url, h),
+        'swarm_data.zip',
+      ),
+    ]
+    self.assertEqual(expected, data)
+
+  def test_isolated_get_run_commands(self):
+    actual = swarming.isolated_get_run_commands(
+        'http://foo.invalid', 'default', '1'*40, ['fo', 'ba'], True)
+    expected = [
+      'python',
+      'run_isolated.zip',
+      '--hash',
+      '1111111111111111111111111111111111111111',
+      '--isolate-server',
+      'http://foo.invalid',
+      '--namespace',
+      'default',
+      '--verbose',
+      '--',
+      'fo',
+      'ba',
+    ]
+    self.assertEqual(expected, actual)
+
+
+class TestSwarmingTrigger(NetTestCase):
+  def test_trigger_task_shards_2_shards(self):
+    task_request = swarming.TaskRequest(
+        command=['a', 'b'],
+        data=[],
+        dimensions={'foo': 'bar', 'os': 'Mac'},
+        env={},
+        expiration=60*60,
+        hard_timeout=60,
+        idempotent=False,
+        io_timeout=60,
+        name=TEST_NAME,
+        priority=101,
+        tags=['taga', 'tagb'],
+        user='joe@localhost',
+        verbose=False)
+
+    request_1 = swarming.task_request_to_raw_request(task_request)
+    request_1['name'] = u'unit_tests:0:2'
+    request_1['properties']['env'] = {
+      'GTEST_SHARD_INDEX': '0', 'GTEST_TOTAL_SHARDS': '2',
+    }
+    result_1 = gen_request_response(request_1)
+
+    request_2 = swarming.task_request_to_raw_request(task_request)
+    request_2['name'] = u'unit_tests:1:2'
+    request_2['properties']['env'] = {
+      'GTEST_SHARD_INDEX': '1', 'GTEST_TOTAL_SHARDS': '2',
+    }
+    result_2 = gen_request_response(request_2, task_id='12400')
+    self.expected_requests(
+        [
+          (
+            'https://localhost:1/swarming/api/v1/client/handshake',
+            {'data': {}, 'headers': {'X-XSRF-Token-Request': '1'}},
+            {'server_version': 'v1', 'xsrf_token': 'Token'},
+          ),
+          (
+            'https://localhost:1/swarming/api/v1/client/request',
+            {'data': request_1, 'headers': {'X-XSRF-Token': 'Token'}},
+            result_1,
+          ),
+          (
+            'https://localhost:1/swarming/api/v1/client/request',
+            {'data': request_2, 'headers': {'X-XSRF-Token': 'Token'}},
+            result_2,
+          ),
+        ])
+
+    tasks = swarming.trigger_task_shards(
+        swarming='https://localhost:1',
+        task_request=task_request,
+        shards=2)
+    expected = {
+      u'unit_tests:0:2': {
+        'shard_index': 0,
+        'task_id': '12300',
+        'view_url': 'https://localhost:1/user/task/12300',
+      },
+      u'unit_tests:1:2': {
+        'shard_index': 1,
+        'task_id': '12400',
+        'view_url': 'https://localhost:1/user/task/12400',
+      },
+    }
+    self.assertEqual(expected, tasks)
+
+  def test_trigger_task_shards_priority_override(self):
+    task_request = swarming.TaskRequest(
+        command=['a', 'b'],
+        data=[['https://foo.invalid/bar', 'bar.zip']],
+        dimensions={'foo': 'bar', 'os': 'Mac'},
+        env={},
+        expiration=60*60,
+        hard_timeout=60,
+        idempotent=False,
+        io_timeout=60,
+        name=TEST_NAME,
+        priority=101,
+        tags=['taga', 'tagb'],
+        user='joe@localhost',
+        verbose=False)
+
+    request = swarming.task_request_to_raw_request(task_request)
+    result = gen_request_response(request)
+    result['request']['priority'] = 200
+    self.expected_requests(
+        [
+          (
+            'https://localhost:1/swarming/api/v1/client/handshake',
+            {'data': {}, 'headers': {'X-XSRF-Token-Request': '1'}},
+            {'server_version': 'v1', 'xsrf_token': 'Token'},
+          ),
+          (
+            'https://localhost:1/swarming/api/v1/client/request',
+            {'data': request, 'headers': {'X-XSRF-Token': 'Token'}},
+            result,
+          ),
+        ])
+
+    tasks = swarming.trigger_task_shards(
+        swarming='https://localhost:1',
+        shards=1,
+        task_request=task_request)
+    expected = {
+      u'unit_tests': {
+        'shard_index': 0,
+        'task_id': '12300',
+        'view_url': 'https://localhost:1/user/task/12300',
+      }
+    }
+    self.assertEqual(expected, tasks)
+    self._check_output('', 'Priority was reset to 200\n')
+
+  def test_isolated_to_hash(self):
+    calls = []
+    self.mock(subprocess, 'call', lambda *c: calls.append(c))
+    content = '{}'
+    expected_hash = hashlib.sha1(content).hexdigest()
+    handle, isolated = tempfile.mkstemp(
+        prefix='swarming_test_', suffix='.isolated')
+    os.close(handle)
+    try:
+      with open(isolated, 'w') as f:
+        f.write(content)
+      hash_value, is_file = swarming.isolated_to_hash(
+          'https://localhost:2', 'default-gzip', isolated, hashlib.sha1, False)
+    finally:
+      os.remove(isolated)
+    self.assertEqual(expected_hash, hash_value)
+    self.assertEqual(True, is_file)
+    expected_calls = [
+        (
+          [
+            sys.executable,
+            os.path.join(swarming.ROOT_DIR, 'isolate.py'),
+            'archive',
+            '--isolate-server', 'https://localhost:2',
+            '--namespace', 'default-gzip',
+            '--isolated',
+            isolated,
+          ],
+          False,
+        ),
+    ]
+    self.assertEqual(expected_calls, calls)
+    self._check_output('Archiving: %s\n' % isolated, '')
+
+
+class TestSwarmingCollection(NetTestCase):
   def test_success(self):
     self.expected_requests(
         [
@@ -427,81 +635,189 @@ class TestGetResults(TestCase):
         'Total duration: 1.8s\n',
         'Results from some shards are missing: 1\n')
 
-
-class TriggerTaskShardsTest(TestCase):
-  def test_trigger_task_shards_2_shards(self):
+  def test_collect_multi(self):
+    actual_calls = []
     self.mock(
-        isolateserver, 'get_storage',
-        lambda *_: MockedStorage(warm_cache=False))
-    request_1 = gen_request_data(name=u'unit_tests:0:2')
-    request_1['properties']['env'] = {
-      'GTEST_SHARD_INDEX': '0', 'GTEST_TOTAL_SHARDS': '2',
-    }
-    result_1 = gen_request_response(request_1)
-    request_2 = gen_request_data(name=u'unit_tests:1:2')
-    request_2['properties']['env'] = {
-      'GTEST_SHARD_INDEX': '1', 'GTEST_TOTAL_SHARDS': '2',
-    }
-    result_2 = gen_request_response(request_2, task_id='12400')
-    self.expected_requests(
-        [
-          (
-            'https://localhost:1/swarming/api/v1/client/handshake',
-            {'data': {}, 'headers': {'X-XSRF-Token-Request': '1'}},
-            {'server_version': 'v1', 'xsrf_token': 'Token'},
-          ),
-          (
-            'https://localhost:1/swarming/api/v1/client/request',
-            {'data': request_1, 'headers': {'X-XSRF-Token': 'Token'}},
-            result_1,
-          ),
-          (
-            'https://localhost:1/swarming/api/v1/client/request',
-            {'data': request_2, 'headers': {'X-XSRF-Token': 'Token'}},
-            result_2,
-          ),
-        ])
+        isolateserver, 'fetch_isolated',
+        lambda *args: actual_calls.append(args))
+    shards_output = [
+      gen_run_isolated_out_hack_log('https://server', 'namespace', 'hash1'),
+      gen_run_isolated_out_hack_log('https://server', 'namespace', 'hash2'),
+      OUTPUT,
+    ]
 
-    tasks = swarming.trigger_task_shards(
-        swarming='https://localhost:1',
-        isolate_server='https://localhost:2',
-        namespace='default-gzip',
-        isolated_hash=FILE_HASH,
-        task_name=TEST_NAME,
-        extra_args=['--some-arg', '123'],
-        shards=2,
-        dimensions={'foo': 'bar', 'os': 'Mac'},
-        env={},
-        expiration=60*60,
-        hard_timeout=60,
-        io_timeout=60,
-        idempotent=False,
-        verbose=False,
-        profile=False,
-        priority=101,
-        tags=['taga', 'tagb'],
-        user='joe@localhost')
+    collector = swarming.TaskOutputCollector(
+        self.tempdir, 'name', len(shards_output))
+    for index, shard_output in enumerate(shards_output):
+      collector.process_shard_result(
+          index, gen_result_response(outputs=[shard_output]))
+    summary = collector.finalize()
+
+    expected_calls = [
+      ('hash1', None, None, os.path.join(self.tempdir, '0'), False),
+      ('hash2', None, None, os.path.join(self.tempdir, '1'), False),
+    ]
+    self.assertEqual(len(expected_calls), len(actual_calls))
+    storage_instances = set()
+    for expected, used in zip(expected_calls, actual_calls):
+      isolated_hash, storage, cache, outdir, require_command = used
+      storage_instances.add(storage)
+      # Compare everything but |storage| and |cache| (use None in their place).
+      self.assertEqual(
+          expected, (isolated_hash, None, None, outdir, require_command))
+      # Ensure cache is set.
+      self.assertTrue(cache)
+
+    # Only one instance of Storage should be used.
+    self.assertEqual(1, len(storage_instances))
+
+    # Ensure storage is pointing to required location.
+    storage = storage_instances.pop()
+    self.assertEqual('https://server', storage.location)
+    self.assertEqual('namespace', storage.namespace)
+
+    # Ensure collected summary is correct.
+    isolated_outs = [
+      {
+        'hash': 'hash1',
+        'namespace': 'namespace',
+        'server': 'https://server',
+        'view_url': 'https://server/browse?namespace=namespace&hash=hash1',
+      },
+      {
+        'hash': 'hash2',
+        'namespace': 'namespace',
+        'server': 'https://server',
+        'view_url': 'https://server/browse?namespace=namespace&hash=hash2',
+      },
+      None,
+    ]
     expected = {
-      u'unit_tests:0:2': {
-        'shard_index': 0,
-        'task_id': '12300',
-        'view_url': 'https://localhost:1/user/task/12300',
-      },
-      u'unit_tests:1:2': {
-        'shard_index': 1,
-        'task_id': '12400',
-        'view_url': 'https://localhost:1/user/task/12400',
-      },
+      'shards': [
+        gen_result_response(isolated_out=isolated_out, outputs=[shard_output])
+        for index, (isolated_out, shard_output) in
+            enumerate(zip(isolated_outs, shards_output))
+      ],
     }
-    self.assertEqual(expected, tasks)
+    self.assertEqual(expected, summary)
 
-  def test_trigger_task_shards_priority_override(self):
+    # Ensure summary dumped to a file is correct as well.
+    with open(os.path.join(self.tempdir, 'summary.json'), 'r') as f:
+      summary_dump = json.load(f)
+    self.assertEqual(expected, summary_dump)
+
+  def test_ensures_same_server(self):
+    # Two shard results, attempt to use different servers.
+    actual_calls = []
     self.mock(
-        isolateserver, 'get_storage',
-        lambda *_: MockedStorage(warm_cache=False))
-    request = gen_request_data()
+        isolateserver, 'fetch_isolated',
+        lambda *args: actual_calls.append(args))
+    data = [
+      gen_result_response(
+        outputs=[
+          gen_run_isolated_out_hack_log('https://server1', 'namespace', 'hash1')
+        ]),
+      gen_result_response(
+        outputs=[
+          gen_run_isolated_out_hack_log('https://server2', 'namespace', 'hash2')
+        ]),
+    ]
+
+    # Feed them to collector.
+    collector = swarming.TaskOutputCollector(self.tempdir, 'task/name', 2)
+    for index, result in enumerate(data):
+      collector.process_shard_result(index, result)
+    collector.finalize()
+
+    # Only first fetch is made, second one is ignored.
+    self.assertEqual(1, len(actual_calls))
+    isolated_hash, storage, _, outdir, _ = actual_calls[0]
+    self.assertEqual(
+        ('hash1', os.path.join(self.tempdir, '0')),
+        (isolated_hash, outdir))
+    self.assertEqual('https://server1', storage.location)
+
+  def test_extract_output_files_location_ok(self):
+    task_log = '\n'.join((
+      'some log',
+      'some more log',
+      gen_run_isolated_out_hack_log('https://fake', 'default', '12345'),
+      'more log',
+    ))
+    self.assertEqual(
+        {'hash': '12345',
+         'namespace': 'default',
+         'server': 'https://fake',
+         'view_url': 'https://fake/browse?namespace=default&hash=12345'},
+        swarming.extract_output_files_location(task_log))
+
+  def test_extract_output_files_location_empty(self):
+    task_log = '\n'.join((
+      'some log',
+      'some more log',
+      '[run_isolated_out_hack]',
+      '[/run_isolated_out_hack]',
+    ))
+    self.assertEqual(
+        None,
+        swarming.extract_output_files_location(task_log))
+
+  def test_extract_output_files_location_missing(self):
+    task_log = '\n'.join((
+      'some log',
+      'some more log',
+      'more log',
+    ))
+    self.assertEqual(
+        None,
+        swarming.extract_output_files_location(task_log))
+
+  def test_extract_output_files_location_corrupt(self):
+    task_log = '\n'.join((
+      'some log',
+      'some more log',
+      '[run_isolated_out_hack]',
+      '{"hash": "12345","namespace":}',
+      '[/run_isolated_out_hack]',
+      'more log',
+    ))
+    self.assertEqual(
+        None,
+        swarming.extract_output_files_location(task_log))
+
+  def test_extract_output_files_location_not_url(self):
+    task_log = '\n'.join((
+      'some log',
+      'some more log',
+      gen_run_isolated_out_hack_log('/local/path', 'default', '12345'),
+      'more log',
+    ))
+    self.assertEqual(
+        None,
+        swarming.extract_output_files_location(task_log))
+
+
+class TestMain(NetTestCase):
+  # Tests calling main().
+  def test_run_raw_cmd(self):
+    # Minimalist use.
+    request = {
+      'name': 'None/foo=bar',
+      'priority': 100,
+      'properties': {
+        'commands': [['python', '-c', 'print(\'hi\')']],
+        'data': [],
+        'dimensions': {'foo': 'bar'},
+        'env': {},
+        'execution_timeout_secs': 3600,
+        'idempotent': False,
+        'io_timeout_secs': 1200,
+      },
+      'scheduling_expiration_secs': 21600,
+      'tags': [],
+      'user': None,
+    }
     result = gen_request_response(request)
-    result['request']['priority'] = 200
     self.expected_requests(
         [
           (
@@ -515,93 +831,33 @@ class TriggerTaskShardsTest(TestCase):
             result,
           ),
         ])
-
-    tasks = swarming.trigger_task_shards(
-        swarming='https://localhost:1',
-        isolate_server='https://localhost:2',
-        namespace='default-gzip',
-        isolated_hash=FILE_HASH,
-        task_name=TEST_NAME,
-        extra_args=['--some-arg', '123'],
-        shards=1,
-        dimensions={'foo': 'bar', 'os': 'Mac'},
-        env={},
-        expiration=60*60,
-        hard_timeout=60,
-        io_timeout=60,
-        idempotent=False,
-        verbose=False,
-        profile=False,
-        priority=101,
-        tags=['taga', 'tagb'],
-        user='joe@localhost')
-    expected = {
-      u'unit_tests': {
-        'shard_index': 0,
-        'task_id': '12300',
-        'view_url': 'https://localhost:1/user/task/12300',
-      }
-    }
-    self.assertEqual(expected, tasks)
-    self._check_output('', 'Priority was reset to 200\n')
-
-  def test_isolated_to_hash(self):
-    calls = []
-    self.mock(subprocess, 'call', lambda *c: calls.append(c))
-    content = '{}'
-    expected_hash = hashlib.sha1(content).hexdigest()
-    handle, isolated = tempfile.mkstemp(
-        prefix='swarming_test_', suffix='.isolated')
-    os.close(handle)
-    try:
-      with open(isolated, 'w') as f:
-        f.write(content)
-      hash_value, is_file = swarming.isolated_to_hash(
-          'https://localhost:2', 'default-gzip', isolated, hashlib.sha1, False)
-    finally:
-      os.remove(isolated)
-    self.assertEqual(expected_hash, hash_value)
-    self.assertEqual(True, is_file)
-    expected_calls = [
-        (
-          [
-            sys.executable,
-            os.path.join(swarming.ROOT_DIR, 'isolate.py'),
-            'archive',
-            '--isolate-server', 'https://localhost:2',
-            '--namespace', 'default-gzip',
-            '--isolated',
-            isolated,
-          ],
-          False,
-        ),
-    ]
-    self.assertEqual(expected_calls, calls)
-    self._check_output('Archiving: %s\n' % isolated, '')
+    ret = main([
+        'trigger',
+        '--swarming', 'https://localhost:1',
+        '--dimension', 'foo', 'bar',
+        '--raw-cmd',
+        '--',
+        'python',
+        '-c',
+        'print(\'hi\')',
+      ])
+    actual = sys.stdout.getvalue()
+    self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
+    self._check_output(
+        'Triggered task: None/foo=bar\n'
+        'To collect results, use:\n'
+        '  swarming.py collect -S https://localhost:1 12300\n'
+        'Or visit:\n'
+        '  https://localhost:1/user/task/12300\n',
+        '')
 
 
-class MainTest(TestCase):
-  def setUp(self):
-    super(MainTest, self).setUp()
-    self._tmpdir = None
-
-  def tearDown(self):
-    try:
-      if self._tmpdir:
-        shutil.rmtree(self._tmpdir)
-    finally:
-      super(MainTest, self).tearDown()
-
-  @property
-  def tmpdir(self):
-    if not self._tmpdir:
-      self._tmpdir = tempfile.mkdtemp(prefix='swarming')
-    return self._tmpdir
-
-  def test_run_hash(self):
+  def test_run_isolated_hash(self):
+    # pylint: disable=unused-argument
+    def isolated_upload_zip_bundle(isolate_server, bundle):
+      return 'https://localhost:1/fetch_url'
     self.mock(
-        isolateserver, 'get_storage',
-        lambda *_: MockedStorage(warm_cache=False))
+        swarming, 'isolated_upload_zip_bundle', isolated_upload_zip_bundle)
     self.mock(swarming, 'now', lambda: 123456)
 
     request = gen_request_data()
@@ -642,29 +898,31 @@ class MainTest(TestCase):
     actual = sys.stdout.getvalue()
     self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
     self._check_output(
-        #'Triggered task: unit_tests\n'
+        'Triggered task: unit_tests\n'
         'To collect results, use:\n'
         '  swarming.py collect -S https://localhost:1 12300\n'
         'Or visit:\n'
         '  https://localhost:1/user/task/12300\n',
         '')
 
-  def test_run_isolated_and_json(self):
+  def test_run_isolated_upload_and_json(self):
+    # pylint: disable=unused-argument
     write_json_calls = []
     self.mock(tools, 'write_json', lambda *args: write_json_calls.append(args))
+    def isolated_upload_zip_bundle(isolate_server, bundle):
+      return 'https://localhost:1/fetch_url'
     self.mock(
-        isolateserver, 'get_storage',
-        lambda *_: MockedStorage(warm_cache=False))
+        swarming, 'isolated_upload_zip_bundle', isolated_upload_zip_bundle)
     subprocess_calls = []
     self.mock(subprocess, 'call', lambda *c: subprocess_calls.append(c))
     self.mock(swarming, 'now', lambda: 123456)
 
-    isolated = os.path.join(self.tmpdir, 'zaz.isolated')
+    isolated = os.path.join(self.tempdir, 'zaz.isolated')
     content = '{}'
     with open(isolated, 'wb') as f:
       f.write(content)
 
-    isolated_hash = ALGO(content).hexdigest()
+    isolated_hash = isolateserver_mock.hash_content(content)
     request = gen_request_data(
         isolated_hash=isolated_hash, properties=dict(idempotent=True))
     result = gen_request_response(request)
@@ -719,7 +977,7 @@ class MainTest(TestCase):
     self.assertEqual(expected, subprocess_calls)
     self._check_output(
         'Archiving: %s\n'
-        #'Triggered task: .\n'
+        'Triggered task: unit_tests\n'
         'To collect results, use:\n'
         '  swarming.py collect -S https://localhost:1 --json foo.json\n'
         'Or visit:\n'
@@ -748,10 +1006,12 @@ class MainTest(TestCase):
       main([
             'trigger', '--swarming', 'https://host',
             '--isolate-server', 'https://host', '-T', 'foo',
+            '-d', 'os', 'amgia',
           ])
     self._check_output(
         '',
-        'Usage: swarming.py trigger [options] (hash|isolated) [-- extra_args]'
+        'Usage: swarming.py trigger [options] (hash|isolated) '
+          '[-- extra_args|raw command]'
         '\n\n'
         'swarming.py: error: Must pass one .isolated file or its hash (sha1).'
         '\n')
@@ -761,7 +1021,8 @@ class MainTest(TestCase):
       main(['trigger'])
     self._check_output(
         '',
-        'Usage: swarming.py trigger [options] (hash|isolated) [-- extra_args]'
+        'Usage: swarming.py trigger [options] (hash|isolated) '
+          '[-- extra_args|raw command]'
         '\n\n'
         'swarming.py: error: --swarming is required.'
         '\n')
@@ -772,43 +1033,33 @@ class MainTest(TestCase):
         main(['trigger', '-T' 'foo', 'foo.isolated'])
     self._check_output(
         '',
-        'Usage: swarming.py trigger [options] (hash|isolated) [-- extra_args]'
+        'Usage: swarming.py trigger [options] (hash|isolated) '
+          '[-- extra_args|raw command]'
         '\n\n'
         'swarming.py: error: --swarming is required.'
         '\n')
 
-  def test_trigger_no_isolate_env_var(self):
+  def test_trigger_no_isolate_server(self):
     with self.assertRaises(SystemExit):
       with test_utils.EnvVars({'SWARMING_SERVER': 'https://host'}):
-        main(['trigger', '-T', 'foo', 'foo.isolated'])
+        main(['trigger', 'foo.isolated', '-d', 'os', 'amiga'])
     self._check_output(
         '',
-        'Usage: swarming.py trigger [options] (hash|isolated) [-- extra_args]'
+        'Usage: swarming.py trigger [options] (hash|isolated) '
+          '[-- extra_args|raw command]'
         '\n\n'
         'swarming.py: error: --isolate-server is required.'
         '\n')
 
-  def test_trigger_env_var(self):
-    with self.assertRaises(SystemExit):
-      with test_utils.EnvVars({'ISOLATE_SERVER': 'https://host',
-                               'SWARMING_SERVER': 'https://host'}):
-        main(['trigger', '-T', 'foo'])
-    self._check_output(
-        '',
-        'Usage: swarming.py trigger [options] (hash|isolated) [-- extra_args]'
-        '\n\n'
-        'swarming.py: error: Must pass one .isolated file or its hash (sha1).'
-        '\n')
-
-  def test_trigger_no_task(self):
+  def test_trigger_no_dimension(self):
     with self.assertRaises(SystemExit):
       main([
-            'trigger', '--swarming', 'https://host',
-            '--isolate-server', 'https://host', 'foo.isolated',
+            'trigger', '--swarming', 'https://host', '--raw-cmd', '--', 'foo',
           ])
     self._check_output(
         '',
-        'Usage: swarming.py trigger [options] (hash|isolated) [-- extra_args]'
+        'Usage: swarming.py trigger [options] (hash|isolated) '
+          '[-- extra_args|raw command]'
         '\n\n'
         'swarming.py: error: Please at least specify one --dimension\n')
 
@@ -872,7 +1123,7 @@ class MainTest(TestCase):
   def test_reproduce(self):
     old_cwd = os.getcwd()
     try:
-      os.chdir(self.tmpdir)
+      os.chdir(self.tempdir)
 
       def call(cmd, env, cwd):
         self.assertEqual(['foo'], cmd)
@@ -908,9 +1159,10 @@ class MainTest(TestCase):
       os.chdir(old_cwd)
 
 
-class BotTestCase(TestCase):
+class TestCommandBot(NetTestCase):
+  # Specialized test fixture for command 'bot'.
   def setUp(self):
-    super(BotTestCase, self).setUp()
+    super(TestCommandBot, self).setUp()
     # Expected requests are always the same, independent of the test case.
     self.expected_requests(
         [
@@ -1117,201 +1369,11 @@ class BotTestCase(TestCase):
     self.assertEqual(0, ret)
 
 
-def gen_run_isolated_out_hack_log(isolate_server, namespace, isolated_hash):
-  data = {
-    'hash': isolated_hash,
-    'namespace': namespace,
-    'storage': isolate_server,
-  }
-  return (OUTPUT +
-      '[run_isolated_out_hack]%s[/run_isolated_out_hack]\n' % (
-          json.dumps(data, sort_keys=True, separators=(',',':'))))
-
-
-class ExtractOutputFilesLocationTest(auto_stub.TestCase):
-  def test_ok(self):
-    task_log = '\n'.join((
-      'some log',
-      'some more log',
-      gen_run_isolated_out_hack_log('https://fake', 'default', '12345'),
-      'more log',
-    ))
-    self.assertEqual(
-        {'hash': '12345',
-         'namespace': 'default',
-         'server': 'https://fake',
-         'view_url': 'https://fake/browse?namespace=default&hash=12345'},
-        swarming.extract_output_files_location(task_log))
-
-  def test_empty(self):
-    task_log = '\n'.join((
-      'some log',
-      'some more log',
-      '[run_isolated_out_hack]',
-      '[/run_isolated_out_hack]',
-    ))
-    self.assertEqual(
-        None,
-        swarming.extract_output_files_location(task_log))
-
-  def test_missing(self):
-    task_log = '\n'.join((
-      'some log',
-      'some more log',
-      'more log',
-    ))
-    self.assertEqual(
-        None,
-        swarming.extract_output_files_location(task_log))
-
-  def test_corrupt(self):
-    task_log = '\n'.join((
-      'some log',
-      'some more log',
-      '[run_isolated_out_hack]',
-      '{"hash": "12345","namespace":}',
-      '[/run_isolated_out_hack]',
-      'more log',
-    ))
-    self.assertEqual(
-        None,
-        swarming.extract_output_files_location(task_log))
-
-  def test_not_url(self):
-    task_log = '\n'.join((
-      'some log',
-      'some more log',
-      gen_run_isolated_out_hack_log('/local/path', 'default', '12345'),
-      'more log',
-    ))
-    self.assertEqual(
-        None,
-        swarming.extract_output_files_location(task_log))
-
-
-class TaskOutputCollectorTest(auto_stub.TestCase):
-  def setUp(self):
-    super(TaskOutputCollectorTest, self).setUp()
-    self.mock(logging, 'error', lambda *_, **__: None)
-    self.mock(isolateserver, 'fetch_isolated', self.fail)
-    self.tempdir = tempfile.mkdtemp(prefix='swarming_test')
-
-  def tearDown(self):
-    shutil.rmtree(self.tempdir)
-    super(TaskOutputCollectorTest, self).tearDown()
-
-  def test_collect_multi(self):
-    actual_calls = []
-    self.mock(
-        isolateserver, 'fetch_isolated',
-        lambda *args: actual_calls.append(args))
-    shards_output = [
-      gen_run_isolated_out_hack_log('https://server', 'namespace', 'hash1'),
-      gen_run_isolated_out_hack_log('https://server', 'namespace', 'hash2'),
-      OUTPUT,
-    ]
-
-    collector = swarming.TaskOutputCollector(
-        self.tempdir, 'name', len(shards_output))
-    for index, shard_output in enumerate(shards_output):
-      collector.process_shard_result(
-          index, gen_result_response(outputs=[shard_output]))
-    summary = collector.finalize()
-
-    expected_calls = [
-      ('hash1', None, None, os.path.join(self.tempdir, '0'), False),
-      ('hash2', None, None, os.path.join(self.tempdir, '1'), False),
-    ]
-    self.assertEqual(len(expected_calls), len(actual_calls))
-    storage_instances = set()
-    for expected, used in zip(expected_calls, actual_calls):
-      isolated_hash, storage, cache, outdir, require_command = used
-      storage_instances.add(storage)
-      # Compare everything but |storage| and |cache| (use None in their place).
-      self.assertEqual(
-          expected, (isolated_hash, None, None, outdir, require_command))
-      # Ensure cache is set.
-      self.assertTrue(cache)
-
-    # Only one instance of Storage should be used.
-    self.assertEqual(1, len(storage_instances))
-
-    # Ensure storage is pointing to required location.
-    storage = storage_instances.pop()
-    self.assertEqual('https://server', storage.location)
-    self.assertEqual('namespace', storage.namespace)
-
-    # Ensure collected summary is correct.
-    isolated_outs = [
-      {
-        'hash': 'hash1',
-        'namespace': 'namespace',
-        'server': 'https://server',
-        'view_url': 'https://server/browse?namespace=namespace&hash=hash1',
-      },
-      {
-        'hash': 'hash2',
-        'namespace': 'namespace',
-        'server': 'https://server',
-        'view_url': 'https://server/browse?namespace=namespace&hash=hash2',
-      },
-      None,
-    ]
-    expected = {
-      'shards': [
-        gen_result_response(isolated_out=isolated_out, outputs=[shard_output])
-        for index, (isolated_out, shard_output) in
-            enumerate(zip(isolated_outs, shards_output))
-      ],
-    }
-    self.assertEqual(expected, summary)
-
-    # Ensure summary dumped to a file is correct as well.
-    with open(os.path.join(self.tempdir, 'summary.json'), 'r') as f:
-      summary_dump = json.load(f)
-    self.assertEqual(expected, summary_dump)
-
-  def test_ensures_same_server(self):
-    # Two shard results, attempt to use different servers.
-    actual_calls = []
-    self.mock(
-        isolateserver, 'fetch_isolated',
-        lambda *args: actual_calls.append(args))
-    data = [
-      gen_result_response(
-        outputs=[
-          gen_run_isolated_out_hack_log('https://server1', 'namespace', 'hash1')
-        ]),
-      gen_result_response(
-        outputs=[
-          gen_run_isolated_out_hack_log('https://server2', 'namespace', 'hash2')
-        ]),
-    ]
-
-    # Feed them to collector.
-    collector = swarming.TaskOutputCollector(self.tempdir, 'task/name', 2)
-    for index, result in enumerate(data):
-      collector.process_shard_result(index, result)
-    collector.finalize()
-
-    # Only first fetch is made, second one is ignored.
-    self.assertEqual(1, len(actual_calls))
-    isolated_hash, storage, _, outdir, _ = actual_calls[0]
-    self.assertEqual(
-        ('hash1', os.path.join(self.tempdir, '0')),
-        (isolated_hash, outdir))
-    self.assertEqual('https://server1', storage.location)
-
-
-def clear_env_vars():
-  for e in ('ISOLATE_SERVER', 'SWARMING_SERVER'):
-    os.environ.pop(e, None)
-
-
 if __name__ == '__main__':
   logging.basicConfig(
-      level=logging.DEBUG if '-v' in sys.argv else logging.ERROR)
+      level=logging.DEBUG if '-v' in sys.argv else logging.CRITICAL)
   if '-v' in sys.argv:
     unittest.TestCase.maxDiff = None
-  clear_env_vars()
+  for e in ('ISOLATE_SERVER', 'SWARMING_SERVER'):
+    os.environ.pop(e, None)
   unittest.main()

@@ -378,6 +378,7 @@ class AutoRetryThreadPool(ThreadPool):
       if channel is None:
         return result
       channel.send_result(result)
+    # pylint: disable=catching-non-exception
     except self._swallowed_exceptions as e:
       # Retry a few times, lowering the priority.
       actual_retries = priority & self.INTERNAL_PRIORITY_BITS

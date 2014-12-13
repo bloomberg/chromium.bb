@@ -364,7 +364,7 @@ class RunIsolatedTest(auto_stub.TestCase):
       uploaded = json_dumps(isolated)
       uploaded_hash = isolateserver_mock.hash_content(uploaded)
       hashes.add(uploaded_hash)
-      self.assertEqual(hashes, set(server._server.contents['default-store']))
+      self.assertEqual(hashes, set(server.contents['default-store']))
 
       expected = ''.join([
         '[run_isolated_out_hack]',
