@@ -285,6 +285,14 @@ class BrowserOptionsHandler
   // the hotword section of the settings page.
   void SendHotwordAvailable();
 
+  // Callback that updates the visibility of the audio history upon completion
+  // of a call to the server to the get the current value.
+  void SetHotwordAudioHistorySectionVisible(
+      bool always_on,
+      const base::string16& audio_history_state,
+      bool success,
+      bool logging_enabled);
+
   // Callback for "requestHotwordAvailable" message.
   void HandleRequestHotwordAvailable(const base::ListValue* args);
 

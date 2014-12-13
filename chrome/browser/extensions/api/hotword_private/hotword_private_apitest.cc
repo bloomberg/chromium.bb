@@ -65,7 +65,8 @@ class MockAudioHistoryHandler : public HotwordAudioHistoryHandler {
  public:
   MockAudioHistoryHandler(content::BrowserContext* context,
                           history::WebHistoryService* web_history)
-      : HotwordAudioHistoryHandler(context),
+      : HotwordAudioHistoryHandler(context,
+                                   base::MessageLoop::current()->task_runner()),
         web_history_(web_history) {}
   ~MockAudioHistoryHandler() override {}
 
@@ -442,9 +443,13 @@ IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, AudioHistoryNoWebHistory) {
       new MockAudioHistoryHandler(profile(), nullptr);
   service()->SetAudioHistoryHandler(handler);
 
-  ExtensionTestMessageListener setListenerT("set AH: false failure", false);
-  ExtensionTestMessageListener setListenerF("set AH: false failure", false);
-  ExtensionTestMessageListener getListener("get AH: false failure", false);
+  // Set an initial value for the audio logging pref.
+  PrefService* prefs = profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kHotwordAudioLoggingEnabled, true);
+
+  ExtensionTestMessageListener setListenerT("set AH: true failure", false);
+  ExtensionTestMessageListener setListenerF("set AH: true failure", false);
+  ExtensionTestMessageListener getListener("get AH: true failure", false);
 
   ASSERT_TRUE(RunComponentExtensionTest("audioHistory")) << message_;
 

@@ -1221,12 +1221,13 @@ cr.define('options', function() {
 
     /**
      * Activates the Audio History section of the Settings page.
+     * @param {boolean} visible Whether the audio history section is visible.
      * @param {boolean} alwaysOn Whether always-on hotwording is available.
      * @param {string} labelText Text describing current audio history state.
      * @private
      */
-    showAudioHistorySection_: function(alwaysOn, labelText) {
-      $('audio-history').hidden = false;
+    setAudioHistorySectionVisible_: function(visible, alwaysOn, labelText) {
+      $('audio-history').hidden = !visible;
       $('audio-history-label').textContent = labelText;
       $('audio-history-always-on-description').hidden = !alwaysOn;
     },
@@ -2129,7 +2130,7 @@ cr.define('options', function() {
     'setVirtualKeyboardCheckboxState',
     'setupPageZoomSelector',
     'setupProxySettingsButton',
-    'showAudioHistorySection',
+    'setAudioHistorySectionVisible',
     'showBluetoothSettings',
     'showCreateProfileError',
     'showCreateProfileSuccess',

@@ -6,9 +6,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
+#include "base/test/test_simple_task_runner.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/test_extension_service.h"
+#include "chrome/browser/history/web_history_service.h"
+#include "chrome/browser/search/hotword_audio_history_handler.h"
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -24,6 +27,37 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+class MockAudioHistoryHandler : public HotwordAudioHistoryHandler {
+ public:
+  MockAudioHistoryHandler(
+      content::BrowserContext* context,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      history::WebHistoryService* web_history)
+      : HotwordAudioHistoryHandler(context, task_runner),
+        get_audio_history_calls_(0),
+        web_history_(web_history) {
+  }
+  ~MockAudioHistoryHandler() override {}
+
+  void GetAudioHistoryEnabled(
+      const HotwordAudioHistoryCallback& callback) override {
+    get_audio_history_calls_++;
+    callback.Run(true, true);
+  }
+
+  history::WebHistoryService* GetWebHistory() override {
+    return web_history_.get();
+  }
+
+  int GetAudioHistoryCalls() {
+    return get_audio_history_calls_;
+  }
+
+ private:
+  int get_audio_history_calls_;
+  scoped_ptr<history::WebHistoryService> web_history_;
+};
 
 class MockHotwordService : public HotwordService {
  public:
@@ -499,4 +533,38 @@ TEST_P(HotwordServiceTest, IsSometimesOnEnabled) {
   profile()->GetPrefs()->SetBoolean(prefs::kHotwordAlwaysOnSearchEnabled,
                                     false);
   EXPECT_FALSE(hotword_service->IsSometimesOnEnabled());
+}
+
+TEST_P(HotwordServiceTest, AudioHistorySyncOccurs) {
+  // Set the field trial to a valid one.
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+    hotword_internal::kHotwordFieldTrialName, "Install"));
+
+  InitializeEmptyExtensionService();
+  service_->Init();
+
+  HotwordServiceFactory* hotword_service_factory =
+    HotwordServiceFactory::GetInstance();
+
+  MockHotwordService* hotword_service = static_cast<MockHotwordService*>(
+    hotword_service_factory->SetTestingFactoryAndUse(
+    profile(), BuildMockHotwordService));
+  EXPECT_TRUE(hotword_service != NULL);
+  hotword_service->SetExtensionService(service());
+  hotword_service->SetExtensionId(extension_id_);
+
+  scoped_refptr<base::TestSimpleTaskRunner> test_task_runner(
+      new base::TestSimpleTaskRunner());
+  MockAudioHistoryHandler* audio_history_handler =
+      new MockAudioHistoryHandler(profile(), test_task_runner, nullptr);
+  hotword_service->SetAudioHistoryHandler(audio_history_handler);
+  EXPECT_EQ(1, audio_history_handler->GetAudioHistoryCalls());
+  // We expect the next check for audio history to be in the queue.
+  EXPECT_EQ(base::TimeDelta::FromDays(1),
+            test_task_runner->NextPendingTaskDelay());
+  EXPECT_TRUE(test_task_runner->HasPendingTask());
+  test_task_runner->RunPendingTasks();
+  EXPECT_EQ(2, audio_history_handler->GetAudioHistoryCalls());
+  EXPECT_TRUE(test_task_runner->HasPendingTask());
+  test_task_runner->ClearPendingTasks();
 }

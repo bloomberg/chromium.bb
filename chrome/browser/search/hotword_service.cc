@@ -225,8 +225,6 @@ class HotwordNotificationDelegate : public NotificationDelegate {
         HotwordService::HOTWORD_AND_AUDIO_HISTORY;
     if (profile_->GetPrefs()->GetBoolean(
             prefs::kHotwordAudioLoggingEnabled)) {
-      // TODO(rlp): Make sure the Chrome Audio History pref is synced
-      // to the account-level Audio History setting from footprints.
       launch_mode = HotwordService::HOTWORD_ONLY;
     }
 
@@ -348,7 +346,8 @@ HotwordService::HotwordService(Profile* profile)
     profile_->GetPrefs()->ClearPref(hotword_internal::kHotwordUnusablePrefName);
   }
 
-  audio_history_handler_.reset(new HotwordAudioHistoryHandler(profile_));
+  SetAudioHistoryHandler(new HotwordAudioHistoryHandler(
+      profile_, base::MessageLoop::current()->task_runner()));
 
   if (HotwordServiceFactory::IsHotwordHardwareAvailable() &&
       IsHotwordAllowed() &&
@@ -746,6 +745,7 @@ HotwordAudioHistoryHandler* HotwordService::GetAudioHistoryHandler() {
 void HotwordService::SetAudioHistoryHandler(
     HotwordAudioHistoryHandler* handler) {
   audio_history_handler_.reset(handler);
+  audio_history_handler_->UpdateAudioHistoryState();
 }
 
 void HotwordService::DisableHotwordPreferences() {

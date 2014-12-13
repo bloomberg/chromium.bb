@@ -14,9 +14,14 @@
 using extensions::BrowserContextKeyedAPIFactory;
 using extensions::HotwordPrivateEventService;
 
+// Max number of hours between audio history checks.
+static const int kHoursUntilNextAudioHistoryCheck = 24;
+
 HotwordAudioHistoryHandler::HotwordAudioHistoryHandler(
-    content::BrowserContext* context)
-    : profile_(Profile::FromBrowserContext(context)),
+    content::BrowserContext* context,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+    : task_runner_(task_runner),
+      profile_(Profile::FromBrowserContext(context)),
       weak_ptr_factory_(this) {
 }
 
@@ -25,6 +30,26 @@ HotwordAudioHistoryHandler::~HotwordAudioHistoryHandler() {
 
 history::WebHistoryService* HotwordAudioHistoryHandler::GetWebHistory() {
   return WebHistoryServiceFactory::GetForProfile(profile_);
+}
+
+void HotwordAudioHistoryHandler::UpdateAudioHistoryState() {
+  GetAudioHistoryEnabled(
+      base::Bind(&HotwordAudioHistoryHandler::UpdateLocalPreference,
+                 weak_ptr_factory_.GetWeakPtr()));
+  // Set the function to update in a day.
+  task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&HotwordAudioHistoryHandler::UpdateAudioHistoryState,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::TimeDelta::FromHours(kHoursUntilNextAudioHistoryCheck));
+}
+
+void HotwordAudioHistoryHandler::UpdateLocalPreference(
+    bool success, bool new_enabled_value) {
+  if (success) {
+    PrefService* prefs = profile_->GetPrefs();
+    prefs->SetBoolean(prefs::kHotwordAudioLoggingEnabled, new_enabled_value);
+  }
 }
 
 void HotwordAudioHistoryHandler::GetAudioHistoryEnabled(
@@ -36,12 +61,10 @@ void HotwordAudioHistoryHandler::GetAudioHistoryEnabled(
                    weak_ptr_factory_.GetWeakPtr(),
                    callback));
   } else {
-    // If web_history is null, the user is not signed in so the opt-in
-    // should be seen as false. Run the callback with false for success
-    // and false for the enabled value.
+    // If web_history is null, the user is not signed in. Set the opt-in value
+    // to the last known value and run the callback with false for success.
     PrefService* prefs = profile_->GetPrefs();
-    prefs->SetBoolean(prefs::kHotwordAudioLoggingEnabled, false);
-    callback.Run(false, false);
+    callback.Run(false, prefs->GetBoolean(prefs::kHotwordAudioLoggingEnabled));
   }
 }
 
@@ -58,31 +81,33 @@ void HotwordAudioHistoryHandler::SetAudioHistoryEnabled(
                    callback));
   } else {
     // If web_history is null, run the callback with false for success
-    // and false for the enabled value.
-    callback.Run(false, false);
+    // and return the last known value for the opt-in pref.
+    PrefService* prefs = profile_->GetPrefs();
+    callback.Run(false, prefs->GetBoolean(prefs::kHotwordAudioLoggingEnabled));
   }
 }
 
 void HotwordAudioHistoryHandler::GetAudioHistoryComplete(
     const HotwordAudioHistoryCallback& callback,
     bool success, bool new_enabled_value) {
+  // Initialize value to the last known value of the audio history pref.
   PrefService* prefs = profile_->GetPrefs();
-  // Set preference to false if the call was not successful to err on the safe
-  // side.
-  bool new_value = success && new_enabled_value;
-  prefs->SetBoolean(prefs::kHotwordAudioLoggingEnabled, new_value);
-
-  callback.Run(success, new_value);
+  bool value = prefs->GetBoolean(prefs::kHotwordAudioLoggingEnabled);
+  // If the call was successful, use the new value for updates.
+  if (success) {
+    value = new_enabled_value;
+    prefs->SetBoolean(prefs::kHotwordAudioLoggingEnabled, value);
+    // If the setting is now turned off, always on should also be turned off.
+    if (!value)
+      prefs->SetBoolean(prefs::kHotwordAlwaysOnSearchEnabled, false);
+  }
+  callback.Run(success, value);
 }
 
 void HotwordAudioHistoryHandler::SetAudioHistoryComplete(
     bool new_enabled_value,
     const HotwordAudioHistoryCallback& callback,
     bool success, bool callback_enabled_value) {
-  if (success) {
-    PrefService* prefs = profile_->GetPrefs();
-    prefs->SetBoolean(prefs::kHotwordAudioLoggingEnabled, new_enabled_value);
-  }
-
+  UpdateLocalPreference(success, new_enabled_value);
   callback.Run(success, new_enabled_value);
 }
