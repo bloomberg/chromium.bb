@@ -402,13 +402,13 @@ void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
 
   SkRRect rrect;
   rrect.setRectRadii(RectToSkRect(rect), (const SkVector*)rad);
-  canvas->sk_canvas()->drawRRect(rrect, paint);
+  canvas->sk_canvas()->drawRRect(rrect, shadow_paint);
 
+  const int shadow_size = 2 * kShadowThickness;
   // Draw the bubble.
-  rect.SetRect(SkIntToScalar(kShadowThickness),
-               SkIntToScalar(kShadowThickness),
-               SkIntToScalar(width),
-               SkIntToScalar(height));
+  rect.SetRect(SkIntToScalar(kShadowThickness), SkIntToScalar(kShadowThickness),
+               SkIntToScalar(width - shadow_size),
+               SkIntToScalar(height - shadow_size));
   rrect.setRectRadii(RectToSkRect(rect), (const SkVector*)rad);
   canvas->sk_canvas()->drawRRect(rrect, paint);
 
@@ -416,10 +416,10 @@ void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
   // is aligned to the right on RTL UIs, we mirror the text bounds if the
   // locale is RTL.
   const gfx::FontList font_list;
-  int text_width = std::min(
-      gfx::GetStringWidth(text_, font_list),
-      width - (kShadowThickness * 2) - kTextPositionX - kTextHorizPadding);
-  int text_height = height - (kShadowThickness * 2);
+  int text_width =
+      std::min(gfx::GetStringWidth(text_, font_list),
+               width - shadow_size - kTextPositionX - kTextHorizPadding);
+  int text_height = height - shadow_size;
   gfx::Rect body_bounds(kShadowThickness + kTextPositionX,
                         kShadowThickness,
                         std::max(0, text_width),
