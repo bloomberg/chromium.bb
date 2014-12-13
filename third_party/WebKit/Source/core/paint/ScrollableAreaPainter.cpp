@@ -170,11 +170,12 @@ void ScrollableAreaPainter::paintScrollCorner(GraphicsContext* context, const In
     if (!absRect.intersects(damageRect))
         return;
 
+    DrawingRecorder recorder(context, m_renderLayerScrollableArea.box().displayItemClient(), DisplayItem::ScrollbarCorner, damageRect);
+
     if (m_renderLayerScrollableArea.scrollCorner()) {
         ScrollbarPainter::paintIntoRect(m_renderLayerScrollableArea.scrollCorner(), context, paintOffset, absRect);
         return;
     }
-
     // We don't want to paint white if we have overlay scrollbars, since we need
     // to see what is behind it.
     if (!m_renderLayerScrollableArea.hasOverlayScrollbars())

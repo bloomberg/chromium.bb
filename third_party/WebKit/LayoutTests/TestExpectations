@@ -1,3 +1,8 @@
+crbug.com/441639 virtual/slimmingpaint/fast/overflow/image-selection-highlight.html [ ImageOnlyFailure ]
+crbug.com/441639 virtual/slimmingpaint/fast/overflow/paged-x-with-column-gap.html [ ImageOnlyFailure ]
+crbug.com/441639 virtual/slimmingpaint/fast/overflow/paged-x-div-with-column-gap.html [ ImageOnlyFailure ]
+crbug.com/441639 virtual/slimmingpaint/fast/overflow/scrollRevealButton.html [ ImageOnlyFailure ]
+crbug.com/441639 [ Linux ] virtual/slimmingpaint/fast/overflow/lots-of-sibling-inline-boxes.html [ Timeout ]
 
 crbug.com/434560 virtual/slimmingpaint/fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
 
