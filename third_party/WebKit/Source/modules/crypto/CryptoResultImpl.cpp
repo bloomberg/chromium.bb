@@ -91,12 +91,8 @@ ExceptionCode webCryptoErrorToExceptionCode(WebCryptoErrorType errorType)
         return NotSupportedError;
     case WebCryptoErrorTypeSyntax:
         return SyntaxError;
-    case WebCryptoErrorTypeInvalidState:
-        return InvalidStateError;
     case WebCryptoErrorTypeInvalidAccess:
         return InvalidAccessError;
-    case WebCryptoErrorTypeUnknown:
-        return UnknownError;
     case WebCryptoErrorTypeData:
         return DataError;
     case WebCryptoErrorTypeOperation:

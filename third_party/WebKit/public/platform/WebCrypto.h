@@ -51,9 +51,7 @@ enum WebCryptoErrorType {
     WebCryptoErrorTypeType,
     WebCryptoErrorTypeNotSupported,
     WebCryptoErrorTypeSyntax,
-    WebCryptoErrorTypeInvalidState,
     WebCryptoErrorTypeInvalidAccess,
-    WebCryptoErrorTypeUnknown,
     WebCryptoErrorTypeData,
     WebCryptoErrorTypeOperation,
 };
