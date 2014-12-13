@@ -133,7 +133,7 @@ namespace blink {
         Vector<KURL> m_redirectChain;
 
     private:
-        static PassRefPtrWillBeRawPtr<DocumentWriter> createWriterFor(const Document* ownerDocument, const DocumentInit&, const AtomicString& mimeType, const AtomicString& encoding, bool dispatch);
+        static PassRefPtrWillBeRawPtr<DocumentWriter> createWriterFor(const Document* ownerDocument, const DocumentInit&, const AtomicString& mimeType, const AtomicString& encoding, bool dispatch, ParserSynchronizationPolicy);
 
         void ensureWriter(const AtomicString& mimeType, const KURL& overridingURL = KURL());
         void endWriting(DocumentWriter*);

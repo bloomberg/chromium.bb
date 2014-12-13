@@ -102,18 +102,18 @@ private:
     WeakPtr<BackgroundHTMLParser> m_backgroundParser;
 };
 
-HTMLDocumentParser::HTMLDocumentParser(HTMLDocument& document, bool reportErrors)
+HTMLDocumentParser::HTMLDocumentParser(HTMLDocument& document, bool reportErrors, ParserSynchronizationPolicy syncPolicy)
     : ScriptableDocumentParser(document)
     , m_options(&document)
-    , m_token(nullptr)
-    , m_tokenizer(nullptr)
+    , m_token(syncPolicy == ForceSynchronousParsing ? adoptPtr(new HTMLToken) : nullptr)
+    , m_tokenizer(syncPolicy == ForceSynchronousParsing ? HTMLTokenizer::create(m_options) : nullptr)
     , m_scriptRunner(HTMLScriptRunner::create(&document, this))
     , m_treeBuilder(HTMLTreeBuilder::create(this, &document, parserContentPolicy(), reportErrors, m_options))
     , m_parserScheduler(HTMLParserScheduler::create(this))
     , m_xssAuditorDelegate(&document)
     , m_weakFactory(this)
     , m_preloader(HTMLResourcePreloader::create(document))
-    , m_isPinnedToMainThread(false)
+    , m_shouldUseThreading(syncPolicy == AllowAsynchronousParsing)
     , m_endWasDelayed(false)
     , m_haveBackgroundParser(false)
     , m_tasksWereSuspended(false)
@@ -133,14 +133,13 @@ HTMLDocumentParser::HTMLDocumentParser(DocumentFragment* fragment, Element* cont
     , m_treeBuilder(HTMLTreeBuilder::create(this, fragment, contextElement, this->parserContentPolicy(), m_options))
     , m_xssAuditorDelegate(&fragment->document())
     , m_weakFactory(this)
-    , m_isPinnedToMainThread(true)
+    , m_shouldUseThreading(false)
     , m_endWasDelayed(false)
     , m_haveBackgroundParser(false)
     , m_tasksWereSuspended(false)
     , m_pumpSessionNestingLevel(0)
     , m_pumpSpeculationsSessionNestingLevel(0)
 {
-    ASSERT(!shouldUseThreading());
     bool reportErrors = false; // For now document fragment parsing never reports errors.
     m_tokenizer->setState(tokenizerStateForContextElement(contextElement, reportErrors, m_options));
     m_xssAuditor.initForFragment();
@@ -173,18 +172,6 @@ void HTMLDocumentParser::trace(Visitor* visitor)
     visitor->trace(m_preloader);
     ScriptableDocumentParser::trace(visitor);
     HTMLScriptRunnerHost::trace(visitor);
-}
-
-void HTMLDocumentParser::pinToMainThread()
-{
-    ASSERT(!m_haveBackgroundParser);
-    ASSERT(!m_isPinnedToMainThread);
-    m_isPinnedToMainThread = true;
-    if (!m_tokenizer) {
-        ASSERT(!m_token);
-        m_token = adoptPtr(new HTMLToken);
-        m_tokenizer = HTMLTokenizer::create(m_options);
-    }
 }
 
 void HTMLDocumentParser::detach()
@@ -277,7 +264,7 @@ bool HTMLDocumentParser::isScheduledForResume() const
 // Used by HTMLParserScheduler
 void HTMLDocumentParser::resumeParsingAfterYield()
 {
-    ASSERT(!m_isPinnedToMainThread);
+    ASSERT(shouldUseThreading());
     ASSERT(m_haveBackgroundParser);
 
     // pumpPendingSpeculations can cause this parser to be detached from the Document,
@@ -799,12 +786,6 @@ void HTMLDocumentParser::append(PassRefPtr<StringImpl> inputSource)
         return;
     }
 
-    // A couple pinToMainThread() callers require synchronous parsing, but can't
-    // easily use the insert() method, so we hack append() for them to be synchronous.
-    // javascript: url handling is one such caller.
-    // FIXME: This is gross, and we should separate the concept of synchronous parsing
-    // from insert() so that only document.write() uses insert.
-    ASSERT(m_isPinnedToMainThread);
     pumpTokenizerIfPossible();
 
     endIfDelayed();
@@ -1015,7 +996,7 @@ void HTMLDocumentParser::executeScriptsWaitingForResources()
 void HTMLDocumentParser::parseDocumentFragment(const String& source, DocumentFragment* fragment, Element* contextElement, ParserContentPolicy parserContentPolicy)
 {
     RefPtrWillBeRawPtr<HTMLDocumentParser> parser = HTMLDocumentParser::create(fragment, contextElement, parserContentPolicy);
-    parser->insert(source); // Use insert() so that the parser will not yield.
+    parser->append(source.impl());
     parser->finish();
     ASSERT(!parser->processingData()); // Make sure we're done. <rdar://problem/3963151>
     parser->detach(); // Allows ~DocumentParser to assert it was detached before destruction.

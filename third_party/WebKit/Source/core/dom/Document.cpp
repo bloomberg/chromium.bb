@@ -509,6 +509,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_didAssociateFormControlsTimer(this, &Document::didAssociateFormControlsTimerFired)
     , m_hasViewportUnits(false)
     , m_styleRecalcElementCounter(0)
+    , m_parserSyncPolicy(AllowAsynchronousParsing)
 {
     if (m_frame) {
         ASSERT(m_frame->page());
@@ -1234,11 +1235,6 @@ KURL Document::baseURI() const
 void Document::setContent(const String& content)
 {
     open();
-    // FIXME: This should probably use insert(), but that's (intentionally)
-    // not implemented for the XML parser as it's normally synonymous with
-    // document.write(). append() will end up yielding, but close() will
-    // pump the tokenizer syncrhonously and finish the parse.
-    m_parser->pinToMainThread();
     m_parser->append(content.impl());
     close();
 }
@@ -2294,7 +2290,7 @@ PassRefPtrWillBeRawPtr<DocumentParser> Document::createParser()
 {
     if (isHTMLDocument()) {
         bool reportErrors = InspectorInstrumentation::collectingHTMLParseErrors(page());
-        return HTMLDocumentParser::create(toHTMLDocument(*this), reportErrors);
+        return HTMLDocumentParser::create(toHTMLDocument(*this), reportErrors, m_parserSyncPolicy);
     }
     // FIXME: this should probably pass the frame instead
     return XMLDocumentParser::create(*this, view());
@@ -2342,7 +2338,7 @@ void Document::open(Document* ownerDocument, ExceptionState& exceptionState)
     }
 
     removeAllEventListenersRecursively();
-    implicitOpen();
+    implicitOpen(ForceSynchronousParsing);
     if (ScriptableDocumentParser* parser = scriptableDocumentParser())
         parser->setWasCreatedByScript(true);
 
@@ -2373,7 +2369,7 @@ void Document::cancelParsing()
     explicitClose();
 }
 
-PassRefPtrWillBeRawPtr<DocumentParser> Document::implicitOpen()
+PassRefPtrWillBeRawPtr<DocumentParser> Document::implicitOpen(ParserSynchronizationPolicy parserSyncPolicy)
 {
     cancelParsing();
 
@@ -2382,6 +2378,7 @@ PassRefPtrWillBeRawPtr<DocumentParser> Document::implicitOpen()
 
     setCompatibilityMode(NoQuirksMode);
 
+    m_parserSyncPolicy = parserSyncPolicy;
     m_parser = createParser();
     setParsingState(Parsing);
     setReadyState(Loading);

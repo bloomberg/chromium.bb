@@ -42,6 +42,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoader.h"
@@ -520,11 +521,9 @@ void DocumentLoader::ensureWriter(const AtomicString& mimeType, const KURL& over
     m_frame->loader().clear();
     ASSERT(m_frame->page());
 
-    m_writer = createWriterFor(0, init, mimeType, encoding, false);
+    ParserSynchronizationPolicy parsingPolicy = (m_substituteData.isValid() && m_substituteData.forceSynchronousLoad()) ? ForceSynchronousParsing : AllowAsynchronousParsing;
+    m_writer = createWriterFor(0, init, mimeType, encoding, false, parsingPolicy);
     m_writer->setDocumentWasLoadedAsPartOfNavigation();
-
-    if (m_substituteData.isValid() && m_substituteData.forceSynchronousLoad())
-        m_writer->forceSynchronousParse();
 
     // This should be set before receivedFirstData().
     if (!overridingURL.isEmpty())
@@ -797,7 +796,7 @@ void DocumentLoader::endWriting(DocumentWriter* writer)
     m_writer.clear();
 }
 
-PassRefPtrWillBeRawPtr<DocumentWriter> DocumentLoader::createWriterFor(const Document* ownerDocument, const DocumentInit& init, const AtomicString& mimeType, const AtomicString& encoding, bool dispatch)
+PassRefPtrWillBeRawPtr<DocumentWriter> DocumentLoader::createWriterFor(const Document* ownerDocument, const DocumentInit& init, const AtomicString& mimeType, const AtomicString& encoding, bool dispatch, ParserSynchronizationPolicy parsingPolicy)
 {
     LocalFrame* frame = init.frame();
 
@@ -817,7 +816,7 @@ PassRefPtrWillBeRawPtr<DocumentWriter> DocumentLoader::createWriterFor(const Doc
 
     frame->loader().didBeginDocument(dispatch);
 
-    return DocumentWriter::create(document.get(), mimeType, encoding);
+    return DocumentWriter::create(document.get(), parsingPolicy, mimeType, encoding);
 }
 
 const AtomicString& DocumentLoader::mimeType() const
@@ -836,7 +835,7 @@ void DocumentLoader::setUserChosenEncoding(const String& charset)
 // This is only called by FrameLoader::replaceDocumentWhileExecutingJavaScriptURL()
 void DocumentLoader::replaceDocumentWhileExecutingJavaScriptURL(const DocumentInit& init, const String& source, Document* ownerDocument)
 {
-    m_writer = createWriterFor(ownerDocument, init, mimeType(), m_writer ? m_writer->encoding() : emptyAtom, true);
+    m_writer = createWriterFor(ownerDocument, init, mimeType(), m_writer ? m_writer->encoding() : emptyAtom, true, ForceSynchronousParsing);
     if (!source.isNull())
         m_writer->appendReplacingData(source);
     endWriting(m_writer.get());

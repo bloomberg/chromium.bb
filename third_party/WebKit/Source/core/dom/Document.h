@@ -47,6 +47,7 @@
 #include "core/dom/custom/CustomElement.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/html/CollectionType.h"
+#include "core/html/parser/ParserSynchronizationPolicy.h"
 #include "core/page/FocusType.h"
 #include "core/page/PageVisibilityState.h"
 #include "platform/Length.h"
@@ -509,7 +510,7 @@ public:
     DocumentLoader* loader() const;
 
     void open(Document* ownerDocument = nullptr, ExceptionState& = ASSERT_NO_EXCEPTION);
-    PassRefPtrWillBeRawPtr<DocumentParser> implicitOpen();
+    PassRefPtrWillBeRawPtr<DocumentParser> implicitOpen(ParserSynchronizationPolicy);
 
     // close() is the DOM API document.close()
     void close(ExceptionState& = ASSERT_NO_EXCEPTION);
@@ -1071,6 +1072,7 @@ protected:
 
     bool importContainerNodeChildren(ContainerNode* oldContainerNode, PassRefPtrWillBeRawPtr<ContainerNode> newContainerNode, ExceptionState&);
     void lockCompatibilityMode() { m_compatibilityModeLocked = true; }
+    ParserSynchronizationPolicy parserSynchronizationPolicy() const { return m_parserSyncPolicy; }
 
 private:
     friend class IgnoreDestructiveWriteCountIncrementer;
@@ -1384,6 +1386,8 @@ private:
     DocumentVisibilityObserverSet m_visibilityObservers;
 
     int m_styleRecalcElementCounter;
+
+    ParserSynchronizationPolicy m_parserSyncPolicy;
 };
 
 inline bool Document::shouldOverrideLegacyDescription(ViewportDescription::Type origin)

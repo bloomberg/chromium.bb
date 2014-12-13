@@ -44,19 +44,18 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<DocumentWriter> DocumentWriter::create(Document* document, const AtomicString& mimeType, const AtomicString& encoding)
+PassRefPtrWillBeRawPtr<DocumentWriter> DocumentWriter::create(Document* document, ParserSynchronizationPolicy parsingPolicy, const AtomicString& mimeType, const AtomicString& encoding)
 {
-    return adoptRefWillBeNoop(new DocumentWriter(document, mimeType, encoding));
+    return adoptRefWillBeNoop(new DocumentWriter(document, parsingPolicy, mimeType, encoding));
 }
 
-DocumentWriter::DocumentWriter(Document* document, const AtomicString& mimeType, const AtomicString& encoding)
+DocumentWriter::DocumentWriter(Document* document, ParserSynchronizationPolicy parserSyncPolicy, const AtomicString& mimeType, const AtomicString& encoding)
     : m_document(document)
     , m_decoderBuilder(mimeType, encoding)
     // We grab a reference to the parser so that we'll always send data to the
     // original parser, even if the document acquires a new parser (e.g., via
     // document.open).
-    , m_parser(m_document->implicitOpen())
-    , m_forcedSynchronousParse(false)
+    , m_parser(m_document->implicitOpen(parserSyncPolicy))
 {
     if (m_document->frame()) {
         if (FrameView* view = m_document->frame()->view())
@@ -74,15 +73,6 @@ void DocumentWriter::trace(Visitor* visitor)
     visitor->trace(m_parser);
 }
 
-void DocumentWriter::forceSynchronousParse()
-{
-    ASSERT(!m_forcedSynchronousParse);
-
-    ASSERT(m_parser);
-    m_parser->pinToMainThread();
-    m_forcedSynchronousParse = true;
-}
-
 void DocumentWriter::appendReplacingData(const String& source)
 {
     m_document->setCompatibilityMode(Document::NoQuirksMode);
@@ -90,9 +80,7 @@ void DocumentWriter::appendReplacingData(const String& source)
     // FIXME: This should call DocumentParser::appendBytes instead of append
     // to support RawDataDocumentParsers.
     if (DocumentParser* parser = m_document->parser()) {
-        if (!m_forcedSynchronousParse)
-            forceSynchronousParse();
-        // Because we're pinned to the main thread we don't need to worry about
+        // Because the parser is pinned to the main thread we don't need to worry about
         // passing ownership of the source string.
         parser->append(source.impl());
     }

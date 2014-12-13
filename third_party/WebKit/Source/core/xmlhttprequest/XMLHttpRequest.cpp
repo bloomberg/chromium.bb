@@ -1609,7 +1609,7 @@ void XMLHttpRequest::parseDocumentChunk(const char* data, unsigned len)
         if (!m_responseDocument)
             return;
 
-        m_responseDocumentParser = m_responseDocument->implicitOpen();
+        m_responseDocumentParser = m_responseDocument->implicitOpen(AllowAsynchronousParsing);
         m_responseDocumentParser->addClient(this);
     }
     ASSERT(m_responseDocumentParser);

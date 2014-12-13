@@ -56,9 +56,6 @@ public:
     virtual TextResourceDecoder* decoder();
     virtual void setHasAppendedData() { }
 
-    // pinToMainThread also makes append() not yield before completion of that chunk.
-    virtual void pinToMainThread() { }
-
     // FIXME: append() should be private, but DocumentLoader::replaceDocumentWhileExecutingJavaScriptURL uses it for now.
     // FIXME: This really should take a PassOwnPtr to signify that it expects to take
     // ownership of the buffer. The parser expects the PassRefPtr to hold the only ref of the StringImpl.

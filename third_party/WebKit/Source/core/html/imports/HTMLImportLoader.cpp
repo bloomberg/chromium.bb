@@ -116,7 +116,7 @@ HTMLImportLoader::State HTMLImportLoader::startWritingAndParsing(const ResourceR
     DocumentInit init = DocumentInit(response.url(), 0, m_controller->master()->contextDocument(), m_controller)
         .withRegistrationContext(m_controller->master()->registrationContext());
     m_document = HTMLDocument::create(init);
-    m_writer = DocumentWriter::create(m_document.get(), response.mimeType(), "UTF-8");
+    m_writer = DocumentWriter::create(m_document.get(), AllowAsynchronousParsing, response.mimeType(), "UTF-8");
 
     DocumentParser* parser = m_document->parser();
     ASSERT(parser);
