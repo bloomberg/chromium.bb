@@ -11,6 +11,7 @@
 #include "net/base/connection_type_histograms.h"
 #include "net/base/host_port_pair.h"
 #include "net/ssl/channel_id_service.h"
+#include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 
@@ -234,10 +235,31 @@ bool SSLClientSocket::IsChannelIDEnabled(
 }
 
 // static
+bool SSLClientSocket::HasCipherAdequateForHTTP2(
+    const std::vector<uint16>& cipher_suites) {
+  for (uint16 cipher : cipher_suites) {
+    if (IsSecureTLSCipherSuite(cipher))
+      return true;
+  }
+  return false;
+}
+
+// static
+bool SSLClientSocket::IsTLSVersionAdequateForHTTP2(
+    const SSLConfig& ssl_config) {
+  return ssl_config.version_max >= SSL_PROTOCOL_VERSION_TLS1_2;
+}
+
+// static
 std::vector<uint8_t> SSLClientSocket::SerializeNextProtos(
-    const NextProtoVector& next_protos) {
+    const NextProtoVector& next_protos,
+    bool can_advertise_http2) {
   std::vector<uint8_t> wire_protos;
   for (const NextProto next_proto : next_protos) {
+    if (!can_advertise_http2 && kProtoSPDY4MinimumVersion <= next_proto &&
+        next_proto <= kProtoSPDY4MaximumVersion) {
+      continue;
+    }
     const std::string proto = NextProtoToString(next_proto);
     if (proto.size() > 255) {
       LOG(WARNING) << "Ignoring overlong NPN/ALPN protocol: " << proto;

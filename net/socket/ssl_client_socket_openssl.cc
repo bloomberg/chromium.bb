@@ -788,8 +788,8 @@ int SSLClientSocketOpenSSL::Init() {
   // disabled by default. Note that !SHA256 and !SHA384 only remove HMAC-SHA256
   // and HMAC-SHA384 cipher suites, not GCM cipher suites with SHA256 or SHA384
   // as the handshake hash.
-  std::string command("DEFAULT:!NULL:!aNULL:!IDEA:!FZA:!SRP:!SHA256:!SHA384:"
-                      "!aECDH:!AESGCM+AES256");
+  std::string command(
+      "DEFAULT:!NULL:!aNULL:!SHA256:!SHA384:!aECDH:!AESGCM+AES256:!aPSK");
   // Walk through all the installed ciphers, seeing if any need to be
   // appended to the cipher removal |command|.
   for (size_t i = 0; i < sk_SSL_CIPHER_num(ciphers); ++i) {
@@ -838,8 +838,20 @@ int SSLClientSocketOpenSSL::Init() {
   }
 
   if (!ssl_config_.next_protos.empty()) {
+    // Get list of ciphers that are enabled.
+    STACK_OF(SSL_CIPHER)* enabled_ciphers = SSL_get_ciphers(ssl_);
+    DCHECK(enabled_ciphers);
+    std::vector<uint16> enabled_ciphers_vector;
+    for (size_t i = 0; i < sk_SSL_CIPHER_num(enabled_ciphers); ++i) {
+      const SSL_CIPHER* cipher = sk_SSL_CIPHER_value(enabled_ciphers, i);
+      const uint16 id = static_cast<uint16>(SSL_CIPHER_get_id(cipher));
+      enabled_ciphers_vector.push_back(id);
+    }
+
     std::vector<uint8_t> wire_protos =
-        SerializeNextProtos(ssl_config_.next_protos);
+        SerializeNextProtos(ssl_config_.next_protos,
+                            HasCipherAdequateForHTTP2(enabled_ciphers_vector) &&
+                                IsTLSVersionAdequateForHTTP2(ssl_config_));
     SSL_set_alpn_protos(ssl_, wire_protos.empty() ? NULL : &wire_protos[0],
                         wire_protos.size());
   }

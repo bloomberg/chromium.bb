@@ -149,6 +149,14 @@ namespace net {
     } while (0)
 #endif
 
+#if !defined(CKM_AES_GCM)
+#define CKM_AES_GCM 0x00001087
+#endif
+
+#if !defined(CKM_NSS_CHACHA20_POLY1305)
+#define CKM_NSS_CHACHA20_POLY1305 (CKM_NSS + 26)
+#endif
+
 namespace {
 
 // SSL plaintext fragments are shorter than 16KB. Although the record layer
@@ -973,8 +981,16 @@ bool SSLClientSocketNSS::Core::Init(PRFileDesc* socket,
   SECStatus rv = SECSuccess;
 
   if (!ssl_config_.next_protos.empty()) {
+    // TODO(bnc): Check ssl_config_.disabled_cipher_suites.
+    const bool adequate_encryption =
+        PK11_TokenExists(CKM_AES_GCM) ||
+        PK11_TokenExists(CKM_NSS_CHACHA20_POLY1305);
+    const bool adequate_key_agreement = PK11_TokenExists(CKM_DH_PKCS_DERIVE) ||
+                                        PK11_TokenExists(CKM_ECDH1_DERIVE);
     std::vector<uint8_t> wire_protos =
-        SerializeNextProtos(ssl_config_.next_protos);
+        SerializeNextProtos(ssl_config_.next_protos,
+                            adequate_encryption && adequate_key_agreement &&
+                                IsTLSVersionAdequateForHTTP2(ssl_config_));
     rv = SSL_SetNextProtoNego(
         nss_fd_, wire_protos.empty() ? NULL : &wire_protos[0],
         wire_protos.size());
