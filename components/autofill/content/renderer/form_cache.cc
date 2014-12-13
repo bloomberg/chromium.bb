@@ -16,7 +16,6 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebElementCollection.h"
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
@@ -29,7 +28,6 @@
 using blink::WebConsoleMessage;
 using blink::WebDocument;
 using blink::WebElement;
-using blink::WebElementCollection;
 using blink::WebFormControlElement;
 using blink::WebFormElement;
 using blink::WebFrame;
@@ -87,22 +85,6 @@ void LogDeprecationMessages(const WebFormControlElement& element) {
   }
 }
 
-bool IsElementInsideFormOrFieldSet(const WebElement& element) {
-  for (WebNode parent_node = element.parentNode();
-       !parent_node.isNull();
-       parent_node = parent_node.parentNode()) {
-    if (!parent_node.isElementNode())
-      continue;
-
-    WebElement cur_element = parent_node.to<WebElement>();
-    if (cur_element.hasHTMLTagName("form") ||
-        cur_element.hasHTMLTagName("fieldset")) {
-      return true;
-    }
-  }
-  return false;
-}
-
 // To avoid overly expensive computation, we impose a minimum number of
 // allowable fields.  The corresponding maximum number of allowable fields
 // is imposed by WebFormElementToFormData().
@@ -118,30 +100,6 @@ FormCache::FormCache() {
 }
 
 FormCache::~FormCache() {
-}
-
-// static
-std::vector<WebFormControlElement>
-FormCache::GetUnownedAutofillableFormFieldElements(
-    const WebElementCollection& elements,
-    std::vector<WebElement>* fieldsets) {
-  std::vector<WebFormControlElement> unowned_fieldset_children;
-  for (WebElement element = elements.firstItem();
-       !element.isNull();
-       element = elements.nextItem()) {
-    if (element.isFormControlElement()) {
-      WebFormControlElement control = element.to<WebFormControlElement>();
-      if (control.form().isNull())
-        unowned_fieldset_children.push_back(control);
-    }
-
-    if (fieldsets && element.hasHTMLTagName("fieldset") &&
-        !IsElementInsideFormOrFieldSet(element)) {
-      fieldsets->push_back(element);
-    }
-  }
-  return ExtractAutofillableElementsFromSet(unowned_fieldset_children,
-                                            REQUIRE_NONE);
 }
 
 std::vector<FormData> FormCache::ExtractNewForms(const WebFrame& frame) {
@@ -177,7 +135,7 @@ std::vector<FormData> FormCache::ExtractNewForms(const WebFrame& frame) {
 
     FormData form;
     if (!WebFormElementToFormData(form_element, WebFormControlElement(),
-                                  REQUIRE_NONE, extract_mask, &form, NULL)) {
+                                  REQUIRE_NONE, extract_mask, &form, nullptr)) {
       continue;
     }
 
@@ -205,8 +163,9 @@ std::vector<FormData> FormCache::ExtractNewForms(const WebFrame& frame) {
 
   FormData form;
   if (!UnownedFormElementsAndFieldSetsToFormData(fieldsets, control_elements,
-                                                 document.url(), extract_mask,
-                                                 &form)) {
+                                                 nullptr, document.url(),
+                                                 REQUIRE_NONE, extract_mask,
+                                                 &form, nullptr)) {
     return forms;
   }
 
@@ -241,11 +200,14 @@ void FormCache::ResetFrame(const WebFrame& frame) {
 
 bool FormCache::ClearFormWithElement(const WebFormControlElement& element) {
   WebFormElement form_element = element.form();
-  if (form_element.isNull())
-    return false;
-
-  std::vector<WebFormControlElement> control_elements =
-      ExtractAutofillableElementsInForm(form_element, REQUIRE_NONE);
+  std::vector<WebFormControlElement> control_elements;
+  if (form_element.isNull()) {
+    control_elements = GetUnownedAutofillableFormFieldElements(
+        element.document().all(), nullptr);
+  } else {
+    control_elements = ExtractAutofillableElementsInForm(
+        form_element, REQUIRE_NONE);
+  }
   for (size_t i = 0; i < control_elements.size(); ++i) {
     WebFormControlElement control_element = control_elements[i];
     // Don't modify the value of disabled fields.

@@ -32,15 +32,6 @@ class FormCache {
   FormCache();
   ~FormCache();
 
-  // Get all form control elements from |elements| that are not part of a form.
-  // If |fieldsets| is not NULL, also append the fieldsets encountered that are
-  // not part of a form.
-  // Exposed for sharing with tests.
-  static std::vector<blink::WebFormControlElement>
-      GetUnownedAutofillableFormFieldElements(
-          const blink::WebElementCollection& elements,
-          std::vector<blink::WebElement>* fieldsets);
-
   // Scans the DOM in |frame| extracting and storing forms that have not been
   // seen before. Returns the extracted forms.
   std::vector<FormData> ExtractNewForms(const blink::WebFrame& frame);
