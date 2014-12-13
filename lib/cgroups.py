@@ -102,7 +102,7 @@ class Cgroup(object):
 
   NEEDED_SUBSYSTEMS = ('cpuset',)
   PROC_PATH = '/proc/cgroups'
-  _MOUNT_ROOT_POTENTIALS = ('/sys/fs/cgroup',)
+  _MOUNT_ROOT_POTENTIALS = ('/sys/fs/cgroup/cpuset', '/sys/fs/cgroup')
   _MOUNT_ROOT_FALLBACK = '/dev/cgroup'
   CGROUP_ROOT = None
   MOUNT_ROOT = None
@@ -118,8 +118,9 @@ class Cgroup(object):
       return False
 
     def _EnsureMounted(mnt, args):
-      if _FileContains('/proc/mounts', [mnt]):
-        return True
+      for mtab in osutils.IterateMountPoints():
+        if mtab.destination == mnt:
+          return True
 
       # Grab a lock so in the off chance we have multiple programs (like two
       # cros_sdk launched in parallel) running this init logic, we don't end
@@ -127,8 +128,9 @@ class Cgroup(object):
       lock_path = '/tmp/.chromite.cgroups.lock'
       with locking.FileLock(lock_path, 'cgroup lock') as lock:
         lock.write_lock()
-        if _FileContains('/proc/mounts', [mnt]):
-          return True
+        for mtab in osutils.IterateMountPoints():
+          if mtab.destination == mnt:
+            return True
 
         # Not all distros mount cgroup_root to sysfs.
         osutils.SafeMakedirs(mnt, sudo=True)
@@ -173,6 +175,7 @@ class Cgroup(object):
         break
     else:
       cls.MOUNT_ROOT = cls._MOUNT_ROOT_FALLBACK
+    cls.MOUNT_ROOT = os.path.realpath(cls.MOUNT_ROOT)
 
     cls.CGROUP_ROOT = os.path.join(cls.MOUNT_ROOT, 'cros')
     return True
