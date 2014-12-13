@@ -1078,7 +1078,7 @@ void RenderViewHostImpl::OnUpdateState(int32 page_id, const PageState& state) {
     return;
   }
 
-  delegate_->UpdateState(this, page_id_, page_id, state);
+  delegate_->UpdateState(this, page_id, state);
 }
 
 void RenderViewHostImpl::OnUpdateTargetURL(const GURL& url) {
