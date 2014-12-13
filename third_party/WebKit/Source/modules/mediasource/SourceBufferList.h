@@ -33,7 +33,6 @@
 
 #include "modules/EventTargetModules.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 
@@ -72,10 +71,10 @@ private:
 
     void scheduleEvent(const AtomicString&);
 
-    ExecutionContext* m_executionContext;
-    GenericEventQueue* m_asyncEventQueue;
+    RawPtrWillBeMember<ExecutionContext> m_executionContext;
+    RawPtrWillBeMember<GenericEventQueue> m_asyncEventQueue;
 
-    HeapVector<Member<SourceBuffer> > m_list;
+    HeapVector<Member<SourceBuffer>> m_list;
 };
 
 } // namespace blink
