@@ -617,6 +617,11 @@ You are signing in with a managed account and giving its administrator control o
         Always
       </message>
 
+      <!-- Sad tab page -->
+      <message name="IDS_SAD_TAB_SUGGESTIONS" desc="The help message displayed on the sad tab page after a tab crashes.">
+        If you're seeing this frequently, try these <ph name="BEGIN_LINK">&lt;link&gt;</ph>suggestions<ph name="END_LINK">&lt;/link&gt;</ph>.
+      </message>
+
     </messages>
   </release>
 </grit>

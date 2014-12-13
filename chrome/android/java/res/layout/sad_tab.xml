@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright 2013 The Chromium Authors. All rights reserved.
+
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="Overdraw"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#e6e6e6">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/sad_tab_background"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/sad_tab_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="17dp"
+            android:src="@drawable/sad_tab"
+            android:contentDescription="@null" />
+
+        <TextView
+            android:id="@+id/sad_tab_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="15dp"
+            android:text="@string/sad_tab_title"
+            android:textColor="#666"
+            android:textSize="20sp" />
+
+        <Button
+            android:id="@+id/sad_tab_reload_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="15dp"
+            android:background="@drawable/sad_tab_reload_button"
+            android:text="@string/sad_tab_reload_label"
+            android:textColor="#fff"
+            android:textSize="13.8sp"
+            android:textStyle="bold"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingStart="13dp"
+            android:paddingEnd="13dp"
+            android:minWidth="65dp"
+            android:minHeight="29dp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="15dp"
+            android:background="#eee" />
+
+        <!-- Note: Using layout_width="wrap_content" and width="538dp" forces this TextView
+             to be as wide as possible up to a maximum width of 538dp. -->
+        <org.chromium.ui.widget.TextViewWithClickableSpans
+            android:id="@+id/sad_tab_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/sad_tab_lower_panel_background"
+            android:paddingTop="18dp"
+            android:paddingBottom="18dp"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:textColor="#444"
+            android:textSize="13.8sp"
+            android:width="538dp" />
+    </LinearLayout>
+
+</ScrollView>
