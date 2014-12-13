@@ -902,7 +902,7 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
 
   // Commit.
   manager->DidNavigateFrame(host, true);
-  // Commit to SiteInstance should be delayed until RenderView commit.
+  // Commit to SiteInstance should be delayed until RenderFrame commit.
   EXPECT_TRUE(host == manager->current_frame_host());
   ASSERT_TRUE(host);
   EXPECT_FALSE(host->GetSiteInstance()->HasSite());
@@ -1524,7 +1524,7 @@ TEST_F(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
 
   // Commit.
   manager->DidNavigateFrame(host, true);
-  // Commit to SiteInstance should be delayed until RenderView commit.
+  // Commit to SiteInstance should be delayed until RenderFrame commit.
   EXPECT_EQ(host, manager->current_frame_host());
   ASSERT_TRUE(host);
   EXPECT_TRUE(host->GetSiteInstance()->HasSite());
@@ -1818,13 +1818,94 @@ TEST_F(RenderFrameHostManagerTest,
 
     // Increment the number of active frames in the new SiteInstance, which will
     // cause the pending RFH to be swapped out instead of deleted.
-   pending_rfh->GetSiteInstance()->increment_active_frame_count();
+    pending_rfh->GetSiteInstance()->increment_active_frame_count();
 
     contents()->GetMainFrame()->OnMessageReceived(
         FrameHostMsg_BeforeUnload_ACK(0, false, now, now));
     EXPECT_FALSE(contents()->cross_navigation_pending());
     EXPECT_FALSE(rfh_deleted_observer.deleted());
   }
+}
+
+// Test that a pending RenderFrameHost in a non-root frame tree node is properly
+// deleted when the node is detached. Motivated by http://crbug.com/441357
+TEST_F(RenderFrameHostManagerTest, DetachPendingChild) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kSitePerProcess);
+
+  const GURL kUrl1("http://www.google.com/");
+  const GURL kUrl2("http://webkit.org/");
+
+  RenderFrameHostImpl* host = NULL;
+
+  contents()->NavigateAndCommit(kUrl1);
+  contents()->GetMainFrame()->OnCreateChildFrame(
+      contents()->GetMainFrame()->GetProcess()->GetNextRoutingID(),
+      std::string("frame_name"));
+  RenderFrameHostManager* manager =
+      contents()->GetFrameTree()->root()->child_at(0)->render_manager();
+
+  // 1) The first navigation. --------------------------
+  NavigationEntryImpl entry1(NULL /* instance */, -1 /* page_id */, kUrl1,
+                             Referrer(), base::string16() /* title */,
+                             ui::PAGE_TRANSITION_TYPED,
+                             false /* is_renderer_init */);
+  host = manager->Navigate(entry1);
+
+  // The RenderFrameHost created in Init will be reused.
+  EXPECT_TRUE(host == manager->current_frame_host());
+  EXPECT_FALSE(manager->pending_frame_host());
+
+  // Commit.
+  manager->DidNavigateFrame(host, true);
+  // Commit to SiteInstance should be delayed until RenderFrame commit.
+  EXPECT_TRUE(host == manager->current_frame_host());
+  ASSERT_TRUE(host);
+  EXPECT_TRUE(host->GetSiteInstance()->HasSite());
+
+  // 2) Cross-site navigate to next site. --------------
+  NavigationEntryImpl entry2(NULL /* instance */, -1 /* page_id */, kUrl2,
+                             Referrer(kUrl1, blink::WebReferrerPolicyDefault),
+                             base::string16() /* title */,
+                             ui::PAGE_TRANSITION_LINK,
+                             false /* is_renderer_init */);
+  host = manager->Navigate(entry2);
+
+  // A new RenderFrameHost should be created.
+  EXPECT_TRUE(manager->pending_frame_host());
+  ASSERT_EQ(host, manager->pending_frame_host());
+  ASSERT_NE(manager->current_frame_host(), manager->pending_frame_host());
+  EXPECT_FALSE(contents()->cross_navigation_pending())
+      << "There should be no top-level pending navigation.";
+
+  RenderFrameHostDeletedObserver delete_watcher(manager->pending_frame_host());
+  EXPECT_FALSE(delete_watcher.deleted());
+
+  // Extend the lifetime of the child frame's SiteInstance, pretending
+  // that there is another reference to it.
+  scoped_refptr<SiteInstanceImpl> site_instance =
+      manager->pending_frame_host()->GetSiteInstance();
+  EXPECT_TRUE(site_instance->HasSite());
+  EXPECT_NE(site_instance, contents()->GetSiteInstance());
+  EXPECT_EQ(1U, site_instance->active_frame_count());
+  site_instance->increment_active_frame_count();
+  EXPECT_EQ(2U, site_instance->active_frame_count());
+
+  // Now detach the child FrameTreeNode. This should kill the pending host.
+  manager->current_frame_host()->OnMessageReceived(
+      FrameHostMsg_Detach(manager->current_frame_host()->GetRoutingID()));
+
+  EXPECT_TRUE(delete_watcher.deleted());
+
+  EXPECT_EQ(1U, site_instance->active_frame_count());
+  site_instance->decrement_active_frame_count();
+
+#if 0
+  // TODO(nick): Currently a proxy to the removed frame lingers in the parent.
+  // Enable this assert below once the proxies to the subframe are correctly
+  // cleaned up after detach.
+  ASSERT_TRUE(site_instance->HasOneRef())
+      << "This SiteInstance should be destroyable now.";
+#endif
 }
 
 }  // namespace content

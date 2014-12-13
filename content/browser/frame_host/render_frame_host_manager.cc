@@ -67,7 +67,7 @@ RenderFrameHostManager::RenderFrameHostManager(
 
 RenderFrameHostManager::~RenderFrameHostManager() {
   if (pending_render_frame_host_)
-    CancelPending();
+    UnsetPendingRenderFrameHost();
 
   // We should always have a current RenderFrameHost except in some tests.
   SetRenderFrameHost(scoped_ptr<RenderFrameHostImpl>());
@@ -1591,6 +1591,11 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
 void RenderFrameHostManager::CancelPending() {
   TRACE_EVENT1("navigation", "RenderFrameHostManager::CancelPending",
                "FrameTreeNode id", frame_tree_node_->frame_tree_node_id());
+  DiscardUnusedFrame(UnsetPendingRenderFrameHost());
+}
+
+scoped_ptr<RenderFrameHostImpl>
+RenderFrameHostManager::UnsetPendingRenderFrameHost() {
   scoped_ptr<RenderFrameHostImpl> pending_render_frame_host =
       pending_render_frame_host_.Pass();
 
@@ -1601,10 +1606,10 @@ void RenderFrameHostManager::CancelPending() {
   // We no longer need to prevent the process from exiting.
   pending_render_frame_host->GetProcess()->RemovePendingView();
 
-  DiscardUnusedFrame(pending_render_frame_host.Pass());
-
   pending_web_ui_.reset();
   pending_and_current_web_ui_.reset();
+
+  return pending_render_frame_host.Pass();
 }
 
 scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::SetRenderFrameHost(

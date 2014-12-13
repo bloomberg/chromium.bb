@@ -507,8 +507,12 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // swapped out.
   void ShutdownRenderFrameProxyHostsInSiteInstance(int32 site_instance_id);
 
-  // Helper method to terminate the pending RenderViewHost.
+  // Helper method to terminate the pending RenderFrameHost. The frame may be
+  // deleted immediately, or it may be kept around in hopes of later reuse.
   void CancelPending();
+
+  // Clears pending_render_frame_host_, returning it to the caller for disposal.
+  scoped_ptr<RenderFrameHostImpl> UnsetPendingRenderFrameHost();
 
   // Helper method to set the active RenderFrameHost. Returns the old
   // RenderFrameHost and updates counts.
