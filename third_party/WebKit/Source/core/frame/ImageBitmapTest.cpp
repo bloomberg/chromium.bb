@@ -42,6 +42,7 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/canvas/CanvasRenderingContext2D.h"
+#include "core/html/canvas/WebGLRenderingContext.h"
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
 #include "platform/heap/Handle.h"
@@ -207,11 +208,13 @@ TEST_F(ImageBitmapTest, ImageResourceLifetime)
         RefPtrWillBeRawPtr<ImageBitmap> imageBitmapFromCanvas = ImageBitmap::create(canvasElement.get(), IntRect(0, 0, canvasElement->width(), canvasElement->height()));
         imageBitmapDerived = ImageBitmap::create(imageBitmapFromCanvas.get(), IntRect(0, 0, 20, 20));
     }
-    CanvasRenderingContext* context = canvasElement->getContext("2d");
+    CanvasContextCreationAttributes attributes;
+    CanvasRenderingContext2DOrWebGLRenderingContext context;
+    canvasElement->getContext("2d", attributes, context);
     TrackExceptionState exceptionState;
     CanvasImageSourceUnion imageSource;
     imageSource.setImageBitmap(imageBitmapDerived);
-    toCanvasRenderingContext2D(context)->drawImage(imageSource, 0, 0, exceptionState);
+    context.getAsCanvasRenderingContext2D()->drawImage(imageSource, 0, 0, exceptionState);
 }
 
 } // namespace

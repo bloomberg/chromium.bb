@@ -81,4 +81,9 @@ PassRefPtr<JSONValue> ScriptValue::toJSONValue(ScriptState* scriptState) const
     return v8ToJSONValue(scriptState->isolate(), v8Value(), JSONValue::maxDepth);
 }
 
+ScriptValue ScriptValue::createNull(ScriptState* scriptState)
+{
+    return ScriptValue(scriptState, v8::Null(scriptState->isolate()));
+}
+
 } // namespace blink

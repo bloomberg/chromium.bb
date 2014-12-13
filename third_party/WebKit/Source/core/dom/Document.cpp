@@ -145,6 +145,7 @@
 #include "core/html/HTMLTitleElement.h"
 #include "core/html/PluginDocument.h"
 #include "core/html/WindowNameCollection.h"
+#include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContext2D.h"
 #include "core/html/canvas/WebGLRenderingContext.h"
@@ -4941,15 +4942,7 @@ void Document::getCSSCanvasContext(const String& type, const String& name, int w
 {
     HTMLCanvasElement& element = getCSSCanvasElement(name);
     element.setSize(IntSize(width, height));
-    CanvasRenderingContext* context = element.getContext(type);
-    if (!context)
-        return;
-
-    if (context->is2d()) {
-        returnValue.setCanvasRenderingContext2D(toCanvasRenderingContext2D(context));
-    } else if (context->is3d()) {
-        returnValue.setWebGLRenderingContext(toWebGLRenderingContext(context));
-    }
+    element.getContext(type, CanvasContextCreationAttributes(), returnValue);
 }
 
 HTMLCanvasElement& Document::getCSSCanvasElement(const String& name)

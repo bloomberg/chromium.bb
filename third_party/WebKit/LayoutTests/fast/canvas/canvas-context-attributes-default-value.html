@@ -4,8 +4,12 @@
 <script src="../../resources/js-test.js"></script>
 <script>
 
-  var checkAttributes = {
+  var trueAttributes = {
     alpha : true,
+  };
+
+  var falseAttributes = {
+    alpha : false,
   };
 
   function testAttributes(expectedAttributes, checkValue) {
@@ -37,15 +41,15 @@
 <script>
 
   debug("Testing default value:");
-  testAttributes(checkAttributes);
+  testAttributes(trueAttributes);
   debug("")
 
   debug("Testing undefined value:");
-  testAttributes(checkAttributes, undefined);
+  testAttributes(trueAttributes, undefined);
   debug("")
 
   debug("Testing null value:");
-  testAttributes(checkAttributes, null);
+  testAttributes(falseAttributes, null);
   debug("")
 
 </script>

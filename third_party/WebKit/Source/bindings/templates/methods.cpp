@@ -163,6 +163,7 @@ for (int i = {{argument.index}}; i < info.Length(); ++i) {
     {{argument.name}}.append(V8{{argument.idl_type}}::toImpl(v8::Handle<v8::Object>::Cast(info[i])));
 }
 {% elif argument.is_dictionary %}
+{% if not argument.use_permissive_dictionary_conversion %}
 {# Dictionaries must have type Undefined, Null or Object:
 http://heycam.github.io/webidl/#es-dictionary #}
 if (!isUndefinedOrNull(info[{{argument.index}}]) && !info[{{argument.index}}]->IsObject()) {
@@ -170,6 +171,7 @@ if (!isUndefinedOrNull(info[{{argument.index}}]) && !info[{{argument.index}}]->I
                                (argument.index + 1, argument.name)) | indent}}
     return;
 }
+{% endif %}{# not argument.use_permissive_dictionary_conversion #}
 {{argument.v8_value_to_local_cpp_value}};
 {% else %}{# argument.is_nullable #}
 {{argument.v8_value_to_local_cpp_value}};

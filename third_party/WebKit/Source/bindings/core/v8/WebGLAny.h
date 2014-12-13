@@ -15,7 +15,6 @@ namespace blink {
 
 class WebGLRenderingContextBase;
 
-ScriptValue WebGLAny(ScriptState*);
 ScriptValue WebGLAny(ScriptState*, bool value);
 ScriptValue WebGLAny(ScriptState*, const bool* value, size_t);
 ScriptValue WebGLAny(ScriptState*, int value);

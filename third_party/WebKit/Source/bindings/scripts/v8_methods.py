@@ -242,6 +242,7 @@ def argument_context(interface, method, argument, index):
         'private_script_cpp_value_to_v8_value': idl_type.cpp_value_to_v8_value(
             argument.name, isolate='scriptState->isolate()',
             creation_context='scriptState->context()->Global()'),
+        'use_permissive_dictionary_conversion': 'PermissiveDictionaryConversion' in extended_attributes,
         'v8_set_return_value': v8_set_return_value(interface.name, method, this_cpp_value),
         'v8_set_return_value_for_main_world': v8_set_return_value(interface.name, method, this_cpp_value, for_main_world=True),
         'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(argument, index, type_checked, return_promise=method.returns_promise),

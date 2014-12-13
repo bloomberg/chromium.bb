@@ -715,6 +715,11 @@ def v8_conversion_type(idl_type, extended_attributes):
     """
     extended_attributes = extended_attributes or {}
 
+    # Nullable dictionaries need to be handled differently than either
+    # non-nullable dictionaries or unions.
+    if idl_type.is_dictionary and idl_type.is_nullable:
+        return 'NullableDictionary'
+
     if idl_type.is_dictionary or idl_type.is_union_type:
         return 'DictionaryOrUnion'
 
@@ -789,6 +794,8 @@ V8_SET_RETURN_VALUE = {
     'DOMWrapperDefault': 'v8SetReturnValue(info, {cpp_value})',
     # Generic dictionary type
     'Dictionary': 'v8SetReturnValue(info, {cpp_value})',
+    # Nullable dictionaries
+    'NullableDictionary': 'v8SetReturnValue(info, result.get())',
     # Union types or dictionaries
     'DictionaryOrUnion': 'v8SetReturnValue(info, result)',
 }
@@ -853,6 +860,15 @@ CPP_VALUE_TO_V8_VALUE = {
     # General
     'array': 'toV8({cpp_value}, {creation_context}, {isolate})',
     'DOMWrapper': 'toV8({cpp_value}, {creation_context}, {isolate})',
+    # Passing nullable dictionaries isn't a pattern currently used
+    # anywhere in the web platform, and more work would be needed in
+    # the code generator to distinguish between passing null, and
+    # passing an object which happened to not contain any of the
+    # dictionary's defined attributes. For now, don't define
+    # NullableDictionary here, which will cause an exception to be
+    # thrown during code generation if an argument to a method is a
+    # nullable dictionary type.
+    #
     # Union types or dictionaries
     'DictionaryOrUnion': 'toV8({cpp_value}, {creation_context}, {isolate})',
 }

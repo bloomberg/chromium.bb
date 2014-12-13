@@ -31,6 +31,7 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/WrapCanvasContext.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -170,7 +171,23 @@ void HTMLCanvasElement::setWidth(int value)
     setIntegralAttribute(widthAttr, value);
 }
 
-CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, CanvasContextAttributes* attrs)
+ScriptValue HTMLCanvasElement::getContext(ScriptState* scriptState, const String& type, const CanvasContextCreationAttributes& attributes)
+{
+    CanvasRenderingContext2DOrWebGLRenderingContext result;
+    getContext(type, attributes, result);
+    if (result.isNull()) {
+        return ScriptValue::createNull(scriptState);
+    }
+
+    if (result.isCanvasRenderingContext2D()) {
+        return wrapCanvasContext(scriptState, this, result.getAsCanvasRenderingContext2D());
+    }
+
+    ASSERT(result.isWebGLRenderingContext());
+    return wrapCanvasContext(scriptState, this, result.getAsWebGLRenderingContext());
+}
+
+void HTMLCanvasElement::getContext(const String& type, const CanvasContextCreationAttributes& attributes, CanvasRenderingContext2DOrWebGLRenderingContext& result)
 {
     // A Canvas can either be "2D" or "webgl" but never both. If you request a 2D canvas and the existing
     // context is already 2D, just return that. If the existing context is WebGL, then destroy it
@@ -189,14 +206,15 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
     // once it is created.
     if (type == "2d") {
         if (m_context && !m_context->is2d())
-            return nullptr;
+            return;
         if (!m_context) {
             blink::Platform::current()->histogramEnumeration("Canvas.ContextType", Context2d, ContextTypeCount);
 
-            m_context = CanvasRenderingContext2D::create(this, static_cast<Canvas2DContextAttributes*>(attrs), document());
+            m_context = CanvasRenderingContext2D::create(this, attributes, document());
             setNeedsCompositingUpdate();
         }
-        return m_context.get();
+        result.setCanvasRenderingContext2D(static_cast<CanvasRenderingContext2D*>(m_context.get()));
+        return;
     }
 
     // Accept the the provisional "experimental-webgl" or official "webgl" context ID.
@@ -204,17 +222,17 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
         ContextType contextType = (type == "webgl") ? ContextWebgl : ContextExperimentalWebgl;
         if (!m_context) {
             blink::Platform::current()->histogramEnumeration("Canvas.ContextType", contextType, ContextTypeCount);
-            m_context = WebGLRenderingContext::create(this, static_cast<WebGLContextAttributes*>(attrs));
+            m_context = WebGLRenderingContext::create(this, attributes);
             setNeedsCompositingUpdate();
             updateExternallyAllocatedMemory();
         } else if (!m_context->is3d()) {
             dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Canvas has an existing, non-WebGL context"));
-            return nullptr;
+            return;
         }
-        return m_context.get();
+        result.setWebGLRenderingContext(static_cast<WebGLRenderingContext*>(m_context.get()));
     }
 
-    return nullptr;
+    return;
 }
 
 bool HTMLCanvasElement::isPaintable() const

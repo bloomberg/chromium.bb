@@ -375,6 +375,8 @@ interface TestObject {
     // Exceptional types
     Dictionary dictionaryMethod();
     TestDictionary testDictionaryMethod();
+    TestDictionary? nullableTestDictionaryMethod();
+    void passPermissiveDictionaryMethod([PermissiveDictionaryConversion] optional TestDictionary arg);
     NodeFilter nodeFilterMethod();
     Promise<void> promiseMethod(long arg1, Dictionary arg2, DOMString arg3, DOMString... variadic);
     Promise promiseMethodWithoutExceptionState(Dictionary arg1);

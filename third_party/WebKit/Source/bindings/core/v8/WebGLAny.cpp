@@ -10,11 +10,6 @@
 
 namespace blink {
 
-ScriptValue WebGLAny(ScriptState* scriptState)
-{
-    return ScriptValue(scriptState, v8::Null(scriptState->isolate()));
-}
-
 ScriptValue WebGLAny(ScriptState* scriptState, bool value)
 {
     return ScriptValue(scriptState, v8Boolean(value, scriptState->isolate()));

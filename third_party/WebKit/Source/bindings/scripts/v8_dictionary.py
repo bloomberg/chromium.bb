@@ -59,6 +59,7 @@ def dictionary_context(dictionary, interfaces_info):
         'members': [member_context(member)
                     for member in sorted(dictionary.members,
                                          key=operator.attrgetter('name'))],
+        'use_permissive_dictionary_conversion': 'PermissiveDictionaryConversion' in dictionary.extended_attributes,
         'v8_class': v8_types.v8_type(cpp_class),
         'v8_original_class': v8_types.v8_type(dictionary.name),
     }

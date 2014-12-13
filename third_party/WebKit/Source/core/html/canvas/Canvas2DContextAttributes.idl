@@ -24,10 +24,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    NoInterfaceObject,
-    WillBeGarbageCollected,
-] interface Canvas2DContextAttributes {
-    attribute boolean alpha;
-    [RuntimeEnabled=ExperimentalCanvasFeatures] attribute DOMString storage;
+dictionary Canvas2DContextAttributes {
+    boolean alpha = true;
+    // Note: the bindings generator ignores the RuntimeEnabled
+    // extended attribute for dictionary members.
+    [RuntimeEnabled=ExperimentalCanvasFeatures] DOMString storage;
 };

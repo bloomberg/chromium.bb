@@ -6770,6 +6770,42 @@ static void testDictionaryMethodMethodCallback(const v8::FunctionCallbackInfo<v8
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void nullableTestDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    Nullable<TestDictionary> result;
+    impl->nullableTestDictionaryMethod(result);
+    if (result.isNull())
+        v8SetReturnValueNull(info);
+    else
+        v8SetReturnValue(info, result.get());
+}
+
+static void nullableTestDictionaryMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::nullableTestDictionaryMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void passPermissiveDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "passPermissiveDictionaryMethod", "TestObject", info.Holder(), info.GetIsolate());
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    TestDictionary arg;
+    {
+        TONATIVE_VOID_EXCEPTIONSTATE_ARGINTERNAL(V8TestDictionary::toImpl(info.GetIsolate(), info[0], arg, exceptionState), exceptionState);
+    }
+    impl->passPermissiveDictionaryMethod(arg);
+}
+
+static void passPermissiveDictionaryMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::passPermissiveDictionaryMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void nodeFilterMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -10791,6 +10827,8 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethodTestEnumArg", TestObjectV8Internal::voidMethodTestEnumArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"dictionaryMethod", TestObjectV8Internal::dictionaryMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"testDictionaryMethod", TestObjectV8Internal::testDictionaryMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
+    {"nullableTestDictionaryMethod", TestObjectV8Internal::nullableTestDictionaryMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
+    {"passPermissiveDictionaryMethod", TestObjectV8Internal::passPermissiveDictionaryMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"nodeFilterMethod", TestObjectV8Internal::nodeFilterMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"promiseMethod", TestObjectV8Internal::promiseMethodMethodCallback, 0, 3, V8DOMConfiguration::ExposedToAllScripts},
     {"promiseMethodWithoutExceptionState", TestObjectV8Internal::promiseMethodWithoutExceptionStateMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},

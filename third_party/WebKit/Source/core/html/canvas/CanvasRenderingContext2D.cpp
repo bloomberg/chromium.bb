@@ -91,14 +91,13 @@ static bool contextLostRestoredEventsEnabled()
     return RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled();
 }
 
-CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, const Canvas2DContextAttributes* attrs, Document& document)
+CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs, Document& document)
     : CanvasRenderingContext(canvas)
     , m_usesCSSCompatibilityParseMode(document.inQuirksMode())
     , m_clipAntialiasing(NotAntiAliased)
-    , m_hasAlpha(!attrs || attrs->alpha())
+    , m_hasAlpha(attrs.alpha())
     , m_isContextLost(false)
     , m_contextRestorable(true)
-    , m_storageMode(!attrs ? PersistentStorage : attrs->parsedStorage())
     , m_tryRestoreContextAttemptCount(0)
     , m_dispatchContextLostEventTimer(this, &CanvasRenderingContext2D::dispatchContextLostEvent)
     , m_dispatchContextRestoredEventTimer(this, &CanvasRenderingContext2D::dispatchContextRestoredEvent)
@@ -2235,11 +2234,9 @@ void CanvasRenderingContext2D::setImageSmoothingEnabled(bool enabled)
         c->setImageInterpolationQuality(enabled ? CanvasDefaultInterpolationQuality : InterpolationNone);
 }
 
-PassRefPtrWillBeRawPtr<Canvas2DContextAttributes> CanvasRenderingContext2D::getContextAttributes() const
+void CanvasRenderingContext2D::getContextAttributes(Canvas2DContextAttributes& attrs) const
 {
-    RefPtrWillBeRawPtr<Canvas2DContextAttributes> attributes = Canvas2DContextAttributes::create();
-    attributes->setAlpha(m_hasAlpha);
-    return attributes.release();
+    attrs.setAlpha(m_hasAlpha);
 }
 
 void CanvasRenderingContext2D::drawFocusIfNeeded(Element* element)

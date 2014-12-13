@@ -20,7 +20,11 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, {
     if (isUndefinedOrNull(v8Value))
         return;
     if (!v8Value->IsObject()) {
+        {% if use_permissive_dictionary_conversion %}
+        // Do nothing.
+        {% else %}
         exceptionState.throwTypeError("cannot convert to dictionary.");
+        {% endif %}
         return;
     }
 

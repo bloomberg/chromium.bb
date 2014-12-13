@@ -30,6 +30,7 @@
 #include "bindings/core/v8/UnionTypesCore.h"
 #include "core/css/CSSFontSelectorClient.h"
 #include "core/html/canvas/Canvas2DContextAttributes.h"
+#include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/html/canvas/CanvasPathMethods.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/ClipList.h"
@@ -73,7 +74,7 @@ typedef WillBeHeapHashMap<String, RefPtrWillBeMember<MutableStylePropertySet>> M
 class CanvasRenderingContext2D final: public CanvasRenderingContext, public ScriptWrappable, public CanvasPathMethods {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassOwnPtrWillBeRawPtr<CanvasRenderingContext2D> create(HTMLCanvasElement* canvas, const Canvas2DContextAttributes* attrs, Document& document)
+    static PassOwnPtrWillBeRawPtr<CanvasRenderingContext2D> create(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs, Document& document)
     {
         return adoptPtrWillBeNoop(new CanvasRenderingContext2D(canvas, attrs, document));
     }
@@ -200,7 +201,7 @@ public:
     bool imageSmoothingEnabled() const;
     void setImageSmoothingEnabled(bool);
 
-    PassRefPtrWillBeRawPtr<Canvas2DContextAttributes> getContextAttributes() const;
+    void getContextAttributes(Canvas2DContextAttributes&) const;
 
     void drawFocusIfNeeded(Element*);
     void drawFocusIfNeeded(Path2D*, Element*);
@@ -279,7 +280,7 @@ private:
         ClipList m_clipList;
     };
 
-    CanvasRenderingContext2D(HTMLCanvasElement*, const Canvas2DContextAttributes* attrs, Document&);
+    CanvasRenderingContext2D(HTMLCanvasElement*, const CanvasContextCreationAttributes& attrs, Document&);
 
     State& modifiableState() { ASSERT(!state().m_unrealizedSaveCount); return *m_stateStack.last(); }
     const State& state() const { return *m_stateStack.last(); }
@@ -353,7 +354,6 @@ private:
     bool m_hasAlpha;
     bool m_isContextLost;
     bool m_contextRestorable;
-    Canvas2DContextStorage m_storageMode;
     MutableStylePropertyMap m_fetchedFonts;
     ListHashSet<String> m_fetchedFontsLRUList;
     unsigned m_tryRestoreContextAttemptCount;

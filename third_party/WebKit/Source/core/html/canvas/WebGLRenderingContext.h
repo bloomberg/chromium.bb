@@ -33,7 +33,7 @@ namespace blink {
 class WebGLRenderingContext final : public WebGLRenderingContextBase {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassOwnPtrWillBeRawPtr<WebGLRenderingContext> create(HTMLCanvasElement*, WebGLContextAttributes*);
+    static PassOwnPtrWillBeRawPtr<WebGLRenderingContext> create(HTMLCanvasElement*, const CanvasContextCreationAttributes&);
     static void forceNextWebGLContextCreationToFail();
     virtual ~WebGLRenderingContext();
 
@@ -44,7 +44,7 @@ public:
     virtual void trace(Visitor*) override;
 
 private:
-    WebGLRenderingContext(HTMLCanvasElement*, PassOwnPtr<blink::WebGraphicsContext3D>, WebGLContextAttributes*);
+    WebGLRenderingContext(HTMLCanvasElement*, PassOwnPtr<blink::WebGraphicsContext3D>, const WebGLContextAttributes&);
 
     // Enabled extension objects.
     RefPtrWillBeMember<ANGLEInstancedArrays> m_angleInstancedArrays;

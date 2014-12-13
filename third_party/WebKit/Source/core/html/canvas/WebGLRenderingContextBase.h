@@ -33,6 +33,7 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
+#include "core/html/canvas/WebGLContextAttributes.h"
 #include "core/html/canvas/WebGLExtensionName.h"
 #include "core/html/canvas/WebGLVertexArrayObjectOES.h"
 #include "core/page/Page.h"
@@ -80,7 +81,6 @@ class WebGLCompressedTextureATC;
 class WebGLCompressedTextureETC1;
 class WebGLCompressedTexturePVRTC;
 class WebGLCompressedTextureS3TC;
-class WebGLContextAttributes;
 class WebGLContextGroup;
 class WebGLContextObject;
 class WebGLDebugRendererInfo;
@@ -194,7 +194,7 @@ public:
     Nullable<WillBeHeapVector<RefPtrWillBeMember<WebGLShader>>> getAttachedShaders(WebGLProgram*);
     GLint getAttribLocation(WebGLProgram*, const String& name);
     ScriptValue getBufferParameter(ScriptState*, GLenum target, GLenum pname);
-    PassRefPtrWillBeRawPtr<WebGLContextAttributes> getContextAttributes();
+    void getContextAttributes(Nullable<WebGLContextAttributes>&);
     GLenum getError();
     PassRefPtrWillBeRawPtr<WebGLExtension> getExtension(const String& name);
     ScriptValue getFramebufferAttachmentParameter(ScriptState*, GLenum target, GLenum attachment, GLenum pname);
@@ -399,7 +399,7 @@ protected:
     friend class WebGLVertexArrayObjectOES;
     friend class ScopedTexture2DRestorer;
 
-    WebGLRenderingContextBase(HTMLCanvasElement*, PassOwnPtr<blink::WebGraphicsContext3D>, WebGLContextAttributes*);
+    WebGLRenderingContextBase(HTMLCanvasElement*, PassOwnPtr<blink::WebGraphicsContext3D>, const WebGLContextAttributes&);
     PassRefPtr<DrawingBuffer> createDrawingBuffer(PassOwnPtr<blink::WebGraphicsContext3D>);
     void initializeNewContext();
     void setupFlags();
@@ -556,7 +556,7 @@ protected:
     bool m_unpackFlipY;
     bool m_unpackPremultiplyAlpha;
     GLenum m_unpackColorspaceConversion;
-    RefPtrWillBeMember<WebGLContextAttributes> m_requestedAttributes;
+    WebGLContextAttributes m_requestedAttributes;
 
     GLfloat m_clearColor[4];
     bool m_scissorEnabled;

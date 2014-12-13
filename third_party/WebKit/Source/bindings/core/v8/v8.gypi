@@ -175,6 +175,8 @@
             'WorkerScriptController.h',
             'WorkerScriptDebugServer.cpp',
             'WorkerScriptDebugServer.h',
+            'WrapCanvasContext.cpp',
+            'WrapCanvasContext.h',
             'WrapperTypeInfo.cpp',
             'WrapperTypeInfo.h',
             'npruntime.cpp',

@@ -552,7 +552,7 @@ typedef unrestricted float GLclampf;
 
     [CallWith=ScriptState] any getBufferParameter(GLenum target, GLenum pname);
 
-    WebGLContextAttributes getContextAttributes();
+    WebGLContextAttributes? getContextAttributes();
 
     GLenum getError();
 

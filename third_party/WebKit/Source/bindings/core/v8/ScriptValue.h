@@ -141,6 +141,8 @@ public:
     bool toString(String&) const;
     PassRefPtr<JSONValue> toJSONValue(ScriptState*) const;
 
+    static ScriptValue createNull(ScriptState*);
+
 private:
     RefPtr<ScriptState> m_scriptState;
     RefPtr<SharedPersistent<v8::Value> > m_value;
