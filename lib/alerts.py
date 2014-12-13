@@ -11,28 +11,51 @@ from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import gzip
+import logging
 import smtplib
 import socket
 import sys
 import traceback
 
+from chromite.lib import retry_util
+
+
 # Note: When importing this module from cbuildbot code that will run on
 # a builder in the golo, set this to constants.GOLO_SMTP_SERVER
 DEFAULT_SMTP_SERVER = 'localhost'
 
+# Retry parameters for the actual smtp connection.
+SMTP_RETRY_COUNT = 3
+SMTP_RETRY_DELAY = 30
+
 
 def _SendEmailHelper(smtp_server, sender, email_recipients, msg):
   """Send an email.
+
+  If we get a socket error (e.g. the SMTP server is not listening or timesout),
+  we will retry a few times.  All socket errors will be caught here.
 
   Args:
     smtp_server: The server with which to send the message.
     sender: The from address of the sender of the email.
     email_recipients: The recipients of the message.
     msg: A MIMEMultipart() object containing the body of the message.
+
+  Returns:
+    True if the email was sent, else False
   """
-  smtp_client = smtplib.SMTP(smtp_server)
-  smtp_client.sendmail(sender, email_recipients, msg.as_string())
-  smtp_client.quit()
+  def _Send():
+    smtp_client = smtplib.SMTP(smtp_server)
+    smtp_client.sendmail(sender, email_recipients, msg.as_string())
+    smtp_client.quit()
+  try:
+    retry_util.RetryException(socket.error, SMTP_RETRY_COUNT, _Send,
+                              sleep=SMTP_RETRY_DELAY)
+    return True
+  except socket.error as e:
+    logging.warning('could not send e-mail from %s to %r via %r: %s',
+                    sender, email_recipients, smtp_server, e)
+    return False
 
 
 def SendEmail(subject, recipients, smtp_server=None, message='',
@@ -41,7 +64,7 @@ def SendEmail(subject, recipients, smtp_server=None, message='',
 
   Args:
     subject: E-mail subject.
-    recipients: list of e-mail recipients.
+    recipients: List of e-mail recipients.
     smtp_server: (optional) Hostname[:port] of smtp server to use to send
                  email. Defaults to DEFAULT_SMTP_SERVER.
     message: (optional) Message to put in the e-mail body.
