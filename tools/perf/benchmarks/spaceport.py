@@ -8,6 +8,7 @@ import logging
 import os
 
 from telemetry import benchmark
+from telemetry import page as page_module
 from telemetry.core import util
 from telemetry.page import page_set
 from telemetry.page import page_test
@@ -102,5 +103,5 @@ class Spaceport(benchmark.Benchmark):
     spaceport_dir = os.path.join(util.GetChromiumSrcDir(), 'chrome', 'test',
         'data', 'third_party', 'spaceport')
     ps = page_set.PageSet(file_path=spaceport_dir)
-    ps.AddPageWithDefaultRunNavigate('file://index.html')
+    ps.AddUserStory(page_module.Page('file://index.html', ps, ps.base_dir))
     return ps

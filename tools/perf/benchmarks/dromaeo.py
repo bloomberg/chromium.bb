@@ -7,6 +7,7 @@ import os
 
 from metrics import power
 from telemetry import benchmark
+from telemetry import page as page_module
 from telemetry.page import page_set
 from telemetry.page import page_test
 from telemetry.value import scalar
@@ -108,7 +109,7 @@ class _DromaeoBenchmark(benchmark.Benchmark):
         archive_data_file=archive_data_file,
         file_path=os.path.abspath(__file__), bucket=page_set.PUBLIC_BUCKET)
     url = 'http://dromaeo.com?%s' % self.query_param
-    ps.AddPageWithDefaultRunNavigate(url)
+    ps.AddUserStory(page_module.Page(url, ps, ps.base_dir))
     return ps
 
 

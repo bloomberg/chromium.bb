@@ -7,6 +7,7 @@ import math
 import os
 
 from telemetry import benchmark
+from telemetry import page as page_module
 from telemetry.core import util
 from telemetry.page import page_set
 from telemetry.page import page_test
@@ -91,6 +92,6 @@ class DomPerf(benchmark.Benchmark):
     ]
     ps = page_set.PageSet(file_path=dom_perf_dir)
     for param in run_params:
-      ps.AddPageWithDefaultRunNavigate(
-        'file://run.html?reportInJS=1&run=%s' % param)
+      ps.AddUserStory(page_module.Page(
+          'file://run.html?reportInJS=1&run=%s' % param, ps, ps.base_dir))
     return ps

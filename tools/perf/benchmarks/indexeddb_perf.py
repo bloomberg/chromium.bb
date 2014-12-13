@@ -26,6 +26,7 @@ from metrics import memory
 from metrics import power
 from metrics import v8_object_stats
 from telemetry import benchmark
+from telemetry import page as page_module
 from telemetry.core import util
 from telemetry.page import page_set
 from telemetry.page import page_test
@@ -98,5 +99,5 @@ class IndexedDb(benchmark.Benchmark):
     indexeddb_dir = os.path.join(util.GetChromiumSrcDir(), 'chrome', 'test',
                                  'data', 'indexeddb')
     ps = page_set.PageSet(file_path=indexeddb_dir)
-    ps.AddPageWithDefaultRunNavigate('file://perf_test.html')
+    ps.AddUserStory(page_module.Page('file://perf_test.html', ps, ps.base_dir))
     return ps

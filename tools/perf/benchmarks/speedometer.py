@@ -19,6 +19,7 @@ engine, CSS style resolution, layout, and other technologies.
 import os
 
 from telemetry import benchmark
+from telemetry import page as page_module
 from telemetry.page import page_set
 from telemetry.page import page_test
 from telemetry.value import list_of_scalar_values
@@ -81,5 +82,6 @@ class Speedometer(benchmark.Benchmark):
         archive_data_file='../page_sets/data/speedometer.json',
         make_javascript_deterministic=False,
         bucket=page_set.PUBLIC_BUCKET)
-    ps.AddPageWithDefaultRunNavigate('http://browserbench.org/Speedometer/')
+    ps.AddUserStory(page_module.Page(
+        'http://browserbench.org/Speedometer/', ps, ps.base_dir))
     return ps

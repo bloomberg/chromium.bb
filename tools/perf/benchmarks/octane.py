@@ -15,6 +15,7 @@ import os
 
 from metrics import power
 from telemetry import benchmark
+from telemetry import page as page_module
 from telemetry.page import page_set
 from telemetry.page import page_test
 from telemetry.util import statistics
@@ -138,6 +139,7 @@ class Octane(benchmark.Benchmark):
       make_javascript_deterministic=False,
       file_path=os.path.abspath(__file__),
       bucket=page_set.PUBLIC_BUCKET)
-    ps.AddPageWithDefaultRunNavigate(
-      'http://octane-benchmark.googlecode.com/svn/latest/index.html?auto=1')
+    ps.AddUserStory(page_module.Page(
+        'http://octane-benchmark.googlecode.com/svn/latest/index.html?auto=1',
+        ps, ps.base_dir))
     return ps

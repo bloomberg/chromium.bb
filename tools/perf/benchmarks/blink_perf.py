@@ -5,6 +5,7 @@
 import os
 
 from telemetry import benchmark
+from telemetry import page as page_module
 from telemetry.core import util
 from telemetry.page import page_set
 from telemetry.page import page_test
@@ -56,7 +57,7 @@ def CreatePageSetFromPath(path, skipped_file):
   ps = page_set.PageSet(file_path=os.getcwd()+os.sep,
                         serving_dirs=serving_dirs)
   for url in page_urls:
-    ps.AddPageWithDefaultRunNavigate(url)
+    ps.AddUserStory(page_module.Page(url, ps, ps.base_dir))
   return ps
 
 
