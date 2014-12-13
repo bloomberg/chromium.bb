@@ -121,7 +121,7 @@ scoped_refptr<Picture> Picture::CreateFromSkpValue(const base::Value* value) {
   if (skpicture == NULL)
     return NULL;
 
-  gfx::Rect layer_rect(skpicture->width(), skpicture->height());
+  gfx::Rect layer_rect(gfx::SkIRectToRect(skpicture->cullRect().roundOut()));
   return make_scoped_refptr(new Picture(skpicture, layer_rect));
 }
 

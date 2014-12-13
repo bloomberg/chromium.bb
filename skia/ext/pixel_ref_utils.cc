@@ -351,15 +351,17 @@ void PixelRefUtils::GatherDiscardablePixelRefs(
   pixel_refs->clear();
   DiscardablePixelRefSet pixel_ref_set(pixel_refs);
 
+  SkRect picture_bounds = picture->cullRect();
+  SkIRect picture_ibounds = picture_bounds.roundOut();
   SkBitmap empty_bitmap;
-  empty_bitmap.setInfo(SkImageInfo::MakeUnknown(picture->width(), picture->height()));
+  empty_bitmap.setInfo(SkImageInfo::MakeUnknown(picture_ibounds.width(),
+                                                picture_ibounds.height()));
 
   GatherPixelRefDevice device(empty_bitmap, &pixel_ref_set);
   SkNoSaveLayerCanvas canvas(&device);
 
-  canvas.clipRect(SkRect::MakeWH(picture->width(), picture->height()),
-                  SkRegion::kIntersect_Op,
-                  false);
+  // Draw the picture pinned against our top/left corner.
+  canvas.translate(-picture_bounds.left(), -picture_bounds.top());
   canvas.drawPicture(picture);
 }
 

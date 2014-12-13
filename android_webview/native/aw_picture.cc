@@ -23,17 +23,18 @@ void AwPicture::Destroy(JNIEnv* env, jobject obj) {
 }
 
 jint AwPicture::GetWidth(JNIEnv* env, jobject obj) {
-  return picture_->width();
+  return picture_->cullRect().roundOut().width();
 }
 
 jint AwPicture::GetHeight(JNIEnv* env, jobject obj) {
-  return picture_->height();
+  return picture_->cullRect().roundOut().height();
 }
 
 void AwPicture::Draw(JNIEnv* env, jobject obj, jobject canvas) {
+  const SkIRect bounds = picture_->cullRect().roundOut();
   scoped_ptr<SoftwareCanvasHolder> canvas_holder = SoftwareCanvasHolder::Create(
       canvas, gfx::Vector2d(),
-      gfx::Size(picture_->width(), picture_->height()));
+      gfx::Size(bounds.width(), bounds.height()));
   if (!canvas_holder || !canvas_holder->GetCanvas()) {
     LOG(ERROR) << "Couldn't draw picture";
     return;

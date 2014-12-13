@@ -265,8 +265,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_IGNORE_GPU_DITHER
 #endif
 
+#if 0
 #ifndef    SK_LEGACY_PICTURE_SIZE_API
 #   define SK_LEGACY_PICTURE_SIZE_API
+#endif
 #endif
 
 #ifndef    SK_LEGACY_PICTURE_DRAW_API
