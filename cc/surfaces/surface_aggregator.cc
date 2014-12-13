@@ -438,4 +438,13 @@ scoped_ptr<CompositorFrame> SurfaceAggregator::Aggregate(SurfaceId surface_id) {
   return frame.Pass();
 }
 
+void SurfaceAggregator::ReleaseResources(SurfaceId surface_id) {
+  SurfaceToResourceChildIdMap::iterator it =
+      surface_id_to_resource_child_id_.find(surface_id);
+  if (it != surface_id_to_resource_child_id_.end()) {
+    provider_->DestroyChild(it->second);
+    surface_id_to_resource_child_id_.erase(it);
+  }
+}
+
 }  // namespace cc

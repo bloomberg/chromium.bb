@@ -32,6 +32,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   ~SurfaceAggregator();
 
   scoped_ptr<CompositorFrame> Aggregate(SurfaceId surface_id);
+  void ReleaseResources(SurfaceId surface_id);
   SurfaceIndexMap& previous_contained_surfaces() {
     return previous_contained_surfaces_;
   }

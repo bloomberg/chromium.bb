@@ -169,8 +169,11 @@ void Display::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
 }
 
 void Display::OnSurfaceDamaged(SurfaceId surface) {
-  if (aggregator_ && aggregator_->previous_contained_surfaces().count(surface))
+  if (aggregator_ &&
+      aggregator_->previous_contained_surfaces().count(surface)) {
+    aggregator_->ReleaseResources(surface);
     client_->DisplayDamaged();
+  }
 }
 
 SurfaceId Display::CurrentSurfaceId() {
