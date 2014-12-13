@@ -5,7 +5,7 @@
 
 """Unit tests for gather_builder_stats."""
 
-# pylint: disable=bad-continuation
+# pylint: disable=bad-continuation,protected-access
 
 from __future__ import print_function
 
@@ -30,6 +30,30 @@ import mock
 REASON_BAD_CL = gather_builder_stats.CLStats.REASON_BAD_CL
 CQ = constants.CQ
 PRE_CQ = constants.PRE_CQ
+
+
+class TestHelperMethods(cros_test_lib.TestCase):
+  """Test helper methods not in a class."""
+
+  def testRemoveBuildsWithNoBuildId(self):
+    good_build1 = metadata_lib.BuildData('url', {'build_id': 1})
+    good_build2 = metadata_lib.BuildData('url', {'build_id': 2})
+    bad_build = metadata_lib.BuildData('url', {})
+
+    # Test No Builds.
+    result = gather_builder_stats._RemoveBuildsWithNoBuildId(
+        [], 'Test No Builds')
+    self.assertEqual(result, [])
+
+    # Test Good Builds.
+    result = gather_builder_stats._RemoveBuildsWithNoBuildId(
+        [good_build1, good_build2], 'Test No Builds')
+    self.assertEqual(result, [good_build1, good_build2])
+
+    # Test No Builds.
+    result = gather_builder_stats._RemoveBuildsWithNoBuildId(
+        [good_build1, good_build2, bad_build], 'Test No Builds')
+    self.assertEqual(result, [good_build1, good_build2])
 
 
 class TestCLActionLogic(cros_test_lib.TestCase):
@@ -170,7 +194,6 @@ class TestCLActionLogic(cros_test_lib.TestCase):
                       for d in TEST_METADATA]
 
     return TEST_BUILDDATA
-
 
   def testCLStatsSummary(self):
     with cros_build_lib.ContextManagerStack() as stack:

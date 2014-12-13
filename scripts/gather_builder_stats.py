@@ -116,6 +116,27 @@ def _GetSlavesOfMaster(master_target):
   return sorted(slave_config.name for slave_config in slave_configs)
 
 
+def _RemoveBuildsWithNoBuildId(builds, description):
+  """Remove builds without a build_id.
+
+  They happen during some failure modes, but we can't process them, and
+  they don't affect the stats. We do log a warning message if any were
+  filtered.
+
+  Args:
+    builds: List of metadata_lib.BuildData objects.
+    description: A string describing the source of missing build_ids.
+  """
+  result = [b for b in builds if 'build_id' in b.metadata_dict]
+  filtered = len(builds) - len(result)
+
+  if filtered:
+    logging.warn('Found %d %s builds without a build_id.',
+                 filtered, description)
+
+  return result
+
+
 class StatsTable(table.Table):
   """Stats table for any specific target on a waterfall."""
 
@@ -1035,6 +1056,11 @@ class CLStats(StatsManager):
     self.builds_by_number = {(CQ, b.build_number): b for b in self.builds}
     self.builds_by_number.update({(PRE_CQ, b.build_number): b
                                   for b in self.pre_cq_stats.builds})
+
+    # Remove PreCQ builds without a build_id.
+    self.pre_cq_stats.builds = _RemoveBuildsWithNoBuildId(
+        self.pre_cq_stats.builds, 'PreCQ')
+    self.builds = _RemoveBuildsWithNoBuildId(self.builds, 'CQ')
 
     self.build_numbers_by_build_id.update(
         {b['build_id'] : b.build_number for b in self.builds})
