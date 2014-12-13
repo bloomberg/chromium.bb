@@ -45,9 +45,8 @@ static base::File::Error LastFileError() {
 
 // Making direct platform in lieu of using base::FileEnumerator because the
 // latter can fail quietly without return an error result.
-static base::File::Error GetDirectoryEntries(
-    const FilePath& dir_param,
-    std::vector<FilePath>* result) {
+static base::File::Error GetDirectoryEntries(const FilePath& dir_param,
+                                             std::vector<FilePath>* result) {
   result->clear();
 #if defined(OS_WIN)
   FilePath dir_filepath = dir_param.Append(FILE_PATH_LITERAL("*"));
@@ -600,13 +599,11 @@ FilePath ChromiumEnv::RestoreFromBackup(const FilePath& base_name) {
 }
 
 void ChromiumEnv::RestoreIfNecessary(const std::string& dir,
-                                     std::vector<std::string>* result) {
+                                     std::vector<std::string>* dir_entries) {
   std::set<FilePath> tables_found;
   std::set<FilePath> backups_found;
-  for (std::vector<std::string>::iterator it = result->begin();
-       it != result->end();
-       ++it) {
-    FilePath current = FilePath::FromUTF8Unsafe(*it);
+  for (const std::string& entry : *dir_entries) {
+    FilePath current = FilePath::FromUTF8Unsafe(entry);
     if (current.MatchesExtension(table_extension))
       tables_found.insert(current.RemoveExtension());
     if (current.MatchesExtension(backup_table_extension))
@@ -627,23 +624,22 @@ void ChromiumEnv::RestoreIfNecessary(const std::string& dir,
                                 base::Histogram::kUmaTargetedHistogramFlag)
         ->Add(num_missing_files);
   }
-  FilePath dir_filepath = FilePath::FromUTF8Unsafe(dir);
-  for (std::set<FilePath>::iterator it = backups_only.begin();
-       it != backups_only.end(); ++it) {
-    FilePath restored_table_name = RestoreFromBackup(dir_filepath.Append(*it));
-    result->push_back(restored_table_name.BaseName().AsUTF8Unsafe());
+  FilePath dir_path = FilePath::FromUTF8Unsafe(dir);
+  for (const FilePath& backup : backups_only) {
+    FilePath restored_table_name = RestoreFromBackup(dir_path.Append(backup));
+    dir_entries->push_back(restored_table_name.BaseName().AsUTF8Unsafe());
   }
 }
 
-Status ChromiumEnv::GetChildren(const std::string& dir_string,
+Status ChromiumEnv::GetChildren(const std::string& dir,
                                 std::vector<std::string>* result) {
   std::vector<FilePath> entries;
   base::File::Error error =
-      GetDirectoryEntries(FilePath::FromUTF8Unsafe(dir_string), &entries);
+      GetDirectoryEntries(FilePath::FromUTF8Unsafe(dir), &entries);
   if (error != base::File::FILE_OK) {
     RecordOSError(kGetChildren, error);
-    return MakeIOError(
-        dir_string, "Could not open/read directory", kGetChildren, error);
+    return MakeIOError(dir, "Could not open/read directory", kGetChildren,
+                       error);
   }
 
   result->clear();
@@ -651,7 +647,7 @@ Status ChromiumEnv::GetChildren(const std::string& dir_string,
     result->push_back(entry.BaseName().AsUTF8Unsafe());
 
   if (make_backup_)
-    RestoreIfNecessary(dir_string, result);
+    RestoreIfNecessary(dir, result);
 
   return Status::OK();
 }
