@@ -176,7 +176,8 @@ bool LocalTestServer::LaunchPython(const base::FilePath& testserver_path) {
 
   base::LaunchOptions launch_options;
   launch_options.inherit_handles = true;
-  if (!base::LaunchProcess(python_command, launch_options, &process_handle_)) {
+  process_ = base::LaunchProcess(python_command, launch_options);
+  if (!process_.IsValid()) {
     LOG(ERROR) << "Failed to launch " << python_command.GetCommandLineString();
     return false;
   }

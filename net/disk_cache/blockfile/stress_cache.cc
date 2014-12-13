@@ -27,7 +27,6 @@
 #include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
-#include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -59,14 +58,14 @@ int RunSlave(int iteration) {
   base::CommandLine cmdline(exe);
   cmdline.AppendArg(base::IntToString(iteration));
 
-  base::ProcessHandle handle;
-  if (!base::LaunchProcess(cmdline, base::LaunchOptions(), &handle)) {
+  base::Process process = base::LaunchProcess(cmdline, base::LaunchOptions());
+  if (!process.IsValid()) {
     printf("Unable to run test\n");
     return kError;
   }
 
   int exit_code;
-  if (!base::WaitForExitCode(handle, &exit_code)) {
+  if (!process.WaitForExit(&exit_code)) {
     printf("Unable to get return code\n");
     return kError;
   }

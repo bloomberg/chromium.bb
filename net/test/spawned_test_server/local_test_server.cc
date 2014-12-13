@@ -121,18 +121,17 @@ bool LocalTestServer::BlockUntilStarted() {
 bool LocalTestServer::Stop() {
   CleanUpWhenStoppingServer();
 
-  if (!process_handle_)
+  if (!process_.IsValid())
     return true;
 
   // First check if the process has already terminated.
-  bool ret = base::WaitForSingleProcess(process_handle_, base::TimeDelta());
+  bool ret = base::WaitForSingleProcess(process_.Handle(), base::TimeDelta());
   if (!ret) {
-    ret = base::KillProcess(process_handle_, 1, true);
+    ret = base::KillProcess(process_.Handle(), 1, true);
   }
 
   if (ret) {
-    base::CloseProcessHandle(process_handle_);
-    process_handle_ = base::kNullProcessHandle;
+    process_.Close();
   } else {
     VLOG(1) << "Kill failed?";
   }
@@ -149,7 +148,6 @@ bool LocalTestServer::Init(const base::FilePath& document_root) {
   // number out over a pipe that this TestServer object will read from. Once
   // that is complete, the host port pair will contain the actual port.
   DCHECK(!GetPort());
-  process_handle_ = base::kNullProcessHandle;
 
   base::FilePath src_dir;
   if (!PathService::Get(base::DIR_SOURCE_ROOT, &src_dir))

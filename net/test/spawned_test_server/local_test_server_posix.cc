@@ -139,7 +139,8 @@ bool LocalTestServer::LaunchPython(const base::FilePath& testserver_path) {
   base::LaunchOptions options;
 
   options.fds_to_remap = &map_write_fd;
-  if (!base::LaunchProcess(python_command, options, &process_handle_)) {
+  process_ = base::LaunchProcess(python_command, options);
+  if (!process_.IsValid()) {
     LOG(ERROR) << "Failed to launch " << python_command.GetCommandLineString();
     return false;
   }
