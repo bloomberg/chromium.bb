@@ -243,8 +243,10 @@ int EditArgsFile(const std::string& build_dir) {
     if (!base::PathExists(arg_file)) {
       std::string argfile_default_contents =
           "# Build arguments go here. Examples:\n"
-          "#   enable_doom_melon = true\n"
-          "#   crazy_something = \"absolutely\"\n";
+          "#   is_component_build = true\n"
+          "#   is_debug = false\n"
+          "# See \"gn args <dir_name> --list\" for available build "
+          "arguments.\n";
 #if defined(OS_WIN)
       // Use Windows lineendings for this file since it will often open in
       // Notepad which can't handle Unix ones.
