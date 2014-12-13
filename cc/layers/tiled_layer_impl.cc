@@ -262,7 +262,8 @@ void TiledLayerImpl::AppendQuads(RenderPass* render_pass,
                    tile->resource_id(),
                    tex_coord_rect,
                    texture_size,
-                   tile->contents_swizzled());
+                   tile->contents_swizzled(),
+                   false);
     }
   }
 }

@@ -347,7 +347,8 @@ void SoftwareRenderer::DrawPictureQuad(const DrawingFrame* frame,
   // (http://crbug.com/280374).
   skia::RefPtr<SkDrawFilter> opacity_filter =
       skia::AdoptRef(new skia::OpacityDrawFilter(
-          quad->opacity(), frame->disable_picture_quad_image_filtering));
+          quad->opacity(), frame->disable_picture_quad_image_filtering ||
+                               quad->nearest_neighbor));
   DCHECK(!current_canvas_->getDrawFilter());
   current_canvas_->setDrawFilter(opacity_filter.get());
 
@@ -449,7 +450,9 @@ void SoftwareRenderer::DrawTileQuad(const DrawingFrame* frame,
       QuadVertexRect(), quad->rect, quad->visible_rect);
 
   SkRect uv_rect = gfx::RectFToSkRect(visible_tex_coord_rect);
-  current_paint_.setFilterLevel(SkPaint::kLow_FilterLevel);
+  current_paint_.setFilterLevel(quad->nearest_neighbor
+                                    ? SkPaint::kNone_FilterLevel
+                                    : SkPaint::kLow_FilterLevel);
   current_canvas_->drawBitmapRectToRect(
       *lock.sk_bitmap(),
       &uv_rect,

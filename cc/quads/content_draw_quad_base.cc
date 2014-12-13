@@ -25,13 +25,15 @@ void ContentDrawQuadBase::SetNew(const SharedQuadState* shared_quad_state,
                                  const gfx::Rect& visible_rect,
                                  const gfx::RectF& tex_coord_rect,
                                  const gfx::Size& texture_size,
-                                 bool swizzle_contents) {
+                                 bool swizzle_contents,
+                                 bool nearest_neighbor) {
   bool needs_blending = false;
   DrawQuad::SetAll(shared_quad_state, material, rect, opaque_rect,
                    visible_rect, needs_blending);
   this->tex_coord_rect = tex_coord_rect;
   this->texture_size = texture_size;
   this->swizzle_contents = swizzle_contents;
+  this->nearest_neighbor = nearest_neighbor;
 }
 
 void ContentDrawQuadBase::SetAll(const SharedQuadState* shared_quad_state,
@@ -42,12 +44,14 @@ void ContentDrawQuadBase::SetAll(const SharedQuadState* shared_quad_state,
                                  bool needs_blending,
                                  const gfx::RectF& tex_coord_rect,
                                  const gfx::Size& texture_size,
-                                 bool swizzle_contents) {
+                                 bool swizzle_contents,
+                                 bool nearest_neighbor) {
   DrawQuad::SetAll(shared_quad_state, material, rect, opaque_rect,
                    visible_rect, needs_blending);
   this->tex_coord_rect = tex_coord_rect;
   this->texture_size = texture_size;
   this->swizzle_contents = swizzle_contents;
+  this->nearest_neighbor = nearest_neighbor;
 }
 
 void ContentDrawQuadBase::ExtendValue(base::debug::TracedValue* value) const {
@@ -60,6 +64,7 @@ void ContentDrawQuadBase::ExtendValue(base::debug::TracedValue* value) const {
   value->EndDictionary();
 
   value->SetBoolean("swizzle_contents", swizzle_contents);
+  value->SetBoolean("nearest_neighbor", nearest_neighbor);
 }
 
 }  // namespace cc

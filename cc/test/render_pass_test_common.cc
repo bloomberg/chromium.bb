@@ -198,6 +198,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                            resource2,
                            gfx::RectF(0, 0, 50, 50),
                            gfx::Size(50, 50),
+                           false,
                            false);
 
   SharedQuadState* transformed_state = this->CreateAndAppendSharedQuadState();
@@ -215,6 +216,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                                 resource3,
                                 gfx::RectF(0, 0, 100, 100),
                                 gfx::Size(100, 100),
+                                false,
                                 false);
 
   SharedQuadState* shared_state2 = this->CreateAndAppendSharedQuadState();
@@ -235,6 +237,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                     resource4,
                     gfx::RectF(0, 0, 100, 100),
                     gfx::Size(100, 100),
+                    false,
                     false);
 
   ResourceProvider::ResourceId plane_resources[4];

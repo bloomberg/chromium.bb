@@ -71,6 +71,7 @@ struct TileQuadState {
   RectF tex_coord_rect;
   Size texture_size;
   bool swizzle_contents;
+  bool nearest_neighbor;
   uint32 resource_id;
 };
 

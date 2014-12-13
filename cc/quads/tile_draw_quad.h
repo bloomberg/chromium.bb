@@ -21,7 +21,8 @@ class CC_EXPORT TileDrawQuad : public ContentDrawQuadBase {
               unsigned resource_id,
               const gfx::RectF& tex_coord_rect,
               const gfx::Size& texture_size,
-              bool swizzle_contents);
+              bool swizzle_contents,
+              bool nearest_neighbor);
 
   void SetAll(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
@@ -31,7 +32,8 @@ class CC_EXPORT TileDrawQuad : public ContentDrawQuadBase {
               unsigned resource_id,
               const gfx::RectF& tex_coord_rect,
               const gfx::Size& texture_size,
-              bool swizzle_contents);
+              bool swizzle_contents,
+              bool nearest_neighbor);
 
   unsigned resource_id;
 

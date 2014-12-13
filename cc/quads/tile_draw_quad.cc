@@ -25,7 +25,8 @@ void TileDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                           unsigned resource_id,
                           const gfx::RectF& tex_coord_rect,
                           const gfx::Size& texture_size,
-                          bool swizzle_contents) {
+                          bool swizzle_contents,
+                          bool nearest_neighbor) {
   ContentDrawQuadBase::SetNew(shared_quad_state,
                               DrawQuad::TILED_CONTENT,
                               rect,
@@ -33,7 +34,8 @@ void TileDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                               visible_rect,
                               tex_coord_rect,
                               texture_size,
-                              swizzle_contents);
+                              swizzle_contents,
+                              nearest_neighbor);
   this->resource_id = resource_id;
 }
 
@@ -45,10 +47,12 @@ void TileDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                           unsigned resource_id,
                           const gfx::RectF& tex_coord_rect,
                           const gfx::Size& texture_size,
-                          bool swizzle_contents) {
+                          bool swizzle_contents,
+                          bool nearest_neighbor) {
   ContentDrawQuadBase::SetAll(shared_quad_state, DrawQuad::TILED_CONTENT, rect,
                               opaque_rect, visible_rect, needs_blending,
-                              tex_coord_rect, texture_size, swizzle_contents);
+                              tex_coord_rect, texture_size, swizzle_contents,
+                              nearest_neighbor);
   this->resource_id = resource_id;
 }
 

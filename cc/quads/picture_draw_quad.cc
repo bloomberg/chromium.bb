@@ -23,6 +23,7 @@ void PictureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                              const gfx::Rect& visible_rect,
                              const gfx::RectF& tex_coord_rect,
                              const gfx::Size& texture_size,
+                             bool nearest_neighbor,
                              ResourceFormat texture_format,
                              const gfx::Rect& content_rect,
                              float contents_scale,
@@ -35,7 +36,8 @@ void PictureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
       visible_rect,
       tex_coord_rect,
       texture_size,
-      !PlatformColor::SameComponentOrder(texture_format));
+      !PlatformColor::SameComponentOrder(texture_format),
+      nearest_neighbor);
   this->content_rect = content_rect;
   this->contents_scale = contents_scale;
   this->raster_source = raster_source;
@@ -49,6 +51,7 @@ void PictureDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                              bool needs_blending,
                              const gfx::RectF& tex_coord_rect,
                              const gfx::Size& texture_size,
+                             bool nearest_neighbor,
                              ResourceFormat texture_format,
                              const gfx::Rect& content_rect,
                              float contents_scale,
@@ -62,7 +65,8 @@ void PictureDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                               tex_coord_rect,
                               texture_size,
                               !PlatformColor::SameComponentOrder(
-                                  texture_format));
+                                  texture_format),
+                              nearest_neighbor);
   this->content_rect = content_rect;
   this->contents_scale = contents_scale;
   this->raster_source = raster_source;

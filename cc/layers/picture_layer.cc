@@ -24,7 +24,8 @@ PictureLayer::PictureLayer(ContentLayerClient* client)
       instrumentation_object_tracker_(id()),
       update_source_frame_number_(-1),
       can_use_lcd_text_for_update_(true),
-      is_mask_(false) {
+      is_mask_(false),
+      nearest_neighbor_(false) {
 }
 
 PictureLayer::PictureLayer(ContentLayerClient* client,
@@ -64,6 +65,8 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
     // longer valid. In this case just destroy the recording source.
     recording_source_->SetEmptyBounds();
   }
+
+  layer_impl->SetNearestNeighbor(nearest_neighbor_);
 
   scoped_refptr<RasterSource> raster_source =
       recording_source_->CreateRasterSource();
@@ -203,6 +206,14 @@ bool PictureLayer::IsSuitableForGpuRasterization() const {
 void PictureLayer::ClearClient() {
   client_ = nullptr;
   UpdateDrawsContent(HasDrawableContent());
+}
+
+void PictureLayer::SetNearestNeighbor(bool nearest_neighbor) {
+  if (nearest_neighbor_ == nearest_neighbor)
+    return;
+
+  nearest_neighbor_ = nearest_neighbor;
+  SetNeedsCommit();
 }
 
 bool PictureLayer::HasDrawableContent() const {

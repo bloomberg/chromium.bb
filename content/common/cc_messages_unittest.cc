@@ -194,6 +194,7 @@ class CCMessagesTest : public testing::Test {
     EXPECT_EQ(a->tex_coord_rect, b->tex_coord_rect);
     EXPECT_EQ(a->texture_size, b->texture_size);
     EXPECT_EQ(a->swizzle_contents, b->swizzle_contents);
+    EXPECT_EQ(a->nearest_neighbor, b->nearest_neighbor);
   }
 
   void Compare(const YUVVideoDrawQuad* a, const YUVVideoDrawQuad* b) {
@@ -456,7 +457,8 @@ TEST_F(CCMessagesTest, AllQuads) {
                   arbitrary_resourceid3,
                   arbitrary_rectf1,
                   arbitrary_size1,
-                  arbitrary_bool2);
+                  arbitrary_bool2,
+                  arbitrary_bool3);
   pass_cmp->CopyFromAndAppendDrawQuad(tile_in, tile_in->shared_quad_state);
 
   YUVVideoDrawQuad* yuvvideo_in =

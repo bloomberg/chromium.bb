@@ -23,6 +23,8 @@ class CC_EXPORT PictureLayer : public Layer {
 
   void ClearClient();
 
+  void SetNearestNeighbor(bool nearest_neighbor);
+
   // Layer interface.
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void SetLayerTreeHost(LayerTreeHost* host) override;
@@ -69,6 +71,7 @@ class CC_EXPORT PictureLayer : public Layer {
   int update_source_frame_number_;
   bool can_use_lcd_text_for_update_;
   bool is_mask_;
+  bool nearest_neighbor_;
 
   DISALLOW_COPY_AND_ASSIGN(PictureLayer);
 };

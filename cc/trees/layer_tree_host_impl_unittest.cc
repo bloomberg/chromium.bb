@@ -4186,6 +4186,7 @@ class BlendStateCheckLayer : public LayerImpl {
                                     resource_id_,
                                     gfx::RectF(0.f, 0.f, 1.f, 1.f),
                                     gfx::Size(1, 1),
+                                    false,
                                     false);
     test_blending_draw_quad->visible_rect = quad_visible_rect_;
     EXPECT_EQ(blend_, test_blending_draw_quad->ShouldDrawWithBlending());

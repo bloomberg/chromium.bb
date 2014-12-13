@@ -85,6 +85,8 @@ class CC_EXPORT PictureLayerImpl
   void GetContentsResourceId(ResourceProvider::ResourceId* resource_id,
                              gfx::Size* resource_size) const override;
 
+  void SetNearestNeighbor(bool nearest_neighbor);
+
   size_t GPUMemoryUsageInBytes() const override;
 
   void RunMicroBenchmark(MicroBenchmarkImpl* benchmark) override;
@@ -172,6 +174,8 @@ class CC_EXPORT PictureLayerImpl
   bool should_update_tile_priorities_;
   bool only_used_low_res_last_append_quads_;
   const bool is_mask_;
+
+  bool nearest_neighbor_;
 
   // Any draw properties derived from |transform|, |viewport|, and |clip|
   // parameters in LayerTreeHostImpl::SetExternalDrawConstraints are not valid

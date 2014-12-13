@@ -158,7 +158,8 @@ bool ConvertDrawQuad(const QuadPtr& input,
                         tile_state->resource_id,
                         tile_state->tex_coord_rect.To<gfx::RectF>(),
                         tile_state->texture_size.To<gfx::Size>(),
-                        tile_state->swizzle_contents);
+                        tile_state->swizzle_contents,
+                        tile_state->nearest_neighbor);
       break;
     }
     case MATERIAL_YUV_VIDEO_CONTENT: {
@@ -309,6 +310,7 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
       tile_state->tex_coord_rect = RectF::From(tile_quad->tex_coord_rect);
       tile_state->texture_size = Size::From(tile_quad->texture_size);
       tile_state->swizzle_contents = tile_quad->swizzle_contents;
+      tile_state->nearest_neighbor = tile_quad->nearest_neighbor;
       tile_state->resource_id = tile_quad->resource_id;
       quad->tile_quad_state = tile_state.Pass();
       break;

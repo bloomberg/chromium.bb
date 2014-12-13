@@ -85,7 +85,8 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl,
       needs_post_commit_initialization_(true),
       should_update_tile_priorities_(false),
       only_used_low_res_last_append_quads_(false),
-      is_mask_(is_mask) {
+      is_mask_(is_mask),
+      nearest_neighbor_(false) {
   layer_tree_impl()->RegisterPictureLayerImpl(this);
 }
 
@@ -140,6 +141,8 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   // into the tree at that point.
   twin_layer_ = layer_impl;
   layer_impl->twin_layer_ = this;
+
+  layer_impl->SetNearestNeighbor(nearest_neighbor_);
 
   // Solid color layers have no tilings.
   DCHECK_IMPLIES(raster_source_->IsSolidColor(), tilings_->num_tilings() == 0);
@@ -241,8 +244,9 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
     PictureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
     quad->SetNew(shared_quad_state, geometry_rect, opaque_rect,
-                 visible_geometry_rect, texture_rect, texture_size, RGBA_8888,
-                 quad_content_rect, max_contents_scale, raster_source_);
+                 visible_geometry_rect, texture_rect, texture_size,
+                 nearest_neighbor_, RGBA_8888, quad_content_rect,
+                 max_contents_scale, raster_source_);
     return;
   }
 
@@ -354,7 +358,8 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
                        draw_info.get_resource_id(),
                        texture_rect,
                        iter.texture_size(),
-                       draw_info.contents_swizzled());
+                       draw_info.contents_swizzled(),
+                       nearest_neighbor_);
           has_draw_quad = true;
           break;
         }
@@ -376,8 +381,8 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
               render_pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
           quad->SetNew(shared_quad_state, geometry_rect, opaque_rect,
                        visible_geometry_rect, texture_rect, iter.texture_size(),
-                       format, iter->content_rect(), iter->contents_scale(),
-                       raster_source_);
+                       nearest_neighbor_, format, iter->content_rect(),
+                       iter->contents_scale(), raster_source_);
           has_draw_quad = true;
           break;
         }
@@ -808,6 +813,14 @@ void PictureLayerImpl::GetContentsResourceId(
 
   *resource_id = draw_info.get_resource_id();
   *resource_size = iter.texture_size();
+}
+
+void PictureLayerImpl::SetNearestNeighbor(bool nearest_neighbor) {
+  if (nearest_neighbor_ == nearest_neighbor)
+    return;
+
+  nearest_neighbor_ = nearest_neighbor;
+  NoteLayerPropertyChanged();
 }
 
 void PictureLayerImpl::DoPostCommitInitialization() {

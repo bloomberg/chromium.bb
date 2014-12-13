@@ -1725,6 +1725,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadIdentityScale) {
   gfx::Rect viewport(this->device_viewport_size_);
   // TODO(enne): the renderer should figure this out on its own.
   ResourceFormat texture_format = RGBA_8888;
+  bool nearest_neighbor = false;
 
   RenderPassId id(1, 1);
   gfx::Transform transform_to_root;
@@ -1761,8 +1762,8 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadIdentityScale) {
   blue_quad->SetNew(blue_shared_state,
                     viewport,  // Intentionally bigger than clip.
                     gfx::Rect(), viewport, gfx::RectF(viewport),
-                    viewport.size(), texture_format, viewport, 1.f,
-                    blue_pile.get());
+                    viewport.size(), nearest_neighbor, texture_format, viewport,
+                    1.f, blue_pile.get());
 
   // One viewport-filling green quad.
   scoped_refptr<FakePicturePileImpl> green_pile =
@@ -1780,7 +1781,8 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadIdentityScale) {
       pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
   green_quad->SetNew(green_shared_state, viewport, gfx::Rect(), viewport,
                      gfx::RectF(0.f, 0.f, 1.f, 1.f), viewport.size(),
-                     texture_format, viewport, 1.f, green_pile.get());
+                     nearest_neighbor, texture_format, viewport, 1.f,
+                     green_pile.get());
 
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
@@ -1796,6 +1798,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadOpacity) {
   gfx::Size pile_tile_size(1000, 1000);
   gfx::Rect viewport(this->device_viewport_size_);
   ResourceFormat texture_format = RGBA_8888;
+  bool nearest_neighbor = false;
 
   RenderPassId id(1, 1);
   gfx::Transform transform_to_root;
@@ -1818,8 +1821,8 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadOpacity) {
   PictureDrawQuad* green_quad =
       pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
   green_quad->SetNew(green_shared_state, viewport, gfx::Rect(), viewport,
-                     gfx::RectF(0, 0, 1, 1), viewport.size(), texture_format,
-                     viewport, 1.f, green_pile.get());
+                     gfx::RectF(0, 0, 1, 1), viewport.size(), nearest_neighbor,
+                     texture_format, viewport, 1.f, green_pile.get());
 
   // One viewport-filling white quad.
   scoped_refptr<FakePicturePileImpl> white_pile =
@@ -1836,8 +1839,8 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadOpacity) {
   PictureDrawQuad* white_quad =
       pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
   white_quad->SetNew(white_shared_state, viewport, gfx::Rect(), viewport,
-                     gfx::RectF(0, 0, 1, 1), viewport.size(), texture_format,
-                     viewport, 1.f, white_pile.get());
+                     gfx::RectF(0, 0, 1, 1), viewport.size(), nearest_neighbor,
+                     texture_format, viewport, 1.f, white_pile.get());
 
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
@@ -1873,6 +1876,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadDisableImageFiltering) {
   gfx::Size pile_tile_size(1000, 1000);
   gfx::Rect viewport(this->device_viewport_size_);
   ResourceFormat texture_format = RGBA_8888;
+  bool nearest_neighbor = false;
 
   RenderPassId id(1, 1);
   gfx::Transform transform_to_root;
@@ -1903,8 +1907,8 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadDisableImageFiltering) {
 
   PictureDrawQuad* quad = pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
   quad->SetNew(shared_state, viewport, gfx::Rect(), viewport,
-               gfx::RectF(0, 0, 2, 2), viewport.size(), texture_format,
-               viewport, 1.f, pile.get());
+               gfx::RectF(0, 0, 2, 2), viewport.size(), nearest_neighbor,
+               texture_format, viewport, 1.f, pile.get());
 
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
@@ -1917,11 +1921,118 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadDisableImageFiltering) {
       ExactPixelComparator(true)));
 }
 
+// This disables filtering by setting |nearest_neighbor| on the PictureDrawQuad.
+TYPED_TEST(RendererPixelTest, PictureDrawQuadNearestNeighbor) {
+  gfx::Size pile_tile_size(1000, 1000);
+  gfx::Rect viewport(this->device_viewport_size_);
+  ResourceFormat texture_format = RGBA_8888;
+  bool nearest_neighbor = true;
+
+  RenderPassId id(1, 1);
+  gfx::Transform transform_to_root;
+  scoped_ptr<RenderPass> pass =
+      CreateTestRenderPass(id, viewport, transform_to_root);
+
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(2, 2);
+  {
+    SkAutoLockPixels lock(bitmap);
+    SkCanvas canvas(bitmap);
+    canvas.drawPoint(0, 0, SK_ColorGREEN);
+    canvas.drawPoint(0, 1, SK_ColorBLUE);
+    canvas.drawPoint(1, 0, SK_ColorBLUE);
+    canvas.drawPoint(1, 1, SK_ColorGREEN);
+  }
+
+  scoped_refptr<FakePicturePileImpl> pile =
+      FakePicturePileImpl::CreateFilledPile(pile_tile_size, viewport.size());
+  SkPaint paint;
+  paint.setFilterLevel(SkPaint::kLow_FilterLevel);
+  pile->add_draw_bitmap_with_paint(bitmap, gfx::Point(), paint);
+  pile->RerecordPile();
+
+  gfx::Transform content_to_target_transform;
+  SharedQuadState* shared_state = CreateTestSharedQuadState(
+      content_to_target_transform, viewport, pass.get());
+
+  PictureDrawQuad* quad = pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
+  quad->SetNew(shared_state, viewport, gfx::Rect(), viewport,
+               gfx::RectF(0, 0, 2, 2), viewport.size(), nearest_neighbor,
+               texture_format, viewport, 1.f, pile.get());
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      base::FilePath(FILE_PATH_LITERAL("four_blue_green_checkers.png")),
+      ExactPixelComparator(true)));
+}
+
+// This disables filtering by setting |nearest_neighbor| on the TileDrawQuad.
+TYPED_TEST(RendererPixelTest, TileDrawQuadNearestNeighbor) {
+  gfx::Rect viewport(this->device_viewport_size_);
+  bool swizzle_contents = true;
+  bool nearest_neighbor = true;
+
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(2, 2);
+  {
+    SkAutoLockPixels lock(bitmap);
+    SkCanvas canvas(bitmap);
+    canvas.drawPoint(0, 0, SK_ColorGREEN);
+    canvas.drawPoint(0, 1, SK_ColorBLUE);
+    canvas.drawPoint(1, 0, SK_ColorBLUE);
+    canvas.drawPoint(1, 1, SK_ColorGREEN);
+  }
+
+  gfx::Size tile_size(2, 2);
+  ResourceProvider::ResourceId resource =
+      this->resource_provider_->CreateResource(
+          tile_size,
+          GL_CLAMP_TO_EDGE,
+          ResourceProvider::TextureHintImmutable,
+          RGBA_8888);
+
+  {
+    SkAutoLockPixels lock(bitmap);
+    this->resource_provider_->SetPixels(
+        resource,
+        static_cast<uint8_t*>(bitmap.getPixels()),
+        gfx::Rect(tile_size),
+        gfx::Rect(tile_size),
+        gfx::Vector2d());
+  }
+
+  RenderPassId id(1, 1);
+  gfx::Transform transform_to_root;
+  scoped_ptr<RenderPass> pass =
+      CreateTestRenderPass(id, viewport, transform_to_root);
+
+  gfx::Transform content_to_target_transform;
+  SharedQuadState* shared_state = CreateTestSharedQuadState(
+      content_to_target_transform, viewport, pass.get());
+
+  TileDrawQuad* quad = pass->CreateAndAppendDrawQuad<TileDrawQuad>();
+  quad->SetNew(shared_state, viewport, gfx::Rect(), viewport, resource,
+               gfx::Rect(tile_size), tile_size, swizzle_contents,
+               nearest_neighbor);
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      base::FilePath(FILE_PATH_LITERAL("four_blue_green_checkers.png")),
+      ExactPixelComparator(true)));
+}
+
 TYPED_TEST(RendererPixelTest, PictureDrawQuadNonIdentityScale) {
   gfx::Size pile_tile_size(1000, 1000);
   gfx::Rect viewport(this->device_viewport_size_);
   // TODO(enne): the renderer should figure this out on its own.
   ResourceFormat texture_format = RGBA_8888;
+  bool nearest_neighbor = false;
 
   RenderPassId id(1, 1);
   gfx::Transform transform_to_root;
@@ -1954,15 +2065,15 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadNonIdentityScale) {
       pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
   green_quad1->SetNew(top_right_green_shared_quad_state, green_rect1,
                       gfx::Rect(), green_rect1, gfx::RectF(green_rect1.size()),
-                      green_rect1.size(), texture_format, green_rect1, 1.f,
-                      green_pile.get());
+                      green_rect1.size(), nearest_neighbor, texture_format,
+                      green_rect1, 1.f, green_pile.get());
 
   PictureDrawQuad* green_quad2 =
       pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
   green_quad2->SetNew(top_right_green_shared_quad_state, green_rect2,
                       gfx::Rect(), green_rect2, gfx::RectF(green_rect2.size()),
-                      green_rect2.size(), texture_format, green_rect2, 1.f,
-                      green_pile.get());
+                      green_rect2.size(), nearest_neighbor, texture_format,
+                      green_rect2, 1.f, green_pile.get());
 
   // Add a green clipped checkerboard in the bottom right to help test
   // interleaving picture quad content and solid color content.
@@ -2030,7 +2141,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadNonIdentityScale) {
   PictureDrawQuad* blue_quad = pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
   blue_quad->SetNew(blue_shared_state, quad_content_rect, gfx::Rect(),
                     quad_content_rect, gfx::RectF(quad_content_rect),
-                    content_union_rect.size(), texture_format,
+                    content_union_rect.size(), nearest_neighbor, texture_format,
                     content_union_rect, contents_scale, pile.get());
 
   // Fill left half of viewport with green.
@@ -2215,6 +2326,7 @@ TEST_F(GLRendererPixelTest, PictureDrawQuadTexture4444) {
   gfx::Size pile_tile_size(1000, 1000);
   gfx::Rect viewport(this->device_viewport_size_);
   ResourceFormat texture_format = RGBA_4444;
+  bool nearest_neighbor = false;
 
   RenderPassId id(1, 1);
   gfx::Transform transform_to_root;
@@ -2236,7 +2348,8 @@ TEST_F(GLRendererPixelTest, PictureDrawQuadTexture4444) {
   PictureDrawQuad* blue_quad = pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
   blue_quad->SetNew(blue_shared_state, viewport, gfx::Rect(), viewport,
                     gfx::RectF(0.f, 0.f, 1.f, 1.f), viewport.size(),
-                    texture_format, viewport, 1.f, blue_pile.get());
+                    nearest_neighbor, texture_format, viewport, 1.f,
+                    blue_pile.get());
 
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());

@@ -35,4 +35,11 @@ void WebImageLayerImpl::setImageBitmap(const SkBitmap& bitmap) {
   }
 }
 
+void WebImageLayerImpl::setNearestNeighbor(bool nearest_neighbor) {
+  if (WebLayerImpl::UsingPictureLayer()) {
+    static_cast<cc::PictureImageLayer*>(layer_->layer())
+        ->SetNearestNeighbor(nearest_neighbor);
+  }
+}
+
 }  // namespace cc_blink
