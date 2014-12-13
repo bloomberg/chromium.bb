@@ -37,6 +37,12 @@ RenderVTTCue::RenderVTTCue(VTTCueBox* element)
 {
 }
 
+void RenderVTTCue::trace(Visitor* visitor)
+{
+    visitor->trace(m_cue);
+    RenderBlockFlow::trace(visitor);
+}
+
 void RenderVTTCue::layout()
 {
     RenderBlockFlow::layout();

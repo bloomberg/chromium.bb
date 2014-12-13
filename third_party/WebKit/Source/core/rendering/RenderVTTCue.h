@@ -29,6 +29,7 @@
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderInline.h"
 #include "platform/geometry/FloatPoint.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -39,6 +40,7 @@ class RenderVTTCue final : public RenderBlockFlow {
 public:
     explicit RenderVTTCue(VTTCueBox*);
 
+    virtual void trace(Visitor*) override;
 private:
     virtual void layout() override;
 
@@ -55,7 +57,7 @@ private:
     void repositionCueSnapToLinesSet();
     void repositionCueSnapToLinesNotSet();
 
-    VTTCue* m_cue;
+    RawPtrWillBeMember<VTTCue> m_cue;
     FloatPoint m_fallbackPosition;
 };
 
