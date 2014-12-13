@@ -4075,8 +4075,7 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
       length = location + length - offset + kExtraCharsBeforeAndAfterSelection;
       WebRange webrange = WebRange::fromDocumentRange(frame_, offset, length);
       if (!webrange.isNull())
-        text = WebRange::fromDocumentRange(
-            frame_, offset, length).toPlainText();
+        text = webrange.toPlainText();
     } else {
       offset = location;
       text = frame_->selectionAsText();
