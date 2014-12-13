@@ -391,7 +391,7 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
 
   // Wakes up the message pump. Can be called on any thread. The caller is
   // responsible for synchronizing ScheduleWork() calls.
-  void ScheduleWork(bool was_empty);
+  void ScheduleWork();
 
   // Returns the TaskAnnotator which is used to add debug information to posted
   // tasks.

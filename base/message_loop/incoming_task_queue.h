@@ -84,6 +84,14 @@ class BASE_EXPORT IncomingTaskQueue
   // The next sequence number to use for delayed tasks.
   int next_sequence_num_;
 
+  // True if our message loop has already been scheduled and does not need to be
+  // scheduled again until an empty reload occurs.
+  bool message_loop_scheduled_;
+
+  // True if we always need to call ScheduleWork when receiving a new task, even
+  // if the incoming queue was not empty.
+  const bool always_schedule_work_;
+
   DISALLOW_COPY_AND_ASSIGN(IncomingTaskQueue);
 };
 

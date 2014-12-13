@@ -86,18 +86,6 @@ bool enable_histogrammer_ = false;
 
 MessageLoop::MessagePumpFactory* message_pump_for_ui_factory_ = NULL;
 
-// Returns true if MessagePump::ScheduleWork() must be called one
-// time for every task that is added to the MessageLoop incoming queue.
-bool AlwaysNotifyPump(MessageLoop::Type type) {
-#if defined(OS_ANDROID)
-  // The Android UI message loop needs to get notified each time a task is added
-  // to the incoming queue.
-  return type == MessageLoop::TYPE_UI || type == MessageLoop::TYPE_JAVA;
-#else
-  return false;
-#endif
-}
-
 #if defined(OS_IOS)
 typedef MessagePumpIOSForIO MessagePumpForIO;
 #elif defined(OS_NACL_SFI)
@@ -512,9 +500,8 @@ void MessageLoop::ReloadWorkQueue() {
   }
 }
 
-void MessageLoop::ScheduleWork(bool was_empty) {
-  if (was_empty || AlwaysNotifyPump(type_))
-    pump_->ScheduleWork();
+void MessageLoop::ScheduleWork() {
+  pump_->ScheduleWork();
 }
 
 //------------------------------------------------------------------------------

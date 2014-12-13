@@ -6,16 +6,36 @@
 
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 
 namespace base {
 namespace internal {
 
+namespace {
+
+// Returns true if MessagePump::ScheduleWork() must be called one
+// time for every task that is added to the MessageLoop incoming queue.
+bool AlwaysNotifyPump(MessageLoop::Type type) {
+#if defined(OS_ANDROID)
+  // The Android UI message loop needs to get notified each time a task is
+  // added
+  // to the incoming queue.
+  return type == MessageLoop::TYPE_UI || type == MessageLoop::TYPE_JAVA;
+#else
+  return false;
+#endif
+}
+
+}  // namespace
+
 IncomingTaskQueue::IncomingTaskQueue(MessageLoop* message_loop)
     : high_res_task_count_(0),
       message_loop_(message_loop),
-      next_sequence_num_(0) {
+      next_sequence_num_(0),
+      message_loop_scheduled_(false),
+      always_schedule_work_(AlwaysNotifyPump(message_loop_->type())) {
 }
 
 bool IncomingTaskQueue::AddToIncomingQueue(
@@ -56,9 +76,14 @@ int IncomingTaskQueue::ReloadWorkQueue(TaskQueue* work_queue) {
 
   // Acquire all we can from the inter-thread queue with one lock acquisition.
   AutoLock lock(incoming_queue_lock_);
-  if (!incoming_queue_.empty())
+  if (incoming_queue_.empty()) {
+    // If the loop attempts to reload but there are no tasks in the incoming
+    // queue, that means it will go to sleep waiting for more work. If the
+    // incoming queue becomes nonempty we need to schedule it again.
+    message_loop_scheduled_ = false;
+  } else {
     incoming_queue_.Swap(work_queue);
-
+  }
   // Reset the count of high resolution tasks since our queue is now empty.
   int high_res_tasks = high_res_task_count_;
   high_res_task_count_ = 0;
@@ -109,8 +134,16 @@ bool IncomingTaskQueue::PostPendingTask(PendingTask* pending_task) {
   incoming_queue_.push(*pending_task);
   pending_task->task.Reset();
 
-  // Wake up the pump.
-  message_loop_->ScheduleWork(was_empty);
+  if (always_schedule_work_ || (!message_loop_scheduled_ && was_empty)) {
+    // Wake up the message loop.
+    message_loop_->ScheduleWork();
+    // After we've scheduled the message loop, we do not need to do so again
+    // until we know it has processed all of the work in our queue and is
+    // waiting for more work again. The message loop will always attempt to
+    // reload from the incoming queue before waiting again so we clear this flag
+    // in ReloadWorkQueue().
+    message_loop_scheduled_ = true;
+  }
 
   return true;
 }

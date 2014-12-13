@@ -39,7 +39,7 @@ class ScheduleWorkTest : public testing::Test {
     uint64_t schedule_calls = 0u;
     do {
       for (size_t i = 0; i < kBatchSize; ++i) {
-        target_message_loop()->ScheduleWork(true);
+        target_message_loop()->ScheduleWork();
         schedule_calls++;
       }
       now = base::TimeTicks::HighResNow();
