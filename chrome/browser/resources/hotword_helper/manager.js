@@ -14,7 +14,7 @@
  *      component extension.
  *  - Settings for enabling and disabling the hotword extension has moved to
  *      Chrome settings.
- *  - Newtab page is served via chrome://newtab/
+ *  - NewTab page is served via chrome://newtab/
  *
  */
 
