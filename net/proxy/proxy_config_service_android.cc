@@ -98,6 +98,12 @@ void AddBypassRules(const std::string& scheme,
   // by | and that use * as a wildcard. For example, setting the
   // http.nonProxyHosts property to *.android.com|*.kernel.org will cause
   // requests to http://developer.android.com to be made without a proxy.
+
+  // Force localhost to be on the proxy exclusion list;
+  // otherwise all localhost traffic is routed through
+  // the proxy which is not desired.
+  bypass_rules->AddRuleToBypassLocal();
+
   std::string non_proxy_hosts =
       get_property.Run(scheme + ".nonProxyHosts");
   if (non_proxy_hosts.empty())
