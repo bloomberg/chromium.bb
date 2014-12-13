@@ -45,6 +45,7 @@
 #include "platform/TraceEvent.h"
 #include "public/platform/WebThreadedDataReceiver.h"
 #include "wtf/Functional.h"
+#include "wtf/TemporaryChange.h"
 
 namespace blink {
 
@@ -119,6 +120,7 @@ HTMLDocumentParser::HTMLDocumentParser(HTMLDocument& document, bool reportErrors
     , m_tasksWereSuspended(false)
     , m_pumpSessionNestingLevel(0)
     , m_pumpSpeculationsSessionNestingLevel(0)
+    , m_isParsingAtLineNumber(false)
 {
     ASSERT(shouldUseThreading() || (m_token && m_tokenizer));
 }
@@ -402,6 +404,7 @@ void HTMLDocumentParser::discardSpeculationsAndResumeFrom(PassOwnPtr<ParsedChunk
 size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<ParsedChunk> popChunk)
 {
     TRACE_EVENT0("blink", "HTMLDocumentParser::processParsedChunkFromBackgroundParser");
+    TemporaryChange<bool> hasLineNumber(m_isParsingAtLineNumber, true);
 
     ASSERT_WITH_SECURITY_IMPLICATION(document()->activeParserCount() == 1);
     ASSERT(!isParsingFragment());
@@ -475,6 +478,8 @@ size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<Par
     // This leaves "script", "style" and "svg" nodes text nodes intact.
     if (!isStopped())
         m_treeBuilder->flush(FlushIfAtTextLimit);
+
+    m_isParsingAtLineNumber = false;
 
     return elementTokenCount;
 }
@@ -886,6 +891,11 @@ bool HTMLDocumentParser::isExecutingScript() const
     if (!m_scriptRunner)
         return false;
     return m_scriptRunner->isExecutingScript();
+}
+
+bool HTMLDocumentParser::isParsingAtLineNumber() const
+{
+    return m_isParsingAtLineNumber && ScriptableDocumentParser::isParsingAtLineNumber();
 }
 
 OrdinalNumber HTMLDocumentParser::lineNumber() const

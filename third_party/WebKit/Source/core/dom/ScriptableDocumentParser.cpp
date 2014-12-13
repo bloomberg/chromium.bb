@@ -40,4 +40,9 @@ ScriptableDocumentParser::ScriptableDocumentParser(Document& document, ParserCon
         m_parserContentPolicy = allowPluginContent(m_parserContentPolicy);
 }
 
+bool ScriptableDocumentParser::isParsingAtLineNumber() const
+{
+    return isParsing() && !isWaitingForScripts() && !isExecutingScript();
+}
+
 };

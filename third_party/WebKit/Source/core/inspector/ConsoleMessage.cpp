@@ -29,7 +29,6 @@ ConsoleMessage::ConsoleMessage(MessageSource source,
     , m_columnNumber(columnNumber)
     , m_requestIdentifier(0)
     , m_timestamp(WTF::currentTime())
-    , m_async(false)
     , m_workerProxy(nullptr)
 {
 }
@@ -134,16 +133,6 @@ double ConsoleMessage::timestamp() const
 void ConsoleMessage::setTimestamp(double timestamp)
 {
     m_timestamp = timestamp;
-}
-
-bool ConsoleMessage::isAsync() const
-{
-    return m_async;
-}
-
-void ConsoleMessage::markAsAsync()
-{
-    m_async = true;
 }
 
 MessageSource ConsoleMessage::source() const

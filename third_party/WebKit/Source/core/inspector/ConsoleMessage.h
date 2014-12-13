@@ -48,8 +48,6 @@ public:
     void setRequestIdentifier(unsigned long);
     double timestamp() const;
     void setTimestamp(double);
-    bool isAsync() const;
-    void markAsAsync();
     WorkerGlobalScopeProxy* workerGlobalScopeProxy() { return m_workerProxy; }
     void setWorkerGlobalScopeProxy(WorkerGlobalScopeProxy* proxy) { m_workerProxy = proxy; }
 
@@ -81,7 +79,6 @@ private:
     RefPtrWillBeMember<ScriptArguments> m_scriptArguments;
     unsigned long m_requestIdentifier;
     double m_timestamp;
-    bool m_async;
     WorkerGlobalScopeProxy* m_workerProxy;
 };
 

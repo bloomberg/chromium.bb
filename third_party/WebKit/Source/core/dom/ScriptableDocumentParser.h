@@ -45,6 +45,7 @@ public:
     virtual bool isWaitingForScripts() const = 0;
 
     // These are used to expose the current line/column to the scripting system.
+    virtual bool isParsingAtLineNumber() const;
     virtual OrdinalNumber lineNumber() const = 0;
     virtual TextPosition textPosition() const = 0;
 

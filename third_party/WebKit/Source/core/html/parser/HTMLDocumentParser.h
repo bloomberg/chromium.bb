@@ -84,6 +84,7 @@ public:
     HTMLTokenizer* tokenizer() const { return m_tokenizer.get(); }
 
     virtual TextPosition textPosition() const override final;
+    virtual bool isParsingAtLineNumber() const override final;
     virtual OrdinalNumber lineNumber() const override final;
 
     virtual void suspendScheduledTasks() override final;
@@ -203,6 +204,7 @@ private:
     bool m_tasksWereSuspended;
     unsigned m_pumpSessionNestingLevel;
     unsigned m_pumpSpeculationsSessionNestingLevel;
+    bool m_isParsingAtLineNumber;
 };
 
 }
