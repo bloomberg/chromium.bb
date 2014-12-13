@@ -398,7 +398,7 @@ const char kDnsPrefetchDisable[]            = "dns-prefetch-disable";
 const char kDumpBrowserHistograms[]         = "dump-browser-histograms";
 
 // Overrides the path of Easy Unlock component app.
-extern const char kEasyUnlockAppPath[]      = "easy-unlock-app-path";
+const char kEasyUnlockAppPath[]             = "easy-unlock-app-path";
 
 // If set, the app list will be enabled as if enabled from CWS.
 const char kEnableAppList[]                 = "enable-app-list";
