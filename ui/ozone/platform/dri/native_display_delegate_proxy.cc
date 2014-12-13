@@ -95,25 +95,22 @@ void NativeDisplayDelegateProxy::ForceDPMSOn() {
   proxy_->Send(new OzoneGpuMsg_ForceDPMSOn());
 }
 
-std::vector<DisplaySnapshot*> NativeDisplayDelegateProxy::GetDisplays() {
+void NativeDisplayDelegateProxy::GetDisplays(
+    const GetDisplaysCallback& callback) {
   // GetDisplays() is supposed to force a refresh of the display list.
   proxy_->Send(new OzoneGpuMsg_RefreshNativeDisplays(
       std::vector<DisplaySnapshot_Params>()));
-  return displays_.get();
-}
-
-void NativeDisplayDelegateProxy::GetDisplays(
-    const GetDisplaysCallback& callback) {
-  callback.Run(GetDisplays());
+  callback.Run(displays_.get());
 }
 
 void NativeDisplayDelegateProxy::AddMode(const DisplaySnapshot& output,
                                          const DisplayMode* mode) {
 }
 
-bool NativeDisplayDelegateProxy::Configure(const DisplaySnapshot& output,
+void NativeDisplayDelegateProxy::Configure(const DisplaySnapshot& output,
                                            const DisplayMode* mode,
-                                           const gfx::Point& origin) {
+                                           const gfx::Point& origin,
+                                           const ConfigureCallback& callback) {
   // TODO(dnicoara) Should handle an asynchronous response.
   if (mode)
     proxy_->Send(new OzoneGpuMsg_ConfigureNativeDisplay(
@@ -121,14 +118,7 @@ bool NativeDisplayDelegateProxy::Configure(const DisplaySnapshot& output,
   else
     proxy_->Send(new OzoneGpuMsg_DisableNativeDisplay(output.display_id()));
 
-  return true;
-}
-
-void NativeDisplayDelegateProxy::Configure(const DisplaySnapshot& output,
-                                           const DisplayMode* mode,
-                                           const gfx::Point& origin,
-                                           const ConfigureCallback& callback) {
-  callback.Run(Configure(output, mode, origin));
+  callback.Run(true);
 }
 
 void NativeDisplayDelegateProxy::CreateFrameBuffer(const gfx::Size& size) {

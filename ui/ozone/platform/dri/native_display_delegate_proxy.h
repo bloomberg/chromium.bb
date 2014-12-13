@@ -38,12 +38,8 @@ class NativeDisplayDelegateProxy : public NativeDisplayDelegate,
   void SyncWithServer() override;
   void SetBackgroundColor(uint32_t color_argb) override;
   void ForceDPMSOn() override;
-  std::vector<DisplaySnapshot*> GetDisplays() override;
   void GetDisplays(const GetDisplaysCallback& callback) override;
   void AddMode(const DisplaySnapshot& output, const DisplayMode* mode) override;
-  bool Configure(const DisplaySnapshot& output,
-                 const DisplayMode* mode,
-                 const gfx::Point& origin) override;
   void Configure(const DisplaySnapshot& output,
                  const DisplayMode* mode,
                  const gfx::Point& origin,

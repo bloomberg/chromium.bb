@@ -161,7 +161,7 @@ std::vector<DisplaySnapshot*> NativeDisplayDelegateDri::GetDisplays() {
 
 void NativeDisplayDelegateDri::GetDisplays(
     const GetDisplaysCallback& callback) {
-  callback.Run(GetDisplays());
+  NOTREACHED();
 }
 
 void NativeDisplayDelegateDri::AddMode(const DisplaySnapshot& output,
@@ -201,7 +201,7 @@ void NativeDisplayDelegateDri::Configure(const DisplaySnapshot& output,
                                          const DisplayMode* mode,
                                          const gfx::Point& origin,
                                          const ConfigureCallback& callback) {
-  callback.Run(Configure(output, mode, origin));
+  NOTREACHED();
 }
 
 void NativeDisplayDelegateDri::CreateFrameBuffer(const gfx::Size& size) {

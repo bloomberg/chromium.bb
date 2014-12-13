@@ -77,13 +77,9 @@ class DISPLAY_EXPORT NativeDisplayDelegateX11 : public NativeDisplayDelegate {
   virtual void SyncWithServer() override;
   virtual void SetBackgroundColor(uint32_t color_argb) override;
   virtual void ForceDPMSOn() override;
-  virtual std::vector<DisplaySnapshot*> GetDisplays() override;
   virtual void GetDisplays(const GetDisplaysCallback& callback) override;
   virtual void AddMode(const DisplaySnapshot& output,
                        const DisplayMode* mode) override;
-  virtual bool Configure(const DisplaySnapshot& output,
-                         const DisplayMode* mode,
-                         const gfx::Point& origin) override;
   virtual void Configure(const DisplaySnapshot& output,
                          const DisplayMode* mode,
                          const gfx::Point& origin,

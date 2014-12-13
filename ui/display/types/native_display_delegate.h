@@ -58,12 +58,8 @@ class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
   // Enables DPMS and forces it to the "on" state.
   virtual void ForceDPMSOn() = 0;
 
-  // Returns information about the current outputs. This method may block for
-  // 60 milliseconds or more.
-  // NativeDisplayDelegate maintains ownership of the ui::DisplaySnapshot
-  // pointers.
-  virtual std::vector<ui::DisplaySnapshot*> GetDisplays() = 0;
-
+  // Queries for a list of fresh displays and returns them via |callback|.
+  // Note the query operation may be expensive and take over 60 milliseconds.
   virtual void GetDisplays(const GetDisplaysCallback& callback) = 0;
 
   // Adds |mode| to |output|. |mode| must be a valid display mode pointer.
@@ -72,11 +68,8 @@ class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
 
   // Configures the display represented by |output| to use |mode| and positions
   // the display to |origin| in the framebuffer. |mode| can be NULL, which
-  // represents disabling the display. Returns true on success.
-  virtual bool Configure(const ui::DisplaySnapshot& output,
-                         const ui::DisplayMode* mode,
-                         const gfx::Point& origin) = 0;
-
+  // represents disabling the display. The callback will return the status of
+  // the operation.
   virtual void Configure(const ui::DisplaySnapshot& output,
                          const ui::DisplayMode* mode,
                          const gfx::Point& origin,

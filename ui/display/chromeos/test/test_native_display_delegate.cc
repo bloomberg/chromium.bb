@@ -56,18 +56,13 @@ void TestNativeDisplayDelegate::ForceDPMSOn() {
   log_->AppendAction(kForceDPMS);
 }
 
-std::vector<DisplaySnapshot*> TestNativeDisplayDelegate::GetDisplays() {
-  return outputs_;
-}
-
 void TestNativeDisplayDelegate::GetDisplays(
     const GetDisplaysCallback& callback) {
-  auto result = GetDisplays();
   if (run_async_) {
     base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::Bind(callback, result));
+                                           base::Bind(callback, outputs_));
   } else {
-    callback.Run(result);
+    callback.Run(outputs_);
   }
 }
 

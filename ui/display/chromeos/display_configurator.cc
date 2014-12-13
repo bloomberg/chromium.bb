@@ -500,12 +500,8 @@ void DisplayConfigurator::TakeControl() {
     return;
 
   display_externally_controlled_ = false;
-
-  for (DisplayStateList::const_iterator it = cached_displays_.begin();
-       it != cached_displays_.end(); ++it) {
-    native_display_delegate_->Configure(*(it->display), it->selected_mode,
-                                        it->display->origin());
-  }
+  force_configure_ = true;
+  RunPendingConfiguration();
 }
 
 void DisplayConfigurator::RelinquishControl() {

@@ -52,25 +52,14 @@ void NativeDisplayDelegateOzone::ForceDPMSOn() {
   NOTIMPLEMENTED();
 }
 
-std::vector<ui::DisplaySnapshot*> NativeDisplayDelegateOzone::GetDisplays() {
-  return displays_.get();
-}
-
 void NativeDisplayDelegateOzone::GetDisplays(
     const GetDisplaysCallback& callback) {
-  callback.Run(GetDisplays());
+  callback.Run(displays_.get());
 }
 
 void NativeDisplayDelegateOzone::AddMode(const ui::DisplaySnapshot& output,
                                          const ui::DisplayMode* mode) {
   NOTIMPLEMENTED();
-}
-
-bool NativeDisplayDelegateOzone::Configure(const ui::DisplaySnapshot& output,
-                                           const ui::DisplayMode* mode,
-                                           const gfx::Point& origin) {
-  NOTIMPLEMENTED();
-  return true;
 }
 
 void NativeDisplayDelegateOzone::Configure(const ui::DisplaySnapshot& output,

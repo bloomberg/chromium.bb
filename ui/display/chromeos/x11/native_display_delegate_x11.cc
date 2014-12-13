@@ -171,7 +171,8 @@ void NativeDisplayDelegateX11::ForceDPMSOn() {
   CHECK(DPMSForceLevel(display_, DPMSModeOn));
 }
 
-std::vector<DisplaySnapshot*> NativeDisplayDelegateX11::GetDisplays() {
+void NativeDisplayDelegateX11::GetDisplays(
+    const GetDisplaysCallback& callback) {
   CHECK(screen_) << "Server not grabbed";
 
   cached_outputs_.clear();
@@ -189,12 +190,7 @@ std::vector<DisplaySnapshot*> NativeDisplayDelegateX11::GetDisplays() {
     XRRFreeOutputInfo(output_info);
   }
 
-  return cached_outputs_.get();
-}
-
-void NativeDisplayDelegateX11::GetDisplays(
-    const GetDisplaysCallback& callback) {
-  callback.Run(GetDisplays());
+  callback.Run(cached_outputs_.get());
 }
 
 void NativeDisplayDelegateX11::AddMode(const DisplaySnapshot& output,
@@ -211,24 +207,18 @@ void NativeDisplayDelegateX11::AddMode(const DisplaySnapshot& output,
   XRRAddOutputMode(display_, x11_output.output(), mode_id);
 }
 
-bool NativeDisplayDelegateX11::Configure(const DisplaySnapshot& output,
+void NativeDisplayDelegateX11::Configure(const DisplaySnapshot& output,
                                          const DisplayMode* mode,
-                                         const gfx::Point& origin) {
+                                         const gfx::Point& origin,
+                                         const ConfigureCallback& callback) {
   const DisplaySnapshotX11& x11_output =
       static_cast<const DisplaySnapshotX11&>(output);
   RRMode mode_id = None;
   if (mode)
     mode_id = static_cast<const DisplayModeX11*>(mode)->mode_id();
 
-  return ConfigureCrtc(
-      x11_output.crtc(), mode_id, x11_output.output(), origin.x(), origin.y());
-}
-
-void NativeDisplayDelegateX11::Configure(const DisplaySnapshot& output,
-                                         const DisplayMode* mode,
-                                         const gfx::Point& origin,
-                                         const ConfigureCallback& callback) {
-  callback.Run(Configure(output, mode, origin));
+  callback.Run(ConfigureCrtc(x11_output.crtc(), mode_id, x11_output.output(),
+                             origin.x(), origin.y()));
 }
 
 bool NativeDisplayDelegateX11::ConfigureCrtc(RRCrtc crtc,

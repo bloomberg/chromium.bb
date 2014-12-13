@@ -1175,12 +1175,13 @@ TEST_F(DisplayConfiguratorTest, ExternalControl) {
           NULL),
       log_->GetActionsAndClear());
   configurator_.TakeControl();
-  EXPECT_EQ(
-      JoinActions(
-          kTakeDisplayControl,
-          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
-          NULL),
-      log_->GetActionsAndClear());
+  EXPECT_EQ(JoinActions(kTakeDisplayControl, kGrab,
+                        GetFramebufferAction(small_mode_.size(), &outputs_[0],
+                                             nullptr).c_str(),
+                        GetCrtcAction(outputs_[0], &small_mode_,
+                                      gfx::Point(0, 0)).c_str(),
+                        kUngrab, NULL),
+            log_->GetActionsAndClear());
 }
 
 }  // namespace test

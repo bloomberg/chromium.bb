@@ -27,6 +27,11 @@ class NativeDisplayDelegateDri : public NativeDisplayDelegate {
                                      bool is_interlaced,
                                      float refresh_rate);
 
+  std::vector<DisplaySnapshot*> GetDisplays();
+  bool Configure(const DisplaySnapshot& output,
+                 const DisplayMode* mode,
+                 const gfx::Point& origin);
+
   // NativeDisplayDelegate overrides:
   void Initialize() override;
   void GrabServer() override;
@@ -36,12 +41,8 @@ class NativeDisplayDelegateDri : public NativeDisplayDelegate {
   void SyncWithServer() override;
   void SetBackgroundColor(uint32_t color_argb) override;
   void ForceDPMSOn() override;
-  std::vector<DisplaySnapshot*> GetDisplays() override;
   void GetDisplays(const GetDisplaysCallback& callback) override;
   void AddMode(const DisplaySnapshot& output, const DisplayMode* mode) override;
-  bool Configure(const DisplaySnapshot& output,
-                 const DisplayMode* mode,
-                 const gfx::Point& origin) override;
   void Configure(const DisplaySnapshot& output,
                  const DisplayMode* mode,
                  const gfx::Point& origin,

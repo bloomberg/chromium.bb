@@ -25,13 +25,9 @@ class NativeDisplayDelegateOzone : public NativeDisplayDelegate {
   void SyncWithServer() override;
   void SetBackgroundColor(uint32_t color_argb) override;
   void ForceDPMSOn() override;
-  std::vector<ui::DisplaySnapshot*> GetDisplays() override;
   void GetDisplays(const GetDisplaysCallback& callback) override;
   void AddMode(const ui::DisplaySnapshot& output,
                const ui::DisplayMode* mode) override;
-  bool Configure(const ui::DisplaySnapshot& output,
-                 const ui::DisplayMode* mode,
-                 const gfx::Point& origin) override;
   void Configure(const ui::DisplaySnapshot& output,
                  const ui::DisplayMode* mode,
                  const gfx::Point& origin,
