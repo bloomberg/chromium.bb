@@ -15272,7 +15272,7 @@ Do you accept?
         Say "Ok Google" when your screen is on and unlocked
       </message>
       <message name="IDS_HOTWORD_OPT_IN_INTRO_DESCRIPTION" desc="Description explaining the steps required to continue through the hotword opt-in process.">
-        To make this happen, you'll need to enable Voice and Audio Activity and train your Chromebook in the following steps.
+        To make this happen, you'll need to enable Voice &amp; Audio Activity and train your Chromebook in the following steps.
       </message>
       <message name="IDS_HOTWORD_OPT_IN_INTRO_DESCRIPTION_AUDIO_HISTORY_ENABLED" desc="Description explaining the steps required to continue through the hotword opt-in process.">
         To make this happen, you'll need to train your Chromebook in the following step.
