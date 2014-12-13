@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
+#include "base/test/test_io_thread.h"
 #include "device/hid/hid_connection.h"
 #include "device/hid/hid_service.h"
 #include "device/test/usb_test_gadget.h"
@@ -21,6 +22,20 @@ namespace device {
 namespace {
 
 using net::IOBufferWithSize;
+
+void ClaimTestDevice(scoped_ptr<UsbTestGadget>* gadget) {
+  base::MessageLoop::ScopedNestableTaskAllower allow(
+      base::MessageLoop::current());
+  *gadget = UsbTestGadget::Claim();
+  ASSERT_TRUE(*gadget);
+  ASSERT_TRUE((*gadget)->SetType(UsbTestGadget::HID_ECHO));
+}
+
+void UnclaimTestDevice(scoped_ptr<UsbTestGadget> gadget) {
+  base::MessageLoop::ScopedNestableTaskAllower allow(
+      base::MessageLoop::current());
+  ASSERT_TRUE(gadget->Unclaim());
+}
 
 // Helper class that can be used to block until a HID device with a particular
 // serial number is available. Example usage:
@@ -146,20 +161,31 @@ class HidConnectionTest : public testing::Test {
   void SetUp() override {
     if (!UsbTestGadget::IsTestEnabled()) return;
 
-    message_loop_.reset(new base::MessageLoopForIO());
-    service_ = HidService::GetInstance(message_loop_->message_loop_proxy());
+    message_loop_.reset(new base::MessageLoopForUI());
+    io_thread_.reset(new base::TestIOThread(base::TestIOThread::kAutoStart));
+
+    service_ = HidService::GetInstance(io_thread_->task_runner());
     ASSERT_TRUE(service_);
 
-    test_gadget_ = UsbTestGadget::Claim();
+    io_thread_->PostTaskAndWait(FROM_HERE,
+                                base::Bind(&ClaimTestDevice, &test_gadget_));
     ASSERT_TRUE(test_gadget_);
-    ASSERT_TRUE(test_gadget_->SetType(UsbTestGadget::HID_ECHO));
 
     DeviceCatcher device_catcher(test_gadget_->GetSerialNumber());
     device_id_ = device_catcher.WaitForDevice();
     ASSERT_NE(device_id_, kInvalidHidDeviceId);
   }
 
-  scoped_ptr<base::MessageLoopForIO> message_loop_;
+  void TearDown() override {
+    if (io_thread_) {
+      io_thread_->PostTaskAndWait(
+          FROM_HERE,
+          base::Bind(&UnclaimTestDevice, base::Passed(&test_gadget_)));
+    }
+  }
+
+  scoped_ptr<base::MessageLoopForUI> message_loop_;
+  scoped_ptr<base::TestIOThread> io_thread_;
   HidService* service_;
   scoped_ptr<UsbTestGadget> test_gadget_;
   HidDeviceId device_id_;

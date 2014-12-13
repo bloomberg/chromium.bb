@@ -35,7 +35,7 @@ class UsbTestGadget {
   virtual bool SetType(Type type) = 0;
 
   virtual UsbDevice* GetDevice() const = 0;
-  virtual std::string GetSerialNumber() const = 0;
+  virtual const std::string& GetSerialNumber() const = 0;
 
  protected:
   UsbTestGadget() {}

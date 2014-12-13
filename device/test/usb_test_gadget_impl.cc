@@ -71,7 +71,7 @@ class UsbTestGadgetImpl : public UsbTestGadget {
   bool Reconnect() override;
   bool SetType(Type type) override;
   UsbDevice* GetDevice() const override;
-  std::string GetSerialNumber() const override;
+  const std::string& GetSerialNumber() const override;
 
  protected:
   UsbTestGadgetImpl();
@@ -166,7 +166,7 @@ UsbDevice* UsbTestGadgetImpl::GetDevice() const {
   return device_.get();
 }
 
-std::string UsbTestGadgetImpl::GetSerialNumber() const {
+const std::string& UsbTestGadgetImpl::GetSerialNumber() const {
   return device_address_;
 }
 
@@ -176,10 +176,8 @@ scoped_ptr<net::URLFetcher> UsbTestGadgetImpl::CreateURLFetcher(
   scoped_ptr<net::URLFetcher> url_fetcher(
       net::URLFetcher::Create(url, request_type, delegate));
 
-  url_fetcher->SetRequestContext(
-      new net::TrivialURLRequestContextGetter(
-          request_context_.get(),
-          base::MessageLoop::current()->message_loop_proxy()));
+  url_fetcher->SetRequestContext(new net::TrivialURLRequestContextGetter(
+      request_context_.get(), base::MessageLoop::current()->task_runner()));
 
   return url_fetcher;
 }
@@ -426,6 +424,8 @@ bool UsbTestGadgetImpl::Unclaim() {
     LOG(ERROR) << "Unexpected HTTP " << response_code << " from /unclaim.";
     return false;
   }
+
+  device_address_.clear();
   return true;
 }
 

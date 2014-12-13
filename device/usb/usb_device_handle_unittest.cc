@@ -81,6 +81,8 @@ TEST_F(UsbDeviceHandleTest, InterruptTransfer) {
     return;
   }
 
+  ASSERT_TRUE(handle_->ClaimInterface(0));
+
   scoped_refptr<net::IOBufferWithSize> in_buffer(new net::IOBufferWithSize(64));
   TestCompletionCallback in_completion;
   handle_->InterruptTransfer(USB_DIRECTION_INBOUND,
@@ -105,15 +107,15 @@ TEST_F(UsbDeviceHandleTest, InterruptTransfer) {
                              out_completion.callback());
   out_completion.WaitForResult();
   ASSERT_EQ(USB_TRANSFER_COMPLETED, out_completion.status());
-  ASSERT_EQ(static_cast<size_t>(out_buffer->size()),
+  EXPECT_EQ(static_cast<size_t>(out_buffer->size()),
             out_completion.transferred());
 
   in_completion.WaitForResult();
   ASSERT_EQ(USB_TRANSFER_COMPLETED, in_completion.status());
-  ASSERT_EQ(static_cast<size_t>(in_buffer->size()),
+  EXPECT_EQ(static_cast<size_t>(in_buffer->size()),
             in_completion.transferred());
-  for (int i = 0; i < in_buffer->size(); ++i) {
-    ASSERT_EQ(out_buffer->data()[i], in_buffer->data()[i]);
+  for (size_t i = 0; i < in_completion.transferred(); ++i) {
+    EXPECT_EQ(out_buffer->data()[i], in_buffer->data()[i]);
   }
 }
 
@@ -122,12 +124,12 @@ TEST_F(UsbDeviceHandleTest, BulkTransfer) {
     return;
   }
 
+  ASSERT_TRUE(handle_->ClaimInterface(1));
+
   scoped_refptr<net::IOBufferWithSize> in_buffer(
       new net::IOBufferWithSize(512));
   TestCompletionCallback in_completion;
-  handle_->BulkTransfer(USB_DIRECTION_INBOUND,
-                        0x81,
-                        in_buffer.get(),
+  handle_->BulkTransfer(USB_DIRECTION_INBOUND, 0x82, in_buffer.get(),
                         in_buffer->size(),
                         5000,  // 5 second timeout
                         in_completion.callback());
@@ -139,23 +141,21 @@ TEST_F(UsbDeviceHandleTest, BulkTransfer) {
     out_buffer->data()[i] = i;
   }
 
-  handle_->BulkTransfer(USB_DIRECTION_OUTBOUND,
-                        0x01,
-                        out_buffer.get(),
+  handle_->BulkTransfer(USB_DIRECTION_OUTBOUND, 0x02, out_buffer.get(),
                         out_buffer->size(),
                         5000,  // 5 second timeout
                         out_completion.callback());
   out_completion.WaitForResult();
   ASSERT_EQ(USB_TRANSFER_COMPLETED, out_completion.status());
-  ASSERT_EQ(static_cast<size_t>(out_buffer->size()),
+  EXPECT_EQ(static_cast<size_t>(out_buffer->size()),
             out_completion.transferred());
 
   in_completion.WaitForResult();
   ASSERT_EQ(USB_TRANSFER_COMPLETED, in_completion.status());
-  ASSERT_EQ(static_cast<size_t>(in_buffer->size()),
+  EXPECT_EQ(static_cast<size_t>(in_buffer->size()),
             in_completion.transferred());
-  for (int i = 0; i < in_buffer->size(); ++i) {
-    ASSERT_EQ(out_buffer->data()[i], in_buffer->data()[i]);
+  for (size_t i = 0; i < in_completion.transferred(); ++i) {
+    EXPECT_EQ(out_buffer->data()[i], in_buffer->data()[i]);
   }
 }
 
