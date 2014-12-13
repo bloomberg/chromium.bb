@@ -12,6 +12,7 @@
 #include <delayimp.h>
 
 #include "base/files/file_path.h"
+#include "media/ffmpeg/ffmpeg_common.h"
 
 #pragma comment(lib, "delayimp.lib")
 
@@ -31,8 +32,20 @@ bool InitializeMediaLibraryInternal(const base::FilePath& module_dir) {
       module_dir.AppendASCII(kFFmpegDLL).value().c_str(), NULL,
       LOAD_WITH_ALTERED_SEARCH_PATH);
 
-  // Check that we loaded the library successfully.
-  return lib != NULL;
+  bool initialized = (lib != NULL);
+
+  // TODO(scherkus): Remove all the bool-ness from these functions as we no
+  // longer support disabling HTML5 media at runtime. http://crbug.com/440892
+  CHECK(initialized);
+
+  // VS2013 has a bug where FMA3 instructions will be executed on CPUs that
+  // support them despite them being disabled at the OS level, causing illegal
+  // instruction exceptions. Because Web Audio's FFT code *might* run before
+  // HTML5 media code, call av_log_set_level() to force library initialziation.
+  // See http://crbug.com/440892 for details.
+  av_log_set_level(AV_LOG_QUIET);
+
+  return initialized;
 }
 
 }  // namespace internal
