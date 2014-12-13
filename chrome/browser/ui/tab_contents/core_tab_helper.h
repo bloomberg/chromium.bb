@@ -64,7 +64,7 @@ class CoreTabHelper : public content::WebContentsObserver,
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
 
-  void OnRequestThumbnailForContextNodeACK(const SkBitmap& bitmap,
+  void OnRequestThumbnailForContextNodeACK(const std::string& thumbnail_data,
                                            const gfx::Size& original_size);
 
   // Delegate for notifying our owner about stuff. Not owned by us.

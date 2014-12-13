@@ -337,8 +337,10 @@ IPC_MESSAGE_ROUTED3(ChromeViewMsg_UpdateTopControlsState,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetWindowFeatures,
                     blink::WebWindowFeatures /* window_features */)
 
+// Responds to the request for a thumbnail.
+// Thumbnail data will be empty is a thumbnail could not be produced.
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_RequestThumbnailForContextNode_ACK,
-                    SkBitmap /* thumbnail */,
+                    std::string /* JPEG-encoded thumbnail data */,
                     gfx::Size /* original size of the image */)
 
 // Requests application info for the page. The renderer responds back with

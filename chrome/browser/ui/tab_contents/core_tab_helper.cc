@@ -26,9 +26,7 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/load_states.h"
 #include "net/http/http_request_headers.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/codec/jpeg_codec.h"
 
 using content::WebContents;
 
@@ -202,10 +200,11 @@ bool CoreTabHelper::OnMessageReceived(
 // Handles the image thumbnail for the context node, composes a image search
 // request based on the received thumbnail and opens the request in a new tab.
 void CoreTabHelper::OnRequestThumbnailForContextNodeACK(
-    const SkBitmap& bitmap,
+    const std::string& thumbnail_data,
     const gfx::Size& original_size) {
-  if (bitmap.isNull())
+  if (thumbnail_data.empty())
     return;
+
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 
@@ -218,18 +217,9 @@ void CoreTabHelper::OnRequestThumbnailForContextNodeACK(
   if (!default_provider)
     return;
 
-  const int kDefaultQualityForImageSearch = 90;
-  std::vector<unsigned char> data;
-  if (!gfx::JPEGCodec::Encode(
-      reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
-      gfx::JPEGCodec::FORMAT_SkBitmap, bitmap.width(), bitmap.height(),
-      static_cast<int>(bitmap.rowBytes()), kDefaultQualityForImageSearch,
-      &data))
-    return;
-
   TemplateURLRef::SearchTermsArgs search_args =
       TemplateURLRef::SearchTermsArgs(base::string16());
-  search_args.image_thumbnail_content = std::string(data.begin(), data.end());
+  search_args.image_thumbnail_content = thumbnail_data;
   // TODO(jnd): Add a method in WebContentsViewDelegate to get the image URL
   // from the ContextMenuParams which creates current context menu.
   search_args.image_url = GURL();

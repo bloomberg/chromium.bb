@@ -4,6 +4,10 @@
 
 #include "chrome/renderer/chrome_render_frame_observer.h"
 
+#include <limits>
+#include <string>
+#include <vector>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/print_messages.h"
@@ -12,10 +16,11 @@
 #include "chrome/renderer/printing/print_web_view_helper.h"
 #include "content/public/renderer/render_frame.h"
 #include "skia/ext/image_operations.h"
-#include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebNode.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/codec/jpeg_codec.h"
 
 using blink::WebElement;
 using blink::WebNode;
@@ -117,8 +122,27 @@ void ChromeRenderFrameObserver::OnRequestThumbnailForContextNode(
                           thumbnail_min_area_pixels,
                           thumbnail_max_size_pixels);
   }
+
+  SkBitmap bitmap;
+  if (thumbnail.colorType() == kN32_SkColorType)
+    bitmap = thumbnail;
+  else
+    thumbnail.copyTo(&bitmap, kN32_SkColorType);
+
+  std::string thumbnail_data;
+  SkAutoLockPixels lock(bitmap);
+  if (bitmap.getPixels()) {
+    const int kDefaultQuality = 90;
+    std::vector<unsigned char> data;
+    if (gfx::JPEGCodec::Encode(
+            reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
+            gfx::JPEGCodec::FORMAT_SkBitmap, bitmap.width(), bitmap.height(),
+            static_cast<int>(bitmap.rowBytes()), kDefaultQuality, &data))
+      thumbnail_data = std::string(data.begin(), data.end());
+  }
+
   Send(new ChromeViewHostMsg_RequestThumbnailForContextNode_ACK(
-      routing_id(), thumbnail, original_size));
+      routing_id(), thumbnail_data, original_size));
 }
 
 void ChromeRenderFrameObserver::OnPrintNodeUnderContextMenu() {
