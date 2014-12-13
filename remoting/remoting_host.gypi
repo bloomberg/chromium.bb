@@ -133,6 +133,21 @@
               'dependencies': [
                 '../third_party/google_toolbox_for_mac/google_toolbox_for_mac.gyp:google_toolbox_for_mac',
               ],
+              'variables': {
+                # Include internal_mac-inl.h only if it exists.
+                'use_remoting_macosx_internal%':
+                  '<!(python -c "import os; print 1 if os.path.exists(\'tools/internal/internal_mac-inl.h\') else 0")'
+              },
+              'conditions': [
+                ['use_remoting_macosx_internal==1', {
+                  'sources': [
+                    'internal/internal_mac-inl.h'
+                  ],
+                  'defines': [
+                    'USE_REMOTING_MACOSX_INTERNAL'
+                  ]
+                }]
+              ],
               'link_settings': {
                 'libraries': [
                   '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',

@@ -104,6 +104,10 @@
 using remoting::protocol::PairingRegistry;
 using remoting::protocol::NetworkSettings;
 
+#if defined(USE_REMOTING_MACOSX_INTERNAL)
+#include "remoting/tools/internal/internal_mac-inl.h"
+#endif
+
 namespace {
 
 // This is used for tagging system event logs.
