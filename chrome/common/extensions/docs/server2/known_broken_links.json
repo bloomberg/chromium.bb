@@ -1092,12 +1092,6 @@
   [
     302,
     "apps/private_apis.html",
-    "apps/scriptBadge.html",
-    "redirects to /extensions/scriptBadge.html"
-  ],
-  [
-    302,
-    "apps/private_apis.html",
     "apps/sessions.html",
     "redirects to /extensions/sessions.html"
   ],

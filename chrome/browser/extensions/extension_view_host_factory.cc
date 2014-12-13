@@ -80,9 +80,6 @@ const Extension* GetExtensionForUrl(Profile* profile, const GURL& url) {
   if (!registry)
     return NULL;
   std::string extension_id = url.host();
-  if (url.SchemeIs(content::kChromeUIScheme) &&
-      url.host() == chrome::kChromeUIExtensionInfoHost)
-    extension_id = url.path().substr(1);
   return registry->enabled_extensions().GetByID(extension_id);
 }
 

@@ -237,10 +237,6 @@
       "extension", "legacy_packaged_app", "hosted_app", "platform_app"
     ]
   },
-  "script_badge": {
-    "channel": "trunk",
-    "extension_types": ["extension"]
-  },
   "short_name": {
     "channel": "stable",
     "extension_types": "all"

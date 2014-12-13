@@ -596,10 +596,6 @@
     "dependencies": ["permission:rtcPrivate"],
     "contexts": ["blessed_extension"]
   },
-  "scriptBadge": {
-    "dependencies": ["manifest:script_badge"],
-    "contexts": ["blessed_extension"]
-  },
   "sessions": {
     "dependencies": ["permission:sessions"],
     "contexts": ["blessed_extension"]

@@ -285,9 +285,6 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   // Make Mac behavior the same with Windows and others.
   if (gPopup) {
     std::string extension_id = url.host();
-    if (url.SchemeIs(content::kChromeUIScheme) &&
-        url.host() == chrome::kChromeUIExtensionInfoHost)
-      extension_id = url.path().substr(1);
     extensions::ExtensionViewHost* host = [gPopup extensionViewHost];
     if (extension_id == host->extension_id()) {
       [gPopup close];

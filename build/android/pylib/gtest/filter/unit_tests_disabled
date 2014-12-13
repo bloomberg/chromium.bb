@@ -67,7 +67,6 @@ PageActionControllerTest.*
 PermissionsUpdaterTest.*
 ImageLoaderTest.*
 ImageLoadingTrackerTest.*
-ScriptBadgeControllerTest.*
 ExtensionSettingsFrontendTest.*
 ExtensionSettingsSyncTest.*
 ExtensionUpdaterTest.*

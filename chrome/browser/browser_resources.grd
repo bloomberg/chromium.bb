@@ -143,9 +143,6 @@
           <include name="IDR_EXTENSIONS_INFOBAR_CSS" file="resources\extensions_infobar.css" flattenhtml="true" type="BINDATA" />
         </if>
         <include name="IDR_EXTENSION_LIST_JS" file="resources\extensions\extension_list.js" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_EXTENSION_INFO_CSS" file="resources\extensions\extension_info.css" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_EXTENSION_INFO_HTML" file="resources\extensions\extension_info.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_EXTENSION_INFO_JS" file="resources\extensions\extension_info.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_EXTENSIONS_JS" file="resources\extensions\extensions.js" flattenhtml="true" type="BINDATA" />
       </if>
       <include name="IDR_FEEDBACK_MANIFEST" file="resources\feedback\manifest.json" type="BINDATA" />

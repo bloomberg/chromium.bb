@@ -304,8 +304,6 @@ void ChromeExtensionsClient::RegisterAPISchemaResources(
   api->RegisterSchemaResource("privacy", IDR_EXTENSION_API_JSON_PRIVACY);
   api->RegisterSchemaResource("processes", IDR_EXTENSION_API_JSON_PROCESSES);
   api->RegisterSchemaResource("proxy", IDR_EXTENSION_API_JSON_PROXY);
-  api->RegisterSchemaResource("scriptBadge",
-                              IDR_EXTENSION_API_JSON_SCRIPTBADGE);
   api->RegisterSchemaResource("ttsEngine", IDR_EXTENSION_API_JSON_TTSENGINE);
   api->RegisterSchemaResource("tts", IDR_EXTENSION_API_JSON_TTS);
   api->RegisterSchemaResource("types", IDR_EXTENSION_API_JSON_TYPES);

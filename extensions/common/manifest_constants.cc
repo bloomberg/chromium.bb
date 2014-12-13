@@ -127,7 +127,6 @@ const char kRequirements[] = "requirements";
 const char kRunAt[] = "run_at";
 const char kSandboxedPages[] = "sandbox.pages";
 const char kSandboxedPagesCSP[] = "sandbox.content_security_policy";
-const char kScriptBadge[] = "script_badge";
 const char kSettingsOverride[] = "chrome_settings_overrides";
 const char kSettingsOverrideAlternateUrls[] =
     "chrome_settings_overrides.search_provider.alternate_urls";
@@ -225,7 +224,6 @@ const char kRunAtDocumentIdle[] = "document_idle";
 const char kPageActionCommandEvent[] = "_execute_page_action";
 const char kPageActionTypeTab[] = "tab";
 const char kPageActionTypePermanent[] = "permanent";
-const char kScriptBadgeCommandEvent[] = "_execute_script_badge";
 const char kLaunchContainerPanel[] = "panel";
 const char kLaunchContainerTab[] = "tab";
 const char kLaunchContainerWindow[] = "window";
@@ -544,8 +542,6 @@ const char kInvalidSandboxedPage[] =
     "Invalid value for 'sandbox.pages[*]'.";
 const char kInvalidSandboxedPagesCSP[] =
     "Invalid value for 'sandbox.content_security_policy'.";
-const char kInvalidScriptBadge[] =
-    "Invalid value for 'script_badge'.";
 const char kInvalidSearchEngineMissingKeys[] =
     "Missing mandatory parameters for "
     "'chrome_settings_overrides.search_provider'.";
@@ -686,14 +682,6 @@ const char kPermissionUnknownOrMalformed[] =
     "Permission '*' is unknown or URL pattern is malformed.";
 const char kReservedMessageFound[] =
     "Reserved key * found in message catalog.";
-const char kScriptBadgeRequiresFlag[] =
-    "The script_badge manifest key is turned off by default. "
-    "You can enable it with the --enable-script-badges command-line flag.";
-const char kScriptBadgeIconIgnored[] =
-    "default_icon specified in script_badge manifest section will not be used.";
-const char kScriptBadgeTitleIgnored[] =
-    "default_title specified in script_badge manifest section will not be "
-    "used.";
 const char kUnrecognizedManifestKey[] = "Unrecognized manifest key '*'.";
 const char kUnrecognizedManifestProperty[] =
     "Unrecognized property '*' of manifest key '*'.";
