@@ -262,18 +262,16 @@
                 },
                 {
                     exception: 'NotSupportedError',
-                    func: function(mk14, _, initData) { return mk14.createSession().generateRequest('video/foo', initData); }
+                    func: function(mk14, _, initData) { return mk14.createSession().generateRequest('video/webm', initData); }
                 },
                 {
                     exception: 'NotSupportedError',
-                    func: function(mk15, _, initData) { return mk15.createSession().generateRequest('text/webm', initData); }
+                    func: function(mk15, _, initData) { return mk15.createSession().generateRequest('video/mp4', initData); }
+                },
+                {
+                    exception: 'NotSupportedError',
+                    func: function(mk16, _, initData) { return mk16.createSession().generateRequest('video/cenc', initData); }
                 }
-                // FIXME: Enable when switching to initDataType from MIME type.
-                // http://crbug.com/385874.
-                // {
-                //     exception: 'NotSupportedError',
-                //     func: function(mk16, _, initData) { return mk16.createSession('video/webm', initData); }
-                // }
             ];
 
             var kTypeSpecificGenerateRequestExceptionsTestCases = [

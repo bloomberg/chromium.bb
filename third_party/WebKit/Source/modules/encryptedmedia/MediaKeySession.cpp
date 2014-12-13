@@ -73,17 +73,23 @@ static bool isKeySystemSupportedWithInitDataType(const String& keySystem, const 
 {
     ASSERT(!keySystem.isEmpty());
 
-    // FIXME: initDataType != contentType. Implement this properly.
-    // http://crbug.com/385874.
-    String contentType = initDataType;
+    // FIXME: Replace the isSupportedEncryptedMediaMIMEType() call with an
+    // explicit initDataType check. For now, we must convert an explicit set of
+    // initDataTypes to the correct MIME type. http://crbug.com/385874.
+    String contentType;
     if (initDataType == "webm") {
         contentType = "video/webm";
     } else if (initDataType == "cenc") {
         contentType = "video/mp4";
+    } else if (initDataType == "keyids") {
+        contentType = initDataType; // This will fail.
+    } else {
+        // Until the call below correctly handles initDataTypes, we must reject
+        // everything else, including the MIME types it accepts.
+        return false;
     }
 
-    ContentType type(contentType);
-    return MIMETypeRegistry::isSupportedEncryptedMediaMIMEType(keySystem, type.type(), type.parameter("codecs"));
+    return MIMETypeRegistry::isSupportedEncryptedMediaMIMEType(keySystem, contentType, "");
 }
 
 // Checks that |sessionId| looks correct and returns whether all checks pass.
