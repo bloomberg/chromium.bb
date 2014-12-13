@@ -44,22 +44,17 @@ IN_PROC_BROWSER_TEST_F(CloudPrintPolicyTest, NormalPassedFlag) {
       chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
 
-  base::ProcessHandle handle;
-  bool launched =
-      base::LaunchProcess(new_command_line, base::LaunchOptionsForTest(),
-          &handle);
-  EXPECT_TRUE(launched);
+  base::Process process =
+      base::LaunchProcess(new_command_line, base::LaunchOptionsForTest());
+  EXPECT_TRUE(process.IsValid());
 
   observer.Wait();
 
   int exit_code = -100;
-  bool exited =
-      base::WaitForExitCodeWithTimeout(handle, &exit_code,
-                                       TestTimeouts::action_timeout());
-
+  bool exited = process.WaitForExitWithTimeout(TestTimeouts::action_timeout(),
+                                               &exit_code);
   EXPECT_TRUE(exited);
   EXPECT_EQ(chrome::RESULT_CODE_NORMAL_EXIT_PROCESS_NOTIFIED, exit_code);
-  base::CloseProcessHandle(handle);
 }
 
 // Disabled due to http://crbug.com/144393.
@@ -74,20 +69,15 @@ IN_PROC_BROWSER_TEST_F(CloudPrintPolicyTest, DISABLED_CloudPrintPolicyFlag) {
       switches::kSpeculativeResourcePrefetching,
       switches::kSpeculativeResourcePrefetchingDisabled);
 
-  base::ProcessHandle handle;
-  bool launched =
-      base::LaunchProcess(new_command_line, base::LaunchOptionsForTest(),
-          &handle);
-  EXPECT_TRUE(launched);
+  base::Process process =
+      base::LaunchProcess(new_command_line, base::LaunchOptionsForTest());
+  EXPECT_TRUE(process.IsValid());
 
   int exit_code = -100;
-  bool exited =
-      base::WaitForExitCodeWithTimeout(handle, &exit_code,
-                                       TestTimeouts::action_timeout());
-
+  bool exited = process.WaitForExitWithTimeout(TestTimeouts::action_timeout(),
+                                               &exit_code);
   EXPECT_TRUE(exited);
   EXPECT_EQ(content::RESULT_CODE_NORMAL_EXIT, exit_code);
-  base::CloseProcessHandle(handle);
 }
 
 }  // namespace

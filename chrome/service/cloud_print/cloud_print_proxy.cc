@@ -50,7 +50,7 @@ void LaunchBrowserProcessWithSwitch(const std::string& switch_string) {
 #if defined(OS_WIN)
   launch_options.force_breakaway_from_job_ = true;
 #endif  // OS_WIN
-  base::LaunchProcess(cmd_line, launch_options, NULL);
+  base::LaunchProcess(cmd_line, launch_options);
 #endif
 }
 

@@ -233,9 +233,7 @@ bool ServiceUtilityProcessHost::Launch(base::CommandLine* cmd_line,
                                        bool no_sandbox) {
   if (no_sandbox) {
     cmd_line->AppendSwitch(switches::kNoSandbox);
-    base::ProcessHandle handle;
-    if (base::LaunchProcess(*cmd_line, base::LaunchOptions(), &handle))
-      process_ = base::Process(handle);
+    process_ = base::LaunchProcess(*cmd_line, base::LaunchOptions());
   } else {
     ServiceSandboxedProcessLauncherDelegate delegate;
     process_ = content::StartSandboxedProcess(&delegate, cmd_line);

@@ -203,8 +203,7 @@ void DeleteProgramDir(const std::string& delete_switch) {
   base::CommandLine command_line(temp_path);
   command_line.AppendSwitchPath(delete_switch, installer_source.DirName());
   base::LaunchOptions options;
-  base::ProcessHandle process_handle;
-  if (!base::LaunchProcess(command_line, options, &process_handle)) {
+  if (!base::LaunchProcess(command_line, options).IsValid()) {
     LOG(ERROR) << "Unable to launch child uninstall.";
   }
 }

@@ -229,7 +229,7 @@ bool LaunchPrintDialog(const base::FilePath& xps_path,
   command_line.AppendSwitchNative(switches::kCloudPrintJobTitle, job_title);
   base::LaunchOptions options;
   options.as_user = primary_token_scoped.Get();
-  base::LaunchProcess(command_line, options, NULL);
+  base::LaunchProcess(command_line, options);
   return true;
 }
 
@@ -255,7 +255,7 @@ void LaunchChromeDownloadPage() {
 
   base::LaunchOptions options;
   options.as_user = token_scoped.Get();
-  base::LaunchProcess(command_line, options, NULL);
+  base::LaunchProcess(command_line, options);
 }
 
 // Returns false if the print job is being run in a context

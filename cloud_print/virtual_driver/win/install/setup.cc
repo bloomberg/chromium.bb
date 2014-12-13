@@ -97,7 +97,7 @@ void SpoolerServiceCommand(const char* command) {
   options.wait = true;
   options.start_hidden = true;
   VLOG(0) << command_line.GetCommandLineString();
-  base::LaunchProcess(command_line, options, NULL);
+  base::LaunchProcess(command_line, options);
 }
 
 HRESULT RegisterPortMonitor(bool install, const base::FilePath& install_path) {
