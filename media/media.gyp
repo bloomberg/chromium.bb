@@ -1780,23 +1780,6 @@
     ['media_use_ffmpeg==1', {
       'targets': [
         {
-          # GN version: //media:ffmpeg_unittests
-          'target_name': 'ffmpeg_unittests',
-          'type': 'executable',
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../base/base.gyp:base_i18n',
-            '../base/base.gyp:test_support_base',
-            '../testing/gtest.gyp:gtest',
-            '../third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
-            'media',
-            'media_test_support',
-          ],
-          'sources': [
-            'ffmpeg/ffmpeg_unittest.cc',
-          ],
-        },
-        {
           # GN version: //media:ffmpeg_regression_tests
           'target_name': 'ffmpeg_regression_tests',
           'type': 'executable',

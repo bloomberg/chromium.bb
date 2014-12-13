@@ -709,23 +709,6 @@ component("shared_memory_support") {
 }
 
 if (media_use_ffmpeg) {
-  test("ffmpeg_unittests") {
-    sources = [
-      "ffmpeg/ffmpeg_unittest.cc",
-    ]
-
-    deps = [
-      ":media",
-      ":test_support",
-      "//base",
-      "//base:i18n",
-      "//base/test:test_support",
-      "//testing/gtest",
-      "//third_party/ffmpeg",
-      "//ui/gfx:test_support",
-    ]
-  }
-
   test("ffmpeg_regression_tests") {
     sources = [
       "base/run_all_unittests.cc",
