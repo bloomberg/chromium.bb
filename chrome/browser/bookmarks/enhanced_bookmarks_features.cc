@@ -21,7 +21,6 @@
 #include "components/variations/variations_associated_data.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
-#include "ui/base/device_form_factor.h"
 
 namespace {
 
@@ -92,11 +91,6 @@ void UpdateBookmarksExperimentState(
   // "0" - user opted out.
   bool opt_out = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
                      switches::kEnhancedBookmarksExperiment) == "0";
-#if defined(OS_ANDROID)
-  // Tablets automagically do opt out.
-  opt_out =
-      opt_out || ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET;
-#endif  // defined(OS_ANDROID)
 
   BookmarksExperimentState bookmarks_experiment_new_state =
       BOOKMARKS_EXPERIMENT_NONE;
