@@ -9,11 +9,6 @@ crbug.com/441639 virtual/slimmingpaint/fast/text/international/rtl-white-space-p
 crbug.com/441639 virtual/slimmingpaint/fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
 crbug.com/441639 virtual/slimmingpaint/fast/text/international/unicode-bidi-plaintext-in-textarea.html [ NeedsRebaseline ]
 
-crbug.com/438356 virtual/slimmingpaint/fast/block/float/021.html [ Failure ImageOnlyFailure ]
-crbug.com/438356 virtual/slimmingpaint/fast/block/positioning/relative-overflow-block.html [ Failure ImageOnlyFailure ]
-crbug.com/438356 virtual/slimmingpaint/fast/block/positioning/relative-overflow-replaced-float.html [ Failure ImageOnlyFailure ]
-crbug.com/438356 virtual/slimmingpaint/fast/block/positioning/relative-overflow-replaced.html [ Failure ImageOnlyFailure ]
-
 crbug.com/434560 virtual/slimmingpaint/fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
 
 # This directly has manual tests that don't have to run with run-webkit-tests
