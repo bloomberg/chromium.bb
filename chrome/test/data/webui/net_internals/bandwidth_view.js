@@ -265,7 +265,8 @@ TEST_F('NetInternalsTest',
  * Checks data reduction proxy info when it is disabled.
  */
 TEST_F('NetInternalsTest',
-    'netInternalsDataReductionProxyDisabled', function() {
+       'DISABLED_netInternalsDataReductionProxyDisabled',
+       function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(new DataReductionProxyTask(false));
   taskQueue.run();
