@@ -15108,7 +15108,7 @@ Do you accept?
         Update your phone's screen lock so it turns off when you're nearby. You'll unlock the phone faster, and enjoy a better Smart Lock experience on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
       </message>
       <message name="IDS_EASY_UNLOCK_SETUP_ANDROID_SMART_LOCK_DONE_BUTTON_LABEL" desc="The text to show as the button label in the Easy Unlock dialog step for encouraging the user to enable Smart Lock for Android. Clicking this button advances the dialog to step 3.">
-        Done
+        Next
       </message>
       <message name="IDS_EASY_UNLOCK_SETUP_ANDROID_SMART_LOCK_ABOUT_LINK_TEXT" desc="The text to show as the link text to access the Smart Lock for Android help article.">
         About Smart Lock for Android
