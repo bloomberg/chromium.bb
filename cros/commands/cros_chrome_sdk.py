@@ -404,21 +404,12 @@ class ChromeSDKCommand(cros.CrosCommand):
   _CLANG_DIR = 'third_party/llvm-build/Release+Asserts/bin'
 
   EBUILD_ENV = (
-      # Compiler tools.
       'CXX',
       'CC',
       'AR',
       'AS',
       'LD',
       'RANLIB',
-
-      # Compiler flags.
-      'CFLAGS',
-      'CXXFLAGS',
-      'CPPFLAGS',
-      'LDFLAGS',
-
-      # Misc settings.
       'GOLD_SET',
       'GYP_DEFINES',
   )
