@@ -29,9 +29,11 @@ public:
     virtual void paintTextMatchMarker(GraphicsContext*, const FloatPoint&, DocumentMarker*, RenderStyle*, const Font&);
 
 private:
+    bool shouldPaintSelection() const;
+    void paintTextFragments(const PaintInfo&, RenderObject&);
     void paintDecoration(const PaintInfo&, TextDecoration, const SVGTextFragment&);
     void paintTextWithShadows(const PaintInfo&, RenderStyle*, TextRun&, const SVGTextFragment&, int startPosition, int endPosition, RenderSVGResourceMode);
-    void paintText(const PaintInfo&, RenderStyle*, RenderStyle* selectionStyle, const SVGTextFragment&, RenderSVGResourceMode, bool hasSelection, bool paintSelectedTextOnly);
+    void paintText(const PaintInfo&, RenderStyle*, RenderStyle* selectionStyle, const SVGTextFragment&, RenderSVGResourceMode, bool shouldPaintSelection);
 
     SVGInlineTextBox& m_svgInlineTextBox;
 };

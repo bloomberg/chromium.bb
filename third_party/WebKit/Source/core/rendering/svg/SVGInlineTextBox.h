@@ -61,13 +61,11 @@ public:
     TextRun constructTextRun(RenderStyle*, const SVGTextFragment&) const;
 
 private:
-
     virtual void paintDocumentMarker(GraphicsContext*, const FloatPointWillBeLayoutPoint&, DocumentMarker*, RenderStyle*, const Font&, bool) override final;
     virtual void paintTextMatchMarker(GraphicsContext*, const FloatPointWillBeLayoutPoint&, DocumentMarker*, RenderStyle*, const Font&) override final;
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) override;
 
-private:
     FloatWillBeLayoutUnit m_logicalHeight;
     bool m_startsNewTextChunk : 1;
     Vector<SVGTextFragment> m_textFragments;

@@ -170,7 +170,6 @@ LayoutRect SVGInlineTextBox::localSelectionRect(int startPosition, int endPositi
 
 void SVGInlineTextBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit, LayoutUnit)
 {
-
     SVGInlineTextBoxPainter(*this).paint(paintInfo, paintOffset);
 }
 
