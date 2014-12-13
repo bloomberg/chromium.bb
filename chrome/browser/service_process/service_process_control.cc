@@ -320,11 +320,10 @@ ServiceProcessControl* ServiceProcessControl::GetInstance() {
 ServiceProcessControl::Launcher::Launcher(
     ServiceProcessControl* process,
     scoped_ptr<base::CommandLine> cmd_line)
-    : process_(process),
+    : process_control_(process),
       cmd_line_(cmd_line.Pass()),
       launched_(false),
-      retry_count_(0),
-      process_handle_(base::kNullProcessHandle) {
+      retry_count_(0) {
 }
 
 // Execute the command line to start the process asynchronously.
@@ -338,7 +337,6 @@ void ServiceProcessControl::Launcher::Run(const base::Closure& task) {
 }
 
 ServiceProcessControl::Launcher::~Launcher() {
-  CloseProcessHandle();
 }
 
 
@@ -346,13 +344,6 @@ void ServiceProcessControl::Launcher::Notify() {
   DCHECK(!notify_task_.is_null());
   notify_task_.Run();
   notify_task_.Reset();
-}
-
-void ServiceProcessControl::Launcher::CloseProcessHandle() {
-  if (process_handle_ != base::kNullProcessHandle) {
-    base::CloseProcessHandle(process_handle_);
-    process_handle_ = base::kNullProcessHandle;
-  }
 }
 
 #if !defined(OS_MACOSX)
@@ -364,9 +355,8 @@ void ServiceProcessControl::Launcher::DoDetectLaunched() {
 
   int exit_code = 0;
   if (launched_ || (retry_count_ >= kMaxLaunchDetectRetries) ||
-      base::WaitForExitCodeWithTimeout(process_handle_, &exit_code,
-                                       base::TimeDelta())) {
-    CloseProcessHandle();
+      process_.WaitForExitWithTimeout(base::TimeDelta(), &exit_code)) {
+    process_.Close();
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE, base::Bind(&Launcher::Notify, this));
     return;
@@ -387,7 +377,8 @@ void ServiceProcessControl::Launcher::DoRun() {
 #if defined(OS_WIN)
   options.start_hidden = true;
 #endif
-  if (base::LaunchProcess(*cmd_line_, options, &process_handle_)) {
+  process_ = base::LaunchProcess(*cmd_line_, options);
+  if (process_.IsValid()) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&Launcher::DoDetectLaunched, this));
