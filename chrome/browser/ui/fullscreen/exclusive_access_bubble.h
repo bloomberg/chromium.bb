@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_EXIT_BUBBLE_H_
-#define CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_EXIT_BUBBLE_H_
+#ifndef CHROME_BROWSER_UI_FULLSCREEN_EXCLUSIVE_ACCESS_BUBBLE_H_
+#define CHROME_BROWSER_UI_FULLSCREEN_EXCLUSIVE_ACCESS_BUBBLE_H_
 
 #include "base/timer/timer.h"
-#include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
+#include "chrome/browser/ui/fullscreen/exclusive_access_bubble_type.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/point.h"
 #include "url/gurl.h"
@@ -17,21 +17,24 @@ namespace gfx {
 class Rect;
 }
 
-class FullscreenExitBubble : public gfx::AnimationDelegate {
+// Bubble that informs the user when an exclusive access state is in effect and
+// as to how to exit out of the state. Currently there are two exclusive access
+// state, namely fullscreen and mouse lock.
+class ExclusiveAccessBubble : public gfx::AnimationDelegate {
  public:
-  explicit FullscreenExitBubble(Browser* browser,
-                                const GURL& url,
-                                FullscreenExitBubbleType bubble_type);
-  ~FullscreenExitBubble() override;
+  explicit ExclusiveAccessBubble(Browser* browser,
+                                 const GURL& url,
+                                 ExclusiveAccessBubbleType bubble_type);
+  ~ExclusiveAccessBubble() override;
 
  protected:
-  static const int kPaddingPx;           // Amount of padding around the link
-  static const int kInitialDelayMs;      // Initial time bubble remains onscreen
-  static const int kIdleTimeMs;          // Time before mouse idle triggers hide
-  static const int kPositionCheckHz;     // How fast to check the mouse position
+  static const int kPaddingPx;        // Amount of padding around the link
+  static const int kInitialDelayMs;   // Initial time bubble remains onscreen
+  static const int kIdleTimeMs;       // Time before mouse idle triggers hide
+  static const int kPositionCheckHz;  // How fast to check the mouse position
   static const int kSlideInRegionHeightPx;
-                                         // Height of region triggering
-                                         // slide-in
+  // Height of region triggering
+  // slide-in
   static const int kPopupTopPx;          // Space between the popup and the top
                                          // of the screen.
   static const int kSlideInDurationMs;   // Duration of slide-in animation
@@ -89,27 +92,27 @@ class FullscreenExitBubble : public gfx::AnimationDelegate {
   GURL url_;
 
   // The type of the bubble; controls e.g. which buttons to show.
-  FullscreenExitBubbleType bubble_type_;
+  ExclusiveAccessBubbleType bubble_type_;
 
  private:
   // Timer to delay before allowing the bubble to hide after it's initially
   // shown.
-  base::OneShotTimer<FullscreenExitBubble> initial_delay_;
+  base::OneShotTimer<ExclusiveAccessBubble> initial_delay_;
 
   // Timer to see how long the mouse has been idle.
-  base::OneShotTimer<FullscreenExitBubble> idle_timeout_;
+  base::OneShotTimer<ExclusiveAccessBubble> idle_timeout_;
 
   // Timer to poll the current mouse position.  We can't just listen for mouse
   // events without putting a non-empty HWND onscreen (or hooking Windows, which
   // has other problems), so instead we run a low-frequency poller to see if the
   // user has moved in or out of our show/hide regions.
-  base::RepeatingTimer<FullscreenExitBubble> mouse_position_checker_;
+  base::RepeatingTimer<ExclusiveAccessBubble> mouse_position_checker_;
 
   // The most recently seen mouse position, in screen coordinates.  Used to see
   // if the mouse has moved since our last check.
   gfx::Point last_mouse_pos_;
 
-  DISALLOW_COPY_AND_ASSIGN(FullscreenExitBubble);
+  DISALLOW_COPY_AND_ASSIGN(ExclusiveAccessBubble);
 };
 
-#endif  // CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_EXIT_BUBBLE_H_
+#endif  // CHROME_BROWSER_UI_FULLSCREEN_EXCLUSIVE_ACCESS_BUBBLE_H_

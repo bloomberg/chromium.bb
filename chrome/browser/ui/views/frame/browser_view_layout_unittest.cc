@@ -53,7 +53,7 @@ class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
     return download_shelf_needs_layout_;
   }
 
-  FullscreenExitBubbleViews* GetFullscreenExitBubble() const override {
+  ExclusiveAccessBubbleViews* GetExclusiveAccessBubble() const override {
     return nullptr;
   }
 

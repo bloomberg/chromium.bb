@@ -32,7 +32,7 @@
 		<object class="NSMutableArray" key="IBDocument.RootObjects" id="1000">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<object class="NSCustomObject" id="1001">
-				<string key="NSClassName">FullscreenExitBubbleController</string>
+				<string key="NSClassName">ExclusiveAccessBubbleWindowController</string>
 			</object>
 			<object class="NSCustomObject" id="1003">
 				<string key="NSClassName">FirstResponder</string>
@@ -215,7 +215,7 @@
 							<string key="NSFrameSize">{629, 109}</string>
 							<reference key="NSSuperview" ref="1006"/>
 							<reference key="NSWindow"/>
-							<string key="NSClassName">FullscreenExitBubbleView</string>
+							<string key="NSClassName">ExclusiveAccessBubbleView</string>
 						</object>
 					</object>
 					<string key="NSFrameSize">{629, 109}</string>
@@ -570,7 +570,7 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">FullscreenExitBubbleController</string>
+					<string key="className">ExclusiveAccessBubbleWindowController</string>
 					<string key="superclassName">NSWindowController</string>
 					<object class="NSMutableDictionary" key="actions">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -659,15 +659,15 @@
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/FullscreenExitBubbleController.h</string>
+						<string key="minorKey">./Classes/ExclusiveAccessBubbleWindowController.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">FullscreenExitBubbleView</string>
+					<string key="className">ExclusiveAccessBubbleView</string>
 					<string key="superclassName">NSView</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/FullscreenExitBubbleView.h</string>
+						<string key="minorKey">./Classes/ExclusiveAccessBubbleView.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

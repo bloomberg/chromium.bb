@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_FULLSCREEN_EXIT_BUBBLE_VIEWS_H_
-#define CHROME_BROWSER_UI_VIEWS_FULLSCREEN_EXIT_BUBBLE_VIEWS_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_EXCLUSIVE_ACCESS_BUBBLE_VIEWS_H_
+#define CHROME_BROWSER_UI_VIEWS_EXCLUSIVE_ACCESS_BUBBLE_VIEWS_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble.h"
+#include "chrome/browser/ui/fullscreen/exclusive_access_bubble.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/views/widget/widget_observer.h"
@@ -22,26 +22,26 @@ class View;
 class Widget;
 }
 
-// FullscreenExitBubbleViews is responsible for showing a bubble atop the
-// screen in fullscreen mode, telling users how to exit and providing a click
-// target. The bubble auto-hides, and re-shows when the user moves to the
-// screen top.
-class FullscreenExitBubbleViews : public FullscreenExitBubble,
-                                  public content::NotificationObserver,
-                                  public views::WidgetObserver {
+// ExclusiveAccessBubbleViews is responsible for showing a bubble atop the
+// screen in fullscreen/mouse lock mode, telling users how to exit and providing
+// a click target. The bubble auto-hides, and re-shows when the user moves to
+// the screen top.
+class ExclusiveAccessBubbleViews : public ExclusiveAccessBubble,
+                                   public content::NotificationObserver,
+                                   public views::WidgetObserver {
  public:
-  FullscreenExitBubbleViews(BrowserView* browser,
-                            const GURL& url,
-                            FullscreenExitBubbleType bubble_type);
-  ~FullscreenExitBubbleViews() override;
+  ExclusiveAccessBubbleViews(BrowserView* browser,
+                             const GURL& url,
+                             ExclusiveAccessBubbleType bubble_type);
+  ~ExclusiveAccessBubbleViews() override;
 
-  void UpdateContent(const GURL& url, FullscreenExitBubbleType bubble_type);
+  void UpdateContent(const GURL& url, ExclusiveAccessBubbleType bubble_type);
 
   // Repositions |popup_| if it is visible.
   void RepositionIfVisible();
 
  private:
-  class FullscreenExitView;
+  class ExclusiveAccessView;
 
   enum AnimatedAttribute {
     ANIMATED_ATTRIBUTE_BOUNDS,
@@ -93,11 +93,11 @@ class FullscreenExitBubbleViews : public FullscreenExitBubble,
   AnimatedAttribute animated_attribute_;
 
   // The contents of the popup.
-  FullscreenExitView* view_;
+  ExclusiveAccessView* view_;
 
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(FullscreenExitBubbleViews);
+  DISALLOW_COPY_AND_ASSIGN(ExclusiveAccessBubbleViews);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_FULLSCREEN_EXIT_BUBBLE_VIEWS_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_EXCLUSIVE_ACCESS_BUBBLE_VIEWS_H_

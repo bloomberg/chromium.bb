@@ -64,12 +64,12 @@ class TestBrowserWindow : public BrowserWindow {
   void Minimize() override {}
   void Restore() override {}
   void EnterFullscreen(const GURL& url,
-                       FullscreenExitBubbleType type,
+                       ExclusiveAccessBubbleType type,
                        bool with_toolbar) override {}
   void ExitFullscreen() override {}
   void UpdateFullscreenExitBubbleContent(
       const GURL& url,
-      FullscreenExitBubbleType bubble_type) override {}
+      ExclusiveAccessBubbleType bubble_type) override {}
   bool ShouldHideUIForFullscreen() const override;
   bool IsFullscreen() const override;
   bool IsFullscreenBubbleVisible() const override;

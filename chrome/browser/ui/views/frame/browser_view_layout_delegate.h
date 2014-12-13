@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_VIEW_LAYOUT_DELEGATE_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_VIEW_LAYOUT_DELEGATE_H_
 
-class FullscreenExitBubbleViews;
+class ExclusiveAccessBubbleViews;
 
 namespace gfx {
 class Rect;
@@ -28,7 +28,7 @@ class BrowserViewLayoutDelegate {
   virtual bool IsToolbarVisible() const = 0;
   virtual bool IsBookmarkBarVisible() const = 0;
   virtual bool DownloadShelfNeedsLayout() const = 0;
-  virtual FullscreenExitBubbleViews* GetFullscreenExitBubble() const = 0;
+  virtual ExclusiveAccessBubbleViews* GetExclusiveAccessBubble() const = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_VIEW_LAYOUT_DELEGATE_H_

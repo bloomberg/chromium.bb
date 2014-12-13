@@ -375,7 +375,7 @@ void BrowserWindowCocoa::Restore() {
 // See browser_window_controller.h for a detailed explanation of the logic in
 // this method.
 void BrowserWindowCocoa::EnterFullscreen(const GURL& url,
-                                         FullscreenExitBubbleType bubble_type,
+                                         ExclusiveAccessBubbleType bubble_type,
                                          bool with_toolbar) {
   if (browser_->fullscreen_controller()->IsWindowFullscreenForTabOrPending())
     [controller_ enterWebContentFullscreenForURL:url bubbleType:bubble_type];
@@ -390,8 +390,8 @@ void BrowserWindowCocoa::ExitFullscreen() {
 }
 
 void BrowserWindowCocoa::UpdateFullscreenExitBubbleContent(
-      const GURL& url,
-      FullscreenExitBubbleType bubble_type) {
+    const GURL& url,
+    ExclusiveAccessBubbleType bubble_type) {
   [controller_ updateFullscreenExitBubbleURL:url bubbleType:bubble_type];
 }
 

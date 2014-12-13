@@ -613,25 +613,26 @@ willPositionSheet:(NSWindow*)sheet
 
   [self hideOverlayIfPossibleWithAnimation:NO delay:NO];
 
-  if (fullscreenBubbleType_ == FEB_TYPE_NONE ||
-      fullscreenBubbleType_ == FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION) {
+  if (exclusiveAccessBubbleType_ == EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE ||
+      exclusiveAccessBubbleType_ ==
+          EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION) {
     // Show no exit instruction bubble on Mac when in Browser Fullscreen.
     [self destroyFullscreenExitBubbleIfNecessary];
   } else {
-    [fullscreenExitBubbleController_ closeImmediately];
-    fullscreenExitBubbleController_.reset(
-        [[FullscreenExitBubbleController alloc]
+    [exclusiveAccessBubbleWindowController_ closeImmediately];
+    exclusiveAccessBubbleWindowController_.reset(
+        [[ExclusiveAccessBubbleWindowController alloc]
             initWithOwner:self
                   browser:browser_.get()
                       url:fullscreenUrl_
-               bubbleType:fullscreenBubbleType_]);
-    [fullscreenExitBubbleController_ showWindow];
+               bubbleType:exclusiveAccessBubbleType_]);
+    [exclusiveAccessBubbleWindowController_ showWindow];
   }
 }
 
 - (void)destroyFullscreenExitBubbleIfNecessary {
-  [fullscreenExitBubbleController_ closeImmediately];
-  fullscreenExitBubbleController_.reset();
+  [exclusiveAccessBubbleWindowController_ closeImmediately];
+  exclusiveAccessBubbleWindowController_.reset();
 }
 
 - (void)contentViewDidResize:(NSNotification*)notification {
@@ -916,7 +917,7 @@ willPositionSheet:(NSWindow*)sheet
       positionFindBarViewAtMaxY:output.findBarMaxY
                        maxWidth:NSWidth(output.contentAreaFrame)];
 
-  [fullscreenExitBubbleController_
+  [exclusiveAccessBubbleWindowController_
       positionInWindowAtTop:output.fullscreenExitButtonMaxY
                       width:NSWidth(output.contentAreaFrame)];
 }

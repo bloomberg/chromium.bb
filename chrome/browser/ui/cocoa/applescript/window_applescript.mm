@@ -262,7 +262,8 @@
 - (void)handlesEnterPresentationMode:(NSScriptCommand*)command {
   if (browser_->window()) {
     browser_->window()->EnterFullscreen(
-        GURL(), FEB_TYPE_FULLSCREEN_EXIT_INSTRUCTION, false);
+        GURL(), EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION,
+        false);
   }
 }
 

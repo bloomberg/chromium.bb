@@ -14,11 +14,11 @@
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
+#include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout_delegate.h"
 #include "chrome/browser/ui/views/frame/contents_layout_manager.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
-#include "chrome/browser/ui/views/fullscreen_exit_bubble_views.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
@@ -354,10 +354,10 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
   // Adjust the fullscreen exit bubble bounds for |top_container_|'s new bounds.
   // This makes the fullscreen exit bubble look like it animates with
   // |top_container_| in immersive fullscreen.
-  FullscreenExitBubbleViews* fullscreen_exit_bubble =
-      delegate_->GetFullscreenExitBubble();
-  if (fullscreen_exit_bubble)
-    fullscreen_exit_bubble->RepositionIfVisible();
+  ExclusiveAccessBubbleViews* exclusive_access_bubble =
+      delegate_->GetExclusiveAccessBubble();
+  if (exclusive_access_bubble)
+    exclusive_access_bubble->RepositionIfVisible();
 
   // Adjust any hosted dialogs if the browser's dialog hosting bounds changed.
   const gfx::Rect dialog_bounds(dialog_host_->GetDialogPosition(gfx::Size()),

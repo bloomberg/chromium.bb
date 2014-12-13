@@ -233,14 +233,14 @@ void FullscreenController::RequestToLockMouse(WebContents* web_contents,
     return;
   }
   SetMouseLockTab(web_contents);
-  FullscreenExitBubbleType bubble_type = GetFullscreenExitBubbleType();
+  ExclusiveAccessBubbleType bubble_type = GetExclusiveAccessBubbleType();
 
   switch (GetMouseLockSetting(web_contents->GetURL())) {
     case CONTENT_SETTING_ALLOW:
       // If bubble already displaying buttons we must not lock the mouse yet,
       // or it would prevent pressing those buttons. Instead, merge the request.
       if (!IsPrivilegedFullscreenForTab() &&
-          fullscreen_bubble::ShowButtonsForType(bubble_type)) {
+          exclusive_access_bubble::ShowButtonsForType(bubble_type)) {
         mouse_lock_state_ = MOUSELOCK_REQUESTED;
       } else {
         // Lock mouse.
@@ -369,11 +369,11 @@ void FullscreenController::ExitTabOrBrowserFullscreenToPreviousState() {
 }
 
 void FullscreenController::OnAcceptFullscreenPermission() {
-  FullscreenExitBubbleType bubble_type = GetFullscreenExitBubbleType();
+  ExclusiveAccessBubbleType bubble_type = GetExclusiveAccessBubbleType();
   bool mouse_lock = false;
   bool fullscreen = false;
-  fullscreen_bubble::PermissionRequestedByType(bubble_type, &fullscreen,
-                                               &mouse_lock);
+  exclusive_access_bubble::PermissionRequestedByType(bubble_type, &fullscreen,
+                                                     &mouse_lock);
   DCHECK(!(fullscreen && tab_fullscreen_accepted_));
   DCHECK(!(mouse_lock && IsMouseLocked()));
 
@@ -461,7 +461,7 @@ GURL FullscreenController::GetFullscreenExitBubbleURL() const {
   return extension_caused_fullscreen_;
 }
 
-FullscreenExitBubbleType FullscreenController::GetFullscreenExitBubbleType()
+ExclusiveAccessBubbleType FullscreenController::GetExclusiveAccessBubbleType()
     const {
   // In kiosk and exclusive app mode we always want to be fullscreen and do not
   // want to show exit instructions for browser mode fullscreen.
@@ -471,33 +471,33 @@ FullscreenExitBubbleType FullscreenController::GetFullscreenExitBubbleType()
 #endif
 
   if (mouse_lock_state_ == MOUSELOCK_ACCEPTED_SILENTLY)
-    return FEB_TYPE_NONE;
+    return EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE;
 
   if (!fullscreened_tab_) {
     if (IsMouseLocked())
-      return FEB_TYPE_MOUSELOCK_EXIT_INSTRUCTION;
+      return EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_EXIT_INSTRUCTION;
     if (IsMouseLockRequested())
-      return FEB_TYPE_MOUSELOCK_BUTTONS;
+      return EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_BUTTONS;
     if (!extension_caused_fullscreen_.is_empty())
-      return FEB_TYPE_BROWSER_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION;
+      return EXCLUSIVE_ACCESS_BUBBLE_TYPE_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION;
     if (toggled_into_fullscreen_ && !app_mode)
-      return FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION;
-    return FEB_TYPE_NONE;
+      return EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION;
+    return EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE;
   }
 
   if (tab_fullscreen_accepted_) {
     if (IsPrivilegedFullscreenForTab())
-      return FEB_TYPE_NONE;
+      return EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE;
     if (IsMouseLocked())
-      return FEB_TYPE_FULLSCREEN_MOUSELOCK_EXIT_INSTRUCTION;
+      return EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_EXIT_INSTRUCTION;
     if (IsMouseLockRequested())
-      return FEB_TYPE_MOUSELOCK_BUTTONS;
-    return FEB_TYPE_FULLSCREEN_EXIT_INSTRUCTION;
+      return EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_BUTTONS;
+    return EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION;
   }
 
   if (IsMouseLockRequested())
-    return FEB_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS;
-  return FEB_TYPE_FULLSCREEN_BUTTONS;
+    return EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS;
+  return EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_BUTTONS;
 }
 
 void FullscreenController::UpdateNotificationRegistrations() {
@@ -623,8 +623,7 @@ void FullscreenController::EnterFullscreenModeInternal(
   // TODO(scheib): Record metrics for WITH_TOOLBAR, without counting transitions
   // from tab fullscreen out to browser with toolbar.
 
-  window_->EnterFullscreen(url,
-                           GetFullscreenExitBubbleType(),
+  window_->EnterFullscreen(url, GetExclusiveAccessBubbleType(),
                            option == BROWSER_WITH_TOOLBAR);
 
   UpdateFullscreenExitBubbleContent();
@@ -668,10 +667,11 @@ void FullscreenController::ExitTabFullscreenOrMouseLockIfNecessary() {
 
 void FullscreenController::UpdateFullscreenExitBubbleContent() {
   GURL url = GetFullscreenExitBubbleURL();
-  FullscreenExitBubbleType bubble_type = GetFullscreenExitBubbleType();
+  ExclusiveAccessBubbleType bubble_type = GetExclusiveAccessBubbleType();
 
   // If bubble displays buttons, unlock mouse to allow pressing them.
-  if (fullscreen_bubble::ShowButtonsForType(bubble_type) && IsMouseLocked())
+  if (exclusive_access_bubble::ShowButtonsForType(bubble_type) &&
+      IsMouseLocked())
     UnlockMouse();
 
   window_->UpdateFullscreenExitBubbleContent(url, bubble_type);

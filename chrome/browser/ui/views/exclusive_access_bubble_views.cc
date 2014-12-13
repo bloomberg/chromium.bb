@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/fullscreen_exit_bubble_views.h"
+#include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -35,7 +35,7 @@
 #include "ui/base/l10n/l10n_util_win.h"
 #endif
 
-// FullscreenExitView ----------------------------------------------------------
+// ExclusiveAccessView ---------------------------------------------------------
 
 namespace {
 
@@ -62,8 +62,7 @@ class ButtonView : public views::View {
 
 ButtonView::ButtonView(views::ButtonListener* listener,
                        int between_button_spacing)
-    : accept_button_(NULL),
-      deny_button_(NULL) {
+    : accept_button_(NULL), deny_button_(NULL) {
   accept_button_ = new views::LabelButton(listener, base::string16());
   accept_button_->SetStyle(views::Button::STYLE_BUTTON);
   accept_button_->SetFocusable(false);
@@ -87,16 +86,16 @@ gfx::Size ButtonView::GetPreferredSize() const {
 
 }  // namespace
 
-class FullscreenExitBubbleViews::FullscreenExitView
+class ExclusiveAccessBubbleViews::ExclusiveAccessView
     : public views::View,
       public views::ButtonListener,
       public views::LinkListener {
  public:
-  FullscreenExitView(FullscreenExitBubbleViews* bubble,
-                     const base::string16& accelerator,
-                     const GURL& url,
-                     FullscreenExitBubbleType bubble_type);
-  ~FullscreenExitView() override;
+  ExclusiveAccessView(ExclusiveAccessBubbleViews* bubble,
+                      const base::string16& accelerator,
+                      const GURL& url,
+                      ExclusiveAccessBubbleType bubble_type);
+  ~ExclusiveAccessView() override;
 
   // views::ButtonListener
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -104,10 +103,10 @@ class FullscreenExitBubbleViews::FullscreenExitView
   // views::LinkListener
   void LinkClicked(views::Link* source, int event_flags) override;
 
-  void UpdateContent(const GURL& url, FullscreenExitBubbleType bubble_type);
+  void UpdateContent(const GURL& url, ExclusiveAccessBubbleType bubble_type);
 
  private:
-  FullscreenExitBubbleViews* bubble_;
+  ExclusiveAccessBubbleViews* bubble_;
 
   // Clickable hint text for exiting fullscreen mode.
   views::Link* link_;
@@ -118,14 +117,14 @@ class FullscreenExitBubbleViews::FullscreenExitView
   ButtonView* button_view_;
   const base::string16 browser_fullscreen_exit_accelerator_;
 
-  DISALLOW_COPY_AND_ASSIGN(FullscreenExitView);
+  DISALLOW_COPY_AND_ASSIGN(ExclusiveAccessView);
 };
 
-FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
-    FullscreenExitBubbleViews* bubble,
+ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
+    ExclusiveAccessBubbleViews* bubble,
     const base::string16& accelerator,
     const GURL& url,
-    FullscreenExitBubbleType bubble_type)
+    ExclusiveAccessBubbleType bubble_type)
     : bubble_(bubble),
       link_(NULL),
       mouse_lock_exit_instruction_(NULL),
@@ -134,8 +133,7 @@ FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
       browser_fullscreen_exit_accelerator_(accelerator) {
   scoped_ptr<views::BubbleBorder> bubble_border(
       new views::BubbleBorder(views::BubbleBorder::NONE,
-                              views::BubbleBorder::BIG_SHADOW,
-                              SK_ColorWHITE));
+                              views::BubbleBorder::BIG_SHADOW, SK_ColorWHITE));
   set_background(new views::BubbleBackground(bubble_border.get()));
   SetBorder(bubble_border.Pass());
   SetFocusable(false);
@@ -195,10 +193,10 @@ FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
   UpdateContent(url, bubble_type);
 }
 
-FullscreenExitBubbleViews::FullscreenExitView::~FullscreenExitView() {
+ExclusiveAccessBubbleViews::ExclusiveAccessView::~ExclusiveAccessView() {
 }
 
-void FullscreenExitBubbleViews::FullscreenExitView::ButtonPressed(
+void ExclusiveAccessBubbleViews::ExclusiveAccessView::ButtonPressed(
     views::Button* sender,
     const ui::Event& event) {
   if (sender == button_view_->accept_button())
@@ -207,19 +205,19 @@ void FullscreenExitBubbleViews::FullscreenExitView::ButtonPressed(
     bubble_->Cancel();
 }
 
-void FullscreenExitBubbleViews::FullscreenExitView::LinkClicked(
+void ExclusiveAccessBubbleViews::ExclusiveAccessView::LinkClicked(
     views::Link* link,
     int event_flags) {
   bubble_->ToggleFullscreen();
 }
 
-void FullscreenExitBubbleViews::FullscreenExitView::UpdateContent(
+void ExclusiveAccessBubbleViews::ExclusiveAccessView::UpdateContent(
     const GURL& url,
-    FullscreenExitBubbleType bubble_type) {
-  DCHECK_NE(FEB_TYPE_NONE, bubble_type);
+    ExclusiveAccessBubbleType bubble_type) {
+  DCHECK_NE(EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE, bubble_type);
 
   message_label_->SetText(bubble_->GetCurrentMessageText());
-  if (fullscreen_bubble::ShowButtonsForType(bubble_type)) {
+  if (exclusive_access_bubble::ShowButtonsForType(bubble_type)) {
     link_->SetVisible(false);
     mouse_lock_exit_instruction_->SetVisible(false);
     button_view_->SetVisible(true);
@@ -228,21 +226,23 @@ void FullscreenExitBubbleViews::FullscreenExitView::UpdateContent(
   } else {
     bool link_visible = true;
     base::string16 accelerator;
-    if (bubble_type == FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION ||
-        bubble_type == FEB_TYPE_BROWSER_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION) {
+    if (bubble_type ==
+            EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION ||
+        bubble_type ==
+            EXCLUSIVE_ACCESS_BUBBLE_TYPE_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION) {
       accelerator = browser_fullscreen_exit_accelerator_;
-    } else if (bubble_type == FEB_TYPE_FULLSCREEN_EXIT_INSTRUCTION) {
+    } else if (bubble_type ==
+               EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION) {
       accelerator = l10n_util::GetStringUTF16(IDS_APP_ESC_KEY);
     } else {
       link_visible = false;
     }
 #if !defined(OS_CHROMEOS)
     if (link_visible) {
-      link_->SetText(
-          l10n_util::GetStringUTF16(IDS_EXIT_FULLSCREEN_MODE) +
-          base::UTF8ToUTF16(" ") +
-          l10n_util::GetStringFUTF16(IDS_EXIT_FULLSCREEN_MODE_ACCELERATOR,
-              accelerator));
+      link_->SetText(l10n_util::GetStringUTF16(IDS_EXIT_FULLSCREEN_MODE) +
+                     base::UTF8ToUTF16(" ") +
+                     l10n_util::GetStringFUTF16(
+                         IDS_EXIT_FULLSCREEN_MODE_ACCELERATOR, accelerator));
     }
 #endif
     link_->SetVisible(link_visible);
@@ -251,14 +251,13 @@ void FullscreenExitBubbleViews::FullscreenExitView::UpdateContent(
   }
 }
 
+// ExclusiveAccessBubbleViews --------------------------------------------------
 
-// FullscreenExitBubbleViews ---------------------------------------------------
-
-FullscreenExitBubbleViews::FullscreenExitBubbleViews(
+ExclusiveAccessBubbleViews::ExclusiveAccessBubbleViews(
     BrowserView* browser_view,
     const GURL& url,
-    FullscreenExitBubbleType bubble_type)
-    : FullscreenExitBubble(browser_view->browser(), url, bubble_type),
+    ExclusiveAccessBubbleType bubble_type)
+    : ExclusiveAccessBubble(browser_view->browser(), url, bubble_type),
       browser_view_(browser_view),
       popup_(NULL),
       animation_(new gfx::SlideAnimation(this)),
@@ -267,11 +266,11 @@ FullscreenExitBubbleViews::FullscreenExitBubbleViews(
 
   // Create the contents view.
   ui::Accelerator accelerator(ui::VKEY_UNKNOWN, ui::EF_NONE);
-  bool got_accelerator = browser_view_->GetWidget()->GetAccelerator(
-      IDC_FULLSCREEN, &accelerator);
+  bool got_accelerator =
+      browser_view_->GetWidget()->GetAccelerator(IDC_FULLSCREEN, &accelerator);
   DCHECK(got_accelerator);
-  view_ = new FullscreenExitView(
-      this, accelerator.GetShortcutText(), url, bubble_type_);
+  view_ = new ExclusiveAccessView(this, accelerator.GetShortcutText(), url,
+                                  bubble_type_);
 
   // TODO(yzshen): Change to use the new views bubble, BubbleDelegateView.
   // TODO(pkotwicz): When this becomes a views bubble, make sure that this
@@ -296,16 +295,14 @@ FullscreenExitBubbleViews::FullscreenExitBubbleViews(
 
   popup_->AddObserver(this);
 
-  registrar_.Add(
-      this,
-      chrome::NOTIFICATION_FULLSCREEN_CHANGED,
-      content::Source<FullscreenController>(
-          browser_view_->browser()->fullscreen_controller()));
+  registrar_.Add(this, chrome::NOTIFICATION_FULLSCREEN_CHANGED,
+                 content::Source<FullscreenController>(
+                     browser_view_->browser()->fullscreen_controller()));
 
   UpdateForImmersiveState();
 }
 
-FullscreenExitBubbleViews::~FullscreenExitBubbleViews() {
+ExclusiveAccessBubbleViews::~ExclusiveAccessBubbleViews() {
   popup_->RemoveObserver(this);
 
   // This is tricky.  We may be in an ATL message handler stack, in which case
@@ -321,10 +318,10 @@ FullscreenExitBubbleViews::~FullscreenExitBubbleViews() {
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, popup_);
 }
 
-void FullscreenExitBubbleViews::UpdateContent(
+void ExclusiveAccessBubbleViews::UpdateContent(
     const GURL& url,
-    FullscreenExitBubbleType bubble_type) {
-  DCHECK_NE(FEB_TYPE_NONE, bubble_type);
+    ExclusiveAccessBubbleType bubble_type) {
+  DCHECK_NE(EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE, bubble_type);
   if (bubble_type_ == bubble_type && url_ == url)
     return;
 
@@ -345,15 +342,16 @@ void FullscreenExitBubbleViews::UpdateContent(
   UpdateMouseWatcher();
 }
 
-void FullscreenExitBubbleViews::RepositionIfVisible() {
+void ExclusiveAccessBubbleViews::RepositionIfVisible() {
   if (popup_->IsVisible())
     UpdateBounds();
 }
 
-void FullscreenExitBubbleViews::UpdateMouseWatcher() {
+void ExclusiveAccessBubbleViews::UpdateMouseWatcher() {
   bool should_watch_mouse = false;
   if (popup_->IsVisible())
-    should_watch_mouse = !fullscreen_bubble::ShowButtonsForType(bubble_type_);
+    should_watch_mouse =
+        !exclusive_access_bubble::ShowButtonsForType(bubble_type_);
   else
     should_watch_mouse = CanMouseTriggerSlideIn();
 
@@ -366,10 +364,11 @@ void FullscreenExitBubbleViews::UpdateMouseWatcher() {
     StopWatchingMouse();
 }
 
-void FullscreenExitBubbleViews::UpdateForImmersiveState() {
+void ExclusiveAccessBubbleViews::UpdateForImmersiveState() {
   AnimatedAttribute expected_animated_attribute =
-      browser_view_->immersive_mode_controller()->IsEnabled() ?
-          ANIMATED_ATTRIBUTE_OPACITY : ANIMATED_ATTRIBUTE_BOUNDS;
+      browser_view_->immersive_mode_controller()->IsEnabled()
+          ? ANIMATED_ATTRIBUTE_OPACITY
+          : ANIMATED_ATTRIBUTE_BOUNDS;
   if (animated_attribute_ != expected_animated_attribute) {
     // If an animation is currently in progress, skip to the end because
     // switching the animated attribute midway through the animation looks
@@ -390,7 +389,7 @@ void FullscreenExitBubbleViews::UpdateForImmersiveState() {
   UpdateMouseWatcher();
 }
 
-void FullscreenExitBubbleViews::UpdateBounds() {
+void ExclusiveAccessBubbleViews::UpdateBounds() {
   gfx::Rect popup_rect(GetPopupRect(false));
   if (!popup_rect.IsEmpty()) {
     popup_->SetBounds(popup_rect);
@@ -398,11 +397,11 @@ void FullscreenExitBubbleViews::UpdateBounds() {
   }
 }
 
-views::View* FullscreenExitBubbleViews::GetBrowserRootView() const {
+views::View* ExclusiveAccessBubbleViews::GetBrowserRootView() const {
   return browser_view_->GetWidget()->GetRootView();
 }
 
-void FullscreenExitBubbleViews::AnimationProgressed(
+void ExclusiveAccessBubbleViews::AnimationProgressed(
     const gfx::Animation* animation) {
   if (animated_attribute_ == ANIMATED_ATTRIBUTE_OPACITY) {
     int opacity = animation_->CurrentValueBetween(0, 255);
@@ -422,20 +421,21 @@ void FullscreenExitBubbleViews::AnimationProgressed(
   }
 }
 
-void FullscreenExitBubbleViews::AnimationEnded(
+void ExclusiveAccessBubbleViews::AnimationEnded(
     const gfx::Animation* animation) {
   AnimationProgressed(animation);
 }
 
-gfx::Rect FullscreenExitBubbleViews::GetPopupRect(
+gfx::Rect ExclusiveAccessBubbleViews::GetPopupRect(
     bool ignore_animation_state) const {
   gfx::Size size(view_->GetPreferredSize());
   // NOTE: don't use the bounds of the root_view_. On linux GTK changing window
   // size is async. Instead we use the size of the screen.
   gfx::Screen* screen =
       gfx::Screen::GetScreenFor(browser_view_->GetWidget()->GetNativeView());
-  gfx::Rect screen_bounds = screen->GetDisplayNearestWindow(
-      browser_view_->GetWidget()->GetNativeView()).bounds();
+  gfx::Rect screen_bounds =
+      screen->GetDisplayNearestWindow(
+                  browser_view_->GetWidget()->GetNativeView()).bounds();
   int x = screen_bounds.x() + (screen_bounds.width() - size.width()) / 2;
 
   int top_container_bottom = screen_bounds.y();
@@ -465,40 +465,41 @@ gfx::Rect FullscreenExitBubbleViews::GetPopupRect(
   return gfx::Rect(gfx::Point(x, y), size);
 }
 
-gfx::Point FullscreenExitBubbleViews::GetCursorScreenPoint() {
-  gfx::Point cursor_pos = gfx::Screen::GetScreenFor(
-      browser_view_->GetWidget()->GetNativeView())->GetCursorScreenPoint();
+gfx::Point ExclusiveAccessBubbleViews::GetCursorScreenPoint() {
+  gfx::Point cursor_pos =
+      gfx::Screen::GetScreenFor(browser_view_->GetWidget()->GetNativeView())
+          ->GetCursorScreenPoint();
   views::View::ConvertPointFromScreen(GetBrowserRootView(), &cursor_pos);
   return cursor_pos;
 }
 
-bool FullscreenExitBubbleViews::WindowContainsPoint(gfx::Point pos) {
+bool ExclusiveAccessBubbleViews::WindowContainsPoint(gfx::Point pos) {
   return GetBrowserRootView()->HitTestPoint(pos);
 }
 
-bool FullscreenExitBubbleViews::IsWindowActive() {
+bool ExclusiveAccessBubbleViews::IsWindowActive() {
   return browser_view_->GetWidget()->IsActive();
 }
 
-void FullscreenExitBubbleViews::Hide() {
+void ExclusiveAccessBubbleViews::Hide() {
   animation_->SetSlideDuration(kSlideOutDurationMs);
   animation_->Hide();
 }
 
-void FullscreenExitBubbleViews::Show() {
+void ExclusiveAccessBubbleViews::Show() {
   animation_->SetSlideDuration(kSlideInDurationMs);
   animation_->Show();
 }
 
-bool FullscreenExitBubbleViews::IsAnimating() {
+bool ExclusiveAccessBubbleViews::IsAnimating() {
   return animation_->is_animating();
 }
 
-bool FullscreenExitBubbleViews::CanMouseTriggerSlideIn() const {
+bool ExclusiveAccessBubbleViews::CanMouseTriggerSlideIn() const {
   return !browser_view_->immersive_mode_controller()->IsEnabled();
 }
 
-void FullscreenExitBubbleViews::Observe(
+void ExclusiveAccessBubbleViews::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -506,7 +507,7 @@ void FullscreenExitBubbleViews::Observe(
   UpdateForImmersiveState();
 }
 
-void FullscreenExitBubbleViews::OnWidgetVisibilityChanged(
+void ExclusiveAccessBubbleViews::OnWidgetVisibilityChanged(
     views::Widget* widget,
     bool visible) {
   UpdateMouseWatcher();

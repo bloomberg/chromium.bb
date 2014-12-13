@@ -48,7 +48,7 @@ class Browser;
 class BrowserViewLayout;
 class ContentsLayoutManager;
 class DownloadShelfView;
-class FullscreenExitBubbleViews;
+class ExclusiveAccessBubbleViews;
 class InfoBarContainerView;
 class LocationBarView;
 class PermissionBubbleViewViews;
@@ -179,8 +179,8 @@ class BrowserView : public BrowserWindow,
   InfoBarContainerView* infobar_container() { return infobar_container_; }
 
   // Accessor for the FullscreenExitBubbleViews.
-  FullscreenExitBubbleViews* fullscreen_exit_bubble() {
-    return fullscreen_bubble_.get();
+  ExclusiveAccessBubbleViews* exclusive_access_bubble() {
+    return exclusive_access_bubble_.get();
   }
 
   // Returns true if various window components are visible.
@@ -281,12 +281,12 @@ class BrowserView : public BrowserWindow,
   void Minimize() override;
   void Restore() override;
   void EnterFullscreen(const GURL& url,
-                       FullscreenExitBubbleType bubble_type,
+                       ExclusiveAccessBubbleType bubble_type,
                        bool with_toolbar) override;
   void ExitFullscreen() override;
   void UpdateFullscreenExitBubbleContent(
       const GURL& url,
-      FullscreenExitBubbleType bubble_type) override;
+      ExclusiveAccessBubbleType bubble_type) override;
   bool ShouldHideUIForFullscreen() const override;
   bool IsFullscreen() const override;
   bool IsFullscreenBubbleVisible() const override;
@@ -527,7 +527,7 @@ class BrowserView : public BrowserWindow,
   void ProcessFullscreen(bool fullscreen,
                          FullscreenMode mode,
                          const GURL& url,
-                         FullscreenExitBubbleType bubble_type);
+                         ExclusiveAccessBubbleType bubble_type);
 
   // Returns whether immmersive fullscreen should replace fullscreen. This
   // should only occur for "browser-fullscreen" for tabbed-typed windows (not
@@ -667,7 +667,7 @@ class BrowserView : public BrowserWindow,
   // jankiness.
   bool in_process_fullscreen_;
 
-  scoped_ptr<FullscreenExitBubbleViews> fullscreen_bubble_;
+  scoped_ptr<ExclusiveAccessBubbleViews> exclusive_access_bubble_;
 
 #if defined(OS_WIN)
   // This object is used to perform periodic actions in a worker

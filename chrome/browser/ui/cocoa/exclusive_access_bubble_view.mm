@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/fullscreen_exit_bubble_view.h"
+#import "chrome/browser/ui/cocoa/exclusive_access_bubble_view.h"
 
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
@@ -20,10 +20,9 @@ const CGFloat kShadowBlurRadius = 150;
 const CGFloat kShadowBlurRadiusLion = 30;
 const CGFloat kShadowAlpha = 0.5;
 const CGFloat kBubbleCornerRadius = 8.0;
-
 }
 
-@implementation FullscreenExitBubbleView
+@implementation ExclusiveAccessBubbleView
 
 - (void)drawRect:(NSRect)rect {
   // Make room for the border to be seen.
@@ -36,9 +35,7 @@ const CGFloat kBubbleCornerRadius = 8.0;
 
   CGFloat radius = kBubbleCornerRadius;
   // Start with a rounded rectangle.
-  [bezier appendBezierPathWithRoundedRect:bounds
-                                  xRadius:radius
-                                  yRadius:radius];
+  [bezier appendBezierPathWithRoundedRect:bounds xRadius:radius yRadius:radius];
 
   [bezier closePath];
   [[NSColor whiteColor] set];
@@ -50,7 +47,7 @@ const CGFloat kBubbleCornerRadius = 8.0;
     [shadow setShadowBlurRadius:kShadowBlurRadius];
   }
   [shadow setShadowColor:[[NSColor blackColor]
-    colorWithAlphaComponent:kShadowAlpha]];
+                             colorWithAlphaComponent:kShadowAlpha]];
   [shadow set];
 
   [bezier fill];

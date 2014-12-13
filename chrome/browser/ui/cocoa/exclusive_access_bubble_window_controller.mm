@@ -14,11 +14,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#import "chrome/browser/ui/cocoa/fullscreen_exit_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/exclusive_access_bubble_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
+#include "chrome/browser/ui/fullscreen/exclusive_access_bubble_type.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
-#include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/browser/extension_registry.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
@@ -30,11 +30,10 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/strings/grit/ui_strings.h"
 
-
 namespace {
 const float kInitialDelay = 3.8;
 const float kHideDuration = 0.7;
-} // namespace
+}  // namespace
 
 @interface OneClickHyperlinkTextView : HyperlinkTextView
 @end
@@ -44,7 +43,7 @@ const float kHideDuration = 0.7;
 }
 @end
 
-@interface FullscreenExitBubbleController (PrivateMethods)
+@interface ExclusiveAccessBubbleWindowController (PrivateMethods)
 // Sets |exitLabel_| based on |exitLabelPlaceholder_|,
 // sets |exitLabelPlaceholder_| to nil.
 - (void)initializeLabel;
@@ -61,17 +60,17 @@ const float kHideDuration = 0.7;
 + (NSString*)keyCommandString;
 
 + (NSString*)keyCombinationForAccelerator:
-    (const ui::PlatformAcceleratorCocoa&)item;
+        (const ui::PlatformAcceleratorCocoa&)item;
 @end
 
-@implementation FullscreenExitBubbleController
+@implementation ExclusiveAccessBubbleWindowController
 
 - (id)initWithOwner:(BrowserWindowController*)owner
             browser:(Browser*)browser
                 url:(const GURL&)url
-         bubbleType:(FullscreenExitBubbleType)bubbleType {
+         bubbleType:(ExclusiveAccessBubbleType)bubbleType {
   NSString* nibPath =
-      [base::mac::FrameworkBundle() pathForResource:@"FullscreenExitBubble"
+      [base::mac::FrameworkBundle() pathForResource:@"ExclusiveAccessBubble"
                                              ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
     browser_ = browser;
@@ -80,8 +79,9 @@ const float kHideDuration = 0.7;
     bubbleType_ = bubbleType;
     // Mouse lock expects mouse events to reach the main window immediately.
     // Make the bubble transparent for mouse events if mouse lock is enabled.
-    if (bubbleType_ == FEB_TYPE_FULLSCREEN_MOUSELOCK_EXIT_INSTRUCTION ||
-        bubbleType_ == FEB_TYPE_MOUSELOCK_EXIT_INSTRUCTION)
+    if (bubbleType_ ==
+            EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_EXIT_INSTRUCTION ||
+        bubbleType_ == EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_EXIT_INSTRUCTION)
       [[self window] setIgnoresMouseEvents:YES];
   }
   return self;
@@ -91,16 +91,17 @@ const float kHideDuration = 0.7;
   // The mouselock code expects that mouse events reach the main window
   // immediately, but the cursor is still over the bubble, which eats the
   // mouse events. Make the bubble transparent for mouse events.
-  if (bubbleType_ == FEB_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS ||
-      bubbleType_ == FEB_TYPE_MOUSELOCK_BUTTONS)
+  if (bubbleType_ ==
+          EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS ||
+      bubbleType_ == EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_BUTTONS)
     [[self window] setIgnoresMouseEvents:YES];
 
-  DCHECK(fullscreen_bubble::ShowButtonsForType(bubbleType_));
+  DCHECK(exclusive_access_bubble::ShowButtonsForType(bubbleType_));
   browser_->fullscreen_controller()->OnAcceptFullscreenPermission();
 }
 
 - (void)deny:(id)sender {
-  DCHECK(fullscreen_bubble::ShowButtonsForType(bubbleType_));
+  DCHECK(exclusive_access_bubble::ShowButtonsForType(bubbleType_));
   browser_->fullscreen_controller()->OnDenyFullscreenPermission();
 }
 
@@ -120,7 +121,7 @@ const float kHideDuration = 0.7;
   // Completes nib load.
   InfoBubbleWindow* info_bubble = static_cast<InfoBubbleWindow*>([self window]);
   [info_bubble setCanBecomeKeyWindow:NO];
-  if (!fullscreen_bubble::ShowButtonsForType(bubbleType_)) {
+  if (!exclusive_access_bubble::ShowButtonsForType(bubbleType_)) {
     [self showButtons:NO];
     [self hideSoon];
   }
@@ -142,30 +143,30 @@ const float kHideDuration = 0.7;
   NSRect ownerWindowFrame = [owner_ window].frame;
   NSPoint origin;
   origin.x = ownerWindowFrame.origin.x +
-      (int)(NSWidth(ownerWindowFrame)/2 - NSWidth(windowFrame)/2);
+             (int)(NSWidth(ownerWindowFrame) / 2 - NSWidth(windowFrame) / 2);
   origin.y = ownerWindowFrame.origin.y + maxY - NSHeight(windowFrame);
   [[self window] setFrameOrigin:origin];
 }
 
 // Called when someone clicks on the embedded link.
-- (BOOL) textView:(NSTextView*)textView
+- (BOOL)textView:(NSTextView*)textView
     clickedOnLink:(id)link
           atIndex:(NSUInteger)charIndex {
-  browser_->fullscreen_controller()->
-      ExitTabOrBrowserFullscreenToPreviousState();
+  browser_->fullscreen_controller()
+      ->ExitTabOrBrowserFullscreenToPreviousState();
   return YES;
 }
 
 - (void)hideTimerFired:(NSTimer*)timer {
   // This might fire racily for buttoned bubbles, even though the timer is
   // cancelled for them. Explicitly check for this case.
-  if (fullscreen_bubble::ShowButtonsForType(bubbleType_))
+  if (exclusive_access_bubble::ShowButtonsForType(bubbleType_))
     return;
 
   [NSAnimationContext beginGrouping];
   [[NSAnimationContext currentContext]
       gtm_setDuration:kHideDuration
-            eventMask:NSLeftMouseUpMask|NSLeftMouseDownMask];
+            eventMask:NSLeftMouseUpMask | NSLeftMouseDownMask];
   [[[self window] animator] setAlphaValue:0.0];
   [NSAnimationContext endGrouping];
 }
@@ -195,7 +196,7 @@ const float kHideDuration = 0.7;
 
 @end
 
-@implementation FullscreenExitBubbleController (PrivateMethods)
+@implementation ExclusiveAccessBubbleWindowController (PrivateMethods)
 
 - (void)initializeLabel {
   // Replace the label placeholder NSTextField with the real label NSTextView.
@@ -204,38 +205,43 @@ const float kHideDuration = 0.7;
   // programmatically.
   exitLabel_.reset([[OneClickHyperlinkTextView alloc]
       initWithFrame:[exitLabelPlaceholder_ frame]]);
-  [exitLabel_.get() setAutoresizingMask:
-      [exitLabelPlaceholder_ autoresizingMask]];
+  [exitLabel_.get()
+      setAutoresizingMask:[exitLabelPlaceholder_ autoresizingMask]];
   [exitLabel_.get() setHidden:[exitLabelPlaceholder_ isHidden]];
-  [[exitLabelPlaceholder_ superview]
-      replaceSubview:exitLabelPlaceholder_ with:exitLabel_.get()];
+  [[exitLabelPlaceholder_ superview] replaceSubview:exitLabelPlaceholder_
+                                               with:exitLabel_.get()];
   exitLabelPlaceholder_ = nil;  // Now released.
   [exitLabel_.get() setDelegate:self];
 
   NSString* exitLinkText;
   NSString* exitUnlinkedText;
-  if (bubbleType_ == FEB_TYPE_FULLSCREEN_MOUSELOCK_EXIT_INSTRUCTION ||
-      bubbleType_ == FEB_TYPE_MOUSELOCK_EXIT_INSTRUCTION) {
+  if (bubbleType_ ==
+          EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_EXIT_INSTRUCTION ||
+      bubbleType_ == EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_EXIT_INSTRUCTION) {
     exitLinkText = @"";
-    exitUnlinkedText = [@" " stringByAppendingString:
-        l10n_util::GetNSStringF(IDS_FULLSCREEN_PRESS_ESC_TO_EXIT,
-                                l10n_util::GetStringUTF16(IDS_APP_ESC_KEY))];
+    exitUnlinkedText =
+        [@" " stringByAppendingString:l10n_util::GetNSStringF(
+                                          IDS_FULLSCREEN_PRESS_ESC_TO_EXIT,
+                                          l10n_util::GetStringUTF16(
+                                              IDS_APP_ESC_KEY))];
   } else {
     exitLinkText = l10n_util::GetNSString(IDS_EXIT_FULLSCREEN_MODE);
-    exitUnlinkedText = [@" " stringByAppendingString:
-        l10n_util::GetNSStringF(IDS_EXIT_FULLSCREEN_MODE_ACCELERATOR,
-                                l10n_util::GetStringUTF16(IDS_APP_ESC_KEY))];
+    exitUnlinkedText =
+        [@" " stringByAppendingString:l10n_util::GetNSStringF(
+                                          IDS_EXIT_FULLSCREEN_MODE_ACCELERATOR,
+                                          l10n_util::GetStringUTF16(
+                                              IDS_APP_ESC_KEY))];
   }
 
-  NSFont* font = [NSFont systemFontOfSize:
-      [NSFont systemFontSizeForControlSize:NSRegularControlSize]];
-  [(HyperlinkTextView*)exitLabel_.get()
-        setMessageAndLink:exitUnlinkedText
-                 withLink:exitLinkText
-                 atOffset:0
-                     font:font
-             messageColor:[NSColor blackColor]
-                linkColor:[NSColor blueColor]];
+  NSFont* font = [NSFont
+      systemFontOfSize:[NSFont
+                           systemFontSizeForControlSize:NSRegularControlSize]];
+  [(HyperlinkTextView*)exitLabel_.get() setMessageAndLink:exitUnlinkedText
+                                                 withLink:exitLinkText
+                                                 atOffset:0
+                                                     font:font
+                                             messageColor:[NSColor blackColor]
+                                                linkColor:[NSColor blueColor]];
   [exitLabel_.get() setAlignment:NSRightTextAlignment];
 
   NSRect labelFrame = [exitLabel_ frame];
@@ -256,12 +262,12 @@ const float kHideDuration = 0.7;
 }
 
 - (NSString*)getLabelText {
-  if (bubbleType_ == FEB_TYPE_NONE)
+  if (bubbleType_ == EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE)
     return @"";
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(browser_->profile());
-  return SysUTF16ToNSString(
-      fullscreen_bubble::GetLabelTextForType(bubbleType_, url_, registry));
+  return SysUTF16ToNSString(exclusive_access_bubble::GetLabelTextForType(
+      bubbleType_, url_, registry));
 }
 
 // This looks at the Main Menu and determines what the user has set as the
@@ -275,14 +281,15 @@ const float kHideDuration = 0.7;
       // Find the toggle presentation mode item.
       if ([item tag] == IDC_PRESENTATION_MODE) {
         return scoped_ptr<ui::PlatformAcceleratorCocoa>(
-          new ui::PlatformAcceleratorCocoa([item keyEquivalent],
-                                           [item keyEquivalentModifierMask]));
+            new ui::PlatformAcceleratorCocoa([item keyEquivalent],
+                                             [item keyEquivalentModifierMask]));
       }
     }
   }
   // Default to Cmd+Shift+F.
   return scoped_ptr<ui::PlatformAcceleratorCocoa>(
-      new ui::PlatformAcceleratorCocoa(@"f", NSCommandKeyMask|NSShiftKeyMask));
+      new ui::PlatformAcceleratorCocoa(@"f",
+                                       NSCommandKeyMask | NSShiftKeyMask));
 }
 
 // This looks at the Main Menu and determines what the user has set as the
@@ -295,7 +302,7 @@ const float kHideDuration = 0.7;
 }
 
 + (NSString*)keyCombinationForAccelerator:
-    (const ui::PlatformAcceleratorCocoa&)item {
+        (const ui::PlatformAcceleratorCocoa&)item {
   NSMutableString* string = [NSMutableString string];
   NSUInteger modifiers = item.modifier_mask();
 

@@ -5,23 +5,24 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
-#include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
+#include "chrome/browser/ui/fullscreen/exclusive_access_bubble_type.h"
 #include "url/gurl.h"
 
 @class BrowserWindowController;
 class Browser;
 @class GTMUILocalizerAndLayoutTweaker;
 
-// The FullscreenExitBubbleController manages the bubble that tells the user
-// how to escape fullscreen mode. The bubble only appears when a tab requests
-// fullscreen mode via webkitRequestFullScreen().
-@interface FullscreenExitBubbleController :
-    NSWindowController<NSTextViewDelegate, NSAnimationDelegate> {
+// The ExclusiveAccessBubbleWindowController manages the bubble that informs the
+// user of different exclusive access state like fullscreen mode, mouse lock,
+// etc. Refer to EXCLUSIVE_ACCESS_BUBBLE_TYPE for the different possible
+// conntents of the bubble.
+@interface ExclusiveAccessBubbleWindowController
+    : NSWindowController<NSTextViewDelegate, NSAnimationDelegate> {
  @private
   BrowserWindowController* owner_;  // weak
-  Browser* browser_; // weak
+  Browser* browser_;                // weak
   GURL url_;
-  FullscreenExitBubbleType bubbleType_;
+  ExclusiveAccessBubbleType bubbleType_;
 
  @protected
   IBOutlet NSTextField* exitLabelPlaceholder_;
@@ -44,7 +45,7 @@ class Browser;
 - (id)initWithOwner:(BrowserWindowController*)owner
             browser:(Browser*)browser
                 url:(const GURL&)url
-         bubbleType:(FullscreenExitBubbleType)bubbleType;
+         bubbleType:(ExclusiveAccessBubbleType)bubbleType;
 
 - (void)allow:(id)sender;
 - (void)deny:(id)sender;
@@ -52,7 +53,7 @@ class Browser;
 - (void)showWindow;
 - (void)closeImmediately;
 
-// Positions the fullscreen exit bubble in the top-center of the window.
+// Positions the exclusive access bubble in the top-center of the window.
 - (void)positionInWindowAtTop:(CGFloat)maxY width:(CGFloat)maxWidth;
 
 @end

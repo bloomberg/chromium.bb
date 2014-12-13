@@ -63,6 +63,7 @@
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/download/download_in_progress_dialog_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
+#include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "chrome/browser/ui/views/extensions/bookmark_app_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout_delegate.h"
@@ -70,7 +71,6 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
-#include "chrome/browser/ui/views/fullscreen_exit_bubble_views.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
@@ -289,8 +289,8 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
     return browser_view_->IsBookmarkBarVisible();
   }
 
-  FullscreenExitBubbleViews* GetFullscreenExitBubble() const override {
-    return browser_view_->fullscreen_exit_bubble();
+  ExclusiveAccessBubbleViews* GetExclusiveAccessBubble() const override {
+    return browser_view_->exclusive_access_bubble();
   }
 
  private:
@@ -874,7 +874,7 @@ void BrowserView::Restore() {
 }
 
 void BrowserView::EnterFullscreen(const GURL& url,
-                                  FullscreenExitBubbleType bubble_type,
+                                  ExclusiveAccessBubbleType bubble_type,
                                   bool with_toolbar) {
   if (IsFullscreen())
     return;  // Nothing to do.
@@ -886,22 +886,24 @@ void BrowserView::ExitFullscreen() {
   if (!IsFullscreen())
     return;  // Nothing to do.
 
-  ProcessFullscreen(false, NORMAL_FULLSCREEN, GURL(), FEB_TYPE_NONE);
+  ProcessFullscreen(false, NORMAL_FULLSCREEN, GURL(),
+                    EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE);
 }
 
 void BrowserView::UpdateFullscreenExitBubbleContent(
     const GURL& url,
-    FullscreenExitBubbleType bubble_type) {
+    ExclusiveAccessBubbleType bubble_type) {
   // Immersive mode has no exit bubble because it has a visible strip at the
   // top that gives the user a hover target.
   // TODO(jamescook): Figure out what to do with mouse-lock.
-  if (bubble_type == FEB_TYPE_NONE || ShouldUseImmersiveFullscreenForUrl(url)) {
-    fullscreen_bubble_.reset();
-  } else if (fullscreen_bubble_.get()) {
-    fullscreen_bubble_->UpdateContent(url, bubble_type);
+  if (bubble_type == EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE ||
+      ShouldUseImmersiveFullscreenForUrl(url)) {
+    exclusive_access_bubble_.reset();
+  } else if (exclusive_access_bubble_.get()) {
+    exclusive_access_bubble_->UpdateContent(url, bubble_type);
   } else {
-    fullscreen_bubble_.reset(new FullscreenExitBubbleViews(
-        this, url, bubble_type));
+    exclusive_access_bubble_.reset(
+        new ExclusiveAccessBubbleViews(this, url, bubble_type));
   }
 }
 
@@ -918,7 +920,7 @@ bool BrowserView::IsFullscreen() const {
 }
 
 bool BrowserView::IsFullscreenBubbleVisible() const {
-  return fullscreen_bubble_ != nullptr;
+  return exclusive_access_bubble_ != nullptr;
 }
 
 bool BrowserView::SupportsFullscreenWithToolbar() const {
@@ -937,7 +939,8 @@ bool BrowserView::IsFullscreenWithToolbar() const {
 #if defined(OS_WIN)
 void BrowserView::SetMetroSnapMode(bool enable) {
   LOCAL_HISTOGRAM_COUNTS("Metro.SnapModeToggle", enable);
-  ProcessFullscreen(enable, METRO_SNAP_FULLSCREEN, GURL(), FEB_TYPE_NONE);
+  ProcessFullscreen(enable, METRO_SNAP_FULLSCREEN, GURL(),
+                    EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE);
 }
 
 bool BrowserView::IsInMetroSnapMode() const {
@@ -953,7 +956,8 @@ void BrowserView::RestoreFocus() {
 
 void BrowserView::FullscreenStateChanged() {
   CHECK(!IsFullscreen());
-  ProcessFullscreen(false, NORMAL_FULLSCREEN, GURL(), FEB_TYPE_NONE);
+  ProcessFullscreen(false, NORMAL_FULLSCREEN, GURL(),
+                    EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE);
 }
 
 void BrowserView::ToolbarSizeChanged(bool is_animating) {
@@ -2195,7 +2199,7 @@ void BrowserView::UpdateUIForContents(WebContents* contents) {
 void BrowserView::ProcessFullscreen(bool fullscreen,
                                     FullscreenMode mode,
                                     const GURL& url,
-                                    FullscreenExitBubbleType bubble_type) {
+                                    ExclusiveAccessBubbleType bubble_type) {
   if (in_process_fullscreen_)
     return;
   in_process_fullscreen_ = true;
@@ -2209,7 +2213,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   if (mode == METRO_SNAP_FULLSCREEN || !fullscreen) {
     // Hide the fullscreen bubble as soon as possible, since the mode toggle can
     // take enough time for the user to notice.
-    fullscreen_bubble_.reset();
+    exclusive_access_bubble_.reset();
   }
 
   if (fullscreen) {

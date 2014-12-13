@@ -2021,8 +2021,9 @@ willAnimateFromState:(BookmarkBar::State)oldState
 }
 
 // (Private/TestingAPI)
-- (FullscreenExitBubbleController*)fullscreenExitBubbleController {
-  return fullscreenExitBubbleController_.get();
+- (ExclusiveAccessBubbleWindowController*)
+        exclusiveAccessBubbleWindowController {
+  return exclusiveAccessBubbleWindowController_.get();
 }
 
 - (NSRect)omniboxPopupAnchorRect {
@@ -2091,9 +2092,9 @@ willAnimateFromState:(BookmarkBar::State)oldState
 }
 
 - (void)updateFullscreenExitBubbleURL:(const GURL&)url
-                           bubbleType:(FullscreenExitBubbleType)bubbleType {
+                           bubbleType:(ExclusiveAccessBubbleType)bubbleType {
   fullscreenUrl_ = url;
-  fullscreenBubbleType_ = bubbleType;
+  exclusiveAccessBubbleType_ = bubbleType;
   [self layoutSubviews];
   [self showFullscreenExitBubbleIfNecessary];
 }
@@ -2113,10 +2114,10 @@ willAnimateFromState:(BookmarkBar::State)oldState
 }
 
 - (void)enterExtensionFullscreenForURL:(const GURL&)url
-                            bubbleType:(FullscreenExitBubbleType)bubbleType {
+                            bubbleType:(ExclusiveAccessBubbleType)bubbleType {
   if (chrome::mac::SupportsSystemFullscreen()) {
     fullscreenUrl_ = url;
-    fullscreenBubbleType_ = bubbleType;
+    exclusiveAccessBubbleType_ = bubbleType;
     [self enterBrowserFullscreenWithToolbar:NO];
   } else {
     [self enterImmersiveFullscreen];
@@ -2126,7 +2127,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
 }
 
 - (void)enterWebContentFullscreenForURL:(const GURL&)url
-                             bubbleType:(FullscreenExitBubbleType)bubbleType {
+                             bubbleType:(ExclusiveAccessBubbleType)bubbleType {
   [self enterImmersiveFullscreen];
   if (!url.is_empty())
     [self updateFullscreenExitBubbleURL:url bubbleType:bubbleType];

@@ -45,36 +45,36 @@ bool FullscreenControllerTest::IsWindowFullscreenForTabOrPending() {
 }
 
 bool FullscreenControllerTest::IsMouseLockPermissionRequested() {
-  FullscreenExitBubbleType type =
-      browser()->fullscreen_controller()->GetFullscreenExitBubbleType();
+  ExclusiveAccessBubbleType type =
+      browser()->fullscreen_controller()->GetExclusiveAccessBubbleType();
   bool mouse_lock = false;
-  fullscreen_bubble::PermissionRequestedByType(type, NULL, &mouse_lock);
+  exclusive_access_bubble::PermissionRequestedByType(type, NULL, &mouse_lock);
   return mouse_lock;
 }
 
 bool FullscreenControllerTest::IsFullscreenPermissionRequested() {
-  FullscreenExitBubbleType type =
-      browser()->fullscreen_controller()->GetFullscreenExitBubbleType();
+  ExclusiveAccessBubbleType type =
+      browser()->fullscreen_controller()->GetExclusiveAccessBubbleType();
   bool fullscreen = false;
-  fullscreen_bubble::PermissionRequestedByType(type, &fullscreen, NULL);
+  exclusive_access_bubble::PermissionRequestedByType(type, &fullscreen, NULL);
   return fullscreen;
 }
 
-FullscreenExitBubbleType
-    FullscreenControllerTest::GetFullscreenExitBubbleType() {
-  return browser()->fullscreen_controller()->GetFullscreenExitBubbleType();
+ExclusiveAccessBubbleType
+FullscreenControllerTest::GetExclusiveAccessBubbleType() {
+  return browser()->fullscreen_controller()->GetExclusiveAccessBubbleType();
 }
 
 bool FullscreenControllerTest::IsFullscreenBubbleDisplayed() {
-  FullscreenExitBubbleType type =
-      browser()->fullscreen_controller()->GetFullscreenExitBubbleType();
-  return type != FEB_TYPE_NONE;
+  ExclusiveAccessBubbleType type =
+      browser()->fullscreen_controller()->GetExclusiveAccessBubbleType();
+  return type != EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE;
 }
 
 bool FullscreenControllerTest::IsFullscreenBubbleDisplayingButtons() {
-  FullscreenExitBubbleType type =
-      browser()->fullscreen_controller()->GetFullscreenExitBubbleType();
-  return fullscreen_bubble::ShowButtonsForType(type);
+  ExclusiveAccessBubbleType type =
+      browser()->fullscreen_controller()->GetExclusiveAccessBubbleType();
+  return exclusive_access_bubble::ShowButtonsForType(type);
 }
 
 void FullscreenControllerTest::AcceptCurrentFullscreenOrMouseLockRequest() {

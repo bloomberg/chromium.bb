@@ -40,7 +40,7 @@ class FullscreenControllerTestWindow : public TestBrowserWindow {
 
   // BrowserWindow Interface:
   void EnterFullscreen(const GURL& url,
-                       FullscreenExitBubbleType type,
+                       ExclusiveAccessBubbleType type,
                        bool with_toolbar) override;
   void ExitFullscreen() override;
   bool ShouldHideUIForFullscreen() const override;
@@ -81,7 +81,7 @@ FullscreenControllerTestWindow::FullscreenControllerTestWindow()
 
 void FullscreenControllerTestWindow::EnterFullscreen(
     const GURL& url,
-    FullscreenExitBubbleType type,
+    ExclusiveAccessBubbleType type,
     bool with_toolbar) {
   EnterFullscreen(with_toolbar);
 }
@@ -427,8 +427,8 @@ TEST_F(FullscreenControllerStateUnitTest, ExitFullscreenViaBrowserWindow) {
   // Exit fullscreen without going through fullscreen controller.
   browser()->window()->ExitFullscreen();
   ChangeWindowFullscreenState();
-  EXPECT_EQ(FEB_TYPE_NONE,
-            browser()->fullscreen_controller()->GetFullscreenExitBubbleType());
+  EXPECT_EQ(EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE,
+            browser()->fullscreen_controller()->GetExclusiveAccessBubbleType());
 }
 
 // Test that switching tabs takes the browser out of tab fullscreen.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/fullscreen_exit_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/exclusive_access_bubble_window_controller.h"
 
 #include "base/mac/mac_util.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -22,19 +22,19 @@
 using content::SiteInstance;
 using content::WebContents;
 
-@interface FullscreenExitBubbleController(JustForTesting)
+@interface ExclusiveAccessBubbleWindowController (JustForTesting)
 // Already defined.
 + (NSString*)keyCommandString;
 + (NSString*)keyCombinationForAccelerator:
-    (const ui::PlatformAcceleratorCocoa&)item;
+        (const ui::PlatformAcceleratorCocoa&)item;
 @end
 
-@interface FullscreenExitBubbleController(ExposedForTesting)
+@interface ExclusiveAccessBubbleWindowController (ExposedForTesting)
 - (NSTextField*)exitLabelPlaceholder;
 - (NSTextView*)exitLabel;
 @end
 
-@implementation FullscreenExitBubbleController(ExposedForTesting)
+@implementation ExclusiveAccessBubbleWindowController (ExposedForTesting)
 - (NSTextField*)exitLabelPlaceholder {
   return exitLabelPlaceholder_;
 }
@@ -44,18 +44,19 @@ using content::WebContents;
 }
 @end
 
-class FullscreenExitBubbleControllerTest : public CocoaProfileTest {
+class ExclusiveAccessBubbleWindowControllerTest : public CocoaProfileTest {
  public:
   virtual void SetUp() {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(profile());
 
     site_instance_ = SiteInstance::Create(profile());
-    controller_.reset(
-        [[FullscreenExitBubbleController alloc] initWithOwner:nil
-                                                      browser:browser()
-                                                          url:GURL()
-                      bubbleType:FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION]);
+    controller_.reset([[ExclusiveAccessBubbleWindowController alloc]
+        initWithOwner:nil
+              browser:browser()
+                  url:GURL()
+           bubbleType:
+               EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION]);
     EXPECT_TRUE([controller_ window]);
   }
 
@@ -68,19 +69,20 @@ class FullscreenExitBubbleControllerTest : public CocoaProfileTest {
   void AppendTabToStrip() {
     WebContents* web_contents = WebContents::Create(
         content::WebContents::CreateParams(profile(), site_instance_.get()));
-    browser()->tab_strip_model()->AppendWebContents(
-        web_contents, /*foreground=*/true);
+    browser()->tab_strip_model()->AppendWebContents(web_contents,
+                                                    /*foreground=*/true);
   }
 
   scoped_refptr<SiteInstance> site_instance_;
-  base::scoped_nsobject<FullscreenExitBubbleController> controller_;
+  base::scoped_nsobject<ExclusiveAccessBubbleWindowController> controller_;
 };
 
 // http://crbug.com/103912
-TEST_F(FullscreenExitBubbleControllerTest, DISABLED_DenyExitsFullscreen) {
+TEST_F(ExclusiveAccessBubbleWindowControllerTest,
+       DISABLED_DenyExitsFullscreen) {
   NSWindow* window = browser()->window()->GetNativeWindow();
-  BrowserWindowController* bwc = [BrowserWindowController
-      browserWindowControllerForWindow:window];
+  BrowserWindowController* bwc =
+      [BrowserWindowController browserWindowControllerForWindow:window];
 
   [bwc showWindow:nil];
 
@@ -97,7 +99,8 @@ TEST_F(FullscreenExitBubbleControllerTest, DISABLED_DenyExitsFullscreen) {
     ASSERT_TRUE(browser()->window()->IsFullscreen());
   }
 
-  FullscreenExitBubbleController* bubble = [bwc fullscreenExitBubbleController];
+  ExclusiveAccessBubbleWindowController* bubble =
+      [bwc exclusiveAccessBubbleWindowController];
   EXPECT_TRUE(bubble);
   {
     content::WindowedNotificationObserver fullscreen_observer(
@@ -106,23 +109,23 @@ TEST_F(FullscreenExitBubbleControllerTest, DISABLED_DenyExitsFullscreen) {
     [bubble deny:nil];
     fullscreen_observer.Wait();
   }
-  EXPECT_FALSE([bwc fullscreenExitBubbleController]);
+  EXPECT_FALSE([bwc exclusiveAccessBubbleWindowController]);
   EXPECT_FALSE(browser()->window()->IsFullscreen());
   CloseBrowserWindow();
 }
 
-TEST_F(FullscreenExitBubbleControllerTest, LabelWasReplaced) {
+TEST_F(ExclusiveAccessBubbleWindowControllerTest, LabelWasReplaced) {
   EXPECT_FALSE([controller_ exitLabelPlaceholder]);
   EXPECT_TRUE([controller_ exitLabel]);
 }
 
-TEST_F(FullscreenExitBubbleControllerTest, ShortcutText) {
+TEST_F(ExclusiveAccessBubbleWindowControllerTest, ShortcutText) {
   ui::PlatformAcceleratorCocoa cmd_F(@"F", NSCommandKeyMask);
-  ui::PlatformAcceleratorCocoa cmd_shift_f(
-      @"f", NSCommandKeyMask | NSShiftKeyMask);
-  NSString* cmd_F_text = [FullscreenExitBubbleController
+  ui::PlatformAcceleratorCocoa cmd_shift_f(@"f",
+                                           NSCommandKeyMask | NSShiftKeyMask);
+  NSString* cmd_F_text = [ExclusiveAccessBubbleWindowController
       keyCombinationForAccelerator:cmd_F];
-  NSString* cmd_shift_f_text = [FullscreenExitBubbleController
+  NSString* cmd_shift_f_text = [ExclusiveAccessBubbleWindowController
       keyCombinationForAccelerator:cmd_shift_f];
   EXPECT_NSEQ(cmd_shift_f_text, cmd_F_text);
   EXPECT_NSEQ(@"\u2318\u21E7F", cmd_shift_f_text);

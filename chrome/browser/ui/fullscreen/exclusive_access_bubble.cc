@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble.h"
+#include "chrome/browser/ui/fullscreen/exclusive_access_bubble.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -19,53 +19,52 @@
 // NOTE(koz): Linux doesn't use the thick shadowed border, so we add padding
 // here.
 #if defined(OS_LINUX)
-const int FullscreenExitBubble::kPaddingPx = 8;
+const int ExclusiveAccessBubble::kPaddingPx = 8;
 #else
-const int FullscreenExitBubble::kPaddingPx = 15;
+const int ExclusiveAccessBubble::kPaddingPx = 15;
 #endif
-const int FullscreenExitBubble::kInitialDelayMs = 3800;
-const int FullscreenExitBubble::kIdleTimeMs = 2300;
-const int FullscreenExitBubble::kPositionCheckHz = 10;
-const int FullscreenExitBubble::kSlideInRegionHeightPx = 4;
-const int FullscreenExitBubble::kSlideInDurationMs = 350;
-const int FullscreenExitBubble::kSlideOutDurationMs = 700;
-const int FullscreenExitBubble::kPopupTopPx = 15;
+const int ExclusiveAccessBubble::kInitialDelayMs = 3800;
+const int ExclusiveAccessBubble::kIdleTimeMs = 2300;
+const int ExclusiveAccessBubble::kPositionCheckHz = 10;
+const int ExclusiveAccessBubble::kSlideInRegionHeightPx = 4;
+const int ExclusiveAccessBubble::kSlideInDurationMs = 350;
+const int ExclusiveAccessBubble::kSlideOutDurationMs = 700;
+const int ExclusiveAccessBubble::kPopupTopPx = 15;
 
-FullscreenExitBubble::FullscreenExitBubble(Browser* browser,
-                                           const GURL& url,
-                                           FullscreenExitBubbleType bubble_type)
-    : browser_(browser),
-      url_(url),
-      bubble_type_(bubble_type) {
-  DCHECK_NE(FEB_TYPE_NONE, bubble_type_);
+ExclusiveAccessBubble::ExclusiveAccessBubble(
+    Browser* browser,
+    const GURL& url,
+    ExclusiveAccessBubbleType bubble_type)
+    : browser_(browser), url_(url), bubble_type_(bubble_type) {
+  DCHECK_NE(EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE, bubble_type_);
 }
 
-FullscreenExitBubble::~FullscreenExitBubble() {
+ExclusiveAccessBubble::~ExclusiveAccessBubble() {
 }
 
-void FullscreenExitBubble::StartWatchingMouse() {
+void ExclusiveAccessBubble::StartWatchingMouse() {
   // Start the initial delay timer and begin watching the mouse.
   initial_delay_.Start(FROM_HERE,
                        base::TimeDelta::FromMilliseconds(kInitialDelayMs), this,
-                       &FullscreenExitBubble::CheckMousePosition);
+                       &ExclusiveAccessBubble::CheckMousePosition);
   gfx::Point cursor_pos = GetCursorScreenPoint();
   last_mouse_pos_ = cursor_pos;
-  mouse_position_checker_.Start(FROM_HERE,
-      base::TimeDelta::FromMilliseconds(1000 / kPositionCheckHz), this,
-      &FullscreenExitBubble::CheckMousePosition);
+  mouse_position_checker_.Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(1000 / kPositionCheckHz),
+      this, &ExclusiveAccessBubble::CheckMousePosition);
 }
 
-void FullscreenExitBubble::StopWatchingMouse() {
+void ExclusiveAccessBubble::StopWatchingMouse() {
   initial_delay_.Stop();
   idle_timeout_.Stop();
   mouse_position_checker_.Stop();
 }
 
-bool FullscreenExitBubble::IsWatchingMouse() const {
+bool ExclusiveAccessBubble::IsWatchingMouse() const {
   return mouse_position_checker_.IsRunning();
 }
 
-void FullscreenExitBubble::CheckMousePosition() {
+void ExclusiveAccessBubble::CheckMousePosition() {
   // Desired behavior:
   //
   // +------------+-----------------------------+------------+
@@ -94,12 +93,11 @@ void FullscreenExitBubble::CheckMousePosition() {
     idle_timeout_.Stop();  // If the timer isn't running, this is a no-op.
     idle_timeout_.Start(FROM_HERE,
                         base::TimeDelta::FromMilliseconds(kIdleTimeMs), this,
-                        &FullscreenExitBubble::CheckMousePosition);
+                        &ExclusiveAccessBubble::CheckMousePosition);
   }
   last_mouse_pos_ = cursor_pos;
 
-  if (!IsWindowActive() ||
-      !WindowContainsPoint(cursor_pos) ||
+  if (!IsWindowActive() || !WindowContainsPoint(cursor_pos) ||
       (cursor_pos.y() >= GetPopupRect(true).bottom()) ||
       !idle_timeout_.IsRunning()) {
     // The cursor is offscreen, in the slide-out region, or idle.
@@ -116,34 +114,34 @@ void FullscreenExitBubble::CheckMousePosition() {
   }
 }
 
-void FullscreenExitBubble::ToggleFullscreen() {
-  browser_->fullscreen_controller()->
-      ExitTabOrBrowserFullscreenToPreviousState();
+void ExclusiveAccessBubble::ToggleFullscreen() {
+  browser_->fullscreen_controller()
+      ->ExitTabOrBrowserFullscreenToPreviousState();
 }
 
-void FullscreenExitBubble::Accept() {
+void ExclusiveAccessBubble::Accept() {
   browser_->fullscreen_controller()->OnAcceptFullscreenPermission();
 }
 
-void FullscreenExitBubble::Cancel() {
+void ExclusiveAccessBubble::Cancel() {
   browser_->fullscreen_controller()->OnDenyFullscreenPermission();
 }
 
-base::string16 FullscreenExitBubble::GetCurrentMessageText() const {
-  return fullscreen_bubble::GetLabelTextForType(
+base::string16 ExclusiveAccessBubble::GetCurrentMessageText() const {
+  return exclusive_access_bubble::GetLabelTextForType(
       bubble_type_, url_,
       extensions::ExtensionRegistry::Get(browser_->profile()));
 }
 
-base::string16 FullscreenExitBubble::GetCurrentDenyButtonText() const {
-  return fullscreen_bubble::GetDenyButtonTextForType(bubble_type_);
+base::string16 ExclusiveAccessBubble::GetCurrentDenyButtonText() const {
+  return exclusive_access_bubble::GetDenyButtonTextForType(bubble_type_);
 }
 
-base::string16 FullscreenExitBubble::GetAllowButtonText() const {
+base::string16 ExclusiveAccessBubble::GetAllowButtonText() const {
   return l10n_util::GetStringUTF16(IDS_FULLSCREEN_ALLOW);
 }
 
-base::string16 FullscreenExitBubble::GetInstructionText() const {
+base::string16 ExclusiveAccessBubble::GetInstructionText() const {
   return l10n_util::GetStringFUTF16(IDS_FULLSCREEN_PRESS_ESC_TO_EXIT,
-      l10n_util::GetStringUTF16(IDS_APP_ESC_KEY));
+                                    l10n_util::GetStringUTF16(IDS_APP_ESC_KEY));
 }

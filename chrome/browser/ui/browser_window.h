@@ -11,7 +11,7 @@
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
+#include "chrome/browser/ui/fullscreen/exclusive_access_bubble_type.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -131,12 +131,12 @@ class BrowserWindow : public ui::BaseWindow {
   // On Mac, the tab strip and toolbar will be shown if |with_toolbar| is true,
   // |with_toolbar| is ignored on other platforms.
   virtual void EnterFullscreen(const GURL& url,
-                               FullscreenExitBubbleType bubble_type,
+                               ExclusiveAccessBubbleType bubble_type,
                                bool with_toolbar) = 0;
   virtual void ExitFullscreen() = 0;
   virtual void UpdateFullscreenExitBubbleContent(
       const GURL& url,
-      FullscreenExitBubbleType bubble_type) = 0;
+      ExclusiveAccessBubbleType bubble_type) = 0;
 
   // Windows and GTK remove the top controls in fullscreen, but Mac and Ash
   // keep the controls in a slide-down panel.
