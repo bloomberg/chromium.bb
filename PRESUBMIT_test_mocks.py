@@ -24,6 +24,7 @@ class MockInputApi(object):
     self.subprocess = subprocess
     self.files = []
     self.is_committing = False
+    self.change = MockChange([])
 
   def AffectedFiles(self, file_filter=None):
     return self.files

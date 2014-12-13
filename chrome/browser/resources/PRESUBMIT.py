@@ -12,8 +12,8 @@ ACTION_XML_PATH = '../../../tools/metrics/actions/actions.xml'
 
 def CheckUserActionUpdate(input_api, output_api, action_xml_path):
   """Checks if any new user action has been added."""
-  if any('actions.xml' == input_api.os_path.basename(f.LocalPath()) for f in
-         input_api.AffectedFiles()):
+  if any('actions.xml' == input_api.os_path.basename(f) for f in
+         input_api.change.LocalPaths()):
     # If actions.xml is already included in the changelist, the PRESUBMIT
     # for actions.xml will do a more complete presubmit check.
     return []

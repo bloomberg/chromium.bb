@@ -11,16 +11,17 @@ import PRESUBMIT
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))))))
-from PRESUBMIT_test_mocks import MockFile, MockInputApi, MockOutputApi
+from PRESUBMIT_test_mocks import MockInputApi, MockOutputApi
+from PRESUBMIT_test_mocks import MockFile, MockChange
 
 class HTMLActionAdditionTest(unittest.TestCase):
 
   def testActionXMLChanged(self):
     mock_input_api = MockInputApi()
-    mock_input_api.files = [
-      MockFile('path/valid.html', ''),
-      MockFile('actions.xml', '') ]
-
+    lines = ['<input id="testinput" pref="testpref"',
+             'metric="validaction" type="checkbox" dialog-pref>']
+    mock_input_api.files = [MockFile('path/valid.html', lines)]
+    mock_input_api.change = MockChange(['path/valid.html','actions.xml'])
     action_xml_path = self._createActionXMLFile()
     self.assertEqual([], PRESUBMIT.CheckUserActionUpdate(mock_input_api,
                                                          MockOutputApi(),
