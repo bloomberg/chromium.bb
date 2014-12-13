@@ -41,22 +41,44 @@ function handleWebEnrollRequest(messageSender, request, sendResponse) {
     sendResponseOnce(sentResponse, closeable, response, sendResponse);
   }
 
+  function timeout() {
+    sendErrorResponse({errorCode: ErrorCodes.TIMEOUT});
+  }
+
   var sender = createSenderFromMessageSender(messageSender);
   if (!sender) {
     sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
     return null;
   }
 
-  var enroller =
-      validateEnrollRequest(
-          sender, request, 'enrollChallenges', 'signData',
-          sendErrorResponse, sendSuccessResponse);
-  if (enroller) {
-    var registerRequests = request['enrollChallenges'];
-    var signRequests = getSignRequestsFromEnrollRequest(request, 'signData');
-    closeable = /** @type {Closeable} */ (enroller);
-    enroller.doEnroll(registerRequests, signRequests, request['appId']);
+  if (!isValidEnrollRequest(request, 'enrollChallenges', 'signData')) {
+    sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
+    return null;
   }
+
+  var timeoutValueSeconds = getTimeoutValueFromRequest(request);
+  // Attenuate watchdog timeout value less than the enroller's timeout, so the
+  // watchdog only fires after the enroller could reasonably have called back,
+  // not before.
+  var watchdogTimeoutValueSeconds = attenuateTimeoutInSeconds(
+      timeoutValueSeconds, MINIMUM_TIMEOUT_ATTENUATION_SECONDS / 2);
+  var watchdog = new WatchdogRequestHandler(watchdogTimeoutValueSeconds,
+      timeout);
+  var wrappedErrorCb = watchdog.wrapCallback(sendErrorResponse);
+  var wrappedSuccessCb = watchdog.wrapCallback(sendSuccessResponse);
+
+  var timer = createAttenuatedTimer(
+      FACTORY_REGISTRY.getCountdownFactory(), timeoutValueSeconds);
+  var logMsgUrl = request['logMsgUrl'];
+  var enroller = new Enroller(timer, sender, wrappedErrorCb, wrappedSuccessCb,
+      logMsgUrl);
+  watchdog.setCloseable(/** @type {!Closeable} */ (enroller));
+  closeable = watchdog;
+
+  var registerRequests = request['enrollChallenges'];
+  var signRequests = getSignRequestsFromEnrollRequest(request, 'signData');
+  enroller.doEnroll(registerRequests, signRequests, request['appId']);
+
   return closeable;
 }
 
@@ -93,57 +115,47 @@ function handleU2fEnrollRequest(messageSender, request, sendResponse) {
     sendResponseOnce(sentResponse, closeable, response, sendResponse);
   }
 
+  function timeout() {
+    sendErrorResponse({errorCode: ErrorCodes.TIMEOUT});
+  }
+
   var sender = createSenderFromMessageSender(messageSender);
   if (!sender) {
     sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
     return null;
   }
 
-  var enroller =
-      validateEnrollRequest(
-          sender, request, 'registerRequests', 'signRequests',
-          sendErrorResponse, sendSuccessResponse, 'registeredKeys');
-  if (enroller) {
-    var registerRequests = request['registerRequests'];
-    var signRequests = getSignRequestsFromEnrollRequest(request,
-        'signRequests', 'registeredKeys');
-    closeable = /** @type {Closeable} */ (enroller);
-    enroller.doEnroll(registerRequests, signRequests, request['appId']);
-  }
-  return closeable;
-}
-
-/**
- * Validates an enroll request using the given parameters.
- * @param {WebRequestSender} sender The sender of the message.
- * @param {Object} request The web page's enroll request.
- * @param {string} enrollChallengesName The name of the enroll challenges value
- *     in the request.
- * @param {string} signChallengesName The name of the sign challenges value in
- *     the request.
- * @param {function(U2fError)} errorCb Error callback.
- * @param {function(string, string, (string|undefined))} successCb Success
- *     callback.
- * @param {string=} opt_registeredKeysName The name of the registered keys
- *     value in the request.
- * @return {Enroller} Enroller object representing the request, if the request
- *     is valid, or null if the request is invalid.
- */
-function validateEnrollRequest(sender, request,
-    enrollChallengesName, signChallengesName, errorCb, successCb,
-    opt_registeredKeysName) {
-  if (!isValidEnrollRequest(request, enrollChallengesName,
-      signChallengesName, opt_registeredKeysName)) {
-    errorCb({errorCode: ErrorCodes.BAD_REQUEST});
+  if (!isValidEnrollRequest(request, 'registerRequests', 'signRequests',
+      'registeredKeys')) {
+    sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
     return null;
   }
 
   var timeoutValueSeconds = getTimeoutValueFromRequest(request);
+  // Attenuate watchdog timeout value less than the enroller's timeout, so the
+  // watchdog only fires after the enroller could reasonably have called back,
+  // not before.
+  var watchdogTimeoutValueSeconds = attenuateTimeoutInSeconds(
+      timeoutValueSeconds, MINIMUM_TIMEOUT_ATTENUATION_SECONDS / 2);
+  var watchdog = new WatchdogRequestHandler(watchdogTimeoutValueSeconds,
+      timeout);
+  var wrappedErrorCb = watchdog.wrapCallback(sendErrorResponse);
+  var wrappedSuccessCb = watchdog.wrapCallback(sendSuccessResponse);
+
   var timer = createAttenuatedTimer(
       FACTORY_REGISTRY.getCountdownFactory(), timeoutValueSeconds);
   var logMsgUrl = request['logMsgUrl'];
-  var enroller = new Enroller(timer, sender, errorCb, successCb, logMsgUrl);
-  return enroller;
+  var enroller = new Enroller(timer, sender, sendErrorResponse,
+      sendSuccessResponse, logMsgUrl);
+  watchdog.setCloseable(/** @type {!Closeable} */ (enroller));
+  closeable = watchdog;
+
+  var registerRequests = request['registerRequests'];
+  var signRequests = getSignRequestsFromEnrollRequest(request,
+      'signRequests', 'registeredKeys');
+  enroller.doEnroll(registerRequests, signRequests, request['appId']);
+
+  return closeable;
 }
 
 /**
@@ -393,12 +405,27 @@ Enroller.prototype.approveOrigin_ = function() {
       .then(function(result) {
         if (self.done_) return;
         if (!result) {
-          // Origin not approved: fail the result.
-          self.notifyError_({errorCode: ErrorCodes.BAD_REQUEST});
+          // Origin not approved: rather than give an explicit indication to
+          // the web page, let a timeout occur.
+          if (self.timer_.expired()) {
+            self.notifyTimeout_();
+            return;
+          }
+          var newTimer = self.timer_.clone(self.notifyTimeout_.bind(self));
+          self.timer_.clearTimeout();
+          self.timer_ = newTimer;
           return;
         }
         self.sendEnrollRequestToHelper_();
       });
+};
+
+/**
+ * Notifies the caller of a timeout error.
+ * @private
+ */
+Enroller.prototype.notifyTimeout_ = function() {
+  this.notifyError_({errorCode: ErrorCodes.TIMEOUT});
 };
 
 /**

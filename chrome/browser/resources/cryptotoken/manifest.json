@@ -1,15 +1,17 @@
 {
   "name": "CryptoTokenExtension",
   "description": "CryptoToken Component Extension",
-  "version": "0.9.6",
+  "version": "0.9.10",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAq7zRobvA+AVlvNqkHSSVhh1sEWsHSqz4oR/XptkDe/Cz3+gW9ZGumZ20NCHjaac8j1iiesdigp8B1LJsd/2WWv2Dbnto4f8GrQ5MVphKyQ9WJHwejEHN2K4vzrTcwaXqv5BSTXwxlxS/mXCmXskTfryKTLuYrcHEWK8fCHb+0gvr8b/kvsi75A1aMmb6nUnFJvETmCkOCPNX5CHTdy634Ts/x0fLhRuPlahk63rdf7agxQv5viVjQFk+tbgv6aa9kdSd11Js/RZ9yZjrFgHOBWgP4jTBqud4+HUglrzu8qynFipyNRLCZsaxhm+NItTyNgesxLdxZcwOz56KD1Q4IQIDAQAB",
   "manifest_version": 2,
   "permissions": [
     "cryptotokenPrivate",
     "hid",
     "usb",
+    "externally_connectable.all_urls",
     "u2fDevices",
-    "https://www.gstatic.com/",
+    "https://*/*",
+    "http://*/*",
     {
       "usbDevices": [
         {
@@ -21,10 +23,7 @@
   ],
   "externally_connectable": {
     "matches": [
-      "https://login.corp.google.com/*",
-      "https://accounts.google.com/*",
-      "https://myaccount.google.com/*",
-      "https://security.google.com/*"
+      "<all_urls>"
     ],
     "ids": [
       "fjajfjhkeibgmiggdfehjplbhmfkialk"
@@ -57,8 +56,10 @@
       "textfetcher.js",
       "appid.js",
       "watchdog.js",
-      "gstaticorigincheck.js",
-      "googleapprovedorigins.js",
+      "etld_names_list.js",
+      "etld.js",
+      "etldorigincheck.js",
+      "cryptotokenapprovedorigins.js",
       "gnubbydevice.js",
       "hidgnubbydevice.js",
       "usbgnubbydevice.js",

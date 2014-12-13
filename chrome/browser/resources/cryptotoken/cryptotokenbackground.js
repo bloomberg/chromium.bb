@@ -22,9 +22,9 @@ UsbGnubbyDevice.register(gnubbies);
 var TIMER_FACTORY = new CountdownTimerFactory();
 
 var FACTORY_REGISTRY = new FactoryRegistry(
-    new GoogleApprovedOrigins(),
+    new CryptoTokenApprovedOrigin(),
     TIMER_FACTORY,
-    new GstaticOriginChecker(),
+    new EtldOriginChecker(),
     new UsbHelper(),
     new XhrTextFetcher());
 

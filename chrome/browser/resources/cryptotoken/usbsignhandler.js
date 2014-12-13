@@ -47,7 +47,6 @@ UsbSignHandler.prototype.run = function(cb) {
   this.cb_ = cb;
   if (!this.request_.signData || !this.request_.signData.length) {
     // Fail a sign request with an empty set of challenges.
-    this.notifyError_(DeviceStatusCodes.INVALID_DATA_STATUS);
     return false;
   }
   var timeoutMillis =

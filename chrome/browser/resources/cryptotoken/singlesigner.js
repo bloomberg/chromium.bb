@@ -253,6 +253,22 @@ SingleGnubbySigner.prototype.openCallback_ = function(rc, gnubby) {
  * @private
  */
 SingleGnubbySigner.prototype.versionCallback_ = function(rc, opt_data) {
+  if (rc == DeviceStatusCodes.BUSY_STATUS) {
+    if (this.timer_ && this.timer_.expired()) {
+      this.goToError_(DeviceStatusCodes.TIMEOUT_STATUS);
+      return;
+    }
+    // There's still time: resync and retry.
+    var self = this;
+    this.gnubby_.sync(function(code) {
+      if (code) {
+        self.goToError_(code, true);
+        return;
+      }
+      self.gnubby_.version(self.versionCallback_.bind(self));
+    });
+    return;
+  }
   if (rc) {
     this.goToError_(rc, true);
     return;
