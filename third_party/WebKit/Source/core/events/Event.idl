@@ -71,5 +71,4 @@
     [CallWith=ExecutionContext, ImplementedAs=legacyReturnValue, MeasureAs=EventReturnValue] attribute boolean returnValue;
     [MeasureAs=EventCancelBubble] attribute boolean cancelBubble;
     [MeasureAs=EventPath] readonly attribute NodeList path;
-    [Custom=Getter, MeasureAs=EventClipboardData] readonly attribute DataTransfer clipboardData;
 };

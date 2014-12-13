@@ -287,6 +287,8 @@ interface ClientRect
 interface ClientRectList
     method constructor
     method item
+interface ClipboardEvent
+    method constructor
 interface CloseEvent
     method constructor
 interface Comment

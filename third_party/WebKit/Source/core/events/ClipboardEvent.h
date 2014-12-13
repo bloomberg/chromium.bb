@@ -24,15 +24,19 @@
 #ifndef ClipboardEvent_h
 #define ClipboardEvent_h
 
+#include "core/clipboard/DataTransfer.h"
 #include "core/events/Event.h"
 
 namespace blink {
 
-class DataTransfer;
-
 class ClipboardEvent final : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~ClipboardEvent();
+    static PassRefPtrWillBeRawPtr<ClipboardEvent> create()
+    {
+        return adoptRefWillBeNoop(new ClipboardEvent());
+    }
 
     static PassRefPtrWillBeRawPtr<ClipboardEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<DataTransfer> dataTransfer)
     {

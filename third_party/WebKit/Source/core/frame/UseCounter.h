@@ -312,7 +312,6 @@ public:
         EventSrcElement = 343,
         EventCancelBubble = 344,
         EventPath = 345,
-        EventClipboardData = 346,
         NodeIteratorDetach = 347,
         AttrNodeValue = 348,
         AttrTextContent = 349,

@@ -17,7 +17,6 @@
             'V8DocumentCustom.cpp',
             'V8ElementCustom.cpp',
             'V8ErrorEventCustom.cpp',
-            'V8EventCustom.cpp',
             'V8EventTargetCustom.cpp',
             'V8FileCustom.cpp',
             'V8FileReaderCustom.cpp',

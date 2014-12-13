@@ -23,8 +23,6 @@
 #include "config.h"
 #include "core/events/ClipboardEvent.h"
 
-#include "core/clipboard/DataTransfer.h"
-
 namespace blink {
 
 ClipboardEvent::ClipboardEvent()
@@ -42,8 +40,7 @@ ClipboardEvent::~ClipboardEvent()
 
 const AtomicString& ClipboardEvent::interfaceName() const
 {
-    // FIXME: create an ClipboardEvent.idl matching http://dev.w3.org/2006/webapi/clipops/clipops.html#clipboard-event-interfaces
-    return EventNames::Event;
+    return EventNames::ClipboardEvent;
 }
 
 bool ClipboardEvent::isClipboardEvent() const
