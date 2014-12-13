@@ -28,6 +28,7 @@
       'cookies.json',
       'copresence.idl',
       'copresence_private.idl',
+      'cryptotoken_private.idl',
       'debugger.json',
       'desktop_capture.json',
       'developer_private.idl',

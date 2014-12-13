@@ -1000,6 +1000,7 @@ enum HistogramValue {
   COPRESENCEENDPOINTS_SEND,
   INLINE_INSTALL_PRIVATE_INSTALL,
   LAUNCHERPAGE_SETENABLED,
+  CRYPTOTOKENPRIVATE_REQUESTPERMISSION,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

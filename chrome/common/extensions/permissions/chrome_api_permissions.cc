@@ -108,6 +108,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        IDS_EXTENSION_PROMPT_WARNING_COPRESENCE,
        PermissionMessage::kCopresence},
       {APIPermission::kCopresencePrivate, "copresencePrivate"},
+      {APIPermission::kCryptotokenPrivate, "cryptotokenPrivate"},
       {APIPermission::kDocumentScan,
        "documentScan",
        APIPermissionInfo::kFlagNone,

@@ -13205,6 +13205,19 @@ Some features may be unavailable.  Please check that the profile exists and you 
         This page has been blocked from tracking your location.
       </message>
 
+      <!-- CryptoToken messages -->
+      <if expr="not is_android">
+        <message name="IDS_CRYPTOTOKEN_INFOBAR_QUESTION" desc="Question asked on the info bar whenever URL wants to access the user's security keys.">
+          Allow <ph name="URL">$1<ex>accounts.google.com</ex></ph> to identify you by your Security Key?
+        </message>
+      </if>
+      <message name="IDS_CRYPTOTOKEN_ALLOW_BUTTON" desc="A button in cryptotoken infobar for allowing access to security keys for a given domain.">
+        Allow
+      </message>
+      <message name="IDS_CRYPTOTOKEN_DENY_BUTTON" desc="A button in cryptotoken infobar for denying access to security keys for a given domain.">
+        Block
+      </message>
+
       <!-- Web MIDI messages -->
       <message name="IDS_MIDI_SYSEX_TAB_LABEL" desc="Label for MIDI system exclusive message on Content Settings dialog">
         MIDI full control

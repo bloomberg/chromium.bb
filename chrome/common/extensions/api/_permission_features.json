@@ -260,6 +260,14 @@
       "AFA728615D3A82D4017BDECEE86978543194D198"  // Whispernet Proxy
     ]
   },
+  "cryptotokenPrivate": {
+    "channel": "dev",
+    "extension_types": ["extension"],
+    "location": "component",
+    "whitelist": [
+      "E24F1786D842E91E74C27929B0B3715A4689A473"  // Cryptotoken
+    ]
+  },
   "diagnostics": [
     {
       "channel": "dev",

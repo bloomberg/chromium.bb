@@ -45990,6 +45990,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="939" label="COPRESENCEENDPOINTS_SEND"/>
   <int value="940" label="INLINE_INSTALL_PRIVATE_INSTALL"/>
   <int value="941" label="LAUNCHERPAGE_SETENABLED"/>
+  <int value="942" label="CRYPTOTOKEN_REQUESTPERMISSION"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

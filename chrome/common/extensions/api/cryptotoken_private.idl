@@ -1,0 +1,34 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// <code>chrome.cryptotokenPrivate</code> API that provides hooks to Chrome to
+// be used by cryptotoken component extension.
+namespace cryptotokenPrivate {
+
+  // Possible results from requesting user permission.
+  enum PermissionResult {
+    // User expclitly allowed
+    ALLOWED,
+    // User explicitly denied
+    DENIED,
+    // Inconclusive, e.g. the tab was closed or navigated away
+    DISMISSED
+  };
+
+  // Callback for permission prompt
+  callback PermissionCallback = void(PermissionResult result);
+
+  // Explicitly gathers approval from the user that an origin in a tab may
+  // to talk to their security keys. This may be used e.g. before registering a
+  // key, since it creates a stable identifier for that particular key, even
+  // across browser instances.
+  // |tabId| is the tab id from the chrome.tabs API, and |securityOrigin| is the
+  // origin as seen by the extension, to verify that it is correct and has not
+  // been navigated away from.
+  interface Functions {
+    static void requestPermission(long tabId,
+                                  DOMString securityOrigin,
+                                  PermissionCallback callback);
+  };
+};

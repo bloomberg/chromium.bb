@@ -183,6 +183,8 @@
       'browser/extensions/api/copresence/copresence_translations.h',
       'browser/extensions/api/copresence_private/copresence_private_api.cc',
       'browser/extensions/api/copresence_private/copresence_private_api.h',
+      'browser/extensions/api/cryptotoken_private/cryptotoken_private_api.cc',
+      'browser/extensions/api/cryptotoken_private/cryptotoken_private_api.h',
       'browser/extensions/api/debugger/debugger_api.cc',
       'browser/extensions/api/debugger/debugger_api.h',
       'browser/extensions/api/debugger/debugger_api_constants.cc',

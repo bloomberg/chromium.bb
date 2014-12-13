@@ -214,6 +214,10 @@
     "dependencies": ["permission:copresencePrivate"],
     "contexts": ["blessed_extension"]
   },
+  "cryptotokenPrivate": {
+    "dependencies": ["permission:cryptotokenPrivate"],
+    "contexts": ["blessed_extension"]
+  },
   "debugger": {
     "dependencies": ["permission:debugger"],
     "contexts": ["blessed_extension"]
