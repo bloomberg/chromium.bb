@@ -20,6 +20,7 @@
 <!ENTITY fcstring SYSTEM "fcstring.sgml">
 <!ENTITY fcstrset SYSTEM "fcstrset.sgml">
 <!ENTITY fcvalue SYSTEM "fcvalue.sgml">
+<!ENTITY fcweight SYSTEM "fcweight.sgml">
 <!ENTITY version SYSTEM "version.sgml">
 ]>
 <!--
@@ -536,6 +537,12 @@ pattern elements can be generated from font names.
 Provides for application-specified symbolic constants for font names.
     </para>
     &fcconstant;
+  </sect2>
+  <sect2><title>FcWeight</title>
+    <para>
+Maps weights to and from OpenType weights.
+    </para>
+  &fcweight;
   </sect2>
   <sect2><title>FcBlanks</title>
     <para>
