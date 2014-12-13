@@ -4,6 +4,7 @@
 
 #include "content/browser/speech/google_streaming_remote_engine.h"
 
+#include <algorithm>
 #include <vector>
 
 #include "base/bind.h"
@@ -342,7 +343,12 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
     upstream_args.push_back("continuous");
   if (config_.interim_results)
     upstream_args.push_back("interim");
-
+  if (!config_.auth_token.empty() && !config_.auth_scope.empty()) {
+    upstream_args.push_back(
+        "authScope=" + net::EscapeQueryParamValue(config_.auth_scope, true));
+    upstream_args.push_back(
+        "authToken=" + net::EscapeQueryParamValue(config_.auth_token, true));
+  }
   GURL upstream_url(std::string(kWebServiceBaseUrl) +
                     std::string(kUpstreamUrl) +
                     JoinString(upstream_args, '&'));

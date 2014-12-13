@@ -18,6 +18,7 @@
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/ui/app_list/recommended_apps.h"
+#include "chrome/browser/ui/app_list/speech_auth_helper.h"
 #include "chrome/browser/ui/app_list/speech_recognizer.h"
 #include "chrome/browser/ui/app_list/start_page_observer.h"
 #include "chrome/browser/ui/app_list/start_page_service_factory.h"
@@ -161,6 +162,7 @@ StartPageService::StartPageService(Profile* profile)
       speech_button_toggled_manually_(false),
       speech_result_obtained_(false),
       webui_finished_loading_(false),
+      speech_auth_helper_(new SpeechAuthHelper(profile, &clock_)),
       weak_factory_(this) {
   // If experimental hotwording is enabled, then we're always "ready".
   // Transitioning into the "hotword recognizing" state is handled by the
@@ -344,11 +346,26 @@ content::WebContents* StartPageService::GetSpeechContents() {
   return GetSpeechRecognitionContents();
 }
 
+void StartPageService::GetSpeechAuthParameters(std::string* auth_scope,
+                                               std::string* auth_token) {
+  if (HotwordService::IsExperimentalHotwordingEnabled()) {
+    HotwordService* service = HotwordServiceFactory::GetForProfile(profile_);
+    if (service &&
+        service->IsOptedIntoAudioLogging() &&
+        !speech_auth_helper_->GetToken().empty()) {
+      *auth_scope = speech_auth_helper_->GetScope();
+      *auth_token = speech_auth_helper_->GetToken();
+    }
+  }
+}
+
 void StartPageService::Shutdown() {
   UnloadContents();
 #if defined(OS_CHROMEOS)
   audio_status_.reset();
 #endif
+
+  speech_auth_helper_.reset();
 }
 
 void StartPageService::WebUILoaded() {

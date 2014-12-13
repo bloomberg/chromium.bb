@@ -43,7 +43,9 @@ class SpeechRecognizer::EventListener
                 net::URLRequestContextGetter* url_request_context_getter,
                 const std::string& locale);
 
-  void StartOnIOThread(int render_process_id);
+  void StartOnIOThread(int render_process_id,
+                       const std::string& auth_scope,
+                       const std::string& auth_token);
   void StopOnIOThread();
 
  private:
@@ -104,7 +106,10 @@ SpeechRecognizer::EventListener::~EventListener() {
   DCHECK(!speech_timeout_.IsRunning());
 }
 
-void SpeechRecognizer::EventListener::StartOnIOThread(int render_process_id) {
+void SpeechRecognizer::EventListener::StartOnIOThread(
+    int render_process_id,
+    const std::string& auth_scope,
+    const std::string& auth_token) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (session_ != kInvalidSessionId)
     StopOnIOThread();
@@ -119,6 +124,8 @@ void SpeechRecognizer::EventListener::StartOnIOThread(int render_process_id) {
   config.url_request_context_getter = url_request_context_getter_;
   config.event_listener = weak_factory_.GetWeakPtr();
   config.initial_context.render_process_id = render_process_id;
+  config.auth_scope = auth_scope;
+  config.auth_token = auth_token;
 
   auto speech_instance = content::SpeechRecognitionManager::GetInstance();
   session_ = speech_instance->CreateSession(config);
@@ -251,7 +258,7 @@ SpeechRecognizer::SpeechRecognizer(
     const std::string& locale)
     : delegate_(delegate),
       speech_event_listener_(new EventListener(
-          delegate, url_request_context_getter, locale)){
+          delegate, url_request_context_getter, locale)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -271,12 +278,18 @@ void SpeechRecognizer::Start() {
   if (!contents)
     return;
 
+  std::string auth_scope;
+  std::string auth_token;
+  delegate_->GetSpeechAuthParameters(&auth_scope, &auth_token);
+
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
       base::Bind(&SpeechRecognizer::EventListener::StartOnIOThread,
                  speech_event_listener_,
-                 contents->GetRenderProcessHost()->GetID()));
+                 contents->GetRenderProcessHost()->GetID(),
+                 auth_scope,
+                 auth_token));
 }
 
 void SpeechRecognizer::Stop() {

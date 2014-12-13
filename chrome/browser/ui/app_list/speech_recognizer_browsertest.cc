@@ -37,6 +37,7 @@ class MockSpeechRecognizerDelegate : public SpeechRecognizerDelegate {
   MOCK_METHOD1(OnSpeechSoundLevelChanged, void(int16_t));
   MOCK_METHOD1(OnSpeechRecognitionStateChanged, void(SpeechRecognitionState));
   MOCK_METHOD0(GetSpeechContents, content::WebContents*());
+  MOCK_METHOD2(GetSpeechAuthParameters, void(std::string*, std::string*));
 
  private:
   base::WeakPtrFactory<MockSpeechRecognizerDelegate> weak_factory_;

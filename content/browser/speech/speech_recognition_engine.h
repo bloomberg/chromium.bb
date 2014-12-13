@@ -59,6 +59,8 @@ class SpeechRecognitionEngine {
     std::string origin_url;
     int audio_sample_rate;
     int audio_num_bits_per_sample;
+    std::string auth_token;
+    std::string auth_scope;
   };
 
   virtual ~SpeechRecognitionEngine() {}

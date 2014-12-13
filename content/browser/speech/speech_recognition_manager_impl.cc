@@ -132,6 +132,8 @@ int SpeechRecognitionManagerImpl::CreateSession(
   remote_engine_config.hardware_info = hardware_info;
   remote_engine_config.origin_url =
       can_report_metrics ? config.origin_url : std::string();
+  remote_engine_config.auth_token = config.auth_token;
+  remote_engine_config.auth_scope = config.auth_scope;
 
   SpeechRecognitionEngine* google_remote_engine;
   if (config.is_legacy_api) {
@@ -434,7 +436,7 @@ int SpeechRecognitionManagerImpl::GetSession(
     int render_process_id, int render_view_id, int request_id) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   SessionsTable::const_iterator iter;
-  for(iter = sessions_.begin(); iter != sessions_.end(); ++iter) {
+  for (iter = sessions_.begin(); iter != sessions_.end(); ++iter) {
     const int session_id = iter->first;
     const SpeechRecognitionSessionContext& context = iter->second->context;
     if (context.render_process_id == render_process_id &&

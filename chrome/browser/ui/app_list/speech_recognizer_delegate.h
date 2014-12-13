@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_APP_LIST_SPEECH_RECOGNIZER_DELEGATE_H_
 
 #include <stdint.h>
+#include <string>
 
 #include "base/strings/string16.h"
 #include "ui/app_list/speech_ui_model_observer.h"
@@ -36,6 +37,11 @@ class SpeechRecognizerDelegate {
   // TODO(amistry): This is an implementation detail that shouldn't be
   // necessary. Somehow, eliminate this dependency.
   virtual content::WebContents* GetSpeechContents() = 0;
+
+  // Get the OAuth2 scope and token to pass to the speech recognizer. Does not
+  // modify the arguments if no auth token is available or allowed.
+  virtual void GetSpeechAuthParameters(std::string* auth_scope,
+                                       std::string* auth_token) = 0;
 
  protected:
   virtual ~SpeechRecognizerDelegate() {}

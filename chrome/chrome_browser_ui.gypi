@@ -1203,6 +1203,8 @@
       'browser/ui/app_list/search/webstore/webstore_provider.h',
       'browser/ui/app_list/search/webstore/webstore_result.cc',
       'browser/ui/app_list/search/webstore/webstore_result.h',
+      'browser/ui/app_list/speech_auth_helper.cc',
+      'browser/ui/app_list/speech_auth_helper.h',
       'browser/ui/app_list/speech_recognizer.cc',
       'browser/ui/app_list/speech_recognizer.h',
       'browser/ui/app_list/speech_recognizer_delegate.h',
