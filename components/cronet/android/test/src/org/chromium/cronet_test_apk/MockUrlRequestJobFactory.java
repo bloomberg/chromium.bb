@@ -62,10 +62,24 @@ public final class MockUrlRequestJobFactory {
         return nativeGetMockUrlWithFailure(path, phase.ordinal(), netError);
     }
 
+    /**
+     * Constructs a mock URL that synchronously responds with data repeated many
+     * times.
+     *
+     * @param data to return in response.
+     * @param dataRepeatCount number of times to repeat the data.
+     */
+    public String getMockUrlForData(String data, int dataRepeatCount) {
+        return nativeGetMockUrlForData(data, dataRepeatCount);
+    }
+
     private static native void nativeAddUrlInterceptors(String installedPath);
 
     private static native String nativeGetMockUrl(String path);
 
     private static native String nativeGetMockUrlWithFailure(String path,
             int phase, int netError);
+
+    private static native String nativeGetMockUrlForData(String data,
+            int dataRepeatCount);
 }

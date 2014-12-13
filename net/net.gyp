@@ -963,6 +963,8 @@
         'test/spawned_test_server/spawner_communicator.h',
         'test/url_request/url_request_failed_job.cc',
         'test/url_request/url_request_failed_job.h',
+        'test/url_request/url_request_mock_data_job.cc',
+        'test/url_request/url_request_mock_data_job.h',
         'test/url_request/url_request_mock_http_job.cc',
         'test/url_request/url_request_mock_http_job.h',
         'url_request/test_url_fetcher_factory.cc',

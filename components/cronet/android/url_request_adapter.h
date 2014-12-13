@@ -17,7 +17,7 @@
 #include "net/url_request/url_request.h"
 
 namespace net {
-class GrowableIOBuffer;
+class IOBufferWithSize;
 class HttpResponseHeaders;
 class UploadDataStream;
 struct RedirectInfo;
@@ -36,7 +36,7 @@ class URLRequestAdapter : public net::URLRequest::Delegate {
       : public base::RefCountedThreadSafe<URLRequestAdapterDelegate> {
    public:
     virtual void OnResponseStarted(URLRequestAdapter* request) = 0;
-    virtual void OnBytesRead(URLRequestAdapter* request) = 0;
+    virtual void OnBytesRead(URLRequestAdapter* request, int bytes_read) = 0;
     virtual void OnRequestFinished(URLRequestAdapter* request) = 0;
     virtual int ReadFromUploadChannel(net::IOBuffer* buf, int buf_length) = 0;
 
@@ -112,9 +112,6 @@ class URLRequestAdapter : public net::URLRequest::Delegate {
   // Get all response headers, as a HttpResponseHeaders object.
   net::HttpResponseHeaders* GetResponseHeaders() const;
 
-  // Returns the overall number of bytes read.
-  size_t bytes_read() const { return bytes_read_; }
-
   // Returns a pointer to the downloaded data.
   unsigned char* Data() const;
 
@@ -138,12 +135,14 @@ class URLRequestAdapter : public net::URLRequest::Delegate {
   void OnRequestSucceeded();
   void OnRequestFailed();
   void OnRequestCompleted();
-  void OnRequestCanceled();
-  void OnBytesRead(int bytes_read);
   void OnAppendChunk(const scoped_ptr<char[]> bytes, int bytes_len,
                      bool is_last_chunk);
 
   void Read();
+
+  // Handles synchronous or asynchronous read result, calls |delegate_| with
+  // bytes read and returns true unless request has succeeded or failed.
+  bool HandleReadResult(int bytes_read);
 
   URLRequestContextAdapter* context_;
   scoped_refptr<URLRequestAdapterDelegate> delegate_;
@@ -153,8 +152,7 @@ class URLRequestAdapter : public net::URLRequest::Delegate {
   net::HttpRequestHeaders headers_;
   scoped_ptr<net::URLRequest> url_request_;
   scoped_ptr<net::UploadDataStream> upload_data_stream_;
-  scoped_refptr<net::GrowableIOBuffer> read_buffer_;
-  int bytes_read_;
+  scoped_refptr<net::IOBufferWithSize> read_buffer_;
   int total_bytes_read_;
   int error_code_;
   int http_status_code_;

@@ -64,8 +64,8 @@ class JniURLRequestAdapterDelegate
     cronet::Java_ChromiumUrlRequest_onResponseStarted(env, owner_);
   }
 
-  void OnBytesRead(URLRequestAdapter* request_adapter) override {
-    int bytes_read = request_adapter->bytes_read();
+  void OnBytesRead(URLRequestAdapter* request_adapter,
+                   int bytes_read) override {
     if (bytes_read != 0) {
       JNIEnv* env = base::android::AttachCurrentThread();
       base::android::ScopedJavaLocalRef<jobject> java_buffer(

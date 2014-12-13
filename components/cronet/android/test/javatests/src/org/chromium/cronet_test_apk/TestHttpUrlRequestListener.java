@@ -30,7 +30,8 @@ public class TestHttpUrlRequestListener implements HttpUrlRequestListener {
     public Exception mException;
     public Map<String, List<String>> mResponseHeaders;
 
-    private ConditionVariable mComplete = new ConditionVariable();
+    private final ConditionVariable mStarted = new ConditionVariable();
+    private final ConditionVariable mComplete = new ConditionVariable();
 
     public TestHttpUrlRequestListener() {
     }
@@ -43,6 +44,7 @@ public class TestHttpUrlRequestListener implements HttpUrlRequestListener {
         mHttpStatusCode = request.getHttpStatusCode();
         mNegotiatedProtocol = request.getNegotiatedProtocol();
         mHttpStatusText = request.getHttpStatusText();
+        mStarted.open();
     }
 
     @Override
@@ -62,8 +64,15 @@ public class TestHttpUrlRequestListener implements HttpUrlRequestListener {
         mResponseAsString = new String(mResponseAsBytes);
         mException = request.getException();
         mComplete.open();
-        Log.i(TAG, "****** Request Complete, status code is "
-                + request.getHttpStatusCode());
+        Log.i(TAG, "****** Request Complete over " + mNegotiatedProtocol
+                + ", status code is " + mHttpStatusCode);
+    }
+
+    /**
+     * Blocks until the response starts.
+     */
+    public void blockForStart() {
+        mStarted.block();
     }
 
     /**

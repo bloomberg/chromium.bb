@@ -4,13 +4,18 @@
 
 package org.chromium.cronet_test_apk;
 
+import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.ChunkedWritableByteChannel;
 import org.chromium.net.HttpUrlRequest;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 /**
  * Tests that use mock URLRequestJobs to simulate URL requests.
@@ -120,5 +125,119 @@ public class MockUrlRequestJobTest extends CronetTestBase {
         assertEquals("Request failed because there were too many redirects or "
                          + "redirects have been disabled",
                      listener.mException.getMessage());
+    }
+
+    /**
+     * TestByteChannel is used for making sure write is not called after the
+     * channel has been closed. Can synchronously cancel a request when write is
+     * called.
+     */
+    static class TestByteChannel extends ChunkedWritableByteChannel {
+        HttpUrlRequest mRequestToCancelOnWrite;
+
+        @Override
+        public int write(ByteBuffer byteBuffer) throws IOException {
+            assertTrue(isOpen());
+            if (mRequestToCancelOnWrite != null) {
+                assertFalse(mRequestToCancelOnWrite.isCanceled());
+                mRequestToCancelOnWrite.cancel();
+                mRequestToCancelOnWrite = null;
+            }
+            return super.write(byteBuffer);
+        }
+
+        @Override
+        public void close() {
+            assertTrue(isOpen());
+            super.close();
+        }
+
+        /**
+         * Set request that will be synchronously canceled when write is called.
+         */
+        public void setRequestToCancelOnWrite(HttpUrlRequest request) {
+            mRequestToCancelOnWrite = request;
+        }
+    }
+
+    @LargeTest
+    @Feature({"Cronet"})
+    public void testNoWriteAfterCancelOnAnotherThread() throws Exception {
+        CronetTestActivity activity = launchCronetTestApp();
+
+        // This test verifies that WritableByteChannel.write is not called after
+        // WritableByteChannel.close if request is canceled from another
+        // thread.
+        for (int i = 0; i < 100; ++i) {
+            HashMap<String, String> headers = new HashMap<String, String>();
+            TestByteChannel channel = new TestByteChannel();
+            TestHttpUrlRequestListener listener =
+                    new TestHttpUrlRequestListener();
+
+            // Create request.
+            final HttpUrlRequest request =
+                    activity.mRequestFactory.createRequest(
+                            MockUrlRequestJobFactory.SUCCESS_URL,
+                            HttpUrlRequest.REQUEST_PRIORITY_LOW, headers,
+                            channel, listener);
+            request.start();
+            listener.blockForStart();
+            Runnable cancelTask = new Runnable() {
+                public void run() {
+                    request.cancel();
+                }
+            };
+            Executors.newCachedThreadPool().execute(cancelTask);
+            listener.blockForComplete();
+            assertFalse(channel.isOpen());
+        }
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testNoWriteAfterSyncCancel() throws Exception {
+        CronetTestActivity activity = launchCronetTestApp();
+
+        HashMap<String, String> headers = new HashMap<String, String>();
+        TestByteChannel channel = new TestByteChannel();
+        TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
+
+        String data = "MyBigFunkyData";
+        int dataLength = data.length();
+        int repeatCount = 10000;
+        String mockUrl = mMockUrlRequestJobFactory.getMockUrlForData(data,
+                repeatCount);
+
+        // Create request.
+        final HttpUrlRequest request =
+                activity.mRequestFactory.createRequest(
+                        mockUrl,
+                        HttpUrlRequest.REQUEST_PRIORITY_LOW, headers,
+                        channel, listener);
+        // Channel will cancel the request from the network thread during the
+        // first write.
+        channel.setRequestToCancelOnWrite(request);
+        request.start();
+        listener.blockForComplete();
+        assertTrue(request.isCanceled());
+        assertFalse(channel.isOpen());
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testBigDataSyncReadRequest() throws Exception {
+        String data = "MyBigFunkyData";
+        int dataLength = data.length();
+        int repeatCount = 100000;
+        String mockUrl = mMockUrlRequestJobFactory.getMockUrlForData(data,
+                repeatCount);
+        TestHttpUrlRequestListener listener = createRequestAndWaitForComplete(
+                mockUrl, false);
+        assertEquals(mockUrl, listener.mUrl);
+        String responseData = new String(listener.mResponseAsBytes);
+        for (int i = 0; i < repeatCount; ++i) {
+            assertEquals(data, responseData.substring(dataLength * i,
+                    dataLength * (i + 1)));
+        }
     }
 }
