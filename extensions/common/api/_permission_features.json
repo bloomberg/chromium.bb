@@ -121,12 +121,10 @@
       "81986D4F846CEDDDB962643FA501D1780DD441BB"   // http://crbug.com/407693
     ]
   },
-  "declarativeWebRequest": [
-    {
+  "declarativeWebRequest": {
       "channel": "beta",
       "extension_types": ["extension", "legacy_packaged_app"]
-    }
-  ],
+  },
   "dns": [
     {
       "channel": "dev",
@@ -325,33 +323,16 @@
     "extension_types": ["extension", "platform_app"],
     "platforms": ["chromeos"]
   },
-  "webview": [
-    {
-      "channel": "stable",
-      "extension_types": ["platform_app"]
-    },
-    {
-      // General support for webview in component extensions still in progress.
-      // Only allowed for whitelisted extensions until all the caveats are
-      // addressed. Tracked in crbug/285151.
-      "channel": "stable",
-      "extension_types": ["extension"],
-      "location": "component",
-      "whitelist": [
-        "D519188F86D9ACCEE0412007B227D9936EB9676B"  // GAIA Component Extension
-      ]
-    }
-  ],
-  "webRequest": [
-    {
+  "webview": {
+    "channel": "stable",
+    "extension_types": ["platform_app"]
+  },
+  "webRequest": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
-     }
-  ],
-  "webRequestBlocking": [
-    {
+   },
+  "webRequestBlocking": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
-    }
-  ]
+  }
 }
