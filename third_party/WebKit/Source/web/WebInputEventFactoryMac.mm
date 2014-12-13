@@ -722,7 +722,18 @@ static inline int modifiersFromEvent(NSEvent* event) {
         modifiers |= WebInputEvent::MetaKey;
     if ([event modifierFlags] & NSAlphaShiftKeyMask)
         modifiers |= WebInputEvent::CapsLockOn;
-    // TODO(port): Set mouse button states
+
+    // The return value of 1 << 0 corresponds to the left mouse button,
+    // 1 << 1 corresponds to the right mouse button,
+    // 1 << n, n >= 2 correspond to other mouse buttons.
+    NSUInteger pressedButtons = [NSEvent pressedMouseButtons];
+
+    if (pressedButtons & (1 << 0))
+        modifiers |= WebInputEvent::LeftButtonDown;
+    if (pressedButtons & (1 << 1))
+        modifiers |= WebInputEvent::RightButtonDown;
+    if (pressedButtons & (1 << 2))
+        modifiers |= WebInputEvent::MiddleButtonDown;
 
     return modifiers;
 }
