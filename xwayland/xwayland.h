@@ -105,6 +105,7 @@ struct weston_wm {
 		xcb_atom_t		 net_wm_state_fullscreen;
 		xcb_atom_t		 net_wm_user_time;
 		xcb_atom_t		 net_wm_icon_name;
+		xcb_atom_t		 net_wm_desktop;
 		xcb_atom_t		 net_wm_window_type;
 		xcb_atom_t		 net_wm_window_type_desktop;
 		xcb_atom_t		 net_wm_window_type_dock;

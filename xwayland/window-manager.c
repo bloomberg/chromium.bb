@@ -863,6 +863,29 @@ weston_wm_window_create_frame(struct weston_wm_window *window)
 	hash_table_insert(wm->window_hash, window->frame_id, window);
 }
 
+/*
+ * Sets the _NET_WM_DESKTOP property for the window to 'desktop'.
+ * Passing a <0 desktop value deletes the property.
+ */
+static void
+weston_wm_window_set_virtual_desktop(struct weston_wm_window *window,
+                                     int desktop)
+{
+	if (desktop >= 0) {
+		xcb_change_property(window->wm->conn,
+		                    XCB_PROP_MODE_REPLACE,
+		                    window->id,
+		                    window->wm->atom.net_wm_desktop,
+		                    XCB_ATOM_CARDINAL,
+		                    32, /* format */
+		                    1, &desktop);
+	} else {
+		xcb_delete_property(window->wm->conn,
+		                    window->id,
+		                    window->wm->atom.net_wm_desktop);
+	}
+}
+
 static void
 weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 {
@@ -888,6 +911,7 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 
 	weston_wm_window_set_wm_state(window, ICCCM_NORMAL_STATE);
 	weston_wm_window_set_net_wm_state(window);
+	weston_wm_window_set_virtual_desktop(window, 0);
 
 	xcb_map_window(wm->conn, map_request->window);
 	xcb_map_window(wm->conn, window->frame_id);
@@ -935,6 +959,10 @@ weston_wm_handle_unmap_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 	window->surface = NULL;
 	window->shsurf = NULL;
 	window->view = NULL;
+
+	weston_wm_window_set_wm_state(window, ICCCM_WITHDRAWN_STATE);
+	weston_wm_window_set_virtual_desktop(window, -1);
+
 	xcb_unmap_window(wm->conn, window->frame_id);
 }
 
@@ -1123,6 +1151,7 @@ weston_wm_window_destroy(struct weston_wm_window *window)
 		xcb_reparent_window(wm->conn, window->id, wm->wm_window, 0, 0);
 		xcb_destroy_window(wm->conn, window->frame_id);
 		weston_wm_window_set_wm_state(window, ICCCM_WITHDRAWN_STATE);
+		weston_wm_window_set_virtual_desktop(window, -1);
 		hash_table_remove(wm->window_hash, window->frame_id);
 		window->frame_id = XCB_WINDOW_NONE;
 	}
@@ -1858,6 +1887,7 @@ weston_wm_get_resources(struct weston_wm *wm)
 		{ "_NET_WM_STATE_FULLSCREEN", F(atom.net_wm_state_fullscreen) },
 		{ "_NET_WM_USER_TIME", F(atom.net_wm_user_time) },
 		{ "_NET_WM_ICON_NAME", F(atom.net_wm_icon_name) },
+		{ "_NET_WM_DESKTOP", F(atom.net_wm_desktop) },
 		{ "_NET_WM_WINDOW_TYPE", F(atom.net_wm_window_type) },
 
 		{ "_NET_WM_WINDOW_TYPE_DESKTOP", F(atom.net_wm_window_type_desktop) },
