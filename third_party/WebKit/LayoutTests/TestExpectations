@@ -113,6 +113,33 @@ crbug.com/304953 fast/css/font-face-download-error.html [ Pass Timeout ]
 
 crbug.com/411175 [ XP ] svg/custom/svg-fonts-without-missing-glyph.xhtml [ Failure Pass ]
 
+crbug.com/375870 svg/repaint/inner-svg-change-viewBox.svg [ NeedsRebaseline ]
+crbug.com/375870 svg/custom/relative-sized-deep-shadow-tree-content.xhtml [ NeedsRebaseline ]
+crbug.com/375870 svg/custom/clip-path-child-changes.svg [ NeedsRebaseline ]
+crbug.com/375870 svg/filters/filter-refresh.svg [ NeedsRebaseline ]
+crbug.com/375870 fast/repaint/dynamic-table-vertical-alignment-change.html [ NeedsRebaseline ]
+crbug.com/375870 svg/repaint/add-outline-property-on-root.html [ NeedsRebaseline ]
+crbug.com/375870 svg/repaint/inner-svg-change-viewBox-contract.svg [ NeedsRebaseline ]
+crbug.com/375870 svg/custom/clip-path-id-changes.svg [ NeedsRebaseline ]
+crbug.com/375870 svg/custom/relative-sized-shadow-tree-content.xhtml [ NeedsRebaseline ]
+crbug.com/375870 svg/custom/marker-viewBox-changes.svg [ NeedsRebaseline ]
+crbug.com/375870 svg/custom/relative-sized-shadow-tree-content-with-symbol.xhtml [ NeedsRebaseline ]
+crbug.com/375870 fast/repaint/table-shrink-row-repaint.html [ NeedsRebaseline ]
+crbug.com/375870 svg/custom/resource-client-removal.svg [ NeedsRebaseline ]
+crbug.com/375870 fast/css-grid-layout/grid-element-change-columns-repaint.html [ NeedsRebaseline ]
+crbug.com/375870 svg/text/text-rescale.html [ NeedsRebaseline ]
+crbug.com/375870 svg/custom/relative-sized-content.xhtml [ NeedsRebaseline ]
+crbug.com/375870 svg/repaint/paintorder-filtered.svg [ NeedsRebaseline ]
+crbug.com/375870 svg/custom/relative-sized-image.xhtml [ NeedsRebaseline ]
+crbug.com/375870 svg/custom/clip-path-href-changes.svg [ NeedsRebaseline ]
+crbug.com/375870 fast/repaint/bugzilla-6278.html [ NeedsRebaseline ]
+crbug.com/375870 svg/repaint/inner-svg-change-viewPort-relative.svg [ NeedsRebaseline ]
+crbug.com/375870 svg/repaint/remove-outline-property-on-root.html [ NeedsRebaseline ]
+crbug.com/375870 fast/repaint/intermediate-layout-position.html [ NeedsRebaseline ]
+crbug.com/375870 fast/repaint/repaint-table-row-in-composited-document.html [ NeedsRebaseline ]
+crbug.com/375870 svg/custom/clip-path-units-changes.svg [ NeedsRebaseline ]
+crbug.com/375870 fast/css-grid-layout/grid-element-change-rows-repaint.html [ NeedsRebaseline ]
+
 # This batch were marked as NeedsRebaseline for crbug.com/133097 but are flaky:
 # crbug.com/310679 [ Mac ] compositing/fixed-body-background-positioned.html [ Failure Pass ]
 crbug.com/310679 [ Mac ] compositing/rubberbanding/transform-overhang-e.html [ ImageOnlyFailure Pass ]
@@ -1418,7 +1445,8 @@ crbug.com/364225 virtual/gpu/fast/canvas/canvas-composite-text-alpha.html [ Pass
 
 crbug.com/440452 virtual/display_list_2d_canvas/fast/canvas/canvas-partial-invalidation-zoomed.html [ Pass Slow Timeout ]
 
-crbug.com/439840 [ Win Linux Debug ] svg/custom/relative-sized-image.xhtml [ Pass ImageOnlyFailure ]
+# Uncomment this after https://codereview.chromium.org/799093002/ is landed.
+# crbug.com/439840 [ Win Linux Debug ] svg/custom/relative-sized-image.xhtml [ Pass ImageOnlyFailure ]
 
 crbug.com/418091 [ Mac ] fast/text/aat-morx.html [ Pass Failure ]
 
