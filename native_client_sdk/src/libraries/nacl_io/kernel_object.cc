@@ -252,9 +252,19 @@ void KernelObject::FreeAndReassignFD(int fd,
   } else {
     AUTO_LOCK(handle_lock_);
 
-    // If the required FD is larger than the current set, grow the set
-    if (fd >= (int)handle_map_.size())
+    // If the required FD is larger than the current set, grow the set.
+    int sz = static_cast<int>(handle_map_.size());
+    if (fd >= sz) {
+      // Expand the handle map to include all the extra descriptors
+      // up to and including fd.
       handle_map_.resize(fd + 1);
+      // Add all the new descriptors, except fd, to the free list.
+      for (; sz < fd; ++sz) {
+        free_fds_.push_back(sz);
+        std::push_heap(free_fds_.begin(), free_fds_.end(),
+                       std::greater<int>());
+      }
+    }
 
     // This path will be from an existing handle, and absolute.
     handle_map_[fd] = Descriptor_t(handle, path);

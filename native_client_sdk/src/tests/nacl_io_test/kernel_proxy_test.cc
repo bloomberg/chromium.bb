@@ -527,6 +527,29 @@ TEST_F(KernelProxyTest, MemMountDup) {
   // fd, new_fd, dup_fd -> "/bar"
 }
 
+TEST_F(KernelProxyTest, DescriptorAllocationConsistency) {
+  // Check that the descriptor free list returns the expected ones,
+  // as the order is mandated by POSIX.
+
+  // Open a file to a get a descriptor to copy for this test.
+  // The test makes the assumption at all descriptors
+  // open by default are contiguous starting from zero.
+  int fd = ki_open("/foo", O_CREAT | O_RDWR, 0777);
+  ASSERT_GT(fd, -1);
+
+  // The next descriptor allocated should follow the first.
+  int dup_fd = ki_dup(fd);
+  ASSERT_EQ(fd + 1, dup_fd);
+
+  // Allocate a high descriptor number.
+  ASSERT_EQ(100, ki_dup2(fd, 100));
+
+  // The next descriptor allocate should still come 2 places
+  // after the first.
+  int dup_fd2 = ki_dup(fd);
+  ASSERT_EQ(fd + 2, dup_fd2);
+}
+
 TEST_F(KernelProxyTest, Lstat) {
   int fd = ki_open("/foo", O_CREAT | O_RDWR, 0777);
   ASSERT_GT(fd, -1);
