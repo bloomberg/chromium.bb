@@ -327,16 +327,19 @@ void WebMediaPlayerImpl::seek(double seconds) {
 
   // Update our paused time.
   // In paused state ignore the seek operations to current time and generate
-  // buffer state change event to eventually fire seeking and seeked events
+  // OnPipelineSeeked and OnPipelineBufferingStateChanged events
+  // to eventually fire seeking and seeked events
   if (paused_) {
     if (paused_time_ != seek_time) {
       paused_time_ = seek_time;
     } else {
       main_task_runner_->PostTask(
+          FROM_HERE, base::Bind(&WebMediaPlayerImpl::OnPipelineSeeked,
+                                AsWeakPtr(), false, PIPELINE_OK));
+      main_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&WebMediaPlayerImpl::OnPipelineBufferingStateChanged,
-                     AsWeakPtr(),
-                     BUFFERING_HAVE_ENOUGH));
+                     AsWeakPtr(), BUFFERING_HAVE_ENOUGH));
       return;
     }
   }
