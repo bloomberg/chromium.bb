@@ -119,26 +119,9 @@ void DriGpuPlatformSupport::OnForceDPMSOn() {
   ndd_->ForceDPMSOn();
 }
 
-void DriGpuPlatformSupport::OnRefreshNativeDisplays(
-    const std::vector<DisplaySnapshot_Params>& cached_displays) {
+void DriGpuPlatformSupport::OnRefreshNativeDisplays() {
   std::vector<DisplaySnapshot_Params> displays;
   std::vector<DisplaySnapshot*> native_displays = ndd_->GetDisplays();
-
-  // If any of the cached displays are in the list of new displays then apply
-  // their configuration immediately.
-  for (size_t i = 0; i < native_displays.size(); ++i) {
-    std::vector<DisplaySnapshot_Params>::const_iterator it =
-        std::find_if(cached_displays.begin(), cached_displays.end(),
-                     FindDisplayById(native_displays[i]->display_id()));
-
-    if (it == cached_displays.end())
-      continue;
-
-    if (it->has_current_mode)
-      OnConfigureNativeDisplay(it->display_id, it->current_mode, it->origin);
-    else
-      OnDisableNativeDisplay(it->display_id);
-  }
 
   for (size_t i = 0; i < native_displays.size(); ++i)
     displays.push_back(GetDisplaySnapshotParams(*native_displays[i]));
@@ -181,7 +164,8 @@ void DriGpuPlatformSupport::OnConfigureNativeDisplay(
     return;
   }
 
-  ndd_->Configure(*display, mode, origin);
+  sender_->Send(new OzoneHostMsg_DisplayConfigured(
+      id, ndd_->Configure(*display, mode, origin)));
 }
 
 void DriGpuPlatformSupport::OnDisableNativeDisplay(int64_t id) {

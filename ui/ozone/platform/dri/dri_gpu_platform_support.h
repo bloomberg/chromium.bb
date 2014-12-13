@@ -64,8 +64,7 @@ class DriGpuPlatformSupport : public GpuPlatformSupport {
 
   // Display related IPC handlers.
   void OnForceDPMSOn();
-  void OnRefreshNativeDisplays(
-      const std::vector<DisplaySnapshot_Params>& cached_displays);
+  void OnRefreshNativeDisplays();
   void OnConfigureNativeDisplay(int64_t id,
                                 const DisplayMode_Params& mode,
                                 const gfx::Point& origin);

@@ -80,9 +80,7 @@ IPC_MESSAGE_CONTROL0(OzoneGpuMsg_ForceDPMSOn)
 
 // Trigger a display reconfiguration. OzoneHostMsg_UpdateNativeDisplays will be
 // sent as a response.
-// The |displays| parameter will hold a list of last known displays.
-IPC_MESSAGE_CONTROL1(OzoneGpuMsg_RefreshNativeDisplays,
-                     std::vector<ui::DisplaySnapshot_Params> /* displays */)
+IPC_MESSAGE_CONTROL0(OzoneGpuMsg_RefreshNativeDisplays)
 
 // Configure a display with the specified mode at the specified location.
 IPC_MESSAGE_CONTROL3(OzoneGpuMsg_ConfigureNativeDisplay,
@@ -112,3 +110,7 @@ IPC_MESSAGE_CONTROL0(OzoneGpuMsg_RelinquishDisplayControl)
 // Updates the list of active displays.
 IPC_MESSAGE_CONTROL1(OzoneHostMsg_UpdateNativeDisplays,
                      std::vector<ui::DisplaySnapshot_Params>)
+
+IPC_MESSAGE_CONTROL2(OzoneHostMsg_DisplayConfigured,
+                     int64_t /* display_id */,
+                     bool /* status */)

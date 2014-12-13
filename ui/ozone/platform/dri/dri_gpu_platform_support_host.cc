@@ -87,7 +87,7 @@ bool DriGpuPlatformSupportHost::Send(IPC::Message* message) {
   if (sender_)
     return sender_->Send(message);
 
-  return true;
+  return false;
 }
 
 void DriGpuPlatformSupportHost::SetHardwareCursor(
