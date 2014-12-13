@@ -31,10 +31,10 @@
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/VectorMath.h"
-#include "wtf/Complex.h"
 #include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
+#include <complex>
 #include <limits.h>
 
 namespace blink {
@@ -183,7 +183,7 @@ void RealtimeAnalyser::doFFTAnalysis()
     float* destination = magnitudeBuffer().data();
     size_t n = magnitudeBuffer().size();
     for (size_t i = 0; i < n; ++i) {
-        Complex c(realP[i], imagP[i]);
+        std::complex<double> c(realP[i], imagP[i]);
         double scalarMagnitude = abs(c) * magnitudeScale;
         destination[i] = float(k * destination[i] + (1 - k) * scalarMagnitude);
     }
