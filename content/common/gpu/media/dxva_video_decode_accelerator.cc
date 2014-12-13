@@ -1457,10 +1457,10 @@ void DXVAVideoDecodeAccelerator::DeferredDismissStaleBuffer(
 }
 
 DXVAVideoDecodeAccelerator::State
-DXVAVideoDecodeAccelerator::GetState() const {
-  State state = kUninitialized;
-  ::InterlockedExchange(reinterpret_cast<long*>(&state),
-                        state_);
+DXVAVideoDecodeAccelerator::GetState() {
+  static_assert(sizeof(State) == sizeof(long), "mismatched type sizes");
+  State state = static_cast<State>(
+      InterlockedAdd(reinterpret_cast<volatile long*>(&state_), 0));
   return state;
 }
 
@@ -1473,9 +1473,10 @@ void DXVAVideoDecodeAccelerator::SetState(State new_state) {
                    new_state));
     return;
   }
-  ::InterlockedCompareExchange(reinterpret_cast<long*>(&state_),
-                               new_state,
-                               state_);
+
+  static_assert(sizeof(State) == sizeof(long), "mismatched type sizes");
+  ::InterlockedExchange(reinterpret_cast<volatile long*>(&state_),
+                        new_state);
   DCHECK_EQ(state_, new_state);
 }
 

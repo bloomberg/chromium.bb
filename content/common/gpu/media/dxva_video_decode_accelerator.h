@@ -167,7 +167,7 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
 
   // Gets the state of the decoder. Can be called from the main thread and
   // the decoder thread. Thread safe.
-  State GetState() const;
+  State GetState();
 
   // Worker function for the Decoder Reset functionality. Executes on the
   // decoder thread and queues tasks on the main thread as needed.
@@ -224,7 +224,7 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   EGLConfig egl_config_;
 
   // Current state of the decoder.
-  State state_;
+  volatile State state_;
 
   MFT_INPUT_STREAM_INFO input_stream_info_;
   MFT_OUTPUT_STREAM_INFO output_stream_info_;
