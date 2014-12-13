@@ -71,22 +71,22 @@ class AtomicPointer {
   AtomicPointer() { }
   explicit AtomicPointer(void* p) : rep_(reinterpret_cast<Rep>(p)) {}
   inline void* Acquire_Load() const {
-    return reinterpret_cast<void*>(::base::subtle::Acquire_Load(&rep_));
+    return reinterpret_cast<void*>(base::subtle::Acquire_Load(&rep_));
   }
   inline void Release_Store(void* v) {
-    ::base::subtle::Release_Store(&rep_, reinterpret_cast<Rep>(v));
+    base::subtle::Release_Store(&rep_, reinterpret_cast<Rep>(v));
   }
   inline void* NoBarrier_Load() const {
-    return reinterpret_cast<void*>(::base::subtle::NoBarrier_Load(&rep_));
+    return reinterpret_cast<void*>(base::subtle::NoBarrier_Load(&rep_));
   }
   inline void NoBarrier_Store(void* v) {
-    ::base::subtle::NoBarrier_Store(&rep_, reinterpret_cast<Rep>(v));
+    base::subtle::NoBarrier_Store(&rep_, reinterpret_cast<Rep>(v));
   }
 };
 
 // Implementation of OnceType and InitOnce() pair, this is equivalent to
 // pthread_once_t and pthread_once().
-typedef ::base::subtle::Atomic32 OnceType;
+typedef base::subtle::Atomic32 OnceType;
 
 enum {
   ONCE_STATE_UNINITIALIZED = 0,
@@ -100,7 +100,7 @@ enum {
 void InitOnceImpl(OnceType* once, void (*initializer)());
 
 static inline void InitOnce(OnceType* once, void (*initializer)()) {
-  if (::base::subtle::Acquire_Load(once) != ONCE_STATE_DONE)
+  if (base::subtle::Acquire_Load(once) != ONCE_STATE_DONE)
     InitOnceImpl(once, initializer);
 }
 

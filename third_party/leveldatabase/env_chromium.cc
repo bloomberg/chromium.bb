@@ -95,7 +95,7 @@ static base::File::Error GetDirectoryEntries(const FilePath& dir_param,
 
 class ChromiumFileLock : public FileLock {
  public:
-  ::base::File file_;
+  base::File file_;
   std::string name_;
 };
 
@@ -184,7 +184,7 @@ class ChromiumSequentialFile : public leveldb::SequentialFile {
 class ChromiumRandomAccessFile : public leveldb::RandomAccessFile {
  public:
   ChromiumRandomAccessFile(const std::string& fname,
-                           ::base::File file,
+                           base::File file,
                            const UMALogger* uma_logger)
       : filename_(fname), file_(file.Pass()), uma_logger_(uma_logger) {}
   virtual ~ChromiumRandomAccessFile() {}
@@ -207,7 +207,7 @@ class ChromiumRandomAccessFile : public leveldb::RandomAccessFile {
 
  private:
   std::string filename_;
-  mutable ::base::File file_;
+  mutable base::File file_;
   const UMALogger* uma_logger_;
 };
 
@@ -330,10 +330,9 @@ class IDBEnv : public ChromiumEnv {
   }
 };
 
-::base::LazyInstance<IDBEnv>::Leaky idb_env = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<IDBEnv>::Leaky idb_env = LAZY_INSTANCE_INITIALIZER;
 
-::base::LazyInstance<ChromiumEnv>::Leaky default_env =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<ChromiumEnv>::Leaky default_env = LAZY_INSTANCE_INITIALIZER;
 
 }  // unnamed namespace
 
@@ -541,46 +540,46 @@ ChromiumEnv::~ChromiumEnv() {
 }
 
 bool ChromiumEnv::FileExists(const std::string& fname) {
-  return ::base::PathExists(FilePath::FromUTF8Unsafe(fname));
+  return base::PathExists(FilePath::FromUTF8Unsafe(fname));
 }
 
-const char* ChromiumEnv::FileErrorString(::base::File::Error error) {
+const char* ChromiumEnv::FileErrorString(base::File::Error error) {
   switch (error) {
-    case ::base::File::FILE_ERROR_FAILED:
+    case base::File::FILE_ERROR_FAILED:
       return "No further details.";
-    case ::base::File::FILE_ERROR_IN_USE:
+    case base::File::FILE_ERROR_IN_USE:
       return "File currently in use.";
-    case ::base::File::FILE_ERROR_EXISTS:
+    case base::File::FILE_ERROR_EXISTS:
       return "File already exists.";
-    case ::base::File::FILE_ERROR_NOT_FOUND:
+    case base::File::FILE_ERROR_NOT_FOUND:
       return "File not found.";
-    case ::base::File::FILE_ERROR_ACCESS_DENIED:
+    case base::File::FILE_ERROR_ACCESS_DENIED:
       return "Access denied.";
-    case ::base::File::FILE_ERROR_TOO_MANY_OPENED:
+    case base::File::FILE_ERROR_TOO_MANY_OPENED:
       return "Too many files open.";
-    case ::base::File::FILE_ERROR_NO_MEMORY:
+    case base::File::FILE_ERROR_NO_MEMORY:
       return "Out of memory.";
-    case ::base::File::FILE_ERROR_NO_SPACE:
+    case base::File::FILE_ERROR_NO_SPACE:
       return "No space left on drive.";
-    case ::base::File::FILE_ERROR_NOT_A_DIRECTORY:
+    case base::File::FILE_ERROR_NOT_A_DIRECTORY:
       return "Not a directory.";
-    case ::base::File::FILE_ERROR_INVALID_OPERATION:
+    case base::File::FILE_ERROR_INVALID_OPERATION:
       return "Invalid operation.";
-    case ::base::File::FILE_ERROR_SECURITY:
+    case base::File::FILE_ERROR_SECURITY:
       return "Security error.";
-    case ::base::File::FILE_ERROR_ABORT:
+    case base::File::FILE_ERROR_ABORT:
       return "File operation aborted.";
-    case ::base::File::FILE_ERROR_NOT_A_FILE:
+    case base::File::FILE_ERROR_NOT_A_FILE:
       return "The supplied path was not a file.";
-    case ::base::File::FILE_ERROR_NOT_EMPTY:
+    case base::File::FILE_ERROR_NOT_EMPTY:
       return "The file was not empty.";
-    case ::base::File::FILE_ERROR_INVALID_URL:
+    case base::File::FILE_ERROR_INVALID_URL:
       return "Invalid URL.";
-    case ::base::File::FILE_ERROR_IO:
+    case base::File::FILE_ERROR_IO:
       return "OS or hardware error.";
-    case ::base::File::FILE_OK:
+    case base::File::FILE_OK:
       return "OK.";
-    case ::base::File::FILE_ERROR_MAX:
+    case base::File::FILE_ERROR_MAX:
       NOTREACHED();
   }
   NOTIMPLEMENTED();
@@ -656,7 +655,7 @@ Status ChromiumEnv::DeleteFile(const std::string& fname) {
   Status result;
   FilePath fname_filepath = FilePath::FromUTF8Unsafe(fname);
   // TODO(jorlow): Should we assert this is a file?
-  if (!::base::DeleteFile(fname_filepath, false)) {
+  if (!base::DeleteFile(fname_filepath, false)) {
     result = MakeIOError(fname, "Could not delete file.", kDeleteFile);
     RecordErrorAt(kDeleteFile);
   }
@@ -684,7 +683,7 @@ Status ChromiumEnv::CreateDir(const std::string& name) {
 Status ChromiumEnv::DeleteDir(const std::string& name) {
   Status result;
   // TODO(jorlow): Should we assert this is a directory?
-  if (!::base::DeleteFile(FilePath::FromUTF8Unsafe(name), false)) {
+  if (!base::DeleteFile(FilePath::FromUTF8Unsafe(name), false)) {
     result = MakeIOError(name, "Could not delete directory.", kDeleteDir);
     RecordErrorAt(kDeleteDir);
   }
@@ -694,7 +693,7 @@ Status ChromiumEnv::DeleteDir(const std::string& name) {
 Status ChromiumEnv::GetFileSize(const std::string& fname, uint64_t* size) {
   Status s;
   int64_t signed_size;
-  if (!::base::GetFileSize(FilePath::FromUTF8Unsafe(fname), &signed_size)) {
+  if (!base::GetFileSize(FilePath::FromUTF8Unsafe(fname), &signed_size)) {
     *size = 0;
     s = MakeIOError(fname, "Could not determine file size.", kGetFileSize);
     RecordErrorAt(kGetFileSize);
@@ -707,7 +706,7 @@ Status ChromiumEnv::GetFileSize(const std::string& fname, uint64_t* size) {
 Status ChromiumEnv::RenameFile(const std::string& src, const std::string& dst) {
   Status result;
   FilePath src_file_path = FilePath::FromUTF8Unsafe(src);
-  if (!::base::PathExists(src_file_path))
+  if (!base::PathExists(src_file_path))
     return result;
   FilePath destination = FilePath::FromUTF8Unsafe(dst);
 
@@ -731,11 +730,11 @@ Status ChromiumEnv::RenameFile(const std::string& src, const std::string& dst) {
 Status ChromiumEnv::LockFile(const std::string& fname, FileLock** lock) {
   *lock = NULL;
   Status result;
-  int flags = ::base::File::FLAG_OPEN_ALWAYS |
-              ::base::File::FLAG_READ |
-              ::base::File::FLAG_WRITE;
-  ::base::File::Error error_code;
-  ::base::File file;
+  int flags = base::File::FLAG_OPEN_ALWAYS |
+              base::File::FLAG_READ |
+              base::File::FLAG_WRITE;
+  base::File::Error error_code;
+  base::File file;
   Retrier retrier(kLockFile, this);
   do {
     file.Initialize(FilePath::FromUTF8Unsafe(fname), flags);
@@ -744,7 +743,7 @@ Status ChromiumEnv::LockFile(const std::string& fname, FileLock** lock) {
   } while (!file.IsValid() && retrier.ShouldKeepTrying(error_code));
 
   if (!file.IsValid()) {
-    if (error_code == ::base::File::FILE_ERROR_NOT_FOUND) {
+    if (error_code == base::File::FILE_ERROR_NOT_FOUND) {
       FilePath parent = FilePath::FromUTF8Unsafe(fname).DirName();
       FilePath last_parent;
       int num_missing_ancestors = 0;
@@ -772,10 +771,10 @@ Status ChromiumEnv::LockFile(const std::string& fname, FileLock** lock) {
   Retrier lock_retrier = Retrier(kLockFile, this);
   do {
     error_code = file.Lock();
-  } while (error_code != ::base::File::FILE_OK &&
+  } while (error_code != base::File::FILE_OK &&
            retrier.ShouldKeepTrying(error_code));
 
-  if (error_code != ::base::File::FILE_OK) {
+  if (error_code != base::File::FILE_OK) {
     locks_.Remove(fname);
     result = MakeIOError(fname, FileErrorString(error_code), kLockFile,
                          error_code);
@@ -794,8 +793,8 @@ Status ChromiumEnv::UnlockFile(FileLock* lock) {
   ChromiumFileLock* my_lock = reinterpret_cast<ChromiumFileLock*>(lock);
   Status result;
 
-  ::base::File::Error error_code = my_lock->file_.Unlock();
-  if (error_code != ::base::File::FILE_OK) {
+  base::File::Error error_code = my_lock->file_.Unlock();
+  if (error_code != base::File::FILE_OK) {
     result =
         MakeIOError(my_lock->name_, "Could not unlock lock file.", kUnlockFile);
     RecordOSError(kUnlockFile, error_code);
@@ -866,15 +865,15 @@ void ChromiumEnv::RecordOpenFilesLimit(const std::string& type) {
 
 Status ChromiumEnv::NewRandomAccessFile(const std::string& fname,
                                         leveldb::RandomAccessFile** result) {
-  int flags = ::base::File::FLAG_READ | ::base::File::FLAG_OPEN;
-  ::base::File file(FilePath::FromUTF8Unsafe(fname), flags);
+  int flags = base::File::FLAG_READ | base::File::FLAG_OPEN;
+  base::File file(FilePath::FromUTF8Unsafe(fname), flags);
   if (file.IsValid()) {
     *result = new ChromiumRandomAccessFile(fname, file.Pass(), this);
     RecordOpenFilesLimit("Success");
     return Status::OK();
   }
-  ::base::File::Error error_code = file.error_details();
-  if (error_code == ::base::File::FILE_ERROR_TOO_MANY_OPENED)
+  base::File::Error error_code = file.error_details();
+  if (error_code == base::File::FILE_ERROR_TOO_MANY_OPENED)
     RecordOpenFilesLimit("TooManyOpened");
   else
     RecordOpenFilesLimit("OtherError");
@@ -902,12 +901,12 @@ Status ChromiumEnv::NewWritableFile(const std::string& fname,
 }
 
 uint64_t ChromiumEnv::NowMicros() {
-  return ::base::TimeTicks::Now().ToInternalValue();
+  return base::TimeTicks::Now().ToInternalValue();
 }
 
 void ChromiumEnv::SleepForMicroseconds(int micros) {
   // Round up to the next millisecond.
-  ::base::PlatformThread::Sleep(::base::TimeDelta::FromMicroseconds(micros));
+  base::PlatformThread::Sleep(base::TimeDelta::FromMicroseconds(micros));
 }
 
 void ChromiumEnv::RecordErrorAt(MethodID method) const {
@@ -996,12 +995,12 @@ base::HistogramBase* ChromiumEnv::GetRecoveredFromErrorHistogram(
       kNumEntries + 1, base::Histogram::kUmaTargetedHistogramFlag);
 }
 
-class Thread : public ::base::PlatformThread::Delegate {
+class Thread : public base::PlatformThread::Delegate {
  public:
   Thread(void (*function)(void* arg), void* arg)
       : function_(function), arg_(arg) {
-    ::base::PlatformThreadHandle handle;
-    bool success = ::base::PlatformThread::Create(0, this, &handle);
+    base::PlatformThreadHandle handle;
+    bool success = base::PlatformThread::Create(0, this, &handle);
     DCHECK(success);
   }
   virtual ~Thread() {}

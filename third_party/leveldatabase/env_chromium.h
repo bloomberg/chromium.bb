@@ -139,7 +139,7 @@ class ChromiumEnv : public leveldb::Env,
   bool make_backup_;
 
  private:
-  static const char* FileErrorString(::base::File::Error error);
+  static const char* FileErrorString(base::File::Error error);
 
   virtual void DidCreateNewFile(const std::string& fname);
   virtual bool DoesDirNeedSync(const std::string& fname);
@@ -193,8 +193,8 @@ class ChromiumEnv : public leveldb::Env,
 
   base::FilePath test_directory_;
 
-  ::base::Lock mu_;
-  ::base::ConditionVariable bgsignal_;
+  base::Lock mu_;
+  base::ConditionVariable bgsignal_;
   bool started_bgthread_;
 
   // Entry per Schedule() call
