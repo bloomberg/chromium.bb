@@ -1001,12 +1001,6 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
   },
-  "unlimitedStorage": {
-    "channel": "stable",
-    "extension_types": [
-      "extension", "legacy_packaged_app", "hosted_app", "platform_app"
-    ]
-  },
   "virtualKeyboardPrivate": {
     "channel": "stable",
     "extension_types": ["extension"],
