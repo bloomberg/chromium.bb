@@ -149,7 +149,6 @@ private:
     HashSet<const RenderLayer*> m_layersWithTouchRects;
     bool m_wasFrameScrollable;
 
-    // This is retained for testing.
     MainThreadScrollingReasons m_lastMainThreadScrollingReasons;
 };
 

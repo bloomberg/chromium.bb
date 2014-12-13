@@ -166,6 +166,27 @@ static WebLayer* webLayerFromElement(Element* element)
     return graphicsLayer->platformLayer();
 }
 
+
+TEST_F(ScrollingCoordinatorChromiumTest, fractionalScrollingNonLayerFixedPosition)
+{
+    registerMockedHttpURLLoad("fractional-scroll-fixed-position.html");
+    navigateTo(m_baseURL + "fractional-scroll-fixed-position.html");
+    // Prevent fixed-position element from getting its own layer.
+    webViewImpl()->settings()->setPreferCompositingToLCDTextEnabled(false);
+    forceFullCompositingUpdate();
+
+    FrameView* frameView = frame()->view();
+    frameView->scrollTo(DoublePoint(1.5, 1.5));
+    WebLayer* rootScrollLayer = getRootScrollLayer();
+    // Scroll on main if there is non-composited fixed position element.
+    // And the containing scroll layer should not get fractional scroll offset.
+    ASSERT_TRUE(rootScrollLayer->shouldScrollOnMainThread());
+    ASSERT_EQ(1.0, rootScrollLayer->scrollPositionDouble().x);
+    ASSERT_EQ(1.0, rootScrollLayer->scrollPositionDouble().y);
+    ASSERT_EQ(0.0, rootScrollLayer->position().x);
+    ASSERT_EQ(0.0, rootScrollLayer->position().y);
+}
+
 TEST_F(ScrollingCoordinatorChromiumTest, fastScrollingForFixedPosition)
 {
     registerMockedHttpURLLoad("fixed-position.html");

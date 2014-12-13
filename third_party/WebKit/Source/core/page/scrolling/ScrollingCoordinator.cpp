@@ -368,7 +368,16 @@ bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* sc
     WebLayer* containerLayer = toWebLayer(scrollableArea->layerForContainer());
     if (webLayer) {
         webLayer->setScrollClipLayer(containerLayer);
-        webLayer->setScrollPositionDouble(DoublePoint(scrollableArea->scrollPositionDouble() - scrollableArea->minimumScrollPosition()));
+        // Non-layered Viewport constrained objects, e.g. fixed position elements, are
+        // positioned in Blink using integer coordinates. In that case, we don't want
+        // to set the WebLayer's scroll position at fractional precision otherwise the
+        // WebLayer's position after snapping to device pixel can be off with regard to
+        // fixed position elements.
+        if (m_lastMainThreadScrollingReasons & ScrollingCoordinator::HasNonLayerViewportConstrainedObjects)
+            webLayer->setScrollPositionDouble(DoublePoint(scrollableArea->scrollPosition() - scrollableArea->minimumScrollPosition()));
+        else
+            webLayer->setScrollPositionDouble(DoublePoint(scrollableArea->scrollPositionDouble() - scrollableArea->minimumScrollPosition()));
+
         webLayer->setBounds(scrollableArea->contentsSize());
         bool canScrollX = scrollableArea->userInputScrollable(HorizontalScrollbar);
         bool canScrollY = scrollableArea->userInputScrollable(VerticalScrollbar);
@@ -543,7 +552,6 @@ void ScrollingCoordinator::reset()
     m_layersWithTouchRects.clear();
     m_wasFrameScrollable = false;
 
-    // This is retained for testing.
     m_lastMainThreadScrollingReasons = 0;
     setShouldUpdateScrollLayerPositionOnMainThread(m_lastMainThreadScrollingReasons);
 }
