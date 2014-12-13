@@ -930,6 +930,8 @@
       'browser/mojo/mojo_application_host.h',
       'browser/mojo/service_registry_android.cc',
       'browser/mojo/service_registry_android.h',
+      'browser/navigator_connect/navigator_connect_dispatcher_host.cc',
+      'browser/navigator_connect/navigator_connect_dispatcher_host.h',
       'browser/net/browser_online_state_observer.cc',
       'browser/net/browser_online_state_observer.h',
       'browser/net/sqlite_persistent_cookie_store.cc',

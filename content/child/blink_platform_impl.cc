@@ -34,6 +34,7 @@
 #include "content/child/child_thread.h"
 #include "content/child/content_child_helpers.h"
 #include "content/child/geofencing/web_geofencing_provider_impl.h"
+#include "content/child/navigator_connect/navigator_connect_provider.h"
 #include "content/child/notifications/notification_dispatcher.h"
 #include "content/child/notifications/notification_manager.h"
 #include "content/child/push_messaging/push_dispatcher.h"
@@ -1078,6 +1079,15 @@ blink::WebPushProvider* BlinkPlatformImpl::pushProvider() {
 
   return PushProvider::ThreadSpecificInstance(thread_safe_sender_.get(),
                                               push_dispatcher_.get());
+}
+
+blink::WebNavigatorConnectProvider*
+BlinkPlatformImpl::navigatorConnectProvider() {
+  if (!thread_safe_sender_.get())
+    return nullptr;
+
+  return NavigatorConnectProvider::ThreadSpecificInstance(
+      thread_safe_sender_.get(), main_thread_task_runner_);
 }
 
 WebThemeEngine* BlinkPlatformImpl::themeEngine() {

@@ -158,6 +158,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
   virtual blink::WebBluetooth* bluetooth();
   virtual blink::WebNotificationManager* notificationManager();
   virtual blink::WebPushProvider* pushProvider();
+  virtual blink::WebNavigatorConnectProvider* navigatorConnectProvider();
 
   void SuspendSharedTimer();
   void ResumeSharedTimer();

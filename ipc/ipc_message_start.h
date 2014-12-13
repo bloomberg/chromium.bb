@@ -114,6 +114,7 @@ enum IPCMessageStart {
   LayoutTestMsgStart,
   DnsPrefetchMsgStart,
   BluetoothMsgStart,
+  NavigatorConnectMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 

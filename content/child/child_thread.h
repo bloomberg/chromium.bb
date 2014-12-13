@@ -44,6 +44,7 @@ class ChildResourceMessageFilter;
 class ChildSharedBitmapManager;
 class FileSystemDispatcher;
 class GeofencingMessageFilter;
+class NavigatorConnectDispatcher;
 class NotificationDispatcher;
 class PushDispatcher;
 class ServiceWorkerMessageFilter;
@@ -275,6 +276,8 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   scoped_refptr<GeofencingMessageFilter> geofencing_message_filter_;
 
   scoped_refptr<BluetoothMessageFilter> bluetooth_message_filter_;
+
+  scoped_refptr<NavigatorConnectDispatcher> navigator_connect_dispatcher_;
 
   bool in_browser_process_;
 

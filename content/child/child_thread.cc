@@ -37,6 +37,7 @@
 #include "content/child/fileapi/webfilesystem_impl.h"
 #include "content/child/geofencing/geofencing_message_filter.h"
 #include "content/child/mojo/mojo_application.h"
+#include "content/child/navigator_connect/navigator_connect_dispatcher.h"
 #include "content/child/notifications/notification_dispatcher.h"
 #include "content/child/power_monitor_broadcast_source.h"
 #include "content/child/push_messaging/push_dispatcher.h"
@@ -298,6 +299,8 @@ void ChildThread::Init(const Options& options) {
   notification_dispatcher_ =
       new NotificationDispatcher(thread_safe_sender_.get());
   push_dispatcher_ = new PushDispatcher(thread_safe_sender_.get());
+  navigator_connect_dispatcher_ =
+      new NavigatorConnectDispatcher(thread_safe_sender_.get());
 
   channel_->AddFilter(histogram_message_filter_.get());
   channel_->AddFilter(sync_message_filter_.get());
@@ -308,6 +311,7 @@ void ChildThread::Init(const Options& options) {
   channel_->AddFilter(service_worker_message_filter_->GetFilter());
   channel_->AddFilter(geofencing_message_filter_->GetFilter());
   channel_->AddFilter(bluetooth_message_filter_->GetFilter());
+  channel_->AddFilter(navigator_connect_dispatcher_->GetFilter());
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess)) {
