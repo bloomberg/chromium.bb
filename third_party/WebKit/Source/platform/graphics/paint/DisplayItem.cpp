@@ -74,13 +74,14 @@ WTF::String DisplayItem::asDebugString() const
 
 void DisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder) const
 {
+    stringBuilder.append("name: \"");
+    stringBuilder.append(name());
+    stringBuilder.append("\", ");
     if (!clientDebugString().isEmpty()) {
         stringBuilder.append(clientDebugString());
         stringBuilder.append(", ");
     }
     stringBuilder.append("type: \"");
-    if (isCached())
-        stringBuilder.append("Cached-");
     stringBuilder.append(typeAsDebugString(type()));
     stringBuilder.append('"');
 }

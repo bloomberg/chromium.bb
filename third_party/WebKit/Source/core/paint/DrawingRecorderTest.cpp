@@ -61,7 +61,10 @@ TEST_F(DrawingRecorderTest, DrawingRecorderTest_Nothing)
     EXPECT_EQ((size_t)0, rootDisplayItemList().paintList().size());
 
     drawNothing(&context, renderView(), PaintPhaseForeground, bound);
-    EXPECT_EQ((size_t)0, rootDisplayItemList().paintList().size());
+    EXPECT_EQ((size_t)1, rootDisplayItemList().paintList().size());
+#ifndef NDEBUG
+    EXPECT_STREQ("Dummy", rootDisplayItemList().paintList()[0]->name());
+#endif
 }
 
 TEST_F(DrawingRecorderTest, DrawingRecorderTest_Rect)
@@ -70,6 +73,30 @@ TEST_F(DrawingRecorderTest, DrawingRecorderTest_Rect)
     FloatRect bound = renderView()->viewRect();
     drawRect(&context, renderView(), PaintPhaseForeground, bound);
     EXPECT_EQ((size_t)1, rootDisplayItemList().paintList().size());
+#ifndef NDEBUG
+    EXPECT_STREQ("Drawing", rootDisplayItemList().paintList()[0]->name());
+#endif
+}
+
+TEST_F(DrawingRecorderTest, DrawingRecorderTest_Cached)
+{
+    GraphicsContext context(nullptr, &rootDisplayItemList());
+    FloatRect bound = renderView()->viewRect();
+    drawNothing(&context, renderView(), PaintPhaseBlockBackground, bound);
+    drawRect(&context, renderView(), PaintPhaseForeground, bound);
+    EXPECT_EQ((size_t)2, rootDisplayItemList().paintList().size());
+#ifndef NDEBUG
+    EXPECT_STREQ("Dummy", rootDisplayItemList().paintList()[0]->name());
+    EXPECT_STREQ("Drawing", rootDisplayItemList().paintList()[1]->name());
+#endif
+
+    drawNothing(&context, renderView(), PaintPhaseBlockBackground, bound);
+    drawRect(&context, renderView(), PaintPhaseForeground, bound);
+    EXPECT_EQ((size_t)2, rootDisplayItemList().paintList().size());
+#ifndef NDEBUG
+    EXPECT_STREQ("Dummy", rootDisplayItemList().paintList()[0]->name());
+    EXPECT_STREQ("Drawing", rootDisplayItemList().paintList()[1]->name());
+#endif
 }
 
 }

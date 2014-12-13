@@ -29,6 +29,7 @@ protected:
 
 private:
 #ifndef NDEBUG
+    virtual const char* name() const override { return "BeginFilter"; }
     virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
 
@@ -46,6 +47,11 @@ public:
 protected:
     EndFilterDisplayItem(DisplayItemClient client)
         : DisplayItem(client, EndFilter) { }
+
+private:
+#ifndef NDEBUG
+    virtual const char* name() const override { return "EndFilter"; }
+#endif
 };
 
 }

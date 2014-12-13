@@ -25,6 +25,7 @@ public:
 
 private:
 #ifndef NDEBUG
+    virtual const char* name() const override { return "BeginTransparency"; }
     virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
 
@@ -53,6 +54,11 @@ public:
 protected:
     EndTransparencyDisplayItem(DisplayItemClient client, Type type)
         : DisplayItem(client, type) { }
+
+private:
+#ifndef NDEBUG
+    virtual const char* name() const override { return "EndTransparency"; }
+#endif
 };
 
 } // namespace blink

@@ -22,6 +22,10 @@ protected:
     BeginTransformDisplayItem(DisplayItemClient, const AffineTransform&);
 
 private:
+#ifndef NDEBUG
+    virtual const char* name() const override { return "BeginTransform"; }
+#endif
+
     const AffineTransform m_transform;
 };
 
@@ -35,6 +39,11 @@ public:
 protected:
     EndTransformDisplayItem(DisplayItemClient client)
         : DisplayItem(client, EndTransform) { }
+
+private:
+#ifndef NDEBUG
+    virtual const char* name() const override { return "EndTransform"; }
+#endif
 };
 
 } // namespace blink

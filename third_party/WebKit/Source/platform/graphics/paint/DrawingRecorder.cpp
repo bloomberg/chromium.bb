@@ -64,8 +64,9 @@ DrawingRecorder::~DrawingRecorder()
     } else {
         RefPtr<const SkPicture> picture = m_context->endRecording();
         if (!picture || !picture->approximateOpCount())
-            return;
-        displayItem = DrawingDisplayItem::create(m_displayItemClient, m_displayItemType, picture);
+            displayItem = DisplayItem::create(m_displayItemClient, m_displayItemType);
+        else
+            displayItem = DrawingDisplayItem::create(m_displayItemClient, m_displayItemType, picture);
     }
 
 #ifndef NDEBUG

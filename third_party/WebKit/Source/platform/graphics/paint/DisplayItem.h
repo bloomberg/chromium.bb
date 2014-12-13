@@ -7,6 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "wtf/Assertions.h"
+#include "wtf/PassOwnPtr.h"
 
 #ifndef NDEBUG
 #include "wtf/text/StringBuilder.h"
@@ -74,15 +75,19 @@ public:
         Resizer
     };
 
+    // Create a dummy display item which just holds the id but has no display operation.
+    // It helps a CachedDisplayItem to match the corresponding original empty display item.
+    static PassOwnPtr<DisplayItem> create(DisplayItemClient client, Type type) { return adoptPtr(new DisplayItem(client, type)); }
+
     virtual ~DisplayItem() { }
 
-    virtual void replay(GraphicsContext*) = 0;
+    virtual void replay(GraphicsContext*) { }
 
     DisplayItemClient client() const { return m_id.client; }
     Type type() const { return m_id.type; }
     bool idsEqual(const DisplayItem& other) const { return m_id.client == other.m_id.client && m_id.type == other.m_id.type; }
 
-    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const = 0;
+    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const { }
 
 #ifndef NDEBUG
     static WTF::String typeAsDebugString(DisplayItem::Type);
@@ -91,6 +96,7 @@ public:
     const WTF::String& clientDebugString() const { return m_clientDebugString; }
 
     WTF::String asDebugString() const;
+    virtual const char* name() const { return "Dummy"; }
     virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const;
 #endif
 
