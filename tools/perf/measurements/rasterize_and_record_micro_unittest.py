@@ -32,7 +32,7 @@ class RasterizeAndRecordMicroUnitTest(page_test_test_case.PageTestTestCase):
         report_detailed_results=True)
     try:
       results = self.RunMeasurement(measurement, ps, options=self._options)
-    except page_test.TestNotSupportedOnPlatformFailure as failure:
+    except page_test.TestNotSupportedOnPlatformError as failure:
       logging.warning(str(failure))
       return
     self.assertEquals(0, len(results.failures))

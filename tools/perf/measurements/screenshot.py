@@ -17,7 +17,7 @@ class Screenshot(page_test.PageTest):
 
   def ValidateAndMeasurePage(self, page, tab, results):
     if not tab.screenshot_supported:
-      raise page_test.TestNotSupportedOnPlatformFailure(
+      raise page_test.TestNotSupportedOnPlatformError(
           'Browser does not support screenshotting')
 
     tab.WaitForDocumentReadyStateToBeComplete()

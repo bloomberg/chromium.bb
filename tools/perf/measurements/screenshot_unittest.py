@@ -8,6 +8,7 @@ import tempfile
 
 from measurements import screenshot
 from telemetry import benchmark
+from telemetry.page import page_test
 from telemetry.unittest_util import options_for_unittests
 from telemetry.unittest_util import page_test_test_case
 
@@ -24,9 +25,10 @@ class ScreenshotUnitTest(page_test_test_case.PageTestTestCase):
   def testScreenshot(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('blank.html')
     measurement = screenshot.Screenshot(self._png_outdir)
-    results = self.RunMeasurement(measurement, ps, options=self._options)
-    if results.failures:
-      logging.warning(str(results.failures))
+    try:
+      results = self.RunMeasurement(measurement, ps, options=self._options)
+    except page_test.TestNotSupportedOnPlatformError as e:
+      logging.warning(e)
       return
 
     saved_picture_count = results.FindAllPageSpecificValuesNamed(

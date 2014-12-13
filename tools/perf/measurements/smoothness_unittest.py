@@ -8,7 +8,6 @@ from metrics import power
 from telemetry.core import exceptions
 from telemetry.core import wpr_modes
 from telemetry.page import page
-from telemetry.page import page_test
 from telemetry.unittest_util import options_for_unittests
 from telemetry.unittest_util import page_test_test_case
 from telemetry.unittest_util import test
@@ -176,7 +175,7 @@ class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
     measurement = BuggyMeasurement()
     try:
       self.RunMeasurement(measurement, ps)
-    except page_test.TestNotSupportedOnPlatformFailure:
+    except exceptions.IntentionalException:
       pass
 
     self.assertTrue(measurement.fake_power.start_called)
