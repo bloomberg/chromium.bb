@@ -16,6 +16,7 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/break_list.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/render_text_harfbuzz.h"
 
@@ -2380,29 +2381,37 @@ TEST_F(RenderTextTest, HarfBuzz_UniscribeFallback) {
 // to a canvas and checks whether any pixel beyond the width is colored.
 TEST_F(RenderTextTest, TextDoesntClip) {
   const wchar_t* kTestStrings[] = { L"Save", L"Remove", L"TEST", L"W", L"WWW" };
+  const Size kCanvasSize(300, 50);
+  const int kTestWidth = 10;
 
-  skia::RefPtr<SkSurface> surface =
-      skia::AdoptRef(SkSurface::NewRasterPMColor(300, 50));
+  skia::RefPtr<SkSurface> surface = skia::AdoptRef(
+      SkSurface::NewRasterPMColor(kCanvasSize.width(), kCanvasSize.height()));
   scoped_ptr<Canvas> canvas(
       Canvas::CreateCanvasWithoutScaling(surface->getCanvas(), 1.0f));
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
-  render_text->SetDisplayRect(Rect(300, 50));
+  render_text->SetDisplayRect(Rect(kCanvasSize));
   render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   render_text->SetColor(SK_ColorBLACK);
 
-  for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
+  for (auto string : kTestStrings) {
     surface->getCanvas()->clear(SK_ColorWHITE);
-    render_text->SetText(WideToUTF16(kTestStrings[i]));
+    render_text->SetText(WideToUTF16(string));
     render_text->SetStyle(BOLD, true);
     render_text->Draw(canvas.get());
     int width = render_text->GetStringSize().width();
-    ASSERT_LT(width, 300);
+    ASSERT_LT(width + kTestWidth, kCanvasSize.width());
     const uint32* buffer = static_cast<const uint32*>(
         surface->peekPixels(NULL, NULL));
     ASSERT_NE(nullptr, buffer);
-    for (int y = 0; y < 50; ++y) {
-      EXPECT_EQ(SK_ColorWHITE, buffer[width + y * 300])
-          << "String: " << kTestStrings[i];
+
+    for (int y = 0; y < kCanvasSize.height(); ++y) {
+      // Allow one column of anti-aliased pixels past the expected width.
+      SkColor color = buffer[width + y * kCanvasSize.width()];
+      EXPECT_LT(230U, color_utils::GetLuminanceForColor(color)) << string;
+      for (int x = 1; x < kTestWidth; ++x) {
+        color = buffer[width + x + y * kCanvasSize.width()];
+        EXPECT_EQ(SK_ColorWHITE, color) << string;
+      }
     }
   }
 }

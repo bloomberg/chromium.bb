@@ -21,6 +21,12 @@
 namespace gfx {
 namespace win {
 
+namespace {
+
+static bool dwrite_enabled = false;
+
+}
+
 bool ShouldUseDirectWrite() {
   // If the flag is currently on, and we're on Win7 or above, we enable
   // DirectWrite. Skia does not require the additions to DirectWrite in QFE
@@ -89,10 +95,15 @@ void MaybeInitializeDirectWrite() {
   // interface fails with E_INVALIDARG on certain Windows 7 gold versions
   // (6.1.7600.*). We should just use GDI in these cases.
   SkFontMgr* direct_write_font_mgr = SkFontMgr_New_DirectWrite(factory.get());
-  if (direct_write_font_mgr) {
-    SetDefaultSkiaFactory(direct_write_font_mgr);
-    gfx::PlatformFontWin::SetDirectWriteFactory(factory.get());
-  }
+  if (!direct_write_font_mgr)
+    return;
+  dwrite_enabled = true;
+  SetDefaultSkiaFactory(direct_write_font_mgr);
+  gfx::PlatformFontWin::SetDirectWriteFactory(factory.get());
+}
+
+bool IsDirectWriteEnabled() {
+  return dwrite_enabled;
 }
 
 }  // namespace win

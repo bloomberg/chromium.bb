@@ -15,6 +15,8 @@ GFX_EXPORT bool ShouldUseDirectWrite();
 
 GFX_EXPORT void MaybeInitializeDirectWrite();
 
+GFX_EXPORT bool IsDirectWriteEnabled();
+
 }  // namespace win
 }  // namespace gfx
 

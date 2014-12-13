@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
+#include "ui/gfx/win/direct_write.h"
 #include "ui/gfx/win/singleton_hwnd.h"
 
 namespace gfx {
@@ -34,7 +35,8 @@ class CachedFontRenderParams : public gfx::SingletonHwnd::Observer {
     BOOL enabled = false;
     if (SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &enabled, 0) && enabled) {
       params_->antialiasing = true;
-      params_->subpixel_positioning = true;
+      // GDI does not support subpixel positioning.
+      params_->subpixel_positioning = win::IsDirectWriteEnabled();
 
       UINT type = 0;
       if (SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &type, 0) &&
