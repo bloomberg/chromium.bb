@@ -26,7 +26,7 @@ namespace {
 
 void ToNullableString16Vector(const WebVector<WebString>& input,
                               std::vector<base::NullableString16>* output) {
-  output->reserve(input.size());
+  output->reserve(output->size() + input.size());
   for (size_t i = 0; i < input.size(); ++i)
     output->push_back(input[i]);
 }
@@ -114,14 +114,20 @@ void GenerateFrameStateFromItem(const WebHistoryItem& item,
   }
 }
 
-void RecursivelyGenerateFrameState(HistoryEntry::HistoryNode* node,
-                                   ExplodedFrameState* state) {
+void RecursivelyGenerateFrameState(
+    HistoryEntry::HistoryNode* node,
+    ExplodedFrameState* state,
+    std::vector<base::NullableString16>* referenced_files) {
   GenerateFrameStateFromItem(node->item(), state);
+  ToNullableString16Vector(node->item().getReferencedFilePaths(),
+                           referenced_files);
 
   std::vector<HistoryEntry::HistoryNode*>& children = node->children();
   state->children.resize(children.size());
-  for (size_t i = 0; i < children.size(); ++i)
-    RecursivelyGenerateFrameState(children[i], &state->children[i]);
+  for (size_t i = 0; i < children.size(); ++i) {
+    RecursivelyGenerateFrameState(children[i], &state->children[i],
+                                  referenced_files);
+  }
 }
 
 void RecursivelyGenerateHistoryItem(const ExplodedFrameState& state,
@@ -169,10 +175,8 @@ void RecursivelyGenerateHistoryItem(const ExplodedFrameState& state,
 
 PageState HistoryEntryToPageState(HistoryEntry* entry) {
   ExplodedPageState state;
-  ToNullableString16Vector(entry->root().getReferencedFilePaths(),
-                           &state.referenced_files);
-
-  RecursivelyGenerateFrameState(entry->root_history_node(), &state.top);
+  RecursivelyGenerateFrameState(entry->root_history_node(), &state.top,
+                                &state.referenced_files);
 
   std::string encoded_data;
   if (!EncodePageState(state, &encoded_data))

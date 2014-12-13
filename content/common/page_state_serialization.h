@@ -68,6 +68,9 @@ private:
 };
 
 struct CONTENT_EXPORT ExplodedPageState {
+  // TODO(creis): Move referenced_files to ExplodedFrameState.
+  // It currently contains a list from all frames, but cannot be deserialized
+  // into the files referenced by each frame.  See http://crbug.com/441966.
   std::vector<base::NullableString16> referenced_files;
   ExplodedFrameState top;
 
