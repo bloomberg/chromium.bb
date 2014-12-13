@@ -52,31 +52,33 @@ Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids) {
   // Check for newly-opened web views.
   for (size_t i = 0; i < views_info.GetSize(); ++i) {
     const WebViewInfo& view = views_info.Get(i);
-    if (view.type != WebViewInfo::kPage && view.type != WebViewInfo::kApp)
-      continue;
-
-    bool found = false;
-    for (WebViewList::const_iterator web_view_iter = web_views_.begin();
-         web_view_iter != web_views_.end(); ++web_view_iter) {
-      if ((*web_view_iter)->GetId() == view.id) {
-        found = true;
-        break;
+    if (view.type == WebViewInfo::kPage ||
+        view.type == WebViewInfo::kApp ||
+        (view.type == WebViewInfo::kOther &&
+         view.url.find("chrome-extension://") == 0)) {
+      bool found = false;
+      for (WebViewList::const_iterator web_view_iter = web_views_.begin();
+           web_view_iter != web_views_.end(); ++web_view_iter) {
+        if ((*web_view_iter)->GetId() == view.id) {
+          found = true;
+          break;
+        }
       }
-    }
-    if (!found) {
-      scoped_ptr<DevToolsClient> client(
-          devtools_http_client_->CreateClient(view.id));
-      for (ScopedVector<DevToolsEventListener>::const_iterator listener =
-               devtools_event_listeners_.begin();
-           listener != devtools_event_listeners_.end(); ++listener) {
-        client->AddListener(*listener);
-        // OnConnected will fire when DevToolsClient connects later.
+      if (!found) {
+        scoped_ptr<DevToolsClient> client(
+            devtools_http_client_->CreateClient(view.id));
+        for (ScopedVector<DevToolsEventListener>::const_iterator listener =
+                 devtools_event_listeners_.begin();
+             listener != devtools_event_listeners_.end(); ++listener) {
+          client->AddListener(*listener);
+          // OnConnected will fire when DevToolsClient connects later.
+        }
+        web_views_.push_back(make_linked_ptr(new WebViewImpl(
+            view.id,
+            devtools_http_client_->browser_info(),
+            client.Pass(),
+            devtools_http_client_->device_metrics())));
       }
-      web_views_.push_back(make_linked_ptr(new WebViewImpl(
-          view.id,
-          devtools_http_client_->browser_info(),
-          client.Pass(),
-          devtools_http_client_->device_metrics())));
     }
   }
 
