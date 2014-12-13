@@ -274,16 +274,12 @@ void GraphicsLayer::paintGraphicsLayerContents(GraphicsContext& context, const I
         m_debugInfo.clearAnnotatedInvalidateRects();
     incrementPaintCount();
     m_client->paintContents(this, context, m_paintingPhase, clip);
-
+#ifndef NDEBUG
     if (m_displayItemList) {
         ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
-#ifndef NDEBUG
         context.fillRect(clip, Color(0xFF, 0, 0));
-#endif
-        const PaintList& paintList = m_displayItemList->paintList();
-        for (PaintList::const_iterator it = paintList.begin(); it != paintList.end(); ++it)
-            (*it)->replay(&context);
     }
+#endif
 }
 
 void GraphicsLayer::updateChildList()

@@ -132,32 +132,32 @@
   {
     "prefix": "slimmingpaint",
     "base": "fast/block",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint", "--enable-impl-side-painting"]
   },
   {
     "prefix": "slimmingpaint",
     "base": "fast/inline",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint", "--enable-impl-side-painting"]
   },
   {
     "prefix": "slimmingpaint",
     "base": "fast/inline-block",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint", "--enable-impl-side-painting"]
   },
   {
     "prefix": "slimmingpaint",
     "base": "fast/images",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint", "--enable-impl-side-painting"]
   },
   {
     "prefix": "slimmingpaint",
     "base": "fast/table",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint", "--enable-impl-side-painting"]
   },
   {
     "prefix": "slimmingpaint",
     "base": "fast/text",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint", "--enable-impl-side-painting"]
   },
   {
     "prefix": "rootlayerscrolls",

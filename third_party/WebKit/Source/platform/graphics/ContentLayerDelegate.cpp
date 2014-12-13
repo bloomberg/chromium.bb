@@ -89,13 +89,10 @@ void ContentLayerDelegate::paintContents(
     canvas->restore();
     picture = adoptRef(recorder.endRecording());
 
-    DisplayItemList* displayItemList = m_painter->displayItemList();
-    if (displayItemList->paintList().size() == 0) {
-        webDisplayItemList->appendDrawingItem(picture.get(), WebFloatPoint());
-        return;
-    }
+    ASSERT(m_painter->displayItemList());
+    ASSERT(m_painter->displayItemList()->paintList().size() > 0);
 
-    const PaintList& paintList = displayItemList->paintList();
+    const PaintList& paintList = m_painter->displayItemList()->paintList();
     for (PaintList::const_iterator it = paintList.begin(); it != paintList.end(); ++it)
         (*it)->appendToWebDisplayItemList(webDisplayItemList);
 }
