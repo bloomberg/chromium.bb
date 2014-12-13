@@ -84,7 +84,10 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
   // Close device at path (on UI thread).
   void DetachInputDevice(const base::FilePath& file_path);
 
-  void NotifyHotplugEventObserver(const EventConverterEvdev& converter);
+  // Update observers on device changes.
+  void NotifyDeviceChange(const EventConverterEvdev& converter);
+  void NotifyKeyboardsUpdated();
+  void NotifyTouchscreensUpdated();
 
   int NextDeviceId();
 

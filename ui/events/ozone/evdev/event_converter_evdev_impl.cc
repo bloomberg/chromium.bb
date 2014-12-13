@@ -19,12 +19,14 @@ EventConverterEvdevImpl::EventConverterEvdevImpl(
     base::FilePath path,
     int id,
     InputDeviceType type,
+    const EventDeviceInfo& devinfo,
     EventModifiersEvdev* modifiers,
     MouseButtonMapEvdev* button_map,
     CursorDelegateEvdev* cursor,
     KeyboardEvdev* keyboard,
     const EventDispatchCallback& callback)
     : EventConverterEvdev(fd, path, id, type),
+      has_keyboard_(devinfo.HasKeyboard()),
       x_offset_(0),
       y_offset_(0),
       cursor_(cursor),
@@ -53,6 +55,10 @@ void EventConverterEvdevImpl::OnFileCanReadWithoutBlocking(int fd) {
 
   DCHECK_EQ(read_size % sizeof(*inputs), 0u);
   ProcessEvents(inputs, read_size / sizeof(*inputs));
+}
+
+bool EventConverterEvdevImpl::HasKeyboard() const {
+  return has_keyboard_;
 }
 
 void EventConverterEvdevImpl::ProcessEvents(const input_event* inputs,

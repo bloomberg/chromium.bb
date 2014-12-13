@@ -88,7 +88,7 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
             params.keyboard, params.gesture_property_provider,
             params.dispatch_callback));
     return make_scoped_ptr(new EventReaderLibevdevCros(
-        fd, params.path, params.id, type, gesture_interp.Pass()));
+        fd, params.path, params.id, type, devinfo, gesture_interp.Pass()));
   }
 #endif
 
@@ -108,7 +108,7 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
 
   // Everything else: use EventConverterEvdevImpl.
   return make_scoped_ptr<EventConverterEvdevImpl>(new EventConverterEvdevImpl(
-      fd, params.path, params.id, type, params.modifiers,
+      fd, params.path, params.id, type, devinfo, params.modifiers,
       params.button_map, params.cursor, params.keyboard,
       params.dispatch_callback));
 }
@@ -224,7 +224,7 @@ void EventFactoryEvdev::AttachInputDevice(
   converters_[path] = converter.release();
   converters_[path]->Start();
 
-  NotifyHotplugEventObserver(*converters_[path]);
+  NotifyDeviceChange(*converters_[path]);
 }
 
 void EventFactoryEvdev::OnDeviceEvent(const DeviceEvent& event) {
@@ -291,7 +291,7 @@ void EventFactoryEvdev::DetachInputDevice(const base::FilePath& path) {
     // on UI since the polling happens on UI.
     converter->Stop();
 
-    NotifyHotplugEventObserver(*converter);
+    NotifyDeviceChange(*converter);
 
     // Dispatch task to close from the worker pool, since close may block.
     base::WorkerPool::PostTask(
@@ -313,26 +313,40 @@ void EventFactoryEvdev::WarpCursorTo(gfx::AcceleratedWidget widget,
   }
 }
 
-void EventFactoryEvdev::NotifyHotplugEventObserver(
+void EventFactoryEvdev::NotifyDeviceChange(
     const EventConverterEvdev& converter) {
-  // For now the only information propagated is related to touchscreens. Ignore
-  // events for everything but touchscreens.
-  if (!converter.HasTouchscreen())
-    return;
+  if (converter.HasTouchscreen())
+    NotifyTouchscreensUpdated();
 
+  if (converter.HasKeyboard())
+    NotifyKeyboardsUpdated();
+}
+
+void EventFactoryEvdev::NotifyTouchscreensUpdated() {
   DeviceHotplugEventObserver* observer = DeviceDataManager::GetInstance();
   std::vector<TouchscreenDevice> touchscreens;
   for (auto it = converters_.begin(); it != converters_.end(); ++it) {
     if (it->second->HasTouchscreen()) {
-      touchscreens.push_back(
-          TouchscreenDevice(it->second->id(),
-                            it->second->type(),
-                            std::string(), /* Device name */
-                            it->second->GetTouchscreenSize()));
+      touchscreens.push_back(TouchscreenDevice(
+          it->second->id(), it->second->type(), std::string() /* Device name */,
+          it->second->GetTouchscreenSize()));
     }
   }
 
   observer->OnTouchscreenDevicesUpdated(touchscreens);
+}
+
+void EventFactoryEvdev::NotifyKeyboardsUpdated() {
+  DeviceHotplugEventObserver* observer = DeviceDataManager::GetInstance();
+  std::vector<KeyboardDevice> keyboards;
+  for (auto it = converters_.begin(); it != converters_.end(); ++it) {
+    if (it->second->HasKeyboard()) {
+      keyboards.push_back(KeyboardDevice(it->second->id(), it->second->type(),
+                                         std::string() /* Device name */));
+    }
+  }
+
+  observer->OnKeyboardDevicesUpdated(keyboards);
 }
 
 int EventFactoryEvdev::NextDeviceId() {

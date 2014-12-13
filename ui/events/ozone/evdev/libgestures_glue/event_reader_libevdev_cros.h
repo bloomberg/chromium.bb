@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
+#include "ui/events/ozone/evdev/event_device_info.h"
 
 namespace ui {
 
@@ -39,17 +40,22 @@ class EventReaderLibevdevCros : public EventConverterEvdev {
                           const base::FilePath& path,
                           int id,
                           InputDeviceType type,
+                          const EventDeviceInfo& devinfo,
                           scoped_ptr<Delegate> delegate);
   ~EventReaderLibevdevCros();
 
   // EventConverterEvdev:
   void OnFileCanReadWithoutBlocking(int fd) override;
+  bool HasKeyboard() const override;
 
  private:
   static void OnSynReport(void* data,
                           EventStateRec* evstate,
                           struct timeval* tv);
   static void OnLogMessage(void*, int level, const char*, ...);
+
+  // Input modalities for this device.
+  bool has_keyboard_;
 
   // Libevdev state.
   Evdev evdev_;

@@ -29,8 +29,11 @@ EventReaderLibevdevCros::EventReaderLibevdevCros(int fd,
                                                  const base::FilePath& path,
                                                  int id,
                                                  InputDeviceType type,
+                                                 const EventDeviceInfo& devinfo,
                                                  scoped_ptr<Delegate> delegate)
-    : EventConverterEvdev(fd, path, id, type), delegate_(delegate.Pass()) {
+    : EventConverterEvdev(fd, path, id, type),
+      has_keyboard_(devinfo.HasKeyboard()),
+      delegate_(delegate.Pass()) {
   memset(&evdev_, 0, sizeof(evdev_));
   evdev_.log = OnLogMessage;
   evdev_.log_udata = this;
@@ -63,6 +66,10 @@ void EventReaderLibevdevCros::OnFileCanReadWithoutBlocking(int fd) {
     Stop();
     return;
   }
+}
+
+bool EventReaderLibevdevCros::HasKeyboard() const {
+  return has_keyboard_;
 }
 
 // static

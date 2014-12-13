@@ -233,6 +233,19 @@ bool EventDeviceInfo::IsMappedToScreen() const {
   return true;
 }
 
+bool EventDeviceInfo::HasKeyboard() const {
+  if (!HasEventType(EV_KEY))
+    return false;
+
+  // Check first 31 keys: If we have all of them, consider it a full
+  // keyboard. This is exactly what udev does for ID_INPUT_KEYBOARD.
+  for (int key = KEY_ESC; key <= KEY_D; ++key)
+    if (!HasKeyEvent(key))
+      return false;
+
+  return true;
+}
+
 const std::vector<int32_t>& EventDeviceInfo::GetMtSlotsForCode(int code) const {
   int index = code - ABS_MT_SLOT - 1;
   DCHECK_LE(0, index) << code << " is not a valid multi-touch code";

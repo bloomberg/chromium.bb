@@ -35,6 +35,10 @@ void EventConverterEvdev::OnFileCanWriteWithoutBlocking(int fd) {
   NOTREACHED();
 }
 
+bool EventConverterEvdev::HasKeyboard() const {
+  return false;
+}
+
 bool EventConverterEvdev::HasTouchscreen() const {
   return false;
 }

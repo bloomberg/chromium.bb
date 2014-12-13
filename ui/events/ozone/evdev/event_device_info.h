@@ -65,12 +65,15 @@ class EVENTS_OZONE_EVDEV_EXPORT EventDeviceInfo {
   // Has MT absolute events
   bool HasMTAbsXY() const;
 
-  // Has relativeX & Y axes.
+  // Has relative X & Y axes.
   bool HasRelXY() const;
 
   // Determine whether absolute device X/Y coordinates are mapped onto the
   // screen. This is the case for touchscreens and tablets but not touchpads.
   bool IsMappedToScreen() const;
+
+  // Determine whether there's a keyboard on this device.
+  bool HasKeyboard() const;
 
  private:
   // Return the slot vector in |slot_values_| for |code|.

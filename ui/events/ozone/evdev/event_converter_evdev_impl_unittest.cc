@@ -32,6 +32,7 @@ class MockEventConverterEvdevImpl : public EventConverterEvdevImpl {
                                 base::FilePath(kTestDevicePath),
                                 1,
                                 INPUT_DEVICE_UNKNOWN,
+                                EventDeviceInfo(),
                                 modifiers,
                                 button_map,
                                 cursor,

@@ -36,6 +36,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
   // Stop reading events.
   void Stop();
 
+  // Returns true of the converter is used for a keyboard device.
+  virtual bool HasKeyboard() const;
+
   // Returns true of the converter is used for a touchscreen device.
   virtual bool HasTouchscreen() const;
 
