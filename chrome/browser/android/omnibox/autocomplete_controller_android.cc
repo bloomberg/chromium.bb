@@ -223,7 +223,6 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
       true,
       selected_index,
       false,
-      false, /* don't know */
       SessionTabHelper::IdForTab(web_contents),
       current_page_classification,
       base::TimeDelta::FromMilliseconds(elapsed_time_since_first_modified),

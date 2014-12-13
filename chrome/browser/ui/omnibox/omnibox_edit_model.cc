@@ -755,8 +755,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       input_.type(),
       popup_model()->IsOpen(),
       (!popup_model()->IsOpen() || !pasted_text.empty()) ? 0 : index,
-      !pasted_text.empty(),  // is_paste_and_go
-      paste_state_ != NONE,  // last_action_was_paste
+      !pasted_text.empty(),
       -1,  // don't yet know tab ID; set later if appropriate
       ClassifyPage(),
       elapsed_time_since_user_first_modified_omnibox,
