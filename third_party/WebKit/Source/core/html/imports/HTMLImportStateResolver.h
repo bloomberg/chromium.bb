@@ -32,16 +32,19 @@
 #define HTMLImportStateResolver_h
 
 #include "core/html/imports/HTMLImportState.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
 class HTMLImport;
 
 class HTMLImportStateResolver {
+    STACK_ALLOCATED();
 public:
     explicit HTMLImportStateResolver(HTMLImport* import)
         : m_import(import)
-    { }
+    {
+    }
 
     HTMLImportState resolve() const;
 
@@ -51,7 +54,7 @@ private:
     bool shouldBlockScriptExecution() const;
     bool isActive() const;
 
-    HTMLImport* m_import;
+    RawPtrWillBeMember<HTMLImport> m_import;
 };
 
 }
