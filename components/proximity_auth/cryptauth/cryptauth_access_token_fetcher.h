@@ -5,10 +5,15 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_CRYPT_AUTH_ACCESS_TOKEN_FETCHER_H
 #define COMPONENTS_PROXIMITY_AUTH_CRYPT_AUTH_ACCESS_TOKEN_FETCHER_H
 
+#include <string>
+
+#include "base/callback_forward.h"
+
 namespace proximity_auth {
 
 // Simple interface for fetching the OAuth2 access token that authorizes
-// CryptAuth API calls.
+// CryptAuth API calls. Do not reuse this after calling FetchAccessToken();
+// instead, create a new instance.
 class CryptAuthAccessTokenFetcher {
  public:
   virtual ~CryptAuthAccessTokenFetcher() {}

@@ -5,6 +5,8 @@
 source_set("cryptauth") {
   sources = [
     "cryptauth_access_token_fetcher.h",
+    "cryptauth_account_token_fetcher.cc",
+    "cryptauth_account_token_fetcher.h",
     "cryptauth_api_call_flow.cc",
     "cryptauth_api_call_flow.h",
     "cryptauth_client.cc",
@@ -25,6 +27,7 @@ source_set("cryptauth") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "cryptauth_account_token_fetcher_unittest.cc",
     "cryptauth_api_call_flow_unittest.cc",
     "cryptauth_client_unittest.cc",
   ]
@@ -32,6 +35,7 @@ source_set("unit_tests") {
   deps = [
     ":cryptauth",
     "//base/test:test_support",
+    "//google_apis:test_support",
     "//net:test_support",
     "//testing/gtest",
   ]

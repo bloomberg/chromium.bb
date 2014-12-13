@@ -71,6 +71,8 @@
       ],
       'sources': [
         "proximity_auth/cryptauth/cryptauth_access_token_fetcher.h",
+        "proximity_auth/cryptauth/cryptauth_account_token_fetcher.cc",
+        "proximity_auth/cryptauth/cryptauth_account_token_fetcher.h",
         "proximity_auth/cryptauth/cryptauth_api_call_flow.cc",
         "proximity_auth/cryptauth/cryptauth_api_call_flow.h",
         "proximity_auth/cryptauth/cryptauth_client.cc",
