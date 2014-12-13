@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_win.h"
 
+#include "base/tracked_objects.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drag_source_win.h"
 #include "ui/base/dragdrop/drop_target_event.h"
@@ -36,9 +37,14 @@ int DesktopDragDropClientWin::StartDragAndDrop(
 
   drag_source_ = new ui::DragSourceWin;
   DWORD effect;
+
+  // Use task stopwatch to exclude the drag-drop time current task, if any.
+  tracked_objects::TaskStopwatch stopwatch;
+  stopwatch.Start();
   HRESULT result = DoDragDrop(
       ui::OSExchangeDataProviderWin::GetIDataObject(data), drag_source_.get(),
       ui::DragDropTypes::DragOperationToDropEffect(operation), &effect);
+  stopwatch.Stop();
 
   drag_drop_in_progress_ = false;
 

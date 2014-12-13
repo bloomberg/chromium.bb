@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
+#include "base/tracked_objects.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
@@ -2126,9 +2127,20 @@ void HWNDMessageHandler::OnSysCommand(UINT notification_code,
     // with the mouse/touch/keyboard, we flag as being in a size loop.
     if ((notification_code & sc_mask) == SC_SIZE)
       in_size_loop_ = true;
+    const bool runs_nested_loop = ((notification_code & sc_mask) == SC_SIZE) ||
+                                  ((notification_code & sc_mask) == SC_MOVE);
     base::WeakPtr<HWNDMessageHandler> ref(weak_factory_.GetWeakPtr());
+
+    // Use task stopwatch to exclude the time spend in the move/resize loop from
+    // the current task, if any.
+    tracked_objects::TaskStopwatch stopwatch;
+    if (runs_nested_loop)
+      stopwatch.Start();
     DefWindowProc(hwnd(), WM_SYSCOMMAND, notification_code,
                   MAKELPARAM(point.x(), point.y()));
+    if (runs_nested_loop)
+      stopwatch.Stop();
+
     if (!ref.get())
       return;
     in_size_loop_ = false;
