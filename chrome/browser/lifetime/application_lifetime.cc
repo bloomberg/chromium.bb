@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/user_manager.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_shutdown.h"
@@ -48,6 +49,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
+#include "components/browser_watcher/exit_funnel_win.h"
 #endif
 
 namespace chrome {
@@ -251,6 +253,12 @@ void ExitCleanly() {
 #endif
 
 void SessionEnding() {
+#if defined(OS_WIN)
+  browser_watcher::ExitFunnel funnel;
+
+  funnel.Init(kBrowserExitCodesRegistryPath, base::GetCurrentProcessHandle());
+  funnel.RecordEvent(L"SessionEnding");
+#endif
   // This is a time-limited shutdown where we need to write as much to
   // disk as we can as soon as we can, and where we must kill the
   // process within a hang timeout to avoid user prompts.
@@ -276,11 +284,20 @@ void SessionEnding() {
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
 
+#if defined(OS_WIN)
+  funnel.RecordEvent(L"EndSession");
+#endif
   // Write important data first.
   g_browser_process->EndSession();
 
 #if defined(OS_WIN)
   base::win::SetShouldCrashOnProcessDetach(false);
+#endif
+
+#if defined(OS_WIN)
+  // KillProcess ought to terminate the process without further ado, so if
+  // execution gets to this point, presumably this is normal exit.
+  funnel.RecordEvent(L"KillProcess");
 #endif
 
   // On Windows 7 and later, the system will consider the process ripe for

@@ -7,8 +7,10 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/logging_win.h"
+#include "base/process/process_handle.h"
 #include "base/template_util.h"
 #include "components/browser_watcher/exit_code_watcher_win.h"
+#include "components/browser_watcher/exit_funnel_win.h"
 #include "components/browser_watcher/watcher_main_api_win.h"
 
 namespace {
@@ -42,8 +44,30 @@ extern "C" int WatcherMain(const base::char16* registry_path) {
   // Attempt to wait on our parent process, and record its exit status.
   if (exit_code_watcher.ParseArguments(
         *base::CommandLine::ForCurrentProcess())) {
+    base::ProcessHandle dupe = base::kNullProcessHandle;
+    // Duplicate the process handle for the exit funnel due to the wonky
+    // process handle lifetime management in base.
+    if (!::DuplicateHandle(base::GetCurrentProcessHandle(),
+                           exit_code_watcher.process(),
+                           base::GetCurrentProcessHandle(),
+                           &dupe,
+                           0,
+                           FALSE,
+                           DUPLICATE_SAME_ACCESS)) {
+      dupe = base::kNullProcessHandle;
+    }
+
     // Wait on the process.
     exit_code_watcher.WaitForExit();
+
+    if (dupe != base::kNullProcessHandle) {
+      browser_watcher::ExitFunnel funnel;
+      funnel.Init(registry_path, dupe);
+      funnel.RecordEvent(L"BrowserExit");
+
+      base::CloseProcessHandle(dupe);
+    }
+
     ret = 0;
   }
 

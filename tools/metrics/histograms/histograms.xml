@@ -35484,6 +35484,71 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Stability.ExitFunnel.BackgroundOff" units="milliseconds">
+  <owner>siggi@chromium.org</owner>
+  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
+</histogram>
+
+<histogram name="Stability.ExitFunnel.BackgroundOn" units="milliseconds">
+  <owner>siggi@chromium.org</owner>
+  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
+</histogram>
+
+<histogram name="Stability.ExitFunnel.BrowserExit" units="milliseconds">
+  <owner>siggi@chromium.org</owner>
+  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
+</histogram>
+
+<histogram name="Stability.ExitFunnel.EndSession" units="milliseconds">
+  <owner>siggi@chromium.org</owner>
+  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
+</histogram>
+
+<histogram name="Stability.ExitFunnel.ES_CloseApp" units="milliseconds">
+  <owner>siggi@chromium.org</owner>
+  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
+</histogram>
+
+<histogram name="Stability.ExitFunnel.ES_Critical" units="milliseconds">
+  <owner>siggi@chromium.org</owner>
+  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
+</histogram>
+
+<histogram name="Stability.ExitFunnel.ES_Logoff" units="milliseconds">
+  <owner>siggi@chromium.org</owner>
+  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
+</histogram>
+
+<histogram name="Stability.ExitFunnel.ES_Other" units="milliseconds">
+  <owner>siggi@chromium.org</owner>
+  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
+</histogram>
+
+<histogram name="Stability.ExitFunnel.KillProcess" units="milliseconds">
+  <owner>siggi@chromium.org</owner>
+  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
+</histogram>
+
+<histogram name="Stability.ExitFunnel.LastWindowClose" units="milliseconds">
+  <owner>siggi@chromium.org</owner>
+  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
+</histogram>
+
+<histogram name="Stability.ExitFunnel.SessionEnding" units="milliseconds">
+  <owner>siggi@chromium.org</owner>
+  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
+</histogram>
+
+<histogram name="Stability.ExitFunnel.TraybarExit" units="milliseconds">
+  <owner>siggi@chromium.org</owner>
+  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
+</histogram>
+
+<histogram name="Stability.ExitFunnel.WM_ENDSESSION" units="milliseconds">
+  <owner>siggi@chromium.org</owner>
+  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
+</histogram>
+
 <histogram name="Stars.Goog_Related" units="percent">
   <owner>yefim@chromium.org</owner>
   <summary>

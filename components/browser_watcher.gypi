@@ -14,6 +14,8 @@
             'sources': [
               'browser_watcher/exit_code_watcher_win.cc',
               'browser_watcher/exit_code_watcher_win.h',
+              'browser_watcher/exit_funnel_win.cc',
+              'browser_watcher/exit_funnel_win.h',
             ],
             'dependencies': [
               '../base/base.gyp:base',
@@ -24,8 +26,6 @@
             'target_name': 'browser_watcher_client',
             'type': 'static_library',
             'sources': [
-              'browser_watcher/exit_funnel_win.cc',
-              'browser_watcher/exit_funnel_win.h',
               'browser_watcher/watcher_client_win.cc',
               'browser_watcher/watcher_client_win.h',
               'browser_watcher/watcher_main_api_win.cc',

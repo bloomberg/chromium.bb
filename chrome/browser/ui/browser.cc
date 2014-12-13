@@ -201,6 +201,7 @@
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "components/autofill/core/browser/autofill_ie_toolbar_import_win.h"
+#include "components/browser_watcher/exit_funnel_win.h"
 #include "ui/base/touch/touch_device.h"
 #include "ui/base/win/shell.h"
 #endif  // OS_WIN
@@ -658,8 +659,13 @@ void Browser::OnWindowClosing() {
   bool should_quit_if_last_browser =
       browser_shutdown::IsTryingToQuit() || !chrome::WillKeepAlive();
 
-  if (should_quit_if_last_browser && chrome::ShouldStartShutdown(this))
+  if (should_quit_if_last_browser && chrome::ShouldStartShutdown(this)) {
+#if defined(OS_WIN)
+    browser_watcher::ExitFunnel::RecordSingleEvent(
+          chrome::kBrowserExitCodesRegistryPath, L"LastWindowClose");
+#endif
     browser_shutdown::OnShutdownStarting(browser_shutdown::WINDOW_CLOSE);
+  }
 
   // Don't use GetForProfileIfExisting here, we want to force creation of the
   // session service so that user can restore what was open.
