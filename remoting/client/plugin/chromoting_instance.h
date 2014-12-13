@@ -21,7 +21,6 @@
 #include "remoting/client/client_user_interface.h"
 #include "remoting/client/key_event_mapper.h"
 #include "remoting/client/plugin/empty_cursor_filter.h"
-#include "remoting/client/plugin/media_source_video_renderer.h"
 #include "remoting/client/plugin/pepper_cursor_setter.h"
 #include "remoting/client/plugin/pepper_input_handler.h"
 #include "remoting/client/plugin/pepper_plugin_thread_delegate.h"
@@ -75,7 +74,6 @@ struct ClientConfig;
 
 class ChromotingInstance :
       public ClientUserInterface,
-      public MediaSourceVideoRenderer::Delegate,
       public protocol::ClipboardStub,
       public protocol::CursorShapeStub,
       public pp::Instance {
@@ -203,7 +201,6 @@ class ChromotingInstance :
   void HandleRequestPairing(const base::DictionaryValue& data);
   void HandleExtensionMessage(const base::DictionaryValue& data);
   void HandleAllowMouseLockMessage();
-  void HandleEnableMediaSourceRendering();
   void HandleSendMouseInputWhenUnfocused();
   void HandleDelegateLargeCursors();
 
@@ -241,15 +238,6 @@ class ChromotingInstance :
   void FetchSecretFromDialog(
       bool pairing_supported,
       const protocol::SecretFetchedCallback& secret_fetched_callback);
-
-  // MediaSourceVideoRenderer::Delegate implementation.
-  void OnMediaSourceSize(const webrtc::DesktopSize& size,
-                         const webrtc::DesktopVector& dpi) override;
-  void OnMediaSourceShape(const webrtc::DesktopRegion& shape) override;
-  void OnMediaSourceReset(const std::string& format) override;
-  void OnMediaSourceData(uint8_t* buffer,
-                         size_t buffer_size,
-                         bool keyframe) override;
 
   bool initialized_;
 
@@ -290,11 +278,6 @@ class ChromotingInstance :
   // PIN Fetcher.
   bool use_async_pin_dialog_;
   protocol::SecretFetchedCallback secret_fetched_callback_;
-
-  // Set to true if the webapp has requested to use MediaSource API for
-  // rendering. In that case all the encoded video will be passed to the
-  // webapp for decoding.
-  bool use_media_source_rendering_;
 
   base::WeakPtr<TokenFetcherProxy> token_fetcher_proxy_;
 
