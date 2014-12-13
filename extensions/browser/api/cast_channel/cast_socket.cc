@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
+#include "base/time/time.h"
 #include "extensions/browser/api/cast_channel/cast_auth_util.h"
 #include "extensions/browser/api/cast_channel/cast_framer.h"
 #include "extensions/browser/api/cast_channel/cast_message_util.h"
@@ -49,6 +50,18 @@ namespace {
 // after 9 failed probes.  So the total idle time before close is 10 *
 // kTcpKeepAliveDelaySecs.
 const int kTcpKeepAliveDelaySecs = 10;
+
+const int kMaxSelfSignedCertLifetimeInDays = 2;
+
+std::string FormatTimeForLogging(base::Time time) {
+  base::Time::Exploded exploded;
+  time.UTCExplode(&exploded);
+  return base::StringPrintf(
+      "%04d-%02d-%02d %02d:%02d:%02d.%03d UTC", exploded.year, exploded.month,
+      exploded.day_of_month, exploded.hour, exploded.minute, exploded.second,
+      exploded.millisecond);
+}
+
 }  // namespace
 
 namespace extensions {
@@ -177,11 +190,25 @@ bool CastSocketImpl::ExtractPeerCert(std::string* cert) {
 
   logger_->LogSocketEvent(channel_id_, proto::SSL_INFO_OBTAINED);
 
+  // Ensure that the peer cert (which is self-signed) doesn't have an excessive
+  // life-time (i.e. no more than 2 days).
+  base::Time expiry = ssl_info.cert->valid_expiry();
+  base::Time lifetimeLimit =
+      base::Time::Now() +
+      base::TimeDelta::FromDays(kMaxSelfSignedCertLifetimeInDays);
+  if (expiry.is_null() || expiry > lifetimeLimit) {
+    std::string details = FormatTimeForLogging(expiry);
+    details += " " + ip_endpoint().ToString();
+    LOG(ERROR) << "Peer cert has excessive lifetime. details=" << details;
+    logger_->LogSocketEventWithDetails(
+        channel_id_, proto::SSL_CERT_EXCESSIVE_LIFETIME, details);
+    return false;
+  }
+
   bool result = net::X509Certificate::GetDEREncoded(
      ssl_info.cert->os_cert_handle(), cert);
   if (result) {
-    VLOG_WITH_CONNECTION(1) << "Successfully extracted peer certificate: "
-                            << *cert;
+    VLOG_WITH_CONNECTION(1) << "Successfully extracted peer certificate";
   }
 
   logger_->LogSocketEventWithRv(
