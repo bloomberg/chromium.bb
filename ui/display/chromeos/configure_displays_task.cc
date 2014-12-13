@@ -65,17 +65,19 @@ void ConfigureDisplaysTask::Run() {
   if (is_configuring_)
     return;
 
-  base::AutoReset<bool> recursivity_guard(&is_configuring_, true);
-  while (!pending_request_indexes_.empty()) {
-    size_t index = pending_request_indexes_.front();
-    DisplayConfigureRequest* request = &requests_[index];
-    pending_request_indexes_.pop();
-    delegate_->Configure(*request->display, request->mode, request->origin,
-                         base::Bind(&ConfigureDisplaysTask::OnConfigured,
-                                    weak_ptr_factory_.GetWeakPtr(), index));
+  {
+    base::AutoReset<bool> recursivity_guard(&is_configuring_, true);
+    while (!pending_request_indexes_.empty()) {
+      size_t index = pending_request_indexes_.front();
+      DisplayConfigureRequest* request = &requests_[index];
+      pending_request_indexes_.pop();
+      delegate_->Configure(*request->display, request->mode, request->origin,
+                           base::Bind(&ConfigureDisplaysTask::OnConfigured,
+                                      weak_ptr_factory_.GetWeakPtr(), index));
+    }
   }
 
-  // Nothing should be modified after the |callback_| is called since thie
+  // Nothing should be modified after the |callback_| is called since the
   // task may be deleted in the callback.
   if (num_displays_configured_ == requests_.size())
     callback_.Run(task_status_);
