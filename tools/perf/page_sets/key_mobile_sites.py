@@ -312,47 +312,47 @@ class KeyMobileSitesPageSet(page_set_module.PageSet):
       bucket=page_set_module.PARTNER_BUCKET)
 
 
-    self.AddPage(CapitolVolkswagenPage(self))
-    self.AddPage(TheVergePage(self))
-    self.AddPage(CnnPage(self))
-    self.AddPage(FacebookPage(self))
-    self.AddPage(YoutubeMobilePage(self))
-    self.AddPage(LinkedInPage(self))
-    self.AddPage(YahooAnswersPage(self))
-    self.AddPage(GmailPage(self))
+    self.AddUserStory(CapitolVolkswagenPage(self))
+    self.AddUserStory(TheVergePage(self))
+    self.AddUserStory(CnnPage(self))
+    self.AddUserStory(FacebookPage(self))
+    self.AddUserStory(YoutubeMobilePage(self))
+    self.AddUserStory(LinkedInPage(self))
+    self.AddUserStory(YahooAnswersPage(self))
+    self.AddUserStory(GmailPage(self))
     # Page behaves non-deterministically, replaced with test version for now.
-    # self.AddPage(GroupClonedPage(self))
+    # self.AddUserStory(GroupClonedPage(self))
     # mean_input_event_latency cannot be tracked correctly for
     # GroupClonedListImagesPage.
     # See crbug.com/409086.
-    # self.AddPage(GroupClonedListImagesPage(self))
-    self.AddPage(GoogleNewsMobilePage(self))
-    self.AddPage(GoogleNewsMobile2Page(self))
-    self.AddPage(AmazonNicolasCagePage(self))
+    # self.AddUserStory(GroupClonedListImagesPage(self))
+    self.AddUserStory(GoogleNewsMobilePage(self))
+    self.AddUserStory(GoogleNewsMobile2Page(self))
+    self.AddUserStory(AmazonNicolasCagePage(self))
 
     # Why: Top news site.
-    self.AddPage(KeyMobileSitesPage(
+    self.AddUserStory(KeyMobileSitesPage(
       url='http://nytimes.com/', page_set=self, labels=['fastpath']))
 
     # Why: Image-heavy site.
-    self.AddPage(KeyMobileSitesPage(
+    self.AddUserStory(KeyMobileSitesPage(
       url='http://cuteoverload.com', page_set=self, labels=['fastpath']))
 
     # Why: #11 (Alexa global), google property; some blogger layouts
     # have infinite scroll but more interesting.
-    self.AddPage(KeyMobileSitesPage(
+    self.AddUserStory(KeyMobileSitesPage(
       url='http://googlewebmastercentral.blogspot.com/',
       page_set=self, name='Blogger'))
 
     # Why: #18 (Alexa global), Picked an interesting post """
-    self.AddPage(KeyMobileSitesPage(
+    self.AddUserStory(KeyMobileSitesPage(
       # pylint: disable=C0301
       url='http://en.blog.wordpress.com/2012/09/04/freshly-pressed-editors-picks-for-august-2012/',
       page_set=self,
       name='Wordpress'))
 
    # Why: #6 (Alexa) most visited worldwide, picked an interesting page
-    self.AddPage(KeyMobileSitesPage(
+    self.AddUserStory(KeyMobileSitesPage(
       url='http://en.wikipedia.org/wiki/Wikipedia',
       page_set=self,
       name='Wikipedia (1 tab)'))
@@ -360,34 +360,35 @@ class KeyMobileSitesPageSet(page_set_module.PageSet):
 
     # Why: #8 (Alexa global), picked an interesting page
     # Forbidden (Rate Limit Exceeded)
-    # self.AddPage(KeyMobileSitesPage(
+    # self.AddUserStory(KeyMobileSitesPage(
     #  url='http://twitter.com/katyperry', page_set=self, name='Twitter'))
 
     # Why: #37 (Alexa global) """
-    self.AddPage(KeyMobileSitesPage(
+    self.AddUserStory(KeyMobileSitesPage(
         url='http://pinterest.com',
         page_set=self,
         name='Pinterest'))
 
     # Why: #1 sports.
     # Fails often; crbug.com/249722'
-    # self.AddPage(KeyMobileSitesPage(
+    # self.AddUserStory(KeyMobileSitesPage(
     # url='http://espn.go.com', page_set=self, name='ESPN'))
     # Why: crbug.com/231413
     # Doesn't scroll; crbug.com/249736
-    # self.AddPage(KeyMobileSitesPage(url='http://forecast.io', page_set=self))
+    # self.AddUserStory(KeyMobileSitesPage(
+    #     url='http://forecast.io', page_set=self))
     # Why: crbug.com/169827
-    self.AddPage(KeyMobileSitesPage(
+    self.AddUserStory(KeyMobileSitesPage(
       url='http://slashdot.org/', page_set=self, labels=['fastpath']))
 
     # Why: #5 Alexa news """
 
-    self.AddPage(KeyMobileSitesPage(
+    self.AddUserStory(KeyMobileSitesPage(
       url='http://www.reddit.com/r/programming/comments/1g96ve',
       page_set=self, labels=['fastpath']))
 
     # Why: Problematic use of fixed position elements """
-    self.AddPage(KeyMobileSitesPage(
+    self.AddUserStory(KeyMobileSitesPage(
       url='http://www.boingboing.net', page_set=self, labels=['fastpath']))
 
     urls_list = [
@@ -441,4 +442,4 @@ class KeyMobileSitesPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(KeyMobileSitesPage(url, self))
+      self.AddUserStory(KeyMobileSitesPage(url, self))

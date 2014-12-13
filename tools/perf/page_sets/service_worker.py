@@ -20,11 +20,11 @@ class ServiceWorkerPageSet(page_set.PageSet):
 
     # Why: the first application using ServiceWorker
     # 1st time: registration
-    self.AddPage(page.Page(
+    self.AddUserStory(page.Page(
         'https://jakearchibald.github.io/trained-to-thrill/', self))
     # 2st time: 1st onfetch with caching
-    self.AddPage(page.Page(
+    self.AddUserStory(page.Page(
         'https://jakearchibald.github.io/trained-to-thrill/', self))
     # 3rd time: 2nd onfetch from cache
-    self.AddPage(page.Page(
+    self.AddUserStory(page.Page(
         'https://jakearchibald.github.io/trained-to-thrill/', self))

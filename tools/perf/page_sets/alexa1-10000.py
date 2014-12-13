@@ -19377,4 +19377,4 @@ class Alexa1To10000PageSet(PageSet):
       # Why: #9999 in Alexa global
       'http://www.busuk.org/']
     for url in urls_list:
-      self.AddPage(Alexa1To10000Page(url, self))
+      self.AddUserStory(Alexa1To10000Page(url, self))

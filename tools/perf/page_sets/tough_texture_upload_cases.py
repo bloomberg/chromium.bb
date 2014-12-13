@@ -39,5 +39,5 @@ class ToughTextureUploadCasesPageSet(page_set_module.PageSet):
       # pylint: disable=C0301
       'file://tough_texture_upload_cases/background_color_animation_with_gradient_and_transform_animation.html']
     for url in urls_list:
-      self.AddPage(ToughTextureUploadCasesPage(url, self))
+      self.AddUserStory(ToughTextureUploadCasesPage(url, self))
 

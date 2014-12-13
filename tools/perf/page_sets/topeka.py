@@ -25,4 +25,4 @@ class TopekaPageSet(page_set_module.PageSet):
       archive_data_file='data/topeka.json',
       bucket=page_set_module.INTERNAL_BUCKET)
 
-    self.AddPage(TopekaPage(self))
+    self.AddUserStory(TopekaPage(self))

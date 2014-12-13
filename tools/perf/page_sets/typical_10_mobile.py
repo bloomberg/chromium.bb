@@ -53,4 +53,4 @@ class Typical10MobilePageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(Typical10MobilePage(url, self))
+      self.AddUserStory(Typical10MobilePage(url, self))

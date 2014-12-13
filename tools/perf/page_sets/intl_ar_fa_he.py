@@ -41,4 +41,4 @@ class IntlArFaHePageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(IntlArFaHePage(url, self))
+      self.AddUserStory(IntlArFaHePage(url, self))

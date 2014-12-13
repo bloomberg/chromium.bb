@@ -33,4 +33,4 @@ class GmailRefreshPageSet(page_set_module.PageSet):
       archive_data_file='data/gmail_refresh.json',
       bucket=page_set_module.PUBLIC_BUCKET)
 
-    self.AddPage(GmailRefreshPage(self))
+    self.AddUserStory(GmailRefreshPage(self))

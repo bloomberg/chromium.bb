@@ -33,4 +33,4 @@ class StartupPagesRecordPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(StartupPagesRecordPage(url, self))
+      self.AddUserStory(StartupPagesRecordPage(url, self))

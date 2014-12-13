@@ -35,4 +35,4 @@ class MorejsnpPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(MorejsnpPage(url, self))
+      self.AddUserStory(MorejsnpPage(url, self))

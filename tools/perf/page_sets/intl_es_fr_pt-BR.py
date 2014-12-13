@@ -49,4 +49,4 @@ class IntlEsFrPtBrPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(IntlEsFrPtBrPage(url, self))
+      self.AddUserStory(IntlEsFrPtBrPage(url, self))

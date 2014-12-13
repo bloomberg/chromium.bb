@@ -18,4 +18,4 @@ class FiveBlankPagesPageSet(page_set_module.PageSet):
   def __init__(self):
     super(FiveBlankPagesPageSet, self).__init__()
     for _ in xrange(5):
-      self.AddPage(BlankPage('file://blank_page/blank_page.html', self))
+      self.AddUserStory(BlankPage('file://blank_page/blank_page.html', self))

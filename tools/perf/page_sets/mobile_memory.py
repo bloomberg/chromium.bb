@@ -92,8 +92,8 @@ class MobileMemoryPageSet(page_set_module.PageSet):
         archive_data_file='data/mobile_memory.json',
         bucket=page_set_module.PARTNER_BUCKET)
 
-    self.AddPage(GmailPage(self))
-    self.AddPage(GoogleSearchPage(self))
+    self.AddUserStory(GmailPage(self))
+    self.AddUserStory(GoogleSearchPage(self))
 
     urls_list = [
       # Why: Renderer process memory bloat
@@ -105,4 +105,4 @@ class MobileMemoryPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(ScrollPage(url, self))
+      self.AddUserStory(ScrollPage(url, self))

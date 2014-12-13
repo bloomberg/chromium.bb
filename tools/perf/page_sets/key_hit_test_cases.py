@@ -52,4 +52,4 @@ class KeyHitTestCasesPageSet(page_set_module.PageSet):
     super(KeyHitTestCasesPageSet, self).__init__(
       user_agent_type='mobile')
 
-    self.AddPage(PaperCalculatorHitTest(self))
+    self.AddUserStory(PaperCalculatorHitTest(self))

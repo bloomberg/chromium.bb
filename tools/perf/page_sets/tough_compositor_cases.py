@@ -73,7 +73,7 @@ class ToughCompositorCasesPageSet(page_set_module.PageSet):
     ]
 
     for url in scroll_urls_list:
-      self.AddPage(ToughCompositorScrollPage(url, self))
+      self.AddUserStory(ToughCompositorScrollPage(url, self))
 
     for url in wait_urls_list:
-      self.AddPage(ToughCompositorWaitPage(url, self))
+      self.AddUserStory(ToughCompositorWaitPage(url, self))

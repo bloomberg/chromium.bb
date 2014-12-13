@@ -333,10 +333,10 @@ class Top7StressPageSet(page_set_module.PageSet):
       archive_data_file='data/top_25.json',
       bucket=page_set_module.PARTNER_BUCKET)
 
-    self.AddPage(GoogleWebSearchPage(self))
-    self.AddPage(GmailPage(self))
-    self.AddPage(GoogleCalendarPage(self))
-    self.AddPage(GooglePlusPage(self))
-    self.AddPage(BlogspotPage(self))
-    self.AddPage(WordpressPage(self))
-    self.AddPage(FacebookPage(self))
+    self.AddUserStory(GoogleWebSearchPage(self))
+    self.AddUserStory(GmailPage(self))
+    self.AddUserStory(GoogleCalendarPage(self))
+    self.AddUserStory(GooglePlusPage(self))
+    self.AddUserStory(BlogspotPage(self))
+    self.AddUserStory(WordpressPage(self))
+    self.AddUserStory(FacebookPage(self))

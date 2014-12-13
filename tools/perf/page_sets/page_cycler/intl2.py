@@ -56,4 +56,4 @@ class Intl2PageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(Intl2Page(url, self))
+      self.AddUserStory(Intl2Page(url, self))

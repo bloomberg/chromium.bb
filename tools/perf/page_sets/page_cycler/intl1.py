@@ -79,4 +79,4 @@ class Intl1PageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(Intl1Page(url, self))
+      self.AddUserStory(Intl1Page(url, self))

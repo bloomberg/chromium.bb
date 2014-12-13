@@ -33,4 +33,4 @@ class DomPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(DomPage(url, self))
+      self.AddUserStory(DomPage(url, self))

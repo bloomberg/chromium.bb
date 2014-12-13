@@ -23,4 +23,4 @@ class PicaPageSet(page_set_module.PageSet):
       archive_data_file='data/pica.json',
       bucket=page_set_module.INTERNAL_BUCKET)
 
-    self.AddPage(PicaPage(self))
+    self.AddUserStory(PicaPage(self))

@@ -18,5 +18,5 @@ class ToughLayerCasesPageSet(page_set_module.PageSet):
   def __init__(self):
     super(ToughLayerCasesPageSet, self).__init__()
 
-    self.AddPage(ToughLayerCasesPage(
+    self.AddUserStory(ToughLayerCasesPage(
       'file://layer_stress_tests/opacity.html', self))

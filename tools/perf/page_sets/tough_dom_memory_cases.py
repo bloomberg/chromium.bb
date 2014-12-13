@@ -46,4 +46,4 @@ class ToughDomMemoryCasesPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(ToughDomMemoryCasesPage(url, self))
+      self.AddUserStory(ToughDomMemoryCasesPage(url, self))

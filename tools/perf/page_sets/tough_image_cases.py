@@ -28,4 +28,4 @@ class ToughImageCasesPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(ToughImageCasesPage(url, self))
+      self.AddUserStory(ToughImageCasesPage(url, self))

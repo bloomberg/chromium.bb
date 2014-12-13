@@ -46,4 +46,4 @@ class ToughLayoutCasesPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(ToughLayoutCasesPage(url, self))
+      self.AddUserStory(ToughLayoutCasesPage(url, self))

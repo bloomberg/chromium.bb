@@ -35,7 +35,7 @@ class ToughFiltersCasesPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(ToughFiltersCasesPage(url, self))
+      self.AddUserStory(ToughFiltersCasesPage(url, self))
 
-    self.AddPage(PirateMarkPage(
+    self.AddUserStory(PirateMarkPage(
         'http://ie.microsoft.com/testdrive/Performance/Pirates/', self))

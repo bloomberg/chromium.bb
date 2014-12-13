@@ -65,4 +65,4 @@ class KeySearchMobilePageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(KeySearchMobilePage(url, self))
+      self.AddUserStory(KeySearchMobilePage(url, self))

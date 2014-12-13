@@ -71,4 +71,4 @@ class Typical25PageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(Typical25Page(url, self))
+      self.AddUserStory(Typical25Page(url, self))

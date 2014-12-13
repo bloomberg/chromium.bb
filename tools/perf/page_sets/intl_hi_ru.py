@@ -50,4 +50,4 @@ class IntlHiRuPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(IntlHiRuPage(url, self))
+      self.AddUserStory(IntlHiRuPage(url, self))

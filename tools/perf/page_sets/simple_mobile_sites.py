@@ -51,5 +51,5 @@ class SimpleMobileSitesPageSet(page_set_module.PageSet):
     ]
 
     for url in scroll_page_list:
-      self.AddPage(SimpleScrollPage(url, self))
+      self.AddUserStory(SimpleScrollPage(url, self))
 

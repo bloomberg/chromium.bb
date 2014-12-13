@@ -42,4 +42,4 @@ class DhtmlPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(DhtmlPage(url, self))
+      self.AddUserStory(DhtmlPage(url, self))

@@ -96,35 +96,35 @@ class Top25SmoothPageSet(page_set_module.PageSet):
         archive_data_file='data/top_25.json',
         bucket=page_set_module.PARTNER_BUCKET)
 
-    self.AddPage(_CreatePageClassWithSmoothInteractions(
+    self.AddUserStory(_CreatePageClassWithSmoothInteractions(
         top_pages.GoogleWebSearchPage)(self))
-    self.AddPage(GmailSmoothPage(self))
-    self.AddPage(GoogleCalendarSmoothPage(self))
-    self.AddPage(_CreatePageClassWithSmoothInteractions(
+    self.AddUserStory(GmailSmoothPage(self))
+    self.AddUserStory(GoogleCalendarSmoothPage(self))
+    self.AddUserStory(_CreatePageClassWithSmoothInteractions(
         top_pages.GoogleImageSearchPage)(self))
-    self.AddPage(GoogleDocSmoothPage(self))
-    self.AddPage(_CreatePageClassWithSmoothInteractions(
+    self.AddUserStory(GoogleDocSmoothPage(self))
+    self.AddUserStory(_CreatePageClassWithSmoothInteractions(
         top_pages.GooglePlusPage)(self))
-    self.AddPage(_CreatePageClassWithSmoothInteractions(
+    self.AddUserStory(_CreatePageClassWithSmoothInteractions(
         top_pages.YoutubePage)(self))
-    self.AddPage(_CreatePageClassWithSmoothInteractions(
+    self.AddUserStory(_CreatePageClassWithSmoothInteractions(
         top_pages.BlogspotPage)(self))
-    self.AddPage(_CreatePageClassWithSmoothInteractions(
+    self.AddUserStory(_CreatePageClassWithSmoothInteractions(
         top_pages.WordpressPage)(self))
-    self.AddPage(_CreatePageClassWithSmoothInteractions(
+    self.AddUserStory(_CreatePageClassWithSmoothInteractions(
         top_pages.FacebookPage)(self))
-    self.AddPage(_CreatePageClassWithSmoothInteractions(
+    self.AddUserStory(_CreatePageClassWithSmoothInteractions(
         top_pages.LinkedinPage)(self))
-    self.AddPage(_CreatePageClassWithSmoothInteractions(
+    self.AddUserStory(_CreatePageClassWithSmoothInteractions(
         top_pages.WikipediaPage)(self))
-    self.AddPage(_CreatePageClassWithSmoothInteractions(
+    self.AddUserStory(_CreatePageClassWithSmoothInteractions(
         top_pages.TwitterPage)(self))
-    self.AddPage(_CreatePageClassWithSmoothInteractions(
+    self.AddUserStory(_CreatePageClassWithSmoothInteractions(
         top_pages.PinterestPage)(self))
-    self.AddPage(ESPNSmoothPage(self))
-    self.AddPage(_CreatePageClassWithSmoothInteractions(
+    self.AddUserStory(ESPNSmoothPage(self))
+    self.AddUserStory(_CreatePageClassWithSmoothInteractions(
         top_pages.WeatherPage)(self))
-    self.AddPage(_CreatePageClassWithSmoothInteractions(
+    self.AddUserStory(_CreatePageClassWithSmoothInteractions(
         top_pages.YahooGamesPage)(self))
 
     other_urls = [
@@ -148,4 +148,4 @@ class Top25SmoothPageSet(page_set_module.PageSet):
     ]
 
     for url in other_urls:
-      self.AddPage(TopSmoothPage(url, self))
+      self.AddUserStory(TopSmoothPage(url, self))

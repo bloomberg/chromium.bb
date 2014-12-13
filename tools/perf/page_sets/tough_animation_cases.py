@@ -184,7 +184,7 @@ class ToughAnimationCasesPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list_one:
-      self.AddPage(ToughAnimationCasesPage(url, self,
+      self.AddUserStory(ToughAnimationCasesPage(url, self,
                                            need_measurement_ready=True))
 
     urls_list_two = [
@@ -201,5 +201,5 @@ class ToughAnimationCasesPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list_two:
-      self.AddPage(ToughAnimationCasesPage(url, self,
+      self.AddUserStory(ToughAnimationCasesPage(url, self,
                                            need_measurement_ready=False))

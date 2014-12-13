@@ -56,7 +56,7 @@ class ToughScrollingCasesPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(ToughScrollingCasesPage(url, self))
+      self.AddUserStory(ToughScrollingCasesPage(url, self))
 
     fast_scrolling_page_name_list = [
       'text',
@@ -69,7 +69,7 @@ class ToughScrollingCasesPageSet(page_set_module.PageSet):
 
     for name in fast_scrolling_page_name_list:
       for speed in fast_scrolling_speed_list:
-        self.AddPage(ToughFastScrollingCasesPage(
+        self.AddUserStory(ToughFastScrollingCasesPage(
           'file://tough_scrolling_cases/' + name + '.html',
           name + '_' + str(speed).zfill(5) + '_pixels_per_second',
           speed,

@@ -35,5 +35,5 @@ class ServiceWorkerMicroBenchmarkPageSet(page_set.PageSet):
     # This will be merged into the main repository.
     # pylint: enable=C0301
     # Why: to measure performance of many concurrent fetches
-    self.AddPage(ServiceWorkerBenchmarkPage(
+    self.AddUserStory(ServiceWorkerBenchmarkPage(
         'http://localhost:8091/index.html', self))

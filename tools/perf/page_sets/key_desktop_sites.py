@@ -122,11 +122,11 @@ class KeyDesktopSitesPageSet(page_set_module.PageSet):
       archive_data_file='data/key_desktop_sites.json',
       bucket=page_set_module.PARTNER_BUCKET)
 
-    self.AddPage(FacebookPage(self))
-    self.AddPage(GmailPage(self))
-    self.AddPage(GoogleCalendarPage(self))
-    self.AddPage(GoogleDrivePage(self))
-    self.AddPage(GoogleDocPage(self))
+    self.AddUserStory(FacebookPage(self))
+    self.AddUserStory(GmailPage(self))
+    self.AddUserStory(GoogleCalendarPage(self))
+    self.AddUserStory(GoogleDrivePage(self))
+    self.AddUserStory(GoogleDocPage(self))
 
     urls_list = [
       'http://www.google.com/nexus/5/#/',
@@ -850,4 +850,4 @@ class KeyDesktopSitesPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(KeyDesktopSitesPage(url, self))
+      self.AddUserStory(KeyDesktopSitesPage(url, self))

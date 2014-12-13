@@ -273,4 +273,4 @@ class Top2012Q3PageSet(page_set.PageSet):
 
 
     for url in TOP_2013_URLS:
-      self.AddPage(Top2012Q3Page(url, self))
+      self.AddUserStory(Top2012Q3Page(url, self))

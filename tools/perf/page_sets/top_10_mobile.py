@@ -63,4 +63,4 @@ class Top10MobilePageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(Top10MobilePage(url, self))
+      self.AddUserStory(Top10MobilePage(url, self))

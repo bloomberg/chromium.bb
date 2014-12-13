@@ -96,33 +96,33 @@ class Top10PageSet(page_set_module.PageSet):
       bucket=page_set_module.PARTNER_BUCKET)
 
     # top google property; a google tab is often open
-    self.AddPage(Google(self))
+    self.AddUserStory(Google(self))
 
     # productivity, top google properties
     # TODO(dominikg): fix crbug.com/386152
-    #self.AddPage(Gmail(self))
+    #self.AddUserStory(Gmail(self))
 
     # productivity, top google properties
-    self.AddPage(GoogleCalendar(self))
+    self.AddUserStory(GoogleCalendar(self))
 
     # #3 (Alexa global)
-    self.AddPage(Youtube(self))
+    self.AddUserStory(Youtube(self))
 
     # top social, Public profile
-    self.AddPage(Facebook(self))
+    self.AddUserStory(Facebook(self))
 
     # #6 (Alexa) most visited worldwide,Picked an interesting page
-    self.AddPage(SimpleScrollPage('http://en.wikipedia.org/wiki/Wikipedia',
+    self.AddUserStory(SimpleScrollPage('http://en.wikipedia.org/wiki/Wikipedia',
                                   self, name='Wikipedia'))
 
     # #1 world commerce website by visits; #3 commerce in the US by time spent
-    self.AddPage(SimpleScrollPage('http://www.amazon.com', self))
+    self.AddUserStory(SimpleScrollPage('http://www.amazon.com', self))
 
     # #4 Alexa
-    self.AddPage(SimpleScrollPage('http://www.yahoo.com/', self))
+    self.AddUserStory(SimpleScrollPage('http://www.yahoo.com/', self))
 
     # #16 Alexa
-    self.AddPage(SimpleScrollPage('http://www.bing.com/', self))
+    self.AddUserStory(SimpleScrollPage('http://www.bing.com/', self))
 
     # #20 Alexa
-    self.AddPage(SimpleScrollPage('http://www.ask.com/', self))
+    self.AddUserStory(SimpleScrollPage('http://www.ask.com/', self))

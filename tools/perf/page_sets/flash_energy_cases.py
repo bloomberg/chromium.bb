@@ -36,4 +36,4 @@ class FlashEnergyCasesPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(FlashEnergyCasesPage(url, self))
+      self.AddUserStory(FlashEnergyCasesPage(url, self))

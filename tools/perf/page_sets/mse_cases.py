@@ -44,4 +44,4 @@ class MseCasesPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(MseCasesPage(url, self))
+      self.AddUserStory(MseCasesPage(url, self))

@@ -73,6 +73,6 @@ class WebrtcCasesPageSet(page_set_module.PageSet):
       archive_data_file='data/webrtc_cases.json',
       bucket=page_set_module.PUBLIC_BUCKET)
 
-    self.AddPage(Page1(self))
-    self.AddPage(Page2(self))
-    self.AddPage(Page3(self))
+    self.AddUserStory(Page1(self))
+    self.AddUserStory(Page2(self))
+    self.AddUserStory(Page3(self))

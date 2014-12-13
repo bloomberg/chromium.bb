@@ -56,4 +56,4 @@ class ToughWebglCasesPageSet(page_set_module.PageSet):
       'http://webglsamples.googlecode.com/hg/dynamic-cubemap/dynamic-cubemap.html'
     ]
     for url in urls_list:
-      self.AddPage(ToughWebglCasesPage(url, self))
+      self.AddUserStory(ToughWebglCasesPage(url, self))

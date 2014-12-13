@@ -33,4 +33,4 @@ class MorejsPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(MorejsPage(url, self))
+      self.AddUserStory(MorejsPage(url, self))

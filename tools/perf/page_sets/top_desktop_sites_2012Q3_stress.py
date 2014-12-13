@@ -33,4 +33,4 @@ class Top2012Q3StressPageSet(page_set.PageSet):
       bucket=page_set.PARTNER_BUCKET)
 
     for url in top_desktop_sites_2012Q3.TOP_2013_URLS:
-      self.AddPage(Top2012Q3StressPage(url, self))
+      self.AddUserStory(Top2012Q3StressPage(url, self))

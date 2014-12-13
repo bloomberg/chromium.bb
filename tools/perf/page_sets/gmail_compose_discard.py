@@ -68,4 +68,4 @@ class GmailComposeDiscardPageSet(page_set_module.PageSet):
     super(GmailComposeDiscardPageSet, self).__init__(
       user_agent_type='desktop')
 
-    self.AddPage(GmailComposeDiscardPage(self))
+    self.AddUserStory(GmailComposeDiscardPage(self))

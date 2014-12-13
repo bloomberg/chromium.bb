@@ -93,7 +93,7 @@ class MediaCnsCasesPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(BasicPlayPage(url, self))
+      self.AddUserStory(BasicPlayPage(url, self))
 
     urls_list2 = [
       # pylint: disable=C0301
@@ -113,4 +113,4 @@ class MediaCnsCasesPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list2:
-      self.AddPage(SeekBeforeAndAfterPlayheadPage(url, self))
+      self.AddUserStory(SeekBeforeAndAfterPlayheadPage(url, self))

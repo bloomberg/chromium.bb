@@ -381,69 +381,69 @@ class ToughSchedulingCasesPageSet(page_set_module.PageSet):
         bucket=page_set_module.INTERNAL_BUCKET)
 
     # Why: Simple scrolling baseline
-    self.AddPage(ToughSchedulingCasesPage(
+    self.AddUserStory(ToughSchedulingCasesPage(
       'file://tough_scheduling_cases/simple_text_page.html',
       self))
-    self.AddPage(Page1(self))
-    self.AddPage(Page2(self))
-    self.AddPage(Page3(self))
-    self.AddPage(Page4(self))
+    self.AddUserStory(Page1(self))
+    self.AddUserStory(Page2(self))
+    self.AddUserStory(Page3(self))
+    self.AddUserStory(Page4(self))
     # Disabled until crbug.com/413829 is fixed.
-    # self.AddPage(Page5(self))
+    # self.AddUserStory(Page5(self))
     # Disabled because of crbug.com/413829 and flakiness crbug.com/368532
-    # self.AddPage(Page6(self))
+    # self.AddUserStory(Page6(self))
     # Why: Touch handler scrolling baseline
-    self.AddPage(ToughSchedulingCasesPage(
+    self.AddUserStory(ToughSchedulingCasesPage(
       'file://tough_scheduling_cases/touch_handler_scrolling.html',
       self))
-    self.AddPage(Page7(self))
-    self.AddPage(Page8(self))
-    self.AddPage(Page9(self))
-    self.AddPage(Page10(self))
-    self.AddPage(Page11(self))
-    self.AddPage(Page12(self))
+    self.AddUserStory(Page7(self))
+    self.AddUserStory(Page8(self))
+    self.AddUserStory(Page9(self))
+    self.AddUserStory(Page10(self))
+    self.AddUserStory(Page11(self))
+    self.AddUserStory(Page12(self))
     # Why: requestAnimationFrame scrolling baseline
-    self.AddPage(ToughSchedulingCasesPage(
+    self.AddUserStory(ToughSchedulingCasesPage(
       'file://tough_scheduling_cases/raf.html',
       self))
     # Why: Test canvas blocking behavior
-    self.AddPage(ToughSchedulingCasesPage(
+    self.AddUserStory(ToughSchedulingCasesPage(
       'file://tough_scheduling_cases/raf_canvas.html',
       self))
     # Disabled until crbug.com/413829 is fixed.
-    # self.AddPage(Page13(self))
+    # self.AddUserStory(Page13(self))
     # Disabled because of crbug.com/413829 and flakiness crbug.com/368532
-    # self.AddPage(Page14(self))
-    self.AddPage(Page15(self))
-    self.AddPage(Page16(self))
+    # self.AddUserStory(Page14(self))
+    self.AddUserStory(Page15(self))
+    self.AddUserStory(Page16(self))
     # Why: Test a requestAnimationFrame handler with concurrent CSS animation
-    self.AddPage(ToughSchedulingCasesPage(
+    self.AddUserStory(ToughSchedulingCasesPage(
       'file://tough_scheduling_cases/raf_animation.html',
       self))
     # Why: Stress test for the scheduler
-    self.AddPage(ToughSchedulingCasesPage(
+    self.AddUserStory(ToughSchedulingCasesPage(
       'file://tough_scheduling_cases/raf_touch_animation.html',
       self))
-    self.AddPage(Page17(self))
-    self.AddPage(Page18(self))
-    self.AddPage(Page19(self))
-    self.AddPage(Page20(self))
+    self.AddUserStory(Page17(self))
+    self.AddUserStory(Page18(self))
+    self.AddUserStory(Page19(self))
+    self.AddUserStory(Page20(self))
     # Why: Baseline for scrolling in the presence of a no-op touch handler
-    self.AddPage(EmptyTouchHandlerPage(
+    self.AddUserStory(EmptyTouchHandlerPage(
       name='baseline',
       desktop=False,
       slow_handler=False,
       bounce=False,
       page_set=self))
     # Why: Slow handler blocks scroll start
-    self.AddPage(EmptyTouchHandlerPage(
+    self.AddUserStory(EmptyTouchHandlerPage(
       name='slow_handler',
       desktop=False,
       slow_handler=True,
       bounce=False,
       page_set=self))
     # Why: Slow handler blocks scroll start until touch ACK timeout
-    self.AddPage(EmptyTouchHandlerPage(
+    self.AddUserStory(EmptyTouchHandlerPage(
       name='desktop_slow_handler',
       desktop=True,
       slow_handler=True,
@@ -452,14 +452,14 @@ class ToughSchedulingCasesPageSet(page_set_module.PageSet):
     # Why: Scroll bounce showing repeated transitions between scrolling and
     # sending synchronous touchmove events.  Should be nearly as fast as
     # scroll baseline.
-    self.AddPage(EmptyTouchHandlerPage(
+    self.AddUserStory(EmptyTouchHandlerPage(
       name='bounce',
       desktop=False,
       slow_handler=False,
       bounce=True,
       page_set=self))
     # Why: Scroll bounce with slow handler, repeated blocking.
-    self.AddPage(EmptyTouchHandlerPage(
+    self.AddUserStory(EmptyTouchHandlerPage(
       name='bounce_slow_handler',
       desktop=False,
       slow_handler=True,
@@ -467,18 +467,18 @@ class ToughSchedulingCasesPageSet(page_set_module.PageSet):
       page_set=self))
     # Why: Scroll bounce with slow handler on desktop, blocks only once until
     # ACK timeout.
-    self.AddPage(EmptyTouchHandlerPage(
+    self.AddUserStory(EmptyTouchHandlerPage(
       name='bounce_desktop_slow_handler',
       desktop=True,
       slow_handler=True,
       bounce=True,
       page_set=self))
     # Why: For measuring the latency of scroll-synchronized effects.
-    self.AddPage(SynchronizedScrollOffsetPage(page_set=self))
+    self.AddUserStory(SynchronizedScrollOffsetPage(page_set=self))
     # Why: Good examples of poor initial scrolling
-    self.AddPage(ToughSchedulingCasesPage(
+    self.AddUserStory(ToughSchedulingCasesPage(
       'http://www.latimes.com',
       self))
-    self.AddPage(ToughSchedulingCasesPage(
+    self.AddUserStory(ToughSchedulingCasesPage(
       'http://m.espn.go.com/nhl/rankings',
        self))

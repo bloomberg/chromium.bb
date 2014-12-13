@@ -15,4 +15,4 @@ class BlankPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(BlankPageSet, self).__init__()
-    self.AddPage(BlankPage('file://blank_page/blank_page.html', self))
+    self.AddUserStory(BlankPage('file://blank_page/blank_page.html', self))

@@ -60,7 +60,7 @@ class Top25RepaintPageSet(page_set_module.PageSet):
     ]
 
     for cl in top_page_classes:
-      self.AddPage(_CreatePageClassWithRepaintInteractions(cl)(self))
+      self.AddUserStory(_CreatePageClassWithRepaintInteractions(cl)(self))
 
     other_urls = [
         # Why: #1 news worldwide (Alexa global)
@@ -83,4 +83,4 @@ class Top25RepaintPageSet(page_set_module.PageSet):
     ]
 
     for url in other_urls:
-      self.AddPage(TopRepaintPage(url, self))
+      self.AddUserStory(TopRepaintPage(url, self))

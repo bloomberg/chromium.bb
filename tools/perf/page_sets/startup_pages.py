@@ -29,8 +29,9 @@ class StartupPagesPageSet(page_set_module.PageSet):
         bucket=page_set_module.PARTNER_BUCKET)
 
     # Typical page.
-    self.AddPage(StartedPage('about:blank', 'about:blank', self))
+    self.AddUserStory(StartedPage('about:blank', 'about:blank', self))
     # Typical page.
-    self.AddPage(StartedPage('http://bbc.co.uk', 'http://bbc.co.uk', self))
+    self.AddUserStory(StartedPage('http://bbc.co.uk', 'http://bbc.co.uk', self))
     # Horribly complex page - stress test!
-    self.AddPage(StartedPage('http://kapook.com', 'http://kapook.com', self))
+    self.AddUserStory(StartedPage(
+        'http://kapook.com', 'http://kapook.com', self))

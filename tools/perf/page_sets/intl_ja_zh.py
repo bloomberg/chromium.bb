@@ -61,4 +61,4 @@ class IntlJaZhPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(IntlJaZhPage(url, self))
+      self.AddUserStory(IntlJaZhPage(url, self))

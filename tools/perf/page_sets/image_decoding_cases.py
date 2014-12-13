@@ -24,4 +24,4 @@ class ImageDecodingCasesPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(ImageDecodingCasesPage(url, self))
+      self.AddUserStory(ImageDecodingCasesPage(url, self))

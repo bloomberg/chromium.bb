@@ -21,6 +21,6 @@ class BloatPageSet(page_set_module.PageSet):
       serving_dirs=set(['../../../../data/page_cycler/bloat']),
       bucket=page_set_module.PUBLIC_BUCKET)
 
-    self.AddPage(BloatPage(
+    self.AddUserStory(BloatPage(
       'file://../../../../data/page_cycler/bloat/gmail_load_cleardot/',
       self))

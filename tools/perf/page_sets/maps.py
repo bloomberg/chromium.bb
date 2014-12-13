@@ -40,4 +40,4 @@ class MapsPageSet(page_set_module.PageSet):
         archive_data_file='data/maps.json',
         bucket=page_set_module.PUBLIC_BUCKET)
 
-    self.AddPage(MapsPage(self))
+    self.AddUserStory(MapsPage(self))
