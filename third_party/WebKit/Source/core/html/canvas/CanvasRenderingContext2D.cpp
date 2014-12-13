@@ -66,6 +66,7 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/graphics/DrawLooperBuilder.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/text/BidiTextRun.h"
 #include "platform/text/TextRun.h"
 #include "wtf/ArrayBufferContents.h"
 #include "wtf/CheckedArithmetic.h"
@@ -2013,7 +2014,14 @@ PassRefPtrWillBeRawPtr<TextMetrics> CanvasRenderingContext2D::measureText(const 
     FontCachePurgePreventer fontCachePurgePreventer;
     canvas()->document().updateRenderTreeIfNeeded();
     const Font& font = accessFont();
-    const TextRun textRun(text, 0, 0, TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion, toTextDirection(state().m_direction), false, true, true);
+
+    bool hasStrongDirectionality;
+    TextDirection direction;
+    if (state().m_direction == DirectionInherit)
+        direction = determineDirectionality(text, hasStrongDirectionality);
+    else
+        direction = toTextDirection(state().m_direction);
+    const TextRun textRun(text, 0, 0, TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion, direction, false, true, true);
     FloatRect textBounds = font.selectionRectForText(textRun, FloatPoint(), font.fontDescription().computedSize(), 0, -1, true);
 
     // x direction
