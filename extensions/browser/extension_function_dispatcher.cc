@@ -378,6 +378,9 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
     return;
   }
 
+  // Fetch the ProcessManager before |this| is possibly invalidated.
+  ProcessManager* process_manager = ProcessManager::Get(browser_context_);
+
   ExtensionSystem* extension_system = ExtensionSystem::Get(browser_context_);
   QuotaService* quota = extension_system->quota_service();
   std::string violation_error = quota->Assess(extension->id(),
@@ -410,7 +413,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
   // now, largely for simplicity's sake. This is OK because currently, only
   // the webRequest API uses IOThreadExtensionFunction, and that API is not
   // compatible with lazy background pages.
-  ProcessManager::Get(browser_context_)->IncrementLazyKeepaliveCount(extension);
+  process_manager->IncrementLazyKeepaliveCount(extension);
 }
 
 void ExtensionFunctionDispatcher::OnExtensionFunctionCompleted(
