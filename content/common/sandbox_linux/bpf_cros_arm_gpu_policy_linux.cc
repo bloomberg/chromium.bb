@@ -48,7 +48,7 @@ inline bool IsChromeOS() {
 }
 
 inline bool IsArchitectureArm() {
-#if defined(__arm__)
+#if defined(__arm__) || defined(__aarch64__)
   return true;
 #else
   return false;
@@ -108,8 +108,11 @@ class CrosArmGpuBrokerProcessPolicy : public CrosArmGpuProcessPolicy {
 // openat allowed.
 ResultExpr CrosArmGpuBrokerProcessPolicy::EvaluateSyscall(int sysno) const {
   switch (sysno) {
+#if !defined(__aarch64__)
     case __NR_access:
     case __NR_open:
+#endif  // !defined(__aarch64__)
+    case __NR_faccessat:
     case __NR_openat:
       return Allow();
     default:
@@ -125,13 +128,13 @@ CrosArmGpuProcessPolicy::CrosArmGpuProcessPolicy(bool allow_shmat)
 CrosArmGpuProcessPolicy::~CrosArmGpuProcessPolicy() {}
 
 ResultExpr CrosArmGpuProcessPolicy::EvaluateSyscall(int sysno) const {
-#if defined(__arm__)
+#if defined(__arm__) || defined(__aarch64__)
   if (allow_shmat_ && sysno == __NR_shmat)
     return Allow();
-#endif  // defined(__arm__)
+#endif  // defined(__arm__) || defined(__aarch64__)
 
   switch (sysno) {
-#if defined(__arm__)
+#if defined(__arm__) || defined(__aarch64__)
     // ARM GPU sandbox is started earlier so we need to allow networking
     // in the sandbox.
     case __NR_connect:
@@ -146,7 +149,7 @@ ResultExpr CrosArmGpuProcessPolicy::EvaluateSyscall(int sysno) const {
       const Arg<int> domain(0);
       return If(domain == AF_UNIX, Allow()).Else(Error(EPERM));
     }
-#endif  // defined(__arm__)
+#endif  // defined(__arm__) || defined(__aarch64__)
     default:
       // Default to the generic GPU policy.
       return GpuProcessPolicy::EvaluateSyscall(sysno);

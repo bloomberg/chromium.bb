@@ -94,6 +94,7 @@ intptr_t GpuSIGSYS_Handler(const struct arch_seccomp_data& args,
   BrokerProcess* broker_process =
       static_cast<BrokerProcess*>(aux_broker_process);
   switch (args.nr) {
+#if !defined(__aarch64__)
     case __NR_access:
       return broker_process->Access(reinterpret_cast<const char*>(args.args[0]),
                                     static_cast<int>(args.args[1]));
@@ -104,6 +105,15 @@ intptr_t GpuSIGSYS_Handler(const struct arch_seccomp_data& args,
 #endif
       return broker_process->Open(reinterpret_cast<const char*>(args.args[0]),
                                   static_cast<int>(args.args[1]));
+#endif  // !defined(__aarch64__)
+    case __NR_faccessat:
+      if (static_cast<int>(args.args[0]) == AT_FDCWD) {
+        return
+            broker_process->Access(reinterpret_cast<const char*>(args.args[1]),
+                                    static_cast<int>(args.args[2]));
+      } else {
+        return -EPERM;
+      }
     case __NR_openat:
       // Allow using openat() as open().
       if (static_cast<int>(args.args[0]) == AT_FDCWD) {
@@ -138,8 +148,11 @@ class GpuBrokerProcessPolicy : public GpuProcessPolicy {
 // openat and in the non-Chrome OS case unlink allowed.
 ResultExpr GpuBrokerProcessPolicy::EvaluateSyscall(int sysno) const {
   switch (sysno) {
+#if !defined(__aarch64__)
     case __NR_access:
     case __NR_open:
+#endif  // !defined(__aarch64__)
+    case __NR_faccessat:
     case __NR_openat:
 #if !defined(OS_CHROMEOS)
     // The broker process needs to able to unlink the temporary
@@ -211,8 +224,11 @@ ResultExpr GpuProcessPolicy::EvaluateSyscall(int sysno) const {
     // TODO(jln): restrict prctl.
     case __NR_prctl:
       return Allow();
+#if !defined(__aarch64__)
     case __NR_access:
     case __NR_open:
+#endif  // !defined(__aarch64__)
+    case __NR_faccessat:
     case __NR_openat:
       DCHECK(broker_process_);
       return Trap(GpuSIGSYS_Handler, broker_process_);
