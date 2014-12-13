@@ -17,7 +17,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/task/cancelable_task_tracker.h"
-#include "chrome/browser/chromeos/version_loader.h"
+#include "chromeos/system/version_loader.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace base {

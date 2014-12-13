@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/version_loader.h"
 #include "chrome/browser/ui/webui/version_handler.h"
+#include "chromeos/system/version_loader.h"
 
 // VersionHandlerChromeOS is responsible for loading the Chrome OS
 // version.

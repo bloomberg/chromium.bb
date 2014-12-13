@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_VERSION_LOADER_H_
-#define CHROME_BROWSER_CHROMEOS_VERSION_LOADER_H_
+#ifndef CHROMEOS_SYSTEM_VERSION_LOADER_H_
+#define CHROMEOS_SYSTEM_VERSION_LOADER_H_
 
 #include <string>
+
+#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 namespace version_loader {
@@ -20,16 +22,16 @@ enum VersionFormat {
 // If |full_version| is true version string with extra info is extracted,
 // otherwise it's in short format x.x.xx.x.
 // Must be run on a blocking thread pool.
-std::string GetVersion(VersionFormat format);
+CHROMEOS_EXPORT std::string GetVersion(VersionFormat format);
 
 // Gets the firmware info.
 // Must be run on a blocking thread pool.
-std::string GetFirmware();
+CHROMEOS_EXPORT std::string GetFirmware();
 
 // Extracts the firmware from the file.
-std::string ParseFirmware(const std::string& contents);
+CHROMEOS_EXPORT std::string ParseFirmware(const std::string& contents);
 
 }  // namespace version_loader
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_VERSION_LOADER_H_
+#endif  // CHROMEOS_SYSTEM_VERSION_LOADER_H_

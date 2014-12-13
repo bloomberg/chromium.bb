@@ -9,7 +9,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/chrome_browser_main_linux.h"
 #include "chrome/browser/chromeos/external_metrics.h"
-#include "chrome/browser/chromeos/version_loader.h"
+#include "chromeos/system/version_loader.h"
 
 namespace base {
 class MemoryPressureObserverChromeOS;

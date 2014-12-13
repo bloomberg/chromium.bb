@@ -948,8 +948,6 @@
         'browser/chromeos/ui_proxy_config_service.h',
         'browser/chromeos/upgrade_detector_chromeos.cc',
         'browser/chromeos/upgrade_detector_chromeos.h',
-        'browser/chromeos/version_loader.cc',
-        'browser/chromeos/version_loader.h',
         'browser/supervised_user/chromeos/manager_password_service.cc',
         'browser/supervised_user/chromeos/manager_password_service.h',
         'browser/supervised_user/chromeos/manager_password_service_factory.cc',
