@@ -4311,14 +4311,6 @@ void WebViewImpl::updateMainFrameScrollPosition(const IntPoint& scrollPosition, 
 void WebViewImpl::applyViewportDeltas(
     const WebSize& pinchViewportDelta,
     const WebSize& mainFrameDelta,
-    float pageScaleDelta,
-    float topControlsDelta) {
-    applyViewportDeltas(pinchViewportDelta, mainFrameDelta, WebFloatSize(), pageScaleDelta, topControlsDelta);
-}
-
-void WebViewImpl::applyViewportDeltas(
-    const WebSize& pinchViewportDelta,
-    const WebSize& mainFrameDelta,
     const WebFloatSize& elasticOverscrollDelta,
     float pageScaleDelta,
     float topControlsDelta)

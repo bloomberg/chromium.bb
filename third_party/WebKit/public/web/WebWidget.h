@@ -153,12 +153,6 @@ public:
         const WebFloatSize& elasticOverscrollDelta,
         float scaleFactor,
         float topControlsDelta) { }
-    // TODO(ccameron): Delete this when all callers are removed.
-    virtual void applyViewportDeltas(
-        const WebSize& pinchViewportDelta,
-        const WebSize& mainFrameDelta,
-        float scaleFactor,
-        float topControlsDelta) { }
 
     // Called to inform the WebWidget that mouse capture was lost.
     virtual void mouseCaptureLost() { }
