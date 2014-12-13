@@ -57,9 +57,6 @@ public:
 
     ScriptPromise setServerCertificate(ScriptState*, const DOMArrayPiece& serverCertificate);
 
-    // FIXME: Remove this method since it's not in the spec anymore.
-    static bool isTypeSupported(const String& keySystem, const String& contentType);
-
     blink::WebContentDecryptionModule* contentDecryptionModule();
 
     void trace(Visitor*);

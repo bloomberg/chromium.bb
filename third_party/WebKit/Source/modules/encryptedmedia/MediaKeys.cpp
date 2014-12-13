@@ -33,23 +33,12 @@
 #include "core/dom/ExecutionContext.h"
 #include "modules/encryptedmedia/MediaKeySession.h"
 #include "modules/encryptedmedia/SimpleContentDecryptionModuleResultPromise.h"
-#include "platform/ContentType.h"
 #include "platform/Logging.h"
-#include "platform/MIMETypeRegistry.h"
 #include "platform/Timer.h"
 #include "public/platform/WebContentDecryptionModule.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
-
-static bool isKeySystemSupportedWithContentType(const String& keySystem, const String& contentType)
-{
-    ASSERT(!keySystem.isEmpty());
-
-    ContentType type(contentType);
-    String codecs = type.parameter("codecs");
-    return MIMETypeRegistry::isSupportedEncryptedMediaMIMEType(keySystem, type.type(), codecs);
-}
 
 // A class holding a pending action.
 class MediaKeys::PendingAction : public GarbageCollectedFinalized<MediaKeys::PendingAction> {
@@ -162,28 +151,6 @@ ScriptPromise MediaKeys::setServerCertificate(ScriptState* scriptState, const DO
 
     // 6. Return promise.
     return promise;
-}
-
-bool MediaKeys::isTypeSupported(const String& keySystem, const String& contentType)
-{
-    WTF_LOG(Media, "MediaKeys::isTypeSupported(%s, %s)", keySystem.ascii().data(), contentType.ascii().data());
-
-    // 1. If keySystem is an empty string, return false and abort these steps.
-    if (keySystem.isEmpty())
-        return false;
-
-    // 2. If keySystem contains an unrecognized or unsupported Key System, return false and abort
-    // these steps. Key system string comparison is case-sensitive.
-    if (!isKeySystemSupportedWithContentType(keySystem, ""))
-        return false;
-
-    // 3. If contentType is an empty string, return true and abort these steps.
-    if (contentType.isEmpty())
-        return true;
-
-    // 4. If the Key System specified by keySystem does not support decrypting the container and/or
-    // codec specified by contentType, return false and abort these steps.
-    return isKeySystemSupportedWithContentType(keySystem, contentType);
 }
 
 void MediaKeys::timerFired(Timer<MediaKeys>*)
