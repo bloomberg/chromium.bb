@@ -36,6 +36,14 @@
           ['exclude', '_udev\\.(h|cc)$'],
         ],
       }],
+      ['use_xkbcommon==1', {
+        'dependencies': [
+          '../../../build/linux/system.gyp:xkbcommon',
+        ],
+        'defines': [
+          'USE_XKBCOMMON',
+        ],
+      }],
       ['use_ozone_evdev==1 and use_udev==1', {
         'dependencies': [
           '<(DEPTH)/device/udev_linux/udev.gyp:udev_linux',

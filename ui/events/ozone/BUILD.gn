@@ -3,7 +3,17 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
+
+# Optional system libraries.
+use_xkbcommon = use_ozone
+
+if (use_xkbcommon) {
+  pkg_config("xkbcommon") {
+    packages = [ "xkbcommon" ]
+  }
+}
 
 component("events_ozone") {
   sources = [
@@ -37,6 +47,12 @@ component("events_ozone") {
 
   if (use_ozone_evdev && use_udev) {
     deps += [ "//device/udev_linux" ]
+  }
+
+  if (use_xkbcommon) {
+    configs += [ ":xkbcommon" ]
+
+    defines += [ "USE_XKBCOMMON" ]
   }
 }
 

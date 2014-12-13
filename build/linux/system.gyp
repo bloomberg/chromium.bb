@@ -465,6 +465,27 @@
         },
       ],
     }],
+    ['use_xkbcommon==1', {
+      'targets': [
+        {
+          'target_name': 'xkbcommon',
+          'type': 'none',
+          'direct_dependent_settings': {
+            'cflags': [
+              '<!@(<(pkg-config) --cflags xkbcommon)'
+            ],
+          },
+          'link_settings': {
+            'ldflags': [
+              '<!@(<(pkg-config) --libs-only-L --libs-only-other xkbcommon)',
+            ],
+            'libraries': [
+              '<!@(<(pkg-config) --libs-only-l xkbcommon)',
+            ],
+          },
+        },
+      ],
+    }],
     ['ozone_platform_gbm==1', {
       'targets': [
         {

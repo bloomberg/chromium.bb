@@ -706,6 +706,13 @@
           'use_dbus%': 0,
         }],
 
+        # Libxkbcommon usage.
+        ['use_ozone==1 and embedded==0', {
+          'use_xkbcommon%': 1,
+        }, {
+          'use_xkbcommon%': 0,
+        }],
+
         # We always use skia text rendering in Aura on Windows, since GDI
         # doesn't agree with our BackingStore.
         # TODO(beng): remove once skia text rendering is on by default.
@@ -1087,6 +1094,7 @@
     'use_cairo%': '<(use_cairo)',
     'use_ozone%': '<(use_ozone)',
     'use_ozone_evdev%': '<(use_ozone_evdev)',
+    'use_xkbcommon%': '<(use_xkbcommon)',
     'use_clipboard_aurax11%': '<(use_clipboard_aurax11)',
     'desktop_linux%': '<(desktop_linux)',
     'use_x11%': '<(use_x11)',
