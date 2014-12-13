@@ -6,6 +6,7 @@
 #define UI_OZONE_PUBLIC_INPUT_CONTROLLER_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/ozone/ozone_export.h"
 
 namespace ui {
@@ -38,6 +39,9 @@ class OZONE_EXPORT InputController {
  private:
   DISALLOW_COPY_AND_ASSIGN(InputController);
 };
+
+// Create an input controller that does nothing.
+OZONE_EXPORT scoped_ptr<InputController> CreateStubInputController();
 
 }  // namespace ui
 

@@ -101,6 +101,7 @@
         'common/gpu/ozone_gpu_messages.h',
         'common/native_display_delegate_ozone.cc',
         'common/native_display_delegate_ozone.h',
+        'public/input_controller.cc',
         'public/input_controller.h',
         'public/ozone_platform.cc',
         'public/ozone_platform.h',

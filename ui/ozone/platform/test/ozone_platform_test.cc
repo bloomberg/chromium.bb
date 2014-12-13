@@ -9,12 +9,12 @@
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/ozone/common/native_display_delegate_ozone.h"
-#include "ui/ozone/platform/test/input_controller_test.h"
 #include "ui/ozone/platform/test/test_window.h"
 #include "ui/ozone/platform/test/test_window_manager.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/gpu_platform_support.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
+#include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
 #include "ui/ozone/public/system_input_injector.h"
@@ -67,7 +67,7 @@ class OzonePlatformTest : public OzonePlatform {
     if (!PlatformEventSource::GetInstance())
       platform_event_source_ = PlatformEventSource::CreateDefault();
 
-    input_controller_.reset(new InputControllerTest);
+    input_controller_ = CreateStubInputController();
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
   }
@@ -80,7 +80,7 @@ class OzonePlatformTest : public OzonePlatform {
   scoped_ptr<TestWindowManager> window_manager_;
   scoped_ptr<PlatformEventSource> platform_event_source_;
   scoped_ptr<CursorFactoryOzone> cursor_factory_ozone_;
-  scoped_ptr<InputControllerTest> input_controller_;
+  scoped_ptr<InputController> input_controller_;
   scoped_ptr<GpuPlatformSupport> gpu_platform_support_;
   scoped_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
   base::FilePath file_path_;

@@ -11,6 +11,7 @@
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/gpu_platform_support.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
+#include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/system_input_injector.h"
 
@@ -31,7 +32,7 @@ class OzonePlatformCaca : public OzonePlatform {
     return cursor_factory_ozone_.get();
   }
   InputController* GetInputController() override {
-    return nullptr;  // no input setting need
+    return input_controller_.get();
   }
   GpuPlatformSupport* GetGpuPlatformSupport() override {
     return gpu_platform_support_.get();
@@ -60,6 +61,7 @@ class OzonePlatformCaca : public OzonePlatform {
     event_source_.reset(new CacaEventSource());
     cursor_factory_ozone_.reset(new CursorFactoryOzone());
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
+    input_controller_ = CreateStubInputController();
   }
 
   void InitializeGPU() override {
@@ -72,6 +74,7 @@ class OzonePlatformCaca : public OzonePlatform {
   scoped_ptr<CursorFactoryOzone> cursor_factory_ozone_;
   scoped_ptr<GpuPlatformSupport> gpu_platform_support_;
   scoped_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
+  scoped_ptr<InputController> input_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformCaca);
 };
