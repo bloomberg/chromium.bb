@@ -76,6 +76,18 @@ class ConstrainedWebDialogDelegateViewMac :
     return constrained_window_->GetNativeDialog();
   }
   WebContents* GetWebContents() override { return impl_->GetWebContents(); }
+  gfx::Size GetMinimumSize() const override {
+    NOTIMPLEMENTED();
+    return gfx::Size();
+  }
+  gfx::Size GetMaximumSize() const override {
+    NOTIMPLEMENTED();
+    return gfx::Size();
+  }
+  gfx::Size GetPreferredSize() const override {
+    NOTIMPLEMENTED();
+    return gfx::Size();
+  }
 
   // ConstrainedWindowMacDelegate interface
   void OnConstrainedWindowClosed(ConstrainedWindowMac* window) override {
@@ -115,7 +127,7 @@ ConstrainedWebDialogDelegateViewMac::ConstrainedWebDialogDelegateViewMac(
   impl_->set_window(constrained_window_.get());
 }
 
-ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
+ConstrainedWebDialogDelegate* ShowConstrainedWebDialog(
         content::BrowserContext* browser_context,
         WebDialogDelegate* delegate,
         content::WebContents* web_contents) {

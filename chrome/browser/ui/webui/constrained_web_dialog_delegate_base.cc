@@ -99,3 +99,18 @@ void ConstrainedWebDialogDelegateBase::HandleKeyboardEvent(
     content::WebContents* source,
     const NativeWebKeyboardEvent& event) {
 }
+
+gfx::Size ConstrainedWebDialogDelegateBase::GetMinimumSize() const {
+  NOTREACHED();
+  return gfx::Size();
+}
+
+gfx::Size ConstrainedWebDialogDelegateBase::GetMaximumSize() const {
+  NOTREACHED();
+  return gfx::Size();
+}
+
+gfx::Size ConstrainedWebDialogDelegateBase::GetPreferredSize() const {
+  NOTREACHED();
+  return gfx::Size();
+}

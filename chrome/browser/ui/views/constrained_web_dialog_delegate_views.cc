@@ -9,10 +9,14 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/web_modal/popup_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 #include "ui/views/controls/webview/webview.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
@@ -20,15 +24,28 @@
 
 namespace {
 
+// WebContentsObserver that tracks the lifetime of the WebContents to avoid
+// potential use after destruction.
+class InitiatorWebContentsObserver
+    : public content::WebContentsObserver {
+  public:
+   explicit InitiatorWebContentsObserver(content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents) {
+   }
+
+  private:
+    DISALLOW_COPY_AND_ASSIGN(InitiatorWebContentsObserver);
+};
+
 class WebDialogWebContentsDelegateViews
     : public ui::WebDialogWebContentsDelegate {
  public:
   WebDialogWebContentsDelegateViews(content::BrowserContext* browser_context,
-                                    content::WebContents* initiator,
+                                    InitiatorWebContentsObserver* observer,
                                     views::WebView* web_view)
       : ui::WebDialogWebContentsDelegate(browser_context,
                                          new ChromeWebContentsHandler()),
-        initiator_(initiator),
+        initiator_observer_(observer),
         web_view_(web_view) {
   }
   ~WebDialogWebContentsDelegateViews() override {}
@@ -45,15 +62,36 @@ class WebDialogWebContentsDelegateViews
     // http://crbug.com/104586
     // Disabled on Mac due to http://crbug.com/112173
 #if !defined(OS_MACOSX)
-    auto delegate = initiator_->GetDelegate();
+    if (!initiator_observer_->web_contents())
+      return;
+
+    auto delegate = initiator_observer_->web_contents()->GetDelegate();
     if (!delegate)
       return;
-    delegate->HandleKeyboardEvent(initiator_, event);
+    delegate->HandleKeyboardEvent(initiator_observer_->web_contents(), event);
 #endif
   }
 
+  void ResizeDueToAutoResize(content::WebContents* source,
+                             const gfx::Size& preferred_size) override {
+    if (source != web_view_->GetWebContents())
+      return;
+
+    if (!initiator_observer_->web_contents())
+      return;
+
+    // Sets WebView's preferred size based on auto-resized contents.
+    web_view_->SetPreferredSize(preferred_size);
+
+    constrained_window::UpdateWebContentsModalDialogPosition(
+        web_view_->GetWidget(),
+        web_modal::WebContentsModalDialogManager::FromWebContents(
+            initiator_observer_->web_contents())->delegate()->
+                GetWebContentsModalDialogHost());
+  }
+
  private:
-  content::WebContents* initiator_;
+  InitiatorWebContentsObserver* const initiator_observer_;
   views::WebView* web_view_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDialogWebContentsDelegateViews);
@@ -64,10 +102,10 @@ class ConstrainedWebDialogDelegateViews
  public:
   ConstrainedWebDialogDelegateViews(content::BrowserContext* context,
                                     ui::WebDialogDelegate* delegate,
-                                    content::WebContents* web_contents,
+                                    InitiatorWebContentsObserver* observer,
                                     views::WebView* view)
       : ConstrainedWebDialogDelegateBase(context, delegate,
-            new WebDialogWebContentsDelegateViews(context, web_contents, view)),
+            new WebDialogWebContentsDelegateViews(context, observer, view)),
         view_(view) {}
 
   ~ConstrainedWebDialogDelegateViews() override {}
@@ -107,10 +145,16 @@ class ConstrainedWebDialogDelegateViewViews
   ConstrainedWebDialogDelegateViewViews(
       content::BrowserContext* browser_context,
       ui::WebDialogDelegate* delegate,
-      content::WebContents* web_contents)
+      content::WebContents* web_contents,
+      const gfx::Size& min_size,
+      const gfx::Size& max_size)
       : views::WebView(browser_context),
+        initiator_observer_(web_contents),
         impl_(new ConstrainedWebDialogDelegateViews(browser_context, delegate,
-                                                    web_contents, this)) {
+                                                    &initiator_observer_,
+                                                    this)),
+        min_size_(min_size),
+        max_size_(max_size) {
     SetWebContents(GetWebContents());
     AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
   }
@@ -168,30 +212,90 @@ class ConstrainedWebDialogDelegateViewViews
   }
   gfx::Size GetPreferredSize() const override {
     gfx::Size size;
-    if (!impl_->closed_via_webui())
-      GetWebDialogDelegate()->GetDialogSize(&size);
+    if (!impl_->closed_via_webui()) {
+      // The size is set here if the dialog has been auto-resized in
+      // WebDialogWebContentsDelegateViews's ResizeDueToAutoResize.
+      size = WebView::GetPreferredSize();
+      if (size.IsEmpty()) {
+        // The size set here if the dialog has not been auto-resized or
+        // auto-resizable is not enabled.
+        GetWebDialogDelegate()->GetDialogSize(&size);
+      }
+    }
     return size;
   }
   gfx::Size GetMinimumSize() const override {
-    // Return an empty size so that we can be made smaller.
-    return gfx::Size();
+    return min_size_;
+  }
+  gfx::Size GetMaximumSize() const override {
+    return !max_size_.IsEmpty() ? max_size_ : WebView::GetMaximumSize();
+  }
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override {
+    if (!max_size_.IsEmpty())
+      EnableAutoResize();
+  }
+  void RenderViewHostChanged(content::RenderViewHost* old_host,
+                             content::RenderViewHost* new_host) override {
+    if (!max_size_.IsEmpty())
+      EnableAutoResize();
+  }
+  void DocumentOnLoadCompletedInMainFrame() override {
+    if (!max_size_.IsEmpty()) {
+      EnableAutoResize();
+      if (initiator_observer_.web_contents()) {
+        web_modal::PopupManager* popup_manager =
+            web_modal::PopupManager::FromWebContents(
+                initiator_observer_.web_contents());
+        popup_manager->ShowModalDialog(GetWidget()->GetNativeView(),
+                                       initiator_observer_.web_contents());
+      }
+    }
   }
 
  private:
+  void EnableAutoResize() {
+    content::RenderViewHost* render_view_host =
+        GetWebContents()->GetRenderViewHost();
+    render_view_host->EnableAutoResize(min_size_, max_size_);
+  }
+
+  InitiatorWebContentsObserver initiator_observer_;
+
   scoped_ptr<ConstrainedWebDialogDelegateViews> impl_;
+
+  // Minimum and maximum sizes to determine dialog bounds for auto-resizing.
+  const gfx::Size min_size_;
+  const gfx::Size max_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWebDialogDelegateViewViews);
 };
 
 }  // namespace
 
-ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
+ConstrainedWebDialogDelegate* ShowConstrainedWebDialog(
     content::BrowserContext* browser_context,
     ui::WebDialogDelegate* delegate,
     content::WebContents* web_contents) {
   ConstrainedWebDialogDelegateViewViews* dialog =
       new ConstrainedWebDialogDelegateViewViews(
-          browser_context, delegate, web_contents);
+          browser_context, delegate, web_contents,
+          gfx::Size(), gfx::Size());
   constrained_window::ShowWebModalDialogViews(dialog, web_contents);
+  return dialog;
+}
+
+ConstrainedWebDialogDelegate* ShowConstrainedWebDialogWithAutoResize(
+    content::BrowserContext* browser_context,
+    ui::WebDialogDelegate* delegate,
+    content::WebContents* web_contents,
+    const gfx::Size& min_size,
+    const gfx::Size& max_size) {
+  DCHECK(!min_size.IsEmpty());
+  DCHECK(!max_size.IsEmpty());
+  ConstrainedWebDialogDelegateViewViews* dialog =
+      new ConstrainedWebDialogDelegateViewViews(
+          browser_context, delegate, web_contents,
+          min_size, max_size);
+  constrained_window::CreateWebModalDialogViews(dialog, web_contents);
   return dialog;
 }

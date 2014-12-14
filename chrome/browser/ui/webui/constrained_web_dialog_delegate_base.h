@@ -35,8 +35,11 @@ class ConstrainedWebDialogDelegateBase
   ui::WebDialogDelegate* GetWebDialogDelegate() override;
   void OnDialogCloseFromWebUI() override;
   void ReleaseWebContentsOnDialogClose() override;
-  web_modal::NativeWebContentsModalDialog GetNativeDialog() override;
   content::WebContents* GetWebContents() override;
+  web_modal::NativeWebContentsModalDialog GetNativeDialog() override;
+  gfx::Size GetMinimumSize() const override;
+  gfx::Size GetMaximumSize() const override;
+  gfx::Size GetPreferredSize() const override;
 
   // WebDialogWebContentsDelegate interface.
   void HandleKeyboardEvent(

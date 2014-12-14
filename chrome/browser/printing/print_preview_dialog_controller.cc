@@ -370,9 +370,9 @@ WebContents* PrintPreviewDialogController::CreatePrintPreviewDialog(
 
   // The dialog delegates are deleted when the dialog is closed.
   ConstrainedWebDialogDelegate* web_dialog_delegate =
-      CreateConstrainedWebDialog(initiator->GetBrowserContext(),
-                                 new PrintPreviewDialogDelegate(initiator),
-                                 initiator);
+      ShowConstrainedWebDialog(initiator->GetBrowserContext(),
+                               new PrintPreviewDialogDelegate(initiator),
+                               initiator);
 
   WebContents* preview_dialog = web_dialog_delegate->GetWebContents();
   EnableInternalPDFPluginForContents(preview_dialog);
