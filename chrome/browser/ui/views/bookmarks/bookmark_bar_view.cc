@@ -1131,7 +1131,7 @@ void BookmarkBarView::BookmarkMenuControllerDeleted(
     bookmark_drop_menu_ = NULL;
 }
 
-void BookmarkBarView::ShowImportDialog() {
+void BookmarkBarView::OnImportBookmarks() {
   int64 install_time = g_browser_process->metrics_service()->GetInstallDate();
   int64 time_from_install = base::Time::Now().ToTimeT() - install_time;
   if (bookmark_bar_state_ == BookmarkBar::SHOW) {

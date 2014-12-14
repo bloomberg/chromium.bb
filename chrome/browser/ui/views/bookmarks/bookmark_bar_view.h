@@ -194,7 +194,7 @@ class BookmarkBarView : public DetachableToolbarView,
       BookmarkMenuController* controller) override;
 
   // BookmarkBarInstructionsDelegate:
-  void ShowImportDialog() override;
+  void OnImportBookmarks() override;
 
   // BookmarkBubbleViewObserver:
   void OnBookmarkBubbleShown(const GURL& url) override;

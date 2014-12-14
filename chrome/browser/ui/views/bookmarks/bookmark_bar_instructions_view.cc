@@ -104,7 +104,7 @@ void BookmarkBarInstructionsView::GetAccessibleState(
 
 void BookmarkBarInstructionsView::LinkClicked(views::Link* source,
                                               int event_flags) {
-  delegate_->ShowImportDialog();
+  delegate_->OnImportBookmarks();
 }
 
 void BookmarkBarInstructionsView::ShowContextMenuForView(

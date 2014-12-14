@@ -9,7 +9,7 @@
 // bookmarks.
 class BookmarkBarInstructionsDelegate {
  public:
-  virtual void ShowImportDialog() = 0;
+  virtual void OnImportBookmarks() = 0;
 
  protected:
   virtual ~BookmarkBarInstructionsDelegate() {}
