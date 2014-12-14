@@ -240,9 +240,8 @@ bool MockPeerConnectionImpl::GetStats(
     return false;
 
   DCHECK_EQ(kStatsOutputLevelStandard, level);
-  webrtc::StatsReport report1, report2;
-  report1.id = "1234";
-  report1.type = "ssrc";
+  webrtc::StatsReport report1("1234"), report2("nontrack");
+  report1.type = webrtc::StatsReport::kStatsReportTypeSsrc;
   report1.timestamp = 42;
   report1.values.push_back(
       webrtc::StatsReport::Value(
@@ -255,8 +254,7 @@ bool MockPeerConnectionImpl::GetStats(
   // If selector is given, we pass back one report.
   // If selector is not given, we pass back two.
   if (!track) {
-    report2.id = "nontrack";
-    report2.type = "generic";
+    report2.type = webrtc::StatsReport::kStatsReportTypeSession;
     report2.timestamp = 44;
     report2.values.push_back(
         webrtc::StatsReport::Value(
