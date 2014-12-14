@@ -168,16 +168,20 @@ public:
         m_transform = 0;
     }
 
-    void createColorTransform(const ColorProfile& colorProfile, bool hasAlpha)
+    void createColorTransform(const ColorProfile& colorProfile, bool hasAlpha, bool sRGB)
     {
         clearColorTransform();
 
-        if (colorProfile.isEmpty())
+        if (colorProfile.isEmpty() && !sRGB)
             return;
         qcms_profile* deviceProfile = ImageDecoder::qcmsOutputDeviceProfile();
         if (!deviceProfile)
             return;
-        qcms_profile* inputProfile = qcms_profile_from_memory(colorProfile.data(), colorProfile.size());
+        qcms_profile* inputProfile = 0;
+        if (!colorProfile.isEmpty())
+            inputProfile = qcms_profile_from_memory(colorProfile.data(), colorProfile.size());
+        else
+            inputProfile = qcms_profile_sRGB();
         if (!inputProfile)
             return;
         // We currently only support color profiles for RGB and RGBA images.
@@ -244,9 +248,15 @@ ImageFrame* PNGImageDecoder::frameBufferAtIndex(size_t index)
 }
 
 #if USE(QCMSLIB)
-static void readColorProfile(png_structp png, png_infop info, ColorProfile& colorProfile)
+static void getColorProfile(png_structp png, png_infop info, ColorProfile& colorProfile, bool& sRGB)
 {
 #ifdef PNG_iCCP_SUPPORTED
+    ASSERT(colorProfile.isEmpty());
+    if (png_get_valid(png, info, PNG_INFO_sRGB)) {
+        sRGB = true;
+        return;
+    }
+
     char* profileName;
     int compressionType;
 #if (PNG_LIBPNG_VER < 10500)
@@ -268,7 +278,6 @@ static void readColorProfile(png_structp png, png_infop info, ColorProfile& colo
     else if (!ImageDecoder::inputDeviceColorProfile(profileData, profileLength))
         ignoreProfile = true;
 
-    ASSERT(colorProfile.isEmpty());
     if (!ignoreProfile)
         colorProfile.append(profileData, profileLength);
 #endif
@@ -325,10 +334,11 @@ void PNGImageDecoder::headerAvailable()
         // do not similarly transform the color profile. We'd either need to transform
         // the color profile or we'd need to decode into a gray-scale image buffer and
         // hand that to CoreGraphics.
+        bool sRGB = false;
         ColorProfile colorProfile;
-        readColorProfile(png, info, colorProfile);
-        bool decodedImageHasAlpha = (colorType & PNG_COLOR_MASK_ALPHA) || trnsCount;
-        m_reader->createColorTransform(colorProfile, decodedImageHasAlpha);
+        getColorProfile(png, info, colorProfile, sRGB);
+        bool imageHasAlpha = (colorType & PNG_COLOR_MASK_ALPHA) || trnsCount;
+        m_reader->createColorTransform(colorProfile, imageHasAlpha, sRGB);
         m_hasColorProfile = !!m_reader->colorTransform();
     }
 #endif
