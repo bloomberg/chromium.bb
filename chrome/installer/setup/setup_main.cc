@@ -587,7 +587,7 @@ bool CheckPreInstallConditions(const InstallationState& original_state,
             cmd.AppendSwitch(switches::kForceFirstRun);
             installer_state->WriteInstallerResult(*status, 0, NULL);
             VLOG(1) << "Launching existing system-level chrome instead.";
-            base::LaunchProcess(cmd, base::LaunchOptions(), NULL);
+            base::LaunchProcess(cmd, base::LaunchOptions());
           }
         } else {
           // It's no longer possible for |product| to be anything other than
@@ -729,7 +729,7 @@ installer::InstallStatus UninstallProducts(
     InstallUtil::TriggerActiveSetupCommand();
 
   if (!system_level_cmd.GetProgram().empty())
-    base::LaunchProcess(system_level_cmd, base::LaunchOptions(), NULL);
+    base::LaunchProcess(system_level_cmd, base::LaunchOptions());
 
   // Tell Google Update that an uninstall has taken place.
   // Ignore the return value: success or failure of Google Update

@@ -229,12 +229,11 @@ ScopedPriorityClass::~ScopedPriorityClass() {
 PriorityClassChangeResult RelaunchAndDoProcessPriorityAdjustment() {
   CommandLine cmd_line(*CommandLine::ForCurrentProcess());
   cmd_line.AppendSwitch(kAdjustProcessPriority);
-  base::ProcessHandle process_handle = NULL;
+  base::Process process = base::LaunchProcess(cmd_line, base::LaunchOptions());
   int exit_code = 0;
-  if (!base::LaunchProcess(cmd_line, base::LaunchOptions(),
-                           &process_handle)) {
+  if (!process.IsValid()) {
     ADD_FAILURE() << " to launch subprocess.";
-  } else if (!base::WaitForExitCode(process_handle, &exit_code)) {
+  } else if (!process.WaitForExit(&exit_code)) {
     ADD_FAILURE() << " to wait for subprocess to exit.";
   } else {
     return static_cast<PriorityClassChangeResult>(exit_code);

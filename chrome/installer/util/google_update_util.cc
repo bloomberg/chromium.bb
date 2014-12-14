@@ -183,7 +183,7 @@ void ElevateIfNeededToReenableUpdates() {
       base::win::UserAccountControlIsEnabled()) {
     base::LaunchElevatedProcess(cmd, launch_options);
   } else {
-    base::LaunchProcess(cmd, launch_options, NULL);
+    base::LaunchProcess(cmd, launch_options);
   }
 }
 

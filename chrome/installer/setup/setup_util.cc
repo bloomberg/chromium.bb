@@ -70,13 +70,13 @@ bool LaunchAndWaitForExistingInstall(const base::FilePath& setup_exe,
   // Launch the process and wait for it to exit.
   VLOG(1) << "Launching existing installer with command: "
           << new_cl.GetCommandLineString();
-  base::ProcessHandle handle = INVALID_HANDLE_VALUE;
-  if (!base::LaunchProcess(new_cl, base::LaunchOptions(), &handle)) {
+  base::Process process = base::LaunchProcess(new_cl, base::LaunchOptions());
+  if (!process.IsValid()) {
     PLOG(ERROR) << "Failed to launch existing installer with command: "
                 << new_cl.GetCommandLineString();
     return false;
   }
-  if (!base::WaitForExitCode(handle, exit_code)) {
+  if (!process.WaitForExit(exit_code)) {
     PLOG(DFATAL) << "Failed to get exit code from existing installer";
     *exit_code = WAIT_FOR_EXISTING_FAILED;
   } else {

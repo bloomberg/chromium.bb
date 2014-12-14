@@ -136,11 +136,13 @@ bool LaunchSetup(CommandLine* cmd_line, bool system_level_toast) {
       // gets inherited by the child process.
       base::LaunchOptions options;
       options.inherit_handles = true;
-      return base::LaunchProcess(*cmd_line, options, NULL);
+      base::Process process = base::LaunchProcess(*cmd_line, options);
+      return process.IsValid();
     }
   }
 
-  return base::LaunchProcess(*cmd_line, base::LaunchOptions(), NULL);
+  base::Process process = base::LaunchProcess(*cmd_line, base::LaunchOptions());
+  return process.IsValid();
 }
 
 // For System level installs, setup.exe lives in the system temp, which
@@ -240,10 +242,10 @@ bool LaunchSetupAsConsoleUser(CommandLine* cmd_line) {
   options.inherit_handles = true;
   options.empty_desktop_name = true;
   VLOG(1) << __FUNCTION__ << " launching " << cmd_line->GetCommandLineString();
-  bool launched = base::LaunchProcess(*cmd_line, options, NULL);
+  base::Process process = base::LaunchProcess(*cmd_line, options);
   ::CloseHandle(user_token);
-  VLOG(1) << __FUNCTION__ << "   result: " << launched;
-  return launched;
+  VLOG(1) << __FUNCTION__ << "   result: " << process.IsValid();
+  return process.IsValid();
 }
 
 // A helper function that writes to HKLM if the handle was passed through the
@@ -528,7 +530,7 @@ void InactiveUserToastExperiment(int flavor,
 
   CommandLine cmd(InstallUtil::GetChromeUninstallCmd(
                       system_level_toast, product.distribution()->GetType()));
-  base::LaunchProcess(cmd, base::LaunchOptions(), NULL);
+  base::LaunchProcess(cmd, base::LaunchOptions());
 }
 
 }  // namespace installer
