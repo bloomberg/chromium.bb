@@ -167,8 +167,11 @@ bool SubresourceIntegrity::parseAlgorithm(const UChar*& position, const UChar* e
         HashAlgorithm algorithm;
     } kSupportedPrefixes[] = {
         { "sha256", HashAlgorithmSha256 },
+        { "sha-256", HashAlgorithmSha256 },
         { "sha384", HashAlgorithmSha384 },
-        { "sha512", HashAlgorithmSha512 }
+        { "sha-384", HashAlgorithmSha384 },
+        { "sha512", HashAlgorithmSha512 },
+        { "sha-512", HashAlgorithmSha512 }
     };
 
     for (auto& prefix : kSupportedPrefixes) {

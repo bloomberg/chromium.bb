@@ -135,12 +135,12 @@ TEST_F(SubresourceIntegrityTest, ParseAlgorithm)
     expectAlgorithm("sha256;", HashAlgorithmSha256);
     expectAlgorithm("sha384;", HashAlgorithmSha384);
     expectAlgorithm("sha512;", HashAlgorithmSha512);
+    expectAlgorithm("sha-256;", HashAlgorithmSha256);
+    expectAlgorithm("sha-384;", HashAlgorithmSha384);
+    expectAlgorithm("sha-512;", HashAlgorithmSha512);
 
     expectAlgorithmFailure("sha1;");
     expectAlgorithmFailure("sha-1;");
-    expectAlgorithmFailure("sha-256;");
-    expectAlgorithmFailure("sha-384;");
-    expectAlgorithmFailure("sha-512;");
 }
 
 TEST_F(SubresourceIntegrityTest, ParseDigest)
@@ -173,6 +173,11 @@ TEST_F(SubresourceIntegrityTest, Parsing)
         HashAlgorithmSha256);
 
     expectParse(
+        "ni:///sha-256;BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=",
+        "BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=",
+        HashAlgorithmSha256);
+
+    expectParse(
         "     ni:///sha256;BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=     ",
         "BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=",
         HashAlgorithmSha256);
@@ -183,7 +188,17 @@ TEST_F(SubresourceIntegrityTest, Parsing)
         HashAlgorithmSha384);
 
     expectParse(
+        "ni:///sha-384;XVVXBGoYw6AJOh9J/Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr",
+        "XVVXBGoYw6AJOh9J/Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr",
+        HashAlgorithmSha384);
+
+    expectParse(
         "ni:///sha512;tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
+        "tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
+        HashAlgorithmSha512);
+
+    expectParse(
+        "ni:///sha-512;tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
         "tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
         HashAlgorithmSha512);
 }
