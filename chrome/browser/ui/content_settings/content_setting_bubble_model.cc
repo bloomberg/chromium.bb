@@ -505,7 +505,10 @@ ContentSettingPluginBubbleModel::~ContentSettingPluginBubbleModel() {
 
 void ContentSettingPluginBubbleModel::OnCustomLinkClicked() {
   content::RecordAction(UserMetricsAction("ClickToPlay_LoadAll_Bubble"));
-  DCHECK(web_contents());
+  // Web contents can be NULL if the tab was closed while the plugins
+  // settings bubble is visible.
+  if (!web_contents())
+    return;
 #if defined(ENABLE_PLUGINS)
   // TODO(bauerb): We should send the identifiers of blocked plug-ins here.
   ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
