@@ -150,7 +150,7 @@ bool SVGRenderStyle::diffNeedsLayoutAndPaintInvalidation(const SVGRenderStyle* o
         return true;
 
     // Text related properties influence layout.
-    if (misc->baselineShiftValue != other->misc->baselineShiftValue)
+    if (*misc->baselineShiftValue != *other->misc->baselineShiftValue)
         return true;
 
     // These properties affect the cached stroke bounding box rects.
@@ -164,13 +164,13 @@ bool SVGRenderStyle::diffNeedsLayoutAndPaintInvalidation(const SVGRenderStyle* o
 
     // Some stroke properties, requires relayouts, as the cached stroke boundaries need to be recalculated.
     if (stroke.get() != other->stroke.get()) {
-        if (stroke->width != other->stroke->width
+        if (*stroke->width != *other->stroke->width
             || stroke->paintType != other->stroke->paintType
             || stroke->paintColor != other->stroke->paintColor
             || stroke->paintUri != other->stroke->paintUri
             || stroke->miterLimit != other->stroke->miterLimit
-            || stroke->dashArray != other->stroke->dashArray
-            || stroke->dashOffset != other->stroke->dashOffset
+            || *stroke->dashArray != *other->stroke->dashArray
+            || *stroke->dashOffset != *other->stroke->dashOffset
             || stroke->visitedLinkPaintColor != other->stroke->visitedLinkPaintColor
             || stroke->visitedLinkPaintUri != other->stroke->visitedLinkPaintUri
             || stroke->visitedLinkPaintType != other->stroke->visitedLinkPaintType)

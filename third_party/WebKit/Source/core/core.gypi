@@ -3639,6 +3639,7 @@
             'rendering/shapes/BoxShapeTest.cpp',
             'rendering/style/OutlineValueTest.cpp',
             'rendering/style/RenderStyleTest.cpp',
+            'rendering/style/SVGRenderStyleTest.cpp',
             'streams/ReadableStreamTest.cpp',
             'testing/PrivateScriptTestTest.cpp',
             'testing/UnitTestHelpers.cpp',

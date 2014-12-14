@@ -187,7 +187,7 @@ public:
 
     void setStrokeDashArray(PassRefPtrWillBeRawPtr<SVGLengthList> obj)
     {
-        if (!(stroke->dashArray == obj))
+        if (*stroke->dashArray != *obj)
             stroke.access()->dashArray = obj;
     }
 
@@ -199,13 +199,13 @@ public:
 
     void setStrokeWidth(PassRefPtrWillBeRawPtr<SVGLength> obj)
     {
-        if (!(stroke->width == obj))
+        if (*stroke->width != *obj)
             stroke.access()->width = obj;
     }
 
     void setStrokeDashOffset(PassRefPtrWillBeRawPtr<SVGLength> obj)
     {
-        if (!(stroke->dashOffset == obj))
+        if (*stroke->dashOffset != *obj)
             stroke.access()->dashOffset = obj;
     }
 
