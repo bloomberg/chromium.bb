@@ -26,7 +26,7 @@ class ConfirmBubbleModel;
 // controller takes the ownership of the passed-in ConfirmBubbleModel.
 - (id)initWithParent:(NSView*)parent
               origin:(CGPoint)origin
-               model:(ConfirmBubbleModel*)model;
+               model:(scoped_ptr<ConfirmBubbleModel>)model;
 
 // Access to the properties of the ConfirmBubbleModel object. These functions
 // also converts C++ types returned by the ConfirmBubbleModel object to

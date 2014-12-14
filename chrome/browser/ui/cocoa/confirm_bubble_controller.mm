@@ -16,11 +16,11 @@
 
 - (id)initWithParent:(NSView*)parent
               origin:(CGPoint)origin
-               model:(ConfirmBubbleModel*)model {
+               model:(scoped_ptr<ConfirmBubbleModel>)model {
   if ((self = [super initWithNibName:nil bundle:nil])) {
     parent_ = parent;
     origin_ = origin;
-    model_.reset(model);
+    model_ = model.Pass();
   }
   return self;
 }

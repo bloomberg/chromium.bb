@@ -303,11 +303,13 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
     if (!integrate_spelling_service_.GetValue()) {
       content::RenderViewHost* rvh = proxy_->GetRenderViewHost();
       gfx::Rect rect = rvh->GetView()->GetViewBounds();
+      scoped_ptr<SpellingBubbleModel> model(
+          new SpellingBubbleModel(profile, proxy_->GetWebContents(), false));
       chrome::ShowConfirmBubble(
           proxy_->GetWebContents()->GetTopLevelNativeWindow(),
           rvh->GetView()->GetNativeView(),
           gfx::Point(rect.CenterPoint().x(), rect.y()),
-          new SpellingBubbleModel(profile, proxy_->GetWebContents(), false));
+          model.Pass());
     } else {
       if (profile) {
         profile->GetPrefs()->SetBoolean(prefs::kSpellCheckUseSpellingService,
@@ -327,11 +329,13 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
     if (!integrate_spelling_service_.GetValue()) {
       content::RenderViewHost* rvh = proxy_->GetRenderViewHost();
       gfx::Rect rect = rvh->GetView()->GetViewBounds();
+      scoped_ptr<SpellingBubbleModel> model(
+          new SpellingBubbleModel(profile, proxy_->GetWebContents(), true));
       chrome::ShowConfirmBubble(
           proxy_->GetWebContents()->GetTopLevelNativeWindow(),
           rvh->GetView()->GetNativeView(),
           gfx::Point(rect.CenterPoint().x(), rect.y()),
-          new SpellingBubbleModel(profile, proxy_->GetWebContents(), true));
+          model.Pass());
     } else {
       if (profile) {
         bool current_value = autocorrect_spelling_.GetValue();

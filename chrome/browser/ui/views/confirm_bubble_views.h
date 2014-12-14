@@ -24,7 +24,7 @@ class ConfirmBubbleModel;
 class ConfirmBubbleViews : public views::DialogDelegateView,
                            public views::LinkListener {
  public:
-  explicit ConfirmBubbleViews(ConfirmBubbleModel* model);
+  explicit ConfirmBubbleViews(scoped_ptr<ConfirmBubbleModel> model);
 
  protected:
   ~ConfirmBubbleViews() override;

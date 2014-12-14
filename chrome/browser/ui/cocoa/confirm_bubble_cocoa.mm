@@ -47,14 +47,14 @@ namespace chrome {
 void ShowConfirmBubble(gfx::NativeWindow window,
                        gfx::NativeView anchor_view,
                        const gfx::Point& origin,
-                       ConfirmBubbleModel* model) {
+                       scoped_ptr<ConfirmBubbleModel> model) {
   // Create a custom NSViewController that manages a bubble view, and add it to
   // a child to the specified |anchor_view|. This controller will be
   // automatically deleted when it loses first-responder status.
   ConfirmBubbleController* controller =
       [[ConfirmBubbleController alloc] initWithParent:anchor_view
                                                origin:origin.ToCGPoint()
-                                                model:model];
+                                                model:model.Pass()];
   [anchor_view addSubview:[controller view]
                positioned:NSWindowAbove
                relativeTo:nil];
