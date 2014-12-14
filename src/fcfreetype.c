@@ -1285,6 +1285,12 @@ FcFreeTypeQueryFace (const FT_Face  face,
 			   (face->face_flags & FT_FACE_FLAG_SCALABLE) != 0))
 	goto bail1;
 
+#ifdef FT_FACE_FLAG_COLOR
+    if (!FcPatternAddBool (pat, FC_COLOR,
+			   (face->face_flags & FT_FACE_FLAG_COLOR) != 0))
+	goto bail1;
+#endif
+
 
     /*
      * Get the OS/2 table

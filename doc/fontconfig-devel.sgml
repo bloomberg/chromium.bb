@@ -176,6 +176,7 @@ convenience for the application's rendering mechanism.
     scalable       FC_SCALABLE            Bool    Whether glyphs can be scaled
     scale          FC_SCALE               Double  Scale factor for point->pixel
                                                   conversions
+    color          FC_COLOR               Bool    Whether any glyphs have color
     dpi            FC_DPI                 Double  Target dots per inch
     rgba           FC_RGBA                Int     unknown, rgb, bgr, vrgb,
                                                   vbgr, none - subpixel geometry
