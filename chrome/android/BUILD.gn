@@ -437,6 +437,8 @@ android_library("chrome_shell_test_java") {
     "//chrome/test/android:chrome_java_test_support",
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",
+    "//third_party/android_tools:android_support_v13_java",
+    "//third_party/android_tools:android_support_v7_appcompat_java",
     "//ui/android:ui_java",
   ]
   DEPRECATED_java_in_dir = "shell/javatests/src"
@@ -470,6 +472,8 @@ android_apk("chrome_sync_shell_test_apk") {
     "//content/public/test/android:content_java_test_support",
     "//sync/android:sync_java",
     "//sync:sync_java_test_support",
+    "//third_party/android_tools:android_support_v13_java",
+    "//third_party/android_tools:android_support_v7_appcompat_java",
   ]
   apk_name = "ChromeSyncShellTest"
   DEPRECATED_java_in_dir = "sync_shell/javatests/src"
