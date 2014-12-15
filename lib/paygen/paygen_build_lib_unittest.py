@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2013 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -13,9 +12,6 @@ import os
 import shutil
 import tempfile
 import unittest
-
-import fixup_path
-fixup_path.FixupPath()
 
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import constants
@@ -1424,7 +1420,3 @@ DOC = "Faux doc"
     # Test an unknown board doesn't.
     self.assertRaises(paygen_build_lib.BoardNotConfigured,
                       paygen_build_lib.ValidateBoardConfig, 'goofy-board')
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

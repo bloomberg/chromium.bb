@@ -29,9 +29,6 @@ the creating server.
 
 from __future__ import print_function
 
-import fixup_path
-fixup_path.FixupPath()
-
 import datetime
 import logging
 

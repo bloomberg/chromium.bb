@@ -16,9 +16,6 @@ import stat
 import tempfile
 import time
 
-import fixup_path
-fixup_path.FixupPath()
-
 from chromite.lib.paygen import flock
 from chromite.lib.paygen import urilib
 from chromite.lib.paygen import utils

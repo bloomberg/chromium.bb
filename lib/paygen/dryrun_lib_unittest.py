@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -6,9 +5,6 @@
 """Unittests for dry_run library."""
 
 from __future__ import print_function
-
-import fixup_path
-fixup_path.FixupPath()
 
 from chromite.lib import cros_test_lib
 from chromite.lib.paygen import dryrun_lib
@@ -88,7 +84,3 @@ class TestDryRunMgr(cros_test_lib.MoxTestCase):
     dryrun_lib.DryRunMgr.Run(mocked_drm, FuncClass.Func,
                              *args, **kwargs)
     self.mox.VerifyAll()
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

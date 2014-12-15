@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,13 +6,11 @@
 
 from __future__ import print_function
 
+import mock
 import os
 import shutil
 import socket
 import tempfile
-
-import fixup_path
-fixup_path.FixupPath()
 
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
@@ -22,10 +19,6 @@ from chromite.lib import gs_unittest
 from chromite.lib.paygen import gslock
 from chromite.lib.paygen import signer_payloads_client
 from chromite.lib.paygen import utils
-
-# TODO(build): Finish test wrapper (http://crosbug.com/37517).
-# Until then, this has to be after the chromite imports.
-import mock
 
 
 # pylint: disable=protected-access
@@ -422,7 +415,3 @@ class SignerPayloadsClientIntegrationTest(cros_test_lib.TestCase):
     finally:
       # Cleanup when we are over
       ctx.Remove(clean_uri, ignore_missing=True)
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

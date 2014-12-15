@@ -11,9 +11,6 @@ import sys
 import urllib
 import urllib2
 
-import fixup_path
-fixup_path.FixupPath()
-
 from chromite.lib.paygen import filelib
 from chromite.lib.paygen import gslib
 

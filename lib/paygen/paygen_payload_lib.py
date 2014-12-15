@@ -13,11 +13,10 @@ import json
 import logging
 import os
 import shutil
+import sys
 import tempfile
 
-import fixup_path
-fixup_path.FixupPath()
-
+from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib.paygen import dryrun_lib
@@ -26,6 +25,9 @@ from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import signer_payloads_client
 from chromite.lib.paygen import urilib
 from chromite.lib.paygen import utils
+
+# Needed for the dev.host.lib import below.
+sys.path.insert(0, os.path.join(constants.SOURCE_ROOT, 'src', 'platform'))
 
 
 DESCRIPTION_FILE_VERSION = 1

@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -14,9 +13,6 @@ import multiprocessing
 import os
 import pickle
 import traceback
-
-import fixup_path
-fixup_path.FixupPath()
 
 from chromite.lib import cros_test_lib
 from chromite.lib.paygen import download_cache
@@ -408,7 +404,3 @@ class DownloadCacheTest(cros_test_lib.TempDirTestCase):
     # Ensure that every process gave back the expected result.
     expected = [contents_a, contents_b, None] * 10
     self.assertEqual(results, expected)
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

@@ -13,9 +13,6 @@ import logging
 import os
 import re
 
-import fixup_path
-fixup_path.FixupPath()
-
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib.paygen import filelib

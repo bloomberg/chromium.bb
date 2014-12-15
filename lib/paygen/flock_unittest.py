@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -14,9 +13,6 @@ import multiprocessing
 import os
 import sys
 import time
-
-import fixup_path
-fixup_path.FixupPath()
 
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -261,7 +257,3 @@ class FLockTest(cros_test_lib.TempDirTestCase):
     self.assertEquals(p.exitcode, LOCK_ACQUIRED)
     q.join()
     self.assertEquals(p.exitcode, LOCK_ACQUIRED)
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

@@ -25,9 +25,6 @@ import os
 import random
 import re
 
-import fixup_path
-fixup_path.FixupPath()
-
 from chromite.lib.paygen import utils
 
 

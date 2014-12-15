@@ -14,9 +14,6 @@ import tempfile
 import time
 import threading
 
-import fixup_path
-fixup_path.FixupPath()
-
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
 from chromite.lib.paygen import gslock

@@ -20,11 +20,9 @@ import logging
 import os
 import shutil
 import socket
+import sys
 import tempfile
 import urlparse
-
-import fixup_path
-fixup_path.FixupPath()
 
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
@@ -41,6 +39,10 @@ from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import paygen_payload_lib
 from chromite.lib.paygen import urilib
 from chromite.lib.paygen import utils
+
+AUTOTEST_DIR = os.path.join(constants.SOURCE_ROOT, 'src', 'third_party',
+                            'autotest', 'files')
+sys.path.insert(0, AUTOTEST_DIR)
 
 # If we are an external only checkout, or a bootstrap environemnt these imports
 # will fail. We quietly ignore the failure, but leave bombs around that will
@@ -996,8 +998,7 @@ class _PaygenBuild(object):
         logging.warning('Warning running test suite; error output:\n%s', e)
     else:
       cmd = [
-          os.path.join(fixup_path.CROS_AUTOTEST_PATH, 'site_utils',
-                       'run_suite.py'),
+          os.path.join(AUTOTEST_DIR, 'site_utils', 'run_suite.py'),
           '--board', self._archive_board,
           '--build', self._archive_build,
           '--suite_name', suite_name,

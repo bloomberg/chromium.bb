@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -12,9 +11,6 @@ import datetime
 import errno
 import mox
 import os
-
-import fixup_path
-fixup_path.FixupPath()
 
 from chromite.lib import cros_test_lib
 
@@ -806,7 +802,3 @@ class TestGsLibAccess(cros_test_lib.MoxTempDirTestCase):
     gs_path = 'gs://lokijuhygtfrdesxcv/awsedrftgyhujikol'
     gs_md5 = gslib.MD5Sum(gs_path)
     self.assertTrue(gs_md5 is None)
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

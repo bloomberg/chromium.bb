@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -10,9 +9,6 @@ from __future__ import print_function
 import os
 import shutil
 import subprocess
-
-import fixup_path
-fixup_path.FixupPath()
 
 from chromite.lib import cros_test_lib
 from chromite.lib.paygen import filelib
@@ -328,7 +324,3 @@ class TestFileLib(cros_test_lib.MoxTempDirTestCase):
     self.assertFalse(filelib.Exists(path1))
     self.assertFalse(filelib.Exists(path2))
     self.assertFalse(filelib.Exists(subpath1))
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()
