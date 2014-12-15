@@ -58782,13 +58782,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PLT.PT_StartToFinish_WithPreview"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="HistogramInconsistencies" separator=".">
-  <suffix name="Cronet" label="Cronet histograms."/>
-  <affected-histogram name="Histogram.InconsistenciesBrowser"/>
-  <affected-histogram name="Histogram.InconsistenciesBrowserUnique"/>
-  <affected-histogram name="Histogram.InconsistentSnapshotBrowser"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="HttpPipeliningCompatibility">
   <suffix name="disable_test" label="Do nothing"/>
   <suffix name="enable_test" label="Test connection for HTTP pipelining"/>

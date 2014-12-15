@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 
-import org.chromium.net.HistogramManager;
 import org.chromium.net.HttpUrlRequest;
 import org.chromium.net.HttpUrlRequestFactory;
 import org.chromium.net.HttpUrlRequestListener;
@@ -40,8 +39,6 @@ public class CronetTestActivity extends Activity {
 
     HttpUrlRequestFactory mRequestFactory;
     UrlRequestContext mUrlRequestContext;
-    HistogramManager mHistogramManager = new HistogramManager();
-
     String mUrl;
 
     boolean mLoading = false;

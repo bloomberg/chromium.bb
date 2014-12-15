@@ -159,8 +159,6 @@
             'login/screens/screen_context_unittest.cc',
             'metrics/compression_utils_unittest.cc',
             'metrics/daily_event_unittest.cc',
-            'metrics/histogram_encoder_unittest.cc',
-            'metrics/histogram_manager_unittest.cc',
             'metrics/machine_id_provider_win_unittest.cc',
             'metrics/metrics_hashes_unittest.cc',
             'metrics/metrics_log_manager_unittest.cc',

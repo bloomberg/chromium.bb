@@ -10,7 +10,6 @@
 #include "components/cronet/android/chromium_url_request_context.h"
 #include "components/cronet/android/cronet_url_request.h"
 #include "components/cronet/android/cronet_url_request_context.h"
-#include "components/cronet/android/histogram_manager.h"
 #include "net/android/net_jni_registrar.h"
 #include "url/android/url_jni_registrar.h"
 #include "url/url_util.h"
@@ -28,7 +27,6 @@ const base::android::RegistrationMethod kCronetRegisteredMethods[] = {
     {"ChromiumUrlRequestContext", cronet::ChromiumUrlRequestContextRegisterJni},
     {"CronetUrlRequest", cronet::CronetUrlRequestRegisterJni},
     {"CronetUrlRequestContext", cronet::CronetUrlRequestContextRegisterJni},
-    {"HistogramManager", cronet::HistogramManagerRegisterJni},
     {"NetAndroid", net::android::RegisterJni},
     {"UrlAndroid", url::android::RegisterJni},
 };
