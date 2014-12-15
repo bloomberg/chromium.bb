@@ -449,6 +449,7 @@ cr.define('options', function() {
       }
 
       if (extension.dependentExtensions.length > 0) {
+        node.classList.add('developer-extras');
         var dependentMessage =
             node.querySelector('.dependent-extensions-message');
         dependentMessage.hidden = false;
