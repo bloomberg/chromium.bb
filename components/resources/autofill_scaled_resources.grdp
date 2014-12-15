@@ -7,5 +7,7 @@
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_JCB" file="common/autofill/jcb.png" />
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_MASTERCARD" file="common/autofill/mastercard.png" />
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_VISA" file="common/autofill/visa.png" />
+  <!-- This is not used on desktop, only Android, so use a placeholder file. -->
+  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_SCAN_NEW" file="common/autofill/cc-generic.png" />
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_MAC_CONTACTS_ICON" file="common/autofill/mac_contacts_icon.png" />
 </grit-part>

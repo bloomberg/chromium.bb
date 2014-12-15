@@ -88,7 +88,8 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
         // it doesn't regress.
         // http://crbug.com/429364
         View wrapper = layout.findViewById(R.id.dropdown_label_wrapper);
-        wrapper.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, height));
+        wrapper.setLayoutParams(
+                new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, height, 1));
 
         DropdownItem item = getItem(position);
         TextView labelView = (TextView) layout.findViewById(R.id.dropdown_label);

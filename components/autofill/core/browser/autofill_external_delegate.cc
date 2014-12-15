@@ -123,7 +123,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   if (should_show_scan_credit_card_) {
     values.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_SCAN_CREDIT_CARD));
     labels.push_back(base::string16());
-    icons.push_back(base::string16());
+    icons.push_back(base::ASCIIToUTF16("scanCreditCardIcon"));
     ids.push_back(POPUP_ITEM_ID_SCAN_CREDIT_CARD);
 
     if (!has_shown_popup_for_current_edit_) {
