@@ -15,7 +15,7 @@
         "test": "browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 7
+          "shards": 10
         }
       },
       "cacheinvalidation_unittests",
@@ -119,7 +119,7 @@
         "test": "browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 7
+          "shards": 10
         }
       },
       "cacheinvalidation_unittests",
@@ -233,7 +233,7 @@
         "test": "browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 7
+          "shards": 10
         }
       },
       "cacheinvalidation_unittests",
@@ -344,7 +344,7 @@
         "test": "browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 6
+          "shards": 10
         }
       },
       "app_installer_unittests",
