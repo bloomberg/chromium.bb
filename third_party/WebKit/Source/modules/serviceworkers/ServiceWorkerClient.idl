@@ -14,5 +14,5 @@
     [RuntimeEnabled=ServiceWorkerClientAttributes] readonly attribute USVString url;
     [RuntimeEnabled=ServiceWorkerClientAttributes] readonly attribute DOMString frameType;
     [Custom, RaisesException, CallWith=ExecutionContext] void postMessage(SerializedScriptValue message, optional sequence<Transferable> transfer);
-    [RuntimeEnabled=PushMessaging, CallWith=ScriptState] Promise<boolean> focus();
+    [RuntimeEnabled=ServiceWorkerClientAttributes, CallWith=ScriptState] Promise<boolean> focus();
 };
