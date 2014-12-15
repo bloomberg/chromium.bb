@@ -421,13 +421,13 @@ IPC_MESSAGE_CONTROL0(GpuHostMsg_ResourcesRelinquished)
 // the browser should start sending the corresponding information
 IPC_MESSAGE_CONTROL2(GpuHostMsg_AddSubscription,
                      int32 /* client_id */,
-                     unsigned int /* target */);
+                     unsigned int /* target */)
 
 // Tells the browser that no contexts are subscribed to the target anymore
 // so the browser should stop sending the corresponding information
 IPC_MESSAGE_CONTROL2(GpuHostMsg_RemoveSubscription,
                      int32 /* client_id */,
-                     unsigned int /* target */);
+                     unsigned int /* target */)
 
 //------------------------------------------------------------------------------
 // GPU Channel Messages
