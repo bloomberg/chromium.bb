@@ -49,6 +49,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/history_index_restore_observer.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
+#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_constants.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -57,6 +58,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/user_prefs/user_prefs.h"
+#include "components/webdata_services/web_data_service_wrapper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/notification_service.h"
@@ -183,6 +185,67 @@ KeyedService* CreateTestDesktopNotificationService(
   return new DesktopNotificationService(static_cast<Profile*>(profile));
 }
 #endif
+
+KeyedService* BuildFaviconService(content::BrowserContext* profile) {
+  FaviconClient* favicon_client =
+      ChromeFaviconClientFactory::GetForProfile(static_cast<Profile*>(profile));
+  return new FaviconService(static_cast<Profile*>(profile), favicon_client);
+}
+
+KeyedService* BuildHistoryService(content::BrowserContext* context) {
+  Profile* profile = static_cast<Profile*>(context);
+  HistoryService* history_service = new HistoryService(
+      ChromeHistoryClientFactory::GetForProfile(profile), profile);
+  return history_service;
+}
+
+KeyedService* BuildBookmarkModel(content::BrowserContext* context) {
+  Profile* profile = static_cast<Profile*>(context);
+  ChromeBookmarkClient* bookmark_client =
+      ChromeBookmarkClientFactory::GetForProfile(profile);
+  BookmarkModel* bookmark_model = new BookmarkModel(bookmark_client);
+  bookmark_client->Init(bookmark_model);
+  bookmark_model->Load(profile->GetPrefs(),
+                       profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
+                       profile->GetPath(),
+                       profile->GetIOTaskRunner(),
+                       content::BrowserThread::GetMessageLoopProxyForThread(
+                           content::BrowserThread::UI));
+  return bookmark_model;
+}
+
+KeyedService* BuildChromeBookmarkClient(
+    content::BrowserContext* context) {
+  return new ChromeBookmarkClient(static_cast<Profile*>(context));
+}
+
+KeyedService* BuildChromeHistoryClient(
+    content::BrowserContext* context) {
+  Profile* profile = static_cast<Profile*>(context);
+  return new ChromeHistoryClient(BookmarkModelFactory::GetForProfile(profile),
+                                 profile,
+                                 profile->GetTopSites());
+}
+
+void TestProfileErrorCallback(WebDataServiceWrapper::ErrorType error_type,
+                              sql::InitStatus status) {
+  NOTREACHED();
+}
+
+KeyedService* BuildWebDataService(content::BrowserContext* profile) {
+  WebDataServiceWrapper* web_data_service_wrapper = new WebDataServiceWrapper(
+      static_cast<Profile*>(profile)->GetPath(),
+      g_browser_process->GetApplicationLocale(),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+      &TestProfileErrorCallback);
+  web_data_service_wrapper->GetAutofillWebData()->GetAutofillBackend(
+      base::Bind(&InitSyncableServicesOnDBThread,
+                 web_data_service_wrapper->GetAutofillWebData(),
+                 static_cast<Profile*>(profile)->GetPath(),
+                 g_browser_process->GetApplicationLocale()));
+  return web_data_service_wrapper;
+}
 
 }  // namespace
 
@@ -453,23 +516,10 @@ TestingProfile::~TestingProfile() {
   }
 }
 
-static KeyedService* BuildFaviconService(content::BrowserContext* profile) {
-  FaviconClient* favicon_client =
-      ChromeFaviconClientFactory::GetForProfile(static_cast<Profile*>(profile));
-  return new FaviconService(static_cast<Profile*>(profile), favicon_client);
-}
-
 void TestingProfile::CreateFaviconService() {
   // It is up to the caller to create the history service if one is needed.
   FaviconServiceFactory::GetInstance()->SetTestingFactory(
       this, BuildFaviconService);
-}
-
-static KeyedService* BuildHistoryService(content::BrowserContext* context) {
-  Profile* profile = static_cast<Profile*>(context);
-  HistoryService* history_service = new HistoryService(
-      ChromeHistoryClientFactory::GetForProfile(profile), profile);
-  return history_service;
 }
 
 bool TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
@@ -546,34 +596,6 @@ void TestingProfile::DestroyTopSites() {
   }
 }
 
-static KeyedService* BuildBookmarkModel(content::BrowserContext* context) {
-  Profile* profile = static_cast<Profile*>(context);
-  ChromeBookmarkClient* bookmark_client =
-      ChromeBookmarkClientFactory::GetForProfile(profile);
-  BookmarkModel* bookmark_model = new BookmarkModel(bookmark_client);
-  bookmark_client->Init(bookmark_model);
-  bookmark_model->Load(profile->GetPrefs(),
-                       profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
-                       profile->GetPath(),
-                       profile->GetIOTaskRunner(),
-                       content::BrowserThread::GetMessageLoopProxyForThread(
-                           content::BrowserThread::UI));
-  return bookmark_model;
-}
-
-static KeyedService* BuildChromeBookmarkClient(
-    content::BrowserContext* context) {
-  return new ChromeBookmarkClient(static_cast<Profile*>(context));
-}
-
-static KeyedService* BuildChromeHistoryClient(
-    content::BrowserContext* context) {
-  Profile* profile = static_cast<Profile*>(context);
-  return new ChromeHistoryClient(BookmarkModelFactory::GetForProfile(profile),
-                                 profile,
-                                 profile->GetTopSites());
-}
-
 void TestingProfile::CreateBookmarkModel(bool delete_file) {
   if (delete_file) {
     base::FilePath path = GetPath().Append(bookmarks::kBookmarksFileName);
@@ -586,10 +608,6 @@ void TestingProfile::CreateBookmarkModel(bool delete_file) {
   // This creates the BookmarkModel.
   ignore_result(BookmarkModelFactory::GetInstance()->SetTestingFactoryAndUse(
       this, BuildBookmarkModel));
-}
-
-static KeyedService* BuildWebDataService(content::BrowserContext* profile) {
-  return new WebDataServiceWrapper(static_cast<Profile*>(profile));
 }
 
 void TestingProfile::CreateWebDataService() {

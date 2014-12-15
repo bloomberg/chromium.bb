@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_WEBDATA_COMMON_WEB_DATA_SERVICE_TEST_UTIL_H__
-#define COMPONENTS_WEBDATA_COMMON_WEB_DATA_SERVICE_TEST_UTIL_H__
+#ifndef COMPONENTS_WEBDATA_SERVICES_WEB_DATA_SERVICE_TEST_UTIL_H__
+#define COMPONENTS_WEBDATA_SERVICES_WEB_DATA_SERVICE_TEST_UTIL_H__
 
 #include "base/basictypes.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
+#include "components/webdata_services/web_data_service_wrapper.h"
 
 // Base class for mocks of WebDataService, that does nothing in
 // Shutdown().
@@ -45,4 +45,4 @@ class MockWebDataServiceWrapper : public MockWebDataServiceWrapperBase {
   DISALLOW_COPY_AND_ASSIGN(MockWebDataServiceWrapper);
 };
 
-#endif  // COMPONENTS_WEBDATA_COMMON_WEB_DATA_SERVICE_TEST_UTIL_H__
+#endif  // COMPONENTS_WEBDATA_SERVICES_WEB_DATA_SERVICE_TEST_UTIL_H__

@@ -130,6 +130,7 @@
         'search_engines.gypi',
         'sync_driver.gypi',
         'invalidation.gypi',
+        'webdata_services.gypi',
       ],
     }],
     ['enable_plugins==1', {

@@ -7,59 +7,30 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
-#include "components/keyed_service/core/keyed_service.h"
-#include "components/webdata/common/web_database_service.h"
 
+template <typename T> struct DefaultSingletonTraits;
 class KeywordWebDataService;
 class TokenWebData;
+class WebDataServiceWrapper;
 
 #if defined(OS_WIN)
 class PasswordWebDataService;
 #endif
 
 namespace autofill {
+class AutofillWebDataBackend;
 class AutofillWebDataService;
 }  // namespace autofill
 
-// A wrapper of WebDataService so that we can use it as a profile keyed service.
-class WebDataServiceWrapper : public KeyedService {
- public:
-  explicit WebDataServiceWrapper(Profile* profile);
-
-  // For testing.
-  WebDataServiceWrapper();
-
-  ~WebDataServiceWrapper() override;
-
-  // KeyedService:
-  void Shutdown() override;
-
-  virtual scoped_refptr<autofill::AutofillWebDataService> GetAutofillWebData();
-
-  virtual scoped_refptr<KeywordWebDataService> GetKeywordWebData();
-
-  virtual scoped_refptr<TokenWebData> GetTokenWebData();
-
-#if defined(OS_WIN)
-  virtual scoped_refptr<PasswordWebDataService> GetPasswordWebData();
-#endif
-
- private:
-  scoped_refptr<WebDatabaseService> web_database_;
-
-  scoped_refptr<autofill::AutofillWebDataService> autofill_web_data_;
-  scoped_refptr<KeywordWebDataService> keyword_web_data_;
-  scoped_refptr<TokenWebData> token_web_data_;
-
-#if defined(OS_WIN)
-  scoped_refptr<PasswordWebDataService> password_web_data_;
-#endif
-
-  DISALLOW_COPY_AND_ASSIGN(WebDataServiceWrapper);
-};
+// Initialize syncable services on database thread.
+// (visible for testing)
+void InitSyncableServicesOnDBThread(
+    scoped_refptr<autofill::AutofillWebDataService> autofill_web_data,
+    const base::FilePath& profile_path,
+    const std::string& app_locale,
+    autofill::AutofillWebDataBackend* autofill_backend);
 
 // Singleton that owns all WebDataServiceWrappers and associates them with
 // Profiles.

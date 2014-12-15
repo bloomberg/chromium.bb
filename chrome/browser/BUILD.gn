@@ -118,6 +118,7 @@ static_library("browser") {
     "//components/variations",
     "//components/variations/net",
     "//components/webdata/common",
+    "//components/webdata_services",
     "//components/web_resource",
     "//content/public/browser",
     "//content/public/common",

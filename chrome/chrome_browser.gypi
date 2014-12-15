@@ -2941,6 +2941,7 @@
         '../components/components.gyp:variations',
         '../components/components.gyp:variations_http_provider',
         '../components/components.gyp:webdata_common',
+        '../components/components.gyp:webdata_services',
         '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',
         '../courgette/courgette.gyp:courgette_lib',

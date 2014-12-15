@@ -83,6 +83,7 @@ include_rules = [
   "+components/web_modal",
   "+components/web_cache/browser",
   "+components/webdata/common",
+  "+components/webdata_services",
   "+components/web_resource",
   "+content/public/browser",
   "+content/test/net",

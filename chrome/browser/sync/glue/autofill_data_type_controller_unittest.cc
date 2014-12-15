@@ -17,7 +17,7 @@
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/sync_driver/data_type_controller_mock.h"
-#include "components/webdata/common/web_data_service_test_util.h"
+#include "components/webdata_services/web_data_service_test_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"

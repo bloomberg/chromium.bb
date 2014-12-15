@@ -7,15 +7,9 @@ specific_include_rules = {
   # TODO(caitkp): Extract unit tests from //chrome, at lower priority
   # than production code.
   r'(.*_unittest|.*_test_util)\.(cc|h)': [
-    "+chrome/browser/webdata/logins_table.h",
-    "+chrome/browser/webdata/token_service_table.h",
-    "+chrome/browser/webdata/token_web_data.h",
-    "+chrome/browser/webdata/web_data_service.h",
-    "+chrome/browser/webdata/web_data_service_factory.h",
-    "+components/autofill/core",
+    "+components/autofill/core/browser",
     "+components/password_manager/core/browser/webdata",
     "+components/search_engines/keyword_table.h",
     "+components/signin/core/browser/webdata",
-    "+content/public/test",
   ],
 }

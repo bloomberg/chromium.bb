@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/webdata/common/web_data_service_test_util.h"
+#include "components/webdata_services/web_data_service_test_util.h"
 
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 
@@ -23,15 +23,14 @@ void MockWebDataServiceWrapperBase::Shutdown() {
 MockWebDataServiceWrapper::MockWebDataServiceWrapper(
     scoped_refptr<AutofillWebDataService> fake_autofill,
     scoped_refptr<TokenWebData> fake_token)
-    : fake_autofill_web_data_(fake_autofill),
-      fake_token_web_data_(fake_token) {
+    : fake_autofill_web_data_(fake_autofill), fake_token_web_data_(fake_token) {
 }
 
 MockWebDataServiceWrapper::~MockWebDataServiceWrapper() {
 }
 
 scoped_refptr<AutofillWebDataService>
-    MockWebDataServiceWrapper::GetAutofillWebData() {
+MockWebDataServiceWrapper::GetAutofillWebData() {
   return fake_autofill_web_data_;
 }
 

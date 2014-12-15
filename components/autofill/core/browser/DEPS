@@ -1,6 +1,7 @@
 include_rules = [
   "+components/keyed_service/core",
   "+components/webdata/common",
+  "+components/webdata_services",
   "+crypto/random.h",
   "+google_apis/gaia",
   "+google_apis/google_api_keys.h",

@@ -1421,9 +1421,6 @@
       '../components/search_engines/template_url_service_sync_unittest.cc',
       '../components/search_engines/template_url_service_unittest.cc',
 
-      '../components/webdata/common/web_data_service_test_util.cc',
-      '../components/webdata/common/web_data_service_test_util.h',
-
       '../skia/ext/analysis_canvas_unittest.cc',
       '../skia/ext/bitmap_platform_device_mac_unittest.cc',
       '../skia/ext/convolver_unittest.cc',
@@ -1988,6 +1985,7 @@
             '../components/components.gyp:autofill_content_test_support',
             '../components/components.gyp:component_metrics_proto',
             '../components/components.gyp:data_reduction_proxy_test_support',
+            '../components/components.gyp:webdata_services_test_support',
             '../components/components_strings.gyp:components_strings',
             '../content/app/resources/content_resources.gyp:content_resources',
             '../gpu/gpu.gyp:gpu_unittest_utils',
