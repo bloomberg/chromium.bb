@@ -32,12 +32,26 @@ v8::Handle<v8::Value> Arguments::PeekNext() const {
   return (*info_)[next_];
 }
 
+std::string V8TypeAsString(v8::Handle<v8::Value> value) {
+  if (value.IsEmpty())
+    return "<empty handle>";
+  if (value->IsUndefined())
+    return "undefined";
+  if (value->IsNull())
+    return "null";
+  std::string result;
+  if (!ConvertFromV8(NULL, value, &result))
+    return std::string();
+  return result;
+}
+
 void Arguments::ThrowError() const {
   if (insufficient_arguments_)
     return ThrowTypeError("Insufficient number of arguments.");
 
-  ThrowTypeError(base::StringPrintf(
-      "Error processing argument %d.", next_ - 1));
+  return ThrowTypeError(base::StringPrintf(
+      "Error processing argument at index %d, conversion failure from %s",
+      next_ - 1, V8TypeAsString((*info_)[next_ - 1]).c_str()));
 }
 
 void Arguments::ThrowTypeError(const std::string& message) const {
