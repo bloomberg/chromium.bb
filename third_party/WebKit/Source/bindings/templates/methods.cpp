@@ -643,19 +643,13 @@ void {{v8_class_or_partial}}::installConditionallyEnabledMethods(v8::Handle<v8::
     ASSERT(context);
 
     {% for method in conditionally_enabled_methods %}
-    {% filter per_context_enabled(method.overloads.per_context_enabled_function_all
-                                  if method.overloads else
-                                  method.per_context_enabled_function) %}
-    {% filter exposed(method.overloads.exposed_test_all
-                      if method.overloads else
-                      method.exposed_test) %}
-    {% filter runtime_enabled(method.overloads.runtime_enabled_function_all
-                              if method.overloads else
-                              method.runtime_enabled_function) %}
+    {% filter per_context_enabled(method.per_context_enabled_function) %}
+    {% filter exposed(method.exposed_test) %}
+    {% filter runtime_enabled(method.overloads.runtime_enabled_function_all if method.overloads else method.runtime_enabled_function) %}
     prototypeObject->Set(v8AtomicString(isolate, "{{method.name}}"), v8::FunctionTemplate::New(isolate, {{cpp_class_or_partial}}V8Internal::{{method.name}}MethodCallback, v8Undefined(), defaultSignature, {{method.number_of_required_arguments}})->GetFunction());
-    {% endfilter %}{# runtime_enabled() #}
-    {% endfilter %}{# exposed() #}
-    {% endfilter %}{# per_context_enabled() #}
+    {% endfilter %}
+    {% endfilter %}
+    {% endfilter %}
     {% endfor %}
     {% endif %}
 }

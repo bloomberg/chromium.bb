@@ -792,18 +792,6 @@ static void installV8TestInterface5Template(v8::Handle<v8::FunctionTemplate> fun
         "alwaysExposedStaticMethod", TestInterface5ImplementationV8Internal::alwaysExposedStaticMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };
     V8DOMConfiguration::installMethod(functionTemplate, v8::Local<v8::Signature>(), v8::None, alwaysExposedStaticMethodMethodConfiguration, isolate);
-    if (context && (context->isWorkerGlobalScope())) {
-        const V8DOMConfiguration::MethodConfiguration workerExposedStaticMethodMethodConfiguration = {
-            "workerExposedStaticMethod", TestInterface5ImplementationV8Internal::workerExposedStaticMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
-        };
-        V8DOMConfiguration::installMethod(functionTemplate, v8::Local<v8::Signature>(), v8::None, workerExposedStaticMethodMethodConfiguration, isolate);
-    }
-    if (context && (context->isDocument())) {
-        const V8DOMConfiguration::MethodConfiguration windowExposedStaticMethodMethodConfiguration = {
-            "windowExposedStaticMethod", TestInterface5ImplementationV8Internal::windowExposedStaticMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
-        };
-        V8DOMConfiguration::installMethod(functionTemplate, v8::Local<v8::Signature>(), v8::None, windowExposedStaticMethodMethodConfiguration, isolate);
-    }
     const V8DOMConfiguration::MethodConfiguration toStringMethodConfiguration = {
         "toString", TestInterface5ImplementationV8Internal::toStringMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };
@@ -862,6 +850,12 @@ void V8TestInterface5::installConditionallyEnabledMethods(v8::Handle<v8::Object>
     }
     if (context && (context->isDocument())) {
         prototypeObject->Set(v8AtomicString(isolate, "windowExposedMethod"), v8::FunctionTemplate::New(isolate, TestInterface5ImplementationV8Internal::windowExposedMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
+    }
+    if (context && (context->isWorkerGlobalScope())) {
+        prototypeObject->Set(v8AtomicString(isolate, "workerExposedStaticMethod"), v8::FunctionTemplate::New(isolate, TestInterface5ImplementationV8Internal::workerExposedStaticMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
+    }
+    if (context && (context->isDocument())) {
+        prototypeObject->Set(v8AtomicString(isolate, "windowExposedStaticMethod"), v8::FunctionTemplate::New(isolate, TestInterface5ImplementationV8Internal::windowExposedStaticMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
     }
     if (context && (context->isDocument() || context->isServiceWorkerGlobalScope())) {
         prototypeObject->Set(v8AtomicString(isolate, "windowAndServiceWorkerExposedMethod"), v8::FunctionTemplate::New(isolate, TestInterface5ImplementationV8Internal::windowAndServiceWorkerExposedMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());

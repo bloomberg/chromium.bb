@@ -393,12 +393,6 @@ static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functio
     {% for method in custom_registration_methods %}
     {# install_custom_signature #}
     {% filter conditional(method.conditional_string) %}
-    {% filter per_context_enabled(method.overloads.per_context_enabled_function_all
-                                  if method.overloads else
-                                  method.per_context_enabled_function) %}
-    {% filter exposed(method.overloads.exposed_test_all
-                      if method.overloads else
-                      method.exposed_test) %}
     {% filter runtime_enabled(method.overloads.runtime_enabled_function_all
                               if method.overloads else
                               method.runtime_enabled_function) %}
@@ -408,8 +402,6 @@ static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functio
     {{install_custom_signature(method) | indent}}
     {% endif %}{# is_do_not_check_security #}
     {% endfilter %}{# runtime_enabled() #}
-    {% endfilter %}{# exposed() #}
-    {% endfilter %}{# per_context_enabled() #}
     {% endfilter %}{# conditional() #}
     {% endfor %}
     {% for attribute in attributes if attribute.is_static %}
