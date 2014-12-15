@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 
 namespace net {
@@ -45,7 +46,8 @@ class NET_EXPORT_PRIVATE ProofSource {
   // used.
   //
   // This function may be called concurrently.
-  virtual bool GetProof(const std::string& hostname,
+  virtual bool GetProof(const IPEndPoint& server_ip,
+                        const std::string& hostname,
                         const std::string& server_config,
                         bool ecdsa_ok,
                         const std::vector<std::string>** out_certs,

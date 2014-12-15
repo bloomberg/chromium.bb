@@ -164,11 +164,11 @@ void QuicCryptoServerStream::SendServerConfigUpdate(
 
   CryptoHandshakeMessage server_config_update_message;
   if (!crypto_config_.BuildServerConfigUpdateMessage(
+          session()->connection()->self_address(),
           session()->connection()->peer_address(),
           session()->connection()->clock(),
           session()->connection()->random_generator(),
-          crypto_negotiated_params_,
-          cached_network_params,
+          crypto_negotiated_params_, cached_network_params,
           &server_config_update_message)) {
     DVLOG(1) << "Server: Failed to build server config update (SCUP)!";
     return;
@@ -234,14 +234,14 @@ QuicErrorCode QuicCryptoServerStream::ProcessClientHello(
   }
 
   return crypto_config_.ProcessClientHello(
-      result,
-      session()->connection()->connection_id(),
+      result, session()->connection()->connection_id(),
+      session()->connection()->self_address(),
       session()->connection()->peer_address(),
       session()->connection()->version(),
       session()->connection()->supported_versions(),
       session()->connection()->clock(),
-      session()->connection()->random_generator(),
-      &crypto_negotiated_params_, reply, error_details);
+      session()->connection()->random_generator(), &crypto_negotiated_params_,
+      reply, error_details);
 }
 
 void QuicCryptoServerStream::OverrideQuicConfigDefaults(QuicConfig* config) {

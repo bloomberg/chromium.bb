@@ -65,3 +65,6 @@ bool FLAGS_quic_enable_pacing = false;
 
 // If true, the silent close option will be honored.
 bool FLAGS_quic_allow_silent_close = true;
+
+// If true, use std::cbrt instead of custom cube root.
+bool FLAGS_quic_use_std_cbrt = true;

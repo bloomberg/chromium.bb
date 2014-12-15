@@ -259,5 +259,10 @@ void QuicConnectionPeer::SetSequenceNumberOfLastSentPacket(
   connection->sequence_number_of_last_sent_packet_ = number;
 }
 
+// static
+QuicConnectionStats* QuicConnectionPeer::GetStats(QuicConnection* connection) {
+  return &connection->stats_;
+}
+
 }  // namespace test
 }  // namespace net

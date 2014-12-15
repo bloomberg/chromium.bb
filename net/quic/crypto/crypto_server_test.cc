@@ -227,9 +227,10 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
                                const ValidateCallback::Result& result,
                                bool should_succeed,
                                const char* error_substr) {
+    IPEndPoint server_ip;
     string error_details;
     QuicErrorCode error = config_.ProcessClientHello(
-        result, 1 /* ConnectionId */, client_address_,
+        result, 1 /* ConnectionId */, server_ip, client_address_,
         supported_versions_.front(), supported_versions_, &clock_, rand_,
         &params_, &out_, &error_details);
 

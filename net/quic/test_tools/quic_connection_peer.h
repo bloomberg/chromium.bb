@@ -126,6 +126,8 @@ class QuicConnectionPeer {
   static void SetSequenceNumberOfLastSentPacket(
       QuicConnection* connection, QuicPacketSequenceNumber number);
 
+  static QuicConnectionStats* GetStats(QuicConnection* connection);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicConnectionPeer);
 };

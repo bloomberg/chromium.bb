@@ -11,6 +11,9 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 
+using base::StringPiece;
+using std::numeric_limits;
+
 namespace net {
 
 QuicDataWriter::QuicDataWriter(size_t size)
@@ -61,7 +64,7 @@ bool QuicDataWriter::WriteUFloat16(uint64 value) {
     result = static_cast<uint16>(value);
   } else if (value >= kUFloat16MaxValue) {
     // Value is out of range; clamp it to the maximum representable.
-    result = std::numeric_limits<uint16>::max();
+    result = numeric_limits<uint16>::max();
   } else {
     // The highest bit is between position 13 and 42 (zero-based), which
     // corresponds to exponent 1-30. In the output, mantissa is from 0 to 10,
@@ -92,8 +95,8 @@ bool QuicDataWriter::WriteUFloat16(uint64 value) {
   return WriteBytes(&result, sizeof(result));
 }
 
-bool QuicDataWriter::WriteStringPiece16(base::StringPiece val) {
-  if (val.size() > std::numeric_limits<uint16>::max()) {
+bool QuicDataWriter::WriteStringPiece16(StringPiece val) {
+  if (val.size() > numeric_limits<uint16>::max()) {
     return false;
   }
   if (!WriteUInt16(static_cast<uint16>(val.size()))) {

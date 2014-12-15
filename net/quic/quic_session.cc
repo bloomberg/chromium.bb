@@ -659,9 +659,9 @@ QuicDataStream* QuicSession::GetIncomingDataStream(QuicStreamId stream_id) {
     }
     if (largest_peer_created_stream_id_ == 0) {
       if (is_server()) {
-        largest_peer_created_stream_id_= 3;
+        largest_peer_created_stream_id_ = 3;
       } else {
-        largest_peer_created_stream_id_= 1;
+        largest_peer_created_stream_id_ = 1;
       }
     }
     for (QuicStreamId id = largest_peer_created_stream_id_ + 2;

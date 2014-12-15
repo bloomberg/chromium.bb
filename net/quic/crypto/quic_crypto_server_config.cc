@@ -517,12 +517,13 @@ void QuicCryptoServerConfig::ValidateClientHello(
 QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     const ValidateClientHelloResultCallback::Result& validate_chlo_result,
     QuicConnectionId connection_id,
-    IPEndPoint client_address,
+    const IPEndPoint& server_ip,
+    const IPEndPoint& client_address,
     QuicVersion version,
     const QuicVersionVector& supported_versions,
     const QuicClock* clock,
     QuicRandom* rand,
-    QuicCryptoNegotiatedParameters *params,
+    QuicCryptoNegotiatedParameters* params,
     CryptoHandshakeMessage* out,
     string* error_details) const {
   DCHECK(error_details);
@@ -593,7 +594,7 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
       !info.client_nonce_well_formed ||
       !info.unique ||
       !requested_config.get()) {
-    BuildRejection(*primary_config.get(), client_hello, info,
+    BuildRejection(server_ip, *primary_config.get(), client_hello, info,
                    validate_chlo_result.cached_network_params, rand, params,
                    out);
     return QUIC_NO_ERROR;
@@ -1034,6 +1035,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
 }
 
 bool QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
+    const IPEndPoint& server_ip,
     const IPEndPoint& client_ip,
     const QuicClock* clock,
     QuicRandom* rand,
@@ -1057,9 +1059,9 @@ bool QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
 
   const vector<string>* certs;
   string signature;
-  if (!proof_source_->GetProof(params.sni, primary_config_->serialized,
-                               params.x509_ecdsa_supported, &certs,
-                               &signature)) {
+  if (!proof_source_->GetProof(
+          server_ip, params.sni, primary_config_->serialized,
+          params.x509_ecdsa_supported, &certs, &signature)) {
     DVLOG(1) << "Server: failed to get proof.";
     return false;
   }
@@ -1074,12 +1076,13 @@ bool QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
 }
 
 void QuicCryptoServerConfig::BuildRejection(
+    const IPEndPoint& server_ip,
     const Config& config,
     const CryptoHandshakeMessage& client_hello,
     const ClientHelloInfo& info,
     const CachedNetworkParameters& cached_network_params,
     QuicRandom* rand,
-    QuicCryptoNegotiatedParameters *params,
+    QuicCryptoNegotiatedParameters* params,
     CryptoHandshakeMessage* out) const {
   out->set_tag(kREJ);
   out->SetStringPiece(kSCFG, config.serialized);
@@ -1130,9 +1133,9 @@ void QuicCryptoServerConfig::BuildRejection(
 
   const vector<string>* certs;
   string signature;
-  if (!proof_source_->GetProof(info.sni.as_string(), config.serialized,
-                               params->x509_ecdsa_supported, &certs,
-                               &signature)) {
+  if (!proof_source_->GetProof(server_ip, info.sni.as_string(),
+                               config.serialized, params->x509_ecdsa_supported,
+                               &certs, &signature)) {
     return;
   }
 

@@ -23,5 +23,6 @@ NET_EXPORT_PRIVATE
 extern bool FLAGS_quic_enable_bandwidth_resumption_experiment;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_enable_pacing;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_allow_silent_close;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_std_cbrt;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

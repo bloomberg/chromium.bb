@@ -50,10 +50,10 @@ struct NET_EXPORT_PRIVATE QuicConnectionStats {
 
   QuicPacketCount packets_revived;
   QuicPacketCount packets_dropped;  // Duplicate or less than least unacked.
-  uint32 crypto_retransmit_count;
+  size_t crypto_retransmit_count;
   // Count of times the loss detection alarm fired.  At least one packet should
   // be lost when the alarm fires.
-  uint32 loss_timeout_count;
+  size_t loss_timeout_count;
   size_t tlp_count;
   size_t rto_count;  // Count of times the rto timer fired.
   size_t spurious_rto_count;

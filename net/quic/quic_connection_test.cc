@@ -612,7 +612,7 @@ class FecQuicConnectionDebugVisitor
 
 class MockPacketWriterFactory : public QuicConnection::PacketWriterFactory {
  public:
-  MockPacketWriterFactory(QuicPacketWriter* writer) {
+  explicit MockPacketWriterFactory(QuicPacketWriter* writer) {
     ON_CALL(*this, Create(_)).WillByDefault(Return(writer));
   }
   ~MockPacketWriterFactory() override {}

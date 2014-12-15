@@ -1959,7 +1959,7 @@ bool QuicFramer::AppendStreamFrame(
     return false;
   }
   if (!no_stream_frame_length) {
-    if ((frame.data.TotalBufferSize() > std::numeric_limits<uint16>::max()) ||
+    if ((frame.data.TotalBufferSize() > numeric_limits<uint16>::max()) ||
         !writer->WriteUInt16(
             static_cast<uint16>(frame.data.TotalBufferSize()))) {
       LOG(DFATAL) << "Writing stream frame length failed";

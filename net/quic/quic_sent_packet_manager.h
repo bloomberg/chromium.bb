@@ -56,7 +56,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
         const QuicAckFrame& ack_frame,
         QuicTime ack_receive_time,
         QuicPacketSequenceNumber largest_observed,
-        bool largest_observed_acked,
+        bool rtt_updated,
         QuicPacketSequenceNumber least_unacked_sent_packet) {}
   };
 

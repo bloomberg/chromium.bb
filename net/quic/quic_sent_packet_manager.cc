@@ -195,15 +195,13 @@ void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
   QuicByteCount bytes_in_flight = unacked_packets_.bytes_in_flight();
 
   UpdatePacketInformationReceivedByPeer(ack_frame);
-  // We rely on delta_time_largest_observed to compute an RTT estimate, so
-  // we only update rtt when the largest observed gets acked.
-  bool largest_observed_acked = MaybeUpdateRTT(ack_frame, ack_receive_time);
+  bool rtt_updated = MaybeUpdateRTT(ack_frame, ack_receive_time);
   DCHECK_GE(ack_frame.largest_observed, unacked_packets_.largest_observed());
   unacked_packets_.IncreaseLargestObserved(ack_frame.largest_observed);
 
   HandleAckForSentPackets(ack_frame);
   InvokeLossDetection(ack_receive_time);
-  MaybeInvokeCongestionEvent(largest_observed_acked, bytes_in_flight);
+  MaybeInvokeCongestionEvent(rtt_updated, bytes_in_flight);
   unacked_packets_.RemoveObsoletePackets();
 
   sustained_bandwidth_recorder_.RecordEstimate(
@@ -222,7 +220,7 @@ void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
 
   // Anytime we are making forward progress and have a new RTT estimate, reset
   // the backoff counters.
-  if (largest_observed_acked) {
+  if (rtt_updated) {
     // Reset all retransmit counters any time a new packet is acked.
     consecutive_rto_count_ = 0;
     consecutive_tlp_count_ = 0;
@@ -230,11 +228,9 @@ void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
   }
 
   if (debug_delegate_ != nullptr) {
-    debug_delegate_->OnIncomingAck(ack_frame,
-                                   ack_receive_time,
+    debug_delegate_->OnIncomingAck(ack_frame, ack_receive_time,
                                    unacked_packets_.largest_observed(),
-                                   largest_observed_acked,
-                                   GetLeastUnacked());
+                                   rtt_updated, GetLeastUnacked());
   }
 }
 
@@ -750,6 +746,10 @@ void QuicSentPacketManager::InvokeLossDetection(QuicTime time) {
 bool QuicSentPacketManager::MaybeUpdateRTT(
     const QuicAckFrame& ack_frame,
     const QuicTime& ack_receive_time) {
+  // We rely on delta_time_largest_observed to compute an RTT estimate, so we
+  // only update rtt when the largest observed gets acked.
+  // NOTE: If ack is a truncated ack, then the largest observed is in fact
+  // unacked, and may cause an RTT sample to be taken.
   if (!unacked_packets_.IsUnacked(ack_frame.largest_observed)) {
     return false;
   }

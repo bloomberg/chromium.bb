@@ -221,6 +221,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   //     information about it.
   // connection_id: the ConnectionId for the connection, which is used in key
   //     derivation.
+  // server_ip: the IP address and port of the server. The IP address may be
+  //     used for certificate selection.
   // client_address: the IP address and port of the client. The IP address is
   //     used to generate and validate source-address tokens.
   // version: version of the QUIC protocol in use for this connection
@@ -238,7 +240,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   QuicErrorCode ProcessClientHello(
       const ValidateClientHelloResultCallback::Result& validate_chlo_result,
       QuicConnectionId connection_id,
-      IPEndPoint client_address,
+      const IPEndPoint& server_ip,
+      const IPEndPoint& client_address,
       QuicVersion version,
       const QuicVersionVector& supported_versions,
       const QuicClock* clock,
@@ -254,6 +257,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   //
   // |cached_network_params| is optional, and can be nullptr.
   bool BuildServerConfigUpdateMessage(
+      const IPEndPoint& server_ip,
       const IPEndPoint& client_ip,
       const QuicClock* clock,
       QuicRandom* rand,
@@ -420,14 +424,14 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
       ValidateClientHelloResultCallback* done_cb) const;
 
   // BuildRejection sets |out| to be a REJ message in reply to |client_hello|.
-  void BuildRejection(
-      const Config& config,
-      const CryptoHandshakeMessage& client_hello,
-      const ClientHelloInfo& info,
-      const CachedNetworkParameters& cached_network_params,
-      QuicRandom* rand,
-      QuicCryptoNegotiatedParameters *params,
-      CryptoHandshakeMessage* out) const;
+  void BuildRejection(const IPEndPoint& server_ip,
+                      const Config& config,
+                      const CryptoHandshakeMessage& client_hello,
+                      const ClientHelloInfo& info,
+                      const CachedNetworkParameters& cached_network_params,
+                      QuicRandom* rand,
+                      QuicCryptoNegotiatedParameters* params,
+                      CryptoHandshakeMessage* out) const;
 
   // ParseConfigProtobuf parses the given config protobuf and returns a
   // scoped_refptr<Config> if successful. The caller adopts the reference to the
