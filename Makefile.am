@@ -130,6 +130,10 @@ TESTS =						\
 	resources-test				\
 	message-test
 
+if ENABLE_CPP_TEST
+TESTS += cpp-compile-test
+endif
+
 check_PROGRAMS =				\
 	$(TESTS)				\
 	exec-fd-leak-checker
@@ -180,6 +184,10 @@ resources_test_SOURCES = tests/resources-test.c
 resources_test_LDADD = libtest-runner.la
 message_test_SOURCES = tests/message-test.c
 message_test_LDADD = libtest-runner.la
+
+if ENABLE_CPP_TEST
+cpp_compile_test_SOURCES = tests/cpp-compile-test.cpp
+endif
 
 fixed_benchmark_SOURCES = tests/fixed-benchmark.c
 fixed_benchmark_LDADD = libtest-runner.la

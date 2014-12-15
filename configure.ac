@@ -26,6 +26,18 @@ AM_SILENT_RULES([yes])
 
 # Check for programs
 AC_PROG_CC
+AC_PROG_CXX
+
+# check if we have C++ compiler. This is hacky workaround,
+# for a reason why it is this way see
+# http://lists.gnu.org/archive/html/bug-autoconf/2010-05/msg00001.html
+have_cpp_compiler=yes
+
+if ! which "$CXX" &>/dev/null; then
+	have_cpp_compiler=no
+fi
+
+AM_CONDITIONAL(ENABLE_CPP_TEST, test "x$have_cpp_compiler" = "xyes")
 
 # Initialize libtool
 LT_PREREQ([2.2])
