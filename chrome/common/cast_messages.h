@@ -178,12 +178,12 @@ IPC_MESSAGE_CONTROL3(
 IPC_MESSAGE_CONTROL2(
     CastHostMsg_AddValidSsrc,
     int32 /* channel id */,
-    uint32 /* ssrc */);
+    uint32 /* ssrc */)
 
 IPC_MESSAGE_CONTROL2(
     CastHostMsg_SendRtcpFromRtpReceiver,
     int32 /* channel id */,
-    media::cast::SendRtcpFromRtpReceiver_Params /* data */);
+    media::cast::SendRtcpFromRtpReceiver_Params /* data */)
 
 IPC_MESSAGE_CONTROL4(
     CastHostMsg_New,
