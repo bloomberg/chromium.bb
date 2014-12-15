@@ -41,9 +41,8 @@ const uint32 kDefaultKeyModifier = PP_INPUTEVENT_MODIFIER_METAKEY;
 const uint32 kDefaultKeyModifier = PP_INPUTEVENT_MODIFIER_CONTROLKEY;
 #endif  // OS_MACOSX
 
-// Do one time initialization of the SDK.  data is platform specific, on Windows
-// it's the instance of the DLL and it's unused on other platforms.
-bool InitializeSDK(void* data);
+// Do one time initialization of the SDK.
+bool InitializeSDK();
 // Tells the SDK that we're shutting down.
 void ShutdownSDK();
 
