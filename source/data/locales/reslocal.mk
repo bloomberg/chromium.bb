@@ -84,6 +84,7 @@ GENRB_SOURCE =\
  bem.txt\
  br.txt\
  bs.txt\
+ ckb.txt\
  cy.txt\
  ee.txt\
  eo.txt\
@@ -99,6 +100,7 @@ GENRB_SOURCE =\
  ka.txt\
  kk.txt\
  km.txt\
+ ku.txt\
  ky.txt\
  lg.txt\
  ln.txt\

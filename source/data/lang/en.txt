@@ -29,7 +29,7 @@ en{
         ca{"Catalan"}
         ceb{"Cebuano"}
         chr{"Cherokee"}
-        ckb{"Sorani Kurdish"}
+        ckb{"Kurdish (Arabic)"}
         co{"Corsican"}
         cs{"Czech"}
         cy{"Welsh"}
