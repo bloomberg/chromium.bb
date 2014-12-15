@@ -1563,7 +1563,6 @@ class Port(object):
             PhysicalTestSuite('ietestcenter', ['--enable-impl-side-painting']),
             PhysicalTestSuite('media', ['--enable-impl-side-painting']),
             PhysicalTestSuite('svg', ['--enable-impl-side-painting']),
-            PhysicalTestSuite('tables', ['--enable-impl-side-painting']),
             PhysicalTestSuite('transforms', ['--enable-impl-side-painting']),
         ]
 
