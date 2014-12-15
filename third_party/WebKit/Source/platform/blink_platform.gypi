@@ -101,7 +101,6 @@
       'PlatformTouchPoint.h',
       'PlatformWheelEvent.h',
       'PopupMenu.h',
-      'PopupMenuClient.h',
       'PopupMenuStyle.h',
       'Prerender.cpp',
       'Prerender.h',
