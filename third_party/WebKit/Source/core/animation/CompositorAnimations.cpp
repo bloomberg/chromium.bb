@@ -260,6 +260,10 @@ bool CompositorAnimationsImpl::convertTimingForCompositor(const Timing& timing, 
 {
     timing.assertValid();
 
+    // FIXME: Compositor does not know anything about endDelay.
+    if (timing.endDelay != 0)
+        return false;
+
     if (!timing.iterationCount || !timing.iterationDuration)
         return false;
 
