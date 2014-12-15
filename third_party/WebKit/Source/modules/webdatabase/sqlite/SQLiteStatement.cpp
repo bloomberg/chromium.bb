@@ -61,16 +61,24 @@ int SQLiteStatement::prepare()
 
     CString query = m_query.stripWhiteSpace().utf8();
 
-    ThreadState::SafePointScope scope(ThreadState::HeapPointersOnStack);
+    const char* tail = nullptr;
+    // Need to pass non-stack sqlite3_stmt* to avoid race with Oilpan stack
+    // scanning.
+    OwnPtr<sqlite3_stmt*> statement = adoptPtr(new sqlite3_stmt*);
+    *statement = nullptr;
+    int error;
+    {
+        ThreadState::SafePointScope scope(ThreadState::HeapPointersOnStack);
 
-    WTF_LOG(SQLDatabase, "SQL - prepare - %s", query.data());
+        WTF_LOG(SQLDatabase, "SQL - prepare - %s", query.data());
 
-    // Pass the length of the string including the null character to sqlite3_prepare_v2;
-    // this lets SQLite avoid an extra string copy.
-    size_t lengthIncludingNullCharacter = query.length() + 1;
+        // Pass the length of the string including the null character to sqlite3_prepare_v2;
+        // this lets SQLite avoid an extra string copy.
+        size_t lengthIncludingNullCharacter = query.length() + 1;
 
-    const char* tail = 0;
-    int error = sqlite3_prepare_v2(m_database.sqlite3Handle(), query.data(), lengthIncludingNullCharacter, &m_statement, &tail);
+        error = sqlite3_prepare_v2(m_database.sqlite3Handle(), query.data(), lengthIncludingNullCharacter, statement.get(), &tail);
+    }
+    m_statement = *statement;
 
     if (error != SQLITE_OK)
         WTF_LOG(SQLDatabase, "sqlite3_prepare16 failed (%i)\n%s\n%s", error, query.data(), sqlite3_errmsg(m_database.sqlite3Handle()));
