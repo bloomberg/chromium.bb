@@ -12,11 +12,15 @@ using namespace devtools_bridge::android;
 JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   base::android::InitVM(vm);
   JNIEnv* env = base::android::AttachCurrentThread();
-  if (!base::android::RegisterLibraryLoaderEntryHook(env) ||
-      !base::android::RegisterJni(env) ||
-      !SessionDependencyFactoryAndroid::InitializeSSL() ||
-      !SessionDependencyFactoryAndroid::RegisterNatives(env)) {
+  if (!base::android::RegisterLibraryLoaderEntryHook(env)) {
     return -1;
   }
+  if (!base::android::RegisterJni(env)) {
+    return -1;
+  }
+  if (!SessionDependencyFactoryAndroid::InitializeSSL()) {
+    return -1;
+  }
+  SessionDependencyFactoryAndroid::RegisterNatives(env);
   return JNI_VERSION_1_4;
 }

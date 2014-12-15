@@ -5,9 +5,8 @@
 #ifndef COMPONENTS_DEVTOOLS_BRIDGE_ANDROID_SESSION_DEPENDENCY_FACTORY_ANDROID_H_
 #define COMPONENTS_DEVTOOLS_BRIDGE_ANDROID_SESSION_DEPENDENCY_FACTORY_ANDROID_H_
 
-#include <jni.h>
-
 #include "components/devtools_bridge/session_dependency_factory.h"
+#include "jni.h"
 
 namespace devtools_bridge {
 namespace android {
@@ -17,7 +16,7 @@ class SessionDependencyFactoryAndroid : public SessionDependencyFactory {
   SessionDependencyFactoryAndroid();
   virtual ~SessionDependencyFactoryAndroid();
 
-  static bool RegisterNatives(JNIEnv* env);
+  static void RegisterNatives(JNIEnv* env);
 
   virtual scoped_ptr<AbstractPeerConnection> CreatePeerConnection(
       scoped_ptr<RTCConfiguration> config,

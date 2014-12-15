@@ -1,5 +1,0 @@
-include_rules = [
-  "+content/public",
-  "-third_party/libjingle",
-  "-third_party/webrtc",
-]
