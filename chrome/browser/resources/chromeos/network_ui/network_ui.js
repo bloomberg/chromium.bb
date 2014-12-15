@@ -35,81 +35,6 @@ var NetworkUI = (function() {
     'onc_source'
   ];
 
-  var LOG_LEVEL_CLASSNAME = {
-    'Error': 'network-log-level-error',
-    'User': 'network-log-level-user',
-    'Event': 'network-log-level-event',
-    'Debug': 'network-log-level-debug'
-  };
-
-  var LOG_LEVEL_CHECKBOX = {
-    'Error': 'log-error',
-    'User': 'log-user',
-    'Event': 'log-event',
-    'Debug': 'log-debug'
-  };
-
-  /**
-   * Create a tag of log level.
-   *
-   * @param {string} level A string that represents log level.
-   * @return {DOMElement} The created span element.
-   */
-  var createLevelTag = function(level) {
-    var tag = document.createElement('span');
-    tag.className = 'network-level-tag';
-    tag.textContent = level;
-    tag.classList.add(LOG_LEVEL_CLASSNAME[level]);
-    return tag;
-  };
-
-  /**
-   * Creates an element that contains the time, the event, the level and
-   * the description of the given log entry.
-   *
-   * @param {Object} logEntry An object that represents a single line of log.
-   * @return {DOMElement}  The created p element that represents the log entry.
-   */
-  var createLogEntryText = function(logEntry) {
-    var level = logEntry['level'];
-    if (!$(LOG_LEVEL_CHECKBOX[level]).checked)
-      return null;
-    var res = document.createElement('p');
-    var textWrapper = document.createElement('span');
-    var fileinfo = '';
-    if ($('log-fileinfo').checked)
-      fileinfo = logEntry['file'];
-    var timestamp = '';
-    if ($('log-timedetail').checked)
-      timestamp = logEntry['timestamp'];
-    else
-      timestamp = logEntry['timestampshort'];
-    textWrapper.textContent = loadTimeData.getStringF(
-      'logEntryFormat',
-      timestamp,
-      fileinfo,
-      logEntry['event']);
-    res.appendChild(createLevelTag(level));
-    res.appendChild(textWrapper);
-    return res;
-  };
-
-  /**
-   * Create event log entries.
-   *
-   * @param {Array.<string>} logEntries A array of strings that each string
-   *     represents a log event in JSON format.
-   */
-  var createEventLog = function(logEntries) {
-    var container = $('network-log-container');
-    container.textContent = '';
-    for (var i = 0; i < logEntries.length; ++i) {
-      var entry = createLogEntryText(JSON.parse(logEntries[i]));
-      if (entry)
-        container.appendChild(entry);
-    }
-  };
-
   /**
    * Create a cell with a button for expanding a network state table row.
    *
@@ -191,15 +116,6 @@ var NetworkUI = (function() {
   };
 
   /**
-   * This callback function is triggered when the network log is received.
-   *
-   * @param {Object} data A JSON structure of event log entries.
-   */
-  var getNetworkLogCallback = function(data) {
-    createEventLog(JSON.parse(data));
-  };
-
-  /**
    * This callback function is triggered when visible networks are received.
    *
    * @param {Array} data A list of network state information for each
@@ -262,8 +178,8 @@ var NetworkUI = (function() {
       else
         detailCell.textContent = JSON.stringify(state, null, '\t');
     };
-    var selected = $('get-network-type').selectedIndex;
-    var selectedId = $('get-network-type').options[selected].id;
+    var selected = $('get-property-format').selectedIndex;
+    var selectedId = $('get-property-format').options[selected].value;
     if (selectedId == 'shill')
       networkConfig.getShillProperties(guid, showDetail);
     else if (selectedId == 'managed')
@@ -271,13 +187,6 @@ var NetworkUI = (function() {
     else
       networkConfig.getProperties(guid, showDetail);
     return expandedRow;
-  };
-
-  /**
-   * Requests a network log update.
-   */
-  var requestLog = function() {
-    chrome.send('NetworkUI.getNetworkLog');
   };
 
   /**
@@ -305,25 +214,10 @@ var NetworkUI = (function() {
    * Get network information from WebUI.
    */
   document.addEventListener('DOMContentLoaded', function() {
-    $('log-refresh').onclick = requestLog;
-    $('log-error').checked = true;
-    $('log-error').onclick = requestLog;
-    $('log-user').checked = true;
-    $('log-user').onclick = requestLog;
-    $('log-event').checked = true;
-    $('log-event').onclick = requestLog;
-    $('log-debug').checked = false;
-    $('log-debug').onclick = requestLog;
-    $('log-fileinfo').checked = false;
-    $('log-fileinfo').onclick = requestLog;
-    $('log-timedetail').checked = false;
-    $('log-timedetail').onclick = requestLog;
+    $('refresh').onclick = requestNetworks;
     setRefresh();
-    requestLog();
     requestNetworks();
   });
 
-  return {
-    getNetworkLogCallback: getNetworkLogCallback
-  };
+  return {};
 })();

@@ -915,6 +915,8 @@
       'browser/ui/webui/chromeos/cryptohome_ui.h',
       'browser/ui/webui/chromeos/cryptohome_web_ui_handler.cc',
       'browser/ui/webui/chromeos/cryptohome_web_ui_handler.h',
+      'browser/ui/webui/chromeos/device_log_ui.cc',
+      'browser/ui/webui/chromeos/device_log_ui.h',
       'browser/ui/webui/chromeos/drive_internals_ui.cc',
       'browser/ui/webui/chromeos/drive_internals_ui.h',
       'browser/ui/webui/chromeos/first_run/first_run_actor.cc',

@@ -42,7 +42,8 @@ namespace chromeos {
 namespace device_event_log {
 
 // Used to specify the type of event. NOTE: Be sure to update LogTypeFromString
-// and GetLogTypeString when adding entries to this enum.
+// and GetLogTypeString when adding entries to this enum. Also consider
+// updating chrome://device-log (see device_log_ui.cc).
 enum LogType {
   // Shill / network configuration related events.
   LOG_TYPE_NETWORK,

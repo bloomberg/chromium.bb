@@ -11,35 +11,22 @@
   <script src="chrome://network/network_ui.js"></script>
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
-  <p i18n-content="autoRefreshText"></p>
-  <h3>Event Log (Newest first):</h3>
-  <div id="log-level-container">
-    <button id="log-refresh" i18n-content="logRefreshText"></button>
-    <label i18n-content="logLevelShowText"></label>
-    <input id="log-error" type="checkbox">
-    <label for="log-error" i18n-content="logLevelErrorText"></label>
-    <input id="log-user" type="checkbox">
-    <label for="log-user" i18n-content="logLevelUserText"></label>
-    <input id="log-event" type="checkbox">
-    <label for="log-event" i18n-content="logLevelEventText"></label>
-    <input id="log-debug" type="checkbox">
-    <label for="log-debug" i18n-content="logLevelDebugText"></label>
-    <input id="log-fileinfo" type="checkbox">
-    <label for="log-fileinfo" i18n-content="logLevelFileinfoText"></label>
-    <input id="log-timedetail" type="checkbox">
-    <label for="log-timedetail" i18n-content="logLevelTimeDetailText"></label>
+  <div id="header">
+    <p i18n-content="autoRefreshText"></p>
+    <span i18n-values=".innerHTML:deviceLogLinkText"></span>
+    <div id="advanced-options">
+      <span i18n-content="clickToExpandText"></span>
+      <span i18n-content="propertyFormatText"></span>
+      <select id="get-property-format">
+        <option value="normal" i18n-content="normalFormatOption"></option>
+        <option value="managed" i18n-content="managedFormatOption"></option>
+        <option value="shill" i18n-content="shillFormatOption"></option>
+      </select>
+    </div>
+    <p><button id="refresh" i18n-content="networkRefreshText"></button></p>
   </div>
-  <div id="network-log-container">
-  </div>
-  <div id="advanced-options">
-    <span>Click '+' to get network properties of type:  </span>
-    <select id="get-network-type">
-      <option id="normal" selected>ONC</option>
-      <option id="managed">Managed ONC</option>
-      <option id="shill">Shill</option>
-    </select>
-  </div>
-  <h3>Visible Networks: </h3>
+
+  <h3 i18n-content="visibleNetworksLabel"></h3>
   <table id="network-state-table" class="state-table">
     <tr class="state-table-header">
       <td></td>
@@ -58,7 +45,8 @@
       <td>Strength</td>
     </tr>
   </table>
-  <h3>Favorites: </h3>
+
+  <h3 i18n-content="favoriteNetworksLabel"></h3>
   <table id="favorite-state-table" class="state-table">
     <tr class="state-table-header">
       <td></td>
@@ -71,6 +59,7 @@
       <td>ONC Source</td>
     </tr>
   </table>
+
   <script src="chrome://resources/js/i18n_template2.js"></script>
 </body>
 </html>

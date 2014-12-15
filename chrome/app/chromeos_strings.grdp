@@ -5707,37 +5707,81 @@ All users must sign out to continue.
   </message>
 
   <!-- About network UI display strings -->
-  <message name="IDS_NETWORK_TITLE" desc="Title of the page">
+  <message name="IDS_NETWORK_UI_TITLE" desc="Title of the page">
     Network
   </message>
-  <message name="IDS_NETWORK_AUTO_REFRESH" desc="A instruction of how to auto-refresh the page">
+  <message name="IDS_NETWORK_UI_AUTO_REFRESH" desc="Instructions for how to auto-refresh the page">
     Add a query param in URL to auto-refresh the page: chrome://network/?refresh=&lt;sec&gt;
   </message>
-  <message name="IDS_NETWORK_LOG_REFRESH" desc="Button to refresh network log">
+  <message name="IDS_NETWORK_UI_REFRESH" desc="Button label for refreshing networks">
+    Refresh Networks
+  </message>
+  <message name="IDS_NETWORK_UI_EXPAND" desc="Button label for expanding network properties">
+    Click '+' to get network properties
+  </message>
+  <message name="IDS_NETWORK_UI_PROPERTY_FORMAT" desc="Drowpdown label for network property format">
+    Property format:
+  </message>
+  <message name="IDS_NETWORK_UI_FORMAT_NORMAL" desc="Label in network property format dropdown for unmanaged ONC properties">
+    ONC
+  </message>
+  <message name="IDS_NETWORK_UI_FORMAT_MANAGED" desc="Label in network property format dropdown for managed ONC properties">
+    Managed ONC
+  </message>
+  <message name="IDS_NETWORK_UI_FORMAT_SHILL" desc="Label in network property format dropdown for Shill properties">
+    Shill
+  </message>
+  <message name="IDS_NETWORK_UI_VISIBLE_NETWORKS" desc="Label for list of visible networks">
+    Visible Networks:
+  </message>
+  <message name="IDS_NETWORK_UI_FAVORITE_NETWORKS" desc="Label for list of favorite networks">
+    Favorite Networks:
+  </message>
+
+  <message name="IDS_DEVICE_LOG_LINK_TEXT" desc="Message preceeding link to chrome://device-log">
+    For network logs, see: <ph name="DEVICE_LOG_LINK">&lt;a href="chrome://device-log"&gt;chrome://device-log&lt;/a&gt;</ph>
+  </message>
+
+  <message name="IDS_DEVICE_LOG_TITLE" desc="Title of the chrome://device-log page">
+    Device Log
+  </message>
+  <message name="IDS_DEVICE_AUTO_REFRESH" desc="Instructions for how to auto-refresh the page">
+    Add a query param in URL to auto-refresh the page: chrome://device-log/?refresh=&lt;sec&gt;
+  </message>
+  <message name="IDS_DEVICE_LOG_REFRESH" desc="Button to refresh device log">
     Refresh
   </message>
-  <message name="IDS_NETWORK_LOG_LEVEL_SHOW" desc="'Show' label before logging level checkboxes">
+  <message name="IDS_DEVICE_LOG_LEVEL_SHOW" desc="'Show' label before logging level checkboxes">
     Show:
   </message>
-  <message name="IDS_NETWORK_LOG_LEVEL_ERROR" desc="Error logging level checkbox">
+  <message name="IDS_DEVICE_LOG_LEVEL_ERROR" desc="Error logging level checkbox">
     Error
   </message>
-  <message name="IDS_NETWORK_LOG_LEVEL_USER" desc="User logging level checkbox">
+  <message name="IDS_DEVICE_LOG_LEVEL_USER" desc="User logging level checkbox">
     User
   </message>
-  <message name="IDS_NETWORK_LOG_LEVEL_EVENT" desc="Event logging level checkbox">
+  <message name="IDS_DEVICE_LOG_LEVEL_EVENT" desc="Event logging level checkbox">
     Event
   </message>
-  <message name="IDS_NETWORK_LOG_LEVEL_DEBUG" desc="Debug logging level checkbox">
+  <message name="IDS_DEVICE_LOG_LEVEL_DEBUG" desc="Debug logging level checkbox">
     Debug
   </message>
-  <message name="IDS_NETWORK_LOG_LEVEL_FILEINFO" desc="File info checkbox in network event log">
+  <message name="IDS_DEVICE_LOG_TYPE_LOGIN" desc="Checkbox to enable showing events of type LOGIN">
+    Login
+  </message>
+  <message name="IDS_DEVICE_LOG_TYPE_NETWORK" desc="Checkbox to enable showing events of type NETWORK">
+    Network
+  </message>
+  <message name="IDS_DEVICE_LOG_TYPE_POWER" desc="Checkbox to enable showing events of type POWER">
+    Power
+  </message>
+  <message name="IDS_DEVICE_LOG_FILEINFO" desc="File info checkbox in device event log">
     File Info
   </message>
-  <message name="IDS_NETWORK_LOG_LEVEL_TIME_DETAIL" desc="Detailed timestamps checkbox in network event log">
+  <message name="IDS_DEVICE_LOG_TIME_DETAIL" desc="Detailed timestamps checkbox in device event log">
     Detailed Timestamps
   </message>
-  <message name="IDS_NETWORK_LOG_ENTRY" desc="The log entry displayed in network event log table.">
+  <message name="IDS_DEVICE_LOG_ENTRY" desc="Format string for lines in chrome://device-log.">
     [<ph name="TIMESTAMP">$1<ex>Timestamp</ex></ph>]
     <ph name="FILE_INFO">$2<ex>file:123</ex></ph>
     <ph name="EVENT_NAME">$3<ex>Event Description</ex></ph>

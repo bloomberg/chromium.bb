@@ -268,6 +268,7 @@ const char kChromeUIBluetoothPairingHost[] = "bluetooth-pairing";
 const char kChromeUICertificateManagerHost[] = "certificate-manager";
 const char kChromeUIChooseMobileNetworkHost[] = "choose-mobile-network";
 const char kChromeUICryptohomeHost[] = "cryptohome";
+const char kChromeUIDeviceLogHost[] = "device-log";
 const char kChromeUIDiscardsHost[] = "discards";
 const char kChromeUIFirstRunHost[] = "first-run";
 const char kChromeUIIdleLogoutDialogHost[] = "idle-logout";
@@ -626,6 +627,7 @@ const char* const kChromeHostURLs[] = {
   kChromeUICertificateManagerHost,
   kChromeUIChooseMobileNetworkHost,
   kChromeUICryptohomeHost,
+  kChromeUIDeviceLogHost,
   kChromeUIDiscardsHost,
   kChromeUIDriveInternalsHost,
   kChromeUIFirstRunHost,
