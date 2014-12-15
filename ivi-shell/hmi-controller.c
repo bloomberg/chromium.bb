@@ -254,11 +254,6 @@ mode_divided_into_tiling(struct hmi_controller *hmi_ctrl,
 		ivi_layout_layer_set_transition(layer->ivilayer,
 				IVI_LAYOUT_TRANSITION_LAYER_VIEW_ORDER,
 				duration);
-		//TODO: implement IVI_LAYOUT_TRANSITION_LAYER_VIEW_ORDER later.
-		ivi_layout_transition_layer_render_order(layer->ivilayer,
-							 new_order,
-							 surf_num,
-							 duration);
 	}
 
 	free(surfaces);
