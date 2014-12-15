@@ -76,7 +76,7 @@ get_transition_from_type_and_id(enum ivi_layout_transition_type type,
 	return NULL;
 }
 
-WL_EXPORT int32_t
+int32_t
 is_surface_transition(struct ivi_layout_surface *surface)
 {
 	struct ivi_layout *layout = get_instance();
@@ -156,7 +156,7 @@ layout_transition_frame(void *data)
 	return 1;
 }
 
-WL_EXPORT struct ivi_layout_transition_set *
+struct ivi_layout_transition_set *
 ivi_layout_transition_set_create(struct weston_compositor *ec)
 {
 	struct ivi_layout_transition_set *transitions;
@@ -359,7 +359,7 @@ create_move_resize_view_transition(
 	return transition;
 }
 
-WL_EXPORT void
+void
 ivi_layout_transition_move_resize_view(struct ivi_layout_surface *surface,
 				       int32_t dest_x, int32_t dest_y,
 				       int32_t dest_width, int32_t dest_height,
@@ -512,7 +512,7 @@ visibility_on_transition_destroy(struct ivi_layout_transition *transition)
 	transition->user_data = NULL;
 }
 
-WL_EXPORT void
+void
 ivi_layout_transition_visibility_on(struct ivi_layout_surface *surface,
 				    uint32_t duration)
 {
@@ -577,7 +577,7 @@ visibility_off_transition_destroy(struct ivi_layout_transition *transition)
 	transition->user_data= NULL;
 }
 
-WL_EXPORT void
+void
 ivi_layout_transition_visibility_off(struct ivi_layout_surface *surface,
 				     uint32_t duration)
 {
@@ -703,7 +703,7 @@ create_move_layer_transition(
 	return transition;
 }
 
-WL_EXPORT void
+void
 ivi_layout_transition_move_layer(struct ivi_layout_layer *layer,
 				 int32_t dest_x, int32_t dest_y,
 				 uint32_t duration)
@@ -726,7 +726,7 @@ ivi_layout_transition_move_layer(struct ivi_layout_layer *layer,
 	return;
 }
 
-WL_EXPORT void
+void
 ivi_layout_transition_move_layer_cancel(struct ivi_layout_layer *layer)
 {
 	struct ivi_layout_transition *transition =
@@ -779,7 +779,7 @@ is_transition_fade_layer_func(struct fade_layer_data *data,
 	return data->layer == layer;
 }
 
-WL_EXPORT void
+void
 ivi_layout_transition_fade_layer(
 			struct ivi_layout_layer *layer,
 			uint32_t is_fade_in,

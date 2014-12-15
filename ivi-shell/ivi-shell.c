@@ -42,8 +42,6 @@
 #include "ivi-layout-export.h"
 #include "ivi-layout-private.h"
 
-#include "../shared/os-compatibility.h"
-
 /* Representation of ivi_surface protocol object. */
 struct ivi_shell_surface
 {
@@ -390,35 +388,6 @@ ivi_shell_setting_create(struct ivi_shell_setting *dest,
 /*
  * Initialization of ivi-shell.
  */
-static int
-ivi_load_modules(struct weston_compositor *compositor, const char *modules,
-		 int *argc, char *argv[])
-{
-	const char *p, *end;
-	char buffer[256];
-	int (*module_init)(struct weston_compositor *compositor,
-			   int *argc, char *argv[]);
-
-	if (modules == NULL)
-		return 0;
-
-	p = modules;
-	while (*p) {
-		end = strchrnul(p, ',');
-		snprintf(buffer, sizeof buffer, "%.*s", (int)(end - p), p);
-
-		module_init = weston_load_module(buffer, "module_init");
-		if (module_init)
-			module_init(compositor, argc, argv);
-
-		p = end;
-		while (*p == ',')
-			p++;
-	}
-
-	return 0;
-}
-
 WL_EXPORT int
 module_init(struct weston_compositor *compositor,
 	    int *argc, char *argv[])
@@ -450,7 +419,7 @@ module_init(struct weston_compositor *compositor,
 
 
 	/* Call module_init of ivi-modules which are defined in weston.ini */
-	if (ivi_load_modules(compositor, setting.ivi_module, argc, argv) < 0) {
+	if (load_controller_modules(compositor, setting.ivi_module, argc, argv) < 0) {
 		free(setting.ivi_module);
 		return -1;
 	}
