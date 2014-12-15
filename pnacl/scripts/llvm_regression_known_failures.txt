@@ -66,11 +66,6 @@ LLVM::ExecutionEngine/MCJIT/test-global-init-nonzero-sm-pic.ll x86_32
 ### Post LLVM 3.5 merge failures.
 ###
 
-# Mips was reverted to upstream state in the merge, but a few LOCALMODs need to
-# be put back.
-LLVM::CodeGen/Mips/prevent-hoisting.ll
-LLVM::MC/Mips/nacl-mask.s
-
 # Failure on mac introduced by the update to clang for the host build, now
 # on Linux too; still investigating.
 LLVM::ExecutionEngine/MCJIT/eh-sm-pic.ll
