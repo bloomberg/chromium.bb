@@ -66,6 +66,8 @@ def Compare(symbols1, symbols2):
         symbol_type = '@' # hack to categorize these separately
       if file_path:
         file_path = os.path.normpath(file_path)
+        if sys.platform.startswith('win'):
+          file_path = file_path.replace('\\', '/')
       else:
         file_path = '(No Path)'
       key = (file_path, symbol_type)
