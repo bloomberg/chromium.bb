@@ -340,7 +340,7 @@ int Picture::Raster(SkCanvas* canvas,
   if (callback) {
     // If we have a callback, we need to call |draw()|, |drawPicture()| doesn't
     // take a callback.  This is used by |AnalysisCanvas| to early out.
-    picture_->draw(canvas, callback);
+    picture_->playback(canvas, callback);
   } else {
     // Prefer to call |drawPicture()| on the canvas since it could place the
     // entire picture on the canvas instead of parsing the skia operations.
@@ -358,7 +358,7 @@ int Picture::Raster(SkCanvas* canvas,
 void Picture::Replay(SkCanvas* canvas) {
   TRACE_EVENT_BEGIN0("cc", "Picture::Replay");
   DCHECK(picture_);
-  picture_->draw(canvas);
+  picture_->playback(canvas);
   SkIRect bounds;
   canvas->getClipDeviceBounds(&bounds);
   TRACE_EVENT_END1("cc", "Picture::Replay",

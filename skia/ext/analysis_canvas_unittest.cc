@@ -310,7 +310,7 @@ TEST(AnalysisCanvasTest, EarlyOutNotSolid) {
   // Draw the picture into the analysis canvas, using the canvas as a callback
   // as well.
   skia::AnalysisCanvas canvas(256, 256);
-  picture->draw(&canvas, &canvas);
+  picture->playback(&canvas, &canvas);
 
   // Ensure that canvas is not solid.
   SkColor output_color;

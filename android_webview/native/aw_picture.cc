@@ -39,7 +39,7 @@ void AwPicture::Draw(JNIEnv* env, jobject obj, jobject canvas) {
     LOG(ERROR) << "Couldn't draw picture";
     return;
   }
-  picture_->draw(canvas_holder->GetCanvas());
+  picture_->playback(canvas_holder->GetCanvas());
 }
 
 bool RegisterAwPicture(JNIEnv* env) {

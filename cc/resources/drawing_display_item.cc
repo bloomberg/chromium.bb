@@ -24,7 +24,7 @@ void DrawingDisplayItem::Raster(SkCanvas* canvas,
   canvas->save();
   canvas->translate(location_.x(), location_.y());
   if (callback)
-    picture_->draw(canvas, callback);
+    picture_->playback(canvas, callback);
   else
     canvas->drawPicture(picture_.get());
   canvas->restore();
