@@ -31,7 +31,7 @@ struct OverlayPlane {
   ~OverlayPlane();
 
   // Returns the primary plane in |overlays|.
-  static const OverlayPlane& GetPrimaryPlane(const OverlayPlaneList& overlays);
+  static const OverlayPlane* GetPrimaryPlane(const OverlayPlaneList& overlays);
 
   scoped_refptr<ScanoutBuffer> buffer;
   int z_order;
