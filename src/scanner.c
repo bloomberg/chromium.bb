@@ -1002,7 +1002,7 @@ emit_header(struct protocol *protocol, enum side side)
 	       "struct wl_resource;\n\n",
 	       protocol->uppercase_name, s,
 	       protocol->uppercase_name, s,
-	       (side == SERVER) ? "wayland-util.h" : "wayland-client.h");
+	       (side == SERVER) ? "wayland-server.h" : "wayland-client.h");
 
 	wl_list_for_each(i, &protocol->interface_list, link)
 		printf("struct %s;\n", i->name);
