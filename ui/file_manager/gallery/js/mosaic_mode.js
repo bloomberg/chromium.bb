@@ -7,7 +7,7 @@
  * @param {ErrorBanner} errorBanner Error banner.
  * @param {cr.ui.ArrayDataModel} dataModel Data model.
  * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
- * @param {VolumeManagerWrapper} volumeManager Volume manager.
+ * @param {!VolumeManager} volumeManager Volume manager.
  * @param {function()} toggleMode Function to switch to the Slide mode.
  * @constructor
  */

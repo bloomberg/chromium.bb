@@ -288,9 +288,9 @@ util.createChild = function(parent, opt_className, opt_tag) {
 /**
  * Updates the app state.
  *
- * @param {string} currentDirectoryURL Currently opened directory as an URL.
+ * @param {?string} currentDirectoryURL Currently opened directory as an URL.
  *     If null the value is left unchanged.
- * @param {string} selectionURL Currently selected entry as an URL. If null the
+ * @param {?string} selectionURL Currently selected entry as an URL. If null the
  *     value is left unchanged.
  * @param {string|Object=} opt_param Additional parameters, to be stored. If
  *     null, then left unchanged.
@@ -727,8 +727,8 @@ util.comparePath = function(entry1, entry2) {
 /**
  * Checks if {@code entry} is an immediate child of {@code directory}.
  *
- * @param {?DirectoryEntry} directory The presumptive parent.
- * @param {?Entry} entry The presumptive child.
+ * @param {Entry} entry The presumptive child.
+ * @param {DirectoryEntry} directory The presumptive parent.
  * @return {!Promise.<boolean>} Resolves with true if {@code directory} is
  *     parent of {@code entry}.
  */

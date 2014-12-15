@@ -20,6 +20,7 @@
  *     function.
  * @constructor
  * @struct
+ * @extends {cr.EventTarget}
  */
 function SlideMode(container, content, toolbar, prompt, errorBanner, dataModel,
     selectionModel, context, volumeManager, toggleMode, displayStringFunction) {
@@ -504,7 +505,7 @@ SlideMode.prototype.getViewport = function() { return this.viewport_; };
 
 /**
  * Load items, display the selected item.
- * @param {!ImageRect} zoomFromRect Rectangle for zoom effect.
+ * @param {ImageRect} zoomFromRect Rectangle for zoom effect.
  * @param {function()} displayCallback Called when the image is displayed.
  * @param {function()} loadCallback Called when the image is displayed.
  */
@@ -592,7 +593,7 @@ SlideMode.prototype.enter = function(
 
 /**
  * Leave the mode.
- * @param {!ImageRect} zoomToRect Rectangle for zoom effect.
+ * @param {ImageRect} zoomToRect Rectangle for zoom effect.
  * @param {function()} callback Called when the image is committed and
  *   the zoom-out animation has started.
  */
@@ -1072,13 +1073,6 @@ SlideMode.prototype.requestPrefetch = function(direction, delay) {
 };
 
 // Event handlers.
-
-/**
- * Unload handler, to be called from the top frame.
- * @param {boolean} exiting True if the app is exiting.
- */
-SlideMode.prototype.onUnload = function(exiting) {
-};
 
 /**
  * Click handler for the image container.

@@ -20,8 +20,3 @@ window.initialize = function(backgroundComponents) {};
  * @param {!Array.<!Entry>} selectedEntries Array of selected entries.
  */
 window.loadEntries = function(entries, selectedEntries) {};
-
-/**
- * @typedef {function(number, number, boolean)}
- */
-ImageBuffer.DragHandler;
