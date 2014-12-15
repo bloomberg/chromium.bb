@@ -17,6 +17,7 @@
 #include "modules/push_messaging/PushError.h"
 #include "modules/push_messaging/PushPermissionStatusCallback.h"
 #include "modules/push_messaging/PushRegistration.h"
+#include "modules/push_messaging/PushRegistrationCallbacks.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebPushClient.h"
@@ -57,9 +58,9 @@ ScriptPromise PushManager::registerPushMessaging(ScriptState* scriptState)
         // FIXME: add test coverage for this condition - https://crbug.com/440431
         if (!document->domWindow() || !document->frame())
             return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Document is detached from window."));
-        PushController::clientFrom(document->frame()).registerPushMessaging(m_registration->webRegistration(), new CallbackPromiseAdapter<PushRegistration, PushError>(resolver));
+        PushController::clientFrom(document->frame()).registerPushMessaging(m_registration->webRegistration(), new PushRegistrationCallbacks(resolver, m_registration));
     } else {
-        pushProvider()->registerPushMessaging(m_registration->webRegistration(), new CallbackPromiseAdapter<PushRegistration, PushError>(resolver));
+        pushProvider()->registerPushMessaging(m_registration->webRegistration(), new PushRegistrationCallbacks(resolver, m_registration));
     }
 
     return promise;

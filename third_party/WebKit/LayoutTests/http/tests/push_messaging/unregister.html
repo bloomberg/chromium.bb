@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Test PushRegistration.unregister()</title>
+<link rel="manifest" href="resources/push_manifest.json">
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../serviceworker/resources/test-helpers.js"></script>
+</head>
+<body>
+<script>
+async_test(function(test) {
+    var workerUrl = 'resources/empty_worker.js';
+    var workerScope = 'resources/scope/' + location.pathname;
+    var swRegistration;
+    service_worker_unregister_and_register(test, workerUrl, workerScope)
+        .then(function(serviceWorkerRegistration) {
+            swRegistration = serviceWorkerRegistration;
+            return wait_for_state(test, swRegistration.installing, 'activated');
+        })
+        .then(function() {
+            // If running manually, grant permission when prompted.
+            if (self.testRunner)
+                testRunner.setPushMessagingPermission(location.origin, true);
+            return swRegistration.pushManager.register();
+        })
+        .then(function(pushRegistration) {
+            assert_inherits(pushRegistration, 'unregister',
+                            'unregister() should be exposed on the PushRegistration object');
+            assert_equals(typeof(pushRegistration.unregister), 'function',
+                          'PushRegistration.unregister() is a function.');
+            return pushRegistration.unregister();
+        })
+        .then(function(unregistration_result) {
+            assert_true(unregistration_result,
+                        'Unregistering a registered PushRegistration should succeed.');
+            // FIXME: we should add another call to unregister(). It should then
+            // fail.
+            // FIXME: we should check that there is no more push registration
+            // object available if we query the registrations.
+            return service_worker_unregister_and_done(test, workerScope);
+        })
+        .catch(unreached_rejection(test));
+}, 'unregister() succeeds if called after a successful registration');
+</script>
+</body>
+</html>

@@ -77,6 +77,7 @@ namespace blink {
 // in and it is up to the callee to free the WebCallbacks instace.
 template<typename S, typename T>
 class CallbackPromiseAdapter final : public blink::WebCallbacks<typename S::WebType, typename T::WebType> {
+    WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
 public:
     explicit CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver)
         : m_resolver(resolver)
@@ -105,11 +106,11 @@ public:
 
 private:
     RefPtr<ScriptPromiseResolver> m_resolver;
-    WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
 };
 
 template<typename T>
 class CallbackPromiseAdapter<void, T> final : public blink::WebCallbacks<void, typename T::WebType> {
+    WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
 public:
     explicit CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver)
         : m_resolver(resolver)
@@ -136,11 +137,11 @@ public:
 
 private:
     RefPtr<ScriptPromiseResolver> m_resolver;
-    WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
 };
 
 template<typename T>
 class CallbackPromiseAdapter<bool, T> final : public blink::WebCallbacks<bool, typename T::WebType> {
+    WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
 public:
     explicit CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver)
         : m_resolver(resolver)
@@ -167,11 +168,11 @@ public:
 
 private:
     RefPtr<ScriptPromiseResolver> m_resolver;
-    WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
 };
 
 template<>
 class CallbackPromiseAdapter<void, void> final : public blink::WebCallbacks<void, void> {
+    WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
 public:
     explicit CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver)
         : m_resolver(resolver)
@@ -196,7 +197,35 @@ public:
 
 private:
     RefPtr<ScriptPromiseResolver> m_resolver;
+};
+
+template<>
+class CallbackPromiseAdapter<bool, void> final : public blink::WebCallbacks<bool, void> {
     WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
+public:
+    explicit CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver)
+        : m_resolver(resolver)
+    {
+        ASSERT(m_resolver);
+    }
+    virtual ~CallbackPromiseAdapter() { }
+
+    virtual void onSuccess(bool* result) override
+    {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+            return;
+        m_resolver->resolve(*result);
+    }
+
+    virtual void onError() override
+    {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+            return;
+        m_resolver->reject();
+    }
+
+private:
+    RefPtr<ScriptPromiseResolver> m_resolver;
 };
 
 } // namespace blink

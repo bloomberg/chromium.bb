@@ -17,6 +17,7 @@ struct WebPushRegistration;
 
 typedef WebCallbacks<WebPushRegistration, WebPushError> WebPushRegistrationCallbacks;
 typedef WebCallbacks<WebPushPermissionStatus, void> WebPushPermissionStatusCallbacks;
+typedef WebCallbacks<bool, void> WebPushUnregisterCallbacks;
 
 class WebPushProvider {
 public:
@@ -28,15 +29,22 @@ public:
 
     // Takes ownership of the WebPushRegistrationCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.
-    virtual void unregister(WebServiceWorkerRegistration*, WebPushRegistrationCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
-
-    // Takes ownership of the WebPushRegistrationCallbacks.
-    // Does not take ownership of the WebServiceWorkerRegistration.
     virtual void getRegistration(WebServiceWorkerRegistration*, WebPushRegistrationCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
 
     // Takes ownership of the WebPushPermissionStatusCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.
     virtual void getPermissionStatus(WebServiceWorkerRegistration*, WebPushPermissionStatusCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
+
+    // Takes ownership if the WebPushUnregisterCallbacks.
+    // Does not take ownership of the WebServiceWorkerRegistration.
+    virtual void unregister(WebServiceWorkerRegistration*, WebPushUnregisterCallbacks* callback)
+    {
+        // FIXME: this should call BLINK_ASSERT_NOT_REACHED() when Chromium will
+        // have an implementation.
+        bool result = true;
+        callback->onSuccess(&result);
+        delete callback;
+    }
 };
 
 } // namespace blink

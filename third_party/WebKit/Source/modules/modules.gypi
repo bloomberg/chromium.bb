@@ -844,6 +844,8 @@
       'push_messaging/PushPermissionStatusCallback.h',
       'push_messaging/PushRegistration.cpp',
       'push_messaging/PushRegistration.h',
+      'push_messaging/PushRegistrationCallbacks.cpp',
+      'push_messaging/PushRegistrationCallbacks.h',
       'push_messaging/ServiceWorkerGlobalScopePush.h',
       'push_messaging/ServiceWorkerRegistrationPush.cpp',
       'push_messaging/ServiceWorkerRegistrationPush.h',

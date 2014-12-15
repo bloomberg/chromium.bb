@@ -8,4 +8,5 @@
 ] interface PushRegistration {
     readonly attribute DOMString pushEndpoint;
     readonly attribute DOMString pushRegistrationId;
+    [CallWith=ScriptState] Promise<boolean> unregister();
 };
