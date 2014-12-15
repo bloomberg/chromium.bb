@@ -443,9 +443,8 @@ def DoComponentBuildTasks(staging_dir, build_dir, target_arch, current_version):
   # Explicitly list the component DLLs setup.exe depends on (this list may
   # contain wildcards). These will be copied to |installer_dir| in the archive.
   setup_component_dll_globs = [ 'base.dll',
+                                'boringssl.dll',
                                 'crcrypto.dll',
-                                'crnspr.dll',
-                                'crnss.dll',
                                 'icui18n.dll',
                                 'icuuc.dll',
                                 'msvc*.dll' ]
