@@ -2548,6 +2548,54 @@ TEST_F(LayerTreeHostImplTopControlsTest, FixedContainerDelta) {
   host_impl_->top_controls_manager()->ScrollEnd();
 }
 
+// Test that if a scrollable sublayer doesn't consume the scroll,
+// top controls should hide when scrolling down.
+TEST_F(LayerTreeHostImplTopControlsTest, TopControlsScrollableSublayer) {
+  gfx::Size sub_content_size(100, 400);
+  gfx::Size sub_content_layer_size(100, 300);
+  SetupTopControlsAndScrollLayerWithVirtualViewport(
+      gfx::Size(100, 50), gfx::Size(100, 100), gfx::Size(100, 100));
+  DrawFrame();
+
+  // Show top controls
+  EXPECT_EQ(top_controls_height_,
+            host_impl_->active_tree()->total_top_controls_content_offset());
+
+  LayerImpl* outer_viewport_scroll_layer =
+      host_impl_->active_tree()->OuterViewportScrollLayer();
+  int id = outer_viewport_scroll_layer->id();
+
+  scoped_ptr<LayerImpl> child =
+      LayerImpl::Create(host_impl_->active_tree(), id + 2);
+  scoped_ptr<LayerImpl> child_clip =
+      LayerImpl::Create(host_impl_->active_tree(), id + 3);
+
+  child_clip->SetBounds(sub_content_layer_size);
+  child->SetScrollClipLayer(child_clip->id());
+  child->SetBounds(sub_content_size);
+  child->SetContentBounds(sub_content_size);
+  child->SetPosition(gfx::PointF());
+  child->SetDrawsContent(true);
+  child->SetIsContainerForFixedPositionLayers(true);
+
+  // scroll child to limit
+  child->SetScrollDelta(gfx::Vector2dF(0, 100.f));
+  child_clip->AddChild(child.Pass());
+  outer_viewport_scroll_layer->AddChild(child_clip.Pass());
+
+  // Scroll 25px to hide top controls
+  gfx::Vector2dF scroll_delta(0.f, 25.f);
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
+  host_impl_->ScrollBy(gfx::Point(), scroll_delta);
+  host_impl_->ScrollEnd();
+
+  // Top controls should be hidden
+  EXPECT_EQ(scroll_delta.y(),
+            top_controls_height_ -
+                host_impl_->active_tree()->total_top_controls_content_offset());
+}
+
 // Ensure setting the top controls position explicitly using the setters on the
 // TreeImpl correctly affects the top controls manager and viewport bounds.
 TEST_F(LayerTreeHostImplTopControlsTest, PositionTopControlsExplicitly) {
