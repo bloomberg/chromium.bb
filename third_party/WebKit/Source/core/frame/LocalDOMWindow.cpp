@@ -90,6 +90,7 @@
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "core/page/WindowFeatures.h"
+#include "core/page/WindowFocusAllowedIndicator.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/storage/Storage.h"
 #include "core/storage/StorageArea.h"

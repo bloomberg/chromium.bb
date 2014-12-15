@@ -33,6 +33,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/ScopedWindowFocusAllowedIndicator.h"
+#include "core/page/WindowFocusAllowedIndicator.h"
 #include "public/web/WebDocument.h"
 
 namespace blink {
@@ -44,8 +45,14 @@ void WebScopedWindowFocusAllowedIndicator::initialize(WebDocument* webDocument)
     m_private.reset(new ScopedWindowFocusAllowedIndicator(document));
 }
 
+void WebScopedWindowFocusAllowedIndicator::initialize()
+{
+    m_indicator.reset(new WindowFocusAllowedIndicator());
+}
+
 void WebScopedWindowFocusAllowedIndicator::reset()
 {
+    m_indicator.reset(0);
     m_private.reset(0);
 }
 
