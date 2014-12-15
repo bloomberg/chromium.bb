@@ -76,13 +76,12 @@ class CC_EXPORT TilingData {
     }
 
    protected:
-    explicit BaseIterator(const TilingData* tiling_data);
+    BaseIterator();
     void done() {
       index_x_ = -1;
       index_y_ = -1;
     }
 
-    const TilingData* tiling_data_;
     int index_x_;
     int index_y_;
   };
