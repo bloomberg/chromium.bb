@@ -86,6 +86,11 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   // IPC couldn't be sent to the worker.
   ServiceWorkerStatusCode Stop();
 
+  // Stops the worker if the worker is not being debugged (i.e. devtools is
+  // not attached). This method is called by a stop-worker timer to kill
+  // idle workers.
+  void StopIfIdle();
+
   // Sends |message| to the embedded worker running in the child process.
   // It is invalid to call this while the worker is not in RUNNING status.
   ServiceWorkerStatusCode SendMessage(const IPC::Message& message);
@@ -103,6 +108,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
 
   void AddListener(Listener* listener);
   void RemoveListener(Listener* listener);
+
+  void set_devtools_attached(bool attached) { devtools_attached_ = attached; }
 
  private:
   typedef ObserverList<Listener> ListenerList;
@@ -191,6 +198,9 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   int process_id_;
   int thread_id_;
   int worker_devtools_agent_route_id_;
+
+  // Whether devtools is attached or not.
+  bool devtools_attached_;
 
   StatusCallback start_callback_;
 

@@ -253,6 +253,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   bool skip_waiting() const { return skip_waiting_; }
 
+  void SetDevToolsAttached(bool attached);
+
  private:
   class GetClientDocumentsCallback;
   class GetClientInfoCallback;
@@ -261,6 +263,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,
                            ActivateWaitingVersion);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, ScheduleStopWorker);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, KeepAlive);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, ListenerAvailability);
   typedef ServiceWorkerVersion self;
   typedef std::map<ServiceWorkerProviderHost*, int> ControlleeMap;
@@ -319,6 +322,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnFocusClientFinished(int request_id, bool result);
   void DidSkipWaiting(int request_id);
   void ScheduleStopWorker();
+  void StopWorkerIfIdle();
+  bool HasInflightRequests() const;
+
   void DoomInternal();
 
   const int64 version_id_;
@@ -332,7 +338,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   std::vector<StatusCallback> stop_callbacks_;
   std::vector<base::Closure> status_change_callbacks_;
 
-  // Message callbacks.
+  // Message callbacks. (Update HasInflightRequests() too when you update this
+  // list.)
   IDMap<StatusCallback, IDMapOwnPointer> activate_callbacks_;
   IDMap<StatusCallback, IDMapOwnPointer> install_callbacks_;
   IDMap<FetchCallback, IDMapOwnPointer> fetch_callbacks_;

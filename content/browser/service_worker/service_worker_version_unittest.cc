@@ -363,14 +363,11 @@ TEST_F(ServiceWorkerVersionTest, ScheduleStopWorker) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   EXPECT_FALSE(version_->stop_worker_timer_.IsRunning());
 
-  // Verify the timer is running when version status changes frome ACTIVATING
-  // to ACTIVATED.
+  // Verify the timer is running after the worker is started.
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
   version_->StartWorker(CreateReceiverOnCurrentThread(&status));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_OK, status);
-  version_->SetStatus(ServiceWorkerVersion::ACTIVATING);
-  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   EXPECT_TRUE(version_->stop_worker_timer_.IsRunning());
 
   // The timer should be running if the worker is restarted without controllee.

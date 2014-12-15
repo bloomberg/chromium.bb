@@ -139,6 +139,13 @@ void EmbeddedWorkerDevToolsManager::WorkerDestroyed(int worker_process_id,
   DevToolsManager::GetInstance()->AgentHostChanged(agent_host);
 }
 
+void EmbeddedWorkerDevToolsManager::WorkerStopIgnored(int worker_process_id,
+                                                      int worker_route_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // TODO(pfeldman): Show a console message to tell the user that UA didn't
+  // terminate the worker because devtools is attached.
+}
+
 void EmbeddedWorkerDevToolsManager::WorkerReadyForInspection(
     int worker_process_id,
     int worker_route_id) {

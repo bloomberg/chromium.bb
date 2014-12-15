@@ -193,10 +193,6 @@ void ServiceWorkerVersion::SetStatus(Status status) {
   if (status_ == status)
     return;
 
-  // Schedule to stop worker after registration successfully completed.
-  if (status_ == ACTIVATING && status == ACTIVATED && !HasControllee())
-    ScheduleStopWorker();
-
   status_ = status;
 
   if (skip_waiting_ && status_ == ACTIVATED) {
@@ -599,11 +595,19 @@ void ServiceWorkerVersion::Doom() {
     DoomInternal();
 }
 
+void ServiceWorkerVersion::SetDevToolsAttached(bool attached) {
+  embedded_worker()->set_devtools_attached(attached);
+  if (!attached && !stop_worker_timer_.IsRunning()) {
+    // If devtools is detached from this version and stop-worker-timer is not
+    // running, try scheduling stop-worker-timer now.
+    ScheduleStopWorker();
+  }
+}
+
 void ServiceWorkerVersion::OnStarted() {
   DCHECK_EQ(RUNNING, running_status());
   DCHECK(cache_listener_.get());
-  if (status() == ACTIVATED && !HasControllee())
-    ScheduleStopWorker();
+  ScheduleStopWorker();
   // Fire all start callbacks.
   RunCallbacks(this, &start_callbacks_, SERVICE_WORKER_OK);
   FOR_EACH_OBSERVER(Listener, listeners_, OnWorkerStarted(this));
@@ -1003,7 +1007,9 @@ void ServiceWorkerVersion::DidSkipWaiting(int request_id) {
 }
 
 void ServiceWorkerVersion::ScheduleStopWorker() {
-  if (running_status() != RUNNING)
+  // TODO(kinuko): Currently we don't schedule stop-time-worker when the SW has
+  // controllee, but we should change this default behavior (crbug.com/440259)
+  if (running_status() != RUNNING || HasControllee())
     return;
   if (stop_worker_timer_.IsRunning()) {
     stop_worker_timer_.Reset();
@@ -1011,9 +1017,32 @@ void ServiceWorkerVersion::ScheduleStopWorker() {
   }
   stop_worker_timer_.Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kStopWorkerDelay),
-      base::Bind(&ServiceWorkerVersion::StopWorker,
-                 weak_factory_.GetWeakPtr(),
-                 base::Bind(&ServiceWorkerUtils::NoOpStatusCallback)));
+      base::Bind(&ServiceWorkerVersion::StopWorkerIfIdle,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void ServiceWorkerVersion::StopWorkerIfIdle() {
+  // Reschedule the stop the worker while there're inflight requests.
+  // (Note: we'll probably need to revisit this so that we can kill 'bad' SW.
+  // See https://github.com/slightlyoff/ServiceWorker/issues/527)
+  if (HasInflightRequests()) {
+    ScheduleStopWorker();
+    return;
+  }
+  if (running_status() == STOPPED || !stop_callbacks_.empty())
+    return;
+  embedded_worker_->StopIfIdle();
+}
+
+bool ServiceWorkerVersion::HasInflightRequests() const {
+  return
+    !activate_callbacks_.IsEmpty() ||
+    !install_callbacks_.IsEmpty() ||
+    !fetch_callbacks_.IsEmpty() ||
+    !sync_callbacks_.IsEmpty() ||
+    !notification_click_callbacks_.IsEmpty() ||
+    !push_callbacks_.IsEmpty() ||
+    !geofencing_callbacks_.IsEmpty();
 }
 
 void ServiceWorkerVersion::DoomInternal() {
