@@ -45,6 +45,7 @@
 #include "public/platform/WebLayerClient.h"
 #include "public/platform/WebLayerScrollClient.h"
 #include "public/platform/WebNinePatchLayer.h"
+#include "third_party/skia/include/core/SkPaint.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
@@ -178,6 +179,8 @@ public:
     void setIsRootForIsolatedGroup(bool);
 
     void setFilters(const FilterOperations&);
+
+    void setFilterLevel(SkPaint::FilterLevel);
 
     // Some GraphicsLayers paint only the foreground or the background content
     void setPaintingPhase(GraphicsLayerPaintingPhase);

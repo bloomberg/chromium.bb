@@ -38,6 +38,7 @@ public:
 
     virtual WebLayer* layer() = 0;
     virtual void setImageBitmap(const SkBitmap&) = 0;
+    virtual void setNearestNeighbor(bool) = 0;
 };
 
 } // namespace blink

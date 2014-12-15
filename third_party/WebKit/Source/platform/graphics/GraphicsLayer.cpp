@@ -1005,6 +1005,12 @@ void GraphicsLayer::setFilters(const FilterOperations& filters)
     m_layer->layer()->setFilters(*webFilters);
 }
 
+void GraphicsLayer::setFilterLevel(SkPaint::FilterLevel filterLevel)
+{
+    if (m_imageLayer)
+        m_imageLayer->setNearestNeighbor(filterLevel == SkPaint::kNone_FilterLevel);
+}
+
 void GraphicsLayer::setPaintingPhase(GraphicsLayerPaintingPhase phase)
 {
     if (m_paintingPhase == phase)

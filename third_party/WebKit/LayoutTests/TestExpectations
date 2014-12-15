@@ -1574,3 +1574,6 @@ crbug.com/441736 svg/as-image/svg-invalid-image-1.html [ Pass Failure ]
 crbug.com/441738 inspector/extensions/extensions-network.html [ Pass Failure ]
 
 crbug.com/441743 [ Mac Win ] plugins/js-from-destroy.html [ Timeout Crash ]
+
+crbug.com/439856 virtual/deferred/fast/images/pixelated-composited.html [ ImageOnlyFailure ]
+crbug.com/442181 virtual/slimmingpaint/fast/images/pixelated-composited.html [ ImageOnlyFailure ]
