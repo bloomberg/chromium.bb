@@ -683,6 +683,7 @@
       'browser/safe_browsing/incident_reporting/off_domain_inclusion_detector_unittest.cc',
       'browser/safe_browsing/incident_reporting/preference_validation_delegate_unittest.cc',
       'browser/safe_browsing/incident_reporting/tracked_preference_incident_handlers_unittest.cc',
+      'browser/safe_browsing/incident_reporting/variations_seed_signature_incident_handlers_unittest.cc',
       'browser/safe_browsing/local_two_phase_testserver.cc',
       'browser/safe_browsing/malware_details_unittest.cc',
       'browser/safe_browsing/path_sanitizer_unittest.cc',

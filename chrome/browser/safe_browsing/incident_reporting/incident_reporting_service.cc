@@ -32,6 +32,7 @@
 #include "chrome/browser/safe_browsing/incident_reporting/omnibox_watcher.h"
 #include "chrome/browser/safe_browsing/incident_reporting/preference_validation_delegate.h"
 #include "chrome/browser/safe_browsing/incident_reporting/tracked_preference_incident_handlers.h"
+#include "chrome/browser/safe_browsing/incident_reporting/variations_seed_signature_incident_handlers.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
@@ -52,8 +53,9 @@ enum IncidentType {
   BINARY_INTEGRITY = 2,
   BLACKLIST_LOAD = 3,
   OMNIBOX_INTERACTION = 4,
+  VARIATIONS_SEED_SIGNATURE = 5,
   // Values for new incident types go here.
-  NUM_INCIDENT_TYPES = 5
+  NUM_INCIDENT_TYPES = 6
 };
 
 // The action taken for an incident; used for user metrics (see
@@ -98,6 +100,8 @@ size_t CountIncidents(const ClientIncidentReport_IncidentData& incident) {
     ++result;
   if (incident.has_omnibox_interaction())
     ++result;
+  if (incident.has_variations_seed_signature())
+    ++result;
   // Add detection for new incident types here.
   return result;
 }
@@ -113,9 +117,11 @@ IncidentType GetIncidentType(
     return BLACKLIST_LOAD;
   if (incident_data.has_omnibox_interaction())
     return OMNIBOX_INTERACTION;
+  if (incident_data.has_variations_seed_signature())
+    return VARIATIONS_SEED_SIGNATURE;
 
   // Add detection for new incident types here.
-  COMPILE_ASSERT(OMNIBOX_INTERACTION + 1 == NUM_INCIDENT_TYPES,
+  COMPILE_ASSERT(VARIATIONS_SEED_SIGNATURE + 1 == NUM_INCIDENT_TYPES,
                  add_support_for_new_types);
   NOTREACHED();
   return NUM_INCIDENT_TYPES;
@@ -166,10 +172,12 @@ PersistentIncidentState ComputeIncidentState(
       state.key = GetOmniboxIncidentKey(incident);
       state.digest = GetOmniboxIncidentDigest(incident);
       break;
+    case VARIATIONS_SEED_SIGNATURE:
+      state.key = GetVariationsSeedSignatureIncidentKey(incident);
+      state.digest = GetVariationsSeedSignatureIncidentDigest(incident);
+      break;
     // Add handling for new incident types here.
-    default:
-      COMPILE_ASSERT(OMNIBOX_INTERACTION + 1 == NUM_INCIDENT_TYPES,
-                     add_support_for_new_types);
+    case NUM_INCIDENT_TYPES:
       NOTREACHED();
       break;
   }

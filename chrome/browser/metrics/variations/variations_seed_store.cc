@@ -120,6 +120,7 @@ VariationsSeedStore::~VariationsSeedStore() {
 }
 
 bool VariationsSeedStore::LoadSeed(variations::VariationsSeed* seed) {
+  invalid_base64_signature_.clear();
   const std::string base64_seed_data =
       local_state_->GetString(prefs::kVariationsSeed);
   if (base64_seed_data.empty()) {
@@ -150,6 +151,8 @@ bool VariationsSeedStore::LoadSeed(variations::VariationsSeed* seed) {
               << "with result: " << result << ". Clearing the pref.";
       ClearPrefs();
       RecordVariationSeedEmptyHistogram(VARIATIONS_SEED_INVALID_SIGNATURE);
+      // Record the invalid signature.
+      invalid_base64_signature_ = base64_seed_signature;
       return false;
     }
   }
@@ -270,6 +273,10 @@ VariationsSeedStore::VerifySeedSignature(
   if (verifier.VerifyFinal())
     return VARIATIONS_SEED_SIGNATURE_VALID;
   return VARIATIONS_SEED_SIGNATURE_INVALID_SEED;
+}
+
+std::string VariationsSeedStore::GetInvalidSignature() const {
+  return invalid_base64_signature_;
 }
 
 }  // namespace chrome_variations
