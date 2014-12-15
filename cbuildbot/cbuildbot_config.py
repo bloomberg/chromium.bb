@@ -1538,6 +1538,11 @@ internal_chromium_pfq.add_config('daisy-chromium-pfq',
   boards=['daisy'],
 )
 
+internal_chromium_pfq.add_config('mipsel-o32-generic-chromium-pfq',
+  non_testable_builder,
+  boards=['mipsel-o32-generic'],
+)
+
 internal_chromium_pfq.add_config('amd64-generic-chromium-pfq',
   disk_layout='2gb-rootfs',
   boards=['amd64-generic'],
