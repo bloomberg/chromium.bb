@@ -36,7 +36,9 @@
       'target_name': 'ui_touch_selection_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [
+        '../../base/base.gyp:base',
         '../../base/base.gyp:run_all_unittests',
+        '../../base/base.gyp:test_support_base',
         '../../testing/gtest.gyp:gtest',
         '../base/ui_base.gyp:ui_base',
         '../events/events.gyp:events_test_support',
@@ -51,6 +53,13 @@
       'include_dirs': [
         '../..',
       ],
+      'conditions': [
+        ['OS == "android"', {
+          'dependencies': [
+            '../../testing/android/native_test.gyp:native_test_native_code',
+          ],
+        }],
+      ]
     },
   ],
   'conditions': [
