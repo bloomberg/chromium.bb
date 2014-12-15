@@ -115,7 +115,7 @@ struct TupleBaseImpl<IndexSequence<Ns...>, Ts...> : TupleLeaf<Ns, Ts>... {
 
 template <size_t N, typename T>
 struct TupleLeaf {
-  TupleLeaf() : x() {}
+  TupleLeaf() {}
   explicit TupleLeaf(typename TupleTraits<T>::ParamType x) : x(x) {}
 
   T& get() { return x; }
@@ -130,7 +130,7 @@ struct TupleLeaf {
 #define DEFINE_TUPLE_LEAF(N, x)                                        \
   template <typename T>                                                \
   struct TupleLeaf<N, T> {                                             \
-    TupleLeaf() : x() {}                                               \
+    TupleLeaf() {}                                                     \
     explicit TupleLeaf(typename TupleTraits<T>::ParamType x) : x(x) {} \
                                                                        \
     T& get() { return x; }                                             \
