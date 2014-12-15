@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/tabs/media_indicator_button.h"
+#import "chrome/browser/ui/cocoa/tabs/media_indicator_button_cocoa.h"
 
 #include "base/logging.h"
 #include "base/thread_task_runner_handle.h"

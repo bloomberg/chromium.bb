@@ -1112,7 +1112,7 @@
       'browser/ui/cocoa/tab_contents/sad_tab_controller_unittest.mm',
       'browser/ui/cocoa/tab_contents/sad_tab_view_cocoa_unittest.mm',
       'browser/ui/cocoa/table_row_nsimage_cache_unittest.mm',
-      'browser/ui/cocoa/tabs/media_indicator_button_unittest.mm',
+      'browser/ui/cocoa/tabs/media_indicator_button_cocoa_unittest.mm',
       'browser/ui/cocoa/tabs/tab_controller_unittest.mm',
       'browser/ui/cocoa/tabs/tab_strip_controller_unittest.mm',
       'browser/ui/cocoa/tabs/tab_strip_view_unittest.mm',

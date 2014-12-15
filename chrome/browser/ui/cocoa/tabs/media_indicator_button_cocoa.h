@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_TABS_MEDIA_INDICATOR_BUTTON_H_
-#define CHROME_BROWSER_UI_COCOA_TABS_MEDIA_INDICATOR_BUTTON_H_
+#ifndef CHROME_BROWSER_UI_COCOA_TABS_MEDIA_INDICATOR_BUTTON_COCOA_H_
+#define CHROME_BROWSER_UI_COCOA_TABS_MEDIA_INDICATOR_BUTTON_COCOA_H_
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
@@ -74,4 +74,4 @@ class AnimationDelegate;
 
 @end
 
-#endif  // CHROME_BROWSER_UI_COCOA_TABS_MEDIA_INDICATOR_BUTTON_H_
+#endif  // CHROME_BROWSER_UI_COCOA_TABS_MEDIA_INDICATOR_BUTTON_COCOA_H_
