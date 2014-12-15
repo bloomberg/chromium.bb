@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/printing/printer_query.h"
 #include "content/public/browser/browser_thread.h"
 #include "printing/page_number.h"
 #include "printing/print_job_constants.h"
@@ -41,11 +42,13 @@ class PrintJobWorker {
 
   // Initializes the print settings. If |ask_user_for_settings| is true, a
   // Print... dialog box will be shown to ask the user his preference.
+  // |is_scripted| should be true for calls coming straight from window.print().
   void GetSettings(
       bool ask_user_for_settings,
       int document_page_count,
       bool has_selection,
-      MarginType margin_type);
+      MarginType margin_type,
+      bool is_scripted);
 
   // Set the new print settings.
   void SetSettings(scoped_ptr<base::DictionaryValue> new_settings);
@@ -108,7 +111,8 @@ class PrintJobWorker {
   // but sticks with this for consistency.
   void GetSettingsWithUI(
       int document_page_count,
-      bool has_selection);
+      bool has_selection,
+      bool is_scripted);
 
   // The callback used by PrintingContext::GetSettingsWithUI() to notify this
   // object that the print settings are set.  This is needed in order to bounce

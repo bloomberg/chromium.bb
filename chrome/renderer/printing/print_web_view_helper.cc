@@ -818,9 +818,6 @@ void PrintWebViewHelper::DisablePreview() {
 
 bool PrintWebViewHelper::IsScriptInitiatedPrintAllowed(
     blink::WebFrame* frame, bool user_initiated) {
-#if defined(OS_ANDROID)
-  return false;
-#endif  // defined(OS_ANDROID)
   // If preview is enabled, then the print dialog is tab modal, and the user
   // can always close the tab on a mis-behaving page (the system print dialog
   // is app modal). If the print was initiated through user action, don't
@@ -858,7 +855,7 @@ void PrintWebViewHelper::PrintPage(blink::WebLocalFrame* frame,
     return;
 
   if (!g_is_preview_enabled_) {
-    Print(frame, blink::WebNode());
+    Print(frame, blink::WebNode(), true);
   } else {
     print_preview_context_.InitWithFrame(frame);
     RequestPrintPreview(PRINT_PREVIEW_SCRIPTED);
@@ -974,7 +971,7 @@ void PrintWebViewHelper::OnPrintPages() {
   // If we are printing a PDF extension frame, find the plugin node and print
   // that instead.
   auto plugin = GetPdfElement(frame);
-  Print(frame, plugin);
+  Print(frame, plugin, false);
 }
 
 void PrintWebViewHelper::OnPrintForSystemDialog() {
@@ -983,7 +980,7 @@ void PrintWebViewHelper::OnPrintForSystemDialog() {
     NOTREACHED();
     return;
   }
-  Print(frame, print_preview_context_.source_node());
+  Print(frame, print_preview_context_.source_node(), false);
 }
 #endif  // ENABLE_BASIC_PRINTING
 
@@ -1265,7 +1262,7 @@ void PrintWebViewHelper::PrintNode(const blink::WebNode& node) {
   // its |context_menu_node_|.
   if (!g_is_preview_enabled_) {
     blink::WebNode duplicate_node(node);
-    Print(duplicate_node.document().frame(), duplicate_node);
+    Print(duplicate_node.document().frame(), duplicate_node, false);
   } else {
     print_preview_context_.InitWithNode(node);
     RequestPrintPreview(PRINT_PREVIEW_USER_INITIATED_CONTEXT_NODE);
@@ -1275,7 +1272,8 @@ void PrintWebViewHelper::PrintNode(const blink::WebNode& node) {
 }
 
 void PrintWebViewHelper::Print(blink::WebLocalFrame* frame,
-                               const blink::WebNode& node) {
+                               const blink::WebNode& node,
+                               bool is_scripted) {
   // If still not finished with earlier print request simply ignore.
   if (prep_frame_view_)
     return;
@@ -1296,7 +1294,8 @@ void PrintWebViewHelper::Print(blink::WebLocalFrame* frame,
 
   // Ask the browser to show UI to retrieve the final print settings.
   if (!GetPrintSettingsFromUser(frame_ref.GetFrame(), node,
-                                expected_page_count)) {
+                                expected_page_count,
+                                is_scripted)) {
     DidFinishPrinting(OK);  // Release resources and fail silently.
     return;
   }
@@ -1573,7 +1572,8 @@ bool PrintWebViewHelper::UpdatePrintSettings(
 
 bool PrintWebViewHelper::GetPrintSettingsFromUser(blink::WebFrame* frame,
                                                   const blink::WebNode& node,
-                                                  int expected_pages_count) {
+                                                  int expected_pages_count,
+                                                  bool is_scripted) {
   PrintHostMsg_ScriptedPrint_Params params;
   PrintMsg_PrintPages_Params print_settings;
 
@@ -1584,6 +1584,7 @@ bool PrintWebViewHelper::GetPrintSettingsFromUser(blink::WebFrame* frame,
   if (PrintingNodeOrPdfFrame(frame, node))
     margin_type = GetMarginsForPdf(frame, node);
   params.margin_type = margin_type;
+  params.is_scripted = is_scripted;
 
   Send(new PrintHostMsg_DidShowPrintDialog(routing_id()));
 

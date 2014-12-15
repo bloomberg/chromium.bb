@@ -55,8 +55,12 @@ class PRINTING_EXPORT PrintingContext {
   // context with the select device settings. The result of the call is returned
   // in the callback. This is necessary for Linux, which only has an
   // asynchronous printing API.
+  // On Android, when |is_scripted| is true, calling it initiates a full
+  // printing flow from the framework's PrintManager.
+  // (see https://codereview.chromium.org/740983002/)
   virtual void AskUserForSettings(int max_pages,
                                   bool has_selection,
+                                  bool is_scripted,
                                   const PrintSettingsCallback& callback) = 0;
 
   // Selects the user's default printer and format. Updates the context with the

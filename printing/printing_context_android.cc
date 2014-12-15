@@ -82,6 +82,7 @@ PrintingContextAndroid::~PrintingContextAndroid() {
 void PrintingContextAndroid::AskUserForSettings(
     int max_pages,
     bool has_selection,
+    bool is_scripted,
     const PrintSettingsCallback& callback) {
   // This method is always run in the UI thread.
   callback_ = callback;
@@ -93,9 +94,13 @@ void PrintingContextAndroid::AskUserForSettings(
         reinterpret_cast<intptr_t>(this)));
   }
 
-  Java_PrintingContext_pageCountEstimationDone(env,
-                                               j_printing_context_.obj(),
-                                               max_pages);
+  if (is_scripted) {
+    Java_PrintingContext_showPrintDialog(env, j_printing_context_.obj());
+  } else {
+    Java_PrintingContext_pageCountEstimationDone(env,
+                                                 j_printing_context_.obj(),
+                                                 max_pages);
+  }
 }
 
 void PrintingContextAndroid::AskUserForSettingsReply(JNIEnv* env,
@@ -130,6 +135,12 @@ void PrintingContextAndroid::AskUserForSettingsReply(JNIEnv* env,
   SetSizes(&settings_, dpi, width, height);
 
   callback_.Run(OK);
+}
+
+void PrintingContextAndroid::ShowSystemDialogDone(JNIEnv* env,
+                                                  jobject obj) {
+  // Settings are not updated, callback is called only to unblock javascript.
+  callback_.Run(CANCEL);
 }
 
 PrintingContext::Result PrintingContextAndroid::UseDefaultSettings() {

@@ -31,6 +31,7 @@ PrintingContextNoSystemDialog::~PrintingContextNoSystemDialog() {
 void PrintingContextNoSystemDialog::AskUserForSettings(
     int max_pages,
     bool has_selection,
+    bool is_scripted,
     const PrintSettingsCallback& callback) {
   // We don't want to bring up a dialog here.  Ever.  Just signal the callback.
   callback.Run(OK);

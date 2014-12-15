@@ -54,6 +54,7 @@ PrintingContextWin::~PrintingContextWin() {
 void PrintingContextWin::AskUserForSettings(
     int max_pages,
     bool has_selection,
+    bool is_scripted,
     const PrintSettingsCallback& callback) {
   NOTIMPLEMENTED();
 }
@@ -208,7 +209,7 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
   // Update data using DocumentProperties.
   if (show_system_dialog) {
     PrintingContext::Result result = PrintingContext::FAILED;
-    AskUserForSettings(0, false, base::Bind(&AssingResult, &result));
+    AskUserForSettings(0, false, false, base::Bind(&AssingResult, &result));
     return result;
   } else {
     scoped_dev_mode = CreateDevMode(printer.Get(), scoped_dev_mode.get());

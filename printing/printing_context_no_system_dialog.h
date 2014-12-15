@@ -24,6 +24,7 @@ class PRINTING_EXPORT PrintingContextNoSystemDialog : public PrintingContext {
   virtual void AskUserForSettings(
       int max_pages,
       bool has_selection,
+      bool is_scripted,
       const PrintSettingsCallback& callback) override;
   virtual Result UseDefaultSettings() override;
   virtual gfx::Size GetPdfPaperSizeDeviceUnits() override;

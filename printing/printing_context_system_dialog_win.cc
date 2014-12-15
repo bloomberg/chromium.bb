@@ -21,6 +21,7 @@ PrintingContextSytemDialogWin::~PrintingContextSytemDialogWin() {
 void PrintingContextSytemDialogWin::AskUserForSettings(
     int max_pages,
     bool has_selection,
+    bool is_scripted,
     const PrintSettingsCallback& callback) {
   DCHECK(!in_print_job_);
   dialog_box_dismissed_ = false;

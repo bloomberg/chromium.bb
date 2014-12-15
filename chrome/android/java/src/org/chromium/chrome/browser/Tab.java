@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.contextmenu.ContextMenuPopulatorWrapper;
 import org.chromium.chrome.browser.contextmenu.EmptyChromeContextMenuItemDelegate;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerFeedbackReporter;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
+import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.toolbar.ToolbarModel;
@@ -34,6 +35,9 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.WebContentsObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.printing.PrintManagerDelegateImpl;
+import org.chromium.printing.PrintingController;
+import org.chromium.printing.PrintingControllerImpl;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
@@ -597,6 +601,15 @@ public class Tab {
     public boolean print() {
         assert mNativeTabAndroid != 0;
         return nativePrint(mNativeTabAndroid);
+    }
+
+    @CalledByNative
+    public void setPendingPrint() {
+        PrintingController printingController = PrintingControllerImpl.getInstance();
+        if (printingController == null) return;
+
+        printingController.setPendingPrint(new TabPrinter(this),
+                new PrintManagerDelegateImpl(mContext));
     }
 
     /**

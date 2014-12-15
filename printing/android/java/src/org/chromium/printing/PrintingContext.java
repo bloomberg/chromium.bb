@@ -97,6 +97,17 @@ public class PrintingContext implements PrintingContextInterface {
     }
 
     @CalledByNative
+    public void showPrintDialog() {
+        ThreadUtils.assertOnUiThread();
+        if (mController != null) {  // The native side doesn't check if printing is enabled
+            mController.startPendingPrint(this);
+        } else {
+            // Printing disabled. Notify the native side to stop waiting.
+            showSystemDialogDone();
+        }
+    }
+
+    @CalledByNative
     public static void pdfWritingDone(int fd, boolean success) {
         ThreadUtils.assertOnUiThread();
         // TODO(cimamoglu): Do something when fd == -1.
@@ -129,7 +140,14 @@ public class PrintingContext implements PrintingContextInterface {
         }
     }
 
+    @Override
+    public void showSystemDialogDone() {
+        nativeShowSystemDialogDone(mNativeObject);
+    }
+
     private native void nativeAskUserForSettingsReply(
             long nativePrintingContextAndroid,
             boolean success);
+
+    private native void nativeShowSystemDialogDone(long nativePrintingContextAndroid);
 }

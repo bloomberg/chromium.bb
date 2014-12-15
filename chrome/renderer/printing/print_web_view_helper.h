@@ -169,7 +169,10 @@ class PrintWebViewHelper
 
   // Main printing code -------------------------------------------------------
 
-  void Print(blink::WebLocalFrame* frame, const blink::WebNode& node);
+  // |is_scripted| should be true when the call is coming from window.print()
+  void Print(blink::WebLocalFrame* frame,
+             const blink::WebNode& node,
+             bool is_scripted);
 
   // Notification when printing is done - signal tear-down/free resources.
   void DidFinishPrinting(PrintingResult result);
@@ -200,7 +203,8 @@ class PrintWebViewHelper
   // Return false if the user cancels or on error.
   bool GetPrintSettingsFromUser(blink::WebFrame* frame,
                                 const blink::WebNode& node,
-                                int expected_pages_count);
+                                int expected_pages_count,
+                                bool is_scripted);
 
   // Page Printing / Rendering ------------------------------------------------
 

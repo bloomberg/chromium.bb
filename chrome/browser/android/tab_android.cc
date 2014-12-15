@@ -645,6 +645,11 @@ bool TabAndroid::Print(JNIEnv* env, jobject obj) {
   return true;
 }
 
+void TabAndroid::SetPendingPrint() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_Tab_setPendingPrint(env, weak_java_tab_.get(env).obj());
+}
+
 ScopedJavaLocalRef<jobject> TabAndroid::GetDefaultFavicon(JNIEnv* env,
                                                           jobject obj) {
   ScopedJavaLocalRef<jobject> bitmap;

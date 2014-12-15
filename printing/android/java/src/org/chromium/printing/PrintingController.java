@@ -73,7 +73,7 @@ public interface PrintingController {
      * Sets PrintingContext currently associated with the controller.
      *
      * This needs to be called after PrintingContext object is created. Firstly its native
-     * counterpart is created, and then the Java.  PrintingController implementation
+     * counterpart is created, and then the Java. PrintingController implementation
      * needs this to interact with the native side, since JNI is built on PrintingContext.
      **/
     void setPrintingContext(final PrintingContextInterface printingContext);
@@ -82,4 +82,25 @@ public interface PrintingController {
      * @return Whether a complete PDF generation cycle inside Chromium has been completed.
      */
     boolean hasPrintingFinished();
+
+    /**
+     * Sets the data required to initiate a printing process. The process can later be started using
+     * {@link #startPendingPrint(PrintingContextInterface)}.
+     *
+     * @param printable An object capable of starting native side PDF generation, i.e. typically
+     *     a Tab.
+     * @param printManager The print manager that manages the print job.
+     */
+    void setPendingPrint(final Printable printable, final PrintManagerDelegate printManager);
+
+    /**
+     * Starts printing, provided that the current object already has sufficient data to start the
+     * process. (using {@link #setPendingPrint(Printable, PrintManagerDelegate)} for example)
+     *
+     * @param jsOriginatedPrintingContext The printingContext holding the callback to be used to
+     *     reply when javascript can resume. When printing is done (or could not start),
+     *     {@link PrintingContextInterface#showSystemDialogDone()} will be called on this object.
+     */
+    void startPendingPrint(PrintingContextInterface jsOriginatedPrintingContext);
+
 }

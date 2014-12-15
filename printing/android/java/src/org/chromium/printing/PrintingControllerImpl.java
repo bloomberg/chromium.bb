@@ -10,6 +10,7 @@ import android.os.ParcelFileDescriptor;
 import android.print.PageRange;
 import android.print.PrintAttributes;
 import android.print.PrintDocumentInfo;
+import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.printing.PrintDocumentAdapterWrapper.PdfGenerator;
@@ -46,6 +47,12 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
     private final String mErrorMessage;
 
     private PrintingContextInterface mPrintingContext;
+
+    /**
+     * The context of a query initiated by window.print(), stored here to allow syncrhonization
+     * with javascript.
+     */
+    private PrintingContextInterface mContextFromScriptInitiation;
 
     /** The file descriptor into which the PDF will be written.  Provided by the framework. */
     private int mFileDescriptor;
@@ -85,6 +92,8 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
     private int mLastKnownMaxPages = PrintDocumentInfo.PAGE_COUNT_UNKNOWN;
 
     private boolean mIsBusy = false;
+
+    private PrintManagerDelegate mPrintManager;
 
     private PrintingControllerImpl(PrintDocumentAdapterWrapper printDocumentAdapterWrapper,
                                    String errorText) {
@@ -168,11 +177,30 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
     }
 
     @Override
+    public void setPendingPrint(final Printable printable, PrintManagerDelegate printManager) {
+        if (mIsBusy) return;
+        mPrintable = printable;
+        mPrintManager = printManager;
+    }
+
+    @Override
+    public void startPendingPrint(PrintingContextInterface printingContext) {
+        if (mIsBusy || mPrintManager == null) {
+            Log.w(LOG_TAG, "Pending print can't be started. Is might be busy or not initialized.");
+            if (printingContext != null) printingContext.showSystemDialogDone();
+            return;
+        }
+        mContextFromScriptInitiation = printingContext;
+        mIsBusy = true;
+        mPrintDocumentAdapterWrapper.print(mPrintManager, mPrintable.getTitle());
+        mPrintManager = null;
+    }
+
+    @Override
     public void startPrint(final Printable printable, PrintManagerDelegate printManager) {
         if (mIsBusy) return;
-        mIsBusy = true;
-        mPrintable = printable;
-        mPrintDocumentAdapterWrapper.print(printManager, printable.getTitle());
+        setPendingPrint(printable, printManager);
+        startPendingPrint(null);
     }
 
     @Override
@@ -321,6 +349,12 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
             mPrintingContext.updatePrintingContextMap(mFileDescriptor, true);
             mPrintingContext = null;
         }
+
+        if (mContextFromScriptInitiation != null) {
+            mContextFromScriptInitiation.showSystemDialogDone();
+            mContextFromScriptInitiation = null;
+        }
+
         mPrintingState = PRINTING_STATE_FINISHED;
 
         closeFileDescriptor(mFileDescriptor);

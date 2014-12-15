@@ -67,6 +67,7 @@ void PrintingContextLinux::PrintDocument(const MetafilePlayer& metafile) {
 void PrintingContextLinux::AskUserForSettings(
     int max_pages,
     bool has_selection,
+    bool is_scripted,
     const PrintSettingsCallback& callback) {
   if (!print_dialog_) {
     // Can only get here if the renderer is sending bad messages.

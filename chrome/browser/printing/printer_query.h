@@ -24,7 +24,7 @@ class PrintJobWorker;
 class PrinterQuery : public PrintJobWorkerOwner {
  public:
   // GetSettings() UI parameter.
-  enum GetSettingsAskParam {
+  enum class GetSettingsAskParam {
     DEFAULTS,
     ASK_USER,
   };
@@ -47,6 +47,7 @@ class PrinterQuery : public PrintJobWorkerOwner {
       int expected_page_count,
       bool has_selection,
       MarginType margin_type,
+      bool is_scripted,
       const base::Closure& callback);
 
   // Updates the current settings with |new_settings| dictionary values.

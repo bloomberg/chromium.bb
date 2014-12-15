@@ -161,6 +161,7 @@ TEST_F(PrintingContextTest, PrintAll) {
   context.AskUserForSettings(
       123,
       false,
+      false,
       base::Bind(&PrintingContextTest::PrintSettingsCallback,
                  base::Unretained(this)));
   EXPECT_EQ(PrintingContext::OK, result());
