@@ -54,8 +54,7 @@ cr.define('ntp', function() {
       else
         this.launchRegularTab_ = this.appendMenuItem_('applaunchtyperegular');
       this.launchPinnedTab_ = this.appendMenuItem_('applaunchtypepinned');
-      if (!cr.isMac)
-        this.launchNewWindow_ = this.appendMenuItem_('applaunchtypewindow');
+      this.launchNewWindow_ = this.appendMenuItem_('applaunchtypewindow');
       this.launchFullscreen_ = this.appendMenuItem_('applaunchtypefullscreen');
 
       var self = this;
