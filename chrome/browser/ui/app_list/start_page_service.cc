@@ -353,6 +353,7 @@ void StartPageService::GetSpeechAuthParameters(std::string* auth_scope,
     HotwordService* service = HotwordServiceFactory::GetForProfile(profile_);
     if (service &&
         service->IsOptedIntoAudioLogging() &&
+        service->IsAlwaysOnEnabled() &&
         !speech_auth_helper_->GetToken().empty()) {
       *auth_scope = speech_auth_helper_->GetScope();
       *auth_token = speech_auth_helper_->GetToken();
