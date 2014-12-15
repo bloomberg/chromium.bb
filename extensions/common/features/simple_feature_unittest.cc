@@ -380,6 +380,8 @@ TEST(SimpleFeatureTest, Location) {
   // Component extensions can access any location.
   EXPECT_TRUE(LocationIsAvailable(SimpleFeature::COMPONENT_LOCATION,
                                   Manifest::COMPONENT));
+  EXPECT_TRUE(LocationIsAvailable(SimpleFeature::EXTERNAL_COMPONENT_LOCATION,
+                                  Manifest::COMPONENT));
   EXPECT_TRUE(
       LocationIsAvailable(SimpleFeature::POLICY_LOCATION, Manifest::COMPONENT));
   EXPECT_TRUE(LocationIsAvailable(SimpleFeature::UNSPECIFIED_LOCATION,
@@ -390,6 +392,8 @@ TEST(SimpleFeatureTest, Location) {
                                    Manifest::INVALID_LOCATION));
   EXPECT_FALSE(LocationIsAvailable(SimpleFeature::COMPONENT_LOCATION,
                                    Manifest::UNPACKED));
+  EXPECT_FALSE(LocationIsAvailable(SimpleFeature::COMPONENT_LOCATION,
+                                   Manifest::EXTERNAL_COMPONENT));
   EXPECT_FALSE(LocationIsAvailable(SimpleFeature::COMPONENT_LOCATION,
                                    Manifest::EXTERNAL_PREF_DOWNLOAD));
   EXPECT_FALSE(LocationIsAvailable(SimpleFeature::COMPONENT_LOCATION,
@@ -405,11 +409,18 @@ TEST(SimpleFeatureTest, Location) {
 
   // Non-policy (except component) extensions cannot access policy.
   EXPECT_FALSE(LocationIsAvailable(SimpleFeature::POLICY_LOCATION,
+                                   Manifest::EXTERNAL_COMPONENT));
+  EXPECT_FALSE(LocationIsAvailable(SimpleFeature::POLICY_LOCATION,
                                    Manifest::INVALID_LOCATION));
   EXPECT_FALSE(
       LocationIsAvailable(SimpleFeature::POLICY_LOCATION, Manifest::UNPACKED));
   EXPECT_FALSE(LocationIsAvailable(SimpleFeature::POLICY_LOCATION,
                                    Manifest::EXTERNAL_PREF_DOWNLOAD));
+
+  // External component extensions can access the "external_component"
+  // location.
+  EXPECT_TRUE(LocationIsAvailable(SimpleFeature::EXTERNAL_COMPONENT_LOCATION,
+                                  Manifest::EXTERNAL_COMPONENT));
 }
 
 TEST(SimpleFeatureTest, Platform) {

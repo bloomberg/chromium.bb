@@ -37,6 +37,7 @@ class FeatureProvider {
   static const FeatureProvider* GetAPIFeatures();
   static const FeatureProvider* GetManifestFeatures();
   static const FeatureProvider* GetPermissionFeatures();
+  static const FeatureProvider* GetBehaviorFeatures();
 };
 
 }  // namespace extensions

@@ -144,6 +144,8 @@
         'common/features/simple_feature.h',
         'common/features/simple_feature_filter.cc',
         'common/features/simple_feature_filter.h',
+        'common/features/behavior_feature.cc',
+        'common/features/behavior_feature.h',
         'common/file_util.cc',
         'common/file_util.h',
         'common/guest_view/guest_view_constants.cc',

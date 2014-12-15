@@ -234,7 +234,8 @@ ExtensionBrowserTest::LoadExtensionWithInstallParam(
     content::WindowedNotificationObserver load_signal(
         extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
         content::Source<Profile>(profile()));
-    CHECK(!extensions::util::IsIncognitoEnabled(extension_id, profile()));
+    CHECK(!extensions::util::IsIncognitoEnabled(extension_id, profile()))
+        << extension_id << " is enabled in incognito, but shouldn't be";
 
     if (flags & kFlagEnableIncognito) {
       extensions::util::SetIsIncognitoEnabled(extension_id, profile(), true);

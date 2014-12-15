@@ -59,6 +59,8 @@ struct Mappings {
     contexts["webui"] = Feature::WEBUI_CONTEXT;
 
     locations["component"] = SimpleFeature::COMPONENT_LOCATION;
+    locations["external_component"] =
+        SimpleFeature::EXTERNAL_COMPONENT_LOCATION;
     locations["policy"] = SimpleFeature::POLICY_LOCATION;
 
     platforms["chromeos"] = Feature::CHROMEOS_PLATFORM;
@@ -570,8 +572,9 @@ bool SimpleFeature::MatchesManifestLocation(
     case SimpleFeature::UNSPECIFIED_LOCATION:
       return true;
     case SimpleFeature::COMPONENT_LOCATION:
-      // TODO(kalman/asargent): Should this include EXTERNAL_COMPONENT too?
       return manifest_location == Manifest::COMPONENT;
+    case SimpleFeature::EXTERNAL_COMPONENT_LOCATION:
+      return manifest_location == Manifest::EXTERNAL_COMPONENT;
     case SimpleFeature::POLICY_LOCATION:
       return manifest_location == Manifest::EXTERNAL_POLICY ||
              manifest_location == Manifest::EXTERNAL_POLICY_DOWNLOAD;

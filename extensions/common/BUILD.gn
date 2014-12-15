@@ -100,6 +100,8 @@ if (enable_extensions) {
       "features/simple_feature.h",
       "features/simple_feature_filter.cc",
       "features/simple_feature_filter.h",
+      "features/behavior_feature.cc",
+      "features/behavior_feature.h",
       "file_util.cc",
       "file_util.h",
       "guest_view/guest_view_constants.cc",

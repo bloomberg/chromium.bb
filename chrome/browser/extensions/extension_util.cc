@@ -24,7 +24,8 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/feature_switch.h"
-#include "extensions/common/features/simple_feature.h"
+#include "extensions/common/features/behavior_feature.h"
+#include "extensions/common/features/feature_provider.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -41,20 +42,12 @@ namespace {
 const char kExtensionAllowedOnAllUrlsPrefName[] =
     "extension_can_script_all_urls";
 
-// Returns true if |extension_id| for an external component extension should
-// always be enabled in incognito windows.
-bool IsWhitelistedForIncognito(const std::string& extension_id) {
-  static const char* const kExtensionWhitelist[] = {
-    "D5736E4B5CF695CB93A2FB57E4FDC6E5AFAB6FE2",  // http://crbug.com/312900
-    "D57DE394F36DC1C3220E7604C575D29C51A6C495",  // http://crbug.com/319444
-    "3F65507A3B39259B38C8173C6FFA3D12DF64CCE9"   // http://crbug.com/371562
-  };
-
-  return extensions::SimpleFeature::IsIdInList(
-      extension_id,
-      std::set<std::string>(
-          kExtensionWhitelist,
-          kExtensionWhitelist + arraysize(kExtensionWhitelist)));
+// Returns true if |extension| should always be enabled in incognito mode.
+bool IsWhitelistedForIncognito(const Extension* extension) {
+  return FeatureProvider::GetBehaviorFeatures()
+      ->GetFeature(BehaviorFeature::kWhitelistedForIncognito)
+      ->IsAvailableToExtension(extension)
+      .is_available();
 }
 
 // Returns |extension_id|. See note below.
@@ -90,12 +83,9 @@ bool IsIncognitoEnabled(const std::string& extension_id,
     // work in incognito mode.
     if (extension->location() == Manifest::COMPONENT)
       return true;
-    if (extension->location() == Manifest::EXTERNAL_COMPONENT &&
-        IsWhitelistedForIncognito(extension_id)) {
+    if (IsWhitelistedForIncognito(extension))
       return true;
-    }
   }
-
   return ExtensionPrefs::Get(context)->IsIncognitoEnabled(extension_id);
 }
 

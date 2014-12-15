@@ -27,8 +27,7 @@ class SimpleFeature : public Feature {
   ~SimpleFeature() override;
 
   // Similar to Manifest::Location, these are the classes of locations
-  // supported in feature files; "component" implies
-  // COMPONENT/EXTERNAL_COMPONENT manifest location types, etc.
+  // supported in feature files.
   //
   // This is only public for testing. Production code should never access it,
   // nor should it really have any reason to access the SimpleFeature class
@@ -36,6 +35,7 @@ class SimpleFeature : public Feature {
   enum Location {
     UNSPECIFIED_LOCATION,
     COMPONENT_LOCATION,
+    EXTERNAL_COMPONENT_LOCATION,
     POLICY_LOCATION,
   };
 

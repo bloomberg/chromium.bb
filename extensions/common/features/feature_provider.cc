@@ -34,6 +34,8 @@ class Static {
         make_linked_ptr(client->CreateFeatureProvider("manifest").release());
     feature_providers_["permission"] =
         make_linked_ptr(client->CreateFeatureProvider("permission").release());
+    feature_providers_["behavior"] =
+        make_linked_ptr(client->CreateFeatureProvider("behavior").release());
   }
 
   typedef std::map<std::string, linked_ptr<FeatureProvider> >
@@ -64,6 +66,10 @@ const FeatureProvider* FeatureProvider::GetManifestFeatures() {
 // static
 const FeatureProvider* FeatureProvider::GetPermissionFeatures() {
   return GetByName("permission");
+}
+
+const FeatureProvider* FeatureProvider::GetBehaviorFeatures() {
+  return GetByName("behavior");
 }
 
 }  // namespace extensions

@@ -13,6 +13,7 @@
       <include name="IDR_EXTENSION_API_JSON_WEB_VIEW_REQUEST" file="common\api\web_view_request.json" type="BINDATA" />
       <include name="IDR_EXTENSION_MANIFEST_FEATURES" file="common\api\_manifest_features.json" type="BINDATA" />
       <include name="IDR_EXTENSION_PERMISSION_FEATURES" file="common\api\_permission_features.json" type="BINDATA" />
+      <include name="IDR_EXTENSION_BEHAVIOR_FEATURES" file="common\api\_behavior_features.json" type="BINDATA" />
     </includes>
   </release>
 </grit>
