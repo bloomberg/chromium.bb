@@ -3457,7 +3457,7 @@ void WebGLRenderingContextBase::texImage2DImpl(GLenum target, GLint level, GLenu
         webContext()->pixelStorei(GL_UNPACK_ALIGNMENT, m_unpackAlignment);
 }
 
-bool WebGLRenderingContextBase::validateTexFunc(const char* functionName, TexFuncValidationFunctionType functionType, TexFuncValidationSourceType sourceType, GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, GLint xoffset, GLint yoffset)
+bool WebGLRenderingContextBase::validateTexFunc(const char* functionName, TexImageFunctionType functionType, TexFuncValidationSourceType sourceType, GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, GLint xoffset, GLint yoffset)
 {
     if (!validateTexFuncParameters(functionName, functionType, target, level, internalformat, width, height, border, format, type))
         return false;
@@ -3593,6 +3593,68 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
     texImage2DImpl(target, level, internalformat, format, type, imageForRender.get(), WebGLImageConversion::HtmlDomImage, m_unpackFlipY, m_unpackPremultiplyAlpha, exceptionState);
 }
 
+void WebGLRenderingContextBase::texImage2DCanvasByGPU(TexImageFunctionType functionType, WebGLTexture* texture, GLenum target,
+    GLint level, GLenum internalformat, GLenum type, GLint xoffset, GLint yoffset, HTMLCanvasElement* canvas)
+{
+    ScopedTexture2DRestorer restorer(this);
+
+    Platform3DObject targetTexture = texture->object();
+    GLenum targetType = type;
+    GLenum targetInternalformat = internalformat;
+    GLint targetLevel = level;
+    bool possibleDirectCopy = false;
+    if (functionType == NotTexSubImage2D) {
+        possibleDirectCopy = GL_TEXTURE_2D == target && Extensions3DUtil::canUseCopyTextureCHROMIUM(internalformat, type, level);
+    } else if (functionType == TexSubImage2D) {
+        possibleDirectCopy = false;
+    }
+    // if direct copy is not possible, create a temporary texture and then copy from canvas to temporary texture to target texture.
+    if (!possibleDirectCopy) {
+        targetLevel = 0;
+        targetInternalformat = GL_RGBA;
+        targetType = GL_UNSIGNED_BYTE;
+        targetTexture = webContext()->createTexture();
+        webContext()->bindTexture(GL_TEXTURE_2D, targetTexture);
+        webContext()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        webContext()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        webContext()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        webContext()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        webContext()->texImage2D(GL_TEXTURE_2D, 0, targetInternalformat, canvas->width(),
+            canvas->height(), 0, GL_RGBA, targetType, 0);
+    }
+
+    if (!canvas->is3D()) {
+        ImageBuffer* buffer = canvas->buffer();
+        if (!buffer->copyToPlatformTexture(webContext(), targetTexture, targetInternalformat, targetType,
+            targetLevel, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
+            ASSERT_NOT_REACHED();
+        }
+    } else {
+        WebGLRenderingContextBase* gl = toWebGLRenderingContextBase(canvas->renderingContext());
+        ScopedTexture2DRestorer restorer(gl);
+        if (!gl->drawingBuffer()->copyToPlatformTexture(webContext(), targetTexture, targetInternalformat, targetType,
+            targetLevel, m_unpackPremultiplyAlpha, !m_unpackFlipY, BackBuffer)) {
+            ASSERT_NOT_REACHED();
+        }
+    }
+
+    if (!possibleDirectCopy) {
+        WebGLId tmpFBO = webContext()->createFramebuffer();
+        webContext()->bindFramebuffer(GL_FRAMEBUFFER, tmpFBO);
+        webContext()->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, targetTexture, 0);
+        webContext()->bindTexture(texture->getTarget(), texture->object());
+        if (functionType == NotTexSubImage2D) {
+            webContext()->copyTexImage2D(target, level, internalformat, 0, 0, canvas->width(), canvas->height(), 0);
+        } else if (functionType == TexSubImage2D) {
+            webContext()->copyTexSubImage2D(target, level, xoffset, yoffset, 0, 0, canvas->width(), canvas->height());
+        }
+        webContext()->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
+        restoreCurrentFramebuffer();
+        webContext()->deleteFramebuffer(tmpFBO);
+        webContext()->deleteTexture(targetTexture);
+    }
+}
+
 void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum internalformat,
     GLenum format, GLenum type, HTMLCanvasElement* canvas, ExceptionState& exceptionState)
 {
@@ -3600,31 +3662,18 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
         return;
 
     WebGLTexture* texture = validateTextureBinding("texImage2D", target, true);
+    ASSERT(texture);
 
-    // If possible, copy from the canvas element directly to the texture
-    // via the GPU, without a read-back to system memory.
-    if (canvas->renderingContext() && GL_TEXTURE_2D == target && texture) {
-        ScopedTexture2DRestorer restorer(this);
-
-        if (!canvas->is3D()) {
-            ImageBuffer* buffer = canvas->buffer();
-            if (buffer && buffer->copyToPlatformTexture(webContext(), texture->object(), internalformat, type,
-                level, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
-                texture->setLevelInfo(target, level, internalformat, canvas->width(), canvas->height(), type);
-                return;
-            }
-        } else {
-            WebGLRenderingContextBase* gl = toWebGLRenderingContextBase(canvas->renderingContext());
-            ScopedTexture2DRestorer restorer(gl);
-            if (gl->drawingBuffer()->copyToPlatformTexture(webContext(), texture->object(), internalformat, type,
-                level, m_unpackPremultiplyAlpha, !m_unpackFlipY, BackBuffer)) {
-                texture->setLevelInfo(target, level, internalformat, canvas->width(), canvas->height(), type);
-                return;
-            }
-        }
+    if (!canvas->renderingContext() || !canvas->renderingContext()->isAccelerated()) {
+        ASSERT(!canvas->renderingContext() || canvas->renderingContext()->is2d());
+        // 2D canvas has only FrontBuffer.
+        texImage2DImpl(target, level, internalformat, format, type, canvas->copiedImage(FrontBuffer).get(),
+            WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY, m_unpackPremultiplyAlpha, exceptionState);
+        return;
     }
 
-    texImage2DImpl(target, level, internalformat, format, type, canvas->copiedImage(BackBuffer).get(), WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY, m_unpackPremultiplyAlpha, exceptionState);
+    texImage2DCanvasByGPU(NotTexSubImage2D, texture, target, level, internalformat, type, 0, 0, canvas);
+    texture->setLevelInfo(target, level, internalformat, canvas->width(), canvas->height(), type);
 }
 
 PassRefPtr<Image> WebGLRenderingContextBase::videoFrameToImage(HTMLVideoElement* video, BackingStoreCopy backingStoreCopy)
@@ -3858,7 +3907,18 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
         || !validateTexFunc("texSubImage2D", TexSubImage2D, SourceHTMLCanvasElement, target, level, format, canvas->width(), canvas->height(), 0, format, type, xoffset, yoffset))
         return;
 
-    texSubImage2DImpl(target, level, xoffset, yoffset, format, type, canvas->copiedImage(BackBuffer).get(), WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY, m_unpackPremultiplyAlpha, exceptionState);
+    WebGLTexture* texture = validateTextureBinding("texImage2D", target, true);
+    ASSERT(texture);
+
+    if (!canvas->renderingContext() || !canvas->renderingContext()->isAccelerated()) {
+        ASSERT(!canvas->renderingContext() || canvas->renderingContext()->is2d());
+        // 2D canvas has only FrontBuffer.
+        texSubImage2DImpl(target, level, xoffset, yoffset, format, type, canvas->copiedImage(FrontBuffer).get(),
+            WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY, m_unpackPremultiplyAlpha, exceptionState);
+        return;
+    }
+
+    texImage2DCanvasByGPU(TexSubImage2D, texture, target, level, GL_RGBA, type, xoffset, yoffset, canvas);
 }
 
 void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
@@ -4826,7 +4886,7 @@ bool WebGLRenderingContextBase::validateTexFuncLevel(const char* functionName, G
     return true;
 }
 
-bool WebGLRenderingContextBase::validateTexFuncDimensions(const char* functionName, TexFuncValidationFunctionType functionType,
+bool WebGLRenderingContextBase::validateTexFuncDimensions(const char* functionName, TexImageFunctionType functionType,
     GLenum target, GLint level, GLsizei width, GLsizei height)
 {
     if (width < 0 || height < 0) {
@@ -4865,7 +4925,7 @@ bool WebGLRenderingContextBase::validateTexFuncDimensions(const char* functionNa
     return true;
 }
 
-bool WebGLRenderingContextBase::validateTexFuncParameters(const char* functionName, TexFuncValidationFunctionType functionType, GLenum target,
+bool WebGLRenderingContextBase::validateTexFuncParameters(const char* functionName, TexImageFunctionType functionType, GLenum target,
     GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type)
 {
     // We absolutely have to validate the format and type combination.
@@ -5038,7 +5098,7 @@ bool WebGLRenderingContextBase::validateCompressedTexFuncData(const char* functi
     return true;
 }
 
-bool WebGLRenderingContextBase::validateCompressedTexDimensions(const char* functionName, TexFuncValidationFunctionType functionType, GLenum target, GLint level, GLsizei width, GLsizei height, GLenum format)
+bool WebGLRenderingContextBase::validateCompressedTexDimensions(const char* functionName, TexImageFunctionType functionType, GLenum target, GLint level, GLsizei width, GLsizei height, GLenum format)
 {
     if (!validateTexFuncDimensions(functionName, functionType, target, level, width, height))
         return false;
