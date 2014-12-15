@@ -89,20 +89,6 @@ const int kBookmarkAppBubbleViewHeight = 46;
 
 const int kIconPreviewTargetSize = 64;
 
-NSPoint GetPointForBubble(content::WebContents* web_contents,
-                          int x_offset,
-                          int y_offset) {
-  NSView* view = web_contents->GetNativeView();
-  NSRect bounds = [view bounds];
-  NSPoint point;
-  point.x = NSMinX(bounds) + x_offset;
-  // The view's origin is at the bottom but |rect|'s origin is at the top.
-  point.y = NSMaxY(bounds) - y_offset;
-  point = [view convertPoint:point toView:nil];
-  point = [[view window] convertBaseToScreen:point];
-  return point;
-}
-
 }  // namespace
 
 BrowserWindowCocoa::BrowserWindowCocoa(Browser* browser,
@@ -776,18 +762,6 @@ void BrowserWindowCocoa::DestroyBrowser() {
 
 NSWindow* BrowserWindowCocoa::window() const {
   return [controller_ window];
-}
-
-void BrowserWindowCocoa::ShowAvatarBubble(WebContents* web_contents,
-                                          const gfx::Rect& rect) {
-  NSPoint point = GetPointForBubble(web_contents, rect.right(), rect.bottom());
-
-  // |menu| will automatically release itself on close.
-  AvatarMenuBubbleController* menu =
-      [[AvatarMenuBubbleController alloc] initWithBrowser:browser_
-                                               anchoredAt:point];
-  [[menu bubble] setAlignment:info_bubble::kAlignEdgeToAnchorEdge];
-  [menu showWindow:nil];
 }
 
 void BrowserWindowCocoa::ShowAvatarBubbleFromAvatarButton(

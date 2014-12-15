@@ -358,12 +358,6 @@ class BrowserWindow : public ui::BaseWindow {
   static chrome::HostDesktopType AdjustHostDesktopType(
       chrome::HostDesktopType desktop_type);
 
-  // Shows the avatar bubble inside |web_contents|. The bubble is positioned
-  // relative to |rect|. |rect| should be in the |web_contents| coordinate
-  // system.
-  virtual void ShowAvatarBubble(content::WebContents* web_contents,
-                                const gfx::Rect& rect) = 0;
-
   // Shows the avatar bubble on the window frame off of the avatar button with
   // the given mode. The Service Type specified by GAIA is provided as well.
   enum AvatarBubbleMode {

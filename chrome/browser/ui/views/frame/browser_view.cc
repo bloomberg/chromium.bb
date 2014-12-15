@@ -2401,17 +2401,6 @@ void BrowserView::UpdateAcceleratorMetrics(const ui::Accelerator& accelerator,
 #endif
 }
 
-void BrowserView::ShowAvatarBubble(WebContents* web_contents,
-                                   const gfx::Rect& rect) {
-  gfx::Point origin(rect.origin());
-  views::View::ConvertPointToScreen(GetTabContentsContainerView(), &origin);
-  gfx::Rect bounds(origin, rect.size());
-
-  AvatarMenuBubbleView::ShowBubble(
-      this, views::BubbleBorder::TOP_RIGHT, views::BubbleBorder::PAINT_NORMAL,
-      views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE, bounds, browser_.get());
-}
-
 void BrowserView::ShowAvatarBubbleFromAvatarButton(
     AvatarBubbleMode mode,
     const signin::ManageAccountsParams& manage_accounts_params) {

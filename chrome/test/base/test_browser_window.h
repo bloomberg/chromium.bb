@@ -140,8 +140,6 @@ class TestBrowserWindow : public BrowserWindow {
   FindBar* CreateFindBar() override;
   web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
       override;
-  void ShowAvatarBubble(content::WebContents* web_contents,
-                        const gfx::Rect& rect) override {}
   void ShowAvatarBubbleFromAvatarButton(
       AvatarBubbleMode mode,
       const signin::ManageAccountsParams& manage_accounts_params) override {}
