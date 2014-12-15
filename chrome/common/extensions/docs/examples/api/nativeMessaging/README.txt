@@ -7,13 +7,15 @@ host from the host directory.
 To install the host:
 
 On Windows:
-  Add registry key
-  HKEY_LOCAL_MACHINE\SOFTWARE\Google\Chrome\NativeMessagingHosts\com.google.chrome.example.echo
-  or
+  Run install_host.bat script in the host directory.
+  This script installs the native messaging host for the current user, by
+  creating a registry key
   HKEY_CURRENT_USER\SOFTWARE\Google\Chrome\NativeMessagingHosts\com.google.chrome.example.echo
-  and set its default value to the full path to
-  host\com.google.chrome.example.echo-win.json . Note that you need to have
-  python installed.
+  and setting its default value to the full path to
+  host\com.google.chrome.example.echo-win.json .
+  If you want to install the native messaging host for all users, change HKCU to
+  HKLM.
+  Note that you need to have python installed.
 
 On Mac and Linux:
   Run install_host.sh script in the host directory:
