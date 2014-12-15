@@ -6,6 +6,7 @@
 function test()
 {
     var indexedDBModel = new WebInspector.IndexedDBModel(WebInspector.targetManager.mainTarget());
+    indexedDBModel.enable();
     var mainFrameId = WebInspector.resourceTreeModel.mainFrame.id;
 
     function dumpDatabaseNames()
