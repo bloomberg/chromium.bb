@@ -8,7 +8,7 @@
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION=223109
+CLANG_REVISION=223108
 
 THIS_DIR="$(dirname "${0}")"
 LLVM_DIR="${THIS_DIR}/../../../third_party/llvm"
@@ -244,6 +244,12 @@ for i in \
       "${CLANG_DIR}/test/Frontend/exceptions.c" \
       "${CLANG_DIR}/test/Preprocessor/predefined-exceptions.m" \
       "${LLVM_DIR}/test/Bindings/Go/go.test" \
+      "${CLANG_DIR}/lib/Parse/ParseExpr.cpp" \
+      "${CLANG_DIR}/lib/Parse/ParseTemplate.cpp" \
+      "${CLANG_DIR}/lib/Sema/SemaDeclCXX.cpp" \
+      "${CLANG_DIR}/lib/Sema/SemaExprCXX.cpp" \
+      "${CLANG_DIR}/test/SemaCXX/default2.cpp" \
+      "${CLANG_DIR}/test/SemaCXX/typo-correction-delayed.cpp" \
       ; do
   if [[ -e "${i}" ]]; then
     rm -f "${i}"  # For unversioned files.
@@ -444,6 +450,229 @@ index 0791075..c13f429 100644
 EOF
 patch -p1
 popd
+
+# Apply r223177: "Ensure typos in the default values of template parameters get diagnosed."
+pushd "${CLANG_DIR}"
+cat << 'EOF' |
+--- a/lib/Parse/ParseTemplate.cpp
++++ b/lib/Parse/ParseTemplate.cpp
+@@ -676,7 +676,7 @@ Parser::ParseNonTypeTemplateParameter(unsigned Depth, unsigned Position) {
+     GreaterThanIsOperatorScope G(GreaterThanIsOperator, false);
+     EnterExpressionEvaluationContext Unevaluated(Actions, Sema::Unevaluated);
+ 
+-    DefaultArg = ParseAssignmentExpression();
++    DefaultArg = Actions.CorrectDelayedTyposInExpr(ParseAssignmentExpression());
+     if (DefaultArg.isInvalid())
+       SkipUntil(tok::comma, tok::greater, StopAtSemi | StopBeforeMatch);
+   }
+diff --git a/test/SemaCXX/default2.cpp b/test/SemaCXX/default2.cpp
+index 1626044..c4d40b4 100644
+--- a/test/SemaCXX/default2.cpp
++++ b/test/SemaCXX/default2.cpp
+@@ -122,3 +122,9 @@ class XX {
+   void A(int length = -1 ) {  } 
+   void B() { A(); }
+ };
++
++template <int I = (1 * I)> struct S {};  // expected-error-re {{use of undeclared identifier 'I'{{$}}}}
++S<1> s;
++
++template <int I1 = I2, int I2 = 1> struct T {};  // expected-error-re {{use of undeclared identifier 'I2'{{$}}}}
++T<0, 1> t;
+diff --git a/test/SemaCXX/typo-correction-delayed.cpp b/test/SemaCXX/typo-correction-delayed.cpp
+index bff1d76..7bf9258 100644
+--- a/test/SemaCXX/typo-correction-delayed.cpp
++++ b/test/SemaCXX/typo-correction-delayed.cpp
+@@ -102,3 +102,7 @@ void f(int *i) {
+   __atomic_load(i, i, something_something);  // expected-error-re {{use of undeclared identifier 'something_something'{{$}}}}
+ }
+ }
++
++const int DefaultArg = 9;  // expected-note {{'DefaultArg' declared here}}
++template <int I = defaultArg> struct S {};  // expected-error {{use of undeclared identifier 'defaultArg'; did you mean 'DefaultArg'?}}
++S<1> s;
+EOF
+patch -p1
+popd
+
+# Apply r223209: "Handle delayed corrections in a couple more error paths in ParsePostfixExpressionSuffix."
+pushd "${CLANG_DIR}"
+cat << 'EOF' |
+--- a/lib/Parse/ParseExpr.cpp
++++ b/lib/Parse/ParseExpr.cpp
+@@ -1390,6 +1390,7 @@ Parser::ParsePostfixExpressionSuffix(ExprResult LHS) {
+         SourceLocation OpenLoc = ConsumeToken();
+ 
+         if (ParseSimpleExpressionList(ExecConfigExprs, ExecConfigCommaLocs)) {
++          (void)Actions.CorrectDelayedTyposInExpr(LHS);
+           LHS = ExprError();
+         }
+ 
+@@ -1440,6 +1441,7 @@ Parser::ParsePostfixExpressionSuffix(ExprResult LHS) {
+         if (Tok.isNot(tok::r_paren)) {
+           if (ParseExpressionList(ArgExprs, CommaLocs, &Sema::CodeCompleteCall,
+                                   LHS.get())) {
++            (void)Actions.CorrectDelayedTyposInExpr(LHS);
+             LHS = ExprError();
+           }
+         }
+diff --git a/test/SemaCXX/typo-correction-delayed.cpp b/test/SemaCXX/typo-correction-delayed.cpp
+index 7bf9258..f7ef015 100644
+--- a/test/SemaCXX/typo-correction-delayed.cpp
++++ b/test/SemaCXX/typo-correction-delayed.cpp
+@@ -106,3 +106,9 @@ void f(int *i) {
+ const int DefaultArg = 9;  // expected-note {{'DefaultArg' declared here}}
+ template <int I = defaultArg> struct S {};  // expected-error {{use of undeclared identifier 'defaultArg'; did you mean 'DefaultArg'?}}
+ S<1> s;
++
++namespace foo {}
++void test_paren_suffix() {
++  foo::bar({5, 6});  // expected-error-re {{no member named 'bar' in namespace 'foo'{{$}}}} \
++                     // expected-error {{expected expression}}
++}
+EOF
+patch -p1
+popd
+
+# Apply r223705: "Handle possible TypoExprs in member initializers."
+pushd "${CLANG_DIR}"
+cat << 'EOF' |
+--- a/lib/Sema/SemaDeclCXX.cpp
++++ b/lib/Sema/SemaDeclCXX.cpp
+@@ -2813,6 +2813,11 @@ Sema::BuildMemInitializer(Decl *ConstructorD,
+                           SourceLocation IdLoc,
+                           Expr *Init,
+                           SourceLocation EllipsisLoc) {
++  ExprResult Res = CorrectDelayedTyposInExpr(Init);
++  if (!Res.isUsable())
++    return true;
++  Init = Res.get();
++
+   if (!ConstructorD)
+     return true;
+ 
+diff --git a/test/SemaCXX/typo-correction-delayed.cpp b/test/SemaCXX/typo-correction-delayed.cpp
+index f7ef015..d303b58 100644
+--- a/test/SemaCXX/typo-correction-delayed.cpp
++++ b/test/SemaCXX/typo-correction-delayed.cpp
+@@ -112,3 +112,10 @@ void test_paren_suffix() {
+   foo::bar({5, 6});  // expected-error-re {{no member named 'bar' in namespace 'foo'{{$}}}} \
+                      // expected-error {{expected expression}}
+ }
++
++const int kNum = 10;  // expected-note {{'kNum' declared here}}
++class SomeClass {
++  int Kind;
++public:
++  explicit SomeClass() : Kind(kSum) {}  // expected-error {{use of undeclared identifier 'kSum'; did you mean 'kNum'?}}
++};
+EOF
+patch -p1
+popd
+
+# Apply r224172: "Typo correction: Ignore temporary binding exprs after overload resolution"
+pushd "${CLANG_DIR}"
+cat << 'EOF' |
+--- a/lib/Sema/SemaExprCXX.cpp
++++ b/lib/Sema/SemaExprCXX.cpp
+@@ -6105,8 +6105,13 @@ public:
+     auto Result = BaseTransform::RebuildCallExpr(Callee, LParenLoc, Args,
+                                                  RParenLoc, ExecConfig);
+     if (auto *OE = dyn_cast<OverloadExpr>(Callee)) {
+-      if (!Result.isInvalid() && Result.get())
+-        OverloadResolution[OE] = cast<CallExpr>(Result.get())->getCallee();
++      if (!Result.isInvalid() && Result.get()) {
++        Expr *ResultCall = Result.get();
++        if (auto *BE = dyn_cast<CXXBindTemporaryExpr>(ResultCall))
++          ResultCall = BE->getSubExpr();
++        if (auto *CE = dyn_cast<CallExpr>(ResultCall))
++          OverloadResolution[OE] = CE->getCallee();
++      }
+     }
+     return Result;
+   }
+diff --git a/test/SemaCXX/typo-correction-delayed.cpp b/test/SemaCXX/typo-correction-delayed.cpp
+index d303b58..d42888f 100644
+--- a/test/SemaCXX/typo-correction-delayed.cpp
++++ b/test/SemaCXX/typo-correction-delayed.cpp
+@@ -119,3 +119,23 @@ class SomeClass {
+ public:
+   explicit SomeClass() : Kind(kSum) {}  // expected-error {{use of undeclared identifier 'kSum'; did you mean 'kNum'?}}
+ };
++
++extern "C" int printf(const char *, ...);
++
++// There used to be an issue with typo resolution inside overloads.
++struct AssertionResult {
++  ~AssertionResult();
++  operator bool();
++  int val;
++};
++AssertionResult Compare(const char *a, const char *b);
++AssertionResult Compare(int a, int b);
++int main() {
++  // expected-note@+1 {{'result' declared here}}
++  const char *result;
++  // expected-error@+1 {{use of undeclared identifier 'resulta'; did you mean 'result'?}}
++  if (AssertionResult ar = (Compare("value1", resulta)))
++    ;
++  else
++    printf("ar: %d\n", ar.val);
++}
+EOF
+patch -p1
+popd
+
+# Apply r224173: "Implement feedback on r224172 in PR21899"
+pushd "${CLANG_DIR}"
+cat << 'EOF' |
+--- a/lib/Sema/SemaExprCXX.cpp
++++ b/lib/Sema/SemaExprCXX.cpp
+@@ -6105,7 +6105,7 @@ public:
+     auto Result = BaseTransform::RebuildCallExpr(Callee, LParenLoc, Args,
+                                                  RParenLoc, ExecConfig);
+     if (auto *OE = dyn_cast<OverloadExpr>(Callee)) {
+-      if (!Result.isInvalid() && Result.get()) {
++      if (Result.isUsable()) {
+         Expr *ResultCall = Result.get();
+         if (auto *BE = dyn_cast<CXXBindTemporaryExpr>(ResultCall))
+           ResultCall = BE->getSubExpr();
+diff --git a/test/SemaCXX/typo-correction-delayed.cpp b/test/SemaCXX/typo-correction-delayed.cpp
+index d42888f..7879d29 100644
+--- a/test/SemaCXX/typo-correction-delayed.cpp
++++ b/test/SemaCXX/typo-correction-delayed.cpp
+@@ -120,22 +120,13 @@ public:
+   explicit SomeClass() : Kind(kSum) {}  // expected-error {{use of undeclared identifier 'kSum'; did you mean 'kNum'?}}
+ };
+ 
+-extern "C" int printf(const char *, ...);
+-
+ // There used to be an issue with typo resolution inside overloads.
+-struct AssertionResult {
+-  ~AssertionResult();
+-  operator bool();
+-  int val;
+-};
+-AssertionResult Compare(const char *a, const char *b);
+-AssertionResult Compare(int a, int b);
+-int main() {
++struct AssertionResult { ~AssertionResult(); };
++AssertionResult Overload(const char *a);
++AssertionResult Overload(int a);
++void UseOverload() {
+   // expected-note@+1 {{'result' declared here}}
+   const char *result;
+   // expected-error@+1 {{use of undeclared identifier 'resulta'; did you mean 'result'?}}
+-  if (AssertionResult ar = (Compare("value1", resulta)))
+-    ;
+-  else
+-    printf("ar: %d\n", ar.val);
++  Overload(resulta);
+ }
+EOF
+patch -p1
+popd
+
 
 # This Go bindings test doesn't work after the bootstrap build on Linux. (PR21552)
 pushd "${LLVM_DIR}"
