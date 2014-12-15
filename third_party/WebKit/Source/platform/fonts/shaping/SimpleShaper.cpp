@@ -105,7 +105,7 @@ float SimpleShaper::adjustSpacing(float width, const CharacterData& charData)
         width += m_font->fontDescription().letterSpacing();
 
     bool isExpansionOpportunity = Character::treatAsSpace(charData.character) || (m_run.textJustify() == TextJustifyDistribute);
-    if (isExpansionOpportunity) {
+    if (isExpansionOpportunity || (m_run.textJustify() == TextJustifyAuto && Character::isCJKIdeographOrSymbol(charData.character))) {
         // Distribute the run's total expansion evenly over all expansion opportunities in the run.
         if (m_expansion) {
             if (!isExpansionOpportunity && !m_isAfterExpansion) {

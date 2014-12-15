@@ -378,6 +378,13 @@ unsigned Character::expansionOpportunityCount(const UChar* characters, size_t le
                 character = U16_GET_SUPPLEMENTARY(character, characters[i + 1]);
                 i++;
             }
+            if (textJustify == TextJustify::TextJustifyAuto && isCJKIdeographOrSymbol(character)) {
+                if (!isAfterExpansion)
+                    count++;
+                count++;
+                isAfterExpansion = true;
+                continue;
+            }
             isAfterExpansion = false;
         }
     } else {
@@ -391,6 +398,13 @@ unsigned Character::expansionOpportunityCount(const UChar* characters, size_t le
             if (U16_IS_TRAIL(character) && i > 1 && U16_IS_LEAD(characters[i - 2])) {
                 character = U16_GET_SUPPLEMENTARY(characters[i - 2], character);
                 i--;
+            }
+            if (textJustify == TextJustify::TextJustifyAuto && isCJKIdeographOrSymbol(character)) {
+                if (!isAfterExpansion)
+                    count++;
+                count++;
+                isAfterExpansion = true;
+                continue;
             }
             isAfterExpansion = false;
         }

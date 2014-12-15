@@ -510,6 +510,24 @@ crbug.com/320477 [ Debug ] inspector/sources/debugger/debugger-pause-in-internal
 
 crbug.com/396823 [ Mac ] virtual/regionbasedmulticol/fast/multicol/multicol-with-child-renderLayer-for-input.html [ ImageOnlyFailure ]
 
+crbug.com/368108 fast/inline/justify-emphasis-inline-box.html [ NeedsRebaseline ]
+crbug.com/368108 fast/ruby/base-shorter-than-text.html [ NeedsRebaseline ]
+crbug.com/368108 fast/ruby/nested-ruby.html [ NeedsRebaseline ]
+crbug.com/368108 fast/writing-mode/japanese-ruby-horizontal-bt.html [ NeedsRebaseline ]
+crbug.com/368108 fast/writing-mode/japanese-ruby-vertical-lr.html [ NeedsRebaseline ]
+crbug.com/368108 fast/writing-mode/japanese-ruby-vertical-rl.html [ NeedsRebaseline ]
+crbug.com/368108 fast/text/justify-ideograph-leading-expansion.html [ NeedsRebaseline ]
+crbug.com/368108 fast/text/justify-ideograph-simple.html [ NeedsRebaseline ]
+crbug.com/368108 fast/text/justify-ideograph-vertical.html [ NeedsRebaseline ]
+crbug.com/368108 fast/writing-mode/Kusa-Makura-background-canvas.html [ NeedsRebaseline ]
+crbug.com/368108 virtual/antialiasedtext/fast/text/justify-ideograph-leading-expansion.html [ NeedsRebaseline ]
+crbug.com/368108 virtual/antialiasedtext/fast/text/justify-ideograph-simple.html [ NeedsRebaseline ]
+crbug.com/368108 [ Linux Win ] virtual/slimmingpaint/fast/inline/justify-emphasis-inline-box.html [ NeedsRebaseline ]
+crbug.com/368108 virtual/slimmingpaint/fast/text/justify-ideograph-leading-expansion.html [ NeedsRebaseline ]
+crbug.com/368108 virtual/slimmingpaint/fast/text/justify-ideograph-simple.html [ NeedsRebaseline ]
+crbug.com/368108 virtual/slimmingpaint/fast/text/midword-break-before-surrogate-pair-2.html [ NeedsRebaseline ]
+crbug.com/368108 virtual/slimmingpaint/fast/text/midword-break-before-surrogate-pair.html [ NeedsRebaseline ]
+
 # Printing Layout broken in these tests.
 crbug.com/377696 printing/setPrinting.html [ Skip ]
 crbug.com/377696 printing/width-overflow.html [ Skip ]
