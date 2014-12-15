@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<style>
+@font-face {
+    font-family:cssot-h;
+    src:url(../../third_party/adobe-fonts/CSSHWOrientationTest.otf);
+}
+#container {
+    font-family:cssot-h;
+}
+.v {
+    -webkit-writing-mode:vertical-lr;
+}
+#s {
+    -webkit-text-orientation:sideways;
+}
+#u {
+    -webkit-text-orientation:upright;
+}
+</style>
+<div id="container">
+    <pre><span id="h"></span></pre>
+    <div class="v">
+        <div>A</div>
+        <div id="v"></div>
+        <div id="u"></div>
+        <div id="s"></div>
+    </div>
+</div>
+<script>
+(function () {
+    description('Confirms Mongolian and Phags-Pa are oriented correctly in vertical flow.');
+    jsTestIsAsync = true;
+    window.onload = function () {
+        testRange('Mongolian', 0x1800, 0x18AF, [0x180B, 0x180C, 0x180D, 0x180E, 0x18A9]);
+        testRange('Phags-Pa', 0xA840, 0xA87F);
+        finishJSTest();
+    };
+
+    function testRange(name, start, end, allowed_inconclusives) {
+        list = [];
+        for (var code = start; code <= end; ++code)
+            list.push(dataFromCode(code));
+        var failed = 0;
+        allowed_inconclusives = allowed_inconclusives || [];
+        inconclusives = {};
+        allowed_inconclusives.forEach(function (code) { inconclusives[code] = true; });
+        for (var i = 0; i < list.length; ++i) {
+            var data = list[i];
+            if (!testData(data, inconclusives))
+                ++failed;
+        }
+        if (!failed)
+            testPassed(name + ': U+' + start.toString(16) + '-' + end.toString(16));
+        clean();
+    }
+
+    var horizontal = document.getElementById('h');
+    var vertical = document.getElementById('v');
+    var sideways = document.getElementById('s');
+    var upright = document.getElementById('u');
+
+    function dataFromCode(code) {
+        var ch = String.fromCharCode(code);
+        return {
+            code:code,
+            h:spanFromText(ch, horizontal),
+            v:spanFromText(ch, vertical),
+            u:spanFromText(ch, upright),
+            s:spanFromText(ch, sideways),
+        };
+    }
+
+    function spanFromText(text, parent) {
+        var node = document.createElement('span');
+        node.innerText = text;
+        parent.appendChild(node);
+        return node;
+    }
+
+    function testData(data, inconclusives) {
+        var v = data.v.getBoundingClientRect(),
+            u = data.u.getBoundingClientRect(),
+            s = data.s.getBoundingClientRect(),
+            isUpright = v.width == u.width && v.height == u.height,
+            isSideways = v.width == s.width && v.height == s.height;
+        if ((isUpright && isSideways) || (!isUpright && !isSideways)) {
+            if (data.code in inconclusives) {
+                testPassed('Inconclusive U+' + dataToString(data));
+                return true;
+            }
+            testFailed('Inconclusive ' + dataToString(data));
+            return false;
+        }
+        if (isSideways)
+            return true;
+        testFailed('Is upright ' + dataToString(data));
+        return false;
+    }
+
+    function dataToString(data) {
+        return 'U+' + data.code.toString(16) + ': vertical=' + sizeToString(data.v) + ', upright=' + sizeToString(data.u) + ', sideways=' + sizeToString(data.s);
+    }
+
+    function sizeToString(size) {
+        size = size.getBoundingClientRect();
+        return size.width + 'x' + size.height;
+    }
+
+    function clean() {
+        removeAllChildren(horizontal);
+        removeAllChildren(vertical);
+        removeAllChildren(sideways);
+        removeAllChildren(upright);
+    }
+
+    function removeAllChildren(parent) {
+        var child;
+        while (child = parent.lastChild)
+            parent.removeChild(child);
+    }
+})();
+</script>

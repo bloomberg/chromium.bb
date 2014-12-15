@@ -181,7 +181,7 @@ bool Character::shouldIgnoreRotation(UChar32 character)
     if (isInRange(character, 0x002E5, 0x002EB))
         return true;
 
-    if (isInRange(character, 0x01100, 0x011FF) || isInRange(character, 0x01401, 0x0167F) || isInRange(character, 0x01800, 0x018FF))
+    if (isInRange(character, 0x01100, 0x011FF) || isInRange(character, 0x01401, 0x0167F) || isInRange(character, 0x018B0, 0x018FF))
         return true;
 
     if (character == 0x02016 || character == 0x02018 || character == 0x02019 || character == 0x02020 || character == 0x02021
@@ -217,7 +217,7 @@ bool Character::shouldIgnoreRotation(UChar32 character)
         || isInRange(character, 0x030FD, 0x0A4CF))
         return true;
 
-    if (isInRange(character, 0x0A840, 0x0A87F) || isInRange(character, 0x0A960, 0x0A97F)
+    if (isInRange(character, 0x0A960, 0x0A97F)
         || isInRange(character, 0x0AC00, 0x0D7FF) || isInRange(character, 0x0E000, 0x0FAFF))
         return true;
 

@@ -1,0 +1,17 @@
+Confirms Mongolian and Phags-Pa are oriented correctly in vertical flow.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS Inconclusive U+U+180b: vertical=16x0, upright=16x0, sideways=16x0
+PASS Inconclusive U+U+180c: vertical=16x0, upright=16x0, sideways=16x0
+PASS Inconclusive U+U+180d: vertical=16x0, upright=16x0, sideways=16x0
+PASS Inconclusive U+U+180e: vertical=16x0, upright=16x0, sideways=16x0
+PASS Inconclusive U+U+18a9: vertical=16x0, upright=16x0, sideways=16x0
+PASS Mongolian: U+1800-18af
+PASS Phags-Pa: U+a840-a87f
+PASS successfullyParsed is true
+
+TEST COMPLETE
+A
+
