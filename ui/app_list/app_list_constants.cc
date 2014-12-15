@@ -23,10 +23,10 @@ const SkColor kBottomSeparatorColor = SkColorSetRGB(0xC0, 0xC0, 0xC0);
 // The color of the separator used inside dialogs in the app list.
 const SkColor kDialogSeparatorColor = SkColorSetRGB(0xD1, 0xD1, 0xD1);
 
-// 6% black over kContentsBackgroundColor
-const SkColor kHighlightedColor = SkColorSetRGB(0xEB, 0xEB, 0xEB);
-// 10% black over kContentsBackgroundColor
-const SkColor kSelectedColor = SkColorSetRGB(0xE1, 0xE1, 0xE1);
+// The mouse hover colour (3% black over kContentsBackgroundColor).
+const SkColor kHighlightedColor = SkColorSetRGB(0xEE, 0xEE, 0xEE);
+// The keyboard select colour (6% black over kContentsBackgroundColor).
+const SkColor kSelectedColor = SkColorSetRGB(0xE6, 0xE6, 0xE6);
 
 const SkColor kPagerHoverColor = SkColorSetRGB(0xB4, 0xB4, 0xB4);
 const SkColor kPagerNormalColor = SkColorSetRGB(0xE2, 0xE2, 0xE2);
