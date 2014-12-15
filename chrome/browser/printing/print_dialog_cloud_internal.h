@@ -146,7 +146,7 @@ class CloudPrintFlowHandler : public content::WebUIMessageHandler,
 class CloudPrintWebDialogDelegate : public ui::WebDialogDelegate {
  public:
   CloudPrintWebDialogDelegate(content::BrowserContext* browser_context,
-                              gfx::NativeWindow modal_parent,
+                              gfx::NativeView modal_parent,
                               const base::RefCountedMemory* data,
                               const std::string& json_arguments,
                               const base::string16& print_job_title,
@@ -178,7 +178,7 @@ class CloudPrintWebDialogDelegate : public ui::WebDialogDelegate {
             const std::string& json_arguments);
 
   CloudPrintFlowHandler* flow_handler_;
-  gfx::NativeWindow modal_parent_;
+  gfx::NativeView modal_parent_;
   mutable bool owns_flow_handler_;
   bool keep_alive_when_non_modal_;
 
@@ -189,7 +189,7 @@ class CloudPrintWebDialogDelegate : public ui::WebDialogDelegate {
 };
 
 void CreateDialogForFileImpl(content::BrowserContext* browser_context,
-                             gfx::NativeWindow modal_parent,
+                             gfx::NativeView modal_parent,
                              const base::FilePath& path_to_file,
                              const base::string16& print_job_title,
                              const base::string16& print_ticket,

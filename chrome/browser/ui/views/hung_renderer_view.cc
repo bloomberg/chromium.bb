@@ -174,7 +174,7 @@ static const int kCentralColumnPadding =
 
 // static
 HungRendererDialogView* HungRendererDialogView::Create(
-    gfx::NativeView context) {
+    gfx::NativeWindow context) {
   if (!g_instance_) {
     g_instance_ = new HungRendererDialogView;
     views::DialogDelegate::CreateDialogWidget(g_instance_, context, NULL);
@@ -189,9 +189,9 @@ HungRendererDialogView* HungRendererDialogView::GetInstance() {
 
 // static
 bool HungRendererDialogView::IsFrameActive(WebContents* contents) {
-  gfx::NativeView frame_view =
+  gfx::NativeWindow window =
       platform_util::GetTopLevel(contents->GetNativeView());
-  return platform_util::IsWindowActive(frame_view);
+  return platform_util::IsWindowActive(window);
 }
 
 // static
@@ -236,10 +236,10 @@ void HungRendererDialogView::ShowForWebContents(WebContents* contents) {
           GetWidget(), manager->GetWebContentsModalDialogHost());
     }
 
-    gfx::NativeView frame_view =
+    gfx::NativeWindow window =
         platform_util::GetTopLevel(contents->GetNativeView());
     views::Widget* insert_after =
-        views::Widget::GetWidgetForNativeView(frame_view);
+        views::Widget::GetWidgetForNativeWindow(window);
     if (insert_after)
       GetWidget()->StackAboveWidget(insert_after);
 
@@ -430,14 +430,16 @@ void ShowHungRendererDialog(WebContents* contents) {
   if (logging::DialogsAreSuppressed())
     return;
 
-  gfx::NativeView toplevel_view =
+  gfx::NativeWindow window =
       platform_util::GetTopLevel(contents->GetNativeView());
+#if defined(USE_AURA)
   // Don't show the dialog if there is no root window for the renderer, because
   // it's invisible to the user (happens when the renderer is for prerendering
   // for example).
-  if (!toplevel_view->GetRootWindow())
+  if (!window->GetRootWindow())
     return;
-  HungRendererDialogView* view = HungRendererDialogView::Create(toplevel_view);
+#endif
+  HungRendererDialogView* view = HungRendererDialogView::Create(window);
   view->ShowForWebContents(contents);
 }
 

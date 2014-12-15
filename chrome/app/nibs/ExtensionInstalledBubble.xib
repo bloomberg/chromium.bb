@@ -167,7 +167,7 @@
 									<object class="NSTextFieldCell" key="NSCell" id="353810369">
 										<int key="NSCellFlags">67108864</int>
 										<int key="NSCellFlags2">272662528</int>
-										<string key="NSContents">^IDS_EXTENSION_INSTALLED_MANAGE_INFO_MAC</string>
+										<string key="NSContents">^IDS_EXTENSION_INSTALLED_MANAGE_INFO</string>
 										<reference key="NSSupport" ref="472995141"/>
 										<reference key="NSControlView" ref="480350025"/>
 										<object class="NSColor" key="NSBackgroundColor" id="951604798">

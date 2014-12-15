@@ -99,7 +99,7 @@ class HungRendererDialogView : public views::DialogDelegateView,
  public:
   // Factory function for creating an instance of the HungRendererDialogView
   // class. At any given point only one instance can be active.
-  static HungRendererDialogView* Create(gfx::NativeView context);
+  static HungRendererDialogView* Create(gfx::NativeWindow context);
 
   // Returns a pointer to the singleton instance if any.
   static HungRendererDialogView* GetInstance();

@@ -2036,8 +2036,9 @@
       'browser/ui/views/frame/browser_frame_mac.h',
       'browser/ui/views/frame/browser_frame_mac.mm',
       'browser/ui/views/frame/browser_non_client_frame_view.cc',
-      'browser/ui/views/frame/browser_non_client_frame_view_factory_aura.cc',
       'browser/ui/views/frame/browser_non_client_frame_view.h',
+      'browser/ui/views/frame/browser_non_client_frame_view_factory_aura.cc',
+      'browser/ui/views/frame/browser_non_client_frame_view_factory_mac.mm',
       'browser/ui/views/frame/browser_root_view.cc',
       'browser/ui/views/frame/browser_root_view.h',
       'browser/ui/views/frame/browser_shutdown.cc',
@@ -2067,6 +2068,8 @@
       'browser/ui/views/frame/native_browser_frame_factory_chromeos.cc',
       'browser/ui/views/frame/native_browser_frame_factory_mac.cc',
       'browser/ui/views/frame/native_browser_frame.h',
+      'browser/ui/views/frame/opaque_browser_frame_view.cc',
+      'browser/ui/views/frame/opaque_browser_frame_view.h',
       'browser/ui/views/frame/opaque_browser_frame_view_layout.cc',
       'browser/ui/views/frame/opaque_browser_frame_view_layout_delegate.h',
       'browser/ui/views/frame/opaque_browser_frame_view_layout.h',
@@ -2081,6 +2084,7 @@
       'browser/ui/views/frame/system_menu_model_delegate.cc',
       'browser/ui/views/frame/system_menu_model_delegate.h',
       'browser/ui/views/frame/taskbar_decorator.h',
+      'browser/ui/views/frame/taskbar_decorator.cc',
       'browser/ui/views/frame/taskbar_decorator_win.cc',
       'browser/ui/views/frame/top_container_view.cc',
       'browser/ui/views/frame/top_container_view.h',
@@ -2320,8 +2324,6 @@
       'browser/ui/views/external_protocol_dialog.h',
       'browser/ui/views/frame/desktop_browser_frame_aura.cc',
       'browser/ui/views/frame/desktop_browser_frame_aura.h',
-      'browser/ui/views/frame/opaque_browser_frame_view.cc',
-      'browser/ui/views/frame/opaque_browser_frame_view.h',
       'browser/ui/views/message_center/message_center_frame_view.cc',
       'browser/ui/views/message_center/message_center_frame_view.h',
       'browser/ui/views/message_center/message_center_widget_delegate.h',
@@ -2528,7 +2530,6 @@
       'browser/ui/startup/autolaunch_prompt.cc',
       'browser/ui/views/apps/chrome_apps_client_views.cc',
       'browser/ui/views/apps/keyboard_hook_handler.cc',
-      'browser/ui/views/frame/taskbar_decorator.cc',
       'browser/ui/webui/certificate_viewer_ui.cc',
       'browser/ui/webui/certificate_viewer_ui.h',
       'browser/ui/webui/certificate_viewer_webui.cc',
@@ -2913,11 +2914,6 @@
         ['OS=="mac"', {
           'sources': [ '<@(chrome_browser_ui_mac_sources)' ],
           'sources!': [
-            # Mac has its own way of drawing tabs.
-            'browser/ui/tabs/tab_resources.cc',
-            'browser/ui/tabs/tab_resources.h',
-            'browser/ui/views/extensions/extension_view_views.cc',
-            'browser/ui/views/extensions/extension_view_views.h',
             # Task manager has its own sources list. Leave out the views one.
             'browser/ui/views/task_manager_view.cc',
           ],
@@ -2981,6 +2977,9 @@
             '../ui/views/views.gyp:views',
           ],
           'sources': [ '<@(chrome_browser_ui_win_sources)' ],
+          'sources!': [
+            'browser/ui/views/frame/taskbar_decorator.cc'
+          ],
           'conditions': [
             ['win_use_allocator_shim==1', {
               'dependencies': [

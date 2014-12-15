@@ -96,7 +96,7 @@ private:
 
 namespace chrome {
 
-gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
+gfx::NativeWindow ShowWebDialog(gfx::NativeView parent,
                                 content::BrowserContext* context,
                                 WebDialogDelegate* delegate) {
   return [WebDialogWindowController showWebDialog:delegate

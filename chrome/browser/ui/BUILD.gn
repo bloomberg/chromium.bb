@@ -336,11 +336,6 @@ static_library("ui") {
   if (is_mac) {
     sources +=
         rebase_path(gypi_values.chrome_browser_ui_mac_sources, ".", "//chrome")
-    sources -= [
-      # Mac has its own way of drawing tabs.
-      "tabs/tab_resources.cc",
-      "tabs/tab_resources.h",
-    ]
     deps += [
       "//third_party/google_toolbox_for_mac",
       ":generate_localizer",

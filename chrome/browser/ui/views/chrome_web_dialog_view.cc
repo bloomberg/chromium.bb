@@ -11,7 +11,7 @@
 namespace chrome {
 
 // Declared in browser_dialogs.h so that others don't need to depend on our .h.
-gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
+gfx::NativeWindow ShowWebDialog(gfx::NativeView parent,
                                 content::BrowserContext* context,
                                 ui::WebDialogDelegate* delegate) {
   views::Widget* widget = NULL;

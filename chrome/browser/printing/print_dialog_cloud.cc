@@ -486,7 +486,7 @@ bool CloudPrintFlowHandler::IsCloudPrintDialogUrl(const GURL& url) {
 
 CloudPrintWebDialogDelegate::CloudPrintWebDialogDelegate(
     content::BrowserContext* browser_context,
-    gfx::NativeWindow modal_parent,
+    gfx::NativeView modal_parent,
     const base::RefCountedMemory* data,
     const std::string& json_arguments,
     const base::string16& print_job_title,
@@ -617,7 +617,7 @@ bool CloudPrintWebDialogDelegate::HandleContextMenu(
 
 // Called from the UI thread, starts up the dialog.
 void CreateDialogImpl(content::BrowserContext* browser_context,
-                      gfx::NativeWindow modal_parent,
+                      gfx::NativeView modal_parent,
                       const base::RefCountedMemory* data,
                       const base::string16& print_job_title,
                       const base::string16& print_ticket,
@@ -649,7 +649,7 @@ void CreateDialogImpl(content::BrowserContext* browser_context,
 }
 
 void CreateDialogForFileImpl(content::BrowserContext* browser_context,
-                             gfx::NativeWindow modal_parent,
+                             gfx::NativeView modal_parent,
                              const base::FilePath& path_to_file,
                              const base::string16& print_job_title,
                              const base::string16& print_ticket,
@@ -696,7 +696,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 // the dialog.
 
 void CreatePrintDialogForFile(content::BrowserContext* browser_context,
-                              gfx::NativeWindow modal_parent,
+                              gfx::NativeView modal_parent,
                               const base::FilePath& path_to_file,
                               const base::string16& print_job_title,
                               const base::string16& print_ticket,
@@ -737,7 +737,7 @@ void CreateCloudPrintSigninTab(Browser* browser,
 }
 
 void CreatePrintDialogForBytes(content::BrowserContext* browser_context,
-                               gfx::NativeWindow modal_parent,
+                               gfx::NativeView modal_parent,
                                const base::RefCountedMemory* data,
                                const base::string16& print_job_title,
                                const base::string16& print_ticket,

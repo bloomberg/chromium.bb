@@ -39,7 +39,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 // If non-NULL, |modal_parent| specifies a window that the print dialog is modal
 // to.
 void CreatePrintDialogForFile(content::BrowserContext* browser_context,
-                              gfx::NativeWindow modal_parent,
+                              gfx::NativeView modal_parent,
                               const base::FilePath& path_to_file,
                               const base::string16& print_job_title,
                               const base::string16& print_ticket,
@@ -51,7 +51,7 @@ void CreatePrintDialogForFile(content::BrowserContext* browser_context,
 // If non-NULL, |modal_parent| specifies a window that the print dialog is modal
 // to.
 void CreatePrintDialogForBytes(content::BrowserContext* browser_context,
-                               gfx::NativeWindow modal_parent,
+                               gfx::NativeView modal_parent,
                                const base::RefCountedMemory* data,
                                const base::string16& print_job_title,
                                const base::string16& print_ticket,

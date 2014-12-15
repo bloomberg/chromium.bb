@@ -10,7 +10,7 @@ bool OpaqueBrowserFrameViewPlatformSpecific::IsUsingSystemTheme() {
   return false;
 }
 
-#if defined(OS_WIN)
+#if !defined(OS_LINUX)
 
 // static
 OpaqueBrowserFrameViewPlatformSpecific*

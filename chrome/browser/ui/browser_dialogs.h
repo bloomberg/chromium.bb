@@ -40,7 +40,7 @@ namespace chrome {
 //
 // Make sure to use the returned window only when you know it is safe
 // to do so, i.e. before OnDialogClosed() is called on the delegate.
-gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
+gfx::NativeWindow ShowWebDialog(gfx::NativeView parent,
                                 content::BrowserContext* context,
                                 ui::WebDialogDelegate* delegate);
 
