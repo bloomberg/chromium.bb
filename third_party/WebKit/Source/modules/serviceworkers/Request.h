@@ -19,6 +19,7 @@
 
 namespace blink {
 
+class BodyStreamBuffer;
 class RequestInit;
 class WebServiceWorkerRequest;
 
@@ -27,7 +28,7 @@ typedef RequestOrUSVString RequestInfo;
 class Request final : public Body {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~Request() { }
+    ~Request() override { }
 
     // From Request.idl:
     static Request* create(ExecutionContext*, const RequestInfo&, const Dictionary&, ExceptionState&);
@@ -60,7 +61,7 @@ public:
     void setBodyBlobHandle(PassRefPtr<BlobDataHandle>);
     bool hasBody() const { return m_request->blobDataHandle(); }
 
-    virtual void trace(Visitor*)  override;
+    void trace(Visitor*) override;
 
 private:
     explicit Request(const Request&);
@@ -70,7 +71,9 @@ private:
     static Request* createRequestWithRequestOrString(ExecutionContext*, Request*, const String&, const RequestInit&, ExceptionState&);
     void clearHeaderList();
 
-    virtual PassRefPtr<BlobDataHandle> blobDataHandle() override;
+    PassRefPtr<BlobDataHandle> blobDataHandle() const override;
+    BodyStreamBuffer* buffer() const override;
+    String contentTypeForBuffer() const override;
 
     const Member<FetchRequestData> m_request;
     const Member<Headers> m_headers;

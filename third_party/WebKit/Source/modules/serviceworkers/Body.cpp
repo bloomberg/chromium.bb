@@ -15,8 +15,36 @@
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/streams/UnderlyingSource.h"
+#include "modules/serviceworkers/BodyStreamBuffer.h"
 
 namespace blink {
+
+class Body::BlobHandleReceiver final : public BodyStreamBuffer::BlobHandleCreatorClient {
+public:
+    explicit BlobHandleReceiver(Body* body)
+        : m_body(body)
+    {
+    }
+    void didCreateBlobHandle(PassRefPtr<BlobDataHandle> handle) override
+    {
+        ASSERT(m_body);
+        m_body->readAsyncFromBlob(handle);
+        m_body = nullptr;
+    }
+    void didFail(PassRefPtrWillBeRawPtr<DOMException> exception) override
+    {
+        ASSERT(m_body);
+        m_body->didBlobHandleReceiveError(exception);
+        m_body = nullptr;
+    }
+    void trace(Visitor* visitor) override
+    {
+        BodyStreamBuffer::BlobHandleCreatorClient::trace(visitor);
+        visitor->trace(m_body);
+    }
+private:
+    Member<Body> m_body;
+};
 
 class Body::ReadableStreamSource : public GarbageCollectedFinalized<ReadableStreamSource>, public UnderlyingSource {
     USING_GARBAGE_COLLECTED_MIXIN(ReadableStreamSource);
@@ -54,13 +82,18 @@ void Body::pullSource()
         return;
     }
     ASSERT(!m_loader);
-    FileReaderLoader::ReadType readType = FileReaderLoader::ReadAsArrayBuffer;
+    if (buffer()) {
+        // If the body has a body buffer, we read all data from the buffer and
+        // create a blob and then put the data from the blob to |m_stream|.
+        // FIXME: Put the data directry from the buffer.
+        buffer()->readAllAndCreateBlobHandle(contentTypeForBuffer(), new BlobHandleReceiver(this));
+        return;
+    }
     RefPtr<BlobDataHandle> blobHandle = blobDataHandle();
     if (!blobHandle.get()) {
         blobHandle = BlobDataHandle::create(BlobData::create(), 0);
     }
-    m_loader = adoptPtr(new FileReaderLoader(readType, this));
-    m_loader->start(executionContext(), blobHandle);
+    readAsyncFromBlob(blobHandle);
 }
 
 ScriptPromise Body::readAsync(ScriptState* scriptState, ResponseType type)
@@ -105,12 +138,28 @@ ScriptPromise Body::readAsync(ScriptState* scriptState, ResponseType type)
         return promise;
     }
 
+    if (buffer()) {
+        buffer()->readAllAndCreateBlobHandle(contentTypeForBuffer(), new BlobHandleReceiver(this));
+        return promise;
+    }
+    readAsyncFromBlob(blobDataHandle());
+    return promise;
+}
+
+void Body::readAsyncFromBlob(PassRefPtr<BlobDataHandle> handle)
+{
+    if (m_streamAccessed) {
+        FileReaderLoader::ReadType readType = FileReaderLoader::ReadAsArrayBuffer;
+        m_loader = adoptPtr(new FileReaderLoader(readType, this));
+        m_loader->start(executionContext(), handle);
+        return;
+    }
     FileReaderLoader::ReadType readType = FileReaderLoader::ReadAsText;
-    RefPtr<BlobDataHandle> blobHandle = blobDataHandle();
+    RefPtr<BlobDataHandle> blobHandle = handle;
     if (!blobHandle.get()) {
         blobHandle = BlobDataHandle::create(BlobData::create(), 0);
     }
-    switch (type) {
+    switch (m_responseType) {
     case ResponseAsArrayBuffer:
         readType = FileReaderLoader::ReadAsArrayBuffer;
         break;
@@ -120,7 +169,7 @@ ScriptPromise Body::readAsync(ScriptState* scriptState, ResponseType type)
             // it.
             m_resolver->resolve(Blob::create(blobHandle));
             m_resolver.clear();
-            return promise;
+            return;
         }
         // If the size is not set, read as ArrayBuffer and create a new blob to
         // get the size.
@@ -141,9 +190,9 @@ ScriptPromise Body::readAsync(ScriptState* scriptState, ResponseType type)
     }
 
     m_loader = adoptPtr(new FileReaderLoader(readType, this));
-    m_loader->start(executionContext, blobHandle);
+    m_loader->start(m_resolver->scriptState()->executionContext(), blobHandle);
 
-    return promise;
+    return;
 }
 
 void Body::readAllFromStream(ScriptState* scriptState)
@@ -213,10 +262,15 @@ void Body::setBodyUsed()
     m_bodyUsed = true;
 }
 
+bool Body::streamAccessed() const
+{
+    return m_streamAccessed;
+}
+
 void Body::stop()
 {
     // Canceling the load will call didFail which will remove the resolver.
-    if (m_resolver)
+    if (m_loader)
         m_loader->cancel();
 }
 
@@ -372,6 +426,14 @@ void Body::didFail(FileError::ErrorCode code)
         m_resolver.clear();
     }
     m_stream->error(DOMException::create(NetworkError, "network error"));
+}
+
+void Body::didBlobHandleReceiveError(PassRefPtrWillBeRawPtr<DOMException> exception)
+{
+    if (!m_resolver)
+        return;
+    m_resolver->reject(exception);
+    m_resolver.clear();
 }
 
 } // namespace blink

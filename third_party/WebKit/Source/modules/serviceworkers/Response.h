@@ -17,6 +17,7 @@
 namespace blink {
 
 class Blob;
+class BodyStreamBuffer;
 class DOMArrayBuffer;
 class DOMArrayBufferView;
 class ExceptionState;
@@ -28,7 +29,7 @@ typedef BlobOrArrayBufferOrArrayBufferViewOrUSVString BodyInit;
 class Response final : public Body {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~Response() { }
+    ~Response() override { }
 
     // From Response.idl:
     static Response* create(ExecutionContext*, ExceptionState&);
@@ -37,9 +38,8 @@ public:
     static Response* create(ExecutionContext*, Blob*, const ResponseInit&, ExceptionState&);
     static Response* create(ExecutionContext*, FetchResponseData*);
     static Response* create(ExecutionContext*, const WebServiceWorkerResponse&);
-    // The 'FetchResponseData' object is shared between responses, as it is
-    // immutable to the user after Response creation. Headers are copied.
-    static Response* create(const Response&);
+
+    static Response* createClone(const Response&);
 
     const FetchResponseData* response() const { return m_response; }
 
@@ -55,16 +55,22 @@ public:
 
     void populateWebServiceWorkerResponse(WebServiceWorkerResponse&);
 
-    bool hasBody() const { return m_response->blobDataHandle(); }
+    bool hasBody() const;
 
-    virtual void trace(Visitor*) override;
+    PassRefPtr<BlobDataHandle> blobDataHandle() const override;
+    BodyStreamBuffer* buffer() const override;
+    String contentTypeForBuffer() const override;
+
+    PassRefPtr<BlobDataHandle> internalBlobDataHandle() const;
+    BodyStreamBuffer* internalBuffer() const;
+    String internalContentTypeForBuffer() const;
+
+    void trace(Visitor*) override;
 
 private:
     explicit Response(const Response&);
     explicit Response(ExecutionContext*);
     Response(ExecutionContext*, FetchResponseData*);
-
-    virtual PassRefPtr<BlobDataHandle> blobDataHandle() override;
 
     const Member<FetchResponseData> m_response;
     const Member<Headers> m_headers;

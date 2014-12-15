@@ -268,8 +268,8 @@ Request::Request(ExecutionContext* context, const WebServiceWorkerRequest& webRe
 
 Request::Request(const Request& copy_from)
     : Body(copy_from)
-    , m_request(copy_from.m_request)
-    , m_headers(copy_from.m_headers->createCopy())
+    , m_request(copy_from.m_request->createCopy())
+    , m_headers(Headers::create(m_request->headerList()))
 {
 }
 
@@ -342,6 +342,11 @@ Request* Request::clone(ExceptionState& exceptionState) const
         exceptionState.throwTypeError("Request body is already used");
         return nullptr;
     }
+    if (streamAccessed()) {
+        // FIXME: Support clone() of the stream accessed Request.
+        exceptionState.throwTypeError("clone() of the Request which .body is accessed is not supported.");
+        return nullptr;
+    }
     return Request::create(*this);
 }
 
@@ -371,9 +376,21 @@ void Request::clearHeaderList()
     m_request->headerList()->clearList();
 }
 
-PassRefPtr<BlobDataHandle> Request::blobDataHandle()
+PassRefPtr<BlobDataHandle> Request::blobDataHandle() const
 {
     return m_request->blobDataHandle();
+}
+
+BodyStreamBuffer* Request::buffer() const
+{
+    return nullptr;
+}
+
+String Request::contentTypeForBuffer() const
+{
+    // We don't support BodyStreamBuffer for Request yet.
+    ASSERT_NOT_REACHED();
+    return String();
 }
 
 void Request::trace(Visitor* visitor)

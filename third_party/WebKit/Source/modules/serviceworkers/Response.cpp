@@ -173,9 +173,9 @@ Response* Response::create(ExecutionContext* context, const WebServiceWorkerResp
     return r;
 }
 
-Response* Response::create(const Response& copyFrom)
+Response* Response::createClone(const Response& cloneFrom)
 {
-    Response* r = new Response(copyFrom);
+    Response* r = new Response(cloneFrom);
     r->suspendIfNeeded();
     return r;
 }
@@ -235,7 +235,12 @@ Response* Response::clone(ExceptionState& exceptionState) const
         exceptionState.throwTypeError("Response body is already used");
         return nullptr;
     }
-    return Response::create(*this);
+    if (streamAccessed()) {
+        // FIXME: Support clone() of the stream accessed Response.
+        exceptionState.throwTypeError("clone() of the Response which .body is accessed is not supported.");
+        return nullptr;
+    }
+    return Response::createClone(*this);
 }
 
 void Response::populateWebServiceWorkerResponse(WebServiceWorkerResponse& response)
@@ -251,10 +256,10 @@ Response::Response(ExecutionContext* context)
     m_headers->setGuard(Headers::ResponseGuard);
 }
 
-Response::Response(const Response& copy_from)
-    : Body(copy_from)
-    , m_response(copy_from.m_response)
-    , m_headers(copy_from.m_headers->createCopy())
+Response::Response(const Response& clone_from)
+    : Body(clone_from)
+    , m_response(clone_from.m_response->clone())
+    , m_headers(Headers::create(m_response->headerList()))
 {
 }
 
@@ -266,10 +271,39 @@ Response::Response(ExecutionContext* context, FetchResponseData* response)
     m_headers->setGuard(Headers::ResponseGuard);
 }
 
+bool Response::hasBody() const
+{
+    return internalBlobDataHandle() || internalBuffer();
+}
 
-PassRefPtr<BlobDataHandle> Response::blobDataHandle()
+PassRefPtr<BlobDataHandle> Response::blobDataHandle() const
 {
     return m_response->blobDataHandle();
+}
+
+BodyStreamBuffer* Response::buffer() const
+{
+    return m_response->buffer();
+}
+
+String Response::contentTypeForBuffer() const
+{
+    return m_response->contentTypeForBuffer();
+}
+
+PassRefPtr<BlobDataHandle> Response::internalBlobDataHandle() const
+{
+    return m_response->internalBlobDataHandle();
+}
+
+BodyStreamBuffer* Response::internalBuffer() const
+{
+    return m_response->internalBuffer();
+}
+
+String Response::internalContentTypeForBuffer() const
+{
+    return m_response->internalContentTypeForBuffer();
 }
 
 void Response::trace(Visitor* visitor)

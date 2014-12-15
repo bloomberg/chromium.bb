@@ -13,6 +13,7 @@
 namespace blink {
 
 class BlobDataHandle;
+class BodyStreamBuffer;
 class FetchHeaderList;
 class WebServiceWorkerResponse;
 
@@ -28,10 +29,13 @@ public:
 
     static FetchResponseData* create();
     static FetchResponseData* createNetworkErrorResponse();
+    static FetchResponseData* createWithBuffer(BodyStreamBuffer*);
 
     FetchResponseData* createBasicFilteredResponse();
     FetchResponseData* createCORSFilteredResponse();
     FetchResponseData* createOpaqueFilteredResponse();
+
+    FetchResponseData* clone();
 
     Type type() const { return m_type; }
     const KURL& url() const { return m_url; }
@@ -39,11 +43,17 @@ public:
     AtomicString statusMessage() const { return m_statusMessage; }
     FetchHeaderList* headerList() const { return m_headerList.get(); }
     PassRefPtr<BlobDataHandle> blobDataHandle() const { return m_blobDataHandle; }
+    BodyStreamBuffer* buffer() const { return m_buffer; }
+    String contentTypeForBuffer() const;
+    PassRefPtr<BlobDataHandle> internalBlobDataHandle() const;
+    BodyStreamBuffer* internalBuffer() const;
+    String internalContentTypeForBuffer() const;
 
     void setURL(const KURL& url) { m_url = url; }
     void setStatus(unsigned short status) { m_status = status; }
     void setStatusMessage(AtomicString statusMessage) { m_statusMessage = statusMessage; }
-    void setBlobDataHandle(PassRefPtr<BlobDataHandle> blobDataHandle) { m_blobDataHandle = blobDataHandle; }
+    void setBlobDataHandle(PassRefPtr<BlobDataHandle>);
+    void setContentTypeForBuffer(const String& contentType) { m_contentTypeForBuffer = contentType; }
 
     void populateWebServiceWorkerResponse(blink::WebServiceWorkerResponse&);
 
@@ -60,6 +70,8 @@ private:
     Member<FetchHeaderList> m_headerList;
     RefPtr<BlobDataHandle> m_blobDataHandle;
     Member<FetchResponseData> m_internalResponse;
+    Member<BodyStreamBuffer> m_buffer;
+    String m_contentTypeForBuffer;
 };
 
 } // namespace blink

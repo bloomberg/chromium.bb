@@ -18,6 +18,7 @@
 
 namespace blink {
 
+class BodyStreamBuffer;
 class ScriptState;
 
 class Body
@@ -50,6 +51,8 @@ public:
     void setBodyUsed();
     bool bodyUsed() const;
 
+    bool streamAccessed() const;
+
     // ActiveDOMObject override.
     virtual void stop() override;
     virtual bool hasPendingActivity() const override;
@@ -62,9 +65,12 @@ protected:
 
 private:
     class ReadableStreamSource;
+    class BlobHandleReceiver;
+
     void pullSource();
     void readAllFromStream(ScriptState*);
     ScriptPromise readAsync(ScriptState*, ResponseType);
+    void readAsyncFromBlob(PassRefPtr<BlobDataHandle>);
     void resolveJSON(const String&);
 
     // FileReaderLoaderClient functions.
@@ -73,7 +79,15 @@ private:
     virtual void didFinishLoading() override;
     virtual void didFail(FileError::ErrorCode) override;
 
-    virtual PassRefPtr<BlobDataHandle> blobDataHandle() = 0;
+    void didBlobHandleReceiveError(PassRefPtrWillBeRawPtr<DOMException>);
+
+    // We use BlobDataHandle or BodyStreamBuffer as data container of the Body.
+    // BodyStreamBuffer is used only when the Response object is created by
+    // fetch() API.
+    // FIXME: We should seek a cleaner way to handle the data.
+    virtual PassRefPtr<BlobDataHandle> blobDataHandle() const = 0;
+    virtual BodyStreamBuffer* buffer() const = 0;
+    virtual String contentTypeForBuffer() const = 0;
 
     void didFinishLoadingViaStream(DOMArrayBuffer*);
 

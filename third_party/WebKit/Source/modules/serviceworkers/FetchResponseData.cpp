@@ -5,7 +5,9 @@
 #include "config.h"
 #include "FetchResponseData.h"
 
+#include "core/dom/DOMArrayBuffer.h"
 #include "core/fetch/CrossOriginAccessControl.h"
+#include "modules/serviceworkers/BodyStreamBuffer.h"
 #include "modules/serviceworkers/FetchHeaderList.h"
 #include "public/platform/WebServiceWorkerResponse.h"
 
@@ -36,6 +38,63 @@ WebServiceWorkerResponseType fetchTypeToWebType(FetchResponseData::Type fetchTyp
     return webType;
 }
 
+class StreamTeePump : public BodyStreamBuffer::Observer {
+public:
+    StreamTeePump(BodyStreamBuffer* inBuffer, BodyStreamBuffer* outBuffer1, BodyStreamBuffer* outBuffer2)
+        : m_inBuffer(inBuffer)
+        , m_outBuffer1(outBuffer1)
+        , m_outBuffer2(outBuffer2)
+    {
+    }
+    void onWrite() override
+    {
+        while (RefPtr<DOMArrayBuffer> buf = m_inBuffer->read()) {
+            m_outBuffer1->write(buf);
+            m_outBuffer2->write(buf);
+        }
+    }
+    void onClose() override
+    {
+        m_outBuffer1->close();
+        m_outBuffer2->close();
+        cleanup();
+    }
+    void onError() override
+    {
+        m_outBuffer1->error(m_inBuffer->exception());
+        m_outBuffer2->error(m_inBuffer->exception());
+        cleanup();
+    }
+    void trace(Visitor* visitor) override
+    {
+        BodyStreamBuffer::Observer::trace(visitor);
+        visitor->trace(m_inBuffer);
+        visitor->trace(m_outBuffer1);
+        visitor->trace(m_outBuffer2);
+    }
+    void start()
+    {
+        m_inBuffer->registerObserver(this);
+        onWrite();
+        if (m_inBuffer->hasError())
+            return onError();
+        if (m_inBuffer->isClosed())
+            return onClose();
+    }
+
+private:
+    void cleanup()
+    {
+        m_inBuffer->unregisterObserver();
+        m_inBuffer.clear();
+        m_outBuffer1.clear();
+        m_outBuffer2.clear();
+    }
+    Member<BodyStreamBuffer> m_inBuffer;
+    Member<BodyStreamBuffer> m_outBuffer1;
+    Member<BodyStreamBuffer> m_outBuffer2;
+};
+
 } // namespace
 
 FetchResponseData* FetchResponseData::create()
@@ -53,6 +112,13 @@ FetchResponseData* FetchResponseData::createNetworkErrorResponse()
     return new FetchResponseData(ErrorType, 0, "");
 }
 
+FetchResponseData* FetchResponseData::createWithBuffer(BodyStreamBuffer* buffer)
+{
+    FetchResponseData* response = FetchResponseData::create();
+    response->m_buffer = buffer;
+    return response;
+}
+
 FetchResponseData* FetchResponseData::createBasicFilteredResponse()
 {
     // "A basic filtered response is a filtered response whose type is |basic|,
@@ -67,6 +133,8 @@ FetchResponseData* FetchResponseData::createBasicFilteredResponse()
         response->m_headerList->append(header->first, header->second);
     }
     response->m_blobDataHandle = m_blobDataHandle;
+    response->m_buffer = m_buffer;
+    response->m_contentTypeForBuffer = m_contentTypeForBuffer;
     response->m_internalResponse = this;
     return response;
 }
@@ -93,6 +161,8 @@ FetchResponseData* FetchResponseData::createCORSFilteredResponse()
         response->m_headerList->append(header->first, header->second);
     }
     response->m_blobDataHandle = m_blobDataHandle;
+    response->m_buffer = m_buffer;
+    response->m_contentTypeForBuffer = m_contentTypeForBuffer;
     response->m_internalResponse = this;
     return response;
 }
@@ -105,6 +175,69 @@ FetchResponseData* FetchResponseData::createOpaqueFilteredResponse()
     FetchResponseData* response = new FetchResponseData(OpaqueType, 0, "");
     response->m_internalResponse = this;
     return response;
+}
+
+String FetchResponseData::contentTypeForBuffer() const
+{
+    return m_contentTypeForBuffer;
+}
+
+PassRefPtr<BlobDataHandle> FetchResponseData::internalBlobDataHandle() const
+{
+    if (m_internalResponse) {
+        return m_internalResponse->m_blobDataHandle;
+    }
+    return m_blobDataHandle;
+}
+
+BodyStreamBuffer* FetchResponseData::internalBuffer() const
+{
+    if (m_internalResponse) {
+        return m_internalResponse->m_buffer;
+    }
+    return m_buffer;
+}
+
+String FetchResponseData::internalContentTypeForBuffer() const
+{
+    if (m_internalResponse) {
+        return m_internalResponse->contentTypeForBuffer();
+    }
+    return m_contentTypeForBuffer;
+}
+
+FetchResponseData* FetchResponseData::clone()
+{
+    FetchResponseData* newResponse = create();
+    newResponse->m_type = m_type;
+    if (m_terminationReason) {
+        newResponse->m_terminationReason = adoptPtr(new TerminationReason);
+        *newResponse->m_terminationReason = *m_terminationReason;
+    }
+    newResponse->m_url = m_url;
+    newResponse->m_status = m_status;
+    newResponse->m_statusMessage = m_statusMessage;
+    newResponse->m_headerList = m_headerList->createCopy();
+    newResponse->m_blobDataHandle = m_blobDataHandle;
+    newResponse->m_contentTypeForBuffer = m_contentTypeForBuffer;
+    if (!m_internalResponse) {
+        if (!m_buffer)
+            return newResponse;
+        BodyStreamBuffer* original = m_buffer;
+        m_buffer = new BodyStreamBuffer();
+        newResponse->m_buffer = new BodyStreamBuffer();
+        StreamTeePump* teePump = new StreamTeePump(original, m_buffer, newResponse->m_buffer);
+        teePump->start();
+        return newResponse;
+    }
+
+    ASSERT(!m_buffer || m_buffer == m_internalResponse->m_buffer);
+    newResponse->m_internalResponse = m_internalResponse->clone();
+    if (m_buffer) {
+        m_buffer = m_internalResponse->m_buffer;
+        newResponse->m_buffer = newResponse->m_internalResponse->m_buffer;
+    }
+    return newResponse;
 }
 
 void FetchResponseData::populateWebServiceWorkerResponse(WebServiceWorkerResponse& response)
@@ -123,7 +256,7 @@ void FetchResponseData::populateWebServiceWorkerResponse(WebServiceWorkerRespons
         const FetchHeaderList::Header* header = headerList()->list()[i].get();
         response.appendHeader(header->first, header->second);
     }
-    response.setBlobDataHandle(blobDataHandle());
+    response.setBlobDataHandle(m_blobDataHandle);
 }
 
 FetchResponseData::FetchResponseData(Type type, unsigned short status, AtomicString statusMessage)
@@ -134,10 +267,17 @@ FetchResponseData::FetchResponseData(Type type, unsigned short status, AtomicStr
 {
 }
 
+void FetchResponseData::setBlobDataHandle(PassRefPtr<BlobDataHandle> blobDataHandle)
+{
+    ASSERT(!m_buffer);
+    m_blobDataHandle = blobDataHandle;
+}
+
 void FetchResponseData::trace(Visitor* visitor)
 {
     visitor->trace(m_headerList);
     visitor->trace(m_internalResponse);
+    visitor->trace(m_buffer);
 }
 
 } // namespace blink
