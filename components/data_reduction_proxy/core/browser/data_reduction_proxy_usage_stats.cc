@@ -11,6 +11,8 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_member.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -121,10 +123,35 @@ void DataReductionProxyUsageStats::OnUrlRequestCompleted(
     const net::URLRequest* request, bool started) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (request->status().status() == net::URLRequestStatus::SUCCESS &&
-      data_reduction_proxy_params_->WasDataReductionProxyUsed(request, NULL)) {
-    successful_requests_through_proxy_count_++;
-    NotifyUnavailabilityIfChanged();
+  DataReductionProxyTypeInfo proxy_info;
+  if (data_reduction_proxy_params_->WasDataReductionProxyUsed(request,
+                                                              &proxy_info)) {
+    if (request->status().status() == net::URLRequestStatus::SUCCESS) {
+      successful_requests_through_proxy_count_++;
+      NotifyUnavailabilityIfChanged();
+    }
+
+    // Report any network errors that occurred for this request, including OK
+    // and ABORTED.
+    if (!proxy_info.is_fallback) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY(
+          "DataReductionProxy.RequestCompletionErrorCodes.Primary",
+          std::abs(request->status().error()));
+      if (request->load_flags() & net::LOAD_MAIN_FRAME) {
+        UMA_HISTOGRAM_SPARSE_SLOWLY(
+            "DataReductionProxy.RequestCompletionErrorCodes.MainFrame.Primary",
+            std::abs(request->status().error()));
+      }
+    } else {
+      UMA_HISTOGRAM_SPARSE_SLOWLY(
+          "DataReductionProxy.RequestCompletionErrorCodes.Fallback",
+          std::abs(request->status().error()));
+      if (request->load_flags() & net::LOAD_MAIN_FRAME) {
+        UMA_HISTOGRAM_SPARSE_SLOWLY(
+            "DataReductionProxy.RequestCompletionErrorCodes.MainFrame.Fallback",
+            std::abs(request->status().error()));
+      }
+    }
   }
 }
 

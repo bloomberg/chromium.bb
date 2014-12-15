@@ -15,6 +15,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/metrics/user_metrics.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_member.h"
@@ -40,6 +41,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "net/cookies/canonical_cookie.h"
@@ -148,6 +150,21 @@ void ReportInvalidReferrerSend(const GURL& target_url,
       base::UserMetricsAction("Net.URLRequest_StartJob_InvalidReferrer"));
   base::debug::DumpWithoutCrashing();
   NOTREACHED();
+}
+
+// Record network errors that HTTP requests complete with, including OK and
+// ABORTED.
+void RecordNetworkErrorHistograms(const net::URLRequest* request) {
+  if (request->url().SchemeIs("http")) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.HttpRequestCompletionErrorCodes",
+                                std::abs(request->status().error()));
+
+    if (request->load_flags() & net::LOAD_MAIN_FRAME) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY(
+          "Net.HttpRequestCompletionErrorCodes.MainFrame",
+          std::abs(request->status().error()));
+    }
+  }
 }
 
 }  // namespace
@@ -385,6 +402,8 @@ void ChromeNetworkDelegate::OnRawBytesRead(const net::URLRequest& request,
 
 void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
                                         bool started) {
+  RecordNetworkErrorHistograms(request);
+
   TRACE_EVENT_ASYNC_END0("net", "URLRequest", request);
   if (request->status().status() == net::URLRequestStatus::SUCCESS) {
 #if defined(OS_ANDROID)

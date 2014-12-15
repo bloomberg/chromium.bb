@@ -12,6 +12,8 @@
 #include "base/test/histogram_tester.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -149,7 +151,7 @@ TEST_F(DataReductionProxyUsageStatsTest, IsDataReductionProxyUnreachable) {
         .WillRepeatedly(testing::Return(
             test_case.fallback_proxy_server_is_data_reduction_proxy));
     EXPECT_CALL(mock_params_,
-                WasDataReductionProxyUsed(mock_url_request_.get(), NULL))
+                WasDataReductionProxyUsed(mock_url_request_.get(), testing::_))
         .WillRepeatedly(testing::Return(test_case.was_proxy_used));
 
     scoped_ptr<DataReductionProxyUsageStats> usage_stats(
@@ -181,7 +183,7 @@ TEST_F(DataReductionProxyUsageStatsTest, ProxyUnreachableThenReachable) {
   EXPECT_CALL(mock_params_, IsDataReductionProxy(testing::_, testing::_))
       .WillOnce(testing::Return(true));
   EXPECT_CALL(mock_params_,
-              WasDataReductionProxyUsed(mock_url_request_.get(), NULL))
+              WasDataReductionProxyUsed(mock_url_request_.get(), testing::_))
       .WillOnce(testing::Return(true));
 
   // proxy falls back
@@ -206,7 +208,7 @@ TEST_F(DataReductionProxyUsageStatsTest, ProxyReachableThenUnreachable) {
       base::Bind(&DataReductionProxyUsageStatsTest::NotifyUnavailable,
                  base::Unretained(this)));
   EXPECT_CALL(mock_params_,
-              WasDataReductionProxyUsed(mock_url_request_.get(), NULL))
+              WasDataReductionProxyUsed(mock_url_request_.get(), testing::_))
       .WillOnce(testing::Return(true));
   EXPECT_CALL(mock_params_, IsDataReductionProxy(testing::_, testing::_))
       .WillRepeatedly(testing::Return(true));
@@ -419,7 +421,7 @@ TEST_F(DataReductionProxyUsageStatsTest, RecordMissingViaHeaderBytes) {
     fake_request->set_received_response_content_length(kResponseContentLength);
 
     EXPECT_CALL(mock_params_,
-                WasDataReductionProxyUsed(fake_request.get(), NULL))
+                WasDataReductionProxyUsed(fake_request.get(), testing::_))
         .WillRepeatedly(Return(test_cases[i].was_proxy_used));
 
     usage_stats->RecordMissingViaHeaderBytes(fake_request.get());
@@ -436,6 +438,95 @@ TEST_F(DataReductionProxyUsageStatsTest, RecordMissingViaHeaderBytes) {
                                           kResponseContentLength, 1);
     } else {
       histogram_tester.ExpectTotalCount(kOtherHistogramName, 0);
+    }
+  }
+}
+
+TEST_F(DataReductionProxyUsageStatsTest, RequestCompletionErrorCodes) {
+  const std::string kPrimaryHistogramName =
+      "DataReductionProxy.RequestCompletionErrorCodes.Primary";
+  const std::string kFallbackHistogramName =
+      "DataReductionProxy.RequestCompletionErrorCodes.Fallback";
+  const std::string kPrimaryMainFrameHistogramName =
+      "DataReductionProxy.RequestCompletionErrorCodes.MainFrame.Primary";
+  const std::string kFallbackMainFrameHistogramName =
+      "DataReductionProxy.RequestCompletionErrorCodes.MainFrame.Fallback";
+
+  struct TestCase {
+    bool was_proxy_used;
+    bool is_fallback;
+    bool is_main_frame;
+    net::Error net_error;
+  };
+
+  const TestCase test_cases[] = {
+    {false, false, true, net::OK},
+    {false, false, false, net::ERR_TOO_MANY_REDIRECTS},
+    {true, false, true, net::OK},
+    {true, false, true, net::ERR_TOO_MANY_REDIRECTS},
+    {true, false, false, net::OK},
+    {true, false, false, net::ERR_TOO_MANY_REDIRECTS},
+    {true, true, true, net::OK},
+    {true, true, true, net::ERR_TOO_MANY_REDIRECTS},
+    {true, true, false, net::OK},
+    {true, true, false, net::ERR_TOO_MANY_REDIRECTS}
+  };
+
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+    base::HistogramTester histogram_tester;
+    scoped_ptr<DataReductionProxyUsageStats> usage_stats(
+        new DataReductionProxyUsageStats(&mock_params_, loop_proxy_));
+
+    std::string raw_headers("HTTP/1.1 200 OK\n"
+                            "Via: 1.1 Chrome-Compression-Proxy\n");
+    HeadersToRaw(&raw_headers);
+    scoped_ptr<net::URLRequest> fake_request(
+        CreateURLRequestWithResponseHeaders(GURL("http://www.google.com/"),
+                                            raw_headers));
+    if (test_cases[i].is_main_frame) {
+      fake_request->SetLoadFlags(fake_request->load_flags() |
+                                 net::LOAD_MAIN_FRAME);
+    }
+
+    int net_error_int = static_cast<int>(test_cases[i].net_error);
+    if (test_cases[i].net_error != net::OK) {
+      fake_request->CancelWithError(net_error_int);
+    }
+
+    DataReductionProxyTypeInfo proxy_info;
+    proxy_info.is_fallback = test_cases[i].is_fallback;
+    EXPECT_CALL(mock_params_, WasDataReductionProxyUsed(fake_request.get(),
+                                                        testing::NotNull()))
+        .WillRepeatedly(testing::DoAll(testing::SetArgPointee<1>(proxy_info),
+                                       Return(test_cases[i].was_proxy_used)));
+
+    usage_stats->OnUrlRequestCompleted(fake_request.get(), false);
+
+    if (test_cases[i].was_proxy_used && !test_cases[i].is_fallback) {
+      histogram_tester.ExpectUniqueSample(
+          kPrimaryHistogramName, -net_error_int, 1);
+    } else {
+      histogram_tester.ExpectTotalCount(kPrimaryHistogramName, 0);
+    }
+    if (test_cases[i].was_proxy_used && test_cases[i].is_fallback) {
+      histogram_tester.ExpectUniqueSample(
+          kFallbackHistogramName, -net_error_int, 1);
+    } else {
+      histogram_tester.ExpectTotalCount(kFallbackHistogramName, 0);
+    }
+    if (test_cases[i].was_proxy_used && !test_cases[i].is_fallback &&
+        test_cases[i].is_main_frame) {
+      histogram_tester.ExpectUniqueSample(
+          kPrimaryMainFrameHistogramName, -net_error_int, 1);
+    } else {
+      histogram_tester.ExpectTotalCount(kPrimaryMainFrameHistogramName, 0);
+    }
+    if (test_cases[i].was_proxy_used && test_cases[i].is_fallback &&
+        test_cases[i].is_main_frame) {
+      histogram_tester.ExpectUniqueSample(
+          kFallbackMainFrameHistogramName, -net_error_int, 1);
+    } else {
+      histogram_tester.ExpectTotalCount(kFallbackMainFrameHistogramName, 0);
     }
   }
 }

@@ -3808,6 +3808,27 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.RequestCompletionErrorCodes"
+    enum="NetErrorCodes">
+  <owner>sclittle@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Reports the different network errors that requests that try to use the data
+    reduction proxy are completing with, including OK and ABORTED.
+  </summary>
+</histogram>
+
+<histogram name="DataReductionProxy.RequestCompletionErrorCodes.MainFrame"
+    enum="NetErrorCodes">
+  <owner>sclittle@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Reports the different network errors that main frame resource requests that
+    try to use the data reduction proxy are completing with, including OK and
+    ABORTED.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.SettingsConversion"
     enum="DataReductionProxySettingsConversion">
   <owner>bengr@chromium.org</owner>
@@ -16790,6 +16811,25 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Net.HttpProxySocketRequestTime" units="milliseconds">
   <owner>mmenke@chromium.org</owner>
   <summary>Time it takes to request a new (unused) HTTP proxy socket.</summary>
+</histogram>
+
+<histogram name="Net.HttpRequestCompletionErrorCodes" enum="NetErrorCodes">
+  <owner>sclittle@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    The network error code that the HTTP request completes with, including OK
+    and ABORTED.
+  </summary>
+</histogram>
+
+<histogram name="Net.HttpRequestCompletionErrorCodes.MainFrame"
+    enum="NetErrorCodes">
+  <owner>sclittle@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    The network error code that the HTTP main frame resource request completes
+    with, including OK and ABORTED.
+  </summary>
 </histogram>
 
 <histogram name="Net.HttpResponseCode">
@@ -58389,6 +58429,21 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Primary" label="Primary data reduction proxy"/>
   <suffix name="Fallback" label="Fallback data reduction proxy"/>
   <affected-histogram name="DataReductionProxy.MissingViaHeader.ResponseCode"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="DataReductionProxyRequestCompletionErrorCodes"
+    separator=".">
+  <suffix name="Primary" label="Primary data reduction proxy"/>
+  <suffix name="Fallback" label="Fallback data reduction proxy"/>
+  <affected-histogram name="DataReductionProxy.RequestCompletionErrorCodes"/>
+</histogram_suffixes>
+
+<histogram_suffixes
+    name="DataReductionProxyRequestCompletionErrorCodesMainFrame" separator=".">
+  <suffix name="Primary" label="Primary data reduction proxy"/>
+  <suffix name="Fallback" label="Fallback data reduction proxy"/>
+  <affected-histogram
+      name="DataReductionProxy.RequestCompletionErrorCodes.MainFrame"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="DefaultAppsExperiment">
