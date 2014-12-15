@@ -901,14 +901,13 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
     return;
   }
 
-  // The out-of-process plugin element is nested within a frame.
+  // The out-of-process plugin element is nested within a frame. In tests, there
+  // may not be an iframe containing the out-of-process plugin, so continue with
+  // the element with ID "pdf-viewer" if it isn't an iframe.
   blink::WebLocalFrame* plugin_frame = pdf_element.document().frame();
   blink::WebElement plugin_element = pdf_element;
-  if (switches::OutOfProcessPdfEnabled()) {
-    if (!pdf_element.hasHTMLTagName("iframe")) {
-      NOTREACHED();
-      return;
-    }
+  if (switches::OutOfProcessPdfEnabled() &&
+      pdf_element.hasHTMLTagName("iframe")) {
     plugin_frame = blink::WebLocalFrame::fromFrameOwnerElement(pdf_element);
     plugin_element = GetPdfElement(plugin_frame);
     if (plugin_element.isNull()) {
