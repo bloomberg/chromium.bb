@@ -1,5 +1,5 @@
 {
-    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
+    "description": "Describes the Web Page Replay archives for a user story set. Don't edit by hand! Use record_wpr for updating.", 
     "archives": {
         "webrtc_cases_007.wpr": [
             "http://googlechrome.github.io/webrtc/samples/web/content/getusermedia-resolution/", 
@@ -9,10 +9,14 @@
             "third_party/webrtc/samples/js/demos/html/pc1.html", 
             "webrtc/local-video.html"
         ], 
-        "webrtc_cases_008.wpr": [
-            "http://googlechrome.github.io/webrtc/samples/web/content/peerconnection/pc1/", 
+        "webrtc_cases_009.wpr": [
+            "http://googlechrome.github.io/webrtc/samples/web/content/peerconnection/audio/?codec=PCMU", 
+            "http://googlechrome.github.io/webrtc/samples/web/content/getusermedia/resolution/", 
             "http://googlechrome.github.io/webrtc/samples/web/content/getusermedia/gum/", 
-            "http://googlechrome.github.io/webrtc/samples/web/content/getusermedia/resolution/"
+            "http://googlechrome.github.io/webrtc/samples/web/content/peerconnection/audio/?codec=OPUS", 
+            "http://googlechrome.github.io/webrtc/samples/web/content/peerconnection/audio/?codec=ISAC_16K", 
+            "http://googlechrome.github.io/webrtc/samples/web/content/peerconnection/audio/?codec=G722", 
+            "http://googlechrome.github.io/webrtc/samples/web/content/peerconnection/pc1/"
         ]
     }
 }
