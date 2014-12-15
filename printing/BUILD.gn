@@ -108,6 +108,8 @@ component("printing") {
       "backend/win_helper.cc",
       "backend/win_helper.h",
       "backend/print_backend_win.cc",
+      "printing_context_system_dialog_win.cc",
+      "printing_context_system_dialog_win.h",
       "printing_context_win.cc",
       "printing_context_win.h",
     ]
