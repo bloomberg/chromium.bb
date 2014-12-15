@@ -211,10 +211,12 @@ void AnimationPlayer::preCommit(int compositorGroup, bool startOnCompositor)
         return;
     }
 
+    ASSERT(!m_compositorState || !std::isnan(m_compositorState->startTime));
+
     PlayStateUpdateScope updateScope(*this, TimingUpdateOnDemand, DoNotSetCompositorPending);
 
     bool softChange = m_compositorState && (paused() || m_compositorState->playbackRate != m_playbackRate);
-    bool hardChange = m_compositorState && (m_compositorState->sourceChanged || (m_compositorState->startTime != m_startTime && !std::isnan(m_compositorState->startTime) && !std::isnan(m_startTime)));
+    bool hardChange = m_compositorState && (m_compositorState->sourceChanged || m_compositorState->startTime != m_startTime);
 
     // FIXME: softChange && !hardChange should generate a Pause/ThenStart,
     // not a Cancel, but we can't communicate these to the compositor yet.
