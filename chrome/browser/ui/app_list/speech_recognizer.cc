@@ -15,7 +15,7 @@
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/speech_recognition_session_config.h"
-#include "content/public/browser/web_contents.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/app_list/speech_ui_model_observer.h"
@@ -43,8 +43,7 @@ class SpeechRecognizer::EventListener
                 net::URLRequestContextGetter* url_request_context_getter,
                 const std::string& locale);
 
-  void StartOnIOThread(int render_process_id,
-                       const std::string& auth_scope,
+  void StartOnIOThread(const std::string& auth_scope,
                        const std::string& auth_token);
   void StopOnIOThread();
 
@@ -107,7 +106,6 @@ SpeechRecognizer::EventListener::~EventListener() {
 }
 
 void SpeechRecognizer::EventListener::StartOnIOThread(
-    int render_process_id,
     const std::string& auth_scope,
     const std::string& auth_token) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -123,7 +121,10 @@ void SpeechRecognizer::EventListener::StartOnIOThread(
   config.filter_profanities = true;
   config.url_request_context_getter = url_request_context_getter_;
   config.event_listener = weak_factory_.GetWeakPtr();
-  config.initial_context.render_process_id = render_process_id;
+  // kInvalidUniqueID is not a valid render process, so the speech permission
+  // check allows the request through.
+  config.initial_context.render_process_id =
+      content::ChildProcessHost::kInvalidUniqueID;
   config.auth_scope = auth_scope;
   config.auth_token = auth_token;
 
@@ -269,15 +270,6 @@ SpeechRecognizer::~SpeechRecognizer() {
 
 void SpeechRecognizer::Start() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // The speech recognizer checks to see if the request is allowed by looking
-  // up the renderer process. A renderer containing the app-list is hard-coded
-  // to be allowed.
-  if (!delegate_)
-    return;
-  content::WebContents* contents = delegate_->GetSpeechContents();
-  if (!contents)
-    return;
-
   std::string auth_scope;
   std::string auth_token;
   delegate_->GetSpeechAuthParameters(&auth_scope, &auth_token);
@@ -287,7 +279,6 @@ void SpeechRecognizer::Start() {
       FROM_HERE,
       base::Bind(&SpeechRecognizer::EventListener::StartOnIOThread,
                  speech_event_listener_,
-                 contents->GetRenderProcessHost()->GetID(),
                  auth_scope,
                  auth_token));
 }

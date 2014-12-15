@@ -224,16 +224,11 @@ void StartPageService::AppListHidden() {
 void StartPageService::ToggleSpeechRecognition() {
   DCHECK(contents_);
   speech_button_toggled_manually_ = true;
-  if (!contents_->GetWebUI())
-    return;
 
-  if (!webui_finished_loading_) {
-    pending_webui_callbacks_.push_back(
-        base::Bind(&StartPageService::ToggleSpeechRecognition,
-                   base::Unretained(this)));
-    return;
-  }
-
+  // Speech recognition under V2 hotwording does not depend in any way on the
+  // start page web contents. Do this code path first to make this explicit and
+  // easier to identify what code needs to be deleted when V2 hotwording is
+  // stable.
   if (HotwordService::IsExperimentalHotwordingEnabled()) {
     if (!speech_recognizer_) {
       std::string profile_locale;
@@ -251,6 +246,16 @@ void StartPageService::ToggleSpeechRecognition() {
     }
 
     speech_recognizer_->Start();
+    return;
+  }
+
+  if (!contents_->GetWebUI())
+    return;
+
+  if (!webui_finished_loading_) {
+    pending_webui_callbacks_.push_back(
+        base::Bind(&StartPageService::ToggleSpeechRecognition,
+                   base::Unretained(this)));
     return;
   }
 
@@ -340,10 +345,6 @@ void StartPageService::OnSpeechRecognitionStateChanged(
   FOR_EACH_OBSERVER(StartPageObserver,
                     observers_,
                     OnSpeechRecognitionStateChanged(new_state));
-}
-
-content::WebContents* StartPageService::GetSpeechContents() {
-  return GetSpeechRecognitionContents();
 }
 
 void StartPageService::GetSpeechAuthParameters(std::string* auth_scope,

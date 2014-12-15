@@ -16,7 +16,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/fake_speech_recognition_manager.h"
-#include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,7 +35,6 @@ class MockSpeechRecognizerDelegate : public SpeechRecognizerDelegate {
   MOCK_METHOD2(OnSpeechResult, void(const base::string16&, bool));
   MOCK_METHOD1(OnSpeechSoundLevelChanged, void(int16_t));
   MOCK_METHOD1(OnSpeechRecognitionStateChanged, void(SpeechRecognitionState));
-  MOCK_METHOD0(GetSpeechContents, content::WebContents*());
   MOCK_METHOD2(GetSpeechAuthParameters, void(std::string*, std::string*));
 
  private:
@@ -56,14 +54,9 @@ class AppListSpeechRecognizerBrowserTest : public InProcessBrowserTest {
     content::SpeechRecognitionManager::SetManagerForTesting(
         fake_speech_recognition_manager_.get());
     mock_speech_delegate_.reset(new MockSpeechRecognizerDelegate());
-    test_contents_.reset(content::WebContentsTester::CreateTestWebContents(
-        browser()->profile(), NULL));
   }
 
   void TearDownOnMainThread() override {
-    // This puts stuff on the IO loop which needs to be executed.
-    test_contents_.reset();
-
     // Poor-person's way of ensuring IO loop is idle.
     auto io_loop = content::BrowserThread::UnsafeGetMessageLoopForThread(
         content::BrowserThread::IO);
@@ -80,7 +73,6 @@ class AppListSpeechRecognizerBrowserTest : public InProcessBrowserTest {
   scoped_ptr<content::FakeSpeechRecognitionManager>
       fake_speech_recognition_manager_;
   scoped_ptr<MockSpeechRecognizerDelegate> mock_speech_delegate_;
-  scoped_ptr<content::WebContents> test_contents_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppListSpeechRecognizerBrowserTest);
@@ -92,8 +84,6 @@ IN_PROC_BROWSER_TEST_F(AppListSpeechRecognizerBrowserTest, RecognizeSpeech) {
                               "en");
 
   base::RunLoop run_loop;
-  EXPECT_CALL(*mock_speech_delegate_, GetSpeechContents())
-      .WillOnce(Return(test_contents_.get()));
   EXPECT_CALL(*mock_speech_delegate_,
               OnSpeechResult(base::ASCIIToUTF16("Pictures of the moon"), true));
   EXPECT_CALL(*mock_speech_delegate_,

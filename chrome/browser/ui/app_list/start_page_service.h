@@ -72,7 +72,6 @@ class StartPageService : public KeyedService,
   void OnSpeechSoundLevelChanged(int16_t level) override;
   void OnSpeechRecognitionStateChanged(
       SpeechRecognitionState new_state) override;
-  content::WebContents* GetSpeechContents() override;
   void GetSpeechAuthParameters(std::string* auth_scope,
                                std::string* auth_token) override;
 
