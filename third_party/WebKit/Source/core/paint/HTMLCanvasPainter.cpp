@@ -23,15 +23,11 @@ void HTMLCanvasPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPo
     LayoutRect paintRect = m_renderHTMLCanvas.replacedContentRect();
     paintRect.moveBy(paintOffset);
 
-    PaintInfo localPaintInfo(paintInfo);
-    OwnPtr<ClipRecorder> clipRecorder;
     bool clip = !contentRect.contains(paintRect);
-    if (clip)
-        clipRecorder = adoptPtr(new ClipRecorder(m_renderHTMLCanvas.displayItemClient(), paintInfo.context, paintInfo.displayItemTypeForClipping(), contentRect));
-
-    RenderDrawingRecorder recorder(context, m_renderHTMLCanvas, localPaintInfo.phase, pixelSnappedIntRect(paintRect));
-    if (recorder.canUseCachedDrawing())
-        return;
+    if (clip) {
+        context->save();
+        context->clip(contentRect);
+    }
 
     // FIXME: InterpolationNone should be used if ImageRenderingOptimizeContrast is set.
     // See bug for more details: crbug.com/353716.
@@ -43,6 +39,9 @@ void HTMLCanvasPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPo
     context->setImageInterpolationQuality(interpolationQuality);
     toHTMLCanvasElement(m_renderHTMLCanvas.node())->paint(context, paintRect);
     context->setImageInterpolationQuality(previousInterpolationQuality);
+
+    if (clip)
+        context->restore();
 }
 
 } // namespace blink

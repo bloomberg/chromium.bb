@@ -7,6 +7,7 @@
 
 #include "core/paint/BoxPainter.h"
 #include "core/paint/ObjectPainter.h"
+#include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderLayer.h"
@@ -50,6 +51,10 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
             return;
         drawSelectionTint = false;
     }
+
+    RenderDrawingRecorder renderDrawingRecorder(paintInfo.context, m_renderReplaced, paintInfo.phase, paintRect);
+    if (renderDrawingRecorder.canUseCachedDrawing())
+        return;
 
     bool completelyClippedOut = false;
     if (m_renderReplaced.style()->hasBorderRadius()) {

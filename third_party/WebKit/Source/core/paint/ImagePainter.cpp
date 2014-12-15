@@ -88,9 +88,7 @@ void ImagePainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
         if (cWidth > 2 && cHeight > 2) {
             // Draw an outline rect where the image should be.
             IntRect paintRect = pixelSnappedIntRect(LayoutRect(paintOffset.x() + m_renderImage.borderLeft() + m_renderImage.paddingLeft(), paintOffset.y() + m_renderImage.borderTop() + m_renderImage.paddingTop(), cWidth, cHeight));
-            RenderDrawingRecorder recorder(context, m_renderImage, paintInfo.phase, paintRect);
-            if (recorder.canUseCachedDrawing())
-                return;
+
 
             context->setStrokeStyle(SolidStroke);
             context->setStrokeColor(Color::lightGray);
@@ -102,9 +100,6 @@ void ImagePainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
         contentRect.moveBy(paintOffset);
         LayoutRect paintRect = m_renderImage.replacedContentRect();
         paintRect.moveBy(paintOffset);
-        RenderDrawingRecorder recorder(context, m_renderImage, paintInfo.phase, contentRect);
-        if (recorder.canUseCachedDrawing())
-            return;
 
         bool clip = !contentRect.contains(paintRect);
         if (clip) {

@@ -4,6 +4,13 @@ crbug.com/441639 virtual/slimmingpaint/fast/overflow/paged-x-div-with-column-gap
 crbug.com/441639 virtual/slimmingpaint/fast/overflow/scrollRevealButton.html [ ImageOnlyFailure ]
 crbug.com/441639 [ Linux ] virtual/slimmingpaint/fast/overflow/lots-of-sibling-inline-boxes.html [ Timeout ]
 
+crbug.com/441547 virtual/slimmingpaint/fast/borders/border-antialiasing.html [ ImageOnlyFailure ]
+crbug.com/441547 virtual/slimmingpaint/fast/borders/border-radius-mask-canvas-with-mask.html [ Crash ]
+crbug.com/441547 [ Win ] virtual/slimmingpaint/fast/borders/border-image-rotate-transform.html [ ImageOnlyFailure ]
+crbug.com/441547 [ Win ] virtual/slimmingpaint/fast/borders/border-image-scale-transform.html [ ImageOnlyFailure ]
+crbug.com/441547 [ Win ] virtual/slimmingpaint/fast/borders/table-borders.html [ ImageOnlyFailure ]
+crbug.com/441547 virtual/slimmingpaint/fast/borders/border-image-omit-right-slice.html [ NeedsRebaseline ]
+
 crbug.com/434560 virtual/slimmingpaint/fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
 
 # This directly has manual tests that don't have to run with run-webkit-tests
