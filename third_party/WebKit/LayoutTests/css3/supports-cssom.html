@@ -58,9 +58,11 @@
 
     evalAndLog("rules = document.styleSheets[1].cssRules");
     shouldEvaluateTo("rules.length", 4);
+    shouldBeType("rules[0]", "CSSSupportsRule");
     shouldBe("rules[0].type", "CSSRule.SUPPORTS_RULE");
     shouldEvaluateTo("rules[0].cssRules.length", 2);
     shouldBe("rules[0].cssRules[0].type", "CSSRule.STYLE_RULE");
+    shouldBeType("rules[0].cssRules[1]", "CSSSupportsRule");
     shouldBe("rules[0].cssRules[1].type", "CSSRule.SUPPORTS_RULE");
     shouldEvaluateTo("rules[0].cssRules[1].cssRules.length", 1);
     shouldBe("rules[0].cssRules[1].cssRules[0].type", "CSSRule.STYLE_RULE");
@@ -82,6 +84,7 @@
 
     evalAndLog("rules[0].cssRules[1].insertRule('@supports (display: rainbow) {}', 1)");
     shouldEvaluateTo("rules[0].cssRules[1].cssRules.length", 2);
+    shouldBeType("rules[0].cssRules[1].cssRules[1]", "CSSSupportsRule");
     shouldBe("rules[0].cssRules[1].cssRules[1].type", "CSSRule.SUPPORTS_RULE");
     evalAndLog("rules[0].cssRules[1].deleteRule(1)");
     shouldEvaluateTo("rules[0].cssRules.length", 2);
@@ -99,6 +102,7 @@
     debug("\n@supports rule nested inside a media rule.");
     shouldBe("rules[2].type", "CSSRule.MEDIA_RULE");
     shouldEvaluateTo("rules[2].cssRules.length", 1);
+    shouldBeType("rules[2].cssRules[0]", "CSSSupportsRule");
     shouldBe("rules[2].cssRules[0].type", "CSSRule.SUPPORTS_RULE");
     shouldBeEqualToString("rules[2].cssRules[0].conditionText", "( padding: 0)");
     shouldEvaluateTo("rules[0].cssRules[1].cssRules.length", 1);

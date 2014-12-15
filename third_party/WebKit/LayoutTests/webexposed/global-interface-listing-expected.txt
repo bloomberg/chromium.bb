@@ -209,6 +209,10 @@ interface CSSStyleSheet
     method deleteRule
     method insertRule
     method removeRule
+interface CSSSupportsRule
+    method constructor
+    method deleteRule
+    method insertRule
 interface CSSUnknownRule
     method constructor
 interface CSSViewportRule
