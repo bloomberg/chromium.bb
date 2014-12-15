@@ -11,7 +11,6 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/views/window/non_client_view.h"
 
 // static
@@ -58,35 +57,4 @@ void DetachableToolbarView::PaintHorizontalBorder(gfx::Canvas* canvas,
   int thickness = views::NonClientFrameView::kClientEdgeThickness;
   int y = at_top ? 0 : (view->height() - thickness);
   canvas->FillRect(gfx::Rect(0, y, view->width(), thickness), color);
-}
-
-// static
-void DetachableToolbarView::PaintVerticalDivider(gfx::Canvas* canvas,
-                                                 int x,
-                                                 int height,
-                                                 int vertical_padding,
-                                                 SkColor top_color,
-                                                 SkColor middle_color,
-                                                 SkColor bottom_color) {
-  // Draw the upper half of the divider.
-  SkPaint paint;
-  skia::RefPtr<SkShader> shader = gfx::CreateGradientShader(
-      vertical_padding + 1, height / 2, top_color, middle_color);
-  paint.setShader(shader.get());
-  SkRect rc = { SkIntToScalar(x),
-                SkIntToScalar(vertical_padding + 1),
-                SkIntToScalar(x + 1),
-                SkIntToScalar(height / 2) };
-  canvas->sk_canvas()->drawRect(rc, paint);
-
-  // Draw the lower half of the divider.
-  SkPaint paint_down;
-  shader = gfx::CreateGradientShader(
-      height / 2, height - vertical_padding, middle_color, bottom_color);
-  paint_down.setShader(shader.get());
-  SkRect rc_down = { SkIntToScalar(x),
-                     SkIntToScalar(height / 2),
-                     SkIntToScalar(x + 1),
-                     SkIntToScalar(height - vertical_padding) };
-  canvas->sk_canvas()->drawRect(rc_down, paint_down);
 }

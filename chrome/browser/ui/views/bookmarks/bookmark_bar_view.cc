@@ -420,13 +420,50 @@ struct BookmarkBarView::DropInfo {
 
 // ButtonSeparatorView  --------------------------------------------------------
 
+// Paints a themed gradient divider at location |x|. |height| is the full
+// height of the view you want to paint the divider into, not the height of
+// the divider. The height of the divider will become:
+//   |height| - 2 * |vertical_padding|.
+// The color of the divider is a gradient starting with |top_color| at the
+// top, and changing into |middle_color| and then over to |bottom_color| as
+// you go further down.
+void PaintVerticalDivider(gfx::Canvas* canvas,
+                          int x,
+                          int height,
+                          int vertical_padding,
+                          SkColor top_color,
+                          SkColor middle_color,
+                          SkColor bottom_color) {
+  // Draw the upper half of the divider.
+  SkPaint paint;
+  skia::RefPtr<SkShader> shader = gfx::CreateGradientShader(
+      vertical_padding + 1, height / 2, top_color, middle_color);
+  paint.setShader(shader.get());
+  SkRect rc = { SkIntToScalar(x),
+                SkIntToScalar(vertical_padding + 1),
+                SkIntToScalar(x + 1),
+                SkIntToScalar(height / 2) };
+  canvas->sk_canvas()->drawRect(rc, paint);
+
+  // Draw the lower half of the divider.
+  SkPaint paint_down;
+  shader = gfx::CreateGradientShader(
+      height / 2, height - vertical_padding, middle_color, bottom_color);
+  paint_down.setShader(shader.get());
+  SkRect rc_down = { SkIntToScalar(x),
+                     SkIntToScalar(height / 2),
+                     SkIntToScalar(x + 1),
+                     SkIntToScalar(height - vertical_padding) };
+  canvas->sk_canvas()->drawRect(rc_down, paint_down);
+}
+
 class BookmarkBarView::ButtonSeparatorView : public views::View {
  public:
   ButtonSeparatorView() {}
   ~ButtonSeparatorView() override {}
 
   void OnPaint(gfx::Canvas* canvas) override {
-    DetachableToolbarView::PaintVerticalDivider(
+    PaintVerticalDivider(
         canvas,
         kSeparatorStartX,
         height(),

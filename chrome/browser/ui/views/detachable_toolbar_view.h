@@ -8,8 +8,6 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "ui/views/accessible_pane_view.h"
 
-struct SkRect;
-
 // DetachableToolbarView contains functionality common to views that can detach
 // from the Chrome frame, such as the BookmarkBarView and the Extension shelf.
 class DetachableToolbarView : public views::AccessiblePaneView {
@@ -42,21 +40,6 @@ class DetachableToolbarView : public views::AccessiblePaneView {
                                     DetachableToolbarView* view,
                                     bool at_top,
                                     SkColor color);
-
-  // Paint a themed gradient divider at location |x|. |height| is the full
-  // height of the view you want to paint the divider into, not the height of
-  // the divider. The height of the divider will become:
-  //   |height| - 2 * |vertical_padding|.
-  // The color of the divider is a gradient starting with |top_color| at the
-  // top, and changing into |middle_color| and then over to |bottom_color| as
-  // you go further down.
-  static void PaintVerticalDivider(gfx::Canvas* canvas,
-                                   int x,
-                                   int height,
-                                   int vertical_padding,
-                                   SkColor top_color,
-                                   SkColor middle_color,
-                                   SkColor bottom_color);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DetachableToolbarView);
