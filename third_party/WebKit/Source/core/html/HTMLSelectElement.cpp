@@ -1220,10 +1220,6 @@ void HTMLSelectElement::handlePopupOpenKeyboardEvent(Event* event)
     saveLastSelection();
     if (RenderMenuList* menuList = toRenderMenuList(renderer()))
         menuList->showPopup();
-    int index = selectedIndex();
-    ASSERT(index >= 0);
-    ASSERT_WITH_SECURITY_IMPLICATION(index < static_cast<int>(listItems().size()));
-    setSelectedIndex(index);
     event->setDefaultHandled();
     return;
 }
