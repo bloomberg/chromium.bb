@@ -5,23 +5,8 @@ Dumping console messages:
 
 injectedFunction()
 Uncaught Error: injectedObj.func
-    message: "injectedObj.func"
-    stack: (...)
-    get stack: function () { [native code] }
-    set stack: function () { [native code] }
-    __proto__: d
 localObj.func()
-debugger-eval-while-paused-throws.html:20 Uncaught Error: localObj.func
-    message: "localObj.func"
-    stack: (...)
-    get stack: function () { [native code] }
-    set stack: function () { [native code] }
-    __proto__: d
+Uncaught Error: localObj.func
 globalObj.func()
-debugger-eval-while-paused-throws.html:11 Uncaught Error: globalObj.func
-    message: "globalObj.func"
-    stack: (...)
-    get stack: function () { [native code] }
-    set stack: function () { [native code] }
-    __proto__: d
+Uncaught Error: globalObj.func
 

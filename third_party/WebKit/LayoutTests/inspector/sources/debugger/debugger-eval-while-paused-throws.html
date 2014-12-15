@@ -60,16 +60,18 @@ var test = function()
 
     function step5()
     {
-        InspectorTest.evaluateInConsole("globalObj.func()", expandAndDumpConsoleMessages);
+        InspectorTest.evaluateInConsole("globalObj.func()", dumpConsoleMessages);
     }
 
-    function expandAndDumpConsoleMessages()
+    function dumpConsoleMessages()
     {
-        InspectorTest.expandConsoleMessages(function() {
-            InspectorTest.addResult("Dumping console messages:\n");
-            InspectorTest.dumpConsoleMessages(false, false, InspectorTest.textContentWithLineBreaks);
-            InspectorTest.completeDebuggerTest();
-        });
+        InspectorTest.addResult("Dumping console messages:\n");
+        InspectorTest.dumpConsoleMessages(false, false, formatter);
+        InspectorTest.completeDebuggerTest();
+    }
+
+    function formatter(element, message) {
+        return message.messageText;
     }
 }
 

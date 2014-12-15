@@ -32,7 +32,7 @@ InspectorTest.evaluateInConsoleAndDump = function(code, callback)
 
     function mycallback(text)
     {
-        InspectorTest.addResult(code + " = " + text);
+        InspectorTest.addResult(code + " = " + text.replace(/\bVM\d+/g, "VM"));
         callback(text);
     }
     InspectorTest.evaluateInConsole(code, mycallback);

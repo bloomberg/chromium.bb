@@ -912,11 +912,6 @@ void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString, const
     }
 
     injectedScript.evaluateOnCallFrame(errorString, m_currentCallStack, asyncCallStacks, callFrameId, expression, objectGroup ? *objectGroup : "", asBool(includeCommandLineAPI), asBool(returnByValue), asBool(generatePreview), &result, wasThrown, &exceptionDetails);
-    // V8 doesn't generate afterCompile event when it's in debugger therefore there is no content of evaluated scripts on frontend
-    // therefore contents of the stack does not provide necessary information
-    // FIXME: Remove this hack. See crbug.com/435011
-    if (exceptionDetails)
-        exceptionDetails->openAccessors()->remove("stackTrace");
     if (asBool(doNotPauseOnExceptionsAndMuteConsole)) {
         unmuteConsole();
         if (scriptDebugServer().pauseOnExceptionsState() != previousPauseOnExceptionsState)
