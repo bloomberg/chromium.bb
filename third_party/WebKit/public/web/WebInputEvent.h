@@ -465,6 +465,12 @@ public:
         } flingStart;
 
         struct {
+            // If set to true, don't treat flingCancel
+            // as a part of fling boost events sequence.
+            bool preventBoosting;
+        } flingCancel;
+
+        struct {
             float scale;
         } pinchUpdate;
     } data;
