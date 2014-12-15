@@ -1593,6 +1593,12 @@ crbug.com/439840 [ Win Linux Debug ] svg/custom/relative-sized-image.xhtml [ Pas
 
 crbug.com/418091 [ Mac ] fast/text/aat-morx.html [ Pass Failure ]
 
+crbug.com/442512 svg/dom/viewspec-aspectparams.html [ Pass Failure ]
+crbug.com/442512 svg/dom/viewspec-transformparams.html [ Pass Failure ]
+crbug.com/442512 svg/dom/viewspec-viewboxparams.html [ Pass Failure ]
+crbug.com/442512 svg/dom/viewspec-viewtargetparams.html [ Pass Failure ]
+crbug.com/442512 svg/dom/viewspec-zoomandpanparams.html [ Pass Failure ]
+
 crbug.com/436445 fast/css-grid-layout/flex-and-minmax-content-resolution-rows.html [ Failure ]
 crbug.com/440277 crypto/abandon-crypto-operation.html [ Pass Crash ]
 crbug.com/410929 virtual/gpu/fast/canvas/canvas-toDataURL-jpeg-maximum-quality.html [ Pass ImageOnlyFailure ]
