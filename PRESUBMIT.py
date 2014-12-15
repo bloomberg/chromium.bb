@@ -1772,9 +1772,8 @@ def GetPreferredTryMasters(project, change):
   if all(re.search('(^|[/_])win[/_.]', f) for f in files):
     return GetDefaultTryConfigs([
         'win8_chromium_rel',
-        'win_chromium_dbg',
-        'win_chromium_rel',
-        'win_chromium_x64_rel',
+        'win_chromium_rel_ng',
+        'win_chromium_x64_rel_ng',
     ])
   if all(re.search(r'(^|[\\\/_])android[\\\/_.]', f) for f in files):
     return GetDefaultTryConfigs([
@@ -1787,8 +1786,10 @@ def GetPreferredTryMasters(project, change):
   builders = [
       'android_aosp',
       'android_arm64_dbg_recipe',
-      'android_chromium_gn_compile_rel',
+      'android_arm64_dbg_recipe',
       'android_chromium_gn_compile_dbg',
+      'android_chromium_gn_compile_rel',
+      'android_clang_dbg_recipe',
       'android_clang_dbg_recipe',
       'android_dbg_tests_recipe',
       'ios_dbg_simulator',
@@ -1805,11 +1806,11 @@ def GetPreferredTryMasters(project, change):
       'mac_chromium_compile_dbg_ng',
       'mac_chromium_rel_ng',
       'mac_gpu',
-      'win_chromium_compile_dbg',
-      'win_chromium_rel',
-      'win_chromium_x64_rel',
-      'win_gpu',
       'win8_chromium_rel',
+      'win_chromium_compile_dbg',
+      'win_chromium_rel_ng',
+      'win_chromium_x64_rel_ng',
+      'win_gpu',
   ]
 
   # Match things like path/aura/file.cc and path/file_aura.cc.
