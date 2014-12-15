@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/desktop_notification_delegate.h"
 #include "content/public/common/platform_notification_data.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -74,7 +76,7 @@ class PlatformNotificationServiceTest : public testing::Test {
         new MockDesktopNotificationDelegate();
 
     service()->DisplayNotification(profile(),
-                                   GURL("https://example.com/"),
+                                   GURL("https://chrome.com/"),
                                    SkBitmap(),
                                    notification_data,
                                    make_scoped_ptr(delegate),
@@ -124,6 +126,32 @@ TEST_F(PlatformNotificationServiceTest, DisplayPageCloseClosure) {
   // delegate given that it'd result in a use-after-free.
 }
 
+TEST_F(PlatformNotificationServiceTest, PersistentNotificationDisplay) {
+  content::PlatformNotificationData notification_data;
+  notification_data.title = base::ASCIIToUTF16("My notification's title");
+  notification_data.body = base::ASCIIToUTF16("Hello, world!");
+
+  service()->DisplayPersistentNotification(profile(),
+                                           42 /* sw_registration_id */,
+                                           GURL("https://chrome.com/"),
+                                           SkBitmap(),
+                                           notification_data,
+                                           0 /* render_process_id */);
+
+  ASSERT_EQ(1u, ui_manager()->GetNotificationCount());
+
+  const Notification& notification = ui_manager()->GetNotificationAt(0);
+  EXPECT_EQ("https://chrome.com/", notification.origin_url().spec());
+  EXPECT_EQ("My notification's title",
+      base::UTF16ToUTF8(notification.title()));
+  EXPECT_EQ("Hello, world!",
+      base::UTF16ToUTF8(notification.message()));
+
+  service()->ClosePersistentNotification(profile(),
+                                         notification.delegate_id());
+  EXPECT_EQ(0u, ui_manager()->GetNotificationCount());
+}
+
 TEST_F(PlatformNotificationServiceTest, DisplayPageNotificationMatches) {
   content::PlatformNotificationData notification_data;
   notification_data.title = base::ASCIIToUTF16("My notification's title");
@@ -159,4 +187,30 @@ TEST_F(PlatformNotificationServiceTest, DisplayNameForOrigin) {
 
   // TODO(peter): Include unit tests for the extension-name translation
   // functionality of DisplayNameForOriginInProcessId.
+}
+
+TEST_F(PlatformNotificationServiceTest, NotificationPermissionLastUsage) {
+  // Both page and persistent notifications should update the last usage
+  // time of the notification permission for the origin.
+  GURL origin("https://chrome.com/");
+  base::Time begin_time;
+
+  CreateSimplePageNotification();
+
+  base::Time after_page_notification =
+      profile()->GetHostContentSettingsMap()->GetLastUsage(
+          origin, origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  EXPECT_GT(after_page_notification, begin_time);
+
+  service()->DisplayPersistentNotification(profile(),
+                                           42 /* sw_registration_id */,
+                                           origin,
+                                           SkBitmap(),
+                                           content::PlatformNotificationData(),
+                                           0 /* render_process_id */);
+
+  base::Time after_persistent_notification =
+      profile()->GetHostContentSettingsMap()->GetLastUsage(
+          origin, origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  EXPECT_GT(after_persistent_notification, after_page_notification);
 }

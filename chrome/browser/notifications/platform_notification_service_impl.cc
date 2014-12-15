@@ -6,15 +6,16 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_object_proxy.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/persistent_notification_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_notification_delegate.h"
+#include "content/public/browser/notification_event_dispatcher.h"
 #include "content/public/common/platform_notification_data.h"
 #include "ui/message_center/notifier_settings.h"
 
@@ -51,12 +52,31 @@ PlatformNotificationServiceImpl::PlatformNotificationServiceImpl()
 
 PlatformNotificationServiceImpl::~PlatformNotificationServiceImpl() {}
 
+void PlatformNotificationServiceImpl::OnPersistentNotificationClick(
+    content::BrowserContext* browser_context,
+    int64 service_worker_registration_id,
+    const std::string& notification_id,
+    const GURL& origin,
+    const content::PlatformNotificationData& notification_data,
+    const base::Callback<void(content::PersistentNotificationStatus)>&
+        callback) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  content::NotificationEventDispatcher::GetInstance()
+      ->DispatchNotificationClickEvent(
+            browser_context,
+            origin,
+            service_worker_registration_id,
+            notification_id,
+            notification_data,
+            callback);
+}
+
 blink::WebNotificationPermission
 PlatformNotificationServiceImpl::CheckPermission(
     content::ResourceContext* resource_context,
     const GURL& origin,
     int render_process_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
 #if defined(ENABLE_EXTENSIONS)
@@ -102,31 +122,20 @@ void PlatformNotificationServiceImpl::DisplayNotification(
     scoped_ptr<content::DesktopNotificationDelegate> delegate,
     int render_process_id,
     base::Closure* cancel_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
   DCHECK(profile);
 
   NotificationObjectProxy* proxy = new NotificationObjectProxy(delegate.Pass());
-  base::string16 display_source = DisplayNameForOriginInProcessId(
-      profile, origin, render_process_id);
-
-  // TODO(peter): Icons for Web Notifications are currently always requested for
-  // 1x scale, whereas the displays on which they can be displayed can have a
-  // different pixel density. Be smarter about this when the API gets updated
-  // with a way for developers to specify images of different resolutions.
-  Notification notification(origin, notification_data.title,
-      notification_data.body, gfx::Image::CreateFrom1xBitmap(icon),
-      display_source, notification_data.tag, proxy);
-
-  // Web Notifications do not timeout.
-  notification.set_never_timeout(true);
+  Notification notification = CreateNotificationFromData(
+      profile, origin, icon, notification_data, proxy, render_process_id);
 
   GetNotificationUIManager()->Add(notification, profile);
   if (cancel_callback)
     *cancel_callback =
         base::Bind(&CancelNotification,
-                   proxy->id(),
+                   notification.delegate_id(),
                    NotificationUIManager::GetProfileID(profile));
 
   profile->GetHostContentSettingsMap()->UpdateLastUsage(
@@ -140,13 +149,60 @@ void PlatformNotificationServiceImpl::DisplayPersistentNotification(
     const SkBitmap& icon,
     const content::PlatformNotificationData& notification_data,
     int render_process_id) {
-  NOTIMPLEMENTED();
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  DCHECK(profile);
+
+  PersistentNotificationDelegate* delegate = new PersistentNotificationDelegate(
+      browser_context,
+      service_worker_registration_id,
+      origin,
+      notification_data);
+
+  Notification notification = CreateNotificationFromData(
+      profile, origin, icon, notification_data, delegate, render_process_id);
+
+  GetNotificationUIManager()->Add(notification, profile);
+
+  profile->GetHostContentSettingsMap()->UpdateLastUsage(
+      origin, origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }
 
 void PlatformNotificationServiceImpl::ClosePersistentNotification(
     content::BrowserContext* browser_context,
     const std::string& persistent_notification_id) {
-  NOTIMPLEMENTED();
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  DCHECK(profile);
+
+  GetNotificationUIManager()->CancelById(
+      persistent_notification_id, NotificationUIManager::GetProfileID(profile));
+}
+
+Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
+    Profile* profile,
+    const GURL& origin,
+    const SkBitmap& icon,
+    const content::PlatformNotificationData& notification_data,
+    NotificationDelegate* delegate,
+    int render_process_id) const {
+  base::string16 display_source = DisplayNameForOriginInProcessId(
+      profile, origin, render_process_id);
+
+  // TODO(peter): Icons for Web Notifications are currently always requested for
+  // 1x scale, whereas the displays on which they can be displayed can have a
+  // different pixel density. Be smarter about this when the API gets updated
+  // with a way for developers to specify images of different resolutions.
+  Notification notification(origin, notification_data.title,
+      notification_data.body, gfx::Image::CreateFrom1xBitmap(icon),
+      display_source, notification_data.tag, delegate);
+
+  // Web Notifications do not timeout.
+  notification.set_never_timeout(true);
+
+  return notification;
 }
 
 NotificationUIManager*
@@ -163,7 +219,7 @@ void PlatformNotificationServiceImpl::SetNotificationUIManagerForTesting(
 }
 
 base::string16 PlatformNotificationServiceImpl::DisplayNameForOriginInProcessId(
-    Profile* profile, const GURL& origin, int process_id) {
+    Profile* profile, const GURL& origin, int process_id) const {
 #if defined(ENABLE_EXTENSIONS)
   // If the source is an extension, lookup the display name.
   if (origin.SchemeIs(extensions::kExtensionScheme)) {

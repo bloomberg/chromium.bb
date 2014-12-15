@@ -1479,6 +1479,7 @@
               # cross-platform panels).
               'sources': [
                 'browser/notifications/notification_browsertest.cc',
+                'browser/notifications/platform_notification_service_browsertest.cc',
               ],
             }],
           ],
@@ -1490,6 +1491,7 @@
 
             # TODO(peter): Enable the Notification browser tests.
             'browser/notifications/notification_browsertest.cc',
+            'browser/notifications/platform_notification_service_browsertest.cc',
           ]
         }],
         ['toolkit_views==1', {

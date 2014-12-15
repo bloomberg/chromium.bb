@@ -1827,6 +1827,8 @@
       'browser/notifications/notification_ui_manager.h',
       'browser/notifications/notification_ui_manager_android.cc',
       'browser/notifications/notification_ui_manager_android.h',
+      'browser/notifications/persistent_notification_delegate.cc',
+      'browser/notifications/persistent_notification_delegate.h',
       'browser/notifications/platform_notification_service_impl.cc',
       'browser/notifications/platform_notification_service_impl.h',
       'browser/notifications/profile_notification.cc',

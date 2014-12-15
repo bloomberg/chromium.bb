@@ -8,8 +8,11 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/notifications/notification.h"
 #include "content/public/browser/platform_notification_service.h"
+#include "content/public/common/persistent_notification_status.h"
 
+class NotificationDelegate;
 class NotificationUIManager;
 class Profile;
 
@@ -21,6 +24,18 @@ class PlatformNotificationServiceImpl
   // Returns the active instance of the service in the browser process. Safe to
   // be called from any thread.
   static PlatformNotificationServiceImpl* GetInstance();
+
+  // To be called when a persistent notification has been clicked on. The
+  // Service Worker associated with the registration will be started if
+  // needed, on which the event will be fired. Must be called on the UI thread.
+  void OnPersistentNotificationClick(
+      content::BrowserContext* browser_context,
+      int64 service_worker_registration_id,
+      const std::string& notification_id,
+      const GURL& origin,
+      const content::PlatformNotificationData& notification_data,
+      const base::Callback<void(content::PersistentNotificationStatus)>&
+          callback) const;
 
   // Returns the Notification UI Manager through which notifications can be
   // displayed to the user. Can be overridden for testing.
@@ -52,12 +67,24 @@ class PlatformNotificationServiceImpl
 
  private:
   friend struct DefaultSingletonTraits<PlatformNotificationServiceImpl>;
+  friend class PlatformNotificationServiceBrowserTest;
   friend class PlatformNotificationServiceTest;
   FRIEND_TEST_ALL_PREFIXES(
       PlatformNotificationServiceTest, DisplayNameForOrigin);
 
   PlatformNotificationServiceImpl();
   ~PlatformNotificationServiceImpl() override;
+
+  // Creates a new Web Notification-based Notification object.
+  // TODO(peter): |delegate| can be a scoped_refptr, but properly passing this
+  // through requires changing a whole lot of Notification constructor calls.
+  Notification CreateNotificationFromData(
+      Profile* profile,
+      const GURL& origin,
+      const SkBitmap& icon,
+      const content::PlatformNotificationData& notification_data,
+      NotificationDelegate* delegate,
+      int render_process_id) const;
 
   // Overrides the Notification UI Manager to use to |manager|. Only to be
   // used by tests. Tests are responsible for cleaning up after themselves.
@@ -68,7 +95,7 @@ class PlatformNotificationServiceImpl
   // from the origin itself when dealing with extensions.
   base::string16 DisplayNameForOriginInProcessId(Profile* profile,
                                                  const GURL& origin,
-                                                 int process_id);
+                                                 int process_id) const;
 
   // Weak reference. Ownership maintains with the test.
   NotificationUIManager* notification_ui_manager_for_tests_;
