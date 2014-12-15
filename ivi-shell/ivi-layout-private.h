@@ -292,28 +292,23 @@ ivi_layout_surface_set_transition_duration(
 			struct ivi_layout_surface *ivisurf,
 			uint32_t duration);
 
-struct ivi_layout_interface {
-	struct weston_view *(*get_weston_view)(
-				struct ivi_layout_surface *surface);
-
-	void (*surface_configure)(struct ivi_layout_surface *ivisurf,
-				  int32_t width,
-				  int32_t height);
-
-	struct ivi_layout_surface *(*surface_create)(
-				struct weston_surface *wl_surface,
-				uint32_t id_surface);
-
-	void (*init_with_compositor)(struct weston_compositor *ec);
-
-	int32_t (*get_surface_dimension)(
-				struct ivi_layout_surface *ivisurf,
-				int32_t *dest_width,
-				int32_t *dest_height);
-
-	void (*add_surface_configured_listener)(
-				struct ivi_layout_surface *ivisurf,
-				struct wl_listener* listener);
-};
-
+/**
+ * methods of interaction between ivi-shell with ivi-layout
+ */
+struct weston_view *
+ivi_layout_get_weston_view(struct ivi_layout_surface *surface);
+void
+ivi_layout_surface_configure(struct ivi_layout_surface *ivisurf,
+			     int32_t width, int32_t height);
+struct ivi_layout_surface*
+ivi_layout_surface_create(struct weston_surface *wl_surface,
+			  uint32_t id_surface);
+void
+ivi_layout_init_with_compositor(struct weston_compositor *ec);
+int32_t
+ivi_layout_surface_get_dimension(struct ivi_layout_surface *ivisurf,
+				 int32_t *dest_width, int32_t *dest_height);
+void
+ivi_layout_surface_add_configured_listener(struct ivi_layout_surface* ivisurf,
+					   struct wl_listener* listener);
 #endif

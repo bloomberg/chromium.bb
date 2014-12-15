@@ -2659,8 +2659,10 @@ ivi_layout_surface_set_transition(struct ivi_layout_surface *ivisurf,
 	return 0;
 }
 
-/***called from ivi-shell**/
-static struct weston_view *
+/**
+ * methods of interaction between ivi-shell with ivi-layout
+ */
+struct weston_view *
 ivi_layout_get_weston_view(struct ivi_layout_surface *surface)
 {
 	struct weston_view *tmpview = NULL;
@@ -2677,7 +2679,7 @@ ivi_layout_get_weston_view(struct ivi_layout_surface *surface)
 	return tmpview;
 }
 
-static void
+void
 ivi_layout_surface_configure(struct ivi_layout_surface *ivisurf,
 			     int32_t width, int32_t height)
 {
@@ -2707,7 +2709,7 @@ ivi_layout_surface_configure(struct ivi_layout_surface *ivisurf,
 	}
 }
 
-WL_EXPORT int32_t
+int32_t
 ivi_layout_surface_set_content_observer(struct ivi_layout_surface *ivisurf,
 					ivi_controller_surface_content_callback callback,
 					void* userdata)
@@ -2722,7 +2724,7 @@ ivi_layout_surface_set_content_observer(struct ivi_layout_surface *ivisurf,
 	return ret;
 }
 
-static struct ivi_layout_surface*
+struct ivi_layout_surface*
 ivi_layout_surface_create(struct weston_surface *wl_surface,
 			  uint32_t id_surface)
 {
@@ -2798,7 +2800,7 @@ ivi_layout_surface_create(struct weston_surface *wl_surface,
 	return ivisurf;
 }
 
-static void
+void
 ivi_layout_init_with_compositor(struct weston_compositor *ec)
 {
 	struct ivi_layout *layout = get_instance();
@@ -2826,18 +2828,10 @@ ivi_layout_init_with_compositor(struct weston_compositor *ec)
 }
 
 
-static void
+void
 ivi_layout_surface_add_configured_listener(struct ivi_layout_surface* ivisurf,
 					   struct wl_listener* listener)
 {
 	wl_signal_add(&ivisurf->configured, listener);
 }
 
-WL_EXPORT struct ivi_layout_interface ivi_layout_interface = {
-	.get_weston_view = ivi_layout_get_weston_view,
-	.surface_configure = ivi_layout_surface_configure,
-	.surface_create = ivi_layout_surface_create,
-	.init_with_compositor = ivi_layout_init_with_compositor,
-	.get_surface_dimension = ivi_layout_surface_get_dimension,
-	.add_surface_configured_listener = ivi_layout_surface_add_configured_listener
-};

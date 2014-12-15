@@ -39,6 +39,7 @@
 
 #include "ivi-shell.h"
 #include "ivi-application-server-protocol.h"
+#include "ivi-layout-export.h"
 #include "ivi-layout-private.h"
 
 #include "../shared/os-compatibility.h"
@@ -85,8 +86,9 @@ surface_configure_notify(struct wl_listener *listener, void *data)
 
 	int32_t dest_width = 0;
 	int32_t dest_height = 0;
-	shell_surf->shell->ivi_layout->get_surface_dimension(layout_surf,
-					  &dest_width, &dest_height);
+
+	ivi_layout_surface_get_dimension(layout_surf,
+					 &dest_width, &dest_height);
 
 	if (shell_surf->resource)
 		ivi_surface_send_configure(shell_surf->resource,
@@ -119,7 +121,8 @@ ivi_shell_surface_configure(struct weston_surface *surface,
 	if (surface->width == 0 || surface->height == 0 || ivisurf == NULL)
 		return;
 
-	view = ivisurf->shell->ivi_layout->get_weston_view(ivisurf->layout_surface);
+	view = ivi_layout_get_weston_view(ivisurf->layout_surface);
+
 	if (view == NULL)
 		return;
 
@@ -136,8 +139,8 @@ ivi_shell_surface_configure(struct weston_surface *surface,
 					 view->geometry.y + to_y - from_y);
 		weston_view_update_transform(view);
 
-		ivisurf->shell->ivi_layout->surface_configure(ivisurf->layout_surface,
-					      surface->width, surface->height);
+		ivi_layout_surface_configure(ivisurf->layout_surface,
+					     surface->width, surface->height);
 	}
 }
 
@@ -231,8 +234,7 @@ application_surface_create(struct wl_client *client,
 				    resource, IVI_APPLICATION_ERROR_ROLE) < 0)
 		return;
 
-	layout_surface = shell->ivi_layout->surface_create(weston_surface,
-						    id_surface);
+	layout_surface = ivi_layout_surface_create(weston_surface, id_surface);
 
 	/* check if id_ivi is already used for wl_surface*/
 	if (layout_surface == NULL){
@@ -259,9 +261,8 @@ application_surface_create(struct wl_client *client,
 	ivisurf->height = 0;
 	ivisurf->layout_surface = layout_surface;
 	ivisurf->configured_listener.notify = surface_configure_notify;
-	ivisurf->shell->ivi_layout->add_surface_configured_listener(layout_surface,
-						&ivisurf->configured_listener);
-
+	ivi_layout_surface_add_configured_listener(layout_surface,
+				     &ivisurf->configured_listener);
 	/*
 	 * The following code relies on wl_surface destruction triggering
 	 * immediateweston_surface destruction
@@ -320,7 +321,7 @@ get_default_view(struct weston_surface *surface)
 
 	shsurf = get_ivi_shell_surface(surface);
 	if (shsurf && shsurf->layout_surface) {
-		view = shsurf->shell->ivi_layout->get_weston_view(shsurf->layout_surface);
+		view = ivi_layout_get_weston_view(shsurf->layout_surface);
 		if (view)
 			return view;
 	}
@@ -423,8 +424,6 @@ module_init(struct weston_compositor *compositor,
 	    int *argc, char *argv[])
 {
 	struct ivi_shell *shell;
-	char ivi_layout_path[PATH_MAX];
-	void *module;
 	struct ivi_shell_setting setting = { };
 
 	shell = zalloc(sizeof *shell);
@@ -447,44 +446,12 @@ module_init(struct weston_compositor *compositor,
 	if (ivi_shell_setting_create(&setting, compositor) != 0)
 		return -1;
 
-	/*
-	 * load module:ivi-layout
-	 * ivi_layout_interface is referred by ivi-shell to use ivi-layout.
-	 * The reason why the following code is written newly without
-	 * using weston_load_module is it doesn't open library with
-	 * RTLD_GLOBAL option.
-	 */
-	snprintf(ivi_layout_path, sizeof ivi_layout_path,
-		 "%s/%s", MODULEDIR, "ivi-layout.so");
-	module = dlopen(ivi_layout_path, RTLD_NOW | RTLD_NOLOAD);
-	if (module) {
-		weston_log("ivi-shell: Module '%s' already loaded\n",
-			   ivi_layout_path);
-		dlclose(module);
-		return -1;
-	}
+	ivi_layout_init_with_compositor(compositor);
 
-	weston_log("ivi-shell: Loading module '%s'\n", ivi_layout_path);
-	module = dlopen(ivi_layout_path, RTLD_NOW | RTLD_GLOBAL);
-	if (!module) {
-		weston_log("ivi-shell: Failed to load module: %s\n", dlerror());
-		return -1;
-	}
-
-	shell->ivi_layout = dlsym(module,"ivi_layout_interface");
-	if (!shell->ivi_layout){
-		weston_log("ivi-shell: couldn't find ivi_layout_interface in '%s'\n", ivi_layout_path);
-		free(setting.ivi_module);
-		dlclose(module);
-		return -1;
-	}
-
-	shell->ivi_layout->init_with_compositor(compositor);
 
 	/* Call module_init of ivi-modules which are defined in weston.ini */
 	if (ivi_load_modules(compositor, setting.ivi_module, argc, argv) < 0) {
 		free(setting.ivi_module);
-		dlclose(module);
 		return -1;
 	}
 
