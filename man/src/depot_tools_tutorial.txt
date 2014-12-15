@@ -71,7 +71,7 @@ Clone the 'depot_tools' repository:
 
 [subs="quotes"]
 ----
-[white]**$ git clone https://chromium.googlesource.com/chromium/tools/depot_tools**
+[white]**$ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git**
 ----
 
 Add 'depot_tools' to the 'end' of your PATH (you will probably want to put this
