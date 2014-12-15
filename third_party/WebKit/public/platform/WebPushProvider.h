@@ -17,7 +17,7 @@ struct WebPushRegistration;
 
 typedef WebCallbacks<WebPushRegistration, WebPushError> WebPushRegistrationCallbacks;
 typedef WebCallbacks<WebPushPermissionStatus, void> WebPushPermissionStatusCallbacks;
-typedef WebCallbacks<bool, void> WebPushUnregisterCallbacks;
+typedef WebCallbacks<bool, WebPushError> WebPushUnregisterCallbacks;
 
 class WebPushProvider {
 public:

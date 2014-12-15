@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "modules/push_messaging/PushError.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebPushProvider.h"
@@ -45,7 +46,7 @@ ScriptPromise PushRegistration::unregister(ScriptState* scriptState)
     WebPushProvider* webPushProvider = Platform::current()->pushProvider();
     ASSERT(webPushProvider);
 
-    webPushProvider->unregister(m_serviceWorkerRegistration->webRegistration(), new CallbackPromiseAdapter<bool, void>(resolver));
+    webPushProvider->unregister(m_serviceWorkerRegistration->webRegistration(), new CallbackPromiseAdapter<bool, PushError>(resolver));
     return promise;
 }
 

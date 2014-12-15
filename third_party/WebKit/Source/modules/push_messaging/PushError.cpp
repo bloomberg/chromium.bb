@@ -16,6 +16,8 @@ PassRefPtrWillBeRawPtr<DOMException> PushError::take(ScriptPromiseResolver*, Web
     switch (webError->errorType) {
     case WebPushError::ErrorTypeAbort:
         return DOMException::create(AbortError, webError->message);
+    case WebPushError::ErrorTypeNetwork:
+        return DOMException::create(NetworkError, webError->message);
     case WebPushError::ErrorTypeNotFound:
         return DOMException::create(NotFoundError, webError->message);
     case WebPushError::ErrorTypeUnknown:
