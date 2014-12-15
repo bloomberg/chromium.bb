@@ -878,19 +878,13 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             l10n_util::GetStringFUTF16(IDS_PLUGIN_NOT_AUTHORIZED, group_name),
             GURL());
         placeholder->set_allow_loading(true);
-        // Check to see if old infobar should be displayed.
-        std::string trial_group =
-            base::FieldTrialList::FindFullName("UnauthorizedPluginInfoBar");
-        if (plugin.type != content::WebPluginInfo::PLUGIN_TYPE_NPAPI ||
-            trial_group == "Enabled") {
+        if (plugin.type != content::WebPluginInfo::PLUGIN_TYPE_NPAPI) {
           render_frame->Send(new ChromeViewHostMsg_BlockedUnauthorizedPlugin(
               render_frame->GetRoutingID(),
               group_name,
               identifier));
-        } else {
-          // Send IPC for showing blocked plugins page action.
-          observer->DidBlockContentType(content_type, group_name);
         }
+        observer->DidBlockContentType(content_type, group_name);
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay: {

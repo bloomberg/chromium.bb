@@ -44,37 +44,6 @@ class PluginInfoBarDelegate : public ConfirmInfoBarDelegate {
   DISALLOW_COPY_AND_ASSIGN(PluginInfoBarDelegate);
 };
 
-// Infobar that's shown when a plug-in requires user authorization to run.
-class UnauthorizedPluginInfoBarDelegate : public PluginInfoBarDelegate {
- public:
-  // Creates an unauthorized plugin infobar and delegate and adds the infobar to
-  // |infobar_service|.
-  static void Create(InfoBarService* infobar_service,
-                     HostContentSettingsMap* content_settings,
-                     const base::string16& name,
-                     const std::string& identifier);
-
- private:
-  UnauthorizedPluginInfoBarDelegate(HostContentSettingsMap* content_settings,
-                                    const base::string16& name,
-                                    const std::string& identifier);
-  ~UnauthorizedPluginInfoBarDelegate() override;
-
-  // PluginInfoBarDelegate:
-  base::string16 GetMessageText() const override;
-  base::string16 GetButtonLabel(InfoBarButton button) const override;
-  bool Accept() override;
-  bool Cancel() override;
-  void InfoBarDismissed() override;
-  bool LinkClicked(WindowOpenDisposition disposition) override;
-  std::string GetLearnMoreURL() const override;
-
-  HostContentSettingsMap* content_settings_;
-  base::string16 name_;
-
-  DISALLOW_COPY_AND_ASSIGN(UnauthorizedPluginInfoBarDelegate);
-};
-
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 // Infobar that's shown when a plug-in is out of date.
 class OutdatedPluginInfoBarDelegate : public PluginInfoBarDelegate,

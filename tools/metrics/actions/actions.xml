@@ -1266,56 +1266,67 @@ should be able to be added at any place in this file.
 <action name="BlockedPluginInfobar.AllowThisTime">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>This infobar has been removed.</obsolete>
 </action>
 
 <action name="BlockedPluginInfobar.AlwaysAllow">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>This infobar has been removed.</obsolete>
 </action>
 
 <action name="BlockedPluginInfobar.Closed">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>This infobar has been removed.</obsolete>
 </action>
 
 <action name="BlockedPluginInfobar.Dismissed">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>This infobar has been removed.</obsolete>
 </action>
 
 <action name="BlockedPluginInfobar.LearnMore">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>This infobar has been removed.</obsolete>
 </action>
 
 <action name="BlockedPluginInfobar.Shown">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>This infobar has been removed.</obsolete>
 </action>
 
 <action name="BlockedPluginInfobar.Shown.Java">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>This infobar has been removed.</obsolete>
 </action>
 
 <action name="BlockedPluginInfobar.Shown.QuickTime">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>This infobar has been removed.</obsolete>
 </action>
 
 <action name="BlockedPluginInfobar.Shown.RealPlayer">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>This infobar has been removed.</obsolete>
 </action>
 
 <action name="BlockedPluginInfobar.Shown.Shockwave">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>This infobar has been removed.</obsolete>
 </action>
 
 <action name="BlockedPluginInfobar.Shown.WindowsMediaPlayer">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>This infobar has been removed.</obsolete>
 </action>
 
 <action name="Bold">

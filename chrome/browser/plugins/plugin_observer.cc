@@ -335,8 +335,6 @@ bool PluginObserver::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(PluginObserver, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_BlockedOutdatedPlugin,
                         OnBlockedOutdatedPlugin)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_BlockedUnauthorizedPlugin,
-                        OnBlockedUnauthorizedPlugin)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_NPAPINotSupported,
                         OnNPAPINotSupported)
 #if defined(ENABLE_PLUGIN_INSTALLATION)
@@ -365,16 +363,6 @@ bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 
   return true;
-}
-
-void PluginObserver::OnBlockedUnauthorizedPlugin(
-    const base::string16& name,
-    const std::string& identifier) {
-  UnauthorizedPluginInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents()),
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext())->
-          GetHostContentSettingsMap(),
-      name, identifier);
 }
 
 void PluginObserver::OnBlockedOutdatedPlugin(int placeholder_id,
