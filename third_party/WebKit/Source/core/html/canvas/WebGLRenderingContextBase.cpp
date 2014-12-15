@@ -4383,6 +4383,13 @@ blink::WebLayer* WebGLRenderingContextBase::platformLayer() const
     return isContextLost() ? 0 : drawingBuffer()->platformLayer();
 }
 
+void WebGLRenderingContextBase::setFilterLevel(SkPaint::FilterLevel filterLevel)
+{
+    if (!isContextLost()) {
+        drawingBuffer()->setFilterLevel(filterLevel);
+    }
+}
+
 Extensions3DUtil* WebGLRenderingContextBase::extensionsUtil()
 {
     ASSERT(!isContextLost());

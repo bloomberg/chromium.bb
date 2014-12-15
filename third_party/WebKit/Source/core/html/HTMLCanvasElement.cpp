@@ -113,6 +113,7 @@ inline HTMLCanvasElement::HTMLCanvasElement(Document& document)
     , m_didFailToCreateImageBuffer(false)
     , m_imageBufferIsClear(false)
 {
+    setHasCustomStyleCallbacks();
 }
 
 DEFINE_NODE_FACTORY(HTMLCanvasElement)
@@ -143,6 +144,15 @@ RenderObject* HTMLCanvasElement::createRenderer(RenderStyle* style)
     if (frame && frame->script().canExecuteScripts(NotAboutToExecuteScript))
         return new RenderHTMLCanvas(this);
     return HTMLElement::createRenderer(style);
+}
+
+void HTMLCanvasElement::didRecalcStyle(StyleRecalcChange)
+{
+    SkPaint::FilterLevel filterLevel = computedStyle()->imageRendering() == ImageRenderingPixelated ? SkPaint::kNone_FilterLevel : SkPaint::kLow_FilterLevel;
+    if (m_context && m_context->is3d()) {
+        toWebGLRenderingContext(m_context.get())->setFilterLevel(filterLevel);
+        setNeedsCompositingUpdate();
+    }
 }
 
 Node::InsertionNotificationRequest HTMLCanvasElement::insertedInto(ContainerNode* node)
@@ -223,6 +233,9 @@ void HTMLCanvasElement::getContext(const String& type, const CanvasContextCreati
         if (!m_context) {
             blink::Platform::current()->histogramEnumeration("Canvas.ContextType", contextType, ContextTypeCount);
             m_context = WebGLRenderingContext::create(this, attributes);
+            RenderStyle* style = computedStyle();
+            if (style)
+                toWebGLRenderingContext(m_context.get())->setFilterLevel(style->imageRendering() == ImageRenderingPixelated ? SkPaint::kNone_FilterLevel : SkPaint::kLow_FilterLevel);
             setNeedsCompositingUpdate();
             updateExternallyAllocatedMemory();
         } else if (!m_context->is3d()) {

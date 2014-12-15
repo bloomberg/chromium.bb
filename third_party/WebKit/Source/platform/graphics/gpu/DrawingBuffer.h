@@ -148,6 +148,7 @@ public:
     void setBufferClearNeeded(bool);
     bool bufferClearNeeded() const;
     void setIsHidden(bool);
+    void setFilterLevel(SkPaint::FilterLevel);
 
     WebLayer* platformLayer();
 
@@ -292,6 +293,7 @@ private:
     int m_packAlignment;
     bool m_destructionInProgress;
     bool m_isHidden;
+    SkPaint::FilterLevel m_filterLevel;
 
     OwnPtr<WebExternalTextureLayer> m_layer;
 

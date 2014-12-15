@@ -384,6 +384,8 @@ public:
         void trace(Visitor*);
     };
 
+    void setFilterLevel(SkPaint::FilterLevel);
+
 protected:
     friend class WebGLDrawBuffers;
     friend class WebGLFramebuffer;

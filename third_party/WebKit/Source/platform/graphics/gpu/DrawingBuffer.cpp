@@ -157,6 +157,7 @@ DrawingBuffer::DrawingBuffer(PassOwnPtr<WebGraphicsContext3D> context,
     , m_packAlignment(4)
     , m_destructionInProgress(false)
     , m_isHidden(false)
+    , m_filterLevel(SkPaint::kLow_FilterLevel)
     , m_contextEvictionManager(contextEvictionManager)
 {
     // Used by browser tests to detect the use of a DrawingBuffer.
@@ -209,6 +210,15 @@ void DrawingBuffer::setIsHidden(bool hidden)
     m_isHidden = hidden;
     if (m_isHidden)
         freeRecycledMailboxes();
+}
+
+void DrawingBuffer::setFilterLevel(SkPaint::FilterLevel filterLevel)
+{
+    if (m_filterLevel != filterLevel) {
+        m_filterLevel = filterLevel;
+        if (m_layer)
+            m_layer->setNearestNeighbor(filterLevel == SkPaint::kNone_FilterLevel);
+    }
 }
 
 void DrawingBuffer::freeRecycledMailboxes()
@@ -531,6 +541,7 @@ WebLayer* DrawingBuffer::platformLayer()
         m_layer->setOpaque(!m_actualAttributes.alpha);
         m_layer->setBlendBackgroundColor(m_actualAttributes.alpha);
         m_layer->setPremultipliedAlpha(m_actualAttributes.premultipliedAlpha);
+        m_layer->setNearestNeighbor(m_filterLevel == SkPaint::kNone_FilterLevel);
         GraphicsLayer::registerContentsLayer(m_layer->layer());
     }
 
