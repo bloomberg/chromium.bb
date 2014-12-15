@@ -238,7 +238,7 @@ void RlzLibTest::SimulateOmniboxUsage() {
   // with empty or invalid values.
   AutocompleteResult empty_result;
   OmniboxLog dummy(base::string16(), false, metrics::OmniboxInputType::INVALID,
-                   true, 0, false, -1,
+                   true, 0, false, false, -1,
                    metrics::OmniboxEventProto::INVALID_SPEC,
                    base::TimeDelta::FromSeconds(0), 0,
                    base::TimeDelta::FromSeconds(0),

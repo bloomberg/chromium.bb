@@ -37,8 +37,8 @@ void OmniboxWatcher::Observe(int type,
   // No normal person can type URLs that fast!  Navigating to a URL as a
   // result of such typing is suspicious.
   // TODO(mpearson): Add support for suspicious queries.
-  if (!log->is_paste_and_go && log->is_popup_open &&
-      (log->text.length() > 200) &&
+  if (!log->is_paste_and_go && !log->last_action_was_paste &&
+      log->is_popup_open && (log->text.length() > 200) &&
       (log->elapsed_time_since_user_first_modified_omnibox <
        base::TimeDelta::FromSeconds(1)) &&
       !AutocompleteMatch::IsSearchType(selected_suggestion.type)) {
