@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_BACKGROUND_CONTENTS_H_
-#define CHROME_BROWSER_TAB_CONTENTS_BACKGROUND_CONTENTS_H_
+#ifndef CHROME_BROWSER_BACKGROUND_BACKGROUND_CONTENTS_H_
+#define CHROME_BROWSER_BACKGROUND_BACKGROUND_CONTENTS_H_
 
 #include <string>
 
@@ -21,8 +21,9 @@ class SessionStorageNamespace;
 class SiteInstance;
 };
 
-// This class consumes WebContents. It can host a renderer, but does not
-// have any visible display.
+// This class maintains a WebContents used in the background. It can host a
+// renderer, but does not have any visible display.
+// TODO(atwilson): Unify this with background pages; http://crbug.com/77790
 class BackgroundContents : public content::WebContentsDelegate,
                            public content::WebContentsObserver,
                            public content::NotificationObserver {
@@ -102,4 +103,4 @@ struct BackgroundContentsOpenedDetails {
   const base::string16& application_id;
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_BACKGROUND_CONTENTS_H_
+#endif  // CHROME_BROWSER_BACKGROUND_BACKGROUND_CONTENTS_H_

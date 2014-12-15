@@ -12,7 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/tab_contents/background_contents.h"
+#include "chrome/browser/background/background_contents.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

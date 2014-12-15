@@ -796,6 +796,8 @@
       'browser/accessibility/invert_bubble_prefs.h',
       'browser/auto_launch_trial.cc',
       'browser/auto_launch_trial.h',
+      'browser/background/background_contents.cc',
+      'browser/background/background_contents.h',
       'browser/bookmarks/bookmark_html_writer.cc',
       'browser/bookmarks/bookmark_html_writer.h',
       'browser/certificate_viewer.cc',
@@ -1057,8 +1059,6 @@
       'browser/sync/profile_sync_service_base.h',
       'browser/sync/sync_ui_util.cc',
       'browser/sync/sync_ui_util.h',
-      'browser/tab_contents/background_contents.cc',
-      'browser/tab_contents/background_contents.h',
     ],
     'chrome_browser_win_sources': [
       'browser/browser_process_platform_part_aurawin.cc',
