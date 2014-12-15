@@ -52,7 +52,7 @@ class FakeCIDBConnection(object):
     self.buildTable.append(row)
     return build_id
 
-  def InsertCLActions(self, build_id, cl_actions):
+  def InsertCLActions(self, build_id, cl_actions, timestamp=None):
     """Insert a list of |cl_actions|."""
     if not cl_actions:
       return 0
@@ -70,7 +70,7 @@ class FakeCIDBConnection(object):
           'change_number': change_number,
           'patch_number' : patch_number,
           'action' : action,
-          'timestamp': datetime.datetime.now(),
+          'timestamp': timestamp or datetime.datetime.now(),
           'reason' : reason})
 
     self.clActionTable.extend(rows)

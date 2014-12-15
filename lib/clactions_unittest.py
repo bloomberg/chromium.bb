@@ -9,6 +9,8 @@
 
 from __future__ import print_function
 
+import datetime
+import itertools
 import os
 import sys
 
@@ -35,12 +37,39 @@ class TestCLActionHistory(cros_test_lib.TestCase):
   def setUp(self):
     self.fake_db = fake_cidb.FakeCIDBConnection()
 
+  def testGetCLHandlingTime(self):
+    """Test that we correctly compute a CL's handling time."""
+    change = metadata_lib.GerritPatchTuple(1, 1, False)
+    build_id = self.fake_db.InsertBuild('n', 'w', 1, 'c', 'h')
 
-  def _Act(self, build_id, change, action, reason=None):
+    start_time = datetime.datetime.now()
+    c = itertools.count()
+    def next_time():
+      return start_time + datetime.timedelta(seconds=c.next())
+
+    # Simulate a CL getting speculatively picked up, then marked as ready
+    # then rejected, then remarked as ready, then submitted.
+    # Only the time while it was ready (2 seconds in our fake clock) should
+    # count as handling time.
+    self._Act(build_id, change, constants.CL_ACTION_SPECULATIVE,
+              timestamp=next_time())
+    self._Act(build_id, change, constants.CL_ACTION_REQUEUED,
+              timestamp=next_time())
+    self._Act(build_id, change, constants.CL_ACTION_KICKED_OUT,
+              timestamp=next_time())
+    self._Act(build_id, change, constants.CL_ACTION_REQUEUED,
+              timestamp=next_time())
+    self._Act(build_id, change, constants.CL_ACTION_SUBMITTED,
+              timestamp=next_time())
+
+    action_history = self.fake_db.GetActionsForChanges([change])
+    self.assertEqual(2, clactions.GetCLHandlingTime(change, action_history))
+
+  def _Act(self, build_id, change, action, reason=None, timestamp=None):
     self.fake_db.InsertCLActions(
           build_id,
-          [clactions.CLAction.FromGerritPatchAndAction(change, action, reason)]
-          )
+          [clactions.CLAction.FromGerritPatchAndAction(change, action, reason)],
+          timestamp=timestamp)
 
 
   def _GetCLStatus(self, change):

@@ -219,6 +219,40 @@ def GetRequeuedOrSpeculative(change, action_history, is_speculative):
 
   return None
 
+
+def GetCLHandlingTime(change, action_history):
+  """Returns the handling time of |change|, in seconds.
+
+  This method computes a CL's handling time, not including the time spent
+  waiting for a developer to mark or re-mark their change as ready.
+
+  Args:
+    change: GerritPatch instance of a submitted change.
+    action_history: List of CL actions.
+  """
+  actions_for_patch = ActionsForPatch(change, action_history)
+
+  elapsed_time = 0
+  last_timestamp = None
+  counting = True
+
+  for a in actions_for_patch:
+    interval = 0
+    if last_timestamp is not None:
+      interval = (a.timestamp - last_timestamp).seconds
+    last_timestamp = a.timestamp
+    if counting:
+      elapsed_time += interval
+
+    if a.action in (constants.CL_ACTION_KICKED_OUT,
+                    constants.CL_ACTION_SPECULATIVE):
+      counting = False
+    if a.action == constants.CL_ACTION_REQUEUED:
+      counting = True
+
+  return elapsed_time
+
+
 def GetCLActionCount(change, configs, action, action_history,
                      latest_patchset_only=True):
   """Return how many times |action| has occured on |change|.
