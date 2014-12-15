@@ -56,8 +56,12 @@ class AdbWrapper(object):
 
   # pylint: disable=unused-argument
   @classmethod
-  def _BuildAdbCmd(cls, args, device_serial):
-    cmd = [constants.GetAdbPath()]
+  def _BuildAdbCmd(cls, args, device_serial, cpu_affinity=None):
+    if cpu_affinity is not None:
+      cmd = ['taskset', '-c', str(cpu_affinity)]
+    else:
+      cmd = []
+    cmd.append(constants.GetAdbPath())
     if device_serial is not None:
       cmd.extend(['-s', device_serial])
     cmd.extend(args)
@@ -68,9 +72,9 @@ class AdbWrapper(object):
   @classmethod
   @decorators.WithTimeoutAndRetries
   def _RunAdbCmd(cls, args, timeout=None, retries=None, device_serial=None,
-                 check_error=True):
+                 check_error=True, cpu_affinity=None):
     status, output = cmd_helper.GetCmdStatusAndOutputWithTimeout(
-        cls._BuildAdbCmd(args, device_serial),
+        cls._BuildAdbCmd(args, device_serial, cpu_affinity=cpu_affinity),
         timeout_retry.CurrentTimeoutThread().GetRemainingTime())
     if status != 0:
       raise device_errors.AdbCommandFailedError(
@@ -134,6 +138,16 @@ class AdbWrapper(object):
 
   def __repr__(self):
     return '%s(\'%s\')' % (self.__class__.__name__, self)
+
+  @classmethod
+  def KillServer(cls, timeout=_DEFAULT_TIMEOUT, retries=_DEFAULT_RETRIES):
+    cls._RunAdbCmd(['kill-server'], timeout=timeout, retries=retries)
+
+  @classmethod
+  def StartServer(cls, timeout=_DEFAULT_TIMEOUT, retries=_DEFAULT_RETRIES):
+    # CPU affinity is used to reduce adb instability http://crbug.com/268450
+    cls._RunAdbCmd(['start-server'], timeout=timeout, retries=retries,
+                   cpu_affinity=0)
 
   # TODO(craigdh): Determine the filter criteria that should be supported.
   @classmethod
