@@ -25,16 +25,16 @@ class WebStateObserver {
   // (in the case of new navigations) or renavigated to (for back/forward
   // navigations).
   virtual void NavigationItemCommitted(
-      const LoadCommittedDetails& load_details) {};
+      const LoadCommittedDetails& load_details) {}
 
   // Called when the current page is loaded.
-  virtual void PageLoaded() {};
+  virtual void PageLoaded() {}
 
   // Called on URL hash change events.
-  virtual void URLHashChanged() {};
+  virtual void URLHashChanged() {}
 
   // Called on history state change events.
-  virtual void HistoryStateChanged() {};
+  virtual void HistoryStateChanged() {}
 
   // Invoked when the WebState is being destroyed. Gives subclasses a chance
   // to cleanup.
