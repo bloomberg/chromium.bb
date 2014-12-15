@@ -77,7 +77,6 @@
 
 #if defined(OS_ANDROID)
 #include <android/keycodes.h>
-#include "base/android/build_info.h"
 #include "content/renderer/android/synchronous_compositor_factory.h"
 #endif
 
@@ -2017,12 +2016,9 @@ ui::TextInputType RenderWidget::GetTextInputType() {
 
 void RenderWidget::UpdateCompositionInfo(bool should_update_range) {
 #if defined(OS_ANDROID)
-  // Sending composition info makes sense only in Lollipop (API level 21)
-  // and above due to the API availability.
-  if (base::android::BuildInfo::GetInstance()->sdk_int() < 21)
-    return;
-#endif
-
+  // TODO(yukawa): Start sending character bounds when the browser side
+  // implementation becomes ready (crbug.com/424866).
+#else
   gfx::Range range = gfx::Range();
   if (should_update_range) {
     GetCompositionRange(&range);
@@ -2038,6 +2034,7 @@ void RenderWidget::UpdateCompositionInfo(bool should_update_range) {
   composition_range_ = range;
   Send(new InputHostMsg_ImeCompositionRangeChanged(
       routing_id(), composition_range_, composition_character_bounds_));
+#endif
 }
 
 void RenderWidget::GetCompositionCharacterBounds(
