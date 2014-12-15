@@ -33,9 +33,14 @@ const int kPrefMuteOn = 1;
 // parts of the string could be identical, only the last part will differentiate
 // them.
 std::string GetDeviceIdString(const chromeos::AudioDevice& device) {
-  return device.device_name + " : " +
-         base::Uint64ToString(device.id & static_cast<uint64>(0xffffffff)) +
-         " : " + (device.is_input ? "1" : "0");
+  std::string device_id_string =
+      device.device_name + " : " +
+      base::Uint64ToString(device.id & static_cast<uint64>(0xffffffff)) +
+      " : " + (device.is_input ? "1" : "0");
+  // Replace any periods from the device id string with a space, since setting
+  // names cannot contain periods.
+  std::replace(device_id_string.begin(), device_id_string.end(), '.', ' ');
+  return device_id_string;
 }
 
 }  // namespace
@@ -114,6 +119,8 @@ double AudioDevicesPrefHandlerImpl::GetVolumeGainPrefValue(
   // cras has added support for normalizing input gain range.
   double value = device.is_input ?
       0.0 : GetDeviceDefaultOutputVolume(device);
+  // TODO(rkc): The above code is completely ignored since we 'always' have a
+  // default pref value. Fix this. http://crbug.com/442489
   device_volume_settings_->GetDouble(device_id_str, &value);
 
   return value;
@@ -139,7 +146,7 @@ AudioDevicesPrefHandlerImpl::AudioDevicesPrefHandlerImpl(
 }
 
 AudioDevicesPrefHandlerImpl::~AudioDevicesPrefHandlerImpl() {
-};
+}
 
 void AudioDevicesPrefHandlerImpl::InitializePrefObservers() {
   pref_change_registrar_.Init(local_state_);
