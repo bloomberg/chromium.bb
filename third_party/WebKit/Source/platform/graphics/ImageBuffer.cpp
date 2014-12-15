@@ -265,23 +265,7 @@ void ImageBuffer::draw(GraphicsContext* context, const FloatRect& destRect, cons
         return;
 
     FloatRect srcRect = srcPtr ? *srcPtr : FloatRect(FloatPoint(), size());
-    RefPtr<SkPicture> picture = m_surface->getPicture();
-    if (picture) {
-        context->drawPicture(picture.get(), destRect, srcRect, op, blendMode);
-        return;
-    }
-
-    SkBitmap bitmap = m_surface->bitmap();
-    // For ImageBufferSurface that enables cachedBitmap, Use the cached Bitmap for CPU side usage
-    // if it is available, otherwise generate and use it.
-    if (!context->isAccelerated() && m_surface->isAccelerated() && m_surface->cachedBitmapEnabled() && isSurfaceValid()) {
-        m_surface->updateCachedBitmapIfNeeded();
-        bitmap = m_surface->cachedBitmap();
-    }
-
-    RefPtr<Image> image = BitmapImage::create(NativeImageSkia::create(drawNeedsCopy(m_context.get(), context) ? deepSkBitmapCopy(bitmap) : bitmap));
-
-    context->drawImage(image.get(), destRect, srcRect, op, blendMode, DoNotRespectImageOrientation);
+    m_surface->draw(context, destRect, srcRect, op, blendMode, drawNeedsCopy(m_context.get(), context));
 }
 
 void ImageBuffer::flush()

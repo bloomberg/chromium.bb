@@ -32,6 +32,8 @@
 
 #include "platform/graphics/ImageBufferSurface.h"
 
+#include "platform/graphics/BitmapImage.h"
+#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
@@ -84,6 +86,30 @@ const SkBitmap& ImageBufferSurface::cachedBitmap() const
 PassRefPtr<SkImage> ImageBufferSurface::newImageSnapshot() const
 {
     return nullptr;
+}
+
+static SkBitmap deepSkBitmapCopy(const SkBitmap& bitmap)
+{
+    SkBitmap tmp;
+    if (!bitmap.deepCopyTo(&tmp))
+        bitmap.copyTo(&tmp, bitmap.colorType());
+
+    return tmp;
+}
+
+void ImageBufferSurface::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect& srcRect, CompositeOperator op, WebBlendMode blendMode, bool needsCopy)
+{
+    SkBitmap bmp = bitmap();
+    // For ImageBufferSurface that enables cachedBitmap, Use the cached bitmap for CPU side usage
+    // if it is available, otherwise generate and use it.
+    if (!context->isAccelerated() && isAccelerated() && cachedBitmapEnabled() && isValid()) {
+        updateCachedBitmapIfNeeded();
+        bmp = cachedBitmap();
+    }
+
+    RefPtr<Image> image = BitmapImage::create(NativeImageSkia::create(needsCopy ? deepSkBitmapCopy(bmp) : bmp));
+
+    context->drawImage(image.get(), destRect, srcRect, op, blendMode, DoNotRespectImageOrientation);
 }
 
 } // namespace blink

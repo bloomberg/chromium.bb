@@ -259,7 +259,7 @@ public:
     void fillBetweenRoundedRects(const RoundedRect&, const RoundedRect&, const Color&);
 
     void drawPicture(const SkPicture*);
-    void drawPicture(SkPicture*, const FloatRect& dest, const FloatRect& src, CompositeOperator, WebBlendMode);
+    void compositePicture(SkPicture*, const FloatRect& dest, const FloatRect& src, CompositeOperator, WebBlendMode);
 
     void drawImage(Image*, const IntPoint&, CompositeOperator = CompositeSourceOver, RespectImageOrientationEnum = DoNotRespectImageOrientation);
     void drawImage(Image*, const IntRect&, CompositeOperator = CompositeSourceOver, RespectImageOrientationEnum = DoNotRespectImageOrientation);

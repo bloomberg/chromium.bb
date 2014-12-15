@@ -178,6 +178,21 @@ void RecordingImageBufferSurface::willDrawVideo()
         fallBackToRasterCanvas();
 }
 
+void RecordingImageBufferSurface::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect& srcRect, CompositeOperator op, WebBlendMode blendMode, bool needsCopy)
+{
+    if (m_fallbackSurface) {
+        m_fallbackSurface->draw(context, destRect, srcRect, op, blendMode, needsCopy);
+        return;
+    }
+
+    RefPtr<SkPicture> picture = getPicture();
+    if (picture) {
+        context->compositePicture(picture.get(), destRect, srcRect, op, blendMode);
+    } else {
+        ImageBufferSurface::draw(context, destRect, srcRect, op, blendMode, needsCopy);
+    }
+}
+
 // Fallback passthroughs
 
 const SkBitmap& RecordingImageBufferSurface::bitmap()
