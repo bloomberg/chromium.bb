@@ -741,6 +741,9 @@ bool AccessibilityManager::IsAutoclickEnabled() {
 }
 
 void AccessibilityManager::UpdateAutoclickFromPref() {
+  if (!profile_)
+    return;
+
   bool enabled =
       profile_->GetPrefs()->GetBoolean(prefs::kAccessibilityAutoclickEnabled);
 
@@ -767,6 +770,9 @@ int AccessibilityManager::GetAutoclickDelay() const {
 }
 
 void AccessibilityManager::UpdateAutoclickDelayFromPref() {
+  if (!profile_)
+    return;
+
   int autoclick_delay_ms =
       profile_->GetPrefs()->GetInteger(prefs::kAccessibilityAutoclickDelayMs);
 
