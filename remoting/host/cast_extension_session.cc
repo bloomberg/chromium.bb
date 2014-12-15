@@ -134,18 +134,14 @@ class CastStatsObserver : public webrtc::StatsObserver {
     return new rtc::RefCountedObject<CastStatsObserver>();
   }
 
-  void OnComplete(const std::vector<webrtc::StatsReport>& reports) override {
-    typedef webrtc::StatsReport::Values::iterator ValuesIterator;
-
+  void OnComplete(const webrtc::StatsReports& reports) override {
     VLOG(1) << "Received " << reports.size() << " new StatsReports.";
 
-    int index;
-    std::vector<webrtc::StatsReport>::const_iterator it;
-    for (it = reports.begin(), index = 0; it != reports.end(); ++it, ++index) {
-      webrtc::StatsReport::Values v = it->values;
-      VLOG(1) << "Report " << index << ":";
-      for (ValuesIterator vIt = v.begin(); vIt != v.end(); ++vIt) {
-        VLOG(1) << "Stat: " << vIt->name << "=" << vIt->value << ".";
+    int index = 0;
+    for (const auto* report : reports) {
+      VLOG(1) << "Report " << index++ << ":";
+      for (const auto& v : report->values) {
+        VLOG(1) << "Stat: " << v.display_name() << "=" << v.value << ".";
       }
     }
   }
