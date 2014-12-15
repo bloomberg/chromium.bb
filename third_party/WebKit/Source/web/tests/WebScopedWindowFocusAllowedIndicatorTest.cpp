@@ -32,7 +32,6 @@
 #include "public/web/WebScopedWindowFocusAllowedIndicator.h"
 
 #include "core/dom/Document.h"
-#include "core/page/WindowFocusAllowedIndicator.h"
 #include "public/web/WebDocument.h"
 #include <gtest/gtest.h>
 
@@ -41,21 +40,6 @@ using namespace blink;
 namespace {
 
 TEST(WebScopedWindowFocusAllowedIndicatorTest, Basic)
-{
-    EXPECT_FALSE(WindowFocusAllowedIndicator::windowFocusAllowed());
-    {
-        WebScopedWindowFocusAllowedIndicator indicator1;
-        EXPECT_TRUE(WindowFocusAllowedIndicator::windowFocusAllowed());
-        {
-            WebScopedWindowFocusAllowedIndicator indicator2;
-            EXPECT_TRUE(WindowFocusAllowedIndicator::windowFocusAllowed());
-        }
-        EXPECT_TRUE(WindowFocusAllowedIndicator::windowFocusAllowed());
-    }
-    EXPECT_FALSE(WindowFocusAllowedIndicator::windowFocusAllowed());
-}
-
-TEST(WebScopedWindowFocusAllowedIndicatorTest, WithDocument)
 {
     RefPtrWillBePersistent<Document> document = Document::create();
     WebDocument webDocument(document);
