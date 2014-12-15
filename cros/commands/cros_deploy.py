@@ -740,6 +740,9 @@ For more information of cros build usage:
     parser.add_argument(
         '--deep-rev', action='store_true',
         help='Update reverse dependencies. Implies --deep.')
+    parser.add_argument(
+        '--dry-run', '-n', action='store_true',
+        help='Output deployment plan but do not deploy anything.')
 
   def _GetPackageByCPV(self, cpv):
     """Returns the path to a binary package corresponding to |cpv|."""
@@ -932,7 +935,7 @@ For more information of cros build usage:
         for i, pkg in enumerate(pkgs):
           logging.info('%s %d) %s', '*' if pkg in listed else ' ', i + 1, pkg)
 
-        if not self._ConfirmUpdate(pkgs):
+        if self.options.dry_run or not self._ConfirmUpdate(pkgs):
           return
 
         for pkg in pkgs:
