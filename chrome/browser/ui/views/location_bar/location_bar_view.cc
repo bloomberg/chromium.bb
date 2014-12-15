@@ -334,7 +334,7 @@ void LocationBarView::Init() {
   translate_icon_view_->SetVisible(false);
   AddChildView(translate_icon_view_);
 
-  star_view_ = new StarView(command_updater());
+  star_view_ = new StarView(command_updater(), browser_);
   star_view_->SetVisible(false);
   AddChildView(star_view_);
 

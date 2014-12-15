@@ -149,7 +149,7 @@ TEST_F(BrowserCommandsTest, BookmarkCurrentPage) {
   browser()->OpenURL(OpenURLParams(
       url1, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
 
-  chrome::BookmarkCurrentPage(browser());
+  chrome::BookmarkCurrentPageAllowingExtensionOverrides(browser());
 
   // It should now be bookmarked in the bookmark model.
   EXPECT_EQ(profile(), browser()->profile());

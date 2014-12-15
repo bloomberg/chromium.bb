@@ -18,7 +18,7 @@ class BubbleIconView : public views::ImageView {
     EXECUTE_SOURCE_GESTURE,
   };
 
-  explicit BubbleIconView(CommandUpdater* command_updater, int command_id);
+  BubbleIconView(CommandUpdater* command_updater, int command_id);
   ~BubbleIconView() override;
 
   // Returns true if a related bubble is showing.
@@ -38,10 +38,11 @@ class BubbleIconView : public views::ImageView {
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
- private:
+ protected:
   // Calls OnExecuting and runs |command_id_| with a valid |command_updater_|.
-  void ExecuteCommand(ExecuteSource source);
+  virtual void ExecuteCommand(ExecuteSource source);
 
+ private:
   // The CommandUpdater for the Browser object that owns the location bar.
   CommandUpdater* command_updater_;
 
