@@ -221,6 +221,13 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
   if (contents_view_ && contents_view_->visible())
     handled = contents_view_->OnKeyPressed(key_event);
 
+  // Prevent Shift+Tab from locking up the whole chrome browser process.
+  // Explicitly capturing the Shift+Tab event here compensates for a focus
+  // search issue. We get away with this because there are no other focus
+  // targets. See http://crbug.com/438425 for details.
+  if (key_event.key_code() == ui::VKEY_TAB && key_event.IsShiftDown())
+    handled = true;
+
   return handled;
 }
 
