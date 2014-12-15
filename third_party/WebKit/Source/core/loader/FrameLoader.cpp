@@ -870,6 +870,8 @@ void FrameLoader::stopAllLoaders()
         if (child->isLocalFrame())
             toLocalFrame(child.get())->loader().stopAllLoaders();
     }
+
+    m_frame->document()->suppressLoadEvent();
     if (m_provisionalDocumentLoader)
         m_provisionalDocumentLoader->stopLoading();
     if (m_documentLoader)
@@ -969,27 +971,6 @@ FrameLoadType FrameLoader::loadType() const
     return m_loadType;
 }
 
-#if defined(ENABLE_LOAD_COMPLETION_HACKS)
-// This function is an incomprehensible mess and is only used in checkLoadCompleteForThisFrame.
-// If you're thinking of using it elsewhere, stop right now and reconsider your life.
-static bool isDocumentDoneLoading(Document* document)
-{
-    if (!document->loader())
-        return true;
-    if (document->loader()->isLoadingMainResource())
-        return false;
-    if (!document->loadEventFinished())
-        return false;
-    if (document->fetcher()->requestCount())
-        return false;
-    if (document->processingLoadEvent())
-        return false;
-    if (document->hasActiveParser())
-        return false;
-    return true;
-}
-#endif
-
 bool FrameLoader::checkLoadCompleteForThisFrame()
 {
     ASSERT(client()->hasWebView());
@@ -1024,22 +1005,10 @@ bool FrameLoader::checkLoadCompleteForThisFrame()
         return true;
     if (m_provisionalDocumentLoader || !m_documentLoader)
         return false;
-
-#if defined(ENABLE_LOAD_COMPLETION_HACKS)
-    if (!isDocumentDoneLoading(m_frame->document()) && !m_inStopAllLoaders)
-        return false;
-#else
-    if (m_inStopAllLoaders)
-        m_frame->document()->suppressLoadEvent();
     if (!m_frame->document()->loadEventFinished())
         return false;
-#endif
 
     m_state = FrameStateComplete;
-
-    // FIXME: Is this subsequent work important if we already navigated away?
-    // Maybe there are bugs because of that, or extra work we can skip because
-    // the new page is ready.
 
     // Retry restoring scroll offset since FrameStateComplete disables content
     // size clamping.
