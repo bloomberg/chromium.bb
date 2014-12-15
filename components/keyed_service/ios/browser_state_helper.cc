@@ -31,19 +31,19 @@
 // to find the associated web::BrowserState (there is a 1:1 mapping).
 
 namespace {
-BrowserStateFromContextFn gBrowserStateFromContext = nullptr;
+BrowserStateFromContextFn g_browser_state_from_context = nullptr;
 }  // namespace
 
 void SetBrowserStateFromContextHelper(BrowserStateFromContextFn helper) {
-  gBrowserStateFromContext = helper;
+  g_browser_state_from_context = helper;
 }
 
 web::BrowserState* BrowserStateFromContext(base::SupportsUserData* context) {
   web::BrowserState* state = nullptr;
   if (context) {
     state = web::BrowserState::FromSupportsUserData(context);
-    if (!state && gBrowserStateFromContext)
-      state = gBrowserStateFromContext(context);
+    if (!state && g_browser_state_from_context)
+      state = g_browser_state_from_context(context);
     DCHECK(state) << "cannot convert context to web::BrowserState";
   }
   return state;
