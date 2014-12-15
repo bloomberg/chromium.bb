@@ -9,6 +9,8 @@
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
+#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #include "ui/ozone/platform/dri/display_manager.h"
 #include "ui/ozone/platform/dri/dri_buffer.h"
 #include "ui/ozone/platform/dri/dri_cursor.h"
@@ -97,8 +99,11 @@ class OzonePlatformDri : public OzonePlatform {
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
     window_manager_.reset(
         new DriWindowManager(gpu_platform_support_host_.get()));
-    event_factory_ozone_.reset(new EventFactoryEvdev(window_manager_->cursor(),
-                                                     device_manager_.get()));
+    KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
+        make_scoped_ptr(new StubKeyboardLayoutEngine()));
+    event_factory_ozone_.reset(new EventFactoryEvdev(
+        window_manager_->cursor(), device_manager_.get(),
+        KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()));
 
     if (!ui_thread_gpu_.Initialize())
       LOG(FATAL) << "Failed to initialize dummy channel.";
@@ -131,6 +136,8 @@ class OzonePlatformDri : public OzonePlatform {
 
 }  // namespace
 
-OzonePlatform* CreateOzonePlatformDri() { return new OzonePlatformDri; }
+OzonePlatform* CreateOzonePlatformDri() {
+  return new OzonePlatformDri;
+}
 
 }  // namespace ui

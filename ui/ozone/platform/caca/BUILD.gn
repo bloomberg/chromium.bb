@@ -21,6 +21,7 @@ source_set("caca") {
   deps = [
     "//base",
     "//skia",
+    "//ui/events/ozone:events_ozone_layout",
     "//ui/gfx/geometry",
   ]
 

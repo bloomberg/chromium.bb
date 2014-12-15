@@ -141,6 +141,7 @@ component("events") {
 
   if (use_ozone) {
     sources += [ "ozone/events_ozone.cc" ]
+    deps += [ "//ui/events/ozone:events_ozone_layout" ]
   }
 
   if (use_aura) {
@@ -334,6 +335,7 @@ test("events_unittests") {
     deps += [
       "//ui/events/ozone:events_ozone",
       "//ui/events/ozone:events_ozone_evdev",
+      "//ui/events/ozone:events_ozone_layout",
     ]
   }
 

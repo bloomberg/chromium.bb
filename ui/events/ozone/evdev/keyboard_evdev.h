@@ -11,6 +11,7 @@
 #include "ui/events/ozone/evdev/event_device_util.h"
 #include "ui/events/ozone/evdev/event_dispatch_callback.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
+#include "ui/events/ozone/layout/keyboard_layout_engine.h"
 
 namespace ui {
 
@@ -21,12 +22,13 @@ class EventModifiersEvdev;
 // This object is responsible for combining all attached keyboards into
 // one logical keyboard, applying modifiers & implementing key repeat.
 //
-// It also currently also applies the layout (hardcoded as US).
+// It also currently also applies the layout.
 //
 // TODO(spang): Implement key repeat & turn off kernel repeat.
 class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
  public:
   KeyboardEvdev(EventModifiersEvdev* modifiers,
+                KeyboardLayoutEngine* keyboard_layout_engine,
                 const EventDispatchCallback& callback);
   ~KeyboardEvdev();
 
@@ -53,6 +55,8 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
 
   // Shared modifier state.
   EventModifiersEvdev* modifiers_;
+
+  KeyboardLayoutEngine* keyboard_layout_engine_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardEvdev);
 };

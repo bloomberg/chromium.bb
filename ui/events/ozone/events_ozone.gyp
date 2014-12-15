@@ -61,6 +61,7 @@
       '../events.gyp:dom4_keycode_converter',
       '../platform/events_platform.gyp:events_platform',
       'events_ozone',
+      'events_ozone_layout',
     ],
     'defines': [
       'EVENTS_OZONE_EVDEV_IMPLEMENTATION',
@@ -128,6 +129,25 @@
       ['use_ozone_evdev==1', {
         'defines': ['USE_OZONE_EVDEV=1'],
       }],
+    ],
+  }, {
+    'target_name': 'events_ozone_layout',
+    'type': '<(component)',
+    'dependencies': [
+      '../../../base/base.gyp:base',
+    ],
+    'defines': [
+      'EVENTS_OZONE_LAYOUT_IMPLEMENTATION',
+    ],
+    'sources': [
+      'layout/events_ozone_layout_export.h',
+      'layout/keyboard_layout_engine.h',
+      'layout/keyboard_layout_engine_manager.cc',
+      'layout/keyboard_layout_engine_manager.h',
+      'layout/no/no_keyboard_layout_engine.cc',
+      'layout/no/no_keyboard_layout_engine.h',
+      'layout/stub/stub_keyboard_layout_engine.cc',
+      'layout/stub/stub_keyboard_layout_engine.h',
     ],
   }]
 }

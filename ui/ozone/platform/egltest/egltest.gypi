@@ -23,6 +23,7 @@
         '../../third_party/khronos/khronos.gyp:khronos_headers',
         '../events/events.gyp:events',
         '../events/ozone/events_ozone.gyp:events_ozone_evdev',
+        '../events/ozone/events_ozone.gyp:events_ozone_layout',
         '../gfx/gfx.gyp:gfx',
         'eglplatform_shim',
       ],

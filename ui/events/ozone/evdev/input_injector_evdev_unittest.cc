@@ -12,6 +12,7 @@
 #include "ui/events/ozone/evdev/event_modifiers_evdev.h"
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
 #include "ui/events/ozone/events_ozone.h"
+#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 
 namespace ui {
 
@@ -124,7 +125,9 @@ class InputInjectorEvdevTest : public testing::Test {
 InputInjectorEvdevTest::InputInjectorEvdevTest()
     : dispatch_callback_(base::Bind(&EventObserver::EventDispatchCallback,
                                     base::Unretained(&event_observer_))),
-      keyboard_(&modifiers_, dispatch_callback_),
+      keyboard_(&modifiers_,
+                KeyboardLayoutEngineManager::GetKeyboardLayoutEngine(),
+                dispatch_callback_),
       injector_(&modifiers_, &cursor_, &keyboard_, dispatch_callback_) {
 }
 

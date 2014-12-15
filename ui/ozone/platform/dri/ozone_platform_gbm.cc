@@ -14,6 +14,8 @@
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
+#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #include "ui/ozone/platform/dri/display_manager.h"
 #include "ui/ozone/platform/dri/dri_cursor.h"
 #include "ui/ozone/platform/dri/dri_gpu_platform_support.h"
@@ -59,15 +61,15 @@ class GbmBufferGenerator : public ScanoutBufferGenerator {
   gbm_device* device() const { return device_; }
 
   scoped_refptr<ScanoutBuffer> Create(const gfx::Size& size) override {
-    return GbmBuffer::CreateBuffer(
-        dri_, device_, SurfaceFactoryOzone::RGBA_8888, size, true);
+    return GbmBuffer::CreateBuffer(dri_, device_,
+                                   SurfaceFactoryOzone::RGBA_8888, size, true);
   }
 
  protected:
   DriWrapper* dri_;  // Not owned.
 
   // HACK: gbm drivers have broken linkage
-  void *glapi_lib_;
+  void* glapi_lib_;
 
   gbm_device* device_;
 
@@ -126,16 +128,19 @@ class OzonePlatformGbm : public OzonePlatform {
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
     window_manager_.reset(
         new DriWindowManager(gpu_platform_support_host_.get()));
-    event_factory_ozone_.reset(new EventFactoryEvdev(window_manager_->cursor(),
-                                                     device_manager_.get()));
+    KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
+        make_scoped_ptr(new StubKeyboardLayoutEngine()));
+    event_factory_ozone_.reset(new EventFactoryEvdev(
+        window_manager_->cursor(), device_manager_.get(),
+        KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()));
   }
 
   void InitializeGPU() override {
     dri_.reset(new DriWrapper(kDefaultGraphicsCardPath));
     dri_->Initialize();
     buffer_generator_.reset(new GbmBufferGenerator(dri_.get()));
-    screen_manager_.reset(new ScreenManager(dri_.get(),
-                                            buffer_generator_.get()));
+    screen_manager_.reset(
+        new ScreenManager(dri_.get(), buffer_generator_.get()));
     window_delegate_manager_.reset(new DriWindowDelegateManager());
     if (!surface_factory_ozone_)
       surface_factory_ozone_.reset(new GbmSurfaceFactory(use_surfaceless_));

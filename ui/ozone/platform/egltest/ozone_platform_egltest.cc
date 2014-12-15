@@ -16,6 +16,8 @@
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/events_ozone.h"
+#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/common/egl_util.h"
@@ -272,8 +274,10 @@ bool SurfaceFactoryEgltest::LoadEGLGLES2Bindings(
 const int32* SurfaceFactoryEgltest::GetEGLSurfaceProperties(
     const int32* desired_list) {
   static const int32 broken_props[] = {
-      EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-      EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
+      EGL_RENDERABLE_TYPE,
+      EGL_OPENGL_ES2_BIT,
+      EGL_SURFACE_TYPE,
+      EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
       EGL_NONE,
   };
   return broken_props;
@@ -337,11 +341,8 @@ class OzonePlatformEgltest : public OzonePlatform {
   scoped_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) override {
-    return make_scoped_ptr<PlatformWindow>(
-        new EgltestWindow(delegate,
-                          &eglplatform_shim_,
-                          event_factory_ozone_.get(),
-                          bounds));
+    return make_scoped_ptr<PlatformWindow>(new EgltestWindow(
+        delegate, &eglplatform_shim_, event_factory_ozone_.get(), bounds));
   }
   scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
     return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateOzone());
@@ -352,8 +353,11 @@ class OzonePlatformEgltest : public OzonePlatform {
     if (!surface_factory_ozone_)
       surface_factory_ozone_.reset(
           new SurfaceFactoryEgltest(&eglplatform_shim_));
-    event_factory_ozone_.reset(
-        new EventFactoryEvdev(NULL, device_manager_.get()));
+    KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
+        make_scoped_ptr(new StubKeyboardLayoutEngine()));
+    event_factory_ozone_.reset(new EventFactoryEvdev(
+        NULL, device_manager_.get(),
+        KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()));
     cursor_factory_ozone_.reset(new CursorFactoryOzone());
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
   }

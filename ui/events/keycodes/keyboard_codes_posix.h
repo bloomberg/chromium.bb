@@ -221,11 +221,9 @@ enum KeyboardCode {
   // (VK_OEM_AX) code to represent AltGr, matching the behaviour of Firefox on
   // Linux.
   VKEY_ALTGR = 0xE1,
-#if defined(USE_X11)
   // Windows does not have a specific key code for Compose. We use the unused
   // 0xE6 (VK_ICO_CLEAR) code to represent Compose.
   VKEY_COMPOSE = 0xE6,
-#endif
 };
 
 }  // namespace ui

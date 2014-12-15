@@ -27,6 +27,7 @@
         '../display/display.gyp:display_util',
         '../events/events.gyp:events',
         '../events/ozone/events_ozone.gyp:events_ozone_evdev',
+        '../events/ozone/events_ozone.gyp:events_ozone_layout',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
       ],

@@ -173,6 +173,11 @@
             'linux/text_edit_key_bindings_delegate_auralinux.h',
           ],
         }],
+        ['use_ozone==1', {
+          'dependencies': [
+            'ozone/events_ozone.gyp:events_ozone_layout',
+          ],
+        }],
       ],
     },
     {
@@ -353,6 +358,7 @@
           'dependencies': [
             'ozone/events_ozone.gyp:events_ozone',
             'ozone/events_ozone.gyp:events_ozone_evdev',
+            'ozone/events_ozone.gyp:events_ozone_layout',
           ]
         }],
         ['use_aura==0', {

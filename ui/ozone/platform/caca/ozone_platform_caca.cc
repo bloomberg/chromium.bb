@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/caca/ozone_platform_caca.h"
 
+#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/events/ozone/layout/no/no_keyboard_layout_engine.h"
 #include "ui/ozone/common/native_display_delegate_ozone.h"
 #include "ui/ozone/platform/caca/caca_event_source.h"
 #include "ui/ozone/platform/caca/caca_window.h"
@@ -62,6 +64,8 @@ class OzonePlatformCaca : public OzonePlatform {
     cursor_factory_ozone_.reset(new CursorFactoryOzone());
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
     input_controller_ = CreateStubInputController();
+    KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
+        make_scoped_ptr(new NoKeyboardLayoutEngine()));
   }
 
   void InitializeGPU() override {
@@ -81,6 +85,8 @@ class OzonePlatformCaca : public OzonePlatform {
 
 }  // namespace
 
-OzonePlatform* CreateOzonePlatformCaca() { return new OzonePlatformCaca; }
+OzonePlatform* CreateOzonePlatformCaca() {
+  return new OzonePlatformCaca;
+}
 
 }  // namespace ui

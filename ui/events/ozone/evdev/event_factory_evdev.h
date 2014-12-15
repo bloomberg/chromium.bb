@@ -47,7 +47,8 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
                                                     public PlatformEventSource {
  public:
   EventFactoryEvdev(CursorDelegateEvdev* cursor,
-                    DeviceManager* device_manager);
+                    DeviceManager* device_manager,
+                    KeyboardLayoutEngine* keyboard_layout_engine);
   ~EventFactoryEvdev() override;
 
   // Get a list of device ids that matches a device type. Return true if the

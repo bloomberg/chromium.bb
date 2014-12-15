@@ -78,6 +78,7 @@ source_set("dri_common") {
     "//ui/display/types",
     "//ui/events",
     "//ui/events/ozone:events_ozone_evdev",
+    "//ui/events/ozone:events_ozone_layout",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]

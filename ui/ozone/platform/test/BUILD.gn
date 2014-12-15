@@ -17,5 +17,6 @@ source_set("test") {
     "//skia",
     "//ui/base",
     "//ui/gfx/geometry",
+    "//ui/events/ozone:events_ozone_layout",
   ]
 }

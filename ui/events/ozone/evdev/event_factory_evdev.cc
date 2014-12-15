@@ -168,12 +168,13 @@ void CloseInputDevice(const base::FilePath& path,
 }  // namespace
 
 EventFactoryEvdev::EventFactoryEvdev(CursorDelegateEvdev* cursor,
-                                     DeviceManager* device_manager)
+                                     DeviceManager* device_manager,
+                                     KeyboardLayoutEngine* keyboard_layout)
     : last_device_id_(0),
       device_manager_(device_manager),
       dispatch_callback_(
           base::Bind(&EventFactoryEvdev::PostUiEvent, base::Unretained(this))),
-      keyboard_(&modifiers_, dispatch_callback_),
+      keyboard_(&modifiers_, keyboard_layout, dispatch_callback_),
       cursor_(cursor),
 #if defined(USE_EVDEV_GESTURES)
       gesture_property_provider_(new GesturePropertyProvider),

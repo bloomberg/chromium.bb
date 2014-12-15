@@ -15,6 +15,7 @@
 #include "ui/events/ozone/evdev/event_converter_evdev_impl.h"
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
 #include "ui/events/ozone/evdev/mouse_button_map_evdev.h"
+#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 
 namespace ui {
 
@@ -100,7 +101,8 @@ class EventConverterEvdevImplTest : public testing::Test {
         base::Bind(&EventConverterEvdevImplTest::DispatchEventForTest,
                    base::Unretained(this));
     keyboard_.reset(new ui::KeyboardEvdev(
-        modifiers_.get(), callback));
+        modifiers_.get(),
+        ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine(), callback));
     device_.reset(new ui::MockEventConverterEvdevImpl(
         events_in_, modifiers_.get(), button_map_.get(), cursor_.get(),
         keyboard_.get(), callback));
