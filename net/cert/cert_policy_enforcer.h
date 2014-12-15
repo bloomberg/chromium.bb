@@ -24,11 +24,9 @@ class X509Certificate;
 class NET_EXPORT CertPolicyEnforcer {
  public:
   // Set the parameters for this policy enforcer:
-  // |num_ct_logs| is the number of Certificate Transparency log currently
-  // known to Chrome.
   // |require_ct_for_ev| indicates whether Certificate Transparency presence
   // is required for EV certificates.
-  CertPolicyEnforcer(size_t num_ct_logs, bool require_ct_for_ev);
+  explicit CertPolicyEnforcer(bool require_ct_for_ev);
   virtual ~CertPolicyEnforcer();
 
   // Returns true if the collection of SCTs for the given certificate
@@ -47,7 +45,6 @@ class NET_EXPORT CertPolicyEnforcer {
   bool HasRequiredNumberOfSCTs(X509Certificate* cert,
                                const ct::CTVerifyResult& ct_result);
 
-  size_t num_ct_logs_;
   bool require_ct_for_ev_;
 };
 

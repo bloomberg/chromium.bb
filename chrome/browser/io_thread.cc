@@ -658,9 +658,9 @@ void IOThread::InitAsync() {
   net::CertPolicyEnforcer* policy_enforcer = NULL;
   // TODO(eranm): Control with Finch, crbug.com/437766
   if (command_line.HasSwitch(switches::kRequireCTForEV)) {
-    policy_enforcer = new net::CertPolicyEnforcer(kNumKnownCTLogs, true);
+    policy_enforcer = new net::CertPolicyEnforcer(true);
   } else {
-    policy_enforcer = new net::CertPolicyEnforcer(kNumKnownCTLogs, false);
+    policy_enforcer = new net::CertPolicyEnforcer(false);
   }
   globals_->cert_policy_enforcer.reset(policy_enforcer);
 

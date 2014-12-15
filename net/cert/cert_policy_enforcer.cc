@@ -67,9 +67,8 @@ void LogCTComplianceStatusToUMA(CTComplianceStatus status) {
 
 }  // namespace
 
-CertPolicyEnforcer::CertPolicyEnforcer(size_t num_ct_logs,
-                                       bool require_ct_for_ev)
-    : num_ct_logs_(num_ct_logs), require_ct_for_ev_(require_ct_for_ev) {
+CertPolicyEnforcer::CertPolicyEnforcer(bool require_ct_for_ev)
+    : require_ct_for_ev_(require_ct_for_ev) {
 }
 
 CertPolicyEnforcer::~CertPolicyEnforcer() {
@@ -157,9 +156,7 @@ bool CertPolicyEnforcer::HasRequiredNumberOfSCTs(
     num_required_embedded_scts = 2;
   }
 
-  size_t min_acceptable_logs = std::max(num_ct_logs_, static_cast<size_t>(2u));
-  return num_embedded_scts >=
-         std::min(num_required_embedded_scts, min_acceptable_logs);
+  return num_embedded_scts >= num_required_embedded_scts;
 }
 
 }  // namespace net

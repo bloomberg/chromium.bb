@@ -44,7 +44,7 @@ class DummyEVCertsWhitelist : public ct::EVCertsWhitelist {
 class CertPolicyEnforcerTest : public ::testing::Test {
  public:
   virtual void SetUp() override {
-    policy_enforcer_.reset(new CertPolicyEnforcer(5, true));
+    policy_enforcer_.reset(new CertPolicyEnforcer(true));
 
     std::string der_test_cert(ct::GetDerEncodedX509Cert());
     chain_ = X509Certificate::CreateFromBytes(der_test_cert.data(),
@@ -109,7 +109,7 @@ TEST_F(CertPolicyEnforcerTest, DoesNotConformToCTEVPolicyNotEnoughSCTs) {
 }
 
 TEST_F(CertPolicyEnforcerTest, DoesNotEnforceCTPolicyIfNotRequired) {
-  scoped_ptr<CertPolicyEnforcer> enforcer(new CertPolicyEnforcer(3, false));
+  scoped_ptr<CertPolicyEnforcer> enforcer(new CertPolicyEnforcer(false));
 
   ct::CTVerifyResult result;
   FillResultWithSCTsOfOrigin(ct::SignedCertificateTimestamp::SCT_EMBEDDED, 1,
@@ -162,19 +162,6 @@ TEST_F(CertPolicyEnforcerTest,
     EXPECT_TRUE(
         policy_enforcer_->DoesConformToCTEVPolicy(cert.get(), nullptr, result));
   }
-}
-
-TEST_F(CertPolicyEnforcerTest,
-       ConformsToPolicyButDoesNotRequireMoreThanNumLogs) {
-  scoped_ptr<CertPolicyEnforcer> enforcer(new CertPolicyEnforcer(2, true));
-
-  ct::CTVerifyResult result;
-  FillResultWithSCTsOfOrigin(ct::SignedCertificateTimestamp::SCT_EMBEDDED, 2,
-                             &result);
-  // Expect true despite the chain not having enough SCTs according to the
-  // policy
-  // since we only have 2 logs.
-  EXPECT_TRUE(enforcer->DoesConformToCTEVPolicy(chain_.get(), nullptr, result));
 }
 
 TEST_F(CertPolicyEnforcerTest, ConformsToPolicyByEVWhitelistPresence) {
