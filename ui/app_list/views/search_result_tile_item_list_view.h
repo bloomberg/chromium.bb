@@ -10,6 +10,10 @@
 #include "base/macros.h"
 #include "ui/app_list/views/search_result_container_view.h"
 
+namespace views {
+class Textfield;
+}
+
 namespace app_list {
 
 class SearchResultTileItemView;
@@ -18,7 +22,7 @@ class SearchResultTileItemView;
 class APP_LIST_EXPORT SearchResultTileItemListView
     : public SearchResultContainerView {
  public:
-  SearchResultTileItemListView();
+  explicit SearchResultTileItemListView(views::Textfield* search_box);
   ~SearchResultTileItemListView() override;
 
   // Overridden from SearchResultContainerView:
@@ -33,6 +37,8 @@ class APP_LIST_EXPORT SearchResultTileItemListView
   void UpdateSelectedIndex(int old_selected, int new_selected) override;
 
   std::vector<SearchResultTileItemView*> tile_views_;
+
+  views::Textfield* search_box_;  // Owned by the views hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultTileItemListView);
 };

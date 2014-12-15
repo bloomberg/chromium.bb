@@ -9,6 +9,7 @@
 #include "ui/app_list/search_result.h"
 #include "ui/app_list/views/search_result_tile_item_view.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace {
@@ -21,7 +22,9 @@ const int kTileSpacing = 10;
 
 namespace app_list {
 
-SearchResultTileItemListView::SearchResultTileItemListView() {
+SearchResultTileItemListView::SearchResultTileItemListView(
+    views::Textfield* search_box)
+    : search_box_(search_box) {
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, kTileSpacing));
   for (size_t i = 0; i < kNumSearchResultTiles; ++i) {
@@ -72,17 +75,38 @@ bool SearchResultTileItemListView::OnKeyPressed(const ui::KeyEvent& event) {
   if (selected_index() >= 0 && child_at(selected_index())->OnKeyPressed(event))
     return true;
 
-  int selection_index = -1;
+  int dir = 0;
+  bool cursor_at_end_of_searchbox =
+      search_box_->GetCursorPosition() == search_box_->text().length();
   switch (event.key_code()) {
     case ui::VKEY_TAB:
       if (event.IsShiftDown())
-        selection_index = selected_index() - 1;
+        dir = -1;
       else
-        selection_index = selected_index() + 1;
+        dir = 1;
+      break;
+    case ui::VKEY_LEFT:
+      // The left key will not capture the key event when the selection is at
+      // the beginning of the list. This means that the text cursor in the
+      // search box will be allowed to handle the keypress. This will also
+      // ignore the keypress if the user has clicked somewhere in the middle of
+      // the searchbox.
+      if (cursor_at_end_of_searchbox)
+        dir = -1;
+      break;
+    case ui::VKEY_RIGHT:
+      // Only move right if the search box text cursor is at the end of the
+      // text.
+      if (cursor_at_end_of_searchbox)
+        dir = 1;
       break;
     default:
       break;
   }
+  if (dir == 0)
+    return false;
+
+  int selection_index = selected_index() + dir;
   if (IsValidSelectionIndex(selection_index)) {
     SetSelectedIndex(selection_index);
     return true;

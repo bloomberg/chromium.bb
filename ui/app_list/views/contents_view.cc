@@ -81,7 +81,8 @@ void ContentsView::Init(AppListModel* model) {
     search_results_page_view_->AddSearchResultContainerView(
         results, new SearchResultListView(app_list_main_view_, view_delegate));
     search_results_page_view_->AddSearchResultContainerView(
-        results, new SearchResultTileItemListView());
+        results,
+        new SearchResultTileItemListView(GetSearchBoxView()->search_box()));
 
     AddLauncherPage(search_results_page_view_,
                     AppListModel::STATE_SEARCH_RESULTS);
