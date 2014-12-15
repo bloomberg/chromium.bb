@@ -52,6 +52,8 @@ public:
     virtual void textFieldDidReceiveKeyDown(const WebInputElement&, const WebKeyboardEvent&) { }
     // This is called when a datalist indicator is clicked.
     virtual void openTextDataListChooser(const WebInputElement&) { }
+    // This is called when the datalist for an input has changed.
+    virtual void dataListOptionsChanged(const WebInputElement&) { }
     // Called the first time the user interacts with the page after a load.
     virtual void firstUserGestureObserved() { }
 

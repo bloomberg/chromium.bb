@@ -228,6 +228,7 @@ public:
     virtual void didChangeValueInTextField(HTMLFormControlElement&) { }
     virtual void didEndEditingOnTextField(HTMLInputElement&) { }
     virtual void handleKeyboardEventOnTextField(HTMLInputElement&, KeyboardEvent&) { }
+    virtual void textFieldDataListChanged(HTMLInputElement&) { }
 
     // Input mehtod editor related functions.
     virtual void didCancelCompositionOnSelectionChange() { }

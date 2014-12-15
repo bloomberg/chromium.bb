@@ -874,4 +874,14 @@ void ChromeClientImpl::openTextDataListChooser(HTMLInputElement& input)
         webframe->autofillClient()->openTextDataListChooser(WebInputElement(&input));
 }
 
+void ChromeClientImpl::textFieldDataListChanged(HTMLInputElement& input)
+{
+    // FIXME: remove. See http://crbug.com/425756
+    if (m_webView->autofillClient())
+        m_webView->autofillClient()->dataListOptionsChanged(WebInputElement(&input));
+    WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(input.document().frame());
+    if (webframe->autofillClient())
+        webframe->autofillClient()->dataListOptionsChanged(WebInputElement(&input));
+}
+
 } // namespace blink
