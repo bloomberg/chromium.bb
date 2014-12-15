@@ -82,10 +82,10 @@ def main():
 
   content, md5 = MakeZip(directory=args.dir, files=args.files)
   if args.zip_file:
-    with open(args.zip_file, 'w') as zip_file:
+    with open(args.zip_file, 'wb') as zip_file:
       zip_file.write(content)
   if args.hash_file:
-    with open(args.hash_file, 'w') as hash_file:
+    with open(args.hash_file, 'wb') as hash_file:
       hash_file.write(md5)
   if args.upload:
     UploadZip(content, md5, args.upload)
