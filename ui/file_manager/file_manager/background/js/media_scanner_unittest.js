@@ -3,29 +3,30 @@
 // found in the LICENSE file.
 
 /**
- * Dummy private APIs.
+ * Stub out the metrics package.
+ * @type {!Object.<!string, !Function>}
  */
-var chrome;
+var metrics = {
+  recordTime: function() {},
+  recordValue: function() {}
+};
 
-/**
- * Callbacks registered by setTimeout.
- * @type {Array.<function>}
- */
-var timeoutCallbacks;
-
-
-/**
- * @type {!importer.DefaultMediaScanner}
- */
+/** @type {!importer.DefaultMediaScanner} */
 var scanner;
+
+/** @type {!importer.TestImportHistory} */
+var importHistory;
 
 // Set up the test components.
 function setUp() {
-  scanner = new importer.DefaultMediaScanner();
+
+  importHistory = new importer.TestImportHistory();
+  scanner = new importer.DefaultMediaScanner(importHistory);
 }
 
 /**
  * Creates a subdirectory within a temporary file system for testing.
+ *
  * @param {string} directoryName Name of the test directory to create.  Must be
  *     unique within this test suite.
  */
@@ -34,7 +35,7 @@ function makeTestFileSystemRoot(directoryName) {
     return new Promise(function(resolve, reject) {
       window.webkitRequestFileSystem(
           window.TEMPORARY,
-          1024*1024,
+          1024 * 1024,
           resolve,
           reject);
     });
@@ -132,6 +133,39 @@ function testSingleLevel(callback) {
   ];
   reportPromise(
       makeTestFileSystemRoot('testSingleLevel')
+          .then(populateDir.bind(null, filenames))
+          .then(
+              /**
+               * Scans the directory.
+               * @param {!DirectoryEntry} root
+               */
+              function(root) {
+                return scanner.scan([root]).whenFinished();
+              })
+          .then(assertResults.bind(null, expectedFiles)),
+      callback);
+}
+
+/**
+ * Verifies that scanning ignores previously imported entries.
+ */
+function testIgnoresPreviousImports(callback) {
+  importHistory.importedPaths[
+      '/testIgnoresPreviousImports/oldimage1234.jpg'] =
+          [importer.Destination.GOOGLE_DRIVE];
+  var filenames = [
+    'oldimage1234.jpg',
+    'foo.jpg',
+    'bar.gif',
+    'baz.avi'
+  ];
+  var expectedFiles = [
+    '/testIgnoresPreviousImports/foo.jpg',
+    '/testIgnoresPreviousImports/bar.gif',
+    '/testIgnoresPreviousImports/baz.avi'
+  ];
+  reportPromise(
+      makeTestFileSystemRoot('testIgnoresPreviousImports')
           .then(populateDir.bind(null, filenames))
           .then(
               /**

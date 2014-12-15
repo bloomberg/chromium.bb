@@ -665,15 +665,8 @@ Object.freeze(DialogType);
                 this.backgroundPage_.background.fileOperationManager;
             this.mediaImportHandler_ =
                 this.backgroundPage_.background.mediaImportHandler;
-            this.backgroundPage_.background.historyLoaderPromise.then(
-                /**
-                 * @param {!importer.HistoryLoader} loader
-                 * @this {FileManager}
-                 */
-                function(loader) {
-                  this.historyLoader_ = loader;
-                  callback();
-                }.bind(this));
+            this.historyLoader_ = this.backgroundPage_.background.historyLoader;
+            callback();
           }.bind(this));
         }.bind(this)));
   };

@@ -101,6 +101,16 @@ metricsBase.recordUserAction = function(name) {
 };
 
 /**
+ * Records an elapsed time of no more than 10 seconds.
+ * @param {string} name Short metric name.
+ * @param {number} value Numeric value to be recorded in units
+ *     that match the histogram definition (in histograms.xml).
+ */
+metricsBase.recordValue = function(name, value) {
+  metrics.call_('recordValue', [metrics.convertName_(name), value]);
+};
+
+/**
  * Complete the time interval recording.
  *
  * Should be preceded by a call to startInterval with the same name. *

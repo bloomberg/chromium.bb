@@ -63,8 +63,13 @@ importer.ScanResult.prototype.whenFinished;
  * @constructor
  * @struct
  * @implements {importer.MediaScanner}
+ *
+ * @param {!importer.HistoryLoader} historyLoader
  */
-importer.DefaultMediaScanner = function() {};
+importer.DefaultMediaScanner = function(historyLoader) {
+  /** @private {!importer.HistoryLoader} */
+  this.historyLoader_ = historyLoader;
+};
 
 /** @override */
 importer.DefaultMediaScanner.prototype.scan = function(entries) {
@@ -72,8 +77,9 @@ importer.DefaultMediaScanner.prototype.scan = function(entries) {
     throw new Error('Cannot scan empty list of entries.');
   }
 
-  var scanResult = new importer.DefaultScanResult();
+  var scanResult = new importer.DefaultScanResult(this.historyLoader_);
   var scanPromises = entries.map(this.scanEntry_.bind(this, scanResult));
+
   Promise.all(scanPromises)
       .then(scanResult.resolveScan.bind(scanResult))
       .catch(scanResult.rejectScan.bind(scanResult));
@@ -92,7 +98,7 @@ importer.DefaultMediaScanner.prototype.scan = function(entries) {
 importer.DefaultMediaScanner.prototype.scanEntry_ =
     function(result, entry) {
   return entry.isFile ?
-      result.addFileEntry(/** @type {!FileEntry} */ (entry)) :
+      result.onFileEntryFound(/** @type {!FileEntry} */ (entry)) :
       this.scanDirectory_(result, /** @type {!DirectoryEntry} */ (entry));
 };
 
@@ -116,7 +122,7 @@ importer.DefaultMediaScanner.prototype.scanDirectory_ =
             entry,
             /** @param  {!FileEntry} fileEntry */
             function(fileEntry) {
-              promises.push(result.addFileEntry(fileEntry));
+              promises.push(result.onFileEntryFound(fileEntry));
             })
             .then(
                 /** @this {importer.DefaultScanResult} */
@@ -136,8 +142,13 @@ importer.DefaultMediaScanner.prototype.scanDirectory_ =
  * @constructor
  * @struct
  * @implements {importer.ScanResult}
+ *
+ * @param {!importer.HistoryLoader} historyLoader
  */
-importer.DefaultScanResult = function() {
+importer.DefaultScanResult = function(historyLoader) {
+  /** @private {!importer.HistoryLoader} */
+  this.historyLoader_ = historyLoader;
+
   /**
    * List of file entries found while scanning.
    * @private {!Array.<!FileEntry>}
@@ -170,7 +181,7 @@ importer.DefaultScanResult = function() {
       function(resolve, reject) {
         this.resolveScan = function() {
           resolve(this);
-        };
+        }.bind(this);
         this.rejectScan = reject;
       }.bind(this));
 };
@@ -201,14 +212,48 @@ importer.DefaultScanResult.prototype.whenFinished = function() {
  * @param {!FileEntry} entry
  * @return {!Promise} Resolves once file entry has been processed
  *     and is represented in results.
- * @private
  */
-importer.DefaultScanResult.prototype.addFileEntry = function(entry) {
+importer.DefaultScanResult.prototype.onFileEntryFound = function(entry) {
   this.lastScanActivity_ = new Date();
 
   if (!FileType.isImageOrVideo(entry)) {
     return Promise.resolve();
   }
+
+  return this.historyLoader_.getHistory()
+      .then(
+          /**
+           * @param {!importer.ImportHistory} history
+           * @return {!Promise}
+           * @this {importer.DefaultScanResult}
+           */
+          function(history) {
+            return history.wasImported(
+                entry,
+                importer.Destination.GOOGLE_DRIVE)
+                .then(
+                    /**
+                     * @param {boolean} imported
+                     * @return {!Promise}
+                     * @this {importer.DefaultScanResult}
+                     */
+                    function(imported) {
+                      return imported ?
+                          Promise.resolve() :
+                          this.addFileEntry_(entry);
+                    }.bind(this));
+          }.bind(this));
+};
+
+/**
+ * Adds a file to results.
+ *
+ * @param {!FileEntry} entry
+ * @return {!Promise} Resolves once file entry has been processed
+ *     and is represented in results.
+ * @private
+ */
+importer.DefaultScanResult.prototype.addFileEntry_ = function(entry) {
   return new Promise(
       function(resolve, reject) {
         // TODO(smckay): Update to use MetadataCache.
