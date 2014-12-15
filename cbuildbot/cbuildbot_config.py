@@ -803,6 +803,44 @@ class HWTestConfig(object):
     default_dict.update(kwargs)
     return cls.DefaultListNonCanary(**default_dict)
 
+  @classmethod
+  def SharedPoolCQ(cls, **kwargs):
+    """Return a list of HWTestConfigs for CQ which uses a shared pool.
+
+    The returned suites will run in pool:critical by default, which is
+    shared with canaries. The first suite in the list is a blocking
+    sanity suite that verifies the build will not break dut.
+    """
+    sanity_dict = dict(pool=constants.HWTEST_CRITICAL_POOL, timeout=120 * 60,
+                       file_bugs=False, priority=constants.HWTEST_CQ_PRIORITY)
+    sanity_dict.update(kwargs)
+    sanity_dict.update(dict(num=1, minimum_duts=1, suite_min_duts=1,
+                            blocking=True))
+    default_dict = dict(pool=constants.HWTEST_CRITICAL_POOL)
+    default_dict.update(kwargs)
+    suite_list = [cls(constants.HWTEST_SANITY_SUITE, **sanity_dict)]
+    suite_list.extend(cls.DefaultListCQ(**default_dict))
+    return suite_list
+
+  @classmethod
+  def SharedPoolCanary(cls, **kwargs):
+    """Return a list of HWTestConfigs for Canary which uses a shared pool.
+
+    The returned suites will run in pool:critical by default, which is
+    shared with CQs. The first suite in the list is a blocking sanity suite
+    that verifies the build will not break dut.
+    """
+    sanity_dict = dict(pool=constants.HWTEST_CRITICAL_POOL, file_bugs=True)
+    sanity_dict.update(kwargs)
+    sanity_dict.update(dict(num=1, minimum_duts=1, suite_min_duts=1,
+                            blocking=True))
+    default_dict = dict(pool=constants.HWTEST_CRITICAL_POOL)
+    default_dict.update(kwargs)
+    suite_list = [cls(constants.HWTEST_SANITY_SUITE, **sanity_dict)]
+    suite_list.extend(cls.DefaultListCanary(**default_dict))
+    return suite_list
+
+
   def __init__(self, suite, num=constants.HWTEST_DEFAULT_NUM,
                pool=constants.HWTEST_MACH_POOL, timeout=DEFAULT_HW_TEST_TIMEOUT,
                async=False, warn_only=False, critical=False, blocking=False,
@@ -1935,7 +1973,7 @@ internal_paladin.add_config('wolf-tot-paladin',
   paladin_builder_name='wolf ToT paladin',
   do_not_apply_cq_patches=True,
   prebuilts=False,
-  hw_tests=HWTestConfig.DefaultListCQ(pool=constants.HWTEST_TOT_PALADIN_POOL),
+  hw_tests=HWTestConfig.SharedPoolCQ(suite_min_duts=20),
 )
 
 _paladin_boards = _all_boards
@@ -2438,6 +2476,14 @@ _release.add_config('swanky-release',
   boards=['swanky'],
   useflags=_release['useflags'] + ['highdpi'],
 )
+
+# TODO(fdeng): As a pilot experiment of crbug.com/441606
+# make wolf-tot-paladin share duts with canary. Once it proves to work
+# we will begin sharing pool for more boards.
+wolf_release_config = _base_configs['wolf'].derive()
+wolf_release_config['hw_tests'] = HWTestConfig.SharedPoolCanary(
+  suite_min_duts=6)
+_release.add_config('wolf-release', wolf_release_config)
 
 ### x86 Freon Release configs.
 

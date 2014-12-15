@@ -440,6 +440,7 @@ HWTEST_PFQ_POOL = 'pfq'
 HWTEST_SUITES_POOL = 'suites'
 HWTEST_CHROME_PERF_POOL = 'chromeperf'
 HWTEST_TRYBOT_POOL = 'try-bot'
+HWTEST_CRITICAL_POOL = 'critical'
 
 
 # Master build timeouts in seconds. This is the overall timeout set by the
@@ -469,6 +470,8 @@ HWTEST_COMMIT_SUITE = 'bvt-cq'
 HWTEST_CANARY_SUITE = 'bvt-perbuild'
 HWTEST_AFDO_SUITE = 'AFDO_record'
 HWTEST_MOBLAB_SUITE = 'moblab'
+HWTEST_SANITY_SUITE = 'sanity'
+HWTEST_PROVISION_SUITE = 'bvt-provision'
 
 
 # Additional timeout to wait for autotest to abort a suite if the test takes
