@@ -16,7 +16,7 @@ group("python") {
 # GYP version: mojo.gyp:mojo_python_system
 python_binary_module("system") {
   python_base_module = "mojo"
-  sources = [
+  cython_sources = [
     "mojo/c_core.pxd",
     "mojo/system.pyx",
   ]
@@ -33,12 +33,12 @@ python_binary_module("system") {
 
 python_binary_module("system_impl") {
   python_base_module = "mojo"
-  sources = [
+  cython_sources = [
     "mojo/c_core.pxd",
     "mojo/c_environment.pxd",
     "mojo/system_impl.pyx",
   ]
-  additional_sources = [
+  sources = [
     "src/python_system_helper.cc",
     "src/python_system_helper.h",
   ]

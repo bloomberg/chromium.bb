@@ -2,34 +2,37 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-template("python_binary_module_sources") {
+template("python_binary_source_set") {
   # Only available on linux for now.
   assert(is_linux)
-  assert(defined(invoker.sources))
+  assert(defined(invoker.cython_sources) || defined(invoker.sources))
 
-  cython_root = "//third_party/cython"
-  cython_script = "$cython_root/src/cython.py"
-  cython_output = "${target_out_dir}/${target_name}.cc"
-
-  generator_target_name = target_name + "_cython_compiler"
   config_name = target_name + "_python_config"
 
   target_visibility = [ ":$target_name" ]
 
-  action(generator_target_name) {
-    visibility = target_visibility
-    script = cython_script
-    sources = invoker.sources
-    outputs = [
-      cython_output,
-    ]
-    args = [
-             "--cplus",
-             "-I",
-             rebase_path("//", root_build_dir),
-             "-o",
-             rebase_path(cython_output, root_build_dir),
-           ] + rebase_path(sources, root_build_dir)
+  if (defined(invoker.cython_sources)) {
+    generator_target_name = target_name + "_cython_compiler"
+
+    cython_root = "//third_party/cython"
+    cython_script = "$cython_root/src/cython.py"
+    cython_output = "${target_out_dir}/${target_name}.cc"
+
+    action(generator_target_name) {
+      visibility = target_visibility
+      script = cython_script
+      sources = invoker.cython_sources
+      outputs = [
+        cython_output,
+      ]
+      args = [
+               "--cplus",
+               "-I",
+               rebase_path("//", root_build_dir),
+               "-o",
+               rebase_path(cython_output, root_build_dir),
+             ] + rebase_path(sources, root_build_dir)
+    }
   }
 
   config(config_name) {
@@ -45,11 +48,23 @@ template("python_binary_module_sources") {
   }
 
   source_set(target_name) {
-    deps = [
-      ":$generator_target_name",
-    ]
     if (defined(invoker.visibility)) {
       visibility = invoker.visibility
+    }
+    sources = []
+    if (defined(invoker.cython_sources)) {
+      sources += [ cython_output ]
+    }
+    if (defined(invoker.sources)) {
+      sources += invoker.sources
+    }
+    if (defined(invoker.configs)) {
+      configs += invoker.configs
+    }
+    all_dependent_configs = [ ":$config_name" ]
+    deps = []
+    if (defined(invoker.cython_sources)) {
+      deps += [ ":$generator_target_name" ]
     }
     if (defined(invoker.deps)) {
       deps += invoker.deps
@@ -57,23 +72,16 @@ template("python_binary_module_sources") {
     if (defined(invoker.datadeps)) {
       datadeps = invoker.datadeps
     }
-    sources = [
-      cython_output,
-    ]
-    if (defined(invoker.additional_sources)) {
-      sources += invoker.additional_sources
-    }
-    if (defined(invoker.configs)) {
-      configs += invoker.configs
-    }
-    all_dependent_configs = [ ":$config_name" ]
   }
 }
 
 template("python_binary_module") {
   # Only available on linux for now.
   assert(is_linux)
-  assert(defined(invoker.sources))
+
+  has_sources = defined(invoker.cython_sources) || defined(invoker.sources)
+
+  assert(has_sources || defined(invoker.deps))
   assert(defined(invoker.python_base_module))
 
   sources_target_name = target_name + "_cython_sources"
@@ -91,30 +99,41 @@ template("python_binary_module") {
     ":$target_name",
   ]
 
-  python_binary_module_sources(sources_target_name) {
-    visibility = target_visibility
-    sources = invoker.sources
-    if (defined(invoker.configs)) {
-      configs = invoker.configs
+  if (has_sources) {
+    python_binary_source_set(sources_target_name) {
+      visibility = target_visibility
+      if (defined(invoker.cython_sources)) {
+        cython_sources = invoker.cython_sources
+      }
+      if (defined(invoker.sources)) {
+        sources = invoker.sources
+      }
+      if (defined(invoker.configs)) {
+        configs = invoker.configs
+      }
+      if (defined(invoker.deps)) {
+        deps = invoker.deps
+      }
+      if (defined(invoker.datadeps)) {
+        datadeps = invoker.datadeps
+      }
     }
   }
 
   shared_library(shared_library_name) {
     visibility = target_visibility
-    deps = [
-      ":$sources_target_name",
-    ]
+    if (defined(invoker.configs)) {
+      configs += invoker.configs
+    }
+    deps = []
+    if (has_sources) {
+      deps += [ ":$sources_target_name" ]
+    }
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
     if (defined(invoker.datadeps)) {
       datadeps = invoker.datadeps
-    }
-    if (defined(invoker.additional_sources)) {
-      sources = invoker.additional_sources
-    }
-    if (defined(invoker.configs)) {
-      configs += invoker.configs
     }
   }
 
