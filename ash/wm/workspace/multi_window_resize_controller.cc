@@ -130,7 +130,9 @@ class MultiWindowResizeController::ResizeMouseWatcherHost :
   // MouseWatcherHost overrides:
   bool Contains(const gfx::Point& point_in_screen,
                 MouseEventType type) override {
-    return host_->IsOverWindows(point_in_screen);
+    return (type == MOUSE_PRESS)
+        ? host_->IsOverResizeWidget(point_in_screen)
+        : host_->IsOverWindows(point_in_screen);
   }
 
  private:
@@ -517,9 +519,15 @@ gfx::Rect MultiWindowResizeController::CalculateResizeWidgetBounds(
   return gfx::Rect(x, y, pref.width(), pref.height());
 }
 
+bool MultiWindowResizeController::IsOverResizeWidget(
+    const gfx::Point& location_in_screen) const {
+  return resize_widget_->GetWindowBoundsInScreen().Contains(
+      location_in_screen);
+}
+
 bool MultiWindowResizeController::IsOverWindows(
     const gfx::Point& location_in_screen) const {
-  if (resize_widget_->GetWindowBoundsInScreen().Contains(location_in_screen))
+  if (IsOverResizeWidget(location_in_screen))
     return true;
 
   if (windows_.direction == TOP_BOTTOM) {

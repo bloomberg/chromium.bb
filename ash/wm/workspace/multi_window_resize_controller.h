@@ -140,6 +140,9 @@ class ASH_EXPORT MultiWindowResizeController :
   gfx::Rect CalculateResizeWidgetBounds(
       const gfx::Point& location_in_parent) const;
 
+  // Returns true if |location_in_screen| is over the resize widget.
+  bool IsOverResizeWidget(const gfx::Point& location_in_screen) const;
+
   // Returns true if |location_in_screen| is over the resize windows
   // (or the resize widget itself).
   bool IsOverWindows(const gfx::Point& location_in_screen) const;

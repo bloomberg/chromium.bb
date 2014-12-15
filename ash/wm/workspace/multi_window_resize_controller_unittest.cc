@@ -338,4 +338,39 @@ TEST_F(MultiWindowResizeControllerTest, Three) {
   generator.PressLeftButton();
 }
 
+// Tests that clicking outside of the resize handle dismisses it.
+TEST_F(MultiWindowResizeControllerTest, ClickOutside) {
+  aura::test::TestWindowDelegate delegate1;
+  scoped_ptr<aura::Window> w1(
+      CreateTestWindow(&delegate1, gfx::Rect(0, 0, 100, 100)));
+  delegate1.set_window_component(HTRIGHT);
+  aura::test::TestWindowDelegate delegate2;
+  scoped_ptr<aura::Window> w2(
+      CreateTestWindow(&delegate2, gfx::Rect(100, 0, 100, 100)));
+  delegate2.set_window_component(HTLEFT);
+
+  ui::test::EventGenerator& generator(GetEventGenerator());
+  gfx::Point w1_center_in_screen = w1->GetBoundsInScreen().CenterPoint();
+  generator.MoveMouseTo(w1_center_in_screen);
+  EXPECT_TRUE(HasPendingShow());
+  EXPECT_TRUE(IsShowing());
+  ShowNow();
+  EXPECT_TRUE(IsShowing());
+
+  gfx::Rect resize_widget_bounds_in_screen =
+      resize_widget()->GetWindowBoundsInScreen();
+
+  // Clicking on the resize handle should not do anything.
+  generator.MoveMouseTo(resize_widget_bounds_in_screen.CenterPoint());
+  generator.ClickLeftButton();
+  EXPECT_TRUE(IsShowing());
+
+  // Clicking outside the resize handle should immediately hide the resize
+  // handle.
+  EXPECT_FALSE(resize_widget_bounds_in_screen.Contains(w1_center_in_screen));
+  generator.MoveMouseTo(w1_center_in_screen);
+  generator.ClickLeftButton();
+  EXPECT_FALSE(IsShowing());
+}
+
 }  // namespace ash

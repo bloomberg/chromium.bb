@@ -69,11 +69,6 @@ void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
         click_component_ = HTNOWHERE;
       }
 
-      // The multi window resizer does not hide as a result of a single click
-      // because this code is never reached as a result of a single click.
-      // TODO(pkotwicz): Fix this. http://crbug.com/437125
-      multi_window_resize_controller_.Hide();
-
       HandleVerticalResizeDoubleClick(target_state, event);
       break;
     }
