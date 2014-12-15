@@ -66,6 +66,12 @@ class CHROMEOS_EXPORT TPMTokenLoader : public LoginState::Observer {
   void SetCryptoTaskRunner(
       const scoped_refptr<base::SequencedTaskRunner>& crypto_task_runner);
 
+  // Starts loading TPM system token, if not yet started. It should be called
+  // if the system token has to be loaded before a user logs in. By default (if
+  // |EnsureStarted| is not called) system token loading will start when the
+  // login state changes to LOGGED_IN_ACTIVE.
+  void EnsureStarted();
+
   // Checks if the TPM token is enabled. If the state is unknown, |callback|
   // will be called back once the TPM state is known.
   TPMTokenStatus IsTPMTokenEnabled(const TPMReadyCallback& callback);
@@ -115,6 +121,10 @@ class CHROMEOS_EXPORT TPMTokenLoader : public LoginState::Observer {
   // Cached TPM token info.
   int tpm_token_slot_id_;
   std::string tpm_user_pin_;
+
+  // Whether TPM system token loading may be started before user log in.
+  // This will be true iff |EnsureStarted| was called.
+  bool can_start_before_login_;
 
   base::ThreadChecker thread_checker_;
 

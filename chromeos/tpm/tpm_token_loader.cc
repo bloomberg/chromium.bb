@@ -70,6 +70,7 @@ TPMTokenLoader::TPMTokenLoader(bool for_test)
               DBusThreadManager::Get()->GetCryptohomeClient(),
               base::ThreadTaskRunnerHandle::Get())),
       tpm_token_slot_id_(-1),
+      can_start_before_login_(false),
       weak_factory_(this) {
   if (!initialized_for_test_ && LoginState::IsInitialized())
     LoginState::Get()->AddObserver(this);
@@ -83,6 +84,13 @@ TPMTokenLoader::TPMTokenLoader(bool for_test)
 void TPMTokenLoader::SetCryptoTaskRunner(
     const scoped_refptr<base::SequencedTaskRunner>& crypto_task_runner) {
   crypto_task_runner_ = crypto_task_runner;
+  MaybeStartTokenInitialization();
+}
+
+void TPMTokenLoader::EnsureStarted() {
+  if (can_start_before_login_)
+    return;
+  can_start_before_login_ = true;
   MaybeStartTokenInitialization();
 }
 
@@ -119,10 +127,9 @@ void TPMTokenLoader::MaybeStartTokenInitialization() {
   if (tpm_token_state_ != TPM_STATE_UNKNOWN || !crypto_task_runner_.get())
     return;
 
-  if (!LoginState::IsInitialized())
-    return;
-
-  bool start_initialization = LoginState::Get()->IsUserLoggedIn();
+  bool start_initialization =
+      (LoginState::IsInitialized() && LoginState::Get()->IsUserLoggedIn()) ||
+      can_start_before_login_;
 
   VLOG(1) << "StartTokenInitialization: " << start_initialization;
   if (!start_initialization)

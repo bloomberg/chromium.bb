@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_metrics.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chromeos/login/auth/user_context.h"
+#include "chromeos/tpm/tpm_token_loader.h"
 
 namespace {
 
@@ -318,6 +319,15 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(const std::string& user_id) {
   }
 
   LoadCurrentUserDataIfNeeded();
+
+  // Start loading TPM system token.
+  // The system token will be needed to sign a nonce using TPM private key
+  // during the sign-in protocol.
+  EasyUnlockScreenlockStateHandler::HardlockState hardlock_state;
+  if (GetPersistedHardlockState(&hardlock_state) &&
+      hardlock_state != EasyUnlockScreenlockStateHandler::NO_PAIRING) {
+    chromeos::TPMTokenLoader::Get()->EnsureStarted();
+  }
 }
 
 void EasyUnlockServiceSignin::LoggedInStateChanged() {
