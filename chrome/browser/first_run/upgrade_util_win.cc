@@ -159,7 +159,7 @@ bool RelaunchChromeHelper(const CommandLine& command_line,
       relaunch_mode != RELAUNCH_MODE_METRO &&
       relaunch_mode != RELAUNCH_MODE_DESKTOP)
     return base::LaunchProcess(chrome_exe_command_line,
-                               base::LaunchOptions(), NULL);
+                               base::LaunchOptions()).IsValid();
 
   // On Windows 8 we always use the delegate_execute for re-launching chrome.
   // On Windows 7 we use delegate_execute for re-launching chrome into Windows

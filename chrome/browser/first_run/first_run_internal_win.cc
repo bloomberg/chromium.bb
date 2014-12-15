@@ -46,7 +46,6 @@ bool LaunchSetupForEula(const base::FilePath::StringType& value,
     return false;
   exe_dir = exe_dir.Append(installer::kInstallerDir);
   base::FilePath exe_path = exe_dir.Append(installer::kSetupExe);
-  base::ProcessHandle ph;
 
   CommandLine cl(CommandLine::NO_PROGRAM);
   cl.AppendSwitchNative(installer::switches::kShowEula, value);
@@ -67,11 +66,11 @@ bool LaunchSetupForEula(const base::FilePath::StringType& value,
     CommandLine setup_path(exe_path);
     setup_path.AppendArguments(cl, false);
 
+    base::Process process =
+        base::LaunchProcess(setup_path, base::LaunchOptions());
     int exit_code = 0;
-    if (!base::LaunchProcess(setup_path, base::LaunchOptions(), &ph) ||
-        !base::WaitForExitCode(ph, &exit_code)) {
+    if (!process.IsValid() || !process.WaitForExit(&exit_code))
       return false;
-    }
 
     *ret_code = exit_code;
     return true;
