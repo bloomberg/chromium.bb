@@ -444,7 +444,7 @@ class TestMain(cros_test_lib.MoxTestCase):
     options.skip_upload = False
     options.filters = True
     options.key = 'PORTAGE_BINHOST'
-    options.binhost_conf_dir = 'foo'
+    options.binhost_conf_dir = None
     options.sync_binhost_conf = True
     options.slave_targets = [prebuilt.BuildTarget('x86-bar', 'aura')]
     self.mox.StubOutWithMock(prebuilt, 'ParseOptions')
@@ -462,7 +462,7 @@ class TestMain(cros_test_lib.MoxTestCase):
     prebuilt.PrebuiltUploader.__init__(options.upload, expected_gs_acl_path,
                                        options.upload, mox.IgnoreArg(),
                                        options.build_path, options.packages,
-                                       False, options.binhost_conf_dir, False,
+                                       False, None, False,
                                        target, options.slave_targets,
                                        mox.IgnoreArg())
     self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, 'SyncHostPrebuilts')
