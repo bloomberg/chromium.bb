@@ -9,6 +9,10 @@
 
 #include "base/mac/scoped_nsobject.h"
 
+namespace ui {
+class ThemeProvider;
+}
+
 namespace image_button_cell {
 
 // Possible states
@@ -63,6 +67,10 @@ enum ButtonState {
 
 // Gets the alpha to use to draw the button for the current window focus state.
 - (CGFloat)imageAlphaForWindowState:(NSWindow*)window;
+
+// Returns the theme provider for the given |window|; this allows subclasses to
+// pass in a different theme provider to use if appropriate.
+- (ui::ThemeProvider*)themeProviderForWindow:(NSWindow*)window;
 
 // Draws the cell's image within |cellFrame|.
 - (void)drawImageWithFrame:(NSRect)cellFrame inView:(NSView*)controlView;

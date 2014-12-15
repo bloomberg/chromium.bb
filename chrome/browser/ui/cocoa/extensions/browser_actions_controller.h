@@ -63,6 +63,7 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 }
 
 @property(readonly, nonatomic) BrowserActionsContainerView* containerView;
+@property(readonly, nonatomic) Browser* browser;
 
 // Initializes the controller given the current browser and container view that
 // will hold the browser action buttons.

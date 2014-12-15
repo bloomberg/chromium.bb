@@ -11,8 +11,10 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu_controller.h"
+#import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_action_view_delegate_cocoa.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "grit/theme_resources.h"
@@ -399,6 +401,15 @@ void ToolbarActionViewDelegateBridge::SetContextMenuController(
   cellFrame.origin.y += kBrowserActionBadgeOriginYOffset;
   [self drawBadgeWithinFrame:cellFrame
               forWebContents:webContents];
+}
+
+- (ui::ThemeProvider*)themeProviderForWindow:(NSWindow*)window {
+  ui::ThemeProvider* themeProvider = [window themeProvider];
+  if (!themeProvider)
+    themeProvider =
+        [[browserActionsController_ browser]->window()->GetNativeWindow()
+            themeProvider];
+  return themeProvider;
 }
 
 @end

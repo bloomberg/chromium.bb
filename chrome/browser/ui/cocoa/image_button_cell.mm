@@ -132,6 +132,10 @@ const CGFloat kImageNoFocusAlpha = 0.65;
   return windowHasFocus ? 1.0 : kImageNoFocusAlpha;
 }
 
+- (ui::ThemeProvider*)themeProviderForWindow:(NSWindow*)window {
+  return [window themeProvider];
+}
+
 - (void)drawFocusRingWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   if (![self showsFirstResponder])
     return;
@@ -166,7 +170,8 @@ const CGFloat kImageNoFocusAlpha = 0.65;
   if (!imageID)
     return nil;
 
-  ui::ThemeProvider* themeProvider = [[controlView window] themeProvider];
+  ui::ThemeProvider* themeProvider =
+      [self themeProviderForWindow:[controlView window]];
   if (!themeProvider)
     return nil;
 

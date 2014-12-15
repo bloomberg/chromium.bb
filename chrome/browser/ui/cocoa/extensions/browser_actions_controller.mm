@@ -228,6 +228,7 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
 @implementation BrowserActionsController
 
 @synthesize containerView = containerView_;
+@synthesize browser = browser_;
 
 #pragma mark -
 #pragma mark Public Methods
