@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'CanvasRenderingContext2D.webkitImageSmoothingEnabled' is deprecated. Please use 'CanvasRenderingContext2D.imageSmoothingEnabled' instead.
 Tests canvas 2D ResourceState during the replay.
 
 

@@ -809,6 +809,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case DocumentSetCharset:
         return "Setting 'Document.charset' is deprecated. Please use '<meta charset=\"UTF-8\">' instead.";
 
+    case PrefixedImageSmoothingEnabled:
+        return replacedBy("CanvasRenderingContext2D.webkitImageSmoothingEnabled", "CanvasRenderingContext2D.imageSmoothingEnabled");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
