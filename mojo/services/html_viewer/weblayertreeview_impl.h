@@ -67,42 +67,40 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
   void RateLimitSharedMainThreadContext() override {}
 
   // blink::WebLayerTreeView implementation.
-  virtual void setSurfaceReady() override;
-  virtual void setRootLayer(const blink::WebLayer& layer) override;
-  virtual void clearRootLayer() override;
-  virtual void setViewportSize(
-      const blink::WebSize& device_viewport_size) override;
-  virtual blink::WebSize deviceViewportSize() const override;
-  virtual void setDeviceScaleFactor(float) override;
-  virtual float deviceScaleFactor() const override;
-  virtual void setBackgroundColor(blink::WebColor color) override;
-  virtual void setHasTransparentBackground(
-      bool has_transparent_background) override;
-  virtual void setOverhangBitmap(const SkBitmap& bitmap) override;
-  virtual void setVisible(bool visible) override;
+  virtual void setSurfaceReady();
+  virtual void setRootLayer(const blink::WebLayer& layer);
+  virtual void clearRootLayer();
+  virtual void setViewportSize(const blink::WebSize& device_viewport_size);
+  virtual blink::WebSize deviceViewportSize() const;
+  virtual void setDeviceScaleFactor(float);
+  virtual float deviceScaleFactor() const;
+  virtual void setBackgroundColor(blink::WebColor color);
+  virtual void setHasTransparentBackground(bool has_transparent_background);
+  virtual void setOverhangBitmap(const SkBitmap& bitmap);
+  virtual void setVisible(bool visible);
   virtual void setPageScaleFactorAndLimits(float page_scale_factor,
                                            float minimum,
-                                           float maximum) override;
+                                           float maximum);
   virtual void startPageScaleAnimation(const blink::WebPoint& destination,
                                        bool use_anchor,
                                        float new_page_scale,
-                                       double duration_sec) override;
+                                       double duration_sec);
   virtual void heuristicsForGpuRasterizationUpdated(bool matches_heuristic) {}
   virtual void setTopControlsContentOffset(float offset) {}
-  virtual void setNeedsAnimate() override;
-  virtual bool commitRequested() const override;
+  virtual void setNeedsAnimate();
+  virtual bool commitRequested() const;
   virtual void didStopFlinging() {}
   virtual void compositeAndReadbackAsync(
       blink::WebCompositeAndReadbackAsyncCallback* callback) {}
-  virtual void finishAllRendering() override;
+  virtual void finishAllRendering();
   virtual void setDeferCommits(bool defer_commits) {}
-  virtual void registerForAnimations(blink::WebLayer* layer) override;
+  virtual void registerForAnimations(blink::WebLayer* layer);
   virtual void registerViewportLayers(
       const blink::WebLayer* overscrollElasticityLayer,
       const blink::WebLayer* pageScaleLayerLayer,
       const blink::WebLayer* innerViewportScrollLayer,
-      const blink::WebLayer* outerViewportScrollLayer) override;
-  virtual void clearViewportLayers() override;
+      const blink::WebLayer* outerViewportScrollLayer);
+  virtual void clearViewportLayers();
   virtual void registerSelection(const blink::WebSelectionBound& start,
                                  const blink::WebSelectionBound& end) {}
   virtual void clearSelection() {}
