@@ -72,5 +72,23 @@ void IdentityGetAuthTokenFunction::OnGetTokenFailure(
   Release();  // Balanced in Run().
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
+IdentityRemoveCachedAuthTokenFunction::IdentityRemoveCachedAuthTokenFunction() {
+}
+
+IdentityRemoveCachedAuthTokenFunction::
+    ~IdentityRemoveCachedAuthTokenFunction() {
+}
+
+ExtensionFunction::ResponseAction IdentityRemoveCachedAuthTokenFunction::Run() {
+  scoped_ptr<api::identity::RemoveCachedAuthToken::Params> params(
+      api::identity::RemoveCachedAuthToken::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  // This stub identity API does not maintain a token cache, so there is nothing
+  // to remove.
+  return RespondNow(NoArguments());
+}
+
 }  // namespace shell
 }  // namespace extensions

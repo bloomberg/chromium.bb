@@ -41,6 +41,23 @@ class IdentityGetAuthTokenFunction : public UIThreadExtensionFunction,
   DISALLOW_COPY_AND_ASSIGN(IdentityGetAuthTokenFunction);
 };
 
+// Stub. See the IDL file for documentation.
+class IdentityRemoveCachedAuthTokenFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("identity.removeCachedAuthToken", UNKNOWN)
+
+  IdentityRemoveCachedAuthTokenFunction();
+
+ protected:
+  ~IdentityRemoveCachedAuthTokenFunction() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IdentityRemoveCachedAuthTokenFunction);
+};
+
 }  // namespace shell
 }  // namespace extensions
 

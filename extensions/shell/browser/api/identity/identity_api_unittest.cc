@@ -84,5 +84,16 @@ TEST_F(IdentityApiTest, GetAuthToken) {
   EXPECT_EQ("token123", value);
 }
 
+// Verifies that the removeCachedAuthToken function exists and can be called
+// without crashing.
+TEST_F(IdentityApiTest, RemoveCachedAuthToken) {
+  MockShellOAuth2TokenService token_service;
+
+  // Function succeeds and returns nothing (for its callback).
+  scoped_ptr<base::Value> result = RunFunctionAndReturnValue(
+      new IdentityRemoveCachedAuthTokenFunction, "[{}]");
+  EXPECT_FALSE(result.get());
+}
+
 }  // namespace shell
 }  // namespace extensions
