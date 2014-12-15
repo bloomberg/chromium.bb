@@ -51,6 +51,18 @@ const GURL ManifestParserTest::default_document_url(
 const GURL ManifestParserTest::default_manifest_url(
     "http://foo.com/manifest.json");
 
+TEST_F(ManifestParserTest, CrashTest) {
+  // Passing temporary variables should not crash.
+  ManifestParser parser("{\"start_url\": \"/\"}",
+                        GURL("http://example.com"),
+                        GURL("http://example.com"));
+  parser.Parse();
+
+  // .Parse() should have been call without crashing and succeeded.
+  EXPECT_EQ(0u, parser.errors().size());
+  EXPECT_FALSE(parser.manifest().IsEmpty());
+}
+
 TEST_F(ManifestParserTest, EmptyStringNull) {
   Manifest manifest = ParseManifest("");
 

@@ -136,8 +136,8 @@ class CONTENT_EXPORT ManifestParser {
   bool ParseGCMUserVisibleOnly(const base::DictionaryValue& dictionary);
 
   const base::StringPiece& data_;
-  const GURL& manifest_url_;
-  const GURL& document_url_;
+  GURL manifest_url_;
+  GURL document_url_;
 
   bool failed_;
   Manifest manifest_;
