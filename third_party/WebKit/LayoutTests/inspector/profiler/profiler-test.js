@@ -5,8 +5,6 @@ WebInspector.TempFile = InspectorTest.TempFileMock;
 
 InspectorTest.startProfilerTest = function(callback)
 {
-    Runtime.experiments.enableForTest("disableAgentsWhenProfile");
-
     InspectorTest.addResult("Profiler was enabled.");
     InspectorTest.addSniffer(WebInspector.panels.profiles, "_addProfileHeader", InspectorTest._profileHeaderAdded, true);
     InspectorTest.addSniffer(WebInspector.CPUProfileView.prototype, "refresh", InspectorTest._profileViewRefresh, true);
