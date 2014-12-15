@@ -2154,39 +2154,43 @@ void RenderBox::computeMarginsForDirection(MarginDirection flowDirection, const 
     // values for 'margin-left' or 'margin-right' are, for the following rules, treated as zero.
     LayoutUnit marginBoxWidth = childWidth + (!style()->width().isAuto() ? marginStartWidth + marginEndWidth : LayoutUnit());
 
-    // CSS 2.1: "If both 'margin-left' and 'margin-right' are 'auto', their used values are equal. This horizontally centers the element
-    // with respect to the edges of the containing block."
-    const RenderStyle* containingBlockStyle = containingBlock->style();
-    if ((marginStartLength.isAuto() && marginEndLength.isAuto() && marginBoxWidth < availableWidth)
-        || (!marginStartLength.isAuto() && !marginEndLength.isAuto() && containingBlockStyle->textAlign() == WEBKIT_CENTER)) {
-        // Other browsers center the margin box for align=center elements so we match them here.
-        LayoutUnit centeredMarginBoxStart = std::max(LayoutUnit(), (availableWidth - childWidth - marginStartWidth - marginEndWidth) / 2);
-        marginStart = centeredMarginBoxStart + marginStartWidth;
-        marginEnd = availableWidth - childWidth - marginStart + marginEndWidth;
-        return;
-    }
+    if (marginBoxWidth < availableWidth) {
+        // CSS 2.1: "If both 'margin-left' and 'margin-right' are 'auto', their used values are equal. This horizontally centers the element
+        // with respect to the edges of the containing block."
+        const RenderStyle* containingBlockStyle = containingBlock->style();
+        if ((marginStartLength.isAuto() && marginEndLength.isAuto())
+            || (!marginStartLength.isAuto() && !marginEndLength.isAuto() && containingBlockStyle->textAlign() == WEBKIT_CENTER)) {
+            // Other browsers center the margin box for align=center elements so we match them here.
+            LayoutUnit centeredMarginBoxStart = std::max(LayoutUnit(), (availableWidth - childWidth - marginStartWidth - marginEndWidth) / 2);
+            marginStart = centeredMarginBoxStart + marginStartWidth;
+            marginEnd = availableWidth - childWidth - marginStart + marginEndWidth;
+            return;
+        }
 
-    // CSS 2.1: "If there is exactly one value specified as 'auto', its used value follows from the equality."
-    if (marginEndLength.isAuto() && marginBoxWidth < availableWidth) {
-        marginStart = marginStartWidth;
-        marginEnd = availableWidth - childWidth - marginStart;
-        return;
-    }
+        // Adjust margins for the align attribute
+        if ((!containingBlockStyle->isLeftToRightDirection() && containingBlockStyle->textAlign() == WEBKIT_LEFT)
+            || (containingBlockStyle->isLeftToRightDirection() && containingBlockStyle->textAlign() == WEBKIT_RIGHT)) {
+            if (containingBlockStyle->isLeftToRightDirection() != style()->isLeftToRightDirection()) {
+                if (!marginStartLength.isAuto())
+                    marginEndLength = Length(Auto);
+            } else {
+                if (!marginEndLength.isAuto())
+                    marginStartLength = Length(Auto);
+            }
+        }
 
-    bool adjustFromTextAlign = !marginEndLength.isAuto() && ((!containingBlockStyle->isLeftToRightDirection() && containingBlockStyle->textAlign() == WEBKIT_LEFT)
-        || (containingBlockStyle->isLeftToRightDirection() && containingBlockStyle->textAlign() == WEBKIT_RIGHT));
-    bool hasInvertedDirection = containingBlockStyle->isLeftToRightDirection() != style()->isLeftToRightDirection();
+        // CSS 2.1: "If there is exactly one value specified as 'auto', its used value follows from the equality."
+        if (marginEndLength.isAuto()) {
+            marginStart = marginStartWidth;
+            marginEnd = availableWidth - childWidth - marginStart;
+            return;
+        }
 
-    if ((marginStartLength.isAuto() && marginBoxWidth < availableWidth) || (adjustFromTextAlign && !hasInvertedDirection)) {
-        marginEnd = marginEndWidth;
-        marginStart = availableWidth - childWidth - marginEnd;
-        return;
-    }
-
-    if (adjustFromTextAlign && hasInvertedDirection) {
-        marginStart = marginStartWidth;
-        marginEnd = availableWidth - childWidth - marginStart;
-        return;
+        if (marginStartLength.isAuto()) {
+            marginEnd = marginEndWidth;
+            marginStart = availableWidth - childWidth - marginEnd;
+            return;
+        }
     }
 
     // Either no auto margins, or our margin box width is >= the container width, auto margins will just turn into 0.
