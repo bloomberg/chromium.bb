@@ -163,6 +163,15 @@ VolumeInfo.prototype = {
 };
 
 /**
+ * Provides short hand checking of volume type.
+ * @param {VolumeManagerCommon.VolumeType} type
+ * @return {boolean} True if the volume is of the specified type.
+ */
+VolumeInfo.prototype.isType = function(type) {
+  return type === this.volumeType_;
+};
+
+/**
  * Starts resolving the display root and obtains it.  It may take long time for
  * Drive. Once resolved, it is cached.
  *
