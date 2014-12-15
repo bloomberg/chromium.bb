@@ -44,7 +44,7 @@ class TestCollection(object):
           self._item_available_or_all_done.clear()
 
   def add(self, test):
-    """Add an test to the collection.
+    """Add a test to the collection.
 
     Args:
       test: A test to add.

@@ -13,7 +13,7 @@ def CreateTestInstance(args, error_func):
 
   if args.command == 'gtest':
     return gtest_test_instance.GtestTestInstance(
-        args, isolator.Isolator(constants.ISOLATE_DEPS_DIR))
+        args, isolator.Isolator(constants.ISOLATE_DEPS_DIR), error_func)
   if args.command == 'uirobot':
     return uirobot_test_instance.UirobotTestInstance(args)
   # TODO(jbudorick) Add instrumentation test instance.

@@ -64,35 +64,3 @@ class TestPackage(object):
     """
     raise NotImplementedError('Method must be overriden.')
 
-  @staticmethod
-  def _ParseGTestListTests(raw_list):
-    """Parses a raw test list as provided by --gtest_list_tests.
-
-    Args:
-      raw_list: The raw test listing with the following format:
-
-      IPCChannelTest.
-        SendMessageInChannelConnected
-      IPCSyncChannelTest.
-        Simple
-        DISABLED_SendWithTimeoutMixedOKAndTimeout
-
-    Returns:
-      A list of all tests. For the above raw listing:
-
-      [IPCChannelTest.SendMessageInChannelConnected, IPCSyncChannelTest.Simple,
-       IPCSyncChannelTest.DISABLED_SendWithTimeoutMixedOKAndTimeout]
-    """
-    ret = []
-    current = ''
-    for test in raw_list:
-      if not test:
-        continue
-      if test[0] != ' ':
-        test_case = test.split()[0]
-        if test_case.endswith('.'):
-          current = test_case
-      elif not 'YOU HAVE' in test:
-        test_name = test.split()[0]
-        ret += [current + test_name]
-    return ret

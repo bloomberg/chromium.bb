@@ -5,12 +5,10 @@
 
 import unittest
 
-from pylib.gtest import test_package
-
-# pylint: disable=W0212
+from pylib.gtest import gtest_test_instance
 
 
-class TestPackageTest(unittest.TestCase):
+class GtestTestInstanceTests(unittest.TestCase):
 
   def testParseGTestListTests_simple(self):
     raw_output = [
@@ -21,7 +19,7 @@ class TestPackageTest(unittest.TestCase):
       '  testThree',
       '  testFour',
     ]
-    actual = test_package.TestPackage._ParseGTestListTests(raw_output)
+    actual = gtest_test_instance.ParseGTestListTests(raw_output)
     expected = [
       'TestCaseOne.testOne',
       'TestCaseOne.testTwo',
@@ -36,7 +34,7 @@ class TestPackageTest(unittest.TestCase):
       '  testOne',
       '  testTwo',
     ]
-    actual = test_package.TestPackage._ParseGTestListTests(raw_output)
+    actual = gtest_test_instance.ParseGTestListTests(raw_output)
     expected = [
       'TPTestCase/WithTypeParam/0.testOne',
       'TPTestCase/WithTypeParam/0.testTwo',
@@ -49,7 +47,7 @@ class TestPackageTest(unittest.TestCase):
       '  testOne',
       '  testTwo',
     ]
-    actual = test_package.TestPackage._ParseGTestListTests(raw_output)
+    actual = gtest_test_instance.ParseGTestListTests(raw_output)
     expected = [
       'TPTestCase/WithTypeParam/0.testOne',
       'TPTestCase/WithTypeParam/0.testTwo',
@@ -62,7 +60,7 @@ class TestPackageTest(unittest.TestCase):
       '  testWithValueParam/0',
       '  testWithValueParam/1',
     ]
-    actual = test_package.TestPackage._ParseGTestListTests(raw_output)
+    actual = gtest_test_instance.ParseGTestListTests(raw_output)
     expected = [
       'VPTestCase.testWithValueParam/0',
       'VPTestCase.testWithValueParam/1',
@@ -75,7 +73,7 @@ class TestPackageTest(unittest.TestCase):
       '  testWithValueParam/0  # GetParam() = 0',
       '  testWithValueParam/1  # GetParam() = 1',
     ]
-    actual = test_package.TestPackage._ParseGTestListTests(raw_output)
+    actual = gtest_test_instance.ParseGTestListTests(raw_output)
     expected = [
       'VPTestCase.testWithValueParam/0',
       'VPTestCase.testWithValueParam/1',

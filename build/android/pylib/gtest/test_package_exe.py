@@ -13,6 +13,7 @@ from pylib import cmd_helper
 from pylib import constants
 from pylib import pexpect
 from pylib.device import device_errors
+from pylib.gtest import gtest_test_instance
 from pylib.gtest.test_package import TestPackage
 
 
@@ -126,7 +127,7 @@ class TestPackageExecutable(TestPackage):
     if exit_code != 0:
       raise Exception(
           'Failed to start binary:\n%s' % '\n'.join(output))
-    return self._ParseGTestListTests(output)
+    return gtest_test_instance.ParseGTestListTests(output)
 
   #override
   def SpawnTestProcess(self, device):

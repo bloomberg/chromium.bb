@@ -4,10 +4,12 @@
 
 import logging
 import os
+import re
 import shutil
 import sys
 
 from pylib import constants
+from pylib.base import base_test_result
 from pylib.base import test_instance
 
 sys.path.append(os.path.join(
@@ -38,27 +40,86 @@ _DEPS_EXCLUSION_LIST = [
 ]
 
 
+# TODO(jbudorick): Remove these once we're no longer parsing stdout to generate
+# results.
+_RE_TEST_STATUS = re.compile(
+    r'\[ +((?:RUN)|(?:FAILED)|(?:OK)) +\] ?([^ ]+)(?: \((\d+) ms\))?$')
+_RE_TEST_RUN_STATUS = re.compile(
+    r'\[ +(PASSED|RUNNER_FAILED|CRASHED) \] ?[^ ]+')
+
+
+# TODO(jbudorick): Make this a class method of GtestTestInstance once
+# test_package_apk and test_package_exe are gone.
+def ParseGTestListTests(raw_list):
+  """Parses a raw test list as provided by --gtest_list_tests.
+
+  Args:
+    raw_list: The raw test listing with the following format:
+
+    IPCChannelTest.
+      SendMessageInChannelConnected
+    IPCSyncChannelTest.
+      Simple
+      DISABLED_SendWithTimeoutMixedOKAndTimeout
+
+  Returns:
+    A list of all tests. For the above raw listing:
+
+    [IPCChannelTest.SendMessageInChannelConnected, IPCSyncChannelTest.Simple,
+     IPCSyncChannelTest.DISABLED_SendWithTimeoutMixedOKAndTimeout]
+  """
+  ret = []
+  current = ''
+  for test in raw_list:
+    if not test:
+      continue
+    if test[0] != ' ':
+      test_case = test.split()[0]
+      if test_case.endswith('.'):
+        current = test_case
+    elif not 'YOU HAVE' in test:
+      test_name = test.split()[0]
+      ret += [current + test_name]
+  return ret
+
+
 class GtestTestInstance(test_instance.TestInstance):
 
-  def __init__(self, options, isolate_delegate):
+  def __init__(self, args, isolate_delegate, error_func):
     super(GtestTestInstance, self).__init__()
     # TODO(jbudorick): Support multiple test suites.
-    if len(options.suite_name) > 1:
+    if len(args.suite_name) > 1:
       raise ValueError('Platform mode currently supports only 1 gtest suite')
-    self._apk_path = os.path.join(
-        constants.GetOutDirectory(), '%s_apk' % options.suite_name[0],
-        '%s-debug.apk' % options.suite_name[0])
+    self._suite = args.suite_name[0]
+
+    if self._suite == 'content_browsertests':
+      error_func('content_browsertests are not currently supported '
+                 'in platform mode.')
+      self._apk_path = os.path.join(
+          constants.GetOutDirectory(), 'apks', '%s.apk' % self._suite)
+    else:
+      self._apk_path = os.path.join(
+          constants.GetOutDirectory(), '%s_apk' % self._suite,
+          '%s-debug.apk' % self._suite)
+    self._exe_path = os.path.join(constants.GetOutDirectory(),
+                                  self._suite)
+    if not os.path.exists(self._apk_path):
+      self._apk_path = None
+    if not os.path.exists(self._exe_path):
+      self._exe_path = None
+    if not self._apk_path and not self._exe_path:
+      error_func('Could not find apk or executable for %s' % self._suite)
+
     self._data_deps = []
-    self._gtest_filter = options.test_filter
-    if options.isolate_file_path:
-      self._isolate_abs_path = os.path.abspath(options.isolate_file_path)
+    self._gtest_filter = args.test_filter
+    if args.isolate_file_path:
+      self._isolate_abs_path = os.path.abspath(args.isolate_file_path)
       self._isolate_delegate = isolate_delegate
       self._isolated_abs_path = os.path.join(
-          constants.GetOutDirectory(), '%s.isolated' % options.suite_name)
+          constants.GetOutDirectory(), '%s.isolated' % self._suite)
     else:
       logging.warning('No isolate file provided. No data deps will be pushed.');
       self._isolate_delegate = None
-    self._suite = options.suite_name
 
   #override
   def TestType(self):
@@ -72,7 +133,11 @@ class GtestTestInstance(test_instance.TestInstance):
           self._isolate_abs_path, self._isolated_abs_path)
       self._isolate_delegate.PurgeExcluded(_DEPS_EXCLUSION_LIST)
       self._isolate_delegate.MoveOutputDeps()
-      self._data_deps.extend([(constants.ISOLATE_DEPS_DIR, None)])
+      dest_dir = None
+      if self._suite == 'breakpad_unittests':
+        dest_dir = '/data/local/tmp/'
+      self._data_deps.extend([(constants.ISOLATE_DEPS_DIR, dest_dir)])
+
 
   def GetDataDependencies(self):
     """Returns the test suite's data dependencies.
@@ -100,10 +165,8 @@ class GtestTestInstance(test_instance.TestInstance):
 
     filtered_test_list = test_list
     for gtest_filter_string in gtest_filter_strings:
-      logging.info('gtest filter string: %s' % gtest_filter_string)
       filtered_test_list = unittest_util.FilterTestNames(
           filtered_test_list, gtest_filter_string)
-    logging.info('final list of tests: %s' % (str(filtered_test_list)))
     return filtered_test_list
 
   def _GenerateDisabledFilterString(self, disabled_prefixes):
@@ -112,6 +175,7 @@ class GtestTestInstance(test_instance.TestInstance):
     if disabled_prefixes is None:
       disabled_prefixes = ['DISABLED_', 'FLAKY_', 'FAILS_', 'PRE_', 'MANUAL_']
     disabled_filter_items += ['%s*' % dp for dp in disabled_prefixes]
+    disabled_filter_items += ['*.%s*' % dp for dp in disabled_prefixes]
 
     disabled_tests_file_path = os.path.join(
         constants.DIR_SOURCE_ROOT, 'build', 'android', 'pylib', 'gtest',
@@ -124,6 +188,32 @@ class GtestTestInstance(test_instance.TestInstance):
 
     return '*-%s' % ':'.join(disabled_filter_items)
 
+  def ParseGTestOutput(self, output):
+    """Parses raw gtest output and returns a list of results.
+
+    Args:
+      output: A list of output lines.
+    Returns:
+      A list of base_test_result.BaseTestResults.
+    """
+    results = []
+    for l in output:
+      matcher = _RE_TEST_STATUS.match(l)
+      if matcher:
+        result_type = None
+        if matcher.group(1) == 'OK':
+          result_type = base_test_result.ResultType.PASS
+        elif matcher.group(1) == 'FAILED':
+          result_type = base_test_result.ResultType.FAIL
+
+        if result_type:
+          test_name = matcher.group(2)
+          duration = matcher.group(3) if matcher.group(3) else 0
+          results.append(base_test_result.BaseTestResult(
+              test_name, result_type, duration))
+      logging.info(l)
+    return results
+
   #override
   def TearDown(self):
     """Clear the mappings created by SetUp."""
@@ -133,6 +223,10 @@ class GtestTestInstance(test_instance.TestInstance):
   @property
   def apk(self):
     return self._apk_path
+
+  @property
+  def exe(self):
+    return self._exe_path
 
   @property
   def suite(self):

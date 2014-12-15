@@ -17,6 +17,7 @@ from pylib import constants
 from pylib import pexpect
 from pylib.device import device_errors
 from pylib.device import intent
+from pylib.gtest import gtest_test_instance
 from pylib.gtest.test_package import TestPackage
 
 
@@ -111,7 +112,7 @@ class TestPackageApk(TestPackage):
       self.tool.CleanUpEnvironment()
     # We need to strip the trailing newline.
     content = [line.rstrip() for line in p.before.splitlines()]
-    return self._ParseGTestListTests(content)
+    return gtest_test_instance.ParseGTestListTests(content)
 
   #override
   def SpawnTestProcess(self, device):

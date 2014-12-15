@@ -114,7 +114,6 @@ public class ChromiumNativeTestInstrumentationTestRunner extends Instrumentation
             r = new BufferedReader(
                     new InputStreamReader(new BufferedInputStream(new FileInputStream(fifo))));
 
-            StringBuilder resultsStr = new StringBuilder();
             for (String l = r.readLine(); l != null && !l.equals("<<ScopedMainEntryLogger");
                     l = r.readLine()) {
                 Matcher m = RE_TEST_OUTPUT.matcher(l);
@@ -127,11 +126,9 @@ public class ChromiumNativeTestInstrumentationTestRunner extends Instrumentation
                         results.put(m.group(2), TestResult.PASSED);
                     }
                 }
-                resultsStr.append(l);
-                resultsStr.append("\n");
+                mLogBundle.putString(Instrumentation.REPORT_KEY_STREAMRESULT, l + "\n");
+                sendStatus(0, mLogBundle);
             }
-            mLogBundle.putString(Instrumentation.REPORT_KEY_STREAMRESULT, resultsStr.toString());
-            sendStatus(0, mLogBundle);
         } catch (InterruptedException e) {
             Log.e(TAG, "Interrupted while waiting for FIFO file creation: " + e.toString());
         } catch (FileNotFoundException e) {
