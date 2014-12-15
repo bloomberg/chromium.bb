@@ -34,6 +34,7 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
                              bool has_submenu) override;
 #if defined(OS_WIN)
   virtual HICON GetDefaultWindowIcon() const override;
+  virtual HICON GetSmallWindowIcon() const override;
   virtual bool IsWindowInMetro(gfx::NativeWindow window) const override;
 #elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
   gfx::ImageSkia* GetDefaultWindowIcon() const override;

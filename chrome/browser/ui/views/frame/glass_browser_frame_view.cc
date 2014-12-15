@@ -21,6 +21,7 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/theme_resources.h"
+#include "skia/ext/image_operations.h"
 #include "ui/base/resource/resource_bundle_win.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
@@ -71,6 +72,17 @@ const int kNewTabCaptionMaximizedSpacing = 16;
 // How far to indent the tabstrip from the left side of the screen when there
 // is no avatar icon.
 const int kTabStripIndent = -6;
+
+// Converts the |image| to a Windows icon and returns the corresponding HICON
+// handle. |image| is resized to desired |width| and |height| if needed.
+HICON CreateHICONFromSkBitmapSizedTo(const gfx::ImageSkia& image,
+                                     int width,
+                                     int height) {
+  if (width == image.width() && height == image.height())
+    return IconUtil::CreateHICONFromSkBitmap(*image.bitmap());
+  return IconUtil::CreateHICONFromSkBitmap(skia::ImageOperations::Resize(
+      *image.bitmap(), skia::ImageOperations::RESIZE_BEST, width, height));
+}
 
 }  // namespace
 
@@ -539,27 +551,39 @@ void GlassBrowserFrameView::StopThrobber() {
   if (throbber_running_) {
     throbber_running_ = false;
 
-    HICON frame_icon = nullptr;
+    HICON small_icon = nullptr;
+    HICON big_icon = nullptr;
 
     // Check if hosted BrowserView has a window icon to use.
     if (browser_view()->ShouldShowWindowIcon()) {
       gfx::ImageSkia icon = browser_view()->GetWindowIcon();
-      if (!icon.isNull())
-        frame_icon = IconUtil::CreateHICONFromSkBitmap(*icon.bitmap());
+      if (!icon.isNull()) {
+        small_icon = CreateHICONFromSkBitmapSizedTo(
+            icon, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON));
+        big_icon = CreateHICONFromSkBitmapSizedTo(
+            icon, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON));
+      }
     }
 
     // Fallback to class icon.
-    if (!frame_icon) {
-      frame_icon = reinterpret_cast<HICON>(GetClassLongPtr(
-          views::HWNDForWidget(frame()), GCLP_HICONSM));
+    if (!small_icon) {
+      small_icon = reinterpret_cast<HICON>(
+          GetClassLongPtr(views::HWNDForWidget(frame()), GCLP_HICONSM));
+    }
+    if (!big_icon) {
+      big_icon = reinterpret_cast<HICON>(
+          GetClassLongPtr(views::HWNDForWidget(frame()), GCLP_HICON));
     }
 
-    // This will reset the small icon which we set in the throbber code.
+    // This will reset the icon which we set in the throbber code.
     // WM_SETICON with null icon restores the icon for title bar but not
     // for taskbar. See http://crbug.com/29996
     SendMessage(views::HWNDForWidget(frame()), WM_SETICON,
                 static_cast<WPARAM>(ICON_SMALL),
-                reinterpret_cast<LPARAM>(frame_icon));
+                reinterpret_cast<LPARAM>(small_icon));
+    SendMessage(views::HWNDForWidget(frame()), WM_SETICON,
+                static_cast<WPARAM>(ICON_BIG),
+                reinterpret_cast<LPARAM>(big_icon));
   }
 }
 

@@ -33,6 +33,14 @@ HICON GetAppIcon() {
                   MAKEINTRESOURCE(icon_id));
 }
 
+HICON GetSmallAppIcon() {
+  const int icon_id = GetAppIconResourceId();
+  return static_cast<HICON>(LoadImage(
+      GetModuleHandle(chrome::kBrowserResourcesDll), MAKEINTRESOURCE(icon_id),
+      IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON),
+      LR_DEFAULTCOLOR));
+}
+
 scoped_ptr<SkBitmap> GetAppIconForSize(int size) {
   const int icon_id = GetAppIconResourceId();
   return IconUtil::CreateSkBitmapFromIconResource(

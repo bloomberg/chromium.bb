@@ -33,10 +33,10 @@ const wchar_t* const WindowImpl::kBaseClassName = L"Chrome_WidgetWin_";
 struct ClassInfo {
   UINT style;
   HICON icon;
+  HICON small_icon;
 
-  ClassInfo(int style, HICON icon)
-      : style(style),
-        icon(icon) {}
+  ClassInfo(int style, HICON icon, HICON small_icon)
+      : style(style), icon(icon), small_icon(small_icon) {}
 
   // Compares two ClassInfos. Returns true if all members match.
   bool Equals(const ClassInfo& other) const {
@@ -126,17 +126,10 @@ ATOM ClassRegistrar::RetrieveClassAtom(const ClassInfo& class_info) {
 
   WNDCLASSEX window_class;
   base::win::InitializeWindowClass(
-      name.c_str(),
-      &base::win::WrappedWindowProc<WindowImpl::WndProc>,
-      class_info.style,
-      0,
-      0,
-      NULL,
-      reinterpret_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)),
-      NULL,
-      class_info.icon,
-      class_info.icon,
-      &window_class);
+      name.c_str(), &base::win::WrappedWindowProc<WindowImpl::WndProc>,
+      class_info.style, 0, 0, NULL,
+      reinterpret_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)), NULL,
+      class_info.icon, class_info.small_icon, &window_class);
   HMODULE instance = window_class.hInstance;
   ATOM atom = RegisterClassEx(&window_class);
   CHECK(atom) << GetLastError();
@@ -256,7 +249,11 @@ void WindowImpl::Init(HWND parent, const Rect& bounds) {
 }
 
 HICON WindowImpl::GetDefaultWindowIcon() const {
-  return NULL;
+  return nullptr;
+}
+
+HICON WindowImpl::GetSmallWindowIcon() const {
+  return nullptr;
 }
 
 LRESULT WindowImpl::OnWndProc(UINT message, WPARAM w_param, LPARAM l_param) {
@@ -305,7 +302,8 @@ LRESULT CALLBACK WindowImpl::WndProc(HWND hwnd,
 
 ATOM WindowImpl::GetWindowClassAtom() {
   HICON icon = GetDefaultWindowIcon();
-  ClassInfo class_info(initial_class_style(), icon);
+  HICON small_icon = GetSmallWindowIcon();
+  ClassInfo class_info(initial_class_style(), icon, small_icon);
   return ClassRegistrar::GetInstance()->RetrieveClassAtom(class_info);
 }
 

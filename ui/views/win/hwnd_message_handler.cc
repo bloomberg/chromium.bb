@@ -913,9 +913,18 @@ void HWNDMessageHandler::DispatchKeyEventPostIME(const ui::KeyEvent& key) {
 
 HICON HWNDMessageHandler::GetDefaultWindowIcon() const {
   if (use_system_default_icon_)
-    return NULL;
-  return ViewsDelegate::views_delegate ?
-      ViewsDelegate::views_delegate->GetDefaultWindowIcon() : NULL;
+    return nullptr;
+  return ViewsDelegate::views_delegate
+             ? ViewsDelegate::views_delegate->GetDefaultWindowIcon()
+             : nullptr;
+}
+
+HICON HWNDMessageHandler::GetSmallWindowIcon() const {
+  if (use_system_default_icon_)
+    return nullptr;
+  return ViewsDelegate::views_delegate
+             ? ViewsDelegate::views_delegate->GetSmallWindowIcon()
+             : nullptr;
 }
 
 LRESULT HWNDMessageHandler::OnWndProc(UINT message,
