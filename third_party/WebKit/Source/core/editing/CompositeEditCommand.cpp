@@ -360,7 +360,12 @@ void CompositeEditCommand::insertNodeAt(PassRefPtrWillBeRawPtr<Node> insertChild
 
 void CompositeEditCommand::appendNode(PassRefPtrWillBeRawPtr<Node> node, PassRefPtrWillBeRawPtr<ContainerNode> parent)
 {
-    ASSERT(canHaveChildrenForEditing(parent.get()));
+    // When cloneParagraphUnderNewElement() clones the fallback content
+    // of an OBJECT element, the ASSERT below may fire since the return
+    // value of canHaveChildrenForEditing is not reliable until the render
+    // object of the OBJECT is created. Hence we ignore this check for OBJECTs.
+    ASSERT(canHaveChildrenForEditing(parent.get())
+        || (parent->isElementNode() && toElement(parent.get())->tagQName() == objectTag));
     applyCommandToComposite(AppendNodeCommand::create(parent, node));
 }
 
