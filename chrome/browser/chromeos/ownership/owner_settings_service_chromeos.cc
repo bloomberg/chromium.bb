@@ -614,6 +614,7 @@ void OwnerSettingsServiceChromeOS::UpdateDeviceSettings(
     //   kReportDeviceVersionInfo
     //   kReportDeviceNetworkInterfaces
     //   kReportDeviceUsers
+    //   kReportDeviceHardwareStatus
     //   kScreenSaverExtensionId
     //   kScreenSaverTimeout
     //   kServiceAccountIdentity

@@ -95,6 +95,11 @@ const char kReportDeviceNetworkInterfaces[] =
 // status reports to the device management server.
 const char kReportDeviceUsers[] = "cros.device_status.report_users";
 
+// Determines whether the device reports hardware status (CPU utilization,
+// disk space, etc) in device status reports to the device management server.
+const char kReportDeviceHardwareStatus[] =
+    "cros.device_status.report_hardware_status";
+
 // A list of dictionaries, each detailing one extension to install as part of
 // the AppPack and including the following fields:
 // "extension-id": ID of the extension to install

@@ -67,6 +67,7 @@ const char* const kKnownSettings[] = {
   kReportDeviceLocation,
   kReportDeviceNetworkInterfaces,
   kReportDeviceUsers,
+  kReportDeviceHardwareStatus,
   kReportDeviceVersionInfo,
   kScreenSaverExtensionId,
   kScreenSaverTimeout,
@@ -366,6 +367,11 @@ void DecodeReportingPolicies(
       new_values_cache->SetBoolean(
           kReportDeviceUsers,
           reporting_policy.report_users());
+    }
+    if (reporting_policy.has_report_hardware_status()) {
+      new_values_cache->SetBoolean(
+          kReportDeviceHardwareStatus,
+          reporting_policy.report_hardware_status());
     }
   }
 }

@@ -59,8 +59,6 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider {
       LocationUpdateRequester* location_update_requester);
   virtual ~DeviceStatusCollector();
 
-  void GetStatus(enterprise_management::DeviceStatusReportRequest* request);
-
   // CloudPolicyClient::StatusProvider:
   virtual bool GetDeviceStatus(
       enterprise_management::DeviceStatusReportRequest* status) override;
@@ -123,6 +121,8 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider {
       enterprise_management::DeviceStatusReportRequest* request);
   void GetUsers(
       enterprise_management::DeviceStatusReportRequest* request);
+  void GetHardwareStatus(
+      enterprise_management::DeviceStatusReportRequest* request);
 
   // Update the cached values of the reporting settings.
   void UpdateReportingSettings();
@@ -176,6 +176,7 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider {
   bool report_location_;
   bool report_network_interfaces_;
   bool report_users_;
+  bool report_hardware_status_;
 
   scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
       version_info_subscription_;
@@ -189,6 +190,8 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider {
       network_interfaces_subscription_;
   scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
       users_subscription_;
+  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+      hardware_status_subscription_;
 
   base::WeakPtrFactory<DeviceStatusCollector> weak_factory_;
 

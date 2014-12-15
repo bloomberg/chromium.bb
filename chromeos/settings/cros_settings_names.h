@@ -56,6 +56,7 @@ CHROMEOS_EXPORT extern const char kReportDeviceBootMode[];
 CHROMEOS_EXPORT extern const char kReportDeviceLocation[];
 CHROMEOS_EXPORT extern const char kReportDeviceNetworkInterfaces[];
 CHROMEOS_EXPORT extern const char kReportDeviceUsers[];
+CHROMEOS_EXPORT extern const char kReportDeviceHardwareStatus[];
 
 CHROMEOS_EXPORT extern const char kAppPack[];
 CHROMEOS_EXPORT extern const char kAppPackKeyExtensionId[];

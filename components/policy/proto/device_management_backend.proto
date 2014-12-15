@@ -480,6 +480,40 @@ message NetworkInterface {
   // IMEI (if applicable) of the corresponding network device. 15-16 decimal
   // digits encoded as ASCII string. Example: 355402040158759.
   optional string imei = 4;
+
+  // The device path associated with this network interface.
+  optional string device_path = 5;
+}
+
+
+// Information about configured/visible networks - this is separate from
+// NetworkInterface because a configured network may not be associated with
+// any specific interface, or may be visible across multiple interfaces.
+message NetworkState {
+  // The current state of this network.
+  enum ConnectionState {
+    IDLE = 0;
+    CARRIER = 1;
+    ASSOCIATION = 2;
+    CONFIGURATION = 3;
+    READY = 4;
+    PORTAL = 5;
+    OFFLINE = 6;
+    ONLINE = 7;
+    DISCONNECT = 8;
+    FAILURE = 9;
+    ACTIVATION_FAILURE = 10;
+    UNKNOWN = 11;
+  }
+
+  // For networks associated with a device, the path of the device.
+  optional string device_path = 1;
+
+  // Current state of this connection as reported by shill.
+  optional ConnectionState connection_state = 2;
+
+  // For wireless networks, the signal_strength in dBm.
+  optional int32 signal_strength = 3;
 }
 
 // Details about a device user.
@@ -498,6 +532,13 @@ message DeviceUser {
 
   // Email address of the user. Present only if the user type is managed.
   optional string email = 2;
+}
+
+// Information about a single disk volume.
+message VolumeInfo {
+  optional string volume_id = 1;
+  optional int64 storage_used = 2;
+  optional int64 storage_free = 3;
 }
 
 // Report device level status.
@@ -530,18 +571,57 @@ message DeviceStatusReportRequest {
 
   // List of recent device users, in descending order by last login time.
   repeated DeviceUser user = 9;
+
+  // Disk space + other info about mounted/connected volumes.
+  repeated VolumeInfo volume_info = 10;
+
+  // List of visible/configured networks
+  repeated NetworkState network_state = 11;
+
+  // Samples of CPU utilization (0-100), sampled once every 60 seconds.
+  repeated int32 cpu_utilization_pct = 12;
+
+  // RAM free (as reported on a per-process level, unreliable due to GC).
+  optional int64 system_ram_free = 13;
+  optional int64 system_ram_used = 14;
+}
+
+// Provides status information for an installed app/extension.
+message AppStatus {
+  // ID of the installed app/extension
+  required string app_id = 1;
+
+  // Currently installed version of the app.
+  required string extension_version = 2;
+
+  // Self-reported status summary (via chrome.reporting APIs)
+  optional string status = 3;
+
+  // If true, the application is currently in a self-reported error state.
+  optional bool error = 4;
 }
 
 // Report session (a user on one device) level status.
 message SessionStatusReportRequest {
   // Installed apps for this user on this device.
-  repeated string installed_app_id = 1;
+  // No longer used -- use installed_apps instead.
+  repeated string installed_app_id = 1 [deprecated = true];
 
   // Installed extensions for this user on this device.
-  repeated string installed_extension_id = 2;
+  // No longer used -- use installed_extensions instead.
+  repeated string installed_extension_id = 2 [deprecated = true];
 
   // One stat per app for top 30 apps.
   repeated InstallableLaunch app_launch_stat = 3;
+
+  // If this is a kiosk session, this is the device local account ID.
+  optional string device_local_account_id = 4;
+
+  // Information about installed apps for this user on this device.
+  repeated AppStatus installed_apps = 5;
+
+  // Information about installed extensions for this user on this device.
+  repeated AppStatus installed_extensions = 6;
 }
 
 // Response from DMServer to update devices' status.

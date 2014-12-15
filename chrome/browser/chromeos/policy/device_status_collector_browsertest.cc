@@ -23,7 +23,10 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
+#include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
 #include "chromeos/system/fake_statistics_provider.h"
@@ -683,6 +686,51 @@ static const FakeDeviceData kFakeDevices[] = {
     -1 },
 };
 
+// Fake network state.
+struct FakeNetworkState {
+  const char* name;
+  const char* device_path;
+  const char* type;
+  int signal_strength;
+  const char* connection_status;
+  int expected_state;
+};
+
+// List of fake networks - primarily used to make sure that signal strength
+// and connection state are properly populated in status reports. Note that
+// by convention shill will not report a signal strength of 0 for a visible
+// network, so we use 1 below.
+static const FakeNetworkState kFakeNetworks[] = {
+  { "offline", "/device/wifi", shill::kTypeWifi, 35,
+    shill::kStateOffline, em::NetworkState::OFFLINE },
+  { "ethernet", "/device/ethernet", shill::kTypeEthernet, 0,
+    shill::kStateOnline, em::NetworkState::ONLINE },
+  { "wifi", "/device/wifi", shill::kTypeWifi, 23, shill::kStatePortal,
+    em::NetworkState::PORTAL },
+  { "idle", "/device/cellular1", shill::kTypeCellular, 0, shill::kStateIdle,
+    em::NetworkState::IDLE },
+  { "carrier", "/device/cellular1", shill::kTypeCellular, 0,
+    shill::kStateCarrier, em::NetworkState::CARRIER },
+  { "association", "/device/cellular1", shill::kTypeCellular, 0,
+    shill::kStateAssociation, em::NetworkState::ASSOCIATION },
+  { "config", "/device/cellular1", shill::kTypeCellular, 0,
+    shill::kStateConfiguration, em::NetworkState::CONFIGURATION },
+  { "ready", "/device/cellular1", shill::kTypeCellular, 0, shill::kStateReady,
+    em::NetworkState::READY },
+  { "disconnect", "/device/wifi", shill::kTypeWifi, 1,
+    shill::kStateDisconnect, em::NetworkState::DISCONNECT },
+  { "failure", "/device/wifi", shill::kTypeWifi, 1, shill::kStateFailure,
+    em::NetworkState::FAILURE },
+  { "activation-failure", "/device/cellular1", shill::kTypeCellular, 0,
+    shill::kStateActivationFailure, em::NetworkState::ACTIVATION_FAILURE },
+  { "unknown", "", shill::kTypeWifi, 1, "unknown", em::NetworkState::UNKNOWN },
+};
+
+static const FakeNetworkState kUnconfiguredNetwork = {
+  "unconfigured", "/device/unconfigured", shill::kTypeWifi, 35,
+  shill::kStateOffline, em::NetworkState::OFFLINE
+};
+
 class DeviceStatusCollectorNetworkInterfacesTest
     : public DeviceStatusCollectorTest {
  protected:
@@ -714,8 +762,64 @@ class DeviceStatusCollectorNetworkInterfacesTest
       }
     }
 
+    chromeos::ShillServiceClient::TestInterface* service_client =
+        chromeos::DBusThreadManager::Get()->GetShillServiceClient()->
+            GetTestInterface();
+    service_client->ClearServices();
+
+    // Now add services for every fake network.
+    for (const FakeNetworkState& fake_network : kFakeNetworks) {
+      // Shill forces non-visible networks to report a disconnected state.
+      bool is_visible =
+          fake_network.connection_status != shill::kStateDisconnect;
+      service_client->AddService(
+          fake_network.name,       /* service_path */
+          fake_network.name        /* guid */,
+          fake_network.name        /* name */,
+          fake_network.type        /* type */,
+          fake_network.connection_status,
+          is_visible);
+      service_client->SetServiceProperty(
+          fake_network.name, shill::kSignalStrengthProperty,
+          base::FundamentalValue(fake_network.signal_strength));
+      service_client->SetServiceProperty(
+          fake_network.name, shill::kDeviceProperty,
+          base::StringValue(fake_network.device_path));
+      // Set the profile so this shows up as a configured network.
+      service_client->SetServiceProperty(
+          fake_network.name, shill::kProfileProperty,
+          base::StringValue(fake_network.name));
+    }
+
+    // Now add an unconfigured network - it should not show up in the
+    // reported list of networks because it doesn't have a profile specified.
+    service_client->AddService(
+        kUnconfiguredNetwork.name,       /* service_path */
+        kUnconfiguredNetwork.name        /* guid */,
+        kUnconfiguredNetwork.name        /* name */,
+        kUnconfiguredNetwork.type        /* type */,
+        kUnconfiguredNetwork.connection_status,
+        true /* visible */);
+    service_client->SetServiceProperty(
+        kUnconfiguredNetwork.name, shill::kSignalStrengthProperty,
+        base::FundamentalValue(kUnconfiguredNetwork.signal_strength));
+    service_client->SetServiceProperty(
+        kUnconfiguredNetwork.name, shill::kDeviceProperty,
+        base::StringValue(kUnconfiguredNetwork.device_path));
+
     // Flush out pending state updates.
     base::RunLoop().RunUntilIdle();
+
+    chromeos::NetworkStateHandler::NetworkStateList state_list;
+    chromeos::NetworkStateHandler* network_state_handler =
+        chromeos::NetworkHandler::Get()->network_state_handler();
+    network_state_handler->GetNetworkListByType(
+        chromeos::NetworkTypePattern::Default(),
+        true,  // configured_only
+        false,  // visible_only,
+        0,      // no limit to number of results
+        &state_list);
+    ASSERT_EQ(arraysize(kFakeNetworks), state_list.size());
   }
 
   virtual void TearDown() override {
@@ -728,11 +832,13 @@ TEST_F(DeviceStatusCollectorNetworkInterfacesTest, NetworkInterfaces) {
   // Interfaces should be reported by default.
   GetStatus();
   EXPECT_LT(0, status_.network_interface_size());
+  EXPECT_LT(0, status_.network_state_size());
 
   // No interfaces should be reported if the policy is off.
   cros_settings_->SetBoolean(chromeos::kReportDeviceNetworkInterfaces, false);
   GetStatus();
   EXPECT_EQ(0, status_.network_interface_size());
+  EXPECT_EQ(0, status_.network_state_size());
 
   // Switch the policy on and verify the interface list is present.
   cros_settings_->SetBoolean(chromeos::kReportDeviceNetworkInterfaces, true);
@@ -758,7 +864,8 @@ TEST_F(DeviceStatusCollectorNetworkInterfacesTest, NetworkInterfaces) {
           iface->has_imei() == !!*dev.imei &&
           iface->mac_address() == dev.mac_address &&
           iface->meid() == dev.meid &&
-          iface->imei() == dev.imei) {
+          iface->imei() == dev.imei &&
+          iface->device_path() == dev.device_path) {
         found_match = true;
         break;
       }
@@ -769,6 +876,24 @@ TEST_F(DeviceStatusCollectorNetworkInterfacesTest, NetworkInterfaces) {
   }
 
   EXPECT_EQ(count, status_.network_interface_size());
+
+  // Now make sure network state list is correct.
+  EXPECT_EQ(arraysize(kFakeNetworks),
+            static_cast<size_t>(status_.network_state_size()));
+  for (const FakeNetworkState& state : kFakeNetworks) {
+    bool found_match = false;
+    for (const em::NetworkState& proto_state : status_.network_state()) {
+      // Make sure every item has a matching entry in the proto.
+      if (proto_state.has_device_path() == (strlen(state.device_path) > 0) &&
+          proto_state.signal_strength() == state.signal_strength &&
+          proto_state.connection_state() == state.expected_state) {
+        found_match = true;
+        break;
+      }
+    }
+    EXPECT_TRUE(found_match) << "No matching state for fake network "
+                             << " (" << state.name << ")";
+  }
 }
 
 }  // namespace policy
