@@ -32,7 +32,7 @@ class ThreadTimesUnitTest(page_test_test_case.PageTestTestCase):
 
   def testBasicForPageWithNoGesture(self):
     ps = self.CreateEmptyPageSet()
-    ps.AddPage(smoothness_unittest.AnimatedPage(ps))
+    ps.AddUserStory(smoothness_unittest.AnimatedPage(ps))
 
     measurement = thread_times.ThreadTimes()
     timeline_options = self._options

@@ -28,7 +28,7 @@ class TaskExecutionTimeUnitTest(page_test_test_case.PageTestTestCase):
 
   def testCorrectNumberOfResultsReturned(self):
     ps = self.CreateEmptyPageSet()
-    ps.AddPage(TestTaskExecutionTimePage(ps, ps.base_dir))
+    ps.AddUserStory(TestTaskExecutionTimePage(ps, ps.base_dir))
     measurement = task_execution_time.TaskExecutionTime()
 
     results = self.RunMeasurement(measurement, ps, options=self._options)
@@ -39,7 +39,7 @@ class TaskExecutionTimeUnitTest(page_test_test_case.PageTestTestCase):
 
   def testResultsAreDecreasing(self):
     ps = self.CreateEmptyPageSet()
-    ps.AddPage(TestTaskExecutionTimePage(ps, ps.base_dir))
+    ps.AddUserStory(TestTaskExecutionTimePage(ps, ps.base_dir))
     measurement = task_execution_time.TaskExecutionTime()
 
     results = self.RunMeasurement(measurement, ps, options=self._options)

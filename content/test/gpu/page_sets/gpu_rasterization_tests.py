@@ -78,4 +78,4 @@ class GpuRasterizationTestsPageSet(page_set_module.PageSet):
   def __init__(self):
     super(GpuRasterizationTestsPageSet, self).__init__()
 
-    self.AddPage(GpuRasterizationTestsPage(self))
+    self.AddUserStory(GpuRasterizationTestsPage(self))

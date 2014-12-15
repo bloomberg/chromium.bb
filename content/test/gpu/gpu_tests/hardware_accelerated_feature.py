@@ -58,5 +58,5 @@ class HardwareAcceleratedFeature(benchmark.Benchmark):
     ps = page_set.PageSet(user_agent_type='desktop', file_path='')
 
     for feature in features:
-      ps.AddPage(ChromeGpuPage(page_set=ps, feature=feature))
+      ps.AddUserStory(ChromeGpuPage(page_set=ps, feature=feature))
     return ps

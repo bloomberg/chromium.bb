@@ -33,7 +33,7 @@ class RepaintUnitTest(page_test_test_case.PageTestTestCase):
 
   def testRepaint(self):
     ps = self.CreateEmptyPageSet()
-    ps.AddPage(TestRepaintPage(ps, ps.base_dir))
+    ps.AddUserStory(TestRepaintPage(ps, ps.base_dir))
     measurement = repaint.Repaint()
     results = self.RunMeasurement(measurement, ps, options=self._options)
     self.assertEquals(0, len(results.failures))

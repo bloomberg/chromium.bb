@@ -48,6 +48,6 @@ class GpuProcessTestsPageSet(page_set_module.PageSet):
     ]
 
     for url, name in urls_and_names_list:
-      self.AddPage(GpuProcessTestsPage(url, name, self))
+      self.AddUserStory(GpuProcessTestsPage(url, name, self))
 
-    self.AddPage(FunctionalVideoPage(self))
+    self.AddUserStory(FunctionalVideoPage(self))

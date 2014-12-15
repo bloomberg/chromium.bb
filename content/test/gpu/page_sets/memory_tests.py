@@ -27,4 +27,4 @@ class MemoryTestsPageSet(page_set_module.PageSet):
     super(MemoryTestsPageSet, self).__init__(
       user_agent_type='desktop')
 
-    self.AddPage(MemoryTestsPage(self))
+    self.AddUserStory(MemoryTestsPage(self))

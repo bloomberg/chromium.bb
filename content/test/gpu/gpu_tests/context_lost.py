@@ -328,10 +328,11 @@ class ContextLost(benchmark_module.Benchmark):
       file_path=data_path,
       user_agent_type='desktop',
       serving_dirs=set(['']))
-    ps.AddPage(GPUProcessCrashesExactlyOnce(ps, ps.base_dir))
-    ps.AddPage(WebGLContextLostFromGPUProcessExitPage(ps, ps.base_dir))
-    ps.AddPage(WebGLContextLostFromLoseContextExtensionPage(ps, ps.base_dir))
-    ps.AddPage(WebGLContextLostFromQuantityPage(ps, ps.base_dir))
-    ps.AddPage(WebGLContextLostFromSelectElementPage(ps, ps.base_dir))
-    ps.AddPage(WebGLContextLostInHiddenTabPage(ps, ps.base_dir))
+    ps.AddUserStory(GPUProcessCrashesExactlyOnce(ps, ps.base_dir))
+    ps.AddUserStory(WebGLContextLostFromGPUProcessExitPage(ps, ps.base_dir))
+    ps.AddUserStory(
+        WebGLContextLostFromLoseContextExtensionPage(ps, ps.base_dir))
+    ps.AddUserStory(WebGLContextLostFromQuantityPage(ps, ps.base_dir))
+    ps.AddUserStory(WebGLContextLostFromSelectElementPage(ps, ps.base_dir))
+    ps.AddUserStory(WebGLContextLostInHiddenTabPage(ps, ps.base_dir))
     return ps

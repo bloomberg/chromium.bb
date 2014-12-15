@@ -114,7 +114,7 @@ class ScrollingPage(page_module.Page):
 class SmoothGestureTest(page_test_test_case.PageTestTestCase):
   def testSmoothGestureAdjusted(self):
     ps = self.CreateEmptyPageSet()
-    ps.AddPage(ScrollingPage(
+    ps.AddUserStory(ScrollingPage(
       'file://scrollable_page.html', ps, base_dir=ps.base_dir))
     models = []
     tab_ids = []

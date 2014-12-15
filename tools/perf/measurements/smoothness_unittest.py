@@ -131,7 +131,7 @@ class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
   @test.Disabled('mac', 'chromeos')  # http://crbug.com/403903
   def testSmoothnessForPageWithNoGesture(self):
     ps = self.CreateEmptyPageSet()
-    ps.AddPage(AnimatedPage(ps))
+    ps.AddUserStory(AnimatedPage(ps))
 
     measurement = smoothness.Smoothness()
     results = self.RunMeasurement(measurement, ps, options=self._options)
@@ -164,7 +164,7 @@ class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
         self.stop_called = True
 
     ps = self.CreateEmptyPageSet()
-    ps.AddPage(FailPage(ps))
+    ps.AddUserStory(FailPage(ps))
 
     class BuggyMeasurement(smoothness.Smoothness):
       fake_power = None

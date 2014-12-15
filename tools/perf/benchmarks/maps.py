@@ -52,7 +52,7 @@ class MapsBenchmark(benchmark.Benchmark):
       archive_data_file='data/maps.json',
       make_javascript_deterministic=False,
       file_path=page_set_path)
-    ps.AddPage(MapsPage(ps, ps.base_dir))
+    ps.AddUserStory(MapsPage(ps, ps.base_dir))
     return ps
 
 class MapsNoVsync(MapsBenchmark):

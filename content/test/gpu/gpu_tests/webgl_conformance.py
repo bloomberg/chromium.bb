@@ -115,7 +115,7 @@ class WebglConformance(benchmark_module.Benchmark):
       file_path=conformance_path)
 
     for test in tests:
-      ps.AddPage(WebglConformancePage(ps, test))
+      ps.AddUserStory(WebglConformancePage(ps, test))
 
     return ps
 

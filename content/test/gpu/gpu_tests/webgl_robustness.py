@@ -66,5 +66,5 @@ class WebglRobustness(benchmark.Benchmark):
       file_path=conformance_path,
       user_agent_type='desktop',
       serving_dirs=[''])
-    ps.AddPage(WebglRobustnessPage(ps, ps.base_dir))
+    ps.AddUserStory(WebglRobustnessPage(ps, ps.base_dir))
     return ps

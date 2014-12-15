@@ -100,5 +100,5 @@ class Maps(cloud_storage_test_base.TestBase):
                           make_javascript_deterministic=False,
                           file_path=page_set_path,
                           bucket=page_set.PUBLIC_BUCKET)
-    ps.AddPage(MapsPage(ps, ps.base_dir))
+    ps.AddUserStory(MapsPage(ps, ps.base_dir))
     return ps
