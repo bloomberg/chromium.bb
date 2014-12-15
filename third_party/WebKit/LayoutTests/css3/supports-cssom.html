@@ -75,6 +75,11 @@
                           "}\n" +
                           "}");
 
+    debug("\nMissing argument exceptions.");
+    shouldThrow("rules[0].insertRule()");
+    shouldThrow("rules[0].insertRule('@media all {}')");
+    shouldThrow("rules[0].deleteRule()");
+
     debug("\nInserting and deleting rules.");
     evalAndLog("rules[0].insertRule('@media all { #s { width: 0px; } }', 2)");
     shouldEvaluateTo("rules[0].cssRules.length", 3);
