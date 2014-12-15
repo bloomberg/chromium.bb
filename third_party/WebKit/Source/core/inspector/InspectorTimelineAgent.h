@@ -233,8 +233,6 @@ private:
     void onBeginImplSideFrame(const TraceEventDispatcher::TraceEvent&);
     void onPaintSetupBegin(const TraceEventDispatcher::TraceEvent&);
     void onPaintSetupEnd(const TraceEventDispatcher::TraceEvent&);
-    void onRasterTaskBegin(const TraceEventDispatcher::TraceEvent&);
-    void onRasterTaskEnd(const TraceEventDispatcher::TraceEvent&);
     void onImageDecodeBegin(const TraceEventDispatcher::TraceEvent&);
     void onImageDecodeEnd(const TraceEventDispatcher::TraceEvent&);
     void onLayerDeleted(const TraceEventDispatcher::TraceEvent&);

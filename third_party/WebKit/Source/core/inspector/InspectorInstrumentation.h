@@ -119,7 +119,6 @@ InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ExecutionContext*)
 
 namespace InstrumentationEvents {
 extern const char PaintSetup[];
-extern const char RasterTask[];
 extern const char Paint[];
 extern const char Layer[];
 extern const char RequestMainThreadFrame[];
