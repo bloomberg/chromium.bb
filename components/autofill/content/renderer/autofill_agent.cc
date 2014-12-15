@@ -449,6 +449,13 @@ void AutofillAgent::openTextDataListChooser(const WebInputElement& element) {
   ShowSuggestions(element, options);
 }
 
+void AutofillAgent::dataListOptionsChanged(const WebInputElement& element) {
+  if (!is_popup_possibly_visible_ || !element.focused())
+    return;
+
+  TextFieldDidChangeImpl(element);
+}
+
 void AutofillAgent::firstUserGestureObserved() {
   password_autofill_agent_->FirstUserGestureObserved();
   Send(new AutofillHostMsg_FirstUserGestureObserved(routing_id()));
