@@ -132,9 +132,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, NoScriptAccessAfterSwapOut) {
             new_shell->web_contents()->GetLastCommittedURL().path());
 
   // Should have the same SiteInstance.
-  scoped_refptr<SiteInstance> blank_site_instance(
-      new_shell->web_contents()->GetSiteInstance());
-  EXPECT_EQ(orig_site_instance, blank_site_instance);
+  EXPECT_EQ(orig_site_instance, new_shell->web_contents()->GetSiteInstance());
 
   // We should have access to the opened window's location.
   success = false;
@@ -157,6 +155,29 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, NoScriptAccessAfterSwapOut) {
       "window.domAutomationController.send(testScriptAccessToWindow());",
       &success));
   EXPECT_FALSE(success);
+
+  // We now navigate the window to an about:blank page.
+  success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
+      "window.domAutomationController.send(clickBlankTargetedLink());",
+      &success));
+  EXPECT_TRUE(success);
+
+  // Wait for the navigation in the new window to finish.
+  WaitForLoadStop(new_shell->web_contents());
+  GURL blank_url(url::kAboutBlankURL);
+  EXPECT_EQ(blank_url,
+            new_shell->web_contents()->GetLastCommittedURL());
+  EXPECT_EQ(orig_site_instance, new_shell->web_contents()->GetSiteInstance());
+
+  // We should have access to the opened window's location.
+  success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
+      "window.domAutomationController.send(testScriptAccessToWindow());",
+      &success));
+  EXPECT_TRUE(success);
 }
 
 // Test for crbug.com/24447.  Following a cross-site link with rel=noreferrer

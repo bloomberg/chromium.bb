@@ -14,6 +14,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/session_storage_namespace.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/common/referrer.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -103,6 +104,10 @@ class NavigationController {
   struct CONTENT_EXPORT LoadURLParams {
     // The url to load. This field is required.
     GURL url;
+
+    // SiteInstance of the frame that initiated the navigation or null if we
+    // don't know it.
+    scoped_refptr<SiteInstance> source_site_instance;
 
     // See LoadURLType comments above.
     LoadURLType load_type;

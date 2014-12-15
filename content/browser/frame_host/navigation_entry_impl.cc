@@ -159,6 +159,11 @@ void NavigationEntryImpl::set_site_instance(SiteInstanceImpl* site_instance) {
   site_instance_ = site_instance;
 }
 
+void NavigationEntryImpl::set_source_site_instance(
+    SiteInstanceImpl* source_site_instance) {
+  source_site_instance_ = source_site_instance;
+}
+
 void NavigationEntryImpl::SetBindings(int bindings) {
   // Ensure this is set to a valid value, and that it stays the same once set.
   CHECK_NE(bindings, kInvalidBindings);
@@ -340,13 +345,14 @@ void NavigationEntryImpl::ClearExtraData(const std::string& key) {
 void NavigationEntryImpl::ResetForCommit() {
   // Any state that only matters when a navigation entry is pending should be
   // cleared here.
-  SetBrowserInitiatedPostData(NULL);
+  SetBrowserInitiatedPostData(nullptr);
   set_is_renderer_initiated(false);
   set_transferred_global_request_id(GlobalRequestID());
   set_should_replace_entry(false);
 
   set_should_clear_history_list(false);
   set_frame_tree_node_id(-1);
+  set_source_site_instance(nullptr);
 }
 
 void NavigationEntryImpl::SetScreenshotPNGData(

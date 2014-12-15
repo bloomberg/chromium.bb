@@ -95,6 +95,7 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // specified |disposition|.
   virtual void RequestOpenURL(RenderFrameHostImpl* render_frame_host,
                               const GURL& url,
+                              SiteInstance* source_site_instance,
                               const Referrer& referrer,
                               WindowOpenDisposition disposition,
                               bool should_replace_current_entry,
@@ -106,6 +107,7 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   virtual void RequestTransferURL(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
+      SiteInstance* source_site_instance,
       const std::vector<GURL>& redirect_chain,
       const Referrer& referrer,
       ui::PageTransition page_transition,

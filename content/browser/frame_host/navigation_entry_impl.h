@@ -107,6 +107,13 @@ class CONTENT_EXPORT NavigationEntryImpl
     return site_instance_.get();
   }
 
+  // The |source_site_instance| is used to identify the SiteInstance of the
+  // frame that initiated the navigation.
+  void set_source_site_instance(SiteInstanceImpl* source_site_instance);
+  SiteInstanceImpl* source_site_instance() const {
+    return source_site_instance_.get();
+  }
+
   // Remember the set of bindings granted to this NavigationEntry at the time
   // of commit, to ensure that we do not grant it additional bindings if we
   // navigate back to it in the future.  This can only be changed once.
@@ -267,6 +274,9 @@ class CONTENT_EXPORT NavigationEntryImpl
 
   // This member is not persisted with session restore.
   std::string extra_headers_;
+
+  // This member is cleared in |ResetForCommit| and not persisted.
+  scoped_refptr<SiteInstanceImpl> source_site_instance_;
 
   // Used for specifying base URL for pages loaded via data URLs. Only used and
   // persisted by Android WebView.

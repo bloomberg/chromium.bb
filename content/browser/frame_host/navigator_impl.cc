@@ -626,13 +626,13 @@ bool NavigatorImpl::ShouldAssignSiteForURL(const GURL& url) {
   return GetContentClient()->browser()->ShouldAssignSiteForURL(url);
 }
 
-void NavigatorImpl::RequestOpenURL(
-    RenderFrameHostImpl* render_frame_host,
-    const GURL& url,
-    const Referrer& referrer,
-    WindowOpenDisposition disposition,
-    bool should_replace_current_entry,
-    bool user_gesture) {
+void NavigatorImpl::RequestOpenURL(RenderFrameHostImpl* render_frame_host,
+                                   const GURL& url,
+                                   SiteInstance* source_site_instance,
+                                   const Referrer& referrer,
+                                   WindowOpenDisposition disposition,
+                                   bool should_replace_current_entry,
+                                   bool user_gesture) {
   SiteInstance* current_site_instance =
       GetRenderManager(render_frame_host)->current_frame_host()->
           GetSiteInstance();
@@ -650,20 +650,16 @@ void NavigatorImpl::RequestOpenURL(
   // TODO(creis): Pass the redirect_chain into this method to support client
   // redirects.  http://crbug.com/311721.
   std::vector<GURL> redirect_chain;
-  RequestTransferURL(render_frame_host,
-                     url,
-                     redirect_chain,
-                     referrer,
-                     ui::PAGE_TRANSITION_LINK,
-                     disposition,
-                     GlobalRequestID(),
-                     should_replace_current_entry,
-                     user_gesture);
+  RequestTransferURL(render_frame_host, url, source_site_instance,
+                     redirect_chain, referrer, ui::PAGE_TRANSITION_LINK,
+                     disposition, GlobalRequestID(),
+                     should_replace_current_entry, user_gesture);
 }
 
 void NavigatorImpl::RequestTransferURL(
     RenderFrameHostImpl* render_frame_host,
     const GURL& url,
+    SiteInstance* source_site_instance,
     const std::vector<GURL>& redirect_chain,
     const Referrer& referrer,
     ui::PageTransition page_transition,
@@ -689,6 +685,7 @@ void NavigatorImpl::RequestTransferURL(
   OpenURLParams params(
       dest_url, referrer, frame_tree_node_id, disposition, page_transition,
       true /* is_renderer_initiated */);
+  params.source_site_instance = source_site_instance;
   if (redirect_chain.size() > 0)
     params.redirect_chain = redirect_chain;
   params.transferred_global_request_id = transferred_global_request_id;

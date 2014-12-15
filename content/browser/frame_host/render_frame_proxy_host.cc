@@ -155,7 +155,7 @@ void RenderFrameProxyHost::DisownOpener() {
 
 void RenderFrameProxyHost::OnOpenURL(
     const FrameHostMsg_OpenURL_Params& params) {
-  frame_tree_node_->current_frame_host()->OpenURL(params);
+  frame_tree_node_->current_frame_host()->OpenURL(params, site_instance_.get());
 }
 
 }  // namespace content

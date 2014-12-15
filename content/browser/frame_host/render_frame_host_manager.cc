@@ -161,12 +161,10 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
                "FrameTreeNode id", frame_tree_node_->frame_tree_node_id());
   // Create a pending RenderFrameHost to use for the navigation.
   RenderFrameHostImpl* dest_render_frame_host = UpdateStateForNavigate(
-      entry.GetURL(),
-      entry.site_instance(),
+      entry.GetURL(), entry.source_site_instance(), entry.site_instance(),
       entry.GetTransitionType(),
       entry.restore_type() != NavigationEntryImpl::RESTORE_NONE,
-      entry.IsViewSourceMode(),
-      entry.transferred_global_request_id(),
+      entry.IsViewSourceMode(), entry.transferred_global_request_id(),
       entry.bindings());
   if (!dest_render_frame_host)
     return NULL;  // We weren't able to create a pending render frame host.
@@ -378,15 +376,9 @@ void RenderFrameHostManager::OnCrossSiteResponse(
   // However, since we force the navigation to be in the current tab, it
   // doesn't matter.
   pending_render_frame_host->frame_tree_node()->navigator()->RequestTransferURL(
-      pending_render_frame_host,
-      transfer_url,
-      rest_of_chain,
-      referrer,
-      page_transition,
-      CURRENT_TAB,
-      global_request_id,
-      should_replace_current_entry,
-      true);
+      pending_render_frame_host, transfer_url, nullptr, rest_of_chain, referrer,
+      page_transition, CURRENT_TAB, global_request_id,
+      should_replace_current_entry, true);
 
   // The transferring request was only needed during the RequestTransferURL
   // call, so it is safe to clear at this point.
@@ -636,7 +628,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   // Pick the right RenderFrameHost to commit the navigation.
   // TODO(clamy): Replace the default values by the right ones.
   RenderFrameHostImpl* render_frame_host = UpdateStateForNavigate(
-      url, NULL, transition, false, false, GlobalRequestID(),
+      url, nullptr, nullptr, transition, false, false, GlobalRequestID(),
       NavigationEntryImpl::kInvalidBindings);
 
   // If the renderer that needs to navigate is not live (it was just created or
@@ -649,7 +641,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
                         opener_route_id,
                         MSG_ROUTING_NONE,
                         frame_tree_node_->IsMainFrame())) {
-      return NULL;
+      return nullptr;
     }
   }
   return render_frame_host;
@@ -783,8 +775,9 @@ bool RenderFrameHostManager::ShouldReuseWebUI(
 
 SiteInstance* RenderFrameHostManager::GetSiteInstanceForNavigation(
     const GURL& dest_url,
+    SiteInstance* source_instance,
     SiteInstance* dest_instance,
-    ui::PageTransition dest_transition,
+    ui::PageTransition transition,
     bool dest_is_restore,
     bool dest_is_view_source_mode) {
   SiteInstance* current_instance = render_frame_host_->GetSiteInstance();
@@ -818,13 +811,8 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForNavigation(
       dest_is_view_source_mode);
   if (ShouldTransitionCrossSite() || force_swap) {
     new_instance = GetSiteInstanceForURL(
-        dest_url,
-        dest_instance,
-        dest_transition,
-        dest_is_restore,
-        dest_is_view_source_mode,
-        current_instance,
-        force_swap);
+        dest_url, source_instance, current_instance, dest_instance,
+        transition, dest_is_restore, dest_is_view_source_mode, force_swap);
   }
 
   // If force_swap is true, we must use a different SiteInstance.  If we didn't,
@@ -837,11 +825,12 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForNavigation(
 
 SiteInstance* RenderFrameHostManager::GetSiteInstanceForURL(
     const GURL& dest_url,
+    SiteInstance* source_instance,
+    SiteInstance* current_instance,
     SiteInstance* dest_instance,
-    ui::PageTransition dest_transition,
+    ui::PageTransition transition,
     bool dest_is_restore,
     bool dest_is_view_source_mode,
-    SiteInstance* current_instance,
     bool force_browsing_instance_swap) {
   NavigationControllerImpl& controller =
       delegate_->GetControllerForRenderManager();
@@ -874,7 +863,7 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForURL(
   //
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kProcessPerSite) &&
       ui::PageTransitionCoreTypeIs(
-          dest_transition, ui::PAGE_TRANSITION_GENERATED)) {
+          transition, ui::PAGE_TRANSITION_GENERATED)) {
     return current_instance;
   }
 
@@ -975,6 +964,14 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForURL(
       !IsRendererDebugURL(dest_url)) {
     return SiteInstance::CreateForURL(browser_context, dest_url);
   }
+
+  // Use the source SiteInstance in case of data URLs or about:blank pages,
+  // because the content is then controlled and/or scriptable by the source
+  // SiteInstance.
+  GURL about_blank(url::kAboutBlankURL);
+  if (source_instance &&
+      (dest_url == about_blank || dest_url.scheme() == url::kDataScheme))
+    return source_instance;
 
   // Use the current SiteInstance for same site navigations, as long as the
   // process type is correct.  (The URL may have been installed as an app since
@@ -1442,11 +1439,12 @@ void RenderFrameHostManager::ShutdownRenderFrameProxyHostsInSiteInstance(
 }
 
 RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
-    const GURL& url,
-    SiteInstance* instance,
+    const GURL& dest_url,
+    SiteInstance* source_instance,
+    SiteInstance* dest_instance,
     ui::PageTransition transition,
-    bool is_restore,
-    bool is_view_source_mode,
+    bool dest_is_restore,
+    bool dest_is_view_source_mode,
     const GlobalRequestID& transferred_request_id,
     int bindings) {
   // If we are currently navigating cross-process, we want to get back to normal
@@ -1459,7 +1457,8 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
 
   SiteInstance* current_instance = render_frame_host_->GetSiteInstance();
   scoped_refptr<SiteInstance> new_instance = GetSiteInstanceForNavigation(
-      url, instance, transition, is_restore, is_view_source_mode);
+      dest_url, source_instance, dest_instance, transition,
+      dest_is_restore, dest_is_view_source_mode);
 
   const NavigationEntry* current_entry =
       delegate_->GetLastCommittedNavigationEntryForRenderManager();
@@ -1481,7 +1480,7 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
     // It must also happen after the above conditional call to CancelPending(),
     // otherwise CancelPending may clear the pending_web_ui_ and the page will
     // not have its bindings set appropriately.
-    SetPendingWebUI(url, bindings);
+    SetPendingWebUI(dest_url, bindings);
     CreatePendingRenderFrameHost(current_instance, new_instance.get(),
                                  frame_tree_node_->IsMainFrame());
     if (!pending_render_frame_host_.get()) {
@@ -1559,11 +1558,11 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
   // delete the proxy.
   DeleteRenderFrameProxyHost(new_instance.get());
 
-  if (ShouldReuseWebUI(current_entry, url)) {
+  if (ShouldReuseWebUI(current_entry, dest_url)) {
     pending_web_ui_.reset();
     pending_and_current_web_ui_ = web_ui_->AsWeakPtr();
   } else {
-    SetPendingWebUI(url, bindings);
+    SetPendingWebUI(dest_url, bindings);
     // Make sure the new RenderViewHost has the right bindings.
     if (pending_web_ui() &&
         !render_frame_host_->GetProcess()->IsIsolatedGuest()) {
@@ -1579,7 +1578,7 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
 
   // The renderer can exit view source mode when any error or cancellation
   // happen. We must overwrite to recover the mode.
-  if (is_view_source_mode) {
+  if (dest_is_view_source_mode) {
     render_frame_host_->render_view_host()->Send(
         new ViewMsg_EnableViewSourceMode(
             render_frame_host_->render_view_host()->GetRoutingID()));

@@ -271,10 +271,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Load the specified URL; this is a shortcut for Navigate().
   void NavigateToURL(const GURL& url);
 
-  // Treat this prospective navigation as thought it originated from the
-  // frame. Used, e.g., for a navigation request that originated from
-  // a RemoteFrame.
-  void OpenURL(const FrameHostMsg_OpenURL_Params& params);
+  // Treat this prospective navigation as though it originated from the frame.
+  // Used, e.g., for a navigation request that originated from a RemoteFrame.
+  // |source_site_instance| is the SiteInstance of the frame that initiated the
+  // navigation.
+  // TODO(creis): Remove this method and have RenderFrameProxyHost call
+  // RequestOpenURL with its FrameTreeNode.
+  void OpenURL(const FrameHostMsg_OpenURL_Params& params,
+               SiteInstance* source_site_instance);
 
   // Stop the load in progress.
   void Stop();

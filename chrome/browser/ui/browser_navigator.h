@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/common/referrer.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -233,6 +234,13 @@ struct NavigateParams {
   // Indicates whether |source_contents| should be set as opener when creating
   // |target_contents|.
   bool should_set_opener;
+
+  // SiteInstance of the frame that initiated the navigation or null if we
+  // don't know it. This should be assigned from the OpenURLParams of the
+  // WebContentsDelegate::OpenURLFromTab implementation and is used to determine
+  // the SiteInstance that will be used for the resulting frame in the case of
+  // an about:blank or a data url navigation.
+  scoped_refptr<content::SiteInstance> source_site_instance;
 
  private:
   NavigateParams();
