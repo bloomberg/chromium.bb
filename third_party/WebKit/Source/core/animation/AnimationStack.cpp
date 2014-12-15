@@ -101,7 +101,7 @@ WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > AnimationSt
         nonCopyingSort(effects.begin(), effects.end(), compareEffects);
         animationStack->simplifyEffects();
         for (const auto& effect : effects) {
-            if (effect->animation()->priority() != priority || (cancelledAnimationPlayers && cancelledAnimationPlayers->contains(effect->animation()->player())))
+            if (effect->priority() != priority || (cancelledAnimationPlayers && effect->animation() && cancelledAnimationPlayers->contains(effect->animation()->player())))
                 continue;
             copyToActiveInterpolationMap(effect->interpolations(), result);
         }
