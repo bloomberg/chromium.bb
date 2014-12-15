@@ -825,8 +825,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   RenderWidgetHostLatencyTracker latency_tracker_;
 
-  bool subscribe_uniform_enabled_;
-
   int next_browser_snapshot_id_;
   typedef std::map<int,
       base::Callback<void(const unsigned char*, size_t)> > PendingSnapshotMap;

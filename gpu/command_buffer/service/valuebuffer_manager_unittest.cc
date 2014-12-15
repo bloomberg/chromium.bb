@@ -15,12 +15,19 @@
 #include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/test_helper.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_mock.h"
 
 namespace gpu {
 namespace gles2 {
+
+class MockSubscriptionRefSetObserver : public SubscriptionRefSet::Observer {
+ public:
+  MOCK_METHOD1(OnAddSubscription, void(unsigned int target));
+  MOCK_METHOD1(OnRemoveSubscription, void(unsigned int target));
+};
 
 class ValuebufferManagerTest : public GpuServiceTest {
  public:
@@ -29,16 +36,23 @@ class ValuebufferManagerTest : public GpuServiceTest {
 
   void SetUp() override {
     GpuServiceTest::SetUp();
+    subscription_ref_set_ = new SubscriptionRefSet();
     pending_state_map_ = new ValueStateMap();
-    manager_.reset(new ValuebufferManager(pending_state_map_.get()));
+    subscription_ref_set_->AddObserver(&mock_observer_);
+    manager_.reset(new ValuebufferManager(subscription_ref_set_.get(),
+                                          pending_state_map_.get()));
   }
 
   void TearDown() override {
     manager_->Destroy();
+    subscription_ref_set_->RemoveObserver(&mock_observer_);
     GpuServiceTest::TearDown();
   }
 
  protected:
+  MockSubscriptionRefSetObserver mock_observer_;
+
+  scoped_refptr<SubscriptionRefSet> subscription_ref_set_;
   scoped_refptr<ValueStateMap> pending_state_map_;
   scoped_ptr<ValuebufferManager> manager_;
 };
@@ -107,6 +121,31 @@ TEST_F(ValuebufferManagerTest, UpdateState) {
       valuebuffer0->GetState(GL_MOUSE_POSITION_CHROMIUM);
   ASSERT_TRUE(new_state2 != NULL);
   ASSERT_TRUE(new_state2->int_value[0] == 222);
+}
+
+TEST_F(ValuebufferManagerTest, NotifySubscriptionRefs) {
+  const GLuint kClientId1 = 1;
+  const GLuint kClientId2 = 2;
+  manager_->CreateValuebuffer(kClientId1);
+  Valuebuffer* valuebuffer1 = manager_->GetValuebuffer(kClientId1);
+  ASSERT_TRUE(valuebuffer1 != NULL);
+  manager_->CreateValuebuffer(kClientId2);
+  Valuebuffer* valuebuffer2 = manager_->GetValuebuffer(kClientId2);
+  ASSERT_TRUE(valuebuffer2 != NULL);
+  EXPECT_CALL(mock_observer_, OnAddSubscription(GL_MOUSE_POSITION_CHROMIUM))
+      .Times(1);
+  valuebuffer1->AddSubscription(GL_MOUSE_POSITION_CHROMIUM);
+  EXPECT_CALL(mock_observer_, OnAddSubscription(GL_MOUSE_POSITION_CHROMIUM))
+      .Times(0);
+  valuebuffer2->AddSubscription(GL_MOUSE_POSITION_CHROMIUM);
+  EXPECT_CALL(mock_observer_, OnRemoveSubscription(GL_MOUSE_POSITION_CHROMIUM))
+      .Times(0);
+  valuebuffer1->RemoveSubscription(GL_MOUSE_POSITION_CHROMIUM);
+  // Ensure the manager still thinks a buffer has a reference to the
+  // subscription target.
+  EXPECT_CALL(mock_observer_, OnRemoveSubscription(GL_MOUSE_POSITION_CHROMIUM))
+      .Times(1);
+  valuebuffer2->RemoveSubscription(GL_MOUSE_POSITION_CHROMIUM);
 }
 
 }  // namespace gles2

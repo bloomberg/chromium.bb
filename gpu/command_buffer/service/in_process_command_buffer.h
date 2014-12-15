@@ -52,6 +52,7 @@ namespace gles2 {
 class GLES2Decoder;
 class MailboxManager;
 class ShaderTranslatorCache;
+class SubscriptionRefSet;
 }
 
 class CommandBufferServiceBase;
@@ -139,10 +140,12 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     virtual scoped_refptr<gles2::ShaderTranslatorCache>
         shader_translator_cache() = 0;
     scoped_refptr<gles2::MailboxManager> mailbox_manager();
+    scoped_refptr<gles2::SubscriptionRefSet> subscription_ref_set();
     scoped_refptr<gpu::ValueStateMap> pending_valuebuffer_state();
 
    private:
     scoped_refptr<gles2::MailboxManager> mailbox_manager_;
+    scoped_refptr<gles2::SubscriptionRefSet> subscription_ref_set_;
     scoped_refptr<gpu::ValueStateMap> pending_valuebuffer_state_;
   };
 

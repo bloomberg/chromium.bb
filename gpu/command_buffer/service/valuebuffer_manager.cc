@@ -9,6 +9,46 @@
 namespace gpu {
 namespace gles2 {
 
+SubscriptionRefSet::Observer::~Observer() {
+}
+
+SubscriptionRefSet::SubscriptionRefSet() {
+}
+
+SubscriptionRefSet::~SubscriptionRefSet() {
+  // Make sure no valuebuffers are still holding references to targets
+  DCHECK(reference_set_.empty());
+}
+
+void SubscriptionRefSet::AddSubscription(unsigned int target) {
+  RefSet::iterator it = reference_set_.find(target);
+  if (it == reference_set_.end()) {
+    reference_set_.insert(std::make_pair(target, 1));
+    FOR_EACH_OBSERVER(Observer, observers_, OnAddSubscription(target));
+  } else {
+    ++it->second;
+  }
+}
+
+void SubscriptionRefSet::RemoveSubscription(unsigned int target) {
+  RefSet::iterator it = reference_set_.find(target);
+  DCHECK(it != reference_set_.end());
+  if (it->second == 1) {
+    reference_set_.erase(it);
+    FOR_EACH_OBSERVER(Observer, observers_, OnRemoveSubscription(target));
+  } else {
+    --it->second;
+  }
+}
+
+void SubscriptionRefSet::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void SubscriptionRefSet::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 Valuebuffer::Valuebuffer(ValuebufferManager* manager, unsigned int client_id)
     : manager_(manager), client_id_(client_id), has_been_bound_(false) {
   manager_->StartTracking(this);
@@ -17,17 +57,28 @@ Valuebuffer::Valuebuffer(ValuebufferManager* manager, unsigned int client_id)
 
 Valuebuffer::~Valuebuffer() {
   if (manager_) {
+    for (SubscriptionSet::const_iterator it = subscriptions_.begin();
+        it != subscriptions_.end(); ++it) {
+      manager_->NotifyRemoveSubscription(*it);
+    }
     manager_->StopTracking(this);
     manager_ = NULL;
   }
 }
 
 void Valuebuffer::AddSubscription(unsigned int subscription) {
-  subscriptions_.insert(subscription);
+  if (subscriptions_.find(subscription) == subscriptions_.end()) {
+    subscriptions_.insert(subscription);
+    manager_->NotifyAddSubscription(subscription);
+  }
 }
 
 void Valuebuffer::RemoveSubscription(unsigned int subscription) {
-  subscriptions_.erase(subscription);
+  SubscriptionSet::iterator it = subscriptions_.find(subscription);
+  if (subscriptions_.find(subscription) != subscriptions_.end()) {
+    subscriptions_.erase(it);
+    manager_->NotifyRemoveSubscription(subscription);
+  }
 }
 
 bool Valuebuffer::IsSubscribed(unsigned int subscription) {
@@ -49,9 +100,11 @@ void Valuebuffer::UpdateState(const ValueStateMap* pending_state) {
   }
 }
 
-ValuebufferManager::ValuebufferManager(ValueStateMap* state_map)
+ValuebufferManager::ValuebufferManager(SubscriptionRefSet* ref_set,
+                                       ValueStateMap* state_map)
     : valuebuffer_count_(0),
-      pending_state_map_(state_map) {
+      pending_state_map_(state_map),
+      subscription_ref_set_(ref_set) {
 }
 
 ValuebufferManager::~ValuebufferManager() {
@@ -71,6 +124,13 @@ void ValuebufferManager::StartTracking(Valuebuffer* /* valuebuffer */) {
 
 void ValuebufferManager::StopTracking(Valuebuffer* /* valuebuffer */) {
   --valuebuffer_count_;
+}
+
+void ValuebufferManager::NotifyAddSubscription(unsigned int target) {
+  subscription_ref_set_->AddSubscription(target);
+}
+void ValuebufferManager::NotifyRemoveSubscription(unsigned int target) {
+  subscription_ref_set_->RemoveSubscription(target);
 }
 
 void ValuebufferManager::CreateValuebuffer(unsigned int client_id) {

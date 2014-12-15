@@ -176,6 +176,7 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
                        memory_tracker_,
                        new ShaderTranslatorCache,
                        feature_info.get(),
+                       new SubscriptionRefSet,
                        new ValueStateMap,
                        normalized_init.bind_generates_resource));
   bool use_default_textures = normalized_init.bind_generates_resource;

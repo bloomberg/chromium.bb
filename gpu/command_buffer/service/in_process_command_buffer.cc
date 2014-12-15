@@ -32,6 +32,7 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
+#include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
@@ -198,10 +199,18 @@ InProcessCommandBuffer::Service::mailbox_manager() {
   return mailbox_manager_;
 }
 
-scoped_refptr<gpu::ValueStateMap>
+scoped_refptr<gles2::SubscriptionRefSet>
+InProcessCommandBuffer::Service::subscription_ref_set() {
+  if (!subscription_ref_set_.get()) {
+    subscription_ref_set_ = new gles2::SubscriptionRefSet();
+  }
+  return subscription_ref_set_;
+}
+
+scoped_refptr<ValueStateMap>
 InProcessCommandBuffer::Service::pending_valuebuffer_state() {
   if (!pending_valuebuffer_state_.get()) {
-    pending_valuebuffer_state_ = new gpu::ValueStateMap();
+    pending_valuebuffer_state_ = new ValueStateMap();
   }
   return pending_valuebuffer_state_;
 }
@@ -351,6 +360,7 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
                                     NULL,
                                     service_->shader_translator_cache(),
                                     NULL,
+                                    service_->subscription_ref_set(),
                                     service_->pending_valuebuffer_state(),
                                     bind_generates_resource)));
 

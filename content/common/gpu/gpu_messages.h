@@ -417,6 +417,18 @@ IPC_MESSAGE_CONTROL1(GpuHostMsg_GpuMemoryUmaStats,
 // Response to GpuMsg_RelinquishResources.
 IPC_MESSAGE_CONTROL0(GpuHostMsg_ResourcesRelinquished)
 
+// Tells the browser that a context has subscribed to a new target and
+// the browser should start sending the corresponding information
+IPC_MESSAGE_CONTROL2(GpuHostMsg_AddSubscription,
+                     int32 /* client_id */,
+                     unsigned int /* target */);
+
+// Tells the browser that no contexts are subscribed to the target anymore
+// so the browser should stop sending the corresponding information
+IPC_MESSAGE_CONTROL2(GpuHostMsg_RemoveSubscription,
+                     int32 /* client_id */,
+                     unsigned int /* target */);
+
 //------------------------------------------------------------------------------
 // GPU Channel Messages
 // These are messages from a renderer process to the GPU process.

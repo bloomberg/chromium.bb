@@ -230,6 +230,8 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
                         OnVideoMemoryUsageStatsReceived);
     IPC_MESSAGE_HANDLER(GpuHostMsg_ResourcesRelinquished,
                         OnResourcesRelinquished)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_AddSubscription, OnAddSubscription);
+    IPC_MESSAGE_HANDLER(GpuHostMsg_RemoveSubscription, OnRemoveSubscription);
 
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
@@ -303,6 +305,22 @@ void GpuProcessHostUIShim::OnVideoMemoryUsageStatsReceived(
 void GpuProcessHostUIShim::OnResourcesRelinquished() {
   if (!relinquish_callback_.is_null()) {
     base::ResetAndReturn(&relinquish_callback_).Run();
+  }
+}
+
+void GpuProcessHostUIShim::OnAddSubscription(
+    int32 process_id, unsigned int target) {
+  RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
+  if (rph) {
+    rph->OnAddSubscription(target);
+  }
+}
+
+void GpuProcessHostUIShim::OnRemoveSubscription(
+    int32 process_id, unsigned int target) {
+  RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
+  if (rph) {
+    rph->OnRemoveSubscription(target);
   }
 }
 

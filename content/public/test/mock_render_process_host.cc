@@ -234,6 +234,20 @@ const base::TimeTicks& MockRenderProcessHost::GetInitTimeForNavigationMetrics()
   return dummy_time;
 }
 
+bool MockRenderProcessHost::SubscribeUniformEnabled() const {
+  return false;
+}
+
+void MockRenderProcessHost::OnAddSubscription(unsigned int target) {
+}
+
+void MockRenderProcessHost::OnRemoveSubscription(unsigned int target) {
+}
+
+void MockRenderProcessHost::SendUpdateValueState(
+    unsigned int target, const gpu::ValueState& state) {
+}
+
 void MockRenderProcessHost::FilterURL(bool empty_allowed, GURL* url) {
   RenderProcessHostImpl::FilterURL(this, empty_allowed, url);
 }

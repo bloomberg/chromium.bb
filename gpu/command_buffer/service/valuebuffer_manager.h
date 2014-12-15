@@ -9,13 +9,54 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/gpu_export.h"
+#include "ipc/ipc_sender.h"
+
+namespace content {
+class GpuChannel;
+}
 
 namespace gpu {
 namespace gles2 {
 
 class ValuebufferManager;
+
+class GPU_EXPORT SubscriptionRefSet
+    : public base::RefCounted<SubscriptionRefSet> {
+ public:
+  class GPU_EXPORT Observer {
+   public:
+    virtual ~Observer();
+
+    virtual void OnAddSubscription(unsigned int target) = 0;
+    virtual void OnRemoveSubscription(unsigned int target) = 0;
+  };
+
+  SubscriptionRefSet();
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+ protected:
+  virtual ~SubscriptionRefSet();
+
+ private:
+  friend class base::RefCounted<SubscriptionRefSet>;
+  friend class ValuebufferManager;
+
+  typedef base::hash_map<unsigned int, int> RefSet;
+
+  void AddSubscription(unsigned int target);
+  void RemoveSubscription(unsigned int target);
+
+  RefSet reference_set_;
+
+  ObserverList<Observer, true> observers_;
+
+  DISALLOW_COPY_AND_ASSIGN(SubscriptionRefSet);
+};
 
 class GPU_EXPORT Valuebuffer : public base::RefCounted<Valuebuffer> {
  public:
@@ -67,7 +108,7 @@ class GPU_EXPORT Valuebuffer : public base::RefCounted<Valuebuffer> {
 
 class GPU_EXPORT ValuebufferManager {
  public:
-  ValuebufferManager(ValueStateMap* state_map);
+  ValuebufferManager(SubscriptionRefSet* ref_set, ValueStateMap* state_map);
   ~ValuebufferManager();
 
   // Must call before destruction.
@@ -96,6 +137,9 @@ class GPU_EXPORT ValuebufferManager {
   void StartTracking(Valuebuffer* valuebuffer);
   void StopTracking(Valuebuffer* valuebuffer);
 
+  void NotifyAddSubscription(unsigned int target);
+  void NotifyRemoveSubscription(unsigned int target);
+
   // Counts the number of Valuebuffer allocated with 'this' as its manager.
   // Allows to check no Valuebuffer will outlive this.
   unsigned int valuebuffer_count_;
@@ -106,6 +150,10 @@ class GPU_EXPORT ValuebufferManager {
   // Current value state in the system
   // Updated by GpuChannel
   scoped_refptr<ValueStateMap> pending_state_map_;
+
+  // Subscription targets which are currently subscribed and how
+  // many value buffers are currently subscribed to each
+  scoped_refptr<SubscriptionRefSet> subscription_ref_set_;
 
   DISALLOW_COPY_AND_ASSIGN(ValuebufferManager);
 };

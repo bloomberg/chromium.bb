@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
+#include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "gpu/gles2_conform_support/egl/config.h"
 #include "gpu/gles2_conform_support/egl/surface.h"
 
@@ -115,8 +116,14 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
   if (!command_buffer->Initialize())
     return NULL;
 
-  scoped_refptr<gpu::gles2::ContextGroup> group(new gpu::gles2::ContextGroup(
-      NULL, NULL, new gpu::gles2::ShaderTranslatorCache, NULL, NULL, true));
+  scoped_refptr<gpu::gles2::ContextGroup> group(
+      new gpu::gles2::ContextGroup(NULL,
+                                   NULL,
+                                   new gpu::gles2::ShaderTranslatorCache,
+                                   NULL,
+                                   NULL,
+                                   NULL,
+                                   true));
 
   decoder_.reset(gpu::gles2::GLES2Decoder::Create(group.get()));
   if (!decoder_.get())

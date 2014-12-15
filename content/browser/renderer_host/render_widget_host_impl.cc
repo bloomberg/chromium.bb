@@ -183,7 +183,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       pending_mouse_lock_request_(false),
       allow_privileged_mouse_lock_(false),
       has_touch_handler_(false),
-      subscribe_uniform_enabled_(false),
       next_browser_snapshot_id_(1),
       weak_factory_(this) {
   CHECK(delegate_);
@@ -233,10 +232,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
         base::Bind(&RenderWidgetHostImpl::RendererIsUnresponsive,
                    weak_factory_.GetWeakPtr())));
   }
-
-  subscribe_uniform_enabled_ =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSubscribeUniformExtension);
 }
 
 RenderWidgetHostImpl::~RenderWidgetHostImpl() {
@@ -902,17 +897,13 @@ void RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo(
 
   // Pass mouse state to gpu service if the subscribe uniform
   // extension is enabled.
-  // TODO(orglofch): Only pass mouse information if one of the GL Contexts
-  // is subscribed to GL_MOUSE_POSITION_CHROMIUM
-  if (subscribe_uniform_enabled_) {
+  if (process_->SubscribeUniformEnabled()) {
     gpu::ValueState state;
     state.int_value[0] = mouse_event.x;
     state.int_value[1] = mouse_event.y;
-    GpuProcessHost::SendOnIO(
-        GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-        CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
-        new GpuMsg_UpdateValueState(
-            process_->GetID(), GL_MOUSE_POSITION_CHROMIUM, state));
+    // TODO(orglofch) Separate the mapping of pending value states to the
+    // Gpu Service to be per RWH not per process
+    process_->SendUpdateValueState(GL_MOUSE_POSITION_CHROMIUM, state);
   }
 }
 

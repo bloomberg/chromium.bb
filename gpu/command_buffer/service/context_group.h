@@ -36,6 +36,7 @@ class RenderbufferManager;
 class ProgramManager;
 class ShaderManager;
 class TextureManager;
+class SubscriptionRefSet;
 class ValuebufferManager;
 class MemoryTracker;
 struct DisallowedFeatures;
@@ -49,6 +50,7 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
       const scoped_refptr<MemoryTracker>& memory_tracker,
       const scoped_refptr<ShaderTranslatorCache>& shader_translator_cache,
       const scoped_refptr<FeatureInfo>& feature_info,
+      const scoped_refptr<SubscriptionRefSet>& subscription_ref_set,
       const scoped_refptr<ValueStateMap>& pending_valuebuffer_state,
       bool bind_generates_resource);
 
@@ -226,7 +228,8 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   scoped_refptr<MemoryTracker> memory_tracker_;
   scoped_refptr<ShaderTranslatorCache> shader_translator_cache_;
   scoped_ptr<TransferBufferManagerInterface> transfer_buffer_manager_;
-  scoped_refptr<gpu::ValueStateMap> pending_valuebuffer_state_;
+  scoped_refptr<SubscriptionRefSet> subscription_ref_set_;
+  scoped_refptr<ValueStateMap> pending_valuebuffer_state_;
 
   bool enforce_gl_minimums_;
   bool bind_generates_resource_;
