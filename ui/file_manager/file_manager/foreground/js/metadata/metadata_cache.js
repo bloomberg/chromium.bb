@@ -129,7 +129,7 @@ MetadataCache.createFull = function(volumeManager) {
  * Clones metadata entry. Metadata entries may contain scalars, arrays,
  * hash arrays and Date object. Other objects are not supported.
  * @param {Object} metadata Metadata object.
- * @return {!Object} Cloned entry.
+ * @return {Object} Cloned entry.
  */
 MetadataCache.cloneMetadata = function(metadata) {
   if (metadata instanceof Array) {
