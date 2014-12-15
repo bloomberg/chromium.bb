@@ -138,6 +138,13 @@ class ContentCredentialManagerDispatcherTest
     form_.signon_realm = form_.origin.spec();
     form_.scheme = autofill::PasswordForm::SCHEME_HTML;
 
+    cross_origin_form_.username_value = base::ASCIIToUTF16("Username");
+    cross_origin_form_.display_name = base::ASCIIToUTF16("Display Name");
+    cross_origin_form_.password_value = base::ASCIIToUTF16("Password");
+    cross_origin_form_.origin = GURL("https://example.net/");
+    cross_origin_form_.signon_realm = cross_origin_form_.origin.spec();
+    cross_origin_form_.scheme = autofill::PasswordForm::SCHEME_HTML;
+
     store_->Clear();
     EXPECT_TRUE(store_->IsEmpty());
   }
@@ -151,6 +158,7 @@ class ContentCredentialManagerDispatcherTest
 
  protected:
   autofill::PasswordForm form_;
+  autofill::PasswordForm cross_origin_form_;
   scoped_refptr<TestPasswordStore> store_;
   scoped_ptr<ContentCredentialManagerDispatcher> dispatcher_;
   scoped_ptr<TestPasswordManagerClient> client_;
@@ -211,6 +219,26 @@ TEST_F(ContentCredentialManagerDispatcherTest,
 
 TEST_F(ContentCredentialManagerDispatcherTest,
        CredentialManagerOnRequestCredentialWithEmptyPasswordStore) {
+  std::vector<GURL> federations;
+  dispatcher()->OnRequestCredential(kRequestId, false, federations);
+
+  RunAllPendingTasks();
+
+  const uint32 kMsgID = CredentialManagerMsg_SendCredential::ID;
+  const IPC::Message* message =
+      process()->sink().GetFirstMessageMatching(kMsgID);
+  EXPECT_TRUE(message);
+  CredentialManagerMsg_SendCredential::Param param;
+  CredentialManagerMsg_SendCredential::Read(message, &param);
+  EXPECT_EQ(CREDENTIAL_TYPE_EMPTY, param.b.type);
+  process()->sink().ClearMessages();
+  EXPECT_FALSE(client_->did_prompt_user_to_choose());
+}
+
+TEST_F(ContentCredentialManagerDispatcherTest,
+       CredentialManagerOnRequestCredentialWithCrossOriginPasswordStore) {
+  store_->AddLogin(cross_origin_form_);
+
   std::vector<GURL> federations;
   dispatcher()->OnRequestCredential(kRequestId, false, federations);
 

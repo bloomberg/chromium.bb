@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/password_manager/core/browser/credential_manager_dispatcher.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -61,6 +62,8 @@ class ContentCredentialManagerDispatcher : public CredentialManagerDispatcher,
       base::Callback<void(const autofill::PasswordForm&)>;
 
  private:
+  struct PendingRequestParameters;
+
   PasswordStore* GetPasswordStore();
 
   // Returns the driver for the current main frame.
@@ -73,9 +76,9 @@ class ContentCredentialManagerDispatcher : public CredentialManagerDispatcher,
   scoped_ptr<CredentialManagerPasswordFormManager> form_manager_;
 
   // When 'OnRequestCredential' is called, it in turn calls out to the
-  // PasswordStore; we store the request ID here in order to properly respond
-  // to the request once the PasswordStore gives us data.
-  int pending_request_id_;
+  // PasswordStore; we store request details here in order to properly
+  // respond to the request once the PasswordStore gives us data.
+  scoped_ptr<PendingRequestParameters> pending_request_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentCredentialManagerDispatcher);
 };

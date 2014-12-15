@@ -49,6 +49,15 @@ void TestPasswordStore::WrapModificationTask(ModificationTask task) {
   task.Run();
 }
 
+void TestPasswordStore::GetAutofillableLoginsImpl(
+    PasswordStore::GetLoginsRequest* request) {
+  for (auto& forms_for_realm : stored_passwords_) {
+    for (const autofill::PasswordForm& form : forms_for_realm.second)
+      request->result()->push_back(new autofill::PasswordForm(form));
+  }
+  ForwardLoginsResult(request);
+}
+
 PasswordStoreChangeList TestPasswordStore::AddLoginImpl(
     const autofill::PasswordForm& form) {
   PasswordStoreChangeList changes;

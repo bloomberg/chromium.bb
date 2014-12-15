@@ -51,6 +51,8 @@ class TestPasswordStore : public PasswordStore {
                      PasswordStore::AuthorizationPromptPolicy prompt_policy,
                      const ConsumerCallbackRunner& runner) override;
   void WrapModificationTask(ModificationTask task) override;
+  void GetAutofillableLoginsImpl(
+      PasswordStore::GetLoginsRequest* request) override;
 
   // Unused portions of PasswordStore interface
   void ReportMetricsImpl(const std::string& sync_username,
@@ -61,8 +63,6 @@ class TestPasswordStore : public PasswordStore {
   PasswordStoreChangeList RemoveLoginsSyncedBetweenImpl(
       base::Time delete_begin,
       base::Time delete_end) override;
-  void GetAutofillableLoginsImpl(
-      PasswordStore::GetLoginsRequest* request) override {}
   void GetBlacklistLoginsImpl(
       PasswordStore::GetLoginsRequest* request) override {}
   bool FillAutofillableLogins(
