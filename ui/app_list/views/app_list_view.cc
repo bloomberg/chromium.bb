@@ -276,6 +276,16 @@ void AppListView::SetAppListOverlayVisible(bool visible) {
 
   const float kOverlayOpacity = 0.75f;
   overlay_view_->layer()->SetOpacity(visible ? kOverlayOpacity : 0.0f);
+  // Create the illusion that the search box is hidden behind the app list
+  // overlay mask by setting its opacity to the same value, and disabling it.
+  {
+    ui::ScopedLayerAnimationSettings settings(
+        search_box_widget_->GetLayer()->GetAnimator());
+    const float kSearchBoxWidgetOpacity = 0.5f;
+    search_box_widget_->GetLayer()->SetOpacity(visible ? kSearchBoxWidgetOpacity
+                                                       : 1.0f);
+    search_box_view_->SetEnabled(!visible);
+  }
 }
 
 bool AppListView::ShouldCenterWindow() const {
