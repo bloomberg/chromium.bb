@@ -83,28 +83,31 @@ function removeManifest() {
   if (element) {
     element.parentNode.removeChild(element);
     sendResultToTest('manifest removed');
-  } else
-  sendResultToTest('unable to find manifest element');
+  } else {
+    sendResultToTest('unable to find manifest element');
+  }
 }
 
 function registerPush() {
   navigator.serviceWorker.ready.then(function(swRegistration) {
-    // TODO(mvanouwerkerk): Cleanup once the final API is exposed.
-    var pushManager = swRegistration.pushManager || navigator.push;
-    return pushManager.register().then(function(pushRegistration) {
-      sendResultToTest(pushRegistration.pushEndpoint + ' - ' +
-          pushRegistration.pushRegistrationId);
-    });
+    return swRegistration.pushManager.register()
+        .then(function(pushRegistration) {
+          // TODO: Cleanup once the final API is exposed.
+          var endpoint = pushRegistration.endpoint ||
+                         pushRegistration.pushEndpoint;
+          var registrationId = pushRegistration.registrationId ||
+                               pushRegistration.pushRegistrationId;
+          sendResultToTest(endpoint + ' - ' + registrationId);
+        });
   }).catch(sendErrorToTest);
 }
 
 function hasPermission() {
   navigator.serviceWorker.ready.then(function(swRegistration) {
-    // TODO(mvanouwerkerk): Cleanup once the final API is exposed.
-    var pushManager = swRegistration.pushManager || navigator.push;
-    return pushManager.hasPermission().then(function(permission) {
-      sendResultToTest('permission status - ' + permission);
-    });
+    return swRegistration.pushManager.hasPermission()
+        .then(function(permission) {
+          sendResultToTest('permission status - ' + permission);
+        });
   }).catch(sendErrorToTest);
 }
 
