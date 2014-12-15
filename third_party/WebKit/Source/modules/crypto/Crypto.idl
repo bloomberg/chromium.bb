@@ -35,7 +35,7 @@
     //
     // This is for compatibility sake, since getRandomValues() predates the full
     // Web Crypto API spec.
-    [Custom, RaisesException] ArrayBufferView getRandomValues(ArrayBufferView array);
+    [RaisesException] ArrayBufferView getRandomValues(ArrayBufferView array);
 
     readonly attribute SubtleCrypto subtle;
 };

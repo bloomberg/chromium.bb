@@ -39,6 +39,9 @@ function checkNonIntegerTypes() {
     shouldThrow("crypto.getRandomValues(view)");
 }
 
+shouldThrow("crypto.getRandomValues()");
+shouldThrow("crypto.getRandomValues(undefined)");
+shouldThrow("crypto.getRandomValues(null)");
 checkIntegerTypes();
 checkNonIntegerTypes();
 

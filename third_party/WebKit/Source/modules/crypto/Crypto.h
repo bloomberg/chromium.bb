@@ -46,7 +46,7 @@ public:
         return new Crypto();
     }
 
-    void getRandomValues(DOMArrayBufferView*, ExceptionState&);
+    DOMArrayBufferView* getRandomValues(DOMArrayBufferView*, ExceptionState&);
 
     SubtleCrypto* subtle();
 
