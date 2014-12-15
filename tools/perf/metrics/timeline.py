@@ -79,13 +79,13 @@ TimelineThreadCategories =  {
   "CrRendererMain"        : "renderer_main",
   "Compositor"            : "renderer_compositor",
   "IOThread"              : "IO",
-  "CompositorRasterWorker": "raster",
+  "CompositorTileWorker"  : "raster",
   "DummyThreadName1"      : "other",
   "DummyThreadName2"      : "total_fast_path",
   "DummyThreadName3"      : "total_all"
 }
 
-_MatchBySubString = ["IOThread", "CompositorRasterWorker"]
+_MatchBySubString = ["IOThread", "CompositorTileWorker"]
 
 AllThreads = TimelineThreadCategories.values()
 NoThreads = []
