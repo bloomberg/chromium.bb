@@ -14,7 +14,7 @@
 
 namespace blink {
 
-{{v8_class}}::{{v8_class}}(v8::Handle<v8::Function> callback, ScriptState* scriptState)
+{{v8_class}}::{{v8_class}}(v8::Local<v8::Function> callback, ScriptState* scriptState)
     : ActiveDOMCallback(scriptState->executionContext())
     , m_scriptState(scriptState)
 {

@@ -18,7 +18,7 @@
 
 namespace blink {
 
-V8TestCallbackInterface::V8TestCallbackInterface(v8::Handle<v8::Function> callback, ScriptState* scriptState)
+V8TestCallbackInterface::V8TestCallbackInterface(v8::Local<v8::Function> callback, ScriptState* scriptState)
     : ActiveDOMCallback(scriptState->executionContext())
     , m_scriptState(scriptState)
 {

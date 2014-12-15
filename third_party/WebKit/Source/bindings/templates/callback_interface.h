@@ -16,7 +16,7 @@ namespace blink {
 
 class {{v8_class}} final : public {{cpp_class}}, public ActiveDOMCallback {
 public:
-    static {{v8_class}}* create(v8::Handle<v8::Function> callback, ScriptState* scriptState)
+    static {{v8_class}}* create(v8::Local<v8::Function> callback, ScriptState* scriptState)
     {
         return new {{v8_class}}(callback, scriptState);
     }
@@ -27,7 +27,7 @@ public:
     virtual {{method.cpp_type}} {{method.name}}({{method.argument_declarations | join(', ')}}) override;
 {% endfor %}
 private:
-    {{v8_class}}(v8::Handle<v8::Function>, ScriptState*);
+    {{v8_class}}(v8::Local<v8::Function>, ScriptState*);
 
     ScopedPersistent<v8::Function> m_callback;
     RefPtr<ScriptState> m_scriptState;
