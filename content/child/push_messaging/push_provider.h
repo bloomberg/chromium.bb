@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "content/child/push_messaging/push_dispatcher.h"
 #include "content/child/worker_task_runner.h"
@@ -59,11 +60,12 @@ class PushProvider : public blink::WebPushProvider,
 
   // Stores the registration callbacks with their request ids. This class owns
   // the callbacks.
-  std::map<int, blink::WebPushRegistrationCallbacks*> registration_callbacks_;
+  IDMap<blink::WebPushRegistrationCallbacks, IDMapOwnPointer>
+      registration_callbacks_;
 
   // Stores the permission status callbacks with their request ids. This class
   // owns the callbacks.
-  std::map<int, blink::WebPushPermissionStatusCallbacks*>
+  IDMap<blink::WebPushPermissionStatusCallbacks, IDMapOwnPointer>
       permission_status_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(PushProvider);
