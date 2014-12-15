@@ -9,7 +9,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/core/common/autofill_constants.h"
-#include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "grit/components_strings.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -42,32 +41,6 @@ namespace autofill {
 
 namespace {
 
-// Helper function to discard state of various WebFormElements when they go out
-// of web frame's scope. This is done to release memory that we no longer need
-// to hold.
-// K should inherit from WebFormControlElement as the function looks to extract
-// WebFormElement for K.form().
-template <class K, class V>
-void RemoveOldElements(const WebFrame& frame, std::map<const K, V>* states) {
-  std::vector<K> to_remove;
-  for (typename std::map<const K, V>::const_iterator it = states->begin();
-       it != states->end(); ++it) {
-    const WebFormElement& form_element = it->first.form();
-    if (form_element.isNull()) {
-      to_remove.push_back(it->first);
-    } else {
-      const WebFrame* element_frame = form_element.document().frame();
-      if (!element_frame || element_frame == &frame)
-        to_remove.push_back(it->first);
-    }
-  }
-
-  for (typename std::vector<K>::const_iterator it = to_remove.begin();
-       it != to_remove.end(); ++it) {
-    states->erase(*it);
-  }
-}
-
 void LogDeprecationMessages(const WebFormControlElement& element) {
   std::string autocomplete_attribute =
       base::UTF16ToUTF8(element.getAttribute("autocomplete"));
@@ -96,27 +69,24 @@ bool ShouldIgnoreForm(size_t num_editable_elements,
 
 }  // namespace
 
-FormCache::FormCache() {
+FormCache::FormCache(const WebFrame& frame) : frame_(frame) {
 }
 
 FormCache::~FormCache() {
 }
 
-std::vector<FormData> FormCache::ExtractNewForms(const WebFrame& frame) {
+std::vector<FormData> FormCache::ExtractNewForms() {
   std::vector<FormData> forms;
-  WebDocument document = frame.document();
+  WebDocument document = frame_.document();
   if (document.isNull())
     return forms;
-
-  if (!ContainsKey(documents_to_synthetic_form_map_, document))
-    documents_to_synthetic_form_map_[document] = FormData();
 
   WebVector<WebFormElement> web_forms;
   document.forms(web_forms);
 
   // Log an error message for deprecated attributes, but only the first time
   // the form is parsed.
-  bool log_deprecation_messages = !ContainsKey(parsed_forms_, &frame);
+  bool log_deprecation_messages = parsed_forms_.empty();
 
   const ExtractMask extract_mask =
       static_cast<ExtractMask>(EXTRACT_VALUE | EXTRACT_OPTIONS);
@@ -144,9 +114,9 @@ std::vector<FormData> FormCache::ExtractNewForms(const WebFrame& frame) {
       return forms;
 
     if (form.fields.size() >= kRequiredAutofillFields &&
-        !ContainsKey(parsed_forms_[&frame], form)) {
+        !ContainsKey(parsed_forms_, form)) {
       forms.push_back(form);
-      parsed_forms_[&frame].insert(form);
+      parsed_forms_.insert(form);
     }
   }
 
@@ -161,41 +131,32 @@ std::vector<FormData> FormCache::ExtractNewForms(const WebFrame& frame) {
   if (ShouldIgnoreForm(num_editable_elements, control_elements.size()))
     return forms;
 
-  FormData form;
+  FormData synthetic_form;
   if (!UnownedFormElementsAndFieldSetsToFormData(fieldsets, control_elements,
                                                  nullptr, document.url(),
                                                  REQUIRE_NONE, extract_mask,
-                                                 &form, nullptr)) {
+                                                 &synthetic_form, nullptr)) {
     return forms;
   }
 
-  num_fields_seen += form.fields.size();
+  num_fields_seen += synthetic_form.fields.size();
   if (num_fields_seen > kMaxParseableFields)
     return forms;
 
-  if (form.fields.size() >= kRequiredAutofillFields &&
-      !parsed_forms_[&frame].count(form)) {
-    forms.push_back(form);
-    parsed_forms_[&frame].insert(form);
-    documents_to_synthetic_form_map_[document] = form;
+  if (synthetic_form.fields.size() >= kRequiredAutofillFields &&
+      !parsed_forms_.count(synthetic_form)) {
+    forms.push_back(synthetic_form);
+    parsed_forms_.insert(synthetic_form);
+    synthetic_form_ = synthetic_form;
   }
   return forms;
 }
 
-void FormCache::ResetFrame(const WebFrame& frame) {
-  std::vector<WebDocument> documents_to_delete;
-  for (const auto& it : documents_to_synthetic_form_map_) {
-    const WebFrame* document_frame = it.first.frame();
-    if (!document_frame || document_frame == &frame)
-      documents_to_delete.push_back(it.first);
-  }
-
-  for (const auto& it : documents_to_delete)
-    documents_to_synthetic_form_map_.erase(it);
-
-  parsed_forms_[&frame].clear();
-  RemoveOldElements(frame, &initial_select_values_);
-  RemoveOldElements(frame, &initial_checked_state_);
+void FormCache::Reset() {
+  synthetic_form_ = FormData();
+  parsed_forms_.clear();
+  initial_select_values_.clear();
+  initial_checked_state_.clear();
 }
 
 bool FormCache::ClearFormWithElement(const WebFormControlElement& element) {
@@ -261,47 +222,39 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form) {
 
   std::vector<WebFormControlElement> control_elements;
 
-  // First check the synthetic forms.
+  // First check the synthetic form.
   bool found_synthetic_form = false;
-  for (const auto& it : documents_to_synthetic_form_map_) {
-    const FormData& form_data = it.second;
-    if (!form_data.SameFormAs(form.data))
-      continue;
-
+  if (form.data.SameFormAs(synthetic_form_)) {
     found_synthetic_form = true;
-    WebDocument document = it.first;
+    WebDocument document = frame_.document();
     control_elements =
         GetUnownedAutofillableFormFieldElements(document.all(), nullptr);
-    break;
   }
 
   if (!found_synthetic_form) {
     // Find the real form by searching through the WebDocuments.
     bool found_form = false;
     WebFormElement form_element;
-    for (const auto& it : documents_to_synthetic_form_map_) {
-      WebVector<WebFormElement> web_forms;
-      it.first.forms(web_forms);
+    WebVector<WebFormElement> web_forms;
+    frame_.document().forms(web_forms);
 
-      for (size_t i = 0; i < web_forms.size(); ++i) {
-        form_element = web_forms[i];
-
-        // Note: matching on the form name here which is not guaranteed to be
-        // unique for the page, nor is it guaranteed to be non-empty.  Ideally,
-        // we would have a way to uniquely identify the form cross-process. For
-        // now, we'll check form name and form action for identity.
-        // Also note that WebString() == WebString(string16()) does not evaluate
-        // to |true| -- WebKit distinguishes between a "null" string (lhs) and
-        // an "empty" string (rhs). We don't want that distinction, so forcing
-        // to string16.
-        base::string16 element_name = GetFormIdentifier(form_element);
-        GURL action(form_element.document().completeURL(form_element.action()));
-        if (element_name == form.data.name && action == form.data.action) {
-          found_form = true;
-          control_elements =
-              ExtractAutofillableElementsInForm(form_element, REQUIRE_NONE);
-          break;
-        }
+    for (size_t i = 0; i < web_forms.size(); ++i) {
+      form_element = web_forms[i];
+      // Note: matching on the form name here which is not guaranteed to be
+      // unique for the page, nor is it guaranteed to be non-empty.  Ideally,
+      // we would have a way to uniquely identify the form cross-process. For
+      // now, we'll check form name and form action for identity.
+      // Also note that WebString() == WebString(string16()) does not evaluate
+      // to |true| -- WebKit distinguishes between a "null" string (lhs) and
+      // an "empty" string (rhs). We don't want that distinction, so forcing
+      // to string16.
+      base::string16 element_name = GetFormIdentifier(form_element);
+      GURL action(form_element.document().completeURL(form_element.action()));
+      if (element_name == form.data.name && action == form.data.action) {
+        found_form = true;
+        control_elements =
+            ExtractAutofillableElementsInForm(form_element, REQUIRE_NONE);
+        break;
       }
     }
 

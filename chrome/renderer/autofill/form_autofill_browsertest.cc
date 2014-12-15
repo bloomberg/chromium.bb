@@ -195,8 +195,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     WebFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
-    FormCache form_cache;
-    std::vector<FormData> forms = form_cache.ExtractNewForms(*web_frame);
+    FormCache form_cache(*web_frame);
+    std::vector<FormData> forms = form_cache.ExtractNewForms();
     ASSERT_EQ(1U, forms.size());
 
     const FormData& form = forms[0];
@@ -255,8 +255,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     WebFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
-    FormCache form_cache;
-    std::vector<FormData> forms = form_cache.ExtractNewForms(*web_frame);
+    FormCache form_cache(*web_frame);
+    std::vector<FormData> forms = form_cache.ExtractNewForms();
     ASSERT_EQ(1U, forms.size());
 
     // Get the input element we want to find.
@@ -486,8 +486,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     WebFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
-    FormCache form_cache;
-    std::vector<FormData> forms = form_cache.ExtractNewForms(*web_frame);
+    FormCache form_cache(*web_frame);
+    std::vector<FormData> forms = form_cache.ExtractNewForms();
     ASSERT_EQ(1U, forms.size());
 
     // Get the input element we want to find.
@@ -566,8 +566,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     WebFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
-    FormCache form_cache;
-    std::vector<FormData> forms = form_cache.ExtractNewForms(*web_frame);
+    FormCache form_cache(*web_frame);
+    std::vector<FormData> forms = form_cache.ExtractNewForms();
     ASSERT_EQ(1U, forms.size());
 
     // Get the textarea element we want to find.
@@ -656,8 +656,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     WebFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
-    FormCache form_cache;
-    std::vector<FormData> forms = form_cache.ExtractNewForms(*web_frame);
+    FormCache form_cache(*web_frame);
+    std::vector<FormData> forms = form_cache.ExtractNewForms();
     ASSERT_EQ(1U, forms.size());
 
     // Get the input element we want to find.
@@ -744,8 +744,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     WebFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
-    FormCache form_cache;
-    std::vector<FormData> forms = form_cache.ExtractNewForms(*web_frame);
+    FormCache form_cache(*web_frame);
+    std::vector<FormData> forms = form_cache.ExtractNewForms();
     ASSERT_EQ(1U, forms.size());
 
     // Get the input element we want to find.
@@ -816,8 +816,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     WebFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
-    FormCache form_cache;
-    std::vector<FormData> forms = form_cache.ExtractNewForms(*web_frame);
+    FormCache form_cache(*web_frame);
+    std::vector<FormData> forms = form_cache.ExtractNewForms();
     ASSERT_EQ(1U, forms.size());
 
     // Get the input element we want to find.
@@ -891,8 +891,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     WebFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
-    FormCache form_cache;
-    std::vector<FormData> forms = form_cache.ExtractNewForms(*web_frame);
+    FormCache form_cache(*web_frame);
+    std::vector<FormData> forms = form_cache.ExtractNewForms();
     const size_t expected_size = unowned ? 1 : 2;
     ASSERT_EQ(expected_size, forms.size());
 
@@ -974,8 +974,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     WebFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
-    FormCache form_cache;
-    std::vector<FormData> forms = form_cache.ExtractNewForms(*web_frame);
+    FormCache form_cache(*web_frame);
+    std::vector<FormData> forms = form_cache.ExtractNewForms();
     ASSERT_EQ(1U, forms.size());
 
     // Get the input element we want to find.
@@ -1070,8 +1070,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     WebFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
-    FormCache form_cache;
-    std::vector<FormData> forms = form_cache.ExtractNewForms(*web_frame);
+    FormCache form_cache(*web_frame);
+    std::vector<FormData> forms = form_cache.ExtractNewForms();
     ASSERT_EQ(1U, forms.size());
 
     // Set the auto-filled attribute.
@@ -1166,8 +1166,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     WebFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
-    FormCache form_cache;
-    std::vector<FormData> forms = form_cache.ExtractNewForms(*web_frame);
+    FormCache form_cache(*web_frame);
+    std::vector<FormData> forms = form_cache.ExtractNewForms();
     ASSERT_EQ(1U, forms.size());
 
     // Set the auto-filled attribute.
@@ -1232,8 +1232,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     WebFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
-    FormCache form_cache;
-    std::vector<FormData> forms = form_cache.ExtractNewForms(*web_frame);
+    FormCache form_cache(*web_frame);
+    std::vector<FormData> forms = form_cache.ExtractNewForms();
     ASSERT_EQ(1U, forms.size());
 
     // Set the auto-filled attribute.
@@ -1286,8 +1286,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     WebFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
-    FormCache form_cache;
-    std::vector<FormData> forms = form_cache.ExtractNewForms(*web_frame);
+    FormCache form_cache(*web_frame);
+    std::vector<FormData> forms = form_cache.ExtractNewForms();
     ASSERT_EQ(1U, forms.size());
 
     // Set the auto-filled attribute.
@@ -1340,8 +1340,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     WebFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
-    FormCache form_cache;
-    std::vector<FormData> forms = form_cache.ExtractNewForms(*web_frame);
+    FormCache form_cache(*web_frame);
+    std::vector<FormData> forms = form_cache.ExtractNewForms();
     ASSERT_EQ(1U, forms.size());
 
     // Set the auto-filled attribute.
@@ -1394,8 +1394,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     WebFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
-    FormCache form_cache;
-    std::vector<FormData> forms = form_cache.ExtractNewForms(*web_frame);
+    FormCache form_cache(*web_frame);
+    std::vector<FormData> forms = form_cache.ExtractNewForms();
     ASSERT_EQ(1U, forms.size());
 
     // Set the autofilled attribute.
@@ -2087,8 +2087,8 @@ TEST_F(FormAutofillTest, ExtractMultipleForms) {
   WebFrame* web_frame = GetMainFrame();
   ASSERT_NE(nullptr, web_frame);
 
-  FormCache form_cache;
-  std::vector<FormData> forms = form_cache.ExtractNewForms(*web_frame);
+  FormCache form_cache(*web_frame);
+  std::vector<FormData> forms = form_cache.ExtractNewForms();
   ASSERT_EQ(2U, forms.size());
 
   // First form.
@@ -2150,12 +2150,12 @@ TEST_F(FormAutofillTest, OnlyExtractNewForms) {
   WebFrame* web_frame = GetMainFrame();
   ASSERT_NE(nullptr, web_frame);
 
-  FormCache form_cache;
-  std::vector<FormData> forms = form_cache.ExtractNewForms(*web_frame);
+  FormCache form_cache(*web_frame);
+  std::vector<FormData> forms = form_cache.ExtractNewForms();
   ASSERT_EQ(1U, forms.size());
 
   // Second call should give nothing as there are no new forms.
-  forms = form_cache.ExtractNewForms(*web_frame);
+  forms = form_cache.ExtractNewForms();
   ASSERT_TRUE(forms.empty());
 
   // Append to the current form will re-extract.
@@ -2167,7 +2167,7 @@ TEST_F(FormAutofillTest, OnlyExtractNewForms) {
       "document.getElementById('testform').appendChild(newInput);");
   msg_loop_.RunUntilIdle();
 
-  forms = form_cache.ExtractNewForms(*web_frame);
+  forms = form_cache.ExtractNewForms();
   ASSERT_EQ(1U, forms.size());
 
   const std::vector<FormFieldData>& fields = forms[0].fields;
@@ -2220,7 +2220,7 @@ TEST_F(FormAutofillTest, OnlyExtractNewForms) {
   msg_loop_.RunUntilIdle();
 
   web_frame = GetMainFrame();
-  forms = form_cache.ExtractNewForms(*web_frame);
+  forms = form_cache.ExtractNewForms();
   ASSERT_EQ(1U, forms.size());
 
   const std::vector<FormFieldData>& fields2 = forms[0].fields;
@@ -2250,8 +2250,8 @@ TEST_F(FormAutofillTest, ExtractFormsTooFewFields) {
   WebFrame* web_frame = GetMainFrame();
   ASSERT_NE(nullptr, web_frame);
 
-  FormCache form_cache;
-  std::vector<FormData> forms = form_cache.ExtractNewForms(*web_frame);
+  FormCache form_cache(*web_frame);
+  std::vector<FormData> forms = form_cache.ExtractNewForms();
   ASSERT_TRUE(forms.empty());
 }
 
@@ -2265,8 +2265,8 @@ TEST_F(FormAutofillTest, ExtractFormsSkippedForms) {
   WebFrame* web_frame = GetMainFrame();
   ASSERT_NE(nullptr, web_frame);
 
-  FormCache form_cache;
-  std::vector<FormData> forms = form_cache.ExtractNewForms(*web_frame);
+  FormCache form_cache(*web_frame);
+  std::vector<FormData> forms = form_cache.ExtractNewForms();
   ASSERT_TRUE(forms.empty());
 }
 
@@ -2278,8 +2278,8 @@ TEST_F(FormAutofillTest, ExtractFormsNoFields) {
   WebFrame* web_frame = GetMainFrame();
   ASSERT_NE(nullptr, web_frame);
 
-  FormCache form_cache;
-  std::vector<FormData> forms = form_cache.ExtractNewForms(*web_frame);
+  FormCache form_cache(*web_frame);
+  std::vector<FormData> forms = form_cache.ExtractNewForms();
   ASSERT_TRUE(forms.empty());
 }
 
@@ -2297,8 +2297,8 @@ TEST_F(FormAutofillTest, ExtractFormsTooFewFieldsSkipsCheckable) {
   WebFrame* web_frame = GetMainFrame();
   ASSERT_NE(nullptr, web_frame);
 
-  FormCache form_cache;
-  std::vector<FormData> forms = form_cache.ExtractNewForms(*web_frame);
+  FormCache form_cache(*web_frame);
+  std::vector<FormData> forms = form_cache.ExtractNewForms();
   ASSERT_TRUE(forms.empty());
 }
 
