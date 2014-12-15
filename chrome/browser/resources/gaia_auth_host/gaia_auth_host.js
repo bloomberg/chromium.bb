@@ -253,6 +253,7 @@ cr.define('cr.login', function() {
       populateParams(SUPPORTED_PARAMS, data);
       populateParams(LOCALIZED_STRING_PARAMS, data.localizedStrings);
       params.push('parentPage=' + encodeURIComponent(window.location.origin));
+      params.push('needPassword=1');
 
       var url;
       switch (authMode) {

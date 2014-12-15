@@ -132,6 +132,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     onBeforeShow: function(data) {
       var url = data.signin_url;
       url += '?gaiaUrl=' + encodeURIComponent(data.gaiaUrl);
+      url += '&needPassword=0';
       this.signInUrl_ = url;
       var modes = ['manual', 'forced', 'recovery'];
       for (var i = 0; i < modes.length; ++i) {

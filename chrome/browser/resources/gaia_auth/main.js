@@ -57,6 +57,7 @@ Authenticator.prototype = {
   // when support for key types other than plain text password is added.
   passwordBytes_: null,
 
+  needPassword_: false,
   chooseWhatToSync_: false,
   skipForNow_: false,
   sessionIndex_: null,
@@ -90,6 +91,7 @@ Authenticator.prototype = {
     this.isConstrainedWindow_ = params.constrained == '1';
     this.initialFrameUrl_ = params.frameUrl || this.constructInitialFrameUrl_();
     this.initialFrameUrlWithoutParams_ = stripParams(this.initialFrameUrl_);
+    this.needPassword_ = params.needPassword == '1';
 
     // For CrOS 'ServiceLogin' we assume that Gaia is loaded if we recieved
     // 'clearOldAttempts' message. For other scenarios Gaia doesn't send this
@@ -382,7 +384,14 @@ Authenticator.prototype = {
     this.sessionIndex_ = msg.sessionIndex;
 
     if (this.passwordBytes_) {
+      // If the credentials passing API was used, login is complete.
       window.parent.postMessage({method: 'samlApiUsed'}, this.parentPage_);
+      this.completeLogin_(msg);
+    } else if (!this.needPassword_) {
+      // If the credentials passing API was not used, the password was obtained
+      // by scraping. It must be verified before use. However, the host may not
+      // be interested in the password at all. In that case, verification is
+      // unnecessary and login is complete.
       this.completeLogin_(msg);
     } else {
       this.supportChannel_.sendWithCallback(

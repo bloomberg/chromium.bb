@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cstring>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
@@ -31,6 +35,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 #include "chrome/common/chrome_paths.h"
@@ -45,15 +50,20 @@
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_switches.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/fake_gaia.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_switches.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
@@ -102,6 +112,10 @@ const char kSAMLIdPCookieValue1[] = "value-1";
 const char kSAMLIdPCookieValue2[] = "value-2";
 
 const char kRelayState[] = "RelayState";
+
+const char kTestUserinfoToken[] = "fake-userinfo-token";
+const char kTestRefreshToken[] = "fake-refresh-token";
+const char kPolicy[] = "{\"managed_users\": [\"*\"]}";
 
 // FakeSamlIdp serves IdP auth form and the form submission. The form is
 // served with the template's RelayState placeholder expanded to the real
@@ -242,7 +256,7 @@ scoped_ptr<HttpResponse> FakeSamlIdp::BuildHTMLResponse(
 
 class SamlTest : public InProcessBrowserTest {
  public:
-  SamlTest() : saml_load_injected_(false) {}
+  SamlTest() : gaia_frame_parent_("signin-frame"), saml_load_injected_(false) {}
   virtual ~SamlTest() {}
 
   virtual void SetUp() override {
@@ -340,7 +354,7 @@ class SamlTest : public InProcessBrowserTest {
     login_screen_load_observer_->Wait();
   }
 
-  void StartSamlAndWaitForIdpPageLoad(const std::string& gaia_email) {
+  virtual void StartSamlAndWaitForIdpPageLoad(const std::string& gaia_email) {
     WaitForSigninScreen();
 
     if (!saml_load_injected_) {
@@ -415,7 +429,7 @@ class SamlTest : public InProcessBrowserTest {
   // Executes JavaScript code in the auth iframe hosted by gaia_auth extension.
   void ExecuteJsInSigninFrame(const std::string& js) {
     content::RenderFrameHost* frame = InlineLoginUI::GetAuthIframe(
-        GetLoginUI()->GetWebContents(), GURL(), "signin-frame");
+        GetLoginUI()->GetWebContents(), GURL(), gaia_frame_parent_);
     ASSERT_TRUE(content::ExecuteScript(frame, js));
   }
 
@@ -425,10 +439,13 @@ class SamlTest : public InProcessBrowserTest {
   scoped_ptr<content::WindowedNotificationObserver> login_screen_load_observer_;
   FakeGaia fake_gaia_;
 
- private:
-  FakeSamlIdp fake_saml_idp_;
+  std::string gaia_frame_parent_;
+
   scoped_ptr<HTTPSForwarder> gaia_https_forwarder_;
   scoped_ptr<HTTPSForwarder> saml_https_forwarder_;
+
+ private:
+  FakeSamlIdp fake_saml_idp_;
 
   bool saml_load_injected_;
 
@@ -637,6 +654,170 @@ IN_PROC_BROWSER_TEST_F(SamlTest, MetaRefreshToHTTPDisallowed) {
                 IDS_LOGIN_FATAL_ERROR_TEXT_INSECURE_URL,
                 base::UTF8ToUTF16(url.spec())),
             WaitForAndGetFatalErrorMessage());
+}
+
+class SAMLEnrollmentTest : public SamlTest,
+                           public content::WebContentsObserver {
+ public:
+  SAMLEnrollmentTest();
+  ~SAMLEnrollmentTest() override;
+
+  // SamlTest:
+  void SetUp() override;
+  void SetUpCommandLine(CommandLine* command_line) override;
+  void SetUpOnMainThread() override;
+  void StartSamlAndWaitForIdpPageLoad(const std::string& gaia_email) override;
+
+  // content::WebContentsObserver:
+  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
+
+  void WaitForEnrollmentSuccess();
+
+ private:
+  scoped_ptr<policy::LocalPolicyTestServer> test_server_;
+  base::ScopedTempDir temp_dir_;
+
+  scoped_ptr<base::RunLoop> run_loop_;
+  content::RenderFrameHost* auth_frame_;
+
+  DISALLOW_COPY_AND_ASSIGN(SAMLEnrollmentTest);
+};
+
+SAMLEnrollmentTest::SAMLEnrollmentTest() : auth_frame_(nullptr) {
+  gaia_frame_parent_ = "oauth-enroll-signin-frame";
+}
+
+SAMLEnrollmentTest::~SAMLEnrollmentTest() {
+}
+
+void SAMLEnrollmentTest::SetUp() {
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  const base::FilePath policy_file =
+      temp_dir_.path().AppendASCII("policy.json");
+  ASSERT_EQ(static_cast<int>(strlen(kPolicy)),
+            base::WriteFile(policy_file, kPolicy, strlen(kPolicy)));
+
+  test_server_.reset(new policy::LocalPolicyTestServer(policy_file));
+  ASSERT_TRUE(test_server_->Start());
+
+  SamlTest::SetUp();
+}
+
+void SAMLEnrollmentTest::SetUpCommandLine(CommandLine* command_line) {
+  command_line->AppendSwitchASCII(policy::switches::kDeviceManagementUrl,
+                                  test_server_->GetServiceURL().spec());
+  command_line->AppendSwitch(policy::switches::kDisablePolicyKeyVerification);
+  command_line->AppendSwitch(switches::kEnterpriseEnrollmentSkipRobotAuth);
+
+  SamlTest::SetUpCommandLine(command_line);
+}
+
+void SAMLEnrollmentTest::SetUpOnMainThread() {
+  Observe(GetLoginUI()->GetWebContents());
+
+  FakeGaia::AccessTokenInfo token_info;
+  token_info.token = kTestUserinfoToken;
+  token_info.scopes.insert(GaiaConstants::kDeviceManagementServiceOAuth);
+  token_info.scopes.insert(GaiaConstants::kOAuthWrapBridgeUserInfoScope);
+  token_info.audience = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
+  token_info.email = kFirstSAMLUserEmail;
+  fake_gaia_.IssueOAuthToken(kTestRefreshToken, token_info);
+
+  SamlTest::SetUpOnMainThread();
+}
+
+void SAMLEnrollmentTest::StartSamlAndWaitForIdpPageLoad(
+    const std::string& gaia_email) {
+  WaitForSigninScreen();
+  run_loop_.reset(new base::RunLoop);
+  ExistingUserController::current_controller()->OnStartEnterpriseEnrollment();
+  run_loop_->Run();
+
+  SetSignFormField("Email", gaia_email);
+
+  run_loop_.reset(new base::RunLoop);
+  ExecuteJsInSigninFrame("document.getElementById('signIn').click();");
+  run_loop_->Run();
+}
+
+void SAMLEnrollmentTest::RenderFrameCreated(
+    content::RenderFrameHost* render_frame_host) {
+  content::RenderFrameHost* parent = render_frame_host->GetParent();
+  if (!parent || parent->GetFrameName() != gaia_frame_parent_)
+    return;
+
+  // The GAIA extension created the iframe in which the login form will be
+  // shown. Now wait for the login form to finish loading.
+  auth_frame_ = render_frame_host;
+  Observe(content::WebContents::FromRenderFrameHost(auth_frame_));
+}
+
+void SAMLEnrollmentTest::DidFinishLoad(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& validated_url) {
+  if (render_frame_host != auth_frame_)
+    return;
+
+  const GURL origin = validated_url.GetOrigin();
+  if (origin != gaia_https_forwarder_->GetURL("") &&
+      origin != saml_https_forwarder_->GetURL("")) {
+    return;
+  }
+
+  // The GAIA or SAML IdP login form finished loading.
+  if (run_loop_)
+    run_loop_->Quit();
+}
+
+// Waits until the class |oauth-enroll-state-success| becomes set for the
+// enrollment screen, indicating enrollment success.
+void SAMLEnrollmentTest::WaitForEnrollmentSuccess() {
+  bool done = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetLoginUI()->GetWebContents(),
+      "var enrollmentScreen = document.getElementById('oauth-enrollment');"
+      "function SendReplyIfEnrollmentDone() {"
+      "  if (!enrollmentScreen.classList.contains("
+      "           'oauth-enroll-state-success')) {"
+      "    return false;"
+      "  }"
+      "  domAutomationController.send(true);"
+      "  observer.disconnect();"
+      "  return true;"
+      "}"
+      "var observer = new MutationObserver(SendReplyIfEnrollmentDone);"
+      "if (!SendReplyIfEnrollmentDone()) {"
+      "  var options = { attributes: true, attributeFilter: [ 'class' ] };"
+      "  observer.observe(enrollmentScreen, options);"
+      "}",
+      &done));
+}
+
+IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, WithoutCredentialsPassingAPI) {
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
+  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
+
+  // Fill-in the SAML IdP form and submit.
+  SetSignFormField("Email", "fake_user");
+  SetSignFormField("Password", "fake_password");
+  ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
+
+  WaitForEnrollmentSuccess();
+}
+
+IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, WithCredentialsPassingAPI) {
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_api_login.html");
+  fake_saml_idp()->SetLoginAuthHTMLTemplate("saml_api_login_auth.html");
+  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
+
+  // Fill-in the SAML IdP form and submit.
+  SetSignFormField("Email", "fake_user");
+  SetSignFormField("Password", "fake_password");
+  ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
+
+  WaitForEnrollmentSuccess();
 }
 
 class SAMLPolicyTest : public SamlTest {
