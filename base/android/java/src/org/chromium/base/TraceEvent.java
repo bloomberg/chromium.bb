@@ -239,19 +239,6 @@ public class TraceEvent {
     }
 
     /**
-     * Convenience wrapper around the versions of begin() that take string parameters.
-     * The name of the event will be derived from the class and function name that call this.
-     * IMPORTANT: if using this version, ensure end() (no parameters) is always called from the
-     * same calling context.
-     *
-     * Note that the overhead is at ms or sub-ms order. Don't use this when millisecond accuracy
-     * is desired.
-     */
-    public static void begin() {
-        if (sEnabled) nativeBegin(getCallerName(), null);
-    }
-
-    /**
      * Triggers the 'begin' native trace event with no arguments.
      * @param name The name of the event.
      */
@@ -269,14 +256,6 @@ public class TraceEvent {
     }
 
     /**
-     * Convenience wrapper around the versions of end() that take string parameters.
-     * @see #begin()
-     */
-    public static void end() {
-        if (sEnabled) nativeEnd(getCallerName(), null);
-    }
-
-    /**
      * Triggers the 'end' native trace event with no arguments.
      * @param name The name of the event.
      */
@@ -291,21 +270,6 @@ public class TraceEvent {
      */
     public static void end(String name, String arg) {
         if (sEnabled) nativeEnd(name, arg);
-    }
-
-    private static String getCallerName() {
-        // This was measured to take about 1ms on Trygon device.
-        StackTraceElement[] stack = java.lang.Thread.currentThread().getStackTrace();
-
-        // Commented out to avoid excess call overhead, but these lines can be useful to debug
-        // exactly where the TraceEvent's client is on the callstack.
-        //  int index = 0;
-        //  while (!stack[index].getClassName().equals(TraceEvent.class.getName())) ++index;
-        //  while (stack[index].getClassName().equals(TraceEvent.class.getName())) ++index;
-        //  System.logW("TraceEvent caller is at stack index " + index);
-
-        // '4' Was derived using the above commented out code snippet.
-        return stack[4].getClassName() + "." + stack[4].getMethodName();
     }
 
     private static native void nativeRegisterEnabledObserver();
