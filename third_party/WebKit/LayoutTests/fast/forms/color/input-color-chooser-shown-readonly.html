@@ -22,6 +22,8 @@ if (window.eventSender) {
         nwait--;
         if (0 < nwait)
             return window.setTimeout(testClosed, 0);
+        // Let an Oilpan GC finalize the popup controller and bring about closure of color chooser.
+        gc();
         shouldBeFalse("testRunner.isChooserShown()");
         finishJSTest();
    }
