@@ -215,10 +215,11 @@ static base::DictionaryValue* GetDictValueStats(
   base::ListValue* values = new base::ListValue();
   dict->Set("values", values);
 
-  for (size_t i = 0; i < report.values.size(); ++i) {
-    values->AppendString(report.values[i].display_name());
-    values->AppendString(report.values[i].value);
+  for (const auto& v : report.values) {
+    values->AppendString(v.display_name());
+    values->AppendString(v.value);
   }
+
   return dict;
 }
 
@@ -247,11 +248,11 @@ class InternalStatsObserver : public webrtc::StatsObserver {
   InternalStatsObserver(int lid)
       : lid_(lid), main_thread_(base::ThreadTaskRunnerHandle::Get()) {}
 
-  void OnComplete(const std::vector<webrtc::StatsReport>& reports) override {
+  void OnComplete(const webrtc::StatsReports& reports) override {
     scoped_ptr<base::ListValue> list(new base::ListValue());
 
-    for (size_t i = 0; i < reports.size(); ++i) {
-      base::DictionaryValue* report = GetDictValue(reports[i]);
+    for (const auto* r : reports) {
+      base::DictionaryValue* report = GetDictValue(*r);
       if (report)
         list->Append(report);
     }
