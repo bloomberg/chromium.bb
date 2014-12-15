@@ -827,11 +827,6 @@
             '../events/platform/x11/x11_events_platform.gyp:x11_events_platform',
           ],
         }],
-        ['use_ozone==1', {
-          'sources!': [
-            'corewm/capture_controller_unittest.cc',
-          ],
-        }],
         ['use_aura==1', {
           'sources': [ '<@(views_unittests_aura_sources)' ],
           'dependencies': [
