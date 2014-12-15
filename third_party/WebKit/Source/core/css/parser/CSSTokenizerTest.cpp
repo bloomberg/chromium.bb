@@ -70,6 +70,7 @@ void testTokens(const String& string, const CSSParserToken& token1, const CSSPar
 }
 
 static CSSParserToken ident(const String& string) { return CSSParserToken(IdentToken, string); }
+static CSSParserToken atKeyword(const String& string) { return CSSParserToken(AtKeywordToken, string); }
 static CSSParserToken string(const String& string) { return CSSParserToken(StringToken, string); }
 static CSSParserToken function(const String& string) { return CSSParserToken(FunctionToken, string); }
 static CSSParserToken url(const String& string) { return CSSParserToken(UrlToken, string); }
@@ -238,6 +239,23 @@ TEST(CSSTokenizerTest, FunctionToken)
     TEST_TOKENS("foo(  \'bar.gif\'", function("foo"), whitespace, string("bar.gif"));
     // To simplify implementation we drop the whitespace in function(url),whitespace,string()
     TEST_TOKENS("url(  \'bar.gif\'", function("url"), string("bar.gif"));
+}
+
+TEST(CSSTokenizerTest, AtKeywordToken)
+{
+    TEST_TOKENS("@at-keyword", atKeyword("at-keyword"));
+    TEST_TOKENS("@testing123", atKeyword("testing123"));
+    TEST_TOKENS("@hello!", atKeyword("hello"), delim('!'));
+    TEST_TOKENS("@-text", atKeyword("-text"));
+    TEST_TOKENS("@--abc", atKeyword("--abc"));
+    TEST_TOKENS("@--", atKeyword("--"));
+    TEST_TOKENS("@--11", atKeyword("--11"));
+    TEST_TOKENS("@---", atKeyword("---"));
+    TEST_TOKENS("@\\ ", atKeyword(" "));
+    TEST_TOKENS("@-\\ ", atKeyword("- "));
+    TEST_TOKENS("@@", delim('@'), delim('@'));
+    TEST_TOKENS("@2", delim('@'), number(IntegerValueType, 2));
+    TEST_TOKENS("@-1", delim('@'), number(IntegerValueType, -1));
 }
 
 TEST(CSSTokenizerTest, UrlToken)

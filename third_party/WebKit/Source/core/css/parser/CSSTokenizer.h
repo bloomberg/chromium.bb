@@ -78,6 +78,7 @@ private:
     CSSParserToken dollarSign(UChar);
     CSSParserToken verticalLine(UChar);
     CSSParserToken tilde(UChar);
+    CSSParserToken commercialAt(UChar);
     CSSParserToken reverseSolidus(UChar);
     CSSParserToken asciiDigit(UChar);
     CSSParserToken letterU(UChar);

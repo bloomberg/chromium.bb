@@ -231,6 +231,14 @@ CSSParserToken CSSTokenizer::tilde(UChar cc)
     return CSSParserToken(DelimiterToken, '~');
 }
 
+CSSParserToken CSSTokenizer::commercialAt(UChar cc)
+{
+    ASSERT(cc == '@');
+    if (nextCharsAreIdentifier())
+        return CSSParserToken(AtKeywordToken, consumeName());
+    return CSSParserToken(DelimiterToken, '@');
+}
+
 CSSParserToken CSSTokenizer::reverseSolidus(UChar cc)
 {
     if (twoCharsAreValidEscape(cc, m_input.nextInputChar())) {

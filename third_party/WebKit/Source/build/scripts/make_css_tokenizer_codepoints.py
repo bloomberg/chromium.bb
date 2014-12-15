@@ -46,6 +46,7 @@ def token_type(i):
                   '$': 'dollarSign',
                   '|': 'verticalLine',
                   '~': 'tilde',
+                  '@': 'commercialAt',
                   'u': 'letterU',
                   'U': 'letterU',
                   }

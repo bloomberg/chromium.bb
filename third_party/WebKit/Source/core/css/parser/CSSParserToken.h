@@ -13,6 +13,7 @@ namespace blink {
 enum CSSParserTokenType {
     IdentToken = 0,
     FunctionToken,
+    AtKeywordToken,
     HashToken,
     UrlToken,
     BadUrlToken,
