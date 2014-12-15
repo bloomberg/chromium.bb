@@ -2176,6 +2176,38 @@ _config.add_group('mixed-c-pre-cq',
                                  _base_configs['duck']),
 )
 
+# TODO (crbug.com/438839): pre-cq-group has been replaced by multiple
+# configs. Remove this config when no active CL has been screened
+# with this config.
+_config.add_group(constants.PRE_CQ_GROUP_CONFIG,
+  # amd64 w/kernel 3.10. This builder runs VMTest so it's going to be
+  # the slowest one.
+  pre_cq.add_config('rambi-deprecated-pre-cq', _base_configs['rambi']),
+
+  # daisy_spring w/kernel 3.8.
+  compile_only_pre_cq.add_config('daisy_spring-deprecated-pre-cq',
+                                 _base_configs['daisy_spring']),
+
+  # brillo config. We set build_packages_in_background=False here, so
+  # that subsequent boards (samus, lumpy, parrot) don't get launched until
+  # after duck finishes BuildPackages.
+  unittest_only_pre_cq.add_config('duck-deprecated-pre-cq',
+                                  _base_configs['duck'],
+                                  build_packages_in_background=False),
+
+  # samus w/kernel 3.14.
+  compile_only_pre_cq.add_config('samus-deprecated-pre-cq',
+                                 _base_configs['samus']),
+
+  # lumpy w/kernel 3.8.
+  compile_only_pre_cq.add_config('lumpy-deprecated-pre-cq',
+                                 _base_configs['lumpy']),
+
+  # arm64 w/kernel 3.4.
+  compile_only_pre_cq.add_config('rush_ryu-deprecated-pre-cq',
+                                 _base_configs['rush_ryu']),
+)
+
 internal_paladin.add_config('pre-cq-launcher',
   boards=[],
   build_type=constants.PRE_CQ_LAUNCHER_TYPE,
