@@ -1424,6 +1424,12 @@ interface Promise
     method chain
     method constructor
     method then
+interface PushManager
+    method constructor
+    method hasPermission
+    method register
+interface PushRegistration
+    method constructor
 interface RTCIceCandidate
     method constructor
 interface RTCSessionDescription

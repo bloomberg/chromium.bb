@@ -5,9 +5,8 @@
 // http://w3c.github.io/push-api/#pushregistrationmanager-interface
 
 [
-    NoInterfaceObject,
-    RuntimeEnabled=PushMessaging,
     GarbageCollected,
+    RuntimeEnabled=PushMessaging,
 ] interface PushManager {
     [CallWith=ScriptState, ImplementedAs=registerPushMessaging] Promise register();
     [CallWith=ScriptState] Promise hasPermission();

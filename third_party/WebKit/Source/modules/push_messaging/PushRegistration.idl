@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 [
-    NoInterfaceObject,
     GarbageCollected,
+    RuntimeEnabled=PushMessaging,
 ] interface PushRegistration {
     readonly attribute DOMString pushEndpoint;
     readonly attribute DOMString pushRegistrationId;
