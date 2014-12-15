@@ -220,9 +220,16 @@ bool TilingSetEvictionQueue::AdvanceToNextTilingRangeType() {
       current_tiling_range_type_ = PictureLayerTilingSet::HIGH_RES;
       return true;
     case PictureLayerTilingSet::HIGH_RES:
+      // Process required for activation tiles (unless that has already been
+      // done for the current priority bin) if there is a tiling with required
+      // for activation tiles and that tiling may have required for activation
+      // tiles having the current priority bin (in the pending tree only NOW
+      // tiles may be required for activation).
       if (!processing_tiling_with_required_for_activation_tiles_ &&
           tiling_index_with_required_for_activation_tiles_ <
-              tiling_set_->num_tilings()) {
+              tiling_set_->num_tilings() &&
+          (current_priority_bin_ == TilePriority::NOW ||
+           tree_ == ACTIVE_TREE)) {
         processing_tiling_with_required_for_activation_tiles_ = true;
         return true;
       }
