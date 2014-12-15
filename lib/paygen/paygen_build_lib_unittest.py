@@ -25,7 +25,6 @@ from chromite.cbuildbot import constants
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
-from chromite.lib import osutils
 from chromite.lib import parallel
 
 from chromite.lib.paygen import download_cache
@@ -47,13 +46,11 @@ from site_utils.autoupdate.lib import test_control
 # pylint: disable=W0212
 
 
-class PaygenBuildLibTest(mox.MoxTestBase):
+class PaygenBuildLibTest(cros_test_lib.MoxTempDirTestCase):
   """Test PaygenBuildLib class."""
 
-  def __init__(self, test_case_names):
-    mox.MoxTestBase.__init__(self, test_case_names)
+  def setUp(self):
     self.work_dir = '/work/foo'
-    self.tempdir = None
 
     self.prev_image = gspaths.Image(channel='foo-channel',
                                     board='foo-board',
@@ -847,7 +844,6 @@ fsi_images: 2913.331.0,2465.105.0
     self.assertEqual(paygen._FindFullTestPayloads('find_full_version'),
                      ['foo', 'bar'])
 
-  @osutils.TempDirDecorator
   def DoGeneratePayloadsTest(self, run_parallel, test_dry_run):
     """Test paygen_build_lib._GeneratePayloads."""
     paygen = paygen_build_lib._PaygenBuild(self.foo_build, self.tempdir,
@@ -892,7 +888,6 @@ fsi_images: 2913.331.0,2465.105.0
       for test_dry_run in (True, False):
         self.DoGeneratePayloadsTest(run_parallel, test_dry_run)
 
-  @osutils.TempDirDecorator
   def testGeneratePayloadInProcess(self):
     """Make sure the _GenerateSinglePayload calls into paygen_payload_lib."""
 
@@ -1171,7 +1166,6 @@ fsi_images: 2913.331.0,2465.105.0
 
     paygen.CreatePayloads()
 
-  @osutils.TempDirDecorator
   def testFindControlFileDir(self):
     """Test that we find control files in the proper directory."""
     # Test default dir in /tmp.

@@ -10,7 +10,6 @@ DEPRECATED: Should be migrated to chromite.lib.locking_unittest.
 
 from __future__ import print_function
 
-import mox
 import multiprocessing
 import os
 import sys
@@ -28,14 +27,9 @@ LOCK_ACQUIRED = 5
 LOCK_NOT_ACQUIRED = 6
 
 
-class FLockTest(mox.MoxTestBase):
+class FLockTest(cros_test_lib.TempDirTestCase):
   """Test FLock lock class."""
 
-  def __init__(self, testCaseNames):
-    self.tempdir = None
-    mox.MoxTestBase.__init__(self, testCaseNames)
-
-  @osutils.TempDirDecorator
   def _HelperSingleLockTest(self, blocking, shared):
     """Helper method that runs a basic test with/without blocking/sharing."""
     lock = flock.Lock('SingleLock',
@@ -63,7 +57,8 @@ class FLockTest(mox.MoxTestBase):
     lock.Release()
     self.assertFalse(lock.IsLocked())
 
-  @osutils.TempDirDecorator
+    osutils.SafeUnlink(expected_lock_file)
+
   def _HelperDoubleLockTest(self, blocking1, shared1, blocking2, shared2):
     """Helper method that runs a two-lock test with/without blocking/sharing."""
     lock1 = flock.Lock('DoubleLock',
@@ -186,7 +181,6 @@ class FLockTest(mox.MoxTestBase):
 
     self._HelperWithProcess(name, expected=LOCK_ACQUIRED)
 
-  @osutils.TempDirDecorator
   def testSingleProcessLock(self):
     """Test grabbing the same lock in processes with no conflicts."""
     self._HelperWithProcess('ProcessLock', expected=LOCK_ACQUIRED)
@@ -198,7 +192,6 @@ class FLockTest(mox.MoxTestBase):
     self._HelperWithProcess('ProcessLock', expected=LOCK_ACQUIRED,
                             blocking=True, shared=True)
 
-  @osutils.TempDirDecorator
   def testNonBlockingConflicts(self):
     """Test that we get a lock conflict for non-blocking locks."""
     name = 'ProcessLock'
@@ -213,7 +206,6 @@ class FLockTest(mox.MoxTestBase):
     # Can grab it after it's released
     self._HelperWithProcess(name, expected=LOCK_ACQUIRED)
 
-  @osutils.TempDirDecorator
   def testSharedLocks(self):
     """Test lock conflict for blocking locks."""
     name = 'ProcessLock'
@@ -227,7 +219,6 @@ class FLockTest(mox.MoxTestBase):
       self._HelperWithProcess(name, expected=LOCK_ACQUIRED, shared=True)
       self._HelperWithProcess(name, expected=LOCK_NOT_ACQUIRED, shared=False)
 
-  @osutils.TempDirDecorator
   def testBlockingConflicts(self):
     """Test lock conflict for blocking locks."""
     name = 'ProcessLock'
