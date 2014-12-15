@@ -82,6 +82,10 @@ class EasyUnlockKeyManager {
   static std::string GetKeyLabel(size_t key_index);
 
  private:
+  void RefreshKeysWithTpmKeyPresent(const UserContext& user_context,
+                                    base::ListValue* remote_devices,
+                                    const RefreshKeysCallback& callback);
+
   // Returns true if there are pending operations.
   bool HasPendingOperations() const;
 

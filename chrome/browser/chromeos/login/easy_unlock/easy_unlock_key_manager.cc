@@ -9,6 +9,8 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
 
 namespace chromeos {
 
@@ -45,14 +47,55 @@ void EasyUnlockKeyManager::RefreshKeys(const UserContext& user_context,
   // Must have the secret.
   DCHECK(!user_context.GetKey()->GetSecret().empty());
 
+  base::Closure do_refresh_keys = base::Bind(
+      &EasyUnlockKeyManager::RefreshKeysWithTpmKeyPresent,
+      weak_ptr_factory_.GetWeakPtr(),
+      user_context,
+      base::Owned(remote_devices.DeepCopy()),
+      callback);
+
+  EasyUnlockTpmKeyManager* tpm_key_manager =
+      EasyUnlockTpmKeyManagerFactory::GetInstance()->GetForUser(
+          user_context.GetUserID());
+  if (!tpm_key_manager) {
+    LOG(ERROR) << "No TPM key manager.";
+    callback.Run(false);
+    return;
+  }
+
+  if (tpm_key_manager->PrepareTpmKey(false /* check_private_key */,
+                                     do_refresh_keys)) {
+    do_refresh_keys.Run();
+  } else {
+    // In case Chrome is supposed to restart to apply user session flags, the
+    // Chrome restart will be postponed until Easy Sign-in keys are refreshed.
+    // This is to ensure that creating TPM key does not hang if TPM system
+    // loading takes too much time. Note that in normal circumstances the
+    // chances that TPM slot cannot be loaded should be extremely low.
+    // TODO(tbarzic): Add some metrics to measure if the timeout even gets hit.
+    tpm_key_manager->StartGetSystemSlotTimeoutMs(2000);
+  }
+}
+
+void EasyUnlockKeyManager::RefreshKeysWithTpmKeyPresent(
+    const UserContext& user_context,
+    base::ListValue* remote_devices,
+    const RefreshKeysCallback& callback) {
+  EasyUnlockTpmKeyManager* tpm_key_manager =
+      EasyUnlockTpmKeyManagerFactory::GetInstance()->GetForUser(
+          user_context.GetUserID());
+  std::string tpm_public_key =
+      tpm_key_manager->GetPublicTpmKey(user_context.GetUserID());
+
   EasyUnlockDeviceKeyDataList devices;
-  if (!RemoteDeviceListToDeviceDataList(remote_devices, &devices))
+  if (!RemoteDeviceListToDeviceDataList(*remote_devices, &devices))
     devices.clear();
 
   // Only one pending request.
   DCHECK(!HasPendingOperations());
   create_keys_op_.reset(new EasyUnlockCreateKeysOperation(
       user_context,
+      tpm_public_key,
       devices,
       base::Bind(&EasyUnlockKeyManager::OnKeysCreated,
                  weak_ptr_factory_.GetWeakPtr(),

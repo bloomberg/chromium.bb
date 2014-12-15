@@ -25,6 +25,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/chromeos_utils.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
 #include "chrome/browser/ui/webui/options/chromeos/user_image_source.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -607,12 +609,31 @@ bool EasyUnlockPrivateGetSignInChallengeFunction::RunAsync() {
       easy_unlock_private::GetSignInChallenge::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
+#if defined(OS_CHROMEOS)
   Profile* profile = Profile::FromBrowserContext(browser_context());
   const std::string challenge =
       EasyUnlockService::Get(profile)->GetChallenge();
-  // TODO(tbarzic): Implement nonce signing.
-  OnDone(challenge, std::string() /* signed_nonce */);
+  if (!challenge.empty() && !params->nonce.empty()) {
+    EasyUnlockTpmKeyManager* key_manager =
+        EasyUnlockTpmKeyManagerFactory::GetInstance()->Get(profile);
+    if (!key_manager) {
+      SetError("No EasyUnlockTpmKeyManager.");
+      return false;
+    }
+    key_manager->SignUsingTpmKey(
+        EasyUnlockService::Get(profile)->GetUserEmail(),
+        params->nonce,
+        base::Bind(&EasyUnlockPrivateGetSignInChallengeFunction::OnDone,
+                   this,
+                   challenge));
+  } else {
+    OnDone(challenge, std::string());
+  }
   return true;
+#else  // if !defined(OS_CHROMEOS)
+  SetError("Sign-in not supported.");
+  return false;
+#endif  // defined(OS_CHROMEOS)
 }
 
 void EasyUnlockPrivateGetSignInChallengeFunction::OnDone(

@@ -14,6 +14,7 @@
 #include "extensions/browser/extensions_browser_client.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/signin/easy_unlock_service_signin_chromeos.h"
 #endif
@@ -36,6 +37,9 @@ EasyUnlockServiceFactory::EasyUnlockServiceFactory()
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
+#if defined(OS_CHROMEOS)
+  DependsOn(EasyUnlockTpmKeyManagerFactory::GetInstance());
+#endif
 }
 
 EasyUnlockServiceFactory::~EasyUnlockServiceFactory() {

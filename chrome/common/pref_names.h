@@ -810,6 +810,7 @@ extern const char kBrowserGuestModeEnabled[];
 extern const char kBrowserAddPersonEnabled[];
 
 extern const char kEasyUnlockHardlockState[];
+extern const char kEasyUnlockLocalStateTpmKeys[];
 
 extern const char kPasswordBubbleTimeStamp[];
 extern const char kPasswordBubbleNopesCount[];

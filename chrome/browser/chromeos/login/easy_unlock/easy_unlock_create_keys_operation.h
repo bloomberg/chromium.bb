@@ -24,6 +24,7 @@ class EasyUnlockCreateKeysOperation {
   typedef base::Callback<void (bool success)> CreateKeysCallback;
   EasyUnlockCreateKeysOperation(
       const UserContext& user_context,
+      const std::string& tpm_public_key,
       const EasyUnlockDeviceKeyDataList& devices,
       const CreateKeysCallback& callback);
   ~EasyUnlockCreateKeysOperation();
@@ -45,6 +46,7 @@ class EasyUnlockCreateKeysOperation {
                     cryptohome::MountError return_code);
 
   UserContext user_context_;
+  std::string tpm_public_key_;
   EasyUnlockDeviceKeyDataList devices_;
   CreateKeysCallback callback_;
 

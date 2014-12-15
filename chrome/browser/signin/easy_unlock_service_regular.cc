@@ -166,15 +166,12 @@ void EasyUnlockServiceRegular::SetRemoteDevices(
       !devices.empty()) {
     // We may already have the password cached, so proceed to create the
     // cryptohome keys for sign-in or the system will be hardlocked.
-    chromeos::UserContext* user_context =
-        short_lived_user_context_->user_context();
-    chromeos::EasyUnlockKeyManager* key_manager =
-        chromeos::UserSessionManager::GetInstance()->GetEasyUnlockKeyManager();
-
-    key_manager->RefreshKeys(
-        *user_context, devices,
-        base::Bind(&EasyUnlockServiceRegular::OnKeysRefreshedForSetDevices,
-                   weak_ptr_factory_.GetWeakPtr()));
+    chromeos::UserSessionManager::GetInstance()->GetEasyUnlockKeyManager()
+        ->RefreshKeys(
+            *short_lived_user_context_->user_context(),
+            devices,
+            base::Bind(&EasyUnlockServiceRegular::OnKeysRefreshedForSetDevices,
+                       weak_ptr_factory_.GetWeakPtr()));
   } else {
     CheckCryptohomeKeysAndMaybeHardlock();
   }

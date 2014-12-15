@@ -2291,6 +2291,10 @@ const char kBrowserAddPersonEnabled[] = "profile.add_person_enabled";
 // A dictionary that maps user id to hardlock state.
 const char kEasyUnlockHardlockState[] = "easy_unlock.hardlock_state";
 
+// A dictionary that maps user id to public part of RSA key pair used by
+// Easy Sign-in for the user.
+const char kEasyUnlockLocalStateTpmKeys[] = "easy_unlock.public_tpm_keys";
+
 // The beginning of time span when we count user's "Nope" for the password
 // bubble.
 const char kPasswordBubbleTimeStamp[] = "password_bubble.timestamp";

@@ -255,6 +255,8 @@ class EasyUnlockService : public KeyedService {
   // Updates the service to state for handling system suspend.
   void PrepareForSuspend();
 
+  void EnsureTpmKeyPresentIfNeeded();
+
   Profile* profile_;
 
   // Created lazily in |GetScreenlockStateHandler|.
@@ -274,6 +276,8 @@ class EasyUnlockService : public KeyedService {
 
   // Whether the service has been shut down.
   bool shut_down_;
+
+  bool tpm_key_checked_;
 
   ObserverList<EasyUnlockServiceObserver> observers_;
 
