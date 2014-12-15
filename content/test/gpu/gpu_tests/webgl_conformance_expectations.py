@@ -306,3 +306,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mac'], bug=436493)
     self.Fail('conformance/textures/texture-upload-size.html',
         ['linux'], bug=436493)
+
+    # Temporary suppression while updating this test.
+    self.Fail('conformance/misc/bad-arguments-test.html', bug=441997)
