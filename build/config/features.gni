@@ -74,8 +74,9 @@ enable_print_preview = !is_android
 # currently.
 # Do not disable seccomp_bpf anywhere without talking to
 # security@chromium.org!
-use_seccomp_bpf = (is_linux || is_android) &&
-                  (cpu_arch == "x86" || cpu_arch == "x64" || cpu_arch == "arm")
+use_seccomp_bpf =
+    (is_linux || is_android) && (cpu_arch == "x86" || cpu_arch == "x64" ||
+                                 cpu_arch == "arm" || cpu_arch == "mipsel")
 
 # Enable notifications everywhere except iOS.
 enable_notifications = !is_ios
