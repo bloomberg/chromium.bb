@@ -11,7 +11,6 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/chromeos/memory_pressure_observer_chromeos.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
@@ -333,12 +332,6 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopStart() {
 }
 
 void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
-  // Instantiate the MemoryPressureObserver.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseMemoryPressureSystemChromeOS)) {
-    memory_pressure_observer_.reset(new base::MemoryPressureObserverChromeOS);
-  }
-
   base::FilePath user_data_dir;
   if (!base::SysInfo::IsRunningOnChromeOS() &&
       PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
@@ -707,9 +700,6 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
 // Shut down services before the browser process, etc are destroyed.
 void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   BootTimesLoader::Get()->AddLogoutTimeMarker("UIMessageLoopEnded", true);
-
-  // Remove the MemoryPressureObserver since it is not needed anymore.
-  memory_pressure_observer_.reset();
 
   g_browser_process->platform_part()->oom_priority_manager()->Stop();
 

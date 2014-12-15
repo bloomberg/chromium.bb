@@ -100,6 +100,11 @@
 #include "ui/base/l10n/l10n_util_win.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "base/chromeos/memory_pressure_observer_chromeos.h"
+#include "chromeos/chromeos_switches.h"
+#endif
+
 #if defined(USE_GLIB)
 #include <glib-object.h>
 #endif
@@ -475,7 +480,12 @@ void BrowserMainLoop::MainMessageLoopStart() {
     l10n_util::OverrideLocaleWithUILanguageList();
   }
 #endif
-
+#if defined(OS_CHROMEOS)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kUseMemoryPressureSystemChromeOS)) {
+    memory_pressure_observer_.reset(new base::MemoryPressureObserverChromeOS);
+  }
+#endif
   // Create a MessageLoop if one does not already exist for the current thread.
   if (!base::MessageLoop::current())
     main_message_loop_.reset(new base::MessageLoopForUI);
@@ -822,6 +832,10 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
                  "BrowserMainLoop::Subsystem:ResourceDispatcherHost");
     resource_dispatcher_host_.get()->Shutdown();
   }
+
+#if defined(OS_CHROMEOS)
+  memory_pressure_observer_.reset();
+#endif
 
 #if defined(OS_MACOSX)
   BrowserCompositorMac::DisableRecyclingForShutdown();
