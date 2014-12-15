@@ -14,8 +14,11 @@ function test()
     var resourcesWereFinished = false;
     var pageWasReloaded = false;
 
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, frameNavigated);
-    InspectorTest.reloadPage(pageReloaded);
+    // Resources panel has heavy initialization that does not work well with reloading-from-test.
+    InspectorTest.runAfterPendingDispatches(function() {
+        WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, frameNavigated);
+        InspectorTest.reloadPage(pageReloaded);
+    });
 
     function frameNavigated()
     {

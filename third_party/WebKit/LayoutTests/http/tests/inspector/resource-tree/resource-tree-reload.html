@@ -10,7 +10,10 @@
 
 function test()
 {
-    InspectorTest.reloadPage(step1);
+    // Resources panel has heavy initialization that does not work well with reloading-from-test.
+    InspectorTest.runAfterPendingDispatches(function() {
+        InspectorTest.reloadPage(step1);
+    });
 
     function step1()
     {
