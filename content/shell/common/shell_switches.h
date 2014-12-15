@@ -24,6 +24,7 @@ extern const char kEncodeBinary[];
 extern const char kExposeInternalsForTesting[];
 extern const char kRegisterFontFiles[];
 extern const char kStableReleaseMode[];
+extern const char kContentShellHostWindowSize[];
 
 }  // namespace switches
 

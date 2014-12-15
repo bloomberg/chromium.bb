@@ -59,4 +59,7 @@ const char kRegisterFontFiles[] = "register-font-files";
 // http://dev.chromium.org/blink/runtime-enabled-features.
 const char kStableReleaseMode[] = "stable-release-mode";
 
+// Size for the content_shell's host window (i.e. "800x600").
+const char kContentShellHostWindowSize[] = "content-shell-host-window-size";
+
 }  // namespace switches
