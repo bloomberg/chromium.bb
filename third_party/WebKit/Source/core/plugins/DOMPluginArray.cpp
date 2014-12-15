@@ -85,7 +85,9 @@ PassRefPtrWillBeRawPtr<DOMPlugin> DOMPluginArray::namedItem(const AtomicString& 
 
 void DOMPluginArray::refresh(bool reload)
 {
-    Page::refreshPlugins(reload);
+    Page::refreshPlugins();
+    if (reload)
+        m_frame->reload(NormalReload, ClientRedirect);
 }
 
 PluginData* DOMPluginArray::pluginData() const

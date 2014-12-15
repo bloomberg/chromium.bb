@@ -2010,7 +2010,7 @@ PassRefPtr<SerializedScriptValue> Internals::deserializeBuffer(PassRefPtr<DOMArr
 
 void Internals::forceReload(bool endToEnd)
 {
-    frame()->loader().reload(endToEnd ? EndToEndReload : NormalReload);
+    frame()->reload(endToEnd ? EndToEndReload : NormalReload, NotClientRedirect);
 }
 
 PassRefPtrWillBeRawPtr<ClientRect> Internals::selectionBounds(ExceptionState& exceptionState)

@@ -258,31 +258,18 @@ void Page::setNeedsLayoutInAllFrames()
     }
 }
 
-void Page::refreshPlugins(bool reload)
+void Page::refreshPlugins()
 {
     if (allPages().isEmpty())
         return;
 
     PluginData::refresh();
 
-    WillBeHeapVector<RefPtrWillBeMember<LocalFrame>> framesNeedingReload;
-
     for (const Page* page : allPages()) {
         // Clear out the page's plug-in data.
         if (page->m_pluginData)
             page->m_pluginData = nullptr;
-
-        if (!reload)
-            continue;
-
-        for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-            if (frame->isLocalFrame() && toLocalFrame(frame)->document()->containsPlugins())
-                framesNeedingReload.append(toLocalFrame(frame));
-        }
     }
-
-    for (size_t i = 0; i < framesNeedingReload.size(); ++i)
-        framesNeedingReload[i]->loader().reload(NormalReload);
 }
 
 PluginData* Page::pluginData() const

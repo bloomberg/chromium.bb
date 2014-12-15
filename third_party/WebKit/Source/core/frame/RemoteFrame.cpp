@@ -52,6 +52,11 @@ void RemoteFrame::navigate(Document& originDocument, const KURL& url, bool lockB
     remoteFrameClient()->navigate(request, lockBackForwardList);
 }
 
+void RemoteFrame::reload(ReloadPolicy reloadPolicy, ClientRedirectPolicy clientRedirectPolicy)
+{
+    remoteFrameClient()->reload(reloadPolicy, clientRedirectPolicy);
+}
+
 void RemoteFrame::detach()
 {
     detachChildren();

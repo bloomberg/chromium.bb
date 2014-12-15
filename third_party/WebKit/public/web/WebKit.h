@@ -83,7 +83,7 @@ BLINK_EXPORT void enableLogChannel(const char*);
 
 // Purge the plugin list cache. If |reloadPages| is true, any pages
 // containing plugins will be reloaded after refreshing the plugin list.
-BLINK_EXPORT void resetPluginCache(bool reloadPages);
+BLINK_EXPORT void resetPluginCache(bool reloadPages = false);
 
 } // namespace blink
 

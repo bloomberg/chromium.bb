@@ -111,7 +111,7 @@ public:
 
     ViewportDescription viewportDescription() const;
 
-    static void refreshPlugins(bool reload);
+    static void refreshPlugins();
     PluginData* pluginData() const;
 
     EditorClient& editorClient() const { return *m_editorClient; }

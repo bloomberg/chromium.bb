@@ -26,6 +26,7 @@ public:
     virtual bool isRemoteFrame() const override { return true; }
     virtual DOMWindow* domWindow() const override;
     virtual void navigate(Document& originDocument, const KURL&, bool lockBackForwardList) override;
+    virtual void reload(ReloadPolicy, ClientRedirectPolicy) override;
     virtual void detach() override;
     virtual RemoteSecurityContext* securityContext() const override;
 

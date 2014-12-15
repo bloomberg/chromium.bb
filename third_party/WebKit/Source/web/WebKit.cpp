@@ -268,7 +268,8 @@ void enableLogChannel(const char* name)
 
 void resetPluginCache(bool reloadPages)
 {
-    Page::refreshPlugins(reloadPages);
+    ASSERT(!reloadPages);
+    Page::refreshPlugins();
 }
 
 } // namespace blink

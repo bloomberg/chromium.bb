@@ -248,6 +248,15 @@ void LocalFrame::navigate(Document& originDocument, const KURL& url, bool lockBa
     m_navigationScheduler.scheduleLocationChange(&originDocument, url.string(), lockBackForwardList);
 }
 
+void LocalFrame::reload(ReloadPolicy reloadPolicy, ClientRedirectPolicy clientRedirectPolicy)
+{
+    ASSERT(clientRedirectPolicy == NotClientRedirect || reloadPolicy == NormalReload);
+    if (clientRedirectPolicy == NotClientRedirect)
+        m_loader.reload(reloadPolicy);
+    else
+        m_navigationScheduler.scheduleReload();
+}
+
 void LocalFrame::detach()
 {
     // A lot of the following steps can result in the current frame being

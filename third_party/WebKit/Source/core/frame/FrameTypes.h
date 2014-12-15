@@ -26,77 +26,19 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FrameLoaderTypes_h
-#define FrameLoaderTypes_h
+#ifndef FrameTypes_h
+#define FrameTypes_h
 
 namespace blink {
 
-enum FrameState {
-    FrameStateProvisional,
-    // This state indicates we are ready to commit to a page,
-    // which means the view will transition to use the new data source.
-    FrameStateCommittedPage,
-    FrameStateComplete
+enum ReloadPolicy {
+    NormalReload,
+    EndToEndReload
 };
 
-enum FrameLoadType {
-    FrameLoadTypeStandard,
-    FrameLoadTypeBackForward,
-    FrameLoadTypeReload,
-    FrameLoadTypeSame, // user loads same URL again (but not reload button)
-    FrameLoadTypeRedirectWithLockedBackForwardList,
-    FrameLoadTypeInitialInChildFrame,
-    FrameLoadTypeInitialHistoryLoad,
-    FrameLoadTypeReloadFromOrigin,
-};
-
-enum NavigationType {
-    NavigationTypeLinkClicked,
-    NavigationTypeFormSubmitted,
-    NavigationTypeBackForward,
-    NavigationTypeReload,
-    NavigationTypeFormResubmitted,
-    NavigationTypeOther
-};
-
-enum ObjectContentType {
-    ObjectContentNone,
-    ObjectContentImage,
-    ObjectContentFrame,
-    ObjectContentNetscapePlugin,
-    ObjectContentOtherPlugin
-};
-
-enum ShouldSendReferrer {
-    MaybeSendReferrer,
-    NeverSendReferrer
-};
-
-enum ReasonForCallingAllowPlugins {
-    AboutToInstantiatePlugin,
-    NotAboutToInstantiatePlugin
-};
-
-enum LoadStartType {
-    NavigationToDifferentDocument,
-    NavigationWithinSameDocument
-};
-
-enum SameDocumentNavigationSource {
-    SameDocumentNavigationDefault,
-    SameDocumentNavigationHistoryApi,
-};
-
-enum HistoryLoadType {
-    HistorySameDocumentLoad,
-    HistoryDifferentDocumentLoad
-};
-
-enum HistoryCommitType {
-    StandardCommit,
-    BackForwardCommit,
-    InitialCommitInChildFrame,
-    HistoryInertCommit
+enum ClientRedirectPolicy {
+    NotClientRedirect,
+    ClientRedirect
 };
 
 }

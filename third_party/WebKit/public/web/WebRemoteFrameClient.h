@@ -35,6 +35,7 @@ public:
 
     // A remote frame was asked to start a navigation.
     virtual void navigate(const WebURLRequest& request, bool shouldReplaceCurrentEntry) { }
+    virtual void reload(bool ignoreCache, bool isClientRedirect) { }
 
     // FIXME: Remove this method once we have input routing in the browser
     // process. See http://crbug.com/339659.
