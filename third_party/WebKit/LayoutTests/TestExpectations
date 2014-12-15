@@ -1612,3 +1612,12 @@ crbug.com/442285 virtual/slimmingpaint/fast/inline/continuation-outlines.html [ 
 crbug.com/442285 virtual/slimmingpaint/fast/text/international/rtl-white-space-pre-wrap.html [ NeedsRebaseline ]
 crbug.com/442285 virtual/slimmingpaint/fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
 crbug.com/442285 virtual/slimmingpaint/fast/text/international/unicode-bidi-plaintext-in-textarea.html [ NeedsRebaseline ]
+
+# Rebaseline after ES6 classes are in.
+crbug.com/442340 webexposed/global-interface-listing.html [ NeedsManualRebaseline ]
+crbug.com/442340 virtual/stable/webexposed/global-interface-listing-dedicated-worker.html [ NeedsManualRebaseline ]
+crbug.com/442340 fast/js/reserved-words-as-property.html [ NeedsManualRebaseline ]
+crbug.com/442340 virtual/stable/webexposed/global-interface-listing.html [ NeedsManualRebaseline ]
+crbug.com/442340 webexposed/global-interface-listing-shared-worker.html [ NeedsManualRebaseline ]
+crbug.com/442340 webexposed/global-interface-listing-dedicated-worker.html [ NeedsManualRebaseline ]
+crbug.com/442340 virtual/stable/webexposed/global-interface-listing-shared-worker.html [ NeedsManualRebaseline ]
