@@ -74,8 +74,11 @@ layer at (164,12) size 58x70 clip at (165,13) size 41x68
     RenderBlock {OPTGROUP} at (1,35) size 41x34
       RenderBlock {DIV} at (0,0) size 41x17
       RenderBlock {OPTION} at (0,17) size 41x17 [bgcolor=#999999]
-        RenderText {#text} at (2,0) size 37x16
-          text run at (2,0) width 37: "    baz"
+        RenderInline {<pseudo:before>} at (0,0) size 16x16
+          RenderTextFragment at (2,0) size 16x16
+            text run at (2,0) width 16: "    "
+        RenderText {#text} at (18,0) size 21x16
+          text run at (18,0) width 21: "baz"
 layer at (234,63) size 45x19 clip at (235,64) size 28x17 scrollHeight 68
   RenderListBox {SELECT} at (226,55) size 45x19 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
     RenderBlock {OPTION} at (1,1) size 28x17

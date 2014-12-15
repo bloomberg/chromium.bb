@@ -117,6 +117,7 @@ public:
 
     // For use in the implementation of HTMLOptionElement.
     void optionSelectionStateChanged(HTMLOptionElement*, bool optionIsSelected);
+    void optionInserted(const HTMLOptionElement&, bool optionIsSelected);
     void optionRemoved(const HTMLOptionElement&);
     bool anonymousIndexedSetter(unsigned, PassRefPtrWillBeRawPtr<HTMLOptionElement>, ExceptionState&);
 
@@ -175,6 +176,7 @@ private:
         DeselectOtherOptions = 1 << 0,
         DispatchInputAndChangeEvent = 1 << 1,
         UserDriven = 1 << 2,
+        DelayScrollToSelection = 1 << 3,
     };
     typedef unsigned SelectOptionFlags;
     void selectOption(int optionIndex, SelectOptionFlags = 0);
@@ -229,6 +231,7 @@ private:
     mutable bool m_shouldRecalcListItems;
     int m_suggestedIndex;
     bool m_isAutofilledByPreview;
+    bool m_scrollToSelectionLater;
 };
 
 } // namespace blink

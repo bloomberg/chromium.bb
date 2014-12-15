@@ -1407,6 +1407,11 @@ crbug.com/426543 fast/js/mozilla/strict/15.4.4.13.html [ Pass Failure ]
 
 crbug.com/401377 [ XP ] http/tests/serviceworker/fetch-mixed-content-to-inscope.html [ Pass Timeout ]
 
+crbug.com/440253 fast/forms/select/listbox-appearance-basic.html [ NeedsRebaseline ]
+crbug.com/440253 fast/forms/select/listbox-with-display-none-option.html [ NeedsRebaseline ]
+crbug.com/440253 fast/forms/select/menulist-appearance-basic.html [ NeedsRebaseline ]
+crbug.com/440253 fast/forms/select/optgroup-rendering.html [ NeedsRebaseline ]
+
 crbug.com/430557 [ Win Linux Mac ] inspector/layers/layer-canvas-log.html [ Failure ]
 
 crbug.com/429128 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ Pass Timeout ]

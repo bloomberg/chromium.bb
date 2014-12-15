@@ -84,6 +84,7 @@ HTMLSelectElement::HTMLSelectElement(Document& document, HTMLFormElement* form)
     , m_shouldRecalcListItems(false)
     , m_suggestedIndex(-1)
     , m_isAutofilledByPreview(false)
+    , m_scrollToSelectionLater(false)
 {
 }
 
@@ -418,6 +419,11 @@ void HTMLSelectElement::childrenChanged(const ChildrenChange& change)
     m_lastOnChangeSelection.clear();
 
     HTMLFormControlElementWithState::childrenChanged(change);
+
+    if (m_scrollToSelectionLater) {
+        m_scrollToSelectionLater = false;
+        scrollToSelection();
+    }
 }
 
 void HTMLSelectElement::optionElementChildrenChanged()
@@ -918,6 +924,13 @@ void HTMLSelectElement::optionSelectionStateChanged(HTMLOptionElement* option, b
         selectOption(nextSelectableListIndex(-1));
 }
 
+void HTMLSelectElement::optionInserted(const HTMLOptionElement& option, bool optionIsSelected)
+{
+    ASSERT(option.ownerSelectElement() == this);
+    if (optionIsSelected)
+        selectOption(option.index(), DelayScrollToSelection);
+}
+
 void HTMLSelectElement::optionRemoved(const HTMLOptionElement& option)
 {
     if (m_activeSelectionAnchorIndex < 0 && m_activeSelectionEndIndex < 0)
@@ -960,7 +973,10 @@ void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
     if (RenderObject* renderer = this->renderer())
         renderer->updateFromElement();
 
-    scrollToSelection();
+    if (flags & DelayScrollToSelection)
+        m_scrollToSelectionLater = true;
+    else
+        scrollToSelection();
 
     setNeedsValidityCheck();
 
@@ -1655,7 +1671,7 @@ String HTMLSelectElement::optionAtIndex(int index) const
     HTMLElement* element = items[index];
     if (!isHTMLOptionElement(*element) || toHTMLOptionElement(element)->isDisabledFormControl())
         return String();
-    return toHTMLOptionElement(element)->textIndentedToRespectGroupLabel();
+    return toHTMLOptionElement(element)->text();
 }
 
 void HTMLSelectElement::typeAheadFind(KeyboardEvent* event)
