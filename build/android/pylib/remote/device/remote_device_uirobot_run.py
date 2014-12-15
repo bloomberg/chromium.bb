@@ -34,8 +34,9 @@ class RemoteDeviceUirobotRun(remote_device_test_run.RemoteDeviceTestRun):
     """
     super(RemoteDeviceUirobotRun, self).__init__(env, test_instance)
 
+  #override
   def TestPackage(self):
-    pass
+    return self._test_instance.package_name
 
   #override
   def _TriggerSetUp(self):

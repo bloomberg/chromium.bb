@@ -41,9 +41,6 @@ class RemoteDeviceTestRun(test_run.TestRun):
     self._test_id = ''
     self._results = ''
 
-  def TestPackage(self):
-    pass
-
   #override
   def RunTests(self):
     """Run the test."""

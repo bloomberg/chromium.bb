@@ -27,8 +27,9 @@ class RemoteDeviceGtestRun(remote_device_test_run.RemoteDeviceTestRun):
   DEFAULT_RUNNER_PACKAGE = (
       'org.chromium.native_test.ChromiumNativeTestInstrumentationTestRunner')
 
+  #override
   def TestPackage(self):
-    pass
+    return self._test_instance.suite
 
   #override
   def _TriggerSetUp(self):

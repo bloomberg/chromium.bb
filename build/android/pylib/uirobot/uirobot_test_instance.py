@@ -6,6 +6,7 @@ import os
 
 from pylib import constants
 from pylib.base import test_instance
+from pylib.utils import apk_helper
 
 class UirobotTestInstance(test_instance.TestInstance):
 
@@ -19,6 +20,7 @@ class UirobotTestInstance(test_instance.TestInstance):
     self._apk_under_test = os.path.join(
         constants.GetOutDirectory(), args.apk_under_test)
     self._minutes = args.minutes
+    self._package_name = apk_helper.GetPackageName(self._apk_under_test)
 
   #override
   def TestType(self):
@@ -41,11 +43,11 @@ class UirobotTestInstance(test_instance.TestInstance):
     return self._apk_under_test
 
   @property
-  def suite(self):
-    """Returns the test suite, none for uirobot."""
-    return None
-
-  @property
   def minutes(self):
     """Returns the number of minutes to run the uirobot for."""
     return self._minutes
+
+  @property
+  def package_name(self):
+    """Returns the name of the package in the APK."""
+    return self._package_name
