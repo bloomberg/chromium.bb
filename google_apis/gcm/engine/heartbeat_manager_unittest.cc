@@ -190,7 +190,7 @@ TEST_F(HeartbeatManagerTest, UpdateTimerAfterStart) {
   manager()->UpdateHeartbeatTimer(
       make_scoped_ptr(new base::Timer(true, false)));
   EXPECT_LT(manager()->GetNextHeartbeatTime() - heartbeat,
-            base::TimeDelta::FromMilliseconds(1));
+            base::TimeDelta::FromMilliseconds(5));
 }
 
 // Stopping the manager should reset the heartbeat timer.
