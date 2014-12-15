@@ -74,10 +74,10 @@
 //
 //<include src="../../common/js/async_util.js">
 //<include src="../../common/js/file_type.js">
-//<include src="../../common/js/importer_common.js">
 //<include src="../../common/js/volume_manager_common.js">
 //<include src="../../common/js/util.js">
 //<include src="../../common/js/progress_center_common.js">
+//<include src="../../common/js/importer_common.js">
 //
 //<include src="ui/combobutton.js">
 //<include src="ui/commandbutton.js">
