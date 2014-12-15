@@ -32,6 +32,10 @@
 #include "../shared/os-compatibility.h"
 #include "weston-test-client-helper.h"
 
+#define max(a, b) (((a) > (b)) ? (a) : (b))
+#define min(a, b) (((a) > (b)) ? (b) : (a))
+#define clip(x, a, b)  min(max(x, a), b)
+
 void *
 fail_on_null(void *p)
 {
@@ -860,4 +864,87 @@ screenshot_reference_filename(const char *basename, uint32_t seq) {
 				 reference_path(), basename, seq) < 0)
 		return NULL;
 	return filename;
+}
+
+/**
+ * check_surfaces_equal() - tests if two surfaces are pixel-identical
+ *
+ * Returns true if surface buffers have all the same byte values,
+ * false if the surfaces don't match or can't be compared due to
+ * different dimensions.
+ */
+bool
+check_surfaces_equal(const struct surface *a, const struct surface *b)
+{
+	int bpp = 4;  /* Assumes ARGB */
+
+	if (a == NULL || b == NULL)
+		return false;
+	if (a->width != b->width || a->height != b->height)
+		return false;
+
+	return (memcmp(a->data, b->data, bpp * a->width * a->height) == 0);
+}
+
+/**
+ * check_surfaces_match_in_clip() - tests if a given region within two
+ * surfaces are pixel-identical.
+ *
+ * Returns true if the two surfaces have the same byte values within the
+ * given clipping region, or false if they don't match or the surfaces
+ * can't be compared.
+ */
+bool
+check_surfaces_match_in_clip(const struct surface *a, const struct surface *b, const struct rectangle *clip_rect)
+{
+	int i, j;
+	int x0, y0, x1, y1;
+	void *p, *q;
+	int bpp = 4;  /* Assumes ARGB */
+
+	if (a == NULL || b == NULL || clip_rect == NULL)
+		return false;
+
+	if (a->data == NULL || b->data == NULL) {
+		printf("Undefined data\n");
+		return false;
+	}
+	if (a->width != b->width || a->height != b->height) {
+		printf("Mismatched dimensions:  %d,%d != %d,%d\n",
+		       a->width, a->height, b->width, b->height);
+		return false;
+	}
+	if (clip_rect->x > a->width || clip_rect->y > a->height) {
+		printf("Clip outside image boundaries\n");
+		return true;
+	}
+
+	x0 = max(0, clip_rect->x);
+	y0 = max(0, clip_rect->y);
+	x1 = min(a->width,  clip_rect->x + clip_rect->width);
+	y1 = min(a->height, clip_rect->y + clip_rect->height);
+
+	if (x0 == x1 || y0 == y1) {
+		printf("Degenerate comparison\n");
+		return true;
+	}
+
+	printf("Bytewise comparison inside clip\n");
+	for (i=y0; i<y1; i++) {
+		p = a->data + i * a->width * bpp + x0 * bpp;
+		q = b->data + i * b->width * bpp + x0 * bpp;
+		if (memcmp(p, q, (x1-x0)*bpp) != 0) {
+			/* Dump the bad row */
+			printf("Mismatched image on row %d\n", i);
+			for (j=0; j<(x1-x0)*bpp; j++) {
+				char a_char = *((char*)(p+j*bpp));
+				char b_char = *((char*)(q+j*bpp));
+				printf("%d,%d: %8x %8x %s\n", i, j, a_char, b_char,
+				       (a_char != b_char)? " <---": "");
+			}
+			return false;
+		}
+	}
+
+	return true;
 }

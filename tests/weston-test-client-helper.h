@@ -27,6 +27,7 @@
 
 #include <assert.h>
 #include <stdbool.h>
+
 #include "weston-test-runner.h"
 #include "weston-test-client-protocol.h"
 
@@ -132,6 +133,13 @@ struct surface {
 	void *data;
 };
 
+struct rectangle {
+	int x;
+	int y;
+	int width;
+	int height;
+};
+
 void *
 fail_on_null(void *p);
 
@@ -189,5 +197,11 @@ screenshot_output_filename(const char *basename, uint32_t seq);
 
 char*
 screenshot_reference_filename(const char *basename, uint32_t seq);
+
+bool
+check_surfaces_equal(const struct surface *a, const struct surface *b);
+
+bool
+check_surfaces_match_in_clip(const struct surface *a, const struct surface *b, const struct rectangle *clip);
 
 #endif
