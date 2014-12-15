@@ -326,7 +326,6 @@ public:
     void stop()
     {
         m_timer.stop();
-        [m_animation setCurrentProgress:1];
     }
 
     void setDuration(CFTimeInterval duration)
@@ -340,12 +339,12 @@ private:
         double currentTime = WTF::currentTime();
         double delta = currentTime - m_startTime;
 
-        if (delta >= m_duration) {
-            stop();
-            return;
-        }
+        if (delta >= m_duration)
+            m_timer.stop();
 
         double fraction = delta / m_duration;
+        fraction = std::min(1.0, fraction);
+        fraction = std::max(0.0, fraction);
         double progress = m_timingFunction->evaluate(fraction, 0.001);
         [m_animation setCurrentProgress:progress];
     }
