@@ -46,7 +46,6 @@ class DocumentLoader;
 class LocalFrame;
 class InspectorFrontend;
 class InjectedScriptManager;
-class InspectorTimelineAgent;
 class ScriptProfile;
 class ThreadableLoaderClient;
 class XMLHttpRequest;
@@ -56,7 +55,7 @@ typedef String ErrorString;
 class InspectorConsoleAgent : public InspectorBaseAgent<InspectorConsoleAgent>, public InspectorBackendDispatcher::ConsoleCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorConsoleAgent);
 public:
-    InspectorConsoleAgent(InspectorTimelineAgent*, InjectedScriptManager*);
+    explicit InspectorConsoleAgent(InjectedScriptManager*);
     virtual ~InspectorConsoleAgent();
     virtual void trace(Visitor*) override;
 
@@ -71,10 +70,6 @@ public:
 
     void addMessageToConsole(ConsoleMessage*);
     void consoleMessagesCleared();
-
-    void setTracingBasedTimeline(ErrorString*, bool enabled);
-    void consoleTimeline(ExecutionContext*, const String& title, ScriptState*);
-    void consoleTimelineEnd(ExecutionContext*, const String& title, ScriptState*);
 
     void didCommitLoad(LocalFrame*, DocumentLoader*);
 
@@ -96,7 +91,6 @@ protected:
     virtual void enableStackCapturingIfNeeded() = 0;
     virtual void disableStackCapturingIfNeeded() = 0;
 
-    RawPtrWillBeMember<InspectorTimelineAgent> m_timelineAgent;
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     InspectorFrontend::Console* m_frontend;
     bool m_enabled;

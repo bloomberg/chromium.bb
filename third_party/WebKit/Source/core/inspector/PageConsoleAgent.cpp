@@ -46,8 +46,8 @@ namespace blink {
 
 int PageConsoleAgent::s_enabledAgentCount = 0;
 
-PageConsoleAgent::PageConsoleAgent(InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent, InspectorTimelineAgent* timelineAgent, Page* page)
-    : InspectorConsoleAgent(timelineAgent, injectedScriptManager)
+PageConsoleAgent::PageConsoleAgent(InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent, Page* page)
+    : InspectorConsoleAgent(injectedScriptManager)
     , m_inspectorDOMAgent(domAgent)
     , m_page(page)
 {

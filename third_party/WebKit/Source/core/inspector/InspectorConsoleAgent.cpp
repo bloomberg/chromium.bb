@@ -37,7 +37,6 @@
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorState.h"
-#include "core/inspector/InspectorTimelineAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptAsyncCallStack.h"
@@ -59,12 +58,10 @@ namespace blink {
 namespace ConsoleAgentState {
 static const char monitoringXHR[] = "monitoringXHR";
 static const char consoleMessagesEnabled[] = "consoleMessagesEnabled";
-static const char tracingBasedTimeline[] = "tracingBasedTimeline";
 }
 
-InspectorConsoleAgent::InspectorConsoleAgent(InspectorTimelineAgent* timelineAgent, InjectedScriptManager* injectedScriptManager)
+InspectorConsoleAgent::InspectorConsoleAgent(InjectedScriptManager* injectedScriptManager)
     : InspectorBaseAgent<InspectorConsoleAgent>("Console")
-    , m_timelineAgent(timelineAgent)
     , m_injectedScriptManager(injectedScriptManager)
     , m_frontend(0)
     , m_enabled(false)
@@ -80,7 +77,6 @@ InspectorConsoleAgent::~InspectorConsoleAgent()
 
 void InspectorConsoleAgent::trace(Visitor* visitor)
 {
-    visitor->trace(m_timelineAgent);
     visitor->trace(m_injectedScriptManager);
     InspectorBaseAgent::trace(visitor);
 }
@@ -116,7 +112,6 @@ void InspectorConsoleAgent::disable(ErrorString*)
     disableStackCapturingIfNeeded();
 
     m_state->setBoolean(ConsoleAgentState::consoleMessagesEnabled, false);
-    m_state->setBoolean(ConsoleAgentState::tracingBasedTimeline, false);
 }
 
 void InspectorConsoleAgent::clearMessages(ErrorString*)
@@ -156,24 +151,6 @@ void InspectorConsoleAgent::consoleMessagesCleared()
     m_injectedScriptManager->releaseObjectGroup("console");
     if (m_frontend)
         m_frontend->messagesCleared();
-}
-
-void InspectorConsoleAgent::setTracingBasedTimeline(ErrorString*, bool enabled)
-{
-    m_state->setBoolean(ConsoleAgentState::tracingBasedTimeline, enabled);
-}
-
-void InspectorConsoleAgent::consoleTimeline(ExecutionContext* context, const String& title, ScriptState* scriptState)
-{
-    UseCounter::count(context, UseCounter::DevToolsConsoleTimeline);
-    if (!m_state->getBoolean(ConsoleAgentState::tracingBasedTimeline))
-        m_timelineAgent->consoleTimeline(context, title, scriptState);
-}
-
-void InspectorConsoleAgent::consoleTimelineEnd(ExecutionContext* context, const String& title, ScriptState* scriptState)
-{
-    if (!m_state->getBoolean(ConsoleAgentState::tracingBasedTimeline))
-        m_timelineAgent->consoleTimelineEnd(context, title, scriptState);
 }
 
 void InspectorConsoleAgent::didFinishXHRLoading(XMLHttpRequest*, ThreadableLoaderClient*, unsigned long requestIdentifier, ScriptString, const AtomicString& method, const String& url)
