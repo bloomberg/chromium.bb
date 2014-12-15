@@ -19,6 +19,7 @@ viewer-page-indicator {
 }
 
 viewer-progress-bar {
+  visibility: hidden;
   z-index: 3;
 }
 

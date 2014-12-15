@@ -402,6 +402,7 @@ PDFViewer.prototype = {
       case 'setTranslatedStrings':
         this.passwordScreen_.text = message.data.getPasswordString;
         this.progressBar_.text = message.data.loadingString;
+        this.progressBar_.style.visibility = 'visible';
         this.errorScreen_.text = message.data.loadFailedString;
         break;
       case 'cancelStreamUrl':
