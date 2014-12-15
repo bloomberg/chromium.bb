@@ -266,7 +266,6 @@ void ServiceWorkerRegistration::ActivateWaitingVersion() {
   // "activating" as arguments."
   activating_version->SetStatus(ServiceWorkerVersion::ACTIVATING);
   // "9. Fire a simple event named controllerchange..."
-  // Notify associated provider hosts to change the controller.
   if (activating_version->skip_waiting())
     FOR_EACH_OBSERVER(Listener, listeners_, OnSkippedWaiting(this));
 

@@ -84,6 +84,11 @@ void ServiceWorkerProviderHost::OnRegistrationFailed(
 void ServiceWorkerProviderHost::OnSkippedWaiting(
     ServiceWorkerRegistration* registration) {
   DCHECK_EQ(associated_registration_.get(), registration);
+  // A client is "using" a registration if it is controlled by the active
+  // worker of the registration. skipWaiting doesn't cause a client to start
+  // using the registration.
+  if (!controlling_version_)
+    return;
   ServiceWorkerVersion* active_version = registration->active_version();
   DCHECK_EQ(active_version->status(), ServiceWorkerVersion::ACTIVATING);
   SetControllerVersionAttribute(active_version);
