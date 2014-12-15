@@ -186,6 +186,7 @@
         "background/js/media_import_handler.js",
         "background/js/media_scanner.js",
         "background/js/progress_center.js",
+        "background/js/task_queue.js",
         "background/js/test_util.js",
         "background/js/volume_manager.js",
         "background/js/background.js"

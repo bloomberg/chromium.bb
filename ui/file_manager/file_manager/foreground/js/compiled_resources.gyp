@@ -58,6 +58,7 @@
           '../../background/js/import_history.js',
           '../../background/js/media_import_handler.js',
           '../../background/js/media_scanner.js',
+          '../../background/js/task_queue.js',
           '../../background/js/background_base.js',
           '../../background/js/background.js',
           '../../../image_loader/image_loader_client.js',

@@ -37,6 +37,7 @@
       <include name="IDR_FILE_MANAGER_MEDIA_IMPORT_HANDLER_JS" file="file_manager/background/js/media_import_handler.js" flattenhtml="false" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_MEDIA_SCANNER_JS" file="file_manager/background/js/media_scanner.js" flattenhtml="false" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_PROGRESS_CENTER_JS" file="file_manager/background/js/progress_center.js" flattenhtml="false" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_TASK_QUEUE_JS" file="file_manager/background/js/task_queue.js" flattenhtml="false" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_TEST_UTIL_JS" file="file_manager/background/js/test_util.js" flattenhtml="false" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_VOLUME_MANAGER_JS" file="file_manager/background/js/volume_manager.js" flattenhtml="false" type="BINDATA" />
 

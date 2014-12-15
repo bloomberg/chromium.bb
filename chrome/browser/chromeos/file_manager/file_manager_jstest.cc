@@ -93,3 +93,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MediaImportHandlerTest) {
   RunTest(base::FilePath(
       FILE_PATH_LITERAL("background/js/media_import_handler_unittest.html")));
 }
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, TaskQueueTest) {
+  RunTest(base::FilePath(
+      FILE_PATH_LITERAL("background/js/task_queue_unittest.html")));
+}

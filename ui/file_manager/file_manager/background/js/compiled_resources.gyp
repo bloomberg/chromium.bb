@@ -36,6 +36,7 @@
           'media_import_handler.js',
           'media_scanner.js',
           'progress_center.js',
+          'task_queue.js',
           'volume_manager.js',
           'background_base.js',
         ],
