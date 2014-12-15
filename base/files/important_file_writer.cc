@@ -27,10 +27,14 @@ namespace {
 
 const int kDefaultCommitIntervalMs = 10000;
 
+// This enum is used to define the buckets for an enumerated UMA histogram.
+// Hence,
+//   (a) existing enumerated constants should never be deleted or reordered, and
+//   (b) new constants should only be appended at the end of the enumeration.
 enum TempFileFailure {
   FAILED_CREATING,
   FAILED_OPENING,
-  FAILED_CLOSING,
+  FAILED_CLOSING,  // Unused.
   FAILED_WRITING,
   FAILED_RENAMING,
   FAILED_FLUSHING,
