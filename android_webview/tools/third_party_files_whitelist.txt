@@ -163,6 +163,10 @@ tools/symsrc/pefile.py
 tools/traceline/traceline/assembler.h
 # Copyright Google Inc; BSD license. Tool only.
 tools/traceline/traceline/sidestep/mini_disassembler.cc
+# Copyright Marijn Haverbeke. MIT license. Tool only, not used on Android.
+tools/win/sizeviewer/clike.js
+# Copyright Marijn Haverbeke. MIT license. Tool only, not used on Android.
+tools/win/sizeviewer/codemirror.js
 # Copyright The Chromium Authors, Apple Inc; BSD license. Not used on Android.
 ui/base/clipboard/clipboard_util_win.cc
 # Copyright The Chromium Authors, Apple Inc; BSD license. Not used on Android.
