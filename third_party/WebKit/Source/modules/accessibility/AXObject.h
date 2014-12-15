@@ -108,7 +108,6 @@ enum AccessibilityRole {
     LogRole,
     MainRole,
     MarqueeRole,
-    MathElementRole,
     MathRole,
     MenuBarRole,
     MenuButtonRole,

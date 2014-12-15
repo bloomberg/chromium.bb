@@ -127,7 +127,6 @@ enum WebAXRole {
     WebAXRoleLog,
     WebAXRoleMain,
     WebAXRoleMarquee,
-    WebAXRoleMathElement,
     WebAXRoleMath,
     WebAXRoleMenuBar,
     WebAXRoleMenuButton,

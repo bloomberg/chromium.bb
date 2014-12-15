@@ -200,7 +200,7 @@ WebAXObject WebAXObject::parentObject() const
 bool WebAXObject::canSetSelectedAttribute() const
 {
     if (isDetached())
-        return 0;
+        return false;
 
     return m_private->canSetSelectedAttribute();
 }
@@ -208,7 +208,7 @@ bool WebAXObject::canSetSelectedAttribute() const
 bool WebAXObject::isAnchor() const
 {
     if (isDetached())
-        return 0;
+        return false;
 
     return m_private->isAnchor();
 }
@@ -224,7 +224,7 @@ WebAXOptionalBool WebAXObject::isAriaGrabbed() const
 bool WebAXObject::isAriaReadOnly() const
 {
     if (isDetached())
-        return 0;
+        return false;
 
     return equalIgnoringCase(m_private->getAttribute(HTMLNames::aria_readonlyAttr), "true");
 }
@@ -240,7 +240,7 @@ WebString WebAXObject::ariaAutoComplete() const
 bool WebAXObject::isButtonStateMixed() const
 {
     if (isDetached())
-        return 0;
+        return false;
 
     return m_private->checkboxOrRadioValue() == ButtonStateMixed;
 }
@@ -248,7 +248,7 @@ bool WebAXObject::isButtonStateMixed() const
 bool WebAXObject::isChecked() const
 {
     if (isDetached())
-        return 0;
+        return false;
 
     return m_private->isChecked();
 }
@@ -256,7 +256,7 @@ bool WebAXObject::isChecked() const
 bool WebAXObject::isClickable() const
 {
     if (isDetached())
-        return 0;
+        return false;
 
     return m_private->isClickable();
 }
@@ -264,7 +264,7 @@ bool WebAXObject::isClickable() const
 bool WebAXObject::isCollapsed() const
 {
     if (isDetached())
-        return 0;
+        return false;
 
     return m_private->isCollapsed();
 }
@@ -272,7 +272,7 @@ bool WebAXObject::isCollapsed() const
 bool WebAXObject::isControl() const
 {
     if (isDetached())
-        return 0;
+        return false;
 
     return m_private->isControl();
 }
@@ -280,7 +280,7 @@ bool WebAXObject::isControl() const
 bool WebAXObject::isEnabled() const
 {
     if (isDetached())
-        return 0;
+        return false;
 
     return m_private->isEnabled();
 }
@@ -296,7 +296,7 @@ WebAXExpanded WebAXObject::isExpanded() const
 bool WebAXObject::isFocused() const
 {
     if (isDetached())
-        return 0;
+        return false;
 
     return m_private->isFocused();
 }
@@ -304,7 +304,7 @@ bool WebAXObject::isFocused() const
 bool WebAXObject::isHovered() const
 {
     if (isDetached())
-        return 0;
+        return false;
 
     return m_private->isHovered();
 }
@@ -312,7 +312,7 @@ bool WebAXObject::isHovered() const
 bool WebAXObject::isIndeterminate() const
 {
     if (isDetached())
-        return 0;
+        return false;
 
     return m_private->isIndeterminate();
 }
@@ -320,7 +320,7 @@ bool WebAXObject::isIndeterminate() const
 bool WebAXObject::isLinked() const
 {
     if (isDetached())
-        return 0;
+        return false;
 
     return m_private->isLinked();
 }
@@ -328,7 +328,7 @@ bool WebAXObject::isLinked() const
 bool WebAXObject::isLoaded() const
 {
     if (isDetached())
-        return 0;
+        return false;
 
     return m_private->isLoaded();
 }
@@ -336,7 +336,7 @@ bool WebAXObject::isLoaded() const
 bool WebAXObject::isMultiSelectable() const
 {
     if (isDetached())
-        return 0;
+        return false;
 
     return m_private->isMultiSelectable();
 }
@@ -344,7 +344,7 @@ bool WebAXObject::isMultiSelectable() const
 bool WebAXObject::isOffScreen() const
 {
     if (isDetached())
-        return 0;
+        return false;
 
     return m_private->isOffScreen();
 }
@@ -352,7 +352,7 @@ bool WebAXObject::isOffScreen() const
 bool WebAXObject::isPasswordField() const
 {
     if (isDetached())
-        return 0;
+        return false;
 
     return m_private->isPasswordField();
 }
@@ -360,7 +360,7 @@ bool WebAXObject::isPasswordField() const
 bool WebAXObject::isPressed() const
 {
     if (isDetached())
-        return 0;
+        return false;
 
     return m_private->isPressed();
 }
@@ -368,7 +368,7 @@ bool WebAXObject::isPressed() const
 bool WebAXObject::isReadOnly() const
 {
     if (isDetached())
-        return 0;
+        return false;
 
     return m_private->isReadOnly();
 }
@@ -376,7 +376,7 @@ bool WebAXObject::isReadOnly() const
 bool WebAXObject::isRequired() const
 {
     if (isDetached())
-        return 0;
+        return false;
 
     return m_private->isRequired();
 }
@@ -384,7 +384,7 @@ bool WebAXObject::isRequired() const
 bool WebAXObject::isSelected() const
 {
     if (isDetached())
-        return 0;
+        return false;
 
     return m_private->isSelected();
 }
@@ -408,7 +408,7 @@ WebAXOrientation WebAXObject::orientation() const
 bool WebAXObject::isVisible() const
 {
     if (isDetached())
-        return 0;
+        return false;
 
     return m_private->isVisible();
 }
@@ -416,7 +416,7 @@ bool WebAXObject::isVisible() const
 bool WebAXObject::isVisited() const
 {
     if (isDetached())
-        return 0;
+        return false;
 
     return m_private->isVisited();
 }
@@ -472,7 +472,7 @@ bool WebAXObject::ariaDescribedby(WebVector<WebAXObject>& describedbyElements) c
 bool WebAXObject::ariaHasPopup() const
 {
     if (isDetached())
-        return 0;
+        return false;
 
     return m_private->ariaHasPopup();
 }
@@ -520,7 +520,7 @@ bool WebAXObject::isInLiveRegion() const
 bool WebAXObject::liveRegionAtomic() const
 {
     if (isDetached())
-        return 0;
+        return false;
 
     return m_private->liveRegionAtomic();
 }
@@ -528,7 +528,7 @@ bool WebAXObject::liveRegionAtomic() const
 bool WebAXObject::liveRegionBusy() const
 {
     if (isDetached())
-        return 0;
+        return false;
 
     return m_private->liveRegionBusy();
 }
