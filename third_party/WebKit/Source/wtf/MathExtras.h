@@ -53,21 +53,6 @@ const float piOverFourFloat = static_cast<float>(M_PI_4);
 const double twoPiDouble = piDouble * 2.0;
 const float twoPiFloat = piFloat * 2.0f;
 
-#if OS(OPENBSD)
-
-namespace std {
-
-#ifndef isfinite
-inline bool isfinite(double x) { return finite(x); }
-#endif
-#ifndef signbit
-inline bool signbit(double x) { struct ieee_double *p = (struct ieee_double *)&x; return p->dbl_sign; }
-#endif
-
-} // namespace std
-
-#endif
-
 #if OS(ANDROID) || COMPILER(MSVC)
 // ANDROID and MSVC's math.h does not currently supply log2 or log2f.
 inline double log2(double num)
