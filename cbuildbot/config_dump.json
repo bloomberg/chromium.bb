@@ -13787,6 +13787,7 @@
         "name": "gizmo-paladin",
         "paladin_builder_name": "gizmo paladin",
         "prebuilts": "public",
+        "separate_debug_symbols": true,
         "sync_chrome": false,
         "trybot_list": true,
         "upload_standalone_images": false,
