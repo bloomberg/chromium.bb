@@ -18,7 +18,8 @@
     'R_package_relpath': 'com/android/webview/chromium',
     'extensions_to_not_compress': 'pak',
     'asset_location': '<(PRODUCT_DIR)/android_webview_assets',
-    'proguard_enabled': 'true',
+    # TODO: crbug.com/442348 Update proguard.flags and re-enable.
+    'proguard_enabled': 'false',
     'proguard_flags_paths': ['<(DEPTH)/android_webview/apk/java/proguard.flags'],
     # TODO: crbug.com/405035 Find a better solution for WebView .pak files.
     'additional_input_paths': [
