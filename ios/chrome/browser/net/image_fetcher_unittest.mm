@@ -6,14 +6,12 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/mac/bind_objc_block.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/mac/scoped_block.h"
+#include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -59,9 +57,15 @@ static unsigned char kWEBPImage[] = {
     48,1,0,157,1,42,1,0,1,0,3,0,52,37,164,0,3,112,0,254,251,253,80,0
 };
 
-static char kTestUrl[] = "http://www.img.com";
+static const char kTestUrl[] = "http://www.img.com";
+
+static const char kWEBPHeaderResponse[] =
+    "HTTP/1.1 200 OK\0Content-type: image/webp\0\0";
 
 }  // namespace
+
+// TODO(ios): remove the static_cast<UIImage*>(nil) once all the bots have
+// Xcode 6.0 or later installed, http://crbug.com/440857
 
 class ImageFetcherTest : public PlatformTest {
  protected:
@@ -77,7 +81,7 @@ class ImageFetcherTest : public PlatformTest {
         } copy]);
     image_fetcher_->SetRequestContextGetter(
         new net::TestURLRequestContextGetter(
-            base::MessageLoopProxy::current()));
+            base::ThreadTaskRunnerHandle::Get()));
   }
 
   ~ImageFetcherTest() override { pool_->Shutdown(); }
@@ -93,7 +97,7 @@ class ImageFetcherTest : public PlatformTest {
   }
 
   base::MessageLoop loop_;
-  base::mac::ScopedBlock<image_fetcher::Callback> callback_;
+  base::mac::ScopedBlock<image_fetcher::ImageFetchedCallback> callback_;
   net::TestURLFetcherFactory factory_;
   scoped_refptr<base::SequencedWorkerPool> pool_;
   scoped_ptr<image_fetcher::ImageFetcher> image_fetcher_;
@@ -132,11 +136,8 @@ TEST_F(ImageFetcherTest, TestGoodWebP) {
   fetcher->set_response_code(200);
   fetcher->SetResponseString(
       std::string((char*)kWEBPImage, sizeof(kWEBPImage)));
-  std::string kZero = std::string("\0", 1);
-  std::string header_string = std::string("HTTP/1.1 200 OK") + kZero +
-      "Content-type: image/webp" + kZero + kZero;
   scoped_refptr<net::HttpResponseHeaders> headers(new net::HttpResponseHeaders(
-      header_string));
+      std::string(kWEBPHeaderResponse, arraysize(kWEBPHeaderResponse))));
   fetcher->set_response_headers(headers);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
   pool_->FlushForTesting();
@@ -149,11 +150,8 @@ TEST_F(ImageFetcherTest, TestBadWebP) {
   net::TestURLFetcher* fetcher = SetupFetcher();
   fetcher->set_response_code(200);
   fetcher->SetResponseString("This is not a valid WebP image");
-  std::string kZero = std::string("\0", 1);
-  std::string header_string = std::string("HTTP/1.1 200 OK") + kZero +
-      "Content-type: image/webp" + kZero + kZero;
   scoped_refptr<net::HttpResponseHeaders> headers(new net::HttpResponseHeaders(
-      header_string));
+      std::string(kWEBPHeaderResponse, arraysize(kWEBPHeaderResponse))));
   fetcher->set_response_headers(headers);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
   pool_->FlushForTesting();
@@ -167,11 +165,8 @@ TEST_F(ImageFetcherTest, DeleteDuringWebPDecoding) {
   fetcher->set_response_code(200);
   fetcher->SetResponseString(
       std::string((char*)kWEBPImage, sizeof(kWEBPImage)));
-  std::string kZero = std::string("\0", 1);
-  std::string header_string = std::string("HTTP/1.1 200 OK") + kZero +
-      "Content-type: image/webp" + kZero + kZero;
   scoped_refptr<net::HttpResponseHeaders> headers(new net::HttpResponseHeaders(
-      header_string));
+      std::string(kWEBPHeaderResponse, arraysize(kWEBPHeaderResponse))));
   fetcher->set_response_headers(headers);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
   // Delete the image fetcher, and check that the callback is not called.

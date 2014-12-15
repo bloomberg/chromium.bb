@@ -7,35 +7,42 @@
 
 #include <map>
 
-#include "base/compiler_specific.h"
-#include "base/mac/bind_objc_block.h"
-#include "base/mac/scoped_nsobject.h"
+#include "base/mac/scoped_block.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "url/gurl.h"
 
+class GURL;
 @class NSData;
+
+namespace base {
+class SequencedWorkerPool;
+}
+
+namespace net {
+class URLRequestContextGetter;
+}
 
 namespace image_fetcher {
 
 // Callback that informs of the download of an image encoded in |data|,
 // downloaded from |url|, and with the http status |http_response_code|. If the
 // url is a data URL, |http_response_code| is always 200.
-typedef void (^Callback)(const GURL& url, int http_response_code, NSData* data);
+using ImageFetchedCallback =
+    void (^)(const GURL& url, int http_response_code, NSData* data);
 
 // Utility class that will retrieve an image from an URL. The image is returned
 // as NSData which can be used with +[UIImage imageWithData:]. This class
 // usually returns the raw bytes retrieved from the network without any
-// processing with the exception of WebP encoded images. Those are decoded and
+// processing, with the exception of WebP encoded images. Those are decoded and
 // then reencoded in a format suitable for UIImage.
 // An instance of this class can download a number of images at the same time.
 class ImageFetcher : public net::URLFetcherDelegate {
  public:
   // The WorkerPool is used to eventually decode the image.
   explicit ImageFetcher(
-      const scoped_refptr<base::SequencedWorkerPool> decoding_pool);
+      const scoped_refptr<base::SequencedWorkerPool>& decoding_pool);
   ~ImageFetcher() override;
 
   // Start downloading the image at the given |url|. The |callback| will be
@@ -45,25 +52,25 @@ class ImageFetcher : public net::URLFetcherDelegate {
   // This method assumes the request context getter has been set.
   // (virtual for testing)
   virtual void StartDownload(const GURL& url,
-                             Callback callback,
+                             ImageFetchedCallback callback,
                              const std::string& referrer,
                              net::URLRequest::ReferrerPolicy referrer_policy);
 
   // Helper method to call StartDownload without a referrer.
   // (virtual for testing)
-  virtual void StartDownload(const GURL& url, Callback callback);
+  virtual void StartDownload(const GURL& url, ImageFetchedCallback callback);
 
   // A valid request context getter is required before starting the download.
   // (virtual for testing)
-  virtual void SetRequestContextGetter(
-      net::URLRequestContextGetter* request_context_getter);
+  virtual void SetRequestContextGetter(const scoped_refptr<
+      net::URLRequestContextGetter>& request_context_getter);
 
-  // content::URLFetcherDelegate methods.
+  // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
  private:
   // Runs the callback with the given arguments.
-  void RunCallback(const base::mac::ScopedBlock<Callback>& callback,
+  void RunCallback(const base::mac::ScopedBlock<ImageFetchedCallback>& callback,
                    const GURL& url,
                    const int http_response_code,
                    NSData* data);
@@ -72,7 +79,7 @@ class ImageFetcher : public net::URLFetcherDelegate {
   // fetch; the value is the callback to use when the download request
   // completes. When a download request completes, the URLFetcher must be
   // deleted and the callback called and released.
-  std::map<const net::URLFetcher*, Callback> downloads_in_progress_;
+  std::map<const net::URLFetcher*, ImageFetchedCallback> downloads_in_progress_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   // The WeakPtrFactory is used to cancel callbacks if ImageFetcher is destroyed

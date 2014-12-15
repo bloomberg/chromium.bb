@@ -7,18 +7,15 @@
 #import <Foundation/Foundation.h>
 
 #include "base/bind.h"
-#include "base/compiler_specific.h"
 #include "base/location.h"
-#include "base/logging.h"
-#include "base/mac/scoped_block.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/task_runner_util.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "ios/web/public/web_thread.h"
 #include "ios/web/public/webp_decoder.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
-#include "url/gurl.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace {
 
@@ -45,6 +42,9 @@ class WebpDecoderDelegate : public web::WebpDecoder::Delegate {
   base::scoped_nsobject<NSMutableData> decoded_image_;
 };
 
+// Content-type header for WebP images.
+static const char kWEBPMimeType[] = "image/webp";
+
 // Returns a NSData object containing the decoded image.
 // Returns nil in case of failure.
 base::scoped_nsobject<NSData> DecodeWebpImage(
@@ -61,7 +61,7 @@ base::scoped_nsobject<NSData> DecodeWebpImage(
 namespace image_fetcher {
 
 ImageFetcher::ImageFetcher(
-    const scoped_refptr<base::SequencedWorkerPool> decoding_pool)
+    const scoped_refptr<base::SequencedWorkerPool>& decoding_pool)
     : request_context_getter_(nullptr),
       weak_factory_(this),
       decoding_pool_(decoding_pool) {
@@ -71,17 +71,15 @@ ImageFetcher::ImageFetcher(
 ImageFetcher::~ImageFetcher() {
   // Delete all the entries in the |downloads_in_progress_| map.  This will in
   // turn cancel all of the requests.
-  for (std::map<const net::URLFetcher*, Callback>::iterator it =
-           downloads_in_progress_.begin();
-       it != downloads_in_progress_.end(); ++it) {
-    [it->second release];
-    delete it->first;
+  for (const auto& pair : downloads_in_progress_) {
+    [pair.second release];
+    delete pair.first;
   }
 }
 
 void ImageFetcher::StartDownload(
     const GURL& url,
-    Callback callback,
+    ImageFetchedCallback callback,
     const std::string& referrer,
     net::URLRequest::ReferrerPolicy referrer_policy) {
   DCHECK(request_context_getter_.get());
@@ -90,16 +88,18 @@ void ImageFetcher::StartDownload(
                                                      this);
   downloads_in_progress_[fetcher] = [callback copy];
   fetcher->SetLoadFlags(
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES |
+      net::LOAD_DO_NOT_SEND_AUTH_DATA | net::LOAD_DO_NOT_PROMPT_FOR_LOGIN);
   fetcher->SetRequestContext(request_context_getter_.get());
   fetcher->SetReferrer(referrer);
   fetcher->SetReferrerPolicy(referrer_policy);
   fetcher->Start();
 }
 
-void ImageFetcher::StartDownload(const GURL& url, Callback callback) {
+void ImageFetcher::StartDownload(
+    const GURL& url, ImageFetchedCallback callback) {
   ImageFetcher::StartDownload(
-      url, callback, "", net::URLRequest::NEVER_CLEAR_REFERRER);
+      url, callback, std::string(), net::URLRequest::NEVER_CLEAR_REFERRER);
 }
 
 // Delegate callback that is called when URLFetcher completes.  If the image
@@ -111,19 +111,20 @@ void ImageFetcher::OnURLFetchComplete(const net::URLFetcher* fetcher) {
     return;
   }
 
-  // Ensures that |fetcher| will be deleted even if we return early.
+  // Ensures that |fetcher| will be deleted in the event of early return.
   scoped_ptr<const net::URLFetcher> fetcher_deleter(fetcher);
 
-  // Retrieves the callback and ensures that it will be deleted even if we
-  // return early.
-  base::mac::ScopedBlock<Callback> callback(downloads_in_progress_[fetcher]);
+  // Retrieves the callback and ensures that it will be deleted in the event
+  // of early return.
+  base::mac::ScopedBlock<ImageFetchedCallback> callback(
+      downloads_in_progress_[fetcher]);
 
   // Remove |fetcher| from the map.
   downloads_in_progress_.erase(fetcher);
 
   // Make sure the request was successful. For "data" requests, the response
   // code has no meaning, because there is no actual server (data is encoded
-  // directly in the URL). In that case, we set the response code to 200.
+  // directly in the URL). In that case, set the response code to 200 (OK).
   const GURL& original_url = fetcher->GetOriginalURL();
   const int http_response_code = original_url.SchemeIs("data") ?
       200 : fetcher->GetResponseCode();
@@ -146,7 +147,7 @@ void ImageFetcher::OnURLFetchComplete(const net::URLFetcher* fetcher) {
   if (fetcher->GetResponseHeaders()) {
     std::string mime_type;
     fetcher->GetResponseHeaders()->GetMimeType(&mime_type);
-    if (mime_type == "image/webp") {
+    if (mime_type == kWEBPMimeType) {
       base::PostTaskAndReplyWithResult(decoding_pool_.get(),
                                        FROM_HERE,
                                        base::Bind(&DecodeWebpImage, data),
@@ -161,15 +162,16 @@ void ImageFetcher::OnURLFetchComplete(const net::URLFetcher* fetcher) {
   (callback.get())(original_url, http_response_code, data);
 }
 
-void ImageFetcher::RunCallback(const base::mac::ScopedBlock<Callback>& callback,
-                               const GURL& url,
-                               int http_response_code,
-                               NSData* data) {
+void ImageFetcher::RunCallback(
+    const base::mac::ScopedBlock<ImageFetchedCallback>& callback,
+    const GURL& url,
+    int http_response_code,
+    NSData* data) {
   (callback.get())(url, http_response_code, data);
 }
 
 void ImageFetcher::SetRequestContextGetter(
-    net::URLRequestContextGetter* request_context_getter) {
+    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter) {
   request_context_getter_ = request_context_getter;
 }
 
