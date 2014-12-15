@@ -114,13 +114,6 @@ class ChangeNotInManifestException(Exception):
   """Raised if we try to apply a not-in-manifest change."""
 
 
-class PatchNotCommitReady(cros_patch.PatchException):
-  """Raised if a patch is not marked as commit ready."""
-
-  def ShortExplanation(self):
-    return 'isn\'t marked as Commit-Ready anymore.'
-
-
 class PatchModified(cros_patch.PatchException):
   """Raised if a patch is modified while the CQ is running."""
 
@@ -483,7 +476,7 @@ class PatchSeries(object):
         if self._is_submitting:
           raise PatchRejected(dep_change)
         else:
-          raise PatchNotCommitReady(dep_change)
+          raise dep_change.GetMergeException() or PatchRejected(dep_change)
 
       unsatisfied.append(dep_change)
 
@@ -1670,13 +1663,7 @@ class ValidationPool(object):
       raise TreeIsClosedException(closed_or_throttled=not throttled_ok)
 
     # Filter out changes that were modified during the CQ run.
-    unmodified_changes, errors = self.FilterModifiedChanges(changes)
-
-    # Filter out changes that aren't marked as CR=+2, CQ=+1, V=+1 anymore, in
-    # case the patch status changed during the CQ run.
-    filtered_changes = [x for x in unmodified_changes if x.IsMergeable()]
-    for change in set(unmodified_changes) - set(filtered_changes):
-      errors[change] = PatchNotCommitReady(change)
+    filtered_changes, errors = self.FilterModifiedChanges(changes)
 
     patch_series = PatchSeries(self.build_root, helper_pool=self._helper_pool,
                                is_submitting=True)
@@ -1739,8 +1726,8 @@ class ValidationPool(object):
     Returns:
       This returns a tuple (unmodified_changes, errors).
 
-      unmodified_changes: A reloaded list of changes, only including unmodified
-                          and unsubmitted changes.
+      unmodified_changes: A reloaded list of changes, only including mergeable,
+                          unmodified and unsubmitted changes.
       errors: A dictionary. This dictionary will contain all patches that have
         encountered errors, and map them to the associated exception object.
     """
@@ -1749,15 +1736,18 @@ class ValidationPool(object):
     # that occurs below will be mostly up-to-date.
     unmodified_changes, errors = [], {}
     reloaded_changes = list(cls.ReloadChanges(changes))
-    old_changes = cros_patch.PatchCache(changes)
-    for change in reloaded_changes:
-      if change.IsAlreadyMerged():
+    for change, reloaded_change in zip(changes, reloaded_changes):
+      if reloaded_change.IsAlreadyMerged():
         logging.warning('%s is already merged. It was most likely chumped '
                         'during the current CQ run.', change)
-      elif change.patch_number != old_changes[change].patch_number:
+      elif reloaded_change.patch_number != change.patch_number:
         # If users upload new versions of a CL while the CQ is in-flight, then
         # their CLs are no longer tested. These CLs should be rejected.
         errors[change] = PatchModified(change)
+      elif not reloaded_change.IsMergeable():
+        # Get the reason why this change is not mergeable anymore.
+        errors[change] = reloaded_change.GetMergeException()
+        errors[change].patch = change
       else:
         unmodified_changes.append(change)
 
