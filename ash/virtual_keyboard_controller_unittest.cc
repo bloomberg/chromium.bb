@@ -40,6 +40,8 @@ class VirtualKeyboardControllerTest : public AshTestBase {
   }
 
   void SetUp() override {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        keyboard::switches::kDisableSmartVirtualKeyboard);
     AshTestBase::SetUp();
     UpdateKeyboardDevices(std::vector<ui::KeyboardDevice>());
     UpdateTouchscreenDevices(std::vector<ui::TouchscreenDevice>());
@@ -70,9 +72,11 @@ class VirtualKeyboardControllerAutoTest : public VirtualKeyboardControllerTest,
   ~VirtualKeyboardControllerAutoTest() override {}
 
   void SetUp() override {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        keyboard::switches::kAutoVirtualKeyboard);
-    VirtualKeyboardControllerTest::SetUp();
+    AshTestBase::SetUp();
+    // Set the current list of devices to empty so that they don't interfere
+    // with the test.
+    UpdateKeyboardDevices(std::vector<ui::KeyboardDevice>());
+    UpdateTouchscreenDevices(std::vector<ui::TouchscreenDevice>());
     Shell::GetInstance()->system_tray_notifier()->AddVirtualKeyboardObserver(
         this);
   }

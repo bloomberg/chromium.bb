@@ -14121,11 +14121,11 @@ Do you accept?
       </message>
 
       <if expr="chromeos">
-        <message name="IDS_FLAGS_AUTO_VIRTUAL_KEYBOARD_NAME" desc="Name of about:flags option to turn on automatic deployment of the virtual keyboard.">
-          Auto Virtual Keyboard
+        <message name="IDS_FLAGS_DISABLE_SMART_VIRTUAL_KEYBOARD_NAME" desc="Name of about:flags option to turn off smart deployment of the virtual keyboard.">
+          Disable Smart Virtual Keyboard
         </message>
-        <message name="IDS_FLAGS_AUTO_VIRTUAL_KEYBOARD_DESCRIPTION" desc="Description of about:flags option to turn on automatic deployment of the virtual keyboard">
-          Enable automatic deployment of the virtual keyboard.
+        <message name="IDS_FLAGS_DISABLE_SMART_VIRTUAL_KEYBOARD_DESCRIPTION" desc="Description of about:flags option to turn off smart deployment of the virtual keyboard">
+          Disable smart deployment of the virtual keyboard.
         </message>
 
         <message name="IDS_FLAGS_ENABLE_VIRTUAL_KEYBOARD_NAME" desc="Name of about:flags option to turn on the virtual keyboard">
