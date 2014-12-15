@@ -29,7 +29,7 @@ class EVENTS_EXPORT GestureProviderAura : public GestureProviderClient {
   GestureProviderAura(GestureProviderAuraClient* client);
   ~GestureProviderAura() override;
 
-  bool OnTouchEvent(const TouchEvent& event);
+  bool OnTouchEvent(TouchEvent* event);
   void OnAsyncTouchEventAck(bool event_consumed);
   void OnSyncTouchEventAck(const uint64 unique_event_id, bool event_consumed);
   const MotionEventAura& pointer_state() { return pointer_state_; }

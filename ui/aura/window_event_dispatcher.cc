@@ -883,13 +883,17 @@ void WindowEventDispatcher::PreDispatchTouchEvent(Window* target,
   }
 
   ui::TouchEvent orig_event(*event, target, window());
-  if (!ui::GestureRecognizer::Get()->ProcessTouchEventPreDispatch(orig_event,
+  if (!ui::GestureRecognizer::Get()->ProcessTouchEventPreDispatch(&orig_event,
                                                                   target)) {
     // The event is invalid - ignore it.
     event->StopPropagation();
     event->DisableSynchronousHandling();
     return;
   }
+
+  // This flag is set depending on the gestures recognized in the call above,
+  // and needs to propagate with the forwarded event.
+  event->set_may_cause_scrolling(orig_event.may_cause_scrolling());
 
   PreDispatchLocatedEvent(target, event);
 }

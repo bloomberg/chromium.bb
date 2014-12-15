@@ -449,7 +449,8 @@ class EventFilterRecorder : public ui::EventHandler {
   typedef std::vector<int> EventFlags;
 
   EventFilterRecorder()
-      : wait_until_event_(ui::ET_UNKNOWN) {
+      : wait_until_event_(ui::ET_UNKNOWN),
+        last_touch_may_cause_scrolling_(false) {
   }
 
   const Events& events() const { return events_; }
@@ -478,6 +479,7 @@ class EventFilterRecorder : public ui::EventHandler {
     touch_locations_.clear();
     gesture_locations_.clear();
     mouse_event_flags_.clear();
+    last_touch_may_cause_scrolling_ = false;
   }
 
   // ui::EventHandler overrides:
@@ -497,6 +499,7 @@ class EventFilterRecorder : public ui::EventHandler {
 
   void OnTouchEvent(ui::TouchEvent* event) override {
     touch_locations_.push_back(event->location());
+    last_touch_may_cause_scrolling_ = event->may_cause_scrolling();
   }
 
   void OnGestureEvent(ui::GestureEvent* event) override {
@@ -505,6 +508,10 @@ class EventFilterRecorder : public ui::EventHandler {
 
   bool HasReceivedEvent(ui::EventType type) {
     return std::find(events_.begin(), events_.end(), type) != events_.end();
+  }
+
+  bool LastTouchMayCauseScrolling() const {
+    return last_touch_may_cause_scrolling_;
   }
 
  private:
@@ -516,6 +523,7 @@ class EventFilterRecorder : public ui::EventHandler {
   EventLocations touch_locations_;
   EventLocations gesture_locations_;
   EventFlags mouse_event_flags_;
+  bool last_touch_may_cause_scrolling_;
 
   DISALLOW_COPY_AND_ASSIGN(EventFilterRecorder);
 };
@@ -2378,4 +2386,51 @@ TEST_F(WindowEventDispatcherTest, GestureEventCoordinates) {
             recorder.gesture_locations()[0].ToString());
 }
 
+// Tests that a scroll-generating touch-event is marked as such.
+TEST_F(WindowEventDispatcherTest, TouchMovesMarkedWhenCausingScroll) {
+  EventFilterRecorder recorder;
+  root_window()->AddPreTargetHandler(&recorder);
+
+  const gfx::Point location(20, 20);
+  ui::TouchEvent press(
+      ui::ET_TOUCH_PRESSED, location, 0, ui::EventTimeForNow());
+  DispatchEventUsingWindowDispatcher(&press);
+  EXPECT_FALSE(recorder.LastTouchMayCauseScrolling());
+  EXPECT_TRUE(recorder.HasReceivedEvent(ui::ET_TOUCH_PRESSED));
+  recorder.Reset();
+
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED,
+                      location + gfx::Vector2d(100, 100),
+                      0,
+                      ui::EventTimeForNow());
+  DispatchEventUsingWindowDispatcher(&move);
+  EXPECT_TRUE(recorder.LastTouchMayCauseScrolling());
+  EXPECT_TRUE(recorder.HasReceivedEvent(ui::ET_TOUCH_MOVED));
+  EXPECT_TRUE(recorder.HasReceivedEvent(ui::ET_GESTURE_SCROLL_BEGIN));
+  EXPECT_TRUE(recorder.HasReceivedEvent(ui::ET_GESTURE_SCROLL_UPDATE));
+  recorder.Reset();
+
+  ui::TouchEvent move2(ui::ET_TOUCH_MOVED,
+                       location + gfx::Vector2d(200, 200),
+                       0,
+                       ui::EventTimeForNow());
+  DispatchEventUsingWindowDispatcher(&move2);
+  EXPECT_TRUE(recorder.LastTouchMayCauseScrolling());
+  EXPECT_TRUE(recorder.HasReceivedEvent(ui::ET_TOUCH_MOVED));
+  EXPECT_TRUE(recorder.HasReceivedEvent(ui::ET_GESTURE_SCROLL_UPDATE));
+  recorder.Reset();
+
+  // Delay the release to avoid fling generation.
+  ui::TouchEvent release(
+      ui::ET_TOUCH_RELEASED,
+      location + gfx::Vector2dF(200, 200),
+      0,
+      ui::EventTimeForNow() + base::TimeDelta::FromSeconds(1));
+  DispatchEventUsingWindowDispatcher(&release);
+  EXPECT_FALSE(recorder.LastTouchMayCauseScrolling());
+  EXPECT_TRUE(recorder.HasReceivedEvent(ui::ET_TOUCH_RELEASED));
+  EXPECT_TRUE(recorder.HasReceivedEvent(ui::ET_GESTURE_SCROLL_END));
+
+  root_window()->RemovePreTargetHandler(&recorder);
+}
 }  // namespace aura

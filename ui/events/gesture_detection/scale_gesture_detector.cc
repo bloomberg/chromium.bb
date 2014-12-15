@@ -30,7 +30,8 @@ const float kScaleFactor = .5f;
 }  // namespace
 
 // Note: These constants were taken directly from the default (unscaled)
-// versions found in Android's ViewConfiguration.
+// versions found in Android's ViewConfiguration. Do not change these default
+// values without explicitly consulting an OWNER.
 ScaleGestureDetector::Config::Config()
     : span_slop(16),
       min_scaling_touch_major(48),

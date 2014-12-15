@@ -237,6 +237,7 @@ void Coalesce(const WebTouchEvent& event_to_coalesce, WebTouchEvent* event) {
     if (old_event.touches[i_old].state == blink::WebTouchPoint::StateMoved)
       event->touches[i].state = blink::WebTouchPoint::StateMoved;
   }
+  event->causesScrollingIfUncanceled |= old_event.causesScrollingIfUncanceled;
 }
 
 bool CanCoalesce(const WebGestureEvent& event_to_coalesce,

@@ -33,30 +33,30 @@ class GestureProviderAuraTest : public testing::Test,
 TEST_F(GestureProviderAuraTest, IgnoresExtraPressEvents) {
   base::TimeDelta time = ui::EventTimeForNow();
   TouchEvent press1(ET_TOUCH_PRESSED, gfx::PointF(10, 10), 0, time);
-  EXPECT_TRUE(provider()->OnTouchEvent(press1));
+  EXPECT_TRUE(provider()->OnTouchEvent(&press1));
 
   time += base::TimeDelta::FromMilliseconds(10);
   TouchEvent press2(ET_TOUCH_PRESSED, gfx::PointF(30, 40), 0, time);
   // Redundant press with same id is ignored.
-  EXPECT_FALSE(provider()->OnTouchEvent(press2));
+  EXPECT_FALSE(provider()->OnTouchEvent(&press2));
 }
 
 TEST_F(GestureProviderAuraTest, IgnoresExtraMoveOrReleaseEvents) {
   base::TimeDelta time = ui::EventTimeForNow();
   TouchEvent press1(ET_TOUCH_PRESSED, gfx::PointF(10, 10), 0, time);
-  EXPECT_TRUE(provider()->OnTouchEvent(press1));
+  EXPECT_TRUE(provider()->OnTouchEvent(&press1));
 
   time += base::TimeDelta::FromMilliseconds(10);
   TouchEvent release1(ET_TOUCH_RELEASED, gfx::PointF(30, 40), 0, time);
-  EXPECT_TRUE(provider()->OnTouchEvent(release1));
+  EXPECT_TRUE(provider()->OnTouchEvent(&release1));
 
   time += base::TimeDelta::FromMilliseconds(10);
   TouchEvent release2(ET_TOUCH_RELEASED, gfx::PointF(30, 45), 0, time);
-  EXPECT_FALSE(provider()->OnTouchEvent(release1));
+  EXPECT_FALSE(provider()->OnTouchEvent(&release1));
 
   time += base::TimeDelta::FromMilliseconds(10);
   TouchEvent move1(ET_TOUCH_MOVED, gfx::PointF(70, 75), 0, time);
-  EXPECT_FALSE(provider()->OnTouchEvent(move1));
+  EXPECT_FALSE(provider()->OnTouchEvent(&move1));
 }
 
 TEST_F(GestureProviderAuraTest, IgnoresIdenticalMoveEvents) {
@@ -69,10 +69,10 @@ TEST_F(GestureProviderAuraTest, IgnoresIdenticalMoveEvents) {
 
   base::TimeDelta time = ui::EventTimeForNow();
   TouchEvent press0_1(ET_TOUCH_PRESSED, gfx::PointF(9, 10), kTouchId0, time);
-  EXPECT_TRUE(provider()->OnTouchEvent(press0_1));
+  EXPECT_TRUE(provider()->OnTouchEvent(&press0_1));
 
   TouchEvent press1_1(ET_TOUCH_PRESSED, gfx::PointF(40, 40), kTouchId1, time);
-  EXPECT_TRUE(provider()->OnTouchEvent(press1_1));
+  EXPECT_TRUE(provider()->OnTouchEvent(&press1_1));
 
   time += base::TimeDelta::FromMilliseconds(10);
   TouchEvent move0_1(ET_TOUCH_MOVED,
@@ -84,7 +84,7 @@ TEST_F(GestureProviderAuraTest, IgnoresIdenticalMoveEvents) {
                    kRadiusY,
                    kAngle,
                    kForce);
-  EXPECT_TRUE(provider()->OnTouchEvent(move0_1));
+  EXPECT_TRUE(provider()->OnTouchEvent(&move0_1));
 
   TouchEvent move1_1(ET_TOUCH_MOVED,
                    gfx::PointF(100, 200),
@@ -95,7 +95,7 @@ TEST_F(GestureProviderAuraTest, IgnoresIdenticalMoveEvents) {
                    kRadiusY,
                    kAngle,
                    kForce);
-  EXPECT_TRUE(provider()->OnTouchEvent(move1_1));
+  EXPECT_TRUE(provider()->OnTouchEvent(&move1_1));
 
   time += base::TimeDelta::FromMilliseconds(10);
   TouchEvent move0_2(ET_TOUCH_MOVED,
@@ -108,7 +108,7 @@ TEST_F(GestureProviderAuraTest, IgnoresIdenticalMoveEvents) {
                      kAngle,
                      kForce);
   // Nothing has changed, so ignore the move.
-  EXPECT_FALSE(provider()->OnTouchEvent(move0_2));
+  EXPECT_FALSE(provider()->OnTouchEvent(&move0_2));
 
   TouchEvent move1_2(ET_TOUCH_MOVED,
                      gfx::PointF(100, 200),
@@ -120,7 +120,7 @@ TEST_F(GestureProviderAuraTest, IgnoresIdenticalMoveEvents) {
                      kAngle,
                      kForce);
   // Nothing has changed, so ignore the move.
-  EXPECT_FALSE(provider()->OnTouchEvent(move1_2));
+  EXPECT_FALSE(provider()->OnTouchEvent(&move1_2));
 
   time += base::TimeDelta::FromMilliseconds(10);
   TouchEvent move0_3(ET_TOUCH_MOVED,
@@ -133,7 +133,7 @@ TEST_F(GestureProviderAuraTest, IgnoresIdenticalMoveEvents) {
                      kAngle,
                      kForce);
   // Position has changed, so don't ignore the move.
-  EXPECT_TRUE(provider()->OnTouchEvent(move0_3));
+  EXPECT_TRUE(provider()->OnTouchEvent(&move0_3));
 
   time += base::TimeDelta::FromMilliseconds(10);
   TouchEvent move0_4(ET_TOUCH_MOVED,
@@ -146,5 +146,7 @@ TEST_F(GestureProviderAuraTest, IgnoresIdenticalMoveEvents) {
                      kAngle,
                      kForce);
 }
+
+// TODO(jdduke): Test whether event marked as scroll trigger.
 
 }  // namespace ui

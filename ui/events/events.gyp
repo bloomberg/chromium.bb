@@ -322,6 +322,7 @@
         'event_rewriter_unittest.cc',
         'event_unittest.cc',
         'gesture_detection/bitset_32_unittest.cc',
+        'gesture_detection/filtered_gesture_provider_unittest.cc',
         'gesture_detection/gesture_event_data_packet_unittest.cc',
         'gesture_detection/gesture_provider_unittest.cc',
         'gesture_detection/motion_event_buffer_unittest.cc',

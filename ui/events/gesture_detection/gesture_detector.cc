@@ -38,7 +38,8 @@ enum TimeoutEvent {
 }  // namespace
 
 // Note: These constants were taken directly from the default (unscaled)
-// versions found in Android's ViewConfiguration.
+// versions found in Android's ViewConfiguration. Do not change these default
+// values without explicitly consulting an OWNER.
 GestureDetector::Config::Config()
     : longpress_timeout(base::TimeDelta::FromMilliseconds(500)),
       showpress_timeout(base::TimeDelta::FromMilliseconds(180)),

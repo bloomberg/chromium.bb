@@ -57,7 +57,7 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
   void DispatchGestureEvent(GestureEvent* event);
 
   // Overridden from GestureRecognizer
-  bool ProcessTouchEventPreDispatch(const TouchEvent& event,
+  bool ProcessTouchEventPreDispatch(TouchEvent* event,
                                     GestureConsumer* consumer) override;
 
   Gestures* AckAsyncTouchEvent(const TouchEvent& event,

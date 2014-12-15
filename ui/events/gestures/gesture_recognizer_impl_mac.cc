@@ -17,7 +17,7 @@ class GestureRecognizerImplMac : public GestureRecognizer {
   ~GestureRecognizerImplMac() override {}
 
  private:
-  bool ProcessTouchEventPreDispatch(const TouchEvent& event,
+  bool ProcessTouchEventPreDispatch(TouchEvent* event,
                                     GestureConsumer* consumer) override {
     return false;
   }

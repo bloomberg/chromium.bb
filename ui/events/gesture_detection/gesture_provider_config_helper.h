@@ -12,7 +12,14 @@
 
 namespace ui {
 
-GESTURE_DETECTION_EXPORT GestureProvider::Config DefaultGestureProviderConfig();
+enum class GestureProviderConfigType {
+  CURRENT_PLATFORM,  // Parameters tailored for the current platform.
+  GENERIC_DESKTOP,   // Parameters typical for a desktop machine.
+  GENERIC_MOBILE     // Parameters typical for a mobile device (phone/tablet).
+};
+
+GESTURE_DETECTION_EXPORT GestureProvider::Config GetGestureProviderConfig(
+    GestureProviderConfigType);
 
 }  // namespace ui
 

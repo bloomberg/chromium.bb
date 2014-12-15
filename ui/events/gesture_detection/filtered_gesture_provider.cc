@@ -10,31 +10,41 @@
 
 namespace ui {
 
+FilteredGestureProvider::TouchHandlingResult::TouchHandlingResult()
+    : succeeded(false), did_generate_scroll(false) {
+}
+
 FilteredGestureProvider::FilteredGestureProvider(
     const GestureProvider::Config& config,
     GestureProviderClient* client)
     : client_(client),
       gesture_provider_(config, this),
       gesture_filter_(this),
-      handling_event_(false) {}
+      handling_event_(false),
+      last_touch_event_did_generate_scroll_(false) {
+}
 
-bool FilteredGestureProvider::OnTouchEvent(const MotionEvent& event) {
+FilteredGestureProvider::TouchHandlingResult
+FilteredGestureProvider::OnTouchEvent(const MotionEvent& event) {
   DCHECK(!handling_event_);
   base::AutoReset<bool> handling_event(&handling_event_, true);
 
   pending_gesture_packet_ = GestureEventDataPacket::FromTouch(event);
-
+  last_touch_event_did_generate_scroll_ = false;
   if (!gesture_provider_.OnTouchEvent(event))
-    return false;
+    return TouchHandlingResult();
 
-  TouchDispositionGestureFilter::PacketResult result =
+  TouchDispositionGestureFilter::PacketResult filter_result =
       gesture_filter_.OnGesturePacket(pending_gesture_packet_);
-  if (result != TouchDispositionGestureFilter::SUCCESS) {
+  if (filter_result != TouchDispositionGestureFilter::SUCCESS) {
     NOTREACHED() << "Invalid touch gesture sequence detected.";
-    return false;
+    return TouchHandlingResult();
   }
 
-  return true;
+  TouchHandlingResult result;
+  result.succeeded = true;
+  result.did_generate_scroll = last_touch_event_did_generate_scroll_;
+  return result;
 }
 
 void FilteredGestureProvider::OnAsyncTouchEventAck(bool event_consumed) {
@@ -69,6 +79,11 @@ const ui::MotionEvent* FilteredGestureProvider::GetCurrentDownEvent() const {
 
 void FilteredGestureProvider::OnGestureEvent(const GestureEventData& event) {
   if (handling_event_) {
+    if (event.details.type() == ui::ET_GESTURE_SCROLL_BEGIN ||
+        event.details.type() == ui::ET_GESTURE_SCROLL_UPDATE ||
+        event.details.type() == ui::ET_SCROLL_FLING_START) {
+      last_touch_event_did_generate_scroll_ = true;
+    }
     pending_gesture_packet_.Push(event);
     return;
   }

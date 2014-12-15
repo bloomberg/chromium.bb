@@ -50,13 +50,7 @@ GestureEventQueue::Config GetGestureEventQueueConfig() {
 }
 
 TouchEventQueue::Config GetTouchEventQueueConfig() {
-  TouchEventQueue::Config config;
-
-  config.touchmove_slop_suppression_length_dips =
-      ui::GestureConfiguration::GetInstance()
-          ->max_touch_move_in_pixels_for_click();
-
-  return config;
+  return TouchEventQueue::Config();
 }
 
 #elif defined(OS_ANDROID)
@@ -86,13 +80,6 @@ TouchEventQueue::Config GetTouchEventQueueConfig() {
       base::TimeDelta::FromMilliseconds(kTouchAckTimeoutDelayMs);
   config.touch_ack_timeout_supported = true;
 
-  const double touch_slop_length_pixels =
-      static_cast<double>(gfx::ViewConfiguration::GetTouchSlopInPixels());
-  const double device_scale_factor =
-      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().device_scale_factor();
-  config.touchmove_slop_suppression_length_dips =
-      touch_slop_length_pixels / device_scale_factor;
-
   return config;
 }
 
@@ -103,10 +90,7 @@ GestureEventQueue::Config GetGestureEventQueueConfig() {
 }
 
 TouchEventQueue::Config GetTouchEventQueueConfig() {
-  TouchEventQueue::Config config;
-  config.touchmove_slop_suppression_length_dips =
-      ui::GestureDetector::Config().touch_slop;
-  return config;
+  return TouchEventQueue::Config();
 }
 
 #endif

@@ -28,10 +28,10 @@ const double kAsyncTouchMoveIntervalSec = .2;
 // trigger an immediate async touchmove to cancel potential tap-related logic.
 const double kApplicationSlopRegionLengthDipsSqared = 15. * 15.;
 
-// Using a small epsilon when comparing slop distances allows pixel perfect
-// slop determination when using fractional DIP coordinates (assuming the slop
-// region and DPI scale are reasonably proportioned).
-const float kSlopEpsilon = .05f;
+// A sanity check on touches received to ensure that touch movement outside
+// the platform slop region will cause scrolling, as indicated by the event's
+// |causesScrollingIfUncanceled| bit.
+const double kMaxConceivablePlatformSlopRegionLengthDipsSquared = 60. * 60.;
 
 TouchEventWithLatencyInfo ObtainCancelEventForTouchEvent(
     const TouchEventWithLatencyInfo& event_to_cancel) {
@@ -215,27 +215,16 @@ class TouchEventQueue::TouchTimeoutHandler {
   bool enabled_for_current_sequence_;
 };
 
-// Provides touchmove slop suppression for a single touch that remains within
-// a given slop region, unless the touchstart is preventDefault'ed.
-// TODO(jdduke): Use a flag bundled with each TouchEvent declaring whether it
-// has exceeded the slop region, removing duplicated slop determination logic.
+// Provides touchmove slop suppression for a touch sequence until a
+// (unprevented) touch will trigger immediate scrolling.
 class TouchEventQueue::TouchMoveSlopSuppressor {
  public:
-  TouchMoveSlopSuppressor(double slop_suppression_length_dips)
-      : slop_suppression_length_dips_squared_(0),
-        suppressing_touchmoves_(false) {
-    if (slop_suppression_length_dips) {
-      slop_suppression_length_dips += kSlopEpsilon;
-      slop_suppression_length_dips_squared_ =
-          slop_suppression_length_dips * slop_suppression_length_dips;
-    }
-  }
+  TouchMoveSlopSuppressor() : suppressing_touchmoves_(false) {}
 
   bool FilterEvent(const WebTouchEvent& event) {
     if (WebTouchEventTraits::IsTouchSequenceStart(event)) {
-      touch_sequence_start_position_ =
-          gfx::PointF(event.touches[0].position);
-      suppressing_touchmoves_ = slop_suppression_length_dips_squared_ != 0;
+      suppressing_touchmoves_ = true;
+      touch_start_location_ = gfx::PointF(event.touches[0].position);
     }
 
     if (event.type == WebInputEvent::TouchEnd ||
@@ -246,17 +235,18 @@ class TouchEventQueue::TouchMoveSlopSuppressor {
       return false;
 
     if (suppressing_touchmoves_) {
-      // Movement with a secondary pointer should terminate suppression.
       if (event.touchesLength > 1) {
         suppressing_touchmoves_ = false;
-      } else if (event.touchesLength == 1) {
-        // Movement outside of the slop region should terminate suppression.
-        gfx::PointF position(event.touches[0].position);
-        if ((position - touch_sequence_start_position_).LengthSquared() >
-            slop_suppression_length_dips_squared_)
-          suppressing_touchmoves_ = false;
+      } else if (event.causesScrollingIfUncanceled) {
+        suppressing_touchmoves_ = false;
+      } else {
+        // No sane slop region should be larger than 60 DIPs.
+        DCHECK_LT((gfx::PointF(event.touches[0].position) -
+                   touch_start_location_).LengthSquared(),
+                  kMaxConceivablePlatformSlopRegionLengthDipsSquared);
       }
     }
+
     return suppressing_touchmoves_;
   }
 
@@ -268,9 +258,11 @@ class TouchEventQueue::TouchMoveSlopSuppressor {
   bool suppressing_touchmoves() const { return suppressing_touchmoves_; }
 
  private:
-  double slop_suppression_length_dips_squared_;
-  gfx::PointF touch_sequence_start_position_;
   bool suppressing_touchmoves_;
+
+  // Sanity check that the upstream touch provider is properly reporting whether
+  // the touch sequence will cause scrolling.
+  gfx::PointF touch_start_location_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchMoveSlopSuppressor);
 };
@@ -362,8 +354,7 @@ class CoalescedWebTouchEvent {
 };
 
 TouchEventQueue::Config::Config()
-    : touchmove_slop_suppression_length_dips(0),
-      touch_scrolling_mode(TOUCH_SCROLLING_MODE_DEFAULT),
+    : touch_scrolling_mode(TOUCH_SCROLLING_MODE_DEFAULT),
       touch_ack_timeout_delay(base::TimeDelta::FromMilliseconds(200)),
       touch_ack_timeout_supported(false) {
 }
@@ -375,8 +366,7 @@ TouchEventQueue::TouchEventQueue(TouchEventQueueClient* client,
       dispatching_touch_(false),
       has_handlers_(true),
       drop_remaining_touches_in_sequence_(false),
-      touchmove_slop_suppressor_(new TouchMoveSlopSuppressor(
-          config.touchmove_slop_suppression_length_dips)),
+      touchmove_slop_suppressor_(new TouchMoveSlopSuppressor),
       send_touch_events_async_(false),
       needs_async_touchmove_for_outer_slop_region_(false),
       last_sent_touch_timestamp_sec_(0),

@@ -59,10 +59,6 @@ class CONTENT_EXPORT TouchEventQueue {
   struct CONTENT_EXPORT Config {
     Config();
 
-    // Determines the bounds of the (square) touchmove slop suppression region.
-    // Defaults to 0 (disabled).
-    double touchmove_slop_suppression_length_dips;
-
     // Determines the type of touch scrolling.
     // Defaults to TouchEventQueue:::TOUCH_SCROLLING_MODE_DEFAULT.
     TouchEventQueue::TouchScrollingMode touch_scrolling_mode;

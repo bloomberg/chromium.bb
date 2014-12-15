@@ -57,7 +57,7 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
   // Whether we should convert scrolls into pinches.
   bool InPinchGestureMode() const;
 
-  bool FillTouchEventAndPoint(const blink::WebMouseEvent& mouse_event);
+  void FillTouchEventAndPoint(const blink::WebMouseEvent& mouse_event);
   void FillPinchEvent(const blink::WebInputEvent& event);
 
   // The following methods generate and pass gesture events to the renderer.
@@ -66,7 +66,9 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
   void PinchEnd(const blink::WebGestureEvent& event);
   void ScrollEnd(const blink::WebGestureEvent& event);
 
-  void ForwardTouchEventToClient();
+  // Offers the emulated event to |gesture_provider_|, conditionally forwarding
+  // it to the client if appropriate.
+  void HandleEmulatedTouchEvent(blink::WebTouchEvent event);
 
   TouchEmulatorClient* const client_;
   ui::FilteredGestureProvider gesture_provider_;

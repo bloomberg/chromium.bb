@@ -239,11 +239,11 @@ void GestureRecognizerImpl::DispatchGestureEvent(GestureEvent* event) {
 }
 
 bool GestureRecognizerImpl::ProcessTouchEventPreDispatch(
-    const TouchEvent& event,
+    TouchEvent* event,
     GestureConsumer* consumer) {
-  SetupTargets(event, consumer);
+  SetupTargets(*event, consumer);
 
-  if (event.result() & ER_CONSUMED)
+  if (event->result() & ER_CONSUMED)
     return false;
 
   GestureProviderAura* gesture_provider =

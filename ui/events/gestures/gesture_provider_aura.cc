@@ -15,7 +15,9 @@ namespace ui {
 
 GestureProviderAura::GestureProviderAura(GestureProviderAuraClient* client)
     : client_(client),
-      filtered_gesture_provider_(DefaultGestureProviderConfig(), this),
+      filtered_gesture_provider_(
+          GetGestureProviderConfig(GestureProviderConfigType::CURRENT_PLATFORM),
+          this),
       handling_event_(false),
       last_unique_touch_event_id_(
           std::numeric_limits<unsigned long long>::max()) {
@@ -24,15 +26,16 @@ GestureProviderAura::GestureProviderAura(GestureProviderAuraClient* client)
 
 GestureProviderAura::~GestureProviderAura() {}
 
-bool GestureProviderAura::OnTouchEvent(const TouchEvent& event) {
-  last_unique_touch_event_id_ = event.unique_event_id();
-  int index = pointer_state_.FindPointerIndexOfId(event.touch_id());
+bool GestureProviderAura::OnTouchEvent(TouchEvent* event) {
+  DCHECK(event);
+  last_unique_touch_event_id_ = event->unique_event_id();
+  int index = pointer_state_.FindPointerIndexOfId(event->touch_id());
   bool pointer_id_is_active = index != -1;
 
-  if (event.type() == ET_TOUCH_PRESSED && pointer_id_is_active) {
+  if (event->type() == ET_TOUCH_PRESSED && pointer_id_is_active) {
     // Ignore touch press events if we already believe the pointer is down.
     return false;
-  } else if (event.type() != ET_TOUCH_PRESSED && !pointer_id_is_active) {
+  } else if (event->type() != ET_TOUCH_PRESSED && !pointer_id_is_active) {
     // We could have an active touch stream transfered to us, resulting in touch
     // move or touch up events without associated touch down events. Ignore
     // them.
@@ -41,18 +44,22 @@ bool GestureProviderAura::OnTouchEvent(const TouchEvent& event) {
 
   // If this is a touchmove event, and it isn't different from the last
   // event, ignore it.
-  if (event.type() == ET_TOUCH_MOVED &&
-      event.x() == pointer_state_.GetX(index) &&
-      event.y() == pointer_state_.GetY(index)) {
+  if (event->type() == ET_TOUCH_MOVED &&
+      event->x() == pointer_state_.GetX(index) &&
+      event->y() == pointer_state_.GetY(index)) {
     return false;
   }
 
-  last_touch_event_latency_info_ = *event.latency();
-  pointer_state_.OnTouch(event);
+  last_touch_event_latency_info_ = *event->latency();
+  pointer_state_.OnTouch(*event);
 
-  bool result = filtered_gesture_provider_.OnTouchEvent(pointer_state_);
-  pointer_state_.CleanupRemovedTouchPoints(event);
-  return result;
+  auto result = filtered_gesture_provider_.OnTouchEvent(pointer_state_);
+  if (!result.succeeded)
+    return false;
+
+  event->set_may_cause_scrolling(result.did_generate_scroll);
+  pointer_state_.CleanupRemovedTouchPoints(*event);
+  return true;
 }
 
 void GestureProviderAura::OnAsyncTouchEventAck(bool event_consumed) {

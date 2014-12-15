@@ -212,7 +212,7 @@ class EVENTS_EXPORT Event {
   void StopPropagation();
   bool stopped_propagation() const { return !!(result_ & ER_CONSUMED); }
 
-  // Marks the event as having been handled. A handled event does not reach the
+
   // next event phase. For example, if an event is handled during the pre-target
   // phase, then the event is dispatched to all pre-target handlers, but not to
   // the target or post-target handlers.
@@ -494,7 +494,8 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
         radius_x_(model.radius_x_),
         radius_y_(model.radius_y_),
         rotation_angle_(model.rotation_angle_),
-        force_(model.force_) {}
+        force_(model.force_),
+        may_cause_scrolling_(model.may_cause_scrolling_) {}
 
   TouchEvent(EventType type,
              const gfx::PointF& location,
@@ -521,6 +522,9 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
   float radius_y() const { return radius_y_; }
   float rotation_angle() const { return rotation_angle_; }
   float force() const { return force_; }
+
+  void set_may_cause_scrolling(bool causes) { may_cause_scrolling_ = causes; }
+  bool may_cause_scrolling() const { return may_cause_scrolling_; }
 
   // Used for unit tests.
   void set_radius_x(const float r) { radius_x_ = r; }
@@ -567,6 +571,11 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
 
   // Force (pressure) of the touch. Normalized to be [0, 1]. Default to be 0.0.
   float force_;
+
+  // Whether the (unhandled) touch event will produce a scroll event (e.g., a
+  // touchmove that exceeds the platform slop region, or a touchend that
+  // causes a fling). Defaults to false.
+  bool may_cause_scrolling_;
 };
 
 // An interface that individual platforms can use to store additional data on

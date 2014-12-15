@@ -190,6 +190,7 @@ blink::WebTouchPoint* UpdateWebTouchEventFromUIEvent(
   WebTouchEventTraits::ResetType(TouchEventTypeFromEvent(event),
                                  event.time_stamp().InSecondsF(),
                                  web_event);
+  web_event->causesScrollingIfUncanceled = event.may_cause_scrolling();
   web_event->modifiers = EventFlagsToWebEventModifiers(event.flags());
 
   return point;

@@ -17,7 +17,9 @@ namespace {
 scoped_ptr<GestureDetector> CreateGestureDetector(
     ui::GestureListener* listener) {
   GestureDetector::Config config =
-      ui::DefaultGestureProviderConfig().gesture_detector_config;
+      ui::GetGestureProviderConfig(
+          ui::GestureProviderConfigType::CURRENT_PLATFORM)
+          .gesture_detector_config;
 
   ui::DoubleTapListener* null_double_tap_listener = nullptr;
 

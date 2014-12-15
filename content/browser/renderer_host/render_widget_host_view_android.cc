@@ -284,7 +284,8 @@ scoped_ptr<OverscrollControllerAndroid> CreateOverscrollController(
 }
 
 ui::GestureProvider::Config CreateGestureProviderConfig() {
-  ui::GestureProvider::Config config = ui::DefaultGestureProviderConfig();
+  ui::GestureProvider::Config config = ui::GetGestureProviderConfig(
+      ui::GestureProviderConfigType::CURRENT_PLATFORM);
   config.disable_click_delay =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableClickDelay);
@@ -790,11 +791,13 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
   if (stylus_text_selector_.OnTouchEvent(event))
     return true;
 
-  if (!gesture_provider_.OnTouchEvent(event))
+  auto result = gesture_provider_.OnTouchEvent(event);
+  if (!result.succeeded)
     return false;
 
   if (host_->ShouldForwardTouchEvent()) {
-    blink::WebTouchEvent web_event = CreateWebTouchEventFromMotionEvent(event);
+    blink::WebTouchEvent web_event =
+        CreateWebTouchEventFromMotionEvent(event, result.did_generate_scroll);
     host_->ForwardTouchEventWithLatencyInfo(web_event,
                                             CreateLatencyInfo(web_event));
   } else {

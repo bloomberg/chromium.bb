@@ -525,7 +525,8 @@ TouchEvent::TouchEvent(const base::NativeEvent& native_event)
       radius_x_(GetTouchRadiusX(native_event)),
       radius_y_(GetTouchRadiusY(native_event)),
       rotation_angle_(GetTouchAngle(native_event)),
-      force_(GetTouchForce(native_event)) {
+      force_(GetTouchForce(native_event)),
+      may_cause_scrolling_(false) {
   latency()->AddLatencyNumberWithTimestamp(
       INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
       0,
@@ -549,7 +550,8 @@ TouchEvent::TouchEvent(EventType type,
       radius_x_(0.0f),
       radius_y_(0.0f),
       rotation_angle_(0.0f),
-      force_(0.0f) {
+      force_(0.0f),
+      may_cause_scrolling_(false) {
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
 }
 
@@ -568,7 +570,8 @@ TouchEvent::TouchEvent(EventType type,
       radius_x_(radius_x),
       radius_y_(radius_y),
       rotation_angle_(angle),
-      force_(force) {
+      force_(force),
+      may_cause_scrolling_(false) {
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
 }
 

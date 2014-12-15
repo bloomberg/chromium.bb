@@ -25,7 +25,7 @@ CONTENT_EXPORT void UpdateWindowsKeyCodeAndKeyIdentifier(
     ui::KeyboardCode windows_key_code);
 
 CONTENT_EXPORT blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
-    const ui::MotionEvent& event);
+    const ui::MotionEvent& event, bool may_cause_scrolling);
 
 CONTENT_EXPORT blink::WebGestureEvent CreateWebGestureEvent(
     const ui::GestureEventDetails& details,

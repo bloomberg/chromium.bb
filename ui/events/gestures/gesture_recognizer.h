@@ -29,7 +29,7 @@ class EVENTS_EXPORT GestureRecognizer {
 
   // Invoked before event dispatch. If the event is invalid given the current
   // touch sequence, returns false.
-  virtual bool ProcessTouchEventPreDispatch(const TouchEvent& event,
+  virtual bool ProcessTouchEventPreDispatch(TouchEvent* event,
                                             GestureConsumer* consumer) = 0;
 
   // Returns a list of zero or more GestureEvents. The caller is responsible for

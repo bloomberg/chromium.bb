@@ -56,7 +56,7 @@ TEST(WebInputEventUtilTest, MotionEventConversion) {
   expected_pointer.force = pointer.pressure;
   expected_event.touches[0] = expected_pointer;
 
-  WebTouchEvent actual_event = CreateWebTouchEventFromMotionEvent(event);
+  WebTouchEvent actual_event = CreateWebTouchEventFromMotionEvent(event, false);
   EXPECT_EQ(WebInputEventTraits::ToString(expected_event),
             WebInputEventTraits::ToString(actual_event));
 }

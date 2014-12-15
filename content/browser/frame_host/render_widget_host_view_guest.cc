@@ -141,7 +141,7 @@ void RenderWidgetHostViewGuest::ProcessAckedTouchEvent(
       INPUT_EVENT_ACK_STATE_CONSUMED) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
   for (ScopedVector<ui::TouchEvent>::iterator iter = events.begin(),
       end = events.end(); iter != end; ++iter)  {
-    if (!gesture_recognizer_->ProcessTouchEventPreDispatch(*(*iter), this))
+    if (!gesture_recognizer_->ProcessTouchEventPreDispatch(*iter, this))
       continue;
 
     scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
