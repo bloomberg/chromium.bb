@@ -268,6 +268,81 @@ get_layer(struct wl_list *layer_list, uint32_t id_layer)
 	return NULL;
 }
 
+static void
+remove_configured_listener(struct ivi_layout_surface *ivisurf)
+{
+	struct wl_listener *link = NULL;
+	struct wl_listener *next = NULL;
+
+	wl_list_for_each_safe(link, next, &ivisurf->configured.listener_list, link) {
+		wl_list_remove(&link->link);
+	}
+}
+
+
+static void
+remove_all_notification(struct wl_list *listener_list)
+{
+	struct wl_listener *listener = NULL;
+	struct wl_listener *next = NULL;
+
+	wl_list_for_each_safe(listener, next, listener_list, link) {
+		struct listener_layout_notification *notification = NULL;
+		if (!wl_list_empty(&listener->link)) {
+			wl_list_remove(&listener->link);
+		}
+
+		notification =
+			container_of(listener,
+				     struct listener_layout_notification,
+				     listener);
+
+		free(notification->userdata);
+		free(notification);
+	}
+}
+
+WL_EXPORT void
+ivi_layout_surface_remove_notification(struct ivi_layout_surface *ivisurf)
+{
+	if (ivisurf == NULL) {
+		weston_log("ivi_layout_surface_remove_notification: invalid argument\n");
+		return;
+	}
+
+	remove_all_notification(&ivisurf->property_changed.listener_list);
+}
+
+void
+ivi_layout_surface_remove(struct ivi_layout_surface *ivisurf)
+{
+	struct ivi_layout *layout = get_instance();
+
+	if (ivisurf == NULL) {
+		weston_log("ivi_layout_surface_remove: invalid argument\n");
+		return;
+	}
+
+	if (!wl_list_empty(&ivisurf->pending.link)) {
+		wl_list_remove(&ivisurf->pending.link);
+	}
+	if (!wl_list_empty(&ivisurf->order.link)) {
+		wl_list_remove(&ivisurf->order.link);
+	}
+	if (!wl_list_empty(&ivisurf->link)) {
+		wl_list_remove(&ivisurf->link);
+	}
+	remove_ordersurface_from_layer(ivisurf);
+
+	wl_signal_emit(&layout->surface_notification.removed, ivisurf);
+
+	remove_configured_listener(ivisurf);
+
+	ivi_layout_surface_remove_notification(ivisurf);
+
+	free(ivisurf);
+}
+
 /**
  * Called at destruction of ivi_surface
  */
@@ -1205,28 +1280,6 @@ remove_notification(struct wl_list *listener_list, void *callback, void *userdat
 	}
 }
 
-static void
-remove_all_notification(struct wl_list *listener_list)
-{
-	struct wl_listener *listener = NULL;
-	struct wl_listener *next = NULL;
-
-	wl_list_for_each_safe(listener, next, listener_list, link) {
-		struct listener_layout_notification *notification = NULL;
-		if (!wl_list_empty(&listener->link)) {
-			wl_list_remove(&listener->link);
-		}
-
-		notification =
-			container_of(listener,
-				     struct listener_layout_notification,
-				     listener);
-
-		free(notification->userdata);
-		free(notification);
-	}
-}
-
 /**
  * Exported APIs of ivi-layout library are implemented from here.
  * Brief of APIs is described in ivi-layout-export.h.
@@ -1508,58 +1561,6 @@ ivi_layout_surface_add_notification(struct ivi_layout_surface *ivisurf,
 	wl_signal_add(&ivisurf->property_changed, &notification->listener);
 
 	return IVI_SUCCEEDED;
-}
-
-WL_EXPORT void
-ivi_layout_surface_remove_notification(struct ivi_layout_surface *ivisurf)
-{
-	if (ivisurf == NULL) {
-		weston_log("ivi_layout_surface_remove_notification: invalid argument\n");
-		return;
-	}
-
-	remove_all_notification(&ivisurf->property_changed.listener_list);
-}
-
-static void
-remove_configured_listener(struct ivi_layout_surface *ivisurf)
-{
-	struct wl_listener *link = NULL;
-	struct wl_listener *next = NULL;
-
-	wl_list_for_each_safe(link, next, &ivisurf->configured.listener_list, link) {
-		wl_list_remove(&link->link);
-	}
-}
-
-void
-ivi_layout_surface_remove(struct ivi_layout_surface *ivisurf)
-{
-	struct ivi_layout *layout = get_instance();
-
-	if (ivisurf == NULL) {
-		weston_log("ivi_layout_surface_remove: invalid argument\n");
-		return;
-	}
-
-	if (!wl_list_empty(&ivisurf->pending.link)) {
-		wl_list_remove(&ivisurf->pending.link);
-	}
-	if (!wl_list_empty(&ivisurf->order.link)) {
-		wl_list_remove(&ivisurf->order.link);
-	}
-	if (!wl_list_empty(&ivisurf->link)) {
-		wl_list_remove(&ivisurf->link);
-	}
-	remove_ordersurface_from_layer(ivisurf);
-
-	wl_signal_emit(&layout->surface_notification.removed, ivisurf);
-
-	remove_configured_listener(ivisurf);
-
-	ivi_layout_surface_remove_notification(ivisurf);
-
-	free(ivisurf);
 }
 
 WL_EXPORT const struct ivi_layout_layer_properties *
@@ -1849,6 +1850,17 @@ ivi_layout_layer_create_with_dimension(uint32_t id_layer,
 	wl_signal_emit(&layout->layer_notification.created, ivilayer);
 
 	return ivilayer;
+}
+
+WL_EXPORT void
+ivi_layout_layer_remove_notification(struct ivi_layout_layer *ivilayer)
+{
+	if (ivilayer == NULL) {
+		weston_log("ivi_layout_layer_remove_notification: invalid argument\n");
+		return;
+	}
+
+	remove_all_notification(&ivilayer->property_changed.listener_list);
 }
 
 WL_EXPORT void
@@ -2463,17 +2475,6 @@ ivi_layout_layer_add_notification(struct ivi_layout_layer *ivilayer,
 	return add_notification(&ivilayer->property_changed,
 				layer_prop_changed,
 				prop_callback);
-}
-
-WL_EXPORT void
-ivi_layout_layer_remove_notification(struct ivi_layout_layer *ivilayer)
-{
-	if (ivilayer == NULL) {
-		weston_log("ivi_layout_layer_remove_notification: invalid argument\n");
-		return;
-	}
-
-	remove_all_notification(&ivilayer->property_changed.listener_list);
 }
 
 WL_EXPORT const struct ivi_layout_surface_properties *
