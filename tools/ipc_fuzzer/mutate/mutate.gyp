@@ -24,6 +24,7 @@
             # Compiling mutate.cc with ASan takes too long, see
             # http://crbug.com/360158.
             '-fsanitize=address',
+            '-fsanitize-coverage=<(asan_coverage)',
           ],
         }],
       ],
@@ -51,6 +52,7 @@
             # Compiling generate.cc with ASan takes too long, see
             # http://crbug.com/360158.
             '-fsanitize=address',
+            '-fsanitize-coverage=<(asan_coverage)',
           ],
         }],
       ],
