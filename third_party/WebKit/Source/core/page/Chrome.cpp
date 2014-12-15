@@ -383,7 +383,7 @@ bool Chrome::hasOpenedPopup() const
     return m_client->hasOpenedPopup();
 }
 
-PassRefPtrWillBeRawPtr<PopupMenu> Chrome::createPopupMenu(LocalFrame& frame, PopupMenuClient* client) const
+PassRefPtrWillBeRawPtr<PopupMenu> Chrome::createPopupMenu(LocalFrame& frame, PopupMenuClient* client)
 {
     notifyPopupOpeningObservers();
     return m_client->createPopupMenu(frame, client);

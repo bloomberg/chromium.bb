@@ -75,7 +75,7 @@ public:
     virtual void disconnectClient() override { }
 };
 
-PassRefPtrWillBeRawPtr<PopupMenu> EmptyChromeClient::createPopupMenu(LocalFrame&, PopupMenuClient*) const
+PassRefPtrWillBeRawPtr<PopupMenu> EmptyChromeClient::createPopupMenu(LocalFrame&, PopupMenuClient*)
 {
     return adoptRefWillBeNoop(new EmptyPopupMenu());
 }

@@ -196,7 +196,7 @@ public:
 
     // Checks if there is an opened popup, called by RenderMenuList::showPopup().
     virtual bool hasOpenedPopup() const = 0;
-    virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) const = 0;
+    virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) = 0;
     virtual DOMWindow* pagePopupWindowForTesting() const = 0;
 
     virtual void postAccessibilityNotification(AXObject*, AXObjectCache::AXNotification) { }

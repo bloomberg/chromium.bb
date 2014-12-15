@@ -152,7 +152,7 @@ public:
     void setNewWindowNavigationPolicy(WebNavigationPolicy);
 
     virtual bool hasOpenedPopup() const override;
-    virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) const override;
+    virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) override;
     PagePopup* openPagePopup(PagePopupClient*, const IntRect&);
     void closePagePopup(PagePopup*);
     virtual DOMWindow* pagePopupWindowForTesting() const override;

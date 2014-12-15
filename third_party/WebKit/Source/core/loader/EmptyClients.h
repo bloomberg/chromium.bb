@@ -116,7 +116,7 @@ public:
     virtual bool runJavaScriptPrompt(LocalFrame*, const String&, const String&, String&) override { return false; }
 
     virtual bool hasOpenedPopup() const override { return false; }
-    virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) const override;
+    virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) override;
     virtual DOMWindow* pagePopupWindowForTesting() const override { return nullptr; }
 
     virtual void setStatusbarText(const String&) override { }
