@@ -69,20 +69,7 @@ def RestartServer():
   Raises:
     CommandFailedError if we fail to kill or restart the server.
   """
-  def adb_killed():
-    status, _ = cmd_helper.GetCmdStatusAndOutput(['pgrep', 'adb'])
-    return status != 0  # pgrep didn't find adb, kill-server succeeded
-
-  def adb_started():
-    status, _ = cmd_helper.GetCmdStatusAndOutput(['pgrep', 'adb'])
-    return status == 0  # pgrep found adb, start-server succeeded
-
-  adb_wrapper.AdbWrapper.KillServer()
-  if not timeout_retry.WaitFor(adb_killed, wait_period=1, max_tries=5):
-    raise device_errors.CommandFailedError('Failed to kill adb server')
-  adb_wrapper.AdbWrapper.StartServer()
-  if not timeout_retry.WaitFor(adb_started, wait_period=1, max_tries=5):
-    raise device_errors.CommandFailedError('Failed to start adb server')
+  pylib.android_commands.AndroidCommands().RestartAdbServer()
 
 
 class DeviceUtils(object):
