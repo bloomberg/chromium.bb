@@ -1,0 +1,26 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+package affiliation_pb;
+
+option optimize_for = LITE_RUNTIME;
+
+// A collection of facets affiliated with each other, i.e. an equivalence class.
+message Affiliation {
+  repeated string facet = 1;
+}
+
+// Encapsulates a lookup request to the Affiliation API.
+message LookupAffiliationRequest {
+  // The facet URIs to query.
+  repeated string facet = 1;
+}
+
+// Encapsulates a lookup response from the the Affiliation API.
+message LookupAffiliationResponse {
+  // For each queried facet, the corresponding equivalence class, if any.
+  repeated Affiliation affiliation = 1;
+}

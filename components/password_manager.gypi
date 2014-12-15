@@ -12,17 +12,22 @@
         '../base/base.gyp:base',
         '../net/net.gyp:net',
         '../sql/sql.gyp:sql',
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../url/url.gyp:url_lib',
         'autofill_core_common',
         'keyed_service_core',
         'os_crypt',
         'password_manager_core_common',
+        'password_manager_core_browser_proto',
       ],
       'include_dirs': [
         '..',
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'password_manager/core/browser/affiliation_fetcher_delegate.h',
+        'password_manager/core/browser/affiliation_fetcher.cc',
+        'password_manager/core/browser/affiliation_fetcher.h',
         'password_manager/core/browser/affiliation_utils.cc',
         'password_manager/core/browser/affiliation_utils.h',
         'password_manager/core/browser/browser_save_password_progress_logger.cc',
@@ -110,6 +115,19 @@
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
+    },
+    {
+      # GN version: //components/password_manager/core/browser:proto
+      'target_name': 'password_manager_core_browser_proto',
+      'type': 'static_library',
+      'sources': [
+        'password_manager/core/browser/affiliation_api.proto'
+      ],
+      'variables': {
+        'proto_in_dir': 'password_manager/core/browser',
+        'proto_out_dir': 'components/password_manager/core/browser',
+      },
+      'includes': ['../build/protoc.gypi'],
     },
     {
       # GN version: //components/password_manager/core/browser:test_support

@@ -4,6 +4,8 @@ include_rules = [
   "+components/password_manager/core",
   "+components/strings/grit",
   "+net/base",
+  "+net/http/http_status_code.h",
+  "+net/url_request",
   "+sql",
   "+sync/api",
   "+sync/protocol",
