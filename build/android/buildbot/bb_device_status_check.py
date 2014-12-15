@@ -69,14 +69,23 @@ def DeviceInfo(serial, options):
   imei_slice = _GetData(r'Device ID = (\d+)',
                         device_adb.old_interface.GetSubscriberInfo(),
                         lambda x: x[-6:])
+  json_data = {
+    'serial': serial,
+    'type': device_type,
+    'build': device_build,
+    'build_detail': device_adb.GetProp('ro.build.fingerprint'),
+    'battery': battery_info,
+    'imei_slice': imei_slice,
+    'wifi_ip': device_adb.GetProp('dhcp.wlan0.ipaddress'),
+  }
   report = ['Device %s (%s)' % (serial, device_type),
             '  Build: %s (%s)' %
-              (device_build, device_adb.build_fingerprint),
+              (device_build, json_data['build_detail']),
             '  Current Battery Service state: ',
             '\n'.join(['    %s: %s' % (k, v)
                        for k, v in battery_info.iteritems()]),
             '  IMEI slice: %s' % imei_slice,
-            '  Wifi IP: %s' % device_adb.GetProp('dhcp.wlan0.ipaddress'),
+            '  Wifi IP: %s' % json_data['wifi_ip'],
             '']
 
   errors = []
@@ -99,7 +108,9 @@ def DeviceInfo(serial, options):
     errors += ['Mantaray device not connected to AC power.']
 
   full_report = '\n'.join(report)
-  return device_type, device_build, battery_level, full_report, errors, dev_good
+
+  return (device_type, device_build, battery_level, full_report, errors,
+    dev_good, json_data)
 
 
 def CheckForMissingDevices(options, adb_online_devs):
@@ -319,10 +330,10 @@ def main():
   offline_devices = android_commands.GetAttachedDevices(
       hardware=False, emulator=False, offline=True)
 
-  types, builds, batteries, reports, errors = [], [], [], [], []
+  types, builds, batteries, reports, errors, json_data = [], [], [], [], [], []
   fail_step_lst = []
   if devices:
-    types, builds, batteries, reports, errors, fail_step_lst = (
+    types, builds, batteries, reports, errors, fail_step_lst, json_data = (
         zip(*[DeviceInfo(dev, options) for dev in devices]))
 
   err_msg = CheckForMissingDevices(options, devices) or []
@@ -363,13 +374,7 @@ def main():
 
   if options.json_output:
     with open(options.json_output, 'wb') as f:
-      f.write(json.dumps({
-        'online_devices': devices,
-        'offline_devices': offline_devices,
-        'expected_devices': expected_devices,
-        'unique_types': unique_types,
-        'unique_builds': unique_builds,
-      }))
+      f.write(json.dumps(json_data, indent=4))
 
   num_failed_devs = 0
   for fail_status, device in zip(fail_step_lst, devices):
