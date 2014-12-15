@@ -216,7 +216,7 @@ static_library("ui") {
   } else {  # Not athena.
     if (!is_android) {
       sources += rebase_path(
-              gypi_values.chrome_browser_ui_non_athena_non_android_sources,
+              gypi_values.chrome_browser_ui_non_athena_non_mobile_sources,
               ".",
               "//chrome")
     }
@@ -327,10 +327,6 @@ static_library("ui") {
                            "//chrome")
 
     defines += [ "CHROME_BUILD_ID=" + android_chrome_build_id ]
-  } else {  # Non-Android.
-    sources += rebase_path(gypi_values.chrome_browser_ui_non_android_sources,
-                           ".",
-                           "//chrome")
   }
 
   if (is_mac) {

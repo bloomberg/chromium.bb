@@ -1345,7 +1345,7 @@
       'browser/ui/auto_login_infobar_delegate.h',
       'browser/ui/screen_capture_notification_ui_stub.cc',
     ],
-    'chrome_browser_ui_non_android_sources': [
+    'chrome_browser_ui_non_mobile_sources': [
       'browser/ui/apps/app_info_dialog.h',
       'browser/ui/apps/apps_metro_handler_win.cc',
       'browser/ui/apps/apps_metro_handler_win.h',
@@ -1379,6 +1379,8 @@
       'browser/ui/browser.h',
       'browser/ui/browser_command_controller.cc',
       'browser/ui/browser_command_controller.h',
+      'browser/ui/browser_commands.cc',
+      'browser/ui/browser_commands.h',
       'browser/ui/browser_content_setting_bubble_model_delegate.cc',
       'browser/ui/browser_content_setting_bubble_model_delegate.h',
       'browser/ui/browser_finder.cc',
@@ -1391,6 +1393,7 @@
       'browser/ui/browser_otr_state.h',
       'browser/ui/browser_tab_restore_service_delegate.cc',
       'browser/ui/browser_tab_restore_service_delegate.h',
+      'browser/ui/browser_tab_restorer.cc',
       'browser/ui/browser_tab_strip_model_delegate.cc',
       'browser/ui/browser_tab_strip_model_delegate.h',
       'browser/ui/browser_tabrestore.cc',
@@ -1401,6 +1404,8 @@
       'browser/ui/browser_toolbar_model_delegate.h',
       'browser/ui/browser_view_prefs.cc',
       'browser/ui/browser_view_prefs.h',
+      'browser/ui/browser_window_state.cc',
+      'browser/ui/browser_window_state.h',
       'browser/ui/chrome_pages.cc',
       'browser/ui/chrome_pages.h',
       'browser/ui/chrome_style.cc',
@@ -1504,6 +1509,8 @@
       'browser/ui/sad_tab_helper.cc',
       'browser/ui/sad_tab_helper.h',
       'browser/ui/sad_tab_types.h',
+      'browser/ui/scoped_tabbed_browser_displayer.cc',
+      'browser/ui/scoped_tabbed_browser_displayer.h',
       'browser/ui/search/search_delegate.cc',
       'browser/ui/search/search_delegate.h',
       'browser/ui/search/search_ui.cc',
@@ -1534,6 +1541,8 @@
       'browser/ui/startup/startup_types.h',
       'browser/ui/sync/browser_synced_window_delegate.cc',
       'browser/ui/sync/browser_synced_window_delegate.h',
+      'browser/ui/sync/sync_promo_ui.cc',
+      'browser/ui/sync/sync_promo_ui.h',
       'browser/ui/tab_contents/tab_contents_iterator.cc',
       'browser/ui/tab_contents/tab_contents_iterator.h',
       'browser/ui/tab_modal_confirm_dialog_delegate.cc',
@@ -1569,15 +1578,15 @@
       'browser/ui/toolbar/encoding_menu_controller.h',
       'browser/ui/toolbar/recent_tabs_sub_menu_model.cc',
       'browser/ui/toolbar/recent_tabs_sub_menu_model.h',
+      'browser/ui/toolbar/toolbar_action_view_controller.h',
+      'browser/ui/toolbar/toolbar_action_view_delegate.h',
       'browser/ui/toolbar/toolbar_actions_bar.cc',
       'browser/ui/toolbar/toolbar_actions_bar.h',
       'browser/ui/toolbar/toolbar_actions_bar_delegate.h',
-      'browser/ui/toolbar/toolbar_action_view_controller.h',
-      'browser/ui/toolbar/toolbar_action_view_delegate.h',
-      'browser/ui/toolbar/wrench_menu_badge_controller.cc',
-      'browser/ui/toolbar/wrench_menu_badge_controller.h',
       'browser/ui/toolbar/wrench_icon_painter.cc',
       'browser/ui/toolbar/wrench_icon_painter.h',
+      'browser/ui/toolbar/wrench_menu_badge_controller.cc',
+      'browser/ui/toolbar/wrench_menu_badge_controller.h',
       'browser/ui/toolbar/wrench_menu_model.cc',
       'browser/ui/toolbar/wrench_menu_model.h',
       'browser/ui/uma_browsing_activity_observer.cc',
@@ -1594,6 +1603,8 @@
       'browser/ui/webui/bookmarks_ui.h',
       'browser/ui/webui/chrome_web_contents_handler.cc',
       'browser/ui/webui/chrome_web_contents_handler.h',
+      'browser/ui/webui/devtools_ui.cc',
+      'browser/ui/webui/devtools_ui.h',
       'browser/ui/webui/downloads_dom_handler.cc',
       'browser/ui/webui/downloads_dom_handler.h',
       'browser/ui/webui/downloads_ui.cc',
@@ -1806,19 +1817,6 @@
       'browser/ui/webui/uber/uber_ui.h',
       'browser/ui/window_sizer/window_sizer.cc',
       'browser/ui/window_sizer/window_sizer.h',
-    ],
-    'chrome_browser_ui_non_mobile_sources': [
-      'browser/ui/browser_commands.cc',
-      'browser/ui/browser_commands.h',
-      'browser/ui/browser_tab_restorer.cc',
-      'browser/ui/browser_window_state.cc',
-      'browser/ui/browser_window_state.h',
-      'browser/ui/scoped_tabbed_browser_displayer.cc',
-      'browser/ui/scoped_tabbed_browser_displayer.h',
-      'browser/ui/sync/sync_promo_ui.cc',
-      'browser/ui/sync/sync_promo_ui.h',
-      'browser/ui/webui/devtools_ui.cc',
-      'browser/ui/webui/devtools_ui.h',
     ],
     'chrome_browser_ui_print_preview_sources': [
       'browser/ui/webui/print_preview/print_preview_handler.cc',
@@ -2500,8 +2498,8 @@
       'browser/ui/ash/session_state_delegate_views.cc',
       'browser/ui/ash/session_state_delegate_views.h',
     ],
-    # Used when not using android and not using Athena.
-    'chrome_browser_ui_non_athena_non_android_sources': [
+    # Used when not using mobile and not using Athena.
+    'chrome_browser_ui_non_athena_non_mobile_sources': [
       'browser/ui/extensions/application_launch_web_app.cc',
       'browser/ui/extensions/extension_install_ui_factory.cc',
       'browser/ui/webui/chromeos/keyboard_overlay_ui.cc',
@@ -2720,7 +2718,13 @@
             ],
           },
         }, {  # OS == "ios"
-          'sources': [ '<@(chrome_browser_ui_ios_sources)' ],
+          'sources': [
+            '<@(chrome_browser_ui_ios_sources)'
+          ],
+          'sources!': [
+            'browser/ui/external_protocol_dialog_delegate.cc',
+            'browser/ui/startup/default_browser_prompt.cc',
+          ],
           'dependencies': [
             '../net/net.gyp:net',
           ],
@@ -2813,8 +2817,8 @@
           ],
         }, { # use_athena==0
           'conditions': [
-            ['OS!="android"', {
-              'sources': [ '<@(chrome_browser_ui_non_athena_non_android_sources)' ],
+            ['OS!="android" and OS!="ios"', {
+              'sources': [ '<@(chrome_browser_ui_non_athena_non_mobile_sources)' ],
             }],
             ['use_ash==1', {
               'sources': [ '<@(chrome_browser_ui_ash_non_athena_sources)' ],
@@ -2910,8 +2914,6 @@
              'chrome_browser_ui_views.gyp:browser_ui_views',
           ],
           'sources': [ '<@(chrome_browser_ui_android_sources)' ],
-        }, {  # Non-Android
-          'sources': [ '<@(chrome_browser_ui_non_android_sources)' ],
         }],
         ['OS=="mac"', {
           'sources': [ '<@(chrome_browser_ui_mac_sources)' ],

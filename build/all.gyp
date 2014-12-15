@@ -44,6 +44,7 @@
         ['OS=="ios"', {
           'dependencies': [
             '../chrome/chrome.gyp:browser',
+            '../chrome/chrome.gyp:browser_ui',
             '../ios/ios.gyp:*',
             # NOTE: This list of targets is present because
             # mojo_base.gyp:mojo_base cannot be built on iOS, as
