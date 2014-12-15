@@ -589,6 +589,22 @@ print(json.dumps(pkg_info))
 
     return sorted_updates
 
+  def _EnqListedPkg(self, pkg):
+    """Finds and enqueues a listed package."""
+    cp, slot = self._FindPackage(pkg)
+    if cp not in self.binpkgs_db:
+      raise self.BintreeError('Package %s not found in binpkgs tree' % pkg)
+    self._EnqDep((cp, slot), True, False)
+
+  def _EnqInstalledPkgs(self):
+    """Enqueues all available binary packages that are already installed."""
+    for cp, cp_slots in self.binpkgs_db.iteritems():
+      target_cp_slots = self.target_db.get(cp)
+      if target_cp_slots:
+        for slot in cp_slots.iterkeys():
+          if slot in target_cp_slots:
+            self._EnqDep((cp, slot), True, False)
+
   def Run(self, device, root, listed_pkgs, update, process_rdeps,
           process_rev_rdeps):
     """Computes the list of packages that need to be updated on a target.
@@ -619,13 +635,16 @@ print(json.dumps(pkg_info))
     logging.info('Initializing binary packages database...')
     self._InitBinpkgDB(process_rdeps)
 
-    logging.info('Finding %d listed package(s)...', len(listed_pkgs))
+    logging.info('Finding listed package(s)...')
     self._InitDepQueue()
     for pkg in listed_pkgs:
-      cp, slot = self._FindPackage(pkg)
-      if cp not in self.binpkgs_db:
-        raise self.BintreeError('Package %s not found in binpkgs tree' % pkg)
-      self._EnqDep((cp, slot), True, False)
+      if pkg == '@installed':
+        if not update:
+          raise ValueError(
+              'Must check installed packages when updating all of them.')
+        self._EnqInstalledPkgs()
+      else:
+        self._EnqListedPkg(pkg)
 
     logging.info('Computing set of packages to update...')
     updates = self._ComputeUpdates(process_rdeps, process_rev_rdeps)
@@ -699,7 +718,8 @@ For more information of cros build usage:
         'device', help='IP[:port] address of the target device.')
     parser.add_argument(
         'packages', help='Packages to install. You can specify '
-        '[category/]package[:slot] or the path to the binary package.',
+        '[category/]package[:slot] or the path to the binary package. '
+        'Use @installed to update all installed packages (requires --update).',
         nargs='+')
     parser.add_argument(
         '--board', default=None, help='The board to use. By default it is '
