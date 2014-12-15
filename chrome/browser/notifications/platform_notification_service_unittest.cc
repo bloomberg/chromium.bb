@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
@@ -201,6 +202,9 @@ TEST_F(PlatformNotificationServiceTest, NotificationPermissionLastUsage) {
       profile()->GetHostContentSettingsMap()->GetLastUsage(
           origin, origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   EXPECT_GT(after_page_notification, begin_time);
+
+  // Ensure that there is at least some time between the two calls.
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
 
   service()->DisplayPersistentNotification(profile(),
                                            42 /* sw_registration_id */,
