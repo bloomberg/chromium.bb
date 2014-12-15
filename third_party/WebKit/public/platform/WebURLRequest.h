@@ -128,6 +128,7 @@ public:
     enum InputToLoadPerfMetricReportPolicy {
         NoReport, // Don't report metrics for this WebURLRequest.
         ReportLink, // Report metrics with UI action link clicked.
+        ReportIntent, // Report metrics with UI action displayed intent.
     };
 
     class ExtraData {
@@ -274,7 +275,9 @@ public:
     // that triggered the navigation (which can be different from the navigation
     // start time used in the Navigation Timing API).
     BLINK_PLATFORM_EXPORT double uiStartTime() const;
+    BLINK_PLATFORM_EXPORT void setUiStartTime(double);
     BLINK_PLATFORM_EXPORT WebURLRequest::InputToLoadPerfMetricReportPolicy inputPerfMetricReportPolicy() const;
+    BLINK_PLATFORM_EXPORT void setInputPerfMetricReportPolicy(WebURLRequest::InputToLoadPerfMetricReportPolicy);
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT ResourceRequest& toMutableResourceRequest();

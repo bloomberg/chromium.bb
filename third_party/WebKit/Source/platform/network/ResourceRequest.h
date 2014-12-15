@@ -50,6 +50,7 @@ enum ResourceRequestCachePolicy {
 enum InputToLoadPerfMetricReportPolicy {
     NoReport, // Don't report metrics for this ResourceRequest.
     ReportLink, // Report metrics for this request as initiated by a link click.
+    ReportIntent, // Report metrics for this request as initiated by an intent.
 };
 
 struct CrossThreadResourceRequestData;

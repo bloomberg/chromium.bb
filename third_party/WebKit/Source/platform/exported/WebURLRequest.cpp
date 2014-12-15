@@ -397,10 +397,22 @@ double WebURLRequest::uiStartTime() const
     return m_private->m_resourceRequest->uiStartTime();
 }
 
+void WebURLRequest::setUiStartTime(double time)
+{
+    m_private->m_resourceRequest->setUIStartTime(time);
+}
+
 WebURLRequest::InputToLoadPerfMetricReportPolicy WebURLRequest::inputPerfMetricReportPolicy() const
 {
     return static_cast<WebURLRequest::InputToLoadPerfMetricReportPolicy>(
         m_private->m_resourceRequest->inputPerfMetricReportPolicy());
+}
+
+void WebURLRequest::setInputPerfMetricReportPolicy(
+    WebURLRequest::InputToLoadPerfMetricReportPolicy policy)
+{
+    m_private->m_resourceRequest->setInputPerfMetricReportPolicy(
+        static_cast<blink::InputToLoadPerfMetricReportPolicy>(policy));
 }
 
 const ResourceRequest& WebURLRequest::toResourceRequest() const
