@@ -48,11 +48,6 @@ public:
 
     // Initialization and lifecycle --------------------------------------
 
-    // Indicates that the compositing surface used by this WebLayerTreeView is ready to use.
-    // A WebLayerTreeView may request a context from its client before the surface is ready,
-    // but it won't attempt to use it.
-    virtual void setSurfaceReady() = 0;
-
     // Sets the root of the tree. The root is set by way of the constructor.
     virtual void setRootLayer(const WebLayer&) = 0;
     virtual void clearRootLayer() = 0;

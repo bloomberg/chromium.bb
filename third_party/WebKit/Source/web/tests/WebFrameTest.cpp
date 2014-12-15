@@ -4278,7 +4278,6 @@ public:
     CompositedSelectionBoundsTestLayerTreeView() : m_selectionCleared(false) { }
     virtual ~CompositedSelectionBoundsTestLayerTreeView() { }
 
-    virtual void setSurfaceReady()  override { }
     virtual void setRootLayer(const WebLayer&)  override { }
     virtual void clearRootLayer()  override { }
     virtual void setViewportSize(const WebSize& deviceViewportSize)  override { }
