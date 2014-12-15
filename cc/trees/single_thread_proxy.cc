@@ -463,6 +463,12 @@ void SingleThreadProxy::DidLoseOutputSurfaceOnImplThread() {
     scheduler_on_impl_thread_->DidLoseOutputSurface();
 }
 
+void SingleThreadProxy::CommitVSyncParameters(base::TimeTicks timebase,
+                                              base::TimeDelta interval) {
+  if (scheduler_on_impl_thread_)
+    scheduler_on_impl_thread_->CommitVSyncParameters(timebase, interval);
+}
+
 void SingleThreadProxy::DidSwapBuffersOnImplThread() {
   TRACE_EVENT0("cc", "SingleThreadProxy::DidSwapBuffersOnImplThread");
   if (scheduler_on_impl_thread_)
