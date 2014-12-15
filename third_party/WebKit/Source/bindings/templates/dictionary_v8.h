@@ -17,11 +17,11 @@ class ExceptionState;
 
 class {{v8_class}} {
 public:
-    static void toImpl(v8::Isolate*, v8::Handle<v8::Value>, {{cpp_class}}&, ExceptionState&);
+    static void toImpl(v8::Isolate*, v8::Local<v8::Value>, {{cpp_class}}&, ExceptionState&);
 };
 
-v8::Handle<v8::Value> toV8(const {{cpp_class}}&, v8::Handle<v8::Object>, v8::Isolate*);
-void toV8{{cpp_class}}(const {{cpp_class}}&, v8::Handle<v8::Object> dictionary, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+v8::Local<v8::Value> toV8(const {{cpp_class}}&, v8::Local<v8::Object>, v8::Isolate*);
+void toV8{{cpp_class}}(const {{cpp_class}}&, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate*);
 
 template<class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, {{cpp_class}}& impl)
@@ -31,7 +31,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, {{cpp_class}}& im
 
 template <>
 struct NativeValueTraits<{{cpp_class}}> {
-    static {{cpp_class}} nativeValue(const v8::Handle<v8::Value>&, v8::Isolate*, ExceptionState&);
+    static {{cpp_class}} nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
 };
 
 } // namespace blink

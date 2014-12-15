@@ -20,7 +20,7 @@
 
 namespace blink {
 
-void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, TestDictionary& impl, ExceptionState& exceptionState)
+void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestDictionary& impl, ExceptionState& exceptionState)
 {
     if (isUndefinedOrNull(v8Value))
         return;
@@ -358,14 +358,14 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Valu
 
 }
 
-v8::Handle<v8::Value> toV8(const TestDictionary& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Local<v8::Value> toV8(const TestDictionary& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    v8::Handle<v8::Object> v8Object = v8::Object::New(isolate);
+    v8::Local<v8::Object> v8Object = v8::Object::New(isolate);
     toV8TestDictionary(impl, v8Object, creationContext, isolate);
     return v8Object;
 }
 
-void toV8TestDictionary(const TestDictionary& impl, v8::Handle<v8::Object> dictionary, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+void toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (impl.hasBooleanMember()) {
         dictionary->Set(v8String(isolate, "booleanMember"), v8Boolean(impl.booleanMember(), isolate));
@@ -467,7 +467,7 @@ void toV8TestDictionary(const TestDictionary& impl, v8::Handle<v8::Object> dicti
 
 }
 
-TestDictionary NativeValueTraits<TestDictionary>::nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+TestDictionary NativeValueTraits<TestDictionary>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     TestDictionary impl;
     V8TestDictionary::toImpl(isolate, value, impl, exceptionState);

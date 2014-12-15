@@ -18,11 +18,11 @@ class ExceptionState;
 
 class V8TestDictionary {
 public:
-    static void toImpl(v8::Isolate*, v8::Handle<v8::Value>, TestDictionary&, ExceptionState&);
+    static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestDictionary&, ExceptionState&);
 };
 
-v8::Handle<v8::Value> toV8(const TestDictionary&, v8::Handle<v8::Object>, v8::Isolate*);
-void toV8TestDictionary(const TestDictionary&, v8::Handle<v8::Object> dictionary, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+v8::Local<v8::Value> toV8(const TestDictionary&, v8::Local<v8::Object>, v8::Isolate*);
+void toV8TestDictionary(const TestDictionary&, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate*);
 
 template<class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestDictionary& impl)
@@ -32,7 +32,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestDictionary& i
 
 template <>
 struct NativeValueTraits<TestDictionary> {
-    static TestDictionary nativeValue(const v8::Handle<v8::Value>&, v8::Isolate*, ExceptionState&);
+    static TestDictionary nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
 };
 
 } // namespace blink

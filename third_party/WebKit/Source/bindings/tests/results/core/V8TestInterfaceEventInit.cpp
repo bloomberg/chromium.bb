@@ -12,7 +12,7 @@
 
 namespace blink {
 
-void V8TestInterfaceEventInit::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, TestInterfaceEventInit& impl, ExceptionState& exceptionState)
+void V8TestInterfaceEventInit::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceEventInit& impl, ExceptionState& exceptionState)
 {
     if (isUndefinedOrNull(v8Value))
         return;
@@ -41,15 +41,15 @@ void V8TestInterfaceEventInit::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value
 
 }
 
-v8::Handle<v8::Value> toV8(const TestInterfaceEventInit& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Local<v8::Value> toV8(const TestInterfaceEventInit& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    v8::Handle<v8::Object> v8Object = v8::Object::New(isolate);
+    v8::Local<v8::Object> v8Object = v8::Object::New(isolate);
     toV8EventInitDictionary(impl, v8Object, creationContext, isolate);
     toV8TestInterfaceEventInit(impl, v8Object, creationContext, isolate);
     return v8Object;
 }
 
-void toV8TestInterfaceEventInit(const TestInterfaceEventInit& impl, v8::Handle<v8::Object> dictionary, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+void toV8TestInterfaceEventInit(const TestInterfaceEventInit& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (impl.hasStringMember()) {
         dictionary->Set(v8String(isolate, "stringMember"), v8String(isolate, impl.stringMember()));
@@ -57,7 +57,7 @@ void toV8TestInterfaceEventInit(const TestInterfaceEventInit& impl, v8::Handle<v
 
 }
 
-TestInterfaceEventInit NativeValueTraits<TestInterfaceEventInit>::nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+TestInterfaceEventInit NativeValueTraits<TestInterfaceEventInit>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     TestInterfaceEventInit impl;
     V8TestInterfaceEventInit::toImpl(isolate, value, impl, exceptionState);

@@ -18,11 +18,11 @@ class ExceptionState;
 
 class V8TestInterfaceEventInit {
 public:
-    static void toImpl(v8::Isolate*, v8::Handle<v8::Value>, TestInterfaceEventInit&, ExceptionState&);
+    static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterfaceEventInit&, ExceptionState&);
 };
 
-v8::Handle<v8::Value> toV8(const TestInterfaceEventInit&, v8::Handle<v8::Object>, v8::Isolate*);
-void toV8TestInterfaceEventInit(const TestInterfaceEventInit&, v8::Handle<v8::Object> dictionary, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+v8::Local<v8::Value> toV8(const TestInterfaceEventInit&, v8::Local<v8::Object>, v8::Isolate*);
+void toV8TestInterfaceEventInit(const TestInterfaceEventInit&, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate*);
 
 template<class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceEventInit& impl)
@@ -32,7 +32,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceEven
 
 template <>
 struct NativeValueTraits<TestInterfaceEventInit> {
-    static TestInterfaceEventInit nativeValue(const v8::Handle<v8::Value>&, v8::Isolate*, ExceptionState&);
+    static TestInterfaceEventInit nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
 };
 
 } // namespace blink

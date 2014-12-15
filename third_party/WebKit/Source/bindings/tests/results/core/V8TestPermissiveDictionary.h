@@ -18,11 +18,11 @@ class ExceptionState;
 
 class V8TestPermissiveDictionary {
 public:
-    static void toImpl(v8::Isolate*, v8::Handle<v8::Value>, TestPermissiveDictionary&, ExceptionState&);
+    static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestPermissiveDictionary&, ExceptionState&);
 };
 
-v8::Handle<v8::Value> toV8(const TestPermissiveDictionary&, v8::Handle<v8::Object>, v8::Isolate*);
-void toV8TestPermissiveDictionary(const TestPermissiveDictionary&, v8::Handle<v8::Object> dictionary, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+v8::Local<v8::Value> toV8(const TestPermissiveDictionary&, v8::Local<v8::Object>, v8::Isolate*);
+void toV8TestPermissiveDictionary(const TestPermissiveDictionary&, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate*);
 
 template<class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestPermissiveDictionary& impl)
@@ -32,7 +32,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestPermissiveDic
 
 template <>
 struct NativeValueTraits<TestPermissiveDictionary> {
-    static TestPermissiveDictionary nativeValue(const v8::Handle<v8::Value>&, v8::Isolate*, ExceptionState&);
+    static TestPermissiveDictionary nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
 };
 
 } // namespace blink
