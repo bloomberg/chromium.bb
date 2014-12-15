@@ -32,14 +32,15 @@ namespace app_list {
 
 AppResult::AppResult(Profile* profile,
                      const std::string& app_id,
-                     AppListControllerDelegate* controller)
+                     AppListControllerDelegate* controller,
+                     bool is_recommendation)
     : profile_(profile),
       app_id_(app_id),
       controller_(controller),
       extension_registry_(NULL) {
   set_id(extensions::Extension::GetBaseURLFromExtensionId(app_id_).spec());
   if (app_list::switches::IsExperimentalAppListEnabled())
-    set_display_type(DISPLAY_TILE);
+    set_display_type(is_recommendation ? DISPLAY_RECOMMENDATION : DISPLAY_TILE);
 
   const extensions::Extension* extension =
       extensions::ExtensionSystem::Get(profile_)->extension_service()
@@ -123,7 +124,9 @@ void AppResult::Open(int event_flags) {
 }
 
 scoped_ptr<SearchResult> AppResult::Duplicate() {
-  scoped_ptr<SearchResult> copy(new AppResult(profile_, app_id_, controller_));
+  scoped_ptr<SearchResult> copy(
+      new AppResult(profile_, app_id_, controller_,
+                    display_type() == DISPLAY_RECOMMENDATION));
   copy->set_title(title());
   copy->set_title_tags(title_tags());
 

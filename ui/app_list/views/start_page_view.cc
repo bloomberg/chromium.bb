@@ -235,7 +235,7 @@ void StartPageView::UpdateCustomPageClickzoneVisibility() {
 int StartPageView::Update() {
   std::vector<SearchResult*> display_results =
       AppListModel::FilterSearchResultsByDisplayType(
-          results(), SearchResult::DISPLAY_TILE, kNumStartPageTiles);
+          results(), SearchResult::DISPLAY_RECOMMENDATION, kNumStartPageTiles);
 
   // Update the tile item results.
   for (size_t i = 0; i < search_result_tile_views_.size(); ++i) {

@@ -75,13 +75,13 @@ void SimulateClick(views::View* view) {
 // Choose a set that is 3 regular app list pages and 2 landscape app list pages.
 const int kInitialItems = 34;
 
-class TestTileSearchResult : public TestSearchResult {
+class TestStartPageSearchResult : public TestSearchResult {
  public:
-  TestTileSearchResult() { set_display_type(DISPLAY_TILE); }
-  ~TestTileSearchResult() override {}
+  TestStartPageSearchResult() { set_display_type(DISPLAY_RECOMMENDATION); }
+  ~TestStartPageSearchResult() override {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestTileSearchResult);
+  DISALLOW_COPY_AND_ASSIGN(TestStartPageSearchResult);
 };
 
 // Allows the same tests to run with different contexts: either an Ash-style
@@ -466,7 +466,7 @@ void AppListViewTestContext::RunStartPageTest() {
     EXPECT_EQ(view_size.ToString(), view_->GetPreferredSize().ToString());
 
     // Check tiles hide and show on deletion and addition.
-    model->results()->Add(new TestTileSearchResult());
+    model->results()->Add(new TestStartPageSearchResult());
     start_page_view->UpdateForTesting();
     EXPECT_EQ(1u, GetVisibleViews(start_page_view->tile_views()));
     model->results()->DeleteAll();
@@ -555,15 +555,15 @@ void AppListViewTestContext::RunProfileChangeTest() {
     EXPECT_EQ(NULL, start_page_view);
 
   // New model updates should be processed by the start page view.
-  delegate_->GetTestModel()->results()->Add(new TestTileSearchResult());
+  delegate_->GetTestModel()->results()->Add(new TestStartPageSearchResult());
   if (test_type_ == EXPERIMENTAL) {
     start_page_view->UpdateForTesting();
     EXPECT_EQ(1u, GetVisibleViews(start_page_view->tile_views()));
   }
 
   // Old model updates should be ignored.
-  original_test_model->results()->Add(new TestTileSearchResult());
-  original_test_model->results()->Add(new TestTileSearchResult());
+  original_test_model->results()->Add(new TestStartPageSearchResult());
+  original_test_model->results()->Add(new TestStartPageSearchResult());
   if (test_type_ == EXPERIMENTAL) {
     start_page_view->UpdateForTesting();
     EXPECT_EQ(1u, GetVisibleViews(start_page_view->tile_views()));

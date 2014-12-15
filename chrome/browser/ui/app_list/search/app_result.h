@@ -40,7 +40,8 @@ class AppResult : public SearchResult,
  public:
   AppResult(Profile* profile,
             const std::string& app_id,
-            AppListControllerDelegate* controller);
+            AppListControllerDelegate* controller,
+            bool is_recommendation);
   ~AppResult() override;
 
   void UpdateFromMatch(const TokenizedString& title,

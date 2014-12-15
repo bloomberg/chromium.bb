@@ -35,7 +35,7 @@ URLSuggestionResult::URLSuggestionResult(
       weak_ptr_factory_(this) {
   set_id(suggestion_.url());
   set_title(base::UTF8ToUTF16(suggestion_.title()));
-  set_display_type(DISPLAY_TILE);
+  set_display_type(DISPLAY_RECOMMENDATION);
 
   UpdateIcon();
 }

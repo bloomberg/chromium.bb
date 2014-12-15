@@ -85,8 +85,8 @@ void AppSearchProvider::UpdateResults() {
   for (Apps::const_iterator app_it = apps_.begin();
        app_it != apps_.end();
        ++app_it) {
-    scoped_ptr<AppResult> result(
-        new AppResult(profile_, (*app_it)->app_id(), list_controller_));
+    scoped_ptr<AppResult> result(new AppResult(
+        profile_, (*app_it)->app_id(), list_controller_, show_recommendations));
     if (show_recommendations) {
       result->set_title((*app_it)->indexed_name().text());
       result->UpdateFromLastLaunched(clock_->Now(),
