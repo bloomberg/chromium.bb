@@ -30,19 +30,26 @@ WindowsEventRouter::WindowsEventRouter(Profile* profile)
   DCHECK(!profile->IsOffTheRecord());
 
   WindowControllerList::GetInstance()->AddObserver(this);
-#if defined(TOOLKIT_VIEWS)
-  views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
-#elif defined(OS_MACOSX)
   // Needed for when no suitable window can be passed to an extension as the
-  // currently focused window.
+  // currently focused window. On Mac (even in a toolkit-views build) always
+  // rely on the notification sent by AppControllerMac after AppKit sends
+  // NSWindowDidBecomeKeyNotification and there is no [NSApp keyWindow]. This
+  // allows windows not created by toolkit-views to be tracked.
+  // TODO(tapted): Remove the ifdefs (and NOTIFICATION_NO_KEY_WINDOW) when
+  // Chrome on Mac only makes windows with toolkit-views.
+#if defined(OS_MACOSX)
   registrar_.Add(this, chrome::NOTIFICATION_NO_KEY_WINDOW,
                  content::NotificationService::AllSources());
+#elif defined(TOOLKIT_VIEWS)
+  views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
+#else
+#error Unsupported
 #endif
 }
 
 WindowsEventRouter::~WindowsEventRouter() {
   WindowControllerList::GetInstance()->RemoveObserver(this);
-#if defined(TOOLKIT_VIEWS)
+#if !defined(OS_MACOSX)
   views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
 #endif
 }
@@ -73,7 +80,7 @@ void WindowsEventRouter::OnWindowControllerRemoved(
                 args.Pass());
 }
 
-#if defined(TOOLKIT_VIEWS)
+#if !defined(OS_MACOSX)
 void WindowsEventRouter::OnNativeFocusChange(
     gfx::NativeView focused_before,
     gfx::NativeView focused_now) {

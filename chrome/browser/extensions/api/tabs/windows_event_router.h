@@ -12,7 +12,8 @@
 #include "chrome/browser/extensions/window_controller_list_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#if defined(TOOLKIT_VIEWS)
+
+#if !defined(OS_MACOSX)
 #include "ui/views/focus/widget_focus_manager.h"
 #endif
 
@@ -26,10 +27,10 @@ namespace extensions {
 
 // The WindowsEventRouter sends chrome.windows.* events to listeners
 // inside extension process renderers. The router listens to *all* events,
-// but will only route eventes within a profile to extension processes in the
+// but will only route events within a profile to extension processes in the
 // same profile.
 class WindowsEventRouter : public WindowControllerListObserver,
-#if defined(TOOLKIT_VIEWS)
+#if !defined(OS_MACOSX)
                           public views::WidgetFocusChangeListener,
 #endif
                           public content::NotificationObserver {
@@ -41,7 +42,7 @@ class WindowsEventRouter : public WindowControllerListObserver,
   void OnWindowControllerAdded(WindowController* window_controller) override;
   void OnWindowControllerRemoved(WindowController* window) override;
 
-#if defined(TOOLKIT_VIEWS)
+#if !defined(OS_MACOSX)
   void OnNativeFocusChange(gfx::NativeView focused_before,
                            gfx::NativeView focused_now) override;
 #endif
