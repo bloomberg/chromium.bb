@@ -23,6 +23,9 @@ class AndroidDeviceManager : public base::NonThreadSafe {
   typedef base::Callback<void(int, const std::string&)> CommandCallback;
   typedef base::Callback<void(int result, scoped_ptr<net::StreamSocket>)>
       SocketCallback;
+  typedef base::Callback<void(
+      int result, const std::string& extensions, scoped_ptr<net::StreamSocket>)>
+      HttpUpgradeCallback;
   typedef base::Callback<void(const std::vector<std::string>&)> SerialsCallback;
 
   struct BrowserInfo {
@@ -77,7 +80,9 @@ class AndroidDeviceManager : public base::NonThreadSafe {
         const std::string& socket_name,
         const std::string& url,
         AndroidWebSocket::Delegate* delegate);
-    void Connected(int result, scoped_ptr<net::StreamSocket> socket);
+    void Connected(int result,
+                   const std::string& extensions,
+                   scoped_ptr<net::StreamSocket> socket);
     void OnFrameRead(const std::string& message);
     void OnSocketClosed();
     void Terminate();
@@ -105,7 +110,8 @@ class AndroidDeviceManager : public base::NonThreadSafe {
 
     void HttpUpgrade(const std::string& socket_name,
                      const std::string& url,
-                     const SocketCallback& callback);
+                     const std::string& extensions,
+                     const HttpUpgradeCallback& callback);
     AndroidWebSocket* CreateWebSocket(
         const std::string& socket_name,
         const std::string& url,
@@ -160,7 +166,8 @@ class AndroidDeviceManager : public base::NonThreadSafe {
     virtual void HttpUpgrade(const std::string& serial,
                              const std::string& socket_name,
                              const std::string& url,
-                             const SocketCallback& callback);
+                             const std::string& extensions,
+                             const HttpUpgradeCallback& callback);
 
     virtual void ReleaseDevice(const std::string& serial);
 

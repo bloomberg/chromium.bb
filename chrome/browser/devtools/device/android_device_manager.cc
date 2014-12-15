@@ -28,6 +28,7 @@ static const char kWebSocketUpgradeRequest[] = "GET %s HTTP/1.1\r\n"
     "Connection: Upgrade\r\n"
     "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
     "Sec-WebSocket-Version: 13\r\n"
+    "%s"
     "\r\n";
 
 static void PostDeviceInfoCallback(
@@ -46,19 +47,21 @@ static void PostCommandCallback(
                                   base::Bind(callback, result, response));
 }
 
-static void PostSocketCallback(
+static void PostHttpUpgradeCallback(
     scoped_refptr<base::MessageLoopProxy> response_message_loop,
-    const AndroidDeviceManager::SocketCallback& callback,
+    const AndroidDeviceManager::HttpUpgradeCallback& callback,
     int result,
+    const std::string& extensions,
     scoped_ptr<net::StreamSocket> socket) {
   response_message_loop->PostTask(
-      FROM_HERE, base::Bind(callback, result, base::Passed(&socket)));
+      FROM_HERE,
+      base::Bind(callback, result, extensions, base::Passed(&socket)));
 }
 
 class HttpRequest {
  public:
   typedef AndroidDeviceManager::CommandCallback CommandCallback;
-  typedef AndroidDeviceManager::SocketCallback SocketCallback;
+  typedef AndroidDeviceManager::HttpUpgradeCallback HttpUpgradeCallback;
 
   static void CommandRequest(const std::string& request,
                              const CommandCallback& callback,
@@ -71,12 +74,12 @@ class HttpRequest {
     new HttpRequest(socket.Pass(), request, callback);
   }
 
-  static void SocketRequest(const std::string& request,
-                            const SocketCallback& callback,
-                            int result,
-                            scoped_ptr<net::StreamSocket> socket) {
+  static void HttpUpgradeRequest(const std::string& request,
+                                 const HttpUpgradeCallback& callback,
+                                 int result,
+                                 scoped_ptr<net::StreamSocket> socket) {
     if (result != net::OK) {
-      callback.Run(result, make_scoped_ptr<net::StreamSocket>(NULL));
+      callback.Run(result, "", make_scoped_ptr<net::StreamSocket>(nullptr));
       return;
     }
     new HttpRequest(socket.Pass(), request, callback);
@@ -94,9 +97,9 @@ class HttpRequest {
 
   HttpRequest(scoped_ptr<net::StreamSocket> socket,
               const std::string& request,
-              const SocketCallback& callback)
+              const HttpUpgradeCallback& callback)
     : socket_(socket.Pass()),
-      socket_callback_(callback),
+      http_upgrade_callback_(callback),
       body_pos_(0) {
     SendRequest(request);
   }
@@ -146,17 +149,11 @@ class HttpRequest {
     int expected_length = 0;
     if (bytes_total < 0) {
       // TODO(kaznacheev): Use net::HttpResponseHeader to parse the header.
-      size_t content_pos = response_.find("Content-Length:");
-      if (content_pos != std::string::npos) {
-        size_t endline_pos = response_.find("\n", content_pos);
-        if (endline_pos != std::string::npos) {
-          std::string len = response_.substr(content_pos + 15,
-                                             endline_pos - content_pos - 15);
-          base::TrimWhitespace(len, base::TRIM_ALL, &len);
-          if (!base::StringToInt(len, &expected_length)) {
-            CheckNetResultOrDie(net::ERR_FAILED);
-            return;
-          }
+      std::string content_length = ExtractHeader("Content-Length:");
+      if (!content_length.empty()) {
+        if (!base::StringToInt(content_length, &expected_length)) {
+          CheckNetResultOrDie(net::ERR_FAILED);
+          return;
         }
       }
 
@@ -168,10 +165,12 @@ class HttpRequest {
     }
 
     if (bytes_total == static_cast<int>(response_.length())) {
-      if (!command_callback_.is_null())
+      if (!command_callback_.is_null()) {
         command_callback_.Run(net::OK, response_.substr(body_pos_));
-      else
-        socket_callback_.Run(net::OK, socket_.Pass());
+      } else {
+        http_upgrade_callback_.Run(net::OK,
+            ExtractHeader("Sec-WebSocket-Extensions:"), socket_.Pass());
+      }
       delete this;
       return;
     }
@@ -187,21 +186,38 @@ class HttpRequest {
       OnResponseData(response_buffer, bytes_total, result);
   }
 
+  std::string ExtractHeader(const std::string& header) {
+    size_t start_pos = response_.find(header);
+    if (start_pos == std::string::npos)
+      return std::string();
+
+    size_t endline_pos = response_.find("\n", start_pos);
+    if (endline_pos == std::string::npos)
+      return std::string();
+
+    std::string value = response_.substr(
+        start_pos + header.length(), endline_pos - start_pos - header.length());
+    base::TrimWhitespace(value, base::TRIM_ALL, &value);
+    return value;
+  }
+
   bool CheckNetResultOrDie(int result) {
     if (result >= 0)
       return true;
-    if (!command_callback_.is_null())
+    if (!command_callback_.is_null()) {
       command_callback_.Run(result, std::string());
-    else
-      socket_callback_.Run(result, make_scoped_ptr<net::StreamSocket>(NULL));
+    } else {
+      http_upgrade_callback_.Run(
+          result, "", make_scoped_ptr<net::StreamSocket>(nullptr));
+    }
     delete this;
     return false;
   }
 
   scoped_ptr<net::StreamSocket> socket_;
   std::string response_;
-  AndroidDeviceManager::CommandCallback command_callback_;
-  AndroidDeviceManager::SocketCallback socket_callback_;
+  CommandCallback command_callback_;
+  HttpUpgradeCallback http_upgrade_callback_;
   size_t body_pos_;
 };
 
@@ -305,12 +321,17 @@ void AndroidDeviceManager::DeviceProvider::HttpUpgrade(
     const std::string& serial,
     const std::string& socket_name,
     const std::string& url,
-    const SocketCallback& callback) {
+    const std::string& extensions,
+    const HttpUpgradeCallback& callback) {
+  std::string extensions_with_new_line =
+      extensions.empty() ? std::string() : extensions + "\r\n";
   OpenSocket(
       serial,
       socket_name,
-      base::Bind(&HttpRequest::SocketRequest,
-                 base::StringPrintf(kWebSocketUpgradeRequest, url.c_str()),
+      base::Bind(&HttpRequest::HttpUpgradeRequest,
+                 base::StringPrintf(kWebSocketUpgradeRequest,
+                                    url.c_str(),
+                                    extensions_with_new_line.c_str()),
                  callback));
 }
 
@@ -363,9 +384,11 @@ void AndroidDeviceManager::Device::SendJsonRequest(
                             callback)));
 }
 
-void AndroidDeviceManager::Device::HttpUpgrade(const std::string& socket_name,
-                                               const std::string& url,
-                                               const SocketCallback& callback) {
+void AndroidDeviceManager::Device::HttpUpgrade(
+    const std::string& socket_name,
+    const std::string& url,
+    const std::string& extensions,
+    const HttpUpgradeCallback& callback) {
   message_loop_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&DeviceProvider::HttpUpgrade,
@@ -373,7 +396,8 @@ void AndroidDeviceManager::Device::HttpUpgrade(const std::string& socket_name,
                  serial_,
                  socket_name,
                  url,
-                 base::Bind(&PostSocketCallback,
+                 extensions,
+                 base::Bind(&PostHttpUpgradeCallback,
                             base::MessageLoopProxy::current(),
                             callback)));
 }

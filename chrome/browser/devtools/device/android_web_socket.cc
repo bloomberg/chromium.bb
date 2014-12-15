@@ -25,11 +25,12 @@ class AndroidDeviceManager::AndroidWebSocket::WebSocketImpl {
  public:
    WebSocketImpl(scoped_refptr<base::MessageLoopProxy> response_message_loop,
                  base::WeakPtr<AndroidWebSocket> weak_socket,
+                 const std::string& extensions,
                  scoped_ptr<net::StreamSocket> socket)
        : response_message_loop_(response_message_loop),
          weak_socket_(weak_socket),
          socket_(socket.Pass()),
-         encoder_(net::WebSocketEncoder::CreateClient(std::string())) {
+         encoder_(net::WebSocketEncoder::CreateClient(extensions)) {
     thread_checker_.DetachFromThread();
   }
 
@@ -144,7 +145,7 @@ AndroidDeviceManager::AndroidWebSocket::AndroidWebSocket(
   DCHECK(device_);
   device_->sockets_.insert(this);
   device_->HttpUpgrade(
-      socket_name, url,
+      socket_name, url, net::WebSocketEncoder::kClientExtensions,
       base::Bind(&AndroidWebSocket::Connected, weak_factory_.GetWeakPtr()));
 }
 
@@ -166,6 +167,7 @@ void AndroidDeviceManager::AndroidWebSocket::SendFrame(
 
 void AndroidDeviceManager::AndroidWebSocket::Connected(
     int result,
+    const std::string& extensions,
     scoped_ptr<net::StreamSocket> socket) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (result != net::OK || !socket.get()) {
@@ -174,6 +176,7 @@ void AndroidDeviceManager::AndroidWebSocket::Connected(
   }
   socket_impl_ = new WebSocketImpl(base::MessageLoopProxy::current(),
                                    weak_factory_.GetWeakPtr(),
+                                   extensions,
                                    socket.Pass());
   device_->message_loop_proxy_->PostTask(
       FROM_HERE,
