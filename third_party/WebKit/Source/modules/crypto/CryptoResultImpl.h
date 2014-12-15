@@ -72,12 +72,15 @@ public:
     ScriptPromise promise();
 
 private:
-    class WeakResolver;
+    class Resolver;
     explicit CryptoResultImpl(ScriptState*);
 
+    void clearResolver();
     void cancel();
 
-    WeakPtr<ScriptPromiseResolver> m_resolver;
+    // FIXME: ScriptPromiseResolver should not be exported.
+    // Instead, use ScriptPromise.
+    ScriptPromiseResolver* m_resolver;
     volatile int m_cancelled;
 };
 
