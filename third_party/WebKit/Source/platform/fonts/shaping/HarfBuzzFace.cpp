@@ -51,7 +51,6 @@
 namespace blink {
 
 const hb_tag_t HarfBuzzFace::vertTag = HB_TAG('v', 'e', 'r', 't');
-const hb_tag_t HarfBuzzFace::vrt2Tag = HB_TAG('v', 'r', 't', '2');
 
 // Though we have FontCache class, which provides the cache mechanism for
 // WebKit's font objects, we also need additional caching layer for HarfBuzz
@@ -126,8 +125,7 @@ static hb_script_t findScriptForVerticalGlyphSubstitution(hb_face_t* face)
         hb_ot_layout_script_get_language_tags(face, HB_OT_TAG_GSUB, scriptIndex, 0, &languageCount, languageTags);
         for (unsigned languageIndex = 0; languageIndex < languageCount; ++languageIndex) {
             unsigned featureIndex;
-            if (hb_ot_layout_language_find_feature(face, HB_OT_TAG_GSUB, scriptIndex, languageIndex, HarfBuzzFace::vertTag, &featureIndex)
-                || hb_ot_layout_language_find_feature(face, HB_OT_TAG_GSUB, scriptIndex, languageIndex, HarfBuzzFace::vrt2Tag, &featureIndex))
+            if (hb_ot_layout_language_find_feature(face, HB_OT_TAG_GSUB, scriptIndex, languageIndex, HarfBuzzFace::vertTag, &featureIndex))
                 return hb_ot_tag_to_script(scriptTags[scriptIndex]);
         }
     }
