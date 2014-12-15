@@ -36,6 +36,7 @@ class CSSStyleDeclaration;
 class MutableStylePropertySet;
 class StylePropertySet;
 class StyleRuleCSSStyleDeclaration;
+class ExceptionState;
 
 class StyleKeyframe final : public RefCountedWillBeGarbageCollectedFinalized<StyleKeyframe> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
@@ -48,7 +49,7 @@ public:
 
     // Exposed to JavaScript.
     String keyText() const;
-    void setKeyText(const String&);
+    bool setKeyText(const String&);
 
     // Used by StyleResolver.
     const Vector<double>& keys() const;
@@ -69,9 +70,7 @@ private:
     StyleKeyframe();
 
     RefPtrWillBeMember<StylePropertySet> m_properties;
-    // These are both calculated lazily. Either one can be set, which invalidates the other.
-    mutable String m_keyText;
-    mutable OwnPtr<Vector<double> > m_keys;
+    Vector<double> m_keys;
 };
 
 class CSSKeyframeRule final : public CSSRule {
@@ -83,7 +82,7 @@ public:
     virtual void reattach(StyleRuleBase*) override;
 
     String keyText() const { return m_keyframe->keyText(); }
-    void setKeyText(const String& s) { m_keyframe->setKeyText(s); }
+    void setKeyText(const String&, ExceptionState&);
 
     CSSStyleDeclaration* style() const;
 

@@ -186,7 +186,6 @@ PassOwnPtr<Vector<double> > BisonCSSParser::parseKeyframeKeyList(const String& s
 {
     setupParser("@-internal-keyframe-key-list ", string, "");
     cssyyparse(this);
-    ASSERT(m_valueList);
     return StyleKeyframe::createKeyList(m_valueList.get());
 }
 

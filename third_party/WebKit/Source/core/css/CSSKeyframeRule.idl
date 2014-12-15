@@ -29,7 +29,7 @@
 // Introduced in DOM Level ?:
 interface CSSKeyframeRule : CSSRule {
 
-    attribute DOMString keyText;
+    [RaisesException=Setter] attribute DOMString keyText;
     readonly attribute CSSStyleDeclaration style;
 
 };

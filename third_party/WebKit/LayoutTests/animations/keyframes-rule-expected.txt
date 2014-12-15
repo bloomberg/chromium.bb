@@ -90,31 +90,34 @@ PASS rules8.item(1).keyText is '90%,100%'
 Set a keyframe key with 'from'
 PASS rules9.length is 2
 PASS rules9.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
-PASS rules9.item(0).keyText is 'from'
+PASS rules9.item(0).keyText is '0%'
 PASS rules9.item(1).keyText is '90%,100%'
 
 Set a keyframe key with multiple values
 PASS rules10.length is 2
 PASS rules10.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
-PASS rules10.item(0).keyText is '10%, 20%, 30%'
+PASS rules10.item(0).keyText is '0%,10%,0%,20%,30%,100%'
 PASS rules10.item(1).keyText is '90%,100%'
 
 Set a keyframe key with an out-of-range value
+PASS rules11.item(0).keyText = "40%, -50%, 60%"; threw exception SyntaxError: Failed to set the 'keyText' property on 'CSSKeyframeRule': The key '40%, -50%, 60%' is invalid and cannot be parsed.
 PASS rules11.length is 2
 PASS rules11.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
-PASS rules11.item(0).keyText is '40%, -50%, 60%'
+PASS rules11.item(0).keyText is '0%'
 PASS rules11.item(1).keyText is '90%,100%'
 
 Set a keyframe key with an invalid value
+PASS rules12.item(0).keyText = "foo"; threw exception SyntaxError: Failed to set the 'keyText' property on 'CSSKeyframeRule': The key 'foo' is invalid and cannot be parsed.
 PASS rules12.length is 2
 PASS rules12.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
-PASS rules12.item(0).keyText is 'foo'
+PASS rules12.item(0).keyText is '0%'
 PASS rules12.item(1).keyText is '90%,100%'
 
 Set a keyframe key with a null value
+PASS rules13.item(0).keyText = null; threw exception SyntaxError: Failed to set the 'keyText' property on 'CSSKeyframeRule': The key 'null' is invalid and cannot be parsed.
 PASS rules13.length is 2
 PASS rules13.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
-PASS rules13.item(0).keyText is 'null'
+PASS rules13.item(0).keyText is '0%'
 PASS rules13.item(1).keyText is '90%,100%'
 PASS successfullyParsed is true
 

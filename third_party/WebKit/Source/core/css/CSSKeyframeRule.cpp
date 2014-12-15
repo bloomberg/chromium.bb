@@ -26,10 +26,12 @@
 #include "config.h"
 #include "core/css/CSSKeyframeRule.h"
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/PropertySetCSSStyleDeclaration.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/frame/UseCounter.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -45,51 +47,40 @@ StyleKeyframe::~StyleKeyframe()
 
 String StyleKeyframe::keyText() const
 {
-    if (m_keyText.isNull()) {
-        // Keys are always set when these objects are created.
-        ASSERT(m_keys && !m_keys->isEmpty());
-        StringBuilder keyText;
-        for (unsigned i = 0; i < m_keys->size(); ++i) {
-            if (i)
-                keyText.append(',');
-            keyText.appendNumber(m_keys->at(i) * 100);
-            keyText.append('%');
-        }
-        m_keyText = keyText.toString();
+    ASSERT(!m_keys.isEmpty());
+
+    StringBuilder keyText;
+    for (unsigned i = 0; i < m_keys.size(); ++i) {
+        if (i)
+            keyText.append(',');
+        keyText.appendNumber(m_keys.at(i) * 100);
+        keyText.append('%');
     }
-    ASSERT(!m_keyText.isNull());
-    return m_keyText;
+
+    return keyText.toString();
 }
 
-void StyleKeyframe::setKeyText(const String& keyText)
+bool StyleKeyframe::setKeyText(const String& keyText)
 {
-    // FIXME: Should we trim whitespace?
-    // FIXME: Should we leave keyText unchanged when attempting to set to an
-    // invalid string?
     ASSERT(!keyText.isNull());
-    m_keyText = keyText;
-    m_keys.clear();
+
+    OwnPtr<Vector<double> > keys = CSSParser::parseKeyframeKeyList(keyText);
+    if (keys->isEmpty())
+        return false;
+
+    m_keys = *keys;
+    return true;
 }
 
 const Vector<double>& StyleKeyframe::keys() const
 {
-    if (!m_keys) {
-        // Keys can only be cleared by setting the key text from JavaScript
-        // and this can never be null.
-        ASSERT(!m_keyText.isNull());
-        m_keys = CSSParser::parseKeyframeKeyList(m_keyText);
-    }
-    // If an invalid key string was set, m_keys may be empty.
-    ASSERT(m_keys);
-    return *m_keys;
+    return m_keys;
 }
 
 void StyleKeyframe::setKeys(PassOwnPtr<Vector<double> > keys)
 {
     ASSERT(keys && !keys->isEmpty());
-    m_keys = keys;
-    m_keyText = String();
-    ASSERT(m_keyText.isNull());
+    m_keys = *keys;
 }
 
 MutableStylePropertySet& StyleKeyframe::mutableProperties()
@@ -120,8 +111,9 @@ String StyleKeyframe::cssText() const
 
 PassOwnPtr<Vector<double> > StyleKeyframe::createKeyList(CSSParserValueList* keys)
 {
-    OwnPtr<Vector<double> > keyVector = adoptPtr(new Vector<double>(keys->size()));
-    for (unsigned i = 0; i < keys->size(); ++i) {
+    size_t numKeys = keys ? keys->size() : 0;
+    OwnPtr<Vector<double> > keyVector = adoptPtr(new Vector<double>(numKeys));
+    for (size_t i = 0; i < numKeys; ++i) {
         ASSERT(keys->valueAt(i)->unit == blink::CSSPrimitiveValue::CSS_NUMBER);
         double key = keys->valueAt(i)->fValue;
         if (key < 0 || key > 100) {
@@ -154,6 +146,12 @@ CSSKeyframeRule::~CSSKeyframeRule()
     if (m_propertiesCSSOMWrapper)
         m_propertiesCSSOMWrapper->clearParentRule();
 #endif
+}
+
+void CSSKeyframeRule::setKeyText(const String& keyText, ExceptionState& exceptionState)
+{
+    if (!m_keyframe->setKeyText(keyText))
+        exceptionState.throwDOMException(SyntaxError, "The key '" + keyText + "' is invalid and cannot be parsed");
 }
 
 CSSStyleDeclaration* CSSKeyframeRule::style() const

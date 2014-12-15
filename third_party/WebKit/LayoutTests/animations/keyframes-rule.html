@@ -251,52 +251,47 @@ var rules9 = document.styleSheets.item(0).cssRules.item(8).cssRules;
 rules9.item(0).keyText = "from";
 shouldBe("rules9.length", "2");
 shouldBe("rules9.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
-// FIXME: Should this be converted to '0%'?
-shouldBe("rules9.item(0).keyText", "'from'");
+shouldBe("rules9.item(0).keyText", "'0%'");
 shouldBe("rules9.item(1).keyText", "'90%,100%'");
 
 debug("");
 debug("Set a keyframe key with multiple values");
 
 var rules10 = document.styleSheets.item(0).cssRules.item(9).cssRules;
-rules10.item(0).keyText = "10%, 20%, 30%";
+rules10.item(0).keyText = "0%, 10%, from, 20%, 30%, to";
 shouldBe("rules10.length", "2");
 shouldBe("rules10.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
-// FIXME: Should we strip spaces to match the keyText parsed from a keyframe rule?
-shouldBe("rules10.item(0).keyText", "'10%, 20%, 30%'");
+shouldBe("rules10.item(0).keyText", "'0%,10%,0%,20%,30%,100%'");
 shouldBe("rules10.item(1).keyText", "'90%,100%'");
 
 debug("");
 debug("Set a keyframe key with an out-of-range value");
 
 var rules11 = document.styleSheets.item(0).cssRules.item(10).cssRules;
-rules11.item(0).keyText = "40%, -50%, 60%";
+shouldThrow('rules11.item(0).keyText = "40%, -50%, 60%";');
 shouldBe("rules11.length", "2");
 shouldBe("rules11.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
-// FIXME: Should we leave keyText unchanged when attempting to set to an invalid string?
-shouldBe("rules11.item(0).keyText", "'40%, -50%, 60%'");
+shouldBe("rules11.item(0).keyText", "'0%'");
 shouldBe("rules11.item(1).keyText", "'90%,100%'");
 
 debug("");
 debug("Set a keyframe key with an invalid value");
 
 var rules12 = document.styleSheets.item(0).cssRules.item(11).cssRules;
-rules12.item(0).keyText = "foo";
+shouldThrow('rules12.item(0).keyText = "foo";');
 shouldBe("rules12.length", "2");
 shouldBe("rules12.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
-// FIXME: Should we leave keyText unchanged when attempting to set to an invalid string?
-shouldBe("rules12.item(0).keyText", "'foo'");
+shouldBe("rules12.item(0).keyText", "'0%'");
 shouldBe("rules12.item(1).keyText", "'90%,100%'");
 
 debug("");
 debug("Set a keyframe key with a null value");
 
 var rules13 = document.styleSheets.item(0).cssRules.item(12).cssRules;
-rules13.item(0).keyText = null;
+shouldThrow('rules13.item(0).keyText = null;');
 shouldBe("rules13.length", "2");
 shouldBe("rules13.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
-// FIXME: Should we leave keyText unchanged when attempting to set to something invalid?
-shouldBe("rules13.item(0).keyText", "'null'");
+shouldBe("rules13.item(0).keyText", "'0%'");
 shouldBe("rules13.item(1).keyText", "'90%,100%'");
 
 </script>
