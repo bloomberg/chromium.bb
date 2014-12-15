@@ -36,14 +36,6 @@
           ['exclude', '_udev\\.(h|cc)$'],
         ],
       }],
-      ['use_xkbcommon==1', {
-        'dependencies': [
-          '../../../build/linux/system.gyp:xkbcommon',
-        ],
-        'defines': [
-          'USE_XKBCOMMON',
-        ],
-      }],
       ['use_ozone_evdev==1 and use_udev==1', {
         'dependencies': [
           '<(DEPTH)/device/udev_linux/udev.gyp:udev_linux',
@@ -144,10 +136,34 @@
       'layout/keyboard_layout_engine.h',
       'layout/keyboard_layout_engine_manager.cc',
       'layout/keyboard_layout_engine_manager.h',
+      'layout/layout_util.cc',
+      'layout/layout_util.h',
       'layout/no/no_keyboard_layout_engine.cc',
       'layout/no/no_keyboard_layout_engine.h',
       'layout/stub/stub_keyboard_layout_engine.cc',
       'layout/stub/stub_keyboard_layout_engine.h',
+    ],
+    'conditions': [
+      ['use_xkbcommon==1', {
+        'dependencies': [
+          '../../../build/linux/system.gyp:xkbcommon',
+        ],
+        'defines': [
+          'USE_XKBCOMMON',
+        ],
+        'sources': [
+          'layout/xkb/xkb.h',
+          'layout/xkb/xkb_evdev_codes.cc',
+          'layout/xkb/xkb_evdev_codes.h',
+          'layout/xkb/xkb_key_code_converter.h',
+          'layout/xkb/xkb_keyboard_code_conversion.cc',
+          'layout/xkb/xkb_keyboard_code_conversion.h',
+          'layout/xkb/xkb_keyboard_layout_engine.cc',
+          'layout/xkb/xkb_keyboard_layout_engine.h',
+          'layout/xkb/xkb_keysym.h',
+          'layout/xkb/scoped_xkb.h',
+        ],
+      }],
     ],
   }]
 }

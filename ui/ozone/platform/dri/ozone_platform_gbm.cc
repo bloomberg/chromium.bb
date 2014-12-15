@@ -15,7 +15,6 @@
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
-#include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #include "ui/ozone/platform/dri/display_manager.h"
 #include "ui/ozone/platform/dri/dri_cursor.h"
 #include "ui/ozone/platform/dri/dri_gpu_platform_support.h"
@@ -36,6 +35,13 @@
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
+
+#if defined(USE_XKBCOMMON)
+#include "ui/events/ozone/layout/xkb/xkb_evdev_codes.h"
+#include "ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h"
+#else
+#include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
+#endif
 
 namespace ui {
 
@@ -128,8 +134,13 @@ class OzonePlatformGbm : public OzonePlatform {
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
     window_manager_.reset(
         new DriWindowManager(gpu_platform_support_host_.get()));
+#if defined(USE_XKBCOMMON)
+    KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(make_scoped_ptr(
+        new XkbKeyboardLayoutEngine(xkb_evdev_code_converter_)));
+#else
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
         make_scoped_ptr(new StubKeyboardLayoutEngine()));
+#endif
     event_factory_ozone_.reset(new EventFactoryEvdev(
         window_manager_->cursor(), device_manager_.get(),
         KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()));
@@ -174,6 +185,10 @@ class OzonePlatformGbm : public OzonePlatform {
   // Browser side object only.
   scoped_ptr<DriWindowManager> window_manager_;
   scoped_ptr<DisplayManager> display_manager_;
+
+#if defined(USE_XKBCOMMON)
+  XkbEvdevCodes xkb_evdev_code_converter_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformGbm);
 };
