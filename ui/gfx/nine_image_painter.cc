@@ -25,10 +25,14 @@ namespace {
 // The following functions width and height of the image in pixels for the
 // scale factor in the Canvas.
 int ImageWidthInPixels(const ImageSkia& i, Canvas* c) {
+  if (i.isNull())
+    return 0;
   return i.GetRepresentation(c->image_scale()).pixel_width();
 }
 
 int ImageHeightInPixels(const ImageSkia& i, Canvas* c) {
+  if (i.isNull())
+    return 0;
   return i.GetRepresentation(c->image_scale()).pixel_height();
 }
 
@@ -40,6 +44,8 @@ void Fill(Canvas* c,
           int w,
           int h,
           const SkPaint& paint) {
+  if (i.isNull())
+    return;
   c->DrawImageIntInPixel(i, 0, 0, ImageWidthInPixels(i, c),
                          ImageHeightInPixels(i, c), x, y, w, h, false, paint);
 }
@@ -146,22 +152,27 @@ void NineImagePainter::Paint(Canvas* canvas,
   SkPaint paint;
   paint.setAlpha(alpha);
 
-  if (!images_[4].isNull())
-    Fill(canvas, images_[4], i4x, i4y, i4w, i4h, paint);
   canvas->DrawImageIntInPixel(images_[0], 0, 0, i0w, i0h,
                               0, 0, i0w, i0h, false, paint);
+
   Fill(canvas, images_[1], i0w, 0, width_in_pixels - i0w - i2w, i1h, paint);
-  canvas->DrawImageIntInPixel(images_[2], 0, 0, i2w, i2h, width_in_pixels - i2w,
-                              0, i2w, i2h, false, paint);
+
+  Fill(canvas, images_[2], width_in_pixels - i2w, 0, i2w, i2h, paint);
+
   Fill(canvas, images_[3], 0, i0h, i3w, height_in_pixels - i0h - i6h, paint);
+
+  Fill(canvas, images_[4], i4x, i4y, i4w, i4h, paint);
+
   Fill(canvas, images_[5], width_in_pixels - i5w, i2h, i5w,
        height_in_pixels - i2h - i8h, paint);
-  canvas->DrawImageIntInPixel(images_[6], 0, 0, i6w, i6h, 0,
-                              height_in_pixels - i6h, i6w, i6h, false, paint);
+
+  Fill(canvas, images_[6], 0, height_in_pixels - i6h, i6w, i6h, paint);
+
   Fill(canvas, images_[7], i6w, height_in_pixels - i7h,
        width_in_pixels - i6w - i8w, i7h, paint);
-  canvas->DrawImageIntInPixel(images_[8], 0, 0, i8w, i8h, width_in_pixels - i8w,
-                              height_in_pixels - i8h, i8w, i8h, false, paint);
+
+  Fill(canvas, images_[8], width_in_pixels - i8w, height_in_pixels - i8h, i8w,
+       i8h, paint);
 }
 
 }  // namespace gfx

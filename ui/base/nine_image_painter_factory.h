@@ -23,6 +23,17 @@
       x ## _LEFT, EMPTY_IMAGE, x ## _RIGHT, \
       x ## _BOTTOM_LEFT, x ## _BOTTOM, x ## _BOTTOM_RIGHT, }
 
+// A macro to define arrays of IDR constants used with CreateImageGridPainter
+// where it can only be streched horizontally.
+#define IMAGE_GRID_HORIZONTAL(x) { x ## _LEFT, x ## _CENTER, x ## _RIGHT, \
+      EMPTY_IMAGE, EMPTY_IMAGE, EMPTY_IMAGE, \
+      EMPTY_IMAGE, EMPTY_IMAGE, EMPTY_IMAGE}
+
+// A macro to define arrays of IDR constants used with CreateImageGridPainter
+// where it can only be streched vertically.
+#define IMAGE_GRID_VERTICAL(x) { x ## _TOP, EMPTY_IMAGE, EMPTY_IMAGE, \
+        x ## _CENTER, EMPTY_IMAGE, EMPTY_IMAGE, \
+        x ## _BOTTOM, EMPTY_IMAGE, EMPTY_IMAGE}
 
 namespace gfx {
 class NineImagePainter;
