@@ -9,6 +9,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/prefs/pref_member.h"
+#include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 
@@ -39,10 +40,7 @@ class AutocompleteHistoryManager : public WebDataServiceConsumer {
       const base::string16& name,
       const base::string16& prefix,
       const std::string& form_control_type,
-      const std::vector<base::string16>& autofill_values,
-      const std::vector<base::string16>& autofill_labels,
-      const std::vector<base::string16>& autofill_icons,
-      const std::vector<int>& autofill_unique_ids);
+      const std::vector<Suggestion>& suggestions);
   virtual void OnFormSubmitted(const FormData& form);
 
   // Cancels the currently pending WebDataService query, if there is one.
@@ -58,8 +56,10 @@ class AutocompleteHistoryManager : public WebDataServiceConsumer {
  protected:
   friend class AutofillManagerTest;
 
-  // Sends the given |suggestions| for display in the Autofill popup.
-  void SendSuggestions(const std::vector<base::string16>* suggestions);
+  // Sends the stored suggestions plus the new autocomplete results for display
+  // in the Autofill popup. The parameter may be null if there are no new
+  // autocomplete additions.
+  void SendSuggestions(const std::vector<base::string16>* new_results);
 
  private:
   // Provides driver-level context. Must outlive this object.
@@ -71,10 +71,7 @@ class AutocompleteHistoryManager : public WebDataServiceConsumer {
   // back.  We also store the autofill results so we can send them together.
   WebDataServiceBase::Handle pending_query_handle_;
   int query_id_;
-  std::vector<base::string16> autofill_values_;
-  std::vector<base::string16> autofill_labels_;
-  std::vector<base::string16> autofill_icons_;
-  std::vector<int> autofill_unique_ids_;
+  std::vector<Suggestion> autofill_suggestions_;
 
   // Delegate to perform external processing (display, selection) on
   // our behalf.  Weak.

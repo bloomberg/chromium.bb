@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "components/autofill/content/browser/wallet/gaia_account.h"
 #include "components/autofill/content/browser/wallet/wallet_service_url.h"
+#include "components/autofill/core/browser/autofill_sync_constants.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "grit/components_scaled_resources.h"
@@ -42,19 +43,19 @@ bool VectorsAreEqual(const std::vector<T*>& a, const std::vector<T*>& b) {
 
 WalletItems::MaskedInstrument::Type
     TypeFromString(const std::string& type_string) {
-  if (type_string == "VISA")
+  if (type_string == kSyncCardTypeVisa)
     return WalletItems::MaskedInstrument::VISA;
-  if (type_string == "MASTER_CARD")
+  if (type_string == kSyncCardTypeMasterCard)
     return WalletItems::MaskedInstrument::MASTER_CARD;
-  if (type_string == "AMEX")
+  if (type_string == kSyncCardTypeAmex)
     return WalletItems::MaskedInstrument::AMEX;
-  if (type_string == "DISCOVER")
+  if (type_string == kSyncCardTypeDiscover)
     return WalletItems::MaskedInstrument::DISCOVER;
-  if (type_string == "SOLO")
+  if (type_string == kSyncCardTypeSolo)
     return WalletItems::MaskedInstrument::SOLO;
-  if (type_string == "MAESTRO")
+  if (type_string == kSyncCardTypeSolo)
     return WalletItems::MaskedInstrument::MAESTRO;
-  if (type_string == "SWITCH")
+  if (type_string == kSyncCardTypeSwitch)
     return WalletItems::MaskedInstrument::SWITCH;
   return WalletItems::MaskedInstrument::UNKNOWN;
 }

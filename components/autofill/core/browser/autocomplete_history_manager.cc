@@ -82,17 +82,11 @@ void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
     const base::string16& name,
     const base::string16& prefix,
     const std::string& form_control_type,
-    const std::vector<base::string16>& autofill_values,
-    const std::vector<base::string16>& autofill_labels,
-    const std::vector<base::string16>& autofill_icons,
-    const std::vector<int>& autofill_unique_ids) {
+    const std::vector<Suggestion>& suggestions) {
   CancelPendingQuery();
 
   query_id_ = query_id;
-  autofill_values_ = autofill_values;
-  autofill_labels_ = autofill_labels;
-  autofill_icons_ = autofill_icons;
-  autofill_unique_ids_ = autofill_unique_ids;
+  autofill_suggestions_ = suggestions;
   if (!autofill_client_->IsAutocompleteEnabled() ||
       form_control_type == "textarea") {
     SendSuggestions(NULL);
@@ -161,39 +155,28 @@ void AutocompleteHistoryManager::CancelPendingQuery() {
 }
 
 void AutocompleteHistoryManager::SendSuggestions(
-    const std::vector<base::string16>* suggestions) {
-  if (suggestions) {
+    const std::vector<base::string16>* autocomplete_results) {
+  if (autocomplete_results) {
     // Combine Autofill and Autocomplete values into values and labels.
-    for (size_t i = 0; i < suggestions->size(); ++i) {
+    for (const auto& new_result : *autocomplete_results) {
       bool unique = true;
-      for (size_t j = 0; j < autofill_values_.size(); ++j) {
+      for (const auto& autofill_suggestion : autofill_suggestions_) {
         // Don't add duplicate values.
-        if (autofill_values_[j] == (*suggestions)[i]) {
+        if (new_result == autofill_suggestion.value) {
           unique = false;
           break;
         }
       }
 
-      if (unique) {
-        autofill_values_.push_back((*suggestions)[i]);
-        autofill_labels_.push_back(base::string16());
-        autofill_icons_.push_back(base::string16());
-        autofill_unique_ids_.push_back(0);  // 0 means no profile.
-      }
+      if (unique)
+        autofill_suggestions_.push_back(Suggestion(new_result));
     }
   }
 
-  external_delegate_->OnSuggestionsReturned(query_id_,
-                                            autofill_values_,
-                                            autofill_labels_,
-                                            autofill_icons_,
-                                            autofill_unique_ids_);
+  external_delegate_->OnSuggestionsReturned(query_id_, autofill_suggestions_);
 
   query_id_ = 0;
-  autofill_values_.clear();
-  autofill_labels_.clear();
-  autofill_icons_.clear();
-  autofill_unique_ids_.clear();
+  autofill_suggestions_.clear();
 }
 
 }  // namespace autofill

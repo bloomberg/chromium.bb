@@ -893,13 +893,12 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction) {
   // Simulate editing an autofilled field.
   {
     base::HistogramTester histogram_tester;
-    PersonalDataManager::GUIDPair guid(
+    SuggestionBackendID guid(
         "00000000-0000-0000-0000-000000000001", 0);
-    PersonalDataManager::GUIDPair empty(std::string(), 0);
     autofill_manager_->FillOrPreviewForm(
         AutofillDriver::FORM_DATA_ACTION_FILL,
         0, form, form.fields.front(),
-        autofill_manager_->PackGUIDs(empty, guid));
+        autofill_manager_->MakeFrontendID(SuggestionBackendID(), guid));
     autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
                                             TimeTicks());
     // Simulate a second keystroke; make sure we don't log the metric twice.

@@ -548,27 +548,16 @@ void PersonalDataManager::Refresh() {
   LoadCreditCards();
 }
 
-void PersonalDataManager::GetProfileSuggestions(
+std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
     const AutofillType& type,
     const base::string16& field_contents,
     bool field_is_autofilled,
     const std::vector<ServerFieldType>& other_field_types,
-    const base::Callback<bool(const AutofillProfile&)>& filter,
-    std::vector<base::string16>* values,
-    std::vector<base::string16>* labels,
-    std::vector<base::string16>* icons,
-    std::vector<GUIDPair>* guid_pairs) {
-  values->clear();
-  labels->clear();
-  icons->clear();
-  guid_pairs->clear();
+    const base::Callback<bool(const AutofillProfile&)>& filter) {
+  std::vector<Suggestion> suggestions;
 
-  const std::vector<AutofillProfile*>& profiles = GetProfiles(true);
   std::vector<AutofillProfile*> matched_profiles;
-  for (std::vector<AutofillProfile*>::const_iterator iter = profiles.begin();
-       iter != profiles.end(); ++iter) {
-    AutofillProfile* profile = *iter;
-
+  for (AutofillProfile* profile : GetProfiles(true)) {
     // The value of the stored data for this field type in the |profile|.
     std::vector<base::string16> multi_values;
     AddressField address_field;
@@ -594,8 +583,9 @@ void PersonalDataManager::GetProfileSuggestions(
             StartsWith(multi_values[i], field_contents, false) &&
             (filter.is_null() || filter.Run(*profile))) {
           matched_profiles.push_back(profile);
-          values->push_back(multi_values[i]);
-          guid_pairs->push_back(GUIDPair(profile->guid(), i));
+          suggestions.push_back(Suggestion(multi_values[i]));
+          suggestions.back().backend_id.guid = profile->guid();
+          suggestions.back().backend_id.variant = i;
         }
       } else {
         if (multi_values[i].empty())
@@ -620,8 +610,9 @@ void PersonalDataManager::GetProfileSuggestions(
             profile_value_lower_case == field_value_lower_case) {
           for (size_t j = 0; j < multi_values.size(); ++j) {
             if (!multi_values[j].empty()) {
-              values->push_back(multi_values[j]);
-              guid_pairs->push_back(GUIDPair(profile->guid(), j));
+              suggestions.push_back(Suggestion(multi_values[j]));
+              suggestions.back().backend_id.guid = profile->guid();
+              suggestions.back().backend_id.variant = j;
             }
           }
 
@@ -634,35 +625,24 @@ void PersonalDataManager::GetProfileSuggestions(
   }
 
   if (!field_is_autofilled) {
+    // Generate labels for the profiles we discovered above.
+    std::vector<base::string16> labels;
     AutofillProfile::CreateInferredLabels(
         matched_profiles, &other_field_types,
-        type.GetStorableType(), 1, app_locale_, labels);
-  } else {
-    // No sub-labels for previously filled fields.
-    labels->resize(values->size());
+        type.GetStorableType(), 1, app_locale_, &labels);
+    DCHECK_EQ(suggestions.size(), labels.size());
+    for (size_t i = 0; i < labels.size(); i++)
+      suggestions[i].label = labels[i];
   }
 
-  // No icons for profile suggestions.
-  icons->resize(values->size());
+  return suggestions;
 }
 
-void PersonalDataManager::GetCreditCardSuggestions(
+std::vector<Suggestion> PersonalDataManager::GetCreditCardSuggestions(
     const AutofillType& type,
-    const base::string16& field_contents,
-    std::vector<base::string16>* values,
-    std::vector<base::string16>* labels,
-    std::vector<base::string16>* icons,
-    std::vector<GUIDPair>* guid_pairs) {
-  values->clear();
-  labels->clear();
-  icons->clear();
-  guid_pairs->clear();
-
-  const std::vector<CreditCard*>& credit_cards = GetCreditCards();
-  for (std::vector<CreditCard*>::const_iterator iter = credit_cards.begin();
-       iter != credit_cards.end(); ++iter) {
-    CreditCard* credit_card = *iter;
-
+    const base::string16& field_contents) {
+  std::vector<Suggestion> suggestions;
+  for (const CreditCard* credit_card : GetCreditCards()) {
     // The value of the stored data for this field type in the |credit_card|.
     base::string16 creditcard_field_value =
         credit_card->GetInfo(type, app_locale_);
@@ -671,30 +651,33 @@ void PersonalDataManager::GetCreditCardSuggestions(
          (type.GetStorableType() == CREDIT_CARD_NUMBER &&
           base::string16::npos !=
               creditcard_field_value.find(field_contents)))) {
+      // Make a new suggestion.
+      suggestions.push_back(Suggestion());
+      Suggestion* suggestion = &suggestions.back();
+
       // If the value is the card number, the label is the expiration date.
       // Otherwise the label is the card number, or if that is empty the
       // cardholder name. The label should never repeat the value.
-      base::string16 label;
       if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
         creditcard_field_value = credit_card->ObfuscatedNumber();
-        label = credit_card->GetInfo(
+        suggestion->label = credit_card->GetInfo(
             AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR), app_locale_);
       } else if (credit_card->number().empty()) {
         if (type.GetStorableType() != CREDIT_CARD_NAME) {
-          label =
+          suggestion->label =
               credit_card->GetInfo(AutofillType(CREDIT_CARD_NAME), app_locale_);
         }
       } else {
-        label = kCreditCardPrefix;
-        label.append(credit_card->LastFourDigits());
+        suggestion->label = kCreditCardPrefix;
+        suggestion->label.append(credit_card->LastFourDigits());
       }
 
-      values->push_back(creditcard_field_value);
-      labels->push_back(label);
-      icons->push_back(base::UTF8ToUTF16(credit_card->type()));
-      guid_pairs->push_back(GUIDPair(credit_card->guid(), 0));
+      suggestion->value = creditcard_field_value;
+      suggestion->icon = base::UTF8ToUTF16(credit_card->type());
+      suggestion->backend_id.guid = credit_card->guid();
     }
   }
+  return suggestions;
 }
 
 bool PersonalDataManager::IsAutofillEnabled() const {

@@ -138,8 +138,8 @@ struct FormFieldData;
 //   status             Server's status of this card.
 //                      TODO(brettw) define constants for this.
 //   name_on_card
-//   type               Type of the credit card.
-//                      TODO(brettw) define constants for this.
+//   type               Type of the credit card. This is one of the
+//                      kSyncCardType* strings.
 //   last_four          Last four digits of the card number. For de-duping
 //                      with locally stored cards and generating descriptions.
 //   exp_month          Expiration month: 1-12
@@ -280,9 +280,21 @@ class AutofillTable : public WebDatabaseTable {
   // |credit_card_id|.
   bool GetCreditCard(const std::string& guid, CreditCard** credit_card);
 
-  // Retrieves all credit cards in the database.  Caller owns the returned
+  // Retrieves all local credit cards in the database. Caller owns the returned
   // credit cards.
   virtual bool GetCreditCards(std::vector<CreditCard*>* credit_cards);
+
+  // Returns the wallet cards synced from the server. These might be of type
+  // MASKED_WALLET_CARD and will need an extra round-trip to unmask, or they
+  // might be FULL_WALLET_CARD.
+  bool GetWalletCreditCards(std::vector<CreditCard*>* credit_cards);
+
+  // Cards synced from Wallet may be "masked" (only last 4 digits available)
+  // or "unmasked" (everything is available). These functions set that
+  // state.
+  void UnmaskWalletCreditCard(const std::string& id,
+                              const base::string16& full_number);
+  void MaskWalletCreditCard(const std::string& id);
 
   // Removes rows from autofill_profiles and credit_cards if they were created
   // on or after |delete_begin| and strictly before |delete_end|.  Returns the

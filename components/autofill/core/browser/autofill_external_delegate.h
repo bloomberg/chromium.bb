@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/autofill_popup_delegate.h"
+#include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "ui/gfx/rect.h"
@@ -61,10 +62,7 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   // to be displayed.  Called when an Autofill query result is available.
   virtual void OnSuggestionsReturned(
       int query_id,
-      const std::vector<base::string16>& values,
-      const std::vector<base::string16>& labels,
-      const std::vector<base::string16>& icons,
-      const std::vector<int>& unique_ids);
+      const std::vector<Suggestion>& suggestions);
 
   // Set the data list value associated with the current field.
   void SetCurrentDataListValues(
@@ -101,25 +99,16 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   void FillAutofillFormData(int unique_id, bool is_preview);
 
   // Handle applying any Autofill warnings to the Autofill popup.
-  void ApplyAutofillWarnings(std::vector<base::string16>* values,
-                             std::vector<base::string16>* labels,
-                             std::vector<base::string16>* icons,
-                             std::vector<int>* unique_ids);
+  void ApplyAutofillWarnings(std::vector<Suggestion>* suggestions);
 
   // Handle applying any Autofill option listings to the Autofill popup.
   // This function should only get called when there is at least one
   // multi-field suggestion in the list of suggestions.
-  void ApplyAutofillOptions(std::vector<base::string16>* values,
-                            std::vector<base::string16>* labels,
-                            std::vector<base::string16>* icons,
-                            std::vector<int>* unique_ids);
+  void ApplyAutofillOptions(std::vector<Suggestion>* suggestions);
 
   // Insert the data list values at the start of the given list, including
   // any required separators.
-  void InsertDataListValues(std::vector<base::string16>* values,
-                            std::vector<base::string16>* labels,
-                            std::vector<base::string16>* icons,
-                            std::vector<int>* unique_ids);
+  void InsertDataListValues(std::vector<Suggestion>* suggestions);
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // Pings the renderer.

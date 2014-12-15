@@ -156,10 +156,7 @@ void ChromeAutofillClient::ShowRequestAutocompleteDialog(
 void ChromeAutofillClient::ShowAutofillPopup(
     const gfx::RectF& element_bounds,
     base::i18n::TextDirection text_direction,
-    const std::vector<base::string16>& values,
-    const std::vector<base::string16>& labels,
-    const std::vector<base::string16>& icons,
-    const std::vector<int>& identifiers,
+    const std::vector<autofill::Suggestion>& suggestions,
     base::WeakPtr<AutofillPopupDelegate> delegate) {
   // Convert element_bounds to be in screen space.
   gfx::Rect client_area = web_contents()->GetContainerBounds();
@@ -175,7 +172,7 @@ void ChromeAutofillClient::ShowAutofillPopup(
                                                element_bounds_in_screen_space,
                                                text_direction);
 
-  popup_controller_->Show(values, labels, icons, identifiers);
+  popup_controller_->Show(suggestions);
 }
 
 void ChromeAutofillClient::UpdateAutofillPopupDataListValues(

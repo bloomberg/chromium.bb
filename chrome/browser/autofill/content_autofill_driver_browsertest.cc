@@ -38,13 +38,10 @@ class MockAutofillClient : public TestAutofillClient {
     return prefs_.registry();
   }
 
-  MOCK_METHOD7(ShowAutofillPopup,
+  MOCK_METHOD4(ShowAutofillPopup,
                void(const gfx::RectF& element_bounds,
                     base::i18n::TextDirection text_direction,
-                    const std::vector<base::string16>& values,
-                    const std::vector<base::string16>& labels,
-                    const std::vector<base::string16>& icons,
-                    const std::vector<int>& identifiers,
+                    const std::vector<autofill::Suggestion>& suggestions,
                     base::WeakPtr<AutofillPopupDelegate> delegate));
 
   MOCK_METHOD0(HideAutofillPopup, void());

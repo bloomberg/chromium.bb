@@ -127,6 +127,15 @@ CreditCard::CreditCard(const base::string16& card_number,
   SetExpirationYear(expiration_year);
 }
 
+CreditCard::CreditCard(const std::string& wallet_id, RecordType type)
+    : AutofillDataModel(std::string(), std::string()),
+      record_type_(type),
+      type_(kGenericCard),
+      expiration_month_(0),
+      expiration_year_(0),
+      wallet_id_(wallet_id) {
+}
+
 CreditCard::CreditCard()
     : AutofillDataModel(base::GenerateGUID(), std::string()),
       record_type_(LOCAL_CARD),

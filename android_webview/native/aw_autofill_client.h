@@ -73,10 +73,7 @@ class AwAutofillClient : public autofill::AutofillClient,
   virtual void ShowAutofillPopup(
       const gfx::RectF& element_bounds,
       base::i18n::TextDirection text_direction,
-      const std::vector<base::string16>& values,
-      const std::vector<base::string16>& labels,
-      const std::vector<base::string16>& icons,
-      const std::vector<int>& identifiers,
+      const std::vector<autofill::Suggestion>& suggestions,
       base::WeakPtr<autofill::AutofillPopupDelegate> delegate) override;
   virtual void UpdateAutofillPopupDataListValues(
       const std::vector<base::string16>& values,
@@ -97,11 +94,10 @@ class AwAutofillClient : public autofill::AutofillClient,
   AwAutofillClient(content::WebContents* web_contents);
   friend class content::WebContentsUserData<AwAutofillClient>;
 
-  void ShowAutofillPopupImpl(const gfx::RectF& element_bounds,
-                             bool is_rtl,
-                             const std::vector<base::string16>& values,
-                             const std::vector<base::string16>& labels,
-                             const std::vector<int>& identifiers);
+  void ShowAutofillPopupImpl(
+      const gfx::RectF& element_bounds,
+      bool is_rtl,
+      const std::vector<autofill::Suggestion>& suggestions);
 
   // The web_contents associated with this delegate.
   content::WebContents* web_contents_;
@@ -109,8 +105,7 @@ class AwAutofillClient : public autofill::AutofillClient,
   JavaObjectWeakGlobalRef java_ref_;
 
   // The current Autofill query values.
-  std::vector<base::string16> values_;
-  std::vector<int> identifiers_;
+  std::vector<autofill::Suggestion> suggestions_;
   base::WeakPtr<autofill::AutofillPopupDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AwAutofillClient);

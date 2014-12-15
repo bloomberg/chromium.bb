@@ -33,6 +33,7 @@ class CreditCard;
 class FormStructure;
 class PersonalDataManager;
 struct FormData;
+struct Suggestion;
 
 // A client interface that needs to be supplied to the Autofill component by the
 // embedder.
@@ -106,10 +107,7 @@ class AutofillClient {
   virtual void ShowAutofillPopup(
       const gfx::RectF& element_bounds,
       base::i18n::TextDirection text_direction,
-      const std::vector<base::string16>& values,
-      const std::vector<base::string16>& labels,
-      const std::vector<base::string16>& icons,
-      const std::vector<int>& identifiers,
+      const std::vector<Suggestion>& suggestions,
       base::WeakPtr<AutofillPopupDelegate> delegate) = 0;
 
   // Update the data list values shown by the Autofill popup, if visible.

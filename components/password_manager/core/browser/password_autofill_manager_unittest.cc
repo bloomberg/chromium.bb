@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
+#include "components/autofill/core/browser/suggestion_test_helpers.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -29,6 +30,9 @@ const char kPasswordName[] = "password";
 const char kAliceUsername[] = "alice";
 const char kAlicePassword[] = "password";
 
+using autofill::Suggestion;
+using autofill::SuggestionVectorIdsAre;
+using autofill::SuggestionVectorValuesAre;
 using testing::_;
 
 namespace autofill {
@@ -57,13 +61,10 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
 
 class MockAutofillClient : public autofill::TestAutofillClient {
  public:
-  MOCK_METHOD7(ShowAutofillPopup,
+  MOCK_METHOD4(ShowAutofillPopup,
                void(const gfx::RectF& element_bounds,
                     base::i18n::TextDirection text_direction,
-                    const std::vector<base::string16>& values,
-                    const std::vector<base::string16>& labels,
-                    const std::vector<base::string16>& icons,
-                    const std::vector<int>& identifiers,
+                    const std::vector<Suggestion>& suggestions,
                     base::WeakPtr<autofill::AutofillPopupDelegate> delegate));
   MOCK_METHOD0(HideAutofillPopup, void());
 };
@@ -188,10 +189,8 @@ TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
               ShowAutofillPopup(
                   _,
                   _,
-                  _,
-                  _,
-                  _,
-                  testing::ElementsAre(autofill::POPUP_ITEM_ID_PASSWORD_ENTRY),
+                  SuggestionVectorIdsAre(testing::ElementsAre(
+                      autofill::POPUP_ITEM_ID_PASSWORD_ENTRY)),
                   _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, base::string16(), false,
@@ -235,19 +234,21 @@ TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
   EXPECT_CALL(*autofill_client,
               ShowAutofillPopup(
                   element_bounds, _,
-                  testing::UnorderedElementsAre(
-                      test_username_, additional_username, other_username),
-                  _, _, _, _));
+                  SuggestionVectorValuesAre(testing::UnorderedElementsAre(
+                      test_username_, additional_username, other_username)),
+                  _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, base::string16(), false,
       element_bounds);
 
   // Now simulate displaying suggestions matching "John".
   EXPECT_CALL(*autofill_client,
-              ShowAutofillPopup(element_bounds, _,
-                                testing::UnorderedElementsAre(
-                                    additional_username, other_username),
-                                _, _, _, _));
+              ShowAutofillPopup(
+                  element_bounds, _,
+                  SuggestionVectorValuesAre(testing::UnorderedElementsAre(
+                      additional_username,
+                      other_username)),
+                  _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, base::ASCIIToUTF16("John"), false,
       element_bounds);
@@ -256,9 +257,9 @@ TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
   EXPECT_CALL(*autofill_client,
               ShowAutofillPopup(
                   element_bounds, _,
-                  testing::UnorderedElementsAre(
-                      test_username_, additional_username, other_username),
-                  _, _, _, _));
+                  SuggestionVectorValuesAre(testing::UnorderedElementsAre(
+                      test_username_, additional_username, other_username)),
+                  _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, base::ASCIIToUTF16("xyz"), true,
       element_bounds);
@@ -297,8 +298,10 @@ TEST_F(PasswordAutofillManagerTest, FillSuggestionPasswordField) {
   EXPECT_CALL(*autofill_client,
               ShowAutofillPopup(
                   element_bounds, _,
-                  testing::UnorderedElementsAre(title, test_username_),
-                  _, _, _, _));
+                  SuggestionVectorValuesAre(testing::UnorderedElementsAre(
+                      title,
+                      test_username_)),
+                  _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, test_username_,
       autofill::IS_PASSWORD_FIELD, element_bounds);

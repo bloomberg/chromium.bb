@@ -12,6 +12,7 @@
 #include "components/autofill/content/browser/wallet/wallet_address.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_sync_constants.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/validation.h"
 
@@ -38,17 +39,17 @@ Instrument::FormOfPayment FormOfPaymentFromCardType(const std::string& type) {
 std::string FormOfPaymentToString(Instrument::FormOfPayment form_of_payment) {
   switch (form_of_payment) {
     case Instrument::UNKNOWN:
-      return "UNKNOWN";
+      return kSyncCardTypeUnknown;
     case Instrument::VISA:
-      return "VISA";
+      return kSyncCardTypeVisa;
     case Instrument::MASTER_CARD:
-      return "MASTER_CARD";
+      return kSyncCardTypeMasterCard;
     case Instrument::AMEX:
-      return "AMEX";
+      return kSyncCardTypeAmex;
     case Instrument::DISCOVER:
-      return "DISCOVER";
+      return kSyncCardTypeDiscover;
     case Instrument::JCB:
-      return "JCB";
+      return kSyncCardTypeJCB;
   }
   NOTREACHED();
   return "NOT_POSSIBLE";

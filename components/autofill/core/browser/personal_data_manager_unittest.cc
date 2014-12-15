@@ -2617,22 +2617,14 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions) {
   personal_data_->AddProfile(profile);
   ResetPersonalDataManager(USER_MODE_NORMAL);
 
-  std::vector<base::string16> values;
-  std::vector<base::string16> labels;
-  std::vector<base::string16> icons;
-  std::vector<PersonalDataManager::GUIDPair> guid_pairs;
-  personal_data_->GetProfileSuggestions(
+  std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
       AutofillType(ADDRESS_HOME_STREET_ADDRESS),
       base::UTF8ToUTF16("123"),
       false,
       std::vector<ServerFieldType>(),
-      base::Bind(ReturnTrue),
-      &values,
-      &labels,
-      &icons,
-      &guid_pairs);
-  ASSERT_FALSE(values.empty());
-  EXPECT_EQ(values[0],
+      base::Bind(ReturnTrue));
+  ASSERT_FALSE(suggestions.empty());
+  EXPECT_EQ(suggestions[0].value,
       base::UTF8ToUTF16("123 Zoo St., Second Line, Third line, unit 5"));
 }
 
@@ -2661,44 +2653,25 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions) {
   base::MessageLoop::current()->Run();
 
   // Sublabel is card number when filling name.
-  std::vector<base::string16> values;
-  std::vector<base::string16> labels;
-  std::vector<base::string16> icons;
-  std::vector<PersonalDataManager::GUIDPair> guid_pairs;
-  personal_data_->GetCreditCardSuggestions(
-      AutofillType(CREDIT_CARD_NAME),
-      base::string16(),
-      &values,
-      &labels,
-      &icons,
-      &guid_pairs);
-  ASSERT_EQ(3U, values.size());
-  ASSERT_EQ(values.size(), labels.size());
-  EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), values[2]);
-  EXPECT_EQ(ASCIIToUTF16("*8555"), labels[2]);
-  EXPECT_EQ(ASCIIToUTF16("John Dillinger"), values[1]);
-  EXPECT_EQ(base::string16(), labels[1]);
-  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), values[0]);
-  EXPECT_EQ(ASCIIToUTF16("*2109"), labels[0]);
+  std::vector<Suggestion> suggestions =
+      personal_data_->GetCreditCardSuggestions(
+          AutofillType(CREDIT_CARD_NAME), base::string16());
+  ASSERT_EQ(3U, suggestions.size());
+  EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), suggestions[2].value);
+  EXPECT_EQ(ASCIIToUTF16("*8555"), suggestions[2].label);
+  EXPECT_EQ(ASCIIToUTF16("John Dillinger"), suggestions[1].value);
+  EXPECT_EQ(base::string16(), suggestions[1].label);
+  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[0].value);
+  EXPECT_EQ(ASCIIToUTF16("*2109"), suggestions[0].label);
 
   // Sublabel is expiration date when filling card number.
-  values.clear();
-  labels.clear();
-  icons.clear();
-  guid_pairs.clear();
-  personal_data_->GetCreditCardSuggestions(
-      AutofillType(CREDIT_CARD_NUMBER),
-      base::string16(),
-      &values,
-      &labels,
-      &icons,
-      &guid_pairs);
-  ASSERT_EQ(2U, values.size());
-  ASSERT_EQ(values.size(), labels.size());
-  EXPECT_EQ(ASCIIToUTF16("********8555"), values[1]);
-  EXPECT_EQ(ASCIIToUTF16("04/15"), labels[1]);
-  EXPECT_EQ(ASCIIToUTF16("********2109"), values[0]);
-  EXPECT_EQ(base::string16(), labels[0]);
+  suggestions = personal_data_->GetCreditCardSuggestions(
+      AutofillType(CREDIT_CARD_NUMBER), base::string16());
+  ASSERT_EQ(2U, suggestions.size());
+  EXPECT_EQ(ASCIIToUTF16("********8555"), suggestions[1].value);
+  EXPECT_EQ(ASCIIToUTF16("04/15"), suggestions[1].label);
+  EXPECT_EQ(ASCIIToUTF16("********2109"), suggestions[0].value);
+  EXPECT_EQ(base::string16(), suggestions[0].label);
 }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)

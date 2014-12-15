@@ -137,6 +137,20 @@ void BindCreditCardToStatement(const CreditCard& credit_card,
   s->BindString(index++, credit_card.origin());
 }
 
+base::string16 UnencryptedCardFromColumn(const sql::Statement& s,
+                                         int column_index) {
+  base::string16 credit_card_number;
+  int encrypted_number_len = s.ColumnByteLength(column_index);
+  if (encrypted_number_len) {
+    std::string encrypted_number;
+    encrypted_number.resize(encrypted_number_len);
+    memcpy(&encrypted_number[0], s.ColumnBlob(column_index),
+           encrypted_number_len);
+    OSCrypt::DecryptString16(encrypted_number, &credit_card_number);
+  }
+  return credit_card_number;
+}
+
 scoped_ptr<CreditCard> CreditCardFromStatement(const sql::Statement& s) {
   scoped_ptr<CreditCard> credit_card(new CreditCard);
 
@@ -148,17 +162,8 @@ scoped_ptr<CreditCard> CreditCardFromStatement(const sql::Statement& s) {
   credit_card->SetRawInfo(CREDIT_CARD_EXP_MONTH, s.ColumnString16(index++));
   credit_card->SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
                           s.ColumnString16(index++));
-  int encrypted_number_len = s.ColumnByteLength(index);
-  base::string16 credit_card_number;
-  if (encrypted_number_len) {
-    std::string encrypted_number;
-    encrypted_number.resize(encrypted_number_len);
-    memcpy(&encrypted_number[0], s.ColumnBlob(index++), encrypted_number_len);
-    OSCrypt::DecryptString16(encrypted_number, &credit_card_number);
-  } else {
-    index++;
-  }
-  credit_card->SetRawInfo(CREDIT_CARD_NUMBER, credit_card_number);
+  credit_card->SetRawInfo(CREDIT_CARD_NUMBER,
+                          UnencryptedCardFromColumn(s, index++));
   // Intentionally skip column 5, which stores the modification date.
   index++;
   credit_card->set_origin(s.ColumnString(index++));
@@ -1084,6 +1089,71 @@ bool AutofillTable::GetCreditCards(
   }
 
   return s.Succeeded();
+}
+
+bool AutofillTable::GetWalletCreditCards(
+    std::vector<CreditCard*>* credit_cards) {
+  credit_cards->clear();
+
+  sql::Statement s(db_->GetUniqueStatement(
+      "SELECT "
+      "card_number_encrypted, "  // 0
+      "last_four,"     // 1
+      "masked.id,"     // 2
+      "status,"        // 3
+      "name_on_card,"  // 4
+      "exp_month,"     // 6
+      "exp_year "      // 7
+      "FROM masked_credit_cards masked JOIN unmasked_credit_cards unmasked "
+      "ON masked.id = unmasked.id"));
+  while (s.Step()) {
+    int index = 0;
+
+    // If the card_number_encrypted field is nonempty, we can assume this card
+    // is a full card, otherwise it's masked.
+    base::string16 full_card_number = UnencryptedCardFromColumn(s, index++);
+    base::string16 last_four = s.ColumnString16(index++);
+    CreditCard::RecordType type = full_card_number.empty() ?
+        CreditCard::MASKED_WALLET_CARD :
+        CreditCard::FULL_WALLET_CARD;
+    std::string wallet_id = s.ColumnString(index++);
+
+    CreditCard* card = new CreditCard(wallet_id, type);
+    card->SetRawInfo(
+        CREDIT_CARD_NUMBER,
+        type == CreditCard::MASKED_WALLET_CARD ? last_four : full_card_number);
+
+    index++;  // TODO(brettw) hook up status. For now, skip over it.
+    card->SetRawInfo(CREDIT_CARD_NAME, s.ColumnString16(index++));
+    card->SetRawInfo(CREDIT_CARD_EXP_MONTH, s.ColumnString16(index++));
+    card->SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, s.ColumnString16(index++));
+    credit_cards->push_back(card);
+  }
+  return s.Succeeded();
+}
+
+void AutofillTable::UnmaskWalletCreditCard(const std::string& id,
+                                           const base::string16& full_number) {
+  // Make sure there aren't duplicates for this card.
+  MaskWalletCreditCard(id);
+  sql::Statement s(db_->GetUniqueStatement(
+      "INSERT INTO unmasked_credit_cards(id, card_number_encrypted) "
+      "VALUES (?,?)"));
+  s.BindString(0, id);
+
+  std::string encrypted_data;
+  OSCrypt::EncryptString16(full_number, &encrypted_data);
+  s.BindBlob(1, encrypted_data.data(),
+             static_cast<int>(encrypted_data.length()));
+
+  s.Run();
+}
+
+void AutofillTable::MaskWalletCreditCard(const std::string& id) {
+  sql::Statement s(db_->GetUniqueStatement(
+      "DELETE FROM unmasked_credit_cards WHERE id = ?"));
+  s.BindString(0, id);
+  s.Run();
 }
 
 bool AutofillTable::UpdateCreditCard(const CreditCard& credit_card) {

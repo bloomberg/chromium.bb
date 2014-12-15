@@ -18,6 +18,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -48,10 +49,6 @@ class PersonalDataManager : public KeyedService,
                             public WebDataServiceConsumer,
                             public AutofillWebDataServiceObserverOnUIThread {
  public:
-  // A pair of GUID and variant index. Represents a single FormGroup and a
-  // specific data variant.
-  typedef std::pair<std::string, size_t> GUIDPair;
-
   explicit PersonalDataManager(const std::string& app_locale);
   ~PersonalDataManager() override;
 
@@ -140,27 +137,19 @@ class PersonalDataManager : public KeyedService,
   // has already been autofilled. |other_field_types| represents the rest of
   // form. |filter| is run on each potential suggestion. If |filter| returns
   // true, the profile added to the last four outparams (else it's omitted).
-  void GetProfileSuggestions(
+  std::vector<Suggestion> GetProfileSuggestions(
       const AutofillType& type,
       const base::string16& field_contents,
       bool field_is_autofilled,
       const std::vector<ServerFieldType>& other_field_types,
-      const base::Callback<bool(const AutofillProfile&)>& filter,
-      std::vector<base::string16>* values,
-      std::vector<base::string16>* labels,
-      std::vector<base::string16>* icons,
-      std::vector<GUIDPair>* guid_pairs);
+      const base::Callback<bool(const AutofillProfile&)>& filter);
 
   // Gets credit cards that can suggest data for |type|. See
   // GetProfileSuggestions for argument descriptions. The variant in each
   // GUID pair should be ignored.
-  void GetCreditCardSuggestions(
+  std::vector<Suggestion> GetCreditCardSuggestions(
       const AutofillType& type,
-      const base::string16& field_contents,
-      std::vector<base::string16>* values,
-      std::vector<base::string16>* labels,
-      std::vector<base::string16>* icons,
-      std::vector<GUIDPair>* guid_pairs);
+      const base::string16& field_contents);
 
   // Re-loads profiles and credit cards from the WebDatabase asynchronously.
   // In the general case, this is a no-op and will re-create the same

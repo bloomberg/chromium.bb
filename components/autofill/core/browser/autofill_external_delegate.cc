@@ -90,41 +90,33 @@ void AutofillExternalDelegate::OnQuery(int query_id,
 
 void AutofillExternalDelegate::OnSuggestionsReturned(
     int query_id,
-    const std::vector<base::string16>& suggested_values,
-    const std::vector<base::string16>& suggested_labels,
-    const std::vector<base::string16>& suggested_icons,
-    const std::vector<int>& suggested_unique_ids) {
+    const std::vector<Suggestion>& input_suggestions) {
   if (query_id != query_id_)
     return;
 
-  std::vector<base::string16> values(suggested_values);
-  std::vector<base::string16> labels(suggested_labels);
-  std::vector<base::string16> icons(suggested_icons);
-  std::vector<int> ids(suggested_unique_ids);
+  std::vector<Suggestion> suggestions(input_suggestions);
 
   // Add or hide warnings as appropriate.
-  ApplyAutofillWarnings(&values, &labels, &icons, &ids);
+  ApplyAutofillWarnings(&suggestions);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableWalletCardImport)) {
     // For now, add a fake masked card.
-    values.push_back(base::ASCIIToUTF16("Visa - 1111"));
-    labels.push_back(base::ASCIIToUTF16("[tap to unlock]"));
-    icons.push_back(base::string16());
-    ids.push_back(POPUP_ITEM_ID_FAKE_MASKED_INSTRUMENT);
+    suggestions.push_back(Suggestion(
+        "Visa - 1111", "[tap to unlock]", "",
+        POPUP_ITEM_ID_FAKE_MASKED_INSTRUMENT));
   }
 
   // Add a separator to go between the values and menu items.
-  values.push_back(base::string16());
-  labels.push_back(base::string16());
-  icons.push_back(base::string16());
-  ids.push_back(POPUP_ITEM_ID_SEPARATOR);
+  suggestions.push_back(Suggestion());
+  suggestions.back().frontend_id = POPUP_ITEM_ID_SEPARATOR;
 
   if (should_show_scan_credit_card_) {
-    values.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_SCAN_CREDIT_CARD));
-    labels.push_back(base::string16());
-    icons.push_back(base::ASCIIToUTF16("scanCreditCardIcon"));
-    ids.push_back(POPUP_ITEM_ID_SCAN_CREDIT_CARD);
+    Suggestion scan_credit_card(
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_SCAN_CREDIT_CARD));
+    scan_credit_card.frontend_id = POPUP_ITEM_ID_SCAN_CREDIT_CARD;
+    scan_credit_card.icon = base::ASCIIToUTF16("scanCreditCardIcon");
+    suggestions.push_back(scan_credit_card);
 
     if (!has_shown_popup_for_current_edit_) {
       AutofillMetrics::LogScanCreditCardPromptMetric(
@@ -135,39 +127,34 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   // Only include "Autofill Options" special menu item if we have Autofill
   // suggestions.
   has_suggestion_ = false;
-  for (size_t i = 0; i < ids.size(); ++i) {
-    if (ids[i] > 0) {
+  for (size_t i = 0; i < suggestions.size(); ++i) {
+    if (suggestions[i].frontend_id > 0) {
       has_suggestion_ = true;
       break;
     }
   }
 
   if (has_suggestion_)
-    ApplyAutofillOptions(&values, &labels, &icons, &ids);
+    ApplyAutofillOptions(&suggestions);
 
   // Remove the separator if it is the last element.
-  DCHECK_GT(ids.size(), 0U);
-  if (ids.back() == POPUP_ITEM_ID_SEPARATOR) {
-    values.pop_back();
-    labels.pop_back();
-    icons.pop_back();
-    ids.pop_back();
-  }
+  DCHECK_GT(suggestions.size(), 0U);
+  if (suggestions.back().frontend_id == POPUP_ITEM_ID_SEPARATOR)
+    suggestions.pop_back();
 
   // If anything else is added to modify the values after inserting the data
   // list, AutofillPopupControllerImpl::UpdateDataListValues will need to be
   // updated to match.
-  InsertDataListValues(&values, &labels, &icons, &ids);
+  InsertDataListValues(&suggestions);
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  if (values.empty() &&
+  if (suggestions.empty() &&
       manager_->ShouldShowAccessAddressBookSuggestion(query_form_,
                                                       query_field_)) {
-    values.push_back(
+    Suggestion mac_contacts(
         l10n_util::GetStringUTF16(IDS_AUTOFILL_ACCESS_MAC_CONTACTS));
-    labels.push_back(base::string16());
-    icons.push_back(base::ASCIIToUTF16("macContactsIcon"));
-    ids.push_back(POPUP_ITEM_ID_MAC_ACCESS_CONTACTS);
+    mac_contacts.icon = base::ASCIIToUTF16("macContactsIcon");
+    mac_contacts.frontend_id = POPUP_ITEM_ID_MAC_ACCESS_CONTACTS;
 
     if (!has_shown_address_book_prompt) {
       has_shown_address_book_prompt = true;
@@ -177,7 +164,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
-  if (values.empty()) {
+  if (suggestions.empty()) {
     // No suggestions, any popup currently showing is obsolete.
     manager_->client()->HideAutofillPopup();
     return;
@@ -187,10 +174,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   if (query_field_.is_focusable) {
     manager_->client()->ShowAutofillPopup(element_bounds_,
                                           query_field_.text_direction,
-                                          values,
-                                          labels,
-                                          icons,
-                                          ids,
+                                          suggestions,
                                           GetWeakPtr());
   }
 }
@@ -361,102 +345,70 @@ void AutofillExternalDelegate::FillAutofillFormData(int unique_id,
 }
 
 void AutofillExternalDelegate::ApplyAutofillWarnings(
-    std::vector<base::string16>* values,
-    std::vector<base::string16>* labels,
-    std::vector<base::string16>* icons,
-    std::vector<int>* unique_ids) {
+    std::vector<Suggestion>* suggestions) {
   if (!ShouldAutofill(query_field_)) {
     // Autofill is disabled.  If there were some profile or credit card
     // suggestions to show, show a warning instead.  Otherwise, clear out the
     // list of suggestions.
-    if (!unique_ids->empty() && (*unique_ids)[0] > 0) {
+    if (!suggestions->empty() && (*suggestions)[0].frontend_id > 0) {
       // If Autofill is disabled and we had suggestions, show a warning instead.
-      values->assign(
-          1, l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED));
-      labels->assign(1, base::string16());
-      icons->assign(1, base::string16());
-      unique_ids->assign(1, POPUP_ITEM_ID_WARNING_MESSAGE);
+      suggestions->assign(1, Suggestion(
+          l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED)));
+      (*suggestions)[0].frontend_id = POPUP_ITEM_ID_WARNING_MESSAGE;
     } else {
-      values->clear();
-      labels->clear();
-      icons->clear();
-      unique_ids->clear();
+      suggestions->clear();
     }
-  } else if (unique_ids->size() > 1 &&
-             (*unique_ids)[0] == POPUP_ITEM_ID_WARNING_MESSAGE) {
+  } else if (suggestions->size() > 1 &&
+             (*suggestions)[0].frontend_id == POPUP_ITEM_ID_WARNING_MESSAGE) {
     // If we received a warning instead of suggestions from Autofill but regular
     // suggestions from autocomplete, don't show the Autofill warning.
-    values->erase(values->begin());
-    labels->erase(labels->begin());
-    icons->erase(icons->begin());
-    unique_ids->erase(unique_ids->begin());
+    suggestions->erase(suggestions->begin());
   }
 
   // If we were about to show a warning and we shouldn't, don't.
-  if (!unique_ids->empty() &&
-      (*unique_ids)[0] == POPUP_ITEM_ID_WARNING_MESSAGE &&
+  if (!suggestions->empty() &&
+      (*suggestions)[0].frontend_id == POPUP_ITEM_ID_WARNING_MESSAGE &&
       !display_warning_if_disabled_) {
-    values->clear();
-    labels->clear();
-    icons->clear();
-    unique_ids->clear();
+    suggestions->clear();
   }
 }
 
 void AutofillExternalDelegate::ApplyAutofillOptions(
-    std::vector<base::string16>* values,
-    std::vector<base::string16>* labels,
-    std::vector<base::string16>* icons,
-    std::vector<int>* unique_ids) {
+    std::vector<Suggestion>* suggestions) {
   // The form has been auto-filled, so give the user the chance to clear the
   // form.  Append the 'Clear form' menu item.
   if (query_field_.is_autofilled) {
-    values->push_back(
-        l10n_util::GetStringUTF16(IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM));
-    labels->push_back(base::string16());
-    icons->push_back(base::string16());
-    unique_ids->push_back(POPUP_ITEM_ID_CLEAR_FORM);
+    suggestions->push_back(Suggestion(
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM)));
+    suggestions->back().frontend_id = POPUP_ITEM_ID_CLEAR_FORM;
   }
 
   // Append the 'Chrome Autofill options' menu item;
-  values->push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS_POPUP));
-  labels->push_back(base::string16());
-  icons->push_back(base::string16());
-  unique_ids->push_back(POPUP_ITEM_ID_AUTOFILL_OPTIONS);
+  suggestions->push_back(Suggestion(
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS_POPUP)));
+  suggestions->back().frontend_id = POPUP_ITEM_ID_AUTOFILL_OPTIONS;
 }
 
 void AutofillExternalDelegate::InsertDataListValues(
-    std::vector<base::string16>* values,
-    std::vector<base::string16>* labels,
-    std::vector<base::string16>* icons,
-    std::vector<int>* unique_ids) {
+    std::vector<Suggestion>* suggestions) {
   if (data_list_values_.empty())
     return;
 
   // Insert the separator between the datalist and Autofill values (if there
   // are any).
-  if (!values->empty()) {
-    values->insert(values->begin(), base::string16());
-    labels->insert(labels->begin(), base::string16());
-    icons->insert(icons->begin(), base::string16());
-    unique_ids->insert(unique_ids->begin(), POPUP_ITEM_ID_SEPARATOR);
+  if (!suggestions->empty()) {
+    suggestions->insert(suggestions->begin(), Suggestion());
+    (*suggestions)[0].frontend_id = POPUP_ITEM_ID_SEPARATOR;
   }
 
-  // Insert the datalist elements.
-  values->insert(values->begin(),
-                 data_list_values_.begin(),
-                 data_list_values_.end());
-  labels->insert(labels->begin(),
-                 data_list_labels_.begin(),
-                 data_list_labels_.end());
-
-  // Set the values that all datalist elements share.
-  icons->insert(icons->begin(),
-                data_list_values_.size(),
-                base::string16());
-  unique_ids->insert(unique_ids->begin(),
-                     data_list_values_.size(),
-                     POPUP_ITEM_ID_DATALIST_ENTRY);
+  // Insert the datalist elements at the beginning.
+  suggestions->insert(suggestions->begin(), data_list_values_.size(),
+                      Suggestion());
+  for (size_t i = 0; i < data_list_values_.size(); i++) {
+    (*suggestions)[i].value = data_list_values_[i];
+    (*suggestions)[i].label = data_list_labels_[i];
+    (*suggestions)[i].frontend_id = POPUP_ITEM_ID_DATALIST_ENTRY;
+  }
 }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)

@@ -37,6 +37,10 @@ class CreditCard : public AutofillDataModel {
              int expiration_month,
              int expiration_year);
 
+  // Creates a wallet card. This sets the wallet-specific records. To set the
+  // rest, use SetRawInfo like a normal card.
+  CreditCard(const std::string& wallet_id, RecordType type);
+
   // For use in STL containers.
   CreditCard();
   CreditCard(const CreditCard& credit_card);
@@ -96,6 +100,8 @@ class CreditCard : public AutofillDataModel {
 
   int expiration_month() const { return expiration_month_; }
   int expiration_year() const { return expiration_year_; }
+
+  const std::string& wallet_id() const { return wallet_id_; }
 
   // For use in STL containers.
   void operator=(const CreditCard& credit_card);
@@ -180,6 +186,10 @@ class CreditCard : public AutofillDataModel {
   // These members are zero if not present.
   int expiration_month_;
   int expiration_year_;
+
+  // For wallet cards (both MASKED and UNMASKED) this is the ID assigned by the
+  // server to uniquely identify this card.
+  std::string wallet_id_;
 };
 
 // So we can compare CreditCards with EXPECT_EQ().
