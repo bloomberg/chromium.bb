@@ -1421,10 +1421,6 @@ crbug.com/424648 editing/selection/deleteFromDocument-crash.html [ Pass ImageOnl
 crbug.com/425345 [ Mac ] fast/text/line-break-after-question-mark.html [ Failure ]
 crbug.com/425345 [ Mac ] virtual/slimmingpaint/fast/text/line-break-after-question-mark.html [ Failure ]
 
-
-crbug.com/426543 fast/js/mozilla/strict/15.4.4.9.html [ Pass Failure ]
-crbug.com/426543 fast/js/mozilla/strict/15.4.4.13.html [ Pass Failure ]
-
 crbug.com/401377 [ XP ] http/tests/serviceworker/fetch-mixed-content-to-inscope.html [ Pass Timeout ]
 
 crbug.com/440253 fast/forms/select/listbox-appearance-basic.html [ NeedsRebaseline ]
