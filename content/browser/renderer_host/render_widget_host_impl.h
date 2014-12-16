@@ -579,7 +579,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Tell this object to destroy itself.
   void Destroy();
 
-  // Called by |hang_timeout_monitor_| on delayed response from the renderer.
+  // Called by |hang_monitor_timeout_| on delayed response from the renderer.
   void RendererIsUnresponsive();
 
   // Called if we know the renderer is responsive. When we currently think the
@@ -754,16 +754,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // This is true if the renderer is currently unresponsive.
   bool is_unresponsive_;
 
-  // The following value indicates a time in the future when we would consider
-  // the renderer hung if it does not generate an appropriate response message.
-  base::Time time_when_considered_hung_;
-
   // This value denotes the number of input events yet to be acknowledged
   // by the renderer.
   int in_flight_event_count_;
-
-  // This timer runs to check if time_when_considered_hung_ has past.
-  base::OneShotTimer<RenderWidgetHostImpl> hung_renderer_timer_;
 
   // Flag to detect recursive calls to GetBackingStore().
   bool in_get_backing_store_;
