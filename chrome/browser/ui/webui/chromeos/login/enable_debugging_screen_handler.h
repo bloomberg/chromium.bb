@@ -57,8 +57,11 @@ class EnableDebuggingScreenHandler : public EnableDebuggingScreenActor,
 
   void ShowWithParams();
 
+  // Callback for CryptohomeClient::WaitForServiceToBeAvailable
+  void OnCryptohomeDaemonAvailabilityChecked(bool service_is_available);
+
   // Callback for DebugDaemonClient::WaitForServiceToBeAvailable
-  void OnServiceAvailabilityChecked(bool service_is_available);
+  void OnDebugDaemonServiceAvailabilityChecked(bool service_is_available);
 
   // Callback for DebugDaemonClient::EnableDebuggingFeatures().
   void OnEnableDebuggingFeatures(bool success);
