@@ -252,7 +252,7 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
     AtomicString imageSourceURL = m_element->imageSourceURL();
     KURL url = imageSourceToKURL(imageSourceURL);
     ResourcePtr<ImageResource> newImage = 0;
-    RefPtrWillBeRawPtr<Element> protectElement(m_element);
+    RefPtrWillBeRawPtr<Element> protectElement(m_element.get());
     if (!url.isNull()) {
         // Unlike raw <img>, we block mixed content inside of <picture> or <img srcset>.
         ResourceLoaderOptions resourceLoaderOptions = ResourceFetcher::defaultResourceOptions();
