@@ -300,6 +300,7 @@
       'websockets/CloseEvent.idl',
     ],
     'modules_dictionary_idl_files': [
+      'device_light/DeviceLightEventInit.idl',
       'encoding/TextDecodeOptions.idl',
       'encoding/TextDecoderOptions.idl',
       'encryptedmedia/MediaEncryptedEventInit.idl',
@@ -342,6 +343,8 @@
       '<(blink_modules_output_dir)/IndexedDBNames.h',
     ],
     'generated_modules_dictionary_files': [
+      '<(blink_modules_output_dir)/device_light/DeviceLightEventInit.cpp',
+      '<(blink_modules_output_dir)/device_light/DeviceLightEventInit.h',
       '<(blink_modules_output_dir)/encoding/TextDecodeOptions.cpp',
       '<(blink_modules_output_dir)/encoding/TextDecodeOptions.h',
       '<(blink_modules_output_dir)/encoding/TextDecoderOptions.cpp',

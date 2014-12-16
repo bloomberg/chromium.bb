@@ -31,6 +31,7 @@ shouldBeFalse("newEvent.cancelable")
 shouldBeTrue("typeof newEvent.value == 'number'");
 shouldBeEqualToNumber('newEvent.value', 10);
 
+// FIXME: Consider making bubbles property configurable.
 shouldBeTrue("defaultEvent.bubbles");
 shouldBeFalse("defaultEvent.cancelable");
 </script>

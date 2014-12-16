@@ -197,6 +197,8 @@ protected:
     virtual void receivedTarget();
     bool dispatched() const { return m_target; }
 
+    void setCanBubble(bool bubble) { m_canBubble = bubble; }
+
 private:
     AtomicString m_type;
     bool m_canBubble;

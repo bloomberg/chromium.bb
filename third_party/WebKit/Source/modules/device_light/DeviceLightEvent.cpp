@@ -24,8 +24,9 @@ DeviceLightEvent::DeviceLightEvent(const AtomicString& eventType, double value)
 
 DeviceLightEvent::DeviceLightEvent(const AtomicString& eventType, const DeviceLightEventInit& initializer)
     : Event(eventType, initializer)
-    , m_value(initializer.value)
+    , m_value(initializer.hasValue() ? initializer.value() : std::numeric_limits<double>::infinity())
 {
+    setCanBubble(true);
 }
 
 const AtomicString& DeviceLightEvent::interfaceName() const
