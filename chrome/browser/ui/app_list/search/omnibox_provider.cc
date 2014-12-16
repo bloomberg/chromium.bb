@@ -118,6 +118,7 @@ class OmniboxResult : public SearchResult {
     // results if they exactly match the query.
     if (match_.type == AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED ||
         (match_.type == AutocompleteMatchType::SEARCH_HISTORY &&
+         match_.search_terms_args &&
          match_.contents == match_.search_terms_args->original_query)) {
       set_voice_result(true);
     }
