@@ -39,6 +39,11 @@ debug(global);
 // Here continues checked.js, a swell file.
 """.strip()
 
+    FileCache._cache["/double-debug.js"] = """
+<include src="/debug.js">
+<include src="/debug.js">
+""".strip()
+
     self._processor = Processor("/checked.js")
 
   def testInline(self):
@@ -77,6 +82,11 @@ debug(global);
     self.assertEquals(set(["/global.js", "/debug.js"]),
                       self._processor.included_files)
 
+  def testDoubleIncludedSkipped(self):
+    """Verify that doubly included files are skipped."""
+    processor = Processor("/double-debug.js")
+    self.assertEquals(set(["/debug.js"]), processor.included_files)
+    self.assertEquals(FileCache.read("/debug.js"), processor.contents)
 
 class IfStrippingTest(unittest.TestCase):
   """Test that the contents of XML <if> blocks are stripped."""
