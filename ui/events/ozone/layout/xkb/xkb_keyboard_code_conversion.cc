@@ -8,7 +8,7 @@
 
 namespace ui {
 
-DomKey XkbKeySymToDomKey(xkb_keysym_t keysym) {
+DomKey NonPrintableXkbKeySymToDomKey(xkb_keysym_t keysym) {
   switch (keysym) {
     case XKB_KEY_BackSpace:
       return DomKey::BACKSPACE;
@@ -377,7 +377,7 @@ DomKey XkbKeySymToDomKey(xkb_keysym_t keysym) {
   }
 }
 
-base::char16 XkbKeySymDeadKey(xkb_keysym_t keysym) {
+base::char16 DeadXkbKeySymToCombiningCharacter(xkb_keysym_t keysym) {
   switch (keysym) {
     case XKB_KEY_dead_grave:
       return 0x0768;  // combining grave accent

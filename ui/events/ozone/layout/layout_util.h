@@ -15,16 +15,23 @@ namespace ui {
 enum class DomCode;
 enum class DomKey;
 
-// Returns the Windows-based VKEY value corresponding to a DOM Level 3 |code|.
-// The returned VKEY is located (e.g. VKEY_LSHIFT).
-KeyboardCode DomCodeToKeyboardCode(DomCode dom_code);
-
 // Returns a Windows-based VKEY for a non-printable DOM Level 3 |key|.
 // The returned VKEY is non-located (e.g. VKEY_SHIFT).
 KeyboardCode NonPrintableDomKeyToKeyboardCode(DomKey dom_key);
 
+// Returns the Windows-based VKEY value corresponding to a DOM Level 3 |code|.
+// The returned VKEY is located (e.g. VKEY_LSHIFT).
+KeyboardCode DomCodeToKeyboardCode(DomCode dom_code);
+
+// Returns the Windows-based VKEY value corresponding to a DOM Level 3 |code|.
+// The returned VKEY is non-located (e.g. VKEY_SHIFT).
+KeyboardCode DomCodeToNonLocatedKeyboardCode(DomCode dom_code);
+
 // Determine the non-located VKEY corresponding to a located VKEY.
-KeyboardCode DeLocateKeyboardCode(KeyboardCode key_code);
+KeyboardCode NonLocatedKeyboardCode(KeyboardCode key_code);
+
+// Determine the located VKEY corresponding to a non-located VKEY.
+KeyboardCode LocatedKeyboardCode(KeyboardCode key_code, DomCode dom_code);
 
 // Returns true control character corresponding to a physical key.
 // In some contexts this is used instead of the key layout.

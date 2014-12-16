@@ -277,7 +277,7 @@ bool StubKeyboardLayoutEngine::Lookup(DomCode dom_code,
           if ((ch >= 'a') && (ch <= 'z'))
             *out_character = e->character[state ^ 1];
         }
-        *out_key_code = DomCodeToKeyboardCode(dom_code);
+        *out_key_code = DomCodeToNonLocatedKeyboardCode(dom_code);
         return true;
       }
     }

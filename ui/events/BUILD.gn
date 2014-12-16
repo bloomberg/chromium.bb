@@ -332,6 +332,7 @@ test("events_unittests") {
       "ozone/evdev/input_injector_evdev_unittest.cc",
       "ozone/evdev/tablet_event_converter_evdev_unittest.cc",
       "ozone/evdev/touch_event_converter_evdev_unittest.cc",
+      "ozone/layout/xkb/xkb_keyboard_layout_engine_unittest.cc",
     ]
     deps += [
       "//ui/events/ozone:events_ozone",

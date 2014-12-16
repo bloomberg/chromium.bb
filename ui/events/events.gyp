@@ -362,6 +362,11 @@
             'ozone/events_ozone.gyp:events_ozone_layout',
           ]
         }],
+        ['use_xkbcommon==1', {
+          'sources': [
+            'ozone/layout/xkb/xkb_keyboard_layout_engine_unittest.cc',
+          ]
+        }],
         ['use_aura==0', {
           'sources!': [
             'gestures/gesture_provider_aura_unittest.cc',
