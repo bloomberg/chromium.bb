@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback_list.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "components/sessions/session_types.h"
@@ -37,6 +38,14 @@ class SessionRestore {
     // when we want to block until restore is complete.
     SYNCHRONOUS                  = 1 << 2,
   };
+
+  // Notification callback list.
+  using CallbackList = base::CallbackList<void(void)>;
+
+  // Used by objects calling RegisterOnSessionRestoredCallback() to de-register
+  // themselves when they are destroyed.
+  using CallbackSubscription =
+      scoped_ptr<base::CallbackList<void(void)>::Subscription>;
 
   // Restores the last session. |behavior| is a bitmask of Behaviors, see it
   // for details. If |browser| is non-null the tabs for the first window are
@@ -82,12 +91,28 @@ class SessionRestore {
   // Returns true if synchronously restoring a session.
   static bool IsRestoringSynchronously();
 
+  // Register callbacks for session restore events. These callbacks are stored
+  // in on_session_restored_callbacks_.
+  static CallbackSubscription RegisterOnSessionRestoredCallback(
+      const base::Closure& callback);
+
   // The max number of non-selected tabs SessionRestore loads when restoring
   // a session. A value of 0 indicates all tabs are loaded at once.
   static size_t num_tabs_to_load_;
 
  private:
   SessionRestore();
+
+  // Accessor for |*on_session_restored_callbacks_|. Creates a new object the
+  // first time so that it always returns a valid object.
+  static CallbackList* on_session_restored_callbacks() {
+    if (!on_session_restored_callbacks_)
+      on_session_restored_callbacks_ = new CallbackList();
+    return on_session_restored_callbacks_;
+  }
+
+  // Contains all registered callbacks for session restore notifications.
+  static CallbackList* on_session_restored_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionRestore);
 };
