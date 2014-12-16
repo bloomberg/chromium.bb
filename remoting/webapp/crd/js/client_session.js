@@ -138,6 +138,8 @@ remoting.ClientSession = function(signalStrategy, container, hostDisplayName,
   /** @private */
   this.resizeToClient_ = true;
   /** @private */
+  this.desktopScale_ = 1.0;
+  /** @private */
   this.remapKeys_ = '';
   /** @private */
   this.hasReceivedFrame_ = false;
@@ -386,6 +388,7 @@ remoting.ClientSession.STATS_KEY_ROUNDTRIP_LATENCY = 'roundtripLatency';
 remoting.ClientSession.KEY_REMAP_KEYS = 'remapKeys';
 remoting.ClientSession.KEY_RESIZE_TO_CLIENT = 'resizeToClient';
 remoting.ClientSession.KEY_SHRINK_TO_FIT = 'shrinkToFit';
+remoting.ClientSession.KEY_DESKTOP_SCALE = 'desktopScale';
 
 /**
  * Set of capabilities for which hasCapability_() can be used to test.
@@ -505,6 +508,12 @@ remoting.ClientSession.prototype.onHostSettingsLoaded_ = function(options) {
           'boolean') {
     this.shrinkToFit_ = /** @type {boolean} */
         options[remoting.ClientSession.KEY_SHRINK_TO_FIT];
+  }
+  if (remoting.ClientSession.KEY_DESKTOP_SCALE in options &&
+      typeof(options[remoting.ClientSession.KEY_DESKTOP_SCALE]) ==
+          'number') {
+    this.desktopScale_ = /** @type {number} */
+        options[remoting.ClientSession.KEY_DESKTOP_SCALE];
   }
 
   /** @param {boolean} result */
@@ -774,6 +783,26 @@ remoting.ClientSession.prototype.sendPrintScreen = function() {
 }
 
 /**
+ * Sets and stores the scale factor to apply to host sizing requests.
+ * The desktopScale applies to the dimensions reported to the host, not
+ * to the client DPI reported to it.
+ *
+ * @param {number} desktopScale Scale factor to apply.
+ */
+remoting.ClientSession.prototype.setDesktopScale = function(desktopScale) {
+  this.desktopScale_ = desktopScale;
+
+  // onResize() will update the plugin size and scrollbars for the new
+  // scaled plugin dimensions, and send a client resolution notification.
+  this.onResize();
+
+  // Save the new desktop scale setting.
+  var options = {};
+  options[remoting.ClientSession.KEY_DESKTOP_SCALE] = this.desktopScale_;
+  remoting.HostSettings.save(this.hostId_, options);
+}
+
+/**
  * Sets and stores the key remapping setting for the current host.
  *
  * @param {string} remappings Comma separated list of key remappings.
@@ -844,10 +873,7 @@ remoting.ClientSession.prototype.applyRemapKeys_ = function(apply) {
 remoting.ClientSession.prototype.setScreenMode =
     function(shrinkToFit, resizeToClient) {
   if (resizeToClient && !this.resizeToClient_) {
-    var clientArea = this.getClientArea_();
-    this.plugin_.notifyClientResolution(clientArea.width,
-                                        clientArea.height,
-                                        window.devicePixelRatio);
+    this.notifyClientResolution_();
   }
 
   // If enabling shrink, reset bump-scroll offsets.
@@ -1010,10 +1036,7 @@ remoting.ClientSession.prototype.onConnectionStatusUpdate_ =
     this.setFocusHandlers_();
     this.onDesktopSizeChanged_();
     if (this.resizeToClient_) {
-      var clientArea = this.getClientArea_();
-      this.plugin_.notifyClientResolution(clientArea.width,
-                                          clientArea.height,
-                                          window.devicePixelRatio);
+      this.notifyClientResolution_();
     }
     // Activate full-screen related UX.
     remoting.fullscreen.addListener(this.callOnFullScreenChanged_);
@@ -1106,10 +1129,7 @@ remoting.ClientSession.prototype.onSetCapabilities_ = function(capabilities) {
   this.capabilities_ = capabilities;
   if (this.hasCapability_(
       remoting.ClientSession.Capability.SEND_INITIAL_RESOLUTION)) {
-    var clientArea = this.getClientArea_();
-    this.plugin_.notifyClientResolution(clientArea.width,
-                                        clientArea.height,
-                                        window.devicePixelRatio);
+    this.notifyClientResolution_();
   }
   if (this.hasCapability_(remoting.ClientSession.Capability.GOOGLE_DRIVE)) {
     this.sendGoogleDriveAccessToken_();
@@ -1178,10 +1198,7 @@ remoting.ClientSession.prototype.onResize = function() {
     }
     var clientArea = this.getClientArea_();
     this.notifyClientResolutionTimer_ = window.setTimeout(
-        this.plugin_.notifyClientResolution.bind(this.plugin_,
-                                                 clientArea.width,
-                                                 clientArea.height,
-                                                 window.devicePixelRatio),
+        this.notifyClientResolution_.bind(this),
         kResizeRateLimitMs);
   }
 
@@ -1288,6 +1305,10 @@ remoting.ClientSession.prototype.updateDimensions = function() {
   var hostPixelRatioX = Math.ceil(this.plugin_.getDesktopXDpi() / 96);
   var hostPixelRatioY = Math.ceil(this.plugin_.getDesktopYDpi() / 96);
   var hostPixelRatio = Math.min(hostPixelRatioX, hostPixelRatioY);
+
+  // Include the desktopScale in the hostPixelRatio before comparing it with
+  // the client devicePixelRatio to determine the "natural" scale to use.
+  hostPixelRatio *= this.desktopScale_;
 
   // Down-scale by the smaller of the client and host ratios.
   var scale = 1.0 / Math.min(window.devicePixelRatio, hostPixelRatio);
@@ -1633,6 +1654,18 @@ remoting.ClientSession.prototype.getClientArea_ = function() {
       remoting.windowFrame.getClientArea() :
       { 'width': window.innerWidth, 'height': window.innerHeight };
 };
+
+/**
+ * Notifies the host of the client's current dimensions and DPI.
+ * Also takes into account per-host scaling factor, if configured.
+ * @private
+ */
+remoting.ClientSession.prototype.notifyClientResolution_ = function() {
+  var clientArea = this.getClientArea_();
+  this.plugin_.notifyClientResolution(clientArea.width * this.desktopScale_,
+                                      clientArea.height * this.desktopScale_,
+                                      window.devicePixelRatio);
+}
 
 /**
  * @param {string} url
