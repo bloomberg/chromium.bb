@@ -12,7 +12,6 @@ namespace content {
 namespace {
 
 const int kClientId = 1;
-const int kSurfaceId = 0;
 
 class GpuMemoryBufferImplTest
     : public testing::TestWithParam<gfx::GpuMemoryBufferType> {
@@ -34,7 +33,7 @@ class GpuMemoryBufferImplTest
       gfx::GpuMemoryBuffer::Usage usage) {
     ++buffer_count_;
     return factory_->CreateGpuMemoryBuffer(id, size, format, usage, kClientId,
-                                           kSurfaceId);
+                                           gfx::kNullPluginWindow);
   }
 
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id, uint32 sync_point) {
