@@ -854,55 +854,91 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
 // The root surface has one pass with a surface quad transformed by +10 in the y
 // direction.
 //
+// The middle surface has one pass with a surface quad scaled by 2 in the x
+// and 3 in the y directions.
+//
 // The child surface has two passes. The first pass has a quad with a transform
 // of +5 in the x direction. The second pass has a reference to the first pass'
 // pass id and a transform of +8 in the x direction.
 //
-// After aggregation, the child surface's root pass quad should have both
-// transforms concatenated for a total transform of +8 x, +10 y. The
+// After aggregation, the child surface's root pass quad should have all
+// transforms concatenated for a total transform of +23 x, +10 y. The
 // contributing render pass' transform in the aggregate frame should not be
 // affected.
 TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
+  // Innermost child surface.
   SurfaceId child_surface_id = allocator_.GenerateId();
-  factory_.Create(child_surface_id);
-  RenderPassId child_pass_id[] = {RenderPassId(1, 1), RenderPassId(1, 2)};
-  test::Quad child_quads[][1] = {
-      {test::Quad::SolidColorQuad(SK_ColorGREEN)},
-      {test::Quad::RenderPassQuad(child_pass_id[0])}};
-  test::Pass child_passes[] = {
-      test::Pass(child_quads[0], arraysize(child_quads[0]), child_pass_id[0]),
-      test::Pass(child_quads[1], arraysize(child_quads[1]), child_pass_id[1])};
+  {
+    factory_.Create(child_surface_id);
+    RenderPassId child_pass_id[] = {RenderPassId(1, 1), RenderPassId(1, 2)};
+    test::Quad child_quads[][1] = {
+        {test::Quad::SolidColorQuad(SK_ColorGREEN)},
+        {test::Quad::RenderPassQuad(child_pass_id[0])},
+    };
+    test::Pass child_passes[] = {
+        test::Pass(child_quads[0], arraysize(child_quads[0]), child_pass_id[0]),
+        test::Pass(child_quads[1], arraysize(child_quads[1]),
+                   child_pass_id[1])};
 
-  RenderPassList child_pass_list;
-  AddPasses(&child_pass_list,
-            gfx::Rect(SurfaceSize()),
-            child_passes,
-            arraysize(child_passes));
+    RenderPassList child_pass_list;
+    AddPasses(&child_pass_list, gfx::Rect(SurfaceSize()), child_passes,
+              arraysize(child_passes));
 
-  RenderPass* child_nonroot_pass = child_pass_list.at(0u);
-  child_nonroot_pass->transform_to_root_target.Translate(8, 0);
-  SharedQuadState* child_nonroot_pass_sqs =
-      child_nonroot_pass->shared_quad_state_list.front();
-  child_nonroot_pass_sqs->content_to_target_transform.Translate(5, 0);
+    RenderPass* child_nonroot_pass = child_pass_list.at(0u);
+    child_nonroot_pass->transform_to_root_target.Translate(8, 0);
+    SharedQuadState* child_nonroot_pass_sqs =
+        child_nonroot_pass->shared_quad_state_list.front();
+    child_nonroot_pass_sqs->content_to_target_transform.Translate(5, 0);
 
-  RenderPass* child_root_pass = child_pass_list.at(1u);
-  SharedQuadState* child_root_pass_sqs =
-      child_root_pass->shared_quad_state_list.front();
-  child_root_pass_sqs->content_to_target_transform.Translate(8, 0);
-  child_root_pass_sqs->is_clipped = true;
-  child_root_pass_sqs->clip_rect = gfx::Rect(0, 0, 5, 5);
+    RenderPass* child_root_pass = child_pass_list.at(1u);
+    SharedQuadState* child_root_pass_sqs =
+        child_root_pass->shared_quad_state_list.front();
+    child_root_pass_sqs->content_to_target_transform.Translate(8, 0);
+    child_root_pass_sqs->is_clipped = true;
+    child_root_pass_sqs->clip_rect = gfx::Rect(0, 0, 5, 5);
 
-  scoped_ptr<DelegatedFrameData> child_frame_data(new DelegatedFrameData);
-  child_pass_list.swap(child_frame_data->render_pass_list);
+    scoped_ptr<DelegatedFrameData> child_frame_data(new DelegatedFrameData);
+    child_pass_list.swap(child_frame_data->render_pass_list);
 
-  scoped_ptr<CompositorFrame> child_frame(new CompositorFrame);
-  child_frame->delegated_frame_data = child_frame_data.Pass();
+    scoped_ptr<CompositorFrame> child_frame(new CompositorFrame);
+    child_frame->delegated_frame_data = child_frame_data.Pass();
 
-  factory_.SubmitFrame(child_surface_id, child_frame.Pass(),
-                       SurfaceFactory::DrawCallback());
+    factory_.SubmitFrame(child_surface_id, child_frame.Pass(),
+                         SurfaceFactory::DrawCallback());
+  }
 
+  // Middle child surface.
+  SurfaceId middle_surface_id = allocator_.GenerateId();
+  {
+    factory_.Create(middle_surface_id);
+    test::Quad middle_quads[] = {
+        test::Quad::SurfaceQuad(child_surface_id, 1.f)};
+    test::Pass middle_passes[] = {
+        test::Pass(middle_quads, arraysize(middle_quads)),
+    };
+
+    RenderPassList middle_pass_list;
+    AddPasses(&middle_pass_list, gfx::Rect(SurfaceSize()), middle_passes,
+              arraysize(middle_passes));
+
+    RenderPass* middle_root_pass = middle_pass_list.at(0u);
+    SharedQuadState* middle_root_pass_sqs =
+        middle_root_pass->shared_quad_state_list.front();
+    middle_root_pass_sqs->content_to_target_transform.Scale(2, 3);
+
+    scoped_ptr<DelegatedFrameData> middle_frame_data(new DelegatedFrameData);
+    middle_pass_list.swap(middle_frame_data->render_pass_list);
+
+    scoped_ptr<CompositorFrame> middle_frame(new CompositorFrame);
+    middle_frame->delegated_frame_data = middle_frame_data.Pass();
+
+    factory_.SubmitFrame(middle_surface_id, middle_frame.Pass(),
+                         SurfaceFactory::DrawCallback());
+  }
+
+  // Root surface.
   test::Quad root_quads[] = {test::Quad::SolidColorQuad(1),
-                             test::Quad::SurfaceQuad(child_surface_id, 1.f)};
+                             test::Quad::SurfaceQuad(middle_surface_id, 1.f)};
   test::Pass root_passes[] = {test::Pass(root_quads, arraysize(root_quads))};
 
   RenderPassList root_pass_list;
@@ -961,7 +997,9 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
   // The first pass's transform to the root target should include the aggregated
   // transform.
   gfx::Transform expected_first_pass_transform_to_root_target;
-  expected_first_pass_transform_to_root_target.Translate(8, 10);
+  expected_first_pass_transform_to_root_target.Translate(0, 10);
+  expected_first_pass_transform_to_root_target.Scale(2, 3);
+  expected_first_pass_transform_to_root_target.Translate(8, 0);
   EXPECT_EQ(expected_first_pass_transform_to_root_target.ToString(),
             aggregated_pass_list[0]->transform_to_root_target.ToString());
 
@@ -973,9 +1011,12 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
   // still be +7 in the y direction.
   expected_root_pass_quad_transforms[0].Translate(0, 7);
   // The second quad in the root pass is aggregated from the child surface so
-  // its transform should be the combination of its original translation (0, 10)
-  // and the child surface draw quad's translation (8, 0).
-  expected_root_pass_quad_transforms[1].Translate(8, 10);
+  // its transform should be the combination of its original translation
+  // (0, 10), the middle surface draw quad's scale of (2, 3), and the
+  // child surface draw quad's translation (8, 0).
+  expected_root_pass_quad_transforms[1].Translate(0, 10);
+  expected_root_pass_quad_transforms[1].Scale(2, 3);
+  expected_root_pass_quad_transforms[1].Translate(8, 0);
 
   for (auto iter = aggregated_pass_list[1]->quad_list.cbegin();
        iter != aggregated_pass_list[1]->quad_list.cend();
@@ -989,12 +1030,13 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
       aggregated_pass_list[1]->shared_quad_state_list.ElementAt(1)->is_clipped);
 
   // The second quad in the root pass is aggregated from the child, so its
-  // clip rect must be transformed by the child's translation.
-  EXPECT_EQ(gfx::Rect(0, 10, 5, 5).ToString(),
+  // clip rect must be transformed by the child's translation/scale.
+  EXPECT_EQ(gfx::Rect(0, 10, 10, 15).ToString(),
             aggregated_pass_list[1]
                 ->shared_quad_state_list.ElementAt(1)
                 ->clip_rect.ToString());
 
+  factory_.Destroy(middle_surface_id);
   factory_.Destroy(child_surface_id);
 }
 

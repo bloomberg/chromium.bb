@@ -163,8 +163,10 @@ gfx::Rect SurfaceAggregator::DamageRectForSurface(const Surface* surface,
   return full_rect;
 }
 
-void SurfaceAggregator::HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
-                                          RenderPass* dest_pass) {
+void SurfaceAggregator::HandleSurfaceQuad(
+    const SurfaceDrawQuad* surface_quad,
+    const gfx::Transform& content_to_target_transform,
+    RenderPass* dest_pass) {
   SurfaceId surface_id = surface_quad->surface_id;
   // If this surface's id is already in our referenced set then it creates
   // a cycle in the graph and should be dropped.
@@ -227,6 +229,8 @@ void SurfaceAggregator::HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
     // levels deep and add tests.
     copy_pass->transform_to_root_target.ConcatTransform(
         surface_quad->quadTransform());
+    copy_pass->transform_to_root_target.ConcatTransform(
+        content_to_target_transform);
 
     CopyQuadsToPass(source.quad_list, source.shared_quad_state_list,
                     gfx::Transform(), copy_pass.get(), surface_id);
@@ -239,15 +243,19 @@ void SurfaceAggregator::HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
     // TODO(jamesr): Clean up last pass special casing.
     const QuadList& quads = last_pass.quad_list;
 
+    gfx::Transform surface_transform = surface_quad->quadTransform();
+    surface_transform.ConcatTransform(content_to_target_transform);
+
     // TODO(jamesr): Make sure clipping is enforced.
-    CopyQuadsToPass(quads, last_pass.shared_quad_state_list,
-                    surface_quad->quadTransform(), dest_pass, surface_id);
+    CopyQuadsToPass(quads, last_pass.shared_quad_state_list, surface_transform,
+                    dest_pass, surface_id);
   } else {
     RenderPassId remapped_pass_id = RemapPassId(last_pass.id, surface_id);
 
+    CopySharedQuadState(surface_quad->shared_quad_state,
+                        content_to_target_transform, dest_pass);
     SharedQuadState* shared_quad_state =
-        dest_pass->CreateAndAppendSharedQuadState();
-    shared_quad_state->CopyFrom(surface_quad->shared_quad_state);
+        dest_pass->shared_quad_state_list.back();
     RenderPassDrawQuad* quad =
         dest_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
     quad->SetNew(shared_quad_state,
@@ -311,7 +319,7 @@ void SurfaceAggregator::CopyQuadsToPass(
 
     if (quad->material == DrawQuad::SURFACE_CONTENT) {
       const SurfaceDrawQuad* surface_quad = SurfaceDrawQuad::MaterialCast(quad);
-      HandleSurfaceQuad(surface_quad, dest_pass);
+      HandleSurfaceQuad(surface_quad, content_to_target_transform, dest_pass);
     } else {
       if (quad->shared_quad_state != last_copied_source_shared_quad_state) {
         CopySharedQuadState(

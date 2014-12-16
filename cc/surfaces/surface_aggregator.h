@@ -42,6 +42,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
                            SurfaceId surface_id);
 
   void HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
+                         const gfx::Transform& content_to_target_transform,
                          RenderPass* dest_pass);
   void CopySharedQuadState(const SharedQuadState* source_sqs,
                            const gfx::Transform& content_to_target_transform,
