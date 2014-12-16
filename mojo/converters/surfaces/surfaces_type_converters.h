@@ -12,9 +12,9 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "mojo/converters/surfaces/mojo_surfaces_export.h"
-#include "mojo/services/public/interfaces/surfaces/quads.mojom.h"
-#include "mojo/services/public/interfaces/surfaces/surface_id.mojom.h"
-#include "mojo/services/public/interfaces/surfaces/surfaces.mojom.h"
+#include "mojo/services/surfaces/public/interfaces/quads.mojom.h"
+#include "mojo/services/surfaces/public/interfaces/surface_id.mojom.h"
+#include "mojo/services/surfaces/public/interfaces/surfaces.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace cc {

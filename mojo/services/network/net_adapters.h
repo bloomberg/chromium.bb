@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "mojo/services/public/interfaces/network/network_error.mojom.h"
+#include "mojo/services/network/public/interfaces/network_error.mojom.h"
 #include "net/base/io_buffer.h"
 
 namespace mojo {

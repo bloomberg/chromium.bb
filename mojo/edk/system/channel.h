@@ -17,8 +17,8 @@
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/channel_endpoint.h"
 #include "mojo/edk/system/channel_endpoint_id.h"
+#include "mojo/edk/system/incoming_endpoint.h"
 #include "mojo/edk/system/message_in_transit.h"
-#include "mojo/edk/system/message_pipe.h"
 #include "mojo/edk/system/raw_channel.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/c/system/types.h"
@@ -45,9 +45,10 @@ class ChannelManager;
 // reference is kept on its creation thread and is released after |Shutdown()|
 // is called, but other threads may have temporarily "dangling" references).
 //
-// Note the lock order (in order of allowable acquisition): |MessagePipe|,
-// |ChannelEndpoint|, |Channel|. Thus |Channel| may not call into
-// |ChannelEndpoint| with |Channel|'s lock held.
+// Note the lock order (in order of allowable acquisition):
+// |ChannelEndpointClient| (e.g., |MessagePipe|), |ChannelEndpoint|, |Channel|.
+// Thus |Channel| may not call into |ChannelEndpoint| with |Channel|'s lock
+// held.
 class MOJO_SYSTEM_IMPL_EXPORT Channel
     : public base::RefCountedThreadSafe<Channel>,
       public RawChannel::Delegate {
@@ -79,25 +80,13 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // If set, the channel manager associated with this channel will be reset.
   void WillShutdownSoon();
 
-  // Attaches the given endpoint to this channel and runs it. |is_bootstrap|
-  // should be set if and only if it is the first endpoint on the channel. This
-  // assigns the endpoint both local and remote IDs. If |is_bootstrap| is set,
-  // both are the bootstrap ID (given by |ChannelEndpointId::GetBootstrap()|);
-  // if not, it will also send a |kSubtypeChannelAttachAndRunEndpoint| message
-  // to the remote side to tell it to create an endpoint as well.
+  // Called to set (i.e., attach and run) the bootstrap (first) endpoint on the
+  // channel. Both the local and remote IDs are the bootstrap ID (given by
+  // |ChannelEndpointId::GetBootstrap()|).
   //
-  // (Bootstrapping is symmetric: Both sides attach and run endpoints with
-  // |is_bootstrap| set, which establishes the first message pipe across a
-  // channel.)
-  //
-  // This returns the *remote* ID (which will be the bootstrap ID in the
-  // bootstrap case, and a "remote ID", i.e., one for which |is_remote()|
-  // returns true, otherwise).
-  //
-  // TODO(vtl): Maybe limit the number of attached message pipes.
-  ChannelEndpointId AttachAndRunEndpoint(
-      scoped_refptr<ChannelEndpoint> endpoint,
-      bool is_bootstrap);
+  // (Bootstrapping is symmetric: Both sides call this, which will establish the
+  // first connection across a channel.)
+  void SetBootstrapEndpoint(scoped_refptr<ChannelEndpoint> endpoint);
 
   // This forwards |message| verbatim to |raw_channel_|.
   bool WriteMessage(scoped_ptr<MessageInTransit> message);
@@ -116,10 +105,25 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
                       ChannelEndpointId local_id,
                       ChannelEndpointId remote_id);
 
-  // Takes ownership of an incoming message pipe (i.e., one that was created via
-  // a |kSubtypeChannelAttachAndRunEndpoint| message).
-  scoped_refptr<MessagePipe> PassIncomingMessagePipe(
-      ChannelEndpointId local_id);
+  // Returns the size of a serialized endpoint (see |SerializeEndpoint()| and
+  // |DeserializeEndpoint()| below). This value will remain constant for a given
+  // instance of |Channel|.
+  size_t GetSerializedEndpointSize() const;
+
+  // Serializes the given endpoint, writing to |destination| auxiliary
+  // information to be transmitted to the peer |Channel| via some other means.
+  // |destination| should point to a buffer of (at least) the size returned by
+  // |GetSerializedEndpointSize()| (exactly that much data will be written).
+  void SerializeEndpoint(scoped_refptr<ChannelEndpoint> endpoint,
+                         void* destination);
+
+  // Deserializes an endpoint that was sent from the peer |Channel| (using
+  // |SerializeEndpoint()|. |source| should be (a copy of) the data that
+  // |SerializeEndpoint()| wrote, and must be (at least)
+  // |GetSerializedEndpointSize()| bytes. This returns the deserialized
+  // |IncomingEndpoint| (which can be converted into a |MessagePipe|) or null on
+  // error.
+  scoped_refptr<IncomingEndpoint> DeserializeEndpoint(const void* source);
 
   // See |RawChannel::GetSerializedPlatformHandleSize()|.
   size_t GetSerializedPlatformHandleSize() const;
@@ -149,11 +153,11 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // Handles "attach and run endpoint" messages.
   bool OnAttachAndRunEndpoint(ChannelEndpointId local_id,
                               ChannelEndpointId remote_id);
-  // Handles "remove message pipe endpoint" messages.
-  bool OnRemoveMessagePipeEndpoint(ChannelEndpointId local_id,
-                                   ChannelEndpointId remote_id);
-  // Handles "remove message pipe endpoint ack" messages.
-  bool OnRemoveMessagePipeEndpointAck(ChannelEndpointId local_id);
+  // Handles "remove endpoint" messages.
+  bool OnRemoveEndpoint(ChannelEndpointId local_id,
+                        ChannelEndpointId remote_id);
+  // Handles "remove endpoint ack" messages.
+  bool OnRemoveEndpointAck(ChannelEndpointId local_id);
 
   // Handles errors (e.g., invalid messages) from the remote side. Callable from
   // any thread.
@@ -161,6 +165,16 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // Handles internal errors/failures from the local side. Callable from any
   // thread.
   void HandleLocalError(const base::StringPiece& error_message);
+
+  // Helper for |SerializeEndpoint()|: Attaches the given (non-bootstrap)
+  // endpoint to this channel and runs it. This assigns the endpoint both local
+  // and remote IDs. This will also send a |kSubtypeChannelAttachAndRunEndpoint|
+  // message to the remote side to tell it to create an endpoint as well. This
+  // returns the *remote* ID (one for which |is_remote()| returns true).
+  //
+  // TODO(vtl): Maybe limit the number of attached message pipes.
+  ChannelEndpointId AttachAndRunEndpoint(
+      scoped_refptr<ChannelEndpoint> endpoint);
 
   // Helper to send channel control messages. Returns true on success. Should be
   // called *without* |lock_| held. Callable from any thread.
@@ -172,9 +186,10 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
 
   embedder::PlatformSupport* const platform_support_;
 
-  // Note: |MessagePipe|s MUST NOT be used under |lock_|. I.e., |lock_| can only
-  // be acquired after |MessagePipe::lock_|, never before. Thus to call into a
-  // |MessagePipe|, a reference to the |MessagePipe| should be acquired from
+  // Note: |ChannelEndpointClient|s (in particular, |MessagePipe|s) MUST NOT be
+  // used under |lock_|. E.g., |lock_| can only be acquired after
+  // |MessagePipe::lock_|, never before. Thus to call into a
+  // |ChannelEndpointClinet|, a reference should be acquired from
   // |local_id_to_endpoint_map_| under |lock_| and then the lock released.
   base::Lock lock_;  // Protects the members below.
 
@@ -194,18 +209,11 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // Note: The IDs generated by this should be checked for existence before use.
   LocalChannelEndpointIdGenerator local_id_generator_;
 
-  typedef base::hash_map<ChannelEndpointId, scoped_refptr<MessagePipe>>
-      IdToMessagePipeMap;
-  // Map from local IDs to pending/incoming message pipes (i.e., those which do
-  // not yet have a dispatcher attached).
-  // TODO(vtl): This is a layering violation, since |Channel| shouldn't know
-  // about |MessagePipe|. However, we can't just hang on to |ChannelEndpoint|s
-  // (even if they have a reference to the |MessagePipe|) since their lifetimes
-  // are tied to the "remote" side. When |ChannelEndpoint::DetachFromChannel()|
-  // (eventually) results in |ChannelEndpoint::DetachFromClient()| being called.
-  // We really need to hang on to the "local" side of the message pipe, to which
-  // dispatchers will be "attached".
-  IdToMessagePipeMap incoming_message_pipes_;
+  typedef base::hash_map<ChannelEndpointId, scoped_refptr<IncomingEndpoint>>
+      IdToIncomingEndpointMap;
+  // Map from local IDs to incoming endpoints (i.e., those received inside other
+  // messages, but not yet claimed via |DeserializeEndpoint()|).
+  IdToIncomingEndpointMap incoming_endpoints_;
   // TODO(vtl): We need to keep track of remote IDs (so that we don't collide
   // if/when we wrap).
   RemoteChannelEndpointIdGenerator remote_id_generator_;

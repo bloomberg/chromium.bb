@@ -25,7 +25,7 @@ source_set("converters") {
     "//mojo/converters/geometry",
     "//mojo/environment:chromium",
     "//mojo/public/c/system:for_component",
-    "//mojo/services/public/interfaces/geometry",
+    "//mojo/services/geometry/public/interfaces",
     "//skia",
   ]
 }
@@ -78,18 +78,6 @@ source_set("renderer_service") {
   ]
 }
 
-mojo_native_application("media") {
-  sources = [
-    "mojo_media_application.cc",
-  ]
-
-  deps = [
-    ":renderer_service",
-    "//mojo/application",
-    "//mojo/public/c/system:for_shared_library",
-  ]
-}
-
 test("media_mojo_unittests") {
   sources = [
     "media_type_converters_unittest.cc",
@@ -108,42 +96,62 @@ test("media_mojo_unittests") {
   ]
 }
 
-# Not a 'test' because this is loaded via mojo_shell as an app.
-# To run the test:
-#   out/Debug/mojo_shell mojo:media_test
-# You can get "mojo_shell" using mojo/public/tools/download_shell_binary.py
-mojo_native_application("media_test") {
-  testonly = true
-  sources = [
-    "media_renderer_apptest.cc",
-  ]
+if (!is_component_build) {
+  mojo_native_application("media") {
+    sources = [
+      "mojo_media_application.cc",
+    ]
 
-  deps = [
-    ":media",
-    ":renderer_proxy",
-    "//base",
-    "//media",
-    "//media/mojo/interfaces",
-    "//media:shared_memory_support",
-    "//mojo/application",
-    "//mojo/application:test_support",
-    "//mojo/common",
-    "//mojo/environment:chromium",
-    "//mojo/public/c/system:for_shared_library",
-  ]
+    deps = [
+      ":renderer_service",
+      "//mojo/application",
+      "//mojo/public/c/system:for_shared_library",
+    ]
+  }
+
+  # Not a 'test' because this is loaded via mojo_shell as an app.
+  # To run the test:
+  #   out/Debug/mojo_shell mojo:media_test
+  # You can get "mojo_shell" using mojo/public/tools/download_shell_binary.py
+  mojo_native_application("media_test") {
+    testonly = true
+    sources = [
+      "media_renderer_apptest.cc",
+    ]
+
+    deps = [
+      ":media",
+      ":renderer_proxy",
+      "//base",
+      "//media",
+      "//media/mojo/interfaces",
+      "//media:shared_memory_support",
+      "//mojo/application",
+      "//mojo/application:test_support",
+      "//mojo/common",
+      "//mojo/environment:chromium",
+      "//mojo/public/c/system:for_shared_library",
+    ]
+  }
 }
 
 group("services") {
   deps = [
-    ":media",
     ":renderer_proxy",
   ]
+
+  if (!is_component_build) {
+    deps += [ ":media" ]
+  }
 }
 
 group("tests") {
   testonly = true
   deps = [
     ":media_mojo_unittests",
-    ":media_test",
   ]
+
+  if (!is_component_build) {
+    deps += [ ":media_test" ]
+  }
 }

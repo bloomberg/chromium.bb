@@ -51,6 +51,8 @@ component("system") {
     "handle_signals_state.h",
     "handle_table.cc",
     "handle_table.h",
+    "incoming_endpoint.cc",
+    "incoming_endpoint.h",
     "local_data_pipe.cc",
     "local_data_pipe.h",
     "local_message_pipe_endpoint.cc",

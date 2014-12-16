@@ -8,6 +8,8 @@
 
 #include "mojo/public/cpp/system/core.h"
 
+#include <stddef.h>
+
 #include <map>
 
 #include "mojo/public/cpp/system/macros.h"
@@ -15,6 +17,13 @@
 
 namespace mojo {
 namespace {
+
+const MojoHandleSignals kSignalReadableWritable =
+    MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE;
+
+const MojoHandleSignals kSignalAll = MOJO_HANDLE_SIGNAL_READABLE |
+                                     MOJO_HANDLE_SIGNAL_WRITABLE |
+                                     MOJO_HANDLE_SIGNAL_PEER_CLOSED;
 
 TEST(CoreCppTest, GetTimeTicksNow) {
   const MojoTimeTicks start = GetTimeTicksNow();
@@ -105,8 +114,19 @@ TEST(CoreCppTest, Basic) {
     wh.push_back(h.get());
     std::vector<MojoHandleSignals> sigs;
     sigs.push_back(~MOJO_HANDLE_SIGNAL_NONE);
-    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              WaitMany(wh, sigs, MOJO_DEADLINE_INDEFINITE));
+    WaitManyResult wait_many_result =
+        WaitMany(wh, sigs, MOJO_DEADLINE_INDEFINITE, nullptr);
+    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, wait_many_result.result);
+    EXPECT_TRUE(wait_many_result.IsIndexValid());
+    EXPECT_FALSE(wait_many_result.AreSignalsStatesValid());
+
+    // Make sure that our specialized template correctly handles |NULL| as well
+    // as |nullptr|.
+    wait_many_result = WaitMany(wh, sigs, MOJO_DEADLINE_INDEFINITE, NULL);
+    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, wait_many_result.result);
+    EXPECT_EQ(0u, wait_many_result.index);
+    EXPECT_TRUE(wait_many_result.IsIndexValid());
+    EXPECT_FALSE(wait_many_result.AreSignalsStatesValid());
   }
 
   // |MakeScopedHandle| (just compilation tests):
@@ -166,30 +186,46 @@ TEST(CoreCppTest, Basic) {
       // correctly.
       hv0 = h0.get().value();
       MojoHandle hv1 = h1.get().value();
+      MojoHandleSignalsState state;
 
       EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
-                Wait(h0.get(), MOJO_HANDLE_SIGNAL_READABLE, 0));
+                Wait(h0.get(), MOJO_HANDLE_SIGNAL_READABLE, 0, &state));
+
+      EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, state.satisfied_signals);
+      EXPECT_EQ(kSignalAll, state.satisfiable_signals);
+
       std::vector<Handle> wh;
       wh.push_back(h0.get());
       wh.push_back(h1.get());
       std::vector<MojoHandleSignals> sigs;
       sigs.push_back(MOJO_HANDLE_SIGNAL_READABLE);
       sigs.push_back(MOJO_HANDLE_SIGNAL_WRITABLE);
-      EXPECT_EQ(1, WaitMany(wh, sigs, 1000));
+      std::vector<MojoHandleSignalsState> states(sigs.size());
+      WaitManyResult wait_many_result = WaitMany(wh, sigs, 1000, &states);
+      EXPECT_EQ(MOJO_RESULT_OK, wait_many_result.result);
+      EXPECT_EQ(1u, wait_many_result.index);
+      EXPECT_TRUE(wait_many_result.IsIndexValid());
+      EXPECT_TRUE(wait_many_result.AreSignalsStatesValid());
+      EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, states[0].satisfied_signals);
+      EXPECT_EQ(kSignalAll, states[0].satisfiable_signals);
+      EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, states[1].satisfied_signals);
+      EXPECT_EQ(kSignalAll, states[1].satisfiable_signals);
 
       // Test closing |h1| explicitly.
       Close(h1.Pass());
       EXPECT_FALSE(h1.get().is_valid());
 
       // Make sure |h1| is closed.
-      EXPECT_EQ(
-          MOJO_RESULT_INVALID_ARGUMENT,
-          MojoWait(hv1, ~MOJO_HANDLE_SIGNAL_NONE, MOJO_DEADLINE_INDEFINITE));
+      EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+                Wait(Handle(hv1), ~MOJO_HANDLE_SIGNAL_NONE,
+                     MOJO_DEADLINE_INDEFINITE, nullptr));
 
-      EXPECT_EQ(
-          MOJO_RESULT_FAILED_PRECONDITION,
-          Wait(
-              h0.get(), MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE));
+      EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+                Wait(h0.get(), MOJO_HANDLE_SIGNAL_READABLE,
+                     MOJO_DEADLINE_INDEFINITE, &state));
+
+      EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfied_signals);
+      EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfiable_signals);
     }
     // |hv0| should have been closed when |h0| went out of scope, so this close
     // should fail.
@@ -210,10 +246,13 @@ TEST(CoreCppTest, Basic) {
                                 nullptr,
                                 0,
                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
-      EXPECT_EQ(
-          MOJO_RESULT_OK,
-          Wait(
-              h1.get(), MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE));
+
+      MojoHandleSignalsState state;
+      EXPECT_EQ(MOJO_RESULT_OK, Wait(h1.get(), MOJO_HANDLE_SIGNAL_READABLE,
+                                     MOJO_DEADLINE_INDEFINITE, &state));
+      EXPECT_EQ(kSignalReadableWritable, state.satisfied_signals);
+      EXPECT_EQ(kSignalAll, state.satisfiable_signals);
+
       char buffer[10] = {0};
       uint32_t buffer_size = static_cast<uint32_t>(sizeof(buffer));
       EXPECT_EQ(MOJO_RESULT_OK,
@@ -259,10 +298,11 @@ TEST(CoreCppTest, Basic) {
       EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(handles[0]));
 
       // Read "hello" and the sent handle.
-      EXPECT_EQ(
-          MOJO_RESULT_OK,
-          Wait(
-              h0.get(), MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE));
+      EXPECT_EQ(MOJO_RESULT_OK, Wait(h0.get(), MOJO_HANDLE_SIGNAL_READABLE,
+                                     MOJO_DEADLINE_INDEFINITE, &state));
+      EXPECT_EQ(kSignalReadableWritable, state.satisfied_signals);
+      EXPECT_EQ(kSignalAll, state.satisfiable_signals);
+
       memset(buffer, 0, sizeof(buffer));
       buffer_size = static_cast<uint32_t>(sizeof(buffer));
       for (size_t i = 0; i < MOJO_ARRAYSIZE(handles); i++)
@@ -284,10 +324,13 @@ TEST(CoreCppTest, Basic) {
       mp.handle1.reset(MessagePipeHandle(handles[0]));
       // Save |handles[0]| to check that it gets properly closed.
       hv0 = handles[0];
+
       EXPECT_EQ(MOJO_RESULT_OK,
-                Wait(mp.handle1.get(),
-                     MOJO_HANDLE_SIGNAL_READABLE,
-                     MOJO_DEADLINE_INDEFINITE));
+                Wait(mp.handle1.get(), MOJO_HANDLE_SIGNAL_READABLE,
+                     MOJO_DEADLINE_INDEFINITE, &state));
+      EXPECT_EQ(kSignalReadableWritable, state.satisfied_signals);
+      EXPECT_EQ(kSignalAll, state.satisfiable_signals);
+
       memset(buffer, 0, sizeof(buffer));
       buffer_size = static_cast<uint32_t>(sizeof(buffer));
       for (size_t i = 0; i < MOJO_ARRAYSIZE(handles); i++)

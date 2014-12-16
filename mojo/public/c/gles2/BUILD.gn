@@ -14,7 +14,7 @@ group("gles2") {
     ":headers",
   ]
   deps = [
-    "../../platform/native:gles2_thunks",
+    "../../platform/native:gles2",
   ]
 }
 

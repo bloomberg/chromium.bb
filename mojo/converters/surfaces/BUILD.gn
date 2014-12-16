@@ -29,8 +29,8 @@ component("surfaces") {
     "//ui/gfx/geometry",
     "//mojo/environment:chromium",
     "//mojo/public/c/system:for_component",
-    "//mojo/services/public/interfaces/surfaces:surface_id",
-    "//mojo/services/public/interfaces/surfaces",
+    "//mojo/services/surfaces/public/interfaces:surface_id",
+    "//mojo/services/surfaces/public/interfaces",
     "//skia",
   ]
 }

@@ -4,7 +4,7 @@
 
 module mojo;
 
-import "mojo/services/public/interfaces/geometry/geometry.mojom";
+import "mojo/services/geometry/public/interfaces/geometry.mojom";
 
 // See media/base/buffering_state.h for descriptions.
 // Kept in sync with media::BufferingState via COMPILE_ASSERTs.

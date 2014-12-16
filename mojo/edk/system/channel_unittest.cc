@@ -199,7 +199,7 @@ TEST_F(ChannelTest, CloseBeforeRun) {
 
   mp->Close(0);
 
-  channel()->AttachAndRunEndpoint(channel_endpoint, true);
+  channel()->SetBootstrapEndpoint(channel_endpoint);
 
   io_thread()->PostTaskAndWait(
       FROM_HERE, base::Bind(&ChannelTest::ShutdownChannelOnIOThread,
@@ -225,7 +225,7 @@ TEST_F(ChannelTest, ShutdownAfterAttach) {
   scoped_refptr<MessagePipe> mp(
       MessagePipe::CreateLocalProxy(&channel_endpoint));
 
-  channel()->AttachAndRunEndpoint(channel_endpoint, true);
+  channel()->SetBootstrapEndpoint(channel_endpoint);
 
   Waiter waiter;
   waiter.Init();
@@ -268,7 +268,7 @@ TEST_F(ChannelTest, WaitAfterAttachRunAndShutdown) {
   scoped_refptr<MessagePipe> mp(
       MessagePipe::CreateLocalProxy(&channel_endpoint));
 
-  channel()->AttachAndRunEndpoint(channel_endpoint, true);
+  channel()->SetBootstrapEndpoint(channel_endpoint);
 
   io_thread()->PostTaskAndWait(
       FROM_HERE, base::Bind(&ChannelTest::ShutdownChannelOnIOThread,

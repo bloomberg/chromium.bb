@@ -15,7 +15,7 @@ source_set("cc") {
     "//mojo/public/c/gles2",
     "//mojo/public/cpp/environment",
     "//mojo/public/cpp/system",
-    "//mojo/services/public/interfaces/surfaces",
+    "//mojo/services/surfaces/public/interfaces",
     "//skia",
   ]
 

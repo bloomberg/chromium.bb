@@ -5,7 +5,7 @@
 #ifndef MOJO_SERVICES_HTML_VIEWER_BLINK_URL_REQUEST_TYPE_CONVERTERS_H_
 #define MOJO_SERVICES_HTML_VIEWER_BLINK_URL_REQUEST_TYPE_CONVERTERS_H_
 
-#include "mojo/services/public/interfaces/network/url_loader.mojom.h"
+#include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 
 namespace blink {
 class WebURLRequest;

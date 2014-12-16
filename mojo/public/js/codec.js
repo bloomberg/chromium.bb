@@ -754,6 +754,27 @@ define("mojo/public/js/codec", [
 
   NullableHandle.encode = Handle.encode;
 
+  function MapOf(keyClass, valueClass) {
+    this.keyClass = keyClass;
+    this.valueClass = valueClass;
+  }
+
+  MapOf.prototype.encodedSize = 8;
+
+  MapOf.prototype.decode = function(decoder) {
+    return decoder.decodeMapPointer(this.keyClass, this.valueClass);
+  };
+
+  MapOf.prototype.encode = function(encoder, val) {
+    encoder.encodeMapPointer(this.keyClass, this.valueClass, val);
+  };
+
+  function NullableMapOf(keyClass, valueClass) {
+    MapOf.call(this, keyClass, valueClass);
+  }
+
+  NullableMapOf.prototype = Object.create(MapOf.prototype);
+
   var exports = {};
   exports.align = align;
   exports.isAligned = isAligned;
@@ -788,5 +809,7 @@ define("mojo/public/js/codec", [
   exports.PackedBool = PackedBool;
   exports.Handle = Handle;
   exports.NullableHandle = NullableHandle;
+  exports.MapOf = MapOf;
+  exports.NullableMapOf = NullableMapOf;
   return exports;
 });

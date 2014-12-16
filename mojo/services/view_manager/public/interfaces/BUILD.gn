@@ -1,0 +1,20 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/public/tools/bindings/mojom.gni")
+
+mojom("interfaces") {
+  sources = [
+    "animations.mojom",
+    "view_manager.mojom",
+    "view_manager_constants.mojom",
+  ]
+
+  deps = [
+    "//mojo/public/interfaces/application",
+    "//mojo/services/geometry/public/interfaces",
+    "//mojo/services/input_events/public/interfaces",
+    "//mojo/services/surfaces/public/interfaces:surface_id",
+  ]
+}

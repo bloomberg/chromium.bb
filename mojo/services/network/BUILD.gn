@@ -13,7 +13,7 @@ mojo_native_application("network") {
     "//mojo/application",
     "//mojo/public/c/system:for_shared_library",
     "//mojo/public/cpp/bindings:bindings",
-    "//mojo/services/public/interfaces/network",
+    "//mojo/services/network/public/interfaces",
   ]
 
   sources = [
@@ -27,8 +27,8 @@ source_set("lib") {
     "//mojo/application",
     "//mojo/common",
     "//mojo/environment:chromium",
-    "//mojo/services/public/cpp/network",
-    "//mojo/services/public/interfaces/network",
+    "//mojo/services/network/public/cpp",
+    "//mojo/services/network/public/interfaces",
     "//net",
     "//url",
   ]

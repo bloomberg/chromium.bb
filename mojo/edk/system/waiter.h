@@ -58,7 +58,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Waiter : public Awakable {
 
   // Wake the waiter up with the given result and context (or no-op if it's been
   // woken up already).
-  void Awake(MojoResult result, uintptr_t context) override;
+  bool Awake(MojoResult result, uintptr_t context) override;
 
  private:
   base::ConditionVariable cv_;  // Associated to |lock_|.

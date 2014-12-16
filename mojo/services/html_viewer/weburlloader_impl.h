@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/common/handle_watcher.h"
-#include "mojo/services/public/interfaces/network/url_loader.mojom.h"
+#include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 

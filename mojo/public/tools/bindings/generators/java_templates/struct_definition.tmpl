@@ -142,6 +142,7 @@ if (decoder{{level+1}} == null) {
         return decode(new org.chromium.mojo.bindings.Decoder(message));
     }
 
+    @SuppressWarnings("unchecked")
     public static {{struct|name}} decode(org.chromium.mojo.bindings.Decoder decoder0) {
         if (decoder0 == null) {
             return null;
@@ -162,6 +163,7 @@ if (decoder{{level+1}} == null) {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected final void encode(org.chromium.mojo.bindings.Encoder encoder) {
 {% if not struct.bytes %}

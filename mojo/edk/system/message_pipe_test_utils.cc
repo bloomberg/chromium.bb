@@ -76,13 +76,13 @@ void ChannelThread::InitChannelOnIOThread(
   channel_ = new Channel(platform_support_);
   CHECK(channel_->Init(RawChannel::Create(platform_handle.Pass())));
 
-  // Attach and run the endpoint.
+  // Start the bootstrap endpoint.
   // Note: On the "server" (parent process) side, we need not attach/run the
   // endpoint immediately. However, on the "client" (child process) side, this
   // *must* be done here -- otherwise, the |Channel| may receive/process
   // messages (which it can do as soon as it's hooked up to the IO thread
   // message loop, and that message loop runs) before the endpoint is attached.
-  channel_->AttachAndRunEndpoint(channel_endpoint, true);
+  channel_->SetBootstrapEndpoint(channel_endpoint);
 }
 
 void ChannelThread::ShutdownChannelOnIOThread() {

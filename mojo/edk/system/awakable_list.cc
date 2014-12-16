@@ -19,12 +19,18 @@ AwakableList::~AwakableList() {
 }
 
 void AwakableList::AwakeForStateChange(const HandleSignalsState& state) {
-  for (AwakeInfoList::iterator it = awakables_.begin(); it != awakables_.end();
-       ++it) {
+  for (AwakeInfoList::iterator it = awakables_.begin();
+       it != awakables_.end();) {
+    bool keep = true;
     if (state.satisfies(it->signals))
-      it->awakable->Awake(MOJO_RESULT_OK, it->context);
+      keep = it->awakable->Awake(MOJO_RESULT_OK, it->context);
     else if (!state.can_satisfy(it->signals))
-      it->awakable->Awake(MOJO_RESULT_FAILED_PRECONDITION, it->context);
+      keep = it->awakable->Awake(MOJO_RESULT_FAILED_PRECONDITION, it->context);
+    AwakeInfoList::iterator maybe_delete = it;
+    ++it;
+
+    if (!keep)
+      awakables_.erase(maybe_delete);
   }
 }
 

@@ -21,7 +21,8 @@ try:
   imp.find_module("mojom")
 except ImportError:
   sys.path.append(os.path.join(_GetDirAbove("pylib"), "pylib"))
-import mojom.parse.translate as translate
+from mojom.parse import ast
+from mojom.parse import translate
 
 
 class TranslateTest(unittest.TestCase):
@@ -42,6 +43,23 @@ class TranslateTest(unittest.TestCase):
        in the presence of an associative array."""
     # pylint: disable=W0212
     self.assertEquals(translate._MapKind("uint8[]{string}"), "m[s][a:u8]")
+
+  def testTranslateSimpleUnions(self):
+    """Makes sure that a simple union is translated correctly."""
+    tree = ast.Mojom(
+        None,
+        ast.ImportList(),
+        [ast.Union("SomeUnion", ast.UnionBody(
+          [ast.UnionField("a", None, "int32"),
+           ast.UnionField("b", None, "string")]))])
+    expected = [{
+      "name": "SomeUnion",
+      "fields": [
+        {"kind": "i32", "name": "a", "ordinal": None},
+        {"kind": "s", "name": "b", "ordinal": None}]}]
+    actual = translate.Translate(tree, "mojom_tree")
+    self.assertEquals(actual["union"], expected)
+
 
 if __name__ == "__main__":
   unittest.main()

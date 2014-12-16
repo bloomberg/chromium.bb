@@ -36,7 +36,7 @@
       'action': [
         'python', '<@(mojom_bindings_generator)',
         '<@(mojom_files)',
-        '--use_chromium_bundled_pylibs',
+        '--use_bundled_pylibs',
         '-d', '<(DEPTH)',
         '<@(mojom_import_args)',
         '-o', '<(SHARED_INTERMEDIATE_DIR)',

@@ -38,15 +38,9 @@ group("for_shared_library") {
   public_deps = [
     ":system",
   ]
-  if (is_component_build) {
-    deps = [
-      "../../../edk/system",
-    ]
-  } else {
-    deps = [
-      "../../platform/native:system_thunks",
-    ]
-  }
+  deps = [
+    "../../platform/native:system",
+  ]
 }
 
 group("for_component") {

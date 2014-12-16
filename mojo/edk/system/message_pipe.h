@@ -31,6 +31,7 @@ namespace system {
 class Awakable;
 class Channel;
 class ChannelEndpoint;
+class MessageInTransitQueue;
 
 // |MessagePipe| is the secondary object implementing a message pipe (see the
 // explanatory comment in core.cc). It is typically owned by the dispatcher(s)
@@ -45,6 +46,14 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe : public ChannelEndpointClient {
   // (newly-created) |ChannelEndpoint| for the latter.
   static MessagePipe* CreateLocalProxy(
       scoped_refptr<ChannelEndpoint>* channel_endpoint);
+
+  // Similar to |CreateLocalProxy()|, except that it'll do so from an existing
+  // |ChannelEndpoint| (whose |ReplaceClient()| it'll call) and take
+  // |message_queue|'s contents as already-received incoming messages. If
+  // |channel_endpoint| is null, this will create a "half-open" message pipe.
+  static MessagePipe* CreateLocalProxyFromExisting(
+      MessageInTransitQueue* message_queue,
+      ChannelEndpoint* channel_endpoint);
 
   // Creates a |MessagePipe| with a |ProxyMessagePipeEndpoint| on port 0 and a
   // |LocalMessagePipeEndpoint| on port 1. |*channel_endpoint| is set to the

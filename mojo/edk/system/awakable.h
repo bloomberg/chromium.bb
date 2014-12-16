@@ -20,7 +20,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Awakable {
   // * As this is called from any thread, this must be thread-safe.
   // * As this is called inside a lock, this must not call anything that takes
   //   "non-terminal" locks, i.e., those which are always safe to take.
-  virtual void Awake(MojoResult result, uintptr_t context) = 0;
+  // This should return false if this must not be called again for the same
+  // reason (e.g., for the same call to |AwakableList::Add()|).
+  virtual bool Awake(MojoResult result, uintptr_t context) = 0;
 
  protected:
   Awakable() {}

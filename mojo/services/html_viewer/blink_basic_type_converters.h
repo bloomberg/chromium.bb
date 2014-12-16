@@ -8,7 +8,7 @@
 #include "mojo/public/cpp/bindings/type_converter.h"
 
 #include "mojo/public/cpp/bindings/array.h"
-#include "mojo/services/public/interfaces/geometry/geometry.mojom.h"
+#include "mojo/services/geometry/public/interfaces/geometry.mojom.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 
 namespace blink {

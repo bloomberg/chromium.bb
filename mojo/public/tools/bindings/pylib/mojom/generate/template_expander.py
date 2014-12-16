@@ -26,7 +26,7 @@ def _GetDirAbove(dirname):
 try:
   imp.find_module("jinja2")
 except ImportError:
-  sys.path.append(os.path.join(_GetDirAbove("mojo"), "third_party"))
+  sys.path.append(os.path.join(_GetDirAbove("public"), "public/third_party"))
 import jinja2
 
 

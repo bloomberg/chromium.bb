@@ -25,9 +25,9 @@ STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
     MessageInTransit::kSubtypeChannelAttachAndRunEndpoint;
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
-    MessageInTransit::kSubtypeChannelRemoveMessagePipeEndpoint;
+    MessageInTransit::kSubtypeChannelRemoveEndpoint;
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
-    MessageInTransit::kSubtypeChannelRemoveMessagePipeEndpointAck;
+    MessageInTransit::kSubtypeChannelRemoveEndpointAck;
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
     MessageInTransit::kSubtypeRawChannelPosixExtraPlatformHandles;
 STATIC_CONST_MEMBER_DEFINITION const size_t MessageInTransit::kMessageAlignment;

@@ -10,7 +10,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/services/html_viewer/blink_url_request_type_converters.h"
-#include "mojo/services/public/interfaces/network/network_service.mojom.h"
+#include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLLoadTiming.h"

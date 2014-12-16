@@ -30,7 +30,7 @@
     },
     # TODO(vtl): Reorganize the mojo_public_*_unittests.
     {
-      # GN version: //mojo/public/cpp/bindings/tests:mojo_public_bindings_unittests
+      # GN version: //mojo/edk/test:mojo_public_bindings_unittests
       'target_name': 'mojo_public_bindings_unittests',
       'type': 'executable',
       'dependencies': [
@@ -64,7 +64,7 @@
       ],
     },
     {
-      # GN version: //mojo/public/cpp/environment/tests:mojo_public_environment_unittests
+      # GN version: //mojo/edk/test:mojo_public_environment_unittests
       'target_name': 'mojo_public_environment_unittests',
       'type': 'executable',
       'dependencies': [
@@ -83,7 +83,7 @@
       ],
     },
     {
-      # GN version: //mojo/public/cpp/application/tests:mojo_public_application_unittests
+      # GN version: //mojo/edk/test:mojo_public_application_unittests
       'target_name': 'mojo_public_application_unittests',
       'type': 'executable',
       'dependencies': [
@@ -140,7 +140,7 @@
       ],
     },
     {
-      # GN version: //mojo/public/c/system/tests:perftests
+      # GN version: //mojo/edk/test:mojo_public_system_perftests
       'target_name': 'mojo_public_system_perftests',
       'type': 'executable',
       'dependencies': [

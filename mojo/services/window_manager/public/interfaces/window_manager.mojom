@@ -1,0 +1,27 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo;
+
+import "mojo/public/interfaces/application/service_provider.mojom";
+import "mojo/services/input_events/public/interfaces/input_events.mojom";
+
+[Client=WindowManagerClient]
+interface WindowManager {
+  // Requests the WindowManager to embed the app for |url| at an appropriate
+  // View. See ViewMangerService::Embed() for details on |service_provider|.
+  Embed(string url, ServiceProvider&? service_provider);
+
+  SetCapture(uint32 view_id) => (bool success);
+  FocusWindow(uint32 view_id) => (bool success);
+  ActivateWindow(uint32 view_id) => (bool success);
+
+  GetFocusedAndActiveViews() => (uint32 focused_view_id, uint32 active_view_id);
+};
+
+interface WindowManagerClient {
+  OnCaptureChanged(uint32 old_capture_view_id, uint32 new_capture_view_id);
+  OnFocusChanged(uint32 old_focused_view_id, uint32 new_focused_view_id);
+  OnActiveWindowChanged(uint32 old_focused_view_id, uint32 new_focused_view_id);
+};

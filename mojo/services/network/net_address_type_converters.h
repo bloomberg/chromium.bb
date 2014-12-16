@@ -6,7 +6,7 @@
 #define MOJO_SERVICES_NETWORK_NET_ADDRESS_TYPE_CONVERTERS_H_
 
 #include "mojo/public/cpp/bindings/type_converter.h"
-#include "mojo/services/public/interfaces/network/net_address.mojom.h"
+#include "mojo/services/network/public/interfaces/net_address.mojom.h"
 #include "net/base/ip_endpoint.h"
 
 namespace mojo {

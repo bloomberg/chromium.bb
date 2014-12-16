@@ -13,8 +13,11 @@
 namespace mojo {
 namespace system {
 
-LocalMessagePipeEndpoint::LocalMessagePipeEndpoint()
+LocalMessagePipeEndpoint::LocalMessagePipeEndpoint(
+    MessageInTransitQueue* message_queue)
     : is_open_(true), is_peer_open_(true) {
+  if (message_queue)
+    message_queue_.Swap(message_queue);
 }
 
 LocalMessagePipeEndpoint::~LocalMessagePipeEndpoint() {

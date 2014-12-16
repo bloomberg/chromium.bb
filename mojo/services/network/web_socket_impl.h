@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/interface_impl.h"
-#include "mojo/services/public/interfaces/network/web_socket.mojom.h"
+#include "mojo/services/network/public/interfaces/web_socket.mojom.h"
 
 namespace net {
 class WebSocketChannel;

@@ -352,3 +352,37 @@ class StructBody(NodeListBase):
   """Represents the body of (i.e., list of definitions inside) a struct."""
 
   _list_item_type = (Const, Enum, StructField)
+
+
+class Union(Definition):
+  """Represents a union definition."""
+
+  def __init__(self, name, body, **kwargs):
+    assert isinstance(body, UnionBody)
+    super(Union, self).__init__(name, **kwargs)
+    self.body = body
+
+  def __eq__(self, other):
+    return super(Union, self).__eq__(other) and \
+           self.body == other.body
+
+
+class UnionField(Definition):
+
+  def __init__(self, name, ordinal, typename, **kwargs):
+    assert isinstance(name, str)
+    assert ordinal is None or isinstance(ordinal, Ordinal)
+    assert isinstance(typename, str)
+    super(UnionField, self).__init__(name, **kwargs)
+    self.ordinal = ordinal
+    self.typename = typename
+
+  def __eq__(self, other):
+    return super(UnionField, self).__eq__(other) and \
+           self.ordinal == other.ordinal and \
+           self.typename == other.typename
+
+
+class UnionBody(NodeListBase):
+
+  _list_item_type = UnionField

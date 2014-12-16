@@ -284,6 +284,75 @@ TEST(AwakableListTest, MultipleAwakables) {
   EXPECT_EQ(10u, context4);
 }
 
+class KeepAwakable : public Awakable {
+ public:
+  KeepAwakable() : awake_count(0) {}
+
+  bool Awake(MojoResult result, uintptr_t context) override {
+    awake_count++;
+    return true;
+  }
+
+  int awake_count;
+
+  DISALLOW_COPY_AND_ASSIGN(KeepAwakable);
+};
+
+class RemoveAwakable : public Awakable {
+ public:
+  RemoveAwakable() : awake_count(0) {}
+
+  bool Awake(MojoResult result, uintptr_t context) override {
+    awake_count++;
+    return false;
+  }
+
+  int awake_count;
+
+  DISALLOW_COPY_AND_ASSIGN(RemoveAwakable);
+};
+
+TEST(AwakableListTest, KeepAwakablesReturningTrue) {
+  KeepAwakable keep0;
+  KeepAwakable keep1;
+  RemoveAwakable remove0;
+  RemoveAwakable remove1;
+  RemoveAwakable remove2;
+
+  HandleSignalsState hss(MOJO_HANDLE_SIGNAL_WRITABLE,
+                         MOJO_HANDLE_SIGNAL_WRITABLE);
+
+  AwakableList remove_all;
+  remove_all.Add(&remove0, MOJO_HANDLE_SIGNAL_WRITABLE, 0);
+  remove_all.Add(&remove1, MOJO_HANDLE_SIGNAL_WRITABLE, 0);
+
+  remove_all.AwakeForStateChange(hss);
+  EXPECT_EQ(remove0.awake_count, 1);
+  EXPECT_EQ(remove1.awake_count, 1);
+
+  remove_all.AwakeForStateChange(hss);
+  EXPECT_EQ(remove0.awake_count, 1);
+  EXPECT_EQ(remove1.awake_count, 1);
+
+  AwakableList remove_first;
+  remove_first.Add(&remove2, MOJO_HANDLE_SIGNAL_WRITABLE, 0);
+  remove_first.Add(&keep0, MOJO_HANDLE_SIGNAL_WRITABLE, 0);
+  remove_first.Add(&keep1, MOJO_HANDLE_SIGNAL_WRITABLE, 0);
+
+  remove_first.AwakeForStateChange(hss);
+  EXPECT_EQ(keep0.awake_count, 1);
+  EXPECT_EQ(keep1.awake_count, 1);
+  EXPECT_EQ(remove2.awake_count, 1);
+
+  remove_first.AwakeForStateChange(hss);
+  EXPECT_EQ(keep0.awake_count, 2);
+  EXPECT_EQ(keep1.awake_count, 2);
+  EXPECT_EQ(remove2.awake_count, 1);
+
+  remove_first.Remove(&keep0);
+  remove_first.Remove(&keep1);
+}
+
 }  // namespace
 }  // namespace system
 }  // namespace mojo

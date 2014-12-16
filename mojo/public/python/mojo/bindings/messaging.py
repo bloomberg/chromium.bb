@@ -398,7 +398,7 @@ def _ReadAndDispatchMessage(handle, message_receiver):
     message_receiver.Accept(Message(bytearray(), []))
   if result != system.RESULT_RESOURCE_EXHAUSTED:
     return result
-  (result, data, _) = handle.ReadMessage(bytearray(sizes[0]))
+  (result, data, _) = handle.ReadMessage(bytearray(sizes[0]), sizes[1])
   if result == system.RESULT_OK and message_receiver:
     message_receiver.Accept(Message(data[0], data[1]))
   return result

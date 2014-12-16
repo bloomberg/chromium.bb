@@ -155,8 +155,8 @@ define([
     serviceImpl.accept(message);
   };
 
-  var receiver = new SimpleMessageReceiver();
-  var serviceProxy = new sample.Service.proxyClass(receiver);
+  var serviceProxy = new sample.Service.proxyClass;
+  serviceProxy.receiver_ = new SimpleMessageReceiver;
 
   checkDefaultValues();
 

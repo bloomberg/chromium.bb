@@ -9,7 +9,7 @@
 #include "cc/output/output_surface.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_id_allocator.h"
-#include "mojo/services/public/interfaces/surfaces/surfaces.mojom.h"
+#include "mojo/services/surfaces/public/interfaces/surfaces.mojom.h"
 
 namespace mojo {
 

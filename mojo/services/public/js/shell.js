@@ -3,13 +3,17 @@
 // found in the LICENSE file.
 
 define("mojo/services/public/js/shell", [
+  "mojo/public/js/core",
+  "mojo/public/interfaces/application/shell.mojom",
   "mojo/public/interfaces/application/service_provider.mojom",
   "mojo/services/public/js/service_provider",
-], function(spInterfaceModule, spModule) {
+], function(coreModule, shellInterfaceModule, spInterfaceModule, spModule) {
 
   class Shell {
-    constructor(appShell) {
-      this.appShell_ = appShell;
+    constructor(shellHandle, app) {
+      this.shellHandle = shellHandle;
+      this.proxy = new shellInterfaceModule.Shell.proxyClass(shellHandle);
+      this.proxy.client$ = app;
       this.applications_ = new Map();
     }
 
@@ -18,9 +22,9 @@ define("mojo/services/public/js/shell", [
       if (application)
         return application;
 
-      var proxy = new spInterfaceModule.ServiceProvider.proxyClass;
-      this.appShell_.connectToApplication(url, proxy);
-      application = new spModule.ServiceProvider(proxy);
+      var spProxy = new spInterfaceModule.ServiceProvider.proxyClass;
+      this.proxy.connectToApplication(url, spProxy);
+      application = new spModule.ServiceProvider(spProxy);
       this.applications_.set(url, application);
       return application;
     }
@@ -34,6 +38,7 @@ define("mojo/services/public/js/shell", [
         application.close();
       });
       this.applications_.clear();
+      coreModule.close(this.shellHandle);
     }
   }
 

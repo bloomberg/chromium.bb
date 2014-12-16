@@ -5,7 +5,7 @@
 #ifndef MOJO_SERVICES_NETWORK_COOKIE_STORE_IMPL_H_
 #define MOJO_SERVICES_NETWORK_COOKIE_STORE_IMPL_H_
 
-#include "mojo/services/public/interfaces/network/cookie_store.mojom.h"
+#include "mojo/services/network/public/interfaces/cookie_store.mojom.h"
 #include "url/gurl.h"
 
 namespace mojo {

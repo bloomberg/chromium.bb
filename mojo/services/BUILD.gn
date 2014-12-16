@@ -6,15 +6,15 @@ import("//build/config/ui.gni")
 
 group("services") {
   deps = [
-    "//mojo/services/public/interfaces/clipboard",
-    "//mojo/services/public/interfaces/content_handler",
-    "//mojo/services/public/interfaces/geometry",
-    "//mojo/services/public/interfaces/input_events",
-    "//mojo/services/public/interfaces/native_viewport",
-    "//mojo/services/public/interfaces/navigation",
-    "//mojo/services/public/interfaces/network",
-    "//mojo/services/public/interfaces/surfaces",
-    "//mojo/services/public/interfaces/view_manager",
+    "//mojo/services/clipboard/public/interfaces",
+    "//mojo/services/content_handler/public/interfaces",
+    "//mojo/services/geometry/public/interfaces",
+    "//mojo/services/input_events/public/interfaces",
+    "//mojo/services/native_viewport/public/interfaces",
+    "//mojo/services/navigation/public/interfaces",
+    "//mojo/services/network/public/interfaces",
+    "//mojo/services/surfaces/public/interfaces",
+    "//mojo/services/view_manager/public/interfaces",
   ]
 
   if (!is_component_build) {

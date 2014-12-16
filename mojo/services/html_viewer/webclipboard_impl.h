@@ -5,7 +5,7 @@
 #ifndef MOJO_SERVICES_HTML_VIEWER_WEBCLIPBOARD_IMPL_H_
 #define MOJO_SERVICES_HTML_VIEWER_WEBCLIPBOARD_IMPL_H_
 
-#include "mojo/services/public/interfaces/clipboard/clipboard.mojom.h"
+#include "mojo/services/clipboard/public/interfaces/clipboard.mojom.h"
 #include "third_party/WebKit/public/platform/WebClipboard.h"
 
 namespace mojo {

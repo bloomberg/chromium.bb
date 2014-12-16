@@ -234,14 +234,14 @@ def GetNameForKind(context, kind):
   elements += _GetNameHierachy(kind)
   return '.'.join(elements)
 
-def GetBoxedJavaType(context, kind):
-  unboxed_type = GetJavaType(context, kind, False)
+def GetBoxedJavaType(context, kind, with_generics=True):
+  unboxed_type = GetJavaType(context, kind, False, with_generics)
   if unboxed_type in _java_primitive_to_boxed_type:
     return _java_primitive_to_boxed_type[unboxed_type]
   return unboxed_type
 
 @contextfilter
-def GetJavaType(context, kind, boxed=False):
+def GetJavaType(context, kind, boxed=False, with_generics=True):
   if boxed:
     return GetBoxedJavaType(context, kind)
   if mojom.IsStructKind(kind) or mojom.IsInterfaceKind(kind):
@@ -250,11 +250,14 @@ def GetJavaType(context, kind, boxed=False):
     return ('org.chromium.mojo.bindings.InterfaceRequest<%s>' %
             GetNameForKind(context, kind.kind))
   if mojom.IsMapKind(kind):
-    return 'java.util.Map<%s, %s>' % (
-        GetBoxedJavaType(context, kind.key_kind),
-        GetBoxedJavaType(context, kind.value_kind))
+    if with_generics:
+      return 'java.util.Map<%s, %s>' % (
+          GetBoxedJavaType(context, kind.key_kind),
+          GetBoxedJavaType(context, kind.value_kind))
+    else:
+      return 'java.util.Map'
   if mojom.IsArrayKind(kind):
-    return '%s[]' % GetJavaType(context, kind.kind)
+    return '%s[]' % GetJavaType(context, kind.kind, boxed, with_generics)
   if mojom.IsEnumKind(kind):
     return 'int'
   return _spec_to_java_type[kind.spec]
@@ -279,7 +282,8 @@ def ConstantValue(context, constant):
 def NewArray(context, kind, size):
   if mojom.IsArrayKind(kind.kind):
     return NewArray(context, kind.kind, size) + '[]'
-  return 'new %s[%s]' % (GetJavaType(context, kind.kind), size)
+  return 'new %s[%s]' % (
+      GetJavaType(context, kind.kind, boxed=False, with_generics=False), size)
 
 @contextfilter
 def ExpressionToText(context, token, kind_spec=''):

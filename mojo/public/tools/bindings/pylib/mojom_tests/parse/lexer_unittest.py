@@ -20,7 +20,7 @@ def _GetDirAbove(dirname):
 try:
   imp.find_module("ply")
 except ImportError:
-  sys.path.append(os.path.join(_GetDirAbove("mojo"), "third_party"))
+  sys.path.append(os.path.join(_GetDirAbove("public"), "public/third_party"))
 from ply import lex
 
 try:
@@ -70,6 +70,8 @@ class LexerTest(unittest.TestCase):
                       _MakeLexTokenForKeyword("module"))
     self.assertEquals(self._SingleTokenForInput("struct"),
                       _MakeLexTokenForKeyword("struct"))
+    self.assertEquals(self._SingleTokenForInput("union"),
+                      _MakeLexTokenForKeyword("union"))
     self.assertEquals(self._SingleTokenForInput("interface"),
                       _MakeLexTokenForKeyword("interface"))
     self.assertEquals(self._SingleTokenForInput("enum"),

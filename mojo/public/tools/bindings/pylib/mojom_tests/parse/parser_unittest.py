@@ -1153,5 +1153,178 @@ class ParserTest(unittest.TestCase):
             r" *some_interface\?& a;$"):
       parser.Parse(source3, "my_file.mojom")
 
+  def testSimpleUnion(self):
+    """Tests a simple .mojom source that just defines a union."""
+    source = """\
+        module my_module;
+
+        union MyUnion {
+          int32 a;
+          double b;
+        };
+        """
+    expected = ast.Mojom(
+        ast.Module(('IDENTIFIER', 'my_module'), None),
+        ast.ImportList(),
+        [ast.Union(
+          'MyUnion',
+          ast.UnionBody([
+            ast.UnionField('a', None, 'int32'),
+            ast.UnionField('b', None, 'double')
+            ]))])
+    actual = parser.Parse(source, "my_file.mojom")
+    self.assertEquals(actual, expected)
+
+  def testUnionWithOrdinals(self):
+    """Test that ordinals are assigned to fields."""
+    source = """\
+        module my_module;
+
+        union MyUnion {
+          int32 a @10;
+          double b @30;
+        };
+        """
+    expected = ast.Mojom(
+        ast.Module(('IDENTIFIER', 'my_module'), None),
+        ast.ImportList(),
+        [ast.Union(
+          'MyUnion',
+          ast.UnionBody([
+            ast.UnionField('a', ast.Ordinal(10), 'int32'),
+            ast.UnionField('b', ast.Ordinal(30), 'double')
+            ]))])
+    actual = parser.Parse(source, "my_file.mojom")
+    self.assertEquals(actual, expected)
+
+  def testUnionWithStructMembers(self):
+    """Test that struct members are accepted."""
+    source = """\
+        module my_module;
+
+        union MyUnion {
+          SomeStruct s;
+        };
+        """
+    expected = ast.Mojom(
+        ast.Module(('IDENTIFIER', 'my_module'), None),
+        ast.ImportList(),
+        [ast.Union(
+          'MyUnion',
+          ast.UnionBody([
+            ast.UnionField('s', None, 'SomeStruct')
+            ]))])
+    actual = parser.Parse(source, "my_file.mojom")
+    self.assertEquals(actual, expected)
+
+  def testUnionWithArrayMember(self):
+    """Test that array members are accepted."""
+    source = """\
+        module my_module;
+
+        union MyUnion {
+          array<int32> a;
+        };
+        """
+    expected = ast.Mojom(
+        ast.Module(('IDENTIFIER', 'my_module'), None),
+        ast.ImportList(),
+        [ast.Union(
+          'MyUnion',
+          ast.UnionBody([
+            ast.UnionField('a', None, 'int32[]')
+            ]))])
+    actual = parser.Parse(source, "my_file.mojom")
+    self.assertEquals(actual, expected)
+
+  def testUnionWithMapMember(self):
+    """Test that map members are accepted."""
+    source = """\
+        module my_module;
+
+        union MyUnion {
+          map<int32, string> m;
+        };
+        """
+    expected = ast.Mojom(
+        ast.Module(('IDENTIFIER', 'my_module'), None),
+        ast.ImportList(),
+        [ast.Union(
+          'MyUnion',
+          ast.UnionBody([
+            ast.UnionField('m', None, 'string{int32}')
+            ]))])
+    actual = parser.Parse(source, "my_file.mojom")
+    self.assertEquals(actual, expected)
+
+  def testUnionDisallowNestedStruct(self):
+    """Tests that structs cannot be nested in unions."""
+    source = """\
+        module my_module;
+
+        union MyUnion {
+          struct MyStruct {
+            int32 a;
+          };
+        };
+        """
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:4: Error: Unexpected 'struct':\n"
+        r" *struct MyStruct {$"):
+      parser.Parse(source, "my_file.mojom")
+
+  def testUnionDisallowNestedInterfaces(self):
+    """Tests that interfaces cannot be nested in unions."""
+    source = """\
+        module my_module;
+
+        union MyUnion {
+          interface MyInterface {
+            MyMethod(int32 a);
+          };
+        };
+        """
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:4: Error: Unexpected 'interface':\n"
+        r" *interface MyInterface {$"):
+      parser.Parse(source, "my_file.mojom")
+
+  def testUnionDisallowNestedUnion(self):
+    """Tests that unions cannot be nested in unions."""
+    source = """\
+        module my_module;
+
+        union MyUnion {
+          union MyOtherUnion {
+            int32 a;
+          };
+        };
+        """
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:4: Error: Unexpected 'union':\n"
+        r" *union MyOtherUnion {$"):
+      parser.Parse(source, "my_file.mojom")
+
+  def testUnionDisallowNestedEnum(self):
+    """Tests that enums cannot be nested in unions."""
+    source = """\
+        module my_module;
+
+        union MyUnion {
+          enum MyEnum {
+            A,
+          };
+        };
+        """
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:4: Error: Unexpected 'enum':\n"
+        r" *enum MyEnum {$"):
+      parser.Parse(source, "my_file.mojom")
+
+
 if __name__ == "__main__":
   unittest.main()

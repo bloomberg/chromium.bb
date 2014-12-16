@@ -44,7 +44,7 @@ system::ChannelId MakeChannel(
     return 0;
   }
 
-  channel->AttachAndRunEndpoint(channel_endpoint, true);
+  channel->SetBootstrapEndpoint(channel_endpoint);
 
   DCHECK(internal::g_channel_manager);
   return internal::g_channel_manager->AddChannel(

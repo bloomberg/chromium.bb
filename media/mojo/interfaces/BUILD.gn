@@ -12,6 +12,6 @@ mojom("interfaces") {
   ]
 
   deps = [
-    "//mojo/services/public/interfaces/geometry",
+    "//mojo/services/geometry/public/interfaces",
   ]
 }

@@ -6,7 +6,7 @@
 #define MOJO_SERVICES_HTML_VIEWER_AX_PROVIDER_IMPL_H_
 
 #include "mojo/public/cpp/bindings/interface_impl.h"
-#include "mojo/services/public/interfaces/accessibility/accessibility.mojom.h"
+#include "mojo/services/accessibility/public/interfaces/accessibility.mojom.h"
 
 namespace blink {
 class WebAXObject;

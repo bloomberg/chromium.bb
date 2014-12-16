@@ -2,8 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: mojo/mojo_base.gyp:mojo_public_bindings_unittests
-test("mojo_public_bindings_unittests") {
+import("../../../mojo_sdk.gni")
+
+mojo_sdk_source_set("tests") {
+  testonly = true
+
   sources = [
     "array_unittest.cc",
     "bounds_checker_unittest.cc",
@@ -25,25 +28,25 @@ test("mojo_public_bindings_unittests") {
   ]
 
   deps = [
-    "//mojo/edk/test:run_all_unittests",
-    "//mojo/public/cpp/bindings",
-    "//mojo/public/cpp/environment:standalone",
-    "//mojo/public/cpp/system",
-    "//mojo/public/cpp/test_support:test_utils",
-    "//mojo/public/cpp/utility",
-    "//mojo/public/interfaces/bindings/tests:test_interfaces",
-    "//testing/gtest",
     ":mojo_public_bindings_test_utils",
+    "//testing/gtest",
+  ]
+
+  mojo_sdk_deps = [
+    "mojo/public/cpp/bindings",
+    "mojo/public/cpp/environment:standalone",
+    "mojo/public/cpp/system",
+    "mojo/public/cpp/test_support:test_utils",
+    "mojo/public/cpp/utility",
+    "mojo/public/interfaces/bindings/tests:test_interfaces",
   ]
 }
 
-source_set("mojo_public_bindings_test_utils") {
+mojo_sdk_source_set("mojo_public_bindings_test_utils") {
   sources = [
     "validation_test_input_parser.cc",
     "validation_test_input_parser.h",
   ]
 
-  deps = [
-    "//mojo/public/c/system",
-  ]
+  mojo_sdk_deps = [ "mojo/public/c/system" ]
 }

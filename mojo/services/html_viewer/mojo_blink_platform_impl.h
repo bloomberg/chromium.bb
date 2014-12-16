@@ -7,7 +7,7 @@
 
 #include "mojo/services/html_viewer/blink_platform_impl.h"
 
-#include "mojo/services/public/interfaces/network/network_service.mojom.h"
+#include "mojo/services/network/public/interfaces/network_service.mojom.h"
 
 namespace mojo {
 

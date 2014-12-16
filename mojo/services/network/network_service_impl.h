@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "mojo/public/cpp/bindings/interface_impl.h"
-#include "mojo/services/public/interfaces/network/network_service.mojom.h"
+#include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "url/gurl.h"
 
 namespace mojo {

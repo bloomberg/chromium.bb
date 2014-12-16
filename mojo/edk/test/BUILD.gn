@@ -21,16 +21,14 @@ mojo_edk_source_set("test_support") {
     "//testing/gtest",
   ]
 
-  mojo_edk_deps = [
-    "mojo/edk/system",
-  ]
+  mojo_edk_deps = [ "mojo/edk/system" ]
 }
 
 # GYP version: mojo/edk/mojo_edk.gyp:mojo_run_all_unittests
 mojo_edk_source_set("run_all_unittests") {
   testonly = true
   sources = [
-    "run_all_unittests.cc"
+    "run_all_unittests.cc",
   ]
 
   deps = [
@@ -40,13 +38,9 @@ mojo_edk_source_set("run_all_unittests") {
     "//testing/gtest",
   ]
 
-  mojo_edk_deps = [
-    "mojo/edk/system",
-  ]
-  
-  mojo_sdk_deps = [
-    "mojo/public/c/test_support",
-  ]
+  mojo_edk_deps = [ "mojo/edk/system" ]
+
+  mojo_sdk_deps = [ "mojo/public/c/test_support" ]
 }
 
 # GYP version: mojo/edk/mojo_edk.gyp:mojo_run_all_perftests
@@ -58,13 +52,9 @@ mojo_edk_source_set("run_all_perftests") {
     "//base/test:test_support",
   ]
 
-  mojo_edk_deps = [
-    "mojo/edk/system",
-  ]
+  mojo_edk_deps = [ "mojo/edk/system" ]
 
-  mojo_sdk_deps = [
-    "mojo/public/c/test_support",
-  ]
+  mojo_sdk_deps = [ "mojo/public/c/test_support" ]
 
   sources = [
     "run_all_perftests.cc",
@@ -79,12 +69,45 @@ mojo_edk_source_set("test_support_impl") {
     "//base/test:test_support",
   ]
 
-  mojo_sdk_deps = [
-    "mojo/public/c/test_support",
-  ]
+  mojo_sdk_deps = [ "mojo/public/c/test_support" ]
 
   sources = [
     "test_support_impl.cc",
     "test_support_impl.h",
+  ]
+}
+
+# Public SDK test targets follow. These targets are not defined within the
+# public SDK itself as running the unittests requires the EDK.
+
+# GYP version: mojo/mojo_base.gyp:mojo_public_application_unittests
+test("mojo_public_application_unittests") {
+  deps = [
+    ":run_all_unittests",
+    "../../public/cpp/application/tests",
+  ]
+}
+
+# GYP version: mojo/mojo_base.gyp:mojo_public_bindings_unittests
+test("mojo_public_bindings_unittests") {
+  deps = [
+    ":run_all_unittests",
+    "../../public/cpp/bindings/tests",
+  ]
+}
+
+# GYP version: mojo/mojo_base.gyp:mojo_public_environment_unittests
+test("mojo_public_environment_unittests") {
+  deps = [
+    ":run_all_unittests",
+    "../../public/cpp/environment/tests",
+  ]
+}
+
+# GYP version: mojo/mojo_base.gyp:mojo_public_system_perftests
+test("mojo_public_system_perftests") {
+  deps = [
+    ":run_all_perftests",
+    "../../public/c/system/tests:perftests",
   ]
 }

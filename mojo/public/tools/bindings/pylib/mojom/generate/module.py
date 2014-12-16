@@ -204,6 +204,29 @@ class Struct(ReferenceKind):
     return field
 
 
+class Union(ReferenceKind):
+  ReferenceKind.AddSharedProperty('name')
+  ReferenceKind.AddSharedProperty('module')
+  ReferenceKind.AddSharedProperty('imported_from')
+  ReferenceKind.AddSharedProperty('fields')
+
+  def __init__(self, name=None, module=None):
+    if name is not None:
+      spec = 'x:' + name
+    else:
+      spec = None
+    ReferenceKind.__init__(self, spec)
+    self.name = name
+    self.module = module
+    self.imported_from = None
+    self.fields = []
+
+  def AddField(self, name, kind, ordinal=None):
+    field = Field(name, kind, ordinal, default=None)
+    self.fields.append(field)
+    return field
+
+
 class Array(ReferenceKind):
   ReferenceKind.AddSharedProperty('kind')
   ReferenceKind.AddSharedProperty('length')
@@ -339,7 +362,9 @@ class Module(object):
     self.path = name
     self.namespace = namespace
     self.structs = []
+    self.unions = []
     self.interfaces = []
+    self.kinds = {}
 
   def AddInterface(self, name):
     interface = Interface(name, module=self)
@@ -347,9 +372,14 @@ class Module(object):
     return interface
 
   def AddStruct(self, name):
-    struct=Struct(name, module=self)
+    struct = Struct(name, module=self)
     self.structs.append(struct)
     return struct
+
+  def AddUnion(self, name):
+    union = Union(name, module=self)
+    self.unions.append(union)
+    return union
 
 
 def IsBoolKind(kind):

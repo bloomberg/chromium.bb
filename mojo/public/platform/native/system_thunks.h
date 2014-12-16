@@ -45,6 +45,16 @@ struct MojoSystemThunks {
                          const MojoHandleSignals* signals,
                          uint32_t num_handles,
                          MojoDeadline deadline);
+  MojoResult (*NewWait)(MojoHandle handle,
+                        MojoHandleSignals signals,
+                        MojoDeadline deadline,
+                        struct MojoHandleSignalsState* signals_state);
+  MojoResult (*NewWaitMany)(const MojoHandle* handles,
+                            const MojoHandleSignals* signals,
+                            uint32_t num_handles,
+                            MojoDeadline deadline,
+                            uint32_t* result_index,
+                            struct MojoHandleSignalsState* signals_states);
   MojoResult (*CreateMessagePipe)(
       const struct MojoCreateMessagePipeOptions* options,
       MojoHandle* message_pipe_handle0,
@@ -106,27 +116,27 @@ struct MojoSystemThunks {
 // Intended to be called from the embedder. Returns a |MojoCore| initialized
 // to contain pointers to each of the embedder's MojoCore functions.
 inline MojoSystemThunks MojoMakeSystemThunks() {
-  MojoSystemThunks system_thunks = {
-    sizeof(MojoSystemThunks),
-    MojoGetTimeTicksNow,
-    MojoClose,
-    MojoWait,
-    MojoWaitMany,
-    MojoCreateMessagePipe,
-    MojoWriteMessage,
-    MojoReadMessage,
-    MojoCreateDataPipe,
-    MojoWriteData,
-    MojoBeginWriteData,
-    MojoEndWriteData,
-    MojoReadData,
-    MojoBeginReadData,
-    MojoEndReadData,
-    MojoCreateSharedBuffer,
-    MojoDuplicateBufferHandle,
-    MojoMapBuffer,
-    MojoUnmapBuffer
-  };
+  MojoSystemThunks system_thunks = {sizeof(MojoSystemThunks),
+                                    MojoGetTimeTicksNow,
+                                    MojoClose,
+                                    MojoWait,
+                                    MojoWaitMany,
+                                    MojoNewWait,
+                                    MojoNewWaitMany,
+                                    MojoCreateMessagePipe,
+                                    MojoWriteMessage,
+                                    MojoReadMessage,
+                                    MojoCreateDataPipe,
+                                    MojoWriteData,
+                                    MojoBeginWriteData,
+                                    MojoEndWriteData,
+                                    MojoReadData,
+                                    MojoBeginReadData,
+                                    MojoEndReadData,
+                                    MojoCreateSharedBuffer,
+                                    MojoDuplicateBufferHandle,
+                                    MojoMapBuffer,
+                                    MojoUnmapBuffer};
   return system_thunks;
 }
 #endif

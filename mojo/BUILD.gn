@@ -28,9 +28,9 @@ group("tests") {
     "//mojo/edk/system:mojo_message_pipe_perftests",
     "//mojo/edk/system:mojo_system_unittests",
     "//mojo/public/c/system/tests:perftests",
-    "//mojo/public/cpp/application/tests:mojo_public_application_unittests",
-    "//mojo/public/cpp/bindings/tests:mojo_public_bindings_unittests",
-    "//mojo/public/cpp/environment/tests:mojo_public_environment_unittests",
+    "//mojo/public/cpp/application/tests",
+    "//mojo/public/cpp/bindings/tests",
+    "//mojo/public/cpp/environment/tests",
     "//mojo/public/cpp/system/tests:mojo_public_system_unittests",
     "//mojo/public/cpp/utility/tests:mojo_public_utility_unittests",
   ]

@@ -103,6 +103,18 @@ class _MojomBuilder(object):
               'constants': _MapTreeForType(_ConstToDict, struct.body,
                                            ast.Const)}
 
+    def UnionToDict(union):
+      def UnionFieldToDict(union_field):
+        assert isinstance(union_field, ast.UnionField)
+        return {'name': union_field.name,
+                'kind': _MapKind(union_field.typename),
+                'ordinal': union_field.ordinal.value \
+                    if union_field.ordinal else None}
+      assert isinstance(union, ast.Union)
+      return {'name': union.name,
+              'fields': _MapTreeForType(UnionFieldToDict, union.body,
+                                        ast.UnionField)}
+
     def InterfaceToDict(interface):
       def MethodToDict(method):
         def ParameterToDict(param):
@@ -140,6 +152,8 @@ class _MojomBuilder(object):
         _AttributeListToDict(tree.module.attribute_list) if tree.module else {}
     self.mojom['structs'] = \
         _MapTreeForType(StructToDict, tree.definition_list, ast.Struct)
+    self.mojom['union'] = \
+        _MapTreeForType(UnionToDict, tree.definition_list, ast.Union)
     self.mojom['interfaces'] = \
         _MapTreeForType(InterfaceToDict, tree.definition_list, ast.Interface)
     self.mojom['enums'] = \

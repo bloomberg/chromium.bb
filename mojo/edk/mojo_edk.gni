@@ -19,7 +19,7 @@ import("../public/mojo_sdk.gni")
 template("mojo_edk_source_set") {
   mojo_sdk_source_set(target_name) {
     restrict_external_deps = false
-    
+
     if (defined(invoker.visibility)) {
       visibility = invoker.visibility
     }
@@ -61,9 +61,8 @@ template("mojo_edk_source_set") {
         # Check that the EDK target was not mistakenly given as an absolute
         # path.
         assert(get_path_info(edk_target, "abspath") != edk_target)
-        allow_circular_includes_from += [
-          rebase_path(edk_target, ".", mojo_root)
-        ]
+        allow_circular_includes_from +=
+            [ rebase_path(edk_target, ".", mojo_root) ]
       }
     }
 

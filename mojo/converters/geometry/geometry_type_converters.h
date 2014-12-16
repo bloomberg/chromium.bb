@@ -6,7 +6,7 @@
 #define MOJO_CONVERTERS_GEOMETRY_GEOMETRY_TYPE_CONVERTERS_H_
 
 #include "mojo/converters/geometry/mojo_geometry_export.h"
-#include "mojo/services/public/interfaces/geometry/geometry.mojom.h"
+#include "mojo/services/geometry/public/interfaces/geometry.mojom.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"

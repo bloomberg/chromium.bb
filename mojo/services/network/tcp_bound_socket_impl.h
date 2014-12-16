@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/interface_impl.h"
-#include "mojo/services/public/interfaces/network/tcp_bound_socket.mojom.h"
+#include "mojo/services/network/public/interfaces/tcp_bound_socket.mojom.h"
 #include "net/socket/tcp_socket.h"
 
 namespace mojo {

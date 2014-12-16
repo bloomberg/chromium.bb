@@ -3,7 +3,7 @@
 {%- endfor %}
 
   function {{interface.name}}Proxy(receiver) {
-    this.receiver_ = receiver;
+    connection.initProxyInstance(this, {{interface.name}}, receiver);
   }
 
   {{interface.name}}Proxy.prototype.getConnection$ = function() {

@@ -82,17 +82,18 @@ MojoResult Waiter::Wait(MojoDeadline deadline, uint32_t* context) {
   return awake_result_;
 }
 
-void Waiter::Awake(MojoResult result, uintptr_t context) {
+bool Waiter::Awake(MojoResult result, uintptr_t context) {
   base::AutoLock locker(lock_);
 
   if (awoken_)
-    return;
+    return true;
 
   awoken_ = true;
   awake_result_ = result;
   awake_context_ = context;
   cv_.Signal();
   // |cv_.Wait()|/|cv_.TimedWait()| will return after |lock_| is released.
+  return true;
 }
 
 }  // namespace system

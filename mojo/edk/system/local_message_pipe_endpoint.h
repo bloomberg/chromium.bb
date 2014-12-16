@@ -19,7 +19,10 @@ namespace system {
 class MOJO_SYSTEM_IMPL_EXPORT LocalMessagePipeEndpoint
     : public MessagePipeEndpoint {
  public:
-  LocalMessagePipeEndpoint();
+  // If |message_queue| is non-null, its contents will be taken as the queue of
+  // (already-received) messages.
+  explicit LocalMessagePipeEndpoint(
+      MessageInTransitQueue* message_queue = nullptr);
   ~LocalMessagePipeEndpoint() override;
 
   // |MessagePipeEndpoint| implementation:

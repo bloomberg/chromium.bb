@@ -15,11 +15,11 @@
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/connect.h"
 #include "mojo/public/cpp/application/interface_factory_impl.h"
+#include "mojo/services/content_handler/public/interfaces/content_handler.mojom.h"
 #include "mojo/services/html_viewer/html_document.h"
 #include "mojo/services/html_viewer/mojo_blink_platform_impl.h"
 #include "mojo/services/html_viewer/webmediaplayer_factory.h"
-#include "mojo/services/public/interfaces/content_handler/content_handler.mojom.h"
-#include "mojo/services/public/interfaces/network/network_service.mojom.h"
+#include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 
 #if !defined(COMPONENT_BUILD)

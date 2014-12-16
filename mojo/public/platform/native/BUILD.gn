@@ -4,12 +4,7 @@
 
 import("../../mojo_sdk.gni")
 
-mojo_sdk_source_set("system_thunks") {
-  mojo_sdk_visibility = [
-    "mojo/public/c/system:for_component",
-    "mojo/public/c/system:for_shared_library",
-  ]
-
+mojo_sdk_source_set("system") {
   sources = [
     "system_thunks.h",
     "system_thunks.cc",
@@ -27,9 +22,7 @@ mojo_sdk_source_set("system_thunks") {
   # source_set here, this flag change is not needed.
 }
 
-mojo_sdk_source_set("gles2_thunks") {
-  mojo_sdk_visibility = [ "mojo/public/gles2:for_shared_library" ]
-
+mojo_sdk_source_set("gles2") {
   sources = [
     "gles2_thunks.cc",
     "gles2_thunks.h",

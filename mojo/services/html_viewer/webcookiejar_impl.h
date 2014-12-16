@@ -5,7 +5,7 @@
 #ifndef MOJO_SERVICES_HTML_VIEWER_WEBCOOKIEJAR_IMPL_H_
 #define MOJO_SERVICES_HTML_VIEWER_WEBCOOKIEJAR_IMPL_H_
 
-#include "mojo/services/public/interfaces/network/cookie_store.mojom.h"
+#include "mojo/services/network/public/interfaces/cookie_store.mojom.h"
 #include "third_party/WebKit/public/platform/WebCookieJar.h"
 
 namespace mojo {

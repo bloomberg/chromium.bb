@@ -8,6 +8,9 @@ define("mojo/public/js/connection", [
   "mojo/public/js/router",
 ], function(connector, core, routerModule) {
 
+  // TODO(hansmuller): the proxy connection_ property should connection$
+  // TODO(hansmuller): the proxy receiver_ property should be receiver$
+
   function BaseConnection(localStub, remoteProxy, router) {
     this.router_ = router;
     this.local = localStub;
@@ -88,11 +91,36 @@ define("mojo/public/js/connection", [
     return stub.connection_;
   }
 
+  function initProxyInstance(proxy, proxyInterface, receiver) {
+    if (proxyInterface.client) {
+      Object.defineProperty(proxy, 'client$', {
+        get: function() {
+          var connection = getProxyConnection(proxy, proxyInterface);
+          return connection.local && connection.local.delegate$
+        },
+        set: function(value) {
+          var connection = getProxyConnection(proxy, proxyInterface);
+          if (connection.local)
+            connection.local.delegate$ = value;
+        }
+      });
+    }
+    if (receiver instanceof routerModule.Router) {
+      // TODO(hansmuller): Temporary, for Chrome backwards compatibility.
+      proxy.receiver_ = receiver;
+    } else if (receiver) {
+      var router = new routerModule.Router(receiver);
+      var stub = proxyInterface.client && new proxyInterface.client.stubClass;
+      proxy.connection_  = new BaseConnection(stub, proxy, router);
+      proxy.connection_.messagePipeHandle = receiver;
+    }
+  }
 
   var exports = {};
   exports.Connection = Connection;
   exports.TestConnection = TestConnection;
   exports.getProxyConnection = getProxyConnection;
   exports.getStubConnection = getStubConnection;
+  exports.initProxyInstance = initProxyInstance;
   return exports;
 });

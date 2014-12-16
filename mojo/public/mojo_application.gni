@@ -62,7 +62,7 @@ template("mojo_native_application") {
 
     if (use_prebuilt_mojo_shell) {
       copy_mojo_shell =
-        rebase_path("mojo/public/tools:copy_mojo_shell", ".", mojo_root)
+          rebase_path("mojo/public/tools:copy_mojo_shell", ".", mojo_root)
     }
 
     # Copy the prebuilt mojo_shell if using it.
@@ -73,12 +73,17 @@ template("mojo_native_application") {
       }
     } else {
       if (use_prebuilt_mojo_shell) {
-        datadeps = [ copy_mojo_shell ]
+        datadeps = [
+          copy_mojo_shell,
+        ]
       }
     }
     deps = rebase_path([
-      "mojo/public/c/system:for_shared_library",
-    ], ".", mojo_root)
+                         "mojo/public/c/system",
+                         "mojo/public/platform/native:system",
+                       ],
+                       ".",
+                       mojo_root)
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
@@ -116,9 +121,7 @@ template("mojo_native_application") {
       testonly = invoker.testonly
     }
 
-    visibility = [
-      ":${final_target_name}",
-    ]
+    visibility = [ ":${final_target_name}" ]
   }
 
   copy(final_target_name) {
@@ -131,8 +134,12 @@ template("mojo_native_application") {
     deps = [
       ":${library_target_name}",
     ]
-    sources = [ "${root_out_dir}/${library_name}" ]
-    outputs = [ "${root_out_dir}/${output}" ]
+    sources = [
+      "${root_out_dir}/${library_name}",
+    ]
+    outputs = [
+      "${root_out_dir}/${output}",
+    ]
   }
 }
 
@@ -159,7 +166,9 @@ if (is_android) {
       ]
 
       output = zip_action_output
-      outputs = [ output ]
+      outputs = [
+        output,
+      ]
 
       rebase_inputs = rebase_path(inputs, root_build_dir)
       rebase_output = rebase_path(output, root_build_dir)
@@ -170,19 +179,23 @@ if (is_android) {
     }
 
     if (defined(invoker.output_name)) {
-      mojo_output = "$target_out_dir/" + invoker.output_name + ".mojo"
+      mojo_output = "$root_out_dir/" + invoker.output_name + ".mojo"
     } else {
-      mojo_output = "$target_out_dir/" + target_name + ".mojo"
+      mojo_output = "$root_out_dir/" + target_name + ".mojo"
     }
 
     action(target_name) {
       script = rebase_path("mojo/public/tools/prepend.py", ".", mojo_root)
 
       input = zip_action_output
-      inputs = [ input ]
+      inputs = [
+        input,
+      ]
 
       output = mojo_output
-      outputs = [ output ]
+      outputs = [
+        output,
+      ]
 
       rebase_input = rebase_path(input, root_build_dir)
       rebase_output = rebase_path(output, root_build_dir)

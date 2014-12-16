@@ -20,7 +20,7 @@ struct RectPair {
 struct EmptyStruct {
 };
 
-// Used to verify that struct fields which don't specify a deafult are
+// Used to verify that struct fields which don't specify a default are
 // initialized to: false for bool, 0 for numbers, and null for strings,
 // handles, and structs. The "?" nullable suffix shouldn't have any 
 // impact on initial field values.
@@ -82,7 +82,6 @@ struct DefaultFieldValues {
   Rect? f16 = default;
 };
 
-
 // Used to verify that the code generated for enum and const values defined
 // within a struct is correct. Assuming that a constant's value can be a literal
 // or another constant and that enum values can either be an integer constant or
@@ -126,8 +125,8 @@ struct MapKeyTypes {
   map<string, string> f11;
 };
 
-// Used to verify that some common or difficult value types can be encoded and
-// decoded successfully.
+// Used to verify that various map value types can be encoded and decoded
+// successfully.
 
 struct MapValueTypes {
   map<string, array<string>> f0;
@@ -137,8 +136,46 @@ struct MapValueTypes {
   map<string, array<array<string, 2>?>> f4;
   map<string, array<array<string, 2>, 1>> f5;
   map<string, Rect?> f6;
-  // TODO(hansmuller, yzshen): Uncomment these once the JavaScript bindings
-  // generator is fixed.
-  // map<string, map<string, string>> f7;
-  // map<string, array<map<string, string>>> f8;
+  map<string, map<string, string>> f7;
+  map<string, array<map<string, string>>> f8;
+};
+
+// Used to verify that various float and double values can be encoded and
+// decoded correctly.
+
+struct FloatNumberValues {
+  const double V0 = double.INFINITY;
+  const double V1 = double.NEGATIVE_INFINITY;
+  const double V2 = double.NAN;
+  const float V3 = float.INFINITY;
+  const float V4 = float.NEGATIVE_INFINITY;
+  const float V5 = float.NAN;
+  const float V6 = 0;
+  const double V7 = 1234567890.123;
+  const double V8 = 1.2E+20;
+  const double V9 = -1.2E+20;
+
+  double f0 = V0;
+  double f1 = V1;
+  double f2 = V2;
+  float f3 = V3;
+  float f4 = V4;
+  float f5 = V5;
+  float f6 = V6;
+  double f7 = V7;
+  double f8 = V8;
+  double f9 = V9;
+};
+
+// Used to verify that various (packed) boolean array values can be encoded
+// and decoded correctly.
+
+struct BitArrayValues {
+  array<bool, 1> f0;
+  array<bool, 7> f1;
+  array<bool, 9> f2;
+  array<bool> f3;
+  array<array<bool>> f4;
+  array<array<bool>?> f5;
+  array<array<bool, 2>?> f6;
 };

@@ -25,15 +25,15 @@ mojo_root = get_path_info("../..", "abspath")
 #     "foo.h",
 #     "foo.cc",
 #   ]
-# 
+#
 #   # Same-file deps are specified in the ordinary way. Any external
 #   dependencies are specified the same way (although in general there should
 #   be very few of these).
 #   deps = [
 #     ":bar",
 #   ]
-# 
-#   # Mojo SDK deps are specified relative to the containing directory of the 
+#
+#   # Mojo SDK deps are specified relative to the containing directory of the
 #   SDK via mojo_sdk_deps.
 #   mojo_sdk_deps = [
 #     "mojo/public/cpp/bindings",
@@ -70,9 +70,8 @@ template("mojo_sdk_source_set") {
       defines = invoker.defines
     }
 
-    public_configs = [
-      rebase_path("mojo/public/build/config:mojo_sdk", ".", mojo_root),
-    ]
+    public_configs =
+        [ rebase_path("mojo/public/build/config:mojo_sdk", ".", mojo_root) ]
     if (defined(invoker.public_configs)) {
       public_configs += invoker.public_configs
     }
@@ -85,7 +84,7 @@ template("mojo_sdk_source_set") {
       allow_circular_includes_from = invoker.allow_circular_includes_from
     }
 
-    if (defined(invoker.public_deps) || (defined(invoker.deps))) {
+    if (defined(invoker.public_deps) || defined(invoker.deps)) {
       restrict_external_deps = true
       if (defined(invoker.restrict_external_deps)) {
         restrict_external_deps = invoker.restrict_external_deps

@@ -8,6 +8,7 @@ define("mojo/services/public/js/service_provider", [
   "mojo/public/js/core",
 ], function(spInterfaceModule, connectionModule, coreModule) {
 
+  // Implementation of the Mojo ServiceProvider interface.
   function connectToServiceImpl(serviceName, serviceHandle) {
     var provider = this.providers_.get(serviceName);
     if (!provider) {
@@ -20,41 +21,41 @@ define("mojo/services/public/js/service_provider", [
       provider.service.stubClass,
       provider.service.client && provider.service.client.proxyClass);
 
-    serviceConnection.local.connection$ = serviceConnection;
     serviceConnection.local.delegate$ =
       new provider.factory(serviceConnection.remote);
 
     provider.connections.push(serviceConnection);
   }
 
+  function checkServiceProvider(sp) {
+    if (!sp.connections_)
+      throw new Error("Service was closed");
+  }
+
   class ServiceProvider {
     constructor(service) {
+      if (!(service instanceof spInterfaceModule.ServiceProvider.proxyClass))
+        throw new Error("service must be a ServiceProvider proxy");
+
+      service.client$ = {
+        connectToService: connectToServiceImpl.bind(this)
+      };
+
       this.connections_ = new Map();
       this.providers_ = new Map();
       this.pendingRequests_ = new Map();
       this.connection_ = null;
-
-      if (service instanceof spInterfaceModule.ServiceProvider.proxyClass) {
-        this.connection_ = service.getConnection$();
-      } else {
-        this.handle_ = service; // service is-a MessagePipe handle
-        this.connection_ =  new connectionModule.Connection(
-          this.handle_,
-          spInterfaceModule.ServiceProvider.client.stubClass,
-          spInterfaceModule.ServiceProvider.proxyClass);
-      };
-      this.connection_.local.delegate$ = {
-        connectToService: connectToServiceImpl.bind(this)
-      }
+      this.connection_ = service.getConnection$();
     }
 
     provideService(service, factory) {
       // TODO(hansmuller): if !factory, remove provider and close its
       // connections.
-      // TODO(hansmuller): if this.connection_ is null, throw an error.
+      checkServiceProvider(this);
+
       var provider = {
-        service: service,
-        factory: factory,
+        service: service, // A JS bindings interface object.
+        factory: factory, // factory(clientProxy) => interface implemntation.
         connections: [],
       };
       this.providers_.set(service.name, provider);
@@ -68,8 +69,10 @@ define("mojo/services/public/js/service_provider", [
     }
 
     connectToService(service, client) {
-      // TODO(hansmuler): if service.name isn't defined, throw an error.
-      // TODO(hansmuller): if this.connection_ is null, throw an error.
+      checkServiceProvider(this);
+      if (!service.name)
+        throw new Error("Invalid service parameter");
+
       var serviceConnection = this.connections_.get(service.name);
       if (serviceConnection)
         return serviceConnection.remote;

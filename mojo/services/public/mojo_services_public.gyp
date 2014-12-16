@@ -27,11 +27,11 @@
       ],
     },
     {
-      # GN version: //mojo/services/public/interfaces/clipboard
+      # GN version: //mojo/services/clipboard/public/interfaces
       'target_name': 'mojo_clipboard_bindings',
       'type': 'static_library',
       'sources': [
-        'interfaces/clipboard/clipboard.mojom',
+        '../clipboard/public/interfaces/clipboard.mojom',
       ],
       'includes': [ '../../public/tools/bindings/mojom_bindings_generator.gypi' ],
       'dependencies': [
@@ -42,13 +42,13 @@
       ],
     },
     {
-      # GN version: //mojo/services/public/interfaces/input_events
+      # GN version: //mojo/services/input_events/public/interfaces
       'target_name': 'mojo_input_events_bindings',
       'type': 'static_library',
       'sources': [
-        'interfaces/input_events/input_event_constants.mojom',
-        'interfaces/input_events/input_events.mojom',
-        'interfaces/input_events/input_key_codes.mojom',
+        '../input_events/public/interfaces/input_event_constants.mojom',
+        '../input_events/public/interfaces/input_events.mojom',
+        '../input_events/public/interfaces/input_key_codes.mojom',
       ],
       'includes': [ '../../public/tools/bindings/mojom_bindings_generator.gypi' ],
       'dependencies': [
@@ -61,11 +61,11 @@
       ],
     },
     {
-      # GN version: //mojo/services/public/interfaces/geometry
+      # GN version: //mojo/services/geometry/public/interfaces
       'target_name': 'mojo_geometry_bindings',
       'type': 'static_library',
       'sources': [
-        'interfaces/geometry/geometry.mojom',
+        '../geometry/public/interfaces/geometry.mojom',
       ],
       'includes': [ '../../public/tools/bindings/mojom_bindings_generator.gypi' ],
       'dependencies': [
@@ -76,14 +76,14 @@
       ],
     },
     {
-      # GN version: //mojo/services/public/interfaces/gpu
+      # GN version: //mojo/services/gpu/public/interfaces
       'target_name': 'mojo_gpu_bindings',
       'type': 'static_library',
       'sources': [
-        'interfaces/gpu/command_buffer.mojom',
-        'interfaces/gpu/gpu.mojom',
-        'interfaces/gpu/gpu_capabilities.mojom',
-        'interfaces/gpu/viewport_parameter_listener.mojom',
+        '../gpu/public/interfaces/command_buffer.mojom',
+        '../gpu/public/interfaces/gpu.mojom',
+        '../gpu/public/interfaces/gpu_capabilities.mojom',
+        '../gpu/public/interfaces/viewport_parameter_listener.mojom',
       ],
       'includes': [ '../../public/tools/bindings/mojom_bindings_generator.gypi' ],
       'dependencies': [
@@ -96,11 +96,11 @@
       ],
     },
     {
-      # GN version: //mojo/services/public/interfaces/native_viewport
+      # GN version: //mojo/services/native_viewport/public/interfaces
       'target_name': 'mojo_native_viewport_bindings',
       'type': 'static_library',
       'sources': [
-        'interfaces/native_viewport/native_viewport.mojom',
+        '../native_viewport/public/interfaces/native_viewport.mojom',
       ],
       'includes': [ '../../public/tools/bindings/mojom_bindings_generator.gypi' ],
       'dependencies': [
@@ -119,11 +119,11 @@
       ],
     },
     {
-      # GN version: //mojo/services/public/interfaces/navigation
+      # GN version: //mojo/services/navigation/public/interfaces
       'target_name': 'mojo_navigation_bindings',
       'type': 'static_library',
       'sources': [
-        'interfaces/navigation/navigation.mojom',
+        '../navigation/public/interfaces/navigation.mojom',
       ],
       'includes': [ '../../public/tools/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
@@ -135,11 +135,11 @@
       ],
     },
     {
-      # GN version: //mojo/services/public/interfaces/content_handler
+      # GN version: //mojo/services/content_handler/public/interfaces
       'target_name': 'mojo_content_handler_bindings',
       'type': 'static_library',
       'sources': [
-        'interfaces/content_handler/content_handler.mojom',
+        '../content_handler/public/interfaces/content_handler.mojom',
       ],
       'includes': [ '../../public/tools/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
@@ -152,20 +152,20 @@
       ],
     },
     {
-      # GN version: //mojo/services/public/interfaces/network
+      # GN version: //mojo/services/network/public/interfaces
       'target_name': 'mojo_network_bindings',
       'type': 'static_library',
       'sources': [
-        'interfaces/network/cookie_store.mojom',
-        'interfaces/network/net_address.mojom',
-        'interfaces/network/network_error.mojom',
-        'interfaces/network/network_service.mojom',
-        'interfaces/network/tcp_bound_socket.mojom',
-        'interfaces/network/tcp_connected_socket.mojom',
-        'interfaces/network/tcp_server_socket.mojom',
-        'interfaces/network/udp_socket.mojom',
-        'interfaces/network/url_loader.mojom',
-        'interfaces/network/web_socket.mojom',
+        '../network/public/interfaces/cookie_store.mojom',
+        '../network/public/interfaces/net_address.mojom',
+        '../network/public/interfaces/network_error.mojom',
+        '../network/public/interfaces/network_service.mojom',
+        '../network/public/interfaces/tcp_bound_socket.mojom',
+        '../network/public/interfaces/tcp_connected_socket.mojom',
+        '../network/public/interfaces/tcp_server_socket.mojom',
+        '../network/public/interfaces/udp_socket.mojom',
+        '../network/public/interfaces/url_loader.mojom',
+        '../network/public/interfaces/web_socket.mojom',
       ],
       'includes': [ '../../public/tools/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
@@ -176,20 +176,20 @@
       ],
     },
     {
-      # GN version: //mojo/services/public/cpp/view_manager:common
+      # GN version: //mojo/services/view_manager/public/cpp:common
       'target_name': 'mojo_view_manager_common',
       'type': 'static_library',
       'sources': [
-        'cpp/view_manager/types.h',
+        '../view_manager/public/cpp/types.h',
       ],
     },
     {
-      # GN version: //mojo/services/public/interfaces/view_manager
+      # GN version: //mojo/services/view_manager/public/interfaces/
       'target_name': 'mojo_view_manager_bindings',
       'type': 'static_library',
       'sources': [
-        'interfaces/view_manager/view_manager.mojom',
-        'interfaces/view_manager/view_manager_constants.mojom',
+        '../view_manager/public/interfaces/view_manager.mojom',
+        '../view_manager/public/interfaces/view_manager_constants.mojom',
       ],
       'includes': [ '../../public/tools/bindings/mojom_bindings_generator.gypi' ],
       'dependencies': [
@@ -208,13 +208,13 @@
       ],
     },
     {
-      # GN version: //mojo/services/public/interfaces/surfaces
+      # GN version: //mojo/services/surfaces/public/interfaces
       'target_name': 'mojo_surfaces_bindings',
       'type': 'static_library',
       'sources': [
-        'interfaces/surfaces/surfaces.mojom',
-        'interfaces/surfaces/surfaces_service.mojom',
-        'interfaces/surfaces/quads.mojom',
+        '../surfaces/public/interfaces/surfaces.mojom',
+        '../surfaces/public/interfaces/surfaces_service.mojom',
+        '../surfaces/public/interfaces/quads.mojom',
       ],
       'includes': [ '../../public/tools/bindings/mojom_bindings_generator.gypi' ],
       'dependencies': [
@@ -230,11 +230,11 @@
       ],
     },
     {
-      # GN version: //mojo/services/public/interfaces/surfaces:surface_id
+      # GN version: //mojo/services/surfaces/public/interfaces:surface_id
       'target_name': 'mojo_surface_id_bindings',
       'type': 'static_library',
       'sources': [
-        'interfaces/surfaces/surface_id.mojom',
+        '../surfaces/public/interfaces/surface_id.mojom',
       ],
       'includes': [ '../../public/tools/bindings/mojom_bindings_generator.gypi' ],
       'dependencies': [
@@ -245,11 +245,11 @@
       ],
     },
     {
-      # GN version: //mojo/services/public/interfaces/window_manager
+      # GN version: //mojo/services/window_manager/public/interfaces
       'target_name': 'mojo_window_manager_bindings',
       'type': 'static_library',
       'sources': [
-        'interfaces/window_manager/window_manager.mojom',
+        '../window_manager/public/interfaces/window_manager.mojom',
       ],
       'includes': [ '../../public/tools/bindings/mojom_bindings_generator.gypi' ],
       'dependencies': [
