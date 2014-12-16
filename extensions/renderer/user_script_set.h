@@ -50,8 +50,8 @@ class UserScriptSet {
   // Appends the ids of the extensions that have user scripts to |ids|.
   void GetActiveExtensionIds(std::set<std::string>* ids) const;
 
-  // Populate |injections| with any ScriptInjections that should run on the
-  // given |web_frame| and |tab_id|, at the given |run_location|.
+  // Append any ScriptInjections that should run on the given |web_frame| and
+  // |tab_id|, at the given |run_location|, to |injections|.
   // |extensions| is passed in to verify the corresponding extension is still
   // valid.
   void GetInjections(ScopedVector<ScriptInjection>* injections,

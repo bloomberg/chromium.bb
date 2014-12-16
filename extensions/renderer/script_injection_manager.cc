@@ -251,6 +251,13 @@ void ScriptInjectionManager::OnUserScriptsUpdated(
     else
       ++iter;
   }
+
+  // If we are currently injecting scripts, we need to make a note that these
+  // extensions were updated.
+  if (injecting_scripts_) {
+    invalidated_while_injecting_.insert(changed_extensions.begin(),
+                                        changed_extensions.end());
+  }
 }
 
 void ScriptInjectionManager::RemoveObserver(RVOHelper* helper) {
@@ -335,52 +342,58 @@ void ScriptInjectionManager::InjectScripts(
     blink::WebFrame* frame,
     UserScript::RunLocation run_location) {
   DCHECK(!injecting_scripts_);
+  DCHECK(invalidated_while_injecting_.empty());
   base::AutoReset<bool>(&injecting_scripts_, true);
-  // Inject any scripts that were waiting for the right run location.
-  ScriptsRunInfo scripts_run_info;
+
+  // Find any injections that want to run on the given frame.
+  // We create a separate vector for these because there is a chance that
+  // injected scripts can block, which can create a nested message loop. When
+  // this happens, other signals (like IPCs) can cause |pending_injections_| to
+  // be changed, so we don't want to risk that.
+  ScopedVector<ScriptInjection> frame_injections;
   for (ScopedVector<ScriptInjection>::iterator iter =
            pending_injections_.begin();
        iter != pending_injections_.end();) {
-    // If a blocking script was injected, there is potentially a possibility
-    // that the frame has been invalidated in the time since. Check.
-    if (!IsFrameValid(frame))
-      return;
-    if ((*iter)->web_frame() == frame &&
-        (*iter)->TryToInject(run_location,
-                             extensions_->GetByID((*iter)->extension_id()),
-                             &scripts_run_info)) {
-      iter = pending_injections_.erase(iter);
+    if ((*iter)->web_frame() == frame) {
+      frame_injections.push_back(*iter);
+      iter = pending_injections_.weak_erase(iter);
     } else {
       ++iter;
     }
   }
 
-  // Try to inject any user scripts that should run for this location. If they
-  // don't complete their injection (for example, waiting for a permission
-  // response) then they will be added to |pending_injections_|.
-  ScopedVector<ScriptInjection> user_script_injections;
+  // Add any injections for user scripts.
   int tab_id = ExtensionHelper::Get(content::RenderView::FromWebView(
                                         frame->top()->view()))->tab_id();
   user_script_set_manager_->GetAllInjections(
-      &user_script_injections, frame, tab_id, run_location);
-  for (ScopedVector<ScriptInjection>::iterator iter =
-           user_script_injections.begin();
-       iter != user_script_injections.end();) {
+      &frame_injections, frame, tab_id, run_location);
+
+  ScriptsRunInfo scripts_run_info;
+  for (ScopedVector<ScriptInjection>::iterator iter = frame_injections.begin();
+       iter != frame_injections.end();) {
     // If a blocking script was injected, there is potentially a possibility
     // that the frame has been invalidated in the time since. Check.
     if (!IsFrameValid(frame))
-      return;
-    scoped_ptr<ScriptInjection> injection(*iter);
-    iter = user_script_injections.weak_erase(iter);
-    if (!injection->TryToInject(run_location,
-                                extensions_->GetByID(injection->extension_id()),
-                                &scripts_run_info)) {
-      pending_injections_.push_back(injection.release());
+      break;
+
+    // Try to inject the script if the extension is not "dirty" (invalidated by
+    // an update). If the injection does not finish (i.e., it is waiting for
+    // permission), add it to the list of pending injections.
+    if (invalidated_while_injecting_.count((*iter)->extension_id()) == 0 &&
+        !(*iter)->TryToInject(run_location,
+                              extensions_->GetByID((*iter)->extension_id()),
+                              &scripts_run_info)) {
+      pending_injections_.insert(pending_injections_.begin(), *iter);
+      iter = frame_injections.weak_erase(iter);
+    } else {
+      ++iter;
     }
   }
 
   if (IsFrameValid(frame))
     scripts_run_info.LogRun(frame, run_location);
+
+  invalidated_while_injecting_.clear();
 }
 
 void ScriptInjectionManager::HandleExecuteCode(

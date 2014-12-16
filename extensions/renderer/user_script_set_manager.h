@@ -65,8 +65,8 @@ class UserScriptSetManager : public content::RenderProcessObserver {
       const GURL& url,
       const Extension* extension);
 
-  // Put all injections from |static_scripts| and each of
-  // |programmatic_scripts_| into |injections|.
+  // Append all injections from |static_scripts| and each of
+  // |programmatic_scripts_| to |injections|.
   void GetAllInjections(ScopedVector<ScriptInjection>* injections,
                         blink::WebFrame* web_frame,
                         int tab_id,

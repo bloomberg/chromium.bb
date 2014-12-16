@@ -101,6 +101,10 @@ class ScriptInjectionManager : public UserScriptSetManager::Observer {
   // True when the manager is actively injecting scripts into a web frame.
   bool injecting_scripts_;
 
+  // The set of extensions that have been updated (and thus any injections have
+  // been invalidated) while the manager was |injecting_scripts_|.
+  std::set<std::string> invalidated_while_injecting_;
+
   // The set of UserScripts associated with extensions. Owned by the Dispatcher.
   UserScriptSetManager* user_script_set_manager_;
 
