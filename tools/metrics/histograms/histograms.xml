@@ -31754,6 +31754,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorkerCache.Cache" units="milliseconds">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    The time to perform operations on the Cache object in the ServiceWorker
+    Cache API.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorkerCache.CacheStorage" units="milliseconds">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    The time to perform operations on the CacheStorage object in the
+    ServiceWorker Cache API.
+  </summary>
+</histogram>
+
 <histogram name="SessionCrashed.Bubble" enum="SessionCrashedBubbleUserAction">
   <owner>yiyaoliu@chromium.org</owner>
   <summary>How did the user interact with the SessionCrashed Bubble?</summary>
@@ -61495,6 +61511,41 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="SB2.MalwareInterstitialTimePrivacyPolicy"/>
   <affected-histogram name="SB2.MalwareInterstitialTimeProceed"/>
   <affected-histogram name="SB2.MalwareInterstitialTimeTakeMeBack"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ServiceWorkerCache.Cache" separator=".">
+  <suffix name="Batch"
+      label="The time to perform the 'batch' operation on a ServiceWorker
+             Cache, which batches other basic operations."/>
+  <suffix name="Keys"
+      label="The time to perform the 'keys' operation on a ServiceWorker
+             Cache, which returns all of the keys in the cache."/>
+  <suffix name="Match"
+      label="The time to perform the 'match' operation on a ServiceWorker
+             Cache, which does a lookup."/>
+  <suffix name="MatchAll"
+      label="The time to perform the 'matchAll' operation on a ServiceWorker
+             Cache, which does a mass cache lookup."/>
+  <affected-histogram name="ServiceWorkerCache.Cache"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ServiceWorkerCache.CacheStorage" separator=".">
+  <suffix name="Delete"
+      label="The time to perform the 'delete' operation on a ServiceWorker
+             CacheStorage, which deletes a cache."/>
+  <suffix name="Has"
+      label="The time to perform the 'has' operation on a ServiceWorker
+             CacheStorage, which returns if the cache exists."/>
+  <suffix name="Keys"
+      label="The time to perform the 'keys' operation on a ServiceWorker
+             CacheStorage, which returns all of the cache names."/>
+  <suffix name="Match"
+      label="The time to perform the 'match' operation on a ServiceWorker
+             CacheStorage, which does a shortcut cache lookup."/>
+  <suffix name="Open"
+      label="The time to perform the 'open' operation on a ServiceWorker
+             CacheStorage, which gets or creates a cache."/>
+  <affected-histogram name="ServiceWorkerCache.CacheStorage"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SessionRestoreTabCounts">
