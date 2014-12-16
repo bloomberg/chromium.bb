@@ -1562,6 +1562,7 @@ def GetFinalizedPexe(env, pexe):
   node = env.Command(target=final_name, source=[pexe_name],
                      action=[Action('${PNACLFINALIZECOM}',
                                     '${PNACLFINALIZECOMSTR}')])
+  env.Alias('all_programs', node)
   assert len(node) == 1, node
   return node[0]
 
@@ -1608,6 +1609,7 @@ def GetTranslatedNexe(env, pexe):
     command += ' --allow-llvm-bitcode-input'
   node = env.Command(target=nexe_name, source=[pexe_name],
                      action=[Action(command, '${TRANSLATECOMSTR}')])
+  env.Alias('all_programs', node)
   assert len(node) == 1, node
   return node[0]
 
