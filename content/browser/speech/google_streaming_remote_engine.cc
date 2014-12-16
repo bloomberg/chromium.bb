@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/big_endian.h"
 #include "base/bind.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -82,6 +83,7 @@ GoogleStreamingRemoteEngine::GoogleStreamingRemoteEngine(
       previous_response_length_(0),
       got_last_definitive_result_(false),
       is_dispatching_event_(false),
+      use_framed_post_data_(false),
       state_(STATE_IDLE) {}
 
 GoogleStreamingRemoteEngine::~GoogleStreamingRemoteEngine() {}
@@ -298,6 +300,18 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
   DCHECK(encoder_.get());
   const std::string request_key = GenerateRequestKey();
 
+  // Only use the framed post data format when a preamble needs to be logged.
+  use_framed_post_data_ = (config_.preamble &&
+                           !config_.preamble->sample_data.empty() &&
+                           !config_.auth_token.empty() &&
+                           !config_.auth_scope.empty());
+  if (use_framed_post_data_) {
+    preamble_encoder_.reset(AudioEncoder::Create(
+        kDefaultAudioCodec,
+        config_.preamble->sample_rate,
+        config_.preamble->sample_depth * 8));
+  }
+
   // Setup downstream fetcher.
   std::vector<std::string> downstream_args;
   downstream_args.push_back(
@@ -349,13 +363,24 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
     upstream_args.push_back(
         "authToken=" + net::EscapeQueryParamValue(config_.auth_token, true));
   }
+  if (use_framed_post_data_) {
+    std::string audio_format;
+    if (preamble_encoder_)
+      audio_format = preamble_encoder_->mime_type() + ",";
+    audio_format += encoder_->mime_type();
+    upstream_args.push_back(
+        "audioFormat=" + net::EscapeQueryParamValue(audio_format, true));
+  }
   GURL upstream_url(std::string(kWebServiceBaseUrl) +
                     std::string(kUpstreamUrl) +
                     JoinString(upstream_args, '&'));
 
   upstream_fetcher_.reset(URLFetcher::Create(
       kUpstreamUrlFetcherIdForTesting, upstream_url, URLFetcher::POST, this));
-  upstream_fetcher_->SetChunkedUpload(encoder_->mime_type());
+  if (use_framed_post_data_)
+    upstream_fetcher_->SetChunkedUpload("application/octet-stream");
+  else
+    upstream_fetcher_->SetChunkedUpload(encoder_->mime_type());
   upstream_fetcher_->SetRequestContext(url_context_.get());
   upstream_fetcher_->SetReferrer(config_.origin_url);
   upstream_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
@@ -363,6 +388,19 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
                                   net::LOAD_DO_NOT_SEND_AUTH_DATA);
   upstream_fetcher_->Start();
   previous_response_length_ = 0;
+
+  if (preamble_encoder_) {
+    // Encode and send preamble right away.
+    scoped_refptr<AudioChunk> chunk = new AudioChunk(
+        reinterpret_cast<const uint8*>(config_.preamble->sample_data.data()),
+        config_.preamble->sample_data.size(),
+        config_.preamble->sample_depth);
+    preamble_encoder_->Encode(*chunk);
+    preamble_encoder_->Flush();
+    scoped_refptr<AudioChunk> encoded_data(
+        preamble_encoder_->GetEncodedDataAndClear());
+    UploadAudioChunk(encoded_data->AsString(), FRAME_PREAMBLE_AUDIO, false);
+  }
   return STATE_BOTH_STREAMS_CONNECTED;
 }
 
@@ -376,7 +414,7 @@ GoogleStreamingRemoteEngine::TransmitAudioUpstream(
   DCHECK_EQ(audio.bytes_per_sample(), config_.audio_num_bits_per_sample / 8);
   encoder_->Encode(audio);
   scoped_refptr<AudioChunk> encoded_data(encoder_->GetEncodedDataAndClear());
-  upstream_fetcher_->AppendChunkToUpload(encoded_data->AsString(), false);
+  UploadAudioChunk(encoded_data->AsString(), FRAME_RECOGNITION_AUDIO, false);
   return state_;
 }
 
@@ -488,7 +526,9 @@ GoogleStreamingRemoteEngine::CloseUpstreamAndWaitForResults(
   DCHECK(!encoded_dummy_data->IsEmpty());
   encoder_.reset();
 
-  upstream_fetcher_->AppendChunkToUpload(encoded_dummy_data->AsString(), true);
+  UploadAudioChunk(encoded_dummy_data->AsString(),
+                   FRAME_RECOGNITION_AUDIO,
+                   true);
   got_last_definitive_result_ = false;
   return STATE_WAITING_DOWNSTREAM_RESULTS;
 }
@@ -574,6 +614,20 @@ std::string GoogleStreamingRemoteEngine::GenerateRequestKey() const {
   int64 key = (base::Time::Now().ToInternalValue() & kKeepLowBytes) |
               (base::RandUint64() & kKeepHighBytes);
   return base::HexEncode(reinterpret_cast<void*>(&key), sizeof(key));
+}
+
+void GoogleStreamingRemoteEngine::UploadAudioChunk(const std::string& data,
+                                                   FrameType type,
+                                                   bool is_final) {
+  if (use_framed_post_data_) {
+    std::string frame(data.size() + 8, 0);
+    base::WriteBigEndian(&frame[0], static_cast<uint32_t>(data.size()));
+    base::WriteBigEndian(&frame[4], static_cast<uint32_t>(type));
+    frame.replace(8, data.size(), data);
+    upstream_fetcher_->AppendChunkToUpload(frame, is_final);
+  } else {
+    upstream_fetcher_->AppendChunkToUpload(data, is_final);
+  }
 }
 
 GoogleStreamingRemoteEngine::FSMEventArgs::FSMEventArgs(FSMEvent event_value)

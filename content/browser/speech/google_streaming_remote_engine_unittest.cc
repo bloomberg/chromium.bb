@@ -4,6 +4,7 @@
 
 #include <queue>
 
+#include "base/big_endian.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
@@ -26,6 +27,10 @@ using net::TestURLFetcher;
 using net::TestURLFetcherFactory;
 
 namespace content {
+
+// Frame types for framed POST data.
+static const uint32_t kFrameTypePreamble = 0;
+static const uint32_t kFrameTypeRecognitionAudio = 1;
 
 // Note: the terms upstream and downstream are from the point-of-view of the
 // client (engine_under_test_).
@@ -73,10 +78,12 @@ class GoogleStreamingRemoteEngineTest : public SpeechRecognitionEngineDelegate,
   void EndMockRecognition();
   void InjectDummyAudioChunk();
   size_t UpstreamChunksUploadedFromLastCall();
+  std::string LastUpstreamChunkUploaded();
   void ProvideMockProtoResultDownstream(
       const proto::SpeechRecognitionEvent& result);
   void ProvideMockResultDownstream(const SpeechRecognitionResult& result);
   void ExpectResultsReceived(const SpeechRecognitionResults& result);
+  void ExpectFramedChunk(const std::string& chunk, uint32_t type);
   void CloseMockDownstream(DownstreamError error);
 
   scoped_ptr<GoogleStreamingRemoteEngine> engine_under_test_;
@@ -325,6 +332,56 @@ TEST_F(GoogleStreamingRemoteEngineTest, Stability) {
   ASSERT_EQ(0U, results_.size());
 }
 
+TEST_F(GoogleStreamingRemoteEngineTest, SendPreamble) {
+  const int kPreambleLength = 100;
+  scoped_refptr<SpeechRecognitionSessionPreamble> preamble =
+      new SpeechRecognitionSessionPreamble();
+  preamble->sample_rate = 16000;
+  preamble->sample_depth = 2;
+  preamble->sample_data = std::string(kPreambleLength, 0);
+  SpeechRecognitionEngine::Config config;
+  config.auth_token = "foo";
+  config.auth_scope = "bar";
+  config.preamble = preamble;
+  engine_under_test_->SetConfig(config);
+
+  StartMockRecognition();
+  ASSERT_TRUE(GetUpstreamFetcher());
+  // First chunk uploaded should be the preamble.
+  ASSERT_EQ(1U, UpstreamChunksUploadedFromLastCall());
+  std::string chunk = LastUpstreamChunkUploaded();
+  ExpectFramedChunk(chunk, kFrameTypePreamble);
+
+  for (int i = 0; i < 3; ++i) {
+    InjectDummyAudioChunk();
+    ASSERT_EQ(1U, UpstreamChunksUploadedFromLastCall());
+    chunk = LastUpstreamChunkUploaded();
+    ExpectFramedChunk(chunk, kFrameTypeRecognitionAudio);
+  }
+  engine_under_test_->AudioChunksEnded();
+  ASSERT_TRUE(engine_under_test_->IsRecognitionPending());
+
+  // Simulate a protobuf message streamed from the server containing a single
+  // result with one hypotheses.
+  SpeechRecognitionResults results;
+  results.push_back(SpeechRecognitionResult());
+  SpeechRecognitionResult& result = results.back();
+  result.is_provisional = false;
+  result.hypotheses.push_back(
+      SpeechRecognitionHypothesis(base::UTF8ToUTF16("hypothesis 1"), 0.1F));
+
+  ProvideMockResultDownstream(result);
+  ExpectResultsReceived(results);
+  ASSERT_TRUE(engine_under_test_->IsRecognitionPending());
+
+  // Ensure everything is closed cleanly after the downstream is closed.
+  CloseMockDownstream(DOWNSTREAM_ERROR_NONE);
+  ASSERT_FALSE(engine_under_test_->IsRecognitionPending());
+  EndMockRecognition();
+  ASSERT_EQ(SPEECH_RECOGNITION_ERROR_NONE, error_);
+  ASSERT_EQ(0U, results_.size());
+}
+
 void GoogleStreamingRemoteEngineTest::SetUp() {
   engine_under_test_.reset(
       new  GoogleStreamingRemoteEngine(NULL /*URLRequestContextGetter*/));
@@ -395,6 +452,13 @@ size_t GoogleStreamingRemoteEngineTest::UpstreamChunksUploadedFromLastCall() {
                             last_number_of_upstream_chunks_seen_;
   last_number_of_upstream_chunks_seen_ = number_of_chunks;
   return new_chunks;
+}
+
+std::string GoogleStreamingRemoteEngineTest::LastUpstreamChunkUploaded() {
+  TestURLFetcher* upstream_fetcher = GetUpstreamFetcher();
+  DCHECK(upstream_fetcher);
+  DCHECK(!upstream_fetcher->upload_chunks().empty());
+  return upstream_fetcher->upload_chunks().back();
 }
 
 void GoogleStreamingRemoteEngineTest::ProvideMockProtoResultDownstream(
@@ -481,6 +545,15 @@ bool GoogleStreamingRemoteEngineTest::ResultsAreEqual(
   }
 
   return true;
+}
+
+void GoogleStreamingRemoteEngineTest::ExpectFramedChunk(
+    const std::string& chunk, uint32_t type) {
+  uint32_t value;
+  base::ReadBigEndian(&chunk[0], &value);
+  EXPECT_EQ(chunk.size() - 8, value);
+  base::ReadBigEndian(&chunk[4], &value);
+  EXPECT_EQ(type, value);
 }
 
 std::string GoogleStreamingRemoteEngineTest::SerializeProtobufResponse(

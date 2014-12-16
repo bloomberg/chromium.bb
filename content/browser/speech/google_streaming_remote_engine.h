@@ -79,6 +79,13 @@ class CONTENT_EXPORT GoogleStreamingRemoteEngine
   static const int kWebserviceStatusNoError;
   static const int kWebserviceStatusErrorNoMatch;
 
+  // Frame type for framed POST data. Do NOT change these. They must match
+  // values the server expects.
+  enum FrameType {
+    FRAME_PREAMBLE_AUDIO = 0,
+    FRAME_RECOGNITION_AUDIO = 1
+  };
+
   // Data types for the internal Finite State Machine (FSM).
   enum FSMState {
     STATE_IDLE = 0,
@@ -143,15 +150,21 @@ class CONTENT_EXPORT GoogleStreamingRemoteEngine
   std::string GetAcceptedLanguages() const;
   std::string GenerateRequestKey() const;
 
+  // Upload a single chunk of audio data. Handles both unframed and framed
+  // upload formats, and uses the appropriate one.
+  void UploadAudioChunk(const std::string& data, FrameType type, bool is_final);
+
   SpeechRecognitionEngineConfig config_;
   scoped_ptr<net::URLFetcher> upstream_fetcher_;
   scoped_ptr<net::URLFetcher> downstream_fetcher_;
   scoped_refptr<net::URLRequestContextGetter> url_context_;
   scoped_ptr<AudioEncoder> encoder_;
+  scoped_ptr<AudioEncoder> preamble_encoder_;
   ChunkedByteBuffer chunked_byte_buffer_;
   size_t previous_response_length_;
   bool got_last_definitive_result_;
   bool is_dispatching_event_;
+  bool use_framed_post_data_;
   FSMState state_;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleStreamingRemoteEngine);

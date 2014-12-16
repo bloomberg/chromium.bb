@@ -217,6 +217,8 @@
       'public/browser/speech_recognition_session_config.h',
       'public/browser/speech_recognition_session_context.cc',
       'public/browser/speech_recognition_session_context.h',
+      'public/browser/speech_recognition_session_preamble.cc',
+      'public/browser/speech_recognition_session_preamble.h',
       'public/browser/ssl_host_state_delegate.h',
       'public/browser/storage_partition.h',
       'public/browser/stream_handle.h',

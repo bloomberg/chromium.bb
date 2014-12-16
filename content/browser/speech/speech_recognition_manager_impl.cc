@@ -134,6 +134,7 @@ int SpeechRecognitionManagerImpl::CreateSession(
       can_report_metrics ? config.origin_url : std::string();
   remote_engine_config.auth_token = config.auth_token;
   remote_engine_config.auth_scope = config.auth_scope;
+  remote_engine_config.preamble = config.preamble;
 
   SpeechRecognitionEngine* google_remote_engine;
   if (config.is_legacy_api) {
