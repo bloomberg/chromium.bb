@@ -7843,8 +7843,18 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
 
 TEST_F(LayerTreeHostImplTest, GetPictureLayerImplPairs) {
   host_impl_->CreatePendingTree();
-  host_impl_->pending_tree()->SetRootLayer(
-      PictureLayerImpl::Create(host_impl_->pending_tree(), 10, false));
+
+  scoped_ptr<PictureLayerImpl> layer =
+      PictureLayerImpl::Create(host_impl_->pending_tree(), 10, false);
+  layer->SetBounds(gfx::Size(10, 10));
+
+  scoped_refptr<RasterSource> pile(FakePicturePileImpl::CreateEmptyPile(
+      gfx::Size(10, 10), gfx::Size(10, 10)));
+  Region empty_invalidation;
+  const PictureLayerTilingSet* null_tiling_set = nullptr;
+  layer->UpdateRasterSource(pile, &empty_invalidation, null_tiling_set);
+
+  host_impl_->pending_tree()->SetRootLayer(layer.Pass());
 
   LayerTreeImpl* pending_tree = host_impl_->pending_tree();
   LayerImpl* pending_layer = pending_tree->root_layer();

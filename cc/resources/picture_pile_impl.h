@@ -30,7 +30,6 @@ namespace cc {
 
 class CC_EXPORT PicturePileImpl : public RasterSource {
  public:
-  static scoped_refptr<PicturePileImpl> Create();
   static scoped_refptr<PicturePileImpl> CreateFromPicturePile(
       const PicturePile* other);
 

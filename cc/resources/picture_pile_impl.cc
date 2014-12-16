@@ -28,10 +28,6 @@ const bool kDefaultClearCanvasSetting = true;
 
 namespace cc {
 
-scoped_refptr<PicturePileImpl> PicturePileImpl::Create() {
-  return make_scoped_refptr(new PicturePileImpl);
-}
-
 scoped_refptr<PicturePileImpl> PicturePileImpl::CreateFromPicturePile(
     const PicturePile* other) {
   return make_scoped_refptr(new PicturePileImpl(other));

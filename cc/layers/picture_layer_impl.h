@@ -46,6 +46,8 @@ class CC_EXPORT PictureLayerImpl
   }
   ~PictureLayerImpl() override;
 
+  bool is_mask() const { return is_mask_; }
+
   scoped_ptr<TilingSetEvictionQueue> CreateEvictionQueue(
       TreePriority tree_priority);
   scoped_ptr<TilingSetRasterQueue> CreateRasterQueue(bool prioritize_low_res);
@@ -78,8 +80,9 @@ class CC_EXPORT PictureLayerImpl
   WhichTree GetTree() const override;
   bool RequiresHighResToDraw() const override;
 
-  // PushPropertiesTo active tree => pending tree.
-  void SyncTiling(const PictureLayerTiling* tiling);
+  void UpdateRasterSource(scoped_refptr<RasterSource> raster_source,
+                          Region* new_invalidation,
+                          const PictureLayerTilingSet* pending_set);
 
   // Mask-related functions.
   void GetContentsResourceId(ResourceProvider::ResourceId* resource_id,
@@ -121,9 +124,6 @@ class CC_EXPORT PictureLayerImpl
   void ResetRasterScale();
   gfx::Rect GetViewportForTilePriorityInContentSpace() const;
   PictureLayerImpl* GetRecycledTwinLayer() const;
-  void UpdateRasterSource(scoped_refptr<RasterSource> raster_source,
-                          Region* new_invalidation,
-                          const PictureLayerTilingSet* pending_set);
 
   void DoPostCommitInitializationIfNeeded() {
     if (needs_post_commit_initialization_)
@@ -185,7 +185,6 @@ class CC_EXPORT PictureLayerImpl
   // frame that has a valid viewport for prioritizing tiles.
   gfx::Rect visible_rect_for_tile_priority_;
 
-  friend class PictureLayer;
   DISALLOW_COPY_AND_ASSIGN(PictureLayerImpl);
 };
 

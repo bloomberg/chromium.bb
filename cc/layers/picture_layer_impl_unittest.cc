@@ -3617,16 +3617,19 @@ TEST_F(PictureLayerImplTest, UpdateTilesForMasksWithNoVisibleContent) {
 
   scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl_.pending_tree(), 1);
 
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, bounds);
   scoped_ptr<FakePictureLayerImpl> layer_with_mask =
-      FakePictureLayerImpl::Create(host_impl_.pending_tree(), 2);
+      FakePictureLayerImpl::CreateWithRasterSource(host_impl_.pending_tree(), 2,
+                                                   pending_pile);
   layer_with_mask->SetBounds(bounds);
   layer_with_mask->SetContentBounds(bounds);
 
-  scoped_refptr<FakePicturePileImpl> pending_pile =
+  scoped_refptr<FakePicturePileImpl> mask_pile =
       FakePicturePileImpl::CreateFilledPile(tile_size, bounds);
   scoped_ptr<FakePictureLayerImpl> mask =
       FakePictureLayerImpl::CreateMaskWithRasterSource(
-          host_impl_.pending_tree(), 3, pending_pile);
+          host_impl_.pending_tree(), 3, mask_pile);
   mask->SetBounds(bounds);
   mask->SetContentBounds(bounds);
   mask->SetDrawsContent(true);
@@ -3636,7 +3639,8 @@ TEST_F(PictureLayerImplTest, UpdateTilesForMasksWithNoVisibleContent) {
       static_cast<FakePictureLayerImpl*>(layer_with_mask->mask_layer());
 
   scoped_ptr<FakePictureLayerImpl> child_of_layer_with_mask =
-      FakePictureLayerImpl::Create(host_impl_.pending_tree(), 4);
+      FakePictureLayerImpl::CreateWithRasterSource(host_impl_.pending_tree(), 4,
+                                                   pending_pile);
   child_of_layer_with_mask->SetBounds(bounds);
   child_of_layer_with_mask->SetContentBounds(bounds);
   child_of_layer_with_mask->SetDrawsContent(true);

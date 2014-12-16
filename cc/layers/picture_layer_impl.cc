@@ -69,8 +69,6 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl,
     : LayerImpl(tree_impl, id),
       twin_layer_(nullptr),
       tilings_(CreatePictureLayerTilingSet()),
-      // TODO(danakj): Can this be null to start?
-      raster_source_(PicturePileImpl::Create()),
       ideal_page_scale_(0.f),
       ideal_device_scale_(0.f),
       ideal_source_scale_(0.f),
@@ -585,7 +583,9 @@ void PictureLayerImpl::UpdateRasterSource(
       << " bounds " << bounds().ToString() << " pile "
       << raster_source->GetSize().ToString();
 
-  bool could_have_tilings = CanHaveTilings();
+  // The |raster_source_| is initially null, so have to check for that for the
+  // first frame.
+  bool could_have_tilings = raster_source_.get() && CanHaveTilings();
   raster_source_.swap(raster_source);
 
   // The |new_invalidation| must be cleared before updating tilings since they

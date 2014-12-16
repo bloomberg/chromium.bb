@@ -45,7 +45,7 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   Layer::PushPropertiesTo(base_layer);
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
   // TODO(danakj): Make is_mask_ a constructor parameter for PictureLayer.
-  DCHECK_EQ(layer_impl->is_mask_, is_mask_);
+  DCHECK_EQ(layer_impl->is_mask(), is_mask_);
 
   int source_frame_number = layer_tree_host()->source_frame_number();
   gfx::Size impl_bounds = layer_impl->bounds();
