@@ -131,6 +131,12 @@ class RenderMessageCompletionCallback {
   }
 
   virtual ~RenderMessageCompletionCallback() {
+    if (reply_msg_) {
+      // If the owner of this class failed to call SendReplyAndDeleteThis(),
+      // send an error reply to prevent the renderer from being hung.
+      reply_msg_->set_reply_error();
+      filter_->Send(reply_msg_);
+    }
   }
 
   RenderMessageFilter* filter() { return filter_.get(); }
@@ -138,6 +144,7 @@ class RenderMessageCompletionCallback {
 
   void SendReplyAndDeleteThis() {
     filter_->Send(reply_msg_);
+    reply_msg_ = NULL;
     delete this;
   }
 
