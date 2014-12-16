@@ -73,6 +73,22 @@
     <event name="n_egl_buffers">
       <arg name="n" type="uint"/>
     </event>
+    <request name="capture_screenshot">
+      <description summary="records current screen image">
+        Records an image of what is currently displayed on a given
+        display output, returning the image as an event.
+      </description>
+      <arg name="output" type="object" interface="wl_output"
+           summary="output to capture from"/>
+      <arg name="buffer" type="object" interface="wl_buffer"
+           summary="buffer for returning screenshots to the test client"/>
+    </request>
+    <event name="capture_screenshot_done">
+	  <description summary="screenshot capture is done">
+		The capture_screenshot_done signal is sent when a screenshot has been copied into the
+		provided buffer.
+	  </description>
+    </event>
   </interface>
 
   <interface name="weston_test_runner" version="1">
