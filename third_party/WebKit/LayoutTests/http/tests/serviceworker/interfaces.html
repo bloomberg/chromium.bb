@@ -7,11 +7,13 @@
 <script>
 
 test(function() {
+    var EVENT_HANDLER = 'object';
     verify_interface(
       'ServiceWorkerContainer', navigator.serviceWorker,
       {
         register: 'function',
-        getRegistration: 'function'
+        getRegistration: 'function',
+        oncontrollerchange: EVENT_HANDLER
       });
   }, 'Interfaces and attributes of ServiceWorkerContainer');
 

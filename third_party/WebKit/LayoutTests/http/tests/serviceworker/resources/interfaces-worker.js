@@ -11,6 +11,7 @@ test(function() {
                        scope: 'string',
                        clients: 'object',
                        close: 'function',
+                       skipWaiting: 'function',
 
                        onactivate: EVENT_HANDLER,
                        onfetch: EVENT_HANDLER,
