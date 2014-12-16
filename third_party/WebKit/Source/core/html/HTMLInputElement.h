@@ -91,6 +91,8 @@ public:
     // or url.
     bool isTextField() const;
 
+    bool isImage() const;
+
     bool checked() const { return m_isChecked; }
     void setChecked(bool, TextFieldEventBehavior = DispatchNoEvent);
 

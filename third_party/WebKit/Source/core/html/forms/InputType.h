@@ -75,6 +75,7 @@ public:
     virtual bool isInteractiveContent() const;
     virtual bool isTextButton() const;
     virtual bool isTextField() const;
+    virtual bool isImage() const;
 
     // Form value functions
 

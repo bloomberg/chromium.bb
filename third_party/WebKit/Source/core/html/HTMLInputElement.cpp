@@ -1633,6 +1633,11 @@ bool HTMLInputElement::isTextButton() const
     return m_inputType->isTextButton();
 }
 
+bool HTMLInputElement::isImage() const
+{
+    return m_inputType->isImage();
+}
+
 bool HTMLInputElement::isEnumeratable() const
 {
     return m_inputType->isEnumeratable();

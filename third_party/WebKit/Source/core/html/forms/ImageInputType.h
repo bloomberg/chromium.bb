@@ -59,6 +59,7 @@ private:
     virtual bool shouldRespectAlignAttribute() override;
     virtual bool canBeSuccessfulSubmitButton() override;
     virtual bool isEnumeratable() override;
+    virtual bool isImage() const override;
     virtual bool shouldRespectHeightAndWidthAttributes() override;
     virtual unsigned height() const override;
     virtual unsigned width() const override;

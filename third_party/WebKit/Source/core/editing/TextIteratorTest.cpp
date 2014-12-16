@@ -152,6 +152,34 @@ TEST_F(TextIteratorTest, BasicIteration)
     EXPECT_EQ(expectedTextChunks, iterate());
 }
 
+TEST_F(TextIteratorTest, IgnoreAltTextInTextControls)
+{
+    static const char* input = "<p>Hello <input type=\"text\" value=\"alt\">!</p>";
+    static const char* expectedTextChunksRawString[] = {
+        "Hello ",
+        "",
+        "!",
+    };
+    Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
+
+    setBodyInnerHTML(input);
+    EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEmitsImageAltText));
+}
+
+TEST_F(TextIteratorTest, DisplayAltTextInImageControls)
+{
+    static const char* input = "<p>Hello <input type=\"image\" alt=\"alt\">!</p>";
+    static const char* expectedTextChunksRawString[] = {
+        "Hello ",
+        "alt",
+        "!",
+    };
+    Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
+
+    setBodyInnerHTML(input);
+    EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEmitsImageAltText));
+}
+
 TEST_F(TextIteratorTest, NotEnteringTextControls)
 {
     static const char* input = "<p>Hello <input type=\"text\" value=\"input\">!</p>";

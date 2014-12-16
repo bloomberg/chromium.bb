@@ -628,6 +628,11 @@ bool InputType::isTextButton() const
     return false;
 }
 
+bool InputType::isImage() const
+{
+    return false;
+}
+
 bool InputType::isInteractiveContent() const
 {
     return true;
