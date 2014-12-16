@@ -385,6 +385,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
     last_output_surface_id_ = output_surface_id;
   }
   ui::Compositor* compositor = client_->GetCompositor();
+  bool immediate_ack = !compositor;
   if (frame_size.IsEmpty()) {
     DCHECK(frame_data->resource_list.empty());
     EvictDelegatedFrame();
@@ -423,8 +424,12 @@ void DelegatedFrameHost::SwapDelegatedFrame(
           latency_info.begin(),
           latency_info.end());
 
+      gfx::Size desired_size = client_->DesiredFrameSize();
+      if (desired_size != frame_size_in_dip && !desired_size.IsEmpty())
+        immediate_ack = true;
+
       cc::SurfaceFactory::DrawCallback ack_callback;
-      if (compositor) {
+      if (compositor && !immediate_ack) {
         ack_callback = base::Bind(&DelegatedFrameHost::SurfaceDrawn,
                                   AsWeakPtr(), output_surface_id);
       }
@@ -461,7 +466,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
 
   pending_delegated_ack_count_++;
 
-  if (!compositor) {
+  if (immediate_ack) {
     SendDelegatedFrameAck(output_surface_id);
   } else if (!use_surfaces_) {
     std::vector<ui::LatencyInfo>::const_iterator it;
