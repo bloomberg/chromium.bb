@@ -152,9 +152,7 @@ Tile* EvictionTilePriorityQueue::PairedTilingSetQueue::Top(
   DCHECK(next_queue && !next_queue->IsEmpty());
 
   Tile* tile = next_queue->Top();
-  DCHECK(std::find(returned_shared_tiles.begin(),
-                   returned_shared_tiles.end(),
-                   tile) == returned_shared_tiles.end());
+  DCHECK(returned_tiles_for_debug.find(tile) == returned_tiles_for_debug.end());
   return tile;
 }
 
@@ -166,25 +164,11 @@ void EvictionTilePriorityQueue::PairedTilingSetQueue::Pop(
   TilingSetEvictionQueue* next_queue =
       next_tree == ACTIVE_TREE ? active_queue.get() : pending_queue.get();
   DCHECK(next_queue && !next_queue->IsEmpty());
-  returned_shared_tiles.push_back(next_queue->Top());
+  DCHECK(returned_tiles_for_debug.insert(next_queue->Top()).second);
   next_queue->Pop();
 
-  if (IsEmpty())
-    return;
-
-  next_tree = NextTileIteratorTree(tree_priority);
-  next_queue =
-      next_tree == ACTIVE_TREE ? active_queue.get() : pending_queue.get();
-  while (std::find(returned_shared_tiles.begin(),
-                   returned_shared_tiles.end(),
-                   next_queue->Top()) != returned_shared_tiles.end()) {
-    next_queue->Pop();
-    if (IsEmpty())
-      break;
-    next_tree = NextTileIteratorTree(tree_priority);
-    next_queue =
-        next_tree == ACTIVE_TREE ? active_queue.get() : pending_queue.get();
-  }
+  // If not empty, use Top to DCHECK the next iterator.
+  DCHECK_IMPLIES(!IsEmpty(), Top(tree_priority));
 }
 
 WhichTree
