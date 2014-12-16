@@ -53,11 +53,13 @@ remoting.enableMouseLock = false;
 /**
  * True to enable MediaSource rendering, if available.
  * The plugin also needs to support MediaSource rendering.
- * TODO(garykac): Remove this once mediaSource is stable for VP9 streams.
+ *
+ * TODO(sergeyu): Remove mediaSource renderer from the plugin and
+ * everywhere else.
  *
  * @type {boolean}
  */
-remoting.enableMediaSourceRendering = true;
+remoting.enableMediaSourceRendering = false;
 
 /**
  * @param {remoting.SignalStrategy} signalStrategy Signal strategy.
