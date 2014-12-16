@@ -368,7 +368,8 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnUpdateDragCursor(blink::WebDragOperation drag_operation);
   void OnTargetDropACK();
   void OnTakeFocus(bool reverse);
-  void OnFocusedNodeChanged(bool is_editable_node);
+  void OnFocusedNodeChanged(bool is_editable_node,
+                            const gfx::Rect& node_bounds_in_viewport);
   void OnClosePageACK();
   void OnDidZoomURL(double zoom_level, const GURL& url);
   void OnRunFileChooser(const FileChooserParams& params);

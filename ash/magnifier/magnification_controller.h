@@ -53,6 +53,15 @@ class ASH_EXPORT MagnificationController {
 
   virtual void SetScrollDirection(ScrollDirection direction) = 0;
 
+  // Returns the view port(i.e. the current visible window)'s Rect in root
+  // window coordinates.
+  virtual gfx::Rect GetViewportRect() const = 0;
+
+  // Follows the focus on web page for non-editable controls.
+  virtual void HandleFocusedNodeChanged(
+      bool is_editable_node,
+      const gfx::Rect& node_bounds_in_screen) = 0;
+
   // Returns |point_of_interest_| in MagnificationControllerImpl. This is
   // the internal variable to stores the last mouse cursor (or last touched)
   // location. This method is only for test purpose.

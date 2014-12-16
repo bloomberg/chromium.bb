@@ -1909,7 +1909,13 @@ void RenderViewImpl::focusPrevious() {
 void RenderViewImpl::focusedNodeChanged(const WebNode& node) {
   has_scrolled_focused_editable_node_into_rect_ = false;
 
-  Send(new ViewHostMsg_FocusedNodeChanged(routing_id_, IsEditableNode(node)));
+  gfx::Rect node_bounds;
+  if (!node.isNull() && node.isElementNode()) {
+    WebNode web_node = const_cast<WebNode&>(node);
+    node_bounds = gfx::Rect(web_node.to<WebElement>().boundsInViewportSpace());
+  }
+  Send(new ViewHostMsg_FocusedNodeChanged(routing_id_, IsEditableNode(node),
+                                          node_bounds));
 
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, FocusedNodeChanged(node));
 

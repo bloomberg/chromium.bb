@@ -53,6 +53,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/focused_node_details.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -1217,7 +1218,9 @@ void RenderViewHostImpl::OnTakeFocus(bool reverse) {
     view->TakeFocus(reverse);
 }
 
-void RenderViewHostImpl::OnFocusedNodeChanged(bool is_editable_node) {
+void RenderViewHostImpl::OnFocusedNodeChanged(
+    bool is_editable_node,
+    const gfx::Rect& node_bounds_in_viewport) {
   is_focused_element_editable_ = is_editable_node;
   if (view_)
     view_->FocusedNodeChanged(is_editable_node);
@@ -1231,10 +1234,18 @@ void RenderViewHostImpl::OnFocusedNodeChanged(bool is_editable_node) {
         TimeDelta::FromMilliseconds(kVirtualKeyboardDisplayWaitTimeoutMs));
   }
 #endif
-  NotificationService::current()->Notify(
-      NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
-      Source<RenderViewHost>(this),
-      Details<const bool>(&is_editable_node));
+
+  // Convert node_bounds to screen coordinates.
+  gfx::Rect view_bounds_in_screen = view_->GetViewBounds();
+  gfx::Point origin = node_bounds_in_viewport.origin();
+  origin.Offset(view_bounds_in_screen.x(), view_bounds_in_screen.y());
+  gfx::Rect node_bounds_in_screen(origin.x(), origin.y(),
+                                  node_bounds_in_viewport.width(),
+                                  node_bounds_in_viewport.height());
+  FocusedNodeDetails details = {is_editable_node, node_bounds_in_screen};
+  NotificationService::current()->Notify(NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
+                                         Source<RenderViewHost>(this),
+                                         Details<FocusedNodeDetails>(&details));
 }
 
 void RenderViewHostImpl::OnUserGesture() {

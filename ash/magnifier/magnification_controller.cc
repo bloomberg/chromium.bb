@@ -11,6 +11,7 @@
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/host/root_window_transformer.h"
 #include "ash/root_window_controller.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "base/command_line.h"
@@ -88,6 +89,10 @@ class MagnificationControllerImpl : virtual public MagnificationController,
     return gfx::ToFlooredPoint(origin_);
   }
   void SetScrollDirection(ScrollDirection direction) override;
+  gfx::Rect GetViewportRect() const override;
+  void HandleFocusedNodeChanged(
+      bool is_editable_node,
+      const gfx::Rect& node_bounds_in_screen) override;
 
   // For test
   gfx::Point GetPointOfInterestForTesting() override {
@@ -145,7 +150,7 @@ class MagnificationControllerImpl : virtual public MagnificationController,
   // Returns the size of the root window.
   gfx::Size GetHostSizeDIP() const;
 
-  // Correct the givin scale value if nessesary.
+  // Correct the given scale value if necessary.
   void ValidateScale(float* scale);
 
   // ui::EventHandler overrides:
@@ -158,11 +163,16 @@ class MagnificationControllerImpl : virtual public MagnificationController,
   // window region. The view port will be moved so that the |point| will be
   // moved to the point where it has |x_target_margin| and |y_target_margin|
   // to the edge of the visible region.
-  void MoveMagnifierWindow(const gfx::Point& point,
-                           int x_panning_margin,
-                           int y_panning_margin,
-                           int x_target_margin,
-                           int y_target_margin);
+  void MoveMagnifierWindowFollowPoint(const gfx::Point& point,
+                                      int x_panning_margin,
+                                      int y_panning_margin,
+                                      int x_target_margin,
+                                      int y_target_margin);
+
+  // Moves the viewport so that |rect| is fully visible. If |rect| is larger
+  // than the viewport horizontally or vertically, the viewport will be moved
+  // to center the |rect| in that dimension.
+  void MoveMagnifierWindowFollowRect(const gfx::Rect& rect);
 
   // ui::InputMethodObserver:
   void OnTextInputTypeChanged(const ui::TextInputClient* client) override {}
@@ -353,7 +363,26 @@ void MagnificationControllerImpl::OnMouseMove(const gfx::Point& location) {
 
   gfx::Point mouse(location);
   int margin = kPanningMergin / scale_;  // No need to consider DPI.
-  MoveMagnifierWindow(mouse, margin, margin, margin, margin);
+  MoveMagnifierWindowFollowPoint(mouse, margin, margin, margin, margin);
+}
+
+gfx::Rect MagnificationControllerImpl::GetViewportRect() const {
+  return gfx::ToEnclosingRect(GetWindowRectDIP(scale_));
+}
+
+void MagnificationControllerImpl::HandleFocusedNodeChanged(
+    bool is_editable_node,
+    const gfx::Rect& node_bounds_in_screen) {
+  // The editable node is handled by OnCaretBoundsChanged.
+  if (is_editable_node)
+    return;
+
+  gfx::Rect node_bounds_in_root =
+      ScreenUtil::ConvertRectFromScreen(root_window_, node_bounds_in_screen);
+  if (GetViewportRect().Contains(node_bounds_in_root))
+    return;
+
+  MoveMagnifierWindowFollowRect(node_bounds_in_root);
 }
 
 void MagnificationControllerImpl::AfterAnimationMoveCursorTo(
@@ -597,17 +626,16 @@ void MagnificationControllerImpl::OnTouchEvent(ui::TouchEvent* event) {
   }
 }
 
-void MagnificationControllerImpl::MoveMagnifierWindow(const gfx::Point& point,
-                                                      int x_panning_margin,
-                                                      int y_panning_margin,
-                                                      int x_target_margin,
-                                                      int y_target_margin) {
+void MagnificationControllerImpl::MoveMagnifierWindowFollowPoint(
+    const gfx::Point& point,
+    int x_panning_margin,
+    int y_panning_margin,
+    int x_target_margin,
+    int y_target_margin) {
   DCHECK(root_window_);
-  int x = origin_.x();
-  int y = origin_.y();
   bool start_zoom = false;
 
-  const gfx::Rect window_rect = gfx::ToEnclosingRect(GetWindowRectDIP(scale_));
+  const gfx::Rect window_rect = GetViewportRect();
   const int left = window_rect.x();
   const int right = window_rect.right();
 
@@ -621,7 +649,7 @@ void MagnificationControllerImpl::MoveMagnifierWindow(const gfx::Point& point,
     x_diff = point.x() - (right - x_target_margin);
     start_zoom = true;
   }
-  x = left + x_diff;
+  int x = left + x_diff;
 
   const int top = window_rect.y();
   const int bottom = window_rect.bottom();
@@ -636,7 +664,7 @@ void MagnificationControllerImpl::MoveMagnifierWindow(const gfx::Point& point,
     y_diff = point.y() - (bottom - y_target_margin);
     start_zoom = true;
   }
-  y = top + y_diff;
+  int y = top + y_diff;
   if (start_zoom && !is_on_animation_) {
     // No animation on panning.
     bool animate = false;
@@ -647,6 +675,43 @@ void MagnificationControllerImpl::MoveMagnifierWindow(const gfx::Point& point,
       if (x_diff != 0 || y_diff != 0)
         MoveCursorTo(root_window_->GetHost(), point);
     }
+  }
+}
+
+void MagnificationControllerImpl::MoveMagnifierWindowFollowRect(
+    const gfx::Rect& rect) {
+  DCHECK(root_window_);
+  bool should_pan = false;
+
+  const gfx::Rect viewport_rect = GetViewportRect();
+  const int left = viewport_rect.x();
+  const int right = viewport_rect.right();
+  const gfx::Point rect_center = rect.CenterPoint();
+  const gfx::Point window_center = viewport_rect.CenterPoint();
+
+  int x = left;
+  if (rect.x() < left || right < rect.right()) {
+    // Panning horizontally.
+    x = rect_center.x() - viewport_rect.width() / 2;
+    should_pan = true;
+  }
+
+  const int top = viewport_rect.y();
+  const int bottom = viewport_rect.bottom();
+
+  int y = top;
+  if (rect.y() < top || bottom < rect.bottom()) {
+    // Panning vertically.
+    y = rect_center.y() - viewport_rect.height() / 2;
+    should_pan = true;
+  }
+
+  if (should_pan) {
+    if (is_on_animation_) {
+      root_window_->layer()->GetAnimator()->StopAnimating();
+      is_on_animation_ = false;
+    }
+    RedrawDIP(gfx::Point(x, y), scale_, false);  // No animation on panning.
   }
 }
 
@@ -667,15 +732,12 @@ void MagnificationControllerImpl::OnCaretBoundsChanged(
   wm::ConvertPointFromScreen(root_window_, &caret_origin);
 
   // Visible window_rect in |root_window_| coordinates.
-  const gfx::Rect visible_window_rect =
-      gfx::ToEnclosingRect(GetWindowRectDIP(scale_));
+  const gfx::Rect visible_window_rect = GetViewportRect();
 
   const int panning_margin = kCaretPanningMargin / scale_;
-  MoveMagnifierWindow(caret_origin,
-                      panning_margin,
-                      panning_margin,
-                      visible_window_rect.width() / 2,
-                      visible_window_rect.height() / 2);
+  MoveMagnifierWindowFollowPoint(caret_origin, panning_margin, panning_margin,
+                                 visible_window_rect.width() / 2,
+                                 visible_window_rect.height() / 2);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

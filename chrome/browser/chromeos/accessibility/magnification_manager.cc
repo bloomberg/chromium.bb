@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/focused_node_details.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -47,7 +48,8 @@ class MagnificationManagerImpl : public MagnificationManager,
         magnifier_scale_pref_handler_(
             prefs::kAccessibilityScreenMagnifierScale),
         type_(ui::kDefaultMagnifierType),
-        enabled_(false) {
+        enabled_(false),
+        observing_focus_change_in_page_(false) {
     registrar_.Add(this,
                    chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                    content::NotificationService::AllSources());
@@ -155,6 +157,7 @@ class MagnificationManagerImpl : public MagnificationManager,
     if (type_ == ui::MAGNIFIER_FULL) {
       ash::Shell::GetInstance()->magnification_controller()->SetEnabled(
           enabled_);
+      MonitorFocusInPageChange();
     } else {
       ash::Shell::GetInstance()->partial_magnification_controller()->SetEnabled(
           enabled_);
@@ -213,6 +216,18 @@ class MagnificationManagerImpl : public MagnificationManager,
 #endif
   }
 
+  void MonitorFocusInPageChange() {
+    if (enabled_ && !observing_focus_change_in_page_) {
+      registrar_.Add(this, content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
+                     content::NotificationService::AllSources());
+      observing_focus_change_in_page_ = true;
+    } else if (!enabled_ && observing_focus_change_in_page_) {
+      registrar_.Remove(this, content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
+                        content::NotificationService::AllSources());
+      observing_focus_change_in_page_ = false;
+    }
+  }
+
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -241,6 +256,15 @@ class MagnificationManagerImpl : public MagnificationManager,
           SetProfile(NULL);
         break;
       }
+      case content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE: {
+        content::FocusedNodeDetails* node_details =
+            content::Details<content::FocusedNodeDetails>(details).ptr();
+        ash::Shell::GetInstance()
+            ->magnification_controller()
+            ->HandleFocusedNodeChanged(node_details->is_editable_node,
+                                       node_details->node_bounds_in_screen);
+        break;
+      }
     }
   }
 
@@ -253,6 +277,7 @@ class MagnificationManagerImpl : public MagnificationManager,
 
   ui::MagnifierType type_;
   bool enabled_;
+  bool observing_focus_change_in_page_;
 
   content::NotificationRegistrar registrar_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;

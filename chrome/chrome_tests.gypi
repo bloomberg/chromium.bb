@@ -95,6 +95,7 @@
       'browser/chrome_service_worker_browsertest.cc',
       'browser/chrome_switches_browsertest.cc',
       'browser/chromeos/accessibility/accessibility_manager_browsertest.cc',
+      'browser/chromeos/accessibility/magnification_controller_browsertest.cc',
       'browser/chromeos/accessibility/magnification_manager_browsertest.cc',
       'browser/chromeos/accessibility/speech_monitor.cc',
       'browser/chromeos/accessibility/speech_monitor.h',
