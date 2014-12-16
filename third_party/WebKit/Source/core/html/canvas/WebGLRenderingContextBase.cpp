@@ -900,14 +900,14 @@ void WebGLRenderingContextBase::setIsHidden(bool hidden)
         drawingBuffer()->setIsHidden(hidden);
 }
 
-void WebGLRenderingContextBase::paintRenderingResultsToCanvas(SourceDrawingBuffer sourceBuffer)
+bool WebGLRenderingContextBase::paintRenderingResultsToCanvas(SourceDrawingBuffer sourceBuffer)
 {
     if (isContextLost())
-        return;
+        return false;
 
     bool mustClearNow = clearIfComposited() != Skipped;
     if (!m_markedCanvasDirty && !mustClearNow)
-        return;
+        return false;
 
     canvas()->clearCopiedImage();
     m_markedCanvasDirty = false;
@@ -921,10 +921,8 @@ void WebGLRenderingContextBase::paintRenderingResultsToCanvas(SourceDrawingBuffe
             drawingBuffer()->paintRenderingResultsToCanvas(canvas()->buffer());
     }
 
-    if (m_framebufferBinding)
-        webContext()->bindFramebuffer(GL_FRAMEBUFFER, objectOrZero(m_framebufferBinding.get()));
-    else
-        drawingBuffer()->bind();
+    restoreCurrentFramebuffer();
+    return true;
 }
 
 PassRefPtrWillBeRawPtr<ImageData> WebGLRenderingContextBase::paintRenderingResultsToImageData(SourceDrawingBuffer sourceBuffer)

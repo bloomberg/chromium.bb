@@ -737,9 +737,11 @@ PassRefPtr<Image> HTMLCanvasElement::copiedImage(SourceDrawingBuffer sourceBuffe
     if (!m_context)
         return createTransparentImage(size());
 
-    if (!m_copiedImage && buffer()) {
-        if (m_context && m_context->is3d())
-            m_context->paintRenderingResultsToCanvas(sourceBuffer);
+    bool needToUpdate = !m_copiedImage;
+    // The concept of SourceDrawingBuffer is valid on only WebGL.
+    if (m_context->is3d())
+        needToUpdate |= m_context->paintRenderingResultsToCanvas(sourceBuffer);
+    if (needToUpdate && buffer()) {
         m_copiedImage = buffer()->copyImage(CopyBackingStore, Unscaled);
         updateExternallyAllocatedMemory();
     }

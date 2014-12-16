@@ -414,7 +414,7 @@ protected:
     virtual bool is3d() const override { return true; }
     virtual bool isAccelerated() const override { return true; }
     virtual void setIsHidden(bool) override;
-    virtual void paintRenderingResultsToCanvas(SourceDrawingBuffer) override;
+    bool paintRenderingResultsToCanvas(SourceDrawingBuffer) override;
     virtual blink::WebLayer* platformLayer() const override;
 
     void addSharedObject(WebGLSharedObject*);
