@@ -554,6 +554,10 @@ void CompositorImpl::DidFailToInitializeOutputSurface() {
 }
 
 void CompositorImpl::CreateOutputSurface() {
+  // This function will get called again when the compositor becomes visible.
+  if (!host_.get())
+    return;
+
   blink::WebGraphicsContext3D::Attributes attrs;
   attrs.shareResources = true;
   attrs.noAutomaticFlushes = true;
