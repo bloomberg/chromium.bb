@@ -15,8 +15,6 @@ from pylib.device import device_utils
 _SURFACE_TEXTURE_TIMESTAMPS_MESSAGE = 'SurfaceTexture update timestamps'
 _SURFACE_TEXTURE_TIMESTAMP_RE = r'\d+'
 
-_MIN_NORMALIZED_FRAME_LENGTH = 0.5
-
 
 class SurfaceStatsCollector(object):
   """Collects surface stats for a SurfaceView from the output of SurfaceFlinger.
@@ -24,11 +22,6 @@ class SurfaceStatsCollector(object):
   Args:
     device: A DeviceUtils instance.
   """
-  class Result(object):
-    def __init__(self, name, value, unit):
-      self.name = name
-      self.value = value
-      self.unit = unit
 
   def __init__(self, device):
     # TODO(jbudorick) Remove once telemetry gets switched over.
@@ -36,12 +29,10 @@ class SurfaceStatsCollector(object):
       device = device_utils.DeviceUtils(device)
     self._device = device
     self._collector_thread = None
-    self._use_legacy_method = False
     self._surface_before = None
     self._get_data_event = None
     self._data_queue = None
     self._stop_event = None
-    self._results = []
     self._warn_about_empty_data = True
 
   def DisableWarningAboutEmptyData(self):
@@ -57,110 +48,16 @@ class SurfaceStatsCollector(object):
       self._collector_thread = threading.Thread(target=self._CollectorThread)
       self._collector_thread.start()
     else:
-      self._use_legacy_method = True
-      self._surface_before = self._GetSurfaceStatsLegacy()
+      raise Exception('SurfaceFlinger not supported on this device.')
 
   def Stop(self):
-    self._StorePerfResults()
+    assert self._collector_thread
+    (refresh_period, timestamps) = self._GetDataFromThread()
     if self._collector_thread:
       self._stop_event.set()
       self._collector_thread.join()
       self._collector_thread = None
-
-  def SampleResults(self):
-    self._StorePerfResults()
-    results = self.GetResults()
-    self._results = []
-    return results
-
-  def GetResults(self):
-    return self._results or self._GetEmptyResults()
-
-  @staticmethod
-  def _GetEmptyResults():
-    return [
-        SurfaceStatsCollector.Result('refresh_period', None, 'seconds'),
-        SurfaceStatsCollector.Result('jank_count', None, 'janks'),
-        SurfaceStatsCollector.Result('max_frame_delay', None, 'vsyncs'),
-        SurfaceStatsCollector.Result('frame_lengths', None, 'vsyncs'),
-        SurfaceStatsCollector.Result('avg_surface_fps', None, 'fps')
-    ]
-
-  @staticmethod
-  def _GetNormalizedDeltas(data, refresh_period, min_normalized_delta=None):
-    deltas = [t2 - t1 for t1, t2 in zip(data, data[1:])]
-    if min_normalized_delta != None:
-      deltas = [d for d in deltas
-                if d / refresh_period >= min_normalized_delta]
-    return (deltas, [delta / refresh_period for delta in deltas])
-
-  @staticmethod
-  def _CalculateResults(refresh_period, timestamps, result_suffix):
-    """Returns a list of SurfaceStatsCollector.Result."""
-    frame_count = len(timestamps)
-    seconds = timestamps[-1] - timestamps[0]
-
-    frame_lengths, normalized_frame_lengths = \
-        SurfaceStatsCollector._GetNormalizedDeltas(
-            timestamps, refresh_period, _MIN_NORMALIZED_FRAME_LENGTH)
-    if len(frame_lengths) < frame_count - 1:
-      logging.warning('Skipping frame lengths that are too short.')
-      frame_count = len(frame_lengths) + 1
-    if len(frame_lengths) == 0:
-      raise Exception('No valid frames lengths found.')
-    _, normalized_changes = \
-        SurfaceStatsCollector._GetNormalizedDeltas(
-            frame_lengths, refresh_period)
-    jankiness = [max(0, round(change)) for change in normalized_changes]
-    pause_threshold = 20
-    jank_count = sum(1 for change in jankiness
-                     if change > 0 and change < pause_threshold)
-    return [
-        SurfaceStatsCollector.Result(
-            'avg_surface_fps' + result_suffix,
-            int(round((frame_count - 1) / seconds)), 'fps'),
-        SurfaceStatsCollector.Result(
-            'jank_count' + result_suffix, jank_count, 'janks'),
-        SurfaceStatsCollector.Result(
-            'max_frame_delay' + result_suffix,
-            round(max(normalized_frame_lengths)),
-            'vsyncs'),
-        SurfaceStatsCollector.Result(
-            'frame_lengths' + result_suffix, normalized_frame_lengths,
-            'vsyncs'),
-    ]
-
-  @staticmethod
-  def _CalculateBuckets(refresh_period, timestamps):
-    results = []
-    for pct in [0.99, 0.5]:
-      sliced = timestamps[min(int(-pct * len(timestamps)), -3) : ]
-      results += SurfaceStatsCollector._CalculateResults(
-          refresh_period, sliced, '_' + str(int(pct * 100)))
-    return results
-
-  def _StorePerfResults(self):
-    if self._use_legacy_method:
-      surface_after = self._GetSurfaceStatsLegacy()
-      td = surface_after['timestamp'] - self._surface_before['timestamp']
-      seconds = td.seconds + td.microseconds / 1e6
-      frame_count = (surface_after['page_flip_count'] -
-                     self._surface_before['page_flip_count'])
-      self._results.append(SurfaceStatsCollector.Result(
-          'avg_surface_fps', int(round(frame_count / seconds)), 'fps'))
-      return
-
-    # Non-legacy method.
-    assert self._collector_thread
-    (refresh_period, timestamps) = self._GetDataFromThread()
-    if not refresh_period or not len(timestamps) >= 3:
-      if self._warn_about_empty_data:
-        logging.warning('Surface stat data is empty')
-      return
-    self._results.append(SurfaceStatsCollector.Result(
-        'refresh_period', refresh_period, 'seconds'))
-    self._results += self._CalculateResults(refresh_period, timestamps, '')
-    self._results += self._CalculateBuckets(refresh_period, timestamps)
+    return (refresh_period, timestamps)
 
   def _CollectorThread(self):
     last_timestamp = 0
@@ -219,13 +116,21 @@ class SurfaceStatsCollector(object):
         'dumpsys SurfaceFlinger --latency-clear SurfaceView')
     return not len(results)
 
+  def GetSurfaceFlingerPid(self):
+    results = self._device.RunShellCommand('ps | grep surfaceflinger')
+    if not results:
+      raise Exception('Unable to get surface flinger process id')
+    pid = results[0].split()[1]
+    return pid
+
   def _GetSurfaceFlingerFrameData(self):
     """Returns collected SurfaceFlinger frame timing data.
 
     Returns:
       A tuple containing:
-      - The display's nominal refresh period in seconds.
-      - A list of timestamps signifying frame presentation times in seconds.
+      - The display's nominal refresh period in milliseconds.
+      - A list of timestamps signifying frame presentation times in
+        milliseconds.
       The return value may be (None, None) if there was no data collected (for
       example, if the app was closed before the collector thread has finished).
     """
@@ -264,8 +169,8 @@ class SurfaceStatsCollector(object):
       return (None, None)
 
     timestamps = []
-    nanoseconds_per_second = 1e9
-    refresh_period = long(results[0]) / nanoseconds_per_second
+    nanoseconds_per_millisecond = 1e6
+    refresh_period = long(results[0]) / nanoseconds_per_millisecond
 
     # If a fence associated with a frame is still pending when we query the
     # latency data, SurfaceFlinger gives the frame a timestamp of INT64_MAX.
@@ -280,33 +185,7 @@ class SurfaceStatsCollector(object):
       timestamp = long(fields[1])
       if timestamp == pending_fence_timestamp:
         continue
-      timestamp /= nanoseconds_per_second
+      timestamp /= nanoseconds_per_millisecond
       timestamps.append(timestamp)
 
     return (refresh_period, timestamps)
-
-  def _GetSurfaceStatsLegacy(self):
-    """Legacy method (before JellyBean), returns the current Surface index
-       and timestamp.
-
-    Calculate FPS by measuring the difference of Surface index returned by
-    SurfaceFlinger in a period of time.
-
-    Returns:
-      Dict of {page_flip_count (or 0 if there was an error), timestamp}.
-    """
-    results = self._device.RunShellCommand('service call SurfaceFlinger 1013')
-    assert len(results) == 1
-    match = re.search(r'^Result: Parcel\((\w+)', results[0])
-    cur_surface = 0
-    if match:
-      try:
-        cur_surface = int(match.group(1), 16)
-      except Exception:
-        logging.error('Failed to parse current surface from ' + match.group(1))
-    else:
-      logging.warning('Failed to call SurfaceFlinger surface ' + results[0])
-    return {
-        'page_flip_count': cur_surface,
-        'timestamp': datetime.datetime.now(),
-    }
