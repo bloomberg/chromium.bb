@@ -659,7 +659,7 @@ std::vector<Suggestion> PersonalDataManager::GetCreditCardSuggestions(
       // Otherwise the label is the card number, or if that is empty the
       // cardholder name. The label should never repeat the value.
       if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
-        creditcard_field_value = credit_card->ObfuscatedNumber();
+        creditcard_field_value = credit_card->TypeAndLastFourDigits();
         suggestion->label = credit_card->GetInfo(
             AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR), app_locale_);
       } else if (credit_card->number().empty()) {

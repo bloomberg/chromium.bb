@@ -129,7 +129,7 @@ public class PersonalDataManagerTest extends ChromeShellTestBase {
 
         card.setGUID(cardOneGUID);
         card.setMonth("10");
-        card.setNumber("5678567856785678");
+        card.setNumber("4012888888881881");
         mHelper.setCreditCard(card);
         assertEquals("Should still have only two cards", 2, mHelper.getNumberOfCreditCards());
 
@@ -138,8 +138,8 @@ public class PersonalDataManagerTest extends ChromeShellTestBase {
         assertEquals("https://www.example.com", storedCard.getOrigin());
         assertEquals("Visa", storedCard.getName());
         assertEquals("10", storedCard.getMonth());
-        assertEquals("5678567856785678", storedCard.getNumber());
-        assertEquals("************5678", storedCard.getObfuscatedNumber());
+        assertEquals("4012888888881881", storedCard.getNumber());
+        assertEquals("Visa - 1881", storedCard.getObfuscatedNumber());
         assertNotNull(mHelper.getCreditCard(cardTwoGUID));
     }
 

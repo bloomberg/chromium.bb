@@ -31,6 +31,9 @@
   <message name="IDS_AUTOFILL_CC_VISA" desc="Visa credit card name.">
     Visa
   </message>
+  <message name="IDS_AUTOFILL_CC_GENERIC" desc="Generic credit card name.">
+    Card
+  </message>
   <message name="IDS_AUTOFILL_ADDRESS_LINE_SEPARATOR" desc="The separator character used to join multi-line addresses.">
     , '''
   </message>

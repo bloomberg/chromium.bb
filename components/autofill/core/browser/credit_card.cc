@@ -36,11 +36,6 @@ namespace {
 
 const base::char16 kCreditCardObfuscationSymbol = '*';
 
-// This is the maximum obfuscated symbols displayed.
-// It is introduced to avoid rare cases where the credit card number is
-// too large and fills the screen.
-const size_t kMaxObfuscationSize = 20;
-
 bool ConvertYear(const base::string16& year, int* num) {
   // If the |year| is empty, clear the stored value.
   if (year.empty()) {
@@ -108,6 +103,28 @@ bool ConvertMonth(const base::string16& month,
   return false;
 }
 
+base::string16 TypeForFill(const std::string& type) {
+  if (type == kAmericanExpressCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_AMEX);
+  if (type == kDinersCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_DINERS);
+  if (type == kDiscoverCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_DISCOVER);
+  if (type == kJCBCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_JCB);
+  if (type == kMasterCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_MASTERCARD);
+  if (type == kUnionPay)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_UNION_PAY);
+  if (type == kVisaCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_VISA);
+
+  // If you hit this DCHECK, the above list of cases needs to be updated to
+  // include a new card.
+  DCHECK_EQ(kGenericCard, type);
+  return base::string16();
+}
+
 }  // namespace
 
 CreditCard::CreditCard(const std::string& guid, const std::string& origin)
@@ -160,25 +177,9 @@ const base::string16 CreditCard::StripSeparators(const base::string16& number) {
 
 // static
 base::string16 CreditCard::TypeForDisplay(const std::string& type) {
-  if (type == kAmericanExpressCard)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_AMEX);
-  if (type == kDinersCard)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_DINERS);
-  if (type == kDiscoverCard)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_DISCOVER);
-  if (type == kJCBCard)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_JCB);
-  if (type == kMasterCard)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_MASTERCARD);
-  if (type == kUnionPay)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_UNION_PAY);
-  if (type == kVisaCard)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_VISA);
-
-  // If you hit this DCHECK, the above list of cases needs to be updated to
-  // include a new card.
-  DCHECK_EQ(kGenericCard, type);
-  return base::string16();
+  if (kGenericCard == type)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_GENERIC);
+  return ::autofill::TypeForFill(type);
 }
 
 // This method is not compiled on iOS because the resources are not used and
@@ -331,7 +332,7 @@ base::string16 CreditCard::GetRawInfo(ServerFieldType type) const {
     }
 
     case CREDIT_CARD_TYPE:
-      return TypeForDisplay();
+      return TypeForFill();
 
     case CREDIT_CARD_NUMBER:
       return number_;
@@ -440,7 +441,7 @@ const base::string16 CreditCard::Label() const {
   if (number().empty())
     return name_on_card_;  // No CC number, return name only.
 
-  base::string16 obfuscated_cc_number = ObfuscatedNumber();
+  base::string16 obfuscated_cc_number = TypeAndLastFourDigits();
   if (!expiration_month_ || !expiration_year_)
     return obfuscated_cc_number;  // No expiration date set.
 
@@ -475,19 +476,6 @@ void CreditCard::SetInfoForMonthInputType(const base::string16& value) {
   SetExpirationMonth(num);
 }
 
-base::string16 CreditCard::ObfuscatedNumber() const {
-  // If the number is four or less digits, there's no need to obfuscate it.
-  if (number_.size() <= 4)
-    return number_;
-
-  base::string16 number = StripSeparators(number_);
-
-  // Avoid making very long obfuscated numbers.
-  size_t obfuscated_digits = std::min(kMaxObfuscationSize, number.size() - 4);
-  base::string16 result(obfuscated_digits, kCreditCardObfuscationSymbol);
-  return result.append(LastFourDigits());
-}
-
 base::string16 CreditCard::LastFourDigits() const {
   static const size_t kNumLastDigits = 4;
 
@@ -504,8 +492,6 @@ base::string16 CreditCard::TypeForDisplay() const {
 
 base::string16 CreditCard::TypeAndLastFourDigits() const {
   base::string16 type = TypeForDisplay();
-  // TODO(estade): type may be empty, we probably want to return
-  // "Card - 1234" or something in that case.
 
   base::string16 digits = LastFourDigits();
   if (digits.empty())
@@ -629,6 +615,10 @@ base::string16 CreditCard::ExpirationMonthAsString() const {
   base::string16 zero = base::ASCIIToUTF16("0");
   zero.append(month);
   return zero;
+}
+
+base::string16 CreditCard::TypeForFill() const {
+  return ::autofill::TypeForFill(type_);
 }
 
 base::string16 CreditCard::Expiration4DigitYearAsString() const {

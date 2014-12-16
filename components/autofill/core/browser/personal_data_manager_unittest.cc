@@ -2668,9 +2668,9 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions) {
   suggestions = personal_data_->GetCreditCardSuggestions(
       AutofillType(CREDIT_CARD_NUMBER), base::string16());
   ASSERT_EQ(2U, suggestions.size());
-  EXPECT_EQ(ASCIIToUTF16("********8555"), suggestions[1].value);
+  EXPECT_EQ(ASCIIToUTF16("American Express - 8555"), suggestions[1].value);
   EXPECT_EQ(ASCIIToUTF16("04/15"), suggestions[1].label);
-  EXPECT_EQ(ASCIIToUTF16("********2109"), suggestions[0].value);
+  EXPECT_EQ(ASCIIToUTF16("MasterCard - 2109"), suggestions[0].value);
   EXPECT_EQ(base::string16(), suggestions[0].label);
 }
 

@@ -859,9 +859,9 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsEmptyValue) {
   // Test that we sent the right values to the external delegate.
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
-      Suggestion("************3456", "04/12", kVisaCard,
+      Suggestion("Visa - 3456", "04/12", kVisaCard,
                  autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion("************8765", "10/14", kMasterCard,
+      Suggestion("MasterCard - 8765", "10/14", kMasterCard,
                  autofill_manager_->GetPackedCreditCardID(5)));
 }
 
@@ -885,7 +885,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsMatchCharacter) {
   // Test that we sent the right values to the external delegate.
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
-      Suggestion("************3456", "04/12", kVisaCard,
+      Suggestion("Visa - 3456", "04/12", kVisaCard,
                  autofill_manager_->GetPackedCreditCardID(4)));
 }
 
@@ -989,11 +989,11 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsRepeatedObfuscatedNumber) {
   // Test that we sent the right values to the external delegate.
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
-      Suggestion("************3456", "04/12", kVisaCard,
+      Suggestion("Visa - 3456", "04/12", kVisaCard,
                  autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion("************8765", "10/14", kMasterCard,
+      Suggestion("MasterCard - 8765", "10/14", kMasterCard,
                  autofill_manager_->GetPackedCreditCardID(5)),
-      Suggestion("************3456", "05/12", kMasterCard,
+      Suggestion("MasterCard - 3456", "05/12", kMasterCard,
                  autofill_manager_->GetPackedCreditCardID(7)));
 }
 
@@ -1030,9 +1030,9 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestions) {
   // Test that we sent the credit card suggestions to the external delegate.
   external_delegate_->CheckSuggestions(
       kPageID2,
-      Suggestion("************3456", "04/12", kVisaCard,
+      Suggestion("Visa - 3456", "04/12", kVisaCard,
                  autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion("************8765", "10/14", kMasterCard,
+      Suggestion("MasterCard - 8765", "10/14", kMasterCard,
                  autofill_manager_->GetPackedCreditCardID(5)));
 }
 
@@ -2931,7 +2931,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsForNumberSpitAcrossFields) {
 
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
-      Suggestion("************3456", "04/12", kVisaCard,
+      Suggestion("Visa - 3456", "04/12", kVisaCard,
                  autofill_manager_->GetPackedCreditCardID(4)));
 }
 

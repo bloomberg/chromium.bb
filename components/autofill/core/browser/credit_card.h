@@ -80,14 +80,14 @@ class CreditCard : public AutofillDataModel {
                const base::string16& value,
                const std::string& app_locale) override;
 
-  // Credit card preview summary, for example: ******1234, Exp: 01/2020
+  // Credit card preview summary, for example: Visa - 1234, Exp: 01/2020
+  // Used for settings and the requestAutocomplete dialog, but not
+  // the autofill dropdown.
   const base::string16 Label() const;
 
   // Special method to set value for HTML5 month input type.
   void SetInfoForMonthInputType(const base::string16& value);
 
-  // The number altered for display, for example: ******1234
-  base::string16 ObfuscatedNumber() const;
   // The last four digits of the credit card number (or possibly less if there
   // aren't enough characters).
   base::string16 LastFourDigits() const;
@@ -147,6 +147,9 @@ class CreditCard : public AutofillDataModel {
  private:
   // FormGroup:
   void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;
+
+  // The type of the card to fill in to the page, e.g. 'Mastercard'.
+  base::string16 TypeForFill() const;
 
   // The month and year are zero if not present.
   int Expiration4DigitYear() const { return expiration_year_; }

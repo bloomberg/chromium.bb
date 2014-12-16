@@ -136,7 +136,7 @@ ScopedJavaLocalRef<jobject> CreateJavaCreditCardFromNative(
       ConvertUTF8ToJavaString(env, card.origin()).obj(),
       ConvertUTF16ToJavaString(env, card.GetRawInfo(CREDIT_CARD_NAME)).obj(),
       ConvertUTF16ToJavaString(env, card.GetRawInfo(CREDIT_CARD_NUMBER)).obj(),
-      ConvertUTF16ToJavaString(env, card.ObfuscatedNumber()).obj(),
+      ConvertUTF16ToJavaString(env, card.TypeAndLastFourDigits()).obj(),
       ConvertUTF16ToJavaString(
           env,
           card.GetRawInfo(CREDIT_CARD_EXP_MONTH)).obj(),

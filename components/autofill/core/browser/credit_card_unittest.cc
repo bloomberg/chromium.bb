@@ -53,56 +53,56 @@ const char* const kInvalidNumbers[] = {
 // Tests credit card summary string generation.  This test simulates a variety
 // of different possible summary strings.  Variations occur based on the
 // existence of credit card number, month, and year fields.
-TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
+TEST(CreditCardTest, PreviewSummaryAndTypeAndLastFourDigitsStrings) {
   // Case 0: empty credit card.
   CreditCard credit_card0(base::GenerateGUID(), "https://www.example.com/");
   base::string16 summary0 = credit_card0.Label();
   EXPECT_EQ(base::string16(), summary0);
-  base::string16 obfuscated0 = credit_card0.ObfuscatedNumber();
-  EXPECT_EQ(base::string16(), obfuscated0);
+  base::string16 obfuscated0 = credit_card0.TypeAndLastFourDigits();
+  EXPECT_EQ(ASCIIToUTF16("Card"), obfuscated0);
 
   // Case 00: Empty credit card with empty strings.
   CreditCard credit_card00(base::GenerateGUID(), "https://www.example.com/");
   test::SetCreditCardInfo(&credit_card00,"John Dillinger", "", "", "");
   base::string16 summary00 = credit_card00.Label();
   EXPECT_EQ(base::string16(ASCIIToUTF16("John Dillinger")), summary00);
-  base::string16 obfuscated00 = credit_card00.ObfuscatedNumber();
-  EXPECT_EQ(base::string16(), obfuscated00);
+  base::string16 obfuscated00 = credit_card00.TypeAndLastFourDigits();
+  EXPECT_EQ(ASCIIToUTF16("Card"), obfuscated00);
 
   // Case 1: No credit card number.
   CreditCard credit_card1(base::GenerateGUID(), "https://www.example.com/");
   test::SetCreditCardInfo(&credit_card1,"John Dillinger", "", "01", "2010");
   base::string16 summary1 = credit_card1.Label();
   EXPECT_EQ(base::string16(ASCIIToUTF16("John Dillinger")), summary1);
-  base::string16 obfuscated1 = credit_card1.ObfuscatedNumber();
-  EXPECT_EQ(base::string16(), obfuscated1);
+  base::string16 obfuscated1 = credit_card1.TypeAndLastFourDigits();
+  EXPECT_EQ(ASCIIToUTF16("Card"), obfuscated1);
 
   // Case 2: No month.
   CreditCard credit_card2(base::GenerateGUID(), "https://www.example.com/");
   test::SetCreditCardInfo(
       &credit_card2, "John Dillinger", "5105 1051 0510 5100", "", "2010");
   base::string16 summary2 = credit_card2.Label();
-  EXPECT_EQ(ASCIIToUTF16("************5100"), summary2);
-  base::string16 obfuscated2 = credit_card2.ObfuscatedNumber();
-  EXPECT_EQ(ASCIIToUTF16("************5100"), obfuscated2);
+  EXPECT_EQ(ASCIIToUTF16("MasterCard - 5100"), summary2);
+  base::string16 obfuscated2 = credit_card2.TypeAndLastFourDigits();
+  EXPECT_EQ(ASCIIToUTF16("MasterCard - 5100"), obfuscated2);
 
   // Case 3: No year.
   CreditCard credit_card3(base::GenerateGUID(), "https://www.example.com/");
   test::SetCreditCardInfo(
       &credit_card3, "John Dillinger", "5105 1051 0510 5100", "01", "");
   base::string16 summary3 = credit_card3.Label();
-  EXPECT_EQ(ASCIIToUTF16("************5100"), summary3);
-  base::string16 obfuscated3 = credit_card3.ObfuscatedNumber();
-  EXPECT_EQ(ASCIIToUTF16("************5100"), obfuscated3);
+  EXPECT_EQ(ASCIIToUTF16("MasterCard - 5100"), summary3);
+  base::string16 obfuscated3 = credit_card3.TypeAndLastFourDigits();
+  EXPECT_EQ(ASCIIToUTF16("MasterCard - 5100"), obfuscated3);
 
   // Case 4: Have everything.
   CreditCard credit_card4(base::GenerateGUID(), "https://www.example.com/");
   test::SetCreditCardInfo(
       &credit_card4, "John Dillinger", "5105 1051 0510 5100", "01", "2010");
   base::string16 summary4 = credit_card4.Label();
-  EXPECT_EQ(ASCIIToUTF16("************5100, Exp: 01/2010"), summary4);
-  base::string16 obfuscated4 = credit_card4.ObfuscatedNumber();
-  EXPECT_EQ(ASCIIToUTF16("************5100"), obfuscated4);
+  EXPECT_EQ(ASCIIToUTF16("MasterCard - 5100, Exp: 01/2010"), summary4);
+  base::string16 obfuscated4 = credit_card4.TypeAndLastFourDigits();
+  EXPECT_EQ(ASCIIToUTF16("MasterCard - 5100"), obfuscated4);
 
   // Case 5: Very long credit card
   CreditCard credit_card5(base::GenerateGUID(), "https://www.example.com/");
@@ -111,9 +111,9 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
       "John Dillinger",
       "0123456789 0123456789 0123456789 5105 1051 0510 5100", "01", "2010");
   base::string16 summary5 = credit_card5.Label();
-  EXPECT_EQ(ASCIIToUTF16("********************5100, Exp: 01/2010"), summary5);
-  base::string16 obfuscated5 = credit_card5.ObfuscatedNumber();
-  EXPECT_EQ(ASCIIToUTF16("********************5100"), obfuscated5);
+  EXPECT_EQ(ASCIIToUTF16("Card - 5100, Exp: 01/2010"), summary5);
+  base::string16 obfuscated5 = credit_card5.TypeAndLastFourDigits();
+  EXPECT_EQ(ASCIIToUTF16("Card - 5100"), obfuscated5);
 }
 
 TEST(CreditCardTest, AssignmentOperator) {
