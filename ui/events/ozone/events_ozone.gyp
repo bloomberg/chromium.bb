@@ -127,6 +127,8 @@
     'type': '<(component)',
     'dependencies': [
       '../../../base/base.gyp:base',
+      '../events.gyp:dom4_keycode_converter',
+      '../events.gyp:events_base',
     ],
     'defines': [
       'EVENTS_OZONE_LAYOUT_IMPLEMENTATION',

@@ -147,6 +147,8 @@ component("events_ozone_layout") {
 
   deps = [
     "//base",
+    "//ui/events:dom4_keycode_converter",
+    "//ui/events:events_base",
   ]
 
   if (use_xkbcommon) {
