@@ -1001,6 +1001,12 @@ crbug.com/354785 [ Linux Debug ] svg/as-background-image/animated-svg-animation-
 
 crbug.com/356957 [ Win Mac Debug ] editing/spelling/spellcheck-editable-on-focus.html [ Timeout ]
 
+crbug.com/381919 fast/multicol/layers-in-multicol.html [ NeedsRebaseline ]
+crbug.com/381919 virtual/regionbasedmulticol/fast/multicol/transform-inside-opacity.html [ NeedsRebaseline ]
+crbug.com/381919 virtual/regionbasedmulticol/fast/multicol/composited-opacity-2nd-and-3rd-column.html [ NeedsRebaseline ]
+crbug.com/381919 virtual/regionbasedmulticol/fast/multicol/composited-with-child-layer-in-next-column.html [ NeedsRebaseline ]
+crbug.com/381919 virtual/regionbasedmulticol/fast/multicol/layers-in-multicol.html [ NeedsRebaseline ]
+
 crbug.com/359960 compositing/iframes/scrolling-iframe.html [ Pass Failure ]
 
 crbug.com/361133 fast/frames/remove-frame-during-load-event.html [ Pass Crash ]
