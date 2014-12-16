@@ -849,19 +849,4 @@ void WebRemoteFrameImpl::setReplicatedOrigin(const WebSecurityOrigin& origin) co
     frame()->securityContext()->setReplicatedOrigin(origin);
 }
 
-void WebRemoteFrameImpl::didStartLoading()
-{
-    frame()->setIsLoading(true);
-}
-
-void WebRemoteFrameImpl::didStopLoading()
-{
-    frame()->setIsLoading(false);
-    if (parent() && parent()->isWebLocalFrame()) {
-        WebLocalFrameImpl* parentFrame =
-            toWebLocalFrameImpl(parent()->toWebLocalFrame());
-        parentFrame->frame()->loader().checkCompleted();
-    }
-}
-
 } // namespace blink

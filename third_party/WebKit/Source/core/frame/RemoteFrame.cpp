@@ -18,7 +18,6 @@ inline RemoteFrame::RemoteFrame(RemoteFrameClient* client, FrameHost* host, Fram
     : Frame(client, host, owner)
     , m_securityContext(RemoteSecurityContext::create())
     , m_domWindow(RemoteDOMWindow::create(*this))
-    , m_isLoading(false)
 {
 }
 
@@ -69,18 +68,6 @@ void RemoteFrame::detach()
 RemoteSecurityContext* RemoteFrame::securityContext() const
 {
     return m_securityContext.get();
-}
-
-bool RemoteFrame::checkLoadComplete()
-{
-    if (m_isLoading)
-        return false;
-
-    bool allChildrenAreDoneLoading = true;
-    for (RefPtrWillBeRawPtr<Frame> child = tree().firstChild(); child; child = child->tree().nextSibling()) {
-        allChildrenAreDoneLoading &= child->checkLoadComplete();
-    }
-    return allChildrenAreDoneLoading;
 }
 
 void RemoteFrame::forwardInputEvent(Event* event)

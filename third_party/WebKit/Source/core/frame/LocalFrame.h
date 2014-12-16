@@ -86,7 +86,6 @@ namespace blink {
         virtual void detach() override;
         virtual void disconnectOwnerElement() override;
         virtual SecurityContext* securityContext() const override;
-        bool checkLoadComplete() override;
 
         void addDestructionObserver(FrameDestructionObserver*);
         void removeDestructionObserver(FrameDestructionObserver*);

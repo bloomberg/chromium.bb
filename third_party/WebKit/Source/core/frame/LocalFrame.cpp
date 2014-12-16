@@ -291,11 +291,6 @@ SecurityContext* LocalFrame::securityContext() const
     return document();
 }
 
-bool LocalFrame::checkLoadComplete()
-{
-    return loader().checkLoadCompleteForThisFrame();
-}
-
 void LocalFrame::disconnectOwnerElement()
 {
     if (owner()) {
