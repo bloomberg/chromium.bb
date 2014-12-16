@@ -15,6 +15,7 @@
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/autocomplete_input.h"
 #include "components/omnibox/autocomplete_match.h"
+#include "components/omnibox/autocomplete_match_type.h"
 #include "grit/theme_resources.h"
 #include "ui/app_list/search_result.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -90,6 +91,17 @@ class OmniboxResult : public SearchResult {
 
     UpdateIcon();
     UpdateTitleAndDetails();
+
+    // The raw "what you typed" search results should be promoted and
+    // automatically selected by voice queries. If a "history" result exactly
+    // matches what you typed, then the omnibox will not produce a "what you
+    // typed" result; therefore, we must also flag "history" results as voice
+    // results if they exactly match the query.
+    if (match_.type == AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED ||
+        (match_.type == AutocompleteMatchType::SEARCH_HISTORY &&
+         match_.contents == match_.search_terms_args->original_query)) {
+      set_voice_result(true);
+    }
   }
   ~OmniboxResult() override {}
 

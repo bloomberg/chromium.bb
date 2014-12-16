@@ -57,7 +57,7 @@ class Mixer::Group {
 
   void AddProvider(SearchProvider* provider) { providers_.push_back(provider); }
 
-  void FetchResults(const KnownResults& known_results) {
+  void FetchResults(bool is_voice_query, const KnownResults& known_results) {
     results_.clear();
 
     for (Providers::const_iterator provider_it = providers_.begin();
@@ -93,6 +93,10 @@ class Mixer::Group {
               break;
           }
         }
+
+        // If this is a voice query, voice results receive a massive boost.
+        if (is_voice_query && (*result_it)->voice_result())
+          boost += 4.0;
 
         results_.push_back(
             SortData(*result_it, (*result_it)->relevance() + boost));
@@ -135,8 +139,9 @@ void Mixer::AddProviderToGroup(GroupId group, SearchProvider* provider) {
   groups_[group]->AddProvider(provider);
 }
 
-void Mixer::MixAndPublish(const KnownResults& known_results) {
-  FetchResults(known_results);
+void Mixer::MixAndPublish(bool is_voice_query,
+                          const KnownResults& known_results) {
+  FetchResults(is_voice_query, known_results);
 
   SortedResults results;
   results.reserve(kMaxResults);
@@ -247,9 +252,10 @@ void Mixer::RemoveDuplicates(SortedResults* results) {
   results->swap(final);
 }
 
-void Mixer::FetchResults(const KnownResults& known_results) {
+void Mixer::FetchResults(bool is_voice_query,
+                         const KnownResults& known_results) {
   for (const auto& item : groups_)
-    item.second->FetchResults(known_results);
+    item.second->FetchResults(is_voice_query, known_results);
 }
 
 }  // namespace app_list

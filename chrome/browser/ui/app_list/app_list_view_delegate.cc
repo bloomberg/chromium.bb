@@ -158,6 +158,7 @@ AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller)
     : controller_(controller),
       profile_(NULL),
       model_(NULL),
+      is_voice_query_(false),
       scoped_observer_(this) {
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
@@ -478,7 +479,7 @@ void AppListViewDelegate::GetShortcutPathForApp(
 
 void AppListViewDelegate::StartSearch() {
   if (search_controller_) {
-    search_controller_->Start();
+    search_controller_->Start(is_voice_query_);
     controller_->OnSearchStarted();
   }
 }
@@ -511,6 +512,8 @@ base::TimeDelta AppListViewDelegate::GetAutoLaunchTimeout() {
 void AppListViewDelegate::AutoLaunchCanceled() {
   base::RecordAction(base::UserMetricsAction("AppList_AutoLaunchCanceled"));
   auto_launch_timeout_ = base::TimeDelta();
+  // Cancelling the auto launch means we are no longer in a voice query.
+  is_voice_query_ = false;
 }
 
 void AppListViewDelegate::ViewInitialized() {
@@ -635,6 +638,7 @@ void AppListViewDelegate::OnSpeechResult(const base::string16& result,
   if (is_final) {
     auto_launch_timeout_ = base::TimeDelta::FromMilliseconds(
         kAutoLaunchDefaultTimeoutMilliSec);
+    is_voice_query_ = true;
     model_->search_box()->SetText(result);
   }
 }

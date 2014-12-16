@@ -66,7 +66,7 @@ void AppListViewDelegate::GetShortcutPathForApp(
 
 void AppListViewDelegate::StartSearch() {
   if (search_controller_)
-    search_controller_->Start();
+    search_controller_->Start(false);
 }
 
 void AppListViewDelegate::StopSearch() {

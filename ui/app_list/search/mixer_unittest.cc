@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <set>
 #include <string>
 
 #include "base/memory/scoped_vector.h"
@@ -27,6 +28,8 @@ class TestSearchResult : public SearchResult {
     set_relevance(relevance);
   }
   ~TestSearchResult() override {}
+
+  using SearchResult::set_voice_result;
 
   // SearchResult overrides:
   void Open(int event_flags) override {}
@@ -64,24 +67,30 @@ class TestSearchProvider : public SearchProvider {
       const std::string id =
           base::StringPrintf("%s%d", prefix_.c_str(), static_cast<int>(i));
       const double relevance = 1.0 - i / 10.0;
-      Add(scoped_ptr<SearchResult>(new TestSearchResult(id, relevance)).Pass());
+      TestSearchResult* result = new TestSearchResult(id, relevance);
+      if (voice_result_indices.find(i) != voice_result_indices.end())
+        result->set_voice_result(true);
+      Add(scoped_ptr<SearchResult>(result).Pass());
     }
   }
   void Stop() override {}
 
   void set_prefix(const std::string& prefix) { prefix_ = prefix; }
   void set_count(size_t count) { count_ = count; }
+  void set_as_voice_result(size_t index) { voice_result_indices.insert(index); }
 
  private:
   std::string prefix_;
   size_t count_;
+  // Indices of results that will have the |voice_result| flag set.
+  std::set<size_t> voice_result_indices;
 
   DISALLOW_COPY_AND_ASSIGN(TestSearchProvider);
 };
 
 class MixerTest : public testing::Test {
  public:
-  MixerTest() {}
+  MixerTest() : is_voice_query_(false) {}
   ~MixerTest() override {}
 
   // testing::Test overrides:
@@ -92,6 +101,8 @@ class MixerTest : public testing::Test {
     providers_.push_back(new TestSearchProvider("omnibox"));
     providers_.push_back(new TestSearchProvider("webstore"));
     providers_.push_back(new TestSearchProvider("people"));
+
+    is_voice_query_ = false;
 
     mixer_.reset(new Mixer(results_.get()));
     mixer_->Init();
@@ -109,7 +120,7 @@ class MixerTest : public testing::Test {
       providers_[i]->Stop();
     }
 
-    mixer_->MixAndPublish(KnownResults());
+    mixer_->MixAndPublish(is_voice_query_, KnownResults());
   }
 
   std::string GetResults() const {
@@ -130,9 +141,16 @@ class MixerTest : public testing::Test {
   TestSearchProvider* webstore_provider() { return providers_[2]; }
   TestSearchProvider* people_provider() { return providers_[3]; }
 
+  // Sets whether test runs should be treated as a voice query.
+  void set_is_voice_query(bool is_voice_query) {
+    is_voice_query_ = is_voice_query;
+  }
+
  private:
   scoped_ptr<Mixer> mixer_;
   scoped_ptr<AppListModel::SearchResults> results_;
+
+  bool is_voice_query_;
 
   ScopedVector<TestSearchProvider> providers_;
 
@@ -198,6 +216,28 @@ TEST_F(MixerTest, RemoveDuplicates) {
 
   // Only three results with unique id are kept.
   EXPECT_EQ("dup0,dup1,dup2", GetResults());
+}
+
+TEST_F(MixerTest, VoiceQuery) {
+  omnibox_provider()->set_count(3);
+  RunQuery();
+  EXPECT_EQ("omnibox0,omnibox1,omnibox2", GetResults());
+
+  // Set "omnibox1" as a voice result. Do not expect any changes (as this is not
+  // a voice query).
+  omnibox_provider()->set_as_voice_result(1);
+  RunQuery();
+  EXPECT_EQ("omnibox0,omnibox1,omnibox2", GetResults());
+
+  // Perform a voice query. Expect voice result first.
+  set_is_voice_query(true);
+  RunQuery();
+  EXPECT_EQ("omnibox1,omnibox0,omnibox2", GetResults());
+
+  // All voice results should appear before non-voice results.
+  omnibox_provider()->set_as_voice_result(2);
+  RunQuery();
+  EXPECT_EQ("omnibox1,omnibox2,omnibox0", GetResults());
 }
 
 TEST_F(MixerTest, Publish) {

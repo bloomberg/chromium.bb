@@ -31,7 +31,7 @@ class APP_LIST_EXPORT SearchController {
                    History* history);
   virtual ~SearchController();
 
-  void Start();
+  void Start(bool is_voice_query);
   void Stop();
 
   void OpenResult(SearchResult* result, int event_flags);
@@ -55,6 +55,8 @@ class APP_LIST_EXPORT SearchController {
   Providers providers_;
   scoped_ptr<Mixer> mixer_;
   History* history_;  // KeyedService, not owned.
+
+  bool is_voice_query_;
 
   base::OneShotTimer<SearchController> stop_timer_;
 
