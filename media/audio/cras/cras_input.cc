@@ -4,6 +4,7 @@
 
 #include "media/audio/cras/cras_input.h"
 
+#include <cras_input.h>
 #include <math.h>
 
 #include "base/basictypes.h"
@@ -159,6 +160,10 @@ void CrasInputStream::Start(AudioInputCallback* callback) {
     return;
   }
 
+  uint32_t flags = 0;
+  if (params_.effects() & AudioParameters::PlatformEffectsMask::HOTWORD)
+    flags = HOTWORD_STREAM;
+
   unsigned int frames_per_packet = params_.frames_per_buffer();
   cras_stream_params* stream_params = cras_client_stream_params_create(
       stream_direction_,
@@ -166,7 +171,7 @@ void CrasInputStream::Start(AudioInputCallback* callback) {
       frames_per_packet,  // Call back when this many ready.
       frames_per_packet,  // Minimum Callback level ignored for capture streams.
       CRAS_STREAM_TYPE_DEFAULT,
-      0,  // Unused flags.
+      flags,
       this,
       CrasInputStream::SamplesReady,
       CrasInputStream::StreamError,
