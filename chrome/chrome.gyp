@@ -606,6 +606,7 @@
             'chrome_resources.gyp:chrome_strings',
             'chrome_strings_grd',
             'chrome_version_java',
+            'document_tab_model_info_proto_java',
             'profile_account_management_metrics_java',
             'content_setting_java',
             'content_settings_type_java',

@@ -89,6 +89,7 @@ android_library("chrome_java") {
     "//content/public/android:content_java",
     "//printing:printing_java",
     "//sync/android:sync_java",
+    "//third_party/android_protobuf:protobuf_nano_javalib",
     "//third_party/android_tools:android_support_v13_java",
     "//third_party/android_tools:android_support_v7_appcompat_java",
     "//third_party/cacheinvalidation:cacheinvalidation_javalib",
