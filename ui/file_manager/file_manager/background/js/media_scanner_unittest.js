@@ -270,6 +270,5 @@ function testMultipleDirectories(callback) {
  */
 function assertResults(expected, results) {
   assertFileEntryPathsEqual(expected, results.getFileEntries());
-  assertTrue(results.getScanDurationMs() > 0);
-  // TODO(smckay): Add coverage for getTotalBytes.
+  // TODO(smckay): Add coverage for getScanDurationMs && getTotalBytes.
 }
