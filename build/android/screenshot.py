@@ -69,9 +69,13 @@ def main():
   if options.verbose:
     logging.getLogger().setLevel(logging.DEBUG)
 
-  if not options.device and len(android_commands.GetAttachedDevices()) > 1:
+  devices = android_commands.GetAttachedDevices()
+
+  if not options.device and len(devices) > 1:
     parser.error('Multiple devices are attached. '
                  'Please specify device serial number with --device.')
+  elif not options.device and len(devices) == 1:
+    options.device = devices[0]
 
   if len(args) > 1:
     parser.error('Too many positional arguments.')
