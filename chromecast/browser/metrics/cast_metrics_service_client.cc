@@ -220,7 +220,7 @@ void CastMetricsServiceClient::Initialize(CastService* cast_service) {
   }
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr< ::metrics::MetricsProvider>(
-          new ::metrics::NetworkMetricsProvider(io_task_runner)));
+          new ::metrics::NetworkMetricsProvider(io_task_runner_)));
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr< ::metrics::MetricsProvider>(
           new ::metrics::ProfilerMetricsProvider));
