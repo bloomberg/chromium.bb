@@ -20,6 +20,7 @@ sys.path.append(os.path.join(
 import appurify.api
 import appurify.utils
 
+
 class RemoteDeviceGtestRun(remote_device_test_run.RemoteDeviceTestRun):
   """Run gtests and uirobot tests on a remote device."""
 
@@ -55,6 +56,8 @@ class RemoteDeviceGtestRun(remote_device_test_run.RemoteDeviceTestRun):
 
   #override
   def _ParseTestResults(self):
-    # TODO(rnephew): Populate test results object.
+    output = self._results['results']['output'].splitlines()
+    results_list = self._test_instance.ParseGTestOutput(output)
     results = base_test_result.TestRunResults()
+    results.AddResults(results_list)
     return results

@@ -61,7 +61,7 @@ class RemoteDeviceTestRun(test_run.TestRun):
         assert isinstance(self._env.trigger, basestring), (
                           'File for storing test_run_id must be a string.')
         with open(self._env.collect, 'r') as test_run_id_file:
-          test_run_id = test_run_id_file.read()
+          test_run_id = test_run_id_file.read().strip()
       while self._GetTestStatus(test_run_id) != self.COMPLETE:
         time.sleep(self.WAIT_TIME)
       self._DownloadTestResults(self._env.results_path)
