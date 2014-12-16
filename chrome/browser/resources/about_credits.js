@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function $(o) {return document.getElementById(o);}
+function $(id) { return document.getElementById(id); }
 
 function toggle(o) {
   var licence = o.nextSibling;
@@ -14,25 +14,28 @@ function toggle(o) {
 
   if (licence.style && licence.style.display == 'block') {
     licence.style.display = 'none';
-    o.innerHTML = 'show license';
+    o.textContent = 'show license';
   } else {
     licence.style.display = 'block';
-    o.innerHTML = 'hide license';
+    o.textContent = 'hide license';
   }
   return false;
 }
 
-document.body.onload = function () {
-  var links = document.getElementsByTagName("a");
-  for (var i = 0; i < links.length; i++) {
-    if (links[i].className === "show") {
-      links[i].onclick = function () { return toggle(this); };
-    }
+document.addEventListener('DOMContentLoaded', function() {
+  if (cr.isChromeOS) {
+    var keyboardUtils = document.createElement('script');
+    keyboardUtils.src = 'chrome://credits/keyboard_utils.js';
+    document.body.appendChild(keyboardUtils);
   }
 
-  $("print-link").onclick = function () {
+  var links = document.querySelectorAll('a.show');
+  for (var i = 0; i < links.length; ++i) {
+    links[i].onclick = function() { return toggle(this); };
+  }
+
+  $('print-link').onclick = function() {
     window.print();
     return false;
-  }
-};
-
+  };
+});

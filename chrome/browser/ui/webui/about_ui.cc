@@ -88,16 +88,10 @@ using content::WebContents;
 namespace {
 
 const char kCreditsJsPath[] = "credits.js";
-const char kKeyboardUtilsPath[] = "keyboard_utils.js";
 const char kMemoryJsPath[] = "memory.js";
 const char kMemoryCssPath[] = "about_memory.css";
 const char kStatsJsPath[] = "stats.js";
 const char kStringsJsPath[] = "strings.js";
-
-#if defined(OS_CHROMEOS)
-// chrome://terms falls back to offline page after kOnlineTermsTimeoutSec.
-const int kOnlineTermsTimeoutSec = 7;
-#endif  // defined(OS_CHROMEOS)
 
 // When you type about:memory, it actually loads this intermediate URL that
 // redirects you to the final page. This avoids the problem where typing
@@ -140,6 +134,11 @@ class AboutMemoryHandler : public MemoryDetails {
 };
 
 #if defined(OS_CHROMEOS)
+
+const char kKeyboardUtilsPath[] = "keyboard_utils.js";
+
+// chrome://terms falls back to offline page after kOnlineTermsTimeoutSec.
+const int kOnlineTermsTimeoutSec = 7;
 
 // Helper class that fetches the online Chrome OS terms. Empty string is
 // returned once fetching failed or exceeded |kOnlineTermsTimeoutSec|.
@@ -1133,7 +1132,9 @@ void AboutUIHTMLSource::FinishDataRequest(
 
 std::string AboutUIHTMLSource::GetMimeType(const std::string& path) const {
   if (path == kCreditsJsPath     ||
+#if defined(OS_CHROMEOS)
       path == kKeyboardUtilsPath ||
+#endif
       path == kStatsJsPath       ||
       path == kStringsJsPath     ||
       path == kMemoryJsPath) {
