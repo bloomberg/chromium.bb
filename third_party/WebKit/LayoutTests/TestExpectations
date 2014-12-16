@@ -1453,15 +1453,6 @@ crbug.com/442181 virtual/slimmingpaint/fast/images/pixelated-composited.html [ I
 
 crbug.com/442285 virtual/slimmingpaint/fast/text/decorations-transformed.html [ ImageOnlyFailure ]
 
-crbug.com/442285 virtual/slimmingpaint/fast/block/float/016.html [ NeedsRebaseline ]
-crbug.com/442285 virtual/slimmingpaint/fast/images/exif-orientation-height-image-document.html [ NeedsRebaseline ]
-crbug.com/442285 virtual/slimmingpaint/fast/images/exif-orientation.html [ NeedsRebaseline ]
-crbug.com/442285 virtual/slimmingpaint/fast/inline/continuation-outlines-with-layers.html [ NeedsRebaseline ]
-crbug.com/442285 virtual/slimmingpaint/fast/inline/continuation-outlines.html [ NeedsRebaseline ]
-crbug.com/442285 virtual/slimmingpaint/fast/text/international/rtl-white-space-pre-wrap.html [ NeedsRebaseline ]
-crbug.com/442285 virtual/slimmingpaint/fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
-crbug.com/442285 virtual/slimmingpaint/fast/text/international/unicode-bidi-plaintext-in-textarea.html [ NeedsRebaseline ]
-
 # Rebaseline after ES6 classes are in.
 crbug.com/442340 webexposed/global-interface-listing.html [ NeedsManualRebaseline ]
 crbug.com/442340 virtual/stable/webexposed/global-interface-listing-dedicated-worker.html [ NeedsManualRebaseline ]
