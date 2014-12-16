@@ -1318,7 +1318,9 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 
 // Test that if a form gets autofilled, then it gets autofilled on re-creation
 // as well.
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, ReCreatedFormsGetFilled) {
+// TODO(vabr): This is flaky everywhere. http://crbug.com/442704
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       DISABLED_ReCreatedFormsGetFilled) {
   NavigateToFile("/password/dynamic_password_form.html");
 
   // Fill in the credentials, and make sure they are saved.
