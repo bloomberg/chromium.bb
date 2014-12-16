@@ -41516,6 +41516,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WrenchMenu.TouchDuration" units="milliseconds">
+  <owner>kkimlabs@google.com</owner>
+  <summary>
+    Time difference between touch down and touch up on Android wrench button.
+  </summary>
+</histogram>
+
 <histogram name="ZeroSuggest.AllResults">
   <owner>hfung@chromium.org</owner>
   <summary>

@@ -9,6 +9,7 @@
 #include "base/debug/trace_event.h"
 #include "chrome/browser/android/accessibility/font_size_prefs_android.h"
 #include "chrome/browser/android/accessibility_util.h"
+#include "chrome/browser/android/appmenu/app_menu_drag_helper.h"
 #include "chrome/browser/android/banners/app_banner_manager.h"
 #include "chrome/browser/android/bookmarks/bookmarks_bridge.h"
 #include "chrome/browser/android/chrome_web_contents_delegate_android.h"
@@ -101,6 +102,7 @@ namespace android {
 
 static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     // Register JNI for components we depend on.
+    {"AppMenuDragHelper", RegisterAppMenuDragHelper},
     {"Bookmarks", bookmarks::android::RegisterBookmarks},
     {"DomDistiller", dom_distiller::android::RegisterDomDistiller},
     {"GCMDriver", gcm::android::RegisterGCMDriverJni},

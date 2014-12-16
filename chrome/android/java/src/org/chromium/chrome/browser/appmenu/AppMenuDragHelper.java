@@ -146,6 +146,7 @@ class AppMenuDragHelper {
         final int roundedRawX = Math.round(rawX);
         final int roundedRawY = Math.round(rawY);
         final int eventActionMasked = event.getActionMasked();
+        final long timeSinceDown = event.getEventTime() - event.getDownTime();
         final ListView listView = mAppMenu.getPopup().getListView();
 
         mLastTouchX = rawX;
@@ -154,9 +155,11 @@ class AppMenuDragHelper {
         if (eventActionMasked == MotionEvent.ACTION_CANCEL) {
             mAppMenu.dismiss();
             return true;
+        } else if (eventActionMasked == MotionEvent.ACTION_UP) {
+            nativeRecordAppMenuTouchDuration(timeSinceDown);
         }
 
-        mIsSingleTapCanceled |= event.getEventTime() - event.getDownTime() > mTapTimeout;
+        mIsSingleTapCanceled |= timeSinceDown > mTapTimeout;
         mIsSingleTapCanceled |= !pointInView(button, event.getX(), event.getY(), mScaledTouchSlop);
         if (!mIsSingleTapCanceled && eventActionMasked == MotionEvent.ACTION_UP) {
             UmaBridge.usingMenu(false, false);
@@ -277,4 +280,6 @@ class AppMenuDragHelper {
         mScreenVisibleRect.offset(mScreenVisiblePoint[0], mScreenVisiblePoint[1]);
         return mScreenVisibleRect;
     }
+
+    private static native void nativeRecordAppMenuTouchDuration(long timeMs);
 }
