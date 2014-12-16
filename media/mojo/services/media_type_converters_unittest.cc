@@ -35,8 +35,9 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_Normal) {
   scoped_refptr<DecoderBuffer> result(ptr.To<scoped_refptr<DecoderBuffer>>());
 
   // Compare.
+  // Note: We intentionally do not serialize the data section of the
+  // DecoderBuffer; no need to check the data here.
   EXPECT_EQ(kDataSize, result->data_size());
-  EXPECT_EQ(0, memcmp(result->data(), kData, kDataSize));
   EXPECT_EQ(kSideDataSize, result->side_data_size());
   EXPECT_EQ(0, memcmp(result->side_data(), kSideData, kSideDataSize));
   EXPECT_EQ(buffer->timestamp(), result->timestamp());
@@ -77,8 +78,9 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_KeyFrame) {
   scoped_refptr<DecoderBuffer> result(ptr.To<scoped_refptr<DecoderBuffer>>());
 
   // Compare.
+  // Note: We intentionally do not serialize the data section of the
+  // DecoderBuffer; no need to check the data here.
   EXPECT_EQ(kDataSize, result->data_size());
-  EXPECT_EQ(0, memcmp(result->data(), kData, kDataSize));
   EXPECT_TRUE(result->is_key_frame());
 }
 
@@ -104,8 +106,9 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_EncryptedBuffer) {
   scoped_refptr<DecoderBuffer> result(ptr.To<scoped_refptr<DecoderBuffer>>());
 
   // Compare.
+  // Note: We intentionally do not serialize the data section of the
+  // DecoderBuffer; no need to check the data here.
   EXPECT_EQ(kDataSize, result->data_size());
-  EXPECT_EQ(0, memcmp(result->data(), kData, kDataSize));
   EXPECT_TRUE(buffer->decrypt_config()->Matches(*result->decrypt_config()));
 
   // Test empty IV. This is used for clear buffer in an encrypted stream.
