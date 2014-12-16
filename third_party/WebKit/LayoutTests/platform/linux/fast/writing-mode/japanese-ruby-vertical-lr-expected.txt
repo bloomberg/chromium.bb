@@ -15,8 +15,8 @@ layer at (0,0) size 105x600
               text run at (1,0) width 80: "\x{653B}\x{6BBB}"
         RenderRubyRun (anonymous) at (0,300) size 48x120
           RenderRubyText {RT} at (47,0) size 23x120
-            RenderText {#text} at (0,10) size 22x100
-              text run at (0,10) width 100: "\x{304D}\x{3069}\x{3046}\x{305F}\x{3044}"
+            RenderText {#text} at (0,2) size 22x116
+              text run at (0,2) width 116: "\x{304D}\x{3069}\x{3046}\x{305F}\x{3044}"
           RenderRubyBase (anonymous) at (0,0) size 48x120
             RenderText {#text} at (1,0) size 46x120
               text run at (1,0) width 120: "\x{6A5F}\x{52D5}\x{968A}"
