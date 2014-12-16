@@ -34,6 +34,8 @@ void RecordRegistrationStatus(PushRegistrationStatus status) {
 
 const char kPushRegistrationIdServiceWorkerKey[] =
     "push_registration_id";
+const char kSenderIdServiceWorkerKey[] =
+    "push_sender_id";
 
 }  // namespace
 
@@ -125,9 +127,6 @@ void PushMessagingMessageFilter::OnRegisterFromDocument(
     return;
   }
 
-  // TODO(mvanouwerkerk): Persist sender id in Service Worker storage.
-  // https://crbug.com/437298
-
   // TODO(peter): Persist |user_visible_only| in Service Worker storage.
 
   RegisterData data;
@@ -137,7 +136,14 @@ void PushMessagingMessageFilter::OnRegisterFromDocument(
   data.render_frame_id = render_frame_id;
   data.user_visible_only = user_visible_only;
 
-  CheckForExistingRegistration(data, sender_id);
+  service_worker_context_->context()->storage()->StoreUserData(
+      service_worker_registration_id,
+      data.requesting_origin,
+      kSenderIdServiceWorkerKey,
+      sender_id,
+      base::Bind(&PushMessagingMessageFilter::DidPersistSenderId,
+                 weak_factory_io_to_io_.GetWeakPtr(),
+                 data, sender_id));
 }
 
 void PushMessagingMessageFilter::OnRegisterFromWorker(
@@ -151,16 +157,13 @@ void PushMessagingMessageFilter::OnRegisterFromWorker(
   if (!service_worker_registration)
     return;
 
-  // TODO(mvanouwerkerk): Get sender id from Service Worker storage.
-  // https://crbug.com/437298
-  std::string sender_id = "";
-
   RegisterData data;
   data.request_id = request_id;
   data.requesting_origin = service_worker_registration->pattern().GetOrigin();
   data.service_worker_registration_id = service_worker_registration_id;
 
-  CheckForExistingRegistration(data, sender_id);
+  // This sender_id will be ignored; instead it will be fetched from storage.
+  CheckForExistingRegistration(data, "" /* sender_id */);
 }
 
 void PushMessagingMessageFilter::OnPermissionStatusRequest(
@@ -206,6 +209,17 @@ void PushMessagingMessageFilter::OnGetPermissionStatus(
                  request_id));
 }
 
+void PushMessagingMessageFilter::DidPersistSenderId(
+    const RegisterData& data,
+    const std::string& sender_id,
+    ServiceWorkerStatusCode service_worker_status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (service_worker_status != SERVICE_WORKER_OK)
+    SendRegisterError(data, PUSH_REGISTRATION_STATUS_STORAGE_ERROR);
+  else
+    CheckForExistingRegistration(data, sender_id);
+}
+
 void PushMessagingMessageFilter::CheckForExistingRegistration(
     const RegisterData& data,
     const std::string& sender_id) {
@@ -237,6 +251,29 @@ void PushMessagingMessageFilter::DidCheckForExistingRegistration(
   // service_worker_status != SERVICE_WORKER_ERROR_NOT_FOUND instead of
   // attempting to do a fresh registration?
   // https://w3c.github.io/push-api/#widl-PushRegistrationManager-register-Promise-PushRegistration
+  if (data.FromDocument()) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&PushMessagingMessageFilter::RegisterOnUI,
+                   this, data, sender_id));
+  } else {
+    service_worker_context_->context()->storage()->GetUserData(
+        data.service_worker_registration_id,
+        kSenderIdServiceWorkerKey,
+        base::Bind(&PushMessagingMessageFilter::DidGetSenderIdFromStorage,
+                   weak_factory_io_to_io_.GetWeakPtr(), data));
+  }
+}
+
+void PushMessagingMessageFilter::DidGetSenderIdFromStorage(
+    const RegisterData& data,
+    const std::string& sender_id,
+    ServiceWorkerStatusCode service_worker_status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (service_worker_status != SERVICE_WORKER_OK) {
+    SendRegisterError(data, PUSH_REGISTRATION_STATUS_NO_SENDER_ID);
+    return;
+  }
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&PushMessagingMessageFilter::RegisterOnUI,

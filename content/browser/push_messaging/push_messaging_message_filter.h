@@ -70,14 +70,25 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   void OnGetPermissionStatus(int request_id,
                              int64 service_worker_registration_id);
 
-  void CheckForExistingRegistration(const RegisterData& data,
-                                    const std::string& sender_id);
+  void DidPersistSenderId(const RegisterData& data,
+                          const std::string& sender_id,
+                          ServiceWorkerStatusCode service_worker_status);
 
+  // sender_id is ignored if data.FromDocument() is false.
+  void CheckForExistingRegistration(
+      const RegisterData& data,
+      const std::string& sender_id);
+
+  // sender_id is ignored if data.FromDocument() is false.
   void DidCheckForExistingRegistration(
       const RegisterData& data,
       const std::string& sender_id,
       const std::string& push_registration_id,
       ServiceWorkerStatusCode service_worker_status);
+
+  void DidGetSenderIdFromStorage(const RegisterData& data,
+                                 const std::string& sender_id,
+                                 ServiceWorkerStatusCode service_worker_status);
 
   void RegisterOnUI(const RegisterData& data,
                     const std::string& sender_id);

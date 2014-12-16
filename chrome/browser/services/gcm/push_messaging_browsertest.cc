@@ -273,6 +273,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, RegisterFailureNoManifest) {
             script_result);
 }
 
+// TODO(johnme): Test registering from a worker - see https://crbug.com/437298.
+
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, RegisterPersisted) {
   std::string script_result;
 
