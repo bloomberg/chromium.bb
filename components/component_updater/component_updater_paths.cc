@@ -44,6 +44,9 @@ bool PathProvider(int key, base::FilePath* result) {
     case DIR_COMPONENT_EV_WHITELIST:
       cur = cur.Append(FILE_PATH_LITERAL("EVWhitelist"));
       break;
+    case DIR_SUPERVISED_USER_WHITELISTS:
+      cur = cur.Append(FILE_PATH_LITERAL("SupervisedUserWhitelists"));
+      break;
     default:
       return false;
   }

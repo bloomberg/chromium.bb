@@ -238,6 +238,8 @@
       'browser/component_updater/ev_whitelist_component_installer.h',
       'browser/component_updater/recovery_component_installer.cc',
       'browser/component_updater/recovery_component_installer.h',
+      'browser/component_updater/supervised_user_whitelist_installer.cc',
+      'browser/component_updater/supervised_user_whitelist_installer.h',
       'browser/component_updater/sw_reporter_installer_win.cc',
       'browser/component_updater/sw_reporter_installer_win.h',
       'browser/component_updater/swiftshader_component_installer.cc',

@@ -16,6 +16,7 @@
 #include "url/gurl.h"
 
 class ComponentsUI;
+class SupervisedUserWhitelistService;
 
 namespace base {
 class DictionaryValue;
@@ -210,6 +211,7 @@ class OnDemandUpdater {
 
  private:
   friend class OnDemandTester;
+  friend class SupervisedUserWhitelistInstaller;
   friend class ::ComponentsUI;
 
   // Triggers an update check for a component. |component_id| is a value

@@ -254,6 +254,7 @@
       'browser/component_updater/test/cld_component_installer_unittest.cc',
       'browser/component_updater/test/component_installers_unittest.cc',
       'browser/component_updater/test/component_updater_service_unittest.cc',
+      'browser/component_updater/test/supervised_user_whitelist_installer_unittest.cc',
       'browser/content_settings/content_settings_default_provider_unittest.cc',
       'browser/content_settings/content_settings_mock_observer.cc',
       'browser/content_settings/content_settings_mock_observer.h',

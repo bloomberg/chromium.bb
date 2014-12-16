@@ -38,6 +38,25 @@ int GetPhysicalMemoryGB() {
   return static_cast<int>(std::floor(0.5 + phys_mem / kOneGB));
 }
 
+// Produces an extension-like friendly id.
+std::string HexStringToID(const std::string& hexstr) {
+  std::string id;
+  for (size_t i = 0; i < hexstr.size(); ++i) {
+    int val = 0;
+    if (base::HexStringToInt(
+            base::StringPiece(hexstr.begin() + i, hexstr.begin() + i + 1),
+            &val)) {
+      id.append(1, val + 'a');
+    } else {
+      id.append(1, 'a');
+    }
+  }
+
+  DCHECK(crx_file::id_util::IdIsValid(id));
+
+  return id;
+}
+
 }  // namespace
 
 std::string BuildProtocolRequest(const std::string& browser_version,
@@ -169,28 +188,11 @@ bool DeleteFileAndEmptyParentDirectory(const base::FilePath& filepath) {
   return base::DeleteFile(dirname, false);
 }
 
-// Produces an extension-like friendly id.
-std::string HexStringToID(const std::string& hexstr) {
-  std::string id;
-  for (size_t i = 0; i < hexstr.size(); ++i) {
-    int val = 0;
-    if (base::HexStringToInt(
-            base::StringPiece(hexstr.begin() + i, hexstr.begin() + i + 1),
-            &val)) {
-      id.append(1, val + 'a');
-    } else {
-      id.append(1, 'a');
-    }
-  }
-
-  DCHECK(crx_file::id_util::IdIsValid(id));
-
-  return id;
-}
-
 std::string GetCrxComponentID(const CrxComponent& component) {
+  const size_t kCrxIdSize = 16;
+  CHECK_GE(component.pk_hash.size(), kCrxIdSize);
   return HexStringToID(base::StringToLowerASCII(
-      base::HexEncode(&component.pk_hash[0], component.pk_hash.size() / 2)));
+      base::HexEncode(&component.pk_hash[0], kCrxIdSize)));
 }
 
 }  // namespace component_updater
