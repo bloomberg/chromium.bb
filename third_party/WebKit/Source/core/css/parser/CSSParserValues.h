@@ -216,6 +216,10 @@ class CSSParserSelector {
 public:
     CSSParserSelector();
     explicit CSSParserSelector(const QualifiedName&);
+
+    static PassOwnPtr<CSSParserSelector> create() { return adoptPtr(new CSSParserSelector); }
+    static PassOwnPtr<CSSParserSelector> create(const QualifiedName& name) { return adoptPtr(new CSSParserSelector(name)); }
+
     ~CSSParserSelector();
 
     PassOwnPtr<CSSSelector> releaseSelector() { return m_selector.release(); }

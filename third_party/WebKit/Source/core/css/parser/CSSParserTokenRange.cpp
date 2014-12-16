@@ -43,7 +43,7 @@ void CSSParserTokenRange::consumeComponentValue()
 void CSSParserTokenRange::consumeWhitespaceAndComments()
 {
     while (peek().type() == WhitespaceToken || peek().type() == CommentToken)
-        consume();
+        ++m_first;
 }
 
 } // namespace blink

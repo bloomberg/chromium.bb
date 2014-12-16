@@ -43,6 +43,21 @@ public:
         return *m_first++;
     }
 
+    const CSSParserToken& consumeIncludingComments()
+    {
+        const CSSParserToken& result = consume();
+        while (peek().type() == CommentToken)
+            ++m_first;
+        return result;
+    }
+
+    const CSSParserToken& consumeIncludingWhitespaceAndComments()
+    {
+        const CSSParserToken& result = consume();
+        consumeWhitespaceAndComments();
+        return result;
+    }
+
     void consumeComponentValue();
     void consumeWhitespaceAndComments();
 

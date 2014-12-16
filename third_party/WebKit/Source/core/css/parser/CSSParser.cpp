@@ -11,6 +11,8 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/css/parser/CSSParserFastPaths.h"
 #include "core/css/parser/CSSParserImpl.h"
+#include "core/css/parser/CSSSelectorParser.h"
+#include "core/css/parser/CSSTokenizer.h"
 
 namespace blink {
 
@@ -29,6 +31,12 @@ bool CSSParser::parseDeclaration(MutableStylePropertySet* propertySet, const Str
 
 void CSSParser::parseSelector(const String& selector, CSSSelectorList& selectorList)
 {
+    if (RuntimeEnabledFeatures::newCSSParserEnabled()) {
+        Vector<CSSParserToken> tokens;
+        CSSTokenizer::tokenize(selector, tokens);
+        CSSSelectorParser::parseSelector(tokens, m_bisonParser.m_context, selectorList);
+        return;
+    }
     m_bisonParser.parseSelector(selector, selectorList);
 }
 
