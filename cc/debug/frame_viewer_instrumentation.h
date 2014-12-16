@@ -12,7 +12,7 @@ namespace cc {
 namespace frame_viewer_instrumentation {
 namespace internal {
 
-const char kCategory[] = "cc";
+const char kCategory[] = "cc," TRACE_DISABLED_BY_DEFAULT("devtools.timeline");
 const char kTileData[] = "tileData";
 const char kLayerId[] = "layerId";
 const char kTileId[] = "tileId";

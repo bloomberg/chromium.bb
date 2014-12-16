@@ -26,7 +26,6 @@ const char kRequestMainThreadFrame[] = "RequestMainThreadFrame";
 const char kDrawFrame[] = "DrawFrame";
 }  // namespace internal
 
-const char kRasterTask[] = "RasterTask";
 const char kPaintSetup[] = "PaintSetup";
 const char kUpdateLayer[] = "UpdateLayer";
 

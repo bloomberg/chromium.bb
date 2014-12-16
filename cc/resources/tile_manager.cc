@@ -108,8 +108,6 @@ class RasterTaskImpl : public RasterTask {
   void Raster(const RasterSource* raster_source) {
     frame_viewer_instrumentation::ScopedRasterTask raster_task(
         tile_id_, tile_resolution_, source_frame_number_, layer_id_);
-    devtools_instrumentation::ScopedLayerTask layer_task(
-        devtools_instrumentation::kRasterTask, layer_id_);
 
     DCHECK(raster_source);
 
