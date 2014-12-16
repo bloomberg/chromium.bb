@@ -16,22 +16,22 @@ extractable = true;
 keyUsages = ['sign', 'verify'];
 
 Promise.resolve(null).then(function() {
-    // Missing curve name.
+    debug("\ngenerateKey() without namedCurve...");
     return crypto.subtle.generateKey({name: 'ECDSA'}, extractable , keyUsages);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
 
-    // Named curve is invalid (an integer when it should be a string).
+    debug("\ngenerateKey() with namedCurve that is an integer...");
     return crypto.subtle.generateKey({name: 'ECDSA', namedCurve: -1}, extractable , keyUsages);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
 
-    // Named curve is unrecognized (lower case when it should be upper case)
+    debug("\ngenerateKey() with namedCurve 'p-256' that contains lower case character 'p'...");
     return crypto.subtle.generateKey({name: 'ECDSA', namedCurve: 'p-256'}, extractable , keyUsages);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
 
-    // Named curve is unrecognized (contains some trailing characters).
+    debug("\ngenerateKey() with namedCurve 'P-256aa' that contains trailing characters 'aa'...");
     return crypto.subtle.generateKey({name: 'ECDSA', namedCurve: 'P-256aa'}, extractable , keyUsages);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);

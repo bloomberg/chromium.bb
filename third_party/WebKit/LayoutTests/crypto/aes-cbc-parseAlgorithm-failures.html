@@ -22,31 +22,32 @@ Promise.resolve(null).then(function(result) {
     var extractable = false;
     var algorithm = {name: 'aes-cbc'};
 
+    debug('\nImporting AES-CBC key...');
     return crypto.subtle.importKey('raw', keyData, algorithm, extractable, usages);
 }).then(function(result) {
     key = result;
 
-    // Bad iv
+    debug('\nencrypt() with iv that is null...');
     return crypto.subtle.encrypt({name: 'AES-CBC', iv: null}, key, data);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
 
-    // Missing iv
+    debug('\nencrypt() without iv...');
     return crypto.subtle.decrypt({name: 'AES-CBC'}, key, data);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
 
-    // iv is not a buffer
+    debug('\nencrypt() with iv that is a number...');
     return crypto.subtle.encrypt({name: 'AES-CBC', iv: 3}, key, data);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
 
-    // iv is too short
+    debug('\nencrypt() with an iv containing 0 bytes...');
     return crypto.subtle.encrypt({name: 'AES-CBC', iv: new Uint8Array(0)}, key, data);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
 
-    // iv is longer than expected
+    debug('\nencrypt() with an iv containing 17 bytes...');
     return crypto.subtle.encrypt({name: 'AES-CBC', iv: new ArrayBuffer(17)}, key, data);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
