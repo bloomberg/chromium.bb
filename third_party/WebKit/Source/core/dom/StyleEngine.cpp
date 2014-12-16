@@ -434,6 +434,8 @@ const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> > StyleEngine::activeSt
 void StyleEngine::didRemoveShadowRoot(ShadowRoot* shadowRoot)
 {
     m_styleSheetCollectionMap.remove(shadowRoot);
+    m_activeTreeScopes.remove(shadowRoot);
+    m_dirtyTreeScopes.remove(shadowRoot);
 }
 
 void StyleEngine::appendActiveAuthorStyleSheets()
