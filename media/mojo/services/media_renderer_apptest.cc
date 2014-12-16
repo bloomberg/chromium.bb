@@ -99,8 +99,7 @@ namespace media {
 
 class MojoRendererTest : public mojo::test::ApplicationTestBase {
  public:
-  MojoRendererTest()
-      : service_provider_(NULL) {}
+  MojoRendererTest() : service_provider_(NULL) {}
   ~MojoRendererTest() override {}
 
  protected:
@@ -157,10 +156,7 @@ TEST_F(MojoRendererTest, BasicInitialize) {
       media::Renderer::PaintCB(), base::Closure(),
       base::Bind(&ErrorCallback, &expected_error));
   base::MessageLoop::current()->Run();
-
-  // We expect an error during initialization because MojoRendererService
-  // doesn't initialize any decoders, which causes an error.
-  EXPECT_EQ(PIPELINE_ERROR_COULD_NOT_RENDER, expected_error);
+  EXPECT_EQ(PIPELINE_OK, expected_error);
 }
 
 }  // namespace media
