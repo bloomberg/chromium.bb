@@ -6,13 +6,21 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/app_icon_loader_impl.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
+#include "chrome/browser/ui/app_list/app_list_util.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -265,13 +273,48 @@ void BookmarkAppBubbleView::ApplyEdits() {
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
           extension_id_, extensions::ExtensionRegistry::EVERYTHING);
-  if (extension && base::UTF8ToUTF16(extension->name()) == title_tf_->text())
+
+  if (!extension)
     return;
 
-  // Reinstall the app with an updated name.
-  WebApplicationInfo install_info(web_app_info_);
-  install_info.title = title_tf_->text();
+  if (base::UTF8ToUTF16(extension->name()) != title_tf_->text()) {
+    // Reinstall the app with an updated name.
+    WebApplicationInfo install_info(web_app_info_);
+    install_info.title = title_tf_->text();
 
-  extensions::CreateOrUpdateBookmarkApp(GetExtensionService(profile_),
-                                        &install_info);
+    // This will asynchronously reload the extension, causing the Extension*
+    // we have to be destroyed. The extension ID will stay the same so that is
+    // used later on to highlight the app.
+    extensions::CreateOrUpdateBookmarkApp(GetExtensionService(profile_),
+                                          &install_info);
+  }
+
+  // As the extension could be destroyed after this point, set it to null to
+  // prevent anyone trying to use it in future.
+  extension = nullptr;
+
+  // Show the newly installed app in the app launcher or chrome://apps. Don't
+  // do this on ash, as the icon will have been added to the shelf.
+  chrome::HostDesktopType desktop =
+      chrome::GetHostDesktopTypeForNativeWindow(GetWidget()->GetNativeWindow());
+  if (desktop == chrome::HOST_DESKTOP_TYPE_ASH)
+    return;
+
+  Profile* current_profile = profile_->GetOriginalProfile();
+  if (IsAppLauncherEnabled()) {
+    AppListService::Get(desktop)
+        ->ShowForAppInstall(current_profile, extension_id_, false);
+    return;
+  }
+
+  chrome::NavigateParams params(current_profile,
+                                GURL(chrome::kChromeUIAppsURL),
+                                ui::PAGE_TRANSITION_LINK);
+  params.disposition = NEW_FOREGROUND_TAB;
+  chrome::Navigate(&params);
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
+      content::Source<content::WebContents>(params.target_contents),
+      content::Details<const std::string>(&extension_id_));
 }
