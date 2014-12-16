@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/audio/audio_api.h"
+#include "extensions/browser/api/audio/audio_api.h"
 
 #include "base/lazy_instance.h"
 #include "base/values.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/api/audio.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/common/api/audio.h"
 
 namespace extensions {
 
-namespace audio = api::audio;
+namespace audio = core_api::audio;
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<AudioAPI> > g_factory =
     LAZY_INSTANCE_INITIALIZER;
@@ -46,9 +45,11 @@ void AudioAPI::OnDeviceChanged() {
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 bool AudioGetInfoFunction::RunAsync() {
   AudioService* service =
-      AudioAPI::GetFactoryInstance()->Get(GetProfile())->GetService();
+      AudioAPI::GetFactoryInstance()->Get(browser_context())->GetService();
   DCHECK(service);
   service->StartGetInfo(base::Bind(&AudioGetInfoFunction::OnGetInfoCompleted,
                                    this));
@@ -59,32 +60,36 @@ void AudioGetInfoFunction::OnGetInfoCompleted(const OutputInfo& output_info,
                                               const InputInfo& input_info,
                                               bool success) {
   if (success)
-    results_ = api::audio::GetInfo::Results::Create(output_info, input_info);
+    results_ = audio::GetInfo::Results::Create(output_info, input_info);
   else
     SetError("Error occurred when querying audio device information.");
   SendResponse(success);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 bool AudioSetActiveDevicesFunction::RunSync() {
-  scoped_ptr<api::audio::SetActiveDevices::Params> params(
-      api::audio::SetActiveDevices::Params::Create(*args_));
+  scoped_ptr<audio::SetActiveDevices::Params> params(
+      audio::SetActiveDevices::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   AudioService* service =
-      AudioAPI::GetFactoryInstance()->Get(GetProfile())->GetService();
+      AudioAPI::GetFactoryInstance()->Get(browser_context())->GetService();
   DCHECK(service);
 
   service->SetActiveDevices(params->ids);
   return true;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 bool AudioSetPropertiesFunction::RunSync() {
-  scoped_ptr<api::audio::SetProperties::Params> params(
-      api::audio::SetProperties::Params::Create(*args_));
+  scoped_ptr<audio::SetProperties::Params> params(
+      audio::SetProperties::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   AudioService* service =
-      AudioAPI::GetFactoryInstance()->Get(GetProfile())->GetService();
+      AudioAPI::GetFactoryInstance()->Get(browser_context())->GetService();
   DCHECK(service);
 
   int volume_value = params->properties.volume.get() ?

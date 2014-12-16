@@ -103,10 +103,6 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
   network_controller_.reset(new ShellNetworkController(
       CommandLine::ForCurrentProcess()->GetSwitchValueNative(
           switches::kAppShellPreferredNetwork)));
-
-  chromeos::CrasAudioHandler::Initialize(
-      new ShellAudioController::PrefHandler());
-  audio_controller_.reset(new ShellAudioController());
 #else
   // Non-Chrome OS platforms are for developer convenience, so use a test IME.
   ui::InitializeInputMethodForTesting();
@@ -132,6 +128,15 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // Initialize our "profile" equivalent.
   browser_context_.reset(new ShellBrowserContext);
   pref_service_ = ShellPrefs::CreatePrefService(browser_context_.get());
+
+#if defined(OS_CHROMEOS)
+  // TODO(jamescook): Use a real chromeos::AudioDevicesPrefHandler hooked up
+  // to |pref_service_|. This requires refactoring some of the Chrome OS audio
+  // code. http://crbug.com/442401
+  chromeos::CrasAudioHandler::Initialize(
+      new ShellAudioController::PrefHandler());
+  audio_controller_.reset(new ShellAudioController());
+#endif
 
 #if defined(USE_AURA)
   aura::Env::GetInstance()->set_context_factory(content::GetContextFactory());
@@ -243,6 +248,11 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
 
   storage_monitor::StorageMonitor::Destroy();
 
+#if defined(OS_CHROMEOS)
+  audio_controller_.reset();
+  chromeos::CrasAudioHandler::Shutdown();
+#endif
+
   pref_service_->CommitPendingWrite();
   pref_service_.reset();
   browser_context_.reset();
@@ -250,8 +260,6 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
 
 void ShellBrowserMainParts::PostDestroyThreads() {
 #if defined(OS_CHROMEOS)
-  audio_controller_.reset();
-  chromeos::CrasAudioHandler::Shutdown();
   network_controller_.reset();
   chromeos::NetworkHandler::Shutdown();
   chromeos::DBusThreadManager::Shutdown();

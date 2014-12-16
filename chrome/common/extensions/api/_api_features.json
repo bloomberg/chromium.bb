@@ -79,10 +79,6 @@
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"],
     "matches": []
   },
-  "audio": {
-    "dependencies": ["permission:audio"],
-    "contexts": ["blessed_extension"]
-  },
   "automationInternal": {
     "internal": true,
     "dependencies": ["manifest:automation"],

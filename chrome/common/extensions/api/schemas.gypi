@@ -11,7 +11,6 @@
       'accessibility_private.json',
       'activity_log_private.json',
       'alarms.idl',
-      'audio.idl',
       'automation.idl',
       'automation_internal.idl',
       'autotest_private.idl',

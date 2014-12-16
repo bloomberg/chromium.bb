@@ -5,6 +5,7 @@
 #include "extensions/browser/browser_context_keyed_service_factories.h"
 
 #include "extensions/browser/api/api_resource_manager.h"
+#include "extensions/browser/api/audio/audio_api.h"
 #include "extensions/browser/api/hid/hid_device_manager.h"
 #include "extensions/browser/api/management/management_api.h"
 #include "extensions/browser/api/runtime/runtime_api.h"
@@ -25,12 +26,12 @@
 namespace extensions {
 
 void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
-  ApiResourceManager<
-      extensions::ResumableTCPServerSocket>::GetFactoryInstance();
-  ApiResourceManager<extensions::ResumableTCPSocket>::GetFactoryInstance();
-  ApiResourceManager<extensions::ResumableUDPSocket>::GetFactoryInstance();
-  ApiResourceManager<extensions::SerialConnection>::GetFactoryInstance();
-  ApiResourceManager<extensions::Socket>::GetFactoryInstance();
+  ApiResourceManager<ResumableTCPServerSocket>::GetFactoryInstance();
+  ApiResourceManager<ResumableTCPSocket>::GetFactoryInstance();
+  ApiResourceManager<ResumableUDPSocket>::GetFactoryInstance();
+  ApiResourceManager<SerialConnection>::GetFactoryInstance();
+  ApiResourceManager<Socket>::GetFactoryInstance();
+  AudioAPI::GetFactoryInstance();
 #if defined(OS_CHROMEOS)
   chromeos::VpnServiceFactory::GetInstance();
 #endif

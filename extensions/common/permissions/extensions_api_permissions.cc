@@ -35,6 +35,7 @@ std::vector<APIPermissionInfo*> ExtensionsAPIPermissions::GetAllPermissions()
       {APIPermission::kAlwaysOnTopWindows, "app.window.alwaysOnTop"},
       {APIPermission::kAppView, "appview",
         APIPermissionInfo::kFlagCannotBeOptional},
+      {APIPermission::kAudio, "audio"},
       {APIPermission::kAudioCapture, "audioCapture",
        APIPermissionInfo::kFlagNone, IDS_EXTENSION_PROMPT_WARNING_AUDIO_CAPTURE,
        PermissionMessage::kAudioCapture},

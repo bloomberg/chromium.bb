@@ -85,6 +85,10 @@
     "channel": "stable",
     "contexts": ["blessed_extension"]
   },
+  "audio": {
+    "dependencies": ["permission:audio"],
+    "contexts": ["blessed_extension"]
+  },
   "bluetooth": {
     "dependencies": ["manifest:bluetooth"],
     "contexts": ["blessed_extension"]

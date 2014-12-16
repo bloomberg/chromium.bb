@@ -9,16 +9,14 @@
 #include "chromeos/audio/audio_devices_pref_handler.h"
 #include "chromeos/audio/cras_audio_handler.h"
 
-namespace chromeos {
-class AudioDevicesPrefHandler;
-}
-
 namespace extensions {
 
 // Ensures that the "best" input and output audio devices are always active.
 class ShellAudioController : public chromeos::CrasAudioHandler::AudioObserver {
  public:
-  // Requests max volume for all devices and doesn't bother saving prefs.
+  // Simple handler that supports one input and one output device, starts with
+  // max voume and doesn't bother saving prefs.
+  // TODO(jamescook): Remove this and use a real one. http://crbug.com/442401
   class PrefHandler : public chromeos::AudioDevicesPrefHandler {
    public:
     PrefHandler();
@@ -44,6 +42,10 @@ class ShellAudioController : public chromeos::CrasAudioHandler::AudioObserver {
     virtual ~PrefHandler();
 
    private:
+    double output_volume_percent_;  // 0.0 to 100.0 inclusive.
+    double input_gain_percent_;  //  0.0 to 100.0 inclusive.
+    bool mute_;
+
     DISALLOW_COPY_AND_ASSIGN(PrefHandler);
   };
 
@@ -51,13 +53,13 @@ class ShellAudioController : public chromeos::CrasAudioHandler::AudioObserver {
   virtual ~ShellAudioController();
 
   // chromeos::CrasAudioHandler::Observer implementation:
-  virtual void OnOutputVolumeChanged() override;
-  virtual void OnOutputMuteChanged() override;
-  virtual void OnInputGainChanged() override;
-  virtual void OnInputMuteChanged() override;
-  virtual void OnAudioNodesChanged() override;
-  virtual void OnActiveOutputNodeChanged() override;
-  virtual void OnActiveInputNodeChanged() override;
+  void OnOutputVolumeChanged() override;
+  void OnOutputMuteChanged() override;
+  void OnInputGainChanged() override;
+  void OnInputMuteChanged() override;
+  void OnAudioNodesChanged() override;
+  void OnActiveOutputNodeChanged() override;
+  void OnActiveInputNodeChanged() override;
 
  private:
   // Gets the current device list from CRAS, chooses the best input and output

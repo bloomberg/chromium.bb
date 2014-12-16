@@ -85,10 +85,7 @@ static_library("extensions") {
         rebase_path(gypi_values.chrome_browser_extensions_chromeos_sources,
                     ".",
                     "//chrome")
-    sources -= [
-      "api/audio/audio_service_linux.cc",
-      "api/music_manager_private/device_id_linux.cc",
-    ]
+    sources -= [ "api/music_manager_private/device_id_linux.cc" ]
     configs += [ "//build/config/linux:dbus" ]
     deps += [
       "//third_party/libevent",
@@ -136,8 +133,6 @@ static_library("extensions") {
         "//ui/events/platform/x11",
       ]
     }
-  } else {
-    sources += [ "api/audio/audio_service.cc" ]
   }
 
   if (enable_configuration_policy) {

@@ -33,16 +33,15 @@ function verifyDeviceProperties(output_id, input_id,
         var inputFound = false;
         for (var i = 0; i < outputInfo.length; ++i) {
           if (outputInfo[i].id == output_id) {
-            chrome.test.assertTrue(outputInfo[i].volume == output_props.volume);
-            chrome.test.assertTrue(
-                outputInfo[i].isMuted == output_props.isMuted);
+            chrome.test.assertEq(output_props.volume, outputInfo[i].volume);
+            chrome.test.assertEq(output_props.isMuted, outputInfo[i].isMuted);
             outputFound = true;
           }
         }
         for (var i = 0; i < inputInfo.length; ++i) {
           if (inputInfo[i].id == input_id) {
-            chrome.test.assertTrue(inputInfo[i].gain == input_props.gain);
-            chrome.test.assertTrue(inputInfo[i].isMuted == input_props.isMuted);
+            chrome.test.assertEq(input_props.gain, inputInfo[i].gain);
+            chrome.test.assertEq(input_props.isMuted, inputInfo[i].isMuted);
             inputFound = true;
           }
         }

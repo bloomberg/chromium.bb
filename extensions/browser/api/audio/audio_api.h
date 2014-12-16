@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_AUDIO_AUDIO_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_AUDIO_AUDIO_API_H_
+#ifndef EXTENSIONS_BROWSER_API_AUDIO_AUDIO_API_H_
+#define EXTENSIONS_BROWSER_API_AUDIO_AUDIO_API_H_
 
-#include "chrome/browser/extensions/api/audio/audio_service.h"
-#include "chrome/browser/extensions/chrome_extension_function.h"
+#include "extensions/browser/api/audio/audio_service.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_function.h"
 
 namespace extensions {
 
@@ -38,10 +38,9 @@ class AudioAPI : public BrowserContextKeyedAPI, public AudioService::Observer {
   AudioService* service_;
 };
 
-class AudioGetInfoFunction : public ChromeAsyncExtensionFunction {
+class AudioGetInfoFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("audio.getInfo",
-                             AUDIO_GETINFO);
+  DECLARE_EXTENSION_FUNCTION("audio.getInfo", AUDIO_GETINFO);
 
  protected:
   ~AudioGetInfoFunction() override {}
@@ -53,20 +52,18 @@ class AudioGetInfoFunction : public ChromeAsyncExtensionFunction {
                           bool success);
 };
 
-class AudioSetActiveDevicesFunction : public ChromeSyncExtensionFunction {
+class AudioSetActiveDevicesFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("audio.setActiveDevices",
-                             AUDIO_SETACTIVEDEVICES);
+  DECLARE_EXTENSION_FUNCTION("audio.setActiveDevices", AUDIO_SETACTIVEDEVICES);
 
  protected:
   ~AudioSetActiveDevicesFunction() override {}
   bool RunSync() override;
 };
 
-class AudioSetPropertiesFunction : public ChromeSyncExtensionFunction {
+class AudioSetPropertiesFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("audio.setProperties",
-                             AUDIO_SETPROPERTIES);
+  DECLARE_EXTENSION_FUNCTION("audio.setProperties", AUDIO_SETPROPERTIES);
 
  protected:
   ~AudioSetPropertiesFunction() override {}
@@ -76,4 +73,4 @@ class AudioSetPropertiesFunction : public ChromeSyncExtensionFunction {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_AUDIO_AUDIO_API_H_
+#endif  // EXTENSIONS_BROWSER_API_AUDIO_AUDIO_API_H_

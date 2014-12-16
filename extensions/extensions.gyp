@@ -338,6 +338,11 @@
         'browser/api/app_window/app_window_api.h',
         'browser/api/async_api_function.cc',
         'browser/api/async_api_function.h',
+        'browser/api/audio/audio_api.cc',
+        'browser/api/audio/audio_api.h',
+        'browser/api/audio/audio_service.h',
+        'browser/api/audio/audio_service_chromeos.cc',
+        'browser/api/audio/audio_service_linux.cc',
         'browser/api/bluetooth/bluetooth_api.cc',
         'browser/api/bluetooth/bluetooth_api.h',
         'browser/api/bluetooth/bluetooth_api_pairing_delegate.cc',
@@ -798,7 +803,10 @@
             '../components/components.gyp:storage_monitor',
           ],
         }],
-        ['OS == "linux" and chromeos == 1', {
+        ['chromeos == 1', {
+          'dependencies': [
+            '../chromeos/chromeos.gyp:chromeos',
+          ],
           'sources': [
             'browser/api/vpn_provider/vpn_provider_api.cc',
             'browser/api/vpn_provider/vpn_provider_api.h',
@@ -832,6 +840,11 @@
               ],
             }],
           ],
+        }],
+        ['OS != "linux"', {
+          'sources': [
+            'browser/api/audio/audio_service.cc',
+          ]
         }],
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.

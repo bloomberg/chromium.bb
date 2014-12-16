@@ -13,6 +13,7 @@
       'app_runtime.idl',
       'app_view_guest_internal.json',
       'app_window.idl',
+      'audio.idl',
       'bluetooth.idl',
       'bluetooth_low_energy.idl',
       'bluetooth_private.json',

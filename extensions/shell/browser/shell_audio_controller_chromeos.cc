@@ -13,8 +13,8 @@ namespace extensions {
 namespace {
 
 // Default output and input volume.
-const double kOutputVolumePercent = 100.0;
-const double kInputGainPercent = 100.0;
+const double kDefaultOutputVolumePercent = 100.0;
+const double kDefaultInputGainPercent = 100.0;
 
 // Returns a pointer to the device in |devices| with ID |node_id|, or NULL if it
 // isn't present.
@@ -30,33 +30,41 @@ const chromeos::AudioDevice* GetDevice(const chromeos::AudioDeviceList& devices,
 
 }  // namespace
 
-ShellAudioController::PrefHandler::PrefHandler() {}
+ShellAudioController::PrefHandler::PrefHandler()
+    : output_volume_percent_(kDefaultOutputVolumePercent),
+      input_gain_percent_(kDefaultInputGainPercent),
+      mute_(false) {
+}
 
 double ShellAudioController::PrefHandler::GetOutputVolumeValue(
     const chromeos::AudioDevice* device) {
-  return kOutputVolumePercent;
+  return output_volume_percent_;
 }
 
 double ShellAudioController::PrefHandler::GetInputGainValue(
     const chromeos::AudioDevice* device) {
-  return kInputGainPercent;
+  return input_gain_percent_;
 }
 
 void ShellAudioController::PrefHandler::SetVolumeGainValue(
     const chromeos::AudioDevice& device,
     double value) {
-  // TODO(derat): Shove volume and mute prefs into a map so we can at least
-  // honor changes that are made at runtime.
+  if (device.is_input)
+    input_gain_percent_ = value;
+  else
+    output_volume_percent_ = value;
 }
 
 bool ShellAudioController::PrefHandler::GetMuteValue(
     const chromeos::AudioDevice& device) {
-  return false;
+  return mute_;
 }
 
 void ShellAudioController::PrefHandler::SetMuteValue(
     const chromeos::AudioDevice& device,
-    bool mute_on) {}
+    bool mute_on) {
+  mute_ = mute_on;
+}
 
 bool ShellAudioController::PrefHandler::GetAudioCaptureAllowedValue() {
   return true;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/audio/audio_service.h"
+#include "extensions/browser/api/audio/audio_service.h"
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
@@ -15,8 +15,8 @@ using content::BrowserThread;
 
 namespace extensions {
 
-using api::audio::OutputDeviceInfo;
-using api::audio::InputDeviceInfo;
+using core_api::audio::OutputDeviceInfo;
+using core_api::audio::InputDeviceInfo;
 
 class AudioServiceImpl : public AudioService,
                          public chromeos::CrasAudioHandler::AudioObserver {

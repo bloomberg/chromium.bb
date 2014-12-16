@@ -114,11 +114,6 @@
       'browser/extensions/api/alarms/alarm_manager.h',
       'browser/extensions/api/alarms/alarms_api.cc',
       'browser/extensions/api/alarms/alarms_api.h',
-      'browser/extensions/api/audio/audio_api.cc',
-      'browser/extensions/api/audio/audio_api.h',
-      'browser/extensions/api/audio/audio_service.h',
-      'browser/extensions/api/audio/audio_service_chromeos.cc',
-      'browser/extensions/api/audio/audio_service_linux.cc',
       'browser/extensions/api/automation_internal/automation_action_adapter.h',
       'browser/extensions/api/automation_internal/automation_internal_api.cc',
       'browser/extensions/api/automation_internal/automation_internal_api.h',
@@ -1029,10 +1024,6 @@
                 '../ui/events/platform/x11/x11_events_platform.gyp:x11_events_platform',
               ],
             }],
-          ],
-        }, {
-          'sources': [
-            'browser/extensions/api/audio/audio_service.cc',
           ],
         }],
         ['safe_browsing==1', {

@@ -219,6 +219,7 @@
         # TODO(yoz): Refactor once we have a second test target.
         # TODO(yoz): Something is off here; should this .gyp file be
         # in the parent directory? Test target extensions_browsertests?
+        '../browser/api/audio/audio_apitest.cc',
         '../browser/api/dns/dns_apitest.cc',
         '../browser/api/hid/hid_apitest.cc',
         '../browser/api/socket/socket_apitest.cc',

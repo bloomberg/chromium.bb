@@ -52,6 +52,9 @@ source_set("browser") {
       "api/app_window/app_window_api.h",
       "api/async_api_function.cc",
       "api/async_api_function.h",
+      "api/audio/audio_api.cc",
+      "api/audio/audio_api.h",
+      "api/audio/audio_service.h",
       "api/bluetooth/bluetooth_api.cc",
       "api/bluetooth/bluetooth_api.h",
       "api/bluetooth/bluetooth_api_pairing_delegate.cc",
@@ -519,13 +522,19 @@ source_set("browser") {
     }
 
     if (is_chromeos) {
+      deps += [ "//chromeos" ]
       sources += [
+        "api/audio/audio_service_chromeos.cc",
         "api/vpn_provider/vpn_provider_api.cc",
         "api/vpn_provider/vpn_provider_api.h",
         "api/vpn_provider/vpn_service.cc",
         "api/vpn_provider/vpn_service.h",
         "api/vpn_provider/vpn_service_factory.h",
       ]
+    } else if (is_linux) {
+      sources += [ "api/audio/audio_service_linux.cc" ]
+    } else {
+      sources += [ "api/audio/audio_service.cc" ]
     }
   }
 
