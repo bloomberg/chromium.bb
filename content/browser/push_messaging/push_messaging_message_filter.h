@@ -45,13 +45,6 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   // BrowserMessageFilter implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  // TODO(mvanouwerkerk): Delete once this is no longer called.
-  void OnRegisterFromDocumentOld(int render_frame_id,
-                                 int request_id,
-                                 const std::string& sender_id,
-                                 bool user_visible_only,
-                                 int service_worker_provider_id);
-
   void OnRegisterFromDocument(int render_frame_id,
                               int request_id,
                               const std::string& sender_id,
@@ -60,12 +53,6 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
 
   void OnRegisterFromWorker(int request_id,
                             int64 service_worker_registration_id);
-
-  // TODO(mvanouwerkerk): Delete once the Push API flows through platform.
-  // https://crbug.com/389194
-  void OnPermissionStatusRequest(int render_frame_id,
-                                 int service_worker_provider_id,
-                                 int permission_callback_id);
 
   void OnGetPermissionStatus(int request_id,
                              int64 service_worker_registration_id);
@@ -92,12 +79,6 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
 
   void RegisterOnUI(const RegisterData& data,
                     const std::string& sender_id);
-
-  // TODO(mvanouwerkerk): Delete once the Push API flows through platform.
-  // https://crbug.com/389194
-  void DoPermissionStatusRequest(const GURL& requesting_origin,
-                                 int render_frame_id,
-                                 int callback_id);
 
   void GetPermissionStatusOnUI(const GURL& requesting_origin, int request_id);
 

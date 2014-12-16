@@ -66,44 +66,15 @@ bool PushMessagingMessageFilter::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PushMessagingMessageFilter, message)
-    IPC_MESSAGE_HANDLER(PushMessagingHostMsg_RegisterFromDocumentOld,
-                        OnRegisterFromDocumentOld)
     IPC_MESSAGE_HANDLER(PushMessagingHostMsg_RegisterFromDocument,
                         OnRegisterFromDocument)
     IPC_MESSAGE_HANDLER(PushMessagingHostMsg_RegisterFromWorker,
                         OnRegisterFromWorker)
-    IPC_MESSAGE_HANDLER(PushMessagingHostMsg_GetRegistration, OnGetRegistration)
-    IPC_MESSAGE_HANDLER(PushMessagingHostMsg_PermissionStatus,
-                        OnPermissionStatusRequest)
     IPC_MESSAGE_HANDLER(PushMessagingHostMsg_GetPermissionStatus,
                         OnGetPermissionStatus)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void PushMessagingMessageFilter::OnRegisterFromDocumentOld(
-    int render_frame_id,
-    int request_id,
-    const std::string& sender_id,
-    bool user_visible_only,
-    int service_worker_provider_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // TODO(mvanouwerkerk): Validate arguments?
-  ServiceWorkerProviderHost* service_worker_host =
-      service_worker_context_->context()->GetProviderHost(
-          render_process_id_, service_worker_provider_id);
-  if (!service_worker_host || !service_worker_host->active_version()) {
-    PushRegistrationStatus status =
-        PUSH_REGISTRATION_STATUS_NO_SERVICE_WORKER;
-    Send(new PushMessagingMsg_RegisterFromDocumentError(render_frame_id,
-                                                        request_id, status));
-    RecordRegistrationStatus(status);
-    return;
-  }
-  OnRegisterFromDocument(
-      render_frame_id, request_id, sender_id, user_visible_only,
-      service_worker_host->active_version()->registration_id());
 }
 
 void PushMessagingMessageFilter::OnRegisterFromDocument(
@@ -164,30 +135,6 @@ void PushMessagingMessageFilter::OnRegisterFromWorker(
 
   // This sender_id will be ignored; instead it will be fetched from storage.
   CheckForExistingRegistration(data, "" /* sender_id */);
-}
-
-void PushMessagingMessageFilter::OnPermissionStatusRequest(
-    int render_frame_id,
-    int service_worker_provider_id,
-    int permission_callback_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  ServiceWorkerProviderHost* service_worker_host =
-      service_worker_context_->context()->GetProviderHost(
-          render_process_id_, service_worker_provider_id);
-
-  if (service_worker_host && service_worker_host->active_version()) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&PushMessagingMessageFilter::DoPermissionStatusRequest,
-                   this,
-                   service_worker_host->active_version()->scope().GetOrigin(),
-                   render_frame_id,
-                   permission_callback_id));
-  } else {
-    Send(new PushMessagingMsg_PermissionStatusFailure(
-          render_frame_id, permission_callback_id));
-  }
 }
 
 void PushMessagingMessageFilter::OnGetPermissionStatus(
@@ -301,24 +248,6 @@ void PushMessagingMessageFilter::RegisterOnUI(
         base::Bind(&PushMessagingMessageFilter::DidRegister,
                    weak_factory_ui_to_ui_.GetWeakPtr(), data));
   }
-}
-
-void PushMessagingMessageFilter::DoPermissionStatusRequest(
-    const GURL& requesting_origin,
-    int render_frame_id,
-    int callback_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!service()) {
-    Send(new PushMessagingMsg_PermissionStatusFailure(render_frame_id,
-                                                      callback_id));
-    return;
-  }
-  blink::WebPushPermissionStatus permission_value =
-      service()->GetPermissionStatus(
-          requesting_origin, render_process_id_, render_frame_id);
-
-  Send(new PushMessagingMsg_PermissionStatusResult(
-      render_frame_id, callback_id, permission_value));
 }
 
 void PushMessagingMessageFilter::GetPermissionStatusOnUI(

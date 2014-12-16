@@ -43,39 +43,22 @@ IPC_MESSAGE_CONTROL2(PushMessagingMsg_RegisterFromWorkerError,
                      content::PushRegistrationStatus /* status */)
 
 IPC_MESSAGE_CONTROL3(PushMessagingMsg_GetRegistrationSuccess,
-                    int32 /* request_id */,
-                    GURL /* push_endpoint */,
-                    std::string /* push_registration_id */)
+                     int32 /* request_id */,
+                     GURL /* push_endpoint */,
+                     std::string /* push_registration_id */)
 
 IPC_MESSAGE_CONTROL2(PushMessagingMsg_GetRegistrationError,
-                    int32 /* request_id */,
-                    content::PushGetRegistrationStatus /* status */)
-
-// TODO(mvanouwerkerk): Delete this after switching to the platform code path.
-IPC_MESSAGE_ROUTED2(PushMessagingMsg_PermissionStatusResult,
-                    int32 /* callback_id */,
-                    blink::WebPushPermissionStatus /* status */)
+                     int32 /* request_id */,
+                     content::PushGetRegistrationStatus /* status */)
 
 IPC_MESSAGE_CONTROL2(PushMessagingMsg_GetPermissionStatusSuccess,
                      int32 /* request_id */,
                      blink::WebPushPermissionStatus /* status */)
 
-// TODO(mvanouwerkerk): Delete this after switching to the platform code path.
-IPC_MESSAGE_ROUTED1(PushMessagingMsg_PermissionStatusFailure,
-                    int32 /* callback_id */)
-
 IPC_MESSAGE_CONTROL1(PushMessagingMsg_GetPermissionStatusError,
                      int32 /* request_id */)
 
 // Messages sent from the child process to the browser.
-
-// TODO(mvanouwerkerk): Delete this when it is no longer used.
-IPC_MESSAGE_CONTROL5(PushMessagingHostMsg_RegisterFromDocumentOld,
-                     int32 /* render_frame_id */,
-                     int32 /* request_id */,
-                     std::string /* sender_id */,
-                     bool /* user_visible_only */,
-                     int32 /* service_worker_provider_id */)
 
 IPC_MESSAGE_CONTROL5(PushMessagingHostMsg_RegisterFromDocument,
                      int32 /* render_frame_id */,
@@ -87,16 +70,6 @@ IPC_MESSAGE_CONTROL5(PushMessagingHostMsg_RegisterFromDocument,
 IPC_MESSAGE_CONTROL2(PushMessagingHostMsg_RegisterFromWorker,
                      int32 /* request_id */,
                      int64 /* service_worker_registration_id */)
-
-IPC_MESSAGE_CONTROL2(PushMessagingHostMsg_GetRegistration,
-                     int32 /* request_id */,
-                     int64 /* service_worker_registration_id */)
-
-// TODO(mvanouwerkerk): Delete this after switching to the platform code path.
-IPC_MESSAGE_CONTROL3(PushMessagingHostMsg_PermissionStatus,
-                     int32 /* render_frame_id */,
-                     int32 /* service_worker_provider_id */,
-                     int32 /* permission_callback_id */)
 
 IPC_MESSAGE_CONTROL2(PushMessagingHostMsg_GetPermissionStatus,
                      int32 /* request_id */,
