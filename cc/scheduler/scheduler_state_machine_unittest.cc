@@ -1079,7 +1079,9 @@ TEST(SchedulerStateMachineTest, TestRequestCommitInvisible) {
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 }
 
-TEST(SchedulerStateMachineTest, TestGoesInvisibleBeforeFinishCommit) {
+// See ThreadProxy::BeginMainFrame "EarlyOut_NotVisible" /
+// "EarlyOut_OutputSurfaceLost" cases.
+TEST(SchedulerStateMachineTest, TestAbortBeginMainFrameBecauseInvisible) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   state.SetCanStart();
@@ -1102,7 +1104,13 @@ TEST(SchedulerStateMachineTest, TestGoesInvisibleBeforeFinishCommit) {
 
   // Become invisible and abort BeginMainFrame.
   state.SetVisible(false);
+  // False means that the BeginMainFrame was sent but we never forwarded it to
+  // the main thread because by the time it arrived we couldn't process it.
   state.BeginMainFrameAborted(false);
+
+  // NeedsCommit should now be true again because we never actually did a
+  // commit.
+  EXPECT_TRUE(state.NeedsCommit());
 
   // We should now be back in the idle state as if we never started the frame.
   EXPECT_COMMIT_STATE(SchedulerStateMachine::COMMIT_STATE_IDLE);
@@ -1132,7 +1140,8 @@ TEST(SchedulerStateMachineTest, TestGoesInvisibleBeforeFinishCommit) {
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 }
 
-TEST(SchedulerStateMachineTest, AbortBeginMainFrameAndCancelCommit) {
+// See ThreadProxy::BeginMainFrame "EarlyOut_NoUpdates" case.
+TEST(SchedulerStateMachineTest, TestAbortBeginMainFrameBecauseCommitNotNeeded) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   state.SetCanStart();
@@ -1151,16 +1160,17 @@ TEST(SchedulerStateMachineTest, AbortBeginMainFrameAndCancelCommit) {
   EXPECT_FALSE(state.NeedsCommit());
   EXPECT_ACTION(SchedulerStateMachine::ACTION_NONE);
 
-  // Abort the commit, cancelling future commits.
+  // Abort the commit, true means that the BeginMainFrame was sent but there
+  // was no work to do on the main thread.
   state.BeginMainFrameAborted(true);
 
+  // NeedsCommit should now be false because the commit was actually handled.
+  EXPECT_FALSE(state.NeedsCommit());
   // Verify that another commit doesn't start on the same frame.
   EXPECT_COMMIT_STATE(SchedulerStateMachine::COMMIT_STATE_IDLE);
   EXPECT_ACTION(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_FALSE(state.NeedsCommit());
 
-  // Start a new frame; draw because this is the first frame since output
-  // surface init'd.
+  // Even though the commit was aborted, we still expect to draw the new frame.
   state.OnBeginImplFrame(CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE));
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -1179,151 +1189,6 @@ TEST(SchedulerStateMachineTest, AbortBeginMainFrameAndCancelCommit) {
   state.SetNeedsCommit();
   EXPECT_COMMIT_STATE(SchedulerStateMachine::COMMIT_STATE_IDLE);
   EXPECT_ACTION(SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-}
-
-TEST(SchedulerStateMachineTest,
-     AbortBeginMainFrameAndCancelCommitWhenInvisible) {
-  SchedulerSettings default_scheduler_settings;
-  StateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
-  state.SetVisible(true);
-  state.SetCanDraw(true);
-
-  // Get into a begin frame / commit state.
-  state.SetNeedsCommit();
-
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-  EXPECT_COMMIT_STATE(
-      SchedulerStateMachine::COMMIT_STATE_BEGIN_MAIN_FRAME_SENT);
-  EXPECT_FALSE(state.NeedsCommit());
-  EXPECT_ACTION(SchedulerStateMachine::ACTION_NONE);
-
-  // Become invisible and abort BeginMainFrame.
-  state.SetVisible(false);
-  state.BeginMainFrameAborted(true);
-
-  // Verify that another commit doesn't start on the same frame.
-  EXPECT_COMMIT_STATE(SchedulerStateMachine::COMMIT_STATE_IDLE);
-  EXPECT_ACTION(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_FALSE(state.NeedsCommit());
-
-  // Become visible and start a new frame.
-  state.SetVisible(true);
-  state.OnBeginImplFrame(CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE));
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-
-  // Draw because this is the first frame since output surface init'd.
-  state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
-  state.DidSwapBuffers();
-  state.DidSwapBuffersComplete();
-
-  // Verify another commit doesn't start on another frame either.
-  EXPECT_COMMIT_STATE(SchedulerStateMachine::COMMIT_STATE_IDLE);
-  EXPECT_ACTION(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_FALSE(state.NeedsCommit());
-
-  // Verify another commit can start if requested, though.
-  state.SetNeedsCommit();
-  EXPECT_COMMIT_STATE(SchedulerStateMachine::COMMIT_STATE_IDLE);
-  EXPECT_ACTION(SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-}
-
-TEST(SchedulerStateMachineTest,
-     AbortBeginMainFrameAndRequestCommitWhenInvisible) {
-  SchedulerSettings default_scheduler_settings;
-  StateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
-  state.SetVisible(true);
-  state.SetCanDraw(true);
-
-  // Get into a begin frame / commit state.
-  state.SetNeedsCommit();
-
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-  EXPECT_COMMIT_STATE(
-      SchedulerStateMachine::COMMIT_STATE_BEGIN_MAIN_FRAME_SENT);
-  EXPECT_FALSE(state.NeedsCommit());
-  EXPECT_ACTION(SchedulerStateMachine::ACTION_NONE);
-
-  // Become invisible and abort BeginMainFrame.
-  state.SetVisible(false);
-  state.BeginMainFrameAborted(true);
-
-  // Verify that another commit doesn't start on the same frame.
-  EXPECT_COMMIT_STATE(SchedulerStateMachine::COMMIT_STATE_IDLE);
-  EXPECT_ACTION(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_FALSE(state.NeedsCommit());
-
-  // Asking for a commit while not visible won't make it happen.
-  state.SetNeedsCommit();
-  EXPECT_COMMIT_STATE(SchedulerStateMachine::COMMIT_STATE_IDLE);
-  EXPECT_ACTION(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_TRUE(state.NeedsCommit());
-
-  // Become visible but nothing happens until the next frame.
-  state.SetVisible(true);
-  EXPECT_COMMIT_STATE(SchedulerStateMachine::COMMIT_STATE_IDLE);
-  EXPECT_ACTION(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_TRUE(state.NeedsCommit());
-
-  // We should get that commit when we begin the next frame.
-  state.OnBeginImplFrame(CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE));
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-}
-
-TEST(SchedulerStateMachineTest,
-     AbortBeginMainFrameAndRequestCommitAndBeginImplFrameWhenInvisible) {
-  SchedulerSettings default_scheduler_settings;
-  StateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
-  state.SetVisible(true);
-  state.SetCanDraw(true);
-
-  // Get into a begin frame / commit state.
-  state.SetNeedsCommit();
-
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-  EXPECT_COMMIT_STATE(
-      SchedulerStateMachine::COMMIT_STATE_BEGIN_MAIN_FRAME_SENT);
-  EXPECT_FALSE(state.NeedsCommit());
-  EXPECT_ACTION(SchedulerStateMachine::ACTION_NONE);
-
-  // Become invisible and abort BeginMainFrame.
-  state.SetVisible(false);
-  state.BeginMainFrameAborted(true);
-
-  // Asking for a commit while not visible won't make it happen.
-  state.SetNeedsCommit();
-  EXPECT_COMMIT_STATE(SchedulerStateMachine::COMMIT_STATE_IDLE);
-  EXPECT_ACTION(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_TRUE(state.NeedsCommit());
-
-  // Begin a frame when not visible, the scheduler animates but does not commit.
-  state.OnBeginImplFrame(CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE));
-  EXPECT_COMMIT_STATE(SchedulerStateMachine::COMMIT_STATE_IDLE);
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
-  EXPECT_ACTION(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_TRUE(state.NeedsCommit());
-
-  // Become visible and the requested commit happens immediately.
-  state.SetVisible(true);
-  EXPECT_COMMIT_STATE(SchedulerStateMachine::COMMIT_STATE_IDLE);
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
 }
 
 TEST(SchedulerStateMachineTest, TestFirstContextCreation) {
