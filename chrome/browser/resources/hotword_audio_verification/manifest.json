@@ -20,7 +20,8 @@
     "chrome://resources/",
     "chrome://settings/",
     "browser",
-    "hotwordPrivate"
+    "hotwordPrivate",
+    "idle"
   ],
   "display_in_launcher": false
 }

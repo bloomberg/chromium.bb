@@ -90,6 +90,12 @@
     this.speakerModelFinalized_ = false;
 
     /**
+     * ID of the currently active timeout.
+     * @private {?number}
+     */
+    this.timeoutId_ = null;
+
+    /**
      * Listener for the speakerModelSaved event.
      * @private {Function}
      */
@@ -102,6 +108,10 @@
      */
     this.hotwordTriggerListener_ =
           this.handleHotwordTrigger_.bind(this);
+
+    // Listen for the user locking the screen.
+    chrome.idle.onStateChanged.addListener(
+        this.handleIdleStateChanged_.bind(this));
   }
 
   /**
@@ -235,7 +245,7 @@
           this.speakerModelFinalizedListener_);
     }
     this.stopTraining();
-    setTimeout(this.finishFlow_.bind(this), 2000);
+    this.setTimeout_(this.finishFlow_.bind(this), 2000);
   };
 
   /**
@@ -280,7 +290,7 @@
     }
 
     this.speakerModelFinalized_ = false;
-    setTimeout(this.handleSpeakerModelFinalizedError_.bind(this), 30000);
+    this.setTimeout_(this.handleSpeakerModelFinalizedError_.bind(this), 30000);
     if (chrome.hotwordPrivate.finalizeSpeakerModel)
       chrome.hotwordPrivate.finalizeSpeakerModel();
   };
@@ -324,7 +334,7 @@
       return;
 
     this.hotwordTriggerReceived_[index] = false;
-    setTimeout(this.handleTrainingTimeout_.bind(this, index), 120000);
+    this.setTimeout_(this.handleTrainingTimeout_.bind(this, index), 120000);
   };
 
   /**
@@ -341,6 +351,31 @@
 
     this.updateTrainingState_(TrainingState.TIMEOUT);
     this.stopTraining();
+  };
+
+  /**
+   * Sets a timeout. If any timeout is active, clear it.
+   * @param {Function} func The function to invoke when the timeout occurs.
+   * @param {number} delay Timeout delay in milliseconds.
+   * @private
+   */
+  Flow.prototype.setTimeout_ = function(func, delay) {
+    this.clearTimeout_();
+    this.timeoutId_ = setTimeout(function() {
+      this.timeoutId_ = null;
+      func();
+    }, delay);
+  };
+
+  /**
+   * Clears any currently active timeout.
+   * @private
+   */
+  Flow.prototype.clearTimeout_ = function() {
+    if (this.timeoutId_ != null) {
+      clearTimeout(this.timeoutId_);
+      this.timeoutId_ = null;
+    }
   };
 
   /**
@@ -424,6 +459,20 @@
     // Only the last step makes it here.
     var buttonElem = $(this.trainingPagePrefix_ + '-processing').hidden = false;
     this.finalizeSpeakerModel_();
+  };
+
+  /**
+   * Handles a chrome.idle.onStateChanged event and times out the training if
+   * the state is "locked".
+   * @param {!string} state State, one of "active", "idle", or "locked".
+   * @private
+   */
+  Flow.prototype.handleIdleStateChanged_ = function(state) {
+    if (state == 'locked' && this.training_) {
+      this.clearTimeout_();
+      this.updateTrainingState_(TrainingState.TIMEOUT);
+      this.stopTraining();
+    }
   };
 
   /**
