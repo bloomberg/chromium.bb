@@ -65,13 +65,18 @@ ContentAutofillDriverFactory::~ContentAutofillDriverFactory() {
 
 ContentAutofillDriver* ContentAutofillDriverFactory::DriverForFrame(
     content::RenderFrameHost* render_frame_host) {
-  return frame_driver_map_[render_frame_host];
+  auto mapping = frame_driver_map_.find(render_frame_host);
+  return mapping == frame_driver_map_.end() ? nullptr : mapping->second;
 }
 
 bool ContentAutofillDriverFactory::OnMessageReceived(
     const IPC::Message& message,
     content::RenderFrameHost* render_frame_host) {
-  return frame_driver_map_[render_frame_host]->HandleMessage(message);
+  auto mapping = frame_driver_map_.find(render_frame_host);
+  if (mapping == frame_driver_map_.end())
+    return false;
+
+  return mapping->second->HandleMessage(message);
 }
 
 void ContentAutofillDriverFactory::RenderFrameCreated(
@@ -92,8 +97,8 @@ void ContentAutofillDriverFactory::DidNavigateMainFrame(
     const content::FrameNavigateParams& params) {
   // This shouldn't happen, but is causing a lot of crashes.
   // See http://crbug.com/438951
-  if (frame_driver_map_.find(web_contents()->GetMainFrame()) ==
-          frame_driver_map_.end()) {
+  auto mapping = frame_driver_map_.find(web_contents()->GetMainFrame());
+  if (mapping == frame_driver_map_.end() || mapping->second == nullptr) {
     LOG(ERROR) << "Could not find ContentAutofillDriver for main frame";
     return;
   }
