@@ -177,12 +177,31 @@ remoting.updateLocalHostState = function() {
 };
 
 /**
- * Entry point ('load' handler) for Remote Desktop (CRD) webapp.
+ * Entry point for test code. In order to make test and production
+ * code as similar as possible, the same entry point is used for
+ * production code, but since production code should never have
+ * 'source' set to 'test', it continue with initialization
+ * immediately. As a fail-safe, the mechanism by which initialization
+ * completes when under test is controlled by a simple UI, making it
+ * possible to use the app even if the previous assumption fails to
+ * hold in some corner cases.
  */
+remoting.initDesktopRemotingForTesting = function() {
+  var urlParams = getUrlParameters_();
+  if (urlParams['source'] === 'test') {
+    document.getElementById('browser-test-continue-init').addEventListener(
+        'click', remoting.initDesktopRemoting, false);
+    document.getElementById('browser-test-deferred-init').hidden = false;
+  } else {
+    remoting.initDesktopRemoting();
+  }
+}
+
+
 remoting.initDesktopRemoting = function() {
   remoting.app = new remoting.Application();
   var desktop_remoting = new remoting.DesktopRemoting(remoting.app);
   remoting.app.init();
 };
 
-window.addEventListener('load', remoting.initDesktopRemoting, false);
+window.addEventListener('load', remoting.initDesktopRemotingForTesting, false);

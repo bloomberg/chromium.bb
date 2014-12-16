@@ -23,9 +23,16 @@ class PageLoadNotificationObserver
 
   ~PageLoadNotificationObserver() override;
 
+  void set_ignore_url_parameters(bool ignore_url_parameters) {
+    ignore_url_parameters_ = ignore_url_parameters;
+  }
+
  private:
   bool IsTargetLoaded();
+
   GURL target_;
+  bool ignore_url_parameters_;
+
   DISALLOW_COPY_AND_ASSIGN(PageLoadNotificationObserver);
 };
 

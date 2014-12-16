@@ -166,7 +166,7 @@ void RemoteDesktopBrowserTest::VerifyChromotingLoaded(bool expected) {
   ASSERT_EQ(installed, expected);
 }
 
-void RemoteDesktopBrowserTest::LaunchChromotingApp() {
+void RemoteDesktopBrowserTest::LaunchChromotingApp(bool defer_start) {
   ASSERT_TRUE(extension_);
 
   GURL chromoting_main = Chromoting_Main_URL();
@@ -174,6 +174,14 @@ void RemoteDesktopBrowserTest::LaunchChromotingApp() {
   // loaded could be the generated background page. We need to wait
   // till the chromoting main page is loaded.
   PageLoadNotificationObserver observer(chromoting_main);
+  observer.set_ignore_url_parameters(true);
+
+  // If the app should be started in deferred mode, ensure that a "source" URL
+  // parameter; if not, ensure that no such parameter is present. The value of
+  // the parameter is determined by the AppLaunchParams ("test", in this case).
+  extensions::FeatureSwitch::ScopedOverride override_trace_app_source(
+      extensions::FeatureSwitch::trace_app_source(),
+      defer_start);
 
   OpenApplication(AppLaunchParams(browser()->profile(), extension_,
                                   is_platform_app()
@@ -209,6 +217,10 @@ void RemoteDesktopBrowserTest::LaunchChromotingApp() {
 
   EXPECT_EQ(Chromoting_Main_URL(), GetCurrentURL());
 }
+
+void RemoteDesktopBrowserTest::StartChromotingApp() {
+  ClickOnControl("browser-test-continue-init");
+};
 
 void RemoteDesktopBrowserTest::Authorize() {
   // The chromoting extension should be installed.
@@ -465,7 +477,7 @@ void RemoteDesktopBrowserTest::Cleanup() {
 void RemoteDesktopBrowserTest::SetUpTestForMe2Me() {
   VerifyInternetAccess();
   Install();
-  LaunchChromotingApp();
+  LaunchChromotingApp(false);
   Auth();
   LoadScript(app_web_content(), FILE_PATH_LITERAL("browser_test.js"));
   ExpandMe2Me();

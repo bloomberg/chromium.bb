@@ -15,7 +15,8 @@ PageLoadNotificationObserver::PageLoadNotificationObserver(const GURL& target)
           content::NOTIFICATION_LOAD_STOP,
           base::Bind(&PageLoadNotificationObserver::IsTargetLoaded,
                      base::Unretained(this))),
-      target_(target) {
+      target_(target),
+      ignore_url_parameters_(false) {
 }
 
 PageLoadNotificationObserver::~PageLoadNotificationObserver() {}
@@ -23,7 +24,15 @@ PageLoadNotificationObserver::~PageLoadNotificationObserver() {}
 bool PageLoadNotificationObserver::IsTargetLoaded() {
   content::NavigationController* controller =
       content::Source<content::NavigationController>(source()).ptr();
-  return controller->GetWebContents()->GetURL() == target_;
+  GURL current_url =  controller->GetWebContents()->GetURL();
+  if (ignore_url_parameters_) {
+    GURL::Replacements strip_query;
+    strip_query.ClearQuery();
+    return current_url.ReplaceComponents(strip_query) ==
+        target_.ReplaceComponents(strip_query);
+  } else {
+    return current_url == target_;
+  }
 }
 
 }  // namespace remoting

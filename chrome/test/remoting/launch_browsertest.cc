@@ -11,7 +11,18 @@ IN_PROC_BROWSER_TEST_F(RemoteDesktopBrowserTest, MANUAL_Launch) {
 
   Install();
 
-  LaunchChromotingApp();
+  LaunchChromotingApp(false);
+
+  Cleanup();
+}
+
+IN_PROC_BROWSER_TEST_F(RemoteDesktopBrowserTest, MANUAL_LaunchDeferredStart) {
+  VerifyInternetAccess();
+
+  Install();
+
+  LaunchChromotingApp(true);
+  StartChromotingApp();
 
   Cleanup();
 }

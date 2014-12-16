@@ -36,7 +36,7 @@ IN_PROC_BROWSER_TEST_F(Me2MeBrowserTest,
                        MANUAL_Me2Me_Connect_Remote_Host) {
   VerifyInternetAccess();
   Install();
-  LaunchChromotingApp();
+  LaunchChromotingApp(false);
 
   // Authorize, Authenticate, and Approve.
   Auth();
@@ -110,7 +110,7 @@ void Me2MeBrowserTest::ConnectPinlessAndCleanupPairings(bool cleanup_all) {
   // TODO(jamiewalch): This reload is only needed because there's a bug in the
   // web-app whereby it doesn't refresh its pairing state correctly.
   // http://crbug.com/311290
-  LaunchChromotingApp();
+  LaunchChromotingApp(false);
   ASSERT_TRUE(HtmlElementVisible("paired-client-manager-message"));
 
   // Second connection: verify that no PIN is requested.

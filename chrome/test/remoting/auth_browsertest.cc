@@ -11,7 +11,7 @@ IN_PROC_BROWSER_TEST_F(RemoteDesktopBrowserTest, MANUAL_Auth) {
 
   Install();
 
-  LaunchChromotingApp();
+  LaunchChromotingApp(false);
 
   // Authorize, Authenticate, and Approve.
   Auth();
