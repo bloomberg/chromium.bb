@@ -28,7 +28,7 @@ class UrlSearchProvider : public app_list::SearchProvider,
   ~UrlSearchProvider() override;
 
   // Overridden from app_list::SearchProvider
-  void Start(const base::string16& query) override;
+  void Start(bool is_voice_query, const base::string16& query) override;
   void Stop() override;
 
   // Overridden from AutocompleteProviderListener

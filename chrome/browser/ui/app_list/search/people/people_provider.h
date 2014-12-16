@@ -37,7 +37,7 @@ class PeopleProvider : public WebserviceSearchProvider,
   ~PeopleProvider() override;
 
   // SearchProvider overrides:
-  void Start(const base::string16& query) override;
+  void Start(bool is_voice_query, const base::string16& query) override;
   void Stop() override;
 
   // OAuth2TokenService::Consumer overrides:

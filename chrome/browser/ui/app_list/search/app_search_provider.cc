@@ -59,7 +59,8 @@ AppSearchProvider::AppSearchProvider(Profile* profile,
 
 AppSearchProvider::~AppSearchProvider() {}
 
-void AppSearchProvider::Start(const base::string16& query) {
+void AppSearchProvider::Start(bool /*is_voice_query*/,
+                              const base::string16& query) {
   query_ = query;
   const TokenizedString query_terms(query);
 

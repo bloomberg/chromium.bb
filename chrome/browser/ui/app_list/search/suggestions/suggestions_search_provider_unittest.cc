@@ -71,7 +71,7 @@ class SuggestionsSearchProviderTest : public AppListTestBase {
   }
 
   std::string RunQuery(const std::string& query) {
-    suggestions_search_->Start(base::UTF8ToUTF16(query));
+    suggestions_search_->Start(false, base::UTF8ToUTF16(query));
 
     // Sort results from most to least relevant.
     std::vector<SearchResult*> sorted_results(

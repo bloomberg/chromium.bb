@@ -61,7 +61,7 @@ class TestSearchProvider : public SearchProvider {
   ~TestSearchProvider() override {}
 
   // SearchProvider overrides:
-  void Start(const base::string16& query) override {
+  void Start(bool is_voice_query, const base::string16& query) override {
     ClearResults();
     for (size_t i = 0; i < count_; ++i) {
       const std::string id =
@@ -116,7 +116,7 @@ class MixerTest : public testing::Test {
     const base::string16 query;
 
     for (size_t i = 0; i < providers_.size(); ++i) {
-      providers_[i]->Start(query);
+      providers_[i]->Start(is_voice_query_, query);
       providers_[i]->Stop();
     }
 

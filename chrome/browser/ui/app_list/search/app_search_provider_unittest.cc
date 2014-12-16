@@ -45,7 +45,7 @@ class AppSearchProviderTest : public AppListTestBase {
   }
 
   std::string RunQuery(const std::string& query) {
-    app_search_->Start(base::UTF8ToUTF16(query));
+    app_search_->Start(false, base::UTF8ToUTF16(query));
 
     // Sort results by relevance.
     std::vector<SearchResult*> sorted_results;

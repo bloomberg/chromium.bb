@@ -54,7 +54,8 @@ PeopleProvider::PeopleProvider(Profile* profile,
 
 PeopleProvider::~PeopleProvider() {}
 
-void PeopleProvider::Start(const base::string16& query) {
+void PeopleProvider::Start(bool /*is_voice_query*/,
+                           const base::string16& query) {
   ClearResults();
   if (!IsValidQuery(query)) {
     query_.clear();

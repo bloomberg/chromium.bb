@@ -53,7 +53,8 @@ SuggestionsSearchProvider::SuggestionsSearchProvider(
 SuggestionsSearchProvider::~SuggestionsSearchProvider() {
 }
 
-void SuggestionsSearchProvider::Start(const base::string16& query) {
+void SuggestionsSearchProvider::Start(bool /*is_voice_query*/,
+                                      const base::string16& query) {
   ClearResults();
   // If the service is not enabled, do not return any results.
   if (!suggestions_service_)

@@ -223,7 +223,8 @@ UrlSearchProvider::UrlSearchProvider(content::BrowserContext* browser_context)
 UrlSearchProvider::~UrlSearchProvider() {
 }
 
-void UrlSearchProvider::Start(const base::string16& query) {
+void UrlSearchProvider::Start(bool /*is_voice_query*/,
+                              const base::string16& query) {
   const bool minimal_changes = query == input_.text();
   input_ = AutocompleteInput(query,
                              base::string16::npos /* cursor_position */,

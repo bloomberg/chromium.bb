@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
@@ -19,10 +20,16 @@
 #include "grit/theme_resources.h"
 #include "ui/app_list/search_result.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "url/gurl.h"
+#include "url/url_canon.h"
 
 namespace app_list {
 
 namespace {
+
+// The Omnibox keyword for Google search. This is correct even if the user is
+// using an international domain (such as google.com.au).
+const char kGoogleSearchKeyword[] = "google.com";
 
 int ACMatchStyleToTagStyle(int styles) {
   int tag_styles = 0;
@@ -67,15 +74,27 @@ void ACMatchClassificationsToTags(
   }
 }
 
+// Converts a Google Search URL into a spoken feedback URL, by adding query
+// parameters. |search_url| must be a Google Search URL.
+GURL MakeGoogleSearchSpokenFeedbackUrl(const GURL& search_url) {
+  std::string query = search_url.query();
+  query += "&gs_ivs=1";
+  GURL::Replacements replacements;
+  replacements.SetQueryStr(query);
+  return search_url.ReplaceComponents(replacements);
+}
+
 class OmniboxResult : public SearchResult {
  public:
   OmniboxResult(Profile* profile,
                 AppListControllerDelegate* list_controller,
                 AutocompleteController* autocomplete_controller,
+                bool is_voice_query,
                 const AutocompleteMatch& match)
       : profile_(profile),
         list_controller_(list_controller),
         autocomplete_controller_(autocomplete_controller),
+        is_voice_query_(is_voice_query),
         match_(match) {
     if (match_.search_terms_args) {
       match_.search_terms_args->from_app_list = true;
@@ -108,15 +127,19 @@ class OmniboxResult : public SearchResult {
   // SearchResult overrides:
   void Open(int event_flags) override {
     RecordHistogram(OMNIBOX_SEARCH_RESULT);
-    list_controller_->OpenURL(profile_,
-                              match_.destination_url,
-                              match_.transition,
+    GURL url = match_.destination_url;
+    if (is_voice_query_ &&
+        base::UTF16ToUTF8(match_.keyword) == kGoogleSearchKeyword) {
+      url = MakeGoogleSearchSpokenFeedbackUrl(url);
+    }
+    list_controller_->OpenURL(profile_, url, match_.transition,
                               ui::DispositionFromEventFlags(event_flags));
   }
 
   scoped_ptr<SearchResult> Duplicate() override {
-    return scoped_ptr<SearchResult>(new OmniboxResult(
-        profile_, list_controller_, autocomplete_controller_, match_));
+    return scoped_ptr<SearchResult>(
+        new OmniboxResult(profile_, list_controller_, autocomplete_controller_,
+                          is_voice_query_, match_));
   }
 
  private:
@@ -150,6 +173,7 @@ class OmniboxResult : public SearchResult {
   Profile* profile_;
   AppListControllerDelegate* list_controller_;
   AutocompleteController* autocomplete_controller_;
+  bool is_voice_query_;
   AutocompleteMatch match_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxResult);
@@ -166,12 +190,14 @@ OmniboxProvider::OmniboxProvider(Profile* profile,
           TemplateURLServiceFactory::GetForProfile(profile),
           this,
           AutocompleteClassifier::kDefaultOmniboxProviders &
-              ~AutocompleteProvider::TYPE_ZERO_SUGGEST)) {
+              ~AutocompleteProvider::TYPE_ZERO_SUGGEST)),
+      is_voice_query_(false) {
 }
 
 OmniboxProvider::~OmniboxProvider() {}
 
-void OmniboxProvider::Start(const base::string16& query) {
+void OmniboxProvider::Start(bool is_voice_query, const base::string16& query) {
+  is_voice_query_ = is_voice_query;
   controller_->Start(AutocompleteInput(
       query, base::string16::npos, std::string(), GURL(),
       metrics::OmniboxEventProto::INVALID_SPEC, false, false, true, true,
@@ -180,6 +206,7 @@ void OmniboxProvider::Start(const base::string16& query) {
 
 void OmniboxProvider::Stop() {
   controller_->Stop(false);
+  is_voice_query_ = false;
 }
 
 void OmniboxProvider::PopulateFromACResult(const AutocompleteResult& result) {
@@ -190,8 +217,8 @@ void OmniboxProvider::PopulateFromACResult(const AutocompleteResult& result) {
     if (!it->destination_url.is_valid())
       continue;
 
-    Add(scoped_ptr<SearchResult>(
-        new OmniboxResult(profile_, list_controller_, controller_.get(), *it)));
+    Add(scoped_ptr<SearchResult>(new OmniboxResult(
+        profile_, list_controller_, controller_.get(), is_voice_query_, *it)));
   }
 }
 

@@ -59,7 +59,8 @@ WebstoreProvider::WebstoreProvider(Profile* profile,
 
 WebstoreProvider::~WebstoreProvider() {}
 
-void WebstoreProvider::Start(const base::string16& query) {
+void WebstoreProvider::Start(bool /*is_voice_query*/,
+                             const base::string16& query) {
   ClearResults();
   if (!IsValidQuery(query)) {
     query_.clear();

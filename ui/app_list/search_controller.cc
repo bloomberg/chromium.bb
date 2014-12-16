@@ -49,7 +49,7 @@ void SearchController::Start(bool is_voice_query) {
   for (Providers::iterator it = providers_.begin();
        it != providers_.end();
        ++it) {
-    (*it)->Start(query);
+    (*it)->Start(is_voice_query, query);
   }
   dispatching_query_ = false;
 
