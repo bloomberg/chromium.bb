@@ -1571,16 +1571,6 @@ DOMWindowCSS* LocalDOMWindow::css() const
     return m_css.get();
 }
 
-static void didAddStorageEventListener(LocalDOMWindow* window)
-{
-    // Creating these blink::Storage objects informs the system that we'd like to receive
-    // notifications about storage events that might be triggered in other processes. Rather
-    // than subscribe to these notifications explicitly, we subscribe to them implicitly to
-    // simplify the work done by the system.
-    window->localStorage(IGNORE_EXCEPTION);
-    window->sessionStorage(IGNORE_EXCEPTION);
-}
-
 bool LocalDOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
 {
     if (!EventTarget::addEventListener(eventType, listener, useCapture))
@@ -1591,8 +1581,6 @@ bool LocalDOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<
 
     if (Document* document = this->document()) {
         document->addListenerTypeIfNeeded(eventType);
-        if (eventType == EventTypeNames::storage)
-            didAddStorageEventListener(this);
     }
 
     lifecycleNotifier().notifyAddEventListener(this, eventType);

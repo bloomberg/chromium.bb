@@ -1873,6 +1873,8 @@
             'rendering/style/StyleTransformData.cpp',
             'rendering/style/StyleVisualData.cpp',
             'rendering/style/StyleWillChangeData.cpp',
+            'storage/DOMWindowStorageController.cpp',
+            'storage/DOMWindowStorageController.h',
             'storage/Storage.cpp',
             'storage/Storage.h',
             'storage/StorageArea.cpp',

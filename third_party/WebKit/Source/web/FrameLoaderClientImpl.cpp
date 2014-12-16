@@ -50,6 +50,7 @@
 #include "core/page/Page.h"
 #include "core/page/WindowFeatures.h"
 #include "core/rendering/HitTestResult.h"
+#include "core/storage/DOMWindowStorageController.h"
 #include "modules/device_light/DeviceLightController.h"
 #include "modules/device_orientation/DeviceMotionController.h"
 #include "modules/device_orientation/DeviceOrientationController.h"
@@ -128,6 +129,7 @@ void FrameLoaderClientImpl::dispatchDidClearWindowObjectInMainWorld()
             NavigatorGamepad::from(*document);
             if (RuntimeEnabledFeatures::serviceWorkerEnabled())
                 NavigatorServiceWorker::from(*document);
+            DOMWindowStorageController::from(*document);
         }
     }
 }
