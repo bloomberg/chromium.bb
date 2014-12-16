@@ -58,7 +58,7 @@ def _CompileFilter(syzygy_dir, executable, symbol, filter_file,
 
 
 def _InstrumentBinary(syzygy_dir, mode, executable, symbol, dst_dir,
-                      filter_file):
+                      filter_file, allocation_filter_file):
   """Instruments the executable found in input_dir, and writes the resultant
   instrumented executable and symbol files to dst_dir.
   """
@@ -76,9 +76,12 @@ def _InstrumentBinary(syzygy_dir, mode, executable, symbol, dst_dir,
   if mode == "asan":
     cmd.append('--no-augment-pdb')
 
-  # If a filter was specified then pass it on to the instrumenter.
+  # If any filters were specified then pass them on to the instrumenter.
   if filter_file:
     cmd.append('--filter=%s' % os.path.abspath(filter_file))
+  if allocation_filter_file:
+    cmd.append('--allocation-filter-config-file=%s' %
+        os.path.abspath(allocation_filter_file))
 
   return _Shell(*cmd)
 
@@ -104,7 +107,8 @@ def main(options):
                     options.input_executable,
                     options.input_symbol,
                     options.destination_dir,
-                    options.output_filter_file)
+                    options.output_filter_file,
+                    options.allocation_filter_file)
 
 
 def _ParseOptions():
@@ -125,6 +129,8 @@ def _ParseOptions():
   option_parser.add_option('--output-filter-file',
       help='The path where the compiled filter will be written. This is '
            'required if --filter is specified.')
+  option_parser.add_option('--allocation-filter-file',
+      help='The path to the SyzyASAN allocation filter to use.')
   options, args = option_parser.parse_args()
 
   if not options.mode:

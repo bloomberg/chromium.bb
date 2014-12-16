@@ -185,7 +185,7 @@
               ],
               'action': [
                 'python',
-                '<(DEPTH)/chrome/tools/build/win/syzygy_instrument.py',
+                '<(DEPTH)/chrome/tools/build/win/syzygy/instrument.py',
                 '--mode', 'asan',
                 '--input_executable', '<(PRODUCT_DIR)/pdf.dll',
                 '--input_symbol', '<(PRODUCT_DIR)/pdf.dll.pdb',

@@ -7,4 +7,4 @@
 # disabling instrumentation of functions with known and deferred bugs, allowing
 # functional instrumented builds of Chrome to be produced in the meantime.
 #
-# See chrome_syzygy.gyp and syzygy_instrument.py for more details.
+# See chrome_syzygy.gypi and instrument.py for more details.
