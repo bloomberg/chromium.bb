@@ -83,8 +83,6 @@ class SupervisedUserService : public KeyedService,
     // Returns true to indicate that the delegate handled the (de)activation, or
     // false to indicate that the SupervisedUserService itself should handle it.
     virtual bool SetActive(bool active) = 0;
-    // TODO(treib): Unused, remove.
-    virtual bool IsChildAccount() const;
     // Returns the path to a blacklist file to load, or an empty path to
     // indicate "none".
     virtual base::FilePath GetBlacklistPath() const;

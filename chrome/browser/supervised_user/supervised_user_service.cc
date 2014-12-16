@@ -65,10 +65,6 @@ using base::DictionaryValue;
 using base::UserMetricsAction;
 using content::BrowserThread;
 
-bool SupervisedUserService::Delegate::IsChildAccount() const {
-  return false;
-}
-
 base::FilePath SupervisedUserService::Delegate::GetBlacklistPath() const {
   return base::FilePath();
 }
