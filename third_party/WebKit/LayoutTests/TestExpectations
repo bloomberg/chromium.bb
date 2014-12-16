@@ -1044,7 +1044,6 @@ crbug.com/350853 fast/multicol/percent-height.html [ Skip ]
 crbug.com/350853 fast/multicol/positioned-outside-of-columns.html [ Skip ]
 crbug.com/350853 fast/multicol/tall-float1.html [ Skip ]
 crbug.com/350853 fast/multicol/tall-float2.html [ Skip ]
-crbug.com/350853 fast/multicol/transform-inside-opacity.html [ Skip ]
 crbug.com/408123 fast/multicol/vertical-lr/balancing/balance-short-trailing-empty-block.html [ Skip ]
 crbug.com/408123 fast/multicol/vertical-lr/balancing/balance-trailing-border.html [ Skip ]
 crbug.com/408123 fast/multicol/vertical-lr/balancing/balance-trailing-border-after-break.html [ Skip ]
@@ -1467,3 +1466,5 @@ crbug.com/442340 webexposed/global-interface-listing-dedicated-worker.html [ Nee
 crbug.com/442340 virtual/stable/webexposed/global-interface-listing-shared-worker.html [ NeedsManualRebaseline ]
 
 crbug.com/390488 [ Mac Debug ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
+
+crbug.com/381919 virtual/regionbasedmulticol/fast/multicol/transform-inside-opacity.html [ NeedsRebaseline ]
