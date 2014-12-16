@@ -425,7 +425,7 @@ bool FillFormOnPasswordReceived(
   // If (a) is true but (b) is false, then just mark the username element as
   // autofilled and return so the fill step is skipped.
   //
-  // If (a) is false but (b) is true, then the username element should not be
+  // If (a) and (b) are false, then the username element should not be
   // autofilled, but the user should still be able to select to fill the
   // password element, so the password element must be marked as autofilled and
   // the fill step should also be skipped.
