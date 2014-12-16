@@ -4,9 +4,9 @@
 
 from measurements import record_per_area
 from telemetry.core import wpr_modes
+from telemetry import decorators
 from telemetry.unittest_util import options_for_unittests
 from telemetry.unittest_util import page_test_test_case
-from telemetry.unittest_util import test
 
 
 class RecordPerAreaUnitTest(page_test_test_case.PageTestTestCase):
@@ -21,7 +21,7 @@ class RecordPerAreaUnitTest(page_test_test_case.PageTestTestCase):
     self._options = options_for_unittests.GetCopy()
     self._options.browser_options.wpr_mode = wpr_modes.WPR_OFF
 
-  @test.Disabled('android')
+  @decorators.Disabled('android')
   def testRecordPerArea(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('scrollable_page.html')
     measurement = record_per_area.RecordPerArea()

@@ -6,7 +6,6 @@ from measurements import oilpan_gc_times
 from telemetry.core import wpr_modes
 from telemetry.unittest_util import options_for_unittests
 from telemetry.unittest_util import page_test_test_case
-from telemetry.unittest_util import test
 
 class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
   """Smoke test for Oilpan GC pause time measurements.

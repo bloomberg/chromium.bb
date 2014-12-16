@@ -5,11 +5,11 @@
 import logging
 
 from measurements import rasterize_and_record_micro
+from telemetry import decorators
 from telemetry.core import wpr_modes
 from telemetry.page import page_test
 from telemetry.unittest_util import options_for_unittests
 from telemetry.unittest_util import page_test_test_case
-from telemetry.unittest_util import test
 
 
 class RasterizeAndRecordMicroUnitTest(page_test_test_case.PageTestTestCase):
@@ -24,7 +24,7 @@ class RasterizeAndRecordMicroUnitTest(page_test_test_case.PageTestTestCase):
     self._options = options_for_unittests.GetCopy()
     self._options.browser_options.wpr_mode = wpr_modes.WPR_OFF
 
-  @test.Disabled('win', 'chromeos')
+  @decorators.Disabled('win', 'chromeos')
   def testRasterizeAndRecordMicro(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('blank.html')
     measurement = rasterize_and_record_micro.RasterizeAndRecordMicro(

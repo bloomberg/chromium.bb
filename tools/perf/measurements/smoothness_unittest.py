@@ -5,12 +5,12 @@ import sys
 
 from measurements import smoothness
 from metrics import power
+from telemetry import decorators
 from telemetry.core import exceptions
 from telemetry.core import wpr_modes
 from telemetry.page import page
 from telemetry.unittest_util import options_for_unittests
 from telemetry.unittest_util import page_test_test_case
-from telemetry.unittest_util import test
 
 class FakeTracingController(object):
   def __init__(self):
@@ -128,7 +128,7 @@ class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
       self.assertGreater(
           mean_input_event_latency[0].GetRepresentativeNumber(), 0)
 
-  @test.Disabled('mac', 'chromeos')  # http://crbug.com/403903
+  @decorators.Disabled('mac', 'chromeos')  # http://crbug.com/403903
   def testSmoothnessForPageWithNoGesture(self):
     ps = self.CreateEmptyPageSet()
     ps.AddUserStory(AnimatedPage(ps))

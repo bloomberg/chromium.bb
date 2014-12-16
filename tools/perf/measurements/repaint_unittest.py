@@ -3,11 +3,11 @@
 # found in the LICENSE file.
 
 from measurements import repaint
+from telemetry import decorators
 from telemetry.core import wpr_modes
 from telemetry.page import page as page_module
 from telemetry.unittest_util import options_for_unittests
 from telemetry.unittest_util import page_test_test_case
-from telemetry.unittest_util import test
 
 
 class TestRepaintPage(page_module.Page):
@@ -56,6 +56,6 @@ class RepaintUnitTest(page_test_test_case.PageTestTestCase):
     self.assertEquals(len(percentage_smooth), 1)
     self.assertGreaterEqual(percentage_smooth[0].GetRepresentativeNumber(), 0)
 
-  @test.Disabled('android')
+  @decorators.Disabled('android')
   def testCleanUpTrace(self):
     self.TestTracingCleanedUp(repaint.Repaint, self._options)
