@@ -238,14 +238,29 @@ void TransportConnectJob::MakeAddressListStartWithIPv4(AddressList* list) {
 }
 
 int TransportConnectJob::DoResolveHost() {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436634 TransportConnectJob::DoResolveHost"));
+
   return helper_.DoResolveHost(priority(), net_log());
 }
 
 int TransportConnectJob::DoResolveHostComplete(int result) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436634 TransportConnectJob::DoResolveHostComplete"));
+
   return helper_.DoResolveHostComplete(result, net_log());
 }
 
 int TransportConnectJob::DoTransportConnect() {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436634 TransportConnectJob::DoTransportConnect"));
+
   base::TimeTicks now = base::TimeTicks::Now();
   base::TimeTicks last_connect_time;
   {
@@ -300,6 +315,11 @@ int TransportConnectJob::DoTransportConnect() {
 }
 
 int TransportConnectJob::DoTransportConnectComplete(int result) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436634 TransportConnectJob::DoTransportConnectComplete"));
+
   if (result == OK) {
     bool is_ipv4 =
         helper_.addresses().front().GetFamily() == ADDRESS_FAMILY_IPV4;
