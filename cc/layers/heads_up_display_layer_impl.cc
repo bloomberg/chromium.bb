@@ -279,8 +279,10 @@ void HeadsUpDisplayLayerImpl::DrawHudContents(SkCanvas* canvas) {
         DrawFPSDisplay(canvas, layer_tree_impl()->frame_rate_counter(), 0, 0);
   }
 
-  area = DrawGpuRasterizationStatus(canvas, 0, area.bottom(),
-                                    SkMaxScalar(area.width(), 150));
+  if (debug_state.show_fps_counter || debug_state.continuous_painting) {
+    area = DrawGpuRasterizationStatus(canvas, 0, area.bottom(),
+                                      SkMaxScalar(area.width(), 150));
+  }
 
   if (debug_state.ShowMemoryStats())
     DrawMemoryDisplay(canvas, 0, area.bottom(), SkMaxScalar(area.width(), 150));
