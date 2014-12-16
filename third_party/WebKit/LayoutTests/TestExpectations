@@ -549,10 +549,6 @@ crbug.com/307777 [ Android ] webexposed/custom-elements.html [ Timeout Pass ]
 
 crbug.com/363280 [ Debug ] inspector-protocol/debugger/debugger-terminate-dedicated-worker-while-paused.html [ Crash Pass ]
 
-crbug.com/432992 fast/canvas/canvas-hidpi-blurry.html [ NeedsRebaseline ]
-crbug.com/432992 virtual/gpu/fast/canvas/canvas-hidpi-blurry.html [ NeedsRebaseline ]
-crbug.com/432992 virtual/display_list_2d_canvas/fast/canvas/canvas-hidpi-blurry.html [ NeedsRebaseline ]
-
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
 
 # On Linux RSA support in WebCrypto requires a very recent version of NSS (which fixes some bugs).
