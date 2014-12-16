@@ -1775,7 +1775,8 @@ def GetPreferredTryMasters(project, change):
         'win_chromium_rel_ng',
         'win_chromium_x64_rel_ng',
     ])
-  if all(re.search(r'(^|[\\\/_])android[\\\/_.]', f) for f in files):
+  if all(re.search(r'(^|[\\\/_])android[\\\/_.]', f) and
+         not re.search(r'(^|[\\\/_])devtools[\\\/_.]', f) for f in files):
     return GetDefaultTryConfigs([
         'android_aosp',
         'android_dbg_tests_recipe',
