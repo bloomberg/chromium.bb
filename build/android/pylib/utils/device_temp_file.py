@@ -43,8 +43,12 @@ class DeviceTempFile(object):
 
   def close(self):
     """Deletes the temporary file from the device."""
-    # we use -f to ignore errors if the file is already gone
-    self._adb.Shell('rm -f %s' % self.name_quoted)
+    # ignore exception if the file is already gone.
+    try:
+      self._adb.Shell('rm -f %s' % self.name_quoted)
+    except device_errors.AdbCommandFailedError:
+      # file does not exist on Android version without 'rm -f' support (ICS)
+      pass
 
   def __enter__(self):
     return self
