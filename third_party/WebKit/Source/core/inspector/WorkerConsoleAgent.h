@@ -48,6 +48,8 @@ public:
     virtual ~WorkerConsoleAgent();
     virtual void trace(Visitor*) override;
 
+    virtual void enable(ErrorString*) override;
+
     virtual bool isWorkerAgent() override { return true; }
 
 protected:

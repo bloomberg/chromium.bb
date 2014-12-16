@@ -36,6 +36,7 @@
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/JSONParser.h"
+#include "core/inspector/PageConsoleAgent.h"
 #include "core/workers/WorkerInspectorProxy.h"
 #include "platform/JSONValues.h"
 #include "platform/weborigin/KURL.h"
@@ -50,18 +51,19 @@ static const char workerInspectionEnabled[] = "workerInspectionEnabled";
 static const char autoconnectToWorkers[] = "autoconnectToWorkers";
 };
 
-class InspectorWorkerAgent::WorkerFrontendChannel final : public WorkerInspectorProxy::PageInspector {
+class InspectorWorkerAgent::WorkerAgentClient final : public WorkerInspectorProxy::PageInspector {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    WorkerFrontendChannel(InspectorFrontend::Worker* frontend, WorkerInspectorProxy* proxy, int id)
+    WorkerAgentClient(InspectorFrontend::Worker* frontend, WorkerInspectorProxy* proxy, int id, PageConsoleAgent* consoleAgent)
         : m_frontend(frontend)
         , m_proxy(proxy)
         , m_id(id)
         , m_connected(false)
+        , m_consoleAgent(consoleAgent)
     {
         ASSERT(!proxy->pageInspector());
     }
-    virtual ~WorkerFrontendChannel()
+    virtual ~WorkerAgentClient()
     {
         disconnectFromWorker();
     }
@@ -97,22 +99,29 @@ private:
             return;
         m_frontend->dispatchMessageFromWorker(m_id, messageObject);
     }
+    // WorkerInspectorProxy::PageInspector implementation
+    virtual void workerConsoleAgentEnabled(WorkerGlobalScopeProxy* proxy) override
+    {
+        m_consoleAgent->workerConsoleAgentEnabled(proxy);
+    }
 
     InspectorFrontend::Worker* m_frontend;
     WorkerInspectorProxy* m_proxy;
     int m_id;
     bool m_connected;
+    PageConsoleAgent* m_consoleAgent;
 };
 
-PassOwnPtrWillBeRawPtr<InspectorWorkerAgent> InspectorWorkerAgent::create()
+PassOwnPtrWillBeRawPtr<InspectorWorkerAgent> InspectorWorkerAgent::create(PageConsoleAgent* consoleAgent)
 {
-    return adoptPtrWillBeNoop(new InspectorWorkerAgent());
+    return adoptPtrWillBeNoop(new InspectorWorkerAgent(consoleAgent));
 }
 
-InspectorWorkerAgent::InspectorWorkerAgent()
+InspectorWorkerAgent::InspectorWorkerAgent(PageConsoleAgent* consoleAgent)
     : InspectorBaseAgent<InspectorWorkerAgent>("Worker")
     , m_frontend(0)
     , m_nextId(1)
+    , m_consoleAgent(consoleAgent)
 {
 }
 
@@ -136,7 +145,7 @@ void InspectorWorkerAgent::setFrontend(InspectorFrontend* frontend)
 void InspectorWorkerAgent::restore()
 {
     if (m_state->getBoolean(WorkerAgentState::workerInspectionEnabled))
-        createWorkerFrontendChannelsForExistingWorkers();
+        createWorkerAgentClientsForExistingWorkers();
 }
 
 void InspectorWorkerAgent::clearFrontend()
@@ -151,7 +160,7 @@ void InspectorWorkerAgent::enable(ErrorString*)
     m_state->setBoolean(WorkerAgentState::workerInspectionEnabled, true);
     if (!m_frontend)
         return;
-    createWorkerFrontendChannelsForExistingWorkers();
+    createWorkerAgentClientsForExistingWorkers();
 }
 
 void InspectorWorkerAgent::disable(ErrorString*)
@@ -159,7 +168,7 @@ void InspectorWorkerAgent::disable(ErrorString*)
     m_state->setBoolean(WorkerAgentState::workerInspectionEnabled, false);
     if (!m_frontend)
         return;
-    destroyWorkerFrontendChannels();
+    destroyWorkerAgentClients();
 }
 
 void InspectorWorkerAgent::canInspectWorkers(ErrorString*, bool* result)
@@ -169,27 +178,27 @@ void InspectorWorkerAgent::canInspectWorkers(ErrorString*, bool* result)
 
 void InspectorWorkerAgent::connectToWorker(ErrorString* error, int workerId)
 {
-    WorkerFrontendChannel* channel = m_idToChannel.get(workerId);
-    if (channel)
-        channel->connectToWorker();
+    WorkerAgentClient* client = m_idToClient.get(workerId);
+    if (client)
+        client->connectToWorker();
     else
         *error = "Worker is gone";
 }
 
 void InspectorWorkerAgent::disconnectFromWorker(ErrorString* error, int workerId)
 {
-    WorkerFrontendChannel* channel = m_idToChannel.get(workerId);
-    if (channel)
-        channel->disconnectFromWorker();
+    WorkerAgentClient* client = m_idToClient.get(workerId);
+    if (client)
+        client->disconnectFromWorker();
     else
         *error = "Worker is gone";
 }
 
 void InspectorWorkerAgent::sendMessageToWorker(ErrorString* error, int workerId, const RefPtr<JSONObject>& message)
 {
-    WorkerFrontendChannel* channel = m_idToChannel.get(workerId);
-    if (channel)
-        channel->proxy()->sendMessageToInspector(message->toJSONString());
+    WorkerAgentClient* client = m_idToClient.get(workerId);
+    if (client)
+        client->proxy()->sendMessageToInspector(message->toJSONString());
     else
         *error = "Worker is gone";
 }
@@ -218,7 +227,7 @@ void InspectorWorkerAgent::didStartWorker(WorkerInspectorProxy* workerInspectorP
     int id = m_nextId++;
     m_workerInfos.set(workerInspectorProxy, WorkerInfo(url.string(), id));
     if (m_frontend && m_state->getBoolean(WorkerAgentState::workerInspectionEnabled))
-        createWorkerFrontendChannel(workerInspectorProxy, url.string(), id);
+        createWorkerAgentClient(workerInspectorProxy, url.string(), id);
     if (!m_tracingSessionId.isEmpty())
         workerInspectorProxy->writeTimelineStartedEvent(m_tracingSessionId, id);
 }
@@ -226,40 +235,40 @@ void InspectorWorkerAgent::didStartWorker(WorkerInspectorProxy* workerInspectorP
 void InspectorWorkerAgent::workerTerminated(WorkerInspectorProxy* proxy)
 {
     m_workerInfos.remove(proxy);
-    for (WorkerChannels::iterator it = m_idToChannel.begin(); it != m_idToChannel.end(); ++it) {
+    for (WorkerClients::iterator it = m_idToClient.begin(); it != m_idToClient.end(); ++it) {
         if (proxy == it->value->proxy()) {
             m_frontend->workerTerminated(it->key);
             delete it->value;
-            m_idToChannel.remove(it);
+            m_idToClient.remove(it);
             return;
         }
     }
 }
 
-void InspectorWorkerAgent::createWorkerFrontendChannelsForExistingWorkers()
+void InspectorWorkerAgent::createWorkerAgentClientsForExistingWorkers()
 {
     for (WorkerInfos::iterator it = m_workerInfos.begin(); it != m_workerInfos.end(); ++it)
-        createWorkerFrontendChannel(it->key, it->value.url, it->value.id);
+        createWorkerAgentClient(it->key, it->value.url, it->value.id);
 }
 
-void InspectorWorkerAgent::destroyWorkerFrontendChannels()
+void InspectorWorkerAgent::destroyWorkerAgentClients()
 {
-    for (WorkerChannels::iterator it = m_idToChannel.begin(); it != m_idToChannel.end(); ++it) {
+    for (WorkerClients::iterator it = m_idToClient.begin(); it != m_idToClient.end(); ++it) {
         it->value->disconnectFromWorker();
         delete it->value;
     }
-    m_idToChannel.clear();
+    m_idToClient.clear();
 }
 
-void InspectorWorkerAgent::createWorkerFrontendChannel(WorkerInspectorProxy* workerInspectorProxy, const String& url, int id)
+void InspectorWorkerAgent::createWorkerAgentClient(WorkerInspectorProxy* workerInspectorProxy, const String& url, int id)
 {
-    WorkerFrontendChannel* channel = new WorkerFrontendChannel(m_frontend, workerInspectorProxy, id);
-    m_idToChannel.set(id, channel);
+    WorkerAgentClient* client = new WorkerAgentClient(m_frontend, workerInspectorProxy, id, m_consoleAgent);
+    m_idToClient.set(id, client);
 
     ASSERT(m_frontend);
     bool autoconnectToWorkers = m_state->getBoolean(WorkerAgentState::autoconnectToWorkers);
     if (autoconnectToWorkers)
-        channel->connectToWorker();
+        client->connectToWorker();
     m_frontend->workerCreated(id, url, autoconnectToWorkers);
 }
 

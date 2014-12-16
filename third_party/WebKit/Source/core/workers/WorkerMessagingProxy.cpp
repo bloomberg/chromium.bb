@@ -97,6 +97,7 @@ WorkerMessagingProxy::WorkerMessagingProxy(Worker* workerObject, PassOwnPtrWillB
     ASSERT(m_workerObject);
     ASSERT((m_executionContext->isDocument() && isMainThread())
         || (m_executionContext->isWorkerGlobalScope() && toWorkerGlobalScope(m_executionContext.get())->thread()->isCurrentThread()));
+    m_workerInspectorProxy->setWorkerGlobalScopeProxy(this);
 }
 
 WorkerMessagingProxy::~WorkerMessagingProxy()
@@ -253,6 +254,15 @@ void WorkerMessagingProxy::postMessageToPageInspector(const String& message)
     WorkerInspectorProxy::PageInspector* pageInspector = m_workerInspectorProxy->pageInspector();
     if (pageInspector)
         pageInspector->dispatchMessageFromWorker(message);
+}
+
+void WorkerMessagingProxy::postWorkerConsoleAgentEnabled()
+{
+    if (!m_workerInspectorProxy)
+        return;
+    WorkerInspectorProxy::PageInspector* pageInspector = m_workerInspectorProxy->pageInspector();
+    if (pageInspector)
+        pageInspector->workerConsoleAgentEnabled(this);
 }
 
 WorkerInspectorProxy* WorkerMessagingProxy::workerInspectorProxy()

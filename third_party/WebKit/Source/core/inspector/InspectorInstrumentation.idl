@@ -398,7 +398,7 @@ interface InspectorInstrumentation {
     [Worker]
     void didStartWorker(ExecutionContext*, WorkerInspectorProxy* proxy, const KURL& url);
 
-    [Worker]
+    [Worker, PageConsole]
     void workerTerminated(ExecutionContext*, WorkerInspectorProxy* proxy);
 
     [WorkerRuntime]

@@ -83,6 +83,12 @@ void WorkerObjectProxy::postMessageToPageInspector(const String& message)
         toDocument(m_executionContext)->postInspectorTask(createCrossThreadTask(&WorkerMessagingProxy::postMessageToPageInspector, m_messagingProxy, message));
 }
 
+void WorkerObjectProxy::postWorkerConsoleAgentEnabled()
+{
+    if (m_executionContext->isDocument())
+        toDocument(m_executionContext)->postInspectorTask(createCrossThreadTask(&WorkerMessagingProxy::postWorkerConsoleAgentEnabled, m_messagingProxy));
+}
+
 void WorkerObjectProxy::workerGlobalScopeClosed()
 {
     m_executionContext->postTask(createCrossThreadTask(&WorkerMessagingProxy::terminateWorkerGlobalScope, m_messagingProxy));

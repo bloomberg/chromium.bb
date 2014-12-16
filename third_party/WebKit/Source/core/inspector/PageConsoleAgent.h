@@ -36,9 +36,12 @@
 
 namespace blink {
 
+class ConsoleMessage;
 class ConsoleMessageStorage;
 class InspectorDOMAgent;
 class Page;
+class WorkerInspectorProxy;
+class WorkerGlobalScopeProxy;
 
 class PageConsoleAgent final : public InspectorConsoleAgent {
     WTF_MAKE_NONCOPYABLE(PageConsoleAgent);
@@ -50,7 +53,14 @@ public:
     virtual ~PageConsoleAgent();
     virtual void trace(Visitor*) override;
 
+    virtual void enable(ErrorString*) override;
+    virtual void disable(ErrorString*) override;
+
     virtual bool isWorkerAgent() override { return false; }
+
+    void workerTerminated(WorkerInspectorProxy*);
+
+    void workerConsoleAgentEnabled(WorkerGlobalScopeProxy*);
 
 protected:
     virtual ConsoleMessageStorage* messageStorage() override;
@@ -65,6 +75,7 @@ private:
 
     RawPtrWillBeMember<InspectorDOMAgent> m_inspectorDOMAgent;
     RawPtrWillBeMember<Page> m_page;
+    HashSet<WorkerGlobalScopeProxy*> m_workersWithEnabledConsole;
 
     static int s_enabledAgentCount;
 };

@@ -59,8 +59,8 @@ public:
     virtual ~InspectorConsoleAgent();
     virtual void trace(Visitor*) override;
 
-    virtual void enable(ErrorString*) override final;
-    virtual void disable(ErrorString*) override final;
+    virtual void enable(ErrorString*) override;
+    virtual void disable(ErrorString*) override;
     virtual void clearMessages(ErrorString*) override;
     bool enabled() { return m_enabled; }
 

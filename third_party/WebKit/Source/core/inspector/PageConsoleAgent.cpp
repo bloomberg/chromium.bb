@@ -37,10 +37,13 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
+#include "core/inspector/ConsoleMessage.h"
+#include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/page/Page.h"
+#include "core/workers/WorkerInspectorProxy.h"
 
 namespace blink {
 
@@ -57,6 +60,7 @@ PageConsoleAgent::~PageConsoleAgent()
 {
 #if !ENABLE(OILPAN)
     m_inspectorDOMAgent = nullptr;
+    m_instrumentingAgents->setPageConsoleAgent(nullptr);
 #endif
 }
 
@@ -67,15 +71,52 @@ void PageConsoleAgent::trace(Visitor* visitor)
     InspectorConsoleAgent::trace(visitor);
 }
 
+void PageConsoleAgent::enable(ErrorString* errorString)
+{
+    InspectorConsoleAgent::enable(errorString);
+    m_workersWithEnabledConsole.clear();
+    m_instrumentingAgents->setPageConsoleAgent(this);
+}
+
+void PageConsoleAgent::disable(ErrorString* errorString)
+{
+    m_instrumentingAgents->setPageConsoleAgent(nullptr);
+    InspectorConsoleAgent::disable(errorString);
+}
+
 void PageConsoleAgent::clearMessages(ErrorString* errorString)
 {
     m_inspectorDOMAgent->releaseDanglingNodes();
     InspectorConsoleAgent::clearMessages(errorString);
 }
 
+void PageConsoleAgent::workerConsoleAgentEnabled(WorkerGlobalScopeProxy* proxy)
+{
+    m_workersWithEnabledConsole.add(proxy);
+}
+
 ConsoleMessageStorage* PageConsoleAgent::messageStorage()
 {
     return &m_page->frameHost().consoleMessageStorage();
+}
+
+void PageConsoleAgent::workerTerminated(WorkerInspectorProxy* workerInspectorProxy)
+{
+    WorkerGlobalScopeProxy* proxy = workerInspectorProxy->workerGlobalScopeProxy();
+    HashSet<WorkerGlobalScopeProxy*>::iterator iterator = m_workersWithEnabledConsole.find(proxy);
+    bool workerAgentWasEnabled = iterator != m_workersWithEnabledConsole.end();
+    if (workerAgentWasEnabled)
+        return;
+
+    ConsoleMessageStorage* storage = messageStorage();
+    size_t messageCount = storage->size();
+    for (size_t i = 0; i < messageCount; ++i) {
+        ConsoleMessage* message = storage->at(i);
+        if (message->workerGlobalScopeProxy() == proxy) {
+            message->setWorkerGlobalScopeProxy(nullptr);
+            sendConsoleMessageToFrontend(message, false);
+        }
+    }
 }
 
 void PageConsoleAgent::enableStackCapturingIfNeeded()

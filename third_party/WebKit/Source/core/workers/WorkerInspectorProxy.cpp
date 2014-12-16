@@ -20,6 +20,7 @@ WorkerInspectorProxy::WorkerInspectorProxy()
     : m_workerThread(nullptr)
     , m_executionContext(nullptr)
     , m_pageInspector(nullptr)
+    , m_workerGlobalScopeProxy(nullptr)
 {
 }
 
