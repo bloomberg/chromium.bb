@@ -9,6 +9,7 @@
 
 #include "base/strings/string16.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/ozone/layout/events_ozone_layout_export.h"
 
 namespace ui {
 
@@ -17,29 +18,33 @@ enum class DomKey;
 
 // Returns a Windows-based VKEY for a non-printable DOM Level 3 |key|.
 // The returned VKEY is non-located (e.g. VKEY_SHIFT).
-KeyboardCode NonPrintableDomKeyToKeyboardCode(DomKey dom_key);
+EVENTS_OZONE_LAYOUT_EXPORT KeyboardCode
+NonPrintableDomKeyToKeyboardCode(DomKey dom_key);
 
 // Returns the Windows-based VKEY value corresponding to a DOM Level 3 |code|.
 // The returned VKEY is located (e.g. VKEY_LSHIFT).
-KeyboardCode DomCodeToKeyboardCode(DomCode dom_code);
+EVENTS_OZONE_LAYOUT_EXPORT KeyboardCode DomCodeToKeyboardCode(DomCode dom_code);
 
 // Returns the Windows-based VKEY value corresponding to a DOM Level 3 |code|.
 // The returned VKEY is non-located (e.g. VKEY_SHIFT).
-KeyboardCode DomCodeToNonLocatedKeyboardCode(DomCode dom_code);
+EVENTS_OZONE_LAYOUT_EXPORT KeyboardCode
+DomCodeToNonLocatedKeyboardCode(DomCode dom_code);
 
 // Determine the non-located VKEY corresponding to a located VKEY.
-KeyboardCode NonLocatedKeyboardCode(KeyboardCode key_code);
+EVENTS_OZONE_LAYOUT_EXPORT KeyboardCode
+NonLocatedKeyboardCode(KeyboardCode key_code);
 
 // Determine the located VKEY corresponding to a non-located VKEY.
-KeyboardCode LocatedKeyboardCode(KeyboardCode key_code, DomCode dom_code);
+EVENTS_OZONE_LAYOUT_EXPORT KeyboardCode
+LocatedKeyboardCode(KeyboardCode key_code, DomCode dom_code);
 
 // Returns true control character corresponding to a physical key.
 // In some contexts this is used instead of the key layout.
-bool LookupControlCharacter(DomCode dom_code,
-                            int flags,
-                            DomKey* dom_key,
-                            base::char16* character,
-                            KeyboardCode* key_code);
+EVENTS_OZONE_LAYOUT_EXPORT bool LookupControlCharacter(DomCode dom_code,
+                                                       int flags,
+                                                       DomKey* dom_key,
+                                                       base::char16* character,
+                                                       KeyboardCode* key_code);
 
 }  // namespace ui
 
