@@ -68,6 +68,7 @@ private:
     virtual void closePopupView() override;
     virtual bool shouldRespectListAttribute() override;
     virtual bool typeMismatchFor(const String&) const override;
+    virtual void warnIfValueIsInvalid(const String&) const override;
     virtual void updateView() override;
     virtual AXObject* popupRootAXObject() override;
 

@@ -184,6 +184,14 @@ bool ColorInputType::typeMismatchFor(const String& value) const
     return !isValidColorString(value);
 }
 
+void ColorInputType::warnIfValueIsInvalid(const String& value) const
+{
+    if (!equalIgnoringCase(value, element().sanitizeValue(value))) {
+        element().document().addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, WarningMessageLevel,
+            String::format("The specified value '%s' does not conform to the required format.  The format is '#rrggbb' where rr, gg, bb are two-digit hexadecimal numbers.", value.utf8().data())));
+    }
+}
+
 void ColorInputType::didChooseColor(const Color& color)
 {
     if (element().isDisabledFormControl() || color == valueAsColor())
