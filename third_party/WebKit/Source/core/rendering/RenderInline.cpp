@@ -366,13 +366,21 @@ RenderInline* RenderInline::clone() const
     return cloneInline;
 }
 
+void RenderInline::moveChildrenToIgnoringContinuation(RenderInline* to, RenderObject* startChild)
+{
+    RenderObject* child = startChild;
+    while (child) {
+        RenderObject* currentChild = child;
+        child = currentChild->nextSibling();
+        to->addChildIgnoringContinuation(children()->removeChildNode(this, currentChild), nullptr);
+    }
+}
+
 void RenderInline::splitInlines(RenderBlock* fromBlock, RenderBlock* toBlock,
                                 RenderBlock* middleBlock,
                                 RenderObject* beforeChild, RenderBoxModelObject* oldCont)
 {
-    // Create a clone of this inline.
-    RenderInline* cloneInline = clone();
-    cloneInline->setContinuation(oldCont);
+    ASSERT(isDescendantOf(fromBlock));
 
     // If we're splitting the inline containing the fullscreened element,
     // |beforeChild| may be the renderer for the fullscreened element. However,
@@ -385,75 +393,69 @@ void RenderInline::splitInlines(RenderBlock* fromBlock, RenderBlock* toBlock,
             beforeChild = fullscreen->fullScreenRenderer();
     }
 
-    // Now take all of the children from beforeChild to the end and remove
-    // them from |this| and place them in the clone.
-    RenderObject* o = beforeChild;
-    while (o) {
-        RenderObject* tmp = o;
-        o = tmp->nextSibling();
-        cloneInline->addChildIgnoringContinuation(children()->removeChildNode(this, tmp), 0);
-        tmp->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
-    }
-
-    // Hook |clone| up as the continuation of the middle block.
-    middleBlock->setContinuation(cloneInline);
-
-    // We have been reparented and are now under the fromBlock.  We need
-    // to walk up our inline parent chain until we hit the containing block.
-    // Once we hit the containing block we're done.
-    RenderBoxModelObject* curr = toRenderBoxModelObject(parent());
-    RenderBoxModelObject* currChild = this;
-
     // FIXME: Because splitting is O(n^2) as tags nest pathologically, we cap the depth at which we're willing to clone.
     // There will eventually be a better approach to this problem that will let us nest to a much
     // greater depth (see bugzilla bug 13430) but for now we have a limit.  This *will* result in
     // incorrect rendering, but the alternative is to hang forever.
-    unsigned splitDepth = 1;
     const unsigned cMaxSplitDepth = 200;
-    while (curr && curr != fromBlock) {
-        ASSERT(curr->isRenderInline());
-        if (splitDepth < cMaxSplitDepth) {
-            // Create a new clone.
-            RenderInline* cloneChild = cloneInline;
-            cloneInline = toRenderInline(curr)->clone();
-
-            // Insert our child clone as the first child.
-            cloneInline->addChildIgnoringContinuation(cloneChild, 0);
-
-            // Hook the clone up as a continuation of |curr|.
-            RenderInline* inlineCurr = toRenderInline(curr);
-            oldCont = inlineCurr->continuation();
-            inlineCurr->setContinuation(cloneInline);
-            cloneInline->setContinuation(oldCont);
-
-            // Now we need to take all of the children starting from the first child
-            // *after* currChild and append them all to the clone.
-            o = currChild->nextSibling();
-            while (o) {
-                RenderObject* tmp = o;
-                o = tmp->nextSibling();
-                cloneInline->addChildIgnoringContinuation(inlineCurr->children()->removeChildNode(curr, tmp), 0);
-                tmp->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
-            }
-        }
-
-        // Keep walking up the chain.
-        currChild = curr;
-        curr = toRenderBoxModelObject(curr->parent());
-        splitDepth++;
+    Vector<RenderInline*> inlinesToClone;
+    RenderInline* topMostInline = this;
+    for (RenderObject* o = this; o != fromBlock; o = o->parent()) {
+        topMostInline = toRenderInline(o);
+        if (inlinesToClone.size() < cMaxSplitDepth)
+            inlinesToClone.append(topMostInline);
+        // Keep walking up the chain to ensure |topMostInline| is a child of |fromBlock|,
+        // to avoid assertion failure when |fromBlock|'s children are moved to |toBlock| below.
     }
 
-    // Now we are at the block level. We need to put the clone into the toBlock.
+    // Create a new clone of the top-most inline in |inlinesToClone|.
+    RenderInline* topMostInlineToClone = inlinesToClone.last();
+    RenderInline* cloneInline = topMostInlineToClone->clone();
+
+    // Now we are at the block level. We need to put the clone into the |toBlock|.
     toBlock->children()->appendChildNode(toBlock, cloneInline);
 
-    // Now take all the children after currChild and remove them from the fromBlock
-    // and put them in the toBlock.
-    o = currChild->nextSibling();
-    while (o) {
-        RenderObject* tmp = o;
-        o = tmp->nextSibling();
-        toBlock->children()->appendChildNode(toBlock, fromBlock->children()->removeChildNode(fromBlock, tmp));
+    // Now take all the children after |topMostInline| and remove them from the |fromBlock|
+    // and put them into the toBlock.
+    fromBlock->moveChildrenTo(toBlock, topMostInline->nextSibling(), nullptr, true);
+
+    RenderInline* currentParent = topMostInlineToClone;
+    RenderInline* cloneInlineParent = cloneInline;
+
+    // Clone the inlines from top to down to ensure any new object will be added into a rooted tree.
+    // Note that we have already cloned the top-most one, so the loop begins from size - 2 (except if
+    // we have reached |cMaxDepth| in which case we sacrifice correct rendering for performance).
+    for (int i = static_cast<int>(inlinesToClone.size()) - 2; i >= 0; --i) {
+        // Hook the clone up as a continuation of |currentInline|.
+        RenderBoxModelObject* oldCont = currentParent->continuation();
+        currentParent->setContinuation(cloneInline);
+        cloneInline->setContinuation(oldCont);
+
+        // Create a new clone.
+        RenderInline* current = inlinesToClone[i];
+        cloneInline = current->clone();
+
+        // Insert our |cloneInline| as the first child of |cloneInlineParent|.
+        cloneInlineParent->addChildIgnoringContinuation(cloneInline, nullptr);
+
+        // Now we need to take all of the children starting from the first child
+        // *after* |current| and append them all to the |cloneInlineParent|.
+        currentParent->moveChildrenToIgnoringContinuation(cloneInlineParent, current->nextSibling());
+
+        currentParent = current;
+        cloneInlineParent = cloneInline;
     }
+
+    // The last inline to clone is |this|, and the current |cloneInline| is cloned from |this|.
+    ASSERT(this == inlinesToClone.first());
+
+    // Hook |cloneInline| up as the continuation of the middle block.
+    cloneInline->setContinuation(oldCont);
+    middleBlock->setContinuation(cloneInline);
+
+    // Now take all of the children from |beforeChild| to the end and remove
+    // them from |this| and place them in the clone.
+    moveChildrenToIgnoringContinuation(cloneInline, beforeChild);
 }
 
 void RenderInline::splitFlow(RenderObject* beforeChild, RenderBlock* newBlockBox,
