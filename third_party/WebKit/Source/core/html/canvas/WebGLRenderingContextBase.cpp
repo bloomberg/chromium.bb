@@ -2528,10 +2528,8 @@ ScriptValue WebGLRenderingContextBase::getProgramParameter(ScriptState* scriptSt
 
 String WebGLRenderingContextBase::getProgramInfoLog(WebGLProgram* program)
 {
-    if (isContextLost())
+    if (isContextLost() || !validateWebGLObject("getProgramInfoLog", program))
         return String();
-    if (!validateWebGLObject("getProgramInfoLog", program))
-        return "";
     return ensureNotNull(webContext()->getProgramInfoLog(objectOrZero(program)));
 }
 
@@ -2598,10 +2596,8 @@ ScriptValue WebGLRenderingContextBase::getShaderParameter(ScriptState* scriptSta
 
 String WebGLRenderingContextBase::getShaderInfoLog(WebGLShader* shader)
 {
-    if (isContextLost())
+    if (isContextLost() || !validateWebGLObject("getShaderInfoLog", shader))
         return String();
-    if (!validateWebGLObject("getShaderInfoLog", shader))
-        return "";
     return ensureNotNull(webContext()->getShaderInfoLog(objectOrZero(shader)));
 }
 
@@ -2638,10 +2634,8 @@ PassRefPtrWillBeRawPtr<WebGLShaderPrecisionFormat> WebGLRenderingContextBase::ge
 
 String WebGLRenderingContextBase::getShaderSource(WebGLShader* shader)
 {
-    if (isContextLost())
+    if (isContextLost() || !validateWebGLObject("getShaderSource", shader))
         return String();
-    if (!validateWebGLObject("getShaderSource", shader))
-        return "";
     return ensureNotNull(shader->source());
 }
 
