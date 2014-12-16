@@ -19,15 +19,9 @@ static const int kLowMemoryDeviceThresholdMB = 512;
 
 bool DetectLowEndDevice() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  int int_value = 0;
-  if (command_line->HasSwitch(switches::kLowEndDeviceMode)) {
-    std::string string_value =
-      command_line->GetSwitchValueASCII(switches::kLowEndDeviceMode);
-    StringToInt(string_value, &int_value);
-  }
-  if (int_value == 1)
+  if (command_line->HasSwitch(switches::kEnableLowEndDeviceMode))
     return true;
-  if (int_value != 2)
+  if (command_line->HasSwitch(switches::kDisableLowEndDeviceMode))
     return false;
 
   int ram_size_mb = SysInfo::AmountOfPhysicalMemoryMB();

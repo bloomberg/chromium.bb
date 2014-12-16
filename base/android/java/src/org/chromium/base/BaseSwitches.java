@@ -15,10 +15,11 @@ public abstract class BaseSwitches {
     // Block ChildProcessMain thread of render process service until a Java debugger is attached.
     public static final String RENDERER_WAIT_FOR_JAVA_DEBUGGER = "renderer-wait-for-java-debugger";
 
-    // Force low-end device when set to 1;
-    // Force non-low-end device when set to 0;
-    // Auto-detect low-end device when set to other values or empty;
-    public static final String LOW_END_DEVICE_MODE = "low-end-device-mode";
+    // Force low-end device mode when set.
+    public static final String ENABLE_LOW_END_DEVICE_MODE = "enable-low-end-device-mode";
+
+    // Force disabling of low-end device mode when set.
+    public static final String DISABLE_LOW_END_DEVICE_MODE = "disable-low-end-device-mode";
 
     // Adds additional thread idle time information into the trace event output.
     public static final String ENABLE_IDLE_TRACING = "enable-idle-tracing";
