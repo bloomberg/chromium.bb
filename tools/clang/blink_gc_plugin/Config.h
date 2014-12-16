@@ -159,7 +159,9 @@ class Config {
            IsIgnoreAnnotated(decl);
   }
 
-  static bool IsVisitor(const std::string& name) { return name == "Visitor"; }
+  static bool IsVisitor(const std::string& name) {
+    return name == "Visitor" || name == "VisitorHelper";
+  }
 
   static bool IsTraceMethod(clang::FunctionDecl* method,
                             bool* isTraceAfterDispatch = 0) {

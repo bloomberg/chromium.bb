@@ -204,11 +204,15 @@ class HeapHashMap : public HashMap<K, V, void, void, void, HeapAllocator> { };
 template<typename T>
 class PersistentHeapVector : public Vector<T, 0, HeapAllocator> { };
 
-class Visitor {
+template <typename Derived>
+class VisitorHelper {
 public:
     template<typename T>
     void trace(const T&);
+};
 
+class Visitor : public VisitorHelper<Visitor> {
+ public:
     template<typename T, void (T::*method)(Visitor*)>
     void registerWeakMembers(const T* obj);
 };
