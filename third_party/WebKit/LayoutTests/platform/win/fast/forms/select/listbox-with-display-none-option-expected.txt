@@ -55,8 +55,11 @@ layer at (68,67) size 65x121 clip at (69,68) size 48x119
         RenderText {#text} at (2,0) size 44x16
           text run at (2,0) width 44: "***45***"
       RenderBlock {OPTION} at (0,17) size 48x17
-        RenderText {#text} at (2,0) size 39x16
-          text run at (2,0) width 39: "    Five"
+        RenderInline {<pseudo:before>} at (0,0) size 16x16
+          RenderTextFragment at (2,0) size 16x16
+            text run at (2,0) width 16: "    "
+        RenderText {#text} at (18,0) size 23x16
+          text run at (18,0) width 23: "Five"
     RenderBlock {OPTION} at (1,86) size 48x17
       RenderText {#text} at (2,0) size 35x16
         text run at (2,0) width 35: "Seven"
@@ -73,8 +76,11 @@ layer at (137,67) size 65x121 clip at (138,68) size 48x119
         RenderText {#text} at (2,0) size 44x16
           text run at (2,0) width 44: "***45***"
       RenderBlock {OPTION} at (0,17) size 48x17
-        RenderText {#text} at (2,0) size 42x16
-          text run at (2,0) width 42: "    Four"
+        RenderInline {<pseudo:before>} at (0,0) size 16x16
+          RenderTextFragment at (2,0) size 16x16
+            text run at (2,0) width 16: "    "
+        RenderText {#text} at (18,0) size 26x16
+          text run at (18,0) width 26: "Four"
     RenderBlock {OPTION} at (1,69) size 48x17
       RenderText {#text} at (2,0) size 19x16
         text run at (2,0) width 19: "Six"
@@ -125,14 +131,23 @@ layer at (326,50) size 63x138 clip at (327,51) size 46x136
         RenderText {#text} at (2,0) size 41x16
           text run at (2,0) width 41: "**456**"
       RenderBlock {OPTION} at (0,17) size 46x17
-        RenderText {#text} at (2,0) size 42x16
-          text run at (2,0) width 42: "    Four"
+        RenderInline {<pseudo:before>} at (0,0) size 16x16
+          RenderTextFragment at (2,0) size 16x16
+            text run at (2,0) width 16: "    "
+        RenderText {#text} at (18,0) size 26x16
+          text run at (18,0) width 26: "Four"
       RenderBlock {OPTION} at (0,34) size 46x17
-        RenderText {#text} at (2,0) size 39x16
-          text run at (2,0) width 39: "    Five"
+        RenderInline {<pseudo:before>} at (0,0) size 16x16
+          RenderTextFragment at (2,0) size 16x16
+            text run at (2,0) width 16: "    "
+        RenderText {#text} at (18,0) size 23x16
+          text run at (18,0) width 23: "Five"
       RenderBlock {OPTION} at (0,51) size 46x17
-        RenderText {#text} at (2,0) size 35x16
-          text run at (2,0) width 35: "    Six"
+        RenderInline {<pseudo:before>} at (0,0) size 16x16
+          RenderTextFragment at (2,0) size 16x16
+            text run at (2,0) width 16: "    "
+        RenderText {#text} at (18,0) size 19x16
+          text run at (18,0) width 19: "Six"
     RenderBlock {OPTION} at (1,120) size 46x17
       RenderText {#text} at (2,0) size 35x16
         text run at (2,0) width 35: "Seven"
