@@ -16,7 +16,7 @@ namespace sandbox {
 
 // Provide direct system call wrappers for a few common system calls.
 // These are guaranteed to perform a system call and do not rely on things such
-// as caching the current pid (c.f. getpid()) unless otherwise specified.
+// as caching the current pid (c.f. getpid()).
 
 SANDBOX_EXPORT pid_t sys_getpid(void);
 
@@ -24,15 +24,9 @@ SANDBOX_EXPORT pid_t sys_gettid(void);
 
 SANDBOX_EXPORT long sys_clone(unsigned long flags);
 
-// |regs| is not supported and must be passed as nullptr. |child_stack| must be
-// nullptr, since otherwise this function cannot safely return.  As a
-// consequence, this function does not support CLONE_VM.
-//
-// This function uses the libc clone wrapper (which updates libc's pid cache)
-// internally, so callers may expect things like getpid() to work correctly
-// after in both the child and parent.
+// |regs| is not supported and must be passed as nullptr.
 SANDBOX_EXPORT long sys_clone(unsigned long flags,
-                              decltype(nullptr) child_stack,
+                              void* child_stack,
                               pid_t* ptid,
                               pid_t* ctid,
                               decltype(nullptr) regs);

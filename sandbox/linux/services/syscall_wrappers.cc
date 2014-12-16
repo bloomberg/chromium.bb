@@ -4,9 +4,6 @@
 
 #include "sandbox/linux/services/syscall_wrappers.h"
 
-#include <pthread.h>
-#include <sched.h>
-#include <setjmp.h>
 #include <sys/resource.h>
 #include <sys/syscall.h>
 #include <sys/time.h>
@@ -27,23 +24,12 @@ pid_t sys_gettid(void) {
   return syscall(__NR_gettid);
 }
 
-namespace {
-
-int CloneHelper(void* arg) {
-  jmp_buf* env_ptr = reinterpret_cast<jmp_buf*>(arg);
-  // This function runs on the stack specified on the clone call. Use longjmp to
-  // switch back to the original stack so the child can return from sys_clone.
-  longjmp(*env_ptr, 1);
-
-  // Should not be reached.
-  RAW_CHECK(false);
-  return 1;
+long sys_clone(unsigned long flags) {
+  return sys_clone(flags, nullptr, nullptr, nullptr, nullptr);
 }
 
-}  // namespace
-
 long sys_clone(unsigned long flags,
-               decltype(nullptr) child_stack,
+               void* child_stack,
                pid_t* ptid,
                pid_t* ctid,
                decltype(nullptr) tls) {
@@ -51,37 +37,21 @@ long sys_clone(unsigned long flags,
   const bool invalid_ctid =
       (flags & (CLONE_CHILD_SETTID | CLONE_CHILD_CLEARTID)) && !ctid;
   const bool invalid_ptid = (flags & CLONE_PARENT_SETTID) && !ptid;
+  const bool invalid_stack = (flags & CLONE_VM) && !child_stack;
 
-  // Since child_stack must be nullptr, we do not support CLONE_VM.
-  const bool clone_vm_used = flags & CLONE_VM;
-
-  if (clone_tls_used || invalid_ctid || invalid_ptid || clone_vm_used) {
+  if (clone_tls_used || invalid_ctid || invalid_ptid || invalid_stack) {
     RAW_LOG(FATAL, "Invalid usage of sys_clone");
   }
 
-  jmp_buf env;
-  if (setjmp(env) == 0) {
-    // We use the libc clone wrapper instead of making the syscall
-    // directly because making the syscall may fail to update the libc's
-    // internal pid cache. The libc interface unfortunately requires
-    // specifying a new stack, so we use setjmp/longjmp to emulate
-    // fork-like behavior.
-    char stack_buf[PTHREAD_STACK_MIN];
-#if defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARM_FAMILY) || \
-    defined(ARCH_CPU_MIPS64_FAMILY) || defined(ARCH_CPU_MIPS_FAMILY)
-    // The stack grows downward.
-    void* stack = stack_buf + sizeof(stack_buf);
-#else
-#error "Unsupported architecture"
+// See kernel/fork.c in Linux. There is different ordering of sys_clone
+// parameters depending on CONFIG_CLONE_BACKWARDS* configuration options.
+#if defined(ARCH_CPU_X86_64)
+  return syscall(__NR_clone, flags, child_stack, ptid, ctid, tls);
+#elif defined(ARCH_CPU_X86) || defined(ARCH_CPU_ARM_FAMILY) || \
+    defined(ARCH_CPU_MIPS_FAMILY) || defined(ARCH_CPU_MIPS64_FAMILY)
+  // CONFIG_CLONE_BACKWARDS defined.
+  return syscall(__NR_clone, flags, child_stack, ptid, tls, ctid);
 #endif
-    return clone(&CloneHelper, stack, flags, &env, ptid, tls, ctid);
-  }
-
-  return 0;
-}
-
-long sys_clone(unsigned long flags) {
-  return sys_clone(flags, nullptr, nullptr, nullptr, nullptr);
 }
 
 void sys_exit_group(int status) {

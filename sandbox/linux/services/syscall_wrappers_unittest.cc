@@ -39,18 +39,14 @@ TEST(SyscallWrappers, CloneParentSettid) {
 }
 
 TEST(SyscallWrappers, CloneChildSettid) {
-  // Warm up the libc pid cache, if there is one.
-  ASSERT_EQ(sys_getpid(), getpid());
-
   pid_t ctid = 0;
   pid_t pid =
       sys_clone(CLONE_CHILD_SETTID | SIGCHLD, nullptr, nullptr, &ctid, nullptr);
 
   const int kSuccessExit = 0;
   if (0 == pid) {
-    // In child.  Check both the raw getpid syscall and the libc getpid wrapper
-    // (which may rely on a pid cache).
-    if (sys_getpid() == ctid && getpid() == ctid)
+    // In child.
+    if (sys_getpid() == ctid)
       _exit(kSuccessExit);
     _exit(1);
   }
