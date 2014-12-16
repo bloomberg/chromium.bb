@@ -26,6 +26,7 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
  public:
   static RenderWidgetFullscreenPepper* Create(
       int32 opener_id,
+      CompositorDependencies* compositor_deps,
       PepperPluginInstanceImpl* plugin,
       const GURL& active_url,
       const blink::WebScreenInfo& screen_info);

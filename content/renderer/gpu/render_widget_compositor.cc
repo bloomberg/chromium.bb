@@ -27,15 +27,12 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/resources/single_release_callback.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/trees/layer_tree_host.h"
-#include "content/child/child_gpu_memory_buffer_manager.h"
-#include "content/child/child_shared_bitmap_manager.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/public/common/content_switches.h"
-#include "content/renderer/gpu/compositor_external_begin_frame_source.h"
 #include "content/renderer/input/input_handler_manager.h"
-#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/scheduler/renderer_scheduler.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/WebKit/public/platform/WebCompositeAndReadbackAsyncCallback.h"
@@ -162,10 +159,30 @@ gfx::Size CalculateDefaultTileSize() {
 // static
 scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
     RenderWidget* widget,
-    bool threaded) {
+    CompositorDependencies* compositor_deps) {
   scoped_ptr<RenderWidgetCompositor> compositor(
-      new RenderWidgetCompositor(widget, threaded));
+      new RenderWidgetCompositor(widget, compositor_deps));
+  compositor->Initialize();
+  return compositor;
+}
 
+RenderWidgetCompositor::RenderWidgetCompositor(
+    RenderWidget* widget,
+    CompositorDependencies* compositor_deps)
+    : num_failed_recreate_attempts_(0),
+      widget_(widget),
+      compositor_deps_(compositor_deps),
+      send_v8_idle_notification_after_commit_(true),
+      weak_factory_(this) {
+  CommandLine* cmd = CommandLine::ForCurrentProcess();
+
+  if (cmd->HasSwitch(switches::kEnableV8IdleNotificationAfterCommit))
+    send_v8_idle_notification_after_commit_ = true;
+  if (cmd->HasSwitch(switches::kDisableV8IdleNotificationAfterCommit))
+    send_v8_idle_notification_after_commit_ = false;
+}
+
+void RenderWidgetCompositor::Initialize() {
   CommandLine* cmd = CommandLine::ForCurrentProcess();
 
   cc::LayerTreeSettings settings;
@@ -222,23 +239,17 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.max_untiled_layer_size = gfx::Size(max_untiled_layer_width,
                                            max_untiled_layer_height);
 
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  // render_thread may be NULL in tests.
-  if (render_thread) {
-    settings.impl_side_painting =
-        render_thread->is_impl_side_painting_enabled();
-    settings.gpu_rasterization_forced =
-        render_thread->is_gpu_rasterization_forced();
-    settings.gpu_rasterization_enabled =
-        render_thread->is_gpu_rasterization_enabled();
-    settings.can_use_lcd_text = render_thread->is_lcd_text_enabled();
-    settings.use_distance_field_text =
-        render_thread->is_distance_field_text_enabled();
-    settings.use_zero_copy = render_thread->is_zero_copy_enabled();
-    settings.use_one_copy = render_thread->is_one_copy_enabled();
-    settings.use_image_texture_target =
-        render_thread->use_image_texture_target();
-  }
+  settings.impl_side_painting = compositor_deps_->IsImplSidePaintingEnabled();
+  settings.gpu_rasterization_forced =
+      compositor_deps_->IsGpuRasterizationForced();
+  settings.gpu_rasterization_enabled =
+      compositor_deps_->IsGpuRasterizationEnabled();
+  settings.can_use_lcd_text = compositor_deps_->IsLcdTextEnabled();
+  settings.use_distance_field_text =
+      compositor_deps_->IsDistanceFieldTextEnabled();
+  settings.use_zero_copy = compositor_deps_->IsZeroCopyEnabled();
+  settings.use_one_copy = compositor_deps_->IsOneCopyEnabled();
+  settings.use_image_texture_target = compositor_deps_->GetImageTextureTarget();
 
   settings.calculate_top_controls_position =
       cmd->HasSwitch(cc::switches::kEnableTopControlsPositionCalculation);
@@ -337,7 +348,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
     settings.gpu_rasterization_enabled = false;
   settings.using_synchronous_renderer_compositor =
       synchronous_compositor_factory;
-  settings.record_full_layer = widget->DoesRecordFullLayer();
+  settings.record_full_layer = widget_->DoesRecordFullLayer();
   settings.report_overscroll_only_for_scrollable_axes =
       !synchronous_compositor_factory;
   settings.max_partial_texture_updates = 0;
@@ -402,24 +413,33 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   if (cmd->HasSwitch(switches::kDisableLowResTiling))
     settings.create_low_res_tiling = false;
 
-  compositor->Initialize(settings);
+  scoped_refptr<base::SingleThreadTaskRunner> compositor_thread_task_runner =
+      compositor_deps_->GetCompositorImplThreadTaskRunner();
+  scoped_refptr<base::SingleThreadTaskRunner>
+      main_thread_compositor_task_runner =
+          compositor_deps_->GetCompositorMainThreadTaskRunner();
+  cc::SharedBitmapManager* shared_bitmap_manager =
+      compositor_deps_->GetSharedBitmapManager();
+  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager =
+      compositor_deps_->GetGpuMemoryBufferManager();
 
-  return compositor.Pass();
-}
+  scoped_ptr<cc::BeginFrameSource> external_begin_frame_source;
+  if (settings.use_external_begin_frame_source) {
+    external_begin_frame_source =
+        compositor_deps_->CreateExternalBeginFrameSource(widget_->routing_id());
+  }
 
-RenderWidgetCompositor::RenderWidgetCompositor(RenderWidget* widget,
-                                               bool threaded)
-    : num_failed_recreate_attempts_(0),
-      threaded_(threaded),
-      widget_(widget),
-      send_v8_idle_notification_after_commit_(true),
-      weak_factory_(this) {
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
-
-  if (cmd->HasSwitch(switches::kEnableV8IdleNotificationAfterCommit))
-    send_v8_idle_notification_after_commit_ = true;
-  if (cmd->HasSwitch(switches::kDisableV8IdleNotificationAfterCommit))
-    send_v8_idle_notification_after_commit_ = false;
+  if (compositor_thread_task_runner.get()) {
+    layer_tree_host_ = cc::LayerTreeHost::CreateThreaded(
+        this, shared_bitmap_manager, gpu_memory_buffer_manager, settings,
+        main_thread_compositor_task_runner, compositor_thread_task_runner,
+        external_begin_frame_source.Pass());
+  } else {
+    layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(
+        this, this, shared_bitmap_manager, gpu_memory_buffer_manager, settings,
+        main_thread_compositor_task_runner, external_begin_frame_source.Pass());
+  }
+  DCHECK(layer_tree_host_);
 }
 
 RenderWidgetCompositor::~RenderWidgetCompositor() {}
@@ -515,64 +535,8 @@ bool RenderWidgetCompositor::SendMessageToMicroBenchmark(
   return layer_tree_host_->SendMessageToMicroBenchmark(id, value.Pass());
 }
 
-void RenderWidgetCompositor::Initialize(const cc::LayerTreeSettings& settings) {
-  scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy;
-  scoped_refptr<base::SingleThreadTaskRunner>
-      main_thread_compositor_task_runner(base::MessageLoopProxy::current());
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  cc::SharedBitmapManager* shared_bitmap_manager = NULL;
-  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager = NULL;
-  // render_thread may be NULL in tests.
-  if (render_thread) {
-    compositor_message_loop_proxy =
-        render_thread->compositor_message_loop_proxy();
-    shared_bitmap_manager = render_thread->shared_bitmap_manager();
-    gpu_memory_buffer_manager = render_thread->gpu_memory_buffer_manager();
-    main_thread_compositor_task_runner =
-        render_thread->main_thread_compositor_task_runner();
-  }
-  scoped_ptr<cc::BeginFrameSource> external_begin_frame_source;
-#if defined(OS_ANDROID)
-  if (SynchronousCompositorFactory* factory =
-      SynchronousCompositorFactory::GetInstance()) {
-    DCHECK(settings.use_external_begin_frame_source);
-    external_begin_frame_source =
-        factory->CreateExternalBeginFrameSource(widget_->routing_id());
-  }
-#endif
-  if (render_thread &&
-      !external_begin_frame_source.get() &&
-      settings.use_external_begin_frame_source) {
-    external_begin_frame_source.reset(new CompositorExternalBeginFrameSource(
-                                              widget_->routing_id()));
-  }
-  if (compositor_message_loop_proxy.get()) {
-    layer_tree_host_ =
-        cc::LayerTreeHost::CreateThreaded(this,
-                                          shared_bitmap_manager,
-                                          gpu_memory_buffer_manager,
-                                          settings,
-                                          main_thread_compositor_task_runner,
-                                          compositor_message_loop_proxy,
-                                          external_begin_frame_source.Pass());
-  } else {
-    layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(
-                           this,
-                           this,
-                           shared_bitmap_manager,
-                           gpu_memory_buffer_manager,
-                           settings,
-                           main_thread_compositor_task_runner,
-                           external_begin_frame_source.Pass());
-  }
-  DCHECK(layer_tree_host_);
-}
-
 void RenderWidgetCompositor::setSurfaceReady() {
-  // In tests without a RenderThreadImpl, don't set ready as this kicks
-  // off creating output surfaces that the test can't create.
-  if (RenderThreadImpl::current())
-    layer_tree_host_->SetLayerTreeHostClientReady();
+  layer_tree_host_->SetLayerTreeHostClientReady();
 }
 
 void RenderWidgetCompositor::setRootLayer(const blink::WebLayer& layer) {
@@ -736,7 +700,8 @@ void RenderWidgetCompositor::compositeAndReadbackAsync(
   // Force a commit to happen. The temporary copy output request will
   // be installed after layout which will happen as a part of the commit, when
   // there is guaranteed to be a root layer.
-  if (!threaded_ &&
+  bool threaded = !!compositor_deps_->GetCompositorImplThreadTaskRunner().get();
+  if (!threaded &&
       !layer_tree_host_->settings().single_thread_proxy_scheduler) {
     layer_tree_host_->Composite(gfx::FrameTime::Now());
   } else {
@@ -805,9 +770,7 @@ void RenderWidgetCompositor::BeginMainFrame(const cc::BeginFrameArgs& args) {
   double interval_sec = args.interval.InSecondsF();
   WebBeginFrameArgs web_begin_frame_args =
       WebBeginFrameArgs(frame_time_sec, deadline_sec, interval_sec);
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  if (render_thread)  // Can be null in tests.
-    render_thread->renderer_scheduler()->WillBeginFrame(args);
+  compositor_deps_->GetRendererScheduler()->WillBeginFrame(args);
   widget_->webwidget()->beginFrame(web_begin_frame_args);
 }
 
@@ -901,9 +864,7 @@ void RenderWidgetCompositor::DidCommit() {
 
   widget_->DidCommitCompositorFrame();
   widget_->didBecomeReadyForAdditionalInput();
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  if (render_thread)  // Can be null in tests.
-    render_thread->renderer_scheduler()->DidCommitFrameToCompositor();
+  compositor_deps_->GetRendererScheduler()->DidCommitFrameToCompositor();
 }
 
 void RenderWidgetCompositor::DidCommitAndDrawFrame() {
@@ -912,7 +873,8 @@ void RenderWidgetCompositor::DidCommitAndDrawFrame() {
 
 void RenderWidgetCompositor::DidCompleteSwapBuffers() {
   widget_->didCompleteSwapBuffers();
-  if (!threaded_)
+  bool threaded = !!compositor_deps_->GetCompositorImplThreadTaskRunner().get();
+  if (!threaded)
     widget_->OnSwapBuffersComplete();
 }
 
@@ -930,7 +892,7 @@ void RenderWidgetCompositor::DidAbortSwapBuffers() {
 
 void RenderWidgetCompositor::RateLimitSharedMainThreadContext() {
   cc::ContextProvider* provider =
-      RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
+      compositor_deps_->GetSharedMainThreadContextProvider();
   provider->ContextGL()->RateLimitOffscreenContextCHROMIUM();
 }
 

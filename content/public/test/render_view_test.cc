@@ -22,6 +22,7 @@
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
 #include "content/renderer/scheduler/renderer_scheduler.h"
+#include "content/test/fake_compositor_dependencies.h"
 #include "content/test/mock_render_process.h"
 #include "content/test/test_content_client.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
@@ -185,6 +186,7 @@ void RenderViewTest::SetUp() {
     ui::ResourceBundle::InitSharedInstanceWithLocale(
         "en-US", NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
 
+  compositor_deps_.reset(new FakeCompositorDependencies);
   mock_process_.reset(new MockRenderProcess);
 
   ViewMsg_New_Params view_params;
@@ -209,7 +211,8 @@ void RenderViewTest::SetUp() {
   view_params.max_size = gfx::Size();
 
   // This needs to pass the mock render thread to the view.
-  RenderViewImpl* view = RenderViewImpl::Create(view_params, false);
+  RenderViewImpl* view =
+      RenderViewImpl::Create(view_params, compositor_deps_.get(), false);
   view->AddRef();
   view_ = view;
 }

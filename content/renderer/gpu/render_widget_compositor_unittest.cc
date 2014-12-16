@@ -9,6 +9,9 @@
 #include "cc/trees/layer_tree_host.h"
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/render_widget.h"
+#include "content/renderer/scheduler/renderer_scheduler.h"
+#include "content/test/fake_compositor_dependencies.h"
+#include "content/test/fake_renderer_scheduler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
@@ -17,6 +20,7 @@ using testing::AllOf;
 using testing::Field;
 
 namespace content {
+namespace {
 
 class MockWebWidget : public blink::WebWidget {
  public:
@@ -46,13 +50,16 @@ class RenderWidgetCompositorTest : public testing::Test {
  public:
   RenderWidgetCompositorTest()
       : render_widget_(make_scoped_refptr(new TestRenderWidget())),
+        compositor_deps_(make_scoped_ptr(new FakeCompositorDependencies)),
         render_widget_compositor_(
-            RenderWidgetCompositor::Create(render_widget_.get(), false)) {}
+            RenderWidgetCompositor::Create(render_widget_.get(),
+                                           compositor_deps_.get())) {}
   ~RenderWidgetCompositorTest() override {}
 
  protected:
   MockRenderThread render_thread_;
   scoped_refptr<TestRenderWidget> render_widget_;
+  scoped_ptr<FakeCompositorDependencies> compositor_deps_;
   scoped_ptr<RenderWidgetCompositor> render_widget_compositor_;
 
  private:
@@ -103,8 +110,9 @@ class RenderWidgetOutputSurface : public TestRenderWidget {
 // the compositor (couldn't bind the output surface) are handled identically.
 class RenderWidgetCompositorOutputSurface : public RenderWidgetCompositor {
  public:
-  RenderWidgetCompositorOutputSurface(RenderWidget* widget, bool threaded)
-      : RenderWidgetCompositor(widget, threaded),
+  RenderWidgetCompositorOutputSurface(RenderWidget* widget,
+                                      CompositorDependencies* compositor_deps)
+      : RenderWidgetCompositor(widget, compositor_deps),
         num_failures_before_success_(0),
         expected_successes_(0),
         expected_fallback_successes_(0),
@@ -115,10 +123,9 @@ class RenderWidgetCompositorOutputSurface : public RenderWidgetCompositor {
         num_fallback_successes_(0),
         num_failures_(0),
         last_create_was_fallback_(false),
-        use_null_output_surface_(true) {
-    cc::LayerTreeSettings settings;
-    Initialize(settings);
-  }
+        use_null_output_surface_(true) {}
+
+  using RenderWidgetCompositor::Initialize;
 
   scoped_ptr<cc::OutputSurface> CreateOutputSurface(bool fallback) {
     EXPECT_EQ(num_requests_since_last_success_ >
@@ -206,9 +213,11 @@ class RenderWidgetCompositorOutputSurfaceTest : public testing::Test {
  public:
   RenderWidgetCompositorOutputSurfaceTest()
       : render_widget_(make_scoped_refptr(new RenderWidgetOutputSurface)),
+        compositor_deps_(make_scoped_ptr(new FakeCompositorDependencies)),
         render_widget_compositor_(make_scoped_ptr(
             new RenderWidgetCompositorOutputSurface(render_widget_.get(),
-                                                    false))) {
+                                                    compositor_deps_.get()))) {
+    render_widget_compositor_->Initialize();
     render_widget_->SetCompositor(render_widget_compositor_.get());
   }
 
@@ -231,6 +240,7 @@ class RenderWidgetCompositorOutputSurfaceTest : public testing::Test {
   base::MessageLoop ye_olde_message_loope_;
   MockRenderThread render_thread_;
   scoped_refptr<RenderWidgetOutputSurface> render_widget_;
+  scoped_ptr<FakeCompositorDependencies> compositor_deps_;
   scoped_ptr<RenderWidgetCompositorOutputSurface> render_widget_compositor_;
 
  private:
@@ -285,4 +295,5 @@ TEST_F(RenderWidgetCompositorOutputSurfaceTest, FallbackSuccessNormalSuccess) {
           1, 1);
 }
 
+}  // namespace
 }  // namespace content

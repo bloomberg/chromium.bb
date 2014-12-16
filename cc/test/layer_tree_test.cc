@@ -16,6 +16,7 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/begin_frame_args_test.h"
+#include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/test_context_provider.h"
@@ -53,52 +54,6 @@ void TestHooks::CreateResourceAndTileTaskWorkerPool(
   host_impl->LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
       tile_task_worker_pool, resource_pool, staging_resource_pool);
 }
-
-class ExternalBeginFrameSourceForTest
-    : public BeginFrameSourceMixIn,
-      public NON_EXPORTED_BASE(base::NonThreadSafe) {
- public:
-  explicit ExternalBeginFrameSourceForTest(double refresh_rate)
-      : milliseconds_per_frame_(1000.0 / refresh_rate),
-        is_ready_(false),
-        weak_ptr_factory_(this) {
-    DetachFromThread();
-  }
-
-  virtual ~ExternalBeginFrameSourceForTest() {
-    DCHECK(CalledOnValidThread());
-  }
-
-  void OnNeedsBeginFramesChange(bool needs_begin_frames) override {
-    DCHECK(CalledOnValidThread());
-    if (needs_begin_frames) {
-      base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&ExternalBeginFrameSourceForTest::TestOnBeginFrame,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(milliseconds_per_frame_));
-    }
-  }
-
-  void SetClientReady() override {
-    DCHECK(CalledOnValidThread());
-    is_ready_ = true;
-  }
-
-  bool is_ready() const {
-    return is_ready_;
-  }
-
-  void TestOnBeginFrame() {
-    DCHECK(CalledOnValidThread());
-    CallOnBeginFrame(CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE));
-  }
-
- private:
-  double milliseconds_per_frame_;
-  bool is_ready_;
-  base::WeakPtrFactory<ExternalBeginFrameSourceForTest> weak_ptr_factory_;
-};
 
 // Adapts ThreadProxy for test. Injects test hooks for testing.
 class ThreadProxyForTest : public ThreadProxy {
@@ -614,10 +569,10 @@ void LayerTreeTest::WillBeginTest() {
 void LayerTreeTest::DoBeginTest() {
   client_ = LayerTreeHostClientForTesting::Create(this);
 
-  scoped_ptr<ExternalBeginFrameSourceForTest> external_begin_frame_source;
+  scoped_ptr<FakeExternalBeginFrameSource> external_begin_frame_source;
   if (settings_.use_external_begin_frame_source &&
       settings_.throttle_frame_production) {
-    external_begin_frame_source.reset(new ExternalBeginFrameSourceForTest(
+    external_begin_frame_source.reset(new FakeExternalBeginFrameSource(
         settings_.renderer_settings.refresh_rate));
     external_begin_frame_source_ = external_begin_frame_source.get();
   }

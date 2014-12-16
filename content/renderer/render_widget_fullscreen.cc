@@ -34,14 +34,13 @@ WebWidget* RenderWidgetFullscreen::CreateWebWidget() {
   return RenderWidget::CreateWebWidget(this);
 }
 
-bool RenderWidgetFullscreen::Init(int32 opener_id) {
+bool RenderWidgetFullscreen::Init(int32 opener_id,
+                                  CompositorDependencies* compositor_deps) {
   DCHECK(!webwidget_);
 
-  return RenderWidget::DoInit(
-      opener_id,
-      CreateWebWidget(),
-      new ViewHostMsg_CreateFullscreenWidget(
-          opener_id, &routing_id_, &surface_id_));
+  return RenderWidget::DoInit(opener_id, compositor_deps, CreateWebWidget(),
+                              new ViewHostMsg_CreateFullscreenWidget(
+                                  opener_id, &routing_id_, &surface_id_));
 }
 
 }  // namespace content

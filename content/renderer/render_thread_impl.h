@@ -23,6 +23,7 @@
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/gpu_result_codes.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/renderer/gpu/compositor_dependencies.h"
 #include "net/base/network_change_notifier.h"
 #include "third_party/WebKit/public/platform/WebConnectionType.h"
 #include "ui/gfx/native_widget_types.h"
@@ -114,9 +115,11 @@ class WebRTCIdentityService;
 // Most of the communication occurs in the form of IPC messages.  They are
 // routed to the RenderThread according to the routing IDs of the messages.
 // The routing IDs correspond to RenderView instances.
-class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
-                                        public ChildThread,
-                                        public GpuChannelHostFactory {
+class CONTENT_EXPORT RenderThreadImpl
+    : public RenderThread,
+      public ChildThread,
+      public GpuChannelHostFactory,
+      NON_EXPORTED_BASE(public CompositorDependencies) {
  public:
   static RenderThreadImpl* current();
 
@@ -174,6 +177,25 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 #endif
   ServiceRegistry* GetServiceRegistry() override;
 
+  // CompositorDependencies implementation.
+  bool IsImplSidePaintingEnabled() override;
+  bool IsGpuRasterizationForced() override;
+  bool IsGpuRasterizationEnabled() override;
+  bool IsLcdTextEnabled() override;
+  bool IsDistanceFieldTextEnabled() override;
+  bool IsZeroCopyEnabled() override;
+  bool IsOneCopyEnabled() override;
+  uint32 GetImageTextureTarget() override;
+  scoped_refptr<base::SingleThreadTaskRunner>
+  GetCompositorMainThreadTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner>
+  GetCompositorImplThreadTaskRunner() override;
+  gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
+  RendererScheduler* GetRendererScheduler() override;
+  cc::ContextProvider* GetSharedMainThreadContextProvider() override;
+  scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
+      int routing_id) override;
+
   // Synchronously establish a channel to the GPU plugin if not previously
   // established or if it has been lost (for example if the GPU plugin crashed).
   // If there is a pending asynchronous request, it will be completed by the
@@ -199,19 +221,9 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
     layout_test_mode_ = layout_test_mode;
   }
 
-  RendererScheduler* renderer_scheduler() const {
-    DCHECK(renderer_scheduler_);
-    return renderer_scheduler_.get();
-  }
-
   RendererBlinkPlatformImpl* blink_platform_impl() const {
     DCHECK(blink_platform_impl_);
     return blink_platform_impl_.get();
-  }
-
-  scoped_refptr<base::SingleThreadTaskRunner>
-  main_thread_compositor_task_runner() const {
-    return main_thread_compositor_task_runner_;
   }
 
   CompositorForwardingMessageFilter* compositor_message_filter() const {
@@ -222,35 +234,9 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
     return input_handler_manager_.get();
   }
 
-  // Will be NULL if threaded compositing has not been enabled.
+  // Will be null if threaded compositing has not been enabled.
   scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy() const {
     return compositor_message_loop_proxy_;
-  }
-
-  bool is_gpu_rasterization_enabled() const {
-    return is_gpu_rasterization_enabled_;
-  }
-
-  bool is_gpu_rasterization_forced() const {
-    return is_gpu_rasterization_forced_;
-  }
-
-  bool is_impl_side_painting_enabled() const {
-    return is_impl_side_painting_enabled_;
-  }
-
-  bool is_lcd_text_enabled() const { return is_lcd_text_enabled_; }
-
-  bool is_distance_field_text_enabled() const {
-    return is_distance_field_text_enabled_;
-  }
-
-  bool is_zero_copy_enabled() const { return is_zero_copy_enabled_; }
-
-  bool is_one_copy_enabled() const { return is_one_copy_enabled_; }
-
-  unsigned use_image_texture_target() const {
-    return use_image_texture_target_;
   }
 
   AppCacheDispatcher* appcache_dispatcher() const {
@@ -582,7 +568,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   scoped_refptr<base::SingleThreadTaskRunner>
       main_thread_compositor_task_runner_;
 
-  // Compositor settings
+  // Compositor settings.
   bool is_gpu_rasterization_enabled_;
   bool is_gpu_rasterization_forced_;
   bool is_impl_side_painting_enabled_;

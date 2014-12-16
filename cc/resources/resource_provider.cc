@@ -555,17 +555,9 @@ ResourceProvider::ResourceId ResourceProvider::CreateBitmap(
     const gfx::Size& size, GLint wrap_mode) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  scoped_ptr<SharedBitmap> bitmap;
-  if (shared_bitmap_manager_)
-    bitmap = shared_bitmap_manager_->AllocateSharedBitmap(size);
-
-  uint8_t* pixels;
-  if (bitmap) {
-    pixels = bitmap->pixels();
-  } else {
-    size_t bytes = SharedBitmap::CheckedSizeInBytes(size);
-    pixels = new uint8_t[bytes];
-  }
+  scoped_ptr<SharedBitmap> bitmap =
+      shared_bitmap_manager_->AllocateSharedBitmap(size);
+  uint8_t* pixels = bitmap->pixels();
   DCHECK(pixels);
 
   ResourceId id = next_id_++;

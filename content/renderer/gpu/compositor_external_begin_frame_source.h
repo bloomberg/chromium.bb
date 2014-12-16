@@ -24,7 +24,10 @@ class CompositorExternalBeginFrameSource
     : public cc::BeginFrameSourceMixIn,
       public NON_EXPORTED_BASE(base::NonThreadSafe) {
  public:
-  explicit CompositorExternalBeginFrameSource(int routing_id);
+  explicit CompositorExternalBeginFrameSource(
+      CompositorForwardingMessageFilter* filter,
+      IPC::SyncMessageFilter* sync_message_filter,
+      int routing_id);
   virtual ~CompositorExternalBeginFrameSource();
 
   // cc::BeginFrameSourceMixIn implementation.

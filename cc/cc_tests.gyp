@@ -150,6 +150,8 @@
       'test/fake_delegated_renderer_layer.h',
       'test/fake_delegated_renderer_layer_impl.cc',
       'test/fake_delegated_renderer_layer_impl.h',
+      'test/fake_external_begin_frame_source.cc',
+      'test/fake_external_begin_frame_source.h',
       'test/fake_impl_proxy.h',
       'test/fake_layer_tree_host.cc',
       'test/fake_layer_tree_host.h',

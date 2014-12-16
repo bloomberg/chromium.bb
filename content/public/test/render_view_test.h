@@ -33,6 +33,7 @@ namespace content {
 class ContentBrowserClient;
 class ContentClient;
 class ContentRendererClient;
+class FakeCompositorDependencies;
 class MockRenderProcess;
 class PageState;
 class RendererMainPlatformDelegate;
@@ -141,6 +142,7 @@ class RenderViewTest : public testing::Test {
   void TearDown() override;
 
   base::MessageLoop msg_loop_;
+  scoped_ptr<FakeCompositorDependencies> compositor_deps_;
   scoped_ptr<MockRenderProcess> mock_process_;
   // We use a naked pointer because we don't want to expose RenderViewImpl in
   // the embedder's namespace.

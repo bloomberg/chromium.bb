@@ -915,7 +915,7 @@ const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   isolate->SetAddHistogramSampleFunction(AddHistogramSample);
 
   main_thread_compositor_task_runner_ =
-      renderer_scheduler()->CompositorTaskRunner();
+      renderer_scheduler_->CompositorTaskRunner();
 
   main_input_callback_.Reset(
       base::Bind(base::IgnoreResult(&RenderThreadImpl::OnMessageReceived),
@@ -960,7 +960,7 @@ const CommandLine& command_line = *CommandLine::ForCurrentProcess();
     }
     input_handler_manager_.reset(new InputHandlerManager(
         compositor_message_loop_proxy_, input_handler_manager_client,
-        renderer_scheduler()));
+        renderer_scheduler_.get()));
   }
 
   if (!input_event_filter_.get()) {
@@ -1275,6 +1275,71 @@ ServiceRegistry* RenderThreadImpl::GetServiceRegistry() {
   return service_registry();
 }
 
+bool RenderThreadImpl::IsImplSidePaintingEnabled() {
+  return is_impl_side_painting_enabled_;
+}
+
+bool RenderThreadImpl::IsGpuRasterizationForced() {
+  return is_gpu_rasterization_forced_;
+}
+
+bool RenderThreadImpl::IsGpuRasterizationEnabled() {
+  return is_gpu_rasterization_enabled_;
+}
+
+bool RenderThreadImpl::IsLcdTextEnabled() {
+  return is_lcd_text_enabled_;
+}
+
+bool RenderThreadImpl::IsDistanceFieldTextEnabled() {
+  return is_distance_field_text_enabled_;
+}
+
+bool RenderThreadImpl::IsZeroCopyEnabled() {
+  return is_zero_copy_enabled_;
+}
+
+bool RenderThreadImpl::IsOneCopyEnabled() {
+  return is_one_copy_enabled_;
+}
+
+uint32 RenderThreadImpl::GetImageTextureTarget() {
+  return use_image_texture_target_;
+}
+scoped_refptr<base::SingleThreadTaskRunner>
+RenderThreadImpl::GetCompositorMainThreadTaskRunner() {
+  return main_thread_compositor_task_runner_;
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+RenderThreadImpl::GetCompositorImplThreadTaskRunner() {
+  return compositor_message_loop_proxy_;
+}
+
+gpu::GpuMemoryBufferManager* RenderThreadImpl::GetGpuMemoryBufferManager() {
+  return gpu_memory_buffer_manager();
+}
+
+RendererScheduler* RenderThreadImpl::GetRendererScheduler() {
+  return renderer_scheduler_.get();
+}
+
+cc::ContextProvider* RenderThreadImpl::GetSharedMainThreadContextProvider() {
+  return SharedMainThreadContextProvider().get();
+}
+
+scoped_ptr<cc::BeginFrameSource>
+RenderThreadImpl::CreateExternalBeginFrameSource(int routing_id) {
+#if defined(OS_ANDROID)
+  if (SynchronousCompositorFactory* factory =
+          SynchronousCompositorFactory::GetInstance()) {
+    return factory->CreateExternalBeginFrameSource(routing_id);
+  }
+#endif
+  return make_scoped_ptr(new CompositorExternalBeginFrameSource(
+      compositor_message_filter_.get(), sync_message_filter(), routing_id));
+}
+
 bool RenderThreadImpl::IsMainThread() {
   return !!current();
 }
@@ -1390,8 +1455,9 @@ void RenderThreadImpl::OnSetZoomLevelForCurrentURL(const std::string& scheme,
 
 void RenderThreadImpl::OnCreateNewView(const ViewMsg_New_Params& params) {
   EnsureWebKitInitialized();
+  CompositorDependencies* compositor_deps = this;
   // When bringing in render_view, also bring in webkit's glue and jsbindings.
-  RenderViewImpl::Create(params, false);
+  RenderViewImpl::Create(params, compositor_deps, false);
 }
 
 GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(

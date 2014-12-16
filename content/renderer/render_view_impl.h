@@ -166,6 +166,7 @@ class CONTENT_EXPORT RenderViewImpl
   // |proxy_routing_id| is specified, so a RenderFrameProxy can be created for
   // this RenderView's main RenderFrame.
   static RenderViewImpl* Create(const ViewMsg_New_Params& params,
+                                CompositorDependencies* compositor_deps,
                                 bool was_created_by_renderer);
 
   // Used by content_layouttest_support to hook into the creation of
@@ -522,6 +523,7 @@ class CONTENT_EXPORT RenderViewImpl
   explicit RenderViewImpl(const ViewMsg_New_Params& params);
 
   void Initialize(const ViewMsg_New_Params& params,
+                  CompositorDependencies* compositor_deps,
                   bool was_created_by_renderer);
   void SetScreenMetricsEmulationParameters(float device_scale_factor,
                                            const gfx::Point& root_layer_offset,

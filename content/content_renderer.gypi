@@ -159,6 +159,7 @@
       'renderer/gamepad_shared_memory_reader.h',
       'renderer/geolocation_dispatcher.cc',
       'renderer/geolocation_dispatcher.h',
+      'renderer/gpu/compositor_dependencies.h',
       'renderer/gpu/compositor_external_begin_frame_source.cc',
       'renderer/gpu/compositor_external_begin_frame_source.h',
       'renderer/gpu/compositor_forwarding_message_filter.cc',

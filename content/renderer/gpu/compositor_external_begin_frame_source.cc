@@ -5,17 +5,17 @@
 #include "content/renderer/gpu/compositor_external_begin_frame_source.h"
 
 #include "content/common/view_messages.h"
-#include "content/renderer/render_thread_impl.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
 
 namespace content {
 
 CompositorExternalBeginFrameSource::CompositorExternalBeginFrameSource(
+    CompositorForwardingMessageFilter* filter,
+    IPC::SyncMessageFilter* sync_message_filter,
     int routing_id)
-    : begin_frame_source_filter_(
-          RenderThreadImpl::current()->compositor_message_filter()),
-      message_sender_(RenderThreadImpl::current()->sync_message_filter()),
+    : begin_frame_source_filter_(filter),
+      message_sender_(sync_message_filter),
       routing_id_(routing_id) {
   DCHECK(begin_frame_source_filter_.get());
   DCHECK(message_sender_.get());

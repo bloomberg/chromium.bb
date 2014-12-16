@@ -152,11 +152,6 @@ ui::TextInputMode ConvertInputMode(const blink::WebString& input_mode) {
   return it->second;
 }
 
-bool IsThreadedCompositingEnabled() {
-  content::RenderThreadImpl* impl = content::RenderThreadImpl::current();
-  return impl && !!impl->compositor_message_loop_proxy().get();
-}
-
 // TODO(brianderson): Replace the hard-coded threshold with a fraction of
 // the BeginMainFrame interval.
 // 4166us will allow 1/4 of a 60Hz interval or 1/2 of a 120Hz interval to
@@ -462,7 +457,8 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
                            bool never_visible)
     : routing_id_(MSG_ROUTING_NONE),
       surface_id_(0),
-      webwidget_(NULL),
+      compositor_deps_(nullptr),
+      webwidget_(nullptr),
       opener_id_(MSG_ROUTING_NONE),
       init_complete_(false),
       top_controls_shrink_blink_size_(false),
@@ -520,12 +516,13 @@ RenderWidget::~RenderWidget() {
 
 // static
 RenderWidget* RenderWidget::Create(int32 opener_id,
+                                   CompositorDependencies* compositor_deps,
                                    blink::WebPopupType popup_type,
                                    const blink::WebScreenInfo& screen_info) {
   DCHECK(opener_id != MSG_ROUTING_NONE);
   scoped_refptr<RenderWidget> widget(
       new RenderWidget(popup_type, screen_info, false, false, false));
-  if (widget->Init(opener_id)) {  // adds reference on success.
+  if (widget->Init(opener_id, compositor_deps)) {  // adds reference on success.
     return widget.get();
   }
   return NULL;
@@ -547,14 +544,15 @@ WebWidget* RenderWidget::CreateWebWidget(RenderWidget* render_widget) {
   return NULL;
 }
 
-bool RenderWidget::Init(int32 opener_id) {
-  return DoInit(opener_id,
-                RenderWidget::CreateWebWidget(this),
+bool RenderWidget::Init(int32 opener_id,
+                        CompositorDependencies* compositor_deps) {
+  return DoInit(opener_id, compositor_deps, RenderWidget::CreateWebWidget(this),
                 new ViewHostMsg_CreateWidget(opener_id, popup_type_,
                                              &routing_id_, &surface_id_));
 }
 
 bool RenderWidget::DoInit(int32 opener_id,
+                          CompositorDependencies* compositor_deps,
                           WebWidget* web_widget,
                           IPC::SyncMessage* create_widget_message) {
   DCHECK(!webwidget_);
@@ -562,6 +560,7 @@ bool RenderWidget::DoInit(int32 opener_id,
   if (opener_id != MSG_ROUTING_NONE)
     opener_id_ = opener_id;
 
+  compositor_deps_ = compositor_deps;
   webwidget_ = web_widget;
 
   bool result = RenderThread::Get()->Send(create_widget_message);
@@ -962,7 +961,7 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
 
   uint32 output_surface_id = next_output_surface_id_++;
   if (command_line.HasSwitch(switches::kEnableDelegatedRenderer)) {
-    DCHECK(IsThreadedCompositingEnabled());
+    DCHECK(compositor_deps_->GetCompositorImplThreadTaskRunner());
     return scoped_ptr<cc::OutputSurface>(
         new DelegatedCompositorOutputSurface(routing_id(),
                                              output_surface_id,
@@ -986,8 +985,7 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
     // Composite-to-mailbox is currently used for layout tests in order to cause
     // them to draw inside in the renderer to do the readback there. This should
     // no longer be the case when crbug.com/311404 is fixed.
-    DCHECK(IsThreadedCompositingEnabled() ||
-           RenderThreadImpl::current()->layout_test_mode());
+    DCHECK(RenderThreadImpl::current()->layout_test_mode());
     cc::ResourceFormat format = cc::RGBA_8888;
     if (base::SysInfo::IsLowEndDevice())
       format = cc::RGB_565;
@@ -1292,8 +1290,7 @@ void RenderWidget::AutoResizeCompositor()  {
 void RenderWidget::initializeLayerTreeView() {
   DCHECK(!host_closing_);
 
-  compositor_ =
-      RenderWidgetCompositor::Create(this, IsThreadedCompositingEnabled());
+  compositor_ = RenderWidgetCompositor::Create(this, compositor_deps_);
   compositor_->setViewportSize(size_, physical_backing_size_);
   if (init_complete_)
     StartCompositor();
@@ -1427,10 +1424,8 @@ void RenderWidget::didCompleteSwapBuffers() {
 }
 
 void RenderWidget::scheduleComposite() {
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  // render_thread may be NULL in tests.
-  if (render_thread && render_thread->compositor_message_loop_proxy().get() &&
-      compositor_) {
+  if (compositor_ &&
+      compositor_deps_->GetCompositorImplThreadTaskRunner().get()) {
     compositor_->setNeedsAnimate();
   }
 }
@@ -2148,6 +2143,10 @@ void RenderWidget::StartCompositor() {
   // For widgets that are never visible, we don't need the compositor to run
   // at all.
   if (never_visible_)
+    return;
+  // In tests without a RenderThreadImpl, don't set ready as this kicks
+  // off creating output surfaces that the test can't create.
+  if (!RenderThreadImpl::current())
     return;
   compositor_->setSurfaceReady();
 }

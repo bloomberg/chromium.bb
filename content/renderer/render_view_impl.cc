@@ -387,14 +387,14 @@ static bool DeviceScaleEnsuresTextQuality(float device_scale_factor) {
 
 }
 
-static bool PreferCompositingToLCDText(float device_scale_factor) {
+static bool PreferCompositingToLCDText(CompositorDependencies* compositor_deps,
+                                       float device_scale_factor) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDisablePreferCompositingToLCDText))
     return false;
   if (command_line.HasSwitch(switches::kEnablePreferCompositingToLCDText))
     return true;
-  if (RenderThreadImpl::current() &&
-      !RenderThreadImpl::current()->is_lcd_text_enabled())
+  if (!compositor_deps->IsLcdTextEnabled())
     return true;
   return DeviceScaleEnsuresTextQuality(device_scale_factor);
 }
@@ -672,9 +672,9 @@ RenderViewImpl::RenderViewImpl(const ViewMsg_New_Params& params)
       next_snapshot_id_(0) {
 }
 
-void RenderViewImpl::Initialize(
-    const ViewMsg_New_Params& params,
-    bool was_created_by_renderer) {
+void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
+                                CompositorDependencies* compositor_deps,
+                                bool was_created_by_renderer) {
   routing_id_ = params.view_id;
   surface_id_ = params.surface_id;
   if (params.opener_route_id != MSG_ROUTING_NONE && was_created_by_renderer)
@@ -690,6 +690,7 @@ void RenderViewImpl::Initialize(
   WebLocalFrame* web_frame = WebLocalFrame::create(main_render_frame_.get());
   main_render_frame_->SetWebFrame(web_frame);
 
+  compositor_deps_ = compositor_deps;
   webwidget_ = WebView::create(this);
   webwidget_mouse_lock_target_.reset(new WebWidgetLockTarget(webwidget_));
 
@@ -734,7 +735,7 @@ void RenderViewImpl::Initialize(
   g_routing_id_view_map.Get().insert(std::make_pair(routing_id_, this));
   webview()->setDeviceScaleFactor(device_scale_factor_);
   webview()->settings()->setPreferCompositingToLCDTextEnabled(
-      PreferCompositingToLCDText(device_scale_factor_));
+      PreferCompositingToLCDText(compositor_deps_, device_scale_factor_));
   webview()->settings()->setThreadedScrollingEnabled(
       !command_line.HasSwitch(switches::kDisableThreadedScrolling));
   webview()->settings()->setRootLayerScrolls(
@@ -754,8 +755,7 @@ void RenderViewImpl::Initialize(
   }
 
   // In --site-per-process, just use the WebRemoteFrame as the main frame.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess) &&
-      proxy) {
+  if (command_line.HasSwitch(switches::kSitePerProcess) && proxy) {
     webview()->setMainFrame(proxy->web_frame());
     // Initialize the WebRemoteFrame with information replicated from the
     // browser process.
@@ -1133,9 +1133,9 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 }
 
 /*static*/
-RenderViewImpl* RenderViewImpl::Create(
-    const ViewMsg_New_Params& params,
-    bool was_created_by_renderer) {
+RenderViewImpl* RenderViewImpl::Create(const ViewMsg_New_Params& params,
+                                       CompositorDependencies* compositor_deps,
+                                       bool was_created_by_renderer) {
   DCHECK(params.view_id != MSG_ROUTING_NONE);
   RenderViewImpl* render_view = NULL;
   if (g_create_render_view_impl)
@@ -1143,7 +1143,7 @@ RenderViewImpl* RenderViewImpl::Create(
   else
     render_view = new RenderViewImpl(params);
 
-  render_view->Initialize(params, was_created_by_renderer);
+  render_view->Initialize(params, compositor_deps, was_created_by_renderer);
   return render_view;
 }
 
@@ -1582,12 +1582,9 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   int32 surface_id = 0;
   int64 cloned_session_storage_namespace_id = 0;
 
-  RenderThread::Get()->Send(
-      new ViewHostMsg_CreateWindow(params,
-                                   &routing_id,
-                                   &main_frame_routing_id,
-                                   &surface_id,
-                                   &cloned_session_storage_namespace_id));
+  RenderThread::Get()->Send(new ViewHostMsg_CreateWindow(
+      params, &routing_id, &main_frame_routing_id, &surface_id,
+      &cloned_session_storage_namespace_id));
   if (routing_id == MSG_ROUTING_NONE)
     return NULL;
 
@@ -1630,7 +1627,8 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   view_params.min_size = gfx::Size();
   view_params.max_size = gfx::Size();
 
-  RenderViewImpl* view = RenderViewImpl::Create(view_params, true);
+  RenderViewImpl* view =
+      RenderViewImpl::Create(view_params, compositor_deps_, true);
   view->opened_by_user_gesture_ = params.user_gesture;
 
   // Record whether the creator frame is trying to suppress the opener field.
@@ -1640,8 +1638,8 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
 }
 
 WebWidget* RenderViewImpl::createPopupMenu(blink::WebPopupType popup_type) {
-  RenderWidget* widget =
-      RenderWidget::Create(routing_id_, popup_type, screen_info_);
+  RenderWidget* widget = RenderWidget::Create(routing_id_, compositor_deps_,
+                                              popup_type, screen_info_);
   if (!widget)
     return NULL;
   if (screen_metrics_emulator_) {
@@ -3589,7 +3587,7 @@ void RenderViewImpl::SetDeviceScaleFactor(float device_scale_factor) {
   if (webview()) {
     webview()->setDeviceScaleFactor(device_scale_factor);
     webview()->settings()->setPreferCompositingToLCDTextEnabled(
-        PreferCompositingToLCDText(device_scale_factor_));
+        PreferCompositingToLCDText(compositor_deps_, device_scale_factor_));
   }
   if (auto_resize_mode_)
     AutoResizeCompositor();

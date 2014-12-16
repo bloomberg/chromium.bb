@@ -10,6 +10,7 @@
 #include "third_party/WebKit/public/web/WebWidget.h"
 
 namespace content {
+class CompositorDependencies;
 
 // TODO(boliu): Override non-supported methods with no-op? eg setWindowRect().
 class RenderWidgetFullscreen : public RenderWidget {
@@ -22,7 +23,7 @@ class RenderWidgetFullscreen : public RenderWidget {
 
   virtual blink::WebWidget* CreateWebWidget();
 
-  bool Init(int32 opener_id);
+  bool Init(int32 opener_id, CompositorDependencies* compositor_deps);
 };
 
 }  // namespace content
