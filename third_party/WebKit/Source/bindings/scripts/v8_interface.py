@@ -380,10 +380,13 @@ def interface_context(interface):
             runtime_enabled_function = method['runtime_enabled_function']
             has_custom_registration = method['has_custom_registration']
 
+        if has_custom_registration:
+            custom_registration_methods.append(method)
+            continue
         if per_context_enabled_function or conditionally_exposed_function:
             conditionally_enabled_methods.append(method)
             continue
-        if runtime_enabled_function or has_custom_registration:
+        if runtime_enabled_function:
             custom_registration_methods.append(method)
             continue
         if method['should_be_exposed_to_script']:
