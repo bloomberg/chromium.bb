@@ -269,6 +269,19 @@ class RenderViewImplTest : public RenderViewTest {
 #endif
   }
 
+  void EnablePreferredSizeMode() {
+    view()->OnEnablePreferredSizeChangedMode();
+  }
+
+  const gfx::Size& GetPreferredSize() {
+    view()->CheckPreferredSize();
+    return view()->preferred_size_;
+  }
+
+  void SetZoomLevel(double level) {
+    view()->OnSetZoomLevelForView(false, level);
+  }
+
  private:
   scoped_ptr<MockKeyboard> mock_keyboard_;
 };
@@ -2288,6 +2301,20 @@ class RenderViewImplInitialSizeTest : public RenderViewImplTest {
 TEST_F(RenderViewImplInitialSizeTest, InitialSize) {
   ASSERT_EQ(initial_size_, view_->GetSize());
   ASSERT_EQ(initial_size_, gfx::Size(view_->GetWebView()->size()));
+}
+
+TEST_F(RenderViewImplTest, PreferredSizeZoomed) {
+  LoadHTML("<body style='margin:0;'><div style='display:inline-block; "
+           "width:400px; height:400px;'/></body>");
+  view()->webview()->mainFrame()->setCanHaveScrollbars(false);
+  EnablePreferredSizeMode();
+
+  gfx::Size size = GetPreferredSize();
+  EXPECT_EQ(gfx::Size(400, 400), size);
+
+  SetZoomLevel(ZoomFactorToZoomLevel(2.0));
+  size = GetPreferredSize();
+  EXPECT_EQ(gfx::Size(800, 800), size);
 }
 
 }  // namespace content
