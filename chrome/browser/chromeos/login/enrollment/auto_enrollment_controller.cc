@@ -81,7 +81,12 @@ AutoEnrollmentController::Mode AutoEnrollmentController::GetMode() {
   } else if (command_line_mode.empty() ||
              command_line_mode == kForcedReEnrollmentOfficialBuild) {
 #if defined(OFFICIAL_BUILD)
-    return MODE_FORCED_RE_ENROLLMENT;
+    std::string firmware_type;
+    const bool non_chrome_firmware =
+        system::StatisticsProvider::GetInstance()->GetMachineStatistic(
+            system::kFirmwareTypeKey, &firmware_type) &&
+        firmware_type == system::kFirmwareTypeValueNonchrome;
+    return non_chrome_firmware ? MODE_NONE : MODE_FORCED_RE_ENROLLMENT;
 #else
     return MODE_NONE;
 #endif
