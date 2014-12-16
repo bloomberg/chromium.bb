@@ -92,12 +92,8 @@ function registerPush() {
   navigator.serviceWorker.ready.then(function(swRegistration) {
     return swRegistration.pushManager.register()
         .then(function(pushRegistration) {
-          // TODO: Cleanup once the final API is exposed.
-          var endpoint = pushRegistration.endpoint ||
-                         pushRegistration.pushEndpoint;
-          var registrationId = pushRegistration.registrationId ||
-                               pushRegistration.pushRegistrationId;
-          sendResultToTest(endpoint + ' - ' + registrationId);
+          sendResultToTest(pushRegistration.endpoint + ' - ' +
+                           pushRegistration.registrationId);
         });
   }).catch(sendErrorToTest);
 }
