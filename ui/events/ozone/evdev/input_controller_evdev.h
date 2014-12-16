@@ -33,11 +33,18 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
                        );
   virtual ~InputControllerEvdev();
 
-  // InputController overrides:
-  //
-  // Interfaces for configuring input devices.
+  // InputController:
   bool HasMouse() override;
   bool HasTouchpad() override;
+  bool IsCapsLockEnabled() override;
+  void SetCapsLockEnabled(bool enabled) override;
+  void SetNumLockEnabled(bool enabled) override;
+  bool IsAutoRepeatEnabled() override;
+  void SetAutoRepeatEnabled(bool enabled) override;
+  void SetAutoRepeatRate(const base::TimeDelta& delay,
+                         const base::TimeDelta& interval) override;
+  void GetAutoRepeatRate(base::TimeDelta* delay,
+                         base::TimeDelta* interval) override;
   void SetTouchpadSensitivity(int value) override;
   void SetTapToClick(bool enabled) override;
   void SetThreeFingerClick(bool enabled) override;

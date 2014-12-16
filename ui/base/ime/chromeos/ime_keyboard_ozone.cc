@@ -4,11 +4,14 @@
 
 #include "ui/base/ime/chromeos/ime_keyboard_ozone.h"
 
+#include "ui/ozone/public/input_controller.h"
+#include "ui/ozone/public/ozone_platform.h"
+
 namespace chromeos {
 namespace input_method {
 
-
-ImeKeyboardOzone::ImeKeyboardOzone() {
+ImeKeyboardOzone::ImeKeyboardOzone(ui::InputController* input_controller)
+    : input_controller_(input_controller) {
 }
 
 
@@ -28,37 +31,40 @@ bool ImeKeyboardOzone::ReapplyCurrentKeyboardLayout() {
 }
 
 void ImeKeyboardOzone::SetCapsLockEnabled(bool enable_caps_lock) {
-  // Call SetModifierStates here.
-  ImeKeyboard::SetCapsLockEnabled(enable_caps_lock);
+  input_controller_->SetCapsLockEnabled(enable_caps_lock);
 }
 
 bool ImeKeyboardOzone::CapsLockIsEnabled() {
-  // Call getModifierStates here.
-  return ImeKeyboard::CapsLockIsEnabled();
+  return input_controller_->IsCapsLockEnabled();
 }
 
 void ImeKeyboardOzone::ReapplyCurrentModifierLockStatus() {
-  // call SetModifierStates here.
 }
 
 void ImeKeyboardOzone::DisableNumLock() {
+  input_controller_->SetNumLockEnabled(false);
 }
 
 bool ImeKeyboardOzone::SetAutoRepeatRate(const AutoRepeatRate& rate) {
+  input_controller_->SetAutoRepeatRate(
+      base::TimeDelta::FromMilliseconds(rate.initial_delay_in_ms),
+      base::TimeDelta::FromMilliseconds(rate.repeat_interval_in_ms));
   return true;
 }
 
 bool ImeKeyboardOzone::SetAutoRepeatEnabled(bool enabled) {
+  input_controller_->SetAutoRepeatEnabled(enabled);
   return true;
 }
 
 bool ImeKeyboardOzone::GetAutoRepeatEnabled() {
-  return true;
+  return input_controller_->IsAutoRepeatEnabled();
 }
 
 // static
 ImeKeyboard* ImeKeyboard::Create() {
-  return new ImeKeyboardOzone();
+  return new ImeKeyboardOzone(
+      ui::OzonePlatform::GetInstance()->GetInputController());
 }
 
 }  // namespace input_method

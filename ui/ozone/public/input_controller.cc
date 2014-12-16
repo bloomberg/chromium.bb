@@ -19,6 +19,15 @@ class StubInputController : public InputController {
   // InputController:
   bool HasMouse() override;
   bool HasTouchpad() override;
+  bool IsCapsLockEnabled() override;
+  void SetCapsLockEnabled(bool enabled) override;
+  void SetNumLockEnabled(bool enabled) override;
+  bool IsAutoRepeatEnabled() override;
+  void SetAutoRepeatEnabled(bool enabled) override;
+  void SetAutoRepeatRate(const base::TimeDelta& delay,
+                         const base::TimeDelta& interval) override;
+  void GetAutoRepeatRate(base::TimeDelta* delay,
+                         base::TimeDelta* interval) override;
   void SetTouchpadSensitivity(int value) override;
   void SetTapToClick(bool enabled) override;
   void SetThreeFingerClick(bool enabled) override;
@@ -45,6 +54,36 @@ bool StubInputController::HasMouse() {
 bool StubInputController::HasTouchpad() {
   NOTIMPLEMENTED();
   return false;
+}
+
+bool StubInputController::IsCapsLockEnabled() {
+  return false;
+}
+
+void StubInputController::SetCapsLockEnabled(bool enabled) {
+  NOTIMPLEMENTED();
+}
+
+void StubInputController::SetNumLockEnabled(bool enabled) {
+  NOTIMPLEMENTED();
+}
+
+bool StubInputController::IsAutoRepeatEnabled() {
+  return true;
+}
+
+void StubInputController::SetAutoRepeatEnabled(bool enabled) {
+  NOTIMPLEMENTED();
+}
+
+void StubInputController::SetAutoRepeatRate(const base::TimeDelta& delay,
+                                            const base::TimeDelta& interval) {
+  NOTIMPLEMENTED();
+}
+
+void StubInputController::GetAutoRepeatRate(base::TimeDelta* delay,
+                                            base::TimeDelta* interval) {
+  NOTIMPLEMENTED();
 }
 
 void StubInputController::SetTouchpadSensitivity(int value) {

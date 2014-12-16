@@ -9,6 +9,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/ozone/ozone_export.h"
 
+namespace base {
+class TimeDelta;
+}
+
 namespace ui {
 
 // Platform-specific interface for controlling input devices.
@@ -25,14 +29,25 @@ class OZONE_EXPORT InputController {
   virtual bool HasMouse() = 0;
   virtual bool HasTouchpad() = 0;
 
-  // Functions for changing device settings.
-  //
-  // See c/b/c/system/input_device_settings.h for more context.
+  // Keyboard settings.
+  virtual bool IsCapsLockEnabled() = 0;
+  virtual void SetCapsLockEnabled(bool enabled) = 0;
+  virtual void SetNumLockEnabled(bool enabled) = 0;
+  virtual bool IsAutoRepeatEnabled() = 0;
+  virtual void SetAutoRepeatEnabled(bool enabled) = 0;
+  virtual void SetAutoRepeatRate(const base::TimeDelta& delay,
+                                 const base::TimeDelta& interval) = 0;
+  virtual void GetAutoRepeatRate(base::TimeDelta* delay,
+                                 base::TimeDelta* interval) = 0;
+
+  // Touchpad settings.
   virtual void SetTouchpadSensitivity(int value) = 0;
   virtual void SetTapToClick(bool enabled) = 0;
   virtual void SetThreeFingerClick(bool enabled) = 0;
   virtual void SetTapDragging(bool enabled) = 0;
   virtual void SetNaturalScroll(bool enabled) = 0;
+
+  // Mouse settings.
   virtual void SetMouseSensitivity(int value) = 0;
   virtual void SetPrimaryButtonRight(bool right) = 0;
 

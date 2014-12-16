@@ -12,12 +12,16 @@
 #include "base/compiler_specific.h"
 #include "ui/base/ui_base_export.h"
 
+namespace ui {
+class InputController;
+}
+
 namespace chromeos {
 namespace input_method {
 
 class UI_BASE_EXPORT ImeKeyboardOzone : public ImeKeyboard {
  public:
-  ImeKeyboardOzone();
+  ImeKeyboardOzone(ui::InputController* controller);
   virtual ~ImeKeyboardOzone();
 
   virtual bool SetCurrentKeyboardLayoutByName(const std::string& layout_name)
@@ -32,6 +36,8 @@ class UI_BASE_EXPORT ImeKeyboardOzone : public ImeKeyboard {
   virtual bool CapsLockIsEnabled() override;
 
  private:
+  ui::InputController* input_controller_;
+
   DISALLOW_COPY_AND_ASSIGN(ImeKeyboardOzone);
 };
 

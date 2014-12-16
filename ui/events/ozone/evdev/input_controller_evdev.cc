@@ -72,6 +72,36 @@ bool InputControllerEvdev::HasTouchpad() {
   return event_factory_->GetDeviceIdsByType(DT_TOUCHPAD, NULL);
 }
 
+bool InputControllerEvdev::IsCapsLockEnabled() {
+  return false;
+}
+
+void InputControllerEvdev::SetCapsLockEnabled(bool enabled) {
+  NOTIMPLEMENTED();
+}
+
+void InputControllerEvdev::SetNumLockEnabled(bool enabled) {
+  NOTIMPLEMENTED();
+}
+
+bool InputControllerEvdev::IsAutoRepeatEnabled() {
+  return true;
+}
+
+void InputControllerEvdev::SetAutoRepeatEnabled(bool enabled) {
+  NOTIMPLEMENTED();
+}
+
+void InputControllerEvdev::SetAutoRepeatRate(const base::TimeDelta& delay,
+                                             const base::TimeDelta& interval) {
+  NOTIMPLEMENTED();
+}
+
+void InputControllerEvdev::GetAutoRepeatRate(base::TimeDelta* delay,
+                                             base::TimeDelta* interval) {
+  NOTIMPLEMENTED();
+}
+
 void InputControllerEvdev::SetIntPropertyForOneType(const EventDeviceType type,
                                                     const std::string& name,
                                                     int value) {
