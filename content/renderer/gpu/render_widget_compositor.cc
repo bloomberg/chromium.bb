@@ -535,7 +535,7 @@ bool RenderWidgetCompositor::SendMessageToMicroBenchmark(
   return layer_tree_host_->SendMessageToMicroBenchmark(id, value.Pass());
 }
 
-void RenderWidgetCompositor::setSurfaceReady() {
+void RenderWidgetCompositor::StartCompositor() {
   layer_tree_host_->SetLayerTreeHostClientReady();
 }
 

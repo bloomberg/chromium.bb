@@ -29,7 +29,6 @@ class WebLayerTreeViewImplForTesting
   void Initialize();
 
   // blink::WebLayerTreeView implementation.
-  virtual void setSurfaceReady();
   virtual void setRootLayer(const blink::WebLayer& layer);
   virtual void clearRootLayer();
   virtual void setViewportSize(const blink::WebSize& unused_deprecated,

@@ -54,10 +54,6 @@ void WebLayerTreeViewImplForTesting::Initialize() {
   DCHECK(layer_tree_host_);
 }
 
-void WebLayerTreeViewImplForTesting::setSurfaceReady() {
-  layer_tree_host_->SetLayerTreeHostClientReady();
-}
-
 void WebLayerTreeViewImplForTesting::setRootLayer(
     const blink::WebLayer& root) {
   layer_tree_host_->SetRootLayer(

@@ -67,7 +67,6 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
   void RateLimitSharedMainThreadContext() override {}
 
   // blink::WebLayerTreeView implementation.
-  virtual void setSurfaceReady();
   virtual void setRootLayer(const blink::WebLayer& layer);
   virtual void clearRootLayer();
   virtual void setViewportSize(const blink::WebSize& device_viewport_size);

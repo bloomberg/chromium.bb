@@ -120,9 +120,6 @@ void WebLayerTreeViewImpl::DidCommitAndDrawFrame() {
 void WebLayerTreeViewImpl::DidCompleteSwapBuffers() {
 }
 
-void WebLayerTreeViewImpl::setSurfaceReady() {
-}
-
 void WebLayerTreeViewImpl::setRootLayer(const blink::WebLayer& layer) {
   layer_tree_host_->SetRootLayer(
       static_cast<const cc_blink::WebLayerImpl*>(&layer)->layer());

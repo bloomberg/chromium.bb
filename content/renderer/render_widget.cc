@@ -2148,7 +2148,7 @@ void RenderWidget::StartCompositor() {
   // off creating output surfaces that the test can't create.
   if (!RenderThreadImpl::current())
     return;
-  compositor_->setSurfaceReady();
+  compositor_->StartCompositor();
 }
 
 void RenderWidget::SchedulePluginMove(const WebPluginGeometry& move) {
