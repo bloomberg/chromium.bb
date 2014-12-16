@@ -686,9 +686,7 @@ class DownloadTest : public InProcessBrowserTest {
     if (manager->InProgressCount() != 0)
       return NULL;
 
-    ui_test_utils::NavigateToURLWithDisposition(
-        browser(), slow_download_url, CURRENT_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+    ui_test_utils::NavigateToURL(browser(), slow_download_url);
 
     observer->WaitForFinished();
     EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::IN_PROGRESS));
@@ -903,9 +901,7 @@ class DownloadTest : public InProcessBrowserTest {
       }
     } else {
       // Navigate to URL normally, wait until done.
-      ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
-                                                                url,
-                                                                1);
+      ui_test_utils::NavigateToURL(browser(), url);
     }
 
     if (download_info.show_download_item) {
@@ -1169,9 +1165,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadMimeTypeSelect) {
           DownloadManagerForBrowser(browser()),
           1,
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url, CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ui_test_utils::NavigateToURL(browser(), url);
   observer->WaitForFinished();
   EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
   CheckDownloadStates(1, DownloadItem::COMPLETE);
@@ -3049,7 +3043,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_Remove) {
   ASSERT_TRUE(CheckDownloadFullPaths(
       browser(), downloaded, OriginFile(base::FilePath(
           FILE_PATH_LITERAL("downloads/a_zip_file.zip")))));
-
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_PauseResumeCancel) {
@@ -3472,7 +3465,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SafeSupportedFile) {
   download->Cancel(true);
 }
 
-#endif // OS_WIN
+#endif  // OS_WIN
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, FeedbackService) {
   // Make a dangerous file.

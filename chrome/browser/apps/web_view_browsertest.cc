@@ -382,9 +382,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
         "/extensions/platform_apps/web_view/isolation/storage1.html#p3");
     tag_url7 = tag_url7.ReplaceComponents(replace_host);
 
-    ui_test_utils::NavigateToURLWithDisposition(
-        browser(), navigate_to_url, CURRENT_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+    ui_test_utils::NavigateToURL(browser(), navigate_to_url);
 
     ui_test_utils::UrlLoadObserver observer1(
         tag_url1, content::NotificationService::AllSources());
@@ -1783,7 +1781,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MediaAccessAPIDeny_TestDeny) {
 IN_PROC_BROWSER_TEST_F(WebViewTest,
                        MediaAccessAPIDeny_TestDenyThenAllowThrows) {
   MediaAccessAPIDenyTestHelper("testDenyThenAllowThrows");
-
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest,

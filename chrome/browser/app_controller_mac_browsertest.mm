@@ -612,9 +612,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerHandoffBrowserTest, TestHandoffURLs) {
   EXPECT_EQ(g_handoff_url, GURL());
 
   // Navigate the current tab in the incognito window.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser3, test_url1, CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ui_test_utils::NavigateToURL(browser3, test_url1);
   EXPECT_EQ(g_handoff_url, GURL());
 
   // Activate the original browser window.

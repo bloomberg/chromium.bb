@@ -454,9 +454,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
       scoped_ptr<content::DownloadTestObserver> observer(
           CreateInProgressDownloadObserver(1));
       GURL slow_download_url(URLRequestSlowDownloadJob::kUnknownSizeUrl);
-      ui_test_utils::NavigateToURLWithDisposition(
-          current_browser(), slow_download_url, CURRENT_TAB,
-          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::NavigateToURL(current_browser(), slow_download_url);
       observer->WaitForFinished();
       EXPECT_EQ(
           1u, observer->NumDownloadsSeenInState(DownloadItem::IN_PROGRESS));
@@ -476,9 +474,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
     if (manager->InProgressCount() != 0)
       return NULL;
 
-    ui_test_utils::NavigateToURLWithDisposition(
-        current_browser(), slow_download_url, CURRENT_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+    ui_test_utils::NavigateToURL(current_browser(), slow_download_url);
 
     observer->WaitForFinished();
     EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::IN_PROGRESS));

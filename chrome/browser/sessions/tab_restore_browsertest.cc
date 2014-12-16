@@ -481,15 +481,9 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest,
   EXPECT_EQ(++tab_count, browser()->tab_strip_model()->count());
 
   // Navigate to more URLs, then a cross-site URL.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), http_url2, CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), http_url1, CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url1_, CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ui_test_utils::NavigateToURL(browser(), http_url2);
+  ui_test_utils::NavigateToURL(browser(), http_url1);
+  ui_test_utils::NavigateToURL(browser(), url1_);
 
   // Close the tab.
   CloseTab(1);
@@ -513,9 +507,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest,
 
   // Navigating to a new URL should clear the forward list, because the max
   // page ID of the renderer should have been updated when we restored the tab.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), http_url2, CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ui_test_utils::NavigateToURL(browser(), http_url2);
   EXPECT_FALSE(chrome::CanGoForward(browser()));
   EXPECT_EQ(http_url2,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());

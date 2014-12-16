@@ -144,11 +144,7 @@ IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestImagesNotBlockedInIncognito) {
   ASSERT_TRUE(test_server()->Start());
   GURL url = test_server()->GetURL("files/settings/image_page.html");
   Browser* incognito_browser = CreateIncognitoBrowser();
-  ui_test_utils::NavigateToURLWithDisposition(
-      incognito_browser,
-      url,
-      CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ui_test_utils::NavigateToURL(incognito_browser, url);
 
   bool result = false;
   std::string script =

@@ -420,9 +420,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Isolation) {
   replace_host.SetHostStr(host_str);
   set_cookie_url = set_cookie_url.ReplaceComponents(replace_host);
 
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), set_cookie_url,
-      CURRENT_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ui_test_utils::NavigateToURL(browser(), set_cookie_url);
 
   // Make sure the cookie is set.
   int cookie_size;
@@ -947,7 +945,7 @@ class CheckExtensionInstalledObserver : public content::NotificationObserver {
 
   bool seen() const {
     return seen_;
-  };
+  }
 
   // NotificationObserver:
   void Observe(int type,
@@ -999,7 +997,6 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 // to be run, then perform setup for step 3.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                        PRE_ComponentAppBackgroundPage) {
-
   // Since the component app is now installed, re-adding it in the same profile
   // should not cause it to be re-installed. Instead, we wait for the OnLaunched
   // in a different observer (which would timeout if not the app was not

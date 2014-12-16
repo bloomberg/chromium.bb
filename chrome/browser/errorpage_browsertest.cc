@@ -845,9 +845,8 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, StaleCacheStatus) {
       base::Bind(&InterceptNetworkTransactions, url_request_context_getter,
                  net::ERR_FAILED));
 
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       // With no navigation corrections to load, there's only one navigation.
-      browser(), test_url, 1);
+  ui_test_utils::NavigateToURL(browser(), test_url);
   EXPECT_TRUE(ProbeStaleCopyValue(true));
   EXPECT_TRUE(IsDisplayingText(browser(), GetLoadStaleButtonLabel()));
   EXPECT_NE(base::ASCIIToUTF16("Nocache Test Page"),
@@ -867,8 +866,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, StaleCacheStatus) {
       BrowsingDataRemover::CreateForUnboundedRange(browser()->profile());
   remover->Remove(BrowsingDataRemover::REMOVE_CACHE,
                   BrowsingDataHelper::UNPROTECTED_WEB);
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
-      browser(), test_url, 1);
+  ui_test_utils::NavigateToURL(browser(), test_url);
   EXPECT_TRUE(ProbeStaleCopyValue(false));
   EXPECT_FALSE(IsDisplayingText(browser(), GetLoadStaleButtonLabel()));
   EXPECT_EQ(0, link_doctor_interceptor()->num_requests());
@@ -1116,11 +1114,10 @@ const char ErrorPageForIDNTest::kHostnameJSUnicode[] =
 // Make sure error page shows correct unicode for IDN.
 IN_PROC_BROWSER_TEST_F(ErrorPageForIDNTest, IDN) {
   // ERR_UNSAFE_PORT will not trigger navigation corrections.
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+  ui_test_utils::NavigateToURL(
       browser(),
       URLRequestFailedJob::GetMockHttpUrlForHostname(net::ERR_UNSAFE_PORT,
-                                                     kHostname),
-      1);
+                                                     kHostname));
 
   ToggleHelpBox(browser());
   EXPECT_TRUE(IsDisplayingText(browser(), kHostnameJSUnicode));

@@ -78,9 +78,8 @@ IN_PROC_BROWSER_TEST_F(ProcessManagementTest, MAYBE_ProcessOverflow) {
   GURL extension1_url = extension1->url();
 
   // Create multiple tabs for each type of renderer that might exist.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), base_url.Resolve("isolated_apps/app1/main.html"),
-      CURRENT_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ui_test_utils::NavigateToURL(
+      browser(), base_url.Resolve("isolated_apps/app1/main.html"));
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUINewTabURL),
       NEW_FOREGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
@@ -220,13 +219,11 @@ IN_PROC_BROWSER_TEST_F(ProcessManagementTest, MAYBE_ExtensionProcessBalancing) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("api_test/management/test")));
 
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), base_url.Resolve("isolated_apps/app1/main.html"),
-      CURRENT_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ui_test_utils::NavigateToURL(
+      browser(), base_url.Resolve("isolated_apps/app1/main.html"));
 
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), base_url.Resolve("api_test/management/test/basics.html"),
-      CURRENT_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ui_test_utils::NavigateToURL(
+      browser(), base_url.Resolve("api_test/management/test/basics.html"));
 
   std::set<int> process_ids;
   Profile* profile = browser()->profile();

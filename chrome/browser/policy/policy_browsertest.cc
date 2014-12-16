@@ -70,8 +70,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
@@ -176,6 +174,7 @@
 #if !defined(OS_MACOSX)
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -353,9 +352,7 @@ void DownloadAndVerifyFile(
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
   base::FilePath downloaded = dir.Append(file);
   EXPECT_FALSE(base::PathExists(downloaded));
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser, url, CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ui_test_utils::NavigateToURL(browser, url);
   observer.WaitForFinished();
   EXPECT_EQ(
       1u, observer.NumDownloadsSeenInState(content::DownloadItem::COMPLETE));

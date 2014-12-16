@@ -487,11 +487,7 @@ class SafeBrowsingBlockingPageBrowserTest
     content::WaitForInterstitialAttach(contents);
     // Cancel the redirect request while interstitial page is open.
     browser()->tab_strip_model()->ActivateTabAt(0, true);
-    ui_test_utils::NavigateToURLWithDisposition(
-        browser(),
-        GURL("javascript:stopWin()"),
-        CURRENT_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+    ui_test_utils::NavigateToURL(browser(), GURL("javascript:stopWin()"));
     browser()->tab_strip_model()->ActivateTabAt(1, true);
     // Simulate the user clicking "proceed", there should be no crash.  Since
     // clicking proceed may do nothing (see comment in RedirectCanceled

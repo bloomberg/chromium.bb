@@ -133,7 +133,5 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
           GetForBrowserContext(browser()->profile());
   ASSERT_TRUE(service);
   service->ProcessLog("<script> text for testing");
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL("chrome://version"), CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIVersionURL));
 }
