@@ -5,8 +5,11 @@
 #include "chrome/browser/content_settings/permission_context_base.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "chrome/browser/content_settings/permission_queue_controller.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -17,21 +20,6 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
- protected:
-  PermissionContextBaseTests() {}
-  ~PermissionContextBaseTests() override {}
-
- private:
-  // ChromeRenderViewHostTestHarness:
-  void SetUp() override {
-    ChromeRenderViewHostTestHarness::SetUp();
-    InfoBarService::CreateForWebContents(web_contents());
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(PermissionContextBaseTests);
-};
 
 class TestPermissionContext : public PermissionContextBase {
  public:
@@ -78,64 +66,116 @@ class TestPermissionContext : public PermissionContextBase {
    bool tab_context_updated_;
 };
 
+class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
+ protected:
+  PermissionContextBaseTests() {}
+  virtual ~PermissionContextBaseTests() {}
+
+  // Accept or dismiss the permission bubble or infobar.
+  void RespondToPermission(TestPermissionContext* context,
+                           const PermissionRequestID& id,
+                           const GURL& url,
+                           bool accept) {
+    if (!PermissionBubbleManager::Enabled()) {
+      context->GetInfoBarController()->OnPermissionSet(
+          id, url, url, accept, accept);
+      return;
+    }
+
+    PermissionBubbleManager* manager =
+        PermissionBubbleManager::FromWebContents(web_contents());
+    if (accept)
+      manager->Accept();
+    else
+      manager->Closing();
+  }
+
+  // Use either the bubble or the infobar.
+  void StartUsingPermissionBubble() {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnablePermissionsBubbles);
+    EXPECT_TRUE(PermissionBubbleManager::Enabled());
+  }
+
+  void TestAskAndGrant_TestContent() {
+    TestPermissionContext permission_context(
+        profile(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+    GURL url("http://www.google.com");
+    content::WebContentsTester::For(web_contents())->NavigateAndCommit(url);
+
+    const PermissionRequestID id(
+        web_contents()->GetRenderProcessHost()->GetID(),
+        web_contents()->GetRenderViewHost()->GetRoutingID(),
+        -1, GURL());
+    permission_context.RequestPermission(
+        web_contents(),
+        id, url, true,
+        base::Bind(&TestPermissionContext::TrackPermissionDecision,
+                   base::Unretained(&permission_context)));
+
+    RespondToPermission(&permission_context, id, url, true);
+    EXPECT_TRUE(permission_context.permission_set());
+    EXPECT_TRUE(permission_context.permission_granted());
+    EXPECT_TRUE(permission_context.tab_context_updated());
+
+    ContentSetting setting =
+        profile()->GetHostContentSettingsMap()->GetContentSetting(
+            url.GetOrigin(), url.GetOrigin(),
+            CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string());
+    EXPECT_EQ(CONTENT_SETTING_ALLOW , setting);
+  }
+
+  void TestAskAndDismiss_TestContent() {
+    TestPermissionContext permission_context(
+        profile(), CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+    GURL url("http://www.google.es");
+    content::WebContentsTester::For(web_contents())->NavigateAndCommit(url);
+
+    const PermissionRequestID id(
+        web_contents()->GetRenderProcessHost()->GetID(),
+        web_contents()->GetRenderViewHost()->GetRoutingID(),
+        -1, GURL());
+    permission_context.RequestPermission(
+        web_contents(),
+        id, url, true,
+        base::Bind(&TestPermissionContext::TrackPermissionDecision,
+                   base::Unretained(&permission_context)));
+
+    RespondToPermission(&permission_context, id, url, false);
+    EXPECT_TRUE(permission_context.permission_set());
+    EXPECT_FALSE(permission_context.permission_granted());
+    EXPECT_TRUE(permission_context.tab_context_updated());
+
+    ContentSetting setting =
+        profile()->GetHostContentSettingsMap()->GetContentSetting(
+            url.GetOrigin(), url.GetOrigin(),
+            CONTENT_SETTINGS_TYPE_MIDI_SYSEX, std::string());
+    EXPECT_EQ(CONTENT_SETTING_ASK , setting);
+  }
+
+ private:
+  // ChromeRenderViewHostTestHarness:
+  virtual void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
+    InfoBarService::CreateForWebContents(web_contents());
+    PermissionBubbleManager::CreateForWebContents(web_contents());
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(PermissionContextBaseTests);
+};
+
 // Simulates clicking Accept. The permission should be granted and
 // saved for future use.
 TEST_F(PermissionContextBaseTests, TestAskAndGrant) {
-  TestPermissionContext permission_context(profile(),
-                      CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-  GURL url("http://www.google.com");
-  content::WebContentsTester::For(web_contents())->NavigateAndCommit(url);
-
-  const PermissionRequestID id(
-      web_contents()->GetRenderProcessHost()->GetID(),
-      web_contents()->GetRenderViewHost()->GetRoutingID(),
-      -1, GURL());
-  permission_context.RequestPermission(
-      web_contents(),
-      id, url, true,
-      base::Bind(&TestPermissionContext::TrackPermissionDecision,
-                 base::Unretained(&permission_context)));
-
-  permission_context.GetInfoBarController()->OnPermissionSet(
-      id, url, url, true, true);
-  EXPECT_TRUE(permission_context.permission_set());
-  EXPECT_TRUE(permission_context.permission_granted());
-  EXPECT_TRUE(permission_context.tab_context_updated());
-
-  ContentSetting setting =
-      profile()->GetHostContentSettingsMap()->GetContentSetting(
-          url.GetOrigin(), url.GetOrigin(),
-          CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string());
-  EXPECT_EQ(CONTENT_SETTING_ALLOW , setting);
+  TestAskAndGrant_TestContent();
+  StartUsingPermissionBubble();
+  TestAskAndGrant_TestContent();
 };
 
-// Simulates clicking Dismiss (X in the infobar.
+// Simulates clicking Dismiss (X) in the infobar/bubble.
 // The permission should be denied but not saved for future use.
 TEST_F(PermissionContextBaseTests, TestAskAndDismiss) {
-  TestPermissionContext permission_context(profile(),
-                      CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
-  GURL url("http://www.google.es");
-  content::WebContentsTester::For(web_contents())->NavigateAndCommit(url);
-
-  const PermissionRequestID id(
-      web_contents()->GetRenderProcessHost()->GetID(),
-      web_contents()->GetRenderViewHost()->GetRoutingID(),
-      -1, GURL());
-  permission_context.RequestPermission(
-      web_contents(),
-      id, url, true,
-      base::Bind(&TestPermissionContext::TrackPermissionDecision,
-                 base::Unretained(&permission_context)));
-
-  permission_context.GetInfoBarController()->OnPermissionSet(
-      id, url, url, false, false);
-  EXPECT_TRUE(permission_context.permission_set());
-  EXPECT_FALSE(permission_context.permission_granted());
-  EXPECT_TRUE(permission_context.tab_context_updated());
-
-  ContentSetting setting =
-      profile()->GetHostContentSettingsMap()->GetContentSetting(
-          url.GetOrigin(), url.GetOrigin(),
-          CONTENT_SETTINGS_TYPE_MIDI_SYSEX, std::string());
-  EXPECT_EQ(CONTENT_SETTING_ASK , setting);
+  TestAskAndDismiss_TestContent();
+  StartUsingPermissionBubble();
+  TestAskAndDismiss_TestContent();
 };

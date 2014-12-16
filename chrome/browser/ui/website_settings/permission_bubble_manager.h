@@ -58,8 +58,9 @@ class PermissionBubbleManager
   void SetView(PermissionBubbleView* view) override;
 
  private:
-  friend class PermissionBubbleManagerTest;
   friend class DownloadRequestLimiterTest;
+  friend class PermissionBubbleManagerTest;
+  friend class PermissionContextBaseTests;
   friend class content::WebContentsUserData<PermissionBubbleManager>;
 
   explicit PermissionBubbleManager(content::WebContents* web_contents);
