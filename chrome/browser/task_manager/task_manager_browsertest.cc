@@ -863,8 +863,9 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, KillSubframe) {
 // Tests what happens when a tab navigates to a site (a.com) that it previously
 // has a cross-process subframe into (b.com).
 //
-// TODO(nick): Disabled because the second navigation hits an ASSERT(frame()) in
-// WebLocalFrameImpl::loadRequest under --site-per-process.
+// TODO(nick): http://crbug.com/442532. Disabled because the second navigation
+// hits an ASSERT(frame()) in WebLocalFrameImpl::loadRequest under --site-per-
+// process.
 IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
                        DISABLED_NavigateToSubframeProcess) {
   ShowTaskManager();
@@ -976,8 +977,8 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
 // Tests what happens when a tab navigates a cross-frame iframe (to b.com)
 // back to the site of the parent document (a.com).
 //
-// TODO(nick): Disabled because the second navigation crashes the renderer
-// under --site-per-process during blink::Frame::detach().
+// TODO(nick): http://crbug.com/433012. Disabled because the second navigation
+// crashes the renderer under --site-per-process during blink::Frame::detach().
 IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
                        DISABLED_CrossSiteIframeBecomesSameSite) {
   ShowTaskManager();
