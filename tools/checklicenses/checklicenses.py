@@ -124,9 +124,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'courgette/third_party/bsdiff_create.cc': [  # http://crbug.com/98095
         'UNKNOWN',
     ],
-    'mojo/public/third_party/ply/__init__.py': [
-        'UNKNOWN',
-    ],
     'native_client': [  # http://crbug.com/98099
         'UNKNOWN',
     ],
@@ -286,9 +283,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
     'third_party/ocmock/OCMock': [  # http://crbug.com/98454
-        'UNKNOWN',
-    ],
-    'third_party/ply/__init__.py': [
         'UNKNOWN',
     ],
     'third_party/protobuf': [  # http://crbug.com/98455
