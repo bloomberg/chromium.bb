@@ -100,14 +100,14 @@ void CSSParserImpl::consumeDeclarationList(CSSParserTokenRange range, CSSRuleSou
         case IdentToken: {
             const CSSParserToken* declarationStart = &range.peek();
             while (!range.atEnd() && range.peek().type() != SemicolonToken)
-                range.consume();
+                range.consumeComponentValue();
             consumeDeclaration(range.makeSubRange(declarationStart, &range.peek()), ruleType);
             break;
         }
         default: // Parser error
             // FIXME: The spec allows at-rules in a declaration list
             while (!range.atEnd() && range.peek().type() != SemicolonToken)
-                range.consume();
+                range.consumeComponentValue();
             break;
         }
     }
