@@ -1382,7 +1382,7 @@ void ChromeAppViewAsh::OnNavigateToUrl(const base::string16& url) {
 
 HRESULT ChromeAppViewAsh::OnSizeChanged(winui::Core::ICoreWindow* sender,
     winui::Core::IWindowSizeChangedEventArgs* args) {
-  if (!window_) {
+  if (!window_ || !ui_channel_) {
     return S_OK;
   }
 
