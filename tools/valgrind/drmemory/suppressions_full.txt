@@ -1871,19 +1871,6 @@ system call NtCreateFile parameter #9
 MSWSOCK.dll!*
 content.dll!content::AppCacheStorageImpl::DatabaseTask::CallRun
 
-UNINITIALIZED READ
-name=bug_434033
-*!`anonymous namespace'::TOutputTraverser::visitConstantUnion
-*!TIntermBinary::traverse
-*!TIntermBinary::traverse
-*!TIntermAggregate::traverse
-*!TIntermAggregate::traverse
-*!TIntermAggregate::traverse
-*!TIntermediate::outputTree
-*!TCompiler::compile
-*!TypeTrackingTest::compile
-*!TypeTrackingTest_StructConstructorResultNoPrecision_Test::TestBody
-
 UNADDRESSABLE ACCESS
 name=bug_436131
 *!ash::test::ShelfViewTestAPI::RunMessageLoopUntilAnimationsDone
