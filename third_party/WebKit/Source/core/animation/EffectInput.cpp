@@ -107,8 +107,12 @@ PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, c
     }
 
     RefPtrWillBeRawPtr<StringKeyframeEffectModel> keyframeEffectModel = StringKeyframeEffectModel::create(keyframes);
-    if (!keyframeEffectModel->isReplaceOnly()) {
+    if (keyframeEffectModel->hasSyntheticKeyframes()) {
         exceptionState.throwDOMException(NotSupportedError, "Partial keyframes are not supported.");
+        return nullptr;
+    }
+    if (!keyframeEffectModel->isReplaceOnly()) {
+        exceptionState.throwDOMException(NotSupportedError, "Additive animations are not supported.");
         return nullptr;
     }
     keyframeEffectModel->forceConversionsToAnimatableValues(element);

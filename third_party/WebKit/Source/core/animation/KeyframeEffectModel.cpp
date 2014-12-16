@@ -122,8 +122,11 @@ void KeyframeEffectModelBase::ensureKeyframeGroups() const
     }
 
     // Add synthetic keyframes.
+    m_hasSyntheticKeyframes = false;
     for (const auto& entry : *m_keyframeGroups) {
-        entry.value->addSyntheticKeyframeIfRequired(this);
+        if (entry.value->addSyntheticKeyframeIfRequired())
+            m_hasSyntheticKeyframes = true;
+
         entry.value->removeRedundantKeyframes();
     }
 }
@@ -204,13 +207,22 @@ void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::removeRedundantKeyf
     ASSERT(m_keyframes.size() >= 2);
 }
 
-void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::addSyntheticKeyframeIfRequired(const KeyframeEffectModelBase* context)
+bool KeyframeEffectModelBase::PropertySpecificKeyframeGroup::addSyntheticKeyframeIfRequired()
 {
     ASSERT(!m_keyframes.isEmpty());
-    if (m_keyframes.first()->offset() != 0.0)
+
+    bool addedSyntheticKeyframe = false;
+
+    if (m_keyframes.first()->offset() != 0.0) {
         m_keyframes.insert(0, m_keyframes.first()->neutralKeyframe(0, nullptr));
-    if (m_keyframes.last()->offset() != 1.0)
+        addedSyntheticKeyframe = true;
+    }
+    if (m_keyframes.last()->offset() != 1.0) {
         appendKeyframe(m_keyframes.last()->neutralKeyframe(1, nullptr));
+        addedSyntheticKeyframe = true;
+    }
+
+    return addedSyntheticKeyframe;
 }
 
 void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::trace(Visitor* visitor)

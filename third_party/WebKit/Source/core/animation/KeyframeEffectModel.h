@@ -64,7 +64,7 @@ public:
 
     private:
         void removeRedundantKeyframes();
-        void addSyntheticKeyframeIfRequired(const KeyframeEffectModelBase* context);
+        bool addSyntheticKeyframeIfRequired();
 
         PropertySpecificKeyframeVector m_keyframes;
 
@@ -93,6 +93,12 @@ public:
     virtual bool isAnimatableValueKeyframeEffectModel() const { return false; }
     virtual bool isStringKeyframeEffectModel() const { return false; }
 
+    bool hasSyntheticKeyframes() const
+    {
+        ensureKeyframeGroups();
+        return m_hasSyntheticKeyframes;
+    }
+
     virtual void trace(Visitor*) override;
 
     // FIXME: This is a hack used to resolve CSSValues to AnimatableValues while we have a valid handle on an element.
@@ -119,6 +125,8 @@ protected:
     using KeyframeGroupMap = WillBeHeapHashMap<CSSPropertyID, OwnPtrWillBeMember<PropertySpecificKeyframeGroup>>;
     mutable OwnPtrWillBeMember<KeyframeGroupMap> m_keyframeGroups;
     mutable RefPtrWillBeMember<InterpolationEffect> m_interpolationEffect;
+
+    mutable bool m_hasSyntheticKeyframes;
 
     friend class KeyframeEffectModelTest;
 
