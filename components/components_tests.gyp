@@ -265,6 +265,9 @@
             'translate/core/common/translate_metrics_unittest.cc',
             'translate/core/common/translate_util_unittest.cc',
             'translate/core/language_detection/language_detection_util_unittest.cc',
+            'translate/ios/browser/js_translate_manager_unittest.mm',
+            'translate/ios/browser/language_detection_controller_unittest.mm',
+            'translate/ios/browser/translate_controller_unittest.mm',
             'url_matcher/regex_set_matcher_unittest.cc',
             'url_matcher/string_pattern_unittest.cc',
             'url_matcher/substring_set_matcher_unittest.cc',
@@ -639,7 +642,13 @@
 
                 # Dependencies of signin
                 'components.gyp:signin_ios_browser',
+
+                # Dependencies of translate
+                'components.gyp:translate_ios_browser',
+
                 '../ios/ios_tests.gyp:test_support_ios',
+                '../ios/web/ios_web.gyp:test_support_ios_web',
+                '../third_party/ocmock/ocmock.gyp:ocmock',
               ],
               'actions': [
                 {

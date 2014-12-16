@@ -24,6 +24,7 @@
         'web/navigation/navigation_item_impl_unittest.mm',
         'web/public/webp_decoder_unittest.mm',
         'web/string_util_unittest.cc',
+        'web/url_scheme_util_unittest.mm',
       ],
       'actions': [
         {

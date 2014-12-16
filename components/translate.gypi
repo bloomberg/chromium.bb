@@ -216,5 +216,54 @@
         },
       ],
     }],
+    ['OS == "ios"', {
+      'targets': [
+        {
+          'target_name': 'translate_ios_browser',
+          'type': 'static_library',
+          'include_dirs': [
+            '..',
+          ],
+          'dependencies': [
+            'translate_core_language_detection',
+            'translate_core_browser',
+            'translate_core_common',
+            'translate_ios_injected_js',
+            '../base/base.gyp:base',
+            '../ios/web/ios_web.gyp:ios_web',
+            '../url/url.gyp:url_lib',
+          ],
+          'sources': [
+            'translate/ios/browser/ios_translate_driver.h',
+            'translate/ios/browser/ios_translate_driver.mm',
+            'translate/ios/browser/language_detection_controller.h',
+            'translate/ios/browser/language_detection_controller.mm',
+            'translate/ios/browser/js_language_detection_manager.h',
+            'translate/ios/browser/js_language_detection_manager.mm',
+            'translate/ios/browser/js_translate_manager.h',
+            'translate/ios/browser/js_translate_manager.mm',
+            'translate/ios/browser/translate_controller.h',
+            'translate/ios/browser/translate_controller.mm',
+          ],
+        },
+        {
+          'target_name': 'translate_ios_injected_js',
+          'type': 'none',
+          'sources': [
+            'translate/ios/browser/resources/language_detection.js',
+            'translate/ios/browser/resources/translate_ios.js',
+          ],
+          'link_settings': {
+            'mac_bundle_resources': [
+              '<(SHARED_INTERMEDIATE_DIR)/translate_ios.js',
+              '<(SHARED_INTERMEDIATE_DIR)/language_detection.js',
+            ],
+          },
+          'includes': [
+            '../ios/web/js_compile.gypi',
+          ],
+        },
+      ],
+    }],
   ],
 }
