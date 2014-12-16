@@ -4,7 +4,6 @@
 
 #include "media/audio/cras/cras_input.h"
 
-#include <cras_input.h>
 #include <math.h>
 
 #include "base/basictypes.h"
