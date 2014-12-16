@@ -19,11 +19,10 @@
 // Test cases labeled FLAKY may not always pass, but they should never crash or
 // cause any kind of warnings or errors under tooling.
 
-#include "media/filters/pipeline_integration_test_base.h"
-
 #include <string>
 
 #include "base/bind.h"
+#include "media/test/pipeline_integration_test_base.h"
 
 namespace media {
 

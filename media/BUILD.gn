@@ -546,6 +546,7 @@ test("media_unittests") {
     "//media/audio:test_support",
     "//media/base:unittests",
     "//media/base:test_support",
+    "//media/test:pipeline_integration_tests",
     "//skia",  # Direct dependency required to inherit config.
     "//testing/gmock",
     "//testing/gtest",
@@ -572,8 +573,6 @@ test("media_unittests") {
       "filters/ffmpeg_glue_unittest.cc",
       "filters/ffmpeg_video_decoder_unittest.cc",
       "filters/in_memory_url_protocol_unittest.cc",
-      "filters/pipeline_integration_test.cc",
-      "filters/pipeline_integration_test_base.cc",
     ]
   }
 
@@ -635,13 +634,6 @@ test("media_unittests") {
 }
 
 test("media_perftests") {
-  sources = []
-  if (media_use_ffmpeg) {
-    sources += [
-      "filters/pipeline_integration_perftest.cc",
-      "filters/pipeline_integration_test_base.cc",
-    ]
-  }
   configs += [ ":media_config" ]
   deps = [
     ":media",
@@ -651,6 +643,7 @@ test("media_perftests") {
     "//media/audio:test_support",
     "//media/base:perftests",
     "//media/base:test_support",
+    "//media/test:pipeline_integration_perftests",
     "//testing/gmock",
     "//testing/gtest",
     "//testing/perf",
@@ -713,32 +706,23 @@ if (media_use_ffmpeg) {
     sources = [
       "base/run_all_unittests.cc",
       "ffmpeg/ffmpeg_regression_tests.cc",
-      "filters/pipeline_integration_test_base.cc",
     ]
-    configs += [ ":media_config" ]
+
+    configs += [ "//media:media_config" ]
+
     deps = [
-      ":media",
-      ":test_support",
       "//base/test:test_support",
+      "//media",
+      "//media:test_support",
       "//media/audio:test_support",
       "//media/base:test_support",
+      "//media/test:pipeline_integration_tests",
       "//testing/gmock",
       "//testing/gtest",
       "//third_party/ffmpeg",
       "//ui/gfx/geometry",
       "//ui/gfx:test_support",
     ]
-
-    # TODO(ajwong): This was in the original gyp, but it seems silly.
-    #        ['os_posix==1 and OS!="mac"', {
-    #          'conditions': [
-    #            ['use_allocator!="none"', {
-    #              'dependencies': [
-    #                '../base/allocator/allocator.gyp:allocator',
-    #              ],
-    #            }],
-    #          ],
-    #        }],
   }
 }
 

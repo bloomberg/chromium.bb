@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/filters/pipeline_integration_test_base.h"
+#include "media/test/pipeline_integration_test_base.h"
 
 #include "base/bind.h"
 #include "base/memory/scoped_vector.h"

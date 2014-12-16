@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "media/base/test_data_util.h"
-#include "media/filters/pipeline_integration_test_base.h"
+#include "media/test/pipeline_integration_test_base.h"
 #include "testing/perf/perf_test.h"
 
 namespace media {

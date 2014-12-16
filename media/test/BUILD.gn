@@ -1,0 +1,73 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//media/media_options.gni")
+
+source_set("pipeline_integration_test_base") {
+  testonly = true
+
+  if (media_use_ffmpeg) {
+    sources = [
+      "pipeline_integration_test_base.cc",
+      "pipeline_integration_test_base.h",
+    ]
+
+    deps = [
+      "//base",
+      "//media",
+      "//media:test_support",
+      "//media/audio:test_support",
+      "//media/base:test_support",
+      "//testing/gmock",
+      "//testing/gtest",
+    ]
+  }
+}
+
+source_set("pipeline_integration_tests") {
+  testonly = true
+
+  if (media_use_ffmpeg) {
+    sources = [
+      "pipeline_integration_test.cc",
+    ]
+
+    deps = [
+      ":pipeline_integration_test_base",
+      "//base",
+      "//media",
+      "//media:test_support",
+      "//media/audio:test_support",
+      "//media/base:test_support",
+      "//testing/gtest",
+
+      # TODO(dalecurtis): Required since the gmock header is included in the
+      # header for pipeline_integration_test_base.h.  This should be moved into
+      # the .cc file to avoid the extra dependency here.
+      "//testing/gmock",
+    ]
+  }
+}
+
+source_set("pipeline_integration_perftests") {
+  testonly = true
+
+  if (media_use_ffmpeg) {
+    sources = [
+      "pipeline_integration_perftest.cc",
+    ]
+
+    deps = [
+      ":pipeline_integration_test_base",
+      "//media/base:test_support",
+      "//testing/gtest",
+      "//testing/perf",
+
+      # TODO(dalecurtis): Required since the gmock header is included in the
+      # header for pipeline_integration_test_base.h.  This should be moved into
+      # the .cc file to avoid the extra dependency here.
+      "//testing/gmock",
+    ]
+  }
+}

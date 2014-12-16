@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_FILTERS_PIPELINE_INTEGRATION_TEST_BASE_H_
-#define MEDIA_FILTERS_PIPELINE_INTEGRATION_TEST_BASE_H_
+#ifndef MEDIA_TEST_PIPELINE_INTEGRATION_TEST_BASE_H_
+#define MEDIA_TEST_PIPELINE_INTEGRATION_TEST_BASE_H_
 
 #include "base/md5.h"
 #include "base/message_loop/message_loop.h"
@@ -144,4 +144,4 @@ class PipelineIntegrationTestBase {
 
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_PIPELINE_INTEGRATION_TEST_BASE_H_
+#endif  // MEDIA_TEST_PIPELINE_INTEGRATION_TEST_BASE_H_

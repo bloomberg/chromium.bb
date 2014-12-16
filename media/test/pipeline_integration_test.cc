@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/filters/pipeline_integration_test_base.h"
-
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
@@ -19,6 +17,7 @@
 #include "media/cdm/json_web_key.h"
 #include "media/filters/chunk_demuxer.h"
 #include "media/filters/renderer_impl.h"
+#include "media/test/pipeline_integration_test_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
