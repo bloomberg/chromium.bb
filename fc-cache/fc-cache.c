@@ -126,7 +126,7 @@ scanDirs (FcStrList *list, FcConfig *config, FcBool force, FcBool really_force, 
     FcStrList	    *sublist;
     FcCache	    *cache;
     struct stat	    statb;
-    FcBool	    was_valid;
+    FcBool	    was_valid, was_processed = FcFalse;
     int		    i;
     const FcChar8   *sysroot = FcConfigGetSysRoot (config);
 
@@ -175,6 +175,7 @@ scanDirs (FcStrList *list, FcConfig *config, FcBool force, FcBool really_force, 
 	    fprintf (stderr, "\"%s\": not a directory, skipping\n", dir);
 	    continue;
 	}
+	was_processed = FcTrue;
 
 	if (really_force)
 	    FcDirCacheUnlink (dir, config);
@@ -256,6 +257,8 @@ scanDirs (FcStrList *list, FcConfig *config, FcBool force, FcBool really_force, 
 	else
 	    FcDirCacheUnload (cache);
     }
+    if (!was_processed)
+	ret++;
     return ret;
 }
 
