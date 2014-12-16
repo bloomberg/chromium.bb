@@ -9,6 +9,7 @@ var bufferFullCount = 0;
 var parameter;
 
 function onBufferFull(event) {
+    shouldBeNull('performance.onwebkitresourcetimingbufferfull');
     parameter = event;
     shouldBe('parameter.__proto__', 'Event.prototype');
     bufferFullCount++;
@@ -19,7 +20,6 @@ shouldBe('Performance.prototype.__proto__', 'EventTarget.prototype');
 performance.addEventListener('webkitresourcetimingbufferfull', onBufferFull);
 shouldBeNull('performance.onwebkitresourcetimingbufferfull');
 performance.webkitSetResourceTimingBufferSize(2);
-shouldBeNull('performance.onwebkitresourcetimingbufferfull');
 </script>
 </head>
 <body>
