@@ -8,6 +8,8 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
+#include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/password_manager/core/browser/webdata/logins_table.h"
@@ -22,16 +24,42 @@
 #include "components/password_manager/core/browser/webdata/password_web_data_service_win.h"
 #endif
 
+namespace {
+
+void InitSyncableServicesOnDBThread(
+    const scoped_refptr<base::MessageLoopProxy>& db_thread,
+    const syncer::SyncableService::StartSyncFlare& sync_flare,
+    const scoped_refptr<autofill::AutofillWebDataService>& autofill_web_data,
+    const base::FilePath& context_path,
+    const std::string& app_locale,
+    autofill::AutofillWebDataBackend* autofill_backend) {
+  DCHECK(db_thread->BelongsToCurrentThread());
+
+  // Currently only Autocomplete and Autofill profiles use the new Sync API, but
+  // all the database data should migrate to this API over time.
+  autofill::AutocompleteSyncableService::CreateForWebDataServiceAndBackend(
+      autofill_web_data.get(), autofill_backend);
+  autofill::AutocompleteSyncableService::FromWebDataService(
+      autofill_web_data.get())->InjectStartSyncFlare(sync_flare);
+  autofill::AutofillProfileSyncableService::CreateForWebDataServiceAndBackend(
+      autofill_web_data.get(), autofill_backend, app_locale);
+  autofill::AutofillProfileSyncableService::FromWebDataService(
+      autofill_web_data.get())->InjectStartSyncFlare(sync_flare);
+}
+
+}  // namespace
+
 WebDataServiceWrapper::WebDataServiceWrapper() {
 }
 
 WebDataServiceWrapper::WebDataServiceWrapper(
-    const base::FilePath& profile_path,
+    const base::FilePath& context_path,
     const std::string& application_locale,
     const scoped_refptr<base::MessageLoopProxy>& ui_thread,
     const scoped_refptr<base::MessageLoopProxy>& db_thread,
+    const syncer::SyncableService::StartSyncFlare& flare,
     ShowErrorCallback show_error_callback) {
-  base::FilePath path = profile_path.Append(kWebDataFilename);
+  base::FilePath path = context_path.Append(kWebDataFilename);
   web_database_ = new WebDatabaseService(path, ui_thread, db_thread);
 
   // All tables objects that participate in managing the database must
@@ -68,6 +96,10 @@ WebDataServiceWrapper::WebDataServiceWrapper(
       base::Bind(show_error_callback, ERROR_LOADING_PASSWORD));
   password_web_data_->Init();
 #endif
+
+  autofill_web_data_->GetAutofillBackend(
+      base::Bind(&InitSyncableServicesOnDBThread, db_thread, flare,
+                 autofill_web_data_, context_path, application_locale));
 }
 
 WebDataServiceWrapper::~WebDataServiceWrapper() {

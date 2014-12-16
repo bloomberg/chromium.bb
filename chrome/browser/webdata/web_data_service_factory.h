@@ -24,14 +24,6 @@ class AutofillWebDataBackend;
 class AutofillWebDataService;
 }  // namespace autofill
 
-// Initialize syncable services on database thread.
-// (visible for testing)
-void InitSyncableServicesOnDBThread(
-    scoped_refptr<autofill::AutofillWebDataService> autofill_web_data,
-    const base::FilePath& profile_path,
-    const std::string& app_locale,
-    autofill::AutofillWebDataBackend* autofill_backend);
-
 // Singleton that owns all WebDataServiceWrappers and associates them with
 // Profiles.
 class WebDataServiceFactory : public BrowserContextKeyedServiceFactory {

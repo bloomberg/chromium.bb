@@ -13,8 +13,8 @@
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
-#include "chrome/browser/webdata/autocomplete_syncable_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
+#include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/sync_driver/data_type_controller_mock.h"
 #include "components/webdata_services/web_data_service_test_util.h"
@@ -93,7 +93,7 @@ class FakeWebDataService : public AutofillWebDataService {
   void CreateSyncableService() {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
     // These services are deleted in DestroySyncableService().
-    AutocompleteSyncableService::CreateForWebDataServiceAndBackend(
+    autofill::AutocompleteSyncableService::CreateForWebDataServiceAndBackend(
         this,
         &autofill_backend_);
   }

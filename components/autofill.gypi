@@ -183,6 +183,8 @@
         'autofill/core/browser/suggestion.h',
         'autofill/core/browser/validation.cc',
         'autofill/core/browser/validation.h',
+        'autofill/core/browser/webdata/autocomplete_syncable_service.cc',
+        'autofill/core/browser/webdata/autocomplete_syncable_service.h',
         'autofill/core/browser/webdata/autofill_change.cc',
         'autofill/core/browser/webdata/autofill_change.h',
         'autofill/core/browser/webdata/autofill_entry.cc',
@@ -227,6 +229,8 @@
           },
         }, { # 'autofill_enable_sync == 0'
           'sources!': [
+            'autofill/core/browser/webdata/autocomplete_syncable_service.cc',
+            'autofill/core/browser/webdata/autocomplete_syncable_service.h',
             'autofill/core/browser/webdata/autofill_profile_syncable_service.cc',
             'autofill/core/browser/webdata/autofill_profile_syncable_service.h',
           ],

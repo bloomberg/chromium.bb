@@ -117,6 +117,8 @@ static_library("browser") {
     "suggestion.h",
     "validation.cc",
     "validation.h",
+    "webdata/autocomplete_syncable_service.cc",
+    "webdata/autocomplete_syncable_service.h",
     "webdata/autofill_change.cc",
     "webdata/autofill_change.h",
     "webdata/autofill_entry.cc",
@@ -170,6 +172,8 @@ static_library("browser") {
     deps += [ "//sync" ]
   } else {
     sources -= [
+      "webdata/autocomplete_syncable_service.cc",
+      "webdata/autocomplete_syncable_service.h",
       "webdata/autofill_profile_syncable_service.cc",
       "webdata/autofill_profile_syncable_service.h",
     ]

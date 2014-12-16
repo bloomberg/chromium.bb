@@ -656,8 +656,6 @@
       'browser/upgrade_detector.h',
       'browser/upload_list.cc',
       'browser/upload_list.h',
-      'browser/webdata/autocomplete_syncable_service.cc',
-      'browser/webdata/autocomplete_syncable_service.h',
       'browser/webdata/web_data_service_factory.cc',
       'browser/webdata/web_data_service_factory.h',
     ],

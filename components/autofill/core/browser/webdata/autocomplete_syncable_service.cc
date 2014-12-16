@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/webdata/autocomplete_syncable_service.h"
+#include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
 
 #include "base/location.h"
 #include "base/logging.h"
@@ -10,22 +10,13 @@
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/webdata/common/web_database.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/protocol/autofill_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
 
-using autofill::AutofillChange;
-using autofill::AutofillChangeList;
-using autofill::AutofillEntry;
-using autofill::AutofillKey;
-using autofill::AutofillTable;
-using autofill::AutofillWebDataService;
-using autofill::AutofillWebDataBackend;
-using content::BrowserThread;
-
+namespace autofill {
 namespace {
 
 const char kAutofillEntryNamespaceTag[] = "autofill_entry|";
@@ -70,9 +61,7 @@ void* UserDataKey() {
 
 AutocompleteSyncableService::AutocompleteSyncableService(
     AutofillWebDataBackend* web_data_backend)
-    : web_data_backend_(web_data_backend),
-      scoped_observer_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+    : web_data_backend_(web_data_backend), scoped_observer_(this) {
   DCHECK(web_data_backend_);
 
   scoped_observer_.Add(web_data_backend_);
@@ -98,9 +87,7 @@ AutocompleteSyncableService* AutocompleteSyncableService::FromWebDataService(
 }
 
 AutocompleteSyncableService::AutocompleteSyncableService()
-    : web_data_backend_(NULL),
-      scoped_observer_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+    : web_data_backend_(nullptr), scoped_observer_(this) {
 }
 
 void AutocompleteSyncableService::InjectStartSyncFlare(
@@ -379,7 +366,7 @@ syncer::SyncError AutocompleteSyncableService::AutofillEntryDelete(
 }
 
 void AutocompleteSyncableService::ActOnChanges(
-     const AutofillChangeList& changes) {
+    const AutofillChangeList& changes) {
   DCHECK(sync_processor_);
   syncer::SyncChangeList new_changes;
   for (AutofillChangeList::const_iterator change = changes.begin();
@@ -440,3 +427,5 @@ std::string AutocompleteSyncableService::KeyToTag(const std::string& name,
   std::string prefix(kAutofillEntryNamespaceTag);
   return prefix + net::EscapePath(name) + "|" + net::EscapePath(value);
 }
+
+}  // namespace autofill

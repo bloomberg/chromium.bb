@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "sql/init_status.h"
+#include "sync/api/syncable_service.h"
 
 class KeywordWebDataService;
 class TokenWebData;
@@ -46,10 +47,16 @@ class WebDataServiceWrapper : public KeyedService {
   // Shows an error message if a loading error occurs.
   using ShowErrorCallback = void (*)(ErrorType, sql::InitStatus);
 
-  WebDataServiceWrapper(const base::FilePath& profile_path,
+  // Constructor for WebDataServiceWrapper that initializes the different
+  // WebDataServices and starts the synchronization services using |flare|.
+  // Since |flare| will be copied and called multiple times, it cannot bind
+  // values using base::Owned nor base::Passed; it should only bind simple or
+  // refcounted types.
+  WebDataServiceWrapper(const base::FilePath& context_path,
                         const std::string& application_locale,
                         const scoped_refptr<base::MessageLoopProxy>& ui_thread,
                         const scoped_refptr<base::MessageLoopProxy>& db_thread,
+                        const syncer::SyncableService::StartSyncFlare& flare,
                         ShowErrorCallback show_error_callback);
   ~WebDataServiceWrapper() override;
 

@@ -42,6 +42,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
+#include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -232,19 +233,14 @@ void TestProfileErrorCallback(WebDataServiceWrapper::ErrorType error_type,
   NOTREACHED();
 }
 
-KeyedService* BuildWebDataService(content::BrowserContext* profile) {
-  WebDataServiceWrapper* web_data_service_wrapper = new WebDataServiceWrapper(
-      static_cast<Profile*>(profile)->GetPath(),
-      g_browser_process->GetApplicationLocale(),
+KeyedService* BuildWebDataService(content::BrowserContext* context) {
+  const base::FilePath& context_path = context->GetPath();
+  return new WebDataServiceWrapper(
+      context_path, g_browser_process->GetApplicationLocale(),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+      sync_start_util::GetFlareForSyncableService(context_path),
       &TestProfileErrorCallback);
-  web_data_service_wrapper->GetAutofillWebData()->GetAutofillBackend(
-      base::Bind(&InitSyncableServicesOnDBThread,
-                 web_data_service_wrapper->GetAutofillWebData(),
-                 static_cast<Profile*>(profile)->GetPath(),
-                 g_browser_process->GetApplicationLocale()));
-  return web_data_service_wrapper;
 }
 
 }  // namespace

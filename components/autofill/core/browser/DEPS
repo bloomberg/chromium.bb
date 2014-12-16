@@ -7,6 +7,7 @@ include_rules = [
   "+google_apis/google_api_keys.h",
   "+net",
   "+sql",
+  "+sync",
   "+third_party/fips181",
   "+third_party/libjingle",
   "+third_party/webrtc/libjingle",

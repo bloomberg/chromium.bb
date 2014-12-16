@@ -14,6 +14,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../sql/sql.gyp:sql',
+        '../sync/sync.gyp:sync',
         'autofill_core_browser',
         'keyed_service_core',
         'password_manager_core_browser',

@@ -11,10 +11,9 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
-#include "chrome/browser/webdata/autocomplete_syncable_service.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
+#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/search_engines/keyword_web_data_service.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
@@ -25,7 +24,6 @@
 #include "components/password_manager/core/browser/webdata/password_web_data_service_win.h"
 #endif
 
-using autofill::AutofillProfileSyncableService;
 using content::BrowserThread;
 
 namespace {
@@ -63,27 +61,6 @@ void ProfileErrorCallback(WebDataServiceWrapper::ErrorType error_type,
 }
 
 }  // namespace
-
-void InitSyncableServicesOnDBThread(
-    scoped_refptr<autofill::AutofillWebDataService> autofill_web_data,
-    const base::FilePath& profile_path,
-    const std::string& app_locale,
-    autofill::AutofillWebDataBackend* autofill_backend) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-
-  // Currently only Autocomplete and Autofill profiles use the new Sync API, but
-  // all the database data should migrate to this API over time.
-  AutocompleteSyncableService::CreateForWebDataServiceAndBackend(
-      autofill_web_data.get(), autofill_backend);
-  AutocompleteSyncableService::FromWebDataService(autofill_web_data.get())
-      ->InjectStartSyncFlare(
-          sync_start_util::GetFlareForSyncableService(profile_path));
-  AutofillProfileSyncableService::CreateForWebDataServiceAndBackend(
-      autofill_web_data.get(), autofill_backend, app_locale);
-  AutofillProfileSyncableService::FromWebDataService(autofill_web_data.get())
-      ->InjectStartSyncFlare(
-          sync_start_util::GetFlareForSyncableService(profile_path));
-}
 
 WebDataServiceFactory::WebDataServiceFactory()
     : BrowserContextKeyedServiceFactory(
@@ -182,19 +159,14 @@ content::BrowserContext* WebDataServiceFactory::GetBrowserContextToUse(
 }
 
 KeyedService* WebDataServiceFactory::BuildServiceInstanceFor(
-    content::BrowserContext* profile) const {
-  WebDataServiceWrapper* web_data_service_wrapper = new WebDataServiceWrapper(
-      static_cast<Profile*>(profile)->GetPath(),
-      g_browser_process->GetApplicationLocale(),
+    content::BrowserContext* context) const {
+  const base::FilePath& profile_path = context->GetPath();
+  return new WebDataServiceWrapper(
+      profile_path, g_browser_process->GetApplicationLocale(),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+      sync_start_util::GetFlareForSyncableService(profile_path),
       &ProfileErrorCallback);
-  web_data_service_wrapper->GetAutofillWebData()->GetAutofillBackend(
-      base::Bind(&InitSyncableServicesOnDBThread,
-                 web_data_service_wrapper->GetAutofillWebData(),
-                 static_cast<Profile*>(profile)->GetPath(),
-                 g_browser_process->GetApplicationLocale()));
-  return web_data_service_wrapper;
 }
 
 bool WebDataServiceFactory::ServiceIsNULLWhileTesting() const {

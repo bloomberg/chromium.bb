@@ -19,6 +19,7 @@ static_library("webdata_services") {
     "//components/signin/core/browser",
     "//components/webdata/common",
     "//sql",
+    "//sync",
   ]
 }
 
