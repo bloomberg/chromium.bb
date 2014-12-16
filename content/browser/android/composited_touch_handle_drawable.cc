@@ -139,20 +139,16 @@ void CompositedTouchHandleDrawable::SetFocus(const gfx::PointF& position) {
   layer_->SetPosition(focal_position_ - focal_offset_from_origin_);
 }
 
-bool CompositedTouchHandleDrawable::IntersectsWith(
-    const gfx::RectF& rect) const {
-  return BoundingRect().Intersects(gfx::ScaleRect(rect, dpi_scale_));
+gfx::RectF CompositedTouchHandleDrawable::GetVisibleBounds() const {
+  return gfx::ScaleRect(gfx::RectF(layer_->position().x(),
+                                   layer_->position().y(),
+                                   layer_->bounds().width(),
+                                   layer_->bounds().height()),
+                        1.f / dpi_scale_);
 }
 
 void CompositedTouchHandleDrawable::Detach() {
   layer_->RemoveFromParent();
-}
-
-gfx::RectF CompositedTouchHandleDrawable::BoundingRect() const {
-  return gfx::RectF(layer_->position().x(),
-                    layer_->position().y(),
-                    layer_->bounds().width(),
-                    layer_->bounds().height());
 }
 
 // static

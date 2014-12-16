@@ -33,7 +33,7 @@ class UI_TOUCH_SELECTION_EXPORT TouchHandleDrawable {
   virtual void SetOrientation(TouchHandleOrientation orientation) = 0;
   virtual void SetAlpha(float alpha) = 0;
   virtual void SetFocus(const gfx::PointF& position) = 0;
-  virtual bool IntersectsWith(const gfx::RectF& rect) const = 0;
+  virtual gfx::RectF GetVisibleBounds() const = 0;
 };
 
 // Interface through which |TouchHandle| communicates handle manipulation and

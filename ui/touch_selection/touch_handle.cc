@@ -27,6 +27,21 @@ const float kMinTouchMajorForHitTesting = 1.f;
 // breaking handle dragging behavior.
 const float kMaxTouchMajorForHitTesting = 36.f;
 
+// Note that the intersection region is boundary *exclusive*.
+bool RectIntersectsCircle(const gfx::RectF& rect,
+                          const gfx::PointF& circle_center,
+                          float circle_radius) {
+  DCHECK_GT(circle_radius, 0.f);
+  // An intersection occurs if the closest point between the rect and the
+  // circle's center is less than the circle's radius.
+  gfx::PointF closest_point_in_rect(circle_center);
+  closest_point_in_rect.SetToMax(rect.origin());
+  closest_point_in_rect.SetToMin(rect.bottom_right());
+
+  gfx::Vector2dF distance = circle_center - closest_point_in_rect;
+  return distance.LengthSquared() < (circle_radius * circle_radius);
+}
+
 }  // namespace
 
 // Responsible for rendering a selection or insertion handle for text editing.
@@ -124,16 +139,17 @@ bool TouchHandle::WillHandleTouchEvent(const MotionEvent& event) {
     case MotionEvent::ACTION_DOWN: {
       if (!is_visible_)
         return false;
-      const float touch_size = std::max(
+      const gfx::PointF touch_point(event.GetX(), event.GetY());
+      const float touch_radius = std::max(
           kMinTouchMajorForHitTesting,
-          std::min(kMaxTouchMajorForHitTesting, event.GetTouchMajor()));
-      const gfx::RectF touch_rect(event.GetX() - touch_size * .5f,
-                                  event.GetY() - touch_size * .5f,
-                                  touch_size,
-                                  touch_size);
-      if (!drawable_->IntersectsWith(touch_rect))
+          std::min(kMaxTouchMajorForHitTesting, event.GetTouchMajor())) * 0.5f;
+      if (!RectIntersectsCircle(drawable_->GetVisibleBounds(),
+                                touch_point,
+                                touch_radius)) {
+        EndDrag();
         return false;
-      touch_down_position_ = gfx::PointF(event.GetX(), event.GetY());
+      }
+      touch_down_position_ = touch_point;
       touch_to_focus_offset_ = position_ - touch_down_position_;
       touch_down_time_ = event.GetEventTime();
       BeginDrag();

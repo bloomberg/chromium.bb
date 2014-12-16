@@ -52,8 +52,8 @@ class MockTouchHandleDrawable : public TouchHandleDrawable {
     data_->rect.set_origin(position);
   }
 
-  bool IntersectsWith(const gfx::RectF& rect) const override {
-    return data_->rect.Intersects(rect);
+  gfx::RectF GetVisibleBounds() const override {
+    return data_->rect;
   }
 
  private:
@@ -415,7 +415,7 @@ TEST_F(TouchHandleTest, DragTargettingUsesTouchSize) {
   const float kOffset = kDefaultDrawableSize + kTouchSize / 2.001f;
 
   MockMotionEvent event(
-      MockMotionEvent::ACTION_DOWN, event_time, kOffset, kOffset);
+      MockMotionEvent::ACTION_DOWN, event_time, kOffset, 0);
   event.SetTouchMajor(0.f);
   EXPECT_FALSE(handle.WillHandleTouchEvent(event));
   EXPECT_FALSE(IsDragging());
@@ -429,6 +429,21 @@ TEST_F(TouchHandleTest, DragTargettingUsesTouchSize) {
   EXPECT_TRUE(IsDragging());
 
   event.SetTouchMajor(kTouchSize * 2.f);
+  EXPECT_TRUE(handle.WillHandleTouchEvent(event));
+  EXPECT_TRUE(IsDragging());
+
+  // The touch hit test region should be circular.
+  event = MockMotionEvent(
+      MockMotionEvent::ACTION_DOWN, event_time, kOffset, kOffset);
+  event.SetTouchMajor(kTouchSize);
+  EXPECT_FALSE(handle.WillHandleTouchEvent(event));
+  EXPECT_FALSE(IsDragging());
+
+  event.SetTouchMajor(kTouchSize * std::sqrt(2.f) - 0.1f);
+  EXPECT_FALSE(handle.WillHandleTouchEvent(event));
+  EXPECT_FALSE(IsDragging());
+
+  event.SetTouchMajor(kTouchSize * std::sqrt(2.f) + 0.1f);
   EXPECT_TRUE(handle.WillHandleTouchEvent(event));
   EXPECT_TRUE(IsDragging());
 

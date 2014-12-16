@@ -23,7 +23,7 @@ class PopupTouchHandleDrawable : public ui::TouchHandleDrawable {
   virtual void SetOrientation(ui::TouchHandleOrientation orientation) override;
   virtual void SetAlpha(float alpha) override;
   virtual void SetFocus(const gfx::PointF& position) override;
-  virtual bool IntersectsWith(const gfx::RectF& rect) const override;
+  virtual gfx::RectF GetVisibleBounds() const override;
 
   static bool RegisterPopupTouchHandleDrawable(JNIEnv* env);
 
