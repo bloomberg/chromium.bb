@@ -35,7 +35,6 @@ type:*JSONArray*
 
 fun:*DoublyLinkedListNode*
 type:*content*WebUIExtensionData*
-type:*v8*internal*CompilationInfo*
 
 # RenderFrameObserverTracker<T>::RenderFrameObserverTracker()
 fun:*content*RenderFrameObserverTracker*RenderFrame*
