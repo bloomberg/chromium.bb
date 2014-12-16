@@ -14,23 +14,23 @@
 #include "base/debug/trace_event.h"
 #include "base/files/scoped_file.h"
 #include "base/posix/eintr_wrapper.h"
-#include "content/common/gpu/media/exynos_v4l2_video_device.h"
+#include "content/common/gpu/media/generic_v4l2_video_device.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace content {
 
 namespace {
-const char kDecoderDevice[] = "/dev/mfc-dec";
-const char kEncoderDevice[] = "/dev/mfc-enc";
+const char kDecoderDevice[] = "/dev/video-dec";
+const char kEncoderDevice[] = "/dev/video-enc";
 const char kImageProcessorDevice[] = "/dev/gsc1";
 }
 
-ExynosV4L2Device::ExynosV4L2Device(Type type)
+GenericV4L2Device::GenericV4L2Device(Type type)
     : type_(type),
       device_fd_(-1),
       device_poll_interrupt_fd_(-1) {}
 
-ExynosV4L2Device::~ExynosV4L2Device() {
+GenericV4L2Device::~GenericV4L2Device() {
   if (device_poll_interrupt_fd_ != -1) {
     close(device_poll_interrupt_fd_);
     device_poll_interrupt_fd_ = -1;
@@ -41,11 +41,11 @@ ExynosV4L2Device::~ExynosV4L2Device() {
   }
 }
 
-int ExynosV4L2Device::Ioctl(int request, void* arg) {
+int GenericV4L2Device::Ioctl(int request, void* arg) {
   return HANDLE_EINTR(ioctl(device_fd_, request, arg));
 }
 
-bool ExynosV4L2Device::Poll(bool poll_device, bool* event_pending) {
+bool GenericV4L2Device::Poll(bool poll_device, bool* event_pending) {
   struct pollfd pollfds[2];
   nfds_t nfds;
   int pollfd = -1;
@@ -70,7 +70,7 @@ bool ExynosV4L2Device::Poll(bool poll_device, bool* event_pending) {
   return true;
 }
 
-void* ExynosV4L2Device::Mmap(void* addr,
+void* GenericV4L2Device::Mmap(void* addr,
                              unsigned int len,
                              int prot,
                              int flags,
@@ -78,11 +78,11 @@ void* ExynosV4L2Device::Mmap(void* addr,
   return mmap(addr, len, prot, flags, device_fd_, offset);
 }
 
-void ExynosV4L2Device::Munmap(void* addr, unsigned int len) {
+void GenericV4L2Device::Munmap(void* addr, unsigned int len) {
   munmap(addr, len);
 }
 
-bool ExynosV4L2Device::SetDevicePollInterrupt() {
+bool GenericV4L2Device::SetDevicePollInterrupt() {
   DVLOG(3) << "SetDevicePollInterrupt()";
 
   const uint64 buf = 1;
@@ -93,7 +93,7 @@ bool ExynosV4L2Device::SetDevicePollInterrupt() {
   return true;
 }
 
-bool ExynosV4L2Device::ClearDevicePollInterrupt() {
+bool GenericV4L2Device::ClearDevicePollInterrupt() {
   DVLOG(3) << "ClearDevicePollInterrupt()";
 
   uint64 buf;
@@ -109,7 +109,7 @@ bool ExynosV4L2Device::ClearDevicePollInterrupt() {
   return true;
 }
 
-bool ExynosV4L2Device::Initialize() {
+bool GenericV4L2Device::Initialize() {
   const char* device_path = NULL;
   switch (type_) {
     case kDecoder:
@@ -137,7 +137,7 @@ bool ExynosV4L2Device::Initialize() {
   return true;
 }
 
-EGLImageKHR ExynosV4L2Device::CreateEGLImage(EGLDisplay egl_display,
+EGLImageKHR GenericV4L2Device::CreateEGLImage(EGLDisplay egl_display,
                                              EGLContext /* egl_context */,
                                              GLuint texture_id,
                                              gfx::Size frame_buffer_size,
@@ -187,21 +187,21 @@ EGLImageKHR ExynosV4L2Device::CreateEGLImage(EGLDisplay egl_display,
   return egl_image;
 }
 
-EGLBoolean ExynosV4L2Device::DestroyEGLImage(EGLDisplay egl_display,
+EGLBoolean GenericV4L2Device::DestroyEGLImage(EGLDisplay egl_display,
                                              EGLImageKHR egl_image) {
   return eglDestroyImageKHR(egl_display, egl_image);
 }
 
-GLenum ExynosV4L2Device::GetTextureTarget() { return GL_TEXTURE_EXTERNAL_OES; }
+GLenum GenericV4L2Device::GetTextureTarget() { return GL_TEXTURE_EXTERNAL_OES; }
 
-uint32 ExynosV4L2Device::PreferredInputFormat() {
+uint32 GenericV4L2Device::PreferredInputFormat() {
   // TODO(posciak): We should support "dontcare" returns here once we
   // implement proper handling (fallback, negotiation) for this in users.
   CHECK_EQ(type_, kEncoder);
   return V4L2_PIX_FMT_NV12M;
 }
 
-uint32 ExynosV4L2Device::PreferredOutputFormat() {
+uint32 GenericV4L2Device::PreferredOutputFormat() {
   // TODO(posciak): We should support "dontcare" returns here once we
   // implement proper handling (fallback, negotiation) for this in users.
   CHECK_EQ(type_, kDecoder);

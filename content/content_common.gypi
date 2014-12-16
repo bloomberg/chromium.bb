@@ -761,8 +761,8 @@
         '../media/media.gyp:media',
       ],
       'sources': [
-        'common/gpu/media/exynos_v4l2_video_device.cc',
-        'common/gpu/media/exynos_v4l2_video_device.h',
+        'common/gpu/media/generic_v4l2_video_device.cc',
+        'common/gpu/media/generic_v4l2_video_device.h',
         'common/gpu/media/tegra_v4l2_video_device.cc',
         'common/gpu/media/tegra_v4l2_video_device.h',
         'common/gpu/media/v4l2_image_processor.cc',
