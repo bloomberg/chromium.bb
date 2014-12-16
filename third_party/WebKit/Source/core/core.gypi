@@ -561,6 +561,8 @@
             'animation/CompositorAnimationsImpl.h',
             'animation/CompositorPendingAnimations.cpp',
             'animation/CompositorPendingAnimations.h',
+            'animation/ColorStyleInterpolation.cpp',
+            'animation/ColorStyleInterpolation.h'
             'animation/DefaultStyleInterpolation.h',
             'animation/DeferredLegacyStyleInterpolation.cpp',
             'animation/DeferredLegacyStyleInterpolation.h',
@@ -3544,6 +3546,7 @@
             'animation/AnimationTranslationUtilTest.cpp',
             'animation/CompositorAnimationsTest.cpp',
             'animation/CompositorAnimationsTestHelper.h',
+            'animation/ColorStyleInterpolationTest.cpp',
             'animation/DeferredLegacyStyleInterpolationTest.cpp',
             'animation/DoubleStyleInterpolationTest.cpp',
             'animation/EffectInputTest.cpp',

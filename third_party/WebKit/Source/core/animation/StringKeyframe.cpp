@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/animation/StringKeyframe.h"
 
+#include "core/animation/ColorStyleInterpolation.h"
 #include "core/animation/DefaultStyleInterpolation.h"
 #include "core/animation/DeferredLegacyStyleInterpolation.h"
 #include "core/animation/LegacyStyleInterpolation.h"
@@ -113,12 +114,28 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyWordSpacing:
         if (LengthStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthStyleInterpolation::canCreateFrom(*toCSSValue))
             return LengthStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, range);
-        break;
     case CSSPropertyVisibility:
         if (VisibilityStyleInterpolation::canCreateFrom(*fromCSSValue) && VisibilityStyleInterpolation::canCreateFrom(*toCSSValue) && (VisibilityStyleInterpolation::isVisible(*fromCSSValue) || VisibilityStyleInterpolation::isVisible(*toCSSValue))) {
             return VisibilityStyleInterpolation::create(*fromCSSValue, *toCSSValue, property);
         }
         break;
+    case CSSPropertyFill:
+    case CSSPropertyStroke:
+    case CSSPropertyBackgroundColor:
+    case CSSPropertyBorderBottomColor:
+    case CSSPropertyBorderLeftColor:
+    case CSSPropertyBorderRightColor:
+    case CSSPropertyBorderTopColor:
+    case CSSPropertyColor:
+    case CSSPropertyFloodColor:
+    case CSSPropertyLightingColor:
+    case CSSPropertyOutlineColor:
+    case CSSPropertyStopColor:
+    case CSSPropertyTextDecorationColor:
+    case CSSPropertyWebkitColumnRuleColor:
+    case CSSPropertyWebkitTextStrokeColor:
+        if (ColorStyleInterpolation::canCreateFrom(*fromCSSValue) && ColorStyleInterpolation::canCreateFrom(*toCSSValue))
+            return ColorStyleInterpolation::create(*fromCSSValue, *toCSSValue, property);
     default:
         break;
     }

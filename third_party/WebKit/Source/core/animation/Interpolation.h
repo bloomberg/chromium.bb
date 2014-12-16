@@ -42,6 +42,7 @@ private:
     friend class AnimationInterpolationEffectTest;
     friend class AnimationDoubleStyleInterpolationTest;
     friend class AnimationVisibilityStyleInterpolationTest;
+    friend class AnimationColorStyleInterpolationTest;
 };
 
 } // namespace blink
