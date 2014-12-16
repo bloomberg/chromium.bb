@@ -164,7 +164,6 @@ class TileManagerPerfTest : public testing::Test {
 
     pending_root_layer_ = static_cast<FakePictureLayerImpl*>(
         host_impl_.pending_tree()->LayerById(id_));
-    pending_root_layer_->DoPostCommitInitializationIfNeeded();
   }
 
   void CreateHighLowResAndSetAllTilesVisible() {
@@ -370,7 +369,6 @@ class TileManagerPerfTest : public testing::Test {
           static_cast<FakePictureLayerImpl*>(layers.back());
 
       fake_layer->SetDrawsContent(true);
-      fake_layer->DoPostCommitInitializationIfNeeded();
       fake_layer->CreateDefaultTilingsAndTiles();
       ++next_id;
     }

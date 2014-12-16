@@ -64,7 +64,6 @@ class PictureLayerImplPerfTest : public testing::Test {
 
     pending_layer_ = static_cast<FakePictureLayerImpl*>(
         host_impl_.pending_tree()->LayerById(7));
-    pending_layer_->DoPostCommitInitializationIfNeeded();
   }
 
   void RunRasterQueueConstructAndIterateTest(const std::string& test_name,

@@ -121,7 +121,6 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
 
     pending_layer_ = static_cast<FakePictureLayerImpl*>(
         host_impl_.pending_tree()->LayerById(id_));
-    pending_layer_->DoPostCommitInitializationIfNeeded();
   }
 
   TileManager* tile_manager() { return host_impl_.tile_manager(); }
@@ -344,7 +343,6 @@ TEST_F(TileManagerTilePriorityQueueTest, ActivationComesBeforeEventually) {
   ASSERT_TRUE(pending_child_raw);
 
   pending_child_raw->SetDrawsContent(true);
-  pending_child_raw->DoPostCommitInitializationIfNeeded();
   pending_child_raw->CreateDefaultTilingsAndTiles();
   ASSERT_TRUE(pending_child_raw->HighResTiling());
 
@@ -581,7 +579,6 @@ TEST_F(TileManagerTilePriorityQueueTest,
   FakePictureLayerImpl* pending_child_layer =
       static_cast<FakePictureLayerImpl*>(pending_layer_->children()[0]);
   pending_child_layer->SetDrawsContent(true);
-  pending_child_layer->DoPostCommitInitializationIfNeeded();
   pending_child_layer->CreateDefaultTilingsAndTiles();
 
   std::set<Tile*> all_tiles;
@@ -700,7 +697,6 @@ TEST_F(TileManagerTilePriorityQueueTest,
   pending_child_layer->CreateDefaultTilingsAndTiles();
   pending_child_layer->SetOpacity(0.0);
   pending_child_layer->layer_tree_impl()->UpdateDrawProperties();
-  pending_child_layer->DoPostCommitInitializationIfNeeded();
 
   // Renew all of the tile priorities.
   gfx::Rect viewport(layer_bounds);
@@ -804,7 +800,6 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueueEmptyLayers) {
     scoped_ptr<FakePictureLayerImpl> pending_layer =
         FakePictureLayerImpl::Create(host_impl_.pending_tree(), id_ + i);
     pending_layer->SetDrawsContent(true);
-    pending_layer->DoPostCommitInitializationIfNeeded();
     pending_layer->set_has_valid_tile_priorities(true);
     pending_layer_->AddChild(pending_layer.Pass());
   }
@@ -855,7 +850,6 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueueEmptyLayers) {
     scoped_ptr<FakePictureLayerImpl> pending_layer =
         FakePictureLayerImpl::Create(host_impl_.pending_tree(), id_ + i);
     pending_layer->SetDrawsContent(true);
-    pending_layer->DoPostCommitInitializationIfNeeded();
     pending_layer->set_has_valid_tile_priorities(true);
     pending_layer_->AddChild(pending_layer.Pass());
   }

@@ -125,12 +125,6 @@ class CC_EXPORT PictureLayerImpl
   gfx::Rect GetViewportForTilePriorityInContentSpace() const;
   PictureLayerImpl* GetRecycledTwinLayer() const;
 
-  void DoPostCommitInitializationIfNeeded() {
-    if (needs_post_commit_initialization_)
-      DoPostCommitInitialization();
-  }
-  void DoPostCommitInitialization();
-
   bool CanHaveTilingWithScale(float contents_scale) const;
   void SanityCheckTilingState() const;
   // Checks if all tiles required for a certain action (e.g. activation) are
@@ -168,7 +162,6 @@ class CC_EXPORT PictureLayerImpl
 
   bool raster_source_scale_is_fixed_;
   bool was_screen_space_transform_animating_;
-  bool needs_post_commit_initialization_;
   // A sanity state check to make sure UpdateTilePriorities only gets called
   // after a CalculateContentsScale/ManageTilings.
   bool should_update_tile_priorities_;
