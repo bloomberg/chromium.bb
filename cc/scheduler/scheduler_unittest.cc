@@ -384,17 +384,42 @@ TEST(SchedulerTest, SendBeginFramesToChildren) {
   EXPECT_FALSE(client.begin_frame_is_sent_to_children());
   scheduler->SetNeedsCommit();
   EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client);
-  client.Reset();
+  EXPECT_TRUE(client.needs_begin_frames());
 
   scheduler->SetChildrenNeedBeginFrames(true);
 
+  client.Reset();
   client.AdvanceFrame();
   EXPECT_TRUE(client.begin_frame_is_sent_to_children());
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
   EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
   EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client, 1, 2);
   EXPECT_TRUE(client.needs_begin_frames());
+}
+
+TEST(SchedulerTest, SendBeginFramesToChildrenWithoutCommit) {
+  FakeSchedulerClient client;
+  SchedulerSettings scheduler_settings;
+  scheduler_settings.use_external_begin_frame_source = true;
+  scheduler_settings.forward_begin_frames_to_children = true;
+  TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
+  scheduler->SetCanStart();
+  scheduler->SetVisible(true);
+  scheduler->SetCanDraw(true);
+
+  EXPECT_SINGLE_ACTION("ScheduledActionBeginOutputSurfaceCreation", client);
+  InitializeOutputSurfaceAndFirstCommit(scheduler, &client);
+
   client.Reset();
+  EXPECT_FALSE(client.needs_begin_frames());
+
+  scheduler->SetChildrenNeedBeginFrames(true);
+  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client);
+  EXPECT_TRUE(client.needs_begin_frames());
+
+  client.Reset();
+  client.AdvanceFrame();
+  EXPECT_TRUE(client.begin_frame_is_sent_to_children());
 }
 
 TEST(SchedulerTest, RequestCommit) {

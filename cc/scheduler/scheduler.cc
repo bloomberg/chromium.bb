@@ -446,7 +446,7 @@ bool Scheduler::OnBeginFrameMixInDelegate(const BeginFrameArgs& args) {
 void Scheduler::SetChildrenNeedBeginFrames(bool children_need_begin_frames) {
   DCHECK(settings_.forward_begin_frames_to_children);
   state_machine_.SetChildrenNeedBeginFrames(children_need_begin_frames);
-  DCHECK_EQ(state_machine_.NextAction(), SchedulerStateMachine::ACTION_NONE);
+  ProcessScheduledActions();
 }
 
 // BeginRetroFrame is called for BeginFrames that we've deferred because
