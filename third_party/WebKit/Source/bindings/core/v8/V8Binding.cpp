@@ -204,15 +204,19 @@ static inline T toSmallerInt(v8::Handle<v8::Value> value, IntegerConversionConfi
         return static_cast<T>(result > LimitsTrait::maxValue ? result - LimitsTrait::numberOfValues : result);
     }
 
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    // Can the value be converted to a number?
-    v8::TryCatch block(isolate);
-    v8::Local<v8::Number> numberObject(value->ToNumber(isolate));
-    if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return 0;
+    v8::Local<v8::Number> numberObject;
+    if (value->IsNumber()) {
+        numberObject = value.As<v8::Number>();
+    } else {
+        v8::Isolate* isolate = v8::Isolate::GetCurrent();
+        // Can the value be converted to a number?
+        v8::TryCatch block(isolate);
+        numberObject = value->ToNumber(isolate);
+        if (block.HasCaught()) {
+            exceptionState.rethrowV8Exception(block.Exception());
+            return 0;
+        }
     }
-
     ASSERT(!numberObject.IsEmpty());
 
     if (configuration == EnforceRange)
@@ -253,15 +257,19 @@ static inline T toSmallerUInt(v8::Handle<v8::Value> value, IntegerConversionConf
         return static_cast<T>(result);
     }
 
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    // Can the value be converted to a number?
-    v8::TryCatch block(isolate);
-    v8::Local<v8::Number> numberObject(value->ToNumber(isolate));
-    if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return 0;
+    v8::Local<v8::Number> numberObject;
+    if (value->IsNumber()) {
+        numberObject = value.As<v8::Number>();
+    } else {
+        v8::Isolate* isolate = v8::Isolate::GetCurrent();
+        // Can the value be converted to a number?
+        v8::TryCatch block(isolate);
+        numberObject = value->ToNumber(isolate);
+        if (block.HasCaught()) {
+            exceptionState.rethrowV8Exception(block.Exception());
+            return 0;
+        }
     }
-
     ASSERT(!numberObject.IsEmpty());
 
     if (configuration == EnforceRange)
@@ -332,15 +340,19 @@ int32_t toInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration conf
     if (value->IsInt32())
         return value->Int32Value();
 
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    // Can the value be converted to a number?
-    v8::TryCatch block(isolate);
-    v8::Local<v8::Number> numberObject(value->ToNumber(isolate));
-    if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return 0;
+    v8::Local<v8::Number> numberObject;
+    if (value->IsNumber()) {
+        numberObject = value.As<v8::Number>();
+    } else {
+        v8::Isolate* isolate = v8::Isolate::GetCurrent();
+        // Can the value be converted to a number?
+        v8::TryCatch block(isolate);
+        numberObject = value->ToNumber(isolate);
+        if (block.HasCaught()) {
+            exceptionState.rethrowV8Exception(block.Exception());
+            return 0;
+        }
     }
-
     ASSERT(!numberObject.IsEmpty());
 
     if (configuration == EnforceRange)
@@ -386,15 +398,19 @@ uint32_t toUInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration co
         return result;
     }
 
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    // Can the value be converted to a number?
-    v8::TryCatch block(isolate);
-    v8::Local<v8::Number> numberObject(value->ToNumber(isolate));
-    if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return 0;
+    v8::Local<v8::Number> numberObject;
+    if (value->IsNumber()) {
+        numberObject = value.As<v8::Number>();
+    } else {
+        v8::Isolate* isolate = v8::Isolate::GetCurrent();
+        // Can the value be converted to a number?
+        v8::TryCatch block(isolate);
+        numberObject = value->ToNumber(isolate);
+        if (block.HasCaught()) {
+            exceptionState.rethrowV8Exception(block.Exception());
+            return 0;
+        }
     }
-
     ASSERT(!numberObject.IsEmpty());
 
     if (configuration == EnforceRange)
@@ -429,15 +445,19 @@ int64_t toInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration conf
     if (value->IsInt32())
         return value->Int32Value();
 
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    // Can the value be converted to a number?
-    v8::TryCatch block(isolate);
-    v8::Local<v8::Number> numberObject(value->ToNumber(isolate));
-    if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return 0;
+    v8::Local<v8::Number> numberObject;
+    if (value->IsNumber()) {
+        numberObject = value.As<v8::Number>();
+    } else {
+        v8::Isolate* isolate = v8::Isolate::GetCurrent();
+        // Can the value be converted to a number?
+        v8::TryCatch block(isolate);
+        numberObject = value->ToNumber(isolate);
+        if (block.HasCaught()) {
+            exceptionState.rethrowV8Exception(block.Exception());
+            return 0;
+        }
     }
-
     ASSERT(!numberObject.IsEmpty());
 
     double numberValue = numberObject->Value();
@@ -480,15 +500,19 @@ uint64_t toUInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration co
         return result;
     }
 
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    // Can the value be converted to a number?
-    v8::TryCatch block(isolate);
-    v8::Local<v8::Number> numberObject(value->ToNumber(isolate));
-    if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return 0;
+    v8::Local<v8::Number> numberObject;
+    if (value->IsNumber()) {
+        numberObject = value.As<v8::Number>();
+    } else {
+        v8::Isolate* isolate = v8::Isolate::GetCurrent();
+        // Can the value be converted to a number?
+        v8::TryCatch block(isolate);
+        numberObject = value->ToNumber(isolate);
+        if (block.HasCaught()) {
+            exceptionState.rethrowV8Exception(block.Exception());
+            return 0;
+        }
     }
-
     ASSERT(!numberObject.IsEmpty());
 
     double numberValue = numberObject->Value();
@@ -534,7 +558,6 @@ double toDouble(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
         exceptionState.rethrowV8Exception(block.Exception());
         return 0;
     }
-
     return numberObject->NumberValue();
 }
 
@@ -549,12 +572,17 @@ String toByteString(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
         return String();
 
     // 1. Let x be ToString(v)
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::TryCatch block(isolate);
-    v8::Local<v8::String> stringObject(value->ToString(isolate));
-    if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return String();
+    v8::Local<v8::String> stringObject;
+    if (value->IsString()) {
+        stringObject = value.As<v8::String>();
+    } else {
+        v8::Isolate* isolate = v8::Isolate::GetCurrent();
+        v8::TryCatch block(isolate);
+        stringObject = value->ToString(isolate);
+        if (block.HasCaught()) {
+            exceptionState.rethrowV8Exception(block.Exception());
+            return String();
+        }
     }
 
     String x = toCoreString(stringObject);
@@ -680,12 +708,17 @@ String toUSVString(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
     if (value.IsEmpty())
         return String();
 
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::TryCatch block(isolate);
-    v8::Local<v8::String> stringObject(value->ToString(isolate));
-    if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return String();
+    v8::Local<v8::String> stringObject;
+    if (value->IsString()) {
+        stringObject = value.As<v8::String>();
+    } else {
+        v8::Isolate* isolate = v8::Isolate::GetCurrent();
+        v8::TryCatch block(isolate);
+        stringObject = value->ToString(isolate);
+        if (block.HasCaught()) {
+            exceptionState.rethrowV8Exception(block.Exception());
+            return String();
+        }
     }
 
     // USVString is identical to DOMString except that "convert a
