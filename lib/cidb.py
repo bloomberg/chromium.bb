@@ -22,7 +22,7 @@ except ImportError:
       '`sudo apt-get install python-sqlalchemy` or similar.')
 
 from chromite.cbuildbot import constants
-from chromite.lib import retry_util
+from chromite.lib import retry_stats
 from chromite.lib import clactions
 
 CIDB_MIGRATIONS_DIR = os.path.join(constants.CHROMITE_DIR, 'cidb',
@@ -449,7 +449,8 @@ class SchemaVersionedMySQLConnection(object):
     f = lambda: engine.execute(query, *args, **kwargs)
     logging.info('Running cidb query on pid %s, repr(query) starts with %s',
                  os.getpid(), repr(query)[:100])
-    return retry_util.GenericRetry(
+    return retry_stats.RetryWithStats(
+        retry_stats.CIDB,
         handler=_IsRetryableException,
         max_retry=8,
         sleep=4,

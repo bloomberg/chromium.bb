@@ -14,6 +14,7 @@ from chromite.lib import retry_util
 
 
 # Well known categories we gather stats for.
+CIDB = 'CIDB'
 GSUTIL = 'Google Storage'
 
 
