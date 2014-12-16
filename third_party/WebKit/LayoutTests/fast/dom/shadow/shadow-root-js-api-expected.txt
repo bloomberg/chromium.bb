@@ -1,3 +1,6 @@
+CONSOLE WARNING: ShadowRoot.getElementsByClassName() is deprecated. Please use 'querySelectorAll' instead
+CONSOLE WARNING: ShadowRoot.getElementsByTagName() is deprecated. Please use 'querySelectorAll' instead
+CONSOLE WARNING: ShadowRoot.getElementsByTagNameNS() is deprecated. Please use 'querySelectorAll' instead
 Tests for ShadowRoot JS APIs. Can only run within DRT
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

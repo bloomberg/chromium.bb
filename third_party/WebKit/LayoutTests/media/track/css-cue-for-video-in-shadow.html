@@ -36,7 +36,7 @@ function loaded()
     var host = document.getElementById('host');
     var shadowRoot = host.createShadowRoot();
     shadowRoot.innerHTML = '<video controls ><track src="captions-webvtt/styling-lifetime.vtt" kind="captions" default></video>';
-    video = shadowRoot.getElementsByTagName('video')[0];
+    video = shadowRoot.querySelector('video');
     video.src = findMediaFile('video', '../content/test');
     video.id = "testvideo";
     waitForEvent('seeked', seeked);

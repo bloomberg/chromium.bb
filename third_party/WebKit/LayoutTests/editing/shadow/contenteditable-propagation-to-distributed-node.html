@@ -16,8 +16,8 @@ var content = document.createElement("content");
 shadowRoot.appendChild(span);
 shadowRoot.appendChild(content);
 
-shouldBeEqualToString("getComputedStyle(shadowRoot.getElementsByTagName('span')[0], null).webkitUserModify", "read-only");
-shouldBeEqualToString("getComputedStyle(shadowRoot.getElementsByTagName('content')[0].getDistributedNodes()[0], null).webkitUserModify", "read-write");
+shouldBeEqualToString("getComputedStyle(shadowRoot.querySelector('span'), null).webkitUserModify", "read-only");
+shouldBeEqualToString("getComputedStyle(shadowRoot.querySelector('content').getDistributedNodes()[0], null).webkitUserModify", "read-write");
 
 successfullyParsed = true;
 </script>

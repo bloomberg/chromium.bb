@@ -566,6 +566,10 @@ public:
         DeprecatedSpeedOfSound = 621,
         DeprecatedSetVelocity = 622,
 
+        ShadowRootGetElementsByClassName = 623,
+        ShadowRootGetElementsByTagName = 624,
+        ShadowRootGetElementsByTagNameNS = 625,
+
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
         // Also, run update_use_counter_feature_enum.py in chromium/src/tools/metrics/histograms/
