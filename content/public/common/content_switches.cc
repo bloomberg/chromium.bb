@@ -280,11 +280,11 @@ const char kDomAutomationController[]       = "dom-automation";
 // Enable antialiasing on 2d canvas clips (as opposed to draw operations)
 const char kEnable2dCanvasClipAntialiasing[] = "enable-2d-canvas-clip-aa";
 
-// Enable partially decoding jpeg images using the GPU.
-// At least YUV decoding will be accelerated when using this flag.
+// Disable partially decoding jpeg images using the GPU.
+// At least YUV decoding will be accelerated when not using this flag.
 // Has no effect unless GPU rasterization is enabled.
-const char kEnableAcceleratedJpegDecoding[] =
-    "enable-accelerated-jpeg-decoding";
+const char kDisableAcceleratedJpegDecoding[] =
+    "disable-accelerated-jpeg-decoding";
 
 // Enable bleeding-edge code to make Chrome draw content faster. The changes
 // behind this path are very likely to break lots of content.

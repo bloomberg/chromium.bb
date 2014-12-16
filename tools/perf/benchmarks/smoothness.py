@@ -144,6 +144,7 @@ class SmoothnessImageDecodingCases(benchmark.Benchmark):
   page_set = page_sets.ImageDecodingCasesPageSet
   def CustomizeBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
+    options.AppendExtraBrowserArgs('--disable-accelerated-jpeg-decoding')
 
 
 class SmoothnessGpuImageDecodingCases(benchmark.Benchmark):
@@ -154,5 +155,6 @@ class SmoothnessGpuImageDecodingCases(benchmark.Benchmark):
   page_set = page_sets.ImageDecodingCasesPageSet
   def CustomizeBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
+    # TODO: Remove the following line once M41 goes stable
     options.AppendExtraBrowserArgs('--enable-accelerated-jpeg-decoding')
 
