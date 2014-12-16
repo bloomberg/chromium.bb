@@ -6,4 +6,4 @@ satorux@chromium.org
 yoshiki@chromium.org
 
 per-file file_manager_browsertest.cc=fukino@chromium.org
-per-file file_manager_jstest.cc=fukino@chromium.org
+per-file *_jstest.cc=fukino@chromium.org
