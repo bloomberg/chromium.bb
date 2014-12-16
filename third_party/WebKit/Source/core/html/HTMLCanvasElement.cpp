@@ -234,7 +234,7 @@ void HTMLCanvasElement::getContext(const String& type, const CanvasContextCreati
             blink::Platform::current()->histogramEnumeration("Canvas.ContextType", contextType, ContextTypeCount);
             m_context = WebGLRenderingContext::create(this, attributes);
             RenderStyle* style = computedStyle();
-            if (style)
+            if (style && m_context)
                 toWebGLRenderingContext(m_context.get())->setFilterLevel(style->imageRendering() == ImageRenderingPixelated ? SkPaint::kNone_FilterLevel : SkPaint::kLow_FilterLevel);
             setNeedsCompositingUpdate();
             updateExternallyAllocatedMemory();
