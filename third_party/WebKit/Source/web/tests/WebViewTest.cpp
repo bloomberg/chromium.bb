@@ -2162,4 +2162,20 @@ TEST_F(WebViewTest, AutoResizeSubtreeLayout)
     EXPECT_FALSE(frameView->needsLayout());
 };
 
+TEST_F(WebViewTest, PreferredSize)
+{
+    std::string url = m_baseURL + "specify_size.html?100px:100px";
+    URLTestHelpers::registerMockedURLLoad(toKURL(url), "specify_size.html");
+    WebView* webView = m_webViewHelper.initializeAndLoad(url, true);
+
+    WebSize size = webView->contentsPreferredMinimumSize();
+    EXPECT_EQ(100, size.width);
+    EXPECT_EQ(100, size.height);
+
+    webView->setZoomLevel(WebView::zoomFactorToZoomLevel(2.0));
+    size = webView->contentsPreferredMinimumSize();
+    EXPECT_EQ(200, size.width);
+    EXPECT_EQ(200, size.height);
+}
+
 } // namespace
