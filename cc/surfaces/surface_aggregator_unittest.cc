@@ -161,7 +161,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, OpacityCopied) {
   SurfaceId embedded_surface_id = allocator_.GenerateId();
   factory_.Create(embedded_surface_id);
 
-  test::Quad embedded_quads[] = {test::Quad::SolidColorQuad(SK_ColorGREEN)};
+  test::Quad embedded_quads[] = {test::Quad::SolidColorQuad(SK_ColorGREEN),
+                                 test::Quad::SolidColorQuad(SK_ColorBLUE)};
   test::Pass embedded_passes[] = {
       test::Pass(embedded_quads, arraysize(embedded_quads))};
 
@@ -181,62 +182,19 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, OpacityCopied) {
   DelegatedFrameData* frame_data = aggregated_frame->delegated_frame_data.get();
 
   RenderPassList& render_pass_list(frame_data->render_pass_list);
-  ASSERT_EQ(1u, render_pass_list.size());
-  SharedQuadStateList& shared_quad_state_list(
-      render_pass_list[0]->shared_quad_state_list);
-  ASSERT_EQ(1u, shared_quad_state_list.size());
-  EXPECT_EQ(.5f, shared_quad_state_list.ElementAt(0)->opacity);
-
-  factory_.Destroy(embedded_surface_id);
-}
-
-TEST_F(SurfaceAggregatorValidSurfaceTest, OpacityCombinedWithNesting) {
-  SurfaceId surface_id1 = allocator_.GenerateId();
-  factory_.Create(surface_id1);
-  SurfaceId surface_id2 = allocator_.GenerateId();
-  factory_.Create(surface_id2);
-
-  // |surface_id1| is color quad.
-  {
-    test::Quad quads[] = {test::Quad::SolidColorQuad(SK_ColorGREEN)};
-    test::Pass passes[] = {test::Pass(quads, arraysize(quads))};
-    SubmitFrame(passes, arraysize(passes), surface_id1);
-  }
-
-  // |surface_id2| has a color quad and a surface quad using |surface_id1| at .5
-  // opacity.
-  {
-    test::Quad quads[] = {test::Quad::SolidColorQuad(SK_ColorBLUE),
-                          test::Quad::SurfaceQuad(surface_id1, .5f)};
-    test::Pass passes[] = {test::Pass(quads, arraysize(quads))};
-    SubmitFrame(passes, arraysize(passes), surface_id2);
-  }
-
-  // Another frame with a surface referencing |surface_id2| @ .6 opacity.
-  {
-    test::Quad quads[] = {test::Quad::SurfaceQuad(surface_id2, .6f)};
-    test::Pass passes[] = {test::Pass(quads, arraysize(quads))};
-    SubmitFrame(passes, arraysize(passes), root_surface_id_);
-  }
-
-  scoped_ptr<CompositorFrame> aggregated_frame =
-      aggregator_.Aggregate(root_surface_id_);
-
-  ASSERT_TRUE(aggregated_frame);
-  ASSERT_TRUE(aggregated_frame->delegated_frame_data);
-
-  DelegatedFrameData* frame_data = aggregated_frame->delegated_frame_data.get();
-
-  RenderPassList& render_pass_list(frame_data->render_pass_list);
-  ASSERT_EQ(1u, render_pass_list.size());
+  ASSERT_EQ(2u, render_pass_list.size());
   SharedQuadStateList& shared_quad_state_list(
       render_pass_list[0]->shared_quad_state_list);
   ASSERT_EQ(2u, shared_quad_state_list.size());
-  EXPECT_EQ(.6f, shared_quad_state_list.ElementAt(0)->opacity);
-  EXPECT_EQ(.3f, shared_quad_state_list.ElementAt(1)->opacity);
+  EXPECT_EQ(1.f, shared_quad_state_list.ElementAt(0)->opacity);
+  EXPECT_EQ(1.f, shared_quad_state_list.ElementAt(1)->opacity);
 
-  factory_.Destroy(surface_id1);
-  factory_.Destroy(surface_id2);
+  SharedQuadStateList& shared_quad_state_list2(
+      render_pass_list[1]->shared_quad_state_list);
+  ASSERT_EQ(1u, shared_quad_state_list2.size());
+  EXPECT_EQ(.5f, shared_quad_state_list2.ElementAt(0)->opacity);
+
+  factory_.Destroy(embedded_surface_id);
 }
 
 TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSimpleFrame) {
