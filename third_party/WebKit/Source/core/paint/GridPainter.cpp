@@ -52,14 +52,14 @@ void GridPainter::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& p
     for (GridSpan::iterator row = dirtiedRows.begin(); row != dirtiedRows.end(); ++row) {
         for (GridSpan::iterator column = dirtiedColumns.begin(); column != dirtiedColumns.end(); ++column) {
             const Vector<RenderBox*, 1>& children = m_renderGrid.gridCell(row.toInt(), column.toInt());
-            for (size_t j = 0; j < children.size(); ++j)
-                gridItemsToBePainted.append(std::make_pair(children[j], m_renderGrid.paintIndexForGridItem(children[j])));
+            for (auto* child : children)
+                gridItemsToBePainted.append(std::make_pair(child, m_renderGrid.paintIndexForGridItem(child)));
         }
     }
 
-    for (Vector<RenderBox*>::const_iterator it = m_renderGrid.itemsOverflowingGridArea().begin(); it != m_renderGrid.itemsOverflowingGridArea().end(); ++it) {
-        if ((*it)->frameRect().intersects(localPaintInvalidationRect))
-            gridItemsToBePainted.append(std::make_pair(*it, m_renderGrid.paintIndexForGridItem(*it)));
+    for (auto* item: m_renderGrid.itemsOverflowingGridArea()) {
+        if (item->frameRect().intersects(localPaintInvalidationRect))
+            gridItemsToBePainted.append(std::make_pair(item, m_renderGrid.paintIndexForGridItem(item)));
     }
 
     // Sort grid items following order-modified document order.
@@ -67,10 +67,10 @@ void GridPainter::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& p
     std::stable_sort(gridItemsToBePainted.begin(), gridItemsToBePainted.end(), GridItemsSorter());
 
     RenderBox* previous = 0;
-    for (Vector<std::pair<RenderBox*, size_t> >::const_iterator it = gridItemsToBePainted.begin(); it != gridItemsToBePainted.end(); ++it) {
+    for (const auto& gridItemAndPaintIndex : gridItemsToBePainted) {
         // We might have duplicates because of spanning children are included in all cells they span.
         // Skip them here to avoid painting items several times.
-        RenderBox* current = it->first;
+        RenderBox* current = gridItemAndPaintIndex.first;
         if (current == previous)
             continue;
 
