@@ -116,8 +116,6 @@ crbug.com/400659 http/tests/media/gc-while-network-loading.html [ Slow ]
 # This has been Slow in Debug since added in r164270.
 crbug.com/330389 [ Debug ] css-parser/color3_hsl.html [ Slow ]
 
-crbug.com/438746 virtual/display_list_2d_canvas/fast/canvas/canvas-overflow-hidden-animation.html [ Slow ]
-
 # Many of the virtual animations tests are slow.
 crbug.com/248938 [ Linux Win ] virtual/threaded/animations/combo-transform-rotate+scale.html [ Slow ]
 crbug.com/248938 virtual/threaded/animations/3d/change-transform-in-end-event.html [ Slow ]
