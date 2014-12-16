@@ -72,6 +72,9 @@ Tests.testIsPlainHostName = function(t) {
   // Valid IPv6 address
   t.expectFalse(isPlainHostName("::1"));
 
+  // Valid IPv6 address containing periods.
+  t.expectFalse(isPlainHostName("::192.186.1.1"));
+
   // Not a valid IPv6 address
   t.expectTrue(isPlainHostName("foopy::1"));
   t.expectTrue(isPlainHostName("foo:112"));

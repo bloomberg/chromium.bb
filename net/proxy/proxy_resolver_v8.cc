@@ -339,8 +339,8 @@ bool IsPlainHostName(const std::string& hostname_utf8) {
   if (hostname_utf8.find('.') != std::string::npos)
     return false;
 
-  // IPv6 addresses may not contain periods, however are not be considered a
-  // plain host name.
+  // IPv6 literals might not contain any periods, however are not considered
+  // plain host names.
   IPAddressNumber unused;
   return !ParseIPLiteralToNumber(hostname_utf8, &unused);
 }
