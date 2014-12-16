@@ -54,6 +54,7 @@ private:
     virtual StepRange createStepRange(AnyStepHandling) const override;
     virtual bool parseToDateComponentsInternal(const String&, DateComponents*) const override;
     virtual bool setMillisecondToDateComponents(double, DateComponents*) const override;
+    virtual void warnIfValueIsInvalid(const String&) const override;
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     virtual String localizeValue(const String&) const override;
 
