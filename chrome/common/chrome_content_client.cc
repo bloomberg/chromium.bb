@@ -47,7 +47,6 @@
 #if !defined(DISABLE_NACL)
 #include "components/nacl/common/nacl_constants.h"
 #include "components/nacl/common/nacl_process_type.h"
-#include "ppapi/native_client/src/trusted/plugin/ppapi_entrypoints.h"
 #endif
 
 #if defined(ENABLE_PLUGINS)
@@ -55,10 +54,6 @@
 #include "content/public/common/pepper_plugin_info.h"
 #include "flapper_version.h"  // In SHARED_INTERMEDIATE_DIR.
 #include "ppapi/shared_impl/ppapi_permissions.h"
-#endif
-
-#if defined(ENABLE_REMOTING)
-#include "remoting/client/plugin/pepper_entrypoints.h"
 #endif
 
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS) && \
@@ -101,6 +96,12 @@ const uint32 kGTalkPluginPermissions = ppapi::PERMISSION_PRIVATE |
                                        ppapi::PERMISSION_DEV;
 
 #if defined(ENABLE_REMOTING)
+
+content::PepperPluginInfo::GetInterfaceFunc g_remoting_get_interface;
+content::PepperPluginInfo::PPP_InitializeModuleFunc
+    g_remoting_initialize_module;
+content::PepperPluginInfo::PPP_ShutdownModuleFunc g_remoting_shutdown_module;
+
 #if defined(GOOGLE_CHROME_BUILD)
 const char kRemotingViewerPluginName[] = "Chrome Remote Desktop Viewer";
 #else
@@ -119,6 +120,12 @@ const char kRemotingViewerPluginMimeDescription[] = "";
 const uint32 kRemotingViewerPluginPermissions = ppapi::PERMISSION_PRIVATE |
                                                 ppapi::PERMISSION_DEV;
 #endif  // defined(ENABLE_REMOTING)
+
+#if !defined(DISABLE_NACL)
+content::PepperPluginInfo::GetInterfaceFunc g_nacl_get_interface;
+content::PepperPluginInfo::PPP_InitializeModuleFunc g_nacl_initialize_module;
+content::PepperPluginInfo::PPP_ShutdownModuleFunc g_nacl_shutdown_module;
+#endif
 
 // Appends the known built-in plugins to the given vector. Some built-in
 // plugins are "internal" which means they are compiled into the Chrome binary,
@@ -183,11 +190,9 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
                                                nacl::kPnaclPluginExtension,
                                                nacl::kPnaclPluginDescription);
     nacl.mime_types.push_back(pnacl_mime_type);
-    nacl.internal_entry_points.get_interface = nacl_plugin::PPP_GetInterface;
-    nacl.internal_entry_points.initialize_module =
-        nacl_plugin::PPP_InitializeModule;
-    nacl.internal_entry_points.shutdown_module =
-        nacl_plugin::PPP_ShutdownModule;
+    nacl.internal_entry_points.get_interface = g_nacl_get_interface;
+    nacl.internal_entry_points.initialize_module = g_nacl_initialize_module;
+    nacl.internal_entry_points.shutdown_module = g_nacl_shutdown_module;
     nacl.permissions = ppapi::PERMISSION_PRIVATE | ppapi::PERMISSION_DEV;
     plugins->push_back(nacl);
   }
@@ -310,10 +315,9 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
       kRemotingViewerPluginMimeExtension,
       kRemotingViewerPluginMimeDescription);
   info.mime_types.push_back(remoting_mime_type);
-  info.internal_entry_points.get_interface = remoting::PPP_GetInterface;
-  info.internal_entry_points.initialize_module =
-      remoting::PPP_InitializeModule;
-  info.internal_entry_points.shutdown_module = remoting::PPP_ShutdownModule;
+  info.internal_entry_points.get_interface = g_remoting_get_interface;
+  info.internal_entry_points.initialize_module = g_remoting_initialize_module;
+  info.internal_entry_points.shutdown_module = g_remoting_shutdown_module;
   info.permissions = kRemotingViewerPluginPermissions;
 
   plugins->push_back(info);
@@ -425,6 +429,30 @@ std::string GetUserAgent() {
 #endif
   return content::BuildUserAgentFromProduct(product);
 }
+
+
+#if defined(ENABLE_REMOTING)
+
+void ChromeContentClient::SetRemotingEntryFunctions(
+    content::PepperPluginInfo::GetInterfaceFunc get_interface,
+    content::PepperPluginInfo::PPP_InitializeModuleFunc initialize_module,
+    content::PepperPluginInfo::PPP_ShutdownModuleFunc shutdown_module) {
+  g_remoting_get_interface = get_interface;
+  g_remoting_initialize_module = initialize_module;
+  g_remoting_shutdown_module = shutdown_module;
+}
+#endif
+
+#if !defined(DISABLE_NACL)
+void ChromeContentClient::SetNaClEntryFunctions(
+    content::PepperPluginInfo::GetInterfaceFunc get_interface,
+    content::PepperPluginInfo::PPP_InitializeModuleFunc initialize_module,
+    content::PepperPluginInfo::PPP_ShutdownModuleFunc shutdown_module) {
+  g_nacl_get_interface = get_interface;
+  g_nacl_initialize_module = initialize_module;
+  g_nacl_shutdown_module = shutdown_module;
+}
+#endif
 
 void ChromeContentClient::SetActiveURL(const GURL& url) {
   base::debug::SetCrashKeyValue(crash_keys::kActiveURL,

@@ -1898,6 +1898,16 @@
             'test/ppapi/ppapi_test.h',
           ],
         }],
+        ['enable_plugins==1 and disable_nacl==0', {
+          'dependencies': [
+            '<(DEPTH)/ppapi/native_client/src/trusted/plugin/plugin.gyp:nacl_trusted_plugin',
+          ],
+        }],
+        ['remoting==1', {
+          'dependencies': [
+            '../remoting/remoting.gyp:remoting_client_plugin',
+          ],
+        }],
       ],
     },
     {

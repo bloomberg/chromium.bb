@@ -231,6 +231,13 @@ group("child_dependencies") {
   if (cld_version == 0 || cld_version == 2) {
     deps += [ "//third_party/cld_2:cld2_platform_impl" ]
   }
+
+  # TODO(gyp) if (enable_nacl) {
+  #  deps += [ "<(DEPTH)/ppapi/native_client/src/trusted/plugin/plugin.gyp:nacl_trusted_plugin" ]
+  #}
+  if (enable_remoting) {
+    deps += [ "//remoting/client/plugin" ]
+  }
 }
 
 if (is_win) {

@@ -22,5 +22,7 @@ include_rules = [
   "+grit",  # For generated headers
   "+native_client/src/trusted/service_runtime/osx",
   "+policy",  # For generated headers and source
+  "+ppapi/native_client/src/trusted/plugin/ppapi_entrypoints.h",
+  "+remoting/client/plugin",
   "+sandbox",
 ]

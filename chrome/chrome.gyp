@@ -46,6 +46,16 @@
               # embedder is using.
               '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld2_platform_impl', ],
           }],
+          ['enable_plugins==1 and disable_nacl==0', {
+            'chromium_child_dependencies': [
+              '<(DEPTH)/ppapi/native_client/src/trusted/plugin/plugin.gyp:nacl_trusted_plugin',
+            ],
+          }],
+          ['remoting==1', {
+            'chromium_child_dependencies': [
+              '../remoting/remoting.gyp:remoting_client_plugin',
+            ],
+          }],
         ],
       }],
       ['enable_basic_printing==1 or enable_print_preview==1', {

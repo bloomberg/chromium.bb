@@ -400,7 +400,6 @@
         ['disable_nacl==0', {
           'dependencies': [
             '<(DEPTH)/components/nacl.gyp:nacl_common',
-            '<(DEPTH)/ppapi/native_client/src/trusted/plugin/plugin.gyp:nacl_trusted_plugin',
           ],
         }],
         ['enable_plugins==1', {
@@ -479,11 +478,6 @@
           ],
           'sources!': [
             'common/chrome_version_info_posix.cc',
-          ],
-        }],
-        ['remoting==1', {
-          'dependencies': [
-            '../remoting/remoting.gyp:remoting_client_plugin',
           ],
         }],
         ['enable_webrtc==0', {

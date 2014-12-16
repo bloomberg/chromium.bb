@@ -112,6 +112,11 @@
 
 #if !defined(DISABLE_NACL)
 #include "components/nacl/common/nacl_switches.h"
+#include "ppapi/native_client/src/trusted/plugin/ppapi_entrypoints.h"
+#endif
+
+#if defined(ENABLE_REMOTING)
+#include "remoting/client/plugin/pepper_entrypoints.h"
 #endif
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
@@ -800,6 +805,21 @@ void ChromeMainDelegate::SandboxInitialized(const std::string& process_type) {
 #endif
 #if defined(OS_WIN)
   SuppressWindowsErrorDialogs();
+#endif
+
+#if defined(CHROME_MULTIPLE_DLL_CHILD) || !defined(CHROME_MULTIPLE_DLL_BROWSER)
+#if defined(ENABLE_REMOTING)
+  ChromeContentClient::SetRemotingEntryFunctions(
+      remoting::PPP_GetInterface,
+      remoting::PPP_InitializeModule,
+      remoting::PPP_ShutdownModule);
+#endif
+#if !defined(DISABLE_NACL)
+  ChromeContentClient::SetNaClEntryFunctions(
+      nacl_plugin::PPP_GetInterface,
+      nacl_plugin::PPP_InitializeModule,
+      nacl_plugin::PPP_ShutdownModule);
+#endif
 #endif
 }
 
