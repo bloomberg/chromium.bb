@@ -7,7 +7,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_tamper_detection.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
@@ -78,10 +77,6 @@ bool MaybeBypassProxyAndPrepareToRetry(
   DataReductionProxyUsageStats::DetectAndRecordMissingViaHeaderResponseCode(
       !data_reduction_proxy_type_info.proxy_servers.second.is_empty(),
       response_headers);
-
-  DataReductionProxyTamperDetection::DetectAndReport(
-      response_headers,
-      data_reduction_proxy_type_info.proxy_servers.first.SchemeIsSecure());
 
   // GetDataReductionProxyBypassType will only log a net_log event if a bypass
   // command was sent via the data reduction proxy headers

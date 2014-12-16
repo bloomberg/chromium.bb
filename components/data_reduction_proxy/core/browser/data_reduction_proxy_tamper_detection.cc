@@ -43,15 +43,18 @@ namespace data_reduction_proxy {
 // static
 bool DataReductionProxyTamperDetection::DetectAndReport(
     const net::HttpResponseHeaders* headers,
-    const bool scheme_is_https) {
-  DCHECK(headers);
+    bool scheme_is_https,
+    int content_length) {
+  if (headers == nullptr) {
+    return false;
+  }
+
   // Abort tamper detection, if the fingerprint of the Chrome-Proxy header is
   // absent.
   std::string chrome_proxy_fingerprint;
   if (!GetDataReductionProxyActionFingerprintChromeProxy(
-      headers, &chrome_proxy_fingerprint)) {
+      headers, &chrome_proxy_fingerprint))
     return false;
-  }
 
   // Get carrier ID.
   unsigned carrier_id = 0;
@@ -100,7 +103,7 @@ bool DataReductionProxyTamperDetection::DetectAndReport(
 
   if (GetDataReductionProxyActionFingerprintContentLength(
       headers, &fingerprint)) {
-    if (tamper_detection.ValidateContentLengthHeader(fingerprint)) {
+    if (tamper_detection.ValidateContentLength(fingerprint, content_length)) {
       tamper_detection.ReportUMAforContentLengthHeaderValidation();
       tampered = true;
     }
@@ -259,31 +262,16 @@ void DataReductionProxyTamperDetection::
       carrier_id_);
 }
 
-// The Content-Length value will not be reported as different if at either side
-// (the data reduction proxy side and the client side), the Content-Length is
-// missing or it cannot be decoded as a valid integer.
-bool DataReductionProxyTamperDetection::ValidateContentLengthHeader(
-    const std::string& fingerprint) const {
-  int received_content_length_fingerprint, actual_content_length;
+bool DataReductionProxyTamperDetection::ValidateContentLength(
+    const std::string& fingerprint,
+    int content_length) const {
+  int received_content_length_fingerprint;
   // Abort, if Content-Length value from the data reduction proxy does not
   // exist or it cannot be converted to an integer.
   if (!base::StringToInt(fingerprint, &received_content_length_fingerprint))
     return false;
 
-  std::string actual_content_length_string;
-  // Abort, if there is no Content-Length header received.
-  if (!response_headers_->GetNormalizedHeader("Content-Length",
-      &actual_content_length_string)) {
-    return false;
-  }
-
-  // Abort, if the Content-Length value cannot be converted to integer.
-  if (!base::StringToInt(actual_content_length_string,
-                         &actual_content_length)) {
-    return false;
-  }
-
-  return received_content_length_fingerprint != actual_content_length;
+  return received_content_length_fingerprint != content_length;
 }
 
 void DataReductionProxyTamperDetection::

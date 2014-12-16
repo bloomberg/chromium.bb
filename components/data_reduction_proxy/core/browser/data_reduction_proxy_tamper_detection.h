@@ -64,11 +64,14 @@ class DataReductionProxyTamperDetection {
  public:
   // Checks if the response contains tamper detection fingerprints added by the
   // data reduction proxy, and determines if the response had been tampered
-  // with if so. Results are reported to UMA. HTTP and HTTPS traffic are
-  // reported separately, specified by |scheme_is_https|. Returns true if
-  // the response has been tampered with.
+  // with if so. |content_length| is the accurate response body length, it will
+  // be used to detect whether response body had been tampered with. Results
+  // are reported to UMA. Traffic carried by HTTP proxy and HTTPS proxy are
+  // reported separately, specified by |scheme_is_https|. Returns true if the
+  // response had been tampered with.
   static bool DetectAndReport(const net::HttpResponseHeaders* headers,
-                              bool scheme_is_https);
+                              bool scheme_is_https,
+                              int content_length);
 
   // Tamper detection checks |response_headers|. Histogram events are reported
   // by |carrier_id|; |scheme_is_https| determines which histogram to report
@@ -120,8 +123,9 @@ class DataReductionProxyTamperDetection {
   // Reports UMA for tampering of values of the list of headers.
   void ReportUMAforOtherHeadersValidation() const;
 
-  // Returns the result of validating the Content-Length header.
-  bool ValidateContentLengthHeader(const std::string& fingerprint) const;
+  // Returns the result of validating the content length.
+  bool ValidateContentLength(const std::string& fingerprint,
+                             int content_length) const;
 
   // Reports UMA for tampering of the Content-Length header.
   void ReportUMAforContentLengthHeaderValidation() const;

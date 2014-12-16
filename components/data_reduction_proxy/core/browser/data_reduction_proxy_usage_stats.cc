@@ -10,6 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_member.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_tamper_detection.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/base/load_flags.h"
@@ -223,10 +224,20 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
     return;
   }
 
-  if (data_reduction_proxy_params_->WasDataReductionProxyUsed(request, NULL)) {
+  DataReductionProxyTypeInfo data_reduction_proxy_type_info;
+  if (data_reduction_proxy_params_->WasDataReductionProxyUsed(
+      request, &data_reduction_proxy_type_info)) {
     RecordBypassedBytes(last_bypass_type_,
                         DataReductionProxyUsageStats::NOT_BYPASSED,
                         content_length);
+
+    // If non-empty, |proxy_server.first| is the proxy that this request used.
+    if (!data_reduction_proxy_type_info.proxy_servers.first.is_empty()) {
+      DataReductionProxyTamperDetection::DetectAndReport(
+          request->response_info().headers.get(),
+          data_reduction_proxy_type_info.proxy_servers.first.SchemeIsSecure(),
+          content_length);
+    }
     return;
   }
 

@@ -511,77 +511,39 @@ TEST_F(DataReductionProxyTamperDetectionTest, OtherHeaders) {
   }
 }
 
-// Tests function ValidateContentLengthHeader.
+// Tests function ValidateContentLength.
 TEST_F(DataReductionProxyTamperDetectionTest, ContentLength) {
   struct {
     std::string label;
-    std::string raw_header;
     std::string received_fingerprint;
+    int actual_content_length;
     bool expected_tampered_with;
   } test[] = {
     {
-      "Checks the case fingerprint matches received response.",
-      "HTTP/1.1 200 OK\n"
-      "Content-Length: 12345\n",
+      "Checks the case fingerprint matches actual content length.",
       "12345",
+      12345,
       false,
     },
     {
       "Checks case that response got modified.",
-      "HTTP/1.1 200 OK\n"
-      "Content-Length: 12345\n",
-      "125",
+      "12345",
+      12346,
       true,
-    },
-    {
-      "Checks the case that the data reduction proxy has not sent"
-      "Content-Length header.",
-      "HTTP/1.1 200 OK\n"
-      "Content-Length: 12345\n",
-      "",
-      false,
-    },
-    {
-      "Checks the case that the data reduction proxy sends invalid"
-      "Content-Length header.",
-      "HTTP/1.1 200 OK\n"
-      "Content-Length: 12345\n",
-      "aaa",
-      false,
-    },
-    {
-      "Checks the case that the data reduction proxy sends invalid"
-      "Content-Length header.",
-      "HTTP/1.1 200 OK\n"
-      "Content-Length: aaa\n",
-      "aaa",
-      false,
-    },
-    {
-      "Checks the case that Content-Length header is missing at the Chromium"
-      "client side.",
-      "HTTP/1.1 200 OK\n",
-      "123",
-      false,
-    },
-    {
-      "Checks the case that Content-Length header are missing at both end.",
-      "HTTP/1.1 200 OK\n",
-      "",
-      false,
     },
   };
 
   for (size_t i = 0; i < arraysize(test); ++i) {
-    std::string raw_headers(test[i].raw_header);
+    std::string raw_headers("HTTP/1.1 200 OK\n");
     HeadersToRaw(&raw_headers);
     scoped_refptr<net::HttpResponseHeaders> headers(
         new net::HttpResponseHeaders(raw_headers));
 
     DataReductionProxyTamperDetection tamper_detection(headers.get(), true, 0);
 
-    bool tampered = tamper_detection.ValidateContentLengthHeader(
-        test[i].received_fingerprint);
+    bool tampered = tamper_detection.ValidateContentLength(
+        test[i].received_fingerprint,
+        test[i].actual_content_length);
 
     EXPECT_EQ(test[i].expected_tampered_with, tampered) << test[i].label;
   }
@@ -680,6 +642,7 @@ TEST_F(DataReductionProxyTamperDetectionTest, DetectAndReport) {
   struct {
     std::string label;
     std::string raw_header;
+    int content_length;
     bool expected_tampered_with;
   } test[] = {
     {
@@ -688,6 +651,7 @@ TEST_F(DataReductionProxyTamperDetectionTest, DetectAndReport) {
       "Via: a1, b2, 1.1 Chrome-Compression-Proxy\n"
       "Content-Length: 12345\n"
       "Chrome-Proxy: bypass=0\n",
+      12345,
       false,
     },
     {
@@ -701,6 +665,7 @@ TEST_F(DataReductionProxyTamperDetectionTest, DetectAndReport) {
       "Chrome-Proxy: fcl=12345, "
       "foh=[header_1,;header_2,;header_3,;]|header1|header2|header3,fvia=0,"
       "fcp=abc\n",
+      12345,
       true,
     },
     {
@@ -715,10 +680,11 @@ TEST_F(DataReductionProxyTamperDetectionTest, DetectAndReport) {
       "foh=[header_1,;header_2,;header_3,;]|header1|header2|header3,"
       "fvia=0, fcp=[fcl=12345,foh=[header_1,;header_2,;header_3,;]"
       "|header1|header2|header3,fvia=0,]\n",
+      12345,
       false,
     },
     {
-      "Check the case that Content-Length doesn't match.",
+      "Check the case that actual content length doesn't match.",
       "HTTP/1.1 200 OK\n"
       "Via: a1, b2, 1.1 Chrome-Compression-Proxy\n"
       "Content-Length: 0\n"
@@ -729,6 +695,7 @@ TEST_F(DataReductionProxyTamperDetectionTest, DetectAndReport) {
       "foh=[header_1,;header_2,;header_3,;]|header1|header2|header3, fvia=0, "
       "fcp=[fcl=12345,foh=[header_1,;header_2,;header_3,;]|"
       "header1|header2|header3,fvia=0,]\n",
+      123,
       true,
     },
   };
@@ -744,8 +711,8 @@ TEST_F(DataReductionProxyTamperDetectionTest, DetectAndReport) {
 
     EXPECT_EQ(
         test[i].expected_tampered_with,
-        DataReductionProxyTamperDetection::DetectAndReport(headers.get(), true))
-        << test[i].label;
+        DataReductionProxyTamperDetection::DetectAndReport(
+        headers.get(), true, test[i].content_length)) << test[i].label;
   }
 }
 
