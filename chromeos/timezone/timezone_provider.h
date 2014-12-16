@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_TIMEZONE_TIMEZONE_PROVIDER_H_
-#define CHROME_BROWSER_CHROMEOS_TIMEZONE_TIMEZONE_PROVIDER_H_
+#ifndef CHROMEOS_TIMEZONE_TIMEZONE_PROVIDER_H_
+#define CHROMEOS_TIMEZONE_TIMEZONE_PROVIDER_H_
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/timezone/timezone_request.h"
+#include "chromeos/timezone/timezone_request.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -27,7 +27,7 @@ struct Geoposition;
 //
 // Note: this should probably be a singleton to monitor requests rate.
 // But as it is used only from WizardController, it can be owned by it for now.
-class TimeZoneProvider {
+class CHROMEOS_EXPORT TimeZoneProvider {
  public:
   TimeZoneProvider(net::URLRequestContextGetter* url_context_getter,
                    const GURL& url);
@@ -63,4 +63,4 @@ class TimeZoneProvider {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_TIMEZONE_TIMEZONE_PROVIDER_H_
+#endif  // CHROMEOS_TIMEZONE_TIMEZONE_PROVIDER_H_

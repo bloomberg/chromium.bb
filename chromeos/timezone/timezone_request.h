@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_TIMEZONE_TIMEZONE_REQUEST_H_
-#define CHROME_BROWSER_CHROMEOS_TIMEZONE_TIMEZONE_REQUEST_H_
+#ifndef CHROMEOS_TIMEZONE_TIMEZONE_REQUEST_H_
+#define CHROMEOS_TIMEZONE_TIMEZONE_REQUEST_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
+#include "chromeos/chromeos_export.h"
 #include "chromeos/geolocation/geoposition.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -23,7 +24,7 @@ class URLRequestContextGetter;
 
 namespace chromeos {
 
-struct TimeZoneResponseData {
+struct CHROMEOS_EXPORT TimeZoneResponseData {
   enum Status {
     OK,
     INVALID_REQUEST,
@@ -47,7 +48,7 @@ struct TimeZoneResponseData {
 };
 
 // Returns default timezone service URL.
-GURL DefaultTimezoneProviderURL();
+CHROMEOS_EXPORT GURL DefaultTimezoneProviderURL();
 
 // Takes Geoposition and sends it to a server to get local timezone information.
 // It performs formatting of the request and interpretation of the response.
@@ -56,7 +57,7 @@ GURL DefaultTimezoneProviderURL();
 // Request is owned and destroyed by caller (usually TimeZoneProvider).
 // If request is destroyed while callback has not beed called yet, request
 // is silently cancelled.
-class TimeZoneRequest : private net::URLFetcherDelegate {
+class CHROMEOS_EXPORT TimeZoneRequest : private net::URLFetcherDelegate {
  public:
   // Called when a new geo timezone information is available.
   // The second argument indicates whether there was a server error or not.
@@ -137,4 +138,4 @@ class TimeZoneRequest : private net::URLFetcherDelegate {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_TIMEZONE_TIMEZONE_REQUEST_H_
+#endif  // CHROMEOS_TIMEZONE_TIMEZONE_REQUEST_H_

@@ -248,7 +248,6 @@
       'browser/chromeos/settings/stub_cros_settings_provider_unittest.cc',
       'browser/chromeos/system/automatic_reboot_manager_unittest.cc',
       'browser/chromeos/system/device_disabling_manager_unittest.cc',
-      'browser/chromeos/timezone/timezone_unittest.cc',
       'browser/chromeos/ui/accessibility_focus_ring_controller_unittest.cc',
       'browser/chromeos/ui/idle_app_name_notification_view_unittest.cc',
       'browser/command_updater_unittest.cc',

@@ -4,8 +4,8 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "chrome/browser/chromeos/timezone/timezone_provider.h"
 #include "chromeos/geolocation/geoposition.h"
+#include "chromeos/timezone/timezone_provider.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"

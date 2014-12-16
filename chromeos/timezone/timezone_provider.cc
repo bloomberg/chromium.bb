@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/timezone/timezone_provider.h"
+#include "chromeos/timezone/timezone_provider.h"
 
 #include <algorithm>
 #include <iterator>
