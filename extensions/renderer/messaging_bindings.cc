@@ -25,7 +25,6 @@
 #include "extensions/renderer/scoped_persistent.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 #include "third_party/WebKit/public/web/WebScopedUserGesture.h"
@@ -325,7 +324,7 @@ void DispatchOnConnectToScriptContext(
   }
 }
 
-void DeliverMessageToScriptContext(const Message& message,
+void DeliverMessageToScriptContext(const std::string& message_data,
                                    int target_port_id,
                                    ScriptContext* script_context) {
   v8::Isolate* isolate = script_context->isolate();
@@ -345,23 +344,10 @@ void DeliverMessageToScriptContext(const Message& message,
 
   std::vector<v8::Handle<v8::Value> > arguments;
   arguments.push_back(v8::String::NewFromUtf8(isolate,
-                                              message.data.c_str(),
+                                              message_data.c_str(),
                                               v8::String::kNormalString,
-                                              message.data.size()));
+                                              message_data.size()));
   arguments.push_back(port_id_handle);
-
-  scoped_ptr<blink::WebScopedUserGesture> web_user_gesture;
-  scoped_ptr<blink::WebScopedWindowFocusAllowedIndicator> allow_window_focus;
-  if (message.user_gesture) {
-    web_user_gesture.reset(new blink::WebScopedUserGesture);
-
-    if (script_context->web_frame()) {
-      blink::WebDocument document = script_context->web_frame()->document();
-      allow_window_focus.reset(new blink::WebScopedWindowFocusAllowedIndicator(
-          &document));
-    }
-  }
-
   script_context->module_system()->CallModuleMethod(
       "messaging", "dispatchOnMessage", &arguments);
 }
@@ -425,13 +411,20 @@ void MessagingBindings::DeliverMessage(
     int target_port_id,
     const Message& message,
     content::RenderFrame* restrict_to_render_frame) {
+  scoped_ptr<blink::WebScopedUserGesture> web_user_gesture;
+  scoped_ptr<blink::WebScopedWindowFocusAllowedIndicator> allow_window_focus;
+  if (message.user_gesture) {
+    web_user_gesture.reset(new blink::WebScopedUserGesture);
+    allow_window_focus.reset(new blink::WebScopedWindowFocusAllowedIndicator);
+  }
+
   // TODO(robwu): ScriptContextSet.ForEach should accept RenderFrame*.
   content::RenderView* restrict_to_render_view =
       restrict_to_render_frame ? restrict_to_render_frame->GetRenderView()
                                : NULL;
   context_set.ForEach(
       restrict_to_render_view,
-      base::Bind(&DeliverMessageToScriptContext, message, target_port_id));
+      base::Bind(&DeliverMessageToScriptContext, message.data, target_port_id));
 }
 
 // static
