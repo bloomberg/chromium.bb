@@ -63,6 +63,8 @@ class APP_LIST_EXPORT StartPageView : public SearchResultContainerView {
   void InitInstantContainer();
   void InitTilesContainer();
 
+  TileItemView* GetTileItemView(size_t index);
+
   // The parent view of ContentsView which is the parent of this view.
   AppListMainView* app_list_main_view_;
 

@@ -28,7 +28,10 @@ class APP_LIST_EXPORT TileItemView : public views::CustomButton,
   TileItemView();
   ~TileItemView() override;
 
-  void SetTitleBackgroundColor(SkColor color);
+  void SetSelected(bool selected);
+
+  // Overridden from views::CustomButton:
+  void StateChanged() override;
 
  protected:
   void SetIcon(const gfx::ImageSkia& icon);
@@ -36,11 +39,15 @@ class APP_LIST_EXPORT TileItemView : public views::CustomButton,
   void SetTitle(const base::string16& title);
 
  private:
+  void UpdateBackgroundColor();
+
   // Overridden from views::View:
   gfx::Size GetPreferredSize() const override;
 
   views::ImageView* icon_;  // Owned by views hierarchy.
   views::Label* title_;     // Owned by views hierarchy.
+
+  bool selected_;
 
   DISALLOW_COPY_AND_ASSIGN(TileItemView);
 };

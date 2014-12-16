@@ -114,12 +114,13 @@ void StartPageView::InitTilesContainer() {
   tiles_layout_manager->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   tiles_container_->SetLayoutManager(tiles_layout_manager);
+  tiles_container_->set_background(
+      views::Background::CreateSolidBackground(kLabelBackgroundColor));
 
   // Add SearchResultTileItemViews to the container.
   for (size_t i = 0; i < kNumStartPageTiles; ++i) {
     SearchResultTileItemView* tile_item = new SearchResultTileItemView();
     tiles_container_->AddChildView(tile_item);
-    tile_item->SetTitleBackgroundColor(kLabelBackgroundColor);
     search_result_tile_views_.push_back(tile_item);
   }
 
@@ -128,7 +129,6 @@ void StartPageView::InitTilesContainer() {
       app_list_main_view_->contents_view(),
       view_delegate_->GetModel()->top_level_item_list());
   all_apps_button_->UpdateIcon();
-  all_apps_button_->SetTitleBackgroundColor(kLabelBackgroundColor);
   tiles_container_->AddChildView(all_apps_button_);
 }
 
@@ -252,17 +252,19 @@ int StartPageView::Update() {
 }
 
 void StartPageView::UpdateSelectedIndex(int old_selected, int new_selected) {
-  if (old_selected >= 0) {
-    tiles_container_->child_at(old_selected)->set_background(nullptr);
-    tiles_container_->child_at(old_selected)->SchedulePaint();
-  }
+  if (old_selected >= 0)
+    GetTileItemView(old_selected)->SetSelected(false);
 
-  if (new_selected >= 0) {
-    tiles_container_->child_at(new_selected)
-        ->set_background(
-            views::Background::CreateSolidBackground(kSelectedColor));
-    tiles_container_->child_at(new_selected)->SchedulePaint();
-  }
+  if (new_selected >= 0)
+    GetTileItemView(new_selected)->SetSelected(true);
+}
+
+TileItemView* StartPageView::GetTileItemView(size_t index) {
+  DCHECK_GT(kNumStartPageTiles + 1, index);
+  if (index == kNumStartPageTiles)
+    return all_apps_button_;
+
+  return search_result_tile_views_[index];
 }
 
 }  // namespace app_list

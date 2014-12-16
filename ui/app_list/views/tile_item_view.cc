@@ -23,7 +23,8 @@ namespace app_list {
 TileItemView::TileItemView()
     : views::CustomButton(this),
       icon_(new views::ImageView),
-      title_(new views::Label) {
+      title_(new views::Label),
+      selected_(false) {
   views::BoxLayout* layout_manager = new views::BoxLayout(
       views::BoxLayout::kVertical, kTileHorizontalPadding, 0, 0);
   layout_manager->set_main_axis_alignment(
@@ -31,6 +32,8 @@ TileItemView::TileItemView()
   SetLayoutManager(layout_manager);
 
   icon_->SetImageSize(gfx::Size(kTileIconSize, kTileIconSize));
+  // Prevent the icon view from interfering with our mouse events.
+  icon_->set_interactive(false);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   title_->SetAutoColorReadabilityEnabled(false);
@@ -45,9 +48,12 @@ TileItemView::TileItemView()
 TileItemView::~TileItemView() {
 }
 
-void TileItemView::SetTitleBackgroundColor(SkColor color) {
-  title_->SetBackgroundColor(color);
-  title_->set_background(views::Background::CreateSolidBackground(color));
+void TileItemView::SetSelected(bool selected) {
+  if (selected == selected_)
+    return;
+
+  selected_ = selected;
+  UpdateBackgroundColor();
 }
 
 void TileItemView::SetIcon(const gfx::ImageSkia& icon) {
@@ -56,6 +62,21 @@ void TileItemView::SetIcon(const gfx::ImageSkia& icon) {
 
 void TileItemView::SetTitle(const base::string16& title) {
   title_->SetText(title);
+}
+
+void TileItemView::StateChanged() {
+  UpdateBackgroundColor();
+}
+
+void TileItemView::UpdateBackgroundColor() {
+  views::Background* background = nullptr;
+  if (selected_)
+    background = views::Background::CreateSolidBackground(kSelectedColor);
+  else if (state() == STATE_HOVERED || state() == STATE_PRESSED)
+    background = views::Background::CreateSolidBackground(kHighlightedColor);
+
+  set_background(background);
+  SchedulePaint();
 }
 
 gfx::Size TileItemView::GetPreferredSize() const {

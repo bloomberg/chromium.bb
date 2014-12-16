@@ -59,16 +59,11 @@ int SearchResultTileItemListView::Update() {
 
 void SearchResultTileItemListView::UpdateSelectedIndex(int old_selected,
                                                        int new_selected) {
-  if (old_selected >= 0) {
-    tile_views_[old_selected]->set_background(nullptr);
-    tile_views_[old_selected]->SchedulePaint();
-  }
+  if (old_selected >= 0)
+    tile_views_[old_selected]->SetSelected(false);
 
-  if (new_selected >= 0) {
-    tile_views_[new_selected]->set_background(
-        views::Background::CreateSolidBackground(kSelectedColor));
-    tile_views_[new_selected]->SchedulePaint();
-  }
+  if (new_selected >= 0)
+    tile_views_[new_selected]->SetSelected(true);
 }
 
 bool SearchResultTileItemListView::OnKeyPressed(const ui::KeyEvent& event) {
