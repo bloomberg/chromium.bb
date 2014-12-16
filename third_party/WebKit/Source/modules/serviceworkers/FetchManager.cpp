@@ -15,6 +15,8 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
+#include "modules/serviceworkers/Body.h"
+#include "modules/serviceworkers/BodyStreamBuffer.h"
 #include "modules/serviceworkers/FetchRequestData.h"
 #include "modules/serviceworkers/Response.h"
 #include "modules/serviceworkers/ResponseInit.h"
@@ -28,13 +30,13 @@ namespace blink {
 class FetchManager::Loader : public ThreadableLoaderClient {
 public:
     Loader(ExecutionContext*, FetchManager*, PassRefPtr<ScriptPromiseResolver>, const FetchRequestData*);
-    ~Loader();
-    virtual void didReceiveResponse(unsigned long, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>);
-    virtual void didFinishLoading(unsigned long, double);
-    virtual void didFail(const ResourceError&);
-    virtual void didFailAccessControlCheck(const ResourceError&);
-    virtual void didFailRedirectCheck();
-    virtual void didDownloadData(int);
+    ~Loader() override;
+    void didReceiveResponse(unsigned long, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
+    void didReceiveData(const char*, unsigned) override;
+    void didFinishLoading(unsigned long, double) override;
+    void didFail(const ResourceError&) override;
+    void didFailAccessControlCheck(const ResourceError&) override;
+    void didFailRedirectCheck() override;
 
     void start();
     void cleanup();
@@ -50,9 +52,8 @@ private:
     FetchManager* m_fetchManager;
     RefPtr<ScriptPromiseResolver> m_resolver;
     Persistent<FetchRequestData> m_request;
+    Persistent<BodyStreamBuffer> m_responseBuffer;
     RefPtr<ThreadableLoader> m_loader;
-    ResourceResponse m_response;
-    long long m_downloadedBlobLength;
     bool m_corsFlag;
     bool m_corsPreflightFlag;
     bool m_failed;
@@ -63,7 +64,6 @@ FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* f
     , m_fetchManager(fetchManager)
     , m_resolver(resolver)
     , m_request(request->createCopy())
-    , m_downloadedBlobLength(0)
     , m_corsFlag(false)
     , m_corsPreflightFlag(false)
     , m_failed(false)
@@ -80,42 +80,41 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
 {
     // FIXME: Use |handle|.
     ASSERT_UNUSED(handle, !handle);
-    m_response = response;
+    m_responseBuffer = new BodyStreamBuffer();
+    FetchResponseData* responseData = FetchResponseData::createWithBuffer(m_responseBuffer);
+    responseData->setStatus(response.httpStatusCode());
+    responseData->setStatusMessage(response.httpStatusText());
+    for (auto& it : response.httpHeaderFields())
+        responseData->headerList()->append(it.key, it.value);
+    responseData->setURL(m_request->url());
+    responseData->setContentTypeForBuffer(response.mimeType());
+
+    FetchResponseData* taintedResponse = responseData;
+    switch (m_request->tainting()) {
+    case FetchRequestData::BasicTainting:
+        taintedResponse = responseData->createBasicFilteredResponse();
+        break;
+    case FetchRequestData::CORSTainting:
+        taintedResponse = responseData->createCORSFilteredResponse();
+        break;
+    case FetchRequestData::OpaqueTainting:
+        taintedResponse = responseData->createOpaqueFilteredResponse();
+        break;
+    }
+    m_resolver->resolve(Response::create(m_resolver->executionContext(), taintedResponse));
+    m_resolver.clear();
+}
+
+void FetchManager::Loader::didReceiveData(const char* data, unsigned size)
+{
+    m_responseBuffer->write(DOMArrayBuffer::create(data, size));
 }
 
 void FetchManager::Loader::didFinishLoading(unsigned long, double)
 {
-    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
-        return;
-
-    OwnPtr<BlobData> blobData = BlobData::create();
-    String filePath = m_response.downloadedFilePath();
-    if (!filePath.isEmpty() && m_downloadedBlobLength) {
-        blobData->appendFile(filePath);
-        blobData->setContentType(m_response.mimeType());
-    }
-    FetchResponseData* response = FetchResponseData::create();
-    response->setStatus(m_response.httpStatusCode());
-    response->setStatusMessage(m_response.httpStatusText());
-    HTTPHeaderMap::const_iterator end = m_response.httpHeaderFields().end();
-    for (HTTPHeaderMap::const_iterator it = m_response.httpHeaderFields().begin(); it != end; ++it) {
-        response->headerList()->append(it->key, it->value);
-    }
-    response->setBlobDataHandle(BlobDataHandle::create(blobData.release(), m_downloadedBlobLength));
-    response->setURL(m_request->url());
-
-    switch (m_request->tainting()) {
-    case FetchRequestData::BasicTainting:
-        response = response->createBasicFilteredResponse();
-        break;
-    case FetchRequestData::CORSTainting:
-        response = response->createCORSFilteredResponse();
-        break;
-    case FetchRequestData::OpaqueTainting:
-        response = response->createOpaqueFilteredResponse();
-        break;
-    }
-    m_resolver->resolve(Response::create(m_resolver->executionContext(), response));
+    ASSERT(m_responseBuffer);
+    m_responseBuffer->close();
+    m_responseBuffer.clear();
     notifyFinished();
 }
 
@@ -132,11 +131,6 @@ void FetchManager::Loader::didFailAccessControlCheck(const ResourceError& error)
 void FetchManager::Loader::didFailRedirectCheck()
 {
     failed("Fetch API cannot load " + m_request->url().string() + ". Redirects are not yet supported.");
-}
-
-void FetchManager::Loader::didDownloadData(int dataLength)
-{
-    m_downloadedBlobLength += dataLength;
 }
 
 void FetchManager::Loader::start()
@@ -275,7 +269,6 @@ void FetchManager::Loader::performHTTPFetch()
     // FIXME: Support body.
     ResourceRequest request(m_request->url());
     request.setRequestContext(WebURLRequest::RequestContextFetch);
-    request.setDownloadToFile(true);
     request.setHTTPMethod(m_request->method());
     const Vector<OwnPtr<FetchHeaderList::Header> >& list = m_request->headerList()->list();
     for (size_t i = 0; i < list.size(); ++i) {
@@ -332,12 +325,17 @@ void FetchManager::Loader::failed(const String& message)
 {
     if (m_failed)
         return;
-    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
-        return;
     m_failed = true;
-    ScriptState* state = m_resolver->scriptState();
-    ScriptState::Scope scope(state);
-    m_resolver->reject(V8ThrowException::createTypeError(state->isolate(), message));
+    if (m_responseBuffer) {
+        m_responseBuffer->error(DOMException::create(NetworkError, message));
+        m_responseBuffer.clear();
+    } else if (m_resolver) {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+            return;
+        ScriptState* state = m_resolver->scriptState();
+        ScriptState::Scope scope(state);
+        m_resolver->reject(V8ThrowException::createTypeError(state->isolate(), message));
+    }
     notifyFinished();
 }
 
