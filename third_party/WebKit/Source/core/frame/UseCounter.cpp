@@ -812,11 +812,13 @@ String UseCounter::deprecationMessage(Feature feature)
     case PrefixedImageSmoothingEnabled:
         return replacedBy("CanvasRenderingContext2D.webkitImageSmoothingEnabled", "CanvasRenderingContext2D.imageSmoothingEnabled");
 
-    case DeprecatedDopplerFactor:
+    case AudioListenerDopplerFactor:
         return "dopplerFactor is deprecated and will be removed in M45 when all doppler effects are removed";
-    case DeprecatedSpeedOfSound:
+
+    case AudioListenerSpeedOfSound:
         return "speedOfSound is deprecated and will be removed in M45 when all doppler effects are removed";
-    case DeprecatedSetVelocity:
+
+    case AudioListenerSetVelocity:
         return "setVelocity() is deprecated and will be removed in M45 when all doppler effects are removed";
 
     case ShadowRootGetElementsByClassName:

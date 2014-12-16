@@ -560,12 +560,9 @@ public:
         MixedContentPrefetch = 617,
         MixedContentVideo = 618,
         CORSCredentialedNullOriginAccessAllowed = 619,
-
-        // WebAudio deprecated doppler feature of panner/listener nodes.
-        DeprecatedDopplerFactor = 620,
-        DeprecatedSpeedOfSound = 621,
-        DeprecatedSetVelocity = 622,
-
+        AudioListenerDopplerFactor = 620,
+        AudioListenerSpeedOfSound = 621,
+        AudioListenerSetVelocity = 622,
         ShadowRootGetElementsByClassName = 623,
         ShadowRootGetElementsByTagName = 624,
         ShadowRootGetElementsByTagNameNS = 625,
