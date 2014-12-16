@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_frame.h"
@@ -20,6 +20,7 @@
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "url/url_constants.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/common/extensions/chrome_extension_messages.h"
