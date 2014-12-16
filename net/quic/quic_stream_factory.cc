@@ -317,6 +317,11 @@ void QuicStreamFactory::Job::CancelWaitForDataReadyCallback() {
 }
 
 int QuicStreamFactory::Job::DoResolveHost() {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicStreamFactory::Job::DoResolveHost"));
+
   // Start loading the data now, and wait for it after we resolve the host.
   if (server_info_) {
     server_info_->Start();
@@ -334,6 +339,11 @@ int QuicStreamFactory::Job::DoResolveHost() {
 }
 
 int QuicStreamFactory::Job::DoResolveHostComplete(int rv) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicStreamFactory::Job::DoResolveHostComplete"));
+
   UMA_HISTOGRAM_TIMES("Net.QuicSession.HostResolutionTime",
                       base::TimeTicks::Now() - dns_resolution_start_time_);
   if (rv != OK)
@@ -352,6 +362,11 @@ int QuicStreamFactory::Job::DoResolveHostComplete(int rv) {
 }
 
 int QuicStreamFactory::Job::DoLoadServerInfo() {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicStreamFactory::Job::DoLoadServerInfo"));
+
   io_state_ = STATE_LOAD_SERVER_INFO_COMPLETE;
 
   if (!server_info_)
@@ -375,6 +390,11 @@ int QuicStreamFactory::Job::DoLoadServerInfo() {
 }
 
 int QuicStreamFactory::Job::DoLoadServerInfoComplete(int rv) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicStreamFactory::Job::DoLoadServerInfoComplete"));
+
   if (server_info_) {
     UMA_HISTOGRAM_TIMES("Net.QuicServerInfo.DiskCacheWaitForDataReadyTime",
                         base::TimeTicks::Now() - disk_cache_load_start_time_);
@@ -389,6 +409,11 @@ int QuicStreamFactory::Job::DoLoadServerInfoComplete(int rv) {
 }
 
 int QuicStreamFactory::Job::DoConnect() {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicStreamFactory::Job::DoConnect"));
+
   io_state_ = STATE_CONNECT_COMPLETE;
 
   int rv = factory_->CreateSession(server_id_, server_info_.Pass(),
@@ -418,6 +443,11 @@ int QuicStreamFactory::Job::DoConnect() {
 }
 
 int QuicStreamFactory::Job::DoResumeConnect() {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicStreamFactory::Job::DoResumeConnect"));
+
   io_state_ = STATE_CONNECT_COMPLETE;
 
   int rv = session_->ResumeCryptoConnect(
@@ -428,6 +458,11 @@ int QuicStreamFactory::Job::DoResumeConnect() {
 }
 
 int QuicStreamFactory::Job::DoConnectComplete(int rv) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicStreamFactory::Job::DoConnectComplete"));
+
   if (rv != OK)
     return rv;
 
