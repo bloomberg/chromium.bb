@@ -45,9 +45,6 @@ public:
     virtual void removeLeftoverAnonymousBlock(RenderBlock*) override { }
     virtual bool createsAnonymousWrapper() const override { return true; }
 
-    // <button> should allow whitespace even though RenderFlexibleBox doesn't.
-    virtual bool canHaveWhitespaceChildren() const override { return true; }
-
     virtual bool canHaveGeneratedChildren() const override;
     virtual bool hasControlClip() const override { return true; }
     virtual LayoutRect controlClipRect(const LayoutPoint&) const override;

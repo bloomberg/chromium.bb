@@ -89,7 +89,6 @@ private:
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
     virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) override;
     virtual void removeChild(RenderObject*) override;
-    virtual bool canHaveWhitespaceChildren() const override { return false; }
 
     virtual void insertedIntoTree() override;
     virtual void willBeRemovedFromTree() override;

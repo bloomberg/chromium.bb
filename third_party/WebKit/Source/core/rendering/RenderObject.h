@@ -503,13 +503,6 @@ public:
     // rest of the rendering tree will move to a similar model.
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction);
 
-    virtual bool canHaveWhitespaceChildren() const
-    {
-        if (isTable() || isTableRow() || isTableSection() || isRenderTableCol() || isFrameSet() || isFlexibleBox() || isRenderGrid())
-            return false;
-        return true;
-    }
-
     bool isAnonymous() const { return m_bitfields.isAnonymous(); }
     bool isAnonymousBlock() const
     {
@@ -1066,7 +1059,6 @@ public:
 
     DisplayItemClient displayItemClient() const { return static_cast<DisplayItemClientInternalVoid*>((void*)this); }
 
-protected:
     enum RenderObjectType {
         RenderObjectBr,
         RenderObjectCanvas,
@@ -1138,6 +1130,7 @@ protected:
     };
     virtual bool isOfType(RenderObjectType type) const { return false; }
 
+protected:
     inline bool layerCreationAllowedForSubtree() const;
 
     // Overrides should call the superclass at the end. m_style will be 0 the first time

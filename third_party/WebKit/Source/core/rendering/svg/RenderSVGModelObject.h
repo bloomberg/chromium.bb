@@ -46,7 +46,6 @@ public:
     explicit RenderSVGModelObject(SVGElement*);
 
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
-    virtual bool canHaveWhitespaceChildren() const override { return false; }
 
     virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override;
 
