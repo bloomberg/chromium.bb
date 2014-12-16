@@ -432,6 +432,9 @@ base::FilePath SafeBrowsingDatabase::UnwantedSoftwareDBFilename(
 }
 
 SafeBrowsingStore* SafeBrowsingDatabaseNew::GetStore(const int list_id) {
+  // Stores are not thread safe.
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   if (list_id == safe_browsing_util::PHISH ||
       list_id == safe_browsing_util::MALWARE) {
     return browse_store_.get();
@@ -487,8 +490,7 @@ SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew(
     SafeBrowsingStore* side_effect_free_whitelist_store,
     SafeBrowsingStore* ip_blacklist_store,
     SafeBrowsingStore* unwanted_software_store)
-    : creation_loop_(base::MessageLoop::current()),
-      browse_store_(browse_store),
+    : browse_store_(browse_store),
       download_store_(download_store),
       csd_whitelist_store_(csd_whitelist_store),
       download_whitelist_store_(download_whitelist_store),
@@ -504,11 +506,11 @@ SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew(
 
 SafeBrowsingDatabaseNew::~SafeBrowsingDatabaseNew() {
   // The DCHECK is disabled due to crbug.com/338486 .
-  // DCHECK_EQ(creation_loop_, base::MessageLoop::current());
+  // DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
-  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // This should not be run multiple times.
   DCHECK(filename_base_.empty());
@@ -645,7 +647,7 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
 }
 
 bool SafeBrowsingDatabaseNew::ResetDatabase() {
-  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // Delete files on disk.
   // TODO(shess): Hard to see where one might want to delete without a
@@ -718,8 +720,7 @@ bool SafeBrowsingDatabaseNew::PrefixSetContainsUrlHashes(
   // Used to determine cache expiration.
   const base::Time now = base::Time::Now();
 
-  // This function is called on the I/O thread, prevent changes to
-  // filter and caches.
+  // This function can be called on any thread, so lock against any changes
   base::AutoLock locked(lookup_lock_);
 
   // |prefix_set| is empty until it is either read from disk, or the first
@@ -751,7 +752,7 @@ bool SafeBrowsingDatabaseNew::PrefixSetContainsUrlHashes(
 bool SafeBrowsingDatabaseNew::ContainsDownloadUrl(
     const std::vector<GURL>& urls,
     std::vector<SBPrefix>* prefix_hits) {
-  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // Ignore this check when download checking is not enabled.
   if (!download_store_.get())
@@ -766,9 +767,6 @@ bool SafeBrowsingDatabaseNew::ContainsDownloadUrl(
 }
 
 bool SafeBrowsingDatabaseNew::ContainsCsdWhitelistedUrl(const GURL& url) {
-  // This method is theoretically thread-safe but we expect all calls to
-  // originate from the IO thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   std::vector<SBFullHash> full_hashes;
   UrlToFullHashes(url, true, &full_hashes);
   return ContainsWhitelistedHashes(csd_whitelist_, full_hashes);
@@ -783,7 +781,8 @@ bool SafeBrowsingDatabaseNew::ContainsDownloadWhitelistedUrl(const GURL& url) {
 bool SafeBrowsingDatabaseNew::ContainsExtensionPrefixes(
     const std::vector<SBPrefix>& prefixes,
     std::vector<SBPrefix>* prefix_hits) {
-  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   if (!extension_blacklist_store_)
     return false;
 
@@ -825,7 +824,7 @@ bool SafeBrowsingDatabaseNew::ContainsMalwareIP(const std::string& ip_address) {
   if (ip_number.size() != net::kIPv6AddressSize)
     return false;  // better safe than sorry.
 
-  // This function can be called from any thread.
+  // This function can be called on any thread, so lock against any changes
   base::AutoLock locked(lookup_lock_);
   for (IPBlacklist::const_iterator it = ip_blacklist_.begin();
        it != ip_blacklist_.end();
@@ -877,7 +876,7 @@ void SafeBrowsingDatabaseNew::InsertAddChunk(
     SafeBrowsingStore* store,
     const safe_browsing_util::ListType list_id,
     const SBChunkData& chunk_data) {
-  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(store);
 
   // The server can give us a chunk that we already have because
@@ -908,7 +907,7 @@ void SafeBrowsingDatabaseNew::InsertSubChunk(
     SafeBrowsingStore* store,
     const safe_browsing_util::ListType list_id,
     const SBChunkData& chunk_data) {
-  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(store);
 
   // The server can give us a chunk that we already have because
@@ -943,7 +942,7 @@ void SafeBrowsingDatabaseNew::InsertSubChunk(
 void SafeBrowsingDatabaseNew::InsertChunks(
     const std::string& list_name,
     const std::vector<SBChunkData*>& chunks) {
-  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (corruption_detected_ || chunks.empty())
     return;
@@ -978,7 +977,7 @@ void SafeBrowsingDatabaseNew::InsertChunks(
 
 void SafeBrowsingDatabaseNew::DeleteChunks(
     const std::vector<SBChunkDelete>& chunk_deletes) {
-  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (corruption_detected_ || chunk_deletes.empty())
     return;
@@ -1011,7 +1010,7 @@ void SafeBrowsingDatabaseNew::CacheHashResults(
     const base::TimeDelta& cache_lifetime) {
   const base::Time expire_after = base::Time::Now() + cache_lifetime;
 
-  // This is called on the I/O thread, lock against updates.
+  // This function can be called on any thread, so lock against any changes
   base::AutoLock locked(lookup_lock_);
 
   // Create or reset all cached results for these prefixes.
@@ -1029,7 +1028,7 @@ void SafeBrowsingDatabaseNew::CacheHashResults(
 
 bool SafeBrowsingDatabaseNew::UpdateStarted(
     std::vector<SBListChunkRanges>* lists) {
-  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(lists);
 
   // If |BeginUpdate()| fails, reset the database.
@@ -1128,7 +1127,7 @@ bool SafeBrowsingDatabaseNew::UpdateStarted(
 }
 
 void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
-  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // The update may have failed due to corrupt storage (for instance,
   // an excessive number of invalid add_chunks and sub_chunks).
@@ -1250,6 +1249,8 @@ void SafeBrowsingDatabaseNew::UpdateWhitelistStore(
     const base::FilePath& store_filename,
     SafeBrowsingStore* store,
     SBWhitelist* whitelist) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   if (!store)
     return;
 
@@ -1274,6 +1275,8 @@ int64 SafeBrowsingDatabaseNew::UpdateHashPrefixStore(
     const base::FilePath& store_filename,
     SafeBrowsingStore* store,
     FailureType failure_type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   // These results are not used after this call. Simply ignore the
   // returned value after FinishUpdate(...).
   safe_browsing::PrefixSetBuilder builder;
@@ -1295,6 +1298,8 @@ void SafeBrowsingDatabaseNew::UpdatePrefixSetUrlStore(
     scoped_ptr<const safe_browsing::PrefixSet>* prefix_set,
     FailureType finish_failure_type,
     FailureType write_failure_type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   // Measure the amount of IO during the filter build.
   base::IoCounters io_before, io_after;
   base::ProcessHandle handle = base::GetCurrentProcessHandle();
@@ -1370,6 +1375,8 @@ void SafeBrowsingDatabaseNew::UpdatePrefixSetUrlStore(
 }
 
 void SafeBrowsingDatabaseNew::UpdateSideEffectFreeWhitelistStore() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   safe_browsing::PrefixSetBuilder builder;
   std::vector<SBAddFullHash> add_full_hashes_result;
 
@@ -1417,6 +1424,8 @@ void SafeBrowsingDatabaseNew::UpdateSideEffectFreeWhitelistStore() {
 }
 
 void SafeBrowsingDatabaseNew::UpdateIpBlacklistStore() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   // Note: prefixes will not be empty.  The current data store implementation
   // stores all full-length hashes as both full and prefix hashes.
   safe_browsing::PrefixSetBuilder builder;
@@ -1435,6 +1444,8 @@ void SafeBrowsingDatabaseNew::UpdateIpBlacklistStore() {
 }
 
 void SafeBrowsingDatabaseNew::HandleCorruptDatabase() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   // Reset the database after the current task has unwound (but only
   // reset once within the scope of a given task).
   if (!reset_factory_.HasWeakPtrs()) {
@@ -1446,6 +1457,8 @@ void SafeBrowsingDatabaseNew::HandleCorruptDatabase() {
 }
 
 void SafeBrowsingDatabaseNew::OnHandleCorruptDatabase() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   RecordFailure(FAILURE_DATABASE_CORRUPT_HANDLER);
   corruption_detected_ = true;  // Stop updating the database.
   ResetDatabase();
@@ -1463,10 +1476,11 @@ void SafeBrowsingDatabaseNew::LoadPrefixSet(
     const base::FilePath& db_filename,
     scoped_ptr<const safe_browsing::PrefixSet>* prefix_set,
     FailureType read_failure_type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   if (!prefix_set)
     return;
 
-  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
   DCHECK(!filename_base_.empty());
 
   const base::FilePath prefix_set_filename = PrefixSetForFilename(db_filename);
@@ -1490,7 +1504,7 @@ void SafeBrowsingDatabaseNew::LoadPrefixSet(
 }
 
 bool SafeBrowsingDatabaseNew::Delete() {
-  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!filename_base_.empty());
 
   // TODO(shess): This is a mess.  SafeBrowsingFileStore::Delete() closes the
@@ -1573,7 +1587,7 @@ void SafeBrowsingDatabaseNew::WritePrefixSet(
     const base::FilePath& db_filename,
     const safe_browsing::PrefixSet* prefix_set,
     FailureType write_failure_type) {
-  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!prefix_set)
     return;
@@ -1597,6 +1611,7 @@ void SafeBrowsingDatabaseNew::WritePrefixSet(
 }
 
 void SafeBrowsingDatabaseNew::WhitelistEverything(SBWhitelist* whitelist) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock locked(lookup_lock_);
   whitelist->second = true;
   whitelist->first.clear();
@@ -1605,7 +1620,8 @@ void SafeBrowsingDatabaseNew::WhitelistEverything(SBWhitelist* whitelist) {
 void SafeBrowsingDatabaseNew::LoadWhitelist(
     const std::vector<SBAddFullHash>& full_hashes,
     SBWhitelist* whitelist) {
-  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   if (full_hashes.size() > kMaxWhitelistSize) {
     WhitelistEverything(whitelist);
     return;
@@ -1633,7 +1649,8 @@ void SafeBrowsingDatabaseNew::LoadWhitelist(
 
 void SafeBrowsingDatabaseNew::LoadIpBlacklist(
     const std::vector<SBAddFullHash>& full_hashes) {
-  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   IPBlacklist new_blacklist;
   for (std::vector<SBAddFullHash>::const_iterator it = full_hashes.begin();
        it != full_hashes.end();

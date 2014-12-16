@@ -207,6 +207,8 @@ SafeBrowsingDatabaseManager::SafeBrowsingCheck::~SafeBrowsingCheck() {}
 
 void SafeBrowsingDatabaseManager::Client::OnSafeBrowsingResult(
     const SafeBrowsingCheck& check) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
   DCHECK_EQ(check.urls.size(), check.url_results.size());
   DCHECK_EQ(check.full_hashes.size(), check.full_hash_results.size());
   if (!check.urls.empty()) {
@@ -266,6 +268,7 @@ SafeBrowsingDatabaseManager::SafeBrowsingDatabaseManager(
       database_update_in_progress_(false),
       closing_database_(false),
       check_timeout_(base::TimeDelta::FromMilliseconds(kCheckTimeoutMs)) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(sb_service_.get() != NULL);
 
   // Android only supports a subset of FULL_SAFE_BROWSING.
@@ -319,6 +322,9 @@ SafeBrowsingDatabaseManager::SafeBrowsingDatabaseManager(
 }
 
 SafeBrowsingDatabaseManager::~SafeBrowsingDatabaseManager() {
+  // The DCHECK is disabled due to crbug.com/438754.
+  // DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   // We should have already been shut down. If we're still enabled, then the
   // database isn't going to be closed properly, which could lead to corruption.
   DCHECK(!enabled_);
@@ -333,7 +339,7 @@ bool SafeBrowsingDatabaseManager::CanCheckUrl(const GURL& url) const {
 bool SafeBrowsingDatabaseManager::CheckDownloadUrl(
     const std::vector<GURL>& url_chain,
     Client* client) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!enabled_ || !enable_download_protection_)
     return true;
 
@@ -356,7 +362,7 @@ bool SafeBrowsingDatabaseManager::CheckDownloadUrl(
 bool SafeBrowsingDatabaseManager::CheckExtensionIDs(
     const std::set<std::string>& extension_ids,
     Client* client) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!enabled_ || !enable_extension_blacklist_)
     return true;
@@ -394,7 +400,7 @@ bool SafeBrowsingDatabaseManager::CheckSideEffectFreeWhitelistUrl(
 
 bool SafeBrowsingDatabaseManager::MatchMalwareIP(
     const std::string& ip_address) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!enabled_ || !enable_ip_blacklist_ || !MakeDatabaseAvailable()) {
     return false;  // Fail open.
   }
@@ -402,7 +408,7 @@ bool SafeBrowsingDatabaseManager::MatchMalwareIP(
 }
 
 bool SafeBrowsingDatabaseManager::MatchCsdWhitelistUrl(const GURL& url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!enabled_ || !enable_csd_whitelist_ || !MakeDatabaseAvailable()) {
     // There is something funky going on here -- for example, perhaps the user
     // has not restarted since enabling metrics reporting, so we haven't
@@ -414,7 +420,7 @@ bool SafeBrowsingDatabaseManager::MatchCsdWhitelistUrl(const GURL& url) {
 }
 
 bool SafeBrowsingDatabaseManager::MatchDownloadWhitelistUrl(const GURL& url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!enabled_ || !enable_download_whitelist_ || !MakeDatabaseAvailable()) {
     return true;
   }
@@ -423,7 +429,7 @@ bool SafeBrowsingDatabaseManager::MatchDownloadWhitelistUrl(const GURL& url) {
 
 bool SafeBrowsingDatabaseManager::MatchDownloadWhitelistString(
     const std::string& str) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!enabled_ || !enable_download_whitelist_ || !MakeDatabaseAvailable()) {
     return true;
   }
@@ -431,7 +437,7 @@ bool SafeBrowsingDatabaseManager::MatchDownloadWhitelistString(
 }
 
 bool SafeBrowsingDatabaseManager::IsMalwareKillSwitchOn() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!enabled_ || !MakeDatabaseAvailable()) {
     return true;
   }
@@ -439,7 +445,7 @@ bool SafeBrowsingDatabaseManager::IsMalwareKillSwitchOn() {
 }
 
 bool SafeBrowsingDatabaseManager::IsCsdWhitelistKillSwitchOn() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!enabled_ || !MakeDatabaseAvailable()) {
     return true;
   }
@@ -448,7 +454,7 @@ bool SafeBrowsingDatabaseManager::IsCsdWhitelistKillSwitchOn() {
 
 bool SafeBrowsingDatabaseManager::CheckBrowseUrl(const GURL& url,
                                                  Client* client) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!enabled_)
     return true;
 
@@ -528,7 +534,7 @@ bool SafeBrowsingDatabaseManager::CheckBrowseUrl(const GURL& url,
 }
 
 void SafeBrowsingDatabaseManager::CancelCheck(Client* client) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   for (CurrentChecks::iterator i = checks_.begin(); i != checks_.end(); ++i) {
     // We can't delete matching checks here because the db thread has a copy of
     // the pointer.  Instead, we simply NULL out the client, and when the db
@@ -554,7 +560,7 @@ void SafeBrowsingDatabaseManager::HandleGetHashResults(
     SafeBrowsingCheck* check,
     const std::vector<SBFullHashResult>& full_hashes,
     const base::TimeDelta& cache_lifetime) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!enabled_)
     return;
@@ -577,7 +583,7 @@ void SafeBrowsingDatabaseManager::HandleGetHashResults(
 }
 
 void SafeBrowsingDatabaseManager::GetChunks(GetChunksCallback callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(enabled_);
   DCHECK(!callback.is_null());
   safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, base::Bind(
@@ -588,7 +594,7 @@ void SafeBrowsingDatabaseManager::AddChunks(
     const std::string& list,
     scoped_ptr<ScopedVector<SBChunkData> > chunks,
     AddChunksCallback callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(enabled_);
   DCHECK(!callback.is_null());
   safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, base::Bind(
@@ -598,7 +604,7 @@ void SafeBrowsingDatabaseManager::AddChunks(
 
 void SafeBrowsingDatabaseManager::DeleteChunks(
     scoped_ptr<std::vector<SBChunkDelete> > chunk_deletes) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(enabled_);
   safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, base::Bind(
       &SafeBrowsingDatabaseManager::DeleteDatabaseChunks, this,
@@ -606,14 +612,14 @@ void SafeBrowsingDatabaseManager::DeleteChunks(
 }
 
 void SafeBrowsingDatabaseManager::UpdateStarted() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(enabled_);
   DCHECK(!update_in_progress_);
   update_in_progress_ = true;
 }
 
 void SafeBrowsingDatabaseManager::UpdateFinished(bool update_succeeded) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(enabled_);
   if (update_in_progress_) {
     update_in_progress_ = false;
@@ -624,14 +630,14 @@ void SafeBrowsingDatabaseManager::UpdateFinished(bool update_succeeded) {
 }
 
 void SafeBrowsingDatabaseManager::ResetDatabase() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(enabled_);
   safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, base::Bind(
       &SafeBrowsingDatabaseManager::OnResetDatabase, this));
 }
 
 void SafeBrowsingDatabaseManager::StartOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (enabled_)
     return;
 
@@ -645,7 +651,7 @@ void SafeBrowsingDatabaseManager::StartOnIOThread() {
 }
 
 void SafeBrowsingDatabaseManager::StopOnIOThread(bool shutdown) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DoStopOnIOThread();
   if (shutdown) {
@@ -655,6 +661,7 @@ void SafeBrowsingDatabaseManager::StopOnIOThread(bool shutdown) {
 
 void SafeBrowsingDatabaseManager::NotifyDatabaseUpdateFinished(
     bool update_succeeded) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE,
       content::Source<SafeBrowsingDatabaseManager>(this),
@@ -678,6 +685,8 @@ SafeBrowsingDatabaseManager::QueuedCheck::~QueuedCheck() {
 }
 
 void SafeBrowsingDatabaseManager::DoStopOnIOThread() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
   if (!enabled_)
     return;
 
@@ -751,7 +760,7 @@ bool SafeBrowsingDatabaseManager::DatabaseAvailable() const {
 }
 
 bool SafeBrowsingDatabaseManager::MakeDatabaseAvailable() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(enabled_);
   if (DatabaseAvailable())
     return true;
@@ -783,7 +792,7 @@ SafeBrowsingDatabase* SafeBrowsingDatabaseManager::GetDatabase() {
   database->Init(SafeBrowsingService::GetBaseFilename());
   {
     // Acquiring the lock here guarantees correct ordering between the writes to
-    // the new database object above, and the setting of |databse_| below.
+    // the new database object above, and the setting of |database_| below.
     base::AutoLock lock(database_lock_);
     database_ = database;
   }
@@ -797,7 +806,7 @@ SafeBrowsingDatabase* SafeBrowsingDatabaseManager::GetDatabase() {
 }
 
 void SafeBrowsingDatabaseManager::OnCheckDone(SafeBrowsingCheck* check) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!enabled_)
     return;
@@ -873,20 +882,20 @@ void SafeBrowsingDatabaseManager::GetAllChunksFromDatabase(
 void SafeBrowsingDatabaseManager::OnGetAllChunksFromDatabase(
     const std::vector<SBListChunkRanges>& lists, bool database_error,
     GetChunksCallback callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (enabled_)
     callback.Run(lists, database_error);
 }
 
 void SafeBrowsingDatabaseManager::OnAddChunksComplete(
     AddChunksCallback callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (enabled_)
     callback.Run();
 }
 
 void SafeBrowsingDatabaseManager::DatabaseLoadComplete() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!enabled_)
     return;
 
@@ -979,7 +988,7 @@ void SafeBrowsingDatabaseManager::OnResetDatabase() {
 void SafeBrowsingDatabaseManager::OnHandleGetHashResults(
     SafeBrowsingCheck* check,
     const std::vector<SBFullHashResult>& full_hashes) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   safe_browsing_util::ListType check_type = check->check_type;
   SBPrefix prefix = check->prefix_hits[0];
   GetHashRequests::iterator it = gethash_requests_.find(prefix);
@@ -1005,7 +1014,7 @@ void SafeBrowsingDatabaseManager::OnHandleGetHashResults(
 bool SafeBrowsingDatabaseManager::HandleOneCheck(
     SafeBrowsingCheck* check,
     const std::vector<SBFullHashResult>& full_hashes) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(check);
 
   bool is_threat = false;
@@ -1107,7 +1116,7 @@ void SafeBrowsingDatabaseManager::CheckExtensionIDsOnSBThread(
 }
 
 void SafeBrowsingDatabaseManager::TimeoutCallback(SafeBrowsingCheck* check) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(check);
 
   if (!enabled_)
@@ -1122,13 +1131,14 @@ void SafeBrowsingDatabaseManager::TimeoutCallback(SafeBrowsingCheck* check) {
 
 void SafeBrowsingDatabaseManager::CheckDownloadUrlDone(
     SafeBrowsingCheck* check) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(enable_download_protection_);
   SafeBrowsingCheckDone(check);
 }
 
 void SafeBrowsingDatabaseManager::SafeBrowsingCheckDone(
     SafeBrowsingCheck* check) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(check);
 
   if (!enabled_)
@@ -1145,7 +1155,7 @@ void SafeBrowsingDatabaseManager::SafeBrowsingCheckDone(
 void SafeBrowsingDatabaseManager::StartSafeBrowsingCheck(
     SafeBrowsingCheck* check,
     const base::Closure& task) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   check->timeout_factory_.reset(
       new base::WeakPtrFactory<SafeBrowsingDatabaseManager>(this));
   checks_.insert(check);

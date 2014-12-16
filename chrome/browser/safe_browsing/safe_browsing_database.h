@@ -16,12 +16,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store.h"
-
-namespace base {
-class MessageLoop;
-}
 
 namespace safe_browsing {
 class PrefixSet;
@@ -120,39 +117,40 @@ class SafeBrowsingDatabase {
 
   // Returns false if none of |urls| are in Download database. If it returns
   // true, |prefix_hits| should contain the prefixes for the URLs that were in
-  // the database.  This function could ONLY be accessed from creation thread.
+  // the database.  This function can ONLY be called from the creation thread.
   virtual bool ContainsDownloadUrl(const std::vector<GURL>& urls,
                                    std::vector<SBPrefix>* prefix_hits) = 0;
 
   // Returns false if |url| is not on the client-side phishing detection
   // whitelist.  Otherwise, this function returns true.  Note: the whitelist
-  // only contains full-length hashes so we don't return any prefix hit.
-  // This function should only be called from the IO thread.
+  // only contains full-length hashes so we don't return any prefix hit. This
+  // function is safe to call from any thread.
   virtual bool ContainsCsdWhitelistedUrl(const GURL& url) = 0;
 
   // The download whitelist is used for two purposes: a white-domain list of
   // sites that are considered to host only harmless binaries as well as a
   // whitelist of arbitrary strings such as hashed certificate authorities that
-  // are considered to be trusted.  The two methods below let you lookup
-  // the whitelist either for a URL or an arbitrary string.  These methods will
-  // return false if no match is found and true otherwise.
-  // This function could ONLY be accessed from the IO thread.
+  // are considered to be trusted.  The two methods below let you lookup the
+  // whitelist either for a URL or an arbitrary string.  These methods will
+  // return false if no match is found and true otherwise. This function is safe
+  // to call from any thread.
   virtual bool ContainsDownloadWhitelistedUrl(const GURL& url) = 0;
   virtual bool ContainsDownloadWhitelistedString(const std::string& str) = 0;
 
   // Populates |prefix_hits| with any prefixes in |prefixes| that have matches
   // in the database.
   //
-  // This function can ONLY be accessed from the creation thread.
+  // This function can ONLY be called from the creation thread.
   virtual bool ContainsExtensionPrefixes(
       const std::vector<SBPrefix>& prefixes,
       std::vector<SBPrefix>* prefix_hits) = 0;
 
   // Returns false unless the hash of |url| is on the side-effect free
-  // whitelist.
+  // whitelist. This function is safe to call from any thread.
   virtual bool ContainsSideEffectFreeWhitelistUrl(const GURL& url) = 0;
 
   // Returns true iff the given IP is currently on the csd malware IP blacklist.
+  // This function is safe to call from any thread.
   virtual bool ContainsMalwareIP(const std::string& ip_address) = 0;
 
   // A database transaction should look like:
@@ -185,18 +183,19 @@ class SafeBrowsingDatabase {
 
   // Store the results of a GetHash response. In the case of empty results, we
   // cache the prefixes until the next update so that we don't have to issue
-  // further GetHash requests we know will be empty.
+  // further GetHash requests we know will be empty. This function is safe to
+  // call from any thread.
   virtual void CacheHashResults(
       const std::vector<SBPrefix>& prefixes,
       const std::vector<SBFullHashResult>& full_hits,
       const base::TimeDelta& cache_lifetime) = 0;
 
   // Returns true if the malware IP blacklisting killswitch URL is present
-  // in the csd whitelist.
+  // in the csd whitelist. This function is safe to call from any thread.
   virtual bool IsMalwareIPMatchKillSwitchOn() = 0;
 
   // Returns true if the whitelist killswitch URL is present in the csd
-  // whitelist.
+  // whitelist. This function is safe to call from any thread.
   virtual bool IsCsdWhitelistKillSwitchOn() = 0;
 
   // The name of the bloom-filter file for the given database file.
@@ -470,8 +469,8 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   void UpdateIpBlacklistStore();
 
   // Used to verify that various calls are made from the thread the
-  // object was created on.
-  base::MessageLoop* creation_loop_;
+  // object was created on (i.e., the safe_browsing_thread).
+  base::ThreadChecker thread_checker_;
 
   // The base filename passed to Init(), used to generate the store and prefix
   // set filenames used to store data on disk.
@@ -504,9 +503,8 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // For unwanted software list.
   scoped_ptr<SafeBrowsingStore> unwanted_software_store_;
 
-  // Lock for protecting access to variables that may be used on the IO thread.
-  // This includes |(browse|unwanted_software)_prefix_set_|,
-  // |prefix_gethash_cache_|, |csd_whitelist_|.
+  // Lock for protecting access to variables that may be used on any threads.
+  // This includes all SBWhitelist's, PrefixSet's, and caches.
   base::Lock lookup_lock_;
 
   SBWhitelist csd_whitelist_;

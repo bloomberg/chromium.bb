@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
+#include "base/threading/non_thread_safe.h"
 
 // Implement SafeBrowsingStore in terms of a flat file.  The file
 // format is pretty literal:
@@ -122,7 +123,8 @@
 //   - Delete original file.
 //   - Rename temp file to original filename.
 
-class SafeBrowsingStoreFile : public SafeBrowsingStore {
+class SafeBrowsingStoreFile : public SafeBrowsingStore,
+                              public base::NonThreadSafe {
  public:
   SafeBrowsingStoreFile();
   ~SafeBrowsingStoreFile() override;
