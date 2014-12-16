@@ -54,6 +54,12 @@ GURL GetNormalizedURL(const GURL& url) {
     new_host = url.host().substr(www.size());
     replacements.SetHostStr(new_host);
   }
+  // Strip trailing slash (if any).
+  std::string new_path;
+  if (EndsWith(url.path(), "/", true)) {
+    new_path = url.path().substr(0, url.path().size() - 1);
+    replacements.SetPathStr(new_path);
+  }
   return url.ReplaceComponents(replacements);
 }
 
