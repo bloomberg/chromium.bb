@@ -19,7 +19,6 @@ import fixup_path
 fixup_path.FixupPath()
 
 from chromite.lib import cros_test_lib
-from chromite.lib import osutils
 
 from chromite.lib.paygen import gslib
 from chromite.lib.paygen import utils
@@ -712,7 +711,7 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     self.mox.VerifyAll()
 
 
-class TestGsLibAccess(cros_test_lib.MoxTestCase):
+class TestGsLibAccess(cros_test_lib.MoxTempDirTestCase):
   """Test access to gs lib functionality.
 
   The tests here require GS .boto access to the gs://chromeos-releases-public
@@ -722,7 +721,6 @@ class TestGsLibAccess(cros_test_lib.MoxTestCase):
   small_gs_path = 'gs://chromeos-releases-public/small-test-file'
 
   @cros_test_lib.NetworkTest()
-  @osutils.TempDirDecorator
   def testCopyAndMD5Sum(self):
     """Higher-level functional test.  Test MD5Sum OK:
 

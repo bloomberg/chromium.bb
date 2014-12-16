@@ -15,11 +15,10 @@ import fixup_path
 fixup_path.FixupPath()
 
 from chromite.lib import cros_test_lib
-from chromite.lib import osutils
 from chromite.lib.paygen import utils
 
 
-class TestUtils(cros_test_lib.TestCase):
+class TestUtils(cros_test_lib.TempDirTestCase):
   """Test utils methods."""
 
   def testCreateTmpInvalidPath(self):
@@ -56,7 +55,6 @@ class TestUtils(cros_test_lib.TestCase):
     self.assertFalse(os.path.exists(temp_name))
 
   # pylint: disable=E1101
-  @osutils.TempDirDecorator
   def testListdirFullpath(self):
     file_a = os.path.join(self.tempdir, 'a')
     file_b = os.path.join(self.tempdir, 'b')

@@ -17,11 +17,10 @@ import tempfile
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))
 from chromite.lib import cros_test_lib
-from chromite.lib import osutils
 from chromite.lib import table
 
 # pylint: disable=W0212,R0904
-class TableTest(cros_test_lib.TestCase):
+class TableTest(cros_test_lib.TempDirTestCase):
   """Unit tests for the Table class."""
 
   COL0 = 'Column1'
@@ -300,7 +299,6 @@ class TableTest(cros_test_lib.TestCase):
       vals = table.Table._SplitCSVLine(line)
       self.assertEquals(vals, tests[line])
 
-  @osutils.TempDirDecorator
   def testWriteReadCSV(self):
     """Write and Read CSV and verify contents preserved."""
     # This also tests the Table == and != operators.

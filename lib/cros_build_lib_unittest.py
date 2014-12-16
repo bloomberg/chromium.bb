@@ -602,7 +602,7 @@ class TestRunCommandLogging(cros_test_lib.TempDirTestCase):
     self.assertEqual(osutils.ReadFile(log), 'monkeys4\nmonkeys5\n')
 
 
-class TestRetries(cros_test_lib.MockTestCase):
+class TestRetries(cros_test_lib.MockTempDirTestCase):
   """Tests of GenericRetry and relatives."""
 
   def testGenericRetry(self):
@@ -658,7 +658,6 @@ class TestRetries(cros_test_lib.MockTestCase):
 
     self.assertEqual(sleep_history, [1, 2, 4, 8, 16])
 
-  @osutils.TempDirDecorator
   def testBasicRetry(self):
     # pylint: disable=E1101
     path = os.path.join(self.tempdir, 'script')

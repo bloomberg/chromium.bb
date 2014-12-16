@@ -1421,6 +1421,13 @@ class MoxOutputTestCase(OutputTestCase, MoxTestCase):
   """
 
 
+class MoxTempDirTestOutputCase(OutputTestCase, MoxTempDirTestCase):
+  """Conevenience class mixing OutputTestCase and MoxTempDirTestCase
+
+  Note: mox is deprecated; please use MockOutputTestCase instead.
+  """
+
+
 class MockOutputTestCase(MockTestCase, OutputTestCase):
   """Convenience class mixing Output and Mock."""
 

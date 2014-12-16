@@ -15,7 +15,6 @@ import fixup_path
 fixup_path.FixupPath()
 
 from chromite.lib import cros_test_lib
-from chromite.lib import osutils
 
 from chromite.lib.paygen import filelib
 from chromite.lib.paygen import gslib
@@ -45,7 +44,7 @@ class FakeHttpResponse(object):
     return self.code
 
 
-class TestFileManipulation(cros_test_lib.TestCase):
+class TestFileManipulation(cros_test_lib.TempDirTestCase):
   """Test general urilib file methods together."""
   # pylint: disable=E1101
 
@@ -88,7 +87,6 @@ class TestFileManipulation(cros_test_lib.TestCase):
                  ignore_no_match=True)
 
   @cros_test_lib.NetworkTest()
-  @osutils.TempDirDecorator
   def testIntegration(self):
     self._SetUpDirs()
 
@@ -140,7 +138,7 @@ class TestFileManipulation(cros_test_lib.TestCase):
     self.assertFalse(urilib.ListFiles(self.GS_DIR))
 
 
-class TestUrilib(cros_test_lib.MoxTestCase):
+class TestUrilib(cros_test_lib.MoxTempDirTestCase):
   """Test urilib module."""
 
   def testExtractProtocol(self):
@@ -337,7 +335,6 @@ class TestUrilib(cros_test_lib.MoxTestCase):
     self.mox.VerifyAll()
 
   @cros_test_lib.NetworkTest()
-  @osutils.TempDirDecorator
   def testURLRetrieve(self):
     good_url = 'https://codereview.chromium.org/download/issue11731004_1_2.diff'
     bad_domain_url = 'http://notarealdomainireallyhope.com/some/path'

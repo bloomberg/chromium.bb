@@ -428,7 +428,7 @@ class PInfoTest(cros_test_lib.OutputTestCase):
     self.assertTrue(pinfo1 != pinfo4)
 
 
-class CpuTestBase(cros_test_lib.MoxOutputTestCase):
+class CpuTestBase(cros_test_lib.MoxTempDirTestOutputCase):
   """Base class for all test classes in this file."""
 
   __slots__ = [
@@ -516,13 +516,7 @@ class CpuTestBase(cros_test_lib.MoxOutputTestCase):
   def _TearDownPlayground(self):
     """Delete the temporary ebuild playground files."""
     if self.playground:
-      try:
-        self.playground.cleanup()
-      except OSError:
-        # The clever tmp cleanup code in osutils.TempDirDecorator
-        # will take care of the cleanup before this point if it
-        # is used in the current test.  Just move along.
-        pass
+      self.playground.cleanup()
 
       self.playground = None
       self.playground_envvars = None
@@ -665,7 +659,6 @@ class CopyUpstreamTest(CpuTestBase):
   # _CopyUpstreamEclass
   #
 
-  @osutils.TempDirDecorator
   def _TestCopyUpstreamEclass(self, eclass, do_copy,
                               local_copy_identical=None, error=None):
     """Test Upgrader._CopyUpstreamEclass"""
@@ -745,7 +738,6 @@ class CopyUpstreamTest(CpuTestBase):
   # _CopyUpstreamPackage
   #
 
-  @osutils.TempDirDecorator
   def _TestCopyUpstreamPackage(self, catpkg, verrev, success,
                                existing_files, extra_upstream_files,
                                error=None):
@@ -925,7 +917,6 @@ class CopyUpstreamTest(CpuTestBase):
     self.assertTrue(manifest_lines == expected_manifest_lines, msg=msg)
     self.assertFalse(manifest_lines != expected_manifest_lines, msg=msg)
 
-  @osutils.TempDirDecorator
   def testCreateManifestNew(self):
     """Test case with upstream but no current Manifest."""
 
@@ -957,7 +948,6 @@ class CopyUpstreamTest(CpuTestBase):
     self.mox.VerifyAll()
     self.assertTrue(filecmp.cmp(upstream_manifest, current_manifest))
 
-  @osutils.TempDirDecorator
   def testCreateManifestMerge(self):
     """Test case with upstream but no current Manifest."""
 
@@ -1955,7 +1945,6 @@ class RunBoardTest(CpuTestBase):
       cpu.Upgrader.PrepareToRun(mocked_upgrader)
     self.mox.VerifyAll()
 
-  @osutils.TempDirDecorator
   def testPrepareToRunUpstreamRepoNew(self):
     cmdargs = []
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs,
@@ -2312,10 +2301,9 @@ class UpgradePackagesTest(CpuTestBase):
     self._TestUpgradePackages(pinfolist, False)
 
 
-class CategoriesRoundtripTest(cros_test_lib.MoxOutputTestCase):
+class CategoriesRoundtripTest(cros_test_lib.MoxTempDirTestOutputCase):
   """Tests for full "round trip" runs."""
 
-  @osutils.TempDirDecorator
   def _TestCategoriesRoundtrip(self, categories):
     stable_repo = self.tempdir
     cat_file = cpu.Upgrader.CATEGORIES_FILE

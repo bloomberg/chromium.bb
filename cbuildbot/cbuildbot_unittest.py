@@ -269,7 +269,7 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     cbuildbot.SimpleBuilder(builder_run).RunStages()
 
 
-class LogTest(cros_test_lib.TestCase):
+class LogTest(cros_test_lib.TempDirTestCase):
   """Test logging functionality."""
 
   def _generateLogs(self, num):
@@ -282,7 +282,6 @@ class LogTest(cros_test_lib.TestCase):
                 'w') as f:
         f.write(str(i))
 
-  @osutils.TempDirDecorator
   def testZeroToOneLogs(self):
     """Test beginning corner case."""
     self._generateLogs(0)
@@ -291,7 +290,6 @@ class LogTest(cros_test_lib.TestCase):
     with open(os.path.join(self.tempdir, 'cbuildbot.log.1')) as f:
       self.assertEquals(f.readline(), '1')
 
-  @osutils.TempDirDecorator
   def testNineToTenLogs(self):
     """Test handling *.log.9 to *.log.10 (correct sorting)."""
     self._generateLogs(9)
@@ -300,7 +298,6 @@ class LogTest(cros_test_lib.TestCase):
     with open(os.path.join(self.tempdir, 'cbuildbot.log.10')) as f:
       self.assertEquals(f.readline(), '10')
 
-  @osutils.TempDirDecorator
   def testOverLimit(self):
     """Test going over the limit and having to purge old logs."""
     self._generateLogs(25)
