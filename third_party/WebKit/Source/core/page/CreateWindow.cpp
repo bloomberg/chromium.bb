@@ -51,8 +51,14 @@ static LocalFrame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame
 
     if (!request.frameName().isEmpty() && request.frameName() != "_blank" && policy == NavigationPolicyIgnore) {
         if (LocalFrame* frame = lookupFrame.loader().findFrameForNavigation(request.frameName(), openerFrame.document())) {
-            if (request.frameName() != "_self")
-                frame->page()->focusController().setFocusedFrame(frame);
+            if (request.frameName() != "_self") {
+                if (FrameHost* host = frame->host()) {
+                    if (host == openerFrame.host())
+                        frame->page()->focusController().setFocusedFrame(frame);
+                    else
+                        host->chrome().focus();
+                }
+            }
             created = false;
             return frame;
         }
