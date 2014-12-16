@@ -311,7 +311,7 @@ int PlatformFontWin::GetFontSize() const {
   return font_ref_->font_size();
 }
 
-const FontRenderParams& PlatformFontWin::GetFontRenderParams() const {
+const FontRenderParams& PlatformFontWin::GetFontRenderParams() {
   CR_DEFINE_STATIC_LOCAL(const gfx::FontRenderParams, params,
       (gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(false), NULL)));
   return params;

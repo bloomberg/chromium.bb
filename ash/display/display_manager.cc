@@ -237,14 +237,14 @@ void DisplayManager::InitDefaultDisplay() {
   OnNativeDisplaysChanged(info_list);
 }
 
-void DisplayManager::InitFontParams() {
+void DisplayManager::RefreshFontParams() {
 #if defined(OS_CHROMEOS)
-  if (!HasInternalDisplay())
-    return;
-  const DisplayInfo& display_info =
-      GetDisplayInfo(gfx::Display::InternalDisplayId());
-  gfx::SetFontRenderParamsDeviceScaleFactor(
-      display_info.GetEffectiveDeviceScaleFactor());
+  float device_scale_factor = 1.0f;
+  if (HasInternalDisplay()) {
+    device_scale_factor = GetDisplayInfo(gfx::Display::InternalDisplayId())
+                              .GetEffectiveDeviceScaleFactor();
+  }
+  gfx::SetFontRenderParamsDeviceScaleFactor(device_scale_factor);
 #endif  // OS_CHROMEOS
 }
 
@@ -904,6 +904,7 @@ void DisplayManager::UpdateDisplays(
 
   displays_ = new_displays;
 
+  RefreshFontParams();
   base::AutoReset<bool> resetter(&change_display_upon_host_resize_, false);
 
   // Temporarily add displays to be removed because display object

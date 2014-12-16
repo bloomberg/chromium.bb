@@ -201,7 +201,19 @@ int PlatformFontPango::GetFontSize() const {
   return font_size_pixels_;
 }
 
-const FontRenderParams& PlatformFontPango::GetFontRenderParams() const {
+const FontRenderParams& PlatformFontPango::GetFontRenderParams() {
+#if defined(OS_CHROMEOS)
+  float current_scale_factor = gfx::GetFontRenderParamsDeviceScaleFactor();
+  if (current_scale_factor != device_scale_factor_) {
+    FontRenderParamsQuery query(false);
+    query.families.push_back(font_family_);
+    query.pixel_size = font_size_pixels_;
+    query.style = style_;
+    query.device_scale_factor = current_scale_factor;
+    font_render_params_ = gfx::GetFontRenderParams(query, nullptr);
+    device_scale_factor_ = current_scale_factor;
+  }
+#endif
   return font_render_params_;
 }
 
@@ -260,6 +272,9 @@ void PlatformFontPango::InitFromDetails(
 
   font_size_pixels_ = font_size_pixels;
   style_ = style;
+#if defined(OS_CHROMEOS)
+  device_scale_factor_ = gfx::GetFontRenderParamsDeviceScaleFactor();
+#endif
   font_render_params_ = render_params;
 
   SkPaint paint;
@@ -285,6 +300,9 @@ void PlatformFontPango::InitFromPlatformFont(const PlatformFontPango* other) {
   cap_height_pixels_ = other->cap_height_pixels_;
   pango_metrics_inited_ = other->pango_metrics_inited_;
   average_width_pixels_ = other->average_width_pixels_;
+#if defined(OS_CHROMEOS)
+  device_scale_factor_ = other->device_scale_factor_;
+#endif
 }
 
 void PlatformFontPango::PaintSetup(SkPaint* paint) const {

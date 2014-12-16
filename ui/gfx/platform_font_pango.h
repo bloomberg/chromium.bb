@@ -50,7 +50,7 @@ class GFX_EXPORT PlatformFontPango : public PlatformFont {
   std::string GetFontName() const override;
   std::string GetActualFontNameForTesting() const override;
   int GetFontSize() const override;
-  const FontRenderParams& GetFontRenderParams() const override;
+  const FontRenderParams& GetFontRenderParams() override;
   NativeFont GetNativeFont() const override;
 
  private:
@@ -94,6 +94,9 @@ class GFX_EXPORT PlatformFontPango : public PlatformFont {
   std::string font_family_;
   int font_size_pixels_;
   int style_;
+#if defined(OS_CHROMEOS)
+  float device_scale_factor_;
+#endif
 
   // Information describing how the font should be rendered.
   FontRenderParams font_render_params_;

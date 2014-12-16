@@ -1597,6 +1597,12 @@ bool IsTextSubpixelPositioningEnabled() {
   return params.subpixel_positioning;
 }
 
+gfx::FontRenderParams::Hinting GetFontHintingParams() {
+  gfx::FontRenderParams params =
+      gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(false), NULL);
+  return params.hinting;
+}
+
 }  // namespace
 
 typedef testing::Test DisplayManagerFontTest;
@@ -1606,6 +1612,7 @@ TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf100Internal) {
   ASSERT_DOUBLE_EQ(
       1.0f, Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_FALSE(IsTextSubpixelPositioningEnabled());
+  EXPECT_NE(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
 }
 
 TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf125Internal) {
@@ -1613,6 +1620,7 @@ TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf125Internal) {
   ASSERT_DOUBLE_EQ(
       1.25f, Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_TRUE(IsTextSubpixelPositioningEnabled());
+  EXPECT_EQ(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
 }
 
 TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf200Internal) {
@@ -1620,6 +1628,15 @@ TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf200Internal) {
   ASSERT_DOUBLE_EQ(
       2.0f, Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_TRUE(IsTextSubpixelPositioningEnabled());
+  EXPECT_EQ(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
+
+  Shell::GetInstance()->display_manager()->SetDisplayUIScale(
+      Shell::GetScreen()->GetPrimaryDisplay().id(), 2.0f);
+
+  ASSERT_DOUBLE_EQ(
+      1.0f, Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+  EXPECT_FALSE(IsTextSubpixelPositioningEnabled());
+  EXPECT_NE(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
 }
 
 TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf100External) {
@@ -1627,6 +1644,7 @@ TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf100External) {
   ASSERT_DOUBLE_EQ(
       1.0f, Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_FALSE(IsTextSubpixelPositioningEnabled());
+  EXPECT_NE(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
 }
 
 TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf125External) {
@@ -1634,6 +1652,7 @@ TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf125External) {
   ASSERT_DOUBLE_EQ(
       1.25f, Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_FALSE(IsTextSubpixelPositioningEnabled());
+  EXPECT_NE(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
 }
 
 TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf200External) {
@@ -1641,6 +1660,7 @@ TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf200External) {
   ASSERT_DOUBLE_EQ(
       2.0f, Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_FALSE(IsTextSubpixelPositioningEnabled());
+  EXPECT_NE(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
 }
 
 TEST_F(DisplayManagerFontTest,
@@ -1650,6 +1670,16 @@ TEST_F(DisplayManagerFontTest,
   ASSERT_DOUBLE_EQ(
       1.0f, Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_FALSE(IsTextSubpixelPositioningEnabled());
+  EXPECT_NE(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
+
+  Shell::GetInstance()->display_manager()->SetDisplayUIScale(
+      Shell::GetScreen()->GetPrimaryDisplay().id(), 0.8f);
+
+  ASSERT_DOUBLE_EQ(
+      1.25f, Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+  EXPECT_TRUE(IsTextSubpixelPositioningEnabled());
+  EXPECT_EQ(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
+
   DisplayInfo::SetUse125DSFForUIScaling(false);
 }
 

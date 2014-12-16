@@ -82,6 +82,9 @@ struct GFX_EXPORT FontRenderParamsQuery {
 
   // gfx::Font::FontStyle bit field, or -1 if unset.
   int style;
+
+  // The device scale factor of the display, or 0 if unset.
+  float device_scale_factor;
 };
 
 // Returns the appropriate parameters for rendering the font described by
@@ -99,6 +102,9 @@ GFX_EXPORT FontRenderParams GetFontRenderParams(
 GFX_EXPORT void ClearFontRenderParamsCacheForTest();
 
 #if defined(OS_CHROMEOS)
+// Gets the device scale factor to query the FontRenderParams.
+float GetFontRenderParamsDeviceScaleFactor();
+
 // Sets the device scale factor for FontRenderParams to decide
 // if it should enable subpixel positioning.
 GFX_EXPORT void SetFontRenderParamsDeviceScaleFactor(

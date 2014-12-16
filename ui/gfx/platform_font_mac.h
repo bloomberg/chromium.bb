@@ -29,7 +29,7 @@ class PlatformFontMac : public PlatformFont {
   std::string GetFontName() const override;
   std::string GetActualFontNameForTesting() const override;
   int GetFontSize() const override;
-  const FontRenderParams& GetFontRenderParams() const override;
+  const FontRenderParams& GetFontRenderParams() override;
   NativeFont GetNativeFont() const override;
 
  private:

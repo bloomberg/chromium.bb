@@ -64,7 +64,7 @@ class GFX_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
   virtual int GetFontSize() const = 0;
 
   // Returns an object describing how the font should be rendered.
-  virtual const FontRenderParams& GetFontRenderParams() const = 0;
+  virtual const FontRenderParams& GetFontRenderParams() = 0;
 
   // Returns the native font handle.
   virtual NativeFont GetNativeFont() const = 0;

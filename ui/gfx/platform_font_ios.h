@@ -26,7 +26,7 @@ class PlatformFontIOS : public PlatformFont {
   virtual std::string GetFontName() const override;
   virtual std::string GetActualFontNameForTesting() const override;
   virtual int GetFontSize() const override;
-  virtual const FontRenderParams& GetFontRenderParams() const override;
+  virtual const FontRenderParams& GetFontRenderParams() override;
   virtual NativeFont GetNativeFont() const override;
 
  private:

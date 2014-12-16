@@ -126,7 +126,7 @@ int PlatformFontMac::GetFontSize() const {
   return font_size_;
 }
 
-const FontRenderParams& PlatformFontMac::GetFontRenderParams() const {
+const FontRenderParams& PlatformFontMac::GetFontRenderParams() {
   return render_params_;
 }
 
