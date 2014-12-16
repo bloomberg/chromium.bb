@@ -1596,8 +1596,8 @@ chrome_pfq.add_config('falco-chrome-pfq',
   hw_tests=HWTestConfig.DefaultListPFQ(),
 )
 
-chrome_pfq.add_config('link_freon-chrome-pfq',
-  _base_configs['link_freon'],
+chrome_pfq.add_config('peppy_freon-chrome-pfq',
+  _base_configs['peppy_freon'],
 )
 
 chrome_pfq.add_config('veyron_pinky-chrome-pfq',
@@ -1973,7 +1973,6 @@ _paladin_important_boards = frozenset([
   'kayle',
   'leon',
   'link',
-  'link_freon',
   'lumpy',
   'monroe',
   'nyan',
@@ -1982,6 +1981,7 @@ _paladin_important_boards = frozenset([
   'parrot',
   'peach_pit',
   'peppy',
+  'peppy_freon',
   'rambi',
   'rush_ryu',
   'samus',
