@@ -571,7 +571,9 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     metadata_signatures = ('1',)
 
     expected_json = (
-        '{"metadata_signature": "MQ==", "metadata_size": 10,'
+        '{"md5_hex": "75218643432e5f621386d4ffcbedf9ba",'
+        ' "metadata_signature": "MQ==",'
+        ' "metadata_size": 10,'
         ' "sha1_hex": "FDwoNOUO+kNwrQJMSLnLDY7iZ/E=",'
         ' "sha256_hex": "gkm9207E7xbqpNRBFjEPO43nxyp/MNGQfyH3IYrq2kE=",'
         ' "version": 1}')

@@ -496,6 +496,8 @@ class _PaygenPayload(object):
       "version": 1,
       "sha1_hex": <payload sha1 hash as a hex encoded string>,
       "sha256_hex": <payload sha256 hash as a hex encoded string>,
+      "md5_hex": <payload md5 hash as a hex encoded string>,
+      "metadata_size": <integer of payload metadata covered by signature>,
       "metadata_signature": <metadata signature as base64 encoded string or nil>
     }
 
@@ -504,6 +506,7 @@ class _PaygenPayload(object):
     """
     # Locate everything we put in the json.
     sha1_hex, sha256_hex = filelib.ShaSums(self.payload_file)
+    md5_hex = filelib.MD5Sum(self.payload_file)
 
     metadata_signature = None
     if metadata_signatures:
@@ -519,6 +522,7 @@ class _PaygenPayload(object):
       'version': DESCRIPTION_FILE_VERSION,
       'sha1_hex': sha1_hex,
       'sha256_hex': sha256_hex,
+      'md5_hex': md5_hex,
       'metadata_size': self._MetadataSize(),
       'metadata_signature': metadata_signature,
     }
