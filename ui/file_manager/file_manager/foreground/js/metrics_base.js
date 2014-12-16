@@ -131,7 +131,7 @@ metricsBase.recordInterval = function(name) {
  * @param {string} name Metric name.
  * @param {*} value Enum value.
  * @param {Array.<*>|number=} opt_validValues Array of valid values
- *                                            or a boundary number value.
+ *     or a boundary number (one-past-the-end) value.
  */
 metricsBase.recordEnum = function(name, value, opt_validValues) {
   var boundaryValue;
@@ -152,8 +152,8 @@ metricsBase.recordEnum = function(name, value, opt_validValues) {
     boundaryValue = validValues;
   }
   // Collect invalid values in the overflow bucket at the end.
-  if (index < 0 || index > boundaryValue)
-    index = boundaryValue;
+  if (index < 0 || index >= boundaryValue)
+    index = boundaryValue - 1;
 
   // Setting min to 1 looks strange but this is exactly the recommended way
   // of using histograms for enum-like types. Bucket #0 works as a regular
@@ -164,7 +164,7 @@ metricsBase.recordEnum = function(name, value, opt_validValues) {
     'type': 'histogram-linear',
     'min': 1,
     'max': boundaryValue,
-    'buckets': boundaryValue + 1
+    'buckets': boundaryValue
   };
   metrics.call_('recordValue', [metricDescr, index]);
 };

@@ -30,7 +30,7 @@ metrics.CAST_API_EXTENSION_STATUS = {
   // Cast API extension is loaded.
   LOADED: 4,
   // (sentinel)
-  MAX_VALUE: 4,
+  MAX_VALUE: 5,
 };
 
 /**
@@ -40,7 +40,7 @@ metrics.CAST_API_EXTENSION_STATUS = {
 metrics.PLAY_TYPE = {
   LOCAL: 0,
   CAST: 1,
-  MAX_VALUE: 1,
+  MAX_VALUE: 2,
 };
 
 /**
