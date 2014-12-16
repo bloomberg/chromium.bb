@@ -40,6 +40,7 @@ extern const char kSyncSearchEngines[];
 extern const char kSyncSessions[];
 extern const char kSyncSupervisedUserSettings[];
 extern const char kSyncSupervisedUserSharedSettings[];
+extern const char kSyncSupervisedUserWhitelists[];
 extern const char kSyncSupervisedUsers[];
 extern const char kSyncSyncedNotificationAppInfo[];
 extern const char kSyncSyncedNotifications[];

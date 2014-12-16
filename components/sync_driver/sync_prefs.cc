@@ -344,6 +344,8 @@ const char* SyncPrefs::GetPrefNameForDataType(syncer::ModelType data_type) {
       return prefs::kSyncArticles;
     case syncer::SUPERVISED_USER_SHARED_SETTINGS:
       return prefs::kSyncSupervisedUserSharedSettings;
+    case syncer::SUPERVISED_USER_WHITELISTS:
+      return prefs::kSyncSupervisedUserWhitelists;
     case syncer::DEVICE_INFO:
       return prefs::kSyncDeviceInfo;
     case syncer::WIFI_CREDENTIALS:

@@ -114,6 +114,9 @@ enum ModelType {
   // WiFi credentials. Each item contains the information for connecting to one
   // WiFi network. This includes, e.g., network name and password.
   WIFI_CREDENTIALS,
+  // Supervised user whitelists. Each item contains a CRX ID (like an extension
+  // ID) and a name.
+  SUPERVISED_USER_WHITELISTS,
 
   // ---- Proxy types ----
   // Proxy types are excluded from the sync protocol, but are still considered

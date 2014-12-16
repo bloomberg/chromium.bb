@@ -56832,6 +56832,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="29" label="App list"/>
   <int value="30" label="Managed User Shared Settings"/>
   <int value="31" label="Synced Notification App Info"/>
+  <int value="32" label="Wifi Credentials"/>
+  <int value="33" label="Managed User Whitelists"/>
 </enum>
 
 <enum name="SyncNigoriMigrationResult" type="int">

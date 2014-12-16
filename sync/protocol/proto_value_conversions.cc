@@ -515,6 +515,14 @@ base::DictionaryValue* ManagedUserSharedSettingSpecificsToValue(
   return value;
 }
 
+base::DictionaryValue* ManagedUserWhitelistSpecificsToValue(
+    const sync_pb::ManagedUserWhitelistSpecifics& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET_STR(id);
+  SET_STR(name);
+  return value;
+}
+
 base::DictionaryValue* NigoriSpecificsToValue(
     const sync_pb::NigoriSpecifics& proto) {
   base::DictionaryValue* value = new base::DictionaryValue();
@@ -687,6 +695,7 @@ base::DictionaryValue* EntitySpecificsToValue(
   SET_FIELD(managed_user_shared_setting,
             ManagedUserSharedSettingSpecificsToValue);
   SET_FIELD(managed_user, ManagedUserSpecificsToValue);
+  SET_FIELD(managed_user_whitelist, ManagedUserWhitelistSpecificsToValue);
   SET_FIELD(nigori, NigoriSpecificsToValue);
   SET_FIELD(password, PasswordSpecificsToValue);
   SET_FIELD(preference, PreferenceSpecificsToValue);

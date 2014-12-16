@@ -44,7 +44,7 @@ const char* kUserSelectableDataTypeNames[] = {
 };
 
 COMPILE_ASSERT(
-    33 == MODEL_TYPE_COUNT,
+    34 == MODEL_TYPE_COUNT,
     update_kUserSelectableDataTypeNames_to_match_UserSelectableTypes);
 
 void AddDefaultFieldValue(ModelType datatype,
@@ -138,6 +138,9 @@ void AddDefaultFieldValue(ModelType datatype,
     case SUPERVISED_USER_SHARED_SETTINGS:
       specifics->mutable_managed_user_shared_setting();
       break;
+    case SUPERVISED_USER_WHITELISTS:
+      specifics->mutable_managed_user_whitelist();
+      break;
     case ARTICLES:
       specifics->mutable_article();
       break;
@@ -219,6 +222,8 @@ int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
       return sync_pb::EntitySpecifics::kManagedUserFieldNumber;
     case SUPERVISED_USER_SHARED_SETTINGS:
       return sync_pb::EntitySpecifics::kManagedUserSharedSettingFieldNumber;
+    case SUPERVISED_USER_WHITELISTS:
+      return sync_pb::EntitySpecifics::kManagedUserWhitelistFieldNumber;
     case ARTICLES:
       return sync_pb::EntitySpecifics::kArticleFieldNumber;
     case WIFI_CREDENTIALS:
@@ -348,6 +353,9 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   if (specifics.has_managed_user_shared_setting())
     return SUPERVISED_USER_SHARED_SETTINGS;
 
+  if (specifics.has_managed_user_whitelist())
+    return SUPERVISED_USER_WHITELISTS;
+
   if (specifics.has_article())
     return ARTICLES;
 
@@ -429,6 +437,9 @@ ModelTypeSet EncryptableUserTypes() {
   // Supervised user shared settings are not encrypted since they are managed
   // server-side and shared between manager and supervised user.
   encryptable_user_types.Remove(SUPERVISED_USER_SHARED_SETTINGS);
+  // Supervised user whitelists are not encrypted since they are managed
+  // server-side.
+  encryptable_user_types.Remove(SUPERVISED_USER_WHITELISTS);
   // Proxy types have no sync representation and are therefore not encrypted.
   // Note however that proxy types map to one or more protocol types, which
   // may or may not be encrypted themselves.
@@ -470,6 +481,7 @@ ModelTypeSet CoreTypes() {
   result.Put(SYNCED_NOTIFICATIONS);
   result.Put(SYNCED_NOTIFICATION_APP_INFO);
   result.Put(SUPERVISED_USER_SHARED_SETTINGS);
+  result.Put(SUPERVISED_USER_WHITELISTS);
 
   return result;
 }
@@ -565,6 +577,8 @@ const char* ModelTypeToString(ModelType model_type) {
       return "Managed Users";
     case SUPERVISED_USER_SHARED_SETTINGS:
       return "Managed User Shared Settings";
+    case SUPERVISED_USER_WHITELISTS:
+      return "Managed User Whitelists";
     case ARTICLES:
       return "Articles";
     case WIFI_CREDENTIALS:
@@ -650,6 +664,8 @@ int ModelTypeToHistogramInt(ModelType model_type) {
       return 31;
     case WIFI_CREDENTIALS:
       return 32;
+    case SUPERVISED_USER_WHITELISTS:
+      return 33;
     // Silence a compiler warning.
     case MODEL_TYPE_COUNT:
       return 0;
@@ -741,6 +757,8 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
     return SUPERVISED_USERS;
   else if (model_type_string == "Managed User Shared Settings")
     return SUPERVISED_USER_SHARED_SETTINGS;
+  else if (model_type_string == "Managed User Whitelists")
+    return SUPERVISED_USER_WHITELISTS;
   else if (model_type_string == "Articles")
     return ARTICLES;
   else if (model_type_string == "WiFi Credentials")
@@ -867,6 +885,8 @@ std::string ModelTypeToRootTag(ModelType type) {
       return "google_chrome_managed_users";
     case SUPERVISED_USER_SHARED_SETTINGS:
       return "google_chrome_managed_user_shared_settings";
+    case SUPERVISED_USER_WHITELISTS:
+      return "google_chrome_managed_user_whitelists";
     case ARTICLES:
       return "google_chrome_articles";
     case WIFI_CREDENTIALS:
@@ -914,6 +934,8 @@ const char kSupervisedUserSettingNotificationType[] = "MANAGED_USER_SETTING";
 const char kSupervisedUserNotificationType[] = "MANAGED_USER";
 const char kSupervisedUserSharedSettingNotificationType[] =
     "MANAGED_USER_SHARED_SETTING";
+const char kSupervisedUserWhitelistNotificationType[] =
+    "MANAGED_USER_WHITELIST";
 const char kArticleNotificationType[] = "ARTICLE";
 }  // namespace
 
@@ -1003,6 +1025,9 @@ bool RealModelTypeToNotificationType(ModelType model_type,
       return true;
     case SUPERVISED_USER_SHARED_SETTINGS:
       *notification_type = kSupervisedUserSharedSettingNotificationType;
+      return true;
+    case SUPERVISED_USER_WHITELISTS:
+      *notification_type = kSupervisedUserWhitelistNotificationType;
       return true;
     case ARTICLES:
       *notification_type = kArticleNotificationType;
@@ -1100,6 +1125,9 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
   } else if (notification_type ==
       kSupervisedUserSharedSettingNotificationType) {
     *model_type = SUPERVISED_USER_SHARED_SETTINGS;
+    return true;
+  } else if (notification_type == kSupervisedUserWhitelistNotificationType) {
+    *model_type = SUPERVISED_USER_WHITELISTS;
     return true;
   } else if (notification_type == kArticleNotificationType) {
     *model_type = ARTICLES;

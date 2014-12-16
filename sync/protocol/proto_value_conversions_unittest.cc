@@ -26,6 +26,7 @@
 #include "sync/protocol/managed_user_setting_specifics.pb.h"
 #include "sync/protocol/managed_user_shared_setting_specifics.pb.h"
 #include "sync/protocol/managed_user_specifics.pb.h"
+#include "sync/protocol/managed_user_whitelist_specifics.pb.h"
 #include "sync/protocol/nigori_specifics.pb.h"
 #include "sync/protocol/password_specifics.pb.h"
 #include "sync/protocol/preference_specifics.pb.h"
@@ -56,7 +57,7 @@ TEST_F(ProtoValueConversionsTest, ProtoChangeCheck) {
   // If this number changes, that means we added or removed a data
   // type.  Don't forget to add a unit test for {New
   // type}SpecificsToValue below.
-  EXPECT_EQ(33, MODEL_TYPE_COUNT);
+  EXPECT_EQ(34, MODEL_TYPE_COUNT);
 
   // We'd also like to check if we changed any field in our messages.
   // However, that's hard to do: sizeof could work, but it's
@@ -221,6 +222,10 @@ TEST_F(ProtoValueConversionsTest, ManagedUserSharedSettingSpecificsToValue) {
   TestSpecificsToValue(ManagedUserSharedSettingSpecificsToValue);
 }
 
+TEST_F(ProtoValueConversionsTest, ManagedUserWhitelistSpecificsToValue) {
+  TestSpecificsToValue(ManagedUserWhitelistSpecificsToValue);
+}
+
 TEST_F(ProtoValueConversionsTest, NigoriSpecificsToValue) {
   TestSpecificsToValue(NigoriSpecificsToValue);
 }
@@ -295,6 +300,7 @@ TEST_F(ProtoValueConversionsTest, EntitySpecificsToValue) {
   SET_FIELD(history_delete_directive);
   SET_FIELD(managed_user_setting);
   SET_FIELD(managed_user_shared_setting);
+  SET_FIELD(managed_user_whitelist);
   SET_FIELD(managed_user);
   SET_FIELD(nigori);
   SET_FIELD(password);

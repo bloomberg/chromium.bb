@@ -53,6 +53,8 @@ const char kSyncSessions[] = "sync.sessions";
 const char kSyncSupervisedUserSettings[] = "sync.managed_user_settings";
 const char kSyncSupervisedUserSharedSettings[] =
     "sync.managed_user_shared_settings";
+const char kSyncSupervisedUserWhitelists[] =
+    "sync.managed_user_whitelists";
 const char kSyncSupervisedUsers[] = "sync.managed_users";
 const char kSyncSyncedNotificationAppInfo[] =
     "sync.synced_notification_app_info";

@@ -49,6 +49,7 @@ class Media;
 class ManagedUserSettingSpecifics;
 class ManagedUserSharedSettingSpecifics;
 class ManagedUserSpecifics;
+class ManagedUserWhitelistSpecifics;
 class NavigationRedirect;
 class NigoriSpecifics;
 class PasswordSpecifics;
@@ -203,6 +204,10 @@ SYNC_EXPORT_PRIVATE base::DictionaryValue*
     ManagedUserSharedSettingSpecificsToValue(
         const sync_pb::ManagedUserSharedSettingSpecifics&
             managed_user_shared_setting_specifics);
+
+SYNC_EXPORT_PRIVATE base::DictionaryValue* ManagedUserWhitelistSpecificsToValue(
+    const sync_pb::ManagedUserWhitelistSpecifics&
+        managed_user_whitelist_specifics);
 
 SYNC_EXPORT_PRIVATE base::DictionaryValue* MediaToValue(
     const sync_pb::Media& media);

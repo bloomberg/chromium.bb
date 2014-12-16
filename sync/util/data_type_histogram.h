@@ -120,6 +120,9 @@
       case ::syncer::SUPERVISED_USER_SHARED_SETTINGS: \
         PER_DATA_TYPE_MACRO("ManagedUserSharedSetting"); \
         break; \
+      case ::syncer::SUPERVISED_USER_WHITELISTS: \
+        PER_DATA_TYPE_MACRO("ManagedUserWhitelist"); \
+        break; \
       case ::syncer::ARTICLES: \
         PER_DATA_TYPE_MACRO("Article"); \
         break; \

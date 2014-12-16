@@ -495,6 +495,7 @@
         'protocol/managed_user_setting_specifics.proto',
         'protocol/managed_user_shared_setting_specifics.proto',
         'protocol/managed_user_specifics.proto',
+        'protocol/managed_user_whitelist_specifics.proto',
         'protocol/password_specifics.proto',
         'protocol/preference_specifics.proto',
         'protocol/priority_preference_specifics.proto',

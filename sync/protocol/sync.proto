@@ -38,6 +38,7 @@ import "nigori_specifics.proto";
 import "managed_user_setting_specifics.proto";
 import "managed_user_shared_setting_specifics.proto";
 import "managed_user_specifics.proto";
+import "managed_user_whitelist_specifics.proto";
 import "password_specifics.proto";
 import "preference_specifics.proto";
 import "priority_preference_specifics.proto";
@@ -127,6 +128,7 @@ message EntitySpecifics {
   optional ManagedUserSpecifics managed_user = 194582;
   optional ManagedUserSharedSettingSpecifics managed_user_shared_setting =
       202026;
+  optional ManagedUserWhitelistSpecifics managed_user_whitelist = 306060;
   optional ArticleSpecifics article = 223759;
   optional AppListSpecifics app_list = 229170;
   optional WifiCredentialSpecifics wifi_credential = 218175;
