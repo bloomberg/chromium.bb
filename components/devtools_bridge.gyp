@@ -9,6 +9,7 @@
       'type': 'none',
       'sources': [
         'devtools_bridge/android/java/src/org/chromium/components/devtools_bridge/SessionDependencyFactoryNative.java',
+        'devtools_bridge/android/java/src/org/chromium/components/devtools_bridge/apiary/ApiaryClientFactory.java',
       ],
       'variables': {
         'jni_gen_package': 'devtools_bridge',
@@ -19,19 +20,22 @@
       'target_name': 'devtools_bridge',
       'type': 'static_library',
       'sources': [
+        'devtools_bridge/android/apiary_client_factory.cc',
+        'devtools_bridge/android/apiary_client_factory.h',
         'devtools_bridge/android/session_dependency_factory_android.cc',
         'devtools_bridge/android/session_dependency_factory_android.h',
+        'devtools_bridge/session_dependency_factory.cc',
+        'devtools_bridge/session_dependency_factory.h',
         'devtools_bridge/socket_tunnel_connection.cc',
         'devtools_bridge/socket_tunnel_connection.h',
         'devtools_bridge/socket_tunnel_packet_handler.cc',
         'devtools_bridge/socket_tunnel_packet_handler.h',
         'devtools_bridge/socket_tunnel_server.cc',
         'devtools_bridge/socket_tunnel_server.h',
-        'devtools_bridge/session_dependency_factory.cc',
-        'devtools_bridge/session_dependency_factory.h',
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../google_apis/google_apis.gyp:google_apis',
         '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
         '../third_party/libjingle/libjingle.gyp:libpeerconnection',
         '../third_party/webrtc/base/base.gyp:webrtc_base',

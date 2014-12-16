@@ -22,6 +22,7 @@
         '../crypto/crypto.gyp:crypto',
         '../net/net.gyp:net',
         '../third_party/libxml/libxml.gyp:libxml',
+        '../url/url.gyp:url_lib',
       ],
       'conditions': [
         ['google_api_key!=""', {
