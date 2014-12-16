@@ -124,9 +124,6 @@ private:
     RawPtrWillBeMember<DevToolsHost> m_devtoolsHost;
     ScriptValue m_devtoolsApiObject;
 
-    // FIXME: Oilpan: remove when http://crbug.com/424962 Blink GC plugin
-    // changes have been deployed. ContextMenuItem triggers looping behavior.
-    GC_PLUGIN_IGNORE("crbug.com/424962")
     Vector<ContextMenuItem> m_items;
 };
 
