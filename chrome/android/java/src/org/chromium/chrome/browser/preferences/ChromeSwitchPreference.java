@@ -5,11 +5,11 @@
 package org.chromium.chrome.browser.preferences;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.preference.SwitchPreference;
 import android.support.v7.widget.SwitchCompat;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.TypedValue;
 import android.view.View;
 import android.widget.TextView;
 
@@ -24,12 +24,19 @@ public class ChromeSwitchPreference extends SwitchPreference {
 
     private ManagedPreferenceDelegate mManagedPrefDelegate;
 
+    private boolean mDontUseSummaryAsTitle;
+
     /**
      * Constructor for inflating from XML.
      */
     public ChromeSwitchPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
         setWidgetLayoutResource(R.layout.preference_switch);
+
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.ChromeSwitchPreference);
+        mDontUseSummaryAsTitle =
+                a.getBoolean(R.styleable.ChromeSwitchPreference_dontUseSummaryAsTitle, false);
+        a.recycle();
     }
 
     /**
@@ -45,18 +52,14 @@ public class ChromeSwitchPreference extends SwitchPreference {
         super.onBindView(view);
         SwitchCompat switchView = (SwitchCompat) view.findViewById(R.id.switch_widget);
         switchView.setChecked(isChecked());
+
         TextView title = (TextView) view.findViewById(android.R.id.title);
         title.setSingleLine(false);
-
-        // If the title is empty, make the summary text look like the switch title
-        if (TextUtils.isEmpty(getTitle())) {
-            // On some devices/Android versions, the title view doesn't get properly hidden when
-            // it's empty, resulting in the summary text being misaligned. See crbug.com/436685
-            title.setVisibility(View.GONE);
-
+        if (!mDontUseSummaryAsTitle && TextUtils.isEmpty(getTitle())) {
             TextView summary = (TextView) view.findViewById(android.R.id.summary);
-            summary.setTextSize(TypedValue.COMPLEX_UNIT_PX, title.getTextSize());
-            summary.setTextColor(title.getTextColors());
+            title.setText(summary.getText());
+            title.setVisibility(View.VISIBLE);
+            summary.setVisibility(View.GONE);
         }
 
         if (mManagedPrefDelegate != null) mManagedPrefDelegate.onBindViewToPreference(this, view);

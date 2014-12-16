@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright 2014 The Chromium Authors. All rights reserved.
      Use of this source code is governed by a BSD-style license that can be
-     found in the LICENSE file.
--->
+     found in the LICENSE file. -->
+
 <resources>
     <declare-styleable name="TintedImage">
         <attr name="tint" format="reference|color" />
@@ -11,5 +11,11 @@
     <declare-styleable name="HyperlinkPreference">
         <!-- The URL to load when the preference is clicked -->
         <attr name="url" format="string" />
+    </declare-styleable>
+
+    <declare-styleable name="ChromeSwitchPreference">
+        <!-- Prevents the summary text from being styled like title text in the
+             case that the title is empty. -->
+        <attr name="dontUseSummaryAsTitle" format="boolean" />
     </declare-styleable>
 </resources>
