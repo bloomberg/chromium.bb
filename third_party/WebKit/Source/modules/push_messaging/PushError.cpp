@@ -21,7 +21,7 @@ PassRefPtrWillBeRawPtr<DOMException> PushError::take(ScriptPromiseResolver*, Web
     case WebPushError::ErrorTypeNotFound:
         return DOMException::create(NotFoundError, webError->message);
     case WebPushError::ErrorTypeUnknown:
-        return DOMException::create(UnknownError);
+        return DOMException::create(UnknownError, webError->message);
     }
     ASSERT_NOT_REACHED();
     return DOMException::create(UnknownError);
