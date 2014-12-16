@@ -9,7 +9,6 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
-#include "core/page/WindowFocusAllowedIndicator.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "public/platform/WebString.h"
@@ -74,11 +73,9 @@ ScriptPromise ServiceWorkerClient::focus(ScriptState* scriptState)
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    if (!scriptState->executionContext()->isWindowFocusAllowed()) {
-        resolver->resolve(false);
-        return promise;
-    }
-    scriptState->executionContext()->consumeWindowFocus();
+    // FIXME: there should be a check for whether the caller is allowed to focus
+    // the client. The promise should succeed with |false| if the call is not
+    // allowed. https://crbug.com/437149
 
     ServiceWorkerGlobalScopeClient::from(scriptState->executionContext())->focus(m_id, new CallbackPromiseAdapter<bool, ServiceWorkerError>(resolver));
     return promise;
