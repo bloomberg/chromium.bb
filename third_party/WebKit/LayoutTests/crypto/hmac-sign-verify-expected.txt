@@ -8,7 +8,7 @@ PASS typeof tmpKey.extractable is 'boolean'
 PASS tmpKey.extractable is false
 PASS tmpKey.algorithm.name is "HMAC"
 PASS tmpKey.algorithm.hash.name is "SHA-1"
-PASS tmpKey.algorithm.length is 0
+PASS tmpKey.algorithm.length is 8
 PASS tmpKey.usages.join(',') is "sign,verify"
 PASS: Mac should be [fbdb1d1b18aa6c08324b7d64b71fb76370690e1d] and was
 PASS verifyResult is true
@@ -18,7 +18,7 @@ PASS typeof tmpKey.extractable is 'boolean'
 PASS tmpKey.extractable is false
 PASS tmpKey.algorithm.name is "HMAC"
 PASS tmpKey.algorithm.hash.name is "SHA-1"
-PASS tmpKey.algorithm.length is 0
+PASS tmpKey.algorithm.length is 8
 PASS tmpKey.usages.join(',') is "sign,verify"
 PASS: Mac should be [fbdb1d1b18aa6c08324b7d64b71fb76370690e1d] and was
 PASS verifyResult is true
@@ -28,7 +28,7 @@ PASS typeof tmpKey.extractable is 'boolean'
 PASS tmpKey.extractable is false
 PASS tmpKey.algorithm.name is "HMAC"
 PASS tmpKey.algorithm.hash.name is "SHA-1"
-PASS tmpKey.algorithm.length is 0
+PASS tmpKey.algorithm.length is 8
 PASS tmpKey.usages.join(',') is "sign,verify"
 PASS: Mac should be [fbdb1d1b18aa6c08324b7d64b71fb76370690e1d] and was
 PASS verifyResult is true
@@ -38,7 +38,7 @@ PASS typeof tmpKey.extractable is 'boolean'
 PASS tmpKey.extractable is false
 PASS tmpKey.algorithm.name is "HMAC"
 PASS tmpKey.algorithm.hash.name is "SHA-1"
-PASS tmpKey.algorithm.length is 0
+PASS tmpKey.algorithm.length is 8
 PASS tmpKey.usages.join(',') is "sign,verify"
 PASS: Mac should be [fbdb1d1b18aa6c08324b7d64b71fb76370690e1d] and was
 PASS verifyResult is true
@@ -48,7 +48,7 @@ PASS typeof tmpKey.extractable is 'boolean'
 PASS tmpKey.extractable is false
 PASS tmpKey.algorithm.name is "HMAC"
 PASS tmpKey.algorithm.hash.name is "SHA-256"
-PASS tmpKey.algorithm.length is 0
+PASS tmpKey.algorithm.length is 8
 PASS tmpKey.usages.join(',') is "sign,verify"
 PASS: Mac should be [b613679a0814d9ec772f95d778c35fc5ff1697c493715653c6c712144292c5ad] and was
 PASS verifyResult is true
@@ -58,7 +58,7 @@ PASS typeof tmpKey.extractable is 'boolean'
 PASS tmpKey.extractable is false
 PASS tmpKey.algorithm.name is "HMAC"
 PASS tmpKey.algorithm.hash.name is "SHA-256"
-PASS tmpKey.algorithm.length is 0
+PASS tmpKey.algorithm.length is 8
 PASS tmpKey.usages.join(',') is "sign,verify"
 PASS: Mac should be [b613679a0814d9ec772f95d778c35fc5ff1697c493715653c6c712144292c5ad] and was
 PASS verifyResult is true
@@ -68,7 +68,7 @@ PASS typeof tmpKey.extractable is 'boolean'
 PASS tmpKey.extractable is false
 PASS tmpKey.algorithm.name is "HMAC"
 PASS tmpKey.algorithm.hash.name is "SHA-256"
-PASS tmpKey.algorithm.length is 0
+PASS tmpKey.algorithm.length is 8
 PASS tmpKey.usages.join(',') is "sign,verify"
 PASS: Mac should be [b613679a0814d9ec772f95d778c35fc5ff1697c493715653c6c712144292c5ad] and was
 PASS verifyResult is true
@@ -78,7 +78,7 @@ PASS typeof tmpKey.extractable is 'boolean'
 PASS tmpKey.extractable is false
 PASS tmpKey.algorithm.name is "HMAC"
 PASS tmpKey.algorithm.hash.name is "SHA-256"
-PASS tmpKey.algorithm.length is 0
+PASS tmpKey.algorithm.length is 8
 PASS tmpKey.usages.join(',') is "sign,verify"
 PASS: Mac should be [b613679a0814d9ec772f95d778c35fc5ff1697c493715653c6c712144292c5ad] and was
 PASS verifyResult is true
