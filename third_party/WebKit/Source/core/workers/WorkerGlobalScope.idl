@@ -40,9 +40,6 @@
     // WorkerUtils
     [RaisesException] void importScripts(DOMString... urls);
     [Replaceable] readonly attribute WorkerNavigator navigator;
-
-    // Additional constructors
-    [MeasureAs=PrefixedWorkerURL] attribute URLConstructor webkitURL; // FIXME: deprecate this.
 };
 
 WorkerGlobalScope implements WindowBase64;

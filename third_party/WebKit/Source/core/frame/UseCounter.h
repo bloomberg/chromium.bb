@@ -264,7 +264,6 @@ public:
         HTMLMediaElementSeekToFragmentStart = 281,
         HTMLMediaElementPauseAtFragmentEnd = 282,
         PrefixedWindowURL = 283,
-        PrefixedWorkerURL = 284, // This didn't work because of crbug.com/376039. Available since M37.
         WindowOrientation = 285,
         DOMStringListContains = 286,
         DocumentCaptureEvents = 287,
