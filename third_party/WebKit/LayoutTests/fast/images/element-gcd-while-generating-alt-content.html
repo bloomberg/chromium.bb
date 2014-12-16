@@ -1,0 +1,188 @@
+<!-- crbug.com/440834: Protect an image's element while generating its alt content as it can get gc'd when the asynchronous image load fails asyncrhonously. -->
+<style dir="rtl" title="a AxBxC">
+*{text-rendering:geometricPrecision;text-transform:uppercase;}
+visibility:visible;min-width:intrinsic;</style>
+<body>
+<table dir="ltr">
+    <caption title="b">
+        <abbr>
+            <ruby>
+                <rbc title="AA">
+                </rbc>
+                <rt>
+            </ruby>
+        </abbr>
+    </caption>
+    <colgroup xml:space="preserve" charoff="1mm">
+        <th rowspan="1">
+            a
+            <td char="a" charoff="100">
+            </td>
+            <td dir="rtl">
+                AA
+                <th xml:lang="nl" charoff="1px">
+                    <th valign="middle">
+                        <img alt="AxBxC" width="1cm"/>
+                        <textarea>
+                        </textarea>
+                    </th>
+                </tr>
+            </table>
+            <div title="a A" xml:space="preserve">
+                <select tabindex="-1" size="1">
+                    <optgroup label="AxBxC" dir="ltr" xml:space="preserve">
+                        <option value="AxBxC" selected="selected">
+                        </option>
+                    </optgroup>
+                    <option dir="rtl">
+                    AxBxC c
+                    </option>
+                    <option label="x" title="AxBxC AxBxC">
+                    </option>
+                    <optgroup label="A" xml:space="preserve">
+                        <option value="AxBxC"</optgroup>
+                    <option title="AxBxC AxBxC" label="c a">
+                    C a
+                    </option>
+                    <optgroup label="AxBxC AxBxC" dir="ltr">
+                    </optgroup>
+                </select>
+                <ruby dir="rtl" xml:space="preserve">
+                    <rb title="A" dir="ltr">
+                    <rt xml:space="preserve" dir="rtl">
+                    </rt>
+                    <rtc dir="ltr">
+                    <svg>
+                        <foreignObject>
+                        <script>
+if (window.testRunner) {
+    testRunner.waitUntilDone();
+    testRunner.dumpAsText();
+}
+var aoScriptElements = document.getElementsByTagName("script");
+for(var i = 0; i < aoScriptElements.length; i++) {
+    aoScriptElements[i].parentNode.removeChild(aoScriptElements[i]);
+}
+var event_handler_inserted_active = false;
+
+function cloneRandomElement(num) {
+    var aoElements = document.getElementsByTagName("*");
+    return aoElements[num % aoElements.length].cloneNode(true);
+}
+
+function getRandomElement(num) {
+    var aoElements = document.getElementsByTagName("*");
+    return aoElements[num % aoElements.length];
+}
+
+function event_handler_inserted() {
+    if (event_handler_inserted_active) return ;
+    event_handler_inserted_active = true;
+    var oElement = event.srcElement;
+    document.execCommand('SelectAll',false,false);
+    var oSelection=window.getSelection();
+    var oRange = oSelection.rangeCount ? oSelection.getRangeAt(84 % oSelection.rangeCount) : null;
+    if (oRange) {
+        var oInsertedElement = getRandomElement(60);
+        if (oInsertedElement) {
+            try{oRange.insertNode(oInsertedElement)}
+            catch(e){}
+        }
+    }
+    if (oElement.parentNode) {
+        var oNewElement =  document.createElementNS('http://www.w3.org/2000/svg', 'feMergeNode');
+        oElement.parentNode.replaceChild(cloneRandomElement(66), oElement);
+    }
+    oSelection.collapseToStart();
+    oSelection.modify('extend', 'forward', 'character');
+    var oRange = oSelection.rangeCount ? oSelection.getRangeAt(95 % oSelection.rangeCount) : null;
+    if (oRange) {
+        var oParentElement = getRandomElement(37);
+        if (oParentElement) {
+            try{oRange.surroundContents(oParentElement)}
+            catch(e){}
+        }
+    }
+    if (oRange) {
+        var oInsertedElement = getRandomElement(61);
+        if (oInsertedElement) {
+            try{oRange.insertNode(oInsertedElement)}
+            catch(e){}
+        }
+    }
+    event_handler_inserted_active = false;
+}
+document.addEventListener("DOMNodeInsertedIntoDocument", event_handler_inserted, true);
+document.addEventListener("load", true);
+var event_handler_modified_active = false;
+var event_handler_modified_fired_count = 0;
+function event_handler_modified() {
+    if (event_handler_modified_active) return ;
+    event_handler_modified_active = true;
+    var oElement = event.srcElement;
+    if (oElement.parentNode) {
+        var oNewElement = document.createElementNS('http://www.w3.org/2000/svg', 'font-face');
+        if (oNewElement) {
+            try{oElement.parentNode.replaceChild(cloneRandomElement(1), oElement)}
+            catch(e){}
+        }
+    }
+    oElement.contentEditable = true;
+    var oSelection=window.getSelection();
+    var oRange = oSelection.rangeCount ? oSelection.getRangeAt(39 % oSelection.rangeCount) : null;
+    oSelection.modify('move', 'forward', 'line');
+    var oInsertedElement = getRandomElement(84);
+    oRange.insertNode(oInsertedElement);
+    if (!oSelection.rangeCount) {
+        document.execCommand("SelectAll", false)
+    }
+    var oRange = oSelection.rangeCount ? oSelection.getRangeAt(53 % oSelection.rangeCount) : null;
+    var oParentElement = getRandomElement(18);
+    if (oParentElement) {
+        try{oRange.surroundContents(oParentElement)}
+        catch(e){}
+    }
+    event_handler_modified_active = false;
+}
+document.addEventListener("DOMCharacterDataModified", event_handler_modified, true);
+window.onload=function(){
+    var oElement =  document.createElementNS('http://www.w3.org/2000/svg', 'feConvolveMatrix');
+    var oSelection=window.getSelection();
+    document.execCommand("SelectAll", false)
+    var oRange = oSelection.rangeCount ? oSelection.getRangeAt(4 % oSelection.rangeCount) : null;
+    var oElement = getRandomElement(80);
+    oElement.appendChild(document.createElementNS('http://www.w3.org/2000/svg', 'animateColor'));
+    oElement.outerHTML = "";
+    var oElement = getRandomElement(100);
+    oElement = document.adoptNode(oElement);
+    var oElement = getRandomElement(81);
+    oElement.textContent = '))))))V]]]~/GU}k-FFFFFFFFF??????';
+    var oElement = getRandomElement(71);
+    oElement.innerHTML = '<hgroup></hgroup><bdi>';
+    oElement.outerHTML = "";
+    oElement.insertAdjacentElement('beforeend', document.createElementNS('http://www.w3.org/2000/svg', 'tspan'));
+    if (window.testRunner) {
+        testRunner.notifyDone();
+    }
+};
+                        </script>
+                    </svg>
+                    </rt>
+                </div>
+                <h1>
+                    <input type="image">
+                    <select>
+                        <optgroup>
+                            <option>
+                            AAA
+                        </optgroup>
+                        <option>
+                        B
+                        <option>
+                        a
+                        <optgroup>
+                            <option>
+                            a AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+                            </option>
+                        </select>
+                        <br>
