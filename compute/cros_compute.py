@@ -261,13 +261,14 @@ def main(argv):
           cros_build_lib.Die('Unkown config %s' % opts.config)
         gcctx.CreateInstance(opts.instance, address=opts.address, **config)
     elif opts.operation == 'delete':
-      cros_build_lib.Die('Please specify the instance name (--instance)')
+      if not opts.instance:
+        cros_build_lib.Die('Please specify the instance name (--instance)')
       gcctx.DeleteInstance(opts.instance)
     elif opts.operation == 'list':
       gcctx.ListInstances()
     elif opts.operation == 'ssh':
       if not opts.instance:
-        cros_build_lib.Die('Please specify the instance with --instance')
+        cros_build_lib.Die('Please specify the instance name (--instance)')
       gcctx.SSH(opts.instance)
 
   elif opts.target == 'disks':
