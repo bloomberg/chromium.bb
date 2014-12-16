@@ -10,11 +10,11 @@ error is: TypeError: Invalid key argument
 error is: TypeError: Invalid key argument
 
 Importing a JWK key...
-error is: SyntaxError: Invalid keyFormat argument
-error is: SyntaxError: Invalid keyFormat argument
-error is: SyntaxError: Invalid keyFormat argument
-error is: SyntaxError: Invalid keyFormat argument
-error is: SyntaxError: Invalid keyFormat argument
+error is: TypeError: Invalid keyFormat argument
+error is: TypeError: Invalid keyFormat argument
+error is: TypeError: Invalid keyFormat argument
+error is: TypeError: Invalid keyFormat argument
+error is: TypeError: Invalid keyFormat argument
 
 Exporting the key as raw data...
 PASS bytesToHexString(new Uint8Array(exportedData)) is '8e73b0f7da0e6452c810f32b809079e562f8ead2522c6b7b8e73b0f7da0e6452'

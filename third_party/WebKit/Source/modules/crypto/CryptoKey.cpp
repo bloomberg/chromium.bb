@@ -167,7 +167,7 @@ bool CryptoKey::parseFormat(const String& formatString, WebCryptoKeyFormat& form
         return true;
     }
 
-    result->completeWithError(WebCryptoErrorTypeSyntax, "Invalid keyFormat argument");
+    result->completeWithError(WebCryptoErrorTypeType, "Invalid keyFormat argument");
     return false;
 }
 
@@ -177,7 +177,7 @@ bool CryptoKey::parseUsageMask(const Vector<String>& usages, WebCryptoKeyUsageMa
     for (size_t i = 0; i < usages.size(); ++i) {
         WebCryptoKeyUsageMask usage = keyUsageStringToMask(usages[i]);
         if (!usage) {
-            result->completeWithError(WebCryptoErrorTypeSyntax, "Invalid keyUsages argument");
+            result->completeWithError(WebCryptoErrorTypeType, "Invalid keyUsages argument");
             return false;
         }
         mask |= usage;
