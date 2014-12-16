@@ -291,9 +291,9 @@ void ShellDesktopControllerAura::CreateRootWindow() {
   // Set up basic pieces of ui::wm.
   gfx::Size size;
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAppShellHostWindowBounds)) {
+  if (command_line->HasSwitch(switches::kAppShellHostWindowSize)) {
     const std::string size_str =
-        command_line->GetSwitchValueASCII(switches::kAppShellHostWindowBounds);
+        command_line->GetSwitchValueASCII(switches::kAppShellHostWindowSize);
     int width, height;
     CHECK_EQ(2, sscanf(size_str.c_str(), "%dx%d", &width, &height));
     size = gfx::Size(width, height);
