@@ -156,8 +156,8 @@ void HTMLTextAreaElement::collectStyleForPresentationAttribute(const QualifiedNa
 void HTMLTextAreaElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (name == rowsAttr) {
-        int rows = value.toInt();
-        if (rows <= 0)
+        int rows = 0;
+        if (value.isEmpty() || !parseHTMLInteger(value, rows) || rows <= 0)
             rows = defaultRows;
         if (m_rows != rows) {
             m_rows = rows;
@@ -165,8 +165,8 @@ void HTMLTextAreaElement::parseAttribute(const QualifiedName& name, const Atomic
                 renderer()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
         }
     } else if (name == colsAttr) {
-        int cols = value.toInt();
-        if (cols <= 0)
+        int cols = 0;
+        if (value.isEmpty() || !parseHTMLInteger(value, cols) || cols <= 0)
             cols = defaultCols;
         if (m_cols != cols) {
             m_cols = cols;
