@@ -106,7 +106,13 @@
       "chromeos_unittests",
       "chromevox_tests",
       "components_unittests",
-      "content_browsertests",
+      {
+        "test": "content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 2
+        }
+      },
       "content_unittests",
       "crypto_unittests",
       "dbus_unittests",
@@ -117,13 +123,24 @@
       "gcm_unit_tests",
       "google_apis_unittests",
       "gpu_unittests",
-      "interactive_ui_tests",
+      {
+        "test": "interactive_ui_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 3
+        }
+      },
       "ipc_tests",
       "jingle_unittests",
       "media_unittests",
       "message_center_unittests",
       "nacl_loader_unittests",
-      "net_unittests",
+      {
+        "test": "net_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "ozone_unittests",
       "ppapi_unittests",
       "printing_unittests",
@@ -137,15 +154,15 @@
       "ui_base_unittests",
       "ui_chromeos_unittests",
       "ui_touch_selection_unittests",
-      "unit_tests",
+      {
+        "test": "unit_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "url_unittests",
       "views_unittests",
       "wm_unittests"
-    ]
-  },
-  "Linux ChromiumOS Ozone Tests (2)": {
-    "gtest_tests": [
-      "browser_tests"
     ]
   },
   "Linux ChromiumOS Tests (dbg)(1)": {
