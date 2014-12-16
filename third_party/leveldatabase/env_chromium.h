@@ -19,6 +19,8 @@
 
 namespace leveldb_env {
 
+// These entries map to values in tools/metrics/histograms/histograms.xml. New
+// values should be appended at the end.
 enum MethodID {
   kSequentialFileRead,
   kSequentialFileSkip,
@@ -41,6 +43,7 @@ enum MethodID {
   kNewLogger,
   kSyncParent,
   kGetChildren,
+  kNewAppendableFile,
   kNumEntries
 };
 
@@ -129,6 +132,8 @@ class ChromiumEnv : public leveldb::Env,
       leveldb::RandomAccessFile** result);
   virtual leveldb::Status NewWritableFile(const std::string& fname,
                                           leveldb::WritableFile** result);
+  virtual leveldb::Status NewAppendableFile(const std::string& fname,
+                                            leveldb::WritableFile** result);
   virtual leveldb::Status NewLogger(const std::string& fname,
                                     leveldb::Logger** result);
 

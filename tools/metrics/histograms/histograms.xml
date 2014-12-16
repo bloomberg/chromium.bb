@@ -49274,6 +49274,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="18" label="NewLogger"/>
   <int value="19" label="SyncParent"/>
   <int value="20" label="GetChildren"/>
+  <int value="21" label="NewAppendableFile"/>
 </enum>
 
 <enum name="LevelDBPrefStoreErrorCodes" type="int">
@@ -58942,6 +58943,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="GetChildren" label="ChromiumEnv::GetChildren"/>
   <suffix name="GetFileSize" label="ChromiumEnv::GetFileSize"/>
   <suffix name="LockFile" label="ChromiumEnv::LockFile"/>
+  <suffix name="NewAppendableFile" label="ChromiumEnv::NewAppendableFile"/>
   <suffix name="NewRandomAccessFile" label="ChromiumEnv::NewRandomAccessFile"/>
   <suffix name="RandomAccessFileRead" label="ChromiumRandomAccessFile::Read"/>
   <suffix name="RenameFile" label="ChromiumEnv::RenameFile"/>
