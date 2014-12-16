@@ -1596,7 +1596,7 @@ crbug.com/439840 [ Win Linux Debug ] svg/custom/relative-sized-image.xhtml [ Pas
 
 crbug.com/418091 [ Mac ] fast/text/aat-morx.html [ Pass Failure ]
 
-crbug.com/442512 svg/dom/viewspec-aspectparams.html [ Pass Failure ]
+crbug.com/442512 svg/dom/viewspec-aspectparams.html [ Pass Failure ImageOnlyFailure ]
 crbug.com/442512 svg/dom/viewspec-transformparams.html [ Pass Failure ]
 crbug.com/442512 svg/dom/viewspec-viewboxparams.html [ Pass Failure ]
 crbug.com/442512 svg/dom/viewspec-viewtargetparams.html [ Pass Failure ]
