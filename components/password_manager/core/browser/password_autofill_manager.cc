@@ -18,11 +18,33 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/strings/grit/components_strings.h"
+#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace password_manager {
 
 namespace {
+
+// Tests if |username| and |suggestion| are the same. This is different from the
+// usual string operator== in that an empty username will only match the
+// (non-empty) description of the empty username, used in the suggestions UI.
+bool CompareUsernameSuggestion(const base::string16& username,
+                               const base::string16& suggestion) {
+  if (username.empty()) {
+    return suggestion ==
+           l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN);
+  }
+  return username == suggestion;
+}
+
+// Returns |username| unless it is empty. For an empty |username| returns a
+// localised string saying this username is empty. Use this for displaying the
+// usernames to the user.
+base::string16 ReplaceEmptyUsername(const base::string16& username) {
+  if (username.empty())
+    return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN);
+  return username;
+}
 
 // This function attempts to fill |suggestions| and |realms| form |fill_data|
 // based on |current_username|. Unless |show_all| is true, it only picks
@@ -33,7 +55,8 @@ void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
                     bool show_all) {
   if (show_all ||
       StartsWith(fill_data.username_field.value, current_username, false)) {
-    autofill::Suggestion suggestion(fill_data.username_field.value);
+    autofill::Suggestion suggestion(
+        ReplaceEmptyUsername(fill_data.username_field.value));
     suggestion.label = base::UTF8ToUTF16(fill_data.preferred_realm);
     suggestion.frontend_id = autofill::POPUP_ITEM_ID_PASSWORD_ENTRY;
     suggestions->push_back(suggestion);
@@ -41,7 +64,7 @@ void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
 
   for (const auto& login : fill_data.additional_logins) {
     if (show_all || StartsWith(login.first, current_username, false)) {
-      autofill::Suggestion suggestion(login.first);
+      autofill::Suggestion suggestion(ReplaceEmptyUsername(login.first));
       suggestion.label = base::UTF8ToUTF16(login.second.realm);
       suggestion.frontend_id = autofill::POPUP_ITEM_ID_PASSWORD_ENTRY;
       suggestions->push_back(suggestion);
@@ -52,7 +75,8 @@ void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
     for (size_t i = 0; i < usernames.second.size(); ++i) {
       if (show_all ||
           StartsWith(usernames.second[i], current_username, false)) {
-        autofill::Suggestion suggestion(usernames.second[i]);
+        autofill::Suggestion suggestion(
+            ReplaceEmptyUsername(usernames.second[i]));
         suggestion.label = base::UTF8ToUTF16(usernames.first.realm);
         suggestion.frontend_id = autofill::POPUP_ITEM_ID_PASSWORD_ENTRY;
         suggestions->push_back(suggestion);
@@ -206,7 +230,8 @@ bool PasswordAutofillManager::GetPasswordForUsername(
   // fetch the actual password. See crbug.com/178358 for more context.
 
   // Look for any suitable matches to current field text.
-  if (fill_data.username_field.value == current_username) {
+  if (CompareUsernameSuggestion(fill_data.username_field.value,
+                                current_username)) {
     *password = fill_data.password_field.value;
     return true;
   }
@@ -216,7 +241,7 @@ bool PasswordAutofillManager::GetPasswordForUsername(
            fill_data.additional_logins.begin();
        iter != fill_data.additional_logins.end();
        ++iter) {
-    if (iter->first == current_username) {
+    if (CompareUsernameSuggestion(iter->first, current_username)) {
       *password = iter->second.password;
       return true;
     }
@@ -227,7 +252,8 @@ bool PasswordAutofillManager::GetPasswordForUsername(
        usernames_iter != fill_data.other_possible_usernames.end();
        ++usernames_iter) {
     for (size_t i = 0; i < usernames_iter->second.size(); ++i) {
-      if (usernames_iter->second[i] == current_username) {
+      if (CompareUsernameSuggestion(usernames_iter->second[i],
+                                    current_username)) {
         *password = usernames_iter->first.password;
         return true;
       }

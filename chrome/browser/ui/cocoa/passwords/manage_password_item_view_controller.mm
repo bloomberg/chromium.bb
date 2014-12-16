@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_content_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
+#include "grit/components_strings.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"

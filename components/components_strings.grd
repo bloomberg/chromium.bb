@@ -174,6 +174,7 @@
       <part file="error_page_strings.grdp" />
       <part file="google_strings.grdp" />
       <part file="omnibox_strings.grdp" />
+      <part file="password_manager_strings.grdp" />
       <part file="pdf_strings.grdp" />
       <part file="policy_strings.grdp" />
       <part file="translate_strings.grdp" />

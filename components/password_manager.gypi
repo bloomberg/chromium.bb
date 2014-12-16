@@ -15,6 +15,7 @@
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../url/url.gyp:url_lib',
         'autofill_core_common',
+        'components_strings.gyp:components_strings',
         'keyed_service_core',
         'os_crypt',
         'password_manager_core_common',
