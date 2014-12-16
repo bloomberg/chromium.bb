@@ -1888,32 +1888,3 @@ name=bug_436131_c
 *!ash::test::ShelfViewTestAPI::GetPreferredSize
 *!ash::test::ShelfViewTest_OverflowBubbleSize_Test::TestBody
 *!testing::internal::HandleExceptionsInMethodIfSupported<>
-
-UNINITIALIZED READ
-name=bug_442850_a
-MSVCR120.dll!sprintf_s
-MSVCR120.dll!_uncaught_exception
-...
-*!*
-*!*
-*!*
-*!*
-...
-*!*
-*!*
-*!*
-*!*
-KERNEL32.dll!BaseThreadInitThunk
-
-UNINITIALIZED READ
-name=bug_442850_b
-*!*
-*!*
-*!*
-*!*
-...
-*!*
-*!*
-*!*
-*!*
-KERNEL32.dll!BaseThreadInitThunk
