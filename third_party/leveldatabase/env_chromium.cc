@@ -408,22 +408,26 @@ Status MakeIOError(Slice filename,
   return Status::IOError(filename, buf);
 }
 
-ErrorParsingResult ParseMethodAndError(const char* string,
+ErrorParsingResult ParseMethodAndError(const leveldb::Status& status,
                                        MethodID* method_param,
                                        int* error) {
+  const std::string status_string = status.ToString();
   int method;
-  if (RE2::PartialMatch(string, "ChromeMethodOnly: (\\d+)", &method)) {
+  if (RE2::PartialMatch(status_string.c_str(), "ChromeMethodOnly: (\\d+)",
+                        &method)) {
     *method_param = static_cast<MethodID>(method);
     return METHOD_ONLY;
   }
-  if (RE2::PartialMatch(
-          string, "ChromeMethodPFE: (\\d+)::.*::(\\d+)", &method, error)) {
+  if (RE2::PartialMatch(status_string.c_str(),
+                        "ChromeMethodPFE: (\\d+)::.*::(\\d+)", &method,
+                        error)) {
     *error = -*error;
     *method_param = static_cast<MethodID>(method);
     return METHOD_AND_PFE;
   }
-  if (RE2::PartialMatch(
-          string, "ChromeMethodErrno: (\\d+)::.*::(\\d+)", &method, error)) {
+  if (RE2::PartialMatch(status_string.c_str(),
+                        "ChromeMethodErrno: (\\d+)::.*::(\\d+)", &method,
+                        error)) {
     *method_param = static_cast<MethodID>(method);
     return METHOD_AND_ERRNO;
   }
@@ -502,8 +506,8 @@ bool IndicatesDiskFull(const leveldb::Status& status) {
     return false;
   leveldb_env::MethodID method;
   int error = -1;
-  leveldb_env::ErrorParsingResult result = leveldb_env::ParseMethodAndError(
-      status.ToString().c_str(), &method, &error);
+  leveldb_env::ErrorParsingResult result =
+      leveldb_env::ParseMethodAndError(status, &method, &error);
   return (result == leveldb_env::METHOD_AND_PFE &&
           static_cast<base::File::Error>(error) ==
               base::File::FILE_ERROR_NO_SPACE) ||
@@ -513,8 +517,8 @@ bool IndicatesDiskFull(const leveldb::Status& status) {
 bool IsIOError(const leveldb::Status& status) {
   leveldb_env::MethodID method;
   int error = -1;
-  leveldb_env::ErrorParsingResult result = leveldb_env::ParseMethodAndError(
-      status.ToString().c_str(), &method, &error);
+  leveldb_env::ErrorParsingResult result =
+      leveldb_env::ParseMethodAndError(status, &method, &error);
   return result != leveldb_env::NONE;
 }
 

@@ -184,7 +184,7 @@ static void ParseAndHistogramIOErrorDetails(const std::string& histogram_name,
   leveldb_env::MethodID method;
   int error = -1;
   leveldb_env::ErrorParsingResult result =
-      leveldb_env::ParseMethodAndError(s.ToString().c_str(), &method, &error);
+      leveldb_env::ParseMethodAndError(s, &method, &error);
   if (result == leveldb_env::NONE)
     return;
   std::string method_histogram_name(histogram_name);

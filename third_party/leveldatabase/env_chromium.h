@@ -61,7 +61,7 @@ enum ErrorParsingResult {
   NONE,
 };
 
-ErrorParsingResult ParseMethodAndError(const char* string,
+ErrorParsingResult ParseMethodAndError(const leveldb::Status& status,
                                        MethodID* method,
                                        int* error);
 int GetCorruptionCode(const leveldb::Status& status);

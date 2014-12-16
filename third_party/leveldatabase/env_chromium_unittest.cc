@@ -32,8 +32,7 @@ TEST(ErrorEncoding, OnlyAMethod) {
   const Status s = MakeIOError("Somefile.txt", "message", in_method);
   MethodID method;
   int error = -75;
-  EXPECT_EQ(leveldb_env::METHOD_ONLY,
-            ParseMethodAndError(s.ToString().c_str(), &method, &error));
+  EXPECT_EQ(leveldb_env::METHOD_ONLY, ParseMethodAndError(s, &method, &error));
   EXPECT_EQ(in_method, method);
   EXPECT_EQ(-75, error);
 }
@@ -45,7 +44,7 @@ TEST(ErrorEncoding, FileError) {
   MethodID method;
   int error;
   EXPECT_EQ(leveldb_env::METHOD_AND_PFE,
-            ParseMethodAndError(s.ToString().c_str(), &method, &error));
+            ParseMethodAndError(s, &method, &error));
   EXPECT_EQ(in_method, method);
   EXPECT_EQ(fe, error);
 }
@@ -54,8 +53,7 @@ TEST(ErrorEncoding, NoEncodedMessage) {
   Status s = Status::IOError("Some message", "from leveldb itself");
   MethodID method = leveldb_env::kRandomAccessFileRead;
   int error = 4;
-  EXPECT_EQ(leveldb_env::NONE,
-            ParseMethodAndError(s.ToString().c_str(), &method, &error));
+  EXPECT_EQ(leveldb_env::NONE, ParseMethodAndError(s, &method, &error));
   EXPECT_EQ(leveldb_env::kRandomAccessFileRead, method);
   EXPECT_EQ(4, error);
 }
