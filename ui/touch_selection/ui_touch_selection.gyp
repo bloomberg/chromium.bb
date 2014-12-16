@@ -86,5 +86,29 @@
         },
       ],
     }],  # OS == "android"
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'ui_touch_selection_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'ui_touch_selection_unittests',
+          ],
+          'includes': [
+            '../../build/isolate.gypi',
+          ],
+          'sources': [
+            'ui_touch_selection_unittests.isolate',
+          ],
+          'conditions': [
+            ['use_x11 == 1', {
+              'dependencies': [
+                '../../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+              ],
+            }],
+          ],
+        },
+      ],
+    }],
   ],
 }

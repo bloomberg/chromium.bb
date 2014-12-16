@@ -101,7 +101,12 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "ui_touch_selection_unittests",
+      {
+        "test": "ui_touch_selection_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       {
         "test": "sync_integration_tests",
         "swarming": {
@@ -236,7 +241,12 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "ui_touch_selection_unittests",
+      {
+        "test": "ui_touch_selection_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       {
         "test": "sync_integration_tests",
         "swarming": {
@@ -367,7 +377,12 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "ui_touch_selection_unittests",
+      {
+        "test": "ui_touch_selection_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       {
         "test": "sync_integration_tests",
         "swarming": {
