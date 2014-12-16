@@ -174,6 +174,25 @@ class NET_EXPORT NetworkChangeNotifier {
     DISALLOW_COPY_AND_ASSIGN(NetworkChangeObserver);
   };
 
+  class NET_EXPORT MaxBandwidthObserver {
+   public:
+    // Will be called when a change occurs to the network's maximum bandwidth as
+    // defined in http://w3c.github.io/netinfo/. Generally this will only be
+    // called on bandwidth changing network connection/disconnection events.
+    // Some platforms may call it more frequently, such as when WiFi signal
+    // strength changes.
+    // TODO(jkarlin): This is currently only implemented for Android. Implement
+    // on every platform.
+    virtual void OnMaxBandwidthChanged(double max_bandwidth_mbps) = 0;
+
+   protected:
+    MaxBandwidthObserver() {}
+    virtual ~MaxBandwidthObserver() {}
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(MaxBandwidthObserver);
+  };
+
   virtual ~NetworkChangeNotifier();
 
   // See the description of NetworkChangeNotifier::GetConnectionType().
@@ -252,6 +271,7 @@ class NET_EXPORT NetworkChangeNotifier {
   static void AddConnectionTypeObserver(ConnectionTypeObserver* observer);
   static void AddDNSObserver(DNSObserver* observer);
   static void AddNetworkChangeObserver(NetworkChangeObserver* observer);
+  static void AddMaxBandwidthObserver(MaxBandwidthObserver* observer);
 
   // Unregisters |observer| from receiving notifications.  This must be called
   // on the same thread on which AddObserver() was called.  Like AddObserver(),
@@ -264,6 +284,7 @@ class NET_EXPORT NetworkChangeNotifier {
   static void RemoveConnectionTypeObserver(ConnectionTypeObserver* observer);
   static void RemoveDNSObserver(DNSObserver* observer);
   static void RemoveNetworkChangeObserver(NetworkChangeObserver* observer);
+  static void RemoveMaxBandwidthObserver(MaxBandwidthObserver* observer);
 
   // Allow unit tests to trigger notifications.
   static void NotifyObserversOfIPAddressChangeForTests();
@@ -366,6 +387,7 @@ class NET_EXPORT NetworkChangeNotifier {
   static void NotifyObserversOfConnectionTypeChange();
   static void NotifyObserversOfDNSChange();
   static void NotifyObserversOfNetworkChange(ConnectionType type);
+  static void NotifyObserversOfMaxBandwidthChange(double max_bandwidth_mbps);
 
   // Stores |config| in NetworkState and notifies observers.
   static void SetDnsConfig(const DnsConfig& config);
@@ -383,15 +405,18 @@ class NET_EXPORT NetworkChangeNotifier {
   void NotifyObserversOfConnectionTypeChangeImpl(ConnectionType type);
   void NotifyObserversOfDNSChangeImpl();
   void NotifyObserversOfNetworkChangeImpl(ConnectionType type);
+  void NotifyObserversOfMaxBandwidthChangeImpl(double max_bandwidth_mbps);
 
-  const scoped_refptr<ObserverListThreadSafe<IPAddressObserver> >
+  const scoped_refptr<ObserverListThreadSafe<IPAddressObserver>>
       ip_address_observer_list_;
-  const scoped_refptr<ObserverListThreadSafe<ConnectionTypeObserver> >
+  const scoped_refptr<ObserverListThreadSafe<ConnectionTypeObserver>>
       connection_type_observer_list_;
-  const scoped_refptr<ObserverListThreadSafe<DNSObserver> >
+  const scoped_refptr<ObserverListThreadSafe<DNSObserver>>
       resolver_state_observer_list_;
-  const scoped_refptr<ObserverListThreadSafe<NetworkChangeObserver> >
+  const scoped_refptr<ObserverListThreadSafe<NetworkChangeObserver>>
       network_change_observer_list_;
+  const scoped_refptr<ObserverListThreadSafe<MaxBandwidthObserver>>
+      max_bandwidth_observer_list_;
 
   // The current network state. Hosts DnsConfig, exposed via GetDnsConfig.
   scoped_ptr<NetworkState> network_state_;

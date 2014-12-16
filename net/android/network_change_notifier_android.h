@@ -52,6 +52,7 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierAndroid
 
   // NetworkChangeNotifierDelegateAndroid::Observer:
   virtual void OnConnectionTypeChanged() override;
+  virtual void OnMaxBandwidthChanged(double max_bandwidth_mbps) override;
 
   static bool Register(JNIEnv* env);
 

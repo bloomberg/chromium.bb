@@ -688,6 +688,14 @@ void NetworkChangeNotifier::AddNetworkChangeObserver(
   }
 }
 
+void NetworkChangeNotifier::AddMaxBandwidthObserver(
+    MaxBandwidthObserver* observer) {
+  if (g_network_change_notifier) {
+    g_network_change_notifier->max_bandwidth_observer_list_->AddObserver(
+        observer);
+  }
+}
+
 void NetworkChangeNotifier::RemoveIPAddressObserver(
     IPAddressObserver* observer) {
   if (g_network_change_notifier) {
@@ -715,6 +723,14 @@ void NetworkChangeNotifier::RemoveNetworkChangeObserver(
     NetworkChangeObserver* observer) {
   if (g_network_change_notifier) {
     g_network_change_notifier->network_change_observer_list_->RemoveObserver(
+        observer);
+  }
+}
+
+void NetworkChangeNotifier::RemoveMaxBandwidthObserver(
+    MaxBandwidthObserver* observer) {
+  if (g_network_change_notifier) {
+    g_network_change_notifier->max_bandwidth_observer_list_->RemoveObserver(
         observer);
   }
 }
@@ -747,19 +763,20 @@ void NetworkChangeNotifier::SetTestNotificationsOnly(bool test_only) {
 
 NetworkChangeNotifier::NetworkChangeNotifier(
     const NetworkChangeCalculatorParams& params
-        /*= NetworkChangeCalculatorParams()*/)
-    : ip_address_observer_list_(
-        new ObserverListThreadSafe<IPAddressObserver>(
-            ObserverListBase<IPAddressObserver>::NOTIFY_EXISTING_ONLY)),
+    /*= NetworkChangeCalculatorParams()*/)
+    : ip_address_observer_list_(new ObserverListThreadSafe<IPAddressObserver>(
+          ObserverListBase<IPAddressObserver>::NOTIFY_EXISTING_ONLY)),
       connection_type_observer_list_(
-        new ObserverListThreadSafe<ConnectionTypeObserver>(
-            ObserverListBase<ConnectionTypeObserver>::NOTIFY_EXISTING_ONLY)),
-      resolver_state_observer_list_(
-        new ObserverListThreadSafe<DNSObserver>(
-            ObserverListBase<DNSObserver>::NOTIFY_EXISTING_ONLY)),
+          new ObserverListThreadSafe<ConnectionTypeObserver>(
+              ObserverListBase<ConnectionTypeObserver>::NOTIFY_EXISTING_ONLY)),
+      resolver_state_observer_list_(new ObserverListThreadSafe<DNSObserver>(
+          ObserverListBase<DNSObserver>::NOTIFY_EXISTING_ONLY)),
       network_change_observer_list_(
-        new ObserverListThreadSafe<NetworkChangeObserver>(
-            ObserverListBase<NetworkChangeObserver>::NOTIFY_EXISTING_ONLY)),
+          new ObserverListThreadSafe<NetworkChangeObserver>(
+              ObserverListBase<NetworkChangeObserver>::NOTIFY_EXISTING_ONLY)),
+      max_bandwidth_observer_list_(
+          new ObserverListThreadSafe<MaxBandwidthObserver>(
+              ObserverListBase<MaxBandwidthObserver>::NOTIFY_EXISTING_ONLY)),
       network_state_(new NetworkState()),
       network_change_calculator_(new NetworkChangeCalculator(params)),
       test_notifications_only_(false) {
@@ -886,6 +903,16 @@ void NetworkChangeNotifier::NotifyObserversOfNetworkChange(
 }
 
 // static
+void NetworkChangeNotifier::NotifyObserversOfMaxBandwidthChange(
+    double max_bandwidth_mbps) {
+  if (g_network_change_notifier &&
+      !g_network_change_notifier->test_notifications_only_) {
+    g_network_change_notifier->NotifyObserversOfMaxBandwidthChangeImpl(
+        max_bandwidth_mbps);
+  }
+}
+
+// static
 void NetworkChangeNotifier::NotifyObserversOfDNSChange() {
   if (g_network_change_notifier &&
       !g_network_change_notifier->test_notifications_only_) {
@@ -919,6 +946,12 @@ void NetworkChangeNotifier::NotifyObserversOfNetworkChangeImpl(
 
 void NetworkChangeNotifier::NotifyObserversOfDNSChangeImpl() {
   resolver_state_observer_list_->Notify(&DNSObserver::OnDNSChanged);
+}
+
+void NetworkChangeNotifier::NotifyObserversOfMaxBandwidthChangeImpl(
+    double max_bandwidth_mbps) {
+  max_bandwidth_observer_list_->Notify(
+      &MaxBandwidthObserver::OnMaxBandwidthChanged, max_bandwidth_mbps);
 }
 
 NetworkChangeNotifier::DisableForTest::DisableForTest()

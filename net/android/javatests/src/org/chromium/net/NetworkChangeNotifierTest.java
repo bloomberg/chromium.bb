@@ -7,6 +7,7 @@ package org.chromium.net;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
+import android.net.wifi.WifiManager;
 import android.telephony.TelephonyManager;
 import android.test.InstrumentationTestCase;
 import android.test.UiThreadTest;
@@ -125,6 +126,49 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         mWifiDelegate.setWifiSSID("foo");
     }
 
+    private double getCurrentMaxBandwidthInMbps() {
+        final NetworkChangeNotifierAutoDetect.NetworkState networkState =
+                mReceiver.getCurrentNetworkState();
+        return mReceiver.getCurrentMaxBandwidthInMbps(networkState);
+    }
+
+    private int getCurrentConnectionType() {
+        final NetworkChangeNotifierAutoDetect.NetworkState networkState =
+                mReceiver.getCurrentNetworkState();
+        return mReceiver.getCurrentConnectionType(networkState);
+    }
+
+    /**
+     * Tests that changing the RSSI_CHANGED_ACTION intent updates MaxBandwidth.
+     */
+    @UiThreadTest
+    @MediumTest
+    @Feature({"Android-AppBase"})
+    public void testNetworkChangeNotifierRSSIEventUpdatesMaxBandwidthForWiFi()
+            throws InterruptedException {
+        NetworkChangeNotifier notifier = NetworkChangeNotifier.getInstance();
+        mConnectivityDelegate.setNetworkType(ConnectivityManager.TYPE_WIFI);
+        mWifiDelegate.setLinkSpeedInMbps(42);
+        Intent intent = new Intent(WifiManager.RSSI_CHANGED_ACTION);
+        mReceiver.onReceive(getInstrumentation().getTargetContext(), intent);
+
+        assertEquals(42.0, notifier.getCurrentMaxBandwidthInMbps());
+
+        // Changing the link speed has no effect until the intent fires.
+        mWifiDelegate.setLinkSpeedInMbps(80);
+        assertEquals(42.0, notifier.getCurrentMaxBandwidthInMbps());
+
+        // Fire the intent.
+        mReceiver.onReceive(getInstrumentation().getTargetContext(), intent);
+        assertEquals(80.0, notifier.getCurrentMaxBandwidthInMbps());
+
+        // Firing a network type change intent also causes max bandwidth to update.
+        mWifiDelegate.setLinkSpeedInMbps(20);
+        intent = new Intent(ConnectivityManager.CONNECTIVITY_ACTION);
+        mReceiver.onReceive(getInstrumentation().getTargetContext(), intent);
+        assertEquals(20.0, notifier.getCurrentMaxBandwidthInMbps());
+    }
+
     /**
      * Tests that changing the network type changes the maxBandwidth.
      */
@@ -134,9 +178,8 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
     public void testNetworkChangeNotifierMaxBandwidthEthernet() throws InterruptedException {
         // Show that for Ethernet the link speed is unknown (+Infinity).
         mConnectivityDelegate.setNetworkType(ConnectivityManager.TYPE_ETHERNET);
-        assertEquals(ConnectionType.CONNECTION_ETHERNET,
-                mReceiver.getCurrentConnectionType());
-        assertEquals(Double.POSITIVE_INFINITY, mReceiver.getCurrentMaxBandwidthInMbps());
+        assertEquals(ConnectionType.CONNECTION_ETHERNET, getCurrentConnectionType());
+        assertEquals(Double.POSITIVE_INFINITY, getCurrentMaxBandwidthInMbps());
     }
 
     @UiThreadTest
@@ -146,8 +189,8 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         // Test that for wifi types the link speed is read from the WifiManager.
         mWifiDelegate.setLinkSpeedInMbps(42);
         mConnectivityDelegate.setNetworkType(ConnectivityManager.TYPE_WIFI);
-        assertEquals(ConnectionType.CONNECTION_WIFI, mReceiver.getCurrentConnectionType());
-        assertEquals(42.0, mReceiver.getCurrentMaxBandwidthInMbps());
+        assertEquals(ConnectionType.CONNECTION_WIFI, getCurrentConnectionType());
+        assertEquals(42.0, getCurrentMaxBandwidthInMbps());
     }
 
     @UiThreadTest
@@ -158,9 +201,8 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         // TODO(jkarlin): Add support for CONNECTION_WIMAX as specified in
         // http://w3c.github.io/netinfo/.
         mConnectivityDelegate.setNetworkType(ConnectivityManager.TYPE_WIMAX);
-        assertEquals(ConnectionType.CONNECTION_4G,
-                mReceiver.getCurrentConnectionType());
-        assertEquals(Double.POSITIVE_INFINITY, mReceiver.getCurrentMaxBandwidthInMbps());
+        assertEquals(ConnectionType.CONNECTION_4G, getCurrentConnectionType());
+        assertEquals(Double.POSITIVE_INFINITY, getCurrentMaxBandwidthInMbps());
     }
 
     @UiThreadTest
@@ -169,9 +211,8 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
     public void testNetworkChangeNotifierMaxBandwidthBluetooth() throws InterruptedException {
         // Show that for bluetooth the link speed is unknown (+Infinity).
         mConnectivityDelegate.setNetworkType(ConnectivityManager.TYPE_BLUETOOTH);
-        assertEquals(ConnectionType.CONNECTION_BLUETOOTH,
-                mReceiver.getCurrentConnectionType());
-        assertEquals(Double.POSITIVE_INFINITY, mReceiver.getCurrentMaxBandwidthInMbps());
+        assertEquals(ConnectionType.CONNECTION_BLUETOOTH, getCurrentConnectionType());
+        assertEquals(Double.POSITIVE_INFINITY, getCurrentMaxBandwidthInMbps());
     }
 
     @UiThreadTest
@@ -181,8 +222,8 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         // Test that for mobile types the subtype is used to determine the maxBandwidth.
         mConnectivityDelegate.setNetworkType(ConnectivityManager.TYPE_MOBILE);
         mConnectivityDelegate.setNetworkSubtype(TelephonyManager.NETWORK_TYPE_LTE);
-        assertEquals(ConnectionType.CONNECTION_4G, mReceiver.getCurrentConnectionType());
-        assertEquals(100.0, mReceiver.getCurrentMaxBandwidthInMbps());
+        assertEquals(ConnectionType.CONNECTION_4G, getCurrentConnectionType());
+        assertEquals(100.0, getCurrentMaxBandwidthInMbps());
     }
 
     /**

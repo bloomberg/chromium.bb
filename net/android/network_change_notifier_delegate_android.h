@@ -33,6 +33,9 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierDelegateAndroid {
 
     // Updates the current connection type.
     virtual void OnConnectionTypeChanged() = 0;
+
+    // Updates the current max bandwidth.
+    virtual void OnMaxBandwidthChanged(double max_bandwidth_mbps) = 0;
   };
 
   NetworkChangeNotifierDelegateAndroid();
@@ -46,6 +49,14 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierDelegateAndroid {
                                    jobject obj,
                                    jint new_connection_type);
   jint GetConnectionType(JNIEnv* env, jobject obj) const;
+
+  // Called from NetworkChangeNotifierAndroid.java on the JNI thread whenever
+  // the maximum bandwidth of the connection changes. This updates the current
+  // max bandwidth seen by this class and forwards the notification to the
+  // observers that subscribed through AddObserver().
+  void NotifyMaxBandwidthChanged(JNIEnv* env,
+                                 jobject obj,
+                                 jdouble new_max_bandwidth);
 
   // These methods can be called on any thread. Note that the provided observer
   // will be notified on the thread AddObserver() is called on.

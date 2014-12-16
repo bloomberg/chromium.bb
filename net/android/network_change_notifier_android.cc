@@ -122,6 +122,12 @@ void NetworkChangeNotifierAndroid::OnConnectionTypeChanged() {
   DnsConfigServiceThread::NotifyNetworkChangeNotifierObservers();
 }
 
+void NetworkChangeNotifierAndroid::OnMaxBandwidthChanged(
+    double max_bandwidth_mbps) {
+  NetworkChangeNotifier::NotifyObserversOfMaxBandwidthChange(
+      max_bandwidth_mbps);
+}
+
 // static
 bool NetworkChangeNotifierAndroid::Register(JNIEnv* env) {
   return NetworkChangeNotifierDelegateAndroid::Register(env);

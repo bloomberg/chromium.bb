@@ -73,7 +73,7 @@ public class NetworkChangeNotifier {
     }
 
     @CalledByNative
-    public double getCurrentMaxBandwidth() {
+    public double getCurrentMaxBandwidthInMbps() {
         return mCurrentMaxBandwidth;
     }
 
@@ -147,14 +147,19 @@ public class NetworkChangeNotifier {
                     new NetworkChangeNotifierAutoDetect.Observer() {
                         @Override
                         public void onConnectionTypeChanged(int newConnectionType) {
-                            updateCurrentMaxBandwidth(mAutoDetector.getCurrentMaxBandwidthInMbps());
                             updateCurrentConnectionType(newConnectionType);
+                        }
+                        @Override
+                        public void onMaxBandwidthChanged(double maxBandwidthMbps) {
+                            updateCurrentMaxBandwidth(maxBandwidthMbps);
                         }
                     },
                     mContext,
                     alwaysWatchForChanges);
-                updateCurrentMaxBandwidth(mAutoDetector.getCurrentMaxBandwidthInMbps());
-                updateCurrentConnectionType(mAutoDetector.getCurrentConnectionType());
+                final NetworkChangeNotifierAutoDetect.NetworkState networkState =
+                        mAutoDetector.getCurrentNetworkState();
+                updateCurrentConnectionType(mAutoDetector.getCurrentConnectionType(networkState));
+                updateCurrentMaxBandwidth(mAutoDetector.getCurrentMaxBandwidthInMbps(networkState));
             }
         } else {
             destroyAutoDetector();
@@ -177,9 +182,9 @@ public class NetworkChangeNotifier {
         boolean connectionCurrentlyExists =
                 mCurrentConnectionType != ConnectionType.CONNECTION_NONE;
         if (connectionCurrentlyExists != forceOnline) {
-            updateCurrentMaxBandwidth(forceOnline ? Double.POSITIVE_INFINITY : 0.0);
             updateCurrentConnectionType(forceOnline ? ConnectionType.CONNECTION_UNKNOWN
                     : ConnectionType.CONNECTION_NONE);
+            updateCurrentMaxBandwidth(forceOnline ? Double.POSITIVE_INFINITY : 0.0);
         }
     }
 
@@ -188,8 +193,10 @@ public class NetworkChangeNotifier {
         notifyObserversOfConnectionTypeChange(newConnectionType);
     }
 
-    private void updateCurrentMaxBandwidth(double maxBandwidth) {
-        mCurrentMaxBandwidth = maxBandwidth;
+    private void updateCurrentMaxBandwidth(double maxBandwidthMbps) {
+        if (maxBandwidthMbps == mCurrentMaxBandwidth) return;
+        mCurrentMaxBandwidth = maxBandwidthMbps;
+        notifyObserversOfMaxBandwidthChange(maxBandwidthMbps);
     }
 
     /**
@@ -201,6 +208,15 @@ public class NetworkChangeNotifier {
         }
         for (ConnectionTypeObserver observer : mConnectionTypeObservers) {
             observer.onConnectionTypeChanged(newConnectionType);
+        }
+    }
+
+    /**
+     * Alerts all observers of a bandwidth change.
+     */
+    void notifyObserversOfMaxBandwidthChange(double maxBandwidthMbps) {
+        for (Long nativeChangeNotifier : mNativeChangeNotifiers) {
+            nativeNotifyMaxBandwidthChanged(nativeChangeNotifier, maxBandwidthMbps);
         }
     }
 
@@ -228,6 +244,9 @@ public class NetworkChangeNotifier {
 
     @NativeClassQualifiedName("NetworkChangeNotifierDelegateAndroid")
     private native void nativeNotifyConnectionTypeChanged(long nativePtr, int newConnectionType);
+
+    @NativeClassQualifiedName("NetworkChangeNotifierDelegateAndroid")
+    private native void nativeNotifyMaxBandwidthChanged(long nativePtr, double maxBandwidthMbps);
 
     private static native double nativeGetMaxBandwidthForConnectionSubtype(int subtype);
 
