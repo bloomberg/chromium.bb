@@ -138,13 +138,13 @@ class PtrStorage : public PtrStorageImpl<T, LifetimeOf<T>::value> {
 public:
     static PtrStorage& fromSlot(void** slot)
     {
-        COMPILE_ASSERT(sizeof(PtrStorage) == sizeof(void*), PtrStorage_must_be_pointer_size);
+        static_assert(sizeof(PtrStorage) == sizeof(void*), "PtrStorage must be the size of a pointer");
         return *reinterpret_cast<PtrStorage*>(slot);
     }
 
     static const PtrStorage& fromSlot(void* const* slot)
     {
-        COMPILE_ASSERT(sizeof(PtrStorage) == sizeof(void*), PtrStorage_must_be_pointer_size);
+        static_assert(sizeof(PtrStorage) == sizeof(void*), "PtrStorage must be the size of a pointer");
         return *reinterpret_cast<const PtrStorage*>(slot);
     }
 

@@ -91,7 +91,7 @@ private:
 template<typename T> template<typename U> inline WebPrivateOwnPtr<T>::WebPrivateOwnPtr(const PassOwnPtr<U>& o, EnsurePtrConvertibleArgDefn(U, T))
     : m_ptr(o.leakPtr())
 {
-    COMPILE_ASSERT(!WTF::IsArray<T>::value, Pointers_to_array_must_never_be_converted);
+    static_assert(!WTF::IsArray<T>::value, "Pointers to array must never be converted");
 }
 #endif
 

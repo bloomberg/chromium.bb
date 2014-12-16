@@ -76,7 +76,7 @@ public:
 };
 
 #if INSIDE_BLINK
-COMPILE_ASSERT(sizeof(WebDeviceMotionData) == (10 * sizeof(double) + 2 * sizeof(char)), WebDeviceMotionData_has_wrong_size);
+static_assert(sizeof(WebDeviceMotionData) == (10 * sizeof(double) + 2 * sizeof(char)), "WebDeviceMotionData has wrong size");
 #endif
 
 #pragma pack(pop)

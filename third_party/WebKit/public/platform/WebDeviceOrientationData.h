@@ -61,7 +61,7 @@ public:
 };
 
 #if INSIDE_BLINK
-COMPILE_ASSERT(sizeof(WebDeviceOrientationData) == (3 * sizeof(double) + 1 * sizeof(char)), WebDeviceOrientationData_has_wrong_size);
+static_assert(sizeof(WebDeviceOrientationData) == (3 * sizeof(double) + 1 * sizeof(char)), "WebDeviceOrientationData has wrong size");
 #endif
 
 #pragma pack(pop)
