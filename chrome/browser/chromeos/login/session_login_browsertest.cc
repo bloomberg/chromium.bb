@@ -10,12 +10,12 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/browser_window_testing_views.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/common/chrome_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 namespace chromeos {
 
@@ -23,7 +23,7 @@ namespace {
 
 const char kTestUser[] = "test-user@gmail.com";
 
-}  // anonymous namespace
+}  // namespace
 
 class BrowserLoginTest : public chromeos::LoginManagerTest {
  public:
@@ -59,9 +59,9 @@ IN_PROC_BROWSER_TEST_F(BrowserLoginTest, BrowserActive) {
   EXPECT_TRUE(browser != NULL);
   EXPECT_TRUE(browser->window()->IsActive());
 
-  views::FocusManager* focus_manager = browser->window()->
-      GetBrowserWindowTesting()->GetTabContentsContainerView()->
-          GetFocusManager();
+  gfx::NativeWindow window = browser->window()->GetNativeWindow();
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+  views::FocusManager* focus_manager = widget->GetFocusManager();
   EXPECT_TRUE(focus_manager != NULL);
 
   const views::View* focused_view = focus_manager->GetFocusedView();
