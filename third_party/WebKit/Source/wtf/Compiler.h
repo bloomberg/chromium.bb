@@ -47,8 +47,6 @@
 
 #define WTF_COMPILER_SUPPORTS_CXX_EXPLICIT_CONVERSIONS __has_feature(cxx_explicit_conversions)
 #define WTF_COMPILER_SUPPORTS_BLOCKS __has_feature(blocks)
-#define WTF_COMPILER_SUPPORTS_C_STATIC_ASSERT __has_extension(c_static_assert)
-#define WTF_COMPILER_SUPPORTS_CXX_STATIC_ASSERT __has_extension(cxx_static_assert)
 #define WTF_COMPILER_SUPPORTS_HAS_TRIVIAL_DESTRUCTOR __has_extension(has_trivial_destructor)
 
 #endif
@@ -74,19 +72,7 @@
 
 /* Specific compiler features */
 #if COMPILER(GCC) && !COMPILER(CLANG)
-#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
-/* C11 support */
-#define WTF_COMPILER_SUPPORTS_C_STATIC_ASSERT 1
-#endif
-#if defined(__GXX_EXPERIMENTAL_CXX0X__) || (defined(__cplusplus) && __cplusplus >= 201103L)
-/* C++11 support */
-#if GCC_VERSION_AT_LEAST(4, 3, 0)
-#define WTF_COMPILER_SUPPORTS_CXX_STATIC_ASSERT 1
-#endif
-#if GCC_VERSION_AT_LEAST(4, 5, 0)
 #define WTF_COMPILER_SUPPORTS_CXX_EXPLICIT_CONVERSIONS 1
-#endif
-#endif /* defined(__GXX_EXPERIMENTAL_CXX0X__) || (defined(__cplusplus) && __cplusplus >= 201103L) */
 #endif /* COMPILER(GCC) */
 
 /* ==== Compiler features ==== */

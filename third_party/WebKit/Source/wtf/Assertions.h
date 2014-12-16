@@ -292,15 +292,8 @@ while (0)
 #endif
 
 /* COMPILE_ASSERT */
-#ifndef COMPILE_ASSERT
-#if COMPILER_SUPPORTS(C_STATIC_ASSERT)
-/* Unlike static_assert below, this also works in plain C code. */
-#define COMPILE_ASSERT(exp, name) _Static_assert((exp), #name)
-#elif COMPILER_SUPPORTS(CXX_STATIC_ASSERT)
-#define COMPILE_ASSERT(exp, name) static_assert((exp), #name)
-#else
-#define COMPILE_ASSERT(exp, name) typedef int dummy##name [(exp) ? 1 : -1]
-#endif
+#ifndef COMPILE_ASSERT // also defined in base/macros.h
+#define COMPILE_ASSERT(exp, msg) static_assert((exp), #msg)
 #endif
 
 /* FATAL */
