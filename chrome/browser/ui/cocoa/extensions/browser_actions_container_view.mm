@@ -178,11 +178,12 @@ const CGFloat kMinimumContainerWidth = 10.0;
     [resizeAnimation_ stopAnimation];
 
   if (animate) {
-    NSDictionary* animationDictionary =
-        @{ NSViewAnimationTargetKey: self,
-           NSViewAnimationStartFrameKey: [NSValue valueWithRect:[self frame]],
-           NSViewAnimationEndFrameKey: [NSValue valueWithRect:newFrame] };
-    [resizeAnimation_ setViewAnimations:@[animationDictionary]];
+    NSDictionary* animationDictionary = @{
+      NSViewAnimationTargetKey : self,
+      NSViewAnimationStartFrameKey : [NSValue valueWithRect:[self frame]],
+      NSViewAnimationEndFrameKey : [NSValue valueWithRect:newFrame]
+    };
+    [resizeAnimation_ setViewAnimations:@[ animationDictionary ]];
     [resizeAnimation_ startAnimation];
 
     [[NSNotificationCenter defaultCenter]
