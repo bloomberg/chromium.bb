@@ -56,6 +56,13 @@ void InterpolableNumber::add(const InterpolableValue& rhs, InterpolableValue& re
     resultNumber.m_value = m_value + rhsNumber.m_value;
 }
 
+void InterpolableNumber::multiply(double scalar, InterpolableValue& result) const
+{
+    InterpolableNumber& resultNumber = toInterpolableNumber(result);
+
+    resultNumber.m_value = scalar * m_value;
+}
+
 void InterpolableBool::add(const InterpolableValue& rhs, InterpolableValue& result) const
 {
     const InterpolableBool& rhsBool = toInterpolableBool(rhs);
@@ -76,6 +83,18 @@ void InterpolableList::add(const InterpolableValue& rhs, InterpolableValue& resu
         ASSERT(m_values[i]);
         ASSERT(rhsList.m_values[i]);
         m_values[i]->add(*(rhsList.m_values[i]), *(resultList.m_values[i]));
+    }
+}
+
+void InterpolableList::multiply(double scalar, InterpolableValue& result) const
+{
+    InterpolableList& resultList = toInterpolableList(result);
+
+    ASSERT(resultList.m_size == m_size);
+
+    for (size_t i = 0; i < m_size; i++) {
+        ASSERT(m_values[i]);
+        m_values[i]->multiply(scalar, *(resultList.m_values[i]));
     }
 }
 

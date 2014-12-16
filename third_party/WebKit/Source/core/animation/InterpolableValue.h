@@ -28,6 +28,7 @@ public:
 private:
     virtual void interpolate(const InterpolableValue& to, const double progress, InterpolableValue& result) const = 0;
     virtual void add(const InterpolableValue& rhs, InterpolableValue& result) const = 0;
+    virtual void multiply(double scalar, InterpolableValue& result) const = 0;
 
     friend class Interpolation;
 
@@ -55,6 +56,7 @@ public:
 private:
     virtual void interpolate(const InterpolableValue& to, const double progress, InterpolableValue& result) const override final;
     virtual void add(const InterpolableValue& rhs, InterpolableValue& result) const override final;
+    virtual void multiply(double scalar, InterpolableValue& result) const override final;
     double m_value;
 
     explicit InterpolableNumber(double value)
@@ -78,6 +80,7 @@ public:
 private:
     virtual void interpolate(const InterpolableValue& to, const double progress, InterpolableValue& result) const override final;
     virtual void add(const InterpolableValue& rhs, InterpolableValue& result) const override final;
+    virtual void multiply(double scalar, InterpolableValue& result) const override final { ASSERT_NOT_REACHED(); }
     bool m_value;
 
     explicit InterpolableBool(bool value)
@@ -118,6 +121,7 @@ public:
 private:
     virtual void interpolate(const InterpolableValue& to, const double progress, InterpolableValue& result) const override final;
     virtual void add(const InterpolableValue& rhs, InterpolableValue& result) const override final;
+    virtual void multiply(double scalar, InterpolableValue& result) const override final;
     explicit InterpolableList(size_t size)
         : m_size(size)
         , m_values(m_size)
@@ -153,6 +157,7 @@ public:
 private:
     virtual void interpolate(const InterpolableValue &to, const double progress, InterpolableValue& result) const override final;
     virtual void add(const InterpolableValue& rhs, InterpolableValue& result) const override final { ASSERT_NOT_REACHED(); }
+    virtual void multiply(double scalar, InterpolableValue& result) const override final { ASSERT_NOT_REACHED(); }
     RefPtrWillBeMember<AnimatableValue> m_value;
 
     InterpolableAnimatableValue(PassRefPtrWillBeRawPtr<AnimatableValue> value)

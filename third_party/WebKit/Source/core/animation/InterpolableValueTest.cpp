@@ -71,6 +71,25 @@ protected:
 
         return result.release();
     }
+
+    double multiplyNumber(double scalar, double n)
+    {
+        OwnPtrWillBeRawPtr<InterpolableValue> num = InterpolableNumber::create(n);
+        OwnPtrWillBeRawPtr<InterpolableValue> result = InterpolableNumber::create(0);
+
+        num->multiply(scalar, *result);
+
+        return toInterpolableNumber(result.get())->value();
+    }
+
+    PassOwnPtrWillBeRawPtr<InterpolableList> multiplyList(double scalar, PassOwnPtrWillBeRawPtr<InterpolableValue> list)
+    {
+        OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(toInterpolableList(*list));
+
+        list->multiply(scalar, *result);
+
+        return result.release();
+    }
 };
 
 TEST_F(AnimationInterpolableValueTest, InterpolateNumbers)
@@ -193,6 +212,44 @@ TEST_F(AnimationInterpolableValueTest, AddNestedLists)
     EXPECT_FLOAT_EQ(40, toInterpolableNumber(result->get(0))->value());
     EXPECT_FLOAT_EQ(98, toInterpolableNumber(toInterpolableList(result->get(1))->get(0))->value());
     EXPECT_TRUE(toInterpolableBool(result->get(2))->value());
+}
+
+TEST_F(AnimationInterpolableValueTest, NumberScalarMultiplication)
+{
+    EXPECT_FLOAT_EQ(42, multiplyNumber(6, 7));
+    EXPECT_FLOAT_EQ(-20, multiplyNumber(-2, 10));
+    EXPECT_FLOAT_EQ(-42, multiplyNumber(21, -2));
+    EXPECT_FLOAT_EQ(20, multiplyNumber(-4, -5));
+
+    EXPECT_FLOAT_EQ(0, multiplyNumber(0, 10));
+    EXPECT_FLOAT_EQ(0, multiplyNumber(10, 0));
+}
+
+TEST_F(AnimationInterpolableValueTest, ListScalarMultiplication)
+{
+    OwnPtrWillBeRawPtr<InterpolableList> listA = InterpolableList::create(3);
+    listA->set(0, InterpolableNumber::create(5));
+    OwnPtrWillBeRawPtr<InterpolableList> subListA = InterpolableList::create(2);
+    subListA->set(0, InterpolableNumber::create(4));
+    subListA->set(1, InterpolableNumber::create(7));
+    listA->set(1, subListA.release());
+    listA->set(2, InterpolableNumber::create(3));
+
+    OwnPtrWillBeRawPtr<InterpolableList> resultA = multiplyList(6, listA.release());
+    EXPECT_FLOAT_EQ(30, toInterpolableNumber(resultA->get(0))->value());
+    EXPECT_FLOAT_EQ(24, toInterpolableNumber(toInterpolableList(resultA->get(1))->get(0))->value());
+    EXPECT_FLOAT_EQ(42, toInterpolableNumber(toInterpolableList(resultA->get(1))->get(1))->value());
+    EXPECT_FLOAT_EQ(18, toInterpolableNumber(resultA->get(2))->value());
+
+    OwnPtrWillBeRawPtr<InterpolableList> listB = InterpolableList::create(3);
+    listB->set(0, InterpolableNumber::create(8));
+    listB->set(1, InterpolableNumber::create(-10));
+    listB->set(2, InterpolableNumber::create(9));
+
+    OwnPtrWillBeRawPtr<InterpolableList> resultB = multiplyList(0, listB.release());
+    EXPECT_FLOAT_EQ(0, toInterpolableNumber(resultB->get(0))->value());
+    EXPECT_FLOAT_EQ(0, toInterpolableNumber(resultB->get(1))->value());
+    EXPECT_FLOAT_EQ(0, toInterpolableNumber(resultB->get(2))->value());
 }
 
 }
