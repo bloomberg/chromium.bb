@@ -102,6 +102,8 @@ public:
     // method.
     bool isRemoteFrameTemporary() const { return m_remotePlatformLayer; }
 
+    virtual bool checkLoadComplete() = 0;
+
 protected:
     Frame(FrameClient*, FrameHost*, FrameOwner*);
 

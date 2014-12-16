@@ -447,8 +447,12 @@ void FrameLoader::loadDone()
 bool FrameLoader::allChildrenAreComplete() const
 {
     for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
-        if (!child->isLocalFrame())
+        if (!child->isLocalFrame()) {
+            if (!child->checkLoadComplete()) {
+                return false;
+            }
             continue;
+        }
         LocalFrame* frame = toLocalFrame(child);
         if (!frame->document()->isLoadCompleted() || frame->loader().m_provisionalDocumentLoader)
             return false;
@@ -459,8 +463,15 @@ bool FrameLoader::allChildrenAreComplete() const
 bool FrameLoader::allAncestorsAreComplete() const
 {
     for (Frame* ancestor = m_frame; ancestor; ancestor = ancestor->tree().parent()) {
-        if (ancestor->isLocalFrame() && !toLocalFrame(ancestor)->document()->loadEventFinished())
-            return false;
+        if (ancestor->isLocalFrame()) {
+            if (!toLocalFrame(ancestor)->document()->loadEventFinished())
+                return false;
+        } else {
+            if (!ancestor->checkLoadComplete()) {
+                return false;
+            }
+        }
+
     }
     return true;
 }
@@ -978,8 +989,7 @@ bool FrameLoader::checkLoadCompleteForThisFrame()
 
     bool allChildrenAreDoneLoading = true;
     for (RefPtrWillBeRawPtr<Frame> child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
-        if (child->isLocalFrame())
-            allChildrenAreDoneLoading &= toLocalFrame(child.get())->loader().checkLoadCompleteForThisFrame();
+        allChildrenAreDoneLoading &= child->checkLoadComplete();
     }
 
     if (m_state == FrameStateProvisional && m_provisionalDocumentLoader) {
@@ -1085,10 +1095,7 @@ void FrameLoader::restoreScrollPositionAndViewState()
 void FrameLoader::checkLoadComplete()
 {
     ASSERT(client()->hasWebView());
-    if (Page* page = m_frame->page()) {
-        if (page->mainFrame()->isLocalFrame())
-            page->deprecatedLocalMainFrame()->loader().checkLoadCompleteForThisFrame();
-    }
+    m_frame->page()->mainFrame()->checkLoadComplete();
 }
 
 String FrameLoader::userAgent(const KURL& url) const
