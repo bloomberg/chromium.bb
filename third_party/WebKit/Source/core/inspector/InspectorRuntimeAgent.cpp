@@ -171,6 +171,11 @@ void InspectorRuntimeAgent::isRunRequired(ErrorString*, bool* out_result)
     *out_result = false;
 }
 
+void InspectorRuntimeAgent::setCustomObjectFormatterEnabled(ErrorString*, bool enabled)
+{
+    injectedScriptManager()->setCustomObjectFormatterEnabled(enabled);
+}
+
 void InspectorRuntimeAgent::setFrontend(InspectorFrontend* frontend)
 {
     m_frontend = frontend->runtime();

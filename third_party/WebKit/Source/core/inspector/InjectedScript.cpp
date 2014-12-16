@@ -361,5 +361,14 @@ void InjectedScript::setLastEvaluationResult(const String& objectId)
     makeCall(setLastResultFunction, &result);
 }
 
+void InjectedScript::setCustomObjectFormatterEnabled(bool enabled)
+{
+    ASSERT(!isEmpty());
+    ScriptFunctionCall function(injectedScriptObject(), "setCustomObjectFormatterEnabled");
+    function.appendArgument(enabled);
+    RefPtr<JSONValue> result;
+    makeCall(function, &result);
+}
+
 } // namespace blink
 

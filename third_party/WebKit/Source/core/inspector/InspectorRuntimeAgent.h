@@ -80,6 +80,7 @@ public:
     virtual void releaseObjectGroup(ErrorString*, const String& objectGroup) override final;
     virtual void run(ErrorString*) override;
     virtual void isRunRequired(ErrorString*, bool* out_result) override;
+    virtual void setCustomObjectFormatterEnabled(ErrorString*, bool) override final;
 
     virtual void setFrontend(InspectorFrontend*) override final;
     virtual void clearFrontend() override final;

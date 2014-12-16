@@ -56,6 +56,7 @@ InjectedScriptManager::InjectedScriptManager(InspectedStateAccessCheck accessChe
     : m_nextInjectedScriptId(1)
     , m_injectedScriptHost(InjectedScriptHost::create())
     , m_inspectedStateAccessCheck(accessCheck)
+    , m_customObjectFormatterEnabled(false)
 {
 }
 
@@ -145,6 +146,16 @@ void InjectedScriptManager::releaseObjectGroup(const String& objectGroup)
     }
 }
 
+void InjectedScriptManager::setCustomObjectFormatterEnabled(bool enabled)
+{
+    m_customObjectFormatterEnabled = enabled;
+    IdToInjectedScriptMap::iterator end = m_idToInjectedScript.end();
+    for (IdToInjectedScriptMap::iterator it = m_idToInjectedScript.begin(); it != end; ++it) {
+        if (!it->value.isEmpty())
+            it->value.setCustomObjectFormatterEnabled(enabled);
+    }
+}
+
 String InjectedScriptManager::injectedScriptSource()
 {
     const blink::WebData& injectedScriptSourceResource = blink::Platform::current()->loadResource("InjectedScriptSource.js");
@@ -166,6 +177,8 @@ InjectedScript InjectedScriptManager::injectedScriptFor(ScriptState* inspectedSc
     int id = injectedScriptIdFor(inspectedScriptState);
     ScriptValue injectedScriptValue = createInjectedScript(injectedScriptSource(), inspectedScriptState, id);
     InjectedScript result(injectedScriptValue, m_inspectedStateAccessCheck);
+    if (m_customObjectFormatterEnabled)
+        result.setCustomObjectFormatterEnabled(m_customObjectFormatterEnabled);
     m_idToInjectedScript.set(id, result);
     return result;
 }

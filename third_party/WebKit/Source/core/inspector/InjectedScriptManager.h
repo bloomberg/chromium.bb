@@ -76,6 +76,7 @@ public:
     static void setWeakCallback(const v8::WeakCallbackData<v8::Object, CallbackData>&);
     CallbackData* createCallbackData(InjectedScriptManager*);
     void removeCallbackData(CallbackData*);
+    void setCustomObjectFormatterEnabled(bool);
 
 private:
     explicit InjectedScriptManager(InspectedStateAccessCheck);
@@ -94,6 +95,7 @@ private:
     typedef HashMap<RefPtr<ScriptState>, int> ScriptStateToId;
     ScriptStateToId m_scriptStateToId;
     HashSet<OwnPtr<CallbackData> > m_callbackDataSet;
+    bool m_customObjectFormatterEnabled;
 };
 
 } // namespace blink

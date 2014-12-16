@@ -102,6 +102,7 @@ public:
     void releaseObjectGroup(const String&);
 
     void setLastEvaluationResult(const String& objectId);
+    void setCustomObjectFormatterEnabled(bool);
 
 private:
     friend class InjectedScriptModule;
