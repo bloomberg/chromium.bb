@@ -56,6 +56,8 @@
         'web_state/js/crw_js_message_manager.mm',
         'web_state/web_state_observer.cc',
         'web_thread.cc',
+        'web_thread_impl.cc',
+        'web_thread_impl.h',
         'web_view_util.h',
         'web_view_util.mm',
       ],
@@ -102,6 +104,7 @@
       'target_name': 'test_support_ios_web',
       'type': 'static_library',
       'dependencies': [
+        '../../content/content_shell_and_tests.gyp:test_support_content',
         'ios_web',
       ],
       'include_dirs': [
@@ -114,6 +117,8 @@
         'public/test/test_browser_state.h',
         'public/test/test_web_state.cc',
         'public/test/test_web_state.h',
+        'public/test/test_web_thread.h',
+        'test/test_web_thread.cc',
       ],
     },
   ],

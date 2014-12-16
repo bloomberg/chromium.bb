@@ -4,34 +4,10 @@
 
 #include "ios/web/public/web_thread.h"
 
-#include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
+#include "ios/web/web_thread_impl.h"
 
 namespace web {
-namespace {
-
-content::BrowserThread::ID BrowserThreadIDFromWebThreadID(
-    WebThread::ID identifier) {
-  switch (identifier) {
-    case WebThread::UI:
-      return content::BrowserThread::UI;
-    case WebThread::DB:
-      return content::BrowserThread::DB;
-    case WebThread::FILE:
-      return content::BrowserThread::FILE;
-    case WebThread::FILE_USER_BLOCKING:
-      return content::BrowserThread::FILE_USER_BLOCKING;
-    case WebThread::CACHE:
-      return content::BrowserThread::CACHE;
-    case WebThread::IO:
-      return content::BrowserThread::IO;
-    default:
-      NOTREACHED() << "Unknown web::WebThread::ID: " << identifier;
-  }
-  return content::BrowserThread::UI;
-}
-
-}  // namespace
 
 // static
 bool WebThread::PostTask(ID identifier,

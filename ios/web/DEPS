@@ -5,9 +5,12 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  ".*\.cc$": [
-    # Allow browser_thread.h until a web/ replacement is built out. Note that
-    # headers in public/ are not subject to this exception.
+  # Allow browser_thread.h and test_browser_thread.h until a web/ replacement is
+  # built out. Note that headers in public/ are not subject to this exception.
+  "^web_thread(\.cc|_impl\.(cc|h))$": [
     "+content/public/browser/browser_thread.h",
+  ],
+  "^test_web_thread\.cc$": [
+    "+content/public/test/test_browser_thread.h",
   ],
 }
