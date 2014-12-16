@@ -10,14 +10,7 @@ group("demo") {
 
 executable("ozone_demo") {
   sources = [
-    "gl_renderer.cc",
-    "gl_renderer.h",
     "ozone_demo.cc",
-    "renderer.h",
-    "renderer_base.cc",
-    "renderer_base.h",
-    "software_renderer.cc",
-    "software_renderer.h",
   ]
 
   deps = [
