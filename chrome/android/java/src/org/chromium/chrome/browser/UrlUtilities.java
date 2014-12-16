@@ -37,6 +37,12 @@ public class UrlUtilities {
             "chrome", "chrome-native", "about");
 
     /**
+     * URI schemes that can be handled in Intent fallback navigation.
+     */
+    private static final HashSet<String> FALLBACK_VALID_SCHEMES = CollectionUtil.newHashSet(
+            "http", "https");
+
+    /**
      * @param uri A URI.
      *
      * @return True if the URI's scheme is one that ContentView can handle.
@@ -53,6 +59,28 @@ public class UrlUtilities {
     public static boolean isAcceptedScheme(String uri) {
         try {
             return isAcceptedScheme(new URI(uri));
+        } catch (URISyntaxException e) {
+            return false;
+        }
+    }
+
+    /**
+     * @param uri A URI.
+     *
+     * @return True if the URI is valid for Intent fallback navigation.
+     */
+    public static boolean isValidForIntentFallbackNavigation(URI uri) {
+        return FALLBACK_VALID_SCHEMES.contains(uri.getScheme());
+    }
+
+    /**
+     * @param uri A URI.
+     *
+     * @return True if the URI is valid for Intent fallback navigation.
+     */
+    public static boolean isValidForIntentFallbackNavigation(String uri) {
+        try {
+            return isValidForIntentFallbackNavigation(new URI(uri));
         } catch (URISyntaxException e) {
             return false;
         }

@@ -62,6 +62,16 @@ public class UrlUtilitiesTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    public void testIsValidForIntentFallbackUrl() {
+        assertTrue(UrlUtilities.isValidForIntentFallbackNavigation(
+                "https://user:pass@:awesome.com:9000/bad-scheme:#fake:"));
+        assertTrue(UrlUtilities.isValidForIntentFallbackNavigation("http://awesome.example.com/"));
+        assertFalse(UrlUtilities.isValidForIntentFallbackNavigation("inline:skates.co.uk"));
+        assertFalse(UrlUtilities.isValidForIntentFallbackNavigation("javascript:alert(1)"));
+        assertFalse(UrlUtilities.isValidForIntentFallbackNavigation(""));
+    }
+
+    @SmallTest
     public void testFixUrl() throws URISyntaxException {
         try {
             URI uri;
