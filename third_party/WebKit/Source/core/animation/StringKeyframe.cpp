@@ -9,6 +9,7 @@
 #include "core/animation/DeferredLegacyStyleInterpolation.h"
 #include "core/animation/LegacyStyleInterpolation.h"
 #include "core/animation/LengthStyleInterpolation.h"
+#include "core/animation/VisibilityStyleInterpolation.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -112,6 +113,11 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyWordSpacing:
         if (LengthStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthStyleInterpolation::canCreateFrom(*toCSSValue))
             return LengthStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, range);
+        break;
+    case CSSPropertyVisibility:
+        if (VisibilityStyleInterpolation::canCreateFrom(*fromCSSValue) && VisibilityStyleInterpolation::canCreateFrom(*toCSSValue) && (VisibilityStyleInterpolation::isVisible(*fromCSSValue) || VisibilityStyleInterpolation::isVisible(*toCSSValue))) {
+            return VisibilityStyleInterpolation::create(*fromCSSValue, *toCSSValue, property);
+        }
         break;
     default:
         break;
