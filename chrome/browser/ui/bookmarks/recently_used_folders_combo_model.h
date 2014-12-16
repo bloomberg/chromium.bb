@@ -21,7 +21,7 @@ class BookmarkNode;
 // folder. The list also contains an extra item that shows the text
 // "Choose Another Folder...".
 class RecentlyUsedFoldersComboModel : public ui::ComboboxModel,
-                                      public BookmarkModelObserver {
+                                      public bookmarks::BookmarkModelObserver {
  public:
   RecentlyUsedFoldersComboModel(BookmarkModel* model, const BookmarkNode* node);
   ~RecentlyUsedFoldersComboModel() override;
@@ -34,7 +34,7 @@ class RecentlyUsedFoldersComboModel : public ui::ComboboxModel,
   void AddObserver(ui::ComboboxModelObserver* observer) override;
   void RemoveObserver(ui::ComboboxModelObserver* observer) override;
 
-  // Overriden from BookmarkModelObserver:
+  // Overriden from bookmarks::BookmarkModelObserver:
   void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override;
   void BookmarkModelBeingDeleted(BookmarkModel* model) override;
   void BookmarkNodeMoved(BookmarkModel* model,

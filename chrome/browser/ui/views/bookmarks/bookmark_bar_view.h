@@ -60,7 +60,7 @@ class LabelButton;
 // waits until the HistoryService for the profile has been loaded before
 // creating the BookmarkModel.
 class BookmarkBarView : public DetachableToolbarView,
-                        public BookmarkModelObserver,
+                        public bookmarks::BookmarkModelObserver,
                         public views::MenuButtonListener,
                         public views::ButtonListener,
                         public views::ContextMenuController,
@@ -200,7 +200,7 @@ class BookmarkBarView : public DetachableToolbarView,
   void OnBookmarkBubbleShown(const GURL& url) override;
   void OnBookmarkBubbleHidden() override;
 
-  // BookmarkModelObserver:
+  // bookmarks::BookmarkModelObserver:
   void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override;
   void BookmarkModelBeingDeleted(BookmarkModel* model) override;
   void BookmarkNodeMoved(BookmarkModel* model,

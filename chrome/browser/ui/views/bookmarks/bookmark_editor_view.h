@@ -51,7 +51,7 @@ class BookmarkEditorView : public BookmarkEditor,
                            public views::TextfieldController,
                            public views::ContextMenuController,
                            public ui::SimpleMenuModel::Delegate,
-                           public BookmarkModelObserver {
+                           public bookmarks::BookmarkModelObserver {
  public:
   // Type of node in the tree. Public purely for testing.
   typedef ui::TreeNodeWithValue<int64> EditorNode;
@@ -126,8 +126,8 @@ class BookmarkEditorView : public BookmarkEditor,
   // and requests the entries to display from the database.
   void Init();
 
-  // BookmarkModel observer methods. Any structural change results in
-  // resetting the tree model.
+  // bookmarks::BookmarkModelObserver:
+  // Any structural change results in resetting the tree model.
   void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override {
   }
   void BookmarkNodeMoved(BookmarkModel* model,

@@ -67,7 +67,7 @@ class HistoryEmptyTask : public history::HistoryDBTask {
 
 // Helper class used to wait for changes to take effect on the favicon of a
 // particular bookmark node in a particular bookmark model.
-class FaviconChangeObserver : public BookmarkModelObserver {
+class FaviconChangeObserver : public bookmarks::BookmarkModelObserver {
  public:
   FaviconChangeObserver(BookmarkModel* model, const BookmarkNode* node)
       : model_(model),
@@ -86,6 +86,8 @@ class FaviconChangeObserver : public BookmarkModelObserver {
     wait_for_load_ = false;
     content::RunMessageLoop();
   }
+
+  // bookmarks::BookmarkModelObserver:
   void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override {
   }
   void BookmarkNodeMoved(BookmarkModel* model,

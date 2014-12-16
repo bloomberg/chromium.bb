@@ -116,13 +116,15 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_window,
 }
 
 // Adapter to tell BookmarkEditorBaseController when bookmarks change.
-class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
+class BookmarkEditorBaseControllerBridge
+    : public bookmarks::BookmarkModelObserver {
  public:
   BookmarkEditorBaseControllerBridge(BookmarkEditorBaseController* controller)
       : controller_(controller),
         importing_(false)
   { }
 
+  // bookmarks::BookmarkModelObserver:
   void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override {
     [controller_ modelChangedPreserveSelection:YES];
   }

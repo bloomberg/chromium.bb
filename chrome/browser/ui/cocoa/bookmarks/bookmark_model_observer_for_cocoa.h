@@ -28,7 +28,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 
-class BookmarkModelObserverForCocoa : public BookmarkModelObserver {
+class BookmarkModelObserverForCocoa : public bookmarks::BookmarkModelObserver {
  public:
   // Callback called on a significant model change. |nodeWasDeleted| will
   // be YES if an observed node was deleted in the change.
@@ -45,7 +45,7 @@ class BookmarkModelObserverForCocoa : public BookmarkModelObserver {
   void StartObservingNode(const BookmarkNode* node);
   void StopObservingNode(const BookmarkNode* node);
 
-  // BookmarkModelObserver:
+  // bookmarks::BookmarkModelObserver:
   void BookmarkModelBeingDeleted(BookmarkModel* model) override;
   void BookmarkNodeMoved(BookmarkModel* model,
                          const BookmarkNode* old_parent,

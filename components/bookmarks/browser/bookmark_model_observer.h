@@ -11,6 +11,8 @@ class BookmarkModel;
 class BookmarkNode;
 class GURL;
 
+namespace bookmarks {
+
 // Observer for the BookmarkModel.
 class BookmarkModelObserver {
  public:
@@ -134,5 +136,7 @@ class BookmarkModelObserver {
  protected:
   virtual ~BookmarkModelObserver() {}
 };
+
+}  // namespace bookmarks
 
 #endif  // COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_MODEL_OBSERVER_H_

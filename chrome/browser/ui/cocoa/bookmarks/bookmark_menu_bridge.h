@@ -33,13 +33,13 @@ class Profile;
 @class NSMenuItem;
 @class BookmarkMenuCocoaController;
 
-class BookmarkMenuBridge : public BookmarkModelObserver,
+class BookmarkMenuBridge : public bookmarks::BookmarkModelObserver,
                            public MainMenuItem {
  public:
   BookmarkMenuBridge(Profile* profile, NSMenu* menu);
   ~BookmarkMenuBridge() override;
 
-  // BookmarkModelObserver:
+  // bookmarks::BookmarkModelObserver:
   void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override;
   void BookmarkModelBeingDeleted(BookmarkModel* model) override;
   void BookmarkNodeMoved(BookmarkModel* model,

@@ -25,12 +25,12 @@ class BookmarkModelTask {
 
 // Base class for bookmark model tasks that observe for model updates.
 class BookmarkModelObserverTask : public BookmarkModelTask,
-                                  public BookmarkModelObserver {
+                                  public bookmarks::BookmarkModelObserver {
  public:
   explicit BookmarkModelObserverTask(BookmarkModel* bookmark_model);
   virtual ~BookmarkModelObserverTask();
 
-  // BookmarkModelObserver:
+  // bookmarks::BookmarkModelObserver:
   virtual void BookmarkModelLoaded(BookmarkModel* model,
                                    bool ids_reassigned) override;
   virtual void BookmarkNodeMoved(BookmarkModel* model,

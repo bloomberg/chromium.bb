@@ -24,7 +24,7 @@ class EnhancedBookmarkModel;
 
 // The BookmarkImageService stores salient images for bookmarks.
 class BookmarkImageService : public KeyedService,
-                             public BookmarkModelObserver,
+                             public bookmarks::BookmarkModelObserver,
                              public base::NonThreadSafe {
  public:
   BookmarkImageService(const base::FilePath& path,
@@ -48,7 +48,7 @@ class BookmarkImageService : public KeyedService,
   // possible. The callback is always triggered on the main thread.
   void SalientImageForUrl(const GURL& page_url, Callback callback);
 
-  // BookmarkModelObserver methods.
+  // bookmarks::BookmarkModelObserver:
   void BookmarkNodeRemoved(BookmarkModel* model,
                            const BookmarkNode* parent,
                            int old_index,

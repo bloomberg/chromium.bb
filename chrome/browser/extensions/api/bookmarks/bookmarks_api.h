@@ -39,7 +39,7 @@ struct CreateDetails;
 
 // Observes BookmarkModel and then routes the notifications as events to
 // the extension system.
-class BookmarkEventRouter : public BookmarkModelObserver {
+class BookmarkEventRouter : public bookmarks::BookmarkModelObserver {
  public:
   explicit BookmarkEventRouter(Profile* profile);
   ~BookmarkEventRouter() override;

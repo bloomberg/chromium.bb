@@ -19,14 +19,14 @@
 class Profile;
 @class BookmarkBarController;
 
-class BookmarkBarBridge : public BookmarkModelObserver {
+class BookmarkBarBridge : public bookmarks::BookmarkModelObserver {
  public:
   BookmarkBarBridge(Profile* profile,
                     BookmarkBarController* controller,
                     BookmarkModel* model);
   ~BookmarkBarBridge() override;
 
-  // Overridden from BookmarkModelObserver:
+  // bookmarks::BookmarkModelObserver:
   void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override;
   void BookmarkModelBeingDeleted(BookmarkModel* model) override;
   void BookmarkNodeMoved(BookmarkModel* model,

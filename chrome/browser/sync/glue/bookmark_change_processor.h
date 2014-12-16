@@ -32,7 +32,7 @@ namespace browser_sync {
 // and applying them to the sync API 'syncable' model, and vice versa.
 // All operations and use of this class are from the UI thread.
 // This is currently bookmarks specific.
-class BookmarkChangeProcessor : public BookmarkModelObserver,
+class BookmarkChangeProcessor : public bookmarks::BookmarkModelObserver,
                                 public sync_driver::ChangeProcessor {
  public:
   BookmarkChangeProcessor(Profile* profile,
@@ -40,7 +40,7 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
                           sync_driver::DataTypeErrorHandler* error_handler);
   ~BookmarkChangeProcessor() override;
 
-  // BookmarkModelObserver implementation.
+  // bookmarks::BookmarkModelObserver:
   // BookmarkModel -> sync API model change application.
   void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override;
   void BookmarkModelBeingDeleted(BookmarkModel* model) override;
