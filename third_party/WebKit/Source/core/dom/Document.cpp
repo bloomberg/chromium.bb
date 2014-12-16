@@ -2289,6 +2289,13 @@ AXObjectCache* Document::axObjectCache() const
 PassRefPtrWillBeRawPtr<DocumentParser> Document::createParser()
 {
     if (isHTMLDocument()) {
+        // Disable asynchronous parsing on chrome:// UI pages to
+        // prevent showing incorrect contents on intermediate rendering.
+        // This fix should be temporary, and UI pages should be rewritten to
+        // allow incremental rendering.
+        if (url().protocolIs("chrome"))
+            m_parserSyncPolicy = ForceSynchronousParsing;
+
         bool reportErrors = InspectorInstrumentation::collectingHTMLParseErrors(page());
         return HTMLDocumentParser::create(toHTMLDocument(*this), reportErrors, m_parserSyncPolicy);
     }
