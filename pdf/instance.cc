@@ -532,8 +532,11 @@ bool Instance::HandleInputEvent(const pp::InputEvent& event) {
     pp::KeyboardInputEvent keyboard_event(event);
     bool no_h_scrollbar = !h_scrollbar_.get();
     uint32_t key_code = keyboard_event.GetKeyCode();
-    bool page_down = no_h_scrollbar && key_code == ui::VKEY_RIGHT;
-    bool page_up = no_h_scrollbar && key_code == ui::VKEY_LEFT;
+    bool has_modifiers = keyboard_event.GetModifiers() != 0;
+    bool page_down =
+        no_h_scrollbar && !has_modifiers && key_code == ui::VKEY_RIGHT;
+    bool page_up =
+        no_h_scrollbar && !has_modifiers && key_code == ui::VKEY_LEFT;
     if (zoom_mode_ == ZOOM_FIT_TO_PAGE) {
       bool has_shift =
           keyboard_event.GetModifiers() & PP_INPUTEVENT_MODIFIER_SHIFTKEY;
