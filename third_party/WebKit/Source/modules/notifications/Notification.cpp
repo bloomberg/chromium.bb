@@ -33,6 +33,8 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
+#include "core/dom/ExecutionContextTask.h"
 #include "core/events/Event.h"
 #include "core/frame/UseCounter.h"
 #include "core/page/WindowFocusAllowedIndicator.h"
@@ -141,11 +143,16 @@ void Notification::close()
     if (m_state != NotificationStateShowing)
         return;
 
-    m_state = NotificationStateClosed;
-    if (!m_persistentId.isEmpty())
-        notificationManager()->closePersistent(m_persistentId);
-    else
+    if (m_persistentId.isEmpty()) {
+        // Fire the close event asynchronously.
+        executionContext()->postTask(createSameThreadTask(&Notification::dispatchCloseEvent, this));
+
+        m_state = NotificationStateClosing;
         notificationManager()->close(this);
+    } else {
+        m_state = NotificationStateClosed;
+        notificationManager()->closePersistent(m_persistentId);
+    }
 }
 
 void Notification::dispatchShowEvent()
@@ -167,6 +174,11 @@ void Notification::dispatchErrorEvent()
 
 void Notification::dispatchCloseEvent()
 {
+    // The notification will be showing when the user initiated the close, or it will be
+    // closing if the developer initiated the close.
+    if (m_state != NotificationStateShowing && m_state != NotificationStateClosing)
+        return;
+
     m_state = NotificationStateClosed;
     dispatchEvent(Event::create(EventTypeNames::close));
 }

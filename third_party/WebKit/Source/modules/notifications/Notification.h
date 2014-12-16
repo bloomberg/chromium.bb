@@ -137,6 +137,7 @@ private:
     enum NotificationState {
         NotificationStateIdle,
         NotificationStateShowing,
+        NotificationStateClosing,
         NotificationStateClosed
     };
 
