@@ -96,6 +96,14 @@ const uint8_t finalizedZapValue = 24;
 const uint8_t orphanedZapValue = 240;
 const int numberOfPagesToConsiderForCoalescing = 100;
 
+#if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
+#define FILL_ZERO_IF_PRODUCTION(address, size) do { } while (false)
+#define FILL_ZERO_IF_NOT_PRODUCTION(address, size) memset((address), 0, (size))
+#else
+#define FILL_ZERO_IF_PRODUCTION(address, size) memset((address), 0, (size))
+#define FILL_ZERO_IF_NOT_PRODUCTION(address, size) do { } while (false)
+#endif
+
 class CallbackStack;
 class PageMemory;
 template<ThreadAffinity affinity> class ThreadLocalPersistents;
@@ -1288,9 +1296,7 @@ Address ThreadHeap<Header>::allocate(size_t size, const GCInfo* gcInfo)
 
         // Unpoison the memory used for the object (payload).
         ASAN_UNPOISON_MEMORY_REGION(result, allocationSize - sizeof(Header));
-#if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
-        memset(result, 0, allocationSize - sizeof(Header));
-#endif
+        FILL_ZERO_IF_NOT_PRODUCTION(result, allocationSize - sizeof(Header));
         ASSERT(pageFromAddress(headerAddress + allocationSize - 1));
         return result;
     }

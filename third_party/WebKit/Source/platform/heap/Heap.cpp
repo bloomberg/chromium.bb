@@ -866,9 +866,7 @@ bool ThreadHeap<Header>::expandObject(Header* header, size_t newSize)
 
         // Unpoison the memory used for the object (payload).
         ASAN_UNPOISON_MEMORY_REGION(header->payloadEnd(), expandSize);
-#if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
-        memset(header->payloadEnd(), 0, expandSize);
-#endif
+        FILL_ZERO_IF_NOT_PRODUCTION(header->payloadEnd(), expandSize);
         header->setSize(allocationSize);
         ASSERT(pageFromAddress(header->payloadEnd() - 1));
         return true;
@@ -886,9 +884,7 @@ void ThreadHeap<Header>::shrinkObject(Header* header, size_t newSize)
     if (header->payloadEnd() == m_currentAllocationPoint) {
         m_currentAllocationPoint -= shrinkSize;
         m_remainingAllocationSize += shrinkSize;
-#if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
-        memset(m_currentAllocationPoint, 0, shrinkSize);
-#endif
+        FILL_ZERO_IF_PRODUCTION(m_currentAllocationPoint, shrinkSize);
         ASAN_POISON_MEMORY_REGION(m_currentAllocationPoint, shrinkSize);
         header->setSize(allocationSize);
     } else {
@@ -924,15 +920,11 @@ void ThreadHeap<Header>::promptlyFreeObject(Header* header)
                 m_lastRemainingAllocationSize += size;
             }
             m_remainingAllocationSize += size;
-#if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
-            memset(address, 0, size);
-#endif
+            FILL_ZERO_IF_PRODUCTION(address, size);
             ASAN_POISON_MEMORY_REGION(address, size);
             return;
         }
-#if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
-        memset(payload, 0, payloadSize);
-#endif
+        FILL_ZERO_IF_PRODUCTION(payload, payloadSize);
         header->markPromptlyFreed();
     }
 
@@ -998,9 +990,7 @@ bool ThreadHeap<Header>::coalesce(size_t allocationSize)
                 Heap::decreaseAllocatedObjectSize(reinterpret_cast<Header*>(basicHeader)->size());
                 size_t size = basicHeader->size();
                 ASSERT(size >= sizeof(Header));
-#if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
-                memset(headerAddress, 0, sizeof(Header));
-#endif
+                FILL_ZERO_IF_PRODUCTION(headerAddress, sizeof(Header));
                 ++freedCount;
                 headerAddress += size;
                 continue;
@@ -1612,16 +1602,11 @@ void HeapPage<Header>::sweep(ThreadHeap<Header>* heap)
 
         if (basicHeader->isFree()) {
             size_t size = basicHeader->size();
-#if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
             // Zero the memory in the free list header to maintain the
             // invariant that memory on the free list is zero filled.
             // The rest of the memory is already on the free list and is
             // therefore already zero filled.
-            if (size < sizeof(FreeListEntry))
-                memset(headerAddress, 0, size);
-            else
-                memset(headerAddress, 0, sizeof(FreeListEntry));
-#endif
+            FILL_ZERO_IF_PRODUCTION(headerAddress, size < sizeof(FreeListEntry) ? size : sizeof(FreeListEntry));
             headerAddress += size;
             continue;
         }
@@ -1637,11 +1622,9 @@ void HeapPage<Header>::sweep(ThreadHeap<Header>* heap)
             ASAN_UNPOISON_MEMORY_REGION(header->payload(), header->payloadSize());
             finalize(header);
             size_t size = header->size();
-#if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
             // This memory will be added to the freelist. Maintain the invariant
             // that memory on the freelist is zero filled.
-            memset(headerAddress, 0, size);
-#endif
+            FILL_ZERO_IF_PRODUCTION(headerAddress, size);
             ASAN_POISON_MEMORY_REGION(header->payload(), header->payloadSize());
             headerAddress += size;
             continue;
