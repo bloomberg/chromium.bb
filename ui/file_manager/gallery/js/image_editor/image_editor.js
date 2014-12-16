@@ -40,24 +40,6 @@ function ImageEditor(
    */
   this.currentTool_ = null;
 
-  /**
-   * @type {HTMLElement}
-   * @private
-   */
-  this.undoButton_ = null;
-
-  /**
-   * @type {HTMLElement}
-   * @private
-   */
-  this.redoButton_ = null;
-
-  /**
-   * @type {!Array.<string>}
-   * @private
-   */
-  this.actionNames_ = [];
-
   ImageUtil.removeChildren(this.container_);
 
   this.viewport_ = viewport;
@@ -83,10 +65,54 @@ function ImageEditor(
 
   this.prompt_ = prompt;
 
-  this.createToolButtons();
-
   this.commandQueue_ = null;
+
+  // -----------------------------------------------------------------
+  // Populate the toolbar.
+
+  /**
+   * @type {!Array.<string>}
+   * @private
+   */
+  this.actionNames_ = [];
+
+  this.mainToolbar_.clear();
+
+  // Create action buttons.
+  for (var i = 0; i != this.modes_.length; i++) {
+    var mode = this.modes_[i];
+    mode.bind(this, this.createToolButton_(mode.name, mode.title,
+          this.enterMode.bind(this, mode)));
+  }
+
+  /**
+   * @type {!HTMLElement}
+   * @private
+   */
+  this.undoButton_ = this.createToolButton_('undo', 'GALLERY_UNDO',
+      this.undo.bind(this));
+  this.registerAction_('undo');
+
+  /**
+   * @type {!HTMLElement}
+   * @private
+   */
+  this.redoButton_ = this.createToolButton_('redo', 'GALLERY_REDO',
+      this.redo.bind(this));
+  this.registerAction_('redo');
 }
+
+/**
+ * Creates a toolbar button.
+ * @param {string} name Button name.
+ * @param {string} title Button title.
+ * @param {function(Event)} handler onClick handler.
+ * @return {!HTMLElement} A created button.
+ */
+ImageEditor.prototype.createToolButton_ = function(name, title, handler) {
+  return this.mainToolbar_.addButton(name, title, handler,
+      name /* opt_className */);
+};
 
 /**
  * @return {boolean} True if no user commands are to be accepted.
@@ -483,46 +509,6 @@ ImageEditor.prototype.registerAction_ = function(name) {
 };
 
 /**
- * Populate the toolbar.
- */
-ImageEditor.prototype.createToolButtons = function() {
-  this.mainToolbar_.clear();
-  this.actionNames_ = [];
-
-  var self = this;
-
-  /**
-   * @param {string} name Button name.
-   * @param {string} title Button title.
-   * @param {function(Event)} handler onClick handler.
-   * @return {!HTMLElement} A created button.
-   */
-  function createButton(name, title, handler) {
-    return self.mainToolbar_.addButton(name,
-                                       title,
-                                       handler,
-                                       name /* opt_className */);
-  }
-
-  for (var i = 0; i != this.modes_.length; i++) {
-    var mode = this.modes_[i];
-    mode.bind(this, createButton(mode.name,
-                                 mode.title,
-                                 this.enterMode.bind(this, mode)));
-  }
-
-  this.undoButton_ = createButton('undo',
-                                  'GALLERY_UNDO',
-                                  this.undo.bind(this));
-  this.registerAction_('undo');
-
-  this.redoButton_ = createButton('redo',
-                                  'GALLERY_REDO',
-                                  this.redo.bind(this));
-  this.registerAction_('redo');
-};
-
-/**
  * @return {ImageEditor.Mode} The current mode.
  */
 ImageEditor.prototype.getMode = function() { return this.currentMode_; };
@@ -559,7 +545,7 @@ ImageEditor.prototype.enterMode = function(mode) {
 ImageEditor.prototype.setUpMode_ = function(mode) {
   this.currentTool_ = mode.button_;
 
-  ImageUtil.setAttribute(this.currentTool_, 'pressed', true);
+  ImageUtil.setAttribute(assert(this.currentTool_), 'pressed', true);
 
   this.currentMode_ = mode;
   this.currentMode_.setUp();
@@ -601,7 +587,7 @@ ImageEditor.prototype.leaveMode = function(commit) {
   this.currentMode_.cleanUpCaches();
   this.currentMode_ = null;
 
-  ImageUtil.setAttribute(this.currentTool_, 'pressed', false);
+  ImageUtil.setAttribute(assert(this.currentTool_), 'pressed', false);
   this.currentTool_ = null;
 };
 

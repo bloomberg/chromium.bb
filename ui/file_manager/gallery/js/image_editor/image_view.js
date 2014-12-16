@@ -404,7 +404,7 @@ ImageView.prototype.load =
   }
 
   /**
-   * @param {ImageView.LoadType} loadType A load type.
+   * @param {!ImageView.LoadType} loadType A load type.
    * @param {(HTMLCanvasElement|HTMLImageElement)} canvas A canvas.
    */
   function displayThumbnail(loadType, canvas) {
@@ -435,7 +435,7 @@ ImageView.prototype.load =
   }
 
   /**
-   * @param {ImageView.LoadType} loadType Load type.
+   * @param {!ImageView.LoadType} loadType Load type.
    * @param {Entry} contentEntry A content entry.
    * @param {boolean} previewShown A preview is shown or not.
    * @param {number} delay Load delay.
@@ -462,7 +462,7 @@ ImageView.prototype.load =
   }
 
   /**
-   * @param {ImageView.LoadType} loadType Load type.
+   * @param {!ImageView.LoadType} loadType Load type.
    * @param {boolean} previewShown A preview is shown or not.
    * @param {!(HTMLCanvasElement|HTMLImageElement)} content A content.
    * @param {string=} opt_error Error message.
@@ -745,7 +745,8 @@ ImageView.prototype.animateAndReplace = function(canvas, imageCropRect) {
   var oldScreenImage = this.screenImage_;
   this.replaceContent_(canvas);
   var newScreenImage = this.screenImage_;
-  var setFade = ImageUtil.setAttribute.bind(null, newScreenImage, 'fade');
+  var setFade = ImageUtil.setAttribute.bind(null, assert(newScreenImage),
+      'fade');
   setFade(true);
   oldScreenImage.parentNode.insertBefore(newScreenImage, oldScreenImage);
   var effect = new ImageView.Effect.Zoom(

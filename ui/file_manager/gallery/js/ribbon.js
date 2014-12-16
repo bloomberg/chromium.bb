@@ -339,7 +339,8 @@ Ribbon.prototype.renderThumbnail_ = function(index) {
     return cached;
   }
 
-  var thumbnail = this.ownerDocument.createElement('div');
+  var thumbnail = assertInstanceof(this.ownerDocument.createElement('div'),
+      HTMLDivElement);
   thumbnail.className = 'ribbon-image';
   thumbnail.addEventListener('click', function() {
     var index = this.dataModel_.indexOf(item);

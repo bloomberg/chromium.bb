@@ -20,6 +20,7 @@
  *     function.
  * @constructor
  * @struct
+ * @suppress {checkStructDictInheritance}
  * @extends {cr.EventTarget}
  */
 function SlideMode(container, content, toolbar, prompt, errorBanner, dataModel,
@@ -1069,7 +1070,7 @@ SlideMode.prototype.requestPrefetch = function(direction, delay) {
   if (this.getItemCount_() <= 1) return;
 
   var index = this.getNextSelectedIndex_(direction);
-  this.imageView_.prefetch(this.getItem(index), delay);
+  this.imageView_.prefetch(assert(this.getItem(index)), delay);
 };
 
 // Event handlers.

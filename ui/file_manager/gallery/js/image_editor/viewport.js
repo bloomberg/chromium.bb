@@ -13,14 +13,14 @@ function Viewport() {
    * @type {!ImageRect}
    * @private
    */
-  this.imageBounds_ = new ImageRect();
+  this.imageBounds_ = new ImageRect(0, 0, 0, 0);
 
   /**
    * Size of the application window.
    * @type {!ImageRect}
    * @private
    */
-  this.screenBounds_ = new ImageRect();
+  this.screenBounds_ = new ImageRect(0, 0, 0, 0);
 
   /**
    * Bounds of the image element on screen without zoom and offset.
