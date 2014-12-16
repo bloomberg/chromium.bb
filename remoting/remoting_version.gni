@@ -73,7 +73,7 @@ prefpane_bundle_name = exec_script(_version_py_abspath,
                                      _remoting_branding_path,
                                      "-t \"@MAC_PREFPANE_BUNDLE_NAME@\"",
                                    ],
-                                   "value",
+                                   "string",
                                    _script_deps)
 
 host_bundle_name = exec_script(_version_py_abspath,
@@ -82,5 +82,5 @@ host_bundle_name = exec_script(_version_py_abspath,
                                  _remoting_branding_path,
                                  "-t \"@MAC_HOST_BUNDLE_NAME@\"",
                                ],
-                               "value",
+                               "string",
                                _script_deps)
