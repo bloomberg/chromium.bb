@@ -373,6 +373,11 @@ cr.define('cr.login', function() {
         return;
       }
 
+      if (msg.method == 'resetAuthFlow') {
+        this.authFlow = AuthFlow.GAIA;
+        return;
+      }
+
       if (msg.method == 'insecureContentBlocked') {
         if (this.insecureContentBlockedCallback_) {
           this.insecureContentBlockedCallback_(msg.url);

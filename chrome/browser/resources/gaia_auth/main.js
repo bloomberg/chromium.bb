@@ -176,6 +176,7 @@ Authenticator.prototype = {
       this.supportChannel_.registerMessage(
           'completeLogin', this.onCompleteLogin_.bind(this));
       this.initSAML_();
+      this.supportChannel_.send({name: 'resetAuth'});
       this.maybeInitialized_();
     }.bind(this));
 
@@ -457,8 +458,14 @@ Authenticator.prototype = {
       this.isSAMLFlow_ = false;
       this.skipForNow_ = false;
       this.chooseWhatToSync_ = false;
-      if (this.supportChannel_)
+      if (this.supportChannel_) {
         this.supportChannel_.send({name: 'resetAuth'});
+        // This message is for clearing saml properties in gaia_auth_host and
+        // oobe_screen_oauth_enrollment.
+        window.parent.postMessage({
+          'method': 'resetAuthFlow',
+        }, this.parentPage_);
+      }
     } else if (msg.method == 'verifyConfirmedPassword' &&
                this.isParentMessage_(e)) {
       this.onVerifyConfirmedPassword_(msg.password);

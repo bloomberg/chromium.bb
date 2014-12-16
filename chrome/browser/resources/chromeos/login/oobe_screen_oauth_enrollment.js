@@ -233,6 +233,10 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
         this.classList.toggle('saml', msg.isSAML);
       }
 
+      if (msg.method == 'resetAuthFlow') {
+        this.classList.remove('saml');
+      }
+
       if (msg.method == 'loginUILoaded' && this.currentStep_ == STEP_SIGNIN) {
         $('oauth-enroll-back-button').disabled = false;
 

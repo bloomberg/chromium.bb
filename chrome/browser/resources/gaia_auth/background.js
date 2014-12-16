@@ -402,6 +402,7 @@ BackgroundBridge.prototype = {
   onResetAuth_: function() {
     this.authStarted_ = false;
     this.passwordStore_ = {};
+    this.isSAML_ = false;
   },
 
   /**
@@ -410,6 +411,7 @@ BackgroundBridge.prototype = {
   onAuthStarted_: function() {
     this.authStarted_ = true;
     this.passwordStore_ = {};
+    this.isSAML_ = false;
   },
 
   /**
