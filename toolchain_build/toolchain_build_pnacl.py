@@ -987,8 +987,9 @@ if __name__ == '__main__':
                       ['le32'] + DIRECT_TO_NACL_ARCHES))
       packages.update(pnacl_targetlibs.SDKLibs('le32', is_canonical))
     if pynacl.platform.IsLinux() or pynacl.platform.IsMac():
+      unsandboxed_irt_canonical = is_canonical or pynacl.platform.IsMac()
       packages.update(pnacl_targetlibs.UnsandboxedIRT(
-          'x86-32-%s' % pynacl.platform.GetOS(), is_canonical))
+          'x86-32-%s' % pynacl.platform.GetOS(), unsandboxed_irt_canonical))
 
 
   tb = toolchain_main.PackageBuilder(packages,
