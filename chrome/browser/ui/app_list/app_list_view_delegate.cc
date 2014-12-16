@@ -204,10 +204,23 @@ AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller)
           "431326 AppListViewDelegate::AppListViewDelegate3"));
 
 #if defined(GOOGLE_CHROME_BUILD)
-  speech_ui_->set_logo(
+  gfx::ImageSkia image =
       *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_APP_LIST_GOOGLE_LOGO_VOICE_SEARCH));
+          IDR_APP_LIST_GOOGLE_LOGO_VOICE_SEARCH);
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile31(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 AppListViewDelegate::AppListViewDelegate31"));
+
+  speech_ui_->set_logo(image);
 #endif
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile32(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 AppListViewDelegate::AppListViewDelegate32"));
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_APP_TERMINATING,

@@ -469,6 +469,12 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
   // This creates the app list widget. (Before this, child widgets cannot be
   // created.)
   views::BubbleDelegateView::CreateBubble(this);
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2_11(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 AppListView::InitAsBubbleInternal2_11"));
+
   SetBubbleArrow(arrow);
 
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.

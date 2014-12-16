@@ -874,10 +874,28 @@ void RenderTextHarfBuzz::EnsureLayout() {
       if (!grapheme_iterator_->Init())
         grapheme_iterator_.reset();
 
+      // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is
+      // fixed.
+      tracked_objects::ScopedTracker tracking_profile11(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "431326 RenderTextHarfBuzz::EnsureLayout11"));
+
       ItemizeText();
+
+      // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is
+      // fixed.
+      tracked_objects::ScopedTracker tracking_profile12(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "431326 RenderTextHarfBuzz::EnsureLayout12"));
 
       for (size_t i = 0; i < runs_.size(); ++i)
         ShapeRun(runs_[i]);
+
+      // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is
+      // fixed.
+      tracked_objects::ScopedTracker tracking_profile13(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "431326 RenderTextHarfBuzz::EnsureLayout13"));
 
       // Precalculate run width information.
       float preceding_run_widths = 0.0f;
@@ -887,6 +905,12 @@ void RenderTextHarfBuzz::EnsureLayout() {
         preceding_run_widths += run->width;
       }
     }
+
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is
+    // fixed.
+    tracked_objects::ScopedTracker tracking_profile14(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "431326 RenderTextHarfBuzz::EnsureLayout14"));
 
     needs_layout_ = false;
     std::vector<internal::Line> empty_lines;
@@ -1201,9 +1225,9 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(internal::TextRunHarfBuzz* run,
                                           const std::string& font_family,
                                           const FontRenderParams& params) {
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
+  tracked_objects::ScopedTracker tracking_profile0(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "431326 RenderTextHarfBuzz::ShapeRunWithFont"));
+          "431326 RenderTextHarfBuzz::ShapeRunWithFont0"));
 
   const base::string16& text = GetLayoutText();
   skia::RefPtr<SkTypeface> skia_face =
@@ -1213,6 +1237,12 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(internal::TextRunHarfBuzz* run,
   run->skia_face = skia_face;
   run->family = font_family;
   run->render_params = params;
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile01(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 RenderTextHarfBuzz::ShapeRunWithFont01"));
+
   hb_font_t* harfbuzz_font = CreateHarfBuzzFont(
       run->skia_face.get(), SkIntToScalar(run->font_size), run->render_params,
       background_is_transparent());
@@ -1226,13 +1256,42 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(internal::TextRunHarfBuzz* run,
   // buffer holds our text, run information to be used by the shaping engine,
   // and the resulting glyph data.
   hb_buffer_t* buffer = hb_buffer_create();
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1q(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 RenderTextHarfBuzz::ShapeRunWithFont11"));
+
   hb_buffer_add_utf16(buffer, reinterpret_cast<const uint16*>(text.c_str()),
                       text.length(), run->range.start(), run->range.length());
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile12(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 RenderTextHarfBuzz::ShapeRunWithFont12"));
+
   hb_buffer_set_script(buffer, ICUScriptToHBScript(run->script));
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile13(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 RenderTextHarfBuzz::ShapeRunWithFont13"));
+
   hb_buffer_set_direction(buffer,
       run->is_rtl ? HB_DIRECTION_RTL : HB_DIRECTION_LTR);
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile14(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 RenderTextHarfBuzz::ShapeRunWithFont14"));
+
   // TODO(ckocagil): Should we determine the actual language?
   hb_buffer_set_language(buffer, hb_language_get_default());
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile15(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 RenderTextHarfBuzz::ShapeRunWithFont15"));
 
   // Shape the text.
   hb_shape(harfbuzz_font, buffer, NULL, 0);
