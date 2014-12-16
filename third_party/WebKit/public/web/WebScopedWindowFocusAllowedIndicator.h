@@ -35,18 +35,27 @@
 
 namespace blink {
 
+class ScopedWindowFocusAllowedIndicator;
+class WebDocument;
 class WindowFocusAllowedIndicator;
 
 class WebScopedWindowFocusAllowedIndicator {
 public:
+    explicit WebScopedWindowFocusAllowedIndicator(WebDocument* document) { initialize(document); }
+    // FIXME: this constructor is now deprecated. It will be removed as part of
+    // https://crbug.com/440740
     WebScopedWindowFocusAllowedIndicator() { initialize(); }
     ~WebScopedWindowFocusAllowedIndicator() { reset(); }
 
 private:
+    BLINK_EXPORT void initialize(WebDocument*);
     BLINK_EXPORT void initialize();
     BLINK_EXPORT void reset();
 
+    // FIXME: m_indicator is now deprecated. It will be removed as part of
+    // https://crbug.com/440740
     WebPrivateOwnPtr<WindowFocusAllowedIndicator> m_indicator;
+    WebPrivateOwnPtr<ScopedWindowFocusAllowedIndicator> m_private;
 };
 
 }

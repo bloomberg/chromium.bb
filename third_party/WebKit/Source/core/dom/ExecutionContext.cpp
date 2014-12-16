@@ -36,6 +36,7 @@
 #include "core/html/PublicURLManager.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "core/page/WindowFocusAllowedIndicator.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "wtf/MainThread.h"
@@ -74,6 +75,7 @@ ExecutionContext::ExecutionContext()
     , m_activeDOMObjectsAreSuspended(false)
     , m_activeDOMObjectsAreStopped(false)
     , m_strictMixedContentCheckingEnforced(false)
+    , m_windowFocusTokens(0)
 {
 }
 
@@ -270,6 +272,26 @@ void ExecutionContext::enforceSandboxFlags(SandboxFlags mask)
         securityContext().setSecurityOrigin(SecurityOrigin::createUnique());
         didUpdateSecurityOrigin();
     }
+}
+
+void ExecutionContext::allowWindowFocus()
+{
+    ++m_windowFocusTokens;
+}
+
+void ExecutionContext::consumeWindowFocus()
+{
+    if (m_windowFocusTokens == 0)
+        return;
+    --m_windowFocusTokens;
+}
+
+bool ExecutionContext::isWindowFocusAllowed() const
+{
+    // FIXME: WindowFocusAllowedIndicator::windowFocusAllowed() is temporary,
+    // it will be removed as soon as WebScopedWindowFocusAllowedIndicator will
+    // be updated to not use WindowFocusAllowedIndicator.
+    return m_windowFocusTokens > 0 || WindowFocusAllowedIndicator::windowFocusAllowed();
 }
 
 void ExecutionContext::trace(Visitor* visitor)
