@@ -340,6 +340,7 @@ group("root") {
       "//ppapi:ppapi_c",
       "//printing",
       "//remoting/client/plugin",
+      "//sandbox",
       "//storage/browser",
       "//sync",
       "//third_party/WebKit/public:all_blink",
