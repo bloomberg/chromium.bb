@@ -567,6 +567,9 @@ bool InputHandlerProxy::FilterInputEventForFlingBoosting(
   const WebGestureEvent& gesture_event =
       static_cast<const WebGestureEvent&>(event);
   if (gesture_event.type == WebInputEvent::GestureFlingCancel) {
+    if (gesture_event.data.flingCancel.preventBoosting)
+      return false;
+
     if (current_fling_velocity_.LengthSquared() < kMinBoostFlingSpeedSquare)
       return false;
 

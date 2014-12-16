@@ -1036,6 +1036,8 @@ void ContentViewCoreImpl::FlingStart(JNIEnv* env, jobject obj, jlong time_ms,
 void ContentViewCoreImpl::FlingCancel(JNIEnv* env, jobject obj, jlong time_ms) {
   WebGestureEvent event = MakeGestureEvent(
       WebInputEvent::GestureFlingCancel, time_ms, 0, 0);
+  event.data.flingCancel.preventBoosting = true;
+
   SendGestureEvent(event);
 }
 

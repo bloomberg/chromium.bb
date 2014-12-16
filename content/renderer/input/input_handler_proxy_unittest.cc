@@ -1954,6 +1954,26 @@ TEST_F(InputHandlerProxyTest, NoFlingBoostIfFlingTooSlow) {
   VERIFY_AND_RESET_MOCKS();
 }
 
+TEST_F(InputHandlerProxyTest, NoFlingBoostIfPreventBoostingFlagIsSet) {
+  base::TimeDelta dt = base::TimeDelta::FromMilliseconds(10);
+  base::TimeTicks time = base::TimeTicks() + dt;
+  WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
+  WebPoint fling_point = WebPoint(7, 13);
+
+  StartFling(
+      time, blink::WebGestureDeviceTouchscreen, fling_delta, fling_point);
+
+  EXPECT_CALL(mock_input_handler_, ScrollEnd());
+
+  // Cancel the fling. The fling cancellation should not be deferred because of
+  // prevent boosting flag set.
+  gesture_.data.flingCancel.preventBoosting = true;
+  time += dt;
+  CancelFling(time);
+
+  // VERIFY_AND_RESET_MOCKS already called by CancelFling
+}
+
 TEST_F(InputHandlerProxyTest, FlingBoostTerminatedDuringScrollSequence) {
   base::TimeDelta dt = base::TimeDelta::FromMilliseconds(10);
   base::TimeTicks time = base::TimeTicks() + dt;
