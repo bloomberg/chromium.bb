@@ -175,9 +175,6 @@ class STORAGE_EXPORT FileSystemOperationImpl
                 base::File::Error rv,
                 int64 bytes,
                 FileWriterDelegate::WriteProgressStatus write_status);
-  void DidOpenFile(const OpenFileCallback& callback,
-                   base::File file,
-                   const base::Closure& on_close_callback);
 
   // Used only for internal assertions.
   // Returns false if there's another inflight pending operation.

@@ -5,8 +5,17 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_restrictions.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/mock_special_storage_policy.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_file_system_context.h"
+#include "content/public/test/test_file_system_options.h"
+#include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/fileapi/file_system_backend.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,6 +26,8 @@ using storage::FileSystemType;
 using storage::FileSystemURL;
 
 namespace content {
+
+namespace {
 
 void GetStatus(bool* done,
                base::File::Error *status_out,
@@ -37,6 +48,10 @@ void GetCancelStatus(bool* operation_done,
   *status_out = status;
 }
 
+void DidOpenFile(base::File file, const base::Closure& on_close_callback) {}
+
+}  // namespace
+
 class FileSystemOperationRunnerTest : public testing::Test {
  protected:
   FileSystemOperationRunnerTest() {}
@@ -45,12 +60,11 @@ class FileSystemOperationRunnerTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(base_.CreateUniqueTempDir());
     base::FilePath base_dir = base_.path();
-    file_system_context_ =
-        CreateFileSystemContextForTesting(NULL, base_dir);
+    file_system_context_ = CreateFileSystemContextForTesting(nullptr, base_dir);
   }
 
   void TearDown() override {
-    file_system_context_ = NULL;
+    file_system_context_ = nullptr;
     base::RunLoop().RunUntilIdle();
   }
 
@@ -162,6 +176,75 @@ TEST_F(FileSystemOperationRunnerTest, CancelWithInvalidId) {
 
   ASSERT_TRUE(cancel_done);
   ASSERT_EQ(base::File::FILE_ERROR_INVALID_OPERATION, cancel_status);
+}
+
+class MultiThreadFileSystemOperationRunnerTest : public testing::Test {
+ public:
+  MultiThreadFileSystemOperationRunnerTest()
+      : thread_bundle_(
+            content::TestBrowserThreadBundle::REAL_FILE_THREAD |
+            content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+
+  void SetUp() override {
+    ASSERT_TRUE(base_.CreateUniqueTempDir());
+
+    base::FilePath base_dir = base_.path();
+    ScopedVector<storage::FileSystemBackend> additional_providers;
+    file_system_context_ = new FileSystemContext(
+        base::ThreadTaskRunnerHandle::Get().get(),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE).get(),
+        storage::ExternalMountPoints::CreateRefCounted().get(),
+        make_scoped_refptr(new MockSpecialStoragePolicy()).get(),
+        nullptr,
+        additional_providers.Pass(),
+        std::vector<storage::URLRequestAutoMountHandler>(),
+        base_dir,
+        CreateAllowFileAccessOptions());
+
+    // Disallow IO on the main loop.
+    base::ThreadRestrictions::SetIOAllowed(false);
+  }
+
+  void TearDown() override {
+    base::ThreadRestrictions::SetIOAllowed(true);
+    file_system_context_ = nullptr;
+  }
+
+  FileSystemURL URL(const std::string& path) {
+    return file_system_context_->CreateCrackedFileSystemURL(
+        GURL("http://example.com"),
+        storage::kFileSystemTypeTemporary,
+        base::FilePath::FromUTF8Unsafe(path));
+  }
+
+  FileSystemOperationRunner* operation_runner() {
+    return file_system_context_->operation_runner();
+  }
+
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
+  base::ScopedTempDir base_;
+  scoped_refptr<FileSystemContext> file_system_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(MultiThreadFileSystemOperationRunnerTest);
+};
+
+TEST_F(MultiThreadFileSystemOperationRunnerTest, OpenAndShutdown) {
+  // Call OpenFile and immediately shutdown the runner.
+  operation_runner()->OpenFile(
+      URL("foo"),
+      base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE,
+      base::Bind(&DidOpenFile));
+  operation_runner()->Shutdown();
+
+  // Wait until the task posted on FILE thread is done.
+  base::RunLoop run_loop;
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&base::DoNothing),
+      run_loop.QuitClosure());
+  run_loop.Run();
+  // This should finish without thread assertion failure on debug build.
 }
 
 }  // namespace content

@@ -31,6 +31,28 @@ using storage::ScopedFile;
 
 namespace storage {
 
+namespace {
+
+// Takes ownership and destruct on the target thread.
+void Destruct(base::File file) {}
+
+void DidOpenFile(
+    scoped_refptr<FileSystemContext> context,
+    base::WeakPtr<FileSystemOperationImpl> operation,
+    const FileSystemOperationImpl::OpenFileCallback& callback,
+    base::File file,
+    const base::Closure& on_close_callback) {
+  if (!operation) {
+    context->default_file_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&Destruct, base::Passed(&file)));
+    return;
+  }
+  callback.Run(file.Pass(), on_close_callback);
+}
+
+}  // namespace
+
 FileSystemOperation* FileSystemOperation::Create(
     const FileSystemURL& url,
     FileSystemContext* file_system_context,
@@ -449,8 +471,8 @@ void FileSystemOperationImpl::DoOpenFile(const FileSystemURL& url,
                                          int file_flags) {
   async_file_util_->CreateOrOpen(
       operation_context_.Pass(), url, file_flags,
-      base::Bind(&FileSystemOperationImpl::DidOpenFile,
-                 weak_factory_.GetWeakPtr(), callback));
+      base::Bind(&DidOpenFile,
+                 file_system_context_, weak_factory_.GetWeakPtr(), callback));
 }
 
 void FileSystemOperationImpl::DidEnsureFileExistsExclusive(
@@ -540,13 +562,6 @@ void FileSystemOperationImpl::DidWrite(
   write_callback.Run(rv, bytes, complete);
   if (!cancel_callback.is_null())
     cancel_callback.Run(base::File::FILE_OK);
-}
-
-void FileSystemOperationImpl::DidOpenFile(
-    const OpenFileCallback& callback,
-    base::File file,
-    const base::Closure& on_close_callback) {
-  callback.Run(file.Pass(), on_close_callback);
 }
 
 bool FileSystemOperationImpl::SetPendingOperationType(OperationType type) {
