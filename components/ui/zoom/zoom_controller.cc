@@ -26,11 +26,10 @@ ZoomController::ZoomController(content::WebContents* web_contents)
       zoom_mode_(ZOOM_MODE_DEFAULT),
       zoom_level_(1.0),
       browser_context_(web_contents->GetBrowserContext()) {
-  content::HostZoomMap* host_zoom_map =
-      content::HostZoomMap::GetForWebContents(web_contents);
-  zoom_level_ = host_zoom_map->GetDefaultZoomLevel();
+  host_zoom_map_ = content::HostZoomMap::GetForWebContents(web_contents);
+  zoom_level_ = host_zoom_map_->GetDefaultZoomLevel();
 
-  zoom_subscription_ = host_zoom_map->AddZoomLevelChangedCallback(
+  zoom_subscription_ = host_zoom_map_->AddZoomLevelChangedCallback(
       base::Bind(&ZoomController::OnZoomLevelChanged, base::Unretained(this)));
 
   UpdateState(std::string());
@@ -251,6 +250,20 @@ void ZoomController::WebContentsDestroyed() {
   // At this point we should no longer be sending any zoom events with this
   // WebContents.
   observers_.Clear();
+}
+
+void ZoomController::RenderFrameHostChanged(
+    content::RenderFrameHost* old_host,
+    content::RenderFrameHost* new_host) {
+  // If our associated HostZoomMap changes, update our event subscription.
+  content::HostZoomMap* new_host_zoom_map =
+      content::HostZoomMap::GetForWebContents(web_contents());
+  if (new_host_zoom_map == host_zoom_map_)
+    return;
+
+  host_zoom_map_ = new_host_zoom_map;
+  zoom_subscription_ = host_zoom_map_->AddZoomLevelChangedCallback(
+      base::Bind(&ZoomController::OnZoomLevelChanged, base::Unretained(this)));
 }
 
 void ZoomController::OnZoomLevelChanged(

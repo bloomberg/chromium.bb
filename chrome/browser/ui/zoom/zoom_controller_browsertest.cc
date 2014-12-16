@@ -10,8 +10,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -156,5 +158,71 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest, Observe) {
           web_contents->GetBrowserContext());
 
   host_zoom_map->SetZoomLevelForHost("about:blank", new_zoom_level);
+  zoom_change_watcher.Wait();
+}
+
+// Regression test: crbug.com/438979.
+IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest,
+                       SettingsZoomAfterSigninWorks) {
+  GURL signin_url(
+      std::string(chrome::kChromeUIChromeSigninURL).append("?source=0"));
+  // We open the signin page in a new tab so that the ZoomController is
+  // created against the HostZoomMap of the special StoragePartition that
+  // backs the signin page. When we subsequently navigate away from the
+  // signin page, the HostZoomMap changes, and we need to test that the
+  // ZoomController correctly detects this.
+  // TODO(wjmaclean): It would be nice if detecting when the signin page is
+  // fully loaded without needing a hard-coded value.
+  const int kLoadStopsBeforeSigninPageIsFullyLoaded = 3;
+  ui_test_utils::NavigateToURLWithDispositionBlockUntilNavigationsComplete(
+      browser(), signin_url, kLoadStopsBeforeSigninPageIsFullyLoaded,
+      NEW_FOREGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_NE(
+      content::PAGE_TYPE_ERROR,
+      web_contents->GetController().GetLastCommittedEntry()->GetPageType());
+
+  EXPECT_EQ(signin_url, web_contents->GetLastCommittedURL());
+  ZoomController* zoom_controller =
+      ZoomController::FromWebContents(web_contents);
+
+  content::HostZoomMap* host_zoom_map_signin =
+      content::HostZoomMap::GetForWebContents(web_contents);
+
+  GURL settings_url(chrome::kChromeUISettingsURL);
+  ui_test_utils::NavigateToURL(browser(), settings_url);
+  EXPECT_NE(
+      content::PAGE_TYPE_ERROR,
+      web_contents->GetController().GetLastCommittedEntry()->GetPageType());
+
+  // Verify new tab was created.
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  // Verify that the settings page is using the same WebContents.
+  EXPECT_EQ(web_contents, browser()->tab_strip_model()->GetActiveWebContents());
+  // TODO(wjmaclean): figure out why this next line fails, i.e. why does this
+  // test not properly trigger a navigation to the settings page.
+  EXPECT_EQ(settings_url, web_contents->GetLastCommittedURL());
+  EXPECT_EQ(zoom_controller, ZoomController::FromWebContents(web_contents));
+
+  // We expect the navigation from the chrome sign in page to the settings
+  // page to invoke a storage partition switch, and thus a different HostZoomMap
+  // for the web_contents.
+  content::HostZoomMap* host_zoom_map_settings =
+      content::HostZoomMap::GetForWebContents(web_contents);
+  EXPECT_NE(host_zoom_map_signin, host_zoom_map_settings);
+
+  // If we zoom the new page, it should still generate a ZoomController event.
+  double old_zoom_level = zoom_controller->GetZoomLevel();
+  double new_zoom_level = old_zoom_level + 0.5;
+
+  ZoomController::ZoomChangedEventData zoom_change_data(
+      web_contents,
+      old_zoom_level,
+      new_zoom_level,
+      ZoomController::ZOOM_MODE_DEFAULT,
+      true);  // We have a non-empty host, so this will be 'true'.
+  ZoomChangedWatcher zoom_change_watcher(web_contents, zoom_change_data);
+  zoom_controller->SetZoomLevel(new_zoom_level);
   zoom_change_watcher.Wait();
 }

@@ -175,11 +175,7 @@ void NavigateToURL(Browser* browser, const GURL& url) {
                                BROWSER_TEST_WAIT_FOR_NAVIGATION);
 }
 
-// Navigates the specified tab (via |disposition|) of |browser| to |url|,
-// blocking until the |number_of_navigations| specified complete.
-// |disposition| indicates what tab the download occurs in, and
-// |browser_test_flags| controls what to wait for before continuing.
-static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
+void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     Browser* browser,
     const GURL& url,
     int number_of_navigations,

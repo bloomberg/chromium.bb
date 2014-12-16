@@ -140,6 +140,8 @@ class ZoomController : public content::WebContentsObserver,
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
   void WebContentsDestroyed() override;
+  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
+                              content::RenderFrameHost* new_host) override;
 
  protected:
   // Protected for testing.
@@ -176,6 +178,8 @@ class ZoomController : public content::WebContentsObserver,
   ObserverList<ZoomObserver> observers_;
 
   content::BrowserContext* browser_context_;
+  // Keep track of the HostZoomMap we're currently subscribed to.
+  content::HostZoomMap* host_zoom_map_;
 
   scoped_ptr<content::HostZoomMap::Subscription> zoom_subscription_;
 
