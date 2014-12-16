@@ -168,6 +168,7 @@ using views::GridLayout;
 using web_modal::WebContentsModalDialogHost;
 
 namespace {
+
 // The name of a key to store on the window handle so that other code can
 // locate this object using just the handle.
 const char* const kBrowserViewKey = "__BROWSER_VIEW__";
@@ -232,11 +233,7 @@ void PaintAttachedBookmarkBar(gfx::Canvas* canvas,
 
 }  // namespace
 
-// static
-const char BrowserView::kViewClassName[] = "BrowserView";
-
 ///////////////////////////////////////////////////////////////////////////////
-
 // Delegate implementation for BrowserViewLayout. Usually just forwards calls
 // into BrowserView.
 class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
@@ -299,17 +296,14 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
   DISALLOW_COPY_AND_ASSIGN(BrowserViewLayoutDelegateImpl);
 };
 
-///////////////////////////////////////////////////////////////////////////////
-// BookmarkExtensionBackground, private:
-// This object serves as the views::Background object which is used to layout
-// and paint the bookmark bar.
-class BookmarkExtensionBackground : public views::Background {
+// This class is used to paint the background for Bookmarks Bar.
+class BookmarkBarViewBackground : public views::Background {
  public:
-  BookmarkExtensionBackground(BrowserView* browser_view,
-                              DetachableToolbarView* host_view,
-                              Browser* browser);
+  BookmarkBarViewBackground(BrowserView* browser_view,
+                            DetachableToolbarView* host_view,
+                            Browser* browser);
 
-  // View methods overridden from views:Background.
+  // views:Background:
   void Paint(gfx::Canvas* canvas, views::View* view) const override;
 
  private:
@@ -320,10 +314,10 @@ class BookmarkExtensionBackground : public views::Background {
 
   Browser* browser_;
 
-  DISALLOW_COPY_AND_ASSIGN(BookmarkExtensionBackground);
+  DISALLOW_COPY_AND_ASSIGN(BookmarkBarViewBackground);
 };
 
-BookmarkExtensionBackground::BookmarkExtensionBackground(
+BookmarkBarViewBackground::BookmarkBarViewBackground(
     BrowserView* browser_view,
     DetachableToolbarView* host_view,
     Browser* browser)
@@ -332,12 +326,15 @@ BookmarkExtensionBackground::BookmarkExtensionBackground(
       browser_(browser) {
 }
 
-void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
-                                        views::View* view) const {
+void BookmarkBarViewBackground::Paint(gfx::Canvas* canvas,
+                                      views::View* view) const {
   int toolbar_overlap = host_view_->GetToolbarOverlap();
   if (!host_view_->IsDetached()) {
-    PaintAttachedBookmarkBar(canvas, host_view_, browser_view_,
-                             browser_->host_desktop_type(), toolbar_overlap);
+    PaintAttachedBookmarkBar(canvas,
+                             host_view_,
+                             browser_view_,
+                             browser_->host_desktop_type(),
+                             toolbar_overlap);
     return;
   }
 
@@ -345,8 +342,7 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
   // the value - when current_state is at '0', we expect the bar to be docked.
   double current_state = 1 - host_view_->GetAnimationValue();
 
-  ThemeService* ts =
-      ThemeServiceFactory::GetForProfile(browser_->profile());
+  ThemeService* ts = ThemeServiceFactory::GetForProfile(browser_->profile());
   if (current_state == 0.0 || current_state == 1.0) {
     PaintDetachedBookmarkBar(canvas, host_view_, ts);
     return;
@@ -360,7 +356,9 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
     // - fade out attached background
     // - fade in detached background.
     canvas->SaveLayerAlpha(attached_alpha);
-    PaintAttachedBookmarkBar(canvas, host_view_, browser_view_,
+    PaintAttachedBookmarkBar(canvas,
+                             host_view_,
+                             browser_view_,
                              browser_->host_desktop_type(),
                              toolbar_overlap);
     canvas->Restore();
@@ -374,7 +372,9 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
     PaintDetachedBookmarkBar(canvas, host_view_, ts);
     canvas->Restore();
     canvas->SaveLayerAlpha(attached_alpha);
-    PaintAttachedBookmarkBar(canvas, host_view_, browser_view_,
+    PaintAttachedBookmarkBar(canvas,
+                             host_view_,
+                             browser_view_,
                              browser_->host_desktop_type(),
                              toolbar_overlap);
   }
@@ -383,6 +383,9 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, public:
+
+// static
+const char BrowserView::kViewClassName[] = "BrowserView";
 
 BrowserView::BrowserView()
     : views::ClientView(nullptr, nullptr),
@@ -2077,10 +2080,8 @@ bool BrowserView::MaybeShowBookmarkBar(WebContents* contents) {
   if (!bookmark_bar_view_.get()) {
     bookmark_bar_view_.reset(new BookmarkBarView(browser_.get(), this));
     bookmark_bar_view_->set_owned_by_client();
-    bookmark_bar_view_->set_background(
-        new BookmarkExtensionBackground(this,
-                                        bookmark_bar_view_.get(),
-                                        browser_.get()));
+    bookmark_bar_view_->set_background(new BookmarkBarViewBackground(
+        this, bookmark_bar_view_.get(), browser_.get()));
     bookmark_bar_view_->SetBookmarkBarState(
         browser_->bookmark_bar_state(),
         BookmarkBar::DONT_ANIMATE_STATE_CHANGE);

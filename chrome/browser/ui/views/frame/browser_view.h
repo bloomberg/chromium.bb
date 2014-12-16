@@ -53,9 +53,7 @@ class InfoBarContainerView;
 class LocationBarView;
 class PermissionBubbleViewViews;
 class StatusBubbleViews;
-class SearchViewController;
 class TabStrip;
-class TabStripModel;
 class ToolbarView;
 class TopContainerView;
 class WebContentsCloseHandler;
@@ -63,10 +61,6 @@ class WebContentsCloseHandler;
 #if defined(OS_WIN)
 class JumpList;
 #endif
-
-namespace content {
-class RenderFrameHost;
-}
 
 namespace extensions {
 class Extension;
