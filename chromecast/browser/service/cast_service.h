@@ -25,12 +25,12 @@ class URLRequestContextGetter;
 
 namespace chromecast {
 
+namespace metrics {
+class CastMetricsServiceClient;
+}
+
 class CastService {
  public:
-  // A callback that will be invoked when the user changes the opt-in stats
-  // value.
-  typedef base::Callback<void(bool)> OptInStatsChangedCallback;
-
   // Create() takes a separate url request context getter because the request
   // context getter obtained through the browser context might not be
   // appropriate for the url requests made by the cast service/reciever.
@@ -40,35 +40,49 @@ class CastService {
   static scoped_ptr<CastService> Create(
       content::BrowserContext* browser_context,
       PrefService* pref_service,
-      net::URLRequestContextGetter* request_context_getter,
-      const OptInStatsChangedCallback& opt_in_stats_callback);
+      metrics::CastMetricsServiceClient* metrics_service_client,
+      net::URLRequestContextGetter* request_context_getter);
 
   virtual ~CastService();
 
-  // Start/stop the cast service.
+  // Starts/stops the cast service.
   void Start();
   void Stop();
 
  protected:
   CastService(content::BrowserContext* browser_context,
               PrefService* pref_service,
-              const OptInStatsChangedCallback& opt_in_stats_callback);
-  virtual void Initialize() = 0;
+              metrics::CastMetricsServiceClient* metrics_service_client);
 
-  // Implementation-specific start/stop behavior.
+  // Implementation-specific initialization. Initialization of cast service's
+  // sub-components should go here. Anything that should happen before cast
+  // service is started but doesn't need the sub-components to finish
+  // initializing should also go here.
+  virtual void InitializeInternal() = 0;
+
+  // Implementation-specific finalization. Any initializations done by
+  // InitializeInternal() should be finalized here.
+  virtual void FinalizeInternal() = 0;
+
+  // Implementation-specific start behavior. It basically starts the
+  // sub-component services and does additional initialization that cannot be
+  // done in the InitializationInternal().
   virtual void StartInternal() = 0;
+
+  // Implementation-specific stop behavior. Any initializations done by
+  // StartInternal() should be finalized here.
   virtual void StopInternal() = 0;
 
   content::BrowserContext* browser_context() const { return browser_context_; }
   PrefService* pref_service() const { return pref_service_; }
-  const OptInStatsChangedCallback& opt_in_stats_callback() const {
-    return opt_in_stats_callback_;
+  metrics::CastMetricsServiceClient* metrics_service_client() const {
+    return metrics_service_client_;
   }
 
  private:
   content::BrowserContext* const browser_context_;
   PrefService* const pref_service_;
-  const OptInStatsChangedCallback opt_in_stats_callback_;
+  metrics::CastMetricsServiceClient* const metrics_service_client_;
   bool stopped_;
   const scoped_ptr<base::ThreadChecker> thread_checker_;
 

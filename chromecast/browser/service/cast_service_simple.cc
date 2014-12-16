@@ -36,24 +36,27 @@ GURL GetStartupURL() {
 scoped_ptr<CastService> CastService::Create(
     content::BrowserContext* browser_context,
     PrefService* pref_service,
-    net::URLRequestContextGetter* request_context_getter,
-    const OptInStatsChangedCallback& opt_in_stats_callback) {
+    metrics::CastMetricsServiceClient* metrics_service_client,
+    net::URLRequestContextGetter* request_context_getter) {
   return scoped_ptr<CastService>(new CastServiceSimple(browser_context,
                                                        pref_service,
-                                                       opt_in_stats_callback));
+                                                       metrics_service_client));
 }
 
 CastServiceSimple::CastServiceSimple(
     content::BrowserContext* browser_context,
     PrefService* pref_service,
-    const OptInStatsChangedCallback& opt_in_stats_callback)
-    : CastService(browser_context, pref_service, opt_in_stats_callback) {
+    metrics::CastMetricsServiceClient* metrics_service_client)
+    : CastService(browser_context, pref_service, metrics_service_client) {
 }
 
 CastServiceSimple::~CastServiceSimple() {
 }
 
-void CastServiceSimple::Initialize() {
+void CastServiceSimple::InitializeInternal() {
+}
+
+void CastServiceSimple::FinalizeInternal() {
 }
 
 void CastServiceSimple::StartInternal() {

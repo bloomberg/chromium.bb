@@ -8,29 +8,32 @@ namespace chromecast {
 namespace metrics {
 
 void RegisterPlatformMetricsProviders(
-    ::metrics::MetricsService* metrics_service) {
+    ::metrics::MetricsService* metrics_service,
+    CastService* cast_servce) {
 }
 
-const std::string GetPlatformClientID() {
+const std::string GetPlatformClientID(CastService* cast_servce) {
   return "";
 }
 
-::metrics::SystemProfileProto::Channel GetPlatformReleaseChannel() {
+::metrics::SystemProfileProto::Channel GetPlatformReleaseChannel(
+     CastService* cast_servce) {
   return ::metrics::SystemProfileProto::CHANNEL_STABLE;
 }
 
-std::string GetPlatformVersionString() {
+std::string GetPlatformVersionString(CastService* cast_servce) {
   return "";
 }
 
-bool PlatformIsReportingEnabled() {
+bool PlatformIsReportingEnabled(CastService* cast_service) {
   return false;
 }
 
-void PlatformSetClientID(const std::string& client_id) {
+void PlatformSetClientID(CastService* cast_servce,
+                         const std::string& client_id) {
 }
 
-void PlatformOnLogUploadComplete() {
+void PlatformOnLogUploadComplete(CastService* cast_servce) {
 }
 
 }  // namespace metrics

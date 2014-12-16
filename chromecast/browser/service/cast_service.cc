@@ -9,12 +9,13 @@
 
 namespace chromecast {
 
-CastService::CastService(content::BrowserContext* browser_context,
-                         PrefService* pref_service,
-                         const OptInStatsChangedCallback& opt_in_stats_callback)
+CastService::CastService(
+    content::BrowserContext* browser_context,
+    PrefService* pref_service,
+    metrics::CastMetricsServiceClient* metrics_service_client)
     : browser_context_(browser_context),
       pref_service_(pref_service),
-      opt_in_stats_callback_(opt_in_stats_callback),
+      metrics_service_client_(metrics_service_client),
       stopped_(true),
       thread_checker_(new base::ThreadChecker()) {
 }
@@ -26,8 +27,7 @@ CastService::~CastService() {
 
 void CastService::Start() {
   DCHECK(thread_checker_->CalledOnValidThread());
-
-  Initialize();
+  InitializeInternal();
   stopped_ = false;
   StartInternal();
 }
@@ -36,6 +36,7 @@ void CastService::Stop() {
   DCHECK(thread_checker_->CalledOnValidThread());
   StopInternal();
   stopped_ = true;
+  FinalizeInternal();
 }
 
 }  // namespace chromecast
