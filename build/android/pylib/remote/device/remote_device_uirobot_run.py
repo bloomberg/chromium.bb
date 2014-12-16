@@ -10,15 +10,10 @@ import sys
 
 from pylib import constants
 from pylib.base import base_test_result
+from pylib.remote.device import appurify_sanitized
 from pylib.remote.device import remote_device_test_run
 from pylib.remote.device import remote_device_helper
 
-sys.path.append(os.path.join(
-    constants.DIR_SOURCE_ROOT, 'third_party', 'requests', 'src'))
-sys.path.append(os.path.join(
-    constants.DIR_SOURCE_ROOT, 'third_party', 'appurify-python', 'src'))
-import appurify.api
-import appurify.utils
 
 class RemoteDeviceUirobotRun(remote_device_test_run.RemoteDeviceTestRun):
   """Run uirobot tests on a remote device."""
@@ -41,6 +36,7 @@ class RemoteDeviceUirobotRun(remote_device_test_run.RemoteDeviceTestRun):
   #override
   def _TriggerSetUp(self):
     """Set up the triggering of a test run."""
+    logging.info('Triggering test run.')
     self._app_id = self._UploadAppToDevice(self._test_instance.apk_under_test)
     if not self._env.runner_type:
       runner_type = self.DEFAULT_RUNNER_TYPE
@@ -53,7 +49,11 @@ class RemoteDeviceUirobotRun(remote_device_test_run.RemoteDeviceTestRun):
 
   #override
   def _ParseTestResults(self):
-    # TODO(rnephew): Populate test results object.
-    results = remote_device_test_run.TestRunResults()
+    logging.info('Parsing results from remote service.')
+    results = base_test_result.TestRunResults()
+    if self._results['results']['pass']:
+      result_type = base_test_result.ResultType.PASS
+    else:
+      result_type = base_test_result.ResultType.FAIL
+    results.AddResult(base_test_result.BaseTestResult('uirobot', result_type))
     return results
-

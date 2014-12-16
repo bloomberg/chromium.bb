@@ -10,15 +10,9 @@ import sys
 
 from pylib import constants
 from pylib.base import base_test_result
+from pylib.remote.device import appurify_sanitized
 from pylib.remote.device import remote_device_test_run
 from pylib.remote.device import remote_device_helper
-
-sys.path.append(os.path.join(
-    constants.DIR_SOURCE_ROOT, 'third_party', 'requests', 'src'))
-sys.path.append(os.path.join(
-    constants.DIR_SOURCE_ROOT, 'third_party', 'appurify-python', 'src'))
-import appurify.api
-import appurify.utils
 
 
 class RemoteDeviceGtestRun(remote_device_test_run.RemoteDeviceTestRun):
@@ -35,6 +29,7 @@ class RemoteDeviceGtestRun(remote_device_test_run.RemoteDeviceTestRun):
   #override
   def _TriggerSetUp(self):
     """Set up the triggering of a test run."""
+    logging.info('Triggering test run.')
     self._app_id = self._UploadAppToDevice(self._test_instance.apk)
 
     if not self._env.runner_type:
@@ -56,6 +51,7 @@ class RemoteDeviceGtestRun(remote_device_test_run.RemoteDeviceTestRun):
 
   #override
   def _ParseTestResults(self):
+    logging.info('Parsing results from stdout.')
     output = self._results['results']['output'].splitlines()
     results_list = self._test_instance.ParseGTestOutput(output)
     results = base_test_result.TestRunResults()

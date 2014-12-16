@@ -4,19 +4,14 @@
 
 """Environment setup and teardown for remote devices."""
 
+import logging
 import os
 import sys
 
 from pylib import constants
 from pylib.base import environment
+from pylib.remote.device import appurify_sanitized
 from pylib.remote.device import remote_device_helper
-
-sys.path.append(os.path.join(
-    constants.DIR_SOURCE_ROOT, 'third_party', 'requests', 'src'))
-sys.path.append(os.path.join(
-    constants.DIR_SOURCE_ROOT, 'third_party', 'appurify-python', 'src'))
-import appurify.api
-
 
 class RemoteDeviceEnvironment(environment.Environment):
   """An environment for running on remote devices."""
@@ -96,7 +91,8 @@ class RemoteDeviceEnvironment(environment.Environment):
 
   def _GetAccessToken(self):
     """Generates access token for remote device service."""
-    access_token_results = appurify.api.access_token_generate(
+    logging.info('Generating remote service access token')
+    access_token_results = appurify_sanitized.api.access_token_generate(
         self._api_key, self._api_secret)
     remote_device_helper.TestHttpResponse(access_token_results,
                                           'Unable to generate access token.')
@@ -104,13 +100,17 @@ class RemoteDeviceEnvironment(environment.Environment):
 
   def _RevokeAccessToken(self):
     """Destroys access token for remote device service."""
-    revoke_token_results = appurify.api.access_token_revoke(self._access_token)
+    logging.info('Revoking remote service access token')
+    revoke_token_results = appurify_sanitized.api.access_token_revoke(
+        self._access_token)
     remote_device_helper.TestHttpResponse(revoke_token_results,
                                           'Unable to revoke access token.')
 
   def _SelectDevice(self):
     """Select which device to use."""
-    dev_list_res = appurify.api.devices_list(self._access_token)
+    logging.info('Finding %s with %s to run tests on.' %
+        (self._remote_device, self._remote_device_os))
+    dev_list_res = appurify_sanitized.api.devices_list(self._access_token)
     remote_device_helper.TestHttpResponse(dev_list_res,
                                           'Unable to generate access token.')
     device_list = dev_list_res.json()['response']

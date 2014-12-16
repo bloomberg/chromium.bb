@@ -12,14 +12,8 @@ import time
 
 from pylib import constants
 from pylib.base import test_run
+from pylib.remote.device import appurify_sanitized
 from pylib.remote.device import remote_device_helper
-
-sys.path.append(os.path.join(
-    constants.DIR_SOURCE_ROOT, 'third_party', 'requests', 'src'))
-sys.path.append(os.path.join(
-    constants.DIR_SOURCE_ROOT, 'third_party', 'appurify-python', 'src'))
-import appurify.api
-import appurify.utils
 
 class RemoteDeviceTestRun(test_run.TestRun):
   """Run gtests and uirobot tests on a remote device."""
@@ -45,11 +39,12 @@ class RemoteDeviceTestRun(test_run.TestRun):
   def RunTests(self):
     """Run the test."""
     if self._env.trigger:
-      test_start_res = appurify.api.tests_run(
+      test_start_res = appurify_sanitized.api.tests_run(
           self._env.token, self._env.device, self._app_id, self._test_id)
       remote_device_helper.TestHttpResponse(
         test_start_res, 'Unable to run test.')
       test_run_id = test_start_res.json()['response']['test_run_id']
+      logging.info('Test run id: %s' % test_run_id)
       if not self._env.collect:
         assert isinstance(self._env.trigger, basestring), (
                           'File for storing test_run_id must be a string.')
@@ -100,7 +95,7 @@ class RemoteDeviceTestRun(test_run.TestRun):
     Args:
       test_name: Test to find the ID of.
     """
-    test_list_res = appurify.api.tests_list(self._env.token)
+    test_list_res = appurify_sanitized.api.tests_list(self._env.token)
     remote_device_helper.TestHttpResponse(test_list_res,
                                           'Unable to get tests list.')
     for test in test_list_res.json()['response']:
@@ -116,9 +111,11 @@ class RemoteDeviceTestRun(test_run.TestRun):
       results_path: path to download results to.
     """
     if results_path:
+      logging.info('Downloading results to %s.' % results_path)
       if not os.path.exists(os.path.basename(results_path)):
         os.makedirs(os.path.basename(results_path))
-      appurify.utils.wget(self._results['results']['url'], results_path)
+      appurify_sanitized.utils.wget(self._results['results']['url'],
+                                    results_path)
 
   def _GetTestStatus(self, test_run_id):
     """Checks the state of the test, and sets self._results
@@ -127,18 +124,20 @@ class RemoteDeviceTestRun(test_run.TestRun):
       test_run_id: Id of test on on remote service.
     """
 
-    test_check_res = appurify.api.tests_check_result(self._env.token,
+    test_check_res = appurify_sanitized.api.tests_check_result(self._env.token,
                                                      test_run_id)
     remote_device_helper.TestHttpResponse(test_check_res,
                                           'Unable to get test status.')
     self._results = test_check_res.json()['response']
+    logging.info('Test status: %s' % self._results['detailed_status'])
     return self._results['status']
 
   def _UploadAppToDevice(self, apk_path):
     """Upload app to device."""
+    logging.info('Upload %s to remote service.' % apk_path)
     apk_name = os.path.basename(apk_path)
     with open(apk_path, 'rb') as apk_src:
-      upload_results = appurify.api.apps_upload(self._env.token,
+      upload_results = appurify_sanitized.api.apps_upload(self._env.token,
                                                 apk_src, 'raw', name=apk_name)
       remote_device_helper.TestHttpResponse(
           upload_results, 'Unable to upload %s.' %(apk_path))
@@ -149,8 +148,9 @@ class RemoteDeviceTestRun(test_run.TestRun):
     Args:
       test_type: Type of test that is being uploaded. Ex. uirobot, gtest..
     """
+    logging.info('Uploading %s to remote service.' % self._test_instance.apk)
     with open(self._test_instance.apk, 'rb') as test_src:
-      upload_results = appurify.api.tests_upload(
+      upload_results = appurify_sanitized.api.tests_upload(
           self._env.token, test_src, 'raw', test_type, app_id=self._app_id)
       remote_device_helper.TestHttpResponse(upload_results,
           'Unable to upload %s.' %(self._test_instance.apk))
@@ -161,13 +161,14 @@ class RemoteDeviceTestRun(test_run.TestRun):
     Args:
       extras: Extra arguments to set in the config file.
     """
+    logging.info('Generating config file for test.')
     with tempfile.TemporaryFile() as config:
       config_data = ['[appurify]', '[%s]' % runner_type]
       config_data.extend('%s=%s' % (k, v) for k, v in body.iteritems())
       config.write(''.join('%s\n' % l for l in config_data))
       config.flush()
       config.seek(0)
-      config_response = appurify.api.config_upload(self._env.token,
+      config_response = appurify_sanitized.api.config_upload(self._env.token,
                                                    config, self._test_id)
       remote_device_helper.TestHttpResponse(config_response,
                                             'Unable to upload test config.')
