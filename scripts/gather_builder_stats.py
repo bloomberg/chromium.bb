@@ -19,6 +19,7 @@ from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import constants
 from chromite.lib import cidb
+from chromite.lib import clactions
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import gdata_lib
@@ -1307,8 +1308,9 @@ class CLStats(StatsManager):
                          if any(a.action == constants.CL_ACTION_SUBMITTED
                                 for a in v)}
 
-    patch_handle_times = [(v[-1].timestamp - v[0].timestamp).total_seconds()
-                          for v in submitted_patches.values()]
+    patch_handle_times = [
+        clactions.GetCLHandlingTime(patch, actions) for
+        (patch, actions) in submitted_patches.iteritems()]
 
     # Count CLs that were rejected, then a subsequent patch was submitted.
     # These are good candidates for bad CLs. We track them in a dict, setting
