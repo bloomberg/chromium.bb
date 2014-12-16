@@ -51,19 +51,16 @@ Promise.resolve(null).then(function(result) {
     return crypto.subtle.importKey("jwk", { "kty": "oct", "alg": "A128CBC" }, {name: "aes-cbc"}, extractable, []);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
-    // FIXME: http://crbug.com/378037
-    // Key data length is incorrect, not allowed in JWK.
-    // return crypto.subtle.importKey("jwk", asciiToUint8Array('{ "kty": "oct", "alg": "HS256", "use": "sig", "ext": false, "k": "1234" }'), hmac256, nonExtractable, []);
     return crypto.subtle.importKey("jwk", { "kty": "oct", "alg": "A128CBC", "use": "sig", "ext": false, "k": "1234" }, {name: "aes-cbc"}, nonExtractable, []);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
     return crypto.subtle.importKey("jwk", { "kty": "oct", "alg": "A128CBC", "use": "sig", "ext": false, "k": "ahjkn23387fgnsibf23qsvahjkn37387fgnsibf23qs" }, {name: "aes-cbc"}, nonExtractable, []);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
-    // Key data is not valid base64url.
-    // FIXME: http://crbug.com/378034
-    // return crypto.subtle.importKey("jwk", asciiToUint8Array('{ "kty": "oct", "alg": "HS256", "use": "sig", "ext": false, "k": "ahjkn23387f+nsibf23qsvahjkn37387fgnsibf23qs" }'), hmac256, nonExtractable, []);
-
+    debug("\nimportKey() with 'k' member containing '+' and '/' characters...");
+    return crypto.subtle.importKey("jwk", { "kty": "oct", "alg": "HS256", "use": "sig", "ext": false, "k": "ahjkn23387f+nsibf23qsvahjkn37387fgnsibf23qs" }, hmac256, nonExtractable, []);
+}).then(failAndFinishJSTest, function(result) {
+    logError(result);
     // Incorrect data types.
     return crypto.subtle.importKey("jwk", { "kty": 1, "alg": "HS256", "use": "sig", "ext": false, "k": "ahjkn23387fgnsibf23qsvahjkn37387fgnsibf23qs" }, hmac256, nonExtractable, []);
 }).then(failAndFinishJSTest, function(result) {
