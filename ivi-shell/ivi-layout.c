@@ -2954,9 +2954,9 @@ load_controller_modules(struct weston_compositor *compositor, const char *module
 
 		controller_module_init = weston_load_module(buffer, "controller_module_init");
 		if (controller_module_init)
-			if(!controller_module_init(compositor, argc, argv,
+			if(controller_module_init(compositor, argc, argv,
 					       &ivi_controller_interface,
-					       sizeof(struct ivi_controller_interface))) {
+					       sizeof(struct ivi_controller_interface)) != 0) {
 				weston_log("ivi-shell: Initialization of controller module fails");
 				return -1;
 		}
