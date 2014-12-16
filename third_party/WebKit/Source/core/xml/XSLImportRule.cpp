@@ -106,7 +106,7 @@ void XSLImportRule::loadSheet()
 
     ASSERT(!m_styleSheet);
     if (SharedBuffer* data = resource->resourceBuffer())
-        setXSLStyleSheet(absHref, parentSheet->baseURL(), UTF8Encoding().decode(data->data(), data->size()));
+        setXSLStyleSheet(absHref, resource->response().url(), UTF8Encoding().decode(data->data(), data->size()));
 }
 
 void XSLImportRule::trace(Visitor* visitor)
