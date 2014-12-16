@@ -22,7 +22,7 @@ class FakeTracingController(object):
 class FakePlatform(object):
   def __init__(self):
     self.tracing_controller = FakeTracingController()
-  def IsRawDisplayFrameRateSupported(self):
+  def IsDisplayTracingSupported(self):
     return False
   def CanMonitorPower(self):
     return False

@@ -18,23 +18,13 @@ from telemetry.web_perf.metrics import smoothness
 
 RUN_SMOOTH_ACTIONS = 'RunSmoothAllActions'
 
-# Descriptions for results from platform.GetRawDisplayFrameRateMeasurements().
-DESCRIPTIONS = {
-    'avg_surface_fps': 'Average frames per second as measured by the '
-                       'platform\'s SurfaceFlinger.'
-}
-
-
-class MissingDisplayFrameRateError(page_test.MeasurementFailure):
-  def __init__(self, name):
-    super(MissingDisplayFrameRateError, self).__init__(
-      'Missing display frame rate metrics: ' + name)
 
 class SmoothnessController(object):
   def __init__(self):
     self._timeline_model = None
     self._tracing_timeline_data = None
     self._interaction = None
+    self._surface_flinger_timeline_data = None
 
   def SetUp(self, page, tab):
     # FIXME: Remove webkit.console when blink.console lands in chromium and
@@ -47,8 +37,8 @@ class SmoothnessController(object):
     options = tracing_options.TracingOptions()
     options.enable_chrome_trace = True
     tab.browser.platform.tracing_controller.Start(options, category_filter, 60)
-    if tab.browser.platform.IsRawDisplayFrameRateSupported():
-      tab.browser.platform.StartRawDisplayFrameRateMeasurement()
+    if tab.browser.platform.IsDisplayTracingSupported():
+      tab.browser.platform.StartDisplayTracing();
 
   def Start(self, tab):
     # Start the smooth marker for all smooth actions.
@@ -60,11 +50,15 @@ class SmoothnessController(object):
     # End the smooth marker for  all smooth actions.
     self._interaction.End()
     # Stop tracing for smoothness metric.
-    if tab.browser.platform.IsRawDisplayFrameRateSupported():
-      tab.browser.platform.StopRawDisplayFrameRateMeasurement()
+    if tab.browser.platform.IsDisplayTracingSupported():
+      self._surface_flinger_timeline_data = \
+          tab.browser.platform.StopDisplayTracing()
     self._tracing_timeline_data = tab.browser.platform.tracing_controller.Stop()
+    timeline_data = [self._tracing_timeline_data]
+    if self._surface_flinger_timeline_data:
+      timeline_data.append(self._surface_flinger_timeline_data)
     self._timeline_model = TimelineModel(
-      timeline_data=self._tracing_timeline_data)
+        timeline_data=timeline_data)
 
   def AddResults(self, tab, results):
     # Add results of smoothness metric. This computes the smoothness metric for
@@ -109,22 +103,10 @@ class SmoothnessController(object):
     # not be used.
     smoothness_metric = smoothness.SmoothnessMetric()
     smoothness_metric.AddResults(
-      self._timeline_model, renderer_thread, smooth_records, results)
-    if tab.browser.platform.IsRawDisplayFrameRateSupported():
-      for r in tab.browser.platform.GetRawDisplayFrameRateMeasurements():
-        if r.value is None:
-          raise MissingDisplayFrameRateError(r.name)
-        if isinstance(r.value, list):
-          results.AddValue(list_of_scalar_values.ListOfScalarValues(
-              results.current_page, r.name, r.unit, r.value,
-              description=DESCRIPTIONS.get(r.name)))
-        else:
-          results.AddValue(scalar.ScalarValue(
-              results.current_page, r.name, r.unit, r.value,
-              description=DESCRIPTIONS.get(r.name)))
+        self._timeline_model, renderer_thread, smooth_records, results)
 
   def CleanUp(self, tab):
-    if tab.browser.platform.IsRawDisplayFrameRateSupported():
-      tab.browser.platform.StopRawDisplayFrameRateMeasurement()
+    if tab.browser.platform.IsDisplayTracingSupported():
+      tab.browser.platform.StopDisplayTracing()
     if tab.browser.platform.tracing_controller.is_tracing_running:
       tab.browser.platform.tracing_controller.Stop()
