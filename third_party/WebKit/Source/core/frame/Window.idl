@@ -192,7 +192,7 @@
     // Additional constructors.
     [MeasureAs=PrefixedTransitionEventConstructor] attribute TransitionEventConstructor WebKitTransitionEvent;
     [RuntimeEnabled=CSSAnimationUnprefixed] attribute WebKitAnimationEventConstructor AnimationEvent;
-    [MeasureAs=PrefixedWindowURL] attribute URLConstructor webkitURL; // FIXME: deprecate this.
+    [DeprecateAs=PrefixedWindowURL] attribute URLConstructor webkitURL;
     [MeasureAs=PrefixedMutationObserverConstructor] attribute MutationObserverConstructor WebKitMutationObserver;
 
     // window.toString() requires special handling in V8

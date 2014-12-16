@@ -830,6 +830,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case ShadowRootGetElementsByTagNameNS:
         return "ShadowRoot.getElementsByTagNameNS() is deprecated. Please use 'querySelectorAll' instead";
 
+    case PrefixedWindowURL:
+        return replacedBy("webkitURL", "URL");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
