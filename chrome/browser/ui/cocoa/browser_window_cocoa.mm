@@ -123,8 +123,8 @@ void BrowserWindowCocoa::Show() {
   NSWindowAnimationBehavior saved_animation_behavior =
       NSWindowAnimationBehaviorDefault;
   bool did_save_animation_behavior = false;
-  // Turn off swishing when restoring windows.
-  if (is_session_restore &&
+  // Turn off swishing when restoring windows or showing an app.
+  if ((is_session_restore || browser_->is_app()) &&
       [window() respondsToSelector:@selector(animationBehavior)] &&
       [window() respondsToSelector:@selector(setAnimationBehavior:)]) {
     did_save_animation_behavior = true;
@@ -163,7 +163,7 @@ void BrowserWindowCocoa::ShowInactive() {
 }
 
 void BrowserWindowCocoa::Hide() {
-  // Not implemented.
+  [window() orderOut:controller_];
 }
 
 void BrowserWindowCocoa::SetBounds(const gfx::Rect& bounds) {

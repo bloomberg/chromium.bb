@@ -10,7 +10,10 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/apps/app_window_registry_util.h"
+#include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/apps/native_app_window_cocoa.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/common/extension.h"
@@ -295,8 +298,13 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
             window);
 
     const extensions::Extension* extension = NULL;
+    // If there is no corresponding AppWindow, this could be a hosted app, so
+    // check for a browser.
     if (appWindow)
       extension = appWindow->GetExtension();
+    else
+      extension = apps::ExtensionAppShimHandler::GetAppForBrowser(
+          chrome::FindBrowserWithWindow(window));
 
     if (extension)
       [self addMenuItems:extension];
@@ -374,16 +382,32 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
   extensions::AppWindow* appWindow =
       AppWindowRegistryUtil::GetAppWindowForNativeWindowAnyProfile(
           [NSApp keyWindow]);
-  if (appWindow)
+  if (appWindow) {
     apps::ExtensionAppShimHandler::QuitAppForWindow(appWindow);
+  } else {
+    Browser* browser = chrome::FindBrowserWithWindow([NSApp keyWindow]);
+    const extensions::Extension* extension =
+        apps::ExtensionAppShimHandler::GetAppForBrowser(browser);
+    if (extension)
+      apps::ExtensionAppShimHandler::QuitHostedAppForWindow(browser->profile(),
+                                                            extension->id());
+  }
 }
 
 - (void)hideCurrentPlatformApp {
   extensions::AppWindow* appWindow =
       AppWindowRegistryUtil::GetAppWindowForNativeWindowAnyProfile(
           [NSApp keyWindow]);
-  if (appWindow)
+  if (appWindow) {
     apps::ExtensionAppShimHandler::HideAppForWindow(appWindow);
+  } else {
+    Browser* browser = chrome::FindBrowserWithWindow([NSApp keyWindow]);
+    const extensions::Extension* extension =
+        apps::ExtensionAppShimHandler::GetAppForBrowser(browser);
+    if (extension)
+      apps::ExtensionAppShimHandler::HideHostedApp(browser->profile(),
+                                                   extension->id());
+  }
 }
 
 - (void)focusCurrentPlatformApp {

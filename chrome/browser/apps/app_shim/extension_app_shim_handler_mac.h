@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_APPS_APP_SHIM_EXTENSION_APP_SHIM_HANDLER_MAC_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -13,6 +14,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -38,7 +41,8 @@ namespace apps {
 // extension.
 class ExtensionAppShimHandler : public AppShimHandler,
                                 public content::NotificationObserver,
-                                public AppLifetimeMonitor::Observer {
+                                public AppLifetimeMonitor::Observer,
+                                public chrome::BrowserListObserver {
  public:
   class Delegate {
    public:
@@ -72,9 +76,24 @@ class ExtensionAppShimHandler : public AppShimHandler,
 
   AppShimHandler::Host* FindHost(Profile* profile, const std::string& app_id);
 
+  void SetHostedAppHidden(Profile* profile,
+                          const std::string& app_id,
+                          bool hidden);
+
+  static const extensions::Extension* GetAppExtension(
+      Profile* profile,
+      const std::string& extension_id);
+
+  static const extensions::Extension* GetAppForBrowser(Browser* browser);
+
   static void QuitAppForWindow(extensions::AppWindow* app_window);
 
+  static void QuitHostedAppForWindow(Profile* profile,
+                                     const std::string& app_id);
+
   static void HideAppForWindow(extensions::AppWindow* app_window);
+
+  static void HideHostedApp(Profile* profile, const std::string& app_id);
 
   static void FocusAppForWindow(extensions::AppWindow* app_window);
 
@@ -115,9 +134,15 @@ class ExtensionAppShimHandler : public AppShimHandler,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // chrome::BrowserListObserver overrides;
+  void OnBrowserAdded(Browser* browser) override;
+  void OnBrowserRemoved(Browser* browser) override;
+
  protected:
   typedef std::map<std::pair<Profile*, std::string>, AppShimHandler::Host*>
       HostMap;
+  typedef std::set<Browser*> BrowserSet;
+  typedef std::map<std::string, BrowserSet> AppBrowserMap;
 
   // Exposed for testing.
   void set_delegate(Delegate* delegate);
@@ -127,6 +152,9 @@ class ExtensionAppShimHandler : public AppShimHandler,
  private:
   // Helper function to get the instance on the browser process.
   static ExtensionAppShimHandler* GetInstance();
+
+  // Closes all browsers associated with an app.
+  void CloseBrowsersForApp(const std::string& app_id);
 
   // This is passed to Delegate::LoadProfileAsync for shim-initiated launches
   // where the profile was not yet loaded.
@@ -144,6 +172,9 @@ class ExtensionAppShimHandler : public AppShimHandler,
   scoped_ptr<Delegate> delegate_;
 
   HostMap hosts_;
+
+  // A map of app ids to associated browser windows.
+  AppBrowserMap app_browser_windows_;
 
   content::NotificationRegistrar registrar_;
 
