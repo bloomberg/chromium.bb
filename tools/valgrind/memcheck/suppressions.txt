@@ -3284,15 +3284,6 @@
    fun:_ZN5blink13InlineTextBox5paintERNS_9PaintInfoERKNS_11LayoutPointENS_10LayoutUnitES6_
 }
 {
-   bug_411235
-   Memcheck:Overlap
-   fun:memcpy@@GLIBC_2.14
-   fun:IncrementalCopyFastPath
-   fun:BrotliDecompress
-   fun:BrotliDecompressBuffer
-   fun:_ZN12_GLOBAL__N_115Woff2UncompressEPhmPKhmj
-}
-{
    bug_415092
    Memcheck:Leak
    fun:_Znw*
