@@ -50,6 +50,19 @@
 #include "chrome/browser/password_manager/generated_password_saved_infobar_delegate_android.h"
 #endif
 
+namespace {
+
+void ReportOsPassword() {
+  password_manager_util::OsPasswordStatus status =
+      password_manager_util::GetOsPasswordStatus();
+
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.OsPasswordStatus",
+                            status,
+                            password_manager_util::MAX_PASSWORD_STATUS);
+}
+
+}  // namespace
+
 using password_manager::ContentPasswordManagerDriverFactory;
 using password_manager::PasswordManagerInternalsService;
 using password_manager::PasswordManagerInternalsServiceFactory;
@@ -94,6 +107,12 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
   if (service)
     can_use_log_router_ = service->RegisterClient(this);
   SetUpAutofillSyncState();
+  // Avoid checking OS password until later on in browser startup
+  // since it calls a few Windows APIs.
+  base::MessageLoopProxy::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&ReportOsPassword),
+      base::TimeDelta::FromSeconds(10));
 }
 
 ChromePasswordManagerClient::~ChromePasswordManagerClient() {

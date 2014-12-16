@@ -6,9 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/environment.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/password_manager/password_manager_util.h"
 #include "chrome/browser/password_manager/sync_metrics.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
@@ -44,34 +42,14 @@
 
 using password_manager::PasswordStore;
 
+#if !defined(OS_CHROMEOS) && defined(USE_X11)
 namespace {
 
-#if !defined(OS_CHROMEOS) && defined(USE_X11)
 const LocalProfileId kInvalidLocalProfileId =
     static_cast<LocalProfileId>(0);
-#endif
-
-void ReportOsPassword() {
-  password_manager_util::OsPasswordStatus status =
-      password_manager_util::GetOsPasswordStatus();
-
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.OsPasswordStatus",
-                            status,
-                            password_manager_util::MAX_PASSWORD_STATUS);
-}
-
-void DelayReportOsPassword() {
-  // Avoid checking OS password until later on in browser startup
-  // since it calls a few Windows APIs.
-  content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&ReportOsPassword),
-      base::TimeDelta::FromSeconds(40));
-}
 
 }  // namespace
-
+#endif
 
 PasswordStoreService::PasswordStoreService(
     scoped_refptr<PasswordStore> password_store)
@@ -144,7 +122,6 @@ LocalProfileId PasswordStoreFactory::GetLocalProfileId(
 
 KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  DelayReportOsPassword();
   Profile* profile = static_cast<Profile*>(context);
 
   base::FilePath login_db_file_path = profile->GetPath();
