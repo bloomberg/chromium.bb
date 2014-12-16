@@ -51,6 +51,7 @@ source_set("lib") {
     "//cc",
     "//cc/blink",
     "//cc/surfaces",
+    "//gin",
     "//media",
     "//media/blink",
     "//media/mojo",

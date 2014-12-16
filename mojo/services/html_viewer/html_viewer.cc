@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
+#include "gin/public/isolate_holder.h"
 #include "mojo/application/application_runner_chromium.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
@@ -132,6 +133,9 @@ class HTMLViewer : public ApplicationDelegate,
   // Overridden from ApplicationDelegate:
   void Initialize(ApplicationImpl* app) override {
     blink_platform_.reset(new MojoBlinkPlatformImpl(app));
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+    gin::IsolateHolder::LoadV8Snapshot();
+#endif
     blink::initialize(blink_platform_.get());
 #if !defined(COMPONENT_BUILD)
     base::i18n::InitializeICU();

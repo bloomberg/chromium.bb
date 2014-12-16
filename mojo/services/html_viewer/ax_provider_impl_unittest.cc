@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/stats_counters.h"
+#include "gin/public/isolate_holder.h"
 #include "mojo/services/html_viewer/blink_platform_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebData.h"
@@ -43,7 +44,12 @@ class TestWebViewClient : public WebViewClient {
 
 class AxProviderImplTest : public testing::Test {
  public:
-  AxProviderImplTest() { blink::initialize(new BlinkPlatformImpl()); }
+  AxProviderImplTest() {
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+    gin::IsolateHolder::LoadV8Snapshot();
+#endif
+    blink::initialize(new BlinkPlatformImpl());
+  }
 
   virtual ~AxProviderImplTest() override { blink::shutdown(); }
 
