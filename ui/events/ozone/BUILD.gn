@@ -6,8 +6,10 @@ import("//build/config/features.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
 
-# Optional system libraries.
-use_xkbcommon = use_ozone
+declare_args() {
+  # Optional system libraries.
+  use_xkbcommon = false
+}
 
 if (use_xkbcommon) {
   pkg_config("xkbcommon") {

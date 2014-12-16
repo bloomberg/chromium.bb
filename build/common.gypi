@@ -639,6 +639,9 @@
       # Enable LTO on code compiled with -O2.
       'use_lto_o2%': 0,
 
+      # Libxkbcommon usage.
+      'use_xkbcommon%': 0,
+
       'conditions': [
         # A flag for POSIX platforms
         ['OS=="win"', {
@@ -704,13 +707,6 @@
           'use_dbus%': 1,
         }, {
           'use_dbus%': 0,
-        }],
-
-        # Libxkbcommon usage.
-        ['use_ozone==1 and embedded==0', {
-          'use_xkbcommon%': 1,
-        }, {
-          'use_xkbcommon%': 0,
         }],
 
         # We always use skia text rendering in Aura on Windows, since GDI
