@@ -126,10 +126,6 @@ Status Status::ErrorJwkDuplicateKeyOps() {
                 "duplicate usages.");
 }
 
-Status Status::ErrorImportEmptyKeyData() {
-  return Status(blink::WebCryptoErrorTypeData, "No key data was provided");
-}
-
 Status Status::ErrorUnsupportedImportKeyFormat() {
   return Status(blink::WebCryptoErrorTypeNotSupported,
                 "Unsupported import key format for algorithm");

@@ -89,14 +89,14 @@
   {
     "key_format": "spki",
     "key": "",
-    "error": "DataError: No key data was provided"
+    "error": "DataError"
   },
 
   // The provided PKCS8 is empty.
   {
     "key_format": "pkcs8",
     "key": "",
-    "error": "DataError: No key data was provided"
+    "error": "DataError"
   },
 
   // Bad DER encoding for SPKI.

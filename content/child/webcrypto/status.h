@@ -119,11 +119,6 @@ class CONTENT_EXPORT Status {
   // Other errors
   // ------------------------------------
 
-  // No key data was provided when importing an spki, pkcs8, or jwk formatted
-  // key. This does not apply to raw format, since it is possible to have empty
-  // key data there.
-  static Status ErrorImportEmptyKeyData();
-
   // Tried importing a key using an unsupported format for the key type (for
   // instance importing an HMAC key using format=spki).
   static Status ErrorUnsupportedImportKeyFormat();

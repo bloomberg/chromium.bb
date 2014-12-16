@@ -332,7 +332,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkInvalidJson) {
   blink::WebCryptoKey key;
   // Fail on empty JSON.
   EXPECT_EQ(
-      Status::ErrorImportEmptyKeyData(),
+      Status::ErrorJwkNotDictionary(),
       ImportKey(blink::WebCryptoKeyFormatJwk, CryptoData(MakeJsonVector("")),
                 CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc), false,
                 blink::WebCryptoKeyUsageEncrypt, &key));

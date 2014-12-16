@@ -175,7 +175,7 @@
     "curve": "P-384",
     "key_format": "spki",
     "key": "",
-    "error": "DataError: No key data was provided"
+    "error": "DataError"
   },
 
   // Import Error: SPKI data is invalid.

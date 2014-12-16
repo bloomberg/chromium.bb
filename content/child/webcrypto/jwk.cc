@@ -292,9 +292,6 @@ Status JwkReader::Init(const CryptoData& bytes,
                        blink::WebCryptoKeyUsageMask expected_usages,
                        const std::string& expected_kty,
                        const std::string& expected_alg) {
-  if (!bytes.byte_length())
-    return Status::ErrorImportEmptyKeyData();
-
   // Parse the incoming JWK JSON.
   base::StringPiece json_string(reinterpret_cast<const char*>(bytes.bytes()),
                                 bytes.byte_length());

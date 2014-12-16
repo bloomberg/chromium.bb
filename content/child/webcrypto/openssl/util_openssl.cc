@@ -170,9 +170,6 @@ Status CreateWebCryptoPrivateKey(crypto::ScopedEVP_PKEY private_key,
 Status ImportUnverifiedPkeyFromSpki(const CryptoData& key_data,
                                     int expected_pkey_id,
                                     crypto::ScopedEVP_PKEY* pkey) {
-  if (!key_data.byte_length())
-    return Status::ErrorImportEmptyKeyData();
-
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
   const uint8_t* ptr = key_data.bytes();
@@ -189,9 +186,6 @@ Status ImportUnverifiedPkeyFromSpki(const CryptoData& key_data,
 Status ImportUnverifiedPkeyFromPkcs8(const CryptoData& key_data,
                                      int expected_pkey_id,
                                      crypto::ScopedEVP_PKEY* pkey) {
-  if (!key_data.byte_length())
-    return Status::ErrorImportEmptyKeyData();
-
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
   const uint8_t* ptr = key_data.bytes();

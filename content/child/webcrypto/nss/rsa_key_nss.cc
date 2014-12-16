@@ -599,9 +599,6 @@ Status RsaHashedAlgorithm::ImportKeyPkcs8(
   if (status.IsError())
     return status;
 
-  if (!key_data.byte_length())
-    return Status::ErrorImportEmptyKeyData();
-
   crypto::ScopedPLArenaPool arena(PORT_NewArena(DER_DEFAULT_CHUNKSIZE));
   if (!arena.get())
     return Status::OperationError();
@@ -665,9 +662,6 @@ Status RsaHashedAlgorithm::ImportKeySpki(
     bool extractable,
     blink::WebCryptoKeyUsageMask usages,
     blink::WebCryptoKey* key) const {
-  if (!key_data.byte_length())
-    return Status::ErrorImportEmptyKeyData();
-
   // The binary blob 'key_data' is expected to be a DER-encoded ASN.1 Subject
   // Public Key Info. Decode this to a CERTSubjectPublicKeyInfo.
   SECItem spki_item = MakeSECItemForBuffer(key_data);
