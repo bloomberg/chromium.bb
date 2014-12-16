@@ -47,6 +47,23 @@ TEST_F(BrowserActionsContainerViewTest, SetWidthTests) {
   [view_ resizeToWidth:20.0 animate:NO];
   EXPECT_EQ(20.0, NSWidth([view_ frame]));
   EXPECT_EQ(15.0, [view_ resizeDeltaX]);
+
+  // Resize the view with animation. It shouldn't immediately take the new
+  // value, but the animationEndFrame should reflect the pending change.
+  [view_ resizeToWidth:40.0 animate:YES];
+  EXPECT_LE(NSWidth([view_ frame]), 40.0);
+  EXPECT_EQ(40.0, NSWidth([view_ animationEndFrame]));
+
+  // The container should be able to be resized while animating (simply taking
+  // the newest target width).
+  [view_ resizeToWidth:30.0 animate:YES];
+  EXPECT_EQ(30.0, NSWidth([view_ animationEndFrame]));
+
+  // Test with no animation again. The animationEndFrame should also reflect
+  // the current frame, if no animation is pending.
+  [view_ resizeToWidth:35.0 animate:NO];
+  EXPECT_EQ(35.0, NSWidth([view_ frame]));
+  EXPECT_EQ(35.0, NSWidth([view_ animationEndFrame]));
 }
 
 }  // namespace

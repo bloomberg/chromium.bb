@@ -51,6 +51,11 @@ const CGFloat kMinimumContainerWidth = 10.0;
     canDragLeft_ = YES;
     canDragRight_ = YES;
     resizable_ = YES;
+
+    resizeAnimation_.reset([[NSViewAnimation alloc] init]);
+    [resizeAnimation_ setDuration:kAnimationDuration];
+    [resizeAnimation_ setAnimationBlockingMode:NSAnimationNonblocking];
+
     [self setHidden:YES];
   }
   return self;
@@ -168,11 +173,17 @@ const CGFloat kMinimumContainerWidth = 10.0;
   CGFloat dX = frame.size.width - width;
   frame.size.width = width;
   NSRect newFrame = NSOffsetRect(frame, dX, 0);
+
+  if ([resizeAnimation_ isAnimating])
+    [resizeAnimation_ stopAnimation];
+
   if (animate) {
-    [NSAnimationContext beginGrouping];
-    [[NSAnimationContext currentContext] setDuration:kAnimationDuration];
-    [[self animator] setFrame:newFrame];
-    [NSAnimationContext endGrouping];
+    NSDictionary* animationDictionary =
+        @{ NSViewAnimationTargetKey: self,
+           NSViewAnimationStartFrameKey: [NSValue valueWithRect:[self frame]],
+           NSViewAnimationEndFrameKey: [NSValue valueWithRect:newFrame] };
+    [resizeAnimation_ setViewAnimations:@[animationDictionary]];
+    [resizeAnimation_ startAnimation];
 
     [[NSNotificationCenter defaultCenter]
         postNotificationName:kBrowserActionsContainerWillAnimate
@@ -188,7 +199,13 @@ const CGFloat kMinimumContainerWidth = 10.0;
 }
 
 - (NSRect)animationEndFrame {
-  return [[self animator] frame];
+  if ([resizeAnimation_ isAnimating]) {
+    NSRect endFrame = [[[[resizeAnimation_ viewAnimations] objectAtIndex:0]
+        valueForKey:NSViewAnimationEndFrameKey] rectValue];
+    return endFrame;
+  } else {
+    return [self frame];
+  }
 }
 
 #pragma mark -
