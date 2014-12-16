@@ -72,6 +72,11 @@ def RestartServer():
   pylib.android_commands.AndroidCommands().RestartAdbServer()
 
 
+def _GetTimeStamp():
+  """Return a basic ISO 8601 time stamp with the current local time."""
+  return time.strftime('%Y%m%dT%H%M%S', time.localtime())
+
+
 class DeviceUtils(object):
 
   _VALID_SHELL_VARIABLE = re.compile('^[a-zA-Z_][a-zA-Z0-9_]*$')
@@ -1198,7 +1203,8 @@ class DeviceUtils(object):
 
     Args:
       host_path: A string containing the path on the host to save the
-                 screenshot to. If None, a file name will be generated.
+                 screenshot to. If None, a file name in the current
+                 directory will be generated.
       timeout: timeout in seconds
       retries: number of retries
 
@@ -1210,7 +1216,13 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    return self.old_interface.TakeScreenshot(host_path)
+    if not host_path:
+      host_path = os.path.abspath('screenshot-%s.png' % _GetTimeStamp())
+    with device_temp_file.DeviceTempFile(self.adb, suffix='.png') as device_tmp:
+      self.RunShellCommand(['/system/bin/screencap', '-p', device_tmp.name],
+                           check_return=True)
+      self.PullFile(device_tmp.name, host_path)
+    return host_path
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def GetIOStats(self, timeout=None, retries=None):
