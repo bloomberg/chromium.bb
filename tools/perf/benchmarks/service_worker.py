@@ -179,6 +179,8 @@ class ServiceWorkerPerfTest(benchmark.Benchmark):
   page_set = page_sets.ServiceWorkerPageSet
 
 
+# Disabled due to redness on the tree. crbug.com/442752
+@benchmark.Disabled
 class ServiceWorkerMicroBenchmarkPerfTest(benchmark.Benchmark):
   """Service Worker performance test using a micro benchmark page set"""
   test = _ServiceWorkerMicroBenchmarkMeasurement
