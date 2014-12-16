@@ -17,6 +17,7 @@
 #import "chrome/browser/ui/cocoa/accelerators_cocoa.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h"
+#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/ui/cocoa/encoding_menu_controller_delegate_mac.h"
@@ -137,11 +138,22 @@ class ZoomLevelObserver {
       BrowserActionsContainerView* containerView =
           [buttonViewController_ overflowActionsContainerView];
 
+      // The overflow browser actions container can't function properly without
+      // a main counterpart, so if the browser window hasn't initialized, abort.
+      // (This is fine because we re-populate the wrench menu each time before
+      // we show it.)
+      if (!browser_->window())
+        break;
+
+      BrowserActionsController* mainController =
+          [[[BrowserWindowController browserWindowControllerForWindow:browser_->
+              window()->GetNativeWindow()] toolbarController]
+                  browserActionsController];
       browserActionsController_.reset(
           [[BrowserActionsController alloc]
               initWithBrowser:browser_
                 containerView:containerView
-                   isOverflow:YES]);
+               mainController:mainController]);
 
       // Set the origins and preferred size for the container.
       gfx::Size preferredSize = [browserActionsController_ preferredSize];

@@ -18,7 +18,11 @@ class TestToolbarActionsBarHelper {
   TestToolbarActionsBarHelper() {}
   virtual ~TestToolbarActionsBarHelper() {}
 
-  static scoped_ptr<TestToolbarActionsBarHelper> Create(Browser* browser);
+  // Creates and returns a TestToolbarActionsBarHelper. If |main_bar| is
+  // non-null, the created actions bar will be in overflow mode.
+  static scoped_ptr<TestToolbarActionsBarHelper> Create(
+      Browser* browser,
+      TestToolbarActionsBarHelper* main_bar);
 
   virtual ToolbarActionsBar* GetToolbarActionsBar() = 0;
 

@@ -235,18 +235,20 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
 
 - (id)initWithBrowser:(Browser*)browser
         containerView:(BrowserActionsContainerView*)container
-           isOverflow:(BOOL)isOverflow {
+       mainController:(BrowserActionsController*)mainController {
   DCHECK(browser && container);
 
   if ((self = [super init])) {
     browser_ = browser;
-    isOverflow_ = isOverflow;
+    isOverflow_ = mainController != nil;
 
     toolbarActionsBarBridge_.reset(new ToolbarActionsBarBridge(self));
+    ToolbarActionsBar* mainBar =
+        mainController ? [mainController toolbarActionsBar] : nullptr;
     toolbarActionsBar_.reset(
         new ToolbarActionsBar(toolbarActionsBarBridge_.get(),
                               browser_,
-                              isOverflow));
+                              mainBar));
 
     containerView_ = container;
     [containerView_ setPostsFrameChangedNotifications:YES];
@@ -455,11 +457,32 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
   }
 
   [self showChevronIfNecessaryInFrame:[containerView_ frame]];
-  NSUInteger offset = isOverflow_ ?
+  NSUInteger minIndex = isOverflow_ ?
       [buttons_ count] - toolbarActionsBar_->GetIconCount() : 0;
-  for (NSUInteger i = offset; i < [buttons_ count]; ++i) {
-    if (![[buttons_ objectAtIndex:i] isBeingDragged])
-      [self moveButton:[buttons_ objectAtIndex:i] toIndex:i - offset];
+  NSUInteger maxIndex = isOverflow_ ?
+      [buttons_ count] : toolbarActionsBar_->GetIconCount();
+  for (NSUInteger i = 0; i < [buttons_ count]; ++i) {
+    BrowserActionButton* button = [buttons_ objectAtIndex:i];
+    if ([button isBeingDragged])
+      continue;
+
+    [self moveButton:[buttons_ objectAtIndex:i] toIndex:i - minIndex];
+
+    if (i >= minIndex && i < maxIndex) {
+      // Make sure the button is within the visible container.
+      if ([button superview] != containerView_) {
+        // We add the subview under the sibling views so that when it
+        // "slides in", it does so under its neighbors.
+        [containerView_ addSubview:button
+                        positioned:NSWindowBelow
+                        relativeTo:nil];
+      }
+      // We need to set the alpha value in case the container has resized.
+      [button setAlphaValue:1.0];
+    } else if ([button superview] == containerView_) {
+      [button removeFromSuperview];
+      [button setAlphaValue:0.0];
+    }
   }
 }
 
@@ -627,22 +650,6 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
 
   [button setFrame:buttonFrame
            animate:!toolbarActionsBar_->suppress_animation()];
-
-  if (index < toolbarActionsBar_->GetIconCount()) {
-    // Make sure the button is within the visible container.
-    if ([button superview] != containerView_) {
-      // We add the subview under the sibling views so that when it "slides in",
-      // it does so under its neighbors.
-      [containerView_ addSubview:button
-                      positioned:NSWindowBelow
-                      relativeTo:nil];
-    }
-    // We need to set the alpha value in case the container has resized.
-    [button setAlphaValue:1.0];
-  } else if ([button superview] == containerView_) {
-    [button removeFromSuperview];
-    [button setAlphaValue:0.0];
-  }
 }
 
 - (BOOL)browserActionClicked:(BrowserActionButton*)button {

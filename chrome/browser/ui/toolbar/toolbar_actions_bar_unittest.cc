@@ -26,6 +26,65 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
 
+namespace {
+
+// Verifies that the toolbar order matches for the given |actions_bar|. If the
+// order matches, the return value is empty; otherwise, it contains the error.
+std::string VerifyToolbarOrderForBar(
+    const ToolbarActionsBar* actions_bar,
+    BrowserActionTestUtil* browser_action_test_util,
+    const char* expected_names[],
+    size_t total_size,
+    size_t visible_count) {
+  const std::vector<ToolbarActionViewController*>& toolbar_actions =
+      actions_bar->toolbar_actions();
+  // If the total size is wrong, we risk segfaulting by continuing. Abort now.
+  if (total_size != toolbar_actions.size()) {
+    return base::StringPrintf("Incorrect action count: expected %d, found %d",
+                              static_cast<int>(total_size),
+                              static_cast<int>(toolbar_actions.size()));
+  }
+
+  // Check that the ToolbarActionsBar matches the expected state.
+  std::string error;
+  for (size_t i = 0; i < total_size; ++i) {
+    if (std::string(expected_names[i]) !=
+            base::UTF16ToUTF8(toolbar_actions[i]->GetActionName())) {
+      error += base::StringPrintf(
+          "Incorrect action in bar at index %d: expected '%s', found '%s'.\n",
+          static_cast<int>(i),
+          expected_names[i],
+          base::UTF16ToUTF8(toolbar_actions[i]->GetActionName()).c_str());
+    }
+  }
+  size_t icon_count = actions_bar->GetIconCount();
+  if (visible_count != icon_count)
+    error += base::StringPrintf(
+        "Incorrect visible count: expected %d, found %d.\n",
+        static_cast<int>(visible_count), static_cast<int>(icon_count));
+
+  // Test that the (platform-specific) toolbar view matches the expected state.
+  for (size_t i = 0; i < total_size; ++i) {
+    std::string id = browser_action_test_util->GetExtensionId(i);
+    if (id != toolbar_actions[i]->GetId()) {
+      error += base::StringPrintf(
+          "Incorrect action in view at index %d: expected '%s', found '%s'.\n",
+          static_cast<int>(i),
+          toolbar_actions[i]->GetId().c_str(),
+          id.c_str());
+    }
+  }
+  size_t view_icon_count = browser_action_test_util->VisibleBrowserActions();
+  if (visible_count != view_icon_count)
+    error += base::StringPrintf(
+        "Incorrect visible count in view: expected %d, found %d.\n",
+        static_cast<int>(visible_count), static_cast<int>(view_icon_count));
+
+  return error;
+}
+
+}  // namespace
+
 // A cross-platform unit test for the ToolbarActionsBar that uses the
 // TestToolbarActionsBarHelper to create the platform-specific containers.
 // TODO(devlin): Since this *does* use the real platform containers, in theory,
@@ -33,7 +92,13 @@
 // doing this.
 class ToolbarActionsBarUnitTest : public BrowserWithTestWindowTest {
  public:
-  ToolbarActionsBarUnitTest() : toolbar_model_(nullptr) {}
+  ToolbarActionsBarUnitTest() : toolbar_model_(nullptr), use_redesign_(false) {}
+
+  // A constructor to allow subclasses to override the redesign value.
+  explicit ToolbarActionsBarUnitTest(bool use_redesign)
+      : toolbar_model_(nullptr),
+        use_redesign_(use_redesign) {}
+
   ~ToolbarActionsBarUnitTest() override {}
 
  protected:
@@ -70,7 +135,10 @@ class ToolbarActionsBarUnitTest : public BrowserWithTestWindowTest {
       size_t visible_count) WARN_UNUSED_RESULT;
 
   ToolbarActionsBar* toolbar_actions_bar() {
-    return toolbar_actions_bar_helper_->GetToolbarActionsBar();
+    return main_bar_helper_->GetToolbarActionsBar();
+  }
+  ToolbarActionsBar* overflow_bar() {
+    return overflow_bar_helper_->GetToolbarActionsBar();
   }
   extensions::ExtensionToolbarModel* toolbar_model() {
     return toolbar_model_;
@@ -78,11 +146,18 @@ class ToolbarActionsBarUnitTest : public BrowserWithTestWindowTest {
   BrowserActionTestUtil* browser_action_test_util() {
     return browser_action_test_util_.get();
   }
+  BrowserActionTestUtil* overflow_browser_action_test_util() {
+    return overflow_browser_action_test_util_.get();
+  }
 
  private:
   // The test helper that owns the ToolbarActionsBar and the platform-specific
   // view for it.
-  scoped_ptr<TestToolbarActionsBarHelper> toolbar_actions_bar_helper_;
+  scoped_ptr<TestToolbarActionsBarHelper> main_bar_helper_;
+
+  // The test helper for the overflow bar; only non-null if |use_redesign| is
+  // true.
+  scoped_ptr<TestToolbarActionsBarHelper> overflow_bar_helper_;
 
   // The associated ExtensionToolbarModel (owned by the keyed service setup).
   extensions::ExtensionToolbarModel* toolbar_model_;
@@ -91,10 +166,24 @@ class ToolbarActionsBarUnitTest : public BrowserWithTestWindowTest {
   // ToolbarActionsBar.
   scoped_ptr<BrowserActionTestUtil> browser_action_test_util_;
 
+  // The overflow container's BrowserActionTestUtil (only non-null if
+  // |use_redesign| is true).
+  scoped_ptr<BrowserActionTestUtil> overflow_browser_action_test_util_;
+
+  // True if the extension action redesign switch should be enabled.
+  bool use_redesign_;
+
+  scoped_ptr<extensions::FeatureSwitch::ScopedOverride> redesign_switch_;
+
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBarUnitTest);
 };
 
 void ToolbarActionsBarUnitTest::SetUp() {
+  if (use_redesign_) {
+    redesign_switch_.reset(new extensions::FeatureSwitch::ScopedOverride(
+        extensions::FeatureSwitch::extension_action_redesign(), true));
+  }
+
   BrowserWithTestWindowTest::SetUp();
   // The toolbar typically displays extension icons, so create some extension
   // test infrastructure.
@@ -109,18 +198,28 @@ void ToolbarActionsBarUnitTest::SetUp() {
       extensions::extension_action_test_util::CreateToolbarModelForProfile(
           profile());
 
-  toolbar_actions_bar_helper_ = TestToolbarActionsBarHelper::Create(browser());
+  main_bar_helper_ = TestToolbarActionsBarHelper::Create(browser(), nullptr);
 
   BrowserActionTestUtil::DisableAnimations();
   browser_action_test_util_.reset(
       new BrowserActionTestUtil(browser(),
                                 toolbar_actions_bar()->delegate_for_test()));
+
+  if (use_redesign_) {
+    overflow_bar_helper_ =
+        TestToolbarActionsBarHelper::Create(browser(), main_bar_helper_.get());
+    overflow_browser_action_test_util_.reset(
+        new BrowserActionTestUtil(browser(),
+                                  overflow_bar()->delegate_for_test()));
+  }
 }
 
 void ToolbarActionsBarUnitTest::TearDown() {
   // Since the profile gets destroyed in BrowserWithTestWindowTest::TearDown(),
   // we need to delete this now.
-  toolbar_actions_bar_helper_.reset();
+  overflow_bar_helper_.reset();
+  main_bar_helper_.reset();
+  redesign_switch_.reset();
   BrowserWithTestWindowTest::TearDown();
 }
 
@@ -158,75 +257,28 @@ testing::AssertionResult ToolbarActionsBarUnitTest::VerifyToolbarOrder(
     const char* expected_names[],
     size_t total_size,
     size_t visible_count) {
-  std::vector<ToolbarActionViewController*> toolbar_actions =
-      toolbar_actions_bar()->toolbar_actions();
-  // If the total size is wrong, we risk segfaulting by continuing. Abort now.
-  if (total_size != toolbar_actions.size()) {
-    return testing::AssertionFailure() << "Incorrect action count: expected " <<
-        total_size << ", found " << toolbar_actions.size();
+  std::string main_bar_error =
+      VerifyToolbarOrderForBar(toolbar_actions_bar(),
+                               browser_action_test_util(),
+                               expected_names,
+                               total_size,
+                               visible_count);
+  std::string overflow_bar_error;
+  if (use_redesign_) {
+    overflow_bar_error =
+        VerifyToolbarOrderForBar(overflow_bar(),
+                                 overflow_browser_action_test_util(),
+                                 expected_names,
+                                 total_size,
+                                 total_size - visible_count);
+
   }
 
-  // Check that the ToolbarActionsBar matches the expected state.
-  std::string error;
-  for (size_t i = 0; i < total_size; ++i) {
-    if (std::string(expected_names[i]) !=
-            base::UTF16ToUTF8(toolbar_actions[i]->GetActionName())) {
-      error += base::StringPrintf(
-          "Incorrect action in bar at index %d: expected '%s', found '%s'.\n",
-          static_cast<int>(i),
-          expected_names[i],
-          base::UTF16ToUTF8(toolbar_actions[i]->GetActionName()).c_str());
-    }
-  }
-  size_t icon_count = toolbar_actions_bar()->GetIconCount();
-  if (visible_count != icon_count)
-    error += base::StringPrintf(
-        "Incorrect visible count: expected %d, found %d.\n",
-        static_cast<int>(visible_count), static_cast<int>(icon_count));
-
-  // Test that the (platform-specific) toolbar view matches the expected state.
-  for (size_t i = 0; i < total_size; ++i) {
-    std::string id = browser_action_test_util()->GetExtensionId(i);
-    if (id != toolbar_actions[i]->GetId()) {
-      error += base::StringPrintf(
-          "Incorrect action in view at index %d: expected '%s', found '%s'.\n",
-          static_cast<int>(i),
-          toolbar_actions[i]->GetId().c_str(),
-          id.c_str());
-    }
-  }
-  size_t view_icon_count = browser_action_test_util()->VisibleBrowserActions();
-  if (visible_count != view_icon_count)
-    error += base::StringPrintf(
-        "Incorrect visible count in view: expected %d, found %d.\n",
-        static_cast<int>(visible_count), static_cast<int>(view_icon_count));
-
-  return error.empty() ? testing::AssertionSuccess() :
-      testing::AssertionFailure() << error;
+  return main_bar_error.empty() && overflow_bar_error.empty() ?
+      testing::AssertionSuccess() :
+      testing::AssertionFailure() << "main bar error:\n" << main_bar_error <<
+          "overflow bar error:\n" << overflow_bar_error;
 }
-
-// A version of the ToolbarActionsBarUnitTest that enables the toolbar redesign.
-class ToolbarActionsBarUnitTestWithSwitch : public ToolbarActionsBarUnitTest {
- public:
-  ToolbarActionsBarUnitTestWithSwitch() {}
-  ~ToolbarActionsBarUnitTestWithSwitch() override {}
-
- protected:
-  void SetUp() override {
-    redesign_switch_.reset(new extensions::FeatureSwitch::ScopedOverride(
-        extensions::FeatureSwitch::extension_action_redesign(), true));
-    ToolbarActionsBarUnitTest::SetUp();
-  }
-  void TearDown() override {
-    redesign_switch_.reset();
-    ToolbarActionsBarUnitTest::TearDown();
-  }
-
- private:
-  scoped_ptr<extensions::FeatureSwitch::ScopedOverride> redesign_switch_;
-
-  DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBarUnitTestWithSwitch);
-};
 
 TEST_F(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {
   // Add three extensions to the profile; this is the easiest way to have
@@ -339,9 +391,24 @@ TEST_F(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {
   EXPECT_EQ(1u, toolbar_actions_bar()->GetIconCount());
 }
 
+class ToolbarActionsBarPopOutUnitTest
+     : public ToolbarActionsBarUnitTest {
+ public:
+  ToolbarActionsBarPopOutUnitTest() : ToolbarActionsBarUnitTest(true) {}
+
+ protected:
+  void SetUp() override {
+    ToolbarActionsBar::set_pop_out_actions_to_run_for_testing(true);
+    ToolbarActionsBarUnitTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBarPopOutUnitTest);
+};
+
 // Test that toolbar actions can pop themselves out of overflow if they want to
 // act on a given tab.
-TEST_F(ToolbarActionsBarUnitTestWithSwitch, ActionsPopOutToAct) {
+TEST_F(ToolbarActionsBarPopOutUnitTest, ActionsPopOutToAct) {
   // Add three extensions to the profile; this is the easiest way to have
   // toolbar actions.
   const char kBrowserAction[] = "browser action";
@@ -497,7 +564,7 @@ TEST_F(ToolbarActionsBarUnitTestWithSwitch, ActionsPopOutToAct) {
   }
 }
 
-TEST_F(ToolbarActionsBarUnitTestWithSwitch, AdjustingActionsThatWantToAct) {
+TEST_F(ToolbarActionsBarPopOutUnitTest, AdjustingActionsThatWantToAct) {
   // Add three extensions to the profile; this is the easiest way to have
   // toolbar actions.
   const char kBrowserAction[] = "browser action";

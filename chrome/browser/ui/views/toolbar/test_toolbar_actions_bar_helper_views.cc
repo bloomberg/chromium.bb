@@ -13,7 +13,8 @@ namespace {
 // creates and owns a BrowserActionsContainer.
 class TestToolbarActionsBarHelperViews : public TestToolbarActionsBarHelper {
  public:
-  explicit TestToolbarActionsBarHelperViews(Browser* browser);
+  TestToolbarActionsBarHelperViews(Browser* browser,
+                                   TestToolbarActionsBarHelperViews* main_bar);
   ~TestToolbarActionsBarHelperViews() override;
 
  private:
@@ -31,9 +32,12 @@ class TestToolbarActionsBarHelperViews : public TestToolbarActionsBarHelper {
 };
 
 TestToolbarActionsBarHelperViews::TestToolbarActionsBarHelperViews(
-    Browser* browser)
+    Browser* browser,
+    TestToolbarActionsBarHelperViews* main_bar)
     : browser_actions_container_(
-          new BrowserActionsContainer(browser, nullptr)) {
+          new BrowserActionsContainer(
+              browser,
+              main_bar ? main_bar->browser_actions_container_ : nullptr)) {
   // The BrowserActionsContainer expects to have a parent (and be added to the
   // view hierarchy), so wrap it in a shell view.
   container_parent_.set_owned_by_client();
@@ -50,6 +54,9 @@ ToolbarActionsBar* TestToolbarActionsBarHelperViews::GetToolbarActionsBar() {
 
 // static
 scoped_ptr<TestToolbarActionsBarHelper>
-TestToolbarActionsBarHelper::Create(Browser* browser) {
-  return make_scoped_ptr(new TestToolbarActionsBarHelperViews(browser));
+TestToolbarActionsBarHelper::Create(Browser* browser,
+                                    TestToolbarActionsBarHelper* main_bar) {
+  return make_scoped_ptr(new TestToolbarActionsBarHelperViews(
+      browser,
+      static_cast<TestToolbarActionsBarHelperViews*>(main_bar)));
 }

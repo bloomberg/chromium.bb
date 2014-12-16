@@ -16,7 +16,8 @@ namespace {
 // testing purposes.
 class TestToolbarActionsBarHelperCocoa : public TestToolbarActionsBarHelper {
  public:
-  TestToolbarActionsBarHelperCocoa(Browser* browser);
+  TestToolbarActionsBarHelperCocoa(Browser* browser,
+                                   TestToolbarActionsBarHelperCocoa* mainBar);
   ~TestToolbarActionsBarHelperCocoa() override;
 
  private:
@@ -32,16 +33,19 @@ class TestToolbarActionsBarHelperCocoa : public TestToolbarActionsBarHelper {
 };
 
 TestToolbarActionsBarHelperCocoa::TestToolbarActionsBarHelperCocoa(
-    Browser* browser) {
+    Browser* browser,
+    TestToolbarActionsBarHelperCocoa* mainBar) {
   // Make sure that Cocoa has been bootstrapped.
   CocoaTest::BootstrapCocoa();
 
   containerView_.reset([[BrowserActionsContainerView alloc]
       initWithFrame:NSMakeRect(0, 0, 0, 15)]);
+  BrowserActionsController* mainController =
+      mainBar ? mainBar->controller_.get() : nil;
   controller_.reset([[BrowserActionsController alloc]
       initWithBrowser:browser
         containerView:containerView_.get()
-           isOverflow:NO]);
+       mainController:mainController]);
 }
 
 TestToolbarActionsBarHelperCocoa::~TestToolbarActionsBarHelperCocoa() {}
@@ -53,6 +57,9 @@ ToolbarActionsBar* TestToolbarActionsBarHelperCocoa::GetToolbarActionsBar() {
 }  // namespace
 
 scoped_ptr<TestToolbarActionsBarHelper> TestToolbarActionsBarHelper::Create(
-    Browser* browser) {
-  return make_scoped_ptr(new TestToolbarActionsBarHelperCocoa(browser));
+    Browser* browser,
+    TestToolbarActionsBarHelper* main_bar) {
+  return make_scoped_ptr(new TestToolbarActionsBarHelperCocoa(
+      browser,
+      static_cast<TestToolbarActionsBarHelperCocoa*>(main_bar)));
 }

@@ -66,9 +66,11 @@ BrowserActionsContainer::DropPosition::DropPosition(
 BrowserActionsContainer::BrowserActionsContainer(
     Browser* browser,
     BrowserActionsContainer* main_container)
-    : toolbar_actions_bar_(new ToolbarActionsBar(this,
-                                                 browser,
-                                                 main_container != nullptr)),
+    : toolbar_actions_bar_(new ToolbarActionsBar(
+          this,
+          browser,
+          main_container ?
+              main_container->toolbar_actions_bar_.get() : nullptr)),
       browser_(browser),
       main_container_(main_container),
       popup_owner_(NULL),

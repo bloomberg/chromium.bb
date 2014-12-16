@@ -66,10 +66,13 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 @property(readonly, nonatomic) Browser* browser;
 
 // Initializes the controller given the current browser and container view that
-// will hold the browser action buttons.
+// will hold the browser action buttons. If |mainController| is nil, the created
+// BrowserActionsController will be the main controller; otherwise (if this is
+// for the overflow menu), |mainController| should be controller of the main bar
+// for the |browser|.
 - (id)initWithBrowser:(Browser*)browser
         containerView:(BrowserActionsContainerView*)container
-           isOverflow:(BOOL)isOverflow;
+       mainController:(BrowserActionsController*)mainController;
 
 // Update the display of all buttons.
 - (void)update;

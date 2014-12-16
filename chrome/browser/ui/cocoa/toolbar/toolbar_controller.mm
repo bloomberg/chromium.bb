@@ -590,7 +590,7 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
     browserActionsController_.reset([[BrowserActionsController alloc]
             initWithBrowser:browser_
               containerView:browserActionsContainerView_
-                 isOverflow:NO]);
+             mainController:nil]);
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(browserActionsContainerWillDrag:)

@@ -9,7 +9,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
-#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -31,8 +30,7 @@ class ToolbarActionViewController;
 // (fka wrench) menu. The main bar can have only a single row of icons with
 // flexible width, whereas the overflow bar has multiple rows of icons with a
 // fixed width (the width of the menu).
-class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer,
-                          public TabStripModelObserver {
+class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
  public:
   // A struct to contain the platform settings.
   struct PlatformSettings {
@@ -63,7 +61,7 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer,
 
   ToolbarActionsBar(ToolbarActionsBarDelegate* delegate,
                     Browser* browser,
-                    bool in_overflow_mode);
+                    ToolbarActionsBar* main_bar);
   ~ToolbarActionsBar() override;
 
   // Returns the width of a browser action icon, optionally including the
@@ -110,11 +108,12 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer,
   // and dragged the view from |dragged_index| to |dropped_index|.
   // |drag_type| indicates whether or not the icon was dragged between the
   // overflow and main containers.
+  // The main container should handle all drag/drop notifications.
   void OnDragDrop(int dragged_index,
                   int dropped_index,
                   DragType drag_type);
 
-  const std::vector<ToolbarActionViewController*>& toolbar_actions() {
+  const std::vector<ToolbarActionViewController*>& toolbar_actions() const {
     return toolbar_actions_.get();
   }
   bool enabled() const { return model_ != nullptr; }
@@ -129,12 +128,19 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer,
 
   ToolbarActionsBarDelegate* delegate_for_test() { return delegate_; }
 
+  static void set_pop_out_actions_to_run_for_testing(
+      bool pop_out_actions_to_run) {
+    pop_out_actions_to_run_ = pop_out_actions_to_run;
+  }
+
   // During testing we can disable animations by setting this flag to true,
   // so that the bar resizes instantly, instead of having to poll it while it
   // animates to open/closed status.
   static bool disable_animations_for_testing_;
 
  private:
+  class TabOrderHelper;
+
   using ToolbarActions = ScopedVector<ToolbarActionViewController>;
 
   // ExtensionToolbarModel::Observer:
@@ -151,14 +157,6 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer,
   void OnToolbarModelInitialized() override;
   Browser* GetBrowser() override;
 
-  // TabStripModelObserver:
-  void TabInsertedAt(content::WebContents* web_contents,
-                     int index,
-                     bool foreground) override;
-  void TabDetachedAt(content::WebContents* web_contents,
-                     int index) override;
-  void TabStripModelDeleted() override;
-
   // Resizes the delegate (if necessary) to the preferred size using the given
   // |tween_type| and optionally suppressing the chevron.
   void ResizeDelegate(gfx::Tween::Type tween_type, bool suppress_chevron);
@@ -169,8 +167,15 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer,
   // Returns the current web contents.
   content::WebContents* GetCurrentWebContents();
 
-  // Reorders the toolbar actions to reflect any that need to pop out.
+  // Reorders the toolbar actions to reflect the model and, optionally, to
+  // "pop out" any overflowed actions that want to run (depending on the
+  // value of |pop_out_actions_to_run|.
   void ReorderActions();
+
+  // Copies the action order from the main bar (only called for the overflow).
+  void CopyActionOrder();
+
+  bool in_overflow_mode() const { return main_bar_ != nullptr; }
 
   // The delegate for this object (in a real build, this is the view).
   ToolbarActionsBarDelegate* delegate_;
@@ -181,8 +186,13 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer,
   // The observed toolbar model.
   extensions::ExtensionToolbarModel* model_;
 
-  // True if this bar is for the overflow menu.
-  bool in_overflow_mode_;
+  // The controller for the main toolbar actions bar. This will be null if this
+  // is the main bar.
+  ToolbarActionsBar* main_bar_;
+
+  // The controller for the overflow toolbar actions bar; this can be null
+  // even if this is the main bar, since the overflow is not always open.
+  ToolbarActionsBar* overflow_bar_;
 
   // Platform-specific settings for dimensions and the overflow chevron.
   PlatformSettings platform_settings_;
@@ -190,19 +200,12 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer,
   // The toolbar actions.
   ToolbarActions toolbar_actions_;
 
-  // The set of tabs for the given action (the key) is currently "popped out".
-  // "Popped out" actions are those that were in the overflow menu normally, but
-  // want to run and are moved to the main bar so the user can see them.
-  std::map<ToolbarActionViewController*, std::set<int>> popped_out_in_tabs_;
-
-  // The set of tab ids that have been checked for whether actions need to be
-  // popped out or not.
-  std::set<int> tabs_checked_for_pop_out_;
+  // The TabOrderHelper that manages popping out actions that want to act.
+  // This is only non-null if |pop_out_actions_to_run| is true.
+  scoped_ptr<TabOrderHelper> tab_order_helper_;
 
   ScopedObserver<extensions::ExtensionToolbarModel,
                  extensions::ExtensionToolbarModel::Observer> model_observer_;
-
-  ScopedObserver<TabStripModel, TabStripModelObserver> tab_strip_observer_;
 
   // True if we should suppress layout, such as when we are creating or
   // adjusting a lot of actions at once.
@@ -211,6 +214,11 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer,
   // True if we should suppress animation; we do this when first creating the
   // toolbar, and also when switching tabs changes the state of the icons.
   bool suppress_animation_;
+
+  // If this is true, actions that want to run (e.g., an extension's page
+  // action) will pop out of overflow to draw more attention.
+  // See also TabOrderHelper in the .cc file.
+  static bool pop_out_actions_to_run_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBar);
 };
