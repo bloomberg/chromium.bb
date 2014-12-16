@@ -41,11 +41,11 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/touch/touch_hud_debug.h"
+#include "ash/utility/partial_screenshot_controller.h"
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector_controller.h"
-#include "ash/wm/partial_screenshot_view.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_state.h"
@@ -405,7 +405,7 @@ void HandleSwitchIme(ImeControlDelegate* ime_control_delegate,
 void HandleTakePartialScreenshot(ScreenshotDelegate* screenshot_delegate) {
   base::RecordAction(UserMetricsAction("Accel_Take_Partial_Screenshot"));
   if (screenshot_delegate) {
-    ash::PartialScreenshotView::StartPartialScreenshot(
+    ash::PartialScreenshotController::StartPartialScreenshotSession(
         screenshot_delegate);
   }
 }
