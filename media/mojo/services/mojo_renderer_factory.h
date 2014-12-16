@@ -7,14 +7,28 @@
 
 #include "media/base/media_export.h"
 #include "media/base/renderer_factory.h"
-#include "mojo/public/interfaces/application/service_provider.mojom.h"
+#include "media/mojo/interfaces/media_renderer.mojom.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
 
 namespace media {
 
 // The default factory class for creating MojoRendererImpl.
 class MEDIA_EXPORT MojoRendererFactory : public RendererFactory {
  public:
-  MojoRendererFactory(mojo::ServiceProviderPtr renderer_service_provider);
+  // A class that can help get a mojo::MediaRenderer service for
+  // MojoRendererFactory.
+  class ServiceProvider {
+   public:
+    ServiceProvider() {};
+    virtual ~ServiceProvider() {};
+    virtual void ConnectToService(
+        mojo::InterfacePtr<mojo::MediaRenderer>* media_renderer_ptr) = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ServiceProvider);
+  };
+
+  explicit MojoRendererFactory(scoped_ptr<ServiceProvider> service_provider);
   ~MojoRendererFactory() final;
 
   scoped_ptr<Renderer> CreateRenderer(
@@ -22,7 +36,7 @@ class MEDIA_EXPORT MojoRendererFactory : public RendererFactory {
       AudioRendererSink* audio_renderer_sink) final;
 
  private:
-  mojo::ServiceProviderPtr renderer_service_provider_;
+  scoped_ptr<ServiceProvider> service_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoRendererFactory);
 };

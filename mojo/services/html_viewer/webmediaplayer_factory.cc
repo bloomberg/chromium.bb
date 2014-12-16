@@ -25,6 +25,29 @@
 
 namespace mojo {
 
+#if !defined(OS_ANDROID)
+namespace {
+
+class RendererServiceProvider
+    : public media::MojoRendererFactory::ServiceProvider {
+ public:
+  explicit RendererServiceProvider(ServiceProviderPtr service_provider_ptr)
+      : service_provider_ptr_(service_provider_ptr.Pass()) {}
+  ~RendererServiceProvider() final {}
+
+  void ConnectToService(InterfacePtr<MediaRenderer>* media_renderer_ptr) final {
+    mojo::ConnectToService(service_provider_ptr_.get(), media_renderer_ptr);
+  }
+
+ private:
+  ServiceProviderPtr service_provider_ptr_;
+
+  DISALLOW_COPY_AND_ASSIGN(RendererServiceProvider);
+};
+
+}  // namespace
+#endif
+
 WebMediaPlayerFactory::WebMediaPlayerFactory(
     const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
     bool enable_mojo_media_renderer)
@@ -62,8 +85,8 @@ blink::WebMediaPlayer* WebMediaPlayerFactory::CreateMediaPlayer(
     ServiceProviderPtr media_renderer_service_provider;
     shell->ConnectToApplication("mojo:media",
                                 GetProxy(&media_renderer_service_provider));
-    media_renderer_factory.reset(
-        new media::MojoRendererFactory(media_renderer_service_provider.Pass()));
+    media_renderer_factory.reset(new media::MojoRendererFactory(make_scoped_ptr(
+        new RendererServiceProvider(media_renderer_service_provider.Pass()))));
   } else {
     media_renderer_factory.reset(
         new media::DefaultRendererFactory(media_log,
