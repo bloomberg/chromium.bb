@@ -16,6 +16,7 @@ class SingleThreadTaskRunner;
 
 namespace remoting {
 
+// TODO(sergeyu): Move ClipboardStub implementation to Clipboard.
 class InputInjector : public protocol::ClipboardStub,
                       public protocol::InputStub {
  public:
