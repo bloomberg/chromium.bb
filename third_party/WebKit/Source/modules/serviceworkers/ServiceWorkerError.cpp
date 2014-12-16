@@ -37,30 +37,36 @@ using blink::WebServiceWorkerError;
 
 namespace blink {
 
+static PassRefPtrWillBeRawPtr<DOMException> createException(
+    ExceptionCode code, const String& defaultMessage, const String& message)
+{
+    return DOMException::create(code, message.isEmpty() ? defaultMessage : message);
+}
+
 // static
 PassRefPtrWillBeRawPtr<DOMException> ServiceWorkerError::take(ScriptPromiseResolver*, WebType* webErrorRaw)
 {
     OwnPtr<WebType> webError = adoptPtr(webErrorRaw);
     switch (webError->errorType) {
-    case WebServiceWorkerError::ErrorTypeDisabled:
-        return DOMException::create(NotSupportedError, "Service Worker support is disabled.");
     case WebServiceWorkerError::ErrorTypeAbort:
-        return DOMException::create(AbortError, "The Service Worker operation was aborted.");
-    case WebServiceWorkerError::ErrorTypeSecurity:
-        return DOMException::create(SecurityError, "The Service Worker security policy prevented an action.");
-    case WebServiceWorkerError::ErrorTypeInstall:
-        // FIXME: Introduce new InstallError type to ExceptionCodes?
-        return DOMException::create(AbortError, "The Service Worker installation failed.");
+        return createException(AbortError, "The Service Worker operation was aborted.", webError->message);
     case WebServiceWorkerError::ErrorTypeActivate:
         // Not currently returned as a promise rejection.
         // FIXME: Introduce new ActivateError type to ExceptionCodes?
-        return DOMException::create(AbortError, "The Service Worker activation failed.");
+        return createException(AbortError, "The Service Worker activation failed.", webError->message);
+    case WebServiceWorkerError::ErrorTypeDisabled:
+        return createException(NotSupportedError, "Service Worker support is disabled.", webError->message);
+    case WebServiceWorkerError::ErrorTypeInstall:
+        // FIXME: Introduce new InstallError type to ExceptionCodes?
+        return createException(AbortError, "The Service Worker installation failed.", webError->message);
     case WebServiceWorkerError::ErrorTypeNetwork:
-        return DOMException::create(NetworkError, "The Service Worker failed by network.");
+        return createException(NetworkError, "The Service Worker failed by network.", webError->message);
     case WebServiceWorkerError::ErrorTypeNotFound:
-        return DOMException::create(NotFoundError, "The specified Service Worker resource was not found.");
+        return createException(NotFoundError, "The specified Service Worker resource was not found.", webError->message);
+    case WebServiceWorkerError::ErrorTypeSecurity:
+        return createException(SecurityError, "The Service Worker security policy prevented an action.", webError->message);
     case WebServiceWorkerError::ErrorTypeUnknown:
-        return DOMException::create(UnknownError, "An unknown error occurred within Service Worker.");
+        return createException(UnknownError, "An unknown error occurred within Service Worker.", webError->message);
     }
     ASSERT_NOT_REACHED();
     return DOMException::create(UnknownError);

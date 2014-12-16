@@ -37,13 +37,13 @@ namespace blink {
 
 struct WebServiceWorkerError {
     enum ErrorType {
-        ErrorTypeDisabled = 0,
-        ErrorTypeAbort,
-        ErrorTypeSecurity,
-        ErrorTypeInstall,
+        ErrorTypeAbort = 0,
         ErrorTypeActivate,
+        ErrorTypeDisabled,
+        ErrorTypeInstall,
         ErrorTypeNetwork,
         ErrorTypeNotFound,
+        ErrorTypeSecurity,
         ErrorTypeUnknown,
         ErrorTypeLast = ErrorTypeUnknown
     };
