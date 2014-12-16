@@ -430,6 +430,11 @@ bool SVGImage::dataChanged(bool allDataReceived)
         TRACE_EVENT0("blink", "SVGImage::dataChanged::load");
         loader.load(FrameLoadRequest(0, blankURL(), SubstituteData(data(), AtomicString("image/svg+xml", AtomicString::ConstructFromLiteral),
             AtomicString("UTF-8", AtomicString::ConstructFromLiteral), KURL(), ForceSynchronousLoad)));
+
+        SVGSVGElement* rootElement = svgRootElement(m_page.get());
+        if (rootElement && rootElement->timeContainer()->hasAnimations())
+            UseCounter::count(frame->document(), UseCounter::SVGSMILAnimationInImage);
+
         // Set the intrinsic size before a container size is available.
         m_intrinsicSize = containerSize();
     }
