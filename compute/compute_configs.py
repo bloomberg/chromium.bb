@@ -37,6 +37,14 @@ configs['cros-bot'] = dict(
     scopes=DEFAULT_SCOPES,
 )
 
+# The default config for Chrome OS PreCQ builders.
+configs['cros-precq-bot'] = dict(
+    machine_type='n1-highmem-8',
+    zone=DEFAULT_ZONE,
+    image=DEFAULT_IMAGE_NAME,
+    scopes=DEFAULT_SCOPES,
+)
+
 # A wimpy config for testing purposes.
 configs['cros-test'] = dict(
     machine_type='n1-standard-1',
