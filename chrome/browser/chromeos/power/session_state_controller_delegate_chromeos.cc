@@ -27,6 +27,10 @@ void SessionStateControllerDelegateChromeos::RequestLockScreen() {
   DBusThreadManager::Get()->GetSessionManagerClient()->RequestLockScreen();
 }
 
+void SessionStateControllerDelegateChromeos::RequestRestart() {
+  DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
+}
+
 void SessionStateControllerDelegateChromeos::RequestShutdown() {
   DBusThreadManager::Get()->GetPowerManagerClient()->RequestShutdown();
 }

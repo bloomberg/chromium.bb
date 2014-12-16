@@ -122,6 +122,16 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
     }
   }
 
+  if (policy.has_reboot_on_shutdown()) {
+    const em::RebootOnShutdownProto& container(policy.reboot_on_shutdown());
+    if (container.has_reboot_on_shutdown()) {
+      policies->Set(key::kDeviceRebootOnShutdown, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    new base::FundamentalValue(container.reboot_on_shutdown()),
+                    NULL);
+    }
+  }
+
   if (policy.has_show_user_names()) {
     const em::ShowUserNamesOnSigninProto& container(policy.show_user_names());
     if (container.has_show_user_names()) {

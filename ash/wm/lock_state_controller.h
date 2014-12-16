@@ -40,6 +40,7 @@ class ASH_EXPORT LockStateControllerDelegate {
   virtual ~LockStateControllerDelegate() {}
 
   virtual void RequestLockScreen() = 0;
+  virtual void RequestRestart() = 0;
   virtual void RequestShutdown() = 0;
 
  private:
@@ -72,6 +73,10 @@ class ASH_EXPORT LockStateControllerDelegate {
 class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
                                        public ShellObserver {
  public:
+  // ShutdownMode determines whether the device will power off or reboot when
+  // RequestShutdown is invoked.
+  enum ShutdownMode { POWER_OFF, RESTART };
+
   // Amount of time that the power button needs to be held before we lock the
   // screen.
   static const int kLockTimeoutMs;
@@ -132,7 +137,7 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
       controller_->pre_shutdown_timer_.Stop();
     }
     void trigger_real_shutdown_timeout() {
-      controller_->OnRealShutdownTimeout();
+      controller_->OnRealPowerTimeout(POWER_OFF);
       controller_->real_shutdown_timer_.Stop();
     }
 
@@ -188,7 +193,7 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   void OnStartingLock();
 
   // Displays the shutdown animation and requests shutdown when it's done.
-  void RequestShutdown();
+  void RequestShutdown(ShutdownMode mode);
 
   // Called when ScreenLocker is ready to close, but not yet destroyed.
   // Can be used to display "hiding" animations on unlock.
@@ -237,10 +242,13 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   // Starts timer for final shutdown animation.
   // If |with_animation_time| is true, it will also include time of "fade to
   // white" shutdown animation.
-  void StartRealShutdownTimer(bool with_animation_time);
+  // If |shutdown_mode| is set to RESTART, the device will reboot.
+  void StartRealShutdownTimer(bool with_animation_time,
+                              ShutdownMode shutdown_mode);
 
-  // Requests that the machine be shut down.
-  void OnRealShutdownTimeout();
+  // Request that the machine be either restarted or shut down depending on
+  // |shutdown_mode|.
+  void OnRealPowerTimeout(ShutdownMode shutdown_mode);
 
   // Starts shutdown animation that can be cancelled and starts pre-shutdown
   // timer.

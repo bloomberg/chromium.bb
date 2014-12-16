@@ -59,6 +59,10 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case ash::UMA_ACCEL_EXIT_SECOND_Q:
       base::RecordAction(base::UserMetricsAction("Accel_Exit_Second_Q"));
       break;
+    case ash::UMA_ACCEL_RESTART_POWER_BUTTON:
+      base::RecordAction(
+          base::UserMetricsAction("Accel_Restart_PowerButton"));
+      break;
     case ash::UMA_ACCEL_SHUT_DOWN_POWER_BUTTON:
       base::RecordAction(
           base::UserMetricsAction("Accel_ShutDown_PowerButton"));

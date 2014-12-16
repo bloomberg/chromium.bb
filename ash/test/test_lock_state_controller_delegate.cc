@@ -9,6 +9,7 @@ namespace test {
 
 TestLockStateControllerDelegate::TestLockStateControllerDelegate()
     : num_lock_requests_(0),
+      num_restart_requests_(0),
       num_shutdown_requests_(0) {
 }
 
@@ -17,6 +18,10 @@ TestLockStateControllerDelegate::~TestLockStateControllerDelegate() {
 
 void TestLockStateControllerDelegate::RequestLockScreen() {
   ++num_lock_requests_;
+}
+
+void TestLockStateControllerDelegate::RequestRestart() {
+  ++num_restart_requests_;
 }
 
 void TestLockStateControllerDelegate::RequestShutdown() {

@@ -16,8 +16,11 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/session_state_animator.h"
 #include "ash/wm/session_state_animator_impl.h"
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/location.h"
+#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window_tree_host.h"
@@ -164,7 +167,7 @@ void LockStateController::OnStartingLock() {
   StartImmediatePreLockAnimation(false /* request_lock_on_completion */);
 }
 
-void LockStateController::RequestShutdown() {
+void LockStateController::RequestShutdown(ShutdownMode mode) {
   if (shutting_down_)
     return;
 
@@ -178,7 +181,7 @@ void LockStateController::RequestShutdown() {
       SessionStateAnimator::ROOT_CONTAINER,
       SessionStateAnimator::ANIMATION_GRAYSCALE_BRIGHTNESS,
       SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN);
-  StartRealShutdownTimer(true);
+  StartRealShutdownTimer(true, mode);
 }
 
 void LockStateController::OnLockScreenHide(
@@ -269,10 +272,11 @@ void LockStateController::OnPreShutdownAnimationTimeout() {
   Shell* shell = ash::Shell::GetInstance();
   shell->cursor_manager()->HideCursor();
 
-  StartRealShutdownTimer(false);
+  StartRealShutdownTimer(false, POWER_OFF);
 }
 
-void LockStateController::StartRealShutdownTimer(bool with_animation_time) {
+void LockStateController::StartRealShutdownTimer(bool with_animation_time,
+                                                 ShutdownMode shutdown_mode) {
   base::TimeDelta duration =
       base::TimeDelta::FromMilliseconds(kShutdownRequestDelayMs);
   if (with_animation_time) {
@@ -291,11 +295,12 @@ void LockStateController::StartRealShutdownTimer(bool with_animation_time) {
 #endif
 
   real_shutdown_timer_.Start(
-      FROM_HERE, duration, this, &LockStateController::OnRealShutdownTimeout);
+      FROM_HERE, duration, base::Bind(&LockStateController::OnRealPowerTimeout,
+                                      base::Unretained(this), shutdown_mode));
 }
 
-void LockStateController::OnRealShutdownTimeout() {
-  VLOG(1) << "OnRealShutdownTimeout";
+void LockStateController::OnRealPowerTimeout(ShutdownMode shutdown_mode) {
+  VLOG(1) << "OnRealPowerTimeout";
   DCHECK(shutting_down_);
 #if defined(OS_CHROMEOS)
   if (!base::SysInfo::IsRunningOnChromeOS()) {
@@ -306,9 +311,15 @@ void LockStateController::OnRealShutdownTimeout() {
     }
   }
 #endif
+  if (shutdown_mode == POWER_OFF) {
+    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+        UMA_ACCEL_SHUT_DOWN_POWER_BUTTON);
+    delegate_->RequestShutdown();
+    return;
+  }
   Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-      UMA_ACCEL_SHUT_DOWN_POWER_BUTTON);
-  delegate_->RequestShutdown();
+      UMA_ACCEL_RESTART_POWER_BUTTON);
+  delegate_->RequestRestart();
 }
 
 void LockStateController::StartCancellableShutdownAnimation() {

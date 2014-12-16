@@ -584,6 +584,16 @@ message SAMLSettingsProto {
   optional bool transfer_saml_cookies = 1;
 }
 
+message RebootOnShutdownProto {
+  // Determines whether the device automatically reboots whenever the user shuts
+  // it down. If this flag is set to true, shutdown is forbidden and UI elements
+  // trigger a device reboot instead of a power off. This policy affects
+  // shutdowns triggered from the UI only. If the user shuts down the device
+  // using the power button, it will not automatically reboot, even if the
+  // policy is enabled.
+  optional bool reboot_on_shutdown = 1 [default = false];
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -618,4 +628,5 @@ message ChromeDeviceSettingsProto {
   optional AutoCleanupSettigsProto auto_clean_up_settings = 31;
   optional SystemSettingsProto system_settings = 32;
   optional SAMLSettingsProto saml_settings = 33;
+  optional RebootOnShutdownProto reboot_on_shutdown = 34;
 }

@@ -44858,6 +44858,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
       label="Control the availability of the Contextual Search feature."/>
   <int value="282" label="Force Google SafeSearch"/>
   <int value="283" label="Force YouTube Safety Mode"/>
+  <int value="284" label="Allow device shutdown"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

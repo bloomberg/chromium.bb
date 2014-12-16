@@ -592,7 +592,8 @@ void SystemTrayDelegateChromeOS::ShowUserLogin() {
 }
 
 void SystemTrayDelegateChromeOS::ShutDown() {
-  ash::Shell::GetInstance()->lock_state_controller()->RequestShutdown();
+  ash::Shell::GetInstance()->lock_state_controller()->RequestShutdown(
+      ash::LockStateController::POWER_OFF);
 }
 
 void SystemTrayDelegateChromeOS::SignOut() {

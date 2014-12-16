@@ -1240,6 +1240,7 @@
       'browser/ui/webui/chromeos/login/l10n_util_test_util.cc',
       'browser/ui/webui/chromeos/login/l10n_util_test_util.h',
       'browser/ui/webui/chromeos/login/l10n_util_unittest.cc',
+      'browser/ui/webui/chromeos/login/shutdown_policy_observer_unittest.cc',
       'browser/ui/webui/chromeos/login/signin_userlist_unittest.cc',
       'browser/ui/webui/fileicon_source_unittest.cc',
       'browser/ui/webui/help/version_updater_chromeos_unittest.cc',

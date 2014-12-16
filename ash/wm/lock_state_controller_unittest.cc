@@ -818,7 +818,7 @@ TEST_F(LockStateControllerTest, ShutdownWithoutButton) {
 TEST_F(LockStateControllerTest, RequestShutdownFromLoginScreen) {
   Initialize(false, user::LOGGED_IN_NONE);
 
-  lock_state_controller_->RequestShutdown();
+  lock_state_controller_->RequestShutdown(LockStateController::POWER_OFF);
 
   ExpectShutdownAnimationStarted();
   Advance(SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN);
@@ -840,7 +840,7 @@ TEST_F(LockStateControllerTest, RequestShutdownFromLockScreen) {
   Advance(SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN);
   ExpectPostLockAnimationFinished();
 
-  lock_state_controller_->RequestShutdown();
+  lock_state_controller_->RequestShutdown(LockStateController::POWER_OFF);
 
   ExpectShutdownAnimationStarted();
   Advance(SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN);

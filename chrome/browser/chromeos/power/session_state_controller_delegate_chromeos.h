@@ -20,6 +20,7 @@ class SessionStateControllerDelegateChromeos
  private:
   // SessionStateControllerDelegate implementation.
   virtual void RequestLockScreen() override;
+  virtual void RequestRestart() override;
   virtual void RequestShutdown() override;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStateControllerDelegateChromeos);

@@ -165,4 +165,9 @@ const char kDeviceDisabled[] = "cros.device_disabled";
 // the device is disabled.
 const char kDeviceDisabledMessage[] = "cros.disabled_state.message";
 
+// A boolean pref that indicates whether the device automatically reboots when
+// the user initiates a shutdown via an UI element.  If set to true, all
+// shutdown buttons in the UI will be replaced by reboot buttons.
+const char kRebootOnShutdown[] = "cros.device.reboot_on_shutdown";
+
 }  // namespace chromeos

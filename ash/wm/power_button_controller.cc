@@ -82,7 +82,7 @@ void PowerButtonController::OnPowerButtonEvent(
           !controller_->LockRequested()) {
         controller_->StartLockAnimationAndLockImmediately(false);
       } else {
-        controller_->RequestShutdown();
+        controller_->RequestShutdown(LockStateController::POWER_OFF);
       }
     }
   } else {  // !has_legacy_power_button_

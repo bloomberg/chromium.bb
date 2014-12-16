@@ -2318,6 +2318,9 @@
   "DeviceEphemeralUsersEnabled": {
   },
 
+  "DeviceRebootOnShutdown": {
+  },
+
   "DeviceIdleLogoutTimeout": {
   },
 

@@ -520,6 +520,11 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Accel_Restart_PowerButton">
+  <owner>cschuet@chromium.org</owner>
+  <description>User restarted the device.</description>
+</action>
+
 <action name="Accel_Restore_Tab">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

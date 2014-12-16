@@ -22,10 +22,12 @@ class TestLockStateControllerDelegate : public LockStateControllerDelegate {
 
   // LockStateControllerDelegate implementation.
   void RequestLockScreen() override;
+  void RequestRestart() override;
   void RequestShutdown() override;
 
  private:
   int num_lock_requests_;
+  int num_restart_requests_;
   int num_shutdown_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLockStateControllerDelegate);

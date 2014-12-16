@@ -1113,7 +1113,8 @@ void SigninScreenHandler::HandleShutdownSystem() {
   chromeos::DBusThreadManager::Get()->
       GetPowerManagerClient()->RequestShutdown();
 #else
-  ash::Shell::GetInstance()->lock_state_controller()->RequestShutdown();
+  ash::Shell::GetInstance()->lock_state_controller()->RequestShutdown(
+      ash::LockStateController::POWER_OFF);
 #endif
 }
 
