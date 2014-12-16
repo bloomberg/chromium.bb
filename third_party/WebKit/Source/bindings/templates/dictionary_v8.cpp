@@ -52,6 +52,9 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
         impl.{{member.null_setter_name}}();
     {% endif %}
     } else {
+        {% if member.deprecate_as %}
+        UseCounter::countDeprecationIfNotPrivateScript(isolate, callingExecutionContext(isolate), UseCounter::{{member.deprecate_as}});
+        {% endif %}
         {% if member.use_output_parameter_for_result %}
         {{member.cpp_type}} {{member.name}};
         {% endif %}

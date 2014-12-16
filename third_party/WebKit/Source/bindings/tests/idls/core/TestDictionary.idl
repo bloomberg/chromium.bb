@@ -23,6 +23,7 @@ dictionary TestDictionary {
     object objectMember;
     object? objectOrNullMember;
     [ImplementedAs=createMember] boolean create;
+    [DeprecateAs=CreateMember, ImplementedAs=createMember] boolean deprecatedCreateMember;
     (double or DOMString) doubleOrStringMember;
     (TestInterface2 or Uint8Array) testInterface2OrUint8ArrayMember;
     sequence<InternalDictionary> internalDictionarySequenceMember;

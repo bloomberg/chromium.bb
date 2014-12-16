@@ -101,6 +101,7 @@ def member_context(member):
             cpp_value='impl.%s()' % cpp_name, isolate='isolate',
             creation_context='creationContext',
             extended_attributes=member.extended_attributes),
+        'deprecate_as': v8_utilities.deprecate_as(member),
         'enum_validation_expression': unwrapped_idl_type.enum_validation_expression,
         'has_method_name': has_method_name_for_dictionary_member(member),
         'idl_type': idl_type.base_type,
@@ -121,14 +122,28 @@ def member_context(member):
 # Context for implementation classes
 
 def dictionary_impl_context(dictionary, interfaces_info):
+    def remove_duplicate_members(members):
+        # When [ImplementedAs] is used, cpp_name can conflict. For example,
+        # dictionary D { long foo; [ImplementedAs=foo, DeprecateAs=Foo] long oldFoo; };
+        # This function removes such duplications, checking they have the same type.
+        members_dict = {}
+        for member in members:
+            cpp_name = member['cpp_name']
+            duplicated_member = members_dict.get(cpp_name)
+            if duplicated_member and duplicated_member != member:
+                raise Exception('Member name conflict: %s' % cpp_name)
+            members_dict[cpp_name] = member
+        return sorted(members_dict.values(), key=lambda member: member['cpp_name'])
+
     includes.clear()
     header_includes = set(['platform/heap/Handle.h'])
+    members = [member_impl_context(member, interfaces_info, header_includes)
+               for member in dictionary.members]
+    members = remove_duplicate_members(members)
     context = {
         'header_includes': header_includes,
         'cpp_class': v8_utilities.cpp_name(dictionary),
-        'members': [member_impl_context(member, interfaces_info,
-                                        header_includes)
-                    for member in dictionary.members],
+        'members': members,
     }
     if dictionary.parent:
         context['parent_cpp_class'] = v8_utilities.cpp_name_from_interfaces_info(

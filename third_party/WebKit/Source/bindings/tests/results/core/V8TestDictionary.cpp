@@ -17,6 +17,7 @@
 #include "bindings/core/v8/V8TestInterfaceGarbageCollected.h"
 #include "bindings/core/v8/V8TestInterfaceWillBeGarbageCollected.h"
 #include "bindings/core/v8/V8Uint8Array.h"
+#include "core/frame/UseCounter.h"
 
 namespace blink {
 
@@ -53,6 +54,19 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     } else {
         bool create = createValue->BooleanValue();
         impl.setCreateMember(create);
+    }
+
+    v8::Local<v8::Value> deprecatedCreateMemberValue = v8Object->Get(v8String(isolate, "deprecatedCreateMember"));
+    if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return;
+    }
+    if (deprecatedCreateMemberValue.IsEmpty() || deprecatedCreateMemberValue->IsUndefined()) {
+        // Do nothing.
+    } else {
+        UseCounter::countDeprecationIfNotPrivateScript(isolate, callingExecutionContext(isolate), UseCounter::CreateMember);
+        bool deprecatedCreateMember = deprecatedCreateMemberValue->BooleanValue();
+        impl.setCreateMember(deprecatedCreateMember);
     }
 
     v8::Local<v8::Value> doubleOrNullMemberValue = v8Object->Get(v8String(isolate, "doubleOrNullMember"));
@@ -373,6 +387,10 @@ void toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
 
     if (impl.hasCreateMember()) {
         dictionary->Set(v8String(isolate, "create"), v8Boolean(impl.createMember(), isolate));
+    }
+
+    if (impl.hasCreateMember()) {
+        dictionary->Set(v8String(isolate, "deprecatedCreateMember"), v8Boolean(impl.createMember(), isolate));
     }
 
     if (impl.hasDoubleOrNullMember()) {
