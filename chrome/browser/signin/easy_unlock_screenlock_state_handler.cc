@@ -302,7 +302,9 @@ void EasyUnlockScreenlockStateHandler::UpdateTooltipOptions(
   if (tooltip.empty())
     return;
 
-  icon_options->SetTooltip(tooltip, trial_run /* autoshow tooltip */);
+  icon_options->SetTooltip(
+      tooltip,
+      trial_run || (state_ != STATE_AUTHENTICATED) /* autoshow tooltip */);
 }
 
 base::string16 EasyUnlockScreenlockStateHandler::GetDeviceName() {

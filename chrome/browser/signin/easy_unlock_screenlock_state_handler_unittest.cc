@@ -364,53 +364,13 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, StatesWithLockedIcon) {
         << "State: " << states[i];
     EXPECT_TRUE(lock_handler_->CustomIconHasTooltip())
         << "State: " << states[i];
-    EXPECT_FALSE(lock_handler_->IsCustomIconTooltipAutoshown())
+    EXPECT_TRUE(lock_handler_->IsCustomIconTooltipAutoshown())
         << "State: " << states[i];
     EXPECT_TRUE(lock_handler_->CustomIconHardlocksOnClick())
         << "State: " << states[i];
 
     state_handler_->ChangeState(states[i]);
     EXPECT_EQ(0u, lock_handler_->GetAndResetShowIconCount())
-        << "State: " << states[i];
-  }
-}
-
-// Verifies tooltips are autoshown on initial run.
-TEST_F(EasyUnlockScreenlockStateHandlerTest, StatesWithLockedIcon_TrialRun) {
-  state_handler_->SetTrialRun();
-
-  std::vector<EasyUnlockScreenlockStateHandler::State> states;
-  states.push_back(EasyUnlockScreenlockStateHandler::STATE_NO_BLUETOOTH);
-  states.push_back(EasyUnlockScreenlockStateHandler::STATE_NO_PHONE);
-  states.push_back(EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED);
-  states.push_back(EasyUnlockScreenlockStateHandler::STATE_PHONE_UNLOCKABLE);
-  states.push_back(
-      EasyUnlockScreenlockStateHandler::STATE_PHONE_NOT_AUTHENTICATED);
-  states.push_back(EasyUnlockScreenlockStateHandler::STATE_PHONE_LOCKED);
-
-  for (size_t i = 0; i < states.size(); ++i) {
-    state_handler_->ChangeState(states[i]);
-    ASSERT_TRUE(lock_handler_->HasCustomIcon())
-        << "State: " << states[i];
-    EXPECT_TRUE(lock_handler_->CustomIconHasTooltip())
-        << "State: " << states[i];
-    EXPECT_TRUE(lock_handler_->IsCustomIconTooltipAutoshown())
-        << "State: " << states[i];
-  }
-
-  ScreenlockBridge::Get()->SetLockHandler(NULL);
-  lock_handler_.reset(new TestLockHandler(user_email_));
-  EXPECT_EQ(0u, lock_handler_->GetAndResetShowIconCount());
-  ScreenlockBridge::Get()->SetLockHandler(lock_handler_.get());
-
-  // After the screen unlocks the tooltips should not be shown anymore.
-  for (size_t i = 0; i < states.size(); ++i) {
-    state_handler_->ChangeState(states[i]);
-    ASSERT_TRUE(lock_handler_->HasCustomIcon())
-        << "State: " << states[i];
-    EXPECT_TRUE(lock_handler_->CustomIconHasTooltip())
-        << "State: " << states[i];
-    EXPECT_FALSE(lock_handler_->IsCustomIconTooltipAutoshown())
         << "State: " << states[i];
   }
 }
