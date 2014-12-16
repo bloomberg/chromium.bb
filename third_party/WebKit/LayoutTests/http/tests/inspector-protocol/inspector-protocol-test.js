@@ -24,6 +24,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+var initialize_InspectorTest = function() {
+
+InspectorTest.evaluateInInspectedPage = function(expression, callback)
+{
+    InspectorTest.sendCommand("Runtime.evaluate", { expression: expression }, callback);
+}
+
+}
+
 var outputElement;
 
 /**

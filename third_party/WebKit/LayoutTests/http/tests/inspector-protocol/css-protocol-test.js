@@ -57,26 +57,6 @@ InspectorTest.requestMainFrameId = function(callback)
     }
 };
 
-InspectorTest.requestDocumentNodeId = function(callback)
-{
-    InspectorTest.sendCommandOrDie("DOM.getDocument", {}, onGotDocument);
-
-    function onGotDocument(result)
-    {
-        callback(result.root.nodeId);
-    }
-};
-
-InspectorTest.requestNodeId = function(documentNodeId, selector, callback)
-{
-    InspectorTest.sendCommandOrDie("DOM.querySelector", { "nodeId": documentNodeId , "selector": selector }, onGotNode);
-
-    function onGotNode(result)
-    {
-        callback(result.nodeId);
-    }
-};
-
 InspectorTest.dumpRuleMatch = function(ruleMatch)
 {
     function log(indent, string)

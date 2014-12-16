@@ -98,6 +98,9 @@ interface InspectorInstrumentation {
     [DOM, DOMDebugger, Inline=FastReturn]
     void didInvalidateStyleAttr([Keep] Node*);
 
+    [DOM, Inline=FastReturn]
+    void didPerformElementShadowDistribution([Keep] Element*);
+
     [CSS]
     void documentDetached([Keep] Document*);
 

@@ -47,6 +47,7 @@
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/markup.h"
 #include "core/events/EventListener.h"
@@ -180,50 +181,68 @@ static Node* hoveredNodeForEvent(LocalFrame* frame, const PlatformTouchEvent& ev
     return hoveredNodeForPoint(frame, roundedIntPoint(points[0].pos()), ignorePointerEventsNone);
 }
 
-class RevalidateStyleAttributeTask final : public NoBaseWillBeGarbageCollectedFinalized<RevalidateStyleAttributeTask> {
+class InspectorRevalidateDOMTask final : public NoBaseWillBeGarbageCollectedFinalized<InspectorRevalidateDOMTask> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    explicit RevalidateStyleAttributeTask(InspectorDOMAgent*);
-    void scheduleFor(Element*);
+    explicit InspectorRevalidateDOMTask(InspectorDOMAgent*);
+    void scheduleStyleAttrRevalidationFor(Element*);
+    void scheduleContentDistributionRevalidationFor(Element*);
     void reset() { m_timer.stop(); }
-    void onTimer(Timer<RevalidateStyleAttributeTask>*);
+    void onTimer(Timer<InspectorRevalidateDOMTask>*);
     void trace(Visitor*);
 
 private:
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
-    Timer<RevalidateStyleAttributeTask> m_timer;
-    WillBeHeapHashSet<RefPtrWillBeMember<Element> > m_elements;
+    Timer<InspectorRevalidateDOMTask> m_timer;
+    WillBeHeapHashSet<RefPtrWillBeMember<Element> > m_styleAttrInvalidatedElements;
+    WillBeHeapHashSet<RefPtrWillBeMember<Element> > m_contentDistributionInvalidatedElements;
 };
 
-RevalidateStyleAttributeTask::RevalidateStyleAttributeTask(InspectorDOMAgent* domAgent)
+InspectorRevalidateDOMTask::InspectorRevalidateDOMTask(InspectorDOMAgent* domAgent)
     : m_domAgent(domAgent)
-    , m_timer(this, &RevalidateStyleAttributeTask::onTimer)
+    , m_timer(this, &InspectorRevalidateDOMTask::onTimer)
 {
 }
 
-void RevalidateStyleAttributeTask::scheduleFor(Element* element)
+void InspectorRevalidateDOMTask::scheduleStyleAttrRevalidationFor(Element* element)
 {
-    m_elements.add(element);
+    m_styleAttrInvalidatedElements.add(element);
     if (!m_timer.isActive())
         m_timer.startOneShot(0, FROM_HERE);
 }
 
-void RevalidateStyleAttributeTask::onTimer(Timer<RevalidateStyleAttributeTask>*)
+void InspectorRevalidateDOMTask::scheduleContentDistributionRevalidationFor(Element* element)
+{
+    m_contentDistributionInvalidatedElements.add(element);
+    if (!m_timer.isActive())
+        m_timer.startOneShot(0, FROM_HERE);
+}
+
+void InspectorRevalidateDOMTask::onTimer(Timer<InspectorRevalidateDOMTask>*)
 {
     // The timer is stopped on m_domAgent destruction, so this method will never be called after m_domAgent has been destroyed.
     WillBeHeapVector<RawPtrWillBeMember<Element> > elements;
-    for (WillBePersistentHeapHashSet<RefPtrWillBeMember<Element> >::iterator it = m_elements.begin(), end = m_elements.end(); it != end; ++it)
+    WillBePersistentHeapHashSet<RefPtrWillBeMember<Element> >::iterator it;
+    for (it = m_styleAttrInvalidatedElements.begin(); it != m_styleAttrInvalidatedElements.end(); ++it)
         elements.append(it->get());
     m_domAgent->styleAttributeInvalidated(elements);
 
-    m_elements.clear();
+    m_styleAttrInvalidatedElements.clear();
+
+    elements.clear();
+    for (const auto& it : m_contentDistributionInvalidatedElements)
+        elements.append(it.get());
+    m_domAgent->contentDistributionInvalidated(elements);
+
+    m_contentDistributionInvalidatedElements.clear();
 }
 
-void RevalidateStyleAttributeTask::trace(Visitor* visitor)
+void InspectorRevalidateDOMTask::trace(Visitor* visitor)
 {
     visitor->trace(m_domAgent);
 #if ENABLE(OILPAN)
-    visitor->trace(m_elements);
+    visitor->trace(m_styleAttrInvalidatedElements);
+    visitor->trace(m_contentDistributionInvalidatedElements);
 #endif
 }
 
@@ -597,8 +616,8 @@ void InspectorDOMAgent::discardFrontendBindings()
     releaseDanglingNodes();
     m_childrenRequested.clear();
     m_cachedChildCount.clear();
-    if (m_revalidateStyleAttrTask)
-        m_revalidateStyleAttrTask->reset();
+    if (m_revalidateTask)
+        m_revalidateTask->reset();
 }
 
 Node* InspectorDOMAgent::nodeForId(int id)
@@ -628,6 +647,62 @@ void InspectorDOMAgent::requestChildNodes(ErrorString* errorString, int nodeId, 
     }
 
     pushChildNodesToFrontend(nodeId, sanitizedDepth);
+}
+
+void InspectorDOMAgent::requestShadowHostDistributedNodes(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::DOM::InsertionPointDistribution> >& insertionPointDistributions)
+{
+    Node* shadowHost = assertNode(errorString, nodeId);
+    if (!shadowHost)
+        return;
+
+    ASSERT(!shadowHost->document().childNeedsDistributionRecalc());
+
+    NodeToIdMap* nodeMap = m_idToNodesMap.get(nodeId);
+    ASSERT(nodeMap);
+
+    insertionPointDistributions = TypeBuilder::Array<TypeBuilder::DOM::InsertionPointDistribution>::create();
+    for (ShadowRoot* root = shadowHost->youngestShadowRoot(); root; root = root->olderShadowRoot()) {
+        const WillBeHeapVector<RefPtrWillBeMember<InsertionPoint> >& insertionPoints = root->descendantInsertionPoints();
+        for (const auto& it : insertionPoints) {
+            InsertionPoint* insertionPoint = it.get();
+            int insertionPointId = pushNodePathToFrontend(insertionPoint, nodeMap);
+            ASSERT(insertionPointId);
+
+            RefPtr<TypeBuilder::Array<TypeBuilder::DOM::DistributedNode> > distributedNodes = TypeBuilder::Array<TypeBuilder::DOM::DistributedNode>::create();
+            for (size_t i = 0; i < insertionPoint->size(); ++i) {
+                Node* distributedNode = insertionPoint->at(i);
+                if (isWhitespace(distributedNode))
+                    continue;
+
+                int distributedNodeId = pushNodePathToFrontend(distributedNode, nodeMap);
+                ASSERT(distributedNodeId);
+
+                RefPtr<TypeBuilder::DOM::DistributedNode> distributedNodeObject = TypeBuilder::DOM::DistributedNode::create()
+                    .setNodeId(distributedNodeId);
+
+                RefPtr<TypeBuilder::Array<int> > destinationInsertionPointIds = TypeBuilder::Array<int>::create();
+                WillBeHeapVector<RawPtrWillBeMember<InsertionPoint>, 8> destinationInsertionPoints;
+                collectDestinationInsertionPoints(*distributedNode, destinationInsertionPoints);
+                // If this node has only one destination insertion point (often), then we already know it and don't need any additional information.
+                if (destinationInsertionPoints.size() != 1) {
+                    for (size_t j = 0; j < destinationInsertionPoints.size(); ++j) {
+                        int destinationInsertionPointId = pushNodePathToFrontend(destinationInsertionPoints.at(j), nodeMap);
+                        ASSERT(destinationInsertionPointId);
+                        destinationInsertionPointIds->addItem(destinationInsertionPointId);
+                    }
+                    distributedNodeObject->setDestinationInsertionPointIds(destinationInsertionPointIds);
+                }
+
+                distributedNodes->addItem(distributedNodeObject);
+            }
+
+            RefPtr<TypeBuilder::DOM::InsertionPointDistribution> insertionPointDistribution = TypeBuilder::DOM::InsertionPointDistribution::create()
+                .setNodeId(insertionPointId)
+                .setDistributedNodes(distributedNodes);
+
+            insertionPointDistributions->addItem(insertionPointDistribution);
+        }
+    }
 }
 
 void InspectorDOMAgent::querySelector(ErrorString* errorString, int nodeId, const String& selectors, int* elementId)
@@ -667,9 +742,9 @@ void InspectorDOMAgent::querySelectorAll(ErrorString* errorString, int nodeId, c
         result->addItem(pushNodePathToFrontend(elements->item(i)));
 }
 
-int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush)
+int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush, NodeToIdMap* nodeMap)
 {
-    ASSERT(nodeToPush);  // Invalid input
+    ASSERT(nodeToPush); // Invalid input
 
     if (!m_document)
         return 0;
@@ -677,40 +752,50 @@ int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush)
         return 0;
 
     // Return id in case the node is known.
-    int result = m_documentNodeToIdMap->get(nodeToPush);
+    int result = nodeMap->get(nodeToPush);
     if (result)
         return result;
 
     Node* node = nodeToPush;
     WillBeHeapVector<RawPtrWillBeMember<Node> > path;
-    NodeToIdMap* danglingMap = 0;
 
     while (true) {
         Node* parent = innerParentNode(node);
-        if (!parent) {
-            // Node being pushed is detached -> push subtree root.
-            OwnPtrWillBeRawPtr<NodeToIdMap> newMap = adoptPtrWillBeNoop(new NodeToIdMap);
-            danglingMap = newMap.get();
-            m_danglingNodeToIdMaps.append(newMap.release());
-            RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > children = TypeBuilder::Array<TypeBuilder::DOM::Node>::create();
-            children->addItem(buildObjectForNode(node, 0, danglingMap));
-            m_frontend->setChildNodes(0, children);
+        if (!parent)
+            return 0;
+        path.append(parent);
+        if (nodeMap->get(parent))
             break;
-        } else {
-            path.append(parent);
-            if (m_documentNodeToIdMap->get(parent))
-                break;
-            node = parent;
-        }
+        node = parent;
     }
 
-    NodeToIdMap* map = danglingMap ? danglingMap : m_documentNodeToIdMap.get();
     for (int i = path.size() - 1; i >= 0; --i) {
-        int nodeId = map->get(path.at(i).get());
+        int nodeId = nodeMap->get(path.at(i).get());
         ASSERT(nodeId);
         pushChildNodesToFrontend(nodeId);
     }
-    return map->get(nodeToPush);
+    return nodeMap->get(nodeToPush);
+}
+
+int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush)
+{
+    int nodeId = pushNodePathToFrontend(nodeToPush, m_documentNodeToIdMap.get());
+    if (nodeId)
+        return nodeId;
+
+    Node* node = nodeToPush;
+    while (Node* parent = innerParentNode(node))
+        node = parent;
+
+    // Node being pushed is detached -> push subtree root.
+    OwnPtrWillBeRawPtr<NodeToIdMap> newMap = adoptPtrWillBeNoop(new NodeToIdMap);
+    NodeToIdMap* danglingMap = newMap.get();
+    m_danglingNodeToIdMaps.append(newMap.release());
+    RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > children = TypeBuilder::Array<TypeBuilder::DOM::Node>::create();
+    children->addItem(buildObjectForNode(node, 0, danglingMap));
+    m_frontend->setChildNodes(0, children);
+
+    return pushNodePathToFrontend(nodeToPush, danglingMap);
 }
 
 int InspectorDOMAgent::boundNodeId(Node* node)
@@ -1972,6 +2057,19 @@ void InspectorDOMAgent::styleAttributeInvalidated(const WillBeHeapVector<RawPtrW
     m_frontend->inlineStyleInvalidated(nodeIds.release());
 }
 
+void InspectorDOMAgent::contentDistributionInvalidated(const WillBeHeapVector<RawPtrWillBeMember<Element> >& elements)
+{
+    RefPtr<TypeBuilder::Array<int> > nodeIds = TypeBuilder::Array<int>::create();
+    for (const auto& it : elements) {
+        Element* element = it.get();
+        int id = boundNodeId(element);
+        if (!id)
+            continue;
+        nodeIds->addItem(id);
+    }
+    m_frontend->shadowHostDistributionInvalidated(nodeIds.release());
+}
+
 void InspectorDOMAgent::characterDataModified(CharacterData* characterData)
 {
     int id = m_documentNodeToIdMap->get(characterData);
@@ -1983,6 +2081,13 @@ void InspectorDOMAgent::characterDataModified(CharacterData* characterData)
     m_frontend->characterDataModified(id, characterData->data());
 }
 
+RawPtrWillBeMember<InspectorRevalidateDOMTask> InspectorDOMAgent::revalidateTask()
+{
+    if (!m_revalidateTask)
+        m_revalidateTask = adoptPtrWillBeNoop(new InspectorRevalidateDOMTask(this));
+    return m_revalidateTask.get();
+}
+
 void InspectorDOMAgent::didInvalidateStyleAttr(Node* node)
 {
     int id = m_documentNodeToIdMap->get(node);
@@ -1990,9 +2095,7 @@ void InspectorDOMAgent::didInvalidateStyleAttr(Node* node)
     if (!id)
         return;
 
-    if (!m_revalidateStyleAttrTask)
-        m_revalidateStyleAttrTask = adoptPtrWillBeNoop(new RevalidateStyleAttributeTask(this));
-    m_revalidateStyleAttrTask->scheduleFor(toElement(node));
+    revalidateTask()->scheduleStyleAttrRevalidationFor(toElement(node));
 }
 
 void InspectorDOMAgent::didPushShadowRoot(Element* host, ShadowRoot* root)
@@ -2017,6 +2120,14 @@ void InspectorDOMAgent::willPopShadowRoot(Element* host, ShadowRoot* root)
     int rootId = m_documentNodeToIdMap->get(root);
     if (hostId && rootId)
         m_frontend->shadowRootPopped(hostId, rootId);
+}
+
+void InspectorDOMAgent::didPerformElementShadowDistribution(Element* shadowHost)
+{
+    int shadowHostId = m_documentNodeToIdMap->get(shadowHost);
+    if (!shadowHostId)
+        return;
+    revalidateTask()->scheduleContentDistributionRevalidationFor(shadowHost);
 }
 
 void InspectorDOMAgent::frameDocumentUpdated(LocalFrame* frame)
@@ -2190,7 +2301,7 @@ void InspectorDOMAgent::trace(Visitor* visitor)
     visitor->trace(m_idToNode);
     visitor->trace(m_idToNodesMap);
     visitor->trace(m_document);
-    visitor->trace(m_revalidateStyleAttrTask);
+    visitor->trace(m_revalidateTask);
     visitor->trace(m_searchResults);
 #endif
     visitor->trace(m_history);
