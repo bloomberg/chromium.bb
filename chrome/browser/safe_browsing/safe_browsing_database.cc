@@ -1679,5 +1679,6 @@ bool SafeBrowsingDatabaseNew::IsMalwareIPMatchKillSwitchOn() {
 }
 
 bool SafeBrowsingDatabaseNew::IsCsdWhitelistKillSwitchOn() {
+  base::AutoLock locked(lookup_lock_);
   return csd_whitelist_.second;
 }
