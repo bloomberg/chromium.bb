@@ -319,10 +319,10 @@ class CC_EXPORT PictureLayerTiling {
   const int skewport_extrapolation_limit_in_content_pixels_;
 
   // Given properties.
-  float contents_scale_;
+  const float contents_scale_;
+  PictureLayerTilingClient* const client_;
   gfx::Size layer_bounds_;
   TileResolution resolution_;
-  PictureLayerTilingClient* client_;
 
   // Internal data.
   TilingData tiling_data_;

@@ -52,9 +52,9 @@ PictureLayerTiling::PictureLayerTiling(
       skewport_extrapolation_limit_in_content_pixels_(
           skewport_extrapolation_limit_in_content_pixels),
       contents_scale_(contents_scale),
+      client_(client),
       layer_bounds_(layer_bounds),
       resolution_(NON_IDEAL_RESOLUTION),
-      client_(client),
       tiling_data_(gfx::Size(), gfx::Size(), kBorderTexels),
       last_impl_frame_time_in_seconds_(0.0),
       can_require_tiles_for_activation_(false),

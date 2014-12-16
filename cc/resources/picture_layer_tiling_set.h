@@ -69,9 +69,6 @@ class CC_EXPORT PictureLayerTilingSet {
   void UpdateTilingsToCurrentRasterSource(
       RasterSource* raster_source,
       const PictureLayerTilingSet* twin_set,
-      // TODO(danakj): Don't need to pass layer bounds here, we have the raster
-      // source already, and they are the same as the raster source size.
-      const gfx::Size& layer_bounds,
       const Region& layer_invalidation,
       float minimum_contents_scale);
 

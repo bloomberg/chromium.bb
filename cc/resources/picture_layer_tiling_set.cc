@@ -56,10 +56,11 @@ PictureLayerTilingSet::~PictureLayerTilingSet() {
 void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSource(
     RasterSource* raster_source,
     const PictureLayerTilingSet* twin_set,
-    const gfx::Size& layer_bounds,
     const Region& layer_invalidation,
     float minimum_contents_scale) {
   RemoveTilingsBelowScale(minimum_contents_scale);
+
+  gfx::Size layer_bounds = raster_source->GetSize();
 
   // Copy over tilings that are shared with the |twin_set| tiling set (if it
   // exists).

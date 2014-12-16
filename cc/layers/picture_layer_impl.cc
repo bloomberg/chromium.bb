@@ -598,8 +598,7 @@ void PictureLayerImpl::UpdateRasterSource(
   // tilings that are going to disappear on the pending tree (if scale changed).
   // But that would also be more complicated, so we just do it here for now.
   tilings_->UpdateTilingsToCurrentRasterSource(
-      raster_source_.get(), pending_set, raster_source_->GetSize(),
-      invalidation_, MinimumContentsScale());
+      raster_source_.get(), pending_set, invalidation_, MinimumContentsScale());
 }
 
 void PictureLayerImpl::NotifyTileStateChanged(const Tile* tile) {
