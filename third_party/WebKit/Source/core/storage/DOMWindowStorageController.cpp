@@ -22,6 +22,12 @@ DOMWindowStorageController::~DOMWindowStorageController()
 {
 }
 
+void DOMWindowStorageController::trace(Visitor* visitor)
+{
+    visitor->trace(m_document);
+    WillBeHeapSupplement<Document>::trace(visitor);
+}
+
 // static
 const char* DOMWindowStorageController::supplementName()
 {

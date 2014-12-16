@@ -14,10 +14,11 @@ namespace blink {
 class Document;
 class Event;
 
-class DOMWindowStorageController : public NoBaseWillBeGarbageCollectedFinalized<DOMWindowStorageController>, public WillBeHeapSupplement<Document>, public DOMWindowLifecycleObserver {
+class DOMWindowStorageController final : public NoBaseWillBeGarbageCollectedFinalized<DOMWindowStorageController>, public WillBeHeapSupplement<Document>, public DOMWindowLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindowStorageController);
 public:
     virtual ~DOMWindowStorageController();
+    virtual void trace(Visitor*);
 
     static const char* supplementName();
     static DOMWindowStorageController& from(Document&);
