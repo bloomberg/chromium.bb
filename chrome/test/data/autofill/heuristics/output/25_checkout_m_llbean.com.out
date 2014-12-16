@@ -1,0 +1,33 @@
+ADDRESS_HOME_COUNTRY | _1_personTitle | First Name Middle Name(optional) Last Name Gender (optional) Country Prefecture |  | _1_personTitle_1-default
+NAME_FIRST | _1_firstName | First Name |  | _1_personTitle_1-default
+NAME_MIDDLE | _1_middleName | Middle Name(optional) |  | _1_personTitle_1-default
+NAME_LAST | _1_lastName | Last Name |  | _1_personTitle_1-default
+UNKNOWN_TYPE | _1_gender | Gender (optional) | M | _1_personTitle_1-default
+UNKNOWN_TYPE | _1_gender | Gender (optional) | F | _1_personTitle_1-default
+ADDRESS_HOME_COUNTRY | _1_country | Country USA & Territories | USA | _1_personTitle_1-default
+ADDRESS_HOME_ZIP | _1_JPNPostal | Postal Code |  | _1_personTitle_1-default
+UNKNOWN_TYPE | _1_JPNPrefecture | Prefecture |  | _1_personTitle_1-default
+ADDRESS_HOME_CITY | _1_JPNCity | City |  | _1_personTitle_1-default
+ADDRESS_HOME_LINE1 | _1_address1 | Address |  | _1_personTitle_1-default
+ADDRESS_HOME_LINE2 | _1_address2 | Address Line 2 (optional) |  | _1_personTitle_1-default
+ADDRESS_HOME_LINE3 | _1_address3 | Address Line 3 (optional) |  | _1_personTitle_1-default
+ADDRESS_HOME_STATE | _1_zipCode | Enter Zip for City and State |  | _1_personTitle_1-default
+ADDRESS_HOME_CITY | _1_city | City |  | _1_personTitle_1-default
+ADDRESS_HOME_STATE | _1_state | City |  | _1_personTitle_1-default
+ADDRESS_HOME_ZIP | _1_CAPostal | Postal Code |  | _1_personTitle_1-default
+ADDRESS_HOME_CITY | _1_CACity | City |  | _1_personTitle_1-default
+ADDRESS_HOME_STATE | _1_CAProvince | Province |  | _1_personTitle_1-default
+ADDRESS_HOME_CITY | _1_INTLCity | City |  | _1_personTitle_1-default
+ADDRESS_HOME_STATE | _1_INTLCounty | County |  | _1_personTitle_1-default
+ADDRESS_HOME_ZIP | _1_INTLPostal | Postal Code |  | _1_personTitle_1-default
+UNKNOWN_TYPE | _1_addressSelect | Address Type | homeAddress | _1_personTitle_1-default
+UNKNOWN_TYPE | _1_addressSelect | Address Type | bizAddress | _1_personTitle_1-default
+COMPANY_NAME | _1_otherAddress | Company Name (optional) |  | _1_personTitle_1-default
+PHONE_HOME_WHOLE_NUMBER | _1_phone1 | Daytime Phone Number |  | _1_personTitle_1-default
+PHONE_HOME_WHOLE_NUMBER | _1_intlPhone1Prefix | Daytime Phone Number |  | _1_personTitle_1-default
+PHONE_HOME_WHOLE_NUMBER | _1_intlPhone1 | Daytime Phone Number |  | _1_personTitle_1-default
+UNKNOWN_TYPE | _1_phone1_Loc | Daytime Phone Number | H | _1_personTitle_1-default
+UNKNOWN_TYPE | _1_phone1_Loc | Daytime Phone Number | B | _1_personTitle_1-default
+UNKNOWN_TYPE | _1_phone1_Loc | Daytime Phone Number | M | _1_personTitle_1-default
+UNKNOWN_TYPE | _1_ckoutShippingCheck | Daytime Phone Number Daytime Phone Number | ckoutShippingCheck | _1_personTitle_1-default
+UNKNOWN_TYPE | _1_shipLiability | Note: Express Shipping is not recommended for Canadian PO Boxes | on | _1_personTitle_1-default
