@@ -2696,7 +2696,7 @@
             '../components/components.gyp:translate_content_common',
             '../content/app/resources/content_resources.gyp:content_resources',
             '../media/media.gyp:media',
-            '../mojo/edk/mojo_edk.gyp:mojo_system_impl',
+            '../mojo/mojo_edk.gyp:mojo_system_impl',
             '../net/net.gyp:net_with_v8',
             '../storage/storage_browser.gyp:storage',
             '../storage/storage_common.gyp:storage_common',

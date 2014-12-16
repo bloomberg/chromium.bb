@@ -12,7 +12,7 @@
       'target_name': 'device_vibration_mojo_bindings',
       'type': 'static_library',
       'includes': [
-        '../../mojo/public/tools/bindings/mojom_bindings_generator.gypi',
+        '../../mojo/mojom_bindings_generator.gypi',
       ],
       'sources': [
         'vibration_manager.mojom',
@@ -25,9 +25,9 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '../../mojo/public/mojo_public.gyp:mojo_cpp_bindings',
         '../../mojo/mojo_base.gyp:mojo_environment_chromium',
-        '../../mojo/edk/mojo_edk.gyp:mojo_system_impl',
+        '../../mojo/mojo_edk.gyp:mojo_system_impl',
+        '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
         'device_vibration_mojo_bindings',
       ],
       'defines': [

@@ -1659,8 +1659,8 @@
         'browser/devtools/devtools.gyp:devtools_protocol_handler',
         '../cc/cc.gyp:cc',
         '../cc/cc.gyp:cc_surfaces',
-        '../mojo/public/mojo_public.gyp:mojo_cpp_bindings',
-        '../mojo/public/mojo_public.gyp:mojo_js_bindings',
+        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
+        '../mojo/mojo_public.gyp:mojo_js_bindings',
         '../net/net.gyp:http_server',
         '../storage/storage_browser.gyp:storage',
         '../storage/storage_common.gyp:storage_common',
@@ -1670,7 +1670,7 @@
         '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection',
       ],
       'export_dependent_settings': [
-        '../mojo/public/mojo_public.gyp:mojo_cpp_bindings',
+        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
       ],
     }],
     ['enable_basic_printing==1 or enable_print_preview==1', {

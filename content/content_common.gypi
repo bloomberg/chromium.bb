@@ -570,10 +570,10 @@
         '../ipc/mojo/ipc_mojo.gyp:ipc_mojo',
         '../media/media.gyp:media',
         '../media/media.gyp:shared_memory_support',
-        '../mojo/edk/mojo_edk.gyp:mojo_system_impl',
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
-        '../mojo/public/mojo_public.gyp:mojo_application_bindings',
-        '../mojo/public/mojo_public.gyp:mojo_cpp_bindings',
+        '../mojo/mojo_edk.gyp:mojo_system_impl',
+        '../mojo/mojo_public.gyp:mojo_application_bindings',
+        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../storage/storage_browser.gyp:storage',
         '../storage/storage_common.gyp:storage_common',
         '../third_party/WebKit/public/blink.gyp:blink',
@@ -581,8 +581,8 @@
         '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
       ],
       'export_dependent_settings' : [
-        '../mojo/public/mojo_public.gyp:mojo_application_bindings',
-        '../mojo/public/mojo_public.gyp:mojo_cpp_bindings',
+        '../mojo/mojo_public.gyp:mojo_application_bindings',
+        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'actions': [
         {

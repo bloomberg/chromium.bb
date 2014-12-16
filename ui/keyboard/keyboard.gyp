@@ -16,7 +16,7 @@
       'sources': [
         'webui/keyboard.mojom',
       ],
-      'includes': [ '../../mojo/public/tools/bindings/mojom_bindings_generator.gypi' ],
+      'includes': [ '../../mojo/mojom_bindings_generator.gypi' ],
     },
     {
       # GN version: //ui/keyboard:resources
@@ -62,10 +62,10 @@
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../content/content.gyp:content_browser',
         '../../ipc/ipc.gyp:ipc',
-        '../../mojo/edk/mojo_edk.gyp:mojo_system_impl',
         '../../mojo/mojo_base.gyp:mojo_environment_chromium',
-        '../../mojo/public/mojo_public.gyp:mojo_cpp_bindings',
-        '../../mojo/public/mojo_public.gyp:mojo_js_bindings',
+        '../../mojo/mojo_edk.gyp:mojo_system_impl',
+        '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
+        '../../mojo/mojo_public.gyp:mojo_js_bindings',
         '../../skia/skia.gyp:skia',
         '../../url/url.gyp:url_lib',
         '../aura/aura.gyp:aura',

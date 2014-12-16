@@ -19,8 +19,8 @@
         '../ui/events/events.gyp:events',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         'mojo_geometry_converters.gyp:mojo_geometry_lib',
-        'services/public/mojo_services_public.gyp:mojo_geometry_bindings',
-        'services/public/mojo_services_public.gyp:mojo_input_events_bindings',
+        'mojo_services_public.gyp:mojo_geometry_bindings',
+        'mojo_services_public.gyp:mojo_input_events_bindings',
         '<(mojo_system_for_component)',
       ],
       'sources': [

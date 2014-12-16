@@ -18,7 +18,7 @@
         '../skia/skia.gyp:skia',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
-        'services/public/mojo_services_public.gyp:mojo_geometry_bindings',
+        'mojo_services_public.gyp:mojo_geometry_bindings',
         '<(mojo_system_for_component)',
       ],
       'export_dependent_settings': [

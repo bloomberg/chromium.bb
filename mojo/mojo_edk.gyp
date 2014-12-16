@@ -4,7 +4,7 @@
 
 {
   'includes': [
-    '../mojo_variables.gypi',
+    'mojo_variables.gypi',
   ],
   'targets': [
     {
@@ -12,8 +12,8 @@
       'target_name': 'mojo_system_impl',
       'type': '<(component)',
       'dependencies': [
-        '../../base/base.gyp:base',
-        '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '../base/base.gyp:base',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
       ],
       'includes': [
         'mojo_edk_system_impl.gypi',
@@ -24,31 +24,31 @@
       'target_name': 'mojo_js_lib',
       'type': 'static_library',
       'dependencies': [
-        '../../base/base.gyp:base',
-        '../../gin/gin.gyp:gin',
-        '../../v8/tools/gyp/v8.gyp:v8',
+        '../base/base.gyp:base',
+        '../gin/gin.gyp:gin',
+        '../v8/tools/gyp/v8.gyp:v8',
       ],
       'export_dependent_settings': [
-        '../../base/base.gyp:base',
-        '../../gin/gin.gyp:gin',
+        '../base/base.gyp:base',
+        '../gin/gin.gyp:gin',
       ],
       'sources': [
         # Sources list duplicated in GN build.
-        'js/core.cc',
-        'js/core.h',
-        'js/drain_data.cc',
-        'js/drain_data.h',
-        'js/handle.cc',
-        'js/handle.h',
-        'js/handle_close_observer.h',
-        'js/mojo_runner_delegate.cc',
-        'js/mojo_runner_delegate.h',
-        'js/support.cc',
-        'js/support.h',
-        'js/threading.cc',
-        'js/threading.h',
-        'js/waiting_callback.cc',
-        'js/waiting_callback.h',
+        'edk/js/core.cc',
+        'edk/js/core.h',
+        'edk/js/drain_data.cc',
+        'edk/js/drain_data.h',
+        'edk/js/handle.cc',
+        'edk/js/handle.h',
+        'edk/js/handle_close_observer.h',
+        'edk/js/mojo_runner_delegate.cc',
+        'edk/js/mojo_runner_delegate.h',
+        'edk/js/support.cc',
+        'edk/js/support.h',
+        'edk/js/threading.cc',
+        'edk/js/threading.h',
+        'edk/js/waiting_callback.cc',
+        'edk/js/waiting_callback.h',
       ],
     },
     {
@@ -56,11 +56,11 @@
       'target_name': 'mojo_test_support_impl',
       'type': 'static_library',
       'dependencies': [
-        '../../base/base.gyp:base',
+        '../base/base.gyp:base',
       ],
       'sources': [
-        'test/test_support_impl.cc',
-        'test/test_support_impl.h',
+        'edk/test/test_support_impl.cc',
+        'edk/test/test_support_impl.h',
       ],
     },
     {
@@ -68,22 +68,22 @@
       'target_name': 'mojo_common_test_support',
       'type': 'static_library',
       'dependencies': [
-        '../../base/base.gyp:base',
-        '../../base/base.gyp:test_support_base',
-        '../../testing/gtest.gyp:gtest',
+        '../base/base.gyp:base',
+        '../base/base.gyp:test_support_base',
+        '../testing/gtest.gyp:gtest',
         'mojo_system_impl',
       ],
       'sources': [
-        'test/multiprocess_test_helper.cc',
-        'test/multiprocess_test_helper.h',
-        'test/test_utils.h',
-        'test/test_utils_posix.cc',
-        'test/test_utils_win.cc',
+        'edk/test/multiprocess_test_helper.cc',
+        'edk/test/multiprocess_test_helper.h',
+        'edk/test/test_utils.h',
+        'edk/test/test_utils_posix.cc',
+        'edk/test/test_utils_win.cc',
       ],
       'conditions': [
         ['OS=="ios"', {
           'sources!': [
-            'test/multiprocess_test_helper.cc',
+            'edk/test/multiprocess_test_helper.cc',
           ],
         }],
       ],
@@ -93,15 +93,15 @@
       'target_name': 'mojo_run_all_unittests',
       'type': 'static_library',
       'dependencies': [
-        '../../base/base.gyp:base',
-        '../../base/base.gyp:test_support_base',
-        '../../testing/gtest.gyp:gtest',
+        '../base/base.gyp:base',
+        '../base/base.gyp:test_support_base',
+        '../testing/gtest.gyp:gtest',
         'mojo_system_impl',
+        'mojo_public.gyp:mojo_test_support',
         'mojo_test_support_impl',
-        '../public/mojo_public.gyp:mojo_test_support',
       ],
       'sources': [
-        'test/run_all_unittests.cc',
+        'edk/test/run_all_unittests.cc',
       ],
     },
     {
@@ -109,13 +109,13 @@
       'target_name': 'mojo_run_all_perftests',
       'type': 'static_library',
       'dependencies': [
-        '../../base/base.gyp:test_support_base',
+        '../base/base.gyp:test_support_base',
         'mojo_edk.gyp:mojo_system_impl',
+        'mojo_public.gyp:mojo_test_support',
         'mojo_test_support_impl',
-        '../public/mojo_public.gyp:mojo_test_support',
       ],
       'sources': [
-        'test/run_all_perftests.cc',
+        'edk/test/run_all_perftests.cc',
       ],
     },
   ],
@@ -126,8 +126,8 @@
           'target_name': 'mojo_system_impl_win64',
           'type': '<(component)',
           'dependencies': [
-            '../../base/base.gyp:base_win64',
-            '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations_win64',
+            '../base/base.gyp:base_win64',
+            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations_win64',
           ],
           'includes': [
             'mojo_edk_system_impl.gypi',

@@ -20,7 +20,7 @@
           'public/common/permission_status.mojom',
         ],
       },
-      'includes': [ '../mojo/public/tools/bindings/mojom_bindings_generator_explicit.gypi' ],
+      'includes': [ '../mojo/mojom_bindings_generator_explicit.gypi' ],
     },
     {
       'target_name': 'content_common_mojo_bindings',
@@ -29,8 +29,8 @@
       'dependencies': [
         'content_common_mojo_bindings_mojom',
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
-        '../mojo/public/mojo_public.gyp:mojo_application_bindings',
-        '../mojo/public/mojo_public.gyp:mojo_cpp_bindings',
+        '../mojo/mojo_public.gyp:mojo_application_bindings',
+        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
       ]
     },
   ]

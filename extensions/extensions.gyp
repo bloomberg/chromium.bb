@@ -15,7 +15,7 @@
       # generated cpp files must be listed explicitly in extensions_common
       'type': 'none',
       'includes': [
-        '../mojo/public/tools/bindings/mojom_bindings_generator.gypi',
+        '../mojo/mojom_bindings_generator.gypi',
       ],
       'sources': [
         'common/mojo/keep_alive.mojom',
@@ -858,7 +858,7 @@
         'extensions_resources.gyp:extensions_resources',
         '../content/content.gyp:content_resources',
         '../gin/gin.gyp:gin',
-        '../mojo/public/mojo_public.gyp:mojo_js_bindings',
+        '../mojo/mojo_public.gyp:mojo_js_bindings',
         '../third_party/WebKit/public/blink.gyp:blink',
       ],
       'include_dirs': [
@@ -1168,10 +1168,10 @@
         '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
         '../device/serial/serial.gyp:device_serial',
         '../device/serial/serial.gyp:device_serial_test_util',
-        '../mojo/edk/mojo_edk.gyp:mojo_js_lib',
-        '../mojo/edk/mojo_edk.gyp:mojo_system_impl',
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
-        '../mojo/public/mojo_public.gyp:mojo_cpp_bindings',
+        '../mojo/mojo_edk.gyp:mojo_js_lib',
+        '../mojo/mojo_edk.gyp:mojo_system_impl',
+        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
