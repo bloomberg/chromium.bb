@@ -1337,10 +1337,6 @@ crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/positioning/fi
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/positioning/vertical-lr/002.html [ Failure ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/positioning/vertical-rl/002.html [ Failure ImageOnlyFailure ]
 
-crbug.com/440834 virtual/slimmingpaint/fast/images/element-gcd-while-generating-alt-content.html [ NeedsRebaseline ]
-crbug.com/440834 virtual/deferred/fast/images/element-gcd-while-generating-alt-content.html [ NeedsRebaseline ]
-crbug.com/440834 fast/images/element-gcd-while-generating-alt-content.html [ NeedsRebaseline ]
-
 # Skip until V8's --harmony-scoping is shipped by default.
 crbug.com/433324 inspector/sources/debugger/debugger-es6-harmony-scopes.html [ Skip ]
 
