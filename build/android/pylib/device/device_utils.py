@@ -510,12 +510,12 @@ class DeviceUtils(object):
     return len(pids)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
-  def StartActivity(self, intent, blocking=False, trace_file_name=None,
+  def StartActivity(self, intent_obj, blocking=False, trace_file_name=None,
                     force_stop=False, timeout=None, retries=None):
     """Start package's activity on the device.
 
     Args:
-      intent: An Intent to send.
+      intent_obj: An Intent object to send.
       blocking: A boolean indicating whether we should wait for the activity to
                 finish launching.
       trace_file_name: If present, a string that both indicates that we want to
@@ -531,16 +531,17 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    single_category = (intent.category[0] if isinstance(intent.category, list)
-                                          else intent.category)
-    output = self.old_interface.StartActivity(
-        intent.package, intent.activity, wait_for_completion=blocking,
-        action=intent.action, category=single_category, data=intent.data,
-        extras=intent.extras, trace_file_name=trace_file_name,
-        force_stop=force_stop, flags=intent.flags)
-    for l in output:
-      if l.startswith('Error:'):
-        raise device_errors.CommandFailedError(l, str(self))
+    cmd = ['am', 'start']
+    if blocking:
+      cmd.append('-W')
+    if trace_file_name:
+      cmd.extend(['--start-profiler', trace_file_name])
+    if force_stop:
+      cmd.append('-S')
+    cmd.extend(intent_obj.am_args)
+    for line in self.RunShellCommand(cmd, check_return=True):
+      if line.startswith('Error:'):
+        raise device_errors.CommandFailedError(line, str(self))
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def StartInstrumentation(self, component, finish=True, raw=False,
@@ -559,7 +560,7 @@ class DeviceUtils(object):
     return self.RunShellCommand(cmd, check_return=True)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
-  def BroadcastIntent(self, intent, timeout=None, retries=None):
+  def BroadcastIntent(self, intent_obj, timeout=None, retries=None):
     """Send a broadcast intent.
 
     Args:
@@ -571,13 +572,7 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    cmd = ['am', 'broadcast', '-a', intent.action]
-    if intent.extras:
-      for key, value in intent.extras.iteritems():
-        if key:
-          cmd.extend(['-e', key])
-          if value:
-            cmd.append(str(value))
+    cmd = ['am', 'broadcast'] + intent_obj.am_args
     self.RunShellCommand(cmd, check_return=True)
 
   @decorators.WithTimeoutAndRetriesFromInstance()

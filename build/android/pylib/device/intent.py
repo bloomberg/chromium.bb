@@ -77,3 +77,37 @@ class Intent(object):
   def package(self):
     return self._package
 
+  @property
+  def am_args(self):
+    """Returns the intent as a list of arguments for the activity manager.
+
+    For details refer to the specification at:
+    - http://developer.android.com/tools/help/adb.html#IntentSpec
+    """
+    args = []
+    if self.action:
+      args.extend(['-a', self.action])
+    if self.data:
+      args.extend(['-d', self.data])
+    if self.category:
+      args.extend(arg for cat in self.category for arg in ('-c', cat))
+    if self.component:
+      args.extend(['-n', self.component])
+    if self.flags:
+      args.extend(['-f', self.flags])
+    if self.extras:
+      for key, value in self.extras.iteritems():
+        if value is None:
+          args.extend(['--esn', key])
+        elif isinstance(value, str):
+          args.extend(['--es', key, value])
+        elif isinstance(value, bool):
+          args.extend(['--ez', key, str(value)])
+        elif isinstance(value, int):
+          args.extend(['--ei', key, str(value)])
+        elif isinstance(value, float):
+          args.extend(['--ef', key, str(value)])
+        else:
+          raise NotImplementedError(
+              'Intent does not know how to pass %s extras' % type(value))
+    return args
