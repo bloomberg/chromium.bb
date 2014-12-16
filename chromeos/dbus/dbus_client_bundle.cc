@@ -49,6 +49,7 @@
 #include "chromeos/dbus/fake_nfc_manager_client.h"
 #include "chromeos/dbus/fake_nfc_record_client.h"
 #include "chromeos/dbus/fake_nfc_tag_client.h"
+#include "chromeos/dbus/fake_peer_daemon_manager_client.h"
 #include "chromeos/dbus/fake_permission_broker_client.h"
 #include "chromeos/dbus/fake_privet_daemon_client.h"
 #include "chromeos/dbus/fake_shill_device_client.h"
@@ -69,6 +70,7 @@
 #include "chromeos/dbus/nfc_manager_client.h"
 #include "chromeos/dbus/nfc_record_client.h"
 #include "chromeos/dbus/nfc_tag_client.h"
+#include "chromeos/dbus/peer_daemon_manager_client.h"
 #include "chromeos/dbus/permission_broker_client.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/power_policy_controller.h"
@@ -106,6 +108,7 @@ const struct {
     { "introspectable",  DBusClientBundle::INTROSPECTABLE },
     { "modem_messaging",  DBusClientBundle::MODEM_MESSAGING },
     { "nfc",  DBusClientBundle::NFC },
+    { "peer_daemon",  DBusClientBundle::PEER_DAEMON },
     { "permission_broker",  DBusClientBundle::PERMISSION_BROKER },
     { "power_manager",  DBusClientBundle::POWER_MANAGER },
     { "privet_daemon",  DBusClientBundle::PRIVET_DAEMON },
@@ -256,6 +259,11 @@ DBusClientBundle::DBusClientBundle(DBusClientTypeMask unstub_client_mask)
     nfc_tag_client_.reset(new FakeNfcTagClient);
     nfc_record_client_.reset(new FakeNfcRecordClient);
   }
+
+  if (!IsUsingStub(PEER_DAEMON))
+    peer_daemon_manager_client_.reset(PeerDaemonManagerClient::Create());
+  else
+    peer_daemon_manager_client_.reset(new FakePeerDaemonManagerClient);
 
   if (!IsUsingStub(PERMISSION_BROKER))
     permission_broker_client_.reset(PermissionBrokerClient::Create());

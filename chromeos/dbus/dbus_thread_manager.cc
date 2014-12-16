@@ -36,6 +36,7 @@
 #include "chromeos/dbus/nfc_manager_client.h"
 #include "chromeos/dbus/nfc_record_client.h"
 #include "chromeos/dbus/nfc_tag_client.h"
+#include "chromeos/dbus/peer_daemon_manager_client.h"
 #include "chromeos/dbus/permission_broker_client.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/privet_daemon_client.h"
@@ -253,6 +254,10 @@ NfcRecordClient* DBusThreadManager::GetNfcRecordClient() {
 
 NfcTagClient* DBusThreadManager::GetNfcTagClient() {
   return client_bundle_->nfc_tag_client();
+}
+
+PeerDaemonManagerClient* DBusThreadManager::GetPeerDaemonManagerClient() {
+  return client_bundle_->peer_daemon_manager_client();
 }
 
 PermissionBrokerClient* DBusThreadManager::GetPermissionBrokerClient() {
@@ -612,6 +617,12 @@ void DBusThreadManagerSetter::SetNfcRecordClient(
 void DBusThreadManagerSetter::SetNfcTagClient(
     scoped_ptr<NfcTagClient> client) {
   DBusThreadManager::Get()->client_bundle_->nfc_tag_client_ = client.Pass();
+}
+
+void DBusThreadManagerSetter::SetPeerDaemonManagerClient(
+    scoped_ptr<PeerDaemonManagerClient> client) {
+  DBusThreadManager::Get()->client_bundle_->peer_daemon_manager_client_ =
+      client.Pass();
 }
 
 void DBusThreadManagerSetter::SetPermissionBrokerClient(
