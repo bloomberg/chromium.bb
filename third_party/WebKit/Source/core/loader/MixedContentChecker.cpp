@@ -322,7 +322,9 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, const ResourceRequ
         break;
 
     case ContextTypeShouldBeBlockable:
-        return false;
+        allowed = true;
+        client->didDisplayInsecureContent();
+        break;
 
     case ContextTypeBlockableUnlessLax:
         // We map this to either OptionallyBlockable or Blockable above.
