@@ -161,6 +161,7 @@ public final class PrefServiceBridge {
         callback.onGotProfilePath(profilePath);
     }
 
+    @VisibleForTesting
     public boolean isAcceptCookiesEnabled() {
         return nativeGetAcceptCookiesEnabled();
     }
