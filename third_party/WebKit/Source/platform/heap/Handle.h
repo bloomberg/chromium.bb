@@ -1050,9 +1050,9 @@ template<typename T> struct HashTraits<blink::Member<T>> : SimpleClassHashTraits
     using IteratorGetType = blink::Member<T>*;
     using IteratorConstGetType = const blink::Member<T>*;
     using IteratorReferenceType = blink::Member<T>&;
-    using IteratorConstReferenceType = T* const;
+    using IteratorConstReferenceType = const blink::Member<T>&;
     static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return *x; }
-    static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return x->get(); }
+    static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return *x; }
     // FIXME: Similarly, there is no need for a distinction between PeekOutType
     // and PassOutType without reference counting.
     using PeekOutType = T*;
@@ -1077,9 +1077,9 @@ template<typename T> struct HashTraits<blink::WeakMember<T>> : SimpleClassHashTr
     using IteratorGetType = blink::WeakMember<T>*;
     using IteratorConstGetType = const blink::WeakMember<T>*;
     using IteratorReferenceType = blink::WeakMember<T>&;
-    using IteratorConstReferenceType = T* const;
+    using IteratorConstReferenceType = const blink::WeakMember<T>&;
     static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return *x; }
-    static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return x->get(); }
+    static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return *x; }
     // FIXME: Similarly, there is no need for a distinction between PeekOutType
     // and PassOutType without reference counting.
     using PeekOutType = T*;
