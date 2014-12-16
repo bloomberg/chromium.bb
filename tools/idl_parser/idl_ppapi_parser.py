@@ -240,6 +240,14 @@ class IDLPPAPIParser(IDLParser):
     """ """
     pass
 
+  def p_EnumValueListComma(self, p):
+    """ """
+    pass
+
+  def p_EnumValueListString(self, p):
+    """ """
+    pass
+
   # We only support:
   #    [ identifier ]
   #    [ identifier ( ArgumentList )]

@@ -230,3 +230,55 @@ interface MyIfacePromise {
   Promise<any> method3();
   Promise method4();
 };
+
+/* TREE
+ *Interface(MyIfaceIterable)
+ *  Iterable()
+ *    Type()
+ *      PrimitiveType(long)
+ *  Iterable()
+ *    Type()
+ *      PrimitiveType(double)
+ *    Type()
+ *      PrimitiveType(DOMString)
+ *  LegacyIterable()
+ *    Type()
+ *      PrimitiveType(boolean)
+ */
+interface MyIfaceIterable {
+  iterable<long>;
+  iterable<double, DOMString>;
+  legacyiterable<boolean>;
+};
+
+/* TREE
+ *Interface(MyIfaceMaplike)
+ *  Maplike()
+ *    Type()
+ *      PrimitiveType(long)
+ *    Type()
+ *      PrimitiveType(DOMString)
+ *  Maplike()
+ *    Type()
+ *      PrimitiveType(double)
+ *    Type()
+ *      PrimitiveType(boolean)
+ */
+interface MyIfaceMaplike {
+  readonly maplike<long, DOMString>;
+  maplike<double, boolean>;
+};
+
+/* TREE
+ *Interface(MyIfaceSetlike)
+ *  Setlike()
+ *    Type()
+ *      PrimitiveType(long)
+ *  Setlike()
+ *    Type()
+ *      PrimitiveType(double)
+ */
+interface MyIfaceSetlike {
+  readonly setlike<long>;
+  setlike<double>;
+};

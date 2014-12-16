@@ -259,18 +259,17 @@ class IDLParser(object):
       p[2].AddChildren(p[1])
       p[0] = ListFromConcat(p[2], p[3])
 
-  # [10]
+  # [10] Removed unsupported: Serializer
   def p_InterfaceMember(self, p):
     """InterfaceMember : Const
-                       | AttributeOrOperationOrIterator"""
-    p[0] = p[1]
-
-  # [10.1] Removed unsupported: Serializer
-  def p_AttributeOrOperationOrIterator(self, p):
-    """AttributeOrOperationOrIterator : Stringifier
-                                      | StaticMember
-                                      | ReadWriteAttribute
-                                      | OperationOrIterator"""
+                       | Operation
+                       | Stringifier
+                       | StaticMember
+                       | Iterable
+                       | ReadonlyMember
+                       | ReadWriteAttribute
+                       | ReadWriteMaplike
+                       | ReadWriteSetlike"""
     p[0] = p[1]
 
   # [11]
@@ -480,7 +479,7 @@ class IDLParser(object):
 
   # [38]
   def p_StaticMemberRest(self, p):
-    """StaticMemberRest : AttributeRest
+    """StaticMemberRest : ReadOnly AttributeRest
                         | ReturnType OperationRest"""
     if len(p) == 2:
       p[0] = p[1]
@@ -488,35 +487,47 @@ class IDLParser(object):
       p[2].AddChildren(p[1])
       p[0] = p[2]
 
-  # [39] NOT IMPLEMENTED (ReadOnlyMember)
-  # [40] NOT IMPLEMENTED (ReadOnlyMemberReset)
+  # [39]
+  def p_ReadonlyMember(self, p):
+    """ReadonlyMember : READONLY ReadonlyMemberRest"""
+    p[2].AddChildren(self.BuildTrue('READONLY'))
+    p[0] = p[2]
+
+  # [40]
+  def p_ReadonlyMemberRest(self, p):
+    """ReadonlyMemberRest : AttributeRest
+                          | MaplikeRest
+                          | SetlikeRest"""
+    p[0] = p[1]
 
   # [41]
   def p_ReadWriteAttribute(self, p):
-    """ReadWriteAttribute : Inherit AttributeRest"""
-    p[2].AddChildren(ListFromConcat(p[1]))
-    p[0] = p[2]
-
-  # [41] Deprecated - Remove this entry after blink stops using it.
-  def p_Attribute(self, p):
-    """Attribute : ReadWriteAttribute"""
-    p[0] = p[1]
+    """ReadWriteAttribute : INHERIT ReadOnly AttributeRest
+                          | AttributeRest"""
+    if len(p) > 2:
+      inherit = self.BuildTrue('INHERIT')
+      p[3].AddChildren(ListFromConcat(inherit, p[2]))
+      p[0] = p[3]
+    else:
+      p[0] = p[1]
 
   # [42]
   def p_AttributeRest(self, p):
-    """AttributeRest : ReadOnly ATTRIBUTE Type identifier ';'"""
-    p[0] = self.BuildNamed('Attribute', p, 4,
-                           ListFromConcat(p[1], p[3]))
+    """AttributeRest : ATTRIBUTE Type AttributeName ';'"""
+    p[0] = self.BuildNamed('Attribute', p, 3, p[2])
 
-  # [43] NOT IMPLEMENTED (AttributeName)
-  # [44] NOT IMPLEMENTED (AttributeNameKeyword)
+  # [43]
+  def p_AttributeName(self, p):
+    """AttributeName : AttributeNameKeyword
+                     | identifier"""
+    p[0] = p[1]
 
-  # [45]
-  def p_Inherit(self, p):
-    """Inherit : INHERIT
-               |"""
-    if len(p) > 1:
-      p[0] = self.BuildTrue('INHERIT')
+  # [44]
+  def p_AttributeNameKeyword(self, p):
+    """AttributeNameKeyword : REQUIRED"""
+    p[0] = p[1]
+
+  # [45] Unreferenced in the specification
 
   # [46]
   def p_ReadOnly(self, p):
@@ -526,9 +537,9 @@ class IDLParser(object):
       p[0] = self.BuildTrue('READONLY')
 
   # [47]
-  def p_OperationOrIterator(self, p):
-    """OperationOrIterator : ReturnType OperationOrIteratorRest
-                           | SpecialOperation"""
+  def p_Operation(self, p):
+    """Operation : ReturnType OperationRest
+                 | SpecialOperation"""
     if len(p) == 3:
       p[2].AddChildren(p[1])
       p[0] = p[2]
@@ -556,11 +567,6 @@ class IDLParser(object):
                | DELETER
                | LEGACYCALLER"""
     p[0] = self.BuildTrue(p[1].upper())
-
-  # [51]
-  def p_OperationOrIteratorRest(self, p):
-    """OperationOrIteratorRest : OperationRest"""
-    p[0] = p[1]
 
   # [51]
   def p_OperationRest(self, p):
@@ -648,12 +654,43 @@ class IDLParser(object):
     """ExceptionField : error"""
     p[0] = self.BuildError(p, 'ExceptionField')
 
-  # [59] NOT IMPLEMENTED (Iterable)
-  # [60] NOT IMPLEMENTED (OptionalType)
-  # [61] NOT IMPLEMENTED (ReadWriteMaplike)
-  # [62] NOT IMPLEMENTED (ReadWriteSetlike)
-  # [63] NOT IMPLEMENTED (MaplikeRest)
-  # [64] NOT IMPLEMENTED (SetlikeRest)
+  # [59]
+  def p_Iterable(self, p):
+    """Iterable : ITERABLE '<' Type OptionalType '>' ';'
+                | LEGACYITERABLE '<' Type '>' ';'"""
+    if len(p) > 6:
+      childlist = ListFromConcat(p[3], p[4])
+      p[0] = self.BuildProduction('Iterable', p, 2, childlist)
+    else:
+      p[0] = self.BuildProduction('LegacyIterable', p, 2, p[3])
+
+  # [60]
+  def p_OptionalType(self, p):
+    """OptionalType : ',' Type
+                    |"""
+    if len(p) > 1:
+      p[0] = p[2]
+
+  # [61]
+  def p_ReadWriteMaplike(self, p):
+    """ReadWriteMaplike : MaplikeRest"""
+    p[0] = p[1]
+
+  # [62]
+  def p_ReadWriteSetlike(self, p):
+    """ReadWriteSetlike : SetlikeRest"""
+    p[0] = p[1]
+
+  # [63]
+  def p_MaplikeRest(self, p):
+    """MaplikeRest : MAPLIKE '<' Type ',' Type '>' ';'"""
+    childlist = ListFromConcat(p[3], p[5])
+    p[0] = self.BuildProduction('Maplike', p, 2, childlist)
+
+  # [64]
+  def p_SetlikeRest(self, p):
+    """SetlikeRest : SETLIKE '<' Type '>' ';'"""
+    p[0] = self.BuildProduction('Setlike', p, 2, p[3])
 
   # [65] No comment version for mid statement attributes.
   def p_ExtendedAttributeListNoComments(self, p):
