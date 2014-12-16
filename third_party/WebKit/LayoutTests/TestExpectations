@@ -516,6 +516,8 @@ crbug.com/320477 [ Debug ] inspector/sources/debugger/debugger-pause-in-internal
 
 crbug.com/396823 [ Mac ] virtual/regionbasedmulticol/fast/multicol/multicol-with-child-renderLayer-for-input.html [ ImageOnlyFailure ]
 
+crbug.com/442730 [ Mac ] inspector/sources/debugger/watch-expressions-preserve-expansion.html [ Pass Failure ]
+
 crbug.com/368108 fast/inline/justify-emphasis-inline-box.html [ NeedsRebaseline ]
 crbug.com/368108 fast/ruby/base-shorter-than-text.html [ NeedsRebaseline ]
 crbug.com/368108 fast/ruby/nested-ruby.html [ NeedsRebaseline ]
