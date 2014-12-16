@@ -676,8 +676,7 @@ class KeySilkCasesPageSet(page_set_module.PageSet):
     self.AddUserStory(Page16(self))
     self.AddUserStory(Page17(self))
     self.AddUserStory(Page18(self))
-    # crbug.com/404317
-    # self.AddUserStory(Page19(self))
+    self.AddUserStory(Page19(self))
     self.AddUserStory(Page20(self))
     self.AddUserStory(GwsGoogleExpansion(self))
     self.AddUserStory(GwsBoogieExpansion(self))
