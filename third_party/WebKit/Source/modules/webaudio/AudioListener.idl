@@ -30,10 +30,10 @@
     GarbageCollected,
     Conditional=WEB_AUDIO
 ] interface AudioListener {
-    attribute float dopplerFactor;  // same as OpenAL (default 1.0)
-    attribute float speedOfSound;   // in meters / second (default 343.3)
+    [DeprecateAs=DeprecatedDopplerFactor] attribute float dopplerFactor;  // same as OpenAL (default 1.0)
+    [DeprecateAs=DeprecatedSpeedOfSound] attribute float speedOfSound;   // in meters / second (default 343.3)
 
     void setPosition(float x, float y, float z);
     void setOrientation(float x, float y, float z, float xUp, float yUp, float zUp);
-    void setVelocity(float x, float y, float z);
+    [DeprecateAs=DeprecatedSetVelocity] void setVelocity(float x, float y, float z);
 };

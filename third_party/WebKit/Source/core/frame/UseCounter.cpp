@@ -812,6 +812,13 @@ String UseCounter::deprecationMessage(Feature feature)
     case PrefixedImageSmoothingEnabled:
         return replacedBy("CanvasRenderingContext2D.webkitImageSmoothingEnabled", "CanvasRenderingContext2D.imageSmoothingEnabled");
 
+    case DeprecatedDopplerFactor:
+        return "dopplerFactor is deprecated and will be removed in M45 when all doppler effects are removed";
+    case DeprecatedSpeedOfSound:
+        return "speedOfSound is deprecated and will be removed in M45 when all doppler effects are removed";
+    case DeprecatedSetVelocity:
+        return "setVelocity() is deprecated and will be removed in M45 when all doppler effects are removed";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
