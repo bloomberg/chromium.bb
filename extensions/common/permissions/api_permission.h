@@ -77,6 +77,7 @@ class APIPermission {
     kCopresence,
     kCopresencePrivate,
     kCryptotokenPrivate,
+    kDataReductionProxy,
     kDiagnostics,
     kDial,
     kDebugger,

@@ -69,6 +69,18 @@ const char kConversionErrorMessage[] =
     "properly.";
 
 PrefMappingEntry kPrefMapping[] = {
+    {"spdy_proxy.enabled",
+     data_reduction_proxy::prefs::kDataReductionProxyEnabled,
+     APIPermission::kDataReductionProxy, APIPermission::kDataReductionProxy},
+    {"data_reduction.daily_original_length",
+     data_reduction_proxy::prefs::kDailyHttpOriginalContentLength,
+     APIPermission::kDataReductionProxy, APIPermission::kDataReductionProxy},
+    {"data_reduction.daily_received_length",
+     data_reduction_proxy::prefs::kDailyHttpReceivedContentLength,
+     APIPermission::kDataReductionProxy, APIPermission::kDataReductionProxy},
+    {"data_reduction.update_daily_lengths",
+     data_reduction_proxy::prefs::kUpdateDailyReceivedContentLengths,
+     APIPermission::kDataReductionProxy, APIPermission::kDataReductionProxy},
     {"alternateErrorPagesEnabled", prefs::kAlternateErrorPagesEnabled,
      APIPermission::kPrivacy, APIPermission::kPrivacy},
     {"autofillEnabled", autofill::prefs::kAutofillEnabled,

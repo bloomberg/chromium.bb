@@ -109,6 +109,9 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        PermissionMessage::kCopresence},
       {APIPermission::kCopresencePrivate, "copresencePrivate"},
       {APIPermission::kCryptotokenPrivate, "cryptotokenPrivate"},
+      {APIPermission::kDataReductionProxy, "dataReductionProxy",
+       APIPermissionInfo::kFlagImpliesFullURLAccess |
+           APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kDocumentScan,
        "documentScan",
        APIPermissionInfo::kFlagNone,

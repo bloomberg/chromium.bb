@@ -1,0 +1,36 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[
+  {
+    "namespace": "dataReductionProxy",
+    "description": "Use the <code>chrome.dataReductionProxy</code> API to control usage of the features in Chrome that can affect a user's privacy. This API relies on the <a href='types#ChromeSetting'>ChromeSetting prototype of the type API</a> for getting and setting Chrome's configuration.",
+    "properties": {
+      "spdyProxyEnabled": {
+        "nocompile": true,
+        "$ref": "types.ChromeSetting",
+        "value": ["spdy_proxy.enabled", {"type":"boolean"}],
+        "description": "Flag to enable data usage reduction by sending requests via data reduction proxy. This preference's value is a boolean, defaulting to <code>false</code>."
+      },
+      "dataReductionDailyContentLength": {
+        "nocompile": true,
+        "$ref": "types.ChromeSetting",
+        "value": ["data_reduction.daily_original_length", {"type":"array"}],
+        "description": "Each item contains the number uncompressed bytes through data reduction proxy per day."
+      },
+      "dataReductionDailyReceivedLength": {
+        "nocompile": true,
+        "$ref": "types.ChromeSetting",
+        "value": ["data_reduction.daily_received_length", {"type":"array"}],
+        "description": "Each item contains the number of compressed bytes through data reduction proxy per day."
+      },
+      "dataReductionUpdateDailyLengths": {
+        "nocompile": true,
+        "$ref": "types.ChromeSetting",
+        "value": ["data_reduction.update_daily_lengths", {"type":"boolean"}],
+        "description": "Flag to indicate that dataReductionDailyContentLength and dataReductionDailyReceivedLength must be updated with their latest values. This preference's value is a boolean, defaulting to <code>false</code>."
+      }
+    }        
+  }
+]
