@@ -13,6 +13,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/input/did_overscroll_params.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/android/resources/resource_manager.h"
@@ -277,6 +278,7 @@ void OverscrollControllerAndroid::TriggerRefresh() {
     return;
 
   triggered_refresh_active_ = true;
+  RecordAction(base::UserMetricsAction("MobilePullGestureReload"));
   web_contents()->GetController().Reload(true);
 }
 

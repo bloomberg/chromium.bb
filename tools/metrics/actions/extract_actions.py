@@ -287,6 +287,7 @@ def AddAndroidActions(actions):
   actions.add('MobilePageLoaded')
   actions.add('MobilePageLoadedDesktopUserAgent')
   actions.add('MobilePageLoadedWithKeyboard')
+  actions.add('MobilePullGestureReload')
   actions.add('MobileReceivedExternalIntent')
   actions.add('MobileRendererCrashed')
   actions.add('MobileShortcutAllBookmarks')

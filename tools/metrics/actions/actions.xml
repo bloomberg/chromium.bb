@@ -7575,6 +7575,15 @@ should be able to be added at any place in this file.
   <description>User closes the tab while preview page is loaded.</description>
 </action>
 
+<action name="MobilePullGestureReload">
+  <owner>jdduke@chromium.org</owner>
+  <description>
+    Emitted on Android when a pull-to-refresh touch gesture initiates a page
+    reload. This fires only after the triggering touch is released while the
+    refresh effect has been pulled beyond the activation threshold.
+  </description>
+</action>
+
 <action name="MobileReceivedExternalIntent">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
