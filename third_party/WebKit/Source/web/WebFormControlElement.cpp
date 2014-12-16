@@ -62,11 +62,6 @@ WebString WebFormControlElement::formControlType() const
     return constUnwrap<HTMLFormControlElement>()->type();
 }
 
-void WebFormControlElement::dispatchFormControlChangeEvent()
-{
-    unwrap<HTMLFormControlElement>()->dispatchFormControlChangeEvent();
-}
-
 bool WebFormControlElement::isAutofilled() const
 {
     return constUnwrap<HTMLFormControlElement>()->isAutofilled();

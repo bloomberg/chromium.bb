@@ -22,19 +22,9 @@ class WebPushClient {
 public:
     virtual ~WebPushClient() { }
 
-    // Ownership of the callback is transferred to the client.
-    // Ownership of the WebServiceWorkerProvider is not transferred.
-    // FIXME: delete this when not called anymore.
-    virtual void registerPushMessaging(WebPushRegistrationCallbacks*, WebServiceWorkerProvider*) { }
-
     // Ownership of the WebServiceWorkerRegistration is not transferred.
     // Ownership of the callbacks is transferred to the client.
     virtual void registerPushMessaging(WebServiceWorkerRegistration*, WebPushRegistrationCallbacks*) { }
-
-    // Ownership of the callback is transferred to the client.
-    // Ownership of the WebServiceWorkerProvider is not transferred.
-    // FIXME: delete this when not called anymore.
-    virtual void getPermissionStatus(WebPushPermissionStatusCallback*, WebServiceWorkerProvider*) { }
 };
 
 } // namespace blink

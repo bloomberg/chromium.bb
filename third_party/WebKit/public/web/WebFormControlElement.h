@@ -57,9 +57,6 @@ public:
     BLINK_EXPORT WebString formControlName() const;
     BLINK_EXPORT WebString formControlType() const;
 
-    // FIXME: remove this method when no longer used.
-    BLINK_EXPORT void dispatchFormControlChangeEvent();
-
     BLINK_EXPORT bool isAutofilled() const;
     BLINK_EXPORT void setAutofilled(bool);
 
