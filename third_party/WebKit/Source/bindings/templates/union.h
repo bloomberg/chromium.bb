@@ -47,15 +47,15 @@ private:
     {{member.cpp_type}} m_{{member.cpp_name}};
     {% endfor %}
 
-    friend v8::Handle<v8::Value> toV8(const {{container.cpp_class}}&, v8::Handle<v8::Object>, v8::Isolate*);
+    friend v8::Local<v8::Value> toV8(const {{container.cpp_class}}&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8{{container.cpp_class}} final {
 public:
-    static void toImpl(v8::Isolate*, v8::Handle<v8::Value>, {{container.cpp_class}}&, ExceptionState&);
+    static void toImpl(v8::Isolate*, v8::Local<v8::Value>, {{container.cpp_class}}&, ExceptionState&);
 };
 
-v8::Handle<v8::Value> toV8(const {{container.cpp_class}}&, v8::Handle<v8::Object>, v8::Isolate*);
+v8::Local<v8::Value> toV8(const {{container.cpp_class}}&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, {{container.cpp_class}}& impl)
@@ -65,14 +65,14 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, {{container.cpp_c
 
 template <>
 struct NativeValueTraits<{{container.cpp_class}}> {
-    static {{container.cpp_class}} nativeValue(const v8::Handle<v8::Value>&, v8::Isolate*, ExceptionState&);
+    static {{container.cpp_class}} nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
 };
 
 {% endfor %}
 {% for cpp_type in nullable_cpp_types %}
 class V8{{cpp_type}}OrNull final {
 public:
-    static void toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, {{cpp_type}}& impl, ExceptionState& exceptionState)
+    static void toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{cpp_type}}& impl, ExceptionState& exceptionState)
     {
         {# http://heycam.github.io/webidl/#es-union #}
         {# 1. null or undefined #}

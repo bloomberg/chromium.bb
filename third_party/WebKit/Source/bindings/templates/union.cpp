@@ -9,7 +9,7 @@
 
 {% macro assign_and_return_if_hasinstance(member) %}
 if (V8{{member.type_name}}::hasInstance(v8Value, isolate)) {
-    {{member.cpp_local_type}} cppValue = V8{{member.type_name}}::toImpl(v8::Handle<v8::Object>::Cast(v8Value));
+    {{member.cpp_local_type}} cppValue = V8{{member.type_name}}::toImpl(v8::Local<v8::Object>::Cast(v8Value));
     impl.set{{member.type_name}}(cppValue);
     return;
 }
@@ -50,7 +50,7 @@ void {{container.cpp_class}}::trace(Visitor* visitor)
 }
 
 {% endif %}
-void V8{{container.cpp_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, {{container.cpp_class}}& impl, ExceptionState& exceptionState)
+void V8{{container.cpp_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{container.cpp_class}}& impl, ExceptionState& exceptionState)
 {
     if (v8Value.IsEmpty())
         return;
@@ -137,7 +137,7 @@ void V8{{container.cpp_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Valu
     {% endif %}
 }
 
-v8::Handle<v8::Value> toV8(const {{container.cpp_class}}& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Local<v8::Value> toV8(const {{container.cpp_class}}& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     switch (impl.m_type) {
     case {{container.cpp_class}}::SpecificTypeNone:
@@ -150,10 +150,10 @@ v8::Handle<v8::Value> toV8(const {{container.cpp_class}}& impl, v8::Handle<v8::O
     default:
         ASSERT_NOT_REACHED();
     }
-    return v8::Handle<v8::Value>();
+    return v8::Local<v8::Value>();
 }
 
-{{container.cpp_class}} NativeValueTraits<{{container.cpp_class}}>::nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+{{container.cpp_class}} NativeValueTraits<{{container.cpp_class}}>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     {{container.cpp_class}} impl;
     V8{{container.cpp_class}}::toImpl(isolate, value, impl, exceptionState);
