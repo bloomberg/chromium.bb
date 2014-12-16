@@ -262,7 +262,7 @@ bool ChannelWin::CreatePipe(const IPC::ChannelHandle &channel_handle,
                           0,
                           NULL,
                           OPEN_EXISTING,
-                          SECURITY_SQOS_PRESENT | SECURITY_IDENTIFICATION |
+                          SECURITY_SQOS_PRESENT | SECURITY_ANONYMOUS |
                               FILE_FLAG_OVERLAPPED,
                           NULL));
   } else {
