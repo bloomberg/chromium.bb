@@ -747,6 +747,10 @@ bool PasswordAutofillAgent::ShowSuggestions(
   if (!FindPasswordInfoForElement(element, &username_element, &password_info))
     return false;
 
+  // TODO(vabr): Make this work for forms without a username element.
+  if (username_element->isNull())
+    return false;
+
   // If autocomplete='off' is set on the form elements, no suggestion dialog
   // should be shown. However, return |true| to indicate that this is a known
   // password form and that the request to show suggestions has been handled (as
