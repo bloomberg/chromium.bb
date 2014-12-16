@@ -678,7 +678,7 @@ void ThreadHeap<Header>::updateRemainingAllocationSize()
 }
 
 template<typename Header>
-Address ThreadHeap<Header>::outOfLineAllocate(size_t payloadSize, size_t allocationSize, const GCInfo* gcInfo)
+Address ThreadHeap<Header>::outOfLineAllocate(size_t allocationSize, const GCInfo* gcInfo)
 {
     ASSERT(allocationSize > remainingAllocationSize());
     if (allocationSize > blinkPageSize / 2)
@@ -687,53 +687,118 @@ Address ThreadHeap<Header>::outOfLineAllocate(size_t payloadSize, size_t allocat
     updateRemainingAllocationSize();
     threadState()->scheduleGCOrForceConservativeGCIfNeeded();
 
-    setAllocationPoint(nullptr, 0);
     ASSERT(allocationSize >= allocationGranularity);
-    if (allocateFromFreeList(allocationSize))
-        return allocate(payloadSize, gcInfo);
-    if (coalesce(allocationSize) && allocateFromFreeList(allocationSize))
-        return allocate(payloadSize, gcInfo);
+    Address result = allocateFromFreeList(allocationSize, gcInfo);
+    if (result)
+        return result;
+    setAllocationPoint(nullptr, 0);
+    if (coalesce(allocationSize)) {
+        result = allocateFromFreeList(allocationSize, gcInfo);
+        if (result)
+            return result;
+    }
 
     addPageToHeap(gcInfo);
-    bool success = allocateFromFreeList(allocationSize);
-    RELEASE_ASSERT(success);
-    return allocate(payloadSize, gcInfo);
+    result = allocateFromFreeList(allocationSize, gcInfo);
+    RELEASE_ASSERT(result);
+    return result;
+}
+
+static bool shouldUseFirstFitForHeap(int heapIndex)
+{
+    // For an allocation of size N, should a heap perform a first-fit
+    // matching within the sized bin that N belongs to?
+    //
+    // Theory: quickly reusing a previously freed backing store block stands
+    // a chance of maintaining cached presence of that block (maintains
+    // "locality".) This is preferable to starting to bump allocate from a
+    // new and bigger block, which is what allocateFromFreeList() does by
+    // default. Hence, the backing store heaps are considered for binned
+    // first-fit matching.
+    //
+    // This appears to hold true through performance expermentation; at
+    // least no signficant performance regressions have been observed.
+    //
+    // This theory of improved performance does not hold true for other
+    // heap types. We are currently seeking an understanding of why;
+    // larger amounts of small block fragmentation might be one reason
+    // for it. TBC.
+    //
+    switch (heapIndex) {
+    case VectorBackingHeap:
+    case InlineVectorBackingHeap:
+    case HashTableBackingHeap:
+    case VectorBackingHeapNonFinalized:
+    case InlineVectorBackingHeapNonFinalized:
+    case HashTableBackingHeapNonFinalized:
+        return true;
+    default:
+        return false;
+    }
 }
 
 template<typename Header>
-FreeListEntry* FreeList<Header>::takeEntry(size_t allocationSize)
+Address ThreadHeap<Header>::allocateFromFreeList(size_t allocationSize, const GCInfo* gcInfo)
 {
-    size_t bucketSize = 1 << m_biggestFreeListIndex;
-    int i = m_biggestFreeListIndex;
-    for (; i > 0; i--, bucketSize >>= 1) {
-        if (bucketSize < allocationSize) {
-            // A FreeListEntry for bucketSize might be larger than allocationSize.
-            // FIXME: We check only the first FreeListEntry because searching
-            // the entire list is costly.
-            if (!m_freeLists[i] || m_freeLists[i]->size() < allocationSize)
+    // The freelist allocation scheme is currently as follows:
+    //
+    // - If the heap is of an appropriate type, try to pick the first
+    //   entry from the sized bin corresponding to |allocationSize|.
+    //   [See shouldUseFirstFitForHeap() comment for motivation on why.]
+    //
+    // - If that didn't satisfy the allocation, try reusing a block
+    //   from the largest bin. The underlying reasoning being that
+    //   we want to amortize this slow allocation call by carving
+    //   off as a large a free block as possible in one go; a block
+    //   that will service this block and let following allocations
+    //   be serviced quickly by bump allocation.
+    //
+    // - Fail; allocation cannot be serviced by the freelist.
+    //   The allocator will handle that failure by requesting more
+    //   heap pages from the OS and re-initiate the allocation request.
+    //
+    int index = FreeList<Header>::bucketIndexForSize(allocationSize) + 1;
+    if (index <= m_freeList.m_biggestFreeListIndex && shouldUseFirstFitForHeap(m_index)) {
+        if (FreeListEntry* entry = m_freeList.m_freeLists[index]) {
+            entry->unlink(&m_freeList.m_freeLists[index]);
+            if (!m_freeList.m_freeLists[index] && index == m_freeList.m_biggestFreeListIndex) {
+                // Biggest bucket drained, adjust biggest index downwards.
+                int maxIndex = m_freeList.m_biggestFreeListIndex - 1;
+                for (; maxIndex >= 0 && !m_freeList.m_freeLists[maxIndex]; --maxIndex) { }
+                m_freeList.m_biggestFreeListIndex = maxIndex < 0 ? 0 : maxIndex;
+            }
+            // Allocate into the freelist block without disturbing the current allocation area.
+            ASSERT(entry->size() >= allocationSize);
+            if (entry->size() > allocationSize)
+                addToFreeList(entry->address() + allocationSize, entry->size() - allocationSize);
+            Heap::increaseAllocatedObjectSize(allocationSize);
+            return allocateAtAddress(entry->address(), allocationSize, gcInfo);
+        }
+        // Failed to find a first-fit freelist entry; fall into the standard case of
+        // chopping off the largest free block and bump allocate from it.
+    }
+    size_t bucketSize = 1 << m_freeList.m_biggestFreeListIndex;
+    index = m_freeList.m_biggestFreeListIndex;
+    for (; index > 0; --index, bucketSize >>= 1) {
+        FreeListEntry* entry = m_freeList.m_freeLists[index];
+        if (allocationSize > bucketSize) {
+            // Final bucket candidate; check initial entry if it is able
+            // to service this allocation. Do not perform a linear scan,
+            // as it is considered too costly.
+            if (!entry || entry->size() < allocationSize)
                 break;
         }
-        if (FreeListEntry* entry = m_freeLists[i]) {
-            m_biggestFreeListIndex = i;
-            entry->unlink(&m_freeLists[i]);
-            return entry;
+        if (entry) {
+            entry->unlink(&m_freeList.m_freeLists[index]);
+            setAllocationPoint(entry->address(), entry->size());
+            ASSERT(hasCurrentAllocationArea());
+            ASSERT(remainingAllocationSize() >= allocationSize);
+            m_freeList.m_biggestFreeListIndex = index;
+            return allocateSize(allocationSize, gcInfo);
         }
     }
-    m_biggestFreeListIndex = i;
+    m_freeList.m_biggestFreeListIndex = index;
     return nullptr;
-}
-
-template<typename Header>
-bool ThreadHeap<Header>::allocateFromFreeList(size_t allocationSize)
-{
-    ASSERT(!hasCurrentAllocationArea());
-    if (FreeListEntry* entry = m_freeList.takeEntry(allocationSize)) {
-        setAllocationPoint(entry->address(), entry->size());
-        ASSERT(hasCurrentAllocationArea());
-        ASSERT(remainingAllocationSize() >= allocationSize);
-        return true;
-    }
-    return false;
 }
 
 #if ENABLE(ASSERT)

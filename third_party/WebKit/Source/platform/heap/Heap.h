@@ -723,7 +723,6 @@ public:
 
     void addToFreeList(Address, size_t);
     void clear();
-    FreeListEntry* takeEntry(size_t allocationSize);
 
     // Returns a bucket number for inserting a FreeListEntry of a given size.
     // All FreeListEntries in the given bucket, n, have size >= 2^n.
@@ -735,9 +734,7 @@ private:
     // All FreeListEntries in the nth list have size >= 2^n.
     FreeListEntry* m_freeLists[blinkPageSizeLog2];
 
-#if ENABLE(ASSERT)
     friend class ThreadHeap<Header>;
-#endif
 };
 
 // Thread heaps represent a part of the per-thread Blink heap.
@@ -786,7 +783,7 @@ public:
         m_freeList.addToFreeList(address, size);
     }
 
-    inline Address allocate(size_t, const GCInfo*);
+    inline Address allocate(size_t payloadSize, const GCInfo*);
     inline static size_t roundedAllocationSize(size_t size)
     {
         return allocationSizeFromSize(size) - sizeof(Header);
@@ -802,7 +799,7 @@ public:
 
 private:
     void addPageToHeap(const GCInfo*);
-    PLATFORM_EXPORT Address outOfLineAllocate(size_t payloadSize, size_t allocationSize, const GCInfo*);
+    PLATFORM_EXPORT Address outOfLineAllocate(size_t allocationSize, const GCInfo*);
     static size_t allocationSizeFromSize(size_t);
     PLATFORM_EXPORT Address allocateLargeObject(size_t, const GCInfo*);
     Address currentAllocationPoint() const { return m_currentAllocationPoint; }
@@ -819,10 +816,13 @@ private:
         m_lastRemainingAllocationSize = m_remainingAllocationSize = size;
     }
     void updateRemainingAllocationSize();
-    bool allocateFromFreeList(size_t);
+    Address allocateFromFreeList(size_t, const GCInfo*);
 
     void freeLargeObject(LargeObject<Header>*, LargeObject<Header>**);
     void allocatePage(const GCInfo*);
+
+    inline Address allocateSize(size_t allocationSize, const GCInfo*);
+    inline Address allocateAtAddress(Address, size_t allocationSize, const GCInfo*);
 
 #if ENABLE(ASSERT)
     bool pagesToBeSweptContains(Address);
@@ -1282,25 +1282,37 @@ size_t ThreadHeap<Header>::allocationSizeFromSize(size_t size)
     return allocationSize;
 }
 
+
 template<typename Header>
-Address ThreadHeap<Header>::allocate(size_t size, const GCInfo* gcInfo)
+inline Address ThreadHeap<Header>::allocateAtAddress(Address headerAddress, size_t allocationSize, const GCInfo* gcInfo)
 {
-    size_t allocationSize = allocationSizeFromSize(size);
+    new (NotNull, headerAddress) Header(allocationSize, gcInfo);
+    Address result = headerAddress + sizeof(Header);
+    ASSERT(!(reinterpret_cast<uintptr_t>(result) & allocationMask));
+
+    // Unpoison the memory used for the object (payload).
+    ASAN_UNPOISON_MEMORY_REGION(result, allocationSize - sizeof(Header));
+    FILL_ZERO_IF_NOT_PRODUCTION(result, allocationSize - sizeof(Header));
+    ASSERT(pageFromAddress(headerAddress + allocationSize - 1));
+    return result;
+}
+
+template<typename Header>
+Address ThreadHeap<Header>::allocateSize(size_t allocationSize, const GCInfo* gcInfo)
+{
     if (LIKELY(allocationSize <= m_remainingAllocationSize)) {
         Address headerAddress = m_currentAllocationPoint;
         m_currentAllocationPoint += allocationSize;
         m_remainingAllocationSize -= allocationSize;
-        new (NotNull, headerAddress) Header(allocationSize, gcInfo);
-        Address result = headerAddress + sizeof(Header);
-        ASSERT(!(reinterpret_cast<uintptr_t>(result) & allocationMask));
-
-        // Unpoison the memory used for the object (payload).
-        ASAN_UNPOISON_MEMORY_REGION(result, allocationSize - sizeof(Header));
-        FILL_ZERO_IF_NOT_PRODUCTION(result, allocationSize - sizeof(Header));
-        ASSERT(pageFromAddress(headerAddress + allocationSize - 1));
-        return result;
+        return allocateAtAddress(headerAddress, allocationSize, gcInfo);
     }
-    return outOfLineAllocate(size, allocationSize, gcInfo);
+    return outOfLineAllocate(allocationSize, gcInfo);
+}
+
+template<typename Header>
+Address ThreadHeap<Header>::allocate(size_t size, const GCInfo* gcInfo)
+{
+    return allocateSize(allocationSizeFromSize(size), gcInfo);
 }
 
 template<typename T, typename HeapTraits>
