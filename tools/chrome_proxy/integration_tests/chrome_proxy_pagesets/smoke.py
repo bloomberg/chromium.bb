@@ -104,9 +104,9 @@ class SmokePageSet(page_set_module.PageSet):
     super(SmokePageSet, self).__init__(
       archive_data_file='../data/chrome_proxy_smoke.json')
 
-    self.AddPage(Page1(self))
-    self.AddPage(Page2(self))
-    self.AddPage(Page3(self))
-    self.AddPage(Page4(self))
-    self.AddPage(Page5(self))
-    self.AddPage(Page6(self))
+    self.AddUserStory(Page1(self))
+    self.AddUserStory(Page2(self))
+    self.AddUserStory(Page3(self))
+    self.AddUserStory(Page4(self))
+    self.AddUserStory(Page5(self))
+    self.AddUserStory(Page6(self))

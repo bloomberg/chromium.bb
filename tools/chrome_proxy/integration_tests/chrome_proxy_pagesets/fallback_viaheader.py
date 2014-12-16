@@ -24,4 +24,4 @@ class FallbackViaHeaderPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(FallbackViaHeaderPage(url, self))
+      self.AddUserStory(FallbackViaHeaderPage(url, self))

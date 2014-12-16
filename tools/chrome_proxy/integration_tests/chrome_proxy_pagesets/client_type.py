@@ -32,25 +32,25 @@ class ClientTypePageSet(page_set_module.PageSet):
     # order to determine the Chrome-Proxy client type value before running any
     # of the following pages, since there's no way to get the client type value
     # from a request that was bypassed.
-    self.AddPage(ClientTypePage(
+    self.AddUserStory(ClientTypePage(
         url='http://aws1.mdw.la/fw',
         page_set=self,
         bypass_for_client_type='none'))
 
     # Page that should cause a bypass for android chrome clients.
-    self.AddPage(ClientTypePage(
+    self.AddUserStory(ClientTypePage(
         url='http://check.googlezip.net/chrome-proxy-header/c=ANDROID',
         page_set=self,
         bypass_for_client_type='android'))
 
     # Page that should cause a bypass for android webview clients.
-    self.AddPage(ClientTypePage(
+    self.AddUserStory(ClientTypePage(
         url='http://check.googlezip.net/chrome-proxy-header/c=WEBVIEW',
         page_set=self,
         bypass_for_client_type='webview'))
 
     # Page that should cause a bypass for iOS clients.
-    self.AddPage(ClientTypePage(
+    self.AddUserStory(ClientTypePage(
         url='http://check.googlezip.net/chrome-proxy-header/c=IOS',
         page_set=self,
         bypass_for_client_type='ios'))

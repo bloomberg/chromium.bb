@@ -21,70 +21,71 @@ class Top20PageSet(page_set_module.PageSet):
       archive_data_file='../data/chrome_proxy_top_20.json')
 
     # Why: top google property; a google tab is often open
-    self.AddPage(Top20Page('https://www.google.com/#hl=en&q=barack+obama',
-                           self))
+    self.AddUserStory(Top20Page('https://www.google.com/#hl=en&q=barack+obama',
+                                self))
 
     # Why: #3 (Alexa global)
-    self.AddPage(Top20Page('http://www.youtube.com', self))
+    self.AddUserStory(Top20Page('http://www.youtube.com', self))
 
     # Why: #18 (Alexa global), Picked an interesting post
-    self.AddPage(Top20Page(
+    self.AddUserStory(Top20Page(
       # pylint: disable=C0301
       'http://en.blog.wordpress.com/2012/09/04/freshly-pressed-editors-picks-for-august-2012/',
       self, 'Wordpress'))
 
     # Why: top social,Public profile
-    self.AddPage(Top20Page('http://www.facebook.com/barackobama', self,
-                           'Facebook'))
+    self.AddUserStory(Top20Page('http://www.facebook.com/barackobama', self,
+                                'Facebook'))
 
     # Why: #12 (Alexa global),Public profile
-    self.AddPage(Top20Page('http://www.linkedin.com/in/linustorvalds', self,
-                           'LinkedIn'))
+    self.AddUserStory(Top20Page('http://www.linkedin.com/in/linustorvalds',
+                                self, 'LinkedIn'))
 
     # Why: #6 (Alexa) most visited worldwide,Picked an interesting page
-    self.AddPage(Top20Page('http://en.wikipedia.org/wiki/Wikipedia', self,
-                           'Wikipedia (1 tab)'))
+    self.AddUserStory(Top20Page('http://en.wikipedia.org/wiki/Wikipedia', self,
+                                'Wikipedia (1 tab)'))
 
     # Why: #8 (Alexa global),Picked an interesting page
-    self.AddPage(Top20Page('https://twitter.com/katyperry', self, 'Twitter'))
+    self.AddUserStory(Top20Page('https://twitter.com/katyperry', self,
+                                'Twitter'))
 
     # Why: #37 (Alexa global)
-    self.AddPage(Top20Page('http://pinterest.com', self, 'Pinterest'))
+    self.AddUserStory(Top20Page('http://pinterest.com', self, 'Pinterest'))
 
     # Why: #1 sports
-    self.AddPage(Top20Page('http://espn.go.com', self, 'ESPN'))
+    self.AddUserStory(Top20Page('http://espn.go.com', self, 'ESPN'))
 
     # Why: #1 news worldwide (Alexa global)
-    self.AddPage(Top20Page('http://news.yahoo.com', self))
+    self.AddUserStory(Top20Page('http://news.yahoo.com', self))
 
     # Why: #2 news worldwide
-    self.AddPage(Top20Page('http://www.cnn.com', self))
+    self.AddUserStory(Top20Page('http://www.cnn.com', self))
 
     # Why: #7 (Alexa news); #27 total time spent,Picked interesting page
-    self.AddPage(Top20Page(
+    self.AddUserStory(Top20Page(
       'http://www.weather.com/weather/right-now/Mountain+View+CA+94043',
       self, 'Weather.com'))
 
     # Why: #1 world commerce website by visits; #3 commerce in the US by time
     # spent
-    self.AddPage(Top20Page('http://www.amazon.com', self))
+    self.AddUserStory(Top20Page('http://www.amazon.com', self))
 
     # Why: #1 commerce website by time spent by users in US
-    self.AddPage(Top20Page('http://www.ebay.com', self))
+    self.AddUserStory(Top20Page('http://www.ebay.com', self))
 
     # Why: #1 games according to Alexa (with actual games in it)
-    self.AddPage(Top20Page('http://games.yahoo.com', self))
+    self.AddUserStory(Top20Page('http://games.yahoo.com', self))
 
     # Why: #1 Alexa recreation
-    self.AddPage(Top20Page('http://booking.com', self))
+    self.AddUserStory(Top20Page('http://booking.com', self))
 
     # Why: #1 Alexa reference
-    self.AddPage(Top20Page('http://answers.yahoo.com', self))
+    self.AddUserStory(Top20Page('http://answers.yahoo.com', self))
 
     # Why: #1 Alexa sports
-    self.AddPage(Top20Page('http://sports.yahoo.com/', self))
+    self.AddUserStory(Top20Page('http://sports.yahoo.com/', self))
 
     # Why: top tech blog
-    self.AddPage(Top20Page('http://techcrunch.com', self))
+    self.AddUserStory(Top20Page('http://techcrunch.com', self))
 
-    self.AddPage(Top20Page('http://www.nytimes.com', self))
+    self.AddUserStory(Top20Page('http://www.nytimes.com', self))

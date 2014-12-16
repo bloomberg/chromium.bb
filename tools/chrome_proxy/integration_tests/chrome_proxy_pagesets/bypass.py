@@ -26,4 +26,4 @@ class BypassPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(BypassPage(url, self))
+      self.AddUserStory(BypassPage(url, self))

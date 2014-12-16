@@ -23,4 +23,4 @@ class HTTPToDirectFallbackPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(HTTPToDirectFallbackPage(url, self))
+      self.AddUserStory(HTTPToDirectFallbackPage(url, self))

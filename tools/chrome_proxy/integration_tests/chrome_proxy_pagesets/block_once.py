@@ -24,4 +24,4 @@ class BlockOncePageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(BlockOncePage(url, self))
+      self.AddUserStory(BlockOncePage(url, self))

@@ -29,4 +29,4 @@ class SafebrowsingPageSet(page_set_module.PageSet):
     super(SafebrowsingPageSet, self).__init__(
       archive_data_file='../data/chrome_proxy_safebrowsing.json')
 
-    self.AddPage(SafebrowsingPage('http://www.ianfette.org/', self))
+    self.AddUserStory(SafebrowsingPage('http://www.ianfette.org/', self))

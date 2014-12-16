@@ -27,4 +27,4 @@ class SyntheticPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddPage(SyntheticPage(url, self))
+      self.AddUserStory(SyntheticPage(url, self))

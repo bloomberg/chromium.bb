@@ -42,7 +42,7 @@ class ExplicitBypassPageSet(page_set_module.PageSet):
     super(ExplicitBypassPageSet, self).__init__()
 
     # Test page for "Chrome-Proxy: bypass=0".
-    self.AddPage(ExplicitBypassPage(
+    self.AddUserStory(ExplicitBypassPage(
         url=measurements.GetResponseOverrideURL(
             respHeader='{"Chrome-Proxy":["bypass=0"],'
                        '"Via":["1.1 Chrome-Compression-Proxy"]}'),
@@ -52,7 +52,7 @@ class ExplicitBypassPageSet(page_set_module.PageSet):
         bypass_seconds_high=metrics.DEFAULT_BYPASS_MAX_SECONDS))
 
     # Test page for "Chrome-Proxy: bypass=3600".
-    self.AddPage(ExplicitBypassPage(
+    self.AddUserStory(ExplicitBypassPage(
         url=measurements.GetResponseOverrideURL(
             respHeader='{"Chrome-Proxy":["bypass=3600"],'
                        '"Via":["1.1 Chrome-Compression-Proxy"]}'),
@@ -62,7 +62,7 @@ class ExplicitBypassPageSet(page_set_module.PageSet):
         bypass_seconds_high=3600))
 
     # Test page for "Chrome-Proxy: block=0".
-    self.AddPage(ExplicitBypassPage(
+    self.AddUserStory(ExplicitBypassPage(
         url=measurements.GetResponseOverrideURL(
             respHeader='{"Chrome-Proxy":["block=0"],'
                        '"Via":["1.1 Chrome-Compression-Proxy"]}'),
@@ -72,7 +72,7 @@ class ExplicitBypassPageSet(page_set_module.PageSet):
         bypass_seconds_high=metrics.DEFAULT_BYPASS_MAX_SECONDS))
 
     # Test page for "Chrome-Proxy: block=3600".
-    self.AddPage(ExplicitBypassPage(
+    self.AddUserStory(ExplicitBypassPage(
         url=measurements.GetResponseOverrideURL(
             respHeader='{"Chrome-Proxy":["block=3600"],'
                        '"Via":["1.1 Chrome-Compression-Proxy"]}'),
