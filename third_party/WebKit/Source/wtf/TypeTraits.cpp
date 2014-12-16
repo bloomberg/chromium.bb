@@ -27,83 +27,83 @@
 
 namespace WTF {
 
-COMPILE_ASSERT(IsInteger<bool>::value, WTF_IsInteger_bool_true);
-COMPILE_ASSERT(IsInteger<char>::value, WTF_IsInteger_char_true);
-COMPILE_ASSERT(IsInteger<signed char>::value, WTF_IsInteger_signed_char_true);
-COMPILE_ASSERT(IsInteger<unsigned char>::value, WTF_IsInteger_unsigned_char_true);
-COMPILE_ASSERT(IsInteger<short>::value, WTF_IsInteger_short_true);
-COMPILE_ASSERT(IsInteger<unsigned short>::value, WTF_IsInteger_unsigned_short_true);
-COMPILE_ASSERT(IsInteger<int>::value, WTF_IsInteger_int_true);
-COMPILE_ASSERT(IsInteger<unsigned>::value, WTF_IsInteger_unsigned_int_true);
-COMPILE_ASSERT(IsInteger<long>::value, WTF_IsInteger_long_true);
-COMPILE_ASSERT(IsInteger<unsigned long>::value, WTF_IsInteger_unsigned_long_true);
-COMPILE_ASSERT(IsInteger<long long>::value, WTF_IsInteger_long_long_true);
-COMPILE_ASSERT(IsInteger<unsigned long long>::value, WTF_IsInteger_unsigned_long_long_true);
+static_assert(IsInteger<bool>::value, "bool should be an integer");
+static_assert(IsInteger<char>::value, "char should be an integer");
+static_assert(IsInteger<signed char>::value, "signed char should be an integer");
+static_assert(IsInteger<unsigned char>::value, "unsigned char should be an integer");
+static_assert(IsInteger<short>::value, "short should be an integer");
+static_assert(IsInteger<unsigned short>::value, "unsigned short should be an integer");
+static_assert(IsInteger<int>::value, "int should be an integer");
+static_assert(IsInteger<unsigned>::value, "unsigned int should be an integer");
+static_assert(IsInteger<long>::value, "long should be an integer");
+static_assert(IsInteger<unsigned long>::value, "unsigned long should be an integer");
+static_assert(IsInteger<long long>::value, "long long should be an integer");
+static_assert(IsInteger<unsigned long long>::value, "unsigned long long should be an integer");
 #if !COMPILER(MSVC) || defined(_NATIVE_WCHAR_T_DEFINED)
-COMPILE_ASSERT(IsInteger<wchar_t>::value, WTF_IsInteger_wchar_t_true);
+static_assert(IsInteger<wchar_t>::value, "wchar_t should be an integer");
 #endif
-COMPILE_ASSERT(!IsInteger<char*>::value, WTF_IsInteger_char_pointer_false);
-COMPILE_ASSERT(!IsInteger<const char*>::value, WTF_IsInteger_const_char_pointer_false);
-COMPILE_ASSERT(!IsInteger<volatile char*>::value, WTF_IsInteger_volatile_char_pointer_false);
-COMPILE_ASSERT(!IsInteger<double>::value, WTF_IsInteger_double_false);
-COMPILE_ASSERT(!IsInteger<float>::value, WTF_IsInteger_float_false);
+static_assert(!IsInteger<char*>::value, "char pointer should not be an integer");
+static_assert(!IsInteger<const char*>::value, "const char pointer should not be an integer");
+static_assert(!IsInteger<volatile char*>::value, "volatile char pointer should not be an integer");
+static_assert(!IsInteger<double>::value, "double should not be an integer");
+static_assert(!IsInteger<float>::value, "float should not be an integer");
 
-COMPILE_ASSERT(IsFloatingPoint<float>::value, WTF_IsFloatingPoint_float_true);
-COMPILE_ASSERT(IsFloatingPoint<double>::value, WTF_IsFloatingPoint_double_true);
-COMPILE_ASSERT(IsFloatingPoint<long double>::value, WTF_IsFloatingPoint_long_double_true);
-COMPILE_ASSERT(!IsFloatingPoint<int>::value, WTF_IsFloatingPoint_int_false);
+static_assert(IsFloatingPoint<float>::value, "float should be floating point");
+static_assert(IsFloatingPoint<double>::value, "double should be floating point");
+static_assert(IsFloatingPoint<long double>::value, "long double should be floating point");
+static_assert(!IsFloatingPoint<int>::value, "int should not be floating point");
 
-COMPILE_ASSERT(IsPointer<void*>::value, WTF_IsPointer_void_star_true);
-COMPILE_ASSERT(IsPointer<char*>::value, WTF_IsPointer_char_star_true);
-COMPILE_ASSERT(IsPointer<const char*>::value, WTF_IsPointer_const_char_star_true);
-COMPILE_ASSERT(!IsPointer<char>::value, WTF_IsPointer_char_false);
-COMPILE_ASSERT(!IsPointer<int>::value, WTF_IsPointer_int_false);
-COMPILE_ASSERT(!IsPointer<long>::value, WTF_IsPointer_long_false);
+static_assert(IsPointer<void*>::value, "void* should be a pointer");
+static_assert(IsPointer<char*>::value, "char* should be a pointer");
+static_assert(IsPointer<const char*>::value, "const char* should be a pointer");
+static_assert(!IsPointer<char>::value, "char should not be a pointer");
+static_assert(!IsPointer<int>::value, "int should not be a pointer");
+static_assert(!IsPointer<long>::value, "long should not be a pointer");
 
 enum TestEnum { TestEnumValue };
-COMPILE_ASSERT(IsEnum<TestEnum>::value, WTF_IsEnum_enum_true);
-COMPILE_ASSERT(!IsEnum<int>::value, WTF_IsEnum_int_false);
-COMPILE_ASSERT(!IsEnum<TestEnum*>::value, WTF_IsEnum_enum_star_false);
+static_assert(IsEnum<TestEnum>::value, "enum should be an enumerated type");
+static_assert(!IsEnum<int>::value, "int should not be an enumerated type");
+static_assert(!IsEnum<TestEnum*>::value, "enum* should not be an enumerated type");
 
-COMPILE_ASSERT(IsScalar<TestEnum>::value, WTF_IsScalar_enum_true);
-COMPILE_ASSERT(IsScalar<int>::value, WTF_IsScalar_int_true);
-COMPILE_ASSERT(IsScalar<TestEnum*>::value, WTF_IsScalar_enum_star_true);
-COMPILE_ASSERT(IsScalar<double>::value, WTF_IsScalar_double_true);
+static_assert(IsScalar<TestEnum>::value, "enum should be scalar");
+static_assert(IsScalar<int>::value, "int should be scalar");
+static_assert(IsScalar<TestEnum*>::value, "enum* should be scalar");
+static_assert(IsScalar<double>::value, "double should be scalar");
 
-COMPILE_ASSERT(IsPod<bool>::value, WTF_IsPod_bool_true);
-COMPILE_ASSERT(IsPod<char>::value, WTF_IsPod_char_true);
-COMPILE_ASSERT(IsPod<signed char>::value, WTF_IsPod_signed_char_true);
-COMPILE_ASSERT(IsPod<unsigned char>::value, WTF_IsPod_unsigned_char_true);
-COMPILE_ASSERT(IsPod<short>::value, WTF_IsPod_short_true);
-COMPILE_ASSERT(IsPod<unsigned short>::value, WTF_IsPod_unsigned_short_true);
-COMPILE_ASSERT(IsPod<int>::value, WTF_IsPod_int_true);
-COMPILE_ASSERT(IsPod<unsigned>::value, WTF_IsPod_unsigned_int_true);
-COMPILE_ASSERT(IsPod<long>::value, WTF_IsPod_long_true);
-COMPILE_ASSERT(IsPod<unsigned long>::value, WTF_IsPod_unsigned_long_true);
-COMPILE_ASSERT(IsPod<long long>::value, WTF_IsPod_long_long_true);
-COMPILE_ASSERT(IsPod<unsigned long long>::value, WTF_IsPod_unsigned_long_long_true);
+static_assert(IsPod<bool>::value, "bool should be a POD");
+static_assert(IsPod<char>::value, "char should be a POD");
+static_assert(IsPod<signed char>::value, "signed char should be a POD");
+static_assert(IsPod<unsigned char>::value, "unsigned char should be a POD");
+static_assert(IsPod<short>::value, "short should be a POD");
+static_assert(IsPod<unsigned short>::value, "unsigned short should be a POD");
+static_assert(IsPod<int>::value, "int should be a POD");
+static_assert(IsPod<unsigned>::value, "unsigned int should be a POD");
+static_assert(IsPod<long>::value, "long should be a POD");
+static_assert(IsPod<unsigned long>::value, "unsigned long should be a POD");
+static_assert(IsPod<long long>::value, "long long should be a POD");
+static_assert(IsPod<unsigned long long>::value, "unsigned long long should be a POD");
 #if !COMPILER(MSVC) || defined(_NATIVE_WCHAR_T_DEFINED)
-COMPILE_ASSERT(IsPod<wchar_t>::value, WTF_IsPod_wchar_t_true);
+static_assert(IsPod<wchar_t>::value, "wchar_t should be a POD");
 #endif
-COMPILE_ASSERT(IsPod<char*>::value, WTF_IsPod_char_pointer_true);
-COMPILE_ASSERT(IsPod<const char*>::value, WTF_IsPod_const_char_pointer_true);
-COMPILE_ASSERT(IsPod<volatile char*>::value, WTF_IsPod_volatile_char_pointer_true);
-COMPILE_ASSERT(IsPod<double>::value, WTF_IsPod_double_true);
-COMPILE_ASSERT(IsPod<long double>::value, WTF_IsPod_long_double_true);
-COMPILE_ASSERT(IsPod<float>::value, WTF_IsPod_float_true);
+static_assert(IsPod<char*>::value, "char* should be a POD");
+static_assert(IsPod<const char*>::value, "const char* should be a POD");
+static_assert(IsPod<volatile char*>::value, "volatile char* should be a POD");
+static_assert(IsPod<double>::value, "double should be a POD");
+static_assert(IsPod<long double>::value, "long double should be a POD");
+static_assert(IsPod<float>::value, "float should be a POD");
 struct VirtualClass {
     virtual void A() { }
 };
-COMPILE_ASSERT(!IsTriviallyMoveAssignable<VirtualClass>::value, WTF_IsTriviallyMoveAssignable_VirtualClass_false);
-COMPILE_ASSERT(!IsScalar<VirtualClass>::value, WTF_IsScalar_class_false);
-COMPILE_ASSERT(IsScalar<VirtualClass*>::value, WTF_IsScalar_class_ptr_true);
+static_assert(!IsTriviallyMoveAssignable<VirtualClass>::value, "VirtualClass should not be trivially move assignable");
+static_assert(!IsScalar<VirtualClass>::value, "classes should not be scalar");
+static_assert(IsScalar<VirtualClass*>::value, "pointers to classes should be scalar");
 
 struct DestructorClass {
     ~DestructorClass() { }
 };
-COMPILE_ASSERT(IsTriviallyMoveAssignable<DestructorClass>::value, WTF_IsTriviallyMoveAssignable_DestructorClass_true);
-COMPILE_ASSERT(IsTriviallyCopyAssignable<DestructorClass>::value, WTF_IsTriviallyCopyAssignable_DestructorClass_true);
-COMPILE_ASSERT(IsTriviallyDefaultConstructible<DestructorClass>::value, WTF_IsTriviallyDefaultConstructable_DestructorClass_true);
+static_assert(IsTriviallyMoveAssignable<DestructorClass>::value, "DestructorClass should be trivially move assignable");
+static_assert(IsTriviallyCopyAssignable<DestructorClass>::value, "DestructorClass should be trivially copy assignable");
+static_assert(IsTriviallyDefaultConstructible<DestructorClass>::value, "DestructorClass should have a trivial default constructor");
 
 struct MixedPrivate {
     int M2() { return m2; }
@@ -111,84 +111,84 @@ struct MixedPrivate {
 private:
     int m2;
 };
-COMPILE_ASSERT(IsTriviallyMoveAssignable<MixedPrivate>::value, WTF_IsTriviallyMoveAssignable_MixedPrivate_true);
-COMPILE_ASSERT(IsTriviallyCopyAssignable<MixedPrivate>::value, WTF_IsTriviallyCopyAssignable_MixedPrivate_true);
-COMPILE_ASSERT(IsTriviallyDefaultConstructible<MixedPrivate>::value, WTF_IsTriviallyDefaultConstructable_MixedPrivate_true);
+static_assert(IsTriviallyMoveAssignable<MixedPrivate>::value, "MixedPrivate should be trivially move assignable");
+static_assert(IsTriviallyCopyAssignable<MixedPrivate>::value, "MixedPrivate should be trivially copy assignable");
+static_assert(IsTriviallyDefaultConstructible<MixedPrivate>::value, "MixedPrivate should have a trivial default constructor");
 struct JustPrivate {
     int M2() { return m2; }
 private:
     int m2;
 };
-COMPILE_ASSERT(IsTriviallyMoveAssignable<JustPrivate>::value, WTF_IsTriviallyMoveAssignable_JustPrivate_true);
-COMPILE_ASSERT(IsTriviallyCopyAssignable<JustPrivate>::value, WTF_IsTriviallyCopyAssignable_JustPrivate_true);
-COMPILE_ASSERT(IsTriviallyDefaultConstructible<JustPrivate>::value, WTF_IsTriviallyDefaultConstructable_JustPrivate_true);
+static_assert(IsTriviallyMoveAssignable<JustPrivate>::value, "JustPrivate should be trivially move assignable");
+static_assert(IsTriviallyCopyAssignable<JustPrivate>::value, "JustPrivate should be trivially copy assignable");
+static_assert(IsTriviallyDefaultConstructible<JustPrivate>::value, "JustPrivate should have a trivial default constructor");
 struct JustPublic {
     int m2;
 };
-COMPILE_ASSERT(IsTriviallyMoveAssignable<JustPublic>::value, WTF_IsTriviallyMoveAssignable_JustPublic_true);
-COMPILE_ASSERT(IsTriviallyCopyAssignable<JustPublic>::value, WTF_IsTriviallyCopyAssignable_JustPublic_true);
-COMPILE_ASSERT(IsTriviallyDefaultConstructible<JustPublic>::value, WTF_IsTriviallyDefaultConstructable_JustPublic_true);
+static_assert(IsTriviallyMoveAssignable<JustPublic>::value, "JustPublic should be trivially move assignable");
+static_assert(IsTriviallyCopyAssignable<JustPublic>::value, "JustPublic should be trivially copy assignable");
+static_assert(IsTriviallyDefaultConstructible<JustPublic>::value, "JustPublic should have a trivial default constructor");
 struct NestedInherited : public JustPublic, JustPrivate {
     float m3;
 };
-COMPILE_ASSERT(IsTriviallyMoveAssignable<NestedInherited>::value, WTF_IsTriviallyMoveAssignable_NestedInherited_true);
-COMPILE_ASSERT(IsTriviallyCopyAssignable<NestedInherited>::value, WTF_IsTriviallyCopyAssignable_NestedInherited_true);
-COMPILE_ASSERT(IsTriviallyDefaultConstructible<NestedInherited>::value, WTF_IsTriviallyDefaultConstructable_NestedInherited_true);
+static_assert(IsTriviallyMoveAssignable<NestedInherited>::value, "NestedInherited should be trivially move assignable");
+static_assert(IsTriviallyCopyAssignable<NestedInherited>::value, "NestedInherited should be trivially copy assignable");
+static_assert(IsTriviallyDefaultConstructible<NestedInherited>::value, "NestedInherited should have a trivial default constructor");
 struct NestedOwned {
     JustPublic m1;
     JustPrivate m2;
     float m3;
 };
 
-COMPILE_ASSERT(IsTriviallyMoveAssignable<NestedOwned>::value, WTF_IsTriviallyMoveAssignable_NestedOwned_true);
-COMPILE_ASSERT(IsTriviallyCopyAssignable<NestedOwned>::value, WTF_IsTriviallyCopyAssignable_NestedOwned_true);
-COMPILE_ASSERT(IsTriviallyDefaultConstructible<NestedOwned>::value, WTF_IsTriviallyDefaultConstructable_NestedOwned_true);
+static_assert(IsTriviallyMoveAssignable<NestedOwned>::value, "NestedOwned should be trivially move assignable");
+static_assert(IsTriviallyCopyAssignable<NestedOwned>::value, "NestedOwned should be trivially copy assignable");
+static_assert(IsTriviallyDefaultConstructible<NestedOwned>::value, "NestedOwned should have a trivial default constructor");
 
 class NonCopyableClass {
     WTF_MAKE_NONCOPYABLE(NonCopyableClass);
 };
 #if 0 // Compilers don't get this "right" yet if using = delete.
-COMPILE_ASSERT(!IsTriviallyMoveAssignable<NonCopyableClass>::value, WTF_IsTriviallyMoveAssignable_NonCopyableClass_false);
-COMPILE_ASSERT(!IsTriviallyCopyAssignable<NonCopyableClass>::value, WTF_IsTriviallyCopyAssignable_NonCopyableClass_false);
-COMPILE_ASSERT(IsTriviallyDefaultConstructible<NonCopyableClass>::value, WTF_IsTriviallyDefaultConstructable_NonCopyableClass_true);
+static_assert(!IsTriviallyMoveAssignable<NonCopyableClass>::value, "NonCopyableClass should not be trivially move assignable");
+static_assert(!IsTriviallyCopyAssignable<NonCopyableClass>::value, "NonCopyableClass should not be trivially copy assignable");
+static_assert(IsTriviallyDefaultConstructible<NonCopyableClass>::value, "NonCopyableClass should have a trivial default constructor");
 #endif // 0
 
 enum IsConvertibleToIntegerCheck { };
-COMPILE_ASSERT(IsConvertibleToInteger<IsConvertibleToIntegerCheck>::value, WTF_IsConvertibleToInteger_enum_true);
-COMPILE_ASSERT(IsConvertibleToInteger<bool>::value, WTF_IsConvertibleToInteger_bool_true);
-COMPILE_ASSERT(IsConvertibleToInteger<char>::value, WTF_IsConvertibleToInteger_char_true);
-COMPILE_ASSERT(IsConvertibleToInteger<signed char>::value, WTF_IsConvertibleToInteger_signed_char_true);
-COMPILE_ASSERT(IsConvertibleToInteger<unsigned char>::value, WTF_IsConvertibleToInteger_unsigned_char_true);
-COMPILE_ASSERT(IsConvertibleToInteger<short>::value, WTF_IsConvertibleToInteger_short_true);
-COMPILE_ASSERT(IsConvertibleToInteger<unsigned short>::value, WTF_IsConvertibleToInteger_unsigned_short_true);
-COMPILE_ASSERT(IsConvertibleToInteger<int>::value, WTF_IsConvertibleToInteger_int_true);
-COMPILE_ASSERT(IsConvertibleToInteger<unsigned>::value, WTF_IsConvertibleToInteger_unsigned_int_true);
-COMPILE_ASSERT(IsConvertibleToInteger<long>::value, WTF_IsConvertibleToInteger_long_true);
-COMPILE_ASSERT(IsConvertibleToInteger<unsigned long>::value, WTF_IsConvertibleToInteger_unsigned_long_true);
-COMPILE_ASSERT(IsConvertibleToInteger<long long>::value, WTF_IsConvertibleToInteger_long_long_true);
-COMPILE_ASSERT(IsConvertibleToInteger<unsigned long long>::value, WTF_IsConvertibleToInteger_unsigned_long_long_true);
+static_assert(IsConvertibleToInteger<IsConvertibleToIntegerCheck>::value, "enum should be convertible to integer");
+static_assert(IsConvertibleToInteger<bool>::value, "bool should be convertible to integer");
+static_assert(IsConvertibleToInteger<char>::value, "char should be convertible to integer");
+static_assert(IsConvertibleToInteger<signed char>::value, "signed char should be convertible to integer");
+static_assert(IsConvertibleToInteger<unsigned char>::value, "unsigned char should be convertible to integer");
+static_assert(IsConvertibleToInteger<short>::value, "short should be convertible to integer");
+static_assert(IsConvertibleToInteger<unsigned short>::value, "unsigned short should be convertible to integer");
+static_assert(IsConvertibleToInteger<int>::value, "int should be convertible to integer");
+static_assert(IsConvertibleToInteger<unsigned>::value, "unsigned int should be convertible to integer");
+static_assert(IsConvertibleToInteger<long>::value, "long should be convertible to integer");
+static_assert(IsConvertibleToInteger<unsigned long>::value, "unsigned long should be convertible to integer");
+static_assert(IsConvertibleToInteger<long long>::value, "long long should be convertible to integer");
+static_assert(IsConvertibleToInteger<unsigned long long>::value, "unsigned long long should be convertible to integer");
 #if !COMPILER(MSVC) || defined(_NATIVE_WCHAR_T_DEFINED)
-COMPILE_ASSERT(IsConvertibleToInteger<wchar_t>::value, WTF_IsConvertibleToInteger_wchar_t_true);
+static_assert(IsConvertibleToInteger<wchar_t>::value, "whcar_t should be convertible to integer");
 #endif
-COMPILE_ASSERT(IsConvertibleToInteger<double>::value, WTF_IsConvertibleToInteger_double_true);
-COMPILE_ASSERT(IsConvertibleToInteger<long double>::value, WTF_IsConvertibleToInteger_long_double_true);
-COMPILE_ASSERT(IsConvertibleToInteger<float>::value, WTF_IsConvertibleToInteger_float_true);
-COMPILE_ASSERT(!IsConvertibleToInteger<char*>::value, WTF_IsConvertibleToInteger_char_pointer_false);
-COMPILE_ASSERT(!IsConvertibleToInteger<const char*>::value, WTF_IsConvertibleToInteger_const_char_pointer_false);
-COMPILE_ASSERT(!IsConvertibleToInteger<volatile char*>::value, WTF_IsConvertibleToInteger_volatile_char_pointer_false);
-COMPILE_ASSERT(!IsConvertibleToInteger<IsConvertibleToInteger<bool> >::value, WTF_IsConvertibleToInteger_struct_false);
+static_assert(IsConvertibleToInteger<double>::value, "double should be convertible to integer");
+static_assert(IsConvertibleToInteger<long double>::value, "long double should be convertible to integer");
+static_assert(IsConvertibleToInteger<float>::value, "float should be convertible to integer");
+static_assert(!IsConvertibleToInteger<char*>::value, "char* should not be convertible to integer");
+static_assert(!IsConvertibleToInteger<const char*>::value, "const char* should not be convertible to integer");
+static_assert(!IsConvertibleToInteger<volatile char*>::value, "volatile char* should not be convertible to integer");
+static_assert(!IsConvertibleToInteger<IsConvertibleToInteger<bool> >::value, "struct should not be convertible to integer");
 
-COMPILE_ASSERT((IsPointerConvertible<int, int>::Value), WTF_IsPointerConvertible_same_type_true);
-COMPILE_ASSERT((!IsPointerConvertible<int, unsigned>::Value), WTF_IsPointerConvertible_int_to_unsigned_false);
-COMPILE_ASSERT((IsPointerConvertible<int, const int>::Value), WTF_IsPointerConvertible_int_to_const_int_true);
-COMPILE_ASSERT((!IsPointerConvertible<const int, int>::Value), WTF_IsPointerConvertible_const_int_to_int_false);
-COMPILE_ASSERT((IsPointerConvertible<int, volatile int>::Value), WTF_IsPointerConvertible_int_to_volatile_int_true);
+static_assert((IsPointerConvertible<int, int>::Value), "pointers to the same type should be convertible");
+static_assert((!IsPointerConvertible<int, unsigned>::Value), "int pointers should not be convertible to unsigned pointers");
+static_assert((IsPointerConvertible<int, const int>::Value), "int pointers should be convertible to const int pointers");
+static_assert((!IsPointerConvertible<const int, int>::Value), "const int* should not be convertible to int*");
+static_assert((IsPointerConvertible<int, volatile int>::Value), "int* should be convertible to volatile int*");
 
-COMPILE_ASSERT((IsSameType<bool, bool>::value), WTF_IsSameType_bool_true);
-COMPILE_ASSERT((IsSameType<int*, int*>::value), WTF_IsSameType_int_pointer_true);
-COMPILE_ASSERT((!IsSameType<int, int*>::value), WTF_IsSameType_int_int_pointer_false);
-COMPILE_ASSERT((!IsSameType<bool, const bool>::value), WTF_IsSameType_const_change_false);
-COMPILE_ASSERT((!IsSameType<bool, volatile bool>::value), WTF_IsSameType_volatile_change_false);
+static_assert((IsSameType<bool, bool>::value), "bool should be the same type as itself");
+static_assert((IsSameType<int*, int*>::value), "int* should be the same type as itself");
+static_assert((!IsSameType<int, int*>::value), "int should not be the same type as int*");
+static_assert((!IsSameType<bool, const bool>::value), "T should not be the same type as const T");
+static_assert((!IsSameType<bool, volatile bool>::value), "T should not be the same type as volatile T");
 
 template <typename T>
 class TestBaseClass {
@@ -197,41 +197,41 @@ class TestBaseClass {
 class TestDerivedClass : public TestBaseClass<int> {
 };
 
-COMPILE_ASSERT((IsSubclass<TestDerivedClass, TestBaseClass<int> >::value), WTF_Test_IsSubclass_Derived_From_Base);
-COMPILE_ASSERT((!IsSubclass<TestBaseClass<int>, TestDerivedClass>::value), WTF_Test_IsSubclass_Base_From_Derived);
-COMPILE_ASSERT((IsSubclassOfTemplate<TestDerivedClass, TestBaseClass>::value), WTF_Test_IsSubclassOfTemplate_Base_From_Derived);
-COMPILE_ASSERT((IsSameType<RemoveTemplate<TestBaseClass<int>, TestBaseClass>::Type, int>::value), WTF_Test_RemoveTemplate);
-COMPILE_ASSERT((IsSameType<RemoveTemplate<int, TestBaseClass>::Type, int>::value), WTF_Test_RemoveTemplate_WithoutTemplate);
-COMPILE_ASSERT((IsPointerConvertible<TestDerivedClass, TestBaseClass<int> >::Value), WTF_Test_IsPointerConvertible_Derived_To_Base);
-COMPILE_ASSERT((!IsPointerConvertible<TestBaseClass<int>, TestDerivedClass>::Value), WTF_Test_IsPointerConvertible_Base_To_Derived);
+static_assert((IsSubclass<TestDerivedClass, TestBaseClass<int> >::value), "Derived class should be a subclass of its base");
+static_assert((!IsSubclass<TestBaseClass<int>, TestDerivedClass>::value), "Base class should not be a sublass of a derived class");
+static_assert((IsSubclassOfTemplate<TestDerivedClass, TestBaseClass>::value), "Derived class should be a subclass of template from its base");
+static_assert((IsSameType<RemoveTemplate<TestBaseClass<int>, TestBaseClass>::Type, int>::value), "RemoveTemplate should remove the template typename from the type");
+static_assert((IsSameType<RemoveTemplate<int, TestBaseClass>::Type, int>::value), "RemoveTemplate should not alter non-template types");
+static_assert((IsPointerConvertible<TestDerivedClass, TestBaseClass<int> >::Value), "Derived class pointers should be convertible to base class pointers");
+static_assert((!IsPointerConvertible<TestBaseClass<int>, TestDerivedClass>::Value), "Base class pointers should not be convertible to derived class pointers");
 
-COMPILE_ASSERT((IsSameType<bool, RemoveConst<const bool>::Type>::value), WTF_test_RemoveConst_const_bool);
-COMPILE_ASSERT((!IsSameType<bool, RemoveConst<volatile bool>::Type>::value), WTF_test_RemoveConst_volatile_bool);
+static_assert((IsSameType<bool, RemoveConst<const bool>::Type>::value), "RemoveConst should produce the corresponding non-const type");
+static_assert((!IsSameType<bool, RemoveConst<volatile bool>::Type>::value), "RemoveConst of volatile types should not remove volatility");
 
-COMPILE_ASSERT((IsSameType<bool, RemoveVolatile<bool>::Type>::value), WTF_test_RemoveVolatile_bool);
-COMPILE_ASSERT((!IsSameType<bool, RemoveVolatile<const bool>::Type>::value), WTF_test_RemoveVolatile_const_bool);
-COMPILE_ASSERT((IsSameType<bool, RemoveVolatile<volatile bool>::Type>::value), WTF_test_RemoveVolatile_volatile_bool);
+static_assert((IsSameType<bool, RemoveVolatile<bool>::Type>::value), "RemoveVolatile should not modify the type of non-volatile types");
+static_assert((!IsSameType<bool, RemoveVolatile<const bool>::Type>::value), "RemoveVolatile should not remove const-ness");
+static_assert((IsSameType<bool, RemoveVolatile<volatile bool>::Type>::value), "RemoveVolatile should produce the equivalent non-volatile type");
 
-COMPILE_ASSERT((IsSameType<bool, RemoveConstVolatile<bool>::Type>::value), WTF_test_RemoveConstVolatile_bool);
-COMPILE_ASSERT((IsSameType<bool, RemoveConstVolatile<const bool>::Type>::value), WTF_test_RemoveConstVolatile_const_bool);
-COMPILE_ASSERT((IsSameType<bool, RemoveConstVolatile<volatile bool>::Type>::value), WTF_test_RemoveConstVolatile_volatile_bool);
-COMPILE_ASSERT((IsSameType<bool, RemoveConstVolatile<const volatile bool>::Type>::value), WTF_test_RemoveConstVolatile_const_volatile_bool);
+static_assert((IsSameType<bool, RemoveConstVolatile<bool>::Type>::value), "RemoveConstVolatile should not modify the type of non-const non-volatile types");
+static_assert((IsSameType<bool, RemoveConstVolatile<const bool>::Type>::value), "RemoveConstVolatile should remove const-ness");
+static_assert((IsSameType<bool, RemoveConstVolatile<volatile bool>::Type>::value), "RemoveConstVolatile should remove volatility");
+static_assert((IsSameType<bool, RemoveConstVolatile<const volatile bool>::Type>::value), "RemoveConstVolatile should remove both constness and volatility");
 
-COMPILE_ASSERT((IsSameType<int, RemovePointer<int>::Type>::value), WTF_Test_RemovePointer_int);
-COMPILE_ASSERT((IsSameType<int, RemovePointer<int*>::Type>::value), WTF_Test_RemovePointer_int_pointer);
-COMPILE_ASSERT((!IsSameType<int, RemovePointer<int**>::Type>::value), WTF_Test_RemovePointer_int_pointer_pointer);
+static_assert((IsSameType<int, RemovePointer<int>::Type>::value), "RemovePointer should not modify non-pointer types");
+static_assert((IsSameType<int, RemovePointer<int*>::Type>::value), "RemovePointer should produce the corresponding non-pointer type");
+static_assert((!IsSameType<int, RemovePointer<int**>::Type>::value), "RemovePointer should only remove one pointer level");
 
-COMPILE_ASSERT((IsSameType<int, RemoveReference<int>::Type>::value), WTF_Test_RemoveReference_int);
-COMPILE_ASSERT((IsSameType<int, RemoveReference<int&>::Type>::value), WTF_Test_RemoveReference_int_reference);
+static_assert((IsSameType<int, RemoveReference<int>::Type>::value), "RemoveReference should not modify non-reference types");
+static_assert((IsSameType<int, RemoveReference<int&>::Type>::value), "RemoveReference should produce the corresponding non-reference type");
 
 
 typedef int IntArray[];
 typedef int IntArraySized[4];
 
-COMPILE_ASSERT((IsArray<IntArray>::value), WTF_Test_IsArray_int_array);
-COMPILE_ASSERT((IsArray<IntArraySized>::value), WTF_Test_IsArray_int_sized_array);
+static_assert((IsArray<IntArray>::value), "IsArray should recognize arrays");
+static_assert((IsArray<IntArraySized>::value), "IsArray should recognize sized arrays");
 
-COMPILE_ASSERT((IsSameType<int, RemoveExtent<IntArray>::Type>::value), WTF_Test_RemoveExtent_int_array);
-COMPILE_ASSERT((IsSameType<int, RemoveExtent<IntArraySized>::Type>::value), WTF_Test_RemoveReference_int_sized_array);
+static_assert((IsSameType<int, RemoveExtent<IntArray>::Type>::value), "RemoveExtent should return the array element type of an array");
+static_assert((IsSameType<int, RemoveExtent<IntArraySized>::Type>::value), "RemoveExtent should return the array element type of a sized array");
 
 } // namespace WTF

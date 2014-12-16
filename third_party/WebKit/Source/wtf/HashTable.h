@@ -600,9 +600,9 @@ namespace WTF {
     template<unsigned size>
     struct HashTableCapacityForSize {
         static const unsigned value = HashTableCapacityForSizeSplitter<size, !(size & (size - 1))>::value;
-        COMPILE_ASSERT(size > 0, HashTableNonZeroMinimumCapacity);
-        COMPILE_ASSERT(!static_cast<int>(value >> 31), HashTableNoCapacityOverflow);
-        COMPILE_ASSERT(value > (2 * size), HashTableCapacityHoldsContentSize);
+        static_assert(size > 0, "HashTable minimum capacity should be > 0");
+        static_assert(!static_cast<int>(value >> 31), "HashTable capacity should not overflow 32bit int");
+        static_assert(value > (2 * size), "HashTable capacity should be able to hold content size");
     };
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
@@ -993,7 +993,7 @@ namespace WTF {
         // like to check this on the whole value (key-value pair), but
         // IsPolymorphic will return false for a pair of two types, even if
         // one of the components is polymorphic.
-        COMPILE_ASSERT(!Traits::emptyValueIsZero || !IsPolymorphic<KeyType>::value, EmptyValueCannotBeZeroForThingsWithAVtable);
+        static_assert(!Traits::emptyValueIsZero || !IsPolymorphic<KeyType>::value, "empty value cannot be zero for things with a vtable");
         if (Traits::emptyValueIsZero) {
             result = Allocator::template allocateZeroedHashTableBacking<ValueType, HashTable>(allocSize);
         } else {

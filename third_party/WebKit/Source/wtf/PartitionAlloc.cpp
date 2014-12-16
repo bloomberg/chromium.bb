@@ -39,19 +39,19 @@
 
 // Two partition pages are used as guard / metadata page so make sure the super
 // page size is bigger.
-COMPILE_ASSERT(WTF::kPartitionPageSize * 4 <= WTF::kSuperPageSize, ok_super_page_size);
-COMPILE_ASSERT(!(WTF::kSuperPageSize % WTF::kPartitionPageSize), ok_super_page_multiple);
+static_assert(WTF::kPartitionPageSize * 4 <= WTF::kSuperPageSize, "ok super page size");
+static_assert(!(WTF::kSuperPageSize % WTF::kPartitionPageSize), "ok super page multiple");
 // Four system pages gives us room to hack out a still-guard-paged piece
 // of metadata in the middle of a guard partition page.
-COMPILE_ASSERT(WTF::kSystemPageSize * 4 <= WTF::kPartitionPageSize, ok_partition_page_size);
-COMPILE_ASSERT(!(WTF::kPartitionPageSize % WTF::kSystemPageSize), ok_partition_page_multiple);
-COMPILE_ASSERT(sizeof(WTF::PartitionPage) <= WTF::kPageMetadataSize, PartitionPage_not_too_big);
-COMPILE_ASSERT(sizeof(WTF::PartitionBucket) <= WTF::kPageMetadataSize, PartitionBucket_not_too_big);
-COMPILE_ASSERT(sizeof(WTF::PartitionSuperPageExtentEntry) <= WTF::kPageMetadataSize, PartitionSuperPageExtentEntry_not_too_big);
-COMPILE_ASSERT(WTF::kPageMetadataSize * WTF::kNumPartitionPagesPerSuperPage <= WTF::kSystemPageSize, page_metadata_fits_in_hole);
+static_assert(WTF::kSystemPageSize * 4 <= WTF::kPartitionPageSize, "ok partition page size");
+static_assert(!(WTF::kPartitionPageSize % WTF::kSystemPageSize), "ok partition page multiple");
+static_assert(sizeof(WTF::PartitionPage) <= WTF::kPageMetadataSize, "PartitionPage should not be too big");
+static_assert(sizeof(WTF::PartitionBucket) <= WTF::kPageMetadataSize, "PartitionBucket should not be too big");
+static_assert(sizeof(WTF::PartitionSuperPageExtentEntry) <= WTF::kPageMetadataSize, "PartitionSuperPageExtentEntry should not be too big");
+static_assert(WTF::kPageMetadataSize * WTF::kNumPartitionPagesPerSuperPage <= WTF::kSystemPageSize, "page metadata fits in hole");
 // Check that some of our zanier calculations worked out as expected.
-COMPILE_ASSERT(WTF::kGenericSmallestBucket == 8, generic_smallest_bucket);
-COMPILE_ASSERT(WTF::kGenericMaxBucketed == 983040, generic_max_bucketed);
+static_assert(WTF::kGenericSmallestBucket == 8, "generic smallest bucket");
+static_assert(WTF::kGenericMaxBucketed == 983040, "generic max bucketed");
 
 namespace WTF {
 

@@ -30,6 +30,6 @@ typedef unsigned char LChar;
 
 #include "wtf/unicode/icu/UnicodeIcu.h"
 
-COMPILE_ASSERT(sizeof(UChar) == 2, UCharIsTwoBytes);
+static_assert(sizeof(UChar) == 2, "UChar should be two bytes");
 
 #endif // WTF_UNICODE_H

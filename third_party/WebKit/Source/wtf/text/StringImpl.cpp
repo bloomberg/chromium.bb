@@ -56,7 +56,7 @@ namespace WTF {
 
 using namespace Unicode;
 
-COMPILE_ASSERT(sizeof(StringImpl) == 3 * sizeof(int), StringImpl_should_stay_small);
+static_assert(sizeof(StringImpl) == 3 * sizeof(int), "StringImpl should stay small");
 
 #ifdef STRING_STATS
 

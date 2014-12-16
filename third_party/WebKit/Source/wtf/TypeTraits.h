@@ -43,7 +43,7 @@ namespace WTF {
     //   RemoveConstVolatile<T>::Type
     //   RemoveExtent<T>::Type
     //
-    //   COMPILE_ASSERT's in TypeTraits.cpp illustrate their usage and what they do.
+    //   static_assert's in TypeTraits.cpp illustrate their usage and what they do.
 
     template<bool Predicate, class T = void> struct EnableIf;
     template<class T> struct EnableIf<true, T> { typedef T Type; };

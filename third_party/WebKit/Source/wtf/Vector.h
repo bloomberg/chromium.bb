@@ -208,7 +208,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     {
         static void uninitializedFill(T* dst, T* dstEnd, const T& val)
         {
-            COMPILE_ASSERT(sizeof(T) == sizeof(char), Size_of_type_should_be_equal_to_one);
+            static_assert(sizeof(T) == sizeof(char), "size of type should be one");
 #if COMPILER(GCC) && defined(_FORTIFY_SOURCE)
             if (!__builtin_constant_p(dstEnd - dst) || (!(dstEnd - dst)))
 #endif
@@ -598,8 +598,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             // finalizer can visit them safely. canInitializeWithMemset tells us
             // that the class does not expect matching constructor and
             // destructor calls as long as the memory is zeroed.
-            COMPILE_ASSERT(!Allocator::isGarbageCollected || !VectorTraits<T>::needsDestruction || VectorTraits<T>::canInitializeWithMemset, ClassHasProblemsWithFinalizersCalledOnClearedMemory);
-            COMPILE_ASSERT(!WTF::IsPolymorphic<T>::value || !VectorTraits<T>::canInitializeWithMemset, CantInitializeWithMemsetIfThereIsAVtable);
+            static_assert(!Allocator::isGarbageCollected || !VectorTraits<T>::needsDestruction || VectorTraits<T>::canInitializeWithMemset, "class has problems with finalizers called on cleared memory");
+            static_assert(!WTF::IsPolymorphic<T>::value || !VectorTraits<T>::canInitializeWithMemset, "cannot initialize with memset if there is a vtable");
             m_size = 0;
         }
 
@@ -610,7 +610,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             // finalizer can visit them safely. canInitializeWithMemset tells us
             // that the class does not expect matching constructor and
             // destructor calls as long as the memory is zeroed.
-            COMPILE_ASSERT(!Allocator::isGarbageCollected || !VectorTraits<T>::needsDestruction || VectorTraits<T>::canInitializeWithMemset, ClassHasProblemsWithFinalizersCalledOnClearedMemory);
+            static_assert(!Allocator::isGarbageCollected || !VectorTraits<T>::needsDestruction || VectorTraits<T>::canInitializeWithMemset, "class has problems with finalizers called on cleared memory");
             m_size = size;
             TypeOperations::initialize(begin(), end());
         }

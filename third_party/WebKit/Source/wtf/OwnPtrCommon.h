@@ -47,8 +47,8 @@ template <typename T>
 struct OwnedPtrDeleter {
     static void deletePtr(T* ptr)
     {
-        COMPILE_ASSERT(!IsRefCounted<T>::value, UseRefPtrForRefCountedObjects);
-        COMPILE_ASSERT(sizeof(T) > 0, TypeMustBeComplete);
+        static_assert(!IsRefCounted<T>::value, "use RefPtr for RefCounted objects");
+        static_assert(sizeof(T) > 0, "type must be complete");
         delete ptr;
     }
 };
@@ -57,15 +57,15 @@ template <typename T>
 struct OwnedPtrDeleter<T[]> {
     static void deletePtr(T* ptr)
     {
-        COMPILE_ASSERT(!IsRefCounted<T>::value, UseRefPtrForRefCountedObjects);
-        COMPILE_ASSERT(sizeof(T) > 0, TypeMustBeComplete);
+        static_assert(!IsRefCounted<T>::value, "use RefPtr for RefCounted objects");
+        static_assert(sizeof(T) > 0, "type must be complete");
         delete[] ptr;
     }
 };
 
 template <class T, int n>
 struct OwnedPtrDeleter<T[n]> {
-    COMPILE_ASSERT(sizeof(T) < 0, DoNotUseArrayWithSizeAsType);
+    static_assert(sizeof(T) < 0, "do not use array with size as type");
 };
 
 } // namespace WTF

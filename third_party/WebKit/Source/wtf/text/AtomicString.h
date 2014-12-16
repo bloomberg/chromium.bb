@@ -65,8 +65,8 @@ public:
     ALWAYS_INLINE AtomicString(const char (&characters)[charactersCount], ConstructFromLiteralTag)
         : m_string(addFromLiteralData(characters, charactersCount - 1))
     {
-        COMPILE_ASSERT(charactersCount > 1, AtomicStringFromLiteralNotEmpty);
-        COMPILE_ASSERT((charactersCount - 1 <= ((unsigned(~0) - sizeof(StringImpl)) / sizeof(LChar))), AtomicStringFromLiteralCannotOverflow);
+        static_assert(charactersCount > 1, "AtomicString FromLiteralData should not be empty");
+        static_assert((charactersCount - 1 <= ((unsigned(~0) - sizeof(StringImpl)) / sizeof(LChar))), "AtomicString FromLiteralData cannot overflow");
     }
 
     // Hash table deleted values, which are only constructed and never copied or destroyed.

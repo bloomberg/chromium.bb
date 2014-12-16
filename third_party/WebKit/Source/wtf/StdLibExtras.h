@@ -112,7 +112,7 @@ namespace WTF {
 template<typename TO, typename FROM>
 inline TO bitwise_cast(FROM from)
 {
-    COMPILE_ASSERT(sizeof(TO) == sizeof(FROM), WTF_bitwise_cast_sizeof_casted_types_is_equal);
+    static_assert(sizeof(TO) == sizeof(FROM), "WTF::bitwise_cast sizeof casted types should be equal");
     union {
         FROM from;
         TO to;

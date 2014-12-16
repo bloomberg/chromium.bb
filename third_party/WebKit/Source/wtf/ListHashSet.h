@@ -360,7 +360,7 @@ namespace WTF {
 
         void* operator new(size_t, NodeAllocator* allocator)
         {
-            COMPILE_ASSERT(sizeof(ListHashSetNode) == sizeof(ListHashSetNodeBase<ValueArg>), PleaseAddAnyFieldsToTheBase);
+            static_assert(sizeof(ListHashSetNode) == sizeof(ListHashSetNodeBase<ValueArg>), "please add any fields to the base");
             return allocator->allocateNode();
         }
 
@@ -695,7 +695,7 @@ namespace WTF {
     template<typename T, size_t inlineCapacity, typename U, typename V>
     inline void ListHashSet<T, inlineCapacity, U, V>::finalize()
     {
-        COMPILE_ASSERT(!Allocator::isGarbageCollected, FinalizeOnHeapAllocatedListHashSetShouldNeverBeCalled);
+        static_assert(!Allocator::isGarbageCollected, "heap allocated ListHashSet should never call finalize()");
         deleteAllNodes();
     }
 
@@ -996,7 +996,7 @@ namespace WTF {
     template<typename T, size_t inlineCapacity, typename U, typename V>
     void ListHashSet<T, inlineCapacity, U, V>::trace(typename Allocator::Visitor* visitor)
     {
-        COMPILE_ASSERT(HashTraits<T>::weakHandlingFlag == NoWeakHandlingInCollections, ListHashSetDoesNotSupportWeakness);
+        static_assert(HashTraits<T>::weakHandlingFlag == NoWeakHandlingInCollections, "ListHashSet does not support weakness");
         // This marks all the nodes and their contents live that can be
         // accessed through the HashTable. That includes m_head and m_tail
         // so we do not have to explicitly trace them here.

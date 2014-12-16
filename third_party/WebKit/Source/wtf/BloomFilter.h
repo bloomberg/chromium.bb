@@ -37,7 +37,7 @@ namespace WTF {
 template <unsigned keyBits>
 class BloomFilter {
 public:
-    COMPILE_ASSERT(keyBits <= 16, bloom_filter_key_size);
+    static_assert(keyBits <= 16, "bloom filter key size check");
 
     static const size_t tableSize = 1 << keyBits;
     static const unsigned keyMask = (1 << keyBits) - 1;
