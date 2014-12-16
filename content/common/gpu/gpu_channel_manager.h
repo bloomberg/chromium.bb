@@ -141,6 +141,7 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
                           const gpu::ValueState& state);
 
   void OnLoseAllContexts();
+  void CheckRelinquishGpuResources();
 
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
   base::WaitableEvent* shutdown_event_;
@@ -164,6 +165,7 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
   scoped_ptr<GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
   IPC::SyncChannel* channel_;
   scoped_refptr<IPC::MessageFilter> filter_;
+  bool relinquish_resources_pending_;
 
   // Member variables should appear before the WeakPtrFactory, to ensure
   // that any WeakPtrs to Controller are invalidated before its members

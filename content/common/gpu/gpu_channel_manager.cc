@@ -101,6 +101,7 @@ GpuChannelManager::GpuChannelManager(MessageRouter* router,
       channel_(channel),
       filter_(
           new GpuChannelManagerMessageFilter(gpu_memory_buffer_factory_.get())),
+      relinquish_resources_pending_(false),
       weak_factory_(this) {
   DCHECK(router_);
   DCHECK(io_message_loop);
@@ -137,6 +138,7 @@ GpuChannelManager::shader_translator_cache() {
 void GpuChannelManager::RemoveChannel(int client_id) {
   Send(new GpuHostMsg_DestroyChannel(client_id));
   gpu_channels_.erase(client_id);
+  CheckRelinquishGpuResources();
 }
 
 int GpuChannelManager::GenerateRouteID() {
@@ -224,6 +226,7 @@ void GpuChannelManager::OnCloseChannel(
        iter != gpu_channels_.end(); ++iter) {
     if (iter->second->GetChannelName() == channel_handle.name) {
       gpu_channels_.erase(iter);
+      CheckRelinquishGpuResources();
       return;
     }
   }
@@ -327,6 +330,7 @@ void GpuChannelManager::LoseAllContexts() {
 
 void GpuChannelManager::OnLoseAllContexts() {
   gpu_channels_.clear();
+  CheckRelinquishGpuResources();
 }
 
 gfx::GLSurface* GpuChannelManager::GetDefaultOffscreenSurface() {
@@ -338,19 +342,27 @@ gfx::GLSurface* GpuChannelManager::GetDefaultOffscreenSurface() {
 }
 
 void GpuChannelManager::OnRelinquishResources() {
-  if (default_offscreen_surface_.get()) {
-    default_offscreen_surface_->DestroyAndTerminateDisplay();
-    default_offscreen_surface_ = nullptr;
-  }
+  relinquish_resources_pending_ = true;
+  CheckRelinquishGpuResources();
+}
+
+void GpuChannelManager::CheckRelinquishGpuResources() {
+  if (relinquish_resources_pending_ && gpu_channels_.size() <= 1) {
+    relinquish_resources_pending_ = false;
+    if (default_offscreen_surface_.get()) {
+      default_offscreen_surface_->DestroyAndTerminateDisplay();
+      default_offscreen_surface_ = NULL;
+    }
 #if defined(USE_OZONE)
-  ui::OzonePlatform::GetInstance()
-      ->GetGpuPlatformSupport()
-      ->RelinquishGpuResources(
-          base::Bind(&GpuChannelManager::OnResourcesRelinquished,
-                     weak_factory_.GetWeakPtr()));
+    ui::OzonePlatform::GetInstance()
+        ->GetGpuPlatformSupport()
+        ->RelinquishGpuResources(
+            base::Bind(&GpuChannelManager::OnResourcesRelinquished,
+                       weak_factory_.GetWeakPtr()));
 #else
-  OnResourcesRelinquished();
+    OnResourcesRelinquished();
 #endif
+  }
 }
 
 void GpuChannelManager::OnResourcesRelinquished() {
