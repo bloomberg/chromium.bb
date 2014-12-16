@@ -112,10 +112,16 @@
       <message name="IDS_TEXT_OFF" desc="Text indicating that an option is turned off. [CHAR-LIMIT=20]">
         Off
       </message>
+      <message name="IDS_LEARN_MORE" desc="Generic label for menu item to learn more about a feature. [CHAR-LIMIT=32]">
+        Learn more
+      </message>
 
       <!-- Main Preferences -->
       <message name="IDS_PREFERENCES" desc="Title for Chrome's Settings.">
         Settings
+      </message>
+      <message name="IDS_HELP" desc="Title for the help view.">
+        Help
       </message>
       <message name="IDS_MANAGED_BY_YOUR_ADMINISTRATOR" desc="Popup message when the user clicks a UI element that has been disabled by enterprise policy.">
         Managed by your administrator
@@ -208,6 +214,33 @@
       </message>
       <message name="IDS_FORCE_ENABLE_ZOOM_SUMMARY" desc="Summary of preference that allows the user to zoom in on any webpage, even if the page tries to disable zooming.">
         Override a website’s request to prevent zooming in
+      </message>
+
+      <!-- Protected content preferences -->
+      <message name="IDS_PROTECTED_CONTENT" desc="Title for link to protected content settings [CHAR-LIMIT=32]">
+        Protected content
+      </message>
+      <message name="IDS_PROTECTED_CONTENT_PREFS_DESCRIPTION" desc="Description of Protected Content preference">
+        When protected content is ON, websites will be able to authenticate your device to ensure it is authorized to play premium, protected videos.
+
+If OFF, you may not be able to play premium videos on this device.
+      </message>
+      <message name="IDS_PROTECTED_CONTENT_RESET_FAILED" desc="Protected content preference device credential reset failure toast">
+        Reset failed. Ensure your device is online and try again.
+      </message>
+      <message name="IDS_RESET_DEVICE_CREDENTIALS" desc="Title for device credential reset menu preference">
+        Reset device credentials
+      </message>
+      <message name="IDS_PROTECTED_CONTENT_RESET_TITLE" desc="Title for device credential reset menu preference">
+        Confirm device credential deletion
+      </message>
+      <message name="IDS_PROTECTED_CONTENT_RESET_MESSAGE" desc="Title for device credential reset menu preference">
+        Content (movies, music, etc.) downloaded in other applications may no longer be playable until those application re-acquire licenses based on a new device credential.
+
+To obtain new licenses, connect to the internet and play your downloaded content.
+      </message>
+      <message name="IDS_PROTECTED_CONTENT_LEARN_MORE_URL" desc="URL for learning more about device credential reset menu preference" translateable="false">
+        https://support.google.com/chrome/?p=mobile_protected_content
       </message>
 
       <!-- About Chrome preferences -->
