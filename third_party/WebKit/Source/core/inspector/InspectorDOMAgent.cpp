@@ -230,7 +230,7 @@ void InspectorRevalidateDOMTask::onTimer(Timer<InspectorRevalidateDOMTask>*)
     m_styleAttrInvalidatedElements.clear();
 
     elements.clear();
-    for (const auto& it : m_contentDistributionInvalidatedElements)
+    for (const RefPtrWillBeMember<Element>& it : m_contentDistributionInvalidatedElements)
         elements.append(it.get());
     m_domAgent->contentDistributionInvalidated(elements);
 
@@ -2311,4 +2311,3 @@ void InspectorDOMAgent::trace(Visitor* visitor)
 }
 
 } // namespace blink
-
