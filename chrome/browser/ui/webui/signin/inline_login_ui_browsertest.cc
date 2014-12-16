@@ -241,7 +241,8 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
 }
 
 // Flaky on CrOS, http://crbug.com/364759.
-#if defined(OS_CHROMEOS)
+// Also flaky on Mac, http://crbug.com/442674.
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
 #define MAYBE_NavigationToOtherChromeURLDisallowed \
     DISABLED_NavigationToOtherChromeURLDisallowed
 #else
