@@ -25,17 +25,17 @@ public:
 
     virtual ~PushRegistration();
 
-    const String& pushEndpoint() const { return m_pushEndpoint; }
-    const String& pushRegistrationId() const { return m_pushRegistrationId; }
+    const String& endpoint() const { return m_endpoint; }
+    const String& registrationId() const { return m_registrationId; }
     ScriptPromise unregister(ScriptState*);
 
     void trace(Visitor*);
 
 private:
-    PushRegistration(const String& pushEndpoint, const String& pushRegistrationId, ServiceWorkerRegistration*);
+    PushRegistration(const String& endpoint, const String& registrationId, ServiceWorkerRegistration*);
 
-    String m_pushEndpoint;
-    String m_pushRegistrationId;
+    String m_endpoint;
+    String m_registrationId;
     Member<ServiceWorkerRegistration> m_serviceWorkerRegistration;
 };
 

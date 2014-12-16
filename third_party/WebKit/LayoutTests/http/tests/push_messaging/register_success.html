@@ -25,13 +25,13 @@ async_test(function(test) {
             return swRegistration.pushManager.register();
         })
         .then(function(pushRegistration) {
-            assert_own_property(pushRegistration, 'pushRegistrationId');
-            assert_equals(typeof pushRegistration.pushRegistrationId, 'string');
+            assert_own_property(pushRegistration, 'registrationId');
+            assert_equals(typeof pushRegistration.registrationId, 'string');
 
-            assert_own_property(pushRegistration, 'pushEndpoint');
-            assert_equals(typeof pushRegistration.pushEndpoint, 'string');
+            assert_own_property(pushRegistration, 'endpoint');
+            assert_equals(typeof pushRegistration.endpoint, 'string');
             try {
-              var endpointUrl = new URL(pushRegistration.pushEndpoint);
+              var endpointUrl = new URL(pushRegistration.endpoint);
             } catch(e) {
               assert_unreached('Constructing a URL from the endpoint should not throw.');
             }

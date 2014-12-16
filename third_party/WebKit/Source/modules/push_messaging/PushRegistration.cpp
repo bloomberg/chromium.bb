@@ -27,10 +27,10 @@ void PushRegistration::dispose(WebPushRegistration* pushRegistration)
     delete pushRegistration;
 }
 
-PushRegistration::PushRegistration(const String& pushEndpoint, const String& pushRegistrationId, ServiceWorkerRegistration* registration)
-    : m_pushEndpoint(pushEndpoint)
-    , m_pushRegistrationId(pushRegistrationId)
-    , m_serviceWorkerRegistration(registration)
+PushRegistration::PushRegistration(const String& endpoint, const String& registrationId, ServiceWorkerRegistration* serviceWorkerRegistration)
+    : m_endpoint(endpoint)
+    , m_registrationId(registrationId)
+    , m_serviceWorkerRegistration(serviceWorkerRegistration)
 {
 }
 
