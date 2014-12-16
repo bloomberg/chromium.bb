@@ -34,6 +34,7 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "modules/EventTargetModules.h"
+#include "modules/mediasource/TrackDefaultList.h"
 #include "platform/AsyncMethodRunner.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebSourceBufferClient.h"
@@ -80,6 +81,8 @@ public:
     void setAppendWindowStart(double, ExceptionState&);
     double appendWindowEnd() const;
     void setAppendWindowEnd(double, ExceptionState&);
+    TrackDefaultList* trackDefaults() const { return m_trackDefaults.get(); }
+    void setTrackDefaults(TrackDefaultList*, ExceptionState&);
 
     void abortIfUpdating();
     void removedFromMediaSource();
@@ -123,6 +126,7 @@ private:
 
     OwnPtr<WebSourceBuffer> m_webSourceBuffer;
     Member<MediaSource> m_source;
+    Member<TrackDefaultList> m_trackDefaults;
     RawPtrWillBeMember<GenericEventQueue> m_asyncEventQueue;
 
     AtomicString m_mode;

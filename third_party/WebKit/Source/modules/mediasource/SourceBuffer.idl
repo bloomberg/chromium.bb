@@ -69,5 +69,9 @@ enum AppendMode {
     // Abort the current segment append sequence.
     [RaisesException] void abort();
     [RaisesException] void remove(double start, unrestricted double end);
+
+    // Gets or sets the TrackDefaultList this SourceBuffer may consult during
+    // the initialization segment algorithm.
+    [RaisesException=Setter, RuntimeEnabled=MediaSourceExperimental] attribute TrackDefaultList trackDefaults;
 };
 
