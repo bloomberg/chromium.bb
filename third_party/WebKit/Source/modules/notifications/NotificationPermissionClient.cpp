@@ -22,9 +22,7 @@ NotificationPermissionClient* NotificationPermissionClient::from(ExecutionContex
         return 0;
 
     const Document* document = toDocument(context);
-    ASSERT(document->frame());
-
-    if (!document->frame()->isLocalFrame())
+    if (!document->frame() || !document->frame()->isLocalFrame())
         return 0;
 
     return static_cast<NotificationPermissionClient*>(WillBeHeapSupplement<LocalFrame>::from(document->frame(), supplementName()));
