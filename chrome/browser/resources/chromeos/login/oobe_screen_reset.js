@@ -89,11 +89,8 @@ login.createScreen('ResetScreen', 'reset', function() {
       if (this.needRestart)
         return $('reset-restart-button');
       if (this.isConfirmational)
-        if (this.rollbackChecked)
-          return $('reset-button');
-      else
-        return $('reset-toconfirm-button');
-      return $('reset-button');
+        return $('reset-confirm-commit');
+      return $('reset-toconfirm-button');
     },
 
     /**
