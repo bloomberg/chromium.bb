@@ -133,6 +133,9 @@ public:
     virtual EventTarget* errorEventTarget() = 0;
     virtual EventQueue* eventQueue() const = 0;
 
+    void enforceStrictMixedContentChecking() { m_strictMixedContentCheckingEnforced = true; }
+    bool shouldEnforceStrictMixedContentChecking() const { return m_strictMixedContentCheckingEnforced; }
+
 protected:
     ExecutionContext();
     virtual ~ExecutionContext();
@@ -172,6 +175,8 @@ private:
     bool m_activeDOMObjectsAreStopped;
 
     OwnPtrWillBeMember<PublicURLManager> m_publicURLManager;
+
+    bool m_strictMixedContentCheckingEnforced;
 
     // The location of this member is important; to make sure contextDestroyed() notification on
     // ExecutionContext's members (notably m_timeouts) is called before they are destructed,

@@ -151,6 +151,8 @@ public:
     void forceSandboxFlags(SandboxFlags flags) { m_forcedSandboxFlags |= flags; }
     SandboxFlags effectiveSandboxFlags() const;
 
+    bool shouldEnforceStrictMixedContentChecking() const;
+
     Frame* opener();
     void setOpener(LocalFrame*);
 

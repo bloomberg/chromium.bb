@@ -291,6 +291,10 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, const ResourceRequ
     SecurityOrigin* securityOrigin = frame->document()->securityOrigin();
     bool allowed = false;
 
+    // If we're in strict mode, we'll automagically fail everything, and intentionally skip
+    // the client checks in order to prevent degrading the site's security UI.
+    bool strictMode = frame->document()->shouldEnforceStrictMixedContentChecking();
+
     ContextType contextType = contextTypeFromContext(resourceRequest.requestContext());
     if (contextType == ContextTypeBlockableUnlessLax)
         contextType = RuntimeEnabledFeatures::laxMixedContentCheckingEnabled() ? ContextTypeOptionallyBlockable : ContextTypeBlockable;
@@ -306,13 +310,13 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, const ResourceRequ
 
     switch (contextType) {
     case ContextTypeOptionallyBlockable:
-        allowed = client->allowDisplayingInsecureContent(settings && settings->allowDisplayOfInsecureContent(), securityOrigin, url);
+        allowed = !strictMode && client->allowDisplayingInsecureContent(settings && settings->allowDisplayOfInsecureContent(), securityOrigin, url);
         if (allowed)
             client->didDisplayInsecureContent();
         break;
 
     case ContextTypeBlockable:
-        allowed = client->allowRunningInsecureContent(settings && settings->allowRunningOfInsecureContent(), securityOrigin, url);
+        allowed = !strictMode && client->allowRunningInsecureContent(settings && settings->allowRunningOfInsecureContent(), securityOrigin, url);
         if (allowed)
             client->didRunInsecureContent(securityOrigin, url);
         break;

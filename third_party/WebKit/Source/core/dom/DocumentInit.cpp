@@ -117,6 +117,12 @@ SandboxFlags DocumentInit::sandboxFlags() const
     return frameForSecurityContext()->loader().effectiveSandboxFlags();
 }
 
+bool DocumentInit::shouldEnforceStrictMixedContentChecking() const
+{
+    ASSERT(frameForSecurityContext());
+    return frameForSecurityContext()->loader().shouldEnforceStrictMixedContentChecking();
+}
+
 Settings* DocumentInit::settings() const
 {
     ASSERT(frameForSecurityContext());

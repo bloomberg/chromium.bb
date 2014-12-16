@@ -61,6 +61,7 @@ public:
     bool isSeamlessAllowedFor(Document* child) const;
     bool shouldReuseDefaultView() const { return m_shouldReuseDefaultView; }
     SandboxFlags sandboxFlags() const;
+    bool shouldEnforceStrictMixedContentChecking() const;
 
     Document* parent() const { return m_parent.get(); }
     Document* owner() const { return m_owner.get(); }

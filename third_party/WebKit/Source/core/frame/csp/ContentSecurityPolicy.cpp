@@ -62,7 +62,7 @@
 
 namespace blink {
 
-// CSP 1.0 Directives
+// CSP Level 1 Directives
 const char ContentSecurityPolicy::ConnectSrc[] = "connect-src";
 const char ContentSecurityPolicy::DefaultSrc[] = "default-src";
 const char ContentSecurityPolicy::FontSrc[] = "font-src";
@@ -75,7 +75,7 @@ const char ContentSecurityPolicy::Sandbox[] = "sandbox";
 const char ContentSecurityPolicy::ScriptSrc[] = "script-src";
 const char ContentSecurityPolicy::StyleSrc[] = "style-src";
 
-// CSP 1.1 Directives
+// CSP Level 2 Directives
 const char ContentSecurityPolicy::BaseURI[] = "base-uri";
 const char ContentSecurityPolicy::ChildSrc[] = "child-src";
 const char ContentSecurityPolicy::FormAction[] = "form-action";
@@ -87,6 +87,10 @@ const char ContentSecurityPolicy::Referrer[] = "referrer";
 // Manifest Directives
 // https://w3c.github.io/manifest/#content-security-policy
 const char ContentSecurityPolicy::ManifestSrc[] = "manifest-src";
+
+// Mixed Content Directive
+// https://w3c.github.io/webappsec/specs/mixedcontent/#strict-mode
+const char ContentSecurityPolicy::StrictMixedContentChecking[] = "strict-mixed-content-checking";
 
 bool ContentSecurityPolicy::isDirectiveName(const String& name)
 {
@@ -109,7 +113,7 @@ bool ContentSecurityPolicy::isDirectiveName(const String& name)
         || equalIgnoringCase(name, ReflectedXSS)
         || equalIgnoringCase(name, Referrer)
         || equalIgnoringCase(name, ManifestSrc)
-    );
+        || equalIgnoringCase(name, StrictMixedContentChecking));
 }
 
 static UseCounter::Feature getUseCounterType(ContentSecurityPolicyHeaderType type)
@@ -137,6 +141,7 @@ ContentSecurityPolicy::ContentSecurityPolicy()
     , m_scriptHashAlgorithmsUsed(ContentSecurityPolicyHashAlgorithmNone)
     , m_styleHashAlgorithmsUsed(ContentSecurityPolicyHashAlgorithmNone)
     , m_sandboxMask(0)
+    , m_enforceStrictMixedContentChecking(false)
     , m_referrerPolicy(ReferrerPolicyDefault)
 {
 }
@@ -154,10 +159,12 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
     m_selfProtocol = securityOrigin()->protocol();
     m_selfSource = adoptPtr(new CSPSource(this, m_selfProtocol, securityOrigin()->host(), securityOrigin()->port(), String(), CSPSource::NoWildcard, CSPSource::NoWildcard));
 
-    // If we're in a Document, set the referrer policy and sandbox flags, then dump all the
-    // parsing error messages, then poke at histograms.
+    // If we're in a Document, set the referrer policy, mixed content checking, and sandbox
+    // flags, then dump all the parsing error messages, then poke at histograms.
     if (Document* document = this->document()) {
         document->enforceSandboxFlags(m_sandboxMask);
+        if (m_enforceStrictMixedContentChecking)
+            document->enforceStrictMixedContentChecking();
         if (didSetReferrerPolicy())
             document->setReferrerPolicy(m_referrerPolicy);
 
@@ -599,6 +606,11 @@ void ContentSecurityPolicy::enforceSandboxFlags(SandboxFlags mask)
     m_sandboxMask |= mask;
 }
 
+void ContentSecurityPolicy::enforceStrictMixedContentChecking()
+{
+    m_enforceStrictMixedContentChecking = true;
+}
+
 static String stripURLForUseInReport(Document* document, const KURL& url)
 {
     if (!url.isValid())
@@ -726,6 +738,11 @@ void ContentSecurityPolicy::reportReportOnlyInMeta(const String& header)
 void ContentSecurityPolicy::reportMetaOutsideHead(const String& header)
 {
     logToConsole("The Content Security Policy '" + header + "' was delivered via a <meta> element outside the document's <head>, which is disallowed. The policy has been ignored.");
+}
+
+void ContentSecurityPolicy::reportValueForEmptyDirective(const String& name, const String& value)
+{
+    logToConsole("The Content Security Policy directive '" + name + "' should be empty, but was delivered with a value of '" + value + "'. The directive has been applied, and the value ignored.");
 }
 
 void ContentSecurityPolicy::reportInvalidInReportOnly(const String& name)

@@ -4784,6 +4784,8 @@ void Document::initSecurityContext(const DocumentInit& initializer)
     // loading URL with a fresh content security policy.
     m_cookieURL = m_url;
     enforceSandboxFlags(initializer.sandboxFlags());
+    if (initializer.shouldEnforceStrictMixedContentChecking())
+        enforceStrictMixedContentChecking();
     setSecurityOrigin(isSandboxed(SandboxOrigin) ? SecurityOrigin::createUnique() : SecurityOrigin::create(m_url));
 
     if (importsController()) {

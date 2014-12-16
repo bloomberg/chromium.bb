@@ -1439,4 +1439,18 @@ SandboxFlags FrameLoader::effectiveSandboxFlags() const
     return flags;
 }
 
+bool FrameLoader::shouldEnforceStrictMixedContentChecking() const
+{
+    Frame* parentFrame = m_frame->tree().parent();
+    if (!parentFrame)
+        return false;
+
+    // FIXME: We need a way to propagate strict mixed content checking flags to
+    // out-of-process frames. For now, we'll always enforce.
+    if (!parentFrame->isLocalFrame())
+        return true;
+
+    return toLocalFrame(parentFrame)->document()->shouldEnforceStrictMixedContentChecking();
+}
+
 } // namespace blink

@@ -62,7 +62,7 @@ typedef WillBePersistentHeapVector<RefPtrWillBeMember<ConsoleMessage> > ConsoleM
 class ContentSecurityPolicy : public RefCounted<ContentSecurityPolicy> {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    // CSP 1.0 Directives
+    // CSP Level 1 Directives
     static const char ConnectSrc[];
     static const char DefaultSrc[];
     static const char FontSrc[];
@@ -87,6 +87,10 @@ public:
     // Manifest Directives (to be merged into CSP Level 2)
     // https://w3c.github.io/manifest/#content-security-policy
     static const char ManifestSrc[];
+
+    // Mixed Content Directive
+    // https://w3c.github.io/webappsec/specs/mixedcontent/#strict-mode
+    static const char StrictMixedContentChecking[];
 
     enum ReportingStatus {
         SendReport,
@@ -175,6 +179,7 @@ public:
     void reportInvalidReferrer(const String&);
     void reportReportOnlyInMeta(const String&);
     void reportMetaOutsideHead(const String&);
+    void reportValueForEmptyDirective(const String& directiveName, const String& value);
 
     // If a frame is passed in, the report will be sent using it as a context. If no frame is
     // passed in, the report will be sent via this object's |m_executionContext| (or dropped
@@ -185,6 +190,7 @@ public:
 
     const KURL url() const;
     void enforceSandboxFlags(SandboxFlags);
+    void enforceStrictMixedContentChecking();
     String evalDisabledErrorMessage() const;
 
     bool urlMatchesSelf(const KURL&) const;
@@ -226,6 +232,7 @@ private:
 
     // State flags used to configure the environment after parsing a policy.
     SandboxFlags m_sandboxMask;
+    bool m_enforceStrictMixedContentChecking;
     ReferrerPolicy m_referrerPolicy;
     String m_disableEvalErrorMessage;
 

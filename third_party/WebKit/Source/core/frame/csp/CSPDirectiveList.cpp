@@ -24,6 +24,7 @@ CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy, ContentSecurit
     , m_reflectedXSSDisposition(ReflectedXSSUnset)
     , m_didSetReferrerPolicy(false)
     , m_referrerPolicy(ReferrerPolicyDefault)
+    , m_strictMixedContentCheckingEnforced(false)
 {
     m_reportOnly = type == ContentSecurityPolicyHeaderTypeReport;
 }
@@ -540,6 +541,22 @@ void CSPDirectiveList::applySandboxPolicy(const String& name, const String& sand
         m_policy->reportInvalidSandboxFlags(invalidTokens);
 }
 
+void CSPDirectiveList::enforceStrictMixedContentChecking(const String& name, const String& value)
+{
+    if (m_reportOnly) {
+        m_policy->reportInvalidInReportOnly(name);
+        return;
+    }
+    if (m_strictMixedContentCheckingEnforced) {
+        m_policy->reportDuplicateDirective(name);
+        return;
+    }
+    m_strictMixedContentCheckingEnforced = true;
+    m_policy->enforceStrictMixedContentChecking();
+    if (!value.isEmpty())
+        m_policy->reportValueForEmptyDirective(name, value);
+}
+
 void CSPDirectiveList::parseReflectedXSS(const String& name, const String& value)
 {
     if (m_reflectedXSSDisposition != ReflectedXSSUnset) {
@@ -688,6 +705,8 @@ void CSPDirectiveList::addDirective(const String& name, const String& value)
     } else if (m_policy->experimentalFeaturesEnabled()) {
         if (equalIgnoringCase(name, ContentSecurityPolicy::ManifestSrc))
             setCSPDirective<SourceListDirective>(name, value, m_manifestSrc);
+        else if (equalIgnoringCase(name, ContentSecurityPolicy::StrictMixedContentChecking))
+            enforceStrictMixedContentChecking(name, value);
         else
             m_policy->reportUnsupportedDirective(name);
     } else {

@@ -73,6 +73,7 @@ ExecutionContext::ExecutionContext()
     , m_inDispatchErrorEvent(false)
     , m_activeDOMObjectsAreSuspended(false)
     , m_activeDOMObjectsAreStopped(false)
+    , m_strictMixedContentCheckingEnforced(false)
 {
 }
 
