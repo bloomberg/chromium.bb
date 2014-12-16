@@ -114,6 +114,16 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
                                PushRegistrationStatus status,
                                const std::string& push_registration_id);
 
+  void OnGetRegistration(int request_id,
+                         int64 service_worker_registration_id);
+
+  void DidGetRegistration(int request_id,
+                          const std::string& push_registration_id,
+                          ServiceWorkerStatusCode status);
+
+  void SendGetRegistrationSuccessOnUI(int request_id,
+                                      const std::string& push_registration_id);
+
   // Returns a push messaging service. The embedder owns the service, and is
   // responsible for ensuring that it outlives RenderProcessHost. It's valid to
   // return NULL. Must be called on the UI thread.

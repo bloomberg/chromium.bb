@@ -70,6 +70,7 @@ bool PushMessagingMessageFilter::OnMessageReceived(
                         OnRegisterFromDocument)
     IPC_MESSAGE_HANDLER(PushMessagingHostMsg_RegisterFromWorker,
                         OnRegisterFromWorker)
+    IPC_MESSAGE_HANDLER(PushMessagingHostMsg_GetRegistration, OnGetRegistration)
     IPC_MESSAGE_HANDLER(PushMessagingHostMsg_PermissionStatus,
                         OnPermissionStatusRequest)
     IPC_MESSAGE_HANDLER(PushMessagingHostMsg_GetPermissionStatus,
@@ -382,6 +383,68 @@ void PushMessagingMessageFilter::SendRegisterSuccessOnUI(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   GURL push_endpoint(service()->GetPushEndpoint());
   SendRegisterSuccess(data, status, push_endpoint, push_registration_id);
+}
+
+void PushMessagingMessageFilter::OnGetRegistration(
+    int request_id,
+    int64 service_worker_registration_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // TODO(johnme): Validate arguments?
+  service_worker_context_->context()->storage()->GetUserData(
+      service_worker_registration_id,
+      kPushRegistrationIdServiceWorkerKey,
+      base::Bind(&PushMessagingMessageFilter::DidGetRegistration,
+                 weak_factory_io_to_io_.GetWeakPtr(),
+                 request_id));
+}
+
+void PushMessagingMessageFilter::DidGetRegistration(
+    int request_id,
+    const std::string& push_registration_id,
+    ServiceWorkerStatusCode service_worker_status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  PushGetRegistrationStatus get_status =
+      PUSH_GETREGISTRATION_STATUS_SERVICE_WORKER_ERROR;
+  switch (service_worker_status) {
+    case SERVICE_WORKER_OK:
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(
+              &PushMessagingMessageFilter::SendGetRegistrationSuccessOnUI,
+              this, request_id, push_registration_id));
+      return;
+    case SERVICE_WORKER_ERROR_NOT_FOUND:
+      get_status = PUSH_GETREGISTRATION_STATUS_REGISTRATION_NOT_FOUND;
+      break;
+    case SERVICE_WORKER_ERROR_FAILED:
+      get_status = PUSH_GETREGISTRATION_STATUS_SERVICE_WORKER_ERROR;
+      break;
+    case SERVICE_WORKER_ERROR_ABORT:
+    case SERVICE_WORKER_ERROR_START_WORKER_FAILED:
+    case SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND:
+    case SERVICE_WORKER_ERROR_EXISTS:
+    case SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED:
+    case SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED:
+    case SERVICE_WORKER_ERROR_IPC_FAILED:
+    case SERVICE_WORKER_ERROR_NETWORK:
+    case SERVICE_WORKER_ERROR_SECURITY:
+    case SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED:
+      NOTREACHED() << "Got unexpected error code: " << service_worker_status
+                   << " " << ServiceWorkerStatusToString(service_worker_status);
+      get_status = PUSH_GETREGISTRATION_STATUS_SERVICE_WORKER_ERROR;
+      break;
+  }
+  Send(new PushMessagingMsg_GetRegistrationError(request_id, get_status));
+  // TODO(johnme): RecordGetRegistrationStatus(status); ?
+}
+
+void PushMessagingMessageFilter::SendGetRegistrationSuccessOnUI(
+    int request_id,
+    const std::string& push_registration_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  GURL push_endpoint(service()->GetPushEndpoint());
+  Send(new PushMessagingMsg_GetRegistrationSuccess(request_id, push_endpoint,
+                                                   push_registration_id));
 }
 
 PushMessagingService* PushMessagingMessageFilter::service() {

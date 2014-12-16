@@ -15,6 +15,9 @@
 IPC_ENUM_TRAITS_MAX_VALUE(content::PushRegistrationStatus,
                           content::PUSH_REGISTRATION_STATUS_LAST)
 
+IPC_ENUM_TRAITS_MAX_VALUE(content::PushGetRegistrationStatus,
+                          content::PUSH_GETREGISTRATION_STATUS_LAST)
+
 IPC_ENUM_TRAITS_MAX_VALUE(
     blink::WebPushPermissionStatus,
     blink::WebPushPermissionStatus::WebPushPermissionStatusLast)
@@ -38,6 +41,15 @@ IPC_MESSAGE_ROUTED2(PushMessagingMsg_RegisterFromDocumentError,
 IPC_MESSAGE_CONTROL2(PushMessagingMsg_RegisterFromWorkerError,
                      int32 /* request_id */,
                      content::PushRegistrationStatus /* status */)
+
+IPC_MESSAGE_CONTROL3(PushMessagingMsg_GetRegistrationSuccess,
+                    int32 /* request_id */,
+                    GURL /* push_endpoint */,
+                    std::string /* push_registration_id */)
+
+IPC_MESSAGE_CONTROL2(PushMessagingMsg_GetRegistrationError,
+                    int32 /* request_id */,
+                    content::PushGetRegistrationStatus /* status */)
 
 // TODO(mvanouwerkerk): Delete this after switching to the platform code path.
 IPC_MESSAGE_ROUTED2(PushMessagingMsg_PermissionStatusResult,
@@ -73,6 +85,10 @@ IPC_MESSAGE_CONTROL5(PushMessagingHostMsg_RegisterFromDocument,
                      int64 /* service_worker_registration_id */)
 
 IPC_MESSAGE_CONTROL2(PushMessagingHostMsg_RegisterFromWorker,
+                     int32 /* request_id */,
+                     int64 /* service_worker_registration_id */)
+
+IPC_MESSAGE_CONTROL2(PushMessagingHostMsg_GetRegistration,
                      int32 /* request_id */,
                      int64 /* service_worker_registration_id */)
 
