@@ -5,8 +5,6 @@
 #include "chrome/browser/devtools/device/webrtc/devtools_bridge_client.h"
 
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/local_discovery/cloud_device_list.h"
-#include "chrome/browser/local_discovery/cloud_device_list_delegate.h"
 #include "chrome/browser/local_discovery/gcd_api_flow.h"
 #include "chrome/browser/signin/profile_identity_provider.h"
 #include "chrome/common/url_constants.h"
@@ -20,8 +18,6 @@
 
 using content::BrowserThread;
 using content::WebContents;
-using local_discovery::CloudDeviceList;
-using local_discovery::GCDApiFlowRequest;
 
 namespace {
 
@@ -96,7 +92,8 @@ void DevToolsBridgeClient::UpdateBrowserList() {
   if (!IsAuthenticated() || browser_list_request_.get())
     return;
   browser_list_request_ = CreateGCDApiFlow();
-  browser_list_request_->Start(make_scoped_ptr(new CloudDeviceList(this)));
+  browser_list_request_->Start(
+      make_scoped_ptr(new DevToolsBridgeInstancesRequest(this)));
 }
 
 void DevToolsBridgeClient::StartSessionIfNeeded(
@@ -244,26 +241,22 @@ void DevToolsBridgeClient::OnCommandFailed() {
   send_command_request_.reset();
 }
 
-void DevToolsBridgeClient::OnDeviceListReady(
-    const CloudDeviceListDelegate::DeviceList& devices) {
-  // TODO(serya): Not all devices are browsers. Filter them out.
+void DevToolsBridgeClient::OnDevToolsBridgeInstancesRequestSucceeded(
+    const DevToolsBridgeInstancesRequest::InstanceList& instances) {
   BrowserInfoList browsers;
-  browsers.reserve(devices.size());
-  for (const auto& device : devices) {
+  for (const auto& instance : instances) {
     BrowserInfo browser;
     browser.type = BrowserInfo::kTypeChrome;
-    browser.display_name = device.display_name;
-    // Make virtual socket name of device ID to know which remote
-    // instance we should connect to.
-    browser.socket_name = kDeviceIdPrefix + device.id;
+    browser.display_name = instance.display_name;
+    browser.socket_name = kDeviceIdPrefix + instance.id;
     browsers.push_back(browser);
   }
-
   browsers_.swap(browsers);
+
   browser_list_request_.reset();
 }
 
-void DevToolsBridgeClient::OnDeviceListUnavailable() {
-  BrowserInfoList().swap(browsers_);
+void DevToolsBridgeClient::OnDevToolsBridgeInstancesRequestFailed() {
+  // We keep the list of remote browsers even if the request failed.
   browser_list_request_.reset();
 }

@@ -85,6 +85,8 @@
             'browser/devtools/device/usb/usb_device_provider.h',
             'browser/devtools/device/webrtc/devtools_bridge_client.cc',
             'browser/devtools/device/webrtc/devtools_bridge_client.h',
+            'browser/devtools/device/webrtc/devtools_bridge_instances_request.cc',
+            'browser/devtools/device/webrtc/devtools_bridge_instances_request.h',
             'browser/devtools/device/webrtc/send_command_request.cc',
             'browser/devtools/device/webrtc/send_command_request.h',
             'browser/devtools/device/webrtc/webrtc_device_provider.cc',

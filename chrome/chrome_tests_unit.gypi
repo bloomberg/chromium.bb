@@ -272,6 +272,7 @@
       'browser/custom_handlers/protocol_handler_registry_unittest.cc',
       'browser/diagnostics/diagnostics_model_unittest.cc',
       'browser/diagnostics/diagnostics_controller_unittest.cc',
+      'browser/devtools/device/webrtc/devtools_bridge_instances_request_unittest.cc',
       'browser/devtools/devtools_network_controller_unittest.cc',
       'browser/download/all_download_item_notifier_unittest.cc',
       'browser/download/chrome_download_manager_delegate_unittest.cc',
@@ -2569,6 +2570,7 @@
         }],
         ['OS=="android" or OS=="ios"', {
           'sources!': [
+            'browser/devtools/device/webrtc/devtools_bridge_instances_request_unittest.cc',
             'browser/ui/sync/sync_promo_ui_unittest.cc',
           ],
         }, { # 'OS!="android" and OS!="ios"'

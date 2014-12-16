@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_DEVTOOLS_DEVICE_WEBRTC_DEVTOOLS_BRIDGE_CLIENT_H_
 
 #include "chrome/browser/devtools/device/android_device_manager.h"
+#include "chrome/browser/devtools/device/webrtc/devtools_bridge_instances_request.h"
 #include "chrome/browser/devtools/device/webrtc/send_command_request.h"
 #include "chrome/browser/local_discovery/cloud_device_list_delegate.h"
 #include "chrome/browser/signin/profile_identity_provider.h"
@@ -32,7 +33,7 @@ class DevToolsBridgeClient final
       private IdentityProvider::Observer,
       private content::WebContentsObserver,
       private SendCommandRequest::Delegate,
-      private local_discovery::CloudDeviceListDelegate {
+      private DevToolsBridgeInstancesRequest::Delegate {
  public:
   using BrowserInfo = AndroidDeviceManager::BrowserInfo;
   using DeviceInfo = AndroidDeviceManager::DeviceInfo;
@@ -86,10 +87,10 @@ class DevToolsBridgeClient final
   void OnCommandSucceeded(const base::DictionaryValue& response) override;
   void OnCommandFailed() override;
 
-  // Implementation of CloudDeviceListDelegate.
-  void OnDeviceListReady(
-      const CloudDeviceListDelegate::DeviceList& devices) override;
-  void OnDeviceListUnavailable() override;
+  // Implementation of DevToolsBridgeInstancesRequest::Delegate.
+  void OnDevToolsBridgeInstancesRequestSucceeded(
+      const DevToolsBridgeInstancesRequest::InstanceList& instances) override;
+  void OnDevToolsBridgeInstancesRequestFailed() override;
 
   Profile* const profile_;
   ProfileIdentityProvider identity_provider_;
