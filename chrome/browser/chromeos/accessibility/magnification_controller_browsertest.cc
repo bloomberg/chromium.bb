@@ -166,8 +166,9 @@ IN_PROC_BROWSER_TEST_F(MagnificationControllerTest,
   EXPECT_TRUE(GetViewPort().Contains(button_bounds));
 }
 
+// Flaky, see crbug.com/442695.
 IN_PROC_BROWSER_TEST_F(MagnificationControllerTest,
-                       FollowFocusOnWebButtonContained) {
+                       DISABLED_FollowFocusOnWebButtonContained) {
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
       browser(), GURL(std::string(kDataURIPrefix) + kTestHtmlContent2)));
   const gfx::Rect button_bounds = GetControlBoundsInRoot("test_button");
