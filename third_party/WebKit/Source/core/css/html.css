@@ -815,6 +815,9 @@ select:-internal-list-box option:checked:disabled {
     color: gray !important;
 }
 
+select:-internal-list-box hr {
+    border-style: none;
+}
 
 output {
     display: inline;

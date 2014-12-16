@@ -1774,7 +1774,7 @@ void HTMLSelectElement::trace(Visitor* visitor)
 void HTMLSelectElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
     RefPtrWillBeRawPtr<HTMLContentElement> content = HTMLContentElement::create(document());
-    content->setAttribute(selectAttr, "option,optgroup");
+    content->setAttribute(selectAttr, "option,optgroup,hr");
     root.appendChild(content);
 }
 

@@ -79,7 +79,7 @@ instead of "initial value".
 |       "TX"
 |   <shadow:root>
 |     <content>
-|       select="option,optgroup"
+|       select="option,optgroup,hr"
 | "input.value: initial value"
 | "internals.suggestedValue(input): suggested value"
 | "input.selectionStart: 0"
