@@ -71,16 +71,9 @@ void StyleRuleKeyframes::wrapperRemoveKeyframe(unsigned index)
 
 int StyleRuleKeyframes::findKeyframeIndex(const String& key) const
 {
-    String percentageString;
-    if (equalIgnoringCase(key, "from"))
-        percentageString = "0%";
-    else if (equalIgnoringCase(key, "to"))
-        percentageString = "100%";
-    else
-        percentageString = key;
-
+    Vector<double> keys = *CSSParser::parseKeyframeKeyList(key);
     for (size_t i = m_keyframes.size(); i--; ) {
-        if (m_keyframes[i]->keyText() == percentageString)
+        if (m_keyframes[i]->keys() == keys)
             return i;
     }
     return -1;
