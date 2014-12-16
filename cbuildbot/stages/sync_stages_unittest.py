@@ -477,12 +477,12 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     Args:
       verifications: A list of lists of configs. Each element in the
                      outer list corresponds to a different CL. Defaults
-                     to [[constants.PRE_CQ_GROUP_CONFIG]]
+                     to [constants.PRE_CQ_DEFAULT_CONFIGS]
 
     Returns:
       A list of len(verifications) MockPatch instances.
     """
-    verifications = verifications or [[constants.PRE_CQ_GROUP_CONFIG]]
+    verifications = verifications or [constants.PRE_CQ_DEFAULT_CONFIGS]
     changes = [MockPatch(gerrit_number=n) for n in range(len(verifications))]
     changes_to_verifications = {c: v for c, v in zip(changes, verifications)}
 
@@ -506,15 +506,14 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     self.PerformSync(pre_cq_status=None, changes=[change],
                      runs=2)
 
-    config_name = constants.PRE_CQ_GROUP_CONFIG
-
-    build_id = self.fake_db.InsertBuild(
-        'builder name', constants.WATERFALL_TRYBOT, 2, config_name,
-        'bot hostname')
-    self.fake_db.InsertCLActions(
-        build_id,
-        [clactions.CLAction.FromGerritPatchAndAction(
-            change, constants.CL_ACTION_VERIFIED)])
+    for config in constants.PRE_CQ_DEFAULT_CONFIGS:
+      build_id = self.fake_db.InsertBuild(
+          'builder name', constants.WATERFALL_TRYBOT, 2, config,
+          'bot hostname')
+      self.fake_db.InsertCLActions(
+          build_id,
+          [clactions.CLAction.FromGerritPatchAndAction(
+              change, constants.CL_ACTION_VERIFIED)])
     return change
 
   def testSubmitInPreCQ(self):
@@ -696,10 +695,11 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
                      constants.CL_STATUS_INFLIGHT)
 
     # Fake the CLs being verified.
-    self.fake_db.InsertCLActions(
-        build_ids[constants.PRE_CQ_GROUP_CONFIG],
-        [clactions.CLAction.FromGerritPatchAndAction(
-            changes[0], constants.CL_ACTION_VERIFIED)])
+    for config in constants.PRE_CQ_DEFAULT_CONFIGS:
+      self.fake_db.InsertCLActions(
+          build_ids[config],
+          [clactions.CLAction.FromGerritPatchAndAction(
+              changes[0], constants.CL_ACTION_VERIFIED)])
 
     self.PerformSync(pre_cq_status=None, changes=changes, patch_objects=False)
 
