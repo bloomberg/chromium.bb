@@ -247,6 +247,11 @@ bool IsFastTabUnloadEnabled() {
         switches::kEnableFastUnload);
 }
 
+bool IsWebAppFrameEnabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableWebAppFrame);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2349,7 +2354,7 @@ bool Browser::ShouldUseWebAppFrame() const {
   // Only use the web app frame for apps in ash, and only if streamlined hosted
   // apps are enabled.
   if (!is_app() || host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH ||
-      !extensions::util::IsStreamlinedHostedAppsEnabled()) {
+      !IsWebAppFrameEnabled()) {
     return false;
   }
 

@@ -1903,6 +1903,15 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(extensions::switches::kEnableEmbeddedExtensionOptions)
   },
 #endif
+#if defined(USE_ASH)
+  {
+    "enable-web-app-frame",
+    IDS_FLAGS_ENABLE_WEB_APP_FRAME_NAME,
+    IDS_FLAGS_ENABLE_WEB_APP_FRAME_DESCRIPTION,
+    kOsWin | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableWebAppFrame)
+  },
+#endif
   {
     "enable-website-settings-manager",
     IDS_FLAGS_ENABLE_WEBSITE_SETTINGS_NAME,

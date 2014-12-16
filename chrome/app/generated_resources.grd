@@ -6753,6 +6753,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_EXTENSION_ACTION_REDESIGN_DESCRIPTION" desc="Description for the flag to enable the extension toolbar redesign">
         Enables the (in development) new extension toolbar toolbar design.
       </message>
+      <if expr="use_ash">
+        <message name="IDS_FLAGS_ENABLE_WEB_APP_FRAME_NAME" desc="Name of the flag that enables the web app style frame for hosted apps.">
+          Enables the web app style frame for hosted apps.
+        </message>
+      </if>
+      <message name="IDS_FLAGS_ENABLE_WEB_APP_FRAME_DESCRIPTION" desc="Description of the flag that enables the web app style frame for hosted apps.">
+        Enables the web app style frame for hosted apps, including bookmark apps. This is currently only available for Ash.
+      </message>
       <message name="IDS_FLAGS_ENABLE_WEBSITE_SETTINGS_NAME" desc="Name of the flag that enables the website settings manager in chrome://settings.">
         Enables the website settings manager.
       </message>

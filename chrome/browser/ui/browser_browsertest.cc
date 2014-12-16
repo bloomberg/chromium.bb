@@ -1379,6 +1379,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
 // supported correctly.
 IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldUseWebAppFrame) {
   ASSERT_TRUE(test_server()->Start());
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableWebAppFrame);
 
   // Load a hosted app.
   host_resolver()->AddRule("www.example.com", "127.0.0.1");

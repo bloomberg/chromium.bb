@@ -32,6 +32,9 @@ class WebAppLeftHeaderViewTest : public TestWithBrowserView {
 
   // TestWithBrowserView override:
   void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableWebAppFrame);
+
     TestWithBrowserView::SetUp();
 
     // Setup a fake toolbar to enable testing.

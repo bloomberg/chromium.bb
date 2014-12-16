@@ -628,6 +628,10 @@ const char kEnableTranslateNewUX[]         = "enable-translate-new-ux";
 const char kEnableUserAlternateProtocolPorts[] =
     "enable-user-controlled-alternate-protocol-ports";
 
+// Enables a new "web app" style frame for hosted apps (including bookmark
+// apps).
+extern const char kEnableWebAppFrame[] = "enable-web-app-frame";
+
 // Enables the Website Settings page on the Settings page.
 const char kEnableWebsiteSettingsManager[]  = "enable-website-settings-manager";
 
