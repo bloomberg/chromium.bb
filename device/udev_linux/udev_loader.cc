@@ -22,19 +22,11 @@ UdevLoader* UdevLoader::Get() {
     return g_udev_loader;
 
   scoped_ptr<UdevLoader> udev_loader;
-  // This is an ugly hack to get around the fact that a MSAN build on Precise
-  // will only build an instrumented copy of libudev0 and not libudev1. If one
-  // runs the binary on Trusty, it will end up loading an uninstrumented
-  // libudev1 at run time. http://crbug.com/437464
-  // TODO(earthdok): Remove this after upgrading our MSAN LKGR builders to
-  // Trusty.
-#if !defined(MEMORY_SANITIZER)
   udev_loader.reset(new Udev1Loader);
   if (udev_loader->Init()) {
     g_udev_loader = udev_loader.release();
     return g_udev_loader;
   }
-#endif
 
   udev_loader.reset(new Udev0Loader);
   if (udev_loader->Init()) {

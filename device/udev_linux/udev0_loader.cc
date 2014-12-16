@@ -18,14 +18,7 @@ bool Udev0Loader::Init() {
   if (lib_loader_)
     return lib_loader_->loaded();
   lib_loader_.reset(new LibUdev0Loader);
-#if defined(MEMORY_SANITIZER)
-  // Temporary hack: rely on the symlink to pick up whichever *instrumented*
-  // version of libudev we have, be it libudev0 or libudev1. crbug.com/437464
-  // TODO(earthdok): Remove this hack after upgrading our LKGR builders.
-  return lib_loader_->Load("libudev.so");
-#else
   return lib_loader_->Load("libudev.so.0");
-#endif
 }
 
 const char* Udev0Loader::udev_device_get_action(udev_device* udev_device) {
