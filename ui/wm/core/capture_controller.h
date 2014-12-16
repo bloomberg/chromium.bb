@@ -5,7 +5,7 @@
 #ifndef UI_WM_CORE_CAPTURE_CONTROLLER_H_
 #define UI_WM_CORE_CAPTURE_CONTROLLER_H_
 
-#include <set>
+#include <map>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -13,20 +13,26 @@
 #include "ui/aura/window_observer.h"
 #include "ui/wm/wm_export.h"
 
+namespace aura {
+namespace client {
+class CaptureDelegate;
+}
+}
+
 namespace wm {
 
 // Internal CaptureClient implementation. See ScopedCaptureClient for details.
 class WM_EXPORT CaptureController : public aura::client::CaptureClient {
  public:
-  // Adds |root| to the list of RootWindows notified when capture changes.
+  // Adds |root| to the list of root windows notified when capture changes.
   void Attach(aura::Window* root);
 
-  // Removes |root| from the list of RootWindows notified when capture changes.
+  // Removes |root| from the list of root windows notified when capture changes.
   void Detach(aura::Window* root);
 
   // Returns true if this CaptureController is installed on at least one
-  // RootWindow.
-  bool is_active() const { return !root_windows_.empty(); }
+  // root window.
+  bool is_active() const { return !delegates_.empty(); }
 
   // Overridden from aura::client::CaptureClient:
   void SetCapture(aura::Window* window) override;
@@ -36,7 +42,6 @@ class WM_EXPORT CaptureController : public aura::client::CaptureClient {
 
  private:
   friend class ScopedCaptureClient;
-  typedef std::set<aura::Window*> RootWindows;
 
   CaptureController();
   ~CaptureController() override;
@@ -44,8 +49,14 @@ class WM_EXPORT CaptureController : public aura::client::CaptureClient {
   // The current capture window. NULL if there is no capture window.
   aura::Window* capture_window_;
 
-  // Set of RootWindows notified when capture changes.
-  RootWindows root_windows_;
+  // The capture delegate for the root window with native capture. The root
+  // window with native capture may not contain |capture_window_|. This occurs
+  // if |capture_window_| is reparented to a different root window while it has
+  // capture.
+  aura::client::CaptureDelegate* capture_delegate_;
+
+  // The delegates notified when capture changes.
+  std::map<aura::Window*, aura::client::CaptureDelegate*> delegates_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptureController);
 };
@@ -55,6 +66,21 @@ class WM_EXPORT CaptureController : public aura::client::CaptureClient {
 // among all ScopedCaptureClients and adds the RootWindow to it.
 class WM_EXPORT ScopedCaptureClient : public aura::WindowObserver {
  public:
+  class WM_EXPORT TestApi {
+   public:
+    explicit TestApi(ScopedCaptureClient* client) : client_(client) {}
+    ~TestApi() {}
+
+    // Sets the delegate.
+    void SetDelegate(aura::client::CaptureDelegate* delegate);
+
+   private:
+    // Not owned.
+    ScopedCaptureClient* client_;
+
+    DISALLOW_COPY_AND_ASSIGN(TestApi);
+  };
+
   explicit ScopedCaptureClient(aura::Window* root);
   ~ScopedCaptureClient() override;
 

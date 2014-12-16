@@ -561,7 +561,6 @@
       'window/dialog_delegate_unittest.cc',
     ],
     'views_unittests_aura_sources': [
-      'corewm/capture_controller_unittest.cc',
       'corewm/tooltip_aura_unittest.cc',
       'corewm/tooltip_controller_unittest.cc',
       'touchui/touch_selection_controller_impl_unittest.cc',

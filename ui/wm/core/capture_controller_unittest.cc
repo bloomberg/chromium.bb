@@ -5,6 +5,7 @@
 #include "ui/wm/core/capture_controller.h"
 
 #include "base/logging.h"
+#include "ui/aura/client/capture_delegate.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_screen.h"
@@ -14,17 +15,36 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/views/test/views_test_base.h"
-#include "ui/views/view.h"
-#include "ui/views/widget/root_view.h"
-#include "ui/views/widget/widget.h"
 
-#if !defined(OS_CHROMEOS)
-#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
-#include "ui/views/widget/desktop_aura/desktop_screen_position_client.h"
-#endif
+namespace wm {
 
-namespace views {
+namespace {
+
+// aura::client::CaptureDelegate which allows querying whether native capture
+// has been acquired.
+class TestCaptureDelegate : public aura::client::CaptureDelegate {
+ public:
+  TestCaptureDelegate() : has_capture_(false) {}
+  ~TestCaptureDelegate() override {}
+
+  bool HasNativeCapture() const {
+    return has_capture_;
+  }
+
+  // aura::client::CaptureDelegate:
+  void UpdateCapture(aura::Window* old_capture,
+                     aura::Window* new_capture) override {}
+  void OnOtherRootGotCapture() override {}
+  void SetNativeCapture() override { has_capture_ = true; }
+  void ReleaseNativeCapture() override { has_capture_ = false; }
+
+ private:
+  bool has_capture_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestCaptureDelegate);
+};
+
+}  // namespace
 
 class CaptureControllerTest : public aura::test::AuraTestBase {
  public:
@@ -32,38 +52,24 @@ class CaptureControllerTest : public aura::test::AuraTestBase {
 
   void SetUp() override {
     AuraTestBase::SetUp();
-    capture_controller_.reset(new wm::ScopedCaptureClient(root_window()));
+    capture_controller_.reset(new ScopedCaptureClient(root_window()));
 
     second_host_.reset(aura::WindowTreeHost::Create(gfx::Rect(0, 0, 800, 600)));
     second_host_->InitHost();
     second_host_->window()->Show();
     second_host_->SetBounds(gfx::Rect(800, 600));
     second_capture_controller_.reset(
-        new wm::ScopedCaptureClient(second_host_->window()));
-
-#if !defined(OS_CHROMEOS)
-    desktop_position_client_.reset(
-        new DesktopScreenPositionClient(root_window()));
-
-    second_desktop_position_client_.reset(
-        new DesktopScreenPositionClient(second_host_->window()));
-#endif
+        new ScopedCaptureClient(second_host_->window()));
   }
 
   void TearDown() override {
     RunAllPendingInMessageLoop();
 
-#if !defined(OS_CHROMEOS)
-    second_desktop_position_client_.reset();
-#endif
     second_capture_controller_.reset();
 
     // Kill any active compositors before we hit the compositor shutdown paths.
     second_host_.reset();
 
-#if !defined(OS_CHROMEOS)
-    desktop_position_client_.reset();
-#endif
     capture_controller_.reset();
 
     AuraTestBase::TearDown();
@@ -77,14 +83,9 @@ class CaptureControllerTest : public aura::test::AuraTestBase {
     return second_capture_controller_->capture_client()->GetCaptureWindow();
   }
 
-  scoped_ptr<wm::ScopedCaptureClient> capture_controller_;
+  scoped_ptr<ScopedCaptureClient> capture_controller_;
   scoped_ptr<aura::WindowTreeHost> second_host_;
-  scoped_ptr<wm::ScopedCaptureClient> second_capture_controller_;
-#if !defined(OS_CHROMEOS)
-  scoped_ptr<aura::client::ScreenPositionClient> desktop_position_client_;
-  scoped_ptr<aura::client::ScreenPositionClient>
-      second_desktop_position_client_;
-#endif
+  scoped_ptr<ScopedCaptureClient> second_capture_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptureControllerTest);
 };
@@ -165,4 +166,34 @@ TEST_F(CaptureControllerTest, TouchTargetResetOnCaptureChange) {
             ui::GestureRecognizer::Get()->GetTouchLockedTarget(touch_event));
 }
 
-}  // namespace views
+// Test that native capture is released properly when the window with capture
+// is reparented to a different root window while it has capture.
+TEST_F(CaptureControllerTest, ReparentedWhileCaptured) {
+  scoped_ptr<TestCaptureDelegate> delegate(new TestCaptureDelegate);
+  ScopedCaptureClient::TestApi(capture_controller_.get())
+      .SetDelegate(delegate.get());
+  scoped_ptr<TestCaptureDelegate> delegate2(new TestCaptureDelegate);
+  ScopedCaptureClient::TestApi(second_capture_controller_.get())
+      .SetDelegate(delegate2.get());
+
+  scoped_ptr<aura::Window> w(CreateNormalWindow(1, root_window(), NULL));
+  w->SetCapture();
+  EXPECT_EQ(w.get(), GetCaptureWindow());
+  EXPECT_EQ(w.get(), GetSecondCaptureWindow());
+  EXPECT_TRUE(delegate->HasNativeCapture());
+  EXPECT_FALSE(delegate2->HasNativeCapture());
+
+  second_host_->window()->AddChild(w.get());
+  EXPECT_EQ(w.get(), GetCaptureWindow());
+  EXPECT_EQ(w.get(), GetSecondCaptureWindow());
+  EXPECT_TRUE(delegate->HasNativeCapture());
+  EXPECT_FALSE(delegate2->HasNativeCapture());
+
+  w->ReleaseCapture();
+  EXPECT_EQ(nullptr, GetCaptureWindow());
+  EXPECT_EQ(nullptr, GetSecondCaptureWindow());
+  EXPECT_FALSE(delegate->HasNativeCapture());
+  EXPECT_FALSE(delegate2->HasNativeCapture());
+}
+
+}  // namespace wm

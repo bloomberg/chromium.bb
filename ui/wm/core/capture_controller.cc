@@ -14,14 +14,14 @@ namespace wm {
 // CaptureController, public:
 
 void CaptureController::Attach(aura::Window* root) {
-  DCHECK_EQ(0u, root_windows_.count(root));
-  root_windows_.insert(root);
+  DCHECK_EQ(0u, delegates_.count(root));
+  delegates_[root] = root->GetHost()->dispatcher();
   aura::client::SetCaptureClient(root, this);
 }
 
 void CaptureController::Detach(aura::Window* root) {
-  root_windows_.erase(root);
-  aura::client::SetCaptureClient(root, NULL);
+  delegates_.erase(root);
+  aura::client::SetCaptureClient(root, nullptr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -36,11 +36,11 @@ void CaptureController::SetCapture(aura::Window* new_capture_window) {
   DCHECK(!capture_window_ || capture_window_->GetRootWindow());
 
   aura::Window* old_capture_window = capture_window_;
-  aura::Window* old_capture_root = old_capture_window ?
-      old_capture_window->GetRootWindow() : NULL;
+  aura::client::CaptureDelegate* old_capture_delegate = capture_delegate_;
 
-  // Copy the list in case it's modified out from under us.
-  RootWindows root_windows(root_windows_);
+  // Copy the map in case it's modified out from under us.
+  std::map<aura::Window*, aura::client::CaptureDelegate*> delegates =
+      delegates_;
 
   // If we're actually starting capture, then cancel any touches/gestures
   // that aren't already locked to the new window, and transfer any on the
@@ -54,33 +54,27 @@ void CaptureController::SetCapture(aura::Window* new_capture_window) {
   }
 
   capture_window_ = new_capture_window;
+  aura::Window* capture_root_window =
+      capture_window_ ? capture_window_->GetRootWindow() : nullptr;
+  capture_delegate_ = delegates_.find(capture_root_window) == delegates_.end()
+                          ? nullptr
+                          : delegates_[capture_root_window];
 
-  for (RootWindows::const_iterator i = root_windows.begin();
-       i != root_windows.end(); ++i) {
-    aura::client::CaptureDelegate* delegate = (*i)->GetHost()->dispatcher();
-    delegate->UpdateCapture(old_capture_window, new_capture_window);
-  }
+  for (const auto& it : delegates)
+    it.second->UpdateCapture(old_capture_window, new_capture_window);
 
-  aura::Window* capture_root =
-      capture_window_ ? capture_window_->GetRootWindow() : NULL;
-  if (capture_root != old_capture_root) {
-    if (old_capture_root) {
-      aura::client::CaptureDelegate* delegate =
-          old_capture_root->GetHost()->dispatcher();
-      delegate->ReleaseNativeCapture();
-    }
-    if (capture_root) {
-      aura::client::CaptureDelegate* delegate =
-          capture_root->GetHost()->dispatcher();
-      delegate->SetNativeCapture();
-    }
+  if (capture_delegate_ != old_capture_delegate) {
+    if (old_capture_delegate)
+      old_capture_delegate->ReleaseNativeCapture();
+    if (capture_delegate_)
+      capture_delegate_->SetNativeCapture();
   }
 }
 
 void CaptureController::ReleaseCapture(aura::Window* window) {
   if (capture_window_ != window)
     return;
-  SetCapture(NULL);
+  SetCapture(nullptr);
 }
 
 aura::Window* CaptureController::GetCaptureWindow() {
@@ -95,7 +89,8 @@ aura::Window* CaptureController::GetGlobalCaptureWindow() {
 // CaptureController, private:
 
 CaptureController::CaptureController()
-    : capture_window_(NULL) {
+    : capture_window_(nullptr),
+      capture_delegate_(nullptr) {
 }
 
 CaptureController::~CaptureController() {
@@ -105,7 +100,7 @@ CaptureController::~CaptureController() {
 // ScopedCaptureClient:
 
 // static
-CaptureController* ScopedCaptureClient::capture_controller_ = NULL;
+CaptureController* ScopedCaptureClient::capture_controller_ = nullptr;
 
 ScopedCaptureClient::ScopedCaptureClient(aura::Window* root)
     : root_window_(root) {
@@ -137,9 +132,17 @@ void ScopedCaptureClient::Shutdown() {
   capture_controller_->Detach(root_window_);
   if (!capture_controller_->is_active()) {
     delete capture_controller_;
-    capture_controller_ = NULL;
+    capture_controller_ = nullptr;
   }
-  root_window_ = NULL;
+  root_window_ = nullptr;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// CaptureController::TestApi
+
+void ScopedCaptureClient::TestApi::SetDelegate(
+    aura::client::CaptureDelegate* delegate) {
+  client_->capture_controller_->delegates_[client_->root_window_] = delegate;
 }
 
 }  // namespace wm

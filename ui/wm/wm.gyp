@@ -137,6 +137,7 @@
       ],
       'sources': [
         'test/run_all_unittests.cc',
+        'core/capture_controller_unittest.cc',
         'core/compound_event_filter_unittest.cc',
         'core/cursor_manager_unittest.cc',
         'core/focus_controller_unittest.cc',
