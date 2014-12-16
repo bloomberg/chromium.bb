@@ -1181,6 +1181,8 @@
       'browser/ui/app_list/search/history_factory.h',
       'browser/ui/app_list/search/omnibox_provider.cc',
       'browser/ui/app_list/search/omnibox_provider.h',
+      'browser/ui/app_list/search/omnibox_result.cc',
+      'browser/ui/app_list/search/omnibox_result.h',
       'browser/ui/app_list/search/people/people_provider.cc',
       'browser/ui/app_list/search/people/people_provider.h',
       'browser/ui/app_list/search/people/people_result.cc',
