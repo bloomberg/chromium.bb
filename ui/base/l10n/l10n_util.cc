@@ -58,6 +58,7 @@ static const char* const kAcceptLanguageList[] = {
   "br",     // Breton
   "bs",     // Bosnian
   "ca",     // Catalan
+  "ckb",    // Kurdish (Arabci),  Sorani
   "co",     // Corsican
   "cs",     // Czech
   "cy",     // Welsh
@@ -66,6 +67,7 @@ static const char* const kAcceptLanguageList[] = {
   "de-AT",  // German (Austria)
   "de-CH",  // German (Switzerland)
   "de-DE",  // German (Germany)
+  "de-LI",  // German (Liechtenstein)
   "el",     // Greek
   "en",     // English
   "en-AU",  // English (Australia)

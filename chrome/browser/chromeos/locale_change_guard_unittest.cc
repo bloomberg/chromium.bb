@@ -26,6 +26,7 @@ const char* const kShowNotificationLanguages[] = {
     "br",   // Breton
     "bs",   // Bosnian
     "ca",   // Catalan
+    "ckb",  // Sorani (Kurdish-Arabic)
     "co",   // Corsican
     "cs",   // Czech
     "cy",   // Welsh
