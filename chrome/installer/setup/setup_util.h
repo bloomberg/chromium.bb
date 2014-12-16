@@ -17,6 +17,8 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/util_constants.h"
 
+class AppRegistrationData;
+
 namespace base {
 class CommandLine;
 class FilePath;
@@ -114,6 +116,11 @@ bool ContainsUnsupportedSwitch(const base::CommandLine& cmd_line);
 
 // Returns true if the processor is supported by chrome.
 bool IsProcessorSupported();
+
+// Returns the "...\\Commands\\|name|" registry key for a product's |reg_data|.
+base::string16 GetRegistrationDataCommandKey(
+    const AppRegistrationData& reg_data,
+    const wchar_t* name);
 
 // This class will enable the privilege defined by |privilege_name| on the
 // current process' token. The privilege will be disabled upon the

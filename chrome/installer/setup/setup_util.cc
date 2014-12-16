@@ -23,6 +23,7 @@
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/installer/setup/setup_constants.h"
+#include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/copy_tree_work_item.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/installation_state.h"
@@ -453,6 +454,17 @@ bool ContainsUnsupportedSwitch(const CommandLine& cmd_line) {
 
 bool IsProcessorSupported() {
   return base::CPU().has_sse2();
+}
+
+base::string16 GetRegistrationDataCommandKey(
+    const AppRegistrationData& reg_data,
+    const wchar_t* name) {
+  base::string16 cmd_key(reg_data.GetVersionKey());
+  cmd_key.append(1, base::FilePath::kSeparators[0])
+      .append(google_update::kRegCommandsKey)
+      .append(1, base::FilePath::kSeparators[0])
+      .append(name);
+  return cmd_key;
 }
 
 ScopedTokenPrivilege::ScopedTokenPrivilege(const wchar_t* privilege_name)

@@ -187,17 +187,6 @@ void AddInstallerCopyTasks(const InstallerState& installer_state,
   }
 }
 
-base::string16 GetRegistrationDataCommandKey(
-    const AppRegistrationData& reg_data,
-    const wchar_t* name) {
-  base::string16 cmd_key(reg_data.GetVersionKey());
-  cmd_key.append(1, base::FilePath::kSeparators[0])
-      .append(google_update::kRegCommandsKey)
-      .append(1, base::FilePath::kSeparators[0])
-      .append(name);
-  return cmd_key;
-}
-
 base::string16 GetRegCommandKey(BrowserDistribution* dist,
                                 const wchar_t* name) {
   return GetRegistrationDataCommandKey(dist->GetAppRegistrationData(), name);

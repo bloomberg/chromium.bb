@@ -15,6 +15,7 @@
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
+#include "base/strings/string_util.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -26,6 +27,7 @@
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/installer_state.h"
+#include "chrome/installer/util/updating_app_registration_data.h"
 #include "chrome/installer/util/util_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -493,4 +495,12 @@ TEST(SetupUtilTest, ContainsUnsupportedSwitch) {
       CommandLine::FromString(L"foo.exe --multi-install --chrome")));
   EXPECT_TRUE(installer::ContainsUnsupportedSwitch(
       CommandLine::FromString(L"foo.exe --chrome-frame")));
+}
+
+TEST(SetupUtilTest, GetRegistrationDataCommandKey) {
+  base::string16 app_guid = L"{AAAAAAAA-BBBB-1111-0123-456789ABCDEF}";
+  UpdatingAppRegistrationData reg_data(app_guid);
+  base::string16 key =
+      installer::GetRegistrationDataCommandKey(reg_data, L"test_name");
+  EXPECT_TRUE(EndsWith(key, app_guid + L"\\Commands\\test_name", true));
 }
