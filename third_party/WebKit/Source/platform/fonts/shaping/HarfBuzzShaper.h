@@ -92,7 +92,9 @@ private:
         FloatSize* offsets() { return &m_offsets[0]; }
         bool hasGlyphToCharacterIndexes() const
         {
-            return m_glyphToCharacterIndexes.size() > 0;
+            // Ensure that we have enough space to map each glyph to an index.
+            // FIXME: https://crbug.com/337886
+            return m_glyphToCharacterIndexes.size() >= m_numGlyphs;
         }
         uint16_t* glyphToCharacterIndexes()
         {
