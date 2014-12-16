@@ -9,6 +9,7 @@
 #include <IOSurface/IOSurfaceAPI.h>
 #include <list>
 #include <map>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -153,9 +154,10 @@ class Layer;
   // key down event.
   BOOL suppressNextEscapeKeyUp_;
 
-  // The keyCode from the last NSKeyDown event.
+  // The set of key codes from key down events that we haven't seen the matching
+  // key up events yet.
   // Used for filtering out non-matching NSKeyUp events.
-  unsigned short lastKeyCode_;
+  std::set<unsigned short> keyDownCodes_;
 }
 
 @property(nonatomic, readonly) NSRange selectedRange;
