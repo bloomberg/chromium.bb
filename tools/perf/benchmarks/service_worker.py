@@ -180,7 +180,7 @@ class ServiceWorkerPerfTest(benchmark.Benchmark):
 
 
 # Disabled due to redness on the tree. crbug.com/442752
-@benchmark.Disabled
+@benchmark.Disabled('reference')
 class ServiceWorkerMicroBenchmarkPerfTest(benchmark.Benchmark):
   """Service Worker performance test using a micro benchmark page set"""
   test = _ServiceWorkerMicroBenchmarkMeasurement
