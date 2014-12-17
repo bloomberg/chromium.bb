@@ -1875,6 +1875,11 @@ bool FrameView::needsLayout() const
 
 void FrameView::setNeedsLayout()
 {
+    RenderBox* box = embeddedContentBox();
+    // It's illegal to ask for layout changes during the layout compositing or paint invalidation step.
+    // FIXME: the third conditional is a hack to support embedded SVG. See FrameView::forceLayoutParentViewIfNeeded and crbug.com/442939
+    RELEASE_ASSERT(!m_frame->document() || m_frame->document()->lifecycle().stateAllowsLayoutInvalidation() || (box && box->isSVGRoot()));
+
     if (RenderView* renderView = this->renderView())
         renderView->setNeedsLayout();
 }

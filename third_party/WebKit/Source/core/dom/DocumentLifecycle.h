@@ -123,6 +123,7 @@ public:
     bool stateAllowsTreeMutations() const;
     bool stateAllowsRenderTreeMutations() const;
     bool stateAllowsDetach() const;
+    bool stateAllowsLayoutInvalidation() const;
 
     void advanceTo(State);
     void ensureStateAtMost(State);
@@ -170,6 +171,13 @@ inline bool DocumentLifecycle::stateAllowsDetach() const
         || m_state == Stopping;
 }
 
+inline bool DocumentLifecycle::stateAllowsLayoutInvalidation() const
+{
+    return m_state != InPerformLayout
+        && m_state != InCompositingUpdate
+        && m_state != InPaintInvalidation;
 }
+
+} // namespace blink
 
 #endif
