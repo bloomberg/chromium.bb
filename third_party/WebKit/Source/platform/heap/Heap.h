@@ -157,116 +157,6 @@ inline bool isPageHeaderAddress(Address address)
 }
 #endif
 
-// Mask an address down to the enclosing oilpan heap base page.  All oilpan heap
-// pages are aligned at blinkPageBase plus an OS page size.
-// FIXME: Remove PLATFORM_EXPORT once we get a proper public interface to our
-// typed heaps.  This is only exported to enable tests in HeapTest.cpp.
-PLATFORM_EXPORT inline BaseHeapPage* pageFromObject(const void* object)
-{
-    Address address = reinterpret_cast<Address>(const_cast<void*>(object));
-    return reinterpret_cast<BaseHeapPage*>(blinkPageAddress(address) + WTF::kSystemPageSize);
-}
-
-// Large allocations are allocated as separate objects and linked in a list.
-//
-// In order to use the same memory allocation routines for everything allocated
-// in the heap, large objects are considered heap pages containing only one
-// object.
-//
-// The layout of a large heap object is as follows:
-//
-// | BaseHeapPage | next pointer | GeneralHeapObjectHeader or HeapObjectHeader | payload |
-template<typename Header>
-class LargeObject final : public BaseHeapPage {
-public:
-    LargeObject(PageMemory* storage, const GCInfo* gcInfo, ThreadState* state) : BaseHeapPage(storage, gcInfo, state)
-    {
-        COMPILE_ASSERT(!(sizeof(LargeObject<Header>) & allocationMask), large_heap_object_header_misaligned);
-    }
-
-    virtual void checkAndMarkPointer(Visitor*, Address) override;
-    virtual bool isLargeObject() override { return true; }
-
-#if ENABLE(GC_PROFILE_MARKING)
-    virtual const GCInfo* findGCInfo(Address address)
-    {
-        if (!objectContains(address))
-            return nullptr;
-        return gcInfo();
-    }
-#endif
-
-#if ENABLE(GC_PROFILE_HEAP)
-    void snapshot(TracedValue*, ThreadState::SnapshotInfo*);
-#endif
-
-    void link(LargeObject<Header>** previousNext)
-    {
-        m_next = *previousNext;
-        *previousNext = this;
-    }
-
-    void unlink(LargeObject<Header>** previousNext)
-    {
-        *previousNext = m_next;
-        m_next = nullptr;
-    }
-
-    // The LargeObject pseudo-page contains one actual object. Determine
-    // whether the pointer is within that object.
-    bool objectContains(Address object)
-    {
-        return (payload() <= object) && (object < address() + size());
-    }
-
-    // Returns true for any address that is on one of the pages that this
-    // large object uses. That ensures that we can use a negative result to
-    // populate the negative page cache.
-    virtual bool contains(Address object) override
-    {
-        return roundToBlinkPageStart(address()) <= object && object < roundToBlinkPageEnd(address() + size());
-    }
-
-    LargeObject<Header>* next()
-    {
-        return m_next;
-    }
-
-    size_t size()
-    {
-        return heapObjectHeader()->size() + sizeof(LargeObject<Header>) + headerPadding<Header>();
-    }
-
-    Address payload() { return heapObjectHeader()->payload(); }
-    size_t payloadSize() { return heapObjectHeader()->payloadSize(); }
-
-    Header* heapObjectHeader()
-    {
-        Address headerAddress = address() + sizeof(LargeObject<Header>) + headerPadding<Header>();
-        return reinterpret_cast<Header*>(headerAddress);
-    }
-
-    bool isMarked();
-    void unmark();
-    size_t objectPayloadSizeForTesting();
-    void mark(Visitor*);
-    void finalize();
-    void markDead();
-    void markUnmarkedObjectsDead();
-    virtual void markOrphaned() override
-    {
-        // Zap the payload with a recognizable value to detect any incorrect
-        // cross thread pointer usage.
-        memset(payload(), orphanedZapValue, payloadSize());
-        BaseHeapPage::markOrphaned();
-    }
-
-private:
-    friend class ThreadHeap<Header>;
-
-    LargeObject<Header>* m_next;
-};
-
 // Our heap object layout is layered with the HeapObjectHeader closest
 // to the payload, this can be wrapped in a GeneralHeapObjectHeader if the
 // object is on the GeneralHeap and not on a specific TypedHeap.
@@ -484,6 +374,51 @@ private:
 #endif
 };
 
+class BaseHeapPage {
+public:
+    BaseHeapPage(PageMemory*, const GCInfo*, ThreadState*);
+    virtual ~BaseHeapPage() { }
+
+    // Check if the given address points to an object in this
+    // heap page. If so, find the start of that object and mark it
+    // using the given Visitor. Otherwise do nothing. The pointer must
+    // be within the same aligned blinkPageSize as the this-pointer.
+    //
+    // This is used during conservative stack scanning to
+    // conservatively mark all objects that could be referenced from
+    // the stack.
+    virtual void checkAndMarkPointer(Visitor*, Address) = 0;
+    virtual bool contains(Address) = 0;
+
+#if ENABLE(GC_PROFILE_MARKING)
+    virtual const GCInfo* findGCInfo(Address) = 0;
+#endif
+
+    Address address() { return reinterpret_cast<Address>(this); }
+    PageMemory* storage() const { return m_storage; }
+    ThreadState* threadState() const { return m_threadState; }
+    const GCInfo* gcInfo() { return m_gcInfo; }
+    virtual bool isLargeObject() { return false; }
+    virtual void markOrphaned();
+    bool orphaned() { return !m_threadState; }
+    bool terminating() { return m_terminating; }
+    void setTerminating() { m_terminating = true; }
+    size_t promptlyFreedSize() { return m_promptlyFreedSize; }
+    void resetPromptlyFreedSize() { m_promptlyFreedSize = 0; }
+    void addToPromptlyFreedSize(size_t size) { m_promptlyFreedSize += size; }
+
+private:
+    PageMemory* m_storage;
+    const GCInfo* m_gcInfo;
+    ThreadState* m_threadState;
+    // Pointer sized integer to ensure proper alignment of the
+    // HeapPage header. We use some of the bits to determine
+    // whether the page is part of a terminting thread or
+    // if the page is traced after being terminated (orphaned).
+    unsigned m_terminating : 1;
+    unsigned m_promptlyFreedSize : 17; // == blinkPageSizeLog2
+};
+
 // Representation of Blink heap pages.
 //
 // Pages are specialized on the type of header on the object they contain.  If a
@@ -580,6 +515,116 @@ protected:
     uint8_t m_objectStartBitMap[reservedForObjectBitMap];
 
     friend class ThreadHeap<Header>;
+};
+
+// Mask an address down to the enclosing oilpan heap base page.  All oilpan heap
+// pages are aligned at blinkPageBase plus an OS page size.
+// FIXME: Remove PLATFORM_EXPORT once we get a proper public interface to our
+// typed heaps.  This is only exported to enable tests in HeapTest.cpp.
+PLATFORM_EXPORT inline BaseHeapPage* pageFromObject(const void* object)
+{
+    Address address = reinterpret_cast<Address>(const_cast<void*>(object));
+    return reinterpret_cast<BaseHeapPage*>(blinkPageAddress(address) + WTF::kSystemPageSize);
+}
+
+// Large allocations are allocated as separate objects and linked in a list.
+//
+// In order to use the same memory allocation routines for everything allocated
+// in the heap, large objects are considered heap pages containing only one
+// object.
+//
+// The layout of a large heap object is as follows:
+//
+// | BaseHeapPage | next pointer | GeneralHeapObjectHeader or HeapObjectHeader | payload |
+template<typename Header>
+class LargeObject final : public BaseHeapPage {
+public:
+    LargeObject(PageMemory* storage, const GCInfo* gcInfo, ThreadState* state) : BaseHeapPage(storage, gcInfo, state)
+    {
+        COMPILE_ASSERT(!(sizeof(LargeObject<Header>) & allocationMask), large_heap_object_header_misaligned);
+    }
+
+    virtual void checkAndMarkPointer(Visitor*, Address) override;
+    virtual bool isLargeObject() override { return true; }
+
+#if ENABLE(GC_PROFILE_MARKING)
+    virtual const GCInfo* findGCInfo(Address address)
+    {
+        if (!objectContains(address))
+            return nullptr;
+        return gcInfo();
+    }
+#endif
+
+#if ENABLE(GC_PROFILE_HEAP)
+    void snapshot(TracedValue*, ThreadState::SnapshotInfo*);
+#endif
+
+    void link(LargeObject<Header>** previousNext)
+    {
+        m_next = *previousNext;
+        *previousNext = this;
+    }
+
+    void unlink(LargeObject<Header>** previousNext)
+    {
+        *previousNext = m_next;
+        m_next = nullptr;
+    }
+
+    // The LargeObject pseudo-page contains one actual object. Determine
+    // whether the pointer is within that object.
+    bool objectContains(Address object)
+    {
+        return (payload() <= object) && (object < address() + size());
+    }
+
+    // Returns true for any address that is on one of the pages that this
+    // large object uses. That ensures that we can use a negative result to
+    // populate the negative page cache.
+    virtual bool contains(Address object) override
+    {
+        return roundToBlinkPageStart(address()) <= object && object < roundToBlinkPageEnd(address() + size());
+    }
+
+    LargeObject<Header>* next()
+    {
+        return m_next;
+    }
+
+    size_t size()
+    {
+        return heapObjectHeader()->size() + sizeof(LargeObject<Header>) + headerPadding<Header>();
+    }
+
+    Address payload() { return heapObjectHeader()->payload(); }
+    size_t payloadSize() { return heapObjectHeader()->payloadSize(); }
+
+    Header* heapObjectHeader()
+    {
+        Address headerAddress = address() + sizeof(LargeObject<Header>) + headerPadding<Header>();
+        return reinterpret_cast<Header*>(headerAddress);
+    }
+
+    bool isMarked();
+    void unmark();
+    size_t objectPayloadSizeForTesting();
+    void mark(Visitor*);
+    void finalize();
+    void markDead();
+    void markUnmarkedObjectsDead();
+    virtual void markOrphaned() override
+    {
+        // Zap the payload with a recognizable value to detect any incorrect
+        // cross thread pointer usage.
+        memset(payload(), orphanedZapValue, payloadSize());
+        BaseHeapPage::markOrphaned();
+    }
+
+private:
+    friend class ThreadHeap<Header>;
+
+    LargeObject<Header>* m_next;
 };
 
 // A HeapDoesNotContainCache provides a fast way of taking an arbitrary

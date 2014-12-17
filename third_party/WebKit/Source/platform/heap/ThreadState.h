@@ -859,52 +859,6 @@ private:
     bool m_locked;
 };
 
-// Common header for heap pages. Needs to be defined before class Visitor.
-class BaseHeapPage {
-public:
-    BaseHeapPage(PageMemory*, const GCInfo*, ThreadState*);
-    virtual ~BaseHeapPage() { }
-
-    // Check if the given address points to an object in this
-    // heap page. If so, find the start of that object and mark it
-    // using the given Visitor. Otherwise do nothing. The pointer must
-    // be within the same aligned blinkPageSize as the this-pointer.
-    //
-    // This is used during conservative stack scanning to
-    // conservatively mark all objects that could be referenced from
-    // the stack.
-    virtual void checkAndMarkPointer(Visitor*, Address) = 0;
-    virtual bool contains(Address) = 0;
-
-#if ENABLE(GC_PROFILE_MARKING)
-    virtual const GCInfo* findGCInfo(Address) = 0;
-#endif
-
-    Address address() { return reinterpret_cast<Address>(this); }
-    PageMemory* storage() const { return m_storage; }
-    ThreadState* threadState() const { return m_threadState; }
-    const GCInfo* gcInfo() { return m_gcInfo; }
-    virtual bool isLargeObject() { return false; }
-    virtual void markOrphaned();
-    bool orphaned() { return !m_threadState; }
-    bool terminating() { return m_terminating; }
-    void setTerminating() { m_terminating = true; }
-    size_t promptlyFreedSize() { return m_promptlyFreedSize; }
-    void resetPromptlyFreedSize() { m_promptlyFreedSize = 0; }
-    void addToPromptlyFreedSize(size_t size) { m_promptlyFreedSize += size; }
-
-private:
-    PageMemory* m_storage;
-    const GCInfo* m_gcInfo;
-    ThreadState* m_threadState;
-    // Pointer sized integer to ensure proper alignment of the
-    // HeapPage header. We use some of the bits to determine
-    // whether the page is part of a terminting thread or
-    // if the page is traced after being terminated (orphaned).
-    uintptr_t m_terminating : 1;
-    uintptr_t m_promptlyFreedSize : 17; // == blinkPageSizeLog2
-};
-
 } // namespace blink
 
 #endif // ThreadState_h
