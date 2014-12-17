@@ -193,6 +193,12 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   // If |only_visible| is true, only forms visible in the layout are sent.
   void SendPasswordForms(bool only_visible);
 
+  // Instructs the browser to show a pop-up suggesting which credentials could
+  // be filled. |show_in_password_field| should indicate whether the pop-up is
+  // to be shown on the password field instead of on the username field. If the
+  // username exists, it should be passed as |user_input|. If there is no
+  // username, pass the password field in |user_input|. In the latter case, no
+  // username value will be shown in the pop-up.
   bool ShowSuggestionPopup(const PasswordFormFillData& fill_data,
                            const blink::WebInputElement& user_input,
                            bool show_all,
@@ -202,7 +208,9 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   // passed in element can be either a username element or a password element.
   // If a PasswordInfo was found, returns |true| and also assigns the
   // corresponding username WebInputElement and PasswordInfo into
-  // username_element and pasword_info, respectively.
+  // username_element and pasword_info, respectively. Note, that
+  // |username_element->isNull()| can be true for forms without a username
+  // field.
   bool FindPasswordInfoForElement(
       const blink::WebInputElement& element,
       const blink::WebInputElement** username_element,

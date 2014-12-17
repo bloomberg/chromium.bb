@@ -416,34 +416,35 @@ bool FillFormOnPasswordReceived(
     return false;
 
   bool form_contains_username_field = FillDataContainsUsername(fill_data);
-  // If the form contains a username field, try to set the username to the
-  // preferred name, but only if:
-  //   (a) The username element is autocompletable, and
-  //   (b) The fill-on-account-select flag is not set, and
-  //   (c) The username element isn't prefilled
+  // If the form contains an autocompletable username field, try to set the
+  // username to the preferred name, but only if:
+  //   (a) The fill-on-account-select flag is not set, and
+  //   (b) The username element isn't prefilled
   //
-  // If (a) is true but (b) is false, then just mark the username element as
-  // autofilled and return so the fill step is skipped.
+  // If (a) is false, then just mark the username element as autofilled and
+  // return so the fill step is skipped.
   //
-  // If (a) and (b) are false, then the username element should not be
-  // autofilled, but the user should still be able to select to fill the
-  // password element, so the password element must be marked as autofilled and
-  // the fill step should also be skipped.
+  // If there is no autocompletable username field, and (a) is false, then the
+  // username element cannot be autofilled, but the user should still be able to
+  // select to fill the password element, so the password element must be marked
+  // as autofilled and the fill step should also be skipped.
   //
   // In all other cases, do nothing.
-  if (form_contains_username_field) {
-    if (IsElementAutocompletable(username_element)) {
-      if (ShouldFillOnAccountSelect()) {
-        username_element.setAutofilled(true);
-        return false;
-      } else if (username_element.value().isEmpty()) {
-        // TODO(tkent): Check maxlength and pattern.
-        username_element.setValue(fill_data.username_field.value, true);
-      }
-    } else if (ShouldFillOnAccountSelect()) {
+  bool form_has_fillable_username = form_contains_username_field &&
+                                    IsElementAutocompletable(username_element);
+
+  if (ShouldFillOnAccountSelect()) {
+    if (form_has_fillable_username) {
+      username_element.setAutofilled(true);
+    } else {
       password_element.setAutofilled(true);
-      return false;
     }
+    return false;
+  }
+
+  if (form_has_fillable_username && username_element.value().isEmpty()) {
+    // TODO(tkent): Check maxlength and pattern.
+    username_element.setValue(fill_data.username_field.value, true);
   }
 
   // Fill if we have an exact match for the username. Note that this sets
@@ -655,22 +656,27 @@ bool PasswordAutofillAgent::FillSuggestion(
     const blink::WebNode& node,
     const blink::WebString& username,
     const blink::WebString& password) {
-  blink::WebInputElement username_element;
+  // The element in context of the suggestion popup.
+  blink::WebInputElement filled_element;
   PasswordInfo* password_info;
 
-  if (!FindLoginInfo(node, &username_element, &password_info) ||
-      !IsElementAutocompletable(username_element) ||
+  if (!FindLoginInfo(node, &filled_element, &password_info) ||
+      !IsElementAutocompletable(filled_element) ||
       !IsElementAutocompletable(password_info->password_field)) {
     return false;
   }
 
   password_info->password_was_edited_last = false;
-  username_element.setValue(username, true);
-  username_element.setAutofilled(true);
-  username_element.setSelectionRange(username.length(), username.length());
+  // Note that in cases where filled_element is the password element, the value
+  // gets overwritten with the correct one below.
+  filled_element.setValue(username, true);
+  filled_element.setAutofilled(true);
 
   password_info->password_field.setValue(password, true);
   password_info->password_field.setAutofilled(true);
+
+  filled_element.setSelectionRange(filled_element.value().length(),
+                                   filled_element.value().length());
 
   return true;
 }
@@ -747,10 +753,6 @@ bool PasswordAutofillAgent::ShowSuggestions(
   if (!FindPasswordInfoForElement(element, &username_element, &password_info))
     return false;
 
-  // TODO(vabr): Make this work for forms without a username element.
-  if (username_element->isNull())
-    return false;
-
   // If autocomplete='off' is set on the form elements, no suggestion dialog
   // should be shown. However, return |true| to indicate that this is a known
   // password form and that the request to show suggestions has been handled (as
@@ -759,19 +761,23 @@ bool PasswordAutofillAgent::ShowSuggestions(
       !IsElementAutocompletable(password_info->password_field))
     return true;
 
-  // If the element is a password field, a popup should only be shown if the
-  // corresponding username element is not editable since it is only in that
-  // case that the username element does not have a suggestions popup.
-  if (element.isPasswordField() && IsElementEditable(*username_element))
+  bool username_is_available =
+      !username_element->isNull() && IsElementEditable(*username_element);
+  // If the element is a password field, a popup should only be shown if there
+  // is no username or the corresponding username element is not editable since
+  // it is only in that case that the username element does not have a
+  // suggestions popup.
+  if (element.isPasswordField() && username_is_available)
     return true;
 
   // Chrome should never show more than one account for a password element since
   // this implies that the username element cannot be modified. Thus even if
   // |show_all| is true, check if the element in question is a password element
   // for the call to ShowSuggestionPopup.
-  return ShowSuggestionPopup(password_info->fill_data, *username_element,
-                             show_all && !element.isPasswordField(),
-                             element.isPasswordField());
+  return ShowSuggestionPopup(
+      password_info->fill_data,
+      username_element->isNull() ? element : *username_element,
+      show_all && !element.isPasswordField(), element.isPasswordField());
 }
 
 bool PasswordAutofillAgent::OriginCanAccessPasswordManager(
@@ -1127,6 +1133,7 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
     const blink::WebInputElement& user_input,
     bool show_all,
     bool show_on_password_field) {
+  DCHECK(!user_input.isNull());
   blink::WebFrame* frame = user_input.document().frame();
   if (!frame)
     return false;
@@ -1141,7 +1148,7 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
       user_input, &form, &field, REQUIRE_NONE);
 
   blink::WebInputElement selected_element = user_input;
-  if (show_on_password_field) {
+  if (show_on_password_field && !selected_element.isPasswordField()) {
     LoginToPasswordInfoMap::const_iterator iter =
         login_to_password_info_.find(user_input);
     DCHECK(iter != login_to_password_info_.end());
@@ -1149,8 +1156,12 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
   }
   gfx::Rect bounding_box(selected_element.boundsInViewportSpace());
 
+  blink::WebInputElement username;
+  if (!show_on_password_field || !user_input.isPasswordField()) {
+    username = user_input;
+  }
   LoginToPasswordInfoKeyMap::const_iterator key_it =
-      login_to_password_info_key_.find(user_input);
+      login_to_password_info_key_.find(username);
   DCHECK(key_it != login_to_password_info_key_.end());
 
   float scale =
@@ -1164,12 +1175,15 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
     options |= SHOW_ALL;
   if (show_on_password_field)
     options |= IS_PASSWORD_FIELD;
+  base::string16 username_string(
+      username.isNull() ? base::string16()
+                        : static_cast<base::string16>(user_input.value()));
   Send(new AutofillHostMsg_ShowPasswordSuggestions(
-      routing_id(), key_it->second, field.text_direction, user_input.value(),
+      routing_id(), key_it->second, field.text_direction, username_string,
       options, bounding_box_scaled));
 
   bool suggestions_present = false;
-  if (GetSuggestionsStats(fill_data, user_input.value(), show_all,
+  if (GetSuggestionsStats(fill_data, username_string, show_all,
                           &suggestions_present)) {
     usernames_usage_ = OTHER_POSSIBLE_USERNAME_SHOWN;
   }
