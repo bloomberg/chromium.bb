@@ -248,15 +248,11 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
     elif sys.platform != 'win32':
       # On non-Windows platforms, key off of the custom header
       # "x-goog-meta-executable".
-      #
-      # TODO(hinoka): It is supposedly faster to use "gsutil stat" but that
-      # doesn't appear to be supported by the gsutil currently in our tree. When
-      # we update, this code should use that instead of "gsutil ls -L".
-      code, out, _ = gsutil.check_call('ls', '-L', file_url)
+      code, out, _ = gsutil.check_call('stat', file_url)
       if code != 0:
         out_q.put('%d> %s' % (thread_num, err))
         ret_codes.put((code, err))
-      elif re.search('x-goog-meta-executable:', out):
+      elif re.search(r'executable:\s*1', out):
         st = os.stat(output_filename)
         os.chmod(output_filename, st.st_mode | stat.S_IEXEC)
 
