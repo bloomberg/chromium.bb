@@ -32,6 +32,3 @@ NTPUserDataLoggerTest.TestLogging
 
 # http://crbug.com/403533
 ExtensionPathUtilTest.BasicPrettifyPathTest
-
-# http://crbug.com/442834
-ComponentLoaderTest.*
