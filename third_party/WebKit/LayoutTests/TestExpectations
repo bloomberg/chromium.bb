@@ -1465,6 +1465,9 @@ crbug.com/442181 virtual/slimmingpaint/fast/images/pixelated-composited.html [ I
 
 crbug.com/442285 virtual/slimmingpaint/fast/text/decorations-transformed.html [ ImageOnlyFailure ]
 
+crbug.com/416425 [ Win Mac ] fast/css/font-face-opentype.html [ NeedsRebaseline ]
+crbug.com/416425 [ Win Linux ] fast/text/line-break-after-question-mark.html [ NeedsRebaseline ]
+
 # Rebaseline after ES6 classes are in.
 crbug.com/442340 webexposed/global-interface-listing.html [ NeedsManualRebaseline ]
 crbug.com/442340 virtual/stable/webexposed/global-interface-listing-dedicated-worker.html [ NeedsManualRebaseline ]
@@ -1478,4 +1481,3 @@ crbug.com/390488 [ Mac Debug ] svg/custom/foreign-object-skew.svg [ ImageOnlyFai
 
 crbug.com/381919 virtual/regionbasedmulticol/fast/multicol/transform-inside-opacity.html [ NeedsRebaseline ]
 crbug.com/438618 fast/css3-text/css3-text-justify/text-justify-distribute.html [ NeedsRebaseline ]
-
