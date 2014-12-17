@@ -173,21 +173,9 @@ CastMetricsServiceClient::CastMetricsServiceClient(
     net::URLRequestContextGetter* request_context)
     : io_task_runner_(io_task_runner),
       pref_service_(pref_service),
-      metrics_state_manager_(::metrics::MetricsStateManager::Create(
-          pref_service,
-          base::Bind(&CastMetricsServiceClient::IsReportingEnabled,
-                     base::Unretained(this)),
-          base::Bind(&CastMetricsServiceClient::StoreClientInfo,
-                     base::Unretained(this)),
-          base::Bind(&CastMetricsServiceClient::LoadClientInfo,
-                     base::Unretained(this)))),
-      metrics_service_(new ::metrics::MetricsService(
-          metrics_state_manager_.get(),
-          this,
-          pref_service)),
+      cast_service_(NULL),
       metrics_service_loop_(base::MessageLoopProxy::current()),
-      request_context_(request_context),
-      cast_service_(NULL) {
+      request_context_(request_context) {
 }
 
 CastMetricsServiceClient::~CastMetricsServiceClient() {
@@ -197,6 +185,19 @@ void CastMetricsServiceClient::Initialize(CastService* cast_service) {
   DCHECK(cast_service);
   DCHECK(!cast_service_);
   cast_service_ = cast_service;
+
+  metrics_state_manager_ = ::metrics::MetricsStateManager::Create(
+      pref_service_,
+      base::Bind(&CastMetricsServiceClient::IsReportingEnabled,
+                 base::Unretained(this)),
+      base::Bind(&CastMetricsServiceClient::StoreClientInfo,
+                 base::Unretained(this)),
+      base::Bind(&CastMetricsServiceClient::LoadClientInfo,
+                 base::Unretained(this)));
+  metrics_service_.reset(new ::metrics::MetricsService(
+      metrics_state_manager_.get(),
+      this,
+      pref_service_));
 
   // Always create a client id as it may also be used by crash reporting,
   // (indirectly) included in feedback, and can be queried during setup.

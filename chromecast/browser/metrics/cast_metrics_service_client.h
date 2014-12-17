@@ -82,16 +82,15 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
 
   base::TaskRunner* const io_task_runner_;
   PrefService* const pref_service_;
+  CastService* cast_service_;
 
 #if defined(OS_LINUX)
   scoped_ptr<ExternalMetrics> external_metrics_;
 #endif  // defined(OS_LINUX)
-  const scoped_ptr< ::metrics::MetricsStateManager> metrics_state_manager_;
-  const scoped_ptr< ::metrics::MetricsService> metrics_service_;
   const scoped_refptr<base::MessageLoopProxy> metrics_service_loop_;
+  scoped_ptr< ::metrics::MetricsStateManager> metrics_state_manager_;
+  scoped_ptr< ::metrics::MetricsService> metrics_service_;
   net::URLRequestContextGetter* const request_context_;
-
-  CastService* cast_service_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMetricsServiceClient);
 };
