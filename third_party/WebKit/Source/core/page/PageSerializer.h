@@ -31,6 +31,7 @@
 #ifndef PageSerializer_h
 #define PageSerializer_h
 
+#include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/KURLHash.h"
 #include "wtf/HashMap.h"
@@ -55,7 +56,8 @@ struct SerializedResource;
 
 // This class is used to serialize a page contents back to text (typically HTML).
 // It serializes all the page frames and retrieves resources such as images and CSS stylesheets.
-class PageSerializer {
+class PageSerializer final {
+    STACK_ALLOCATED();
 public:
     explicit PageSerializer(Vector<SerializedResource>*);
 
@@ -84,10 +86,12 @@ private:
 
     Vector<SerializedResource>* m_resources;
     ListHashSet<KURL> m_resourceURLs;
-    HashMap<LocalFrame*, KURL> m_blankFrameURLs;
+
+    using BlankFrameURLMap = WillBeHeapHashMap<RawPtrWillBeMember<LocalFrame>, KURL>;
+    BlankFrameURLMap m_blankFrameURLs;
     unsigned m_blankFrameCounter;
 };
 
-}
+} // namespace blink
 
-#endif
+#endif // PageSerializer_h
