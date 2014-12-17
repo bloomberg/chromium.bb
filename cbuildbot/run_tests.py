@@ -403,11 +403,13 @@ def main(argv):
 
   # Process list output quickly as it takes no privileges.
   if opts.list:
-    print('\n'.join(sorted(opts.tests or FindTests())))
+    print('\n'.join(sorted(opts.tests or FindTests((constants.CHROMITE_DIR,)))))
     return
 
   # Now let's run some tests.
   _ReExecuteIfNeeded([sys.argv[0]] + argv, opts.network)
+  # A lot of pieces here expect to be run in the root of the chromite tree.
+  # Make them happy.
   os.chdir(constants.CHROMITE_DIR)
   tests = opts.tests or FindTests()
 
