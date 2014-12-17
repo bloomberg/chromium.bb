@@ -84,9 +84,11 @@ class PasswordManagerClient {
   // Returns true if the prompt is indeed displayed. If the prompt is not
   // displayed, returns false and does not call |callback|.
   // |callback| should be invoked with the chosen form.
-  // Note: The implementation takes ownership of all PasswordForms in |forms|.
+  // Note: The implementation takes ownership of all PasswordForms in
+  // |local_forms| and |federated_forms|.
   virtual bool PromptUserToChooseCredentials(
-      const std::vector<autofill::PasswordForm*>& forms,
+      const std::vector<autofill::PasswordForm*>& local_forms,
+      const std::vector<autofill::PasswordForm*>& federated_forms,
       base::Callback<void(const CredentialInfo&)> callback) = 0;
 
   // Called when a password is saved in an automated fashion. Embedder may

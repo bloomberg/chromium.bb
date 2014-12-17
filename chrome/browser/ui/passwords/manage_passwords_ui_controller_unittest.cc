@@ -338,10 +338,12 @@ TEST_F(ManagePasswordsUIControllerTest, AutomaticPasswordSave) {
 }
 
 TEST_F(ManagePasswordsUIControllerTest, ChooseCredential) {
-  ScopedVector<autofill::PasswordForm> credentials;
-  credentials.push_back(new autofill::PasswordForm(test_form()));
+  ScopedVector<autofill::PasswordForm> local_credentials;
+  local_credentials.push_back(new autofill::PasswordForm(test_form()));
+  ScopedVector<autofill::PasswordForm> federated_credentials;
   EXPECT_TRUE(controller()->OnChooseCredentials(
-      credentials.Pass(),
+      local_credentials.Pass(),
+      federated_credentials.Pass(),
       base::Bind(&ManagePasswordsUIControllerTest::CredentialCallback,
                  base::Unretained(this))));
   EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_AND_BUBBLE_STATE,
@@ -364,10 +366,12 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredential) {
 }
 
 TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialCancel) {
-  ScopedVector<autofill::PasswordForm> credentials;
-  credentials.push_back(new autofill::PasswordForm(test_form()));
+  ScopedVector<autofill::PasswordForm> local_credentials;
+  local_credentials.push_back(new autofill::PasswordForm(test_form()));
+  ScopedVector<autofill::PasswordForm> federated_credentials;
   EXPECT_TRUE(controller()->OnChooseCredentials(
-      credentials.Pass(),
+      local_credentials.Pass(),
+      federated_credentials.Pass(),
       base::Bind(&ManagePasswordsUIControllerTest::CredentialCallback,
                  base::Unretained(this))));
   EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_AND_BUBBLE_STATE,

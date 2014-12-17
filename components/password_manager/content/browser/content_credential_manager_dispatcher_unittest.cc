@@ -50,14 +50,18 @@ class TestPasswordManagerClient
   }
 
   bool PromptUserToChooseCredentials(
-      const std::vector<autofill::PasswordForm*>& forms,
+      const std::vector<autofill::PasswordForm*>& local_forms,
+      const std::vector<autofill::PasswordForm*>& federated_forms,
       base::Callback<void(const password_manager::CredentialInfo&)>
           callback) override {
-    EXPECT_FALSE(forms.empty());
+    EXPECT_FALSE(local_forms.empty() && federated_forms.empty());
     did_prompt_user_to_choose_ = true;
-    ScopedVector<autofill::PasswordForm> entries;
-    entries.assign(forms.begin(), forms.end());
-    password_manager::CredentialInfo info(*entries[0]);
+    ScopedVector<autofill::PasswordForm> local_entries;
+    local_entries.assign(local_forms.begin(), local_forms.end());
+    ScopedVector<autofill::PasswordForm> federated_entries;
+    federated_entries.assign(federated_forms.begin(), federated_forms.end());
+    // TODO(vasilii): Do something clever with |federated_forms|.
+    password_manager::CredentialInfo info(*local_entries[0]);
     base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback,
                                                                  info));
     return true;

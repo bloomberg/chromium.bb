@@ -108,12 +108,14 @@ void ManagePasswordsUIController::OnPasswordSubmitted(
 }
 
 bool ManagePasswordsUIController::OnChooseCredentials(
-    ScopedVector<autofill::PasswordForm> credentials,
+    ScopedVector<autofill::PasswordForm> local_credentials,
+    ScopedVector<autofill::PasswordForm> federated_credentials,
     base::Callback<void(const password_manager::CredentialInfo&)> callback){
-  DCHECK(!credentials.empty());
+  // TODO(vasilii): Do something clever with |federated_credentials|.
+  DCHECK(!local_credentials.empty() || !federated_credentials.empty());
   form_manager_.reset();
-  origin_ = credentials[0]->origin;
-  new_password_forms_.swap(credentials);
+  origin_ = local_credentials[0]->origin;
+  new_password_forms_.swap(local_credentials);
   // The map is useless because usernames may overlap.
   password_form_map_.clear();
   state_ = password_manager::ui::CREDENTIAL_REQUEST_AND_BUBBLE_STATE;

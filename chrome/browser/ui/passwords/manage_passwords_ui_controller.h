@@ -45,9 +45,11 @@ class ManagePasswordsUIController
       scoped_ptr<password_manager::PasswordFormManager> form_manager);
 
   // Called when the site asks user to choose from credentials. This triggers
-  // the UI to prompt the user. |credentials| shouldn't be empty.
+  // the UI to prompt the user. |local_credentials| and |federated_credentials|
+  // shouldn't both be empty.
   bool OnChooseCredentials(
-      ScopedVector<autofill::PasswordForm> credentials,
+      ScopedVector<autofill::PasswordForm> local_credentials,
+      ScopedVector<autofill::PasswordForm> federated_credentials,
       base::Callback<void(const password_manager::CredentialInfo&)> callback);
 
   // Called when the password will be saved automatically, but we still wish to

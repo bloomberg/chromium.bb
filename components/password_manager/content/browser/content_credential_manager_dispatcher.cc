@@ -134,22 +134,28 @@ void ContentCredentialManagerDispatcher::OnGetPasswordStoreResults(
     const std::vector<autofill::PasswordForm*>& results) {
   DCHECK(pending_request_);
 
+  std::set<std::string> federations;
+  for (const GURL& origin : pending_request_->federations)
+    federations.insert(origin.spec());
+
   // We own the PasswordForm instances, so we're responsible for cleaning
-  // up the instances we don't add to |filtered_results|. We'll dump them
-  // into a ScopedVector and allow it to delete the PasswordForms upon
-  // destruction.
-  std::vector<autofill::PasswordForm*> filtered_results;
+  // up the instances we don't add to |local_results| or |federated_results|.
+  // We'll dump them into a ScopedVector and allow it to delete the
+  // PasswordForms upon destruction.
+  std::vector<autofill::PasswordForm*> local_results;
+  std::vector<autofill::PasswordForm*> federated_results;
   ScopedVector<autofill::PasswordForm> discarded_results;
   for (autofill::PasswordForm* form : results) {
     // TODO(mkwst): Extend this filter to include federations.
-    if (form->origin == pending_request_->origin) {
-      filtered_results.push_back(form);
-    } else {
+    if (form->origin == pending_request_->origin)
+      local_results.push_back(form);
+    else if (federations.count(form->origin.spec()) != 0)
+      federated_results.push_back(form);
+    else
       discarded_results.push_back(form);
-    }
   }
 
-  if (filtered_results.empty() ||
+  if ((local_results.empty() && federated_results.empty()) ||
       web_contents()->GetLastCommittedURL().GetOrigin() !=
           pending_request_->origin) {
     SendCredential(pending_request_->id, CredentialInfo());
@@ -157,7 +163,8 @@ void ContentCredentialManagerDispatcher::OnGetPasswordStoreResults(
   }
 
   if (!client_->PromptUserToChooseCredentials(
-          filtered_results,
+          local_results,
+          federated_results,
           base::Bind(&ContentCredentialManagerDispatcher::SendCredential,
                      base::Unretained(this), pending_request_->id))) {
     SendCredential(pending_request_->id, CredentialInfo());
