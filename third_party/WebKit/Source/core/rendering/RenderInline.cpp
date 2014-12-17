@@ -1022,29 +1022,42 @@ LayoutRect RenderInline::linesVisualOverflowBoundingBox() const
     return rect;
 }
 
+LayoutRect RenderInline::absoluteClippedOverflowRect() const
+{
+    return clippedOverflowRect(view());
+}
+
 LayoutRect RenderInline::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+{
+    // If we don't create line boxes, we don't have any invalidations to do.
+    if (!alwaysCreateLineBoxes())
+        return LayoutRect();
+    return clippedOverflowRect(paintInvalidationContainer);
+}
+
+LayoutRect RenderInline::clippedOverflowRect(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     if ((!firstLineBoxIncludingCulling() && !continuation()) || style()->visibility() != VISIBLE)
         return LayoutRect();
 
-    LayoutRect paintInvalidationRect(linesVisualOverflowBoundingBox());
+    LayoutRect overflowRect(linesVisualOverflowBoundingBox());
 
     LayoutUnit outlineSize = style()->outlineSize();
-    paintInvalidationRect.inflate(outlineSize);
+    overflowRect.inflate(outlineSize);
 
-    mapRectToPaintInvalidationBacking(paintInvalidationContainer, paintInvalidationRect, paintInvalidationState);
+    mapRectToPaintInvalidationBacking(paintInvalidationContainer, overflowRect, paintInvalidationState);
 
     if (outlineSize) {
         for (RenderObject* curr = firstChild(); curr; curr = curr->nextSibling()) {
             if (!curr->isText())
-                paintInvalidationRect.unite(curr->rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineSize));
+                overflowRect.unite(curr->rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineSize));
         }
 
         if (continuation() && !continuation()->isInline() && continuation()->parent())
-            paintInvalidationRect.unite(continuation()->rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineSize));
+            overflowRect.unite(continuation()->rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineSize));
     }
 
-    return paintInvalidationRect;
+    return overflowRect;
 }
 
 LayoutRect RenderInline::rectWithOutlineForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* paintInvalidationState) const
