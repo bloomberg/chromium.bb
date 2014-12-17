@@ -946,6 +946,7 @@ const char kWakeOnWiFiFeaturesEnabledPacket[] = "packet";
 const char kWakeOnWiFiFeaturesEnabledSSID[] = "ssid";
 const char kWakeOnWiFiFeaturesEnabledPacketSSID[] = "packet_and_ssid";
 const char kWakeOnWiFiFeaturesEnabledNone[] = "none";
+const char kWakeOnWiFiFeaturesEnabledNotSupported[] = "not_supported";
 
 // Cellular service carriers.
 const char kCarrierGenericUMTS[] = "Generic UMTS";
