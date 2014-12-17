@@ -50,8 +50,14 @@ const size_t SdchManager::kMaxDictionaryCount = 20;
 const size_t SdchManager::kMaxDictionarySize = 1000 * 1000;
 #endif
 
+// Workaround for http://crbug.com/437794; remove when fixed.
+#if defined(OS_IOS)
+// static
+bool SdchManager::g_sdch_enabled_ = false;
+#else
 // static
 bool SdchManager::g_sdch_enabled_ = true;
+#endif
 
 // static
 bool SdchManager::g_secure_scheme_supported_ = true;
