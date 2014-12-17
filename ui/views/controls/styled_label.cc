@@ -96,7 +96,6 @@ StyledLabel::StyledLabel(const base::string16& text,
                          StyledLabelListener* listener)
     : specified_line_height_(0),
       listener_(listener),
-      width_at_last_layout_(0),
       displayed_on_background_color_set_(false),
       auto_color_readability_enabled_(true) {
   base::TrimWhitespace(text, base::TRIM_TRAILING, &text_);
@@ -141,17 +140,8 @@ void StyledLabel::SetLineHeight(int line_height) {
 }
 
 void StyledLabel::SetDisplayedOnBackgroundColor(SkColor color) {
-  if (displayed_on_background_color_ == color)
-    return;
-
   displayed_on_background_color_ = color;
   displayed_on_background_color_set_ = true;
-
-  for (int i = 0, count = child_count(); i < count; ++i) {
-    DCHECK((child_at(i)->GetClassName() == Label::kViewClassName) ||
-           (child_at(i)->GetClassName() == Link::kViewClassName));
-    static_cast<Label*>(child_at(i))->SetBackgroundColor(color);
-  }
 }
 
 gfx::Insets StyledLabel::GetInsets() const {
@@ -174,18 +164,19 @@ gfx::Insets StyledLabel::GetInsets() const {
 }
 
 int StyledLabel::GetHeightForWidth(int w) const {
-  // TODO(erg): Munge the const-ness of the style label. CalculateAndDoLayout
-  // doesn't actually make any changes to member variables when |dry_run| is
-  // set to true. In general, the mutating and non-mutating parts shouldn't
-  // be in the same codepath.
-  calculated_size_ =
-      const_cast<StyledLabel*>(this)->CalculateAndDoLayout(w, true);
+  if (w != calculated_size_.width()) {
+    // TODO(erg): Munge the const-ness of the style label. CalculateAndDoLayout
+    // doesn't actually make any changes to member variables when |dry_run| is
+    // set to true. In general, the mutating and non-mutating parts shouldn't
+    // be in the same codepath.
+    calculated_size_ =
+        const_cast<StyledLabel*>(this)->CalculateAndDoLayout(w, true);
+  }
   return calculated_size_.height();
 }
 
 void StyledLabel::Layout() {
   calculated_size_ = CalculateAndDoLayout(GetLocalBounds().width(), false);
-  width_at_last_layout_ = calculated_size_.width();
 }
 
 void StyledLabel::PreferredSizeChanged() {
@@ -199,16 +190,12 @@ void StyledLabel::LinkClicked(Link* source, int event_flags) {
 }
 
 gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
-  width -= GetInsets().width();
-  if (width == calculated_size_.width() &&
-      (dry_run || width_at_last_layout_ == width))
-    return calculated_size_;
-
   if (!dry_run) {
     RemoveAllChildViews(true);
     link_targets_.clear();
   }
 
+  width -= GetInsets().width();
   if (width <= 0 || text_.empty())
     return gfx::Size();
 

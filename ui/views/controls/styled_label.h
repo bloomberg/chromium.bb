@@ -147,7 +147,6 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   // This variable saves the result of the last GetHeightForWidth call in order
   // to avoid repeated calculation.
   mutable gfx::Size calculated_size_;
-  int width_at_last_layout_;
 
   // Background color on which the label is drawn, for auto color readability.
   SkColor displayed_on_background_color_;
