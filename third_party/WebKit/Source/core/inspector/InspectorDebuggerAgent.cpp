@@ -1563,12 +1563,13 @@ void InspectorDebuggerAgent::reset()
 
 void InspectorDebuggerAgent::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_injectedScriptManager);
     visitor->trace(m_listener);
     visitor->trace(m_asyncCallStackTracker);
-#if ENABLE(OILPAN)
     visitor->trace(m_promiseTracker);
     visitor->trace(m_asyncOperationsForStepInto);
+    visitor->trace(m_currentAsyncCallChain);
 #endif
     InspectorBaseAgent::trace(visitor);
 }

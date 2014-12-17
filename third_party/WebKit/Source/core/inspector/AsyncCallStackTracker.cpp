@@ -109,7 +109,7 @@ public:
     void remove(typename MapType::KeyPeekInType key)
     {
         ASSERT(m_tracker);
-        RefPtr<AsyncCallChain> chain = m_asyncCallChains.take(key);
+        RefPtrWillBeRawPtr<AsyncCallChain> chain = m_asyncCallChains.take(key);
         if (chain)
             m_tracker->m_debuggerAgent->didCompleteAsyncOperation(chain.get());
     }

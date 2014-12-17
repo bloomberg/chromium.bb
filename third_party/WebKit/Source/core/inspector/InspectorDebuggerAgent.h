@@ -68,7 +68,6 @@ class InspectorDebuggerAgent
     , public InspectorBackendDispatcher::DebuggerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorDebuggerAgent);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InspectorDebuggerAgent);
 public:
     enum BreakpointSource {
         UserBreakpointSource,
