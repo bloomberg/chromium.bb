@@ -404,6 +404,8 @@ source_set("test_support") {
 test("gfx_unittests") {
   sources = [
     "font_unittest.cc",
+    "image/image_family_unittest.cc",
+    "image/image_ios_unittest.mm",
     "image/image_skia_unittest.cc",
     "image/image_unittest.cc",
     "screen_unittest.cc",
@@ -445,6 +447,8 @@ test("gfx_unittests") {
       "geometry/size_unittest.cc",
       "geometry/vector2d_unittest.cc",
       "geometry/vector3d_unittest.cc",
+      "image/image_mac_unittest.mm",
+      "image/image_util_unittest.cc",
       "mac/coordinate_conversion_unittest.mm",
       "platform_font_mac_unittest.mm",
       "range/range_mac_unittest.mm",
@@ -529,6 +533,7 @@ test("gfx_unittests") {
       "font_fallback_win_unittest.cc",
       "icon_util_unittest.cc",
       "icon_util_unittests.rc",
+      "path_win_unittest.cc",
       "platform_font_win_unittest.cc",
     ]
 
