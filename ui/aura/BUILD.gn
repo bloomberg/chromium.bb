@@ -181,12 +181,15 @@ source_set("test_support") {
     "//ui/events:test_support",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/gfx/x",
     "//ui/wm",
   ]
 
   if (is_win) {
     cflags = [ "/wd4267" ]  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  }
+
+  if (use_x11) {
+    deps += [ "//ui/gfx/x" ]
   }
 
   if (use_aura) {

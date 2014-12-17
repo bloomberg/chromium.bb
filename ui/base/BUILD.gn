@@ -826,6 +826,10 @@ if (!is_android) {
         "win/hwnd_subclass_unittest.cc",
         "win/open_file_name_win_unittest.cc",
       ]
+      sources -= [
+        "dragdrop/os_exchange_data_provider_aurax11_unittest.cc",
+        "x/selection_requestor_unittest.cc",
+      ]
 
       ldflags = [
         "/DELAYLOAD:d2d1.dll",

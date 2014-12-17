@@ -149,7 +149,7 @@ static_library("test_support") {
   if (use_x11) {
     deps += [ "//ui/gfx/x" ]
   }
-  if (use_ozone) {
+  if (use_ozone || !use_x11) {
     sources -= [ "test/x11_property_change_waiter.cc" ]
   }
 }
