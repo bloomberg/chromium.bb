@@ -1199,8 +1199,6 @@ static PassRefPtr<TraceEvent::ConvertableToTraceFormat> jsonObjectForOldAndNewRe
 
 LayoutRect RenderObject::previousSelectionRectForPaintInvalidation() const
 {
-    ASSERT(shouldInvalidateSelection());
-
     if (!selectionPaintInvalidationMap)
         return LayoutRect();
 
@@ -1209,25 +1207,34 @@ LayoutRect RenderObject::previousSelectionRectForPaintInvalidation() const
 
 void RenderObject::setPreviousSelectionRectForPaintInvalidation(const LayoutRect& selectionRect)
 {
-    if (!selectionPaintInvalidationMap)
+    if (!selectionPaintInvalidationMap) {
+        if (selectionRect.isEmpty())
+            return;
         selectionPaintInvalidationMap = new SelectionPaintInvalidationMap();
+    }
 
-    selectionPaintInvalidationMap->set(this, selectionRect);
+    if (selectionRect.isEmpty())
+        selectionPaintInvalidationMap->remove(this);
+    else
+        selectionPaintInvalidationMap->set(this, selectionRect);
 }
 
 void RenderObject::invalidateSelectionIfNeeded(const RenderLayerModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason)
 {
-    if (!shouldInvalidateSelection())
+    // Update selection rect when we are doing full invalidation (in case that the object is moved, composite status changed, etc.)
+    // or shouldInvalidationSelection is set (in case that the selection itself changed).
+    bool fullInvalidation = view()->doingFullPaintInvalidation() || isFullPaintInvalidationReason(invalidationReason);
+    if (!fullInvalidation && !shouldInvalidateSelection())
         return;
 
     LayoutRect oldSelectionRect = previousSelectionRectForPaintInvalidation();
-    LayoutRect previousSelectionRectForPaintInvalidation = selectionRectForPaintInvalidation(&paintInvalidationContainer);
-    setPreviousSelectionRectForPaintInvalidation(previousSelectionRectForPaintInvalidation);
+    LayoutRect newSelectionRect = selectionRectForPaintInvalidation(&paintInvalidationContainer);
+    setPreviousSelectionRectForPaintInvalidation(newSelectionRect);
 
-    if (view()->doingFullPaintInvalidation() || isFullPaintInvalidationReason(invalidationReason))
+    if (fullInvalidation)
         return;
 
-    fullyInvalidatePaint(paintInvalidationContainer, PaintInvalidationSelection, oldSelectionRect, previousSelectionRectForPaintInvalidation);
+    fullyInvalidatePaint(paintInvalidationContainer, PaintInvalidationSelection, oldSelectionRect, newSelectionRect);
 }
 
 PaintInvalidationReason RenderObject::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const RenderLayerModelObject& paintInvalidationContainer)
