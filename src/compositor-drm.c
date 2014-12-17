@@ -225,11 +225,10 @@ static void
 drm_output_set_cursor(struct drm_output *output);
 
 static int
-drm_sprite_crtc_supported(struct weston_output *output_base, uint32_t supported)
+drm_sprite_crtc_supported(struct drm_output *output, uint32_t supported)
 {
-	struct weston_compositor *ec = output_base->compositor;
-	struct drm_compositor *c =(struct drm_compositor *) ec;
-	struct drm_output *output = (struct drm_output *) output_base;
+	struct weston_compositor *ec = output->base.compositor;
+	struct drm_compositor *c = (struct drm_compositor *)ec;
 	int crtc;
 
 	for (crtc = 0; crtc < c->num_crtcs; crtc++) {
@@ -462,10 +461,9 @@ drm_output_check_scanout_format(struct drm_output *output,
 }
 
 static struct weston_plane *
-drm_output_prepare_scanout_view(struct weston_output *_output,
+drm_output_prepare_scanout_view(struct drm_output *output,
 				struct weston_view *ev)
 {
-	struct drm_output *output = (struct drm_output *) _output;
 	struct drm_compositor *c =
 		(struct drm_compositor *) output->base.compositor;
 	struct weston_buffer *buffer = ev->surface->buffer_ref.buffer;
@@ -646,7 +644,7 @@ drm_output_repaint(struct weston_output *output_base,
 		};
 
 		if ((!s->current && !s->next) ||
-		    !drm_sprite_crtc_supported(output_base, s->possible_crtcs))
+		    !drm_sprite_crtc_supported(output, s->possible_crtcs))
 			continue;
 
 		if (s->next && !compositor->sprites_hidden)
@@ -832,11 +830,11 @@ drm_view_transform_supported(struct weston_view *ev)
 }
 
 static struct weston_plane *
-drm_output_prepare_overlay_view(struct weston_output *output_base,
+drm_output_prepare_overlay_view(struct drm_output *output,
 				struct weston_view *ev)
 {
-	struct weston_compositor *ec = output_base->compositor;
-	struct drm_compositor *c =(struct drm_compositor *) ec;
+	struct weston_compositor *ec = output->base.compositor;
+	struct drm_compositor *c = (struct drm_compositor *)ec;
 	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
 	struct drm_sprite *s;
 	int found = 0;
@@ -849,16 +847,16 @@ drm_output_prepare_overlay_view(struct weston_output *output_base,
 	if (c->gbm == NULL)
 		return NULL;
 
-	if (viewport->buffer.transform != output_base->transform)
+	if (viewport->buffer.transform != output->base.transform)
 		return NULL;
 
-	if (viewport->buffer.scale != output_base->current_scale)
+	if (viewport->buffer.scale != output->base.current_scale)
 		return NULL;
 
 	if (c->sprites_are_broken)
 		return NULL;
 
-	if (ev->output_mask != (1u << output_base->id))
+	if (ev->output_mask != (1u << output->base.id))
 		return NULL;
 
 	if (ev->surface->buffer_ref.buffer == NULL)
@@ -874,7 +872,7 @@ drm_output_prepare_overlay_view(struct weston_output *output_base,
 		return NULL;
 
 	wl_list_for_each(s, &c->sprite_list, link) {
-		if (!drm_sprite_crtc_supported(output_base, s->possible_crtcs))
+		if (!drm_sprite_crtc_supported(output, s->possible_crtcs))
 			continue;
 
 		if (!s->next) {
@@ -918,13 +916,13 @@ drm_output_prepare_overlay_view(struct weston_output *output_base,
 	 */
 	pixman_region32_init(&dest_rect);
 	pixman_region32_intersect(&dest_rect, &ev->transform.boundingbox,
-				  &output_base->region);
-	pixman_region32_translate(&dest_rect, -output_base->x, -output_base->y);
+				  &output->base.region);
+	pixman_region32_translate(&dest_rect, -output->base.x, -output->base.y);
 	box = pixman_region32_extents(&dest_rect);
-	tbox = weston_transformed_rect(output_base->width,
-				       output_base->height,
-				       output_base->transform,
-				       output_base->current_scale,
+	tbox = weston_transformed_rect(output->base.width,
+				       output->base.height,
+				       output->base.transform,
+				       output->base.current_scale,
 				       *box);
 	s->dest_x = tbox.x1;
 	s->dest_y = tbox.y1;
@@ -934,7 +932,7 @@ drm_output_prepare_overlay_view(struct weston_output *output_base,
 
 	pixman_region32_init(&src_rect);
 	pixman_region32_intersect(&src_rect, &ev->transform.boundingbox,
-				  &output_base->region);
+				  &output->base.region);
 	box = pixman_region32_extents(&src_rect);
 
 	weston_view_from_global_fixed(ev,
@@ -976,23 +974,22 @@ drm_output_prepare_overlay_view(struct weston_output *output_base,
 }
 
 static struct weston_plane *
-drm_output_prepare_cursor_view(struct weston_output *output_base,
+drm_output_prepare_cursor_view(struct drm_output *output,
 			       struct weston_view *ev)
 {
 	struct drm_compositor *c =
-		(struct drm_compositor *) output_base->compositor;
+		(struct drm_compositor *)output->base.compositor;
 	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
-	struct drm_output *output = (struct drm_output *) output_base;
 
 	if (c->gbm == NULL)
 		return NULL;
 	if (output->base.transform != WL_OUTPUT_TRANSFORM_NORMAL)
 		return NULL;
-	if (viewport->buffer.scale != output_base->current_scale)
+	if (viewport->buffer.scale != output->base.current_scale)
 		return NULL;
 	if (output->cursor_view)
 		return NULL;
-	if (ev->output_mask != (1u << output_base->id))
+	if (ev->output_mask != (1u << output->base.id))
 		return NULL;
 	if (c->cursors_are_broken)
 		return NULL;
@@ -1067,10 +1064,11 @@ drm_output_set_cursor(struct drm_output *output)
 }
 
 static void
-drm_assign_planes(struct weston_output *output)
+drm_assign_planes(struct weston_output *output_base)
 {
 	struct drm_compositor *c =
-		(struct drm_compositor *) output->compositor;
+		(struct drm_compositor *)output_base->compositor;
+	struct drm_output *output = (struct drm_output *)output_base;
 	struct weston_view *ev, *next;
 	pixman_region32_t overlap, surface_overlap;
 	struct weston_plane *primary, *next_plane;
