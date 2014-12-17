@@ -17,7 +17,7 @@ class GURL;
 @class NSData;
 
 namespace base {
-class SequencedWorkerPool;
+class TaskRunner;
 }
 
 namespace net {
@@ -40,9 +40,8 @@ using ImageFetchedCallback =
 // An instance of this class can download a number of images at the same time.
 class ImageFetcher : public net::URLFetcherDelegate {
  public:
-  // The WorkerPool is used to eventually decode the image.
-  explicit ImageFetcher(
-      const scoped_refptr<base::SequencedWorkerPool>& decoding_pool);
+  // The TaskRunner is used to eventually decode the image.
+  explicit ImageFetcher(const scoped_refptr<base::TaskRunner>& task_runner);
   ~ImageFetcher() override;
 
   // Start downloading the image at the given |url|. The |callback| will be
@@ -86,8 +85,8 @@ class ImageFetcher : public net::URLFetcherDelegate {
   // during WebP decoding.
   base::WeakPtrFactory<ImageFetcher> weak_factory_;
 
-  // The pool used to decode images if necessary.
-  const scoped_refptr<base::SequencedWorkerPool> decoding_pool_;
+  // The task runner used to decode images if necessary.
+  const scoped_refptr<base::TaskRunner> task_runner_;
 };
 
 }  // namespace image_fetcher

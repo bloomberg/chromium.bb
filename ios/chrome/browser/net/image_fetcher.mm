@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_runner.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web/public/webp_decoder.h"
 #include "net/base/load_flags.h"
@@ -60,12 +60,11 @@ base::scoped_nsobject<NSData> DecodeWebpImage(
 
 namespace image_fetcher {
 
-ImageFetcher::ImageFetcher(
-    const scoped_refptr<base::SequencedWorkerPool>& decoding_pool)
+ImageFetcher::ImageFetcher(const scoped_refptr<base::TaskRunner>& task_runner)
     : request_context_getter_(nullptr),
       weak_factory_(this),
-      decoding_pool_(decoding_pool) {
-  DCHECK(decoding_pool_.get());
+      task_runner_(task_runner) {
+  DCHECK(task_runner_.get());
 }
 
 ImageFetcher::~ImageFetcher() {
@@ -148,7 +147,7 @@ void ImageFetcher::OnURLFetchComplete(const net::URLFetcher* fetcher) {
     std::string mime_type;
     fetcher->GetResponseHeaders()->GetMimeType(&mime_type);
     if (mime_type == kWEBPMimeType) {
-      base::PostTaskAndReplyWithResult(decoding_pool_.get(),
+      base::PostTaskAndReplyWithResult(task_runner_.get(),
                                        FROM_HERE,
                                        base::Bind(&DecodeWebpImage, data),
                                        base::Bind(&ImageFetcher::RunCallback,
