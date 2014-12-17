@@ -5,14 +5,7 @@
  */
         .syntax unified
         .arm
-
-/*
- * TODO(jvoung): The LLVM assembler doesn't grok '.fpu vfp',
- * but the PNaCl ARM assembler currently assumes +neon.
- */
-#ifndef __clang__
         .fpu vfp
-#endif
 
 /*
  * Rounding mode control field is bits [23:22] in FPSCR.

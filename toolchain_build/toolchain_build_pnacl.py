@@ -103,13 +103,17 @@ TOOL_X64_I686_REDIRECTS = [
     ('ld',     '-melf_i386_nacl'),
     ]
 
+BINUTILS_PROGS = ['addr2line', 'ar', 'as', 'c++filt', 'elfedit', 'ld',
+                  'ld.bfd', 'ld.gold', 'nm', 'objcopy', 'objdump', 'ranlib',
+                  'readelf', 'size', 'strings', 'strip']
+
 TRANSLATOR_ARCHES = ('x86-32', 'x86-64', 'arm', 'mips32',
                      'x86-32-nonsfi', 'arm-nonsfi')
 # MIPS32 doesn't use biased bitcode, and nonsfi targets don't need it.
 BITCODE_BIASES = tuple(
     bias for bias in ('le32', 'i686_bc', 'x86_64_bc', 'arm_bc'))
 
-DIRECT_TO_NACL_ARCHES = ['x86_64', 'i686']
+DIRECT_TO_NACL_ARCHES = ['x86_64', 'i686', 'arm']
 
 MAKE_DESTDIR_CMD = ['make', 'DESTDIR=%(abs_output)s']
 
@@ -469,29 +473,52 @@ def HostTools(host, options):
                    '-Wno-unneeded-internal-declaration',
                    '-Wno-unused-private-field', '-Wno-format-security']
   tools = {
+      # The binutils_pnacl package is used both for bitcode linking (gold) and
+      # for its conventional use with arm-nacl-clang.
       H('binutils_pnacl'): {
           'dependencies': ['binutils_pnacl_src'],
           'type': 'build',
+          'inputs' : { 'macros': os.path.join(NACL_DIR,
+              'pnacl', 'support', 'clang_direct', 'nacl-arm-macros.s')},
           'commands': [
               command.SkipForIncrementalCommand([
                   'sh',
                   '%(binutils_pnacl_src)s/configure'] +
                   ConfigureBinutilsCommon() +
                   ConfigureHostArchFlags(host, warning_flags, options) +
-                  ['--target=arm-pc-nacl',
+                  ['--target=arm-nacl',
                   '--program-prefix=le32-nacl-',
-                  '--enable-targets=arm-pc-nacl,i686-pc-nacl,x86_64-pc-nacl,' +
-                  'mipsel-pc-nacl',
+                  '--enable-targets=arm-nacl,i686-nacl,x86_64-nacl,' +
+                  'mipsel-nacl',
                   '--enable-shared=no',
                   '--enable-gold=default',
-                  '--enable-ld=no',
                   '--enable-plugins',
                   '--without-gas',
                   '--with-sysroot=/le32-nacl']),
               command.Command(MakeCommand(host)),
               command.Command(MAKE_DESTDIR_CMD + ['install-strip'])] +
               [command.RemoveDirectory(os.path.join('%(output)s', dir))
-               for dir in ('arm-pc-nacl', 'lib', 'lib32')]
+               for dir in ('lib', 'lib32')] +
+              # Since it has dual use, just create links for both sets of names
+              # (i.e. le32-nacl-foo and arm-nacl-foo)
+              # TODO(dschuff): Use the redirector scripts here like binutils_x86
+              [command.Command([
+                  'ln', '-f',
+                  command.path.join('%(output)s', 'bin', 'le32-nacl-' + tool),
+                  command.path.join('%(output)s', 'bin', 'arm-nacl-' + tool)])
+               for tool in BINUTILS_PROGS] +
+               # Gold is the default linker for PNaCl, but BFD ld is the default
+               # for nacl-clang, so re-link the version that arm-nacl-clang will
+               # use.
+               [command.Command([
+                   'ln', '-f',
+                   command.path.join('%(output)s', 'arm-nacl', 'bin', 'ld.bfd'),
+                   command.path.join('%(output)s', 'arm-nacl', 'bin', 'ld')]),
+                command.Copy(
+                    '%(macros)s',
+                    os.path.join(
+                        '%(output)s', 'arm-nacl', 'lib', 'nacl-arm-macros.s'))]
+
       },
       H('driver'): {
         'type': 'build',
@@ -715,6 +742,7 @@ def HostToolsDirectToNacl(host):
                   ['sh', '%(binutils_x86_src)s/configure'] +
                   ConfigureBinutilsCommon() +
                   ['--target=x86_64-nacl',
+                   '--enable-gold',
                    '--enable-targets=x86_64-nacl,i686-nacl',
                    '--disable-werror']),
               command.Command(MakeCommand(host)),
@@ -739,10 +767,6 @@ def HostToolsDirectToNacl(host):
                command.Command(['ln', '-s', 'lib',
                                command.path.join(
                                    '%(output)s', 'x86_64-nacl', 'lib64')])] +
-              # Compiler libs (includes are shared)
-              [command.Mkdir(command.path.join('%(output)s',
-                  'lib', 'clang', '3.4', 'lib', target), parents=True)
-               for target in ['i686-nacl', 'x86_64-nacl']] +
               # Create links for i686-flavored names of the tools. For now we
               # don't use the redirector scripts that pass different arguments
               # because the compiler driver doesn't need them.
