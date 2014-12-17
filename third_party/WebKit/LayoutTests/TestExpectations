@@ -744,6 +744,8 @@ crbug.com/439457 [ Android ] svg/batik/text/textAnchor3.svg [ Timeout Crash ]
 crbug.com/439457 [ Android ] svg/canvas/canvas-pattern-svg.html [ Timeout Crash ]
 crbug.com/439457 [ Android ] svg/overflow/overflow-on-outermost-svg-element-in-xhtml-defaults.xhtml [ Timeout Crash ]
 
+crbug.com/414283 fast/dynamic/anchor-lock.html [ NeedsRebaseline ]
+
 crbug.com/340150 [ Mac Debug ] plugins/plugin-document-back-forward.html [ Pass Failure ]
 
 crbug.com/339259 fast/flexbox/box-orient-button.html [ Pass Failure ]

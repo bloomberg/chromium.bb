@@ -27,9 +27,13 @@
       var scrollDistance = 10;
       var expectedScrollDistance;
       var scrollBox;
+      var integerScrollOffset = false;
 
       function scroll(scaleFactor) {
-          expectedScrollDistance = scrollDistance/scaleFactor;
+          if (integerScrollOffset)
+              expectedScrollDistance = Math.floor(scrollDistance/scaleFactor);
+          else
+              expectedScrollDistance = scrollDistance/scaleFactor;
 
           scrollBox.scrollTop = 0;
 
@@ -49,8 +53,11 @@
           }
           eventSender.gestureScrollEnd(0, 0);
 
-          expectedScrollDistance = 20 - scrollDistance/scaleFactor;
-          
+          if (integerScrollOffset)
+              expectedScrollDistance = Math.floor(20 - scrollDistance/scaleFactor);
+          else
+              expectedScrollDistance = 20 - scrollDistance/scaleFactor;
+
           shouldBeCloseTo('scrollBox.scrollTop', expectedScrollDistance, floatPrecision);
       }
 
@@ -62,10 +69,6 @@
       }
 
       function test() {
-          if (window.eventSender) {
-              description('This tests that a div scrolled by gesture touch while the page is scaled still scrolls at' +
-                          ' the rate of the touch');
-                  
               scrollBox = document.getElementById("scrollbox");
 
               testRunner.waitUntilDone();
@@ -83,16 +86,28 @@
               scroll(2.0);
 
               testRunner.notifyDone();
-          
+      }
+
+     function run_test() {
+         if (window.eventSender) {
+            description('This tests that a div scrolled by gesture touch while the page is scaled still scrolls at the rate of the touch');
+
+            window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+            integerScrollOffset = false;
+            test();
+
+            window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
+            integerScrollOffset = true;
+            test();
+
           } else {
             debug('eventSender not detected. Not running test.');
           }
-
       }
     </script>
     <script src="../../resources/js-test.js"></script>
 </head>
-<body onload="test();">
+<body onload="run_test();">
     <div id="scrollbox" style="left:0; top:0; width:500px; height:500px; position:absolute; overflow-y: scroll; overflow-x: scroll;">
       <div id="bluebox"></div>
       <div id="redbox"></div>

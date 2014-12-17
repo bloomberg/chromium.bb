@@ -134,7 +134,7 @@ FloatPoint ScrollAnimator::currentPosition() const
 
 void ScrollAnimator::notifyPositionChanged()
 {
-    if (RuntimeEnabledFeatures::fractionalScrollOffsetsEnabled())
+    if (RuntimeEnabledFeatures::fractionalScrollOffsetsEnabled() && !m_scrollableArea->shouldUseIntegerScrollOffset())
         m_scrollableArea->setScrollOffsetFromAnimation(DoublePoint(m_currentPosX, m_currentPosY));
     else
         m_scrollableArea->setScrollOffsetFromAnimation(IntPoint(m_currentPosX, m_currentPosY));

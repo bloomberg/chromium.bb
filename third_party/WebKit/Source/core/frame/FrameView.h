@@ -309,6 +309,8 @@ public:
     bool inProgrammaticScroll() const { return m_inProgrammaticScroll; }
     void setInProgrammaticScroll(bool programmaticScroll) { m_inProgrammaticScroll = programmaticScroll; }
 
+    virtual bool shouldUseIntegerScrollOffset() const override;
+
     virtual bool isActive() const override;
 
     // DEPRECATED: Use viewportConstrainedVisibleContentRect() instead.

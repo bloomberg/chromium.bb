@@ -51,6 +51,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Chrome.h"
@@ -233,6 +234,14 @@ void RenderLayerScrollableArea::invalidateScrollCornerRect(const IntRect& rect)
         m_scrollCorner->invalidatePaintRectangle(rect);
     if (m_resizer)
         m_resizer->invalidatePaintRectangle(rect);
+}
+
+bool RenderLayerScrollableArea::shouldUseIntegerScrollOffset() const
+{
+    Frame* frame = box().frame();
+    if (frame->settings() && !frame->settings()->preferCompositingToLCDTextEnabled())
+        return true;
+    return false;
 }
 
 bool RenderLayerScrollableArea::isActive() const

@@ -86,6 +86,7 @@ public:
     virtual bool usesCompositedScrolling() const override;
     virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) override;
     virtual void invalidateScrollCornerRect(const IntRect&) override;
+    virtual bool shouldUseIntegerScrollOffset() const override;
     virtual bool isActive() const override;
     virtual bool isScrollCornerVisible() const override;
     virtual IntRect scrollCornerRect() const override;

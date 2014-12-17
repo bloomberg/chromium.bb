@@ -147,6 +147,7 @@ private:
     explicit PinchViewport(FrameHost&);
 
     // ScrollableArea implementation
+    virtual bool shouldUseIntegerScrollOffset() const override;
     virtual bool isActive() const override { return false; }
     virtual int scrollSize(ScrollbarOrientation) const override;
     virtual bool isScrollCornerVisible() const override { return false; }

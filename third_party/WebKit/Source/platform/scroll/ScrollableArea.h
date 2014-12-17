@@ -127,6 +127,14 @@ public:
     const IntPoint& scrollOrigin() const { return m_scrollOrigin; }
     bool scrollOriginChanged() const { return m_scrollOriginChanged; }
 
+
+    // This is used to determine whether the incoming fractional scroll offset should
+    // be truncated to integer. Current rule is that if preferCompositingToLCDTextEnabled()
+    // is disabled (which is true on low-dpi device by default) we should do the truncation.
+    // The justification is that non-composited elements using fractional scroll offsets
+    // is causing too much nasty bugs but does not add too benefit on low-dpi devices.
+    virtual bool shouldUseIntegerScrollOffset() const { return false; }
+
     // FIXME(bokan): Meaningless name, rename to isActiveFocus
     virtual bool isActive() const = 0;
     virtual int scrollSize(ScrollbarOrientation) const = 0;

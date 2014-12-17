@@ -7,14 +7,20 @@
 description("Verifies that document scrolling supports fractional offset.");
 
 var floatPrecision = 0.00001;
+var useIntegerScrollOffset = false;
 function checkScrollOffset(offset_x, offset_y)
 {
+    if (useIntegerScrollOffset) {
+        offset_x = Math.floor(offset_x);
+        offset_y = Math.floor(offset_y);
+    }
     shouldBeCloseTo('document.documentElement.scrollTop', offset_y, floatPrecision);
     shouldBeCloseTo('document.documentElement.scrollLeft', offset_x, floatPrecision);
 }
 
 function scroll()
 {
+    window.scrollTo(0, 0);
     eventSender.gestureScrollBegin(100.1, 300.2);
     checkScrollOffset(0, 0);
     eventSender.gestureScrollUpdate(-20.5, -10.2);
@@ -28,8 +34,16 @@ function scroll()
 
 function runTest()
 {
-    if (window.eventSender)
+    if (window.eventSender) {
+      debug("set PreferCompositingToLCDTextEnabled true");
+      window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
       scroll();
+
+      debug("set PreferCompositingToLCDTextEnabled false");
+      window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
+      useIntegerScrollOffset = true;
+      scroll();
+    }
 }
 
 </script>

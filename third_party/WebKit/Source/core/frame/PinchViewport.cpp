@@ -390,6 +390,14 @@ void PinchViewport::clearLayersForTreeView(WebLayerTreeView* layerTreeView) cons
     layerTreeView->clearViewportLayers();
 }
 
+bool PinchViewport::shouldUseIntegerScrollOffset() const
+{
+    LocalFrame* frame = mainFrame();
+    if (frame && frame->settings() && frame->settings()->preferCompositingToLCDTextEnabled())
+        return true;
+    return false;
+}
+
 int PinchViewport::scrollSize(ScrollbarOrientation orientation) const
 {
     IntSize scrollDimensions = maximumScrollPosition() - minimumScrollPosition();

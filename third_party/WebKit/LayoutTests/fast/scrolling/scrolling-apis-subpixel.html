@@ -31,13 +31,13 @@ description("Verifies that scrolling APIs support fractional offsets.");
 // FIXME: Make this smaller. crbug.com/414283.
 var floatPrecision = 0.01;
 
-function testScroll(scrollOffset) {
+function testScroll(scrollOffset, expectedScrollOffset) {
 
     debug('Scrolling DIV with scrollTop/scrollLeft');
     scroller.scrollTop = scrollOffset;
-    shouldBeCloseTo('scroller.scrollTop', scrollOffset, floatPrecision);
+    shouldBeCloseTo('scroller.scrollTop', expectedScrollOffset, floatPrecision);
     scroller.scrollLeft = scrollOffset;
-    shouldBeCloseTo('scroller.scrollLeft', scrollOffset, floatPrecision);
+    shouldBeCloseTo('scroller.scrollLeft', expectedScrollOffset, floatPrecision);
 
     // Note that the body element is a special case - we don't attempt to
     // test it here as it's semantics are in flux (http://goo.gl/BFHtMR).
@@ -45,21 +45,22 @@ function testScroll(scrollOffset) {
     debug('Scrolling the document with window.scroll');
     window.scroll(0,0);
     scrollOffset++;
+    expectedScrollOffset++;
     window.scroll(scrollOffset, scrollOffset);
-    shouldBeCloseTo('window.scrollY', scrollOffset, floatPrecision);
-    shouldBeCloseTo('window.scrollX', scrollOffset, floatPrecision);
+    shouldBeCloseTo('window.scrollY', expectedScrollOffset, floatPrecision);
+    shouldBeCloseTo('window.scrollX', expectedScrollOffset, floatPrecision);
 
     debug('Scrolling the document with window.scrollTo');
     window.scroll(0,0);
     window.scrollTo(scrollOffset, scrollOffset);
-    shouldBeCloseTo('window.pageYOffset', scrollOffset, floatPrecision);
-    shouldBeCloseTo('window.pageXOffset', scrollOffset, floatPrecision);
+    shouldBeCloseTo('window.pageYOffset', expectedScrollOffset, floatPrecision);
+    shouldBeCloseTo('window.pageXOffset', expectedScrollOffset, floatPrecision);
 
     debug('Scrolling the document with window.scrollBy');
     window.scroll(1,1);
     window.scrollBy(scrollOffset - 1, scrollOffset - 1);
-    shouldBeCloseTo('window.scrollY', scrollOffset, floatPrecision);
-    shouldBeCloseTo('window.scrollX', scrollOffset, floatPrecision);
+    shouldBeCloseTo('window.scrollY', expectedScrollOffset, floatPrecision);
+    shouldBeCloseTo('window.scrollX', expectedScrollOffset, floatPrecision);
 
     debug('');
 }
@@ -67,10 +68,20 @@ function testScroll(scrollOffset) {
 function testPageZoom(zoom) {
     debug('---- Testing page zoom = ' + zoom + ' ----');
     eventSender.setPageZoomFactor(zoom);
-    testScroll(4);
-    testScroll(4.5);
+    testScroll(4, 4);
+    testScroll(4.5, 4.5);
 }
 
-testScroll(4.2);
+debug("set PreferCompositingToLCDTextEnabled true");
+window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+testScroll(4.2, 4.2);
+testPageZoom(2);
+
+// If there is no browser zoom, floating point scroll offsets are truncated.
+// If there is browser zoom, we can still get fractional scroll offsets
+// through JS.
+debug("set PreferCompositingToLCDTextEnabled false");
+window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
+testScroll(4.2, 4);
 testPageZoom(2);
 </script>

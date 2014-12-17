@@ -2197,6 +2197,13 @@ IntRect FrameView::windowClipRectForFrameOwner(const HTMLFrameOwnerElement* owne
     return intersection(clipRect, windowClipRect());
 }
 
+bool FrameView::shouldUseIntegerScrollOffset() const
+{
+    if (m_frame->settings() && !m_frame->settings()->preferCompositingToLCDTextEnabled())
+        return true;
+    return false;
+}
+
 bool FrameView::isActive() const
 {
     Page* page = frame().page();
