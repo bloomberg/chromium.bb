@@ -408,7 +408,6 @@ void AlsaPcmOutputStream::WritePacket() {
   const uint8* buffer_data;
   int buffer_size;
   if (buffer_->GetCurrentChunk(&buffer_data, &buffer_size)) {
-    buffer_size = buffer_size - (buffer_size % bytes_per_output_frame_);
     snd_pcm_sframes_t frames = std::min(
         static_cast<snd_pcm_sframes_t>(buffer_size / bytes_per_output_frame_),
         GetAvailableFrames());
@@ -588,7 +587,8 @@ snd_pcm_sframes_t AlsaPcmOutputStream::GetCurrentDelay() {
   // driver is PulseAudio based, certain configuration settings (e.g., tsched=1)
   // will generate much larger delay values than |alsa_buffer_frames_|, so only
   // clip if delay is truly crazy (> 10x expected).
-  if (static_cast<snd_pcm_uframes_t>(delay) > alsa_buffer_frames_ * 10) {
+  if (delay < 0 ||
+      static_cast<snd_pcm_uframes_t>(delay) > alsa_buffer_frames_ * 10) {
     delay = alsa_buffer_frames_ - GetAvailableFrames();
   }
 
