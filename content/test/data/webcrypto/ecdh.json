@@ -87,7 +87,8 @@
   },
 
   // Try deriving a single bit.
-  // Note that the full byte would be 0x16, however the remaining bits in the byte will be zero-ed.
+  // Note that the full byte would be 0x16, however the remaining bits in the
+  // byte will be zero-ed.
   {
     "private_key": {
       "kty":"EC",
@@ -108,7 +109,8 @@
   },
 
   // This is the same as an earlier test, however 253 bits instead of 256.
-  // Notice how the last byte went from 0xF3 --> 0xF0, because the unused bits have been zeroed.
+  // Notice how the last byte went from 0xF3 --> 0xF0, because the unused bits
+  // have been zeroed.
   {
     "private_key": {
       "kty":"EC",
@@ -191,7 +193,8 @@
     "derived_bytes": "0117D54D84379D0FD385BE068455A77A5366AB534FF172AB0A121F37D180DCCD19607ABB0C41CB9F6F12B01303AC4A69DC2D1D05180181FD496D9769B46BFFEC3400"
   },
 
-  // Ask for 528 bits using P-521, which is the rounded up byte length of the field size.
+  // Ask for 528 bits using P-521, which is the rounded up byte length of the
+  // field size.
   {
     "public_key": {
       "crv":"P-521",
@@ -252,6 +255,52 @@
 
     "length_bits": 7,
     "derived_bytes": "00"
+  },
+
+  // Same as an earlier test, however the public key specifies the extraneous
+  // {"use": "sig"}. This doesn't make sense for ECDH; however, it is allowed
+  // by the implementation. This is not spec compliant, see:
+  // https://www.w3.org/Bugs/Public/show_bug.cgi?id=27601
+  {
+    "private_key": {
+      "kty":"EC",
+      "crv":"P-256",
+      "x":"u6dWhaRHrvFF0CiFVuUUFafU6ixveQf9trHDXJ8hgV8",
+      "y":"thSm4LIY35vDD-5LE454eB7TShn919DVVGZ_7tWdjTE",
+      "d":"CQ8uF_-zB1NftLO6ytwKM3Cnuol64PQw5qOuCzQJeFU"
+    },
+    "public_key": {
+      "kty":"EC",
+      "crv":"P-256",
+      "x":"S2S3tjygMB0DkM-N9jYUgGLt_9_H6km5P9V6V_KS4_4",
+      "y":"03j8Tyqgrc4R4FAUV2C7-im96yMmfmO_5Om6Kr8YP3o",
+      "use": "sig"
+    },
+
+    "length_bits": 0,
+    "derived_bytes": ""
+  },
+
+  // Same test as above, but instead of "use" it uses "key_ops" with bogus
+  // values for ECDH
+  {
+    "private_key": {
+      "kty":"EC",
+      "crv":"P-256",
+      "x":"u6dWhaRHrvFF0CiFVuUUFafU6ixveQf9trHDXJ8hgV8",
+      "y":"thSm4LIY35vDD-5LE454eB7TShn919DVVGZ_7tWdjTE",
+      "d":"CQ8uF_-zB1NftLO6ytwKM3Cnuol64PQw5qOuCzQJeFU"
+    },
+    "public_key": {
+      "kty":"EC",
+      "crv":"P-256",
+      "x":"S2S3tjygMB0DkM-N9jYUgGLt_9_H6km5P9V6V_KS4_4",
+      "y":"03j8Tyqgrc4R4FAUV2C7-im96yMmfmO_5Om6Kr8YP3o",
+      "key_ops": ["encrypt", "decrypt"]
+    },
+
+    "length_bits": 0,
+    "derived_bytes": ""
   },
 
   // -----------------------------------------
@@ -360,6 +409,27 @@
 
     "length_bits": 529,
     "error": "OperationError: Length specified for ECDH key derivation is too large. Maximum allowed is 528 bits"
+  },
+
+  // The JWK has wrong usages (enc)
+  {
+    "public_key": {
+      "crv": "P-256",
+      "kty":"EC",
+      "x":"u6dWhaRHrvFF0CiFVuUUFafU6ixveQf9trHDXJ8hgV8",
+      "y":"thSm4LIY35vDD-5LE454eB7TShn919DVVGZ_7tWdjTE"
+    },
+
+    "private_key": {
+      "kty":"EC",
+      "crv":"P-256",
+      "d":"uN2YSQvxuxhQQ9Y1XXjYi1vr2ZTdzuoDX18PYu4LU-0",
+      "x":"S2S3tjygMB0DkM-N9jYUgGLt_9_H6km5P9V6V_KS4_4",
+      "y":"03j8Tyqgrc4R4FAUV2C7-im96yMmfmO_5Om6Kr8YP3o",
+      "use": "enc"
+    },
+
+    "private_key_error": "DataError: The JWK \"use\" member was inconsistent with that specified by the Web Crypto call. The JWK usage must be a superset of those requested"
   }
 ]
 

@@ -49,8 +49,8 @@ blink::WebCryptoAlgorithm CreateAesGcmDerivedKeyParams(
       new blink::WebCryptoAesDerivedKeyParams(length_bits));
 }
 
-// Helper that loads a  "public_key" and "private_key" from the test data.
-void ImportKeysFromTest(const base::DictionaryValue* test,
+// Helper that loads a "public_key" and "private_key" from the test data.
+bool ImportKeysFromTest(const base::DictionaryValue* test,
                         blink::WebCryptoKey* public_key,
                         blink::WebCryptoKey* private_key) {
   // Import the public key.
@@ -58,22 +58,28 @@ void ImportKeysFromTest(const base::DictionaryValue* test,
   EXPECT_TRUE(test->GetDictionary("public_key", &public_key_json));
   blink::WebCryptoNamedCurve curve =
       GetCurveNameFromDictionary(public_key_json, "crv");
-  ASSERT_EQ(Status::Success(),
+  EXPECT_EQ(Status::Success(),
             ImportKey(blink::WebCryptoKeyFormatJwk,
                       CryptoData(MakeJsonVector(*public_key_json)),
                       CreateEcdhImportAlgorithm(curve), true, 0, public_key));
+
+  // If the test didn't specify an error for private key import, that implies
+  // it expects success.
+  std::string expected_private_key_error = "Success";
+  test->GetString("private_key_error", &expected_private_key_error);
 
   // Import the private key.
   const base::DictionaryValue* private_key_json = NULL;
   EXPECT_TRUE(test->GetDictionary("private_key", &private_key_json));
   curve = GetCurveNameFromDictionary(private_key_json, "crv");
-  ASSERT_EQ(Status::Success(),
-            ImportKey(blink::WebCryptoKeyFormatJwk,
-                      CryptoData(MakeJsonVector(*private_key_json)),
-                      CreateEcdhImportAlgorithm(curve), true,
-                      blink::WebCryptoKeyUsageDeriveBits |
-                          blink::WebCryptoKeyUsageDeriveKey,
-                      private_key));
+  Status status = ImportKey(
+      blink::WebCryptoKeyFormatJwk,
+      CryptoData(MakeJsonVector(*private_key_json)),
+      CreateEcdhImportAlgorithm(curve), true,
+      blink::WebCryptoKeyUsageDeriveBits | blink::WebCryptoKeyUsageDeriveKey,
+      private_key);
+  EXPECT_EQ(expected_private_key_error, StatusToString(status));
+  return status.IsSuccess();
 }
 
 TEST(WebCryptoEcdhTest, DeriveBitsKnownAnswer) {
@@ -92,7 +98,8 @@ TEST(WebCryptoEcdhTest, DeriveBitsKnownAnswer) {
     // Import the keys.
     blink::WebCryptoKey public_key;
     blink::WebCryptoKey private_key;
-    ImportKeysFromTest(test, &public_key, &private_key);
+    if (!ImportKeysFromTest(test, &public_key, &private_key))
+      continue;
 
     // Now try to derive bytes.
     std::vector<uint8_t> derived_bytes;

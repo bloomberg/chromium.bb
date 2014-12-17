@@ -75,13 +75,12 @@
 //   +-------+--------------------------------------------------------------+
 //   | "sig"     | equivalent to key_ops of [sign, verify]                  |
 //   | "enc"     | equivalent to key_ops of [encrypt, decrypt, wrapKey,     |
-//   |           | unwrapKey, deriveKey, deriveBits]                        |
+//   |           | unwrapKey]                                               |
 //   +-------+--------------------------------------------------------------+
 //
 //   NOTE: If both "use" and "key_ops" JWK members are present, the usages
 //   specified by them MUST be consistent.  In particular, the "use" value
-//   "sig" corresponds to "sign" and/or "verify".  The "use" value "enc"
-//   corresponds to all other values defined above.  If "key_ops" values
+//   "sig" corresponds to "sign" and/or "verify".   If "key_ops" values
 //   corresponding to both "sig" and "enc" "use" values are present, the "use"
 //   member SHOULD NOT be present, and if present, its value MUST NOT be
 //   either "sig" or "enc".
@@ -210,8 +209,7 @@ namespace {
 // Web Crypto equivalent usage mask for JWK 'use' = 'enc'.
 const blink::WebCryptoKeyUsageMask kJwkEncUsage =
     blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt |
-    blink::WebCryptoKeyUsageWrapKey | blink::WebCryptoKeyUsageUnwrapKey |
-    blink::WebCryptoKeyUsageDeriveKey | blink::WebCryptoKeyUsageDeriveBits;
+    blink::WebCryptoKeyUsageWrapKey | blink::WebCryptoKeyUsageUnwrapKey;
 // Web Crypto equivalent usage mask for JWK 'use' = 'sig'.
 const blink::WebCryptoKeyUsageMask kJwkSigUsage =
     blink::WebCryptoKeyUsageSign | blink::WebCryptoKeyUsageVerify;
