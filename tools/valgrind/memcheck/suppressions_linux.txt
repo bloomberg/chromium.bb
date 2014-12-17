@@ -52,25 +52,3 @@
    fun:_ZN3IPC11ChannelMojo17InitMessageReaderEN4mojo16ScopedHandleBaseINS1_17MessagePipeHandleEEEi
    fun:_ZN3IPC12_GLOBAL__N_117ServerChannelMojo27ClientChannelWasInitializedEi
 }
-{
-   bug_442600_a
-   Memcheck:Leak
-   fun:malloc
-   fun:PORT_Alloc_Util
-   fun:SGN_End
-   fun:SEC_SignData
-   fun:_ZN12_GLOBAL__N_122SignDataOnWorkerThreadE10scoped_ptrI15PK11SlotInfoStrN6crypto12NSSDestroyerIS1_XadL_Z13PK11_FreeSlotEEEEERKSsS7_RK13scoped_refptrIN4base22SingleThreadTaskRunnerEERKNS9_8CallbackIFvS7_EEE
-}
-{
-   bug_442600_b
-   Memcheck:Leak
-   fun:calloc
-   fun:PORT_ZAlloc_Util
-   fun:PORT_NewArena_Util
-   fun:PK11_MakePrivKey
-   fun:PK11_ImportAndReturnPrivateKey
-   fun:PK11_ImportPrivateKeyInfoAndReturnKey
-   fun:PK11_ImportDERPrivateKeyInfoAndReturnKey
-   fun:_ZN12_GLOBAL__N_127EasyUnlockTpmKeyManagerTest16ImportPrivateKeyEPKhi
-   fun:_ZN12_GLOBAL__N_141EasyUnlockTpmKeyManagerTest_SignData_Test8TestBodyEv
-}

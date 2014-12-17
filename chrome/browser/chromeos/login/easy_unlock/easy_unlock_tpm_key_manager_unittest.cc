@@ -248,17 +248,15 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
       key_size
     };
 
-    SECKEYPrivateKey* seckey = NULL;
     return SECSuccess ==
-           PK11_ImportDERPrivateKeyInfoAndReturnKey(test_system_slot_->slot(),
-                                                    &pki_der_user,
-                                                    NULL,    // nickname
-                                                    NULL,    // publicValue
-                                                    true,    // isPerm
-                                                    true,    // isPrivate
-                                                    KU_ALL,  // usage
-                                                    &seckey,
-                                                    NULL);
+           PK11_ImportDERPrivateKeyInfo(test_system_slot_->slot(),
+                                        &pki_der_user,
+                                        NULL,    // nickname
+                                        NULL,    // publicValue
+                                        true,    // isPerm
+                                        true,    // isPrivate
+                                        KU_ALL,  // usage
+                                        NULL);
   }
 
   // Returns EasyUnlockTPMKeyManager for user profile.

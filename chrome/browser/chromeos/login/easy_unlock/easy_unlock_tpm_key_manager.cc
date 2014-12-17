@@ -90,8 +90,8 @@ void SignDataOnWorkerThread(
     return;
   }
 
-  SECItem sign_result = {siBuffer, NULL, 0};
-  if (SEC_SignData(&sign_result,
+  crypto::ScopedSECItem sign_result(SECITEM_AllocItem(NULL, NULL, 0));
+  if (SEC_SignData(sign_result.get(),
                    reinterpret_cast<const unsigned char*>(data.data()),
                    data.size(),
                    private_key->key(),
@@ -102,8 +102,8 @@ void SignDataOnWorkerThread(
     return;
   }
 
-  std::string signature(reinterpret_cast<const char*>(sign_result.data),
-                        sign_result.len);
+  std::string signature(reinterpret_cast<const char*>(sign_result->data),
+                        sign_result->len);
   response_task_runner->PostTask(FROM_HERE, base::Bind(callback, signature));
 }
 

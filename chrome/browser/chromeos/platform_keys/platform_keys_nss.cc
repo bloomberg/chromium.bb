@@ -393,8 +393,8 @@ void RSASignOnWorkerThread(scoped_ptr<SignState> state) {
       break;
   }
 
-  SECItem sign_result = {siBuffer, NULL, 0};
-  if (SEC_SignData(&sign_result,
+  crypto::ScopedSECItem sign_result(SECITEM_AllocItem(NULL, NULL, 0));
+  if (SEC_SignData(sign_result.get(),
                    reinterpret_cast<const unsigned char*>(state->data_.data()),
                    state->data_.size(),
                    rsa_key->key(),
@@ -404,8 +404,8 @@ void RSASignOnWorkerThread(scoped_ptr<SignState> state) {
     return;
   }
 
-  std::string signature(reinterpret_cast<const char*>(sign_result.data),
-                        sign_result.len);
+  std::string signature(reinterpret_cast<const char*>(sign_result->data),
+                        sign_result->len);
   state->CallBack(FROM_HERE, signature, std::string() /* no error */);
 }
 
