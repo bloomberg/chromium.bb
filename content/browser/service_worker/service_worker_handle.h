@@ -52,19 +52,6 @@ class CONTENT_EXPORT ServiceWorkerHandle
   ~ServiceWorkerHandle() override;
 
   // ServiceWorkerVersion::Listener overrides.
-  void OnWorkerStarted(ServiceWorkerVersion* version) override;
-  void OnWorkerStopped(ServiceWorkerVersion* version) override;
-  void OnErrorReported(ServiceWorkerVersion* version,
-                       const base::string16& error_message,
-                       int line_number,
-                       int column_number,
-                       const GURL& source_url) override;
-  void OnReportConsoleMessage(ServiceWorkerVersion* version,
-                              int source_identifier,
-                              int message_level,
-                              const base::string16& message,
-                              int line_number,
-                              const GURL& source_url) override;
   void OnVersionStateChanged(ServiceWorkerVersion* version) override;
 
   ServiceWorkerObjectInfo GetObjectInfo();
