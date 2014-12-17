@@ -8,6 +8,8 @@
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "ipc/ipc_listener.h"
+#include "ipc/ipc_logging.h"
+#include "ipc/ipc_message_macros.h"
 #include "ipc/mojo/client_channel.mojom.h"
 #include "ipc/mojo/ipc_mojo_bootstrap.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -320,6 +322,9 @@ void ChannelMojo::OnClientLaunched(base::ProcessHandle handle) {
 }
 
 void ChannelMojo::OnMessageReceived(Message& message) {
+  TRACE_EVENT2("ipc,toplevel", "ChannelMojo::OnMessageReceived",
+               "class", IPC_MESSAGE_ID_CLASS(message.type()),
+               "line", IPC_MESSAGE_ID_LINE(message.type()));
   listener_->OnMessageReceived(message);
   if (message.dispatch_error())
     listener_->OnBadMessageReceived(message);
