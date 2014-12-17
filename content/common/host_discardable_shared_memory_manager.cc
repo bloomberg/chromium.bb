@@ -158,6 +158,7 @@ void HostDiscardableSharedMemoryManager::OnMemoryPressure(
   base::AutoLock lock(lock_);
 
   switch (memory_pressure_level) {
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
       break;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:

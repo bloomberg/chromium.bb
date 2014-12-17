@@ -3,12 +3,9 @@
 // found in the LICENSE file.
 
 // MemoryPressure provides static APIs for handling memory pressure on
-// platforms that have such signals, such as Android.
+// platforms that have such signals, such as Android and ChromeOS.
 // The app will try to discard buffers that aren't deemed essential (individual
 // modules will implement their own policy).
-//
-// Refer to memory_pressure_level_list.h for information about what sorts of
-// signals can be sent under what conditions.
 
 #ifndef BASE_MEMORY_PRESSURE_LISTENER_H_
 #define BASE_MEMORY_PRESSURE_LISTENER_H_
@@ -26,11 +23,10 @@ namespace base {
 // the listener.
 // Note that even on the same thread, the callback is not guaranteed to be
 // called synchronously within the system memory pressure broadcast.
-// Please see notes on memory_pressure_level_list.h: some levels are absolutely
-// critical, and if not enough memory is returned to the system, it'll
-// potentially kill the app, and then later the app will have to be
+// Please see notes in MemoryPressureLevel enum below: some levels are
+// absolutely critical, and if not enough memory is returned to the system,
+// it'll potentially kill the app, and then later the app will have to be
 // cold-started.
-//
 //
 // Example:
 //
@@ -52,6 +48,11 @@ class BASE_EXPORT MemoryPressureListener {
   // A Java counterpart will be generated for this enum.
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.base
   enum MemoryPressureLevel {
+    // No problems, there is enough memory to use. This event is not sent via
+    // callback, but the enum is used in other places to find out the current
+    // state of the system.
+    MEMORY_PRESSURE_LEVEL_NONE = -1,
+
     // Modules are advised to free buffers that are cheap to re-allocate and not
     // immediately needed.
     MEMORY_PRESSURE_LEVEL_MODERATE = 0,

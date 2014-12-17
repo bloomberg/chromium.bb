@@ -51,6 +51,7 @@ void MemoryPressureListener::Notify(MemoryPressureLevel memory_pressure_level) {
 // static
 void MemoryPressureListener::NotifyMemoryPressure(
     MemoryPressureLevel memory_pressure_level) {
+  DCHECK_NE(memory_pressure_level, MEMORY_PRESSURE_LEVEL_NONE);
   TRACE_EVENT1("memory", "MemoryPressureListener::NotifyMemoryPressure",
       "level", memory_pressure_level);
   g_observers.Get().Notify(&MemoryPressureListener::Notify,
