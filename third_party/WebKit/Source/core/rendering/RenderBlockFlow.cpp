@@ -49,6 +49,7 @@
 #include "core/rendering/TextAutosizer.h"
 #include "core/rendering/line/LineWidth.h"
 #include "platform/geometry/TransformState.h"
+#include "platform/graphics/paint/ClipRecorderStack.h"
 #include "platform/text/BidiTextRun.h"
 
 namespace blink {
@@ -2136,17 +2137,21 @@ void RenderBlockFlow::paintSelection(const PaintInfo& paintInfo, const LayoutPoi
 
 void RenderBlockFlow::clipOutFloatingObjects(const RenderBlock* rootBlock, const PaintInfo* paintInfo, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock) const
 {
-    if (m_floatingObjects) {
-        const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
-        FloatingObjectSetIterator end = floatingObjectSet.end();
-        for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
-            FloatingObject* floatingObject = it->get();
-            LayoutRect floatBox(LayoutPoint(offsetFromRootBlock), floatingObject->renderer()->size());
-            floatBox.move(positionForFloatIncludingMargin(floatingObject));
-            rootBlock->flipForWritingMode(floatBox);
-            floatBox.move(rootBlockPhysicalPosition.x(), rootBlockPhysicalPosition.y());
-            paintInfo->context->clipOut(pixelSnappedIntRect(floatBox));
-        }
+    if (!m_floatingObjects)
+        return;
+
+    const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
+    FloatingObjectSetIterator end = floatingObjectSet.end();
+    for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
+        FloatingObject* floatingObject = it->get();
+        LayoutRect floatBox(LayoutPoint(offsetFromRootBlock), floatingObject->renderer()->size());
+        floatBox.move(positionForFloatIncludingMargin(floatingObject));
+        rootBlock->flipForWritingMode(floatBox);
+        floatBox.move(rootBlockPhysicalPosition.x(), rootBlockPhysicalPosition.y());
+
+        ASSERT(paintInfo->context->clipRecorderStack());
+        paintInfo->context->clipRecorderStack()->addClipRecorder(adoptPtr(new ClipRecorder(
+            displayItemClient(), paintInfo->context, paintInfo->displayItemTypeForClipping(), floatBox, SkRegion::kDifference_Op)));
     }
 }
 
@@ -2714,7 +2719,10 @@ static void clipOutPositionedObjects(const PaintInfo& paintInfo, const LayoutPoi
     TrackedRendererListHashSet::const_iterator end = positionedObjects->end();
     for (TrackedRendererListHashSet::const_iterator it = positionedObjects->begin(); it != end; ++it) {
         RenderBox* r = *it;
-        paintInfo.context->clipOut(IntRect(flooredIntPoint(r->location() + offset), flooredIntSize(r->size())));
+        ASSERT(paintInfo.context->clipRecorderStack());
+        paintInfo.context->clipRecorderStack()->addClipRecorder(adoptPtr(new ClipRecorder(
+            r->displayItemClient(), paintInfo.context, paintInfo.displayItemTypeForClipping(),
+            IntRect(flooredIntPoint(r->location() + offset), flooredIntSize(r->size())), SkRegion::kDifference_Op)));
     }
 }
 

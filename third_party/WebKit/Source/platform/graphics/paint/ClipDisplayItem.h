@@ -5,6 +5,7 @@
 #ifndef ClipDisplayItem_h
 #define ClipDisplayItem_h
 
+#include "SkRegion.h"
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/paint/DisplayItem.h"
@@ -17,7 +18,10 @@ class RoundedRect;
 
 class PLATFORM_EXPORT ClipDisplayItem : public DisplayItem {
 public:
-    static PassOwnPtr<ClipDisplayItem> create(DisplayItemClient client, Type type, const IntRect& clipRect) { return adoptPtr(new ClipDisplayItem(client, type, clipRect)); }
+    static PassOwnPtr<ClipDisplayItem> create(DisplayItemClient client, Type type, const IntRect& clipRect, SkRegion::Op operation = SkRegion::kIntersect_Op)
+    {
+        return adoptPtr(new ClipDisplayItem(client, type, clipRect, operation));
+    }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
@@ -25,8 +29,8 @@ public:
     Vector<RoundedRect>& roundedRectClips() { return m_roundedRectClips; }
 
 protected:
-    ClipDisplayItem(DisplayItemClient client, Type type, const IntRect& clipRect)
-        : DisplayItem(client, type), m_clipRect(clipRect) { }
+    ClipDisplayItem(DisplayItemClient client, Type type, const IntRect& clipRect, SkRegion::Op operation)
+        : DisplayItem(client, type), m_clipRect(clipRect), m_operation(operation) { }
 
 private:
 #ifndef NDEBUG
@@ -35,6 +39,7 @@ private:
 #endif
     IntRect m_clipRect;
     Vector<RoundedRect> m_roundedRectClips;
+    SkRegion::Op m_operation;
 };
 
 class PLATFORM_EXPORT EndClipDisplayItem : public DisplayItem {

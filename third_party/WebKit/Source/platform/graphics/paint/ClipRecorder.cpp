@@ -13,11 +13,11 @@
 
 namespace blink {
 
-ClipRecorder::ClipRecorder(DisplayItemClient client, GraphicsContext* context, DisplayItem::Type type, const LayoutRect& clipRect)
+ClipRecorder::ClipRecorder(DisplayItemClient client, GraphicsContext* context, DisplayItem::Type type, const LayoutRect& clipRect, SkRegion::Op operation)
     : m_client(client)
     , m_context(context)
 {
-    OwnPtr<ClipDisplayItem> clipDisplayItem = ClipDisplayItem::create(m_client, type, pixelSnappedIntRect(clipRect));
+    OwnPtr<ClipDisplayItem> clipDisplayItem = ClipDisplayItem::create(m_client, type, pixelSnappedIntRect(clipRect), operation);
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context->displayItemList());

@@ -5,6 +5,7 @@
 #ifndef ClipRecorder_h
 #define ClipRecorder_h
 
+#include "SkRegion.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/paint/DisplayItem.h"
 
@@ -13,8 +14,9 @@ namespace blink {
 class GraphicsContext;
 
 class PLATFORM_EXPORT ClipRecorder {
+    WTF_MAKE_FAST_ALLOCATED;
 public:
-    ClipRecorder(DisplayItemClient, GraphicsContext*, DisplayItem::Type, const LayoutRect& clipRect);
+    ClipRecorder(DisplayItemClient, GraphicsContext*, DisplayItem::Type, const LayoutRect& clipRect, SkRegion::Op = SkRegion::kIntersect_Op);
     ~ClipRecorder();
 private:
     DisplayItemClient m_client;
