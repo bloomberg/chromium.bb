@@ -1655,6 +1655,10 @@ HTMLLabelElement* AXNodeObject::labelElementContainer() const
     if (isControl())
         return 0;
 
+    // the link element should not be considered part of the label
+    if (isLink())
+        return 0;
+
     // find if this has a ancestor that is a label
     return Traversal<HTMLLabelElement>::firstAncestorOrSelf(*node());
 }
