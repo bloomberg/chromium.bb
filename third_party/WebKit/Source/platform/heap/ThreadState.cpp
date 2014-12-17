@@ -872,6 +872,7 @@ void ThreadState::prepareHeapForTermination()
         m_heaps[i]->prepareHeapForTermination();
 }
 
+#if ENABLE(ASSERT)
 BaseHeapPage* ThreadState::pageFromAddress(Address address)
 {
     for (int i = 0; i < NumberOfHeaps; ++i) {
@@ -880,6 +881,7 @@ BaseHeapPage* ThreadState::pageFromAddress(Address address)
     }
     return nullptr;
 }
+#endif
 
 size_t ThreadState::objectPayloadSizeForTesting()
 {

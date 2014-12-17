@@ -731,15 +731,15 @@ public:
     virtual ~BaseHeap() { }
     virtual void cleanupPages() = 0;
 
+#if ENABLE(ASSERT)
     // Find the page in this thread heap containing the given
     // address.  Returns 0 if the address is not contained in any
     // page in this thread heap.
     virtual BaseHeapPage* pageFromAddress(Address) = 0;
-
+#endif
 #if ENABLE(GC_PROFILE_MARKING)
     virtual const GCInfo* findGCInfoOfLargeObject(Address) = 0;
 #endif
-
 #if ENABLE(GC_PROFILE_HEAP)
     virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*) = 0;
 #endif
@@ -799,7 +799,9 @@ public:
     virtual ~ThreadHeap();
     virtual void cleanupPages() override;
 
+#if ENABLE(ASSERT)
     virtual BaseHeapPage* pageFromAddress(Address) override;
+#endif
 #if ENABLE(GC_PROFILE_MARKING)
     virtual const GCInfo* findGCInfoOfLargeObject(Address) override;
 #endif
@@ -910,10 +912,10 @@ public:
     static void shutdown();
     static void doShutdown();
 
+#if ENABLE(ASSERT)
     static BaseHeapPage* contains(Address);
     static BaseHeapPage* contains(void* pointer) { return contains(reinterpret_cast<Address>(pointer)); }
     static BaseHeapPage* contains(const void* pointer) { return contains(const_cast<void*>(pointer)); }
-#if ENABLE(ASSERT)
     static bool containedInHeapOrOrphanedPage(void*);
 #endif
 

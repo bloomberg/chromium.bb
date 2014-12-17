@@ -768,7 +768,6 @@ static bool isLargeObjectAligned(LargeObject<Header>* largeObject, Address addre
     // for the guard page).
     return reinterpret_cast<Address>(largeObject) - WTF::kSystemPageSize == roundToBlinkPageStart(reinterpret_cast<Address>(largeObject));
 }
-#endif
 
 template<typename Header>
 BaseHeapPage* ThreadHeap<Header>::pageFromAddress(Address address)
@@ -793,6 +792,7 @@ BaseHeapPage* ThreadHeap<Header>::pageFromAddress(Address address)
     }
     return nullptr;
 }
+#endif
 
 #if ENABLE(GC_PROFILE_MARKING)
 template<typename Header>
@@ -915,7 +915,9 @@ void ThreadHeap<Header>::shrinkObject(Header* header, size_t newSize)
         ASSERT(shrinkSize >= sizeof(HeapObjectHeader));
         HeapObjectHeader* freedHeader = new (NotNull, header->payloadEnd() - shrinkSize) HeapObjectHeader(shrinkSize);
         freedHeader->markPromptlyFreed();
-        pageFromAddress(reinterpret_cast<Address>(header))->addToPromptlyFreedSize(shrinkSize);
+        BaseHeapPage* page = pageFromObject(reinterpret_cast<Address>(header));
+        ASSERT(page == pageFromAddress(reinterpret_cast<Address>(header)));
+        page->addToPromptlyFreedSize(shrinkSize);
         m_promptlyFreedCount++;
         header->setSize(allocationSize);
     }
@@ -2318,6 +2320,7 @@ void Heap::doShutdown()
     ASSERT(Heap::allocatedSpace() == 0);
 }
 
+#if ENABLE(ASSERT)
 BaseHeapPage* Heap::contains(Address address)
 {
     ASSERT(ThreadState::current()->isInGC());
@@ -2328,7 +2331,6 @@ BaseHeapPage* Heap::contains(Address address)
     return nullptr;
 }
 
-#if ENABLE(ASSERT)
 bool Heap::containedInHeapOrOrphanedPage(void* object)
 {
     return contains(object) || orphanedPagePool()->contains(object);
