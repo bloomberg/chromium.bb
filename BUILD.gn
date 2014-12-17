@@ -164,6 +164,9 @@ if (build_ffmpegsumo) {
       # a lot of unresolved symbols. The only supported mode is 'size' (see
       # crbug.com/264459).
       configs += [ "//build/config/compiler:optimize" ]
+      ldflags =
+          [ "/DEF:" +
+            rebase_path("$target_gen_dir/ffmpegsumo.def", root_build_dir) ]
     } else {
       configs += [ "//build/config/compiler:optimize_max" ]
     }
@@ -396,7 +399,7 @@ if (is_win) {
       "chromium/include/win",
       ".",
     ]
-    libs = [ "$target_out_dir/ffmpegsumo.lib" ]
+    libs = [ rebase_path("$target_gen_dir/ffmpegsumo.lib", root_build_dir) ]
     ldflags = [ "/DELAYLOAD:ffmpegsumo.dll" ]
   }
 
