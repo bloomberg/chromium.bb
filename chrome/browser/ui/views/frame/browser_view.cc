@@ -176,12 +176,23 @@ const char* const kBrowserViewKey = "__BROWSER_VIEW__";
 // The number of milliseconds between loading animation frames.
 const int kLoadingAnimationFrameTimeMs = 30;
 
+// Paints the horizontal border separating the Bookmarks Bar from the Toolbar
+// or page content according to |at_top| with |color|.
+void PaintHorizontalBorder(gfx::Canvas* canvas,
+                           BookmarkBarView* view,
+                           bool at_top,
+                           SkColor color) {
+  int thickness = views::NonClientFrameView::kClientEdgeThickness;
+  int y = at_top ? 0 : (view->height() - thickness);
+  canvas->FillRect(gfx::Rect(0, y, view->width(), thickness), color);
+}
+
 // TODO(kuan): These functions are temporarily for the bookmark bar while its
 // detached state is at the top of the page;  it'll be moved to float on the
 // content page in the very near future, at which time, these local functions
 // will be removed.
 void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
-                              DetachableToolbarView* view,
+                              BookmarkBarView* view,
                               ThemeService* theme_service) {
   // Paint background for detached state; if animating, this is fade in/out.
   canvas->DrawColor(
@@ -190,11 +201,10 @@ void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
   // if animating, these are fading in/out.
   SkColor separator_color =
       chrome::GetDetachedBookmarkBarSeparatorColor(theme_service);
-  DetachableToolbarView::PaintHorizontalBorder(canvas, view, true,
-                                               separator_color);
+  PaintHorizontalBorder(canvas, view, true, separator_color);
   // The bottom border needs to be 1-px thick in both regular and retina
-  // displays, so we can't use DetachableToolbarView::PaintHorizontalBorder
-  // which paints a 2-px thick border in retina display.
+  // displays, so we can't use PaintHorizontalBorder which paints a 2-px thick
+  // border in retina display.
   SkPaint paint;
   paint.setAntiAlias(false);
   // Sets border to 1-px thick regardless of scale factor.
@@ -211,8 +221,45 @@ void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
                                 SkIntToScalar(view->width()), y, paint);
 }
 
+// Paints the background (including the theme image behind content area) for
+// the Bookmarks Bar when it is attached to the Toolbar into |bounds|.
+// |background_origin| is the origin to use for painting the theme image.
+void PaintBackgroundAttachedMode(gfx::Canvas* canvas,
+                                 ui::ThemeProvider* theme_provider,
+                                 const gfx::Rect& bounds,
+                                 const gfx::Point& background_origin,
+                                 chrome::HostDesktopType host_desktop_type) {
+  canvas->FillRect(bounds,
+                   theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR));
+  canvas->TileImageInt(*theme_provider->GetImageSkiaNamed(IDR_THEME_TOOLBAR),
+                       background_origin.x(),
+                       background_origin.y(),
+                       bounds.x(),
+                       bounds.y(),
+                       bounds.width(),
+                       bounds.height());
+
+  if (host_desktop_type == chrome::HOST_DESKTOP_TYPE_ASH) {
+    // Ash provides additional lightening at the edges of the toolbar.
+    gfx::ImageSkia* toolbar_left =
+        theme_provider->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_LEFT);
+    canvas->TileImageInt(*toolbar_left,
+                         bounds.x(),
+                         bounds.y(),
+                         toolbar_left->width(),
+                         bounds.height());
+    gfx::ImageSkia* toolbar_right =
+        theme_provider->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_RIGHT);
+    canvas->TileImageInt(*toolbar_right,
+                         bounds.right() - toolbar_right->width(),
+                         bounds.y(),
+                         toolbar_right->width(),
+                         bounds.height());
+  }
+}
+
 void PaintAttachedBookmarkBar(gfx::Canvas* canvas,
-                              DetachableToolbarView* view,
+                              BookmarkBarView* view,
                               BrowserView* browser_view,
                               chrome::HostDesktopType host_desktop_type,
                               int toolbar_overlap) {
@@ -220,14 +267,18 @@ void PaintAttachedBookmarkBar(gfx::Canvas* canvas,
   gfx::Point background_image_offset =
       browser_view->OffsetPointForToolbarBackgroundImage(
           gfx::Point(view->GetMirroredX(), view->y()));
-  DetachableToolbarView::PaintBackgroundAttachedMode(canvas,
-      view->GetThemeProvider(), view->GetLocalBounds(),
-      background_image_offset, host_desktop_type);
+  PaintBackgroundAttachedMode(canvas,
+                              view->GetThemeProvider(),
+                              view->GetLocalBounds(),
+                              background_image_offset,
+                              host_desktop_type);
   if (view->height() >= toolbar_overlap) {
-    // Draw the separator below bookmark bar; this is fading in/out.
-    DetachableToolbarView::PaintHorizontalBorder(canvas, view, false,
-        ThemeProperties::GetDefaultColor(
-            ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
+    // Draw the separator below the Bookmarks Bar; this is fading in/out.
+    PaintHorizontalBorder(canvas,
+                          view,
+                          false,
+                          ThemeProperties::GetDefaultColor(
+                              ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
   }
 }
 
@@ -300,7 +351,7 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
 class BookmarkBarViewBackground : public views::Background {
  public:
   BookmarkBarViewBackground(BrowserView* browser_view,
-                            DetachableToolbarView* host_view,
+                            BookmarkBarView* bookmark_bar_view,
                             Browser* browser);
 
   // views:Background:
@@ -310,7 +361,7 @@ class BookmarkBarViewBackground : public views::Background {
   BrowserView* browser_view_;
 
   // The view hosting this background.
-  DetachableToolbarView* host_view_;
+  BookmarkBarView* bookmark_bar_view_;
 
   Browser* browser_;
 
@@ -319,19 +370,19 @@ class BookmarkBarViewBackground : public views::Background {
 
 BookmarkBarViewBackground::BookmarkBarViewBackground(
     BrowserView* browser_view,
-    DetachableToolbarView* host_view,
+    BookmarkBarView* bookmark_bar_view,
     Browser* browser)
     : browser_view_(browser_view),
-      host_view_(host_view),
+      bookmark_bar_view_(bookmark_bar_view),
       browser_(browser) {
 }
 
 void BookmarkBarViewBackground::Paint(gfx::Canvas* canvas,
                                       views::View* view) const {
-  int toolbar_overlap = host_view_->GetToolbarOverlap();
-  if (!host_view_->IsDetached()) {
+  int toolbar_overlap = bookmark_bar_view_->GetToolbarOverlap();
+  if (!bookmark_bar_view_->IsDetached()) {
     PaintAttachedBookmarkBar(canvas,
-                             host_view_,
+                             bookmark_bar_view_,
                              browser_view_,
                              browser_->host_desktop_type(),
                              toolbar_overlap);
@@ -340,11 +391,11 @@ void BookmarkBarViewBackground::Paint(gfx::Canvas* canvas,
 
   // As 'hidden' according to the animation is the full in-tab state, we invert
   // the value - when current_state is at '0', we expect the bar to be docked.
-  double current_state = 1 - host_view_->GetAnimationValue();
+  double current_state = 1 - bookmark_bar_view_->GetAnimationValue();
 
   ThemeService* ts = ThemeServiceFactory::GetForProfile(browser_->profile());
   if (current_state == 0.0 || current_state == 1.0) {
-    PaintDetachedBookmarkBar(canvas, host_view_, ts);
+    PaintDetachedBookmarkBar(canvas, bookmark_bar_view_, ts);
     return;
   }
   // While animating, set opacity to cross-fade between attached and detached
@@ -357,23 +408,23 @@ void BookmarkBarViewBackground::Paint(gfx::Canvas* canvas,
     // - fade in detached background.
     canvas->SaveLayerAlpha(attached_alpha);
     PaintAttachedBookmarkBar(canvas,
-                             host_view_,
+                             bookmark_bar_view_,
                              browser_view_,
                              browser_->host_desktop_type(),
                              toolbar_overlap);
     canvas->Restore();
     canvas->SaveLayerAlpha(detached_alpha);
-    PaintDetachedBookmarkBar(canvas, host_view_, ts);
+    PaintDetachedBookmarkBar(canvas, bookmark_bar_view_, ts);
   } else {
     // To animate from detached to attached state:
     // - fade out detached background
     // - fade in attached background.
     canvas->SaveLayerAlpha(detached_alpha);
-    PaintDetachedBookmarkBar(canvas, host_view_, ts);
+    PaintDetachedBookmarkBar(canvas, bookmark_bar_view_, ts);
     canvas->Restore();
     canvas->SaveLayerAlpha(attached_alpha);
     PaintAttachedBookmarkBar(canvas,
-                             host_view_,
+                             bookmark_bar_view_,
                              browser_view_,
                              browser_->host_desktop_type(),
                              toolbar_overlap);

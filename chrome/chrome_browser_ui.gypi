@@ -2055,8 +2055,6 @@
       'browser/ui/views/crypto_module_password_dialog_view.h',
       'browser/ui/views/desktop_media_picker_views.cc',
       'browser/ui/views/desktop_media_picker_views.h',
-      'browser/ui/views/detachable_toolbar_view.cc',
-      'browser/ui/views/detachable_toolbar_view.h',
       'browser/ui/views/download/download_danger_prompt_views.cc',
       'browser/ui/views/download/download_feedback_dialog_view.cc',
       'browser/ui/views/download/download_feedback_dialog_view.h',

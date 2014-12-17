@@ -18,10 +18,10 @@
 #include "chrome/browser/ui/bookmarks/bookmark_bar_instructions_delegate.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view_observer.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_controller_observer.h"
-#include "chrome/browser/ui/views/detachable_toolbar_view.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "ui/gfx/animation/animation_delegate.h"
+#include "ui/views/accessible_pane_view.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -59,7 +59,7 @@ class LabelButton;
 // BookmarkBarView shows the bookmarks from a specific Profile. BookmarkBarView
 // waits until the HistoryService for the profile has been loaded before
 // creating the BookmarkModel.
-class BookmarkBarView : public DetachableToolbarView,
+class BookmarkBarView : public views::AccessiblePaneView,
                         public bookmarks::BookmarkModelObserver,
                         public views::MenuButtonListener,
                         public views::ButtonListener,
@@ -155,12 +155,16 @@ class BookmarkBarView : public DetachableToolbarView,
                                               const base::string16& title,
                                               Profile* profile);
 
-  // DetachableToolbarView methods:
-  bool IsDetached() const override;
-  double GetAnimationValue() const override;
-  int GetToolbarOverlap() const override;
+  // Returns true if Bookmarks Bar is currently detached from the Toolbar.
+  bool IsDetached() const;
 
-  // View methods:
+  // Returns the current state of the resize animation (show/hide).
+  double GetAnimationValue() const;
+
+  // Returns the current amount of overlap atop the browser toolbar.
+  int GetToolbarOverlap() const;
+
+  // views::View:
   gfx::Size GetPreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   bool CanProcessEventsWithinSubtree() const override;
