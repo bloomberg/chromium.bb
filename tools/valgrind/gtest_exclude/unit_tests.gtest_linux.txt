@@ -34,4 +34,4 @@ NTPUserDataLoggerTest.TestLogging
 ExtensionPathUtilTest.BasicPrettifyPathTest
 
 # http://crbug.com/442834
-DisplayInfoProviderChromeosTest.*
+ComponentLoaderTest.*
