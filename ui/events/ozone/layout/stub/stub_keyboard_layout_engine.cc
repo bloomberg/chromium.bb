@@ -257,7 +257,8 @@ bool StubKeyboardLayoutEngine::Lookup(DomCode dom_code,
                                       int flags,
                                       DomKey* out_dom_key,
                                       base::char16* out_character,
-                                      KeyboardCode* out_key_code) const {
+                                      KeyboardCode* out_key_code,
+                                      uint32* platform_keycode) const {
   if ((flags & EF_CONTROL_DOWN) == EF_CONTROL_DOWN) {
     if (LookupControlCharacter(dom_code, flags, out_dom_key, out_character,
                                out_key_code)) {

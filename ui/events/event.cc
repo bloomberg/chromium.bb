@@ -766,7 +766,7 @@ void KeyEvent::ApplyLayout() const {
 #elif defined(USE_OZONE)
   KeyboardCode key_code;
   if (!KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()->Lookup(
-      code_, flags(), &key_, &character_, &key_code)) {
+      code_, flags(), &key_, &character_, &key_code, &platform_keycode_)) {
     GetMeaningFromKeyCode(key_code_, flags(), &key_, &character_);
   }
 #else

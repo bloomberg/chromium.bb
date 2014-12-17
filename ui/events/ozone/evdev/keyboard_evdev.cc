@@ -165,14 +165,18 @@ void KeyboardEvdev::DispatchKey(unsigned int key, bool down, bool repeat) {
   DomKey dom_key;
   KeyboardCode key_code;
   uint16 character;
+  uint32 platform_keycode = 0;
   if (!keyboard_layout_engine_->Lookup(dom_code, flags, &dom_key, &character,
-                                       &key_code)) {
+                                       &key_code, &platform_keycode)) {
     return;
   }
 
-  callback_.Run(make_scoped_ptr(
+  KeyEvent* event =
       new KeyEvent(down ? ET_KEY_PRESSED : ET_KEY_RELEASED, key_code, dom_code,
-                   flags, dom_key, character)));
+                   flags, dom_key, character);
+  if (platform_keycode)
+    event->set_platform_keycode(platform_keycode);
+  callback_.Run(make_scoped_ptr(event));
 }
 
 // static

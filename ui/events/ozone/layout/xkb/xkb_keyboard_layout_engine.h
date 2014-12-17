@@ -34,7 +34,8 @@ class EVENTS_OZONE_LAYOUT_EXPORT XkbKeyboardLayoutEngine
                       int flags,
                       DomKey* dom_key,
                       base::char16* character,
-                      KeyboardCode* key_code) const override;
+                      KeyboardCode* key_code,
+                      uint32* platform_keycode) const override;
 
  protected:
   // Table for EventFlagsToXkbFlags().
@@ -59,7 +60,8 @@ class EVENTS_OZONE_LAYOUT_EXPORT XkbKeyboardLayoutEngine
   const XkbKeyCodeConverter& key_code_converter_;
 
  private:
-  // Sets a new XKB keymap, updating object fields.
+  // Sets a new XKB keymap. This updates xkb_state_ (which takes ownership
+  // of the keymap), and updates xkb_flag_map_ for the new keymap.
   void SetKeymap(xkb_keymap* keymap);
 
   // Returns the XKB modifiers flags corresponding to the given EventFlags.

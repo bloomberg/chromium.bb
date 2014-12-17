@@ -769,7 +769,7 @@ class EVENTS_EXPORT KeyEvent : public Event {
 
   // The platform related keycode value. For XKB, it's keysym value.
   // For now, this is used for CharacterComposer in ChromeOS.
-  uint32 platform_keycode_;
+  mutable uint32 platform_keycode_;
 
   // TODO(kpschoedel): refactor so that key_ and character_ are not mutable.
   // This requires defining the KeyEvent completely at construction rather

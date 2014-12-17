@@ -25,7 +25,8 @@ class EVENTS_OZONE_LAYOUT_EXPORT StubKeyboardLayoutEngine
                       int flags,
                       DomKey* dom_key,
                       base::char16* character,
-                      KeyboardCode* key_code) const override;
+                      KeyboardCode* key_code,
+                      uint32* platform_keycode) const override;
 };
 
 }  // namespace ui

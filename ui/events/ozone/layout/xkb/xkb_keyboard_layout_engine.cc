@@ -669,12 +669,12 @@ bool XkbKeyboardLayoutEngine::SetCurrentLayoutByName(
   xkb_keymap* keymap = xkb_keymap_new_from_names(xkb_context_.get(),
                                                  &names,
                                                  XKB_KEYMAP_COMPILE_NO_FLAGS);
-  if (keymap)
+  if (keymap) {
     SetKeymap(keymap);
-  return true;
-#else
+    return true;
+  }
+#endif  // defined(OS_CHROMEOS)
   return false;
-#endif
 }
 
 bool XkbKeyboardLayoutEngine::UsesISOLevel5Shift() const {
@@ -691,7 +691,8 @@ bool XkbKeyboardLayoutEngine::Lookup(DomCode dom_code,
                                      int flags,
                                      DomKey* dom_key,
                                      base::char16* character,
-                                     KeyboardCode* key_code) const {
+                                     KeyboardCode* key_code,
+                                     uint32* platform_keycode) const {
   // Convert DOM physical key to XKB representation.
   xkb_keycode_t xkb_keycode = key_code_converter_.DomCodeToXkbKeyCode(dom_code);
   if (xkb_keycode == key_code_converter_.InvalidXkbKeyCode()) {
@@ -705,6 +706,7 @@ bool XkbKeyboardLayoutEngine::Lookup(DomCode dom_code,
   xkb_keysym_t xkb_keysym;
   if (!XkbLookup(xkb_keycode, xkb_flags, &xkb_keysym, character))
     return false;
+  *platform_keycode = xkb_keysym;
   // Classify the keysym and convert to DOM and VKEY representations.
   *dom_key = NonPrintableXkbKeySymToDomKey(xkb_keysym);
   if (*dom_key == DomKey::NONE) {

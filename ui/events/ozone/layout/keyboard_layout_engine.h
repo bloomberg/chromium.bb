@@ -61,11 +61,14 @@ class EVENTS_OZONE_LAYOUT_EXPORT KeyboardLayoutEngine {
   // Returns false if it cannot determine the meaning (and cannot determine
   // that there is none); in this case it does not set any of the output
   // parameters.
+  //
+  // TODO(kpschoedel): remove the platform_keycode output. crbug.com/442757
   virtual bool Lookup(DomCode dom_code,
                       int event_flags,
                       DomKey* dom_key,
                       base::char16* character,
-                      KeyboardCode* key_code) const = 0;
+                      KeyboardCode* key_code,
+                      uint32* platform_keycode) const = 0;
 };
 
 }  // namespace ui

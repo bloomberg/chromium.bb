@@ -27,7 +27,8 @@ bool NoKeyboardLayoutEngine::Lookup(DomCode dom_code,
                                     int flags,
                                     DomKey* dom_key,
                                     base::char16* character,
-                                    KeyboardCode* key_code) const {
+                                    KeyboardCode* key_code,
+                                    uint32* platform_keycode) const {
   return false;
 }
 
