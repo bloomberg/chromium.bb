@@ -1189,6 +1189,7 @@ crbug.com/305036 fast/multicol/span/span-as-immediate-child-generated-content.ht
 crbug.com/305036 fast/multicol/span/span-as-immediate-child-property-removal.html [ Failure Pass ]
 crbug.com/305036 fast/multicol/span/span-as-immediate-columns-child-dynamic.html [ Failure Pass ]
 crbug.com/305036 fast/multicol/span/span-as-immediate-columns-child-removal.html [ Failure Pass ]
+crbug.com/305036 fast/multicol/span/span-as-nested-columns-child-dynamic.html [ Failure Pass ]
 
 crbug.com/396791 [ Debug ] virtual/threaded/printing/print-close-crash.html [ Pass Crash ]
 
