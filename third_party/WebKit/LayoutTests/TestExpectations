@@ -1226,6 +1226,8 @@ crbug.com/419993 [ Debug ] fast/css/giant-stylesheet-crash.html [ Pass Slow ]
 # Part of a larger issue referenced in the bug. This specific issue will be fixed shortly.
 crbug.com/408159 accessibility/is-ignored-change-sends-notification.html [ Timeout ]
 
+crbug.com/443234 accessibility/selection-change-notification-statictext.html [ Pass Timeout ]
+
 crbug.com/412570 [ Win7 ] virtual/gpu/fast/canvas/setWidthResetAfterForcedRender.html [ NeedsManualRebaseline ]
 
 crbug.com/413604 http/tests/loading/script-priorities.html [ Failure Pass ]
