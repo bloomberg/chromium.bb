@@ -137,6 +137,34 @@ source_set("opus") {
   }
 }
 
+executable("opus_compare") {
+  sources = [
+    "src/src/opus_compare.c",
+  ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  include_dirs = [
+    "src/celt",
+    "src/silk",
+  ]
+
+  if (is_win) {
+    defines = [ "inline=__inline" ]
+  }
+  if (is_android) {
+    libs = [ "log" ]
+  }
+  if (is_clang) {
+    cflags = [ "-Wno-absolute-value" ]
+  }
+
+  deps = [
+    ":opus",
+  ]
+}
+
 executable("opus_demo") {
   sources = [
     "src/src/opus_demo.c",

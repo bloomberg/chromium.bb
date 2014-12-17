@@ -129,6 +129,37 @@
       ],
     },  # target opus
     {
+      'target_name': 'opus_compare',
+      'type': 'executable',
+      'dependencies': [
+        'opus'
+      ],
+      'conditions': [
+        ['OS == "win"', {
+          'defines': [
+            'inline=__inline',
+          ],
+        }],
+        ['OS=="android"', {
+          'link_settings': {
+            'libraries': [
+              '-llog',
+            ],
+          },
+        }],
+        ['clang==1', {
+          'cflags': [ '-Wno-absolute-value' ],
+        }]
+      ],
+      'sources': [
+        'src/src/opus_compare.c',
+      ],
+      'include_dirs': [
+        'src/celt',
+        'src/silk',
+      ],
+    },  # target opus_compare
+    {
       'target_name': 'opus_demo',
       'type': 'executable',
       'dependencies': [
