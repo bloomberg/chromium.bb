@@ -174,6 +174,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   void DidFinishDocumentLoad() override;
   void DidFinishLoad() override;
   void FrameWillClose() override;
+  void DidCommitProvisionalLoad(bool is_new_navigation) override;
 
   // Legacy RenderViewObserver:
   void DidStartLoading();

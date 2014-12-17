@@ -71,6 +71,7 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver {
       const std::vector<autofill::PasswordForm>& visible_forms,
       bool did_stop_loading);
   void OnPasswordFormSubmitted(const autofill::PasswordForm& password_form);
+  void OnInPageNavigation(const autofill::PasswordForm& password_form);
 
  private:
   content::RenderFrameHost* render_frame_host_;

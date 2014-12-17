@@ -103,6 +103,12 @@ class PasswordManager : public LoginModel {
       password_manager::PasswordManagerDriver* driver,
       const autofill::PasswordForm& password_form);
 
+  // Called if |password_form| was filled upon in-page navigation. This often
+  // means history.pushState being called from JavaScript. If this causes false
+  // positive in password saving, update http://crbug.com/357696.
+  void OnInPageNavigation(password_manager::PasswordManagerDriver* driver,
+                          const autofill::PasswordForm& password_form);
+
   PasswordManagerClient* client() { return client_; }
 
  private:
@@ -148,6 +154,10 @@ class PasswordManager : public LoginModel {
   // the password), based on inspecting the state of
   // |provisional_save_manager_|.
   bool ShouldPromptUserToSavePassword() const;
+
+  // Called when we already decided that login was correct and we want to save
+  // password.
+  void AskUserOrSavePassword();
 
   // Checks for every from in |forms| whether |pending_login_managers_| already
   // contain a manager for that form. If not, adds a manager for each such form.

@@ -65,6 +65,7 @@ class NavigationObserver : public content::WebContentsObserver {
  public:
   explicit NavigationObserver(content::WebContents* web_contents)
       : content::WebContentsObserver(web_contents),
+        quit_on_entry_commited_(false),
         message_loop_runner_(new content::MessageLoopRunner) {}
 
   ~NavigationObserver() override {}
@@ -74,6 +75,12 @@ class NavigationObserver : public content::WebContentsObserver {
   // regardless of the frame that navigated. Useful for multi-frame pages.
   void SetPathToWaitFor(const std::string& path) {
     wait_for_path_ = path;
+  }
+
+  // Normally Wait() will not return until a main frame navigation occurs.
+  // If quit_on_entry_commited is true Wait() will return on EntryCommited.
+  void SetQuitOnEntryCommitted(bool quit_on_entry_commited) {
+    quit_on_entry_commited_ = quit_on_entry_commited;
   }
 
   // content::WebContentsObserver:
@@ -86,11 +93,16 @@ class NavigationObserver : public content::WebContentsObserver {
       message_loop_runner_->Quit();
     }
   }
-
+  void NavigationEntryCommitted(
+      const content::LoadCommittedDetails& load_details) override {
+    if (quit_on_entry_commited_)
+      message_loop_runner_->Quit();
+  }
   void Wait() { message_loop_runner_->Run(); }
 
  private:
   std::string wait_for_path_;
+  bool quit_on_entry_commited_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationObserver);
@@ -1358,4 +1370,25 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), delete_form));
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), create_form));
   WaitForElementValue("username_id", "temp");
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, PromptForPushState) {
+  NavigateToFile("/password/password_push_state.html");
+
+  // Verify that we show the save password prompt if 'history.pushState()'
+  // is called after form submission is suppressed by, for example, calling
+  // preventDefault in a form's submit event handler.
+  // Note that calling 'submit()' on a form with javascript doesn't call
+  // the onsubmit handler, so we click the submit button instead.
+  NavigationObserver observer(WebContents());
+  observer.SetQuitOnEntryCommitted(true);
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string fill_and_submit =
+      "document.getElementById('username_field').value = 'temp';"
+      "document.getElementById('password_field').value = 'random';"
+      "document.getElementById('submit_button').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  EXPECT_TRUE(prompt_observer->IsShowingPrompt());
 }

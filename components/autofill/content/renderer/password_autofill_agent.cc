@@ -897,6 +897,24 @@ void PasswordAutofillAgent::FrameWillClose() {
   FrameClosing();
 }
 
+void PasswordAutofillAgent::DidCommitProvisionalLoad(bool is_new_navigation) {
+  blink::WebFrame* frame = render_frame()->GetWebFrame();
+  // TODO(dvadym): check if we need to check if it is main frame navigation
+  // http://crbug.com/443155
+  if (frame->parent())
+    return;  // Not a top-level navigation.
+
+  content::DocumentState* document_state =
+      content::DocumentState::FromDataSource(frame->dataSource());
+  content::NavigationState* navigation_state =
+      document_state->navigation_state();
+  if (navigation_state->was_within_same_page() && provisionally_saved_form_) {
+    Send(new AutofillHostMsg_InPageNavigation(routing_id(),
+                                              *provisionally_saved_form_));
+    provisionally_saved_form_.reset();
+  }
+}
+
 void PasswordAutofillAgent::DidStartLoading() {
   did_stop_loading_ = false;
   if (usernames_usage_ != NOTHING_TO_AUTOFILL) {

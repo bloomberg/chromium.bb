@@ -230,6 +230,11 @@ IPC_MESSAGE_ROUTED0(AutofillHostMsg_PasswordAutofillAgentConstructed)
 IPC_MESSAGE_ROUTED1(AutofillHostMsg_PasswordFormSubmitted,
                     autofill::PasswordForm /* form */)
 
+// Notification that in-page navigation happened and at this moment we have
+// filled password form. We use this as a signal for successful login.
+IPC_MESSAGE_ROUTED1(AutofillHostMsg_InPageNavigation,
+                    autofill::PasswordForm /* form */)
+
 // Sends |log| to browser for displaying to the user. Only strings passed as an
 // argument to methods overriding SavePasswordProgressLogger::SendLog may become
 // |log|, because those are guaranteed to be sanitized. Never pass a free-form

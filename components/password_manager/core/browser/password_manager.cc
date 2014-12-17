@@ -542,25 +542,54 @@ void PasswordManager::OnPasswordFormsRendered(
     // automatically save the login data. We prompt when the user hasn't
     // already given consent, either through previously accepting the infobar
     // or by having the browser generate the password.
-    provisional_save_manager_->SubmitPassed();
+    AskUserOrSavePassword();
+  }
+}
 
-    if (ShouldPromptUserToSavePassword()) {
+void PasswordManager::OnInPageNavigation(
+    password_manager::PasswordManagerDriver* driver,
+    const PasswordForm& password_form) {
+  scoped_ptr<BrowserSavePasswordProgressLogger> logger;
+  if (client_->IsLoggingActive()) {
+    logger.reset(new BrowserSavePasswordProgressLogger(client_));
+    logger->LogMessage(Logger::STRING_ON_IN_PAGE_NAVIGATION);
+  }
+
+  ProvisionallySavePassword(password_form);
+
+  if (!provisional_save_manager_) {
+    if (logger) {
+      logger->LogMessage(Logger::STRING_NO_PROVISIONAL_SAVE_MANAGER);
+    }
+    return;
+  }
+  AskUserOrSavePassword();
+}
+
+void PasswordManager::AskUserOrSavePassword() {
+  scoped_ptr<BrowserSavePasswordProgressLogger> logger;
+  if (client_->IsLoggingActive()) {
+    logger.reset(new BrowserSavePasswordProgressLogger(client_));
+    logger->LogMessage(Logger::STRING_ON_ASK_USER_OR_SAVE_PASSWORD);
+  }
+  provisional_save_manager_->SubmitPassed();
+
+  if (ShouldPromptUserToSavePassword()) {
+    if (logger)
+      logger->LogMessage(Logger::STRING_DECISION_ASK);
+    if (client_->PromptUserToSavePassword(provisional_save_manager_.Pass())) {
       if (logger)
-        logger->LogMessage(Logger::STRING_DECISION_ASK);
-      if (client_->PromptUserToSavePassword(provisional_save_manager_.Pass())) {
-        if (logger)
-          logger->LogMessage(Logger::STRING_SHOW_PASSWORD_PROMPT);
-      }
+        logger->LogMessage(Logger::STRING_SHOW_PASSWORD_PROMPT);
+    }
+  } else {
+    if (logger)
+      logger->LogMessage(Logger::STRING_DECISION_SAVE);
+    provisional_save_manager_->Save();
+
+    if (provisional_save_manager_->HasGeneratedPassword()) {
+      client_->AutomaticPasswordSave(provisional_save_manager_.Pass());
     } else {
-      if (logger)
-        logger->LogMessage(Logger::STRING_DECISION_SAVE);
-      provisional_save_manager_->Save();
-
-      if (provisional_save_manager_->HasGeneratedPassword()) {
-        client_->AutomaticPasswordSave(provisional_save_manager_.Pass());
-      } else {
-        provisional_save_manager_.reset();
-      }
+      provisional_save_manager_.reset();
     }
   }
 }
