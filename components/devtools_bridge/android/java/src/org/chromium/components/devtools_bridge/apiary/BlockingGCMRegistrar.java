@@ -8,50 +8,45 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.util.Log;
+import android.os.Looper;
 
-import com.google.android.gcm.GCMConstants;
-import com.google.android.gcm.GCMRegistrar;
+import com.google.ipc.invalidation.external.client.contrib.MultiplexingGcmListener;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * Helps using GCDRegistrar in blocking manner. If the app has not registered in GCM
+ * Helps using MultiplexingGcmListene in blocking manner. If the app has not registered in GCM
  * it sends registration request and waits for an intent with registration ID.
  * Waiting may be interrupted. Must not be used on UI (or Context's main) looper.
  */
-public abstract class BlockingGCMRegistrar {
-    private static final String TAG = "BlockingGCMRegistrar";
-
+public final class BlockingGCMRegistrar {
     public String blockingGetRegistrationId(Context context)
             throws InterruptedException, IOException {
         assert context != null;
+        assert context.getMainLooper() != Looper.myLooper();
 
         Receiver receiver = new Receiver();
         receiver.register(context);
         try {
-            String result = GCMRegistrar.getRegistrationId(context);
+            // MultiplexingGcmListener starts registration if the app has not registered yet.
+            String result = MultiplexingGcmListener.initializeGcm(context);
             if (result != null && !result.isEmpty()) return result;
-            GCMRegistrar.register(context, getSenderIds());
             return receiver.awaitRegistrationId();
         } finally {
             receiver.unregister(context);
         }
     }
 
-    protected abstract String[] getSenderIds();
-
     private static class Receiver extends BroadcastReceiver {
         private final CountDownLatch mDone = new CountDownLatch(1);
 
         private String mRegistrationId;
-        private String mError;
 
         public void register(Context context) {
             IntentFilter filter = new IntentFilter();
             filter.addCategory(context.getPackageName());
-            filter.addAction(GCMConstants.INTENT_FROM_GCM_REGISTRATION_CALLBACK);
+            filter.addAction(MultiplexingGcmListener.Intents.ACTION);
             context.registerReceiver(this, filter);
         }
 
@@ -64,20 +59,23 @@ public abstract class BlockingGCMRegistrar {
             if (mRegistrationId != null) {
                 return mRegistrationId;
             }
-            throw new IOException(mError);
+            throw new IOException();
         }
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            assert intent.getAction().equals(GCMConstants.INTENT_FROM_GCM_REGISTRATION_CALLBACK);
+            assert intent.getAction().equals(MultiplexingGcmListener.Intents.ACTION);
 
-            mRegistrationId = intent.getStringExtra(GCMConstants.EXTRA_REGISTRATION_ID);
-            mError = intent.getStringExtra(GCMConstants.EXTRA_ERROR);
+            if (!intent.getBooleanExtra(
+                    MultiplexingGcmListener.Intents.EXTRA_OP_REGISTERED, false)) {
+                return;
+            }
 
-            if (mRegistrationId != null || mError != null) {
+            mRegistrationId = intent.getStringExtra(
+                    MultiplexingGcmListener.Intents.EXTRA_DATA_REG_ID);
+
+            if (mRegistrationId != null) {
                 mDone.countDown();
-            } else {
-                Log.e(TAG, "Unexpected intent: " + intent);
             }
         }
     }

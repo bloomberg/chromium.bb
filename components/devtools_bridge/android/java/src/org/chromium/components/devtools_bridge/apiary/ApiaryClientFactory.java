@@ -12,7 +12,7 @@ import org.chromium.base.JNINamespace;
  * Factory for creating clients for external APIs.
  */
 @JNINamespace("devtools_bridge::android")
-public abstract class ApiaryClientFactory {
+public class ApiaryClientFactory {
     private static final String USER_AGENT = "DevTools bridge";
 
     public static final String OAUTH_SCOPE = "https://www.googleapis.com/auth/clouddevices";
@@ -40,12 +40,7 @@ public abstract class ApiaryClientFactory {
     }
 
     public BlockingGCMRegistrar newGCMRegistrar() {
-        return new BlockingGCMRegistrar() {
-                    @Override
-                    protected String[] getSenderIds() {
-                        return getGCMSenderIds();
-                    }
-                };
+        return new BlockingGCMRegistrar();
     }
 
     public void close() {
@@ -59,8 +54,6 @@ public abstract class ApiaryClientFactory {
     protected String getAPIKey() {
         return nativeGetAPIKey();
     }
-
-    public abstract String[] getGCMSenderIds();
 
     private native String nativeGetAPIKey();
     private native String nativeGetOAuthClientId();

@@ -41,6 +41,7 @@ public class DevToolsBridgeServer implements SignalingReceiver {
     private final LooperExecutor mExecutor;
     private final SessionDependencyFactory mFactory = SessionDependencyFactory.newInstance();
     private final Map<String, ServerSession> mSessions = new HashMap<String, ServerSession>();
+    private final GCDNotificationHandler mHandler;
     private PowerManager.WakeLock mWakeLock;
     private Runnable mForegroundCompletionCallback;
 
@@ -49,6 +50,7 @@ public class DevToolsBridgeServer implements SignalingReceiver {
         mSocketName = socketName;
         mServiceUIFactory = uiFactory;
         mExecutor = LooperExecutor.newInstanceForMainLooper(mHost);
+        mHandler = new GCDNotificationHandler(this);
 
         checkCalledOnHostServiceThread();
     }
@@ -70,22 +72,13 @@ public class DevToolsBridgeServer implements SignalingReceiver {
                 DevToolsBridgeServer.class.getName(), Context.MODE_PRIVATE);
     }
 
-    /**
-     * Should be called in service's onStartCommand. If it can handle then the method should
-     * delegate the work to the server.
-     */
-    public boolean canHandle(Intent intent) {
-        String action = intent.getAction();
-        return DISCONNECT_ALL_CLIENTS_ACTION.equals(action);
-    }
-
-    public int onStartCommand(Intent intent) {
-        assert canHandle(intent);
+    public void onStartCommand(Intent intent) {
         String action = intent.getAction();
         if (DISCONNECT_ALL_CLIENTS_ACTION.equals(action)) {
             closeAllSessions();
+        } else if (mHandler.isNotification(intent)) {
+            mHandler.onNotification(intent, startSticky());
         }
-        return Service.START_NOT_STICKY;
     }
 
     /**
@@ -98,6 +91,7 @@ public class DevToolsBridgeServer implements SignalingReceiver {
             session.dispose();
         }
         mFactory.dispose();
+        mHandler.dispose();
     }
 
     @Override
@@ -194,6 +188,7 @@ public class DevToolsBridgeServer implements SignalingReceiver {
     }
 
     /**
+     * TODO(serya): Move service lifetime management to DevToolsBridgeServiceBase.
      * Helper method for doing background tasks. Usage:
      *
      * int onStartCommand(...) {

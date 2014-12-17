@@ -39,15 +39,16 @@ public class GCDNotificationHandler {
     private final ExecutorService mIOExecutor;
     private OAuthResult mOAuthResult;
 
-    public GCDNotificationHandler(DevToolsBridgeServer server, ApiaryClientFactory clientFactory) {
+    public GCDNotificationHandler(DevToolsBridgeServer server) {
         mServer = server;
-        mClientFactory = clientFactory;
+        mClientFactory = new ApiaryClientFactory();
         mCommandReceiver = new CommandReceiver(server);
         mIOExecutor = Executors.newSingleThreadExecutor();
     }
 
     public void dispose() {
         mIOExecutor.shutdown();
+        mClientFactory.close();
     }
 
     public boolean isNotification(Intent intent) {

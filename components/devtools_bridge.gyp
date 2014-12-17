@@ -50,8 +50,9 @@
       },
       'includes': [ '../build/java.gypi' ],
       'dependencies': [
-        '../third_party/android_tools/android_tools.gyp:android_gcm',
         '../base/base.gyp:base_java',
+        '../sync/sync.gyp:sync_java',
+        '../third_party/android_tools/android_tools.gyp:android_support_v13_javalib',
       ],
     },
     {

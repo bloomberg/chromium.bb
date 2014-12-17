@@ -15,13 +15,4 @@ public class TestApiaryClientFactory extends ApiaryClientFactory {
     public TurnConfigClient newConfigClient() {
         return new TurnConfigClient(mHttpClient);
     }
-
-    @Override
-    public String[] getGCMSenderIds() {
-        return new String[] { getGCMSenderId() };
-    }
-
-    public String getGCMSenderId() {
-        return "287888336735";
-    }
 }
