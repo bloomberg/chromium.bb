@@ -8,7 +8,7 @@ Running: testDumpStyles
 element.style  { ()
 
 [expanded] 
-.red  { ()
+.red  { (<style>…</style>)
 color: red;
 
 [expanded] 

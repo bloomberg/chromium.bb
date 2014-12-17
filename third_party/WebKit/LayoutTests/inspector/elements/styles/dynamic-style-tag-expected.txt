@@ -62,7 +62,7 @@ color: red;
 /-- overloaded --/ color: grey;
 
 [expanded] 
-.inline-style-created-by-script  { ()
+.inline-style-created-by-script  { (<style>…</style>)
 /-- overloaded --/ color: orange;
 
 [expanded] 
@@ -70,7 +70,7 @@ color: red;
 /-- overloaded --/ color: yellow;
 
 [expanded] 
-.inline-style-added-by-parser-in-document-write  { ()
+.inline-style-added-by-parser-in-document-write  { (<style>…</style>)
 /-- overloaded --/ color: blue;
 
 [expanded] 

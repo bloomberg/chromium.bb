@@ -6,7 +6,7 @@ This test checks that style sheets hosted inside shadow roots could be inspected
 element.style  { ()
 
 [expanded] 
-.red  { ()
+.red  { (<style>…</style>)
 color: red;
 
 [expanded] 
