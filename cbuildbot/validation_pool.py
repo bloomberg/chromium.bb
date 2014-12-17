@@ -1020,7 +1020,8 @@ class ValidationPool(object):
 
   def __init__(self, overlays, build_root, build_number, builder_name,
                is_master, dryrun, changes=None, non_os_changes=None,
-               conflicting_changes=None, pre_cq_trybot=False, builder_run=None):
+               conflicting_changes=None, pre_cq_trybot=False, builder_run=None,
+               tree_was_open=True):
     """Initializes an instance by setting default variables to instance vars.
 
     Generally use AcquirePool as an entry pool to a pool rather than this
@@ -1043,6 +1044,7 @@ class ValidationPool(object):
         launcher is NOT considered a Pre-CQ trybot.)
       builder_run: Optional BuilderRun instance used to fetch cidb handle and
         metadata instance.
+      tree_was_open: Whether the tree was open when the pool was created.
     """
 
     self.build_root = build_root
@@ -1107,6 +1109,8 @@ class ValidationPool(object):
     self._overlays = overlays
     self._build_number = build_number
     self._builder_name = builder_name
+
+    self.tree_was_open = tree_was_open
 
   @staticmethod
   def GetGerritHelpersForOverlays(overlays):
