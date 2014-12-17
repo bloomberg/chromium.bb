@@ -690,9 +690,6 @@ static bool shouldUseFirstFitForHeap(int heapIndex)
     case VectorBackingHeap:
     case InlineVectorBackingHeap:
     case HashTableBackingHeap:
-    case VectorBackingHeapNonFinalized:
-    case InlineVectorBackingHeapNonFinalized:
-    case HashTableBackingHeapNonFinalized:
         return true;
     default:
         return false;
@@ -2739,8 +2736,7 @@ void HeapAllocator::backingFree(void* address)
     HeaderType* header = HeaderType::fromPayload(address);
     header->checkHeader();
 
-    const GCInfo* gcInfo = header->gcInfo();
-    int heapIndex = HeapTraits::index(gcInfo->hasFinalizer(), header->payloadSize());
+    int heapIndex = HeapTraits::index(header->payloadSize());
     HeapType* heap = static_cast<HeapType*>(state->heap(heapIndex));
     heap->promptlyFreeObject(header);
 }
@@ -2781,8 +2777,7 @@ bool HeapAllocator::backingExpand(void* address, size_t newSize)
     HeaderType* header = HeaderType::fromPayload(address);
     header->checkHeader();
 
-    const GCInfo* gcInfo = header->gcInfo();
-    int heapIndex = HeapTraits::index(gcInfo->hasFinalizer(), header->payloadSize());
+    int heapIndex = HeapTraits::index(header->payloadSize());
     HeapType* heap = static_cast<HeapType*>(state->heap(heapIndex));
     return heap->expandObject(header, newSize);
 }
@@ -2829,7 +2824,7 @@ void HeapAllocator::backingShrink(void* address, size_t quantizedCurrentSize, si
     typename HeapTraits::HeaderType* header = HeapTraits::HeaderType::fromPayload(address);
     header->checkHeader();
 
-    int heapIndex = HeapTraits::index(header->gcInfo()->hasFinalizer(), header->payloadSize());
+    int heapIndex = HeapTraits::index(header->payloadSize());
     static_cast<typename HeapTraits::HeapType*>(state->heap(heapIndex))->shrinkObject(header, quantizedShrunkSize);
 }
 

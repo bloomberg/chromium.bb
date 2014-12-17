@@ -633,10 +633,6 @@ void ThreadState::snapshot()
         json->setString("name", #HeapType);                               \
         m_heaps[HeapType##Heap]->snapshot(json.get(), &info);             \
         json->endDictionary();                                            \
-        json->beginDictionary();                                          \
-        json->setString("name", #HeapType"NonFinalized");                 \
-        m_heaps[HeapType##HeapNonFinalized]->snapshot(json.get(), &info); \
-        json->endDictionary();                                            \
     }
     json->beginArray("heaps");
     SNAPSHOT_HEAP(General1);
@@ -1039,16 +1035,9 @@ void ThreadState::performPendingSweep()
         }
 
         {
-            TRACE_EVENT0("blink_gc", "ThreadState::sweepNonFinalizedHeaps");
-            for (int i = 0; i < NumberOfNonFinalizedHeaps; ++i) {
-                m_heaps[FirstNonFinalizedHeap + i]->sweep();
-            }
-        }
-
-        {
-            TRACE_EVENT0("blink_gc", "ThreadState::sweepFinalizedHeaps");
-            for (int i = 0; i < NumberOfFinalizedHeaps; ++i) {
-                m_heaps[FirstFinalizedHeap + i]->sweep();
+            TRACE_EVENT0("blink_gc", "ThreadState::sweepHeaps");
+            for (int i = 0; i < NumberOfHeaps; ++i) {
+                m_heaps[i]->sweep();
             }
         }
 

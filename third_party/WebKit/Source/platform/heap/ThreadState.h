@@ -173,7 +173,6 @@ template<typename U> class ThreadingTrait<const U> : public ThreadingTrait<U> { 
 
 
 #define TypedHeapEnumName(Type) Type##Heap,
-#define TypedHeapEnumNameNonFinalized(Type) Type##HeapNonFinalized,
 
 enum TypedHeaps {
     General1Heap = 0,
@@ -184,21 +183,8 @@ enum TypedHeaps {
     InlineVectorBackingHeap,
     HashTableBackingHeap,
     FOR_EACH_TYPED_HEAP(TypedHeapEnumName)
-    General1HeapNonFinalized,
-    General2HeapNonFinalized,
-    General3HeapNonFinalized,
-    General4HeapNonFinalized,
-    VectorBackingHeapNonFinalized,
-    InlineVectorBackingHeapNonFinalized,
-    HashTableBackingHeapNonFinalized,
-    FOR_EACH_TYPED_HEAP(TypedHeapEnumNameNonFinalized)
     // Values used for iteration of heap segments.
     NumberOfHeaps,
-    FirstFinalizedHeap = General1Heap,
-    FirstNonFinalizedHeap = General1HeapNonFinalized,
-    NumberOfFinalizedHeaps = General1HeapNonFinalized,
-    NumberOfNonFinalizedHeaps = NumberOfHeaps - NumberOfFinalizedHeaps,
-    NonFinalizedHeapOffset = FirstNonFinalizedHeap
 };
 
 // Base implementation for HeapIndexTrait found below.
@@ -206,11 +192,9 @@ template<int heapIndex>
 struct HeapIndexTraitBase {
     using HeaderType = GeneralHeapObjectHeader;
     using HeapType = ThreadHeap<HeaderType>;
-    static const int finalizedIndex = heapIndex;
-    static const int nonFinalizedIndex = heapIndex + static_cast<int>(NonFinalizedHeapOffset);
-    static int index(bool isFinalized, size_t)
+    static int index(size_t)
     {
-        return isFinalized ? finalizedIndex : nonFinalizedIndex;
+        return heapIndex;
     }
 };
 
@@ -225,9 +209,7 @@ template<int heapIndex>
 struct GeneralHeapIndexTraitBase {
     using HeaderType = GeneralHeapObjectHeader;
     using HeapType = ThreadHeap<HeaderType>;
-    static const int finalizedIndex = heapIndex;
-    static const int nonFinalizedIndex = heapIndex + static_cast<int>(NonFinalizedHeapOffset);
-    static int index(bool isFinalized, size_t size)
+    static int index(size_t size)
     {
         static const int wordSize = sizeof(void*);
         int generalHeapOffset = 0;
@@ -242,7 +224,7 @@ struct GeneralHeapIndexTraitBase {
             else
                 generalHeapOffset = 3;
         }
-        return generalHeapOffset + (isFinalized ? finalizedIndex : nonFinalizedIndex);
+        return heapIndex + generalHeapOffset;
     }
 };
 
@@ -253,41 +235,25 @@ struct HeapIndexTrait;
 template<>
 struct HeapIndexTrait<General1Heap> : public GeneralHeapIndexTraitBase<General1Heap> { };
 template<>
-struct HeapIndexTrait<General1HeapNonFinalized> : public HeapIndexTrait<General1Heap> { };
-template<>
 struct HeapIndexTrait<General2Heap> : public GeneralHeapIndexTraitBase<General2Heap> { };
-template<>
-struct HeapIndexTrait<General2HeapNonFinalized> : public HeapIndexTrait<General2Heap> { };
 template<>
 struct HeapIndexTrait<General3Heap> : public GeneralHeapIndexTraitBase<General3Heap> { };
 template<>
-struct HeapIndexTrait<General3HeapNonFinalized> : public HeapIndexTrait<General3Heap> { };
-template<>
 struct HeapIndexTrait<General4Heap> : public GeneralHeapIndexTraitBase<General4Heap> { };
-template<>
-struct HeapIndexTrait<General4HeapNonFinalized> : public HeapIndexTrait<General4Heap> { };
 
 template<>
 struct HeapIndexTrait<VectorBackingHeap> : public HeapIndexTraitBase<VectorBackingHeap> { };
 template<>
-struct HeapIndexTrait<VectorBackingHeapNonFinalized> : public HeapIndexTrait<VectorBackingHeap> { };
-template<>
 struct HeapIndexTrait<InlineVectorBackingHeap> : public HeapIndexTraitBase<InlineVectorBackingHeap> { };
 template<>
-struct HeapIndexTrait<InlineVectorBackingHeapNonFinalized> : public HeapIndexTrait<InlineVectorBackingHeap> { };
-template<>
 struct HeapIndexTrait<HashTableBackingHeap> : public HeapIndexTraitBase<HashTableBackingHeap> { };
-template<>
-struct HeapIndexTrait<HashTableBackingHeapNonFinalized> : public HeapIndexTrait<HashTableBackingHeap> { };
 
 #define DEFINE_TYPED_HEAP_INDEX_TRAIT(Type)                                     \
     template<>                                                                  \
     struct HeapIndexTrait<Type##Heap> : public HeapIndexTraitBase<Type##Heap> { \
         using HeaderType = HeapObjectHeader;                                    \
         using HeapType = ThreadHeap<HeaderType>;                                \
-    };                                                                          \
-    template<>                                                                  \
-    struct HeapIndexTrait<Type##HeapNonFinalized> : public HeapIndexTrait<Type##Heap> { };
+    };
 FOR_EACH_TYPED_HEAP(DEFINE_TYPED_HEAP_INDEX_TRAIT)
 #undef DEFINE_TYPED_HEAP_INDEX_TRAIT
 
