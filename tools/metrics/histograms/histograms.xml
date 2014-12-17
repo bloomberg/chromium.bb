@@ -32468,11 +32468,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Signin.OneClickConfirmation" enum="SigninFlowConfirmations">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>noms@chromium.org</owner>
   <summary>
     Count of the ways users interact with the confirmation dialogs of the new
     web based sign in to Chrome flow (accessed via the one click signin).
   </summary>
+</histogram>
+
+<histogram name="Signin.Reauth" enum="SigninReauthStates">
+  <owner>noms@chromium.org</owner>
+  <summary>Tracks events related to the reauthentication Gaia page.</summary>
 </histogram>
 
 <histogram name="Signin.Reconciler.AddedToChrome">
@@ -32545,6 +32550,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Track how many minutes of real time (not browser active time) elapsed
     between profile signin and signout.
+  </summary>
+</histogram>
+
+<histogram name="Signin.SigninSource" enum="SigninSource">
+  <owner>noms@chromium.org</owner>
+  <summary>
+    Logs the original source that displayed the signin or reauth Gaia page,
+    before the page is displayed.
   </summary>
 </histogram>
 
@@ -55523,6 +55536,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="10" label="Undo">The sync was aborted with an undo button.</int>
 </enum>
 
+<enum name="SigninReauthStates" type="int">
+  <int value="0" label="Account mismatch"/>
+  <int value="1" label="Reauth Shown"/>
+</enum>
+
 <enum name="SigninSignoutProfile" type="int">
   <int value="0" label="Preference changed">
     The preference or policy controlling if signin is valid has changed.
@@ -55546,6 +55564,22 @@ To add a new entry, add it with any value and run test to compute valid value.
     The credentials are being transfered to a new profile, so the old one is
     signed out.
   </int>
+</enum>
+
+<enum name="SigninSource" type="int">
+  <int value="0" label="Start page"/>
+  <int value="1" label="NTP Link"/>
+  <int value="2" label="Menu"/>
+  <int value="3" label="Settings"/>
+  <int value="4" label="Extension install bubble"/>
+  <int value="5" label="App launcher"/>
+  <int value="6" label="Apps page link"/>
+  <int value="7" label="Bookmark bubble"/>
+  <int value="8" label="Avatar bubble sign in"/>
+  <int value="9" label="Avatar bubble add account"/>
+  <int value="10" label="Devices page"/>
+  <int value="11" label="Reauth"/>
+  <int value="12" label="Unknown"/>
 </enum>
 
 <enum name="SimpleCache.EntryCreatedAndStream2Omitted" type="int">
@@ -61705,6 +61739,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="AndroidAccountConsistencyFirstRunActions"
       label="Signin Flow shown on android after Account Consistency flag was
              enabled."/>
+  <affected-histogram name="Signin"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="Signin.ObsoleteActions" separator=".">
+  <obsolete>
+    Deprecated as of 12/2014.
+  </obsolete>
   <suffix name="AppLauncherActions"/>
   <suffix name="ExtensionInstallBubbleActions"/>
   <suffix name="MenuActions"/>

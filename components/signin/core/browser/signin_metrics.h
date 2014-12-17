@@ -48,6 +48,82 @@ enum ProfileSignout {
   NUM_PROFILE_SIGNOUT_METRICS,
 };
 
+// Enum values used for use with "AutoLogin.Reverse" histograms.
+enum {
+  // The infobar was shown to the user.
+  HISTOGRAM_SHOWN,
+  // The user pressed the accept button to perform the suggested action.
+  HISTOGRAM_ACCEPTED,
+  // The user pressed the reject to turn off the feature.
+  HISTOGRAM_REJECTED,
+  // The user pressed the X button to dismiss the infobar this time.
+  HISTOGRAM_DISMISSED,
+  // The user completely ignored the infoar.  Either they navigated away, or
+  // they used the page as is.
+  HISTOGRAM_IGNORED,
+  // The user clicked on the learn more link in the infobar.
+  HISTOGRAM_LEARN_MORE,
+  // The sync was started with default settings.
+  HISTOGRAM_WITH_DEFAULTS,
+  // The sync was started with advanced settings.
+  HISTOGRAM_WITH_ADVANCED,
+  // The sync was started through auto-accept with default settings.
+  HISTOGRAM_AUTO_WITH_DEFAULTS,
+  // The sync was started through auto-accept with advanced settings.
+  HISTOGRAM_AUTO_WITH_ADVANCED,
+  // The sync was aborted with an undo button.
+  HISTOGRAM_UNDO,
+  HISTOGRAM_MAX
+};
+
+// Enum values used with the "Signin.OneClickConfirmation" histogram, which
+// tracks the actions used in the OneClickConfirmation bubble.
+enum {
+  HISTOGRAM_CONFIRM_SHOWN,
+  HISTOGRAM_CONFIRM_OK,
+  HISTOGRAM_CONFIRM_RETURN,
+  HISTOGRAM_CONFIRM_ADVANCED,
+  HISTOGRAM_CONFIRM_CLOSE,
+  HISTOGRAM_CONFIRM_ESCAPE,
+  HISTOGRAM_CONFIRM_UNDO,
+  HISTOGRAM_CONFIRM_LEARN_MORE,
+  HISTOGRAM_CONFIRM_LEARN_MORE_OK,
+  HISTOGRAM_CONFIRM_LEARN_MORE_RETURN,
+  HISTOGRAM_CONFIRM_LEARN_MORE_ADVANCED,
+  HISTOGRAM_CONFIRM_LEARN_MORE_CLOSE,
+  HISTOGRAM_CONFIRM_LEARN_MORE_ESCAPE,
+  HISTOGRAM_CONFIRM_LEARN_MORE_UNDO,
+  HISTOGRAM_CONFIRM_MAX
+};
+
+// Enum valus used with the "Signin.SigninSource" histogram, which tracks the
+// source that launched a Gaia signin page.
+enum Source {
+  SOURCE_START_PAGE = 0, // This must be first.
+  SOURCE_NTP_LINK,
+  SOURCE_MENU,
+  SOURCE_SETTINGS,
+  SOURCE_EXTENSION_INSTALL_BUBBLE,
+  SOURCE_APP_LAUNCHER,
+  SOURCE_APPS_PAGE_LINK,
+  SOURCE_BOOKMARK_BUBBLE,
+  SOURCE_AVATAR_BUBBLE_SIGN_IN,
+  SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT,
+  SOURCE_DEVICES_PAGE,
+  SOURCE_REAUTH,
+  SOURCE_UNKNOWN, // This must be last.
+};
+
+// Enum values used for use with the "Signin.Reauth" histogram.
+enum AccountReauth {
+  // The user gave the wrong email when doing a reauthentication.
+  HISTOGRAM_ACCOUNT_MISSMATCH,
+  // The user was shown a reauthentication login screen.
+  HISTOGRAM_REAUTH_SHOWN,
+
+  HISTOGRAM_REAUTH_MAX
+};
+
 // Log to UMA histograms and UserCounts stats about a single execution of the
 // AccountReconciler.
 // |total_number_accounts| - How many accounts are in the browser for this
@@ -71,6 +147,9 @@ void LogSigninAccountReconciliation(int total_number_accounts,
 
 // Track a successful signin.
 void LogSigninAddAccount();
+
+// Tracks the original source that showed the signin page.
+void LogSigninSource(Source source);
 
 // Track a successful signin of a profile.
 void LogSigninProfile(bool is_first_run, base::Time install_date);

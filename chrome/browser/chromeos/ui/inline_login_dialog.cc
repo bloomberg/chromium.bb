@@ -43,9 +43,10 @@ base::string16 InlineLoginDialog::GetDialogTitle() const {
 }
 
 GURL InlineLoginDialog::GetDialogContentURL() const {
-  return GURL(signin::GetPromoURL(signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT,
-                                  false /* auto_close */,
-                                  true /* is_constrained */));
+  return GURL(signin::GetPromoURL(
+      signin_metrics::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT,
+      false /* auto_close */,
+      true /* is_constrained */));
 }
 
 void InlineLoginDialog::GetWebUIMessageHandlers(

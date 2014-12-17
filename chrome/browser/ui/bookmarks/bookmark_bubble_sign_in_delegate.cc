@@ -25,7 +25,7 @@ BookmarkBubbleSignInDelegate::~BookmarkBubbleSignInDelegate() {
 
 void BookmarkBubbleSignInDelegate::OnSignInLinkClicked() {
   EnsureBrowser();
-  chrome::ShowBrowserSignin(browser_, signin::SOURCE_BOOKMARK_BUBBLE);
+  chrome::ShowBrowserSignin(browser_, signin_metrics::SOURCE_BOOKMARK_BUBBLE);
 }
 
 void BookmarkBubbleSignInDelegate::OnBrowserRemoved(Browser* browser) {

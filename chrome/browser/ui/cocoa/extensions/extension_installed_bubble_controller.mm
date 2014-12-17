@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/chrome_style.h"
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -201,11 +202,8 @@ class ExtensionLoadedNotificationObserver
    clickedOnLink:(id)link
          atIndex:(NSUInteger)charIndex {
   DCHECK_EQ(promo_.get(), aTextView);
-  GURL promo_url =
-      signin::GetPromoURL(signin::SOURCE_EXTENSION_INSTALL_BUBBLE, false);
-  chrome::NavigateParams params(
-      chrome::GetSingletonTabNavigateParams(browser_, promo_url));
-  chrome::Navigate(&params);
+  chrome::ShowBrowserSignin(browser_,
+                            signin_metrics::SOURCE_EXTENSION_INSTALL_BUBBLE);
   return YES;
 }
 

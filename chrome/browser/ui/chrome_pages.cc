@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
@@ -328,7 +329,7 @@ void ShowSearchEngineSettings(Browser* browser) {
 }
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-void ShowBrowserSignin(Browser* browser, signin::Source source) {
+void ShowBrowserSignin(Browser* browser, signin_metrics::Source source) {
   Profile* original_profile = browser->profile()->GetOriginalProfile();
   SigninManagerBase* manager =
       SigninManagerFactory::GetForProfile(original_profile);
@@ -347,8 +348,16 @@ void ShowBrowserSignin(Browser* browser, signin::Source source) {
       browser = displayer->browser();
     }
 
-    NavigateToSingletonTab(browser, GURL(signin::GetPromoURL(source, false)));
-    DCHECK_GT(browser->tab_strip_model()->count(), 0);
+    signin_metrics::LogSigninSource(source);
+
+    if (switches::IsNewAvatarMenu()) {
+      browser->window()->ShowAvatarBubbleFromAvatarButton(
+          BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
+          signin::ManageAccountsParams());
+    } else {
+      NavigateToSingletonTab(browser, GURL(signin::GetPromoURL(source, false)));
+      DCHECK_GT(browser->tab_strip_model()->count(), 0);
+    }
   }
 }
 #endif

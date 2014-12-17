@@ -665,7 +665,7 @@ TEST_F(OneClickSigninHelperIncognitoTest, ShowInfoBarUIThreadIncognito) {
 
   OneClickSigninHelper::ShowInfoBarUIThread(
       "session_index", "email", OneClickSigninHelper::AUTO_ACCEPT_ACCEPTED,
-      signin::SOURCE_UNKNOWN, GURL(), process()->GetID(),
+      signin_metrics::SOURCE_UNKNOWN, GURL(), process()->GetID(),
       rvh()->GetRoutingID());
 }
 
@@ -703,7 +703,7 @@ TEST_F(OneClickSigninHelperTest, NoRedirectToNTPWithPendingEntry) {
   EXPECT_CALL(delegate, OpenURLFromTab(_, _)).Times(0);
   web_contents()->SetDelegate(&delegate);
   OneClickSigninHelper::RedirectToNtpOrAppsPage(
-      web_contents(), signin::SOURCE_UNKNOWN);
+      web_contents(), signin_metrics::SOURCE_UNKNOWN);
 
   EXPECT_EQ(fooWebUIURL, controller.GetPendingEntry()->GetURL());
 }

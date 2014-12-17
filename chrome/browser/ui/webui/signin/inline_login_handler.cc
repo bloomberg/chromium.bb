@@ -45,10 +45,10 @@ void InlineLoginHandler::HandleInitializeMessage(const base::ListValue* args) {
   params.SetInteger("authMode", InlineLoginHandler::kDesktopAuthMode);
 
   const GURL& current_url = web_ui()->GetWebContents()->GetURL();
-  signin::Source source = signin::GetSourceForPromoURL(current_url);
-  if (source == signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT ||
-      source == signin::SOURCE_AVATAR_BUBBLE_SIGN_IN ||
-      source == signin::SOURCE_REAUTH) {
+  signin_metrics::Source source = signin::GetSourceForPromoURL(current_url);
+  if (source == signin_metrics::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT ||
+      source == signin_metrics::SOURCE_AVATAR_BUBBLE_SIGN_IN ||
+      source == signin_metrics::SOURCE_REAUTH) {
     // Drop the leading slash in the path.
     params.SetString(
         "gaiaPath",
@@ -61,8 +61,8 @@ void InlineLoginHandler::HandleInitializeMessage(const base::ListValue* args) {
                             static_cast<int>(source)).spec());
 
   std::string default_email;
-  if (source != signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT &&
-      source != signin::SOURCE_REAUTH) {
+  if (source != signin_metrics::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT &&
+      source != signin_metrics::SOURCE_REAUTH) {
     default_email = Profile::FromWebUI(web_ui())->GetPrefs()->GetString(
         prefs::kGoogleServicesLastUsername);
   } else {

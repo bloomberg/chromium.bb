@@ -17,6 +17,7 @@
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -307,20 +308,19 @@ void InstalledBubbleContent::ButtonPressed(views::Button* sender,
 
 void InstalledBubbleContent::LinkClicked(views::Link* source, int event_flags) {
   GetWidget()->Close();
-  std::string configure_url;
-  if (source == manage_shortcut_) {
-    configure_url = chrome::kChromeUIExtensionsURL;
-    configure_url += chrome::kExtensionConfigureCommandsSubPage;
-  } else if (source == sign_in_link_) {
-    configure_url = signin::GetPromoURL(
-        signin::SOURCE_EXTENSION_INSTALL_BUBBLE, false).spec();
-  } else {
-    NOTREACHED();
+
+  if (source == sign_in_link_) {
+    chrome::ShowBrowserSignin(
+        browser_, signin_metrics::SOURCE_EXTENSION_INSTALL_BUBBLE);
     return;
   }
-  chrome::NavigateParams params(
-      chrome::GetSingletonTabNavigateParams(
-          browser_, GURL(configure_url.c_str())));
+
+  DCHECK_EQ(manage_shortcut_, source);
+
+  std::string configure_url = chrome::kChromeUIExtensionsURL;
+  configure_url += chrome::kExtensionConfigureCommandsSubPage;
+  chrome::NavigateParams params(chrome::GetSingletonTabNavigateParams(
+      browser_, GURL(configure_url)));
   chrome::Navigate(&params);
 }
 

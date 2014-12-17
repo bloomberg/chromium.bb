@@ -232,7 +232,8 @@ TEST_F(OneClickSigninSyncObserverTest,
 // triggered, since it would be redundant.
 TEST_F(OneClickSigninSyncObserverTest,
        OnSyncStateChanged_SyncConfiguredSuccessfully_SourceIsSettings) {
-  GURL continue_url = signin::GetPromoURL(signin::SOURCE_SETTINGS, false);
+  GURL continue_url = signin::GetPromoURL(
+      signin_metrics::SOURCE_SETTINGS, false);
   CreateSyncObserver(continue_url.spec());
   sync_service_->set_first_setup_in_progress(false);
   sync_service_->set_sync_active(true);

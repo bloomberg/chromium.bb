@@ -19,7 +19,7 @@ void OpenHistoryWindow(Profile* profile);
 void OpenDownloadsWindow(Profile* profile);
 void OpenHelpWindow(Profile* profile, HelpSource source);
 void OpenOptionsWindow(Profile* profile);
-void OpenSyncSetupWindow(Profile* profile, signin::Source source);
+void OpenSyncSetupWindow(Profile* profile, signin_metrics::Source source);
 void OpenClearBrowsingDataDialogWindow(Profile* profile);
 void OpenImportSettingsDialogWindow(Profile* profile);
 void OpenBookmarkManagerWindow(Profile* profile);

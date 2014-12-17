@@ -5,6 +5,7 @@
 #include "chrome/browser/signin/signin_global_error.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_header_helper.h"
@@ -21,6 +22,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -101,6 +103,9 @@ void SigninGlobalError::ExecuteMenuItem(Browser* browser) {
     return;
   }
 
+  UMA_HISTOGRAM_ENUMERATION("Signin.Reauth",
+                            signin_metrics::HISTOGRAM_REAUTH_SHOWN,
+                            signin_metrics::HISTOGRAM_REAUTH_MAX);
   if (switches::IsNewAvatarMenu()) {
     browser->window()->ShowAvatarBubbleFromAvatarButton(
         BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH,

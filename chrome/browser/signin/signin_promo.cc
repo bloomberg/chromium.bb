@@ -173,12 +173,14 @@ GURL GetLandingURL(const char* option, int value) {
   return GURL(url);
 }
 
-GURL GetPromoURL(Source source, bool auto_close) {
+GURL GetPromoURL(signin_metrics::Source source, bool auto_close) {
   return GetPromoURL(source, auto_close, false /* is_constrained */);
 }
 
-GURL GetPromoURL(Source source, bool auto_close, bool is_constrained) {
-  DCHECK_NE(SOURCE_UNKNOWN, source);
+GURL GetPromoURL(signin_metrics::Source source,
+                 bool auto_close,
+                 bool is_constrained) {
+  DCHECK_NE(signin_metrics::SOURCE_UNKNOWN, source);
 
   if (!switches::IsEnableWebBasedSignin()) {
     std::string url(chrome::kChromeUIChromeSigninURL);
@@ -227,13 +229,13 @@ GURL GetReauthURL(Profile* profile, const std::string& account_id) {
 
   if (switches::IsEnableWebBasedSignin()) {
     return net::AppendQueryParameter(
-        signin::GetPromoURL(signin::SOURCE_SETTINGS, true),
+        signin::GetPromoURL(signin_metrics::SOURCE_SETTINGS, true),
         "Email",
         account_id);
   }
 
-  signin::Source source = switches::IsNewAvatarMenu() ?
-      signin::SOURCE_REAUTH : signin::SOURCE_SETTINGS;
+  signin_metrics::Source source = switches::IsNewAvatarMenu() ?
+      signin_metrics::SOURCE_REAUTH : signin_metrics::SOURCE_SETTINGS;
 
   GURL url = signin::GetPromoURL(
       source, true /* auto_close */,
@@ -260,16 +262,17 @@ GURL GetSigninPartitionURL() {
       chrome::kChromeUIChromeSigninURL);
 }
 
-Source GetSourceForPromoURL(const GURL& url) {
+signin_metrics::Source GetSourceForPromoURL(const GURL& url) {
   std::string value;
   if (net::GetValueForKeyInQuery(url, kSignInPromoQueryKeySource, &value)) {
     int source = 0;
-    if (base::StringToInt(value, &source) && source >= SOURCE_START_PAGE &&
-        source < SOURCE_UNKNOWN) {
-      return static_cast<Source>(source);
+    if (base::StringToInt(value, &source) &&
+        source >= signin_metrics::SOURCE_START_PAGE &&
+        source < signin_metrics::SOURCE_UNKNOWN) {
+      return static_cast<signin_metrics::Source>(source);
     }
   }
-  return SOURCE_UNKNOWN;
+  return signin_metrics::SOURCE_UNKNOWN;
 }
 
 bool IsAutoCloseEnabledInURL(const GURL& url) {

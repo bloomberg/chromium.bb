@@ -33,7 +33,6 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/singleton_tabs.h"
-#include "chrome/browser/ui/sync/signin_histogram.h"
 #include "chrome/browser/ui/webui/options/options_handlers_helper.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -366,8 +365,8 @@ void SyncSetupHandler::DisplayGaiaLoginInNewTabOrWindow() {
   if (SigninManagerFactory::GetForProfile(
       browser->profile())->IsAuthenticated()) {
     UMA_HISTOGRAM_ENUMERATION("Signin.Reauth",
-                              signin::HISTOGRAM_SHOWN,
-                              signin::HISTOGRAM_MAX);
+                              signin_metrics::HISTOGRAM_REAUTH_SHOWN,
+                              signin_metrics::HISTOGRAM_REAUTH_MAX);
 
     SigninErrorController* error_controller =
         ProfileOAuth2TokenServiceFactory::GetForProfile(browser->profile())->
@@ -382,12 +381,13 @@ void SyncSetupHandler::DisplayGaiaLoginInNewTabOrWindow() {
                                  error_controller->error_account_id());
     }
   } else {
+    signin_metrics::LogSigninSource(signin_metrics::SOURCE_SETTINGS);
     if (switches::IsNewAvatarMenu() && !force_new_tab) {
       browser->window()->ShowAvatarBubbleFromAvatarButton(
           BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
           signin::ManageAccountsParams());
     } else {
-      url = signin::GetPromoURL(signin::SOURCE_SETTINGS, true);
+      url = signin::GetPromoURL(signin_metrics::SOURCE_SETTINGS, true);
     }
   }
 

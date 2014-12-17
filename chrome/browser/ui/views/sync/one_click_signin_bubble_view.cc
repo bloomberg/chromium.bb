@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
-#include "chrome/browser/ui/sync/one_click_signin_histogram.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -210,7 +209,7 @@ void OneClickSigninBubbleView::InitBubbleContent(views::GridLayout* layout) {
 
 void OneClickSigninBubbleView::InitDialogContent(views::GridLayout* layout) {
   OneClickSigninHelper::LogConfirmHistogramValue(
-      one_click_signin::HISTOGRAM_CONFIRM_SHOWN);
+      signin_metrics::HISTOGRAM_CONFIRM_SHOWN);
 
   // Column set for title bar.
   views::ColumnSet* cs = layout->AddColumnSet(COLUMN_SET_TITLE_BAR);
@@ -322,16 +321,16 @@ bool OneClickSigninBubbleView::AcceleratorPressed(
       if (accelerator.key_code() == ui::VKEY_RETURN) {
         OneClickSigninHelper::LogConfirmHistogramValue(
         clicked_learn_more_ ?
-            one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE_RETURN :
-            one_click_signin::HISTOGRAM_CONFIRM_RETURN);
+            signin_metrics::HISTOGRAM_CONFIRM_LEARN_MORE_RETURN :
+            signin_metrics::HISTOGRAM_CONFIRM_RETURN);
 
         base::ResetAndReturn(&start_sync_callback_).Run(
             OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
       } else if (accelerator.key_code() == ui::VKEY_ESCAPE) {
         OneClickSigninHelper::LogConfirmHistogramValue(
         clicked_learn_more_ ?
-            one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE_ESCAPE :
-            one_click_signin::HISTOGRAM_CONFIRM_ESCAPE);
+            signin_metrics::HISTOGRAM_CONFIRM_LEARN_MORE_ESCAPE :
+            signin_metrics::HISTOGRAM_CONFIRM_ESCAPE);
 
         base::ResetAndReturn(&start_sync_callback_).Run(
             OneClickSigninSyncStarter::UNDO_SYNC);
@@ -349,7 +348,7 @@ void OneClickSigninBubbleView::LinkClicked(views::Link* source,
   if (source == learn_more_link_) {
     if (is_sync_dialog_ && !clicked_learn_more_) {
       OneClickSigninHelper::LogConfirmHistogramValue(
-          one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE);
+          signin_metrics::HISTOGRAM_CONFIRM_LEARN_MORE);
       clicked_learn_more_ = true;
     }
     delegate_->OnLearnMoreLinkClicked(is_sync_dialog_);
@@ -361,8 +360,8 @@ void OneClickSigninBubbleView::LinkClicked(views::Link* source,
     if (is_sync_dialog_) {
       OneClickSigninHelper::LogConfirmHistogramValue(
         clicked_learn_more_ ?
-            one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE_ADVANCED :
-            one_click_signin::HISTOGRAM_CONFIRM_ADVANCED);
+            signin_metrics::HISTOGRAM_CONFIRM_LEARN_MORE_ADVANCED :
+            signin_metrics::HISTOGRAM_CONFIRM_ADVANCED);
 
       base::ResetAndReturn(&start_sync_callback_).Run(
           OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
@@ -382,20 +381,20 @@ void OneClickSigninBubbleView::ButtonPressed(views::Button* sender,
     if (sender == ok_button_)
       OneClickSigninHelper::LogConfirmHistogramValue(
           clicked_learn_more_ ?
-              one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE_OK :
-              one_click_signin::HISTOGRAM_CONFIRM_OK);
+              signin_metrics::HISTOGRAM_CONFIRM_LEARN_MORE_OK :
+              signin_metrics::HISTOGRAM_CONFIRM_OK);
 
     if (sender == undo_button_)
       OneClickSigninHelper::LogConfirmHistogramValue(
           clicked_learn_more_ ?
-              one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE_UNDO :
-              one_click_signin::HISTOGRAM_CONFIRM_UNDO);
+              signin_metrics::HISTOGRAM_CONFIRM_LEARN_MORE_UNDO :
+              signin_metrics::HISTOGRAM_CONFIRM_UNDO);
 
     if (sender == close_button_)
       OneClickSigninHelper::LogConfirmHistogramValue(
           clicked_learn_more_ ?
-              one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE_CLOSE :
-              one_click_signin::HISTOGRAM_CONFIRM_CLOSE);
+              signin_metrics::HISTOGRAM_CONFIRM_LEARN_MORE_CLOSE :
+              signin_metrics::HISTOGRAM_CONFIRM_CLOSE);
 
     base::ResetAndReturn(&start_sync_callback_).Run((sender == ok_button_) ?
       OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS :

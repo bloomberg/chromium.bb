@@ -135,10 +135,10 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const base::ListValue* args) {
     return;
 
   // The user isn't signed in, show the sign in promo.
-  signin::Source source =
+  signin_metrics::Source source =
       web_contents->GetURL().spec() == chrome::kChromeUIAppsURL ?
-          signin::SOURCE_APPS_PAGE_LINK :
-          signin::SOURCE_NTP_LINK;
+          signin_metrics::SOURCE_APPS_PAGE_LINK :
+          signin_metrics::SOURCE_NTP_LINK;
   chrome::ShowBrowserSignin(browser, source);
   RecordInHistogram(NTP_SIGN_IN_PROMO_CLICKED);
 }
@@ -167,7 +167,7 @@ void NTPLoginHandler::HandleShowAdvancedLoginUI(const base::ListValue* args) {
   Browser* browser =
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
   if (browser)
-    chrome::ShowBrowserSignin(browser, signin::SOURCE_NTP_LINK);
+    chrome::ShowBrowserSignin(browser, signin_metrics::SOURCE_NTP_LINK);
 }
 
 void NTPLoginHandler::UpdateLogin() {

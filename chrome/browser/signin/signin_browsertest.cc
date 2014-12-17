@@ -112,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(SigninBrowserTest, MAYBE_ProcessIsolation) {
   EXPECT_FALSE(signin->HasSigninProcess());
 
   ui_test_utils::NavigateToURL(browser(), signin::GetPromoURL(
-      signin::SOURCE_NTP_LINK, true));
+      signin_metrics::SOURCE_NTP_LINK, true));
   EXPECT_EQ(kOneClickSigninEnabled, signin->HasSigninProcess());
 
   // Navigating away should change the process.
@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(SigninBrowserTest, MAYBE_ProcessIsolation) {
   EXPECT_FALSE(signin->HasSigninProcess());
 
   ui_test_utils::NavigateToURL(browser(), signin::GetPromoURL(
-      signin::SOURCE_NTP_LINK, true));
+      signin_metrics::SOURCE_NTP_LINK, true));
   EXPECT_EQ(kOneClickSigninEnabled, signin->HasSigninProcess());
 
   content::WebContents* active_tab =
@@ -135,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(SigninBrowserTest, MAYBE_ProcessIsolation) {
   // shouldn't change anything.
   chrome::NavigateParams params(chrome::GetSingletonTabNavigateParams(
       browser(),
-      GURL(signin::GetPromoURL(signin::SOURCE_NTP_LINK, false))));
+      GURL(signin::GetPromoURL(signin_metrics::SOURCE_NTP_LINK, false))));
   params.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;
   ShowSingletonTabOverwritingNTP(browser(), params);
   EXPECT_EQ(active_tab, browser()->tab_strip_model()->GetActiveWebContents());
@@ -160,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(SigninBrowserTest, MAYBE_NotTrustedAfterRedirect) {
       ChromeSigninClientFactory::GetForProfile(browser()->profile());
   EXPECT_FALSE(signin->HasSigninProcess());
 
-  GURL url = signin::GetPromoURL(signin::SOURCE_NTP_LINK, true);
+  GURL url = signin::GetPromoURL(signin_metrics::SOURCE_NTP_LINK, true);
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_EQ(kOneClickSigninEnabled, signin->HasSigninProcess());
 
@@ -207,7 +207,8 @@ class BackOnNTPCommitObserver : public content::WebContentsObserver {
 // DidStopLoading of the NTP.
 IN_PROC_BROWSER_TEST_F(SigninBrowserTest, SigninSkipForNowAndGoBack) {
   GURL ntp_url(chrome::kChromeUINewTabURL);
-  GURL start_url = signin::GetPromoURL(signin::SOURCE_START_PAGE, false);
+  GURL start_url = signin::GetPromoURL(
+      signin_metrics::SOURCE_START_PAGE, false);
   GURL skip_url = signin::GetLandingURL("ntp", 1);
 
   SigninClient* signin =

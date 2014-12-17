@@ -51,7 +51,7 @@ void OpenOptionsWindow(Profile* profile) {
   browser->window()->Show();
 }
 
-void OpenSyncSetupWindow(Profile* profile, signin::Source source) {
+void OpenSyncSetupWindow(Profile* profile, signin_metrics::Source source) {
   Browser* browser =
       new Browser(Browser::CreateParams(profile,
                                         chrome::HOST_DESKTOP_TYPE_NATIVE));

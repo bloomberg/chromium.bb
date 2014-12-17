@@ -27,6 +27,7 @@
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -299,13 +300,7 @@ void LocalDiscoveryUIHandler::HandleShowSyncUI(
   Browser* browser = chrome::FindBrowserWithWebContents(
       web_ui()->GetWebContents());
   DCHECK(browser);
-
-  GURL url(signin::GetPromoURL(signin::SOURCE_DEVICES_PAGE,
-                               true));  // auto close after success.
-
-  browser->OpenURL(
-      content::OpenURLParams(url, content::Referrer(), SINGLETON_TAB,
-                             ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
+  chrome::ShowBrowserSignin(browser, signin_metrics::SOURCE_DEVICES_PAGE);
 }
 
 void LocalDiscoveryUIHandler::StartRegisterHTTP(

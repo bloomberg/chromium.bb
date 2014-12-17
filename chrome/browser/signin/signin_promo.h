@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "components/signin/core/browser/signin_metrics.h"
 
 class GURL;
 class Profile;
@@ -25,22 +26,6 @@ const char kSignInPromoQueryKeySource[] = "source";
 const char kSignInPromoQueryKeyConstrained[] = "constrained";
 const char kSignInPromoQueryKeyShowAccountManagement[] =
     "showAccountManagement";
-
-enum Source {
-  SOURCE_START_PAGE = 0, // This must be first.
-  SOURCE_NTP_LINK,
-  SOURCE_MENU,
-  SOURCE_SETTINGS,
-  SOURCE_EXTENSION_INSTALL_BUBBLE,
-  SOURCE_APP_LAUNCHER,
-  SOURCE_APPS_PAGE_LINK,
-  SOURCE_BOOKMARK_BUBBLE,
-  SOURCE_AVATAR_BUBBLE_SIGN_IN,
-  SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT,
-  SOURCE_DEVICES_PAGE,
-  SOURCE_REAUTH,
-  SOURCE_UNKNOWN, // This must be last.
-};
 
 // Enum values used for Android signin promo actions.
 enum AndroidSigninPromoAction {
@@ -85,8 +70,10 @@ GURL GetLandingURL(const char* option, int value);
 // |auto_close| whether to close the sign in promo automatically when done.
 // |is_constrained} whether to load the URL in a constrained window, false
 // by default.
-GURL GetPromoURL(Source source, bool auto_close);
-GURL GetPromoURL(Source source, bool auto_close, bool is_constrained);
+GURL GetPromoURL(signin_metrics::Source source, bool auto_close);
+GURL GetPromoURL(signin_metrics::Source source,
+                 bool auto_close,
+                 bool is_constrained);
 
 // Returns a sign in promo URL specifically for reauthenticating |account_id|.
 GURL GetReauthURL(Profile* profile, const std::string& account_id);
@@ -99,7 +86,7 @@ GURL GetSigninPartitionURL();
 
 // Gets the source from the query portion of the sign in promo URL.
 // The source identifies from where the sign in promo was opened.
-Source GetSourceForPromoURL(const GURL& url);
+signin_metrics::Source GetSourceForPromoURL(const GURL& url);
 
 // Returns true if the auto_close parameter in the given URL is set to true.
 bool IsAutoCloseEnabledInURL(const GURL& url);
