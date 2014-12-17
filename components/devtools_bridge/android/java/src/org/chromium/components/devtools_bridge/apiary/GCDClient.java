@@ -95,6 +95,16 @@ public class GCDClient {
                 });
     }
 
+    public final void patchInstanceGCMChannel(String instanceId, String gcmChannelId)
+            throws IOException {
+        String content = new MessageWriter()
+                .writeDeviceGCMChannelPatch(gcmChannelId).close().toString();
+
+        mHttpClient.execute(
+                newHttpPatch("/devices/" + instanceId, content),
+                new EmptyResponseHandler());
+    }
+
     /**
      * Deletes registered instance (unregisters). If client has instance credentials then
      * instanceId must be it's own ID. If client has user credentials then instance must belong

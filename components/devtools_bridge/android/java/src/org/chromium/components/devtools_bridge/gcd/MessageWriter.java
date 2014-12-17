@@ -50,6 +50,19 @@ public final class MessageWriter {
         return this;
     }
 
+    /**
+     * Writes body of devices/<instanceId> PATCH request.
+     */
+    public MessageWriter writeDeviceGCMChannelPatch(String gcmChannelId) throws IOException {
+        mWriter.beginObject();
+        mWriter.name("channel");
+        mWriter.beginObject();
+        mWriter.name("gcmRegistrationId").value(gcmChannelId);
+        mWriter.endObject();
+        mWriter.endObject();
+        return this;
+    }
+
     private void writeDeviceDraft(InstanceDescription description) throws IOException {
         mWriter.beginObject();
         mWriter.name("deviceKind").value("vendor");

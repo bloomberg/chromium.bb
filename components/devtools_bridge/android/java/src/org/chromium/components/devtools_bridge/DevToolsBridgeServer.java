@@ -4,13 +4,10 @@
 
 package org.chromium.components.devtools_bridge;
 
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.PowerManager;
 
-import org.chromium.components.devtools_bridge.ui.ServiceUIFactory;
 import org.chromium.components.devtools_bridge.util.LooperExecutor;
 
 import java.util.HashMap;
@@ -18,53 +15,57 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Android service mixin implementing DevTools Bridge features that not depend on
- * WebRTC signaling. Ability to host this class in different service classes allows:
- * 1. Parametrization.
- * 2. Simplified signaling for tests.
- *
- * Service starts foreground once any remote client starts a debugging session. Stops when all
- * remote clients disconnect.
- *
- * Must be called on service's main thread.
+ * Responsibility of DevToolsBridgeServer consists of handling commands and managing sessions.
+ * It designed to live in DevToolsBridgeServiceBase but also may live separately (in tests).
  */
 public class DevToolsBridgeServer implements SignalingReceiver {
-    public final int NOTIFICATION_ID = 1;
-    public final String DISCONNECT_ALL_CLIENTS_ACTION =
-            "action.DISCONNECT_ALL_CLIENTS_ACTION";
-
-    public final String WAKELOCK_KEY = "wake_lock.DevToolsBridgeServer";
-
-    private final Service mHost;
-    private final String mSocketName;
-    private final ServiceUIFactory mServiceUIFactory;
     private final LooperExecutor mExecutor;
     private final SessionDependencyFactory mFactory = SessionDependencyFactory.newInstance();
     private final Map<String, ServerSession> mSessions = new HashMap<String, ServerSession>();
     private final GCDNotificationHandler mHandler;
-    private PowerManager.WakeLock mWakeLock;
-    private Runnable mForegroundCompletionCallback;
+    private final Delegate mDelegate;
 
-    public DevToolsBridgeServer(Service host, String socketName, ServiceUIFactory uiFactory) {
-        mHost = host;
-        mSocketName = socketName;
-        mServiceUIFactory = uiFactory;
-        mExecutor = LooperExecutor.newInstanceForMainLooper(mHost);
+    /**
+     * Callback for finding DevTools socket asynchronously. Needed in multiprocess
+     * scenario when socket name is variable. May be called synchronously.
+     */
+    public interface QuerySocketCallback {
+        void onSuccess(String socketName);
+        void onFailure();
+    }
+
+    /**
+     * Delegate abstracts Server from service lifetime management and UI.
+     */
+    public interface Delegate {
+        Context getContext();
+
+        // When runs in a service this service should not die when |sessionCount| > 0.
+        void onSessionCountChange(int sessionCount);
+
+        // Lets query a socket name when starting a new session. Result may change
+        // (in multiprocess scenario: when browser process stops and then starts again).
+        void querySocketName(QuerySocketCallback callback);
+    }
+
+    public DevToolsBridgeServer(Delegate delegate) {
+        assert delegate != null;
+
+        mExecutor = LooperExecutor.newInstanceForMainLooper(delegate.getContext());
         mHandler = new GCDNotificationHandler(this);
-
-        checkCalledOnHostServiceThread();
+        mDelegate = delegate;
     }
 
     private void checkCalledOnHostServiceThread() {
         assert mExecutor.isCalledOnSessionThread();
     }
 
-    public Service getContext() {
-        return mHost;
+    public Context getContext() {
+        return mDelegate.getContext();
     }
 
     public SharedPreferences getPreferences() {
-        return getPreferences(mHost);
+        return getPreferences(getContext());
     }
 
     public static SharedPreferences getPreferences(Context context) {
@@ -72,13 +73,16 @@ public class DevToolsBridgeServer implements SignalingReceiver {
                 DevToolsBridgeServer.class.getName(), Context.MODE_PRIVATE);
     }
 
-    public void onStartCommand(Intent intent) {
-        String action = intent.getAction();
-        if (DISCONNECT_ALL_CLIENTS_ACTION.equals(action)) {
-            closeAllSessions();
-        } else if (mHandler.isNotification(intent)) {
-            mHandler.onNotification(intent, startSticky());
+    public void handleCloudMessage(Intent cloudMessage, Runnable completionHandler) {
+        if (mHandler.isNotification(cloudMessage)) {
+            mHandler.onNotification(cloudMessage, completionHandler);
+        } else {
+            completionHandler.run();
         }
+    }
+
+    public void updateCloudMessagesId(String channelId, Runnable completionHandler) {
+        mHandler.updateCloudMessagesId(channelId, completionHandler);
     }
 
     /**
@@ -96,22 +100,31 @@ public class DevToolsBridgeServer implements SignalingReceiver {
 
     @Override
     public void startSession(
-            String sessionId,
-            RTCConfiguration config,
-            String offer,
-            SessionBase.NegotiationCallback callback) {
+            final String sessionId,
+            final RTCConfiguration config,
+            final String offer,
+            final SessionBase.NegotiationCallback callback) {
         checkCalledOnHostServiceThread();
         if (mSessions.containsKey(sessionId)) {
-            callback.onFailure("Session already exists");
+            callback.onFailure("Session " + sessionId + " already exists");
             return;
         }
 
-        ServerSession session = new ServerSession(mFactory, mExecutor, mSocketName);
-        session.setEventListener(new SessionEventListener(sessionId));
-        mSessions.put(sessionId, session);
-        session.startSession(config, offer, callback);
-        if (mSessions.size() == 1)
-            startForeground();
+        mDelegate.querySocketName(new QuerySocketCallback() {
+            @Override
+            public void onSuccess(String socketName) {
+                ServerSession session = new ServerSession(mFactory, mExecutor, socketName);
+                session.setEventListener(new SessionEventListener(sessionId));
+                mSessions.put(sessionId, session);
+                session.startSession(config, offer, callback);
+                mDelegate.onSessionCountChange(mSessions.size());
+            }
+
+            @Override
+            public void onFailure() {
+                callback.onFailure("Socket not available");
+            }
+        });
     }
 
     @Override
@@ -142,25 +155,6 @@ public class DevToolsBridgeServer implements SignalingReceiver {
         session.iceExchange(clientCandidates, callback);
     }
 
-    protected void startForeground() {
-        mForegroundCompletionCallback = startSticky();
-        checkCalledOnHostServiceThread();
-        mHost.startForeground(
-                NOTIFICATION_ID,
-                mServiceUIFactory.newForegroundNotification(mHost, DISCONNECT_ALL_CLIENTS_ACTION));
-    }
-
-    protected void stopForeground() {
-        checkCalledOnHostServiceThread();
-        mHost.stopForeground(true);
-        mForegroundCompletionCallback.run();
-        mForegroundCompletionCallback = null;
-    }
-
-    public void postOnServiceThread(Runnable runnable) {
-        mExecutor.postOnSessionThread(0, runnable);
-    }
-
     private class SessionEventListener implements SessionBase.EventListener {
         private final String mSessionId;
 
@@ -172,62 +166,16 @@ public class DevToolsBridgeServer implements SignalingReceiver {
             checkCalledOnHostServiceThread();
 
             mSessions.remove(mSessionId);
-            if (mSessions.size() == 0) {
-                stopForeground();
-            }
+            mDelegate.onSessionCountChange(mSessions.size());
         }
     }
 
-    private void closeAllSessions() {
+    public void closeAllSessions() {
         if (mSessions.isEmpty()) return;
         for (ServerSession session : mSessions.values()) {
             session.stop();
         }
         mSessions.clear();
-        stopForeground();
-    }
-
-    /**
-     * TODO(serya): Move service lifetime management to DevToolsBridgeServiceBase.
-     * Helper method for doing background tasks. Usage:
-     *
-     * int onStartCommand(...) {
-     *     if (..*) {
-     *         startWorkInBackground(startSticky());
-     *         return START_STICKY;
-     *     }
-     *     ...
-     * }
-     *
-     * void doWorkInBackground(final Runable completionHandler) {
-     *     ... start background task
-     *         @Override
-     *         void run() {
-     *             ...
-     *             completionHandler.run();
-     *         }
-     * }
-     */
-    public Runnable startSticky() {
-        checkCalledOnHostServiceThread();
-        if (mWakeLock == null) {
-            PowerManager pm = (PowerManager) mHost.getSystemService(Context.POWER_SERVICE);
-            mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKELOCK_KEY);
-        }
-        mWakeLock.acquire();
-        return new StartStickyCompletionHandler();
-    }
-
-    private class StartStickyCompletionHandler implements Runnable {
-        @Override
-        public void run() {
-            postOnServiceThread(new Runnable() {
-                @Override
-                public void run() {
-                    mWakeLock.release();
-                    if (!mWakeLock.isHeld()) mHost.stopSelf();
-                }
-            });
-        }
+        mDelegate.onSessionCountChange(mSessions.size());
     }
 }

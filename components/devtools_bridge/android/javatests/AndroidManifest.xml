@@ -12,10 +12,6 @@
         <service
                 android:name=".DebugService" >
         </service>
-        <service
-                android:name="org.chromium.components.devtools_bridge.DevToolsBridgeServerSandbox$Service" />
-        <service
-                android:name="org.chromium.components.devtools_bridge.GCDHostService" />
         <activity
                 android:name=".DebugActivity"
                 android:label="DevToolsBridge tests" >

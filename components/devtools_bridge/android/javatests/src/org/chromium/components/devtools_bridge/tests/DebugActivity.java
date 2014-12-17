@@ -49,7 +49,7 @@ public class DebugActivity extends Activity {
         mLayout.addView(textView);
 
         addActionButton("Start LocalSessionBridge", DebugService.START_SESSION_BRIDGE_ACTION);
-        addActionButton("Start hosted DevToolsBridgeServer", DebugService.START_SERVER_ACTION);
+        addActionButton("Start DevToolsBridgeServer", DebugService.START_SERVER_ACTION);
         addActionButton("Stop", DebugService.STOP_ACTION);
 
         LayoutParams layoutParam = new LayoutParams(LayoutParams.MATCH_PARENT,

@@ -15,7 +15,6 @@ import java.io.IOException;
  */
 public class ClientSessionTestingHost {
     private static final String TAG = "ClientSessionTestingHost";
-    private static final String SESSION_ID = "ID";
 
     private final SignalingReceiver mTarget;
     private final SessionBase.Executor mTargetExecutor;
@@ -40,7 +39,7 @@ public class ClientSessionTestingHost {
         mClientSession = new ClientSession(
                 factory,
                 mClientExecutor,
-                proxy.asServerSession(SESSION_ID),
+                proxy.asServerSession(mSessionId),
                 clientSocketName) {
             @Override
             protected void closeSelf() {
@@ -58,6 +57,12 @@ public class ClientSessionTestingHost {
             protected void onControlChannelClosed() {
                 Log.d(TAG, "Control channel closed");
                 super.onControlChannelClosed();
+            }
+
+            @Override
+            protected void onFailure(String message) {
+                Log.e(TAG, "Failure: " + message);
+                super.onFailure(message);
             }
         };
     }

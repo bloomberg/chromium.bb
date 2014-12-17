@@ -8,9 +8,10 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
+import android.os.Looper;
 import android.support.v4.content.WakefulBroadcastReceiver;
 
-import org.chromium.components.devtools_bridge.ui.ServiceUIFactory;
+import com.google.ipc.invalidation.external.client.contrib.MultiplexingGcmListener;
 
 /**
  * Base class for a service which hosts DevToolsBridgeServer. It relies on Cloud Messages
@@ -22,6 +23,8 @@ import org.chromium.components.devtools_bridge.ui.ServiceUIFactory;
  * TODO(serya): Service lifetime management code should be moved here from DevToolsBridgeServer.
  */
 public abstract class DevToolsBridgeServiceBase extends Service {
+    private static final String WAKELOCK_KEY = "DevToolsBridgeService.WAKELOCK";
+
     /**
      * Delivers intents from MultiplexingGcmListener to the service making sure
      * wakelock is kept during the process.
@@ -44,6 +47,9 @@ public abstract class DevToolsBridgeServiceBase extends Service {
     }
 
     private DevToolsBridgeServer mServer;
+    private ServiceLifetimeManager mLifetimeManager;
+
+    private Runnable mSessionHandlingTask;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -53,8 +59,8 @@ public abstract class DevToolsBridgeServiceBase extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-
-        mServer = new DevToolsBridgeServer(this, socketName(), newUIFactory());
+        mServer = new DevToolsBridgeServer(new ServerDelegate());
+        mLifetimeManager = new ServiceLifetimeManager(this, WAKELOCK_KEY);
     }
 
     @Override
@@ -66,13 +72,80 @@ public abstract class DevToolsBridgeServiceBase extends Service {
 
     @Override
     public final int onStartCommand(Intent intent, int flags, int startId) {
-        Runnable intentHandlingTask = mServer.startSticky();
-        mServer.onStartCommand(intent);
+        Runnable intentHandlingTask = mLifetimeManager.startTask(startId);
+        if (MultiplexingGcmListener.Intents.ACTION.equals(intent.getAction())) {
+            handleGCMIntent(intent);
+        } else {
+            onHandleIntent(intent);
+        }
         ReceiverBase.completeWakefulIntent(intent);
         intentHandlingTask.run(); // Stops self if no other task started.
         return START_NOT_STICKY;
     }
 
-    protected abstract String socketName();
-    protected abstract ServiceUIFactory newUIFactory();
+    private void handleGCMIntent(Intent intent) {
+        if (intent.getBooleanExtra(MultiplexingGcmListener.Intents.EXTRA_OP_MESSAGE, false)) {
+            mServer.handleCloudMessage(intent, mLifetimeManager.startTask());
+        } else if (intent.getBooleanExtra(
+                MultiplexingGcmListener.Intents.EXTRA_OP_REGISTERED, false)) {
+            mServer.updateCloudMessagesId(
+                    intent.getStringExtra(MultiplexingGcmListener.Intents.EXTRA_DATA_REG_ID),
+                    startTask());
+        } else if (intent.getBooleanExtra(
+                MultiplexingGcmListener.Intents.EXTRA_OP_UNREGISTERED, false)) {
+            mServer.updateCloudMessagesId("", startTask());
+        }
+    }
+
+    /**
+     * Unlike similar method in IntentService this one runs on service thread.
+     * Cloud Messages intents are handled separately.
+     */
+    protected void onHandleIntent(Intent intent) {
+        assert calledOnServiceThread();
+    }
+
+    protected abstract void querySocketName(DevToolsBridgeServer.QuerySocketCallback callback);
+    protected abstract void onFirstSessionStarted();
+    protected abstract void onLastSessionStopped();
+    protected void onSessionCountChange(int sessionCount) {}
+
+    protected DevToolsBridgeServer server() {
+        return mServer;
+    }
+
+    protected Runnable startTask() {
+        return mLifetimeManager.startTask();
+    }
+
+    protected boolean calledOnServiceThread() {
+        return Looper.myLooper() == getMainLooper();
+    }
+
+    private class ServerDelegate implements DevToolsBridgeServer.Delegate {
+        @Override
+        public Context getContext() {
+            return DevToolsBridgeServiceBase.this;
+        }
+
+        @Override
+        public void onSessionCountChange(int sessionCount) {
+            assert calledOnServiceThread();
+            if (sessionCount > 0 && mSessionHandlingTask == null) {
+                mSessionHandlingTask = startTask();
+                DevToolsBridgeServiceBase.this.onFirstSessionStarted();
+            } else if (sessionCount == 0 && mSessionHandlingTask != null) {
+                mSessionHandlingTask.run();
+                mSessionHandlingTask = null;
+                DevToolsBridgeServiceBase.this.onLastSessionStopped();
+            } else {
+                DevToolsBridgeServiceBase.this.onSessionCountChange(sessionCount);
+            }
+        }
+
+        @Override
+        public void querySocketName(DevToolsBridgeServer.QuerySocketCallback callback) {
+            DevToolsBridgeServiceBase.this.querySocketName(callback);
+        }
+    }
 }
