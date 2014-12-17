@@ -9,4 +9,7 @@
                             AppCompat and change the value of pref_button_margin_start in
                             values/dimens.xml -->
     <dimen name="pref_button_margin_start">-4dp</dimen>
+    <dimen name="pref_button_horizontal_padding">20dp</dimen>
+    <dimen name="pref_button_vertical_padding">16dp</dimen>
+
 </resources>

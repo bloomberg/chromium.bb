@@ -86,11 +86,11 @@
     <dimen name="password_generation_text_vertical_margin">12dp</dimen>
 
     <!--  Preferences button dimensions -->
-    <dimen name="pref_button_horizontal_padding">18dp</dimen>
     <!-- TODO(twellington): Remove/update the following dimens after we switch the PreferencesTheme
                                 parent to AppCompat. -->
     <dimen name="pref_button_margin_start">0dp</dimen>
     <dimen name="pref_button_corner_radius">2dp</dimen>
+    <dimen name="pref_button_horizontal_padding">16dp</dimen>
     <dimen name="pref_button_vertical_padding">10dp</dimen>
 
 </resources>

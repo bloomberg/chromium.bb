@@ -18,6 +18,8 @@
         android:layout_width="wrap_content"
         android:layout_marginStart="@dimen/pref_button_margin_start"
         android:paddingStart="@dimen/pref_button_horizontal_padding"
-        android:paddingEnd="@dimen/pref_button_horizontal_padding" />
+        android:paddingEnd="@dimen/pref_button_horizontal_padding"
+        android:paddingTop="@dimen/pref_button_vertical_padding"
+        android:paddingBottom="@dimen/pref_button_vertical_padding" />
 
 </LinearLayout>
