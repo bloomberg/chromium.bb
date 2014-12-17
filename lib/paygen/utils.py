@@ -219,8 +219,9 @@ def ListdirFullpath(directory):
 
 
 class RestrictedAttrDict(dict):
-  """Define a dictionary which is also a struct, and whose keys belong
-     to a restricted list of values.
+  """Define a dictionary which is also a struct.
+
+  The keys will belong to a restricted list of values.
   """
 
   _slots = ()

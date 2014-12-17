@@ -223,13 +223,15 @@ class AbstractStageTest(StageTest):
 
   def ConstructStage(self):
     """Returns an instance of the stage to be tested.
-    Implement in subclasses.
+
+    Note: Must be implemented in subclasses.
     """
     raise NotImplementedError(self, "ConstructStage: Implement in your test")
 
   def RunStage(self):
     """Creates and runs an instance of the stage to be tested.
-    Requires ConstructStage() to be implemented.
+
+    Note: Requires ConstructStage() to be implemented.
 
     Raises:
       NotImplementedError: ConstructStage() was not implemented.

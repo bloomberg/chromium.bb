@@ -733,8 +733,9 @@ class PatchSeries(object):
     self._committed_cache.Inject(*changes)
 
   def InjectLookupCache(self, changes):
-    """Inject into the internal lookup cache the given changes, using them
-    (rather than asking gerrit for them) as needed for dependencies.
+    """Inject into the internal lookup cache the given changes.
+
+    Uses |changes| rather than asking gerrit for them for dependencies.
     """
     self._lookup_cache.Inject(*changes)
 
@@ -2412,8 +2413,8 @@ class ValidationPool(object):
 
 
 class PaladinMessage(object):
-  """An object that is used to send messages to developers about their changes.
-  """
+  """Object used to send messages to developers about their changes."""
+
   # URL where Paladin documentation is stored.
   _PALADIN_DOCUMENTATION_URL = ('http://www.chromium.org/developers/'
                                 'tree-sheriffs/sheriff-details-chromium-os/'

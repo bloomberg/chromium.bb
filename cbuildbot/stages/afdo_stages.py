@@ -24,8 +24,7 @@ class AFDODataGenerateStage(generic_stages.BoardSpecificBuilderStage,
     return self._GetPortageEnvVar('ARCH', self._current_board)
 
   def PerformStage(self):
-    """After collecting a 'perf' profile, generate the profile in AFDO format.
-    """
+    """Collect a 'perf' profile and convert it into the AFDO format."""
     super(AFDODataGenerateStage, self).PerformStage()
 
     board = self._current_board

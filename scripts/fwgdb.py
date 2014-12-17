@@ -25,8 +25,10 @@ from chromite.lib.cros_build_lib import Error, Warning, Info, Debug
 # Need to do this before Servo import
 cros_build_lib.AssertInsideChroot()
 
+# pylint: disable=import-error
 from servo import client
 from servo import multiservo
+# pylint: enable=import-error
 
 _SRC_ROOT = os.path.join(constants.CHROOT_SOURCE_ROOT, 'src')
 _SRC_DC = os.path.join(_SRC_ROOT, 'platform/depthcharge')

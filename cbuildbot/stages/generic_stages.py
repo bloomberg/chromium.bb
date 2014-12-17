@@ -316,8 +316,9 @@ class BuilderStage(object):
                       (self.name, cros_build_lib.UserDateTimeFormat()))
 
   def PerformStage(self):
-    """Subclassed stages must override this function to perform what they want
-    to be done.
+    """Run the actual commands needed for this stage.
+
+    Subclassed stages must override this function.
     """
 
   def _HandleExceptionAsSuccess(self, _exc_info):

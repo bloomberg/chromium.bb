@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""This simple program takes changes from gerrit/gerrit-int and creates new
+"""Developer helper tool for merging CLs from ToT to branches.
+
+This simple program takes changes from gerrit/gerrit-int and creates new
 changes for them on the desired branch using your gerrit/ssh credentials. To
 specify a change on gerrit-int, you must prefix the change with a *.
 

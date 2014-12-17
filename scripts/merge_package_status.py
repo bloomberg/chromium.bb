@@ -2,8 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Merge multiple csv files representing Portage package data into
-one csv file, in preparation for uploading to a Google Docs spreadsheet.
+"""Merge multiple package status CSV files into one csv file.
+
+This simplifies uploading to a Google Docs spreadsheet.
 """
 
 # pylint: disable=bad-continuation

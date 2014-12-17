@@ -12,8 +12,9 @@ import logging
 
 
 class DryRunMgr(object):
-  """Manage the calling of functions that make real changes, disabling them
-  when in dry_run mode.
+  """Manage the calling of functions that make real changes.
+
+  We'll automatically disable things when in dry_run mode.
   """
 
   __slots__ = ('dry_run',   # Boolean.  See __init__ docstring.

@@ -518,8 +518,7 @@ class BuildSpecsManager(object):
     return VersionInfo(version_file=version_file_path, incr_type=self.incr_type)
 
   def HasCheckoutBeenBuilt(self):
-    """Checks to see if we've previously built this checkout.
-    """
+    """Checks to see if we've previously built this checkout."""
     if self._latest_status and self._latest_status.Passed():
       latest_spec_file = '%s.xml' % os.path.join(
           self.all_specs_dir, self.latest)
@@ -531,8 +530,7 @@ class BuildSpecsManager(object):
       return False
 
   def CreateManifest(self):
-    """Returns the path to a new manifest based on the current source checkout.
-    """
+    """Returns the path to a new manifest based on the current checkout."""
     new_manifest = tempfile.mkstemp('manifest_versions.manifest')[1]
     osutils.WriteFile(new_manifest,
                       self.cros_source.ExportManifest(mark_revision=True))
@@ -735,8 +733,7 @@ class BuildSpecsManager(object):
     return None
 
   def BootstrapFromVersion(self, version):
-    """Initializes spec data from release version and returns path to manifest.
-    """
+    """Initialize a manifest from a release version returning the path to it."""
     # Only refresh the manifest checkout if needed.
     if not self.InitializeManifestVariables(version=version):
       self.RefreshManifestCheckout()

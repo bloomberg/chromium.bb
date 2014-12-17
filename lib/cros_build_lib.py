@@ -114,6 +114,7 @@ def ShellQuote(s):
 
 def ShellUnquote(s):
   """Do the opposite of ShellQuote.
+
   This function assumes that the input is a valid escaped string. The behaviour
   is undefined on malformed strings.
 
@@ -308,8 +309,7 @@ def SudoRunCommand(cmd, user='root', **kwargs):
 
 def _KillChildProcess(proc, int_timeout, kill_timeout, cmd, original_handler,
                       signum, frame):
-  """Functor that when curried w/ the appropriate arguments, is used as a signal
-  handler by RunCommand.
+  """Used as a signal handler by RunCommand.
 
   This is internal to Runcommand.  No other code should use this.
   """

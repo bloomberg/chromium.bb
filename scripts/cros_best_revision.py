@@ -2,8 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""This program examines success/fail history for Chrome/ium OS builds and
-checks in a LKGM version for Chrome OS for other consumers.
+"""Examine success/fail history for Chrome/ium OS builds.
+
+Used to check in a LKGM version for Chrome OS for other consumers.
 """
 
 # pylint: disable=bad-continuation

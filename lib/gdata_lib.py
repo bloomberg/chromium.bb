@@ -395,8 +395,10 @@ class TrackerComm(object):
 
 
 class SpreadsheetRow(dict):
-  """Minor semi-immutable extension of dict to keep the original spreadsheet
-  row object and spreadsheet row number as attributes.
+  """Minor semi-immutable extension of dict to hold spreadsheet data.
+
+  This lets us keep the original spreadsheet row object and spreadsheet row
+  number as attributes.
 
   No changes are made to equality checking or anything else, so client code
   that wishes to handle this as a pure dict can.

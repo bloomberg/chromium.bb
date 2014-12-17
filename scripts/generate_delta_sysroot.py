@@ -116,8 +116,10 @@ def GenerateSysroot(sysroot, board, build_tests, unpack_only=False):
 
 
 def main(argv):
-  """Generate a tarball containing a sysroot that can be patched over
-  extracted prebuilt package contents to create a complete sysroot.
+  """Generate the delta sysroot
+
+  Create a tarball containing a sysroot that can be patched over extracted
+  prebuilt package contents to create a complete sysroot.
 
   1. Unpack all packages for a board into an unpack_only sysroot directory.
   2. Emerge all packages for a board into a build sysroot directory.

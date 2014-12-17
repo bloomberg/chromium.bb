@@ -2,12 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""This is really a helper for other scripts that need a PYTHONPATH entry
-   for crostools.
+"""Helper for other scripts that need a PYTHONPATH entry for crostools.
 
-   Generally used by import statements of the form:
-     from chromite.lib.paygen import foo
-     from crostools.scripts import foo
+Generally used by import statements of the form:
+  from chromite.lib.paygen import foo
+  from crostools.scripts import foo
 """
 
 # pylint: disable=bad-continuation

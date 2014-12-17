@@ -922,9 +922,10 @@ class GitRepoPatch(PatchQuery):
     return []
 
   def _EnsureId(self, commit_message):
-    """Ensure we have a usable Change-Id.  This will parse the Change-Id out
-    of the given commit message- if it cannot find one, it logs a warning
-    and creates a fake ID.
+    """Ensure we have a usable Change-Id.
+
+    This will parse the Change-Id out of the given commit message;
+    if it cannot find one, it logs a warning and creates a fake ID.
 
     By its nature, that fake ID is useless- it's created to simplify
     API usage for patch consumers. If CQ were to see and try operating

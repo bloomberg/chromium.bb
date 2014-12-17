@@ -23,19 +23,21 @@ from chromite.lib import osutils
 
 
 class PatchReporter(object):
-  """PatchReporter helps discover patches being applied by ebuilds,
-     and compare them to a set of expected patches. This set of expected
-     patches can be sorted into categories like 'needs_upstreaming', etc.
-     Use of this can help ensure that critical (e.g. security) patches
-     are not inadvertently dropped, and help surface forgotten-about
-     patches that are yet-to-be upstreamed.
+  """Help discover patches being applied by ebuilds.
+
+  The patches can be compared to a set of expected patches.  They can also be
+  sorted into categories like 'needs_upstreaming', etc.  Use of this can help
+  ensure that critical (e.g. security) patches are not inadvertently dropped,
+  and help surface forgotten-about patches that are yet-to-be upstreamed.
   """
+
   PATCH_TYPES = ('upstreamed', 'needs_upstreaming', 'not_for_upstream',
                  'uncategorized')
 
-
   def __init__(self, config, overlay_dir, ebuild_cmd, equery_cmd, sudo=False):
-    """The 'config' dictionary should look like this:
+    """Initialize.
+
+    The 'config' dictionary should look like this:
     {
       "ignored_packages": ["chromeos-base/chromeos-chrome"],
       "upstreamed": [],
@@ -65,14 +67,24 @@ class PatchReporter(object):
         self.patches[patch] = cat
 
   def Ignored(self, package_name):
-    """Given a package name (e.g. 'chromeos-base/chromeos-chrome'), return
+    """See if |package_name| should be ignored.
+
+    Args:
+      package_name: A package name (e.g. 'chromeos-base/chromeos-chrome')
+
+    Returns:
        True if this package should be skipped in the analysis. False otherwise.
     """
     return package_name in self.ignored_packages
 
   def ObservePatches(self, deps_map):
-    """Given a deps_map of packages to analyze, observe the ebuild
-       process for each and return a list of patches being applied.
+    """Observe the patches being applied by ebuilds in |deps_map|.
+
+    Args:
+      deps_map: The packages to analyze.
+
+    Returns:
+       A list of patches being applied.
     """
     original = os.environ.get('PORT_LOGDIR', None)
     temp_space = None
@@ -135,8 +147,10 @@ class PatchReporter(object):
     return patches
 
   def ReportDiffs(self, observed_patches):
-    """Prints a report on any differences to stdout. Returns an int
-       representing the total number of discrepancies found.
+    """Prints a report on any differences to stdout.
+
+    Returns:
+      An int representing the total number of discrepancies found.
     """
     expected_patches = set(self.patches.keys())
     observed_patches = set(observed_patches)

@@ -424,9 +424,7 @@ class BuildImageStage(BuildPackagesStage):
 
 
 class UprevStage(generic_stages.BuilderStage):
-  """Stage that uprevs Chromium OS packages that the builder intends to
-  validate.
-  """
+  """Uprevs Chromium OS packages that the builder intends to validate."""
 
   config_name = 'uprev'
   option_name = 'uprev'
