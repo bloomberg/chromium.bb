@@ -129,8 +129,6 @@ void NotificationManager::close(blink::WebNotificationDelegate* delegate) {
     thread_safe_sender_->Send(
         new PlatformNotificationHostMsg_Close(iter->first));
     active_notifications_.erase(iter);
-
-    delegate->dispatchCloseEvent();
     return;
   }
 
