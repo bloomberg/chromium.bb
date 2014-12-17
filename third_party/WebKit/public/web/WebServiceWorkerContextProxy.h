@@ -37,6 +37,7 @@
 namespace blink {
 
 struct WebCircularGeofencingRegion;
+struct WebCrossOriginServiceWorkerClient;
 struct WebNotificationData;
 class WebServiceWorkerRequest;
 class WebString;
@@ -52,13 +53,17 @@ public:
     virtual void dispatchInstallEvent(int installEventID) = 0;
     virtual void dispatchFetchEvent(int fetchEventID, const WebServiceWorkerRequest& webRequest) = 0;
 
-    virtual void dispatchGeofencingEvent(int eventId, WebGeofencingEventType, const WebString& regionId, const WebCircularGeofencingRegion&) = 0;
+    virtual void dispatchGeofencingEvent(int eventID, WebGeofencingEventType, const WebString& regionID, const WebCircularGeofencingRegion&) = 0;
 
     virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray& channels) = 0;
 
     virtual void dispatchNotificationClickEvent(int eventID, const WebString& notificationID, const WebNotificationData&) = 0;
 
     virtual void dispatchPushEvent(int eventID, const WebString& data) = 0;
+
+    virtual void dispatchCrossOriginConnectEvent(int eventID, const WebCrossOriginServiceWorkerClient&) = 0;
+
+    virtual void dispatchCrossOriginMessageEvent(const WebCrossOriginServiceWorkerClient&, const WebString& message, const WebMessagePortChannelArray&) = 0;
 
     // Once the ServiceWorker has finished handling the sync event
     // didHandleSyncEvent is called on the context client.

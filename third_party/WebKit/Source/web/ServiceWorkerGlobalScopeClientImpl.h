@@ -59,7 +59,9 @@ public:
     virtual void didHandleNotificationClickEvent(int eventID, WebServiceWorkerEventResult) override;
     virtual void didHandlePushEvent(int pushEventID, WebServiceWorkerEventResult) override;
     virtual void didHandleSyncEvent(int syncEventID) override;
+    virtual void didHandleCrossOriginConnectEvent(int connectEventID, bool acceptConnect) override;
     virtual void postMessageToClient(int clientID, const WebString& message, PassOwnPtr<WebMessagePortChannelArray>) override;
+    virtual void postMessageToCrossOriginClient(const WebCrossOriginServiceWorkerClient&, const WebString& message, PassOwnPtr<WebMessagePortChannelArray>) override;
     virtual void skipWaiting(WebServiceWorkerSkipWaitingCallbacks*) override;
     virtual void focus(int clientID, WebServiceWorkerClientFocusCallback*) override;
 
