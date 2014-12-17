@@ -19,10 +19,7 @@ from download_from_google_storage import check_bucket_permissions
 from download_from_google_storage import get_sha1
 from download_from_google_storage import Gsutil
 from download_from_google_storage import printer_worker
-
-GSUTIL_DEFAULT_PATH = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    'third_party', 'gsutil', 'gsutil')
+from download_from_google_storage import GSUTIL_DEFAULT_PATH
 
 USAGE_STRING = """%prog [options] target [target2 ...].
 Target is the file intended to be uploaded to Google Storage.
@@ -96,7 +93,7 @@ def _upload_worker(
           continue
     stdout_queue.put('%d> Uploading %s...' % (
         thread_num, filename))
-    code, _, err = gsutil.check_call('cp', '-q', filename, file_url)
+    code, _, err = gsutil.check_call('cp', filename, file_url)
     if code != 0:
       ret_codes.put(
           (code,
@@ -234,8 +231,7 @@ def main(args):
 
   # Make sure we can find a working instance of gsutil.
   if os.path.exists(GSUTIL_DEFAULT_PATH):
-    gsutil = Gsutil(GSUTIL_DEFAULT_PATH, boto_path=options.boto,
-                    bypass_prodaccess=True)
+    gsutil = Gsutil(GSUTIL_DEFAULT_PATH, boto_path=options.boto)
   else:
     gsutil = None
     for path in os.environ["PATH"].split(os.pathsep):

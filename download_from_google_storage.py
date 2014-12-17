@@ -20,8 +20,7 @@ import subprocess2
 
 
 GSUTIL_DEFAULT_PATH = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    'third_party', 'gsutil', 'gsutil')
+    os.path.dirname(os.path.abspath(__file__)), 'gsutil.py')
 # Maps sys.platform to what we actually want to call them.
 PLATFORM_MAPPING = {
     'cygwin': 'win',
@@ -55,13 +54,13 @@ def GetNormalizedPlatform():
 class Gsutil(object):
   """Call gsutil with some predefined settings.  This is a convenience object,
   and is also immutable."""
-  def __init__(self, path, boto_path, timeout=None, bypass_prodaccess=False):
+  def __init__(self, path, boto_path, timeout=None, version='4.7'):
     if not os.path.exists(path):
       raise FileNotFoundError('GSUtil not found in %s' % path)
     self.path = path
     self.timeout = timeout
     self.boto_path = boto_path
-    self.bypass_prodaccess = bypass_prodaccess
+    self.version = version
 
   def get_sub_env(self):
     env = os.environ.copy()
@@ -80,16 +79,12 @@ class Gsutil(object):
     return env
 
   def call(self, *args):
-    cmd = [sys.executable, self.path]
-    if self.bypass_prodaccess:
-      cmd.append('--bypass_prodaccess')
+    cmd = [sys.executable, self.path, '--force-version', self.version]
     cmd.extend(args)
     return subprocess2.call(cmd, env=self.get_sub_env(), timeout=self.timeout)
 
   def check_call(self, *args):
-    cmd = [sys.executable, self.path]
-    if self.bypass_prodaccess:
-      cmd.append('--bypass_prodaccess')
+    cmd = [sys.executable, self.path, '--force-version', self.version]
     cmd.extend(args)
     ((out, err), code) = subprocess2.communicate(
         cmd,
@@ -237,7 +232,7 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
       if os.path.exists(output_filename):
         out_q.put('%d> Warning: deleting %s failed.' % (
             thread_num, output_filename))
-    code, _, err = gsutil.check_call('cp', '-q', file_url, output_filename)
+    code, _, err = gsutil.check_call('cp', file_url, output_filename)
     if code != 0:
       out_q.put('%d> %s' % (thread_num, err))
       ret_codes.put((code, err))
@@ -398,8 +393,7 @@ def main(args):
   # Make sure gsutil exists where we expect it to.
   if os.path.exists(GSUTIL_DEFAULT_PATH):
     gsutil = Gsutil(GSUTIL_DEFAULT_PATH,
-                    boto_path=options.boto,
-                    bypass_prodaccess=options.no_auth)
+                    boto_path=options.boto)
   else:
     parser.error('gsutil not found in %s, bad depot_tools checkout?' %
                  GSUTIL_DEFAULT_PATH)
