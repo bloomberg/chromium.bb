@@ -24,6 +24,9 @@ public:
 
     // Set security origin replicated from another process
     virtual void setReplicatedOrigin(const WebSecurityOrigin&) const = 0;
+
+    virtual void didStartLoading() = 0;
+    virtual void didStopLoading() = 0;
 };
 
 } // namespace blink

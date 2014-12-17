@@ -189,6 +189,8 @@ public:
 
     void trace(Visitor*);
 
+    bool checkLoadCompleteForThisFrame();
+
 private:
     bool allChildrenAreComplete() const; // immediate children, not all descendants
 
@@ -207,7 +209,6 @@ private:
     bool shouldPerformFragmentNavigation(bool isFormSubmission, const String& httpMethod, FrameLoadType, const KURL&);
     void scrollToFragmentWithParentBoundary(const KURL&);
 
-    bool checkLoadCompleteForThisFrame();
 
     void startLoad(FrameLoadRequest&, FrameLoadType, NavigationPolicy);
 
