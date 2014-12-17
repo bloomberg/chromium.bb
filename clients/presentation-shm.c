@@ -344,7 +344,10 @@ pflags_to_str(uint32_t flags, char *str, unsigned len)
 		uint32_t flag;
 		char sym;
 	} desc[] = {
-		{ 1, '1' }, /* dummy placeholder */
+		{ PRESENTATION_FEEDBACK_KIND_VSYNC, 's' },
+		{ PRESENTATION_FEEDBACK_KIND_HW_CLOCK, 'c' },
+		{ PRESENTATION_FEEDBACK_KIND_HW_COMPLETION, 'e' },
+		{ PRESENTATION_FEEDBACK_KIND_ZERO_COPY, 'z' },
 	};
 	unsigned i;
 
