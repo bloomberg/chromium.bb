@@ -9,6 +9,7 @@ is running and thus it caches results of functions that depend on FS state.
 """
 
 import ctypes
+import getpass
 import logging
 import os
 import posixpath
@@ -814,6 +815,32 @@ def make_tree_deleteable(root):
         set_read_only(os.path.join(dirpath, dirname), False)
 
 
+def change_acl_for_delete_win(path):
+  """Zaps the SECURITY_DESCRIPTOR's DACL on a directory entry that is tedious to
+  delete.
+
+  This function is a heavy hammer. It discards the SECURITY_DESCRIPTOR and
+  creates a new one with only one DACL set to user:FILE_ALL_ACCESS.
+
+  Used as last resort.
+  """
+  STANDARD_RIGHTS_REQUIRED = 0xf0000
+  SYNCHRONIZE = 0x100000
+  FILE_ALL_ACCESS = STANDARD_RIGHTS_REQUIRED | SYNCHRONIZE | 0x3ff
+
+  import win32security
+  user, _domain, _type = win32security.LookupAccountName('', getpass.getuser())
+  sd = win32security.SECURITY_DESCRIPTOR()
+  sd.Initialize()
+  sd.SetSecurityDescriptorOwner(user, False)
+  dacl = win32security.ACL()
+  dacl.Initialize()
+  dacl.AddAccessAllowedAce(win32security.ACL_REVISION_DS, FILE_ALL_ACCESS, user)
+  sd.SetSecurityDescriptorDacl(1, dacl, 0)
+  win32security.SetFileSecurity(
+      path, win32security.DACL_SECURITY_INFORMATION, sd)
+
+
 def rmtree(root):
   """Wrapper around shutil.rmtree() to retry automatically on Windows.
 
@@ -839,6 +866,13 @@ def rmtree(root):
     shutil.rmtree(root, onerror=lambda *args: errors.append(args))
     if not errors:
       return True
+    if not i:
+      for _, path, _ in errors:
+        try:
+          change_acl_for_delete_win(path)
+        except Exception as e:
+          sys.stderr.write('- %s (failed to update ACL: %s)\n' % (path, e))
+
     if i == max_tries - 1:
       sys.stderr.write(
           'Failed to delete %s. The following files remain:\n' % root)

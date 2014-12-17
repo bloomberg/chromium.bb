@@ -32,7 +32,7 @@ from utils import tools
 def get_bot_list(swarming_server, dimensions, dead_only):
   """Returns a list of swarming bots."""
   cmd = [
-    sys.executable, 'swarming.py', 'query',
+    sys.executable, 'swarming.py', 'bots',
     '--swarming', swarming_server,
     '--bare',
   ]

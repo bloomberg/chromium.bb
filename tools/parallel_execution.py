@@ -159,7 +159,7 @@ class OptionParser(tools.OptionParserWithLogging):
         '-S', '--swarming',
         metavar='URL', default=os.environ.get('SWARMING_SERVER', ''),
         help='Swarming server to use')
-    isolateserver.add_isolate_server_options(self.server_group, False)
+    isolateserver.add_isolate_server_options(self.server_group)
     self.add_option_group(self.server_group)
     auth.add_auth_options(self)
     self.add_option(
