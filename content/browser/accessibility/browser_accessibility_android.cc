@@ -133,7 +133,7 @@ bool BrowserAccessibilityAndroid::IsCheckable() const {
 }
 
 bool BrowserAccessibilityAndroid::IsChecked() const {
-  return HasState(ui::AX_STATE_CHECKED);
+  return (HasState(ui::AX_STATE_CHECKED) || HasState(ui::AX_STATE_PRESSED));
 }
 
 bool BrowserAccessibilityAndroid::IsClickable() const {
