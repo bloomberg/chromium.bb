@@ -12,6 +12,11 @@
       'sources': [
         '../public/provider/chrome/browser/browser_state/chrome_browser_state.cc',
         '../public/provider/chrome/browser/browser_state/chrome_browser_state.h',
+        '../public/provider/chrome/browser/chrome_browser_provider.cc',
+        '../public/provider/chrome/browser/chrome_browser_provider.h',
+        '../public/provider/chrome/browser/string_provider.h',
+        '../public/provider/chrome/browser/ui/infobar_view_delegate.h',
+        '../public/provider/chrome/browser/ui/infobar_view_protocol.h',
       ],
       'dependencies': [
         '../../base/base.gyp:base',
