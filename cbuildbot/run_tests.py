@@ -60,6 +60,7 @@ SPECIAL_TESTS = {
     'cros/commands/lint_unittest.py': SKIP,
     'lib/filetype_unittest.py': INSIDE,
     'lib/upgrade_table_unittest.py': INSIDE,
+    'scripts/cros_install_debug_syms_unittest.py': INSIDE,
     'scripts/cros_list_modified_packages_unittest.py': INSIDE,
     'scripts/cros_mark_as_stable_unittest.py': INSIDE,
     'scripts/cros_mark_chrome_as_stable_unittest.py': INSIDE,
