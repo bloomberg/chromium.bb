@@ -280,6 +280,10 @@ def main(argv):
   if options.cachebinhost:
     binhost_cache = cache.DiskCache(cache_dir)
 
+  boto_file = vartree.settings['BOTO_CONFIG']
+  if boto_file:
+    os.environ['BOTO_CONFIG'] = boto_file
+
   gs_context = gs.GSContext()
   symbols_mapping = RemoteSymbols(vartree, binhost_cache)
 
