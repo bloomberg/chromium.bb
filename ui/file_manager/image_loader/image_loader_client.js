@@ -154,26 +154,28 @@ ImageLoaderClient.prototype.load = function(
 
   // Try to load from cache, if available.
   var cacheKey = ImageLoaderClient.createKey(url, opt_options);
-  if (opt_options.cache) {
-    // Load from cache.
-    ImageLoaderClient.recordBinary('Cached', true);
-    var cachedValue = this.cache_.get(cacheKey);
-    // Check if the image in cache is up to date. If not, then remove it.
-    if (cachedValue && cachedValue.timestamp != opt_options.timestamp) {
-      this.cache_.remove(cacheKey);
-      cachedValue = null;
-    }
-    if (cachedValue && cachedValue.data) {
-      ImageLoaderClient.recordBinary('Cache.HitMiss', true);
-      callback({status: 'success', data: cachedValue.data});
-      return null;
+  if (cacheKey) {
+    if (opt_options.cache) {
+      // Load from cache.
+      ImageLoaderClient.recordBinary('Cached', true);
+      var cachedValue = this.cache_.get(cacheKey);
+      // Check if the image in cache is up to date. If not, then remove it.
+      if (cachedValue && cachedValue.timestamp != opt_options.timestamp) {
+        this.cache_.remove(cacheKey);
+        cachedValue = null;
+      }
+      if (cachedValue && cachedValue.data) {
+        ImageLoaderClient.recordBinary('Cache.HitMiss', true);
+        callback({status: 'success', data: cachedValue.data});
+        return null;
+      } else {
+        ImageLoaderClient.recordBinary('Cache.HitMiss', false);
+      }
     } else {
-      ImageLoaderClient.recordBinary('Cache.HitMiss', false);
+      // Remove from cache.
+      ImageLoaderClient.recordBinary('Cached', false);
+      this.cache_.remove(cacheKey);
     }
-  } else {
-    // Remove from cache.
-    ImageLoaderClient.recordBinary('Cached', false);
-    this.cache_.remove(cacheKey);
   }
 
   // Not available in cache, performing a request to a remote extension.
@@ -190,11 +192,11 @@ ImageLoaderClient.prototype.load = function(
       request,
       function(result) {
         // Save to cache.
-        if (result.status == 'success' && opt_options.cache) {
+        if (cacheKey && result.status == 'success' && opt_options.cache) {
           var value = {
             timestamp: opt_options.timestamp ? opt_options.timestamp : null,
             data: result.data
-          }
+          };
           this.cache_.put(cacheKey, value, result.data.length);
         }
         callback(result);
@@ -223,9 +225,12 @@ ImageLoaderClient.CACHE_MEMORY_LIMIT = 20 * 1024 * 1024;  // 20 MB.
  *
  * @param {string} url Image url.
  * @param {Object=} opt_options Loader options as a hash array.
- * @return {string} Cache key.
+ * @return {?string} Cache key. It may return null if the class does not provide
+ *     caches for the URL. (e.g. Data URL)
  */
 ImageLoaderClient.createKey = function(url, opt_options) {
+  if (/^data:/.test(url))
+    return null;
   opt_options = opt_options || {};
   return JSON.stringify({
     url: url,

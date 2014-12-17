@@ -9,3 +9,8 @@ class ImageLoaderJsTest : public FileManagerJsTestBase {
   ImageLoaderJsTest() : FileManagerJsTestBase(
       base::FilePath(FILE_PATH_LITERAL("ui/file_manager/image_loader"))) {}
 };
+
+IN_PROC_BROWSER_TEST_F(ImageLoaderJsTest, ImageLoaderClientTest) {
+  RunTest(base::FilePath(FILE_PATH_LITERAL(
+      "image_loader_client_unittest.html")));
+}
