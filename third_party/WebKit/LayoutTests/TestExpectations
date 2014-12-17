@@ -78,6 +78,8 @@ crbug.com/321460 animations/animation-direction-normal.html [ Pass ImageOnlyFail
 
 crbug.com/328996 [ Mac Debug ] http/tests/media/video-seek-to-middle.html [ Pass Failure ]
 
+crbug.com/435515 media/video-overlay-cast-light-rendering.html [ NeedsRebaseline ]
+
 # This test is slow due to Mesa slowness.
 crbug.com/244481 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip ]
 

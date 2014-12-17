@@ -370,6 +370,24 @@ void MediaControls::textTracksChanged()
     refreshClosedCaptionsButtonVisibility();
 }
 
+static Element* elementFromCenter(Element& element)
+{
+    RefPtrWillBeRawPtr<ClientRect> clientRect = element.getBoundingClientRect();
+    int centerX = static_cast<int>((clientRect->left() + clientRect->right()) / 2);
+    int centerY = static_cast<int>((clientRect->top() + clientRect->bottom()) / 2);
+
+    return element.document().elementFromPoint(centerX , centerY);
+}
+
+void MediaControls::tryShowOverlayCastButton()
+{
+    // The element needs to be shown to have its dimensions and position.
+    m_overlayCastButton->show();
+
+    if (elementFromCenter(*m_overlayCastButton) != &mediaElement())
+        m_overlayCastButton->hide();
+}
+
 void MediaControls::refreshCastButtonVisibility()
 {
     if (mediaElement().hasRemoteRoutes()) {
@@ -386,7 +404,7 @@ void MediaControls::refreshCastButtonVisibility()
             // Check that the cast button actually fits on the bar.
             if (m_fullScreenButton->getBoundingClientRect()->right() > m_panel->getBoundingClientRect()->right()) {
                 m_castButton->hide();
-                m_overlayCastButton->show();
+                tryShowOverlayCastButton();
             }
         }
     } else {
@@ -397,7 +415,7 @@ void MediaControls::refreshCastButtonVisibility()
 
 void MediaControls::showOverlayCastButton()
 {
-    m_overlayCastButton->show();
+    tryShowOverlayCastButton();
     resetHideMediaControlsTimer();
 }
 

@@ -29,8 +29,8 @@ function init()
 
 if (window.testRunner) {
     testRunner.waitUntilDone();
-    setTimeout(function() { 
-        document.body.appendChild(document.createTextNode('FAIL')); 
+    setTimeout(function() {
+        document.body.appendChild(document.createTextNode('FAIL'));
         if (window.testRunner)
             testRunner.notifyDone();
     } , 8000);

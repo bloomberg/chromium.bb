@@ -9,6 +9,15 @@ const controlsFadeOutDurationMs = 300;
 // in MediaControls.cpp.
 const controlsMouseMovementTimeoutMs = 3000;
 
+function overlayCastButton(videoElement)
+{
+    var controlID = '-internal-media-controls-overlay-cast-button';
+    var button = mediaControlsElement(window.internals.shadowRoot(videoElement).firstChild, controlID);
+    if (!button)
+        throw 'Failed to find cast button';
+    return button;
+}
+
 function mediaControlsElement(first, id)
 {
     for (var element = first; element; element = element.nextSibling) {
