@@ -505,14 +505,13 @@ void SessionStateAnimatorImpl::GetContainers(int container_mask,
     // in such way.
     aura::Window* non_lock_screen_containers = Shell::GetContainer(
         root_window, kShellWindowId_NonLockScreenContainersContainer);
-    aura::Window::Windows children = non_lock_screen_containers->children();
-
-    for (aura::Window::Windows::const_iterator it = children.begin();
-         it != children.end(); ++it) {
-      aura::Window* window = *it;
-      if (window->id() == kShellWindowId_ShelfContainer)
-        continue;
-      containers->push_back(window);
+    // |non_lock_screen_containers| may already be removed in some tests.
+    if (non_lock_screen_containers) {
+      for (aura::Window* window : non_lock_screen_containers->children()) {
+        if (window->id() == kShellWindowId_ShelfContainer)
+          continue;
+        containers->push_back(window);
+      }
     }
   }
   if (container_mask & LOCK_SCREEN_BACKGROUND) {
@@ -527,6 +526,11 @@ void SessionStateAnimatorImpl::GetContainers(int container_mask,
     containers->push_back(Shell::GetContainer(
         root_window, kShellWindowId_LockScreenRelatedContainersContainer));
   }
+
+  // Some of containers may be null in some tests.
+  containers->erase(
+      std::remove(containers->begin(), containers->end(), nullptr),
+      containers->end());
 }
 
 void SessionStateAnimatorImpl::StartAnimation(int container_mask,

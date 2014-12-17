@@ -117,6 +117,8 @@ TEST_F(PartialScreenshotViewTest, DontStartOverOverlay) {
   RunAllPendingInMessageLoop();
   EXPECT_EQ(&delegate, overlay_filter->delegate_);
   EXPECT_TRUE(view_ == NULL);
+
+  overlay_filter->Deactivate(&delegate);
 }
 
 }  // namespace ash

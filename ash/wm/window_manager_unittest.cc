@@ -832,6 +832,8 @@ TEST_F(WindowManagerTest, TestCursorClientObserver) {
   EXPECT_TRUE(observer_a.did_visibility_change());
   EXPECT_FALSE(observer_b.did_visibility_change());
   EXPECT_TRUE(observer_a.is_cursor_visible());
+
+  cursor_manager->RemoveObserver(&observer_a);
 }
 #endif  // defined(OS_CHROMEOS)
 
