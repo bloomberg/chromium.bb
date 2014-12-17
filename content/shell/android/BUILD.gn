@@ -102,8 +102,8 @@ copy_ex("copy_content_shell_assets") {
   }
   if (v8_use_external_startup_data) {
     sources += [
-      "$root_gen_dir/natives_blob.bin",
-      "$root_gen_dir/snapshot_blob.bin",
+      "$root_build_dir/natives_blob.bin",
+      "$root_build_dir/snapshot_blob.bin",
     ]
   }
 }
