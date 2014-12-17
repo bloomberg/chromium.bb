@@ -167,7 +167,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchCrossOriginMessageEvent(const WebCro
     OwnPtrWillBeRawPtr<MessagePortArray> ports = MessagePort::toMessagePortArray(m_workerGlobalScope, webChannels);
     WebSerializedScriptValue value = WebSerializedScriptValue::fromString(message);
     // FIXME: Have proper source for this MessageEvent.
-    RefPtr<MessageEvent> event = MessageEvent::create(ports.release(), value, webClient.origin.string());
+    RefPtrWillBeRawPtr<MessageEvent> event = MessageEvent::create(ports.release(), value, webClient.origin.string());
     event->setType(EventTypeNames::crossoriginmessage);
     m_workerGlobalScope->dispatchEvent(event);
 }
