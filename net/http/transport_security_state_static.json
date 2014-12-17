@@ -1648,7 +1648,9 @@
     { "name": "slack.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "smartlend.se", "include_subdomains": true, "mode": "force-https" },
     { "name": "webtrh.cz", "include_subdomains": true, "mode": "force-https" },
-    { "name": "yetii.net", "include_subdomains": true, "mode": "force-https" }
+    { "name": "yetii.net", "include_subdomains": true, "mode": "force-https" },
+    { "name": "login.ubuntu.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "login.launchpad.net", "include_subdomains": true, "mode": "force-https" }
   ],
 
   // |ReportUMAOnPinFailure| uses these to report which domain was associated
