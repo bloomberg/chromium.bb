@@ -566,6 +566,9 @@ public:
         ShadowRootGetElementsByTagName = 624,
         ShadowRootGetElementsByTagNameNS = 625,
         SVGSMILAnimationInImage = 626,
+        CSSSelectorPseudoFullScreenDocument = 627,
+        CSSSelectorPseudoFullScreenAncestor = 628,
+        CSSSelectorPseudoFullScreen = 629,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

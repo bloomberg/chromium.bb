@@ -3,7 +3,7 @@
     z-index: 2147483647 !important;
 }
 
-:root:-webkit-full-screen-document:not(:-webkit-full-screen), :root:-webkit-full-screen-ancestor {
+:root:-webkit-full-screen-ancestor {
     overflow: hidden !important;
 }
 
