@@ -163,4 +163,8 @@ void InputControllerEvdev::SetPrimaryButtonRight(bool right) {
   button_map_->UpdateButtonMap(BTN_RIGHT, right ? BTN_LEFT : BTN_RIGHT);
 }
 
+void InputControllerEvdev::SetTapToClickPaused(bool state) {
+  SetBoolPropertyForOneType(DT_TOUCHPAD, "Tap Paused", state);
+}
+
 }  // namespace ui

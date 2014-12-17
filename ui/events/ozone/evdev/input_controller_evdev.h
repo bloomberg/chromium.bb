@@ -54,6 +54,7 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
   void SetNaturalScroll(bool enabled) override;
   void SetMouseSensitivity(int value) override;
   void SetPrimaryButtonRight(bool right) override;
+  void SetTapToClickPaused(bool state) override;
 
  private:
   // Set a property value for all devices of one type.

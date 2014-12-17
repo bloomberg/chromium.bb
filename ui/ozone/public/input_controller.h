@@ -51,6 +51,10 @@ class OZONE_EXPORT InputController {
   virtual void SetMouseSensitivity(int value) = 0;
   virtual void SetPrimaryButtonRight(bool right) = 0;
 
+  // Temporarily enable/disable Tap-to-click. Used to enhance the user
+  // experience in some use cases (e.g., typing, watching video).
+  virtual void SetTapToClickPaused(bool state) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(InputController);
 };

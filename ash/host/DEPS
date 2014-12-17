@@ -3,4 +3,5 @@ include_rules = [
   "+ash/host",
   "+ash/ash_export.h",
   "+ash/ash_switches.h",
+  "+ui/ozone/public",  # For ozone interfaces
 ]

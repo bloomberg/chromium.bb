@@ -35,6 +35,7 @@ class StubInputController : public InputController {
   void SetNaturalScroll(bool enabled) override;
   void SetMouseSensitivity(int value) override;
   void SetPrimaryButtonRight(bool right) override;
+  void SetTapToClickPaused(bool state) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StubInputController);
@@ -111,6 +112,10 @@ void StubInputController::SetMouseSensitivity(int value) {
 }
 
 void StubInputController::SetPrimaryButtonRight(bool right) {
+  NOTIMPLEMENTED();
+}
+
+void StubInputController::SetTapToClickPaused(bool state) {
   NOTIMPLEMENTED();
 }
 

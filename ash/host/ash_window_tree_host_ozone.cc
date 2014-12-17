@@ -11,6 +11,8 @@
 #include "ui/aura/window_tree_host_ozone.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/transform.h"
+#include "ui/ozone/public/input_controller.h"
+#include "ui/ozone/public/ozone_platform.h"
 
 namespace ash {
 namespace {
@@ -34,7 +36,11 @@ class AshWindowTreeHostOzone : public AshWindowTreeHost,
   virtual gfx::Transform GetRootTransform() const override;
   virtual gfx::Transform GetInverseRootTransform() const override;
   virtual void UpdateRootWindowSize(const gfx::Size& host_size) override;
+  virtual void OnCursorVisibilityChangedNative(bool show) override;
   virtual void DispatchEvent(ui::Event* event) override;
+
+  // Temporarily disable the tap-to-click feature. Used on CrOS.
+  void SetTapToClickPaused(bool state);
 
   TransformerHelper transformer_helper_;
 
@@ -42,10 +48,11 @@ class AshWindowTreeHostOzone : public AshWindowTreeHost,
 };
 
 AshWindowTreeHostOzone::AshWindowTreeHostOzone(const gfx::Rect& initial_bounds)
-    : aura::WindowTreeHostOzone(initial_bounds),
-      transformer_helper_(this) {}
+    : aura::WindowTreeHostOzone(initial_bounds), transformer_helper_(this) {
+}
 
-AshWindowTreeHostOzone::~AshWindowTreeHostOzone() {}
+AshWindowTreeHostOzone::~AshWindowTreeHostOzone() {
+}
 
 void AshWindowTreeHostOzone::ToggleFullScreen() {
   NOTIMPLEMENTED();
@@ -88,10 +95,24 @@ void AshWindowTreeHostOzone::UpdateRootWindowSize(const gfx::Size& host_size) {
   transformer_helper_.UpdateWindowSize(host_size);
 }
 
+void AshWindowTreeHostOzone::OnCursorVisibilityChangedNative(bool show) {
+  SetTapToClickPaused(!show);
+}
+
 void AshWindowTreeHostOzone::DispatchEvent(ui::Event* event) {
   if (event->IsLocatedEvent())
     TranslateLocatedEvent(static_cast<ui::LocatedEvent*>(event));
   SendEventToProcessor(event);
+}
+
+void AshWindowTreeHostOzone::SetTapToClickPaused(bool state) {
+#if defined(OS_CHROMEOS)
+  DCHECK(ui::OzonePlatform::GetInstance()->GetInputController());
+
+  // Temporarily pause tap-to-click when the cursor is hidden.
+  ui::OzonePlatform::GetInstance()->GetInputController()->SetTapToClickPaused(
+      state);
+#endif
 }
 
 }  // namespace

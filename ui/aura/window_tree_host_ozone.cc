@@ -105,7 +105,6 @@ void WindowTreeHostOzone::MoveCursorToNative(const gfx::Point& location) {
 }
 
 void WindowTreeHostOzone::OnCursorVisibilityChangedNative(bool show) {
-  NOTIMPLEMENTED();
 }
 
 ui::EventProcessor* WindowTreeHostOzone::GetEventProcessor() {
