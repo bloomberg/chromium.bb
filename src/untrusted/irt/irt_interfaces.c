@@ -106,17 +106,6 @@ static const struct nacl_irt_interface irt_interfaces[] = {
    */
   { NACL_IRT_BLOCKHOOK_v0_1, &nacl_irt_blockhook, sizeof(nacl_irt_blockhook),
     non_pnacl_filter },
-  /*
-   * "irt-resource-open" is primarily provided for use by nacl-glibc's
-   * dynamic linker, which is not supported under PNaCl.
-   * open_resource() returns a file descriptor, but it is the only
-   * interface in NaCl to do so inside Chromium.  This is inconsistent
-   * with PPAPI, which does not expose file descriptors (except in
-   * private/dev interfaces).  See:
-   * https://code.google.com/p/nativeclient/issues/detail?id=3574
-   */
-  { NACL_IRT_RESOURCE_OPEN_v0_1, &nacl_irt_resource_open,
-    sizeof(nacl_irt_resource_open), non_pnacl_filter },
   { NACL_IRT_RANDOM_v0_1, &nacl_irt_random, sizeof(nacl_irt_random), NULL },
   { NACL_IRT_CLOCK_v0_1, &nacl_irt_clock, sizeof(nacl_irt_clock), NULL },
   { NACL_IRT_DEV_GETPID_v0_1, &nacl_irt_dev_getpid,

@@ -8,7 +8,6 @@
 
 #include <stdint.h>
 
-extern __thread int g_is_main_thread;
 extern __thread int g_is_irt_internal_thread;
 
 extern uintptr_t g_dynamic_text_start;

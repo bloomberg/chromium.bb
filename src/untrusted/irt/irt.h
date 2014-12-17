@@ -339,7 +339,8 @@ struct nacl_irt_blockhook {
  * supported under PNaCl.  Also, open_resource() returns a file
  * descriptor, but it is the only interface in NaCl to do so inside
  * Chromium.  This is inconsistent with PPAPI, which does not expose
- * file descriptors (except in private/dev interfaces).
+ * file descriptors (except in private/dev interfaces).  See:
+ * https://code.google.com/p/nativeclient/issues/detail?id=3574
  */
 #define NACL_IRT_RESOURCE_OPEN_v0_1 "nacl-irt-resource-open-0.1"
 struct nacl_irt_resource_open {

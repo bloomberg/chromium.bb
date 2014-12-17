@@ -47,9 +47,6 @@
       'irt_core_resource.c',
       'irt_entry_core.c',
     ],
-    'irt_browser': [
-      'irt_manifest.c',
-    ],
   },
   'targets': [
     {
@@ -88,7 +85,7 @@
         'build_newlib': 1,
         'build_irt': 1,
       },
-      'sources': ['<@(irt_sources)', '<@(irt_browser)'],
+      'sources': ['<@(irt_sources)'],
       'dependencies': [
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
         '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib_newlib',
