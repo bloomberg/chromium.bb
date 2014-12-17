@@ -5,7 +5,6 @@
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
-import("//build/module_args/v8.gni")
 import("//url/config.gni")
 
 # TODO(cjhopman): //build/config/android/rules.gni also imports grit_rule.gni.
@@ -1184,10 +1183,6 @@ if (!is_android && !is_win && !is_mac) {
         ":net_javatests",  # FIXME(brettw)
         ":net_test_jni_headers",
       ]
-    }
-
-    if (v8_use_external_startup_data) {
-      deps += [ "//gin" ]
     }
 
     if (!use_nss_certs) {
