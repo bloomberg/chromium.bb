@@ -55,7 +55,8 @@ add_completion_callback(function (tests, harness_status){
         resultStr += "Harness Error. harness_status.status = " +
                      harness_status.status +
                      " , harness_status.message = " +
-                     harness_status.message;
+                     harness_status.message +
+                     "\n";
     }
     else {
         // Iterate through tests array and build string that contains
