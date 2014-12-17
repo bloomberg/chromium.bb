@@ -8,11 +8,11 @@ var DeclarativeWebRequestSchema =
     requireNative('schema_registry').GetSchema('declarativeWebRequest');
 var EventBindings = require('event_bindings');
 var IdGenerator = requireNative('id_generator');
-var MessagingNatives = requireNative('messaging_natives');
 var WebRequestEvent = require('webRequestInternal').WebRequestEvent;
 var WebRequestSchema =
     requireNative('schema_registry').GetSchema('webRequest');
-var WebViewInternal = require('webViewInternal').WebViewInternal;
+var WebViewActionRequests =
+    require('webViewActionRequests').WebViewActionRequests;
 
 var CreateEvent = function(name) {
   var eventOpts = {supportsListeners: true, supportsFilters: true};
@@ -181,12 +181,6 @@ DeclarativeWebRequestEvent.prototype = {
 function WebViewEvents(webViewImpl, viewInstanceId) {
   this.webViewImpl = webViewImpl;
   this.viewInstanceId = viewInstanceId;
-  this.permissionTypes = ['media',
-                          'geolocation',
-                          'pointerLock',
-                          'download',
-                          'loadplugin',
-                          'filesystem'];
 
   // Set up the events.
   this.setupFrameNameChangedEvent();
@@ -298,80 +292,8 @@ WebViewEvents.prototype.setupEvent = function(name, info) {
   this.webViewImpl.setupEventProperty(name);
 };
 
-
 WebViewEvents.prototype.handleDialogEvent = function(event, webViewEvent) {
-  var showWarningMessage = function(dialogType) {
-    var VOWELS = ['a', 'e', 'i', 'o', 'u'];
-    var WARNING_MSG_DIALOG_BLOCKED = '<webview>: %1 %2 dialog was blocked.';
-    var article = (VOWELS.indexOf(dialogType.charAt(0)) >= 0) ? 'An' : 'A';
-    var output = WARNING_MSG_DIALOG_BLOCKED.replace('%1', article);
-    output = output.replace('%2', dialogType);
-    window.console.warn(output);
-  };
-
-  var requestId = event.requestId;
-  var actionTaken = false;
-
-  var validateCall = function() {
-    var ERROR_MSG_DIALOG_ACTION_ALREADY_TAKEN = '<webview>: ' +
-        'An action has already been taken for this "dialog" event.';
-
-    if (actionTaken) {
-      throw new Error(ERROR_MSG_DIALOG_ACTION_ALREADY_TAKEN);
-    }
-    actionTaken = true;
-  };
-
-  var getGuestInstanceId = function() {
-    return this.webViewImpl.guest.getId();
-  }.bind(this);
-
-  var dialog = {
-    ok: function(user_input) {
-      validateCall();
-      user_input = user_input || '';
-      WebViewInternal.setPermission(getGuestInstanceId(), requestId, 'allow',
-                            user_input);
-    },
-    cancel: function() {
-      validateCall();
-      WebViewInternal.setPermission(getGuestInstanceId(), requestId, 'deny');
-    }
-  };
-  webViewEvent.dialog = dialog;
-
-  var defaultPrevented = !this.webViewImpl.dispatchEvent(webViewEvent);
-  if (actionTaken) {
-    return;
-  }
-
-  if (defaultPrevented) {
-    // Tell the JavaScript garbage collector to track lifetime of |dialog| and
-    // call back when the dialog object has been collected.
-    MessagingNatives.BindToGC(dialog, function() {
-      // Avoid showing a warning message if the decision has already been made.
-      if (actionTaken) {
-        return;
-      }
-      WebViewInternal.setPermission(
-          getGuestInstanceId(), requestId, 'default', '', function(allowed) {
-        if (allowed) {
-          return;
-        }
-        showWarningMessage(event.messageType);
-      });
-    });
-  } else {
-    actionTaken = true;
-    // The default action is equivalent to canceling the dialog.
-    WebViewInternal.setPermission(
-        getGuestInstanceId(), requestId, 'default', '', function(allowed) {
-      if (allowed) {
-        return;
-      }
-      showWarningMessage(event.messageType);
-    });
-  }
+  new WebViewActionRequests.Dialog(this.webViewImpl, event, webViewEvent);
 };
 
 WebViewEvents.prototype.handleLoadAbortEvent = function(event, webViewEvent) {
@@ -394,200 +316,12 @@ WebViewEvents.prototype.handleLoadCommitEvent = function(event, webViewEvent) {
 };
 
 WebViewEvents.prototype.handleNewWindowEvent = function(event, webViewEvent) {
-  var ERROR_MSG_NEWWINDOW_ACTION_ALREADY_TAKEN = '<webview>: ' +
-      'An action has already been taken for this "newwindow" event.';
-
-  var ERROR_MSG_NEWWINDOW_UNABLE_TO_ATTACH = '<webview>: ' +
-      'Unable to attach the new window to the provided webViewImpl.';
-
-  var ERROR_MSG_WEBVIEW_EXPECTED = '<webview> element expected.';
-
-  var showWarningMessage = function() {
-    var WARNING_MSG_NEWWINDOW_BLOCKED = '<webview>: A new window was blocked.';
-    window.console.warn(WARNING_MSG_NEWWINDOW_BLOCKED);
-  };
-
-  var requestId = event.requestId;
-  var actionTaken = false;
-  var getGuestInstanceId = function() {
-    return this.webViewImpl.guest.getId();
-  }.bind(this);
-
-  var validateCall = function() {
-    if (actionTaken) {
-      throw new Error(ERROR_MSG_NEWWINDOW_ACTION_ALREADY_TAKEN);
-    }
-    actionTaken = true;
-  };
-
-  var windowObj = {
-    attach: function(webview) {
-      validateCall();
-      if (!webview || !webview.tagName || webview.tagName != 'WEBVIEW')
-        throw new Error(ERROR_MSG_WEBVIEW_EXPECTED);
-      // Note: Any subsequent errors cannot be exceptions because they happen
-      // asynchronously.
-      setTimeout(function() {
-        var webViewImpl = privates(webview).internal;
-        // Update the partition.
-        if (event.storagePartitionId) {
-          webViewImpl.onAttach(event.storagePartitionId);
-        }
-
-        var attached = webViewImpl.attachWindow(event.windowId);
-
-        if (!attached) {
-          window.console.error(ERROR_MSG_NEWWINDOW_UNABLE_TO_ATTACH);
-        }
-
-        var guestInstanceId = getGuestInstanceId();
-        if (!guestInstanceId) {
-          // If the opener is already gone, then we won't have its
-          // guestInstanceId.
-          return;
-        }
-
-        // If the object being passed into attach is not a valid <webview>
-        // then we will fail and it will be treated as if the new window
-        // was rejected. The permission API plumbing is used here to clean
-        // up the state created for the new window if attaching fails.
-        WebViewInternal.setPermission(
-            guestInstanceId, requestId, attached ? 'allow' : 'deny');
-      }, 0);
-    },
-    discard: function() {
-      validateCall();
-      var guestInstanceId = getGuestInstanceId();
-      if (!guestInstanceId) {
-        // If the opener is already gone, then we won't have its
-        // guestInstanceId.
-        return;
-      }
-      WebViewInternal.setPermission(guestInstanceId, requestId, 'deny');
-    }
-  };
-  webViewEvent.window = windowObj;
-
-  var defaultPrevented = !this.webViewImpl.dispatchEvent(webViewEvent);
-  if (actionTaken) {
-    return;
-  }
-
-  if (defaultPrevented) {
-    // Make browser plugin track lifetime of |windowObj|.
-    MessagingNatives.BindToGC(windowObj, function() {
-      // Avoid showing a warning message if the decision has already been made.
-      if (actionTaken) {
-        return;
-      }
-
-      var guestInstanceId = getGuestInstanceId();
-      if (!guestInstanceId) {
-        // If the opener is already gone, then we won't have its
-        // guestInstanceId.
-        return;
-      }
-
-      WebViewInternal.setPermission(
-          guestInstanceId, requestId, 'default', '', function(allowed) {
-            if (allowed) {
-              return;
-            }
-            showWarningMessage();
-          });
-    });
-  } else {
-    actionTaken = true;
-    // The default action is to discard the window.
-    WebViewInternal.setPermission(
-        getGuestInstanceId(), requestId, 'default', '', function(allowed) {
-      if (allowed) {
-        return;
-      }
-      showWarningMessage();
-    });
-  }
+  new WebViewActionRequests.NewWindow(this.webViewImpl, event, webViewEvent);
 };
 
-WebViewEvents.prototype.handlePermissionEvent =
-    function(event, webViewEvent) {
-  var ERROR_MSG_PERMISSION_ALREADY_DECIDED = '<webview>: ' +
-      'Permission has already been decided for this "permissionrequest" event.';
-
-  var showWarningMessage = function(permission) {
-    var WARNING_MSG_PERMISSION_DENIED = '<webview>: ' +
-        'The permission request for "%1" has been denied.';
-    window.console.warn(
-        WARNING_MSG_PERMISSION_DENIED.replace('%1', permission));
-  };
-
-  var requestId = event.requestId;
-  var getGuestInstanceId = function() {
-    return this.webViewImpl.guest.getId();
-  }.bind(this);
-
-  if (this.permissionTypes.indexOf(event.permission) < 0) {
-    // The permission type is not allowed. Trigger the default response.
-    WebViewInternal.setPermission(
-        getGuestInstanceId(), requestId, 'default', '', function(allowed) {
-      if (!allowed)
-        showWarningMessage(event.permission);
-    });
-    return;
-  }
-
-  var decisionMade = false;
-  var validateCall = function() {
-    if (decisionMade) {
-      throw new Error(ERROR_MSG_PERMISSION_ALREADY_DECIDED);
-    }
-    decisionMade = true;
-  };
-
-  // Construct the event.request object.
-  var request = {
-    allow: function() {
-      validateCall();
-      WebViewInternal.setPermission(getGuestInstanceId(), requestId, 'allow');
-    },
-    deny: function() {
-      validateCall();
-      WebViewInternal.setPermission(getGuestInstanceId(), requestId, 'deny');
-    }
-  };
-  webViewEvent.request = request;
-
-  var defaultPrevented = !this.webViewImpl.dispatchEvent(webViewEvent);
-  if (decisionMade) {
-    return;
-  }
-
-  if (defaultPrevented) {
-    // Make browser plugin track lifetime of |request|.
-    MessagingNatives.BindToGC(request, function() {
-      // Avoid showing a warning message if the decision has already been made.
-      if (decisionMade) {
-        return;
-      }
-      WebViewInternal.setPermission(
-          getGuestInstanceId(), requestId, 'default', '', function(allowed) {
-        if (allowed) {
-          return;
-        }
-        showWarningMessage(event.permission);
-      });
-    });
-  } else {
-    decisionMade = true;
-    WebViewInternal.setPermission(
-        getGuestInstanceId(), requestId, 'default', '',
-        function(allowed) {
-          if (allowed) {
-            return;
-          }
-          showWarningMessage(event.permission);
-        });
-  }
+WebViewEvents.prototype.handlePermissionEvent = function(event, webViewEvent) {
+  new WebViewActionRequests.PermissionRequest(
+      this.webViewImpl, event, webViewEvent);
 };
 
 WebViewEvents.prototype.handleSizeChangedEvent = function(

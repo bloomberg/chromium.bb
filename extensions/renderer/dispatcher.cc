@@ -552,6 +552,8 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
                                      IDR_GUEST_VIEW_CONTAINER_JS));
   resources.push_back(std::make_pair("webView", IDR_WEB_VIEW_JS));
   resources.push_back(std::make_pair("workerframe", IDR_WORKER_FRAME_JS));
+  resources.push_back(std::make_pair("webViewActionRequests",
+                                     IDR_WEB_VIEW_ACTION_REQUESTS_JS));
   resources.push_back(std::make_pair("webViewApiMethods",
                                      IDR_WEB_VIEW_API_METHODS_JS));
   resources.push_back(std::make_pair("webViewAttributes",
