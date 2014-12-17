@@ -198,6 +198,13 @@ enum ListType {
   // See above comment.  Leave 15 available.
 };
 
+// M40 experimental flag controls rollout of the UwS warning.
+enum UnwantedStatus {
+  UWS_OFF,
+  UWS_ON_INVISIBLE,
+  UWS_ON
+};
+
 // Maps a list name to ListType.
 ListType GetListId(const base::StringPiece& name);
 
@@ -227,6 +234,9 @@ GURL GeneratePhishingReportUrl(const std::string& report_page,
 
 SBFullHash StringToSBFullHash(const std::string& hash_in);
 std::string SBFullHashToString(const SBFullHash& hash_out);
+
+// Look up the status of the UwS warning. The default is off.
+UnwantedStatus GetUnwantedTrialGroup();
 
 }  // namespace safe_browsing_util
 

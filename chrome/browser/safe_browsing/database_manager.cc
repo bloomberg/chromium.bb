@@ -301,9 +301,9 @@ SafeBrowsingDatabaseManager::SafeBrowsingDatabaseManager(
   // phishing protection for now.
   enable_ip_blacklist_ = enable_csd_whitelist_;
 
-  // TODO(gab): Gate this on the same experiment that will soon control the UwS
-  // URL UI.
-  enable_unwanted_software_blacklist_ = true;
+  // The UwS blacklist feature is controlled by a flag for M40.
+  enable_unwanted_software_blacklist_ =
+      safe_browsing_util::GetUnwantedTrialGroup() > safe_browsing_util::UWS_OFF;
 
   enum SideEffectFreeWhitelistStatus {
     SIDE_EFFECT_FREE_WHITELIST_ENABLED,

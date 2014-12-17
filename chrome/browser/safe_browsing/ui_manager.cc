@@ -96,7 +96,6 @@ void SafeBrowsingUIManager::OnBlockingPageDone(
 void SafeBrowsingUIManager::DisplayBlockingPage(
     const UnsafeResource& resource) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   if (resource.is_subresource && !resource.is_subframe) {
     // Sites tagged as serving Unwanted Software should only show a warning for
     // main-frame or sub-frame resource. Similar warning restrictions should be
@@ -117,10 +116,13 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
     }
   }
 
+  // For M40, the UwS warning may be gated to not show any UI.
+  const bool ping_only = resource.threat_type == SB_THREAT_TYPE_URL_UNWANTED
+    && safe_browsing_util::GetUnwantedTrialGroup() < safe_browsing_util::UWS_ON;
+
   // Indicate to interested observers that the resource in question matched the
-  // SB filters. If the resource is already whitelisted, OnSafeBrowsingHit
-  // won't be called.
-  if (resource.threat_type != SB_THREAT_TYPE_SAFE) {
+  // SB filters, unless the UwS interstitial is in ping-only mode.
+  if (resource.threat_type != SB_THREAT_TYPE_SAFE && !ping_only) {
     FOR_EACH_OBSERVER(Observer, observer_list_, OnSafeBrowsingMatch(resource));
   }
 
@@ -175,6 +177,16 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
                           resource.is_subresource, resource.threat_type,
                           std::string() /* post_data */);
   }
+
+  // If UwS interstitials are turned off, return here before showing UI.
+  if (ping_only) {
+    if (!resource.callback.is_null()) {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE, base::Bind(resource.callback, true));
+    }
+    return;
+  }
+
   if (resource.threat_type != SB_THREAT_TYPE_SAFE) {
     FOR_EACH_OBSERVER(Observer, observer_list_, OnSafeBrowsingHit(resource));
   }
