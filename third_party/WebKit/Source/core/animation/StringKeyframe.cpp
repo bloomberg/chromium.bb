@@ -9,6 +9,7 @@
 #include "core/animation/DefaultStyleInterpolation.h"
 #include "core/animation/DeferredLegacyStyleInterpolation.h"
 #include "core/animation/LegacyStyleInterpolation.h"
+#include "core/animation/LengthPairStyleInterpolation.h"
 #include "core/animation/LengthStyleInterpolation.h"
 #include "core/animation/VisibilityStyleInterpolation.h"
 #include "core/animation/css/CSSAnimations.h"
