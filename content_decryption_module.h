@@ -303,7 +303,7 @@ struct BinaryData {
 // spec: https://w3c.github.io/encrypted-media/#idl-def-MediaKeyStatus
 enum KeyStatus {
   kUsable = 0,
-  kInvalid = 1,
+  kInternalError = 1,
   kExpired = 2,
   kOutputNotAllowed = 3
 };
@@ -313,7 +313,7 @@ enum KeyStatus {
 // should be 0 when |status| == kUsable.
 struct KeyInformation {
   KeyInformation()
-      : key_id(NULL), key_id_size(0), status(kInvalid), system_code(0) {}
+      : key_id(NULL), key_id_size(0), status(kInternalError), system_code(0) {}
   const uint8_t* key_id;
   uint32_t key_id_size;
   KeyStatus status;
@@ -337,6 +337,12 @@ enum OutputLinkTypes {
   kLinkTypeDVI = 1 << 4,
   kLinkTypeDisplayPort = 1 << 5,
   kLinkTypeNetwork = 1 << 6
+};
+
+// Result of the QueryOutputProtectionStatus() call.
+enum QueryResult {
+  kQuerySucceeded = 0,
+  kQueryFailed
 };
 
 // The type of session to create. The valid types are defined in the spec:
@@ -781,12 +787,13 @@ class ContentDecryptionModule_7 {
 
   // Called by the host after a call to Host::QueryOutputProtectionStatus(). The
   // |link_mask| is a bit mask of OutputLinkTypes and |output_protection_mask|
-  // is a bit mask of OutputProtectionMethods. |error_code| will be non-zero
-  // if an error occurred.
+  // is a bit mask of OutputProtectionMethods. If |result| is kQueryFailed,
+  // then |link_mask| and |output_protection_mask| are undefined and should
+  // be ignored.
   virtual void OnQueryOutputProtectionStatus(
+      QueryResult result,
       uint32_t link_mask,
-      uint32_t output_protection_mask,
-      uint32_t error_code) = 0;
+      uint32_t output_protection_mask) = 0;
 
   // Destroys the object in the same context as it was created.
   virtual void Destroy() = 0;
@@ -837,9 +844,9 @@ class Host_6 {
 
   // Called by the CDM when a session is created or loaded and the value for the
   // MediaKeySession's sessionId attribute is available (|web_session_id|).
-  // This must be called before OnSessionMessage() or OnSessionReady() is called
-  // for the same session. |web_session_id_length| should not include null
-  // termination.
+  // This must be called before OnSessionMessage() or
+  // OnSessionUsableKeysChange() is called for the same session.
+  // |web_session_id_length| should not include null termination.
   // When called in response to LoadSession(), the |web_session_id| must be the
   // same as the |web_session_id| passed in LoadSession(), or NULL if the
   // session could not be loaded.
@@ -965,9 +972,9 @@ class Host_7 {
 
   // Called by the CDM when a session is created or loaded and the value for the
   // MediaKeySession's sessionId attribute is available (|session_id|).
-  // This must be called before OnSessionMessage() or OnSessionReady() is called
-  // for the same session. |session_id_size| should not include null
-  // termination.
+  // This must be called before OnSessionMessage() or
+  // OnSessionKeysChange() is called for the same session. |session_id_size|
+  // should not include null termination.
   // When called in response to LoadSession(), the |session_id| must be the
   // same as the |session_id| passed in LoadSession(), or NULL if the
   // session could not be loaded.
@@ -996,18 +1003,18 @@ class Host_7 {
                                 const char* message,
                                 uint32_t message_size) = 0;
 
-  // Called by the CDM when there has been a change in usable keys for
+  // Called by the CDM when there has been a change in keys or their status for
   // session |session_id|. |has_additional_usable_key| should be set if a
   // key is newly usable (e.g. new key available, previously expired key has
   // been renewed, etc.) and the browser should attempt to resume playback.
   // |key_ids| is the list of key ids for this session along with their
   // current status. |key_ids_count| is the number of entries in |key_ids|.
   // Size parameter for |session_id| should not include null termination.
-  virtual void OnSessionUsableKeysChange(const char* session_id,
-                                         uint32_t session_id_size,
-                                         bool has_additional_usable_key,
-                                         const KeyInformation* keys_info,
-                                         uint32_t keys_info_count) = 0;
+  virtual void OnSessionKeysChange(const char* session_id,
+                                   uint32_t session_id_size,
+                                   bool has_additional_usable_key,
+                                   const KeyInformation* keys_info,
+                                   uint32_t keys_info_count) = 0;
 
   // Called by the CDM when there has been a change in the expiration time for
   // session |session_id|. This can happen as the result of an Update() call
