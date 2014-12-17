@@ -1186,13 +1186,17 @@ void ProfileManager::AddProfileToCache(Profile* profile) {
   if (profile->GetPath().DirName() != cache.GetUserDataDir())
     return;
 
-  if (cache.GetIndexOfProfileWithPath(profile->GetPath()) != std::string::npos)
-    return;
-
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile);
   base::string16 username = base::UTF8ToUTF16(
       signin_manager->GetAuthenticatedUsername());
+
+  size_t profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
+  if (profile_index != std::string::npos) {
+    // The ProfileInfoCache's username must match the Signin Manager's username.
+    cache.SetUserNameOfProfileAtIndex(profile_index, username);
+    return;
+  }
 
   // Profile name and avatar are set by InitProfileUserPrefs and stored in the
   // profile. Use those values to setup the cache entry.
