@@ -119,6 +119,10 @@ class EnrollmentScreenHandler
   // True if screen was not shown yet.
   bool first_show_;
 
+  // Whether we should handle network errors on enrollment screen.
+  // True when signin screen step is shown.
+  bool observe_network_failure_;
+
   // Network state informer used to keep signin screen up.
   scoped_refptr<NetworkStateInformer> network_state_informer_;
 

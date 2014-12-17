@@ -101,6 +101,7 @@ EnrollmentScreenHandler::EnrollmentScreenHandler(
       show_on_init_(false),
       frame_error_(net::OK),
       first_show_(true),
+      observe_network_failure_(false),
       network_state_informer_(network_state_informer),
       error_screen_actor_(error_screen_actor),
       histogram_helper_(new ErrorScreensHistogramHelper("Enrollment")),
@@ -173,6 +174,7 @@ void EnrollmentScreenHandler::Hide() {
 }
 
 void EnrollmentScreenHandler::ShowSigninScreen() {
+  observe_network_failure_ = true;
   ShowStep(kEnrollmentStepSignin);
 }
 
@@ -382,6 +384,9 @@ void EnrollmentScreenHandler::UpdateStateInternal(
     return;
   }
 
+  if (!force_update && !observe_network_failure_)
+    return;
+
   NetworkStateInformer::State state = network_state_informer_->state();
   const std::string network_path = network_state_informer_->network_path();
   const bool is_online = (state == NetworkStateInformer::ONLINE);
@@ -484,6 +489,7 @@ void EnrollmentScreenHandler::HandleClose(const std::string& reason) {
 }
 
 void EnrollmentScreenHandler::HandleCompleteLogin(const std::string& user) {
+  observe_network_failure_ = false;
   DCHECK(controller_);
   controller_->OnLoginDone(gaia::SanitizeEmail(user));
 }
