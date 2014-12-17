@@ -76,6 +76,9 @@ class PageHandler {
   Response StopScreencast();
   Response ScreencastFrameAck(int frame_number);
 
+  Response StartRecordingFrames(int max_frame_count);
+  Response StopRecordingFrames(DevToolsCommandId command_id);
+
   Response HandleJavaScriptDialog(bool accept, const std::string* prompt_text);
 
   Response QueryUsageAndQuota(DevToolsCommandId command_id,
