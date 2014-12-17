@@ -11,7 +11,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/values.h"
-#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api_activity_monitor.h"
@@ -28,6 +27,8 @@
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_urls.h"
+#include "extensions/common/features/feature.h"
+#include "extensions/common/features/feature_provider.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -539,14 +540,12 @@ void EventRouter::DispatchEventToProcess(const std::string& extension_id,
   BrowserContext* listener_context = process->GetBrowserContext();
   ProcessMap* process_map = ProcessMap::Get(listener_context);
 
-  // TODO(kalman): Convert this method to use
-  // ProcessMap::GetMostLikelyContextType.
-
+  // NOTE: |extension| being NULL does not necessarily imply that this event
+  // shouldn't be dispatched. Events can be dispatched to WebUI and webviews as
+  // well.  It all depends on what GetMostLikelyContextType returns.
   const Extension* extension =
       ExtensionRegistry::Get(browser_context_)->enabled_extensions().GetByID(
           extension_id);
-  // NOTE: |extension| being NULL does not necessarily imply that this event
-  // shouldn't be dispatched. Events can be dispatched to WebUI as well.
 
   if (!extension && !extension_id.empty()) {
     // Trying to dispatch an event to an extension that doesn't exist. The
@@ -556,39 +555,41 @@ void EventRouter::DispatchEventToProcess(const std::string& extension_id,
   }
 
   if (extension) {
-    // Dispatching event to an extension.
-    // If the event is privileged, only send to extension processes. Otherwise,
-    // it's OK to send to normal renderers (e.g., for content scripts).
-    if (!process_map->Contains(extension->id(), process->GetID()) &&
-        !ExtensionAPI::GetSharedInstance()->IsAvailableInUntrustedContext(
-            event->event_name, extension)) {
-      return;
-    }
-
-    // If the event is restricted to a URL, only dispatch if the extension has
-    // permission for it (or if the event originated from itself).
+    // Extension-specific checks.
+    // Firstly, if the event is for a URL, the Extension must have permission
+    // to access that URL.
     if (!event->event_url.is_empty() &&
-        event->event_url.host() != extension->id() &&
+        event->event_url.host() != extension->id() &&  // event for self is ok
         !extension->permissions_data()
              ->active_permissions()
              ->HasEffectiveAccessToURL(event->event_url)) {
       return;
     }
-
+    // Secondly, if the event is for incognito mode, the Extension must be
+    // enabled in incognito mode.
     if (!CanDispatchEventToBrowserContext(listener_context, extension, event)) {
       return;
     }
-  } else if (content::ChildProcessSecurityPolicy::GetInstance()
-                 ->HasWebUIBindings(process->GetID())) {
-    // Dispatching event to WebUI.
-    if (!ExtensionAPI::GetSharedInstance()->IsAvailableToWebUI(
-            event->event_name, listener_url)) {
-      return;
-    }
-  } else {
-    // Dispatching event to a webpage - however, all such events (e.g.
-    // messaging) don't go through EventRouter so this should be impossible.
-    NOTREACHED();
+  }
+
+  Feature::Context target_context =
+      process_map->GetMostLikelyContextType(extension, process->GetID());
+
+  // We shouldn't be dispatching an event to a webpage, since all such events
+  // (e.g.  messaging) don't go through EventRouter.
+  DCHECK_NE(Feature::WEB_PAGE_CONTEXT, target_context)
+      << "Trying to dispatch event " << event->event_name << " to a webpage,"
+      << " but this shouldn't be possible";
+
+  Feature::Availability availability =
+      ExtensionAPI::GetSharedInstance()->IsAvailable(
+          event->event_name, extension, target_context, listener_url);
+  if (!availability.is_available()) {
+    // It shouldn't be possible to reach here, because access is checked on
+    // registration. However, for paranoia, check on dispatch as well.
+    NOTREACHED() << "Trying to dispatch event " << event->event_name
+                 << " which the target does not have access to: "
+                 << availability.message();
     return;
   }
 

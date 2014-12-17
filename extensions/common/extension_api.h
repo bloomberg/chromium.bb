@@ -104,11 +104,6 @@ class ExtensionAPI {
                                       Feature::Context context,
                                       const GURL& url);
 
-  // Returns true if |name| is available to |extension| in any untrusted
-  // extension context, such as content scripts, iframes, or web pages.
-  bool IsAvailableInUntrustedContext(const std::string& name,
-                                     const Extension* extension);
-
   // Returns true if |name| is available to WebUI contexts on |url|.
   bool IsAvailableToWebUI(const std::string& name, const GURL& url);
 
