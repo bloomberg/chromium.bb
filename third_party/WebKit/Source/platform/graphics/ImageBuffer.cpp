@@ -286,36 +286,6 @@ void ImageBuffer::drawPattern(GraphicsContext* context, const FloatRect& srcRect
     image->drawPattern(context, srcRect, scale, phase, op, destRect, blendMode, repeatSpacing);
 }
 
-void ImageBuffer::transformColorSpace(ColorSpace srcColorSpace, ColorSpace dstColorSpace)
-{
-    const uint8_t* lookUpTable = ColorSpaceUtilities::getConversionLUT(dstColorSpace, srcColorSpace);
-    if (!lookUpTable)
-        return;
-
-    // FIXME: Disable color space conversions on accelerated canvases (for now).
-    if (context()->isAccelerated() || !isSurfaceValid())
-        return;
-
-    const SkBitmap& bitmap = m_surface->bitmap();
-    if (bitmap.isNull())
-        return;
-
-    ASSERT(bitmap.colorType() == kN32_SkColorType);
-    IntSize size = m_surface->size();
-    SkAutoLockPixels bitmapLock(bitmap);
-    for (int y = 0; y < size.height(); ++y) {
-        uint32_t* srcRow = bitmap.getAddr32(0, y);
-        for (int x = 0; x < size.width(); ++x) {
-            SkColor color = SkPMColorToColor(srcRow[x]);
-            srcRow[x] = SkPreMultiplyARGB(
-                SkColorGetA(color),
-                lookUpTable[SkColorGetR(color)],
-                lookUpTable[SkColorGetG(color)],
-                lookUpTable[SkColorGetB(color)]);
-        }
-    }
-}
-
 PassRefPtr<SkColorFilter> ImageBuffer::createColorSpaceFilter(ColorSpace srcColorSpace,
     ColorSpace dstColorSpace)
 {

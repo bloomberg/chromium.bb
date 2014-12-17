@@ -117,7 +117,6 @@ public:
 
     String toDataURL(const String& mimeType, const double* quality = 0) const;
     AffineTransform baseTransform() const { return AffineTransform(); }
-    void transformColorSpace(ColorSpace srcColorSpace, ColorSpace dstColorSpace);
     WebLayer* platformLayer() const;
 
     // FIXME: current implementations of this method have the restriction that they only work

@@ -50,9 +50,6 @@ class GraphicsContext;
 
 SkXfermode::Mode PLATFORM_EXPORT WebCoreCompositeToSkiaComposite(CompositeOperator, WebBlendMode = WebBlendModeNormal);
 
-// move this guy into SkColor.h
-SkColor SkPMColorToColor(SkPMColor);
-
 inline SkPaint::FilterLevel WebCoreInterpolationQualityToSkFilterLevel(InterpolationQuality quality)
 {
     // FIXME: this reflects existing client mappings, but should probably
