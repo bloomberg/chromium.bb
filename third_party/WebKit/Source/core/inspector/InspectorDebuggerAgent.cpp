@@ -760,7 +760,7 @@ void InspectorDebuggerAgent::didReceiveV8AsyncTaskEvent(ExecutionContext* contex
 {
     ASSERT(trackingAsyncCalls());
     if (eventType == v8AsyncTaskEventEnqueue)
-        asyncCallStackTracker().didEnqueueV8AsyncTask(context, eventName, id, scriptDebugServer().currentCallFramesForAsyncStack());
+        asyncCallStackTracker().didEnqueueV8AsyncTask(context, eventName, id);
     else if (eventType == v8AsyncTaskEventWillHandle)
         asyncCallStackTracker().willHandleV8AsyncTask(context, eventName, id);
     else if (eventType == v8AsyncTaskEventDidHandle)
@@ -1103,10 +1103,12 @@ const AsyncCallChain* InspectorDebuggerAgent::currentAsyncCallChain() const
     return m_currentAsyncCallChain.get();
 }
 
-PassRefPtrWillBeRawPtr<AsyncCallChain> InspectorDebuggerAgent::createAsyncCallChain(const String& description, const ScriptValue& callFrames)
+PassRefPtrWillBeRawPtr<AsyncCallChain> InspectorDebuggerAgent::createAsyncCallChain(const String& description)
 {
+    ScriptValue callFrames = scriptDebugServer().currentCallFramesForAsyncStack();
     if (callFrames.isEmpty()) {
-        ASSERT(m_currentAsyncCallChain);
+        if (!m_currentAsyncCallChain)
+            return nullptr;
         didCreateAsyncCallChain(m_currentAsyncCallChain.get());
         return m_currentAsyncCallChain; // Propogate async call stack chain.
     }
@@ -1123,11 +1125,6 @@ void InspectorDebuggerAgent::didCreateAsyncCallChain(AsyncCallChain* chain)
         return;
     if (m_inAsyncOperationForStepInto || m_asyncOperationsForStepInto.isEmpty())
         m_asyncOperationsForStepInto.add(chain);
-}
-
-bool InspectorDebuggerAgent::validateCallFrames(const ScriptValue& callFrames)
-{
-    return !callFrames.isEmpty() || m_currentAsyncCallChain;
 }
 
 void InspectorDebuggerAgent::clearCurrentAsyncCallChain()

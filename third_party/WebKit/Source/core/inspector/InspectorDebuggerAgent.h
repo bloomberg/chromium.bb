@@ -173,13 +173,12 @@ public:
 
     // Async call stacks implementation
     PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> currentAsyncStackTraceForConsole();
-    PassRefPtrWillBeRawPtr<AsyncCallChain> createAsyncCallChain(const String& description, const ScriptValue& callFrames);
+    PassRefPtrWillBeRawPtr<AsyncCallChain> createAsyncCallChain(const String& description);
     void setCurrentAsyncCallChain(v8::Isolate*, PassRefPtrWillBeRawPtr<AsyncCallChain>);
     const AsyncCallChain* currentAsyncCallChain() const;
     void clearCurrentAsyncCallChain();
     void didCompleteAsyncOperation(AsyncCallChain*);
     bool trackingAsyncCalls() const { return m_maxAsyncCallStackDepth; }
-    bool validateCallFrames(const ScriptValue& callFrames);
 
 protected:
     explicit InspectorDebuggerAgent(InjectedScriptManager*);

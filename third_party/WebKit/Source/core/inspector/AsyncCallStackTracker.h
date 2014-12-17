@@ -87,7 +87,7 @@ public:
     void willPerformExecutionContextTask(ExecutionContext*, ExecutionContextTask*);
     void didPerformExecutionContextTask() { didFireAsyncCall(); };
 
-    void didEnqueueV8AsyncTask(ExecutionContext*, const String& eventName, int id, const ScriptValue& callFrames);
+    void didEnqueueV8AsyncTask(ExecutionContext*, const String& eventName, int id);
     void willHandleV8AsyncTask(ExecutionContext*, const String& eventName, int id);
 
     int traceAsyncOperationStarting(ExecutionContext*, const String& operationName, int prevOperationId = 0);
@@ -108,7 +108,6 @@ private:
     void willHandleXHREvent(XMLHttpRequest*, Event*);
 
     void setCurrentAsyncCallChain(ExecutionContext*, PassRefPtrWillBeRawPtr<AsyncCallChain>);
-    bool validateCallFrames(const ScriptValue& callFrames);
 
     ExecutionContextData* createContextDataIfNeeded(ExecutionContext*);
 

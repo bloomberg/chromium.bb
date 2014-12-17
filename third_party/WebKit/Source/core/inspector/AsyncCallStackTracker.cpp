@@ -31,14 +31,9 @@
 #include "config.h"
 #include "core/inspector/AsyncCallStackTracker.h"
 
-#include "bindings/core/v8/ScriptDebugServer.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8RecursionScope.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
-#include "core/dom/Microtask.h"
 #include "core/events/Event.h"
 #include "core/events/EventTarget.h"
 #include "core/inspector/AsyncCallChain.h"
@@ -225,12 +220,12 @@ void AsyncCallStackTracker::didInstallTimer(ExecutionContext* context, int timer
 {
     ASSERT(context);
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
-    ScriptValue callFrames = m_debuggerAgent->scriptDebugServer().currentCallFramesForAsyncStack();
-    if (!validateCallFrames(callFrames))
+    RefPtrWillBeRawPtr<AsyncCallChain> callChain = m_debuggerAgent->createAsyncCallChain(singleShot ? setTimeoutName : setIntervalName);
+    if (!callChain)
         return;
     ASSERT(timerId > 0);
     ExecutionContextData* data = createContextDataIfNeeded(context);
-    data->m_timerCallChains.set(timerId, m_debuggerAgent->createAsyncCallChain(singleShot ? setTimeoutName : setIntervalName, callFrames));
+    data->m_timerCallChains.set(timerId, callChain.release());
     if (!singleShot)
         data->m_intervalTimerIds.add(timerId);
 }
@@ -268,12 +263,12 @@ void AsyncCallStackTracker::didRequestAnimationFrame(ExecutionContext* context, 
 {
     ASSERT(context);
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
-    ScriptValue callFrames = m_debuggerAgent->scriptDebugServer().currentCallFramesForAsyncStack();
-    if (!validateCallFrames(callFrames))
+    RefPtrWillBeRawPtr<AsyncCallChain> callChain = m_debuggerAgent->createAsyncCallChain(requestAnimationFrameName);
+    if (!callChain)
         return;
     ASSERT(callbackId > 0);
     ExecutionContextData* data = createContextDataIfNeeded(context);
-    data->m_animationFrameCallChains.set(callbackId, m_debuggerAgent->createAsyncCallChain(requestAnimationFrameName, callFrames));
+    data->m_animationFrameCallChains.set(callbackId, callChain.release());
 }
 
 void AsyncCallStackTracker::didCancelAnimationFrame(ExecutionContext* context, int callbackId)
@@ -305,11 +300,11 @@ void AsyncCallStackTracker::didEnqueueEvent(EventTarget* eventTarget, Event* eve
 {
     ASSERT(eventTarget->executionContext());
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
-    ScriptValue callFrames = m_debuggerAgent->scriptDebugServer().currentCallFramesForAsyncStack();
-    if (!validateCallFrames(callFrames))
+    RefPtrWillBeRawPtr<AsyncCallChain> callChain = m_debuggerAgent->createAsyncCallChain(event->type());
+    if (!callChain)
         return;
     ExecutionContextData* data = createContextDataIfNeeded(eventTarget->executionContext());
-    data->m_eventCallChains.set(event, m_debuggerAgent->createAsyncCallChain(event->type(), callFrames));
+    data->m_eventCallChains.set(event, callChain.release());
 }
 
 void AsyncCallStackTracker::didRemoveEvent(EventTarget* eventTarget, Event* event)
@@ -341,11 +336,11 @@ void AsyncCallStackTracker::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderCli
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
     if (!async)
         return;
-    ScriptValue callFrames = m_debuggerAgent->scriptDebugServer().currentCallFramesForAsyncStack();
-    if (!validateCallFrames(callFrames))
+    RefPtrWillBeRawPtr<AsyncCallChain> callChain = m_debuggerAgent->createAsyncCallChain(xhrSendName);
+    if (!callChain)
         return;
     ExecutionContextData* data = createContextDataIfNeeded(xhr->executionContext());
-    data->m_xhrCallChains.set(xhr, m_debuggerAgent->createAsyncCallChain(xhrSendName, callFrames));
+    data->m_xhrCallChains.set(xhr, callChain.release());
 }
 
 void AsyncCallStackTracker::didDispatchXHRLoadendEvent(XMLHttpRequest* xhr)
@@ -374,10 +369,10 @@ void AsyncCallStackTracker::didEnqueueMutationRecord(ExecutionContext* context, 
     ExecutionContextData* data = createContextDataIfNeeded(context);
     if (data->m_mutationObserverCallChains.contains(observer))
         return;
-    ScriptValue callFrames = m_debuggerAgent->scriptDebugServer().currentCallFramesForAsyncStack();
-    if (!validateCallFrames(callFrames))
+    RefPtrWillBeRawPtr<AsyncCallChain> callChain = m_debuggerAgent->createAsyncCallChain(enqueueMutationRecordName);
+    if (!callChain)
         return;
-    data->m_mutationObserverCallChains.set(observer, m_debuggerAgent->createAsyncCallChain(enqueueMutationRecordName, callFrames));
+    data->m_mutationObserverCallChains.set(observer, callChain.release());
 }
 
 void AsyncCallStackTracker::didClearAllMutationRecords(ExecutionContext* context, MutationObserver* observer)
@@ -406,11 +401,11 @@ void AsyncCallStackTracker::didPostExecutionContextTask(ExecutionContext* contex
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
     if (task->taskNameForInstrumentation().isEmpty())
         return;
-    ScriptValue callFrames = m_debuggerAgent->scriptDebugServer().currentCallFramesForAsyncStack();
-    if (!validateCallFrames(callFrames))
+    RefPtrWillBeRawPtr<AsyncCallChain> callChain = m_debuggerAgent->createAsyncCallChain(task->taskNameForInstrumentation());
+    if (!callChain)
         return;
     ExecutionContextData* data = createContextDataIfNeeded(context);
-    data->m_executionContextTaskCallChains.set(task, m_debuggerAgent->createAsyncCallChain(task->taskNameForInstrumentation(), callFrames));
+    data->m_executionContextTaskCallChains.set(task, callChain.release());
 }
 
 void AsyncCallStackTracker::didKillAllExecutionContextTasks(ExecutionContext* context)
@@ -441,14 +436,15 @@ static String makeV8AsyncTaskUniqueId(const String& eventName, int id)
     return builder.toString();
 }
 
-void AsyncCallStackTracker::didEnqueueV8AsyncTask(ExecutionContext* context, const String& eventName, int id, const ScriptValue& callFrames)
+void AsyncCallStackTracker::didEnqueueV8AsyncTask(ExecutionContext* context, const String& eventName, int id)
 {
     ASSERT(context);
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
-    if (!validateCallFrames(callFrames))
+    RefPtrWillBeRawPtr<AsyncCallChain> callChain = m_debuggerAgent->createAsyncCallChain(eventName);
+    if (!callChain)
         return;
     ExecutionContextData* data = createContextDataIfNeeded(context);
-    data->m_v8AsyncTaskCallChains.set(makeV8AsyncTaskUniqueId(eventName, id), m_debuggerAgent->createAsyncCallChain(eventName, callFrames));
+    data->m_v8AsyncTaskCallChains.set(makeV8AsyncTaskUniqueId(eventName, id), callChain.release());
 }
 
 void AsyncCallStackTracker::willHandleV8AsyncTask(ExecutionContext* context, const String& eventName, int id)
@@ -470,13 +466,12 @@ int AsyncCallStackTracker::traceAsyncOperationStarting(ExecutionContext* context
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
     if (prevOperationId)
         traceAsyncOperationCompleted(context, prevOperationId);
-    ScriptValue callFrames = m_debuggerAgent->scriptDebugServer().currentCallFramesForAsyncStack();
-    if (!validateCallFrames(callFrames))
+    RefPtrWillBeRawPtr<AsyncCallChain> callChain = m_debuggerAgent->createAsyncCallChain(operationName);
+    if (!callChain)
         return 0;
     ExecutionContextData* data = createContextDataIfNeeded(context);
-    RefPtrWillBeRawPtr<AsyncCallChain> chain = m_debuggerAgent->createAsyncCallChain(operationName, callFrames);
     int id = data->nextAsyncOperationUniqueId();
-    data->m_asyncOperationCallChains.set(id, chain.release());
+    data->m_asyncOperationCallChains.set(id, callChain.release());
     return id;
 }
 
@@ -514,11 +509,6 @@ void AsyncCallStackTracker::didFireAsyncCall()
 void AsyncCallStackTracker::setCurrentAsyncCallChain(ExecutionContext* context, PassRefPtrWillBeRawPtr<AsyncCallChain> chain)
 {
     m_debuggerAgent->setCurrentAsyncCallChain(toIsolate(context), chain);
-}
-
-bool AsyncCallStackTracker::validateCallFrames(const ScriptValue& callFrames)
-{
-    return m_debuggerAgent->validateCallFrames(callFrames);
 }
 
 AsyncCallStackTracker::ExecutionContextData* AsyncCallStackTracker::createContextDataIfNeeded(ExecutionContext* context)
