@@ -27,6 +27,10 @@ PermissionMenuModel::PermissionMenuModel(
       label = l10n_util::GetStringUTF16(
           IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_ASK);
       break;
+    case CONTENT_SETTING_DETECT_IMPORTANT_CONTENT:
+      label = l10n_util::GetStringUTF16(
+          IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_DETECT_IMPORTANT_CONTENT);
+      break;
     case CONTENT_SETTING_NUM_SETTINGS:
       NOTREACHED();
     default:

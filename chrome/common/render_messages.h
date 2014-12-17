@@ -50,12 +50,12 @@ struct ChromeViewHostMsg_GetPluginInfo_Status {
     kAllowed,
     kBlocked,
     kBlockedByPolicy,
-    kClickToPlay,
     kDisabled,
     kNotFound,
     kNPAPINotSupported,
     kOutdatedBlocked,
     kOutdatedDisallowed,
+    kPlayImportantContent,
     kUnauthorized,
   };
 

@@ -83,6 +83,8 @@ std::string GetStringForContentSettingsType(
       return "ask";
     case CONTENT_SETTING_SESSION_ONLY:
       return "session";
+    case CONTENT_SETTING_DETECT_IMPORTANT_CONTENT:
+      return "detect";
     case CONTENT_SETTING_NUM_SETTINGS:
       return "num_settings";
     case CONTENT_SETTING_DEFAULT:

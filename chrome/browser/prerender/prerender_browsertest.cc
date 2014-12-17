@@ -2040,17 +2040,22 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAlertAfterOnload) {
 #if defined(USE_AURA) && !defined(OS_WIN)
 // http://crbug.com/103496
 #define MAYBE_PrerenderDelayLoadPlugin DISABLED_PrerenderDelayLoadPlugin
+#define MAYBE_PrerenderPluginPowerSaver DISABLED_PrerenderPluginPowerSaver
 #elif defined(OS_MACOSX)
 // http://crbug.com/100514
 #define MAYBE_PrerenderDelayLoadPlugin DISABLED_PrerenderDelayLoadPlugin
+#define MAYBE_PrerenderPluginPowerSaver DISABLED_PrerenderPluginPowerSaver
 #elif defined(OS_WIN) && defined(ARCH_CPU_X86_64)
 // TODO(jschuh): Failing plugin tests. crbug.com/244653
 #define MAYBE_PrerenderDelayLoadPlugin DISABLED_PrerenderDelayLoadPlugin
+#define MAYBE_PrerenderPluginPowerSaver DISABLED_PrerenderPluginPowerSaver
 #elif defined(OS_LINUX)
 // http://crbug.com/306715
 #define MAYBE_PrerenderDelayLoadPlugin DISABLED_PrerenderDelayLoadPlugin
+#define MAYBE_PrerenderPluginPowerSaver DISABLED_PrerenderPluginPowerSaver
 #else
 #define MAYBE_PrerenderDelayLoadPlugin PrerenderDelayLoadPlugin
+#define MAYBE_PrerenderPluginPowerSaver PrerenderPluginPowerSaver
 #endif
 // http://crbug.com/306715
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderDelayLoadPlugin) {
@@ -2060,18 +2065,17 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderDelayLoadPlugin) {
   NavigateToDestURL();
 }
 
-// Checks that plugins are not loaded on prerendering pages when click-to-play
-// is enabled.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickToPlay) {
+// For enabled Plugin Power Saver, checks that plugins are not loaded while
+// a page is being preloaded, but are loaded when the page is displayed.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderPluginPowerSaver) {
   // Enable click-to-play.
   HostContentSettingsMap* content_settings_map =
       current_browser()->profile()->GetHostContentSettingsMap();
   content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_ASK);
+      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
 
-  PrerenderTestURL("files/prerender/prerender_plugin_click_to_play.html",
-                   FINAL_STATUS_USED,
-                   1);
+  PrerenderTestURL("files/prerender/prerender_plugin_power_saver.html",
+                   FINAL_STATUS_USED, 1);
   NavigateToDestURL();
 }
 

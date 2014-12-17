@@ -1,10 +1,10 @@
 <html>
 <!--
-This test checks to make sure plugins aren't loaded when prerendered page
-is displayed and click-to-play is enabled.
+This test checks to make sure plugins aren't loaded when a page is prerendered,
+but are loaded once the page is displayed and Plugin Power Saver is enabled.
 -->
 <head>
-<title>Prerender click-to-play</title>
+<title>Prerender Plugin Power Saver</title>
 
 <script>
 // Make sure plugin was not loaded while prerendering.
@@ -15,12 +15,10 @@ function DidPrerenderPass() {
   return plugin.getURL == undefined;
 }
 
-// Make sure plugin still hasn't loaded once the page is displayed.
+// Make sure plugin loads once the page is displayed.
 function DidDisplayPass() {
-  // |plugin| should be the blocked plugin placeholder, rather than the
-  // test plugin.
   var plugin = window.document['plugin'];
-  return plugin.getURL == undefined;
+  return plugin.getURL != undefined;
 }
 </script>
 

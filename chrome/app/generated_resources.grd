@@ -329,6 +329,9 @@ are declared in build/common.gypi.
       <message name="IDS_WEBSITE_SETTINGS_BUTTON_TEXT_ASK_BY_DEFAULT" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to the default setting and the default settings is ask.">
         Ask by default
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_BUTTON_TEXT_DETECT_IMPORTANT_CONTENT_BY_DEFAULT" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to the default setting and the default settings is detect important content.">
+        Detect important content by default
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_TITLE_SITE_PERMISSIONS" desc="Title of the permissions section of the website settings popup.">
         Permissions
       </message>
@@ -409,6 +412,9 @@ are declared in build/common.gypi.
       </message>
       <message name="IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_ASK" desc="The text of the menu item of a permissions menu on the Website Settings UI that reset the setting to the default setting which is ask.">
         Use global default (Ask)
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_DETECT_IMPORTANT_CONTENT" desc="The text of the menu item of a permissions menu on the Website Settings UI that reset the setting to the default setting which is detect important content.">
+        Use global default (Detect)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_MENU_ITEM_ALLOW" desc="The text of the menu item of a permissions menu on the Website Settings UI that sets the setting to allow.">
         Always allow on this site
@@ -6999,9 +7005,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if> <!-- is_win -->
 
       <!-- Plug-in placeholders -->
-      <message name="IDS_PLUGIN_LOAD" desc="The link for loading a blocked plug-in, displayed in the click to play UI.">
-        Click to run <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph>.
-      </message>
       <message name="IDS_PLUGIN_HIDE" desc="The tooltip for hiding a blocked plug-in, displayed in the click to play UI.">
         Hide this plug-in
       </message>
@@ -8032,14 +8035,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGIN_HEADER" desc="Header for plugin exception management page on Content Settings dialog">
         Plug-in exceptions
       </message>
-      <message name="IDS_PLUGIN_LOAD_RADIO" desc="A radio button in the Content Settings dialog for allowing plug-ins use on any site.">
-        Run automatically (recommended)
+      <message name="IDS_PLUGIN_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing plug-ins use on any site.">
+        Run all plugin content (recommended)
       </message>
-      <message name="IDS_PLUGIN_ASK_RADIO" desc="A radio button in the Content Settings dialog for gating plug-ins on a mouse click (left button).">
-        Click to play
+      <message name="IDS_PLUGIN_DETECT_RADIO" desc="A radio button in the Content Settings dialog for detecting and running important plugin content only.">
+        Detect and run important plugin content
       </message>
-      <message name="IDS_PLUGIN_ASK_MENU_RADIO" desc="A radio button in the Content Settings dialog for gating plug-ins on a context menu activation.">
-        Block by default (You can manually run a blocked plug-in at any time.)
+      <message name="IDS_PLUGIN_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for gating plug-ins on a context menu activation.">
+        Do not run plugins by default
       </message>
       <message name="IDS_PLUGIN_SELECTIVE_DISABLE" desc="Link to selectively disable plug-ins">
         Disable individual plug-ins...
@@ -8144,14 +8147,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXCEPTIONS_ALLOW_BUTTON" desc="A label to display in the exception page's action column when a site's content setting is allowed for a given domain">
         Allow
       </message>
-      <message name="IDS_EXCEPTIONS_ASK_BUTTON" desc="A label to display in the exception page's action column when a site's content setting is set to promt for a given domain.">
+      <message name="IDS_EXCEPTIONS_BLOCK_BUTTON" desc="A label to display in the exception page's action column when a site's content setting is blocked for a given domain.">
+        Block
+      </message>
+      <message name="IDS_EXCEPTIONS_ASK_BUTTON" desc="A label to display in the exception page's action column when a site's content setting is set to prompt for a given domain.">
         Ask
       </message>
       <message name="IDS_EXCEPTIONS_SESSION_ONLY_BUTTON" desc="A label to display in the exception page's action column when a site's content setting is allow but only for the duration of the session for a given domain.">
         Clear on exit
       </message>
-      <message name="IDS_EXCEPTIONS_BLOCK_BUTTON" desc="A label to display in the exception page's action column when a site's content setting is blocked for a given domain.">
-        Block
+      <message name="IDS_EXCEPTIONS_DETECT_IMPORTANT_CONTENT_BUTTON" desc="A label to display in the exception page's action column when only important content is allowed.">
+        Detect important content
       </message>
       <message name="IDS_EXCEPTIONS_OTR_LABEL" desc="A label informing the user that the table below the label shows incognito-only exceptions">
         Exceptions below only apply to the current incognito session.

@@ -508,18 +508,21 @@ void WebsiteSettingsHandler::HandleStopOrigin(const base::ListValue* args) {
   StopOrigin(last_site_);
 }
 
-// TODO(dhnishi): Remove default settings duplication from the
-//                WebsiteSettingsHandler and the ContentSettingsHandler.
 void WebsiteSettingsHandler::HandleUpdateDefaultSetting(
     const base::ListValue* args) {
-  ContentSettingsType last_setting;
-  if (!content_settings::GetTypeFromName(last_setting_, &last_setting))
+  ContentSettingsType type;
+  if (!content_settings::GetTypeFromName(last_setting_, &type))
     return;
 
-  base::DictionaryValue filter_settings;
+  Profile* profile = GetProfile();
   std::string provider_id;
+  ContentSetting default_setting =
+      profile->GetHostContentSettingsMap()->GetDefaultContentSetting(
+          type, &provider_id);
+
+  base::DictionaryValue filter_settings;
   filter_settings.SetString(
-      "value", GetSettingDefaultFromModel(last_setting, &provider_id));
+      "value", content_settings::ContentSettingToString(default_setting));
   filter_settings.SetString("managedBy", provider_id);
 
   web_ui()->CallJavascriptFunction("WebsiteSettingsManager.updateDefault",
@@ -749,17 +752,6 @@ void WebsiteSettingsHandler::UpdateBatteryUsage() {
   }
   web_ui()->CallJavascriptFunction("WebsiteSettingsManager.populateOrigins",
                                    power_map);
-}
-
-std::string WebsiteSettingsHandler::GetSettingDefaultFromModel(
-    ContentSettingsType type,
-    std::string* provider_id) {
-  Profile* profile = GetProfile();
-  ContentSetting default_setting =
-      profile->GetHostContentSettingsMap()->GetDefaultContentSetting(
-          type, provider_id);
-
-  return content_settings::ContentSettingToString(default_setting);
 }
 
 void WebsiteSettingsHandler::StopOrigin(const GURL& site_url) {

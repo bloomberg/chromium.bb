@@ -116,11 +116,6 @@ class WebsiteSettingsHandler : public content_settings::Observer,
   // Updates the page with the last settings used.
   void Update();
 
-  // Gets the default setting in string form. If |provider_id| is not NULL, the
-  // id of the provider which provided the default setting is assigned to it.
-  std::string GetSettingDefaultFromModel(ContentSettingsType type,
-                                         std::string* provider_id);
-
   // Returns the base URL for websites, or the app name for Chrome App URLs.
   const std::string& GetReadableName(const GURL& site_url);
 

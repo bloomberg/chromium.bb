@@ -609,6 +609,7 @@ ContentSettingToPermissionStatus(ContentSetting setting) {
       return content::PERMISSION_STATUS_DENIED;
     case CONTENT_SETTING_ASK:
       return content::PERMISSION_STATUS_ASK;
+    case CONTENT_SETTING_DETECT_IMPORTANT_CONTENT:
     case CONTENT_SETTING_DEFAULT:
     case CONTENT_SETTING_NUM_SETTINGS:
       break;

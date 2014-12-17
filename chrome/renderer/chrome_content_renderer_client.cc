@@ -685,19 +685,18 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
 
     if ((status_value ==
              ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized ||
-         status_value == ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay ||
          status_value == ChromeViewHostMsg_GetPluginInfo_Status::kBlocked) &&
         observer->IsPluginTemporarilyAllowed(identifier)) {
       status_value = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
     }
 
-    // Allow full-page plug-ins for click-to-play.
-    if (status_value == ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay &&
-        !frame->parent() &&
-        !frame->opener() &&
-        frame->document().isPluginDocument()) {
-      status_value = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
+#if defined(ENABLE_PLUGINS)
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnablePluginPowerSaver)) {
+      status_value =
+          ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent;
     }
+#endif
 
 #if defined(OS_WIN)
     // In Windows we need to check if we can load NPAPI plugins.
@@ -723,7 +722,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         NOTREACHED();
         break;
       }
-      case ChromeViewHostMsg_GetPluginInfo_Status::kAllowed: {
+      case ChromeViewHostMsg_GetPluginInfo_Status::kAllowed:
+      case ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent: {
 #if !defined(DISABLE_NACL) && defined(ENABLE_EXTENSIONS)
         const bool is_nacl_plugin =
             plugin.name == ASCIIToUTF16(nacl::kNaClPluginName);
@@ -795,8 +795,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         if (render_frame->ShouldThrottleContent(params, frame->document().url(),
                                                 &poster_url,
                                                 &cross_origin_main_content)) {
-          if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-                  switches::kEnablePluginPowerSaver)) {
+          if (status_value ==
+              ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent) {
             power_saver_mode =
                 RenderFrame::POWER_SAVER_MODE_PERIPHERAL_THROTTLED;
             show_poster = poster_url.is_valid();
@@ -814,9 +814,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             prerender::PrerenderHelper::IsPrerendering(render_frame);
         if (is_prerendering || show_poster) {
           placeholder = create_blocked_plugin(
-              show_poster ? IDR_PLUGIN_POSTER_HTML
-                          : IDR_CLICK_TO_PLAY_PLUGIN_HTML,
-              l10n_util::GetStringFUTF16(IDS_PLUGIN_LOAD, group_name),
+              show_poster ? IDR_PLUGIN_POSTER_HTML : IDR_BLOCKED_PLUGIN_HTML,
+              l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED, group_name),
               poster_url);
           placeholder->set_blocked_for_prerendering(is_prerendering);
           placeholder->set_power_saver_mode(power_saver_mode);
@@ -884,16 +883,6 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
               group_name,
               identifier));
         }
-        observer->DidBlockContentType(content_type, group_name);
-        break;
-      }
-      case ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay: {
-        placeholder = create_blocked_plugin(
-            IDR_CLICK_TO_PLAY_PLUGIN_HTML,
-            l10n_util::GetStringFUTF16(IDS_PLUGIN_LOAD, group_name), GURL());
-        placeholder->set_allow_loading(true);
-        RenderThread::Get()->RecordAction(
-            UserMetricsAction("Plugin_ClickToPlay"));
         observer->DidBlockContentType(content_type, group_name);
         break;
       }

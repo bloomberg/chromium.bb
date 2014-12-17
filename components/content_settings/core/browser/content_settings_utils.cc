@@ -85,6 +85,8 @@ std::string ContentSettingToString(ContentSetting setting) {
       return "block";
     case CONTENT_SETTING_SESSION_ONLY:
       return "session";
+    case CONTENT_SETTING_DETECT_IMPORTANT_CONTENT:
+      return "detect";
     case CONTENT_SETTING_DEFAULT:
       return "default";
     case CONTENT_SETTING_NUM_SETTINGS:
@@ -103,6 +105,8 @@ ContentSetting ContentSettingFromString(const std::string& name) {
     return CONTENT_SETTING_BLOCK;
   if (name == "session")
     return CONTENT_SETTING_SESSION_ONLY;
+  if (name == "detect")
+    return CONTENT_SETTING_DETECT_IMPORTANT_CONTENT;
 
   NOTREACHED() << name << " is not a recognized content setting.";
   return CONTENT_SETTING_DEFAULT;

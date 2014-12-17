@@ -216,14 +216,12 @@ TEST_F(PluginInfoMessageFilterTest, GetPluginContentSetting) {
   map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                 CONTENT_SETTING_BLOCK);
 
-  // Set plugins to click-to-play on example.com and subdomains.
+  // Set plugins to Plugin Power Saver on example.com and subdomains.
   ContentSettingsPattern pattern =
        ContentSettingsPattern::FromString("[*.]example.com");
-  map->SetContentSetting(pattern,
-                         ContentSettingsPattern::Wildcard(),
-                         CONTENT_SETTINGS_TYPE_PLUGINS,
-                         std::string(),
-                         CONTENT_SETTING_ASK);
+  map->SetContentSetting(pattern, ContentSettingsPattern::Wildcard(),
+                         CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
+                         CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
 
   // Allow plugin "foo" on all sites.
   map->SetContentSetting(ContentSettingsPattern::Wildcard(),
@@ -237,8 +235,9 @@ TEST_F(PluginInfoMessageFilterTest, GetPluginContentSetting) {
   ASSERT_EQ(CONTENT_SETTING_BLOCK, map->GetContentSetting(
       unmatched_host, unmatched_host, CONTENT_SETTINGS_TYPE_PLUGINS,
       std::string()));
-  ASSERT_EQ(CONTENT_SETTING_ASK, map->GetContentSetting(
-      host, host, CONTENT_SETTINGS_TYPE_PLUGINS, std::string()));
+  ASSERT_EQ(CONTENT_SETTING_DETECT_IMPORTANT_CONTENT,
+            map->GetContentSetting(host, host, CONTENT_SETTINGS_TYPE_PLUGINS,
+                                   std::string()));
   ASSERT_EQ(CONTENT_SETTING_ALLOW, map->GetContentSetting(
       host, host, CONTENT_SETTINGS_TYPE_PLUGINS, "foo"));
   ASSERT_EQ(CONTENT_SETTING_DEFAULT, map->GetContentSetting(
@@ -249,7 +248,8 @@ TEST_F(PluginInfoMessageFilterTest, GetPluginContentSetting) {
 
   // There is no specific content setting for "bar", so the general setting
   // for example.com applies.
-  VerifyPluginContentSetting(host, "bar", CONTENT_SETTING_ASK, false, false);
+  VerifyPluginContentSetting(
+      host, "bar", CONTENT_SETTING_DETECT_IMPORTANT_CONTENT, false, false);
 
   // Otherwise, use the default.
   VerifyPluginContentSetting(unmatched_host, "bar", CONTENT_SETTING_BLOCK,
