@@ -156,8 +156,8 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
     ASSERT(parentStyle);
 
     if (style->display() != NONE) {
-        if (e)
-            adjustStyleForTagName(style, parentStyle, *e);
+        if (e && e->isHTMLElement())
+            adjustStyleForHTMLElement(style, parentStyle, toHTMLElement(*e));
 
         // Per the spec, position 'static' and 'relative' in the top layer compute to 'absolute'.
         if (isInTopLayer(e, style) && (style->position() == StaticPosition || style->position() == RelativePosition))
@@ -323,7 +323,7 @@ void StyleAdjuster::adjustStyleForAlignment(RenderStyle& style, const RenderStyl
     }
 }
 
-void StyleAdjuster::adjustStyleForTagName(RenderStyle* style, RenderStyle* parentStyle, Element& element)
+void StyleAdjuster::adjustStyleForHTMLElement(RenderStyle* style, RenderStyle* parentStyle, HTMLElement& element)
 {
     // <div> and <span> are the most common elements on the web, we skip all the work for them.
     if (isHTMLDivElement(element) || isHTMLSpanElement(element))
