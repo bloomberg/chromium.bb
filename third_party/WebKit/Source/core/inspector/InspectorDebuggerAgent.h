@@ -34,7 +34,6 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/InspectorFrontend.h"
 #include "core/frame/ConsoleTypes.h"
-#include "core/inspector/AsyncCallStackTracker.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/PromiseTracker.h"
@@ -49,6 +48,8 @@
 
 namespace blink {
 
+class AsyncCallChain;
+class AsyncCallStackTracker;
 class ConsoleMessage;
 class InjectedScript;
 class InjectedScriptManager;
@@ -64,7 +65,6 @@ typedef String ErrorString;
 class InspectorDebuggerAgent
     : public InspectorBaseAgent<InspectorDebuggerAgent>
     , public ScriptDebugListener
-    , public AsyncCallStackTracker::Listener
     , public InspectorBackendDispatcher::DebuggerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorDebuggerAgent);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
@@ -142,12 +142,6 @@ public:
     void getPromises(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::PromiseDetails> >& promises) final;
     void getPromiseById(ErrorString*, int promiseId, const String* objectGroup, RefPtr<TypeBuilder::Runtime::RemoteObject>& promise) final;
 
-    // AsyncCallStackTracker::Listener
-    void didCreateAsyncCallChain(AsyncCallStackTracker::AsyncCallChain*) final;
-    void didSetCurrentAsyncCallChain(AsyncCallStackTracker::AsyncCallChain*) final;
-    void didClearCurrentAsyncCallChain() final;
-    void didRemoveAsyncCallChain(AsyncCallStackTracker::AsyncCallChain*) final;
-
     void schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
     void didFireTimer();
     void didHandleEvent();
@@ -178,7 +172,15 @@ public:
     void setBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource, const String& condition = String());
     void removeBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource);
 
+    // Async call stacks implementation
     PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> currentAsyncStackTraceForConsole();
+    PassRefPtrWillBeRawPtr<AsyncCallChain> createAsyncCallChain(const String& description, const ScriptValue& callFrames);
+    void setCurrentAsyncCallChain(v8::Isolate*, PassRefPtrWillBeRawPtr<AsyncCallChain>);
+    const AsyncCallChain* currentAsyncCallChain() const;
+    void clearCurrentAsyncCallChain();
+    void didCompleteAsyncOperation(AsyncCallChain*);
+    bool trackingAsyncCalls() const { return m_maxAsyncCallStackDepth; }
+    bool validateCallFrames(const ScriptValue& callFrames);
 
 protected:
     explicit InspectorDebuggerAgent(InjectedScriptManager*);
@@ -208,6 +210,9 @@ private:
 
     PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame> > currentCallFrames();
     PassRefPtr<TypeBuilder::Debugger::StackTrace> currentAsyncStackTrace();
+
+    void resetAsyncCallTracker();
+    void didCreateAsyncCallChain(AsyncCallChain*);
 
     void changeJavaScriptRecursionLevel(int step);
 
@@ -274,7 +279,12 @@ private:
     unsigned m_cachedSkipStackGeneration;
     OwnPtrWillBeMember<AsyncCallStackTracker> m_asyncCallStackTracker;
     OwnPtrWillBeMember<PromiseTracker> m_promiseTracker;
-    WillBeHeapHashSet<RefPtrWillBeMember<AsyncCallStackTracker::AsyncCallChain> > m_asyncOperationsForStepInto;
+
+    WillBeHeapHashSet<RefPtrWillBeMember<AsyncCallChain> > m_asyncOperationsForStepInto;
+    unsigned m_maxAsyncCallStackDepth;
+    RefPtrWillBeMember<AsyncCallChain> m_currentAsyncCallChain;
+    unsigned m_nestedAsyncCallCount;
+    bool m_performingAsyncStepIn;
 };
 
 } // namespace blink

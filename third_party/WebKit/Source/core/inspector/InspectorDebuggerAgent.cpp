@@ -34,6 +34,9 @@
 #include "bindings/core/v8/ScriptRegexp.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/V8RecursionScope.h"
+#include "core/dom/Microtask.h"
+#include "core/inspector/AsyncCallChain.h"
 #include "core/inspector/AsyncCallStackTracker.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ContentSearchUtils.h"
@@ -134,8 +137,12 @@ InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedSc
     , m_skipAllPauses(false)
     , m_skipContentScripts(false)
     , m_cachedSkipStackGeneration(0)
-    , m_asyncCallStackTracker(adoptPtrWillBeNoop(new AsyncCallStackTracker()))
+    , m_asyncCallStackTracker(adoptPtrWillBeNoop(new AsyncCallStackTracker(this)))
     , m_promiseTracker(PromiseTracker::create())
+    , m_maxAsyncCallStackDepth(0)
+    , m_currentAsyncCallChain(nullptr)
+    , m_nestedAsyncCallCount(0)
+    , m_performingAsyncStepIn(false)
 {
 }
 
@@ -151,7 +158,6 @@ void InspectorDebuggerAgent::init()
     // FIXME: make breakReason optional so that there was no need to init it with "other".
     clearBreakDetails();
     m_state->setLong(DebuggerAgentState::pauseOnExceptionsState, ScriptDebugServer::DontPauseOnExceptions);
-    asyncCallStackTracker().setScriptDebugServer(&scriptDebugServer());
 }
 
 void InspectorDebuggerAgent::enable()
@@ -232,7 +238,12 @@ void InspectorDebuggerAgent::increaseCachedSkipStackGeneration()
 
 void InspectorDebuggerAgent::internalSetAsyncCallStackDepth(int depth)
 {
-    asyncCallStackTracker().setAsyncCallStackDepth(depth);
+    if (depth <= 0) {
+        m_maxAsyncCallStackDepth = 0;
+        resetAsyncCallTracker();
+    } else {
+        m_maxAsyncCallStackDepth = depth;
+    }
     m_instrumentingAgents->setAsyncCallStackTracker(depth > 0 ? &asyncCallStackTracker() : nullptr);
 }
 
@@ -742,12 +753,12 @@ void InspectorDebuggerAgent::cancelPauseOnNextStatement()
 
 bool InspectorDebuggerAgent::v8AsyncTaskEventsEnabled() const
 {
-    return asyncCallStackTracker().isEnabled();
+    return trackingAsyncCalls();
 }
 
 void InspectorDebuggerAgent::didReceiveV8AsyncTaskEvent(ExecutionContext* context, const String& eventType, const String& eventName, int id)
 {
-    ASSERT(asyncCallStackTracker().isEnabled());
+    ASSERT(trackingAsyncCalls());
     if (eventType == v8AsyncTaskEventEnqueue)
         asyncCallStackTracker().didEnqueueV8AsyncTask(context, eventName, id, scriptDebugServer().currentCallFramesForAsyncStack());
     else if (eventType == v8AsyncTaskEventWillHandle)
@@ -844,13 +855,13 @@ void InspectorDebuggerAgent::stepIntoAsync(ErrorString* errorString)
 {
     if (!assertPaused(errorString))
         return;
-    if (!asyncCallStackTracker().isEnabled()) {
+    if (!trackingAsyncCalls()) {
         *errorString = "Can only perform operation if async call stacks are enabled.";
         return;
     }
     m_inAsyncOperationForStepInto = false;
     m_asyncOperationsForStepInto.clear();
-    asyncCallStackTracker().setListener(this);
+    m_performingAsyncStepIn = true;
     m_scheduledDebuggerStep = NoStep;
     m_steppingFromFramework = isTopCallFrameInFramework();
     m_injectedScriptManager->releaseObjectGroup(InspectorDebuggerAgent::backtraceObjectGroup);
@@ -902,11 +913,11 @@ void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString, const
     }
 
     Vector<ScriptValue> asyncCallStacks;
-    const AsyncCallStackTracker::AsyncCallChain* asyncChain = asyncCallStackTracker().isEnabled() ? asyncCallStackTracker().currentAsyncCallChain() : 0;
+    const AsyncCallChain* asyncChain = trackingAsyncCalls() ? currentAsyncCallChain() : 0;
     if (asyncChain) {
-        const AsyncCallStackTracker::AsyncCallStackVector& callStacks = asyncChain->callStacks();
+        const AsyncCallStackVector& callStacks = asyncChain->callStacks();
         asyncCallStacks.resize(callStacks.size());
-        AsyncCallStackTracker::AsyncCallStackVector::const_iterator it = callStacks.begin();
+        AsyncCallStackVector::const_iterator it = callStacks.begin();
         for (size_t i = 0; it != callStacks.end(); ++it, ++i)
             asyncCallStacks[i] = (*it)->callFrames();
     }
@@ -1044,7 +1055,7 @@ void InspectorDebuggerAgent::setAsyncCallStackDepth(ErrorString*, int depth)
 {
     m_state->setLong(DebuggerAgentState::asyncCallStackDepth, depth);
     internalSetAsyncCallStackDepth(depth);
-    if (!asyncCallStackTracker().isEnabled())
+    if (!trackingAsyncCalls())
         clearStepIntoAsync();
 }
 
@@ -1085,40 +1096,96 @@ void InspectorDebuggerAgent::getPromiseById(ErrorString* errorString, int promis
     promise = injectedScript.wrapObject(value, objectGroup ? *objectGroup : "");
 }
 
-void InspectorDebuggerAgent::didCreateAsyncCallChain(AsyncCallStackTracker::AsyncCallChain* chain)
+const AsyncCallChain* InspectorDebuggerAgent::currentAsyncCallChain() const
 {
+    if (m_currentAsyncCallChain)
+        m_currentAsyncCallChain->ensureMaxAsyncCallChainDepth(m_maxAsyncCallStackDepth);
+    return m_currentAsyncCallChain.get();
+}
+
+PassRefPtrWillBeRawPtr<AsyncCallChain> InspectorDebuggerAgent::createAsyncCallChain(const String& description, const ScriptValue& callFrames)
+{
+    if (callFrames.isEmpty()) {
+        ASSERT(m_currentAsyncCallChain);
+        didCreateAsyncCallChain(m_currentAsyncCallChain.get());
+        return m_currentAsyncCallChain; // Propogate async call stack chain.
+    }
+    RefPtrWillBeRawPtr<AsyncCallChain> chain = adoptRefWillBeNoop(m_currentAsyncCallChain ? new AsyncCallChain(*m_currentAsyncCallChain) : new AsyncCallChain());
+    chain->ensureMaxAsyncCallChainDepth(m_maxAsyncCallStackDepth - 1);
+    chain->m_callStacks.prepend(adoptRefWillBeNoop(new AsyncCallStack(description, callFrames)));
+    didCreateAsyncCallChain(chain.get());
+    return chain.release();
+}
+
+void InspectorDebuggerAgent::didCreateAsyncCallChain(AsyncCallChain* chain)
+{
+    if (!m_performingAsyncStepIn)
+        return;
     if (m_inAsyncOperationForStepInto || m_asyncOperationsForStepInto.isEmpty())
         m_asyncOperationsForStepInto.add(chain);
 }
 
-void InspectorDebuggerAgent::didClearCurrentAsyncCallChain()
+bool InspectorDebuggerAgent::validateCallFrames(const ScriptValue& callFrames)
 {
-    if (!m_inAsyncOperationForStepInto)
-        return;
-    m_inAsyncOperationForStepInto = false;
-    m_scheduledDebuggerStep = NoStep;
-    scriptDebugServer().setPauseOnNextStatement(false);
-    if (m_asyncOperationsForStepInto.isEmpty())
-        clearStepIntoAsync();
+    return !callFrames.isEmpty() || m_currentAsyncCallChain;
 }
 
-void InspectorDebuggerAgent::didSetCurrentAsyncCallChain(AsyncCallStackTracker::AsyncCallChain* chain)
+void InspectorDebuggerAgent::clearCurrentAsyncCallChain()
 {
-    ASSERT(chain);
-    if (!m_asyncOperationsForStepInto.contains(chain))
+    if (!m_nestedAsyncCallCount)
         return;
-    m_inAsyncOperationForStepInto = true;
-    m_scheduledDebuggerStep = StepInto;
-    m_skippedStepFrameCount = 0;
-    m_recursionLevelForStepFrame = 0;
-    scriptDebugServer().setPauseOnNextStatement(true);
+    ASSERT(m_currentAsyncCallChain);
+    --m_nestedAsyncCallCount;
+    if (!m_nestedAsyncCallCount) {
+        m_currentAsyncCallChain.clear();
+        if (!m_performingAsyncStepIn)
+            return;
+        if (!m_inAsyncOperationForStepInto)
+            return;
+        m_inAsyncOperationForStepInto = false;
+        m_scheduledDebuggerStep = NoStep;
+        scriptDebugServer().setPauseOnNextStatement(false);
+        if (m_asyncOperationsForStepInto.isEmpty())
+            clearStepIntoAsync();
+    }
 }
 
-void InspectorDebuggerAgent::didRemoveAsyncCallChain(AsyncCallStackTracker::AsyncCallChain* chain)
+void InspectorDebuggerAgent::setCurrentAsyncCallChain(v8::Isolate* isolate, PassRefPtrWillBeRawPtr<AsyncCallChain> chain)
 {
+    int recursionLevel = V8RecursionScope::recursionLevel(isolate);
+    if (chain && (!recursionLevel || (recursionLevel == 1 && Microtask::performingCheckpoint(isolate)))) {
+        // Current AsyncCallChain corresponds to the bottommost JS call frame.
+        m_currentAsyncCallChain = chain;
+        m_nestedAsyncCallCount = 1;
+        if (!m_performingAsyncStepIn)
+            return;
+        if (!m_asyncOperationsForStepInto.contains(m_currentAsyncCallChain.get()))
+            return;
+        m_inAsyncOperationForStepInto = true;
+        m_scheduledDebuggerStep = StepInto;
+        m_skippedStepFrameCount = 0;
+        m_recursionLevelForStepFrame = 0;
+        scriptDebugServer().setPauseOnNextStatement(true);
+    } else {
+        if (m_currentAsyncCallChain)
+            ++m_nestedAsyncCallCount;
+    }
+}
+
+void InspectorDebuggerAgent::didCompleteAsyncOperation(AsyncCallChain* chain)
+{
+    if (!m_performingAsyncStepIn)
+        return;
     m_asyncOperationsForStepInto.remove(chain);
     if (!m_inAsyncOperationForStepInto && m_asyncOperationsForStepInto.isEmpty())
         clearStepIntoAsync();
+}
+
+void InspectorDebuggerAgent::resetAsyncCallTracker()
+{
+    m_currentAsyncCallChain.clear();
+    m_nestedAsyncCallCount = 0;
+    asyncCallStackTracker().reset();
 }
 
 void InspectorDebuggerAgent::scriptExecutionBlockedByCSP(const String& directiveText)
@@ -1205,17 +1272,17 @@ PassRefPtr<Array<CallFrame> > InspectorDebuggerAgent::currentCallFrames()
 
 PassRefPtr<StackTrace> InspectorDebuggerAgent::currentAsyncStackTrace()
 {
-    if (!m_pausedScriptState || !asyncCallStackTracker().isEnabled())
+    if (!m_pausedScriptState || !trackingAsyncCalls())
         return nullptr;
-    const AsyncCallStackTracker::AsyncCallChain* chain = asyncCallStackTracker().currentAsyncCallChain();
+    const AsyncCallChain* chain = currentAsyncCallChain();
     if (!chain)
         return nullptr;
-    const AsyncCallStackTracker::AsyncCallStackVector& callStacks = chain->callStacks();
+    const AsyncCallStackVector& callStacks = chain->callStacks();
     if (callStacks.isEmpty())
         return nullptr;
     RefPtr<StackTrace> result;
     int asyncOrdinal = callStacks.size();
-    for (AsyncCallStackTracker::AsyncCallStackVector::const_reverse_iterator it = callStacks.rbegin(); it != callStacks.rend(); ++it, --asyncOrdinal) {
+    for (AsyncCallStackVector::const_reverse_iterator it = callStacks.rbegin(); it != callStacks.rend(); ++it, --asyncOrdinal) {
         ScriptValue callFrames = (*it)->callFrames();
         ScriptState* scriptState = callFrames.scriptState();
         InjectedScript injectedScript = scriptState ? m_injectedScriptManager->injectedScriptFor(scriptState) : InjectedScript();
@@ -1251,16 +1318,16 @@ static PassRefPtrWillBeRawPtr<ScriptCallStack> toScriptCallStack(JavaScriptCallF
 
 PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> InspectorDebuggerAgent::currentAsyncStackTraceForConsole()
 {
-    if (!asyncCallStackTracker().isEnabled())
+    if (!trackingAsyncCalls())
         return nullptr;
-    const AsyncCallStackTracker::AsyncCallChain* chain = asyncCallStackTracker().currentAsyncCallChain();
+    const AsyncCallChain* chain = currentAsyncCallChain();
     if (!chain)
         return nullptr;
-    const AsyncCallStackTracker::AsyncCallStackVector& callStacks = chain->callStacks();
+    const AsyncCallStackVector& callStacks = chain->callStacks();
     if (callStacks.isEmpty())
         return nullptr;
     RefPtrWillBeRawPtr<ScriptAsyncCallStack> result = nullptr;
-    for (AsyncCallStackTracker::AsyncCallStackVector::const_reverse_iterator it = callStacks.rbegin(); it != callStacks.rend(); ++it) {
+    for (AsyncCallStackVector::const_reverse_iterator it = callStacks.rbegin(); it != callStacks.rend(); ++it) {
         RefPtrWillBeRawPtr<JavaScriptCallFrame> callFrame = ScriptDebugServer::toJavaScriptCallFrameUnsafe((*it)->callFrames());
         if (!callFrame)
             break;
@@ -1451,7 +1518,7 @@ void InspectorDebuggerAgent::clear()
 
 void InspectorDebuggerAgent::clearStepIntoAsync()
 {
-    asyncCallStackTracker().setListener(nullptr);
+    m_performingAsyncStepIn = false;
     m_asyncOperationsForStepInto.clear();
     m_inAsyncOperationForStepInto = false;
 }
@@ -1488,7 +1555,7 @@ void InspectorDebuggerAgent::reset()
     m_scheduledDebuggerStep = NoStep;
     m_scripts.clear();
     m_breakpointIdToDebugServerBreakpointIds.clear();
-    asyncCallStackTracker().clear();
+    resetAsyncCallTracker();
     promiseTracker().clear();
     if (m_frontend)
         m_frontend->globalObjectCleared();

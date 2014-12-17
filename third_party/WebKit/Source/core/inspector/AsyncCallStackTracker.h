@@ -31,16 +31,14 @@
 #ifndef AsyncCallStackTracker_h
 #define AsyncCallStackTracker_h
 
-#include "bindings/core/v8/ScriptValue.h"
-#include "wtf/Deque.h"
+#include "platform/heap/Handle.h"
+#include "wtf/Forward.h"
 #include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 
+class AsyncCallChain;
 class Event;
 class EventListener;
 class EventTarget;
@@ -48,9 +46,10 @@ class ExecutionContext;
 class ExecutionContextTask;
 class FormData;
 class HTTPHeaderMap;
+class InspectorDebuggerAgent;
 class KURL;
 class MutationObserver;
-class ScriptDebugServer;
+class ScriptValue;
 class ThreadableLoaderClient;
 class XMLHttpRequest;
 
@@ -58,37 +57,7 @@ class AsyncCallStackTracker final : public NoBaseWillBeGarbageCollected<AsyncCal
     WTF_MAKE_NONCOPYABLE(AsyncCallStackTracker);
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(AsyncCallStackTracker);
 public:
-    class AsyncCallStack final : public RefCountedWillBeGarbageCollectedFinalized<AsyncCallStack> {
-    public:
-        AsyncCallStack(const String&, const ScriptValue&);
-        ~AsyncCallStack();
-        void trace(Visitor*) { }
-        String description() const { return m_description; }
-        ScriptValue callFrames() const { return m_callFrames; }
-    private:
-        String m_description;
-        ScriptValue m_callFrames;
-    };
-
-    using AsyncCallStackVector = WillBeHeapDeque<RefPtrWillBeMember<AsyncCallStack>, 4>;
-
-    class AsyncCallChain final : public RefCountedWillBeGarbageCollectedFinalized<AsyncCallChain> {
-    public:
-        AsyncCallChain() { }
-        explicit AsyncCallChain(const AsyncCallChain& t) : m_callStacks(t.m_callStacks) { }
-        AsyncCallStackVector callStacks() const { return m_callStacks; }
-        void trace(Visitor*);
-    private:
-        friend class AsyncCallStackTracker;
-        AsyncCallStackVector m_callStacks;
-    };
-
-    AsyncCallStackTracker();
-
-    bool isEnabled() const { return m_maxAsyncCallStackDepth; }
-    void setAsyncCallStackDepth(int);
-    const AsyncCallChain* currentAsyncCallChain() const;
-    void setScriptDebugServer(ScriptDebugServer* server) { m_scriptDebugServer = server; }
+    explicit AsyncCallStackTracker(InspectorDebuggerAgent*);
 
     void didInstallTimer(ExecutionContext*, int timerId, int timeout, bool singleShot);
     void didRemoveTimer(ExecutionContext*, int timerId);
@@ -128,17 +97,7 @@ public:
     void traceAsyncCallbackCompleted() { didFireAsyncCall(); };
 
     void didFireAsyncCall();
-    void clear();
-
-    class Listener : public WillBeGarbageCollectedMixin {
-    public:
-        virtual ~Listener() { }
-        virtual void didCreateAsyncCallChain(AsyncCallChain*) = 0;
-        virtual void didSetCurrentAsyncCallChain(AsyncCallChain*) = 0;
-        virtual void didClearCurrentAsyncCallChain() = 0;
-        virtual void didRemoveAsyncCallChain(AsyncCallChain*) = 0;
-    };
-    void setListener(Listener* listener) { m_listener = listener; }
+    void reset();
 
     void trace(Visitor*);
 
@@ -148,23 +107,14 @@ private:
     template <class K> class AsyncCallChainMap;
     void willHandleXHREvent(XMLHttpRequest*, Event*);
 
-    PassRefPtrWillBeRawPtr<AsyncCallChain> createAsyncCallChain(const String& description, const ScriptValue& callFrames);
     void setCurrentAsyncCallChain(ExecutionContext*, PassRefPtrWillBeRawPtr<AsyncCallChain>);
-    void clearCurrentAsyncCallChain();
-    static void ensureMaxAsyncCallChainDepth(AsyncCallChain*, unsigned);
     bool validateCallFrames(const ScriptValue& callFrames);
 
     ExecutionContextData* createContextDataIfNeeded(ExecutionContext*);
 
-    unsigned m_maxAsyncCallStackDepth;
-    RefPtrWillBeMember<AsyncCallChain> m_currentAsyncCallChain;
-    unsigned m_nestedAsyncCallCount;
-
     using ExecutionContextDataMap = WillBeHeapHashMap<RawPtrWillBeMember<ExecutionContext>, OwnPtrWillBeMember<ExecutionContextData>>;
     ExecutionContextDataMap m_executionContextDataMap;
-
-    Listener* m_listener;
-    ScriptDebugServer* m_scriptDebugServer;
+    InspectorDebuggerAgent* m_debuggerAgent;
 };
 
 } // namespace blink

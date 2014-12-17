@@ -1195,6 +1195,8 @@
             'frame/csp/SourceListDirective.cpp',
             'imagebitmap/ImageBitmapFactories.cpp',
             'imagebitmap/ImageBitmapFactories.h',
+            'inspector/AsyncCallChain.cpp',
+            'inspector/AsyncCallChain.h',
             'inspector/AsyncCallStackTracker.cpp',
             'inspector/AsyncCallStackTracker.h',
             'inspector/BindingVisitors.h',

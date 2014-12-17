@@ -32,6 +32,7 @@
 #include "core/inspector/AsyncCallStackTracker.h"
 
 #include "bindings/core/v8/ScriptDebugServer.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8RecursionScope.h"
 #include "core/dom/ContextLifecycleObserver.h"
@@ -40,6 +41,8 @@
 #include "core/dom/Microtask.h"
 #include "core/events/Event.h"
 #include "core/events/EventTarget.h"
+#include "core/inspector/AsyncCallChain.h"
+#include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
 #include "core/xmlhttprequest/XMLHttpRequestUpload.h"
 #include "wtf/text/StringBuilder.h"
@@ -62,7 +65,7 @@ template <class K>
 class AsyncCallStackTracker::AsyncCallChainMap final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
-    using MapType = WillBeHeapHashMap<K, RefPtrWillBeMember<AsyncCallStackTracker::AsyncCallChain>>;
+    using MapType = WillBeHeapHashMap<K, RefPtrWillBeMember<AsyncCallChain>>;
     explicit AsyncCallChainMap(AsyncCallStackTracker* tracker)
         : m_tracker(tracker)
     {
@@ -83,12 +86,8 @@ public:
     void clear()
     {
         ASSERT(m_tracker);
-        for (auto it : m_asyncCallChains) {
-            if (AsyncCallStackTracker::Listener* listener = m_tracker->m_listener)
-                listener->didRemoveAsyncCallChain(it.value.get());
-            else
-                break;
-        }
+        for (auto it : m_asyncCallChains)
+            m_tracker->m_debuggerAgent->didCompleteAsyncOperation(it.value.get());
         m_asyncCallChains.clear();
     }
 
@@ -110,9 +109,9 @@ public:
     void remove(typename MapType::KeyPeekInType key)
     {
         ASSERT(m_tracker);
-        RefPtrWillBeRawPtr<AsyncCallStackTracker::AsyncCallChain> chain = m_asyncCallChains.take(key);
-        if (chain && m_tracker->m_listener)
-            m_tracker->m_listener->didRemoveAsyncCallChain(chain.get());
+        RefPtr<AsyncCallChain> chain = m_asyncCallChains.take(key);
+        if (chain)
+            m_tracker->m_debuggerAgent->didCompleteAsyncOperation(chain.get());
     }
 
     void trace(Visitor* visitor)
@@ -215,59 +214,23 @@ static XMLHttpRequest* toXmlHttpRequest(EventTarget* eventTarget)
     return 0;
 }
 
-void AsyncCallStackTracker::AsyncCallChain::trace(Visitor* visitor)
-{
-    visitor->trace(m_callStacks);
-}
-
-AsyncCallStackTracker::AsyncCallStack::AsyncCallStack(const String& description, const ScriptValue& callFrames)
-    : m_description(description)
-    , m_callFrames(callFrames)
-{
-}
-
-AsyncCallStackTracker::AsyncCallStack::~AsyncCallStack()
-{
-}
-
-AsyncCallStackTracker::AsyncCallStackTracker()
-    : m_maxAsyncCallStackDepth(0)
-    , m_nestedAsyncCallCount(0)
-    , m_listener(0)
-    , m_scriptDebugServer(nullptr)
+AsyncCallStackTracker::AsyncCallStackTracker(InspectorDebuggerAgent* debuggerAgent)
+    : m_debuggerAgent(debuggerAgent)
 {
 }
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(AsyncCallStackTracker);
 
-void AsyncCallStackTracker::setAsyncCallStackDepth(int depth)
-{
-    if (depth <= 0) {
-        m_maxAsyncCallStackDepth = 0;
-        clear();
-    } else {
-        m_maxAsyncCallStackDepth = depth;
-    }
-}
-
-const AsyncCallStackTracker::AsyncCallChain* AsyncCallStackTracker::currentAsyncCallChain() const
-{
-    if (m_currentAsyncCallChain)
-        ensureMaxAsyncCallChainDepth(m_currentAsyncCallChain.get(), m_maxAsyncCallStackDepth);
-    return m_currentAsyncCallChain.get();
-}
-
 void AsyncCallStackTracker::didInstallTimer(ExecutionContext* context, int timerId, int timeout, bool singleShot)
 {
     ASSERT(context);
-    ASSERT(isEnabled());
-    ASSERT(m_scriptDebugServer);
-    ScriptValue callFrames = m_scriptDebugServer->currentCallFramesForAsyncStack();
+    ASSERT(m_debuggerAgent->trackingAsyncCalls());
+    ScriptValue callFrames = m_debuggerAgent->scriptDebugServer().currentCallFramesForAsyncStack();
     if (!validateCallFrames(callFrames))
         return;
     ASSERT(timerId > 0);
     ExecutionContextData* data = createContextDataIfNeeded(context);
-    data->m_timerCallChains.set(timerId, createAsyncCallChain(singleShot ? setTimeoutName : setIntervalName, callFrames));
+    data->m_timerCallChains.set(timerId, m_debuggerAgent->createAsyncCallChain(singleShot ? setTimeoutName : setIntervalName, callFrames));
     if (!singleShot)
         data->m_intervalTimerIds.add(timerId);
 }
@@ -275,7 +238,7 @@ void AsyncCallStackTracker::didInstallTimer(ExecutionContext* context, int timer
 void AsyncCallStackTracker::didRemoveTimer(ExecutionContext* context, int timerId)
 {
     ASSERT(context);
-    ASSERT(isEnabled());
+    ASSERT(m_debuggerAgent->trackingAsyncCalls());
     if (timerId <= 0)
         return;
     ExecutionContextData* data = m_executionContextDataMap.get(context);
@@ -288,9 +251,9 @@ void AsyncCallStackTracker::didRemoveTimer(ExecutionContext* context, int timerI
 bool AsyncCallStackTracker::willFireTimer(ExecutionContext* context, int timerId)
 {
     ASSERT(context);
-    ASSERT(isEnabled());
+    ASSERT(m_debuggerAgent->trackingAsyncCalls());
     ASSERT(timerId > 0);
-    ASSERT(!m_currentAsyncCallChain);
+    ASSERT(!m_debuggerAgent->currentAsyncCallChain());
     if (ExecutionContextData* data = m_executionContextDataMap.get(context)) {
         setCurrentAsyncCallChain(context, data->m_timerCallChains.get(timerId));
         if (!data->m_intervalTimerIds.contains(timerId))
@@ -304,20 +267,19 @@ bool AsyncCallStackTracker::willFireTimer(ExecutionContext* context, int timerId
 void AsyncCallStackTracker::didRequestAnimationFrame(ExecutionContext* context, int callbackId)
 {
     ASSERT(context);
-    ASSERT(isEnabled());
-    ASSERT(m_scriptDebugServer);
-    ScriptValue callFrames = m_scriptDebugServer->currentCallFramesForAsyncStack();
+    ASSERT(m_debuggerAgent->trackingAsyncCalls());
+    ScriptValue callFrames = m_debuggerAgent->scriptDebugServer().currentCallFramesForAsyncStack();
     if (!validateCallFrames(callFrames))
         return;
     ASSERT(callbackId > 0);
     ExecutionContextData* data = createContextDataIfNeeded(context);
-    data->m_animationFrameCallChains.set(callbackId, createAsyncCallChain(requestAnimationFrameName, callFrames));
+    data->m_animationFrameCallChains.set(callbackId, m_debuggerAgent->createAsyncCallChain(requestAnimationFrameName, callFrames));
 }
 
 void AsyncCallStackTracker::didCancelAnimationFrame(ExecutionContext* context, int callbackId)
 {
     ASSERT(context);
-    ASSERT(isEnabled());
+    ASSERT(m_debuggerAgent->trackingAsyncCalls());
     if (callbackId <= 0)
         return;
     if (ExecutionContextData* data = m_executionContextDataMap.get(context))
@@ -327,9 +289,9 @@ void AsyncCallStackTracker::didCancelAnimationFrame(ExecutionContext* context, i
 bool AsyncCallStackTracker::willFireAnimationFrame(ExecutionContext* context, int callbackId)
 {
     ASSERT(context);
-    ASSERT(isEnabled());
+    ASSERT(m_debuggerAgent->trackingAsyncCalls());
     ASSERT(callbackId > 0);
-    ASSERT(!m_currentAsyncCallChain);
+    ASSERT(!m_debuggerAgent->currentAsyncCallChain());
     if (ExecutionContextData* data = m_executionContextDataMap.get(context)) {
         setCurrentAsyncCallChain(context, data->m_animationFrameCallChains.get(callbackId));
         data->m_animationFrameCallChains.remove(callbackId);
@@ -342,19 +304,18 @@ bool AsyncCallStackTracker::willFireAnimationFrame(ExecutionContext* context, in
 void AsyncCallStackTracker::didEnqueueEvent(EventTarget* eventTarget, Event* event)
 {
     ASSERT(eventTarget->executionContext());
-    ASSERT(isEnabled());
-    ASSERT(m_scriptDebugServer);
-    ScriptValue callFrames = m_scriptDebugServer->currentCallFramesForAsyncStack();
+    ASSERT(m_debuggerAgent->trackingAsyncCalls());
+    ScriptValue callFrames = m_debuggerAgent->scriptDebugServer().currentCallFramesForAsyncStack();
     if (!validateCallFrames(callFrames))
         return;
     ExecutionContextData* data = createContextDataIfNeeded(eventTarget->executionContext());
-    data->m_eventCallChains.set(event, createAsyncCallChain(event->type(), callFrames));
+    data->m_eventCallChains.set(event, m_debuggerAgent->createAsyncCallChain(event->type(), callFrames));
 }
 
 void AsyncCallStackTracker::didRemoveEvent(EventTarget* eventTarget, Event* event)
 {
     ASSERT(eventTarget->executionContext());
-    ASSERT(isEnabled());
+    ASSERT(m_debuggerAgent->trackingAsyncCalls());
     if (ExecutionContextData* data = m_executionContextDataMap.get(eventTarget->executionContext()))
         data->m_eventCallChains.remove(event);
 }
@@ -362,7 +323,7 @@ void AsyncCallStackTracker::didRemoveEvent(EventTarget* eventTarget, Event* even
 void AsyncCallStackTracker::willHandleEvent(EventTarget* eventTarget, Event* event, EventListener* listener, bool useCapture)
 {
     ASSERT(eventTarget->executionContext());
-    ASSERT(isEnabled());
+    ASSERT(m_debuggerAgent->trackingAsyncCalls());
     if (XMLHttpRequest* xhr = toXmlHttpRequest(eventTarget)) {
         willHandleXHREvent(xhr, event);
     } else {
@@ -377,21 +338,20 @@ void AsyncCallStackTracker::willHandleEvent(EventTarget* eventTarget, Event* eve
 void AsyncCallStackTracker::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderClient*, const AtomicString&, const KURL&, bool async, PassRefPtr<FormData>, const HTTPHeaderMap&, bool)
 {
     ASSERT(xhr->executionContext());
-    ASSERT(isEnabled());
+    ASSERT(m_debuggerAgent->trackingAsyncCalls());
     if (!async)
         return;
-    ASSERT(m_scriptDebugServer);
-    ScriptValue callFrames = m_scriptDebugServer->currentCallFramesForAsyncStack();
+    ScriptValue callFrames = m_debuggerAgent->scriptDebugServer().currentCallFramesForAsyncStack();
     if (!validateCallFrames(callFrames))
         return;
     ExecutionContextData* data = createContextDataIfNeeded(xhr->executionContext());
-    data->m_xhrCallChains.set(xhr, createAsyncCallChain(xhrSendName, callFrames));
+    data->m_xhrCallChains.set(xhr, m_debuggerAgent->createAsyncCallChain(xhrSendName, callFrames));
 }
 
 void AsyncCallStackTracker::didDispatchXHRLoadendEvent(XMLHttpRequest* xhr)
 {
     ASSERT(xhr->executionContext());
-    ASSERT(isEnabled());
+    ASSERT(m_debuggerAgent->trackingAsyncCalls());
     if (ExecutionContextData* data = m_executionContextDataMap.get(xhr->executionContext()))
         data->m_xhrCallChains.remove(xhr);
 }
@@ -400,7 +360,7 @@ void AsyncCallStackTracker::willHandleXHREvent(XMLHttpRequest* xhr, Event* event
 {
     ExecutionContext* context = xhr->executionContext();
     ASSERT(context);
-    ASSERT(isEnabled());
+    ASSERT(m_debuggerAgent->trackingAsyncCalls());
     if (ExecutionContextData* data = m_executionContextDataMap.get(context))
         setCurrentAsyncCallChain(context, data->m_xhrCallChains.get(xhr));
     else
@@ -410,21 +370,20 @@ void AsyncCallStackTracker::willHandleXHREvent(XMLHttpRequest* xhr, Event* event
 void AsyncCallStackTracker::didEnqueueMutationRecord(ExecutionContext* context, MutationObserver* observer)
 {
     ASSERT(context);
-    ASSERT(isEnabled());
+    ASSERT(m_debuggerAgent->trackingAsyncCalls());
     ExecutionContextData* data = createContextDataIfNeeded(context);
     if (data->m_mutationObserverCallChains.contains(observer))
         return;
-    ASSERT(m_scriptDebugServer);
-    ScriptValue callFrames = m_scriptDebugServer->currentCallFramesForAsyncStack();
+    ScriptValue callFrames = m_debuggerAgent->scriptDebugServer().currentCallFramesForAsyncStack();
     if (!validateCallFrames(callFrames))
         return;
-    data->m_mutationObserverCallChains.set(observer, createAsyncCallChain(enqueueMutationRecordName, callFrames));
+    data->m_mutationObserverCallChains.set(observer, m_debuggerAgent->createAsyncCallChain(enqueueMutationRecordName, callFrames));
 }
 
 void AsyncCallStackTracker::didClearAllMutationRecords(ExecutionContext* context, MutationObserver* observer)
 {
     ASSERT(context);
-    ASSERT(isEnabled());
+    ASSERT(m_debuggerAgent->trackingAsyncCalls());
     if (ExecutionContextData* data = m_executionContextDataMap.get(context))
         data->m_mutationObserverCallChains.remove(observer);
 }
@@ -432,7 +391,7 @@ void AsyncCallStackTracker::didClearAllMutationRecords(ExecutionContext* context
 void AsyncCallStackTracker::willDeliverMutationRecords(ExecutionContext* context, MutationObserver* observer)
 {
     ASSERT(context);
-    ASSERT(isEnabled());
+    ASSERT(m_debuggerAgent->trackingAsyncCalls());
     if (ExecutionContextData* data = m_executionContextDataMap.get(context)) {
         setCurrentAsyncCallChain(context, data->m_mutationObserverCallChains.get(observer));
         data->m_mutationObserverCallChains.remove(observer);
@@ -444,21 +403,20 @@ void AsyncCallStackTracker::willDeliverMutationRecords(ExecutionContext* context
 void AsyncCallStackTracker::didPostExecutionContextTask(ExecutionContext* context, ExecutionContextTask* task)
 {
     ASSERT(context);
-    ASSERT(isEnabled());
+    ASSERT(m_debuggerAgent->trackingAsyncCalls());
     if (task->taskNameForInstrumentation().isEmpty())
         return;
-    ASSERT(m_scriptDebugServer);
-    ScriptValue callFrames = m_scriptDebugServer->currentCallFramesForAsyncStack();
+    ScriptValue callFrames = m_debuggerAgent->scriptDebugServer().currentCallFramesForAsyncStack();
     if (!validateCallFrames(callFrames))
         return;
     ExecutionContextData* data = createContextDataIfNeeded(context);
-    data->m_executionContextTaskCallChains.set(task, createAsyncCallChain(task->taskNameForInstrumentation(), callFrames));
+    data->m_executionContextTaskCallChains.set(task, m_debuggerAgent->createAsyncCallChain(task->taskNameForInstrumentation(), callFrames));
 }
 
 void AsyncCallStackTracker::didKillAllExecutionContextTasks(ExecutionContext* context)
 {
     ASSERT(context);
-    ASSERT(isEnabled());
+    ASSERT(m_debuggerAgent->trackingAsyncCalls());
     if (ExecutionContextData* data = m_executionContextDataMap.get(context))
         data->m_executionContextTaskCallChains.clear();
 }
@@ -466,7 +424,7 @@ void AsyncCallStackTracker::didKillAllExecutionContextTasks(ExecutionContext* co
 void AsyncCallStackTracker::willPerformExecutionContextTask(ExecutionContext* context, ExecutionContextTask* task)
 {
     ASSERT(context);
-    ASSERT(isEnabled());
+    ASSERT(m_debuggerAgent->trackingAsyncCalls());
     if (ExecutionContextData* data = m_executionContextDataMap.get(context)) {
         setCurrentAsyncCallChain(context, data->m_executionContextTaskCallChains.get(task));
         data->m_executionContextTaskCallChains.remove(task);
@@ -486,17 +444,17 @@ static String makeV8AsyncTaskUniqueId(const String& eventName, int id)
 void AsyncCallStackTracker::didEnqueueV8AsyncTask(ExecutionContext* context, const String& eventName, int id, const ScriptValue& callFrames)
 {
     ASSERT(context);
-    ASSERT(isEnabled());
+    ASSERT(m_debuggerAgent->trackingAsyncCalls());
     if (!validateCallFrames(callFrames))
         return;
     ExecutionContextData* data = createContextDataIfNeeded(context);
-    data->m_v8AsyncTaskCallChains.set(makeV8AsyncTaskUniqueId(eventName, id), createAsyncCallChain(eventName, callFrames));
+    data->m_v8AsyncTaskCallChains.set(makeV8AsyncTaskUniqueId(eventName, id), m_debuggerAgent->createAsyncCallChain(eventName, callFrames));
 }
 
 void AsyncCallStackTracker::willHandleV8AsyncTask(ExecutionContext* context, const String& eventName, int id)
 {
     ASSERT(context);
-    ASSERT(isEnabled());
+    ASSERT(m_debuggerAgent->trackingAsyncCalls());
     if (ExecutionContextData* data = m_executionContextDataMap.get(context)) {
         String taskId = makeV8AsyncTaskUniqueId(eventName, id);
         setCurrentAsyncCallChain(context, data->m_v8AsyncTaskCallChains.get(taskId));
@@ -509,15 +467,14 @@ void AsyncCallStackTracker::willHandleV8AsyncTask(ExecutionContext* context, con
 int AsyncCallStackTracker::traceAsyncOperationStarting(ExecutionContext* context, const String& operationName, int prevOperationId)
 {
     ASSERT(context);
-    ASSERT(isEnabled());
+    ASSERT(m_debuggerAgent->trackingAsyncCalls());
     if (prevOperationId)
         traceAsyncOperationCompleted(context, prevOperationId);
-    ASSERT(m_scriptDebugServer);
-    ScriptValue callFrames = m_scriptDebugServer->currentCallFramesForAsyncStack();
+    ScriptValue callFrames = m_debuggerAgent->scriptDebugServer().currentCallFramesForAsyncStack();
     if (!validateCallFrames(callFrames))
         return 0;
     ExecutionContextData* data = createContextDataIfNeeded(context);
-    RefPtrWillBeRawPtr<AsyncCallChain> chain = createAsyncCallChain(operationName, callFrames);
+    RefPtrWillBeRawPtr<AsyncCallChain> chain = m_debuggerAgent->createAsyncCallChain(operationName, callFrames);
     int id = data->nextAsyncOperationUniqueId();
     data->m_asyncOperationCallChains.set(id, chain.release());
     return id;
@@ -526,7 +483,7 @@ int AsyncCallStackTracker::traceAsyncOperationStarting(ExecutionContext* context
 void AsyncCallStackTracker::traceAsyncOperationCompleted(ExecutionContext* context, int operationId)
 {
     ASSERT(context);
-    ASSERT(isEnabled());
+    ASSERT(m_debuggerAgent->trackingAsyncCalls());
     if (operationId <= 0)
         return;
     if (ExecutionContextData* data = m_executionContextDataMap.get(context))
@@ -542,7 +499,7 @@ void AsyncCallStackTracker::traceAsyncOperationCompletedCallbackStarting(Executi
 void AsyncCallStackTracker::traceAsyncCallbackStarting(ExecutionContext* context, int operationId)
 {
     ASSERT(context);
-    ASSERT(isEnabled());
+    ASSERT(m_debuggerAgent->trackingAsyncCalls());
     if (ExecutionContextData* data = m_executionContextDataMap.get(context))
         setCurrentAsyncCallChain(context, operationId > 0 ? data->m_asyncOperationCallChains.get(operationId) : nullptr);
     else
@@ -551,63 +508,17 @@ void AsyncCallStackTracker::traceAsyncCallbackStarting(ExecutionContext* context
 
 void AsyncCallStackTracker::didFireAsyncCall()
 {
-    clearCurrentAsyncCallChain();
-}
-
-PassRefPtrWillBeRawPtr<AsyncCallStackTracker::AsyncCallChain> AsyncCallStackTracker::createAsyncCallChain(const String& description, const ScriptValue& callFrames)
-{
-    if (callFrames.isEmpty()) {
-        ASSERT(m_currentAsyncCallChain);
-        if (m_listener)
-            m_listener->didCreateAsyncCallChain(m_currentAsyncCallChain.get());
-        return m_currentAsyncCallChain; // Propogate async call stack chain.
-    }
-    RefPtrWillBeRawPtr<AsyncCallChain> chain = adoptRefWillBeNoop(m_currentAsyncCallChain ? new AsyncCallStackTracker::AsyncCallChain(*m_currentAsyncCallChain) : new AsyncCallStackTracker::AsyncCallChain());
-    ensureMaxAsyncCallChainDepth(chain.get(), m_maxAsyncCallStackDepth - 1);
-    chain->m_callStacks.prepend(adoptRefWillBeNoop(new AsyncCallStackTracker::AsyncCallStack(description, callFrames)));
-    if (m_listener)
-        m_listener->didCreateAsyncCallChain(chain.get());
-    return chain.release();
+    m_debuggerAgent->clearCurrentAsyncCallChain();
 }
 
 void AsyncCallStackTracker::setCurrentAsyncCallChain(ExecutionContext* context, PassRefPtrWillBeRawPtr<AsyncCallChain> chain)
 {
-    v8::Isolate* isolate = toIsolate(context);
-    int recursionLevel = V8RecursionScope::recursionLevel(isolate);
-    if (chain && (!recursionLevel || (recursionLevel == 1 && Microtask::performingCheckpoint(isolate)))) {
-        // Current AsyncCallChain corresponds to the bottommost JS call frame.
-        m_currentAsyncCallChain = chain;
-        m_nestedAsyncCallCount = 1;
-        if (m_listener)
-            m_listener->didSetCurrentAsyncCallChain(m_currentAsyncCallChain.get());
-    } else {
-        if (m_currentAsyncCallChain)
-            ++m_nestedAsyncCallCount;
-    }
-}
-
-void AsyncCallStackTracker::clearCurrentAsyncCallChain()
-{
-    if (!m_nestedAsyncCallCount)
-        return;
-    ASSERT(m_currentAsyncCallChain);
-    --m_nestedAsyncCallCount;
-    if (!m_nestedAsyncCallCount) {
-        m_currentAsyncCallChain.clear();
-        if (m_listener)
-            m_listener->didClearCurrentAsyncCallChain();
-    }
-}
-
-void AsyncCallStackTracker::ensureMaxAsyncCallChainDepth(AsyncCallChain* chain, unsigned maxDepth)
-{
-    while (chain->m_callStacks.size() > maxDepth)
-        chain->m_callStacks.removeLast();
+    m_debuggerAgent->setCurrentAsyncCallChain(toIsolate(context), chain);
 }
 
 bool AsyncCallStackTracker::validateCallFrames(const ScriptValue& callFrames)
 {
-    return !callFrames.isEmpty() || m_currentAsyncCallChain;
+    return m_debuggerAgent->validateCallFrames(callFrames);
 }
 
 AsyncCallStackTracker::ExecutionContextData* AsyncCallStackTracker::createContextDataIfNeeded(ExecutionContext* context)
@@ -620,10 +531,8 @@ AsyncCallStackTracker::ExecutionContextData* AsyncCallStackTracker::createContex
     return data;
 }
 
-void AsyncCallStackTracker::clear()
+void AsyncCallStackTracker::reset()
 {
-    m_currentAsyncCallChain.clear();
-    m_nestedAsyncCallCount = 0;
     for (auto& it : m_executionContextDataMap)
         it.value->dispose();
     m_executionContextDataMap.clear();
@@ -631,7 +540,6 @@ void AsyncCallStackTracker::clear()
 
 void AsyncCallStackTracker::trace(Visitor* visitor)
 {
-    visitor->trace(m_currentAsyncCallChain);
 #if ENABLE(OILPAN)
     visitor->trace(m_executionContextDataMap);
 #endif
