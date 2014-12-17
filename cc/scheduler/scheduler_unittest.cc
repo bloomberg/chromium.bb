@@ -168,18 +168,19 @@ class FakeSchedulerClient : public SchedulerClient {
   void AdvanceFrame() {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.frames"),
                  "FakeSchedulerClient::AdvanceFrame");
-    bool previous_deadline_pending =
-        scheduler_->BeginImplFrameDeadlinePending();
+    // Consume any previous deadline first, if no deadline is currently
+    // pending, ImplFrameDeadlinePending will return false straight away and we
+    // will run no tasks.
+    task_runner().RunTasksWhile(ImplFrameDeadlinePending(true));
+    EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+
+    // Send the next BeginFrame message if using an external source, otherwise
+    // it will be already in the task queue.
     if (ExternalBeginFrame()) {
       SendNextBeginFrame();
-      // This could be the previous deadline or a new one.
       EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
     }
-    // Consume previous deadline first. It is important that we check for the
-    // existence of a previous deadline so that we do not consume the new one.
-    if (previous_deadline_pending) {
-      EXPECT_TRUE(task_runner().RunTasksWhile(ImplFrameDeadlinePending(true)));
-    }
+
     // Then run tasks until new deadline is scheduled.
     EXPECT_TRUE(task_runner().RunTasksWhile(ImplFrameDeadlinePending(false)));
     EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
