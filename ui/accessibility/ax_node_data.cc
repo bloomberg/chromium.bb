@@ -252,6 +252,9 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_ACTION:
         result += " action=" + value;
         break;
+      case AX_ATTR_AUTO_COMPLETE:
+        result += " autocomplete=" + value;
+        break;
       case AX_ATTR_DESCRIPTION:
         result += " description=" + value;
         break;

@@ -225,6 +225,7 @@
     // Attributes that could apply to any node.
     access_key,
     action,
+    auto_complete,
     container_live_relevant,
     container_live_status,
     description,

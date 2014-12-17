@@ -2909,6 +2909,9 @@ void BrowserAccessibilityWin::OnDataChanged() {
 
   InitRoleAndState();
 
+  // Expose autocomplete attribute for combobox and textbox.
+  StringAttributeToIA2(ui::AX_ATTR_AUTO_COMPLETE, "autocomplete");
+
   // Expose the "display" and "tag" attributes.
   StringAttributeToIA2(ui::AX_ATTR_DISPLAY, "display");
   StringAttributeToIA2(ui::AX_ATTR_TEXT_INPUT_TYPE, "text-input-type");
@@ -3379,6 +3382,9 @@ void BrowserAccessibilityWin::InitRoleAndState() {
 
   if (GetBoolAttribute(ui::AX_ATTR_CAN_SET_VALUE))
     ia2_state_ |= IA2_STATE_EDITABLE;
+
+  if (!GetStringAttribute(ui::AX_ATTR_AUTO_COMPLETE).empty())
+    ia2_state_ |= IA2_STATE_SUPPORTS_AUTOCOMPLETION;
 
   base::string16 html_tag = GetString16Attribute(
       ui::AX_ATTR_HTML_TAG);

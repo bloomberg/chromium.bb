@@ -267,6 +267,9 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
   }
   if (src.actionVerb().length())
     dst->AddStringAttribute(ui::AX_ATTR_ACTION, UTF16ToUTF8(src.actionVerb()));
+  if (src.ariaAutoComplete().length())
+    dst->AddStringAttribute(ui::AX_ATTR_AUTO_COMPLETE,
+                            UTF16ToUTF8(src.ariaAutoComplete()));
   if (src.isAriaReadOnly())
     dst->AddBoolAttribute(ui::AX_ATTR_ARIA_READONLY, true);
   if (src.isButtonStateMixed())
