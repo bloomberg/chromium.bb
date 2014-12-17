@@ -896,8 +896,7 @@ void CompositedLayerMapping::updateScrollingLayerGeometry(const IntRect& localCo
     ASSERT(m_scrollingContentsLayer);
     RenderBox* renderBox = toRenderBox(renderer());
     IntRect clientBox = enclosingIntRect(renderBox->clientBoxRect());
-    // FIXME: Remove the flooredIntSize conversion. crbug.com/414283.
-    IntSize adjustedScrollOffset = flooredIntSize(m_owningLayer.scrollableArea()->adjustedScrollOffset());
+    DoubleSize adjustedScrollOffset = m_owningLayer.scrollableArea()->adjustedScrollOffset();
     m_scrollingLayer->setPosition(FloatPoint(clientBox.location() - localCompositingBounds.location() + roundedIntSize(m_owningLayer.subpixelAccumulation())));
     m_scrollingLayer->setSize(clientBox.size());
 
@@ -916,15 +915,17 @@ void CompositedLayerMapping::updateScrollingLayerGeometry(const IntRect& localCo
     if (scrollSize != m_scrollingContentsLayer->size() || clientBoxOffsetChanged)
         m_scrollingContentsLayer->setNeedsDisplay();
 
-    IntSize scrollingContentsOffset = toIntSize(clientBox.location() - adjustedScrollOffset);
-    if (scrollingContentsOffset != m_scrollingContentsLayer->offsetFromRenderer() || scrollSize != m_scrollingContentsLayer->size()) {
+    DoubleSize scrollingContentsOffset(clientBox.location().x() - adjustedScrollOffset.width(), clientBox.location().y() - adjustedScrollOffset.height());
+    // The scroll offset change is compared using floating point so that fractional scroll offset
+    // change can be propagated to compositor.
+    if (scrollingContentsOffset != m_scrollingContentsLayer->offsetDoubleFromRenderer() || scrollSize != m_scrollingContentsLayer->size()) {
         bool coordinatorHandlesOffset = compositor()->scrollingLayerDidChange(&m_owningLayer);
-        m_scrollingContentsLayer->setPosition(coordinatorHandlesOffset ? FloatPoint() : FloatPoint(-adjustedScrollOffset));
+        m_scrollingContentsLayer->setPosition(coordinatorHandlesOffset ? FloatPoint() : FloatPoint(-toFloatSize(adjustedScrollOffset)));
     }
 
     m_scrollingContentsLayer->setSize(scrollSize);
     // FIXME: The paint offset and the scroll offset should really be separate concepts.
-    m_scrollingContentsLayer->setOffsetFromRenderer(scrollingContentsOffset, GraphicsLayer::DontSetNeedsDisplay);
+    m_scrollingContentsLayer->setOffsetDoubleFromRenderer(scrollingContentsOffset, GraphicsLayer::DontSetNeedsDisplay);
 
     if (m_foregroundLayer) {
         if (m_foregroundLayer->size() != m_scrollingContentsLayer->size())

@@ -256,6 +256,11 @@ void GraphicsLayer::setReplicatedByLayer(GraphicsLayer* layer)
 
 void GraphicsLayer::setOffsetFromRenderer(const IntSize& offset, ShouldSetNeedsDisplay shouldSetNeedsDisplay)
 {
+    setOffsetDoubleFromRenderer(offset);
+}
+
+void GraphicsLayer::setOffsetDoubleFromRenderer(const DoubleSize& offset, ShouldSetNeedsDisplay shouldSetNeedsDisplay)
+{
     if (offset == m_offsetFromRenderer)
         return;
 

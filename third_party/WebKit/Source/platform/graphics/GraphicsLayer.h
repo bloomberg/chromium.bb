@@ -131,8 +131,13 @@ public:
     };
 
     // Offset is origin of the renderer minus origin of the graphics layer (so either zero or negative).
-    IntSize offsetFromRenderer() const { return m_offsetFromRenderer; }
+    IntSize offsetFromRenderer() const { return flooredIntSize(m_offsetFromRenderer); }
     void setOffsetFromRenderer(const IntSize&, ShouldSetNeedsDisplay = SetNeedsDisplay);
+
+    // The double version is only used in |updateScrollingLayerGeometry()| for detecting
+    // scroll offset change at floating point precision.
+    DoubleSize offsetDoubleFromRenderer() const { return m_offsetFromRenderer; }
+    void setOffsetDoubleFromRenderer(const DoubleSize&, ShouldSetNeedsDisplay = SetNeedsDisplay);
 
     // The position of the layer (the location of its top-left corner in its parent)
     const FloatPoint& position() const { return m_position; }
@@ -289,7 +294,7 @@ private:
     GraphicsLayerClient* m_client;
 
     // Offset from the owning renderer
-    IntSize m_offsetFromRenderer;
+    DoubleSize m_offsetFromRenderer;
 
     // Position is relative to the parent GraphicsLayer
     FloatPoint m_position;
