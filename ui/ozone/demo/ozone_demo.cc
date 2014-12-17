@@ -7,16 +7,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/timer/timer.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkSurface.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/ozone/demo/gl_renderer.h"
+#include "ui/ozone/demo/software_renderer.h"
 #include "ui/ozone/public/ozone_platform.h"
-#include "ui/ozone/public/surface_factory_ozone.h"
-#include "ui/ozone/public/surface_ozone_canvas.h"
 #include "ui/ozone/public/ui_thread_gpu.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -26,15 +22,22 @@ const int kTestWindowHeight = 600;
 
 const int kFrameDelayMilliseconds = 16;
 
-const int kAnimationSteps = 240;
-
 const char kDisableGpu[] = "disable-gpu";
+
+const char kWindowSize[] = "window-size";
 
 class DemoWindow : public ui::PlatformWindowDelegate {
  public:
-  DemoWindow() : widget_(gfx::kNullAcceleratedWidget), iteration_(0) {
+  DemoWindow() : widget_(gfx::kNullAcceleratedWidget) {
+    int width = kTestWindowWidth;
+    int height = kTestWindowHeight;
+    sscanf(CommandLine::ForCurrentProcess()
+               ->GetSwitchValueASCII(kWindowSize)
+               .c_str(),
+           "%dx%d", &width, &height);
+
     platform_window_ = ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
-        this, gfx::Rect(kTestWindowWidth, kTestWindowHeight));
+        this, gfx::Rect(width, height));
   }
   ~DemoWindow() override {}
 
@@ -49,11 +52,17 @@ class DemoWindow : public ui::PlatformWindowDelegate {
 
   void Start() {
     if (!CommandLine::ForCurrentProcess()->HasSwitch(kDisableGpu) &&
-        gfx::GLSurface::InitializeOneOff() && StartInProcessGpu() &&
-        InitializeGLSurface()) {
-      StartAnimationGL();
-    } else if (InitializeSoftwareSurface()) {
-      StartAnimationSoftware();
+        gfx::GLSurface::InitializeOneOff() && StartInProcessGpu()) {
+      renderer_.reset(new ui::GlRenderer(GetAcceleratedWidget(), GetSize()));
+    } else {
+      renderer_.reset(
+          new ui::SoftwareRenderer(GetAcceleratedWidget(), GetSize()));
+    }
+
+    if (renderer_->Initialize()) {
+      timer_.Start(FROM_HERE,
+                   base::TimeDelta::FromMicroseconds(kFrameDelayMilliseconds),
+                   renderer_.get(), &ui::Renderer::RenderFrame);
     } else {
       LOG(ERROR) << "Failed to create drawing surface";
       Quit();
@@ -81,108 +90,15 @@ class DemoWindow : public ui::PlatformWindowDelegate {
   void OnActivationChanged(bool active) override {}
 
  private:
-  bool InitializeGLSurface() {
-    surface_ = gfx::GLSurface::CreateViewGLSurface(GetAcceleratedWidget());
-    if (!surface_.get()) {
-      LOG(ERROR) << "Failed to create GL surface";
-      return false;
-    }
-
-    context_ = gfx::GLContext::CreateGLContext(
-        NULL, surface_.get(), gfx::PreferIntegratedGpu);
-    if (!context_.get()) {
-      LOG(ERROR) << "Failed to create GL context";
-      surface_ = NULL;
-      return false;
-    }
-
-    surface_->Resize(GetSize());
-
-    if (!context_->MakeCurrent(surface_.get())) {
-      LOG(ERROR) << "Failed to make GL context current";
-      surface_ = NULL;
-      context_ = NULL;
-      return false;
-    }
-
-    return true;
-  }
-
-  bool InitializeSoftwareSurface() {
-    software_surface_ =
-        ui::SurfaceFactoryOzone::GetInstance()->CreateCanvasForWidget(
-            GetAcceleratedWidget());
-    if (!software_surface_) {
-      LOG(ERROR) << "Failed to create software surface";
-      return false;
-    }
-
-    software_surface_->ResizeCanvas(GetSize());
-    return true;
-  }
-
-  void StartAnimationGL() {
-    timer_.Start(FROM_HERE,
-                 base::TimeDelta::FromMicroseconds(kFrameDelayMilliseconds),
-                 this,
-                 &DemoWindow::RenderFrameGL);
-  }
-
-  void StartAnimationSoftware() {
-    timer_.Start(FROM_HERE,
-                 base::TimeDelta::FromMicroseconds(kFrameDelayMilliseconds),
-                 this,
-                 &DemoWindow::RenderFrameSoftware);
-  }
 
   void StopAnimation() { timer_.Stop(); }
 
-  float NextFraction() {
-    float fraction = (sinf(iteration_ * 2 * M_PI / kAnimationSteps) + 1) / 2;
-
-    iteration_++;
-    iteration_ %= kAnimationSteps;
-
-    return fraction;
-  }
-
-  void RenderFrameGL() {
-    float fraction = NextFraction();
-    gfx::Size window_size = GetSize();
-
-    glViewport(0, 0, window_size.width(), window_size.height());
-    glClearColor(1 - fraction, fraction, 0.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    if (!surface_->SwapBuffers())
-      LOG(FATAL) << "Failed to swap buffers";
-  }
-
-  void RenderFrameSoftware() {
-    float fraction = NextFraction();
-    gfx::Size window_size = GetSize();
-
-    skia::RefPtr<SkSurface> surface = software_surface_->GetSurface();
-
-    SkColor color =
-        SkColorSetARGB(0xff, 0, 0xff * fraction, 0xff * (1 - fraction));
-
-    surface->getCanvas()->clear(color);
-
-    software_surface_->PresentCanvas(gfx::Rect(window_size));
-  }
-
   bool StartInProcessGpu() { return ui_thread_gpu_.Initialize(); }
 
+  scoped_ptr<ui::Renderer> renderer_;
+
   // Timer for animation.
-  base::RepeatingTimer<DemoWindow> timer_;
-
-  // Bits for GL rendering.
-  scoped_refptr<gfx::GLSurface> surface_;
-  scoped_refptr<gfx::GLContext> context_;
-
-  // Bits for software rendeirng.
-  scoped_ptr<ui::SurfaceOzoneCanvas> software_surface_;
+  base::RepeatingTimer<ui::Renderer> timer_;
 
   // Window-related state.
   scoped_ptr<ui::PlatformWindow> platform_window_;
@@ -190,9 +106,6 @@ class DemoWindow : public ui::PlatformWindowDelegate {
 
   // Helper for applications that do GL on main thread.
   ui::UiThreadGpu ui_thread_gpu_;
-
-  // Animation state.
-  int iteration_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoWindow);
 };
