@@ -100,11 +100,12 @@ void NativeDisplayDelegateProxy::ForceDPMSOn() {
 
 void NativeDisplayDelegateProxy::GetDisplays(
     const GetDisplaysCallback& callback) {
+  get_displays_callback_ = callback;
   // GetDisplays() is supposed to force a refresh of the display list.
-  if (proxy_->Send(new OzoneGpuMsg_RefreshNativeDisplays()))
-    get_displays_callback_ = callback;
-  else
-    callback.Run(displays_.get());
+  if (!proxy_->Send(new OzoneGpuMsg_RefreshNativeDisplays())) {
+    get_displays_callback_.Run(displays_.get());
+    get_displays_callback_.Reset();
+  }
 }
 
 void NativeDisplayDelegateProxy::AddMode(const DisplaySnapshot& output,
@@ -120,6 +121,8 @@ void NativeDisplayDelegateProxy::Configure(const DisplaySnapshot& output,
     return;
   }
 
+  configure_callback_map_[output.display_id()] = callback;
+
   bool status = false;
   if (mode) {
     status = proxy_->Send(new OzoneGpuMsg_ConfigureNativeDisplay(
@@ -129,10 +132,8 @@ void NativeDisplayDelegateProxy::Configure(const DisplaySnapshot& output,
         proxy_->Send(new OzoneGpuMsg_DisableNativeDisplay(output.display_id()));
   }
 
-  if (status)
-    configure_callback_map_[output.display_id()] = callback;
-  else
-    callback.Run(false);
+  if (!status)
+    OnDisplayConfigured(output.display_id(), false);
 }
 
 void NativeDisplayDelegateProxy::CreateFrameBuffer(const gfx::Size& size) {
@@ -237,8 +238,10 @@ void NativeDisplayDelegateProxy::OnUpdateNativeDisplays(
     displays_.push_back(
         new DriDisplaySnapshotProxy(displays[i], display_manager_));
 
-  if (!get_displays_callback_.is_null())
+  if (!get_displays_callback_.is_null()) {
     get_displays_callback_.Run(displays_.get());
+    get_displays_callback_.Reset();
+  }
 }
 
 void NativeDisplayDelegateProxy::OnDisplayConfigured(int64_t display_id,
