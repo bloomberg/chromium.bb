@@ -31,7 +31,8 @@ class ThreadedDataProvider {
       int request_id,
       blink::WebThreadedDataReceiver* threaded_data_receiver,
       linked_ptr<base::SharedMemory> shm_buffer,
-      int shm_size);
+      int shm_size,
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_);
   virtual ~ThreadedDataProvider();
 
   void Stop();
@@ -60,7 +61,7 @@ class ThreadedDataProvider {
   IPC::SyncChannel* ipc_channel_;
   blink::WebThreadedDataReceiver* threaded_data_receiver_;
   bool resource_filter_active_;
-  base::MessageLoop* main_thread_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   struct QueuedSharedMemoryData {
     const char* data;

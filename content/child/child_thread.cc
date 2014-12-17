@@ -277,7 +277,8 @@ void ChildThread::Init(const Options& options) {
   thread_safe_sender_ = new ThreadSafeSender(
       base::MessageLoopProxy::current().get(), sync_message_filter_.get());
 
-  resource_dispatcher_.reset(new ResourceDispatcher(this));
+  resource_dispatcher_.reset(new ResourceDispatcher(
+      this, message_loop()->task_runner()));
   websocket_dispatcher_.reset(new WebSocketDispatcher);
   file_system_dispatcher_.reset(new FileSystemDispatcher());
 

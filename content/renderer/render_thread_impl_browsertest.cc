@@ -2,9 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/memory/discardable_memory.h"
 #include "base/memory/scoped_vector.h"
+#include "base/thread_task_runner_handle.h"
+#include "content/common/resource_messages.h"
+#include "content/common/websocket_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -12,19 +16,146 @@
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/test/mock_render_process.h"
+#include "content/test/render_thread_impl_browser_test_ipc_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+// IPC messages for testing ----------------------------------------------------
+
+#define IPC_MESSAGE_IMPL
+#include "ipc/ipc_message_macros.h"
+
+#undef IPC_MESSAGE_START
+#define IPC_MESSAGE_START TestMsgStart
+IPC_MESSAGE_CONTROL0(TestMsg_QuitRunLoop)
+
+// -----------------------------------------------------------------------------
+
+// These tests leak memory, this macro disables the test when under the
+// LeakSanitizer.
+#ifdef LEAK_SANITIZER
+#define WILL_LEAK(NAME) DISABLED_##NAME
+#else
+#define WILL_LEAK(NAME) NAME
+#endif
 
 namespace content {
 namespace {
 
-class RenderThreadImplBrowserTest : public testing::Test {
+// FIXME: It would be great if there was a reusable mock SingleThreadTaskRunner
+class TestTaskCounter : public base::SingleThreadTaskRunner {
  public:
-  ~RenderThreadImplBrowserTest() override {}
+  TestTaskCounter() : count_(0) {}
+
+  // SingleThreadTaskRunner implementation.
+  bool PostDelayedTask(const tracked_objects::Location&,
+                       const base::Closure&,
+                       base::TimeDelta) override {
+    base::AutoLock auto_lock(lock_);
+    count_++;
+    return true;
+  }
+
+  bool PostNonNestableDelayedTask(const tracked_objects::Location&,
+                                  const base::Closure&,
+                                  base::TimeDelta) override {
+    base::AutoLock auto_lock(lock_);
+    count_++;
+    return true;
+  }
+
+  bool RunsTasksOnCurrentThread() const override { return true; }
+
+  int NumTasksPosted() const {
+    base::AutoLock auto_lock(lock_);
+    return count_;
+  }
+
+ private:
+  ~TestTaskCounter() override {}
+
+  mutable base::Lock lock_;
+  int count_;
 };
 
-class DummyListener : public IPC::Listener {
+class RenderThreadImplForTest : public RenderThreadImpl {
  public:
-  bool OnMessageReceived(const IPC::Message& message) override { return true; }
+  RenderThreadImplForTest(const std::string& channel_id,
+                          scoped_refptr<TestTaskCounter> test_task_counter)
+      : RenderThreadImpl(channel_id), test_task_counter_(test_task_counter) {}
+
+  ~RenderThreadImplForTest() override {}
+
+  void SetResourceDispatchTaskQueue(
+      const scoped_refptr<base::SingleThreadTaskRunner>&) override {
+    // Use our TestTaskCounter instead.
+    RenderThreadImpl::SetResourceDispatchTaskQueue(test_task_counter_);
+  }
+
+  using ChildThread::OnMessageReceived;
+
+ private:
+  scoped_refptr<TestTaskCounter> test_task_counter_;
+};
+
+void QuitTask(base::MessageLoop* message_loop) {
+  message_loop->QuitWhenIdle();
+}
+
+class QuitOnTestMsgFilter : public IPC::MessageFilter {
+ public:
+  explicit QuitOnTestMsgFilter(base::MessageLoop* message_loop)
+      : message_loop_(message_loop) {}
+
+  // IPC::MessageFilter overrides:
+  bool OnMessageReceived(const IPC::Message& message) override {
+    message_loop_->PostTask(FROM_HERE, base::Bind(&QuitTask, message_loop_));
+    return true;
+  }
+
+  bool GetSupportedMessageClasses(
+      std::vector<uint32>* supported_message_classes) const override {
+    supported_message_classes->push_back(TestMsgStart);
+    return true;
+  }
+
+ private:
+  ~QuitOnTestMsgFilter() override {}
+
+  base::MessageLoop* message_loop_;
+};
+
+class RenderThreadImplBrowserTest : public testing::Test {
+ public:
+  void SetUp() override {
+    content_client_.reset(new ContentClient());
+    content_browser_client_.reset(new ContentBrowserClient());
+    content_renderer_client_.reset(new ContentRendererClient());
+    SetContentClient(content_client_.get());
+    SetBrowserClientForTesting(content_browser_client_.get());
+    SetRendererClientForTesting(content_renderer_client_.get());
+
+    test_helper_.reset(new RenderThreadImplBrowserIPCTestHelper());
+
+    mock_process_.reset(new MockRenderProcess);
+    test_task_counter_ = make_scoped_refptr(new TestTaskCounter());
+    thread_ = new RenderThreadImplForTest(test_helper_->GetChannelId(),
+                                          test_task_counter_);
+    thread_->EnsureWebKitInitialized();
+
+    test_msg_filter_ = make_scoped_refptr(
+        new QuitOnTestMsgFilter(test_helper_->GetMessageLoop()));
+    thread_->AddFilter(test_msg_filter_.get());
+  }
+
+  scoped_refptr<TestTaskCounter> test_task_counter_;
+  scoped_ptr<ContentClient> content_client_;
+  scoped_ptr<ContentBrowserClient> content_browser_client_;
+  scoped_ptr<ContentRendererClient> content_renderer_client_;
+  scoped_ptr<RenderThreadImplBrowserIPCTestHelper> test_helper_;
+  scoped_ptr<MockRenderProcess> mock_process_;
+  scoped_refptr<QuitOnTestMsgFilter> test_msg_filter_;
+  RenderThreadImplForTest* thread_;  // Owned by mock_process_.
+  std::string channel_id_;
 };
 
 void CheckRenderThreadInputHandlerManager(RenderThreadImpl* thread) {
@@ -34,74 +165,20 @@ void CheckRenderThreadInputHandlerManager(RenderThreadImpl* thread) {
 // Check that InputHandlerManager outlives compositor thread because it uses
 // raw pointers to post tasks.
 // Disabled under LeakSanitizer due to memory leaks. http://crbug.com/348994
-#if defined(LEAK_SANITIZER)
-#define MAYBE_InputHandlerManagerDestroyedAfterCompositorThread \
-  DISABLED_InputHandlerManagerDestroyedAfterCompositorThread
-#else
-#define MAYBE_InputHandlerManagerDestroyedAfterCompositorThread \
-  InputHandlerManagerDestroyedAfterCompositorThread
-#endif
 TEST_F(RenderThreadImplBrowserTest,
-    MAYBE_InputHandlerManagerDestroyedAfterCompositorThread) {
-  ContentClient content_client;
-  ContentBrowserClient content_browser_client;
-  ContentRendererClient content_renderer_client;
-  SetContentClient(&content_client);
-  SetBrowserClientForTesting(&content_browser_client);
-  SetRendererClientForTesting(&content_renderer_client);
-  base::MessageLoopForIO message_loop_;
+       WILL_LEAK(InputHandlerManagerDestroyedAfterCompositorThread)) {
+  ASSERT_TRUE(thread_->input_handler_manager());
 
-  std::string channel_id = IPC::Channel::GenerateVerifiedChannelID(
-      std::string());
-  DummyListener dummy_listener;
-  scoped_ptr<IPC::Channel> channel(
-      IPC::Channel::CreateServer(channel_id, &dummy_listener));
-  ASSERT_TRUE(channel->Connect());
-
-  scoped_ptr<MockRenderProcess> mock_process(new MockRenderProcess);
-  // Owned by mock_process.
-  RenderThreadImpl* thread = new RenderThreadImpl(channel_id);
-  thread->EnsureWebKitInitialized();
-
-  ASSERT_TRUE(thread->input_handler_manager());
-
-  thread->compositor_message_loop_proxy()->PostTask(
-      FROM_HERE,
-      base::Bind(&CheckRenderThreadInputHandlerManager, thread));
+  thread_->compositor_message_loop_proxy()->PostTask(
+      FROM_HERE, base::Bind(&CheckRenderThreadInputHandlerManager, thread_));
 }
 
 // Checks that emulated discardable memory is discarded when the last widget
 // is hidden.
 // Disabled under LeakSanitizer due to memory leaks.
-#if defined(LEAK_SANITIZER)
-#define MAYBE_EmulatedDiscardableMemoryDiscardedWhenWidgetsHidden \
-  DISABLED_EmulatedDiscardableMemoryDiscardedWhenWidgetsHidden
-#else
-#define MAYBE_EmulatedDiscardableMemoryDiscardedWhenWidgetsHidden \
-  EmulatedDiscardableMemoryDiscardedWhenWidgetsHidden
-#endif
 TEST_F(RenderThreadImplBrowserTest,
-       MAYBE_EmulatedDiscardableMemoryDiscardedWhenWidgetsHidden) {
-  ContentClient content_client;
-  ContentBrowserClient content_browser_client;
-  ContentRendererClient content_renderer_client;
-  SetContentClient(&content_client);
-  SetBrowserClientForTesting(&content_browser_client);
-  SetRendererClientForTesting(&content_renderer_client);
-  base::MessageLoopForIO message_loop_;
-
-  std::string channel_id =
-      IPC::Channel::GenerateVerifiedChannelID(std::string());
-  DummyListener dummy_listener;
-  scoped_ptr<IPC::Channel> channel(
-      IPC::Channel::CreateServer(channel_id, &dummy_listener));
-  ASSERT_TRUE(channel->Connect());
-
-  scoped_ptr<MockRenderProcess> mock_process(new MockRenderProcess);
-  // Owned by mock_process.
-  RenderThreadImpl* thread = new RenderThreadImpl(channel_id);
-  thread->EnsureWebKitInitialized();
-  thread->WidgetCreated();
+       WILL_LEAK(EmulatedDiscardableMemoryDiscardedWhenWidgetsHidden)) {
+  thread_->WidgetCreated();
 
   // Allocate 128MB of discardable memory.
   ScopedVector<base::DiscardableMemory> discardable_memory;
@@ -114,7 +191,7 @@ TEST_F(RenderThreadImplBrowserTest,
   }
 
   // Hide all widgets.
-  thread->WidgetHidden();
+  thread_->WidgetHidden();
 
   // Count how much memory is left, should be at most one block.
   int blocks_left = 0;
@@ -125,7 +202,30 @@ TEST_F(RenderThreadImplBrowserTest,
   }
   EXPECT_LE(blocks_left, 1);
 
-  thread->WidgetDestroyed();
+  thread_->WidgetDestroyed();
+}
+
+// Disabled under LeakSanitizer due to memory leaks.
+TEST_F(RenderThreadImplBrowserTest,
+       WILL_LEAK(ResourceDispatchIPCTasksGoThroughScheduler)) {
+  test_helper_->Sender()->Send(new ResourceHostMsg_FollowRedirect(0));
+  test_helper_->Sender()->Send(new TestMsg_QuitRunLoop());
+
+  test_helper_->GetMessageLoop()->Run();
+  EXPECT_EQ(1, test_task_counter_->NumTasksPosted());
+}
+
+// Disabled under LeakSanitizer due to memory leaks.
+TEST_F(RenderThreadImplBrowserTest,
+       WILL_LEAK(NonResourceDispatchIPCTasksDontGoThroughScheduler)) {
+  // NOTE other than not being a resource message, the actual message is
+  // unimportant.
+  test_helper_->Sender()->Send(new WebSocketMsg_NotifyFailure(1, ""));
+  test_helper_->Sender()->Send(new TestMsg_QuitRunLoop());
+
+  test_helper_->GetMessageLoop()->Run();
+
+  EXPECT_EQ(0, test_task_counter_->NumTasksPosted());
 }
 
 }  // namespace

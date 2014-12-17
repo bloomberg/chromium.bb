@@ -114,7 +114,7 @@ class TestBridge : public ResourceLoaderBridge,
 
 class TestResourceDispatcher : public ResourceDispatcher {
  public:
-  TestResourceDispatcher() : ResourceDispatcher(NULL) {}
+  TestResourceDispatcher() : ResourceDispatcher(nullptr, nullptr) {}
   ~TestResourceDispatcher() override {}
 
   // ResourceDispatcher implementation:

@@ -152,7 +152,7 @@ class TestRequestPeer : public RequestPeer {
 // Sets up the message sender override for the unit test.
 class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
  public:
-  ResourceDispatcherTest() : dispatcher_(this) {}
+  ResourceDispatcherTest() : dispatcher_(this, message_loop_.task_runner()) {}
 
   ~ResourceDispatcherTest() override {
     STLDeleteContainerPairSecondPointers(shared_memory_map_.begin(),
@@ -341,8 +341,8 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
   std::map<int, base::SharedMemory*> shared_memory_map_;
 
   std::vector<IPC::Message> message_queue_;
-  ResourceDispatcher dispatcher_;
   base::MessageLoop message_loop_;
+  ResourceDispatcher dispatcher_;
 };
 
 // Does a simple request and tests that the correct data is received.  Simulates

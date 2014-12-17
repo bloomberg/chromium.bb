@@ -58,6 +58,7 @@ static_library("test_support") {
       "//content/shell:pak",
       "//cc",
       "//cc:test_support",
+      "//ipc/mojo",
       "//media",
       "//ppapi:ppapi_host",
       "//ppapi:ppapi_proxy",

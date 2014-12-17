@@ -34,6 +34,11 @@ class ChildResourceMessageFilter : public IPC::MessageFilter {
   // IPC::MessageFilter implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
 
+  void SetMainThreadTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
+    main_thread_task_runner_ = main_thread_task_runner;
+  }
+
  private:
   ~ChildResourceMessageFilter() override;
 

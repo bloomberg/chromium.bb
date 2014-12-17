@@ -16,6 +16,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
+#include "content/child/child_thread.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/request_info.h"
 #include "content/child/resource_loader_bridge.h"
@@ -287,11 +288,14 @@ void IPCResourceLoaderBridge::SyncLoad(SyncLoadResponse* response) {
 
 // ResourceDispatcher ---------------------------------------------------------
 
-ResourceDispatcher::ResourceDispatcher(IPC::Sender* sender)
+ResourceDispatcher::ResourceDispatcher(
+    IPC::Sender* sender,
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
     : message_sender_(sender),
       delegate_(NULL),
       io_timestamp_(base::TimeTicks()),
-      weak_factory_(this) {
+      weak_factory_(this),
+      main_thread_task_runner_(main_thread_task_runner) {
 }
 
 ResourceDispatcher::~ResourceDispatcher() {
@@ -649,11 +653,9 @@ void ResourceDispatcher::SetDefersLoading(int request_id, bool value) {
 
     FollowPendingRedirect(request_id, request_info);
 
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&ResourceDispatcher::FlushDeferredMessages,
-                   weak_factory_.GetWeakPtr(),
-                   request_id));
+    main_thread_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&ResourceDispatcher::FlushDeferredMessages,
+                              weak_factory_.GetWeakPtr(), request_id));
   }
 }
 
@@ -674,7 +676,7 @@ bool ResourceDispatcher::AttachThreadedDataReceiver(
     DCHECK(!request_info->threaded_data_provider);
     request_info->threaded_data_provider = new ThreadedDataProvider(
         request_id, threaded_data_receiver, request_info->buffer,
-        request_info->buffer_size);
+        request_info->buffer_size, main_thread_task_runner_);
     return true;
   }
 

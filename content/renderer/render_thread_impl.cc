@@ -39,6 +39,7 @@
 #include "content/child/child_discardable_shared_memory_manager.h"
 #include "content/child/child_gpu_memory_buffer_manager.h"
 #include "content/child/child_histogram_message_filter.h"
+#include "content/child/child_resource_message_filter.h"
 #include "content/child/child_shared_bitmap_manager.h"
 #include "content/child/content_child_helpers.h"
 #include "content/child/db_message_filter.h"
@@ -47,6 +48,7 @@
 #include "content/child/npapi/npobject_util.h"
 #include "content/child/plugin_messages.h"
 #include "content/child/resource_dispatcher.h"
+#include "content/child/resource_scheduling_filter.h"
 #include "content/child/runtime_features.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/web_database_observer_impl.h"
@@ -893,6 +895,20 @@ void RenderThreadImpl::SetResourceDispatcherDelegate(
   resource_dispatcher()->set_delegate(delegate);
 }
 
+void RenderThreadImpl::SetResourceDispatchTaskQueue(
+    const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue) {
+  // Add a filter that forces resource messages to be dispatched via a
+  // particular task runner.
+  resource_scheduling_filter_ =
+      new ResourceSchedulingFilter(resource_task_queue, resource_dispatcher());
+  channel()->AddFilter(resource_scheduling_filter_.get());
+
+  // The ChildResourceMessageFilter and the ResourceDispatcher need to use the
+  // same queue to ensure tasks are executed in the expected order.
+  child_resource_message_filter()->SetMainThreadTaskRunner(resource_task_queue);
+  resource_dispatcher()->SetMainThreadTaskRunner(resource_task_queue);
+}
+
 void RenderThreadImpl::EnsureWebKitInitialized() {
   if (blink_platform_impl_)
     return;
@@ -920,6 +936,9 @@ const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   main_input_callback_.Reset(
       base::Bind(base::IgnoreResult(&RenderThreadImpl::OnMessageReceived),
                  base::Unretained(this)));
+
+  // TODO(alexclarke): Add a dedicated loading task queue
+  SetResourceDispatchTaskQueue(renderer_scheduler_->DefaultTaskRunner());
 
   bool enable = !command_line.HasSwitch(switches::kDisableThreadedCompositing);
   if (enable) {

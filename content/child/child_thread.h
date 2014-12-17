@@ -159,6 +159,10 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
     return quota_message_filter_.get();
   }
 
+  ChildResourceMessageFilter* child_resource_message_filter() const {
+    return resource_message_filter_.get();
+  }
+
   base::MessageLoop* message_loop() const { return message_loop_; }
 
   // Returns the one child thread. Can only be called on the main thread.

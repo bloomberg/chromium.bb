@@ -14,6 +14,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
@@ -47,7 +48,9 @@ struct SiteIsolationResponseMetaData;
 // the child process.  It can be used from any child process.
 class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
  public:
-  explicit ResourceDispatcher(IPC::Sender* sender);
+  ResourceDispatcher(
+      IPC::Sender* sender,
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   ~ResourceDispatcher() override;
 
   // IPC::Listener implementation.
@@ -99,6 +102,11 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   // Remembers IO thread timestamp for next resource message.
   void set_io_timestamp(base::TimeTicks io_timestamp) {
     io_timestamp_ = io_timestamp;
+  }
+
+  void SetMainThreadTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
+    main_thread_task_runner_ = main_thread_task_runner;
   }
 
  private:
@@ -216,6 +224,8 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   base::TimeTicks io_timestamp_;
 
   base::WeakPtrFactory<ResourceDispatcher> weak_factory_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcher);
 };

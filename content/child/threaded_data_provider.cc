@@ -22,12 +22,11 @@ class DataProviderMessageFilter : public IPC::MessageFilter {
  public:
   DataProviderMessageFilter(
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop,
-      base::MessageLoop* main_thread_message_loop,
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
       const WebThreadImpl& background_thread,
       const base::WeakPtr<ThreadedDataProvider>&
           background_thread_resource_provider,
-      const base::WeakPtr<ThreadedDataProvider>&
-          main_thread_resource_provider,
+      const base::WeakPtr<ThreadedDataProvider>& main_thread_resource_provider,
       int request_id);
 
   // IPC::ChannelProxy::MessageFilter
@@ -41,7 +40,7 @@ class DataProviderMessageFilter : public IPC::MessageFilter {
                       int encoded_data_length);
 
   const scoped_refptr<base::MessageLoopProxy> io_message_loop_;
-  base::MessageLoop* main_thread_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   const WebThreadImpl& background_thread_;
   // This weakptr can only be dereferenced on the background thread.
   base::WeakPtr<ThreadedDataProvider>
@@ -54,29 +53,28 @@ class DataProviderMessageFilter : public IPC::MessageFilter {
 
 DataProviderMessageFilter::DataProviderMessageFilter(
     const scoped_refptr<base::MessageLoopProxy>& io_message_loop,
-    base::MessageLoop* main_thread_message_loop,
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
     const WebThreadImpl& background_thread,
     const base::WeakPtr<ThreadedDataProvider>&
         background_thread_resource_provider,
-    const base::WeakPtr<ThreadedDataProvider>&
-        main_thread_resource_provider,
+    const base::WeakPtr<ThreadedDataProvider>& main_thread_resource_provider,
     int request_id)
     : io_message_loop_(io_message_loop),
-      main_thread_message_loop_(main_thread_message_loop),
+      main_thread_task_runner_(main_thread_task_runner),
       background_thread_(background_thread),
       background_thread_resource_provider_(background_thread_resource_provider),
       main_thread_resource_provider_(main_thread_resource_provider),
       request_id_(request_id) {
-  DCHECK(main_thread_message_loop != NULL);
+  DCHECK(main_thread_task_runner_.get());
 }
 
 void DataProviderMessageFilter::OnFilterAdded(IPC::Sender* sender) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
 
-  main_thread_message_loop_->PostTask(FROM_HERE,
-      base::Bind(
-          &ThreadedDataProvider::OnResourceMessageFilterAddedMainThread,
-          main_thread_resource_provider_));
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&ThreadedDataProvider::OnResourceMessageFilterAddedMainThread,
+                 main_thread_resource_provider_));
 }
 
 bool DataProviderMessageFilter::OnMessageReceived(
@@ -119,34 +117,34 @@ void DataProviderMessageFilter::OnReceivedData(int request_id,
 }  // anonymous namespace
 
 ThreadedDataProvider::ThreadedDataProvider(
-    int request_id, blink::WebThreadedDataReceiver* threaded_data_receiver,
-    linked_ptr<base::SharedMemory> shm_buffer, int shm_size)
+    int request_id,
+    blink::WebThreadedDataReceiver* threaded_data_receiver,
+    linked_ptr<base::SharedMemory> shm_buffer,
+    int shm_size,
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
     : request_id_(request_id),
       shm_buffer_(shm_buffer),
       shm_size_(shm_size),
-      background_thread_(
-          static_cast<WebThreadImpl&>(
-              *threaded_data_receiver->backgroundThread())),
+      background_thread_(static_cast<WebThreadImpl&>(
+          *threaded_data_receiver->backgroundThread())),
       ipc_channel_(ChildThread::current()->channel()),
       threaded_data_receiver_(threaded_data_receiver),
       resource_filter_active_(false),
-      main_thread_message_loop_(ChildThread::current()->message_loop()),
+      main_thread_task_runner_(main_thread_task_runner),
       main_thread_weak_factory_(this) {
   DCHECK(ChildThread::current());
   DCHECK(ipc_channel_);
   DCHECK(threaded_data_receiver_);
-  DCHECK(main_thread_message_loop_);
+  DCHECK(main_thread_task_runner_.get());
 
   background_thread_weak_factory_.reset(
       new base::WeakPtrFactory<ThreadedDataProvider>(this));
 
   filter_ = new DataProviderMessageFilter(
       ChildProcess::current()->io_message_loop_proxy(),
-      main_thread_message_loop_,
-      background_thread_,
+      main_thread_task_runner_, background_thread_,
       background_thread_weak_factory_->GetWeakPtr(),
-      main_thread_weak_factory_.GetWeakPtr(),
-      request_id);
+      main_thread_weak_factory_.GetWeakPtr(), request_id);
 
   ChildThread::current()->channel()->AddFilter(filter_.get());
 }
@@ -204,8 +202,8 @@ void ThreadedDataProvider::StopOnBackgroundThread() {
   // which means no callbacks from the filter will happen and nothing else will
   // use this instance on the background thread.
   background_thread_weak_factory_.reset(NULL);
-  main_thread_message_loop_->PostTask(FROM_HERE,
-      base::Bind(&DestructOnMainThread, this));
+  main_thread_task_runner_->PostTask(FROM_HERE,
+                                     base::Bind(&DestructOnMainThread, this));
 }
 
 void ThreadedDataProvider::OnResourceMessageFilterAddedMainThread() {
