@@ -1028,6 +1028,7 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
   response->setConnectionID(info.load_timing.socket_log_id);
   response->setConnectionReused(info.load_timing.socket_reused);
   response->setDownloadFilePath(info.download_file_path.AsUTF16Unsafe());
+  response->setWasFetchedViaSPDY(info.was_fetched_via_spdy);
   response->setWasFetchedViaServiceWorker(info.was_fetched_via_service_worker);
   response->setWasFallbackRequiredByServiceWorker(
       info.was_fallback_required_by_service_worker);
