@@ -49,8 +49,6 @@
           'inputs': [
             '<(DEPTH)/chrome/tools/build/win/syzygy/instrument.py',
             '<(DEPTH)/chrome/tools/build/win/syzygy/'
-                'syzyasan-allocation-filter.txt',
-            '<(DEPTH)/chrome/tools/build/win/syzygy/'
                 'syzyasan-instrumentation-filter.txt',
             '<(PRODUCT_DIR)/<(dll_name).dll',
           ],
@@ -70,8 +68,6 @@
                 'syzyasan-instrumentation-filter.txt',
             '--output-filter-file',
             '<(dest_dir)/win-syzyasan-filter-<(dll_name).txt.json',
-            '--allocation-filter-file', '<(DEPTH)/chrome/tools/build/win/syzygy'
-                'syzyasan-allocation-filter.txt',
             '--destination_dir', '<(dest_dir)',
           ],
         },
