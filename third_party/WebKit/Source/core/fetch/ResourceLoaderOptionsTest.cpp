@@ -20,14 +20,14 @@ TEST(ResourceLoaderOptionsTest, DeepCopy)
 {
     // Check that the fields of ResourceLoaderOptions are enums,
     // except for initiatorInfo and securityOrigin.
-    COMPILE_ASSERT(WTF::IsConvertibleToInteger<DataBufferingPolicy>::value, DataBufferingPolicy_is_enum);
-    COMPILE_ASSERT(WTF::IsConvertibleToInteger<StoredCredentials>::value, StoredCredentials_is_enum);
-    COMPILE_ASSERT(WTF::IsConvertibleToInteger<CredentialRequest>::value, CredentialRequest_is_enum);
-    COMPILE_ASSERT(WTF::IsConvertibleToInteger<ContentSecurityPolicyDisposition>::value, ContentSecurityPolicyDisposition_is_enum);
-    COMPILE_ASSERT(WTF::IsConvertibleToInteger<RequestInitiatorContext>::value, RequestInitiatorContext_is_enum);
-    COMPILE_ASSERT(WTF::IsConvertibleToInteger<MixedContentBlockingTreatment>::value, MixedContentBlockingTreatment_is_enum);
-    COMPILE_ASSERT(WTF::IsConvertibleToInteger<SynchronousPolicy>::value, SynchronousPolicy_is_enum);
-    COMPILE_ASSERT(WTF::IsConvertibleToInteger<CORSEnabled>::value, CORSEnabled_is_enum);
+    static_assert(WTF::IsEnum<DataBufferingPolicy>::value, "DataBufferingPolicy should be an enum");
+    static_assert(WTF::IsEnum<StoredCredentials>::value, "StoredCredentials should be an enum");
+    static_assert(WTF::IsEnum<CredentialRequest>::value, "CredentialRequest should be an enum");
+    static_assert(WTF::IsEnum<ContentSecurityPolicyDisposition>::value, "ContentSecurityPolicyDisposition should be an enum");
+    static_assert(WTF::IsEnum<RequestInitiatorContext>::value, "RequestInitiatorContext should be an enum");
+    static_assert(WTF::IsEnum<MixedContentBlockingTreatment>::value, "MixedContentBlockingTreatment should be an enum");
+    static_assert(WTF::IsEnum<SynchronousPolicy>::value, "SynchronousPolicy should be an enum");
+    static_assert(WTF::IsEnum<CORSEnabled>::value, "CORSEnabled should be an enum");
 
     ResourceLoaderOptions original;
     RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::createFromString("http://www.google.com");
