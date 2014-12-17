@@ -38,7 +38,7 @@ struct SameSizeAsCompactHTMLToken  {
     TextPosition textPosition;
 };
 
-COMPILE_ASSERT(sizeof(CompactHTMLToken) == sizeof(SameSizeAsCompactHTMLToken), CompactHTMLToken_should_stay_small);
+static_assert(sizeof(CompactHTMLToken) == sizeof(SameSizeAsCompactHTMLToken), "CompactHTMLToken should stay small");
 
 CompactHTMLToken::CompactHTMLToken(const HTMLToken* token, const TextPosition& textPosition)
     : m_type(token->type())
