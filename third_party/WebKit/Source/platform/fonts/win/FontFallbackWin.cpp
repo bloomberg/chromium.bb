@@ -31,6 +31,7 @@
 #include "config.h"
 #include "platform/fonts/win/FontFallbackWin.h"
 
+#include "platform/fonts/FontCache.h"
 #include "SkFontMgr.h"
 #include "SkTypeface.h"
 #include "wtf/HashMap.h"
@@ -47,10 +48,16 @@ namespace {
 static inline bool isFontPresent(const UChar* fontName, SkFontMgr* fontManager)
 {
     String family = fontName;
-    RefPtr<SkTypeface> tf = adoptRef(fontManager->legacyCreateTypeface(family.utf8().data(), SkTypeface::kNormal));
-    if (!tf)
+    SkTypeface* typeface;
+    if (FontCache::useDirectWrite())
+        typeface = fontManager->matchFamilyStyle(family.utf8().data(), SkFontStyle());
+    else
+        typeface = fontManager->legacyCreateTypeface(family.utf8().data(), SkTypeface::kNormal);
+
+    if (!typeface)
         return false;
 
+    RefPtr<SkTypeface> tf = adoptRef(typeface);
     SkTypeface::LocalizedStrings* actualFamilies = tf->createFamilyNameIterator();
     bool matchesRequestedFamily = false;
     SkTypeface::LocalizedString actualFamily;
