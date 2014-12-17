@@ -12,6 +12,7 @@
 #include <delayimp.h>
 
 #include "base/files/file_path.h"
+#include "base/metrics/sparse_histogram.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 
 #pragma comment(lib, "delayimp.lib")
@@ -36,7 +37,10 @@ bool InitializeMediaLibraryInternal(const base::FilePath& module_dir) {
 
   // TODO(scherkus): Remove all the bool-ness from these functions as we no
   // longer support disabling HTML5 media at runtime. http://crbug.com/440892
-  CHECK(initialized);
+  if (!initialized) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Media.Initialize.Windows", GetLastError());
+    return false;
+  }
 
   // VS2013 has a bug where FMA3 instructions will be executed on CPUs that
   // support them despite them being disabled at the OS level, causing illegal

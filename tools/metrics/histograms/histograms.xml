@@ -12530,6 +12530,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Media.Initialize.Windows" units="GetLastError">
+  <owner>scherkus@chromium.org</owner>
+  <summary>
+    Errors returned by LoadLibraryEx on Windows while attempting to load
+    ffmpegsumo.dll.
+  </summary>
+</histogram>
+
 <histogram name="Media.InputStreamDuration" units="ms">
   <owner>henrika@chromium.org</owner>
   <summary>
