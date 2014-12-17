@@ -1527,11 +1527,6 @@ public:
         return ThreadState::current()->isAllocationAllowed();
     }
 
-    static void markUsingGCInfo(Visitor* visitor, const void* buffer)
-    {
-        visitor->mark(buffer, GeneralHeapObjectHeader::fromPayload(buffer)->traceCallback());
-    }
-
     static void markNoTracing(Visitor* visitor, const void* t) { visitor->markNoTracing(t); }
 
     template<typename T, typename Traits>
