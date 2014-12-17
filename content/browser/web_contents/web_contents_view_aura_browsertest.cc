@@ -437,7 +437,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_OverscrollNavigation) {
 
 // Flaky on Windows (might be related to the above test):
 // http://crbug.com/305722
-#if defined(OS_WIN)
+// On Linux, the test frequently times out. (See crbug.com/440043).
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_OverscrollNavigationWithTouchHandler \
         DISABLED_OverscrollNavigationWithTouchHandler
 #else
