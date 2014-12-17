@@ -11,6 +11,12 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_BITS_STAT_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_BITS_STAT_H_
 
+#if defined(NACL_IN_TOOLCHAIN_HEADERS)
+#include <sys/types.h>
+#else
+#include "native_client/src/trusted/service_runtime/include/machine/_types.h"
+#endif
+
 /*
  * nacl_abi_mode_t is uint32_t, so we have more bits to play with:
  *
@@ -85,5 +91,36 @@
 #define NACL_ABI_S_ISCHR(m)   (((m) & NACL_ABI_S_IFMT) == NACL_ABI_S_IFCHR)
 #define NACL_ABI_S_ISFIFO(m)  (((m) & NACL_ABI_S_IFMT) == NACL_ABI_S_IFIFO)
 #define NACL_ABI_S_ISSHM(m)   (((m) & NACL_ABI_S_IFMT) == NACL_ABI_S_IFSHM)
+
+
+/*
+ * Linux <bit/stat.h> uses preprocessor to define st_atime to
+ * st_atim.tv_sec etc to widen the ABI to use a struct timespec rather
+ * than just have a time_t access/modification/inode-change times.
+ * this is unfortunate, since that symbol cannot be used as a struct
+ * member elsewhere (!).
+ *
+ * just like with type name conflicts, we avoid it by using nacl_abi_
+ * as a prefix for struct members too.  sigh.
+ */
+
+struct nacl_abi_stat {  /* must be renamed when ABI is exported */
+  nacl_abi_dev_t     nacl_abi_st_dev;       /* not implemented */
+  nacl_abi_ino_t     nacl_abi_st_ino;       /* not implemented */
+  nacl_abi_mode_t    nacl_abi_st_mode;      /* partially implemented. */
+  nacl_abi_nlink_t   nacl_abi_st_nlink;     /* link count */
+  nacl_abi_uid_t     nacl_abi_st_uid;       /* not implemented */
+  nacl_abi_gid_t     nacl_abi_st_gid;       /* not implemented */
+  nacl_abi_dev_t     nacl_abi_st_rdev;      /* not implemented */
+  nacl_abi_off_t     nacl_abi_st_size;      /* object size */
+  nacl_abi_blksize_t nacl_abi_st_blksize;   /* not implemented */
+  nacl_abi_blkcnt_t  nacl_abi_st_blocks;    /* not implemented */
+  nacl_abi_time_t    nacl_abi_st_atime;     /* access time */
+  int64_t            nacl_abi_st_atimensec; /* possibly just pad */
+  nacl_abi_time_t    nacl_abi_st_mtime;     /* modification time */
+  int64_t            nacl_abi_st_mtimensec; /* possibly just pad */
+  nacl_abi_time_t    nacl_abi_st_ctime;     /* inode change time */
+  int64_t            nacl_abi_st_ctimensec; /* possibly just pad */
+};
 
 #endif
