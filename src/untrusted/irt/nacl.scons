@@ -14,18 +14,17 @@ blob_env = env.Clone()
 blob_env.Append(LINKFLAGS=['-Wl,-Trodata-segment=${IRT_BLOB_DATA_START}',
                            '-Wl,-Ttext-segment=${IRT_BLOB_CODE_START}'])
 
+# NACL_GC_WRAP_SYSCALL uses ({...}) syntax.
+blob_env.FilterOut(CCFLAGS=['-pedantic'])
+
 irt_support_sources = [
     'irt_entry.c',
     'irt_entry_core.c',
     'irt_malloc.c',
     'irt_private_pthread.c',
     'irt_private_tls.c',
-    ]
-
-# NACL_GC_WRAP_SYSCALL uses ({...}) syntax.
-blob_env.FilterOut(CCFLAGS=['-pedantic'])
-
-irt_common_interfaces = [
+    'irt_interfaces.c',
+    'irt_query_list.c',
     'irt_basic.c',
     'irt_code_data_alloc.c',
     'irt_fdio.c',
@@ -45,11 +44,11 @@ irt_common_interfaces = [
     'irt_dev_list_mappings.c',
     'irt_nameservice.c',
     'irt_random.c',
+    'irt_core_resource.c',
     ]
 
 # These are the objects and libraries that go into every IRT image.
-irt_support_objs = [blob_env.ComponentObject(x) for x in
-                    (irt_support_sources + irt_common_interfaces)]
+irt_support_objs = [blob_env.ComponentObject(x) for x in irt_support_sources]
 
 # We also get nc_init_private.c, nc_thread.c and nc_tsd.c via
 # #includes of .c files.
@@ -71,11 +70,6 @@ irt_support_objs += [
 # cover IRT-internal code.
 env.ComponentLibrary('libirt_support_private', irt_support_objs)
 
-irt_nonbrowser = ['irt_interfaces.c',
-                  'irt_query_list.c',
-                  'irt_core_resource.c',
-                  ]
-
 irt_libs = ['srpc',
             'imc_syscalls',
             'platform',
@@ -84,7 +78,7 @@ irt_libs = ['srpc',
             ]
 
 irt_core_raw = blob_env.ComponentProgram(
-    'irt_core_raw', irt_support_objs + irt_nonbrowser, EXTRA_LIBS=irt_libs)
+    'irt_core_raw', irt_support_objs, EXTRA_LIBS=irt_libs)
 
 irt_core_nexe = blob_env.ApplyTLSEdit(
     'irt_core.nexe',
