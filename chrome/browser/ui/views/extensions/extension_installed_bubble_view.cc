@@ -90,169 +90,13 @@ class InstalledBubbleContent : public views::View,
   InstalledBubbleContent(Browser* browser,
                          const Extension* extension,
                          ExtensionInstalledBubble::BubbleType type,
-                         const SkBitmap* icon)
-      : browser_(browser),
-        extension_id_(extension->id()),
-        type_(type),
-        flavors_(NONE),
-        height_of_signin_promo_(0u),
-        how_to_use_(NULL),
-        sign_in_link_(NULL),
-        manage_(NULL),
-       manage_shortcut_(NULL) {
-    // The Extension Installed bubble takes on various forms, depending on the
-    // type of extension installed. In general, though, they are all similar:
-    //
-    // -------------------------
-    // |      | Heading    [X] |
-    // | Icon | Info           |
-    // |      | Extra info     |
-    // -------------------------
-    //
-    // Icon and Heading are always shown (as well as the close button).
-    // Info is shown for browser actions, page actions and Omnibox keyword
-    // extensions and might list keyboard shorcut for the former two types.
-    // Extra info is...
-    // ... for other types, either a description of how to manage the extension
-    //     or a link to configure the keybinding shortcut (if one exists).
-    // Extra info can include a promo for signing into sync.
+                         const SkBitmap* icon);
 
-    // First figure out the keybinding situation.
-    extensions::Command command;
-    bool has_keybinding = GetKeybinding(&command);
-    base::string16 key;  // Keyboard shortcut or keyword to display in bubble.
+  // Overridden from views::ButtonListener.
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-    if (extensions::sync_helper::IsSyncableExtension(extension) &&
-        SyncPromoUI::ShouldShowSyncPromo(browser->profile()))
-      flavors_ |= SIGN_IN_PROMO;
-
-    // Determine the bubble flavor we want, based on the extension type.
-    switch (type_) {
-      case ExtensionInstalledBubble::BROWSER_ACTION:
-      case ExtensionInstalledBubble::PAGE_ACTION: {
-        flavors_ |= HOW_TO_USE;
-        if (has_keybinding) {
-          flavors_ |= SHOW_KEYBINDING;
-          key = command.accelerator().GetShortcutText();
-        } else {
-          // The How-To-Use text makes the bubble seem a little crowded when the
-          // extension has a keybinding, so the How-To-Manage text is not shown
-          // in those cases.
-          flavors_ |= HOW_TO_MANAGE;
-        }
-        break;
-      }
-      case ExtensionInstalledBubble::OMNIBOX_KEYWORD: {
-        flavors_ |= HOW_TO_USE | HOW_TO_MANAGE;
-        key = base::UTF8ToUTF16(extensions::OmniboxInfo::GetKeyword(extension));
-        break;
-      }
-      case ExtensionInstalledBubble::GENERIC: {
-        break;
-      }
-      default: {
-        // When adding a new bubble type, the flavor needs to be set.
-        COMPILE_ASSERT(ExtensionInstalledBubble::GENERIC == 3,
-                       kBubbleTypeEnumHasChangedButNotThisSwitchStatement);
-        break;
-      }
-    }
-
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    const gfx::FontList& font_list =
-        rb.GetFontList(ui::ResourceBundle::BaseFont);
-
-    // Add the icon (for all flavors).
-    // Scale down to 43x43, but allow smaller icons (don't scale up).
-    gfx::Size size(icon->width(), icon->height());
-    if (size.width() > kIconSize || size.height() > kIconSize)
-      size = gfx::Size(kIconSize, kIconSize);
-    icon_ = new views::ImageView();
-    icon_->SetImageSize(size);
-    icon_->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(*icon));
-    AddChildView(icon_);
-
-    // Add the heading (for all flavors).
-    base::string16 extension_name = base::UTF8ToUTF16(extension->name());
-    base::i18n::AdjustStringForLocaleDirection(&extension_name);
-    heading_ = new views::Label(l10n_util::GetStringFUTF16(
-        IDS_EXTENSION_INSTALLED_HEADING, extension_name));
-    heading_->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
-    heading_->SetMultiLine(true);
-    heading_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    AddChildView(heading_);
-
-    if (flavors_ & HOW_TO_USE) {
-      how_to_use_ = new views::Label(GetHowToUseDescription(key));
-      how_to_use_->SetFontList(font_list);
-      how_to_use_->SetMultiLine(true);
-      how_to_use_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      AddChildView(how_to_use_);
-    }
-
-    if (flavors_ & SHOW_KEYBINDING) {
-      manage_shortcut_ = new views::Link(
-          l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_SHORTCUTS));
-      manage_shortcut_->set_listener(this);
-      AddChildView(manage_shortcut_);
-    }
-
-    if (flavors_ & HOW_TO_MANAGE) {
-      manage_ = new views::Label(l10n_util::GetStringUTF16(
-          IDS_EXTENSION_INSTALLED_MANAGE_INFO));
-      manage_->SetFontList(font_list);
-      manage_->SetMultiLine(true);
-      manage_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      AddChildView(manage_);
-    }
-
-    if (flavors_ & SIGN_IN_PROMO) {
-      signin_promo_text_ =
-          l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_SIGNIN_PROMO);
-
-      signin_promo_link_text_ =
-          l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_SIGNIN_PROMO_LINK);
-      sign_in_link_ = new views::Link(signin_promo_link_text_);
-      sign_in_link_->SetFontList(font_list);
-      sign_in_link_->set_listener(this);
-      AddChildView(sign_in_link_);
-    }
-
-    // Add the Close button (for all flavors).
-    close_button_ = new views::ImageButton(this);
-    close_button_->SetImage(views::CustomButton::STATE_NORMAL,
-        rb.GetImageSkiaNamed(IDR_CLOSE_2));
-    close_button_->SetImage(views::CustomButton::STATE_HOVERED,
-        rb.GetImageSkiaNamed(IDR_CLOSE_2_H));
-    close_button_->SetImage(views::CustomButton::STATE_PRESSED,
-        rb.GetImageSkiaNamed(IDR_CLOSE_2_P));
-    AddChildView(close_button_);
-  }
-
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
-    DCHECK_EQ(sender, close_button_);
-    GetWidget()->Close();
-  }
-
-  // Implements the views::LinkListener interface.
-  void LinkClicked(views::Link* source, int event_flags) override {
-    GetWidget()->Close();
-    std::string configure_url;
-    if (source == manage_shortcut_) {
-      configure_url = chrome::kChromeUIExtensionsURL;
-      configure_url += chrome::kExtensionConfigureCommandsSubPage;
-    } else if (source == sign_in_link_) {
-      configure_url = signin::GetPromoURL(
-          signin::SOURCE_EXTENSION_INSTALL_BUBBLE, false).spec();
-    } else {
-      NOTREACHED();
-      return;
-    }
-    chrome::NavigateParams params(
-        chrome::GetSingletonTabNavigateParams(
-            browser_, GURL(configure_url.c_str())));
-    chrome::Navigate(&params);
-  }
+  // Overriden from views::LinkListener.
+  void LinkClicked(views::Link* source, int event_flags) override;
 
  private:
   enum Flavors {
@@ -263,211 +107,17 @@ class InstalledBubbleContent : public views::View,
     SIGN_IN_PROMO   = 1 << 3,
   };
 
-  bool GetKeybinding(extensions::Command* command) {
-    extensions::CommandService* command_service =
-        extensions::CommandService::Get(browser_->profile());
-    if (type_ == ExtensionInstalledBubble::BROWSER_ACTION) {
-      return command_service->GetBrowserActionCommand(
-          extension_id_,
-          extensions::CommandService::ACTIVE_ONLY,
-          command,
-          NULL);
-    } else if (type_ == ExtensionInstalledBubble::PAGE_ACTION) {
-      return command_service->GetPageActionCommand(
-          extension_id_,
-          extensions::CommandService::ACTIVE_ONLY,
-          command,
-          NULL);
-    } else {
-      return false;
-    }
-  }
-
-  base::string16 GetHowToUseDescription(const base::string16& key) {
-    switch (type_) {
-      case ExtensionInstalledBubble::BROWSER_ACTION:
-        if (!key.empty()) {
-          return l10n_util::GetStringFUTF16(
-              IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO_WITH_SHORTCUT, key);
-        } else {
-          return l10n_util::GetStringUTF16(
-              IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO);
-        }
-        break;
-      case ExtensionInstalledBubble::PAGE_ACTION:
-        if (!key.empty()) {
-          return l10n_util::GetStringFUTF16(
-              IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO_WITH_SHORTCUT, key);
-        } else {
-          return l10n_util::GetStringUTF16(
-              IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO);
-        }
-        break;
-      case ExtensionInstalledBubble::OMNIBOX_KEYWORD:
-        return l10n_util::GetStringFUTF16(
-            IDS_EXTENSION_INSTALLED_OMNIBOX_KEYWORD_INFO, key);
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-    return base::string16();
-  }
+  bool GetKeybinding(extensions::Command* command);
+  base::string16 GetHowToUseDescription(const base::string16& key);
 
   // Layout the signin promo at coordinates |offset_x| and |offset_y|. Returns
   // the height (in pixels) of the promo UI.
-  int LayoutSigninPromo(int offset_x, int offset_y) {
-    sign_in_promo_lines_.clear();
-    int height = 0;
-    gfx::Rect contents_area = GetContentsBounds();
-    if (contents_area.IsEmpty())
-      return height;
-    contents_area.set_width(kRightColumnWidth);
+  int LayoutSigninPromo(int offset_x, int offset_y);
 
-    base::string16 full_text = signin_promo_link_text_ + signin_promo_text_;
-
-    // The link is the first item in the text.
-    const gfx::Size link_size = sign_in_link_->GetPreferredSize();
-    sign_in_link_->SetBounds(
-        offset_x, offset_y, link_size.width(), link_size.height());
-
-    // Word-wrap the full label text.
-    const gfx::FontList font_list;
-    std::vector<base::string16> lines;
-    gfx::ElideRectangleText(full_text, font_list, contents_area.width(),
-                            contents_area.height(), gfx::ELIDE_LONG_WORDS,
-                            &lines);
-
-    gfx::Point position = gfx::Point(
-        contents_area.origin().x() + offset_x,
-        contents_area.origin().y() + offset_y + 1);
-    if (base::i18n::IsRTL()) {
-      position -= gfx::Vector2d(
-          2 * views::kPanelHorizMargin + kHorizOuterMargin, 0);
-    }
-
-    // Loop through the lines, creating a renderer for each.
-    for (std::vector<base::string16>::const_iterator it = lines.begin();
-         it != lines.end(); ++it) {
-      gfx::RenderText* line = gfx::RenderText::CreateInstance();
-      line->SetDirectionalityMode(gfx::DIRECTIONALITY_FROM_UI);
-      line->SetText(*it);
-      const gfx::Size size(contents_area.width(),
-                           line->GetStringSize().height());
-      line->SetDisplayRect(gfx::Rect(position, size));
-      position.set_y(position.y() + size.height());
-      sign_in_promo_lines_.push_back(line);
-      height += size.height();
-    }
-
-    // The link is drawn separately; make it transparent here to only draw once.
-    // The link always leads other text and is assumed to fit on the first line.
-    sign_in_promo_lines_.front()->ApplyColor(SK_ColorTRANSPARENT,
-        gfx::Range(0, signin_promo_link_text_.size()));
-
-    return height;
-  }
-
-  gfx::Size GetPreferredSize() const override {
-    int width = kHorizOuterMargin;
-    width += kIconSize;
-    width += views::kPanelHorizMargin;
-    width += kRightColumnWidth;
-    width += 2 * views::kPanelHorizMargin;
-    width += kHorizOuterMargin;
-
-    int height = kVertOuterMargin;
-    height += heading_->GetHeightForWidth(kRightColumnWidth);
-    height += kVertInnerMargin;
-
-    if (flavors_ & HOW_TO_USE) {
-      height += how_to_use_->GetHeightForWidth(kRightColumnWidth);
-      height += kVertInnerMargin;
-    }
-
-    if (flavors_ & HOW_TO_MANAGE) {
-      height += manage_->GetHeightForWidth(kRightColumnWidth);
-      height += kVertInnerMargin;
-    }
-
-    if (flavors_ & SIGN_IN_PROMO && height_of_signin_promo_ > 0u) {
-      height += height_of_signin_promo_;
-      height += kVertInnerMargin;
-    }
-
-    if (flavors_ & SHOW_KEYBINDING) {
-      height += manage_shortcut_->GetHeightForWidth(kRightColumnWidth);
-      height += kVertInnerMargin;
-    }
-
-    return gfx::Size(width, std::max(height, kIconSize + 2 * kVertOuterMargin));
-  }
-
-  void Layout() override {
-    int x = kHorizOuterMargin;
-    int y = kVertOuterMargin;
-
-    icon_->SetBounds(x, y, kIconSize, kIconSize);
-    x += kIconSize;
-    x += views::kPanelHorizMargin;
-
-    y += kRightcolumnVerticalShift;
-    heading_->SizeToFit(kRightColumnWidth);
-    heading_->SetX(x);
-    heading_->SetY(y);
-    y += heading_->height();
-    y += kVertInnerMargin;
-
-    if (flavors_ & HOW_TO_USE) {
-      how_to_use_->SizeToFit(kRightColumnWidth);
-      how_to_use_->SetX(x);
-      how_to_use_->SetY(y);
-      y += how_to_use_->height();
-      y += kVertInnerMargin;
-    }
-
-    if (flavors_ & HOW_TO_MANAGE) {
-      manage_->SizeToFit(kRightColumnWidth);
-      manage_->SetX(x);
-      manage_->SetY(y);
-      y += manage_->height();
-      y += kVertInnerMargin;
-    }
-
-    if (flavors_ & SIGN_IN_PROMO) {
-      height_of_signin_promo_ = LayoutSigninPromo(x, y);
-      y += height_of_signin_promo_;
-      y += kVertInnerMargin;
-    }
-
-    if (flavors_ & SHOW_KEYBINDING) {
-      gfx::Size sz = manage_shortcut_->GetPreferredSize();
-      manage_shortcut_->SetBounds(width() - 2 * kHorizOuterMargin - sz.width(),
-                                  y,
-                                  sz.width(),
-                                  sz.height());
-      y += manage_shortcut_->height();
-      y += kVertInnerMargin;
-    }
-
-    gfx::Size sz;
-    x += kRightColumnWidth + 2 * views::kPanelHorizMargin + kHorizOuterMargin -
-        close_button_->GetPreferredSize().width();
-    y = kVertOuterMargin;
-    sz = close_button_->GetPreferredSize();
-    // x-1 & y-1 is just slop to get the close button visually aligned with the
-    // title text and bubble arrow.
-    close_button_->SetBounds(x - 1, y - 1, sz.width(), sz.height());
-  }
-
-  void OnPaint(gfx::Canvas* canvas) override {
-    for (ScopedVector<gfx::RenderText>::const_iterator it =
-             sign_in_promo_lines_.begin();
-         it != sign_in_promo_lines_.end(); ++it)
-      (*it)->Draw(canvas);
-
-    views::View::OnPaint(canvas);
-  }
+  // Overriden from views::View.
+  gfx::Size GetPreferredSize() const override;
+  void Layout() override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   // The browser we're associated with.
   Browser* browser_;
@@ -505,6 +155,379 @@ class InstalledBubbleContent : public views::View,
 
   DISALLOW_COPY_AND_ASSIGN(InstalledBubbleContent);
 };
+
+InstalledBubbleContent::InstalledBubbleContent(
+    Browser* browser,
+    const Extension* extension,
+    ExtensionInstalledBubble::BubbleType type,
+    const SkBitmap* icon)
+    : browser_(browser),
+      extension_id_(extension->id()),
+      type_(type),
+      flavors_(NONE),
+      height_of_signin_promo_(0u),
+      how_to_use_(NULL),
+      sign_in_link_(NULL),
+      manage_(NULL),
+      manage_shortcut_(NULL) {
+  // The Extension Installed bubble takes on various forms, depending on the
+  // type of extension installed. In general, though, they are all similar:
+  //
+  // -------------------------
+  // |      | Heading    [X] |
+  // | Icon | Info           |
+  // |      | Extra info     |
+  // -------------------------
+  //
+  // Icon and Heading are always shown (as well as the close button).
+  // Info is shown for browser actions, page actions and Omnibox keyword
+  // extensions and might list keyboard shorcut for the former two types.
+  // Extra info is...
+  // ... for other types, either a description of how to manage the extension
+  //     or a link to configure the keybinding shortcut (if one exists).
+  // Extra info can include a promo for signing into sync.
+
+  // First figure out the keybinding situation.
+  extensions::Command command;
+  bool has_keybinding = GetKeybinding(&command);
+  base::string16 key;  // Keyboard shortcut or keyword to display in bubble.
+
+  if (extensions::sync_helper::IsSyncableExtension(extension) &&
+      SyncPromoUI::ShouldShowSyncPromo(browser->profile()))
+    flavors_ |= SIGN_IN_PROMO;
+
+  // Determine the bubble flavor we want, based on the extension type.
+  switch (type_) {
+    case ExtensionInstalledBubble::BROWSER_ACTION:
+    case ExtensionInstalledBubble::PAGE_ACTION: {
+      flavors_ |= HOW_TO_USE;
+      if (has_keybinding) {
+        flavors_ |= SHOW_KEYBINDING;
+        key = command.accelerator().GetShortcutText();
+      } else {
+        // The How-To-Use text makes the bubble seem a little crowded when the
+        // extension has a keybinding, so the How-To-Manage text is not shown
+        // in those cases.
+        flavors_ |= HOW_TO_MANAGE;
+      }
+      break;
+    }
+    case ExtensionInstalledBubble::OMNIBOX_KEYWORD: {
+      flavors_ |= HOW_TO_USE | HOW_TO_MANAGE;
+      key = base::UTF8ToUTF16(extensions::OmniboxInfo::GetKeyword(extension));
+      break;
+    }
+    case ExtensionInstalledBubble::GENERIC: {
+      break;
+    }
+    default: {
+      // When adding a new bubble type, the flavor needs to be set.
+      COMPILE_ASSERT(ExtensionInstalledBubble::GENERIC == 3,
+                     kBubbleTypeEnumHasChangedButNotThisSwitchStatement);
+      break;
+    }
+  }
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const gfx::FontList& font_list =
+      rb.GetFontList(ui::ResourceBundle::BaseFont);
+
+  // Add the icon (for all flavors).
+  // Scale down to 43x43, but allow smaller icons (don't scale up).
+  gfx::Size size(icon->width(), icon->height());
+  if (size.width() > kIconSize || size.height() > kIconSize)
+    size = gfx::Size(kIconSize, kIconSize);
+  icon_ = new views::ImageView();
+  icon_->SetImageSize(size);
+  icon_->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(*icon));
+  AddChildView(icon_);
+
+  // Add the heading (for all flavors).
+  base::string16 extension_name = base::UTF8ToUTF16(extension->name());
+  base::i18n::AdjustStringForLocaleDirection(&extension_name);
+  heading_ = new views::Label(l10n_util::GetStringFUTF16(
+      IDS_EXTENSION_INSTALLED_HEADING, extension_name));
+  heading_->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
+  heading_->SetMultiLine(true);
+  heading_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  AddChildView(heading_);
+
+  if (flavors_ & HOW_TO_USE) {
+    how_to_use_ = new views::Label(GetHowToUseDescription(key));
+    how_to_use_->SetFontList(font_list);
+    how_to_use_->SetMultiLine(true);
+    how_to_use_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    AddChildView(how_to_use_);
+  }
+
+  if (flavors_ & SHOW_KEYBINDING) {
+    manage_shortcut_ = new views::Link(
+        l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_SHORTCUTS));
+    manage_shortcut_->set_listener(this);
+    AddChildView(manage_shortcut_);
+  }
+
+  if (flavors_ & HOW_TO_MANAGE) {
+    manage_ = new views::Label(l10n_util::GetStringUTF16(
+        IDS_EXTENSION_INSTALLED_MANAGE_INFO));
+    manage_->SetFontList(font_list);
+    manage_->SetMultiLine(true);
+    manage_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    AddChildView(manage_);
+  }
+
+  if (flavors_ & SIGN_IN_PROMO) {
+    signin_promo_text_ =
+        l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_SIGNIN_PROMO);
+
+    signin_promo_link_text_ =
+        l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_SIGNIN_PROMO_LINK);
+    sign_in_link_ = new views::Link(signin_promo_link_text_);
+    sign_in_link_->SetFontList(font_list);
+    sign_in_link_->set_listener(this);
+    AddChildView(sign_in_link_);
+  }
+
+  // Add the Close button (for all flavors).
+  close_button_ = new views::ImageButton(this);
+  close_button_->SetImage(views::CustomButton::STATE_NORMAL,
+      rb.GetImageSkiaNamed(IDR_CLOSE_2));
+  close_button_->SetImage(views::CustomButton::STATE_HOVERED,
+      rb.GetImageSkiaNamed(IDR_CLOSE_2_H));
+  close_button_->SetImage(views::CustomButton::STATE_PRESSED,
+      rb.GetImageSkiaNamed(IDR_CLOSE_2_P));
+  AddChildView(close_button_);
+}
+
+void InstalledBubbleContent::ButtonPressed(views::Button* sender,
+                                           const ui::Event& event) {
+  DCHECK_EQ(sender, close_button_);
+  GetWidget()->Close();
+}
+
+void InstalledBubbleContent::LinkClicked(views::Link* source, int event_flags) {
+  GetWidget()->Close();
+  std::string configure_url;
+  if (source == manage_shortcut_) {
+    configure_url = chrome::kChromeUIExtensionsURL;
+    configure_url += chrome::kExtensionConfigureCommandsSubPage;
+  } else if (source == sign_in_link_) {
+    configure_url = signin::GetPromoURL(
+        signin::SOURCE_EXTENSION_INSTALL_BUBBLE, false).spec();
+  } else {
+    NOTREACHED();
+    return;
+  }
+  chrome::NavigateParams params(
+      chrome::GetSingletonTabNavigateParams(
+          browser_, GURL(configure_url.c_str())));
+  chrome::Navigate(&params);
+}
+
+bool InstalledBubbleContent::GetKeybinding(extensions::Command* command) {
+  extensions::CommandService* command_service =
+      extensions::CommandService::Get(browser_->profile());
+  if (type_ == ExtensionInstalledBubble::BROWSER_ACTION) {
+    return command_service->GetBrowserActionCommand(
+        extension_id_,
+        extensions::CommandService::ACTIVE_ONLY,
+        command,
+        NULL);
+  } else if (type_ == ExtensionInstalledBubble::PAGE_ACTION) {
+    return command_service->GetPageActionCommand(
+        extension_id_,
+        extensions::CommandService::ACTIVE_ONLY,
+        command,
+        NULL);
+  } else {
+    return false;
+  }
+}
+
+base::string16 InstalledBubbleContent::GetHowToUseDescription(
+    const base::string16& key) {
+  switch (type_) {
+    case ExtensionInstalledBubble::BROWSER_ACTION:
+      if (!key.empty()) {
+        return l10n_util::GetStringFUTF16(
+            IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO_WITH_SHORTCUT, key);
+      } else {
+        return l10n_util::GetStringUTF16(
+            IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO);
+      }
+      break;
+    case ExtensionInstalledBubble::PAGE_ACTION:
+      if (!key.empty()) {
+        return l10n_util::GetStringFUTF16(
+            IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO_WITH_SHORTCUT, key);
+      } else {
+        return l10n_util::GetStringUTF16(
+            IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO);
+      }
+      break;
+    case ExtensionInstalledBubble::OMNIBOX_KEYWORD:
+      return l10n_util::GetStringFUTF16(
+          IDS_EXTENSION_INSTALLED_OMNIBOX_KEYWORD_INFO, key);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  return base::string16();
+}
+
+int InstalledBubbleContent::LayoutSigninPromo(int offset_x, int offset_y) {
+  sign_in_promo_lines_.clear();
+  int height = 0;
+  gfx::Rect contents_area = GetContentsBounds();
+  if (contents_area.IsEmpty())
+    return height;
+  contents_area.set_width(kRightColumnWidth);
+
+  base::string16 full_text = signin_promo_link_text_ + signin_promo_text_;
+
+  // The link is the first item in the text.
+  const gfx::Size link_size = sign_in_link_->GetPreferredSize();
+  sign_in_link_->SetBounds(
+      offset_x, offset_y, link_size.width(), link_size.height());
+
+  // Word-wrap the full label text.
+  const gfx::FontList font_list;
+  std::vector<base::string16> lines;
+  gfx::ElideRectangleText(full_text, font_list, contents_area.width(),
+                          contents_area.height(), gfx::ELIDE_LONG_WORDS,
+                          &lines);
+
+  gfx::Point position = gfx::Point(
+      contents_area.origin().x() + offset_x,
+      contents_area.origin().y() + offset_y + 1);
+  if (base::i18n::IsRTL()) {
+    position -= gfx::Vector2d(
+        2 * views::kPanelHorizMargin + kHorizOuterMargin, 0);
+  }
+
+  // Loop through the lines, creating a renderer for each.
+  for (std::vector<base::string16>::const_iterator it = lines.begin();
+       it != lines.end(); ++it) {
+    gfx::RenderText* line = gfx::RenderText::CreateInstance();
+    line->SetDirectionalityMode(gfx::DIRECTIONALITY_FROM_UI);
+    line->SetText(*it);
+    const gfx::Size size(contents_area.width(),
+                         line->GetStringSize().height());
+    line->SetDisplayRect(gfx::Rect(position, size));
+    position.set_y(position.y() + size.height());
+    sign_in_promo_lines_.push_back(line);
+    height += size.height();
+  }
+
+  // The link is drawn separately; make it transparent here to only draw once.
+  // The link always leads other text and is assumed to fit on the first line.
+  sign_in_promo_lines_.front()->ApplyColor(SK_ColorTRANSPARENT,
+      gfx::Range(0, signin_promo_link_text_.size()));
+
+  return height;
+}
+
+gfx::Size InstalledBubbleContent::GetPreferredSize() const {
+  int width = kHorizOuterMargin;
+  width += kIconSize;
+  width += views::kPanelHorizMargin;
+  width += kRightColumnWidth;
+  width += 2 * views::kPanelHorizMargin;
+  width += kHorizOuterMargin;
+
+  int height = kVertOuterMargin;
+  height += heading_->GetHeightForWidth(kRightColumnWidth);
+  height += kVertInnerMargin;
+
+  if (flavors_ & HOW_TO_USE) {
+    height += how_to_use_->GetHeightForWidth(kRightColumnWidth);
+    height += kVertInnerMargin;
+  }
+
+  if (flavors_ & HOW_TO_MANAGE) {
+    height += manage_->GetHeightForWidth(kRightColumnWidth);
+    height += kVertInnerMargin;
+  }
+
+  if (flavors_ & SIGN_IN_PROMO && height_of_signin_promo_ > 0u) {
+    height += height_of_signin_promo_;
+    height += kVertInnerMargin;
+  }
+
+  if (flavors_ & SHOW_KEYBINDING) {
+    height += manage_shortcut_->GetHeightForWidth(kRightColumnWidth);
+    height += kVertInnerMargin;
+  }
+
+  return gfx::Size(width, std::max(height, kIconSize + 2 * kVertOuterMargin));
+}
+
+void InstalledBubbleContent::Layout() {
+  int x = kHorizOuterMargin;
+  int y = kVertOuterMargin;
+
+  icon_->SetBounds(x, y, kIconSize, kIconSize);
+  x += kIconSize;
+  x += views::kPanelHorizMargin;
+
+  y += kRightcolumnVerticalShift;
+  heading_->SizeToFit(kRightColumnWidth);
+  heading_->SetX(x);
+  heading_->SetY(y);
+  y += heading_->height();
+  y += kVertInnerMargin;
+
+  if (flavors_ & HOW_TO_USE) {
+    how_to_use_->SizeToFit(kRightColumnWidth);
+    how_to_use_->SetX(x);
+    how_to_use_->SetY(y);
+    y += how_to_use_->height();
+    y += kVertInnerMargin;
+  }
+
+  if (flavors_ & HOW_TO_MANAGE) {
+    manage_->SizeToFit(kRightColumnWidth);
+    manage_->SetX(x);
+    manage_->SetY(y);
+    y += manage_->height();
+    y += kVertInnerMargin;
+  }
+
+  if (flavors_ & SIGN_IN_PROMO) {
+    height_of_signin_promo_ = LayoutSigninPromo(x, y);
+    y += height_of_signin_promo_;
+    y += kVertInnerMargin;
+  }
+
+  if (flavors_ & SHOW_KEYBINDING) {
+    gfx::Size sz = manage_shortcut_->GetPreferredSize();
+    manage_shortcut_->SetBounds(width() - 2 * kHorizOuterMargin - sz.width(),
+                                y,
+                                sz.width(),
+                                sz.height());
+    y += manage_shortcut_->height();
+    y += kVertInnerMargin;
+  }
+
+  gfx::Size sz;
+  x += kRightColumnWidth + 2 * views::kPanelHorizMargin + kHorizOuterMargin -
+      close_button_->GetPreferredSize().width();
+  y = kVertOuterMargin;
+  sz = close_button_->GetPreferredSize();
+  // x-1 & y-1 is just slop to get the close button visually aligned with the
+  // title text and bubble arrow.
+  close_button_->SetBounds(x - 1, y - 1, sz.width(), sz.height());
+}
+
+void InstalledBubbleContent::OnPaint(gfx::Canvas* canvas) {
+  for (ScopedVector<gfx::RenderText>::const_iterator it =
+           sign_in_promo_lines_.begin();
+       it != sign_in_promo_lines_.end(); ++it)
+    (*it)->Draw(canvas);
+
+  views::View::OnPaint(canvas);
+}
 
 void ExtensionInstalledBubbleView::Show(const Extension* extension,
                                         Browser* browser,
