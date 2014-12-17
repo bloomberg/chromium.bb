@@ -82,6 +82,11 @@ unsigned short MockWebRTCDataChannelHandler::id() const {
   return init_.id;
 }
 
+blink::WebRTCDataChannelHandlerClient::ReadyState
+    MockWebRTCDataChannelHandler::state() const {
+  return blink::WebRTCDataChannelHandlerClient::ReadyStateConnecting;
+}
+
 unsigned long MockWebRTCDataChannelHandler::bufferedAmount() {
   return 0;
 }

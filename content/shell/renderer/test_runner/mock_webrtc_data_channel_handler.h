@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "content/shell/renderer/test_runner/web_task.h"
 #include "third_party/WebKit/public/platform/WebRTCDataChannelHandler.h"
+#include "third_party/WebKit/public/platform/WebRTCDataChannelHandlerClient.h"
 #include "third_party/WebKit/public/platform/WebRTCDataChannelInit.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
@@ -32,6 +33,9 @@ class MockWebRTCDataChannelHandler : public blink::WebRTCDataChannelHandler {
   virtual blink::WebString protocol() const override;
   virtual bool negotiated() const override;
   virtual unsigned short id() const override;
+  // TODO(bemasc): Mark |state()| as |override| once https://codereview.chromium.org/782843003/
+  // lands in Blink and rolls into Chromium.
+  virtual blink::WebRTCDataChannelHandlerClient::ReadyState state() const;
   virtual unsigned long bufferedAmount() override;
   virtual bool sendStringData(const blink::WebString& data) override;
   virtual bool sendRawData(const char* data, size_t size) override;

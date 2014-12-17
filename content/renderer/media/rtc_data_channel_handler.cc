@@ -195,6 +195,38 @@ unsigned short RtcDataChannelHandler::id() const {
   return channel()->id();
 }
 
+blink::WebRTCDataChannelHandlerClient::ReadyState convertReadyState(
+    webrtc::DataChannelInterface::DataState state) {
+  switch (state) {
+    case webrtc::DataChannelInterface::kConnecting:
+      return blink::WebRTCDataChannelHandlerClient::ReadyStateConnecting;
+      break;
+    case webrtc::DataChannelInterface::kOpen:
+      return blink::WebRTCDataChannelHandlerClient::ReadyStateOpen;
+      break;
+    case webrtc::DataChannelInterface::kClosing:
+      return blink::WebRTCDataChannelHandlerClient::ReadyStateClosing;
+      break;
+    case webrtc::DataChannelInterface::kClosed:
+      return blink::WebRTCDataChannelHandlerClient::ReadyStateClosed;
+      break;
+    default:
+      NOTREACHED();
+      // MSVC does not respect |NOTREACHED()|, so we need a return value.
+      return blink::WebRTCDataChannelHandlerClient::ReadyStateClosed;
+  }
+}
+
+blink::WebRTCDataChannelHandlerClient::ReadyState
+    RtcDataChannelHandler::state() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!observer_.get()) {
+    return blink::WebRTCDataChannelHandlerClient::ReadyStateConnecting;
+  } else {
+    return convertReadyState(observer_->channel()->state());
+  }
+}
+
 unsigned long RtcDataChannelHandler::bufferedAmount() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return channel()->buffered_amount();
@@ -245,28 +277,10 @@ void RtcDataChannelHandler::OnStateChange(
     return;
   }
 
-  switch (state) {
-    case webrtc::DataChannelInterface::kConnecting:
-      webkit_client_->didChangeReadyState(
-          blink::WebRTCDataChannelHandlerClient::ReadyStateConnecting);
-      break;
-    case webrtc::DataChannelInterface::kOpen:
-      IncrementCounter(CHANNEL_OPENED);
-      webkit_client_->didChangeReadyState(
-          blink::WebRTCDataChannelHandlerClient::ReadyStateOpen);
-      break;
-    case webrtc::DataChannelInterface::kClosing:
-      webkit_client_->didChangeReadyState(
-          blink::WebRTCDataChannelHandlerClient::ReadyStateClosing);
-      break;
-    case webrtc::DataChannelInterface::kClosed:
-      webkit_client_->didChangeReadyState(
-          blink::WebRTCDataChannelHandlerClient::ReadyStateClosed);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
+  if (state == webrtc::DataChannelInterface::kOpen)
+    IncrementCounter(CHANNEL_OPENED);
+
+  webkit_client_->didChangeReadyState(convertReadyState(state));
 }
 
 void RtcDataChannelHandler::OnMessage(scoped_ptr<webrtc::DataBuffer> buffer) {

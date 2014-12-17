@@ -50,6 +50,9 @@ class CONTENT_EXPORT RtcDataChannelHandler
   virtual blink::WebString protocol() const override;
   virtual bool negotiated() const override;
   virtual unsigned short id() const override;
+  // TODO(bemasc): Mark |state()| as |override| once https://codereview.chromium.org/782843003/
+  // lands in Blink and rolls into Chromium.
+  virtual blink::WebRTCDataChannelHandlerClient::ReadyState state() const;
   virtual unsigned long bufferedAmount() override;
   virtual bool sendStringData(const blink::WebString& data) override;
   virtual bool sendRawData(const char* data, size_t length) override;
