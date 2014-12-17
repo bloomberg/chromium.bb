@@ -27,8 +27,7 @@ interface DemuxerStream {
   };
 
   // Request a MediaDecoderBuffer from this stream for decoding and rendering.
-  // When available, the callback will be invoked with a Status and |response|
-  // buffer.  See media::DemuxerStream::ReadCB for explanation of fields.
+  // See media::DemuxerStream::ReadCB for an explanation of the fields.
   //
   // Upon receipt of the callback, clients must fill out the data section of
   // the returned media::DecoderBuffer by reading from the |pipe| provided
@@ -37,7 +36,7 @@ interface DemuxerStream {
   // TODO(dalecurtis): Remove this method in favor of serializing everything
   // into the DataPipe given to OnStreamReady() once DataPipe supports framed
   // data in a nicer fashion.
-  Read() => (Status status, MediaDecoderBuffer response);
+  Read() => (Status status, MediaDecoderBuffer? buffer);
 };
 
 interface DemuxerStreamClient {

@@ -84,11 +84,6 @@ void MojoDemuxerStreamAdapter::OnAudioDecoderConfigChanged(
   type_ = DemuxerStream::AUDIO;
 
   audio_config_queue_.push(config.To<AudioDecoderConfig>());
-
-  if (!read_cb_.is_null()) {
-    read_cb_.Run(DemuxerStream::Status::kConfigChanged, NULL);
-    read_cb_.Reset();
-  }
 }
 
 void MojoDemuxerStreamAdapter::OnVideoDecoderConfigChanged(
@@ -98,11 +93,6 @@ void MojoDemuxerStreamAdapter::OnVideoDecoderConfigChanged(
   type_ = DemuxerStream::VIDEO;
 
   video_config_queue_.push(config.To<VideoDecoderConfig>());
-
-  if (!read_cb_.is_null()) {
-    read_cb_.Run(DemuxerStream::Status::kConfigChanged, NULL);
-    read_cb_.Reset();
-  }
 }
 
 void MojoDemuxerStreamAdapter::OnBufferReady(
@@ -113,28 +103,32 @@ void MojoDemuxerStreamAdapter::OnBufferReady(
   DCHECK_NE(type_, DemuxerStream::UNKNOWN);
   DCHECK(stream_pipe_.is_valid());
 
-  DemuxerStream::Status media_status(
-      static_cast<DemuxerStream::Status>(status));
+  if (status == mojo::DemuxerStream::STATUS_CONFIG_CHANGED) {
+    if (type_ == DemuxerStream::AUDIO) {
+      audio_config_queue_.pop();
+      DCHECK(!audio_config_queue_.empty());
+    } else if (type_ == DemuxerStream::VIDEO) {
+      video_config_queue_.pop();
+      DCHECK(!video_config_queue_.empty());
+    } else {
+      NOTREACHED() << "Unsupported config change encountered for type: "
+                   << type_;
+    }
+
+    base::ResetAndReturn(&read_cb_).Run(DemuxerStream::kConfigChanged, nullptr);
+    return;
+  }
+
+  if (status == mojo::DemuxerStream::STATUS_ABORTED) {
+    base::ResetAndReturn(&read_cb_).Run(DemuxerStream::kAborted, nullptr);
+    return;
+  }
+
+  DCHECK_EQ(status, mojo::DemuxerStream::STATUS_OK);
   scoped_refptr<DecoderBuffer> media_buffer(
       buffer.To<scoped_refptr<DecoderBuffer>>());
 
-  if (status == mojo::DemuxerStream::STATUS_CONFIG_CHANGED) {
-    DCHECK(!media_buffer.get());
-
-    // If the configuration queue is empty we need to wait for a config change
-    // event before invoking |read_cb_|.
-
-    if (type_ == DemuxerStream::AUDIO) {
-      audio_config_queue_.pop();
-      if (audio_config_queue_.empty())
-        return;
-    } else if (type_ == DemuxerStream::VIDEO) {
-      video_config_queue_.pop();
-      if (video_config_queue_.empty())
-        return;
-    }
-  } else if (status == mojo::DemuxerStream::STATUS_OK &&
-             !media_buffer->end_of_stream()) {
+  if (!media_buffer->end_of_stream()) {
     DCHECK_GT(media_buffer->data_size(), 0);
 
     // Read the inner data for the DecoderBuffer from our DataPipe.
@@ -145,8 +139,7 @@ void MojoDemuxerStreamAdapter::OnBufferReady(
     CHECK_EQ(num_bytes, static_cast<uint32_t>(media_buffer->data_size()));
   }
 
-  read_cb_.Run(media_status, media_buffer);
-  read_cb_.Reset();
+  base::ResetAndReturn(&read_cb_).Run(DemuxerStream::kOk, media_buffer);
 }
 
 }  // namespace media

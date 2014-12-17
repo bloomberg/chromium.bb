@@ -249,8 +249,9 @@ TypeConverter<scoped_ptr<media::DecryptConfig>, DecryptConfigPtr>::Convert(
 MediaDecoderBufferPtr TypeConverter<MediaDecoderBufferPtr,
     scoped_refptr<media::DecoderBuffer> >::Convert(
         const scoped_refptr<media::DecoderBuffer>& input) {
-  MediaDecoderBufferPtr mojo_buffer(MediaDecoderBuffer::New());
+  DCHECK(input);
 
+  MediaDecoderBufferPtr mojo_buffer(MediaDecoderBuffer::New());
   if (input->end_of_stream())
     return mojo_buffer.Pass();
 
