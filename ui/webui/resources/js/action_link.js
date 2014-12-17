@@ -51,16 +51,29 @@ var ActionLink = document.registerElement('action-link', {
         }
       });
 
-      this.addEventListener('mousedown', function(e) {
+      function preventDefault(e) {
+        e.preventDefault();
+      }
+
+      function removePreventDefault() {
+        document.removeEventListener('selectstart', preventDefault);
+        document.removeEventListener('mouseup', removePreventDefault);
+      }
+
+      this.addEventListener('mousedown', function() {
         // This handlers strives to match the behavior of <a href="...">.
 
-        // tabindex="0" makes an element receive focus when the mouse is
-        // pressed. <a href> doesn't do this, so prevent this behavior.
-        e.preventDefault();
+        // While the mouse is down, prevent text selection from dragging.
+        document.addEventListener('selectstart', preventDefault);
+        document.addEventListener('mouseup', removePreventDefault);
 
-        // A mouse press on <a href> blurs any other currently focused element.
+        // If focus started via mouse press, don't show an outline.
         if (document.activeElement != this)
-          document.activeElement.blur();
+          this.classList.add('no-outline');
+      });
+
+      this.addEventListener('blur', function() {
+        this.classList.remove('no-outline');
       });
     },
 
@@ -92,5 +105,6 @@ var ActionLink = document.registerElement('action-link', {
         HTMLAnchorElement.prototype.removeAttribute.apply(this, arguments);
     },
   },
+
   extends: 'a',
 });

@@ -266,6 +266,10 @@ input:disabled:-webkit-any([type='password'],
   text-decoration: none;
 }
 
+[is='action-link'].no-outline {
+  outline: none;
+}
+
 /* Checkbox/radio helpers ******************************************************
  *
  * .checkbox and .radio classes wrap labels. Checkboxes and radios should use
