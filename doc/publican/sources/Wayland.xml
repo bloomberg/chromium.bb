@@ -12,7 +12,7 @@
   <xi:include href="Architecture.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
   <xi:include href="Protocol.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
   <xi:include href="ProtocolSpec.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
-  <xi:include href="WaylandClientAPI.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-  <xi:include href="WaylandServerAPI.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="ClientAPI.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="ServerAPI.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 </book>
 

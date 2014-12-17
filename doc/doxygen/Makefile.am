@@ -1,24 +1,24 @@
 
-noinst_DATA = xml/client/index.xml xml/server/index.xml
+noinst_DATA = xml/Client/index.xml xml/Server/index.xml
 dist_noinst_DATA = wayland.doxygen.in
 
 scanned_src_files_shared = 				\
 	$(top_srcdir)/src/wayland-util.c	\
 	$(top_srcdir)/src/wayland-util.h
 
-scanned_src_files_client = 				\
+scanned_src_files_Client = 				\
 	$(scanned_src_files_shared)			\
 	$(top_srcdir)/src/wayland-client.c	\
 	$(top_srcdir)/src/wayland-client.h
 
-scanned_src_files_server = 				\
+scanned_src_files_Server = 				\
 	$(scanned_src_files_shared)			\
 	$(top_srcdir)/src/wayland-server.c	\
 	$(top_srcdir)/src/wayland-server.h	\
 	$(top_srcdir)/src/wayland-shm.c
 
 scanned_src_files_man =					\
-	$(scanned_src_files_server)			\
+	$(scanned_src_files_Server)			\
 	$(top_srcdir)/src/wayland-client.c	\
 	$(top_srcdir)/src/wayland-client.h
 
@@ -28,20 +28,13 @@ scanned_src_files_man =					\
 dist_man3_MANS = $(shell test -d man && find man/man3 -name "wl_*.3" -printf "man/man3/%P\n")
 
 # Listing various directories that might need to be created.
-alldirs := xml/client xml/server man/man3
+alldirs := xml/Client xml/Server man/man3
 
-xml/client/index.xml: $(scanned_src_files_client) wayland.doxygen | xml/client
+xml/%/index.xml: $(scanned_src_files_%) wayland.doxygen | xml/%
 	$(AM_V_GEN)(cat wayland.doxygen; \
           echo "GENERATE_XML=YES"; \
-          echo "XML_OUTPUT=xml/client"; \
-          echo "INPUT= $(scanned_src_files_client)"; \
-          ) | $(DOXYGEN) -
-
-xml/server/index.xml: $(scanned_src_files_server) wayland.doxygen | xml/server
-	$(AM_V_GEN)(cat wayland.doxygen; \
-          echo "GENERATE_XML=YES"; \
-          echo "XML_OUTPUT=xml/server"; \
-          echo "INPUT= $(scanned_src_files_server)"; \
+          echo "XML_OUTPUT=xml/$*"; \
+          echo "INPUT= $(scanned_src_files_$*)"; \
           ) | $(DOXYGEN) -
 
 man/man3/wl_display.3: $(scanned_src_files_man) wayland.doxygen | man/man3

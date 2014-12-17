@@ -29,9 +29,8 @@
 
     <para>
       Following is the Wayland library classes for the
-      <xsl:value-of select="$which"/>
-      (<emphasis>libwayland-<xsl:value-of select="translate($which,
-      'SC', 'sc')"/></emphasis>).  This appendix describes in detail
+      <emphasis>libwayland-<xsl:value-of select="translate($which,
+      'SC', 'sc')"/></emphasis>.  This appendix describes in detail
       the library's methods and their helpers, aiming implementors who
       are building a Wayland <xsl:value-of select="translate($which,
       'SC', 'sc')"/>.
