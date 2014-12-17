@@ -15,16 +15,13 @@ namespace {
 const int kMemoryPressureIntervalInMS = 1000;
 
 // Converts free percent of memory into a memory pressure value.
-MemoryPressureObserverChromeOS::MemoryPressureLevel
-GetMemoryPressureLevelFromFillLevel(
+MemoryPressureListener::MemoryPressureLevel GetMemoryPressureLevelFromFillLevel(
     int memory_fill_level) {
-  if (memory_fill_level < 50)
-    return MemoryPressureObserverChromeOS::MEMORY_PRESSURE_LEVEL_LOW;
-  if (memory_fill_level < 75)
-    return MemoryPressureObserverChromeOS::MEMORY_PRESSURE_LEVEL_MODERATE;
-  if (memory_fill_level < 90)
-    return MemoryPressureObserverChromeOS::MEMORY_PRESSURE_LEVEL_HIGH;
-  return MemoryPressureObserverChromeOS::MEMORY_PRESSURE_LEVEL_CRITICAL;
+  if (memory_fill_level < 70)
+    return MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
+  return memory_fill_level < 90 ?
+      MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE :
+      MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
 }
 
 // Gets the used ChromeOS memory in percent.
@@ -68,7 +65,8 @@ int GetUsedMemoryInPercent() {
 }  // namespace
 
 MemoryPressureObserverChromeOS::MemoryPressureObserverChromeOS()
-    : current_memory_pressure_level_(MEMORY_PRESSURE_LEVEL_LOW) {
+    : current_memory_pressure_level_(
+        MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE) {
   StartObserving();
 }
 
@@ -89,27 +87,15 @@ void MemoryPressureObserverChromeOS::StopObserving() {
 }
 
 void MemoryPressureObserverChromeOS::CheckMemoryPressure() {
-  MemoryPressureLevel old_pressure = current_memory_pressure_level_;
-  MemoryPressureLevel new_pressure =
+  MemoryPressureListener::MemoryPressureLevel old_pressure =
+      current_memory_pressure_level_;
+  MemoryPressureListener::MemoryPressureLevel new_pressure =
       GetMemoryPressureLevelFromFillLevel(GetUsedMemoryInPercent());
   if (old_pressure != new_pressure) {
     current_memory_pressure_level_ = new_pressure;
-    switch (new_pressure) {
-      case MEMORY_PRESSURE_LEVEL_LOW:
-        // The |MemoryPressureListener| does currently not support this.
-        break;
-      case MEMORY_PRESSURE_LEVEL_MODERATE:
-        MemoryPressureListener::NotifyMemoryPressure(
-            MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
-        break;
-      case MEMORY_PRESSURE_LEVEL_HIGH:
-        // The |MemoryPressureListener| does currently not support this.
-        break;
-      case MEMORY_PRESSURE_LEVEL_CRITICAL:
-        MemoryPressureListener::NotifyMemoryPressure(
-            MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
-        break;
-    }
+    // Everything but NONE will be sent to the listener.
+    if (new_pressure != MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE)
+      MemoryPressureListener::NotifyMemoryPressure(new_pressure);
   }
 }
 

@@ -21,34 +21,11 @@ namespace base {
 //
 class BASE_EXPORT MemoryPressureObserverChromeOS {
  public:
-  // This is like the |MemoryPressureListener::MemoryPressureLevel| but it has
-  // more states to allow for a finer grained control as well as a request for
-  // the current status.
-  // TODO(skuhne): If the |MemoryPressureListener| will get extended to support
-  // all these levels, this can be removed.
-  enum MemoryPressureLevel {
-    // There is enough memory available to use.
-    MEMORY_PRESSURE_LEVEL_LOW = 0,
-
-    // Modules are advised to free buffers that are cheap to re-allocate and not
-    // immediately needed.
-    MEMORY_PRESSURE_LEVEL_MODERATE = 1,
-
-    // Modules are advised that they might get unloaded dependent on the OS.
-    // As such they should start to release more memory if possible.
-    MEMORY_PRESSURE_LEVEL_HIGH = 2,
-
-    // At this level, modules are advised to free all possible memory.  The
-    // alternative is to be killed by the system, which means all memory will
-    // have to be re-created, plus the cost of a cold start.
-    MEMORY_PRESSURE_LEVEL_CRITICAL = 3,
-  };
-
   MemoryPressureObserverChromeOS();
   ~MemoryPressureObserverChromeOS();
 
   // Get the current memory pressure level.
-  MemoryPressureLevel GetCurrentPressureLevel() {
+  base::MemoryPressureListener::MemoryPressureLevel GetCurrentPressureLevel() {
     return current_memory_pressure_level_;
   }
 
@@ -67,7 +44,8 @@ class BASE_EXPORT MemoryPressureObserverChromeOS {
   void CheckMemoryPressure();
 
   // The current memory pressure.
-  MemoryPressureLevel current_memory_pressure_level_;
+  base::MemoryPressureListener::MemoryPressureLevel
+      current_memory_pressure_level_;
 
   // A periodic timer to check for resource pressure changes. This will get
   // replaced by a kernel triggered event system (see crbug.com/381196).
