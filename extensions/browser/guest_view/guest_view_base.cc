@@ -147,7 +147,6 @@ GuestViewBase::GuestViewBase(content::BrowserContext* browser_context,
       is_being_destroyed_(false),
       auto_size_enabled_(false),
       is_full_page_plugin_(false),
-      observing_owners_zoom_controller_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -311,11 +310,12 @@ bool GuestViewBase::IsDragAndDropEnabled() const {
   return false;
 }
 
+bool GuestViewBase::ZoomPropagatesFromEmbedderToGuest() const {
+  return true;
+}
+
 void GuestViewBase::DidAttach(int guest_proxy_routing_id) {
   opener_lifetime_observer_.reset();
-
-  // Any zoom events from the embedder should be relayed to the guest.
-  StartObservingOwnersZoomController();
 
   // Give the derived class an opportunity to perform some actions.
   DidAttachToEmbedder();
@@ -332,6 +332,7 @@ void GuestViewBase::DidAttach(int guest_proxy_routing_id) {
 void GuestViewBase::DidDetach() {
   GuestViewManager::FromBrowserContext(browser_context_)->DetachGuest(
       this, element_instance_id_);
+  StopTrackingEmbedderZoomLevel();
   owner_web_contents()->Send(new ExtensionMsg_GuestDetached(
       owner_web_contents()->GetMainFrame()->GetRoutingID(),
       element_instance_id_));
@@ -366,9 +367,9 @@ void GuestViewBase::Destroy() {
   is_being_destroyed_ = true;
 
   // It is important to clear owner_web_contents_ after the call to
-  // StopObservingOwnersZoomControllerIfNecessary(), but before the rest of
+  // StopTrackingEmbedderZoomLevel(), but before the rest of
   // the statements in this function.
-  StopObservingOwnersZoomControllerIfNecessary();
+  StopTrackingEmbedderZoomLevel();
   owner_web_contents_ = NULL;
 
   DCHECK(web_contents());
@@ -418,15 +419,17 @@ void GuestViewBase::RegisterDestructionCallback(
 void GuestViewBase::WillAttach(content::WebContents* embedder_web_contents,
                                int element_instance_id,
                                bool is_full_page_plugin) {
-  owner_web_contents_ = embedder_web_contents;
-
-  // If we are attaching to a different WebContents than the one that created
-  // the guest, we need to create a new LifetimeObserver.
-  if (embedder_web_contents != owner_lifetime_observer_->web_contents()) {
+  if (owner_web_contents_ != embedder_web_contents) {
+    DCHECK_EQ(owner_lifetime_observer_->web_contents(), owner_web_contents_);
+    // Stop tracking the old embedder's zoom level.
+    StopTrackingEmbedderZoomLevel();
+    owner_web_contents_ = embedder_web_contents;
     owner_lifetime_observer_.reset(
         new OwnerLifetimeObserver(this, embedder_web_contents));
   }
 
+  // Start tracking the new embedder's zoom level.
+  StartTrackingEmbedderZoomLevel();
   element_instance_id_ = element_instance_id;
   is_full_page_plugin_ = is_full_page_plugin;
 
@@ -503,7 +506,6 @@ void GuestViewBase::OnZoomChanged(
     const ui_zoom::ZoomController::ZoomChangedEventData& data) {
   if (content::ZoomValuesEqual(data.old_zoom_level, data.new_zoom_level))
     return;
-
   // When the embedder's zoom level is changed, then we also update the
   // guest's zoom level to match.
   ui_zoom::ZoomController::FromWebContents(web_contents())
@@ -557,31 +559,31 @@ void GuestViewBase::CompleteInit(const std::string& owner_extension_id,
   callback.Run(guest_web_contents);
 }
 
-void GuestViewBase::StartObservingOwnersZoomController() {
-  ui_zoom::ZoomController* zoom_controller =
-      ui_zoom::ZoomController::FromWebContents(embedder_web_contents());
-  if (!zoom_controller)
+void GuestViewBase::StartTrackingEmbedderZoomLevel() {
+  if (!ZoomPropagatesFromEmbedderToGuest())
     return;
 
+  ui_zoom::ZoomController* zoom_controller =
+      ui_zoom::ZoomController::FromWebContents(owner_web_contents());
+  // Chrome Apps do not have a ZoomController.
+  if (!zoom_controller)
+    return;
   // Listen to the embedder's zoom changes.
   zoom_controller->AddObserver(this);
-  observing_owners_zoom_controller_ = true;
   // Set the guest's initial zoom level to be equal to the embedder's.
   ui_zoom::ZoomController::FromWebContents(web_contents())
       ->SetZoomLevel(zoom_controller->GetZoomLevel());
 }
 
-void GuestViewBase::StopObservingOwnersZoomControllerIfNecessary() {
-  // We use owner_web_contents_ below and not embedder_web_contents() since
-  // we may have been detached by this point.
-  DCHECK(!observing_owners_zoom_controller_ || owner_web_contents_);
-  if (!owner_web_contents_ || !observing_owners_zoom_controller_)
+void GuestViewBase::StopTrackingEmbedderZoomLevel() {
+  if (!attached() || !ZoomPropagatesFromEmbedderToGuest())
     return;
 
   ui_zoom::ZoomController* zoom_controller =
-      ui_zoom::ZoomController::FromWebContents(owner_web_contents_);
+      ui_zoom::ZoomController::FromWebContents(owner_web_contents());
+  if (!zoom_controller)
+    return;
   zoom_controller->RemoveObserver(this);
-  observing_owners_zoom_controller_ = false;
 }
 
 // static

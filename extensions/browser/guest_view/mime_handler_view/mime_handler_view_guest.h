@@ -37,6 +37,7 @@ class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest>,
                          const WebContentsCreatedCallback& callback) override;
   void DidAttachToEmbedder() override;
   void DidInitialize() override;
+  bool ZoomPropagatesFromEmbedderToGuest() const override;
 
   // content::BrowserPluginGuestDelegate implementation
   bool Find(int request_id,

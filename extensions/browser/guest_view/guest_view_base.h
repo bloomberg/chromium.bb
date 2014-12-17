@@ -142,6 +142,10 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // to destruction.
   virtual void WillDestroy() {}
 
+  // This method is to be implemented by the derived class. This indicates
+  // whether zoom should propagate from the embedder to the guest content.
+  virtual bool ZoomPropagatesFromEmbedderToGuest() const;
+
   // This method is to be implemented by the derived class. Access to guest
   // views are determined by the availability of the internal extension API
   // used to implement the guest view.
@@ -273,8 +277,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
                     const WebContentsCreatedCallback& callback,
                     content::WebContents* guest_web_contents);
 
-  void StartObservingOwnersZoomController();
-  void StopObservingOwnersZoomControllerIfNecessary();
+  void StartTrackingEmbedderZoomLevel();
+  void StopTrackingEmbedderZoomLevel();
 
   static void RegisterGuestViewTypes();
 
@@ -360,8 +364,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   // Whether the guest view is inside a plugin document.
   bool is_full_page_plugin_;
-
-  bool observing_owners_zoom_controller_;
 
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.

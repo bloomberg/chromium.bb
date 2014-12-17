@@ -133,6 +133,10 @@ void MimeHandlerViewGuest::DidInitialize() {
     delegate_->AttachHelpers();
 }
 
+bool MimeHandlerViewGuest::ZoomPropagatesFromEmbedderToGuest() const {
+  return false;
+}
+
 bool MimeHandlerViewGuest::Find(int request_id,
                                 const base::string16& search_text,
                                 const blink::WebFindOptions& options) {
