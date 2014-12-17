@@ -30,6 +30,7 @@
 
 #include "config.h"
 #include "core/animation/AnimationNode.h"
+#include "core/animation/ComputedTimingProperties.h"
 
 #include <gtest/gtest.h>
 
@@ -119,7 +120,7 @@ TEST(AnimationAnimationNodeTest, Sanity)
     timing.iterationDuration = 2;
     RefPtrWillBeRawPtr<TestAnimationNode> animationNode = TestAnimationNode::create(timing);
 
-    EXPECT_EQ(0, animationNode->startTime());
+    EXPECT_EQ(0, animationNode->computedTiming().startTime());
 
     animationNode->updateInheritedTime(0);
 
@@ -128,7 +129,7 @@ TEST(AnimationAnimationNodeTest, Sanity)
     EXPECT_TRUE(animationNode->isCurrent());
     EXPECT_TRUE(animationNode->isInEffect());
     EXPECT_EQ(0, animationNode->currentIteration());
-    EXPECT_EQ(0, animationNode->startTime());
+    EXPECT_EQ(0, animationNode->computedTiming().startTime());
     EXPECT_EQ(2, animationNode->activeDurationInternal());
     EXPECT_EQ(0, animationNode->timeFraction());
 
@@ -139,7 +140,7 @@ TEST(AnimationAnimationNodeTest, Sanity)
     EXPECT_TRUE(animationNode->isCurrent());
     EXPECT_TRUE(animationNode->isInEffect());
     EXPECT_EQ(0, animationNode->currentIteration());
-    EXPECT_EQ(0, animationNode->startTime());
+    EXPECT_EQ(0, animationNode->computedTiming().startTime());
     EXPECT_EQ(2, animationNode->activeDurationInternal());
     EXPECT_EQ(0.5, animationNode->timeFraction());
 
@@ -150,7 +151,7 @@ TEST(AnimationAnimationNodeTest, Sanity)
     EXPECT_FALSE(animationNode->isCurrent());
     EXPECT_TRUE(animationNode->isInEffect());
     EXPECT_EQ(0, animationNode->currentIteration());
-    EXPECT_EQ(0, animationNode->startTime());
+    EXPECT_EQ(0, animationNode->computedTiming().startTime());
     EXPECT_EQ(2, animationNode->activeDurationInternal());
     EXPECT_EQ(1, animationNode->timeFraction());
 
@@ -161,7 +162,7 @@ TEST(AnimationAnimationNodeTest, Sanity)
     EXPECT_FALSE(animationNode->isCurrent());
     EXPECT_TRUE(animationNode->isInEffect());
     EXPECT_EQ(0, animationNode->currentIteration());
-    EXPECT_EQ(0, animationNode->startTime());
+    EXPECT_EQ(0, animationNode->computedTiming().startTime());
     EXPECT_EQ(2, animationNode->activeDurationInternal());
     EXPECT_EQ(1, animationNode->timeFraction());
 }
@@ -374,7 +375,7 @@ TEST(AnimationAnimationNodeTest, ZeroDurationSanity)
     Timing timing;
     RefPtrWillBeRawPtr<TestAnimationNode> animationNode = TestAnimationNode::create(timing);
 
-    EXPECT_EQ(0, animationNode->startTime());
+    EXPECT_EQ(0, animationNode->computedTiming().startTime());
 
     animationNode->updateInheritedTime(0);
 
@@ -383,7 +384,7 @@ TEST(AnimationAnimationNodeTest, ZeroDurationSanity)
     EXPECT_FALSE(animationNode->isCurrent());
     EXPECT_TRUE(animationNode->isInEffect());
     EXPECT_EQ(0, animationNode->currentIteration());
-    EXPECT_EQ(0, animationNode->startTime());
+    EXPECT_EQ(0, animationNode->computedTiming().startTime());
     EXPECT_EQ(0, animationNode->activeDurationInternal());
     EXPECT_EQ(1, animationNode->timeFraction());
 
@@ -394,7 +395,7 @@ TEST(AnimationAnimationNodeTest, ZeroDurationSanity)
     EXPECT_FALSE(animationNode->isCurrent());
     EXPECT_TRUE(animationNode->isInEffect());
     EXPECT_EQ(0, animationNode->currentIteration());
-    EXPECT_EQ(0, animationNode->startTime());
+    EXPECT_EQ(0, animationNode->computedTiming().startTime());
     EXPECT_EQ(0, animationNode->activeDurationInternal());
     EXPECT_EQ(1, animationNode->timeFraction());
 }
@@ -592,7 +593,7 @@ TEST(AnimationAnimationNodeTest, InfiniteDurationSanity)
     timing.iterationCount = 1;
     RefPtrWillBeRawPtr<TestAnimationNode> animationNode = TestAnimationNode::create(timing);
 
-    EXPECT_EQ(0, animationNode->startTime());
+    EXPECT_EQ(0, animationNode->computedTiming().startTime());
 
     animationNode->updateInheritedTime(0);
 
@@ -623,7 +624,7 @@ TEST(AnimationAnimationNodeTest, InfiniteDurationZeroIterations)
     timing.iterationCount = 0;
     RefPtrWillBeRawPtr<TestAnimationNode> animationNode = TestAnimationNode::create(timing);
 
-    EXPECT_EQ(0, animationNode->startTime());
+    EXPECT_EQ(0, animationNode->computedTiming().startTime());
 
     animationNode->updateInheritedTime(0);
 
@@ -653,7 +654,7 @@ TEST(AnimationAnimationNodeTest, InfiniteDurationInfiniteIterations)
     timing.iterationCount = std::numeric_limits<double>::infinity();
     RefPtrWillBeRawPtr<TestAnimationNode> animationNode = TestAnimationNode::create(timing);
 
-    EXPECT_EQ(0, animationNode->startTime());
+    EXPECT_EQ(0, animationNode->computedTiming().startTime());
 
     animationNode->updateInheritedTime(0);
 
@@ -683,7 +684,7 @@ TEST(AnimationAnimationNodeTest, InfiniteDurationZeroPlaybackRate)
     timing.playbackRate = 0;
     RefPtrWillBeRawPtr<TestAnimationNode> animationNode = TestAnimationNode::create(timing);
 
-    EXPECT_EQ(0, animationNode->startTime());
+    EXPECT_EQ(0, animationNode->computedTiming().startTime());
 
     animationNode->updateInheritedTime(0);
 

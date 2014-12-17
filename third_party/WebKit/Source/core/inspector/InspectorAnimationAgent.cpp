@@ -10,6 +10,7 @@
 #include "core/animation/AnimationEffect.h"
 #include "core/animation/AnimationNode.h"
 #include "core/animation/AnimationPlayer.h"
+#include "core/animation/ComputedTimingProperties.h"
 #include "core/animation/ElementAnimation.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/StringKeyframe.h"
@@ -68,15 +69,18 @@ void InspectorAnimationAgent::enable(ErrorString*)
 
 PassRefPtr<TypeBuilder::Animation::AnimationNode> InspectorAnimationAgent::buildObjectForAnimationNode(AnimationNode* animationNode)
 {
+    ComputedTimingProperties computedTiming;
+    animationNode->computedTiming(computedTiming);
+    // FIXME: Use computedTiming in place of specifiedTiming.
     RefPtr<TypeBuilder::Animation::AnimationNode> animationObject = TypeBuilder::Animation::AnimationNode::create()
         .setStartDelay(animationNode->specifiedTiming().startDelay)
         .setPlaybackRate(animationNode->specifiedTiming().playbackRate)
         .setIterationStart(animationNode->specifiedTiming().iterationStart)
         .setIterationCount(animationNode->specifiedTiming().iterationCount)
-        .setDuration(animationNode->duration())
+        .setDuration(computedTiming.duration().getAsUnrestrictedDouble())
         .setDirection(animationNode->specifiedTiming().direction)
         .setFillMode(animationNode->specifiedTiming().fillMode)
-        .setTimeFraction(animationNode->timeFraction())
+        .setTimeFraction(computedTiming.timeFraction())
         .setName(animationNode->name())
         .setBackendNodeId(InspectorNodeIds::idForNode(toAnimation(animationNode)->target()));
     return animationObject.release();

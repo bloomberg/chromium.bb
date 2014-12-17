@@ -264,7 +264,7 @@ bool CompositorAnimationsImpl::convertTimingForCompositor(const Timing& timing, 
     if (timing.endDelay != 0)
         return false;
 
-    if (!timing.iterationCount || !timing.iterationDuration)
+    if (std::isnan(timing.iterationDuration) || !timing.iterationCount || !timing.iterationDuration)
         return false;
 
     if (!std::isfinite(timing.iterationCount)) {

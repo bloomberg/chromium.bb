@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+FAIL TimedItem.localTime and TimedItem.currentIteration are null when animation is not associated with a Player assert_equals: expected (object) null but got (undefined) undefined
+PASS TimedItem.localTime and TimedItem.currentIteration return reasonable values when an animation is in effect 
+FAIL TimedItem.currentIteration is null when animation is not in effect assert_equals: expected (object) null but got (undefined) undefined
+PASS TimedItem startTime, endTime, duration, activeDuration are sensible for a simple animation 
+PASS TimedItem startTime, endTime, duration, activeDuration are sensible for animations with delays and iterations 
+PASS TimedItem duration is calculated when no duration is specified 
+Harness: the test ran to completion.
+

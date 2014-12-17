@@ -594,6 +594,7 @@
             'animation/StringKeyframe.cpp',
             'animation/StringKeyframe.h',
             'animation/StyleInterpolation.h',
+            'animation/Timing.cpp',
             'animation/Timing.h',
             'animation/TimingCalculations.h',
             'animation/TimingInput.cpp',
@@ -3412,6 +3413,7 @@
             'svg/properties/SVGPropertyTearOff.cpp',
         ],
         'core_dictionary_idl_files': [
+            'animation/ComputedTimingProperties.idl',
             'css/FontFaceDescriptors.idl',
             'css/MediaQueryListEventInit.idl',
             'dom/DOMPointInit.idl',
@@ -3431,6 +3433,8 @@
             'storage/StorageEventInit.idl',
         ],
         'generated_core_dictionary_files': [
+            '<(blink_core_output_dir)/animation/ComputedTimingProperties.cpp',
+            '<(blink_core_output_dir)/animation/ComputedTimingProperties.h',
             '<(blink_core_output_dir)/css/FontFaceDescriptors.cpp',
             '<(blink_core_output_dir)/css/FontFaceDescriptors.h',
             '<(blink_core_output_dir)/css/MediaQueryListEventInit.cpp',

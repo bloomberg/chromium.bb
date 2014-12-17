@@ -34,21 +34,7 @@ double AnimationNodeTiming::endDelay()
 
 String AnimationNodeTiming::fill()
 {
-    Timing::FillMode fillMode = m_parent->specifiedTiming().fillMode;
-    switch (fillMode) {
-    case Timing::FillModeNone:
-        return "none";
-    case Timing::FillModeForwards:
-        return "forwards";
-    case Timing::FillModeBackwards:
-        return "backwards";
-    case Timing::FillModeBoth:
-        return "both";
-    case Timing::FillModeAuto:
-        return "auto";
-    }
-    ASSERT_NOT_REACHED();
-    return "auto";
+    return Timing::fillModeString(m_parent->specifiedTiming().fillMode);
 }
 
 double AnimationNodeTiming::iterationStart()
@@ -86,19 +72,7 @@ double AnimationNodeTiming::playbackRate()
 
 String AnimationNodeTiming::direction()
 {
-    Timing::PlaybackDirection direction = m_parent->specifiedTiming().direction;
-    switch (direction) {
-    case Timing::PlaybackDirectionNormal:
-        return "normal";
-    case Timing::PlaybackDirectionReverse:
-        return "reverse";
-    case Timing::PlaybackDirectionAlternate:
-        return "alternate";
-    case Timing::PlaybackDirectionAlternateReverse:
-        return "alternate-reverse";
-    }
-    ASSERT_NOT_REACHED();
-    return "normal";
+    return Timing::playbackDirectionString(m_parent->specifiedTiming().direction);
 }
 
 String AnimationNodeTiming::easing()

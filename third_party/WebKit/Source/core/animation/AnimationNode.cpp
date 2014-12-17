@@ -33,6 +33,7 @@
 
 #include "core/animation/AnimationNodeTiming.h"
 #include "core/animation/AnimationPlayer.h"
+#include "core/animation/ComputedTimingProperties.h"
 #include "core/animation/TimingCalculations.h"
 
 namespace blink {
@@ -95,6 +96,45 @@ void AnimationNode::updateSpecifiedTiming(const Timing& timing)
         m_player->setOutdated();
     specifiedTimingChanged();
 }
+
+void AnimationNode::computedTiming(ComputedTimingProperties& computedTiming)
+{
+    // ComputedTimingProperties members.
+    computedTiming.setStartTime(startTimeInternal() * 1000);
+    computedTiming.setEndTime(endTimeInternal() * 1000);
+    computedTiming.setActiveDuration(activeDurationInternal() * 1000);
+
+    // FIXME: These should be null if not in effect, but current dictionary API
+    // will treat these as undefined.
+    if (ensureCalculated().isInEffect) {
+        computedTiming.setLocalTime(ensureCalculated().localTime * 1000);
+        computedTiming.setTimeFraction(ensureCalculated().timeFraction);
+        computedTiming.setCurrentIteration(ensureCalculated().currentIteration);
+    }
+
+    // AnimationTimingProperties members.
+    computedTiming.setDelay(specifiedTiming().startDelay * 1000);
+    computedTiming.setEndDelay(specifiedTiming().endDelay * 1000);
+    computedTiming.setFill(Timing::fillModeString(resolvedFillMode(specifiedTiming().fillMode, isAnimation())));
+    computedTiming.setIterationStart(specifiedTiming().iterationStart);
+    computedTiming.setIterations(specifiedTiming().iterationCount);
+
+    UnrestrictedDoubleOrString duration;
+    duration.setUnrestrictedDouble(iterationDuration() * 1000);
+    computedTiming.setDuration(duration);
+
+    computedTiming.setPlaybackRate(specifiedTiming().playbackRate);
+    computedTiming.setDirection(Timing::playbackDirectionString(specifiedTiming().direction));
+    computedTiming.setEasing(specifiedTiming().timingFunction->toString());
+}
+
+ComputedTimingProperties AnimationNode::computedTiming()
+{
+    ComputedTimingProperties result;
+    computedTiming(result);
+    return result;
+}
+
 
 void AnimationNode::updateInheritedTime(double inheritedTime, TimingUpdateReason reason) const
 {

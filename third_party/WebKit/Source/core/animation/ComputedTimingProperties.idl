@@ -1,0 +1,25 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// FIXME: Should extend AnimationTimingProperties
+dictionary ComputedTimingProperties {
+    double              startTime;
+    unrestricted double endTime;
+    unrestricted double activeDuration;
+    double?             localTime;
+    unrestricted double timeFraction;
+    unsigned long?      currentIteration;
+
+    // FIXME: These should be inherited from AnimationTimingProperties
+    double                             delay = 0;
+    double                             endDelay = 0;
+    DOMString                          fill = "auto";
+    double                             iterationStart = 0.0;
+    unrestricted double                iterations = 1.0;
+    // FIXME: Default should be 'auto'
+    (unrestricted double or DOMString) duration;
+    double                             playbackRate = 1.0;
+    DOMString                          direction = "normal";
+    DOMString                          easing = "linear";
+};

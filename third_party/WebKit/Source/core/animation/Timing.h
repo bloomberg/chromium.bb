@@ -46,12 +46,16 @@ struct Timing {
         FillModeBoth
     };
 
+    static String fillModeString(FillMode);
+
     enum PlaybackDirection {
         PlaybackDirectionNormal,
         PlaybackDirectionReverse,
         PlaybackDirectionAlternate,
         PlaybackDirectionAlternateReverse
     };
+
+    static String playbackDirectionString(PlaybackDirection);
 
     static const Timing& defaults()
     {
