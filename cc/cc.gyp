@@ -106,6 +106,7 @@
         'debug/devtools_instrumentation.h',
         'debug/frame_rate_counter.cc',
         'debug/frame_rate_counter.h',
+        'debug/frame_viewer_instrumentation.cc',
         'debug/frame_viewer_instrumentation.h',
         'debug/invalidation_benchmark.cc',
         'debug/invalidation_benchmark.h',
