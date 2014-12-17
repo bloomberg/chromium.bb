@@ -90,7 +90,7 @@ struct SameSizeAsGradientAttributes {
     unsigned c : 8;
 };
 
-COMPILE_ASSERT(sizeof(GradientAttributes) == sizeof(SameSizeAsGradientAttributes), GradientAttributes_size_guard);
+static_assert(sizeof(GradientAttributes) == sizeof(SameSizeAsGradientAttributes), "GradientAttributes should stay small");
 
 } // namespace blink
 
