@@ -29,7 +29,7 @@ enum ScaleFactor : int;
 
 class UI_BASE_EXPORT DataPack : public ResourceHandle {
  public:
-  DataPack(ui::ScaleFactor scale_factor);
+  explicit DataPack(ui::ScaleFactor scale_factor);
   ~DataPack() override;
 
   // Load a pack file from |path|, returning false on error.
