@@ -2361,10 +2361,6 @@ PP_Var PepperPluginInstanceImpl::ExecuteScript(PP_Instance instance,
     result = frame->executeScriptAndReturnValue(script);
   }
 
-  // Check for an exception due to the context being destroyed.
-  if (try_catch.HasException())
-    return PP_MakeUndefined();
-
   ScopedPPVar var_result = try_catch.FromV8(result);
   if (try_catch.HasException())
     return PP_MakeUndefined();
