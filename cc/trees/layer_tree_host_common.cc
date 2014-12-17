@@ -14,7 +14,9 @@
 #include "cc/layers/layer_iterator.h"
 #include "cc/layers/render_surface.h"
 #include "cc/layers/render_surface_impl.h"
+#include "cc/trees/draw_property_utils.h"
 #include "cc/trees/layer_sorter.h"
+#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
@@ -1839,6 +1841,9 @@ static void CalculateDrawPropertiesInternal(
   } else {
     render_to_separate_surface = IsRootLayer(layer);
   }
+
+  layer->SetHasRenderSurface(render_to_separate_surface);
+
   if (render_to_separate_surface) {
     // Check back-face visibility before continuing with this surface and its
     // subtree
@@ -2430,6 +2435,14 @@ static void ProcessCalcDrawPropsInputs(
   data_for_recursion->subtree_is_visible_from_ancestor = true;
 }
 
+static bool ApproximatelyEqual(const gfx::Rect& r1, const gfx::Rect& r2) {
+  static const int tolerance = 1;
+  return std::abs(r1.x() - r2.x()) <= tolerance &&
+         std::abs(r1.y() - r2.y()) <= tolerance &&
+         std::abs(r1.width() - r2.width()) <= tolerance &&
+         std::abs(r1.height() - r2.height()) <= tolerance;
+}
+
 void LayerTreeHostCommon::CalculateDrawProperties(
     CalcDrawPropsMainInputs* inputs) {
   LayerList dummy_layer_list;
@@ -2454,6 +2467,36 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   // A root layer render_surface should always exist after
   // CalculateDrawProperties.
   DCHECK(inputs->root_layer->render_surface());
+
+  if (inputs->verify_property_trees) {
+    // TODO(ajuma): Can we efficiently cache some of this rather than
+    // starting from scratch every frame?
+    TransformTree transform_tree;
+    ClipTree clip_tree;
+    ComputeVisibleRectsUsingPropertyTrees(
+        inputs->root_layer, inputs->page_scale_application_layer,
+        inputs->page_scale_factor, inputs->device_scale_factor,
+        gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
+        &transform_tree, &clip_tree);
+
+    bool failed = false;
+    LayerIterator<Layer> it, end;
+    for (it = LayerIterator<Layer>::Begin(inputs->render_surface_layer_list),
+        end = LayerIterator<Layer>::End(inputs->render_surface_layer_list);
+         it != end; ++it) {
+      Layer* current_layer = *it;
+      if (it.represents_itself()) {
+        if (!failed && current_layer->DrawsContent() &&
+            !ApproximatelyEqual(
+                current_layer->visible_content_rect(),
+                current_layer->visible_rect_from_property_trees())) {
+          failed = true;
+        }
+      }
+    }
+
+    CHECK(!failed);
+  }
 }
 
 void LayerTreeHostCommon::CalculateDrawProperties(

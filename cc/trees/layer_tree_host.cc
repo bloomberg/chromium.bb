@@ -873,7 +873,8 @@ bool LayerTreeHost::UpdateLayers(Layer* root_layer,
         GetRendererCapabilities().max_texture_size, settings_.can_use_lcd_text,
         settings_.layers_always_allowed_lcd_text,
         can_render_to_separate_surface,
-        settings_.layer_transforms_should_scale_layer_contents, &update_list,
+        settings_.layer_transforms_should_scale_layer_contents,
+        settings_.verify_property_trees, &update_list,
         render_surface_layer_list_id);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 

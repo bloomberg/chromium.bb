@@ -670,7 +670,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsForReplica) {
   gfx::Transform replica_composite_transform =
       parent_composite_transform * replica_layer_transform *
       Inverse(surface_sublayer_transform);
-
+  child_replica->SetIsDrawable(true);
   // Child's render surface should not exist yet.
   ASSERT_FALSE(child->render_surface());
 

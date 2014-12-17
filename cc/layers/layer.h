@@ -24,6 +24,7 @@
 #include "cc/layers/paint_properties.h"
 #include "cc/layers/render_surface.h"
 #include "cc/output/filter_operations.h"
+#include "cc/trees/property_tree.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
@@ -180,7 +181,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   bool transform_is_invertible() const { return transform_is_invertible_; }
 
   void SetTransformOrigin(const gfx::Point3F&);
-  gfx::Point3F transform_origin() { return transform_origin_; }
+  gfx::Point3F transform_origin() const { return transform_origin_; }
 
   void SetScrollParent(Layer* parent);
 
@@ -462,6 +463,50 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void Set3dSortingContextId(int id);
   int sorting_context_id() const { return sorting_context_id_; }
 
+  void set_transform_tree_index(int index) { transform_tree_index_ = index; }
+  void set_clip_tree_index(int index) { clip_tree_index_ = index; }
+  int clip_tree_index() const { return clip_tree_index_; }
+  int transform_tree_index() const { return transform_tree_index_; }
+
+  void set_offset_to_transform_parent(gfx::Vector2dF offset) {
+    offset_to_transform_parent_ = offset;
+  }
+  gfx::Vector2dF offset_to_transform_parent() const {
+    return offset_to_transform_parent_;
+  }
+
+  // TODO(vollick): Once we transition to transform and clip trees, rename these
+  // functions and related values.  The "from property trees" functions below
+  // use the transform and clip trees.  Eventually, we will use these functions
+  // to compute the official values, but these functions are retained for
+  // testing purposes until we've migrated.
+
+  const gfx::Rect& visible_rect_from_property_trees() const {
+    return visible_rect_from_property_trees_;
+  }
+  void set_visible_rect_from_property_trees(const gfx::Rect& rect) {
+    visible_rect_from_property_trees_ = rect;
+  }
+
+  gfx::Transform screen_space_transform_from_property_trees(
+      const TransformTree& tree) const;
+  gfx::Transform draw_transform_from_property_trees(
+      const TransformTree& tree) const;
+
+  // TODO(vollick): These values are temporary and will be removed as soon as
+  // render surface determinations are moved out of CDP. They only exist because
+  // certain logic depends on whether or not a layer would render to a separate
+  // surface, but CDP destroys surfaces and targets it doesn't need, so without
+  // this boolean, this is impossible to determine after the fact without
+  // wastefully recomputing it. This is public for the time being so that it can
+  // be accessed from CDP.
+  bool has_render_surface() const {
+    return has_render_surface_;
+  }
+  void SetHasRenderSurface(bool has_render_surface) {
+    has_render_surface_ = has_render_surface;
+  }
+
  protected:
   friend class LayerImpl;
   friend class TreeSynchronizer;
@@ -589,6 +634,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // this layer.
   int scroll_clip_layer_id_;
   int num_descendants_that_draw_content_;
+  int transform_tree_index_;
+  int opacity_tree_index_;
+  int clip_tree_index_;
+  gfx::Vector2dF offset_to_transform_parent_;
   bool should_scroll_on_main_thread_ : 1;
   bool have_wheel_event_handlers_ : 1;
   bool have_scroll_event_handlers_ : 1;
@@ -607,6 +656,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   bool draw_checkerboard_for_missing_tiles_ : 1;
   bool force_render_surface_ : 1;
   bool transform_is_invertible_ : 1;
+  bool has_render_surface_ : 1;
   Region non_fast_scrollable_region_;
   Region touch_event_handler_region_;
   gfx::PointF position_;
@@ -641,6 +691,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   PaintProperties paint_properties_;
 
+  gfx::Rect visible_rect_from_property_trees_;
   DISALLOW_COPY_AND_ASSIGN(Layer);
 };
 

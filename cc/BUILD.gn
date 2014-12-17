@@ -475,6 +475,8 @@ component("cc") {
     "trees/blocking_task_runner.h",
     "trees/damage_tracker.cc",
     "trees/damage_tracker.h",
+    "trees/draw_property_utils.cc",
+    "trees/draw_property_utils.h",
     "trees/layer_sorter.cc",
     "trees/layer_sorter.h",
     "trees/layer_tree_host.cc",
@@ -492,6 +494,10 @@ component("cc") {
     "trees/occlusion.h",
     "trees/occlusion_tracker.cc",
     "trees/occlusion_tracker.h",
+    "trees/property_tree.cc",
+    "trees/property_tree.h",
+    "trees/property_tree_builder.cc",
+    "trees/property_tree_builder.h",
     "trees/proxy.cc",
     "trees/proxy.h",
     "trees/proxy_timing_history.cc",
@@ -815,6 +821,7 @@ test("cc_unittests") {
     "trees/layer_tree_impl_unittest.cc",
     "trees/occlusion_tracker_unittest.cc",
     "trees/occlusion_unittest.cc",
+    "trees/property_tree_unittest.cc",
     "trees/tree_synchronizer_unittest.cc",
 
     # Surfaces test files.

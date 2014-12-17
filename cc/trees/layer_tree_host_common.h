@@ -45,6 +45,7 @@ class CC_EXPORT LayerTreeHostCommon {
                         bool layers_always_allowed_lcd_text,
                         bool can_render_to_separate_surface,
                         bool can_adjust_raster_scales,
+                        bool verify_property_trees,
                         RenderSurfaceLayerListType* render_surface_layer_list,
                         int current_render_surface_layer_list_id)
         : root_layer(root_layer),
@@ -61,6 +62,7 @@ class CC_EXPORT LayerTreeHostCommon {
           layers_always_allowed_lcd_text(layers_always_allowed_lcd_text),
           can_render_to_separate_surface(can_render_to_separate_surface),
           can_adjust_raster_scales(can_adjust_raster_scales),
+          verify_property_trees(verify_property_trees),
           render_surface_layer_list(render_surface_layer_list),
           current_render_surface_layer_list_id(
               current_render_surface_layer_list_id) {}
@@ -78,6 +80,7 @@ class CC_EXPORT LayerTreeHostCommon {
     bool layers_always_allowed_lcd_text;
     bool can_render_to_separate_surface;
     bool can_adjust_raster_scales;
+    bool verify_property_trees;
     RenderSurfaceLayerListType* render_surface_layer_list;
     int current_render_surface_layer_list_id;
   };
@@ -238,6 +241,7 @@ LayerTreeHostCommon::CalcDrawPropsInputsForTesting<LayerType,
           false,
           true,
           false,
+          true,
           render_surface_layer_list,
           0) {
   DCHECK(root_layer);
@@ -265,6 +269,7 @@ LayerTreeHostCommon::CalcDrawPropsInputsForTesting<LayerType,
           false,
           true,
           false,
+          true,
           render_surface_layer_list,
           0) {
   DCHECK(root_layer);

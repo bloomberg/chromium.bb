@@ -567,6 +567,14 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void Set3dSortingContextId(int id);
   int sorting_context_id() { return sorting_context_id_; }
 
+  // TODO(vollick): These is temporary and will be removed as soon as render
+  // surface determinations are moved out of CDP. They only exist because
+  // certain logic depends on whether or not a layer would render to a separate
+  // surface, but CDP destroys surfaces and targets it doesn't need, so without
+  // this boolean, this is impossible to determine after the fact without
+  // wastefully recomputing it.
+  void SetHasRenderSurface(bool value) {}
+
  protected:
   LayerImpl(LayerTreeImpl* layer_impl, int id);
 

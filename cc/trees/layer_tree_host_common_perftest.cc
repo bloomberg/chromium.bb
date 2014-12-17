@@ -105,6 +105,7 @@ class CalcDrawPropsMainTest : public LayerTreeHostCommonPerfTest {
           layer_tree_host()
               ->settings()
               .layer_transforms_should_scale_layer_contents,
+          layer_tree_host()->settings().verify_property_trees,
           &update_list, 0);
       LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -157,6 +158,7 @@ class CalcDrawPropsImplTest : public LayerTreeHostCommonPerfTest {
         host_impl->settings().layers_always_allowed_lcd_text,
         can_render_to_separate_surface,
         host_impl->settings().layer_transforms_should_scale_layer_contents,
+        host_impl->settings().verify_property_trees,
         &update_list, 0);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   }

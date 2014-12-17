@@ -534,6 +534,7 @@ bool LayerTreeImpl::UpdateDrawProperties() {
         settings().can_use_lcd_text, settings().layers_always_allowed_lcd_text,
         can_render_to_separate_surface,
         settings().layer_transforms_should_scale_layer_contents,
+        settings().verify_property_trees,
         &render_surface_layer_list_, render_surface_layer_list_id_);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   }

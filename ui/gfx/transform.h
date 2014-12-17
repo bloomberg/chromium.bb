@@ -122,6 +122,11 @@ class GFX_EXPORT Transform {
   // Returns true if the matrix is either identity or pure translation.
   bool IsIdentityOrTranslation() const { return matrix_.isTranslate(); }
 
+  // Returns true if the matrix is either the identity or a 2d translation.
+  bool IsIdentityOr2DTranslation() const {
+    return matrix_.isTranslate() && matrix_.get(2, 3) == 0;
+  }
+
   // Returns true if the matrix is either identity or pure translation,
   // allowing for an amount of inaccuracy as specified by the parameter.
   bool IsApproximatelyIdentityOrTranslation(SkMScalar tolerance) const;

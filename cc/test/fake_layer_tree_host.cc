@@ -17,6 +17,7 @@ FakeLayerTreeHost::FakeLayerTreeHost(FakeLayerTreeHostClient* client,
 scoped_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
     FakeLayerTreeHostClient* client) {
   LayerTreeSettings settings;
+  settings.verify_property_trees = true;
   return make_scoped_ptr(new FakeLayerTreeHost(client, settings));
 }
 
