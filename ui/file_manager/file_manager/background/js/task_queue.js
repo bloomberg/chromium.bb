@@ -51,7 +51,7 @@ importer.TaskQueue.prototype.queueTask = function(task) {
   // The Tasks that are pushed onto the queue aren't required to be inherently
   // asynchronous.  This code force task execution to occur asynchronously.
   Promise.resolve().then(function() {
-    task.setOwner(this);
+    task.addObserver(this.onTaskUpdate_.bind(this));
     this.tasks_.push(task);
     // If more than one task is queued, then the queue is already running.
     if (this.tasks_.length === 1) {
@@ -92,29 +92,25 @@ importer.TaskQueue.prototype.setIdleCallback = function(callback) {
  * the running tasks owned by this queue.
  * @param {!importer.TaskQueue.UpdateType} updateType
  * @param {!importer.TaskQueue.Task} task
+ * @private
  */
-importer.TaskQueue.prototype.taskUpdate = function(updateType, task) {
+importer.TaskQueue.prototype.onTaskUpdate_ = function(updateType, task) {
+  // Send a task update to clients.
   this.updateCallbacks_.forEach(function(callback) {
     callback.call(null, updateType, task);
   });
-};
 
-/**
- * Sends out notifications when a task stops.  Stopping could be due to
- * successful completion, cancellation, or errors.  This is meant to be called
- * by the running tasks owned by this queue.
- * @param {!importer.TaskQueue.UpdateType} reason
- * @param {!importer.TaskQueue.Task} task
- */
-importer.TaskQueue.prototype.taskDone = function(reason, task) {
-  // Assumption: the currently running task is at the head of the queue.
-  assert(this.tasks_[0] === task);
-  // Remove the completed task from the queue.
-  this.tasks_.shift();
-  // Send updates to clients.
-  this.taskUpdate(reason, task);
-  // Run the next thing in the queue.
-  this.runPending_();
+  // If the task update is a terminal one, move on to the next task.
+  var UpdateType = importer.TaskQueue.UpdateType;
+  if (updateType === UpdateType.SUCCESS || updateType === UpdateType.ERROR) {
+    // Assumption: the currently running task is at the head of the queue.
+    console.assert(this.tasks_[0] === task,
+        'Only tasks that are at the head of the queue should be active');
+    // Remove the completed task from the queue.
+    this.tasks_.shift();
+    // Run the next thing in the queue.
+    this.runPending_();
+  }
 };
 
 /**
@@ -149,11 +145,17 @@ importer.TaskQueue.prototype.runPending_ = function() {
 importer.TaskQueue.Task = function() {};
 
 /**
+ * @typedef {function(!importer.TaskQueue.UpdateType, !importer.TaskQueue.Task)}
+ */
+importer.TaskQueue.Task.Observer;
+
+/**
  * Sets the TaskQueue that will own this task.  The TaskQueue must call this
  * prior to enqueuing a Task.
- * @param {!importer.TaskQueue} owner
+ * @param {!importer.TaskQueue.Task.Observer} observer A callback that
+ *     will be triggered each time the task has a status update.
  */
-importer.TaskQueue.Task.prototype.setOwner;
+importer.TaskQueue.Task.prototype.addObserver;
 
 /**
  * Performs the actual work of the Task.  Child classes should implement this.
@@ -170,47 +172,36 @@ importer.TaskQueue.Task.prototype.run;
 importer.TaskQueue.BaseTask = function(taskId) {
   /** @private {string} */
   this.taskId_ = taskId;
-  /** @private {importer.TaskQueue} */
-  this.owner_ = null;
+  /** @private {!Array<!importer.TaskQueue.Task.Observer>} */
+  this.observers_ = [];
 };
 
-/**
- * Sets the TaskQueue that will own this task.  The TaskQueue must call this
- * prior to enqueuing a Task.
- * @param {!importer.TaskQueue} owner
- */
-importer.TaskQueue.BaseTask.prototype.setOwner = function(owner) {
-  this.owner_ = owner;
+/** @struct */
+importer.TaskQueue.BaseTask.prototype = {
+  /**
+   * @return {string} The task ID.
+   */
+  get taskId() {
+    return this.taskId_;
+  }
+};
+
+/** @override */
+importer.TaskQueue.BaseTask.prototype.addObserver = function(observer) {
+  this.observers_.push(observer);
 };
 
 /** @override */
 importer.TaskQueue.BaseTask.prototype.run = function() {};
 
 /**
- * Sends progress notifications.  Task subclasses should call this to report
- * progress.
+ * @param {!importer.TaskQueue.UpdateType} updateType
  * @protected
  */
-importer.TaskQueue.BaseTask.prototype.notifyProgress = function() {
-  this.owner_.taskUpdate(importer.TaskQueue.UpdateType.PROGRESS, this);
-};
-
-/**
- * Sends success notifications.  Task subclasses should call this to indicate
- * when they successfully complete.  Calling this results in the Task instance
- * being dequeued.
- * @protected
- */
-importer.TaskQueue.BaseTask.prototype.notifySuccess = function() {
-  this.owner_.taskDone(importer.TaskQueue.UpdateType.SUCCESS, this);
-};
-
-/**
- * Sends error notifications.  Task subclasses should call this to indicate when
- * an error occurs.  Tasks are assumed to stop execution once they call
- * notifyError (i.e. they will be dequeued).
- * @protected
- */
-importer.TaskQueue.BaseTask.prototype.notifyError = function() {
-  this.owner_.taskDone(importer.TaskQueue.UpdateType.ERROR, this);
+importer.TaskQueue.BaseTask.prototype.notify = function(updateType) {
+  this.observers_.forEach(
+      /** @param {!importer.TaskQueue.Task.Observer} callback */
+      function(callback) {
+        callback.call(null, updateType, this);
+      }.bind(this));
 };

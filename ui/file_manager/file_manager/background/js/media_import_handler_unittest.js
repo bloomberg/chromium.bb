@@ -22,6 +22,11 @@ var mediaImporter;
  */
 var drive;
 
+/**
+ * @type {!Array<!Object>}
+ */
+var importedMedia = [];
+
 function setUp() {
   // Set up string assets.
   loadTimeData.data = {
@@ -30,6 +35,18 @@ function setUp() {
   };
 
   fileOperationManager = new MockFileOperationManager();
+
+  // Replace with test function.
+  fileOperationUtil.copyTo = function(source, parent, newName,
+      entryChangedCallback, progressCallback, successCallback, errorCallback) {
+    importedMedia.push({
+      source: source,
+      destination: parent,
+      newName: newName
+    });
+    successCallback();
+  };
+  importedMedia = [];
 
   var volumeManager = new MockVolumeManager();
   drive = volumeManager.getCurrentProfileVolumeInfo(
@@ -70,21 +87,34 @@ function testImportMedia(callback) {
   });
   mediaScanner.fileEntries = media;
 
-  // Verify the results when the import operation is kicked off.
-  reportPromise(
-      // Looks like we're using a "paste" operation to copy imported files.
-      fileOperationManager.whenPasteCalled().then(
-          function(args) {
-            // Verify that the task ID is correct.
-            assertEquals(importTask.taskId, args.opt_taskId);
-            // Verify that we're copying, not moving, files.
-            assertFalse(args.isMove);
-            // Verify that the sources are correct.
-            assertFileEntryListEquals(media, args.sourceEntries);
-            // Verify that the destination is correct.
-            assertEquals(destinationFileSystem.root, args.targetEntry);
-          }),
-      callback);
-  // Kick off an import
   var importTask = mediaImporter.importMedia(fileSystem.root, destination);
+  var whenImportDone = new Promise(function(resolve, reject) {
+    importTask.addObserver(
+        /**
+         * @param {!importer.TaskQueue.UpdateType} updateType
+         * @param {!importer.TaskQueue.Task} task
+         */
+        function(updateType, task) {
+          switch (updateType) {
+          case importer.TaskQueue.UpdateType.SUCCESS:
+            resolve(importedMedia);
+            break;
+          case importer.TaskQueue.UpdateType.ERROR:
+            reject(new Error(importer.TaskQueue.UpdateType.ERROR));
+            break;
+          }
+        });
+  });
+
+  reportPromise(whenImportDone.then(
+      /** @param {!Array<!FileEntry>} importedMedia */
+      function(importedMedia) {
+        assertEquals(media.length, importedMedia.length);
+        importedMedia.forEach(function(imported) {
+          // Verify that the copied file exists is one of the expected files.
+          assertTrue(media.indexOf(imported.source) >= 0);
+          // Verify that the files are being copied to the right locations.
+          assertEquals(destination(), imported.destination);
+        });
+      }), callback);
 }

@@ -27,9 +27,11 @@ function setUp() {
  * A Task subclass for testing.
  * @constructor
  * @extends {importer.TaskQueue.BaseTask}
+ *
+ * @param {string} taskId
  */
-var TestTask = function() {
-  importer.TaskQueue.Task.call(this);
+var TestTask = function(taskId) {
+  importer.TaskQueue.BaseTask.call(this, taskId);
 
   /** @type {boolean} */
   this.wasRun = false;
@@ -51,6 +53,21 @@ TestTask.prototype.run = function() {
   this.runResolver_(this);
 };
 
+/** Sends a quick error notification. */
+TestTask.prototype.notifyError = function() {
+  this.notify(importer.TaskQueue.UpdateType.ERROR);
+};
+
+/** Sends a quick success notification. */
+TestTask.prototype.notifySuccess = function() {
+  this.notify(importer.TaskQueue.UpdateType.SUCCESS);
+};
+
+/** Sends a quick progress notification. */
+TestTask.prototype.notifyProgress = function() {
+  this.notify(importer.TaskQueue.UpdateType.PROGRESS);
+};
+
 /** @return {!Promise} A promise that settles once #run is called. */
 TestTask.prototype.whenRun = function() {
   return this.runPromise_;
@@ -58,15 +75,15 @@ TestTask.prototype.whenRun = function() {
 
 // Verifies that a queued task gets run.
 function testRunsTask(callback) {
-  var task = new TestTask();
+  var task = new TestTask('task0');
   queue.queueTask(task);
   reportPromise(task.whenRun(), callback);
 }
 
 // Verifies that multiple queued tasks get run.
 function testRunsTasks(callback) {
-  var task0 = new TestTask();
-  var task1 = new TestTask();
+  var task0 = new TestTask('task0');
+  var task1 = new TestTask('task1');
 
   // Make the tasks call Task#notifySuccess when they are run.
   task0.whenRun().then(function(task) { task.notifySuccess(); });
@@ -82,7 +99,7 @@ function testRunsTasks(callback) {
 
 // Verifies that the active callback triggers when the queue starts doing work
 function testOnActiveCalled(callback) {
-  var task = new TestTask();
+  var task = new TestTask('task0');
 
   // Make a promise that resolves when the active callback is triggered.
   var whenActive = new Promise(function(resolve) {
@@ -101,7 +118,7 @@ function testOnActiveCalled(callback) {
 
 // Verifies that the idle callback triggers when the queue is empty.
 function testOnIdleCalled(callback) {
-  var task = new TestTask();
+  var task = new TestTask('task0');
 
   task.whenRun().then(function(task) { task.notifySuccess(); });
 
@@ -123,7 +140,7 @@ function testOnIdleCalled(callback) {
 
 // Verifies that the update callback is called when a task reports progress.
 function testProgressUpdate(callback) {
-  var task = new TestTask();
+  var task = new TestTask('task0');
 
   // Get the task to report some progress, then success, when it's run.
   task.whenRun()
@@ -155,7 +172,7 @@ function testProgressUpdate(callback) {
 // Verifies that the update callback is called to report successful task
 // completion.
 function testSuccessUpdate(callback) {
-  var task = new TestTask();
+  var task = new TestTask('task0');
 
   // Get the task to report success when it's run.
   task.whenRun().then(function(task) { task.notifySuccess(); });
@@ -176,7 +193,7 @@ function testSuccessUpdate(callback) {
 
 // Verifies that the update callback is called to report task errors.
 function testErrorUpdate(callback) {
-  var task = new TestTask();
+  var task = new TestTask('task0');
 
   // Get the task to report an error when it's run.
   task.whenRun().then(function(task) { task.notifyError(); });
