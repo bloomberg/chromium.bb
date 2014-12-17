@@ -3568,6 +3568,60 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Cryptohome.Errors" enum="CryptohomeError">
+  <owner>dkrahn@chromium.org</owner>
+  <summary>Cryptohome errors.</summary>
+</histogram>
+
+<histogram name="Cryptohome.TimeToInitPkcs11" units="milliseconds">
+  <owner>dkrahn@chromium.org</owner>
+  <summary>
+    The amount of time (ms) for Chrome OS cryptohome daemon to initialize the
+    PKCS#11. Initializations under 1 second represent checks on a previously
+    initialized PKCS#11, and should be discarded for analysis.
+  </summary>
+</histogram>
+
+<histogram name="Cryptohome.TimeToMountAsync" units="milliseconds">
+  <owner>dkrahn@chromium.org</owner>
+  <summary>
+    The amount of time (ms) for Chrome OS cryptohome to mount the encrypted home
+    directory asynchronously.
+  </summary>
+</histogram>
+
+<histogram name="Cryptohome.TimeToMountGuestAsync" units="milliseconds">
+  <owner>dkrahn@chromium.org</owner>
+  <summary>
+    The amount of time (ms) for Chrome OS cryptohome to mount the encrypted
+    guest home directory asynchronously.
+  </summary>
+</histogram>
+
+<histogram name="Cryptohome.TimeToMountGuestSync" units="milliseconds">
+  <owner>dkrahn@chromium.org</owner>
+  <summary>
+    The amount of time (ms) for Chrome OS cryptohome to mount the encrypted
+    guest home directory synchronously.
+  </summary>
+</histogram>
+
+<histogram name="Cryptohome.TimeToMountSync" units="milliseconds">
+  <owner>dkrahn@chromium.org</owner>
+  <summary>
+    The amount of time (ms) for Chrome OS cryptohome to mount the encrypted home
+    directory synchronously.
+  </summary>
+</histogram>
+
+<histogram name="Cryptohome.TimeToTakeTpmOwnership" units="milliseconds">
+  <owner>dkrahn@chromium.org</owner>
+  <summary>
+    The amount of time (ms) for Chrome OS cryptohome daemon to take ownership of
+    the TPM.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.BlockTypeFallback"
     enum="DataReductionProxyBypassType">
   <owner>bengr@chromium.org</owner>
@@ -43462,6 +43516,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="6" label="Sheets"/>
   <int value="7" label="Slides"/>
   <int value="8" label="PlayMusic"/>
+</enum>
+
+<enum name="CryptohomeError" type="int">
+  <int value="1" label="TPM returned TPM_E_FAIL"/>
 </enum>
 
 <enum name="CTRequirementCompliance" type="int">
