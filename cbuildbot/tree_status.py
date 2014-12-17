@@ -369,7 +369,7 @@ def ConstructDashboardURL(waterfall, builder_name, build_number, stage=None):
   """Return the dashboard (buildbot) URL for this run
 
   Args:
-    waterfall: One of constants.CIDB_KNOWN_WATERFALLS.
+    waterfall: One of constants.ALL_WATERFALLS
     builder_name: Builder name on buildbot dashboard.
     build_number: Build number for this validation attempt.
     stage: Link directly to a stage log, else use the general landing page.
