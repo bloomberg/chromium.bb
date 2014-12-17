@@ -20,6 +20,12 @@ class CONTENT_EXPORT RendererFrameManagerClient {
   virtual void EvictCurrentFrame() = 0;
 };
 
+// This class is responsible for globally managing which renderers keep their
+// compositor frame when offscreen. We actively discard compositor frames for
+// offscreen tabs, but keep a minimum amount, as an LRU cache, to make switching
+// between a small set of tabs faster. The limit is a soft limit, because
+// clients can lock their frame to prevent it from being discarded, e.g. if the
+// tab is visible, or while capturing a screenshot.
 class CONTENT_EXPORT RendererFrameManager {
  public:
   static RendererFrameManager* GetInstance();
