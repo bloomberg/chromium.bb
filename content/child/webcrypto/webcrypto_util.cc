@@ -233,16 +233,13 @@ Status GetHmacImportKeyLengthBits(
     unsigned int* keylen_bits) {
   // Make sure that the key data's length can be represented in bits without
   // overflow.
-  unsigned int data_keylen_bits = 0;
-  {
-    base::CheckedNumeric<unsigned int> keylen_bits(key_data_byte_length);
-    keylen_bits *= 8;
+  base::CheckedNumeric<unsigned int> checked_keylen_bits(key_data_byte_length);
+  checked_keylen_bits *= 8;
 
-    if (!keylen_bits.IsValid())
-      return Status::ErrorDataTooLarge();
+  if (!checked_keylen_bits.IsValid())
+    return Status::ErrorDataTooLarge();
 
-    data_keylen_bits = keylen_bits.ValueOrDie();
-  }
+  unsigned int data_keylen_bits = checked_keylen_bits.ValueOrDie();
 
   // Determine how many bits of the input to use.
   *keylen_bits = data_keylen_bits;
@@ -250,9 +247,8 @@ Status GetHmacImportKeyLengthBits(
     // The requested bit length must be:
     //   * No longer than the input data length
     //   * At most 7 bits shorter.
-    if (NumBitsToBytes(params->optionalLengthBits()) != key_data_byte_length) {
+    if (NumBitsToBytes(params->optionalLengthBits()) != key_data_byte_length)
       return Status::ErrorHmacImportBadLength();
-    }
     *keylen_bits = params->optionalLengthBits();
   }
 
