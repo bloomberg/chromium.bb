@@ -2010,7 +2010,6 @@ struct GCInfoTrait<Deque<T, 0, HeapAllocator>> {
         };
         return &info;
     }
-    static const GCInfo info;
 };
 
 template<typename T, typename U, typename V>
@@ -2029,7 +2028,6 @@ struct GCInfoTrait<HashCountedSet<T, U, V, HeapAllocator>> {
         };
         return &info;
     }
-    static const GCInfo info;
 };
 
 template<typename T, size_t inlineCapacity>
@@ -2052,7 +2050,6 @@ struct GCInfoTrait<Deque<T, inlineCapacity, HeapAllocator>> {
         };
         return &info;
     }
-    static const GCInfo info;
 };
 
 template<typename T, typename Traits>
