@@ -918,7 +918,7 @@ public:
 #endif
 
     // Push a trace callback on the marking stack.
-    static void pushTraceCallback(CallbackStack*, void* containerObject, TraceCallback);
+    static void pushTraceCallback(void* containerObject, TraceCallback);
 
     // Push a trace callback on the post-marking callback stack.  These
     // callbacks are called after normal marking (including ephemeron

@@ -1991,9 +1991,8 @@ public:
     using ObjectGraph = HashMap<uintptr_t, std::pair<uintptr_t, String>>;
 #endif
 
-    explicit MarkingVisitor(CallbackStack* markingStack)
+    MarkingVisitor()
         : Visitor(Mode == GlobalMarking ? Visitor::GlobalMarkingVisitorType : Visitor::GenericVisitorType)
-        , m_markingStack(markingStack)
     {
     }
 
@@ -2035,7 +2034,7 @@ public:
         // fprintf(stderr, "%s[%p] -> %s[%p]\n", m_hostName.ascii().data(), m_hostObject, className.ascii().data(), objectPointer);
 #endif
         if (callback)
-            Heap::pushTraceCallback(m_markingStack, const_cast<void*>(objectPointer), callback);
+            Heap::pushTraceCallback(const_cast<void*>(objectPointer), callback);
     }
 
     // We need both HeapObjectHeader and GeneralHeapObjectHeader versions to
@@ -2269,9 +2268,6 @@ protected:
     {
         Heap::pushWeakCellPointerCallback(cell, callback);
     }
-
-private:
-    CallbackStack* m_markingStack;
 };
 
 void Heap::init()
@@ -2282,7 +2278,7 @@ void Heap::init()
     s_weakCallbackStack = new CallbackStack();
     s_ephemeronStack = new CallbackStack();
     s_heapDoesNotContainCache = new HeapDoesNotContainCache();
-    s_markingVisitor = new MarkingVisitor<GlobalMarking>(s_markingStack);
+    s_markingVisitor = new MarkingVisitor<GlobalMarking>();
     s_freePagePool = new FreePagePool();
     s_orphanedPagePool = new OrphanedPagePool();
     s_allocatedObjectSize = 0;
@@ -2420,10 +2416,10 @@ String Heap::createBacktraceString()
 }
 #endif
 
-void Heap::pushTraceCallback(CallbackStack* stack, void* object, TraceCallback callback)
+void Heap::pushTraceCallback(void* object, TraceCallback callback)
 {
     ASSERT(Heap::containedInHeapOrOrphanedPage(object));
-    CallbackStack::Item* slot = stack->allocateEntry();
+    CallbackStack::Item* slot = s_markingStack->allocateEntry();
     *slot = CallbackStack::Item(object, callback);
 }
 
@@ -2608,7 +2604,7 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
     // same time as a thread local GC.
 
     {
-        MarkingVisitor<ThreadLocalMarking> markingVisitor(s_markingStack);
+        MarkingVisitor<ThreadLocalMarking> markingVisitor;
         ThreadState::NoAllocationScope noAllocationScope(state);
 
         state->preGC();
