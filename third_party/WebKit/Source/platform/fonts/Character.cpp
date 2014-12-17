@@ -343,22 +343,29 @@ unsigned Character::expansionOpportunityCount(const LChar* characters, size_t le
 {
     unsigned count = 0;
     if (textJustify == TextJustifyDistribute) {
-        count = length - 1;
-    } else {
-        if (direction == LTR) {
-            for (size_t i = 0; i < length; ++i) {
-                if (treatAsSpace(characters[i]))
-                    count++;
+        isAfterExpansion = true;
+        return length;
+    }
+
+    if (direction == LTR) {
+        for (size_t i = 0; i < length; ++i) {
+            if (treatAsSpace(characters[i])) {
+                count++;
+                isAfterExpansion = true;
+            } else {
+                isAfterExpansion = false;
             }
-        } else {
-            for (size_t i = length; i > 0; --i) {
-                if (treatAsSpace(characters[i - 1]))
-                    count++;
+        }
+    } else {
+        for (size_t i = length; i > 0; --i) {
+            if (treatAsSpace(characters[i - 1])) {
+                count++;
+                isAfterExpansion = true;
+            } else {
+                isAfterExpansion = false;
             }
         }
     }
-    int lastCharacter = (direction == LTR) ? length - 1 : 0;
-    isAfterExpansion = treatAsSpace(characters[lastCharacter]);
 
     return count;
 }
