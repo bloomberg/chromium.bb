@@ -1,4 +1,4 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollY 982.44 scrollHeight 2122
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollY 982.00 scrollHeight 2122
   RenderView at (0,0) size 800x600
 layer at (0,0) size 785x2122 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock {HTML} at (0,0) size 785x2122.44
