@@ -48,6 +48,31 @@ SurfaceAggregator::SurfaceAggregator(SurfaceManager* manager,
 
 SurfaceAggregator::~SurfaceAggregator() {}
 
+// Create a clip rect for an aggregated quad from the original clip rect and
+// the clip rect from the surface it's on.
+SurfaceAggregator::ClipData SurfaceAggregator::CalculateClipRect(
+    const ClipData& surface_clip,
+    const ClipData& quad_clip,
+    const gfx::Transform& content_to_target_transform) {
+  ClipData out_clip;
+  if (surface_clip.is_clipped)
+    out_clip = surface_clip;
+
+  if (quad_clip.is_clipped) {
+    // TODO(jamesr): This only works if content_to_target_transform maps integer
+    // rects to integer rects.
+    gfx::Rect final_clip = MathUtil::MapEnclosingClippedRect(
+        content_to_target_transform, quad_clip.rect);
+    if (out_clip.is_clipped)
+      out_clip.rect.Intersect(final_clip);
+    else
+      out_clip.rect = final_clip;
+    out_clip.is_clipped = true;
+  }
+
+  return out_clip;
+}
+
 class SurfaceAggregator::RenderPassIdAllocator {
  public:
   explicit RenderPassIdAllocator(int* next_index) : next_index_(next_index) {}
@@ -166,6 +191,7 @@ gfx::Rect SurfaceAggregator::DamageRectForSurface(const Surface* surface,
 void SurfaceAggregator::HandleSurfaceQuad(
     const SurfaceDrawQuad* surface_quad,
     const gfx::Transform& content_to_target_transform,
+    const ClipData& clip_rect,
     RenderPass* dest_pass) {
   SurfaceId surface_id = surface_quad->surface_id;
   // If this surface's id is already in our referenced set then it creates
@@ -233,7 +259,7 @@ void SurfaceAggregator::HandleSurfaceQuad(
         content_to_target_transform);
 
     CopyQuadsToPass(source.quad_list, source.shared_quad_state_list,
-                    gfx::Transform(), copy_pass.get(), surface_id);
+                    gfx::Transform(), ClipData(), copy_pass.get(), surface_id);
 
     dest_pass_list_->push_back(copy_pass.Pass());
   }
@@ -246,14 +272,25 @@ void SurfaceAggregator::HandleSurfaceQuad(
     gfx::Transform surface_transform = surface_quad->quadTransform();
     surface_transform.ConcatTransform(content_to_target_transform);
 
-    // TODO(jamesr): Make sure clipping is enforced.
+    // Intersect the transformed visible rect and the clip rect to create a
+    // smaller cliprect for the quad.
+    ClipData surface_quad_clip_rect(
+        true, MathUtil::MapEnclosingClippedRect(surface_quad->quadTransform(),
+                                                surface_quad->visible_rect));
+    if (surface_quad->isClipped())
+      surface_quad_clip_rect.rect.Intersect(surface_quad->clipRect());
+
+    ClipData quads_clip = CalculateClipRect(clip_rect, surface_quad_clip_rect,
+                                            content_to_target_transform);
+
     CopyQuadsToPass(quads, last_pass.shared_quad_state_list, surface_transform,
-                    dest_pass, surface_id);
+                    quads_clip, dest_pass, surface_id);
   } else {
     RenderPassId remapped_pass_id = RemapPassId(last_pass.id, surface_id);
 
     CopySharedQuadState(surface_quad->shared_quad_state,
-                        content_to_target_transform, dest_pass);
+                        content_to_target_transform, clip_rect, dest_pass);
+
     SharedQuadState* shared_quad_state =
         dest_pass->shared_quad_state_list.back();
     RenderPassDrawQuad* quad =
@@ -282,6 +319,7 @@ void SurfaceAggregator::HandleSurfaceQuad(
 void SurfaceAggregator::CopySharedQuadState(
     const SharedQuadState* source_sqs,
     const gfx::Transform& content_to_target_transform,
+    const ClipData& clip_rect,
     RenderPass* dest_render_pass) {
   SharedQuadState* copy_shared_quad_state =
       dest_render_pass->CreateAndAppendSharedQuadState();
@@ -294,16 +332,19 @@ void SurfaceAggregator::CopySharedQuadState(
   // transform is not identity.
   copy_shared_quad_state->content_to_target_transform.ConcatTransform(
       content_to_target_transform);
-  if (copy_shared_quad_state->is_clipped) {
-    copy_shared_quad_state->clip_rect = MathUtil::MapEnclosingClippedRect(
-        content_to_target_transform, copy_shared_quad_state->clip_rect);
-  }
+
+  ClipData new_clip_rect = CalculateClipRect(
+      clip_rect, ClipData(source_sqs->is_clipped, source_sqs->clip_rect),
+      content_to_target_transform);
+  copy_shared_quad_state->is_clipped = new_clip_rect.is_clipped;
+  copy_shared_quad_state->clip_rect = new_clip_rect.rect;
 }
 
 void SurfaceAggregator::CopyQuadsToPass(
     const QuadList& source_quad_list,
     const SharedQuadStateList& source_shared_quad_state_list,
     const gfx::Transform& content_to_target_transform,
+    const ClipData& clip_rect,
     RenderPass* dest_pass,
     SurfaceId surface_id) {
   const SharedQuadState* last_copied_source_shared_quad_state = NULL;
@@ -319,11 +360,12 @@ void SurfaceAggregator::CopyQuadsToPass(
 
     if (quad->material == DrawQuad::SURFACE_CONTENT) {
       const SurfaceDrawQuad* surface_quad = SurfaceDrawQuad::MaterialCast(quad);
-      HandleSurfaceQuad(surface_quad, content_to_target_transform, dest_pass);
+      HandleSurfaceQuad(surface_quad, content_to_target_transform, clip_rect,
+                        dest_pass);
     } else {
       if (quad->shared_quad_state != last_copied_source_shared_quad_state) {
-        CopySharedQuadState(
-            quad->shared_quad_state, content_to_target_transform, dest_pass);
+        CopySharedQuadState(quad->shared_quad_state,
+                            content_to_target_transform, clip_rect, dest_pass);
         last_copied_source_shared_quad_state = quad->shared_quad_state;
       }
       if (quad->material == DrawQuad::RENDER_PASS) {
@@ -375,7 +417,8 @@ void SurfaceAggregator::CopyPasses(const DelegatedFrameData* frame_data,
                       source.has_transparent_background);
 
     CopyQuadsToPass(source.quad_list, source.shared_quad_state_list,
-                    gfx::Transform(), copy_pass.get(), surface->surface_id());
+                    gfx::Transform(), ClipData(), copy_pass.get(),
+                    surface->surface_id());
 
     dest_pass_list_->push_back(copy_pass.Pass());
   }
