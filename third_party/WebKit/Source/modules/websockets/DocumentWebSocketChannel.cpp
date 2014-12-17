@@ -121,7 +121,7 @@ DocumentWebSocketChannel::DocumentWebSocketChannel(ExecutionContext* context, We
     , m_sourceURLAtConstruction(sourceURL)
     , m_lineNumberAtConstruction(lineNumber)
 {
-    if (context->isDocument() && toDocument(context)->page())
+    if (context->isDocument())
         m_identifier = createUniqueIdentifier();
 }
 
