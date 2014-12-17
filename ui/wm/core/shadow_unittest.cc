@@ -77,7 +77,7 @@ class MockResourceBundleDelegate : public ui::ResourceBundle::Delegate {
     return false;
   }
   scoped_ptr<gfx::Font> GetFont(ui::ResourceBundle::FontStyle style) override {
-    return scoped_ptr<gfx::Font>();
+    return nullptr;
   }
 
   int last_resource_id() const { return last_resource_id_; }
