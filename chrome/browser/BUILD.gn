@@ -789,10 +789,15 @@ grit("resources") {
 action("about_credits") {
   script = "//tools/licenses.py"
 
-  # TODO(phajdan.jr): input dependencies so this can be regenerated
-  # automatically when one of the credits changes. The way this should work is
-  # that licenses.py should write a .d file listing the input dependencies (see
-  # "depfile" in GN).
+  inputs = [
+    # This is not a complete list. TODO(phajdan.jr, dbeam): licenses.py needs to
+    # generate a .d file with all the licenses/credits that about:credits uses.
+    # Then about:credits will automatically rebuild when one of them changes.
+    # See: depfile in gn's documentation (gn help depfile).
+    "resources/about_credits.tmpl",
+    "resources/about_credits_entry.tmpl",
+  ]
+
   outputs = [
     about_credits_file,
   ]

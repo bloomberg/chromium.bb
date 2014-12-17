@@ -604,8 +604,11 @@
           },
           'action_name': 'generate_about_credits',
           'inputs': [
-            # TODO(phajdan.jr): make licenses.py print inputs too.
+            # TODO(phajdan.jr): make licenses.py print license input files so
+            # about:credits gets rebuilt when one changes.
             '<(generator_path)',
+            'browser/resources/about_credits.tmpl',
+            'browser/resources/about_credits_entry.tmpl',
           ],
           'outputs': [
             '<(about_credits_file)',
