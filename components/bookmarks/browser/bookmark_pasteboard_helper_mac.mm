@@ -218,17 +218,21 @@ void WriteBookmarkDictionaryListPboardType(
 
 void FillFlattenedArraysForBookmarks(
     const std::vector<BookmarkNodeData::Element>& elements,
-    NSMutableArray* titles,
-    NSMutableArray* urls) {
-  for (size_t i = 0; i < elements.size(); ++i) {
-    BookmarkNodeData::Element element = elements[i];
+    NSMutableArray* url_titles,
+    NSMutableArray* urls,
+    NSMutableArray* toplevel_string_data) {
+  for (const BookmarkNodeData::Element& element : elements) {
+    NSString* title = base::SysUTF16ToNSString(element.title);
     if (element.is_url) {
-      NSString* title = base::SysUTF16ToNSString(element.title);
       NSString* url = base::SysUTF8ToNSString(element.url.spec());
-      [titles addObject:title];
+      [url_titles addObject:title];
       [urls addObject:url];
+      if (toplevel_string_data)
+        [toplevel_string_data addObject:url];
     } else {
-      FillFlattenedArraysForBookmarks(element.children, titles, urls);
+      if (toplevel_string_data)
+        [toplevel_string_data addObject:title];
+      FillFlattenedArraysForBookmarks(element.children, url_titles, urls, nil);
     }
   }
 }
@@ -236,26 +240,28 @@ void FillFlattenedArraysForBookmarks(
 void WriteSimplifiedBookmarkTypes(
     NSPasteboard* pb,
     const std::vector<BookmarkNodeData::Element>& elements) {
-  NSMutableArray* titles = [NSMutableArray array];
+  NSMutableArray* url_titles = [NSMutableArray array];
   NSMutableArray* urls = [NSMutableArray array];
-  FillFlattenedArraysForBookmarks(elements, titles, urls);
+  NSMutableArray* toplevel_string_data = [NSMutableArray array];
+  FillFlattenedArraysForBookmarks(
+      elements, url_titles, urls, toplevel_string_data);
 
-  // These bookmark types only act on urls, not folders.
+  // Write NSStringPboardType.
+  [pb setString:[toplevel_string_data componentsJoinedByString:@"\n"]
+        forType:NSStringPboardType];
+
+  // The following pasteboard types only act on urls, not folders.
   if ([urls count] < 1)
     return;
 
   // Write WebURLsWithTitlesPboardType.
-  [pb setPropertyList:[NSArray arrayWithObjects:urls, titles, nil]
+  [pb setPropertyList:[NSArray arrayWithObjects:urls, url_titles, nil]
               forType:kCrWebURLsWithTitlesPboardType];
-
-  // Write NSStringPboardType.
-  [pb setString:[urls componentsJoinedByString:@"\n"]
-        forType:NSStringPboardType];
 
   // Write NSURLPboardType (with title).
   NSURL* url = [NSURL URLWithString:[urls objectAtIndex:0]];
   [url writeToPasteboard:pb];
-  NSString* titleString = [titles objectAtIndex:0];
+  NSString* titleString = [url_titles objectAtIndex:0];
   [pb setString:titleString forType:kNSURLTitlePboardType];
 }
 
