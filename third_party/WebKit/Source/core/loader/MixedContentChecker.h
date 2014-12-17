@@ -63,7 +63,6 @@ public:
 
     bool canSubmitToInsecureForm(SecurityOrigin*, const KURL&) const;
     bool canConnectInsecureWebSocket(SecurityOrigin*, const KURL&) const;
-    bool canFrameInsecureContent(SecurityOrigin*, const KURL&) const;
     static bool isMixedContent(SecurityOrigin*, const KURL&);
 
     static void checkMixedPrivatePublic(LocalFrame*, const AtomicString& resourceIPAddress);

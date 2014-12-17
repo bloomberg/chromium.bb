@@ -799,7 +799,17 @@ void WebLocalFrameImpl::collectGarbage()
 bool WebLocalFrameImpl::checkIfRunInsecureContent(const WebURL& url) const
 {
     ASSERT(frame());
-    return frame()->loader().mixedContentChecker()->canFrameInsecureContent(frame()->document()->securityOrigin(), url);
+
+    // This is only called (eventually, through proxies and delegates and IPC) from
+    // PluginURLFetcher::OnReceivedRedirect for redirects of NPAPI resources. We'll
+    // synthezise a ResourceRequest here with reasonable properties to perform the
+    // mixed content check.
+    //
+    // FIXME: Remove this method entirely once we smother NPAPI.
+    ResourceRequest request(url);
+    request.setRequestContext(WebURLRequest::RequestContextObject);
+    request.setFrameType(WebURLRequest::FrameTypeNone);
+    return MixedContentChecker::shouldBlockFetch(frame(), request, url, MixedContentChecker::SendReport);
 }
 
 v8::Handle<v8::Value> WebLocalFrameImpl::executeScriptAndReturnValue(const WebScriptSource& source)
