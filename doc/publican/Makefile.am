@@ -94,11 +94,12 @@ $(builddir)/en-US/ProtocolInterfaces.xml: $(top_srcdir)/protocol/wayland.xml $(s
 # * use doxygen's combine.xslt to merge the xml files into one single file
 # * move wayland-<foo>_8h.xml back to its original location
 $(builddir)/en-US/%API.xml.tmp: $(doxydir)/xml/%/index.xml | $(builddir)/en-US
-	$(AM_V_at)mv $(doxydir)/xml/$*/wayland-$*_8h.xml \
-		$(doxydir)/xml/
+	$(AM_V_at)$(MKDIR_P) $(doxydir)/xml/$*/saved
+	$(AM_V_at)mv $(doxydir)/xml/$*/wayland-*_8h.xml \
+		$(doxydir)/xml/$*/saved
 	$(AM_V_GEN)$(XSLTPROC) $(doxydir)/xml/$*/combine.xslt \
 		$(doxydir)/xml/$*/index.xml > $@
-	$(AM_V_at)mv $(doxydir)/xml/wayland-$*_8h.xml \
+	$(AM_V_at)mv $(doxydir)/xml/$*/saved/* \
 		$(doxydir)/xml/$*
 
 # WaylandClientAPI.xml:
