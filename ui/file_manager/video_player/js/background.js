@@ -2,11 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Stores the app windows OLNY for test purpose.
-// We SHOULD NOT use it as it is except for test, since the files which have
-// the same name will be overridden each other.
+/**
+ * Icon of the video player.
+ * TODO(yoshiki): Consider providing an exact size icon, instead of relying
+ * on downsampling by ash.
+ *
+ * @type {string}
+ * @const
+ */
+var ICON_IMAGE = 'images/icon/video-player-64.png';
+
 var appWindowsForTest = {};
 
+/**
+ * Configuration of the video player panel.
+ * @type {Object}
+ */
+var windowCreateOptions = {
+  id: 'video',
+  frame: 'none',
+  minWidth: 480,
+  minHeight: 270
+};
+
+/**
+ * Backgound object. This is necessary for AppWindowWrapper.
+ * @type {BackgroundBase}
+ */
+var background = new BackgroundBase();
+
+/**
+ * Queue to serialize initialization.
+ * @type {AsyncUtil.Queue}
+ */
 var initializeQueue = new AsyncUtil.Queue();
 
 // Initializes the strings. This needs for the volume manager.
@@ -22,6 +50,7 @@ initializeQueue.run(function(fulfill) {
   VolumeManager.getInstance(fulfill);
 }.wrap());
 
+// Registers the handlers.
 chrome.app.runtime.onLaunched.addListener(onLaunched);
 
 /**
@@ -32,67 +61,86 @@ function onLaunched(launchData) {
   if (!launchData || !launchData.items || launchData.items.length == 0)
     return;
 
-  var videos = [];
+  var playlist = {};
 
   initializeQueue.run(function(fulfill) {
     var isolatedEntries = launchData.items.map(function(item) {
       return item.entry;
-    });
+    }.wrap());
 
     chrome.fileManagerPrivate.resolveIsolatedEntries(isolatedEntries,
         function(externalEntries) {
-          videos = externalEntries.map(function(entry) {
-            return Object.freeze({
-              entry: entry,
-              title: entry.name,
-              url: entry.toURL(),
-            });
-          });
+          var urls = util.entriesToURLs(externalEntries);
+          playlist = {items: urls, position: 0};
           fulfill();
         }.wrap());
   }.wrap());
 
   initializeQueue.run(function(fulfill) {
-    if (videos.length > 0) {
-      open(videos);
-    } else {
-      // TODO(yoshiki): handle error in a smarter way.
-      open('', 'error');  // Empty URL shows the error message.
-    }
+    openVideoPlayerWindow(playlist, false);
     fulfill();
   }.wrap());
 }
 
+var generateWindowId = (function() {
+  var seq = 0;
+  return function() {
+    return 'VIDEO_PLAYER_APP_' + seq++;
+  }.wrap();
+}.wrap())();
+
 /**
  * Opens player window.
- * @param {Array.<Object>} videos List of videos to play.
+ * @param {Object} playlist List of videos to play and index to start playing.
+ * @param {boolean} reopen True if reopen, false otherwise.
  * @return {Promise} Promise to be fulfilled on success, or rejected on error.
  */
-function open(videos) {
-  return new Promise(function(fulfill, reject) {
-    chrome.app.window.create('video_player.html', {
-      id: 'video',
-      frame: 'none',
-      singleton: false,
-      minWidth: 480,
-      minHeight: 270
-    },
-    fulfill);
-  }).then(function(createdWindow) {
-    // Stores the window for test purpose.
-    appWindowsForTest[videos[0].entry.name] = createdWindow;
+function openVideoPlayerWindow(playlist, reopen) {
+  var items = playlist.items;
+  var position = playlist.position;
+  var startUrl = (position < items.length) ? items[position] : '';
+  var windowNameForTest = null;
 
-    createdWindow.contentWindow.videos = videos;
-    createdWindow.setIcon('images/icon/video-player-64.png');
+  return new Promise(function(fulfill, reject) {
+    util.URLsToEntries(items).then(function(result) {
+      fulfill(result.entries);
+    }.wrap()).catch(reject);
+  }.wrap()).then(function(entries) {
+    if (entries.length === 0)
+      return Promise.reject('No file to open.');
+
+    // Adjusts the position to start playing.
+    var maybePosition = util.entriesToURLs(entries).indexOf(startUrl);
+    if (maybePosition !== -1)
+      position = maybePosition;
+
+    windowNameForTest = entries[0].name;
+
+    // Opens the video player window.
+    return new Promise(function(fulfill, reject) {
+      var urls = util.entriesToURLs(entries);
+      var videoPlayer = new AppWindowWrapper('video_player.html',
+                                             generateWindowId(),
+                                             windowCreateOptions);
+
+      videoPlayer.launch(
+          {items: urls, position: position},
+          reopen,
+          fulfill.bind(null, videoPlayer));
+    }.wrap());
+  }.wrap()).then(function(videoPlayer) {
+    var appWindow = videoPlayer.rawAppWindow;
+    appWindowsForTest[windowNameForTest] = appWindow;
 
     if (chrome.test)
-      createdWindow.contentWindow.loadMockCastExtensionForTest = true;
+      appWindow.contentWindow.loadMockCastExtensionForTest = true;
 
-    chrome.runtime.sendMessage({ready: true});
-  }).catch(function(error) {
-    console.error('Launch failed', error.stack || error);
+    videoPlayer.setIcon(ICON_IMAGE);
+    AppWindowWrapper.focusOnDesktop(videoPlayer.rawAppWindow);
+  }.wrap()).catch(function(error) {
+    console.error('Launch failed' + error.stack || error);
     return Promise.reject(error);
-  });
+  }.wrap());
 }
 
 // If is is run in the browser test, wait for the test resources are installed
@@ -108,5 +156,5 @@ if (chrome.test) {
         'chrome-extension://' + window.testExtensionId +
         '/common/test_loader.js';
     document.documentElement.appendChild(script);
-  });
+  }.wrap());
 }

@@ -21,6 +21,7 @@
 //<include src="../../../webui/resources/js/cr/ui.js">
 //<include src="../../../webui/resources/js/cr/event_target.js">
 
+//<include src="../../../webui/resources/js/cr/ui/array_data_model.js">
 //<include src="../../../webui/resources/js/cr/ui/position_util.js">
 //<include src="../../../webui/resources/js/cr/ui/menu_item.js">
 //<include src="../../../webui/resources/js/cr/ui/menu.js">
@@ -34,8 +35,11 @@
 //<include src="../../../webui/resources/js/i18n_template_no_process.js">
 
 //<include src="../../file_manager/common/js/async_util.js">
+//<include src="../../file_manager/common/js/file_type.js">
 //<include src="../../file_manager/common/js/util.js">
+//<include src="../../file_manager/common/js/volume_manager_common.js">
 //<include src="../../file_manager/foreground/js/mouse_inactivity_watcher.js">
+//<include src="../../file_manager/foreground/js/volume_manager_wrapper.js">
 
 //<include src="cast/cast_extension_discoverer.js">
 //<include src="cast/cast_video_element.js">

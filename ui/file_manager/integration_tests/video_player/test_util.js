@@ -26,19 +26,16 @@ function launch(testVolumeName, volumeType, entries, opt_selected) {
 
   var appWindow = null;
   return entriesPromise.then(function(entries) {
-    return open(entries.map(function(entry) {
-      return {entry: entry, title: entry.name, url: entry.toURL()};
-    })).then(function() {
-      appWindow = appWindowsForTest[entries[0].name];
+    return openVideoPlayerWindow({
+      items: util.entriesToURLs(entries),
+      position: 0
+    }, false).then(function() {
+      return entries;
     });
+  }).then(function(entries) {
+    appWindow = appWindowsForTest[entries[0].name];
   }).then(function() {
-    return waitForElement(appWindow, 'body').then(function() {
-      var script = document.createElement('script');
-      script.src =
-          'chrome-extension://ljoplibgfehghmibaoaepfagnmbbfiga/' +
-          'video_player/test_helper_on_ui_page.js';
-      appWindow.contentWindow.document.body.appendChild(script);
-    });
+    return waitForElement(appWindow, 'body');
   }).then(function() {
     return Promise.all([
       waitForElement(appWindow, '#video-player[first-video][last-video]'),
