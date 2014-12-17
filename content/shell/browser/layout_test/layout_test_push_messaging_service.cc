@@ -22,6 +22,7 @@ void LayoutTestPushMessagingService::SetPermission(const GURL& origin,
 
 void LayoutTestPushMessagingService::ClearPermissions() {
   permission_map_.clear();
+  registrations_.clear();
 }
 
 GURL LayoutTestPushMessagingService::GetPushEndpoint() {
@@ -47,6 +48,7 @@ void LayoutTestPushMessagingService::RegisterFromWorker(
     const PushMessagingService::RegisterCallback& callback) {
   if (GetPermissionStatus(requesting_origin, requesting_origin) ==
       blink::WebPushPermissionStatusGranted) {
+    registrations_.insert(requesting_origin);
     callback.Run("layoutTestRegistrationId",
                  PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE);
   } else {
@@ -70,6 +72,19 @@ LayoutTestPushMessagingService::GetPermissionStatus(
   if (it == permission_map_.end())
     return blink::WebPushPermissionStatusDefault;
   return it->second;
+}
+
+void LayoutTestPushMessagingService::Unregister(
+    const GURL& requesting_origin,
+    int64 service_worker_registration_id,
+    const UnregisterCallback& callback) {
+  PushUnregistrationStatus status;
+  if (registrations_.erase(requesting_origin) == 1)
+    status = PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTER;
+  else
+    status = PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED;
+
+  callback.Run(status);
 }
 
 }  // namespace content

@@ -7,6 +7,7 @@
 
 #include "content/public/common/push_messaging_status.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/WebKit/public/platform/WebPushError.h"
 #include "third_party/WebKit/public/platform/WebPushPermissionStatus.h"
 #include "url/gurl.h"
 
@@ -21,6 +22,10 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::PushGetRegistrationStatus,
 IPC_ENUM_TRAITS_MAX_VALUE(
     blink::WebPushPermissionStatus,
     blink::WebPushPermissionStatus::WebPushPermissionStatusLast)
+
+IPC_ENUM_TRAITS_MAX_VALUE(
+    blink::WebPushError::ErrorType,
+    blink::WebPushError::ErrorType::ErrorTypeLast)
 
 // Messages sent from the browser to the child process.
 
@@ -58,6 +63,15 @@ IPC_MESSAGE_CONTROL2(PushMessagingMsg_GetPermissionStatusSuccess,
 IPC_MESSAGE_CONTROL1(PushMessagingMsg_GetPermissionStatusError,
                      int32 /* request_id */)
 
+IPC_MESSAGE_CONTROL2(PushMessagingMsg_UnregisterSuccess,
+                     int32 /* request_id */,
+                     bool /* did_unregister */)
+
+IPC_MESSAGE_CONTROL3(PushMessagingMsg_UnregisterError,
+                     int32 /* request_id */,
+                     blink::WebPushError::ErrorType /* error_type */,
+                     std::string /* error_message */)
+
 // Messages sent from the child process to the browser.
 
 IPC_MESSAGE_CONTROL5(PushMessagingHostMsg_RegisterFromDocument,
@@ -72,5 +86,9 @@ IPC_MESSAGE_CONTROL2(PushMessagingHostMsg_RegisterFromWorker,
                      int64 /* service_worker_registration_id */)
 
 IPC_MESSAGE_CONTROL2(PushMessagingHostMsg_GetPermissionStatus,
+                     int32 /* request_id */,
+                     int64 /* service_worker_registration_id */)
+
+IPC_MESSAGE_CONTROL2(PushMessagingHostMsg_Unregister,
                      int32 /* request_id */,
                      int64 /* service_worker_registration_id */)

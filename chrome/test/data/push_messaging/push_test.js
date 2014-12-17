@@ -5,6 +5,7 @@
 'use strict';
 
 var pushData = new FutureData();
+var pushRegistration = null;
 
 // Sends data back to the test. This must be in response to an earlier
 // request, but it's ok to respond asynchronously. The request blocks until
@@ -91,7 +92,8 @@ function removeManifest() {
 function registerPush() {
   navigator.serviceWorker.ready.then(function(swRegistration) {
     return swRegistration.pushManager.register()
-        .then(function(pushRegistration) {
+        .then(function(registration) {
+          pushRegistration = registration
           sendResultToTest(pushRegistration.endpoint + ' - ' +
                            pushRegistration.registrationId);
         });
@@ -113,6 +115,19 @@ function isControlled() {
   } else {
     sendResultToTest('false - is not controlled');
   }
+}
+
+function unregister() {
+  if (!pushRegistration) {
+    sendResultToTest('unregister error: no registration');
+    return;
+  }
+
+  pushRegistration.unregister().then(function(result) {
+    sendResultToTest('unregister result: ' + result);
+  }, function(error) {
+    sendResultToTest('unregister error: ' + error.name + ': ' + error.message);
+  });
 }
 
 addEventListener('message', function(event) {

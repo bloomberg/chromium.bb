@@ -6,6 +6,7 @@
 #define CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_PUSH_MESSAGING_SERVICE_H_
 
 #include <map>
+#include <set>
 
 #include "content/public/browser/push_messaging_service.h"
 #include "content/public/common/push_messaging_status.h"
@@ -45,10 +46,15 @@ class LayoutTestPushMessagingService : public PushMessagingService {
   blink::WebPushPermissionStatus GetPermissionStatus(
       const GURL& requesting_origin,
       const GURL& embedding_origin) override;
+  void Unregister(const GURL& requesting_origin,
+                  int64 service_worker_registration_id,
+                  const UnregisterCallback& callback) override;
 
  private:
   // Map from origin to permission status.
   std::map<GURL, blink::WebPushPermissionStatus> permission_map_;
+  // Set of currently registered origins.
+  std::set<GURL> registrations_;
 
   DISALLOW_COPY_AND_ASSIGN(LayoutTestPushMessagingService);
 };

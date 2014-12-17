@@ -24,6 +24,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebIDBTypes.h",
   "+third_party/WebKit/public/platform/WebLockOrientationError.h",
   "+third_party/WebKit/public/platform/WebNotificationPermission.h",
+  "+third_party/WebKit/public/platform/WebPushError.h",
   "+third_party/WebKit/public/platform/WebPushPermissionStatus.h",
   "+third_party/WebKit/public/platform/WebReferrerPolicy.h",
   "+third_party/WebKit/public/platform/WebScreenOrientationLockType.h",

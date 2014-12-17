@@ -72,6 +72,8 @@ bool PushMessagingMessageFilter::OnMessageReceived(
                         OnRegisterFromWorker)
     IPC_MESSAGE_HANDLER(PushMessagingHostMsg_GetPermissionStatus,
                         OnGetPermissionStatus)
+    IPC_MESSAGE_HANDLER(PushMessagingHostMsg_Unregister,
+                        OnUnregister)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -349,6 +351,65 @@ void PushMessagingMessageFilter::SendRegisterSuccessOnUI(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   GURL push_endpoint(service()->GetPushEndpoint());
   SendRegisterSuccess(data, status, push_endpoint, push_registration_id);
+}
+
+void PushMessagingMessageFilter::OnUnregister(
+    int request_id, int64 service_worker_registration_id) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  ServiceWorkerRegistration* service_worker_registration =
+      service_worker_context_->context()->GetLiveRegistration(
+          service_worker_registration_id);
+  DCHECK(service_worker_registration);
+  if (!service_worker_registration)
+    return;
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&PushMessagingMessageFilter::UnregisterOnUI,
+                 this,
+                 request_id,
+                 service_worker_registration_id,
+                 service_worker_registration->pattern().GetOrigin()));
+}
+
+void PushMessagingMessageFilter::UnregisterOnUI(
+    int request_id,
+    int64 service_worker_registration_id,
+    const GURL& requesting_origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!service()) {
+    DidUnregister(request_id, PUSH_UNREGISTRATION_STATUS_UNKNOWN_ERROR);
+    return;
+  }
+
+  service()->Unregister(requesting_origin, service_worker_registration_id,
+      base::Bind(&PushMessagingMessageFilter::DidUnregister,
+                 weak_factory_ui_to_ui_.GetWeakPtr(), request_id));
+}
+
+void PushMessagingMessageFilter::DidUnregister(
+    int request_id,
+    PushUnregistrationStatus unregistration_status) {
+  switch (unregistration_status) {
+  case PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTER:
+    Send(new PushMessagingMsg_UnregisterSuccess(request_id, true));
+    return;
+  case PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED:
+    Send(new PushMessagingMsg_UnregisterSuccess(request_id, false));
+    return;
+  case PUSH_UNREGISTRATION_STATUS_NETWORK_ERROR:
+    Send(new PushMessagingMsg_UnregisterError(
+        request_id,
+        blink::WebPushError::ErrorTypeNetwork,
+        "Failed to connect to the push server."));
+    return;
+  case PUSH_UNREGISTRATION_STATUS_UNKNOWN_ERROR:
+    Send(new PushMessagingMsg_UnregisterError(
+        request_id,
+        blink::WebPushError::ErrorTypeUnknown,
+        "Unexpected error while trying to unregister from the push server."));
+    return;
+  }
 }
 
 void PushMessagingMessageFilter::OnGetRegistration(

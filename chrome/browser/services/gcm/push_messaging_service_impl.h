@@ -64,6 +64,10 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       int64 service_worker_registration_id,
       const std::string& sender_id,
       const content::PushMessagingService::RegisterCallback& callback) override;
+  void Unregister(
+      const GURL& requesting_origin,
+      int64 service_worker_registration_id,
+      const content::PushMessagingService::UnregisterCallback&) override;
   // TODO(mvanouwerkerk): Delete once the Push API flows through platform.
   // https://crbug.com/389194
   blink::WebPushPermissionStatus GetPermissionStatus(
@@ -100,11 +104,11 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const content::PushMessagingService::RegisterCallback& callback,
       bool allow);
 
-  // TODO(mvanouwerkerk): this will need to be extended and move to the
-  // PushMessagingService interface later.
-  void Unregister(const PushMessagingApplicationId& application_id);
+  void Unregister(const PushMessagingApplicationId& application_id,
+                  const content::PushMessagingService::UnregisterCallback&);
 
-  void DidUnregister(GCMClient::Result result);
+  void DidUnregister(const content::PushMessagingService::UnregisterCallback&,
+                     GCMClient::Result result);
 
   // Helper method that checks if a given origin is allowed to use Push.
   bool HasPermission(const GURL& origin);

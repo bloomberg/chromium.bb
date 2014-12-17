@@ -19,9 +19,10 @@ namespace content {
 // push messaging services like GCM. Must only be used on the UI thread.
 class CONTENT_EXPORT PushMessagingService {
  public:
-  typedef base::Callback<void(const std::string& /* registration_id */,
-                              PushRegistrationStatus /* status */)>
-      RegisterCallback;
+  using RegisterCallback =
+      base::Callback<void(const std::string& /* registration_id */,
+                          PushRegistrationStatus /* status */)>;
+  using UnregisterCallback = base::Callback<void(PushUnregistrationStatus)>;
 
   virtual ~PushMessagingService() {}
 
@@ -48,6 +49,12 @@ class CONTENT_EXPORT PushMessagingService {
                                   int64 service_worker_registration_id,
                                   const std::string& sender_id,
                                   const RegisterCallback& callback) = 0;
+
+  // Unregister an origin and its associated service worker registration id from
+  // the push service.
+  virtual void Unregister(const GURL& requesting_origin,
+                          int64 service_worker_registration_id,
+                          const UnregisterCallback& callback) = 0;
 
   // Check whether the requester has permission to register for Push
   // Messages

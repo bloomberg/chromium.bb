@@ -72,7 +72,9 @@ bool PushDispatcher::ShouldHandleMessage(const IPC::Message& msg) {
   return msg.type() == PushMessagingMsg_RegisterFromWorkerSuccess::ID ||
          msg.type() == PushMessagingMsg_RegisterFromWorkerError::ID ||
          msg.type() == PushMessagingMsg_GetPermissionStatusSuccess::ID ||
-         msg.type() == PushMessagingMsg_GetPermissionStatusError::ID;
+         msg.type() == PushMessagingMsg_GetPermissionStatusError::ID ||
+         msg.type() == PushMessagingMsg_UnregisterSuccess::ID ||
+         msg.type() == PushMessagingMsg_UnregisterError::ID;
 }
 
 }  // namespace content

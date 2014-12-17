@@ -158,7 +158,7 @@ void PushMessagingServiceImpl::OnMessage(
     if (!HasPermission(application_id.origin)) {
       // The |origin| lost push permission. We need to unregister and drop this
       // message.
-      Unregister(application_id);
+      Unregister(application_id, UnregisterCallback());
       return;
     }
 
@@ -197,7 +197,7 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
     case content::PUSH_DELIVERY_STATUS_EVENT_WAITUNTIL_REJECTED:
       break;
     case content::PUSH_DELIVERY_STATUS_NO_SERVICE_WORKER:
-      Unregister(application_id);
+      Unregister(application_id, UnregisterCallback());
       break;
   }
 }
@@ -414,22 +414,59 @@ void PushMessagingServiceImpl::DidRequestPermission(
 }
 
 void PushMessagingServiceImpl::Unregister(
-    const PushMessagingApplicationId& application_id) {
+    const GURL& requesting_origin,
+    int64 service_worker_registration_id,
+    const content::PushMessagingService::UnregisterCallback& callback) {
+  DCHECK(gcm_profile_service_->driver());
+
+  PushMessagingApplicationId application_id = PushMessagingApplicationId(
+      requesting_origin, service_worker_registration_id);
+  DCHECK(application_id.IsValid());
+
+  Unregister(application_id, callback);
+}
+
+void PushMessagingServiceImpl::Unregister(
+    const PushMessagingApplicationId& application_id,
+    const content::PushMessagingService::UnregisterCallback& callback) {
   DCHECK(gcm_profile_service_->driver());
 
   gcm_profile_service_->driver()->Unregister(
       application_id.ToString(),
       base::Bind(&PushMessagingServiceImpl::DidUnregister,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr(), callback));
 }
 
-void PushMessagingServiceImpl::DidUnregister(GCMClient::Result result) {
-  if (result != GCMClient::SUCCESS) {
-    DVLOG(1) << "GCM unregistration failed.";
-    return;
+void PushMessagingServiceImpl::DidUnregister(
+    const content::PushMessagingService::UnregisterCallback& callback,
+    GCMClient::Result result) {
+  // Internal calls pass a null callback.
+  if (!callback.is_null()) {
+    switch (result) {
+    case GCMClient::SUCCESS:
+      callback.Run(content::PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTER);
+      break;
+    case GCMClient::NETWORK_ERROR:
+    case GCMClient::TTL_EXCEEDED:
+      callback.Run(content::PUSH_UNREGISTRATION_STATUS_NETWORK_ERROR);
+      break;
+    case GCMClient::SERVER_ERROR:
+    case GCMClient::INVALID_PARAMETER:
+    case GCMClient::GCM_DISABLED:
+    case GCMClient::NOT_SIGNED_IN:
+    case GCMClient::ASYNC_OPERATION_PENDING:
+    case GCMClient::UNKNOWN_ERROR:
+      callback.Run(content::PUSH_UNREGISTRATION_STATUS_UNKNOWN_ERROR);
+      break;
+    default:
+      NOTREACHED() << "Unexpected GCMClient::Result value.";
+      callback.Run(content::PUSH_UNREGISTRATION_STATUS_UNKNOWN_ERROR);
+      break;
+    }
   }
 
-  DecreasePushRegistrationCount(1);
+  if (result == GCMClient::SUCCESS)
+    DecreasePushRegistrationCount(1);
 }
 
 bool PushMessagingServiceImpl::HasPermission(const GURL& origin) {

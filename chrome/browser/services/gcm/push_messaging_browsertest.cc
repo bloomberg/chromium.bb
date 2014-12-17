@@ -484,4 +484,41 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, HasPermissionSaysDenied) {
   EXPECT_EQ("permission status - denied", script_result);
 }
 
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnregisterSuccess) {
+  std::string script_result;
+
+  TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
+
+  gcm_service()->AddExpectedUnregisterResponse(GCMClient::SUCCESS);
+
+  ASSERT_TRUE(RunScript("unregister()", &script_result));
+  EXPECT_EQ("unregister result: true", script_result);
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnregisterNetworkError) {
+  std::string script_result;
+
+  TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
+
+  gcm_service()->AddExpectedUnregisterResponse(GCMClient::NETWORK_ERROR);
+
+  ASSERT_TRUE(RunScript("unregister()", &script_result));
+  EXPECT_EQ("unregister error: "
+            "NetworkError: Failed to connect to the push server.",
+            script_result);
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnregisterUnknownError) {
+  std::string script_result;
+
+  TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
+
+  gcm_service()->AddExpectedUnregisterResponse(GCMClient::UNKNOWN_ERROR);
+
+  ASSERT_TRUE(RunScript("unregister()", &script_result));
+  EXPECT_EQ("unregister error: "
+            "UnknownError: Unexpected error while trying to unregister from the"
+            " push server.", script_result);
+}
+
 }  // namespace gcm

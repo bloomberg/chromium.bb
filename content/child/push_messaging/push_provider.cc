@@ -13,7 +13,6 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/child/worker_task_runner.h"
 #include "content/common/push_messaging_messages.h"
-#include "third_party/WebKit/public/platform/WebPushError.h"
 #include "third_party/WebKit/public/platform/WebPushRegistration.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
@@ -78,6 +77,21 @@ void PushProvider::registerPushMessaging(
       request_id, service_worker_registration_id));
 }
 
+void PushProvider::unregister(
+    blink::WebServiceWorkerRegistration* service_worker_registration,
+    blink::WebPushUnregisterCallbacks* callbacks) {
+  DCHECK(service_worker_registration);
+  DCHECK(callbacks);
+
+  int request_id = push_dispatcher_->GenerateRequestId(CurrentWorkerId());
+  unregister_callbacks_.AddWithID(callbacks, request_id);
+
+  int64 service_worker_registration_id =
+      GetServiceWorkerRegistrationId(service_worker_registration);
+  thread_safe_sender_->Send(new PushMessagingHostMsg_Unregister(
+      request_id, service_worker_registration_id));
+}
+
 void PushProvider::getPermissionStatus(
     blink::WebServiceWorkerRegistration* service_worker_registration,
     blink::WebPushPermissionStatusCallbacks* callbacks) {
@@ -98,6 +112,10 @@ bool PushProvider::OnMessageReceived(const IPC::Message& message) {
                         OnRegisterFromWorkerSuccess);
     IPC_MESSAGE_HANDLER(PushMessagingMsg_RegisterFromWorkerError,
                         OnRegisterFromWorkerError);
+    IPC_MESSAGE_HANDLER(PushMessagingMsg_UnregisterSuccess,
+                        OnUnregisterSuccess);
+    IPC_MESSAGE_HANDLER(PushMessagingMsg_UnregisterError,
+                        OnUnregisterError);
     IPC_MESSAGE_HANDLER(PushMessagingMsg_GetPermissionStatusSuccess,
                         OnGetPermissionStatusSuccess);
     IPC_MESSAGE_HANDLER(PushMessagingMsg_GetPermissionStatusError,
@@ -139,6 +157,33 @@ void PushProvider::OnRegisterFromWorkerError(int request_id,
   callbacks->onError(error.release());
 
   registration_callbacks_.Remove(request_id);
+}
+
+void PushProvider::OnUnregisterSuccess(int request_id, bool did_unregister) {
+  blink::WebPushUnregisterCallbacks* callbacks =
+      unregister_callbacks_.Lookup(request_id);
+  if (!callbacks)
+    return;
+
+  callbacks->onSuccess(&did_unregister);
+
+  unregister_callbacks_.Remove(request_id);
+}
+
+void PushProvider::OnUnregisterError(
+    int request_id,
+    blink::WebPushError::ErrorType error_type,
+    const std::string& error_message) {
+  blink::WebPushUnregisterCallbacks* callbacks =
+      unregister_callbacks_.Lookup(request_id);
+  if (!callbacks)
+    return;
+
+  scoped_ptr<blink::WebPushError> error(new blink::WebPushError(
+      error_type, blink::WebString::fromUTF8(error_message)));
+  callbacks->onError(error.release());
+
+  unregister_callbacks_.Remove(request_id);
 }
 
 void PushProvider::OnGetPermissionStatusSuccess(

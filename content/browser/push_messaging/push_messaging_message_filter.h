@@ -106,6 +106,21 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
                                PushRegistrationStatus status,
                                const std::string& push_registration_id);
 
+  // Unregister methods --------------------------------------------------------
+
+  void OnUnregister(int request_id,
+                    int64 service_worker_registration_id);
+
+  void UnregisterOnUI(int request_id,
+                      int64 service_worker_registration_id,
+                      const GURL& requesting_origin);
+
+  void DidUnregister(int request_id,
+                     PushUnregistrationStatus unregistration_status);
+
+
+  // GetRegistration methods ---------------------------------------------------
+
   void OnGetRegistration(int request_id,
                          int64 service_worker_registration_id);
 
