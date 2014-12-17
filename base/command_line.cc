@@ -94,13 +94,15 @@ void AppendSwitchesAndArguments(CommandLine* command_line,
 }
 
 // Lowercase switches for backwards compatiblity *on Windows*.
-std::string LowerASCIIOnWindows(const std::string& string) {
 #if defined(OS_WIN)
+std::string LowerASCIIOnWindows(const std::string& string) {
   return StringToLowerASCII(string);
-#elif defined(OS_POSIX)
-  return string;
-#endif
 }
+#elif defined(OS_POSIX)
+const std::string& LowerASCIIOnWindows(const std::string& string) {
+  return string;
+}
+#endif
 
 
 #if defined(OS_WIN)
