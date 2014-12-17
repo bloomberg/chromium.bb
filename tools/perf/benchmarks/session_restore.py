@@ -6,7 +6,6 @@ import os
 import tempfile
 
 from measurements import session_restore
-from measurements import session_restore_with_url
 import page_sets
 from profile_creators import small_profile_creator
 from telemetry import benchmark
@@ -55,23 +54,3 @@ class SessionRestoreWarmTypical25(_SessionRestoreTest):
   test = session_restore.SessionRestore
   page_set = page_sets.Typical25PageSet
   options = {'pageset_repeat': 20}
-
-
-# crbug.com/325479, crbug.com/381990, crbug.com/405386
-@benchmark.Disabled
-class SessionRestoreWithUrlCold(_SessionRestoreTest):
-  """Measure Chrome cold session restore with startup URLs."""
-  tag = 'cold'
-  test = session_restore_with_url.SessionRestoreWithUrl
-  page_set = page_sets.StartupPagesPageSet
-  options = {'pageset_repeat': 5}
-
-
-# crbug.com/325479, crbug.com/381990, crbug.com/405386
-@benchmark.Disabled
-class SessionRestoreWithUrlWarm(_SessionRestoreTest):
-  """Measure Chrome warm session restore with startup URLs."""
-  tag = 'warm'
-  test = session_restore_with_url.SessionRestoreWithUrl
-  page_set = page_sets.StartupPagesPageSet
-  options = {'pageset_repeat': 10}
