@@ -1992,7 +1992,8 @@ public:
 #endif
 
     explicit MarkingVisitor(CallbackStack* markingStack)
-        : m_markingStack(markingStack)
+        : Visitor(Mode == GlobalMarking ? Visitor::GlobalMarkingVisitorType : Visitor::GenericVisitorType)
+        , m_markingStack(markingStack)
     {
     }
 

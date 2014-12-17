@@ -235,7 +235,8 @@ private:
 class CountingVisitor : public Visitor {
 public:
     CountingVisitor()
-        : m_count(0)
+        : Visitor(Visitor::GenericVisitorType)
+        , m_count(0)
     {
     }
 

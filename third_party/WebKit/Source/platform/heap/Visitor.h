@@ -478,6 +478,11 @@ class PLATFORM_EXPORT Visitor : public VisitorHelper<Visitor> {
 public:
     friend class VisitorHelper<Visitor>;
 
+    enum VisitorType {
+        GlobalMarkingVisitorType,
+        GenericVisitorType,
+    };
+
     virtual ~Visitor() { }
 
     // FIXME: This is a temporary hack to cheat old Blink GC plugin checks.
@@ -569,9 +574,12 @@ public:
     inline void incrementTraceDepth() { m_traceDepth++; }
     inline void decrementTraceDepth() { ASSERT(m_traceDepth > 0); m_traceDepth--; }
 
+    inline bool isGlobalMarkingVisitor() const { return m_isGlobalMarkingVisitor; }
+
 protected:
-    Visitor()
+    explicit Visitor(VisitorType type)
         : m_traceDepth(0)
+        , m_isGlobalMarkingVisitor(type == GlobalMarkingVisitorType)
     {
     }
 
@@ -587,6 +595,7 @@ private:
     const int kMaxEagerTraceDepth = 100;
 
     int m_traceDepth;
+    bool m_isGlobalMarkingVisitor;
 };
 
 // We trace vectors by using the trace trait on each element, which means you
