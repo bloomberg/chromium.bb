@@ -15,7 +15,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "modules/push_messaging/PushController.h"
 #include "modules/push_messaging/PushError.h"
-#include "modules/push_messaging/PushPermissionStatusCallback.h"
+#include "modules/push_messaging/PushPermissionStatusCallbacks.h"
 #include "modules/push_messaging/PushRegistration.h"
 #include "modules/push_messaging/PushRegistrationCallbacks.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
@@ -77,7 +77,7 @@ ScriptPromise PushManager::hasPermission(ScriptState* scriptState)
 
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    pushProvider()->getPermissionStatus(m_registration->webRegistration(), new PushPermissionStatusCallback(resolver));
+    pushProvider()->getPermissionStatus(m_registration->webRegistration(), new PushPermissionStatusCallbacks(resolver));
     return promise;
 }
 

@@ -7,16 +7,13 @@
 
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/WebPushError.h"
-#include "public/platform/WebPushPermissionStatus.h"
 
 namespace blink {
 
-class WebServiceWorkerProvider;
 class WebServiceWorkerRegistration;
 struct WebPushRegistration;
 
 typedef WebCallbacks<WebPushRegistration, WebPushError> WebPushRegistrationCallbacks;
-typedef WebCallbacks<WebPushPermissionStatus, void> WebPushPermissionStatusCallback;
 
 class WebPushClient {
 public:
