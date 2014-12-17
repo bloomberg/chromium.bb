@@ -4,15 +4,14 @@
 
 package org.chromium.content_browsertests_apk;
 
-import android.app.Application;
-
+import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ResourceExtractor;
 
 /**
  * A basic content browser tests {@link android.app.Application}.
  */
-public class ContentBrowserTestsApplication extends Application {
+public class ContentBrowserTestsApplication extends BaseChromiumApplication {
 
     private static final String[] MANDATORY_PAK_FILES = new String[] {
         "content_shell.pak",
