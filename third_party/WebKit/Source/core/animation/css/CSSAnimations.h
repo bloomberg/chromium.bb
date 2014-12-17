@@ -115,6 +115,7 @@ public:
     public:
         void trace(Visitor* visitor)
         {
+            visitor->trace(player);
             visitor->trace(animation);
         }
 
@@ -219,9 +220,9 @@ private:
     public:
         void trace(Visitor* visitor)
         {
+            visitor->trace(player);
             visitor->trace(from);
             visitor->trace(to);
-            visitor->trace(player);
         }
 
         RefPtrWillBeMember<AnimationPlayer> player;
@@ -287,5 +288,6 @@ private:
 } // namespace blink
 
 WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::CSSAnimationUpdate::NewAnimation);
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::CSSAnimationUpdate::UpdatedAnimationTiming);
 
 #endif
