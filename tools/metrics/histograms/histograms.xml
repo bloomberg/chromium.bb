@@ -43528,6 +43528,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <enum name="CryptohomeError" type="int">
   <int value="1" label="TPM returned TPM_E_FAIL"/>
+  <int value="2" label="TCS key load failed"/>
+  <int value="3" label="TPM dictionary defense lock is running"/>
+  <int value="4" label="Decrypt attempt but TPM key is missing"/>
+  <int value="5" label="Decrypt attempt but TPM is not owned"/>
+  <int value="6" label="Decrypt attempt but TPM is not available"/>
+  <int value="7" label="Decrypt attempt but TPM key is mismatched"/>
+  <int value="8" label="Decrypt attempt with TPM key failed (general)"/>
+  <int value="9" label="Cannot load TPM SRK"/>
+  <int value="10" label="Cannot read TPM SRK public info"/>
+  <int value="11" label="Cannot load cryptohome TPM key"/>
+  <int value="12" label="Cannot read cryptohome TPM key public info"/>
+  <int value="13"
+      label="TPM failed to load a key because of a bad key property"/>
+  <int value="14" label="Failed to load a PKCS #11 token"/>
+  <int value="15" label="Failed to encrypt with cryptohome TPM key"/>
 </enum>
 
 <enum name="CTRequirementCompliance" type="int">
