@@ -147,24 +147,6 @@ function addAudioFile(url) {
 }
 
 /**
- * Mixes the local audio stream with an audio file through WebAudio.
- *
- * You must have successfully requested access to the user's microphone through
- * getUserMedia before calling this function (see getUserMedia.js).
- * Additionally, you must have loaded an audio file to mix with.
- *
- * When playAudioFile is called, WebAudio will effectively mix the user's
- * microphone input with the previously loaded file and feed that into the
- * peer connection.
- */
-function mixLocalStreamWithPreviouslyLoadedAudioFile() {
-  if (getLocalStream() == null)
-    throw failTest('trying to mix in stream, but we have no stream to mix in.');
-
-  mixLocalStreamIntoPeerConnection(peerConnection_(), getLocalStream());
-}
-
-/**
  * Must be called after addAudioFile.
  */
 function playAudioFile() {

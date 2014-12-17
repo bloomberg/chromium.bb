@@ -17,20 +17,11 @@ function loadAudioAndAddToPeerConnection(url, peerconnection) {
     if (peerconnection.webAudioBufferSource)
       throw failTest('Cannot load more than one sound per peerconnection.');
 
-    peerconnection.inputSink = inputSink;
     peerconnection.webAudioBufferSource = gContext.createBufferSource();
     peerconnection.webAudioBufferSource.buffer = voiceSoundBuffer;
     peerconnection.webAudioBufferSource.connect(inputSink);
     returnToTest('ok-added');
   });
-}
-
-function mixLocalStreamIntoPeerConnection(peerconnection, localStream) {
-  if (!peerconnection.inputSink)
-    throw failTest('Must call loadAudioAndAddToPeerConnection before this.');
-  micInputNode = gContext.createMediaStreamSource(localStream);
-  micInputNode.connect(peerconnection.inputSink);
-  returnToTest('ok-mixed-in');
 }
 
 function playPreviouslyLoadedAudioFile(peerconnection) {
