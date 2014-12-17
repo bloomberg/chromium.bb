@@ -224,7 +224,14 @@ class ChromeRenderProcessHostTestWithCommandLine
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, ProcessPerTab) {
+// Disable on Mac 10.9 due to ongoing flakiness. (crbug.com/442785)
+#if defined(OS_MACOSX)
+#define MAYBE_ProcessPerTab DISABLED_ProcessPerTab
+#else
+#define MAYBE_ProcessPerTab ProcessPerTab
+#endif
+
+IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, MAYBE_ProcessPerTab) {
   // Set max renderers to 1 to force running out of processes.
   content::RenderProcessHost::SetMaxRendererProcessCount(1);
 
@@ -337,7 +344,8 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, MAYBE_Backgrounding) {
 #endif
 
 // TODO(nasko): crbug.com/173137
-#if defined(OS_WIN)
+// Disable on Mac 10.9 due to ongoing flakiness. (crbug.com/442785)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_ProcessOverflow DISABLED_ProcessOverflow
 #else
 #define MAYBE_ProcessOverflow ProcessOverflow
@@ -349,10 +357,17 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, MAYBE_ProcessOverflow) {
   TestProcessOverflow();
 }
 
+// Disable on Mac 10.9 due to ongoing flakiness. (crbug.com/442785)
+#if defined(OS_MACOSX)
+#define MAYBE_ProcessOverflowCommandLine DISABLED_ProcessOverflow
+#else
+#define MAYBE_ProcessOverflowCommandLine ProcessOverflow
+#endif
+
 // Variation of the ProcessOverflow test, which is driven through command line
 // parameter instead of direct function call into the class.
 IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTestWithCommandLine,
-                       ProcessOverflow) {
+                       MAYBE_ProcessOverflowCommandLine) {
   TestProcessOverflow();
 }
 
