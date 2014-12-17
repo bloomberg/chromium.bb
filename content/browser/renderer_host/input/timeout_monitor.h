@@ -31,13 +31,14 @@ class CONTENT_EXPORT TimeoutMonitor {
   bool IsRunning() const;
 
  private:
+  void StartImpl(base::TimeDelta delay);
   void CheckTimedOut();
 
   TimeoutHandler timeout_handler_;
 
   // Indicates a time in the future when we would consider the input as
   // having timed out, if it does not receive an appropriate stop request.
-  base::Time time_when_considered_timed_out_;
+  base::TimeTicks time_when_considered_timed_out_;
 
   // This timer runs to check if |time_when_considered_timed_out_| has past.
   base::OneShotTimer<TimeoutMonitor> timeout_timer_;

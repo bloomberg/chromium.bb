@@ -4,8 +4,10 @@
 
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 
-using base::Time;
+#include "base/debug/trace_event.h"
+
 using base::TimeDelta;
+using base::TimeTicks;
 
 namespace content {
 
@@ -14,14 +16,52 @@ TimeoutMonitor::TimeoutMonitor(const TimeoutHandler& timeout_handler)
   DCHECK(!timeout_handler_.is_null());
 }
 
-TimeoutMonitor::~TimeoutMonitor() {}
+TimeoutMonitor::~TimeoutMonitor() {
+  Stop();
+}
 
 void TimeoutMonitor::Start(TimeDelta delay) {
+  if (!IsRunning()) {
+    TRACE_EVENT_ASYNC_BEGIN0("renderer_host", "TimeoutMonitor", this);
+    TRACE_EVENT_INSTANT0("renderer_host", "TimeoutMonitor::Start",
+                         TRACE_EVENT_SCOPE_THREAD);
+  }
+
+  StartImpl(delay);
+}
+
+void TimeoutMonitor::Restart(TimeDelta delay) {
+  if (!IsRunning()) {
+    Start(delay);
+    return;
+  }
+
+  TRACE_EVENT_INSTANT0("renderer_host", "TimeoutMonitor::Restart",
+                       TRACE_EVENT_SCOPE_THREAD);
+  // Setting to null will cause StartTimeoutMonitor to restart the timer.
+  time_when_considered_timed_out_ = TimeTicks();
+  StartImpl(delay);
+}
+
+void TimeoutMonitor::Stop() {
+  if (!IsRunning())
+    return;
+
+  // We do not bother to stop the timeout_timer_ here in case it will be
+  // started again shortly, which happens to be the common use case.
+  TRACE_EVENT_INSTANT0("renderer_host", "TimeoutMonitor::Stop",
+                       TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_ASYNC_END1("renderer_host", "TimeoutMonitor", this,
+                         "result", "stopped");
+  time_when_considered_timed_out_ = TimeTicks();
+}
+
+void TimeoutMonitor::StartImpl(base::TimeDelta delay) {
   // Set time_when_considered_timed_out_ if it's null. Also, update
   // time_when_considered_timed_out_ if the caller's request is sooner than the
   // existing one. This will have the side effect that the existing timeout will
   // be forgotten.
-  Time requested_end_time = Time::Now() + delay;
+  TimeTicks requested_end_time = TimeTicks::Now() + delay;
   if (time_when_considered_timed_out_.is_null() ||
       time_when_considered_timed_out_ > requested_end_time)
     time_when_considered_timed_out_ = requested_end_time;
@@ -43,30 +83,24 @@ void TimeoutMonitor::Start(TimeDelta delay) {
   timeout_timer_.Start(FROM_HERE, delay, this, &TimeoutMonitor::CheckTimedOut);
 }
 
-void TimeoutMonitor::Restart(TimeDelta delay) {
-  // Setting to null will cause StartTimeoutMonitor to restart the timer.
-  time_when_considered_timed_out_ = Time();
-  Start(delay);
-}
-
-void TimeoutMonitor::Stop() {
-  // We do not bother to stop the timeout_timer_ here in case it will be
-  // started again shortly, which happens to be the common use case.
-  time_when_considered_timed_out_ = Time();
-}
-
 void TimeoutMonitor::CheckTimedOut() {
   // If we received a call to |Stop()|.
   if (time_when_considered_timed_out_.is_null())
     return;
 
   // If we have not waited long enough, then wait some more.
-  Time now = Time::Now();
+  TimeTicks now = TimeTicks::Now();
   if (now < time_when_considered_timed_out_) {
-    Start(time_when_considered_timed_out_ - now);
+    TRACE_EVENT_INSTANT0("renderer_host", "TimeoutMonitor::Reschedule",
+                         TRACE_EVENT_SCOPE_THREAD);
+    StartImpl(time_when_considered_timed_out_ - now);
     return;
   }
 
+  TRACE_EVENT_ASYNC_END1("renderer_host", "TimeoutMonitor", this,
+                         "result", "timed_out");
+  TRACE_EVENT0("renderer_host", "TimeoutMonitor::TimeOutHandler");
+  time_when_considered_timed_out_ = TimeTicks();
   timeout_handler_.Run();
 }
 
