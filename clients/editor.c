@@ -473,7 +473,7 @@ text_input_enter(void *data,
 	if (surface != window_get_wl_surface(entry->window))
 		return;
 
-	entry->active = 1;
+	entry->active++;
 
 	text_entry_update(entry);
 	entry->reset_serial = entry->serial;
@@ -488,10 +488,10 @@ text_input_leave(void *data,
 	struct text_entry *entry = data;
 
 	text_entry_commit_and_reset(entry);
+	entry->active--;
 
-	entry->active = 0;
-
-	wl_text_input_hide_input_panel(text_input);
+	if (!entry->active)
+		wl_text_input_hide_input_panel(text_input);
 
 	widget_schedule_redraw(entry->widget);
 }
