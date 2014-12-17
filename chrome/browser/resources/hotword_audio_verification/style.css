@@ -2,6 +2,8 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+/* TODO(xdai): Remove hard-coded font-family for 'Roboto'. */
+
 * {
   box-sizing: border-box;
   color: rgba(0, 0, 0, .54);

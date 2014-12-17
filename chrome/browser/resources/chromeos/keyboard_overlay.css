@@ -15,7 +15,6 @@ body {
   background: -webkit-linear-gradient(#484848, #252525) no-repeat;
   background-color: #252525;
   border-radius: 6px;
-  font-family: 'Noto Sans UI', ui-sans;
 }
 
 .keyboard-overlay-instructions {

@@ -10,13 +10,14 @@ about:memory template page
 <if expr="is_android">
   <meta name="viewport" content="width=device-width">
 </if>
+  <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
   <link rel="stylesheet" href="chrome://memory-redirect/about_memory.css">
   <link rel="stylesheet" href="about_memory_linux.css">
   <script src="chrome://resources/js/load_time_data.js"></script>
   <script src="chrome://memory-redirect/memory.js"></script>
   <script src="chrome://memory-redirect/strings.js"></script>
 </head>
-<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+<body>
     <div id="header">
       <h1>
         About memory

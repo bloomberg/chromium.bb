@@ -1,7 +1,6 @@
 /* Copyright 2013 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+ * found in the LICENSE file. */
 
 #about-info {
   -webkit-column-width: 350px;
@@ -119,11 +118,9 @@
 
 .traffic-event-entry .time {
   color: #222;
-  font-family: sans-serif;
 }
 
 .traffic-event-entry .type {
-  font-family: sans-serif;
   font-weight: bold;
   margin: 0.5em;
   white-space: nowrap;

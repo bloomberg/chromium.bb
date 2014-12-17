@@ -4,6 +4,7 @@
  */
 
 /* TODO(dzhioev): support RTL. http://crbug.com/423354 */
+/* TODO(xdai): Remove the hard-coded font-family for 'Roboto'. */
 
 :host {
   -webkit-user-select: none;

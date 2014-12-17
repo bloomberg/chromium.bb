@@ -1,6 +1,9 @@
 /* Copyright 2013 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
+
+/* TODO: Need to discuss with NTP folks before we remove font-family from the
+ * body tag. */
 body {
   background-attachment: fixed !important;
   background-color: white;
@@ -36,7 +39,7 @@ body.fakebox-disable #fakebox > input {
 }
 
 #logo {
-  background-image: url('images/google_logo.png@2x');
+  background-image: url(images/google_logo.png@2x);
   background-repeat: no-repeat;
   background-size: 269px 95px;
   height: 95px;
@@ -46,7 +49,7 @@ body.fakebox-disable #fakebox > input {
 }
 
 body.alternate-logo #logo {
-  -webkit-mask-image: url('images/google_logo.png@2x');
+  -webkit-mask-image: url(images/google_logo.png@2x);
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 100%;
   background: #eee;
@@ -467,19 +470,19 @@ html[dir=rtl] .des-mat .mv-thumb-fallback {
 }
 
 .des-cla .mv-x {
-  background-image: url('images/close_2.png');
+  background-image: url(images/close_2.png);
   height: 16px;
   width: 16px;
 }
 
 .des-cla .mv-x:hover,
 .des-cla #mv-notice-x:focus {
-  background-image: url('images/close_2_hover.png');
+  background-image: url(images/close_2_hover.png);
 }
 
 .des-cla .mv-x:active,
 .des-cla #mv-notice-x:active {
-  background-image: url('images/close_2_active.png');
+  background-image: url(images/close_2_active.png);
 }
 
 .des-cla .mv-page .mv-x {
@@ -509,8 +512,8 @@ html[dir=rtl] .des-cla .mv-page .mv-x {
 
 .des-mat .mv-x .mv-x-inner {
   -webkit-mask-image: -webkit-image-set(
-      url('images/close_3_mask.png') 1x,
-      url('images/close_3_mask.png@2x') 2x);
+      url(images/close_3_mask.png) 1x,
+      url(images/close_3_mask.png@2x) 2x);
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 10px 10px;
   background-color: rgba(90,90,90,0.7);
@@ -606,8 +609,8 @@ html[dir=rtl] .des-mat .mv-favicon {
 
 .des-mat .mv-favicon-fallback {
   background-image: -webkit-image-set(
-      url('images/ntp_default_favicon.png') 1x,
-      url('images/ntp_default_favicon.png@2x') 2x);
+      url(images/ntp_default_favicon.png) 1x,
+      url(images/ntp_default_favicon.png@2x) 2x);
   background-repeat: no-repeat;
   background-size: 16px 16px;
 }
