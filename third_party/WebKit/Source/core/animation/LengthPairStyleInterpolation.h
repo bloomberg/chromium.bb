@@ -20,7 +20,6 @@ public:
     static bool canCreateFrom(const CSSValue&);
 
     virtual void apply(StyleResolverState&) const override;
-    virtual void trace(Visitor*) override;
 
 private:
     LengthPairStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id, ValueRange range)
