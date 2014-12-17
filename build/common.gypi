@@ -1004,9 +1004,9 @@
         # TODO(baixo): Enable v8_use_external_startup_data
         # http://crbug.com/421063
         ['android_webview_build==0 and android_webview_telemetry_build==0 and chromecast==0 and chromeos==0 and (OS=="android" or OS=="linux" or OS=="mac")', {
-          'v8_use_external_startup_data': 1,
+          'v8_use_external_startup_data%': 1,
         }, {
-          'v8_use_external_startup_data': 0,
+          'v8_use_external_startup_data%': 0,
         }],
       ],
 
@@ -1211,7 +1211,7 @@
     'video_hole%': '<(video_hole)',
     'enable_load_completion_hacks%': '<(enable_load_completion_hacks)',
     'support_pre_M6_history_database%': '<(support_pre_M6_history_database)',
-    'v8_use_external_startup_data': '<(v8_use_external_startup_data)',
+    'v8_use_external_startup_data%': '<(v8_use_external_startup_data)',
 
     # Whether or not we are building the Athena shell.
     'use_athena%': '0',
