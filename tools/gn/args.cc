@@ -4,12 +4,9 @@
 
 #include "tools/gn/args.h"
 
+#include "base/sys_info.h"
 #include "build/build_config.h"
 #include "tools/gn/variables.h"
-
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
 
 const char kBuildArgs_Help[] =
     "Build Arguments Overview\n"
@@ -231,39 +228,20 @@ void Args::SetSystemVarsLocked(Scope* dest) const {
   // Host architecture.
   static const char kX86[] = "x86";
   static const char kX64[] = "x64";
+  static const char kArm[] = "arm";
   const char* arch = NULL;
-#if defined(OS_WIN)
-  // ...on Windows, set the CPU architecture based on the underlying OS, not
+
+  // Set the CPU architecture based on the underlying OS, not
   // whatever the current bit-tedness of the GN binary is.
-  const base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
-  switch (os_info->architecture()) {
-    case base::win::OSInfo::X86_ARCHITECTURE:
-      arch = kX86;
-      break;
-    case base::win::OSInfo::X64_ARCHITECTURE:
-      arch = kX64;
-      break;
-    default:
-      CHECK(false) << "Windows architecture not handled.";
-      break;
-  }
-#else
-  // ...on all other platforms, just use the bit-tedness of the current
-  // process.
-  #if defined(ARCH_CPU_X86_64)
-    arch = kX64;
-  #elif defined(ARCH_CPU_X86)
+  std::string os_arch = base::SysInfo::OperatingSystemArchitecture();
+  if (os_arch == "x86")
     arch = kX86;
-  #elif defined(ARCH_CPU_ARMEL)
-    static const char kArm[] = "arm";
+  else if (os_arch == "x86_64")
+    arch = kX64;
+  else if (os_arch.substr(3) == "arm")
     arch = kArm;
-  #else
-    #error Unknown architecture.
-  #endif
-#endif
-  // Avoid unused var warning.
-  (void)kX86;
-  (void)kX64;
+  else
+    CHECK(false) << "OS architecture not handled.";
 
   Value arch_val(NULL, std::string(arch));
   dest->SetValue(variables::kBuildCpuArch, arch_val, NULL);
