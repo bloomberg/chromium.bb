@@ -61,7 +61,7 @@ class MEDIA_EXPORT AudioRendererImpl
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       AudioRendererSink* sink,
       ScopedVector<AudioDecoder> decoders,
-      const AudioHardwareConfig& hardware_params,
+      const AudioHardwareConfig& hardware_config,
       const scoped_refptr<MediaLog>& media_log);
   ~AudioRendererImpl() override;
 
