@@ -546,10 +546,10 @@ void LargeObject<GeneralHeapObjectHeader>::mark(Visitor* visitor)
 {
     GeneralHeapObjectHeader* header = heapObjectHeader();
     if (header->hasVTable() && !vTableInitialized(payload())) {
-        visitor->markNoTracing(header);
+        visitor->markHeaderNoTracing(header);
         ASSERT(isUninitializedMemory(header->payload(), header->payloadSize()));
     } else {
-        visitor->mark(header, header->traceCallback());
+        visitor->markHeader(header, header->traceCallback());
     }
 }
 
@@ -559,7 +559,7 @@ void LargeObject<HeapObjectHeader>::mark(Visitor* visitor)
     ASSERT(gcInfo());
     if (gcInfo()->hasVTable() && !vTableInitialized(payload())) {
         HeapObjectHeader* header = heapObjectHeader();
-        visitor->markNoTracing(header);
+        visitor->markHeaderNoTracing(header);
         ASSERT(isUninitializedMemory(header->payload(), header->payloadSize()));
     } else {
         visitor->mark(heapObjectHeader(), gcInfo()->m_trace);
@@ -1771,10 +1771,10 @@ void HeapPage<Header>::checkAndMarkPointer(Visitor* visitor, Address address)
     visitor->setHostInfo(&address, "stack");
 #endif
     if (hasVTable(header) && !vTableInitialized(header->payload())) {
-        visitor->markNoTracing(header);
+        visitor->markHeaderNoTracing(header);
         ASSERT(isUninitializedMemory(header->payload(), header->payloadSize()));
     } else {
-        visitor->mark(header, traceCallback(header));
+        visitor->markHeader(header, traceCallback(header));
     }
 }
 
@@ -2040,12 +2040,12 @@ public:
 
     // We need both HeapObjectHeader and GeneralHeapObjectHeader versions to
     // correctly find the payload.
-    virtual void mark(HeapObjectHeader* header, TraceCallback callback) override
+    virtual void markHeader(HeapObjectHeader* header, TraceCallback callback) override
     {
         visitHeader(header, header->payload(), callback);
     }
 
-    virtual void mark(GeneralHeapObjectHeader* header, TraceCallback callback) override
+    virtual void markHeader(GeneralHeapObjectHeader* header, TraceCallback callback) override
     {
         visitHeader(header, header->payload(), callback);
     }

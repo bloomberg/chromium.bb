@@ -246,13 +246,13 @@ public:
             m_count++;
     }
 
-    virtual void mark(HeapObjectHeader* header, TraceCallback callback) override
+    virtual void markHeader(HeapObjectHeader* header, TraceCallback callback) override
     {
         ASSERT(header->payload());
         m_count++;
     }
 
-    virtual void mark(GeneralHeapObjectHeader* header, TraceCallback callback) override
+    virtual void markHeader(GeneralHeapObjectHeader* header, TraceCallback callback) override
     {
         ASSERT(header->payload());
         m_count++;
@@ -907,12 +907,12 @@ public:
         mark(ptr);
     }
 
-    virtual void mark(HeapObjectHeader* header, TraceCallback callback) override
+    virtual void markHeader(HeapObjectHeader* header, TraceCallback callback) override
     {
         mark(header->payload());
     }
 
-    virtual void mark(GeneralHeapObjectHeader* header, TraceCallback callback) override
+    virtual void markHeader(GeneralHeapObjectHeader* header, TraceCallback callback) override
     {
         mark(header->payload());
     }

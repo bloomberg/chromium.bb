@@ -427,8 +427,8 @@ public:
 #endif
 
     void markNoTracing(const void* pointer) { toDerived()->mark(pointer, reinterpret_cast<TraceCallback>(0)); }
-    void markNoTracing(HeapObjectHeader* header) { toDerived()->mark(header, reinterpret_cast<TraceCallback>(0)); }
-    void markNoTracing(GeneralHeapObjectHeader* header) { toDerived()->mark(header, reinterpret_cast<TraceCallback>(0)); }
+    void markHeaderNoTracing(HeapObjectHeader* header) { toDerived()->markHeader(header, reinterpret_cast<TraceCallback>(0)); }
+    void markHeaderNoTracing(GeneralHeapObjectHeader* header) { toDerived()->markHeader(header, reinterpret_cast<TraceCallback>(0)); }
     template<typename T> void markNoTracing(const T* pointer) { toDerived()->mark(pointer, reinterpret_cast<TraceCallback>(0)); }
 
     template<typename T> inline bool isAlive(T* obj)
@@ -506,8 +506,8 @@ public:
     virtual void mark(const void*, TraceCallback) = 0;
 
     // Used to mark objects during conservative scanning.
-    virtual void mark(HeapObjectHeader*, TraceCallback) = 0;
-    virtual void mark(GeneralHeapObjectHeader*, TraceCallback) = 0;
+    virtual void markHeader(HeapObjectHeader*, TraceCallback) = 0;
+    virtual void markHeader(GeneralHeapObjectHeader*, TraceCallback) = 0;
 
     // Used to delay the marking of objects until the usual marking
     // including emphemeron iteration is done. This is used to delay
