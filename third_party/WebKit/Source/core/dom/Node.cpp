@@ -107,7 +107,7 @@ struct SameSizeAsNode : NODE_BASE_CLASSES {
     void* m_pointer[5];
 };
 
-COMPILE_ASSERT(sizeof(Node) <= sizeof(SameSizeAsNode), Node_should_stay_small);
+static_assert(sizeof(Node) <= sizeof(SameSizeAsNode), "Node should stay small");
 
 #if !ENABLE(OILPAN)
 void* Node::operator new(size_t size)

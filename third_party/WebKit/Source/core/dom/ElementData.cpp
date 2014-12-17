@@ -42,7 +42,7 @@ struct SameSizeAsElementData : public RefCountedWillBeGarbageCollectedFinalized<
     void* pointers[3];
 };
 
-COMPILE_ASSERT(sizeof(ElementData) == sizeof(SameSizeAsElementData), element_attribute_data_should_stay_small);
+static_assert(sizeof(ElementData) == sizeof(SameSizeAsElementData), "ElementData should stay small");
 
 static size_t sizeForShareableElementDataWithAttributeCount(unsigned count)
 {

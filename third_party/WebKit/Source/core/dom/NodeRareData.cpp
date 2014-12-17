@@ -44,7 +44,7 @@ struct SameSizeAsNodeRareData {
     unsigned m_bitfields;
 };
 
-COMPILE_ASSERT(sizeof(NodeRareData) == sizeof(SameSizeAsNodeRareData), NodeRareDataShouldStaySmall);
+static_assert(sizeof(NodeRareData) == sizeof(SameSizeAsNodeRareData), "NodeRareData should stay small");
 
 void NodeRareData::traceAfterDispatch(Visitor* visitor)
 {

@@ -39,7 +39,7 @@ struct SameSizeAsQualifiedNameImpl : public RefCounted<SameSizeAsQualifiedNameIm
     void* pointers[4];
 };
 
-COMPILE_ASSERT(sizeof(QualifiedName::QualifiedNameImpl) == sizeof(SameSizeAsQualifiedNameImpl), qualified_name_impl_should_stay_small);
+static_assert(sizeof(QualifiedName::QualifiedNameImpl) == sizeof(SameSizeAsQualifiedNameImpl), "QualifiedNameImpl should stay small");
 
 static const int staticQualifiedNamesCount = HTMLNames::HTMLTagsCount + HTMLNames::HTMLAttrsCount
     + MathMLNames::MathMLTagsCount + MathMLNames::MathMLAttrsCount

@@ -76,6 +76,6 @@ void ElementRareData::traceAfterDispatch(Visitor* visitor)
     NodeRareData::traceAfterDispatch(visitor);
 }
 
-COMPILE_ASSERT(sizeof(ElementRareData) == sizeof(SameSizeAsElementRareData), ElementRareDataShouldStaySmall);
+static_assert(sizeof(ElementRareData) == sizeof(SameSizeAsElementRareData), "ElementRareData should stay small");
 
 } // namespace blink
