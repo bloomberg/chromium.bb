@@ -851,7 +851,7 @@ class PreCQSyncStage(SyncStage):
     # are already being merged. If they are, we don't test them in the PreCQ.
     self.patches = [p for p in patches if not p.IsBeingMerged()]
 
-    if not self.patches:
+    if patches and not self.patches:
       cros_build_lib.Die('No patches that still need testing.')
 
     # The ValidationPool of patches to test. Initialized in PerformStage, and
@@ -875,7 +875,7 @@ class PreCQSyncStage(SyncStage):
         builder_run=self._run)
     self.pool.ApplyPoolIntoRepo()
 
-    if len(self.pool.changes) == 0:
+    if len(self.pool.changes) == 0 and self.patches:
       cros_build_lib.Die('No changes have been applied.')
 
 
