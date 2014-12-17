@@ -7,28 +7,19 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/files/file_util.h"
-#include "base/logging.h"
-#include "base/path_service.h"
 #include "base/strings/string16.h"
-#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/accessibility/accessibility_tree_formatter.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/accessibility/dump_accessibility_browsertest_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/url_constants.h"
-#include "content/public/test/content_browser_test.h"
-#include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/accessibility_browser_test_utils.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -43,15 +34,6 @@
 
 namespace content {
 
-namespace {
-
-const char kCommentToken = '#';
-const char kMarkSkipFile[] = "#<skip";
-const char kMarkEndOfFile[] = "<-- End-of-file -->";
-const char kSignalDiff[] = "*";
-
-}  // namespace
-
 typedef AccessibilityTreeFormatter::Filter Filter;
 
 // This test takes a snapshot of the platform BrowserAccessibility tree and
@@ -64,91 +46,13 @@ typedef AccessibilityTreeFormatter::Filter Filter;
 //    readable string.
 // 4. Perform a comparison between actual and expected and fail if they do not
 //    exactly match.
-class DumpAccessibilityTreeTest : public ContentBrowserTest {
+class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
  public:
-  // Utility helper that does a comment aware equality check.
-  // Returns array of lines from expected file which are different.
-  std::vector<int> DiffLines(const std::vector<std::string>& expected_lines,
-                             const std::vector<std::string>& actual_lines) {
-    int actual_lines_count = actual_lines.size();
-    int expected_lines_count = expected_lines.size();
-    std::vector<int> diff_lines;
-    int i = 0, j = 0;
-    while (i < actual_lines_count && j < expected_lines_count) {
-      if (expected_lines[j].size() == 0 ||
-          expected_lines[j][0] == kCommentToken) {
-        // Skip comment lines and blank lines in expected output.
-        ++j;
-        continue;
-      }
-
-      if (actual_lines[i] != expected_lines[j])
-        diff_lines.push_back(j);
-      ++i;
-      ++j;
-    }
-
-    // Actual file has been fully checked.
-    return diff_lines;
-  }
-
-  void AddDefaultFilters(std::vector<Filter>* filters) {
+  void AddDefaultFilters(std::vector<Filter>* filters) override {
     filters->push_back(Filter(base::ASCIIToUTF16("FOCUSABLE"), Filter::ALLOW));
     filters->push_back(Filter(base::ASCIIToUTF16("READONLY"), Filter::ALLOW));
     filters->push_back(Filter(base::ASCIIToUTF16("name*"), Filter::ALLOW));
     filters->push_back(Filter(base::ASCIIToUTF16("*=''"), Filter::DENY));
-  }
-
-  // Parse the test html file and parse special directives, usually
-  // beginning with an '@' and inside an HTML comment, that control how the
-  // test is run and how the results are interpreted.
-  //
-  // When the accessibility tree is dumped as text, each attribute is
-  // run through filters before being appended to the string. An "allow"
-  // filter specifies attribute strings that should be dumped, and a "deny"
-  // filter specifies strings that should be suppressed. As an example,
-  // @MAC-ALLOW:AXSubrole=* means that the AXSubrole attribute should be
-  // printed, while @MAC-ALLOW:AXSubrole=AXList* means that any subrole
-  // beginning with the text "AXList" should be printed.
-  //
-  // The @WAIT-FOR:text directive allows the test to specify that the document
-  // may dynamically change after initial load, and the test is to wait
-  // until the given string (e.g., "text") appears in the resulting dump.
-  // A test can make some changes to the document, then append a magic string
-  // indicating that the test is done, and this framework will wait for that
-  // string to appear before comparing the results.
-  void ParseHtmlForExtraDirectives(const std::string& test_html,
-                                   std::vector<Filter>* filters,
-                                   std::string* wait_for) {
-    std::vector<std::string> lines;
-    base::SplitString(test_html, '\n', &lines);
-    for (std::vector<std::string>::const_iterator iter = lines.begin();
-         iter != lines.end();
-         ++iter) {
-      const std::string& line = *iter;
-      const std::string& allow_empty_str =
-          AccessibilityTreeFormatter::GetAllowEmptyString();
-      const std::string& allow_str =
-          AccessibilityTreeFormatter::GetAllowString();
-      const std::string& deny_str =
-          AccessibilityTreeFormatter::GetDenyString();
-      const std::string& wait_str = "@WAIT-FOR:";
-      if (StartsWithASCII(line, allow_empty_str, true)) {
-        filters->push_back(
-          Filter(base::UTF8ToUTF16(line.substr(allow_empty_str.size())),
-                 Filter::ALLOW_EMPTY));
-      } else if (StartsWithASCII(line, allow_str, true)) {
-        filters->push_back(Filter(base::UTF8ToUTF16(
-                                      line.substr(allow_str.size())),
-                                  Filter::ALLOW));
-      } else if (StartsWithASCII(line, deny_str, true)) {
-        filters->push_back(Filter(base::UTF8ToUTF16(
-                                      line.substr(deny_str.size())),
-                                  Filter::DENY));
-      } else if (StartsWithASCII(line, wait_str, true)) {
-        *wait_for = line.substr(wait_str.size());
-      }
-    }
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -158,137 +62,20 @@ class DumpAccessibilityTreeTest : public ContentBrowserTest {
         switches::kEnableExperimentalWebPlatformFeatures);
   }
 
-  void RunTest(const base::FilePath::CharType* file_path);
-};
-
-void DumpAccessibilityTreeTest::RunTest(
-    const base::FilePath::CharType* file_path) {
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
-
-  // Setup test paths.
-  base::FilePath dir_test_data;
-  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &dir_test_data));
-  base::FilePath test_path(
-      dir_test_data.Append(FILE_PATH_LITERAL("accessibility")));
-  ASSERT_TRUE(base::PathExists(test_path))
-      << test_path.LossyDisplayName();
-
-  base::FilePath html_file = test_path.Append(base::FilePath(file_path));
-  // Output the test path to help anyone who encounters a failure and needs
-  // to know where to look.
-  printf("Testing: %s\n", html_file.MaybeAsASCII().c_str());
-
-  std::string html_contents;
-  base::ReadFileToString(html_file, &html_contents);
-
-  // Read the expected file.
-  std::string expected_contents_raw;
-  base::FilePath expected_file =
-    base::FilePath(html_file.RemoveExtension().value() +
-                   AccessibilityTreeFormatter::GetExpectedFileSuffix());
-  base::ReadFileToString(expected_file, &expected_contents_raw);
-
-  // Tolerate Windows-style line endings (\r\n) in the expected file:
-  // normalize by deleting all \r from the file (if any) to leave only \n.
-  std::string expected_contents;
-  base::RemoveChars(expected_contents_raw, "\r", &expected_contents);
-
-  if (!expected_contents.compare(0, strlen(kMarkSkipFile), kMarkSkipFile)) {
-    printf("Skipping this test on this platform.\n");
-    return;
-  }
-
-  // Parse filters and other directives in the test file.
-  std::vector<Filter> filters;
-  std::string wait_for;
-  AddDefaultFilters(&filters);
-  ParseHtmlForExtraDirectives(html_contents, &filters, &wait_for);
-
-  // Load the page.
-  base::string16 html_contents16;
-  html_contents16 = base::UTF8ToUTF16(html_contents);
-  GURL url = GetTestUrl("accessibility",
-                        html_file.BaseName().MaybeAsASCII().c_str());
-
-  // If there's a @WAIT-FOR directive, set up an accessibility notification
-  // waiter that returns on any event; we'll stop when we get the text we're
-  // waiting for, or time out. Otherwise just wait specifically for
-  // the "load complete" event.
-  scoped_ptr<AccessibilityNotificationWaiter> waiter;
-  if (!wait_for.empty()) {
-    waiter.reset(new AccessibilityNotificationWaiter(
-        shell(), AccessibilityModeComplete, ui::AX_EVENT_NONE));
-  } else {
-    waiter.reset(new AccessibilityNotificationWaiter(
-        shell(), AccessibilityModeComplete, ui::AX_EVENT_LOAD_COMPLETE));
-  }
-
-  // Load the test html.
-  NavigateToURL(shell(), url);
-
-  // Wait for notifications. If there's a @WAIT-FOR directive, break when
-  // the text we're waiting for appears in the dump, otherwise break after
-  // the first notification, which will be a load complete.
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      shell()->web_contents());
-  std::string actual_contents;
-  do {
-    waiter->WaitForNotification();
-    base::string16 actual_contents_utf16;
+  std::vector<std::string> Dump() override {
+    WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+        shell()->web_contents());
     AccessibilityTreeFormatter formatter(
         web_contents->GetRootBrowserAccessibilityManager()->GetRoot());
-    formatter.SetFilters(filters);
+    formatter.SetFilters(filters_);
+    base::string16 actual_contents_utf16;
     formatter.FormatAccessibilityTree(&actual_contents_utf16);
-    actual_contents = base::UTF16ToUTF8(actual_contents_utf16);
-  } while (!wait_for.empty() &&
-           actual_contents.find(wait_for) == std::string::npos);
-
-  // Perform a diff (or write the initial baseline).
-  std::vector<std::string> actual_lines, expected_lines;
-  Tokenize(actual_contents, "\n", &actual_lines);
-  Tokenize(expected_contents, "\n", &expected_lines);
-  // Marking the end of the file with a line of text ensures that
-  // file length differences are found.
-  expected_lines.push_back(kMarkEndOfFile);
-  actual_lines.push_back(kMarkEndOfFile);
-
-  std::vector<int> diff_lines = DiffLines(expected_lines, actual_lines);
-  bool is_different = diff_lines.size() > 0;
-  EXPECT_FALSE(is_different);
-  if (is_different) {
-    // Mark the expected lines which did not match actual output with a *.
-    printf("* Line Expected\n");
-    printf("- ---- --------\n");
-    for (int line = 0, diff_index = 0;
-         line < static_cast<int>(expected_lines.size());
-         ++line) {
-      bool is_diff = false;
-      if (diff_index < static_cast<int>(diff_lines.size()) &&
-          diff_lines[diff_index] == line) {
-        is_diff = true;
-        ++diff_index;
-      }
-      printf("%1s %4d %s\n", is_diff? kSignalDiff : "", line + 1,
-             expected_lines[line].c_str());
-    }
-    printf("\nActual\n");
-    printf("------\n");
-    printf("%s\n", actual_contents.c_str());
+    std::string actual_contents = base::UTF16ToUTF8(actual_contents_utf16);
+    std::vector<std::string> actual_lines;
+    Tokenize(actual_contents, "\n", &actual_lines);
+    return actual_lines;
   }
-
-  if (!base::PathExists(expected_file)) {
-    base::FilePath actual_file =
-        base::FilePath(html_file.RemoveExtension().value() +
-                       AccessibilityTreeFormatter::GetActualFileSuffix());
-
-    EXPECT_TRUE(base::WriteFile(
-        actual_file, actual_contents.c_str(), actual_contents.size()));
-
-    ADD_FAILURE() << "No expectation found. Create it by doing:\n"
-                  << "mv " << actual_file.LossyDisplayName() << " "
-                  << expected_file.LossyDisplayName();
-  }
-}
+};
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityA) {
   RunTest(FILE_PATH_LITERAL("a.html"));
