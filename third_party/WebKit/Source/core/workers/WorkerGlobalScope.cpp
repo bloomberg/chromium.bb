@@ -344,7 +344,7 @@ ConsoleMessageStorage* WorkerGlobalScope::messageStorage()
 
 void WorkerGlobalScope::exceptionHandled(int exceptionId, bool isHandled)
 {
-    RefPtr<ConsoleMessage> consoleMessage = m_pendingMessages.take(exceptionId);
+    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = m_pendingMessages.take(exceptionId);
     if (!isHandled)
         addConsoleMessage(consoleMessage.release());
 }
@@ -359,6 +359,7 @@ void WorkerGlobalScope::trace(Visitor* visitor)
     visitor->trace(m_eventQueue);
     visitor->trace(m_workerClients);
     visitor->trace(m_messageStorage);
+    visitor->trace(m_pendingMessages);
     HeapSupplementable<WorkerGlobalScope>::trace(visitor);
 #endif
     ExecutionContext::trace(visitor);

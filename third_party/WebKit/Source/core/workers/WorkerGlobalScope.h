@@ -171,7 +171,7 @@ private:
 
     OwnPtrWillBeMember<ConsoleMessageStorage> m_messageStorage;
 
-    HashMap<unsigned long, RefPtr<ConsoleMessage> > m_pendingMessages;
+    WillBeHeapHashMap<unsigned long, RefPtrWillBeMember<ConsoleMessage>> m_pendingMessages;
 };
 
 DEFINE_TYPE_CASTS(WorkerGlobalScope, ExecutionContext, context, context->isWorkerGlobalScope(), context.isWorkerGlobalScope());
