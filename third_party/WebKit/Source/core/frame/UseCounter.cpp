@@ -833,6 +833,12 @@ String UseCounter::deprecationMessage(Feature feature)
     case PrefixedWindowURL:
         return replacedBy("webkitURL", "URL");
 
+    case PrefixedAudioContext:
+        return replacedBy("webkitAudioContext", "AudioContext");
+
+    case PrefixedOfflineAudioContext:
+        return replacedBy("webkitOfflineAudioContext", "OfflineAudioContext");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

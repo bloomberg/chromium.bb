@@ -56,37 +56,37 @@ enum AudioContextState {
     [RaisesException] AudioBuffer createBuffer(unsigned long numberOfChannels, unsigned long numberOfFrames, float sampleRate);
 
     // Asynchronous audio file data decoding.
-    [RaisesException] void decodeAudioData(ArrayBuffer audioData, AudioBufferCallback successCallback, optional AudioBufferCallback errorCallback);
+    [MeasureAs=AudioContextDecodeAudioData, RaisesException] void decodeAudioData(ArrayBuffer audioData, AudioBufferCallback successCallback, optional AudioBufferCallback errorCallback);
 
     // Sources
-    AudioBufferSourceNode createBufferSource();
+    [MeasureAs=AudioContextCreateBufferSource] AudioBufferSourceNode createBufferSource();
 
-    [RaisesException] MediaElementAudioSourceNode createMediaElementSource(HTMLMediaElement mediaElement);
+    [MeasureAs=AudioContextCreateMediaElementSource, RaisesException] MediaElementAudioSourceNode createMediaElementSource(HTMLMediaElement mediaElement);
 
-    [RaisesException] MediaStreamAudioSourceNode createMediaStreamSource(MediaStream mediaStream);
-    MediaStreamAudioDestinationNode createMediaStreamDestination();
+    [MeasureAs=AudioContextCreateMediaStreamSource, RaisesException] MediaStreamAudioSourceNode createMediaStreamSource(MediaStream mediaStream);
+    [MeasureAs=AudioContextCreateMediaStreamDestination] MediaStreamAudioDestinationNode createMediaStreamDestination();
 
     // Processing nodes
-    GainNode createGain();
-    [RaisesException] DelayNode createDelay(optional double maxDelayTime);
-    BiquadFilterNode createBiquadFilter();
-    WaveShaperNode createWaveShaper();
-    PannerNode createPanner();
-    ConvolverNode createConvolver();
-    DynamicsCompressorNode createDynamicsCompressor();
-    AnalyserNode createAnalyser();
-    [RaisesException] ScriptProcessorNode createScriptProcessor(optional unsigned long bufferSize, optional unsigned long numberOfInputChannels, optional unsigned long numberOfOutputChannels);
-    StereoPannerNode createStereoPanner();
-    OscillatorNode createOscillator();
-    [RaisesException] PeriodicWave createPeriodicWave(Float32Array real, Float32Array imag);
+    [MeasureAs=AudioContextCreateGain] GainNode createGain();
+    [MeasureAs=AudioContextCreateDelay, RaisesException] DelayNode createDelay(optional double maxDelayTime);
+    [MeasureAs=AudioContextCreateBiquadFilter] BiquadFilterNode createBiquadFilter();
+    [MeasureAs=AudioContextCreateWaveShaper] WaveShaperNode createWaveShaper();
+    [MeasureAs=AudioContextCreatePanner] PannerNode createPanner();
+    [MeasureAs=AudioContextCreateConvolver] ConvolverNode createConvolver();
+    [MeasureAs=AudioContextCreateDynamicsCompressor] DynamicsCompressorNode createDynamicsCompressor();
+    [MeasureAs=AudioContextCreateAnalyser] AnalyserNode createAnalyser();
+    [MeasureAs=AudioContextCreateScriptProcessor, RaisesException] ScriptProcessorNode createScriptProcessor(optional unsigned long bufferSize, optional unsigned long numberOfInputChannels, optional unsigned long numberOfOutputChannels);
+    [MeasureAs=AudioContextCreatePanner] StereoPannerNode createStereoPanner();
+    [MeasureAs=AudioContextCreateOscillator] OscillatorNode createOscillator();
+    [MeasureAs=AudioContextCreatePeriodicWave, RaisesException] PeriodicWave createPeriodicWave(Float32Array real, Float32Array imag);
 
     // Channel splitting and merging
-    [RaisesException] ChannelSplitterNode createChannelSplitter(optional unsigned long numberOfOutputs);
-    [RaisesException] ChannelMergerNode createChannelMerger(optional unsigned long numberOfInputs);
+    [MeasureAs=AudioContextCreateChannelSplitter, RaisesException] ChannelSplitterNode createChannelSplitter(optional unsigned long numberOfOutputs);
+    [MeasureAs=AudioContextCreateChannelMerger, RaisesException] ChannelMergerNode createChannelMerger(optional unsigned long numberOfInputs);
 
     // Pause/resume
-    [CallWith=ScriptState, ImplementedAs=suspendContext] Promise suspend();
-    [CallWith=ScriptState, ImplementedAs=resumeContext] Promise resume();
+    [MeasureAs=AudioContextSuspend, CallWith=ScriptState, ImplementedAs=suspendContext] Promise suspend();
+    [MeasureAs=AudioContextResume, CallWith=ScriptState, ImplementedAs=resumeContext] Promise resume();
 
     attribute EventHandler onstatechange;
 };
