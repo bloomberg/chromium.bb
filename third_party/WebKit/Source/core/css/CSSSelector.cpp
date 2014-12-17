@@ -48,7 +48,7 @@ struct SameSizeAsCSSSelector {
     void *pointers[1];
 };
 
-COMPILE_ASSERT(sizeof(CSSSelector) == sizeof(SameSizeAsCSSSelector), CSSSelectorShouldStaySmall);
+static_assert(sizeof(CSSSelector) == sizeof(SameSizeAsCSSSelector), "CSSSelector should stay small");
 
 void CSSSelector::createRareData()
 {

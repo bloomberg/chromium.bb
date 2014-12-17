@@ -235,7 +235,7 @@ static String buildPolygonString(const WindRule& windRule, const Vector<String>&
     const char evenOddOpening[] = "polygon(evenodd, ";
     const char nonZeroOpening[] = "polygon(";
     const char commaSeparator[] = ", ";
-    COMPILE_ASSERT(sizeof(evenOddOpening) > sizeof(nonZeroOpening), polygon_string_openings_have_same_length);
+    static_assert(sizeof(evenOddOpening) > sizeof(nonZeroOpening), "polygon string openings should be the same length");
 
     // Compute the required capacity in advance to reduce allocations.
     size_t length = sizeof(evenOddOpening) - 1;

@@ -86,7 +86,7 @@ BorderImageLength animatableValueToBorderImageLength(const AnimatableValue* valu
 
 template<typename T> T animatableValueRoundClampTo(const AnimatableValue* value, T min = defaultMinimumForClamp<T>(), T max = defaultMaximumForClamp<T>())
 {
-    COMPILE_ASSERT(WTF::IsInteger<T>::value, ShouldUseIntegralTypeTWhenRoundingValues);
+    static_assert(WTF::IsInteger<T>::value, "should use integral type T when rounding values");
     return clampTo<T>(round(toAnimatableDouble(value)->toDouble()), min, max);
 }
 

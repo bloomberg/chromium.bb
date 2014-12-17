@@ -573,7 +573,7 @@ unsigned StylePropertySet::averageSizeInBytes()
 struct SameSizeAsStylePropertySet : public RefCountedWillBeGarbageCollectedFinalized<SameSizeAsStylePropertySet> {
     unsigned bitfield;
 };
-COMPILE_ASSERT(sizeof(StylePropertySet) == sizeof(SameSizeAsStylePropertySet), style_property_set_should_stay_small);
+static_assert(sizeof(StylePropertySet) == sizeof(SameSizeAsStylePropertySet), "StylePropertySet should stay small");
 
 #ifndef NDEBUG
 void StylePropertySet::showStyle()

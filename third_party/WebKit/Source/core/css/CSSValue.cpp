@@ -64,7 +64,7 @@ struct SameSizeAsCSSValue : public RefCountedWillBeGarbageCollectedFinalized<Sam
     uint32_t bitfields;
 };
 
-COMPILE_ASSERT(sizeof(CSSValue) <= sizeof(SameSizeAsCSSValue), CSS_value_should_stay_small);
+static_assert(sizeof(CSSValue) <= sizeof(SameSizeAsCSSValue), "CSSValue should stay small");
 
 bool CSSValue::isImplicitInitialValue() const
 {

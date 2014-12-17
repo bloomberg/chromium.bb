@@ -1245,15 +1245,15 @@ static inline bool isValidFirstLetterStyleProperty(CSSPropertyID id)
 // lastCSSPropertyId<HighPriorityProperties>.
 template<> CSSPropertyID StyleResolver::firstCSSPropertyId<StyleResolver::HighPriorityProperties>()
 {
-    COMPILE_ASSERT(CSSPropertyColor == firstCSSProperty, CSS_color_is_first_high_priority_property);
+    static_assert(CSSPropertyColor == firstCSSProperty, "CSSPropertyColor should be the first high priority property");
     return CSSPropertyColor;
 }
 
 // This method returns the last CSSPropertyId of high priority properties.
 template<> CSSPropertyID StyleResolver::lastCSSPropertyId<StyleResolver::HighPriorityProperties>()
 {
-    COMPILE_ASSERT(CSSPropertyZoom == CSSPropertyColor + 16, CSS_zoom_is_end_of_high_priority_property_range);
-    COMPILE_ASSERT(CSSPropertyTextRendering == CSSPropertyZoom - 1, CSS_text_rendering_is_before_zoom);
+    static_assert(CSSPropertyZoom == CSSPropertyColor + 16, "CSSPropertyZoom should be the end of the high priority property range");
+    static_assert(CSSPropertyTextRendering == CSSPropertyZoom - 1, "CSSPropertyTextRendering should be immediately before CSSPropertyZoom");
     return CSSPropertyZoom;
 }
 
@@ -1265,7 +1265,7 @@ template<> CSSPropertyID StyleResolver::lastCSSPropertyId<StyleResolver::HighPri
 // lastCSSPropertyId<LowPriorityProperties>.
 template<> CSSPropertyID StyleResolver::firstCSSPropertyId<StyleResolver::LowPriorityProperties>()
 {
-    COMPILE_ASSERT(CSSPropertyAlignContent == CSSPropertyZoom + 1, CSS_align_content_is_first_low_priority_property);
+    static_assert(CSSPropertyAlignContent == CSSPropertyZoom + 1, "CSSPropertyAlignContent should be the first low priority property");
     return CSSPropertyAlignContent;
 }
 
