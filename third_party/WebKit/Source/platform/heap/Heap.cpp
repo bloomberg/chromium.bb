@@ -449,44 +449,6 @@ private:
     bool m_parkedAllThreads; // False if we fail to park all threads
 };
 
-NO_SANITIZE_ADDRESS inline
-bool HeapObjectHeader::isMarked() const
-{
-    checkHeader();
-    return m_size & markBitMask;
-}
-
-NO_SANITIZE_ADDRESS inline
-void HeapObjectHeader::mark()
-{
-    checkHeader();
-    ASSERT(!isMarked());
-    m_size = m_size | markBitMask;
-}
-
-NO_SANITIZE_ADDRESS inline
-void HeapObjectHeader::unmark()
-{
-    checkHeader();
-    ASSERT(isMarked());
-    m_size &= ~markBitMask;
-}
-
-NO_SANITIZE_ADDRESS inline
-bool HeapObjectHeader::isDead() const
-{
-    checkHeader();
-    return m_size & deadBitMask;
-}
-
-NO_SANITIZE_ADDRESS inline
-void HeapObjectHeader::markDead()
-{
-    checkHeader();
-    ASSERT(!isMarked());
-    m_size |= deadBitMask;
-}
-
 #if ENABLE(ASSERT)
 NO_SANITIZE_ADDRESS
 void HeapObjectHeader::zapMagic()

@@ -1267,6 +1267,44 @@ size_t GeneralHeapObjectHeader::payloadSize()
     return size() - sizeof(GeneralHeapObjectHeader);
 }
 
+NO_SANITIZE_ADDRESS inline
+bool HeapObjectHeader::isMarked() const
+{
+    checkHeader();
+    return m_size & markBitMask;
+}
+
+NO_SANITIZE_ADDRESS inline
+void HeapObjectHeader::mark()
+{
+    checkHeader();
+    ASSERT(!isMarked());
+    m_size = m_size | markBitMask;
+}
+
+NO_SANITIZE_ADDRESS inline
+void HeapObjectHeader::unmark()
+{
+    checkHeader();
+    ASSERT(isMarked());
+    m_size &= ~markBitMask;
+}
+
+NO_SANITIZE_ADDRESS inline
+bool HeapObjectHeader::isDead() const
+{
+    checkHeader();
+    return m_size & deadBitMask;
+}
+
+NO_SANITIZE_ADDRESS inline
+void HeapObjectHeader::markDead()
+{
+    checkHeader();
+    ASSERT(!isMarked());
+    m_size |= deadBitMask;
+}
+
 template<typename Header>
 size_t ThreadHeap<Header>::allocationSizeFromSize(size_t size)
 {
