@@ -88,6 +88,19 @@ struct Timing {
         ASSERT(timingFunction);
     }
 
+    bool operator==(const Timing &other) const
+    {
+        return startDelay == other.startDelay && endDelay == other.endDelay
+            && fillMode == other.fillMode && iterationStart == other.iterationStart
+            && iterationCount == other.iterationCount && iterationDuration == other.iterationDuration
+            && playbackRate == other.playbackRate && direction == other.direction;
+    }
+
+    bool operator!=(const Timing &other) const
+    {
+        return !(*this == other);
+    }
+
     double startDelay;
     double endDelay;
     FillMode fillMode;

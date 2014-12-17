@@ -60,7 +60,7 @@ protected:
     {
         Timing timing;
         timing.fillMode = Timing::FillModeBoth;
-        return InertAnimation::create(effect, timing, false);
+        return InertAnimation::create(effect, timing, false, 0);
     }
 
     PassRefPtrWillBeRawPtr<Animation> makeAnimation(PassRefPtrWillBeRawPtr<AnimationEffect> effect, double duration = 10)

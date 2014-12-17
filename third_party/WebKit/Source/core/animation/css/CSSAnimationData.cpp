@@ -36,7 +36,12 @@ const AtomicString& CSSAnimationData::initialName()
 
 bool CSSAnimationData::animationsMatchForStyleRecalc(const CSSAnimationData& other) const
 {
-    return m_nameList == other.m_nameList && m_playStateList == other.m_playStateList;
+    return m_nameList == other.m_nameList && m_playStateList == other.m_playStateList
+        && m_iterationCountList == other.m_iterationCountList
+        && m_directionList == other.m_directionList
+        && m_fillModeList == other.m_fillModeList
+        && delayList() == other.delayList()
+        && durationList() == other.durationList();
 }
 
 Timing CSSAnimationData::convertToTiming(size_t index) const

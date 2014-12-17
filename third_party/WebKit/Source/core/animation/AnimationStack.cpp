@@ -59,7 +59,7 @@ void copyNewAnimationsToActiveInterpolationMap(const WillBeHeapVector<RawPtrWill
 {
     for (const auto& newAnimation : newAnimations) {
         OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> sample = nullptr;
-        newAnimation->sample(0, sample);
+        newAnimation->sample(sample);
         if (sample)
             copyToActiveInterpolationMap(*sample, result);
     }
@@ -89,7 +89,7 @@ bool AnimationStack::hasActiveAnimationsOnCompositor(CSSPropertyID property) con
     return false;
 }
 
-WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > AnimationStack::activeInterpolations(AnimationStack* animationStack, const WillBeHeapVector<RawPtrWillBeMember<InertAnimation> >* newAnimations, const WillBeHeapHashSet<RawPtrWillBeMember<const AnimationPlayer> >* cancelledAnimationPlayers, Animation::Priority priority, double timelineCurrentTime)
+WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > AnimationStack::activeInterpolations(AnimationStack* animationStack, const WillBeHeapVector<RawPtrWillBeMember<InertAnimation> >* newAnimations, const WillBeHeapHashSet<RawPtrWillBeMember<const AnimationPlayer> >* suppressedAnimationPlayers, Animation::Priority priority, double timelineCurrentTime)
 {
     // We don't exactly know when new animations will start, but timelineCurrentTime is a good estimate.
 
@@ -101,7 +101,7 @@ WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > AnimationSt
         nonCopyingSort(effects.begin(), effects.end(), compareEffects);
         animationStack->simplifyEffects();
         for (const auto& effect : effects) {
-            if (effect->priority() != priority || (cancelledAnimationPlayers && effect->animation() && cancelledAnimationPlayers->contains(effect->animation()->player())))
+            if (effect->priority() != priority || (suppressedAnimationPlayers && effect->animation() && suppressedAnimationPlayers->contains(effect->animation()->player())))
                 continue;
             copyToActiveInterpolationMap(effect->interpolations(), result);
         }

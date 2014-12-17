@@ -39,8 +39,8 @@ namespace blink {
 
 class InertAnimation final : public AnimationNode {
 public:
-    static PassRefPtrWillBeRawPtr<InertAnimation> create(PassRefPtrWillBeRawPtr<AnimationEffect>, const Timing&, bool paused);
-    void sample(double inheritedTime, OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>&);
+    static PassRefPtrWillBeRawPtr<InertAnimation> create(PassRefPtrWillBeRawPtr<AnimationEffect>, const Timing&, bool paused, double inheritedTime);
+    void sample(OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>&);
     AnimationEffect* effect() const { return m_effect.get(); }
     bool paused() const { return m_paused; }
 
@@ -51,9 +51,10 @@ protected:
     virtual double calculateTimeToEffectChange(bool forwards, double inheritedTime, double timeToNextIteration) const override;
 
 private:
-    InertAnimation(PassRefPtrWillBeRawPtr<AnimationEffect>, const Timing&, bool paused);
+    InertAnimation(PassRefPtrWillBeRawPtr<AnimationEffect>, const Timing&, bool paused, double inheritedTime);
     RefPtrWillBeMember<AnimationEffect> m_effect;
     bool m_paused;
+    double m_inheritedTime;
 };
 
 } // namespace blink

@@ -269,32 +269,44 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, const E
             if (animationName == CSSAnimationData::initialName())
                 continue;
 
-            bool isPaused = CSSTimingData::getRepeated(animationData->playStateList(), i) == AnimPlayStatePaused;
-
-            // Keyframes and animation properties are snapshotted when the
-            // animation starts, so we don't need to track changes to these,
-            // with the exception of play-state.
-            if (cssAnimations) {
-                AnimationMap::const_iterator existing(cssAnimations->m_animations.find(animationName));
-                if (existing != cssAnimations->m_animations.end()) {
-                    inactive.remove(animationName);
-                    AnimationPlayer* player = existing->value.get();
-                    if (isPaused != player->paused()) {
-                        ASSERT(!activeAnimations || !activeAnimations->isAnimationStyleChange());
-                        update->toggleAnimationPaused(animationName);
-                    }
-                    continue;
-                }
-            }
+            const bool isPaused = CSSTimingData::getRepeated(animationData->playStateList(), i) == AnimPlayStatePaused;
 
             Timing timing = animationData->convertToTiming(i);
             RefPtr<TimingFunction> keyframeTimingFunction = timing.timingFunction;
             timing.timingFunction = Timing::defaults().timingFunction;
+
+            if (cssAnimations) {
+                AnimationMap::const_iterator existing(cssAnimations->m_animations.find(animationName));
+                if (existing != cssAnimations->m_animations.end()) {
+                    inactive.remove(animationName);
+
+                    AnimationPlayer* player = existing->value.get();
+
+                    // FIXME: Should handle changes in the timing function.
+                    if (timing != player->source()->specifiedTiming()) {
+                        ASSERT(!activeAnimations || !activeAnimations->isAnimationStyleChange());
+
+                        AnimatableValueKeyframeVector resolvedKeyframes;
+                        resolveKeyframes(resolver, animatingElement, element, style, parentStyle, animationName, keyframeTimingFunction.get(), resolvedKeyframes);
+
+                        update->updateAnimationTiming(player, InertAnimation::create(AnimatableValueKeyframeEffectModel::create(resolvedKeyframes),
+                            timing, isPaused, player->currentTimeInternal()), timing);
+                    }
+
+                    if (isPaused != player->paused()) {
+                        ASSERT(!activeAnimations || !activeAnimations->isAnimationStyleChange());
+                        update->toggleAnimationPaused(animationName);
+                    }
+
+                    continue;
+                }
+            }
+
             AnimatableValueKeyframeVector resolvedKeyframes;
             resolveKeyframes(resolver, animatingElement, element, style, parentStyle, animationName, keyframeTimingFunction.get(), resolvedKeyframes);
             if (!resolvedKeyframes.isEmpty()) {
                 ASSERT(!activeAnimations || !activeAnimations->isAnimationStyleChange());
-                update->startAnimation(animationName, InertAnimation::create(AnimatableValueKeyframeEffectModel::create(resolvedKeyframes), timing, isPaused));
+                update->startAnimation(animationName, InertAnimation::create(AnimatableValueKeyframeEffectModel::create(resolvedKeyframes), timing, isPaused, 0));
             }
         }
     }
@@ -336,6 +348,11 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             player->pause();
         if (player->outdated())
             player->update(TimingUpdateOnDemand);
+    }
+
+    for (const auto& timingUpdate : update->animationsWithTimingUpdates()) {
+        timingUpdate.player->source()->updateSpecifiedTiming(timingUpdate.newTiming);
+        timingUpdate.player->update(TimingUpdateOnDemand);
     }
 
     for (const auto& entry : update->newAnimations()) {
@@ -394,9 +411,9 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             newFrames.append(toAnimatableValueKeyframe(frames[1]->clone().get()));
 
             newFrames[0]->clearPropertyValue(id);
-            RefPtrWillBeRawPtr<InertAnimation> inertAnimationForSampling = InertAnimation::create(oldAnimation->effect(), oldAnimation->specifiedTiming(), false);
+            RefPtrWillBeRawPtr<InertAnimation> inertAnimationForSampling = InertAnimation::create(oldAnimation->effect(), oldAnimation->specifiedTiming(), false, inheritedTime);
             OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> sample = nullptr;
-            inertAnimationForSampling->sample(inheritedTime, sample);
+            inertAnimationForSampling->sample(sample);
             ASSERT(sample && sample->size() == 1);
             newFrames[0]->setPropertyValue(id, toLegacyStyleInterpolation(sample->at(0).get())->currentValue());
 
@@ -459,7 +476,7 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, CSSPr
     keyframes.append(endKeyframe);
 
     RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = AnimatableValueKeyframeEffectModel::create(keyframes);
-    update->startTransition(id, eventId, from.get(), to.get(), InertAnimation::create(effect, timing, false));
+    update->startTransition(id, eventId, from.get(), to.get(), InertAnimation::create(effect, timing, false, 0));
     ASSERT(!element->activeAnimations() || !element->activeAnimations()->isAnimationStyleChange());
 }
 
@@ -556,17 +573,19 @@ void CSSAnimations::calculateAnimationActiveInterpolations(CSSAnimationUpdate* u
     ActiveAnimations* activeAnimations = animatingElement ? animatingElement->activeAnimations() : nullptr;
     AnimationStack* animationStack = activeAnimations ? &activeAnimations->defaultStack() : nullptr;
 
-    if (update->newAnimations().isEmpty() && update->cancelledAnimationAnimationPlayers().isEmpty()) {
+    if (update->newAnimations().isEmpty() && update->suppressedAnimationAnimationPlayers().isEmpty()) {
         WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>> activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, 0, 0, Animation::DefaultPriority, timelineCurrentTime));
         update->adoptActiveInterpolationsForAnimations(activeInterpolationsForAnimations);
         return;
     }
 
     WillBeHeapVector<RawPtrWillBeMember<InertAnimation>> newAnimations;
-    for (size_t i = 0; i < update->newAnimations().size(); ++i) {
-        newAnimations.append(update->newAnimations()[i].animation.get());
-    }
-    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>> activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, &newAnimations, &update->cancelledAnimationAnimationPlayers(), Animation::DefaultPriority, timelineCurrentTime));
+    for (const auto& newAnimation : update->newAnimations())
+        newAnimations.append(newAnimation.animation.get());
+    for (const auto& updatedAnimation : update->animationsWithTimingUpdates())
+        newAnimations.append(updatedAnimation.animation.get()); // Animations with timing updates use a temporary InertAnimation for the current frame.
+
+    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>> activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, &newAnimations, &update->suppressedAnimationAnimationPlayers(), Animation::DefaultPriority, timelineCurrentTime));
     update->adoptActiveInterpolationsForAnimations(activeInterpolationsForAnimations);
 }
 
@@ -744,7 +763,8 @@ void CSSAnimationUpdate::trace(Visitor* visitor)
     visitor->trace(m_activeInterpolationsForAnimations);
     visitor->trace(m_activeInterpolationsForTransitions);
     visitor->trace(m_newAnimations);
-    visitor->trace(m_cancelledAnimationPlayers);
+    visitor->trace(m_suppressedAnimationPlayers);
+    visitor->trace(m_animationsWithTimingUpdates);
 #endif
 }
 
