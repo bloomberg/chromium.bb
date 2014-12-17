@@ -81,7 +81,6 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
                                    blink::WebDataSource* ds) {}
   virtual void PrintPage(blink::WebLocalFrame* frame, bool user_initiated) {}
   virtual void FocusedNodeChanged(const blink::WebNode& node) {}
-  virtual void DidChangeScrollOffset(blink::WebLocalFrame* frame) {}
   virtual void DraggableRegionsChanged(blink::WebFrame* frame) {}
   virtual void DidCommitCompositorFrame() {}
   virtual void DidUpdateLayout() {}

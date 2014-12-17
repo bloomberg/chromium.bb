@@ -54,6 +54,7 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void DidClearWindowObject() {}
   virtual void DidChangeName(const base::string16& name) {}
   virtual void DidChangeManifest() {}
+  virtual void DidChangeScrollOffset() {}
 
   // Called when the frame will soon be closed. This is the last opportunity to
   // send messages to the host (e.g., for clean-up, shutdown, etc.).

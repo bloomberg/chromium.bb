@@ -212,10 +212,7 @@ void AutofillAgent::WillSubmitForm(WebLocalFrame* frame,
   }
 }
 
-void AutofillAgent::DidChangeScrollOffset(WebLocalFrame* frame) {
-  if (frame != render_frame()->GetWebFrame())
-    return;
-
+void AutofillAgent::DidChangeScrollOffset() {
   HidePopup();
 }
 
@@ -820,11 +817,6 @@ void AutofillAgent::LegacyAutofillAgent::WillSubmitForm(
     WebLocalFrame* frame,
     const WebFormElement& form) {
   agent_->WillSubmitForm(frame, form);
-}
-
-void AutofillAgent::LegacyAutofillAgent::DidChangeScrollOffset(
-    WebLocalFrame* frame) {
-  agent_->DidChangeScrollOffset(frame);
 }
 
 void AutofillAgent::LegacyAutofillAgent::FocusedNodeChanged(

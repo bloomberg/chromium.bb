@@ -3170,6 +3170,8 @@ void RenderFrameImpl::didChangeScrollOffset(blink::WebLocalFrame* frame) {
   // TODO(nasko): Move implementation here. Needed methods:
   // * StartNavStateSyncTimerIfNecessary
   render_view_->didChangeScrollOffset(frame);
+
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidChangeScrollOffset());
 }
 
 void RenderFrameImpl::willInsertBody(blink::WebLocalFrame* frame) {

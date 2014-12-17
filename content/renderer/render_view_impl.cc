@@ -2382,9 +2382,6 @@ BrowserPluginManager* RenderViewImpl::GetBrowserPluginManager() {
 
 void RenderViewImpl::didChangeScrollOffset(WebLocalFrame* frame) {
   StartNavStateSyncTimerIfNecessary();
-
-  FOR_EACH_OBSERVER(
-      RenderViewObserver, observers_, DidChangeScrollOffset(frame));
 }
 
 void RenderViewImpl::SendFindReply(int request_id,
