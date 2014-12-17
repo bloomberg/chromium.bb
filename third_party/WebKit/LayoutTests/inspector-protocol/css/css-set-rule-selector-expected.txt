@@ -99,6 +99,12 @@ html, body, div, a {
 
 
 
+Running test: testInvalidSelectorText
+Expected protocol error: SyntaxError Selector text is not valid.
+
+Running test: testSelectorTextWithUnclosedComment
+Expected protocol error: SyntaxError Selector text is not valid.
+
 Running test: testEditSubSelector
 Expected protocol error: Source range didn't match any rule selector source range
 

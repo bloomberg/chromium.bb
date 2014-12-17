@@ -1070,12 +1070,14 @@ bool InspectorStyleSheet::setRuleSelector(const InspectorCSSId& id, const String
         return false;
     }
 
-    rule->setSelectorText(selector);
-    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = ruleSourceDataAt(id.ordinal());
-    if (!sourceData) {
-        exceptionState.throwDOMException(NotFoundError, "The selector '" + selector + "' could not be set.");
+    if (!verifySelectorText(selector)) {
+        exceptionState.throwDOMException(SyntaxError, "Selector text is not valid.");
         return false;
     }
+
+    rule->setSelectorText(selector);
+    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = ruleSourceDataAt(id.ordinal());
+    ASSERT(sourceData);
 
     String sheetText = m_parsedStyleSheet->text();
     sheetText.replace(sourceData->ruleHeaderRange.start, sourceData->ruleHeaderRange.length(), selector);
@@ -1213,6 +1215,33 @@ bool InspectorStyleSheet::verifyRuleText(const String& ruleText)
     unsigned propertyCount = propertyData.size();
 
     // Exactly one property should be in rule.
+    if (propertyCount != 1)
+        return false;
+
+    // Check for the property name.
+    if (propertyData.at(0).name != bogusPropertyName)
+        return false;
+
+    return true;
+}
+
+bool InspectorStyleSheet::verifySelectorText(const String& selectorText)
+{
+    DEFINE_STATIC_LOCAL(String, bogusPropertyName, ("-webkit-boguz-propertee"));
+    RuleSourceDataList sourceData;
+    RefPtrWillBeRawPtr<StyleSheetContents> styleSheetContents = StyleSheetContents::create(strictCSSParserContext());
+    String text = selectorText + " div { " + bogusPropertyName + ": none; }";
+    StyleSheetHandler handler(text, ownerDocument(), styleSheetContents.get(), &sourceData);
+    CSSParser::parseSheet(parserContextForDocument(ownerDocument()), styleSheetContents.get(), text, TextPosition::minimumPosition(), &handler);
+
+    // Exactly one rule should be parsed.
+    unsigned ruleCount = sourceData.size();
+    if (ruleCount != 1 || sourceData.at(0)->type != CSSRuleSourceData::STYLE_RULE)
+        return false;
+
+    // Exactly one property should be in style rule.
+    WillBeHeapVector<CSSPropertySourceData>& propertyData = sourceData.at(0)->styleSourceData->propertyData;
+    unsigned propertyCount = propertyData.size();
     if (propertyCount != 1)
         return false;
 

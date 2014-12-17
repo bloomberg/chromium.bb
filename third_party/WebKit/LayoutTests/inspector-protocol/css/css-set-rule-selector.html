@@ -96,6 +96,22 @@ function test()
             }
         },
 
+        function testInvalidSelectorText(next)
+        {
+            verifyProtocolError({
+                range: firstSelectorRange,
+                selector: "123"
+            }, next);
+        },
+
+        function testSelectorTextWithUnclosedComment(next)
+        {
+            verifyProtocolError({
+                range: firstSelectorRange,
+                selector: "body /*"
+            }, next);
+        },
+
         function testEditSubSelector(next)
         {
             verifyProtocolError({
