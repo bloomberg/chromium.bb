@@ -462,6 +462,7 @@ component("cc") {
     "resources/zero_copy_tile_task_worker_pool.h",
     "scheduler/begin_frame_source.cc",
     "scheduler/begin_frame_source.h",
+    "scheduler/commit_earlyout_reason.h",
     "scheduler/delay_based_time_source.cc",
     "scheduler/delay_based_time_source.h",
     "scheduler/draw_result.h",

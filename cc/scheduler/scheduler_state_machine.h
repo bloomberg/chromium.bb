@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/begin_frame_args.h"
+#include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/scheduler/draw_result.h"
 #include "cc/scheduler/scheduler_settings.h"
 
@@ -206,8 +207,7 @@ class CC_EXPORT SchedulerStateMachine {
 
   // Call this only in response to receiving an ACTION_SEND_BEGIN_MAIN_FRAME
   // from NextAction if the client rejects the BeginMainFrame message.
-  // If did_handle is false, then another commit will be retried soon.
-  void BeginMainFrameAborted(bool did_handle);
+  void BeginMainFrameAborted(CommitEarlyOutReason reason);
 
   // Set that we can create the first OutputSurface and start the scheduler.
   void SetCanStart() { can_start_ = true; }
@@ -286,7 +286,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool HasRequestedSwapThisFrame() const;
   bool HasSwappedThisFrame() const;
 
-  void UpdateStateOnCommit(bool commit_was_aborted);
+  void UpdateStateOnCommit(bool commit_had_no_updates);
   void UpdateStateOnActivation();
   void UpdateStateOnDraw(bool did_request_swap);
   void UpdateStateOnPrepareTiles();

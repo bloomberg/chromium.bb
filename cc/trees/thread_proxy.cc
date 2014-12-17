@@ -20,6 +20,7 @@
 #include "cc/output/output_surface.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/resources/prioritized_resource_manager.h"
+#include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/scheduler/scheduler.h"
 #include "cc/trees/blocking_task_runner.h"
@@ -697,24 +698,21 @@ void ThreadProxy::BeginMainFrame(
 
   if (!layer_tree_host()->visible()) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NotVisible", TRACE_EVENT_SCOPE_THREAD);
-    bool did_handle = false;
     Proxy::ImplThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&ThreadProxy::BeginMainFrameAbortedOnImplThread,
-                   impl_thread_weak_ptr_,
-                   did_handle));
+        FROM_HERE, base::Bind(&ThreadProxy::BeginMainFrameAbortedOnImplThread,
+                              impl_thread_weak_ptr_,
+                              CommitEarlyOutReason::ABORTED_NOT_VISIBLE));
     return;
   }
 
   if (layer_tree_host()->output_surface_lost()) {
     TRACE_EVENT_INSTANT0(
         "cc", "EarlyOut_OutputSurfaceLost", TRACE_EVENT_SCOPE_THREAD);
-    bool did_handle = false;
     Proxy::ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(&ThreadProxy::BeginMainFrameAbortedOnImplThread,
                    impl_thread_weak_ptr_,
-                   did_handle));
+                   CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST));
     return;
   }
 
@@ -786,12 +784,10 @@ void ThreadProxy::BeginMainFrame(
 
   if (!updated && can_cancel_this_commit) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NoUpdates", TRACE_EVENT_SCOPE_THREAD);
-    bool did_handle = true;
     Proxy::ImplThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&ThreadProxy::BeginMainFrameAbortedOnImplThread,
-                   impl_thread_weak_ptr_,
-                   did_handle));
+        FROM_HERE, base::Bind(&ThreadProxy::BeginMainFrameAbortedOnImplThread,
+                              impl_thread_weak_ptr_,
+                              CommitEarlyOutReason::FINISHED_NO_UPDATES));
 
     // Although the commit is internally aborted, this is because it has been
     // detected to be a no-op.  From the perspective of an embedder, this commit
@@ -884,17 +880,19 @@ void ThreadProxy::StartCommitOnImplThread(CompletionEvent* completion,
       impl().scheduler->AnticipatedDrawTime());
 }
 
-void ThreadProxy::BeginMainFrameAbortedOnImplThread(bool did_handle) {
-  TRACE_EVENT0("cc", "ThreadProxy::BeginMainFrameAbortedOnImplThread");
+void ThreadProxy::BeginMainFrameAbortedOnImplThread(
+    CommitEarlyOutReason reason) {
+  TRACE_EVENT1("cc", "ThreadProxy::BeginMainFrameAbortedOnImplThread", "reason",
+               CommitEarlyOutReasonToString(reason));
   DCHECK(IsImplThread());
   DCHECK(impl().scheduler);
   DCHECK(impl().scheduler->CommitPending());
   DCHECK(!impl().layer_tree_host_impl->pending_tree());
 
-  if (did_handle)
+  if (CommitEarlyOutHandledCommit(reason))
     SetInputThrottledUntilCommitOnImplThread(false);
-  impl().layer_tree_host_impl->BeginMainFrameAborted(did_handle);
-  impl().scheduler->BeginMainFrameAborted(did_handle);
+  impl().layer_tree_host_impl->BeginMainFrameAborted(reason);
+  impl().scheduler->BeginMainFrameAborted(reason);
 }
 
 void ThreadProxy::ScheduledActionAnimate() {

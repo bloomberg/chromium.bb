@@ -278,11 +278,11 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   DestroyTileManager();
 }
 
-void LayerTreeHostImpl::BeginMainFrameAborted(bool did_handle) {
+void LayerTreeHostImpl::BeginMainFrameAborted(CommitEarlyOutReason reason) {
   // If the begin frame data was handled, then scroll and scale set was applied
   // by the main thread, so the active tree needs to be updated as if these sent
   // values were applied and committed.
-  if (did_handle) {
+  if (CommitEarlyOutHandledCommit(reason)) {
     active_tree_->ApplySentScrollAndScaleDeltasFromAbortedCommit();
     active_tree_->ResetContentsTexturesPurged();
   }

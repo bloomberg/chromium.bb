@@ -179,9 +179,9 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->WillBeginImplFrameOnThread(this, args);
   }
 
-  void BeginMainFrameAborted(bool did_handle) override {
-    LayerTreeHostImpl::BeginMainFrameAborted(did_handle);
-    test_hooks_->BeginMainFrameAbortedOnThread(this, did_handle);
+  void BeginMainFrameAborted(CommitEarlyOutReason reason) override {
+    LayerTreeHostImpl::BeginMainFrameAborted(reason);
+    test_hooks_->BeginMainFrameAbortedOnThread(this, reason);
   }
 
   void BeginCommit() override {

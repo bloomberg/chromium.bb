@@ -120,7 +120,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
       scoped_ptr<BeginFrameSource> external_begin_frame_source);
 
   void BeginMainFrame();
-  void BeginMainFrameAbortedOnImplThread();
+  void BeginMainFrameAbortedOnImplThread(CommitEarlyOutReason reason);
   void DoAnimate();
   void DoBeginMainFrame(const BeginFrameArgs& begin_frame_args);
   void DoCommit();

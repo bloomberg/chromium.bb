@@ -128,7 +128,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn,
   void SetImplLatencyTakesPriority(bool impl_latency_takes_priority);
 
   void NotifyReadyToCommit();
-  void BeginMainFrameAborted(bool did_handle);
+  void BeginMainFrameAborted(CommitEarlyOutReason reason);
 
   void DidPrepareTiles();
   void DidLoseOutputSurface();

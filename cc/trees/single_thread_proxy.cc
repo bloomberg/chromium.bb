@@ -12,6 +12,7 @@
 #include "cc/quads/draw_quad.h"
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/resources/resource_update_controller.h"
+#include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -677,14 +678,16 @@ void SingleThreadProxy::BeginMainFrame() {
 
   if (!layer_tree_host_->visible()) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NotVisible", TRACE_EVENT_SCOPE_THREAD);
-    BeginMainFrameAbortedOnImplThread();
+    BeginMainFrameAbortedOnImplThread(
+        CommitEarlyOutReason::ABORTED_NOT_VISIBLE);
     return;
   }
 
   if (layer_tree_host_->output_surface_lost()) {
     TRACE_EVENT_INSTANT0(
         "cc", "EarlyOut_OutputSurfaceLost", TRACE_EVENT_SCOPE_THREAD);
-    BeginMainFrameAbortedOnImplThread();
+    BeginMainFrameAbortedOnImplThread(
+        CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST);
     return;
   }
 
@@ -716,22 +719,23 @@ void SingleThreadProxy::DoBeginMainFrame(
 
   timing_history_.DidBeginMainFrame();
 
+  // TODO(enne): SingleThreadProxy does not support cancelling commits yet,
+  // search for CommitEarlyOutReason::FINISHED_NO_UPDATES inside
+  // thread_proxy.cc
   if (scheduler_on_impl_thread_) {
     scheduler_on_impl_thread_->NotifyBeginMainFrameStarted();
     scheduler_on_impl_thread_->NotifyReadyToCommit();
   }
 }
 
-void SingleThreadProxy::BeginMainFrameAbortedOnImplThread() {
+void SingleThreadProxy::BeginMainFrameAbortedOnImplThread(
+    CommitEarlyOutReason reason) {
   DebugScopedSetImplThread impl(this);
   DCHECK(scheduler_on_impl_thread_->CommitPending());
   DCHECK(!layer_tree_host_impl_->pending_tree());
 
-  // TODO(enne): SingleThreadProxy does not support cancelling commits yet so
-  // did_handle is always false.
-  bool did_handle = false;
-  layer_tree_host_impl_->BeginMainFrameAborted(did_handle);
-  scheduler_on_impl_thread_->BeginMainFrameAborted(did_handle);
+  layer_tree_host_impl_->BeginMainFrameAborted(reason);
+  scheduler_on_impl_thread_->BeginMainFrameAborted(reason);
 }
 
 DrawResult SingleThreadProxy::ScheduledActionDrawAndSwapIfPossible() {

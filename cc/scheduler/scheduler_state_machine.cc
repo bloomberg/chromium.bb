@@ -550,8 +550,8 @@ void SchedulerStateMachine::UpdateState(Action action) {
       return;
 
     case ACTION_COMMIT: {
-      bool commit_was_aborted = false;
-      UpdateStateOnCommit(commit_was_aborted);
+      bool commit_has_no_updates = false;
+      UpdateStateOnCommit(commit_has_no_updates);
       return;
     }
 
@@ -586,13 +586,13 @@ void SchedulerStateMachine::UpdateState(Action action) {
   }
 }
 
-void SchedulerStateMachine::UpdateStateOnCommit(bool commit_was_aborted) {
+void SchedulerStateMachine::UpdateStateOnCommit(bool commit_has_no_updates) {
   commit_count_++;
 
-  if (!commit_was_aborted && HasAnimatedThisFrame())
+  if (!commit_has_no_updates && HasAnimatedThisFrame())
     did_commit_after_animating_ = true;
 
-  if (commit_was_aborted || settings_.main_frame_before_activation_enabled) {
+  if (commit_has_no_updates || settings_.main_frame_before_activation_enabled) {
     commit_state_ = COMMIT_STATE_IDLE;
   } else if (settings_.impl_side_painting) {
     commit_state_ = COMMIT_STATE_WAITING_FOR_ACTIVATION;
@@ -604,7 +604,7 @@ void SchedulerStateMachine::UpdateStateOnCommit(bool commit_was_aborted) {
 
   // If we are impl-side-painting but the commit was aborted, then we behave
   // mostly as if we are not impl-side-painting since there is no pending tree.
-  has_pending_tree_ = settings_.impl_side_painting && !commit_was_aborted;
+  has_pending_tree_ = settings_.impl_side_painting && !commit_has_no_updates;
 
   // Update state related to forced draws.
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_COMMIT) {
@@ -627,7 +627,7 @@ void SchedulerStateMachine::UpdateStateOnCommit(bool commit_was_aborted) {
   // Update state if we have a new active tree to draw, or if the active tree
   // was unchanged but we need to do a forced draw.
   if (!has_pending_tree_ &&
-      (!commit_was_aborted ||
+      (!commit_has_no_updates ||
        forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW)) {
     needs_redraw_ = true;
     active_tree_needs_first_draw_ = true;
@@ -1025,14 +1025,18 @@ void SchedulerStateMachine::NotifyReadyToCommit() {
     DCHECK(ShouldCommit());
 }
 
-void SchedulerStateMachine::BeginMainFrameAborted(bool did_handle) {
+void SchedulerStateMachine::BeginMainFrameAborted(CommitEarlyOutReason reason) {
   DCHECK_EQ(commit_state_, COMMIT_STATE_BEGIN_MAIN_FRAME_SENT);
-  if (did_handle) {
-    bool commit_was_aborted = true;
-    UpdateStateOnCommit(commit_was_aborted);
-  } else {
-    commit_state_ = COMMIT_STATE_IDLE;
-    SetNeedsCommit();
+  switch (reason) {
+    case CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST:
+    case CommitEarlyOutReason::ABORTED_NOT_VISIBLE:
+      commit_state_ = COMMIT_STATE_IDLE;
+      SetNeedsCommit();
+      return;
+    case CommitEarlyOutReason::FINISHED_NO_UPDATES:
+      bool commit_has_no_updates = true;
+      UpdateStateOnCommit(commit_has_no_updates);
+      return;
   }
 }
 

@@ -14,6 +14,7 @@
 #include "cc/base/completion_event.h"
 #include "cc/base/delayed_unique_notifier.h"
 #include "cc/resources/resource_update_controller.h"
+#include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/scheduler/scheduler.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/proxy.h"
@@ -255,7 +256,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
 
   void StartCommitOnImplThread(CompletionEvent* completion,
                                ResourceUpdateQueue* queue);
-  void BeginMainFrameAbortedOnImplThread(bool did_handle);
+  void BeginMainFrameAbortedOnImplThread(CommitEarlyOutReason reason);
   void FinishAllRenderingOnImplThread(CompletionEvent* completion);
   void InitializeImplOnImplThread(CompletionEvent* completion);
   void SetLayerTreeHostClientReadyOnImplThread();

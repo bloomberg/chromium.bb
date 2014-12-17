@@ -2508,7 +2508,7 @@ class LayerTreeHostTestAbortedCommitDoesntStall : public LayerTreeHostTest {
   }
 
   void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
-                                     bool did_handle) override {
+                                     CommitEarlyOutReason reason) override {
     commit_abort_count_++;
     // Initiate another abortable commit.
     host_impl->SetNeedsCommit();
@@ -4810,7 +4810,7 @@ class LayerTreeHostTestBreakSwapPromiseForVisibilityAbortedCommit
   }
 
   void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
-                                     bool did_handle) override {
+                                     CommitEarlyOutReason reason) override {
     EndTest();
   }
 
@@ -4851,7 +4851,7 @@ class LayerTreeHostTestBreakSwapPromiseForContextAbortedCommit
   }
 
   void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
-                                     bool did_handle) override {
+                                     CommitEarlyOutReason reason) override {
     // This is needed so that the impl-thread state matches main-thread state.
     host_impl->DidLoseOutputSurface();
     EndTest();

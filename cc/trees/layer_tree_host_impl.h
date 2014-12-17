@@ -32,6 +32,7 @@
 #include "cc/quads/render_pass.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/tile_manager.h"
+#include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/scheduler/draw_result.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -190,7 +191,7 @@ class CC_EXPORT LayerTreeHostImpl
     void AppendRenderPass(scoped_ptr<RenderPass> render_pass) override;
   };
 
-  virtual void BeginMainFrameAborted(bool did_handle);
+  virtual void BeginMainFrameAborted(CommitEarlyOutReason reason);
   virtual void BeginCommit();
   virtual void CommitComplete();
   virtual void Animate(base::TimeTicks monotonic_time);
