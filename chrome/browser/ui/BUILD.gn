@@ -82,6 +82,15 @@ static_library("ui") {
     sources += rebase_path(gypi_values.chrome_browser_ui_non_ios_sources,
                            ".",
                            "//chrome")
+    sources += rebase_path(gypi_values.chrome_browser_ui_global_error_sources,
+                           ".",
+                           "//chrome")
+    sources += rebase_path(gypi_values.chrome_browser_ui_omnibox_sources,
+                           ".",
+                           "//chrome")
+    sources += rebase_path(gypi_values.chrome_browser_ui_toolbar_model_sources,
+                           ".",
+                           "//chrome")
     deps += [
       "//chrome/browser/devtools",
       "//chrome/browser/ui/views",
@@ -129,6 +138,10 @@ static_library("ui") {
     sources += rebase_path(gypi_values.chrome_browser_ui_non_mobile_sources,
                            ".",
                            "//chrome")
+    sources +=
+        rebase_path(gypi_values.chrome_browser_ui_omnibox_non_mobile_sources,
+                    ".",
+                    "//chrome")
     deps += [ "//device/bluetooth" ]
   }
 
