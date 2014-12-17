@@ -142,6 +142,7 @@
           'destination': '<(dest_dir)/longdesc',
           'files': [
             'longdesc/background.js',
+            'longdesc/border.css',
             'longdesc/icon.png',
             'longdesc/icon-128.png',
             'longdesc/icon-48.png',

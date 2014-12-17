@@ -44,6 +44,9 @@ function updateContextMenuItem(element) {
 
   if (element.target.hasAttribute("longdesc")) {
     longDesc = element.target.getAttribute("longdesc");
+    var link = document.createElement("a");
+    link.href = longDesc;
+    longDesc = link.href;
   }
 
   if (element.target.hasAttribute("aria-describedat")) {
@@ -67,30 +70,12 @@ function updateContextMenuItem(element) {
  * Modify border to make the HTML element more visible.
  */
 function addBorders() {
-  var elementArray = new Array(document.querySelectorAll('[longdesc]'));
-  elementArray.concat(new Array(document.querySelectorAll('[aria-describedat]')));
-
-  for (var i = 0; i < elementArray.length; i++) {
-    borderColor = elementArray[0][i].style.borderColor;
-    borderStyle = elementArray[0][i].style.borderStyle;
-    borderWidth = elementArray[0][i].style.borderWidth;
-
-    elementArray[0][i].style.borderColor = 'blue';
-    elementArray[0][i].style.borderStyle = 'groove';
-    elementArray[0][i].style.borderWidth = '15px';
-  }
+  document.body.setAttribute('showlongdescborders', '');
 }
 
 /**
  * Revert back to the original border styling.
  */
 function removeBorders() {
-  var elementArray = new Array(document.querySelectorAll('[longdesc]'));
-  elementArray.concat(new Array(document.querySelectorAll('[aria-describedat]')));
-
-  for (var i = 0; i < elementArray.length; i++) {
-    elementArray[0][i].style.borderColor = borderColor;
-    elementArray[0][i].style.borderStyle = borderStyle;
-    elementArray[0][i].style.borderWidth = borderWidth;
-  }
+  document.body.removeAttribute('showlongdescborders', '');
 }

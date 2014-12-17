@@ -1,13 +1,14 @@
 {
   "name": "__MSG_LONGDESC_APPNAME__",
-  "version": "1.0",
+  "version": "1.0.1",
   "description": "__MSG_LONGDESC_APPDESC__",
   "background": {
     "scripts": [ "background.js" ]
   },
   "content_scripts": [{
     "matches": ["<all_urls>"],
-    "js": ["lastRightClick.js"]
+    "js": ["lastRightClick.js"],
+    "css": ["border.css"]
   }],
   "icons": {
     "16": "icon.png"

@@ -15,9 +15,24 @@ chrome.windows.getAll({'populate': true}, function(windows) {
   for (var i = 0; i < windows.length; i++) {
     var tabs = windows[i].tabs;
     for (var j = 0; j < tabs.length; j++) {
-      chrome.tabs.executeScript(
-        tabs[j].id,
-        {file: 'lastRightClick.js'});
+      try {
+        chrome.tabs.insertCSS(
+          tabs[j].id,
+          {file: 'border.css'},
+          function(result) {
+            chrome.runtime.lastError;
+          });
+      } catch (x) {
+      }
+      try {
+        chrome.tabs.executeScript(
+          tabs[j].id,
+          {file: 'lastRightClick.js'},
+          function(result) {
+            chrome.runtime.lastError;
+          });
+      } catch (x) {
+      }
     }
   }
 });
