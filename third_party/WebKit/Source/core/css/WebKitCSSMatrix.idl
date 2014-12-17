@@ -26,6 +26,7 @@
 // Introduced in DOM Level ?:
 [
     Constructor(optional DOMString cssValue = null),
+    ConstructorCallWith=ExecutionContext,
     ImplementedAs=CSSMatrix,
     RaisesException=Constructor,
     WillBeGarbageCollected

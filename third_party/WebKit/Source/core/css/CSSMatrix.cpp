@@ -34,11 +34,18 @@
 #include "core/css/parser/CSSParser.h"
 #include "core/css/resolver/TransformBuilder.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/frame/UseCounter.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include "wtf/MathExtras.h"
 
 namespace blink {
+
+PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::create(ExecutionContext* executionContext, const String& s, ExceptionState& exceptionState)
+{
+    UseCounter::count(executionContext, UseCounter::WebKitCSSMatrix);
+    return adoptRefWillBeNoop(new CSSMatrix(s, exceptionState));
+}
 
 CSSMatrix::CSSMatrix(const TransformationMatrix& m)
     : m_matrix(m)

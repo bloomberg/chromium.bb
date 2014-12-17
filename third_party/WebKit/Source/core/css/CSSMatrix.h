@@ -34,6 +34,7 @@
 namespace blink {
 
 class ExceptionState;
+class ExecutionContext;
 
 class CSSMatrix final : public RefCountedWillBeGarbageCollected<CSSMatrix>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
@@ -42,10 +43,7 @@ public:
     {
         return adoptRefWillBeNoop(new CSSMatrix(m));
     }
-    static PassRefPtrWillBeRawPtr<CSSMatrix> create(const String& s, ExceptionState& exceptionState)
-    {
-        return adoptRefWillBeNoop(new CSSMatrix(s, exceptionState));
-    }
+    static PassRefPtrWillBeRawPtr<CSSMatrix> create(ExecutionContext*, const String&, ExceptionState&);
 
     double a() const { return m_matrix.a(); }
     double b() const { return m_matrix.b(); }
