@@ -578,6 +578,11 @@ void RenderLayer::mapPointToPaintBackingCoordinates(const RenderLayerModelObject
 {
     RenderLayer* paintInvalidationLayer = paintInvalidationContainer->layer();
     if (!paintInvalidationLayer->groupedMapping()) {
+        // FIXME: this is defensive code to avoid crashes such as those described in crbug.com/440887, most likely due to
+        // the new multi-column code special-casing when choosing paint invalidation containers. Remove once that is cleaned up.
+        if (!paintInvalidationLayer->compositedLayerMapping())
+            return;
+
         point.move(paintInvalidationLayer->compositedLayerMapping()->contentOffsetInCompositingLayer());
         return;
     }
