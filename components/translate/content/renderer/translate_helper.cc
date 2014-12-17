@@ -577,6 +577,9 @@ void TranslateHelper::CancelCldDataPolling() {
 
 void TranslateHelper::SendCldDataRequest(const int delay_millis,
                                          const int next_delay_millis) {
+  DCHECK_GE(delay_millis, 0);
+  DCHECK_GT(next_delay_millis, 0);
+
   // Terminate immediately if told to stop polling.
   if (cld_data_polling_canceled_) {
     DVLOG(1) << "Aborting CLD data request (polling canceled)";
@@ -586,6 +589,13 @@ void TranslateHelper::SendCldDataRequest(const int delay_millis,
   // Terminate immediately if data is already loaded.
   if (cld_data_provider_->IsCldDataAvailable()) {
     DVLOG(1) << "Aborting CLD data request (data available)";
+    return;
+  }
+
+  // Terminate immediately if the decayed delay is sufficiently large.
+  if (next_delay_millis > std::numeric_limits<int>::max() / 2) {
+    DVLOG(1) << "Aborting CLD data request (exceeded max number of requests)";
+    cld_data_polling_started_ = false;
     return;
   }
 
@@ -613,7 +623,7 @@ void TranslateHelper::SendCldDataRequest(const int delay_millis,
       base::Bind(&TranslateHelper::SendCldDataRequest,
                  weak_method_factory_.GetWeakPtr(),
                  next_delay_millis,
-                 next_delay_millis),
+                 next_delay_millis * 2),
       base::TimeDelta::FromMilliseconds(delay_millis));
 }
 
