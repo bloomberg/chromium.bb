@@ -257,7 +257,7 @@ if sys.platform == 'win32':
   def filter_processes_tree_win(processes):
     """Returns all the processes under the current process."""
     # Convert to dict.
-    processes = {p.ProcessId: p for p in processes}
+    processes = dict((p.ProcessId, p) for p in processes)
     root_pid = os.getpid()
     out = {root_pid: processes[root_pid]}
     while True:
@@ -898,7 +898,7 @@ def rmtree(root):
     tree_processes = filter_processes_tree_win(processes)
     dir_processes = filter_processes_dir_win(processes, root)
     # Convert to dict to remove duplicates.
-    processes = {p.ProcessId: p for p in tree_processes}
+    processes = dict((p.ProcessId, p) for p in tree_processes)
     processes.update((p.ProcessId, p) for p in dir_processes)
     processes.pop(os.getpid())
     return processes
