@@ -46,7 +46,7 @@ WebViewActionRequest.prototype.defaultAction = function() {
       return;
     }
     this.showWarningMessage();
-  });
+  }.bind(this));
 };
 
 // Called to handle the action request's event.
@@ -73,7 +73,7 @@ WebViewActionRequest.prototype.handleActionRequestEvent = function() {
 
 // Displays a warning message when an action request is blocked by default.
 WebViewActionRequest.prototype.showWarningMessage = function() {
-  window.console.warn(WARNING_MSG_REQUEST_BLOCKED);
+  window.console.warn(this.WARNING_MSG_REQUEST_BLOCKED);
 };
 
 // This function ensures that each action is taken at most once.
@@ -230,7 +230,7 @@ PermissionRequest.prototype.getInterfaceObject = function() {
 
 PermissionRequest.prototype.showWarningMessage = function() {
   window.console.warn(
-      WARNING_MSG_REQUEST_BLOCKED.replace('%1', this.event.permission));
+      this.WARNING_MSG_REQUEST_BLOCKED.replace('%1', this.event.permission));
 };
 
 // Checks that the requested permission is valid. Returns true if valid.
