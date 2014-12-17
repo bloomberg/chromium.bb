@@ -13,7 +13,7 @@ class WebContentDecryptionModuleResult;
 
 class BLINK_PLATFORM_EXPORT WebContentDecryptionModuleAccess {
 public:
-    virtual ~WebContentDecryptionModuleAccess() { }
+    virtual ~WebContentDecryptionModuleAccess();
     virtual void createContentDecryptionModule(WebContentDecryptionModuleResult) = 0;
 };
 

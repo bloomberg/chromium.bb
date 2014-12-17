@@ -5,14 +5,15 @@
 #ifndef WebEncryptedMediaClient_h
 #define WebEncryptedMediaClient_h
 
+#include "WebCommon.h"
+
 namespace blink {
 
 class WebEncryptedMediaRequest;
 
-class WebEncryptedMediaClient {
+class BLINK_PLATFORM_EXPORT WebEncryptedMediaClient {
 public:
-    virtual ~WebEncryptedMediaClient() { }
-
+    virtual ~WebEncryptedMediaClient();
     virtual void requestMediaKeySystemAccess(WebEncryptedMediaRequest) = 0;
 };
 

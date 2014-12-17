@@ -21,7 +21,7 @@ class WebEncryptedMediaRequest {
 public:
     WebEncryptedMediaRequest();
     explicit WebEncryptedMediaRequest(const WebEncryptedMediaRequest&);
-    ~WebEncryptedMediaRequest();
+    BLINK_EXPORT ~WebEncryptedMediaRequest();
 
     BLINK_EXPORT WebString keySystem() const;
     BLINK_EXPORT const WebVector<WebMediaKeySystemConfiguration>& supportedConfigurations() const;
