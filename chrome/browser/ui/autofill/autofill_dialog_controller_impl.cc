@@ -488,16 +488,15 @@ base::string16 GenerateRandomCardNumber() {
 gfx::Image CreditCardIconForType(const std::string& credit_card_type) {
   const int input_card_idr = CreditCard::IconResourceId(credit_card_type);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::Image result = rb.GetImageNamed(input_card_idr);
   if (input_card_idr == IDR_AUTOFILL_CC_GENERIC) {
     // When the credit card type is unknown, no image should be shown. However,
     // to simplify the view code on Mac, save space for the credit card image by
-    // returning a transparent image of the appropriate size. Not all credit
-    // card images are the same size, but none is larger than the Visa icon.
-    result = gfx::Image(gfx::ImageSkiaOperations::CreateTransparentImage(
-        rb.GetImageNamed(IDR_AUTOFILL_CC_VISA).AsImageSkia(), 0));
+    // returning a transparent image of the appropriate size. All credit card
+    // icons are the same size.
+    return gfx::Image(gfx::ImageSkiaOperations::CreateTransparentImage(
+        rb.GetImageNamed(IDR_AUTOFILL_CC_GENERIC).AsImageSkia(), 0));
   }
-  return result;
+  return rb.GetImageNamed(input_card_idr);
 }
 
 gfx::Image CvcIconForCreditCardType(const base::string16& credit_card_type) {

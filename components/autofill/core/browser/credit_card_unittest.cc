@@ -170,11 +170,11 @@ TEST(CreditCardTest, Compare) {
 TEST(CreditCardTest, IconResourceId) {
   EXPECT_EQ(IDR_AUTOFILL_CC_AMEX,
             CreditCard::IconResourceId(kAmericanExpressCard));
-  EXPECT_EQ(IDR_AUTOFILL_CC_DINERS,
+  EXPECT_EQ(IDR_AUTOFILL_CC_GENERIC,
             CreditCard::IconResourceId(kDinersCard));
   EXPECT_EQ(IDR_AUTOFILL_CC_DISCOVER,
             CreditCard::IconResourceId(kDiscoverCard));
-  EXPECT_EQ(IDR_AUTOFILL_CC_JCB,
+  EXPECT_EQ(IDR_AUTOFILL_CC_GENERIC,
             CreditCard::IconResourceId(kJCBCard));
   EXPECT_EQ(IDR_AUTOFILL_CC_MASTERCARD,
             CreditCard::IconResourceId(kMasterCard));

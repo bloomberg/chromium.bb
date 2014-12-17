@@ -54,10 +54,10 @@ struct DataResource {
 
 const DataResource kDataResources[] = {
   { "americanExpressCC", IDR_AUTOFILL_CC_AMEX },
-  { "dinersCC", IDR_AUTOFILL_CC_DINERS },
+  { "dinersCC", IDR_AUTOFILL_CC_GENERIC },
   { "discoverCC", IDR_AUTOFILL_CC_DISCOVER },
   { "genericCC", IDR_AUTOFILL_CC_GENERIC },
-  { "jcbCC", IDR_AUTOFILL_CC_JCB },
+  { "jcbCC", IDR_AUTOFILL_CC_GENERIC },
   { "masterCardCC", IDR_AUTOFILL_CC_MASTERCARD },
   { "visaCC", IDR_AUTOFILL_CC_VISA },
   { "scanCreditCardIcon", IDR_AUTOFILL_CC_SCAN_NEW },

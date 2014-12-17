@@ -3195,10 +3195,8 @@ TEST_F(AutofillDialogControllerTest, IconReservedForCreditCardField) {
   // supported credit card issuers.
   const int kSupportedCardIdrs[] = {
     IDR_AUTOFILL_CC_AMEX,
-    IDR_AUTOFILL_CC_DINERS,
     IDR_AUTOFILL_CC_DISCOVER,
     IDR_AUTOFILL_CC_GENERIC,
-    IDR_AUTOFILL_CC_JCB,
     IDR_AUTOFILL_CC_MASTERCARD,
     IDR_AUTOFILL_CC_VISA,
   };

@@ -190,15 +190,15 @@ int CreditCard::IconResourceId(const std::string& type) {
   if (type == kAmericanExpressCard)
     return IDR_AUTOFILL_CC_AMEX;
   if (type == kDinersCard)
-    return IDR_AUTOFILL_CC_DINERS;
+    return IDR_AUTOFILL_CC_GENERIC;
   if (type == kDiscoverCard)
     return IDR_AUTOFILL_CC_DISCOVER;
   if (type == kJCBCard)
-    return IDR_AUTOFILL_CC_JCB;
+    return IDR_AUTOFILL_CC_GENERIC;
   if (type == kMasterCard)
     return IDR_AUTOFILL_CC_MASTERCARD;
   if (type == kUnionPay)
-    return IDR_AUTOFILL_CC_GENERIC;  // Needs resource: http://crbug.com/259211
+    return IDR_AUTOFILL_CC_GENERIC;
   if (type == kVisaCard)
     return IDR_AUTOFILL_CC_VISA;
 
