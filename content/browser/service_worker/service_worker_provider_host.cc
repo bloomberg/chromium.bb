@@ -333,7 +333,6 @@ ServiceWorkerObjectInfo ServiceWorkerProviderHost::CreateHandleAndPass(
         ServiceWorkerHandle::Create(context_,
                                     dispatcher_host_,
                                     kDocumentMainThreadId,
-                                    provider_id_,
                                     version);
     info = handle->GetObjectInfo();
     dispatcher_host_->RegisterServiceWorkerHandle(handle.Pass());

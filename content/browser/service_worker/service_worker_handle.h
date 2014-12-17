@@ -40,13 +40,11 @@ class CONTENT_EXPORT ServiceWorkerHandle
       base::WeakPtr<ServiceWorkerContextCore> context,
       IPC::Sender* sender,
       int thread_id,
-      int provider_id,
       ServiceWorkerVersion* version);
 
   ServiceWorkerHandle(base::WeakPtr<ServiceWorkerContextCore> context,
                       IPC::Sender* sender,
                       int thread_id,
-                      int provider_id,
                       ServiceWorkerRegistration* registration,
                       ServiceWorkerVersion* version);
   ~ServiceWorkerHandle() override;
@@ -57,7 +55,6 @@ class CONTENT_EXPORT ServiceWorkerHandle
   ServiceWorkerObjectInfo GetObjectInfo();
 
   int thread_id() const { return thread_id_; }
-  int provider_id() const { return provider_id_; }
   int handle_id() const { return handle_id_; }
   ServiceWorkerRegistration* registration() { return registration_.get(); }
   ServiceWorkerVersion* version() { return version_.get(); }
@@ -70,7 +67,6 @@ class CONTENT_EXPORT ServiceWorkerHandle
   base::WeakPtr<ServiceWorkerContextCore> context_;
   IPC::Sender* sender_;  // Not owned, it should always outlive this.
   const int thread_id_;
-  const int provider_id_;
   const int handle_id_;
   int ref_count_;  // Created with 1.
   scoped_refptr<ServiceWorkerRegistration> registration_;
