@@ -15,6 +15,7 @@
 namespace ui {
 
 class EventFactoryEvdev;
+class KeyboardEvdev;
 class MouseButtonMapEvdev;
 
 #if defined(USE_EVDEV_GESTURES)
@@ -25,6 +26,7 @@ class GesturePropertyProvider;
 class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
  public:
   InputControllerEvdev(EventFactoryEvdev* event_factory,
+                       KeyboardEvdev* keyboard,
                        MouseButtonMapEvdev* button_map
 #if defined(USE_EVDEV_GESTURES)
                        ,
@@ -63,14 +65,17 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
                                  bool value);
 
   // Event factory object which manages device event converters.
-  EventFactoryEvdev* event_factory_;  // Not owned.
+  EventFactoryEvdev* event_factory_;
+
+  // Keyboard state.
+  KeyboardEvdev* keyboard_;
 
   // Mouse button map.
-  MouseButtonMapEvdev* button_map_;  // Not owned.
+  MouseButtonMapEvdev* button_map_;
 
 #if defined(USE_EVDEV_GESTURES)
   // Gesture library property provider.
-  GesturePropertyProvider* gesture_property_provider_;  // Not owned.
+  GesturePropertyProvider* gesture_property_provider_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(InputControllerEvdev);

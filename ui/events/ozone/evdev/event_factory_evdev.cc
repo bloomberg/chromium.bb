@@ -180,6 +180,7 @@ EventFactoryEvdev::EventFactoryEvdev(CursorDelegateEvdev* cursor,
       gesture_property_provider_(new GesturePropertyProvider),
 #endif
       input_controller_(this,
+                        &keyboard_,
                         &button_map_
 #if defined(USE_EVDEV_GESTURES)
                         ,

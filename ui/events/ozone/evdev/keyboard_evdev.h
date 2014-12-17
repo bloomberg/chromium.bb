@@ -39,6 +39,13 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
   // Handlers for raw key presses & releases.
   void OnKeyChange(unsigned int code, bool down);
 
+  // Configuration for key repeat.
+  bool IsAutoRepeatEnabled();
+  void SetAutoRepeatEnabled(bool enabled);
+  void SetAutoRepeatRate(const base::TimeDelta& delay,
+                         const base::TimeDelta& interval);
+  void GetAutoRepeatRate(base::TimeDelta* delay, base::TimeDelta* interval);
+
  private:
   void UpdateModifier(unsigned int key, bool down);
   void UpdateKeyRepeat(unsigned int key, bool down);

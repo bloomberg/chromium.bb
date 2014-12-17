@@ -46,6 +46,7 @@ void SetGestureBoolProperty(GesturePropertyProvider* provider,
 
 InputControllerEvdev::InputControllerEvdev(
     EventFactoryEvdev* event_factory,
+    KeyboardEvdev* keyboard,
     MouseButtonMapEvdev* button_map
 #if defined(USE_EVDEV_GESTURES)
     ,
@@ -53,6 +54,7 @@ InputControllerEvdev::InputControllerEvdev(
 #endif
     )
     : event_factory_(event_factory),
+      keyboard_(keyboard),
       button_map_(button_map)
 #if defined(USE_EVDEV_GESTURES)
       ,
@@ -85,21 +87,21 @@ void InputControllerEvdev::SetNumLockEnabled(bool enabled) {
 }
 
 bool InputControllerEvdev::IsAutoRepeatEnabled() {
-  return true;
+  return keyboard_->IsAutoRepeatEnabled();
 }
 
 void InputControllerEvdev::SetAutoRepeatEnabled(bool enabled) {
-  NOTIMPLEMENTED();
+  keyboard_->SetAutoRepeatEnabled(enabled);
 }
 
 void InputControllerEvdev::SetAutoRepeatRate(const base::TimeDelta& delay,
                                              const base::TimeDelta& interval) {
-  NOTIMPLEMENTED();
+  keyboard_->SetAutoRepeatRate(delay, interval);
 }
 
 void InputControllerEvdev::GetAutoRepeatRate(base::TimeDelta* delay,
                                              base::TimeDelta* interval) {
-  NOTIMPLEMENTED();
+  keyboard_->GetAutoRepeatRate(delay, interval);
 }
 
 void InputControllerEvdev::SetIntPropertyForOneType(const EventDeviceType type,

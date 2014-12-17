@@ -85,6 +85,26 @@ void KeyboardEvdev::OnKeyChange(unsigned int key, bool down) {
   DispatchKey(key, down, false /* repeat */);
 }
 
+bool KeyboardEvdev::IsAutoRepeatEnabled() {
+  return repeat_enabled_;
+}
+
+void KeyboardEvdev::SetAutoRepeatEnabled(bool enabled) {
+  repeat_enabled_ = enabled;
+}
+
+void KeyboardEvdev::SetAutoRepeatRate(const base::TimeDelta& delay,
+                                      const base::TimeDelta& interval) {
+  repeat_delay_ = delay;
+  repeat_interval_ = interval;
+}
+
+void KeyboardEvdev::GetAutoRepeatRate(base::TimeDelta* delay,
+                                      base::TimeDelta* interval) {
+  *delay = repeat_delay_;
+  *interval = repeat_interval_;
+}
+
 void KeyboardEvdev::UpdateModifier(unsigned int key, bool down) {
   int modifier = ModifierFromEvdevKey(key);
   int locking = IsModifierLockKeyFromEvdevKey(key);
