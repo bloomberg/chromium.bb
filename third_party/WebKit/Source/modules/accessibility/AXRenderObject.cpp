@@ -587,9 +587,11 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
     // NOTE: BRs always have text boxes now, so the text box check here can be removed
     if (m_renderer->isText()) {
         // static text beneath MenuItems and MenuButtons are just reported along with the menu item, so it's ignored on an individual level
-        AXObject* parent = parentObjectUnignored();
-        if (parent && (parent->ariaRoleAttribute() == MenuItemRole || parent->ariaRoleAttribute() == MenuButtonRole))
-            return true;
+        if (AXObject* parent = parentObjectUnignored()) {
+            AccessibilityRole role = parent->ariaRoleAttribute();
+            if (role == MenuItemRole || role == MenuItemRadioRole || role == MenuItemCheckBoxRole || role == MenuButtonRole)
+                return true;
+        }
         RenderText* renderText = toRenderText(m_renderer);
         if (m_renderer->isBR() || !renderText->firstTextBox())
             return true;

@@ -1,0 +1,30 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+</head>
+<body id="body">
+
+<div role="menubar" id="menu1">
+<div role="menuitemcheckbox" tabindex="0">menu item checkbox</div>
+<div role="menuitemradio" tabindex="0">menu item radio</div>
+</div>
+
+<p id="description"></p>
+<div id="console"></div>
+
+<script>
+
+    if (window.accessibilityController) {
+        var menu = accessibilityController.accessibleElementById("menu1");
+        shouldBeTrue("!menu.childAtIndex(0).childAtIndex(0)");
+        shouldBeTrue("!menu.childAtIndex(1).childAtIndex(0)");
+        // Static text should be reported along with menu item
+        debug(menu.childAtIndex(0).title);
+        debug(menu.childAtIndex(1).title);
+    }
+
+</script>
+
+</body>
+</html>
