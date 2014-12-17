@@ -463,8 +463,17 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                                                   expected_result);
 }
 
+#if defined(OS_WIN)
+// Timing out on Winodws 7 bot: http://crbug.com/443294
+#define MAYBE_TwoGetUserMediaWithFirst1080pSecondVga\
+    DISABLED_TwoGetUserMediaWithFirst1080pSecondVga
+#else
+#define MAYBE_TwoGetUserMediaWithFirst1080pSecondVga\
+    TwoGetUserMediaWithFirst1080pSecondVga
+#endif
+
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       TwoGetUserMediaWithFirst1080pSecondVga) {
+                       MAYBE_TwoGetUserMediaWithFirst1080pSecondVga) {
   std::string constraints1 =
       "{video: {mandatory: {maxWidth:1920 , minWidth:1920 , maxHeight: 1080,\
       minHeight: 1080}}}";
