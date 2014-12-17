@@ -32,6 +32,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "ipc/ipc_message.h"
+#include "ipc/ipc_message_start.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -189,6 +190,10 @@ class SearchIPCRouterTest : public BrowserWithTestWindowTest {
         chrome::IsRenderedInInstantProcess(web_contents(), profile());
     bool handled = GetSearchIPCRouter().OnMessageReceived(message);
     ASSERT_EQ(should_handle_message, handled);
+  }
+
+  bool OnSpuriousMessageReceived(const IPC::Message& message) {
+    return GetSearchIPCRouter().OnMessageReceived(message);
   }
 
   bool IsActiveTab(content::WebContents* contents) {
@@ -885,4 +890,19 @@ TEST_F(SearchIPCRouterTest, DoNotSendToggleVoiceSearch) {
   process()->sink().ClearMessages();
   GetSearchIPCRouter().ToggleVoiceSearch();
   EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxToggleVoiceSearch::ID));
+}
+
+TEST_F(SearchIPCRouterTest, SpuriousMessageTypesIgnored) {
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
+  SetupMockDelegateAndPolicy();
+  const int routing_id = web_contents()->GetRoutingID();
+
+  // Construct a series of synthetic messages for each valid IPC message type,
+  // ensuring the router ignores them all.
+  for (int i = 0; i < LastIPCMsgStart; ++i) {
+    const int message_id = i << 16;
+    ASSERT_EQ(IPC_MESSAGE_ID_CLASS(message_id), i);
+    IPC::Message msg(routing_id, message_id, IPC::Message::PRIORITY_LOW);
+    EXPECT_FALSE(OnSpuriousMessageReceived(msg)) << i;
+  }
 }

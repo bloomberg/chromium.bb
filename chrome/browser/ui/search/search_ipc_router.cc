@@ -160,6 +160,9 @@ void SearchIPCRouter::OnTabDeactivated() {
 }
 
 bool SearchIPCRouter::OnMessageReceived(const IPC::Message& message) {
+  if (IPC_MESSAGE_CLASS(message) != ChromeMsgStart)
+    return false;
+
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   if (!chrome::IsRenderedInInstantProcess(web_contents(), profile))
