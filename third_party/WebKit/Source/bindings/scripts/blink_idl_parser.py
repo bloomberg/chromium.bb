@@ -281,6 +281,12 @@ class BlinkIDLParser(IDLParser):
             items = ListFromConcat(p[2], p[3])
             p[0] = self.BuildProduction('ExtAttributes', p, 1, items)
 
+    # Error handling for ExtendedAttributeList.
+    # We can't upstream this because we override ExtendedAttributeList.
+    def p_ExtendedAttributeListError(self, p):
+        """ExtendedAttributeList : '[' ExtendedAttribute ',' error"""
+        p[0] = self.BuildError(p, "ExtendedAttributeList")
+
     # [b50] Allow optional trailing comma
     # Blink-only, marked as WONTFIX in Web IDL spec:
     # https://www.w3.org/Bugs/Public/show_bug.cgi?id=22156
