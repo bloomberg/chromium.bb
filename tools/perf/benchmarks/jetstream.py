@@ -83,9 +83,9 @@ class Jetstream(benchmark.Benchmark):
   def CreatePageSet(self, options):
     ps = page_set.PageSet(
         archive_data_file='../page_sets/data/jetstream.json',
-        make_javascript_deterministic=False,
         file_path=os.path.abspath(__file__),
         bucket=page_set.INTERNAL_BUCKET)
     ps.AddUserStory(page_module.Page(
-        'http://browserbench.org/JetStream/', ps, ps.base_dir))
+        'http://browserbench.org/JetStream/', ps, ps.base_dir,
+        make_javascript_deterministic=False))
     return ps

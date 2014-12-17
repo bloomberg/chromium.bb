@@ -15,16 +15,18 @@ class ServiceWorkerPageSet(page_set.PageSet):
   def __init__(self):
     super(ServiceWorkerPageSet, self).__init__(
         archive_data_file=archive_data_file_path,
-        make_javascript_deterministic=False,
         bucket=page_set.PARTNER_BUCKET)
 
     # Why: the first application using ServiceWorker
     # 1st time: registration
     self.AddUserStory(page.Page(
-        'https://jakearchibald.github.io/trained-to-thrill/', self))
+        'https://jakearchibald.github.io/trained-to-thrill/', self,
+        make_javascript_deterministic=False))
     # 2st time: 1st onfetch with caching
     self.AddUserStory(page.Page(
-        'https://jakearchibald.github.io/trained-to-thrill/', self))
+        'https://jakearchibald.github.io/trained-to-thrill/', self,
+        make_javascript_deterministic=False))
     # 3rd time: 2nd onfetch from cache
     self.AddUserStory(page.Page(
-        'https://jakearchibald.github.io/trained-to-thrill/', self))
+        'https://jakearchibald.github.io/trained-to-thrill/', self,
+        make_javascript_deterministic=False))

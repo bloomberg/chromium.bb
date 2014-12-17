@@ -51,12 +51,12 @@ class RobohornetPro(benchmark.Benchmark):
 
   def CreatePageSet(self, options):
     ps = page_set.PageSet(
-      archive_data_file='../page_sets/data/robohornet_pro.json',
-      # Measurement require use of real Date.now() for measurement.
-      make_javascript_deterministic=False,
-      file_path=os.path.abspath(__file__),
-      bucket=page_set.PARTNER_BUCKET)
+        archive_data_file='../page_sets/data/robohornet_pro.json',
+        file_path=os.path.abspath(__file__),
+        bucket=page_set.PARTNER_BUCKET)
     ps.AddUserStory(page_module.Page(
         'http://ie.microsoft.com/testdrive/performance/robohornetpro/',
-        ps, ps.base_dir))
+        ps, ps.base_dir,
+        # Measurement require use of real Date.now() for measurement.
+        make_javascript_deterministic=False))
     return ps

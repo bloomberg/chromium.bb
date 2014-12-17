@@ -105,11 +105,11 @@ class _DromaeoBenchmark(benchmark.Benchmark):
       raise NotImplementedError('query_param or tag not in Dromaeo benchmark.')
     archive_data_file = '../page_sets/data/dromaeo.%s.json' % self.tag
     ps = page_set.PageSet(
-        make_javascript_deterministic=False,
         archive_data_file=archive_data_file,
         file_path=os.path.abspath(__file__), bucket=page_set.PUBLIC_BUCKET)
     url = 'http://dromaeo.com?%s' % self.query_param
-    ps.AddUserStory(page_module.Page(url, ps, ps.base_dir))
+    ps.AddUserStory(page_module.Page(
+        url, ps, ps.base_dir, make_javascript_deterministic=False))
     return ps
 
 

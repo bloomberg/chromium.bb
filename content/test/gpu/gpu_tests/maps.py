@@ -74,10 +74,11 @@ class _MapsValidator(cloud_storage_test_base.ValidatorBase):
 class MapsPage(page.Page):
   def __init__(self, page_set, base_dir):
     super(MapsPage, self).__init__(
-      url='http://localhost:10020/tracker.html',
-      page_set=page_set,
-      base_dir=base_dir,
-      name='Maps.maps_002')
+        url='http://localhost:10020/tracker.html',
+        page_set=page_set,
+        base_dir=base_dir,
+        name='Maps.maps_002',
+        make_javascript_deterministic=False)
     self.pixel_expectations = 'data/maps_002_expectations.json'
 
   def RunNavigateSteps(self, action_runner):
@@ -97,7 +98,6 @@ class Maps(cloud_storage_test_base.TestBase):
     page_set_path = os.path.join(
         util.GetChromiumSrcDir(), 'content', 'test', 'gpu', 'page_sets')
     ps = page_set.PageSet(archive_data_file='data/maps.json',
-                          make_javascript_deterministic=False,
                           file_path=page_set_path,
                           bucket=page_set.PUBLIC_BUCKET)
     ps.AddUserStory(MapsPage(ps, ps.base_dir))

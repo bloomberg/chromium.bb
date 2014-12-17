@@ -31,9 +31,10 @@ class _MapsMeasurement(page_test.PageTest):
 class MapsPage(page_module.Page):
   def __init__(self, page_set, base_dir):
     super(MapsPage, self).__init__(
-      url='http://localhost:10020/tracker.html',
-      page_set=page_set,
-      base_dir=base_dir)
+        url='http://localhost:10020/tracker.html',
+        page_set=page_set,
+        base_dir=base_dir,
+        make_javascript_deterministic=False)
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
@@ -49,9 +50,8 @@ class MapsBenchmark(benchmark.Benchmark):
     page_set_path = os.path.join(
         util.GetChromiumSrcDir(), 'tools', 'perf', 'page_sets')
     ps = page_set_module.PageSet(
-      archive_data_file='data/maps.json',
-      make_javascript_deterministic=False,
-      file_path=page_set_path)
+        archive_data_file='data/maps.json',
+        file_path=page_set_path)
     ps.AddUserStory(MapsPage(ps, ps.base_dir))
     return ps
 

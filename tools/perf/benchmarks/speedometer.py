@@ -80,8 +80,8 @@ class Speedometer(benchmark.Benchmark):
     ps = page_set.PageSet(
         file_path=os.path.abspath(__file__),
         archive_data_file='../page_sets/data/speedometer.json',
-        make_javascript_deterministic=False,
         bucket=page_set.PUBLIC_BUCKET)
     ps.AddUserStory(page_module.Page(
-        'http://browserbench.org/Speedometer/', ps, ps.base_dir))
+        'http://browserbench.org/Speedometer/', ps, ps.base_dir,
+        make_javascript_deterministic=False))
     return ps
