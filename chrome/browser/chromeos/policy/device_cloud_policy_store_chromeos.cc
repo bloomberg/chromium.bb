@@ -74,9 +74,7 @@ void DeviceCloudPolicyStoreChromeOS::InstallInitialPolicy(
   // Cancel all pending requests.
   weak_factory_.InvalidateWeakPtrs();
 
-  if (!install_attributes_->IsEnterpriseDevice() &&
-      device_settings_service_->status() !=
-          chromeos::DeviceSettingsService::STORE_NO_POLICY) {
+  if (!install_attributes_->IsEnterpriseDevice()) {
     status_ = STATUS_BAD_STATE;
     NotifyStoreError();
     return;
