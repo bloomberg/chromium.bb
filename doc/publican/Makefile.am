@@ -74,7 +74,7 @@ $(html_destdir)/images/%: $(srcdir)/sources/images/% | $(html_destdir)/images
 
 pubdir = $(docdir)/Wayland/en-US
 
-publican_targets = $(publican_sources:$(srcdir)/sources%=$(builddir)/en-US/%) \
+publican_targets = $(publican_sources:$(srcdir)/sources/%=$(builddir)/en-US/%) \
 	$(builddir)/en-US/ProtocolSpec.xml \
 	$(builddir)/en-US/ProtocolInterfaces.xml \
 	$(builddir)/en-US/ClientAPI.xml \
