@@ -100,6 +100,7 @@ ResourceType WebURLRequestToResourceType(const WebURLRequest& request) {
     // Object
     case WebURLRequest::RequestContextEmbed:
     case WebURLRequest::RequestContextObject:
+    case WebURLRequest::RequestContextPlugin:
       return RESOURCE_TYPE_OBJECT;
 
     // Ping
@@ -126,7 +127,6 @@ ResourceType WebURLRequestToResourceType(const WebURLRequest& request) {
     case WebURLRequest::RequestContextDownload:
     case WebURLRequest::RequestContextManifest:
     case WebURLRequest::RequestContextSubresource:
-    case WebURLRequest::RequestContextPlugin:
       return RESOURCE_TYPE_SUB_RESOURCE;
 
     // TextTrack
