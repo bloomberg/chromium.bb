@@ -20,9 +20,10 @@
 </style>
 <body>
     <!-- The output should be checkerboards all 20x20 with sharp 2x2 blocks and no blurring. -->
+    <!-- FIXME: this test is a little too small to visually inspect for blurring. Should we make the test larger and more accessible? -->
     <canvas width="10" height="10"></canvas>
-    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB94HEAM4DvS4c9UAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAIUlEQVQY02P4////fwYGhv+EaAZiFP3///8/w6iJVDERACxc+Qdc4qF6AAAAAElFTkSuQmCC">
-    <svg><image width="10" height="10" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB94HEAM4DvS4c9UAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAIUlEQVQY02P4////fwYGhv+EaAZiFP3///8/w6iJVDERACxc+Qdc4qF6AAAAAElFTkSuQmCC"/></svg>
+    <img src="resources/pixelated-hdpi.png">
+    <svg><image width="10" height="10" xlink:href="resources/pixelated-hdpi.png"/></svg>
 </body>
 <script>
     function drawImageToCanvas() {
