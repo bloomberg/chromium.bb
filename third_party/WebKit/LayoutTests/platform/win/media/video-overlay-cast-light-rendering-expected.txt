@@ -36,5 +36,3 @@ layer at (8,608) size 320x262 backgroundClip at (0,0) size 785x600 clip at (0,0)
     RenderBlock {DIV} at (0,227) size 320x35
 layer at (8,608) size 320x227 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
   RenderFlexibleBox {DIV} at (0,0) size 320x227
-layer at (24,619) size 30x30 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 0x0
-  RenderButton {INPUT} at (16,11.34) size 30x30
