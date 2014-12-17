@@ -10,7 +10,8 @@ import re
 import tempfile
 
 from telemetry import benchmark
-from telemetry.core import bitmap
+from telemetry.image_processing import image_util
+from telemetry.image_processing import rgba_color
 from telemetry.page import page_test
 from telemetry.util import cloud_storage
 
@@ -28,13 +29,14 @@ def _CompareScreenshotSamples(screenshot, expectations, device_pixel_ratio):
     x = int(location[0] * device_pixel_ratio)
     y = int(location[1] * device_pixel_ratio)
 
-    if x < 0 or y < 0 or x > screenshot.width or y > screenshot.height:
+    if (x < 0 or y < 0 or x > image_util.Width(screenshot) or
+        y > image_util.Height(screenshot)):
       raise page_test.Failure(
           'Expected pixel location [%d, %d] is out of range on [%d, %d] image' %
-          (x, y, screenshot.width, screenshot.height))
+          (x, y, image_util.Width(screenshot), image_util.Height(screenshot)))
 
-    actual_color = screenshot.GetPixelColor(x, y)
-    expected_color = bitmap.RgbaColor(
+    actual_color = image_util.GetPixelColor(screenshot, x, y)
+    expected_color = rgba_color.RgbaColor(
         expectation["color"][0],
         expectation["color"][1],
         expectation["color"][2])
@@ -72,7 +74,7 @@ class ValidatorBase(page_test.PageTest):
     output_dir = os.path.dirname(image_path)
     if not os.path.exists(output_dir):
       os.makedirs(output_dir)
-    png_image.WritePngFile(image_path)
+    image_util.WritePngFile(png_image, image_path)
 
   def _WriteErrorImages(self, img_dir, img_name, screenshot, ref_png):
     full_image_name = img_name + '_' + str(self.options.build_revision)
@@ -82,14 +84,14 @@ class ValidatorBase(page_test.PageTest):
     self._WriteImage(
         os.path.join(img_dir, 'FAIL_' + full_image_name), screenshot)
 
-    if ref_png:
+    if ref_png is not None:
       # Save the reference image.
       # This ensures that we get the right revision number.
       self._WriteImage(
           os.path.join(img_dir, full_image_name), ref_png)
 
       # Save the difference image.
-      diff_png = screenshot.Diff(ref_png)
+      diff_png = image_util.Diff(screenshot, ref_png)
       self._WriteImage(
           os.path.join(img_dir, 'DIFF_' + full_image_name), diff_png)
 
@@ -142,7 +144,7 @@ class ValidatorBase(page_test.PageTest):
     # avoiding PermissionErrors seems to be to not actually try to write to
     # the temporary file object, but to re-open its name for all operations.
     temp_file = tempfile.NamedTemporaryFile().name
-    bitmap.WritePngFile(temp_file)
+    image_util.WritePngFile(bitmap, temp_file)
     cloud_storage.Insert(bucket, name, temp_file, publicly_readable=public)
 
   def _ConditionallyUploadToCloudStorage(self, img_name, page, tab, screenshot):
@@ -171,7 +173,7 @@ class ValidatorBase(page_test.PageTest):
     cloud_storage.Get(self.options.refimg_cloud_storage_bucket,
                       self._FormatReferenceImageName(img_name, page, tab),
                       temp_file)
-    return bitmap.Bitmap.FromPngFile(temp_file)
+    return image_util.FromPngFile(temp_file)
 
   def _UploadErrorImagesToCloudStorage(self, image_name, screenshot, ref_img):
     """For a failing run, uploads the failing image, reference image (if
@@ -186,10 +188,10 @@ class ValidatorBase(page_test.PageTest):
     self._UploadBitmapToCloudStorage(
       base_bucket + '/gen', image_name_with_revision, screenshot,
       public=True)
-    if ref_img:
+    if ref_img is not None:
       self._UploadBitmapToCloudStorage(
         base_bucket + '/ref', image_name_with_revision, ref_img, public=True)
-      diff_img = screenshot.Diff(ref_img)
+      diff_img = image_util.Diff(screenshot, ref_img)
       self._UploadBitmapToCloudStorage(
         base_bucket + '/diff', image_name_with_revision, diff_img,
         public=True)

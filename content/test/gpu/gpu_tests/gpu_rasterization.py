@@ -6,6 +6,8 @@ import cloud_storage_test_base
 import optparse
 import page_sets
 
+from telemetry.image_processing import image_util
+
 
 test_harness_script = r"""
   var domAutomationController = {};
@@ -45,15 +47,14 @@ class _GpuRasterizationValidator(cloud_storage_test_base.ValidatorBase):
       raise page_test.Failure('Browser does not support screenshot capture')
 
     screenshot = tab.Screenshot()
-    if not screenshot:
+    if screenshot is None:
       raise page_test.Failure('Could not capture screenshot')
 
     device_pixel_ratio = tab.EvaluateJavaScript('window.devicePixelRatio')
     if hasattr(page, 'test_rect'):
       test_rect = [int(x * device_pixel_ratio) for x in page.test_rect]
-      screenshot = screenshot.Crop(
-          test_rect[0], test_rect[1],
-          test_rect[2], test_rect[3])
+      screenshot = image_util.Crop(screenshot, test_rect[0], test_rect[1],
+                                   test_rect[2], test_rect[3])
 
     self._ValidateScreenshotSamples(
         page.display_name,
