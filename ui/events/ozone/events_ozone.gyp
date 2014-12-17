@@ -153,6 +153,11 @@
         'defines': [
           'USE_XKBCOMMON',
         ],
+        'direct_dependent_settings': {
+          'defines': [
+            'USE_XKBCOMMON',
+          ],
+        },
         'sources': [
           'layout/xkb/xkb.h',
           'layout/xkb/xkb_evdev_codes.cc',

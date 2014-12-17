@@ -50,12 +50,6 @@ component("events_ozone") {
   if (use_ozone_evdev && use_udev) {
     deps += [ "//device/udev_linux" ]
   }
-
-  if (use_xkbcommon) {
-    configs += [ ":xkbcommon" ]
-
-    defines += [ "USE_XKBCOMMON" ]
-  }
 }
 
 config("evdev") {
@@ -99,6 +93,7 @@ component("events_ozone_evdev") {
     ":events_ozone",
     ":events_ozone_layout",
     "//base",
+    "//ui/events:dom4_keycode_converter",
     "//ui/events/devices",
     "//ui/events/platform",
     "//ui/gfx",
@@ -129,6 +124,12 @@ component("events_ozone_evdev") {
   }
 }
 
+config("events_ozone_layout_config") {
+  if (use_xkbcommon) {
+    defines = [ "USE_XKBCOMMON" ]
+  }
+}
+
 component("events_ozone_layout") {
   sources = [
     "layout/events_ozone_layout_export.h",
@@ -151,7 +152,11 @@ component("events_ozone_layout") {
     "//ui/events:events_base",
   ]
 
+  public_configs = [ ":events_ozone_layout_config" ]
+
   if (use_xkbcommon) {
+    configs += [ ":xkbcommon" ]
+
     sources += [
       "layout/xkb/xkb.h",
       "layout/xkb/xkb_evdev_codes.cc",
