@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.preferences.autofill;
 
 import android.app.Activity;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
@@ -30,6 +32,8 @@ public class AutofillPreferences extends PreferenceFragment
     public static final String SETTINGS_ORIGIN = "Chrome settings";
     private static final int SUMMARY_CHAR_LENGTH = 40;
     private static final String PREF_AUTOFILL_SWITCH = "autofill_switch";
+    private static final String PREF_AUTOFILL_PROFILES = "autofill_profiles";
+    private static final String PREF_AUTOFILL_CREDIT_CARDS = "autofill_credit_cards";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -51,12 +55,27 @@ public class AutofillPreferences extends PreferenceFragment
             }
         });
 
+        setPreferenceCategoryIcons();
     }
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         rebuildLists();
         return true;
+    }
+
+    private void setPreferenceCategoryIcons() {
+        Drawable plusIcon = getResources().getDrawable(R.drawable.plus);
+        plusIcon.mutate();
+        plusIcon.setColorFilter(getResources().getColor(R.color.pref_accent_color),
+                PorterDuff.Mode.SRC_IN);
+        findPreference(PREF_AUTOFILL_PROFILES).setIcon(plusIcon);
+
+        plusIcon = getResources().getDrawable(R.drawable.plus);
+        plusIcon.mutate();
+        plusIcon.setColorFilter(getResources().getColor(R.color.pref_accent_color),
+                PorterDuff.Mode.SRC_IN);
+        findPreference(PREF_AUTOFILL_CREDIT_CARDS).setIcon(plusIcon);
     }
 
     /**
@@ -70,7 +89,7 @@ public class AutofillPreferences extends PreferenceFragment
     // Always clears the list before building/rebuilding.
     private void rebuildProfileList() {
         // Add an edit preference for each current Chrome profile.
-        PreferenceGroup profileCategory = (PreferenceGroup) findPreference("autofill_profiles");
+        PreferenceGroup profileCategory = (PreferenceGroup) findPreference(PREF_AUTOFILL_PROFILES);
         profileCategory.removeAll();
         for (AutofillProfile profile : PersonalDataManager.getInstance().getProfiles()) {
             // Add an item on the current page...
@@ -93,7 +112,8 @@ public class AutofillPreferences extends PreferenceFragment
     }
 
     private void rebuildCreditCardList() {
-        PreferenceGroup profileCategory = (PreferenceGroup) findPreference("autofill_credit_cards");
+        PreferenceGroup profileCategory =
+                (PreferenceGroup) findPreference(PREF_AUTOFILL_CREDIT_CARDS);
         profileCategory.removeAll();
         for (CreditCard card : PersonalDataManager.getInstance().getCreditCards()) {
             // Add an item on the current page...

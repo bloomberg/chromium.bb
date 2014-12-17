@@ -52,7 +52,7 @@ public class AutofillProfileEditor extends Fragment implements TextWatcher,
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getActivity().setTitle(R.string.autofill_create_profile);
+
         View v = inflater.inflate(R.layout.autofill_profile_editor, container, false);
 
         mPhoneText = (EditText) v.findViewById(R.id.autofill_profile_editor_phone_number_edit);
@@ -66,6 +66,9 @@ public class AutofillProfileEditor extends Fragment implements TextWatcher,
         }
         if (mGUID == null) {
             mGUID = "";
+            getActivity().setTitle(R.string.autofill_create_profile);
+        } else {
+            getActivity().setTitle(R.string.autofill_edit_profile);
         }
 
         addProfileDataToEditFields(v);

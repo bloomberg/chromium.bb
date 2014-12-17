@@ -23,6 +23,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 /**
@@ -51,7 +52,6 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getActivity().setTitle(R.string.autofill_create_credit_card);
 
         View v = inflater.inflate(R.layout.autofill_credit_card_editor, container, false);
         mNameText = (EditText) v.findViewById(
@@ -75,6 +75,9 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
         }
         if (mGUID == null) {
             mGUID = "";
+            getActivity().setTitle(R.string.autofill_create_credit_card);
+        } else {
+            getActivity().setTitle(R.string.autofill_edit_credit_card);
         }
 
         addSpinnerAdapters();
@@ -108,15 +111,20 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
     void addSpinnerAdapters() {
         ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(getActivity(),
                 android.R.layout.simple_spinner_item);
-        for (int month = 1; month <= 12; month++) {
-            adapter.add(String.format("%02d", month));
+
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat formatter = new SimpleDateFormat("MMMM (MM)");
+
+        for (int month = 0; month < 12; month++) {
+            calendar.set(Calendar.MONTH, month);
+            adapter.add(formatter.format(calendar.getTime()));
         }
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mExpirationMonth.setAdapter(adapter);
 
         adapter = new ArrayAdapter<CharSequence>(getActivity(),
                 android.R.layout.simple_spinner_item);
-        int initialYear = Calendar.getInstance().get(Calendar.YEAR);
+        int initialYear = calendar.get(Calendar.YEAR);
         for (int year = initialYear; year < initialYear + 10; year++) {
             adapter.add(Integer.toString(year));
         }
@@ -134,19 +142,11 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
         mNameText.setText(card.getName());
         mNumberText.setText(card.getNumber());
 
-        mInitialExpirationMonthPos = 0;
         int monthAsInt = 1;
         if (!card.getMonth().isEmpty()) {
             monthAsInt = Integer.parseInt(card.getMonth());
         }
-        for (int i = 0; i < mExpirationMonth.getAdapter().getCount(); i++) {
-            int itemVal = Integer.parseInt((String) mExpirationMonth.getAdapter().getItem(i));
-            if (monthAsInt == itemVal) {
-                mInitialExpirationMonthPos = i;
-                break;
-            }
-        }
-        mExpirationMonth.setSelection(mInitialExpirationMonthPos);
+        mExpirationMonth.setSelection(monthAsInt - 1);
 
         mInitialExpirationYearPos = 0;
         boolean foundYear = false;
@@ -180,7 +180,7 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
                 mNameText.getText().toString().trim(),
                 cardNumber,
                 cardNumber, // obfuscated number, it will be obfuscated by native code.
-                (String) mExpirationMonth.getSelectedItem(),
+                String.valueOf(mExpirationMonth.getSelectedItemPosition() + 1),
                 (String) mExpirationYear.getSelectedItem());
 
         PersonalDataManager.getInstance().setCreditCard(card);

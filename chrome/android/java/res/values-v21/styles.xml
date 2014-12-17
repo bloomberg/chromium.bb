@@ -17,6 +17,15 @@
     <style name="PreferenceButtonStyle" parent="@android:style/Widget.Material.Light.Button">
         <item name="android:textColor">#fff</item>
     </style>
+    <style name="PreferenceCategoryWithButtonStyle">
+        <item name="android:paddingStart">?android:attr/listPreferredItemPaddingStart</item>
+        <item name="android:paddingEnd">4dp</item>
+    </style>
+    <style name="PreferenceCategoryTextStyle">
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/pref_accent_color</item>
+        <item name="android:textSize">14sp</item>
+    </style>
     <style name="PreferenceTitle">
         <item name="android:ellipsize">end</item>
         <item name="android:singleLine">true</item>
