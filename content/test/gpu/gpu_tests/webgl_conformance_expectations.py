@@ -23,14 +23,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win'], bug=391957)
     self.Fail('conformance/glsl/bugs/conditional-discard-in-loop.html',
         ['win'], bug=402195)
-    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-webgl-canvas.html',
-        ['win'], bug=420357)
-    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-webgl-canvas-rgb565.html',
-        ['win'], bug=420357)
-    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-webgl-canvas-rgba4444.html',
-        ['win'], bug=420357)
-    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-webgl-canvas-rgba5551.html',
-        ['win'], bug=420357)
     self.Fail('conformance/glsl/misc/ternary-operators-in-global-initializers.html',
         ['win'], bug=415694)
     self.Fail('conformance/glsl/misc/struct-specifiers-in-uniforms.html',
