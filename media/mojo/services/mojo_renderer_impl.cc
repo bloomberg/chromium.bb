@@ -178,7 +178,7 @@ void MojoRendererImpl::OnEnded() {
     return;
   }
 
-  base::ResetAndReturn(&ended_cb_).Run();
+  ended_cb_.Run();
 }
 
 void MojoRendererImpl::OnError() {
