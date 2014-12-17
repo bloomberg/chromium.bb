@@ -462,7 +462,7 @@ class TestMain(cros_test_lib.MoxTestCase):
     prebuilt.PrebuiltUploader.__init__(options.upload, expected_gs_acl_path,
                                        options.upload, mox.IgnoreArg(),
                                        options.build_path, options.packages,
-                                       False, '/trunk/foo', False,
+                                       False, options.binhost_conf_dir, False,
                                        target, options.slave_targets,
                                        mox.IgnoreArg())
     self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, 'SyncHostPrebuilts')

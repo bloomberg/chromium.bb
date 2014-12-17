@@ -17,11 +17,12 @@ Example of uploading x86-dogfood binhosts to Google Storage:
 upload_prebuilts -b x86-dogfood -p /b/cbuild/build/ -u gs://chromeos-prebuilt -g
 """
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import datetime
 import functools
-import glob
 import multiprocessing
 import os
 import sys
@@ -101,9 +102,6 @@ def UpdateLocalFile(filename, value, key='PORTAGE_BINHOST'):
     filename: Name of file to modify.
     value: Value to write with the key.
     key: The variable key to update. (Default: PORTAGE_BINHOST)
-
-  Returns:
-    True if changes were made to the file.
   """
   if os.path.exists(filename):
     file_fh = open(filename)
@@ -111,7 +109,6 @@ def UpdateLocalFile(filename, value, key='PORTAGE_BINHOST'):
     file_fh = open(filename, 'w+')
   file_lines = []
   found = False
-  made_changes = False
   keyval_str = '%(key)s=%(value)s'
   for line in file_fh:
     # Strip newlines from end of line. We already add newlines below.
@@ -127,20 +124,17 @@ def UpdateLocalFile(filename, value, key='PORTAGE_BINHOST'):
       found = True
       print('Updating %s=%s to %s="%s"' % (file_var, file_val, key, value))
       value = '"%s"' % value
-      made_changes |= (file_val != value)
       file_lines.append(keyval_str % {'key': key, 'value': value})
     else:
       file_lines.append(keyval_str % {'key': file_var, 'value': file_val})
 
   if not found:
     value = '"%s"' % value
-    made_changes = True
     file_lines.append(keyval_str % {'key': key, 'value': value})
 
   file_fh.close()
   # write out new file
   osutils.WriteFile(filename, '\n'.join(file_lines) + '\n')
-  return made_changes
 
 
 def RevGitFile(filename, data, retries=5, dryrun=False):
@@ -302,15 +296,17 @@ def UpdateBinhostConfFile(path, key, value):
     key: Key to update.
     value: New value for key.
   """
-  cwd, filename = os.path.split(os.path.abspath(path))
+  cwd = os.path.dirname(os.path.abspath(path))
+  filename = os.path.basename(path)
   osutils.SafeMakedirs(cwd)
   if not git.GetCurrentBranch(cwd):
     git.CreatePushBranch(constants.STABLE_EBUILD_BRANCH, cwd, sync=False)
   osutils.WriteFile(path, '', mode='a')
-  if UpdateLocalFile(path, value, key):
-    desc = '%s: %s %s' % (filename, 'updating' if value else 'clearing', key)
-    git.AddPath(path)
-    git.Commit(cwd, desc)
+  UpdateLocalFile(path, value, key)
+  git.RunGit(cwd, ['add', filename])
+  description = '%s: updating %s' % (os.path.basename(filename), key)
+  git.RunGit(cwd, ['commit', '-m', description])
+
 
 def GenerateHtmlIndex(files, index, board, version):
   """Given the list of |files|, generate an index.html at |index|.
@@ -551,11 +547,12 @@ class PrebuiltUploader(object):
 
     binhost = ' '.join(binhost_urls)
     if git_sync:
-      git_file = os.path.join(self._build_path, _PREBUILT_MAKE_CONF[_HOST_ARCH])
+      git_file = os.path.join(self._build_path,
+          _PREBUILT_MAKE_CONF[_HOST_ARCH])
       RevGitFile(git_file, {key: binhost}, dryrun=self._dryrun)
     if sync_binhost_conf:
-      binhost_conf = os.path.join(
-          self._binhost_conf_dir, 'host', '%s-%s.conf' % (_HOST_ARCH, key))
+      binhost_conf = os.path.join(self._build_path, self._binhost_conf_dir,
+          'host', '%s-%s.conf' % (_HOST_ARCH, key))
       UpdateBinhostConfFile(binhost_conf, key, binhost)
 
   def SyncBoardPrebuilts(self, key, git_sync, sync_binhost_conf,
@@ -574,7 +571,6 @@ class PrebuiltUploader(object):
       toolchain_tarballs: A list of toolchain tarballs to upload.
       toolchain_upload_path: Path under the bucket to place toolchain tarballs.
     """
-    updated_binhosts = set()
     for target in self._GetTargets():
       board_path = os.path.join(self._build_path,
                                 _BOARD_PATH % {'board': target.board_variant})
@@ -609,7 +605,7 @@ class PrebuiltUploader(object):
           assert tar_process.exitcode == 0
           # TODO(zbehan): This should be done cleaner.
           if target.board == constants.CHROOT_BUILDER_BOARD:
-            sdk_conf = os.path.join(self._binhost_conf_dir,
+            sdk_conf = os.path.join(self._build_path, self._binhost_conf_dir,
                                     'host/sdk_version.conf')
             sdk_settings = {
                 'SDK_LATEST_VERSION': version_str,
@@ -627,18 +623,9 @@ class PrebuiltUploader(object):
 
       if sync_binhost_conf:
         # Update the binhost configuration file in git.
-        binhost_conf = os.path.join(
-            self._binhost_conf_dir, 'target', '%s-%s.conf' % (target, key))
-        updated_binhosts.add(binhost_conf)
+        binhost_conf = os.path.join(self._build_path, self._binhost_conf_dir,
+            'target', '%s-%s.conf' % (target, key))
         UpdateBinhostConfFile(binhost_conf, key, url_value)
-
-    if sync_binhost_conf:
-      # Clear all old binhosts. The files must be left empty in case anybody
-      # is referring to them.
-      all_binhosts = set(glob.glob(os.path.join(
-          self._binhost_conf_dir, 'target', '*-%s.conf' % key)))
-      for binhost_conf in all_binhosts - updated_binhosts:
-        UpdateBinhostConfFile(binhost_conf, key, '')
 
 
 def _AddSlaveBoard(_option, _opt_str, value, parser):
@@ -828,11 +815,10 @@ def main(argv):
                                          board=target.board_variant,
                                          buildroot=options.build_path)
 
-  binhost_conf_dir = os.path.join(options.build_path, options.binhost_conf_dir)
   uploader = PrebuiltUploader(options.upload, acl, binhost_base_url,
                               pkg_indexes, options.build_path,
                               options.packages, options.skip_upload,
-                              binhost_conf_dir, options.dryrun,
+                              options.binhost_conf_dir, options.dryrun,
                               target, options.slave_targets, version)
 
   if options.sync_host:
