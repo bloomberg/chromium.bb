@@ -15114,7 +15114,7 @@ Do you accept?
         Next
       </message>
       <message name="IDS_EASY_UNLOCK_SETUP_ANDROID_SMART_LOCK_ABOUT_LINK_TEXT" desc="The text to show as the link text to access the Smart Lock for Android help article.">
-        About Smart Lock for Android
+        Learn more
       </message>
       <!-- Step 3: "You're all set" -->
       <message name="IDS_EASY_UNLOCK_SETUP_COMPLETE_HEADER_TITLE" desc="The text to show as the header title of the Easy Unlock dialog during the penultimate step, confirming success.">
