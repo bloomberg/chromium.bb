@@ -17,6 +17,7 @@
         '../../../ui/gl/gl.gyp:gl',
         '../../../ui/ozone/ozone.gyp:ozone',
         '../../../ui/ozone/ozone.gyp:ozone_base',
+        '../../../ui/ozone/gpu/ozone_gpu.gyp:ozone_gpu',
       ],
       'sources': [
         'gl_renderer.cc',
@@ -27,6 +28,8 @@
         'renderer_base.h',
         'software_renderer.cc',
         'software_renderer.h',
+        'surfaceless_gl_renderer.cc',
+        'surfaceless_gl_renderer.h',
       ],
     },
   ],

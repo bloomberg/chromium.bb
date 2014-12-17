@@ -18,6 +18,8 @@ executable("ozone_demo") {
     "renderer_base.h",
     "software_renderer.cc",
     "software_renderer.h",
+    "surfaceless_gl_renderer.cc",
+    "surfaceless_gl_renderer.h",
   ]
 
   deps = [
@@ -26,5 +28,6 @@ executable("ozone_demo") {
     "//ui/gfx/geometry",
     "//ui/gl",
     "//ui/ozone",
+    "//ui/ozone/gpu",
   ]
 }

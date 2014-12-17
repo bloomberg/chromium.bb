@@ -12,7 +12,9 @@
 #include "ui/gl/gl_surface.h"
 #include "ui/ozone/demo/gl_renderer.h"
 #include "ui/ozone/demo/software_renderer.h"
+#include "ui/ozone/demo/surfaceless_gl_renderer.h"
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/ozone_switches.h"
 #include "ui/ozone/public/ui_thread_gpu.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -53,7 +55,13 @@ class DemoWindow : public ui::PlatformWindowDelegate {
   void Start() {
     if (!CommandLine::ForCurrentProcess()->HasSwitch(kDisableGpu) &&
         gfx::GLSurface::InitializeOneOff() && StartInProcessGpu()) {
-      renderer_.reset(new ui::GlRenderer(GetAcceleratedWidget(), GetSize()));
+      if (CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kOzoneUseSurfaceless)) {
+        renderer_.reset(
+            new ui::SurfacelessGlRenderer(GetAcceleratedWidget(), GetSize()));
+      } else {
+        renderer_.reset(new ui::GlRenderer(GetAcceleratedWidget(), GetSize()));
+      }
     } else {
       renderer_.reset(
           new ui::SoftwareRenderer(GetAcceleratedWidget(), GetSize()));
