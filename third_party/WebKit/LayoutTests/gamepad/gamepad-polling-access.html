@@ -9,16 +9,6 @@
         gamepadController.disconnect(1);
         gamepadController.disconnect(2);
         gamepadController.disconnect(3);
-        shouldBe("navigator.webkitGetGamepads().length", "4");
-        shouldBeNull("navigator.webkitGetGamepads().item(0)");
-        shouldBeNull("navigator.webkitGetGamepads().item(1)");
-        shouldBeNull("navigator.webkitGetGamepads().item(2)");
-        shouldBeNull("navigator.webkitGetGamepads().item(3)");
-        shouldBeUndefined("navigator.webkitGetGamepads()[0]");
-        shouldBeUndefined("navigator.webkitGetGamepads()[1]");
-        shouldBeUndefined("navigator.webkitGetGamepads()[2]");
-        shouldBeUndefined("navigator.webkitGetGamepads()[3]");
-
         shouldBe("navigator.getGamepads().length", "4");
         shouldBeNull("navigator.getGamepads().item(0)");
         shouldBeNull("navigator.getGamepads().item(1)");
@@ -31,11 +21,8 @@
 
         // connect and disconnect
         gamepadController.connect(0);
-        shouldBeNonNull("navigator.webkitGetGamepads()[0]");
         shouldBeNonNull("navigator.getGamepads()[0]");
         gamepadController.disconnect(0);
-        shouldBeNull("navigator.webkitGetGamepads().item(0)");
-        shouldBeUndefined("navigator.webkitGetGamepads()[0]");
         shouldBeNull("navigator.getGamepads().item(0)");
         shouldBeUndefined("navigator.getGamepads()[0]");
 
@@ -48,15 +35,6 @@
         gamepadController.setButtonData(0, 1, 0);
         gamepadController.setAxisData(0, 0, .5);
         gamepadController.setAxisData(0, 1, -1.0);
-        shouldBe("navigator.webkitGetGamepads()[0].id", "'MockStick 3000'");
-        shouldBe("navigator.webkitGetGamepads()[0].buttons.length", "2");
-        shouldBe("navigator.webkitGetGamepads()[0].axes.length", "2");
-        shouldBe("navigator.webkitGetGamepads()[0].buttons[0]", "1.0");
-        shouldBe("navigator.webkitGetGamepads()[0].buttons[1]", "0.0");
-        shouldBe("navigator.webkitGetGamepads()[0].axes.length", "2");
-        shouldBe("navigator.webkitGetGamepads()[0].axes[0]", "0.5");
-        shouldBe("navigator.webkitGetGamepads()[0].axes[1]", "-1.0");
-
         shouldBe("navigator.getGamepads()[0].id", "'MockStick 3000'");
         shouldBe("navigator.getGamepads()[0].buttons.length", "2");
         shouldBe("navigator.getGamepads()[0].axes.length", "2");

@@ -18,6 +18,5 @@
  */
 
 partial interface Navigator {
-    [DeprecateAs=PrefixedGamepad] WebKitGamepadList webkitGetGamepads();
     GamepadList getGamepads();
 };

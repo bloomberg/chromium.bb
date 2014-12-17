@@ -270,7 +270,6 @@ public:
         DocumentReleaseEvents = 288,
         WindowCaptureEvents = 289,
         WindowReleaseEvents = 290,
-        PrefixedGamepad = 291,
         ElementAnimateKeyframeListEffectObjectTiming = 292,
         ElementAnimateKeyframeListEffectDoubleTiming = 293,
         ElementAnimateKeyframeListEffectNoTiming = 294,

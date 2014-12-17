@@ -716,9 +716,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case PrefixedVideoExitFullScreen:
         return "'HTMLVideoElement.webkitExitFullScreen()' is deprecated. Please use 'Document.exitFullscreen()' and 'Document.webkitExitFullscreen()' instead.";
 
-    case PrefixedGamepad:
-        return replacedBy("navigator.webkitGetGamepads", "navigator.getGamepads");
-
     case PrefixedIndexedDB:
         return replacedBy("webkitIndexedDB", "indexedDB");
 

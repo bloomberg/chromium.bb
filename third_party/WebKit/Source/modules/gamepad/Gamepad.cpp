@@ -29,11 +29,20 @@
 namespace blink {
 
 Gamepad::Gamepad()
+    : m_index(0)
+    , m_timestamp(0)
 {
 }
 
 Gamepad::~Gamepad()
 {
+}
+
+void Gamepad::setAxes(unsigned count, const double* data)
+{
+    m_axes.resize(count);
+    if (count)
+        std::copy(data, data + count, m_axes.begin());
 }
 
 void Gamepad::setButtons(unsigned count, const WebGamepadButton* data)

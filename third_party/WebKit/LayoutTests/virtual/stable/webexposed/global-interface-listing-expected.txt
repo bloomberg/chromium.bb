@@ -1121,7 +1121,6 @@ interface Navigator
     method sendBeacon
     method unregisterProtocolHandler
     method vibrate
-    method webkitGetGamepads
     method webkitGetUserMedia
 interface Node
     attribute ATTRIBUTE_NODE

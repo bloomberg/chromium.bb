@@ -40,7 +40,6 @@ class Document;
 class Gamepad;
 class GamepadList;
 class Navigator;
-class WebKitGamepadList;
 
 class NavigatorGamepad final : public NoBaseWillBeGarbageCollectedFinalized<NavigatorGamepad>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty, public PlatformEventController, public DOMWindowLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorGamepad);
@@ -49,10 +48,7 @@ public:
     static NavigatorGamepad& from(Navigator&);
     virtual ~NavigatorGamepad();
 
-    static WebKitGamepadList* webkitGetGamepads(Navigator&);
     static GamepadList* getGamepads(Navigator&);
-
-    WebKitGamepadList* webkitGamepads();
     GamepadList* gamepads();
 
     virtual void trace(Visitor*);
@@ -84,7 +80,6 @@ private:
     virtual void didRemoveAllEventListeners(LocalDOMWindow*) override;
 
     PersistentWillBeMember<GamepadList> m_gamepads;
-    PersistentWillBeMember<WebKitGamepadList> m_webkitGamepads;
     PersistentHeapDequeWillBeHeapDeque<Member<Gamepad> > m_pendingEvents;
     AsyncMethodRunner<NavigatorGamepad> m_dispatchOneEventRunner;
 };

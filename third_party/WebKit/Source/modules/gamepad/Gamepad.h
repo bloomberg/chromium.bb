@@ -28,13 +28,14 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/gamepad/GamepadButton.h"
-#include "modules/gamepad/GamepadCommon.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebGamepad.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class Gamepad final : public GarbageCollectedFinalized<Gamepad>, public GamepadCommon, public ScriptWrappable {
+class Gamepad final : public GarbageCollectedFinalized<Gamepad>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static Gamepad* create()
@@ -43,6 +44,26 @@ public:
     }
     ~Gamepad();
 
+    typedef Vector<double> DoubleVector;
+
+    const String& id() const { return m_id; }
+    void setId(const String& id) { m_id = id; }
+
+    unsigned index() const { return m_index; }
+    void setIndex(unsigned val) { m_index = val; }
+
+    bool connected() const { return m_connected; }
+    void setConnected(bool val) { m_connected = val; }
+
+    unsigned long long timestamp() const { return m_timestamp; }
+    void setTimestamp(unsigned long long val) { m_timestamp = val; }
+
+    const String& mapping() const { return m_mapping; }
+    void setMapping(const String& val) { m_mapping = val; }
+
+    const DoubleVector& axes() const { return m_axes; }
+    void setAxes(unsigned count, const double* data);
+
     const GamepadButtonVector& buttons() const { return m_buttons; }
     void setButtons(unsigned count, const WebGamepadButton* data);
 
@@ -50,6 +71,13 @@ public:
 
 private:
     Gamepad();
+
+    String m_id;
+    unsigned m_index;
+    bool m_connected;
+    unsigned long long m_timestamp;
+    String m_mapping;
+    DoubleVector m_axes;
     GamepadButtonVector m_buttons;
 };
 

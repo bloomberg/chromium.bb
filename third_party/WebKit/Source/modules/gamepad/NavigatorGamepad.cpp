@@ -34,7 +34,6 @@
 #include "modules/gamepad/GamepadDispatcher.h"
 #include "modules/gamepad/GamepadEvent.h"
 #include "modules/gamepad/GamepadList.h"
-#include "modules/gamepad/WebKitGamepadList.h"
 
 namespace blink {
 
@@ -89,25 +88,9 @@ NavigatorGamepad& NavigatorGamepad::from(Navigator& navigator)
     return *supplement;
 }
 
-WebKitGamepadList* NavigatorGamepad::webkitGetGamepads(Navigator& navigator)
-{
-    return NavigatorGamepad::from(navigator).webkitGamepads();
-}
-
 GamepadList* NavigatorGamepad::getGamepads(Navigator& navigator)
 {
     return NavigatorGamepad::from(navigator).gamepads();
-}
-
-WebKitGamepadList* NavigatorGamepad::webkitGamepads()
-{
-    if (!m_webkitGamepads)
-        m_webkitGamepads = WebKitGamepadList::create();
-    if (window()) {
-        startUpdating();
-        sampleGamepads<WebKitGamepad>(m_webkitGamepads.get());
-    }
-    return m_webkitGamepads.get();
 }
 
 GamepadList* NavigatorGamepad::gamepads()
@@ -124,7 +107,6 @@ GamepadList* NavigatorGamepad::gamepads()
 void NavigatorGamepad::trace(Visitor* visitor)
 {
     visitor->trace(m_gamepads);
-    visitor->trace(m_webkitGamepads);
     visitor->trace(m_pendingEvents);
     WillBeHeapSupplement<Navigator>::trace(visitor);
     DOMWindowProperty::trace(visitor);
@@ -257,7 +239,7 @@ void NavigatorGamepad::pageVisibilityChanged()
 {
     // Inform the embedder whether it needs to provide gamepad data for us.
     bool visible = page()->visibilityState() == PageVisibilityStateVisible;
-    if (visible && (m_hasEventListener || m_gamepads || m_webkitGamepads))
+    if (visible && (m_hasEventListener || m_gamepads))
         startUpdating();
     else
         stopUpdating();
