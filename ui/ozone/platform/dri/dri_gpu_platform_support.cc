@@ -136,6 +136,7 @@ void DriGpuPlatformSupport::OnConfigureNativeDisplay(
   DisplaySnapshot* display = ndd_->FindDisplaySnapshot(id);
   if (!display) {
     LOG(ERROR) << "There is no display with ID " << id;
+    sender_->Send(new OzoneHostMsg_DisplayConfigured(id, false));
     return;
   }
 
@@ -161,6 +162,7 @@ void DriGpuPlatformSupport::OnConfigureNativeDisplay(
     LOG(ERROR) << "Failed to find mode: size=" << mode_param.size.ToString()
                << " is_interlaced=" << mode_param.is_interlaced
                << " refresh_rate=" << mode_param.refresh_rate;
+    sender_->Send(new OzoneHostMsg_DisplayConfigured(id, false));
     return;
   }
 
@@ -170,10 +172,13 @@ void DriGpuPlatformSupport::OnConfigureNativeDisplay(
 
 void DriGpuPlatformSupport::OnDisableNativeDisplay(int64_t id) {
   DisplaySnapshot* display = ndd_->FindDisplaySnapshot(id);
+  bool success = false;
   if (display)
-    ndd_->Configure(*display, NULL, gfx::Point());
+    success = ndd_->Configure(*display, NULL, gfx::Point());
   else
     LOG(ERROR) << "There is no display with ID " << id;
+
+  sender_->Send(new OzoneHostMsg_DisplayConfigured(id, success));
 }
 
 void DriGpuPlatformSupport::OnTakeDisplayControl() {
