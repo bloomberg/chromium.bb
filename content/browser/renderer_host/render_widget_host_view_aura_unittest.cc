@@ -1652,7 +1652,7 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
 
 TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
   size_t max_renderer_frames =
-      RendererFrameManager::GetInstance()->max_number_of_saved_frames();
+      RendererFrameManager::GetInstance()->GetMaxNumberOfSavedFrames();
   ASSERT_LE(2u, max_renderer_frames);
   size_t renderer_count = max_renderer_frames + 1;
   gfx::Rect view_rect(100, 100);
@@ -1814,7 +1814,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
 
 TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
   size_t max_renderer_frames =
-      RendererFrameManager::GetInstance()->max_number_of_saved_frames();
+      RendererFrameManager::GetInstance()->GetMaxNumberOfSavedFrames();
   ASSERT_LE(2u, max_renderer_frames);
   size_t renderer_count = max_renderer_frames + 1;
   gfx::Rect view_rect(100, 100);
@@ -1865,6 +1865,69 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
   // If we unlock [0] now, then [0] should be evicted.
   views[0]->GetDelegatedFrameHost()->UnlockResources();
   EXPECT_FALSE(views[0]->HasFrameData());
+
+  for (size_t i = 0; i < renderer_count; ++i) {
+    views[i]->Destroy();
+    delete hosts[i];
+  }
+}
+
+// Test that changing the memory pressure should delete saved frames.
+TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
+  size_t max_renderer_frames =
+      RendererFrameManager::GetInstance()->GetMaxNumberOfSavedFrames();
+  ASSERT_LE(2u, max_renderer_frames);
+  size_t renderer_count = max_renderer_frames;
+  gfx::Rect view_rect(100, 100);
+  gfx::Size frame_size = view_rect.size();
+  DCHECK_EQ(0u, HostSharedBitmapManager::current()->AllocatedBitmapCount());
+
+  scoped_ptr<RenderWidgetHostImpl * []> hosts(
+      new RenderWidgetHostImpl* [renderer_count]);
+  scoped_ptr<FakeRenderWidgetHostViewAura * []> views(
+      new FakeRenderWidgetHostViewAura* [renderer_count]);
+
+  // Create a bunch of renderers.
+  for (size_t i = 0; i < renderer_count; ++i) {
+    hosts[i] = new RenderWidgetHostImpl(
+        &delegate_, process_host_, MSG_ROUTING_NONE, false);
+    hosts[i]->Init();
+    views[i] = new FakeRenderWidgetHostViewAura(hosts[i], false);
+    views[i]->InitAsChild(NULL);
+    aura::client::ParentWindowWithContext(
+        views[i]->GetNativeView(),
+        parent_view_->GetNativeView()->GetRootWindow(),
+        gfx::Rect());
+    views[i]->SetSize(view_rect.size());
+  }
+
+  // Make each renderer visible and swap a frame on it. No eviction should
+  // occur because all frames are visible.
+  for (size_t i = 0; i < renderer_count; ++i) {
+    views[i]->WasShown();
+    views[i]->OnSwapCompositorFrame(
+        1, MakeDelegatedFrame(1.f, frame_size, view_rect));
+    EXPECT_TRUE(views[i]->HasFrameData());
+  }
+
+  // If we hide one, it should not get evicted.
+  views[0]->WasHidden();
+  message_loop_.RunUntilIdle();
+  EXPECT_TRUE(views[0]->HasFrameData());
+  // Using a lesser memory pressure event however, should evict.
+  base::MemoryPressureListener::NotifyMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
+  message_loop_.RunUntilIdle();
+  EXPECT_FALSE(views[0]->HasFrameData());
+
+  // Check the same for a higher pressure event.
+  views[1]->WasHidden();
+  message_loop_.RunUntilIdle();
+  EXPECT_TRUE(views[1]->HasFrameData());
+  base::MemoryPressureListener::NotifyMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  message_loop_.RunUntilIdle();
+  EXPECT_FALSE(views[1]->HasFrameData());
 
   for (size_t i = 0; i < renderer_count; ++i) {
     views[i]->Destroy();

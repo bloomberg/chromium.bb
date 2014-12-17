@@ -6,12 +6,25 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/shared_memory.h"
 #include "base/sys_info.h"
 #include "content/common/host_shared_bitmap_manager.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/chromeos/memory_pressure_observer_chromeos.h"
+#include "content/browser/browser_main_loop.h"
+#endif
+
 namespace content {
+namespace {
+
+const int kModeratePressurePercentage = 50;
+const int kCriticalPressurePercentage = 10;
+
+}  // namespace
 
 RendererFrameManager* RendererFrameManager::GetInstance() {
   return Singleton<RendererFrameManager>::get();
@@ -24,7 +37,7 @@ void RendererFrameManager::AddFrame(RendererFrameManagerClient* frame,
     locked_frames_[frame] = 1;
   else
     unlocked_frames_.push_front(frame);
-  CullUnlockedFrames();
+  CullUnlockedFrames(GetMaxNumberOfSavedFrames());
 }
 
 void RendererFrameManager::RemoveFrame(RendererFrameManagerClient* frame) {
@@ -57,11 +70,51 @@ void RendererFrameManager::UnlockFrame(RendererFrameManagerClient* frame) {
   } else {
     RemoveFrame(frame);
     unlocked_frames_.push_front(frame);
-    CullUnlockedFrames();
+    CullUnlockedFrames(GetMaxNumberOfSavedFrames());
   }
 }
 
-RendererFrameManager::RendererFrameManager() {
+size_t RendererFrameManager::GetMaxNumberOfSavedFrames() const {
+#if defined(OS_CHROMEOS)
+  content::BrowserMainLoop* browser_main_loop =
+      content::BrowserMainLoop::GetInstance();
+
+  // Unit tests can come here without a BrowserMainLoop instance.
+  if (!browser_main_loop)
+    return max_number_of_saved_frames_;
+
+  base::MemoryPressureObserverChromeOS* observer =
+      browser_main_loop->memory_pressure_observer();
+
+  if (!observer)
+    return max_number_of_saved_frames_;
+
+  // Until we have a global OnMemoryPressureChanged event we need to query the
+  // value from our specific pressure observer.
+  int percentage = 100;
+  switch (observer->GetCurrentPressureLevel()) {
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
+      percentage = 100;
+      break;
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
+      percentage = kModeratePressurePercentage;
+      break;
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
+      percentage = kCriticalPressurePercentage;
+      break;
+  }
+  return std::max(1UL, (max_number_of_saved_frames_ * percentage) / 100);
+#else
+  return max_number_of_saved_frames_;
+#endif
+}
+
+RendererFrameManager::RendererFrameManager()
+    : memory_pressure_listener_(
+        base::Bind(&RendererFrameManager::OnMemoryPressure,
+                   base::Unretained(this))) {
+  // Note: With the destruction of this class the |memory_pressure_listener_|
+  // gets destroyed and the observer will remove itself.
   max_number_of_saved_frames_ =
 #if defined(OS_ANDROID)
       1;
@@ -73,9 +126,7 @@ RendererFrameManager::RendererFrameManager() {
 
 RendererFrameManager::~RendererFrameManager() {}
 
-void RendererFrameManager::CullUnlockedFrames() {
-  uint32 saved_frame_limit = max_number_of_saved_frames();
-
+void RendererFrameManager::CullUnlockedFrames(size_t saved_frame_limit) {
   if (unlocked_frames_.size() + locked_frames_.size() > 0) {
     float handles_per_frame =
         HostSharedBitmapManager::current()->AllocatedBitmapCount() * 1.0f /
@@ -93,6 +144,26 @@ void RendererFrameManager::CullUnlockedFrames() {
     unlocked_frames_.back()->EvictCurrentFrame();
     DCHECK_EQ(unlocked_frames_.size() + 1, old_size);
   }
+}
+
+void RendererFrameManager::OnMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  int saved_frame_limit = max_number_of_saved_frames_;
+  if (saved_frame_limit <= 1)
+    return;
+  int percentage = 100;
+  switch (memory_pressure_level) {
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
+      percentage = kModeratePressurePercentage;
+      break;
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
+      percentage = kCriticalPressurePercentage;
+      break;
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
+      // No need to change anything when there is no pressure.
+      return;
+  }
+  CullUnlockedFrames(std::max(1, (saved_frame_limit * percentage) / 100));
 }
 
 }  // namespace content
