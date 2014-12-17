@@ -48,7 +48,7 @@ struct SameSizeAsInlineFlowBox : public InlineBox {
     uint32_t bitfields : 23;
 };
 
-COMPILE_ASSERT(sizeof(InlineFlowBox) == sizeof(SameSizeAsInlineFlowBox), InlineFlowBox_should_stay_small);
+static_assert(sizeof(InlineFlowBox) == sizeof(SameSizeAsInlineFlowBox), "InlineFlowBox should stay small");
 
 #if ENABLE(ASSERT)
 

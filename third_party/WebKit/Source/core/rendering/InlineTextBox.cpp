@@ -47,7 +47,7 @@ struct SameSizeAsInlineTextBox : public InlineBox {
     void* pointers[2];
 };
 
-COMPILE_ASSERT(sizeof(InlineTextBox) == sizeof(SameSizeAsInlineTextBox), InlineTextBox_should_stay_small);
+static_assert(sizeof(InlineTextBox) == sizeof(SameSizeAsInlineTextBox), "InlineTextBox should stay small");
 
 typedef WTF::HashMap<const InlineTextBox*, LayoutRect> InlineTextBoxOverflowMap;
 static InlineTextBoxOverflowMap* gTextBoxesWithOverflow;

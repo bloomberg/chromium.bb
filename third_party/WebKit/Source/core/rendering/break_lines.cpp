@@ -114,7 +114,7 @@ static const unsigned char asciiLineBreakTable[][(asciiLineBreakTableLastChar - 
 #undef DI
 #undef AL
 
-COMPILE_ASSERT(WTF_ARRAY_LENGTH(asciiLineBreakTable) == asciiLineBreakTableLastChar - asciiLineBreakTableFirstChar + 1, TestLineBreakTableConsistency);
+static_assert(WTF_ARRAY_LENGTH(asciiLineBreakTable) == asciiLineBreakTableLastChar - asciiLineBreakTableFirstChar + 1, "asciiLineBreakTable should be consistent");
 
 static inline bool shouldBreakAfter(UChar lastCh, UChar ch, UChar nextCh)
 {

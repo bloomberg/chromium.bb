@@ -50,7 +50,7 @@ struct SameSizeAsBorderValue {
     unsigned m_width;
 };
 
-COMPILE_ASSERT(sizeof(BorderValue) == sizeof(SameSizeAsBorderValue), BorderValue_should_not_grow);
+static_assert(sizeof(BorderValue) == sizeof(SameSizeAsBorderValue), "BorderValue should stay small");
 
 struct SameSizeAsRenderStyle : public RefCounted<SameSizeAsRenderStyle> {
     void* dataRefs[7];
@@ -66,7 +66,7 @@ struct SameSizeAsRenderStyle : public RefCounted<SameSizeAsRenderStyle> {
     } noninherited_flags;
 };
 
-COMPILE_ASSERT(sizeof(RenderStyle) == sizeof(SameSizeAsRenderStyle), RenderStyle_should_stay_small);
+static_assert(sizeof(RenderStyle) == sizeof(SameSizeAsRenderStyle), "RenderStyle should stay small");
 
 inline RenderStyle* defaultStyle()
 {
@@ -109,8 +109,8 @@ ALWAYS_INLINE RenderStyle::RenderStyle()
     , m_svgStyle(defaultStyle()->m_svgStyle)
 {
     setBitDefaults(); // Would it be faster to copy this from the default style?
-    COMPILE_ASSERT((sizeof(InheritedFlags) <= 8), InheritedFlags_does_not_grow);
-    COMPILE_ASSERT((sizeof(NonInheritedFlags) <= 8), NonInheritedFlags_does_not_grow);
+    static_assert((sizeof(InheritedFlags) <= 8), "InheritedFlags should not grow");
+    static_assert((sizeof(NonInheritedFlags) <= 8), "NonInheritedFlags should not grow");
 }
 
 ALWAYS_INLINE RenderStyle::RenderStyle(DefaultStyleTag)

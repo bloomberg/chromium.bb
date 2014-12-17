@@ -39,7 +39,7 @@ struct SameSizeAsFloatingObject {
     uint32_t bitfields : 8;
 };
 
-COMPILE_ASSERT(sizeof(FloatingObject) == sizeof(SameSizeAsFloatingObject), FloatingObject_should_stay_small);
+static_assert(sizeof(FloatingObject) == sizeof(SameSizeAsFloatingObject), "FloatingObject should stay small");
 
 FloatingObject::FloatingObject(RenderBox* renderer)
     : m_renderer(renderer)

@@ -45,7 +45,7 @@ struct ExpectedSVGInlineTextBoxSize : public InlineTextBox {
     Vector<SVGTextFragment> vector;
 };
 
-COMPILE_ASSERT(sizeof(SVGInlineTextBox) == sizeof(ExpectedSVGInlineTextBoxSize), SVGInlineTextBox_is_not_of_expected_size);
+static_assert(sizeof(SVGInlineTextBox) == sizeof(ExpectedSVGInlineTextBoxSize), "SVGInlineTextBox has an unexpected size");
 
 SVGInlineTextBox::SVGInlineTextBox(RenderObject& object, int start, unsigned short length)
     : InlineTextBox(object, start, length)

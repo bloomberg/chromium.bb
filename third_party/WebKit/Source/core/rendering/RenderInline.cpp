@@ -51,7 +51,7 @@ struct SameSizeAsRenderInline : public RenderBoxModelObject {
     RenderLineBoxList m_lineBoxes;
 };
 
-COMPILE_ASSERT(sizeof(RenderInline) == sizeof(SameSizeAsRenderInline), RenderInline_should_stay_small);
+static_assert(sizeof(RenderInline) == sizeof(SameSizeAsRenderInline), "RenderInline should stay small");
 
 RenderInline::RenderInline(Element* element)
     : RenderBoxModelObject(element)

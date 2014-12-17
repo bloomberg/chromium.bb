@@ -83,7 +83,7 @@ struct SameSizeAsRenderBlock : public RenderBox {
     uint32_t bitfields;
 };
 
-COMPILE_ASSERT(sizeof(RenderBlock) == sizeof(SameSizeAsRenderBlock), RenderBlock_should_stay_small);
+static_assert(sizeof(RenderBlock) == sizeof(SameSizeAsRenderBlock), "RenderBlock should stay small");
 
 typedef WTF::HashMap<const RenderBox*, OwnPtr<ColumnInfo> > ColumnInfoMap;
 static ColumnInfoMap* gColumnInfoMap = 0;

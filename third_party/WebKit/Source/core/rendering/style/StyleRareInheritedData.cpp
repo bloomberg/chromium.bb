@@ -51,7 +51,7 @@ struct SameSizeAsStyleRareInheritedData : public RefCounted<SameSizeAsStyleRareI
     Color touchColors;
 };
 
-COMPILE_ASSERT(sizeof(StyleRareInheritedData) == sizeof(SameSizeAsStyleRareInheritedData), StyleRareInheritedData_should_bit_pack);
+static_assert(sizeof(StyleRareInheritedData) == sizeof(SameSizeAsStyleRareInheritedData), "StyleRareInheritedData should stay small");
 
 StyleRareInheritedData::StyleRareInheritedData()
     : listStyleImage(RenderStyle::initialListStyleImage())

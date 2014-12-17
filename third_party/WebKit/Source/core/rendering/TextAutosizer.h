@@ -200,8 +200,8 @@ private:
         float m_width;
     };
     // Ensures efficient hashing using StringHasher.
-    COMPILE_ASSERT(!(sizeof(FingerprintSourceData) % sizeof(UChar)),
-        Sizeof_FingerprintSourceData_must_be_multiple_of_UChar);
+    static_assert(!(sizeof(FingerprintSourceData) % sizeof(UChar)),
+        "sizeof(FingerprintSourceData) must be a multiple of UChar");
 
     typedef unsigned Fingerprint;
     typedef HashMap<Fingerprint, OwnPtr<Supercluster> > SuperclusterMap;

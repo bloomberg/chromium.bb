@@ -63,7 +63,7 @@ struct SameSizeAsRenderText : public RenderObject {
     void* pointers[2];
 };
 
-COMPILE_ASSERT(sizeof(RenderText) == sizeof(SameSizeAsRenderText), RenderText_should_stay_small);
+static_assert(sizeof(RenderText) == sizeof(SameSizeAsRenderText), "RenderText should stay small");
 
 class SecureTextTimer;
 typedef HashMap<RenderText*, SecureTextTimer*> SecureTextTimerMap;

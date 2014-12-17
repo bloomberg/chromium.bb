@@ -28,7 +28,7 @@ struct SameSizeAsPointerEventsHitRules {
     unsigned bitfields;
 };
 
-COMPILE_ASSERT(sizeof(PointerEventsHitRules) <= sizeof(SameSizeAsPointerEventsHitRules), PointerEventsHitRules_should_stay_small);
+static_assert(sizeof(PointerEventsHitRules) <= sizeof(SameSizeAsPointerEventsHitRules), "PointerEventsHitRules should stay small");
 
 PointerEventsHitRules::PointerEventsHitRules(EHitTesting hitTesting, const HitTestRequest& request, EPointerEvents pointerEvents)
     : requireVisible(false)

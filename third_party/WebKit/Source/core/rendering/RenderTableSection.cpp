@@ -351,7 +351,7 @@ void RenderTableSection::distributeExtraRowSpanHeightToPercentRows(RenderTableCe
 // problem in this function.
 static void updatePositionIncreasedWithRowHeight(long long extraHeight, long long rowHeight, long long totalHeight, int& accumulatedPositionIncrease, int& remainder)
 {
-    COMPILE_ASSERT(sizeof(long long int) > sizeof(int), int_should_be_less_than_longlong);
+    static_assert(sizeof(long long int) > sizeof(int), "int should be smaller than long long");
 
     accumulatedPositionIncrease += (extraHeight * rowHeight) / totalHeight;
     remainder += (extraHeight * rowHeight) % totalHeight;

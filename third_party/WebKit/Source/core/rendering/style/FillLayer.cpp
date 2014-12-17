@@ -40,7 +40,7 @@ struct SameSizeAsFillLayer {
     unsigned m_bitfields2;
 };
 
-COMPILE_ASSERT(sizeof(FillLayer) == sizeof(SameSizeAsFillLayer), FillLayer_should_stay_small);
+static_assert(sizeof(FillLayer) == sizeof(SameSizeAsFillLayer), "FillLayer should stay small");
 
 FillLayer::FillLayer(EFillLayerType type, bool useInitialValues)
     : m_next(0)

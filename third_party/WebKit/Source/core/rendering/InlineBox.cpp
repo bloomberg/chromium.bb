@@ -46,7 +46,7 @@ struct SameSizeAsInlineBox {
 #endif
 };
 
-COMPILE_ASSERT(sizeof(InlineBox) == sizeof(SameSizeAsInlineBox), InlineBox_size_guard);
+static_assert(sizeof(InlineBox) == sizeof(SameSizeAsInlineBox), "InlineBox should stay small");
 
 #if ENABLE(ASSERT)
 

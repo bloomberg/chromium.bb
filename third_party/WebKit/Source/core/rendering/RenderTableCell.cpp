@@ -47,8 +47,8 @@ struct SameSizeAsRenderTableCell : public RenderBlockFlow {
     int paddings[2];
 };
 
-COMPILE_ASSERT(sizeof(RenderTableCell) == sizeof(SameSizeAsRenderTableCell), RenderTableCell_should_stay_small);
-COMPILE_ASSERT(sizeof(CollapsedBorderValue) == 8, CollapsedBorderValue_should_stay_small);
+static_assert(sizeof(RenderTableCell) == sizeof(SameSizeAsRenderTableCell), "RenderTableCell should stay small");
+static_assert(sizeof(CollapsedBorderValue) == 8, "CollapsedBorderValue should stay small");
 
 RenderTableCell::RenderTableCell(Element* element)
     : RenderBlockFlow(element)

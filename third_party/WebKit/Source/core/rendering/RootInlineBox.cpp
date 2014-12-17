@@ -42,7 +42,7 @@ struct SameSizeAsRootInlineBox : public InlineFlowBox {
     LayoutUnit layoutVariables[6];
 };
 
-COMPILE_ASSERT(sizeof(RootInlineBox) == sizeof(SameSizeAsRootInlineBox), RootInlineBox_should_stay_small);
+static_assert(sizeof(RootInlineBox) == sizeof(SameSizeAsRootInlineBox), "RootInlineBox should stay small");
 
 typedef WTF::HashMap<const RootInlineBox*, EllipsisBox*> EllipsisBoxMap;
 static EllipsisBoxMap* gEllipsisBoxMap = 0;

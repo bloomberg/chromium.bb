@@ -60,7 +60,7 @@ struct SameSizeAsMarginInfo {
     LayoutUnit margins[2];
 };
 
-COMPILE_ASSERT(sizeof(RenderBlockFlow::MarginValues) == sizeof(LayoutUnit[4]), MarginValues_should_stay_small);
+static_assert(sizeof(RenderBlockFlow::MarginValues) == sizeof(LayoutUnit[4]), "MarginValues should stay small");
 
 class MarginInfo {
     // Collapsing flags for whether we can collapse our margins with our children's margins.
@@ -165,7 +165,7 @@ void RenderBlockFlow::RenderBlockFlowRareData::trace(Visitor* visitor)
 RenderBlockFlow::RenderBlockFlow(ContainerNode* node)
     : RenderBlock(node)
 {
-    COMPILE_ASSERT(sizeof(MarginInfo) == sizeof(SameSizeAsMarginInfo), MarginInfo_should_stay_small);
+    static_assert(sizeof(MarginInfo) == sizeof(SameSizeAsMarginInfo), "MarginInfo should stay small");
     setChildrenInline(true);
 }
 

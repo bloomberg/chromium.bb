@@ -11,7 +11,7 @@
 namespace blink {
 
 // DisplayItem types must be kept in sync with PaintPhase.
-COMPILE_ASSERT((unsigned)DisplayItem::DrawingPaintPhaseBlockBackground == (unsigned)PaintPhaseBlockBackground, DisplayItem_Type_should_stay_in_sync);
-COMPILE_ASSERT((unsigned)DisplayItem::DrawingPaintPhaseClippingMask == (unsigned)PaintPhaseClippingMask, DisplayItem_Type_should_stay_in_sync);
+static_assert((unsigned)DisplayItem::DrawingPaintPhaseBlockBackground == (unsigned)PaintPhaseBlockBackground, "DisplayItem Type should stay in sync");
+static_assert((unsigned)DisplayItem::DrawingPaintPhaseClippingMask == (unsigned)PaintPhaseClippingMask, "DisplayItem Type should stay in sync");
 
 } // namespace blink
