@@ -23,7 +23,6 @@
     }
   },
   "permissions": [
-    "alarms",
     "identity",
     "identity.email",
     "chromeosInfoPrivate",
