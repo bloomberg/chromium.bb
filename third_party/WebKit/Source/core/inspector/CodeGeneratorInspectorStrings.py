@@ -230,7 +230,7 @@ $methodNameDeclarationsIndex
 };
 
 const char* InspectorBackendDispatcher::commandName(MethodNames index) {
-    COMPILE_ASSERT(static_cast<int>(kMethodNamesEnumSize) == WTF_ARRAY_LENGTH(commandNamesIndex), command_name_array_problem);
+    static_assert(static_cast<int>(kMethodNamesEnumSize) == WTF_ARRAY_LENGTH(commandNamesIndex), "MethodNames enum should have the same number of elements as commandNamesIndex");
     return commandNames + commandNamesIndex[index];
 }
 
@@ -611,7 +611,7 @@ private:
     Array() { }
 
     JSONArray* openAccessors() {
-        COMPILE_ASSERT(sizeof(JSONArray) == sizeof(Array<T>), cannot_cast);
+        static_assert(sizeof(JSONArray) == sizeof(Array<T>), "JSONArray should be the same size as Array<T>");
         return static_cast<JSONArray*>(static_cast<JSONArrayBase*>(this));
     }
 
@@ -639,7 +639,7 @@ public:
 #if $validatorIfdefName
         assertCorrectValue(array.get());
 #endif  // $validatorIfdefName
-        COMPILE_ASSERT(sizeof(Array<T>) == sizeof(JSONArray), type_cast_problem);
+        static_assert(sizeof(Array<T>) == sizeof(JSONArray), "Array<T> should be the same size as JSONArray");
         return static_cast<Array<T>*>(static_cast<JSONArrayBase*>(array.get()));
     }
 
@@ -899,7 +899,7 @@ class_binding_builder_part_1 = (
 
         Builder(PassRefPtr</*%s*/JSONObject> ptr)
         {
-            COMPILE_ASSERT(STATE == NoFieldsSet, builder_created_in_non_init_state);
+            static_assert(STATE == NoFieldsSet, "builder should not be created in non-init state");
             m_result = ptr;
         }
         friend class %s;
@@ -909,7 +909,7 @@ class_binding_builder_part_1 = (
 class_binding_builder_part_2 = ("""
         Builder<STATE | %s>& set%s(%s value)
         {
-            COMPILE_ASSERT(!(STATE & %s), property_%s_already_set);
+            static_assert(!(STATE & %s), "property %s should not be set yet");
             m_result->set%s("%s", %s);
             return castState<%s>();
         }
@@ -918,8 +918,8 @@ class_binding_builder_part_2 = ("""
 class_binding_builder_part_3 = ("""
         operator RefPtr<%s>& ()
         {
-            COMPILE_ASSERT(STATE == AllFieldsSet, result_is_not_ready);
-            COMPILE_ASSERT(sizeof(%s) == sizeof(JSONObject), cannot_cast);
+            static_assert(STATE == AllFieldsSet, "state should be AllFieldsSet");
+            static_assert(sizeof(%s) == sizeof(JSONObject), "%s should be the same size as JSONObject");
             return *reinterpret_cast<RefPtr<%s>*>(&m_result);
         }
 
