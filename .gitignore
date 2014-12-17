@@ -7,3 +7,8 @@ buildbot/revisions.pfq
 .project
 .pydevproject
 buildbot/.completed_stages
+
+# source cross-reference files.
+tags
+.ctags
+cscope.out
