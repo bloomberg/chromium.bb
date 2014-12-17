@@ -527,15 +527,11 @@ bool PNGImageDecoder::isComplete() const
 
 void PNGImageDecoder::decode(bool onlySize)
 {
-    if (failed()) {
-        ASSERT(!m_reader);
+    if (failed())
         return;
-    }
 
-    if (!m_reader) {
+    if (!m_reader)
         m_reader = adoptPtr(new PNGImageReader(this));
-        ASSERT(!isComplete());
-    }
 
     // If we couldn't decode the image but have received all the data, decoding
     // has failed.
