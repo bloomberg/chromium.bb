@@ -244,7 +244,7 @@ void RenderView::mapLocalToContainer(const RenderLayerModelObject* paintInvalida
     }
 
     if ((mode & IsFixed) && m_frameView) {
-        transformState.move(m_frameView->scrollOffsetForFixedPosition());
+        transformState.move(m_frameView->scrollOffsetForViewportConstrainedObjects());
         // IsFixed flag is only applicable within this RenderView.
         mode &= ~IsFixed;
     }
@@ -270,7 +270,7 @@ const RenderObject* RenderView::pushMappingToContainer(const RenderLayerModelObj
     RenderObject* container = 0;
 
     if (m_frameView)
-        offsetForFixedPosition = LayoutSize(m_frameView->scrollOffsetForFixedPosition());
+        offsetForFixedPosition = LayoutSize(m_frameView->scrollOffsetForViewportConstrainedObjects());
 
     if (geometryMap.mapCoordinatesFlags() & TraverseDocumentBoundaries) {
         if (RenderPart* parentDocRenderer = frame()->ownerRenderer()) {
@@ -298,7 +298,7 @@ const RenderObject* RenderView::pushMappingToContainer(const RenderLayerModelObj
 void RenderView::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformState& transformState) const
 {
     if (mode & IsFixed && m_frameView)
-        transformState.move(m_frameView->scrollOffsetForFixedPosition());
+        transformState.move(m_frameView->scrollOffsetForViewportConstrainedObjects());
 
     if (mode & UseTransforms && shouldUseTransformFromContainer(0)) {
         TransformationMatrix t;
@@ -420,7 +420,7 @@ void RenderView::adjustViewportConstrainedOffset(LayoutRect& rect, ViewportConst
         return;
 
     if (m_frameView) {
-        rect.move(m_frameView->scrollOffsetForFixedPosition());
+        rect.move(m_frameView->scrollOffsetForViewportConstrainedObjects());
 
         // FIXME: Paint invalidation should happen after scroll updates, so there should be no pending scroll delta.
         // However, we still have paint invalidation during layout, so we can't ASSERT for now. crbug.com/434950.

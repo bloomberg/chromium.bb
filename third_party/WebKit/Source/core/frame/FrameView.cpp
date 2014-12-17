@@ -1307,9 +1307,9 @@ void FrameView::viewportConstrainedVisibleContentSizeChanged(bool widthChanged, 
     }
 }
 
-IntSize FrameView::scrollOffsetForFixedPosition() const
+IntSize FrameView::scrollOffsetForViewportConstrainedObjects() const
 {
-    return toIntSize(clampScrollPosition(scrollPosition()));
+    return roundedIntSize(viewportConstrainedVisibleContentRect().location());
 }
 
 IntPoint FrameView::lastKnownMousePosition() const

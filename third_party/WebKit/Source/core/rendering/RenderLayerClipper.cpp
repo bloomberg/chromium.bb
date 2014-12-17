@@ -73,7 +73,7 @@ static void applyClipRects(const ClipRectsContext& context, RenderObject& render
     RenderView* view = renderer.view();
     ASSERT(view);
     if (clipRects.fixed() && context.rootLayer->renderer() == view)
-        offset -= view->frameView()->scrollOffsetForFixedPosition();
+        offset -= view->frameView()->scrollOffsetForViewportConstrainedObjects();
 
     if (renderer.hasOverflowClip()) {
         ClipRect newOverflowClip = toRenderBox(renderer).overflowClipRect(offset, context.scrollbarRelevancy);
@@ -334,7 +334,7 @@ ClipRect RenderLayerClipper::backgroundClipRect(const ClipRectsContext& context)
 
     // Note: infinite clipRects should not be scrolled here, otherwise they will accidentally no longer be considered infinite.
     if (parentClipRects->fixed() && context.rootLayer->renderer() == m_renderer.view() && result != LayoutRect::infiniteIntRect())
-        result.move(m_renderer.view()->frameView()->scrollOffsetForFixedPosition());
+        result.move(m_renderer.view()->frameView()->scrollOffsetForViewportConstrainedObjects());
 
     return result;
 }

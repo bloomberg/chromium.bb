@@ -313,8 +313,7 @@ public:
 
     virtual bool isActive() const override;
 
-    // DEPRECATED: Use viewportConstrainedVisibleContentRect() instead.
-    IntSize scrollOffsetForFixedPosition() const;
+    IntSize scrollOffsetForViewportConstrainedObjects() const;
 
     // Override scrollbar notifications to update the AXObject cache.
     virtual void didAddScrollbar(Scrollbar*, ScrollbarOrientation) override;
