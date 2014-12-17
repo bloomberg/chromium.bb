@@ -1479,5 +1479,4 @@ crbug.com/442340 virtual/stable/webexposed/global-interface-listing-shared-worke
 
 crbug.com/390488 [ Mac Debug ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
 
-crbug.com/381919 virtual/regionbasedmulticol/fast/multicol/transform-inside-opacity.html [ NeedsRebaseline ]
 crbug.com/438618 fast/css3-text/css3-text-justify/text-justify-distribute.html [ NeedsRebaseline ]
