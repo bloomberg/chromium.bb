@@ -410,6 +410,22 @@
             }],
           ]
         },  # end of target 'cast_crash_client'
+        {
+          'target_name': 'cast_shell_media',
+          'type': '<(component)',
+          'dependencies': [
+            'media/media.gyp:cast_media',
+            '../content/content.gyp:content',
+            '../ipc/ipc.gyp:ipc',
+          ],
+          'sources': [
+            'common/media/cma_messages.h',
+            'common/media/cma_message_generator.cc',
+            'common/media/cma_message_generator.h',
+            'common/media/cma_param_traits.cc',
+            'common/media/cma_param_traits.h',
+          ],
+        },  # end of target 'cast_shell_media'
         # This target contains all of the primary code of |cast_shell|, except
         # for |main|. This allows end-to-end tests using |cast_shell|.
         # This also includes all targets that cannot be built on Android.
@@ -419,6 +435,7 @@
           'dependencies': [
             'cast_crash_client',
             'cast_net',
+            'cast_shell_media',
             'cast_shell_common',
             'media/media.gyp:cast_media',
             '../ui/aura/aura.gyp:aura_test_support',
