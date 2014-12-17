@@ -104,11 +104,16 @@ const AudioParameters::Format CrasUnifiedStreamTest::kTestFormat =
 const uint32 CrasUnifiedStreamTest::kTestFramesPerPacket = 1000;
 
 TEST_F(CrasUnifiedStreamTest, ConstructedState) {
-  // Should support mono.
-  CrasUnifiedStream* test_stream = CreateStream(CHANNEL_LAYOUT_MONO);
+  CrasUnifiedStream* test_stream = CreateStream(kTestChannelLayout);
+  EXPECT_TRUE(test_stream->Open());
   test_stream->Close();
 
-  // Should support stereo.
+  // Should support mono.
+  test_stream = CreateStream(CHANNEL_LAYOUT_MONO);
+  EXPECT_TRUE(test_stream->Open());
+  test_stream->Close();
+
+  // Should support multi-channel.
   test_stream = CreateStream(CHANNEL_LAYOUT_SURROUND);
   EXPECT_TRUE(test_stream->Open());
   test_stream->Close();
@@ -126,11 +131,6 @@ TEST_F(CrasUnifiedStreamTest, ConstructedState) {
                                   0, kTestBitsPerSample, kTestFramesPerPacket);
   test_stream = new CrasUnifiedStream(bad_rate_params, mock_manager_.get());
   EXPECT_FALSE(test_stream->Open());
-  test_stream->Close();
-
-  // Check that Mono works too.
-  test_stream = CreateStream(CHANNEL_LAYOUT_MONO);
-  ASSERT_TRUE(test_stream->Open());
   test_stream->Close();
 }
 
