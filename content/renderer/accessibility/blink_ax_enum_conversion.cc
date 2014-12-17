@@ -164,6 +164,8 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_HEADING;
     case blink::WebAXRoleIframe:
       return ui::AX_ROLE_IFRAME;
+    case blink::WebAXRoleIframePresentational:
+      return ui::AX_ROLE_IFRAME_PRESENTATIONAL;
     case blink::WebAXRoleIgnored:
       return ui::AX_ROLE_IGNORED;
     case blink::WebAXRoleImage:

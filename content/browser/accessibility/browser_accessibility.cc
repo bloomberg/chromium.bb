@@ -678,6 +678,23 @@ bool BrowserAccessibility::IsEditableText() const {
           GetRole() == ui::AX_ROLE_TEXT_AREA);
 }
 
+bool BrowserAccessibility::IsWebAreaForPresentationalIframe() const {
+  if (GetRole() != ui::AX_ROLE_WEB_AREA &&
+      GetRole() != ui::AX_ROLE_ROOT_WEB_AREA) {
+    return false;
+  }
+
+  BrowserAccessibility* parent = GetParent();
+  if (!parent)
+    return false;
+
+  BrowserAccessibility* grandparent = parent->GetParent();
+  if (!grandparent)
+    return false;
+
+  return grandparent->GetRole() == ui::AX_ROLE_IFRAME_PRESENTATIONAL;
+}
+
 std::string BrowserAccessibility::GetTextRecursive() const {
   if (!name_.empty()) {
     return name_;

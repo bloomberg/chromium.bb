@@ -94,6 +94,7 @@
     group,
     heading,
     iframe,
+    iframePresentational,
     ignored,
     imageMapLink,
     imageMap,

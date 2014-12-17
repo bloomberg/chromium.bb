@@ -597,6 +597,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunTest(FILE_PATH_LITERAL("iframe-coordinates.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityIframePresentational) {
+  RunTest(FILE_PATH_LITERAL("iframe-presentational.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityImg) {
   RunTest(FILE_PATH_LITERAL("img.html"));
 }

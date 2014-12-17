@@ -532,6 +532,13 @@ NSDictionary* attributeToMethodNameMap = nil;
     else
       return NSAccessibilityButtonRole;
   }
+
+  // If this is a web area for a presentational iframe, give it a role of
+  // something other than WebArea so that the fact that it's a separate doc
+  // is not exposed to AT.
+  if (browserAccessibility_->IsWebAreaForPresentationalIframe())
+    return NSAccessibilityGroupRole;
+
   return [AXPlatformNodeCocoa nativeRoleFromAXRole:role];
 }
 
@@ -557,8 +564,9 @@ NSDictionary* attributeToMethodNameMap = nil;
         IDS_AX_ROLE_HEADING));
   }
 
-  if ([role isEqualToString:NSAccessibilityGroupRole] ||
-      [role isEqualToString:NSAccessibilityRadioButtonRole]) {
+  if (([role isEqualToString:NSAccessibilityGroupRole] ||
+       [role isEqualToString:NSAccessibilityRadioButtonRole]) &&
+      !browserAccessibility_->IsWebAreaForPresentationalIframe()) {
     std::string role;
     if (browserAccessibility_->GetHtmlAttribute("role", &role)) {
       ui::AXRole internalRole = [self internalRole];

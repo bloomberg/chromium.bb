@@ -3088,6 +3088,14 @@ void BrowserAccessibilityWin::OnDataChanged() {
     relation->AddTarget(title_elem_id);
     relations_.push_back(relation);
   }
+
+  // If this is a web area for a presentational iframe, give it a role of
+  // something other than DOCUMENT so that the fact that it's a separate doc
+  // is not exposed to AT.
+  if (IsWebAreaForPresentationalIframe()) {
+    ia_role_ = ROLE_SYSTEM_GROUPING;
+    ia2_role_ = ROLE_SYSTEM_GROUPING;
+  }
 }
 
 void BrowserAccessibilityWin::OnUpdateFinished() {
@@ -3549,6 +3557,9 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_role_ = ROLE_SYSTEM_DOCUMENT;
       ia2_role_ = IA2_ROLE_INTERNAL_FRAME;
       ia_state_ = STATE_SYSTEM_READONLY;
+      break;
+    case ui::AX_ROLE_IFRAME_PRESENTATIONAL:
+      ia_role_ = ROLE_SYSTEM_GROUPING;
       break;
     case ui::AX_ROLE_IMAGE:
       ia_role_ = ROLE_SYSTEM_GRAPHIC;

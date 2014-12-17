@@ -105,6 +105,7 @@
     group,
     heading,
     iframe,
+    iframe_presentational,
     ignored,
     image_map_link,
     image_map,

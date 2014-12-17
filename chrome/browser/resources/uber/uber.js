@@ -337,6 +337,7 @@ cr.define('uber', function() {
     if (!frame) {
       frame = container.ownerDocument.createElement('iframe');
       frame.name = pageId;
+      frame.setAttribute('role', 'presentation');
       container.appendChild(frame);
       frame.src = sourceUrl;
     } else {
