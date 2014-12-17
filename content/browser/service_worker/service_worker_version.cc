@@ -155,6 +155,12 @@ void RunErrorMessageCallback(
   callback.Run(status);
 }
 
+void RunErrorCrossOriginConnectCallback(
+    const ServiceWorkerVersion::CrossOriginConnectCallback& callback,
+    ServiceWorkerStatusCode status) {
+  callback.Run(status, false);
+}
+
 }  // namespace
 
 ServiceWorkerVersion::ServiceWorkerVersion(
@@ -554,6 +560,37 @@ void ServiceWorkerVersion::DispatchGeofencingEvent(
   }
 }
 
+void ServiceWorkerVersion::DispatchCrossOriginConnectEvent(
+    const CrossOriginConnectCallback& callback,
+    const CrossOriginServiceWorkerClient& client) {
+  DCHECK_EQ(ACTIVATED, status()) << status();
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures)) {
+    callback.Run(SERVICE_WORKER_ERROR_ABORT, false);
+    return;
+  }
+
+  if (running_status() != RUNNING) {
+    // Schedule calling this method after starting the worker.
+    StartWorker(
+        base::Bind(&RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(),
+                   base::Bind(&RunErrorCrossOriginConnectCallback, callback),
+                   base::Bind(&self::DispatchCrossOriginConnectEvent,
+                              weak_factory_.GetWeakPtr(), callback, client)));
+    return;
+  }
+
+  int request_id = cross_origin_connect_callbacks_.Add(
+      new CrossOriginConnectCallback(callback));
+  ServiceWorkerStatusCode status = embedded_worker_->SendMessage(
+      ServiceWorkerMsg_CrossOriginConnectEvent(request_id, client));
+  if (status != SERVICE_WORKER_OK) {
+    cross_origin_connect_callbacks_.Remove(request_id);
+    RunSoon(base::Bind(callback, status, false));
+  }
+}
+
 void ServiceWorkerVersion::AddControllee(
     ServiceWorkerProviderHost* provider_host) {
   DCHECK(!ContainsKey(controllee_map_, provider_host));
@@ -713,6 +750,8 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
                         OnPushEventFinished)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_GeofencingEventFinished,
                         OnGeofencingEventFinished)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CrossOriginConnectEventFinished,
+                        OnCrossOriginConnectEventFinished)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessageToDocument,
                         OnPostMessageToDocument)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_FocusClient,
@@ -939,6 +978,24 @@ void ServiceWorkerVersion::OnGeofencingEventFinished(int request_id) {
   scoped_refptr<ServiceWorkerVersion> protect(this);
   callback->Run(SERVICE_WORKER_OK);
   geofencing_callbacks_.Remove(request_id);
+}
+
+void ServiceWorkerVersion::OnCrossOriginConnectEventFinished(
+    int request_id,
+    bool accept_connection) {
+  TRACE_EVENT1("ServiceWorker",
+               "ServiceWorkerVersion::OnCrossOriginConnectEventFinished",
+               "Request id", request_id);
+  CrossOriginConnectCallback* callback =
+      cross_origin_connect_callbacks_.Lookup(request_id);
+  if (!callback) {
+    NOTREACHED() << "Got unexpected message: " << request_id;
+    return;
+  }
+
+  scoped_refptr<ServiceWorkerVersion> protect(this);
+  callback->Run(SERVICE_WORKER_OK, accept_connection);
+  cross_origin_connect_callbacks_.Remove(request_id);
 }
 
 void ServiceWorkerVersion::OnPostMessageToDocument(

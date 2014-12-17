@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "content/common/navigator_connect_types.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/platform_notification_data.h"
@@ -207,6 +208,9 @@ IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_PushEventFinished,
                     blink::WebServiceWorkerEventResult)
 IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_GeofencingEventFinished,
                     int /* request_id */)
+IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_CrossOriginConnectEventFinished,
+                    int /* request_id */,
+                    bool /* accept_connection */)
 
 // Asks the browser to retrieve documents controlled by the sender
 // ServiceWorker.
@@ -417,6 +421,9 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_GeofencingEvent,
                      blink::WebGeofencingEventType /* event_type */,
                      std::string /* region_id */,
                      blink::WebCircularGeofencingRegion /* region */)
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CrossOriginConnectEvent,
+                     int /* request_id */,
+                     content::CrossOriginServiceWorkerClient /* client */)
 IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_MessageToWorker,
                      base::string16 /* message */,
                      std::vector<int> /* sent_message_port_ids */,

@@ -886,7 +886,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #endif
   AddFilter(new GeofencingDispatcherHost(
       storage_partition_impl_->GetGeofencingManager()));
-  AddFilter(new NavigatorConnectDispatcherHost());
+  AddFilter(new NavigatorConnectDispatcherHost(
+      storage_partition_impl_->GetServiceWorkerContext()));
   if (browser_command_line.HasSwitch(
           switches::kEnableExperimentalWebPlatformFeatures))
     AddFilter(new BluetoothDispatcherHost());

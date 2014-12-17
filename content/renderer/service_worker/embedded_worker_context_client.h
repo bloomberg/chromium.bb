@@ -99,6 +99,8 @@ class EmbeddedWorkerContextClient
   virtual void didHandlePushEvent(int request_id,
                                   blink::WebServiceWorkerEventResult result);
   virtual void didHandleSyncEvent(int request_id);
+  virtual void didHandleCrossOriginConnectEvent(int request_id,
+                                                bool accept_connection);
   virtual blink::WebServiceWorkerNetworkProvider*
       createServiceWorkerNetworkProvider(blink::WebDataSource* data_source);
   virtual void postMessageToClient(

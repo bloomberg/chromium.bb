@@ -337,6 +337,14 @@ void EmbeddedWorkerContextClient::didHandleSyncEvent(int request_id) {
   script_context_->DidHandleSyncEvent(request_id);
 }
 
+void EmbeddedWorkerContextClient::didHandleCrossOriginConnectEvent(
+    int request_id,
+    bool accept_connection) {
+  DCHECK(script_context_);
+  script_context_->DidHandleCrossOriginConnectEvent(request_id,
+                                                    accept_connection);
+}
+
 blink::WebServiceWorkerNetworkProvider*
 EmbeddedWorkerContextClient::createServiceWorkerNetworkProvider(
     blink::WebDataSource* data_source) {

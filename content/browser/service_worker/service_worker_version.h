@@ -34,6 +34,7 @@ struct WebCircularGeofencingRegion;
 
 namespace content {
 
+struct CrossOriginServiceWorkerClient;
 class EmbeddedWorkerRegistry;
 struct PlatformNotificationData;
 class ServiceWorkerContextCore;
@@ -56,6 +57,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   typedef base::Callback<void(ServiceWorkerStatusCode,
                               ServiceWorkerFetchEventResult,
                               const ServiceWorkerResponse&)> FetchCallback;
+  typedef base::Callback<void(ServiceWorkerStatusCode, bool)>
+      CrossOriginConnectCallback;
 
   enum RunningStatus {
     STOPPED = EmbeddedWorkerInstance::STOPPED,
@@ -229,6 +232,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
       const std::string& region_id,
       const blink::WebCircularGeofencingRegion& region);
 
+  // Sends a cross origin connect event to the associated embedded worker and
+  // asynchronously calls |callback| with the response from the worker.
+  //
+  // This must be called when the status() is ACTIVATED.
+  void DispatchCrossOriginConnectEvent(
+      const CrossOriginConnectCallback& callback,
+      const CrossOriginServiceWorkerClient& client);
+
   // Adds and removes |provider_host| as a controllee of this ServiceWorker.
   // A potential controllee is a host having the version as its .installing
   // or .waiting version.
@@ -313,6 +324,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnPushEventFinished(int request_id,
                            blink::WebServiceWorkerEventResult result);
   void OnGeofencingEventFinished(int request_id);
+  void OnCrossOriginConnectEventFinished(int request_id,
+                                         bool accept_connection);
   void OnPostMessageToDocument(int client_id,
                                const base::string16& message,
                                const std::vector<int>& sent_message_port_ids);
@@ -348,6 +361,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   IDMap<StatusCallback, IDMapOwnPointer> push_callbacks_;
   IDMap<StatusCallback, IDMapOwnPointer> geofencing_callbacks_;
   IDMap<GetClientInfoCallback, IDMapOwnPointer> get_client_info_callbacks_;
+  IDMap<CrossOriginConnectCallback, IDMapOwnPointer>
+      cross_origin_connect_callbacks_;
 
   ControlleeMap controllee_map_;
   ControlleeByIDMap controllee_by_id_;

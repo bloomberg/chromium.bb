@@ -35,6 +35,7 @@ class Message;
 
 namespace content {
 
+struct CrossOriginServiceWorkerClient;
 class EmbeddedWorkerContextClient;
 struct PlatformNotificationData;
 
@@ -64,6 +65,7 @@ class ServiceWorkerScriptContext {
   void DidHandlePushEvent(int request_id,
                           blink::WebServiceWorkerEventResult result);
   void DidHandleSyncEvent(int request_id);
+  void DidHandleCrossOriginConnectEvent(int request_id, bool accept_connection);
   void GetClientDocuments(
       blink::WebServiceWorkerClientsCallbacks* callbacks);
   void PostMessageToDocument(
@@ -106,6 +108,8 @@ class ServiceWorkerScriptContext {
                          blink::WebGeofencingEventType event_type,
                          const std::string& region_id,
                          const blink::WebCircularGeofencingRegion& region);
+  void OnCrossOriginConnectEvent(int request_id,
+                                 const CrossOriginServiceWorkerClient& client);
   void OnPostMessage(const base::string16& message,
                      const std::vector<int>& sent_message_port_ids,
                      const std::vector<int>& new_routing_ids);

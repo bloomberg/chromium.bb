@@ -13,6 +13,7 @@
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/renderer/service_worker/embedded_worker_context_client.h"
 #include "ipc/ipc_message.h"
+#include "third_party/WebKit/public/platform/WebCrossOriginServiceWorkerClient.h"
 #include "third_party/WebKit/public/platform/WebNotificationData.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerRequest.h"
@@ -82,6 +83,8 @@ void ServiceWorkerScriptContext::OnMessageReceived(
                         OnNotificationClickEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_PushEvent, OnPushEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_GeofencingEvent, OnGeofencingEvent)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CrossOriginConnectEvent,
+                        OnCrossOriginConnectEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_MessageToWorker, OnPostMessage)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetClientDocuments,
                         OnDidGetClientDocuments)
@@ -165,6 +168,13 @@ void ServiceWorkerScriptContext::DidHandlePushEvent(
 void ServiceWorkerScriptContext::DidHandleSyncEvent(int request_id) {
   Send(new ServiceWorkerHostMsg_SyncEventFinished(
       GetRoutingID(), request_id));
+}
+
+void ServiceWorkerScriptContext::DidHandleCrossOriginConnectEvent(
+    int request_id,
+    bool accept_connection) {
+  Send(new ServiceWorkerHostMsg_CrossOriginConnectEventFinished(
+      GetRoutingID(), request_id, accept_connection));
 }
 
 void ServiceWorkerScriptContext::GetClientDocuments(
@@ -297,6 +307,18 @@ void ServiceWorkerScriptContext::OnGeofencingEvent(
       request_id, event_type, blink::WebString::fromUTF8(region_id), region);
   Send(new ServiceWorkerHostMsg_GeofencingEventFinished(GetRoutingID(),
                                                         request_id));
+}
+
+void ServiceWorkerScriptContext::OnCrossOriginConnectEvent(
+    int request_id,
+    const CrossOriginServiceWorkerClient& client) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerScriptContext::OnCrossOriginConnectEvent");
+  blink::WebCrossOriginServiceWorkerClient web_client;
+  web_client.origin = client.origin;
+  web_client.targetURL = client.target_url;
+  web_client.clientID = client.message_port_id;
+  proxy_->dispatchCrossOriginConnectEvent(request_id, web_client);
 }
 
 void ServiceWorkerScriptContext::OnPostMessage(
