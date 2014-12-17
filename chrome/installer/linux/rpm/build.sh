@@ -146,7 +146,7 @@ do_package() {
   # compression, symbol stripping, etc. that we want.
   fakeroot rpmbuild -bb --target="$ARCHITECTURE" --rmspec \
     --define "_topdir $RPMBUILD_DIR" \
-    --define "_binary_payload w9.bzdio" \
+    --define "_binary_payload w9.xzdio" \
     --define "__os_install_post  %{nil}" \
     "${SPEC}"
   PKGNAME="${PACKAGE}-${CHANNEL}-${VERSION}-${PACKAGE_RELEASE}"
