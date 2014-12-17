@@ -10,12 +10,15 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/login/enrollment/enrollment_mode.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
-#include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 
 class GoogleServiceAuthError;
 class Profile;
+
+namespace policy {
+struct EnrollmentConfig;
+class EnrollmentStatus;
+}
 
 namespace chromeos {
 
@@ -58,8 +61,8 @@ class EnterpriseEnrollmentHelper {
   // Factory method. Caller takes ownership of the returned object.
   static scoped_ptr<EnterpriseEnrollmentHelper> Create(
       EnrollmentStatusConsumer* status_consumer,
-      EnrollmentMode enrollment_mode,
-      std::string& domain);
+      const policy::EnrollmentConfig& enrollment_config,
+      const std::string& enrolling_user_domain);
 
   virtual ~EnterpriseEnrollmentHelper();
 

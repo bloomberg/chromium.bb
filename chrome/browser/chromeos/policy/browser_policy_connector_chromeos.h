@@ -30,6 +30,7 @@ class DeviceCloudPolicyInitializer;
 class DeviceCloudPolicyInvalidator;
 class DeviceLocalAccountPolicyService;
 class DeviceManagementService;
+struct EnrollmentConfig;
 class EnterpriseInstallAttributes;
 class NetworkConfigurationUpdater;
 class ProxyPolicyProvider;
@@ -68,6 +69,11 @@ class BrowserPolicyConnectorChromeOS
   // locked empty, or DEVICE_MODE_UNKNOWN if the device has not been owned yet.
   // For other OSes the function will always return DEVICE_MODE_CONSUMER.
   DeviceMode GetDeviceMode();
+
+  // Get the enrollment configuration for the device as decided by various
+  // factors. See DeviceCloudPolicyInitializer::GetPrescribedEnrollmentConfig()
+  // for details.
+  EnrollmentConfig GetPrescribedEnrollmentConfig() const;
 
   // Works out the user affiliation by checking the given |user_name| against
   // the installation attributes.

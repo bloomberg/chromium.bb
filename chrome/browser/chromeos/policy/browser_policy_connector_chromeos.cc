@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
+#include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -255,6 +256,14 @@ std::string BrowserPolicyConnectorChromeOS::GetEnterpriseDomain() {
 DeviceMode BrowserPolicyConnectorChromeOS::GetDeviceMode() {
   return install_attributes_ ? install_attributes_->GetMode()
                              : DEVICE_MODE_NOT_SET;
+}
+
+EnrollmentConfig BrowserPolicyConnectorChromeOS::GetPrescribedEnrollmentConfig()
+    const {
+  if (device_cloud_policy_initializer_)
+    return device_cloud_policy_initializer_->GetPrescribedEnrollmentConfig();
+
+  return EnrollmentConfig();
 }
 
 UserAffiliation BrowserPolicyConnectorChromeOS::GetUserAffiliation(

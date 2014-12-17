@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
+#include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"

@@ -17,18 +17,23 @@ const char * const kMetricEnrollmentRecovery = "Enterprise.EnrollmentRecovery";
 
 namespace chromeos {
 
-void EnrollmentUMA(policy::MetricEnrollment sample, EnrollmentMode mode) {
+void EnrollmentUMA(policy::MetricEnrollment sample,
+                   policy::EnrollmentConfig::Mode mode) {
   switch (mode) {
-    case ENROLLMENT_MODE_MANUAL:
+    case policy::EnrollmentConfig::MODE_MANUAL:
+    case policy::EnrollmentConfig::MODE_MANUAL_REENROLLMENT:
+    case policy::EnrollmentConfig::MODE_LOCAL_ADVERTISED:
+    case policy::EnrollmentConfig::MODE_SERVER_ADVERTISED:
       UMA_HISTOGRAM_SPARSE_SLOWLY(kMetricEnrollment, sample);
       break;
-    case ENROLLMENT_MODE_FORCED:
+    case policy::EnrollmentConfig::MODE_LOCAL_FORCED:
+    case policy::EnrollmentConfig::MODE_SERVER_FORCED:
       UMA_HISTOGRAM_SPARSE_SLOWLY(kMetricEnrollmentForced, sample);
       break;
-    case ENROLLMENT_MODE_RECOVERY:
+    case policy::EnrollmentConfig::MODE_RECOVERY:
       UMA_HISTOGRAM_SPARSE_SLOWLY(kMetricEnrollmentRecovery, sample);
       break;
-    case ENROLLMENT_MODE_COUNT:
+    case policy::EnrollmentConfig::MODE_NONE:
       NOTREACHED();
       break;
   }

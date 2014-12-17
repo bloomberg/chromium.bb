@@ -7,6 +7,8 @@
 
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
+#include "chrome/browser/chromeos/policy/enrollment_config.h"
+#include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -25,8 +27,8 @@ class MockEnrollmentScreenActor
   MockEnrollmentScreenActor();
   virtual ~MockEnrollmentScreenActor();
 
-  MOCK_METHOD3(SetParameters,
-               void(Controller*, EnrollmentMode, const std::string&));
+  MOCK_METHOD2(SetParameters,
+               void(Controller*, const policy::EnrollmentConfig& config));
   MOCK_METHOD0(PrepareToShow, void());
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());

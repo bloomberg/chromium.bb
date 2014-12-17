@@ -15,10 +15,10 @@ EnterpriseEnrollmentHelper::~EnterpriseEnrollmentHelper() {
 // static
 scoped_ptr<EnterpriseEnrollmentHelper> EnterpriseEnrollmentHelper::Create(
     EnrollmentStatusConsumer* status_consumer,
-    EnrollmentMode enrollment_mode,
-    std::string& domain) {
+    const policy::EnrollmentConfig& enrollment_config,
+    const std::string& enrolling_user_domain) {
   return make_scoped_ptr(new EnterpriseEnrollmentHelperImpl(
-      status_consumer, enrollment_mode, domain));
+      status_consumer, enrollment_config, enrolling_user_domain));
 }
 
 EnterpriseEnrollmentHelper::EnterpriseEnrollmentHelper(

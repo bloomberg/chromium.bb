@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/enrollment/enrollment_uma.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
+#include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -63,11 +64,11 @@ namespace chromeos {
 
 EnterpriseEnrollmentHelperImpl::EnterpriseEnrollmentHelperImpl(
     EnrollmentStatusConsumer* status_consumer,
-    EnrollmentMode enrollment_mode,
-    std::string& domain)
+    const policy::EnrollmentConfig& enrollment_config,
+    const std::string& enrolling_user_domain)
     : EnterpriseEnrollmentHelper(status_consumer),
-      enrollment_mode_(enrollment_mode),
-      domain_(domain),
+      enrollment_config_(enrollment_config),
+      enrolling_user_domain_(enrolling_user_domain),
       profile_(NULL),
       fetch_additional_token_(false),
       started_(false),
@@ -148,7 +149,7 @@ void EnterpriseEnrollmentHelperImpl::DoEnrollUsingToken(
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   if (connector->IsEnterpriseManaged() &&
-      connector->GetEnterpriseDomain() != domain_) {
+      connector->GetEnterpriseDomain() != enrolling_user_domain_) {
     LOG(ERROR) << "Trying to re-enroll to a different domain than "
                << connector->GetEnterpriseDomain();
     UMA(policy::kMetricEnrollmentPrecheckDomainMismatch);
@@ -367,7 +368,7 @@ void EnterpriseEnrollmentHelperImpl::ReportEnrollmentStatus(
 }
 
 void EnterpriseEnrollmentHelperImpl::UMA(policy::MetricEnrollment sample) {
-  EnrollmentUMA(sample, enrollment_mode_);
+  EnrollmentUMA(sample, enrollment_config_.mode);
 }
 
 void EnterpriseEnrollmentHelperImpl::OnBrowsingDataRemoverDone() {

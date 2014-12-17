@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -35,7 +34,9 @@ namespace policy {
 class DeviceCloudPolicyManagerChromeOS;
 class DeviceCloudPolicyStoreChromeOS;
 class DeviceManagementService;
+struct EnrollmentConfig;
 class EnrollmentHandlerChromeOS;
+class EnrollmentStatus;
 class EnterpriseInstallAttributes;
 
 // This class connects DCPM to the correct device management service, and
@@ -78,20 +79,16 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
       const AllowedDeviceModes& allowed_modes,
       const EnrollmentCallback& enrollment_callback);
 
-  // Checks whether enterprise enrollment should be a regular step during OOBE.
-  bool ShouldAutoStartEnrollment() const;
-
-  // Checks whether enterprise enrollment recovery is required.
-  bool ShouldRecoverEnrollment() const;
-
-  // Looks up the domain from |install_attributes_|.
-  std::string GetEnrollmentRecoveryDomain() const;
-
-  // Checks whether the user can cancel enrollment.
-  bool CanExitEnrollment() const;
-
-  // Gets the domain this device is supposed to be enrolled to.
-  std::string GetForcedEnrollmentDomain() const;
+  // Get the enrollment configuration that has been set up via signals such as
+  // device requisition, OEM manifest, pre-existing installation-time attributes
+  // or server-backed state retrieval. The configuration is stored in |config|,
+  // |config.mode| will be MODE_NONE if there is no prescribed configuration.
+  // |config.management_domain| will contain the domain the device is supposed
+  // to be enrolled to as decided by factors such as forced re-enrollment,
+  // enrollment recovery, or already-present install attributes. Note that
+  // |config.management_domain| may be non-empty even if |config.mode| is
+  // MODE_NONE.
+  EnrollmentConfig GetPrescribedEnrollmentConfig() const;
 
   // CloudPolicyStore::Observer:
   virtual void OnStoreLoaded(CloudPolicyStore* store) override;

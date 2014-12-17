@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/login/screens/controller_pairing_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/host_pairing_screen.h"
+#include "chrome/browser/chromeos/policy/enrollment_config.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -95,16 +96,6 @@ class WizardController : public BaseScreenDelegate,
   // Skips any screens that may normally be shown after login (registration,
   // Terms of Service, user image selection).
   static void SkipPostLoginScreensForTesting();
-
-  // Checks whether OOBE should start enrollment automatically.
-  static bool ShouldAutoStartEnrollment();
-
-  // Checks whether OOBE should recover enrollment.  Note that this flips to
-  // false once device policy has been restored as a part of recovery.
-  static bool ShouldRecoverEnrollment();
-
-  // Obtains domain the device used to be enrolled to from install attributes.
-  static std::string GetEnrollmentRecoveryDomain();
 
   // Shows the first screen defined by |first_screen_name| or by default
   // if the parameter is empty.
@@ -188,9 +179,6 @@ class WizardController : public BaseScreenDelegate,
 
   // Shows images login screen.
   void ShowLoginScreen(const LoginScreenContext& context);
-
-  // Resumes a pending login screen.
-  void ResumeLoginScreen();
 
   // Invokes corresponding first OOBE screen.
   void OnHIDScreenNecessityCheck(bool screen_needed);
@@ -282,12 +270,6 @@ class WizardController : public BaseScreenDelegate,
   // Launched kiosk app configured for auto-launch.
   void AutoLaunchKioskApp();
 
-  // Checks whether the user is allowed to exit enrollment.
-  static bool CanExitEnrollment();
-
-  // Gets the management domain.
-  static std::string GetForcedEnrollmentDomain();
-
   // Called when LocalState is initialized.
   void OnLocalStateInitialized(bool /* succeeded */);
 
@@ -331,6 +313,10 @@ class WizardController : public BaseScreenDelegate,
   void OnSharkConnected(
       scoped_ptr<pairing_chromeos::HostPairingController> pairing_controller);
 
+  // Start the enrollment screen using the config from
+  // |prescribed_enrollment_config_|.
+  void StartEnrollmentScreen();
+
   // Whether to skip any screens that may normally be shown after login
   // (registration, Terms of Service, user image selection).
   static bool skip_post_login_screens_;
@@ -370,9 +356,8 @@ class WizardController : public BaseScreenDelegate,
   // EULA is accepted.
   bool skip_update_enroll_after_eula_;
 
-  // Whether enrollment will be or has been recovered in the current wizard
-  // instance.
-  bool enrollment_recovery_;
+  // The prescribed enrollment configuration for the device.
+  policy::EnrollmentConfig prescribed_enrollment_config_;
 
   // Whether the auto-enrollment check should be retried or the cached result
   // returned if present.

@@ -38,9 +38,6 @@ class StartupUtils {
   // Marks device registered. i.e. second part of OOBE is completed.
   static void MarkDeviceRegistered(const base::Closure& done_callback);
 
-  // Returns whether enrollment recovery is required.
-  static bool IsEnrollmentRecoveryRequired();
-
   // Mark a device as requiring enrollment recovery.
   static void MarkEnrollmentRecoveryRequired();
 

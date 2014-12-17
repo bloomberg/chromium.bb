@@ -43,6 +43,7 @@
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/ui/focus_ring_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -1209,14 +1210,11 @@ void ShowLoginWizard(const std::string& first_screen_name) {
   }
 
   // Check whether we need to execute OOBE flow.
-  bool oobe_complete = StartupUtils::IsOobeCompleted();
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  bool enrollment_screen_wanted =
-      WizardController::ShouldRecoverEnrollment() ||
-      (WizardController::ShouldAutoStartEnrollment() && oobe_complete &&
-       !connector->IsEnterpriseManaged());
-  if (enrollment_screen_wanted && first_screen_name.empty()) {
+  const policy::EnrollmentConfig enrollment_config =
+      g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->GetPrescribedEnrollmentConfig();
+  if (enrollment_config.should_enroll() && first_screen_name.empty()) {
     // Shows networks screen instead of enrollment screen to resume the
     // interrupted auto start enrollment flow because enrollment screen does
     // not handle flaky network. See http://crbug.com/332572
@@ -1232,7 +1230,7 @@ void ShowLoginWizard(const std::string& first_screen_name) {
   }
 
   bool show_login_screen =
-      (first_screen_name.empty() && oobe_complete) ||
+      (first_screen_name.empty() && StartupUtils::IsOobeCompleted()) ||
       first_screen_name == WizardController::kLoginScreenName;
 
   if (show_login_screen) {

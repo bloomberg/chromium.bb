@@ -8,11 +8,14 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/chromeos/login/enrollment/enrollment_mode.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
-#include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 
 class GoogleServiceAuthError;
+
+namespace policy {
+struct EnrollmentConfig;
+class EnrollmentStatus;
+}
 
 namespace chromeos {
 
@@ -35,8 +38,7 @@ class EnrollmentScreenActor {
 
   // Initializes the actor with parameters.
   virtual void SetParameters(Controller* controller,
-                             EnrollmentMode enrollment_mode,
-                             const std::string& management_domain) = 0;
+                             const policy::EnrollmentConfig& config) = 0;
 
   // Prepare the contents to showing.
   virtual void PrepareToShow() = 0;

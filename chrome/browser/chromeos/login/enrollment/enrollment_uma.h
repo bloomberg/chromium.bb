@@ -5,14 +5,15 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_ENROLLMENT_UMA_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_ENROLLMENT_UMA_H_
 
-#include "chrome/browser/chromeos/login/enrollment/enrollment_mode.h"
+#include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
 
 namespace chromeos {
 
-// Logs an UMA |event| in "Enrollment.*" histogram. Histogram is choosen
+// Logs an UMA |event| in "Enrollment.*" histogram. Histogram is chosen
 // depending on |mode|.
-void EnrollmentUMA(policy::MetricEnrollment sample, EnrollmentMode mode);
+void EnrollmentUMA(policy::MetricEnrollment sample,
+                   policy::EnrollmentConfig::Mode mode);
 
 }  // namespace chromeos
 

@@ -68,6 +68,7 @@ IN_PROC_BROWSER_TEST_F(LoginUITest, PRE_InterruptedAutoStartEnrollment) {
   StartupUtils::MarkOobeCompleted();
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kDeviceEnrollmentAutoStart, true);
+  prefs->SetBoolean(prefs::kDeviceEnrollmentCanExit, false);
 }
 
 // Tests that the default first screen is the network screen after OOBE

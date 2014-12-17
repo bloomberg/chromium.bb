@@ -13,10 +13,10 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/login/enrollment/enrollment_mode.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
+#include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "components/pairing/host_pairing_controller.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
@@ -56,8 +56,7 @@ class EnrollmentScreen
   //   |remora_controller| is an interface that is used to communicate with a
   //     shark device for remote enrollment.
   void SetParameters(
-      EnrollmentMode enrollment_mode,
-      const std::string& management_domain,
+      const policy::EnrollmentConfig& enrollment_config,
       pairing_chromeos::ControllerPairingController* shark_controller,
       pairing_chromeos::HostPairingController* remora_controller);
 
@@ -127,9 +126,9 @@ class EnrollmentScreen
   pairing_chromeos::ControllerPairingController* shark_controller_;
   pairing_chromeos::HostPairingController* remora_controller_;
   EnrollmentScreenActor* actor_;
-  EnrollmentMode enrollment_mode_;
+  policy::EnrollmentConfig enrollment_config_;
   bool enrollment_failed_once_;
-  std::string domain_;
+  std::string enrolling_user_domain_;
   scoped_ptr<base::ElapsedTimer> elapsed_timer_;
   scoped_ptr<EnterpriseEnrollmentHelper> enrollment_helper_;
   base::WeakPtrFactory<EnrollmentScreen> weak_ptr_factory_;

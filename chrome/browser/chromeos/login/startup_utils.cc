@@ -161,12 +161,6 @@ void StartupUtils::MarkDeviceRegistered(const base::Closure& done_callback) {
 }
 
 // static
-bool StartupUtils::IsEnrollmentRecoveryRequired() {
-  return g_browser_process->local_state()
-      ->GetBoolean(prefs::kEnrollmentRecoveryRequired);
-}
-
-// static
 void StartupUtils::MarkEnrollmentRecoveryRequired() {
   SaveBoolPreferenceForced(prefs::kEnrollmentRecoveryRequired, true);
 }

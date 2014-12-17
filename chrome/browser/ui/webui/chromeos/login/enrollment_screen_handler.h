@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
+#include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/extensions/signin/scoped_gaia_auth_extension.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
@@ -40,8 +41,7 @@ class EnrollmentScreenHandler
 
   // Implements EnrollmentScreenActor:
   virtual void SetParameters(Controller* controller,
-                             EnrollmentMode enrollment_mode,
-                             const std::string& management_domain) override;
+                             const policy::EnrollmentConfig& config) override;
   virtual void PrepareToShow() override;
   virtual void Show() override;
   virtual void Hide() override;
@@ -107,11 +107,8 @@ class EnrollmentScreenHandler
 
   bool show_on_init_;
 
-  // The enrollment mode.
-  EnrollmentMode enrollment_mode_;
-
-  // The management domain, if applicable.
-  std::string management_domain_;
+  // The enrollment configuration.
+  policy::EnrollmentConfig config_;
 
   // Whether an enrollment attempt has failed.
   bool enrollment_failed_once_;

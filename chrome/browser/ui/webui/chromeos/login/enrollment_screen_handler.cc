@@ -8,11 +8,13 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/signin/gaia_auth_extension_loader.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,6 +38,33 @@ const char kJsScreenPath[] = "login.OAuthEnrollmentScreen";
 const char kEnrollmentStepSignin[] = "signin";
 const char kEnrollmentStepSuccess[] = "success";
 const char kEnrollmentStepWorking[] = "working";
+
+// Enrollment mode constants used in the UI. This needs to be kept in sync with
+// oobe_screen_oauth_enrollment.js.
+const char kEnrollmentModeUIForced[] = "forced";
+const char kEnrollmentModeUIManual[] = "manual";
+const char kEnrollmentModeUIRecovery[] = "recovery";
+
+// Converts |mode| to a mode identifier for the UI.
+std::string EnrollmentModeToUIMode(policy::EnrollmentConfig::Mode mode) {
+  switch (mode) {
+    case policy::EnrollmentConfig::MODE_NONE:
+      break;
+    case policy::EnrollmentConfig::MODE_MANUAL:
+    case policy::EnrollmentConfig::MODE_MANUAL_REENROLLMENT:
+    case policy::EnrollmentConfig::MODE_LOCAL_ADVERTISED:
+    case policy::EnrollmentConfig::MODE_SERVER_ADVERTISED:
+      return kEnrollmentModeUIManual;
+    case policy::EnrollmentConfig::MODE_LOCAL_FORCED:
+    case policy::EnrollmentConfig::MODE_SERVER_FORCED:
+      return kEnrollmentModeUIForced;
+    case policy::EnrollmentConfig::MODE_RECOVERY:
+      return kEnrollmentModeUIRecovery;
+  }
+
+  NOTREACHED() << "Bad enrollment mode " << mode;
+  return kEnrollmentModeUIManual;
+}
 
 // Returns network name by service path.
 std::string GetNetworkName(const std::string& service_path) {
@@ -70,7 +99,6 @@ EnrollmentScreenHandler::EnrollmentScreenHandler(
     : BaseScreenHandler(kJsScreenPath),
       controller_(NULL),
       show_on_init_(false),
-      enrollment_mode_(ENROLLMENT_MODE_MANUAL),
       frame_error_(net::OK),
       first_show_(true),
       network_state_informer_(network_state_informer),
@@ -120,11 +148,10 @@ void EnrollmentScreenHandler::RegisterMessages() {
 
 void EnrollmentScreenHandler::SetParameters(
     Controller* controller,
-    EnrollmentMode enrollment_mode,
-    const std::string& management_domain) {
+    const policy::EnrollmentConfig& config) {
+  CHECK_NE(policy::EnrollmentConfig::MODE_NONE, config.mode);
   controller_ = controller;
-  enrollment_mode_ = enrollment_mode;
-  management_domain_ = management_domain;
+  config_ = config;
 }
 
 void EnrollmentScreenHandler::PrepareToShow() {
@@ -498,8 +525,8 @@ void EnrollmentScreenHandler::DoShow() {
       base::StringPrintf("%s/main.html", extensions::kGaiaAuthExtensionOrigin));
   screen_data.SetString("gaiaUrl", GaiaUrls::GetInstance()->gaia_url().spec());
   screen_data.SetString("enrollment_mode",
-                        EnrollmentModeToString(enrollment_mode_));
-  screen_data.SetString("management_domain", management_domain_);
+                        EnrollmentModeToUIMode(config_.mode));
+  screen_data.SetString("management_domain", config_.management_domain);
 
   ShowScreen(OobeUI::kScreenOobeEnrollment, &screen_data);
   if (first_show_) {

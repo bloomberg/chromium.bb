@@ -223,6 +223,7 @@
       'browser/chromeos/policy/consumer_management_notifier_factory_unittest.cc',
       'browser/chromeos/policy/consumer_management_notifier_unittest.cc',
       'browser/chromeos/policy/consumer_management_service_unittest.cc',
+      'browser/chromeos/policy/device_cloud_policy_initializer_unittest.cc',
       'browser/chromeos/policy/device_cloud_policy_invalidator_unittest.cc',
       'browser/chromeos/policy/device_cloud_policy_manager_chromeos_unittest.cc',
       'browser/chromeos/policy/device_cloud_policy_store_chromeos_unittest.cc',
