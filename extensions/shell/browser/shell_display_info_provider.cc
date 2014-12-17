@@ -23,7 +23,11 @@ bool ShellDisplayInfoProvider::SetInfo(
 void ShellDisplayInfoProvider::UpdateDisplayUnitInfoForPlatform(
     const gfx::Display& display,
     extensions::core_api::system_display::DisplayUnitInfo* unit) {
-  NOTIMPLEMENTED();
+  static bool logged_once = false;
+  if (!logged_once) {
+    NOTIMPLEMENTED();
+    logged_once = true;
+  }
 }
 
 gfx::Screen* ShellDisplayInfoProvider::GetActiveScreen() {
