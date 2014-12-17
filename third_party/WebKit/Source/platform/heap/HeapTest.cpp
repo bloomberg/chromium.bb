@@ -263,7 +263,7 @@ public:
 #if ENABLE(ASSERT)
     virtual bool weakTableRegistered(const void*) override { return false; }
 #endif
-    virtual void registerWeakCell(void**, WeakPointerCallback) override { }
+    virtual void registerWeakCellWithCallback(void**, WeakPointerCallback) override { }
     virtual bool isMarked(const void*) override { return false; }
     virtual bool ensureMarked(const void* objectPointer) override
     {

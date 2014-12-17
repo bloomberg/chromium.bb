@@ -734,6 +734,7 @@ private:
     T** cell() const { return const_cast<T**>(&this->m_raw); }
 
     friend class Visitor;
+    template<typename Derived> friend class VisitorHelper;
 };
 
 // Comparison operators between (Weak)Members and Persistents

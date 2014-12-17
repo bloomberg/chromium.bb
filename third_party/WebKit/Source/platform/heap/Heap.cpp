@@ -2264,7 +2264,7 @@ public:
     }
 
 protected:
-    virtual void registerWeakCell(void** cell, WeakPointerCallback callback) override
+    virtual void registerWeakCellWithCallback(void** cell, WeakPointerCallback callback) override
     {
         Heap::pushWeakCellPointerCallback(cell, callback);
     }
