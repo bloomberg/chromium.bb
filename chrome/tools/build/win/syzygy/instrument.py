@@ -16,7 +16,7 @@ import sys
 
 # The default directory containing the Syzygy toolchain.
 _DEFAULT_SYZYGY_DIR = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), '../../../..',
+    os.path.dirname(__file__), '../../../../..',
     'third_party/syzygy/binaries/exe/'))
 
 # Basenames of various tools.

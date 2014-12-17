@@ -14,7 +14,7 @@ import sys
 
 # The default relink executable to use to reorder binaries.
 _DEFAULT_RELINKER = os.path.join(
-    os.path.join(os.path.dirname(__file__), '../../../..'),
+    os.path.join(os.path.dirname(__file__), '../../../../..'),
     'third_party/syzygy/binaries/exe/relink.exe')
 
 _LOGGER = logging.getLogger()
