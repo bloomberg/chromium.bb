@@ -41357,6 +41357,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.ReceivedPacketsLostInPercent" units="%">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    Percentage of received packets lost for a received video stream. Recorded
+    when a stream is removed.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.RetransmittedBitrateReceivedInKbps" units="kbps">
   <owner>asapersson@chromium.org</owner>
   <summary>
@@ -41386,6 +41394,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     The number of sent bits over RTX per second for a sent video stream.
     Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.SentPacketsLostInPercent" units="%">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    Percentage of sent packets lost for a sent video stream. Recorded when a
+    stream is removed.
   </summary>
 </histogram>
 
