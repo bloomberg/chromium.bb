@@ -79,23 +79,6 @@ void CustomElementUpgradeCandidateMap::elementWasDestroyed(Element* element)
     m_upgradeCandidates.remove(candidate);
 }
 
-void CustomElementUpgradeCandidateMap::elementDidFinishParsingChildren(Element* element)
-{
-    // An upgrade candidate finished parsing; reorder so that eventual
-    // upgrade order matches finished-parsing order.
-    moveToEnd(element);
-}
-
-void CustomElementUpgradeCandidateMap::moveToEnd(Element* element)
-{
-    UpgradeCandidateMap::iterator candidate = m_upgradeCandidates.find(element);
-    ASSERT_WITH_SECURITY_IMPLICATION(candidate != m_upgradeCandidates.end());
-
-    UnresolvedDefinitionMap::iterator elements = m_unresolvedDefinitions.find(candidate->value);
-    ASSERT_WITH_SECURITY_IMPLICATION(elements != m_unresolvedDefinitions.end());
-    elements->value->appendOrMoveToLast(element);
-}
-
 PassOwnPtrWillBeRawPtr<CustomElementUpgradeCandidateMap::ElementSet> CustomElementUpgradeCandidateMap::takeUpgradeCandidatesFor(const CustomElementDescriptor& descriptor)
 {
     OwnPtrWillBeRawPtr<ElementSet> candidates = m_unresolvedDefinitions.take(descriptor);

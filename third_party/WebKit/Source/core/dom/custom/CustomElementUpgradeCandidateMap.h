@@ -60,9 +60,6 @@ private:
 
     virtual void elementWasDestroyed(Element*) override;
 
-    virtual void elementDidFinishParsingChildren(Element*) override;
-    void moveToEnd(Element*);
-
     typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<Element>, CustomElementDescriptor> UpgradeCandidateMap;
     UpgradeCandidateMap m_upgradeCandidates;
 
