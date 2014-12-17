@@ -168,8 +168,8 @@ class FuzzyForSoftwareOnlyPixelComparator : public PixelComparator {
   explicit FuzzyForSoftwareOnlyPixelComparator(bool discard_alpha)
       : fuzzy_(discard_alpha), exact_(discard_alpha) {}
 
-  virtual bool Compare(const SkBitmap& actual_bmp,
-                       const SkBitmap& expected_bmp) const;
+  bool Compare(const SkBitmap& actual_bmp,
+               const SkBitmap& expected_bmp) const override;
 
  private:
   FuzzyPixelOffByOneComparator fuzzy_;
