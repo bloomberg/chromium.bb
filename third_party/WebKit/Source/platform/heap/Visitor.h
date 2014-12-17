@@ -103,6 +103,16 @@ struct GCInfo {
 #endif
 };
 
+#if ENABLE(ASSERT)
+PLATFORM_EXPORT void assertObjectHasGCInfo(const void*, const GCInfo*);
+
+#define DECLARE_CHECK_GC_INFO(Type)                     \
+    PLATFORM_EXPORT void assertObjectHasGCInfo(const Type*, const GCInfo*);
+FOR_EACH_TYPED_HEAP(DECLARE_CHECK_GC_INFO)
+#undef DECLARE_CHECK_GC_INFO
+#endif
+
+
 // The FinalizerTraitImpl specifies how to finalize objects. Object
 // that inherit from GarbageCollectedFinalized are finalized by
 // calling their 'finalize' method which by default will call the
@@ -184,9 +194,9 @@ public:
     }
 
 #if ENABLE(ASSERT)
-    static void checkGCInfo(Visitor* visitor, const T* t)
+    static void checkGCInfo(const T* t)
     {
-        DefaultTraceTrait<T>::checkGCInfo(visitor, t);
+        DefaultTraceTrait<T>::checkGCInfo(t);
     }
 #endif
 };
@@ -276,7 +286,7 @@ public:
         if (!t)
             return;
 #if ENABLE(ASSERT)
-        TraceTrait<T>::checkGCInfo(this, t);
+        TraceTrait<T>::checkGCInfo(t);
 #endif
         TraceTrait<T>::mark(this, t);
 
@@ -505,13 +515,8 @@ public:
         return isAlive(ptr.get());
     }
 
-#if ENABLE(ASSERT)
-    void checkGCInfo(const void*, const GCInfo*);
-#endif
-
     // Macro to declare methods needed for each typed heap.
 #define DECLARE_VISITOR_METHODS(Type)                            \
-    DEBUG_ONLY(void checkGCInfo(const Type*, const GCInfo*);)    \
     virtual void mark(const Type*, TraceCallback) = 0;           \
     virtual bool isMarked(const Type*) = 0;                      \
     virtual bool ensureMarked(const Type*) = 0;
@@ -630,9 +635,9 @@ public:
     }
 
 #if ENABLE(ASSERT)
-    static void checkGCInfo(Visitor* visitor, const T* t)
+    static void checkGCInfo(const T* t)
     {
-        visitor->checkGCInfo(const_cast<T*>(t), GCInfoTrait<T>::get());
+        assertObjectHasGCInfo(const_cast<T*>(t), GCInfoTrait<T>::get());
     }
 #endif
 };
@@ -657,7 +662,7 @@ public:
     }
 
 #if ENABLE(ASSERT)
-    static void checkGCInfo(Visitor*, const T*) { }
+    static void checkGCInfo(const T*) { }
 #endif
 };
 

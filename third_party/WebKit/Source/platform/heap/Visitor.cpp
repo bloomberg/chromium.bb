@@ -37,7 +37,7 @@
 namespace blink {
 
 #if ENABLE(ASSERT)
-void Visitor::checkGCInfo(const void* payload, const GCInfo* gcInfo)
+void assertObjectHasGCInfo(const void* payload, const GCInfo* gcInfo)
 {
     GeneralHeapObjectHeader::fromPayload(payload)->checkHeader();
 #if !defined(COMPONENT_BUILD)
@@ -49,7 +49,7 @@ void Visitor::checkGCInfo(const void* payload, const GCInfo* gcInfo)
 }
 
 #define DEFINE_VISITOR_CHECK_MARKER(Type)                                \
-    void Visitor::checkGCInfo(const Type* payload, const GCInfo* gcInfo) \
+    void assertObjectHasGCInfo(const Type* payload, const GCInfo* gcInfo) \
     {                                                                    \
         HeapObjectHeader::fromPayload(payload)->checkHeader();           \
         Type* object = const_cast<Type*>(payload);                       \

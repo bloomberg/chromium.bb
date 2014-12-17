@@ -2286,7 +2286,7 @@ struct TraceTrait<HeapVectorBacking<T, Traits>> {
     static void checkGCInfo(Visitor* visitor, const Backing* backing)
     {
 #if ENABLE(ASSERT)
-        visitor->checkGCInfo(const_cast<Backing*>(backing), GCInfoTrait<Backing>::get());
+        assertObjectHasGCInfo(const_cast<Backing*>(backing), GCInfoTrait<Backing>::get());
 #endif
     }
 };
@@ -2316,7 +2316,7 @@ struct TraceTrait<HeapHashTableBacking<Table>> {
     static void checkGCInfo(Visitor* visitor, const Backing* backing)
     {
 #if ENABLE(ASSERT)
-        visitor->checkGCInfo(const_cast<Backing*>(backing), GCInfoTrait<Backing>::get());
+        assertObjectHasGCInfo(const_cast<Backing*>(backing), GCInfoTrait<Backing>::get());
 #endif
     }
 };
