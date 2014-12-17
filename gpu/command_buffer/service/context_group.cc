@@ -156,21 +156,35 @@ bool ContextGroup::Initialize(
 
   GLint max_texture_size = 0;
   GLint max_cube_map_texture_size = 0;
+  GLint max_rectangle_texture_size = 0;
   const GLint kMinTextureSize = 2048;  // GL actually says 64!?!?
   const GLint kMinCubeMapSize = 256;  // GL actually says 16!?!?
-  if (!QueryGLFeature(
-      GL_MAX_TEXTURE_SIZE, kMinTextureSize, &max_texture_size) ||
-      !QueryGLFeature(
-      GL_MAX_CUBE_MAP_TEXTURE_SIZE, kMinCubeMapSize,
-      &max_cube_map_texture_size)) {
-    LOG(ERROR) << "ContextGroup::Initialize failed because maximum texture size"
-               << "is too small.";
+  const GLint kMinRectangleTextureSize = 64;
+  if (!QueryGLFeature(GL_MAX_TEXTURE_SIZE, kMinTextureSize,
+                      &max_texture_size) ||
+      !QueryGLFeature(GL_MAX_CUBE_MAP_TEXTURE_SIZE, kMinCubeMapSize,
+                      &max_cube_map_texture_size)) {
+    LOG(ERROR) << "ContextGroup::Initialize failed because maximum "
+               << " texture size is too small.";
     return false;
+  }
+  if (feature_info_->feature_flags().arb_texture_rectangle) {
+    if (!QueryGLFeature(GL_MAX_RECTANGLE_TEXTURE_SIZE_ARB,
+                        kMinRectangleTextureSize,
+                        &max_rectangle_texture_size)) {
+      LOG(ERROR) << "ContextGroup::Initialize failed because maximum "
+                 << "rectangle texture size is too small.";
+      return false;
+    }
   }
 
   if (feature_info_->workarounds().max_texture_size) {
     max_texture_size = std::min(
-        max_texture_size, feature_info_->workarounds().max_texture_size);
+        max_texture_size,
+        feature_info_->workarounds().max_texture_size);
+    max_rectangle_texture_size = std::min(
+        max_rectangle_texture_size,
+        feature_info_->workarounds().max_texture_size);
   }
   if (feature_info_->workarounds().max_cube_map_texture_size) {
     max_cube_map_texture_size = std::min(
@@ -182,6 +196,7 @@ bool ContextGroup::Initialize(
                                             feature_info_.get(),
                                             max_texture_size,
                                             max_cube_map_texture_size,
+                                            max_rectangle_texture_size,
                                             bind_generates_resource_));
   texture_manager_->set_framebuffer_manager(framebuffer_manager_.get());
 

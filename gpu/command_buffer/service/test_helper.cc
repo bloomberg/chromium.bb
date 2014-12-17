@@ -67,6 +67,7 @@ const GLint TestHelper::kMaxSamples;
 const GLint TestHelper::kMaxRenderbufferSize;
 const GLint TestHelper::kMaxTextureSize;
 const GLint TestHelper::kMaxCubeMapTextureSize;
+const GLint TestHelper::kMaxRectangleTextureSize;
 const GLint TestHelper::kNumVertexAttribs;
 const GLint TestHelper::kNumTextureUnits;
 const GLint TestHelper::kMaxTextureImageUnits;
@@ -297,6 +298,11 @@ void TestHelper::SetupContextGroupInitExpectations(
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, _))
       .WillOnce(SetArgumentPointee<1>(kMaxCubeMapTextureSize))
       .RetiresOnSaturation();
+  if (strstr(extensions, "GL_ARB_texture_rectangle")) {
+    EXPECT_CALL(*gl, GetIntegerv(GL_MAX_RECTANGLE_TEXTURE_SIZE, _))
+        .WillOnce(SetArgumentPointee<1>(kMaxRectangleTextureSize))
+        .RetiresOnSaturation();
+  }
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, _))
       .WillOnce(SetArgumentPointee<1>(kMaxTextureImageUnits))
       .RetiresOnSaturation();

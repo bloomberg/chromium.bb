@@ -47,6 +47,7 @@ class TextureManagerTest : public GpuServiceTest {
  public:
   static const GLint kMaxTextureSize = 16;
   static const GLint kMaxCubeMapTextureSize = 8;
+  static const GLint kMaxRectangleTextureSize = 16;
   static const GLint kMaxExternalTextureSize = 16;
   static const GLint kMax2dLevels = 5;
   static const GLint kMaxCubeMapLevels = 4;
@@ -64,6 +65,7 @@ class TextureManagerTest : public GpuServiceTest {
                                       feature_info_.get(),
                                       kMaxTextureSize,
                                       kMaxCubeMapTextureSize,
+                                      kMaxRectangleTextureSize,
                                       kUseDefaultTextures));
     TestHelper::SetupTextureManagerInitExpectations(
         gl_.get(), "", kUseDefaultTextures);
@@ -93,6 +95,7 @@ class TextureManagerTest : public GpuServiceTest {
 #ifndef COMPILER_MSVC
 const GLint TextureManagerTest::kMaxTextureSize;
 const GLint TextureManagerTest::kMaxCubeMapTextureSize;
+const GLint TextureManagerTest::kMaxRectangleTextureSize;
 const GLint TextureManagerTest::kMaxExternalTextureSize;
 const GLint TextureManagerTest::kMax2dLevels;
 const GLint TextureManagerTest::kMaxCubeMapLevels;
@@ -172,6 +175,7 @@ TEST_F(TextureManagerTest, UseDefaultTexturesTrue) {
                          feature_info_.get(),
                          kMaxTextureSize,
                          kMaxCubeMapTextureSize,
+                         kMaxRectangleTextureSize,
                          use_default_textures);
   manager.Initialize();
 
@@ -191,6 +195,7 @@ TEST_F(TextureManagerTest, UseDefaultTexturesFalse) {
                          feature_info_.get(),
                          kMaxTextureSize,
                          kMaxCubeMapTextureSize,
+                         kMaxRectangleTextureSize,
                          use_default_textures);
   manager.Initialize();
 
@@ -209,6 +214,7 @@ TEST_F(TextureManagerTest, TextureUsageExt) {
                          feature_info_.get(),
                          kMaxTextureSize,
                          kMaxCubeMapTextureSize,
+                         kMaxRectangleTextureSize,
                          kUseDefaultTextures);
   manager.Initialize();
   const GLuint kClient1Id = 1;
@@ -235,6 +241,7 @@ TEST_F(TextureManagerTest, Destroy) {
                          feature_info_.get(),
                          kMaxTextureSize,
                          kMaxCubeMapTextureSize,
+                         kMaxRectangleTextureSize,
                          kUseDefaultTextures);
   manager.Initialize();
   // Check we can create texture.
@@ -287,6 +294,8 @@ TEST_F(TextureManagerTest, MaxValues) {
             manager_->MaxSizeForTarget(GL_TEXTURE_CUBE_MAP_POSITIVE_Z));
   EXPECT_EQ(kMaxCubeMapTextureSize,
             manager_->MaxSizeForTarget(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z));
+  EXPECT_EQ(kMaxRectangleTextureSize,
+            manager_->MaxSizeForTarget(GL_TEXTURE_RECTANGLE_ARB));
   EXPECT_EQ(kMaxExternalTextureSize,
             manager_->MaxSizeForTarget(GL_TEXTURE_EXTERNAL_OES));
 }
@@ -371,6 +380,7 @@ TEST_F(TextureManagerTest, ValidForTargetNPOT) {
                          feature_info.get(),
                          kMaxTextureSize,
                          kMaxCubeMapTextureSize,
+                         kMaxRectangleTextureSize,
                          kUseDefaultTextures);
   // Check NPOT width on level 0
   EXPECT_TRUE(manager.ValidForTarget(GL_TEXTURE_2D, 0, 5, 2, 1));
@@ -387,6 +397,7 @@ class TextureTestBase : public GpuServiceTest {
  public:
   static const GLint kMaxTextureSize = 16;
   static const GLint kMaxCubeMapTextureSize = 8;
+  static const GLint kMaxRectangleTextureSize = 16;
   static const GLint kMax2dLevels = 5;
   static const GLint kMaxCubeMapLevels = 4;
   static const GLuint kClient1Id = 1;
@@ -411,6 +422,7 @@ class TextureTestBase : public GpuServiceTest {
                                       feature_info_.get(),
                                       kMaxTextureSize,
                                       kMaxCubeMapTextureSize,
+                                      kMaxRectangleTextureSize,
                                       kUseDefaultTextures));
     decoder_.reset(new ::testing::StrictMock<gles2::MockGLES2Decoder>());
     error_state_.reset(new ::testing::StrictMock<gles2::MockErrorState>());
@@ -844,6 +856,7 @@ TEST_F(TextureTest, NPOT2DNPOTOK) {
                          feature_info.get(),
                          kMaxTextureSize,
                          kMaxCubeMapTextureSize,
+                         kMaxRectangleTextureSize,
                          kUseDefaultTextures);
   manager.CreateTexture(kClient1Id, kService1Id);
   TextureRef* texture_ref = manager.GetTexture(kClient1Id);
@@ -1135,6 +1148,7 @@ TEST_F(TextureTest, FloatNotLinear) {
                          feature_info.get(),
                          kMaxTextureSize,
                          kMaxCubeMapTextureSize,
+                         kMaxRectangleTextureSize,
                          kUseDefaultTextures);
   manager.CreateTexture(kClient1Id, kService1Id);
   TextureRef* texture_ref = manager.GetTexture(kClient1Id);
@@ -1165,6 +1179,7 @@ TEST_F(TextureTest, FloatLinear) {
                          feature_info.get(),
                          kMaxTextureSize,
                          kMaxCubeMapTextureSize,
+                         kMaxRectangleTextureSize,
                          kUseDefaultTextures);
   manager.CreateTexture(kClient1Id, kService1Id);
   TextureRef* texture_ref = manager.GetTexture(kClient1Id);
@@ -1187,6 +1202,7 @@ TEST_F(TextureTest, HalfFloatNotLinear) {
                          feature_info.get(),
                          kMaxTextureSize,
                          kMaxCubeMapTextureSize,
+                         kMaxRectangleTextureSize,
                          kUseDefaultTextures);
   manager.CreateTexture(kClient1Id, kService1Id);
   TextureRef* texture_ref = manager.GetTexture(kClient1Id);
@@ -1217,6 +1233,7 @@ TEST_F(TextureTest, HalfFloatLinear) {
                          feature_info.get(),
                          kMaxTextureSize,
                          kMaxCubeMapTextureSize,
+                         kMaxRectangleTextureSize,
                          kUseDefaultTextures);
   manager.CreateTexture(kClient1Id, kService1Id);
   TextureRef* texture_ref = manager.GetTexture(kClient1Id);
@@ -1239,6 +1256,7 @@ TEST_F(TextureTest, EGLImageExternal) {
                          feature_info.get(),
                          kMaxTextureSize,
                          kMaxCubeMapTextureSize,
+                         kMaxRectangleTextureSize,
                          kUseDefaultTextures);
   manager.CreateTexture(kClient1Id, kService1Id);
   TextureRef* texture_ref = manager.GetTexture(kClient1Id);
@@ -1259,6 +1277,7 @@ TEST_F(TextureTest, DepthTexture) {
                          feature_info.get(),
                          kMaxTextureSize,
                          kMaxCubeMapTextureSize,
+                         kMaxRectangleTextureSize,
                          kUseDefaultTextures);
   manager.CreateTexture(kClient1Id, kService1Id);
   TextureRef* texture_ref = manager.GetTexture(kClient1Id);
@@ -2199,6 +2218,7 @@ class SharedTextureTest : public GpuServiceTest {
                            feature_info_.get(),
                            TextureManagerTest::kMaxTextureSize,
                            TextureManagerTest::kMaxCubeMapTextureSize,
+                           TextureManagerTest::kMaxRectangleTextureSize,
                            kUseDefaultTextures));
     memory_tracker2_ = new CountingMemoryTracker;
     texture_manager2_.reset(
@@ -2206,6 +2226,7 @@ class SharedTextureTest : public GpuServiceTest {
                            feature_info_.get(),
                            TextureManagerTest::kMaxTextureSize,
                            TextureManagerTest::kMaxCubeMapTextureSize,
+                           TextureManagerTest::kMaxRectangleTextureSize,
                            kUseDefaultTextures));
     TestHelper::SetupTextureManagerInitExpectations(
         gl_.get(), "", kUseDefaultTextures);

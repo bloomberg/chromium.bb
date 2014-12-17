@@ -371,7 +371,7 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
       return;
     }
     if (texture_target_ == GL_TEXTURE_EXTERNAL_OES ||
-        texture_target_ == GL_TEXTURE_RECTANGLE) {
+        texture_target_ == GL_TEXTURE_RECTANGLE_ARB) {
       // These textures have their dimensions defined by the underlying storage.
       // Use |texture_dimensions_| for this size.
       texture_manager->SetLevelInfo(texture_ref,

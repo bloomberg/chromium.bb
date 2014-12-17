@@ -21,6 +21,7 @@ namespace {
 
 const GLint kMaxTextureSize = 64;
 const GLint kMaxCubemapSize = 64;
+const GLint kMaxRectangleTextureSize = 64;
 const GLint kMaxRenderbufferSize = 64;
 const GLint kMaxSamples = 4;
 const uint32 kMaxDrawBuffers = 16;
@@ -38,6 +39,7 @@ class FramebufferManagerTest : public GpuServiceTest {
                          new FeatureInfo(),
                          kMaxTextureSize,
                          kMaxCubemapSize,
+                         kMaxRectangleTextureSize,
                          kUseDefaultTextures),
         renderbuffer_manager_(NULL,
                               kMaxRenderbufferSize,
@@ -114,6 +116,7 @@ class FramebufferInfoTest : public GpuServiceTest {
                                               feature_info_.get(),
                                               kMaxTextureSize,
                                               kMaxCubemapSize,
+                                              kMaxRectangleTextureSize,
                                               kUseDefaultTextures));
   }
   ~FramebufferInfoTest() override {

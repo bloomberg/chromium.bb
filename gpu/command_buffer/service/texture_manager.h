@@ -530,6 +530,7 @@ class GPU_EXPORT TextureManager {
                  FeatureInfo* feature_info,
                  GLsizei max_texture_size,
                  GLsizei max_cube_map_texture_size,
+                 GLsizei max_rectangle_texture_size,
                  bool use_default_textures);
   ~TextureManager();
 
@@ -561,6 +562,8 @@ class GPU_EXPORT TextureManager {
       case GL_TEXTURE_2D:
       case GL_TEXTURE_EXTERNAL_OES:
         return max_texture_size_;
+      case GL_TEXTURE_RECTANGLE:
+        return max_rectangle_texture_size_;
       default:
         return max_cube_map_texture_size_;
     }
@@ -831,6 +834,7 @@ class GPU_EXPORT TextureManager {
 
   GLsizei max_texture_size_;
   GLsizei max_cube_map_texture_size_;
+  GLsizei max_rectangle_texture_size_;
   GLint max_levels_;
   GLint max_cube_map_levels_;
 

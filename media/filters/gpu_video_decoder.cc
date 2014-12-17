@@ -400,12 +400,6 @@ static void ReadPixelsSync(
     uint32 texture_id,
     const gfx::Rect& visible_rect,
     const SkBitmap& pixels) {
-#if defined(OS_MACOSX)
-  // For Mac OS X, just return black. http://crbug.com/425708.
-  pixels.eraseARGB(0, 0, 0, 0);
-  return;
-#endif
-
   base::WaitableEvent event(true, false);
   if (!factories->GetTaskRunner()->PostTask(FROM_HERE,
                                             base::Bind(&ReadPixelsSyncInner,
