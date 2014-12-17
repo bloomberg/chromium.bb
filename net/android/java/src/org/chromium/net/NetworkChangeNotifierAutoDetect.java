@@ -174,13 +174,14 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
         mConnectionType = getCurrentConnectionType(networkState);
         mWifiSSID = getCurrentWifiSSID(networkState);
         mMaxBandwidthMbps = getCurrentMaxBandwidthInMbps(networkState);
+        mIntentFilter =
+                new NetworkConnectivityIntentFilter(mWifiManagerDelegate.getHasWifiPermission());
+
         if (alwaysWatchForChanges) {
             registerReceiver();
         } else {
             ApplicationStatus.registerApplicationStateListener(this);
         }
-        mIntentFilter =
-                new NetworkConnectivityIntentFilter(mWifiManagerDelegate.getHasWifiPermission());
     }
 
     /**
