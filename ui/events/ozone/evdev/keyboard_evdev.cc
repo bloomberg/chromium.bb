@@ -16,6 +16,9 @@ namespace {
 
 const int kXkbKeycodeOffset = 8;
 
+const int kRepeatDelayMs = 500;
+const int kRepeatIntervalMs = 50;
+
 int ModifierFromEvdevKey(unsigned int code) {
   switch (code) {
     case KEY_CAPSLOCK:
@@ -54,7 +57,11 @@ KeyboardEvdev::KeyboardEvdev(EventModifiersEvdev* modifiers,
                              const EventDispatchCallback& callback)
     : callback_(callback),
       modifiers_(modifiers),
-      keyboard_layout_engine_(keyboard_layout_engine) {
+      keyboard_layout_engine_(keyboard_layout_engine),
+      repeat_enabled_(true),
+      repeat_key_(KEY_RESERVED) {
+  repeat_delay_ = base::TimeDelta::FromMilliseconds(kRepeatDelayMs);
+  repeat_interval_ = base::TimeDelta::FromMilliseconds(kRepeatIntervalMs);
 }
 
 KeyboardEvdev::~KeyboardEvdev() {
@@ -64,17 +71,18 @@ void KeyboardEvdev::OnKeyChange(unsigned int key, bool down) {
   if (key > KEY_MAX)
     return;
 
-  if (down != key_state_.test(key)) {
-    // State transition: !(down) -> (down)
-    if (down)
-      key_state_.set(key);
-    else
-      key_state_.reset(key);
+  if (down == key_state_.test(key))
+    return;
 
-    UpdateModifier(key, down);
-  }
+  // State transition: !(down) -> (down)
+  if (down)
+    key_state_.set(key);
+  else
+    key_state_.reset(key);
 
-  DispatchKey(key, down);
+  UpdateModifier(key, down);
+  UpdateKeyRepeat(key, down);
+  DispatchKey(key, down, false /* repeat */);
 }
 
 void KeyboardEvdev::UpdateModifier(unsigned int key, bool down) {
@@ -90,7 +98,43 @@ void KeyboardEvdev::UpdateModifier(unsigned int key, bool down) {
     modifiers_->UpdateModifier(modifier, down);
 }
 
-void KeyboardEvdev::DispatchKey(unsigned int key, bool down) {
+void KeyboardEvdev::UpdateKeyRepeat(unsigned int key, bool down) {
+  if (!repeat_enabled_)
+    StopKeyRepeat();
+  else if (key != repeat_key_ && down)
+    StartKeyRepeat(key);
+  else if (key == repeat_key_ && !down)
+    StopKeyRepeat();
+}
+
+void KeyboardEvdev::StartKeyRepeat(unsigned int key) {
+  repeat_key_ = key;
+  repeat_delay_timer_.Start(
+      FROM_HERE, repeat_delay_,
+      base::Bind(&KeyboardEvdev::OnRepeatDelayTimeout, base::Unretained(this)));
+  repeat_interval_timer_.Stop();
+}
+
+void KeyboardEvdev::StopKeyRepeat() {
+  repeat_key_ = KEY_RESERVED;
+  repeat_delay_timer_.Stop();
+  repeat_interval_timer_.Stop();
+}
+
+void KeyboardEvdev::OnRepeatDelayTimeout() {
+  DispatchKey(repeat_key_, true /* down */, true /* repeat */);
+
+  repeat_interval_timer_.Start(
+      FROM_HERE, repeat_interval_,
+      base::Bind(&KeyboardEvdev::OnRepeatIntervalTimeout,
+                 base::Unretained(this)));
+}
+
+void KeyboardEvdev::OnRepeatIntervalTimeout() {
+  DispatchKey(repeat_key_, true /* down */, true /* repeat */);
+}
+
+void KeyboardEvdev::DispatchKey(unsigned int key, bool down, bool repeat) {
   DomCode dom_code =
       KeycodeConverter::NativeKeycodeToDomCode(key + kXkbKeycodeOffset);
   // DomCode constants are not included here because of conflicts with

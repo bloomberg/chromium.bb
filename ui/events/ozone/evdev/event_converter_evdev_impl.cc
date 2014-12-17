@@ -14,6 +14,10 @@
 
 namespace ui {
 
+// Values for EV_KEY.
+const int kKeyReleaseValue = 0;
+const int kKeyRepeatValue = 2;
+
 EventConverterEvdevImpl::EventConverterEvdevImpl(
     int fd,
     base::FilePath path,
@@ -80,13 +84,18 @@ void EventConverterEvdevImpl::ProcessEvents(const input_event* inputs,
 }
 
 void EventConverterEvdevImpl::ConvertKeyEvent(const input_event& input) {
+  // Ignore repeat events.
+  if (input.value == kKeyRepeatValue)
+    return;
+
   // Mouse processing.
   if (input.code >= BTN_MOUSE && input.code < BTN_JOYSTICK) {
     DispatchMouseButton(input);
     return;
   }
+
   // Keyboard processing.
-  keyboard_->OnKeyChange(input.code, input.value != 0);
+  keyboard_->OnKeyChange(input.code, input.value != kKeyReleaseValue);
 }
 
 void EventConverterEvdevImpl::ConvertMouseMoveEvent(const input_event& input) {

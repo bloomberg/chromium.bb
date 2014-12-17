@@ -8,6 +8,8 @@
 #include <bitset>
 #include <linux/input.h>
 
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "ui/events/ozone/evdev/event_device_util.h"
 #include "ui/events/ozone/evdev/event_dispatch_callback.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
@@ -39,7 +41,12 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
 
  private:
   void UpdateModifier(unsigned int key, bool down);
-  void DispatchKey(unsigned int key, bool down);
+  void UpdateKeyRepeat(unsigned int key, bool down);
+  void StartKeyRepeat(unsigned int key);
+  void StopKeyRepeat();
+  void OnRepeatDelayTimeout();
+  void OnRepeatIntervalTimeout();
+  void DispatchKey(unsigned int key, bool down, bool repeat);
 
   // Aggregated key state. There is only one bit of state per key; we do not
   // attempt to count presses of the same key on multiple keyboards.
@@ -56,7 +63,16 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
   // Shared modifier state.
   EventModifiersEvdev* modifiers_;
 
+  // Shared layout engine.
   KeyboardLayoutEngine* keyboard_layout_engine_;
+
+  // Key repeat state.
+  bool repeat_enabled_;
+  unsigned int repeat_key_;
+  base::TimeDelta repeat_delay_;
+  base::TimeDelta repeat_interval_;
+  base::OneShotTimer<KeyboardEvdev> repeat_delay_timer_;
+  base::RepeatingTimer<KeyboardEvdev> repeat_interval_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardEvdev);
 };
