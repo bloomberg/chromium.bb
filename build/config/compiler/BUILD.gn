@@ -762,10 +762,18 @@ config("default_warnings") {
 
         # TODO(thakis): Remove, http://crbug.com/263960
         "-Wno-reserved-user-defined-literal",
-
-        # TODO(hans): Get this cleaned up.
-        "-Wno-inconsistent-missing-override",
       ]
+
+      # NaCl's Clang compiler and Chrome's hermetic Clang compiler will almost
+      # always have different versions. Certain flags may not be recognized by
+      # one version or the other.
+      if (!is_nacl) {
+        # Flags NaCl does not recognize.
+        cflags += [
+          # TODO(hans): Get this cleaned up.
+          "-Wno-inconsistent-missing-override",
+        ]
+      }
     }
     if (gcc_version >= 48) {
       cflags_cc += [
