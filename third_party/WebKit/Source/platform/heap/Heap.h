@@ -252,7 +252,7 @@ public:
 #endif
 
 private:
-    volatile uint32_t m_size;
+    uint32_t m_size;
 #if ENABLE(ASSERT)
     uint32_t m_magic;
 #endif
