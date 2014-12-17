@@ -343,7 +343,7 @@ mode-buildbot-arm() {
   # Don't run the rest of the tests on qemu, only build them.
   # QEMU is too flaky for the main waterfall
 
-  # Normal pexe mode tests
+  # Normal pexe mode build.
   scons-stage-noirt "arm" "${qemuflags}" "${SCONS_EVERYTHING}"
   # This extra step is required to translate the pexes (because translation
   # happens as part of CommandSelLdrTestNacl and not part of the
@@ -352,6 +352,8 @@ mode-buildbot-arm() {
   # Large tests cannot be run in parallel
   scons-stage-noirt "arm" "${qemuflags} -j1" "large_tests"
 
+  # Normal pexe mode build.
+  scons-stage-irt "arm" "${qemuflags}" "${SCONS_EVERYTHING}"
   # also run some tests with the irt
   scons-stage-irt "arm" "${qemuflags}" "${SCONS_S_M_IRT}"
 
