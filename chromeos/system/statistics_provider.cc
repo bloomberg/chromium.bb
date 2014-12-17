@@ -7,9 +7,11 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/synchronization/waitable_event.h"
@@ -19,6 +21,7 @@
 #include "base/time/time.h"
 #include "chromeos/app_mode/kiosk_oem_manifest_parser.h"
 #include "chromeos/chromeos_constants.h"
+#include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/system/name_value_pairs_parser.h"
 
@@ -37,12 +40,10 @@ const char kCrosSystemUnknownValue[] = "(error)";
 
 const char kHardwareClassCrosSystemKey[] = "hwid";
 const char kUnknownHardwareClass[] = "unknown";
-const char kSerialNumber[] = "sn";
 
-// File to get machine hardware info from, and key/value delimiters of
-// the file. machine-info is generated only for OOBE and enterprise enrollment
-// and may not be present. See login-manager/init/machine-info.conf.
-const char kMachineHardwareInfoFile[] = "/tmp/machine-info";
+// Key/value delimiters of machine hardware info file. machine-info is generated
+// only for OOBE and enterprise enrollment and may not be present. See
+// login-manager/init/machine-info.conf.
 const char kMachineHardwareInfoEq[] = "=";
 const char kMachineHardwareInfoDelim[] = " \n";
 
@@ -256,7 +257,28 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
     }
   }
 
-  parser.GetNameValuePairsFromFile(base::FilePath(kMachineHardwareInfoFile),
+  base::FilePath machine_info_path;
+  PathService::Get(chromeos::FILE_MACHINE_INFO, &machine_info_path);
+  if (!base::SysInfo::IsRunningOnChromeOS() &&
+      !base::PathExists(machine_info_path)) {
+    // Use time value to create an unique stub serial because clashes of the
+    // same serial for the same domain invalidate earlier enrollments. Persist
+    // to disk to keep it constant across restarts (required for re-enrollment
+    // testing).
+    std::string stub_contents =
+        "\"serial_number\"=\"stub_" +
+        base::Int64ToString(base::Time::Now().ToJavaTime()) + "\"\n";
+    int bytes_written = base::WriteFile(machine_info_path,
+                                        stub_contents.c_str(),
+                                        stub_contents.size());
+    // static_cast<int> is fine because stub_contents is small.
+    if (bytes_written < static_cast<int>(stub_contents.size())) {
+      LOG(ERROR) << "Error writing machine info stub: "
+                 << machine_info_path.value();
+    }
+  }
+
+  parser.GetNameValuePairsFromFile(machine_info_path,
                                    kMachineHardwareInfoEq,
                                    kMachineHardwareInfoDelim);
   parser.GetNameValuePairsFromFile(base::FilePath(kEchoCouponFile),
@@ -283,17 +305,6 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
     } else if (base::SysInfo::IsRunningOnChromeOS()) {
       LoadOemManifestFromFile(base::FilePath(kOemManifestFilePath));
     }
-  }
-
-  if (!base::SysInfo::IsRunningOnChromeOS() &&
-      machine_info_.find(kSerialNumber) == machine_info_.end()) {
-    // Set stub value for testing. A time value is appended to avoid clashes of
-    // the same serial for the same domain, which would invalidate earlier
-    // enrollments. A fake /tmp/machine-info file should be used instead if
-    // a stable serial is needed, e.g. to test re-enrollment.
-    base::TimeDelta time = base::Time::Now() - base::Time::UnixEpoch();
-    machine_info_[kSerialNumber] =
-        "stub_serial_number_" + base::Int64ToString(time.InSeconds());
   }
 
   // Finished loading the statistics.

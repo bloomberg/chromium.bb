@@ -29,6 +29,9 @@ const base::FilePath::CharType kOwnerKeyFileName[] =
 const base::FilePath::CharType kInstallAttributesFileName[] =
     FILE_PATH_LITERAL("/var/run/lockbox/install_attributes.pb");
 
+const base::FilePath::CharType kMachineHardwareInfoFileName[] =
+    FILE_PATH_LITERAL("/tmp/machine-info");
+
 const base::FilePath::CharType kUptimeFileName[] =
     FILE_PATH_LITERAL("/proc/uptime");
 
@@ -57,6 +60,9 @@ bool PathProvider(int key, base::FilePath* result) {
       break;
     case FILE_INSTALL_ATTRIBUTES:
       *result = base::FilePath(kInstallAttributesFileName);
+      break;
+    case FILE_MACHINE_INFO:
+      *result = base::FilePath(kMachineHardwareInfoFileName);
       break;
     case FILE_UPTIME:
       *result = base::FilePath(kUptimeFileName);
@@ -103,6 +109,11 @@ void RegisterStubPathOverrides(const base::FilePath& stubs_dir) {
   PathService::OverrideAndCreateIfNeeded(
       FILE_INSTALL_ATTRIBUTES,
       parent.AppendASCII("stub_install_attributes.pb"),
+      is_absolute,
+      create);
+  PathService::OverrideAndCreateIfNeeded(
+      FILE_MACHINE_INFO,
+      parent.AppendASCII("stub_machine-info"),
       is_absolute,
       create);
   PathService::Override(
