@@ -986,10 +986,16 @@ public class Tab {
      *         is specified or it requires the default favicon.
      */
     public Bitmap getFavicon() {
-        // If we have no content return null.
-        if (getNativePage() == null && getContentViewCore() == null) return null;
+        // If we have no content or a native page, return null.
+        if (getContentViewCore() == null) return null;
 
-        return (mFavicon != null) ? mFavicon : nativeGetDefaultFavicon(mNativeTabAndroid);
+        if (mFavicon != null) return mFavicon;
+
+        // Cache the result so we don't keep querying it.
+        mFavicon = nativeGetFavicon(mNativeTabAndroid);
+        // Invalidate the favicon URL so that if we do get a favicon for this page we don't drop it.
+        mFaviconUrl = null;
+        return mFavicon;
     }
 
     /**
@@ -1322,6 +1328,6 @@ public class Tab {
     private native void nativeSetActiveNavigationEntryTitleForUrl(long nativeTabAndroid, String url,
             String title);
     private native boolean nativePrint(long nativeTabAndroid);
-    private native Bitmap nativeGetDefaultFavicon(long nativeTabAndroid);
+    private native Bitmap nativeGetFavicon(long nativeTabAndroid);
     private native void nativeCreateHistoricalTab(long nativeTabAndroid);
 }

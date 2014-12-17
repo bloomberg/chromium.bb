@@ -650,8 +650,9 @@ void TabAndroid::SetPendingPrint() {
   Java_Tab_setPendingPrint(env, weak_java_tab_.get(env).obj());
 }
 
-ScopedJavaLocalRef<jobject> TabAndroid::GetDefaultFavicon(JNIEnv* env,
-                                                          jobject obj) {
+ScopedJavaLocalRef<jobject> TabAndroid::GetFavicon(JNIEnv* env,
+                                                   jobject obj) {
+
   ScopedJavaLocalRef<jobject> bitmap;
   FaviconTabHelper* favicon_tab_helper =
       FaviconTabHelper::FromWebContents(web_contents_.get());
