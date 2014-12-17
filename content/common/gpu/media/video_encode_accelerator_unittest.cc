@@ -121,6 +121,10 @@ struct IvfFrameHeader {
   uint64_t timestamp;   // 64-bit presentation timestamp
 } __attribute__((packed));
 
+// The number of frames to be encoded. This variable is set by the switch
+// "--num_frames_to_encode". Ignored if 0.
+int g_num_frames_to_encode = 0;
+
 struct TestStream {
   TestStream()
       : num_frames(0),
@@ -803,15 +807,17 @@ void VEAClient::RequireBitstreamBuffers(unsigned int input_count,
 
   CreateAlignedInputStreamFile(input_coded_size, test_stream_);
 
+  num_frames_to_encode_ = test_stream_->num_frames;
+  if (g_num_frames_to_encode > 0)
+    num_frames_to_encode_ = g_num_frames_to_encode;
+
   // We may need to loop over the stream more than once if more frames than
   // provided is required for bitrate tests.
-  if (force_bitrate_ && test_stream_->num_frames < kMinFramesForBitrateTests) {
+  if (force_bitrate_ && num_frames_to_encode_ < kMinFramesForBitrateTests) {
     DVLOG(1) << "Stream too short for bitrate test ("
              << test_stream_->num_frames << " frames), will loop it to reach "
              << kMinFramesForBitrateTests << " frames";
     num_frames_to_encode_ = kMinFramesForBitrateTests;
-  } else {
-    num_frames_to_encode_ = test_stream_->num_frames;
   }
   if (save_to_file_ && IsVP8(test_stream_->requested_profile))
     WriteIvfFileHeader();
@@ -1122,7 +1128,9 @@ class VideoEncodeAcceleratorTestEnvironment : public ::testing::Environment {
 };
 
 // Test parameters:
-// - Number of concurrent encoders.
+// - Number of concurrent encoders. The value takes effect when there is only
+//   one input stream; otherwise, one encoder per input stream will be
+//   instantiated.
 // - If true, save output to file (provided an output filename was supplied).
 // - Force a keyframe every n frames.
 // - Force bitrate; the actual required value is provided as a property
@@ -1135,7 +1143,7 @@ class VideoEncodeAcceleratorTest
           Tuple7<int, bool, int, bool, bool, bool, bool> > {};
 
 TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
-  const size_t num_concurrent_encoders = GetParam().a;
+  size_t num_concurrent_encoders = GetParam().a;
   const bool save_to_file = GetParam().b;
   const unsigned int keyframe_period = GetParam().c;
   const bool force_bitrate = GetParam().d;
@@ -1147,6 +1155,9 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
   ScopedVector<VEAClient> clients;
   base::Thread encoder_thread("EncoderThread");
   ASSERT_TRUE(encoder_thread.Start());
+
+  if (g_env->test_streams_.size() > 1)
+    num_concurrent_encoders = g_env->test_streams_.size();
 
   // Create all encoders.
   for (size_t i = 0; i < num_concurrent_encoders; i++) {
@@ -1267,6 +1278,11 @@ int main(int argc, char** argv) {
        ++it) {
     if (it->first == "test_stream_data") {
       test_stream_data->assign(it->second.c_str());
+      continue;
+    }
+    if (it->first == "num_frames_to_encode") {
+      std::string input(it->second.begin(), it->second.end());
+      CHECK(base::StringToInt(input, &content::g_num_frames_to_encode));
       continue;
     }
     if (it->first == "v" || it->first == "vmodule")

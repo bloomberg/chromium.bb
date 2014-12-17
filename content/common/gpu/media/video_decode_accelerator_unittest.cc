@@ -104,6 +104,12 @@ double g_rendering_fps = 60;
 // The value is set by the switch "--rendering_warm_up".
 int g_rendering_warm_up = 0;
 
+// The value is set by the switch "--num_play_throughs". The video will play
+// the specified number of times. In different test cases, we have different
+// values for |num_play_throughs|. This setting will override the value. A
+// special value "0" means no override.
+int g_num_play_throughs = 0;
+
 // Magic constants for differentiating the reasons for NotifyResetDone being
 // called.
 enum ResetPoint {
@@ -1010,7 +1016,9 @@ void VideoDecodeAcceleratorTest::OutputLogFile(
 }
 
 // Test parameters:
-// - Number of concurrent decoders.
+// - Number of concurrent decoders. The value takes effect when there is only
+//   one input stream; otherwise, one decoder per input stream will be
+//   instantiated.
 // - Number of concurrent in-flight Decode() calls per decoder.
 // - Number of play-throughs.
 // - reset_after_frame_num: see GLRenderingVDAClient ctor.
@@ -1053,13 +1061,19 @@ enum { kMinSupportedNumConcurrentDecoders = 3 };
 // Test the most straightforward case possible: data is decoded from a single
 // chunk and rendered to the screen.
 TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
-  const size_t num_concurrent_decoders = GetParam().a;
+  size_t num_concurrent_decoders = GetParam().a;
   const size_t num_in_flight_decodes = GetParam().b;
-  const int num_play_throughs = GetParam().c;
+  int num_play_throughs = GetParam().c;
   const int reset_point = GetParam().d;
   const int delete_decoder_state = GetParam().e;
   bool test_reuse_delay = GetParam().f;
   const bool render_as_thumbnails = GetParam().g;
+
+  if (test_video_files_.size() > 1)
+    num_concurrent_decoders = test_video_files_.size();
+
+  if (g_num_play_throughs > 0)
+    num_play_throughs = g_num_play_throughs;
 
   UpdateTestVideoFileParams(
       num_concurrent_decoders, reset_point, &test_video_files_);
@@ -1434,6 +1448,12 @@ int main(int argc, char **argv) {
     // TODO(owenlin): Remove this flag once it is not used in autotest.
     if (it->first == "disable_rendering") {
       content::g_rendering_fps = 0;
+      continue;
+    }
+
+    if (it->first == "num_play_throughs") {
+      std::string input(it->second.begin(), it->second.end());
+      CHECK(base::StringToInt(input, &content::g_num_play_throughs));
       continue;
     }
     if (it->first == "v" || it->first == "vmodule")
