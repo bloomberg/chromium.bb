@@ -172,7 +172,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchCrossOriginMessageEvent(const WebCro
     m_workerGlobalScope->dispatchEvent(event);
 }
 
-void ServiceWorkerGlobalScopeProxy::reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL)
+void ServiceWorkerGlobalScopeProxy::reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int)
 {
     m_client.reportException(errorMessage, lineNumber, columnNumber, sourceURL);
 }

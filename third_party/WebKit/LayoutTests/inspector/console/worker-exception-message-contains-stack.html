@@ -1,0 +1,62 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+var worker;
+
+function startWorker()
+{
+    worker = new Worker("resources/worker-with-throw.js");
+}
+
+function postMessageToWorker()
+{
+    worker.postMessage();
+}
+
+function setupErrorHandler()
+{
+    worker.onerror = function(e) {
+        console.log(e.message);
+        e.preventDefault();
+    }
+}
+
+function test()
+{
+    InspectorTest.addSniffer(WebInspector.RuntimeModel.prototype, "_executionContextCreated", contextCreated);
+    InspectorTest.evaluateInPage("startWorker()");
+
+    function contextCreated()
+    {
+        InspectorTest.evaluateInPage("postMessageToWorker()", step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.evaluateInPage("setupErrorHandler()", step3);
+    }
+
+    function step3()
+    {
+        InspectorTest.evaluateInPage("postMessageToWorker()", step4);
+    }
+
+    function step4()
+    {
+        InspectorTest.expandConsoleMessages(step5);
+    }
+
+    function step5()
+    {
+        InspectorTest.dumpConsoleMessages();
+        InspectorTest.completeTest();
+    }
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests exception message from worker contains stack trace.</p>
+</body>
+</html>

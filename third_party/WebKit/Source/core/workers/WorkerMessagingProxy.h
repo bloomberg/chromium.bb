@@ -62,7 +62,7 @@ public:
     // These methods come from worker context thread via WorkerObjectProxy
     // and are called on the worker object thread (e.g. main thread).
     void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>);
-    void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL);
+    void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId);
     void reportConsoleMessage(MessageSource, MessageLevel, const String& message, int lineNumber, const String& sourceURL);
     void postMessageToPageInspector(const String&);
     void postWorkerConsoleAgentEnabled();

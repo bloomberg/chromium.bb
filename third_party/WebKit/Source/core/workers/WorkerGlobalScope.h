@@ -125,6 +125,8 @@ public:
     virtual void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override final;
     ConsoleMessageStorage* messageStorage();
 
+    void exceptionHandled(int exceptionId, bool isHandled);
+
     virtual void trace(Visitor*) override;
 
 protected:
@@ -168,6 +170,8 @@ private:
     double m_timeOrigin;
 
     OwnPtrWillBeMember<ConsoleMessageStorage> m_messageStorage;
+
+    HashMap<unsigned long, RefPtr<ConsoleMessage> > m_pendingMessages;
 };
 
 DEFINE_TYPE_CASTS(WorkerGlobalScope, ExecutionContext, context, context->isWorkerGlobalScope(), context.isWorkerGlobalScope());

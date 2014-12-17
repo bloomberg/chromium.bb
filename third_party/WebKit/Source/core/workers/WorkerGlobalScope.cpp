@@ -60,6 +60,14 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURLRequest.h"
 
+namespace {
+    unsigned long createWorkerExceptionUniqueIdentifier()
+    {
+        static unsigned long s_workerExceptionUniqueIdentifier = 0;
+        return ++s_workerExceptionUniqueIdentifier;
+    }
+}
+
 namespace blink {
 
 class CloseWorkerGlobalScopeTask : public ExecutionContextTask {
@@ -267,9 +275,14 @@ EventTarget* WorkerGlobalScope::errorEventTarget()
     return this;
 }
 
-void WorkerGlobalScope::logExceptionToConsole(const String& errorMessage, int, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>)
+void WorkerGlobalScope::logExceptionToConsole(const String& errorMessage, int, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
 {
-    thread()->workerReportingProxy().reportException(errorMessage, lineNumber, columnNumber, sourceURL);
+    unsigned long exceptionId = createWorkerExceptionUniqueIdentifier();
+    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber);
+    consoleMessage->setCallStack(callStack);
+    m_pendingMessages.set(exceptionId, consoleMessage);
+
+    thread()->workerReportingProxy().reportException(errorMessage, lineNumber, columnNumber, sourceURL, exceptionId);
 }
 
 void WorkerGlobalScope::reportBlockedScriptExecutionToInspector(const String& directiveText)
@@ -327,6 +340,13 @@ void WorkerGlobalScope::countDeprecation(UseCounter::Feature) const
 ConsoleMessageStorage* WorkerGlobalScope::messageStorage()
 {
     return m_messageStorage.get();
+}
+
+void WorkerGlobalScope::exceptionHandled(int exceptionId, bool isHandled)
+{
+    RefPtr<ConsoleMessage> consoleMessage = m_pendingMessages.take(exceptionId);
+    if (!isHandled)
+        addConsoleMessage(consoleMessage.release());
 }
 
 void WorkerGlobalScope::trace(Visitor* visitor)

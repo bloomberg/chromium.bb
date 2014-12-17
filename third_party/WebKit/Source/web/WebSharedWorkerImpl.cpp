@@ -268,7 +268,7 @@ void WebSharedWorkerImpl::saveAgentRuntimeState(const WebString& inspectorState)
 
 // WorkerReportingProxy --------------------------------------------------------
 
-void WebSharedWorkerImpl::reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL)
+void WebSharedWorkerImpl::reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId)
 {
     // Not suppported in SharedWorker.
 }
