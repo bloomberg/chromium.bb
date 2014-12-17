@@ -24,8 +24,7 @@ const char* kChildrenDictAttr = "children";
 
 AccessibilityTreeFormatter::AccessibilityTreeFormatter(
     BrowserAccessibility* root)
-    : root_(root),
-      show_ids_(false) {
+    : root_(root) {
   Initialize();
 }
 
@@ -76,12 +75,12 @@ void AccessibilityTreeFormatter::RecursiveBuildAccessibilityTree(
 
 void AccessibilityTreeFormatter::RecursiveFormatAccessibilityTree(
     const base::DictionaryValue& dict, base::string16* contents, int depth) {
-  base::string16 indent = base::string16(depth * kIndentSpaces, ' ');
-  base::string16 line = indent + ToString(dict);
+  base::string16 line =
+      ToString(dict, base::string16(depth * kIndentSpaces, ' '));
   if (line.find(base::ASCIIToUTF16(kSkipString)) != base::string16::npos)
     return;
 
-  *contents += line + base::ASCIIToUTF16("\n");
+  *contents += line;
   const base::ListValue* children;
   dict.GetList(kChildrenDictAttr, &children);
   const base::DictionaryValue* child_dict;
@@ -98,10 +97,12 @@ void AccessibilityTreeFormatter::AddProperties(const BrowserAccessibility& node,
 }
 
 base::string16 AccessibilityTreeFormatter::ToString(
-    const base::DictionaryValue& node) {
+    const base::DictionaryValue& node,
+    const base::string16& indent) {
   int id_value;
   node.GetInteger("id", &id_value);
-  return base::IntToString16(id_value);
+  return indent + base::IntToString16(id_value) +
+       base::ASCIIToUTF16("\n");
 }
 
 void AccessibilityTreeFormatter::Initialize() {}
@@ -139,14 +140,11 @@ void AccessibilityTreeFormatter::SetFilters(
   filters_ = filters;
 }
 
-// static
 bool AccessibilityTreeFormatter::MatchesFilters(
-    const std::vector<Filter>& filters,
-    const base::string16& text,
-    bool default_result) {
-  std::vector<Filter>::const_iterator iter = filters.begin();
+    const base::string16& text, bool default_result) const {
+  std::vector<Filter>::const_iterator iter = filters_.begin();
   bool allow = default_result;
-  for (iter = filters.begin(); iter != filters.end(); ++iter) {
+  for (iter = filters_.begin(); iter != filters_.end(); ++iter) {
     if (MatchPattern(text, iter->match_str)) {
       if (iter->type == Filter::ALLOW_EMPTY)
         allow = true;
@@ -157,11 +155,6 @@ bool AccessibilityTreeFormatter::MatchesFilters(
     }
   }
   return allow;
-}
-
-bool AccessibilityTreeFormatter::MatchesFilters(
-    const base::string16& text, bool default_result) const {
-  return MatchesFilters(filters_, text, default_result);
 }
 
 base::string16 AccessibilityTreeFormatter::FormatCoordinates(

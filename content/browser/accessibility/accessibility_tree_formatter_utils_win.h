@@ -20,10 +20,7 @@ CONTENT_EXPORT void IAccessibleStateToStringVector(
     int32 ia_state, std::vector<base::string16>* result);
 CONTENT_EXPORT base::string16 IAccessible2StateToString(int32 ia2_state);
 CONTENT_EXPORT void IAccessible2StateToStringVector(
-    int32 ia_state, std::vector<base::string16>* result);
-
-// Handles both IAccessible/MSAA events and IAccessible2 events.
-CONTENT_EXPORT base::string16 AccessibilityEventToString(int32 event_id);
+  int32 ia_state, std::vector<base::string16>* result);
 
 }  // namespace content
 

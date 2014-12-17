@@ -27,27 +27,7 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   explicit AccessibilityTreeFormatter(BrowserAccessibility* root);
   virtual ~AccessibilityTreeFormatter();
 
-  // A single filter specification. See GetAllowString() and GetDenyString()
-  // for more information.
-  struct Filter {
-    enum Type {
-      ALLOW,
-      ALLOW_EMPTY,
-      DENY
-    };
-    base::string16 match_str;
-    Type type;
-
-    Filter(base::string16 match_str, Type type)
-        : match_str(match_str), type(type) {}
-  };
-
   static AccessibilityTreeFormatter* Create(WebContents* wc);
-
-  static bool MatchesFilters(
-      const std::vector<Filter>& filters,
-      const base::string16& text,
-      bool default_result);
 
   // Populates the given DictionaryValue with the accessibility tree.
   // The dictionary contains a key/value pair for each attribute of the node,
@@ -74,13 +54,24 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   // Dumps a BrowserAccessibility tree into a string.
   void FormatAccessibilityTree(base::string16* contents);
 
+  // A single filter specification. See GetAllowString() and GetDenyString()
+  // for more information.
+  struct Filter {
+    enum Type {
+      ALLOW,
+      ALLOW_EMPTY,
+      DENY
+    };
+    base::string16 match_str;
+    Type type;
+
+    Filter(base::string16 match_str, Type type)
+        : match_str(match_str), type(type) {}
+  };
+
   // Set regular expression filters that apply to each component of every
   // line before it's output.
   void SetFilters(const std::vector<Filter>& filters);
-
-  // If true, the internal accessibility id of each node will be included
-  // in its output.
-  void set_show_ids(bool show_ids) { show_ids_ = show_ids; }
 
   // Suffix of the expectation file corresponding to html file.
   // Example:
@@ -128,7 +119,10 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
                                    const base::DictionaryValue& value);
 
   // Returns a platform specific representation of a BrowserAccessibility.
-  base::string16 ToString(const base::DictionaryValue& node);
+  // Should be zero or more complete lines, each with |prefix| prepended
+  // (to indent each line).
+  base::string16 ToString(const base::DictionaryValue& node,
+                          const base::string16& indent);
 
   void Initialize();
 
@@ -146,9 +140,6 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
 
   // Filters used when formatting the accessibility tree as text.
   std::vector<Filter> filters_;
-
-  // Whether or not node ids should be included in the dump.
-  bool show_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityTreeFormatter);
 };

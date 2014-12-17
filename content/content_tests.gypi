@@ -1221,9 +1221,6 @@
           ],
           'sources': [
             'app/mojo/mojo_browsertest.cc',
-            'browser/accessibility/accessibility_event_recorder.cc',
-            'browser/accessibility/accessibility_event_recorder.h',
-            'browser/accessibility/accessibility_event_recorder_win.cc',
             'browser/accessibility/accessibility_ipc_error_browsertest.cc',
             'browser/accessibility/accessibility_mode_browsertest.cc',
             'browser/accessibility/accessibility_win_browsertest.cc',
@@ -1232,7 +1229,6 @@
             'browser/accessibility/cross_platform_accessibility_browsertest.cc',
             'browser/accessibility/dump_accessibility_browsertest_base.cc',
             'browser/accessibility/dump_accessibility_browsertest_base.h',
-            'browser/accessibility/dump_accessibility_events_browsertest.cc',
             'browser/accessibility/dump_accessibility_tree_browsertest.cc',
             'browser/accessibility/site_per_process_accessibility_browsertest.cc',
             'browser/battery_status/battery_monitor_impl_browsertest.cc',

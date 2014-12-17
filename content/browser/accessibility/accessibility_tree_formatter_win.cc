@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -59,7 +58,6 @@ void AccessibilityTreeFormatter::Initialize() {
 
 void AccessibilityTreeFormatter::AddProperties(
     const BrowserAccessibility& node, base::DictionaryValue* dict) {
-  dict->SetInteger("id", node.GetId());
   BrowserAccessibilityWin* acc_obj =
       const_cast<BrowserAccessibility*>(&node)->ToBrowserAccessibilityWin();
 
@@ -201,14 +199,9 @@ void AccessibilityTreeFormatter::AddProperties(
 }
 
 base::string16 AccessibilityTreeFormatter::ToString(
-    const base::DictionaryValue& dict) {
+    const base::DictionaryValue& dict,
+    const base::string16& indent) {
   base::string16 line;
-
-  if (show_ids_) {
-    int id_value;
-    dict.GetInteger("id", &id_value);
-    WriteAttribute(true, base::IntToString16(id_value), &line);
-  }
 
   base::string16 role_value;
   dict.GetString("role", &role_value);
@@ -290,7 +283,7 @@ base::string16 AccessibilityTreeFormatter::ToString(
     }
   }
 
-  return line;
+  return indent + line + base::ASCIIToUTF16("\n");
 }
 
 // static

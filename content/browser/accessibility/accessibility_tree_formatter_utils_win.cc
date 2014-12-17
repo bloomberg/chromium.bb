@@ -16,39 +16,37 @@
 namespace content {
 namespace {
 
-class AccessibilityEnumMap {
+class AccessibilityRoleStateMap {
  public:
-  static AccessibilityEnumMap* GetInstance();
+  static AccessibilityRoleStateMap* GetInstance();
 
   std::map<int32, base::string16> ia_role_string_map;
   std::map<int32, base::string16> ia2_role_string_map;
   std::map<int32, base::string16> ia_state_string_map;
   std::map<int32, base::string16> ia2_state_string_map;
-  std::map<int32, base::string16> event_string_map;
 
  private:
-  AccessibilityEnumMap();
-  virtual ~AccessibilityEnumMap() {}
+  AccessibilityRoleStateMap();
+  virtual ~AccessibilityRoleStateMap() {}
 
-  friend struct DefaultSingletonTraits<AccessibilityEnumMap>;
+  friend struct DefaultSingletonTraits<AccessibilityRoleStateMap>;
 
-  DISALLOW_COPY_AND_ASSIGN(AccessibilityEnumMap);
+  DISALLOW_COPY_AND_ASSIGN(AccessibilityRoleStateMap);
 };
 
 // static
-AccessibilityEnumMap* AccessibilityEnumMap::GetInstance() {
-  return Singleton<AccessibilityEnumMap,
-                   LeakySingletonTraits<AccessibilityEnumMap> >::get();
+AccessibilityRoleStateMap* AccessibilityRoleStateMap::GetInstance() {
+  return Singleton<AccessibilityRoleStateMap,
+                   LeakySingletonTraits<AccessibilityRoleStateMap> >::get();
 }
 
-AccessibilityEnumMap::AccessibilityEnumMap() {
+AccessibilityRoleStateMap::AccessibilityRoleStateMap() {
 // Convenience macros for generating readable strings.
 #define IA_ROLE_MAP(x) ia_role_string_map[x] = L###x;  \
                        ia2_role_string_map[x] = L###x;
 #define IA2_ROLE_MAP(x) ia2_role_string_map[x] = L###x;
 #define IA_STATE_MAP(x) ia_state_string_map[STATE_SYSTEM_##x] = L###x;
 #define IA2_STATE_MAP(x) ia2_state_string_map[x] = L###x;
-#define EVENT_MAP(x) event_string_map[x] = L###x;
 
   // MSAA / IAccessible roles. Each one of these is also a valid
   // IAccessible2 role, the IA_ROLE_MAP macro adds it to both.
@@ -219,91 +217,22 @@ AccessibilityEnumMap::AccessibilityEnumMap() {
   // Untested states include those that would be repeated on nearly every node,
   // or would vary based on window size.
   // IA2_STATE_MAP(IA2_STATE_OPAQUE) // Untested.
-
-  EVENT_MAP(EVENT_OBJECT_CREATE)
-  EVENT_MAP(EVENT_OBJECT_DESTROY)
-  EVENT_MAP(EVENT_OBJECT_SHOW)
-  EVENT_MAP(EVENT_OBJECT_HIDE)
-  EVENT_MAP(EVENT_OBJECT_REORDER)
-  EVENT_MAP(EVENT_OBJECT_FOCUS)
-  EVENT_MAP(EVENT_OBJECT_SELECTION)
-  EVENT_MAP(EVENT_OBJECT_SELECTIONADD)
-  EVENT_MAP(EVENT_OBJECT_SELECTIONREMOVE)
-  EVENT_MAP(EVENT_OBJECT_SELECTIONWITHIN)
-  EVENT_MAP(EVENT_OBJECT_STATECHANGE)
-  EVENT_MAP(EVENT_OBJECT_LOCATIONCHANGE)
-  EVENT_MAP(EVENT_OBJECT_NAMECHANGE)
-  EVENT_MAP(EVENT_OBJECT_DESCRIPTIONCHANGE)
-  EVENT_MAP(EVENT_OBJECT_VALUECHANGE)
-  EVENT_MAP(EVENT_OBJECT_PARENTCHANGE)
-  EVENT_MAP(EVENT_OBJECT_HELPCHANGE)
-  EVENT_MAP(EVENT_OBJECT_DEFACTIONCHANGE)
-  EVENT_MAP(EVENT_OBJECT_ACCELERATORCHANGE)
-  EVENT_MAP(EVENT_OBJECT_INVOKED)
-  EVENT_MAP(EVENT_OBJECT_TEXTSELECTIONCHANGED)
-  EVENT_MAP(EVENT_OBJECT_CONTENTSCROLLED)
-  EVENT_MAP(EVENT_OBJECT_LIVEREGIONCHANGED)
-  EVENT_MAP(EVENT_OBJECT_HOSTEDOBJECTSINVALIDATED)
-  EVENT_MAP(EVENT_OBJECT_DRAGSTART)
-  EVENT_MAP(EVENT_OBJECT_DRAGCANCEL)
-  EVENT_MAP(EVENT_OBJECT_DRAGCOMPLETE)
-  EVENT_MAP(EVENT_OBJECT_DRAGENTER)
-  EVENT_MAP(EVENT_OBJECT_DRAGLEAVE)
-  EVENT_MAP(EVENT_OBJECT_DRAGDROPPED)
-  EVENT_MAP(EVENT_SYSTEM_ALERT)
-  EVENT_MAP(EVENT_SYSTEM_SCROLLINGSTART)
-  EVENT_MAP(EVENT_SYSTEM_SCROLLINGEND)
-  EVENT_MAP(IA2_EVENT_ACTION_CHANGED)
-  EVENT_MAP(IA2_EVENT_ACTIVE_DECENDENT_CHANGED)
-  EVENT_MAP(IA2_EVENT_ACTIVE_DESCENDANT_CHANGED)
-  EVENT_MAP(IA2_EVENT_DOCUMENT_ATTRIBUTE_CHANGED)
-  EVENT_MAP(IA2_EVENT_DOCUMENT_CONTENT_CHANGED)
-  EVENT_MAP(IA2_EVENT_DOCUMENT_LOAD_COMPLETE)
-  EVENT_MAP(IA2_EVENT_DOCUMENT_LOAD_STOPPED)
-  EVENT_MAP(IA2_EVENT_DOCUMENT_RELOAD)
-  EVENT_MAP(IA2_EVENT_HYPERLINK_END_INDEX_CHANGED)
-  EVENT_MAP(IA2_EVENT_HYPERLINK_NUMBER_OF_ANCHORS_CHANGED)
-  EVENT_MAP(IA2_EVENT_HYPERLINK_SELECTED_LINK_CHANGED)
-  EVENT_MAP(IA2_EVENT_HYPERTEXT_LINK_ACTIVATED)
-  EVENT_MAP(IA2_EVENT_HYPERTEXT_LINK_SELECTED)
-  EVENT_MAP(IA2_EVENT_HYPERLINK_START_INDEX_CHANGED)
-  EVENT_MAP(IA2_EVENT_HYPERTEXT_CHANGED)
-  EVENT_MAP(IA2_EVENT_HYPERTEXT_NLINKS_CHANGED)
-  EVENT_MAP(IA2_EVENT_OBJECT_ATTRIBUTE_CHANGED)
-  EVENT_MAP(IA2_EVENT_PAGE_CHANGED)
-  EVENT_MAP(IA2_EVENT_SECTION_CHANGED)
-  EVENT_MAP(IA2_EVENT_TABLE_CAPTION_CHANGED)
-  EVENT_MAP(IA2_EVENT_TABLE_COLUMN_DESCRIPTION_CHANGED)
-  EVENT_MAP(IA2_EVENT_TABLE_COLUMN_HEADER_CHANGED)
-  EVENT_MAP(IA2_EVENT_TABLE_MODEL_CHANGED)
-  EVENT_MAP(IA2_EVENT_TABLE_ROW_DESCRIPTION_CHANGED)
-  EVENT_MAP(IA2_EVENT_TABLE_ROW_HEADER_CHANGED)
-  EVENT_MAP(IA2_EVENT_TABLE_SUMMARY_CHANGED)
-  EVENT_MAP(IA2_EVENT_TEXT_ATTRIBUTE_CHANGED)
-  EVENT_MAP(IA2_EVENT_TEXT_CARET_MOVED)
-  EVENT_MAP(IA2_EVENT_TEXT_CHANGED)
-  EVENT_MAP(IA2_EVENT_TEXT_COLUMN_CHANGED)
-  EVENT_MAP(IA2_EVENT_TEXT_INSERTED)
-  EVENT_MAP(IA2_EVENT_TEXT_REMOVED)
-  EVENT_MAP(IA2_EVENT_TEXT_UPDATED)
-  EVENT_MAP(IA2_EVENT_TEXT_SELECTION_CHANGED)
-  EVENT_MAP(IA2_EVENT_VISIBLE_DATA_CHANGED)
 }
 
 }  // namespace.
 
 base::string16 IAccessibleRoleToString(int32 ia_role) {
-  return AccessibilityEnumMap::GetInstance()->ia_role_string_map[ia_role];
+  return AccessibilityRoleStateMap::GetInstance()->ia_role_string_map[ia_role];
 }
 
 base::string16 IAccessible2RoleToString(int32 ia_role) {
-  return AccessibilityEnumMap::GetInstance()->ia2_role_string_map[ia_role];
+  return AccessibilityRoleStateMap::GetInstance()->ia2_role_string_map[ia_role];
 }
 
 void IAccessibleStateToStringVector(int32 ia_state,
                                     std::vector<base::string16>* result) {
   const std::map<int32, base::string16>& state_string_map =
-      AccessibilityEnumMap::GetInstance()->ia_state_string_map;
+      AccessibilityRoleStateMap::GetInstance()->ia_state_string_map;
   std::map<int32, base::string16>::const_iterator it;
   for (it = state_string_map.begin(); it != state_string_map.end(); ++it) {
     if (it->first & ia_state)
@@ -320,7 +249,7 @@ base::string16 IAccessibleStateToString(int32 ia_state) {
 void IAccessible2StateToStringVector(int32 ia2_state,
                                      std::vector<base::string16>* result) {
   const std::map<int32, base::string16>& state_string_map =
-      AccessibilityEnumMap::GetInstance()->ia2_state_string_map;
+      AccessibilityRoleStateMap::GetInstance()->ia2_state_string_map;
   std::map<int32, base::string16>::const_iterator it;
   for (it = state_string_map.begin(); it != state_string_map.end(); ++it) {
     if (it->first & ia2_state)
@@ -332,10 +261,6 @@ base::string16 IAccessible2StateToString(int32 ia2_state) {
   std::vector<base::string16> strings;
   IAccessible2StateToStringVector(ia2_state, &strings);
   return JoinString(strings, ',');
-}
-
-base::string16 AccessibilityEventToString(int32 event_id) {
-  return AccessibilityEnumMap::GetInstance()->event_string_map[event_id];
 }
 
 }  // namespace content
