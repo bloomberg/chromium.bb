@@ -176,7 +176,7 @@ InspectorTest.dump = function(value, customFormatters, prefix, prefixWithName)
     }
     if (value === null)
         InspectorTest.addResult(prefixWithName + "null");
-    else if (value instanceof Array)
+    else if (value && value.constructor && value.constructor.name === "Array")
         InspectorTest.addArray(value, customFormatters, prefix, prefixWithName);
     else if (typeof value === "object")
         InspectorTest.addObject(value, customFormatters, prefix, prefixWithName);
