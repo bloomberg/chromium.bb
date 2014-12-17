@@ -815,6 +815,9 @@ struct weston_view {
 	 * displayed on.
 	 */
 	uint32_t output_mask;
+
+	/* Per-surface Presentation feedback flags, controlled by backend. */
+	uint32_t psf_flags;
 };
 
 struct weston_surface_state {

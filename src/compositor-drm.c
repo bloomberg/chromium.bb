@@ -1130,10 +1130,23 @@ drm_assign_planes(struct weston_output *output_base)
 			next_plane = drm_output_prepare_overlay_view(output, ev);
 		if (next_plane == NULL)
 			next_plane = primary;
+
 		weston_view_move_to_plane(ev, next_plane);
+
 		if (next_plane == primary)
 			pixman_region32_union(&overlap, &overlap,
 					      &ev->transform.boundingbox);
+
+		if (next_plane == primary ||
+		    next_plane == &output->cursor_plane) {
+			/* cursor plane involves a copy */
+			ev->psf_flags = 0;
+		} else {
+			/* All other planes are a direct scanout of a
+			 * single client buffer.
+			 */
+			ev->psf_flags = PRESENTATION_FEEDBACK_KIND_ZERO_COPY;
+		}
 
 		pixman_region32_fini(&surface_overlap);
 	}

@@ -470,6 +470,9 @@ struct weston_presentation_feedback {
 
 	/* XXX: could use just wl_resource_get_link() instead */
 	struct wl_list link;
+
+	/* The per-surface feedback flags */
+	uint32_t psf_flags;
 };
 
 static void
@@ -515,7 +518,7 @@ weston_presentation_feedback_present(
 					     ts->tv_nsec,
 					     refresh_nsec,
 					     seq >> 32, seq & 0xffffffff,
-					     flags);
+					     flags | feedback->psf_flags);
 	wl_resource_destroy(feedback->resource);
 }
 
@@ -2000,6 +2003,31 @@ weston_compositor_build_view_list(struct weston_compositor *compositor)
 			surface_free_unused_subsurface_views(view->surface);
 }
 
+static void
+weston_output_take_feedback_list(struct weston_output *output,
+				 struct weston_surface *surface)
+{
+	struct weston_view *view;
+	struct weston_presentation_feedback *feedback;
+	uint32_t flags = 0xffffffff;
+
+	if (wl_list_empty(&surface->feedback_list))
+		return;
+
+	/* All views must have the flag for the flag to survive. */
+	wl_list_for_each(view, &surface->views, surface_link) {
+		/* ignore views that are not on this output at all */
+		if (view->output_mask & (1u << output->id))
+			flags &= view->psf_flags;
+	}
+
+	wl_list_for_each(feedback, &surface->feedback_list, link)
+		feedback->psf_flags = flags;
+
+	wl_list_insert_list(&output->feedback_list, &surface->feedback_list);
+	wl_list_init(&surface->feedback_list);
+}
+
 static int
 weston_output_repaint(struct weston_output *output)
 {
@@ -2019,11 +2047,14 @@ weston_output_repaint(struct weston_output *output)
 	/* Rebuild the surface list and update surface transforms up front. */
 	weston_compositor_build_view_list(ec);
 
-	if (output->assign_planes && !output->disable_planes)
+	if (output->assign_planes && !output->disable_planes) {
 		output->assign_planes(output);
-	else
-		wl_list_for_each(ev, &ec->view_list, link)
+	} else {
+		wl_list_for_each(ev, &ec->view_list, link) {
 			weston_view_move_to_plane(ev, &ec->primary_plane);
+			ev->psf_flags = 0;
+		}
+	}
 
 	wl_list_init(&frame_callback_list);
 	wl_list_for_each(ev, &ec->view_list, link) {
@@ -2035,9 +2066,7 @@ weston_output_repaint(struct weston_output *output)
 					    &ev->surface->frame_callback_list);
 			wl_list_init(&ev->surface->frame_callback_list);
 
-			wl_list_insert_list(&output->feedback_list,
-					    &ev->surface->feedback_list);
-			wl_list_init(&ev->surface->feedback_list);
+			weston_output_take_feedback_list(output, ev->surface);
 		}
 	}
 
