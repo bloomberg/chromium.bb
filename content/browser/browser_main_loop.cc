@@ -480,17 +480,19 @@ void BrowserMainLoop::MainMessageLoopStart() {
     l10n_util::OverrideLocaleWithUILanguageList();
   }
 #endif
+
+  // Create a MessageLoop if one does not already exist for the current thread.
+  if (!base::MessageLoop::current())
+    main_message_loop_.reset(new base::MessageLoopForUI);
+
+  InitializeMainThread();
+
 #if defined(OS_CHROMEOS)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kUseMemoryPressureSystemChromeOS)) {
     memory_pressure_observer_.reset(new base::MemoryPressureObserverChromeOS);
   }
 #endif
-  // Create a MessageLoop if one does not already exist for the current thread.
-  if (!base::MessageLoop::current())
-    main_message_loop_.reset(new base::MessageLoopForUI);
-
-  InitializeMainThread();
 
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:SystemMonitor");
