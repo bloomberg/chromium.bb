@@ -11,8 +11,10 @@
 
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/third_party/valgrind/valgrind.h"
 #include "build/build_config.h"
 #include "sandbox/linux/tests/test_utils.h"
+#include "sandbox/linux/tests/unit_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {
@@ -47,6 +49,35 @@ TEST(SyscallWrappers, CloneChildSettid) {
   if (0 == pid) {
     // In child.
     if (sys_getpid() == ctid)
+      _exit(kSuccessExit);
+    _exit(1);
+  }
+
+  ASSERT_NE(-1, pid);
+  int status = 0;
+  ASSERT_EQ(pid, HANDLE_EINTR(waitpid(pid, &status, 0)));
+  ASSERT_TRUE(WIFEXITED(status));
+  EXPECT_EQ(kSuccessExit, WEXITSTATUS(status));
+}
+
+TEST(SyscallWrappers, ForkWithFlagsUpdatesPidCache) {
+  // The libc clone function, which allows ForkWithFlags to keep the pid cache
+  // up to date, does not work on Valgrind.
+  if (IsRunningOnValgrind()) {
+    return;
+  }
+
+  // Warm up the libc pid cache, if there is one.
+  ASSERT_EQ(sys_getpid(), getpid());
+
+  pid_t ctid = 0;
+  pid_t pid = ForkWithFlags(CLONE_CHILD_SETTID | SIGCHLD, nullptr, &ctid);
+
+  const int kSuccessExit = 0;
+  if (0 == pid) {
+    // In child.  Check both the raw getpid syscall and the libc getpid wrapper
+    // (which may rely on a pid cache).
+    if (sys_getpid() == ctid && getpid() == ctid)
       _exit(kSuccessExit);
     _exit(1);
   }
