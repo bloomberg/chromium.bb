@@ -51,8 +51,7 @@ unsigned short PerformanceNavigation::type() const
     if (!documentLoader)
         return TYPE_NAVIGATE;
 
-    blink::NavigationType navigationType = documentLoader->triggeringAction().type();
-    switch (navigationType) {
+    switch (documentLoader->navigationType()) {
     case NavigationTypeReload:
         return TYPE_RELOAD;
     case NavigationTypeBackForward:

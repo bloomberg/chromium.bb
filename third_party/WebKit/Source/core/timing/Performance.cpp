@@ -33,6 +33,7 @@
 #include "core/timing/Performance.h"
 
 #include "core/dom/Document.h"
+#include "core/events/Event.h"
 #include "core/frame/LocalFrame.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/timing/ResourceTimingInfo.h"

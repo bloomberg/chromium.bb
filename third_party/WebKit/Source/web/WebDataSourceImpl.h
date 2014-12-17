@@ -65,7 +65,6 @@ public:
     virtual bool isClientRedirect() const override;
     virtual bool replacesCurrentHistoryItem() const override;
     virtual WebNavigationType navigationType() const override;
-    virtual double triggeringEventTime() const override;
     virtual ExtraData* extraData() const override;
     virtual void setExtraData(ExtraData*) override;
     virtual void setNavigationStartTime(double) override;

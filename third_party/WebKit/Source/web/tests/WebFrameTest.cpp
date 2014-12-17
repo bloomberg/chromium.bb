@@ -5917,7 +5917,7 @@ public:
         m_frame = 0;
     }
 
-    void didStartProvisionalLoad(WebLocalFrame* frame, bool isTransitionNavigation)
+    void didStartProvisionalLoad(WebLocalFrame* frame, bool isTransitionNavigation, double)
     {
         WebDataSource* ds = frame->provisionalDataSource();
         m_replacesCurrentHistoryItem = ds->replacesCurrentHistoryItem();
@@ -6876,7 +6876,7 @@ public:
         m_navigationalDataReceivedCount++;
     }
 
-    virtual void didStartProvisionalLoad(WebLocalFrame* localFrame, bool isTransitionNavigation) override
+    virtual void didStartProvisionalLoad(WebLocalFrame* localFrame, bool isTransitionNavigation, double) override
     {
         m_provisionalLoadCount++;
         m_wasLastProvisionalLoadATransition = isTransitionNavigation;

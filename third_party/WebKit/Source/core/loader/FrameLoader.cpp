@@ -44,6 +44,7 @@
 #include "core/dom/ViewportDescription.h"
 #include "core/editing/Editor.h"
 #include "core/editing/UndoStack.h"
+#include "core/events/MouseEvent.h"
 #include "core/events/PageTransitionEvent.h"
 #include "core/fetch/FetchContext.h"
 #include "core/fetch/ResourceFetcher.h"
@@ -683,8 +684,6 @@ FrameLoadType FrameLoader::determineFrameLoadType(const FrameLoadRequest& reques
 
 bool FrameLoader::prepareRequestForThisFrame(FrameLoadRequest& request)
 {
-    request.resourceRequest().setFrameType(m_frame->isMainFrame() ? WebURLRequest::FrameTypeTopLevel : WebURLRequest::FrameTypeNested);
-
     // If no origin Document* was specified, skip remaining security checks and assume the caller has fully initialized the FrameLoadRequest.
     if (!request.originDocument())
         return true;
@@ -703,13 +702,28 @@ bool FrameLoader::prepareRequestForThisFrame(FrameLoadRequest& request)
     return true;
 }
 
-static bool shouldOpenInNewWindow(LocalFrame* targetFrame, const FrameLoadRequest& request, const NavigationAction& action)
+static bool shouldOpenInNewWindow(LocalFrame* targetFrame, const FrameLoadRequest& request, NavigationPolicy policy)
 {
     if (!targetFrame && !request.frameName().isEmpty())
         return true;
     // FIXME: This case is a workaround for the fact that ctrl+clicking a form submission incorrectly
     // sends as a GET rather than a POST if it creates a new window in a different process.
-    return request.formState() && action.shouldOpenInNewWindow();
+    return request.formState() && policy != NavigationPolicyCurrentTab;
+}
+
+static NavigationType determineNavigationType(FrameLoadType frameLoadType, bool isFormSubmission, bool haveEvent)
+{
+    bool isReload = frameLoadType == FrameLoadTypeReload || frameLoadType == FrameLoadTypeReloadFromOrigin;
+    bool isBackForward = isBackForwardLoadType(frameLoadType);
+    if (isFormSubmission)
+        return (isReload || isBackForward) ? NavigationTypeFormResubmitted : NavigationTypeFormSubmitted;
+    if (haveEvent)
+        return NavigationTypeLinkClicked;
+    if (isReload)
+        return NavigationTypeReload;
+    if (isBackForward)
+        return NavigationTypeBackForward;
+    return NavigationTypeOther;
 }
 
 static WebURLRequest::RequestContext determineRequestContextFromNavigationType(const NavigationType navigationType)
@@ -731,6 +745,23 @@ static WebURLRequest::RequestContext determineRequestContextFromNavigationType(c
     }
     ASSERT_NOT_REACHED();
     return WebURLRequest::RequestContextHyperlink;
+}
+
+static NavigationPolicy navigationPolicyForRequest(const FrameLoadRequest& request)
+{
+    NavigationPolicy policy = NavigationPolicyCurrentTab;
+    Event* event = request.triggeringEvent();
+    if (!event)
+        return policy;
+
+    if (request.formState() && event->underlyingEvent())
+        event = event->underlyingEvent();
+    if (!event->isMouseEvent())
+        return policy;
+
+    const MouseEvent* mouseEvent = toMouseEvent(event);
+    navigationPolicyFromMouseEvent(mouseEvent->button(), mouseEvent->ctrlKey(), mouseEvent->shiftKey(), mouseEvent->altKey(), mouseEvent->metaKey(), &policy);
+    return policy;
 }
 
 void FrameLoader::load(const FrameLoadRequest& passedRequest)
@@ -758,27 +789,25 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
     setReferrerForFrameRequest(request.resourceRequest(), request.shouldSendReferrer(), request.originDocument());
 
     FrameLoadType newLoadType = determineFrameLoadType(request);
-    NavigationAction action(request.resourceRequest(), newLoadType, request.formState(), request.triggeringEvent());
-    if (action.resourceRequest().requestContext() == WebURLRequest::RequestContextUnspecified)
-        action.mutableResourceRequest().setRequestContext(determineRequestContextFromNavigationType(action.type()));
-    if (shouldOpenInNewWindow(targetFrame.get(), request, action)) {
-        if (action.policy() == NavigationPolicyDownload)
-            client()->loadURLExternally(action.resourceRequest(), NavigationPolicyDownload);
+    NavigationPolicy policy = navigationPolicyForRequest(request);
+    if (shouldOpenInNewWindow(targetFrame.get(), request, policy)) {
+        if (policy == NavigationPolicyDownload)
+            client()->loadURLExternally(request.resourceRequest(), NavigationPolicyDownload);
         else
-            createWindowForRequest(request, *m_frame, action.policy(), request.shouldSendReferrer());
+            createWindowForRequest(request, *m_frame, policy, request.shouldSendReferrer());
         return;
     }
 
     const KURL& url = request.resourceRequest().url();
-    if (!action.shouldOpenInNewWindow() && shouldPerformFragmentNavigation(request.formState(), request.resourceRequest().httpMethod(), newLoadType, url)) {
-        m_documentLoader->setTriggeringAction(action);
+    if (policy == NavigationPolicyCurrentTab && shouldPerformFragmentNavigation(request.formState(), request.resourceRequest().httpMethod(), newLoadType, url)) {
+        m_documentLoader->setNavigationType(determineNavigationType(newLoadType, false, request.triggeringEvent()));
         if (shouldTreatURLAsSameAsCurrent(url))
             newLoadType = FrameLoadTypeRedirectWithLockedBackForwardList;
         loadInSameDocument(url, nullptr, newLoadType, request.clientRedirect());
         return;
     }
     bool sameURL = url == m_documentLoader->urlForHistory();
-    loadWithNavigationAction(action, newLoadType, request.formState(), request.substituteData(), request.shouldCheckMainWorldContentSecurityPolicy(), request.clientRedirect(), request.triggeringEvent());
+    startLoad(request, newLoadType, policy);
     // Example of this case are sites that reload the same URL with a different cookie
     // driving the generated content, or a master frame with links that drive a target
     // frame, where the user has clicked on the same link repeatedly.
@@ -829,8 +858,6 @@ void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, Cli
 
     ResourceRequestCachePolicy cachePolicy = reloadPolicy == EndToEndReload ? ReloadBypassingCache : ReloadIgnoringCacheData;
     ResourceRequest request = requestFromHistoryItem(m_currentItem.get(), cachePolicy);
-    request.setFrameType(m_frame->isMainFrame() ? WebURLRequest::FrameTypeTopLevel : WebURLRequest::FrameTypeNested);
-    request.setRequestContext(WebURLRequest::RequestContextInternal);
 
     // ClientRedirectPolicy is an indication that this load was triggered by
     // some direct interaction with the page. If this reload is not a client
@@ -846,9 +873,9 @@ void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, Cli
         request.clearHTTPReferrer();
     }
     request.setSkipServiceWorker(reloadPolicy == EndToEndReload);
-
-    FrameLoadType type = reloadPolicy == EndToEndReload ? FrameLoadTypeReloadFromOrigin : FrameLoadTypeReload;
-    loadWithNavigationAction(NavigationAction(request, type), type, nullptr, SubstituteData(), CheckContentSecurityPolicy, clientRedirectPolicy);
+    FrameLoadRequest frameLoadRequest(nullptr, request);
+    frameLoadRequest.setClientRedirect(clientRedirectPolicy);
+    startLoad(frameLoadRequest, reloadPolicy == EndToEndReload ? FrameLoadTypeReloadFromOrigin : FrameLoadTypeReload, NavigationPolicyCurrentTab);
 }
 
 void FrameLoader::stopAllLoaders()
@@ -1231,13 +1258,16 @@ bool FrameLoader::dispatchNavigationTransitionData()
     return true;
 }
 
-void FrameLoader::loadWithNavigationAction(const NavigationAction& action, FrameLoadType type, PassRefPtrWillBeRawPtr<FormState> formState, const SubstituteData& substituteData, ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy, ClientRedirectPolicy clientRedirect, Event* triggeringEvent)
+void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType type, NavigationPolicy navigationPolicy)
 {
     ASSERT(client()->hasWebView());
     if (m_frame->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal)
         return;
 
-    const ResourceRequest& request = action.resourceRequest();
+    NavigationType navigationType = determineNavigationType(type, frameLoadRequest.resourceRequest().httpBody() || frameLoadRequest.formState(), frameLoadRequest.triggeringEvent());
+    frameLoadRequest.resourceRequest().setRequestContext(determineRequestContextFromNavigationType(navigationType));
+    frameLoadRequest.resourceRequest().setFrameType(m_frame->isMainFrame() ? WebURLRequest::FrameTypeTopLevel : WebURLRequest::FrameTypeNested);
+    ResourceRequest& request = frameLoadRequest.resourceRequest();
 
     // The current load should replace the history item if it is the first real
     // load of the frame.
@@ -1247,10 +1277,10 @@ void FrameLoader::loadWithNavigationAction(const NavigationAction& action, Frame
         replacesCurrentHistoryItem = true;
     }
 
-    m_policyDocumentLoader = client()->createDocumentLoader(m_frame, request, substituteData.isValid() ? substituteData : defaultSubstituteDataForURL(request.url()));
-    m_policyDocumentLoader->setTriggeringAction(action);
+    m_policyDocumentLoader = client()->createDocumentLoader(m_frame, request, frameLoadRequest.substituteData().isValid() ? frameLoadRequest.substituteData() : defaultSubstituteDataForURL(request.url()));
+    m_policyDocumentLoader->setNavigationType(navigationType);
     m_policyDocumentLoader->setReplacesCurrentHistoryItem(replacesCurrentHistoryItem);
-    m_policyDocumentLoader->setIsClientRedirect(clientRedirect == ClientRedirect);
+    m_policyDocumentLoader->setIsClientRedirect(frameLoadRequest.clientRedirect() == ClientRedirect);
 
     bool isTransitionNavigation = false;
     if (RuntimeEnabledFeatures::navigationTransitionsEnabled() && type != FrameLoadTypeReload && type != FrameLoadTypeReloadFromOrigin && type != FrameLoadTypeSame)
@@ -1258,7 +1288,7 @@ void FrameLoader::loadWithNavigationAction(const NavigationAction& action, Frame
 
     // stopAllLoaders can detach the LocalFrame, so protect it.
     RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
-    if ((!m_policyDocumentLoader->shouldContinueForNavigationPolicy(request, shouldCheckMainWorldContentSecurityPolicy, isTransitionNavigation) || !shouldClose()) && m_policyDocumentLoader) {
+    if ((!m_policyDocumentLoader->shouldContinueForNavigationPolicy(request, frameLoadRequest.shouldCheckMainWorldContentSecurityPolicy(), navigationPolicy, isTransitionNavigation) || !shouldClose()) && m_policyDocumentLoader) {
         m_policyDocumentLoader->detachFromFrame();
         m_policyDocumentLoader = nullptr;
         if (!m_stateMachine.committedFirstRealDocumentLoad())
@@ -1288,14 +1318,14 @@ void FrameLoader::loadWithNavigationAction(const NavigationAction& action, Frame
     m_loadType = type;
     m_state = FrameStateProvisional;
 
-    if (formState)
+    if (FormState* formState = frameLoadRequest.formState())
         client()->dispatchWillSubmitForm(formState->form());
 
     m_progressTracker->progressStarted();
     if (m_provisionalDocumentLoader->isClientRedirect())
         m_provisionalDocumentLoader->appendRedirect(m_frame->document()->url());
     m_provisionalDocumentLoader->appendRedirect(m_provisionalDocumentLoader->request().url());
-    double triggeringEventTime = triggeringEvent ? convertDOMTimeStampToSeconds(triggeringEvent->timeStamp()) : 0;
+    double triggeringEventTime = frameLoadRequest.triggeringEvent() ? convertDOMTimeStampToSeconds(frameLoadRequest.triggeringEvent()->timeStamp()) : 0;
     client()->dispatchDidStartProvisionalLoad(isTransitionNavigation, triggeringEventTime);
     ASSERT(m_provisionalDocumentLoader);
     m_provisionalDocumentLoader->startLoadingMainResource();
@@ -1393,11 +1423,8 @@ void FrameLoader::loadHistoryItem(HistoryItem* item, FrameLoadType frameLoadType
         restoreScrollPositionAndViewState();
         return;
     }
-
-    ResourceRequest request = requestFromHistoryItem(item, cachePolicy);
-    request.setFrameType(m_frame->isMainFrame() ? WebURLRequest::FrameTypeTopLevel : WebURLRequest::FrameTypeNested);
-    request.setRequestContext(WebURLRequest::RequestContextInternal);
-    loadWithNavigationAction(NavigationAction(request, frameLoadType), frameLoadType, nullptr, SubstituteData(), CheckContentSecurityPolicy);
+    FrameLoadRequest request(nullptr, requestFromHistoryItem(item, cachePolicy));
+    startLoad(request, frameLoadType, NavigationPolicyCurrentTab);
 }
 
 void FrameLoader::dispatchDocumentElementAvailable()

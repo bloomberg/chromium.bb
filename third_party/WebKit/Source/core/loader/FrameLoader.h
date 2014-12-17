@@ -41,6 +41,7 @@
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/HistoryItem.h"
 #include "core/loader/MixedContentChecker.h"
+#include "core/loader/NavigationPolicy.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceRequest.h"
@@ -80,7 +81,7 @@ public:
     MixedContentChecker* mixedContentChecker() const { return &m_mixedContentChecker; }
     ProgressTracker& progress() const { return *m_progressTracker; }
 
-    // These functions start a load. All eventually call into loadWithNavigationAction() or loadInSameDocument().
+    // These functions start a load. All eventually call into startLoad() or loadInSameDocument().
     void load(const FrameLoadRequest&); // The entry point for non-reload, non-history loads.
     void reload(ReloadPolicy, const KURL& overrideURL = KURL(), ClientRedirectPolicy = NotClientRedirect);
     void loadHistoryItem(HistoryItem*, FrameLoadType = FrameLoadTypeBackForward,
@@ -208,9 +209,7 @@ private:
 
     bool checkLoadCompleteForThisFrame();
 
-    // Calls continueLoadAfterNavigationPolicy
-    void loadWithNavigationAction(const NavigationAction&, FrameLoadType, PassRefPtrWillBeRawPtr<FormState>,
-        const SubstituteData&, ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy, ClientRedirectPolicy = NotClientRedirect, Event* triggeringEvent = nullptr);
+    void startLoad(FrameLoadRequest&, FrameLoadType, NavigationPolicy);
 
     bool validateTransitionNavigationMode();
     bool dispatchNavigationTransitionData();

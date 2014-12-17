@@ -84,6 +84,7 @@ DocumentLoader::DocumentLoader(LocalFrame* frame, const ResourceRequest& req, co
     , m_committed(false)
     , m_isClientRedirect(false)
     , m_replacesCurrentHistoryItem(false)
+    , m_navigationType(NavigationTypeOther)
     , m_loadingMainResource(false)
     , m_timeOfLastDataReceived(0.0)
     , m_applicationCacheHost(ApplicationCacheHost::create(this))
@@ -302,7 +303,7 @@ bool DocumentLoader::isRedirectAfterPost(const ResourceRequest& newRequest, cons
     return false;
 }
 
-bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& request, ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy, bool isTransitionNavigation)
+bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& request, ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy, NavigationPolicy policy, bool isTransitionNavigation)
 {
     // Don't ask if we are loading an empty URL.
     if (request.url().isEmpty() || m_substituteData.isValid())
@@ -320,7 +321,6 @@ bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& re
         return false;
     }
 
-    NavigationPolicy policy = m_triggeringAction.policy();
     policy = frameLoader()->client()->decidePolicyForNavigation(request, this, policy, isTransitionNavigation);
     if (policy == NavigationPolicyCurrentTab)
         return true;
@@ -356,7 +356,7 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
     // deferrals plays less of a part in this function in preventing the bad behavior deferring
     // callbacks is meant to prevent.
     ASSERT(!newRequest.isNull());
-    if (isFormSubmission(m_triggeringAction.type()) && !m_frame->document()->contentSecurityPolicy()->allowFormAction(newRequest.url())) {
+    if (isFormSubmission(m_navigationType) && !m_frame->document()->contentSecurityPolicy()->allowFormAction(newRequest.url())) {
         cancelMainResourceLoad(ResourceError::cancelledError(newRequest.url()));
         return;
     }

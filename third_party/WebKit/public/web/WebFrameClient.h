@@ -256,9 +256,8 @@ public:
     virtual void didCreateDataSource(WebLocalFrame*, WebDataSource*) { }
 
     // A new provisional load has been started.
-    virtual void didStartProvisionalLoad(WebLocalFrame* localFrame, bool isTransitionNavigation, double triggeringEventTime) { didStartProvisionalLoad(localFrame, isTransitionNavigation); }
-    // DEPRECATED, to be removed once RenderFrameImpl implements the 3-parameter variant.
-    virtual void didStartProvisionalLoad(WebLocalFrame* localFrame, bool isTransitionNavigation) { }
+    virtual void didStartProvisionalLoad(WebLocalFrame* localFrame, bool isTransitionNavigation,
+        double triggeringEventTime) { }
 
     // The provisional load was redirected via a HTTP 3xx response.
     virtual void didReceiveServerRedirectForProvisionalLoad(WebLocalFrame*) { }

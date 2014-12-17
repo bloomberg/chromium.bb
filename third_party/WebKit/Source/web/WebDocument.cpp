@@ -42,6 +42,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/Fullscreen.h"
 #include "core/dom/StyleEngine.h"
+#include "core/events/Event.h"
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLCollection.h"

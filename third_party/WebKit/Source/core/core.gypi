@@ -1360,8 +1360,6 @@
             'loader/LinkLoaderClient.h',
             'loader/MixedContentChecker.cpp',
             'loader/MixedContentChecker.h',
-            'loader/NavigationAction.cpp',
-            'loader/NavigationAction.h',
             'loader/NavigationPolicy.cpp',
             'loader/NavigationPolicy.h',
             'loader/NavigationScheduler.cpp',
