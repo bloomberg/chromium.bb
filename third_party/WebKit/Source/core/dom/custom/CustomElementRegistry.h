@@ -51,11 +51,12 @@ class CustomElementRegistry final {
     DISALLOW_ALLOCATION();
 public:
     void trace(Visitor*);
+    void documentWasDetached() { m_documentWasDetached = true; }
 
 protected:
     friend class CustomElementRegistrationContext;
 
-    CustomElementRegistry() { }
+    CustomElementRegistry() : m_documentWasDetached(false) { }
 
     CustomElementDefinition* registerElement(Document*, CustomElementConstructorBuilder*, const AtomicString& name, CustomElement::NameSet validNames, ExceptionState&);
     CustomElementDefinition* find(const CustomElementDescriptor&) const;
@@ -64,6 +65,7 @@ private:
     typedef WillBeHeapHashMap<CustomElementDescriptor, RefPtrWillBeMember<CustomElementDefinition> > DefinitionMap;
     DefinitionMap m_definitions;
     HashSet<AtomicString> m_registeredTypeNames;
+    bool m_documentWasDetached;
 };
 
 } // namespace blink

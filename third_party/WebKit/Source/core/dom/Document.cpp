@@ -2183,6 +2183,9 @@ void Document::detach(const AttachContext& context)
             view->detachCustomScrollbars();
     }
 
+    if (registrationContext())
+        registrationContext()->documentWasDetached();
+
     m_hoverNode = nullptr;
     m_focusedElement = nullptr;
     m_activeHoverElement = nullptr;

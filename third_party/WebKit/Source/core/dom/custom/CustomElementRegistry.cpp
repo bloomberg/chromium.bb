@@ -40,35 +40,8 @@
 
 namespace blink {
 
-class RegistrationContextObserver : public DocumentLifecycleObserver {
-public:
-    explicit RegistrationContextObserver(Document* document)
-        : DocumentLifecycleObserver(document)
-        , m_wentAway(!document)
-    {
-    }
-
-    bool registrationContextWentAway() { return m_wentAway; }
-
-private:
-#if ENABLE(OILPAN)
-    // In oilpan we don't have the disposed phase for context lifecycle observer.
-    virtual void documentWasDetached() override { m_wentAway = true; }
-#else
-    virtual void documentWasDisposed() override { m_wentAway = true; }
-#endif
-
-    bool m_wentAway;
-};
-
 CustomElementDefinition* CustomElementRegistry::registerElement(Document* document, CustomElementConstructorBuilder* constructorBuilder, const AtomicString& userSuppliedName, CustomElement::NameSet validNames, ExceptionState& exceptionState)
 {
-    // FIXME: In every instance except one it is the
-    // CustomElementConstructorBuilder that observes document
-    // destruction during registration. This responsibility should be
-    // consolidated in one place.
-    RegistrationContextObserver observer(document);
-
     AtomicString type = userSuppliedName.lower();
 
     if (!constructorBuilder->isFeatureAllowed()) {
@@ -92,13 +65,13 @@ CustomElementDefinition* CustomElementRegistry::registerElement(Document* docume
 
     ASSERT(tagName.namespaceURI() == HTMLNames::xhtmlNamespaceURI || tagName.namespaceURI() == SVGNames::svgNamespaceURI);
 
-    ASSERT(!observer.registrationContextWentAway());
+    ASSERT(!m_documentWasDetached);
 
     RefPtrWillBeRawPtr<CustomElementLifecycleCallbacks> lifecycleCallbacks = constructorBuilder->createCallbacks();
 
     // Consulting the constructor builder could execute script and
     // kill the document.
-    if (observer.registrationContextWentAway()) {
+    if (m_documentWasDetached) {
         CustomElementException::throwException(CustomElementException::ContextDestroyedCreatingCallbacks, type, exceptionState);
         return 0;
     }
