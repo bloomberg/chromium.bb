@@ -107,21 +107,9 @@ promise_test(function() {
             text, expectedText,
             'When If-Match is overridden, the response body must be correct.');
 
-          return fetch(url,
-                       { headers: [['If-Match', 'xyzzy']] });
-        })
-      .then(function(res) {
-          assert_equals(
-            res.status, 412,
-            'When If-Match is overridden to the invalid tag, the response ' +
-            'status must be 412.');
-          return res.text();
-        })
-      .then(function(text) {
-          assert_equals(
-            text, '',
-            'When If-Match is overridden to the invalid tag, the response ' +
-            'body must be empty.');
+          // FIXME: We used to have a test of If-Match overridden with an
+          // invalid etag, but removed due to broken If-Match handling of
+          // Apache 2.4. See crbug.com/423070
 
           return fetch(url,
                        { headers: [['If-None-Match', eTag]] });

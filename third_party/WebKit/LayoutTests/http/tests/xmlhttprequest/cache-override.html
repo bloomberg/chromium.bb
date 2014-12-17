@@ -63,10 +63,11 @@ Conditional XMLHttpRequest gets should pass 304 responses unchanged.</p>
     req.send(null);
     log("If-Match override: status = " + req.status);
 
-    req.open("GET", "resources/reply.xml", false);
-    req.setRequestHeader("If-Match", "xyzzy");
-    req.send(null);
-    log("If-Match override (none match): status = " + req.status);
+    // FIXME: Disabled due to a bug of Apache 2.4. See crbug.com/423070
+    // req.open("GET", "resources/reply.xml", false);
+    // req.setRequestHeader("If-Match", "xyzzy");
+    // req.send(null);
+    // log("If-Match override (none match): status = " + req.status);
 
     req.open("GET", "resources/reply.xml", false);
     req.setRequestHeader("If-None-Match", eTag);
@@ -164,7 +165,8 @@ Conditional XMLHttpRequest gets should pass 304 responses unchanged.</p>
             req.send(null);
           } else if (asyncStep == 7) {
             asyncStep = 8;
-            log("async: If-Match override (none match): status = " + req.status);
+            // FIXME: Disabled due to a bug of Apache 2.4. See crbug.com/423070
+            // log("async: If-Match override (none match): status = " + req.status);
 
             req = new XMLHttpRequest();
             req.onreadystatechange = processStateChange;
