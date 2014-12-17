@@ -892,6 +892,7 @@
       'browser/ui/app_list/extension_app_model_builder_unittest.cc',
       'browser/ui/app_list/model_pref_updater_unittest.cc',
       'browser/ui/app_list/profile_loader_unittest.cc',
+      'browser/ui/app_list/search/omnibox_result_unittest.cc',
       'browser/ui/app_list/search/suggestions/suggestions_search_provider_unittest.cc',
       'browser/ui/app_list/speech_auth_helper_unittest.cc',
       'browser/ui/app_list/test/fake_profile.cc',

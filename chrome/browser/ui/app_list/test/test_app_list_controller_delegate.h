@@ -42,6 +42,11 @@ class TestAppListControllerDelegate : public AppListControllerDelegate {
                  int event_flags) override;
   void ShowForProfileByPath(const base::FilePath& profile_path) override;
   bool ShouldShowUserIcon() override;
+
+  const GURL& last_opened_url() const { return last_opened_url_; }
+
+ private:
+  GURL last_opened_url_;
 };
 
 }  // namespace test

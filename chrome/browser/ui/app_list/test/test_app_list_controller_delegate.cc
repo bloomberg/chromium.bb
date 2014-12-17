@@ -67,6 +67,7 @@ void TestAppListControllerDelegate::OpenURL(Profile* profile,
                                             const GURL& url,
                                             ui::PageTransition transition,
                                             WindowOpenDisposition deposition) {
+  last_opened_url_ = url;
 }
 
 void TestAppListControllerDelegate::ActivateApp(

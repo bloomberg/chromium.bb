@@ -90,7 +90,7 @@ OmniboxResult::OmniboxResult(Profile* profile,
       autocomplete_controller_(autocomplete_controller),
       is_voice_query_(is_voice_query),
       match_(match) {
-  if (match_.search_terms_args) {
+  if (match_.search_terms_args && autocomplete_controller_) {
     match_.search_terms_args->from_app_list = true;
     autocomplete_controller_->UpdateMatchDestinationURL(
         *match_.search_terms_args, &match_);
