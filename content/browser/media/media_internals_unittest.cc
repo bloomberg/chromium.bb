@@ -147,7 +147,7 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
   const media::VideoCaptureFormat capture_format(
       kFrameSize, kFrameRate, kPixelFormat);
   const std::string expected_string =
-      base::StringPrintf("resolution: %s, fps: %f, pixel format: %s",
+      base::StringPrintf("resolution: %s, fps: %.3f, pixel format: %s",
                          kFrameSize.ToString().c_str(),
                          kFrameRate,
                          media::VideoCaptureFormat::PixelFormatToString(

@@ -26,6 +26,8 @@
 
 namespace media {
 
+#define GET_V4L2_FOURCC_CHAR(a, index) ((char)( ((a) >> (8 * index)) & 0xff))
+
 // Max number of video buffers VideoCaptureDeviceLinux can allocate.
 enum { kMaxVideoBuffers = 2 };
 // Timeout in milliseconds v4l2_thread_ blocks waiting for a frame from the hw.
@@ -55,7 +57,7 @@ static const char kVidPathTemplate[] =
 static const char kPidPathTemplate[] =
     "/sys/class/video4linux/%s/device/../idProduct";
 
-bool ReadIdFile(const std::string path, std::string* id) {
+static bool ReadIdFile(const std::string path, std::string* id) {
   char id_buf[kVidPidSize];
   FILE* file = fopen(path.c_str(), "rb");
   if (!file)
@@ -71,8 +73,8 @@ bool ReadIdFile(const std::string path, std::string* id) {
 // This function translates Video4Linux pixel formats to Chromium pixel formats,
 // should only support those listed in GetListOfUsableFourCCs.
 // static
-VideoPixelFormat VideoCaptureDeviceLinux::V4l2ColorToVideoCaptureColorFormat(
-    int32 v4l2_fourcc) {
+VideoPixelFormat VideoCaptureDeviceLinux::V4l2FourCcToChromiumPixelFormat(
+    uint32 v4l2_fourcc) {
   VideoPixelFormat result = PIXEL_FORMAT_UNKNOWN;
   switch (v4l2_fourcc) {
     case V4L2_PIX_FMT_YUV420:
@@ -89,24 +91,30 @@ VideoPixelFormat VideoCaptureDeviceLinux::V4l2ColorToVideoCaptureColorFormat(
       result = PIXEL_FORMAT_MJPEG;
       break;
     default:
-      DVLOG(1) << "Unsupported pixel format " << std::hex << v4l2_fourcc;
+      DVLOG(1) << "Unsupported pixel format: "
+          << GET_V4L2_FOURCC_CHAR(v4l2_fourcc, 0)
+          << GET_V4L2_FOURCC_CHAR(v4l2_fourcc, 1)
+          << GET_V4L2_FOURCC_CHAR(v4l2_fourcc, 2)
+          << GET_V4L2_FOURCC_CHAR(v4l2_fourcc, 3);
   }
   return result;
 }
 
 // static
-void VideoCaptureDeviceLinux::GetListOfUsableFourCCs(bool favour_mjpeg,
-                                                     std::list<int>* fourccs) {
+std::list<int> VideoCaptureDeviceLinux::GetListOfUsableFourCCs(
+    bool favour_mjpeg) {
+  std::list<int> fourccs;
   for (size_t i = 0; i < arraysize(kV4l2RawFmts); ++i)
-    fourccs->push_back(kV4l2RawFmts[i]);
+    fourccs.push_back(kV4l2RawFmts[i]);
   if (favour_mjpeg)
-    fourccs->push_front(V4L2_PIX_FMT_MJPEG);
+    fourccs.push_front(V4L2_PIX_FMT_MJPEG);
   else
-    fourccs->push_back(V4L2_PIX_FMT_MJPEG);
+    fourccs.push_back(V4L2_PIX_FMT_MJPEG);
 
   // JPEG works as MJPEG on some gspca webcams from field reports.
   // Put it as the least preferred format.
-  fourccs->push_back(V4L2_PIX_FMT_JPEG);
+  fourccs.push_back(V4L2_PIX_FMT_JPEG);
+  return fourccs;
 }
 
 const std::string VideoCaptureDevice::Name::GetModel() const {
@@ -227,22 +235,17 @@ void VideoCaptureDeviceLinux::OnAllocateAndStart(int width,
 
   // Get supported video formats in preferred order.
   // For large resolutions, favour mjpeg over raw formats.
-  std::list<int> v4l2_formats;
-  GetListOfUsableFourCCs(width > kMjpegWidth || height > kMjpegHeight,
-                         &v4l2_formats);
+  const std::list<int>& desired_v4l2_formats =
+      GetListOfUsableFourCCs(width > kMjpegWidth || height > kMjpegHeight);
+  std::list<int>::const_iterator best = desired_v4l2_formats.end();
 
   v4l2_fmtdesc fmtdesc = {0};
   fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-
-  // Enumerate image formats.
-  std::list<int>::iterator best = v4l2_formats.end();
-  while (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_ENUM_FMT, &fmtdesc)) ==
-         0) {
-    best = std::find(v4l2_formats.begin(), best, fmtdesc.pixelformat);
-    fmtdesc.index++;
+  for (; HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_ENUM_FMT, &fmtdesc)) == 0;
+       ++fmtdesc.index) {
+    best = std::find(desired_v4l2_formats.begin(), best, fmtdesc.pixelformat);
   }
-
-  if (best == v4l2_formats.end()) {
+  if (best == desired_v4l2_formats.end()) {
     SetErrorState("Failed to find a supported camera format.");
     return;
   }
@@ -308,12 +311,10 @@ void VideoCaptureDeviceLinux::OnAllocateAndStart(int width,
                                      video_fmt.fmt.pix.height);
   capture_format_.frame_rate = frame_rate;
   capture_format_.pixel_format =
-      V4l2ColorToVideoCaptureColorFormat(video_fmt.fmt.pix.pixelformat);
+      V4l2FourCcToChromiumPixelFormat(video_fmt.fmt.pix.pixelformat);
 
-  // Start capturing.
   if (!AllocateVideoBuffers()) {
-    // Error, We can not recover.
-    SetErrorState("Allocate buffer failed");
+    SetErrorState("Allocate buffers failed");
     return;
   }
 
@@ -340,13 +341,12 @@ void VideoCaptureDeviceLinux::OnStopAndDeAllocate() {
     SetErrorState("VIDIOC_STREAMOFF failed");
     return;
   }
-  // We don't dare to deallocate the buffers if we can't stop
-  // the capture device.
+  // We don't dare to deallocate the buffers if we can't stop the capture
+  // device.
   DeAllocateVideoBuffers();
 
-  // We need to close and open the device if we want to change the settings
-  // Otherwise VIDIOC_S_FMT will return error
-  // Sad but true.
+  // We need to close and open the device if we want to change the settings.
+  // Otherwise VIDIOC_S_FMT will return error. Sad but true.
   device_fd_.reset();
   is_capturing_ = false;
   client_.reset();

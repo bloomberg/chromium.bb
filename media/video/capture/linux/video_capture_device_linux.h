@@ -22,9 +22,8 @@ namespace media {
 
 class VideoCaptureDeviceLinux : public VideoCaptureDevice {
  public:
-  static VideoPixelFormat V4l2ColorToVideoCaptureColorFormat(int32 v4l2_fourcc);
-  static void GetListOfUsableFourCCs(bool favour_mjpeg,
-                                     std::list<int>* fourccs);
+  static VideoPixelFormat V4l2FourCcToChromiumPixelFormat(uint32 v4l2_fourcc);
+  static std::list<int> GetListOfUsableFourCCs(bool favour_mjpeg);
 
   explicit VideoCaptureDeviceLinux(const Name& device_name);
   ~VideoCaptureDeviceLinux() override;
