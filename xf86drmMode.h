@@ -130,6 +130,8 @@ extern "C" {
 #define DRM_MODE_ENCODER_TVDAC   4
 #define DRM_MODE_ENCODER_VIRTUAL 5
 #define DRM_MODE_ENCODER_DSI     6
+#define DRM_MODE_ENCODER_DPMST   7
+#define DRM_MODE_ENCODER_DPI     8
 
 #define DRM_MODE_SUBCONNECTOR_Automatic 0
 #define DRM_MODE_SUBCONNECTOR_Unknown   0
@@ -157,6 +159,7 @@ extern "C" {
 #define DRM_MODE_CONNECTOR_eDP          14
 #define DRM_MODE_CONNECTOR_VIRTUAL      15
 #define DRM_MODE_CONNECTOR_DSI          16
+#define DRM_MODE_CONNECTOR_DPI          17
 
 #define DRM_MODE_PROP_PENDING   (1<<0)
 #define DRM_MODE_PROP_RANGE     (1<<1)
