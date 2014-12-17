@@ -252,6 +252,7 @@ TEST_F(SigninManagerTest, SignInWithRefreshTokenCallsPostSignout) {
     static_cast<FakeAccountTrackerService*>(
         AccountTrackerServiceFactory::GetForProfile(profile()));
   account_tracker_service->SeedAccountInfo(gaia_id, email);
+  account_tracker_service->EnableNetworkFetches();
   std::string account_id = account_tracker_service->PickAccountIdForAccount(
       gaia_id, email);
 

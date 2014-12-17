@@ -5,12 +5,14 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_ACCOUNT_TRACKER_SERVICE_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_ACCOUNT_TRACKER_SERVICE_H_
 
+#include <list>
 #include <map>
 #include <string>
 #include <vector>
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/non_thread_safe.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
@@ -27,7 +29,8 @@ class DictionaryValue;
 // AccountTrackerService is a KeyedService that retrieves and caches GAIA
 // information about Google Accounts.
 class AccountTrackerService : public KeyedService,
-                              public OAuth2TokenService::Observer {
+                              public OAuth2TokenService::Observer,
+                              public base::NonThreadSafe {
  public:
   // Name of the preference property that persists the account information
   // tracked by this service.
@@ -84,6 +87,10 @@ class AccountTrackerService : public KeyedService,
   // (see http://crbug.com/171406)
   void Initialize(OAuth2TokenService* token_service,
                   SigninClient* signin_client);
+
+  // To be called after the Profile is fully initialized; permits network
+  // calls to be executed.
+  void EnableNetworkFetches();
 
   // Returns the list of known accounts and for which gaia IDs
   // have been fetched.
@@ -160,6 +167,8 @@ class AccountTrackerService : public KeyedService,
   std::map<std::string, AccountState> accounts_;
   ObserverList<Observer> observer_list_;
   bool shutdown_called_;
+  bool network_fetches_enabled_;
+  std::list<std::string> pending_user_info_fetches_;
 
   // Holds references to refresh token annotation requests keyed by account_id.
   base::ScopedPtrHashMap<std::string, RefreshTokenAnnotationRequest>
