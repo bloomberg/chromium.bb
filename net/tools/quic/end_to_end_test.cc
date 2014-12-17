@@ -885,7 +885,7 @@ TEST_P(EndToEndTest, NegotiateCongestionControl) {
   ASSERT_TRUE(Initialize());
   client_->client()->WaitForCryptoHandshakeConfirmed();
 
-  CongestionControlType expected_congestion_control_type;
+  CongestionControlType expected_congestion_control_type = kReno;
   switch (GetParam().congestion_control_tag) {
     case kRENO:
       expected_congestion_control_type = kReno;
