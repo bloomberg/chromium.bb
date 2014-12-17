@@ -190,7 +190,7 @@ static const int kCacheTagKindSize = 2;
 
 unsigned cacheTag(CacheTagKind kind)
 {
-    COMPILE_ASSERT((1 << kCacheTagKindSize) >= CacheTagLast, Cache_tag_Last_must_be_large_enough);
+    static_assert((1 << kCacheTagKindSize) >= CacheTagLast, "CacheTagLast must be large enough");
 
     static unsigned v8CacheDataVersion = v8::ScriptCompiler::CachedDataVersionTag() << kCacheTagKindSize;
     return v8CacheDataVersion | kind;

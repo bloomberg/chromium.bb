@@ -50,7 +50,7 @@ V8DOMConfiguration::installConstant(isolate, functionTemplate, prototypeTemplate
 {% for constant in constants %}
 {% if constant.idl_type not in ('Double', 'Float', 'String') %}
 {% set constant_cpp_class = constant.cpp_class or cpp_class %}
-COMPILE_ASSERT({{constant.value}} == {{constant_cpp_class}}::{{constant.reflected_name}}, TheValueOf{{cpp_class}}_{{constant.reflected_name}}DoesntMatchWithImplementation);
+static_assert({{constant.value}} == {{constant_cpp_class}}::{{constant.reflected_name}}, "the value of {{cpp_class}}_{{constant.reflected_name}} does not match with implementation");
 {% endif %}
 {% endfor %}
 {% endif %}

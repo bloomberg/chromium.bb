@@ -171,7 +171,7 @@ struct WrapperTypeInfo {
             visitDOMWrapperFunction(isolate, scriptWrappable, wrapper);
     }
 
-    // This field must be the first member of the struct WrapperTypeInfo. This is also checked by a COMPILE_ASSERT() below.
+    // This field must be the first member of the struct WrapperTypeInfo. This is also checked by a static_assert() below.
     const gin::GinEmbedder ginEmbedder;
 
     DomTemplateFunction domTemplateFunction;
@@ -190,7 +190,7 @@ struct WrapperTypeInfo {
     const unsigned gcType : 2; // GCType
 };
 
-COMPILE_ASSERT(offsetof(struct WrapperTypeInfo, ginEmbedder) == offsetof(struct gin::WrapperInfo, embedder), wrapper_type_info_compatible_to_gin);
+static_assert(offsetof(struct WrapperTypeInfo, ginEmbedder) == offsetof(struct gin::WrapperInfo, embedder), "offset of WrapperTypeInfo.ginEmbedder must be the same as gin::WrapperInfo.embedder");
 
 template<typename T, int offset>
 inline T* getInternalField(const v8::Persistent<v8::Object>& persistent)

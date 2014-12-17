@@ -15,7 +15,7 @@ struct SameSizeAsScriptWrappable {
     v8::Persistent<v8::Object> m_wrapper;
 };
 
-COMPILE_ASSERT(sizeof(ScriptWrappable) <= sizeof(SameSizeAsScriptWrappable), ScriptWrappable_should_stay_small);
+static_assert(sizeof(ScriptWrappable) <= sizeof(SameSizeAsScriptWrappable), "ScriptWrappable should stay small");
 
 namespace {
 

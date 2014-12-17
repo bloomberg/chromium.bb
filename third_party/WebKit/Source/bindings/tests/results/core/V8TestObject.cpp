@@ -11014,24 +11014,24 @@ static void installV8TestObjectTemplate(v8::Handle<v8::FunctionTemplate> functio
     }
     V8DOMConfiguration::installConstant(isolate, functionTemplate, prototypeTemplate, "DEPRECATED_CONSTANT", TestObjectV8Internal::DEPRECATED_CONSTANTConstantGetterCallback);
     V8DOMConfiguration::installConstant(isolate, functionTemplate, prototypeTemplate, "MEASURED_CONSTANT", TestObjectV8Internal::MEASURED_CONSTANTConstantGetterCallback);
-    COMPILE_ASSERT(0 == TestObject::CONST_VALUE_0, TheValueOfTestObject_CONST_VALUE_0DoesntMatchWithImplementation);
-    COMPILE_ASSERT(1 == TestObject::CONST_VALUE_1, TheValueOfTestObject_CONST_VALUE_1DoesntMatchWithImplementation);
-    COMPILE_ASSERT(2 == TestObject::CONST_VALUE_2, TheValueOfTestObject_CONST_VALUE_2DoesntMatchWithImplementation);
-    COMPILE_ASSERT(4 == TestObject::CONST_VALUE_4, TheValueOfTestObject_CONST_VALUE_4DoesntMatchWithImplementation);
-    COMPILE_ASSERT(8 == TestObject::CONST_VALUE_8, TheValueOfTestObject_CONST_VALUE_8DoesntMatchWithImplementation);
-    COMPILE_ASSERT(-1 == TestObject::CONST_VALUE_9, TheValueOfTestObject_CONST_VALUE_9DoesntMatchWithImplementation);
-    COMPILE_ASSERT(0xffffffff == TestObject::CONST_VALUE_11, TheValueOfTestObject_CONST_VALUE_11DoesntMatchWithImplementation);
-    COMPILE_ASSERT(0x01 == TestObject::CONST_VALUE_12, TheValueOfTestObject_CONST_VALUE_12DoesntMatchWithImplementation);
-    COMPILE_ASSERT(0X20 == TestObject::CONST_VALUE_13, TheValueOfTestObject_CONST_VALUE_13DoesntMatchWithImplementation);
-    COMPILE_ASSERT(0x1abc == TestObject::CONST_VALUE_14, TheValueOfTestObject_CONST_VALUE_14DoesntMatchWithImplementation);
-    COMPILE_ASSERT(010 == TestObject::CONST_VALUE_15, TheValueOfTestObject_CONST_VALUE_15DoesntMatchWithImplementation);
-    COMPILE_ASSERT(-010 == TestObject::CONST_VALUE_16, TheValueOfTestObject_CONST_VALUE_16DoesntMatchWithImplementation);
-    COMPILE_ASSERT(-0x1A == TestObject::CONST_VALUE_16, TheValueOfTestObject_CONST_VALUE_16DoesntMatchWithImplementation);
-    COMPILE_ASSERT(-0X1a == TestObject::CONST_VALUE_17, TheValueOfTestObject_CONST_VALUE_17DoesntMatchWithImplementation);
-    COMPILE_ASSERT(1 == TestObject::DEPRECATED_CONSTANT, TheValueOfTestObject_DEPRECATED_CONSTANTDoesntMatchWithImplementation);
-    COMPILE_ASSERT(1 == TestObject::MEASURED_CONSTANT, TheValueOfTestObject_MEASURED_CONSTANTDoesntMatchWithImplementation);
-    COMPILE_ASSERT(1 == TestObject::FEATURE_ENABLED_CONST, TheValueOfTestObject_FEATURE_ENABLED_CONSTDoesntMatchWithImplementation);
-    COMPILE_ASSERT(1 == TestObject::CONST_IMPL, TheValueOfTestObject_CONST_IMPLDoesntMatchWithImplementation);
+    static_assert(0 == TestObject::CONST_VALUE_0, "the value of TestObject_CONST_VALUE_0 does not match with implementation");
+    static_assert(1 == TestObject::CONST_VALUE_1, "the value of TestObject_CONST_VALUE_1 does not match with implementation");
+    static_assert(2 == TestObject::CONST_VALUE_2, "the value of TestObject_CONST_VALUE_2 does not match with implementation");
+    static_assert(4 == TestObject::CONST_VALUE_4, "the value of TestObject_CONST_VALUE_4 does not match with implementation");
+    static_assert(8 == TestObject::CONST_VALUE_8, "the value of TestObject_CONST_VALUE_8 does not match with implementation");
+    static_assert(-1 == TestObject::CONST_VALUE_9, "the value of TestObject_CONST_VALUE_9 does not match with implementation");
+    static_assert(0xffffffff == TestObject::CONST_VALUE_11, "the value of TestObject_CONST_VALUE_11 does not match with implementation");
+    static_assert(0x01 == TestObject::CONST_VALUE_12, "the value of TestObject_CONST_VALUE_12 does not match with implementation");
+    static_assert(0X20 == TestObject::CONST_VALUE_13, "the value of TestObject_CONST_VALUE_13 does not match with implementation");
+    static_assert(0x1abc == TestObject::CONST_VALUE_14, "the value of TestObject_CONST_VALUE_14 does not match with implementation");
+    static_assert(010 == TestObject::CONST_VALUE_15, "the value of TestObject_CONST_VALUE_15 does not match with implementation");
+    static_assert(-010 == TestObject::CONST_VALUE_16, "the value of TestObject_CONST_VALUE_16 does not match with implementation");
+    static_assert(-0x1A == TestObject::CONST_VALUE_16, "the value of TestObject_CONST_VALUE_16 does not match with implementation");
+    static_assert(-0X1a == TestObject::CONST_VALUE_17, "the value of TestObject_CONST_VALUE_17 does not match with implementation");
+    static_assert(1 == TestObject::DEPRECATED_CONSTANT, "the value of TestObject_DEPRECATED_CONSTANT does not match with implementation");
+    static_assert(1 == TestObject::MEASURED_CONSTANT, "the value of TestObject_MEASURED_CONSTANT does not match with implementation");
+    static_assert(1 == TestObject::FEATURE_ENABLED_CONST, "the value of TestObject_FEATURE_ENABLED_CONST does not match with implementation");
+    static_assert(1 == TestObject::CONST_IMPL, "the value of TestObject_CONST_IMPL does not match with implementation");
     const V8DOMConfiguration::MethodConfiguration staticVoidMethodMethodConfiguration = {
         "staticVoidMethod", TestObjectV8Internal::staticVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };

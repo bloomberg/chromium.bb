@@ -338,7 +338,7 @@ void SerializedScriptValueWriter::writeDenseArray(uint32_t numProperties, uint32
 
 String SerializedScriptValueWriter::takeWireString()
 {
-    COMPILE_ASSERT(sizeof(BufferValueType) == 2, BufferValueTypeIsTwoBytes);
+    static_assert(sizeof(BufferValueType) == 2, "BufferValueType should be 2 bytes");
     fillHole();
     String data = String(m_buffer.data(), m_buffer.size());
     data.impl()->truncateAssumingIsolated((m_position + 1) / sizeof(BufferValueType));
@@ -459,13 +459,13 @@ void SerializedScriptValueWriter::append(const uint8_t* data, int length)
 
 void SerializedScriptValueWriter::ensureSpace(unsigned extra)
 {
-    COMPILE_ASSERT(sizeof(BufferValueType) == 2, BufferValueTypeIsTwoBytes);
+    static_assert(sizeof(BufferValueType) == 2, "BufferValueType should be 2 bytes");
     m_buffer.resize((m_position + extra + 1) / sizeof(BufferValueType)); // "+ 1" to round up.
 }
 
 void SerializedScriptValueWriter::fillHole()
 {
-    COMPILE_ASSERT(sizeof(BufferValueType) == 2, BufferValueTypeIsTwoBytes);
+    static_assert(sizeof(BufferValueType) == 2, "BufferValueType should be 2 bytes");
     // If the writer is at odd position in the buffer, then one of
     // the bytes in the last UChar is not initialized.
     if (m_position % 2)

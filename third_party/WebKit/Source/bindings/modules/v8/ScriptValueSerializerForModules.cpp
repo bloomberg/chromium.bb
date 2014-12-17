@@ -249,7 +249,7 @@ void SerializedScriptValueWriterForModules::doWriteNamedCurve(WebCryptoNamedCurv
 void SerializedScriptValueWriterForModules::doWriteKeyUsages(const WebCryptoKeyUsageMask usages, bool extractable)
 {
     // Reminder to update this when adding new key usages.
-    COMPILE_ASSERT(EndOfWebCryptoKeyUsage == (1 << 7) + 1, UpdateMe);
+    static_assert(EndOfWebCryptoKeyUsage == (1 << 7) + 1, "update required when adding new key usages");
 
     uint32_t value = 0;
 
@@ -554,7 +554,7 @@ bool SerializedScriptValueReaderForModules::doReadNamedCurve(WebCryptoNamedCurve
 bool SerializedScriptValueReaderForModules::doReadKeyUsages(WebCryptoKeyUsageMask& usages, bool& extractable)
 {
     // Reminder to update this when adding new key usages.
-    COMPILE_ASSERT(EndOfWebCryptoKeyUsage == (1 << 7) + 1, UpdateMe);
+    static_assert(EndOfWebCryptoKeyUsage == (1 << 7) + 1, "update required when adding new key usages");
     const uint32_t allPossibleUsages = ExtractableUsage | EncryptUsage | DecryptUsage | SignUsage | VerifyUsage | DeriveKeyUsage | WrapKeyUsage | UnwrapKeyUsage | DeriveBitsUsage;
 
     uint32_t rawUsages;

@@ -134,7 +134,7 @@ v8::Handle<v8::Value> SerializedScriptValueFactory::deserialize(String& data, Bl
 {
     if (!data.impl())
         return v8::Null(isolate);
-    COMPILE_ASSERT(sizeof(SerializedScriptValueWriter::BufferValueType) == 2, BufferValueTypeIsTwoBytes);
+    static_assert(sizeof(SerializedScriptValueWriter::BufferValueType) == 2, "BufferValueType should be 2 bytes");
     data.ensure16Bit();
     // FIXME: SerializedScriptValue shouldn't use String for its underlying
     // storage. Instead, it should use SharedBuffer or Vector<uint8_t>. The
