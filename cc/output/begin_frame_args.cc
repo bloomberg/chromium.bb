@@ -19,6 +19,8 @@ const char* BeginFrameArgs::TypeToString(BeginFrameArgsType type) {
       return "SYNCHRONOUS";
     case BeginFrameArgs::MISSED:
       return "MISSED";
+    case BeginFrameArgs::BEGIN_FRAME_ARGS_TYPE_MAX:
+      return "BEGIN_FRAME_ARGS_TYPE_MAX";
   }
   NOTREACHED();
   return "???";
@@ -47,6 +49,7 @@ BeginFrameArgs BeginFrameArgs::Create(BeginFrameArgs::CreationLocation location,
                                       base::TimeDelta interval,
                                       BeginFrameArgs::BeginFrameArgsType type) {
   DCHECK_NE(type, BeginFrameArgs::INVALID);
+  DCHECK_NE(type, BeginFrameArgs::BEGIN_FRAME_ARGS_TYPE_MAX);
 #ifdef NDEBUG
   return BeginFrameArgs(frame_time, deadline, interval, type);
 #else

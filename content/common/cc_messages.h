@@ -271,10 +271,15 @@ IPC_STRUCT_TRAITS_BEGIN(cc::ViewportSelectionBound)
   IPC_STRUCT_TRAITS_MEMBER(visible)
 IPC_STRUCT_TRAITS_END()
 
+IPC_ENUM_TRAITS_MAX_VALUE( \
+    cc::BeginFrameArgs::BeginFrameArgsType, \
+    cc::BeginFrameArgs::BEGIN_FRAME_ARGS_TYPE_MAX - 1)
+
 IPC_STRUCT_TRAITS_BEGIN(cc::BeginFrameArgs)
   IPC_STRUCT_TRAITS_MEMBER(frame_time)
   IPC_STRUCT_TRAITS_MEMBER(deadline)
   IPC_STRUCT_TRAITS_MEMBER(interval)
+  IPC_STRUCT_TRAITS_MEMBER(type)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::CompositorFrameMetadata)

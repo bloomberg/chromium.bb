@@ -42,6 +42,9 @@ struct CC_EXPORT BeginFrameArgs {
     NORMAL,
     SYNCHRONOUS,
     MISSED,
+    // Not a real type, but used by the IPC system. Should always remain the
+    // *last* value in this enum.
+    BEGIN_FRAME_ARGS_TYPE_MAX,
   };
   static const char* TypeToString(BeginFrameArgsType type);
 
