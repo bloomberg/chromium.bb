@@ -61,6 +61,7 @@ void MojoDemuxerStreamImpl::OnBufferReady(
 
   DCHECK_EQ(status, media::DemuxerStream::kOk);
   if (!buffer->end_of_stream()) {
+    DCHECK_GT(buffer->data_size(), 0);
     // Serialize the data section of the DecoderBuffer into our pipe.
     uint32_t num_bytes = buffer->data_size();
     CHECK_EQ(WriteDataRaw(stream_pipe_.get(), buffer->data(), &num_bytes,

@@ -66,6 +66,7 @@ class MojoRendererService : public mojo::InterfaceImpl<mojo::MediaRenderer> {
   // if the media time has changed since the last update.  If |force| is true,
   // the client is notified even if the time is unchanged.
   void UpdateMediaTime(bool force);
+  void CancelPeriodicMediaTimeUpdates();
   void SchedulePeriodicMediaTimeUpdates();
 
   // Callback executed by audio renderer when buffering state changes.
@@ -77,6 +78,9 @@ class MojoRendererService : public mojo::InterfaceImpl<mojo::MediaRenderer> {
 
   // Callback executed when a runtime error happens.
   void OnError(PipelineStatus error);
+
+  // Callback executed once Flush() completes.
+  void OnFlushCompleted(const mojo::Closure& callback);
 
   State state_;
 

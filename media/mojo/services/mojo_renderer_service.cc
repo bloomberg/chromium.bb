@@ -34,10 +34,6 @@ static void LogMediaSourceError(const scoped_refptr<MediaLog>& media_log,
 static void PaintNothing(const scoped_refptr<VideoFrame>& frame) {
 }
 
-static void MojoTrampoline(const mojo::Closure& closure) {
-  closure.Run();
-}
-
 MojoRendererService::MojoRendererService()
     : state_(STATE_UNINITIALIZED),
       last_media_time_usec_(0),
@@ -92,8 +88,9 @@ void MojoRendererService::Flush(const mojo::Closure& callback) {
   DCHECK_EQ(state_, STATE_PLAYING);
 
   state_ = STATE_FLUSHING;
-  time_update_timer_.Reset();
-  renderer_->Flush(base::Bind(&MojoTrampoline, callback));
+  CancelPeriodicMediaTimeUpdates();
+  renderer_->Flush(
+      base::Bind(&MojoRendererService::OnFlushCompleted, weak_this_, callback));
 }
 
 void MojoRendererService::StartPlayingFrom(int64_t time_delta_usec) {
@@ -153,6 +150,11 @@ void MojoRendererService::UpdateMediaTime(bool force) {
   last_media_time_usec_ = media_time;
 }
 
+void MojoRendererService::CancelPeriodicMediaTimeUpdates() {
+  UpdateMediaTime(false);
+  time_update_timer_.Reset();
+}
+
 void MojoRendererService::SchedulePeriodicMediaTimeUpdates() {
   UpdateMediaTime(true);
   time_update_timer_.Start(
@@ -170,14 +172,21 @@ void MojoRendererService::OnBufferingStateChanged(
 
 void MojoRendererService::OnRendererEnded() {
   DVLOG(1) << __FUNCTION__;
+  CancelPeriodicMediaTimeUpdates();
   client()->OnEnded();
-  time_update_timer_.Reset();
 }
 
 void MojoRendererService::OnError(PipelineStatus error) {
   DVLOG(1) << __FUNCTION__;
   state_ = STATE_ERROR;
   client()->OnError();
+}
+
+void MojoRendererService::OnFlushCompleted(const mojo::Closure& callback) {
+  DVLOG(1) << __FUNCTION__;
+  DCHECK_EQ(state_, STATE_FLUSHING);
+  state_ = STATE_PLAYING;
+  callback.Run();
 }
 
 }  // namespace media
