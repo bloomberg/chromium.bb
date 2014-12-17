@@ -82,6 +82,7 @@ void ScrollElasticityHelper::ImmediateScrollByWithoutContentEdgeConstraints(
   layer_tree_host_impl_->active_tree()->set_needs_update_draw_properties();
   layer_tree_host_impl_->SetNeedsCommit();
   layer_tree_host_impl_->SetNeedsRedraw();
+  layer_tree_host_impl_->SetFullRootLayerDamage();
 }
 
 void ScrollElasticityHelper::StartSnapRubberbandTimer() {

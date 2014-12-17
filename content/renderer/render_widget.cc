@@ -1155,6 +1155,13 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
     }
   }
 
+  // Send mouse wheel events and their disposition to the compositor thread, so
+  // that they can be used to produce the elastic overscroll effect on Mac.
+  if (input_event->type == WebInputEvent::MouseWheel) {
+    ObserveWheelEventOnAndResult(
+        static_cast<const WebMouseWheelEvent&>(*input_event), processed);
+  }
+
   bool frame_pending = compositor_ && compositor_->BeginMainFrameRequested();
 
   // If we don't have a fast and accurate HighResNow, we assume the input
@@ -2190,6 +2197,40 @@ bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
 bool RenderWidget::WillHandleGestureEvent(
     const blink::WebGestureEvent& event) {
   return false;
+}
+
+void RenderWidget::ObserveWheelEventOnAndResult(
+    const blink::WebMouseWheelEvent& wheel_event,
+    bool event_processed) {
+  bool observe_wheel_event = false;
+#if defined(OS_MACOSX)
+  observe_wheel_event = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableThreadedEventHandlingMac);
+#endif
+  if (!observe_wheel_event)
+    return;
+
+  // Blink does not accurately compute scroll bubbling or overscroll. For now,
+  // assume that an unprocessed event was entirely an overscroll, and that a
+  // processed event was entirely scroll.
+  // TODO(ccameron): Retrieve an accurate scroll result from Blink.
+  // http://crbug.com/442859
+  cc::InputHandlerScrollResult scroll_result;
+  if (event_processed) {
+    scroll_result.did_scroll = true;
+  } else {
+    scroll_result.did_overscroll_root = true;
+    scroll_result.unused_scroll_delta =
+        gfx::Vector2dF(-wheel_event.deltaX, -wheel_event.deltaY);
+  }
+
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  InputHandlerManager* input_handler_manager =
+      render_thread ? render_thread->input_handler_manager() : NULL;
+  if (input_handler_manager) {
+    input_handler_manager->ObserveWheelEventAndResultOnMainThread(
+        routing_id_, wheel_event, scroll_result);
+  }
 }
 
 void RenderWidget::hasTouchEventHandlers(bool has_handlers) {

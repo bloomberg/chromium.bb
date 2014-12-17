@@ -17,10 +17,12 @@ class MessageLoopProxy;
 
 namespace cc {
 class InputHandler;
+struct InputHandlerScrollResult;
 }
 
 namespace blink {
 class WebInputEvent;
+class WebMouseWheelEvent;
 }
 
 namespace content {
@@ -50,6 +52,11 @@ class InputHandlerManager {
       const base::WeakPtr<cc::InputHandler>& input_handler,
       const base::WeakPtr<RenderViewImpl>& render_view_impl);
 
+  void ObserveWheelEventAndResultOnMainThread(
+      int routing_id,
+      const blink::WebMouseWheelEvent& wheel_event,
+      const cc::InputHandlerScrollResult& scroll_result);
+
   // Callback only from the compositor's thread.
   void RemoveInputHandler(int routing_id);
 
@@ -77,6 +84,11 @@ class InputHandlerManager {
       const scoped_refptr<base::MessageLoopProxy>& main_loop,
       const base::WeakPtr<cc::InputHandler>& input_handler,
       const base::WeakPtr<RenderViewImpl>& render_view_impl);
+
+  void ObserveWheelEventAndResultOnCompositorThread(
+      int routing_id,
+      const blink::WebMouseWheelEvent& wheel_event,
+      const cc::InputHandlerScrollResult& scroll_result);
 
   typedef base::ScopedPtrHashMap<int,  // routing_id
                                  InputHandlerWrapper> InputHandlerMap;

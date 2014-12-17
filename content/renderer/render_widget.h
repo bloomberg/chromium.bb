@@ -61,6 +61,7 @@ class WebTouchEvent;
 }
 
 namespace cc {
+struct InputHandlerScrollResult;
 class OutputSurface;
 class SwapPromise;
 }
@@ -535,6 +536,12 @@ class CONTENT_EXPORT RenderWidget
   // Called by OnHandleInputEvent() to notify subclasses that a touch event was
   // just handled.
   virtual void DidHandleTouchEvent(const blink::WebTouchEvent& event) {}
+
+  // Called by OnHandleInputEvent() to forward a mouse wheel event to the
+  // compositor thread, to effect the elastic overscroll effect.
+  void ObserveWheelEventOnAndResult(
+      const blink::WebMouseWheelEvent& wheel_event,
+      bool event_processed);
 
   // Check whether the WebWidget has any touch event handlers registered
   // at the given point.

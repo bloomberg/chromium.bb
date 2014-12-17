@@ -33,6 +33,10 @@ class CONTENT_EXPORT InputHandlerProxy
                     InputHandlerProxyClient* client);
   virtual ~InputHandlerProxy();
 
+  InputScrollElasticityController* scroll_elasticity_controller() {
+    return scroll_elasticity_controller_.get();
+  }
+
   enum EventDisposition {
     DID_HANDLE,
     DID_NOT_HANDLE,
