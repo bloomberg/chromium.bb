@@ -1487,8 +1487,14 @@ TEST_F(RenderWidgetHostViewAuraTest, Resize) {
   // produce a Resize message after the commit.
   view_->OnSwapCompositorFrame(
       0, MakeDelegatedFrame(1.f, size2, gfx::Rect(size2)));
-  // No frame ack yet.
-  EXPECT_EQ(0u, sink_->message_count());
+  cc::SurfaceId surface_id = view_->surface_id();
+  if (surface_id.is_null()) {
+    // No frame ack yet.
+    EXPECT_EQ(0u, sink_->message_count());
+  } else {
+    // Frame isn't desired size, so early ack.
+    EXPECT_EQ(1u, sink_->message_count());
+  }
   EXPECT_EQ(size2.ToString(), view_->GetRequestedRendererSize().ToString());
 
   // Wait for commit, then we should unlock the compositor and send a Resize
@@ -1496,23 +1502,11 @@ TEST_F(RenderWidgetHostViewAuraTest, Resize) {
   ui::DrawWaiterForTest::WaitForCommit(
       root_window->GetHost()->compositor());
   EXPECT_EQ(size3.ToString(), view_->GetRequestedRendererSize().ToString());
-  cc::SurfaceId surface_id = view_->surface_id();
-  int swap_index = 0;
-  int resize_index = 1;
-  if (!surface_id.is_null()) {
-    // Frame ack is sent only due to a draw callback with surfaces.
-    ImageTransportFactory::GetInstance()
-        ->GetSurfaceManager()
-        ->GetSurfaceForId(surface_id)
-        ->RunDrawCallbacks();
-    swap_index = 1;
-    resize_index = 0;
-  }
   EXPECT_EQ(2u, sink_->message_count());
   EXPECT_EQ(ViewMsg_SwapCompositorFrameAck::ID,
-            sink_->GetMessageAt(swap_index)->type());
+            sink_->GetMessageAt(0)->type());
   {
-    const IPC::Message* msg = sink_->GetMessageAt(resize_index);
+    const IPC::Message* msg = sink_->GetMessageAt(1);
     EXPECT_EQ(ViewMsg_Resize::ID, msg->type());
     ViewMsg_Resize::Param params;
     ViewMsg_Resize::Read(msg, &params);
