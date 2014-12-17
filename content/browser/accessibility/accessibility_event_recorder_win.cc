@@ -1,0 +1,178 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "content/browser/accessibility/accessibility_event_recorder.h"
+
+#include <oleacc.h>
+
+#include <string>
+
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/win/scoped_bstr.h"
+#include "base/win/scoped_comptr.h"
+#include "base/win/scoped_variant.h"
+#include "content/browser/accessibility/accessibility_tree_formatter_utils_win.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/accessibility/browser_accessibility_win.h"
+#include "third_party/iaccessible2/ia2_api_all.h"
+#include "ui/base/win/atl_module.h"
+
+namespace content {
+
+namespace {
+
+std::string RoleVariantToString(const base::win::ScopedVariant& role) {
+  if (role.type() == VT_I4) {
+    return base::UTF16ToUTF8(IAccessibleRoleToString(V_I4(&role)));
+  } else if (role.type() == VT_BSTR) {
+    return base::UTF16ToUTF8(
+        base::string16(V_BSTR(&role), SysStringLen(V_BSTR(&role))));
+  }
+  return std::string();
+}
+
+HRESULT QueryIAccessible2(IAccessible* accessible, IAccessible2** accessible2) {
+  base::win::ScopedComPtr<IServiceProvider> service_provider;
+  HRESULT hr = accessible->QueryInterface(service_provider.Receive());
+  return SUCCEEDED(hr) ?
+      service_provider->QueryService(IID_IAccessible2, accessible2) : hr;
+}
+
+std::string BstrToUTF8(BSTR bstr) {
+  base::string16 str16(bstr, SysStringLen(bstr));
+  return base::UTF16ToUTF8(str16);
+}
+
+std::string AccessibilityEventToStringUTF8(int32 event_id) {
+  return base::UTF16ToUTF8(AccessibilityEventToString(event_id));
+}
+
+}  // namespace
+
+class AccessibilityEventRecorderWin : public AccessibilityEventRecorder {
+ public:
+  explicit AccessibilityEventRecorderWin(BrowserAccessibilityManager* manager);
+  virtual ~AccessibilityEventRecorderWin();
+
+  // Callback registered by SetWinEventHook. Just calls OnWinEventHook.
+  static void CALLBACK WinEventHookThunk(
+      HWINEVENTHOOK handle,
+      DWORD event,
+      HWND hwnd,
+      LONG obj_id,
+      LONG child_id,
+      DWORD event_thread,
+      DWORD event_time);
+
+ private:
+  // Called by the thunk registered by SetWinEventHook. Retrives accessibility
+  // info about the node the event was fired on and appends a string to
+  // the event log.
+  void OnWinEventHook(HWINEVENTHOOK handle,
+                      DWORD event,
+                      HWND hwnd,
+                      LONG obj_id,
+                      LONG child_id,
+                      DWORD event_thread,
+                      DWORD event_time);
+
+  HWINEVENTHOOK win_event_hook_handle_;
+  static AccessibilityEventRecorderWin* instance_;
+};
+
+// static
+AccessibilityEventRecorderWin*
+AccessibilityEventRecorderWin::instance_ = nullptr;
+
+// static
+AccessibilityEventRecorder* AccessibilityEventRecorder::Create(
+    BrowserAccessibilityManager* manager) {
+  return new AccessibilityEventRecorderWin(manager);
+}
+
+// static
+void CALLBACK AccessibilityEventRecorderWin::WinEventHookThunk(
+    HWINEVENTHOOK handle,
+    DWORD event,
+    HWND hwnd,
+    LONG obj_id,
+    LONG child_id,
+    DWORD event_thread,
+    DWORD event_time) {
+  if (instance_) {
+    instance_->OnWinEventHook(handle, event, hwnd, obj_id, child_id,
+                              event_thread, event_time);
+  }
+}
+
+AccessibilityEventRecorderWin::AccessibilityEventRecorderWin(
+    BrowserAccessibilityManager* manager)
+    : AccessibilityEventRecorder(manager) {
+  CHECK(!instance_) << "There can be only one instance of"
+                    << " WinAccessibilityEventMonitor at a time.";
+  instance_ = this;
+  win_event_hook_handle_ = SetWinEventHook(
+      EVENT_MIN,
+      EVENT_MAX,
+      GetModuleHandle(NULL),
+      &AccessibilityEventRecorderWin::WinEventHookThunk,
+      GetCurrentProcessId(),
+      0,  // Hook all threads
+      WINEVENT_INCONTEXT);
+}
+
+AccessibilityEventRecorderWin::~AccessibilityEventRecorderWin() {
+  UnhookWinEvent(win_event_hook_handle_);
+  instance_ = NULL;
+}
+
+void AccessibilityEventRecorderWin::OnWinEventHook(
+    HWINEVENTHOOK handle,
+    DWORD event,
+    HWND hwnd,
+    LONG obj_id,
+    LONG child_id,
+    DWORD event_thread,
+    DWORD event_time) {
+  base::win::ScopedComPtr<IAccessible> browser_accessible;
+  HRESULT hr = AccessibleObjectFromWindow(
+      hwnd,
+      obj_id,
+      IID_IAccessible,
+      reinterpret_cast<void**>(browser_accessible.Receive()));
+  CHECK(SUCCEEDED(hr)) << "Failure accessing accessible object from hwnd "
+                       << hwnd << " obj_id=" << obj_id << " child_id="
+                       << child_id;
+
+  base::win::ScopedVariant childid_variant(child_id);
+  base::win::ScopedComPtr<IDispatch> dispatch;
+  hr = browser_accessible->get_accChild(childid_variant, dispatch.Receive());
+  CHECK(SUCCEEDED(hr));
+  base::win::ScopedComPtr<IAccessible> iaccessible;
+  dispatch.QueryInterface(iaccessible.Receive());
+
+  base::win::ScopedVariant childid_self(CHILDID_SELF);
+  base::win::ScopedVariant role;
+  iaccessible->get_accRole(childid_self, role.Receive());
+  base::win::ScopedBstr name_bstr;
+  iaccessible->get_accName(childid_self, name_bstr.Receive());
+  base::win::ScopedBstr value_bstr;
+  iaccessible->get_accValue(childid_self, value_bstr.Receive());
+
+  std::string log = base::StringPrintf(
+      "%s on role=%s",
+      AccessibilityEventToStringUTF8(event).c_str(),
+      RoleVariantToString(role).c_str());
+  if (name_bstr.Length() > 0)
+    log += base::StringPrintf(" name=\"%s\"", BstrToUTF8(name_bstr).c_str());
+  if (value_bstr.Length() > 0)
+    log += base::StringPrintf(" value=\"%s\"", BstrToUTF8(value_bstr).c_str());
+
+  event_logs_.push_back(log);
+}
+
+}  // namespace content

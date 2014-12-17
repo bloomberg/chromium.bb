@@ -53,6 +53,7 @@ DumpAccessibilityTestBase::DumpUnfilteredAccessibilityTreeAsString() {
   std::vector<Filter> filters;
   filters.push_back(Filter(base::ASCIIToUTF16("*"), Filter::ALLOW));
   formatter.SetFilters(filters);
+  formatter.set_show_ids(true);
   base::string16 ax_tree_dump;
   formatter.FormatAccessibilityTree(&ax_tree_dump);
   return ax_tree_dump;

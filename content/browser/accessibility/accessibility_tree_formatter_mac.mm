@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -190,6 +191,7 @@ void AccessibilityTreeFormatter::Initialize() {
 
 void AccessibilityTreeFormatter::AddProperties(const BrowserAccessibility& node,
                                                base::DictionaryValue* dict) {
+  dict->SetInteger("id", node.GetId());
   BrowserAccessibilityCocoa* cocoa_node =
       const_cast<BrowserAccessibility*>(&node)->ToBrowserAccessibilityCocoa();
   NSArray* supportedAttributes = [cocoa_node accessibilityAttributeNames];
@@ -221,9 +223,14 @@ void AccessibilityTreeFormatter::AddProperties(const BrowserAccessibility& node,
 }
 
 base::string16 AccessibilityTreeFormatter::ToString(
-    const base::DictionaryValue& dict,
-    const base::string16& indent) {
+    const base::DictionaryValue& dict) {
   base::string16 line;
+  if (show_ids_) {
+    int id_value;
+    dict.GetInteger("id", &id_value);
+    WriteAttribute(true, base::IntToString16(id_value), &line);
+  }
+
   NSArray* defaultAttributes =
       [NSArray arrayWithObjects:NSAccessibilityTitleAttribute,
                                 NSAccessibilityValueAttribute,
@@ -278,7 +285,7 @@ base::string16 AccessibilityTreeFormatter::ToString(
                    &line);
   }
 
-  return indent + line + base::ASCIIToUTF16("\n");
+  return line;
 }
 
 // static
