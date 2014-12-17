@@ -171,6 +171,9 @@ public:
     void paintRenderingResultsToCanvas(ImageBuffer*);
     bool paintRenderingResultsToImageData(int&, int&, SourceDrawingBuffer, WTF::ArrayBufferContents&);
 
+    int sampleCount() const { return m_sampleCount; }
+    bool explicitResolveOfMultisampleData() const { return m_multisampleMode == ExplicitResolve; };
+
 protected: // For unittests
     DrawingBuffer(
         PassOwnPtr<WebGraphicsContext3D>,

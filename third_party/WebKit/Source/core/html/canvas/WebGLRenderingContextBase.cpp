@@ -5915,6 +5915,32 @@ void WebGLRenderingContextBase::trace(Visitor* visitor)
     CanvasRenderingContext::trace(visitor);
 }
 
+int WebGLRenderingContextBase::externallyAllocatedBytesPerPixel()
+{
+    if (isContextLost())
+        return 0;
+
+    int bytesPerPixel = 4;
+    int totalBytesPerPixel = bytesPerPixel * 2; // WebGL's front and back color buffers.
+    int samples = drawingBuffer() ? drawingBuffer()->sampleCount() : 0;
+    Nullable<WebGLContextAttributes> attribs;
+    getContextAttributes(attribs);
+    if (!attribs.isNull()) {
+        // Handle memory from WebGL multisample and depth/stencil buffers.
+        // It is enabled only in case of explicit resolve assuming that there
+        // is no memory overhead for MSAA on tile-based GPU arch.
+        if (attribs.get().antialias() && samples > 0 && drawingBuffer()->explicitResolveOfMultisampleData()) {
+            if (attribs.get().depth() || attribs.get().stencil())
+                totalBytesPerPixel += samples * bytesPerPixel; // depth/stencil multisample buffer
+            totalBytesPerPixel += samples * bytesPerPixel; // color multisample buffer
+        } else if (attribs.get().depth() || attribs.get().stencil()) {
+            totalBytesPerPixel += bytesPerPixel; // regular depth/stencil buffer
+        }
+    }
+
+    return totalBytesPerPixel;
+}
+
 #if ENABLE(OILPAN)
 PassRefPtr<WebGLSharedWebGraphicsContext3D> WebGLRenderingContextBase::sharedWebGraphicsContext3D() const
 {

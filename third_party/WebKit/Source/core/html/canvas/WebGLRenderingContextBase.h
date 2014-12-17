@@ -375,6 +375,9 @@ public:
 
     virtual void trace(Visitor*) override;
 
+    // Returns approximate gpu memory allocated per pixel.
+    int externallyAllocatedBytesPerPixel();
+
     class TextureUnitState {
         ALLOW_ONLY_INLINE_ALLOCATION();
     public:

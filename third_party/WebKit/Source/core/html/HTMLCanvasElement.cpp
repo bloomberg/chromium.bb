@@ -681,12 +681,13 @@ void HTMLCanvasElement::updateExternallyAllocatedMemory() const
     int bufferCount = 0;
     if (m_imageBuffer)
         bufferCount++;
-    if (is3D())
-        bufferCount += 2;
     if (m_copiedImage)
         bufferCount++;
 
     Checked<intptr_t, RecordOverflow> checkedExternallyAllocatedMemory = 4 * bufferCount;
+    if (is3D())
+        checkedExternallyAllocatedMemory += toWebGLRenderingContext(m_context.get())->externallyAllocatedBytesPerPixel();
+
     checkedExternallyAllocatedMemory *= width();
     checkedExternallyAllocatedMemory *= height();
     intptr_t externallyAllocatedMemory;
