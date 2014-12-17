@@ -15,8 +15,8 @@
 #include "core/dom/Document.h"
 #include "core/frame/Frame.h"
 #include "core/testing/DummyPageHolder.h"
-#include "modules/serviceworkers/Request.h"
-#include "modules/serviceworkers/Response.h"
+#include "modules/fetch/Request.h"
+#include "modules/fetch/Response.h"
 #include "public/platform/WebServiceWorkerCache.h"
 #include "wtf/OwnPtr.h"
 

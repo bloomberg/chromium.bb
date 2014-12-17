@@ -5,7 +5,7 @@
 #include "config.h"
 #include "FetchEvent.h"
 
-#include "modules/serviceworkers/Request.h"
+#include "modules/fetch/Request.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
 #include "wtf/RefPtr.h"
 

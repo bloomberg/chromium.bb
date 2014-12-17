@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "FetchManager.h"
+#include "modules/fetch/FetchManager.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
@@ -15,11 +15,11 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
-#include "modules/serviceworkers/Body.h"
-#include "modules/serviceworkers/BodyStreamBuffer.h"
-#include "modules/serviceworkers/FetchRequestData.h"
-#include "modules/serviceworkers/Response.h"
-#include "modules/serviceworkers/ResponseInit.h"
+#include "modules/fetch/Body.h"
+#include "modules/fetch/BodyStreamBuffer.h"
+#include "modules/fetch/FetchRequestData.h"
+#include "modules/fetch/Response.h"
+#include "modules/fetch/ResponseInit.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURLRequest.h"

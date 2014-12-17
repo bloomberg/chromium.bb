@@ -10,9 +10,9 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/DOMException.h"
-#include "modules/serviceworkers/BodyStreamBuffer.h"
-#include "modules/serviceworkers/Request.h"
-#include "modules/serviceworkers/Response.h"
+#include "modules/fetch/BodyStreamBuffer.h"
+#include "modules/fetch/Request.h"
+#include "modules/fetch/Response.h"
 #include "public/platform/WebServiceWorkerCache.h"
 
 namespace blink {

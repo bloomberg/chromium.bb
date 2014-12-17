@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "Request.h"
+#include "modules/fetch/Request.h"
 
 #include "bindings/core/v8/Dictionary.h"
 #include "core/dom/Document.h"
@@ -11,8 +11,8 @@
 #include "core/fetch/FetchUtils.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/loader/ThreadableLoader.h"
-#include "modules/serviceworkers/FetchManager.h"
-#include "modules/serviceworkers/RequestInit.h"
+#include "modules/fetch/FetchManager.h"
+#include "modules/fetch/RequestInit.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/Referrer.h"

@@ -12,7 +12,7 @@
 #include "bindings/modules/v8/V8Response.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/streams/Stream.h"
-#include "modules/serviceworkers/BodyStreamBuffer.h"
+#include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebServiceWorkerResponse.h"

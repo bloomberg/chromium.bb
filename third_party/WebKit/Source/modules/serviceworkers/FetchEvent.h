@@ -6,7 +6,7 @@
 #define FetchEvent_h
 
 #include "modules/EventModules.h"
-#include "modules/serviceworkers/Request.h"
+#include "modules/fetch/Request.h"
 #include "modules/serviceworkers/RespondWithObserver.h"
 #include "platform/heap/Handle.h"
 

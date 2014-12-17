@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "modules/serviceworkers/Body.h"
+#include "modules/fetch/Body.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
@@ -15,7 +15,7 @@
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/streams/UnderlyingSource.h"
-#include "modules/serviceworkers/BodyStreamBuffer.h"
+#include "modules/fetch/BodyStreamBuffer.h"
 
 namespace blink {
 

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "RequestInit.h"
+#include "modules/fetch/RequestInit.h"
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
@@ -12,7 +12,7 @@
 #include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8FormData.h"
 #include "core/fileapi/Blob.h"
-#include "modules/serviceworkers/Headers.h"
+#include "modules/fetch/Headers.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/FormData.h"
 

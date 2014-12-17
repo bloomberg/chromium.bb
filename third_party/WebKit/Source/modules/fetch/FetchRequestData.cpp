@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "FetchRequestData.h"
+#include "modules/fetch/FetchRequestData.h"
 
 #include "core/dom/ExecutionContext.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/loader/ThreadableLoader.h"
-#include "modules/serviceworkers/FetchHeaderList.h"
+#include "modules/fetch/FetchHeaderList.h"
 #include "platform/network/ResourceRequest.h"
 #include "public/platform/WebServiceWorkerRequest.h"
 #include "public/platform/WebURLRequest.h"

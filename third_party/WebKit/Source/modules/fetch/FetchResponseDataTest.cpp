@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "modules/serviceworkers/FetchResponseData.h"
+#include "modules/fetch/FetchResponseData.h"
 
-#include "modules/serviceworkers/FetchHeaderList.h"
+#include "modules/fetch/FetchHeaderList.h"
 #include "platform/blob/BlobData.h"
 #include "public/platform/WebServiceWorkerResponse.h"
 

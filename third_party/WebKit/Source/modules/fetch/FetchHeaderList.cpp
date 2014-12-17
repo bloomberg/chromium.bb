@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "FetchHeaderList.h"
+#include "modules/fetch/FetchHeaderList.h"
 
 #include "core/fetch/FetchUtils.h"
 #include "platform/network/HTTPParsers.h"

@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "config.h"
+#include "modules/fetch/Request.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/Document.h"
 #include "core/frame/Frame.h"
 #include "core/testing/DummyPageHolder.h"
-#include "modules/serviceworkers/Request.h"
 #include "public/platform/WebServiceWorkerRequest.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
@@ -61,7 +61,10 @@ TEST_F(ServiceWorkerRequestTest, FromAndToWebRequest)
 
     const KURL url(ParsedURLString, "http://www.example.com/");
     const String method = "GET";
-    struct { const char* key; const char* value; } headers[] = { {"X-Foo", "bar"}, {"X-Quux", "foop"}, {0, 0} };
+    struct {
+        const char* key;
+        const char* value;
+    } headers[] = { {"X-Foo", "bar"}, {"X-Quux", "foop"}, {0, 0} };
     const String referrer = "http://www.referrer.com/";
     const WebReferrerPolicy referrerPolicy = WebReferrerPolicyAlways;
 

@@ -9,8 +9,8 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
-#include "modules/serviceworkers/Request.h"
-#include "modules/serviceworkers/Response.h"
+#include "modules/fetch/Request.h"
+#include "modules/fetch/Response.h"
 #include "public/platform/WebServiceWorkerCacheError.h"
 #include "public/platform/WebServiceWorkerCacheStorage.h"
 

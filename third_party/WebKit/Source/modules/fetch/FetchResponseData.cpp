@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "FetchResponseData.h"
+#include "modules/fetch/FetchResponseData.h"
 
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/fetch/CrossOriginAccessControl.h"
-#include "modules/serviceworkers/BodyStreamBuffer.h"
-#include "modules/serviceworkers/FetchHeaderList.h"
+#include "modules/fetch/BodyStreamBuffer.h"
+#include "modules/fetch/FetchHeaderList.h"
 #include "public/platform/WebServiceWorkerResponse.h"
 
 namespace blink {

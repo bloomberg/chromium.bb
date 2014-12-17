@@ -8,9 +8,9 @@
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/modules/v8/UnionTypesModules.h"
-#include "modules/serviceworkers/Body.h"
-#include "modules/serviceworkers/FetchResponseData.h"
-#include "modules/serviceworkers/Headers.h"
+#include "modules/fetch/Body.h"
+#include "modules/fetch/FetchResponseData.h"
+#include "modules/fetch/Headers.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
 

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "modules/serviceworkers/BodyStreamBuffer.h"
+#include "modules/fetch/BodyStreamBuffer.h"
 
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMException.h"

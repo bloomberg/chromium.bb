@@ -6,7 +6,7 @@
 #define ResponseInit_h
 
 #include "bindings/core/v8/Dictionary.h"
-#include "modules/serviceworkers/Headers.h"
+#include "modules/fetch/Headers.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 

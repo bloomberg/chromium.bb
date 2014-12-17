@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "modules/serviceworkers/Response.h"
+#include "modules/fetch/Response.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/Document.h"
 #include "core/frame/Frame.h"
 #include "core/testing/DummyPageHolder.h"
-#include "modules/serviceworkers/BodyStreamBuffer.h"
-#include "modules/serviceworkers/FetchResponseData.h"
+#include "modules/fetch/BodyStreamBuffer.h"
+#include "modules/fetch/FetchResponseData.h"
 #include "platform/blob/BlobData.h"
 #include "public/platform/WebServiceWorkerResponse.h"
 #include <gtest/gtest.h>

@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "Response.h"
+#include "modules/fetch/Response.h"
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/fileapi/Blob.h"
-#include "modules/serviceworkers/ResponseInit.h"
+#include "modules/fetch/ResponseInit.h"
 #include "public/platform/WebServiceWorkerResponse.h"
 #include "wtf/RefPtr.h"
 

@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "modules/serviceworkers/GlobalFetch.h"
+#include "modules/fetch/GlobalFetch.h"
 
 #include "core/dom/ActiveDOMObject.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "modules/serviceworkers/FetchManager.h"
-#include "modules/serviceworkers/Request.h"
+#include "modules/fetch/FetchManager.h"
+#include "modules/fetch/Request.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"

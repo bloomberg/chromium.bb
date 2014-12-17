@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "modules/serviceworkers/FetchHeaderList.h"
+#include "modules/fetch/FetchHeaderList.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 
