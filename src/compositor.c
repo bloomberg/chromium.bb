@@ -495,12 +495,12 @@ weston_presentation_feedback_present(
 		struct weston_output *output,
 		uint32_t refresh_nsec,
 		const struct timespec *ts,
-		uint64_t seq)
+		uint64_t seq,
+		uint32_t flags)
 {
 	struct wl_client *client = wl_resource_get_client(feedback->resource);
 	struct wl_resource *o;
 	uint64_t secs;
-	uint32_t flags = 0;
 
 	wl_resource_for_each(o, &output->resource_list) {
 		if (wl_resource_get_client(o) != client)
@@ -524,13 +524,18 @@ weston_presentation_feedback_present_list(struct wl_list *list,
 					  struct weston_output *output,
 					  uint32_t refresh_nsec,
 					  const struct timespec *ts,
-					  uint64_t seq)
+					  uint64_t seq,
+					  uint32_t flags)
 {
 	struct weston_presentation_feedback *feedback, *tmp;
 
+	assert(!(flags & PRESENTATION_FEEDBACK_INVALID) ||
+	       wl_list_empty(list));
+
 	wl_list_for_each_safe(feedback, tmp, list, link)
 		weston_presentation_feedback_present(feedback, output,
-						     refresh_nsec, ts, seq);
+						     refresh_nsec, ts, seq,
+						     flags);
 }
 
 static void
@@ -2083,7 +2088,8 @@ weston_compositor_read_input(int fd, uint32_t mask, void *data)
 
 WL_EXPORT void
 weston_output_finish_frame(struct weston_output *output,
-			   const struct timespec *stamp)
+			   const struct timespec *stamp,
+			   uint32_t presented_flags)
 {
 	struct weston_compositor *compositor = output->compositor;
 	struct wl_event_loop *loop =
@@ -2097,7 +2103,8 @@ weston_output_finish_frame(struct weston_output *output,
 	refresh_nsec = 1000000000000UL / output->current_mode->refresh;
 	weston_presentation_feedback_present_list(&output->feedback_list,
 						  output, refresh_nsec, stamp,
-						  output->msc);
+						  output->msc,
+						  presented_flags);
 
 	output->frame_time = stamp->tv_sec * 1000 + stamp->tv_nsec / 1000000;
 

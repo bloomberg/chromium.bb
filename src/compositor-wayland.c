@@ -43,6 +43,7 @@
 #include "../shared/os-compatibility.h"
 #include "../shared/cairo-util.h"
 #include "fullscreen-shell-client-protocol.h"
+#include "presentation_timing-server-protocol.h"
 
 #define WINDOW_TITLE "Weston Compositor"
 
@@ -313,7 +314,7 @@ frame_done(void *data, struct wl_callback *callback, uint32_t time)
 	/* XXX: use the presentation extension for proper timings */
 	ts.tv_sec = time / 1000;
 	ts.tv_nsec = (time % 1000) * 1000000;
-	weston_output_finish_frame(output, &ts);
+	weston_output_finish_frame(output, &ts, 0);
 }
 
 static const struct wl_callback_listener frame_listener = {

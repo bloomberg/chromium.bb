@@ -50,6 +50,7 @@
 #include "libinput-seat.h"
 #include "launcher-util.h"
 #include "vaapi-recorder.h"
+#include "presentation_timing-server-protocol.h"
 
 #ifndef DRM_CAP_TIMESTAMP_MONOTONIC
 #define DRM_CAP_TIMESTAMP_MONOTONIC 0x6
@@ -720,7 +721,8 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 finish_frame:
 	/* if we cannot page-flip, immediately finish frame */
 	clock_gettime(compositor->base.presentation_clock, &ts);
-	weston_output_finish_frame(output_base, &ts);
+	weston_output_finish_frame(output_base, &ts,
+				   PRESENTATION_FEEDBACK_INVALID);
 }
 
 static void
@@ -741,6 +743,8 @@ vblank_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec,
 	struct drm_sprite *s = (struct drm_sprite *)data;
 	struct drm_output *output = s->output;
 	struct timespec ts;
+	uint32_t flags = PRESENTATION_FEEDBACK_KIND_HW_COMPLETION |
+			 PRESENTATION_FEEDBACK_KIND_HW_CLOCK;
 
 	drm_output_update_msc(output, frame);
 	output->vblank_pending = 0;
@@ -752,7 +756,7 @@ vblank_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec,
 	if (!output->page_flip_pending) {
 		ts.tv_sec = sec;
 		ts.tv_nsec = usec * 1000;
-		weston_output_finish_frame(&output->base, &ts);
+		weston_output_finish_frame(&output->base, &ts, flags);
 	}
 }
 
@@ -765,6 +769,9 @@ page_flip_handler(int fd, unsigned int frame,
 {
 	struct drm_output *output = (struct drm_output *) data;
 	struct timespec ts;
+	uint32_t flags = PRESENTATION_FEEDBACK_KIND_VSYNC |
+			 PRESENTATION_FEEDBACK_KIND_HW_COMPLETION |
+			 PRESENTATION_FEEDBACK_KIND_HW_CLOCK;
 
 	drm_output_update_msc(output, frame);
 
@@ -784,7 +791,7 @@ page_flip_handler(int fd, unsigned int frame,
 	else if (!output->vblank_pending) {
 		ts.tv_sec = sec;
 		ts.tv_nsec = usec * 1000;
-		weston_output_finish_frame(&output->base, &ts);
+		weston_output_finish_frame(&output->base, &ts, flags);
 
 		/* We can't call this from frame_notify, because the output's
 		 * repaint needed flag is cleared just after that */

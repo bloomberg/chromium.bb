@@ -308,7 +308,7 @@ rdp_output_start_repaint_loop(struct weston_output *output)
 	struct timespec ts;
 
 	clock_gettime(output->compositor->presentation_clock, &ts);
-	weston_output_finish_frame(output, &ts);
+	weston_output_finish_frame(output, &ts, PRESENTATION_FEEDBACK_INVALID);
 }
 
 static int
@@ -350,7 +350,11 @@ rdp_output_destroy(struct weston_output *output_base)
 static int
 finish_frame_handler(void *data)
 {
-	rdp_output_start_repaint_loop(data);
+	struct rdp_output *output = data;
+	struct timespec ts;
+
+	clock_gettime(output->base.compositor->presentation_clock, &ts);
+	weston_output_finish_frame(&output->base, &ts, 0);
 
 	return 1;
 }

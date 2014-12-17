@@ -30,6 +30,7 @@
 
 #include "compositor.h"
 #include "pixman-renderer.h"
+#include "presentation_timing-server-protocol.h"
 
 struct headless_compositor {
 	struct weston_compositor base;
@@ -58,13 +59,17 @@ headless_output_start_repaint_loop(struct weston_output *output)
 	struct timespec ts;
 
 	clock_gettime(output->compositor->presentation_clock, &ts);
-	weston_output_finish_frame(output, &ts);
+	weston_output_finish_frame(output, &ts, PRESENTATION_FEEDBACK_INVALID);
 }
 
 static int
 finish_frame_handler(void *data)
 {
-	headless_output_start_repaint_loop(data);
+	struct headless_output *output = data;
+	struct timespec ts;
+
+	clock_gettime(output->base.compositor->presentation_clock, &ts);
+	weston_output_finish_frame(&output->base, &ts, 0);
 
 	return 1;
 }
