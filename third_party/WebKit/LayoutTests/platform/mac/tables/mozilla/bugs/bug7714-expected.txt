@@ -42,32 +42,32 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 781x32
           text run at (0,0) width 781: "This is the same table as above, but cellspacing=5 in this case. For 5.0, (jun08 win95) notice the odd cellspacing overlaps."
           text run at (0,16) width 129: "See also bug #6304."
-      RenderTable {TABLE} at (0,266) size 37x157 [border: (1px outset #808080)]
-        RenderTableSection {TBODY} at (1,1) size 35x155
+      RenderTable {TABLE} at (0,266) size 37x147 [border: (1px outset #808080)]
+        RenderTableSection {TBODY} at (1,1) size 35x145
           RenderTableRow {TR} at (0,5) size 35x20
-            RenderTableCell {TD} at (5,18) size 10x18 [border: (1px inset #808080)] [r=0 c=0 rs=2 cs=1]
+            RenderTableCell {TD} at (5,17) size 10x18 [border: (1px inset #808080)] [r=0 c=0 rs=2 cs=1]
               RenderText {#text} at (1,1) size 8x16
                 text run at (1,1) width 8: "1"
             RenderTableCell {TD} at (20,6) size 10x18 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (1,1) size 8x16
                 text run at (1,1) width 8: "2"
-          RenderTableRow {TR} at (0,30) size 35x20
-            RenderTableCell {TD} at (20,43) size 10x18 [border: (1px inset #808080)] [r=1 c=1 rs=2 cs=1]
+          RenderTableRow {TR} at (0,30) size 35x17
+            RenderTableCell {TD} at (20,41) size 10x18 [border: (1px inset #808080)] [r=1 c=1 rs=2 cs=1]
               RenderText {#text} at (1,1) size 8x16
                 text run at (1,1) width 8: "3"
-          RenderTableRow {TR} at (0,55) size 35x20
-            RenderTableCell {TD} at (5,68) size 10x18 [border: (1px inset #808080)] [r=2 c=0 rs=2 cs=1]
+          RenderTableRow {TR} at (0,52) size 35x18
+            RenderTableCell {TD} at (5,63) size 10x18 [border: (1px inset #808080)] [r=2 c=0 rs=2 cs=1]
               RenderText {#text} at (1,1) size 8x16
                 text run at (1,1) width 8: "4"
-          RenderTableRow {TR} at (0,80) size 35x20
-            RenderTableCell {TD} at (20,93) size 10x18 [border: (1px inset #808080)] [r=3 c=1 rs=2 cs=1]
+          RenderTableRow {TR} at (0,75) size 35x17
+            RenderTableCell {TD} at (20,86) size 10x18 [border: (1px inset #808080)] [r=3 c=1 rs=2 cs=1]
               RenderText {#text} at (1,1) size 8x16
                 text run at (1,1) width 8: "5"
-          RenderTableRow {TR} at (0,105) size 35x20
-            RenderTableCell {TD} at (5,118) size 10x18 [border: (1px inset #808080)] [r=4 c=0 rs=2 cs=1]
+          RenderTableRow {TR} at (0,97) size 35x18
+            RenderTableCell {TD} at (5,109) size 10x18 [border: (1px inset #808080)] [r=4 c=0 rs=2 cs=1]
               RenderText {#text} at (1,1) size 8x16
                 text run at (1,1) width 8: "6"
-          RenderTableRow {TR} at (0,130) size 35x20
-            RenderTableCell {TD} at (20,131) size 10x18 [border: (1px inset #808080)] [r=5 c=1 rs=1 cs=1]
+          RenderTableRow {TR} at (0,120) size 35x20
+            RenderTableCell {TD} at (20,121) size 10x18 [border: (1px inset #808080)] [r=5 c=1 rs=1 cs=1]
               RenderText {#text} at (1,1) size 8x16
                 text run at (1,1) width 8: "7"

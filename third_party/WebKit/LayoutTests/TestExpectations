@@ -1481,10 +1481,3 @@ crbug.com/442340 webexposed/global-interface-listing-dedicated-worker.html [ Nee
 crbug.com/442340 virtual/stable/webexposed/global-interface-listing-shared-worker.html [ NeedsManualRebaseline ]
 
 crbug.com/390488 [ Mac Debug ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
-
-crbug.com/396655 [ Mac ] tables/mozilla/bugs/bug13169.html [ NeedsRebaseline ]
-crbug.com/396655 [ Win ] tables/mozilla/bugs/bug133756-1.html [ NeedsRebaseline ]
-crbug.com/396655 [ Win Mac ] tables/mozilla/bugs/bug133756-2.html [ NeedsRebaseline ]
-crbug.com/396655 [ Win Mac ] tables/mozilla/bugs/bug7714.html [ NeedsRebaseline ]
-crbug.com/396655 [ Win Mac ] tables/mozilla_expected_failures/bugs/bug65372.html [ NeedsRebaseline ]
-crbug.com/396655 [ Win Mac ] tables/mozilla/bugs/bug8858.html [ NeedsRebaseline ]
