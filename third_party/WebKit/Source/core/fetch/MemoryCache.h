@@ -227,7 +227,16 @@ public:
     virtual void willProcessTask() override;
     virtual void didProcessTask() override;
 
+    void pruneAll();
+
 private:
+    enum PruneStrategy {
+        // Automatically decide how much to prune.
+        AutomaticPrune,
+        // Maximally prune resources.
+        MaximalPrune
+    };
+
     MemoryCache();
 
     MemoryCacheLRUList* lruListFor(unsigned accessCount, size_t);
@@ -252,9 +261,9 @@ private:
 
     // pruneDeadResources() - Flush decoded and encoded data from resources not referenced by Web pages.
     // pruneLiveResources() - Flush decoded data from resources still referenced by Web pages.
-    void pruneDeadResources(); // Automatically decide how much to prune.
-    void pruneLiveResources();
-    void pruneNow(double currentTime);
+    void pruneDeadResources(PruneStrategy);
+    void pruneLiveResources(PruneStrategy);
+    void pruneNow(double currentTime, PruneStrategy);
 
     bool evict(MemoryCacheEntry*);
 

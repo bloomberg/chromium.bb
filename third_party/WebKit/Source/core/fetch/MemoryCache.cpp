@@ -255,10 +255,12 @@ size_t MemoryCache::liveCapacity() const
     return m_capacity - deadCapacity();
 }
 
-void MemoryCache::pruneLiveResources()
+void MemoryCache::pruneLiveResources(PruneStrategy strategy)
 {
     ASSERT(!m_prunePending);
     size_t capacity = liveCapacity();
+    if (strategy == MaximalPrune)
+        capacity = 0;
     if (!m_liveSize || (capacity && m_liveSize <= capacity))
         return;
 
@@ -283,7 +285,7 @@ void MemoryCache::pruneLiveResources()
             if (current->m_resource->isLoaded() && current->m_resource->decodedSize()) {
                 // Check to see if the remaining resources are too new to prune.
                 double elapsedTime = m_pruneFrameTimeStamp - current->m_lastDecodedAccessTime;
-                if (elapsedTime < m_delayBeforeLiveDecodedPrune)
+                if (strategy == AutomaticPrune && elapsedTime < m_delayBeforeLiveDecodedPrune)
                     return;
 
                 // Destroy our decoded data if possible. This will remove us
@@ -299,9 +301,11 @@ void MemoryCache::pruneLiveResources()
     }
 }
 
-void MemoryCache::pruneDeadResources()
+void MemoryCache::pruneDeadResources(PruneStrategy strategy)
 {
     size_t capacity = deadCapacity();
+    if (strategy == MaximalPrune)
+        capacity = 0;
     if (!m_deadSize || (capacity && m_deadSize <= capacity))
         return;
 
@@ -726,11 +730,11 @@ void MemoryCache::prune(Resource* justReleasedResource)
     double currentTime = WTF::currentTime();
     if (m_prunePending) {
         if (currentTime - m_pruneTimeStamp >= m_maxPruneDeferralDelay) {
-            pruneNow(currentTime);
+            pruneNow(currentTime, AutomaticPrune);
         }
     } else {
         if (currentTime - m_pruneTimeStamp >= m_maxPruneDeferralDelay) {
-            pruneNow(currentTime); // Delay exceeded, prune now.
+            pruneNow(currentTime, AutomaticPrune); // Delay exceeded, prune now.
         } else {
             // Defer.
             blink::Platform::current()->currentThread()->addTaskObserver(this);
@@ -754,7 +758,7 @@ void MemoryCache::prune(Resource* justReleasedResource)
 
         // As a last resort, prune immediately
         if (m_deadSize > m_maxDeferredPruneDeadCapacity)
-            pruneNow(currentTime);
+            pruneNow(currentTime, AutomaticPrune);
     }
 }
 
@@ -766,10 +770,16 @@ void MemoryCache::didProcessTask()
 {
     // Perform deferred pruning
     ASSERT(m_prunePending);
-    pruneNow(WTF::currentTime());
+    pruneNow(WTF::currentTime(), AutomaticPrune);
 }
 
-void MemoryCache::pruneNow(double currentTime)
+void MemoryCache::pruneAll()
+{
+    double currentTime = WTF::currentTime();
+    pruneNow(currentTime, MaximalPrune);
+}
+
+void MemoryCache::pruneNow(double currentTime, PruneStrategy strategy)
 {
     if (m_prunePending) {
         m_prunePending = false;
@@ -777,8 +787,8 @@ void MemoryCache::pruneNow(double currentTime)
     }
 
     TemporaryChange<bool> reentrancyProtector(m_inPruneResources, true);
-    pruneDeadResources(); // Prune dead first, in case it was "borrowing" capacity from live.
-    pruneLiveResources();
+    pruneDeadResources(strategy); // Prune dead first, in case it was "borrowing" capacity from live.
+    pruneLiveResources(strategy);
     m_pruneFrameTimeStamp = FrameView::currentFrameTimeStamp();
     m_pruneTimeStamp = currentTime;
 }
