@@ -11,6 +11,7 @@
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_picture_layer_tiling_client.h"
+#include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -287,278 +288,157 @@ TEST_F(PictureLayerTilingSetTestWithResources, ManyTilings_NotEqual) {
   runTest(10, 1.f, 1.f, 4.5f, 5.f);
 }
 
-class PictureLayerTilingSetSyncTest : public testing::Test {
- public:
-  PictureLayerTilingSetSyncTest()
-      : tile_size_(gfx::Size(10, 10)),
-        source_bounds_(gfx::Size(30, 20)),
-        target_bounds_(gfx::Size(30, 30)) {
-    source_client_.SetTileSize(tile_size_);
-    source_client_.set_tree(PENDING_TREE);
-    target_client_.SetTileSize(tile_size_);
-    target_client_.set_tree(PENDING_TREE);
-    source_ = CreateTilingSet(&source_client_);
-    target_ = CreateTilingSet(&target_client_);
-  }
+TEST(PictureLayerTilingSetTest, TileSizeChange) {
+  FakePictureLayerTilingClient pending_client;
+  FakePictureLayerTilingClient active_client;
+  auto pending_set =
+      PictureLayerTilingSet::Create(&pending_client, 1000, 1.f, 1000);
+  auto active_set =
+      PictureLayerTilingSet::Create(&active_client, 1000, 1.f, 1000);
 
-  // Sync from source to target.
-  void SyncTilings(const gfx::Size& new_bounds,
-                   const Region& invalidation,
-                   float minimum_scale) {
-    for (size_t i = 0; i < source_->num_tilings(); ++i)
-      source_->tiling_at(i)->CreateAllTilesForTesting();
-    for (size_t i = 0; i < target_->num_tilings(); ++i)
-      target_->tiling_at(i)->CreateAllTilesForTesting();
+  gfx::Size layer_bounds(100, 100);
+  auto pile =
+      FakePicturePileImpl::CreateEmptyPile(gfx::Size(77, 77), layer_bounds);
 
-    target_->SyncTilingsForTesting(*source_.get(), new_bounds, invalidation,
-                                   minimum_scale,
-                                   target_client_.raster_source());
-  }
-  void SyncTilings(const gfx::Size& new_bounds) {
-    Region invalidation;
-    SyncTilings(new_bounds, invalidation, 0.f);
-  }
-  void SyncTilings(const gfx::Size& new_bounds, const Region& invalidation) {
-    SyncTilings(new_bounds, invalidation, 0.f);
-  }
-  void SyncTilings(const gfx::Size& new_bounds, float minimum_scale) {
-    Region invalidation;
-    SyncTilings(new_bounds, invalidation, minimum_scale);
-  }
+  gfx::Size tile_size1(10, 10);
+  gfx::Size tile_size2(30, 30);
+  gfx::Size tile_size3(20, 20);
 
-  void VerifyTargetEqualsSource(const gfx::Size& new_bounds) {
-    ASSERT_FALSE(new_bounds.IsEmpty());
-    EXPECT_EQ(target_->num_tilings(), source_->num_tilings());
+  pending_client.SetTileSize(tile_size1);
+  pending_set->AddTiling(1.f, layer_bounds);
+  // New tilings get the correct tile size.
+  EXPECT_EQ(tile_size1, pending_set->tiling_at(0)->tile_size());
 
-    for (size_t i = 0; i < target_->num_tilings(); ++i) {
-      ASSERT_GT(source_->num_tilings(), i);
-      const PictureLayerTiling* source_tiling = source_->tiling_at(i);
-      const PictureLayerTiling* target_tiling = target_->tiling_at(i);
-      EXPECT_EQ(target_tiling->layer_bounds().ToString(),
-                new_bounds.ToString());
-      EXPECT_EQ(source_tiling->contents_scale(),
-                target_tiling->contents_scale());
-    }
+  // Set some expected things for the tiling set to function.
+  pending_set->tiling_at(0)->set_resolution(HIGH_RESOLUTION);
+  active_client.set_twin_tiling_set(pending_set.get());
 
-    EXPECT_EQ(source_->client(), &source_client_);
-    EXPECT_EQ(target_->client(), &target_client_);
-    ValidateTargetTilingSet();
-  }
+  // Set a priority rect so we get tiles.
+  pending_set->UpdateTilePriorities(gfx::Rect(layer_bounds), 1.f, 1.0,
+                                    Occlusion(), false);
+  EXPECT_EQ(tile_size1, pending_set->tiling_at(0)->tile_size());
 
-  void ValidateTargetTilingSet() {
-    // Tilings should be sorted largest to smallest.
-    if (target_->num_tilings() > 0) {
-      float last_scale = target_->tiling_at(0)->contents_scale();
-      for (size_t i = 1; i < target_->num_tilings(); ++i) {
-        const PictureLayerTiling* target_tiling = target_->tiling_at(i);
-        EXPECT_LT(target_tiling->contents_scale(), last_scale);
-        last_scale = target_tiling->contents_scale();
-      }
-    }
+  // The tiles should get the correct size.
+  std::vector<Tile*> pending_tiles =
+      pending_set->tiling_at(0)->AllTilesForTesting();
+  EXPECT_GT(pending_tiles.size(), 0u);
+  for (const auto& tile : pending_tiles)
+    EXPECT_EQ(tile_size1, tile->content_rect().size());
 
-    for (size_t i = 0; i < target_->num_tilings(); ++i)
-      ValidateTiling(target_->tiling_at(i), target_client_.raster_source());
-  }
+  // Update to a new source frame with a new tile size.
+  pending_client.SetTileSize(tile_size2);
+  pending_set->UpdateTilingsToCurrentRasterSource(pile.get(), nullptr, Region(),
+                                                  1.f, 1.f);
+  // The tiling should get the correct tile size.
+  EXPECT_EQ(tile_size2, pending_set->tiling_at(0)->tile_size());
 
-  void ValidateTiling(const PictureLayerTiling* tiling,
-                      const RasterSource* raster_source) {
-    if (tiling->tiling_size().IsEmpty()) {
-      EXPECT_TRUE(tiling->live_tiles_rect().IsEmpty());
-    } else if (!tiling->live_tiles_rect().IsEmpty()) {
-      gfx::Rect tiling_rect(tiling->tiling_size());
-      EXPECT_TRUE(tiling_rect.Contains(tiling->live_tiles_rect()));
-    }
+  // Set a priority rect so we get tiles.
+  pending_set->UpdateTilePriorities(gfx::Rect(layer_bounds), 1.f, 2.0,
+                                    Occlusion(), false);
+  EXPECT_EQ(tile_size2, pending_set->tiling_at(0)->tile_size());
 
-    std::vector<Tile*> tiles = tiling->AllTilesForTesting();
-    for (size_t i = 0; i < tiles.size(); ++i) {
-      const Tile* tile = tiles[i];
-      ASSERT_TRUE(!!tile);
-      EXPECT_EQ(tile->raster_source(), raster_source);
-      EXPECT_TRUE(tile->content_rect().Intersects(tiling->live_tiles_rect()))
-          << "All tiles must be inside the live tiles rect."
-          << " Tile rect: " << tile->content_rect().ToString()
-          << " Live rect: " << tiling->live_tiles_rect().ToString()
-          << " Scale: " << tiling->contents_scale();
-    }
+  // Tiles should have the new correct size.
+  pending_tiles = pending_set->tiling_at(0)->AllTilesForTesting();
+  EXPECT_GT(pending_tiles.size(), 0u);
+  for (const auto& tile : pending_tiles)
+    EXPECT_EQ(tile_size2, tile->content_rect().size());
 
-    for (PictureLayerTiling::CoverageIterator iter(
-             tiling, tiling->contents_scale(), tiling->live_tiles_rect());
-         iter;
-         ++iter) {
-      EXPECT_TRUE(*iter) << "The live tiles rect must be full.";
-    }
-  }
+  // Clone from the pending to the active tree.
+  active_client.SetTileSize(tile_size2);
+  active_set->UpdateTilingsToCurrentRasterSource(pile.get(), pending_set.get(),
+                                                 Region(), 1.f, 1.f);
+  // The active tiling should get the right tile size.
+  EXPECT_EQ(tile_size2, active_set->tiling_at(0)->tile_size());
 
-  gfx::Size tile_size_;
+  // Cloned tiles should have the right size.
+  std::vector<Tile*> active_tiles =
+      active_set->tiling_at(0)->AllTilesForTesting();
+  EXPECT_GT(active_tiles.size(), 0u);
+  for (const auto& tile : active_tiles)
+    EXPECT_EQ(tile_size2, tile->content_rect().size());
 
-  FakePictureLayerTilingClient source_client_;
-  gfx::Size source_bounds_;
-  scoped_ptr<PictureLayerTilingSet> source_;
+  // A new source frame with a new tile size.
+  pending_client.SetTileSize(tile_size3);
+  pending_set->UpdateTilingsToCurrentRasterSource(pile.get(), nullptr, Region(),
+                                                  1.f, 1.f);
+  // The tiling gets the new size correctly.
+  EXPECT_EQ(tile_size3, pending_set->tiling_at(0)->tile_size());
 
-  FakePictureLayerTilingClient target_client_;
-  gfx::Size target_bounds_;
-  scoped_ptr<PictureLayerTilingSet> target_;
-};
+  // Set a priority rect so we get tiles.
+  pending_set->UpdateTilePriorities(gfx::Rect(layer_bounds), 1.f, 3.0,
+                                    Occlusion(), false);
+  EXPECT_EQ(tile_size3, pending_set->tiling_at(0)->tile_size());
 
-TEST_F(PictureLayerTilingSetSyncTest, EmptyBounds) {
-  float source_scales[] = {1.f, 1.2f};
-  for (size_t i = 0; i < arraysize(source_scales); ++i)
-    source_->AddTiling(source_scales[i], source_bounds_);
+  // Tiles are resized for the new size.
+  pending_tiles = pending_set->tiling_at(0)->AllTilesForTesting();
+  EXPECT_GT(pending_tiles.size(), 0u);
+  for (const auto& tile : pending_tiles)
+    EXPECT_EQ(tile_size3, tile->content_rect().size());
 
-  gfx::Size empty_bounds;
-  SyncTilings(empty_bounds);
-  EXPECT_EQ(target_->num_tilings(), 0u);
+  // Now we activate with a different tile size for the active tiling.
+  active_client.SetTileSize(tile_size3);
+  active_set->UpdateTilingsToCurrentRasterSource(pile.get(), pending_set.get(),
+                                                 Region(), 1.f, 1.f);
+  // The active tiling changes its tile size.
+  EXPECT_EQ(tile_size3, active_set->tiling_at(0)->tile_size());
+
+  // And its tiles are resized.
+  active_tiles = active_set->tiling_at(0)->AllTilesForTesting();
+  EXPECT_GT(active_tiles.size(), 0u);
+  for (const auto& tile : active_tiles)
+    EXPECT_EQ(tile_size3, tile->content_rect().size());
 }
 
-TEST_F(PictureLayerTilingSetSyncTest, AllNew) {
-  float source_scales[] = {0.5f, 1.f, 1.2f};
-  for (size_t i = 0; i < arraysize(source_scales); ++i)
-    source_->AddTiling(source_scales[i], source_bounds_);
-  float target_scales[] = {0.75f, 1.4f, 3.f};
-  for (size_t i = 0; i < arraysize(target_scales); ++i)
-    target_->AddTiling(target_scales[i], target_bounds_);
+TEST(PictureLayerTilingSetTest, MaxContentScale) {
+  FakePictureLayerTilingClient pending_client;
+  FakePictureLayerTilingClient active_client;
+  auto pending_set =
+      PictureLayerTilingSet::Create(&pending_client, 1000, 1.f, 1000);
+  auto active_set =
+      PictureLayerTilingSet::Create(&active_client, 1000, 1.f, 1000);
 
-  gfx::Size new_bounds(15, 40);
-  SyncTilings(new_bounds);
-  VerifyTargetEqualsSource(new_bounds);
-}
+  gfx::Size layer_bounds(100, 105);
+  auto pile =
+      FakePicturePileImpl::CreateEmptyPile(gfx::Size(77, 77), layer_bounds);
 
-Tile* FindTileAtOrigin(PictureLayerTiling* tiling) {
-  std::vector<Tile*> tiles = tiling->AllTilesForTesting();
-  for (size_t i = 0; i < tiles.size(); ++i) {
-    if (tiles[i]->content_rect().origin() == gfx::Point())
-      return tiles[i];
-  }
-  return NULL;
-}
+  // Tilings can be added of any scale, the tiling client can controls this.
+  pending_set->AddTiling(1.f, layer_bounds);
+  pending_set->AddTiling(2.f, layer_bounds);
+  pending_set->AddTiling(3.f, layer_bounds);
 
-TEST_F(PictureLayerTilingSetSyncTest, KeepExisting) {
-  float source_scales[] = {0.7f, 1.f, 1.1f, 2.f};
-  for (size_t i = 0; i < arraysize(source_scales); ++i)
-    source_->AddTiling(source_scales[i], source_bounds_);
-  float target_scales[] = {0.5f, 1.f, 2.f};
-  for (size_t i = 0; i < arraysize(target_scales); ++i)
-    target_->AddTiling(target_scales[i], target_bounds_);
+  // Set some expected things for the tiling set to function.
+  pending_set->tiling_at(0)->set_resolution(HIGH_RESOLUTION);
+  active_client.set_twin_tiling_set(pending_set.get());
 
-  PictureLayerTiling* tiling1 = source_->FindTilingWithScale(1.f);
-  ASSERT_TRUE(tiling1);
-  tiling1->CreateAllTilesForTesting();
-  EXPECT_EQ(tiling1->contents_scale(), 1.f);
-  Tile* tile1 = FindTileAtOrigin(tiling1);
-  ASSERT_TRUE(tile1);
+  // Update to a new source frame with a max content scale that is larger than
+  // everything.
+  float max_content_scale = 3.f;
+  pending_set->UpdateTilingsToCurrentRasterSource(pile.get(), nullptr, Region(),
+                                                  1.f, max_content_scale);
+  // All the tilings are there still.
+  EXPECT_EQ(3u, pending_set->num_tilings());
 
-  PictureLayerTiling* tiling2 = source_->FindTilingWithScale(2.f);
-  tiling2->CreateAllTilesForTesting();
-  ASSERT_TRUE(tiling2);
-  EXPECT_EQ(tiling2->contents_scale(), 2.f);
-  Tile* tile2 = FindTileAtOrigin(tiling2);
-  ASSERT_TRUE(tile2);
+  // Clone from the pending to the active tree with the same max content size.
+  active_set->UpdateTilingsToCurrentRasterSource(
+      pile.get(), pending_set.get(), Region(), 1.f, max_content_scale);
+  // All the tilings are on the active tree.
+  EXPECT_EQ(3u, active_set->num_tilings());
 
-  gfx::Size new_bounds(15, 40);
-  SyncTilings(new_bounds);
-  VerifyTargetEqualsSource(new_bounds);
+  // Update to a new source frame with a max content scale that will drop one
+  // tiling.
+  max_content_scale = 2.9f;
+  pending_set->UpdateTilingsToCurrentRasterSource(pile.get(), nullptr, Region(),
+                                                  1.f, max_content_scale);
+  // All the tilings are there still.
+  EXPECT_EQ(2u, pending_set->num_tilings());
 
-  EXPECT_EQ(tiling1, source_->FindTilingWithScale(1.f));
-  EXPECT_EQ(tile1, FindTileAtOrigin(tiling1));
-  EXPECT_FALSE(tiling1->live_tiles_rect().IsEmpty());
+  pending_set->tiling_at(0)->set_resolution(HIGH_RESOLUTION);
 
-  EXPECT_EQ(tiling2, source_->FindTilingWithScale(2.f));
-  EXPECT_EQ(tile2, FindTileAtOrigin(tiling2));
-  EXPECT_FALSE(tiling2->live_tiles_rect().IsEmpty());
-}
-
-TEST_F(PictureLayerTilingSetSyncTest, EmptySet) {
-  float target_scales[] = {0.2f, 1.f};
-  for (size_t i = 0; i < arraysize(target_scales); ++i)
-    target_->AddTiling(target_scales[i], target_bounds_);
-
-  gfx::Size new_bounds(15, 40);
-  SyncTilings(new_bounds);
-  VerifyTargetEqualsSource(new_bounds);
-}
-
-TEST_F(PictureLayerTilingSetSyncTest, MinimumScale) {
-  float source_scales[] = {0.7f, 1.f, 1.1f, 2.f};
-  for (size_t i = 0; i < arraysize(source_scales); ++i)
-    source_->AddTiling(source_scales[i], source_bounds_);
-  float target_scales[] = {0.5f, 0.7f, 1.f, 1.1f, 2.f};
-  for (size_t i = 0; i < arraysize(target_scales); ++i)
-    target_->AddTiling(target_scales[i], target_bounds_);
-
-  gfx::Size new_bounds(15, 40);
-  float minimum_scale = 1.5f;
-  SyncTilings(new_bounds, minimum_scale);
-
-  EXPECT_EQ(target_->num_tilings(), 1u);
-  EXPECT_EQ(target_->tiling_at(0)->contents_scale(), 2.f);
-  ValidateTargetTilingSet();
-}
-
-TEST_F(PictureLayerTilingSetSyncTest, Invalidation) {
-  source_->AddTiling(2.f, source_bounds_);
-  target_->AddTiling(2.f, target_bounds_);
-  target_->tiling_at(0)->CreateAllTilesForTesting();
-
-  Region layer_invalidation;
-  layer_invalidation.Union(gfx::Rect(0, 0, 1, 1));
-  layer_invalidation.Union(gfx::Rect(0, 15, 1, 1));
-  // Out of bounds layer_invalidation.
-  layer_invalidation.Union(gfx::Rect(100, 100, 1, 1));
-
-  Region content_invalidation;
-  for (Region::Iterator iter(layer_invalidation); iter.has_rect();
-       iter.next()) {
-    gfx::Rect content_rect = gfx::ScaleToEnclosingRect(iter.rect(), 2.f);
-    content_invalidation.Union(content_rect);
-  }
-
-  std::vector<Tile*> old_tiles = target_->tiling_at(0)->AllTilesForTesting();
-  std::map<gfx::Point, scoped_refptr<Tile>> old_tile_map;
-  for (size_t i = 0; i < old_tiles.size(); ++i)
-    old_tile_map[old_tiles[i]->content_rect().origin()] = old_tiles[i];
-
-  SyncTilings(target_bounds_, layer_invalidation);
-  VerifyTargetEqualsSource(target_bounds_);
-
-  std::vector<Tile*> new_tiles = target_->tiling_at(0)->AllTilesForTesting();
-  for (size_t i = 0; i < new_tiles.size(); ++i) {
-    const Tile* tile = new_tiles[i];
-    std::map<gfx::Point, scoped_refptr<Tile>>::iterator find =
-        old_tile_map.find(tile->content_rect().origin());
-    if (content_invalidation.Intersects(tile->content_rect()))
-      EXPECT_NE(tile, find->second.get());
-    else
-      EXPECT_EQ(tile, find->second.get());
-  }
-}
-
-TEST_F(PictureLayerTilingSetSyncTest, TileSizeChange) {
-  source_->AddTiling(1.f, source_bounds_);
-  target_->AddTiling(1.f, target_bounds_);
-
-  target_->tiling_at(0)->CreateAllTilesForTesting();
-  std::vector<Tile*> original_tiles =
-      target_->tiling_at(0)->AllTilesForTesting();
-  EXPECT_GT(original_tiles.size(), 0u);
-  gfx::Size new_tile_size(100, 100);
-  target_client_.SetTileSize(new_tile_size);
-  EXPECT_NE(target_->tiling_at(0)->tile_size().ToString(),
-            new_tile_size.ToString());
-
-  gfx::Size new_bounds(15, 40);
-  SyncTilings(new_bounds);
-  VerifyTargetEqualsSource(new_bounds);
-
-  EXPECT_EQ(target_->tiling_at(0)->tile_size().ToString(),
-            new_tile_size.ToString());
-
-  // All old tiles should not be present in new tiles.
-  std::vector<Tile*> new_tiles = target_->tiling_at(0)->AllTilesForTesting();
-  for (size_t i = 0; i < original_tiles.size(); ++i) {
-    std::vector<Tile*>::iterator find =
-        std::find(new_tiles.begin(), new_tiles.end(), original_tiles[i]);
-    EXPECT_TRUE(find == new_tiles.end());
-  }
+  // Clone from the pending to the active tree with the same max content size.
+  active_set->UpdateTilingsToCurrentRasterSource(
+      pile.get(), pending_set.get(), Region(), 1.f, max_content_scale);
+  // All the tilings are on the active tree.
+  EXPECT_EQ(2u, active_set->num_tilings());
 }
 
 }  // namespace

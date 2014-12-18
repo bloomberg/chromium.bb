@@ -14,8 +14,9 @@ namespace cc {
 FakePictureLayerTilingClient::FakePictureLayerTilingClient()
     : tile_manager_(new FakeTileManager(&tile_manager_client_)),
       pile_(FakePicturePileImpl::CreateInfiniteFilledPile()),
-      twin_tiling_(NULL),
-      recycled_twin_tiling_(NULL),
+      twin_set_(nullptr),
+      twin_tiling_(nullptr),
+      recycled_twin_tiling_(nullptr),
       allow_create_tile_(true),
       max_tile_priority_bin_(TilePriority::NOW) {
 }
@@ -27,8 +28,9 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient(
       tile_manager_(
           new FakeTileManager(&tile_manager_client_, resource_pool_.get())),
       pile_(FakePicturePileImpl::CreateInfiniteFilledPile()),
-      twin_tiling_(NULL),
-      recycled_twin_tiling_(NULL),
+      twin_set_(nullptr),
+      twin_tiling_(nullptr),
+      recycled_twin_tiling_(nullptr),
       allow_create_tile_(true),
       max_tile_priority_bin_(TilePriority::NOW) {
 }
@@ -65,7 +67,13 @@ const Region* FakePictureLayerTilingClient::GetPendingInvalidation() {
 const PictureLayerTiling*
 FakePictureLayerTilingClient::GetPendingOrActiveTwinTiling(
     const PictureLayerTiling* tiling) const {
-  return twin_tiling_;
+  if (!twin_set_)
+    return twin_tiling_;
+  for (size_t i = 0; i < twin_set_->num_tilings(); ++i) {
+    if (twin_set_->tiling_at(i)->contents_scale() == tiling->contents_scale())
+      return twin_set_->tiling_at(i);
+  }
+  return nullptr;
 }
 
 PictureLayerTiling* FakePictureLayerTilingClient::GetRecycledTwinTiling(

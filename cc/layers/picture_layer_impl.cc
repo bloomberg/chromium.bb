@@ -5,6 +5,7 @@
 #include "cc/layers/picture_layer_impl.h"
 
 #include <algorithm>
+#include <cmath>
 #include <limits>
 #include <set>
 
@@ -598,7 +599,8 @@ void PictureLayerImpl::UpdateRasterSource(
   // tilings that are going to disappear on the pending tree (if scale changed).
   // But that would also be more complicated, so we just do it here for now.
   tilings_->UpdateTilingsToCurrentRasterSource(
-      raster_source_.get(), pending_set, invalidation_, MinimumContentsScale());
+      raster_source_.get(), pending_set, invalidation_, MinimumContentsScale(),
+      MaximumContentsScale());
 }
 
 void PictureLayerImpl::NotifyTileStateChanged(const Tile* tile) {
@@ -699,10 +701,9 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
 
   if (is_mask_) {
     // Masks are not tiled, so if we can't cover the whole mask with one tile,
-    // don't make any tiles at all. Returning an empty size signals this.
-    if (content_bounds.width() > max_texture_size ||
-        content_bounds.height() > max_texture_size)
-      return gfx::Size();
+    // we shouldn't have such a tiling at all.
+    DCHECK_LE(content_bounds.width(), max_texture_size);
+    DCHECK_LE(content_bounds.height(), max_texture_size);
     return content_bounds;
   }
 
@@ -813,15 +814,11 @@ void PictureLayerImpl::SetNearestNeighbor(bool nearest_neighbor) {
 }
 
 PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {
-  DCHECK(CanHaveTilingWithScale(contents_scale)) <<
-      "contents_scale: " << contents_scale;
-
-  PictureLayerTiling* tiling =
-      tilings_->AddTiling(contents_scale, raster_source_->GetSize());
-
+  DCHECK(CanHaveTilings());
+  DCHECK_GE(contents_scale, MinimumContentsScale());
+  DCHECK_LE(contents_scale, MaximumContentsScale());
   DCHECK(raster_source_->HasRecordings());
-
-  return tiling;
+  return tilings_->AddTiling(contents_scale, raster_source_->GetSize());
 }
 
 void PictureLayerImpl::RemoveAllTilings() {
@@ -911,6 +908,11 @@ bool PictureLayerImpl::ShouldAdjustRasterScale() const {
   if (!draw_properties().screen_space_transform_is_animating &&
       !raster_source_scale_is_fixed_ &&
       raster_source_scale_ != ideal_source_scale_)
+    return true;
+
+  if (raster_contents_scale_ > MaximumContentsScale())
+    return true;
+  if (raster_contents_scale_ < MinimumContentsScale())
     return true;
 
   return false;
@@ -1003,6 +1005,10 @@ void PictureLayerImpl::RecalculateRasterScales() {
 
   raster_contents_scale_ =
       std::max(raster_contents_scale_, MinimumContentsScale());
+  raster_contents_scale_ =
+      std::min(raster_contents_scale_, MaximumContentsScale());
+  DCHECK_GE(raster_contents_scale_, MinimumContentsScale());
+  DCHECK_LE(raster_contents_scale_, MaximumContentsScale());
 
   // If this layer would create zero or one tiles at this content scale,
   // don't create a low res tiling.
@@ -1018,11 +1024,11 @@ void PictureLayerImpl::RecalculateRasterScales() {
 
   float low_res_factor =
       layer_tree_impl()->settings().low_res_contents_scale_factor;
-  low_res_raster_contents_scale_ = std::max(
-      raster_contents_scale_ * low_res_factor,
-      MinimumContentsScale());
+  low_res_raster_contents_scale_ =
+      std::max(raster_contents_scale_ * low_res_factor, MinimumContentsScale());
   DCHECK_LE(low_res_raster_contents_scale_, raster_contents_scale_);
   DCHECK_GE(low_res_raster_contents_scale_, MinimumContentsScale());
+  DCHECK_LE(low_res_raster_contents_scale_, MaximumContentsScale());
 }
 
 void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
@@ -1078,6 +1084,29 @@ float PictureLayerImpl::MinimumContentsScale() const {
   return std::max(1.f / min_dimension, setting_min);
 }
 
+float PictureLayerImpl::MaximumContentsScale() const {
+  // Masks can not have tilings that would become larger than the
+  // max_texture_size since they use a single tile for the entire
+  // tiling. Other layers can have tilings of any scale.
+  if (!is_mask_)
+    return std::numeric_limits<float>::max();
+
+  int max_texture_size =
+      layer_tree_impl()->resource_provider()->max_texture_size();
+  float max_scale_width =
+      static_cast<float>(max_texture_size) / bounds().width();
+  float max_scale_height =
+      static_cast<float>(max_texture_size) / bounds().height();
+  float max_scale = std::min(max_scale_width, max_scale_height);
+  // We require that multiplying the layer size by the contents scale and
+  // ceiling produces a value <= |max_texture_size|. Because for large layer
+  // sizes floating point ambiguity may crop up, making the result larger or
+  // smaller than expected, we use a slightly smaller floating point value for
+  // the scale, to help ensure that the resulting content bounds will never end
+  // up larger than |max_texture_size|.
+  return nextafterf(max_scale, 0.f);
+}
+
 void PictureLayerImpl::ResetRasterScale() {
   raster_page_scale_ = 0.f;
   raster_device_scale_ = 0.f;
@@ -1100,13 +1129,7 @@ bool PictureLayerImpl::CanHaveTilings() const {
     return false;
   // If the |raster_source_| has a recording it should have non-empty bounds.
   DCHECK(!raster_source_->GetSize().IsEmpty());
-  return true;
-}
-
-bool PictureLayerImpl::CanHaveTilingWithScale(float contents_scale) const {
-  if (!CanHaveTilings())
-    return false;
-  if (contents_scale < MinimumContentsScale())
+  if (MaximumContentsScale() < MinimumContentsScale())
     return false;
   return true;
 }

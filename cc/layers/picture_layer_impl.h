@@ -121,11 +121,11 @@ class CC_EXPORT PictureLayerImpl
   void CleanUpTilingsOnActiveLayer(
       std::vector<PictureLayerTiling*> used_tilings);
   float MinimumContentsScale() const;
+  float MaximumContentsScale() const;
   void ResetRasterScale();
   gfx::Rect GetViewportForTilePriorityInContentSpace() const;
   PictureLayerImpl* GetRecycledTwinLayer() const;
 
-  bool CanHaveTilingWithScale(float contents_scale) const;
   void SanityCheckTilingState() const;
   // Checks if all tiles required for a certain action (e.g. activation) are
   // ready to draw.  is_tile_required_callback gets called on all candidate

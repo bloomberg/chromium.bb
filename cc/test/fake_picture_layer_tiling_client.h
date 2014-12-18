@@ -37,7 +37,14 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
   bool RequiresHighResToDraw() const override;
   WhichTree GetTree() const override;
 
-  void set_twin_tiling(PictureLayerTiling* tiling) { twin_tiling_ = tiling; }
+  void set_twin_tiling_set(PictureLayerTilingSet* set) {
+    twin_set_ = set;
+    twin_tiling_ = nullptr;
+  }
+  void set_twin_tiling(PictureLayerTiling* tiling) {
+    twin_tiling_ = tiling;
+    twin_set_ = nullptr;
+  }
   void set_recycled_twin_tiling(PictureLayerTiling* tiling) {
     recycled_twin_tiling_ = tiling;
   }
@@ -60,6 +67,7 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
   scoped_ptr<TileManager> tile_manager_;
   scoped_refptr<PicturePileImpl> pile_;
   gfx::Size tile_size_;
+  PictureLayerTilingSet* twin_set_;
   PictureLayerTiling* twin_tiling_;
   PictureLayerTiling* recycled_twin_tiling_;
   gfx::Rect text_rect_;

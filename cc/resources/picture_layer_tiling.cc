@@ -66,10 +66,6 @@ PictureLayerTiling::PictureLayerTiling(
   gfx::Size content_bounds =
       gfx::ToCeiledSize(gfx::ScaleSize(layer_bounds, contents_scale));
   gfx::Size tile_size = client_->CalculateTileSize(content_bounds);
-  if (tile_size.IsEmpty()) {
-    layer_bounds_ = gfx::Size();
-    content_bounds = gfx::Size();
-  }
 
   DCHECK(!gfx::ToFlooredSize(
       gfx::ScaleSize(layer_bounds, contents_scale)).IsEmpty()) <<
@@ -216,11 +212,6 @@ void PictureLayerTiling::Resize(const gfx::Size& new_layer_bounds) {
   gfx::Size content_bounds =
       gfx::ToCeiledSize(gfx::ScaleSize(new_layer_bounds, contents_scale_));
   gfx::Size tile_size = client_->CalculateTileSize(content_bounds);
-
-  if (tile_size.IsEmpty()) {
-    layer_bounds = gfx::Size();
-    content_bounds = gfx::Size();
-  }
 
   // The layer bounds are only allowed to be empty when the tile size is empty.
   // Otherwise we should not have such a tiling in the first place.

@@ -35,17 +35,6 @@ static gfx::Rect ViewportInLayerSpace(
   return ToEnclosingRect(viewport_in_layer_space);
 }
 
-static void UpdateAllTilePriorities(PictureLayerTilingSet* set,
-                                    const gfx::Rect& visible_layer_rect,
-                                    float layer_contents_scale,
-                                    double current_frame_time_in_seconds) {
-  for (size_t i = 0; i < set->num_tilings(); ++i) {
-    set->tiling_at(i)
-        ->ComputeTilePriorityRects(visible_layer_rect, layer_contents_scale,
-                                   current_frame_time_in_seconds, Occlusion());
-  }
-}
-
 class TestablePictureLayerTiling : public PictureLayerTiling {
  public:
   using PictureLayerTiling::SetLiveTilesRect;
@@ -1361,55 +1350,6 @@ TEST_F(PictureLayerTilingIteratorTest,
   VerifyTiles(1.f,
               gfx::Rect(layer_bounds),
               base::Bind(&TilesIntersectingRectExist, visible_rect, true));
-}
-
-TEST_F(PictureLayerTilingIteratorTest, AddTilingsToMatchScale) {
-  gfx::Size layer_bounds(1099, 801);
-  gfx::Size tile_size(100, 100);
-
-  client_.SetTileSize(tile_size);
-  client_.set_tree(PENDING_TREE);
-
-  LayerTreeSettings defaults;
-  auto active_set = PictureLayerTilingSet::Create(
-      &client_, 10000, defaults.skewport_target_time_in_seconds,
-      defaults.skewport_extrapolation_limit_in_content_pixels);
-
-  active_set->AddTiling(1.f, layer_bounds);
-
-  VerifyTiles(active_set->tiling_at(0), 1.f, gfx::Rect(layer_bounds),
-              base::Bind(&TileExists, false));
-
-  UpdateAllTilePriorities(active_set.get(),
-                          gfx::Rect(layer_bounds),  // visible content rect
-                          1.f,                      // current contents scale
-                          1.0);                     // current frame time
-
-  // The active tiling has tiles now.
-  VerifyTiles(active_set->tiling_at(0), 1.f, gfx::Rect(layer_bounds),
-              base::Bind(&TileExists, true));
-
-  // Add the same tilings to the pending set.
-  auto pending_set = PictureLayerTilingSet::Create(
-      &client_, 10000, defaults.skewport_target_time_in_seconds,
-      defaults.skewport_extrapolation_limit_in_content_pixels);
-  Region invalidation;
-  pending_set->SyncTilingsForTesting(*active_set, layer_bounds, invalidation,
-                                     0.f, client_.raster_source());
-
-  // The pending tiling starts with no tiles.
-  VerifyTiles(pending_set->tiling_at(0), 1.f, gfx::Rect(layer_bounds),
-              base::Bind(&TileExists, false));
-
-  // ComputeTilePriorityRects on the pending tiling at the same frame time. The
-  // pending tiling should get tiles.
-  UpdateAllTilePriorities(pending_set.get(),
-                          gfx::Rect(layer_bounds),  // visible content rect
-                          1.f,                      // current contents scale
-                          1.0);                     // current frame time
-
-  VerifyTiles(pending_set->tiling_at(0), 1.f, gfx::Rect(layer_bounds),
-              base::Bind(&TileExists, true));
 }
 
 TEST(ComputeTilePriorityRectsTest, VisibleTiles) {
