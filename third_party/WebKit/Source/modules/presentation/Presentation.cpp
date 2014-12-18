@@ -52,7 +52,7 @@ PresentationSession* Presentation::session() const
 
 ScriptPromise Presentation::startSession(ScriptState* state, const String& senderId, const String& presentationId)
 {
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(state);
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(state);
     ScriptPromise promise = resolver->promise();
     resolver->reject(DOMException::create(NotSupportedError, "The method is not supported yet."));
     return promise;
@@ -60,7 +60,7 @@ ScriptPromise Presentation::startSession(ScriptState* state, const String& sende
 
 ScriptPromise Presentation::joinSession(ScriptState* state, const String& senderId, const String& presentationId)
 {
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(state);
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(state);
     ScriptPromise promise = resolver->promise();
     resolver->reject(DOMException::create(NotSupportedError, "The method is not supported yet."));
     return promise;

@@ -57,7 +57,7 @@ class CryptoResultImpl final : public CryptoResult {
 public:
     ~CryptoResultImpl();
 
-    static PassRefPtr<CryptoResultImpl> create(ScriptState*);
+    static PassRefPtrWillBeRawPtr<CryptoResultImpl> create(ScriptState*);
 
     virtual void completeWithError(WebCryptoErrorType, const WebString&) override;
     virtual void completeWithBuffer(const void* bytes, unsigned bytesSize) override;

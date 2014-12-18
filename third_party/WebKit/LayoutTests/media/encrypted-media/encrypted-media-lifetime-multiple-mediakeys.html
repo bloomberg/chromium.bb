@@ -59,23 +59,53 @@
                 // a reference to the last one created.
                 createMediaKeyWithMediaKeySession().then(function(mediaKeySession) {
                     // Should be 1 MediaKeySession.
-                    assert_equals(numActiveDOMObjectsCreated(), 1);
+                    // In non-Oilpan, numActiveDOMObjectsCreate() == 1.
+                    // In Oilpan, numActiveDOMObjectsCreated() <= 4.
+                    // (1 MediaKeysInitializer,
+                    //  1 MediaKeySystemAccessInitializer,
+                    //  1 ContentDecryptionModuleResultPromise and
+                    //  1 MediaKeySession).
+                    assert_less_than_equal(numActiveDOMObjectsCreated(), 4);
                     return createMediaKeyWithMediaKeySession();
                 }).then(function(mediaKeySession) {
                     // Should be 2 MediaKeySessions.
-                    assert_equals(numActiveDOMObjectsCreated(), 2);
+                    // In non-Oilpan, numActiveDOMObjectsCreate() == 2.
+                    // In Oilpan, numActiveDOMObjectsCreate() <= 8.
+                    // (2 MediaKeysInitializer,
+                    //  2 MediaKeySystemAccessInitializer,
+                    //  2 ContentDecryptionModuleResultPromise and
+                    //  2 MediaKeySession).
+                    assert_less_than_equal(numActiveDOMObjectsCreated(), 8);
                     return createMediaKeyWithMediaKeySession();
                 }).then(function(mediaKeySession) {
                     // Should be 3 MediaKeySessions.
-                    assert_equals(numActiveDOMObjectsCreated(), 3);
+                    // In non-Oilpan, numActiveDOMObjectsCreate() == 3.
+                    // In Oilpan, numActiveDOMObjectsCreate() <= 12.
+                    // (3 MediaKeysInitializer,
+                    //  3 MediaKeySystemAccessInitializer,
+                    //  3 ContentDecryptionModuleResultPromise and
+                    //  3 MediaKeySession).
+                    assert_less_than_equal(numActiveDOMObjectsCreated(), 12);
                     return createMediaKeyWithMediaKeySession();
                 }).then(function(mediaKeySession) {
                     // Should be 4 MediaKeySessions.
-                    assert_equals(numActiveDOMObjectsCreated(), 4);
+                    // In non-Oilpan, numActiveDOMObjectsCreate() == 4.
+                    // In Oilpan, numActiveDOMObjectsCreate() <= 16.
+                    // (4 MediaKeysInitializer,
+                    //  4 MediaKeySystemAccessInitializer,
+                    //  4 ContentDecryptionModuleResultPromise and
+                    //  4 MediaKeySession).
+                    assert_less_than_equal(numActiveDOMObjectsCreated(), 16);
                     return createMediaKeyWithMediaKeySession();
                 }).then(function(mediaKeySession) {
                     // Should be 5 MediaKeySessions.
-                    assert_equals(numActiveDOMObjectsCreated(), 5);
+                    // In non-Oilpan, numActiveDOMObjectsCreate() == 5.
+                    // In Oilpan, numActiveDOMObjectsCreate() <= 20.
+                    // (5 MediaKeysInitializer,
+                    //  5 MediaKeySystemAccessInitializer,
+                    //  5 ContentDecryptionModuleResultPromise and
+                    //  5 MediaKeySession).
+                    assert_less_than_equal(numActiveDOMObjectsCreated(), 20);
 
                     // |mediaKeys| refers to the most recently created MediaKeys
                     // object.
@@ -88,12 +118,16 @@
                     // doing anything with the event in this test).
                     return delayToAllowEventProcessingPromise();
                 }).then(function(result) {
-                    // In non-Oilpan, numActiveDOMObjectsCreated() is 5
+                    // In non-Oilpan, numActiveDOMObjectsCreated() == 5
                     // (5 MediaKeySession objects).
-                    // In Oilpan, numActiveDOMObjectsCreated() is 6
-                    // (5 MediaKeySession objects + 1 DOMTimer created in the
-                    // above delayToAllowEventProcessingPromise()).
+                    // In Oilpan, numActiveDOMObjectsCreated() <= 21
+                    // (5 MediaKeysInitializer,
+                    //  5 MediaKeySystemAccessInitializer,
+                    //  5 ContentDecryptionModuleResultPromise,
+                    //  5 MediaKeySession, and
+                    //  1 DOMTimer (in delayToAllowEventProcessingPromise))
                     assert_true(numActiveDOMObjectsCreated() >= 5);
+                    assert_less_than_equal(numActiveDOMObjectsCreated(), 21);
 
                     // As we only have a reference (|mediaKeys|) to the last
                     // created MediaKeys object, the other 4 MediaKeys objects

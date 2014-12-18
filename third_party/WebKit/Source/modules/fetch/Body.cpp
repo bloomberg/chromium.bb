@@ -285,6 +285,7 @@ bool Body::hasPendingActivity() const
 
 void Body::trace(Visitor* visitor)
 {
+    visitor->trace(m_resolver);
     visitor->trace(m_stream);
     visitor->trace(m_streamSource);
 }

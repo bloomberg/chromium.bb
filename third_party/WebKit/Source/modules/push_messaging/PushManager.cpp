@@ -47,7 +47,7 @@ ScriptPromise PushManager::registerPushMessaging(ScriptState* scriptState)
     if (!m_registration->active())
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Registration failed - no active Service Worker"));
 
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     // The document context is the only reasonable context from which to ask the user for permission
@@ -75,7 +75,7 @@ ScriptPromise PushManager::hasPermission(ScriptState* scriptState)
             return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Document is detached from window."));
     }
 
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     pushProvider()->getPermissionStatus(m_registration->webRegistration(), new PushPermissionStatusCallbacks(resolver));
     return promise;

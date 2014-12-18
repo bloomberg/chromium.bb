@@ -67,7 +67,7 @@ static IntSize sizeFor(HTMLVideoElement* video)
 
 static ScriptPromise fulfillImageBitmap(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ImageBitmap> imageBitmap)
 {
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (imageBitmap) {
         resolver->resolve(imageBitmap);
@@ -335,6 +335,7 @@ void ImageBitmapFactories::ImageBitmapLoader::didFail(FileError::ErrorCode)
 void ImageBitmapFactories::ImageBitmapLoader::trace(Visitor* visitor)
 {
     visitor->trace(m_factory);
+    visitor->trace(m_resolver);
 }
 
 } // namespace blink

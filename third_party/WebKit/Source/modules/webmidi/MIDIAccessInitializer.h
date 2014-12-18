@@ -39,10 +39,10 @@ public:
 
     static ScriptPromise start(ScriptState* scriptState, const MIDIOptions& options)
     {
-        RefPtr<MIDIAccessInitializer> p = adoptRef(new MIDIAccessInitializer(scriptState, options));
-        p->keepAliveWhilePending();
-        p->suspendIfNeeded();
-        return p->start();
+        RefPtrWillBeRawPtr<MIDIAccessInitializer> resolver = adoptRefWillBeNoop(new MIDIAccessInitializer(scriptState, options));
+        resolver->keepAliveWhilePending();
+        resolver->suspendIfNeeded();
+        return resolver->start();
     }
 
     virtual ~MIDIAccessInitializer();

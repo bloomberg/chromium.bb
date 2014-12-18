@@ -25,13 +25,12 @@ namespace blink {
 //    ExecutionContext state. When the ExecutionContext is suspended,
 //    resolve or reject will be delayed. When it is stopped, resolve or reject
 //    will be ignored.
-class ScriptPromiseResolver : public ActiveDOMObject, public RefCounted<ScriptPromiseResolver> {
+class ScriptPromiseResolver : public RefCountedWillBeRefCountedGarbageCollected<ScriptPromiseResolver>, public ActiveDOMObject {
     WTF_MAKE_NONCOPYABLE(ScriptPromiseResolver);
-
 public:
-    static PassRefPtr<ScriptPromiseResolver> create(ScriptState* scriptState)
+    static PassRefPtrWillBeRawPtr<ScriptPromiseResolver> create(ScriptState* scriptState)
     {
-        RefPtr<ScriptPromiseResolver> resolver = adoptRef(new ScriptPromiseResolver(scriptState));
+        RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = adoptRefWillBeNoop(new ScriptPromiseResolver(scriptState));
         resolver->suspendIfNeeded();
         return resolver.release();
     }
@@ -84,6 +83,8 @@ public:
     // Once this function is called this resolver stays alive while the
     // promise is pending and the associated ExecutionContext isn't stopped.
     void keepAliveWhilePending();
+
+    virtual void trace(Visitor*) { }
 
 protected:
     // You need to call suspendIfNeeded after the construction because

@@ -60,7 +60,7 @@ namespace blink {
 class ServiceWorkerGlobalScope::SkipWaitingCallback final : public WebServiceWorkerSkipWaitingCallbacks {
     WTF_MAKE_NONCOPYABLE(SkipWaitingCallback);
 public:
-    explicit SkipWaitingCallback(PassRefPtr<ScriptPromiseResolver> resolver)
+    explicit SkipWaitingCallback(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
         : m_resolver(resolver) { }
     ~SkipWaitingCallback() { }
 
@@ -70,7 +70,7 @@ public:
     }
 
 private:
-    RefPtr<ScriptPromiseResolver> m_resolver;
+    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
 };
 
 PassRefPtrWillBeRawPtr<ServiceWorkerGlobalScope> ServiceWorkerGlobalScope::create(ServiceWorkerThread* thread, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData)
@@ -131,7 +131,7 @@ void ServiceWorkerGlobalScope::close(ExceptionState& exceptionState)
 
 ScriptPromise ServiceWorkerGlobalScope::skipWaiting(ScriptState* scriptState)
 {
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     ExecutionContext* executionContext = scriptState->executionContext();

@@ -14,6 +14,7 @@
 #include "modules/encryptedmedia/MediaKeysController.h"
 #include "platform/Logging.h"
 #include "platform/Timer.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebContentDecryptionModule.h"
 
 namespace {
@@ -36,7 +37,7 @@ private:
 
 blink::ScriptPromise MediaKeysInitializer::create(blink::ScriptState* scriptState, const String& keySystem)
 {
-    RefPtr<MediaKeysInitializer> initializer = adoptRef(new MediaKeysInitializer(scriptState, keySystem));
+    RefPtrWillBeRawPtr<MediaKeysInitializer> initializer = blink::adoptRefWillBeNoop(new MediaKeysInitializer(scriptState, keySystem));
     initializer->suspendIfNeeded();
     initializer->keepAliveWhilePending();
     return initializer->promise();

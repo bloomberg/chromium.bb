@@ -71,7 +71,7 @@ void ServiceWorkerClient::postMessage(ExecutionContext* context, PassRefPtr<Seri
 
 ScriptPromise ServiceWorkerClient::focus(ScriptState* scriptState)
 {
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     if (!scriptState->executionContext()->isWindowFocusAllowed()) {

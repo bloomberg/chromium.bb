@@ -39,7 +39,7 @@
 #include "WebVector.h"
 
 #if INSIDE_BLINK
-namespace WTF { template <typename T> class PassRefPtr; }
+#include "platform/heap/Handle.h"
 #endif
 
 namespace blink {
@@ -94,7 +94,7 @@ public:
     BLINK_PLATFORM_EXPORT bool cancelled() const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT explicit WebCryptoResult(const WTF::PassRefPtr<CryptoResult>&);
+    BLINK_PLATFORM_EXPORT explicit WebCryptoResult(const PassRefPtrWillBeRawPtr<CryptoResult>&);
 #endif
 
 private:

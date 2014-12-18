@@ -51,7 +51,7 @@ protected:
     ExecutionContext* executionContext() const;
 
 private:
-    RefPtr<ScriptPromiseResolver> m_resolver;
+    RefPtrWillBeMember<ScriptPromiseResolver> m_resolver;
 };
 
 } // namespace blink

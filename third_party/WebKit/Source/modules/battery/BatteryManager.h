@@ -65,7 +65,7 @@ private:
 
     explicit BatteryManager(ExecutionContext*);
 
-    RefPtr<ScriptPromiseResolver> m_resolver;
+    RefPtrWillBeMember<ScriptPromiseResolver> m_resolver;
     Member<BatteryStatus> m_batteryStatus;
     State m_state;
 };

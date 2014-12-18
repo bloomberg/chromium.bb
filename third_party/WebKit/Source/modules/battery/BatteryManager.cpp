@@ -153,6 +153,7 @@ bool BatteryManager::hasPendingActivity() const
 
 void BatteryManager::trace(Visitor* visitor)
 {
+    visitor->trace(m_resolver);
     visitor->trace(m_batteryStatus);
     PlatformEventController::trace(visitor);
     EventTargetWithInlineData::trace(visitor);

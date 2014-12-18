@@ -36,19 +36,34 @@
                     mediaKeys = result;
 
                     // Verify MediaKeys are not an ActiveDOMObject.
-                    assert_equals(numActiveDOMObjectsCreated(), 0, 'MediaKeys.create()');
+                    // In non-Oilpan, numActiveDOMObjectsCreate() == 0.
+                    // In Oilpan, numActiveDOMObjectsCreate() <= 2.
+                    // (1 MediaKeysInitializer and
+                    //  1 MediaKeySystemAccessInitializer).
+                    assert_less_than_equal(numActiveDOMObjectsCreated(), 2, 'MediaKeys.create()');
 
                     mediaKeySession1 = mediaKeys.createSession();
                     return mediaKeySession1.generateRequest(initDataType, initData);
                 }).then(function() {
                     // Should be 1 MediaKeySession.
-                    assert_equals(numActiveDOMObjectsCreated(), 1, 'mediaKeys.createSession(1)');
+                    // In non-Oilpan, numActiveDOMObjectsCreate() == 1.
+                    // In Oilpan, numActiveDOMObjectsCreate() <= 4.
+                    // (1 MediaKeysInitializer,
+                    //  1 MediaKeySystemAccessInitializer,
+                    //  1 ContentDecryptionModuleResultPromise and
+                    //  1 MediaKeySession).
+                    assert_less_than_equal(numActiveDOMObjectsCreated(), 4, 'MediaKeys.createSession(1)');
                     mediaKeySession2 = mediaKeys.createSession();
                     return mediaKeySession2.generateRequest(initDataType, initData);
                 }).then(function() {
                     // Should be 2 MediaKeySessions.
-                    assert_equals(numActiveDOMObjectsCreated(), 2, 'mediaKeys.createSession(2)');
-
+                    // In non-Oilpan, numActiveDOMObjectsCreate() == 2.
+                    // In Oilpan, numActiveDOMObjectsCreate() <= 6.
+                    // (1 MediaKeysInitializer,
+                    //  1 MediaKeySystemAccessInitializer,
+                    //  2 ContentDecryptionModuleResultPromise and
+                    //  2 MediaKeySession).
+                    assert_less_than_equal(numActiveDOMObjectsCreated(), 6, 'mediaKeys.createSession(2)');
                     // Close the sessions. Once completed, only the JS
                     // reference to them keeps them around.
                     return mediaKeySession1.close();
@@ -59,7 +74,13 @@
                     // reference to them from JS will result in the session
                     // being garbage-collected.
                     // Should be 2 MediaKeySessions.
-                    assert_equals(numActiveDOMObjectsCreated(), 2);
+                    // In non-Oilpan, numActiveDOMObjectsCreate() == 2.
+                    // In Oilpan, numActiveDOMObjectsCreate() <= 8.
+                    // (1 MediaKeysInitializer,
+                    //  1 MediaKeySystemAccessInitializer,
+                    //  4 ContentDecryptionModuleResultPromise and
+                    //  2 MediaKeySession).
+                    assert_less_than_equal(numActiveDOMObjectsCreated(), 8, 'after close');
 
                     mediaKeySession1 = null;
                     return createGCPromise();

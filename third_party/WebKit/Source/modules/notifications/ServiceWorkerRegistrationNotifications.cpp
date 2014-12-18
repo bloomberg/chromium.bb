@@ -33,7 +33,7 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptSta
     if (Notification::checkPermission(executionContext) != WebNotificationPermissionAllowed)
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "No notification permission has been granted for this origin."));
 
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     // FIXME: Do the appropriate CORS checks on the icon URL.

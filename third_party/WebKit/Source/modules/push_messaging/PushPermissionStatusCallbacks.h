@@ -5,6 +5,7 @@
 #ifndef PushPermissionStatusCallbacks_h
 #define PushPermissionStatusCallbacks_h
 
+#include "platform/heap/Handle.h"
 #include "public/platform/WebPushPermissionStatus.h"
 #include "public/platform/WebPushProvider.h"
 #include "wtf/Noncopyable.h"
@@ -24,7 +25,7 @@ class PushPermissionStatusCallbacks final : public WebPushPermissionStatusCallba
     WTF_MAKE_NONCOPYABLE(PushPermissionStatusCallbacks);
 
 public:
-    explicit PushPermissionStatusCallbacks(PassRefPtr<ScriptPromiseResolver>);
+    explicit PushPermissionStatusCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver>);
     virtual ~PushPermissionStatusCallbacks();
 
     void onSuccess(WebPushPermissionStatus*) override;
@@ -34,7 +35,7 @@ public:
 
 private:
     static const WTF::String& permissionString(WebPushPermissionStatus);
-    RefPtr<ScriptPromiseResolver> m_resolver;
+    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
 };
 
 } // namespace blink

@@ -25,14 +25,14 @@ struct WebPushRegistration;
 class PushRegistrationCallbacks final : public WebCallbacks<WebPushRegistration, WebPushError> {
     WTF_MAKE_NONCOPYABLE(PushRegistrationCallbacks);
 public:
-    PushRegistrationCallbacks(PassRefPtr<ScriptPromiseResolver>, ServiceWorkerRegistration*);
+    PushRegistrationCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver>, ServiceWorkerRegistration*);
     ~PushRegistrationCallbacks() override;
 
     void onSuccess(WebPushRegistration*) override;
     void onError(WebPushError*) override;
 
 private:
-    RefPtr<ScriptPromiseResolver> m_resolver;
+    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
     Persistent<ServiceWorkerRegistration> m_serviceWorkerRegistration;
 };
 

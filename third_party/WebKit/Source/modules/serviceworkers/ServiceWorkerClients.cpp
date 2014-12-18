@@ -54,7 +54,7 @@ ServiceWorkerClients::ServiceWorkerClients()
 
 ScriptPromise ServiceWorkerClients::getAll(ScriptState* scriptState, const ServiceWorkerClientQueryOptions& options)
 {
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     if (options.includeUncontrolled()) {

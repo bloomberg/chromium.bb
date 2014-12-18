@@ -20,7 +20,7 @@ namespace {
 
 class ConnectCallbacks : public WebCallbacks<void, void> {
 public:
-    ConnectCallbacks(PassRefPtr<ScriptPromiseResolver> resolver, PassRefPtrWillBeRawPtr<MessagePort> port)
+    ConnectCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, PassRefPtrWillBeRawPtr<MessagePort> port)
         : m_resolver(resolver), m_port(port)
     {
         ASSERT(m_resolver);
@@ -44,7 +44,7 @@ public:
     }
 
 private:
-    RefPtr<ScriptPromiseResolver> m_resolver;
+    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
     RefPtrWillBePersistent<MessagePort> m_port;
     WTF_MAKE_NONCOPYABLE(ConnectCallbacks);
 };
@@ -57,7 +57,7 @@ ScriptPromise NavigatorConnect::connect(ScriptState* scriptState, const String& 
     if (!provider)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));
 
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     // Create a new MessageChannel, but immediately disentangle port2 (extract
     // the WebMessagePortChannel from the port and mark it as being transfered).

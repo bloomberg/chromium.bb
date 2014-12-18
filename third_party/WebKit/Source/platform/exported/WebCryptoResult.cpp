@@ -32,7 +32,7 @@
 #include "public/platform/WebCrypto.h"
 
 #include "platform/CryptoResult.h"
-#include "wtf/PassRefPtr.h"
+#include "platform/heap/Heap.h"
 #include <string.h>
 
 namespace blink {
@@ -81,7 +81,7 @@ bool WebCryptoResult::cancelled() const
     return m_impl->cancelled();
 }
 
-WebCryptoResult::WebCryptoResult(const PassRefPtr<CryptoResult>& impl)
+WebCryptoResult::WebCryptoResult(const PassRefPtrWillBeRawPtr<CryptoResult>& impl)
     : m_impl(impl)
 {
     ASSERT(m_impl.get());

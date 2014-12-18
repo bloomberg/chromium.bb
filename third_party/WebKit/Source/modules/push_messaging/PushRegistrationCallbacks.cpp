@@ -12,7 +12,7 @@
 
 namespace blink {
 
-PushRegistrationCallbacks::PushRegistrationCallbacks(PassRefPtr<ScriptPromiseResolver> resolver, ServiceWorkerRegistration* registration)
+PushRegistrationCallbacks::PushRegistrationCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, ServiceWorkerRegistration* registration)
     : m_resolver(resolver)
     , m_serviceWorkerRegistration(registration)
 {

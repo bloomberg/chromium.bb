@@ -628,7 +628,7 @@ ScriptPromise AudioContext::suspendContext(ScriptState* scriptState)
                 "cannot suspend an OfflineAudioContext"));
     }
 
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     // Save the resolver which will get resolved at the end of the rendering quantum.
@@ -650,7 +650,7 @@ ScriptPromise AudioContext::resumeContext(ScriptState* scriptState)
                 "cannot resume an OfflineAudioContext"));
     }
 
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     // Restart the destination node to pull on the audio graph.
@@ -952,7 +952,7 @@ void AudioContext::resolvePromisesForResumeOnMainThread()
     ASSERT(isMainThread());
     AutoLocker locker(this);
 
-    for (RefPtr<ScriptPromiseResolver> resolver : m_resumeResolvers) {
+    for (auto& resolver : m_resumeResolvers) {
         if (m_contextState == Closed) {
             resolver->reject(
                 DOMException::create(InvalidStateError, "Cannot resume a context that has been closed"));
@@ -989,7 +989,7 @@ void AudioContext::resolvePromisesForSuspendOnMainThread()
     if (m_destinationNode)
         stopRendering();
 
-    for (RefPtr<ScriptPromiseResolver> resolver : m_suspendResolvers) {
+    for (auto& resolver : m_suspendResolvers) {
         if (m_contextState == Closed) {
             resolver->reject(
                 DOMException::create(InvalidStateError, "Cannot suspend a context that has been closed"));
@@ -1020,12 +1020,12 @@ void AudioContext::rejectPendingResolvers()
     // Audio context is closing down so reject any suspend or resume promises that are still
     // pending.
 
-    for (RefPtr<ScriptPromiseResolver> resolver : m_suspendResolvers) {
+    for (auto& resolver : m_suspendResolvers) {
         resolver->reject(DOMException::create(InvalidStateError, "Audio context is going away"));
     }
     m_suspendResolvers.clear();
 
-    for (RefPtr<ScriptPromiseResolver> resolver : m_resumeResolvers) {
+    for (auto& resolver : m_resumeResolvers) {
         resolver->reject(DOMException::create(InvalidStateError, "Audio context is going away"));
     }
     m_resumeResolvers.clear();
@@ -1100,6 +1100,8 @@ void AudioContext::trace(Visitor* visitor)
     } else {
         visitor->trace(m_referencedNodes);
     }
+    visitor->trace(m_resumeResolvers);
+    visitor->trace(m_suspendResolvers);
     visitor->trace(m_liveNodes);
     visitor->trace(m_liveAudioSummingJunctions);
     EventTargetWithInlineData::trace(visitor);

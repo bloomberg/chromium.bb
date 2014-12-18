@@ -29,7 +29,7 @@ namespace blink {
 
 class FetchManager::Loader : public ThreadableLoaderClient {
 public:
-    Loader(ExecutionContext*, FetchManager*, PassRefPtr<ScriptPromiseResolver>, const FetchRequestData*);
+    Loader(ExecutionContext*, FetchManager*, PassRefPtrWillBeRawPtr<ScriptPromiseResolver>, const FetchRequestData*);
     ~Loader() override;
     void didReceiveResponse(unsigned long, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
     void didReceiveData(const char*, unsigned) override;
@@ -50,7 +50,7 @@ private:
 
     ExecutionContext* m_executionContext;
     FetchManager* m_fetchManager;
-    RefPtr<ScriptPromiseResolver> m_resolver;
+    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
     Persistent<FetchRequestData> m_request;
     Persistent<BodyStreamBuffer> m_responseBuffer;
     RefPtr<ThreadableLoader> m_loader;
@@ -59,7 +59,7 @@ private:
     bool m_failed;
 };
 
-FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* fetchManager, PassRefPtr<ScriptPromiseResolver> resolver, const FetchRequestData* request)
+FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* fetchManager, PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, const FetchRequestData* request)
     : m_executionContext(executionContext)
     , m_fetchManager(fetchManager)
     , m_resolver(resolver)
@@ -359,7 +359,7 @@ FetchManager::~FetchManager()
 
 ScriptPromise FetchManager::fetch(ScriptState* scriptState, const FetchRequestData* request)
 {
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     OwnPtr<Loader> ownLoader(adoptPtr(new Loader(m_executionContext, this, resolver.release(), request)));

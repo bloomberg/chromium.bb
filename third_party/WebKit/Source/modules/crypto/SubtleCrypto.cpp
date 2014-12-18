@@ -169,7 +169,7 @@ SubtleCrypto::SubtleCrypto()
 
 ScriptPromise SubtleCrypto::encrypt(ScriptState* scriptState, const AlgorithmIdentifier& rawAlgorithm, CryptoKey* key, const DOMArrayPiece& data)
 {
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
+    RefPtrWillBeRawPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
 
     if (!canAccessWebCrypto(scriptState, result.get()))
@@ -193,7 +193,7 @@ ScriptPromise SubtleCrypto::encrypt(ScriptState* scriptState, const AlgorithmIde
 
 ScriptPromise SubtleCrypto::decrypt(ScriptState* scriptState, const AlgorithmIdentifier& rawAlgorithm, CryptoKey* key, const DOMArrayPiece& data)
 {
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
+    RefPtrWillBeRawPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
 
     if (!canAccessWebCrypto(scriptState, result.get()))
@@ -217,7 +217,7 @@ ScriptPromise SubtleCrypto::decrypt(ScriptState* scriptState, const AlgorithmIde
 
 ScriptPromise SubtleCrypto::sign(ScriptState* scriptState, const AlgorithmIdentifier& rawAlgorithm, CryptoKey* key, const DOMArrayPiece& data)
 {
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
+    RefPtrWillBeRawPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
 
     if (!canAccessWebCrypto(scriptState, result.get()))
@@ -241,7 +241,7 @@ ScriptPromise SubtleCrypto::sign(ScriptState* scriptState, const AlgorithmIdenti
 
 ScriptPromise SubtleCrypto::verifySignature(ScriptState* scriptState, const AlgorithmIdentifier& rawAlgorithm, CryptoKey* key, const DOMArrayPiece& signature, const DOMArrayPiece& data)
 {
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
+    RefPtrWillBeRawPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
 
     if (!canAccessWebCrypto(scriptState, result.get()))
@@ -267,7 +267,7 @@ ScriptPromise SubtleCrypto::verifySignature(ScriptState* scriptState, const Algo
 
 ScriptPromise SubtleCrypto::digest(ScriptState* scriptState, const AlgorithmIdentifier& rawAlgorithm, const DOMArrayPiece& data)
 {
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
+    RefPtrWillBeRawPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
 
     if (!canAccessWebCrypto(scriptState, result.get()))
@@ -286,7 +286,7 @@ ScriptPromise SubtleCrypto::digest(ScriptState* scriptState, const AlgorithmIden
 
 ScriptPromise SubtleCrypto::generateKey(ScriptState* scriptState, const AlgorithmIdentifier& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages)
 {
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
+    RefPtrWillBeRawPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
 
     if (!canAccessWebCrypto(scriptState, result.get()))
@@ -306,7 +306,7 @@ ScriptPromise SubtleCrypto::generateKey(ScriptState* scriptState, const Algorith
 
 ScriptPromise SubtleCrypto::importKey(ScriptState* scriptState, const String& rawFormat, const ArrayBufferOrArrayBufferViewOrDictionary& keyData, const AlgorithmIdentifier& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages)
 {
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
+    RefPtrWillBeRawPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
 
     if (!canAccessWebCrypto(scriptState, result.get()))
@@ -359,7 +359,7 @@ ScriptPromise SubtleCrypto::importKey(ScriptState* scriptState, const String& ra
 
 ScriptPromise SubtleCrypto::exportKey(ScriptState* scriptState, const String& rawFormat, CryptoKey* key)
 {
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
+    RefPtrWillBeRawPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
 
     if (!canAccessWebCrypto(scriptState, result.get()))
@@ -383,7 +383,7 @@ ScriptPromise SubtleCrypto::exportKey(ScriptState* scriptState, const String& ra
 
 ScriptPromise SubtleCrypto::wrapKey(ScriptState* scriptState, const String& rawFormat, CryptoKey* key, CryptoKey* wrappingKey, const AlgorithmIdentifier& rawWrapAlgorithm)
 {
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
+    RefPtrWillBeRawPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
 
     if (!canAccessWebCrypto(scriptState, result.get()))
@@ -417,7 +417,7 @@ ScriptPromise SubtleCrypto::wrapKey(ScriptState* scriptState, const String& rawF
 
 ScriptPromise SubtleCrypto::unwrapKey(ScriptState* scriptState, const String& rawFormat, const DOMArrayPiece& wrappedKey, CryptoKey* unwrappingKey, const AlgorithmIdentifier& rawUnwrapAlgorithm, const AlgorithmIdentifier& rawUnwrappedKeyAlgorithm, bool extractable, const Vector<String>& rawKeyUsages)
 {
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
+    RefPtrWillBeRawPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
 
     if (!canAccessWebCrypto(scriptState, result.get()))
@@ -453,7 +453,7 @@ ScriptPromise SubtleCrypto::unwrapKey(ScriptState* scriptState, const String& ra
 
 ScriptPromise SubtleCrypto::deriveBits(ScriptState* scriptState, const AlgorithmIdentifier& rawAlgorithm, CryptoKey* baseKey, unsigned lengthBits)
 {
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
+    RefPtrWillBeRawPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
 
     if (!canAccessWebCrypto(scriptState, result.get()))

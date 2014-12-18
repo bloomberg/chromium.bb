@@ -150,7 +150,7 @@ private:
 
     WillBeHeapHashSet<RefPtrWillBeMember<FontFace> > m_loadingFonts;
     bool m_shouldFireLoadingEvent;
-    Vector<OwnPtr<FontsReadyPromiseResolver> > m_readyResolvers;
+    WillBeHeapVector<OwnPtrWillBeMember<FontsReadyPromiseResolver> > m_readyResolvers;
     FontFaceArray m_loadedFonts;
     FontFaceArray m_failedFonts;
     WillBeHeapListHashSet<RefPtrWillBeMember<FontFace> > m_nonCSSConnectedFaces;

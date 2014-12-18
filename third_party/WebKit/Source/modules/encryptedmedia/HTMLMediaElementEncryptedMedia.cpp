@@ -54,6 +54,8 @@ public:
     static ScriptPromise create(ScriptState*, HTMLMediaElement&, MediaKeys*);
     virtual ~SetMediaKeysHandler();
 
+    virtual void trace(Visitor*) override;
+
 private:
     SetMediaKeysHandler(ScriptState*, HTMLMediaElement&, MediaKeys*);
     void timerFired(Timer<SetMediaKeysHandler>*);
@@ -65,8 +67,8 @@ private:
     void reportSetFailed(ExceptionCode, const String& errorMessage);
 
     // Keep media element alive until promise is fulfilled
-    RefPtrWillBePersistent<HTMLMediaElement> m_element;
-    Persistent<MediaKeys> m_newMediaKeys;
+    RefPtrWillBeMember<HTMLMediaElement> m_element;
+    PersistentWillBeMember<MediaKeys> m_newMediaKeys;
     Timer<SetMediaKeysHandler> m_timer;
 };
 
@@ -113,7 +115,7 @@ private:
 
 ScriptPromise SetMediaKeysHandler::create(ScriptState* scriptState, HTMLMediaElement& element, MediaKeys* mediaKeys)
 {
-    RefPtr<SetMediaKeysHandler> handler = adoptRef(new SetMediaKeysHandler(scriptState, element, mediaKeys));
+    RefPtrWillBeRawPtr<SetMediaKeysHandler> handler = adoptRefWillBeNoop(new SetMediaKeysHandler(scriptState, element, mediaKeys));
     handler->suspendIfNeeded();
     handler->keepAliveWhilePending();
     return handler->promise();
@@ -232,6 +234,13 @@ void SetMediaKeysHandler::reportSetFailed(ExceptionCode code, const String& erro
     // 3.3.2.2 Reject promise with a new DOMException whose name is the
     //         appropriate error name and that has an appropriate message.
     reject(DOMException::create(code, errorMessage));
+}
+
+void SetMediaKeysHandler::trace(Visitor* visitor)
+{
+    visitor->trace(m_element);
+    visitor->trace(m_newMediaKeys);
+    ScriptPromiseResolver::trace(visitor);
 }
 
 HTMLMediaElementEncryptedMedia::HTMLMediaElementEncryptedMedia()

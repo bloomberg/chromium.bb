@@ -62,9 +62,9 @@ static void rejectWithTypeError(const String& errorDetails, ScriptPromiseResolve
 
 class CryptoResultImpl::Resolver final : public ScriptPromiseResolver {
 public:
-    static PassRefPtr<ScriptPromiseResolver> create(ScriptState* scriptState, CryptoResultImpl* result)
+    static PassRefPtrWillBeRawPtr<ScriptPromiseResolver> create(ScriptState* scriptState, CryptoResultImpl* result)
     {
-        RefPtr<Resolver> resolver = adoptRef(new Resolver(scriptState, result));
+        RefPtrWillBeRawPtr<Resolver> resolver = adoptRefWillBeNoop(new Resolver(scriptState, result));
         resolver->suspendIfNeeded();
         resolver->keepAliveWhilePending();
         return resolver.release();
@@ -116,9 +116,9 @@ void CryptoResultImpl::clearResolver()
     m_resolver = nullptr;
 }
 
-PassRefPtr<CryptoResultImpl> CryptoResultImpl::create(ScriptState* scriptState)
+PassRefPtrWillBeRawPtr<CryptoResultImpl> CryptoResultImpl::create(ScriptState* scriptState)
 {
-    return adoptRef(new CryptoResultImpl(scriptState));
+    return adoptRefWillBeNoop(new CryptoResultImpl(scriptState));
 }
 
 void CryptoResultImpl::completeWithError(WebCryptoErrorType errorType, const WebString& errorDetails)

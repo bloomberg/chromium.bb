@@ -95,7 +95,7 @@ private:
     bool m_bodyUsed;
     bool m_streamAccessed;
     ResponseType m_responseType;
-    RefPtr<ScriptPromiseResolver> m_resolver;
+    RefPtrWillBeMember<ScriptPromiseResolver> m_resolver;
     Member<ReadableStreamSource> m_streamSource;
     Member<ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer>>> m_stream;
 };

@@ -42,17 +42,30 @@
                     mediaKeys = result;
 
                     // Verify MediaKeys are not an ActiveDOMObject.
-                    assert_equals(numActiveDOMObjectsCreated(), 0, 'MediaKeys.create()');
+                    // In non-Oilpan, numActiveDOMObjectsCreate() == 0.
+                    // In Oilpan, numActiveDOMObjectsCreate() <= 2.
+                    // (1 MediaKeysInitializer and
+                    //  1 MediaKeySystemAccessInitializer).
+                    assert_less_than_equal(numActiveDOMObjectsCreated(), 2, 'MediaKeys.create()');
 
                     var initDataType = getInitDataType();
                     var mediaKeySession = mediaKeys.createSession();
                     return mediaKeySession.generateRequest(initDataType, getInitData(initDataType));
                 }).then(function() {
                     // 1 MediaKeySession.
-                    assert_equals(numActiveDOMObjectsCreated(), 1, 'MediaKeys.createSession()');
+                    // In non-Oilpan, numActiveDOMObjectsCreate() == 1.
+                    // In Oilpan, numActiveDOMObjectsCreate() <= 4.
+                    // (1 MediaKeysInitializer,
+                    //  1 MediaKeySystemAccessInitializer,
+                    //  1 ContentDecryptionModuleResultPromise and
+                    //  1 MediaKeySession).
+                    assert_less_than_equal(numActiveDOMObjectsCreated(), 4, 'MediaKeys.createSession(1)');
 
                     // Run gc(), should not affect MediaKeys object nor the
                     // session since we still have a reference to it.
+
+                    // When enabling oilpan GC, the in-active
+                    // ScriptPromiseResolvers will be destroyed.
                     return createGCPromise();
                 }).then(function(result) {
                     assert_equals(typeof mediaKeys.createSession, 'function');

@@ -13,6 +13,7 @@
 #include "platform/ContentType.h"
 #include "platform/Logging.h"
 #include "platform/MIMETypeRegistry.h"
+#include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
 namespace {
@@ -46,7 +47,7 @@ private:
 
 blink::ScriptPromise MediaKeySystemAccessInitializer::create(blink::ScriptState* scriptState, const String& keySystem, const Vector<blink::MediaKeySystemConfiguration>& supportedConfigurations)
 {
-    RefPtr<MediaKeySystemAccessInitializer> initializer = adoptRef(new MediaKeySystemAccessInitializer(scriptState, keySystem, supportedConfigurations));
+    RefPtrWillBeRawPtr<MediaKeySystemAccessInitializer> initializer = blink::adoptRefWillBeNoop(new MediaKeySystemAccessInitializer(scriptState, keySystem, supportedConfigurations));
     initializer->suspendIfNeeded();
     initializer->keepAliveWhilePending();
     return initializer->promise();

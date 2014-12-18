@@ -25,7 +25,7 @@
 
 namespace blink {
 
-static void rejectDueToCredentialManagerError(PassRefPtr<ScriptPromiseResolver> resolver, WebCredentialManagerError* reason)
+static void rejectDueToCredentialManagerError(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, WebCredentialManagerError* reason)
 {
     switch (reason->errorType) {
     case WebCredentialManagerError::ErrorTypeDisabled:
@@ -41,7 +41,7 @@ static void rejectDueToCredentialManagerError(PassRefPtr<ScriptPromiseResolver> 
 class NotificationCallbacks : public WebCredentialManagerClient::NotificationCallbacks {
     WTF_MAKE_NONCOPYABLE(NotificationCallbacks);
 public:
-    explicit NotificationCallbacks(PassRefPtr<ScriptPromiseResolver> resolver) : m_resolver(resolver) { }
+    explicit NotificationCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver) : m_resolver(resolver) { }
     virtual ~NotificationCallbacks() { }
 
     virtual void onSuccess() override
@@ -55,13 +55,13 @@ public:
     }
 
 private:
-    const RefPtr<ScriptPromiseResolver> m_resolver;
+    const RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
 };
 
 class RequestCallbacks : public WebCredentialManagerClient::RequestCallbacks {
     WTF_MAKE_NONCOPYABLE(RequestCallbacks);
 public:
-    explicit RequestCallbacks(PassRefPtr<ScriptPromiseResolver> resolver) : m_resolver(resolver) { }
+    explicit RequestCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver) : m_resolver(resolver) { }
     virtual ~RequestCallbacks() { }
 
     virtual void onSuccess(WebCredential* credential) override
@@ -84,7 +84,7 @@ public:
     }
 
 private:
-    const RefPtr<ScriptPromiseResolver> m_resolver;
+    const RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
 };
 
 
@@ -97,7 +97,7 @@ CredentialsContainer::CredentialsContainer()
 {
 }
 
-static bool checkBoilerplate(PassRefPtr<ScriptPromiseResolver> resolver)
+static bool checkBoilerplate(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
 {
     CredentialManagerClient* client = CredentialManagerClient::from(resolver->scriptState()->executionContext());
     if (!client) {
@@ -117,7 +117,7 @@ static bool checkBoilerplate(PassRefPtr<ScriptPromiseResolver> resolver)
 
 ScriptPromise CredentialsContainer::request(ScriptState* scriptState, const Dictionary&)
 {
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (!checkBoilerplate(resolver))
         return promise;
@@ -129,7 +129,7 @@ ScriptPromise CredentialsContainer::request(ScriptState* scriptState, const Dict
 
 ScriptPromise CredentialsContainer::notifySignedIn(ScriptState* scriptState, Credential* credential)
 {
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (!checkBoilerplate(resolver))
         return promise;
@@ -140,7 +140,7 @@ ScriptPromise CredentialsContainer::notifySignedIn(ScriptState* scriptState, Cre
 
 ScriptPromise CredentialsContainer::notifyFailedSignIn(ScriptState* scriptState, Credential* credential)
 {
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (!checkBoilerplate(resolver))
         return promise;
@@ -151,7 +151,7 @@ ScriptPromise CredentialsContainer::notifyFailedSignIn(ScriptState* scriptState,
 
 ScriptPromise CredentialsContainer::notifySignedOut(ScriptState* scriptState)
 {
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (!checkBoilerplate(resolver))
         return promise;

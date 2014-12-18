@@ -23,7 +23,7 @@ ScriptPromise BluetoothDiscovery::requestDevice(ScriptState* scriptState)
     if (!webbluetooth)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));
 
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     webbluetooth->requestDevice(new CallbackPromiseAdapter<BluetoothDevice, BluetoothError>(resolver));
     return promise;

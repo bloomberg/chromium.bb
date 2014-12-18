@@ -79,7 +79,7 @@ template<typename S, typename T>
 class CallbackPromiseAdapter final : public blink::WebCallbacks<typename S::WebType, typename T::WebType> {
     WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
 public:
-    explicit CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver)
+    explicit CallbackPromiseAdapter(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
         : m_resolver(resolver)
     {
         ASSERT(m_resolver);
@@ -105,14 +105,14 @@ public:
     }
 
 private:
-    RefPtr<ScriptPromiseResolver> m_resolver;
+    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
 };
 
 template<typename T>
 class CallbackPromiseAdapter<void, T> final : public blink::WebCallbacks<void, typename T::WebType> {
     WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
 public:
-    explicit CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver)
+    explicit CallbackPromiseAdapter(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
         : m_resolver(resolver)
     {
         ASSERT(m_resolver);
@@ -136,14 +136,14 @@ public:
     }
 
 private:
-    RefPtr<ScriptPromiseResolver> m_resolver;
+    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
 };
 
 template<typename T>
 class CallbackPromiseAdapter<bool, T> final : public blink::WebCallbacks<bool, typename T::WebType> {
     WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
 public:
-    explicit CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver)
+    explicit CallbackPromiseAdapter(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
         : m_resolver(resolver)
     {
         ASSERT(m_resolver);
@@ -167,14 +167,14 @@ public:
     }
 
 private:
-    RefPtr<ScriptPromiseResolver> m_resolver;
+    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
 };
 
 template<>
 class CallbackPromiseAdapter<void, void> final : public blink::WebCallbacks<void, void> {
     WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
 public:
-    explicit CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver)
+    explicit CallbackPromiseAdapter(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
         : m_resolver(resolver)
     {
         ASSERT(m_resolver);
@@ -196,14 +196,14 @@ public:
     }
 
 private:
-    RefPtr<ScriptPromiseResolver> m_resolver;
+    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
 };
 
 template<>
 class CallbackPromiseAdapter<bool, void> final : public blink::WebCallbacks<bool, void> {
     WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
 public:
-    explicit CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver)
+    explicit CallbackPromiseAdapter(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
         : m_resolver(resolver)
     {
         ASSERT(m_resolver);
@@ -225,7 +225,7 @@ public:
     }
 
 private:
-    RefPtr<ScriptPromiseResolver> m_resolver;
+    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
 };
 
 } // namespace blink

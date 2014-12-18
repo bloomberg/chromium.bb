@@ -40,7 +40,7 @@ PushRegistration::~PushRegistration()
 
 ScriptPromise PushRegistration::unregister(ScriptState* scriptState)
 {
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     WebPushProvider* webPushProvider = Platform::current()->pushProvider();
