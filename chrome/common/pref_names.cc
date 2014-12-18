@@ -455,27 +455,6 @@ const char kDefaultAppsInstallState[] = "default_apps_install_state";
 const char kHideWebStoreIcon[] = "hide_web_store_icon";
 
 #if defined(OS_CHROMEOS)
-// A dictionary pref to hold the mute setting for all the currently known
-// audio devices.
-const char kAudioDevicesMute[] = "settings.audio.devices.mute";
-
-// A dictionary pref storing the volume settings for all the currently known
-// audio devices.
-const char kAudioDevicesVolumePercent[] =
-    "settings.audio.devices.volume_percent";
-
-// An integer pref to initially mute volume if 1. This pref is ignored if
-// |kAudioOutputAllowed| is set to false, but its value is preserved, therefore
-// when the policy is lifted the original mute state is restored.  This setting
-// is here only for migration purposes now. It is being replaced by the
-// |kAudioDevicesMute| setting.
-const char kAudioMute[] = "settings.audio.mute";
-
-// A double pref storing the user-requested volume. This setting is here only
-// for migration purposes now. It is being replaced by the
-// |kAudioDevicesVolumePercent| setting.
-const char kAudioVolumePercent[] = "settings.audio.volume_percent";
-
 // A boolean pref set to true if touchpad tap-to-click is enabled.
 const char kTapToClickEnabled[] = "settings.touchpad.enable_tap_to_click";
 
@@ -1853,11 +1832,6 @@ const char kDeviceLocation[] = "device_status.location";
 // A pref holding the value of the policy used to disable mounting of external
 // storage for the user.
 const char kExternalStorageDisabled[] = "hardware.external_storage_disabled";
-
-// A pref holding the value of the policy used to disable playing audio on
-// ChromeOS devices. This pref overrides |kAudioMute| but does not overwrite
-// it, therefore when the policy is lifted the original mute state is restored.
-const char kAudioOutputAllowed[] = "hardware.audio_output_enabled";
 
 // A dictionary that maps usernames to wallpaper properties.
 const char kUsersWallpaperInfo[] = "user_wallpaper_info";

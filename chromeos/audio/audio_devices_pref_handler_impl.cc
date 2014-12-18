@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/audio/audio_devices_pref_handler_impl.h"
+#include "chromeos/audio/audio_devices_pref_handler_impl.h"
 
 #include <algorithm>
 
@@ -13,8 +13,8 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/common/pref_names.h"
 #include "chromeos/audio/audio_device.h"
+#include "chromeos/chromeos_pref_names.h"
 
 namespace {
 
@@ -90,7 +90,10 @@ void AudioDevicesPrefHandlerImpl::SetMuteValue(const AudioDevice& device,
 
 
 bool AudioDevicesPrefHandlerImpl::GetAudioCaptureAllowedValue() {
-  return local_state_->GetBoolean(prefs::kAudioCaptureAllowed);
+  if (audio_capture_allowed_pref_.empty())
+    return true;
+
+  return local_state_->GetBoolean(audio_capture_allowed_pref_);
 }
 
 bool AudioDevicesPrefHandlerImpl::GetAudioOutputAllowedValue() {
@@ -135,10 +138,12 @@ double AudioDevicesPrefHandlerImpl::GetDeviceDefaultOutputVolume(
 }
 
 AudioDevicesPrefHandlerImpl::AudioDevicesPrefHandlerImpl(
-    PrefService* local_state)
+    PrefService* local_state,
+    const std::string& audio_capture_allowed_pref)
     : device_mute_settings_(new base::DictionaryValue()),
       device_volume_settings_(new base::DictionaryValue()),
-      local_state_(local_state) {
+      local_state_(local_state),
+      audio_capture_allowed_pref_(audio_capture_allowed_pref) {
   InitializePrefObservers();
 
   UpdateDevicesMutePref();
@@ -154,7 +159,9 @@ void AudioDevicesPrefHandlerImpl::InitializePrefObservers() {
       base::Bind(&AudioDevicesPrefHandlerImpl::NotifyAudioPolicyChange,
                  base::Unretained(this));
   pref_change_registrar_.Add(prefs::kAudioOutputAllowed, callback);
-  pref_change_registrar_.Add(prefs::kAudioCaptureAllowed, callback);
+
+  if (!audio_capture_allowed_pref_.empty())
+    pref_change_registrar_.Add(audio_capture_allowed_pref_, callback);
 }
 
 void AudioDevicesPrefHandlerImpl::UpdateDevicesMutePref() {
@@ -216,26 +223,27 @@ void AudioDevicesPrefHandlerImpl::NotifyAudioPolicyChange() {
 }
 
 // static
-void AudioDevicesPrefHandlerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
+void AudioDevicesPrefHandlerImpl::RegisterPrefs(
+    PrefRegistrySimple* registry,
+    const std::string& audio_capture_allowed_pref) {
   registry->RegisterDictionaryPref(prefs::kAudioDevicesVolumePercent);
   registry->RegisterDictionaryPref(prefs::kAudioDevicesMute);
 
   // Register the prefs backing the audio muting policies.
   registry->RegisterBooleanPref(prefs::kAudioOutputAllowed, true);
+
   // This pref has moved to the media subsystem but we should verify it is there
   // before we use it.
-  registry->RegisterBooleanPref(::prefs::kAudioCaptureAllowed, true);
+  // NOTE: This registers the pref in the device-wide local state pref registry.
+  // In Chrome the media subsystem also registers kAudioCaptureAllowed in the
+  // per-user profile pref registry.
+  if (!audio_capture_allowed_pref.empty())
+    registry->RegisterBooleanPref(audio_capture_allowed_pref, true);
 
   // Register the legacy audio prefs for migration.
   registry->RegisterDoublePref(prefs::kAudioVolumePercent,
                                kDefaultOutputVolume);
   registry->RegisterIntegerPref(prefs::kAudioMute, kPrefMuteOff);
-}
-
-// static
-AudioDevicesPrefHandler* AudioDevicesPrefHandler::Create(
-    PrefService* local_state) {
-  return new AudioDevicesPrefHandlerImpl(local_state);
 }
 
 }  // namespace chromeos

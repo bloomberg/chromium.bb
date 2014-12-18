@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_AUDIO_AUDIO_DEVICES_PREF_HANDLER_IMPL_H_
-#define CHROME_BROWSER_CHROMEOS_AUDIO_AUDIO_DEVICES_PREF_HANDLER_IMPL_H_
+#ifndef CHROMEOS_AUDIO_AUDIO_DEVICES_PREF_HANDLER_IMPL_H_
+#define CHROMEOS_AUDIO_AUDIO_DEVICES_PREF_HANDLER_IMPL_H_
+
+#include <string>
 
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/values.h"
 #include "chromeos/audio/audio_devices_pref_handler.h"
+#include "chromeos/chromeos_export.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -17,9 +20,11 @@ namespace chromeos {
 
 // Class which implements AudioDevicesPrefHandler interface and register audio
 // preferences as well.
-class AudioDevicesPrefHandlerImpl : public AudioDevicesPrefHandler {
+class CHROMEOS_EXPORT AudioDevicesPrefHandlerImpl
+    : public AudioDevicesPrefHandler {
  public:
-  explicit AudioDevicesPrefHandlerImpl(PrefService* local_state);
+  AudioDevicesPrefHandlerImpl(PrefService* local_state,
+                              const std::string& audio_capture_allowed_pref);
 
   // Overridden from AudioDevicesPrefHandler.
   virtual double GetOutputVolumeValue(const AudioDevice* device) override;
@@ -37,7 +42,8 @@ class AudioDevicesPrefHandlerImpl : public AudioDevicesPrefHandler {
   virtual void RemoveAudioPrefObserver(AudioPrefObserver* observer) override;
 
   // Registers volume and mute preferences.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
+  static void RegisterPrefs(PrefRegistrySimple* registry,
+                            const std::string& audio_capture_allowed_pref);
 
  protected:
   virtual ~AudioDevicesPrefHandlerImpl();
@@ -71,6 +77,11 @@ class AudioDevicesPrefHandlerImpl : public AudioDevicesPrefHandler {
   scoped_ptr<base::DictionaryValue> device_volume_settings_;
 
   PrefService* local_state_;  // not owned
+
+  // The name of the preferences to check if audio capture is allowed or the
+  // empty string if audio capture is always allowed.
+  const std::string audio_capture_allowed_pref_;
+
   PrefChangeRegistrar pref_change_registrar_;
   ObserverList<AudioPrefObserver> observers_;
 
@@ -79,4 +90,4 @@ class AudioDevicesPrefHandlerImpl : public AudioDevicesPrefHandler {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_AUDIO_AUDIO_DEVICES_PREF_HANDLER_IMPL_H_
+#endif  // CHROMEOS_AUDIO_AUDIO_DEVICES_PREF_HANDLER_IMPL_H_

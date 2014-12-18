@@ -155,7 +155,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/attestation/platform_verification_flow.h"
-#include "chrome/browser/chromeos/audio/audio_devices_pref_handler_impl.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/extensions/echo_private_api.h"
@@ -190,6 +189,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chromeos/audio/audio_devices_pref_handler_impl.h"
 #include "components/invalidation/invalidator_storage.h"
 #else
 #include "chrome/browser/extensions/default_apps.h"
@@ -323,7 +323,8 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 #if defined(OS_CHROMEOS)
   ChromeOSMetricsProvider::RegisterPrefs(registry);
-  chromeos::AudioDevicesPrefHandlerImpl::RegisterPrefs(registry);
+  chromeos::AudioDevicesPrefHandlerImpl::RegisterPrefs(
+      registry, prefs::kAudioCaptureAllowed);
   chromeos::ChromeUserManagerImpl::RegisterPrefs(registry);
   chromeos::DataPromoNotification::RegisterPrefs(registry);
   chromeos::DeviceOAuth2TokenService::RegisterPrefs(registry);

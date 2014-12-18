@@ -87,7 +87,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/audio/audio_devices_pref_handler.h"
+#include "chromeos/audio/audio_devices_pref_handler_impl.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_paths.h"
@@ -358,8 +358,8 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::IO));
 
-  CrasAudioHandler::Initialize(
-      AudioDevicesPrefHandler::Create(g_browser_process->local_state()));
+  CrasAudioHandler::Initialize(new AudioDevicesPrefHandlerImpl(
+      g_browser_process->local_state(), prefs::kAudioCaptureAllowed));
 
   // Start loading machine statistics here. StatisticsProvider::Shutdown()
   // will ensure that loading is aborted on early exit.
@@ -425,7 +425,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // logged in and we should behave accordingly.
   bool immediate_login =
       parsed_command_line().HasSwitch(switches::kLoginUser);
-  if (immediate_login){
+  if (immediate_login) {
     // Redirects Chrome logging to the user data dir.
     logging::RedirectChromeLogging(parsed_command_line());
 

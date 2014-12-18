@@ -49,8 +49,6 @@
         'browser/chromeos/attestation/platform_verification_dialog.h',
         'browser/chromeos/attestation/platform_verification_flow.cc',
         'browser/chromeos/attestation/platform_verification_flow.h',
-        'browser/chromeos/audio/audio_devices_pref_handler_impl.cc',
-        'browser/chromeos/audio/audio_devices_pref_handler_impl.h',
         'browser/chromeos/bluetooth/bluetooth_pairing_dialog.cc',
         'browser/chromeos/bluetooth/bluetooth_pairing_dialog.h',
         'browser/chromeos/base/locale_util.cc',

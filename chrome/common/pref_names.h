@@ -170,10 +170,6 @@ extern const char kNetworkPredictionOptions[];
 extern const char kDefaultAppsInstallState[];
 extern const char kHideWebStoreIcon[];
 #if defined(OS_CHROMEOS)
-extern const char kAudioDevicesMute[];
-extern const char kAudioDevicesVolumePercent[];
-extern const char kAudioMute[];
-extern const char kAudioVolumePercent[];
 extern const char kTapToClickEnabled[];
 extern const char kTapDraggingEnabled[];
 extern const char kEnableTouchpadThreeFingerClick[];
@@ -652,7 +648,6 @@ extern const char kDeviceActivityTimes[];
 extern const char kDeviceLocation[];
 extern const char kExternalStorageDisabled[];
 extern const char kUsersWallpaperInfo[];
-extern const char kAudioOutputAllowed[];
 extern const char kOwnerPrimaryMouseButtonRight[];
 extern const char kOwnerTapToClickEnabled[];
 extern const char kUptimeLimit[];

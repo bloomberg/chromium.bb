@@ -78,7 +78,6 @@
       'browser/chromeos/attestation/fake_certificate.cc',
       'browser/chromeos/attestation/fake_certificate.h',
       'browser/chromeos/attestation/platform_verification_flow_unittest.cc',
-      'browser/chromeos/audio/audio_devices_pref_handler_impl_unittest.cc',
       'browser/chromeos/customization/customization_document_unittest.cc',
       'browser/chromeos/dbus/printer_service_provider_unittest.cc',
       'browser/chromeos/display/display_preferences_unittest.cc',

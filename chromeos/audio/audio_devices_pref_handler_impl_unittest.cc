@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/audio/audio_devices_pref_handler_impl.h"
+#include "chromeos/audio/audio_devices_pref_handler_impl.h"
 
 #include "base/memory/ref_counted.h"
 #include "base/prefs/testing_pref_service.h"
-#include "chrome/browser/chromeos/audio/audio_devices_pref_handler_impl.h"
 #include "chromeos/audio/audio_device.h"
 #include "chromeos/audio/audio_devices_pref_handler.h"
+#include "chromeos/chromeos_pref_names.h"
 #include "chromeos/dbus/audio_node.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -62,6 +62,8 @@ const AudioDevice kOutputDeviceWithSpecialCharacters(
               false,
               0));
 
+const char kAudioCaptureAllowedPref[] = "audio_capture_allowed";
+
 class AudioDevicesPrefHandlerTest : public testing::Test {
  public:
   AudioDevicesPrefHandlerTest() {}
@@ -69,8 +71,10 @@ class AudioDevicesPrefHandlerTest : public testing::Test {
 
   void SetUp() override {
     pref_service_.reset(new TestingPrefServiceSimple());
-    AudioDevicesPrefHandlerImpl::RegisterPrefs(pref_service_->registry());
-    audio_pref_handler_ = new AudioDevicesPrefHandlerImpl(pref_service_.get());
+    AudioDevicesPrefHandlerImpl::RegisterPrefs(pref_service_->registry(),
+                                               kAudioCaptureAllowedPref);
+    audio_pref_handler_ = new AudioDevicesPrefHandlerImpl(
+        pref_service_.get(), kAudioCaptureAllowedPref);
   }
 
   void TearDown() override { audio_pref_handler_ = NULL; }
@@ -89,6 +93,18 @@ TEST_F(AudioDevicesPrefHandlerTest, TestDefaultValues) {
   EXPECT_EQ(75.0, audio_pref_handler_->GetInputGainValue(&kInternalMic));
   EXPECT_EQ(75.0, audio_pref_handler_->GetOutputVolumeValue(&kHeadphone));
   EXPECT_EQ(75.0, audio_pref_handler_->GetOutputVolumeValue(&kHDMIOutput));
+}
+
+TEST_F(AudioDevicesPrefHandlerTest, PrefsRegistered) {
+  // The standard audio prefs are registered.
+  EXPECT_TRUE(pref_service_->FindPreference(prefs::kAudioDevicesVolumePercent));
+  EXPECT_TRUE(pref_service_->FindPreference(prefs::kAudioDevicesMute));
+  EXPECT_TRUE(pref_service_->FindPreference(prefs::kAudioOutputAllowed));
+  EXPECT_TRUE(pref_service_->FindPreference(prefs::kAudioVolumePercent));
+  EXPECT_TRUE(pref_service_->FindPreference(prefs::kAudioMute));
+
+  // The optional pref is also registered.
+  EXPECT_TRUE(pref_service_->FindPreference(kAudioCaptureAllowedPref));
 }
 
 TEST_F(AudioDevicesPrefHandlerTest, TestBasicInputOutputDevices) {

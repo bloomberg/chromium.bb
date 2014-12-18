@@ -123,6 +123,7 @@ test("chromeos_unittests") {
     "//net/third_party/nss/ssl:ssl_config",
   ]
   deps = [
+    "//base:prefs_test_support",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//components/onc",

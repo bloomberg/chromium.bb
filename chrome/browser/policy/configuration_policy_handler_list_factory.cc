@@ -42,6 +42,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
+#include "chromeos/chromeos_pref_names.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -415,7 +416,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kExternalStorageDisabled,
     base::Value::TYPE_BOOLEAN },
   { key::kAudioOutputAllowed,
-    prefs::kAudioOutputAllowed,
+    chromeos::prefs::kAudioOutputAllowed,
     base::Value::TYPE_BOOLEAN },
   { key::kShowLogoutButtonInTray,
     prefs::kShowLogoutButtonInTray,
