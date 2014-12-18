@@ -230,6 +230,14 @@ class TestLabFailure(InfrastructureFailure):
   """Raised if a stage fails due to hardware lab infrastructure issues."""
 
 
+class SuiteTimedOut(TestLabFailure):
+  """Raised if a test suite timed out with no test failures."""
+
+
+class BoardNotAvailable(TestLabFailure):
+  """Raised if the board is not available in the lab."""
+
+
 # Gerrit-on-Borg failures.
 class GoBFailure(InfrastructureFailure):
   """Raised if a stage fails due to Gerrit-on-Borg (GoB) issues."""
@@ -268,6 +276,14 @@ class BuilderFailure(InfrastructureFailure):
 # Crash collection service failures.
 class CrashCollectionFailure(InfrastructureFailure):
   """Raised if a stage fails due to crash collection services."""
+
+
+class TestFailure(StepFailure):
+  """Raised if a test stage (e.g. VMTest) fails."""
+
+
+class TestWarning(StepFailure):
+  """Raised if a test stage (e.g. VMTest) returns a warning code."""
 
 
 class BuildFailureMessage(object):

@@ -51,22 +51,7 @@ _TEST_REPORT_FILENAME = 'test_report.log'
 _TEST_PASSED = 'PASSED'
 _TEST_FAILED = 'FAILED'
 
-
-class TestFailure(failures_lib.StepFailure):
-  """Raised if a test stage (e.g. VMTest) fails."""
-
-class TestWarning(failures_lib.StepFailure):
-  """Raised if a test stage (e.g. VMTest) returns a warning code."""
-
-class SuiteTimedOut(failures_lib.TestLabFailure):
-  """Raised if a test suite timed out with no test failures."""
-
-class BoardNotAvailable(failures_lib.TestLabFailure):
-  """Raised if the board is not available in the lab."""
-
-
 # =========================== Command Helpers =================================
-
 
 def RunBuildScript(buildroot, cmd, chromite_cmd=False, **kwargs):
   """Run a build script, wrapping exceptions as needed.
@@ -647,7 +632,8 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
       with open(results_dir_in_chroot + '/failed_test_command', 'w') as failed:
         failed.write(error)
 
-    raise TestFailure('** VMTests failed with code %d **' % result.returncode)
+    raise failures_lib.TestFailure(
+        '** VMTests failed with code %d **' % result.returncode)
 
 
 def RunDevModeTest(buildroot, board, image_dir):
@@ -822,7 +808,8 @@ def ArchiveVMFiles(buildroot, test_results_dir, archive_path):
   return tar_files
 
 
-@failures_lib.SetFailureType(SuiteTimedOut, timeout_util.TimeoutError)
+@failures_lib.SetFailureType(failures_lib.SuiteTimedOut,
+                             timeout_util.TimeoutError)
 def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
                    wait_for_results=None, priority=None, timeout_mins=None,
                    retry=None, minimum_duts=0, suite_min_duts=0, debug=True):
@@ -913,17 +900,20 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     board_not_available_codes = (5,)
 
     if result.returncode in lab_warning_codes:
-      raise TestWarning('** Suite passed with a warning code **')
+      raise failures_lib.TestWarning('** Suite passed with a warning code **')
     elif result.returncode in infra_error_codes:
       raise failures_lib.TestLabFailure(
           '** HWTest did not complete due to infrastructure issues '
           '(code %d) **' % result.returncode)
     elif result.returncode in timeout_codes:
-      raise SuiteTimedOut('** Suite timed out before completion **')
+      raise failures_lib.SuiteTimedOut(
+          '** Suite timed out before completion **')
     elif result.returncode in board_not_available_codes:
-      raise BoardNotAvailable('** Board was not availble in the lab **')
+      raise failures_lib.BoardNotAvailable(
+          '** Board was not availble in the lab **')
     elif result.returncode != 0:
-      raise TestFailure('** HWTest failed (code %d) **' % result.returncode)
+      raise failures_lib.TestFailure(
+          '** HWTest failed (code %d) **' % result.returncode)
 
 
 def AbortHWTests(config_type_or_name, version, debug, suite=''):

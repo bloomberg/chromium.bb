@@ -208,15 +208,15 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTest):
     if cmd_fail_mode == 'timeout':
       to_raise = timeout_util.TimeoutError('Timed out')
     elif cmd_fail_mode == 'suite_timeout':
-      to_raise = commands.SuiteTimedOut('Suite timed out')
+      to_raise = failures_lib.SuiteTimedOut('Suite timed out')
     elif cmd_fail_mode == 'board_not_available':
-      to_raise = commands.BoardNotAvailable('Board not available')
+      to_raise = failures_lib.BoardNotAvailable('Board not available')
     elif cmd_fail_mode == 'lab_fail':
       to_raise = failures_lib.TestLabFailure('Test lab failure')
     elif cmd_fail_mode == 'test_warn':
-      to_raise = commands.TestWarning('Suite passed with warnings')
+      to_raise = failures_lib.TestWarning('Suite passed with warnings')
     elif cmd_fail_mode == 'test_fail':
-      to_raise = commands.TestFailure('HWTest failed.')
+      to_raise = failures_lib.TestFailure('HWTest failed.')
     elif cmd_fail_mode is not None:
       raise ValueError('cmd_fail_mode %s not supported' % cmd_fail_mode)
 

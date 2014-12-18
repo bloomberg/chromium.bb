@@ -239,13 +239,13 @@ class HWLabCommandsTest(cros_build_lib_unittest.RunCommandTestCase):
   def testRunHWTestSuiteFailure(self):
     """Test RunHWTestSuite when ERROR is returned."""
     self.rc.SetDefaultCmdResult(returncode=1)
-    self.assertRaises(commands.TestFailure, commands.RunHWTestSuite,
+    self.assertRaises(failures_lib.TestFailure, commands.RunHWTestSuite,
                       self._build, self._suite, self._board, debug=False)
 
   def testRunHWTestSuiteTimedOut(self):
     """Test RunHWTestSuite when SUITE_TIMEOUT is returned."""
     self.rc.SetDefaultCmdResult(returncode=4)
-    self.assertRaises(commands.SuiteTimedOut, commands.RunHWTestSuite,
+    self.assertRaises(failures_lib.SuiteTimedOut, commands.RunHWTestSuite,
                       self._build, self._suite, self._board, debug=False)
 
   def testRunHWTestSuiteInfraFail(self):
@@ -257,13 +257,13 @@ class HWLabCommandsTest(cros_build_lib_unittest.RunCommandTestCase):
   def testRunHWTestBoardNotAvailable(self):
     """Test RunHWTestSuite when BOARD_NOT_AVAILABLE is returned."""
     self.rc.SetDefaultCmdResult(returncode=5)
-    self.assertRaises(commands.BoardNotAvailable, commands.RunHWTestSuite,
+    self.assertRaises(failures_lib.BoardNotAvailable, commands.RunHWTestSuite,
                       self._build, self._suite, self._board, debug=False)
 
   def testRunHWTestTestWarning(self):
     """Test RunHWTestSuite when WARNING is returned."""
     self.rc.SetDefaultCmdResult(returncode=2)
-    self.assertRaises(commands.TestWarning, commands.RunHWTestSuite,
+    self.assertRaises(failures_lib.TestWarning, commands.RunHWTestSuite,
                       self._build, self._suite, self._board, debug=False)
 
 

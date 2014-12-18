@@ -28,6 +28,7 @@ fixup_path.FixupPath()
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import cbuildbot_config
+from chromite.cbuildbot import failures_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import parallel
 from chromite.lib import retry_util
@@ -952,7 +953,7 @@ class _PaygenBuild(object):
                                 wait_for_results=True,
                                 timeout_mins=timeout_mins,
                                 debug=bool(self._drm))
-      except commands.TestWarning as e:
+      except failures_lib.TestWarning as e:
         logging.warning('Warning running test suite; error output:\n%s', e)
     else:
       cmd = [

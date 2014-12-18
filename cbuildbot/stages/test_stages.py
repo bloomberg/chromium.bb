@@ -229,11 +229,11 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     if self.suite_config.critical:
       return super(HWTestStage, self)._HandleStageException(exc_info)
 
-    if issubclass(exc_type, commands.TestWarning):
+    if issubclass(exc_type, failures_lib.TestWarning):
       # HWTest passed with warning. All builders should pass.
       logging.warning('HWTest passed with warning code.')
       return self._HandleExceptionAsWarning(exc_info)
-    elif issubclass(exc_type, commands.BoardNotAvailable):
+    elif issubclass(exc_type, failures_lib.BoardNotAvailable):
       # Some boards may not have been setup in the lab yet for
       # non-code-checkin configs.
       if not cbuildbot_config.IsPFQType(self._run.config.build_type):
