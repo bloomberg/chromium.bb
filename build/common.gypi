@@ -3387,6 +3387,7 @@
             'AdditionalOptions': [
                 '/d2Zi+',  # Improve debugging of Release builds.
                 '/Zc:inline',  # Remove unreferenced COMDAT (faster links).
+                '/Gw',  # Put data in separate COMDATs.
                 '<@(win_release_extra_cflags)',
             ],
           },
