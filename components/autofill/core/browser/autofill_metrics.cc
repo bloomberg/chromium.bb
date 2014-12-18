@@ -259,12 +259,6 @@ void LogTypeQualityMetric(const std::string& base_name,
 
 }  // namespace
 
-AutofillMetrics::AutofillMetrics() {
-}
-
-AutofillMetrics::~AutofillMetrics() {
-}
-
 // static
 void AutofillMetrics::LogCreditCardInfoBarMetric(InfoBarMetric metric) {
   DCHECK_LT(metric, NUM_INFO_BAR_METRICS);
@@ -369,45 +363,49 @@ void AutofillMetrics::LogWalletResponseCode(int response_code) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("Wallet.ResponseCode", response_code);
 }
 
+// static
 void AutofillMetrics::LogDeveloperEngagementMetric(
-    DeveloperEngagementMetric metric) const {
+    DeveloperEngagementMetric metric) {
   DCHECK_LT(metric, NUM_DEVELOPER_ENGAGEMENT_METRICS);
   UMA_HISTOGRAM_ENUMERATION("Autofill.DeveloperEngagement", metric,
                             NUM_DEVELOPER_ENGAGEMENT_METRICS);
 }
 
-void AutofillMetrics::LogHeuristicTypePrediction(
-    FieldTypeQualityMetric metric,
-    ServerFieldType field_type) const {
+// static
+void AutofillMetrics::LogHeuristicTypePrediction(FieldTypeQualityMetric metric,
+                                                 ServerFieldType field_type) {
   LogTypeQualityMetric("Autofill.Quality.HeuristicType", metric, field_type);
 }
 
-void AutofillMetrics::LogOverallTypePrediction(
-    FieldTypeQualityMetric metric,
-    ServerFieldType field_type) const {
+// static
+void AutofillMetrics::LogOverallTypePrediction(FieldTypeQualityMetric metric,
+                                               ServerFieldType field_type) {
   LogTypeQualityMetric("Autofill.Quality.PredictedType", metric, field_type);
 }
 
-void AutofillMetrics::LogServerTypePrediction(
-    FieldTypeQualityMetric metric,
-    ServerFieldType field_type) const {
+// static
+void AutofillMetrics::LogServerTypePrediction(FieldTypeQualityMetric metric,
+                                              ServerFieldType field_type) {
   LogTypeQualityMetric("Autofill.Quality.ServerType", metric, field_type);
 }
 
-void AutofillMetrics::LogServerQueryMetric(ServerQueryMetric metric) const {
+// static
+void AutofillMetrics::LogServerQueryMetric(ServerQueryMetric metric) {
   DCHECK_LT(metric, NUM_SERVER_QUERY_METRICS);
   UMA_HISTOGRAM_ENUMERATION("Autofill.ServerQueryResponse", metric,
                             NUM_SERVER_QUERY_METRICS);
 }
 
-void AutofillMetrics::LogUserHappinessMetric(UserHappinessMetric metric) const {
+// static
+void AutofillMetrics::LogUserHappinessMetric(UserHappinessMetric metric) {
   DCHECK_LT(metric, NUM_USER_HAPPINESS_METRICS);
   UMA_HISTOGRAM_ENUMERATION("Autofill.UserHappiness", metric,
                             NUM_USER_HAPPINESS_METRICS);
 }
 
+// static
 void AutofillMetrics::LogFormFillDurationFromLoadWithAutofill(
-    const base::TimeDelta& duration) const {
+    const base::TimeDelta& duration) {
   UMA_HISTOGRAM_CUSTOM_TIMES("Autofill.FillDuration.FromLoad.WithAutofill",
                              duration,
                              base::TimeDelta::FromMilliseconds(100),
@@ -415,8 +413,9 @@ void AutofillMetrics::LogFormFillDurationFromLoadWithAutofill(
                              50);
 }
 
+// static
 void AutofillMetrics::LogFormFillDurationFromLoadWithoutAutofill(
-    const base::TimeDelta& duration) const {
+    const base::TimeDelta& duration) {
   UMA_HISTOGRAM_CUSTOM_TIMES("Autofill.FillDuration.FromLoad.WithoutAutofill",
                              duration,
                              base::TimeDelta::FromMilliseconds(100),
@@ -424,8 +423,9 @@ void AutofillMetrics::LogFormFillDurationFromLoadWithoutAutofill(
                              50);
 }
 
+// static
 void AutofillMetrics::LogFormFillDurationFromInteractionWithAutofill(
-    const base::TimeDelta& duration) const {
+    const base::TimeDelta& duration) {
   UMA_HISTOGRAM_CUSTOM_TIMES(
       "Autofill.FillDuration.FromInteraction.WithAutofill",
       duration,
@@ -434,8 +434,9 @@ void AutofillMetrics::LogFormFillDurationFromInteractionWithAutofill(
       50);
 }
 
+// static
 void AutofillMetrics::LogFormFillDurationFromInteractionWithoutAutofill(
-    const base::TimeDelta& duration) const {
+    const base::TimeDelta& duration) {
   UMA_HISTOGRAM_CUSTOM_TIMES(
        "Autofill.FillDuration.FromInteraction.WithoutAutofill",
        duration,
@@ -444,19 +445,23 @@ void AutofillMetrics::LogFormFillDurationFromInteractionWithoutAutofill(
        50);
 }
 
-void AutofillMetrics::LogIsAutofillEnabledAtStartup(bool enabled) const {
+// static
+void AutofillMetrics::LogIsAutofillEnabledAtStartup(bool enabled) {
   UMA_HISTOGRAM_BOOLEAN("Autofill.IsEnabled.Startup", enabled);
 }
 
-void AutofillMetrics::LogIsAutofillEnabledAtPageLoad(bool enabled) const {
+// static
+void AutofillMetrics::LogIsAutofillEnabledAtPageLoad(bool enabled) {
   UMA_HISTOGRAM_BOOLEAN("Autofill.IsEnabled.PageLoad", enabled);
 }
 
-void AutofillMetrics::LogStoredProfileCount(size_t num_profiles) const {
+// static
+void AutofillMetrics::LogStoredProfileCount(size_t num_profiles) {
   UMA_HISTOGRAM_COUNTS("Autofill.StoredProfileCount", num_profiles);
 }
 
-void AutofillMetrics::LogAddressSuggestionsCount(size_t num_suggestions) const {
+// static
+void AutofillMetrics::LogAddressSuggestionsCount(size_t num_suggestions) {
   UMA_HISTOGRAM_COUNTS("Autofill.AddressSuggestionsCount", num_suggestions);
 }
 

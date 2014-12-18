@@ -318,25 +318,21 @@ class AutofillMetrics {
     NUM_WALLET_REQUIRED_ACTIONS
   };
 
-  AutofillMetrics();
-  virtual ~AutofillMetrics();
-
   static void LogCreditCardInfoBarMetric(InfoBarMetric metric);
   static void LogScanCreditCardPromptMetric(ScanCreditCardPromptMetric metric);
 
-  virtual void LogDeveloperEngagementMetric(
-      DeveloperEngagementMetric metric) const;
+  static void LogDeveloperEngagementMetric(DeveloperEngagementMetric metric);
 
-  virtual void LogHeuristicTypePrediction(FieldTypeQualityMetric metric,
-                                          ServerFieldType field_type) const;
-  virtual void LogOverallTypePrediction(FieldTypeQualityMetric metric,
-                                        ServerFieldType field_type) const;
-  virtual void LogServerTypePrediction(FieldTypeQualityMetric metric,
-                                       ServerFieldType field_type) const;
+  static void LogHeuristicTypePrediction(FieldTypeQualityMetric metric,
+                                         ServerFieldType field_type);
+  static void LogOverallTypePrediction(FieldTypeQualityMetric metric,
+                                       ServerFieldType field_type);
+  static void LogServerTypePrediction(FieldTypeQualityMetric metric,
+                                      ServerFieldType field_type);
 
-  virtual void LogServerQueryMetric(ServerQueryMetric metric) const;
+  static void LogServerQueryMetric(ServerQueryMetric metric);
 
-  virtual void LogUserHappinessMetric(UserHappinessMetric metric) const;
+  static void LogUserHappinessMetric(UserHappinessMetric metric);
 
   // Logs |state| to the dismissal states histogram.
   static void LogDialogDismissalState(DialogDismissalState state);
@@ -385,42 +381,42 @@ class AutofillMetrics {
 
   // This should be called when a form that has been Autofilled is submitted.
   // |duration| should be the time elapsed between form load and submission.
-  virtual void LogFormFillDurationFromLoadWithAutofill(
-      const base::TimeDelta& duration) const;
+  static void LogFormFillDurationFromLoadWithAutofill(
+      const base::TimeDelta& duration);
 
   // This should be called when a fillable form that has not been Autofilled is
   // submitted.  |duration| should be the time elapsed between form load and
   // submission.
-  virtual void LogFormFillDurationFromLoadWithoutAutofill(
-      const base::TimeDelta& duration) const;
+  static void LogFormFillDurationFromLoadWithoutAutofill(
+      const base::TimeDelta& duration);
 
   // This should be called when a form that has been Autofilled is submitted.
   // |duration| should be the time elapsed between the initial form interaction
   // and submission.
-  virtual void LogFormFillDurationFromInteractionWithAutofill(
-      const base::TimeDelta& duration) const;
+  static void LogFormFillDurationFromInteractionWithAutofill(
+      const base::TimeDelta& duration);
 
   // This should be called when a fillable form that has not been Autofilled is
   // submitted.  |duration| should be the time elapsed between the initial form
   // interaction and submission.
-  virtual void LogFormFillDurationFromInteractionWithoutAutofill(
-      const base::TimeDelta& duration) const;
+  static void LogFormFillDurationFromInteractionWithoutAutofill(
+      const base::TimeDelta& duration);
 
   // This should be called each time a page containing forms is loaded.
-  virtual void LogIsAutofillEnabledAtPageLoad(bool enabled) const;
+  static void LogIsAutofillEnabledAtPageLoad(bool enabled);
 
   // This should be called each time a new profile is launched.
-  virtual void LogIsAutofillEnabledAtStartup(bool enabled) const;
+  static void LogIsAutofillEnabledAtStartup(bool enabled);
 
   // This should be called each time a new profile is launched.
-  virtual void LogStoredProfileCount(size_t num_profiles) const;
+  static void LogStoredProfileCount(size_t num_profiles);
 
   // Log the number of Autofill suggestions presented to the user when filling a
   // form.
-  virtual void LogAddressSuggestionsCount(size_t num_suggestions) const;
+  static void LogAddressSuggestionsCount(size_t num_suggestions);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AutofillMetrics);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(AutofillMetrics);
 };
 
 }  // namespace autofill

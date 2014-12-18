@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 
 class Profile;
 
@@ -57,10 +58,6 @@ class AutofillDialogControllerAndroid : public AutofillDialogController {
       const GURL& source_url,
       const AutofillClient::ResultCallback& callback);
 
-  const AutofillMetrics& GetMetricLogger() const {
-    return metric_logger_;
-  }
-
   // Logs metrics when the dialog is submitted.
   void LogOnFinishSubmitMetrics();
 
@@ -74,7 +71,6 @@ class AutofillDialogControllerAndroid : public AutofillDialogController {
   content::WebContents* const contents_;
 
   // For logging UMA metrics.
-  const AutofillMetrics metric_logger_;
   base::Time dialog_shown_timestamp_;
   AutofillMetrics::DialogInitialUserStateMetric initial_user_state_;
 

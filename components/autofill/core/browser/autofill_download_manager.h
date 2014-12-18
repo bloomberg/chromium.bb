@@ -27,7 +27,6 @@ class URLFetcher;
 namespace autofill {
 
 class AutofillDriver;
-class AutofillMetrics;
 class FormStructure;
 
 // Handles getting and updating Autofill heuristics.
@@ -68,8 +67,7 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
   // Starts a query request to Autofill servers. The observer is called with the
   // list of the fields of all requested forms.
   // |forms| - array of forms aggregated in this request.
-  bool StartQueryRequest(const std::vector<FormStructure*>& forms,
-                         const AutofillMetrics& metric_logger);
+  bool StartQueryRequest(const std::vector<FormStructure*>& forms);
 
   // Starts an upload request for the given |form|, unless throttled by the
   // server. The probability of the request going over the wire is

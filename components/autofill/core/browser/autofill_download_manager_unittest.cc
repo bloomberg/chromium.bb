@@ -10,6 +10,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/test_timeouts.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
@@ -29,15 +30,6 @@ using base::ASCIIToUTF16;
 namespace autofill {
 
 namespace {
-
-class MockAutofillMetrics : public AutofillMetrics {
- public:
-  MockAutofillMetrics() {}
-  MOCK_CONST_METHOD1(LogServerQueryMetric, void(ServerQueryMetric metric));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockAutofillMetrics);
-};
 
 // Call |fetcher->OnURLFetchComplete()| as the URLFetcher would when
 // a response is received.  Params allow caller to set fake status.
@@ -199,11 +191,11 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   form_structures.push_back(form_structure);
 
   // Request with id 0.
-  MockAutofillMetrics mock_metric_logger;
-  EXPECT_CALL(mock_metric_logger,
-              LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(1);
-  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures.get(),
-                                                  mock_metric_logger));
+  base::HistogramTester histogram;
+  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures.get()));
+  histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
+                               AutofillMetrics::QUERY_SENT, 1);
+
   // Set upload to 100% so requests happen.
   download_manager_.SetPositiveUploadRate(1.0);
   download_manager_.SetNegativeUploadRate(1.0);
@@ -292,12 +284,11 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   form_structures.push_back(form_structure);
 
   // Request with id 3.
-  EXPECT_CALL(mock_metric_logger,
-              LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(1);
-  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures.get(),
-                                                  mock_metric_logger));
+  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures.get()));
   fetcher = factory.GetFetcherByID(3);
   ASSERT_TRUE(fetcher);
+  histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
+                               AutofillMetrics::QUERY_SENT, 2);
   fetcher->set_backoff_delay(TestTimeouts::action_max_timeout());
   FakeOnURLFetchComplete(fetcher, 500, std::string(responses[0]));
 
@@ -309,12 +300,11 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   responses_.pop_front();
 
   // Query requests should be ignored for the next 10 seconds.
-  EXPECT_CALL(mock_metric_logger,
-              LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(0);
-  EXPECT_FALSE(download_manager_.StartQueryRequest(form_structures.get(),
-                                                   mock_metric_logger));
+  EXPECT_FALSE(download_manager_.StartQueryRequest(form_structures.get()));
   fetcher = factory.GetFetcherByID(4);
   EXPECT_EQ(NULL, fetcher);
+  histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
+                               AutofillMetrics::QUERY_SENT, 2);
 
   // Set upload required to true so requests happen.
   form_structures[0]->upload_required_ = UPLOAD_REQUIRED;
@@ -403,12 +393,12 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
     "</autofillqueryresponse>",
   };
 
+  base::HistogramTester histogram;
   // Request with id 0.
-  MockAutofillMetrics mock_metric_logger;
-  EXPECT_CALL(mock_metric_logger,
-              LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(1);
-  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures0.get(),
-                                                  mock_metric_logger));
+  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures0.get()));
+  histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
+                               AutofillMetrics::QUERY_SENT, 1);
+
   // No responses yet
   EXPECT_EQ(static_cast<size_t>(0), responses_.size());
 
@@ -421,20 +411,18 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   responses_.clear();
 
   // No actual request - should be a cache hit.
-  EXPECT_CALL(mock_metric_logger,
-              LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(1);
-  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures0.get(),
-                                                  mock_metric_logger));
+  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures0.get()));
+  histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
+                               AutofillMetrics::QUERY_SENT, 2);
   // Data is available immediately from cache - no over-the-wire trip.
   ASSERT_EQ(static_cast<size_t>(1), responses_.size());
   EXPECT_EQ(responses[0], responses_.front().response);
   responses_.clear();
 
   // Request with id 1.
-  EXPECT_CALL(mock_metric_logger,
-              LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(1);
-  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures1.get(),
-                                                  mock_metric_logger));
+  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures1.get()));
+  histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
+                               AutofillMetrics::QUERY_SENT, 3);
   // No responses yet
   EXPECT_EQ(static_cast<size_t>(0), responses_.size());
 
@@ -447,10 +435,9 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   responses_.clear();
 
   // Request with id 2.
-  EXPECT_CALL(mock_metric_logger,
-              LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(1);
-  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures2.get(),
-                                                  mock_metric_logger));
+  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures2.get()));
+  histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
+                               AutofillMetrics::QUERY_SENT, 4);
 
   fetcher = factory.GetFetcherByID(2);
   ASSERT_TRUE(fetcher);
@@ -461,15 +448,13 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   responses_.clear();
 
   // No actual requests - should be a cache hit.
-  EXPECT_CALL(mock_metric_logger,
-              LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(1);
-  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures1.get(),
-                                                  mock_metric_logger));
+  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures1.get()));
+  histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
+                               AutofillMetrics::QUERY_SENT, 5);
 
-  EXPECT_CALL(mock_metric_logger,
-              LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(1);
-  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures2.get(),
-                                                  mock_metric_logger));
+  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures2.get()));
+  histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
+                               AutofillMetrics::QUERY_SENT, 6);
 
   ASSERT_EQ(static_cast<size_t>(2), responses_.size());
   EXPECT_EQ(responses[1], responses_.front().response);
@@ -478,10 +463,9 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
 
   // The first structure should've expired.
   // Request with id 3.
-  EXPECT_CALL(mock_metric_logger,
-              LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(1);
-  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures0.get(),
-                                                  mock_metric_logger));
+  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures0.get()));
+  histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
+                               AutofillMetrics::QUERY_SENT, 7);
   // No responses yet
   EXPECT_EQ(static_cast<size_t>(0), responses_.size());
 

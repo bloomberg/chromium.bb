@@ -44,7 +44,6 @@ class AutofillExternalDelegate;
 class AutofillField;
 class AutofillClient;
 class AutofillManagerTestDelegate;
-class AutofillMetrics;
 class AutofillProfile;
 class AutofillType;
 class CreditCard;
@@ -211,9 +210,6 @@ class AutofillManager : public AutofillDownloadManager::Observer {
                        SuggestionBackendID* cc_backend_id,
                        SuggestionBackendID* profile_backend_id) const;
 
-  const AutofillMetrics* metric_logger() const { return metric_logger_.get(); }
-  void set_metric_logger(const AutofillMetrics* metric_logger);
-
   ScopedVector<FormStructure>* form_structures() { return &form_structures_; }
 
   // Exposed for testing.
@@ -327,8 +323,6 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   // Handles single-field autocomplete form data.
   scoped_ptr<AutocompleteHistoryManager> autocomplete_history_manager_;
 
-  // For logging UMA metrics. Overridden by metrics tests.
-  scoped_ptr<const AutofillMetrics> metric_logger_;
   // Have we logged whether Autofill is enabled for this page load?
   bool has_logged_autofill_enabled_;
   // Have we logged an address suggestions count metric for this page?

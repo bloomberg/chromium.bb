@@ -148,7 +148,6 @@ AutofillManager::AutofillManager(
       personal_data_(client->GetPersonalDataManager()),
       autocomplete_history_manager_(
           new AutocompleteHistoryManager(driver, client)),
-      metric_logger_(new AutofillMetrics),
       has_logged_autofill_enabled_(false),
       has_logged_address_suggestions_count_(false),
       did_show_suggestions_(false),
@@ -384,7 +383,7 @@ void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms,
 
   bool enabled = IsAutofillEnabled();
   if (!has_logged_autofill_enabled_) {
-    metric_logger_->LogIsAutofillEnabledAtPageLoad(enabled);
+    AutofillMetrics::LogIsAutofillEnabledAtPageLoad(enabled);
     has_logged_autofill_enabled_ = true;
   }
 
@@ -411,17 +410,17 @@ void AutofillManager::OnTextFieldDidChange(const FormData& form,
 
   if (!user_did_type_) {
     user_did_type_ = true;
-    metric_logger_->LogUserHappinessMetric(AutofillMetrics::USER_DID_TYPE);
+    AutofillMetrics::LogUserHappinessMetric(AutofillMetrics::USER_DID_TYPE);
   }
 
   if (autofill_field->is_autofilled) {
     autofill_field->is_autofilled = false;
-    metric_logger_->LogUserHappinessMetric(
+    AutofillMetrics::LogUserHappinessMetric(
         AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD);
 
     if (!user_did_edit_autofilled_field_) {
       user_did_edit_autofilled_field_ = true;
-      metric_logger_->LogUserHappinessMetric(
+      AutofillMetrics::LogUserHappinessMetric(
           AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD_ONCE);
     }
   }
@@ -497,7 +496,7 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
         // The first time we show suggestions on this page, log the number of
         // suggestions shown.
         if (!has_logged_address_suggestions_count_ && !section_is_autofilled) {
-          metric_logger_->LogAddressSuggestionsCount(suggestions.size());
+          AutofillMetrics::LogAddressSuggestionsCount(suggestions.size());
           has_logged_address_suggestions_count_ = true;
         }
       }
@@ -568,10 +567,10 @@ void AutofillManager::OnDidFillAutofillFormData(const TimeTicks& timestamp) {
   if (test_delegate_)
     test_delegate_->DidFillFormData();
 
-  metric_logger_->LogUserHappinessMetric(AutofillMetrics::USER_DID_AUTOFILL);
+  AutofillMetrics::LogUserHappinessMetric(AutofillMetrics::USER_DID_AUTOFILL);
   if (!user_did_autofill_) {
     user_did_autofill_ = true;
-    metric_logger_->LogUserHappinessMetric(
+    AutofillMetrics::LogUserHappinessMetric(
         AutofillMetrics::USER_DID_AUTOFILL_ONCE);
   }
 
@@ -583,11 +582,11 @@ void AutofillManager::DidShowSuggestions(bool is_new_popup) {
     test_delegate_->DidShowSuggestions();
 
   if (is_new_popup) {
-    metric_logger_->LogUserHappinessMetric(AutofillMetrics::SUGGESTIONS_SHOWN);
+    AutofillMetrics::LogUserHappinessMetric(AutofillMetrics::SUGGESTIONS_SHOWN);
 
     if (!did_show_suggestions_) {
       did_show_suggestions_ = true;
-      metric_logger_->LogUserHappinessMetric(
+      AutofillMetrics::LogUserHappinessMetric(
           AutofillMetrics::SUGGESTIONS_SHOWN_ONCE);
     }
   }
@@ -646,9 +645,7 @@ void AutofillManager::OnSetDataList(const std::vector<base::string16>& values,
 void AutofillManager::OnLoadedServerPredictions(
     const std::string& response_xml) {
   // Parse and store the server predictions.
-  FormStructure::ParseQueryResponse(response_xml,
-                                    form_structures_.get(),
-                                    *metric_logger_);
+  FormStructure::ParseQueryResponse(response_xml, form_structures_.get());
 
   // Forward form structures to the password generation manager to detect
   // account creation forms.
@@ -691,9 +688,7 @@ void AutofillManager::UploadFormDataAsyncCallback(
     const TimeTicks& load_time,
     const TimeTicks& interaction_time,
     const TimeTicks& submission_time) {
-  submitted_form->LogQualityMetrics(*metric_logger_,
-                                    load_time,
-                                    interaction_time,
+  submitted_form->LogQualityMetrics(load_time, interaction_time,
                                     submission_time);
 
   if (submitted_form->ShouldBeCrowdsourced())
@@ -789,7 +784,6 @@ AutofillManager::AutofillManager(AutofillDriver* driver,
       personal_data_(personal_data),
       autocomplete_history_manager_(
           new AutocompleteHistoryManager(driver, client)),
-      metric_logger_(new AutofillMetrics),
       has_logged_autofill_enabled_(false),
       has_logged_address_suggestions_count_(false),
       did_show_suggestions_(false),
@@ -801,10 +795,6 @@ AutofillManager::AutofillManager(AutofillDriver* driver,
       weak_ptr_factory_(this) {
   DCHECK(driver_);
   DCHECK(client_);
-}
-
-void AutofillManager::set_metric_logger(const AutofillMetrics* metric_logger) {
-  metric_logger_.reset(metric_logger);
 }
 
 bool AutofillManager::RefreshDataModels() const {
@@ -1072,7 +1062,7 @@ bool AutofillManager::UpdateCachedForm(const FormData& live_form,
   // Add the new or updated form to our cache.
   form_structures_.push_back(new FormStructure(live_form));
   *updated_form = *form_structures_.rbegin();
-  (*updated_form)->DetermineHeuristicTypes(*metric_logger_);
+  (*updated_form)->DetermineHeuristicTypes();
 
   // If we have cached data, propagate it to the updated form.
   if (cached_form) {
@@ -1152,7 +1142,7 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
     if (!form_structure->ShouldBeParsed())
       continue;
 
-    form_structure->DetermineHeuristicTypes(*metric_logger_);
+    form_structure->DetermineHeuristicTypes();
 
     if (form_structure->ShouldBeCrowdsourced())
       form_structures_.push_back(form_structure.release());
@@ -1162,8 +1152,7 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
 
   if (!form_structures_.empty() && download_manager_) {
     // Query the server if at least one of the forms was parsed.
-    download_manager_->StartQueryRequest(form_structures_.get(),
-                                         *metric_logger_);
+    download_manager_->StartQueryRequest(form_structures_.get());
   }
 
   for (std::vector<FormStructure*>::const_iterator iter =
@@ -1173,7 +1162,7 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
   }
 
   if (!form_structures_.empty())
-    metric_logger_->LogUserHappinessMetric(AutofillMetrics::FORMS_LOADED);
+    AutofillMetrics::LogUserHappinessMetric(AutofillMetrics::FORMS_LOADED);
 
   // For the |non_queryable_forms|, we have all the field type info we're ever
   // going to get about them.  For the other forms, we'll wait until we get a

@@ -97,15 +97,6 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
   bool is_off_the_record_;
 };
 
-// Unlike the base AutofillMetrics, exposes copy and assignment constructors,
-// which are handy for briefer test code.  The AutofillMetrics class is
-// stateless, so this is safe.
-class TestAutofillMetrics : public autofill::AutofillMetrics {
- public:
-  TestAutofillMetrics() {}
-  ~TestAutofillMetrics() override {}
-};
-
 }  // anonymous namespace
 
 class PasswordGenerationManagerTest : public testing::Test {
@@ -201,8 +192,7 @@ TEST_F(PasswordGenerationManagerTest, DetectAccountCreationForms) {
       "<field autofilltype=\"76\" />"
       "<field autofilltype=\"75\" />"
       "</autofillqueryresponse>";
-  autofill::FormStructure::ParseQueryResponse(
-      kServerResponse, forms, TestAutofillMetrics());
+  autofill::FormStructure::ParseQueryResponse(kServerResponse, forms);
 
   DetectAccountCreationForms(forms);
   EXPECT_EQ(1u, GetTestDriver()->GetFoundAccountCreationForms().size());

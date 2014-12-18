@@ -19,6 +19,7 @@
 #include "components/autofill/core/browser/autofill-inl.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_field.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/phone_number.h"
@@ -152,7 +153,6 @@ PersonalDataManager::PersonalDataManager(const std::string& app_locale)
       pending_profiles_query_(0),
       pending_creditcards_query_(0),
       app_locale_(app_locale),
-      metric_logger_(new AutofillMetrics),
       pref_service_(NULL),
       is_off_the_record_(false),
       has_logged_profile_count_(false) {}
@@ -165,7 +165,7 @@ void PersonalDataManager::Init(scoped_refptr<AutofillWebDataService> database,
   is_off_the_record_ = is_off_the_record;
 
   if (!is_off_the_record_)
-    metric_logger_->LogIsAutofillEnabledAtStartup(IsAutofillEnabled());
+    AutofillMetrics::LogIsAutofillEnabledAtStartup(IsAutofillEnabled());
 
   // WebDataService may not be available in tests.
   if (!database_.get())
@@ -1037,7 +1037,7 @@ std::string PersonalDataManager::SaveImportedCreditCard(
 
 void PersonalDataManager::LogProfileCount() const {
   if (!has_logged_profile_count_) {
-    metric_logger_->LogStoredProfileCount(web_profiles_.size());
+    AutofillMetrics::LogStoredProfileCount(web_profiles_.size());
     has_logged_profile_count_ = true;
   }
 }

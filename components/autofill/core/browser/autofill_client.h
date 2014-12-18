@@ -26,7 +26,6 @@ class PrefService;
 
 namespace autofill {
 
-class AutofillMetrics;
 class AutofillPopupDelegate;
 class AutofillWebDataService;
 class CreditCard;

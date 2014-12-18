@@ -12,8 +12,6 @@
 #include "components/autofill/content/browser/wallet/wallet_client.h"
 #include "components/autofill/core/browser/autofill_client.h"
 
-class AutofillMetrics;
-
 namespace autofill {
 namespace wallet {
 

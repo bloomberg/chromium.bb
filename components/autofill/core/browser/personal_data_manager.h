@@ -14,7 +14,6 @@
 #include "base/observer_list.h"
 #include "base/prefs/pref_member.h"
 #include "base/strings/string16.h"
-#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -286,15 +285,8 @@ class PersonalDataManager : public KeyedService,
   // this class and must outlive |this|.
   void SetPrefService(PrefService* pref_service);
 
-  // For tests.
-  const AutofillMetrics* metric_logger() const { return metric_logger_.get(); }
-
   void set_database(scoped_refptr<AutofillWebDataService> database) {
     database_ = database;
-  }
-
-  void set_metric_logger(const AutofillMetrics* metric_logger) {
-    metric_logger_.reset(metric_logger);
   }
 
   // The backing database that this PersonalDataManager uses.
@@ -344,9 +336,6 @@ class PersonalDataManager : public KeyedService,
 
   // The default country code for new addresses.
   mutable std::string default_country_code_;
-
-  // For logging UMA metrics. Overridden by metrics tests.
-  scoped_ptr<const AutofillMetrics> metric_logger_;
 
   // The PrefService that this instance uses. Must outlive this instance.
   PrefService* pref_service_;
