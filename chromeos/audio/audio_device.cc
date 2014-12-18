@@ -28,7 +28,6 @@ uint8 GetDevicePriority(AudioDeviceType type) {
     case AUDIO_TYPE_INTERNAL_MIC:
       return 1;
     case AUDIO_TYPE_KEYBOARD_MIC:
-    case AUDIO_TYPE_AOKR:
     case AUDIO_TYPE_OTHER:
     default:
       return 0;
@@ -56,8 +55,6 @@ std::string AudioDevice::GetTypeString(AudioDeviceType type) {
       return "INTERNAL_MIC";
     case AUDIO_TYPE_KEYBOARD_MIC:
       return "KEYBOARD_MIC";
-    case AUDIO_TYPE_AOKR:
-      return "AOKR";
     case AUDIO_TYPE_OTHER:
     default:
       return "OTHER";
@@ -83,8 +80,6 @@ AudioDeviceType AudioDevice::GetAudioType(
     return AUDIO_TYPE_HDMI;
   else if (node_type.find("INTERNAL_SPEAKER") != std::string::npos)
     return AUDIO_TYPE_INTERNAL_SPEAKER;
-  else if (node_type.find("AOKR") != std::string::npos)
-    return AUDIO_TYPE_AOKR;
   else
     return AUDIO_TYPE_OTHER;
 }

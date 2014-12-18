@@ -49,10 +49,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/audio/cras_audio_handler.h"
-#endif
-
 using extensions::BrowserContextKeyedAPIFactory;
 using extensions::HotwordPrivateEventService;
 
@@ -314,13 +310,6 @@ HotwordService::HotwordService(Profile* profile)
       reinstall_pending_(false),
       training_(false),
       weak_factory_(this) {
-#if defined(OS_CHROMEOS)
-  // Tests on chromeos need to have the handler initialized.
-  if (profile_->AsTestingProfile() &&
-      !chromeos::CrasAudioHandler::IsInitialized())
-    chromeos::CrasAudioHandler::InitializeForTesting();
-#endif
-
   extension_registry_observer_.Add(extensions::ExtensionRegistry::Get(profile));
   if (IsExperimentalHotwordingEnabled()) {
     // Disable the old extension so it doesn't interfere with the new stuff.

@@ -15,10 +15,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/audio/cras_audio_handler.h"
-#endif
-
 using content::BrowserContext;
 using content::BrowserThread;
 
@@ -47,16 +43,10 @@ bool HotwordServiceFactory::IsHotwordAllowed(BrowserContext* context) {
 
 // static
 bool HotwordServiceFactory::IsHotwordHardwareAvailable() {
-#if defined(OS_CHROMEOS)
-  chromeos::AudioDeviceList devices;
-  chromeos::CrasAudioHandler::Get()->GetAudioDevices(&devices);
-  for (size_t i = 0; i < devices.size(); ++i) {
-    if (devices[i].type == chromeos::AUDIO_TYPE_AOKR) {
-      DCHECK(devices[i].is_input);
-      return true;
-    }
-  }
-#endif
+  // TODO(rlp, dgreid): return has_hotword_hardware()
+  // Fill in once the hardware has the correct interface implemented.
+  // In the meantime, this function can be used to get other parts moving
+  // based on a flag.
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   return command_line->HasSwitch(switches::kEnableExperimentalHotwordHardware);
 }
