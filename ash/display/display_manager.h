@@ -77,8 +77,10 @@ class ASH_EXPORT DisplayManager
     MIRRORING
   };
 
-  // Returns the list of possible UI scales for the display.
-  static std::vector<float> GetScalesForDisplay(const DisplayInfo& info);
+  // Creates the display modes list for internal display given
+  // by |native_mode|.
+  static std::vector<DisplayMode> CreateInternalDisplayModeList(
+      const DisplayMode& native_mode);
 
   // Returns next valid UI scale.
   static float GetNextUIScale(const DisplayInfo& info, bool up);
@@ -163,9 +165,10 @@ class ASH_EXPORT DisplayManager
   // Sets the display's rotation.
   void SetDisplayRotation(int64 display_id, gfx::Display::Rotation rotation);
 
-  // Sets the display's ui scale.
-  // TODO(mukai): remove this and merge into SetDisplayMode.
-  void SetDisplayUIScale(int64 display_id, float ui_scale);
+  // Sets the display's ui scale. Returns true if it's successful, or
+  // false otherwise.  TODO(mukai): remove this and merge into
+  // SetDisplayMode.
+  bool SetDisplayUIScale(int64 display_id, float ui_scale);
 
   // Sets the display's resolution.
   // TODO(mukai): remove this and merge into SetDisplayMode.
@@ -305,6 +308,11 @@ class ASH_EXPORT DisplayManager
 
   // Create a screen instance to be used during shutdown.
   void CreateScreenForShutdown() const;
+
+  // A unit test may change the internal display id (which never happens on
+  // a real device). This will update the mode list for internal display
+  // for this test scenario.
+  void UpdateInternalDisplayModeListForTest();
 
 private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, ConvertPoint);

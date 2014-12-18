@@ -78,12 +78,18 @@ void DisplayManagerTestApi::UpdateDisplay(
   }
 
   display_manager_->OnNativeDisplaysChanged(display_info_list);
+  display_manager_->UpdateInternalDisplayModeListForTest();
 }
 
 int64 DisplayManagerTestApi::SetFirstDisplayAsInternalDisplay() {
   const gfx::Display& internal = display_manager_->displays_[0];
-  gfx::Display::SetInternalDisplayId(internal.id());
+  SetInternalDisplayId(internal.id());
   return gfx::Display::InternalDisplayId();
+}
+
+void DisplayManagerTestApi::SetInternalDisplayId(int64 id) {
+  gfx::Display::SetInternalDisplayId(id);
+  display_manager_->UpdateInternalDisplayModeListForTest();
 }
 
 void DisplayManagerTestApi::DisableChangeDisplayUponHostResize() {

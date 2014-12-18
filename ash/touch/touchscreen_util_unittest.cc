@@ -26,7 +26,7 @@ class TouchscreenUtilTest : public testing::Test {
       DisplayMode mode(gfx::Size(1920, 1080), 60.0, false, true);
       mode.native = true;
       std::vector<DisplayMode> modes(1, mode);
-      display.set_display_modes(modes);
+      display.SetDisplayModes(modes);
       displays_.push_back(display);
       gfx::Display::SetInternalDisplayId(1);
     }
@@ -36,7 +36,7 @@ class TouchscreenUtilTest : public testing::Test {
       DisplayMode mode(gfx::Size(800, 600), 60.0, false, true);
       mode.native = true;
       std::vector<DisplayMode> modes(1, mode);
-      display.set_display_modes(modes);
+      display.SetDisplayModes(modes);
       displays_.push_back(display);
     }
 
@@ -51,7 +51,7 @@ class TouchscreenUtilTest : public testing::Test {
       DisplayMode mode(gfx::Size(1024, 768), 60.0, false, true);
       mode.native = true;
       std::vector<DisplayMode> modes(1, mode);
-      display.set_display_modes(modes);
+      display.SetDisplayModes(modes);
       displays_.push_back(display);
     }
   }

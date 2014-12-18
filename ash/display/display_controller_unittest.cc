@@ -678,7 +678,9 @@ TEST_F(DisplayControllerTest, BoundsUpdated) {
 
   // UI scale is eanbled only on internal display.
   int64 secondary_id = GetSecondaryDisplay().id();
-  gfx::Display::SetInternalDisplayId(secondary_id);
+  test::DisplayManagerTestApi(display_manager)
+      .SetInternalDisplayId(secondary_id);
+
   display_manager->SetDisplayUIScale(secondary_id, 1.125f);
   EXPECT_EQ(1, observer.CountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
@@ -1141,8 +1143,10 @@ TEST_F(DisplayControllerTest, ScaleRootWindow) {
 
   UpdateDisplay("600x400*2@1.5,500x300");
 
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   gfx::Display display1 = Shell::GetScreen()->GetPrimaryDisplay();
-  gfx::Display::SetInternalDisplayId(display1.id());
+  test::DisplayManagerTestApi(display_manager)
+      .SetInternalDisplayId(display1.id());
 
   gfx::Display display2 = ScreenUtil::GetSecondaryDisplay();
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
@@ -1156,7 +1160,6 @@ TEST_F(DisplayControllerTest, ScaleRootWindow) {
   generator.MoveMouseToInHost(599, 200);
   EXPECT_EQ("449,150", event_handler.GetLocationAndReset());
 
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   display_manager->SetDisplayUIScale(display1.id(), 1.25f);
   display1 = Shell::GetScreen()->GetPrimaryDisplay();
   display2 = ScreenUtil::GetSecondaryDisplay();

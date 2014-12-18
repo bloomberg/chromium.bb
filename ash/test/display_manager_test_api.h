@@ -31,6 +31,10 @@ class DisplayManagerTestApi {
   // the internal display.
   int64 SetFirstDisplayAsInternalDisplay();
 
+  // Sets the display id for internal display and
+  // update the display mode list if necessary.
+  void SetInternalDisplayId(int64 id);
+
   // Don't update the display when the root window's size was changed.
   void DisableChangeDisplayUponHostResize();
 

@@ -93,9 +93,9 @@ struct DisplayModeMatcher {
 struct ScaleComparator {
   explicit ScaleComparator(float s) : scale(s) {}
 
-  bool operator()(float s) const {
+  bool operator()(const DisplayMode& mode) const {
     const float kEpsilon = 0.0001f;
-    return std::abs(scale - s) < kEpsilon;
+    return std::abs(scale - mode.ui_scale) < kEpsilon;
   }
   float scale;
 };
@@ -105,10 +105,50 @@ gfx::Display& GetInvalidDisplay() {
   return *invalid_display;
 }
 
-void MaybeInitInternalDisplay(int64 id) {
+void SetInternalDisplayModeList(DisplayInfo* info) {
+  DisplayMode native_mode;
+  native_mode.size = info->bounds_in_native().size();
+  native_mode.device_scale_factor = info->device_scale_factor();
+  native_mode.ui_scale = 1.0f;
+  info->SetDisplayModes(
+      DisplayManager::CreateInternalDisplayModeList(native_mode));
+}
+
+void MaybeInitInternalDisplay(DisplayInfo* info) {
+  int64 id = info->id();
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAshUseFirstDisplayAsInternal))
+  if (command_line->HasSwitch(switches::kAshUseFirstDisplayAsInternal)) {
     gfx::Display::SetInternalDisplayId(id);
+    SetInternalDisplayModeList(info);
+  }
+}
+
+std::vector<float> GetScalesForDisplay(const DisplayMode& native_mode) {
+#define ASSIGN_ARRAY(v, a) v.assign(a, a + arraysize(a))
+
+  std::vector<float> ret;
+  if (native_mode.device_scale_factor == 2.0f) {
+    ASSIGN_ARRAY(ret, kUIScalesFor2x);
+    return ret;
+  } else if (native_mode.device_scale_factor == 1.25f) {
+    ASSIGN_ARRAY(ret, kUIScalesFor1_25x);
+    return ret;
+  }
+  switch (native_mode.size.width()) {
+    case 1280:
+      ASSIGN_ARRAY(ret, kUIScalesFor1280);
+      break;
+    case 1366:
+      ASSIGN_ARRAY(ret, kUIScalesFor1366);
+      break;
+    default:
+      ASSIGN_ARRAY(ret, kUIScalesFor1280);
+#if defined(OS_CHROMEOS)
+      if (base::SysInfo::IsRunningOnChromeOS())
+        NOTREACHED() << "Unknown resolution:" << native_mode.size.ToString();
+#endif
+  }
+  return ret;
 }
 
 }  // namespace
@@ -159,47 +199,34 @@ DisplayManager::~DisplayManager() {
 }
 
 // static
-std::vector<float> DisplayManager::GetScalesForDisplay(
-    const DisplayInfo& info) {
+std::vector<DisplayMode> DisplayManager::CreateInternalDisplayModeList(
+    const DisplayMode& native_mode) {
+  std::vector<DisplayMode> display_mode_list;
 
-#define ASSIGN_ARRAY(v, a) v.assign(a, a + arraysize(a))
-
-  std::vector<float> ret;
-  if (info.device_scale_factor() == 2.0f) {
-    ASSIGN_ARRAY(ret, kUIScalesFor2x);
-    return ret;
-  } else if (info.device_scale_factor() == 1.25f) {
-    ASSIGN_ARRAY(ret, kUIScalesFor1_25x);
-    return ret;
+  std::vector<float> ui_scales = GetScalesForDisplay(native_mode);
+  float native_ui_scale = (native_mode.device_scale_factor == 1.25f)
+                              ? 1.0f
+                              : native_mode.device_scale_factor;
+  for (size_t i = 0; i < ui_scales.size(); ++i) {
+    DisplayMode mode = native_mode;
+    mode.ui_scale = ui_scales[i];
+    mode.native = (ui_scales[i] == native_ui_scale);
+    display_mode_list.push_back(mode);
   }
-  switch (info.bounds_in_native().width()) {
-    case 1280:
-      ASSIGN_ARRAY(ret, kUIScalesFor1280);
-      break;
-    case 1366:
-      ASSIGN_ARRAY(ret, kUIScalesFor1366);
-      break;
-    default:
-      ASSIGN_ARRAY(ret, kUIScalesFor1280);
-#if defined(OS_CHROMEOS)
-      if (base::SysInfo::IsRunningOnChromeOS())
-        NOTREACHED() << "Unknown resolution:" << info.ToString();
-#endif
-  }
-  return ret;
+  return display_mode_list;
 }
 
 // static
 float DisplayManager::GetNextUIScale(const DisplayInfo& info, bool up) {
-  float scale = info.configured_ui_scale();
-  std::vector<float> scales = GetScalesForDisplay(info);
-  for (size_t i = 0; i < scales.size(); ++i) {
-    if (ScaleComparator(scales[i])(scale)) {
-      if (up && i != scales.size() - 1)
-        return scales[i + 1];
-      if (!up && i != 0)
-        return scales[i - 1];
-      return scales[i];
+  ScaleComparator comparator(info.configured_ui_scale());
+  const std::vector<DisplayMode>& modes = info.display_modes();
+  for (auto iter = modes.begin(); iter != modes.end(); ++iter) {
+    if (comparator(*iter)) {
+      if (up && (iter + 1) != modes.end())
+        return (iter + 1)->ui_scale;
+      if (!up && iter != modes.begin())
+        return (iter - 1)->ui_scale;
+      return info.configured_ui_scale();
     }
   }
   // Fallback to 1.0f if the |scale| wasn't in the list.
@@ -220,7 +247,7 @@ bool DisplayManager::InitFromCommandLine() {
     info_list.push_back(DisplayInfo::CreateFromSpec(*iter));
     info_list.back().set_native(true);
   }
-  MaybeInitInternalDisplay(info_list[0].id());
+  MaybeInitInternalDisplay(&info_list[0]);
   if (info_list.size() > 1 &&
       command_line->HasSwitch(switches::kAshEnableSoftwareMirroring)) {
     SetSecondDisplayMode(MIRRORING);
@@ -233,7 +260,7 @@ void DisplayManager::InitDefaultDisplay() {
   DisplayInfoList info_list;
   info_list.push_back(DisplayInfo::CreateFromSpec(std::string()));
   info_list.back().set_native(true);
-  MaybeInitInternalDisplay(info_list[0].id());
+  MaybeInitInternalDisplay(&info_list[0]);
   OnNativeDisplaysChanged(info_list);
 }
 
@@ -423,33 +450,37 @@ void DisplayManager::SetDisplayRotation(int64 display_id,
   UpdateDisplays(display_info_list);
 }
 
-void DisplayManager::SetDisplayUIScale(int64 display_id,
+bool DisplayManager::SetDisplayUIScale(int64 display_id,
                                        float ui_scale) {
   if (!IsDisplayUIScalingEnabled() ||
       gfx::Display::InternalDisplayId() != display_id) {
-    return;
+    return false;
   }
-
+  bool found = false;
   // TODO(mukai): merge this implementation into SetDisplayMode().
   DisplayInfoList display_info_list;
   for (DisplayList::const_iterator iter = displays_.begin();
        iter != displays_.end(); ++iter) {
     DisplayInfo info = GetDisplayInfo(iter->id());
     if (info.id() == display_id) {
+      found = true;
       if (info.configured_ui_scale() == ui_scale)
-        return;
-      std::vector<float> scales = GetScalesForDisplay(info);
+        return true;
+      const std::vector<DisplayMode>& modes = info.display_modes();
+
       ScaleComparator comparator(ui_scale);
-      if (std::find_if(scales.begin(), scales.end(), comparator) ==
-          scales.end()) {
-        return;
-      }
+      if (std::find_if(modes.begin(), modes.end(), comparator) == modes.end())
+        return false;
       info.set_configured_ui_scale(ui_scale);
     }
     display_info_list.push_back(info);
   }
-  AddMirrorDisplayInfoIfAny(&display_info_list);
-  UpdateDisplays(display_info_list);
+  if (found) {
+    AddMirrorDisplayInfoIfAny(&display_info_list);
+    UpdateDisplays(display_info_list);
+    return true;
+  }
+  return false;
 }
 
 void DisplayManager::SetDisplayResolution(int64 display_id,
@@ -641,7 +672,7 @@ void DisplayManager::OnNativeDisplaysChanged(
     if (displays_.empty()) {
       std::vector<DisplayInfo> init_displays;
       init_displays.push_back(DisplayInfo::CreateFromSpec(std::string()));
-      MaybeInitInternalDisplay(init_displays[0].id());
+      MaybeInitInternalDisplay(&init_displays[0]);
       OnNativeDisplaysChanged(init_displays);
     } else {
       // Otherwise don't update the displays when all displays are disconnected.
@@ -1143,6 +1174,13 @@ void DisplayManager::CreateScreenForShutdown() const {
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE,
                                    screen_for_shutdown);
   }
+}
+
+void DisplayManager::UpdateInternalDisplayModeListForTest() {
+  if (display_info_.count(gfx::Display::InternalDisplayId()) == 0)
+    return;
+  DisplayInfo* info = &display_info_[gfx::Display::InternalDisplayId()];
+  SetInternalDisplayModeList(info);
 }
 
 gfx::Display* DisplayManager::FindDisplayForId(int64 id) {

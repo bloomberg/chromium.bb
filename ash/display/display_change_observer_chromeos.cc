@@ -59,50 +59,20 @@ const int kMinimumWidthFor4K = 3840;
 // available in extrenal large monitors.
 const float kAdditionalDeviceScaleFactorsFor4k[] = {1.25f, 2.0f};
 
-// Display mode list is sorted by:
-//  * the area in pixels in ascending order
-//  * refresh rate in descending order
-struct DisplayModeSorter {
-  explicit DisplayModeSorter(bool is_internal) : is_internal(is_internal) {}
-
-  bool operator()(const DisplayMode& a, const DisplayMode& b) {
-    gfx::Size size_a_dip = a.GetSizeInDIP(is_internal);
-    gfx::Size size_b_dip = b.GetSizeInDIP(is_internal);
-    if (size_a_dip.GetArea() == size_b_dip.GetArea())
-      return (a.refresh_rate > b.refresh_rate);
-    return (size_a_dip.GetArea() < size_b_dip.GetArea());
-  }
-
-  bool is_internal;
-};
-
 }  // namespace
 
 // static
 std::vector<DisplayMode> DisplayChangeObserver::GetInternalDisplayModeList(
     const DisplayInfo& display_info,
     const DisplayConfigurator::DisplayState& output) {
-  std::vector<DisplayMode> display_mode_list;
   const ui::DisplayMode* ui_native_mode = output.display->native_mode();
   DisplayMode native_mode(ui_native_mode->size(),
                           ui_native_mode->refresh_rate(),
                           ui_native_mode->is_interlaced(),
                           true);
   native_mode.device_scale_factor = display_info.device_scale_factor();
-  std::vector<float> ui_scales =
-      DisplayManager::GetScalesForDisplay(display_info);
-  float native_ui_scale = (display_info.device_scale_factor() == 1.25f) ?
-      1.0f : display_info.device_scale_factor();
-  for (size_t i = 0; i < ui_scales.size(); ++i) {
-    DisplayMode mode = native_mode;
-    mode.ui_scale = ui_scales[i];
-    mode.native = (ui_scales[i] == native_ui_scale);
-    display_mode_list.push_back(mode);
-  }
 
-  std::sort(display_mode_list.begin(), display_mode_list.end(),
-            DisplayModeSorter(true));
-  return display_mode_list;
+  return DisplayManager::CreateInternalDisplayModeList(native_mode);
 }
 
 // static
@@ -164,8 +134,6 @@ std::vector<DisplayMode> DisplayChangeObserver::GetExternalDisplayModeList(
     }
   }
 
-  std::sort(display_mode_list.begin(), display_mode_list.end(),
-            DisplayModeSorter(false));
   return display_mode_list;
 }
 
@@ -265,7 +233,7 @@ void DisplayChangeObserver::OnDisplayModeChanged(
         (state.display->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL) ?
         GetInternalDisplayModeList(new_info, state) :
         GetExternalDisplayModeList(state);
-    new_info.set_display_modes(display_modes);
+    new_info.SetDisplayModes(display_modes);
 
     new_info.set_available_color_profiles(
         Shell::GetInstance()

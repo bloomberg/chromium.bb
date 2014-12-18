@@ -268,6 +268,10 @@ TEST_F(DisplayChangeObserverTest, GetExternalDisplayModeList4K) {
 
   std::vector<DisplayMode> display_modes =
       DisplayChangeObserver::GetExternalDisplayModeList(output);
+  DisplayInfo info;
+  info.SetDisplayModes(display_modes);  // Sort as external display.
+  display_modes = info.display_modes();
+
   ASSERT_EQ(9u, display_modes.size());
   EXPECT_EQ("640x480", display_modes[0].size.ToString());
   EXPECT_TRUE(display_modes[0].interlaced);

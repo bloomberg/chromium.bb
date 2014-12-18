@@ -43,6 +43,23 @@ bool GetDisplayBounds(
   return false;
 }
 
+// Display mode list is sorted by:
+//  * the area in pixels in ascending order
+//  * refresh rate in descending order
+struct DisplayModeSorter {
+  explicit DisplayModeSorter(bool is_internal) : is_internal(is_internal) {}
+
+  bool operator()(const DisplayMode& a, const DisplayMode& b) {
+    gfx::Size size_a_dip = a.GetSizeInDIP(is_internal);
+    gfx::Size size_b_dip = b.GetSizeInDIP(is_internal);
+    if (size_a_dip.GetArea() == size_b_dip.GetArea())
+      return (a.refresh_rate > b.refresh_rate);
+    return (size_a_dip.GetArea() < size_b_dip.GetArea());
+  }
+
+  bool is_internal;
+};
+
 }  // namespace
 
 DisplayMode::DisplayMode()
@@ -193,7 +210,7 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
   display_info.set_rotation(rotation);
   display_info.set_configured_ui_scale(ui_scale);
   display_info.SetBounds(bounds_in_native);
-  display_info.set_display_modes(display_modes);
+  display_info.SetDisplayModes(display_modes);
 
   // To test the overscan, it creates the default 5% overscan.
   if (has_overscan) {
@@ -326,6 +343,13 @@ void DisplayInfo::SetOverscanInsets(const gfx::Insets& insets_in_dip) {
 
 gfx::Insets DisplayInfo::GetOverscanInsetsInPixel() const {
   return overscan_insets_in_dip_.Scale(device_scale_factor_);
+}
+
+void DisplayInfo::SetDisplayModes(
+    const std::vector<DisplayMode>& display_modes) {
+  display_modes_ = display_modes;
+  std::sort(display_modes_.begin(), display_modes_.end(),
+            DisplayModeSorter(id_ == gfx::Display::InternalDisplayId()));
 }
 
 gfx::Size DisplayInfo::GetNativeModeSize() const {

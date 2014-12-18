@@ -212,7 +212,8 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
 
   UpdateDisplay("200x200*2, 400x300#400x400|300x200*1.25");
   int64 id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
-  gfx::Display::SetInternalDisplayId(id1);
+  ash::test::DisplayManagerTestApi test_api(display_manager);
+  test_api.SetInternalDisplayId(id1);
   int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
   int64 dummy_id = id2 + 1;
   ASSERT_NE(id1, dummy_id);
@@ -221,7 +222,6 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   profiles.push_back(ui::COLOR_PROFILE_DYNAMIC);
   profiles.push_back(ui::COLOR_PROFILE_MOVIE);
   profiles.push_back(ui::COLOR_PROFILE_READING);
-  ash::test::DisplayManagerTestApi test_api(display_manager);
   // Allows only |id1|.
   test_api.SetAvailableColorProfiles(id1, profiles);
   display_manager->SetColorCalibrationProfile(id1, ui::COLOR_PROFILE_DYNAMIC);
@@ -238,8 +238,8 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
 
   display_controller->SetOverscanInsets(id1, gfx::Insets(10, 11, 12, 13));
   display_manager->SetDisplayRotation(id1, gfx::Display::ROTATE_90);
-  display_manager->SetDisplayUIScale(id1, 1.25f);
-  display_manager->SetDisplayUIScale(id2, 1.25f);
+  EXPECT_TRUE(display_manager->SetDisplayUIScale(id1, 1.25f));
+  EXPECT_FALSE(display_manager->SetDisplayUIScale(id2, 1.25f));
 
   const base::DictionaryValue* displays =
       local_state()->GetDictionary(prefs::kSecondaryDisplays);
@@ -557,7 +557,8 @@ TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {
 
   LoggedInAsGuest();
   int64 id1 = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
-  gfx::Display::SetInternalDisplayId(id1);
+  ash::test::DisplayManagerTestApi(display_manager)
+      .SetInternalDisplayId(id1);
   int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
   ash::DisplayLayout layout(ash::DisplayLayout::TOP, 10);
   SetCurrentDisplayLayout(layout);

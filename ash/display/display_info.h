@@ -178,9 +178,9 @@ class ASH_EXPORT DisplayInfo {
   const std::vector<DisplayMode>& display_modes() const {
     return display_modes_;
   }
-  void set_display_modes(std::vector<DisplayMode>& display_modes) {
-    display_modes_.swap(display_modes);
-  }
+  // Sets the display mode list. The mode list will be sorted for the
+  // display.
+  void SetDisplayModes(const std::vector<DisplayMode>& display_modes);
 
   // Returns the native mode size. If a native mode is not present, return an
   // empty size.

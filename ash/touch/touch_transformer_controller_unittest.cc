@@ -25,7 +25,7 @@ DisplayInfo CreateDisplayInfo(int64 id,
   // Create a default mode.
   std::vector<DisplayMode> default_modes(
       1, DisplayMode(bounds.size(), 60, false, true));
-  info.set_display_modes(default_modes);
+  info.SetDisplayModes(default_modes);
 
   return info;
 }
@@ -54,7 +54,7 @@ TEST_F(TouchTransformerControllerTest, TouchTransformerMirrorModeLetterboxing) {
       DisplayMode(gfx::Size(2560, 1700), 60, false, true));
   internal_modes.push_back(
       DisplayMode(gfx::Size(1920, 1200), 60, false, false));
-  internal_display_info.set_display_modes(internal_modes);
+  internal_display_info.SetDisplayModes(internal_modes);
 
   DisplayInfo external_display_info =
       CreateDisplayInfo(2, 11u, gfx::Rect(0, 0, 1920, 1200));
@@ -127,7 +127,7 @@ TEST_F(TouchTransformerControllerTest, TouchTransformerMirrorModePillarboxing) {
       DisplayMode(gfx::Size(1366, 768), 60, false, true));
   internal_modes.push_back(
       DisplayMode(gfx::Size(1024, 768), 60, false, false));
-  internal_display_info.set_display_modes(internal_modes);
+  internal_display_info.SetDisplayModes(internal_modes);
 
   DisplayInfo external_display_info =
       CreateDisplayInfo(2, 11, gfx::Rect(0, 0, 1024, 768));
