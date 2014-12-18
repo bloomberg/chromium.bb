@@ -117,10 +117,19 @@ class CONTENT_EXPORT RenderFrameProxy
                         bool should_replace_current_entry);
   virtual void forwardInputEvent(const blink::WebInputEvent* event);
 
+  // IPC handlers
+  void OnDidStartLoading();
+
  private:
   RenderFrameProxy(int routing_id, int frame_routing_id);
 
   void Init(blink::WebRemoteFrame* frame, RenderViewImpl* render_view);
+
+  // Navigating a top-level frame cross-process does not swap the WebLocalFrame
+  // for a WebRemoteFrame in the frame tree. In this case, this WebRemoteFrame
+  // is not attached to the frame tree and there is no blink::Frame associated
+  // with it, so it is not in state where most operations on it will succeed.
+  bool IsMainFrameDetachedFromTree() const;
 
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& msg) override;
@@ -130,6 +139,7 @@ class CONTENT_EXPORT RenderFrameProxy
   void OnChildFrameProcessGone();
   void OnCompositorFrameSwapped(const IPC::Message& message);
   void OnDisownOpener();
+  void OnDidStopLoading();
 
   // The routing ID by which this RenderFrameProxy is known.
   const int routing_id_;

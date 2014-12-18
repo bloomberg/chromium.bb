@@ -235,11 +235,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Tells the renderer that this RenderFrame is being swapped out for one in a
   // different renderer process.  It should run its unload handler and move to
   // a blank document.  If |proxy| is not null, it should also create a
-  // RenderFrameProxy to replace the RenderFrame. The renderer should preserve
-  // the RenderFrameProxy object until it exits, in case we come back.  The
-  // renderer can exit if it has no other active RenderFrames, but not until
-  // WasSwappedOut is called.
-  void SwapOut(RenderFrameProxyHost* proxy);
+  // RenderFrameProxy to replace the RenderFrame and set it to |is_loading|
+  // state. The renderer should preserve the RenderFrameProxy object until it
+  // exits, in case we come back.  The renderer can exit if it has no other
+  // active RenderFrames, but not until WasSwappedOut is called.
+  void SwapOut(RenderFrameProxyHost* proxy, bool is_loading);
 
   bool is_waiting_for_beforeunload_ack() const {
     return is_waiting_for_beforeunload_ack_;

@@ -143,6 +143,11 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
   CHECK(result.second) << "Inserted a duplicate item.";
 }
 
+bool RenderFrameProxy::IsMainFrameDetachedFromTree() const {
+  return web_frame_->top() == web_frame_ &&
+      render_view_->webview()->mainFrame()->isWebLocalFrame();
+}
+
 void RenderFrameProxy::DidCommitCompositorFrame() {
   if (compositing_helper_.get())
     compositing_helper_->DidCommitCompositorFrame();
@@ -162,6 +167,8 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER_GENERIC(FrameMsg_CompositorFrameSwapped,
                                 OnCompositorFrameSwapped(msg))
     IPC_MESSAGE_HANDLER(FrameMsg_DisownOpener, OnDisownOpener)
+    IPC_MESSAGE_HANDLER(FrameMsg_DidStartLoading, OnDidStartLoading)
+    IPC_MESSAGE_HANDLER(FrameMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -222,6 +229,20 @@ void RenderFrameProxy::OnDisownOpener() {
 
   if (web_frame_->opener())
     web_frame_->setOpener(NULL);
+}
+
+void RenderFrameProxy::OnDidStartLoading() {
+  if (IsMainFrameDetachedFromTree())
+    return;
+
+  web_frame_->didStartLoading();
+}
+
+void RenderFrameProxy::OnDidStopLoading() {
+  if (IsMainFrameDetachedFromTree())
+    return;
+
+  web_frame_->didStopLoading();
 }
 
 void RenderFrameProxy::frameDetached() {

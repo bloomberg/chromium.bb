@@ -411,12 +411,21 @@ IPC_MESSAGE_ROUTED0(FrameMsg_BeforeUnload)
 // Instructs the frame to swap out for a cross-site transition, including
 // running the unload event handler and creating a RenderFrameProxy with the
 // given |proxy_routing_id|. Expects a SwapOut_ACK message when finished.
-IPC_MESSAGE_ROUTED2(FrameMsg_SwapOut,
+IPC_MESSAGE_ROUTED3(FrameMsg_SwapOut,
                     int /* proxy_routing_id */,
+                    bool /* is_loading */,
                     content::FrameReplicationState /* replication_state */)
 
 // Instructs the frame to stop the load in progress, if any.
 IPC_MESSAGE_ROUTED0(FrameMsg_Stop)
+
+// A message sent to RenderFrameProxy to indicate that its corresponding
+// RenderFrame has started loading a document.
+IPC_MESSAGE_ROUTED0(FrameMsg_DidStartLoading)
+
+// A message sent to RenderFrameProxy to indicate that its corresponding
+// RenderFrame has completed loading.
+IPC_MESSAGE_ROUTED0(FrameMsg_DidStopLoading)
 
 // Request for the renderer to insert CSS into the frame.
 IPC_MESSAGE_ROUTED1(FrameMsg_CSSInsertRequest,

@@ -178,7 +178,7 @@ TEST_F(RendererAccessibilityTest,
   accessibility->HandleAXEvent(
       root_obj,
       ui::AX_EVENT_VALUE_CHANGED);
-  view()->GetMainRenderFrame()->OnSwapOut(kProxyRoutingId,
+  view()->GetMainRenderFrame()->OnSwapOut(kProxyRoutingId, true,
                                           content::FrameReplicationState());
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_FALSE(sink_->GetUniqueMessageMatching(

@@ -556,6 +556,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // content/common/*_messages.h for the message that the function is handling.
   void OnBeforeUnload();
   void OnSwapOut(int proxy_routing_id,
+                 bool is_loading,
                  const FrameReplicationState& replicated_frame_state);
   void OnStop();
   void OnShowContextMenu(const gfx::Point& location);

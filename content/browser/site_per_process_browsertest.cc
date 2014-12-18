@@ -21,6 +21,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
@@ -968,6 +969,40 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Ensure that we have navigated using the top level process.
   EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
             root->child_at(0)->current_frame_host()->GetSiteInstance());
+}
+
+// Ensure that navigating subframes in --site-per-process mode properly fires
+// the DidStopLoading event on WebContentsObserver.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteDidStopLoading) {
+  GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(shell()->web_contents())->
+          GetFrameTree()->root();
+
+  SitePerProcessWebContentsObserver observer(shell()->web_contents());
+
+  // Load same-site page into iframe.
+  FrameTreeNode* child = root->child_at(0);
+  GURL http_url(embedded_test_server()->GetURL("/title1.html"));
+  NavigateFrameToURL(child, http_url);
+  EXPECT_EQ(http_url, observer.navigation_url());
+  EXPECT_TRUE(observer.navigation_succeeded());
+
+  // Load cross-site page into iframe.
+  TestNavigationObserver nav_observer(shell()->web_contents(), 1);
+  GURL url = embedded_test_server()->GetURL("foo.com", "/title2.html");
+  NavigationController::LoadURLParams params(url);
+  params.transition_type = ui::PAGE_TRANSITION_LINK;
+  params.frame_tree_node_id = child->frame_tree_node_id();
+  child->navigator()->GetController()->LoadURLWithParams(params);
+  nav_observer.Wait();
+
+  // Verify that the navigation succeeded and the expected URL was loaded.
+  EXPECT_TRUE(observer.navigation_succeeded());
+  EXPECT_EQ(url, observer.navigation_url());
 }
 
 }  // namespace content

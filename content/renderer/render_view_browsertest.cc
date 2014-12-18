@@ -545,7 +545,7 @@ TEST_F(RenderViewImplTest, SendSwapOutACK) {
   RenderProcess::current()->AddRefProcess();
 
   // Respond to a swap out request.
-  view()->GetMainRenderFrame()->OnSwapOut(kProxyRoutingId,
+  view()->GetMainRenderFrame()->OnSwapOut(kProxyRoutingId, true,
                                           content::FrameReplicationState());
 
   // Ensure the swap out commits synchronously.
@@ -559,7 +559,7 @@ TEST_F(RenderViewImplTest, SendSwapOutACK) {
   // It is possible to get another swap out request.  Ensure that we send
   // an ACK, even if we don't have to do anything else.
   render_thread_->sink().ClearMessages();
-  view()->GetMainRenderFrame()->OnSwapOut(kProxyRoutingId,
+  view()->GetMainRenderFrame()->OnSwapOut(kProxyRoutingId, false,
                                           content::FrameReplicationState());
   const IPC::Message* msg2 = render_thread_->sink().GetUniqueMessageMatching(
       FrameHostMsg_SwapOut_ACK::ID);
@@ -620,7 +620,7 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   ProcessPendingMessages();
 
   // Respond to a swap out request.
-  view()->GetMainRenderFrame()->OnSwapOut(kProxyRoutingId,
+  view()->GetMainRenderFrame()->OnSwapOut(kProxyRoutingId, true,
                                           content::FrameReplicationState());
 
   // Check for a OnSwapOutACK.
@@ -679,7 +679,7 @@ TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
   // WebRemoteFrame.
   content::FrameReplicationState replication_state;
   replication_state.origin = url::Origin("http://foo.com");
-  child_frame->OnSwapOut(kProxyRoutingId, replication_state);
+  child_frame->OnSwapOut(kProxyRoutingId, true, replication_state);
 
   // The child frame should now be a WebRemoteFrame.
   EXPECT_TRUE(web_frame->firstChild()->isWebRemoteFrame());
@@ -694,7 +694,7 @@ TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
   replication_state.origin = url::Origin();
   RenderFrameImpl* child_frame2 = static_cast<RenderFrameImpl*>(
       RenderFrame::FromWebFrame(web_frame->lastChild()));
-  child_frame2->OnSwapOut(kProxyRoutingId + 1, replication_state);
+  child_frame2->OnSwapOut(kProxyRoutingId + 1, true, replication_state);
   EXPECT_TRUE(web_frame->lastChild()->isWebRemoteFrame());
   EXPECT_TRUE(web_frame->lastChild()->securityOrigin().isUnique());
 }

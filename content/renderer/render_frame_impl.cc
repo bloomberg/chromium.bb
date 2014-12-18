@@ -1103,6 +1103,7 @@ void RenderFrameImpl::OnBeforeUnload() {
 
 void RenderFrameImpl::OnSwapOut(
     int proxy_routing_id,
+    bool is_loading,
     const FrameReplicationState& replicated_frame_state) {
   TRACE_EVENT1("navigation", "RenderFrameImpl::OnSwapOut", "id", routing_id_);
   RenderFrameProxy* proxy = NULL;
@@ -1179,6 +1180,10 @@ void RenderFrameImpl::OnSwapOut(
   if (proxy) {
     if (!is_main_frame) {
       frame_->swap(proxy->web_frame());
+
+      if (is_loading)
+        proxy->OnDidStartLoading();
+
       if (is_site_per_process) {
         // TODO(nasko): delete the frame here, since we've replaced it with a
         // proxy.

@@ -753,7 +753,9 @@ void RenderFrameHostImpl::OnDeferredAfterResponseStarted(
     delegate_->DidDeferAfterResponseStarted(transition_data);
 }
 
-void RenderFrameHostImpl::SwapOut(RenderFrameProxyHost* proxy) {
+void RenderFrameHostImpl::SwapOut(
+    RenderFrameProxyHost* proxy,
+    bool is_loading) {
   // The end of this event is in OnSwapOutACK when the RenderFrame has completed
   // the operation and sends back an IPC message.
   // The trace event may not end properly if the ACK times out.  We expect this
@@ -781,7 +783,7 @@ void RenderFrameHostImpl::SwapOut(RenderFrameProxyHost* proxy) {
   }
 
   if (IsRenderFrameLive()) {
-    Send(new FrameMsg_SwapOut(routing_id_, proxy_routing_id,
+    Send(new FrameMsg_SwapOut(routing_id_, proxy_routing_id, is_loading,
                               replication_state));
   }
 

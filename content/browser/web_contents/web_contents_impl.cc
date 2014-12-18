@@ -2754,6 +2754,9 @@ void WebContentsImpl::OnDidStartLoading(bool to_different_document) {
     ++loading_frames_in_progress_;
   }
 
+  // Notify the RenderFrameHostManager of the event.
+  rfh->frame_tree_node()->render_manager()->OnDidStartLoading();
+
   loading_progresses_[render_frame_id] = kMinimumLoadingProgress;
   SendLoadProgressChanged();
 }
@@ -2772,6 +2775,9 @@ void WebContentsImpl::OnDidStopLoading() {
     if (loading_total_progress_ == 1.0)
       ResetLoadProgressState();
   }
+
+  // Notify the RenderFrameHostManager of the event.
+  rfh->frame_tree_node()->render_manager()->OnDidStopLoading();
 
   // TODO(japhet): This should be a DCHECK, but the pdf plugin sometimes
   // calls DidStopLoading() without a matching DidStartLoading().

@@ -517,7 +517,7 @@ void RenderFrameHostManager::SwapOutOldFrame(
       old_render_frame_host->GetSiteInstance()->active_frame_count();
   if (active_frame_count <= 1) {
     // Tell the old RenderFrameHost to swap out, with no proxy to replace it.
-    old_render_frame_host->SwapOut(NULL);
+    old_render_frame_host->SwapOut(NULL, true);
     MoveToPendingDeleteHosts(old_render_frame_host.Pass());
 
     // Also clear out any proxies from this SiteInstance, in case this was the
@@ -536,7 +536,7 @@ void RenderFrameHostManager::SwapOutOldFrame(
       << "Inserting a duplicate item.";
 
   // Tell the old RenderFrameHost to swap out and be replaced by the proxy.
-  old_render_frame_host->SwapOut(proxy);
+  old_render_frame_host->SwapOut(proxy, true);
 
   bool is_main_frame = frame_tree_node_->IsMainFrame();
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess) &&
@@ -571,7 +571,7 @@ void RenderFrameHostManager::DiscardUnusedFrame(
     RenderFrameProxyHost* proxy =
         new RenderFrameProxyHost(site_instance, frame_tree_node_);
     proxy_hosts_[site_instance->GetId()] = proxy;
-    render_frame_host->SwapOut(proxy);
+    render_frame_host->SwapOut(proxy, false);
     if (frame_tree_node_->IsMainFrame())
       proxy->TakeFrameHostOwnership(render_frame_host.Pass());
   } else {
@@ -645,6 +645,19 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     }
   }
   return render_frame_host;
+}
+
+void RenderFrameHostManager::OnDidStartLoading() {
+  for (const auto& pair : proxy_hosts_) {
+    pair.second->Send(
+        new FrameMsg_DidStartLoading(pair.second->GetRoutingID()));
+  }
+}
+
+void RenderFrameHostManager::OnDidStopLoading() {
+  for (const auto& pair : proxy_hosts_) {
+    pair.second->Send(new FrameMsg_DidStopLoading(pair.second->GetRoutingID()));
+  }
 }
 
 void RenderFrameHostManager::Observe(

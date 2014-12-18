@@ -372,6 +372,11 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   RenderFrameHostImpl* GetFrameHostForNavigation(const GURL& url,
                                                  ui::PageTransition transition);
 
+  // Notification methods to tell this RenderFrameHostManager that the frame it
+  // is responsible for has started or stopped loading a document.
+  void OnDidStartLoading();
+  void OnDidStopLoading();
+
  private:
   friend class RenderFrameHostManagerTest;
   friend class TestWebContents;
