@@ -5,6 +5,7 @@
 #include "components/signin/core/browser/refresh_token_annotation_request.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
@@ -16,13 +17,22 @@
 #include "net/base/escape.h"
 #include "net/url_request/url_request_context_getter.h"
 
+namespace {
+
+void RecordRequestStatusHistogram(bool success) {
+  UMA_HISTOGRAM_BOOLEAN("Signin.RefreshTokenAnnotationRequest", success);
+}
+}
+
 RefreshTokenAnnotationRequest::RefreshTokenAnnotationRequest(
     const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
+    const std::string& product_version,
     const std::string& device_id,
     const std::string& client_id,
     const base::Closure& request_callback)
     : OAuth2TokenService::Consumer("refresh_token_annotation"),
       request_context_getter_(request_context_getter),
+      product_version_(product_version),
       device_id_(device_id),
       client_id_(client_id),
       request_callback_(request_callback) {
@@ -42,12 +52,19 @@ RefreshTokenAnnotationRequest::SendIfNeeded(
     const std::string& account_id,
     const base::Closure& request_callback) {
   scoped_ptr<RefreshTokenAnnotationRequest> request;
-  if (ShouldSendNow(pref_service)) {
-    request.reset(new RefreshTokenAnnotationRequest(
-        request_context_getter, signin_client->GetSigninScopedDeviceId(),
-        GaiaUrls::GetInstance()->oauth2_chrome_client_id(), request_callback));
-    request->RequestAccessToken(token_service, account_id);
-  }
+
+  if (!ShouldSendNow(pref_service))
+    return request.Pass();
+
+  // Don't send request if device_id is disabled.
+  std::string device_id = signin_client->GetSigninScopedDeviceId();
+  if (device_id.empty())
+    return request.Pass();
+
+  request.reset(new RefreshTokenAnnotationRequest(
+      request_context_getter, signin_client->GetProductVersion(), device_id,
+      GaiaUrls::GetInstance()->oauth2_chrome_client_id(), request_callback));
+  request->RequestAccessToken(token_service, account_id);
   return request.Pass();
 }
 
@@ -103,6 +120,7 @@ void RefreshTokenAnnotationRequest::OnGetTokenFailure(
     const GoogleServiceAuthError& error) {
   DCHECK(CalledOnValidThread());
   DVLOG(2) << "Failed to get access token";
+  RecordRequestStatusHistogram(false);
   base::MessageLoop::current()->PostTask(FROM_HERE, request_callback_);
   request_callback_.Reset();
 }
@@ -120,7 +138,8 @@ std::string RefreshTokenAnnotationRequest::CreateApiCallBody() {
       "&scope=%s"
       "&client_id=%s"
       "&device_id=%s"
-      "&device_type=chrome";
+      "&device_type=chrome"
+      "&lib_ver=%s";
 
   // It doesn't matter which scope to use for IssueToken request, any common
   // scope would do. In this case I'm using "userinfo.email".
@@ -129,13 +148,15 @@ std::string RefreshTokenAnnotationRequest::CreateApiCallBody() {
       net::EscapeUrlEncodedData(GaiaConstants::kGoogleUserInfoEmail, true)
           .c_str(),
       net::EscapeUrlEncodedData(client_id_, true).c_str(),
-      net::EscapeUrlEncodedData(device_id_, true).c_str());
+      net::EscapeUrlEncodedData(device_id_, true).c_str(),
+      net::EscapeUrlEncodedData(product_version_, true).c_str());
 }
 
 void RefreshTokenAnnotationRequest::ProcessApiCallSuccess(
     const net::URLFetcher* source) {
   DCHECK(CalledOnValidThread());
   DVLOG(2) << "Request succeeded";
+  RecordRequestStatusHistogram(true);
   base::MessageLoop::current()->PostTask(FROM_HERE, request_callback_);
   request_callback_.Reset();
 }
@@ -144,6 +165,7 @@ void RefreshTokenAnnotationRequest::ProcessApiCallFailure(
     const net::URLFetcher* source) {
   DCHECK(CalledOnValidThread());
   DVLOG(2) << "Request failed";
+  RecordRequestStatusHistogram(false);
   base::MessageLoop::current()->PostTask(FROM_HERE, request_callback_);
   request_callback_.Reset();
 }

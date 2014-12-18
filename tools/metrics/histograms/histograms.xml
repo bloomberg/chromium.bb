@@ -32545,6 +32545,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Signin.RefreshTokenAnnotationRequest" enum="BooleanSuccess">
+  <owner>pavely@chromium.org</owner>
+  <summary>
+    Track when chrome successfully sends RefreshTokenAnnotationRequest.
+  </summary>
+</histogram>
+
 <histogram name="Signin.SignedInDurationBeforeSignout" units="minutes">
   <owner>mlerman@chromium.org</owner>
   <summary>

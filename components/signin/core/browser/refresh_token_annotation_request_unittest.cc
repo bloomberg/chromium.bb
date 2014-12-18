@@ -57,8 +57,8 @@ TEST_F(RefreshTokenAnnotationRequestTest, ShouldSendNow) {
 
 TEST_F(RefreshTokenAnnotationRequestTest, CreateApiCallBody) {
   RefreshTokenAnnotationRequest request(
-      scoped_refptr<net::URLRequestContextGetter>(), "device_id1", "client_id1",
-      base::Closure());
+      scoped_refptr<net::URLRequestContextGetter>(), "39.0 (stable)",
+      "device_id1", "client_id1", base::Closure());
   std::string body = request.CreateApiCallBody();
   std::string expected_body =
       "force=true"
@@ -66,6 +66,7 @@ TEST_F(RefreshTokenAnnotationRequestTest, CreateApiCallBody) {
       "&scope=https://www.googleapis.com/auth/userinfo.email"
       "&client_id=client_id1"
       "&device_id=device_id1"
-      "&device_type=chrome";
+      "&device_type=chrome"
+      "&lib_ver=39.0+(stable)";
   EXPECT_EQ(expected_body, body);
 }

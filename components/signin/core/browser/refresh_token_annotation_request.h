@@ -63,6 +63,7 @@ class RefreshTokenAnnotationRequest : public base::NonThreadSafe,
 
   RefreshTokenAnnotationRequest(
       const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
+      const std::string& product_version,
       const std::string& device_id,
       const std::string& client_id,
       const base::Closure& request_callback);
@@ -72,6 +73,7 @@ class RefreshTokenAnnotationRequest : public base::NonThreadSafe,
                           const std::string& account_id);
 
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  std::string product_version_;
   std::string device_id_;
   std::string client_id_;
   base::Closure request_callback_;

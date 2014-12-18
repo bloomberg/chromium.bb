@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/signin/core/browser/refresh_token_annotation_request.h"
@@ -27,6 +28,15 @@ const char kAccountEmailPath[] = "email";
 const char kAccountGaiaPath[] = "gaia";
 const char kAccountHostedDomainPath[] = "hd";
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+// IsRefreshTokenDeviceIdExperimentEnabled is called from
+// SendRefreshTokenAnnotationRequest only on desktop platforms.
+bool IsRefreshTokenDeviceIdExperimentEnabled() {
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("RefreshTokenDeviceId");
+  return group_name == "Enabled";
+}
+#endif
 }
 
 // This must be a string which can never be a valid domain.
@@ -501,7 +511,8 @@ void AccountTrackerService::SendRefreshTokenAnnotationRequest(
     const std::string& account_id) {
 // We only need to send RefreshTokenAnnotationRequest from desktop platforms.
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (IsRefreshTokenDeviceIdExperimentEnabled() ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableRefreshTokenAnnotationRequest)) {
     scoped_ptr<RefreshTokenAnnotationRequest> request =
         RefreshTokenAnnotationRequest::SendIfNeeded(
