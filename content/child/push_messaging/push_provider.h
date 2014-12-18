@@ -39,6 +39,8 @@ class PushProvider : public blink::WebPushProvider,
                                      blink::WebPushRegistrationCallbacks*);
   virtual void unregister(blink::WebServiceWorkerRegistration*,
                           blink::WebPushUnregisterCallbacks*);
+  virtual void getRegistration(blink::WebServiceWorkerRegistration*,
+                       blink::WebPushRegistrationCallbacks*);
   virtual void getPermissionStatus(blink::WebServiceWorkerRegistration*,
                                    blink::WebPushPermissionStatusCallbacks*);
 
@@ -58,6 +60,10 @@ class PushProvider : public blink::WebPushProvider,
   void OnUnregisterError(int request_id,
                          blink::WebPushError::ErrorType error_type,
                          const std::string& error_message);
+  void OnGetRegistrationSuccess(int request_id,
+                                const GURL& endpoint,
+                                const std::string& registration_id);
+  void OnGetRegistrationError(int request_id, PushGetRegistrationStatus status);
   void OnGetPermissionStatusSuccess(int request_id,
                                     blink::WebPushPermissionStatus status);
   void OnGetPermissionStatusError(int request_id);

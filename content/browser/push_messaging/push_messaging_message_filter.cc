@@ -70,10 +70,11 @@ bool PushMessagingMessageFilter::OnMessageReceived(
                         OnRegisterFromDocument)
     IPC_MESSAGE_HANDLER(PushMessagingHostMsg_RegisterFromWorker,
                         OnRegisterFromWorker)
-    IPC_MESSAGE_HANDLER(PushMessagingHostMsg_GetPermissionStatus,
-                        OnGetPermissionStatus)
     IPC_MESSAGE_HANDLER(PushMessagingHostMsg_Unregister,
                         OnUnregister)
+    IPC_MESSAGE_HANDLER(PushMessagingHostMsg_GetRegistration, OnGetRegistration)
+    IPC_MESSAGE_HANDLER(PushMessagingHostMsg_GetPermissionStatus,
+                        OnGetPermissionStatus)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

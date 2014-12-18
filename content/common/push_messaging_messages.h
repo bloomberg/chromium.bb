@@ -47,6 +47,15 @@ IPC_MESSAGE_CONTROL2(PushMessagingMsg_RegisterFromWorkerError,
                      int32 /* request_id */,
                      content::PushRegistrationStatus /* status */)
 
+IPC_MESSAGE_CONTROL2(PushMessagingMsg_UnregisterSuccess,
+                     int32 /* request_id */,
+                     bool /* did_unregister */)
+
+IPC_MESSAGE_CONTROL3(PushMessagingMsg_UnregisterError,
+                     int32 /* request_id */,
+                     blink::WebPushError::ErrorType /* error_type */,
+                     std::string /* error_message */)
+
 IPC_MESSAGE_CONTROL3(PushMessagingMsg_GetRegistrationSuccess,
                      int32 /* request_id */,
                      GURL /* push_endpoint */,
@@ -63,15 +72,6 @@ IPC_MESSAGE_CONTROL2(PushMessagingMsg_GetPermissionStatusSuccess,
 IPC_MESSAGE_CONTROL1(PushMessagingMsg_GetPermissionStatusError,
                      int32 /* request_id */)
 
-IPC_MESSAGE_CONTROL2(PushMessagingMsg_UnregisterSuccess,
-                     int32 /* request_id */,
-                     bool /* did_unregister */)
-
-IPC_MESSAGE_CONTROL3(PushMessagingMsg_UnregisterError,
-                     int32 /* request_id */,
-                     blink::WebPushError::ErrorType /* error_type */,
-                     std::string /* error_message */)
-
 // Messages sent from the child process to the browser.
 
 IPC_MESSAGE_CONTROL5(PushMessagingHostMsg_RegisterFromDocument,
@@ -85,10 +85,14 @@ IPC_MESSAGE_CONTROL2(PushMessagingHostMsg_RegisterFromWorker,
                      int32 /* request_id */,
                      int64 /* service_worker_registration_id */)
 
-IPC_MESSAGE_CONTROL2(PushMessagingHostMsg_GetPermissionStatus,
+IPC_MESSAGE_CONTROL2(PushMessagingHostMsg_Unregister,
                      int32 /* request_id */,
                      int64 /* service_worker_registration_id */)
 
-IPC_MESSAGE_CONTROL2(PushMessagingHostMsg_Unregister,
+IPC_MESSAGE_CONTROL2(PushMessagingHostMsg_GetRegistration,
+                     int32 /* request_id */,
+                     int64 /* service_worker_registration_id */)
+
+IPC_MESSAGE_CONTROL2(PushMessagingHostMsg_GetPermissionStatus,
                      int32 /* request_id */,
                      int64 /* service_worker_registration_id */)

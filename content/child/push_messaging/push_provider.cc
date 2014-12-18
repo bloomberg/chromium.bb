@@ -92,6 +92,19 @@ void PushProvider::unregister(
       request_id, service_worker_registration_id));
 }
 
+void PushProvider::getRegistration(
+    blink::WebServiceWorkerRegistration* service_worker_registration,
+    blink::WebPushRegistrationCallbacks* callbacks) {
+  DCHECK(service_worker_registration);
+  DCHECK(callbacks);
+  int request_id = push_dispatcher_->GenerateRequestId(CurrentWorkerId());
+  registration_callbacks_.AddWithID(callbacks, request_id);
+  int64 service_worker_registration_id =
+      GetServiceWorkerRegistrationId(service_worker_registration);
+  thread_safe_sender_->Send(new PushMessagingHostMsg_GetRegistration(
+      request_id, service_worker_registration_id));
+}
+
 void PushProvider::getPermissionStatus(
     blink::WebServiceWorkerRegistration* service_worker_registration,
     blink::WebPushPermissionStatusCallbacks* callbacks) {
@@ -116,6 +129,10 @@ bool PushProvider::OnMessageReceived(const IPC::Message& message) {
                         OnUnregisterSuccess);
     IPC_MESSAGE_HANDLER(PushMessagingMsg_UnregisterError,
                         OnUnregisterError);
+    IPC_MESSAGE_HANDLER(PushMessagingMsg_GetRegistrationSuccess,
+                        OnGetRegistrationSuccess);
+    IPC_MESSAGE_HANDLER(PushMessagingMsg_GetRegistrationError,
+                        OnGetRegistrationError);
     IPC_MESSAGE_HANDLER(PushMessagingMsg_GetPermissionStatusSuccess,
                         OnGetPermissionStatusSuccess);
     IPC_MESSAGE_HANDLER(PushMessagingMsg_GetPermissionStatusError,
@@ -184,6 +201,38 @@ void PushProvider::OnUnregisterError(
   callbacks->onError(error.release());
 
   unregister_callbacks_.Remove(request_id);
+}
+
+void PushProvider::OnGetRegistrationSuccess(
+    int request_id,
+    const GURL& endpoint,
+    const std::string& registration_id) {
+  blink::WebPushRegistrationCallbacks* callbacks =
+      registration_callbacks_.Lookup(request_id);
+  if (!callbacks)
+    return;
+
+  scoped_ptr<blink::WebPushRegistration> registration(
+      new blink::WebPushRegistration(
+          blink::WebString::fromUTF8(endpoint.spec()),
+          blink::WebString::fromUTF8(registration_id)));
+  callbacks->onSuccess(registration.release());
+
+  registration_callbacks_.Remove(request_id);
+}
+
+void PushProvider::OnGetRegistrationError(
+    int request_id,
+    PushGetRegistrationStatus status) {
+  blink::WebPushRegistrationCallbacks* callbacks =
+      registration_callbacks_.Lookup(request_id);
+  if (!callbacks)
+    return;
+
+  // We are only expecting an error if we can't find a registration.
+  callbacks->onSuccess(nullptr);
+
+  registration_callbacks_.Remove(request_id);
 }
 
 void PushProvider::OnGetPermissionStatusSuccess(
