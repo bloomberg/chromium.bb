@@ -96,11 +96,11 @@ static void promiseMethodPartialOverload3Method(const v8::FunctionCallbackInfo<v
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     Document* document;
     {
-        if (info.Length() > 0 && !V8Document::hasInstance(info[0], info.GetIsolate())) {
+        document = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!document) {
             v8SetReturnValue(info, ScriptPromise::rejectRaw(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("promiseMethodPartialOverload", "TestInterface", "parameter 1 is not of type 'Document'."))));
             return;
         }
-        document = V8Document::toImpl(v8::Handle<v8::Object>::Cast(info[0]));
     }
     v8SetReturnValue(info, TestPartialInterfaceImplementation3::promiseMethodPartialOverload(*impl, document).v8Value());
 }
@@ -168,11 +168,11 @@ static void partial2VoidMethod3Method(const v8::FunctionCallbackInfo<v8::Value>&
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     Node* node;
     {
-        if (info.Length() > 0 && !V8Node::hasInstance(info[0], info.GetIsolate())) {
+        node = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!node) {
             V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("partial2VoidMethod", "TestInterface", "parameter 1 is not of type 'Node'."));
             return;
         }
-        node = V8Node::toImpl(v8::Handle<v8::Object>::Cast(info[0]));
     }
     TestPartialInterfaceImplementation3::partial2VoidMethod(*impl, node);
 }

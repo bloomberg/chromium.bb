@@ -217,16 +217,6 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
     {% if attribute.has_setter_exception_state %}
     ExceptionState exceptionState(ExceptionState::SetterContext, "{{attribute.name}}", "{{interface_name}}", holder, info.GetIsolate());
     {% endif %}
-    {# Type checking #}
-    {% if attribute.has_type_checking_interface %}
-    {# Type checking for interface types (if interface not implemented, throw
-       TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
-    if ({% if attribute.is_nullable %}!isUndefinedOrNull(v8Value) && {% endif %}!V8{{attribute.idl_type}}::hasInstance(v8Value, info.GetIsolate())) {
-        exceptionState.throwTypeError("The provided value is not of type '{{attribute.idl_type}}'.");
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    {% endif %}
     {% if attribute.use_output_parameter_for_result %}
     {{attribute.cpp_type}} cppValue;
     {% endif %}
@@ -257,6 +247,14 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
        http://heycam.github.io/webidl/#es-double #}
     if (!std::isfinite(cppValue)) {
         exceptionState.throwTypeError("The provided {{attribute.idl_type}} value is non-finite.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    {% elif attribute.has_type_checking_interface %}
+    {# Type checking for interface types (if interface not implemented, throw
+       TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
+    if (!cppValue{% if attribute.is_nullable %} && !isUndefinedOrNull(v8Value){% endif %}) {
+        exceptionState.throwTypeError("The provided value is not of type '{{attribute.idl_type}}'.");
         exceptionState.throwIfNeeded();
         return;
     }

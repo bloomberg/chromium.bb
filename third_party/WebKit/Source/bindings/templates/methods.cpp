@@ -109,17 +109,6 @@ if (UNLIKELY(info.Length() <= {{argument.index}})) {
     return;
 }
 {% endif %}
-{% if argument.has_type_checking_interface and not argument.is_variadic_wrapper_type %}
-{# Type checking for wrapper interface types (if interface not implemented,
-   throw a TypeError), per http://www.w3.org/TR/WebIDL/#es-interface
-   Note: for variadic arguments, the type checking is done for each matched
-   argument instead; see argument.is_variadic_wrapper_type code-path below. #}
-if (info.Length() > {{argument.index}} && {% if argument.is_nullable %}!isUndefinedOrNull(info[{{argument.index}}]) && {% endif %}!V8{{argument.idl_type}}::hasInstance(info[{{argument.index}}], info.GetIsolate())) {
-    {{throw_type_error(method, '"parameter %s is not of type \'%s\'."' %
-                               (argument.index + 1, argument.idl_type)) | indent}}
-    return;
-}
-{% endif %}{# argument.has_type_checking_interface #}
 {% if argument.is_callback_interface %}
 {# FIXME: remove EventListener special case #}
 {% if argument.idl_type == 'EventListener' %}
@@ -185,6 +174,16 @@ if (!isUndefinedOrNull(info[{{argument.index}}]) && !info[{{argument.index}}]->I
 if (!std::isfinite({{argument.name}})) {
     {{throw_type_error(method, '"%s parameter %s is non-finite."' %
                                (argument.idl_type, argument.index + 1)) | indent}}
+    return;
+}
+{% elif argument.has_type_checking_interface and not argument.is_variadic_wrapper_type %}
+{# Type checking for wrapper interface types (if interface not implemented,
+   throw a TypeError), per http://www.w3.org/TR/WebIDL/#es-interface
+   Note: for variadic arguments, the type checking is done for each matched
+   argument instead; see argument.is_variadic_wrapper_type code-path above. #}
+if (!{{argument.name}}{% if argument.is_nullable %} && !isUndefinedOrNull(info[{{argument.index}}]){% endif %}) {
+    {{throw_type_error(method, '"parameter %s is not of type \'%s\'."' %
+                               (argument.index + 1, argument.idl_type)) | indent}}
     return;
 }
 {% elif argument.enum_validation_expression %}

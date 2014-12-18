@@ -326,10 +326,6 @@ def setter_context(interface, attribute, context):
          has_extended_attribute_value(attribute, 'TypeChecking', 'Interface')) and
         idl_type.is_wrapper_type)
 
-    type_checked = (has_type_checking_interface and
-                    # These allow null values, so a type-check is still required.
-                    not idl_type.is_nullable)
-
     context.update({
         'has_setter_exception_state':
             is_setter_raises_exception or has_type_checking_interface or
@@ -343,8 +339,7 @@ def setter_context(interface, attribute, context):
             'cppValue', isolate='scriptState->isolate()',
             creation_context='scriptState->context()->Global()'),
         'v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
-            extended_attributes, 'v8Value', 'cppValue',
-            needs_type_check=not type_checked),
+            extended_attributes, 'v8Value', 'cppValue'),
     })
 
     # setter_expression() depends on context values we set above.

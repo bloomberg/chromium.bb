@@ -72,13 +72,13 @@ static void testInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
 {
     v8::Handle<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "testInterfaceAttribute", "TestInterface", holder, info.GetIsolate());
-    if (!V8TestInterface::hasInstance(v8Value, info.GetIsolate())) {
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+    TestInterfaceImplementation* cppValue = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'TestInterface'.");
         exceptionState.throwIfNeeded();
         return;
     }
-    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    TestInterfaceImplementation* cppValue = V8TestInterface::toImpl(v8::Handle<v8::Object>::Cast(v8Value));
     impl->setTestInterfaceAttribute(WTF::getPtr(cppValue));
 }
 
@@ -432,13 +432,13 @@ static void implementsNodeAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
 {
     v8::Handle<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "implementsNodeAttribute", "TestInterface", holder, info.GetIsolate());
-    if (!V8Node::hasInstance(v8Value, info.GetIsolate())) {
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+    Node* cppValue = V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'Node'.");
         exceptionState.throwIfNeeded();
         return;
     }
-    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    Node* cppValue = V8Node::toImpl(v8::Handle<v8::Object>::Cast(v8Value));
     impl->setImplementsNodeAttribute(WTF::getPtr(cppValue));
 }
 
@@ -497,13 +497,13 @@ static void implementsRuntimeEnabledNodeAttributeAttributeSetter(v8::Local<v8::V
 {
     v8::Handle<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "implementsRuntimeEnabledNodeAttribute", "TestInterface", holder, info.GetIsolate());
-    if (!V8Node::hasInstance(v8Value, info.GetIsolate())) {
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+    Node* cppValue = V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'Node'.");
         exceptionState.throwIfNeeded();
         return;
     }
-    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    Node* cppValue = V8Node::toImpl(v8::Handle<v8::Object>::Cast(v8Value));
     impl->setImplementsRuntimeEnabledNodeAttribute(WTF::getPtr(cppValue));
 }
 
@@ -532,13 +532,13 @@ static void implementsPerContextEnabledNodeAttributeAttributeSetter(v8::Local<v8
 {
     v8::Handle<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "implementsPerContextEnabledNodeAttribute", "TestInterface", holder, info.GetIsolate());
-    if (!V8Node::hasInstance(v8Value, info.GetIsolate())) {
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+    Node* cppValue = V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'Node'.");
         exceptionState.throwIfNeeded();
         return;
     }
-    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    Node* cppValue = V8Node::toImpl(v8::Handle<v8::Object>::Cast(v8Value));
     impl->setImplementsPerContextEnabledNodeAttribute(WTF::getPtr(cppValue));
 }
 
@@ -935,11 +935,11 @@ static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     TestInterfaceEmpty* testInterfaceEmptyArg;
     {
-        if (info.Length() > 0 && !V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
+        testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!testInterfaceEmptyArg) {
             V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArg", "TestInterface", "parameter 1 is not of type 'TestInterfaceEmpty'."));
             return;
         }
-        testInterfaceEmptyArg = V8TestInterfaceEmpty::toImpl(v8::Handle<v8::Object>::Cast(info[0]));
     }
     impl->voidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
@@ -1151,11 +1151,11 @@ static void overloadMethodWithExposedAndRuntimeEnabledFlag3Method(const v8::Func
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     DOMWindow* window;
     {
-        if (info.Length() > 0 && !V8Window::hasInstance(info[0], info.GetIsolate())) {
+        window = toDOMWindow(info.GetIsolate(), info[0]);
+        if (!window) {
             V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("overloadMethodWithExposedAndRuntimeEnabledFlag", "TestInterface", "parameter 1 is not of type 'Window'."));
             return;
         }
-        window = toDOMWindow(info.GetIsolate(), info[0]);
     }
     impl->overloadMethodWithExposedAndRuntimeEnabledFlag(window);
 }
@@ -1269,11 +1269,11 @@ static void promiseMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     DOMWindow* window;
     {
-        if (info.Length() > 0 && !V8Window::hasInstance(info[0], info.GetIsolate())) {
+        window = toDOMWindow(info.GetIsolate(), info[0]);
+        if (!window) {
             v8SetReturnValue(info, ScriptPromise::rejectRaw(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("promiseMethodPartialOverload", "TestInterface", "parameter 1 is not of type 'Window'."))));
             return;
         }
-        window = toDOMWindow(info.GetIsolate(), info[0]);
     }
     v8SetReturnValue(info, impl->promiseMethodPartialOverload(window).v8Value());
 }
@@ -1309,12 +1309,12 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
     TestInterfaceEmpty* testInterfaceEmptyArg;
     {
         TOSTRING_VOID_INTERNAL(strArg, info[0]);
-        if (info.Length() > 1 && !V8TestInterfaceEmpty::hasInstance(info[1], info.GetIsolate())) {
+        testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[1]);
+        if (!testInterfaceEmptyArg) {
             exceptionState.throwTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
             exceptionState.throwIfNeeded();
             return;
         }
-        testInterfaceEmptyArg = V8TestInterfaceEmpty::toImpl(v8::Handle<v8::Object>::Cast(info[1]));
     }
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     RefPtr<TestInterfaceEmpty> result = impl->implementsComplexMethod(executionContext, strArg, testInterfaceEmptyArg, exceptionState);
