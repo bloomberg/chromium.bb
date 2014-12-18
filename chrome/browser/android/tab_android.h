@@ -173,6 +173,12 @@ class TabAndroid : public CoreTabHelperDelegate,
   static void CreateHistoricalTabFromContents(
       content::WebContents* web_contents);
 
+  void UpdateTopControlsState(JNIEnv* env,
+                              jobject obj,
+                              jint constraints,
+                              jint current,
+                              jboolean animate);
+
   // Register the Tab's native methods through JNI.
   static bool RegisterTabAndroid(JNIEnv* env);
 

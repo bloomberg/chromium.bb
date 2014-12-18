@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/common/instant_types.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/google/core/browser/google_util.h"
@@ -52,6 +53,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/top_controls_state.h"
 #include "jni/Tab_jni.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
@@ -711,6 +713,20 @@ void TabAndroid::CreateHistoricalTabFromContents(WebContents* web_contents) {
 
 void TabAndroid::CreateHistoricalTab(JNIEnv* env, jobject obj) {
   TabAndroid::CreateHistoricalTabFromContents(web_contents());
+}
+
+void TabAndroid::UpdateTopControlsState(JNIEnv* env,
+                                        jobject obj,
+                                        jint constraints,
+                                        jint current,
+                                        jboolean animate) {
+  content::TopControlsState constraints_state =
+      static_cast<content::TopControlsState>(constraints);
+  content::TopControlsState current_state =
+      static_cast<content::TopControlsState>(current);
+  WebContents* sender = web_contents();
+  sender->Send(new ChromeViewMsg_UpdateTopControlsState(
+      sender->GetRoutingID(), constraints_state, current_state, animate));
 }
 
 static void Init(JNIEnv* env, jobject obj) {

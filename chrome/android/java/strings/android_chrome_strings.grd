@@ -661,6 +661,12 @@ You are signing in with a managed account and giving its administrator control o
         If you're seeing this frequently, try these <ph name="BEGIN_LINK">&lt;link&gt;</ph>suggestions<ph name="END_LINK">&lt;/link&gt;</ph>.
       </message>
 
+      <!-- Fullscreen -->
+      <message name="IDS_FULLSCREEN_API_NOTIFICATION" desc="Notification message when a site has entered fullscreen and the directions of how to exit.">
+        This site has gone fullscreen.
+Drag from top to exit.
+      </message>
+
     </messages>
   </release>
 </grit>

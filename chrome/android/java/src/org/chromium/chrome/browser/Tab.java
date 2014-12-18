@@ -24,17 +24,21 @@ import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulatorWrapper;
 import org.chromium.chrome.browser.contextmenu.EmptyChromeContextMenuItemDelegate;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerFeedbackReporter;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabModelBase;
 import org.chromium.chrome.browser.toolbar.ToolbarModel;
+import org.chromium.chrome.browser.ui.toolbar.ToolbarModelSecurityLevel;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.WebContentsObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.common.TopControlsState;
 import org.chromium.printing.PrintManagerDelegateImpl;
 import org.chromium.printing.PrintingController;
 import org.chromium.printing.PrintingControllerImpl;
@@ -167,6 +171,12 @@ public class Tab {
      */
     private final TabLaunchType mLaunchType;
 
+    private FullscreenManager mFullscreenManager;
+    private float mPreviousFullscreenTopControlsOffsetY = Float.NaN;
+    private float mPreviousFullscreenContentOffsetY = Float.NaN;
+    private float mPreviousFullscreenOverdrawBottomHeight = Float.NaN;
+    private int mFullscreenHungRendererToken = FullscreenManager.INVALID_TOKEN;
+
     /**
      * A default {@link ChromeContextMenuItemDelegate} that supports some of the context menu
      * functionality.
@@ -251,6 +261,10 @@ public class Tab {
 
         @Override
         public void toggleFullscreenModeForTab(boolean enableFullscreen) {
+            if (mFullscreenManager != null) {
+                mFullscreenManager.setPersistentFullscreenMode(enableFullscreen);
+            }
+
             for (TabObserver observer : mObservers) {
                 observer.onToggleFullscreenMode(Tab.this, enableFullscreen);
             }
@@ -278,6 +292,29 @@ public class Tab {
                 observer.webContentsCreated(Tab.this, sourceWebContents, openerRenderFrameId,
                         frameName, targetUrl, newWebContents);
             }
+        }
+
+        @Override
+        public void rendererUnresponsive() {
+            super.rendererUnresponsive();
+            if (mFullscreenManager == null) return;
+            mFullscreenHungRendererToken =
+                    mFullscreenManager.showControlsPersistentAndClearOldToken(
+                            mFullscreenHungRendererToken);
+        }
+
+        @Override
+        public void rendererResponsive() {
+            super.rendererResponsive();
+            if (mFullscreenManager == null) return;
+            mFullscreenManager.hideControlsPersistent(mFullscreenHungRendererToken);
+            mFullscreenHungRendererToken = FullscreenManager.INVALID_TOKEN;
+        }
+
+        @Override
+        public boolean isFullscreenForTabOrPending() {
+            return mFullscreenManager == null
+                    ? false : mFullscreenManager.getPersistentFullscreenMode();
         }
     }
 
@@ -816,6 +853,14 @@ public class Tab {
      */
     protected void hide() {
         if (mContentViewCore != null) mContentViewCore.onHide();
+
+        // Clean up any fullscreen state that might impact other tabs.
+        if (mFullscreenManager != null) {
+            mFullscreenManager.setPersistentFullscreenMode(false);
+            mFullscreenManager.hideControlsPersistent(mFullscreenHungRendererToken);
+            mFullscreenHungRendererToken = FullscreenManager.INVALID_TOKEN;
+            mPreviousFullscreenOverdrawBottomHeight = Float.NaN;
+        }
     }
 
     /**
@@ -974,6 +1019,9 @@ public class Tab {
             mInfoBarContainer.destroy();
             mInfoBarContainer = null;
         }
+
+        mPreviousFullscreenTopControlsOffsetY = Float.NaN;
+        mPreviousFullscreenContentOffsetY = Float.NaN;
     }
 
     /**
@@ -1307,6 +1355,170 @@ public class Tab {
     }
 
     /**
+     * @return true iff the tab doesn't hold a live page. This happens before initialize() and when
+     * the tab holds frozen WebContents state that is yet to be inflated.
+     */
+    @VisibleForTesting
+    public boolean isFrozen() {
+        return getNativePage() == null && getContentViewCore() == null;
+    }
+
+    /**
+     * @return An instance of a {@link FullscreenManager}.
+     */
+    protected FullscreenManager getFullscreenManager() {
+        return mFullscreenManager;
+    }
+
+    /**
+     * Clears hung renderer state.
+     */
+    protected void clearHungRendererState() {
+        if (mFullscreenManager == null) return;
+
+        mFullscreenManager.hideControlsPersistent(mFullscreenHungRendererToken);
+        mFullscreenHungRendererToken = FullscreenManager.INVALID_TOKEN;
+        updateFullscreenEnabledState();
+    }
+
+    /**
+     * Called when offset values related with fullscreen functionality has been changed by the
+     * compositor.
+     * @param topControlsOffsetY The Y offset of the top controls in physical pixels.
+     * @param contentOffsetY The Y offset of the content in physical pixels.
+     * @param overdrawBottomHeight The overdraw height.
+     * @param isNonFullscreenPage Whether a current page is non-fullscreen page or not.
+     */
+    protected void onOffsetsChanged(float topControlsOffsetY, float contentOffsetY,
+            float overdrawBottomHeight, boolean isNonFullscreenPage) {
+        mPreviousFullscreenTopControlsOffsetY = topControlsOffsetY;
+        mPreviousFullscreenContentOffsetY = contentOffsetY;
+        mPreviousFullscreenOverdrawBottomHeight = overdrawBottomHeight;
+
+        if (mFullscreenManager == null) return;
+        if (isNonFullscreenPage || isNativePage()) {
+            mFullscreenManager.setPositionsForTabToNonFullscreen();
+        } else {
+            mFullscreenManager.setPositionsForTab(topControlsOffsetY, contentOffsetY);
+        }
+        TabModelBase.setActualTabSwitchLatencyMetricRequired();
+    }
+
+    /**
+     * Push state about whether or not the top controls can show or hide to the renderer.
+     */
+    public void updateFullscreenEnabledState() {
+        if (isFrozen() || mFullscreenManager == null) return;
+
+        updateTopControlsState(getTopControlsStateConstraints(), TopControlsState.BOTH, true);
+
+        if (getContentViewCore() != null) {
+            getContentViewCore().updateMultiTouchZoomSupport(
+                    !mFullscreenManager.getPersistentFullscreenMode());
+        }
+    }
+
+    /**
+     * Updates the top controls state for this tab.  As these values are set at the renderer
+     * level, there is potential for this impacting other tabs that might share the same
+     * process.
+     *
+     * @param constraints The constraints that determine whether the controls can be shown
+     *                    or hidden at all.
+     * @param current The desired current state for the controls.  Pass
+     *                {@link TopControlsState#BOTH} to preserve the current position.
+     * @param animate Whether the controls should animate to the specified ending condition or
+     *                should jump immediately.
+     */
+    protected void updateTopControlsState(int constraints, int current, boolean animate) {
+        if (mNativeTabAndroid == 0) return;
+        nativeUpdateTopControlsState(mNativeTabAndroid, constraints, current, animate);
+    }
+
+    /**
+     * Updates the top controls state for this tab.  As these values are set at the renderer
+     * level, there is potential for this impacting other tabs that might share the same
+     * process.
+     *
+     * @param current The desired current state for the controls.  Pass
+     *                {@link TopControlsState#BOTH} to preserve the current position.
+     * @param animate Whether the controls should animate to the specified ending condition or
+     *                should jump immediately.
+     */
+    public void updateTopControlsState(int current, boolean animate) {
+        int constraints = getTopControlsStateConstraints();
+        // Do nothing if current and constraints conflict to avoid error in
+        // renderer.
+        if ((constraints == TopControlsState.HIDDEN && current == TopControlsState.SHOWN)
+                || (constraints == TopControlsState.SHOWN && current == TopControlsState.HIDDEN)) {
+            return;
+        }
+        updateTopControlsState(getTopControlsStateConstraints(), current, animate);
+    }
+
+    /**
+     * @return Whether hiding top controls is enabled or not.
+     */
+    protected boolean isHidingTopControlsEnabled() {
+        String url = getUrl();
+        boolean enableHidingTopControls = url != null && !url.startsWith(UrlConstants.CHROME_SCHEME)
+                && !url.startsWith(UrlConstants.CHROME_NATIVE_SCHEME);
+
+        int securityState = getSecurityLevel();
+        enableHidingTopControls &= (securityState != ToolbarModelSecurityLevel.SECURITY_ERROR
+                && securityState != ToolbarModelSecurityLevel.SECURITY_WARNING);
+
+        enableHidingTopControls &=
+                !AccessibilityUtil.isAccessibilityEnabled(getApplicationContext());
+        return enableHidingTopControls;
+    }
+
+    /**
+     * @return The current visibility constraints for the display of top controls.
+     *         {@link TopControlsState} defines the valid return options.
+     */
+    protected int getTopControlsStateConstraints() {
+        if (mFullscreenManager == null) return TopControlsState.SHOWN;
+
+        boolean enableHidingTopControls = isHidingTopControlsEnabled();
+        boolean enableShowingTopControls = !mFullscreenManager.getPersistentFullscreenMode();
+
+        int constraints = TopControlsState.BOTH;
+        if (!enableShowingTopControls) {
+            constraints = TopControlsState.HIDDEN;
+        } else if (!enableHidingTopControls) {
+            constraints = TopControlsState.SHOWN;
+        }
+        return constraints;
+    }
+
+    /**
+     * @param manager The fullscreen manager that should be notified of changes to this tab (if
+     *                set to null, no more updates will come from this tab).
+     */
+    public void setFullscreenManager(FullscreenManager manager) {
+        mFullscreenManager = manager;
+        if (mFullscreenManager != null) {
+            if (Float.isNaN(mPreviousFullscreenTopControlsOffsetY)
+                    || Float.isNaN(mPreviousFullscreenContentOffsetY)) {
+                mFullscreenManager.setPositionsForTabToNonFullscreen();
+            } else {
+                mFullscreenManager.setPositionsForTab(
+                        mPreviousFullscreenTopControlsOffsetY, mPreviousFullscreenContentOffsetY);
+            }
+            mFullscreenManager.showControlsTransient();
+            updateFullscreenEnabledState();
+        }
+    }
+
+    /**
+     * @return The most recent frame's overdraw bottom height in pixels.
+     */
+    public float getFullscreenOverdrawBottomHeightPix() {
+        return mPreviousFullscreenOverdrawBottomHeight;
+    }
+
+    /**
      * @return An unused id.
      */
     private static int generateNextId() {
@@ -1350,4 +1562,6 @@ public class Tab {
     private native boolean nativePrint(long nativeTabAndroid);
     private native Bitmap nativeGetFavicon(long nativeTabAndroid);
     private native void nativeCreateHistoricalTab(long nativeTabAndroid);
+    private native void nativeUpdateTopControlsState(
+            long nativeTabAndroid, int constraints, int current, boolean animate);
 }
