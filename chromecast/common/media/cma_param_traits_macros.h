@@ -23,8 +23,6 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(chromecast::media::LoadType,
                               chromecast::media::kLoadTypeURL,
                               chromecast::media::kLoadTypeMediaStream)
 
-// TODO (gunsch): move media enum IPC code to a common location in media.
-// See crbug.com/442594 for details.
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::AudioCodec,
                               media::AudioCodec::kUnknownAudioCodec,
                               media::AudioCodec::kAudioCodecMax)
@@ -34,20 +32,12 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::BufferingState,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::SampleFormat,
                               media::SampleFormat::kUnknownSampleFormat,
                               media::SampleFormat::kSampleFormatMax)
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::ChannelLayout,
-                              media::ChannelLayout::CHANNEL_LAYOUT_NONE,
-                              media::ChannelLayout::CHANNEL_LAYOUT_MAX)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::PipelineStatus,
                               media::PIPELINE_OK,
                               media::PIPELINE_STATUS_MAX)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::VideoCodec,
                               media::VideoCodec::kUnknownVideoCodec,
                               media::VideoCodec::kVideoCodecMax)
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::VideoCodecProfile,
-                              media::VIDEO_CODEC_PROFILE_MIN,
-                              media::VIDEO_CODEC_PROFILE_MAX)
-IPC_ENUM_TRAITS_MAX_VALUE(media::VideoFrame::Format,
-                          media::VideoFrame::FORMAT_MAX)
 
 IPC_STRUCT_TRAITS_BEGIN(media::PipelineStatistics)
   IPC_STRUCT_TRAITS_MEMBER(audio_bytes_decoded)

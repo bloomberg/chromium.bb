@@ -13,6 +13,19 @@
 #include "media/base/video_decoder_config.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 
+// Note(gunsch): these are currently defined in content/, but not declared in
+// content/public/. These headers need to be forward-declared for chromecast/,
+// but without new implementations linked in.
+// The correct long-term fix is to use Mojo instead of the content/ IPCs.
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::ChannelLayout,
+                              media::ChannelLayout::CHANNEL_LAYOUT_NONE,
+                              media::ChannelLayout::CHANNEL_LAYOUT_MAX)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::VideoCodecProfile,
+                              media::VIDEO_CODEC_PROFILE_MIN,
+                              media::VIDEO_CODEC_PROFILE_MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(media::VideoFrame::Format,
+                          media::VideoFrame::FORMAT_MAX)
+
 namespace IPC {
 
 void ParamTraits<media::AudioDecoderConfig>::Write(
