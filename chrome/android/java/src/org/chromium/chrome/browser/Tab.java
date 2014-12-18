@@ -281,6 +281,26 @@ public class Tab {
         }
     }
 
+    /**
+     * ContentViewClient that provides basic tab functionality and is meant to be extended
+     * by child classes.
+     */
+    protected class TabContentViewClient extends ContentViewClient {
+        @Override
+        public void onContextualActionBarShown() {
+            for (TabObserver observer : mObservers) {
+                observer.onContextualActionBarVisibilityChanged(Tab.this, true);
+            }
+        }
+
+        @Override
+        public void onContextualActionBarHidden() {
+            for (TabObserver observer : mObservers) {
+                observer.onContextualActionBarVisibilityChanged(Tab.this, false);
+            }
+        }
+    }
+
     private class TabContextMenuPopulator extends ContextMenuPopulatorWrapper {
         public TabContextMenuPopulator(ContextMenuPopulator populator) {
             super(populator);
