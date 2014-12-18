@@ -71,7 +71,6 @@
 window.ImageUtil = ImageUtil;
 window.ImageUtil.metrics = metrics;
 window.Gallery = Gallery;
-window.unload = unload;
 window.util = util;
 
 })();

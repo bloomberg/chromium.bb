@@ -3,12 +3,6 @@
 // found in the LICENSE file.
 
 /**
- * Called from the main frame when unloading.
- * @param {boolean=} opt_exiting True if the app is exiting.
- */
-function unload(opt_exiting) { gallery.onUnload(opt_exiting); }
-
-/**
  * Overrided metadata worker's path.
  * @type {string}
  */
@@ -368,6 +362,8 @@ function Gallery(volumeManager) {
   }
   this.volumeManager_.addEventListener(
       'externally-unmounted', this.onExternallyUnmountedBound_);
+  // The 'pagehide' event is called when the app window is closed.
+  window.addEventListener('pagehide', this.onPageHide_.bind(this));
 }
 
 /**
@@ -421,9 +417,9 @@ Gallery.prototype.onExternallyUnmounted_ = function(event) {
 
 /**
  * Unloads the Gallery.
- * @param {boolean=} opt_exiting True if the app is exiting.
+ * @private
  */
-Gallery.prototype.onUnload = function(opt_exiting) {
+Gallery.prototype.onPageHide_ = function() {
   if (this.metadataCacheObserverId_ !== null)
     this.metadataCache_.removeObserver(this.metadataCacheObserverId_);
   this.volumeManager_.removeEventListener(
