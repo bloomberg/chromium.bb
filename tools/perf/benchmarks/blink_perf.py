@@ -78,6 +78,8 @@ class _BlinkPerfMeasurement(page_test.PageTest):
         '--enable-experimental-web-platform-features',
         '--disable-gesture-requirement-for-media-playback'
     ])
+    if 'content-shell' in options.browser_type:
+      options.AppendExtraBrowserArgs('--expose-internals-for-testing')
 
   def ValidateAndMeasurePage(self, page, tab, results):
     tab.WaitForJavaScriptExpression('testRunner.isDone', 600)
@@ -127,6 +129,16 @@ class BlinkPerfBindings(benchmark.Benchmark):
 
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'Bindings')
+    return CreatePageSetFromPath(path, SKIPPED_FILE)
+
+
+@benchmark.Enabled('content-shell')
+class BlinkPerfBlinkGC(benchmark.Benchmark):
+  tag = 'blink_gc'
+  test = _BlinkPerfMeasurement
+
+  def CreatePageSet(self, options):
+    path = os.path.join(BLINK_PERF_BASE_DIR, 'BlinkGC')
     return CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
