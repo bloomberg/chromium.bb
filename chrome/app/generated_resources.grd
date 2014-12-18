@@ -10281,7 +10281,7 @@ Chrome ran out of memory.
           Turn off Smart Lock?
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_DESCRIPTION" desc="The description text of the Easy unlock turn off dialog.">
-          If you turn off Smart Lock for Chrome, you won’t be able to unlock your Chrome devices using your phone. You will have to type in your password.
+          If you turn off Smart Lock for Chrome, you won’t be able to unlock your Chrome devices using your phone. You'll need to type your password.
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_OFFLINE_TITLE" desc="The title text on the Easy unlock turn off dialog when Easy unlock could not be turned off because the device is offline.">
           Please connect to a network
@@ -10293,7 +10293,7 @@ Chrome ran out of memory.
           Smart Lock is unavailable
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_ERROR_MESSAGE" desc="The text on the Easy unlock turn off dialog when Easy unlock could not be turned off because there is a server error.">
-          Unable to connect to Smart Lock right now. Please try again later.
+          Smart Lock is currently unavailable. Please try again later.
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_RETRY_BUTTON" desc="The label text of the retry button on the Easy unlock turn off dialog when Easy unlock could not be turned off because there is a server error.">
           Retry
@@ -15091,6 +15091,10 @@ Do you accept?
       <message name="IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_HEADER_TEXT" desc="The text to show as the header body text of the Easy Unlock dialog during the second step, after a suitable phone has been found. Note that the &lt;a&gt; element surrounds a link; these HTML elements should be preserved in the translation.">
         Google sent a notification to this phone. Note that with Bluetooth, your phone may keep your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> unlocked from over 100 feet away. In cases where this could be a problem, you can &lt;a&gt;temporarily disable this feature&lt;/a&gt;.
       </message>
+      <!-- TODO(isherman): Remove this duplicate string once proximity work is completed. -->
+      <message name="IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_HEADER_TEXT_30_FEET" desc="The text to show as the header body text of the Easy Unlock dialog during the second step, after a suitable phone has been found. Note that the &lt;a&gt; element surrounds a link; these HTML elements should be preserved in the translation. This string is identical ot 'IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_HEADER_TEXT', but uses a 30 in place of the 100.">
+        Google sent a notification to this phone. Note that with Bluetooth, your phone may keep your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> unlocked from over 30 feet away. In cases where this could be a problem, you can &lt;a&gt;temporarily disable this feature&lt;/a&gt;.
+      </message>
       <message name="IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_USE_THIS_PHONE_BUTTON_LABEL" desc="The text to show as the 'Use this phone' button label in the Easy Unlock dialog. This button is visible during the second step, after a suitable phone is found.">
         Use this phone
       </message>
@@ -15196,7 +15200,7 @@ Do you accept?
         Your phone used for Smart Lock changed. Type your password to update Smart Lock on this device. Next time, you can just click your picture to enter.
       </message>
       <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_PAIRING_ADDED" desc="Tooltip text shown on a user's lock screen pod when Easy Unlock pairing data is synced on a new Chromebook.">
-        One-time activation: Type your password to activate Smart Lock. With Smart Lock, your phone will unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>—without a password. To change or disable this feature, visit your <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph>'s settings.
+        One-time activation: Type your password to activate Smart Lock. With Smart Lock, your phone will unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>—without a password. To change or turn off this feature, visit your <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph>'s settings.
       </message>
       <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_LOGIN_FAILURE" desc="Tooltip text shown on a user's lock screen when Smart Lock signin attempt fails.">
         Smart Lock couldn’t verify your account. Type your password to enter.
