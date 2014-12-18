@@ -114,3 +114,7 @@ class PageCyclerToughLayoutCases(_PageCycler):
 @benchmark.Disabled('android', 'win')
 class PageCyclerTypical25(_PageCycler):
   page_set = page_sets.Typical25PageSet
+
+
+class PageCyclerBigJs(_PageCycler):
+  page_set = page_sets.BigJsPageSet
