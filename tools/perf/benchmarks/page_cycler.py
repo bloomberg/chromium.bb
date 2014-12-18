@@ -116,5 +116,6 @@ class PageCyclerTypical25(_PageCycler):
   page_set = page_sets.Typical25PageSet
 
 
+@benchmark.Disabled # crbug.com/443730
 class PageCyclerBigJs(_PageCycler):
   page_set = page_sets.BigJsPageSet
