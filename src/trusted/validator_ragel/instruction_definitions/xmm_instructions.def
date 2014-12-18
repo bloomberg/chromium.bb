@@ -1228,221 +1228,161 @@ vfmaddpd Lpdx Wpdx Hpdx Vpdx, 0xc4 RXB.00011 0.src.L.01 0x69,
     CPUFeature_FMA4 disabled_untested
 vfmaddpd Wpdx Lpdx Hpdx Vpdx, 0xc4 RXB.00011 1.src.L.01 0x69,
     CPUFeature_FMA4 disabled_untested
-vfmadd132pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0x98,
-    CPUFeature_FMA disabled_untested
-vfmadd213pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xa8,
-    CPUFeature_FMA disabled_untested
-vfmadd231pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xb8,
-    CPUFeature_FMA disabled_untested
+vfmadd132pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0x98, CPUFeature_FMA
+vfmadd213pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xa8, CPUFeature_FMA
+vfmadd231pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xb8, CPUFeature_FMA
 ######## VFMADDPS/VFMADD132PS/VFMADD213PS/VFMADD231PS ##########################
 vfmaddps Lpsx Wpsx Hpsx Vpsx, 0xc4 RXB.00011 0.src.L.01 0x68,
     CPUFeature_FMA4 disabled_untested
 vfmaddps Wpsx Lpsx Hpsx Vpsx, 0xc4 RXB.00011 1.src.L.01 0x68,
     CPUFeature_FMA4 disabled_untested
-vfmadd132ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x98,
-    CPUFeature_FMA disabled_untested
-vfmadd213ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xa8,
-    CPUFeature_FMA disabled_untested
-vfmadd231ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xb8,
-    CPUFeature_FMA disabled_untested
+vfmadd132ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x98, CPUFeature_FMA
+vfmadd213ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xa8, CPUFeature_FMA
+vfmadd231ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xb8, CPUFeature_FMA
 ######## VFMADDSD/VFMADD132SD/VFMADD213SD/VFMADD231SD ##########################
 vfmaddsd Lsd Wsd Hsd Vsd, 0xc4 RXB.00011 0.src.x.01 0x6b,
     CPUFeature_FMA4 disabled_untested
 vfmaddsd Wsd Lsd Hsd Vsd, 0xc4 RXB.00011 1.src.x.01 0x6b,
     CPUFeature_FMA4 disabled_untested
-vfmadd132sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0x99,
-    CPUFeature_FMA disabled_untested
-vfmadd213sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xa9,
-    CPUFeature_FMA disabled_untested
-vfmadd231sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xb9,
-    CPUFeature_FMA disabled_untested
+vfmadd132sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0x99, CPUFeature_FMA
+vfmadd213sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xa9, CPUFeature_FMA
+vfmadd231sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xb9, CPUFeature_FMA
 ######## VFMADDSS/VFMADD132SS/VFMADD213SS/VFMADD231SS ##########################
 vfmaddss Lss Wss Hss Vss, 0xc4 RXB.00011 0.src.x.01 0x6a,
     CPUFeature_FMA4 disabled_untested
 vfmaddss Wss Lss Hss Vss, 0xc4 RXB.00011 1.src.x.01 0x6a,
     CPUFeature_FMA4 disabled_untested
-vfmadd132ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0x99,
-    CPUFeature_FMA disabled_untested
-vfmadd213ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xa9,
-    CPUFeature_FMA disabled_untested
-vfmadd231ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xb9,
-    CPUFeature_FMA disabled_untested
+vfmadd132ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0x99, CPUFeature_FMA
+vfmadd213ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xa9, CPUFeature_FMA
+vfmadd231ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xb9, CPUFeature_FMA
 ######## VFMADDSUBPD/VFMADDSUB132PD/VFMADDSUB213PD/VFMADDSUB231PD ##############
 vfmaddsubpd Lpdx Wpdx Hpdx Vpdx, 0xc4 RXB.00011 0.src.L.01 0x5d,
     CPUFeature_FMA4 disabled_untested
 vfmaddsubpd Wpdx Lpdx Hpdx Vpdx, 0xc4 RXB.00011 1.src.L.01 0x5d,
     CPUFeature_FMA4 disabled_untested
-vfmaddsub132pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0x96,
-    CPUFeature_FMA disabled_untested
-vfmaddsub213pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xa6,
-    CPUFeature_FMA disabled_untested
-vfmaddsub231pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xb6,
-    CPUFeature_FMA disabled_untested
+vfmaddsub132pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0x96, CPUFeature_FMA
+vfmaddsub213pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xa6, CPUFeature_FMA
+vfmaddsub231pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xb6, CPUFeature_FMA
 ######## VFMADDSUBPS/VFMADDSUB132PS/VFMADDSUB213PS/VFMADDSUB231PS ##############
 vfmaddsubps Lpsx Wpsx Hpsx Vpsx, 0xc4 RXB.00011 0.src.L.01 0x5c,
     CPUFeature_FMA4 disabled_untested
 vfmaddsubps Wpsx Lpsx Hpsx Vpsx, 0xc4 RXB.00011 1.src.L.01 0x5c,
     CPUFeature_FMA4 disabled_untested
-vfmaddsub132ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x96,
-    CPUFeature_FMA disabled_untested
-vfmaddsub213ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xa6,
-    CPUFeature_FMA disabled_untested
-vfmaddsub231ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xb6,
-    CPUFeature_FMA disabled_untested
+vfmaddsub132ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x96, CPUFeature_FMA
+vfmaddsub213ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xa6, CPUFeature_FMA
+vfmaddsub231ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xb6, CPUFeature_FMA
 ######## VFMSUBADDPD/VFMSUBADD132PD/VFMSUBADD213PD/VFMSUBADD231PD ##############
 vfmsubaddpd Lpdx Wpdx Hpdx Vpdx, 0xc4 RXB.00011 0.src.L.01 0x5f,
     CPUFeature_FMA4 disabled_untested
 vfmsubaddpd Wpdx Lpdx Hpdx Vpdx, 0xc4 RXB.00011 1.src.L.01 0x5f,
     CPUFeature_FMA4 disabled_untested
-vfmsubadd132pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0x97,
-    CPUFeature_FMA disabled_untested
-vfmsubadd213pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xa7,
-    CPUFeature_FMA disabled_untested
-vfmsubadd231pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xb7,
-    CPUFeature_FMA disabled_untested
+vfmsubadd132pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0x97, CPUFeature_FMA
+vfmsubadd213pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xa7, CPUFeature_FMA
+vfmsubadd231pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xb7, CPUFeature_FMA
 ######## VFMSUBADDPS/VFMSUBADD132PS/VFMSUBADD213PS/VFMSUBADD231PS ##############
 vfmsubaddps Lpsx Wpsx Hpsx Vpsx, 0xc4 RXB.00011 0.src.L.01 0x5e,
     CPUFeature_FMA4 disabled_untested
 vfmsubaddps Wpsx Lpsx Hpsx Vpsx, 0xc4 RXB.00011 1.src.L.01 0x5e,
     CPUFeature_FMA4 disabled_untested
-vfmsubadd132ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x97,
-    CPUFeature_FMA disabled_untested
-vfmsubadd213ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xa7,
-    CPUFeature_FMA disabled_untested
-vfmsubadd231ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xb7,
-    CPUFeature_FMA disabled_untested
+vfmsubadd132ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x97, CPUFeature_FMA
+vfmsubadd213ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xa7, CPUFeature_FMA
+vfmsubadd231ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xb7, CPUFeature_FMA
 ######## VFMSUBPD/VFMSUB132PD/VFMSUB213PD/VFMSUB231PD ##########################
 vfmsubpd Lpdx Wpdx Hpdx Vpdx, 0xc4 RXB.00011 0.src.L.01 0x6d,
     CPUFeature_FMA4 disabled_untested
 vfmsubpd Wpdx Lpdx Hpdx Vpdx, 0xc4 RXB.00011 1.src.L.01 0x6d,
     CPUFeature_FMA4 disabled_untested
-vfmsub132pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0x9a,
-    CPUFeature_FMA disabled_untested
-vfmsub213pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xaa,
-    CPUFeature_FMA disabled_untested
-vfmsub231pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xba,
-    CPUFeature_FMA disabled_untested
+vfmsub132pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0x9a, CPUFeature_FMA
+vfmsub213pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xaa, CPUFeature_FMA
+vfmsub231pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xba, CPUFeature_FMA
 ######## VFMSUBPS/VFMSUB132PS/VFMSUB213PS/VFMSUB231PS ##########################
 vfmsubps Lpsx Wpsx Hpsx Vpsx, 0xc4 RXB.00011 0.src.L.01 0x6c,
     CPUFeature_FMA4 disabled_untested
 vfmsubps Wpsx Lpsx Hpsx Vpsx, 0xc4 RXB.00011 1.src.L.01 0x6c,
     CPUFeature_FMA4 disabled_untested
-vfmsub132ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x9a,
-    CPUFeature_FMA disabled_untested
-vfmsub213ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xaa,
-    CPUFeature_FMA disabled_untested
-vfmsub231ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xba,
-    CPUFeature_FMA disabled_untested
+vfmsub132ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x9a, CPUFeature_FMA
+vfmsub213ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xaa, CPUFeature_FMA
+vfmsub231ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xba, CPUFeature_FMA
 ######## VFMSUBSD/VFMSUB132SD/VFMSUB213SD/VFMSUB231SD ##########################
 vfmsubsd Lsd Wsd Hsd Vsd, 0xc4 RXB.00011 0.src.x.01 0x6f,
     CPUFeature_FMA4 disabled_untested
 vfmsubsd Wsd Lsd Hsd Vsd, 0xc4 RXB.00011 1.src.x.01 0x6f,
     CPUFeature_FMA4 disabled_untested
-vfmsub132sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0x9b,
-    CPUFeature_FMA disabled_untested
-vfmsub213sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xab,
-    CPUFeature_FMA disabled_untested
-vfmsub231sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xbb,
-    CPUFeature_FMA disabled_untested
+vfmsub132sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0x9b, CPUFeature_FMA
+vfmsub213sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xab, CPUFeature_FMA
+vfmsub231sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xbb, CPUFeature_FMA
 ######## VFMSUBSS/VFMSUB132SS/VFMSUB213SS/VFMSUB231SS ##########################
 vfmsubss Lss Wss Hss Vss, 0xc4 RXB.00011 0.src.x.01 0x6e,
     CPUFeature_FMA4 disabled_untested
 vfmsubss Wss Lss Hss Vss, 0xc4 RXB.00011 1.src.x.01 0x6e,
     CPUFeature_FMA4 disabled_untested
-vfmsub132ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0x9b,
-    CPUFeature_FMA disabled_untested
-vfmsub213ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xab,
-    CPUFeature_FMA disabled_untested
-vfmsub231ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xbb,
-    CPUFeature_FMA disabled_untested
+vfmsub132ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0x9b, CPUFeature_FMA
+vfmsub213ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xab, CPUFeature_FMA
+vfmsub231ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xbb, CPUFeature_FMA
 ######## VFNMADDPD/VFNMADD132PD/VFNMADD213PD/VFNMADD231PD ######################
 vfnmaddpd Lpdx Wpdx Hpdx Vpdx, 0xc4 RXB.00011 0.src.L.01 0x79,
     CPUFeature_FMA4 disabled_untested
 vfnmaddpd Wpdx Lpdx Hpdx Vpdx, 0xc4 RXB.00011 1.src.L.01 0x79,
     CPUFeature_FMA4 disabled_untested
-vfnmadd132pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0x9c,
-    CPUFeature_FMA disabled_untested
-vfnmadd213pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xac,
-    CPUFeature_FMA disabled_untested
-vfnmadd231pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xbc,
-    CPUFeature_FMA disabled_untested
+vfnmadd132pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0x9c, CPUFeature_FMA
+vfnmadd213pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xac, CPUFeature_FMA
+vfnmadd231pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xbc, CPUFeature_FMA
 ######## VFNMADDPS/VFNMADD132PS/VFNMADD213PS/VFNMADD231PS ######################
 vfnmaddps Lpsx Wpsx Hpsx Vpsx, 0xc4 RXB.00011 0.src.L.01 0x78,
     CPUFeature_FMA4 disabled_untested
 vfnmaddps Wpsx Lpsx Hpsx Vpsx, 0xc4 RXB.00011 1.src.L.01 0x78,
     CPUFeature_FMA4 disabled_untested
-vfnmadd132ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x9c,
-    CPUFeature_FMA disabled_untested
-vfnmadd213ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xac,
-    CPUFeature_FMA disabled_untested
-vfnmadd231ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xbc,
-    CPUFeature_FMA disabled_untested
+vfnmadd132ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x9c, CPUFeature_FMA
+vfnmadd213ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xac, CPUFeature_FMA
+vfnmadd231ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xbc, CPUFeature_FMA
 ######## VFNMADDSD/VFNMADD132SD/VFNMADD213SD/VFNMADD231SD ######################
 vfnmaddsd Lsd Wsd Hsd Vsd, 0xc4 RXB.00011 0.src.x.01 0x7b,
     CPUFeature_FMA4 disabled_untested
 vfnmaddsd Wsd Lsd Hsd Vsd, 0xc4 RXB.00011 1.src.x.01 0x7b,
     CPUFeature_FMA4 disabled_untested
-vfnmadd132sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0x9d,
-    CPUFeature_FMA disabled_untested
-vfnmadd213sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xad,
-    CPUFeature_FMA disabled_untested
-vfnmadd231sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xbd,
-    CPUFeature_FMA disabled_untested
+vfnmadd132sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0x9d, CPUFeature_FMA
+vfnmadd213sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xad, CPUFeature_FMA
+vfnmadd231sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xbd, CPUFeature_FMA
 ######## VFMADDSS/VFMADD132SS/VFMADD213SS/VFMADD231SS ##########################
 vfnmaddss Lss Wss Hss Vss, 0xc4 RXB.00011 0.src.x.01 0x7a,
     CPUFeature_FMA4 disabled_untested
 vfnmaddss Wss Lss Hss Vss, 0xc4 RXB.00011 1.src.x.01 0x7a,
     CPUFeature_FMA4 disabled_untested
-vfnmadd132ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0x9d,
-    CPUFeature_FMA disabled_untested
-vfnmadd213ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xad,
-    CPUFeature_FMA disabled_untested
-vfnmadd231ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xbd,
-    CPUFeature_FMA disabled_untested
+vfnmadd132ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0x9d, CPUFeature_FMA
+vfnmadd213ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xad, CPUFeature_FMA
+vfnmadd231ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xbd, CPUFeature_FMA
 ######## VFNMSUBPD/VFNMSUB132PD/VFNMSUB213PD/VFNMSUB231PD ######################
 vfnmsubpd Lpdx Wpdx Hpdx Vpdx, 0xc4 RXB.00011 0.src.L.01 0x7d,
     CPUFeature_FMA4 disabled_untested
 vfnmsubpd Wpdx Lpdx Hpdx Vpdx, 0xc4 RXB.00011 1.src.L.01 0x7d,
     CPUFeature_FMA4 disabled_untested
-vfnmsub132pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0x9e,
-    CPUFeature_FMA disabled_untested
-vfnmsub213pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xae,
-    CPUFeature_FMA disabled_untested
-vfnmsub231pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xbe,
-    CPUFeature_FMA disabled_untested
+vfnmsub132pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0x9e, CPUFeature_FMA
+vfnmsub213pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xae, CPUFeature_FMA
+vfnmsub231pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xbe, CPUFeature_FMA
 ######## VFNMSUBPS/VFNMSUB132PS/VFNMSUB213PS/VFNMSUB231PS ######################
 vfnmsubps Lpsx Wpsx Hpsx Vpsx, 0xc4 RXB.00011 0.src.L.01 0x7c,
     CPUFeature_FMA4 disabled_untested
 vfnmsubps Wpsx Lpsx Hpsx Vpsx, 0xc4 RXB.00011 1.src.L.01 0x7c,
     CPUFeature_FMA4 disabled_untested
-vfnmsub132ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x9e,
-    CPUFeature_FMA disabled_untested
-vfnmsub213ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xae,
-    CPUFeature_FMA disabled_untested
-vfnmsub231ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xbe,
-    CPUFeature_FMA disabled_untested
+vfnmsub132ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x9e, CPUFeature_FMA
+vfnmsub213ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xae, CPUFeature_FMA
+vfnmsub231ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xbe, CPUFeature_FMA
 ######## VFNMSUBSD/VFNMSUB132SD/VFNMSUB213SD/VFNMSUB231SD ######################
 vfnmsubsd Lsd Wsd Hsd Vsd, 0xc4 RXB.00011 0.src.x.01 0x7f,
     CPUFeature_FMA4 disabled_untested
 vfnmsubsd Wsd Lsd Hsd Vsd, 0xc4 RXB.00011 1.src.x.01 0x7f,
     CPUFeature_FMA4 disabled_untested
-vfnmsub132sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0x9f,
-    CPUFeature_FMA disabled_untested
-vfnmsub213sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xaf,
-    CPUFeature_FMA disabled_untested
-vfnmsub231sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xbf,
-    CPUFeature_FMA disabled_untested
+vfnmsub132sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0x9f, CPUFeature_FMA
+vfnmsub213sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xaf, CPUFeature_FMA
+vfnmsub231sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xbf, CPUFeature_FMA
 ######## VFMSUBSS/VFMSUB132SS/VFMSUB213SS/VFMSUB231SS ##########################
 vfnmsubss Lss Wss Hss Vss, 0xc4 RXB.00011 0.src.x.01 0x7e,
     CPUFeature_FMA4 disabled_untested
 vfnmsubss Wss Lss Hss Vss, 0xc4 RXB.00011 1.src.x.01 0x7e,
     CPUFeature_FMA4 disabled_untested
-vfnmsub132ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0x9f,
-    CPUFeature_FMA disabled_untested
-vfnmsub213ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xaf,
-    CPUFeature_FMA disabled_untested
-vfnmsub231ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xbf,
-    CPUFeature_FMA disabled_untested
+vfnmsub132ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0x9f, CPUFeature_FMA
+vfnmsub213ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xaf, CPUFeature_FMA
+vfnmsub231ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xbf, CPUFeature_FMA
 ######## VFRCZPD ###############################################################
 vfrczpd Wpdx Vpdx, 0x8f RXB.01001 0.1111.L.00 0x81,
     CPUFeature_XOP disabled_untested
