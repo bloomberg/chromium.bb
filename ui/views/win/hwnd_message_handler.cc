@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/tracked_objects.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/win_util.h"
@@ -2086,6 +2087,11 @@ void HWNDMessageHandler::OnSize(UINT param, const gfx::Size& size) {
 
 void HWNDMessageHandler::OnSysCommand(UINT notification_code,
                                       const gfx::Point& point) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "440919 HWNDMessageHandler::OnSysCommand1"));
+
   if (!delegate_->ShouldHandleSystemCommands())
     return;
 
@@ -2139,6 +2145,11 @@ void HWNDMessageHandler::OnSysCommand(UINT notification_code,
     const bool runs_nested_loop = ((notification_code & sc_mask) == SC_SIZE) ||
                                   ((notification_code & sc_mask) == SC_MOVE);
     base::WeakPtr<HWNDMessageHandler> ref(weak_factory_.GetWeakPtr());
+
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "440919 HWNDMessageHandler::OnSysCommand2"));
 
     // Use task stopwatch to exclude the time spend in the move/resize loop from
     // the current task, if any.
@@ -2249,6 +2260,11 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
 }
 
 void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "440919 HWNDMessageHandler::OnWindowPosChanging"));
+
   if (ignore_window_pos_changes_) {
     // If somebody's trying to toggle our visibility, change the nonclient area,
     // change our Z-order, or activate us, we should probably let it go through.
