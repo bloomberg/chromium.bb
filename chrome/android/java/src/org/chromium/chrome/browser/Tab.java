@@ -10,6 +10,9 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.view.ContextMenu;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.FrameLayout;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ObserverList;
@@ -28,6 +31,7 @@ import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.SadTabViewFactory;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelBase;
 import org.chromium.chrome.browser.toolbar.ToolbarModel;
@@ -176,6 +180,11 @@ public class Tab {
     private float mPreviousFullscreenContentOffsetY = Float.NaN;
     private float mPreviousFullscreenOverdrawBottomHeight = Float.NaN;
     private int mFullscreenHungRendererToken = FullscreenManager.INVALID_TOKEN;
+
+    /**
+     * Reference to the current sadTabView if one is defined.
+     */
+    private View mSadTabView;
 
     /**
      * A default {@link ChromeContextMenuItemDelegate} that supports some of the context menu
@@ -544,6 +553,7 @@ public class Tab {
     public int loadUrl(LoadUrlParams params) {
         try {
             TraceEvent.begin("Tab.loadUrl");
+            removeSadTabIfPresent();
 
             // We load the URL from the tab rather than directly from the ContentView so the tab has
             // a chance of using a prerenderer page is any.
@@ -990,6 +1000,56 @@ public class Tab {
         // when it loads. This is not the default behavior for embedded
         // web views.
         mContentViewCore.setShouldSetAccessibilityFocusOnPageLoad(true);
+    }
+
+    /**
+     * Constructs and shows a sad tab (Aw, Snap!).
+     */
+    protected void showSadTab() {
+        if (getContentViewCore() != null) {
+            OnClickListener suggestionAction = new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    loadUrl(new LoadUrlParams(UrlConstants.CRASH_REASON_URL));
+                }
+            };
+            OnClickListener reloadButtonAction = new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    reload();
+                }
+            };
+
+            // Make sure we are not adding the "Aw, snap" view over an existing one.
+            assert mSadTabView == null;
+            mSadTabView = SadTabViewFactory.createSadTabView(
+                    getApplicationContext(), suggestionAction, reloadButtonAction);
+
+            // Show the sad tab inside ContentView.
+            getContentViewCore().getContainerView().addView(
+                    mSadTabView, new FrameLayout.LayoutParams(
+                            LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        }
+        FullscreenManager fullscreenManager = getFullscreenManager();
+        if (fullscreenManager != null) {
+            fullscreenManager.setPositionsForTabToNonFullscreen();
+        }
+    }
+
+    /**
+     * Removes the sad tab view if present.
+     */
+    protected void removeSadTabIfPresent() {
+        if (isShowingSadTab()) getContentViewCore().getContainerView().removeView(mSadTabView);
+        mSadTabView = null;
+    }
+
+    /**
+     * @return Whether or not the sad tab is showing.
+     */
+    public boolean isShowingSadTab() {
+        return mSadTabView != null && getContentViewCore() != null
+                && mSadTabView.getParent() == getContentViewCore().getContainerView();
     }
 
     /**
