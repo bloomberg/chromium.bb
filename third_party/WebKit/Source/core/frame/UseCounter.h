@@ -598,6 +598,7 @@ public:
         AddEventListenerOneArgument = 657,
         RemoveEventListenerNoArguments = 658,
         RemoveEventListenerOneArgument = 659,
+        SRIElementWithNonMatchingIntegrityType = 660,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

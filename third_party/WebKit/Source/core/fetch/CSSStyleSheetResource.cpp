@@ -91,6 +91,11 @@ const String CSSStyleSheetResource::sheetText(bool enforceMIMEType, bool* hasVal
     return decodedText();
 }
 
+const AtomicString CSSStyleSheetResource::mimeType() const
+{
+    return extractMIMETypeFromMediaType(response().httpHeaderField("Content-Type")).lower();
+}
+
 void CSSStyleSheetResource::checkNotify()
 {
     // Decode the data to find out the encoding and keep the sheet text around during checkNotify()
@@ -135,8 +140,7 @@ bool CSSStyleSheetResource::canUseSheet(bool enforceMIMEType, bool* hasValidMIME
     //
     // This code defaults to allowing the stylesheet for non-HTTP protocols so
     // folks can use standards mode for local HTML documents.
-    const AtomicString& mimeType = extractMIMETypeFromMediaType(response().httpHeaderField("Content-Type"));
-    bool typeOK = mimeType.isEmpty() || equalIgnoringCase(mimeType, "text/css") || equalIgnoringCase(mimeType, "application/x-unknown-content-type");
+    bool typeOK = mimeType().isEmpty() || equalIgnoringCase(mimeType(), "text/css") || equalIgnoringCase(mimeType(), "application/x-unknown-content-type");
     if (hasValidMIMEType)
         *hasValidMIMEType = typeOK;
     if (!enforceMIMEType)

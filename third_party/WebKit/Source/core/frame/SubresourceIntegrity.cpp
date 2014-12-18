@@ -28,11 +28,14 @@ namespace blink {
 // FIXME: This should probably use common functions with ContentSecurityPolicy.
 static bool isIntegrityCharacter(UChar c)
 {
-    // FIXME: This should be checking base64url encoding, not base64 encoding.
-
     // Check if it's a base64 encoded value. We're pretty loose here, as there's
     // not much risk in it, and it'll make it simpler for developers.
     return isASCIIAlphanumeric(c) || c == '_' || c == '-' || c == '+' || c == '/' || c == '=';
+}
+
+static bool isTypeCharacter(UChar c)
+{
+    return isASCIIAlphanumeric(c) || c == '+' || c == '.' || c == '-';
 }
 
 static void logErrorToConsole(const String& message, Document& document)
@@ -80,7 +83,7 @@ static String digestToString(const DigestValue& digest)
     return output.replace('+', '-').replace('/', '_');
 }
 
-bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, const String& source, const KURL& resourceUrl)
+bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, const String& source, const KURL& resourceUrl, const String& resourceType)
 {
     if (!RuntimeEnabledFeatures::subresourceIntegrityEnabled())
         return true;
@@ -112,10 +115,17 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, con
 
     String integrity;
     HashAlgorithm algorithm;
+    String type;
     String attribute = element.fastGetAttribute(HTMLNames::integrityAttr);
-    if (!parseIntegrityAttribute(attribute, integrity, algorithm, document)) {
+    if (!parseIntegrityAttribute(attribute, integrity, algorithm, type, document)) {
         // An error is logged to the console during parsing; we don't need to log one here.
         UseCounter::count(document, UseCounter::SRIElementWithUnparsableIntegrityAttribute);
+        return false;
+    }
+
+    if (!type.isEmpty() && !equalIgnoringCase(type, resourceType)) {
+        UseCounter::count(document, UseCounter::SRIElementWithNonMatchingIntegrityType);
+        logErrorToConsole("Subresource Integrity: The resource '" + resourceUrl.elidedString() + "' was delivered as type '" + resourceType + "', which does not match the expected type '" + type + "'. The resource has been blocked.", document);
         return false;
     }
 
@@ -155,7 +165,7 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, con
 //       ^                 ^
 //       position          end
 //
-// After:
+// After (if successful: if the method returns false, we make no promises and the caller should exit early):
 //
 // ni:///[algorithm];[hash]
 //                  ^      ^
@@ -193,7 +203,7 @@ bool SubresourceIntegrity::parseAlgorithm(const UChar*& position, const UChar* e
 //                   ^     ^                              ^              ^
 //            position   end                       position            end
 //
-// After:
+// After (if successful: if the method returns false, we make no promises and the caller should exit early):
 //
 // ni:///[algorithm];[hash]     OR      ni:///[algorithm];[hash]?[params]
 //                         ^                                    ^        ^
@@ -213,7 +223,47 @@ bool SubresourceIntegrity::parseDigest(const UChar*& position, const UChar* end,
     return true;
 }
 
-bool SubresourceIntegrity::parseIntegrityAttribute(const String& attribute, String& digest, HashAlgorithm& algorithm, Document& document)
+
+// Before:
+//
+// ni:///[algorithm];[hash]     OR      ni:///[algorithm];[hash]?[params]
+//                         ^                                    ^        ^
+//              position/end                             position      end
+//
+// After (if successful: if the method returns false, we make no promises and the caller should exit early):
+//
+// ni:///[algorithm];[hash]     OR      ni:///[algorithm];[hash]?[params]
+//                         ^                                             ^
+//              position/end                                  position/end
+bool SubresourceIntegrity::parseMimeType(const UChar*& position, const UChar* end, String& type)
+{
+    type = emptyString();
+    if (position == end)
+        return true;
+
+    if (!skipToken<UChar>(position, end, "?ct="))
+        return false;
+
+    const UChar* begin = position;
+    skipWhile<UChar, isASCIIAlpha>(position, end);
+    if (position == end)
+        return false;
+
+    if (!skipExactly<UChar>(position, end, '/'))
+        return false;
+
+    if (position == end)
+        return false;
+
+    skipWhile<UChar, isTypeCharacter>(position, end);
+    if (position != end)
+        return false;
+
+    type = String(begin, position - begin);
+    return true;
+}
+
+bool SubresourceIntegrity::parseIntegrityAttribute(const String& attribute, String& digest, HashAlgorithm& algorithm, String& type, Document& document)
 {
     Vector<UChar> characters;
     attribute.stripWhiteSpace().appendTo(characters);
@@ -240,7 +290,10 @@ bool SubresourceIntegrity::parseIntegrityAttribute(const String& attribute, Stri
         return false;
     }
 
-    // FIXME: Parse params in order to get content type (e.g. "?ct=application/javascript")
+    if (!parseMimeType(position, end, type)) {
+        logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute + "'). The content type could not be parsed.", document);
+        return false;
+    }
 
     return true;
 }

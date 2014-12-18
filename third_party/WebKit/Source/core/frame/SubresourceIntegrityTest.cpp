@@ -91,34 +91,61 @@ protected:
         EXPECT_TRUE(digest.isEmpty());
     }
 
-    void expectParse(const char* integrityAttribute, const char* expectedDigest, HashAlgorithm expectedAlgorithm)
+    void expectMimeType(const String& text, const char* expectedType)
+    {
+        Vector<UChar> characters;
+        text.appendTo(characters);
+        const UChar* position = characters.data();
+        const UChar* end = characters.end();
+        String type;
+
+        EXPECT_TRUE(SubresourceIntegrity::parseMimeType(position, end, type));
+        EXPECT_EQ(expectedType, type);
+    }
+
+    void expectMimeTypeFailure(const String& text)
+    {
+        Vector<UChar> characters;
+        text.appendTo(characters);
+        const UChar* position = characters.data();
+        const UChar* end = characters.end();
+        String type;
+
+        EXPECT_FALSE(SubresourceIntegrity::parseMimeType(position, end, type));
+        EXPECT_TRUE(type.isEmpty());
+    }
+
+    void expectParse(const char* integrityAttribute, const char* expectedDigest, HashAlgorithm expectedAlgorithm, const char* expectedType)
     {
         String digest;
         HashAlgorithm algorithm;
+        String type;
 
-        EXPECT_TRUE(SubresourceIntegrity::parseIntegrityAttribute(integrityAttribute, digest, algorithm, *document));
+        EXPECT_TRUE(SubresourceIntegrity::parseIntegrityAttribute(integrityAttribute, digest, algorithm, type, *document));
         EXPECT_EQ(expectedDigest, digest);
         EXPECT_EQ(expectedAlgorithm, algorithm);
+        EXPECT_EQ(expectedType, type);
     }
 
     void expectParseFailure(const char* integrityAttribute)
     {
         String digest;
         HashAlgorithm algorithm;
+        String type;
 
-        EXPECT_FALSE(SubresourceIntegrity::parseIntegrityAttribute(integrityAttribute, digest, algorithm, *document));
+        EXPECT_FALSE(SubresourceIntegrity::parseIntegrityAttribute(integrityAttribute, digest, algorithm, type, *document));
     }
 
-    void expectIntegrity(const char* integrity, const char* script, const KURL& url)
+    void expectIntegrity(const char* integrity, const char* script, const KURL& url, const String& mimeType = String())
     {
         scriptElement->setAttribute(HTMLNames::integrityAttr, integrity);
-        EXPECT_TRUE(SubresourceIntegrity::CheckSubresourceIntegrity(*scriptElement, script, url));
+        EXPECT_TRUE(SubresourceIntegrity::CheckSubresourceIntegrity(*scriptElement, script, url, mimeType));
     }
 
-    void expectIntegrityFailure(const char* integrity, const char* script, const KURL& url)
+    void expectIntegrityFailure(const char* integrity, const char* script, const KURL& url, const String& mimeType = String())
     {
         scriptElement->setAttribute(HTMLNames::integrityAttr, integrity);
-        EXPECT_FALSE(SubresourceIntegrity::CheckSubresourceIntegrity(*scriptElement, script, url));
+        EXPECT_FALSE(SubresourceIntegrity::CheckSubresourceIntegrity(*scriptElement, script, url, mimeType));
     }
 
     KURL secureURL;
@@ -155,6 +182,22 @@ TEST_F(SubresourceIntegrityTest, ParseDigest)
     expectDigestFailure("\x01\x02\x03\x04");
 }
 
+TEST_F(SubresourceIntegrityTest, ParseMimeType)
+{
+    expectMimeType("?ct=application/javascript", "application/javascript");
+    expectMimeType("?ct=application/xhtml+xml", "application/xhtml+xml");
+    expectMimeType("?ct=text/vnd.abc", "text/vnd.abc");
+    expectMimeType("?ct=video/x-ms-wmv", "video/x-ms-wmv");
+
+    expectMimeTypeFailure("application/javascript");
+    expectMimeTypeFailure("?application/javascript");
+    expectMimeTypeFailure("?not-ct=application/javascript");
+    expectMimeTypeFailure("?ct==application/javascript");
+    expectMimeTypeFailure("?yay=boo&ct=application/javascript");
+    expectMimeTypeFailure("?ct=application/javascript&yay=boo");
+    expectMimeTypeFailure("?ct=video%2Fx-ms-wmv");
+}
+
 //
 // End-to-end parsing tests.
 //
@@ -172,37 +215,44 @@ TEST_F(SubresourceIntegrityTest, Parsing)
     expectParse(
         "ni:///sha256;BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=",
         "BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=",
-        HashAlgorithmSha256);
+        HashAlgorithmSha256,
+        "");
 
     expectParse(
         "ni:///sha-256;BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=",
         "BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=",
-        HashAlgorithmSha256);
+        HashAlgorithmSha256,
+        "");
 
     expectParse(
         "     ni:///sha256;BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=     ",
         "BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=",
-        HashAlgorithmSha256);
+        HashAlgorithmSha256,
+        "");
 
     expectParse(
         "ni:///sha384;XVVXBGoYw6AJOh9J-Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup_tA1v5GPr",
         "XVVXBGoYw6AJOh9J+Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr",
-        HashAlgorithmSha384);
+        HashAlgorithmSha384,
+        "");
 
     expectParse(
         "ni:///sha-384;XVVXBGoYw6AJOh9J_Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup_tA1v5GPr",
         "XVVXBGoYw6AJOh9J/Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr",
-        HashAlgorithmSha384);
+        HashAlgorithmSha384,
+        "");
 
     expectParse(
         "ni:///sha512;tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ-07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
         "tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
-        HashAlgorithmSha512);
+        HashAlgorithmSha512,
+        "");
 
     expectParse(
         "ni:///sha-512;tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ-07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
         "tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
-        HashAlgorithmSha512);
+        HashAlgorithmSha512,
+        "");
 }
 
 TEST_F(SubresourceIntegrityTest, ParsingBase64)
@@ -210,7 +260,8 @@ TEST_F(SubresourceIntegrityTest, ParsingBase64)
     expectParse(
         "ni:///sha384;XVVXBGoYw6AJOh9J+Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr",
         "XVVXBGoYw6AJOh9J+Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr",
-        HashAlgorithmSha384);
+        HashAlgorithmSha384,
+        "");
 }
 
 //

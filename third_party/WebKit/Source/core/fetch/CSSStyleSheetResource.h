@@ -44,6 +44,8 @@ public:
 
     const String sheetText(bool enforceMIMEType = true, bool* hasValidMIMEType = 0) const;
 
+    const AtomicString mimeType() const;
+
     virtual void didAddClient(ResourceClient*) override;
 
     PassRefPtrWillBeRawPtr<StyleSheetContents> restoreParsedStyleSheet(const CSSParserContext&);

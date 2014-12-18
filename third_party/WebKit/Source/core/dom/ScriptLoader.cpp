@@ -344,7 +344,7 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* com
             return;
         }
 
-        if (!SubresourceIntegrity::CheckSubresourceIntegrity(*m_element, sourceCode.source(), sourceCode.resource()->url()))
+        if (!SubresourceIntegrity::CheckSubresourceIntegrity(*m_element, sourceCode.source(), sourceCode.resource()->url(), sourceCode.resource()->mimeType()))
             return;
     }
 
