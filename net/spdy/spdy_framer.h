@@ -494,7 +494,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   // Serializes a PRIORITY frame. The PRIORITY frame advises a change in
   // the relative priority of the given stream.
-  SpdySerializedFrame* SerializePriority(const SpdyPriorityIR& priority);
+  SpdySerializedFrame* SerializePriority(const SpdyPriorityIR& priority) const;
 
   // Serialize a frame of unknown type.
   SpdySerializedFrame* SerializeFrame(const SpdyFrameIR& frame);
@@ -579,8 +579,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   // Interpolates SpdyPriority values into SPDY4/HTTP2 priority weights,
   // and vice versa.
-  uint8 MapPriorityToWeight(SpdyPriority priority);
-  SpdyPriority MapWeightToPriority(uint8 weight);
+  static uint8 MapPriorityToWeight(SpdyPriority priority);
+  static SpdyPriority MapWeightToPriority(uint8 weight);
 
   // Deliver the given control frame's compressed headers block to the visitor
   // in decompressed form, in chunks. Returns true if the visitor has

@@ -2868,7 +2868,7 @@ SpdyFrame* SpdyFramer::SerializeAltSvc(const SpdyAltSvcIR& altsvc) {
   return builder.take();
 }
 
-SpdyFrame* SpdyFramer::SerializePriority(const SpdyPriorityIR& priority) {
+SpdyFrame* SpdyFramer::SerializePriority(const SpdyPriorityIR& priority) const {
   DCHECK_LT(SPDY3, protocol_version());
   size_t size = GetPrioritySize();
 

@@ -11,6 +11,10 @@
 #include "base/logging.h"
 #include "net/spdy/spdy_protocol.h"
 
+namespace {
+class WriteBlockedListPeer;
+}
+
 namespace net {
 
 const int kHighestPriority = 0;
@@ -76,16 +80,32 @@ class WriteBlockedList {
     write_blocked_lists_[ClampPriority(priority)].push_back(stream_id);
   }
 
-  void RemoveStreamFromWriteBlockedList(IdType stream_id,
+  bool RemoveStreamFromWriteBlockedList(IdType stream_id,
                                         SpdyPriority priority) {
+    // We shouldn't really add a stream_id to a list multiple times,
+    // but under some conditions it does happen. Doing a check in PushBack
+    // would be too costly, so instead we check here to eliminate duplicates.
+    bool found = false;
     iterator it = std::find(write_blocked_lists_[priority].begin(),
                             write_blocked_lists_[priority].end(),
                             stream_id);
     while (it != write_blocked_lists_[priority].end()) {
-      write_blocked_lists_[priority].erase(it);
-      it = std::find(write_blocked_lists_[priority].begin(),
-                     write_blocked_lists_[priority].end(),
-                     stream_id);
+      found = true;
+      iterator next_it = write_blocked_lists_[priority].erase(it);
+      it = std::find(next_it, write_blocked_lists_[priority].end(), stream_id);
+    }
+    return found;
+  }
+
+  void UpdateStreamPriorityInWriteBlockedList(IdType stream_id,
+                                              SpdyPriority old_priority,
+                                              SpdyPriority new_priority) {
+    if (old_priority == new_priority) {
+      return;
+    }
+    bool found = RemoveStreamFromWriteBlockedList(stream_id, old_priority);
+    if (found) {
+      PushBack(stream_id, new_priority);
     }
   }
 
@@ -98,6 +118,7 @@ class WriteBlockedList {
   }
 
  private:
+  friend WriteBlockedListPeer;
   BlockedList write_blocked_lists_[kLowestPriority + 1];
 };
 
