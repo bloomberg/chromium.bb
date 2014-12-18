@@ -1630,15 +1630,7 @@ public class ContentViewCore
      */
     public boolean onHoverEvent(MotionEvent event) {
         TraceEvent.begin("onHoverEvent");
-        // TODO(lanwei): Remove this switch once experimentation is complete -
-        // crbug.com/418188
-        if (event.getToolType(0) == MotionEvent.TOOL_TYPE_FINGER) {
-            if (mEnableTouchHover == null) {
-                mEnableTouchHover =
-                        CommandLine.getInstance().hasSwitch(ContentSwitches.ENABLE_TOUCH_HOVER);
-            }
-            if (!mEnableTouchHover.booleanValue()) return false;
-        }
+
         MotionEvent offset = createOffsetMotionEvent(event);
         try {
             if (mBrowserAccessibilityManager != null) {
@@ -1649,6 +1641,16 @@ public class ContentViewCore
             // event are incorrect when touch exploration is on.
             if (mTouchExplorationEnabled && offset.getAction() == MotionEvent.ACTION_HOVER_EXIT) {
                 return true;
+            }
+
+            // TODO(lanwei): Remove this switch once experimentation is complete -
+            // crbug.com/418188
+            if (event.getToolType(0) == MotionEvent.TOOL_TYPE_FINGER) {
+                if (mEnableTouchHover == null) {
+                    mEnableTouchHover =
+                            CommandLine.getInstance().hasSwitch(ContentSwitches.ENABLE_TOUCH_HOVER);
+                }
+                if (!mEnableTouchHover.booleanValue()) return false;
             }
 
             mContainerView.removeCallbacks(mFakeMouseMoveRunnable);
