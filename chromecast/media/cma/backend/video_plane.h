@@ -6,6 +6,7 @@
 #define CHROMECAST_MEDIA_CMA_BACKEND_VIDEO_PLANE_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace gfx {
 class QuadF;
@@ -28,8 +29,8 @@ class VideoPlane {
   VideoPlane();
   virtual ~VideoPlane();
 
-  // Gets video plane resolution.
-  virtual gfx::Size GetVideoPlaneResolution() = 0;
+  // Gets output screen resolution.
+  virtual gfx::Size GetScreenResolution() = 0;
 
   // Updates the video plane geometry.
   // |quad.p1()| corresponds to the top left of the original video,
@@ -41,9 +42,17 @@ class VideoPlane {
   virtual void SetGeometry(const gfx::QuadF& quad,
                            CoordinateType coordinate_type) = 0;
 
+  // Should be invoked whenever screen resolution changes (e.g. when a device is
+  // plugged into a new HDMI port and a new HDMI EDID is received).
+  // VideoPlane should reposition itself according to the new screen resolution.
+  virtual void OnScreenResolutionChanged(const gfx::Size& screen_res) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoPlane);
 };
+
+// Factory to create a VideoPlane.
+scoped_ptr<VideoPlane> CreateVideoPlane();
 
 // Global accessor to the video plane.
 VideoPlane* GetVideoPlane();

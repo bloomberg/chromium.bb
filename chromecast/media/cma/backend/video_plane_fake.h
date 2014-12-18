@@ -6,7 +6,6 @@
 #define CHROMECAST_MEDIA_CMA_BACKEND_VIDEO_PLANE_FAKE_H_
 
 #include "base/macros.h"
-#include "base/memory/singleton.h"
 #include "chromecast/media/cma/backend/video_plane.h"
 
 namespace chromecast {
@@ -14,19 +13,14 @@ namespace media {
 
 class VideoPlaneFake : public VideoPlane {
  public:
-  static VideoPlaneFake* GetInstance();
-
-  // VideoPlane implementation.
-  gfx::Size GetVideoPlaneResolution() override;
-  void SetGeometry(const gfx::QuadF& quad,
-                   CoordinateType coordinate_type) override;
-
- private:
-  friend struct DefaultSingletonTraits<VideoPlaneFake>;
-  friend class Singleton<VideoPlaneFake>;
-
   VideoPlaneFake();
   virtual ~VideoPlaneFake();
+
+  // VideoPlane implementation.
+  gfx::Size GetScreenResolution() override;
+  void SetGeometry(const gfx::QuadF& quad,
+                   CoordinateType coordinate_type) override;
+  void OnScreenResolutionChanged(const gfx::Size& screen_res) override;
 
   DISALLOW_COPY_AND_ASSIGN(VideoPlaneFake);
 };

@@ -7,9 +7,8 @@
 namespace chromecast {
 namespace media {
 
-// Global accessor to the video plane.
-VideoPlane* GetVideoPlane() {
-  return VideoPlaneFake::GetInstance();
+scoped_ptr<VideoPlane> CreateVideoPlane() {
+  return make_scoped_ptr(new VideoPlaneFake());
 }
 
 }  // namespace media
