@@ -23,6 +23,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -1153,6 +1154,19 @@ void ProfileSyncService::OnExperimentsChanged(
 
   profile()->GetPrefs()->SetBoolean(prefs::kInvalidationServiceUseGCMChannel,
                                     experiments.gcm_invalidations_enabled);
+
+  if (experiments.enhanced_bookmarks_enabled) {
+    profile_->GetPrefs()->SetString(
+        sync_driver::prefs::kEnhancedBookmarksExtensionId,
+        experiments.enhanced_bookmarks_ext_id);
+  } else {
+    profile_->GetPrefs()->ClearPref(
+        sync_driver::prefs::kEnhancedBookmarksExtensionId);
+  }
+  UpdateBookmarksExperimentState(
+      profile_->GetPrefs(), g_browser_process->local_state(), true,
+      experiments.enhanced_bookmarks_enabled ? BOOKMARKS_EXPERIMENT_ENABLED :
+                                               BOOKMARKS_EXPERIMENT_NONE);
 
   // If this is a first time sync for a client, this will be called before
   // OnBackendInitialized() to ensure the new datatypes are available at sync
