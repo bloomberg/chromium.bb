@@ -223,9 +223,9 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   // IO thread timestamp for ongoing IPC message.
   base::TimeTicks io_timestamp_;
 
-  base::WeakPtrFactory<ResourceDispatcher> weak_factory_;
-
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+
+  base::WeakPtrFactory<ResourceDispatcher> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcher);
 };

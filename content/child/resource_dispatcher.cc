@@ -294,8 +294,8 @@ ResourceDispatcher::ResourceDispatcher(
     : message_sender_(sender),
       delegate_(NULL),
       io_timestamp_(base::TimeTicks()),
-      weak_factory_(this),
-      main_thread_task_runner_(main_thread_task_runner) {
+      main_thread_task_runner_(main_thread_task_runner),
+      weak_factory_(this) {
 }
 
 ResourceDispatcher::~ResourceDispatcher() {
