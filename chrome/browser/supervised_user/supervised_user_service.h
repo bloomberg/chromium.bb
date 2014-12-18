@@ -70,7 +70,8 @@ class SupervisedUserService : public KeyedService,
 #endif
                               public SyncTypePreferenceProvider,
                               public ProfileSyncServiceObserver,
-                              public chrome::BrowserListObserver {
+                              public chrome::BrowserListObserver,
+                              public SupervisedUserURLFilter::Observer {
  public:
   typedef std::vector<base::string16> CategoryList;
   typedef base::Callback<void(content::WebContents*)> NavigationBlockedCallback;
@@ -201,6 +202,9 @@ class SupervisedUserService : public KeyedService,
   // chrome::BrowserListObserver implementation:
   void OnBrowserSetLastActive(Browser* browser) override;
 
+  // SupervisedUserURLFilter::Observer implementation:
+  void OnSiteListUpdated() override;
+
  private:
   friend class SupervisedUserServiceExtensionTestBase;
   friend class SupervisedUserServiceFactory;
@@ -224,7 +228,8 @@ class SupervisedUserService : public KeyedService,
     void SetDefaultFilteringBehavior(
         SupervisedUserURLFilter::FilteringBehavior behavior);
     void LoadWhitelists(ScopedVector<SupervisedUserSiteList> site_lists);
-    void LoadBlacklist(const base::FilePath& path);
+    void LoadBlacklist(const base::FilePath& path,
+                       const base::Closure& callback);
     void SetManualHosts(scoped_ptr<std::map<std::string, bool> > host_map);
     void SetManualURLs(scoped_ptr<std::map<GURL, bool> > url_map);
 
@@ -232,7 +237,7 @@ class SupervisedUserService : public KeyedService,
                              const std::string& cx);
 
    private:
-    void OnBlacklistLoaded();
+    void OnBlacklistLoaded(const base::Closure& callback);
 
     // SupervisedUserURLFilter is refcounted because the IO thread filter is
     // used both by ProfileImplIOData and OffTheRecordProfileIOData (to filter
@@ -312,6 +317,8 @@ class SupervisedUserService : public KeyedService,
   void LoadBlacklistFromFile(const base::FilePath& path);
 
   void OnBlacklistDownloadDone(const base::FilePath& path, bool success);
+
+  void OnBlacklistLoaded();
 
   // Updates the manual overrides for hosts in the URL filters when the
   // corresponding preference is changed.
