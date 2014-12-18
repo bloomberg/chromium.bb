@@ -71,7 +71,7 @@ ScriptPromise PushManager::getRegistration(ScriptState* scriptState)
     if (!m_registration->active())
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Registration failed - no active Service Worker"));
 
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     pushProvider()->getRegistration(m_registration->webRegistration(), new PushRegistrationCallbacks(resolver, m_registration));
