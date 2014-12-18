@@ -15,14 +15,17 @@
 
 #include "chrome/browser/password_manager/password_manager_util.h"
 
+#include "base/bind.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/worker_pool.h"
 #include "base/time/time.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -33,6 +36,7 @@
 #endif
 
 namespace password_manager_util {
+namespace {
 
 const unsigned kMaxPasswordRetries = 3;
 
@@ -43,7 +47,31 @@ const unsigned kCredUiDefaultFlags =
     CREDUI_FLAGS_ALWAYS_SHOW_UI |
     CREDUI_FLAGS_DO_NOT_PERSIST;
 
-static int64 GetPasswordLastChanged(WCHAR* username) {
+struct PasswordCheckPrefs {
+  PasswordCheckPrefs() : pref_last_changed_(0), blank_password_(false) {}
+
+  void Read(PrefService* local_state);
+  void Write(PrefService* local_state);
+
+  int64 pref_last_changed_;
+  bool blank_password_;
+};
+
+void PasswordCheckPrefs::Read(PrefService* local_state) {
+  blank_password_ =
+      local_state->GetBoolean(password_manager::prefs::kOsPasswordBlank);
+  pref_last_changed_ =
+      local_state->GetInt64(password_manager::prefs::kOsPasswordLastChanged);
+}
+
+void PasswordCheckPrefs::Write(PrefService* local_state) {
+  local_state->SetBoolean(password_manager::prefs::kOsPasswordBlank,
+                          blank_password_);
+  local_state->SetInt64(password_manager::prefs::kOsPasswordLastChanged,
+                        pref_last_changed_);
+}
+
+int64 GetPasswordLastChanged(const WCHAR* username) {
   LPUSER_INFO_1 user_info = NULL;
   DWORD age = 0;
 
@@ -62,22 +90,19 @@ static int64 GetPasswordLastChanged(WCHAR* username) {
   return changed.ToInternalValue();
 }
 
-static bool CheckBlankPassword(WCHAR* username) {
-  PrefService* local_state = g_browser_process->local_state();
+bool CheckBlankPasswordWithPrefs(const WCHAR* username,
+                                 PasswordCheckPrefs* prefs) {
   int64 last_changed = GetPasswordLastChanged(username);
-  bool need_recheck = true;
-  bool blank_password = false;
 
   // If we cannot determine when the password was last changed
   // then assume the password is not blank
   if (last_changed == -1)
     return false;
 
-  blank_password =
-      local_state->GetBoolean(password_manager::prefs::kOsPasswordBlank);
-  int64 pref_last_changed =
-      local_state->GetInt64(password_manager::prefs::kOsPasswordLastChanged);
-  if (pref_last_changed > 0 && last_changed <= pref_last_changed) {
+  bool blank_password = prefs->blank_password_;
+  bool need_recheck = true;
+  if (prefs->pref_last_changed_ > 0 &&
+      last_changed <= prefs->pref_last_changed_) {
     need_recheck = false;
   }
 
@@ -108,37 +133,72 @@ static bool CheckBlankPassword(WCHAR* username) {
   // writing to the preferences by adding a small skew factor here.
   last_changed += base::Time::kMicrosecondsPerSecond;
 
-  // Save the blank password status for later.
-  local_state->SetBoolean(password_manager::prefs::kOsPasswordBlank,
-                          blank_password);
-  local_state->SetInt64(password_manager::prefs::kOsPasswordLastChanged,
-                        last_changed);
-
+  // Update the preferences with new values.
+  prefs->pref_last_changed_ = last_changed;
+  prefs->blank_password_ = blank_password;
   return blank_password;
 }
 
-OsPasswordStatus GetOsPasswordStatus() {
+// Wrapper around CheckBlankPasswordWithPrefs to be called on UI thread.
+bool CheckBlankPassword(const WCHAR* username) {
+  PrefService* local_state = g_browser_process->local_state();
+  PasswordCheckPrefs prefs;
+  prefs.Read(local_state);
+  bool result = CheckBlankPasswordWithPrefs(username, &prefs);
+  prefs.Write(local_state);
+  return result;
+}
+
+void GetOsPasswordStatusInternal(PasswordCheckPrefs* prefs,
+                                 OsPasswordStatus* retVal) {
   DWORD username_length = CREDUI_MAX_USERNAME_LENGTH;
   WCHAR username[CREDUI_MAX_USERNAME_LENGTH+1] = {};
-  OsPasswordStatus retVal = PASSWORD_STATUS_UNKNOWN;
+  *retVal = PASSWORD_STATUS_UNKNOWN;
 
   if (GetUserNameEx(NameUserPrincipal, username, &username_length)) {
     // If we are on a domain, it is almost certain that the password is not
     // blank, but we do not actively check any further than this to avoid any
     // failed login attempts hitting the domain controller.
-    retVal = PASSWORD_STATUS_WIN_DOMAIN;
+    *retVal = PASSWORD_STATUS_WIN_DOMAIN;
   } else {
     username_length = CREDUI_MAX_USERNAME_LENGTH;
-    // CheckBlankPassword() isn't safe to call on before Windows 7.
+    // CheckBlankPasswordWithPrefs() isn't safe to call on before Windows 7.
     // http://crbug.com/345916
     if (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
         GetUserName(username, &username_length)) {
-      retVal = CheckBlankPassword(username) ? PASSWORD_STATUS_BLANK :
+      *retVal = CheckBlankPasswordWithPrefs(username, prefs) ?
+          PASSWORD_STATUS_BLANK :
           PASSWORD_STATUS_NONBLANK;
     }
   }
+}
 
-  return retVal;
+void ReplyOsPasswordStatus(const base::Callback<void(OsPasswordStatus)>& reply,
+                           PasswordCheckPrefs* prefs,
+                           OsPasswordStatus* retVal) {
+  PrefService* local_state = g_browser_process->local_state();
+  prefs->Write(local_state);
+  reply.Run(*retVal);
+}
+
+}  // namespace
+
+void GetOsPasswordStatus(const base::Callback<void(OsPasswordStatus)>& reply) {
+  // Preferences can be accessed on the UI thread only.
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  PrefService* local_state = g_browser_process->local_state();
+  PasswordCheckPrefs* prefs = new PasswordCheckPrefs;
+  prefs->Read(local_state);
+  OsPasswordStatus* retVal = new OsPasswordStatus(PASSWORD_STATUS_UNKNOWN);
+  bool posted = base::WorkerPool::PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&GetOsPasswordStatusInternal,
+                 base::Unretained(prefs), base::Unretained(retVal)),
+      base::Bind(&ReplyOsPasswordStatus,
+                 reply, base::Owned(prefs), base::Owned(retVal)),
+      true);
+  if (!posted)
+    reply.Run(PASSWORD_STATUS_UNKNOWN);
 }
 
 bool AuthenticateUser(gfx::NativeWindow window) {

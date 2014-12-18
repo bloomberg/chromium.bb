@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_UTIL_H_
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace password_manager_util {
@@ -29,9 +30,9 @@ enum OsPasswordStatus {
 bool AuthenticateUser(gfx::NativeWindow window);
 
 // Query the system to determine whether the current logged on user has a
-// password set on their OS account.  Returns one of the OsPasswordStatus
-// enum values.
-OsPasswordStatus GetOsPasswordStatus();
+// password set on their OS account.  It should be called on UI thread. |reply|
+// is invoked on UI thread with result.
+void GetOsPasswordStatus(const base::Callback<void(OsPasswordStatus)>& reply);
 
 }  // namespace password_manager_util
 

@@ -10,8 +10,8 @@ bool AuthenticateUser(gfx::NativeWindow window) {
   return true;
 }
 
-OsPasswordStatus GetOsPasswordStatus() {
-  return PASSWORD_STATUS_UNSUPPORTED;
+void GetOsPasswordStatus(const base::Callback<void(OsPasswordStatus)>& reply) {
+  reply.Run(PASSWORD_STATUS_UNSUPPORTED);
 }
 
 }  // namespace password_manager_util
