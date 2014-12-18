@@ -433,6 +433,8 @@ typedef uint64 SpdyPingId;
 
 typedef std::string SpdyProtocolId;
 
+enum class SpdyHeaderValidatorType { REQUEST, RESPONSE };
+
 // TODO(hkhalil): Add direct testing for this? It won't increase coverage any,
 // but is good to do anyway.
 class NET_EXPORT_PRIVATE SpdyConstants {

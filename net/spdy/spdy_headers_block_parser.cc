@@ -156,21 +156,6 @@ void SpdyHeadersBlockParser::ParseLength(Reader* reader,
   }
 }
 
-void SpdyHeadersBlockParser::Reset() {
-  {
-    SpdyPinnableBufferPiece empty;
-    headers_block_prefix_.Swap(&empty);
-  }
-  {
-    SpdyPinnableBufferPiece empty;
-    key_.Swap(&empty);
-  }
-  error_ = OK;
-  state_ = READING_HEADER_BLOCK_LEN;
-  stream_id_ = 0;
-  total_bytes_received_ = 0;
-}
-
 size_t SpdyHeadersBlockParser::LengthFieldSizeForVersion(
     SpdyMajorVersion spdy_version) {
   if (spdy_version < SPDY3) {

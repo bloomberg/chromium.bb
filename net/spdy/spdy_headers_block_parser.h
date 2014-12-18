@@ -78,10 +78,6 @@ class NET_EXPORT_PRIVATE SpdyHeadersBlockParser {
   };
   ParserError get_error() const { return error_; }
 
-  // Resets the state of the parser to prepare it for a headers block of a
-  // new frame.
-  void Reset();
-
   // Returns the size in bytes of a length field in a SPDY header.
   static size_t LengthFieldSizeForVersion(SpdyMajorVersion spdy_version);
 
