@@ -192,15 +192,19 @@ class FakeSchedulerClient : public SchedulerClient {
     EXPECT_SINGLE_ACTION("ScheduledActionBeginOutputSurfaceCreation", (*this));
     Reset();
 
-    // Finish the initial output surface creation and run the first commit.
+    // We don't see anything happening until the first impl frame.
     scheduler->DidCreateAndInitializeOutputSurface();
     scheduler->SetNeedsCommit();
-    scheduler->NotifyBeginMainFrameStarted();
-    scheduler->NotifyReadyToCommitThenActivateIfNeeded();
+    EXPECT_TRUE(needs_begin_frames());
+    EXPECT_FALSE(scheduler->BeginImplFrameDeadlinePending());
+    Reset();
 
     {
-      SCOPED_TRACE("Go through the motions to draw the commit");
+      SCOPED_TRACE("Do first frame to commit after initialize.");
       AdvanceFrame();
+
+      scheduler->NotifyBeginMainFrameStarted();
+      scheduler->NotifyReadyToCommitThenActivateIfNeeded();
 
       // Run the posted deadline task.
       EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());

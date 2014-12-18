@@ -31,16 +31,24 @@ void FakeExternalBeginFrameSource::OnNeedsBeginFramesChange(
     bool needs_begin_frames) {
   DCHECK(CalledOnValidThread());
   if (needs_begin_frames) {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, base::Bind(&FakeExternalBeginFrameSource::TestOnBeginFrame,
-                              weak_ptr_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(milliseconds_per_frame_));
+    PostTestOnBeginFrame();
   }
 }
 
 void FakeExternalBeginFrameSource::TestOnBeginFrame() {
   DCHECK(CalledOnValidThread());
   CallOnBeginFrame(CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE));
+
+  if (NeedsBeginFrames()) {
+    PostTestOnBeginFrame();
+  }
+}
+
+void FakeExternalBeginFrameSource::PostTestOnBeginFrame() {
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, base::Bind(&FakeExternalBeginFrameSource::TestOnBeginFrame,
+                            weak_ptr_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(milliseconds_per_frame_));
 }
 
 }  // namespace cc

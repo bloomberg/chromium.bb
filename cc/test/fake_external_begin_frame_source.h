@@ -26,6 +26,7 @@ class FakeExternalBeginFrameSource
   void OnNeedsBeginFramesChange(bool needs_begin_frames) override;
 
   void TestOnBeginFrame();
+  void PostTestOnBeginFrame();
 
  private:
   double milliseconds_per_frame_;

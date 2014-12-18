@@ -342,6 +342,10 @@ bool SchedulerStateMachine::ShouldDraw() const {
   if (PendingDrawsShouldBeAborted())
     return active_tree_needs_first_draw_;
 
+  // Don't draw if we are waiting on the first commit after a surface.
+  if (output_surface_state_ != OUTPUT_SURFACE_ACTIVE)
+    return false;
+
   // If a commit has occurred after the animate call, we need to call animate
   // again before we should draw.
   if (did_commit_after_animating_)
@@ -387,6 +391,10 @@ bool SchedulerStateMachine::ShouldActivatePendingTree() const {
 }
 
 bool SchedulerStateMachine::ShouldAnimate() const {
+  // Don't animate if we are waiting on the first commit after a surface.
+  if (output_surface_state_ != OUTPUT_SURFACE_ACTIVE)
+    return false;
+
   // If a commit occurred after our last call, we need to do animation again.
   if (HasAnimatedThisFrame() && !did_commit_after_animating_)
     return false;
@@ -423,10 +431,6 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
       (has_pending_tree_ || active_tree_needs_first_draw_)) {
     return false;
   }
-
-  // We want to start the first commit after we get a new output surface ASAP.
-  if (output_surface_state_ == OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT)
-    return true;
 
   // We should not send BeginMainFrame while we are in
   // BEGIN_IMPL_FRAME_STATE_IDLE since we might have new
