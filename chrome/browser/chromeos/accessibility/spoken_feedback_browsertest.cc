@@ -390,7 +390,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OverviewMode) {
 
   EXPECT_TRUE(PerformAcceleratorAction(ash::TOGGLE_OVERVIEW));
   EXPECT_EQ("Edit text", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Entered window overview mode, window",
+  EXPECT_EQ("Alert Entered window overview mode",
             speech_monitor_.GetNextUtterance());
 
   SendKeyPress(ui::VKEY_TAB);

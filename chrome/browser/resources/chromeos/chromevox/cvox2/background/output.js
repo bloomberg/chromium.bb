@@ -86,7 +86,7 @@ Output.RULES = {
       braille: ''
     },
     alert: {
-      speak: '@aria_role_alert $name @earcon(ALERT_NONMODAL)'
+      speak: '@aria_role_alert $name $earcon(ALERT_NONMODAL)'
     },
     button: {
       speak: '$name $earcon(BUTTON, @tag_button)'

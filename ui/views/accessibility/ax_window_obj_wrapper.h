@@ -25,7 +25,7 @@ class AXWindowObjWrapper : public AXAuraObjWrapper,
   bool is_alert() { return is_alert_; }
 
   // Sets whether this window is an alert window.
-  void set_is_alert(bool is_alert) { is_alert = is_alert_; }
+  void set_is_alert(bool is_alert) { is_alert_ = is_alert; }
 
   // AXAuraObjWrapper overrides.
   AXAuraObjWrapper* GetParent() override;
