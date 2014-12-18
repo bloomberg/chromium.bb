@@ -484,37 +484,7 @@ static bool compareRowSpanCellsInHeightDistributionOrder(const RenderTableCell* 
     return false;
 }
 
-bool RenderTableSection::isHeightNeededForRowHavingOnlySpanningCells(unsigned row)
-{
-    unsigned totalCols = m_grid[row].row.size();
-
-    if (!totalCols)
-        return false;
-
-    for (unsigned col = 0; col < totalCols; col++) {
-        const CellStruct& rowSpanCell = cellAt(row, col);
-
-        if (rowSpanCell.cells.size()) {
-            RenderTableCell* cell = rowSpanCell.cells[0];
-            const unsigned rowIndex = cell->rowIndex();
-            const unsigned rowSpan = cell->rowSpan();
-            int totalRowSpanCellHeight = 0;
-
-            for (unsigned row = 0; row < rowSpan; row++) {
-                unsigned actualRow = row + rowIndex;
-                totalRowSpanCellHeight += m_rowPos[actualRow + 1] - m_rowPos[actualRow];
-            }
-            totalRowSpanCellHeight -= borderSpacingForRow(rowIndex + rowSpan - 1);
-
-            if (totalRowSpanCellHeight < cell->logicalHeightForRowSizing())
-                return true;
-        }
-    }
-
-    return false;
-}
-
-unsigned RenderTableSection::calcRowHeightHavingOnlySpanningCells(unsigned row)
+unsigned RenderTableSection::calcRowHeightHavingOnlySpanningCells(unsigned row, int& accumulatedCellPositionIncrease, unsigned rowToApplyExtraHeight, unsigned& extraTableHeightToPropgate, Vector<int>& rowsCountWithOnlySpanningCells)
 {
     ASSERT(rowHasOnlySpanningCells(row));
 
@@ -527,14 +497,46 @@ unsigned RenderTableSection::calcRowHeightHavingOnlySpanningCells(unsigned row)
 
     for (unsigned col = 0; col < totalCols; col++) {
         const CellStruct& rowSpanCell = cellAt(row, col);
-        if (rowSpanCell.cells.size() && rowSpanCell.cells[0]->rowSpan() > 1)
-            rowHeight = std::max(rowHeight, rowSpanCell.cells[0]->logicalHeightForRowSizing() / rowSpanCell.cells[0]->rowSpan());
+
+        if (!rowSpanCell.cells.size())
+            continue;
+
+        RenderTableCell* cell = rowSpanCell.cells[0];
+
+        if (cell->rowSpan() < 2)
+            continue;
+
+        const unsigned cellRowIndex = cell->rowIndex();
+        const unsigned cellRowSpan = cell->rowSpan();
+
+        // As we are going from the top of the table to the bottom to calculate the row
+        // heights for rows that only contain spanning cells and all previous rows are
+        // processed we only need to find the number of rows with spanning cells from the
+        // current cell to the end of the current cells spanning height.
+        unsigned startRowForSpanningCellCount = std::max(cellRowIndex, row);
+        unsigned endRow = cellRowIndex + cellRowSpan;
+        unsigned spanningCellsRowsCountHavingZeroHeight = rowsCountWithOnlySpanningCells[endRow - 1];
+
+        if (startRowForSpanningCellCount)
+            spanningCellsRowsCountHavingZeroHeight -= rowsCountWithOnlySpanningCells[startRowForSpanningCellCount - 1];
+
+        int totalRowspanCellHeight = (m_rowPos[endRow] - m_rowPos[cellRowIndex]) - borderSpacingForRow(endRow - 1);
+
+        totalRowspanCellHeight += accumulatedCellPositionIncrease;
+        if (rowToApplyExtraHeight >= cellRowIndex && rowToApplyExtraHeight < endRow)
+            totalRowspanCellHeight += extraTableHeightToPropgate;
+
+        if (totalRowspanCellHeight < cell->logicalHeightForRowSizing()) {
+            unsigned extraHeightRequired = cell->logicalHeightForRowSizing() - totalRowspanCellHeight;
+
+            rowHeight = std::max(rowHeight, extraHeightRequired / spanningCellsRowsCountHavingZeroHeight);
+        }
     }
 
     return rowHeight;
 }
 
-void RenderTableSection::updateRowsHeightHavingOnlySpanningCells(RenderTableCell* cell, struct SpanningRowsHeight& spanningRowsHeight)
+void RenderTableSection::updateRowsHeightHavingOnlySpanningCells(RenderTableCell* cell, struct SpanningRowsHeight& spanningRowsHeight, unsigned& extraHeightToPropagate, Vector<int>& rowsCountWithOnlySpanningCells)
 {
     ASSERT(spanningRowsHeight.rowHeight.size());
 
@@ -546,8 +548,8 @@ void RenderTableSection::updateRowsHeightHavingOnlySpanningCells(RenderTableCell
 
     for (unsigned row = 0; row < spanningRowsHeight.rowHeight.size(); row++) {
         unsigned actualRow = row + rowIndex;
-        if (!spanningRowsHeight.rowHeight[row] && rowHasOnlySpanningCells(actualRow) && isHeightNeededForRowHavingOnlySpanningCells(actualRow)) {
-            spanningRowsHeight.rowHeight[row] = calcRowHeightHavingOnlySpanningCells(actualRow);
+        if (!spanningRowsHeight.rowHeight[row] && rowHasOnlySpanningCells(actualRow)) {
+            spanningRowsHeight.rowHeight[row] = calcRowHeightHavingOnlySpanningCells(actualRow, accumulatedPositionIncrease, rowIndex + rowSpan, extraHeightToPropagate, rowsCountWithOnlySpanningCells);
             accumulatedPositionIncrease += spanningRowsHeight.rowHeight[row];
         }
         m_rowPos[actualRow + 1] += accumulatedPositionIncrease;
@@ -569,6 +571,16 @@ void RenderTableSection::distributeRowSpanHeightToRows(SpanningRenderTableCells&
     unsigned extraHeightToPropagate = 0;
     unsigned lastRowIndex = 0;
     unsigned lastRowSpan = 0;
+
+    Vector<int> rowsCountWithOnlySpanningCells;
+
+    // At this stage, Height of the rows are zero for the one containing only spanning cells.
+    int count = 0;
+    for (unsigned row = 0; row < m_grid.size(); row++) {
+        if (rowHasOnlySpanningCells(row))
+            count++;
+        rowsCountWithOnlySpanningCells.append(count);
+    }
 
     for (unsigned i = 0; i < rowSpanCells.size(); i++) {
         RenderTableCell* cell = rowSpanCells[i];
@@ -607,7 +619,7 @@ void RenderTableSection::distributeRowSpanHeightToRows(SpanningRenderTableCells&
 
         // Here we are handling only row(s) who have only rowspanning cells and do not have any empty cell.
         if (spanningRowsHeight.isAnyRowWithOnlySpanningCells)
-            updateRowsHeightHavingOnlySpanningCells(cell, spanningRowsHeight);
+            updateRowsHeightHavingOnlySpanningCells(cell, spanningRowsHeight, extraHeightToPropagate, rowsCountWithOnlySpanningCells);
 
         // This code handle row(s) that have rowspanning cell(s) and at least one empty cell.
         // Such rows are not handled below and end up having a height of 0. That would mean

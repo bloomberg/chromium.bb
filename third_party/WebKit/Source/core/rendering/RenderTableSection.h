@@ -260,9 +260,8 @@ private:
     void ensureRows(unsigned);
 
     bool rowHasOnlySpanningCells(unsigned);
-    unsigned calcRowHeightHavingOnlySpanningCells(unsigned);
-    void updateRowsHeightHavingOnlySpanningCells(RenderTableCell*, struct SpanningRowsHeight&);
-    bool isHeightNeededForRowHavingOnlySpanningCells(unsigned);
+    unsigned calcRowHeightHavingOnlySpanningCells(unsigned, int&, unsigned, unsigned&, Vector<int>&);
+    void updateRowsHeightHavingOnlySpanningCells(RenderTableCell*, struct SpanningRowsHeight&, unsigned&, Vector<int>&);
 
     void populateSpanningRowsHeightFromCell(RenderTableCell*, struct SpanningRowsHeight&);
     void distributeExtraRowSpanHeightToPercentRows(RenderTableCell*, int, int&, Vector<int>&);
