@@ -16,7 +16,7 @@ import base64
 import tempfile
 import json
 import os
-import urllib
+import urllib2
 
 
 # Add depot_tools to path
@@ -71,15 +71,15 @@ class GsutilUnitTests(unittest.TestCase):
   def setUp(self):
     self.fake = FakeCall()
     self.tempdir = tempfile.mkdtemp()
-    self.old_urlopen = getattr(urllib, 'urlopen')
+    self.old_urlopen = getattr(urllib2, 'urlopen')
     self.old_call = getattr(gsutil, 'call')
-    setattr(urllib, 'urlopen', self.fake)
+    setattr(urllib2, 'urlopen', self.fake)
     setattr(gsutil, 'call', self.fake)
 
   def tearDown(self):
     self.assertEqual(self.fake.expectations, [])
     shutil.rmtree(self.tempdir)
-    setattr(urllib, 'urlopen', self.old_urlopen)
+    setattr(urllib2, 'urlopen', self.old_urlopen)
     setattr(gsutil, 'call', self.old_call)
 
   def test_download_gsutil(self):
