@@ -4437,7 +4437,7 @@ blink::WebLayer* WebGLRenderingContextBase::platformLayer() const
 
 void WebGLRenderingContextBase::setFilterLevel(SkPaint::FilterLevel filterLevel)
 {
-    if (!isContextLost()) {
+    if (!isContextLost() && drawingBuffer()) {
         drawingBuffer()->setFilterLevel(filterLevel);
     }
 }
