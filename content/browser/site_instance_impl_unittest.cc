@@ -326,35 +326,56 @@ TEST_F(SiteInstanceTest, SetSite) {
 TEST_F(SiteInstanceTest, GetSiteForURL) {
   // Pages are irrelevant.
   GURL test_url = GURL("http://www.google.com/index.html");
-  EXPECT_EQ(GURL("http://google.com"),
-            SiteInstanceImpl::GetSiteForURL(NULL, test_url));
+  GURL site_url = SiteInstanceImpl::GetSiteForURL(NULL, test_url);
+  EXPECT_EQ(GURL("http://google.com"), site_url);
+  EXPECT_EQ("http", site_url.scheme());
+  EXPECT_EQ("google.com", site_url.host());
 
   // Ports are irrlevant.
   test_url = GURL("https://www.google.com:8080");
-  EXPECT_EQ(GURL("https://google.com"),
-            SiteInstanceImpl::GetSiteForURL(NULL, test_url));
+  site_url = SiteInstanceImpl::GetSiteForURL(NULL, test_url);
+  EXPECT_EQ(GURL("https://google.com"), site_url);
 
-  // Javascript URLs have no site.
-  test_url = GURL("javascript:foo();");
-  EXPECT_EQ(GURL(), SiteInstanceImpl::GetSiteForURL(NULL, test_url));
-
+  // Hostnames without TLDs are ok.
   test_url = GURL("http://foo/a.html");
-  EXPECT_EQ(GURL("http://foo"), SiteInstanceImpl::GetSiteForURL(
-      NULL, test_url));
+  site_url = SiteInstanceImpl::GetSiteForURL(NULL, test_url);
+  EXPECT_EQ(GURL("http://foo"), site_url);
+  EXPECT_EQ("foo", site_url.host());
 
+  // File URLs should include the scheme.
   test_url = GURL("file:///C:/Downloads/");
-  EXPECT_EQ(GURL(), SiteInstanceImpl::GetSiteForURL(NULL, test_url));
+  site_url = SiteInstanceImpl::GetSiteForURL(NULL, test_url);
+  EXPECT_EQ(GURL("file:"), site_url);
+  EXPECT_EQ("file", site_url.scheme());
+  EXPECT_FALSE(site_url.has_host());
 
+  // Some file URLs have hosts in the path.
+  test_url = GURL("file://server/path");
+  site_url = SiteInstanceImpl::GetSiteForURL(NULL, test_url);
+  EXPECT_EQ(GURL("file://server"), site_url);
+  EXPECT_EQ("server", site_url.host());
+
+  // Data URLs should include the scheme.
+  test_url = GURL("data:text/html,foo");
+  site_url = SiteInstanceImpl::GetSiteForURL(NULL, test_url);
+  EXPECT_EQ(GURL("data:"), site_url);
+  EXPECT_EQ("data", site_url.scheme());
+  EXPECT_FALSE(site_url.has_host());
+
+  // Javascript URLs should include the scheme.
+  test_url = GURL("javascript:foo();");
+  site_url = SiteInstanceImpl::GetSiteForURL(NULL, test_url);
+  EXPECT_EQ(GURL("javascript:"), site_url);
+  EXPECT_EQ("javascript", site_url.scheme());
+  EXPECT_FALSE(site_url.has_host());
+
+  // Guest URLs are special and need to have the path in the site as well,
+  // since it affects the StoragePartition configuration.
   std::string guest_url(kGuestScheme);
-  guest_url.append("://abc123");
+  guest_url.append("://abc123/path");
   test_url = GURL(guest_url);
-  EXPECT_EQ(test_url, SiteInstanceImpl::GetSiteForURL(NULL, test_url));
-
-  // TODO(creis): Do we want to special case file URLs to ensure they have
-  // either no site or a special "file://" site?  We currently return
-  // "file://home/" as the site, which seems broken.
-  // test_url = GURL("file://home/");
-  // EXPECT_EQ(GURL(), SiteInstanceImpl::GetSiteForURL(NULL, test_url));
+  site_url = SiteInstanceImpl::GetSiteForURL(NULL, test_url);
+  EXPECT_EQ(test_url, site_url);
 
   DrainMessageLoops();
 }
