@@ -15,7 +15,7 @@
           testRunner.clearWebNotificationPermissions();
 
       async_test(function (test) {
-          testRunner.grantWebNotificationPermission("http://localhost:8000", false);
+          testRunner.grantWebNotificationPermission(location.origin, false);
           Notification.requestPermission(function (status) {
               assert_equals(status, 'denied');
 

@@ -8,7 +8,7 @@
         <div id="console"></div>
         <script>
             if (window.testRunner) {
-                testRunner.grantWebNotificationPermission("http://127.0.0.1:8000", true);
+                testRunner.grantWebNotificationPermission(location.origin, true);
                 testRunner.dumpAsText();
                 testRunner.dumpChildFramesAsText();
             }

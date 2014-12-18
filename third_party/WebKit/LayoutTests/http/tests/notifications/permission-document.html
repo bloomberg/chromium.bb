@@ -11,7 +11,7 @@
       // permission level of notifications for the current origin. This test
       // requires the TestRunner.
       if (window.testRunner)
-          testRunner.grantWebNotificationPermission("http://127.0.0.1:8000", true);
+          testRunner.grantWebNotificationPermission(location.origin, true);
 
       test(function () {
           if (!window.testRunner) {
@@ -24,10 +24,10 @@
           // "default" indicates that no permission request has been answered.
           assert_equals(Notification.permission, "default");
 
-          testRunner.grantWebNotificationPermission("http://127.0.0.1:8000", false);
+          testRunner.grantWebNotificationPermission(location.origin, false);
           assert_equals(Notification.permission, "denied");
 
-          testRunner.grantWebNotificationPermission("http://127.0.0.1:8000", true);
+          testRunner.grantWebNotificationPermission(location.origin, true);
           assert_equals(Notification.permission, "granted");
 
       }, 'Notification.permission reflects the actual permission level.');

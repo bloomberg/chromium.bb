@@ -13,7 +13,7 @@
       if (window.testRunner) {
           testRunner.setCanOpenWindows(); 
           testRunner.setCloseRemainingWindowsWhenComplete();
-          testRunner.grantWebNotificationPermission("http://127.0.0.1:8000", true);
+          testRunner.grantWebNotificationPermission(location.origin, true);
       }
 
       async_test(function(test) {

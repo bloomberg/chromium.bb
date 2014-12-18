@@ -13,7 +13,7 @@
       // manually, grant Notification permission first and verify that only a
       // single notification will be shown at the end of the test.
       if (window.testRunner)
-          testRunner.grantWebNotificationPermission("http://127.0.0.1:8000", true);
+          testRunner.grantWebNotificationPermission(location.origin, true);
 
       sharedWorkerTest("resources/update-event-test.js");
     </script>
