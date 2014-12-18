@@ -7,7 +7,7 @@ include_rules = [
 
   # The untrusted build references the NaCl integrated runtime (IRT).
   "+native_client/src/public",
-  "+native_client/src/shared/srpc/nacl_srpc.h",
+  "+native_client/src/shared/srpc/nacl_srpc_ppapi_plugin_internal.h",
   "+native_client/src/untrusted/irt/irt.h",
   # The IRT also needs to know the errno and sysconf enums.
   "+native_client/src/trusted/service_runtime/include/sys/errno.h",

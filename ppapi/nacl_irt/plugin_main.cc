@@ -19,7 +19,7 @@
 #include "ppapi/shared_impl/ppb_audio_shared.h"
 
 #if defined(__native_client__)
-#include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/shared/srpc/nacl_srpc_ppapi_plugin_internal.h"
 #endif
 
 void PpapiPluginRegisterThreadCreator(
@@ -34,17 +34,11 @@ int PpapiPluginMain() {
   ppapi::proxy::PluginGlobals plugin_globals;
 
 #if defined(OS_NACL_SFI)
-  // Currently on non-SFI mode, we don't use SRPC server on plugin.
-  // TODO(hidehiko): Make sure this SRPC is actually used on SFI-mode.
-
-  // Start up the SRPC server on another thread. Otherwise, when it blocks
-  // on an RPC, the PPAPI proxy will hang. Do this before we initialize the
-  // module and start the PPAPI proxy so that the NaCl plugin can continue
-  // loading the app.
-  static struct NaClSrpcHandlerDesc srpc_methods[] = { { NULL, NULL } };
-  if (!NaClSrpcAcceptClientOnThread(srpc_methods)) {
-    return 1;
-  }
+  // This is currently needed so that the NaCl reverse service calls the
+  // StartupInitializationComplete() SRPC method, which unblocks plugin
+  // startup on the Chromium side.
+  // TODO(mseaborn): Remove the need to call this.
+  NaClPluginLowLevelInitializationComplete();
 #endif
 
   ppapi::PpapiDispatcher ppapi_dispatcher(

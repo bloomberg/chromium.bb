@@ -161,22 +161,6 @@ void Plugin::StartNexe(int32_t pp_error, ServiceRuntime* service_runtime) {
 }
 
 bool Plugin::LoadNaClModuleContinuationIntern() {
-  ErrorInfo error_info;
-  if (!uses_nonsfi_mode_) {
-    if (!main_subprocess_.StartSrpcServices()) {
-      // The NaCl process probably crashed. On Linux, a crash causes this
-      // error, while on other platforms, the error is detected below, when we
-      // attempt to start the proxy. Report a module initialization error here,
-      // to make it less confusing for developers.
-      NaClLog(LOG_ERROR, "LoadNaClModuleContinuationIntern: "
-              "StartSrpcServices failed\n");
-      error_info.SetReport(PP_NACL_ERROR_START_PROXY_MODULE,
-                           "could not initialize module.");
-      ReportLoadError(error_info);
-      return false;
-    }
-  }
-
   return PP_ToBool(nacl_interface_->StartPpapiProxy(pp_instance()));
 }
 
