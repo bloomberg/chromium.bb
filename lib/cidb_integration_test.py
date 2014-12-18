@@ -418,9 +418,11 @@ class BuildStagesAndFailureTest(CIDBIntegrationTest):
     self.assertEqual(True, values['final'])
     self.assertEqual(constants.BUILDER_STATUS_PASSED, values['status'])
 
+    self.assertFalse(bot_db.HasBuildStageFailed(build_stage_id))
     for category in constants.EXCEPTION_CATEGORY_ALL_CATEGORIES:
       e = ValueError('The value was erroneous.')
-      bot_db.InsertFailure(build_stage_id, e, category)
+      bot_db.InsertFailure(build_stage_id, type(e).__name__, str(e), category)
+      self.assertTrue(bot_db.HasBuildStageFailed(build_stage_id))
 
 
 class BuildTableTest(CIDBIntegrationTest):

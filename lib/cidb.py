@@ -618,7 +618,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                                             'status': status})
 
   @minimum_schema(29)
-  def InsertFailure(self, build_stage_id, exception,
+  def InsertFailure(self, build_stage_id, exception_type, exception_message,
                     exception_category=constants.EXCEPTION_CATEGORY_UNKNOWN,
                     outer_failure_id=None,
                     extra_info=None):
@@ -627,7 +627,8 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     Args:
       build_stage_id: primary key, in buildStageTable, of the stage where
                       failure occured.
-      exception: Exception instance that occured.
+      exception_type: str name of the exception class.
+      exception_message: str description of the failure.
       exception_category: (Optional) one of
                           constants.EXCEPTION_CATEGORY_ALL_CATEGORIES,
                           Default: 'unknown'.
@@ -637,13 +638,14 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       extra_info: (Optional) extra category-specific string description giving
                   failure details. Used for programmatic triage.
     """
+    if exception_message:
+      exception_message = exception_message[:240]
     values = {'build_stage_id': build_stage_id,
-              'exception_type': type(exception).__name__,
-              'exception_message': exception.message,
+              'exception_type': exception_type,
+              'exception_message': exception_message,
               'exception_category': exception_category,
               'outer_failure_id': outer_failure_id,
               'extra_info': extra_info}
-
     return self._Insert('failureTable', values)
 
   @minimum_schema(2)
@@ -946,6 +948,21 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     query = '%s NATURAL JOIN (%s) as w' % (self._SQL_FETCH_ACTIONS, changes)
     results = self._Execute(query, values).fetchall()
     return [clactions.CLAction(*values) for values in results]
+
+  @minimum_schema(29)
+  def HasBuildStageFailed(self, build_stage_id):
+    """Determine whether a build stage has failed according to cidb.
+
+    Args:
+      build_stage_id: The id of the build_stage to query for.
+
+    Returns:
+      True if there is a failure reported for this build stage to cidb.
+    """
+    failures = self._SelectWhere('failureTable',
+                                 'build_stage_id = %s' % build_stage_id,
+                                 ['id'])
+    return bool(failures)
 
 
 class CIDBConnectionFactory(object):

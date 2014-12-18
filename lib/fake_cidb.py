@@ -23,6 +23,7 @@ class FakeCIDBConnection(object):
     self.buildTable = []
     self.clActionTable = []
     self.buildStageTable = {}
+    self.failureTable = {}
     self.fake_time = None
 
   def SetTime(self, fake_time):
@@ -116,6 +117,20 @@ class FakeCIDBConnection(object):
   def InsertBoardPerBuild(self, build_id, board):
     # TODO(akeshet): Fill this placeholder.
     pass
+
+  def InsertFailure(self, build_stage_id, exception_type, exception_message,
+                    exception_category=constants.EXCEPTION_CATEGORY_UNKNOWN,
+                    outer_failure_id=None,
+                    extra_info=None):
+    failure_id = len(self.failureTable)
+    values = {'build_stage_id': build_stage_id,
+              'exception_type': exception_type,
+              'exception_message': exception_message,
+              'exception_category': exception_category,
+              'outer_failure_id': outer_failure_id,
+              'extra_info': extra_info}
+    self.failureTable[failure_id] = values
+    return failure_id
 
   def StartBuildStage(self, build_stage_id):
     if build_stage_id > len(self.buildStageTable):

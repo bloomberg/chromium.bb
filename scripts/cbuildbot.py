@@ -241,6 +241,16 @@ class Builder(object):
           if not results_lib.Results.StageHasResults(name):
             results_lib.Results.Record(name, ex, str(ex))
 
+      if cidb.CIDBConnectionFactory.IsCIDBSetup():
+        db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
+        if db:
+          for stage in stage_objs:
+            for build_stage_id in stage.GetBuildStageIDs():
+              if not db.HasBuildStageFailed(build_stage_id):
+                failures_lib.ReportStageFailureToCIDB(db,
+                                                      build_stage_id,
+                                                      ex)
+
       raise
 
   def _RunSyncStage(self, sync_instance):
