@@ -70,7 +70,6 @@ class AutofillAgent : public content::RenderFrameObserver,
     void WillSubmitForm(blink::WebLocalFrame* frame,
                         const blink::WebFormElement& form) override;
     void FocusedNodeChanged(const blink::WebNode& node) override;
-    void OrientationChangeEvent() override;
     void Resized() override;
     void FrameWillClose(blink::WebFrame* frame) override;
 
@@ -125,7 +124,6 @@ class AutofillAgent : public content::RenderFrameObserver,
   void WillSubmitForm(blink::WebLocalFrame* frame,
                       const blink::WebFormElement& form);
   void FocusedNodeChanged(const blink::WebNode& node);
-  void OrientationChangeEvent();
   void Resized();
   void LegacyFrameWillClose(blink::WebFrame* frame);
 

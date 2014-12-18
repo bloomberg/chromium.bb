@@ -245,10 +245,6 @@ void AutofillAgent::FocusedNodeChanged(const WebNode& node) {
   element_ = *element;
 }
 
-void AutofillAgent::OrientationChangeEvent() {
-  HidePopup();
-}
-
 void AutofillAgent::Resized() {
   HidePopup();
 }
@@ -822,10 +818,6 @@ void AutofillAgent::LegacyAutofillAgent::WillSubmitForm(
 void AutofillAgent::LegacyAutofillAgent::FocusedNodeChanged(
     const WebNode& node) {
   agent_->FocusedNodeChanged(node);
-}
-
-void AutofillAgent::LegacyAutofillAgent::OrientationChangeEvent() {
-  agent_->OrientationChangeEvent();
 }
 
 void AutofillAgent::LegacyAutofillAgent::Resized() {
