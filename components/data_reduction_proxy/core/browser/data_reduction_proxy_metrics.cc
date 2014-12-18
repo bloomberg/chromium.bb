@@ -292,25 +292,22 @@ class DailyDataSavingUpdate {
 }  // namespace
 
 DataReductionProxyRequestType GetDataReductionProxyRequestType(
-    const net::URLRequest* request) {
-  if (request->url().SchemeIs(url::kHttpsScheme))
+    const net::URLRequest& request,
+    const DataReductionProxyParams& params) {
+  if (request.url().SchemeIs(url::kHttpsScheme))
     return HTTPS;
-  if (!request->url().SchemeIs(url::kHttpScheme)) {
+  if (!request.url().SchemeIs(url::kHttpScheme)) {
     NOTREACHED();
     return UNKNOWN_TYPE;
   }
-  DataReductionProxyParams params(
-        DataReductionProxyParams::kAllowed |
-        DataReductionProxyParams::kFallbackAllowed |
-        DataReductionProxyParams::kPromoAllowed);
   base::TimeDelta bypass_delay;
-  if (params.AreDataReductionProxiesBypassed(*request, &bypass_delay)) {
+  if (params.AreDataReductionProxiesBypassed(request, &bypass_delay)) {
     if (bypass_delay > base::TimeDelta::FromSeconds(kLongBypassDelayInSeconds))
       return LONG_BYPASS;
     return SHORT_BYPASS;
   }
-  if (request->response_info().headers.get() &&
-      HasDataReductionProxyViaHeader(request->response_info().headers.get(),
+  if (request.response_info().headers.get() &&
+      HasDataReductionProxyViaHeader(request.response_info().headers.get(),
                                      NULL)) {
     return VIA_DATA_REDUCTION_PROXY;
   }

@@ -15,6 +15,7 @@ class PrefService;
 
 namespace data_reduction_proxy {
 
+class DataReductionProxyParams;
 class DataReductionProxyStatisticsPrefs;
 
 enum DataReductionProxyRequestType {
@@ -31,7 +32,8 @@ enum DataReductionProxyRequestType {
 
 // Returns DataReductionProxyRequestType for |request|.
 DataReductionProxyRequestType GetDataReductionProxyRequestType(
-    const net::URLRequest* request);
+    const net::URLRequest& request,
+    const DataReductionProxyParams& params);
 
 // Returns |received_content_length| as adjusted original content length if
 // |original_content_length| has the invalid value (-1) or |request_type|

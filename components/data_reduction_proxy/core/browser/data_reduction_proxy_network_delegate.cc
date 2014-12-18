@@ -200,7 +200,8 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
         request->response_info().headers->GetFreshnessLifetimes(
             request->response_info().response_time).freshness;
     DataReductionProxyRequestType request_type =
-        GetDataReductionProxyRequestType(request);
+        GetDataReductionProxyRequestType(*request,
+                                         *data_reduction_proxy_params_);
 
     int64 adjusted_original_content_length =
         GetAdjustedOriginalContentLength(request_type,
