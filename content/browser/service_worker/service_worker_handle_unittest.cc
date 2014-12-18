@@ -81,7 +81,6 @@ TEST_F(ServiceWorkerHandleTest, OnVersionStateChanged) {
   scoped_ptr<ServiceWorkerHandle> handle =
       ServiceWorkerHandle::Create(helper_->context()->AsWeakPtr(),
                                   helper_.get(),
-                                  1 /* thread_id */,
                                   version_.get());
 
   // Start the worker, and then...

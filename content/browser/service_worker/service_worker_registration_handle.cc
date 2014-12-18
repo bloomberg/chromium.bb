@@ -8,10 +8,9 @@
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/service_worker/service_worker_handle.h"
 #include "content/common/service_worker/service_worker_messages.h"
+#include "content/common/service_worker/service_worker_types.h"
 
 namespace content {
-
-static const int kDocumentMainThreadId = 0;
 
 ServiceWorkerRegistrationHandle::ServiceWorkerRegistrationHandle(
     base::WeakPtr<ServiceWorkerContextCore> context,
@@ -54,7 +53,6 @@ ServiceWorkerRegistrationHandle::CreateServiceWorkerHandleAndPass(
     scoped_ptr<ServiceWorkerHandle> handle =
         ServiceWorkerHandle::Create(context_,
                                     dispatcher_host_,
-                                    kDocumentMainThreadId,
                                     version);
     info = handle->GetObjectInfo();
     dispatcher_host_->RegisterServiceWorkerHandle(handle.Pass());

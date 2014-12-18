@@ -22,6 +22,10 @@
 
 namespace content {
 
+// Indicates the document main thread ID in the child process. This is used for
+// messaging between the browser process and the child process.
+static const int kDocumentMainThreadId = 0;
+
 // Indicates invalid request ID (i.e. the sender does not expect it gets
 // response for the message) for messaging between browser process
 // and embedded worker.

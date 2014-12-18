@@ -24,8 +24,6 @@
 
 namespace content {
 
-static const int kDocumentMainThreadId = 0;
-
 namespace {
 
 void FocusOnUIThread(int render_process_id,
@@ -332,7 +330,6 @@ ServiceWorkerObjectInfo ServiceWorkerProviderHost::CreateHandleAndPass(
     scoped_ptr<ServiceWorkerHandle> handle =
         ServiceWorkerHandle::Create(context_,
                                     dispatcher_host_,
-                                    kDocumentMainThreadId,
                                     version);
     info = handle->GetObjectInfo();
     dispatcher_host_->RegisterServiceWorkerHandle(handle.Pass());

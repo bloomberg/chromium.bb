@@ -33,18 +33,15 @@ class CONTENT_EXPORT ServiceWorkerHandle
   // Creates a handle for a live version. The version's corresponding
   // registration must be also alive.
   // This may return NULL if |context|.get() or |version| is NULL.
-  // |sender| and |thread_id| will be used to send messages to the
-  // corresponding WebServiceWorkerImpl (which should live on |thread_id|
-  // in the child process).
+  // |sender| will be used to send messages to the corresponding
+  // WebServiceWorkerImpl in the child process.
   static scoped_ptr<ServiceWorkerHandle> Create(
       base::WeakPtr<ServiceWorkerContextCore> context,
       IPC::Sender* sender,
-      int thread_id,
       ServiceWorkerVersion* version);
 
   ServiceWorkerHandle(base::WeakPtr<ServiceWorkerContextCore> context,
                       IPC::Sender* sender,
-                      int thread_id,
                       ServiceWorkerRegistration* registration,
                       ServiceWorkerVersion* version);
   ~ServiceWorkerHandle() override;
@@ -54,7 +51,6 @@ class CONTENT_EXPORT ServiceWorkerHandle
 
   ServiceWorkerObjectInfo GetObjectInfo();
 
-  int thread_id() const { return thread_id_; }
   int handle_id() const { return handle_id_; }
   ServiceWorkerRegistration* registration() { return registration_.get(); }
   ServiceWorkerVersion* version() { return version_.get(); }
@@ -66,7 +62,6 @@ class CONTENT_EXPORT ServiceWorkerHandle
  private:
   base::WeakPtr<ServiceWorkerContextCore> context_;
   IPC::Sender* sender_;  // Not owned, it should always outlive this.
-  const int thread_id_;
   const int handle_id_;
   int ref_count_;  // Created with 1.
   scoped_refptr<ServiceWorkerRegistration> registration_;
