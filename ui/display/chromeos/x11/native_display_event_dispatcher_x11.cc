@@ -75,10 +75,11 @@ uint32_t NativeDisplayEventDispatcherX11::DispatchEvent(
           static_cast<const DisplaySnapshotX11*>(*it);
       const DisplayModeX11* x11_mode =
           static_cast<const DisplayModeX11*>(x11_output->current_mode());
+      RRMode mode_id = x11_mode ? x11_mode->mode_id() : None;
 
       if (x11_output->output() == output_change_event->output) {
         if (connected && x11_output->crtc() == output_change_event->crtc &&
-            x11_mode->mode_id() == output_change_event->mode) {
+            mode_id == output_change_event->mode) {
           VLOG(1) << "Ignoring event describing already-cached state";
           return POST_DISPATCH_PERFORM_DEFAULT;
         }
