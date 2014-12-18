@@ -68,6 +68,10 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
   // Starts/stops the metrics service.
   void EnableMetricsService(bool enabled);
 
+  std::string client_id() const {
+    return client_id_;
+  }
+
  private:
   CastMetricsServiceClient(
       base::TaskRunner* io_task_runner,
@@ -83,6 +87,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
   base::TaskRunner* const io_task_runner_;
   PrefService* const pref_service_;
   CastService* cast_service_;
+  std::string client_id_;
 
 #if defined(OS_LINUX)
   scoped_ptr<ExternalMetrics> external_metrics_;

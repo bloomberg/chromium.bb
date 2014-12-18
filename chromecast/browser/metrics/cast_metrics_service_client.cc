@@ -42,6 +42,7 @@ scoped_ptr<CastMetricsServiceClient> CastMetricsServiceClient::Create(
 
 void CastMetricsServiceClient::SetMetricsClientId(
     const std::string& client_id) {
+  client_id_ = client_id;
   LOG(INFO) << "Metrics client ID set: " << client_id;
   PlatformSetClientID(cast_service_, client_id);
 }
