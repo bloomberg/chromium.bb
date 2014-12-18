@@ -23,6 +23,7 @@ public:
     }
 
     ScriptPromise registerPushMessaging(ScriptState*);
+    ScriptPromise getRegistration(ScriptState*);
     ScriptPromise hasPermission(ScriptState*);
 
     void trace(Visitor*);

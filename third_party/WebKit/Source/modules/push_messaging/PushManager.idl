@@ -9,5 +9,6 @@
     RuntimeEnabled=PushMessaging,
 ] interface PushManager {
     [CallWith=ScriptState, ImplementedAs=registerPushMessaging] Promise register();
+    [CallWith=ScriptState] Promise<PushRegistration?> getRegistration();
     [CallWith=ScriptState] Promise hasPermission();
 };

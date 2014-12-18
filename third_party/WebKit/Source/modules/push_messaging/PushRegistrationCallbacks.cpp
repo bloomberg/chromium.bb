@@ -24,13 +24,18 @@ PushRegistrationCallbacks::~PushRegistrationCallbacks()
 {
 }
 
-void PushRegistrationCallbacks::onSuccess(WebPushRegistration* result)
+void PushRegistrationCallbacks::onSuccess(WebPushRegistration* webPushRegistration)
 {
     if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
-        PushRegistration::dispose(result);
+        PushRegistration::dispose(webPushRegistration);
         return;
     }
-    m_resolver->resolve(PushRegistration::take(m_resolver.get(), result, m_serviceWorkerRegistration));
+
+    if (!webPushRegistration) {
+        m_resolver->resolve(v8::Null(m_resolver->scriptState()->isolate()));
+        return;
+    }
+    m_resolver->resolve(PushRegistration::take(m_resolver.get(), webPushRegistration, m_serviceWorkerRegistration));
 }
 
 void PushRegistrationCallbacks::onError(WebPushError* error)

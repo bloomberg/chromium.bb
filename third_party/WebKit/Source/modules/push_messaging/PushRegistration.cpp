@@ -24,7 +24,8 @@ PushRegistration* PushRegistration::take(ScriptPromiseResolver*, WebPushRegistra
 
 void PushRegistration::dispose(WebPushRegistration* pushRegistration)
 {
-    delete pushRegistration;
+    if (pushRegistration)
+        delete pushRegistration;
 }
 
 PushRegistration::PushRegistration(const String& endpoint, const String& registrationId, ServiceWorkerRegistration* serviceWorkerRegistration)
