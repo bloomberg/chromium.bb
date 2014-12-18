@@ -18,7 +18,6 @@ import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.invalidation.InvalidationServiceFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.sync.internal_api.pub.PassphraseType;
-import org.chromium.sync.internal_api.pub.SyncDecryptionPassphraseType;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 
 import java.util.HashSet;
@@ -188,40 +187,6 @@ public class ProfileSyncService {
             Log.e(TAG, "Unable to write session sync tag. "
                     + "This may lead to unexpected tab sync behavior.");
         }
-    }
-
-    /**
-     * Checks if a password or a passphrase is required for decryption of sync data.
-     * <p/>
-     * Returns NONE if the state is unavailable, or decryption passphrase/password is not required.
-     *
-     * @return the enum describing the decryption passphrase type required
-     */
-    public SyncDecryptionPassphraseType getSyncDecryptionPassphraseTypeIfRequired() {
-        // ProfileSyncService::IsUsingSecondaryPassphrase() requires the sync backend to be
-        // initialized, and that happens just after OnPassphraseRequired(). Therefore, we need to
-        // guard that call with a check of the sync backend since we can not be sure which
-        // passphrase type we should tell the user we need.
-        // This is tracked in:
-        // http://code.google.com/p/chromium/issues/detail?id=108127
-        if (isSyncInitialized() && isPassphraseRequiredForDecryption()) {
-            return getSyncDecryptionPassphraseType();
-        }
-        return SyncDecryptionPassphraseType.NONE;
-    }
-
-    /**
-     * Returns the actual passphrase type being used for encryption. The sync backend must be
-     * running (isSyncInitialized() returns true) before calling this function.
-     * <p/>
-     * This method should only be used if you want to know the raw value. For checking whether we
-     * should ask the user for a passphrase, you should instead use
-     * getSyncDecryptionPassphraseTypeIfRequired().
-     */
-    public SyncDecryptionPassphraseType getSyncDecryptionPassphraseType() {
-        assert isSyncInitialized();
-        int passphraseType = nativeGetPassphraseType(mNativeProfileSyncServiceAndroid);
-        return SyncDecryptionPassphraseType.fromInternalValue(passphraseType);
     }
 
     /**
