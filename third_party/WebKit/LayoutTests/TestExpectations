@@ -20,6 +20,9 @@ crbug.com/258949 fast/filesystem/workers/file-writer-truncate-extend.html [ Fail
 crbug.com/307782 [ Win ] http/tests/cache/stopped-revalidation.html [ Pass Timeout ]
 crbug.com/316146 [ XP ] http/tests/cache/cached-main-resource.html [ Pass Timeout ]
 
+crbug.com/443596 [ Mac ] media/sources-fallback-codecs.html [ Failure Pass ]
+crbug.com/443596 [ Win ] media/sources-fallback-codecs.html [ Failure Pass ]
+
 crbug.com/364267 [ Win Mac ] http/tests/security/webgl-remote-read-remote-image-blocked-no-crossorigin.html [ Pass Timeout ]
 
 crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pass Failure ]
