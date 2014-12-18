@@ -46,8 +46,6 @@
 /* Specific compiler features */
 
 #define WTF_COMPILER_SUPPORTS_CXX_EXPLICIT_CONVERSIONS __has_feature(cxx_explicit_conversions)
-#define WTF_COMPILER_SUPPORTS_BLOCKS __has_feature(blocks)
-#define WTF_COMPILER_SUPPORTS_HAS_TRIVIAL_DESTRUCTOR __has_extension(has_trivial_destructor)
 
 #endif
 
