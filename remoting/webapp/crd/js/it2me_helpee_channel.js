@@ -426,7 +426,7 @@ remoting.It2MeHelpeeChannel.prototype.connectToHost_ =
     this.onHostStateChanged_.bind(this),
     base.doNothing, // Ignore |onNatPolicyChanged|.
     console.log.bind(console), // Forward logDebugInfo to console.log.
-    remoting.settings.XMPP_SERVER_ADDRESS,
+    remoting.settings.XMPP_SERVER_FOR_IT2ME_HOST,
     remoting.settings.XMPP_SERVER_USE_TLS,
     remoting.settings.DIRECTORY_BOT_JID,
     this.onHostConnectError_);

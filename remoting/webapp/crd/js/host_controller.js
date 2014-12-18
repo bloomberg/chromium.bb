@@ -568,7 +568,7 @@ remoting.HostController.prototype.getClientBaseJid_ = function(
    */
   function connectSignalingWithTokenAndEmail(token, email) {
     signalStrategy.connect(
-        remoting.settings.XMPP_SERVER_ADDRESS, email, token);
+        remoting.settings.XMPP_SERVER_FOR_CLIENT, email, token);
   }
 
   remoting.identity.callWithToken(connectSignalingWithToken, onError);

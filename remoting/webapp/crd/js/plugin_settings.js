@@ -47,8 +47,11 @@ remoting.Settings.prototype.OAUTH2_REDIRECT_URL = function() {
 remoting.Settings.prototype.DIRECTORY_BOT_JID = 'DIRECTORY_BOT_JID';
 
 // XMPP server connection settings.
-/** @type {string} XMPP server host name (or IP address) and port. */
-remoting.Settings.prototype.XMPP_SERVER_ADDRESS = 'XMPP_SERVER_ADDRESS';
+/** @type {string} XMPP server name and port to use in It2Me host. */
+remoting.Settings.prototype.XMPP_SERVER_FOR_IT2ME_HOST =
+    'XMPP_SERVER_FOR_IT2ME_HOST';
+/** @type {string} XMPP server name and port to use in the client. */
+remoting.Settings.prototype.XMPP_SERVER_FOR_CLIENT = 'XMPP_SERVER_FOR_CLIENT';
 /** @type {boolean} Whether to use TLS on connections to the XMPP server. */
 remoting.Settings.prototype.XMPP_SERVER_USE_TLS =
     Boolean('XMPP_SERVER_USE_TLS');

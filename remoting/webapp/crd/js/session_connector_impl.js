@@ -376,7 +376,7 @@ remoting.SessionConnectorImpl.prototype.connectSignaling_ = function() {
    */
   function connectSignalingWithTokenAndEmail(token, email) {
     that.signalStrategy_.connect(
-        remoting.settings.XMPP_SERVER_ADDRESS, email, token);
+        remoting.settings.XMPP_SERVER_FOR_CLIENT, email, token);
   }
 
   this.signalStrategy_ =
