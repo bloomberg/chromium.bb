@@ -5,6 +5,7 @@ from measurements import timeline_controller
 from metrics import timeline
 from telemetry.core.platform import tracing_category_filter
 from telemetry.page import page_test
+from telemetry.web_perf.metrics import layout
 
 class ThreadTimes(page_test.PageTest):
   def __init__(self, report_silk_details=False,
@@ -35,6 +36,9 @@ class ThreadTimes(page_test.PageTest):
       metric.details_to_report = timeline.ReportSilkDetails
     metric.AddResults(self._timeline_controller.model, renderer_thread,
                       self._timeline_controller.smooth_records, results)
+    layout_metric = layout.LayoutMetric()
+    layout_metric.AddResults(self._timeline_controller.model, renderer_thread,
+                             self._timeline_controller.smooth_records, results)
 
   def CleanUpAfterPage(self, _, tab):
     self._timeline_controller.CleanUp(tab)
