@@ -837,7 +837,7 @@ void HotwordService::ActiveUserChanged() {
     return;
 
   // Don't bother notifying the extension if hotwording is completely off.
-  if (!IsSometimesOnEnabled() && !IsAlwaysOnEnabled())
+  if (!IsSometimesOnEnabled() && !IsAlwaysOnEnabled() && !IsTraining())
     return;
 
   HotwordPrivateEventService* event_service =

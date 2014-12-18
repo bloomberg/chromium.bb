@@ -112,6 +112,13 @@
     // Listen for the user locking the screen.
     chrome.idle.onStateChanged.addListener(
         this.handleIdleStateChanged_.bind(this));
+
+    // Listen for hotword settings changes. This used to detect when the user
+    // switches to a different profile.
+    if (chrome.hotwordPrivate.onEnabledChanged) {
+      chrome.hotwordPrivate.onEnabledChanged.addListener(
+          this.handleEnabledChanged_.bind(this));
+    }
   }
 
   /**
@@ -343,12 +350,22 @@
    * @private
    */
   Flow.prototype.handleTrainingTimeout_ = function(index) {
-    if (!this.training_)
-      return;
-
     if (this.hotwordTriggerReceived_[index])
       return;
 
+    this.timeoutTraining_();
+  };
+
+  /**
+   * Times out training and updates the UI to show a "retry" message, if
+   * currently training.
+   * @private
+   */
+  Flow.prototype.timeoutTraining_ = function() {
+    if (!this.training_)
+      return;
+
+    this.clearTimeout_();
     this.updateTrainingState_(TrainingState.TIMEOUT);
     this.stopTraining();
   };
@@ -468,10 +485,23 @@
    * @private
    */
   Flow.prototype.handleIdleStateChanged_ = function(state) {
-    if (state == 'locked' && this.training_) {
-      this.clearTimeout_();
-      this.updateTrainingState_(TrainingState.TIMEOUT);
-      this.stopTraining();
+    if (state == 'locked')
+      this.timeoutTraining_();
+  };
+
+  /**
+   * Handles a chrome.hotwordPrivate.onEnabledChanged event and times out
+   * training if the user is no longer the active user (user switches profiles).
+   * @private
+   */
+  Flow.prototype.handleEnabledChanged_ = function() {
+    if (chrome.hotwordPrivate.getStatus) {
+      chrome.hotwordPrivate.getStatus(function(status) {
+        if (status.userIsActive)
+          return;
+
+        this.timeoutTraining_();
+      }.bind(this));
     }
   };
 
