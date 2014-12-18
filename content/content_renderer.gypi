@@ -46,6 +46,7 @@
     'public_renderer_sources': [
       'public/renderer/android_content_detection_prefixes.cc',
       'public/renderer/android_content_detection_prefixes.h',
+      'public/renderer/browser_plugin_delegate.cc',
       'public/renderer/browser_plugin_delegate.h',
       'public/renderer/content_renderer_client.cc',
       'public/renderer/content_renderer_client.h',

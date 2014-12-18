@@ -23,9 +23,8 @@ struct FrameMsg_BuffersSwapped_Params;
 namespace content {
 
 class BrowserPluginDelegate;
-class ChildFrameCompositingHelper;
 class BrowserPluginManager;
-class MockBrowserPlugin;
+class ChildFrameCompositingHelper;
 
 class CONTENT_EXPORT BrowserPlugin :
     NON_EXPORTED_BASE(public blink::WebPlugin),
@@ -33,13 +32,9 @@ class CONTENT_EXPORT BrowserPlugin :
  public:
   static BrowserPlugin* GetFromNode(blink::WebNode& node);
 
-  RenderViewImpl* render_view() const { return render_view_.get(); }
   int render_view_routing_id() const { return render_view_routing_id_; }
   int browser_plugin_instance_id() const { return browser_plugin_instance_id_; }
   bool attached() const { return attached_; }
-  BrowserPluginManager* browser_plugin_manager() const {
-    return browser_plugin_manager_.get();
-  }
 
   bool OnMessageReceived(const IPC::Message& msg);
 
@@ -141,17 +136,13 @@ class CONTENT_EXPORT BrowserPlugin :
   // Only the manager is allowed to create a BrowserPlugin.
   friend class BrowserPluginManager;
 
-  // For unit/integration tests.
-  friend class MockBrowserPlugin;
-
   // A BrowserPlugin object is a controller that represents an instance of a
   // browser plugin within the embedder renderer process. Once a BrowserPlugin
   // does an initial navigation or is attached to a newly created guest, it
   // acquires a browser_plugin_instance_id as well. The guest instance ID
   // uniquely identifies a guest WebContents that's hosted by this
   // BrowserPlugin.
-  BrowserPlugin(RenderViewImpl* render_view,
-                blink::WebFrame* frame,
+  BrowserPlugin(RenderFrame* render_frame,
                 scoped_ptr<BrowserPluginDelegate> delegate);
 
   ~BrowserPlugin() override;
@@ -185,7 +176,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // This indicates whether this BrowserPlugin has been attached to a
   // WebContents and is ready to receive IPCs.
   bool attached_;
-  const base::WeakPtr<RenderViewImpl> render_view_;
   // We cache the |render_view_|'s routing ID because we need it on destruction.
   // If the |render_view_| is destroyed before the BrowserPlugin is destroyed
   // then we will attempt to access a NULL pointer.
@@ -207,11 +197,6 @@ class CONTENT_EXPORT BrowserPlugin :
 
   // This indicates that the BrowserPlugin has a geometry.
   bool ready_;
-
-  // BrowserPlugin outlives RenderViewImpl in Chrome Apps and so we need to
-  // store the BrowserPlugin's BrowserPluginManager in a member variable to
-  // avoid accessing the RenderViewImpl.
-  const scoped_refptr<BrowserPluginManager> browser_plugin_manager_;
 
   // Used for HW compositing.
   scoped_refptr<ChildFrameCompositingHelper> compositing_helper_;

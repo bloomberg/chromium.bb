@@ -38,6 +38,16 @@ void MimeHandlerViewContainer::DidReceiveData(const char* data,
   html_string_ += std::string(data, data_length);
 }
 
+bool MimeHandlerViewContainer::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(MimeHandlerViewContainer, message)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_CreateMimeHandlerViewGuestACK,
+                        OnCreateMimeHandlerViewGuestACK)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
 void MimeHandlerViewContainer::Ready() {
   blink::WebFrame* frame = render_frame()->GetWebFrame();
   blink::WebURLLoaderOptions options;
@@ -50,20 +60,6 @@ void MimeHandlerViewContainer::Ready() {
   blink::WebURLRequest request(original_url_);
   request.setRequestContext(blink::WebURLRequest::RequestContextObject);
   loader_->loadAsynchronously(request, this);
-}
-
-bool MimeHandlerViewContainer::HandlesMessage(const IPC::Message& message) {
-  return message.type() == ExtensionMsg_CreateMimeHandlerViewGuestACK::ID;
-}
-
-bool MimeHandlerViewContainer::OnMessage(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(MimeHandlerViewContainer, message)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_CreateMimeHandlerViewGuestACK,
-                        OnCreateMimeHandlerViewGuestACK)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 void MimeHandlerViewContainer::didReceiveData(blink::WebURLLoader* /* unused */,
@@ -97,8 +93,8 @@ void MimeHandlerViewContainer::CreateMimeHandlerViewGuest() {
 
   DCHECK_NE(element_instance_id(), guestview::kInstanceIDNone);
   render_frame()->Send(new ExtensionHostMsg_CreateMimeHandlerViewGuest(
-      routing_id(), stream_url.spec(), original_url_.spec(), mime_type_,
-      element_instance_id()));
+      render_frame()->GetRoutingID(), stream_url.spec(), original_url_.spec(),
+      mime_type_, element_instance_id()));
 }
 
 }  // namespace extensions

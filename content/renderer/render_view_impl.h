@@ -121,7 +121,6 @@ class WebHitTestResult;
 
 namespace content {
 
-class BrowserPluginManager;
 class DevToolsAgent;
 class DocumentState;
 class HistoryController;
@@ -204,9 +203,6 @@ class CONTENT_EXPORT RenderViewImpl
   HistoryController* history_controller() {
     return history_controller_.get();
   }
-
-  // Lazily initialize this view's BrowserPluginManager and return it.
-  BrowserPluginManager* GetBrowserPluginManager();
 
   // Functions to add and remove observers for this object.
   void AddObserver(RenderViewObserver* observer);
@@ -962,9 +958,6 @@ class CONTENT_EXPORT RenderViewImpl
   // The speech recognition dispatcher attached to this view, lazily
   // initialized.
   SpeechRecognitionDispatcher* speech_recognition_dispatcher_;
-
-  // BrowserPluginManager attached to this view; lazily initialized.
-  scoped_refptr<BrowserPluginManager> browser_plugin_manager_;
 
   DevToolsAgent* devtools_agent_;
 

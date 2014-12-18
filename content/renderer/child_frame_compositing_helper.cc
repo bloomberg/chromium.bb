@@ -67,7 +67,7 @@ BrowserPluginManager* ChildFrameCompositingHelper::GetBrowserPluginManager() {
   if (!browser_plugin_)
     return NULL;
 
-  return browser_plugin_->browser_plugin_manager();
+  return BrowserPluginManager::Get();
 }
 
 blink::WebPluginContainer* ChildFrameCompositingHelper::GetContainer() {

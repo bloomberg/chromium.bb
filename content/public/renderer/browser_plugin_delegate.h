@@ -8,6 +8,7 @@
 #include <string>
 
 #include "content/common/content_export.h"
+#include "ipc/ipc_message.h"
 
 namespace content {
 
@@ -33,6 +34,10 @@ class CONTENT_EXPORT BrowserPluginDelegate {
   // Sets the instance ID that idenfies the plugin within current render
   // process.
   virtual void SetElementInstanceID(int element_instance_id) {}
+
+  // Called when a message is received.  Returns true iff the message was
+  // handled.
+  virtual bool OnMessageReceived(const IPC::Message& message);
 };
 
 }  // namespace content

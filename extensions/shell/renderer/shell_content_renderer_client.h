@@ -35,6 +35,7 @@ class ShellContentRendererClient : public content::ContentRendererClient {
   blink::WebPlugin* CreatePluginReplacement(
       content::RenderFrame* render_frame,
       const base::FilePath& plugin_path) override;
+  bool ShouldForwardToGuestContainer(const IPC::Message& msg) override;
   bool WillSendRequest(blink::WebFrame* frame,
                        ui::PageTransition transition_type,
                        const GURL& url,

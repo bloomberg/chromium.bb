@@ -321,7 +321,6 @@ void GuestViewBase::DidAttach(int guest_proxy_routing_id) {
 
   // Inform the associated GuestViewContainer that the contentWindow is ready.
   embedder_web_contents()->Send(new ExtensionMsg_GuestAttached(
-      embedder_web_contents()->GetMainFrame()->GetRoutingID(),
       element_instance_id_,
       guest_proxy_routing_id));
 
@@ -333,7 +332,6 @@ void GuestViewBase::DidDetach() {
       this, element_instance_id_);
   StopTrackingEmbedderZoomLevel();
   owner_web_contents()->Send(new ExtensionMsg_GuestDetached(
-      owner_web_contents()->GetMainFrame()->GetRoutingID(),
       element_instance_id_));
   element_instance_id_ = guestview::kInstanceIDNone;
 }

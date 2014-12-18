@@ -223,6 +223,10 @@ class CONTENT_EXPORT ContentRendererClient {
                           bool is_server_redirect,
                           bool* send_referrer);
 
+  // Returns true if this IPC message belongs to a guest container. Currently,
+  // BrowserPlugin is a guest container.
+  virtual bool ShouldForwardToGuestContainer(const IPC::Message& msg);
+
   // Notifies the embedder that the given frame is requesting the resource at
   // |url|.  If the function returns true, the url is changed to |new_url|.
   virtual bool WillSendRequest(blink::WebFrame* frame,

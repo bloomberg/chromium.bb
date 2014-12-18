@@ -2432,6 +2432,11 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_WebViewWebRequestRegistryHasNoCache) {
   EXPECT_FALSE(registry->rules_cache_delegate_for_testing());
 }
 
+// This test verifies that webview.contentWindow works inside an iframe.
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebViewInsideFrame) {
+  LoadAppWithGuest("web_view/inside_iframe");
+}
+
 // <webview> screenshot capture fails with ubercomp.
 // See http://crbug.com/327035.
 IN_PROC_BROWSER_TEST_F(WebViewCaptureTest,

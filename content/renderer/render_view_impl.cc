@@ -653,7 +653,6 @@ RenderViewImpl::RenderViewImpl(const ViewMsg_New_Params& params)
 #endif
       has_scrolled_focused_editable_node_into_rect_(false),
       speech_recognition_dispatcher_(NULL),
-      browser_plugin_manager_(NULL),
       devtools_agent_(NULL),
       mouse_lock_dispatcher_(NULL),
 #if defined(OS_ANDROID)
@@ -2374,12 +2373,6 @@ void RenderViewImpl::CheckPreferredSize() {
                                                       preferred_size_));
 }
 
-BrowserPluginManager* RenderViewImpl::GetBrowserPluginManager() {
-  if (!browser_plugin_manager_.get())
-    browser_plugin_manager_ = BrowserPluginManager::Create(this);
-  return browser_plugin_manager_.get();
-}
-
 void RenderViewImpl::didChangeScrollOffset(WebLocalFrame* frame) {
   StartNavStateSyncTimerIfNecessary();
 }
@@ -3486,8 +3479,8 @@ void RenderViewImpl::OnSetFocus(bool enable) {
     (*i)->SetContentAreaFocus(enable);
 #endif
   // Notify all BrowserPlugins of the RenderView's focus state.
-  if (browser_plugin_manager_.get())
-    browser_plugin_manager_->UpdateFocusState();
+  if (BrowserPluginManager::Get())
+    BrowserPluginManager::Get()->UpdateFocusState();
 }
 
 void RenderViewImpl::OnImeSetComposition(
@@ -3584,8 +3577,8 @@ void RenderViewImpl::SetDeviceScaleFactor(float device_scale_factor) {
   if (auto_resize_mode_)
     AutoResizeCompositor();
 
-  if (browser_plugin_manager_.get())
-    browser_plugin_manager_->UpdateDeviceScaleFactor();
+  if (BrowserPluginManager::Get())
+    BrowserPluginManager::Get()->UpdateDeviceScaleFactor();
 }
 
 bool RenderViewImpl::SetDeviceColorProfile(
@@ -4069,6 +4062,8 @@ void RenderViewImpl::OnReleaseDisambiguationPopupBitmap(
 
 void RenderViewImpl::DidCommitCompositorFrame() {
   RenderWidget::DidCommitCompositorFrame();
+  if (BrowserPluginManager::Get())
+    BrowserPluginManager::Get()->DidCommitCompositorFrame(GetRoutingID());
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidCommitCompositorFrame());
 }
 

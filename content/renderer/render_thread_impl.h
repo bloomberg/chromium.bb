@@ -81,6 +81,7 @@ class AecDumpMessageFilter;
 class AudioInputMessageFilter;
 class AudioMessageFilter;
 class AudioRendererMixerManager;
+class BrowserPluginManager;
 class CompositorForwardingMessageFilter;
 class ContextProviderCommandBuffer;
 class DBMessageFilter;
@@ -274,6 +275,10 @@ class CONTENT_EXPORT RenderThreadImpl
   // The resulting object is owned by WebKit and deleted by WebKit at tear-down.
   blink::WebMediaStreamCenter* CreateMediaStreamCenter(
       blink::WebMediaStreamCenterClient* client);
+
+  BrowserPluginManager* browser_plugin_manager() const {
+    return browser_plugin_manager_.get();
+  }
 
 #if defined(ENABLE_WEBRTC)
   // Returns a factory used for creating RTC PeerConnection objects.
@@ -477,6 +482,8 @@ class CONTENT_EXPORT RenderThreadImpl
 #endif
   scoped_refptr<DevToolsAgentFilter> devtools_agent_message_filter_;
   scoped_ptr<V8SamplingProfiler> v8_sampling_profiler_;
+
+  scoped_ptr<BrowserPluginManager> browser_plugin_manager_;
 
 #if defined(ENABLE_WEBRTC)
   scoped_ptr<PeerConnectionDependencyFactory> peer_connection_factory_;

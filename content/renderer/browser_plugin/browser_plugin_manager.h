@@ -6,9 +6,8 @@
 #define CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_MANAGER_H_
 
 #include "base/id_map.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
-#include "content/public/renderer/render_view_observer.h"
+#include "base/memory/scoped_ptr.h"
+#include "content/public/renderer/render_process_observer.h"
 #include "ipc/ipc_sender.h"
 
 namespace blink {
@@ -19,26 +18,24 @@ namespace content {
 
 class BrowserPlugin;
 class BrowserPluginDelegate;
-class RenderViewImpl;
+class RenderFrame;
 
 // BrowserPluginManager manages the routing of messages to the appropriate
-// BrowserPlugin object based on its instance ID.
-class CONTENT_EXPORT BrowserPluginManager
-    : public RenderViewObserver,
-      public base::RefCounted<BrowserPluginManager> {
+// BrowserPlugin object based on its instance ID. There is one BrowserPlugin
+// for the RenderThread.
+class CONTENT_EXPORT BrowserPluginManager : public RenderProcessObserver {
  public:
-  // Returns the one BrowserPluginManager for this process.
-  static BrowserPluginManager* Create(RenderViewImpl* render_view);
+  static BrowserPluginManager* Get();
 
-  explicit BrowserPluginManager(RenderViewImpl* render_view);
+  BrowserPluginManager();
+  ~BrowserPluginManager() override;
 
   // Creates a new BrowserPlugin object.
   // BrowserPlugin is responsible for associating itself with the
   // BrowserPluginManager via AddBrowserPlugin. When it is destroyed, it is
   // responsible for removing its association via RemoveBrowserPlugin.
   BrowserPlugin* CreateBrowserPlugin(
-      RenderViewImpl* render_view,
-      blink::WebFrame* frame,
+      RenderFrame* render_frame,
       scoped_ptr<BrowserPluginDelegate> delegate);
 
   void Attach(int browser_plugin_instance_id);
@@ -52,35 +49,23 @@ class CONTENT_EXPORT BrowserPluginManager
 
   void UpdateDeviceScaleFactor();
   void UpdateFocusState();
-  RenderViewImpl* render_view() const { return render_view_.get(); }
 
   // Returns a new instance ID to be used by BrowserPlugin. Instance IDs are
   // unique per process.
   int GetNextInstanceID();
 
-  // RenderViewObserver override. Call on render thread.
-  void DidCommitCompositorFrame() override;
-  bool OnMessageReceived(const IPC::Message& message) override;
-  bool Send(IPC::Message* msg) override;
+  void DidCommitCompositorFrame(int render_view_routing_id);
+  bool Send(IPC::Message* msg);
 
-  // Don't destroy the BrowserPluginManager when the RenderViewImpl goes away.
-  // BrowserPluginManager's lifetime is managed by a reference count. Once
-  // the host RenderViewImpl and all BrowserPlugins release their references,
-  // then the BrowserPluginManager will be destroyed.
-  void OnDestruct() override {}
+  // RenderProcessObserver override.
+  bool OnControlMessageReceived(const IPC::Message& message) override;
 
  private:
-  // Friend RefCounted so that the dtor can be non-public.
-  friend class base::RefCounted<BrowserPluginManager>;
-
-  ~BrowserPluginManager() override;
-
   // IPC message handlers.
   void OnCompositorFrameSwappedPluginUnavailable(const IPC::Message& message);
 
   // This map is keyed by guest instance IDs.
   IDMap<BrowserPlugin> instances_;
-  base::WeakPtr<RenderViewImpl> render_view_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginManager);
 };

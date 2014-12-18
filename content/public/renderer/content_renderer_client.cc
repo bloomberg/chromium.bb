@@ -122,6 +122,11 @@ bool ContentRendererClient::ShouldFork(blink::WebFrame* frame,
   return false;
 }
 
+bool ContentRendererClient::ShouldForwardToGuestContainer(
+    const IPC::Message& msg) {
+  return false;
+}
+
 bool ContentRendererClient::WillSendRequest(
     blink::WebFrame* frame,
     ui::PageTransition transition_type,

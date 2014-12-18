@@ -14,6 +14,7 @@
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/extension_helper.h"
 #include "extensions/renderer/guest_view/extensions_guest_view_container.h"
+#include "extensions/renderer/guest_view/guest_view_container.h"
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container.h"
 #include "extensions/shell/common/shell_extensions_client.h"
 #include "extensions/shell/renderer/shell_extensions_renderer_client.h"
@@ -129,6 +130,11 @@ blink::WebPlugin* ShellContentRendererClient::CreatePluginReplacement(
     const base::FilePath& plugin_path) {
   // Don't provide a custom "failed to load" plugin.
   return NULL;
+}
+
+bool ShellContentRendererClient::ShouldForwardToGuestContainer(
+    const IPC::Message& msg) {
+  return GuestViewContainer::HandlesMessage(msg);
 }
 
 bool ShellContentRendererClient::WillSendRequest(

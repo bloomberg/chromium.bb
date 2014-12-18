@@ -556,7 +556,7 @@ IPC_MESSAGE_CONTROL1(ExtensionMsg_CreateMimeHandlerViewGuestACK,
 
 // Once a RenderView proxy has been created for the guest in the embedder render
 // process, this IPC informs the embedder of the proxy's routing ID.
-IPC_MESSAGE_ROUTED2(ExtensionMsg_GuestAttached,
+IPC_MESSAGE_CONTROL2(ExtensionMsg_GuestAttached,
                     int /* element_instance_id */,
                     int /* source_routing_id */)
 
@@ -564,8 +564,8 @@ IPC_MESSAGE_ROUTED2(ExtensionMsg_GuestAttached,
 // |element_instance_id| from a GuestViewBase if it is attached to one.
 // In other words, routing of input and graphics will no longer flow through
 // the container associated with the provided ID.
-IPC_MESSAGE_ROUTED1(ExtensionMsg_GuestDetached,
-                    int /* element_instance_id*/)
+IPC_MESSAGE_CONTROL1(ExtensionMsg_GuestDetached,
+                     int /* element_instance_id*/)
 
 // Messages sent from the renderer to the browser.
 

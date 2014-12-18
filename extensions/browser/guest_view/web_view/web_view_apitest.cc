@@ -143,6 +143,7 @@ void WebViewAPITest::LaunchApp(const std::string& app_location) {
   extension_system_->LaunchApp(extension->id());
 
   ExtensionTestMessageListener launch_listener("LAUNCHED", false);
+  launch_listener.set_failure_message("FAILURE");
   ASSERT_TRUE(launch_listener.WaitUntilSatisfied());
 
   embedder_web_contents_ = GetFirstAppWindowWebContents();
@@ -704,5 +705,11 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestWebRequestAPIExistence) {
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestWebRequestAPIGoogleProperty) {
   RunTest("testWebRequestAPIGoogleProperty", "web_view/apitest");
 }
+
+// This test verifies that webview.contentWindow works inside an iframe
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestWebViewInsideFrame) {
+  LaunchApp("web_view/inside_iframe");
+}
+
 
 }  // namespace extensions

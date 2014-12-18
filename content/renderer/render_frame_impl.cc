@@ -1674,11 +1674,11 @@ bool RenderFrameImpl::IsFTPDirectoryListing() {
 }
 
 void RenderFrameImpl::AttachGuest(int element_instance_id) {
-  render_view_->GetBrowserPluginManager()->Attach(element_instance_id);
+  BrowserPluginManager::Get()->Attach(element_instance_id);
 }
 
 void RenderFrameImpl::DetachGuest(int element_instance_id) {
-  render_view_->GetBrowserPluginManager()->Detach(element_instance_id);
+  BrowserPluginManager::Get()->Detach(element_instance_id);
 }
 
 void RenderFrameImpl::SetSelectedText(const base::string16& selection_text,
@@ -1736,8 +1736,8 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
     scoped_ptr<BrowserPluginDelegate> browser_plugin_delegate(
         GetContentClient()->renderer()->CreateBrowserPluginDelegate(this,
             kBrowserPluginMimeType, GURL(params.url)));
-    return render_view_->GetBrowserPluginManager()->CreateBrowserPlugin(
-        render_view_.get(), frame, browser_plugin_delegate.Pass());
+    return BrowserPluginManager::Get()->CreateBrowserPlugin(
+        this, browser_plugin_delegate.Pass());
   }
 
 #if defined(ENABLE_PLUGINS)
@@ -1754,8 +1754,8 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
     scoped_ptr<BrowserPluginDelegate> browser_plugin_delegate(
         GetContentClient()->renderer()->CreateBrowserPluginDelegate(
             this, mime_type, GURL(params.url)));
-    return render_view_->GetBrowserPluginManager()->CreateBrowserPlugin(
-        render_view_.get(), frame, browser_plugin_delegate.Pass());
+    return BrowserPluginManager::Get()->CreateBrowserPlugin(
+        this, browser_plugin_delegate.Pass());
   }
 
 

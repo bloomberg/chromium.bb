@@ -74,6 +74,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
+#include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/devtools/devtools_agent_filter.h"
 #include "content/renderer/devtools/v8_sampling_profiler.h"
 #include "content/renderer/dom_storage/dom_storage_dispatcher.h"
@@ -474,6 +475,9 @@ void RenderThreadImpl::Init() {
 
   vc_manager_.reset(new VideoCaptureImplManager());
   AddFilter(vc_manager_->video_capture_message_filter());
+
+  browser_plugin_manager_.reset(new BrowserPluginManager());
+  AddObserver(browser_plugin_manager_.get());
 
 #if defined(ENABLE_WEBRTC)
   peer_connection_tracker_.reset(new PeerConnectionTracker());

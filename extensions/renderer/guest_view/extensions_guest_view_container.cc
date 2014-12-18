@@ -186,6 +186,12 @@ void ExtensionsGuestViewContainer::RegisterDestructionCallback(
   destruction_isolate_ = isolate;
 }
 
+bool ExtensionsGuestViewContainer::OnMessageReceived(
+    const IPC::Message& message) {
+  OnHandleCallback(message);
+  return true;
+}
+
 void ExtensionsGuestViewContainer::SetElementInstanceID(
     int element_instance_id) {
   GuestViewContainer::SetElementInstanceID(element_instance_id);
@@ -200,16 +206,6 @@ void ExtensionsGuestViewContainer::Ready() {
   ready_ = true;
   CHECK(!pending_response_.get());
   PerformPendingRequest();
-}
-
-bool ExtensionsGuestViewContainer::HandlesMessage(const IPC::Message& message) {
-  return (message.type() == ExtensionMsg_GuestAttached::ID) ||
-      (message.type() == ExtensionMsg_GuestDetached::ID);
-}
-
-bool ExtensionsGuestViewContainer::OnMessage(const IPC::Message& message) {
-  OnHandleCallback(message);
-  return true;
 }
 
 void ExtensionsGuestViewContainer::OnHandleCallback(

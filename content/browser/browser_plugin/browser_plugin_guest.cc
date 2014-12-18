@@ -395,7 +395,6 @@ void BrowserPluginGuest::SendMessageToEmbedder(IPC::Message* msg) {
     pending_messages_.push_back(linked_ptr<IPC::Message>(msg));
     return;
   }
-  msg->set_routing_id(owner_web_contents_->GetRoutingID());
   owner_web_contents_->Send(msg);
 }
 

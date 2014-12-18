@@ -39,11 +39,8 @@ class MimeHandlerViewContainer : public GuestViewContainer,
   // BrowserPluginDelegate implementation.
   void DidFinishLoading() override;
   void DidReceiveData(const char* data, int data_length) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
   void Ready() override;
-
-  // GuestViewContainer overrides.
-  bool HandlesMessage(const IPC::Message& message) override;
-  bool OnMessage(const IPC::Message& message) override;
 
   // WebURLLoaderClient overrides.
   void didReceiveData(blink::WebURLLoader* loader,

@@ -84,12 +84,9 @@ class ExtensionsGuestViewContainer : public GuestViewContainer {
                                    v8::Isolate* isolate);
 
   // BrowserPluginDelegate implementation.
+  bool OnMessageReceived(const IPC::Message& message) override;
   void SetElementInstanceID(int element_instance_id) override;
   void Ready() override;
-
-  // GuestViewContainer override.
-  bool HandlesMessage(const IPC::Message& message) override;
-  bool OnMessage(const IPC::Message& message) override;
 
  private:
   void OnHandleCallback(const IPC::Message& message);
