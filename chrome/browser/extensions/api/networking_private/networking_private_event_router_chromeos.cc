@@ -8,7 +8,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_api.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/networking_private.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
@@ -19,6 +18,7 @@
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/onc/onc_constants.h"
+#include "content/public/browser/browser_context.h"
 #include "extensions/browser/extension_system.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -34,7 +34,8 @@ class NetworkingPrivateEventRouterImpl
       public chromeos::NetworkStateHandlerObserver,
       public NetworkPortalDetector::Observer {
  public:
-  explicit NetworkingPrivateEventRouterImpl(Profile* profile);
+  explicit NetworkingPrivateEventRouterImpl(
+      content::BrowserContext* browser_context);
   ~NetworkingPrivateEventRouterImpl() override;
 
  protected:
@@ -61,20 +62,20 @@ class NetworkingPrivateEventRouterImpl
   // Otherwise, we want to unregister and not be listening to network changes.
   void StartOrStopListeningForNetworkChanges();
 
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
   bool listening_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateEventRouterImpl);
 };
 
 NetworkingPrivateEventRouterImpl::NetworkingPrivateEventRouterImpl(
-    Profile* profile)
-    : profile_(profile), listening_(false) {
+    content::BrowserContext* browser_context)
+    : browser_context_(browser_context), listening_(false) {
   // Register with the event router so we know when renderers are listening to
   // our events. We first check and see if there *is* an event router, because
   // some unit tests try to create all profile services, but don't initialize
   // the event router first.
-  EventRouter* event_router = EventRouter::Get(profile_);
+  EventRouter* event_router = EventRouter::Get(browser_context_);
   if (event_router) {
     event_router->RegisterObserver(
         this, api::networking_private::OnNetworksChanged::kEventName);
@@ -94,7 +95,7 @@ void NetworkingPrivateEventRouterImpl::Shutdown() {
   // Unregister with the event router. We first check and see if there *is* an
   // event router, because some unit tests try to shutdown all profile services,
   // but didn't initialize the event router first.
-  EventRouter* event_router = EventRouter::Get(profile_);
+  EventRouter* event_router = EventRouter::Get(browser_context_);
   if (event_router)
     event_router->UnregisterObserver(this);
 
@@ -119,7 +120,7 @@ void NetworkingPrivateEventRouterImpl::OnListenerRemoved(
 }
 
 void NetworkingPrivateEventRouterImpl::StartOrStopListeningForNetworkChanges() {
-  EventRouter* event_router = EventRouter::Get(profile_);
+  EventRouter* event_router = EventRouter::Get(browser_context_);
   bool should_listen =
       event_router->HasEventListener(
           api::networking_private::OnNetworksChanged::kEventName) ||
@@ -141,7 +142,7 @@ void NetworkingPrivateEventRouterImpl::StartOrStopListeningForNetworkChanges() {
 }
 
 void NetworkingPrivateEventRouterImpl::NetworkListChanged() {
-  EventRouter* event_router = EventRouter::Get(profile_);
+  EventRouter* event_router = EventRouter::Get(browser_context_);
   NetworkStateHandler::NetworkStateList networks;
   NetworkHandler::Get()->network_state_handler()->GetVisibleNetworkList(
       &networks);
@@ -172,7 +173,7 @@ void NetworkingPrivateEventRouterImpl::NetworkListChanged() {
 
 void NetworkingPrivateEventRouterImpl::NetworkPropertiesUpdated(
     const NetworkState* network) {
-  EventRouter* event_router = EventRouter::Get(profile_);
+  EventRouter* event_router = EventRouter::Get(browser_context_);
   if (!event_router->HasEventListener(
            api::networking_private::OnNetworksChanged::kEventName)) {
     NET_LOG_EVENT("NetworkingPrivate.NetworkPropertiesUpdated: No Listeners",
@@ -194,7 +195,7 @@ void NetworkingPrivateEventRouterImpl::OnPortalDetectionCompleted(
     const NetworkPortalDetector::CaptivePortalState& state) {
   const std::string path = network ? network->guid() : std::string();
 
-  EventRouter* event_router = EventRouter::Get(profile_);
+  EventRouter* event_router = EventRouter::Get(browser_context_);
   if (!event_router->HasEventListener(
           api::networking_private::OnPortalDetectionCompleted::kEventName)) {
     NET_LOG_EVENT("NetworkingPrivate.OnPortalDetectionCompleted: No Listeners",
@@ -237,8 +238,8 @@ void NetworkingPrivateEventRouterImpl::OnPortalDetectionCompleted(
 }
 
 NetworkingPrivateEventRouter* NetworkingPrivateEventRouter::Create(
-    Profile* profile) {
-  return new NetworkingPrivateEventRouterImpl(profile);
+    content::BrowserContext* browser_context) {
+  return new NetworkingPrivateEventRouterImpl(browser_context);
 }
 
 }  // namespace extensions

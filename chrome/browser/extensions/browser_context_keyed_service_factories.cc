@@ -125,7 +125,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::MediaPlayerAPI::GetFactoryInstance();
 #endif
   extensions::MenuManagerFactory::GetInstance();
-#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
   extensions::NetworkingPrivateEventRouterFactory::GetInstance();
 #endif
   extensions::OmniboxAPI::GetFactoryInstance();

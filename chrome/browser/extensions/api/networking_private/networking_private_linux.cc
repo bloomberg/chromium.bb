@@ -14,6 +14,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/extensions/api/networking_private/network_config_dbus_constants_linux.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_api.h"
+#include "chrome/browser/extensions/api/networking_private/networking_private_delegate_observer.h"
 #include "components/onc/onc_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -69,21 +70,23 @@ bool ParseNetworkGuid(const std::string& guid,
   return true;
 }
 
-// Iterates over the map giving ownership of the contained networks to a
+// Simplified helper to parse the SSID from the GUID.
+bool GuidToSsid(const std::string& guid, std::string* ssid) {
+  std::string unused_1;
+  std::string unused_2;
+  return ParseNetworkGuid(guid, &unused_1, &unused_2, ssid);
+}
+
+// Iterates over the map cloning the contained networks to a
 // list then returns the list.
-scoped_ptr<base::ListValue> ConvertNetworkMapToList(
-    scoped_ptr<NetworkingPrivateLinux::NetworkMap> network_map) {
+scoped_ptr<base::ListValue> CopyNetworkMapToList(
+    const NetworkingPrivateLinux::NetworkMap& network_map) {
   scoped_ptr<base::ListValue> network_list(new base::ListValue);
 
-  for (NetworkingPrivateLinux::NetworkMap::iterator it = network_map->begin();
-       it != network_map->end();
-       ++it) {
-    network_list->Append(it->second.release());
+  for (const auto& network : network_map) {
+    network_list->Append(network.second->DeepCopy());
   }
 
-  // Clear |network_map| since the contents have all been released and are now
-  // owned by |network_list|.
-  network_map->clear();
   return network_list.Pass();
 }
 
@@ -114,6 +117,20 @@ void OnNetworkConnectOperationCompleted(
     return;
   }
   success_callback.Run();
+}
+
+// Fires the appropriate callback when the network properties are returned
+// from the |dbus_thread_|.
+void GetCachedNetworkPropertiesCallback(
+    scoped_ptr<std::string> error,
+    scoped_ptr<base::DictionaryValue> properties,
+    const NetworkingPrivateDelegate::DictionaryCallback& success_callback,
+    const NetworkingPrivateDelegate::FailureCallback& failure_callback) {
+  if (!error->empty()) {
+    failure_callback.Run(*error);
+    return;
+  }
+  success_callback.Run(properties.Pass());
 }
 
 }  // namespace
@@ -159,6 +176,8 @@ void NetworkingPrivateLinux::Initialize() {
   if (!network_manager_proxy_) {
     LOG(ERROR) << "Platform does not support NetworkManager over DBUS";
   }
+
+  network_map_.reset(new NetworkMap());
 }
 
 bool NetworkingPrivateLinux::CheckNetworkManagerSupported(
@@ -175,7 +194,7 @@ void NetworkingPrivateLinux::GetProperties(
     const std::string& guid,
     const DictionaryCallback& success_callback,
     const FailureCallback& failure_callback) {
-  ReportNotSupported("GetProperties", failure_callback);
+  GetState(guid, success_callback, failure_callback);
 }
 
 void NetworkingPrivateLinux::GetManagedProperties(
@@ -189,7 +208,49 @@ void NetworkingPrivateLinux::GetState(
     const std::string& guid,
     const DictionaryCallback& success_callback,
     const FailureCallback& failure_callback) {
-  ReportNotSupported("GetState", failure_callback);
+  if (!CheckNetworkManagerSupported(failure_callback))
+    return;
+
+  scoped_ptr<std::string> error(new std::string);
+  scoped_ptr<base::DictionaryValue> network_properties(
+      new base::DictionaryValue);
+
+  // Runs GetCachedNetworkProperties on |dbus_thread|.
+  dbus_thread_.task_runner()->PostTaskAndReply(
+      FROM_HERE, base::Bind(&NetworkingPrivateLinux::GetCachedNetworkProperties,
+                            base::Unretained(this), guid,
+                            base::Unretained(network_properties.get()),
+                            base::Unretained(error.get())),
+      base::Bind(&GetCachedNetworkPropertiesCallback, base::Passed(&error),
+                 base::Passed(&network_properties), success_callback,
+                 failure_callback));
+}
+
+void NetworkingPrivateLinux::GetCachedNetworkProperties(
+    const std::string& guid,
+    base::DictionaryValue* properties,
+    std::string* error) {
+  AssertOnDBusThread();
+  std::string ssid;
+
+  if (!GuidToSsid(guid, &ssid)) {
+    *error = "Invalid Network GUID format";
+    return;
+  }
+
+  NetworkMap::const_iterator network_iter =
+      network_map_->find(base::UTF8ToUTF16(ssid));
+  if (network_iter == network_map_->end()) {
+    *error = "Unknown network GUID";
+    return;
+  }
+
+  // Make a copy of the properties out of the cached map.
+  scoped_ptr<base::DictionaryValue> temp_properties(
+      network_iter->second->DeepCopy());
+
+  // Swap the new copy into the dictionary that is shared with the reply.
+  properties->Swap(temp_properties.get());
 }
 
 void NetworkingPrivateLinux::SetProperties(
@@ -235,16 +296,11 @@ void NetworkingPrivateLinux::GetNetworks(
   dbus_thread_.task_runner()->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&NetworkingPrivateLinux::GetAllWiFiAccessPoints,
-                 base::Unretained(this),
-                 configured_only,
-                 visible_only,
-                 limit,
+                 base::Unretained(this), configured_only, visible_only, limit,
                  base::Unretained(network_map.get())),
       base::Bind(&NetworkingPrivateLinux::OnAccessPointsFound,
-                 base::Unretained(this),
-                 base::Passed(&network_map),
-                 success_callback,
-                 failure_callback));
+                 base::Unretained(this), base::Passed(&network_map),
+                 success_callback, failure_callback));
 }
 
 // Constructs the network configuration message and connects to the network.
@@ -262,9 +318,16 @@ void NetworkingPrivateLinux::ConnectToNetwork(const std::string& guid,
   std::string ssid;
   DVLOG(1) << "Connecting to network GUID " << guid;
 
-  if (!ParseNetworkGuid(
-          guid, &device_path_str, &access_point_path_str, &ssid)) {
+  if (!ParseNetworkGuid(guid, &device_path_str, &access_point_path_str,
+                        &ssid)) {
     *error = "Invalid Network GUID format";
+    return;
+  }
+
+  // Set the connection state to connecting in the map.
+  if (!SetConnectionStateAndPostEvent(guid, ssid,
+                                      ::onc::connection_state::kConnecting)) {
+    *error = "Unknown network GUID";
     return;
   }
 
@@ -316,6 +379,10 @@ void NetworkingPrivateLinux::ConnectToNetwork(const std::string& guid,
   if (!response) {
     LOG(ERROR) << "Failed to add a new connection";
     *error = "Failed to connect.";
+
+    // Set the connection state to NotConnected in the map.
+    SetConnectionStateAndPostEvent(guid, ssid,
+                                   ::onc::connection_state::kNotConnected);
     return;
   }
 
@@ -327,6 +394,10 @@ void NetworkingPrivateLinux::ConnectToNetwork(const std::string& guid,
     LOG(ERROR) << "Unexpected response for add connection path "
                << ": " << response->ToString();
     *error = "Failed to connect.";
+
+    // Set the connection state to NotConnected in the map.
+    SetConnectionStateAndPostEvent(guid, ssid,
+                                   ::onc::connection_state::kNotConnected);
     return;
   }
 
@@ -334,9 +405,16 @@ void NetworkingPrivateLinux::ConnectToNetwork(const std::string& guid,
     LOG(ERROR) << "Unexpected response for connection path "
                << ": " << response->ToString();
     *error = "Failed to connect.";
+
+    // Set the connection state to NotConnected in the map.
+    SetConnectionStateAndPostEvent(guid, ssid,
+                                   ::onc::connection_state::kNotConnected);
     return;
   }
 
+  // Set the connection state to Connected in the map.
+  SetConnectionStateAndPostEvent(guid, ssid,
+                                 ::onc::connection_state::kConnected);
   return;
 }
 
@@ -465,13 +543,39 @@ bool NetworkingPrivateLinux::RequestScan() {
   return true;
 }
 
+void NetworkingPrivateLinux::AddObserver(
+    NetworkingPrivateDelegateObserver* observer) {
+  network_events_observers_.AddObserver(observer);
+}
+
+void NetworkingPrivateLinux::RemoveObserver(
+    NetworkingPrivateDelegateObserver* observer) {
+  network_events_observers_.RemoveObserver(observer);
+}
+
 void NetworkingPrivateLinux::OnAccessPointsFound(
     scoped_ptr<NetworkMap> network_map,
     const NetworkListCallback& success_callback,
     const FailureCallback& failure_callback) {
-  scoped_ptr<base::ListValue> network_list =
-      ConvertNetworkMapToList(network_map.Pass());
+  scoped_ptr<base::ListValue> network_list = CopyNetworkMapToList(*network_map);
+
+  // Give ownership to the member variable.
+  network_map_.swap(network_map);
+  GuidList guidsForEventCallback;
+
+  for (const auto& network : *network_list) {
+    std::string guid;
+    base::DictionaryValue* dict;
+    if (network->GetAsDictionary(&dict)) {
+      if (dict->GetString(kAccessPointInfoGuid, &guid)) {
+        guidsForEventCallback.push_back(guid);
+      }
+    }
+  }
+
+  // TODO(zentaro): Which order should this be?
   success_callback.Run(network_list.Pass());
+  OnNetworkListChangedEventOnUIThread(guidsForEventCallback);
 }
 
 bool NetworkingPrivateLinux::GetNetworkDevices(
@@ -541,10 +645,7 @@ void NetworkingPrivateLinux::GetAllWiFiAccessPoints(bool configured_only,
     return;
   }
 
-  for (std::vector<dbus::ObjectPath>::iterator it = device_paths.begin();
-       it != device_paths.end();
-       ++it) {
-    const dbus::ObjectPath& device_path = *it;
+  for (const auto& device_path : device_paths) {
     NetworkingPrivateLinux::DeviceType device_type = GetDeviceType(device_path);
 
     // Get the access points for each WiFi adapter. Other network types are
@@ -717,10 +818,7 @@ bool NetworkingPrivateLinux::AddAccessPointsFromDevice(
     return false;
   }
 
-  for (std::vector<dbus::ObjectPath>::iterator it = access_point_paths.begin();
-       it != access_point_paths.end();
-       ++it) {
-    const dbus::ObjectPath& access_point_path = *it;
+  for (const auto& access_point_path : access_point_paths) {
     scoped_ptr<base::DictionaryValue> access_point(new base::DictionaryValue);
 
     if (GetAccessPointInfo(access_point_path, access_point)) {
@@ -845,11 +943,7 @@ bool NetworkingPrivateLinux::GetConnectedAccessPoint(
     return false;
   }
 
-  for (std::vector<dbus::ObjectPath>::iterator it = connection_paths.begin();
-       it != connection_paths.end();
-       ++it) {
-    const dbus::ObjectPath connection_path = *it;
-
+  for (const auto& connection_path : connection_paths) {
     dbus::ObjectPath connections_device_path;
     if (!GetDeviceOfConnection(connection_path, &connections_device_path)) {
       return false;
@@ -954,6 +1048,89 @@ bool NetworkingPrivateLinux::GetAccessPointForConnection(
   }
 
   return true;
+}
+
+bool NetworkingPrivateLinux::SetConnectionStateAndPostEvent(
+    const std::string& guid,
+    const std::string& ssid,
+    const std::string& connection_state) {
+  AssertOnDBusThread();
+
+  NetworkMap::iterator network_iter =
+      network_map_->find(base::UTF8ToUTF16(ssid));
+  if (network_iter == network_map_->end()) {
+    return false;
+  }
+
+  DVLOG(1) << "Setting connection state of " << ssid << " to "
+           << connection_state;
+
+  // If setting this network to connected, find the previously connected network
+  // and disconnect that one. Also retain the guid of that network to fire a
+  // changed event.
+  std::string connected_network_guid;
+  if (connection_state == ::onc::connection_state::kConnected) {
+    for (auto& network : *network_map_) {
+      std::string other_connection_state;
+      if (network.second->GetString(kAccessPointInfoConnectionState,
+                                    &other_connection_state)) {
+        if (other_connection_state == ::onc::connection_state::kConnected) {
+          network.second->GetString(kAccessPointInfoGuid,
+                                    &connected_network_guid);
+          network.second->SetString(kAccessPointInfoConnectionState,
+                                    ::onc::connection_state::kNotConnected);
+        }
+      }
+    }
+  }
+
+  // Set the status.
+  network_iter->second->SetString(kAccessPointInfoConnectionState,
+                                  connection_state);
+
+  scoped_ptr<GuidList> changed_networks(new GuidList());
+  changed_networks->push_back(guid);
+
+  // Only add a second network if it exists and it is not the same as the
+  // network already being added to the list.
+  if (!connected_network_guid.empty() && connected_network_guid != guid) {
+    changed_networks->push_back(connected_network_guid);
+  }
+
+  PostOnNetworksChangedToUIThread(changed_networks.Pass());
+  return true;
+}
+
+void NetworkingPrivateLinux::OnNetworksChangedEventOnUIThread(
+    const GuidList& network_guids) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  FOR_EACH_OBSERVER(NetworkingPrivateDelegateObserver,
+                    network_events_observers_,
+                    OnNetworksChangedEvent(network_guids));
+}
+
+void NetworkingPrivateLinux::OnNetworkListChangedEventOnUIThread(
+    const GuidList& network_guids) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  FOR_EACH_OBSERVER(NetworkingPrivateDelegateObserver,
+                    network_events_observers_,
+                    OnNetworkListChangedEvent(network_guids));
+}
+
+void NetworkingPrivateLinux::PostOnNetworksChangedToUIThread(
+    scoped_ptr<GuidList> guid_list) {
+  AssertOnDBusThread();
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&NetworkingPrivateLinux::OnNetworksChangedEventTask,
+                 base::Unretained(this), base::Passed(&guid_list)));
+}
+
+void NetworkingPrivateLinux::OnNetworksChangedEventTask(
+    scoped_ptr<GuidList> guid_list) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  OnNetworksChangedEventOnUIThread(*guid_list);
 }
 
 }  // namespace extensions

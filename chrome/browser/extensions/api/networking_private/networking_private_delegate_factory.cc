@@ -43,16 +43,6 @@ NetworkingPrivateDelegateFactory::GetInstance() {
   return Singleton<NetworkingPrivateDelegateFactory>::get();
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-// static
-NetworkingPrivateServiceClient*
-NetworkingPrivateDelegateFactory::GetServiceClientForBrowserContext(
-    content::BrowserContext* browser_context) {
-  return static_cast<NetworkingPrivateServiceClient*>(
-      GetForBrowserContext(browser_context));
-}
-#endif
-
 NetworkingPrivateDelegateFactory::NetworkingPrivateDelegateFactory()
     : BrowserContextKeyedServiceFactory(
           "NetworkingPrivateDelegate",

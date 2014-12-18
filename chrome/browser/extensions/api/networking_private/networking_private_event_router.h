@@ -8,9 +8,13 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/event_router.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace extensions {
+
+class NetworkingPrivateDelegate;
 
 // This is an event router that will observe listeners to |NetworksChanged| and
 // |NetworkListChanged| events. On ChromeOS it will forward these events
@@ -18,7 +22,8 @@ namespace extensions {
 class NetworkingPrivateEventRouter : public KeyedService,
                                      public EventRouter::Observer {
  public:
-  static NetworkingPrivateEventRouter* Create(Profile* profile);
+  static NetworkingPrivateEventRouter* Create(
+      content::BrowserContext* browser_context);
 
  protected:
   NetworkingPrivateEventRouter() {}
@@ -30,4 +35,3 @@ class NetworkingPrivateEventRouter : public KeyedService,
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_EVENT_ROUTER_H_
-

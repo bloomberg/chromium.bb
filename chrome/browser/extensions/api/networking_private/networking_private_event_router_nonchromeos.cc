@@ -6,9 +6,9 @@
 
 #include "chrome/browser/extensions/api/networking_private/networking_private_api.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_delegate_factory.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_service_client.h"
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/extensions/api/networking_private/networking_private_delegate_observer.h"
 #include "chrome/common/extensions/api/networking_private.h"
+#include "content/public/browser/browser_context.h"
 
 namespace extensions {
 
@@ -16,9 +16,10 @@ namespace extensions {
 // |NetworkListChanged| events.
 class NetworkingPrivateEventRouterImpl
     : public NetworkingPrivateEventRouter,
-      NetworkingPrivateServiceClient::Observer {
+      public NetworkingPrivateDelegateObserver {
  public:
-  explicit NetworkingPrivateEventRouterImpl(Profile* profile);
+  explicit NetworkingPrivateEventRouterImpl(
+      content::BrowserContext* browser_context);
   ~NetworkingPrivateEventRouterImpl() override;
 
  protected:
@@ -29,7 +30,7 @@ class NetworkingPrivateEventRouterImpl
   void OnListenerAdded(const EventListenerInfo& details) override;
   void OnListenerRemoved(const EventListenerInfo& details) override;
 
-  // NetworkingPrivateServiceClient::Observer overrides:
+  // NetworkingPrivateDelegateObserver overrides:
   void OnNetworksChangedEvent(
       const std::vector<std::string>& network_guids) override;
   void OnNetworkListChangedEvent(
@@ -42,22 +43,20 @@ class NetworkingPrivateEventRouterImpl
   // Otherwise, we want to unregister and not be listening to network changes.
   void StartOrStopListeningForNetworkChanges();
 
-  NetworkingPrivateServiceClient* GetProcessClient();
-
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
   bool listening_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateEventRouterImpl);
 };
 
 NetworkingPrivateEventRouterImpl::NetworkingPrivateEventRouterImpl(
-    Profile* profile)
-    : profile_(profile), listening_(false) {
+    content::BrowserContext* browser_context)
+    : browser_context_(browser_context), listening_(false) {
   // Register with the event router so we know when renderers are listening to
   // our events. We first check and see if there *is* an event router, because
   // some unit tests try to create all profile services, but don't initialize
   // the event router first.
-  EventRouter* event_router = EventRouter::Get(profile_);
+  EventRouter* event_router = EventRouter::Get(browser_context_);
   if (!event_router)
     return;
   event_router->RegisterObserver(
@@ -75,14 +74,17 @@ void NetworkingPrivateEventRouterImpl::Shutdown() {
   // Unregister with the event router. We first check and see if there *is* an
   // event router, because some unit tests try to shutdown all profile services,
   // but didn't initialize the event router first.
-  EventRouter* event_router = EventRouter::Get(profile_);
+  EventRouter* event_router = EventRouter::Get(browser_context_);
   if (event_router)
     event_router->UnregisterObserver(this);
 
   if (!listening_)
     return;
   listening_ = false;
-  GetProcessClient()->RemoveObserver(this);
+  NetworkingPrivateDelegate* delegate =
+      NetworkingPrivateDelegateFactory::GetForBrowserContext(browser_context_);
+  if (delegate)
+    delegate->RemoveObserver(this);
 }
 
 void NetworkingPrivateEventRouterImpl::OnListenerAdded(
@@ -99,27 +101,37 @@ void NetworkingPrivateEventRouterImpl::OnListenerRemoved(
 }
 
 void NetworkingPrivateEventRouterImpl::StartOrStopListeningForNetworkChanges() {
-  EventRouter* event_router = EventRouter::Get(profile_);
+  EventRouter* event_router = EventRouter::Get(browser_context_);
   if (!event_router)
     return;
+
   bool should_listen =
       event_router->HasEventListener(
           api::networking_private::OnNetworksChanged::kEventName) ||
       event_router->HasEventListener(
           api::networking_private::OnNetworkListChanged::kEventName);
 
-  if (should_listen && !listening_)
-    GetProcessClient()->AddObserver(this);
-
-  if (!should_listen && listening_)
-    GetProcessClient()->RemoveObserver(this);
+  if (should_listen && !listening_) {
+    NetworkingPrivateDelegate* delegate =
+        NetworkingPrivateDelegateFactory::GetForBrowserContext(
+            browser_context_);
+    if (delegate)
+      delegate->AddObserver(this);
+  }
+  if (!should_listen && listening_) {
+    NetworkingPrivateDelegate* delegate =
+        NetworkingPrivateDelegateFactory::GetForBrowserContext(
+            browser_context_);
+    if (delegate)
+      delegate->RemoveObserver(this);
+  }
 
   listening_ = should_listen;
 }
 
 void NetworkingPrivateEventRouterImpl::OnNetworksChangedEvent(
     const std::vector<std::string>& network_guids) {
-  EventRouter* event_router = EventRouter::Get(profile_);
+  EventRouter* event_router = EventRouter::Get(browser_context_);
   if (!event_router)
     return;
   scoped_ptr<base::ListValue> args(
@@ -131,7 +143,7 @@ void NetworkingPrivateEventRouterImpl::OnNetworksChangedEvent(
 
 void NetworkingPrivateEventRouterImpl::OnNetworkListChangedEvent(
     const std::vector<std::string>& network_guids) {
-  EventRouter* event_router = EventRouter::Get(profile_);
+  EventRouter* event_router = EventRouter::Get(browser_context_);
   if (!event_router)
     return;
   scoped_ptr<base::ListValue> args(
@@ -142,15 +154,9 @@ void NetworkingPrivateEventRouterImpl::OnNetworkListChangedEvent(
   event_router->BroadcastEvent(netlistchanged_event.Pass());
 }
 
-NetworkingPrivateServiceClient*
-NetworkingPrivateEventRouterImpl::GetProcessClient() {
-  return NetworkingPrivateDelegateFactory::GetServiceClientForBrowserContext(
-      profile_);
-}
-
 NetworkingPrivateEventRouter* NetworkingPrivateEventRouter::Create(
-    Profile* profile) {
-  return new NetworkingPrivateEventRouterImpl(profile);
+    content::BrowserContext* browser_context) {
+  return new NetworkingPrivateEventRouterImpl(browser_context);
 }
 
 }  // namespace extensions

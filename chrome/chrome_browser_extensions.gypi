@@ -357,6 +357,7 @@
       'browser/extensions/api/networking_private/networking_private_chromeos.h',
       'browser/extensions/api/networking_private/networking_private_delegate.cc',
       'browser/extensions/api/networking_private/networking_private_delegate.h',
+      'browser/extensions/api/networking_private/networking_private_delegate_observer.h',
       'browser/extensions/api/networking_private/networking_private_event_router.h',
       'browser/extensions/api/networking_private/networking_private_event_router_chromeos.cc',
       'browser/extensions/api/networking_private/networking_private_event_router_factory.cc',
@@ -859,6 +860,7 @@
       'browser/extensions/api/networking_private/networking_private_service_client.h',
     ],
     'chrome_browser_extensions_networking_private_sources_linux': [
+      'browser/extensions/api/networking_private/networking_private_event_router_nonchromeos.cc',
       'browser/extensions/api/networking_private/networking_private_linux.cc',
       'browser/extensions/api/networking_private/networking_private_linux.h',
       'browser/extensions/api/networking_private/network_config_dbus_constants_linux.cc',

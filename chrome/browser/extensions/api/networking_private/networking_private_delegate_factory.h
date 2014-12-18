@@ -47,13 +47,6 @@ class NetworkingPrivateDelegateFactory
       content::BrowserContext* browser_context);
   static NetworkingPrivateDelegateFactory* GetInstance();
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  // This is provided to avoid a potentially unsafe (or at least not obviously
-  // safe) cast in tne win/mac NetworkingPrivateEventRouter implementaiton.
-  static NetworkingPrivateServiceClient* GetServiceClientForBrowserContext(
-      content::BrowserContext* browser_context);
-#endif
-
  private:
   friend struct DefaultSingletonTraits<NetworkingPrivateDelegateFactory>;
 

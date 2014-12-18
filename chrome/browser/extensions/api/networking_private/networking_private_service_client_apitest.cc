@@ -9,6 +9,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_credentials_getter.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_delegate_factory.h"
+#include "chrome/browser/extensions/api/networking_private/networking_private_event_router.h"
+#include "chrome/browser/extensions/api/networking_private/networking_private_event_router_factory.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_service_client.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "components/user_manager/user.h"
@@ -23,6 +25,8 @@ using testing::_;
 
 using extensions::NetworkingPrivateDelegate;
 using extensions::NetworkingPrivateDelegateFactory;
+using extensions::NetworkingPrivateEventRouter;
+using extensions::NetworkingPrivateEventRouterFactory;
 using extensions::NetworkingPrivateServiceClient;
 
 // This tests the Windows / Mac implementation of the networkingPrivate API.
@@ -70,10 +74,6 @@ class NetworkingPrivateServiceClientApiTest : public ExtensionApiTest {
                                kFlagEnableFileAccess | kFlagLoadAsComponent);
   }
 
-  void SetUpInProcessBrowserTestFixture() override {
-    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
-  }
-
   void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     // Whitelist the extension ID of the test extension.
@@ -95,6 +95,11 @@ class NetworkingPrivateServiceClientApiTest : public ExtensionApiTest {
     content::RunAllPendingInMessageLoop();
     NetworkingPrivateDelegateFactory::GetInstance()->SetTestingFactory(
         profile(), &CreateNetworkingPrivateServiceClient);
+  }
+
+  void TearDownOnMainThread() override {
+    content::RunAllPendingInMessageLoop();
+    ExtensionApiTest::SetUpOnMainThread();
   }
 
  protected:

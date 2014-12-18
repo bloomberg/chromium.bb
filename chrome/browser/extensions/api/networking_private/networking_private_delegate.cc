@@ -23,6 +23,16 @@ NetworkingPrivateDelegate::NetworkingPrivateDelegate(
 NetworkingPrivateDelegate::~NetworkingPrivateDelegate() {
 }
 
+void NetworkingPrivateDelegate::AddObserver(
+    NetworkingPrivateDelegateObserver* observer) {
+  NOTREACHED() << "Class does not use NetworkingPrivateDelegateObserver";
+}
+
+void NetworkingPrivateDelegate::RemoveObserver(
+    NetworkingPrivateDelegateObserver* observer) {
+  NOTREACHED() << "Class does not use NetworkingPrivateDelegateObserver";
+}
+
 void NetworkingPrivateDelegate::VerifyDestination(
     const VerificationProperties& verification_properties,
     const BoolCallback& success_callback,

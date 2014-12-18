@@ -10,6 +10,7 @@
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_api.h"
+#include "chrome/browser/extensions/api/networking_private/networking_private_delegate_observer.h"
 #include "chrome/common/extensions/api/networking_private.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -84,11 +85,13 @@ void NetworkingPrivateServiceClient::Shutdown() {
                                     base::Passed(&wifi_service_)));
 }
 
-void NetworkingPrivateServiceClient::AddObserver(Observer* observer) {
+void NetworkingPrivateServiceClient::AddObserver(
+    NetworkingPrivateDelegateObserver* observer) {
   network_events_observers_.AddObserver(observer);
 }
 
-void NetworkingPrivateServiceClient::RemoveObserver(Observer* observer) {
+void NetworkingPrivateServiceClient::RemoveObserver(
+    NetworkingPrivateDelegateObserver* observer) {
   network_events_observers_.RemoveObserver(observer);
 }
 
@@ -416,14 +419,16 @@ void NetworkingPrivateServiceClient::AfterStartDisconnect(
 void NetworkingPrivateServiceClient::OnNetworksChangedEventOnUIThread(
     const std::vector<std::string>& network_guids) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  FOR_EACH_OBSERVER(Observer, network_events_observers_,
+  FOR_EACH_OBSERVER(NetworkingPrivateDelegateObserver,
+                    network_events_observers_,
                     OnNetworksChangedEvent(network_guids));
 }
 
 void NetworkingPrivateServiceClient::OnNetworkListChangedEventOnUIThread(
     const std::vector<std::string>& network_guids) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  FOR_EACH_OBSERVER(Observer, network_events_observers_,
+  FOR_EACH_OBSERVER(NetworkingPrivateDelegateObserver,
+                    network_events_observers_,
                     OnNetworkListChangedEvent(network_guids));
 }
 
