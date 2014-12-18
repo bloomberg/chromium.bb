@@ -182,9 +182,18 @@ class TestScheduler : public Scheduler {
     return begin_retro_frame_args_.empty();
   }
 
+  bool CanStart() const { return state_machine_.CanStartForTesting(); }
+
   BeginFrameSource& frame_source() { return *frame_source_; }
 
   ~TestScheduler() override;
+
+  void NotifyReadyToCommitThenActivateIfNeeded() {
+    NotifyReadyToCommit();
+    if (settings_.impl_side_painting) {
+      NotifyReadyToActivate();
+    }
+  }
 
  protected:
   // Overridden from Scheduler.

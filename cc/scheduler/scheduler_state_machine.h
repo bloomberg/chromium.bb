@@ -211,6 +211,8 @@ class CC_EXPORT SchedulerStateMachine {
 
   // Set that we can create the first OutputSurface and start the scheduler.
   void SetCanStart() { can_start_ = true; }
+  // Allow access of the can_start_ state in tests.
+  bool CanStartForTesting() const { return can_start_; }
 
   void SetSkipNextBeginMainFrameToReduceLatency();
 
