@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 import os
 
+from telemetry.image_processing import image_util
 from telemetry.page import page_test
 from telemetry.page import page_test
 from telemetry.value import scalar
@@ -31,7 +32,7 @@ class Screenshot(page_test.PageTest):
     else:
       previous_mtime = -1
 
-    screenshot.WritePngFile(outpath)
+    image_util.WritePngFile(screenshot, outpath)
 
     saved_picture_count = 0
     if os.path.exists(outpath) and os.path.getmtime(outpath) > previous_mtime:

@@ -9,7 +9,8 @@ import json
 import os
 import unittest
 
-from telemetry.core import bitmap
+from telemetry.image_processing import histogram
+from telemetry.image_processing import rgba_color
 from telemetry.timeline import inspector_timeline_data
 from telemetry.timeline import model
 from metrics import speedindex
@@ -24,8 +25,12 @@ _SAMPLE_EVENTS = model.TimelineModel(
     timeline_data=_SAMPLE_TIMELINE_DATA).GetAllEvents()
 
 
-class FakeTimelineModel(object):
+class FakeImageUtil(object):
+  # pylint: disable=W0613
+  def GetColorHistogram(self, image, ignore_color=None, tolerance=None):
+    return image.ColorHistogram()
 
+class FakeTimelineModel(object):
   def __init__(self):
     self._events = []
 
@@ -38,7 +43,6 @@ class FakeTimelineModel(object):
 
 
 class FakeVideo(object):
-
   def __init__(self, frames):
     self._frames = frames
 
@@ -47,9 +51,8 @@ class FakeVideo(object):
       yield frame
 
 class FakeBitmap(object):
-
   def __init__(self, r, g, b):
-    self._histogram = bitmap.ColorHistogram(r, g, b, bitmap.WHITE)
+    self._histogram = histogram.ColorHistogram(r, g, b, rgba_color.WHITE)
 
   # pylint: disable=W0613
   def ColorHistogram(self, ignore_color=None, tolerance=None):
@@ -57,7 +60,6 @@ class FakeBitmap(object):
 
 
 class FakeTab(object):
-
   def __init__(self, video_capture_result=None):
     self._timeline_model = FakeTimelineModel()
     self._javascript_result = None
@@ -123,7 +125,7 @@ class SpeedIndexImplTest(unittest.TestCase):
     max_distance = 42.
 
     tab = FakeTab(frames)
-    impl = speedindex.VideoSpeedIndexImpl()
+    impl = speedindex.VideoSpeedIndexImpl(FakeImageUtil())
     impl.Start(tab)
     impl.Stop(tab)
     time_completeness = impl.GetTimeCompletenessList(tab)
@@ -147,7 +149,7 @@ class SpeedIndexImplTest(unittest.TestCase):
         (0.3, FakeBitmap([0, 0, 0, 1], [0, 0, 0, 1], [0, 0, 0, 1])),
     ]
     tab = FakeTab(frames)
-    impl = speedindex.VideoSpeedIndexImpl()
+    impl = speedindex.VideoSpeedIndexImpl(FakeImageUtil())
     impl.Start(tab)
     impl.Stop(tab)
     time_completeness = impl.GetTimeCompletenessList(tab)
