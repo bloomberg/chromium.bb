@@ -78,7 +78,7 @@ class PlatformEventObserver : public PlatformEventObserverBase,
   // Start observing. Will request the browser process to start listening to the
   // events. |listener| will receive any response from the browser process.
   // Note: should not be called if already observing.
-  virtual void Start(blink::WebPlatformEventListener* listener) {
+  void Start(blink::WebPlatformEventListener* listener) override {
     DCHECK(!is_observing());
     listener_ = static_cast<ListenerType*>(listener);
     is_observing_ = true;
@@ -88,7 +88,7 @@ class PlatformEventObserver : public PlatformEventObserverBase,
 
   // Stop observing. Will let the browser know that it doesn't need to observe
   // anymore.
-  virtual void Stop() {
+  void Stop() override {
     DCHECK(is_observing());
     listener_ = 0;
     is_observing_ = false;

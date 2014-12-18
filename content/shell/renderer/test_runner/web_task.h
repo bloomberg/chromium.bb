@@ -55,12 +55,12 @@ class WebMethodTask : public WebTask {
 
   virtual ~WebMethodTask() {}
 
-  virtual void run() {
+  void run() override {
     if (object_)
       RunIfValid();
   }
 
-  virtual void cancel() {
+  void cancel() override {
     object_ = 0;
     task_list_->UnregisterTask(this);
     task_list_ = 0;

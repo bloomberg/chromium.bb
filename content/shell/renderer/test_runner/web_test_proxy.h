@@ -295,8 +295,6 @@ class WebTestProxy : public Base, public WebTestProxyBase {
  public:
   explicit WebTestProxy(T t) : Base(t) {}
 
-  virtual ~WebTestProxy() {}
-
   // WebWidgetClient implementation.
   virtual blink::WebScreenInfo screenInfo() {
     blink::WebScreenInfo info = Base::screenInfo();
@@ -393,6 +391,8 @@ class WebTestProxy : public Base, public WebTestProxyBase {
   }
 
  private:
+  virtual ~WebTestProxy() {}
+
   DISALLOW_COPY_AND_ASSIGN(WebTestProxy);
 };
 

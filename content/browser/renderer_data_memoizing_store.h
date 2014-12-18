@@ -153,7 +153,7 @@ class RendererDataMemoizingStore : public RenderProcessHostObserver {
     id_to_item_.erase(item_iter);
   }
 
-  void RenderProcessHostDestroyed(RenderProcessHost* host) {
+  void RenderProcessHostDestroyed(RenderProcessHost* host) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     RemoveRenderProcessItems(host->GetID());
   }

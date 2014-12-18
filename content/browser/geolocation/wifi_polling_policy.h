@@ -32,7 +32,7 @@ class GenericWifiPollingPolicy : public WifiPollingPolicy {
  public:
   GenericWifiPollingPolicy() : polling_interval_(DEFAULT_INTERVAL) {}
   // WifiPollingPolicy
-  virtual void UpdatePollingInterval(bool scan_results_differ) {
+  void UpdatePollingInterval(bool scan_results_differ) override {
     if (scan_results_differ) {
       polling_interval_ = DEFAULT_INTERVAL;
     } else if (polling_interval_ == DEFAULT_INTERVAL) {
@@ -43,8 +43,8 @@ class GenericWifiPollingPolicy : public WifiPollingPolicy {
       polling_interval_ = TWO_NO_CHANGE_INTERVAL;
     }
   }
-  virtual int PollingInterval() { return polling_interval_; }
-  virtual int NoWifiInterval() { return NO_WIFI_INTERVAL; }
+  int PollingInterval() override { return polling_interval_; }
+  int NoWifiInterval() override { return NO_WIFI_INTERVAL; }
 
  private:
   int polling_interval_;
