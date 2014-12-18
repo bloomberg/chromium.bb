@@ -79,10 +79,6 @@ body.alternate-logo #logo {
   border-top-color: rgb(144, 144, 144);
 }
 
-.des-cla #fakebox {
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
 body.fakebox-focused #fakebox {
   border: 1px solid rgb(77, 144, 254);
 }
@@ -126,10 +122,6 @@ html[dir=rtl] #fakebox > input {
 html[dir=rtl] #fakebox-text {
   left: auto;
   right: 9px;
-}
-
-.des-cla #fakebox-text {
-  visibility: hidden;
 }
 
 #cursor {
@@ -176,10 +168,6 @@ body.fakebox-focused #cursor {
 }
 
 /* For Google page, add space from Fakebox. */
-.des-cla #most-visited {
-  margin-top: 51px;
-}
-
 .des-mat #most-visited {
   margin-top: 64px;
 }
@@ -199,11 +187,6 @@ html[dir=rtl] #mv-tiles {
   text-align: right;
 }
 
-.des-cla #mv-tiles {
-  height: calc(2 * 138px);
-  line-height: 138px;
-}
-
 .des-mat #mv-tiles {
   height: calc(2 * 146px);
   line-height: 146px;
@@ -218,21 +201,6 @@ html[dir=rtl] #mv-tiles {
 .mv-page-ready {
   cursor: pointer;
   outline: none;
-}
-
-.des-cla .mv-tile {
-  background: linear-gradient(#f2f2f2, #e8e8e8);
-  border-radius: 3px;
-  box-shadow: inset 0 2px 3px rgba(0, 0, 0, .09);
-  height: 85px;
-  margin-left: 10px;
-  margin-right: 10px;  /* Total horizontal margins add to TILE_MARGIN. */
-  width: 140px;
-}
-
-.des-cla .mv-page-ready {
-  -webkit-transition-duration: 200ms;
-  -webkit-transition-property: -webkit-transform, margin, opacity, width;
 }
 
 .des-mat .mv-tile {
@@ -266,10 +234,6 @@ html[dir=rtl] #mv-tiles {
   opacity: 0;
 }
 
-.des-cla .mv-tile.mv-blacklist {
-  -webkit-transform: scale(0.5);
-}
-
 .des-mat .mv-tile.mv-blacklist {
   -webkit-transform: scale(0, 0);
   -webkit-transform-origin: 0 41px;
@@ -289,10 +253,6 @@ html[dir=rtl] #mv-tiles {
   position: absolute;
 }
 
-.des-cla .mv-mask {
-  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.09);
-}
-
 .des-mat .mv-mask {
   border-color: transparent;
   border-radius: 2px;
@@ -301,19 +261,6 @@ html[dir=rtl] #mv-tiles {
 }
 
 /* Styling border. */
-.des-cla .mv-page-ready .mv-mask {
-  border-style: solid;
-}
-
-.default-theme.des-cla .mv-page-ready .mv-mask {
-  border-color: #c0c0c0;
-}
-
-.default-theme.des-cla .mv-page-ready:hover .mv-mask,
-.default-theme.des-cla .mv-page-ready .mv-focused ~ .mv-mask {
-  border-color: #7f7f7f;
-}
-
 .default-theme.des-mat.old-hover .mv-page-ready:hover .mv-mask,
 .default-theme.des-mat.old-hover .mv-page-ready .mv-focused ~ .mv-mask {
   border-color: #999;
@@ -342,13 +289,6 @@ html[dir=rtl] #mv-tiles {
 }
 
 /* Styling background. */
-.des-cla .mv-page .mv-focused ~ .mv-mask {
-  -webkit-transition: background-color 100ms ease-in-out;
-  background: linear-gradient(rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0) 80%, rgba(255, 255, 255, 0.9));
-  background-color: rgba(0, 0, 0, 0.35);
-}
-
 .des-mat .mv-page .mv-focused ~ .mv-mask {
   -webkit-transition: box-shadow 200ms, border 200ms,
       background-color 100ms ease-in-out;
@@ -359,13 +299,6 @@ html[dir=rtl] #mv-tiles {
 .mv-title {
   border: none;
   position: absolute;
-}
-
-.des-cla .mv-title {
-  bottom: -27px;
-  height: 18px;
-  left: 0;
-  width: 140px;
 }
 
 .des-mat .mv-title {
@@ -391,24 +324,6 @@ html[dir=rtl] .des-mat .mv-title {
   border: none;
   cursor: pointer;
   position: absolute;
-}
-
-.des-cla .mv-thumb,
-.des-cla .mv-mask {
-  height: 83px;
-  width: 138px;
-}
-
-.des-cla .mv-thumb {
-  border-radius: 2px;
-  left: 1px;
-  top: 1px;
-}
-
-.des-cla .mv-mask {
-  border-radius: 3px;
-  left: 0;
-  top: 0;
 }
 
 .des-mat .mv-thumb,
@@ -467,32 +382,6 @@ html[dir=rtl] .des-mat .mv-thumb-fallback {
   -webkit-transition: opacity 150ms;
   opacity: 0;
   position: absolute;
-}
-
-.des-cla .mv-x {
-  background-image: url(images/close_2.png);
-  height: 16px;
-  width: 16px;
-}
-
-.des-cla .mv-x:hover,
-.des-cla #mv-notice-x:focus {
-  background-image: url(images/close_2_hover.png);
-}
-
-.des-cla .mv-x:active,
-.des-cla #mv-notice-x:active {
-  background-image: url(images/close_2_active.png);
-}
-
-.des-cla .mv-page .mv-x {
-  right: 2px;
-  top: 2px;
-}
-
-html[dir=rtl] .des-cla .mv-page .mv-x {
-  left: 2px;
-  right: auto;
 }
 
 #mv-notice-x {
@@ -589,11 +478,6 @@ html[dir=rtl] .des-mat.dark .mv-page .mv-x {
   pointer-events: none;
   position: absolute;
   width: 16px;
-}
-
-.des-cla .mv-favicon {
-  bottom: -7px;
-  left: 62px;
 }
 
 .des-mat .mv-favicon {

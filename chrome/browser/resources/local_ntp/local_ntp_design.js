@@ -4,7 +4,7 @@
 
 
 /**
- * @fileoverview Specifications for NTP design, and an accessor to presets.
+ * @fileoverview Specifications for NTP design.
  */
 
  var THUMBNAIL_FALLBACK = {
@@ -30,7 +30,7 @@
  *   thumbnail fallback strategy. If unassigned, then the thumbnail.html
  *   iframe would handle the fallback.
  *
- * @typedef {{
+ * @const {{
  *   fontFamily: string,
  *   fontSize: number,
  *   tileWidth: number,
@@ -38,48 +38,22 @@
  *   titleColor: string,
  *   titleColorAgainstDark: string,
  *   titleTextAlign: string|null|undefined,
+ *   TODO(huangs): Clean-up certain parameters once previous design is no longer
+ *       used on server.
  *   titleTextFade: number|null|undefined,
  *   thumbnailTextColor: string,
  *   thumbnailFallback: string|null|undefined
  * }}
  */
-var NtpDesign;
-
-/**
- * Returns an NTP design corresponding to the given name.
- * @param {string|undefined} opt_name The name of the design. If undefined, then
- *   the default design is specified.
- * @return {NtpDesign} The NTP design corresponding to name.
- */
-function getNtpDesign(opt_name) {
-  var ntpDesign = null;
-
-  if (opt_name === 'des-mat') {
-    ntpDesign = {
-      fontFamily: 'arial, sans-serif',
-      fontSize: 12,
-      tileWidth: 156,
-      tileMargin: 16,
-      titleColor: '323232ff',
-      titleColorAgainstDark: 'd2d2d2ff',
-      titleTextAlign: 'inherit',
-      titleTextFade: 122 - 36,  // 112px wide title with 32 pixel fade at end.
-      thumbnailTextColor: '323232ff',  // Unused.
-      thumbnailFallback: THUMBNAIL_FALLBACK.DOT
-    };
-  } else {
-    ntpDesign = {
-      fontFamily: 'arial, sans-serif',
-      fontSize: 11,
-      tileWidth: 140,
-      tileMargin: 20,
-      titleColor: '777777ff',
-      titleColorAgainstDark: '777777ff',
-      titleTextAlign: 'center',
-      titleTextFade: null,  // Default to ellipsis.
-      thumbnailTextColor: '777777ff',
-      thumbnailFallback: null  // Default to false.
-    };
-  }
-  return ntpDesign;
-}
+var NTP_DESIGN = {
+  fontFamily: 'arial, sans-serif',
+  fontSize: 12,
+  tileWidth: 156,
+  tileMargin: 16,
+  titleColor: '323232ff',
+  titleColorAgainstDark: 'd2d2d2ff',
+  titleTextAlign: 'inherit',
+  titleTextFade: 122 - 36,  // 112px wide title with 32 pixel fade at end.
+  thumbnailTextColor: '323232ff',  // Unused.
+  thumbnailFallback: THUMBNAIL_FALLBACK.DOT
+};
