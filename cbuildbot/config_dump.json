@@ -324,6 +324,7 @@
         "name": "amd64-generic-paladin",
         "paladin_builder_name": "amd64-generic paladin",
         "prebuilts": "public",
+        "separate_debug_symbols": true,
         "trybot_list": true,
         "upload_standalone_images": false,
         "vm_tests": [

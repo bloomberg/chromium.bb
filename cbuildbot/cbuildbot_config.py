@@ -2066,6 +2066,7 @@ _paladin_full_boards = frozenset([
 ])
 
 _paladin_separate_symbols = frozenset([
+  'amd64-generic',
   'gizmo',
 ])
 
