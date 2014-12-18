@@ -10,9 +10,7 @@ class ManyExtensionsProfileCreator(
   """Install 25 popular extensions."""
 
   def __init__(self):
-    super(ManyExtensionsProfileCreator, self).__init__()
-
-    self._extensions_to_install = [
+    extensions_to_install = [
         "nklfajnmfbchcceflgddnkignfheooic",
         "keigpnkjljkelclbjbekcfnaomfodamj",
         "fjnbnpbmkenffdnngjfgmeleoegfcffe",
@@ -38,3 +36,6 @@ class ManyExtensionsProfileCreator(
         "ohjkicjidmohhfcjjlahfppkdblibkkb",
         "bfbmjmiodbnnpllbbbfblcplfjjepjdn",
         "opnbmdkdflhjiclaoiiifmheknpccalb"]
+
+    super(ManyExtensionsProfileCreator, self).__init__(
+        extensions_to_install=extensions_to_install)

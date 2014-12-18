@@ -9,7 +9,6 @@ class ThemeProfileCreator(extensions_profile_creator.ExtensionsProfileCreator):
   """Install a theme."""
 
   def __init__(self):
-    super(ThemeProfileCreator, self).__init__()
-
     # Marc Ecko theme.
-    self._theme_to_install = "opjonmehjfmkejjifhhknofdnacklmjk"
+    theme_to_install = "opjonmehjfmkejjifhhknofdnacklmjk"
+    super(ThemeProfileCreator, self).__init__(theme_to_install=theme_to_install)

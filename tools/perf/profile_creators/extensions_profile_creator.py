@@ -83,7 +83,9 @@ class ExtensionsProfileCreator(profile_creator.ProfileCreator):
   Subclasses are meant to be run interactively.
   """
 
-  def __init__(self):
+  def __init__(self, extensions_to_install=None, theme_to_install=None):
+    self._CheckTestEnvironment()
+
     super(ExtensionsProfileCreator, self).__init__()
     self._page_set = page_sets.Typical25()
 
@@ -91,10 +93,10 @@ class ExtensionsProfileCreator(profile_creator.ProfileCreator):
     self._output_profile_path = None
 
     # List of extensions to install.
-    self._extensions_to_install = []
+    self._extensions_to_install = list(extensions_to_install or [])
 
     # Theme to install (if any).
-    self._theme_to_install = None
+    self._theme_to_install = theme_to_install
 
     # Directory to download extension files into.
     self._extension_download_dir = None
@@ -105,13 +107,29 @@ class ExtensionsProfileCreator(profile_creator.ProfileCreator):
     # List of files to delete after run.
     self._files_to_cleanup = []
 
+    self._PrepareExtensionInstallFiles()
+
+  def _CheckTestEnvironment(self):
+    # Running this script on a corporate network or other managed environment
+    # could potentially alter the profile contents.
+    hostname = socket.gethostname()
+    if hostname.endswith('corp.google.com'):
+      raise Exception("It appears you are connected to a corporate network "
+          "(hostname=%s).  This script needs to be run off the corp "
+          "network." % hostname)
+
+    prompt = ("\n!!!This script must be run on a fresh OS installation, "
+        "disconnected from any corporate network. Are you sure you want to "
+        "continue? (y/N) ")
+    if (raw_input(prompt).lower() != 'y'):
+      sys.exit(-1)
+
   def _PrepareExtensionInstallFiles(self):
     """Download extension archives and create extension install files."""
     extensions_to_install = self._extensions_to_install
     if self._theme_to_install:
-      extensions_to_install = extensions_to_install + [self._theme_to_install]
-    num_extensions = len(extensions_to_install)
-    if not num_extensions:
+      extensions_to_install.append(self._theme_to_install)
+    if not extensions_to_install:
       raise ValueError("No extensions or themes to install:",
           extensions_to_install)
 
@@ -122,8 +140,8 @@ class ExtensionsProfileCreator(profile_creator.ProfileCreator):
 
     self._extension_download_dir = tempfile.mkdtemp()
 
-    for i in xrange(num_extensions):
-      extension_id = extensions_to_install[i]
+    num_extensions = len(extensions_to_install)
+    for i, extension_id in extensions_to_install:
       logging.info("Downloading %s - %d/%d" % (
           extension_id, (i + 1), num_extensions))
       extension_path = _DownloadExtension(extension_id,
@@ -153,27 +171,6 @@ class ExtensionsProfileCreator(profile_creator.ProfileCreator):
 
   def CustomizeBrowserOptions(self, options):
     self._output_profile_path = options.output_profile_path
-
-  def WillRunTest(self, options):
-    """Run before browser starts.
-
-    Download extensions and write installation files."""
-    super(ExtensionsProfileCreator, self).WillRunTest(options)
-
-    # Running this script on a corporate network or other managed environment
-    # could potentially alter the profile contents.
-    hostname = socket.gethostname()
-    if hostname.endswith('corp.google.com'):
-      raise Exception("It appears you are connected to a corporate network "
-          "(hostname=%s).  This script needs to be run off the corp "
-          "network." % hostname)
-
-    prompt = ("\n!!!This script must be run on a fresh OS installation, "
-        "disconnected from any corporate network. Are you sure you want to "
-        "continue? (y/N) ")
-    if (raw_input(prompt).lower() != 'y'):
-      sys.exit(-1)
-    self._PrepareExtensionInstallFiles()
 
   def DidRunTest(self, browser, results):
     """Run before exit."""
