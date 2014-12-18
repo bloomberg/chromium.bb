@@ -426,12 +426,12 @@ void RenderBox::setScrollTop(LayoutUnit newTop)
 
 void RenderBox::scrollToOffset(const DoubleSize& offset, ScrollBehavior scrollBehavior)
 {
-    ASSERT(hasOverflowClip());
-
     // This doesn't hit in any tests, but since the equivalent code in setScrollTop
     // does, presumably this code does as well.
     DisableCompositingQueryAsserts disabler;
-    layer()->scrollableArea()->scrollToOffset(offset, ScrollOffsetClamped, scrollBehavior);
+
+    if (hasOverflowClip())
+        layer()->scrollableArea()->scrollToOffset(offset, ScrollOffsetClamped, scrollBehavior);
 }
 
 static inline bool frameElementAndViewPermitScroll(HTMLFrameElementBase* frameElementBase, FrameView* frameView)
