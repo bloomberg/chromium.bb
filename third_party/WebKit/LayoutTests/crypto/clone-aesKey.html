@@ -23,7 +23,7 @@ var k256BitData = "00112233445546778899aabbccddeeff000102030405060708090a0b0c0d0
 
 var kPossibleAlgorithms = ['AES-CBC', 'AES-GCM'];
 var kPossibleExtractable = [true, false];
-var kPossibleKeyUsages = [[], ['encrypt'], ['decrypt', 'wrapKey'], ['encrypt', 'wrapKey', 'unwrapKey']];
+var kPossibleKeyUsages = [['encrypt'], ['decrypt', 'wrapKey'], ['encrypt', 'wrapKey', 'unwrapKey']];
 var kPossibleKeyData = [k128BitData, k256BitData];
 
 function runTest(algorithmName, extractable, keyUsages, keyData)
