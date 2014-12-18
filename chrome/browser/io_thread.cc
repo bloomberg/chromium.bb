@@ -324,6 +324,17 @@ bool IsStaleWhileRevalidateEnabled(const base::CommandLine& command_line) {
   return group_name == "Enabled";
 }
 
+bool IsCertificateTransparencyRequiredForEV(
+    const base::CommandLine& command_line) {
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("CTRequiredForEVTrial");
+
+  if (command_line.HasSwitch(switches::kRequireCTForEV))
+    return true;
+
+  return group_name == "RequirementEnforced";
+}
+
 }  // namespace
 
 class IOThread::LoggingNetworkChangeObserver
@@ -656,12 +667,8 @@ void IOThread::InitAsync() {
   }
 
   net::CertPolicyEnforcer* policy_enforcer = NULL;
-  // TODO(eranm): Control with Finch, crbug.com/437766
-  if (command_line.HasSwitch(switches::kRequireCTForEV)) {
-    policy_enforcer = new net::CertPolicyEnforcer(true);
-  } else {
-    policy_enforcer = new net::CertPolicyEnforcer(false);
-  }
+  policy_enforcer = new net::CertPolicyEnforcer(
+      IsCertificateTransparencyRequiredForEV(command_line));
   globals_->cert_policy_enforcer.reset(policy_enforcer);
 
   globals_->ssl_config_service = GetSSLConfigService();

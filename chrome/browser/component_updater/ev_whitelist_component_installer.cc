@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
+#include "base/version.h"
 #include "chrome/browser/net/packed_ct_ev_whitelist.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "content/public/browser/browser_thread.h"
@@ -30,7 +31,8 @@ base::FilePath GetEVWhitelistFilePath(const base::FilePath& base_path) {
 }
 
 void UpdateNewWhitelistData(const base::FilePath& new_whitelist_file,
-                            const base::FilePath& stored_whitelist_path) {
+                            const base::FilePath& stored_whitelist_path,
+                            const base::Version& version) {
   VLOG(1) << "Reading new EV whitelist from file: "
           << new_whitelist_file.value();
   std::string compressed_list;
@@ -40,7 +42,7 @@ void UpdateNewWhitelistData(const base::FilePath& new_whitelist_file,
   }
 
   scoped_refptr<net::ct::EVCertsWhitelist> new_whitelist(
-      new PackedEVCertsWhitelist(compressed_list));
+      new PackedEVCertsWhitelist(compressed_list, version));
   if (!new_whitelist->IsValid()) {
     VLOG(1) << "Failed uncompressing EV certs whitelist.";
     return;
@@ -70,8 +72,12 @@ void DoInitialLoadFromDisk(const base::FilePath& stored_whitelist_path) {
     return;
   }
 
+  // The version number is unknown as the list is loaded from disk, not
+  // the component.
+  // In practice very quickly the component updater will call ComponentReady
+  // which will have a valid version.
   scoped_refptr<net::ct::EVCertsWhitelist> new_whitelist(
-      new PackedEVCertsWhitelist(compressed_list));
+      new PackedEVCertsWhitelist(compressed_list, Version()));
   if (!new_whitelist->IsValid()) {
     VLOG(1) << "Failed uncompressing EV certs whitelist.";
     return;
@@ -128,8 +134,8 @@ void EVWhitelistComponentInstallerTraits::ComponentReady(
 
   const base::FilePath whitelist_file = GetInstalledPath(path);
   content::BrowserThread::PostBlockingPoolTask(
-      FROM_HERE,
-      base::Bind(&UpdateNewWhitelistData, whitelist_file, ev_whitelist_path_));
+      FROM_HERE, base::Bind(&UpdateNewWhitelistData, whitelist_file,
+                            ev_whitelist_path_, version));
 }
 
 bool EVWhitelistComponentInstallerTraits::VerifyInstallation(

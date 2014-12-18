@@ -10,6 +10,12 @@
 #include "base/memory/ref_counted.h"
 #include "net/base/net_export.h"
 
+namespace base {
+
+class Version;
+
+}  // namespace base
+
 namespace net {
 
 namespace ct {
@@ -25,6 +31,9 @@ class NET_EXPORT EVCertsWhitelist
   // Returns true if the global EV certificate hashes whitelist is non-empty,
   // false otherwise.
   virtual bool IsValid() const = 0;
+
+  // Returns the version of the whitelist in use
+  virtual base::Version Version() const = 0;
 
  protected:
   virtual ~EVCertsWhitelist() {}

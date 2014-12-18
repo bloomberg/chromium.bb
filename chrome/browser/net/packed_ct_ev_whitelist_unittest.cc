@@ -119,7 +119,7 @@ TEST(PackedEVCertsWhitelistTest, UncompressesWhitelistCorrectly) {
 
 TEST(PackedEVCertsWhitelistTest, CanFindHashInSetList) {
   scoped_refptr<PackedEVCertsWhitelist> whitelist(
-      new PackedEVCertsWhitelist(GetAllWhitelistData()));
+      new PackedEVCertsWhitelist(GetAllWhitelistData(), base::Version()));
 
   EXPECT_TRUE(whitelist->IsValid());
   EXPECT_TRUE(whitelist->ContainsCertificateHash(GetFirstHash()));
@@ -129,21 +129,21 @@ TEST(PackedEVCertsWhitelistTest, CanFindHashInSetList) {
 
 TEST(PackedEVCertsWhitelistTest, CorrectlyIdentifiesEmptyWhitelistIsInvalid) {
   scoped_refptr<PackedEVCertsWhitelist> whitelist(
-      new PackedEVCertsWhitelist(""));
+      new PackedEVCertsWhitelist(std::string(), base::Version()));
 
   EXPECT_FALSE(whitelist->IsValid());
 }
 
 TEST(PackedEVCertsWhitelistTest, CorrectlyIdentifiesPartialWhitelistIsInvalid) {
   scoped_refptr<PackedEVCertsWhitelist> whitelist(
-      new PackedEVCertsWhitelist(GetPartialWhitelistData(14)));
+      new PackedEVCertsWhitelist(GetPartialWhitelistData(14), base::Version()));
 
   EXPECT_FALSE(whitelist->IsValid());
 }
 
 TEST(PackedEVCertsWhitelistTest, CorrectlyIdentifiesWhitelistIsValid) {
   scoped_refptr<PackedEVCertsWhitelist> whitelist(
-      new PackedEVCertsWhitelist(GetAllWhitelistData()));
+      new PackedEVCertsWhitelist(GetAllWhitelistData(), base::Version()));
 
   EXPECT_TRUE(whitelist->IsValid());
 }

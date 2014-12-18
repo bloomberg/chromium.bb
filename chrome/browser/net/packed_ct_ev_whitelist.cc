@@ -98,7 +98,9 @@ bool PackedEVCertsWhitelist::UncompressEVWhitelist(
 }
 
 PackedEVCertsWhitelist::PackedEVCertsWhitelist(
-    const std::string& compressed_whitelist) {
+    const std::string& compressed_whitelist,
+    const base::Version& version)
+    : version_(version) {
   if (!UncompressEVWhitelist(compressed_whitelist, &whitelist_)) {
     whitelist_.clear();
     return;
@@ -123,4 +125,8 @@ bool PackedEVCertsWhitelist::ContainsCertificateHash(
 
 bool PackedEVCertsWhitelist::IsValid() const {
   return whitelist_.size() > 0;
+}
+
+base::Version PackedEVCertsWhitelist::Version() const {
+  return version_;
 }

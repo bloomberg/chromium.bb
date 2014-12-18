@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "net/base/net_export.h"
+#include "net/base/net_log.h"
 
 namespace net {
 
@@ -30,21 +31,17 @@ class NET_EXPORT CertPolicyEnforcer {
   virtual ~CertPolicyEnforcer();
 
   // Returns true if the collection of SCTs for the given certificate
-  // conforms with the CT/EV policy.
+  // conforms with the CT/EV policy. Conformance details are logged to
+  // |net_log|.
   // |cert| is the certificate for which the SCTs apply.
   // |ct_result| must contain the result of verifying any SCTs associated with
   // |cert| prior to invoking this method.
   bool DoesConformToCTEVPolicy(X509Certificate* cert,
                                const ct::EVCertsWhitelist* ev_whitelist,
-                               const ct::CTVerifyResult& ct_result);
+                               const ct::CTVerifyResult& ct_result,
+                               const BoundNetLog& net_log);
 
  private:
-  bool IsCertificateInWhitelist(X509Certificate* cert,
-                                const ct::EVCertsWhitelist* ev_whitelist);
-
-  bool HasRequiredNumberOfSCTs(X509Certificate* cert,
-                               const ct::CTVerifyResult& ct_result);
-
   bool require_ct_for_ev_;
 };
 

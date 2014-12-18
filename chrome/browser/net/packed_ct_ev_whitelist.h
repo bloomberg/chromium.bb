@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/version.h"
 #include "net/cert/ct_ev_whitelist.h"
 
 namespace base {
@@ -30,7 +31,8 @@ class PackedEVCertsWhitelist : public net::ct::EVCertsWhitelist {
  public:
   // Unpacks the given |compressed_whitelist|. See the class documentation
   // for description of the |compressed_whitelist| format.
-  explicit PackedEVCertsWhitelist(const std::string& compressed_whitelist);
+  PackedEVCertsWhitelist(const std::string& compressed_whitelist,
+                         const base::Version& version);
 
   // Returns true if the |certificate_hash| appears in the EV certificate hashes
   // whitelist. Must not be called if IsValid for this instance returned false.
@@ -40,6 +42,9 @@ class PackedEVCertsWhitelist : public net::ct::EVCertsWhitelist {
   // Returns true if the EV certificate hashes whitelist provided in the c'tor
   // was valid, false otherwise.
   bool IsValid() const override;
+
+  // Returns the version of the whitelist in use, if available.
+  base::Version Version() const override;
 
  protected:
   ~PackedEVCertsWhitelist() override;
@@ -67,6 +72,7 @@ class PackedEVCertsWhitelist : public net::ct::EVCertsWhitelist {
   // shows that bsearch is about twice as fast as std::set lookups (and std::set
   // has additional memory overhead).
   std::vector<uint64_t> whitelist_;
+  base::Version version_;
 
   DISALLOW_COPY_AND_ASSIGN(PackedEVCertsWhitelist);
 };

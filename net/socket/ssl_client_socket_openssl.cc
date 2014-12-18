@@ -1286,7 +1286,7 @@ void SSLClientSocketOpenSSL::VerifyCT() {
           SSLConfigService::GetEVCertsWhitelist();
       if (!policy_enforcer_->DoesConformToCTEVPolicy(
               server_cert_verify_result_.verified_cert.get(),
-              ev_whitelist.get(), ct_verify_result_)) {
+              ev_whitelist.get(), ct_verify_result_, net_log_)) {
         // TODO(eranm): Log via the BoundNetLog, see crbug.com/437766
         VLOG(1) << "EV certificate for "
                 << server_cert_verify_result_.verified_cert->subject()
