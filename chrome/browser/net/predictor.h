@@ -30,7 +30,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/net/referrer.h"
-#include "chrome/browser/net/spdyproxy/proxy_advisor.h"
 #include "chrome/browser/net/timed_cache.h"
 #include "chrome/browser/net/url_info.h"
 #include "components/dns_prefetch/common/prefetch_common.h"
@@ -278,10 +277,6 @@ class Predictor {
     transport_security_state_ = transport_security_state;
   }
   // Used for testing.
-  void SetProxyAdvisor(ProxyAdvisor* proxy_advisor) {
-    proxy_advisor_.reset(proxy_advisor);
-  }
-  // Used for testing.
   size_t max_concurrent_dns_lookups() const {
     return max_concurrent_dns_lookups_;
   }
@@ -433,13 +428,6 @@ class Predictor {
   // Only for testing;
   size_t peak_pending_lookups() const { return peak_pending_lookups_; }
 
-  // If a proxy advisor is defined, let it know that |url| will be prefetched or
-  // preconnected to. Can be called on either UI or IO threads and will post to
-  // the IO thread if necessary, invoking AdviseProxyOnIOThread().
-  void AdviseProxy(const GURL& url,
-                   UrlInfo::ResolutionMotivation motivation,
-                   bool is_preconnect);
-
   // These two members call the appropriate global functions in
   // prediction_options.cc depending on which thread they are called on.
   virtual bool CanPrefetchAndPrerender() const;
@@ -499,12 +487,6 @@ class Predictor {
   // If it does not process all the URLs in that vector, it posts a task to
   // continue with them shortly (i.e., it yeilds and continues).
   void IncrementalTrimReferrers(bool trim_all_now);
-
-  // If a proxy advisor is defined, let it know that |url| will be prefetched or
-  // preconnected to.
-  void AdviseProxyOnIOThread(const GURL& url,
-                             UrlInfo::ResolutionMotivation motivation,
-                             bool is_preconnect);
 
   // If we can determine immediately (i.e. synchronously) that requests to this
   // URL would likely go through a proxy, then return true.  Otherwise, return
@@ -603,8 +585,6 @@ class Predictor {
 
   // A time after which we need to do more trimming of referrers.
   base::TimeTicks next_trim_time_;
-
-  scoped_ptr<ProxyAdvisor> proxy_advisor_;
 
   // An observer for testing.
   PredictorObserver* observer_;

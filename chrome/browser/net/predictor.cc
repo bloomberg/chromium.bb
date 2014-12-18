@@ -28,12 +28,10 @@
 #include "base/values.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/preconnect.h"
-#include "chrome/browser/net/spdyproxy/proxy_advisor.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/address_list.h"
@@ -212,18 +210,6 @@ void Predictor::InitNetworkPredictor(PrefService* user_prefs,
   // Data.
   user_prefs->ClearPref(prefs::kDnsPrefetchingStartupList);
   user_prefs->ClearPref(prefs::kDnsPrefetchingHostReferralList);
-
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  // TODO(marq): Once https://codereview.chromium.org/30883003/ lands, also
-  // condition this on DataReductionProxySettings::IsDataReductionProxyAllowed()
-  // Until then, we may create a proxy advisor when the proxy feature itself
-  // isn't available, and the advisor instance will never send advisory
-  // requests, which is slightly wasteful but not harmful.
-  if (data_reduction_proxy::DataReductionProxyParams::
-      IsIncludedInPreconnectHintingFieldTrial()) {
-    proxy_advisor_.reset(new ProxyAdvisor(user_prefs, getter));
-  }
-#endif
 
   BrowserThread::PostTask(
       BrowserThread::IO,
@@ -913,8 +899,6 @@ void Predictor::PreconnectUrlOnIOThread(
   // Skip the HSTS redirect.
   GURL url = GetHSTSRedirectOnIOThread(original_url);
 
-  AdviseProxy(url, motivation, true /* is_preconnect */);
-
   if (observer_) {
     observer_->OnPreconnectUrl(
         url, first_party_for_cookies, motivation, count);
@@ -946,26 +930,6 @@ void Predictor::PredictFrameSubresources(const GURL& url,
         FROM_HERE,
         base::Bind(&Predictor::PrepareFrameSubresources,
                    base::Unretained(this), url, first_party_for_cookies));
-  }
-}
-
-void Predictor::AdviseProxy(const GURL& url,
-                            UrlInfo::ResolutionMotivation motivation,
-                            bool is_preconnect) {
-  if (!proxy_advisor_)
-    return;
-
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    AdviseProxyOnIOThread(url, motivation, is_preconnect);
-  } else {
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&Predictor::AdviseProxyOnIOThread,
-                   base::Unretained(this), url, motivation, is_preconnect));
   }
 }
 
@@ -1119,9 +1083,7 @@ UrlInfo* Predictor::AppendToResolutionQueue(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "436671 Predictor::AppendToResolutionQueue2"));
 
-  AdviseProxy(url, motivation, false /* is_preconnect */);
-  if ((proxy_advisor_ && proxy_advisor_->WouldProxyURL(url)) ||
-      WouldLikelyProxyURL(url)) {
+  if (WouldLikelyProxyURL(url)) {
     info->DLogResultsStats("DNS PrefetchForProxiedRequest");
     return NULL;
   }
@@ -1258,15 +1220,6 @@ void Predictor::IncrementalTrimReferrers(bool trim_all_now) {
       referrers_.erase(it);
   }
   PostIncrementalTrimTask();
-}
-
-void Predictor::AdviseProxyOnIOThread(const GURL& url,
-                                      UrlInfo::ResolutionMotivation motivation,
-                                      bool is_preconnect) {
-  if (!proxy_advisor_)
-    return;
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  proxy_advisor_->Advise(url, motivation, is_preconnect);
 }
 
 GURL Predictor::GetHSTSRedirectOnIOThread(const GURL& url) {

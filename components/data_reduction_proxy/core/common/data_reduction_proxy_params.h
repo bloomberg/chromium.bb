@@ -68,10 +68,6 @@ class DataReductionProxyParams {
   // a promotion for the data reduction proxy.
   static bool IsIncludedInPromoFieldTrial();
 
-  // Returns true if this client is part of a field trial that uses preconnect
-  // hinting.
-  static bool IsIncludedInPreconnectHintingFieldTrial();
-
   // Returns true if this client is part of a field trial that bypasses the
   // proxy if the request resource type is on the critical path (e.g. HTML).
   static bool IsIncludedInCriticalPathBypassFieldTrial();

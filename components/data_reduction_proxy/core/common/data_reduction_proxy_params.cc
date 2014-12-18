@@ -63,12 +63,6 @@ bool DataReductionProxyParams::IsIncludedInPromoFieldTrial() {
 }
 
 // static
-bool DataReductionProxyParams::IsIncludedInPreconnectHintingFieldTrial() {
-  return FieldTrialList::FindFullName(
-          "DataCompressionProxyPreconnectHints") == kEnabled;
-}
-
-// static
 bool DataReductionProxyParams::IsIncludedInCriticalPathBypassFieldTrial() {
   return FieldTrialList::FindFullName(
           "DataCompressionProxyCriticalBypass") == kEnabled;

@@ -783,8 +783,6 @@
       'browser/chrome_browser_field_trials_mobile.h',
       'browser/metrics/variations/variations_request_scheduler_mobile.cc',
       'browser/metrics/variations/variations_request_scheduler_mobile.h',
-      'browser/net/spdyproxy/proxy_advisor.cc',
-      'browser/net/spdyproxy/proxy_advisor.h',
     ],
     # Everything but Android and iOS.
     'chrome_browser_non_mobile_sources': [
