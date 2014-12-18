@@ -119,6 +119,8 @@ class MEDIA_EXPORT DecoderStream {
     STATE_ERROR
   };
 
+  void SelectDecoder(const SetDecryptorReadyCB& set_decryptor_ready_cb);
+
   // Called when |decoder_selector| selected the |selected_decoder|.
   // |decrypting_demuxer_stream| was also populated if a DecryptingDemuxerStream
   // is created to help decrypt the encrypted stream.
@@ -155,6 +157,8 @@ class MEDIA_EXPORT DecoderStream {
   // Callback for Decoder reinitialization.
   void OnDecoderReinitialized(PipelineStatus status);
 
+  void CompleteDecoderReinitialization(bool success);
+
   void ResetDecoder();
   void OnDecoderReset();
 
@@ -174,8 +178,11 @@ class MEDIA_EXPORT DecoderStream {
 
   scoped_ptr<DecoderSelector<StreamType> > decoder_selector_;
 
-  // These two will be set by DecoderSelector::SelectDecoder().
   scoped_ptr<Decoder> decoder_;
+  // TODO(watk): When falling back from H/W decoding to S/W decoding,
+  // destructing the GpuVideoDecoder too early results in black frames being
+  // displayed. |previous_decoder_| is used to keep it alive.
+  scoped_ptr<Decoder> previous_decoder_;
   scoped_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream_;
 
   SpliceObserverCB splice_observer_cb_;

@@ -14,12 +14,15 @@
 namespace media {
 
 FakeVideoDecoder::FakeVideoDecoder(int decoding_delay,
-                                   int max_parallel_decoding_requests)
+                                   int max_parallel_decoding_requests,
+                                   const BytesDecodedCB& bytes_decoded_cb)
     : decoding_delay_(decoding_delay),
       max_parallel_decoding_requests_(max_parallel_decoding_requests),
+      bytes_decoded_cb_(bytes_decoded_cb),
       state_(STATE_UNINITIALIZED),
       hold_decode_(false),
       total_bytes_decoded_(0),
+      fail_to_initialize_(false),
       weak_factory_(this) {
   DCHECK_GE(decoding_delay, 0);
 }
@@ -66,8 +69,13 @@ void FakeVideoDecoder::Initialize(const VideoDecoderConfig& config,
     decoded_frames_.clear();
   }
 
-  state_ = STATE_NORMAL;
-  init_cb_.RunOrHold(PIPELINE_OK);
+  if (fail_to_initialize_) {
+    state_ = STATE_ERROR;
+    init_cb_.RunOrHold(DECODER_ERROR_NOT_SUPPORTED);
+  } else {
+    state_ = STATE_NORMAL;
+    init_cb_.RunOrHold(PIPELINE_OK);
+  }
 }
 
 void FakeVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
@@ -180,6 +188,10 @@ void FakeVideoDecoder::SimulateError() {
   decoded_frames_.clear();
 }
 
+void FakeVideoDecoder::SimulateFailureToInit() {
+  fail_to_initialize_ = true;
+}
+
 int FakeVideoDecoder::GetMaxDecodeRequests() const {
   return max_parallel_decoding_requests_;
 }
@@ -189,8 +201,10 @@ void FakeVideoDecoder::OnFrameDecoded(int buffer_size,
                                       Status status) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (status == kOk)
+  if (status == kOk) {
     total_bytes_decoded_ += buffer_size;
+    bytes_decoded_cb_.Run(buffer_size);
+  }
   decode_cb.Run(status);
 }
 

@@ -30,10 +30,15 @@ class FakeVideoDecoderTest
       public testing::WithParamInterface<FakeVideoDecoderTestParams> {
  public:
   FakeVideoDecoderTest()
-      : decoder_(new FakeVideoDecoder(GetParam().decoding_delay,
-                                      GetParam().max_decode_requests)),
+      : decoder_(new FakeVideoDecoder(
+            GetParam().decoding_delay,
+            GetParam().max_decode_requests,
+            base::Bind(&FakeVideoDecoderTest::OnBytesDecoded,
+                       base::Unretained(this)))),
         num_input_buffers_(0),
         num_decoded_frames_(0),
+        num_bytes_decoded_(0),
+        total_bytes_in_buffers_(0),
         last_decode_status_(VideoDecoder::kOk),
         pending_decode_requests_(0),
         is_reset_pending_(false) {}
@@ -42,16 +47,17 @@ class FakeVideoDecoderTest
     Destroy();
   }
 
-  void InitializeWithConfig(const VideoDecoderConfig& config) {
+  void InitializeWithConfigAndExpectStatus(const VideoDecoderConfig& config,
+                                           PipelineStatus status) {
     decoder_->Initialize(
-        config, false, NewExpectedStatusCB(PIPELINE_OK),
+        config, false, NewExpectedStatusCB(status),
         base::Bind(&FakeVideoDecoderTest::FrameReady, base::Unretained(this)));
     message_loop_.RunUntilIdle();
     current_config_ = config;
   }
 
   void Initialize() {
-    InitializeWithConfig(TestVideoConfig::Normal());
+    InitializeWithConfigAndExpectStatus(TestVideoConfig::Normal(), PIPELINE_OK);
   }
 
   void EnterPendingInitState() {
@@ -75,6 +81,10 @@ class FakeVideoDecoderTest
     DCHECK(!frame->end_of_stream());
     last_decoded_frame_ = frame;
     num_decoded_frames_++;
+  }
+
+  void OnBytesDecoded(int count) {
+    num_bytes_decoded_ += count;
   }
 
   enum CallbackResult {
@@ -115,6 +125,7 @@ class FakeVideoDecoderTest
           current_config_,
           base::TimeDelta::FromMilliseconds(kDurationMs * num_input_buffers_),
           base::TimeDelta::FromMilliseconds(kDurationMs));
+      total_bytes_in_buffers_ += buffer->data_size();
     } else {
       buffer = DecoderBuffer::CreateEOSBuffer();
     }
@@ -213,6 +224,8 @@ class FakeVideoDecoderTest
 
   int num_input_buffers_;
   int num_decoded_frames_;
+  int num_bytes_decoded_;
+  int total_bytes_in_buffers_;
 
   // Callback result/status.
   VideoDecoder::Status last_decode_status_;
@@ -237,10 +250,19 @@ TEST_P(FakeVideoDecoderTest, Initialize) {
   Initialize();
 }
 
+TEST_P(FakeVideoDecoderTest, SimulateFailureToInitialize) {
+  decoder_->SimulateFailureToInit();
+  InitializeWithConfigAndExpectStatus(TestVideoConfig::Normal(),
+                                      DECODER_ERROR_NOT_SUPPORTED);
+  Decode();
+  EXPECT_EQ(last_decode_status_, VideoDecoder::kDecodeError);
+}
+
 TEST_P(FakeVideoDecoderTest, Read_AllFrames) {
   Initialize();
   ReadAllFrames();
   EXPECT_EQ(kTotalBuffers, num_decoded_frames_);
+  EXPECT_EQ(total_bytes_in_buffers_, num_bytes_decoded_);
 }
 
 TEST_P(FakeVideoDecoderTest, Read_DecodingDelay) {
@@ -254,7 +276,9 @@ TEST_P(FakeVideoDecoderTest, Read_DecodingDelay) {
 }
 
 TEST_P(FakeVideoDecoderTest, Read_ZeroDelay) {
-  decoder_.reset(new FakeVideoDecoder(0, 1));
+  decoder_.reset(new FakeVideoDecoder(
+      0, 1, base::Bind(&FakeVideoDecoderTest::OnBytesDecoded,
+                       base::Unretained(this))));
   Initialize();
 
   while (num_input_buffers_ < kTotalBuffers) {
@@ -321,8 +345,18 @@ TEST_P(FakeVideoDecoderTest, ReadWithHold_DecodingDelay) {
 TEST_P(FakeVideoDecoderTest, Reinitialize) {
   Initialize();
   ReadOneFrame();
-  InitializeWithConfig(TestVideoConfig::Large());
+  InitializeWithConfigAndExpectStatus(TestVideoConfig::Large(), PIPELINE_OK);
   ReadOneFrame();
+}
+
+TEST_P(FakeVideoDecoderTest, SimulateFailureToReinitialize) {
+  Initialize();
+  ReadOneFrame();
+  decoder_->SimulateFailureToInit();
+  InitializeWithConfigAndExpectStatus(TestVideoConfig::Normal(),
+                                      DECODER_ERROR_NOT_SUPPORTED);
+  Decode();
+  EXPECT_EQ(last_decode_status_, VideoDecoder::kDecodeError);
 }
 
 // Reinitializing the decoder during the middle of the decoding process can

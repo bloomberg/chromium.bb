@@ -79,7 +79,6 @@ void DecoderSelector<StreamType>::SelectDecoder(
   DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(stream);
-  DCHECK(set_decryptor_ready_cb_.is_null());
   DCHECK(select_decoder_cb_.is_null());
 
   set_decryptor_ready_cb_ = set_decryptor_ready_cb;
@@ -101,7 +100,7 @@ void DecoderSelector<StreamType>::SelectDecoder(
     return;
   }
 
-  // This could happen if Encrypted Media Extension (EME) is not enabled.
+  // This could be null if Encrypted Media Extension (EME) is not enabled.
   if (set_decryptor_ready_cb_.is_null()) {
     ReturnNullDecoder();
     return;

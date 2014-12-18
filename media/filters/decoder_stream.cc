@@ -86,7 +86,7 @@ void DecoderStream<StreamType>::Initialize(
     const StatisticsCB& statistics_cb) {
   FUNCTION_DVLOG(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(state_, STATE_UNINITIALIZED) << state_;
+  DCHECK_EQ(state_, STATE_UNINITIALIZED);
   DCHECK(init_cb_.is_null());
   DCHECK(!init_cb.is_null());
 
@@ -95,12 +95,7 @@ void DecoderStream<StreamType>::Initialize(
   stream_ = stream;
 
   state_ = STATE_INITIALIZING;
-  decoder_selector_->SelectDecoder(
-      stream, set_decryptor_ready_cb,
-      base::Bind(&DecoderStream<StreamType>::OnDecoderSelected,
-                 weak_factory_.GetWeakPtr()),
-      base::Bind(&DecoderStream<StreamType>::OnDecodeOutputReady,
-                 weak_factory_.GetWeakPtr()));
+  SelectDecoder(set_decryptor_ready_cb);
 }
 
 template <DemuxerStream::Type StreamType>
@@ -142,7 +137,7 @@ template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::Reset(const base::Closure& closure) {
   FUNCTION_DVLOG(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(state_ != STATE_UNINITIALIZED)<< state_;
+  DCHECK_NE(state_, STATE_UNINITIALIZED);
   DCHECK(reset_cb_.is_null());
 
   reset_cb_ = closure;
@@ -210,6 +205,17 @@ bool DecoderStream<StreamType>::CanDecodeMore() const {
 }
 
 template <DemuxerStream::Type StreamType>
+void DecoderStream<StreamType>::SelectDecoder(
+    const SetDecryptorReadyCB& set_decryptor_ready_cb) {
+  decoder_selector_->SelectDecoder(
+      stream_, set_decryptor_ready_cb,
+      base::Bind(&DecoderStream<StreamType>::OnDecoderSelected,
+                 weak_factory_.GetWeakPtr()),
+      base::Bind(&DecoderStream<StreamType>::OnDecodeOutputReady,
+                 weak_factory_.GetWeakPtr()));
+}
+
+template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::OnDecoderSelected(
     scoped_ptr<Decoder> selected_decoder,
     scoped_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream) {
@@ -217,24 +223,32 @@ void DecoderStream<StreamType>::OnDecoderSelected(
                     << (selected_decoder ? selected_decoder->GetDisplayName()
                                          : "No decoder selected.");
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(state_, STATE_INITIALIZING) << state_;
-  DCHECK(!init_cb_.is_null());
-  DCHECK(read_cb_.is_null());
-  DCHECK(reset_cb_.is_null());
-
-  decoder_selector_.reset();
-  if (decrypting_demuxer_stream)
-    stream_ = decrypting_demuxer_stream.get();
-
-  if (!selected_decoder) {
-    state_ = STATE_UNINITIALIZED;
-    base::ResetAndReturn(&init_cb_).Run(false);
-    return;
+  DCHECK(state_ == STATE_INITIALIZING || state_ == STATE_REINITIALIZING_DECODER)
+      << state_;
+  if (state_ == STATE_INITIALIZING) {
+    DCHECK(!init_cb_.is_null());
+    DCHECK(read_cb_.is_null());
+    DCHECK(reset_cb_.is_null());
+  } else {
+    DCHECK(decoder_);
   }
 
-  state_ = STATE_NORMAL;
+  previous_decoder_ = decoder_.Pass();
   decoder_ = selected_decoder.Pass();
-  decrypting_demuxer_stream_ = decrypting_demuxer_stream.Pass();
+  if (decrypting_demuxer_stream) {
+    decrypting_demuxer_stream_ = decrypting_demuxer_stream.Pass();
+    stream_ = decrypting_demuxer_stream_.get();
+  }
+
+  if (!decoder_) {
+    if (state_ == STATE_INITIALIZING) {
+      state_ = STATE_UNINITIALIZED;
+      base::ResetAndReturn(&init_cb_).Run(false);
+    } else {
+      CompleteDecoderReinitialization(false);
+    }
+    return;
+  }
 
   const std::string stream_type = DecoderStreamTraits<StreamType>::ToString();
   media_log_->SetBooleanProperty((stream_type + "_dds").c_str(),
@@ -242,6 +256,13 @@ void DecoderStream<StreamType>::OnDecoderSelected(
   media_log_->SetStringProperty((stream_type + "_decoder").c_str(),
                                 decoder_->GetDisplayName());
 
+  if (state_ == STATE_REINITIALIZING_DECODER) {
+    CompleteDecoderReinitialization(true);
+    return;
+  }
+
+  // Initialization succeeded.
+  state_ = STATE_NORMAL;
   if (StreamTraits::NeedsBitstreamConversion(decoder_.get()))
     stream_->EnableBitstreamConverter();
   base::ResetAndReturn(&init_cb_).Run(true);
@@ -385,7 +406,7 @@ void DecoderStream<StreamType>::OnDecodeOutputReady(
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::ReadFromDemuxerStream() {
   FUNCTION_DVLOG(2);
-  DCHECK_EQ(state_, STATE_NORMAL) << state_;
+  DCHECK_EQ(state_, STATE_NORMAL);
   DCHECK(CanDecodeMore());
   DCHECK(reset_cb_.is_null());
 
@@ -470,7 +491,7 @@ template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::ReinitializeDecoder() {
   FUNCTION_DVLOG(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(state_, STATE_FLUSHING_DECODER) << state_;
+  DCHECK_EQ(state_, STATE_FLUSHING_DECODER);
   DCHECK_EQ(pending_decode_requests_, 0);
 
   state_ = STATE_REINITIALIZING_DECODER;
@@ -486,7 +507,7 @@ template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::OnDecoderReinitialized(PipelineStatus status) {
   FUNCTION_DVLOG(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(state_, STATE_REINITIALIZING_DECODER) << state_;
+  DCHECK_EQ(state_, STATE_REINITIALIZING_DECODER);
 
   // ReinitializeDecoder() can be called in two cases:
   // 1, Flushing decoder finished (see OnDecodeOutputReady()).
@@ -494,7 +515,25 @@ void DecoderStream<StreamType>::OnDecoderReinitialized(PipelineStatus status) {
   // Also, Reset() can be called during pending ReinitializeDecoder().
   // This function needs to handle them all!
 
-  state_ = (status == PIPELINE_OK) ? STATE_NORMAL : STATE_ERROR;
+  if (status != PIPELINE_OK) {
+    // Reinitialization failed. Try to fall back to one of the remaining
+    // decoders. This will consume at least one decoder so doing it more than
+    // once is safe.
+    // For simplicity, don't attempt to fall back to a decryptor. Calling this
+    // with a null callback ensures that one won't be selected.
+    SelectDecoder(SetDecryptorReadyCB());
+  } else {
+    CompleteDecoderReinitialization(true);
+  }
+}
+
+template <DemuxerStream::Type StreamType>
+void DecoderStream<StreamType>::CompleteDecoderReinitialization(bool success) {
+  FUNCTION_DVLOG(2);
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_EQ(state_, STATE_REINITIALIZING_DECODER);
+
+  state_ = success ? STATE_NORMAL : STATE_ERROR;
 
   if (!reset_cb_.is_null()) {
     base::ResetAndReturn(&reset_cb_).Run();

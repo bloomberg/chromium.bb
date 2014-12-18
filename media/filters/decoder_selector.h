@@ -58,12 +58,14 @@ class MEDIA_EXPORT DecoderSelector {
   // NULL and NULL immediately if it's pending.
   ~DecoderSelector();
 
-  // Initializes and selects a Decoder that can decode the |stream|.
-  // Selected Decoder (and DecryptingDemuxerStream) is returned via
+  // Initializes and selects the first Decoder that can decode the |stream|.
+  // The selected Decoder (and DecryptingDemuxerStream) is returned via
   // the |select_decoder_cb|.
   // Notes:
-  // 1. This function can be only called once.
-  // 2. |set_decryptor_ready_cb| is optional. If |set_decryptor_ready_cb| is
+  // 1. This must not be called again before |select_decoder_cb| is run.
+  // 2. Decoders that fail to initialize will be deleted. Future calls will
+  //    select from the decoders following the decoder that was last returned.
+  // 3. |set_decryptor_ready_cb| is optional. If |set_decryptor_ready_cb| is
   //    null, no decryptor will be available to perform decryption.
   void SelectDecoder(DemuxerStream* stream,
                      const SetDecryptorReadyCB& set_decryptor_ready_cb,
