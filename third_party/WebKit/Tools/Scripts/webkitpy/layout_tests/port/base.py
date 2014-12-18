@@ -1561,6 +1561,7 @@ class Port(object):
             PhysicalTestSuite('editing', ['--enable-impl-side-painting']),
             PhysicalTestSuite('fast', ['--enable-impl-side-painting']),
             PhysicalTestSuite('ietestcenter', ['--enable-impl-side-painting']),
+            PhysicalTestSuite('inspector', ['--enable-impl-side-painting']),
             PhysicalTestSuite('media', ['--enable-impl-side-painting']),
             PhysicalTestSuite('scrollbars', ['--enable-impl-side-painting']),
             PhysicalTestSuite('svg', ['--enable-impl-side-painting']),
