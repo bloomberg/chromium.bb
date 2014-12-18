@@ -244,6 +244,12 @@ gbm_bo_get_stride(struct gbm_bo *bo)
 }
 
 PUBLIC uint32_t
+gbm_bo_get_stride_or_tiling(struct gbm_bo *bo)
+{
+	return bo->tiling ? bo->tiling : bo->stride;
+}
+
+PUBLIC uint32_t
 gbm_bo_get_format(struct gbm_bo *bo)
 {
 	return bo->format;

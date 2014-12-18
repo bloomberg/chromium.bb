@@ -31,6 +31,7 @@ struct gbm_bo
 	uint32_t size;
 	uint32_t stride;
 	uint32_t format;
+	uint32_t tiling;
 	union gbm_bo_handle handle;
 	void *priv;
 	void *user_data;
