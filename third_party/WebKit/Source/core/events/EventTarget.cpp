@@ -88,6 +88,18 @@ inline LocalDOMWindow* EventTarget::executingWindow()
     return 0;
 }
 
+bool EventTarget::addEventListener()
+{
+    UseCounter::count(executionContext(), UseCounter::AddEventListenerNoArguments);
+    return false;
+}
+
+bool EventTarget::addEventListener(const AtomicString& eventType)
+{
+    UseCounter::count(executionContext(), UseCounter::AddEventListenerOneArgument);
+    return false;
+}
+
 bool EventTarget::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
 {
     // FIXME: listener null check should throw TypeError (and be done in
@@ -104,6 +116,18 @@ bool EventTarget::addEventListener(const AtomicString& eventType, PassRefPtr<Eve
     }
 
     return ensureEventTargetData().eventListenerMap.add(eventType, listener, useCapture);
+}
+
+bool EventTarget::removeEventListener()
+{
+    UseCounter::count(executionContext(), UseCounter::RemoveEventListenerNoArguments);
+    return false;
+}
+
+bool EventTarget::removeEventListener(const AtomicString& eventType)
+{
+    UseCounter::count(executionContext(), UseCounter::RemoveEventListenerOneArgument);
+    return false;
 }
 
 bool EventTarget::removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)

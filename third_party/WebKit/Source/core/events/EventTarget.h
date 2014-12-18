@@ -109,11 +109,11 @@ public:
     // FIXME: first 2 args to addEventListener and removeEventListener should
     // be required (per spec), but throwing TypeError breaks legacy content.
     // http://crbug.com/353484
-    bool addEventListener() { return false; }
-    bool addEventListener(const AtomicString& eventType) { return false; }
+    bool addEventListener();
+    bool addEventListener(const AtomicString& eventType);
     virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false);
-    bool removeEventListener() { return false; }
-    bool removeEventListener(const AtomicString& eventType) { return false; }
+    bool removeEventListener();
+    bool removeEventListener(const AtomicString& eventType);
     virtual bool removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false);
     virtual void removeAllEventListeners();
     virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>);

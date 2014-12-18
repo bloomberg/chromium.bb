@@ -594,6 +594,10 @@ public:
         OfflineAudioContext = 653,
         PrefixedAudioContext = 654,
         PrefixedOfflineAudioContext = 655,
+        AddEventListenerNoArguments = 656,
+        AddEventListenerOneArgument = 657,
+        RemoveEventListenerNoArguments = 658,
+        RemoveEventListenerOneArgument = 659,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
