@@ -150,10 +150,7 @@ void CreateAppListShim(const base::FilePath& profile_path) {
   if (installed_version == 0)
     shortcut_locations.in_quick_launch_bar = true;
 
-  web_app::CreateShortcutsWithInfo(web_app::SHORTCUT_CREATION_AUTOMATED,
-                                   shortcut_locations,
-                                   shortcut_info,
-                                   extensions::FileHandlersInfo());
+  web_app::CreateNonAppShortcut(shortcut_locations, shortcut_info);
 
   local_state->SetInteger(prefs::kAppLauncherShortcutVersion,
                           kShortcutVersion);

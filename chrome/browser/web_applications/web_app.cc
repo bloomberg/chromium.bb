@@ -123,6 +123,19 @@ void IgnoreFileHandlersInfo(
   shortcut_info_callback.Run(shortcut_info);
 }
 
+void ScheduleCreatePlatformShortcut(
+    web_app::ShortcutCreationReason reason,
+    const web_app::ShortcutLocations& locations,
+    const web_app::ShortcutInfo& shortcut_info,
+    const extensions::FileHandlersInfo& file_handlers_info) {
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(
+          base::IgnoreResult(&web_app::internals::CreatePlatformShortcuts),
+          GetShortcutDataDir(shortcut_info), shortcut_info, file_handlers_info,
+          locations, reason));
+}
+
 }  // namespace
 
 namespace web_app {
@@ -369,15 +382,14 @@ void CreateShortcutsWithInfo(
   if (!extension)
     return;
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(&internals::CreatePlatformShortcuts),
-                 GetShortcutDataDir(shortcut_info),
-                 shortcut_info,
-                 file_handlers_info,
-                 locations,
-                 reason));
+  ScheduleCreatePlatformShortcut(reason, locations, shortcut_info,
+                                 file_handlers_info);
+}
+
+void CreateNonAppShortcut(const ShortcutLocations& locations,
+                          const ShortcutInfo& shortcut_info) {
+  ScheduleCreatePlatformShortcut(SHORTCUT_CREATION_AUTOMATED, locations,
+                                 shortcut_info, extensions::FileHandlersInfo());
 }
 
 void CreateShortcuts(ShortcutCreationReason reason,

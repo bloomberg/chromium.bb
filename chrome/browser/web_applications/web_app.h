@@ -174,6 +174,11 @@ void CreateShortcutsWithInfo(
     const ShortcutInfo& shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info);
 
+// Currently only called by app_list_service_mac to create a shim for the
+// app launcher.
+void CreateNonAppShortcut(const ShortcutLocations& locations,
+                          const ShortcutInfo& shortcut_info);
+
 // Creates shortcuts for an app. This loads the app's icon from disk, and calls
 // CreateShortcutsWithInfo(). If you already have a ShortcutInfo with the app's
 // icon loaded, you should use CreateShortcutsWithInfo() directly.
