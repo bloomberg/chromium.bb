@@ -144,6 +144,7 @@ if (!is_android) {
     source = "device/webrtc/resources.grd"
     output_dir = "$root_gen_dir/chrome"
     outputs = [
+      "grit/webrtc_device_provider_resources.h",
       "grit/webrtc_device_provider_resources_map.cc",
       "grit/webrtc_device_provider_resources_map.h",
       "webrtc_device_provider_resources.pak",
