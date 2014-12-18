@@ -287,13 +287,17 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaMenuBar) {
   RunTest(FILE_PATH_LITERAL("aria-menubar.html"));
 }
 
+// crbug.com/442278 will stop creating new text elements representing title.
+// Re-baseline after the Blink change goes in
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityAriaMenuItemCheckBox) {
+                       DISABLED_AccessibilityAriaMenuItemCheckBox) {
   RunTest(FILE_PATH_LITERAL("aria-menuitemcheckbox.html"));
 }
 
+// crbug.com/442278 will stop creating new text elements representing title.
+// Re-baseline after the Blink change goes in
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityAriaMenuItemRadio) {
+                       DISABLED_AccessibilityAriaMenuItemRadio) {
   RunTest(FILE_PATH_LITERAL("aria-menuitemradio.html"));
 }
 
