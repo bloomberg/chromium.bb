@@ -73,8 +73,17 @@ void HTMLScriptElement::childrenChanged(const ChildrenChange& change)
 
 void HTMLScriptElement::didMoveToNewDocument(Document& oldDocument)
 {
-    if (RefPtrWillBeRawPtr<Document> contextDocument = document().contextDocument().get())
-        oldDocument.scriptRunner()->movePendingAsyncScript(contextDocument->scriptRunner(), m_loader.get());
+    RefPtrWillBeRawPtr<Document> contextDocument = document().contextDocument().get();
+    if (!contextDocument) {
+        ASSERT(!document().frame());
+        // A frame-detached document is handled as having no context
+        // document - it would be the document if not detached. The
+        // newly moved script element needs to be the latter here as
+        // the script loader for the pending script must also move to
+        // reside with that document and its script runner.
+        contextDocument = &document();
+    }
+    oldDocument.scriptRunner()->movePendingAsyncScript(contextDocument->scriptRunner(), m_loader.get());
     HTMLElement::didMoveToNewDocument(oldDocument);
 }
 
