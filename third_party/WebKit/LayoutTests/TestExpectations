@@ -598,6 +598,11 @@ crbug.com/338883 [ Linux ] crypto/ecdh-deriveKey-hmac.html [ Failure Pass ]
 
 crbug.com/443566 http/tests/misc/image-error.html [ Failure Pass ]
 
+Bug(gardener) [ XP ] tables/mozilla/bugs/bug133756-2.html [ NeedsRebaseline ]
+Bug(gardener) [ XP ] tables/mozilla/bugs/bug7714.html [ NeedsRebaseline ]
+Bug(gardener) [ XP ] tables/mozilla/bugs/bug8858.html [ NeedsRebaseline ]
+Bug(gardener) [ XP ] tables/mozilla_expected_failures/bugs/bug65372.html [ NeedsRebaseline ]
+
 # This test needs to be updated to use a non-svg font.
 crbug.com/242735 fast/css/ex-unit-with-no-x-height.html [ ImageOnlyFailure Failure ]
 
