@@ -598,7 +598,12 @@ void ExtensionAppShimHandler::OnShimQuit(Host* host) {
   Profile* profile = delegate_->ProfileForPath(host->GetProfilePath());
 
   const std::string& app_id = host->GetAppId();
-  if (delegate_->GetAppExtension(profile, app_id)->is_hosted_app())
+  const extensions::Extension* extension =
+      delegate_->GetAppExtension(profile, app_id);
+  if (!extension)
+    return;
+
+  if (extension->is_hosted_app())
     CloseBrowsersForApp(app_id);
   else {
     const AppWindowList windows = delegate_->GetWindows(profile, app_id);
