@@ -22,6 +22,9 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_rep.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -80,7 +83,10 @@ void ThemeSource::StartDataRequest(
 
   int resource_id = ResourcesUtil::GetThemeResourceId(uncached_path);
   if (resource_id != -1) {
-    SendThemeBitmap(callback, resource_id, scale_factor);
+    if (GetMimeType(path) == "image/png")
+      SendThemeImage(callback, resource_id, scale_factor);
+    else
+      SendThemeBitmap(callback, resource_id, scale_factor);
     return;
   }
 
@@ -155,4 +161,42 @@ void ThemeSource::SendThemeBitmap(
     callback.Run(
         rb.LoadDataResourceBytesForScale(resource_id, resource_scale_factor));
   }
+}
+
+void ThemeSource::SendThemeImage(
+    const content::URLDataSource::GotDataCallback& callback,
+    int resource_id,
+    float scale_factor) {
+  // If the resource bundle contains the data pack for |scale_factor|, we can
+  // safely fallback to SendThemeBitmap().
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  if (ui::GetScaleForScaleFactor(rb.GetMaxScaleFactor()) >= scale_factor) {
+    SendThemeBitmap(callback, resource_id, scale_factor);
+    return;
+  }
+
+  // Otherwise, we should use gfx::ImageSkia to obtain the data. ImageSkia can
+  // rescale the bitmap if its backend doesn't contain the representation for
+  // the specified scale factor. This is the fallback path in case chrome is
+  // shipped without 2x resource pack but needs to use HighDPI display, which
+  // can happen in ChromeOS.
+  // TODO(mukai): remove this method itself when we ship 2x resource to all
+  // ChromeOS devices.
+  gfx::ImageSkia image;
+  if (BrowserThemePack::IsPersistentImageID(resource_id)) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    ui::ThemeProvider* tp = ThemeServiceFactory::GetForProfile(profile_);
+    DCHECK(tp);
+
+    image = *tp->GetImageSkiaNamed(resource_id);
+  } else {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    image = *rb.GetImageSkiaNamed(resource_id);
+  }
+
+  const gfx::ImageSkiaRep& rep = image.GetRepresentation(scale_factor);
+  scoped_refptr<base::RefCountedBytes> data(new base::RefCountedBytes());
+  gfx::PNGCodec::EncodeBGRASkBitmap(
+      rep.sk_bitmap(), false /* discard transparency */, &data->data());
+  callback.Run(data.get());
 }

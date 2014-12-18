@@ -41,6 +41,15 @@ class ThemeSource : public content::URLDataSource {
                        int resource_id,
                        float scale_factor);
 
+  // Similar to SendThemeBitmap but treat the responded data as image; if the
+  // resource bundle does not contain the data for |scale_factor|, the resource
+  // bundle falls back to the data of a lower scale, which means smaller images
+  // will be served and webui handles the image incorrectly.
+  // See crbug.com/442384.
+  void SendThemeImage(const content::URLDataSource::GotDataCallback& callback,
+                      int resource_id,
+                      float scale_factor);
+
   // The original profile (never an OTR profile).
   Profile* profile_;
 
