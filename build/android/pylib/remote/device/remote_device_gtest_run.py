@@ -54,10 +54,15 @@ class RemoteDeviceGtestRun(remote_device_test_run.RemoteDeviceTestRun):
   #override
   def _ParseTestResults(self):
     logging.info('Parsing results from stdout.')
-    output = self._results['results']['output'].splitlines()
-    output = (l[len(self._INSTRUMENTATION_STREAM_LEADER):] for l in output
-              if l.startswith(self._INSTRUMENTATION_STREAM_LEADER))
-    results_list = self._test_instance.ParseGTestOutput(output)
     results = base_test_result.TestRunResults()
-    results.AddResults(results_list)
+    if self._results['results']['exception']:
+      results.AddResult(base_test_result.BaseTestResult(
+          self._results['results']['exception'],
+          base_test_result.ResultType.FAIL))
+    else:
+      output = self._results['results']['output'].splitlines()
+      output = (l[len(self._INSTRUMENTATION_STREAM_LEADER):] for l in output
+                if l.startswith(self._INSTRUMENTATION_STREAM_LEADER))
+      results_list = self._test_instance.ParseGTestOutput(output)
+      results.AddResults(results_list)
     return results
