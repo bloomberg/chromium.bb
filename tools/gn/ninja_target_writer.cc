@@ -214,10 +214,8 @@ OutputFile NinjaTargetWriter::WriteInputDepsStampAndGetDep(
 
   // Hard dependencies that are direct or indirect dependencies.
   const std::set<const Target*>& hard_deps = target_->recursive_hard_deps();
-  for (std::set<const Target*>::const_iterator i = hard_deps.begin();
-       i != hard_deps.end(); ++i) {
-    unique_deps.insert(*i);
-  }
+  for (const auto& dep : hard_deps)
+    unique_deps.insert(dep);
 
   // Extra hard dependencies passed in.
   unique_deps.insert(extra_hard_deps.begin(), extra_hard_deps.end());
@@ -230,11 +228,10 @@ OutputFile NinjaTargetWriter::WriteInputDepsStampAndGetDep(
   for (size_t i = 0; i < toolchain_deps.size(); i++)
     unique_deps.insert(toolchain_deps[i].ptr);
 
-  for (std::set<const Target*>::const_iterator i = unique_deps.begin();
-       i != unique_deps.end(); ++i) {
-    DCHECK(!(*i)->dependency_output_file().value().empty());
+  for (const auto& dep : unique_deps) {
+    DCHECK(!dep->dependency_output_file().value().empty());
     out_ << " ";
-    path_output_.WriteFile(out_, (*i)->dependency_output_file());
+    path_output_.WriteFile(out_, dep->dependency_output_file());
   }
 
   out_ << "\n";
