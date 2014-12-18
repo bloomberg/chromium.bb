@@ -5,8 +5,6 @@
 
 """Unittests for parallel library."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import contextlib
@@ -39,8 +37,11 @@ from chromite.lib import timeout_util
 # Until then, this has to be after the chromite imports.
 import mock
 
-# pylint: disable=W0212
-_BUFSIZE = 10**4
+
+# pylint: disable=protected-access
+
+
+_BUFSIZE = 10 ** 4
 _EXIT_TIMEOUT = 30
 _NUM_WRITES = 100
 _NUM_THREADS = 50
@@ -321,7 +322,7 @@ class TestRunParallelSteps(cros_test_lib.TestCase):
     def f1():
       return ret_value
 
-    ret_value = ""
+    ret_value = ''
     for _ in xrange(10000):
       ret_value += 'This will be repeated many times.\n'
 
@@ -377,7 +378,6 @@ class TestExceptions(cros_test_lib.MockOutputTestCase):
 
   def _VerifyExceptionRaised(self, fn, exc_type):
     """A helper function to verify the correct |exc_type| is raised."""
-    # pylint: disable=E1101
     for task in (lambda: parallel.RunTasksInProcessPool(fn, [[]]),
                  lambda: parallel.RunParallelSteps([fn])):
       output_str = ex_str = ex = None
@@ -486,7 +486,8 @@ class TestConstants(cros_test_lib.TestCase):
     # Enforce that the default timeout is less than 9000, the default timeout
     # set in build/scripts/master/factory/chromeos_factory.py:ChromiteFactory
     # in the Chrome buildbot source code.
-    self.assertLess(parallel._BackgroundTask.SILENT_TIMEOUT, 9000,
+    self.assertLess(
+        parallel._BackgroundTask.SILENT_TIMEOUT, 9000,
         'Do not increase this timeout. Instead, print regular progress '
         'updates, so that buildbot (and cbuildbot) will will know that your '
         'program has not hung.')

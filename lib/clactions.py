@@ -4,8 +4,6 @@
 
 """Utility functions for interacting with a CL's action history."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import datetime
@@ -13,10 +11,11 @@ import itertools
 import collections
 from chromite.cbuildbot import constants
 
+
 # Bidirectional mapping between pre-cq status strings and CL action strings.
 _PRECQ_STATUS_TO_ACTION = {
     constants.CL_STATUS_INFLIGHT: constants.CL_ACTION_PRE_CQ_INFLIGHT,
-    constants.CL_STATUS_FULLY_VERIFIED: \
+    constants.CL_STATUS_FULLY_VERIFIED:
         constants.CL_ACTION_PRE_CQ_FULLY_VERIFIED,
     constants.CL_STATUS_PASSED: constants.CL_ACTION_PRE_CQ_PASSED,
     constants.CL_STATUS_FAILED: constants.CL_ACTION_PRE_CQ_FAILED,
@@ -43,7 +42,6 @@ GerritPatchTuple = collections.namedtuple('GerritPatchTuple',
                                            'internal'])
 
 
-# pylint: disable=E1101,W0232
 class CLAction(_CLActionTuple):
   """An action or history log entry for a particular CL."""
 
@@ -78,10 +76,8 @@ class CLAction(_CLActionTuple):
                     BoolToChangeSource(change_dict['internal']),
                     entry[2])
 
-
   def AsMetadataEntry(self):
     """Get a tuple representation, suitable for metadata.json."""
-    # pylint: disable=W0212
     return (self.patch._asdict(), self.action, self.timestamp, self.reason)
 
   @property
@@ -161,9 +157,9 @@ def ActionsForPatch(change, action_history):
   change_source = BoolToChangeSource(change.internal)
 
   actions_for_patch = [a for a in action_history
-                       if a.change_source == change_source and
-                          a.change_number == change_number and
-                          a.patch_number == patch_number]
+                       if (a.change_source == change_source and
+                           a.change_number == change_number and
+                           a.patch_number == patch_number)]
 
   return actions_for_patch
 
@@ -231,8 +227,8 @@ def GetCLActionCount(change, configs, action, action_history,
   change_number = int(change.gerrit_number)
   change_source = BoolToChangeSource(change.internal)
   actions_for_change = [a for a in action_history
-                        if a.change_source == change_source and
-                           a.change_number == change_number]
+                        if (a.change_source == change_source and
+                            a.change_number == change_number)]
 
   if actions_for_change and latest_patchset_only:
     latest_patch_number = max(a.patch_number for a in actions_for_change)
@@ -419,7 +415,7 @@ def IntersectIntervals(intervals):
     current_intervals = [intervals[i][j] for (i, j) in
                          zip(itertools.count(), indices)]
     start = max([s[0] for s in current_intervals])
-    end, end_index = min([(e[1], i)  for e, i in
+    end, end_index = min([(e[1], i) for e, i in
                           zip(current_intervals, itertools.count())])
     if start < end:
       intersection.append((start, end))
@@ -437,7 +433,7 @@ def MeasureTimestampIntervals(intervals):
   Returns:
     The total length of the given intervals, in seconds.
   """
-  lengths = [e-s for s, e in intervals]
+  lengths = [e - s for s, e in intervals]
   return sum(lengths, datetime.timedelta(0)).total_seconds()
 
 

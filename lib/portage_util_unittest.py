@@ -5,8 +5,6 @@
 
 """Unit tests for portage_util.py."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import fileinput
@@ -23,17 +21,23 @@ from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import portage_util
 
-# pylint: disable=W0212
+
 MANIFEST = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)
+
+
+# pylint: disable=protected-access
+
 
 class _Package(object):
   """Package helper class."""
+
   def __init__(self, package):
     self.package = package
 
 
 class _DummyCommandResult(object):
   """Create mock RunCommand results."""
+
   def __init__(self, output):
     # Members other than 'output' are expected to be unused, so
     # we omit them here.
@@ -149,7 +153,6 @@ class ProjectAndPathTest(cros_test_lib.MoxTempDirTestCase):
   def _MockParseWorkonVariables(self, fake_projects, _fake_localname,
                                 _fake_subdir, fake_ebuild_contents):
     """Mock the necessary calls, start Replay mode, call GetSourcePath()."""
-    # pylint: disable=E1120
     self.mox.StubOutWithMock(os.path, 'isdir')
     self.mox.StubOutWithMock(MANIFEST, 'FindCheckoutFromPath')
 
@@ -212,6 +215,7 @@ CROS_WORKON_SUBDIR=%s
 
 class StubEBuild(portage_util.EBuild):
   """Test helper to StubEBuild."""
+
   def __init__(self, path):
     super(StubEBuild, self).__init__(path)
     self.is_workon = True
@@ -256,7 +260,6 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
     self.revved_ebuild_path = package_name + '-r2.ebuild'
 
   def createRevWorkOnMocks(self, ebuild_content, rev, multi=False):
-    # pylint: disable=E1120
     self.mox.StubOutWithMock(os.path, 'exists')
     self.mox.StubOutWithMock(cros_build_lib, 'Die')
     self.mox.StubOutWithMock(portage_util.shutil, 'copyfile')
@@ -269,6 +272,7 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
     self.mox.StubOutWithMock(portage_util.EBuild, 'GetSourcePath')
     self.mox.StubOutWithMock(portage_util.EBuild, 'GetTreeId')
 
+    # pylint: disable=no-value-for-parameter
     if multi:
       portage_util.EBuild.GetSourcePath('/sources', MANIFEST).AndReturn(
           (['fake_project1', 'fake_project2'], ['p1_path1', 'p1_path2']))
@@ -354,7 +358,7 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
     self.m_ebuild.is_stable = False
 
     m_file = self.createRevWorkOnMocks(
-      self._mock_ebuild[0:1] + self._mock_ebuild[2:], rev=True)
+        self._mock_ebuild[0:1] + self._mock_ebuild[2:], rev=True)
 
     self.mox.ReplayAll()
     result = self.m_ebuild.RevWorkOnEBuild('/sources', MANIFEST,
@@ -418,6 +422,7 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
 
 class ListOverlaysTest(cros_test_lib.MockTempDirTestCase):
   """Tests related to listing overlays."""
+
   def testMissingOverlays(self):
     """Tests that exceptions are raised when an overlay is missing."""
     self.assertRaises(portage_util.MissingOverlayException,
@@ -677,27 +682,27 @@ class BuildEBuildDictionaryTest(cros_test_lib.MoxTestCase):
     self.root = '/overlay/chromeos-base/test_package'
     self.package_path = self.root + '/test_package-0.0.1.ebuild'
     paths = [[self.root, [], []]]
-    os.walk("/overlay").AndReturn(paths)
+    os.walk('/overlay').AndReturn(paths)
     self.mox.StubOutWithMock(portage_util, '_FindUprevCandidates')
 
   def testWantedPackage(self):
-    overlays = {"/overlay": []}
+    overlays = {'/overlay': []}
     package = _Package(self.package)
     portage_util._FindUprevCandidates([]).AndReturn(package)
     self.mox.ReplayAll()
     portage_util.BuildEBuildDictionary(overlays, False, [self.package])
     self.mox.VerifyAll()
     self.assertEquals(len(overlays), 1)
-    self.assertEquals(overlays["/overlay"], [package])
+    self.assertEquals(overlays['/overlay'], [package])
 
   def testUnwantedPackage(self):
-    overlays = {"/overlay": []}
+    overlays = {'/overlay': []}
     package = _Package(self.package)
     portage_util._FindUprevCandidates([]).AndReturn(package)
     self.mox.ReplayAll()
     portage_util.BuildEBuildDictionary(overlays, False, [])
     self.assertEquals(len(overlays), 1)
-    self.assertEquals(overlays["/overlay"], [])
+    self.assertEquals(overlays['/overlay'], [])
     self.mox.VerifyAll()
 
 
@@ -739,9 +744,9 @@ class ProjectMappingTest(cros_test_lib.TestCase):
     kernel = 'sys-kernel/chromeos-kernel'
     kernel_project = 'chromiumos/third_party/kernel'
     matches = [
-      ([ply_image], set([ply_image_project])),
-      ([kernel], set([kernel_project])),
-      ([ply_image, kernel], set([ply_image_project, kernel_project]))
+        ([ply_image], set([ply_image_project])),
+        ([kernel], set([kernel_project])),
+        ([ply_image, kernel], set([ply_image_project, kernel_project]))
     ]
     if portage_util.FindOverlays(constants.BOTH_OVERLAYS):
       for packages, projects in matches:
@@ -756,9 +761,9 @@ class PortageDBTest(cros_test_lib.MoxTempDirTestCase):
                 'category2': ['package-3', 'package-4'],
                 'category3': ['invalid', 'semi-invalid'],
                 'with': ['files-1'],
-                'dash-category': ['package-5',],
+                'dash-category': ['package-5'],
                 '-invalid': ['package-6'],
-                'invalid': [], }
+                'invalid': []}
   fake_packages = []
   build_root = None
   fake_chroot = None
@@ -869,7 +874,7 @@ class InstalledPackageTest(cros_test_lib.MoxTempDirTestCase):
     # No package name is provided.
     os.unlink(os.path.join(self.tempdir, 'PF'))
     self.assertRaises(portage_util.PortageDBException,
-        portage_util.InstalledPackage, None, self.tempdir)
+                      portage_util.InstalledPackage, None, self.tempdir)
 
     # Check that doesn't fail when the package name is provided.
     pkg = portage_util.InstalledPackage(None, self.tempdir, pf='package-1')

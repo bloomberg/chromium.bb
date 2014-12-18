@@ -4,8 +4,6 @@
 
 """Routines and classes for working with Portage overlays and ebuilds."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import collections
@@ -26,6 +24,7 @@ from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import osutils
 
+
 _PRIVATE_PREFIX = '%(buildroot)s/src/private-overlays'
 
 # Define datastructures for holding PV and CPV objects.
@@ -36,10 +35,10 @@ CPV = collections.namedtuple('CPV', ['category'] + _PV_FIELDS)
 # Package matching regexp, as dictated by package manager specification:
 # http://www.gentoo.org/proj/en/qa/pms.xml
 _pkg = r'(?P<package>' + r'[\w+][\w+-]*)'
-_ver = r'(?P<version>' + \
-       r'(?P<version_no_rev>(\d+)((\.\d+)*)([a-z]?)' + \
-       r'((_(pre|p|beta|alpha|rc)\d*)*))' + \
-       r'(-(?P<rev>r(\d+)))?)'
+_ver = (r'(?P<version>'
+        r'(?P<version_no_rev>(\d+)((\.\d+)*)([a-z]?)'
+        r'((_(pre|p|beta|alpha|rc)\d*)*))'
+        r'(-(?P<rev>r(\d+)))?)')
 _pvr_re = re.compile(r'^(?P<pv>%s-%s)$' % (_pkg, _ver), re.VERBOSE)
 
 # This regex matches a category name.
@@ -82,8 +81,8 @@ def _ListOverlays(board=None, buildroot=constants.SOURCE_ROOT):
 
       # Sanity check the sets of repos.
       if name in overlays:
-        raise RuntimeError('multiple repos with same name "%s": %s and %s' % (
-                           name, overlays[name]['path'], overlay))
+        raise RuntimeError('multiple repos with same name "%s": %s and %s' %
+                           (name, overlays[name]['path'], overlay))
 
       try:
         masters = cros_build_lib.LoadKeyValueFile(
@@ -272,6 +271,7 @@ def GetOverlayName(overlay):
 
 class EBuildVersionFormatException(Exception):
   """Exception for bad ebuild version string format."""
+
   def __init__(self, filename):
     self.filename = filename
     message = ('Ebuild file name %s '
@@ -281,6 +281,7 @@ class EBuildVersionFormatException(Exception):
 
 class EbuildFormatIncorrectException(Exception):
   """Exception for bad ebuild format."""
+
   def __init__(self, filename, message):
     message = 'Ebuild %s has invalid format: %s ' % (filename, message)
     super(EbuildFormatIncorrectException, self).__init__(message)
@@ -291,7 +292,7 @@ class EBuild(object):
 
   VERBOSE = False
   _PACKAGE_VERSION_PATTERN = re.compile(
-    r'.*-(([0-9][0-9a-z_.]*)(-r[0-9]+)?)[.]ebuild')
+      r'.*-(([0-9][0-9a-z_.]*)(-r[0-9]+)?)[.]ebuild')
   _WORKON_COMMIT_PATTERN = re.compile(r'^CROS_WORKON_COMMIT="(.*)"$')
 
   # A structure to hold computed values of CROS_WORKON_*.
@@ -491,8 +492,8 @@ class EBuild(object):
     # CROS_WORKON_SUBDIR or if CROS_WORKON_PROJECT is set to the wrong thing,
     # but at least this covers some types of failures.
     if 'CROS_WORKON_PROJECT' not in settings:
-      raise EbuildFormatIncorrectException(ebuild_path,
-          'Unable to determine CROS_WORKON_PROJECT value.')
+      raise EbuildFormatIncorrectException(
+          ebuild_path, 'Unable to determine CROS_WORKON_PROJECT value.')
     localnames = settings['CROS_WORKON_LOCALNAME'].split(',')
     projects = settings['CROS_WORKON_PROJECT'].split(',')
     subdirs = settings['CROS_WORKON_SUBDIR'].split(',')
@@ -515,12 +516,13 @@ class EBuild(object):
     # Sanity checks and completion.
     # Each project specification has to have the same amount of items.
     if len(projects) != len(localnames):
-      raise EbuildFormatIncorrectException(self._unstable_ebuild_path,
+      raise EbuildFormatIncorrectException(
+          self._unstable_ebuild_path,
           'Number of _PROJECT and _LOCALNAME items don\'t match.')
     # Subdir must be either 0,1 or len(project)
     if len(projects) != len(subdirs) and len(subdirs) > 1:
-      raise EbuildFormatIncorrectException(self._unstable_ebuild_path,
-          'Incorrect number of _SUBDIR items.')
+      raise EbuildFormatIncorrectException(
+          self._unstable_ebuild_path, 'Incorrect number of _SUBDIR items.')
     # If there's one, apply it to all.
     if len(subdirs) == 1:
       subdirs = subdirs * len(projects)
@@ -595,8 +597,9 @@ class EBuild(object):
       return default
 
     if not self.is_workon:
-      raise EbuildFormatIncorrectException(self._ebuild_path_no_version,
-        "Package has a chromeos-version.sh script but is not workon-able.")
+      raise EbuildFormatIncorrectException(
+          self._ebuild_path_no_version,
+          'Package has a chromeos-version.sh script but is not workon-able.')
 
     srcdirs = self.GetSourcePath(srcroot, manifest)[1]
 
@@ -783,6 +786,7 @@ class EBuild(object):
       if EBuild.GitRepoHasChanges(overlay):
         EBuild.CommitChange('Updating commit hashes in ebuilds '
                             'to match remote repository.', overlay=overlay)
+
 
 class PortageDBException(Exception):
   """Generic PortageDB error."""
@@ -973,7 +977,6 @@ class InstalledPackage(object):
 
 def BestEBuild(ebuilds):
   """Returns the newest EBuild from a list of EBuild objects."""
-  # pylint: disable=F0401
   from portage.versions import vercmp
   winner = ebuilds[0]
   for ebuild in ebuilds[1:]:
@@ -1271,7 +1274,6 @@ def SplitCPV(cpv, strict=True):
   m = SplitPV(chunks[-1], strict=strict)
   if strict and (category is None or m is None):
     return None
-  # pylint: disable=W0212
   return CPV(category=category, **m._asdict())
 
 

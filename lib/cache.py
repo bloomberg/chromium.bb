@@ -17,10 +17,13 @@ from chromite.lib import locking
 from chromite.lib import osutils
 from chromite.lib import retry_util
 
-# pylint: disable=W0212
+
+# pylint: disable=protected-access
+
 
 def EntryLock(f):
   """Decorator that provides monitor access control."""
+
   def new_f(self, *args, **kwargs):
     # Ensure we don't have a read lock before potentially blocking while trying
     # to access the monitor.
@@ -36,6 +39,7 @@ def EntryLock(f):
 
 def WriteLock(f):
   """Decorator that takes a write lock."""
+
   def new_f(self, *args, **kwargs):
     with self._lock.write_lock():
       return f(self, *args, **kwargs)

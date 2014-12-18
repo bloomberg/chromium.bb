@@ -4,8 +4,6 @@
 
 """Contains functionality used to implement a partial mock."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import collections
@@ -288,14 +286,14 @@ class MockedCallResults(object):
     matched, _ = cros_build_lib.PredicateSplit(filter_fn, self.mocked_calls)
     if len(matched) > 1:
       raise AssertionError(
-          "%s: args %r matches more than one mock:\n%s"
+          '%s: args %r matches more than one mock:\n%s'
           % (self.name, params, '\n'.join([repr(c) for c in matched])))
     elif matched:
       side_effect, result = matched[0].side_effect, matched[0].result
     elif (self.default_result, self.default_side_effect) != (None, None):
       side_effect, result = self.default_side_effect, self.default_result
     else:
-      raise AssertionError("%s: %r not mocked!" % (self.name, params))
+      raise AssertionError('%s: %r not mocked!' % (self.name, params))
 
     if side_effect:
       assert hook_args is not None
@@ -452,6 +450,7 @@ def CheckAttr(f):
 
   Raises an AssertionError if mock_attr is left unspecified.
   """
+
   def new_f(self, *args, **kwargs):
     mock_attr = kwargs.pop('mock_attr', None)
     if mock_attr is None:
@@ -471,7 +470,7 @@ class PartialCmdMock(PartialMock):
   """
 
   CmdResult = collections.namedtuple(
-    'MockResult', ['returncode', 'output', 'error'])
+      'MockResult', ['returncode', 'output', 'error'])
 
   DEFAULT_ATTR = None
 

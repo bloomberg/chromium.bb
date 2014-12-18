@@ -4,8 +4,6 @@
 
 """VM-related helper functions/classes."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import logging
@@ -122,7 +120,7 @@ def CreateVMImage(image=None, board=None, updatable=True, dest_dir=None):
       # Move VM from tempdir to dest_dir.
       shutil.move(
           cros_build_lib.FromChrootPath(
-            os.path.join(tempdir, constants.VM_IMAGE_BIN)), dest_path)
+              os.path.join(tempdir, constants.VM_IMAGE_BIN)), dest_path)
       osutils.RmDir(cros_build_lib.FromChrootPath(tempdir), ignore_missing=True)
 
   if not os.path.exists(dest_path):

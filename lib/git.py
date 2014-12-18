@@ -4,8 +4,6 @@
 
 """Common functions for interacting with git and repo."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import collections
@@ -14,24 +12,15 @@ import hashlib
 import logging
 import os
 import re
-import string # pylint: disable=W0402
-import sys
+import string
 import time
 from xml import sax
 
-# TODO(build): Fix this.
-# This should be absolute import, but that requires fixing all
-# relative imports first.
-_path = os.path.realpath(__file__)
-_path = os.path.normpath(os.path.join(os.path.dirname(_path), '..', '..'))
-sys.path.insert(0, _path)
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import retry_util
-# Now restore it so that relative scripts don't get cranky.
-sys.path.pop(0)
-del _path
+
 
 # Retry a git operation if git returns a error response with any of these
 # messages. It's all observed 'bad' GoB responses so far.
@@ -431,7 +420,7 @@ class Manifest(object):
 
     remote = attrs['remote']
     assert remote in self.remotes, ('%s: %s not in %s' %
-        (self.source, remote, self.remotes))
+                                    (self.source, remote, self.remotes))
     remote_name = attrs['remote_alias'] = self.remotes[remote]['alias']
 
     # 'repo manifest -r' adds an 'upstream' attribute to the project tag for the
@@ -520,7 +509,6 @@ class ManifestCheckout(Manifest):
 
   _instance_cache = {}
 
-  # pylint: disable=W0221
   def __init__(self, path, manifest_path=None, search=True):
     """Initialize this instance.
 
@@ -691,7 +679,7 @@ class ManifestCheckout(Manifest):
                   'the git tracking configuration for that branch is broken; '
                   'failing due to that.' % (root,))
 
-  # pylint: disable=W0221
+  # pylint: disable=arguments-differ
   @classmethod
   def Cached(cls, path, manifest_path=None, search=True):
     """Return an instance, reusing an existing one if possible.

@@ -4,8 +4,6 @@
 
 """Common python commands used by various build scripts."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import __main__
@@ -29,17 +27,8 @@ import tempfile
 import time
 import types
 
-# TODO(build): Fix this.
-# This should be absolute import, but that requires fixing all
-# relative imports first.
-_path = os.path.realpath(__file__)
-_path = os.path.normpath(os.path.join(os.path.dirname(_path), '..', '..'))
-sys.path.insert(0, _path)
 from chromite.cbuildbot import constants
 from chromite.lib import signals
-# Now restore it so that relative scripts don't get cranky.
-sys.path.pop(0)
-del _path
 
 
 STRICT_SUDO = False
@@ -217,8 +206,8 @@ class RunCommandError(Exception):
 
   def __str__(self):
     # __str__ needs to return ascii, thus force a conversion to be safe.
-    return self.Stringify().decode('utf-8', 'replace'
-                                   ).encode('ascii', 'xmlcharrefreplace')
+    return self.Stringify().decode('utf-8', 'replace').encode(
+        'ascii', 'xmlcharrefreplace')
 
   def __eq__(self, other):
     return (type(self) == type(other) and
@@ -396,7 +385,7 @@ class _Popen(subprocess.Popen):
         raise
 
 
-# pylint: disable=W0622
+# pylint: disable=redefined-builtin
 def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
                redirect_stderr=False, cwd=None, input=None, enter_chroot=False,
                shell=False, env=None, extra_env=None, ignore_sigint=False,
@@ -625,6 +614,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
       _KillChildProcess(proc, int_timeout, kill_timeout, cmd, None, None, None)
 
   return cmd_result
+# pylint: enable=redefined-builtin
 
 
 # Convenience RunCommand methods.
@@ -657,8 +647,7 @@ def Error(message, *args, **kwargs):
   logger.error(message, *args, **kwargs)
 
 
-# pylint: disable=W0622
-def Warning(message, *args, **kwargs):
+def Warning(message, *args, **kwargs):  # pylint: disable=redefined-builtin
   """Emits a warning message using the logging module."""
   logger.warn(message, *args, **kwargs)
 
@@ -1125,7 +1114,6 @@ def BooleanShellValue(sval, default, msg=None):
 
 
 # Suppress whacked complaints about abstract class being unused.
-# pylint: disable=R0921
 class MasterPidContextManager(object):
   """Allow context managers to restrict their exit to within the same PID."""
 
@@ -1240,7 +1228,7 @@ class ContextManagerStack(object):
     # to know whether or not to suppress the exception raised (or to switch that
     # exception to a new one triggered by an individual handler's __exit__).
     for handler in reversed(self._stack):
-      # pylint: disable=W0702
+      # pylint: disable=bare-except
       try:
         if handler.__exit__(exc_type, exc, traceback):
           exc_type = exc = traceback = None
@@ -1416,16 +1404,16 @@ def PredicateSplit(func, iterable):
 
 
 @contextlib.contextmanager
-def Open(input, mode='r'):
+def Open(obj, mode='r'):
   """Convenience ctx that accepts a file path or an already open file object."""
-  if isinstance(input, basestring):
-    with open(input, mode=mode) as f:
+  if isinstance(obj, basestring):
+    with open(obj, mode=mode) as f:
       yield f
   else:
-    yield input
+    yield obj
 
 
-def LoadKeyValueFile(input, ignore_missing=False, multiline=False):
+def LoadKeyValueFile(obj, ignore_missing=False, multiline=False):
   """Turn a key=value file into a dict
 
   Note: If you're designing a new data store, please use json rather than
@@ -1433,7 +1421,7 @@ def LoadKeyValueFile(input, ignore_missing=False, multiline=False):
   where json isn't an option.
 
   Args:
-    input: The file to read.  Can be a path or an open file object.
+    obj: The file to read.  Can be a path or an open file object.
     ignore_missing: If the file does not exist, return an empty dict.
     multiline: Allow a value enclosed by quotes to span multiple lines.
 
@@ -1443,7 +1431,7 @@ def LoadKeyValueFile(input, ignore_missing=False, multiline=False):
   d = {}
 
   try:
-    with Open(input) as f:
+    with Open(obj) as f:
       key = None
       in_quotes = None
       for raw_line in f:
@@ -1464,7 +1452,7 @@ def LoadKeyValueFile(input, ignore_missing=False, multiline=False):
         chunks = line.split('=', 1)
         if len(chunks) != 2:
           raise ValueError('Malformed key=value file %r; line %r'
-                           % (input, raw_line))
+                           % (obj, raw_line))
         key = chunks[0].strip()
         val = chunks[1].strip()
         if len(val) >= 2 and val[0] in "\"'" and val[0] == val[-1]:
@@ -1682,7 +1670,6 @@ class FrozenAttributesClass(type):
 
   def __new__(mcs, clsname, bases, scope):
     # Create Freeze method that freezes current attributes.
-    # pylint: disable=E1003
     if 'Freeze' in scope:
       raise TypeError('Class %s has its own Freeze method, cannot use with'
                       ' the FrozenAttributesClass metaclass.' % clsname)
@@ -1691,6 +1678,7 @@ class FrozenAttributesClass(type):
     scope.setdefault('_FROZEN_ERR_MSG', mcs._FROZEN_ERR_MSG)
 
     # Create the class.
+    # pylint: disable=bad-super-call
     cls = super(FrozenAttributesClass, mcs).__new__(mcs, clsname, bases, scope)
 
     # Replace cls.__setattr__ with the one that honors freezing.
@@ -1698,7 +1686,7 @@ class FrozenAttributesClass(type):
 
     def SetAttr(obj, name, value):
       """If the object is frozen then abort."""
-      # pylint: disable=W0212
+      # pylint: disable=protected-access
       if getattr(obj, '_frozen', False):
         raise AttributeFrozenError(obj._FROZEN_ERR_MSG % name)
       if isinstance(orig_setattr, types.MethodType):
@@ -1883,9 +1871,7 @@ def _ParseParted(lines, unit='MB'):
   for line in lines:
     match = pattern.match(line)
     if match:
-      # pylint: disable=W0212
       d = dict(zip(PartitionInfo._fields, match.group(1).split(':')))
-      # pylint: enable=W0212
       # Disregard any non-numeric partition number (e.g. the file path).
       if d['number'].isdigit():
         d['number'] = int(d['number'])
@@ -1961,7 +1947,8 @@ def GetImageDiskPartitionInfo(image_path, unit='MB', key_selector='name'):
     cmd = ['parted', '-m', image_path, 'unit', unit, 'print']
     func = _ParseParted
 
-  lines = RunCommand(cmd,
+  lines = RunCommand(
+      cmd,
       extra_env={'PATH': '/sbin:%s' % os.environ['PATH'], 'LC_ALL': 'C'},
       capture_output=True).output.splitlines()
   infos = func(lines, unit)

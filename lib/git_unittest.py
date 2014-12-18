@@ -5,8 +5,6 @@
 
 """Unit tests for chromite.lib.git and helpers for testing that module."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import functools
@@ -226,28 +224,30 @@ class RawDiffTest(cros_test_lib.MockTestCase):
     self.PatchObject(git, 'RunGit', return_value=result)
 
     entries = git.RawDiff('foo', 'bar')
-    self.assertEqual(entries,
-      [('100644', '100644', 'ac234b2', '077d1f8', 'M', None,
-        'chromeos-base/chromeos-chrome/Manifest', None),
-       ('100644', '100644', '9e5d11b', '806bf9b', 'R', '099',
-        'chromeos-base/chromeos-chrome/'
-        'chromeos-chrome-40.0.2197.0_rc-r1.ebuild',
-        'chromeos-base/chromeos-chrome/'
-        'chromeos-chrome-40.0.2197.2_rc-r1.ebuild'),
-       ('100644', '100644', '70d6e94', '821c642', 'M', None,
-        'chromeos-base/chromeos-chrome/chromeos-chrome-9999.ebuild', None),
-       ('100644', '100644', 'be445f9', 'be445f9', 'R', '100',
-        'chromeos-base/chromium-source/'
-        'chromium-source-40.0.2197.0_rc-r1.ebuild',
-        'chromeos-base/chromium-source/'
-        'chromium-source-40.0.2197.2_rc-r1.ebuild')])
+    self.assertEqual(entries, [
+        ('100644', '100644', 'ac234b2', '077d1f8', 'M', None,
+         'chromeos-base/chromeos-chrome/Manifest', None),
+        ('100644', '100644', '9e5d11b', '806bf9b', 'R', '099',
+         'chromeos-base/chromeos-chrome/'
+         'chromeos-chrome-40.0.2197.0_rc-r1.ebuild',
+         'chromeos-base/chromeos-chrome/'
+         'chromeos-chrome-40.0.2197.2_rc-r1.ebuild'),
+        ('100644', '100644', '70d6e94', '821c642', 'M', None,
+         'chromeos-base/chromeos-chrome/chromeos-chrome-9999.ebuild', None),
+        ('100644', '100644', 'be445f9', 'be445f9', 'R', '100',
+         'chromeos-base/chromium-source/'
+         'chromium-source-40.0.2197.0_rc-r1.ebuild',
+         'chromeos-base/chromium-source/'
+         'chromium-source-40.0.2197.2_rc-r1.ebuild')
+    ])
 
 
 class GitPushTest(cros_test_lib.MockTestCase):
   """Tests for git.GitPush function."""
 
   # Non fast-forward push error message.
-  NON_FF_PUSH_ERROR = ('To https://localhost/repo.git\n'
+  NON_FF_PUSH_ERROR = (
+      'To https://localhost/repo.git\n'
       '! [remote rejected] master -> master (non-fast-forward)\n'
       'error: failed to push some refs to \'https://localhost/repo.git\'\n')
 
@@ -332,6 +332,7 @@ class GitPushTest(cros_test_lib.MockTestCase):
 
 class GitBranchDetectionTest(patch_unittest.GitRepoPatchTestCase):
   """Tests that git library functions related to branch detection work."""
+
   def testDoesCommitExistInRepoWithAmbiguousBranchName(self):
     git1 = self._MakeRepo('git1', self.source)
     git.CreateBranch(git1, 'peach', track=True)

@@ -5,8 +5,6 @@
 """Module containing methods and classes to interact with a devserver instance.
 """
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import logging
@@ -270,11 +268,11 @@ class DevServerWrapper(multiprocessing.Process):
         cwd=constants.SOURCE_ROOT, error_code_ok=True,
         redirect_stdout=True, combine_stdout_stderr=True)
     if result.returncode != 0:
-      msg = ('Devserver failed to start!\n'
-             '--- Start output from the devserver startup command ---\n'
-             '%s'
-             '--- End output from the devserver startup command ---'
-             ) % result.output
+      msg = (('Devserver failed to start!\n'
+              '--- Start output from the devserver startup command ---\n'
+              '%s'
+              '--- End output from the devserver startup command ---') %
+             (result.output))
       logging.error(msg)
 
   def Start(self):
@@ -436,7 +434,7 @@ You can fix this with one of the following three options:
     cmd = ['python', self.devserver_bin,
            '--logfile=%s' % self.log_file,
            '--pidfile', self._pid_file,
-           '--port=%d' % port,]
+           '--port=%d' % port]
 
     if not self.port:
       cmd.append('--portfile=%s' % self.port_file)
@@ -448,11 +446,11 @@ You can fix this with one of the following three options:
     result = self._RunCommand(cmd, error_code_ok=True, redirect_stdout=True,
                               combine_stdout_stderr=True)
     if result.returncode != 0:
-      msg = ('Remote devserver failed to start!\n'
-             '--- Start output from the devserver startup command ---\n'
-             '%s'
-             '--- End output from the devserver startup command ---'
-             ) % result.output
+      msg = (('Remote devserver failed to start!\n'
+              '--- Start output from the devserver startup command ---\n'
+              '%s'
+              '--- End output from the devserver startup command ---') %
+             (result.output))
       logging.error(msg)
       if 'ImportError: No module named cherrypy' in result.output:
         logging.error(self.CHERRYPY_ERROR_MSG)

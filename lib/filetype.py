@@ -20,8 +20,6 @@ of a Chromium OS build in small buckets, partitioning cases where other standard
 classifications keep in the same set.
 """
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import itertools
@@ -56,7 +54,7 @@ def SplitShebang(header):
   m = re.match(r'#!\s*(/[a-z/0-9\.-]+)\s*(.*)$', header)
   if m:
     return m.group(1), m.group(2).strip()
-  raise ValueError("shebang (#!) line expected")
+  raise ValueError('shebang (#!) line expected')
 
 
 class FileTypeDecoder(object):
@@ -167,7 +165,7 @@ class FileTypeDecoder(object):
       # ELF.
       if first_kib.startswith('\x7fELF'):
         return self._GetELFType(parseelf.ParseELF(self._root, rel_path,
-                                parse_symbols=False))
+                                                  parse_symbols=False))
 
       if first_kib.startswith('MZ\x90\0'):
         return 'binary/dos-bin'

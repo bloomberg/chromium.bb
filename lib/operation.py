@@ -8,8 +8,6 @@ This module implements the concept of an operation, which has regular progress
 updates, verbose text display and perhaps some errors.
 """
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import contextlib
@@ -19,10 +17,10 @@ import sys
 from chromite.lib.terminal import Color
 
 
-#TODO(sjg): When !isatty(), keep stdout and stderr separate so they can be
-#redirected separately
-#TODO(sjg): Add proper docs to this fileno
-#TODO(sjg): Handle stdin wait in quite mode, rather than silently stalling
+# TODO(sjg): When !isatty(), keep stdout and stderr separate so they can be
+# redirected separately
+# TODO(sjg): Add proper docs to this fileno
+# TODO(sjg): Handle stdin wait in quite mode, rather than silently stalling
 
 class Operation(object):
   """Class which controls stdio and progress of an operation in progress.
@@ -161,7 +159,7 @@ class Operation(object):
     """
     if total > 0:
       update_str = '%s...%d%% (%d of %d)' % (self._name,
-          upto * 100 // total, upto, total)
+                                             upto * 100 // total, upto, total)
       if self.progress:
         # Finish the current line, print progress, and remember its length.
         self._FinishLine(self.verbose)
@@ -347,7 +345,7 @@ class Operation(object):
       line: text to output (without \n on the end)
     """
     self._Out(None, self._color.Color(self._color.BLUE, line),
-        display=self.verbose, newline=True, do_output_filter=False)
+              display=self.verbose, newline=True, do_output_filter=False)
     self._FinishLine(display=True)
 
   def Notice(self, line):
@@ -357,7 +355,7 @@ class Operation(object):
       line: text to output (without \n on the end)
     """
     self._Out(None, self._color.Color(self._color.GREEN, line),
-        display=True, newline=True, do_output_filter=False)
+              display=True, newline=True, do_output_filter=False)
     self._FinishLine(display=True)
 
   def Warning(self, line):
@@ -367,7 +365,7 @@ class Operation(object):
       line: text to output (without \n on the end)
     """
     self._Out(None, self._color.Color(self._color.YELLOW, line),
-        display=True, newline=True, do_output_filter=False)
+              display=True, newline=True, do_output_filter=False)
     self._FinishLine(display=True)
 
   def Error(self, line):
@@ -377,7 +375,7 @@ class Operation(object):
       line: text to output (without \n on the end)
     """
     self._Out(None, self._color.Color(self._color.RED, line),
-        display=True, newline=True, do_output_filter=False)
+              display=True, newline=True, do_output_filter=False)
     self._FinishLine(display=True)
 
   def Die(self, line):

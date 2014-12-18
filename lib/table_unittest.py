@@ -5,8 +5,6 @@
 
 """Unit tests for the table module."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import cStringIO
@@ -19,7 +17,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
 from chromite.lib import cros_test_lib
 from chromite.lib import table
 
-# pylint: disable=W0212,R0904
+
+# pylint: disable=protected-access
+
+
 class TableTest(cros_test_lib.TempDirTestCase):
   """Unit tests for the Table class."""
 
@@ -50,7 +51,7 @@ class TableTest(cros_test_lib.TempDirTestCase):
     """Take |row| dict and return correctly ordered values in a list."""
     vals = []
     for col in self.COLUMNS:
-      vals.append(row.get(col, ""))
+      vals.append(row.get(col, ''))
 
     return vals
 
@@ -281,20 +282,21 @@ class TableTest(cros_test_lib.TempDirTestCase):
 
   def testSplitCSVLine(self):
     """Test splitting of csv line."""
-    tests = {'a,b,c,d':           ['a', 'b', 'c', 'd'],
-             'a, b, c, d':        ['a', ' b', ' c', ' d'],
-             'a,b,c,':            ['a', 'b', 'c', ''],
-             'a,"b c",d':         ['a', 'b c', 'd'],
-             'a,"b, c",d':        ['a', 'b, c', 'd'],
-             'a,"b, c, d",e':     ['a', 'b, c, d', 'e'],
-             'a,"""b, c""",d':    ['a', '"b, c"', 'd'],
-             'a,"""b, c"", d",e': ['a', '"b, c", d', 'e'],
+    tests = {
+        'a,b,c,d':           ['a', 'b', 'c', 'd'],
+        'a, b, c, d':        ['a', ' b', ' c', ' d'],
+        'a,b,c,':            ['a', 'b', 'c', ''],
+        'a,"b c",d':         ['a', 'b c', 'd'],
+        'a,"b, c",d':        ['a', 'b, c', 'd'],
+        'a,"b, c, d",e':     ['a', 'b, c, d', 'e'],
+        'a,"""b, c""",d':    ['a', '"b, c"', 'd'],
+        'a,"""b, c"", d",e': ['a', '"b, c", d', 'e'],
 
-             # Following not real Google Spreadsheet cases.
-             r'a,b\,c,d':         ['a', 'b,c', 'd'],
-             'a,",c':             ['a', '",c'],
-             'a,"",c':            ['a', '', 'c'],
-             }
+        # Following not real Google Spreadsheet cases.
+        r'a,b\,c,d':         ['a', 'b,c', 'd'],
+        'a,",c':             ['a', '",c'],
+        'a,"",c':            ['a', '', 'c'],
+    }
     for line in tests:
       vals = table.Table._SplitCSVLine(line)
       self.assertEquals(vals, tests[line])
@@ -327,18 +329,18 @@ class TableTest(cros_test_lib.TempDirTestCase):
 
   def testProcessRows(self):
     def Processor(row):
-      row[self.COL0] = row[self.COL0] + " processed"
+      row[self.COL0] = row[self.COL0] + ' processed'
     self._table.ProcessRows(Processor)
 
     final_row0 = dict(self.ROW0)
-    final_row0[self.COL0] += " processed"
+    final_row0[self.COL0] += ' processed'
     final_row1 = dict(self.ROW1)
-    final_row1[self.COL0] += " processed"
+    final_row1[self.COL0] += ' processed'
     final_row2 = dict(self.ROW2)
-    final_row2[self.COL0] += " processed"
+    final_row2[self.COL0] += ' processed'
     self.assertRowsEqual(final_row0, self._table[0])
     self.assertRowsEqual(final_row1, self._table[1])
     self.assertRowsEqual(final_row2, self._table[2])
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   cros_test_lib.main()

@@ -8,8 +8,6 @@ This ranges from optparse, to a basic script wrapper setup (much like
 what is used for chromite.bin.*).
 """
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import argparse
@@ -160,8 +158,6 @@ def ParseDate(value):
 
 def NormalizeUri(value):
   """Normalize a local path or URI."""
-  # Pylint is confused about result of urlparse.
-  # pylint: disable=E1101
   o = urlparse.urlparse(value)
   if o.scheme == 'file':
     # Trim off the file:// prefix.
@@ -195,7 +191,7 @@ VALID_TYPES = {
 class Option(optparse.Option):
   """Subclass to implement path evaluation & other useful types."""
 
-  _EXTRA_TYPES = ("path", "gs_path")
+  _EXTRA_TYPES = ('path', 'gs_path')
   TYPES = optparse.Option.TYPES + _EXTRA_TYPES
   TYPE_CHECKER = optparse.Option.TYPE_CHECKER.copy()
   for t in _EXTRA_TYPES:
@@ -258,7 +254,7 @@ class BaseParser(object):
   DEFAULT_LOG_LEVELS = ('fatal', 'critical', 'error', 'warning', 'info',
                         'debug')
 
-  DEFAULT_LOG_LEVEL = "info"
+  DEFAULT_LOG_LEVEL = 'info'
   ALLOW_LOGGING = True
 
   REPO_CACHE_DIR = '.cache'
@@ -316,7 +312,7 @@ class BaseParser(object):
   def SetupOptions(self):
     """Sets up special chromite options for an OptionParser."""
     if self.logging_enabled:
-      self.debug_group = self.add_option_group("Debug options")
+      self.debug_group = self.add_option_group('Debug options')
       self.add_option_to_group(
           self.debug_group, '--log-level', choices=self.log_levels,
           default=self.default_log_level,
@@ -327,19 +323,19 @@ class BaseParser(object):
           help='Set logging format to use.')
       if self.debug_enabled:
         self.add_option_to_group(
-          self.debug_group, '--debug', action='store_const', const='debug',
-          dest='log_level', help='Alias for `--log-level=debug`. '
-          'Useful for debugging bugs/failures.')
+            self.debug_group, '--debug', action='store_const', const='debug',
+            dest='log_level', help='Alias for `--log-level=debug`. '
+            'Useful for debugging bugs/failures.')
       self.add_option_to_group(
-        self.debug_group, '--nocolor', action='store_false', dest='color',
-        default=None,
-        help='Do not use colorized output (or `export NOCOLOR=true`)')
+          self.debug_group, '--nocolor', action='store_false', dest='color',
+          default=None,
+          help='Do not use colorized output (or `export NOCOLOR=true`)')
 
     if self.caching:
-      self.caching_group = self.add_option_group("Caching Options")
+      self.caching_group = self.add_option_group('Caching Options')
       self.add_option_to_group(
-          self.caching_group, "--cache-dir", default=None, type='path',
-          help="Override the calculated chromeos cache directory; "
+          self.caching_group, '--cache-dir', default=None, type='path',
+          help='Override the calculated chromeos cache directory; '
           "typically defaults to '$REPO/.cache' .")
 
   def SetupLogging(self, opts):
@@ -375,7 +371,7 @@ class BaseParser(object):
     if self.logging_enabled:
       value = self.SetupLogging(opts)
       if self.debug_enabled:
-        opts.debug = (value == "DEBUG")
+        opts.debug = (value == 'DEBUG')
 
     if self.caching:
       path = os.environ.get(constants.SHARED_CACHE_ENVVAR)
@@ -395,10 +391,10 @@ class BaseParser(object):
   def ConfigureCacheDir(cache_dir):
     if cache_dir is None:
       os.environ.pop(constants.SHARED_CACHE_ENVVAR, None)
-      logging.debug("Removed cache_dir setting")
+      logging.debug('Removed cache_dir setting')
     else:
       os.environ[constants.SHARED_CACHE_ENVVAR] = cache_dir
-      logging.debug("Configured cache_dir to %r", cache_dir)
+      logging.debug('Configured cache_dir to %r', cache_dir)
 
   @classmethod
   def FindCacheDir(cls, _parser, _opts):
@@ -462,7 +458,7 @@ class OptionParser(optparse.OptionParser, BaseParser):
   def __init__(self, usage=None, **kwargs):
     BaseParser.__init__(self, **kwargs)
     self.PopUsedArgs(kwargs)
-    kwargs.setdefault("option_class", self.DEFAULT_OPTION_CLASS)
+    kwargs.setdefault('option_class', self.DEFAULT_OPTION_CLASS)
     optparse.OptionParser.__init__(self, usage=usage, **kwargs)
     self.SetupOptions()
 
@@ -477,7 +473,7 @@ class OptionParser(optparse.OptionParser, BaseParser):
 
 
 PassedOption = collections.namedtuple(
-        'PassedOption', ['opt_inst', 'opt_str', 'value_str'])
+    'PassedOption', ['opt_inst', 'opt_str', 'value_str'])
 
 
 class FilteringParser(OptionParser):
@@ -529,7 +525,6 @@ class FilteringParser(OptionParser):
     return accepted, removed
 
 
-# pylint: disable=R0901
 class ArgumentParser(BaseParser, argparse.ArgumentParser):
   """Custom argument parser for use by chromite.
 
@@ -537,7 +532,7 @@ class ArgumentParser(BaseParser, argparse.ArgumentParser):
   either derive from this class setting ALLOW_LOGGING to False, or
   pass in logging=False to the constructor.
   """
-  # pylint: disable=W0231
+
   def __init__(self, usage=None, **kwargs):
     kwargs.setdefault('formatter_class', argparse.RawDescriptionHelpFormatter)
     BaseParser.__init__(self, **kwargs)
@@ -589,7 +584,7 @@ def _DefaultHandler(signum, _frame):
   # exception.
   signal.signal(signum, signal.SIG_IGN)
   raise _ShutDownException(
-      signum, "Received signal %i; shutting down" % (signum,))
+      signum, 'Received signal %i; shutting down' % (signum,))
 
 
 def _RestartInChroot(argv):
@@ -647,7 +642,7 @@ def ScriptWrapperMain(find_target_func, argv=None,
     ret = target(argv[1:])
   except _ShutDownException as e:
     sys.stdout.flush()
-    print('%s: Signaled to shutdown: caught %i signal.' % (name, e.signal,),
+    print('%s: Signaled to shutdown: caught %i signal.' % (name, e.signal),
           file=sys.stderr)
     sys.stderr.flush()
   except SystemExit as e:

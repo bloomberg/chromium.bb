@@ -4,8 +4,6 @@
 
 """Support generic spreadsheet-like table information."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import inspect
@@ -18,11 +16,12 @@ from chromite.lib import cros_build_lib
 class Table(object):
   """Class to represent column headers and rows of data."""
 
-  __slots__ = ['_column_set',  # Set of column headers (for faster lookup)
-               '_columns',     # List of column headers in order
-               '_name',        # Name to associate with table
-               '_rows',        # List of row dicts
-               ]
+  __slots__ = (
+      '_column_set',  # Set of column headers (for faster lookup)
+      '_columns',     # List of column headers in order
+      '_name',        # Name to associate with table
+      '_rows',        # List of row dicts
+  )
 
   EMPTY_CELL = ''
 
@@ -72,7 +71,7 @@ class Table(object):
       # If previous value started with quote and ended without one, then
       # the current value is just a continuation of the previous value.
       if prevval and prevval.startswith(Table.CSV_BQ):
-        val = prevval + "," + val
+        val = prevval + ',' + val
         # Once entire value is read, strip surrounding quotes
         if val.endswith(Table.CSV_EQ):
           vals[-1] = val[len(Table.CSV_BQ):-len(Table.CSV_EQ)]
@@ -141,7 +140,7 @@ class Table(object):
 
   def __eq__(self, other):
     """Return true if two tables are equal."""
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     return self._columns == other._columns and self._rows == other._rows
 
   def __ne__(self, other):
@@ -243,7 +242,7 @@ class Table(object):
 
     elif isinstance(values, list):
       if len(values) > len(self._columns):
-        raise LookupError("Tried adding row with too many columns")
+        raise LookupError('Tried adding row with too many columns')
       if len(values) < len(self._columns):
         shortage = len(self._columns) - len(values)
         values.extend([self.EMPTY_CELL] * shortage)
@@ -291,7 +290,7 @@ class Table(object):
     Otherwise, they will have the EMPTY_CELL value.
     """
     if self.HasColumn(name):
-      raise LookupError("Column %s already exists in table." % name)
+      raise LookupError('Column %s already exists in table.' % name)
 
     self._columns.insert(index, name)
     self._column_set.add(name)
@@ -339,7 +338,7 @@ class Table(object):
     # If requested, allow columns in other_table to create new columns
     # in this table if this table does not already have them.
     if allow_new_columns:
-      # pylint: disable=W0212
+      # pylint: disable=protected-access
       for ix, col in enumerate(other_table._columns):
         if not self.HasColumn(col):
           # Create a merge_rule on the fly for this new column.
@@ -424,7 +423,7 @@ class Table(object):
       try:
         return merge_rule(col, val, other_val)
       except ValueError:
-        pass # Fall through to exception at end
+        pass  # Fall through to exception at end
     elif merge_rule == 'accept_this_val':
       return val
     elif merge_rule == 'accept_other_val':

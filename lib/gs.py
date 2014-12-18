@@ -4,8 +4,6 @@
 
 """Library to make common google storage operations more reliable."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import collections
@@ -28,6 +26,7 @@ from chromite.lib import retry_stats
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
 
+
 PUBLIC_BASE_HTTPS_URL = 'https://commondatastorage.googleapis.com/'
 PRIVATE_BASE_HTTPS_URL = 'https://storage.cloud.google.com/'
 BASE_GS_URL = 'gs://'
@@ -49,8 +48,8 @@ LS_LA_RE = re.compile(
     r'(?P<creation_time>\S*?)\s+'
     r'(?P<url>[^#$]+).*?'
     r'('
-     r'#(?P<generation>\d+)\s+'
-     r'meta_?generation=(?P<metageneration>\d+)'
+    r'#(?P<generation>\d+)\s+'
+    r'meta_?generation=(?P<metageneration>\d+)'
     r')?\s*$')
 LS_RE = re.compile(r'^\s*(?P<content_length>)(?P<creation_time>)(?P<url>.*)'
                    r'(?P<generation>)(?P<metageneration>)\s*$')
@@ -852,7 +851,7 @@ class GSContext(object):
     if acl is None:
       if not self.acl:
         raise GSContextException(
-            "SetAcl invoked w/out a specified acl, nor a default acl.")
+            'SetAcl invoked w/out a specified acl, nor a default acl.')
       acl = self.acl
 
     self.DoCommand(['acl', 'set', acl, upload_url])

@@ -4,8 +4,6 @@
 
 """Library for interacting with gdata (i.e. Google Docs, Tracker, etc)."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import functools
@@ -23,7 +21,9 @@ import gdata.spreadsheet.service
 
 from chromite.lib import operation
 
-# pylint: disable=W0201,E0203,E1101
+
+# pylint: disable=attribute-defined-outside-init,access-member-before-definition
+
 
 TOKEN_FILE = os.path.join(os.environ['HOME'], '.gdata_token')
 CRED_FILE = os.path.join(os.environ['HOME'], '.gdata_cred.txt')
@@ -66,13 +66,13 @@ class Creds(object):
   """Class to manage user/password credentials."""
 
   __slots__ = (
-    'docs_auth_token',    # Docs Client auth token string
-    'creds_dirty',        # True if user/password set and not, yet, saved
-    'password',           # User password
-    'token_dirty',        # True if auth token(s) set and not, yet, saved
-    'tracker_auth_token', # Tracker Client auth token string
-    'user',               # User account (foo@chromium.org)
-    )
+      'docs_auth_token',    # Docs Client auth token string
+      'creds_dirty',        # True if user/password set and not, yet, saved
+      'password',           # User password
+      'token_dirty',        # True if auth token(s) set and not, yet, saved
+      'tracker_auth_token', # Tracker Client auth token string
+      'user',               # User account (foo@chromium.org)
+  )
 
   SAVED_TOKEN_ATTRS = ('docs_auth_token', 'tracker_auth_token', 'user')
 
@@ -198,15 +198,15 @@ class Issue(object):
   """Represents one Tracker Issue."""
 
   SlotDefaults = {
-    'comments': [], # List of IssueComment objects
-    'id': 0,        # Issue id number (int)
-    'labels': [],   # List of text labels
-    'owner': None,  # Current owner (text, chromium.org account)
-    'status': None, # Current issue status (text) (e.g. Assigned)
-    'summary': None,# Issue summary (first comment)
-    'title': None,  # Title text
-    'ccs': [],      # Cc list
-    }
+      'comments': [], # List of IssueComment objects
+      'id': 0,        # Issue id number (int)
+      'labels': [],   # List of text labels
+      'owner': None,  # Current owner (text, chromium.org account)
+      'status': None, # Current issue status (text) (e.g. Assigned)
+      'summary': None,# Issue summary (first comment)
+      'title': None,  # Title text
+      'ccs': [],      # Cc list
+  }
 
   __slots__ = SlotDefaults.keys()
 
@@ -226,10 +226,11 @@ class Issue(object):
 
   def __str__(self):
     """Pretty print of issue."""
-    lines = ['Issue %d - %s' % (self.id, self.title),
-             'Status: %s, Owner: %s' % (self.status, self.owner),
-             'Labels: %s' % ', '.join(self.labels),
-             ]
+    lines = [
+        'Issue %d - %s' % (self.id, self.title),
+        'Status: %s, Owner: %s' % (self.status, self.owner),
+        'Labels: %s' % ', '.join(self.labels),
+    ]
 
     if self.summary:
       lines.append('Summary: %s' % self.summary)
@@ -280,6 +281,7 @@ class Issue(object):
   def __ne__(self, other):
     return not self == other
 
+
 class TrackerError(RuntimeError):
   """Error class for tracker communication errors."""
 
@@ -292,10 +294,10 @@ class TrackerComm(object):
   """Class to manage communication with Tracker."""
 
   __slots__ = (
-    'author',       # Author when creating/editing Tracker issues
-    'it_client',    # Issue Tracker client
-    'project_name', # Tracker project name
-    )
+      'author',       # Author when creating/editing Tracker issues
+      'it_client',    # Issue Tracker client
+      'project_name', # Tracker project name
+  )
 
   def __init__(self):
     self.author = None
@@ -311,7 +313,7 @@ class TrackerComm(object):
     if creds.tracker_auth_token:
       oper.Notice('Logging into Tracker using previous auth token.')
       it_client.auth_token = gdata.gauth.ClientLoginToken(
-        creds.tracker_auth_token)
+          creds.tracker_auth_token)
     else:
       oper.Notice('Logging into Tracker as "%s".' % creds.user)
       it_client.ClientLogin(creds.user, creds.password,
@@ -421,8 +423,10 @@ class SpreadsheetRow(dict):
 class SpreadsheetError(RuntimeError):
   """Error class for spreadsheet communication errors."""
 
+
 def ReadWriteDecorator(func):
   """Raise SpreadsheetError if appropriate."""
+
   def f(self, *args, **kwargs):
     try:
       return func(self, *args, **kwargs)
@@ -431,6 +435,7 @@ def ReadWriteDecorator(func):
 
   f.__name__ = func.__name__
   return f
+
 
 class SpreadsheetComm(object):
   """Class to manage communication with one Google Spreadsheet worksheet."""
@@ -443,13 +448,13 @@ class SpreadsheetComm(object):
   COLUMN_NUMBER_OFFSET = 1
 
   __slots__ = (
-    '_columns',    # Tuple of translated column names, filled in as needed
-    '_rows',       # Tuple of Row dicts in order, filled in as needed
-    'gd_client',   # Google Data client
-    'ss_key',      # Spreadsheet key
-    'ws_name',     # Worksheet name
-    'ws_key',      # Worksheet key
-    )
+      '_columns',    # Tuple of translated column names, filled in as needed
+      '_rows',       # Tuple of Row dicts in order, filled in as needed
+      'gd_client',   # Google Data client
+      'ss_key',      # Spreadsheet key
+      'ws_name',     # Worksheet name
+      'ws_key',      # Worksheet key
+  )
 
   @property
   def columns(self):
@@ -691,12 +696,12 @@ class RetrySpreadsheetsService(gdata.spreadsheet.service.SpreadsheetsService):
      can actually vary, so the original implementation of the request
      method can also vary.
   """
-  # pylint: disable=R0904
 
   TRY_MAX = 5
-  RETRYABLE_STATUSES = (403,  # Forbidden (but retries still seem to help).
-                        500,  # Internal server error.
-                       )
+  RETRYABLE_STATUSES = (
+      403,  # Forbidden (but retries still seem to help).
+      500,  # Internal server error.
+  )
 
   def __init__(self, *args, **kwargs):
     gdata.spreadsheet.service.SpreadsheetsService.__init__(self, *args,

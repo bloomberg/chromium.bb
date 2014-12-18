@@ -5,8 +5,6 @@
 
 """Unittests for chromite.lib.patch."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import copy
@@ -33,20 +31,25 @@ import mock
 _GetNumber = iter(itertools.count()).next
 
 FAKE_PATCH_JSON = {
-  "project":"tacos/chromite", "branch":"master",
-  "id":"Iee5c89d929f1850d7d4e1a4ff5f21adda800025f",
-  "currentPatchSet": {
-    "number":"2", "ref":gerrit.GetChangeRef(1112, 2),
-    "revision":"ff10979dd360e75ff21f5cf53b7f8647578785ef",
-  },
-  "number":"1112",
-  "subject":"chromite commit",
-  "owner":{"name":"Chromite Master", "email":"chromite@chromium.org"},
-  "url":"https://chromium-review.googlesource.com/1112",
-  "lastUpdated":1311024529,
-  "sortKey":"00166e8700001052",
-  "open": True,
-  "status":"NEW",
+    'project': 'tacos/chromite',
+    'branch': 'master',
+    'id': 'Iee5c89d929f1850d7d4e1a4ff5f21adda800025f',
+    'currentPatchSet': {
+        'number': '2',
+        'ref': gerrit.GetChangeRef(1112, 2),
+        'revision': 'ff10979dd360e75ff21f5cf53b7f8647578785ef',
+    },
+    'number': '1112',
+    'subject': 'chromite commit',
+    'owner': {
+        'name': 'Chromite Master',
+        'email': 'chromite@chromium.org',
+    },
+    'url': 'https://chromium-review.googlesource.com/1112',
+    'lastUpdated': 1311024529,
+    'sortKey': '00166e8700001052',
+    'open': True,
+    'status': 'NEW',
 }
 
 # Change-ID of a known open change in public gerrit.
@@ -64,8 +67,8 @@ class GitRepoPatchTestCase(cros_test_lib.TempDirTestCase):
 
   patch_kls = cros_patch.GitRepoPatch
 
-  COMMIT_TEMPLATE = (
-"""commit abcdefgh
+  COMMIT_TEMPLATE = """\
+commit abcdefgh
 
 Author: Fake person
 Date:  Tue Oct 99
@@ -76,7 +79,6 @@ I am the first commit.
 
 %(change-id)s
 """
-  )
 
   # Boolean controlling whether the target class natively knows its
   # ChangeId; only GerritPatches do.
@@ -143,7 +145,7 @@ I am the first commit.
 
   def _MakeCommit(self, repo, commit=None):
     if commit is None:
-      commit = "commit at %s" % (time.time(),)
+      commit = 'commit at %s' % (time.time(),)
     self._run(['git', 'commit', '-a', '-m', commit], repo)
     return self._GetSha1(repo, 'HEAD')
 
@@ -179,7 +181,7 @@ I am the first commit.
       raw_changeid_text = 'Change-Id: %s' % (changeid,)
     if extra is None:
       extra = ''
-    commit = template % {'change-id': raw_changeid_text, 'extra':extra}
+    commit = template % {'change-id': raw_changeid_text, 'extra': extra}
 
     return self.CommitFile(repo, filename, content, commit=commit,
                            ChangeId=changeid, **kwargs)
@@ -197,7 +199,7 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
     patch2 = self.CommitFile(git1, 'monkeys', 'blah')
     self.assertEqual({'monkeys': 'M'}, patch2.GetDiffStatus(git1))
     git.RunGit(git1, ['mv', 'monkeys', 'monkeys2'])
-    patch3 = self._MkPatch(git1, self._MakeCommit(git1, commit="mv"))
+    patch3 = self._MkPatch(git1, self._MakeCommit(git1, commit='mv'))
     self.assertEqual({'monkeys': 'D', 'monkeys2': 'A'},
                      patch3.GetDiffStatus(git1))
     patch4 = self.CommitFile(git1, 'monkey2', 'blah')
@@ -230,10 +232,10 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
     git1 = self._MakeRepo('git1', self.source)
     patch1 = self._MkPatch(git1, self._GetSha1(git1, 'HEAD'))
     self.assertRaises2(cros_patch.PatchIsEmpty, patch1.Apply, git1,
-                       self.DEFAULT_TRACKING, check_attrs={'inflight':False})
+                       self.DEFAULT_TRACKING, check_attrs={'inflight': False})
     patch2 = self.CommitFile(git1, 'monkeys', 'rule')
     self.assertRaises2(cros_patch.PatchIsEmpty, patch2.Apply, git1,
-                       self.DEFAULT_TRACKING, check_attrs={'inflight':True})
+                       self.DEFAULT_TRACKING, check_attrs={'inflight': True})
 
   def testDeleteEbuildTwice(self):
     """Test that double-deletes of ebuilds are flagged as conflicts."""
@@ -278,7 +280,7 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
     patch2.Apply(git2, self.DEFAULT_TRACKING)
     self.assertRaises2(cros_patch.ApplyPatchException,
                        patch1.Apply, git2, self.DEFAULT_TRACKING,
-                       exact_kls=True, check_attrs={'inflight':True})
+                       exact_kls=True, check_attrs={'inflight': True})
 
   def testTrivial(self):
     _, git2, patch1 = self._CommonGitSetup()
@@ -303,20 +305,20 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
 
     self.assertRaises2(cros_patch.PatchIsEmpty,
                        patch1.Apply, git2, self.DEFAULT_TRACKING, trivial=True,
-                       check_attrs={'inflight':False, 'trivial':False})
+                       check_attrs={'inflight': False, 'trivial': False})
 
     # Now test conflicts since we're still at ToT; note that this is an actual
     # conflict because the fuzz anchors have changed.
     self.assertRaises2(cros_patch.ApplyPatchException,
                        patch3.Apply, git2, self.DEFAULT_TRACKING, trivial=True,
-                       check_attrs={'inflight':False, 'trivial':False},
+                       check_attrs={'inflight': False, 'trivial': False},
                        exact_kls=True)
 
     # Now test trivial conflict; this would've merged fine were it not for
     # trivial.
     self.assertRaises2(cros_patch.PatchIsEmpty,
                        patch4.Apply, git2, self.DEFAULT_TRACKING, trivial=True,
-                       check_attrs={'inflight':False, 'trivial':False},
+                       check_attrs={'inflight': False, 'trivial': False},
                        exact_kls=True)
 
     # Move us into inflight testing.
@@ -325,21 +327,21 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
     # Repeat the tests from above; should still be the same.
     self.assertRaises2(cros_patch.PatchIsEmpty,
                        patch4.Apply, git2, self.DEFAULT_TRACKING, trivial=True,
-                       check_attrs={'inflight':False, 'trivial':False})
+                       check_attrs={'inflight': False, 'trivial': False})
 
     # Actual conflict merge conflict due to inflight; non trivial induced.
     self.assertRaises2(cros_patch.ApplyPatchException,
                        patch5.Apply, git2, self.DEFAULT_TRACKING, trivial=True,
-                       check_attrs={'inflight':True, 'trivial':False},
+                       check_attrs={'inflight': True, 'trivial': False},
                        exact_kls=True)
 
     self.assertRaises2(cros_patch.PatchIsEmpty,
                        patch1.Apply, git2, self.DEFAULT_TRACKING, trivial=True,
-                       check_attrs={'inflight':False})
+                       check_attrs={'inflight': False})
 
     self.assertRaises2(cros_patch.ApplyPatchException,
                        patch5.Apply, git2, self.DEFAULT_TRACKING, trivial=True,
-                       check_attrs={'inflight':True, 'trivial':False},
+                       check_attrs={'inflight': True, 'trivial': False},
                        exact_kls=True)
 
     # And this should apply without issue, despite the differing history.
@@ -420,10 +422,10 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
                        'CQ-DEPEND=%s %s' % (cid2, '1223'))
     # Dumb comma behaviour
     self._CheckPaladin(git1, cid1, [cid2, cid3],
-                      'CQ-DEPEND=%s, %s,' % (cid2, cid3))
+                       'CQ-DEPEND=%s, %s,' % (cid2, cid3))
     # Multiple keys.
     self._CheckPaladin(git1, cid1, [cid2, '*245', cid4],
-                      'CQ-DEPEND=%s, %s\nCQ-DEPEND=%s' % (cid2, '*245', cid4))
+                       'CQ-DEPEND=%s, %s\nCQ-DEPEND=%s' % (cid2, '*245', cid4))
 
     # Ensure it goes boom on invalid data.
     self.assertRaises(cros_patch.BrokenCQDepends, self._CheckPaladin,
@@ -448,15 +450,14 @@ class TestApplyAgainstManifest(GitRepoPatchTestCase,
                                cros_test_lib.MockTestCase):
   """Test applying a patch against a manifest"""
 
-  MANIFEST_TEMPLATE = (
-"""<?xml version="1.0" encoding="UTF-8"?>
+  MANIFEST_TEMPLATE = """\
+<?xml version="1.0" encoding="UTF-8"?>
 <manifest>
   <remote name="cros" />
   <default revision="refs/heads/master" remote="cros" />
   %(projects)s
 </manifest>
 """
-  )
 
   def _CommonRepoSetup(self, *projects):
     basedir = self.tempdir
@@ -480,24 +481,25 @@ class TestApplyAgainstManifest(GitRepoPatchTestCase,
   def testApplyAgainstManifest(self):
     git1, git2, _ = self._CommonGitSetup()
 
-    readme_text = "Dummy README text."
-    readme1 = self.CommitFile(git1, "README", readme_text)
-    readme_text += " Even more dummy README text."
-    readme2 = self.CommitFile(git1, "README", readme_text)
-    readme_text += " Even more README text."
-    readme3 = self.CommitFile(git1, "README", readme_text)
+    readme_text = 'Dummy README text.'
+    readme1 = self.CommitFile(git1, 'README', readme_text)
+    readme_text += ' Even more dummy README text.'
+    readme2 = self.CommitFile(git1, 'README', readme_text)
+    readme_text += ' Even more README text.'
+    readme3 = self.CommitFile(git1, 'README', readme_text)
 
-    git1_proj = {'path': git1,
-                 'name': 'chromiumos/chromite',
-                 'revision': str(readme1.sha1),
-                 'upstream': 'refs/heads/master'
-                }
-    git2_proj = {'path': git2,
-                 'name': 'git2'
-                }
+    git1_proj = {
+        'path': git1,
+        'name': 'chromiumos/chromite',
+        'revision': str(readme1.sha1),
+        'upstream': 'refs/heads/master',
+    }
+    git2_proj = {
+        'path': git2,
+        'name': 'git2',
+    }
     basedir = self._CommonRepoSetup(git1_proj, git2_proj)
 
-    # pylint: disable=E1101
     self.PatchObject(git.ManifestCheckout, '_GetManifestsBranch',
                      return_value=None)
     manifest = git.ManifestCheckout(basedir)
@@ -534,11 +536,9 @@ class TestLocalPatchGit(GitRepoPatchTestCase):
     git2_sha1 = self._GetSha1(git2, 'HEAD')
 
     patch.ProjectDir = ProjectDirMock
-    # First suppress carbon copy behaviour so we verify pushing
-    # plain works.
-    # pylint: disable=E1101,protected-access
+    # First suppress carbon copy behaviour so we verify pushing plain works.
     sha1 = patch.sha1
-    patch._GetCarbonCopy = lambda: sha1
+    patch._GetCarbonCopy = lambda: sha1  # pylint: disable=protected-access
     patch.Upload(git2, 'refs/testing/test1')
     self.assertEqual(self._GetSha1(git2, 'refs/testing/test1'),
                      patch.sha1)
@@ -701,8 +701,8 @@ class PrepareRemotePatchesTest(cros_test_lib.TestCase):
                internal=False):
 
     l = [project, original_branch, ref, tracking_branch,
-         getattr(constants, '%s_PATCH_TAG' % (
-            'INTERNAL' if internal else 'EXTERNAL'))]
+         getattr(constants, ('%s_PATCH_TAG' %
+                             ('INTERNAL' if internal else 'EXTERNAL')))]
     return ':'.join(l)
 
   def assertRemote(self, patch, project='my/project',
@@ -783,11 +783,11 @@ class TestFormatting(cros_test_lib.TestCase):
                     **kwargs):
     if raises:
       self.assertRaises2(ValueError, functor, value,
-                         msg="%s(%r) did not throw a ValueError"
+                         msg='%s(%r) did not throw a ValueError'
                          % (functor.__name__, value), **kwargs)
     else:
       self.assertEqual(functor(value, **kwargs), expected,
-                       msg="failed: %s(%r) != %r"
+                       msg='failed: %s(%r) != %r'
                        % (functor.__name__, value, expected))
 
   def _assertBad(self, functor, values, **kwargs):
@@ -798,11 +798,10 @@ class TestFormatting(cros_test_lib.TestCase):
     for value, expected in values:
       self._assertResult(functor, value, expected, **kwargs)
 
-
   def testGerritNumber(self):
     """Tests that we can pasre a Gerrit number."""
     self._assertGood(cros_patch.ParseGerritNumber,
-        [('12345',) * 2, ('12',) * 2, ('123',) * 2])
+                     [('12345',) * 2, ('12',) * 2, ('123',) * 2])
 
     self._assertBad(
         cros_patch.ParseGerritNumber,
@@ -825,7 +824,7 @@ class TestFormatting(cros_test_lib.TestCase):
     self._assertGood(cros_patch.ParseSHA1,
                      [('1' * 40,) * 2,
                       ('a' * 40,) * 2,
-                      ('1a7e034'.ljust(40, '0'),) *2])
+                      ('1a7e034'.ljust(40, '0'),) * 2])
 
     self._assertBad(
         cros_patch.ParseSHA1,
@@ -886,24 +885,24 @@ class MockPatchBase(cros_test_lib.MockTestCase):
     if not approvals:
       approvals = [{'type': 'VRIF', 'value': '1', 'grantedOn': 1391733002},
                    {'type': 'CRVW', 'value': '2', 'grantedOn': 1391733002},
-                   {'type': 'COMR', 'value': '1', 'grantedOn': 1391733002},]
+                   {'type': 'COMR', 'value': '1', 'grantedOn': 1391733002}]
 
     current_patch_set = {
-      'number': patch_number,
-      'revision': sha1,
-      'draft': is_draft,
-      'approvals': approvals,
+        'number': patch_number,
+        'revision': sha1,
+        'draft': is_draft,
+        'approvals': approvals,
     }
     patch_dict = {
-      'currentPatchSet': current_patch_set,
-      'id': change_id,
-      'number': gerrit_number,
-      'project': project,
-      'branch': tracking_branch,
-      'owner': {'email': 'elmer.fudd@chromium.org'},
-      'remote': remote,
-      'status': 'MERGED' if is_merged else 'NEW',
-      'url': '%s/%s' % (fake_url, change_id),
+        'currentPatchSet': current_patch_set,
+        'id': change_id,
+        'number': gerrit_number,
+        'project': project,
+        'branch': tracking_branch,
+        'owner': {'email': 'elmer.fudd@chromium.org'},
+        'remote': remote,
+        'status': 'MERGED' if is_merged else 'NEW',
+        'url': '%s/%s' % (fake_url, change_id),
     }
 
     patch = cros_patch.GerritPatch(patch_dict, remote, fake_url)

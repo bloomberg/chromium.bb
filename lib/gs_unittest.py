@@ -5,15 +5,13 @@
 
 """Unittests for the gs.py module."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import contextlib
 import functools
 import datetime
 import os
-import string # pylint: disable=W0402
+import string
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))
@@ -71,7 +69,7 @@ PreconditionException: 412 Precondition Failed"""
     self.GSUTIL_URL = 'file://%s' % gsutil_path
 
   def PreStart(self):
-    os.environ.pop("BOTO_CONFIG", None)
+    os.environ.pop('BOTO_CONFIG', None)
     # Set it here for now, instead of mocking out Cached() directly because
     # python-mock has a bug with mocking out class methods with autospec=True.
     # TODO(rcui): Change this when this is fixed in PartialMock.
@@ -83,7 +81,7 @@ PreconditionException: 412 Precondition Failed"""
 
   def DoCommand(self, inst, gsutil_cmd, **kwargs):
     result = self._results['DoCommand'].LookupResult(
-        (gsutil_cmd,), hook_args=(inst, gsutil_cmd,), hook_kwargs=kwargs)
+        (gsutil_cmd,), hook_args=(inst, gsutil_cmd), hook_kwargs=kwargs)
 
     rc_mock = cros_build_lib_unittest.RunCommandMock()
     rc_mock.AddCmdResult(
@@ -449,18 +447,18 @@ class CopyTest(AbstractGSContextTest, cros_test_lib.TempDirTestCase):
     error = (
         # This is a bit verbose, but it's from real output, so should be fine.
         'Copying file:///tmp/tmpyUUPg1 [Content-Type=application/octet-stream]'
-          '...\n'
+        '...\n'
         'Uploading   ...recovery-R38-6158.66.0-mccloud.instructions.lock:'
-          ' 0 B/38 B    \r'
+        ' 0 B/38 B    \r'
         'Uploading   ...recovery-R38-6158.66.0-mccloud.instructions.lock:'
-          ' 38 B/38 B    \r'
+        ' 38 B/38 B    \r'
         'NotFoundException: 404 Attempt to get key for "gs://chromeos-releases'
-          '/tobesigned/50,beta-\n'
+        '/tobesigned/50,beta-\n'
         'channel,mccloud,6158.66.0,ChromeOS-\n'
         'recovery-R38-6158.66.0-mccloud.instructions.lock" failed. This can '
-          'happen if the\n'
+        'happen if the\n'
         'URI refers to a non-existent object or if you meant to operate on a '
-          'directory\n'
+        'directory\n'
         '(e.g., leaving off -R option on gsutil cp, mv, or ls of a bucket)\n'
     )
     self.gs_mock.AddCmdResult(partial_mock.In('cp'), returncode=1, error=error)
@@ -666,12 +664,11 @@ class MoveTest(AbstractGSContextTest, cros_test_lib.TempDirTestCase):
         ['mv', '--', self.local_path, self.EXPECTED_REMOTE])
 
 
-#pylint: disable=E1101,W0212
 class GSContextInitTest(cros_test_lib.MockTempDirTestCase):
   """Tests GSContext.__init__() functionality."""
 
   def setUp(self):
-    os.environ.pop("BOTO_CONFIG", None)
+    os.environ.pop('BOTO_CONFIG', None)
     self.bad_path = os.path.join(self.tempdir, 'nonexistent')
 
     file_list = ['gsutil_bin', 'boto_file', 'acl_file']
@@ -796,6 +793,7 @@ class GSDoCommandTest(cros_test_lib.TestCase):
         cmd += ['-r', '-e']
       cmd += ['--', '/blah', 'gs://foon']
 
+      # pylint: disable=protected-access
       retry_stats.RetryWithStats.assert_called_once_with(
           retry_stats.GSUTIL,
           ctx._RetryFilter, retries,
@@ -827,13 +825,15 @@ class GSDoCommandTest(cros_test_lib.TestCase):
 class GSRetryFilterTest(cros_test_lib.TestCase):
   """Verifies that we filter and process gsutil errors correctly."""
 
+  # pylint: disable=protected-access
+
   LOCAL_PATH = '/tmp/file'
   REMOTE_PATH = ('gs://chromeos-prebuilt/board/beltino/paladin-R33-4926.0.0'
                  '-rc2/packages/chromeos-base/autotest-tests-0.0.1-r4679.tbz2')
   GSUTIL_TRACKER_DIR = '/foo'
   UPLOAD_TRACKER_FILE = (
       'upload_TRACKER_9263880a80e4a582aec54eaa697bfcdd9c5621ea.9.tbz2__JSON.url'
-      )
+  )
   DOWNLOAD_TRACKER_FILE = (
       'download_TRACKER_5a695131f3ef6e4c903f594783412bb996a7f375._file__JSON.'
       'etag')
@@ -1354,6 +1354,8 @@ class DryRunTest(cros_build_lib_unittest.RunCommandTestCase):
 
 class InitBotoTest(AbstractGSContextTest):
   """Test boto file interactive initialization."""
+
+  # pylint: disable=protected-access
 
   GS_LS_ERROR = """\
 You are attempting to access protected data with no configured credentials.

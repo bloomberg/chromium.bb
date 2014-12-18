@@ -4,8 +4,6 @@
 
 """Cros unit test library, with utility functions."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import collections
@@ -275,7 +273,7 @@ class StackedSetup(type):
     exc_info = None
     for target in StackedSetup._walk_mro_stacking(obj, '__raw_tearDown__',
                                                   True):
-      #pylint: disable=W0702
+      # pylint: disable=bare-except
       try:
         target(obj)
       except:
@@ -324,6 +322,7 @@ class TruthTable(object):
 
   class TruthTableInputIterator(object):
     """Class to support iteration over inputs of a TruthTable."""
+
     def __init__(self, truth_table):
       self.truth_table = truth_table
       self.next_line = 0
@@ -481,7 +480,6 @@ class LoggingCapturer(object):
   def StartCapturing(self):
     """Begin capturing logging messages."""
     logging.getLogger(self.logger_name).addFilter(self._log_filter)
-
 
   def StopCapturing(self):
     """Stop capturing logging messages."""
@@ -661,10 +659,10 @@ class TestCase(unittest.TestCase):
         If not given, a suitable one is defaulted to.
       returns: The exception object.
     """
-    exact_kls = kwargs.pop("exact_kls", None)
-    check_attrs = kwargs.pop("check_attrs", {})
-    ex_msg = kwargs.pop("ex_msg", None)
-    msg = kwargs.pop("msg", None)
+    exact_kls = kwargs.pop('exact_kls', None)
+    check_attrs = kwargs.pop('check_attrs', {})
+    ex_msg = kwargs.pop('ex_msg', None)
+    msg = kwargs.pop('msg', None)
     if msg is None:
       msg = ("%s(*%r, **%r) didn't throw an exception"
              % (functor.__name__, args, kwargs))
@@ -679,13 +677,13 @@ class TestCase(unittest.TestCase):
       bad = []
       for attr, required in check_attrs.iteritems():
         self.assertTrue(hasattr(e, attr),
-                        msg="%s lacks attr %s" % (e, attr))
+                        msg='%s lacks attr %s' % (e, attr))
         value = getattr(e, attr)
         if value != required:
-          bad.append("%s attr is %s, needed to be %s"
+          bad.append('%s attr is %s, needed to be %s'
                      % (attr, value, required))
       if bad:
-        raise AssertionError("\n".join(bad))
+        raise AssertionError('\n'.join(bad))
       return e
 
   def assertExists(self, path):
@@ -940,7 +938,7 @@ class OutputTestCase(TestCase):
     """
     exit_code = self.FuncCatchSystemExit(func, *args, **kwargs)[1]
     self.assertFalse(exit_code is None,
-                      msg='Expected system exit code 0, but caught none')
+                     msg='Expected system exit code 0, but caught none')
     self.assertTrue(exit_code == 0,
                     msg='Expected system exit code 0, but caught %d' %
                     exit_code)
@@ -952,7 +950,7 @@ class OutputTestCase(TestCase):
     """
     exit_code = self.FuncCatchSystemExit(func, *args, **kwargs)[1]
     self.assertFalse(exit_code is None,
-                      msg='Expected non-zero system exit code, but caught none')
+                     msg='Expected non-zero system exit code, but caught none')
     self.assertFalse(exit_code == 0,
                      msg='Expected non-zero system exit code, but caught %d' %
                      exit_code)
@@ -989,6 +987,7 @@ class TempDirTestCase(TestCase):
 
 class MockTestCase(TestCase):
   """Python-mock based test case; compatible with StackedSetup"""
+
   def setUp(self):
     self._patchers = []
 
@@ -1129,7 +1128,6 @@ class GerritTestCase(MockTempDirTestCase):
           ['git', 'config', '--global', 'http.cookiefile', gi.cookies_path],
           quiet=True)
 
-
     # Set cookie file for http authentication
     if gi.cookies_path:
       jar = cookielib.MozillaCookieJar(gi.cookies_path)
@@ -1157,11 +1155,11 @@ class GerritTestCase(MockTempDirTestCase):
     self.PatchObject(constants, 'MANIFEST_INT_URL', '%s/%s' % (
         gi.git_url, constants.MANIFEST_INT_PROJECT))
     self.PatchObject(constants, 'GIT_REMOTES', {
-            constants.EXTERNAL_REMOTE: gi.gerrit_url,
-            constants.INTERNAL_REMOTE: gi.gerrit_url,
-            constants.CHROMIUM_REMOTE: gi.gerrit_url,
-            constants.CHROME_REMOTE: gi.gerrit_url,
-        })
+        constants.EXTERNAL_REMOTE: gi.gerrit_url,
+        constants.INTERNAL_REMOTE: gi.gerrit_url,
+        constants.CHROMIUM_REMOTE: gi.gerrit_url,
+        constants.CHROME_REMOTE: gi.gerrit_url,
+    })
 
   def createProject(self, suffix, description='Test project', owners=None,
                     submit_type='CHERRY_PICK'):
@@ -1363,8 +1361,8 @@ class _LessAnnoyingMox(mox.Mox):
 
   mock_classes = {}.fromkeys(
       ['chromite.lib.cros_build_lib.%s' % x
-       for x in dir(cros_build_lib) if "RunCommand" in x],
-       _RunCommandMock)
+       for x in dir(cros_build_lib) if 'RunCommand' in x],
+      _RunCommandMock)
 
   @staticmethod
   def _GetNamespace(obj):

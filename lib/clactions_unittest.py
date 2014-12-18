@@ -5,8 +5,6 @@
 
 """Unit tests for clactions methods."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import datetime
@@ -24,14 +22,17 @@ from chromite.lib import fake_cidb
 from chromite.lib import clactions
 from chromite.lib import cros_test_lib
 
+
 class CLActionTest(cros_test_lib.TestCase):
   """Placeholder for clactions unit tests."""
+
   def runTest(self):
     pass
 
 
 class IntervalsTest(cros_test_lib.TestCase):
   """Placeholder for clactions unit tests."""
+
   def testIntervals(self):
     self.assertEqual([], clactions.IntersectIntervals([]))
     self.assertEqual([(1, 2)], clactions.IntersectIntervals([[(1, 2)]]))
@@ -42,7 +43,7 @@ class IntervalsTest(cros_test_lib.TestCase):
     self.assertEqual(
         [(2, 5), (7, 8), (9, 10)],
         clactions.IntersectIntervals([test_group_0, test_group_1, test_group_2])
-        )
+    )
 
     test_group_0 = [(1, 3), (10, 12)]
     test_group_1 = [(2, 5)]
@@ -53,7 +54,6 @@ class IntervalsTest(cros_test_lib.TestCase):
 
 class TestCLActionHistory(cros_test_lib.TestCase):
   """Tests various methods related to CL action history."""
-
 
   def setUp(self):
     self.fake_db = fake_cidb.FakeCIDBConnection()
@@ -76,6 +76,7 @@ class TestCLActionHistory(cros_test_lib.TestCase):
 
     start_time = datetime.datetime.now()
     c = itertools.count()
+
     def next_time():
       return start_time + datetime.timedelta(seconds=c.next())
 
@@ -129,16 +130,14 @@ class TestCLActionHistory(cros_test_lib.TestCase):
 
   def _Act(self, build_id, change, action, reason=None, timestamp=None):
     self.fake_db.InsertCLActions(
-          build_id,
-          [clactions.CLAction.FromGerritPatchAndAction(change, action, reason)],
-          timestamp=timestamp)
-
+        build_id,
+        [clactions.CLAction.FromGerritPatchAndAction(change, action, reason)],
+        timestamp=timestamp)
 
   def _GetCLStatus(self, change):
     """Helper method to get a CL's pre-CQ status from fake_db."""
     action_history = self.fake_db.GetActionsForChanges([change])
     return clactions.GetCLPreCQStatus(change, action_history)
-
 
   def testGetRequeuedOrSpeculative(self):
     """Tests GetRequeuedOrSpeculative function."""
@@ -196,9 +195,9 @@ class TestCLActionHistory(cros_test_lib.TestCase):
     self.assertEqual(self._GetCLStatus(change), None)
 
     # Builders can update the CL's pre-CQ status.
-    build_id = self.fake_db.InsertBuild(constants.PRE_CQ_LAUNCHER_NAME,
-        constants.WATERFALL_INTERNAL, 1, constants.PRE_CQ_LAUNCHER_CONFIG,
-        'bot-hostname')
+    build_id = self.fake_db.InsertBuild(
+        constants.PRE_CQ_LAUNCHER_NAME, constants.WATERFALL_INTERNAL, 1,
+        constants.PRE_CQ_LAUNCHER_CONFIG, 'bot-hostname')
 
     self._Act(build_id, change, constants.CL_ACTION_PRE_CQ_WAITING)
     self.assertEqual(self._GetCLStatus(change), constants.CL_STATUS_WAITING)
@@ -211,11 +210,10 @@ class TestCLActionHistory(cros_test_lib.TestCase):
     self._Act(build_id, change, 'polenta')
     self.assertEqual(self._GetCLStatus(change), constants.CL_STATUS_INFLIGHT)
 
-
   def testGetCLPreCQProgress(self):
     change = metadata_lib.GerritPatchTuple(1, 1, False)
     s = lambda: clactions.GetCLPreCQProgress(
-            change, self.fake_db.GetActionsForChanges([change]))
+        change, self.fake_db.GetActionsForChanges([change]))
 
     self.assertEqual({}, s())
 
@@ -246,7 +244,7 @@ class TestCLActionHistory(cros_test_lib.TestCase):
     self.assertEqual(constants.CL_PRECQ_CONFIG_STATUS_FAILED,
                      s()['pineapple-pre-cq'][0])
 
-     # Simulate the pre-cq-launcher launching tryjobs for all pending configs.
+    # Simulate the pre-cq-launcher launching tryjobs for all pending configs.
     for c in configs:
       self._Act(launcher_build_id, change,
                 constants.CL_ACTION_TRYBOT_LAUNCHING, c)
@@ -374,7 +372,8 @@ class TestCLActionHistory(cros_test_lib.TestCase):
     screened_changes = set(changes).intersection(progress_map)
     self.assertEqual({'guava-pre-cq'},
                      clactions.GetPreCQConfigsToTest(screened_changes,
-                                                      progress_map))
+                                                     progress_map))
+
 
 class TestCLStatusCounter(cros_test_lib.TestCase):
   """Tests that GetCLActionCount behaves as expected."""
@@ -385,12 +384,12 @@ class TestCLStatusCounter(cros_test_lib.TestCase):
   def testGetCLActionCount(self):
     c1p1 = metadata_lib.GerritPatchTuple(1, 1, False)
     c1p2 = metadata_lib.GerritPatchTuple(1, 2, False)
-    precq_build_id = self.fake_db.InsertBuild(constants.PRE_CQ_LAUNCHER_NAME,
-        constants.WATERFALL_INTERNAL, 1, constants.PRE_CQ_LAUNCHER_CONFIG,
-        'bot-hostname')
-    melon_build_id = self.fake_db.InsertBuild('melon builder name',
-        constants.WATERFALL_INTERNAL, 1, 'melon-config-name',
-        'grape-bot-hostname')
+    precq_build_id = self.fake_db.InsertBuild(
+        constants.PRE_CQ_LAUNCHER_NAME, constants.WATERFALL_INTERNAL, 1,
+        constants.PRE_CQ_LAUNCHER_CONFIG, 'bot-hostname')
+    melon_build_id = self.fake_db.InsertBuild(
+        'melon builder name', constants.WATERFALL_INTERNAL, 1,
+        'melon-config-name', 'grape-bot-hostname')
 
     # Count should be zero before any actions are recorded.
 
