@@ -1869,6 +1869,11 @@ long SSLClientSocketOpenSSL::BIOCallback(
     int cmd,
     const char *argp, int argi, long argl,
     long retvalue) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "424386 SSLClientSocketOpenSSL::BIOCallback"));
+
   SSLClientSocketOpenSSL* socket = reinterpret_cast<SSLClientSocketOpenSSL*>(
       BIO_get_callback_arg(bio));
   CHECK(socket);
@@ -1880,6 +1885,11 @@ long SSLClientSocketOpenSSL::BIOCallback(
 void SSLClientSocketOpenSSL::InfoCallback(const SSL* ssl,
                                           int type,
                                           int /*val*/) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "424386 SSLClientSocketOpenSSL::InfoCallback"));
+
   if (type == SSL_CB_HANDSHAKE_DONE) {
     SSLClientSocketOpenSSL* ssl_socket =
         SSLContext::GetInstance()->GetClientSocketFromSSL(ssl);
