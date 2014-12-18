@@ -46,12 +46,14 @@
   {
     "prefix": "prefer_compositing_to_lcd_text",
     "base": "compositing/overflow",
-    "args": ["--enable-prefer-compositing-to-lcd-text"]
+    "args": ["--enable-prefer-compositing-to-lcd-text",
+             "--enable-impl-side-painting"]
   },
   {
     "prefix": "prefer_compositing_to_lcd_text",
     "base": "scrollbars",
-    "args": ["--enable-prefer-compositing-to-lcd-text"]
+    "args": ["--enable-prefer-compositing-to-lcd-text",
+             "--enable-impl-side-painting"]
   },
   {
     "prefix": "threaded",

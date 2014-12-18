@@ -823,7 +823,10 @@ crbug.com/334269 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/zero-wi
 crbug.com/334269 [ Mac ] editing/spelling/spellcheck-editable-on-focus-sync.html [ NeedsManualRebaseline ]
 crbug.com/334269 [ Mac ] fast/repaint/4776765.html [ NeedsManualRebaseline ]
 
-#crbug.com/381919 fast/sub-pixel/sub-pixel-composited-layers.html [ NeedsRebaseline ]
+crbug.com/381919 scrollbars/rtl-resizer-position.html [ NeedsRebaseline ]
+crbug.com/381919 scrollbars/scrollbars-on-positioned-content.html [ NeedsRebaseline ]
+crbug.com/381919 virtual/prefer_compositing_to_lcd_text/scrollbars/rtl-resizer-position.html [ NeedsRebaseline ]
+
 crbug.com/437078 fast/text/text-letter-spacing.html [ Pass Failure ImageOnlyFailure ]
 crbug.com/437078 fast/text/international/rtl-negative-letter-spacing.html [ Pass ImageOnlyFailure ]
 
