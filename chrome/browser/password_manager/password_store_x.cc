@@ -110,6 +110,7 @@ PasswordStoreChangeList PasswordStoreX::RemoveLoginsSyncedBetweenImpl(
   PasswordStoreChangeList changes;
   if (use_native_backend() &&
       backend_->RemoveLoginsSyncedBetween(delete_begin, delete_end, &changes)) {
+    LogStatsForBulkDeletionDuringRollback(changes.size());
     allow_fallback_ = false;
   } else if (allow_default_store()) {
     changes = PasswordStoreDefault::RemoveLoginsSyncedBetweenImpl(delete_begin,

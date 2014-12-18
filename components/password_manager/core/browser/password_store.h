@@ -247,6 +247,10 @@ class PasswordStore : protected PasswordStoreSync,
   // Log UMA stats for number of bulk deletions.
   void LogStatsForBulkDeletion(int num_deletions);
 
+  // Log UMA stats for password deletions happening on clear browsing data
+  // since first sync during rollback.
+  void LogStatsForBulkDeletionDuringRollback(int num_deletions);
+
   // PasswordStoreSync:
   // Called by WrapModificationTask() once the underlying data-modifying
   // operation has been performed. Notifies observers that password store data

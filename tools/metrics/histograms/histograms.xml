@@ -23009,6 +23009,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.NumPasswordsDeletedDuringRollback">
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    Number of passwords deleted when browsing data is cleared during rollback.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.NumPasswordsDeletedWhenBlacklisting">
   <owner>dubroy@chromium.org</owner>
   <owner>vabr@chromium.org</owner>

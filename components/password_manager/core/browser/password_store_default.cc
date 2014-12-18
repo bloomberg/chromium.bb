@@ -86,6 +86,7 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsSyncedBetweenImpl(
         changes.push_back(
             PasswordStoreChange(PasswordStoreChange::REMOVE, **it));
       }
+      LogStatsForBulkDeletionDuringRollback(changes.size());
     }
   }
   STLDeleteElements(&forms);

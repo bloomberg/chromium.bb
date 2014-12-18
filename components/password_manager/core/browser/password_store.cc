@@ -238,6 +238,11 @@ void PasswordStore::LogStatsForBulkDeletion(int num_deletions) {
                        num_deletions);
 }
 
+void PasswordStore::LogStatsForBulkDeletionDuringRollback(int num_deletions) {
+  UMA_HISTOGRAM_COUNTS("PasswordManager.NumPasswordsDeletedDuringRollback",
+                       num_deletions);
+}
+
 void PasswordStore::NotifyLoginsChanged(
     const PasswordStoreChangeList& changes) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
