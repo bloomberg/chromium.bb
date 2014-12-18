@@ -115,14 +115,14 @@ function test()
 
     log('\nOption-tabbing forward...\n');
     for (var i = 0; i < 12; ++i) {
-        dispatchTabPress(document, false, true);
+        dispatchTabPress(document, false, navigator.platform.indexOf('Mac') == 0);
     }
 
     lastFocusedElement.blur();
 
     log('\nOption-tabbing backward...\n');
     for (var i = 0; i < 12; ++i) {
-        dispatchTabPress(document, true, true);
+        dispatchTabPress(document, true, navigator.platform.indexOf('Mac') == 0);
     }
 
     lastFocusedElement.blur();
