@@ -462,10 +462,7 @@ static void convertFromFlowThreadToVisualBoundingBoxInAncestor(const RenderLayer
     }
     // The ancestor layer is also inside the pagination layer, so we need to subtract the visual
     // distance from the ancestor layer to the pagination layer.
-    LayoutPoint offsetFromPaginationLayerToAncestor;
-    ancestorLayer->convertToLayerCoords(paginationLayer, offsetFromPaginationLayerToAncestor);
-    offsetFromPaginationLayerToAncestor = flowThread->flowThreadPointToVisualPoint(offsetFromPaginationLayerToAncestor);
-    rect.moveBy(-offsetFromPaginationLayerToAncestor);
+    rect.moveBy(-ancestorLayer->visualOffsetFromAncestor(paginationLayer));
 }
 
 bool RenderLayer::useRegionBasedColumns() const
@@ -1452,6 +1449,34 @@ void RenderLayer::convertToLayerCoords(const RenderLayer* ancestorLayer, LayoutR
     LayoutPoint delta;
     convertToLayerCoords(ancestorLayer, delta);
     rect.moveBy(delta);
+}
+
+LayoutPoint RenderLayer::visualOffsetFromAncestor(const RenderLayer* ancestorLayer) const
+{
+    RenderLayer* paginationLayer = enclosingPaginationLayer();
+    LayoutPoint offset;
+    if (!paginationLayer || paginationLayer == this) {
+        convertToLayerCoords(ancestorLayer, offset);
+        return offset;
+    }
+
+    RenderFlowThread* flowThread = toRenderFlowThread(paginationLayer->renderer());
+    convertToLayerCoords(paginationLayer, offset);
+    offset = flowThread->flowThreadPointToVisualPoint(offset);
+    if (ancestorLayer == paginationLayer)
+        return offset;
+
+    // FIXME: Handle nested fragmentation contexts (crbug.com/423076). For now just give up if there
+    // are different pagination layers involved.
+    if (!ancestorLayer->enclosingPaginationLayer() || ancestorLayer->enclosingPaginationLayer() != paginationLayer) {
+        // The easy case. The ancestor layer is not within the pagination layer.
+        offset.moveBy(paginationLayer->visualOffsetFromAncestor(ancestorLayer));
+    } else {
+        // The ancestor layer is also inside the pagination layer, so we need to subtract the visual
+        // distance from the ancestor layer to the pagination layer.
+        offset.moveBy(-ancestorLayer->visualOffsetFromAncestor(paginationLayer));
+    }
+    return offset;
 }
 
 void RenderLayer::didUpdateNeedsCompositedScrolling()

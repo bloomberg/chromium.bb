@@ -121,6 +121,11 @@
   },
   {
     "prefix": "regionbasedmulticol",
+    "base": "compositing/columns",
+    "args": ["--enable-region-based-columns"]
+  },
+  {
+    "prefix": "regionbasedmulticol",
     "base": "fast/multicol",
     "args": ["--enable-region-based-columns", "--enable-impl-side-painting"]
   },

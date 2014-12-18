@@ -541,8 +541,7 @@ static IntRect clipBox(RenderBox* renderer)
 
 static LayoutPoint computeOffsetFromCompositedAncestor(const RenderLayer* layer, const RenderLayer* compositedAncestor)
 {
-    LayoutPoint offset;
-    layer->convertToLayerCoords(compositedAncestor, offset);
+    LayoutPoint offset = layer->visualOffsetFromAncestor(compositedAncestor);
     if (compositedAncestor)
         offset.move(compositedAncestor->compositedLayerMapping()->owningLayer().subpixelAccumulation());
     return offset;
