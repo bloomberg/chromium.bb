@@ -647,17 +647,20 @@ bool XkbKeyboardLayoutEngine::CanSetCurrentLayout() const {
 bool XkbKeyboardLayoutEngine::SetCurrentLayoutByName(
     const std::string& layout_name) {
 #if defined(OS_CHROMEOS)
-  size_t dash_index = layout_name.find("-");
-  size_t parentheses_index = layout_name.find("(");
+  size_t dash_index = layout_name.find('-');
+  size_t parentheses_index = layout_name.find('(');
   std::string layout_id = layout_name;
   std::string layout_variant = "";
-  if (dash_index != std::string::npos) {
+  if (parentheses_index != std::string::npos) {
+    layout_id = layout_name.substr(0, parentheses_index);
+    size_t close_index = layout_name.find(')', parentheses_index);
+    if (close_index == std::string::npos)
+      close_index = layout_name.size();
+    layout_variant = layout_name.substr(parentheses_index + 1,
+                                        close_index - parentheses_index - 1);
+  } else if (dash_index != std::string::npos) {
     layout_id = layout_name.substr(0, dash_index);
     layout_variant = layout_name.substr(dash_index + 1);
-  } else if (parentheses_index != std::string::npos) {
-    layout_id = layout_name.substr(0, parentheses_index);
-    layout_variant = layout_name.substr(parentheses_index + 1,
-                                        layout_name.size() - 1);
   }
   struct xkb_rule_names names = {
     .rules = NULL,
