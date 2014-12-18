@@ -489,7 +489,7 @@ V8_VALUE_TO_CPP_VALUE = {
     'unsigned long long': 'toUInt64({arguments})',
     # Interface types
     'Dictionary': 'Dictionary({v8_value}, {isolate}, exceptionState)',
-    'EventTarget': 'V8DOMWrapper::isDOMWrapper({v8_value}) ? toWrapperTypeInfo(v8::Handle<v8::Object>::Cast({v8_value}))->toEventTarget(v8::Handle<v8::Object>::Cast({v8_value})) : 0',
+    'EventTarget': 'toEventTarget({isolate}, {v8_value})',
     'NodeFilter': 'toNodeFilter({v8_value}, info.Holder(), ScriptState::current({isolate}))',
     'Promise': 'ScriptPromise::cast(ScriptState::current({isolate}), {v8_value})',
     'SerializedScriptValue': 'SerializedScriptValueFactory::instance().create({v8_value}, 0, 0, exceptionState, {isolate})',

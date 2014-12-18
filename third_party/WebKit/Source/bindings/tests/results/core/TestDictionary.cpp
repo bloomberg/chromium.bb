@@ -20,6 +20,7 @@ TestDictionary::TestDictionary()
 void TestDictionary::trace(Visitor* visitor)
 {
     visitor->trace(m_elementOrNullMember);
+    visitor->trace(m_eventTargetMember);
     visitor->trace(m_internalDictionarySequenceMember);
     visitor->trace(m_testInterfaceGarbageCollectedMember);
     visitor->trace(m_testInterfaceGarbageCollectedOrNullMember);

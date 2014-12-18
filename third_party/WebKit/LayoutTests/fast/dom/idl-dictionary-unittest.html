@@ -32,6 +32,7 @@ if (window.internals && internals.dictionaryTest) {
     shouldBeUndefined('dict.objectMember');
     shouldBeNull('dict.objectOrNullMemberWithDefault');
     shouldBeUndefined('dict.doubleOrStringMember');
+    shouldBeNull('dict.eventTargetOrNullMember');
     debug('');
 
     debug('Test for setting undefined');
@@ -53,6 +54,7 @@ if (window.internals && internals.dictionaryTest) {
     shouldBeUndefined('dict.elementOrNullMember');
     shouldBeUndefined('dict.objectMember');
     shouldBeNull('dict.objectOrNullMemberWithDefault');
+    shouldBeNull('dict.eventTargetOrNullMember');
     debug('');
 
     var element1 = document.createElement('div');
@@ -79,6 +81,7 @@ if (window.internals && internals.dictionaryTest) {
         objectMember: testObject1,
         objectOrNullMemberWithDefault: testObject2,
         doubleOrStringMember: 3.14,
+        eventTargetOrNullMember: element1
     });
     dict = dictionaryTest.get();
     shouldBe('dict.longMember', '1');
@@ -102,6 +105,7 @@ if (window.internals && internals.dictionaryTest) {
     shouldBe('dict.objectMember', 'testObject1');
     shouldBe('dict.objectOrNullMemberWithDefault', 'testObject2');
     shouldBe('dict.doubleOrStringMember', '3.14');
+    shouldBe('dict.eventTargetOrNullMember', 'element1');
     debug('');
 
     debug('Additional test for union type members');
@@ -203,6 +207,28 @@ if (window.internals && internals.dictionaryTest) {
     });
     dict = dictionaryTest.get();
     shouldBe('dict.longMember', '42');
+    debug('');
+
+    debug('Test for passing EventTarget');
+    dictionaryTest.set({
+        eventTargetOrNullMember: window
+    });
+    dict = dictionaryTest.get();
+    shouldBe('dict.eventTargetOrNullMember', 'window');
+    dictionaryTest.set({
+        eventTargetOrNullMember: null
+    });
+    dict = dictionaryTest.get();
+    shouldBeNull('dict.eventTargetOrNullMember');
+    dictionaryTest.set({
+        eventTargetOrNullMember: undefined
+    });
+    dict = dictionaryTest.get();
+    shouldBeNull('dict.eventTargetOrNullMember');
+    shouldThrow("dictionaryTest.set({eventTargetOrNullMember: 'invalid'})");
+    shouldThrow("dictionaryTest.set({eventTargetOrNullMember: 42})");
+    shouldThrow("dictionaryTest.set({eventTargetOrNullMember: []})");
+    shouldThrow("dictionaryTest.set({eventTargetOrNullMember: {}})");
     debug('');
 
     debug('Test for derived dictionary');

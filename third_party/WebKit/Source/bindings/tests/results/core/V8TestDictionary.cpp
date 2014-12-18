@@ -11,6 +11,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/UnionTypesCore.h"
 #include "bindings/core/v8/V8Element.h"
+#include "bindings/core/v8/V8EventTarget.h"
 #include "bindings/core/v8/V8InternalDictionary.h"
 #include "bindings/core/v8/V8TestInterface.h"
 #include "bindings/core/v8/V8TestInterface2.h"
@@ -129,6 +130,22 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
             return;
         }
         impl.setEnumMember(enumMember);
+    }
+
+    v8::Local<v8::Value> eventTargetMemberValue = v8Object->Get(v8String(isolate, "eventTargetMember"));
+    if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return;
+    }
+    if (eventTargetMemberValue.IsEmpty() || eventTargetMemberValue->IsUndefined()) {
+        // Do nothing.
+    } else {
+        EventTarget* eventTargetMember = toEventTarget(isolate, eventTargetMemberValue);
+        if (!eventTargetMember && !eventTargetMemberValue->IsNull()) {
+            exceptionState.throwTypeError("member eventTargetMember is not of type EventTarget.");
+            return;
+        }
+        impl.setEventTargetMember(eventTargetMember);
     }
 
     v8::Local<v8::Value> internalDictionarySequenceMemberValue = v8Object->Get(v8String(isolate, "internalDictionarySequenceMember"));
@@ -411,6 +428,10 @@ void toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
         dictionary->Set(v8String(isolate, "enumMember"), v8String(isolate, impl.enumMember()));
     } else {
         dictionary->Set(v8String(isolate, "enumMember"), v8String(isolate, String("foo")));
+    }
+
+    if (impl.hasEventTargetMember()) {
+        dictionary->Set(v8String(isolate, "eventTargetMember"), toV8(impl.eventTargetMember(), creationContext, isolate));
     }
 
     if (impl.hasInternalDictionarySequenceMember()) {

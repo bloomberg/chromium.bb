@@ -52,6 +52,8 @@ public:
     static void setNativeInfo(v8::Handle<v8::Object>, const WrapperTypeInfo*, ScriptWrappable*);
     static void clearNativeInfo(v8::Handle<v8::Object>, const WrapperTypeInfo*);
 
+    // Note: This function is only for ASSERT() purposes. isDOMWrapper() may
+    // return true for non-DOM wrapper in some cases.
     static bool isDOMWrapper(v8::Handle<v8::Value>);
 };
 

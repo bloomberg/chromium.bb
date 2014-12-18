@@ -51,6 +51,7 @@ namespace blink {
 
 class DOMWindow;
 class EventListener;
+class EventTarget;
 class ExecutionContext;
 class ExceptionState;
 class Frame;
@@ -857,6 +858,8 @@ v8::Local<v8::Context> toV8Context(Frame*, DOMWrapperWorld&);
 // Returns the frame object of the window object associated with
 // a context, if the window is currently being displayed in the LocalFrame.
 LocalFrame* toFrameIfNotDetached(v8::Handle<v8::Context>);
+
+EventTarget* toEventTarget(v8::Isolate*, v8::Handle<v8::Value>);
 
 // If the current context causes out of memory, JavaScript setting
 // is disabled and it returns true.

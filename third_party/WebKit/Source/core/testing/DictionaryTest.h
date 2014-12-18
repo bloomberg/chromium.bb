@@ -69,6 +69,7 @@ private:
     ScriptValue m_objectMember;
     ScriptValue m_objectOrNullMemberWithDefault;
     DoubleOrString m_doubleOrStringMember;
+    RefPtrWillBeMember<EventTarget> m_eventTargetOrNullMember;
     String m_derivedStringMember;
     String m_derivedStringMemberWithDefault;
 };

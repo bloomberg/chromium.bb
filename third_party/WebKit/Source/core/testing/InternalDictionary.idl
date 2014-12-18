@@ -29,4 +29,5 @@ dictionary InternalDictionary {
     object objectMember;
     object? objectOrNullMemberWithDefault = null;
     (double or DOMString) doubleOrStringMember;
+    EventTarget? eventTargetOrNullMember = null;
 };

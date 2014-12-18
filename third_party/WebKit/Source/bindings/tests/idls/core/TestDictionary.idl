@@ -28,4 +28,5 @@ dictionary TestDictionary {
     (TestInterface2 or Uint8Array) testInterface2OrUint8ArrayMember;
     sequence<InternalDictionary> internalDictionarySequenceMember;
     Uint8Array uint8ArrayMember;
+    EventTarget eventTargetMember;
 };

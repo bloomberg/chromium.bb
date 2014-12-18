@@ -16,6 +16,7 @@
 #include "bindings/tests/idls/core/TestInterfaceWillBeGarbageCollected.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/dom/Element.h"
+#include "core/events/EventTarget.h"
 #include "core/testing/InternalDictionary.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
@@ -53,6 +54,10 @@ public:
     bool hasEnumMember() const { return !m_enumMember.isNull(); }
     String enumMember() const { return m_enumMember; }
     void setEnumMember(String value) { m_enumMember = value; }
+
+    bool hasEventTargetMember() const { return m_eventTargetMember; }
+    PassRefPtrWillBeRawPtr<EventTarget> eventTargetMember() const { return m_eventTargetMember; }
+    void setEventTargetMember(PassRefPtrWillBeRawPtr<EventTarget> value) { m_eventTargetMember = value; }
 
     bool hasInternalDictionarySequenceMember() const { return !m_internalDictionarySequenceMember.isNull(); }
     const Vector<InternalDictionary>& internalDictionarySequenceMember() const { return m_internalDictionarySequenceMember.get(); }
@@ -132,6 +137,7 @@ private:
     DoubleOrString m_doubleOrStringMember;
     RefPtrWillBeMember<Element> m_elementOrNullMember;
     String m_enumMember;
+    RefPtrWillBeMember<EventTarget> m_eventTargetMember;
     Nullable<Vector<InternalDictionary> > m_internalDictionarySequenceMember;
     Nullable<int> m_longMember;
     ScriptValue m_objectMember;

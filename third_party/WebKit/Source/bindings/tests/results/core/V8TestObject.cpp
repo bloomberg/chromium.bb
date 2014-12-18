@@ -5804,7 +5804,7 @@ static void voidMethodEventTargetArgMethod(const v8::FunctionCallbackInfo<v8::Va
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     EventTarget* eventTargetArg;
     {
-        eventTargetArg = V8DOMWrapper::isDOMWrapper(info[0]) ? toWrapperTypeInfo(v8::Handle<v8::Object>::Cast(info[0]))->toEventTarget(v8::Handle<v8::Object>::Cast(info[0])) : 0;
+        eventTargetArg = toEventTarget(info.GetIsolate(), info[0]);
     }
     impl->voidMethodEventTargetArg(eventTargetArg);
 }
