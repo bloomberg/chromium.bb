@@ -1608,7 +1608,6 @@ def GetTryServerMasterForBot(bot):
   # Potentially ambiguous bot names are listed explicitly.
   master_map = {
       'linux_gpu': 'tryserver.chromium.gpu',
-      'mac_gpu': 'tryserver.chromium.gpu',
       'win_gpu': 'tryserver.chromium.gpu',
       'chromium_presubmit': 'tryserver.chromium.linux',
       'blink_presubmit': 'tryserver.chromium.linux',
@@ -1710,7 +1709,6 @@ def GetDefaultTryConfigs(bots=None):
       'mac_chromium_compile_dbg_ng': ['defaulttests'],
       'mac_chromium_rel': ['defaulttests'],
       'mac_chromium_rel_ng': ['defaulttests'],
-      'mac_gpu': ['defaulttests'],
       'mac_nacl_sdk_build': ['compile'],
       'win_chromium_compile_dbg': ['defaulttests'],
       'win_chromium_dbg': ['defaulttests'],
@@ -1806,7 +1804,6 @@ def GetPreferredTryMasters(project, change):
       'linux_gpu',
       'mac_chromium_compile_dbg_ng',
       'mac_chromium_rel_ng',
-      'mac_gpu',
       'win8_chromium_rel',
       'win_chromium_compile_dbg',
       'win_chromium_rel_ng',

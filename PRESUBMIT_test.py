@@ -620,8 +620,6 @@ class TryServerMasterTest(unittest.TestCase):
   def testTryServerMasters(self):
     bots = {
         'tryserver.chromium.gpu': [
-            'mac_gpu',
-            'mac_gpu_triggered_tests',
             'linux_gpu',
             'linux_gpu_triggered_tests',
             'win_gpu',
