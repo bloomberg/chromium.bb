@@ -10,6 +10,8 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/ui/autofill/card_unmask_prompt_controller.h"
+#include "chrome/browser/ui/autofill/card_unmask_prompt_view.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/ui/zoom/zoom_observer.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -34,7 +36,8 @@ class ChromeAutofillClient
     : public AutofillClient,
       public content::WebContentsUserData<ChromeAutofillClient>,
       public content::WebContentsObserver,
-      public ui_zoom::ZoomObserver {
+      public ui_zoom::ZoomObserver,
+      public CardUnmaskPromptController {
  public:
   ~ChromeAutofillClient() override;
 
@@ -87,6 +90,11 @@ class ChromeAutofillClient
     dialog_controller_ = dialog_controller;
   }
 
+  // CardUnmaskPromptController implementation.
+  content::WebContents* GetWebContents() override;
+  void OnUnmaskDialogClosed() override;
+  void OnUnmaskResponse(const base::string16& cvc) override;
+
  private:
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // Creates |bridge_wrapper_|, which is responsible for dealing with Keystone
@@ -97,7 +105,8 @@ class ChromeAutofillClient
   void UnregisterFromKeystoneNotifications();
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
-  void OnUnmaskResponse(const base::string16& response);
+  // The CVC the user entered failed to authenticate the masked card.
+  void OnVerificationFailure();
 
   explicit ChromeAutofillClient(content::WebContents* web_contents);
   friend class content::WebContentsUserData<ChromeAutofillClient>;
@@ -115,6 +124,8 @@ class ChromeAutofillClient
   // scoped_ptr.
   AutofillKeystoneBridgeWrapper* bridge_wrapper_;
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
+  CardUnmaskPromptView* card_unmask_view_;
 
   base::WeakPtrFactory<ChromeAutofillClient> weak_pointer_factory_;
 

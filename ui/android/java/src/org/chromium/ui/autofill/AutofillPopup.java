@@ -93,13 +93,6 @@ public class AutofillPopup extends DropdownPopupWindow implements AdapterView.On
         show();
     }
 
-    /**
-     * Hides the popup.
-     */
-    public void hide() {
-        dismiss();
-    }
-
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         DropdownAdapter adapter = (DropdownAdapter) parent.getAdapter();

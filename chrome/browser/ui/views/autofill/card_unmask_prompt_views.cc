@@ -5,6 +5,7 @@
 #include "base/basictypes.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/autofill/card_unmask_prompt_controller.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -16,6 +17,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -27,19 +29,44 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
                               views::DialogDelegateView,
                               views::TextfieldController {
  public:
-  CardUnmaskPromptViews(content::WebContents* web_contents,
-                        const UnmaskCallback& finished)
-      : web_contents_(web_contents),
-        finished_(finished),
-        accepted_(false),
-        cvc_(nullptr) {}
+  explicit CardUnmaskPromptViews(CardUnmaskPromptController* controller)
+      : controller_(controller), cvc_(nullptr), message_label_(nullptr) {}
 
   ~CardUnmaskPromptViews() override {
-    finished_.Run(accepted_ ? cvc_->text() : base::string16());
+    if (controller_)
+      controller_->OnUnmaskDialogClosed();
   }
 
   void Show() {
-    constrained_window::ShowWebModalDialogViews(this, web_contents_);
+    constrained_window::ShowWebModalDialogViews(this,
+                                                controller_->GetWebContents());
+  }
+
+  // CardUnmaskPromptView
+  void ControllerGone() override {
+    controller_ = nullptr;
+    GetWidget()->Close();
+  }
+
+  void DisableAndWaitForVerification() override {
+    cvc_->SetEnabled(false);
+    message_label_->SetText(base::ASCIIToUTF16("Verifying..."));
+    message_label_->SetVisible(true);
+    GetDialogClientView()->UpdateDialogButtons();
+    Layout();
+  }
+
+  void VerificationSucceeded() override {
+    // TODO(estade): implement.
+  }
+
+  void VerificationFailed() override {
+    cvc_->SetEnabled(true);
+    message_label_->SetText(
+        base::ASCIIToUTF16("Verification error. Please try again."));
+    message_label_->SetVisible(true);
+    GetDialogClientView()->UpdateDialogButtons();
+    Layout();
   }
 
   // views::DialogDelegateView
@@ -79,7 +106,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
 
     base::string16 input_text;
     base::TrimWhitespace(cvc_->text(), base::TRIM_ALL, &input_text);
-    return input_text.size() == 3 &&
+    return cvc_->enabled() && input_text.size() == 3 &&
            base::ContainsOnlyChars(input_text,
                                    base::ASCIIToUTF16("0123456789"));
   }
@@ -87,13 +114,15 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   views::View* GetInitiallyFocusedView() override { return cvc_; }
 
   bool Cancel() override {
-    DCHECK_EQ(false, accepted_);
     return true;
   }
 
   bool Accept() override {
-    accepted_ = true;
-    return true;
+    if (!controller_)
+      return true;
+
+    controller_->OnUnmaskResponse(cvc_->text());
+    return false;
   }
 
   // views::TextfieldController
@@ -130,16 +159,19 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     cvc_image->SetImage(rb.GetImageSkiaNamed(IDR_CREDIT_CARD_CVC_HINT));
     cvc_container->AddChildView(cvc_image);
+
+    message_label_ = new views::Label();
+    cvc_container->AddChildView(message_label_);
+    message_label_->SetVisible(false);
   }
 
-  content::WebContents* web_contents_;
-
-  UnmaskCallback finished_;
-
-  // Set to true when the user accepts.
-  bool accepted_;
+  CardUnmaskPromptController* controller_;
 
   views::Textfield* cvc_;
+
+  // TODO(estade): this is a temporary standin in place of some spinner UI
+  // as well as a better error message.
+  views::Label* message_label_;
 
   DISALLOW_COPY_AND_ASSIGN(CardUnmaskPromptViews);
 };
@@ -148,10 +180,8 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
 
 // static
 CardUnmaskPromptView* CardUnmaskPromptView::CreateAndShow(
-    content::WebContents* web_contents,
-    const UnmaskCallback& finished) {
-  CardUnmaskPromptViews* view =
-      new CardUnmaskPromptViews(web_contents, finished);
+    CardUnmaskPromptController* controller) {
+  CardUnmaskPromptViews* view = new CardUnmaskPromptViews(controller);
   view->Show();
   return view;
 }

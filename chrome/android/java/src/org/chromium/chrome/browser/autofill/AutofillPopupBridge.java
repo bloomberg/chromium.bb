@@ -66,8 +66,8 @@ public class AutofillPopupBridge implements AutofillPopupDelegate{
      * Hides the Autofill Popup and removes its anchor from the ContainerView.
      */
     @CalledByNative
-    private void hide() {
-        if (mAutofillPopup != null) mAutofillPopup.hide();
+    private void dismiss() {
+        if (mAutofillPopup != null) mAutofillPopup.dismiss();
     }
 
     /**

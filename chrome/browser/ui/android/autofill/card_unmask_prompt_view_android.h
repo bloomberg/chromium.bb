@@ -12,20 +12,22 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_view.h"
 
-namespace content {
-class WebContents;
-}
-
 namespace autofill {
 
 class CardUnmaskPromptViewAndroid : public CardUnmaskPromptView {
  public:
-  CardUnmaskPromptViewAndroid(content::WebContents* web_contents,
-                              const UnmaskCallback& finished);
+  explicit CardUnmaskPromptViewAndroid(CardUnmaskPromptController* controller);
 
   void Show();
 
-  void PromptDismissed(JNIEnv* env, jobject obj, jstring response);
+  void OnUserInput(JNIEnv* env, jobject obj, jstring response);
+  void PromptDismissed(JNIEnv* env, jobject obj);
+
+  // CardUnmaskPromptView implementation.
+  void ControllerGone() override;
+  void DisableAndWaitForVerification() override;
+  void VerificationSucceeded() override;
+  void VerificationFailed() override;
 
   static bool Register(JNIEnv* env);
 
@@ -35,9 +37,7 @@ class CardUnmaskPromptViewAndroid : public CardUnmaskPromptView {
   // The corresponding java object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 
-  content::WebContents* web_contents_;
-  UnmaskCallback finished_;
-  base::string16 response_;
+  CardUnmaskPromptController* controller_;
 
   DISALLOW_COPY_AND_ASSIGN(CardUnmaskPromptViewAndroid);
 };

@@ -5,25 +5,22 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_CARD_UNMASK_PROMPT_VIEW_H_
 #define CHROME_BROWSER_UI_AUTOFILL_CARD_UNMASK_PROMPT_VIEW_H_
 
-#include "base/callback.h"
-#include "base/strings/string16.h"
-
-namespace content {
-class WebContents;
-}
-
 namespace autofill {
+
+class CardUnmaskPromptController;
 
 // The cross-platform UI interface which prompts the user to unlock a masked
 // Wallet instrument (credit card). This object is responsible for its own
 // lifetime.
 class CardUnmaskPromptView {
  public:
-  typedef base::Callback<void(const base::string16& /* CVC */)> UnmaskCallback;
+  static CardUnmaskPromptView* CreateAndShow(
+      CardUnmaskPromptController* controller);
 
-  // |finished| is guaranteed to be called.
-  static CardUnmaskPromptView* CreateAndShow(content::WebContents* web_contents,
-                                             const UnmaskCallback& finished);
+  virtual void ControllerGone() = 0;
+  virtual void DisableAndWaitForVerification() = 0;
+  virtual void VerificationSucceeded() = 0;
+  virtual void VerificationFailed() = 0;
 
  protected:
   CardUnmaskPromptView();

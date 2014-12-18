@@ -44,7 +44,7 @@ void AutofillPopupViewAndroid::Show() {
 void AutofillPopupViewAndroid::Hide() {
   controller_ = NULL;
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_AutofillPopupBridge_hide(env, java_object_.obj());
+  Java_AutofillPopupBridge_dismiss(env, java_object_.obj());
 }
 
 void AutofillPopupViewAndroid::UpdateBoundsAndRedrawPopup() {

@@ -41,7 +41,9 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(autofill::ChromeAutofillClient);
 namespace autofill {
 
 ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents), weak_pointer_factory_(this) {
+    : content::WebContentsObserver(web_contents),
+      card_unmask_view_(nullptr),
+      weak_pointer_factory_(this) {
   DCHECK(web_contents);
 
 #if !defined(OS_ANDROID)
@@ -63,6 +65,8 @@ ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
 }
 
 ChromeAutofillClient::~ChromeAutofillClient() {
+  if (card_unmask_view_)
+    card_unmask_view_->ControllerGone();
   // NOTE: It is too late to clean up the autofill popup; that cleanup process
   // requires that the WebContents instance still be valid and it is not at
   // this point (in particular, the WebContentsImpl destructor has already
@@ -108,15 +112,28 @@ void ChromeAutofillClient::ShowAutofillSettings() {
 }
 
 void ChromeAutofillClient::ShowUnmaskPrompt() {
-  // TODO(estade): we'll need to store the returned pointer at some point when
-  // the view object gets more complicated.
-  CardUnmaskPromptView::CreateAndShow(
-      web_contents(), base::Bind(&ChromeAutofillClient::OnUnmaskResponse,
-                                 weak_pointer_factory_.GetWeakPtr()));
+  card_unmask_view_ = CardUnmaskPromptView::CreateAndShow(this);
 }
 
-void ChromeAutofillClient::OnUnmaskResponse(const base::string16& response) {
-  NOTIMPLEMENTED() << " I should probably do something with this: " << response;
+content::WebContents* ChromeAutofillClient::GetWebContents() {
+  return web_contents();
+}
+
+void ChromeAutofillClient::OnUnmaskDialogClosed() {
+  card_unmask_view_ = nullptr;
+}
+
+void ChromeAutofillClient::OnUnmaskResponse(const base::string16& cvc) {
+  card_unmask_view_->DisableAndWaitForVerification();
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, base::Bind(&ChromeAutofillClient::OnVerificationFailure,
+                            weak_pointer_factory_.GetWeakPtr()),
+      base::TimeDelta::FromSeconds(2));
+}
+
+void ChromeAutofillClient::OnVerificationFailure() {
+  if (card_unmask_view_)
+    card_unmask_view_->VerificationFailed();
 }
 
 void ChromeAutofillClient::ConfirmSaveCreditCard(

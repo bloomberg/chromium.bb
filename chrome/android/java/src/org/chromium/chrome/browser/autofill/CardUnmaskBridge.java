@@ -31,7 +31,7 @@ public class CardUnmaskBridge implements CardUnmaskPromptDelegate {
             new Handler().post(new Runnable() {
                 @Override
                 public void run() {
-                    dismissed("");
+                    dismissed();
                 }
             });
         } else {
@@ -46,19 +46,48 @@ public class CardUnmaskBridge implements CardUnmaskPromptDelegate {
     }
 
     @Override
-    public void dismissed(String userResponse) {
-        nativePromptDismissed(mNativeCardUnmaskPromptViewAndroid, userResponse);
+    public void dismissed() {
+        nativePromptDismissed(mNativeCardUnmaskPromptViewAndroid);
+    }
+
+    @Override
+    public void onUserInput(String userResponse) {
+        nativeOnUserInput(mNativeCardUnmaskPromptViewAndroid, userResponse);
     }
 
     /**
      * Shows a prompt for unmasking a Wallet credit card.
-     * @param suggestions Autofill suggestions to be displayed.
      */
     @CalledByNative
     private void show() {
         if (mCardUnmaskPrompt != null) mCardUnmaskPrompt.show();
     }
 
-    private native void nativePromptDismissed(long nativeCardUnmaskPromptViewAndroid,
-            String userResponse);
+    /**
+     * Dismisses the prompt without returning any user response.
+     */
+    @CalledByNative
+    private void dismiss() {
+        if (mCardUnmaskPrompt != null) mCardUnmaskPrompt.dismiss();
+    }
+
+    /**
+     * Disables input and visually indicates that verification is ongoing.
+     */
+    @CalledByNative
+    private void disableAndWaitForVerification() {
+        if (mCardUnmaskPrompt != null) mCardUnmaskPrompt.disableAndWaitForVerification();
+    }
+
+    /**
+     * Indicate that verification failed, allow user to retry.
+     */
+    @CalledByNative
+    private void verificationFailed() {
+        if (mCardUnmaskPrompt != null) mCardUnmaskPrompt.verificationFailed();
+    }
+
+    private native void nativePromptDismissed(long nativeCardUnmaskPromptViewAndroid);
+    private native void nativeOnUserInput(
+            long nativeCardUnmaskPromptViewAndroid, String userResponse);
 }

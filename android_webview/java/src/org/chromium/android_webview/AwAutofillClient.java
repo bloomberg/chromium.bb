@@ -66,7 +66,7 @@ public class AwAutofillClient {
     public void hideAutofillPopup() {
         if (mAutofillPopup == null)
             return;
-        mAutofillPopup.hide();
+        mAutofillPopup.dismiss();
         mAutofillPopup = null;
     }
 

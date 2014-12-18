@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/android/autofill/card_unmask_prompt_view_android.h"
 
+#include "chrome/browser/ui/autofill/card_unmask_prompt_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/CardUnmaskBridge_jni.h"
 #include "ui/base/android/view_android.h"
@@ -12,27 +13,27 @@
 namespace autofill {
 
 CardUnmaskPromptView* CardUnmaskPromptView::CreateAndShow(
-    content::WebContents* web_contents,
-    const UnmaskCallback& finished) {
+    CardUnmaskPromptController* controller) {
   CardUnmaskPromptViewAndroid* view =
-      new CardUnmaskPromptViewAndroid(web_contents, finished);
+      new CardUnmaskPromptViewAndroid(controller);
   view->Show();
   return view;
 }
 
 CardUnmaskPromptViewAndroid::CardUnmaskPromptViewAndroid(
-    content::WebContents* web_contents,
-    const UnmaskCallback& finished)
-    : web_contents_(web_contents), finished_(finished) {
+    CardUnmaskPromptController* controller)
+    : controller_(controller) {
 }
 
 CardUnmaskPromptViewAndroid::~CardUnmaskPromptViewAndroid() {
-  finished_.Run(response_);
+  if (controller_)
+    controller_->OnUnmaskDialogClosed();
 }
 
 void CardUnmaskPromptViewAndroid::Show() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  ui::ViewAndroid* view_android = web_contents_->GetNativeView();
+  ui::ViewAndroid* view_android =
+      controller_->GetWebContents()->GetNativeView();
 
   java_object_.Reset(Java_CardUnmaskBridge_create(
       env, reinterpret_cast<intptr_t>(this),
@@ -41,11 +42,35 @@ void CardUnmaskPromptViewAndroid::Show() {
   Java_CardUnmaskBridge_show(env, java_object_.obj());
 }
 
-void CardUnmaskPromptViewAndroid::PromptDismissed(JNIEnv* env,
-                                                  jobject obj,
-                                                  jstring response) {
-  response_ = base::android::ConvertJavaStringToUTF16(env, response);
+void CardUnmaskPromptViewAndroid::OnUserInput(JNIEnv* env,
+                                              jobject obj,
+                                              jstring response) {
+  controller_->OnUnmaskResponse(
+      base::android::ConvertJavaStringToUTF16(env, response));
+}
+
+void CardUnmaskPromptViewAndroid::PromptDismissed(JNIEnv* env, jobject obj) {
   delete this;
+}
+
+void CardUnmaskPromptViewAndroid::ControllerGone() {
+  controller_ = nullptr;
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_CardUnmaskBridge_dismiss(env, java_object_.obj());
+}
+
+void CardUnmaskPromptViewAndroid::DisableAndWaitForVerification() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_CardUnmaskBridge_disableAndWaitForVerification(env, java_object_.obj());
+}
+
+void CardUnmaskPromptViewAndroid::VerificationSucceeded() {
+  // TODO(estade): implement.
+}
+
+void CardUnmaskPromptViewAndroid::VerificationFailed() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_CardUnmaskBridge_verificationFailed(env, java_object_.obj());
 }
 
 // static

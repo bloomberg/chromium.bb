@@ -22,16 +22,29 @@
         android:gravity="start"
         />
 
-    <EditText
-        android:id="@+id/card_unmask_input"
-        android:inputType="number"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:hint="@string/card_unmask_input_hint"
-        />
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/card_unmask_input"
+            android:inputType="number"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:ems="4"
+            android:hint="@string/card_unmask_input_hint"
+            />
+
+        <TextView
+            android:id="@+id/card_unmask_verification_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="start"
+            android:visibility="gone"
+            />
+     </LinearLayout>
 
 </LinearLayout>

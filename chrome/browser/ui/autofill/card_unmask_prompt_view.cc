@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/basictypes.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_view.h"
 
 namespace autofill {
@@ -9,8 +10,7 @@ namespace autofill {
 #if !defined(OS_ANDROID) && !defined(TOOLKIT_VIEWS)
 // static
 CardUnmaskPromptView* CardUnmaskPromptView::CreateAndShow(
-    content::WebContents* web_contents,
-    const UnmaskCallback& finished) {
+    CardUnmaskPromptController* controller) {
   return nullptr;
 }
 #endif
