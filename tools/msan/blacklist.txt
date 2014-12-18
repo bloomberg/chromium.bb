@@ -7,8 +7,11 @@
 # False positive in ffmpeg due to assembly code. http://crbug.com/344505
 fun:ff_get_cpu_flags_x86
 
-# Uninit in zlib. http://crbug.com/116277
+# Benign uninits in zlib.
+# http://crbug.com/116277
 fun:*MOZ_Z_deflate*
+# http://crbug.com/418383
+fun:longest_match
 
 # Uninit in zlib with SIMD intrinsic http://crbug.com/426868
 fun:crc_fold512_to_32
