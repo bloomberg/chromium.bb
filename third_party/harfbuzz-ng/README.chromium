@@ -19,3 +19,5 @@ BUILD.gn and harfbuzz.gyp accordingly.
 
 Right now, it uses revision d457e3f0ff9b27616a34e4cc110d3edbf8796841 from
 https://github.com/behdad/harfbuzz
+
+On top of that, gsubgpos.patch (2-liner) was applied.
