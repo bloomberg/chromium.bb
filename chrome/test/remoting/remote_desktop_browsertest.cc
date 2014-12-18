@@ -361,11 +361,7 @@ void RemoteDesktopBrowserTest::DisconnectMe2Me() {
 
   ASSERT_TRUE(RemoteDesktopBrowserTest::IsSessionConnected());
 
-  ClickOnControl("toolbar-stub");
-
-  EXPECT_TRUE(HtmlElementVisible("session-toolbar"));
-
-  ClickOnControl("toolbar-disconnect");
+  ExecuteScript("remoting.disconnect();");
 
   EXPECT_TRUE(HtmlElementVisible("client-dialog"));
   EXPECT_TRUE(HtmlElementVisible("client-reconnect-button"));
@@ -730,7 +726,7 @@ void RemoteDesktopBrowserTest::RunJavaScriptTest(
   std::string script = "browserTest.runTest(browserTest." + testName + ", " +
                        testData + ");";
 
-  LOG(INFO) << "Executing " << script;
+  DVLOG(1) << "Executing " << script;
 
   ASSERT_TRUE(
       content::ExecuteScriptAndExtractString(web_contents, script, &result));

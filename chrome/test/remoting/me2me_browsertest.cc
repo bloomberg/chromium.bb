@@ -4,8 +4,10 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/remoting/remote_desktop_browsertest.h"
 #include "chrome/test/remoting/waiter.h"
+#include "extensions/browser/app_window/app_window.h"
 
 namespace remoting {
 
@@ -16,6 +18,9 @@ class Me2MeBrowserTest : public RemoteDesktopBrowserTest {
 
   void ConnectPinlessAndCleanupPairings(bool cleanup_all);
   bool IsPairingSpinnerHidden();
+
+  void RestoreApp();
+  void MinimizeApp();
 };
 
 IN_PROC_BROWSER_TEST_F(Me2MeBrowserTest,
@@ -65,6 +70,32 @@ IN_PROC_BROWSER_TEST_F(Me2MeBrowserTest,
 
   Cleanup();
 }
+
+IN_PROC_BROWSER_TEST_F(Me2MeBrowserTest,
+                       MANUAL_Me2Me_v2_Alive_OnLostFocus) {
+  SetUpTestForMe2Me();
+
+  // Connect to host.
+  ConnectToLocalHost(false);
+
+  // Minimize the window
+  MinimizeApp();
+
+  // Wait for a few seconds for app to process any notifications it
+  // would have got from minimizing.
+  ASSERT_TRUE(TimeoutWaiter(base::TimeDelta::FromSeconds(4)).Wait());
+
+  // Validate that the session is still active.
+  EXPECT_TRUE(RemoteDesktopBrowserTest::IsSessionConnected());
+
+  // Maximize so we can disconnect and teardown.
+  RestoreApp();
+
+  // Cleanup
+  DisconnectMe2Me();
+  Cleanup();
+}
+
 
 void Me2MeBrowserTest::TestKeyboardInput() {
   // We will assume here that the browser window is already open on the host
@@ -148,6 +179,24 @@ void Me2MeBrowserTest::ConnectPinlessAndCleanupPairings(bool cleanup_all) {
 
 bool Me2MeBrowserTest::IsPairingSpinnerHidden() {
   return !HtmlElementVisible("paired-client-manager-dialog-working");
+}
+
+void Me2MeBrowserTest::MinimizeApp() {
+  extensions::AppWindow* appWindow = GetFirstAppWindow();
+  if (appWindow) {
+    appWindow->Minimize();
+  } else {
+    browser()->window()->Minimize();
+  }
+}
+
+void Me2MeBrowserTest::RestoreApp() {
+  extensions::AppWindow* appWindow = GetFirstAppWindow();
+  if (appWindow) {
+    appWindow->Restore();
+  } else {
+    browser()->window()->Restore();
+  }
 }
 
 }  // namespace remoting
