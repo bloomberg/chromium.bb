@@ -257,7 +257,7 @@ void MixedContentChecker::count(LocalFrame* frame, WebURLRequest::RequestContext
 }
 
 // static
-bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, const ResourceRequest& resourceRequest, const KURL& url, MixedContentChecker::ReportingStatus reportingStatus)
+bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, WebURLRequest::RequestContext requestContext, WebURLRequest::FrameType frameType, const KURL& url, MixedContentChecker::ReportingStatus reportingStatus)
 {
     // No frame, no mixed content:
     if (!frame)
@@ -272,19 +272,19 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, const ResourceRequ
             return false;
 
         LocalFrame* localTop = toLocalFrame(top);
-        if (frame != localTop && shouldBlockFetch(localTop, resourceRequest, url, reportingStatus))
+        if (frame != localTop && shouldBlockFetch(localTop, requestContext, frameType, url, reportingStatus))
             return true;
     }
 
     // We only care about subresource loads; top-level navigations cannot be mixed content.
-    if (resourceRequest.frameType() == WebURLRequest::FrameTypeTopLevel)
+    if (frameType == WebURLRequest::FrameTypeTopLevel)
         return false;
 
     // No mixed content, no problem.
     if (!isMixedContent(frame->document()->securityOrigin(), url))
         return false;
 
-    MixedContentChecker::count(frame, resourceRequest.requestContext());
+    MixedContentChecker::count(frame, requestContext);
 
     Settings* settings = frame->settings();
     FrameLoaderClient* client = frame->loader().client();
@@ -295,7 +295,7 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, const ResourceRequ
     // the client checks in order to prevent degrading the site's security UI.
     bool strictMode = frame->document()->shouldEnforceStrictMixedContentChecking();
 
-    ContextType contextType = contextTypeFromContext(resourceRequest.requestContext());
+    ContextType contextType = contextTypeFromContext(requestContext);
     if (contextType == ContextTypeBlockableUnlessLax)
         contextType = RuntimeEnabledFeatures::laxMixedContentCheckingEnabled() ? ContextTypeOptionallyBlockable : ContextTypeBlockable;
 
@@ -305,7 +305,7 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, const ResourceRequ
     //
     // FIXME: Remove this temporary hack once we have a reasonable API for launching external applications
     // via URLs. http://crbug.com/318788 and https://crbug.com/393481
-    if (resourceRequest.frameType() == WebURLRequest::FrameTypeNested && !SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(url.protocol()))
+    if (frameType == WebURLRequest::FrameTypeNested && !SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(url.protocol()))
         contextType = ContextTypeOptionallyBlockable;
 
     switch (contextType) {
@@ -333,11 +333,11 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, const ResourceRequ
     };
 
     if (reportingStatus == SendReport)
-        logToConsole(frame, url, resourceRequest.requestContext(), allowed);
+        logToConsole(frame, url, requestContext, allowed);
     return !allowed;
 }
 
-bool MixedContentChecker::canDisplayInsecureContentInternal(SecurityOrigin* securityOrigin, const KURL& url, const MixedContentType type) const
+bool MixedContentChecker::canDisplayInsecureContent(SecurityOrigin* securityOrigin, const KURL& url, const MixedContentType type) const
 {
     // Check the top frame if it differs from MixedContentChecker's m_frame.
     if (!m_frame->tree().top()->isLocalFrame()) {
@@ -347,7 +347,7 @@ bool MixedContentChecker::canDisplayInsecureContentInternal(SecurityOrigin* secu
         return false;
     }
     Frame* top = m_frame->tree().top();
-    if (top != m_frame && !toLocalFrame(top)->loader().mixedContentChecker()->canDisplayInsecureContent(toLocalFrame(top)->document()->securityOrigin(), url))
+    if (top != m_frame && !toLocalFrame(top)->loader().mixedContentChecker()->canDisplayInsecureContent(toLocalFrame(top)->document()->securityOrigin(), url, type))
         return false;
 
     // Just count these for the moment, don't block them.
@@ -368,7 +368,7 @@ bool MixedContentChecker::canDisplayInsecureContentInternal(SecurityOrigin* secu
     return allowed;
 }
 
-bool MixedContentChecker::canRunInsecureContentInternal(SecurityOrigin* securityOrigin, const KURL& url, const MixedContentType type) const
+bool MixedContentChecker::canRunInsecureContent(SecurityOrigin* securityOrigin, const KURL& url, const MixedContentType type) const
 {
     // Check the top frame if it differs from MixedContentChecker's m_frame.
     if (!m_frame->tree().top()->isLocalFrame()) {
@@ -378,7 +378,7 @@ bool MixedContentChecker::canRunInsecureContentInternal(SecurityOrigin* security
         return true;
     }
     Frame* top = m_frame->tree().top();
-    if (top != m_frame && !toLocalFrame(top)->loader().mixedContentChecker()->canRunInsecureContent(toLocalFrame(top)->document()->securityOrigin(), url))
+    if (top != m_frame && !toLocalFrame(top)->loader().mixedContentChecker()->canRunInsecureContent(toLocalFrame(top)->document()->securityOrigin(), url, type))
         return false;
 
     // Just count these for the moment, don't block them.
@@ -403,8 +403,8 @@ bool MixedContentChecker::canRunInsecureContentInternal(SecurityOrigin* security
 bool MixedContentChecker::canConnectInsecureWebSocket(SecurityOrigin* securityOrigin, const KURL& url) const
 {
     if (RuntimeEnabledFeatures::laxMixedContentCheckingEnabled())
-        return canDisplayInsecureContentInternal(securityOrigin, url, MixedContentChecker::WebSocket);
-    return canRunInsecureContentInternal(securityOrigin, url, MixedContentChecker::WebSocket);
+        return canDisplayInsecureContent(securityOrigin, url, MixedContentChecker::WebSocket);
+    return canRunInsecureContent(securityOrigin, url, MixedContentChecker::WebSocket);
 }
 
 bool MixedContentChecker::canSubmitToInsecureForm(SecurityOrigin* securityOrigin, const KURL& url) const
@@ -418,7 +418,7 @@ bool MixedContentChecker::canSubmitToInsecureForm(SecurityOrigin* securityOrigin
     // If lax mixed content checking is enabled (noooo!), skip this check entirely.
     if (RuntimeEnabledFeatures::laxMixedContentCheckingEnabled())
         return true;
-    return canDisplayInsecureContentInternal(securityOrigin, url, MixedContentChecker::Submission);
+    return canDisplayInsecureContent(securityOrigin, url, MixedContentChecker::Submission);
 }
 
 void MixedContentChecker::logWarning(bool allowed, const KURL& target, const MixedContentType type) const
