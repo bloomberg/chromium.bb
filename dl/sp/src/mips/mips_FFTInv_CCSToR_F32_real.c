@@ -17,7 +17,7 @@
 OMXResult mips_FFTInv_CCSToR_F32_real(const OMX_F32* pSrc,
                                       OMX_F32* pDst,
                                       const MIPSFFTSpec_R_FC32* pFFTSpec) {
-  OMX_U32 step, num_transforms;
+  OMX_U32 num_transforms;
   OMX_FC32* p_buf = (OMX_FC32*)pFFTSpec->pBuf;
   const OMX_FC32* p_src = (const OMX_FC32*)pSrc;
   OMX_U32 fft_size = 1 << pFFTSpec->order;
@@ -192,7 +192,7 @@ OMXResult mips_FFTInv_CCSToR_F32_real(const OMX_F32* pSrc,
   pDst[4] = factor * (p_buf[4].Re - tmp2);
 
   w_re_ptr = pFFTSpec->pTwiddle + 1;
-  w_im_ptr = pFFTSpec->pTwiddle + (OMX_U32)(1 << pFFTSpec->order - 2) - 1;
+  w_im_ptr = pFFTSpec->pTwiddle + (OMX_U32)(1 << (pFFTSpec->order - 2)) - 1;
 
   /* Loop performing split-radix butterfly operations. */
   for (uint32_t n = 1; n < 4; ++n) {

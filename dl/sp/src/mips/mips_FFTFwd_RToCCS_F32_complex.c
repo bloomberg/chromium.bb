@@ -159,7 +159,7 @@ OMXResult mips_FFTFwd_RToCCS_F32_complex(const OMX_F32* pSrc,
       /* Twiddle table is initialized for the maximal FFT size. */
       w_re_ptr = pFFTSpec->pTwiddle + step;
       w_im_ptr =
-          pFFTSpec->pTwiddle + (OMX_U32)(1 << pFFTSpec->order - 2) - step;
+          pFFTSpec->pTwiddle + (OMX_U32)(1 << (pFFTSpec->order - 2)) - step;
 
       /*
        * Loop performing split-radix butterfly operations for
@@ -198,7 +198,7 @@ OMXResult mips_FFTFwd_RToCCS_F32_complex(const OMX_F32* pSrc,
 
   /* Additional computation to get the output for full FFT size. */
   w_re_ptr = pFFTSpec->pTwiddle + step;
-  w_im_ptr = pFFTSpec->pTwiddle + (OMX_U32)(1 << pFFTSpec->order - 2) - step;
+  w_im_ptr = pFFTSpec->pTwiddle + (OMX_U32)(1 << (pFFTSpec->order - 2)) - step;
 
   for (uint32_t i = 1; i < fft_size / 8; ++i) {
     tmp1 = p_buf[i].Re;

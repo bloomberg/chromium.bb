@@ -159,7 +159,7 @@ OMXResult mips_FFTFwd_RToCCS_F32_real(const OMX_F32* pSrc,
   p_dst[4].Im = p_buf[4].Im - tmp2;
 
   w_re_ptr = pFFTSpec->pTwiddle + 1;
-  w_im_ptr = pFFTSpec->pTwiddle + (OMX_U32)(1 << pFFTSpec->order - 2) - 1;
+  w_im_ptr = pFFTSpec->pTwiddle + (OMX_U32)(1 << (pFFTSpec->order - 2)) - 1;
 
   /* Loop performing split-radix butterfly operations. */
   for (uint32_t n = 1; n < 4; ++n) {

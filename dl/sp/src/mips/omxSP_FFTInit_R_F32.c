@@ -125,7 +125,7 @@ OMXResult omxSP_FFTInit_R_F32(OMXFFTSpec_R_F32* pFFTSpec, OMX_INT order) {
   /* Fill the twiddle table */
   if (order > 3) {
     tmp = 1 << (TWIDDLE_TABLE_ORDER - order);
-    for (n = 0; n < (1 << (order - 2)); ++n) {
+    for (n = 0; n < (1u << (order - 2)); ++n) {
       p_twiddle[n] = mipsSP_FFT_F32TwiddleTable[n * tmp];
     }
   }
@@ -150,10 +150,10 @@ OMXResult omxSP_FFTInit_R_F32(OMXFFTSpec_R_F32* pFFTSpec, OMX_INT order) {
       }
     } else if (order < 5) {
       /* Check for p_offset table. */
-      int shift = 2;
-      int over = 4;
-      int num_transforms = (SUBTRANSFORM_CONST >> (16 - order)) | 1;
-      for (uint32_t i = 2; i < order; ++i) {
+      uint32_t shift = 2;
+      uint32_t over = 4;
+      uint32_t num_transforms = (SUBTRANSFORM_CONST >> (16 - order)) | 1;
+      for (int i = 2; i < order; ++i) {
         for (uint32_t j = 0; j < num_transforms; ++j) {
           if (((p_offset[j] << shift) + over - 1) >= fft_size)
             return OMX_Sts_BadArgErr;
@@ -169,10 +169,10 @@ OMXResult omxSP_FFTInit_R_F32(OMXFFTSpec_R_F32* pFFTSpec, OMX_INT order) {
       }
     } else {
       /* Check for p_offset table. */
-      int shift = 2;
-      int over = 4;
-      int num_transforms = (SUBTRANSFORM_CONST >> (17 - order)) | 1;
-      for (uint32_t i = 2; i < order; ++i) {
+      uint32_t shift = 2;
+      uint32_t over = 4;
+      uint32_t num_transforms = (SUBTRANSFORM_CONST >> (17 - order)) | 1;
+      for (int i = 2; i < order; ++i) {
         for (uint32_t j = 0; j < num_transforms; ++j) {
           if (((p_offset[j] << shift) + over - 1) >= fft_size)
             return OMX_Sts_BadArgErr;

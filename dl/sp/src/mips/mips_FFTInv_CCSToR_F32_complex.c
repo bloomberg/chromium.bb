@@ -31,7 +31,7 @@ OMXResult mips_FFTInv_CCSToR_F32_complex(const OMX_F32* pSrc,
   OMX_F32 w_re, w_im;
 
   w_re_ptr = pFFTSpec->pTwiddle + 1;
-  w_im_ptr = pFFTSpec->pTwiddle + (OMX_U32)(1 << pFFTSpec->order - 2) - 1;
+  w_im_ptr = pFFTSpec->pTwiddle + (OMX_U32)(1 << (pFFTSpec->order - 2)) - 1;
 
   /*
    * Preliminary loop performing input adaptation due to computing real FFT
@@ -213,7 +213,7 @@ OMXResult mips_FFTInv_CCSToR_F32_complex(const OMX_F32* pSrc,
 
       w_re_ptr = pFFTSpec->pTwiddle + step;
       w_im_ptr =
-          pFFTSpec->pTwiddle + (OMX_U32)(1 << pFFTSpec->order - 2) - step;
+          pFFTSpec->pTwiddle + (OMX_U32)(1 << (pFFTSpec->order - 2)) - step;
 
       /*
        * Loop performing split-radix butterfly operations for one sub-transform.
@@ -271,7 +271,7 @@ OMXResult mips_FFTInv_CCSToR_F32_complex(const OMX_F32* pSrc,
   p_dst[n1_4].Im = factor * (p_buf[n1_4].Im + tmp2);
 
   w_re_ptr = pFFTSpec->pTwiddle + step;
-  w_im_ptr = pFFTSpec->pTwiddle + (OMX_U32)(1 << pFFTSpec->order - 2) - step;
+  w_im_ptr = pFFTSpec->pTwiddle + (OMX_U32)(1 << (pFFTSpec->order - 2)) - step;
 
   for (uint32_t i = 1; i < n1_4; ++i) {
     w_re = *w_re_ptr;
