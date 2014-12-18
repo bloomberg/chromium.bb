@@ -54,7 +54,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
                                   registration)> FindRegistrationCallback;
   typedef base::Callback<
       void(const std::vector<ServiceWorkerRegistrationInfo>& registrations)>
-          GetAllRegistrationInfosCallback;
+          GetRegistrationsInfosCallback;
   typedef base::Callback<
       void(ServiceWorkerStatusCode status, bool are_equal)>
           CompareCallback;
@@ -96,8 +96,13 @@ class CONTENT_EXPORT ServiceWorkerStorage
 
   ServiceWorkerRegistration* GetUninstallingRegistration(const GURL& scope);
 
+  // Returns info about all stored and initially installing registrations for
+  // a given origin.
+  void GetRegistrationsForOrigin(
+      const GURL& origin, const GetRegistrationsInfosCallback& callback);
+
   // Returns info about all stored and initially installing registrations.
-  void GetAllRegistrations(const GetAllRegistrationInfosCallback& callback);
+  void GetAllRegistrations(const GetRegistrationsInfosCallback& callback);
 
   // Commits |registration| with the installed but not activated |version|
   // to storage, overwritting any pre-existing registration data for the scope.
@@ -282,9 +287,10 @@ class CONTENT_EXPORT ServiceWorkerStorage
       const ServiceWorkerDatabase::RegistrationData& data,
       const ResourceList& resources,
       ServiceWorkerDatabase::Status status);
-  void DidGetAllRegistrations(
-      const GetAllRegistrationInfosCallback& callback,
+  void DidGetRegistrations(
+      const GetRegistrationsInfosCallback& callback,
       RegistrationList* registrations,
+      const GURL& origin_filter,
       ServiceWorkerDatabase::Status status);
   void DidStoreRegistration(
       const StatusCallback& callback,

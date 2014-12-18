@@ -74,9 +74,9 @@ void GetAllCallback(
   *all_out = all;
 }
 
-ServiceWorkerStorage::GetAllRegistrationInfosCallback MakeGetAllCallback(
-    bool* was_called,
-    std::vector<ServiceWorkerRegistrationInfo>* all) {
+ServiceWorkerStorage::GetRegistrationsInfosCallback
+MakeGetRegistrationsCallback(bool* was_called,
+                             std::vector<ServiceWorkerRegistrationInfo>* all) {
   return base::Bind(&GetAllCallback, was_called, all);
 }
 
@@ -273,7 +273,19 @@ class ServiceWorkerStorageTest : public testing::Test {
       std::vector<ServiceWorkerRegistrationInfo>* registrations) {
     bool was_called = false;
     storage()->GetAllRegistrations(
-        MakeGetAllCallback(&was_called, registrations));
+        MakeGetRegistrationsCallback(&was_called, registrations));
+    EXPECT_FALSE(was_called);  // always async
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(was_called);
+  }
+
+  void GetRegistrationsForOrigin(
+      const GURL& origin,
+      std::vector<ServiceWorkerRegistrationInfo>* registrations) {
+    bool was_called = false;
+    storage()->GetRegistrationsForOrigin(
+        origin,
+        MakeGetRegistrationsCallback(&was_called, registrations));
     EXPECT_FALSE(was_called);  // always async
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
@@ -479,6 +491,17 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   EXPECT_EQ(kResource1Size + kResource2Size, info.stored_version_size_bytes);
   all_registrations.clear();
 
+  // Finding by origin should provide the same result iif origin is kScope.
+  std::vector<ServiceWorkerRegistrationInfo> registrations_origin;
+  GetRegistrationsForOrigin(kScope.GetOrigin(), &registrations_origin);
+  EXPECT_EQ(1u, registrations_origin.size());
+  registrations_origin.clear();
+
+  GetRegistrationsForOrigin(
+      GURL("http://example.com/").GetOrigin(),
+      &registrations_origin);
+  EXPECT_TRUE(registrations_origin.empty());
+
   found_registration = NULL;
 
   // Drop the live version too.
@@ -583,6 +606,15 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
   GetAllRegistrations(&all_registrations);
   EXPECT_TRUE(all_registrations.empty());
 
+  std::vector<ServiceWorkerRegistrationInfo> registrations_origin;
+  GetRegistrationsForOrigin(kScope.GetOrigin(), &registrations_origin);
+  EXPECT_TRUE(registrations_origin.empty());
+
+  GetRegistrationsForOrigin(
+      GURL("http://example.com/").GetOrigin(),
+      &registrations_origin);
+  EXPECT_TRUE(registrations_origin.empty());
+
   // Notify storage of it being installed.
   storage()->NotifyInstallingRegistration(live_registration.get());
 
@@ -607,6 +639,16 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
   EXPECT_EQ(1u, all_registrations.size());
   all_registrations.clear();
 
+  // Finding by origin should provide the same result iif origin is kScope.
+  GetRegistrationsForOrigin(kScope.GetOrigin(), &registrations_origin);
+  EXPECT_EQ(1u, registrations_origin.size());
+  registrations_origin.clear();
+
+  GetRegistrationsForOrigin(
+      GURL("http://example.com/").GetOrigin(),
+      &registrations_origin);
+  EXPECT_TRUE(registrations_origin.empty());
+
   // Notify storage of installation no longer happening.
   storage()->NotifyDoneInstallingRegistration(
       live_registration.get(), NULL, SERVICE_WORKER_OK);
@@ -627,6 +669,14 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
 
   GetAllRegistrations(&all_registrations);
   EXPECT_TRUE(all_registrations.empty());
+
+  GetRegistrationsForOrigin(kScope.GetOrigin(), &registrations_origin);
+  EXPECT_TRUE(registrations_origin.empty());
+
+  GetRegistrationsForOrigin(
+      GURL("http://example.com/").GetOrigin(),
+      &registrations_origin);
+  EXPECT_TRUE(registrations_origin.empty());
 }
 
 TEST_F(ServiceWorkerStorageTest, StoreUserData) {

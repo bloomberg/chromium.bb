@@ -412,8 +412,36 @@ void ServiceWorkerStorage::FindRegistrationForId(
                             weak_factory_.GetWeakPtr(), callback)));
 }
 
+void ServiceWorkerStorage::GetRegistrationsForOrigin(
+    const GURL& origin, const GetRegistrationsInfosCallback& callback) {
+  if (!LazyInitialize(base::Bind(
+          &ServiceWorkerStorage::GetRegistrationsForOrigin,
+          weak_factory_.GetWeakPtr(), origin, callback))) {
+    if (state_ != INITIALIZING || !context_) {
+      RunSoon(FROM_HERE, base::Bind(
+          callback, std::vector<ServiceWorkerRegistrationInfo>()));
+    }
+    return;
+  }
+  DCHECK_EQ(INITIALIZED, state_);
+
+  RegistrationList* registrations = new RegistrationList;
+  PostTaskAndReplyWithResult(
+      database_task_manager_->GetTaskRunner(),
+      FROM_HERE,
+      base::Bind(&ServiceWorkerDatabase::GetRegistrationsForOrigin,
+                 base::Unretained(database_.get()),
+                 origin,
+                 base::Unretained(registrations)),
+      base::Bind(&ServiceWorkerStorage::DidGetRegistrations,
+                 weak_factory_.GetWeakPtr(),
+                 callback,
+                 base::Owned(registrations),
+                 origin));
+}
+
 void ServiceWorkerStorage::GetAllRegistrations(
-    const GetAllRegistrationInfosCallback& callback) {
+    const GetRegistrationsInfosCallback& callback) {
   if (!LazyInitialize(base::Bind(
           &ServiceWorkerStorage::GetAllRegistrations,
           weak_factory_.GetWeakPtr(), callback))) {
@@ -432,10 +460,11 @@ void ServiceWorkerStorage::GetAllRegistrations(
       base::Bind(&ServiceWorkerDatabase::GetAllRegistrations,
                  base::Unretained(database_.get()),
                  base::Unretained(registrations)),
-      base::Bind(&ServiceWorkerStorage::DidGetAllRegistrations,
+      base::Bind(&ServiceWorkerStorage::DidGetRegistrations,
                  weak_factory_.GetWeakPtr(),
                  callback,
-                 base::Owned(registrations)));
+                 base::Owned(registrations),
+                 GURL()));
 }
 
 void ServiceWorkerStorage::StoreRegistration(
@@ -984,9 +1013,10 @@ void ServiceWorkerStorage::ReturnFoundRegistration(
   callback.Run(SERVICE_WORKER_OK, registration);
 }
 
-void ServiceWorkerStorage::DidGetAllRegistrations(
-    const GetAllRegistrationInfosCallback& callback,
+void ServiceWorkerStorage::DidGetRegistrations(
+    const GetRegistrationsInfosCallback& callback,
     RegistrationList* registrations,
+    const GURL& origin_filter,
     ServiceWorkerDatabase::Status status) {
   DCHECK(registrations);
   if (status != ServiceWorkerDatabase::STATUS_OK &&
@@ -1040,8 +1070,11 @@ void ServiceWorkerStorage::DidGetAllRegistrations(
   for (RegistrationRefsById::const_iterator it =
            installing_registrations_.begin();
        it != installing_registrations_.end(); ++it) {
-    if (pushed_registrations.insert(it->first).second)
+    if ((!origin_filter.is_valid() ||
+         it->second->pattern().GetOrigin() == origin_filter) &&
+        pushed_registrations.insert(it->first).second) {
       infos.push_back(it->second->GetInfo());
+    }
   }
 
   callback.Run(infos);
