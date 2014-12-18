@@ -33,6 +33,7 @@
 #include "content/public/common/zygote_fork_delegate_linux.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_switches.h"
+#include "sandbox/linux/services/syscall_wrappers.h"
 
 #if defined(ADDRESS_SANITIZER)
 #include <sanitizer/asan_interface.h>
@@ -374,7 +375,9 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
     CHECK_NE(pid, 0);
   } else {
     CreatePipe(&read_pipe, &write_pipe);
-    pid = fork();
+    // This is roughly equivalent to a fork(). We are using ForkWithFlags mainly
+    // to give it some more diverse test coverage.
+    pid = sandbox::ForkWithFlags(SIGCHLD, nullptr, nullptr);
   }
 
   if (pid == 0) {
