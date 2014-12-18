@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/worker_pool.h"
 #include "content/browser/devtools/protocol/color_picker.h"
+#include "content/browser/devtools/protocol/frame_recorder.h"
 #include "content/browser/devtools/protocol/usage_and_quota_query.h"
 #include "content/browser/geolocation/geolocation_service_context.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -121,6 +122,7 @@ PageHandler::PageHandler()
       processing_screencast_frame_(false),
       color_picker_(new ColorPicker(base::Bind(
           &PageHandler::OnColorPicked, base::Unretained(this)))),
+      frame_recorder_(new FrameRecorder()),
       host_(nullptr),
       weak_factory_(this) {
 }
@@ -133,6 +135,7 @@ void PageHandler::SetRenderViewHost(RenderViewHostImpl* host) {
     return;
 
   color_picker_->SetRenderViewHost(host);
+  frame_recorder_->SetRenderViewHost(host);
   host_ = host;
   UpdateTouchEventEmulationState();
 }
@@ -155,6 +158,7 @@ void PageHandler::OnSwapCompositorFrame(
   if (screencast_enabled_)
     InnerSwapCompositorFrame();
   color_picker_->OnSwapCompositorFrame();
+  frame_recorder_->OnSwapCompositorFrame();
 }
 
 void PageHandler::OnVisibilityChanged(bool visible) {
@@ -394,11 +398,12 @@ Response PageHandler::StopScreencast() {
 }
 
 Response PageHandler::StartRecordingFrames(int max_frame_count) {
-  return Response::InternalError("Not implemented yet");
+  return frame_recorder_->StartRecordingFrames(max_frame_count);
 }
 
 Response PageHandler::StopRecordingFrames(DevToolsCommandId command_id) {
-  return Response::InternalError("Not implemented yet");
+  return frame_recorder_->StopRecordingFrames(base::Bind(
+      &PageHandler::OnFramesRecorded, base::Unretained(this), command_id));
 }
 
 Response PageHandler::ScreencastFrameAck(int frame_number) {
@@ -607,6 +612,12 @@ void PageHandler::OnColorPicked(int r, int g, int b, int a) {
   scoped_refptr<dom::RGBA> color =
       dom::RGBA::Create()->set_r(r)->set_g(g)->set_b(b)->set_a(a);
   client_->ColorPicked(ColorPickedParams::Create()->set_color(color));
+}
+
+void PageHandler::OnFramesRecorded(
+    DevToolsCommandId command_id,
+    scoped_refptr<StopRecordingFramesResponse> response_data) {
+  client_->SendStopRecordingFramesResponse(command_id, response_data);
 }
 
 void PageHandler::QueryUsageAndQuotaCompleted(
