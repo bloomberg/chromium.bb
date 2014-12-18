@@ -38,7 +38,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "net/base/load_flags.h"
-#include "net/http/http_response_headers.h"
+#include "net/http/http_request_headers.h"
 
 namespace content {
 
@@ -107,8 +107,23 @@ FrameHostMsg_BeginNavigation_Params MakeDefaultBeginNavigation(
   begin_navigation_params.load_flags =
       LoadFlagFromNavigationType(navigation_type);
 
-  // TODO(clamy): Post data from the browser should be put in the request body.
-  // Headers should be filled in as well.
+  // Copy existing headers and add necessary headers that may not be present
+  // in the RequestNavigationParams.
+  net::HttpRequestHeaders headers;
+  headers.AddHeadersFromString(request_params.extra_headers);
+  headers.SetHeaderIfMissing(net::HttpRequestHeaders::kUserAgent,
+                             GetContentClient()->GetUserAgent());
+  headers.SetHeaderIfMissing("Accept", "*/*");
+  begin_navigation_params.headers = headers.ToString();
+
+  // Fill POST data from the browser in the request body.
+  if (request_params.is_post) {
+    begin_navigation_params.request_body = new ResourceRequestBody();
+    begin_navigation_params.request_body->AppendBytes(
+        reinterpret_cast<const char *>(
+            &request_params.browser_initiated_post_data.front()),
+        request_params.browser_initiated_post_data.size());
+  }
 
   begin_navigation_params.has_user_gesture = false;
   return begin_navigation_params;

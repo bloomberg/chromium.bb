@@ -452,7 +452,7 @@ FrameHostMsg_BeginNavigation_Params MakeBeginNavigationParams(
   params.method = request->httpMethod().latin1();
   params.headers = GetWebURLRequestHeaders(*request);
   params.load_flags = GetLoadFlagsForWebURLRequest(*request);
-  // TODO(clamy): fill the http body.
+  params.request_body = GetRequestBodyForWebURLRequest(*request);
   params.has_user_gesture = request->hasUserGesture();
   return params;
 }

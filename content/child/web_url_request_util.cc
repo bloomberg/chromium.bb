@@ -11,8 +11,9 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 
-using blink::WebURLRequest;
+using blink::WebHTTPBody;
 using blink::WebString;
+using blink::WebURLRequest;
 
 namespace content {
 
@@ -213,6 +214,66 @@ int GetLoadFlagsForWebURLRequest(const blink::WebURLRequest& request) {
     load_flags |= net::LOAD_DO_NOT_PROMPT_FOR_LOGIN;
   }
   return load_flags;
+}
+
+scoped_refptr<ResourceRequestBody> GetRequestBodyForWebURLRequest(
+    const blink::WebURLRequest& request) {
+  scoped_refptr<ResourceRequestBody> request_body;
+
+  if (request.httpBody().isNull()) {
+    return request_body;
+  }
+
+  const std::string& method = request.httpMethod().latin1();
+  // GET and HEAD requests shouldn't have http bodies.
+  DCHECK(method != "GET" && method != "HEAD");
+
+  const WebHTTPBody& httpBody = request.httpBody();
+  request_body = new ResourceRequestBody();
+  size_t i = 0;
+  WebHTTPBody::Element element;
+  while (httpBody.elementAt(i++, element)) {
+    switch (element.type) {
+      case WebHTTPBody::Element::TypeData:
+        if (!element.data.isEmpty()) {
+          // Blink sometimes gives empty data to append. These aren't
+          // necessary so they are just optimized out here.
+          request_body->AppendBytes(
+              element.data.data(), static_cast<int>(element.data.size()));
+        }
+        break;
+      case WebHTTPBody::Element::TypeFile:
+        if (element.fileLength == -1) {
+          request_body->AppendFileRange(
+              base::FilePath::FromUTF16Unsafe(element.filePath),
+              0, kuint64max, base::Time());
+        } else {
+          request_body->AppendFileRange(
+              base::FilePath::FromUTF16Unsafe(element.filePath),
+              static_cast<uint64>(element.fileStart),
+              static_cast<uint64>(element.fileLength),
+              base::Time::FromDoubleT(element.modificationTime));
+        }
+        break;
+      case WebHTTPBody::Element::TypeFileSystemURL: {
+        GURL file_system_url = element.fileSystemURL;
+        DCHECK(file_system_url.SchemeIsFileSystem());
+        request_body->AppendFileSystemFileRange(
+            file_system_url,
+            static_cast<uint64>(element.fileStart),
+            static_cast<uint64>(element.fileLength),
+            base::Time::FromDoubleT(element.modificationTime));
+        break;
+      }
+      case WebHTTPBody::Element::TypeBlob:
+        request_body->AppendBlob(element.blobUUID.utf8());
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+  request_body->set_identifier(request.httpBody().identifier());
+  return request_body;
 }
 
 }  // namespace content
