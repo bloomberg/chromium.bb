@@ -580,6 +580,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSetCompositionFromExistingText(
       int start, int end,
       const std::vector<blink::WebCompositionUnderline>& underlines);
+  void OnExecuteNoValueEditCommand(const std::string& name);
   void OnExtendSelectionAndDelete(int before, int after);
   void OnReload(bool ignore_cache);
   void OnTextSurroundingSelectionRequest(size_t max_length);

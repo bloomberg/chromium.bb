@@ -644,7 +644,12 @@ void BrowserPluginGuest::OnDragStatusUpdate(int browser_plugin_instance_id,
 
 void BrowserPluginGuest::OnExecuteEditCommand(int browser_plugin_instance_id,
                                               const std::string& name) {
-  Send(new InputMsg_ExecuteEditCommand(routing_id(), name, std::string()));
+  RenderFrameHost* focused_frame = web_contents()->GetFocusedFrame();
+  if (!focused_frame)
+    return;
+
+  focused_frame->Send(new InputMsg_ExecuteNoValueEditCommand(
+      focused_frame->GetRoutingID(), name));
 }
 
 void BrowserPluginGuest::OnImeSetComposition(

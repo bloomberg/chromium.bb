@@ -911,6 +911,8 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnExtendSelectionAndDelete)
     IPC_MESSAGE_HANDLER(InputMsg_SetCompositionFromExistingText,
                         OnSetCompositionFromExistingText)
+    IPC_MESSAGE_HANDLER(InputMsg_ExecuteNoValueEditCommand,
+                        OnExecuteNoValueEditCommand)
     IPC_MESSAGE_HANDLER(FrameMsg_CSSInsertRequest, OnCSSInsertRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_JavaScriptExecuteRequest,
                         OnJavaScriptExecuteRequest)
@@ -1394,6 +1396,10 @@ void RenderFrameImpl::OnSetCompositionFromExistingText(
     return;
   ImeEventGuard guard(GetRenderWidget());
   frame_->setCompositionFromExistingText(start, end, underlines);
+}
+
+void RenderFrameImpl::OnExecuteNoValueEditCommand(const std::string& name) {
+  frame_->executeCommand(WebString::fromUTF8(name), GetFocusedElement());
 }
 
 void RenderFrameImpl::OnExtendSelectionAndDelete(int before, int after) {

@@ -162,6 +162,9 @@ IPC_MESSAGE_ROUTED2(InputMsg_ExecuteEditCommand,
                     std::string, /* name */
                     std::string /* value */)
 
+// Message payload is the name of a WebCore edit command to execute.
+IPC_MESSAGE_ROUTED1(InputMsg_ExecuteNoValueEditCommand, std::string /* name */)
+
 IPC_MESSAGE_ROUTED0(InputMsg_MouseCaptureLost)
 
 // TODO(darin): figure out how this meshes with RestoreFocus
