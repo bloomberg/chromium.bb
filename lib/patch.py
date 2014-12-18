@@ -294,18 +294,6 @@ class ChangeNotInManifest(PatchException):
     return 'could not be found in the repo manifest.'
 
 
-class PatchNotMergeable(PatchException):
-  """Raised if a patch is not mergeable."""
-
-  def __init__(self, patch, reason):
-    PatchException.__init__(self, patch)
-    self.reason = str(reason)
-    self.args = (patch, reason)
-
-  def ShortExplanation(self):
-    return self.reason
-
-
 def MakeChangeId(unusable=False):
   """Create a random Change-Id.
 
@@ -1546,39 +1534,13 @@ class GerritPatch(GerritFetchOnlyPatch):
 
   def IsMergeable(self):
     """Return true if all Gerrit approvals required for submission are set."""
-    return not self.GetMergeException()
+    return (self.status == 'NEW' and not self.WasVetoed() and
+            not self.IsDraft() and
+            self.HasApprovals({'CRVW': '2', 'VRIF': '1', 'COMR': ('1', '2')}))
 
   def HasReadyFlag(self):
     """Return true if the trybot-ready or commit-ready flag is set."""
     return self.HasApproval('COMR', ('1', '2')) or self.HasApproval('TRY', '1')
-
-  def GetMergeException(self):
-    """Return the reason why this change is not mergeable.
-
-    If the change is in fact mergeable, return None.
-    """
-    if self.IsDraft():
-      return PatchNotMergeable(self, 'is a draft.')
-
-    if self.status != 'NEW':
-      statuses = {
-        'MERGED': 'is already merged.',
-        'SUBMITTED': 'is being merged.',
-        'ABANDONED': 'is abandoned.',
-      }
-      message = statuses.get(self.status, 'has status %s.' % self.status)
-      return PatchNotMergeable(self, message)
-
-    if self.HasApproval('VRIF', '-1'):
-      return PatchNotMergeable(self, 'is marked as Verified=-1.')
-    elif self.HasApproval('CRVW', '-2'):
-      return PatchNotMergeable(self, 'is marked as Code-Review=-2.')
-    elif not self.HasApproval('CRVW', '2'):
-      return PatchNotMergeable(self, 'is not marked Code-Review=+2.')
-    elif not self.HasApproval('VRIF', '1'):
-      return PatchNotMergeable(self, 'is not marked Verified=+1.')
-    elif not self.HasApproval('COMR', ('1', '2')):
-      return PatchNotMergeable(self, 'is not marked Commit-Queue>=+1.')
 
   def GetLatestApproval(self, field):
     """Return most recent value of specific field on the current patchset.
