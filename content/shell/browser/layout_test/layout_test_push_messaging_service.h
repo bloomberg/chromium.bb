@@ -53,8 +53,6 @@ class LayoutTestPushMessagingService : public PushMessagingService {
  private:
   // Map from origin to permission status.
   std::map<GURL, blink::WebPushPermissionStatus> permission_map_;
-  // Set of currently registered origins.
-  std::set<GURL> registrations_;
 
   DISALLOW_COPY_AND_ASSIGN(LayoutTestPushMessagingService);
 };

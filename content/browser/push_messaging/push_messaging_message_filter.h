@@ -111,9 +111,19 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   void OnUnregister(int request_id,
                     int64 service_worker_registration_id);
 
-  void UnregisterOnUI(int request_id,
-                      int64 service_worker_registration_id,
-                      const GURL& requesting_origin);
+  void DoUnregister(int request_id,
+                    int64 service_worker_registration_id,
+                    const GURL& requesting_origin,
+                    const std::string& push_registration_id,
+                    ServiceWorkerStatusCode service_worker_status);
+
+  void UnregisterFromService(int request_id,
+                             int64 service_worker_registration_id,
+                             const GURL& requesting_origin);
+
+  void DidUnregisterFromService(int request_id,
+                                int64 service_worker_registration_id,
+                                PushUnregistrationStatus unregistration_status);
 
   void DidUnregister(int request_id,
                      PushUnregistrationStatus unregistration_status);
@@ -130,6 +140,19 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
 
   void SendGetRegistrationSuccessOnUI(int request_id,
                                       const std::string& push_registration_id);
+
+  // Helper methods ------------------------------------------------------------
+
+  // Clear the registration information related to
+  // |service_worker_registration_id| and call |closure| when done.
+  // The caller MUST check that there is a registration information before
+  // calling this method if this is something that it needs to know.
+  void ClearRegistrationData(int64 service_worker_registration_id,
+                             const base::Closure& closure);
+
+  void DidClearRegistrationData(
+      const base::Closure& closure,
+      ServiceWorkerStatusCode service_worker_status_code);
 
   // Returns a push messaging service. The embedder owns the service, and is
   // responsible for ensuring that it outlives RenderProcessHost. It's valid to

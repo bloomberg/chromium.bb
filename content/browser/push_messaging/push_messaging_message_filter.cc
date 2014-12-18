@@ -363,16 +363,62 @@ void PushMessagingMessageFilter::OnUnregister(
   if (!service_worker_registration)
     return;
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&PushMessagingMessageFilter::UnregisterOnUI,
-                 this,
+  service_worker_context_->context()->storage()->GetUserData(
+      service_worker_registration_id,
+      kPushRegistrationIdServiceWorkerKey,
+      base::Bind(&PushMessagingMessageFilter::DoUnregister,
+                 weak_factory_io_to_io_.GetWeakPtr(),
                  request_id,
                  service_worker_registration_id,
                  service_worker_registration->pattern().GetOrigin()));
 }
 
-void PushMessagingMessageFilter::UnregisterOnUI(
+void PushMessagingMessageFilter::DoUnregister(
+    int request_id,
+    int64 service_worker_registration_id,
+    const GURL& requesting_origin,
+    const std::string& push_registration_id,
+    ServiceWorkerStatusCode service_worker_status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  switch (service_worker_status) {
+    case SERVICE_WORKER_OK:
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(&PushMessagingMessageFilter::UnregisterFromService,
+                     this,
+                     request_id,
+                     service_worker_registration_id,
+                     requesting_origin));
+      return;
+    case SERVICE_WORKER_ERROR_NOT_FOUND:
+      // We did not find a registration, stop here and notify the renderer that
+      // it was a success even though we did not unregister.
+      DidUnregister(request_id,
+                    PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED);
+      return;
+    case SERVICE_WORKER_ERROR_FAILED:
+      DidUnregister(request_id,
+                    PUSH_UNREGISTRATION_STATUS_UNKNOWN_ERROR);
+      return;
+    case SERVICE_WORKER_ERROR_ABORT:
+    case SERVICE_WORKER_ERROR_START_WORKER_FAILED:
+    case SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND:
+    case SERVICE_WORKER_ERROR_EXISTS:
+    case SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED:
+    case SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED:
+    case SERVICE_WORKER_ERROR_IPC_FAILED:
+    case SERVICE_WORKER_ERROR_NETWORK:
+    case SERVICE_WORKER_ERROR_SECURITY:
+    case SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED:
+      NOTREACHED() << "Got unexpected error code: " << service_worker_status
+                   << " " << ServiceWorkerStatusToString(service_worker_status);
+      DidUnregister(request_id, PUSH_UNREGISTRATION_STATUS_UNKNOWN_ERROR);
+      return;
+  }
+}
+
+void PushMessagingMessageFilter::UnregisterFromService(
     int request_id,
     int64 service_worker_registration_id,
     const GURL& requesting_origin) {
@@ -383,8 +429,32 @@ void PushMessagingMessageFilter::UnregisterOnUI(
   }
 
   service()->Unregister(requesting_origin, service_worker_registration_id,
-      base::Bind(&PushMessagingMessageFilter::DidUnregister,
-                 weak_factory_ui_to_ui_.GetWeakPtr(), request_id));
+      base::Bind(&PushMessagingMessageFilter::DidUnregisterFromService,
+                 weak_factory_ui_to_ui_.GetWeakPtr(),
+                 request_id,
+                 service_worker_registration_id));
+}
+
+void PushMessagingMessageFilter::DidUnregisterFromService(
+    int request_id,
+    int64 service_worker_registration_id,
+    PushUnregistrationStatus unregistration_status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (unregistration_status != PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTER) {
+    DidUnregister(request_id, unregistration_status);
+    return;
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&PushMessagingMessageFilter::ClearRegistrationData,
+                 this,
+                 service_worker_registration_id,
+                 base::Bind(&PushMessagingMessageFilter::DidUnregister,
+                            weak_factory_io_to_io_.GetWeakPtr(),
+                            request_id,
+                            unregistration_status)));
 }
 
 void PushMessagingMessageFilter::DidUnregister(
@@ -472,6 +542,31 @@ void PushMessagingMessageFilter::SendGetRegistrationSuccessOnUI(
   GURL push_endpoint(service()->GetPushEndpoint());
   Send(new PushMessagingMsg_GetRegistrationSuccess(request_id, push_endpoint,
                                                    push_registration_id));
+}
+
+void PushMessagingMessageFilter::ClearRegistrationData(
+    int64 service_worker_registration_id,
+    const base::Closure& closure) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  service_worker_context_->context()->storage()->ClearUserData(
+      service_worker_registration_id,
+      kPushRegistrationIdServiceWorkerKey,
+      base::Bind(&PushMessagingMessageFilter::DidClearRegistrationData,
+                 weak_factory_io_to_io_.GetWeakPtr(),
+                 closure));
+}
+
+void PushMessagingMessageFilter::DidClearRegistrationData(
+    const base::Closure& closure,
+    ServiceWorkerStatusCode service_worker_status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  DCHECK(service_worker_status == SERVICE_WORKER_OK)
+      << "Got unexpected error code: " << service_worker_status
+      << " " << ServiceWorkerStatusToString(service_worker_status);
+
+  closure.Run();
 }
 
 PushMessagingService* PushMessagingMessageFilter::service() {
