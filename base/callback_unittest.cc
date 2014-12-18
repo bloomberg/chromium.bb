@@ -36,6 +36,8 @@ struct BindState<void(void), void(void), void(FakeInvoker)>
     : public BindStateBase {
  public:
   typedef FakeInvoker InvokerType;
+ private:
+  ~BindState() override {}
 };
 
 template <>
@@ -44,6 +46,8 @@ struct BindState<void(void), void(void),
     : public BindStateBase {
  public:
   typedef FakeInvoker InvokerType;
+ private:
+  ~BindState() override {}
 };
 }  // namespace internal
 

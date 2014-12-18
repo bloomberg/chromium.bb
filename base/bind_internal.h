@@ -1850,9 +1850,11 @@ struct BindState<Runnable, RunType, void()> : public BindStateBase {
       : runnable_(runnable) {
   }
 
-  virtual ~BindState() {  }
-
   RunnableType runnable_;
+
+ private:
+  ~BindState() override {  }
+
 };
 
 template <typename Runnable, typename RunType, typename P1>
@@ -1871,11 +1873,13 @@ struct BindState<Runnable, RunType, void(P1)> : public BindStateBase {
     MaybeRefcount<HasIsMethodTag<Runnable>::value, P1>::AddRef(p1_);
   }
 
-  virtual ~BindState() {    MaybeRefcount<HasIsMethodTag<Runnable>::value,
-      P1>::Release(p1_);  }
-
   RunnableType runnable_;
   P1 p1_;
+
+ private:
+  ~BindState() override {    MaybeRefcount<HasIsMethodTag<Runnable>::value,
+      P1>::Release(p1_);  }
+
 };
 
 template <typename Runnable, typename RunType, typename P1, typename P2>
@@ -1896,12 +1900,14 @@ struct BindState<Runnable, RunType, void(P1, P2)> : public BindStateBase {
     MaybeRefcount<HasIsMethodTag<Runnable>::value, P1>::AddRef(p1_);
   }
 
-  virtual ~BindState() {    MaybeRefcount<HasIsMethodTag<Runnable>::value,
-      P1>::Release(p1_);  }
-
   RunnableType runnable_;
   P1 p1_;
   P2 p2_;
+
+ private:
+  ~BindState() override {    MaybeRefcount<HasIsMethodTag<Runnable>::value,
+      P1>::Release(p1_);  }
+
 };
 
 template <typename Runnable, typename RunType, typename P1, typename P2,
@@ -1925,13 +1931,15 @@ struct BindState<Runnable, RunType, void(P1, P2, P3)> : public BindStateBase {
     MaybeRefcount<HasIsMethodTag<Runnable>::value, P1>::AddRef(p1_);
   }
 
-  virtual ~BindState() {    MaybeRefcount<HasIsMethodTag<Runnable>::value,
-      P1>::Release(p1_);  }
-
   RunnableType runnable_;
   P1 p1_;
   P2 p2_;
   P3 p3_;
+
+ private:
+  ~BindState() override {    MaybeRefcount<HasIsMethodTag<Runnable>::value,
+      P1>::Release(p1_);  }
+
 };
 
 template <typename Runnable, typename RunType, typename P1, typename P2,
@@ -1959,14 +1967,16 @@ struct BindState<Runnable, RunType, void(P1, P2, P3,
     MaybeRefcount<HasIsMethodTag<Runnable>::value, P1>::AddRef(p1_);
   }
 
-  virtual ~BindState() {    MaybeRefcount<HasIsMethodTag<Runnable>::value,
-      P1>::Release(p1_);  }
-
   RunnableType runnable_;
   P1 p1_;
   P2 p2_;
   P3 p3_;
   P4 p4_;
+
+ private:
+  ~BindState() override {    MaybeRefcount<HasIsMethodTag<Runnable>::value,
+      P1>::Release(p1_);  }
+
 };
 
 template <typename Runnable, typename RunType, typename P1, typename P2,
@@ -1996,15 +2006,17 @@ struct BindState<Runnable, RunType, void(P1, P2, P3, P4,
     MaybeRefcount<HasIsMethodTag<Runnable>::value, P1>::AddRef(p1_);
   }
 
-  virtual ~BindState() {    MaybeRefcount<HasIsMethodTag<Runnable>::value,
-      P1>::Release(p1_);  }
-
   RunnableType runnable_;
   P1 p1_;
   P2 p2_;
   P3 p3_;
   P4 p4_;
   P5 p5_;
+
+ private:
+  ~BindState() override {    MaybeRefcount<HasIsMethodTag<Runnable>::value,
+      P1>::Release(p1_);  }
+
 };
 
 template <typename Runnable, typename RunType, typename P1, typename P2,
@@ -2036,9 +2048,6 @@ struct BindState<Runnable, RunType, void(P1, P2, P3, P4, P5,
     MaybeRefcount<HasIsMethodTag<Runnable>::value, P1>::AddRef(p1_);
   }
 
-  virtual ~BindState() {    MaybeRefcount<HasIsMethodTag<Runnable>::value,
-      P1>::Release(p1_);  }
-
   RunnableType runnable_;
   P1 p1_;
   P2 p2_;
@@ -2046,6 +2055,11 @@ struct BindState<Runnable, RunType, void(P1, P2, P3, P4, P5,
   P4 p4_;
   P5 p5_;
   P6 p6_;
+
+ private:
+  ~BindState() override {    MaybeRefcount<HasIsMethodTag<Runnable>::value,
+      P1>::Release(p1_);  }
+
 };
 
 template <typename Runnable, typename RunType, typename P1, typename P2,
@@ -2079,9 +2093,6 @@ struct BindState<Runnable, RunType, void(P1, P2, P3, P4, P5, P6,
     MaybeRefcount<HasIsMethodTag<Runnable>::value, P1>::AddRef(p1_);
   }
 
-  virtual ~BindState() {    MaybeRefcount<HasIsMethodTag<Runnable>::value,
-      P1>::Release(p1_);  }
-
   RunnableType runnable_;
   P1 p1_;
   P2 p2_;
@@ -2090,6 +2101,11 @@ struct BindState<Runnable, RunType, void(P1, P2, P3, P4, P5, P6,
   P5 p5_;
   P6 p6_;
   P7 p7_;
+
+ private:
+  ~BindState() override {    MaybeRefcount<HasIsMethodTag<Runnable>::value,
+      P1>::Release(p1_);  }
+
 };
 
 }  // namespace internal

@@ -259,7 +259,7 @@ class DelayTimer : protected Timer {
               base::Bind(method, base::Unretained(receiver)),
               false) {}
 
-  void Reset() { Timer::Reset(); }
+  void Reset() override { Timer::Reset(); }
 };
 
 }  // namespace base

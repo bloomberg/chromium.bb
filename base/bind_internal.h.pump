@@ -492,18 +492,20 @@ $if ARITY == 0 [[
 ]]
   }
 
-  virtual ~BindState() {
-$if ARITY > 0 [[
-    MaybeRefcount<HasIsMethodTag<Runnable>::value, P1>::Release(p1_);
-]]
-  }
-
   RunnableType runnable_;
 
 $for ARG [[
   P$(ARG) p$(ARG)_;
 
 ]]
+
+ private:
+  ~BindState() override {
+$if ARITY > 0 [[
+    MaybeRefcount<HasIsMethodTag<Runnable>::value, P1>::Release(p1_);
+]]
+  }
+
 };
 
 ]] $$ for ARITY

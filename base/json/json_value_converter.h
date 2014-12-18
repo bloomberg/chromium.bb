@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -137,67 +138,57 @@ template <typename FieldType>
 class BasicValueConverter;
 
 template <>
-class BasicValueConverter<int> : public ValueConverter<int> {
+class BASE_EXPORT BasicValueConverter<int> : public ValueConverter<int> {
  public:
   BasicValueConverter() {}
 
-  virtual bool Convert(const base::Value& value, int* field) const override {
-    return value.GetAsInteger(field);
-  }
+  bool Convert(const base::Value& value, int* field) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BasicValueConverter);
 };
 
 template <>
-class BasicValueConverter<std::string> : public ValueConverter<std::string> {
+class BASE_EXPORT BasicValueConverter<std::string>
+    : public ValueConverter<std::string> {
  public:
   BasicValueConverter() {}
 
-  virtual bool Convert(
-      const base::Value& value, std::string* field) const override {
-    return value.GetAsString(field);
-  }
+  bool Convert(const base::Value& value, std::string* field) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BasicValueConverter);
 };
 
 template <>
-class BasicValueConverter<string16> : public ValueConverter<string16> {
+class BASE_EXPORT BasicValueConverter<string16>
+    : public ValueConverter<string16> {
  public:
   BasicValueConverter() {}
 
-  virtual bool Convert(
-      const base::Value& value, string16* field) const override {
-    return value.GetAsString(field);
-  }
+  bool Convert(const base::Value& value, string16* field) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BasicValueConverter);
 };
 
 template <>
-class BasicValueConverter<double> : public ValueConverter<double> {
+class BASE_EXPORT BasicValueConverter<double> : public ValueConverter<double> {
  public:
   BasicValueConverter() {}
 
-  virtual bool Convert(const base::Value& value, double* field) const override {
-    return value.GetAsDouble(field);
-  }
+  bool Convert(const base::Value& value, double* field) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BasicValueConverter);
 };
 
 template <>
-class BasicValueConverter<bool> : public ValueConverter<bool> {
+class BASE_EXPORT BasicValueConverter<bool> : public ValueConverter<bool> {
  public:
   BasicValueConverter() {}
 
-  virtual bool Convert(const base::Value& value, bool* field) const override {
-    return value.GetAsBoolean(field);
-  }
+  bool Convert(const base::Value& value, bool* field) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BasicValueConverter);

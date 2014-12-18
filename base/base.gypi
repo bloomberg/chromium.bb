@@ -263,6 +263,7 @@
           'json/json_reader.h',
           'json/json_string_value_serializer.cc',
           'json/json_string_value_serializer.h',
+          'json/json_value_converter.cc',
           'json/json_value_converter.h',
           'json/json_writer.cc',
           'json/json_writer.h',
