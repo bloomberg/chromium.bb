@@ -33,26 +33,7 @@ namespace extensions {
 
 namespace {
 
-const char kWebRequest[] = "declarativeWebRequest.";
-const char kWebViewExpectedError[] = "Webview event with Webview ID expected.";
-
-bool IsWebViewEvent(const std::string& event_name) {
-  // Sample event names:
-  // webViewInternal.onRequest.
-  // webViewInternal.onMessage.
-  return event_name.compare(0,
-                            strlen(webview::kWebViewEventPrefix),
-                            webview::kWebViewEventPrefix) == 0;
-}
-
-std::string GetWebRequestEventName(const std::string& event_name) {
-  std::string web_request_event_name(event_name);
-  if (IsWebViewEvent(web_request_event_name)) {
-    web_request_event_name.replace(
-        0, strlen(webview::kWebViewEventPrefix), kWebRequest);
-  }
-  return web_request_event_name;
-}
+const char kDeclarativeEventPrefix[] = "declarative";
 
 void ConvertBinaryDictionaryValuesToBase64(base::DictionaryValue* dict);
 
@@ -122,17 +103,16 @@ RulesFunction::~RulesFunction() {}
 bool RulesFunction::HasPermission() {
   std::string event_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &event_name));
-  if (IsWebViewEvent(event_name) &&
+  int web_view_instance_id = 0;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(1, &web_view_instance_id));
+
+  // <webview> embedders use the declarativeWebRequest API via
+  // <webview>.onRequest.
+  if (web_view_instance_id != 0 &&
       extension_->permissions_data()->HasAPIPermission(
           extensions::APIPermission::kWebView))
     return true;
-  Feature::Availability availability =
-      ExtensionAPI::GetSharedInstance()->IsAvailable(
-          event_name,
-          extension_.get(),
-          Feature::BLESSED_EXTENSION_CONTEXT,
-          source_url());
-  return availability.is_available();
+  return ExtensionFunction::HasPermission();
 }
 
 bool RulesFunction::RunAsync() {
@@ -143,14 +123,18 @@ bool RulesFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(1, &web_view_instance_id));
   int embedder_process_id = render_view_host()->GetProcess()->GetID();
 
-  bool has_web_view = web_view_instance_id != 0;
-  if (has_web_view != IsWebViewEvent(event_name))
-    EXTENSION_FUNCTION_ERROR(kWebViewExpectedError);
-  event_name = GetWebRequestEventName(event_name);
-
+  bool from_web_view = web_view_instance_id != 0;
   // If we are not operating on a particular <webview>, then the key is 0.
   int rules_registry_id = RulesRegistryService::kDefaultRulesRegistryID;
-  if (has_web_view) {
+  if (from_web_view) {
+    // Sample event names:
+    // webViewInternal.declarativeWebRequest.onRequest.
+    // webViewInternal.declarativeWebRequest.onMessage.
+    // The "webViewInternal." prefix is removed from the event name.
+    std::size_t found = event_name.find(kDeclarativeEventPrefix);
+    EXTENSION_FUNCTION_VALIDATE(found != std::string::npos);
+    event_name = event_name.substr(found);
+
     rules_registry_id = WebViewGuest::GetOrGenerateRulesRegistryID(
         embedder_process_id, web_view_instance_id);
   }

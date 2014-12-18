@@ -224,7 +224,7 @@ WebViewEvents.prototype.setupWebRequestEvents = function() {
             DeclarativeWebRequestEvent : EventBindings.Event;
         this[webRequestEvent.name] =
             new EventClass(
-                'webViewInternal.' + webRequestEvent.name,
+                'webViewInternal.declarativeWebRequest.' + webRequestEvent.name,
                 webRequestEvent.parameters,
                 webRequestEvent.options,
                 this.viewInstanceId);
