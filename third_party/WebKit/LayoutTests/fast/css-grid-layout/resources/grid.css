@@ -230,3 +230,7 @@
 .directionRTL {
     direction: rtl;
 }
+
+.directionLTR {
+    direction: ltr;
+}

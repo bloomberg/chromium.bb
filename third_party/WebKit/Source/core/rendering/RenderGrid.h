@@ -116,16 +116,16 @@ private:
     LayoutUnit maxContentForChild(RenderBox&, GridTrackSizingDirection, Vector<GridTrack>& columnTracks);
     LayoutUnit startOfColumnForChild(const RenderBox& child) const;
     LayoutUnit endOfColumnForChild(const RenderBox& child) const;
-    LayoutUnit columnPositionAlignedWithGridContainerStart(const RenderBox&) const;
-    LayoutUnit columnPositionAlignedWithGridContainerEnd(const RenderBox&) const;
+    LayoutUnit columnPositionLeft(const RenderBox&) const;
+    LayoutUnit columnPositionRight(const RenderBox&) const;
     LayoutUnit centeredColumnPositionForChild(const RenderBox&) const;
     LayoutUnit columnPositionForChild(const RenderBox&) const;
     LayoutUnit startOfRowForChild(const RenderBox& child) const;
     LayoutUnit endOfRowForChild(const RenderBox& child) const;
     LayoutUnit centeredRowPositionForChild(const RenderBox&) const;
     LayoutUnit rowPositionForChild(const RenderBox&) const;
-    LayoutUnit contentPositionAndDistributionOffset(LayoutUnit availableFreeSpace, ContentPosition, ContentDistributionType, unsigned numberOfItems) const;
-    LayoutPoint findChildLogicalPosition(const RenderBox&) const;
+    LayoutUnit contentPositionAndDistributionColumnOffset(LayoutUnit availableFreeSpace, ContentPosition, ContentDistributionType, unsigned numberOfItems) const;
+    LayoutPoint findChildLogicalPosition(const RenderBox&, LayoutSize contentAlignmentOffset) const;
     GridCoordinate cachedGridCoordinate(const RenderBox&) const;
 
     LayoutUnit gridAreaBreadthForChild(const RenderBox& child, GridTrackSizingDirection, const Vector<GridTrack>&) const;
