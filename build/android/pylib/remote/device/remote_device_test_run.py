@@ -34,6 +34,7 @@ class RemoteDeviceTestRun(test_run.TestRun):
     self._app_id = ''
     self._test_id = ''
     self._results = ''
+    self._test_run_id = ''
 
   #override
   def RunTests(self):
@@ -43,21 +44,21 @@ class RemoteDeviceTestRun(test_run.TestRun):
           self._env.token, self._env.device, self._app_id, self._test_id)
       remote_device_helper.TestHttpResponse(
         test_start_res, 'Unable to run test.')
-      test_run_id = test_start_res.json()['response']['test_run_id']
-      logging.info('Test run id: %s' % test_run_id)
+      self._test_run_id = test_start_res.json()['response']['test_run_id']
+      logging.info('Test run id: %s' % self._test_run_id)
       if not self._env.collect:
         assert isinstance(self._env.trigger, basestring), (
                           'File for storing test_run_id must be a string.')
         with open(self._env.trigger, 'w') as test_run_id_file:
-          test_run_id_file.write(test_run_id)
+          test_run_id_file.write(self._test_run_id)
 
     if self._env.collect:
       if not self._env.trigger:
         assert isinstance(self._env.trigger, basestring), (
                           'File for storing test_run_id must be a string.')
         with open(self._env.collect, 'r') as test_run_id_file:
-          test_run_id = test_run_id_file.read().strip()
-      while self._GetTestStatus(test_run_id) != self.COMPLETE:
+          self._test_run_id = test_run_id_file.read().strip()
+      while self._GetTestStatus(self._test_run_id) != self.COMPLETE:
         time.sleep(self.WAIT_TIME)
       self._DownloadTestResults(self._env.results_path)
       return self._ParseTestResults()
@@ -65,7 +66,12 @@ class RemoteDeviceTestRun(test_run.TestRun):
   #override
   def TearDown(self):
     """Tear down the test run."""
-    pass
+    if (self._GetTestStatus(self._test_run_id) != self.COMPLETE
+        and self._env.collect):
+      test_abort_res = appurify_sanitized.api.tests_abort(
+          self._env.token, self._test_run_id, reason='Test runner exiting.')
+      remote_device_helper.TestHttpResponse(test_abort_res,
+                                            'Unable to abort test.')
 
   def __enter__(self):
     """Set up the test run when used as a context manager."""
