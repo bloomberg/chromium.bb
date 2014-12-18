@@ -124,7 +124,7 @@ SharedResourcesDataSource::GetAccessControlAllowOriginForOrigin(
   std::string allowed_origin_prefix = kChromeUIScheme;
   allowed_origin_prefix += "://";
   if (origin.find(allowed_origin_prefix) != 0)
-    return "none";
+    return "null";
   return origin;
 }
 

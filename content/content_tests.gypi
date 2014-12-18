@@ -674,6 +674,7 @@
         'browser/web_contents/web_contents_view_mac_unittest.mm',
         'browser/web_contents/web_drag_dest_mac_unittest.mm',
         'browser/web_contents/web_drag_source_mac_unittest.mm',
+        'browser/webui/url_data_manager_backend_unittest.cc',
         'browser/webui/web_ui_data_source_unittest.cc',
         'browser/webui/web_ui_message_handler_unittest.cc',
         'child/blink_platform_impl_unittest.cc',
@@ -982,6 +983,7 @@
             'browser/geolocation/wifi_data_provider_chromeos_unittest.cc',
             'browser/geolocation/wifi_data_provider_common_unittest.cc',
             'browser/geolocation/wifi_data_provider_linux_unittest.cc',
+            'browser/webui/url_data_manager_backend_unittest.cc',
           ],
         }],
         ['OS != "android" and OS != "ios"', {
