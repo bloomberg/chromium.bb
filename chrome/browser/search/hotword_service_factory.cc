@@ -118,11 +118,8 @@ void HotwordServiceFactory::UpdateMicrophoneState() {
 
 void HotwordServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* prefs) {
-  // Although this is default true, users will not send back information to
-  // Google unless they have opted-in to Hotwording at which point they must
-  // also confirm that they wish this preference to be true or opt out of it.
   prefs->RegisterBooleanPref(prefs::kHotwordAudioLoggingEnabled,
-                             true,
+                             false,
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kHotwordPreviousLanguage,
                             std::string(),

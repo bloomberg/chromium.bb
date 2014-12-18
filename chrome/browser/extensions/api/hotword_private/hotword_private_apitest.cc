@@ -190,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, SetEnabled) {
 
 IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, SetAudioLoggingEnabled) {
   EXPECT_FALSE(service()->IsOptedIntoAudioLogging());
-  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
+  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
       prefs::kHotwordAudioLoggingEnabled));
 
   ExtensionTestMessageListener listenerTrue("ready", false);

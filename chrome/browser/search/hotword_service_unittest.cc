@@ -233,19 +233,6 @@ TEST_P(HotwordServiceTest, IsHotwordAllowedLocale) {
   EXPECT_FALSE(HotwordServiceFactory::IsHotwordAllowed(otr_profile));
 }
 
-TEST_P(HotwordServiceTest, AudioLoggingPrefSetCorrectly) {
-  TestingProfile::Builder profile_builder;
-  scoped_ptr<TestingProfile> profile = profile_builder.Build();
-
-  HotwordService* hotword_service =
-      HotwordServiceFactory::GetForProfile(profile.get());
-  EXPECT_TRUE(hotword_service != NULL);
-
-  // If it's a fresh profile, although the default value is true,
-  // it should return false if the preference has never been set.
-  EXPECT_FALSE(hotword_service->IsOptedIntoAudioLogging());
-}
-
 TEST_P(HotwordServiceTest, ShouldReinstallExtension) {
   // Set the field trial to a valid one.
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
