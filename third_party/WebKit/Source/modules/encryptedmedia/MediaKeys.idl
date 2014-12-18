@@ -38,6 +38,4 @@ typedef (ArrayBuffer or ArrayBufferView) BufferSource;
     [CallWith=ScriptState] MediaKeySession createSession(optional SessionType sessionType = "temporary");
 
     [CallWith=ScriptState] Promise<void> setServerCertificate(BufferSource serverCertificate);
-
-    static boolean isTypeSupported(DOMString keySystem, optional DOMString contentType = null);
 };

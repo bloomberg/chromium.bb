@@ -1234,6 +1234,8 @@ crbug.com/407915 virtual/deferred/inspector/tracing/timeline-event-dispatch.html
 crbug.com/407915 virtual/implsidepainting/inspector/tracing/timeline-event-dispatch.html [ Failure Pass ]
 
 crbug.com/407993 [ Win ] media/encrypted-media/prefixed/encrypted-media-events.html [ Crash Pass ]
+# Will be converted to requestMediaKeySystemAccess() tests.
+crbug.com/425186 media/encrypted-media/encrypted-media-istypesupported.html [ Skip ]
 
 #crbug.com/409715 [ Win ] svg/W3C-SVG-1.1/text-intro-04-t.svg [ Crash Pass ]
 crbug.com/409712 http/tests/filesystem/workers/resolve-url.html [ Pass Timeout ]

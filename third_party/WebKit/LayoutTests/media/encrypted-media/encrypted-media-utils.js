@@ -12,9 +12,41 @@ function consoleWrite(text)
     console.appendChild(span);
 }
 
+// FIXME: Detect EME support rather than just general container support.
+// http://crbug.com/441585
+// For now, assume that implementations that support a container type for clear
+// content and are running these tests also support that container with EME.
+// The element used for this will is not released to avoid interfering with the
+// ActiveDOMObject counts in the lifetime tests.
+var canPlayTypeElement = new Audio();
+var isWebMSupported = ('' != canPlayTypeElement.canPlayType('video/webm'));
+var isCencSupported = ('' != canPlayTypeElement.canPlayType('video/mp4'));
+
+function isInitDataTypeSupported(initDataType)
+{
+    var result = false;
+    switch (initDataType) {
+    case 'webm':
+        result = isWebMSupported;
+        break;
+    case 'cenc':
+        result = isCencSupported;
+        break;
+    default:
+        result = false;
+    }
+
+    return result;
+}
+
+
 function getInitDataType()
 {
-    return (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) ? 'webm' : 'cenc';
+    if (isInitDataTypeSupported('webm'))
+        return 'webm';
+    if (isInitDataTypeSupported('cenc'))
+        return 'cenc';
+    throw 'No supported Initialization Data Types';
 }
 
 function getInitData(initDataType)
