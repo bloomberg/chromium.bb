@@ -269,10 +269,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_IGNORE_GPU_LAYER_HOISTING
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_NewRasterPMColor
-#   define SK_SUPPORT_LEGACY_NewRasterPMColor
-#endif
-
 #ifndef SK_LEGACY_ENCODE_BITMAP
 #   define SK_LEGACY_ENCODE_BITMAP
 #endif

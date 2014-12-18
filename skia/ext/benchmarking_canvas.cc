@@ -25,7 +25,7 @@ class TimingCanvas : public SkProxyCanvas {
 public:
   TimingCanvas(int width, int height, const BenchmarkingCanvas* track_canvas)
       : tracking_canvas_(track_canvas) {
-    surface_ = skia::AdoptRef(SkSurface::NewRasterPMColor(width, height));
+    surface_ = skia::AdoptRef(SkSurface::NewRasterN32Premul(width, height));
 
     setProxy(surface_->getCanvas());
   }

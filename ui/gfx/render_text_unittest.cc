@@ -2385,7 +2385,7 @@ TEST_F(RenderTextTest, TextDoesntClip) {
   const int kTestWidth = 10;
 
   skia::RefPtr<SkSurface> surface = skia::AdoptRef(
-      SkSurface::NewRasterPMColor(kCanvasSize.width(), kCanvasSize.height()));
+      SkSurface::NewRasterN32Premul(kCanvasSize.width(), kCanvasSize.height()));
   scoped_ptr<Canvas> canvas(
       Canvas::CreateCanvasWithoutScaling(surface->getCanvas(), 1.0f));
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
