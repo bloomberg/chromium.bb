@@ -57,6 +57,12 @@ public class OffTheRecordDocumentTabModel extends OffTheRecordTabModel implement
     }
 
     @Override
+    public boolean isCoveredByChildActivity(int tabId) {
+        if (!isDocumentTabModelImplCreated()) return false;
+        return getDelegateDocumentTabModel().isCoveredByChildActivity(tabId);
+    }
+
+    @Override
     public void updateRecentlyClosed() {
         if (!isDocumentTabModelImplCreated()) return;
         getDelegateDocumentTabModel().updateRecentlyClosed();

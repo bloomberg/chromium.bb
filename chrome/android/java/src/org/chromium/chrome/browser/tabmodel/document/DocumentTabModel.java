@@ -21,6 +21,7 @@ public interface DocumentTabModel extends TabModel {
     public static final class Entry {
         public final int tabId;
         public boolean canGoBack;
+        public boolean isCoveredByChildActivity;
         public String initialUrl;
         public String currentUrl;
         public TabState tabState;
@@ -128,6 +129,12 @@ public interface DocumentTabModel extends TabModel {
      * @return Whether or not the given tab ID may be retargeted.
      */
     boolean isRetargetable(int tabId);
+
+    /**
+     * Check if a tab may be covered by child activity in the same task.
+     * @return Whether or not the given tab is covered by child activity.
+     */
+    boolean isCoveredByChildActivity(int tabId);
 
     /**
      * Closes the Tab at a particular index.
