@@ -381,7 +381,7 @@ TEST_F(ServiceWorkerVersionTest, ScheduleStopWorker) {
   EXPECT_EQ(SERVICE_WORKER_OK, status);
   EXPECT_TRUE(version_->stop_worker_timer_.IsRunning());
 
-  // The timer should not be running if a controllee is added.
+  // Adding controllee doesn't stop the stop-worker-timer.
   scoped_ptr<ServiceWorkerProviderHost> host(
       new ServiceWorkerProviderHost(33 /* dummy render process id */,
                                     MSG_ROUTING_NONE /* render_frame_id */,
@@ -389,10 +389,6 @@ TEST_F(ServiceWorkerVersionTest, ScheduleStopWorker) {
                                     helper_->context()->AsWeakPtr(),
                                     NULL));
   version_->AddControllee(host.get());
-  EXPECT_FALSE(version_->stop_worker_timer_.IsRunning());
-
-  // The timer should be running if the controllee is removed.
-  version_->RemoveControllee(host.get());
   EXPECT_TRUE(version_->stop_worker_timer_.IsRunning());
 }
 

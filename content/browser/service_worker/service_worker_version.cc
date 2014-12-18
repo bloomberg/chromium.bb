@@ -596,8 +596,9 @@ void ServiceWorkerVersion::AddControllee(
   DCHECK(!ContainsKey(controllee_map_, provider_host));
   int controllee_id = controllee_by_id_.Add(provider_host);
   controllee_map_[provider_host] = controllee_id;
-  if (stop_worker_timer_.IsRunning())
-    stop_worker_timer_.Stop();
+  // Reset the timer if it's running (so that it's kept alive a bit longer
+  // right after a new controllee is added).
+  ScheduleStopWorker();
 }
 
 void ServiceWorkerVersion::RemoveControllee(
@@ -613,7 +614,9 @@ void ServiceWorkerVersion::RemoveControllee(
     DoomInternal();
     return;
   }
-  ScheduleStopWorker();
+  // Schedule the stop-worker-timer if it's not running.
+  if (!stop_worker_timer_.IsRunning())
+    ScheduleStopWorker();
 }
 
 void ServiceWorkerVersion::AddListener(Listener* listener) {
@@ -1064,9 +1067,7 @@ void ServiceWorkerVersion::DidSkipWaiting(int request_id) {
 }
 
 void ServiceWorkerVersion::ScheduleStopWorker() {
-  // TODO(kinuko): Currently we don't schedule stop-time-worker when the SW has
-  // controllee, but we should change this default behavior (crbug.com/440259)
-  if (running_status() != RUNNING || HasControllee())
+  if (running_status() != RUNNING)
     return;
   if (stop_worker_timer_.IsRunning()) {
     stop_worker_timer_.Reset();
