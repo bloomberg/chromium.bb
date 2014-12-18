@@ -215,7 +215,7 @@ var ENTRIES = {
 
   desktop: new TestEntryInfo(
       EntryType.FILE, 'image.png', 'My Desktop Background.png',
-      'text/plain', SharedOption.NONE, 'Jan 18, 2038, 1:02 AM',
+      'image/png', SharedOption.NONE, 'Jan 18, 2038, 1:02 AM',
       'My Desktop Background.png', '272 bytes', 'PNG image'),
 
   image2: new TestEntryInfo(

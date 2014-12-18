@@ -10,6 +10,11 @@ class GalleryJsTest : public FileManagerJsTestBase {
       base::FilePath(FILE_PATH_LITERAL("ui/file_manager/gallery/js"))) {}
 };
 
+IN_PROC_BROWSER_TEST_F(GalleryJsTest, ImageEncoderTest) {
+  RunTest(base::FilePath(
+      FILE_PATH_LITERAL("image_editor/image_encoder_unittest.html")));
+}
+
 IN_PROC_BROWSER_TEST_F(GalleryJsTest, ExifEncoderTest) {
   RunTest(base::FilePath(
       FILE_PATH_LITERAL("image_editor/exif_encoder_unittest.html")));

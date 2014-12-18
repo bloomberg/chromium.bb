@@ -270,7 +270,12 @@ Gallery.Item.prototype.saveToFile = function(
     fileEntry.createWriter(function(fileWriter) {
       function writeContent() {
         fileWriter.onwriteend = onSuccess.bind(null, fileEntry);
-        fileWriter.write(ImageEncoder.getBlob(canvas, metadataEncoder));
+        // Contrary to what one might think 1.0 is not a good default. Opening
+        // and saving an typical photo taken with consumer camera increases its
+        // file size by 50-100%. Experiments show that 0.9 is much better. It
+        // shrinks some photos a bit, keeps others about the same size, but does
+        // not visibly lower the quality.
+        fileWriter.write(ImageEncoder.getBlob(canvas, metadataEncoder, 0.9));
       }
       fileWriter.onerror = function(error) {
         onError(error);

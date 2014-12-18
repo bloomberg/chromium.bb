@@ -39,44 +39,36 @@ ImageEncoder.createMetadataEncoder = function(metadata) {
   return new constructor(metadata);
 };
 
-
 /**
  * Create a metadata encoder object holding a copy of metadata
  * modified according to the properties of the supplied image.
  *
  * @param {!Object} metadata Original metadata.
  * @param {!HTMLCanvasElement} canvas Canvas to use for metadata.
- * @param {number} quality Encoding quality (defaults to 1).
+ * @param {number} thumbnailQuality Encoding quality of a thumbnail.
  * @return {!ImageEncoder.MetadataEncoder} Encoder with encoded metadata.
  */
-ImageEncoder.encodeMetadata = function(metadata, canvas, quality) {
+ImageEncoder.encodeMetadata = function(metadata, canvas, thumbnailQuality) {
   var encoder = ImageEncoder.createMetadataEncoder(metadata);
   encoder.setImageData(canvas);
-  encoder.setThumbnailData(ImageEncoder.createThumbnail(canvas), quality || 1);
+  encoder.setThumbnailData(ImageEncoder.createThumbnail(canvas),
+      thumbnailQuality);
   return encoder;
 };
-
 
 /**
  * Return a blob with the encoded image with metadata inserted.
  * @param {!HTMLCanvasElement} canvas The canvas with the image to be encoded.
  * @param {!ImageEncoder.MetadataEncoder} metadataEncoder Encoder to use.
- * @param {number=} opt_quality (0..1], Encoding quality, defaults to 0.9.
+ * @param {number} imageQuality (0..1], Encoding quality of an image.
  * @return {!Blob} encoded data.
  */
-ImageEncoder.getBlob = function(canvas, metadataEncoder, opt_quality) {
-  // Contrary to what one might think 1.0 is not a good default. Opening and
-  // saving an typical photo taken with consumer camera increases its file size
-  // by 50-100%.
-  // Experiments show that 0.9 is much better. It shrinks some photos a bit,
-  // keeps others about the same size, but does not visibly lower the quality.
-  var quality = opt_quality || 0.9;
-
+ImageEncoder.getBlob = function(canvas, metadataEncoder, imageQuality) {
   ImageUtil.trace.resetTimer('dataurl');
   // WebKit does not support canvas.toBlob yet so canvas.toDataURL is
   // the only way to use the Chrome built-in image encoder.
-  var dataURL =
-      canvas.toDataURL(metadataEncoder.getMetadata().media.mimeType, quality);
+  var dataURL = canvas.toDataURL(metadataEncoder.getMetadata().media.mimeType,
+      imageQuality);
   ImageUtil.trace.reportTimer('dataurl');
 
   var encodedImage = ImageEncoder.decodeDataURL(dataURL);
@@ -181,11 +173,33 @@ ImageEncoder.stringToArrayBuffer = function(string, from, to) {
  */
 ImageEncoder.MetadataEncoder = function(original_metadata) {
   this.metadata_ = MetadataCache.cloneMetadata(original_metadata) || {};
-  if (this.metadata_.media.mimeType !== 'image/jpeg') {
+  if (ImageEncoder.MetadataEncoder.getMimeType_(this.metadata_) !==
+      'image/jpeg') {
     // Chrome can only encode JPEG and PNG. Force PNG mime type so that we
     // can save to file and generate a thumbnail.
+    // TODO(yawano) Change this not to modify metadata. Mime type comes from
+    // different fields depending on the conditions. Just overriding
+    // media.mimeType and use the modified metadata could cause a problem.
     this.metadata_.media.mimeType = 'image/png';
   }
+};
+
+/**
+ * Gets mime type from metadata. It reads media.mimeType at first, and if it
+ * fails, it falls back to external.contentMimeType. If both fields are
+ * undefined, it means that metadata is broken. Then it throws an exception.
+ *
+ * @param {!Object} metadata Metadata.
+ * @return {string} Mime type.
+ * @private
+ */
+ImageEncoder.MetadataEncoder.getMimeType_ = function(metadata) {
+  if (metadata.media.mimeType)
+    return metadata.media.mimeType;
+  else if (metadata.external.contentMimeType)
+    return metadata.external.contentMimeType;
+
+  assertNotReached();
 };
 
 /**
