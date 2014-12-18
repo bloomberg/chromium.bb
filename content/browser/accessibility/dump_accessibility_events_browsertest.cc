@@ -1,0 +1,149 @@
+// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include <set>
+#include <string>
+#include <vector>
+
+#include "base/strings/string16.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "content/browser/accessibility/accessibility_event_recorder.h"
+#include "content/browser/accessibility/accessibility_tree_formatter.h"
+#include "content/browser/accessibility/browser_accessibility.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/accessibility/dump_accessibility_browsertest_base.h"
+#include "content/browser/web_contents/web_contents_impl.h"
+#include "content/shell/browser/shell.h"
+#include "content/test/accessibility_browser_test_utils.h"
+
+namespace content {
+
+typedef AccessibilityTreeFormatter::Filter Filter;
+
+// Tests that the right platform-specific accessibility events are fired
+// in response to things that happen in a web document.
+//
+// Similar to DumpAccessibilityTree in that each test consists of a
+// single HTML file, possibly with a few special directives in comments,
+// and then expectation files in text format for each platform.
+//
+// While DumpAccessibilityTree just loads the document and then
+// prints out a text representation of the accessibility tree,
+// DumpAccessibilityEvents loads the document, then executes the
+// JavaScript function "go()", then it records and dumps all accessibility
+// events generated as a result of that "go" function executing.
+//
+// How each event is dumped is platform-specific, but should be of the
+// form:
+//
+// <event> on <node>
+//
+// ...where <event> is the name of the event, and <node> is a description
+// of the node the event fired on, such as the node's role and name.
+//
+// As with DumpAccessibilityTree, DumpAccessibilityEvents takes the events
+// dumped from that particular html file and compares it to the expectation
+// file in the same directory (for example, test-name-expected-win.txt)
+// and the test fails if they don't agree.
+//
+// Currently it's not possible to test for accessibility events that
+// don't fire immediately (i.e. within the call scope of the call to "go()");
+// the test framework calls "go()" and then sends a sentinel event signaling
+// the end of the test; anything received after that is too late.
+class DumpAccessibilityEventsTest : public DumpAccessibilityTestBase {
+ public:
+  void AddDefaultFilters(std::vector<Filter>* filters) override {
+  }
+
+  std::vector<std::string> Dump() override;
+
+  void OnDiffFailed() override;
+
+ private:
+  base::string16 initial_tree_;
+  base::string16 final_tree_;
+};
+
+std::vector<std::string> DumpAccessibilityEventsTest::Dump() {
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+      shell()->web_contents());
+  scoped_ptr<AccessibilityEventRecorder> event_recorder(
+      AccessibilityEventRecorder::Create(
+          web_contents->GetRootBrowserAccessibilityManager()));
+
+  // Save a copy of the accessibility tree (as a text dump); we'll
+  // log this for the user later if the test fails.
+  initial_tree_ = DumpUnfilteredAccessibilityTreeAsString();
+
+  // Create a waiter that waits for any one accessibility event.
+  // This will ensure that after calling the go() function, we
+  // block until we've received an accessibility event generated as
+  // a result of this function.
+  scoped_ptr<AccessibilityNotificationWaiter> waiter;
+  waiter.reset(new AccessibilityNotificationWaiter(
+      shell(), AccessibilityModeComplete, ui::AX_EVENT_NONE));
+
+  // Execute the "go" function in the script.
+  web_contents->GetMainFrame()->ExecuteJavaScript(
+      base::ASCIIToUTF16("go()"));
+
+  // Wait for at least one accessibility event generated in response to
+  // that function.
+  waiter->WaitForNotification();
+
+  // More than one accessibility event could have been generated.
+  // To make sure we've received all accessibility events, add a
+  // sentinel by calling AccessibilityHitTest and waiting for a HOVER
+  // event in response.
+  waiter.reset(new AccessibilityNotificationWaiter(
+      shell(), AccessibilityModeComplete, ui::AX_EVENT_HOVER));
+  BrowserAccessibilityManager* manager =
+      web_contents->GetRootBrowserAccessibilityManager();
+  manager->delegate()->AccessibilityHitTest(gfx::Point(0, 0));
+  waiter->WaitForNotification();
+
+  // Save a copy of the final accessibility tree (as a text dump); we'll
+  // log this for the user later if the test fails.
+  final_tree_ = DumpUnfilteredAccessibilityTreeAsString();
+
+  // Dump the event logs, running them through any filters specified
+  // in the HTML file.
+  std::vector<std::string> event_logs = event_recorder->event_logs();
+  std::vector<std::string> result;
+  for (size_t i = 0; i < event_logs.size(); ++i) {
+    if (AccessibilityTreeFormatter::MatchesFilters(
+            filters_, base::UTF8ToUTF16(event_logs[i]), true)) {
+      result.push_back(event_logs[i]);
+    }
+  }
+  return result;
+}
+
+void DumpAccessibilityEventsTest::OnDiffFailed() {
+  printf("\n");
+  printf("Initial accessibility tree (after load complete):\n");
+  printf("%s\n", base::UTF16ToUTF8(initial_tree_).c_str());
+  printf("\n");
+  printf("Final accessibility tree after events fired:\n");
+  printf("%s\n", base::UTF16ToUTF8(final_tree_).c_str());
+  printf("\n");
+}
+
+// TODO(dmazzoni): port these tests to run on all platforms.
+#if defined(OS_WIN)
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsCheckedStateChanged) {
+  RunTest(FILE_PATH_LITERAL("events-checked-state-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsInputTypeTextValueChanged) {
+  RunTest(FILE_PATH_LITERAL("events-input-type-text-value-changed.html"));
+}
+
+#endif  // defined(OS_WIN)
+
+}  // namespace content
