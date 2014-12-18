@@ -16,6 +16,7 @@ $ git commit
 """
 
 import ast
+import optparse
 import os
 import re
 import sys
@@ -80,12 +81,17 @@ def get_solution(gclient_root, dep_path):
   assert False, 'Could not determine the parent project for %s' % dep_path
 
 
+def is_git_hash(revision):
+  """Determines if a given revision is a git hash."""
+  return SHA1_RE.match(revision)
+
+
 def verify_git_revision(dep_path, revision):
   """Verify that a git revision exists in a repository."""
   p = Popen(['git', 'rev-list', '-n', '1', revision],
             cwd=dep_path, stdout=PIPE, stderr=PIPE)
   result = p.communicate()[0].strip()
-  if p.returncode != 0 or not SHA1_RE.match(result):
+  if p.returncode != 0 or not is_git_hash(result):
     result = None
   return result
 
@@ -156,6 +162,8 @@ def get_git_revision(dep_path, revision):
     svn_revision = revision[1:]
   elif re.search('[a-fA-F]', revision):
     git_revision = verify_git_revision(dep_path, revision)
+    if not git_revision:
+      raise RuntimeError('Please \'git fetch origin\' in %s' % dep_path)
     svn_revision = get_svn_revision(dep_path, git_revision)
   elif len(revision) > 6:
     git_revision = verify_git_revision(dep_path, revision)
@@ -272,8 +280,12 @@ def generate_commit_message(deps_section, dep_path, dep_name, new_rev):
   old_rev_short = short_rev(old_rev, dep_path)
   new_rev_short = short_rev(new_rev, dep_path)
   url += '/+log/%s..%s' % (old_rev_short, new_rev_short)
-  old_svn_rev = get_svn_revision(dep_path, old_rev)
-  new_svn_rev = get_svn_revision(dep_path, new_rev)
+  try:
+    old_svn_rev = get_svn_revision(dep_path, old_rev)
+    new_svn_rev = get_svn_revision(dep_path, new_rev)
+  except Exception:
+    # Ignore failures that might arise from the repo not being checked out.
+    old_svn_rev = new_svn_rev = None
   svn_range_str = ''
   if old_svn_rev and new_svn_rev:
     svn_range_str = ' (svn %s:%s)' % (old_svn_rev, new_svn_rev)
@@ -344,16 +356,28 @@ def update_deps(deps_file, dep_path, dep_name, new_rev, comment):
 
 
 def main(argv):
+  parser = optparse.OptionParser()
+  parser.add_option('--no-verify-revision',
+                    help='Don\'t verify the revision passed in. This '
+                         'also skips adding an svn revision comment '
+                         'for git dependencies and requires the passed '
+                         'revision to be a git hash.',
+                    default=False, action='store_true')
+  (options, argv) = parser.parse_args(argv)
   if len(argv) not in (2, 3):
     print >> sys.stderr, (
-        'Usage: roll_dep.py <dep path> <svn revision> [ <DEPS file> ]')
+        'Usage: roll_dep.py [options] <dep path> <svn revision> '
+        '[ <DEPS file> ]')
     return 1
   (arg_dep_path, revision) = argv[0:2]
   gclient_root = find_gclient_root()
   dep_path = platform_path(arg_dep_path)
   if not os.path.exists(dep_path):
     dep_path = os.path.join(gclient_root, dep_path)
-  assert os.path.isdir(dep_path), 'No such directory: %s' % arg_dep_path
+  if not options.no_verify_revision:
+    # Only require the path to exist if the revision should be verified. A path
+    # to e.g. os deps might not be checked out.
+    assert os.path.isdir(dep_path), 'No such directory: %s' % arg_dep_path
   if len(argv) > 2:
     deps_file = argv[2]
   else:
@@ -361,9 +385,16 @@ def main(argv):
     soln_path = os.path.relpath(os.path.join(gclient_root, soln['name']))
     deps_file = os.path.join(soln_path, 'DEPS')
   dep_name = posix_path(os.path.relpath(dep_path, gclient_root))
-  (git_rev, svn_rev) = get_git_revision(dep_path, revision)
-  comment = ('from svn revision %s' % svn_rev) if svn_rev else None
-  assert git_rev, 'Could not find git revision matching %s.' % revision
+  if options.no_verify_revision:
+    assert is_git_hash(revision), (
+        'The passed revision %s must be a git hash when skipping revision '
+        'verification.' % revision)
+    git_rev = revision
+    comment = None
+  else:
+    (git_rev, svn_rev) = get_git_revision(dep_path, revision)
+    comment = ('from svn revision %s' % svn_rev) if svn_rev else None
+    assert git_rev, 'Could not find git revision matching %s.' % revision
   return update_deps(deps_file, dep_path, dep_name, git_rev, comment)
 
 if __name__ == '__main__':
