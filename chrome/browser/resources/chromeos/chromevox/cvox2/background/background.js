@@ -259,6 +259,11 @@ Background.prototype = {
    * @param {Object} evt
    */
   onLoadComplete: function(evt) {
+    // Don't process nodes inside of web content if ChromeVox Next is inactive.
+    if (evt.target.root.role != chrome.automation.RoleType.desktop &&
+        !this.active_)
+      return;
+
     var node = AutomationUtil.findNodePost(evt.target,
         Dir.FORWARD,
         AutomationPredicate.leaf);
@@ -274,6 +279,11 @@ Background.prototype = {
    * @param {Object} evt
    */
   onTextOrTextSelectionChanged: function(evt) {
+    // Don't process nodes inside of web content if ChromeVox Next is inactive.
+    if (evt.target.root.role != chrome.automation.RoleType.desktop &&
+        !this.active_)
+      return;
+
     if (!this.currentRange_) {
       if (!evt.target.state.focused)
         return;
