@@ -38,24 +38,27 @@ public:
     TextRunIterator()
         : m_textRun(0)
         , m_offset(0)
+        , m_length(0)
     {
     }
 
     TextRunIterator(const TextRun* textRun, unsigned offset)
         : m_textRun(textRun)
         , m_offset(offset)
+        , m_length(m_textRun->length())
     {
     }
 
     TextRunIterator(const TextRunIterator& other)
         : m_textRun(other.m_textRun)
         , m_offset(other.m_offset)
+        , m_length(m_textRun->length())
     {
     }
 
     unsigned offset() const { return m_offset; }
     void increment() { m_offset++; }
-    bool atEnd() const { return !m_textRun || m_offset >= m_textRun->length(); }
+    bool atEnd() const { return m_offset >= m_length; }
     UChar current() const { return (*m_textRun)[m_offset]; }
     WTF::Unicode::Direction direction() const { return atEnd() ? WTF::Unicode::OtherNeutral : WTF::Unicode::direction(current()); }
     bool atParagraphSeparator() const { return current() == '\n'; }
@@ -69,7 +72,8 @@ public:
 
 private:
     const TextRun* m_textRun;
-    int m_offset;
+    unsigned m_offset;
+    unsigned m_length;
 };
 
 
