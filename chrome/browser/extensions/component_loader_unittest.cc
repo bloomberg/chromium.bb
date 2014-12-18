@@ -25,10 +25,6 @@
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/audio/cras_audio_handler.h"
-#endif
-
 namespace extensions {
 
 namespace {
@@ -105,12 +101,6 @@ class ComponentLoaderTest : public testing::Test {
 #if defined(OS_CHROMEOS)
     local_state_.registry()->RegisterBooleanPref(
         prefs::kAccessibilitySpokenFeedbackEnabled, false);
-
-    // Tests on chromeos need to have the handler initialized because the
-    // Hotword component extension uses it to determine which extension to
-    // load.
-    if (!chromeos::CrasAudioHandler::IsInitialized())
-      chromeos::CrasAudioHandler::InitializeForTesting();
 #endif
   }
 

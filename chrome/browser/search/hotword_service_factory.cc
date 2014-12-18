@@ -48,12 +48,14 @@ bool HotwordServiceFactory::IsHotwordAllowed(BrowserContext* context) {
 // static
 bool HotwordServiceFactory::IsHotwordHardwareAvailable() {
 #if defined(OS_CHROMEOS)
-  chromeos::AudioDeviceList devices;
-  chromeos::CrasAudioHandler::Get()->GetAudioDevices(&devices);
-  for (size_t i = 0; i < devices.size(); ++i) {
-    if (devices[i].type == chromeos::AUDIO_TYPE_AOKR) {
-      DCHECK(devices[i].is_input);
-      return true;
+  if (chromeos::CrasAudioHandler::IsInitialized()) {
+    chromeos::AudioDeviceList devices;
+    chromeos::CrasAudioHandler::Get()->GetAudioDevices(&devices);
+    for (size_t i = 0; i < devices.size(); ++i) {
+      if (devices[i].type == chromeos::AUDIO_TYPE_AOKR) {
+        DCHECK(devices[i].is_input);
+        return true;
+      }
     }
   }
 #endif
