@@ -8,12 +8,13 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/browser_command_controller.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/passwords/manage_passwords_icon.h"
 #include "chrome/browser/ui/passwords/password_bubble_experiment.h"
+#include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/common/url_constants.h"
 #include "components/password_manager/content/common/credential_manager_types.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
@@ -277,7 +278,7 @@ void ManagePasswordsUIController::DidNavigateMainFrame(
 
 void ManagePasswordsUIController::WasHidden() {
 #if !defined(OS_ANDROID)
-  chrome::CloseManagePasswordsBubble(web_contents());
+  TabDialogs::FromWebContents(web_contents())->HideManagePasswordsBubble();
 #endif
 }
 

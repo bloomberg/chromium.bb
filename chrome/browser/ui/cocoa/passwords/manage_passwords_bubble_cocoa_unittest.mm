@@ -19,6 +19,7 @@
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
+#include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -54,7 +55,8 @@ class ManagePasswordsBubbleCocoaTest : public CocoaProfileTest {
   }
 
   void ShowBubble() {
-    chrome::ShowManagePasswordsBubble(test_web_contents_);
+    TabDialogs::FromWebContents(test_web_contents_)
+        ->ShowManagePasswordsBubble(false);
     if (ManagePasswordsBubbleCocoa::instance()) {
       // Disable animations so that closing happens immediately.
       InfoBubbleWindow* bubbleWindow = base::mac::ObjCCast<InfoBubbleWindow>(

@@ -6,16 +6,13 @@
 #define CHROME_BROWSER_UI_BROWSER_DIALOGS_H_
 
 #include "base/callback.h"
-#include "chrome/browser/profiles/profile_window.h"
 #include "content/public/common/signed_certificate_timestamp_id_and_status.h"
-#include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
 class Profile;
 class SkBitmap;
-class TabModalConfirmDialogDelegate;
 
 namespace content {
 class BrowserContext;
@@ -28,7 +25,6 @@ class Extension;
 }
 
 namespace ui {
-class ProfileSigninConfirmationDelegate;
 class WebDialogDelegate;
 }
 
@@ -44,9 +40,6 @@ gfx::NativeWindow ShowWebDialog(gfx::NativeView parent,
                                 content::BrowserContext* context,
                                 ui::WebDialogDelegate* delegate);
 
-// Shows the collected cookies dialog box.
-void ShowCollectedCookiesDialog(content::WebContents* web_contents);
-
 // Creates the ExtensionInstalledBubble and schedules it to be shown once
 // the extension has loaded. |extension| is the installed extension. |browser|
 // is the browser window which will host the bubble. |icon| is the install
@@ -54,12 +47,6 @@ void ShowCollectedCookiesDialog(content::WebContents* web_contents);
 void ShowExtensionInstalledBubble(const extensions::Extension* extension,
                                   Browser* browser,
                                   const SkBitmap& icon);
-
-// Shows or hide the hung renderer dialog for the given WebContents.
-// We need to pass the WebContents to the dialog, because multiple tabs can hang
-// and it needs to keep track of which tabs are currently hung.
-void ShowHungRendererDialog(content::WebContents* contents);
-void HideHungRendererDialog(content::WebContents* contents);
 
 // Shows or hides the Task Manager. |browser| can be NULL when called from Ash.
 void ShowTaskManager(Browser* browser);
@@ -83,24 +70,11 @@ void ShowCreateChromeAppShortcutsDialog(
 content::ColorChooser* ShowColorChooser(content::WebContents* web_contents,
                                         SkColor initial_color);
 
-void ShowProfileSigninConfirmationDialog(
-    Browser* browser,
-    content::WebContents* web_contents,
-    Profile* profile,
-    const std::string& username,
-    ui::ProfileSigninConfirmationDelegate* delegate);
-
 // Shows the Signed Certificate Timestamps viewer, to view the signed
 // certificate timestamps in |sct_ids_list|
 void ShowSignedCertificateTimestampsViewer(
     content::WebContents* web_contents,
     const content::SignedCertificateTimestampIDStatusList& sct_ids_list);
-
-// Shows the ManagePasswords bubble for a particular |web_contents|.
-void ShowManagePasswordsBubble(content::WebContents* web_contents);
-
-// Closes the bubble if it's shown for |web_contents|.
-void CloseManagePasswordsBubble(content::WebContents* web_contents);
 
 }  // namespace chrome
 

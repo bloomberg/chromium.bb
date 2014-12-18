@@ -13,12 +13,12 @@
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#import "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/website_settings/permission_selector_button.h"
+#import "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/website_settings/permission_menu_model.h"
 #include "chrome/browser/ui/website_settings/website_settings_utils.h"
 #include "chrome/common/url_constants.h"
@@ -524,7 +524,7 @@ NSColor* IdentityVerifiedTextColor() {
   DCHECK(webContents_);
   presenter_->RecordWebsiteSettingsAction(
       WebsiteSettings::WEBSITE_SETTINGS_COOKIES_DIALOG_OPENED);
-  chrome::ShowCollectedCookiesDialog(webContents_);
+  TabDialogs::FromWebContents(webContents_)->ShowCollectedCookies();
 }
 
 // Handler for the link button to show certificate information.

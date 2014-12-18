@@ -124,6 +124,7 @@
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/sync/browser_synced_window_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
+#include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
@@ -1611,11 +1612,11 @@ void Browser::RendererUnresponsive(WebContents* source) {
   if (tab_strip_model_->IsTabBlocked(index))
     return;
 
-  chrome::ShowHungRendererDialog(source);
+  TabDialogs::FromWebContents(source)->ShowHungRendererDialog();
 }
 
 void Browser::RendererResponsive(WebContents* source) {
-  chrome::HideHungRendererDialog(source);
+  TabDialogs::FromWebContents(source)->HideHungRendererDialog();
 }
 
 void Browser::WorkerCrashed(WebContents* source) {

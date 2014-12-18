@@ -8,7 +8,6 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -33,21 +32,6 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
-
-namespace chrome {
-// Declared in browser_dialogs.h
-void ShowProfileSigninConfirmationDialog(
-    Browser* browser,
-    content::WebContents* web_contents,
-    Profile* profile,
-    const std::string& username,
-    ui::ProfileSigninConfirmationDelegate* delegate) {
-  ProfileSigninConfirmationDialogViews::ShowDialog(browser,
-                                                   profile,
-                                                   username,
-                                                   delegate);
-}
-}  // namespace chrome
 
 ProfileSigninConfirmationDialogViews::ProfileSigninConfirmationDialogViews(
     Browser* browser,

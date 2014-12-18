@@ -10,7 +10,6 @@
 #include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/multi_key_equivalent_button.h"
 #import "chrome/browser/ui/cocoa/tab_contents/favicon_util_mac.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
@@ -105,6 +104,20 @@ class HungRendererWebContentsObserverBridge
   KeyEquivalentAndModifierMask key;
   key.charCode = @"\e";
   [waitButton_ addKeyEquivalent:key];
+}
+
++ (void)showForWebContents:(content::WebContents*)contents {
+  if (!logging::DialogsAreSuppressed()) {
+    if (!g_instance)
+      g_instance = [[HungRendererController alloc]
+          initWithWindowNibName:@"HungRendererDialog"];
+    [g_instance showForWebContents:contents];
+  }
+}
+
++ (void)endForWebContents:(content::WebContents*)contents {
+  if (!logging::DialogsAreSuppressed() && g_instance)
+    [g_instance endForWebContents:contents];
 }
 
 - (IBAction)kill:(id)sender {
@@ -217,21 +230,3 @@ class HungRendererWebContentsObserverBridge
   return waitButton_;
 }
 @end
-
-namespace chrome {
-
-void ShowHungRendererDialog(WebContents* contents) {
-  if (!logging::DialogsAreSuppressed()) {
-    if (!g_instance)
-      g_instance = [[HungRendererController alloc]
-                     initWithWindowNibName:@"HungRendererDialog"];
-    [g_instance showForWebContents:contents];
-  }
-}
-
-void HideHungRendererDialog(WebContents* contents) {
-  if (!logging::DialogsAreSuppressed() && g_instance)
-    [g_instance endForWebContents:contents];
-}
-
-}  // namespace chrome

@@ -10,7 +10,6 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/common/url_constants.h"
@@ -88,24 +87,6 @@ void ProfileSigninConfirmationHandler::OnContinueButtonClicked(
 }
 
 }  // namespace
-
-#if !defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
-namespace chrome {
-// static
-// Declared in browser_dialogs.h
-void ShowProfileSigninConfirmationDialog(
-    Browser* browser,
-    content::WebContents* web_contents,
-    Profile* profile,
-    const std::string& username,
-    ui::ProfileSigninConfirmationDelegate* delegate) {
-  ProfileSigninConfirmationDialog::ShowDialog(web_contents,
-                                              profile,
-                                              username,
-                                              delegate);
-}
-}  // namespace chrome
-#endif
 
 // ProfileSigninConfirmationDialog ---------------------------------------------
 

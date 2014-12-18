@@ -41,6 +41,13 @@ class ProfileSigninConfirmationDialogCocoa : ConstrainedWindowMacDelegate {
       bool offer_profile_creation);
   virtual ~ProfileSigninConfirmationDialogCocoa();
 
+  // Shows the dialog if needed.
+  static void Show(Browser* browser,
+                   content::WebContents* web_contents,
+                   Profile* profile,
+                   const std::string& username,
+                   ui::ProfileSigninConfirmationDelegate* delegate);
+
   // Closes the dialog, which deletes itself.
   void Close();
 

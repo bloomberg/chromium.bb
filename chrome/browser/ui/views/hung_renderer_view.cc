@@ -9,7 +9,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
@@ -185,6 +184,30 @@ HungRendererDialogView* HungRendererDialogView::Create(
 // static
 HungRendererDialogView* HungRendererDialogView::GetInstance() {
   return g_instance_;
+}
+
+// static
+void HungRendererDialogView::Show(WebContents* contents) {
+  if (logging::DialogsAreSuppressed())
+    return;
+
+  gfx::NativeWindow window =
+      platform_util::GetTopLevel(contents->GetNativeView());
+#if defined(USE_AURA)
+  // Don't show the dialog if there is no root window for the renderer, because
+  // it's invisible to the user (happens when the renderer is for prerendering
+  // for example).
+  if (!window->GetRootWindow())
+    return;
+#endif
+  HungRendererDialogView* view = HungRendererDialogView::Create(window);
+  view->ShowForWebContents(contents);
+}
+
+// static
+void HungRendererDialogView::Hide(WebContents* contents) {
+  if (!logging::DialogsAreSuppressed() && HungRendererDialogView::GetInstance())
+    HungRendererDialogView::GetInstance()->EndForWebContents(contents);
 }
 
 // static
@@ -423,29 +446,3 @@ void HungRendererDialogView::InitClass() {
     initialized = true;
   }
 }
-
-namespace chrome {
-
-void ShowHungRendererDialog(WebContents* contents) {
-  if (logging::DialogsAreSuppressed())
-    return;
-
-  gfx::NativeWindow window =
-      platform_util::GetTopLevel(contents->GetNativeView());
-#if defined(USE_AURA)
-  // Don't show the dialog if there is no root window for the renderer, because
-  // it's invisible to the user (happens when the renderer is for prerendering
-  // for example).
-  if (!window->GetRootWindow())
-    return;
-#endif
-  HungRendererDialogView* view = HungRendererDialogView::Create(window);
-  view->ShowForWebContents(contents);
-}
-
-void HideHungRendererDialog(WebContents* contents) {
-  if (!logging::DialogsAreSuppressed() && HungRendererDialogView::GetInstance())
-    HungRendererDialogView::GetInstance()->EndForWebContents(contents);
-}
-
-}  // namespace chrome

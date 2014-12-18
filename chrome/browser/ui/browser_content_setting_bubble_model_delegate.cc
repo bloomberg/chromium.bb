@@ -6,9 +6,9 @@
 
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/common/url_constants.h"
 #include "components/google/core/browser/google_util.h"
 
@@ -27,7 +27,7 @@ BrowserContentSettingBubbleModelDelegate::
 
 void BrowserContentSettingBubbleModelDelegate::ShowCollectedCookiesDialog(
     content::WebContents* web_contents) {
-  chrome::ShowCollectedCookiesDialog(web_contents);
+  TabDialogs::FromWebContents(web_contents)->ShowCollectedCookies();
 }
 
 void BrowserContentSettingBubbleModelDelegate::ShowContentSettingsPage(

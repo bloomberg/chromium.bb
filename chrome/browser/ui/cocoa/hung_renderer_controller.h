@@ -53,6 +53,10 @@ class WebContents;
   base::scoped_nsobject<NSArray> hungFavicons_;
 }
 
+// Shows or hides the hung renderer dialog for the given WebContents.
++ (void)showForWebContents:(content::WebContents*)contents;
++ (void)endForWebContents:(content::WebContents*)contents;
+
 // Kills the hung renderers.
 - (IBAction)kill:(id)sender;
 

@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
-#include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/passwords/save_password_refusal_combobox_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -172,37 +171,6 @@ std::string PresentURL(const GURL& url) {
 }
 
 }  // namespace
-
-
-// Globals --------------------------------------------------------------------
-
-namespace chrome {
-
-void ShowManagePasswordsBubble(content::WebContents* web_contents) {
-  if (ManagePasswordsBubbleView::IsShowing()) {
-    // The bubble is currently shown for some other tab. We should close it now
-    // and open for |web_contents|.
-    ManagePasswordsBubbleView::CloseBubble();
-  }
-  ManagePasswordsUIController* controller =
-      ManagePasswordsUIController::FromWebContents(web_contents);
-  ManagePasswordsBubbleView::ShowBubble(
-      web_contents,
-      password_manager::ui::IsAutomaticDisplayState(controller->state())
-          ? ManagePasswordsBubbleView::AUTOMATIC
-          : ManagePasswordsBubbleView::USER_ACTION);
-}
-
-void CloseManagePasswordsBubble(content::WebContents* web_contents) {
-  if (!ManagePasswordsBubbleView::IsShowing())
-    return;
-  content::WebContents* bubble_web_contents =
-      ManagePasswordsBubbleView::manage_password_bubble()->web_contents();
-  if (web_contents == bubble_web_contents)
-    ManagePasswordsBubbleView::CloseBubble();
-}
-
-}  // namespace chrome
 
 
 // ManagePasswordsBubbleView::AccountChooserView ------------------------------

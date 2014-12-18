@@ -15,7 +15,6 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/content_settings/cookie_details_view_controller.h"
 #import "chrome/browser/ui/cocoa/vertical_gradient_view.h"
@@ -49,16 +48,6 @@ enum TabViewItemIndices {
 };
 
 } // namespace
-
-namespace chrome {
-
-// Declared in browser_dialogs.h so others don't have to depend on our header.
-void ShowCollectedCookiesDialog(content::WebContents* web_contents) {
-  // Deletes itself on close.
-  new CollectedCookiesMac(web_contents);
-}
-
-}  // namespace chrome
 
 #pragma mark Constrained window delegate
 

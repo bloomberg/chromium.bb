@@ -7,7 +7,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -31,8 +31,8 @@ IN_PROC_BROWSER_TEST_F(CollectedCookiesTest, DoubleDisplay) {
   // Click on the info link twice.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  chrome::ShowCollectedCookiesDialog(web_contents);
-  chrome::ShowCollectedCookiesDialog(web_contents);
+  TabDialogs::FromWebContents(web_contents)->ShowCollectedCookies();
+  TabDialogs::FromWebContents(web_contents)->ShowCollectedCookies();
 }
 
 // If this crashes on Windows, use http://crbug.com/79331
@@ -50,7 +50,7 @@ IN_PROC_BROWSER_TEST_F(CollectedCookiesTest, NavigateAway) {
   // Click on the info link.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  chrome::ShowCollectedCookiesDialog(web_contents);
+  TabDialogs::FromWebContents(web_contents)->ShowCollectedCookies();
 
   // Navigate to another page.
   ui_test_utils::NavigateToURL(

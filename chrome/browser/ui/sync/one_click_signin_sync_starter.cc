@@ -25,7 +25,6 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -33,9 +32,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_observer.h"
+#include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
-#include "chrome/browser/ui/webui/signin/profile_signin_confirmation_dialog.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -229,9 +228,8 @@ void OneClickSigninSyncStarter::OnRegisteredForPolicy(
     CancelSigninAndDelete();
     return;
   }
-  chrome::ShowProfileSigninConfirmationDialog(
+  TabDialogs::FromWebContents(web_contents)->ShowProfileSigninConfirmation(
       browser_,
-      web_contents,
       profile_,
       signin->GetUsernameForAuthInProgress(),
       new SigninDialogDelegate(weak_pointer_factory_.GetWeakPtr()));

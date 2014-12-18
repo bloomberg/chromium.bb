@@ -6,7 +6,6 @@
 
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
@@ -34,23 +33,6 @@ void ShowDialog(
 }
 
 }  // namespace
-
-namespace chrome {
-
-// Declared in browser_dialogs.h
-void ShowProfileSigninConfirmationDialog(
-    Browser* browser,
-    content::WebContents* web_contents,
-    Profile* profile,
-    const std::string& username,
-    ui::ProfileSigninConfirmationDelegate* delegate) {
-  ui::CheckShouldPromptForNewProfile(
-      profile,
-      base::Bind(ShowDialog,
-                 browser, web_contents, profile, username, delegate));
-}
-
-}  // namespace chrome
 
 ProfileSigninConfirmationDialogCocoa::ProfileSigninConfirmationDialogCocoa(
     Browser* browser,
@@ -81,6 +63,18 @@ ProfileSigninConfirmationDialogCocoa::ProfileSigninConfirmationDialogCocoa(
 }
 
 ProfileSigninConfirmationDialogCocoa::~ProfileSigninConfirmationDialogCocoa() {
+}
+
+// static
+void ProfileSigninConfirmationDialogCocoa::Show(
+    Browser* browser,
+    content::WebContents* web_contents,
+    Profile* profile,
+    const std::string& username,
+    ui::ProfileSigninConfirmationDelegate* delegate) {
+  ui::CheckShouldPromptForNewProfile(
+      profile, base::Bind(ShowDialog, browser, web_contents, profile, username,
+                          delegate));
 }
 
 void ProfileSigninConfirmationDialogCocoa::Close() {

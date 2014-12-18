@@ -5,14 +5,12 @@
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_cocoa.h"
 
 #include "base/mac/scoped_block.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/cocoa/location_bar/manage_passwords_decoration.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_icon.h"
-#include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "content/public/browser/web_contents.h"
 
 typedef void (^Callback)(void);
@@ -39,37 +37,6 @@ typedef void (^Callback)(void);
 // static
 ManagePasswordsBubbleCocoa* ManagePasswordsBubbleCocoa::bubble_ = NULL;
 
-namespace chrome {
-void ShowManagePasswordsBubble(content::WebContents* webContents) {
-  ManagePasswordsBubbleCocoa* instance = ManagePasswordsBubbleCocoa::instance();
-  if (instance && (instance->webContents_ != webContents)) {
-    // The bubble is currently shown for some other tab. We should close it now
-    // and open for |webContents|.
-    instance->Close();
-  }
-
-  ManagePasswordsUIController* controller =
-      ManagePasswordsUIController::FromWebContents(webContents);
-  NSWindow* window = [webContents->GetNativeView() window];
-  if (!window) {
-    // The tab isn't active right now.
-    return;
-  }
-  BrowserWindowController* bwc =
-      [BrowserWindowController browserWindowControllerForWindow:window];
-  ManagePasswordsBubbleCocoa::ShowBubble(
-      webContents,
-      password_manager::ui::IsAutomaticDisplayState(controller->state())
-          ? ManagePasswordsBubble::AUTOMATIC
-          : ManagePasswordsBubble::USER_ACTION,
-      [bwc locationBarBridge]->manage_passwords_decoration()->icon());
-}
-
-void CloseManagePasswordsBubble(content::WebContents* web_contents) {
-  // The bubble is closed when it loses the focus.
-}
-}  // namespace chrome
-
 ManagePasswordsBubbleCocoa::ManagePasswordsBubbleCocoa(
     content::WebContents* webContents,
     DisplayReason displayReason,
@@ -86,7 +53,7 @@ ManagePasswordsBubbleCocoa::ManagePasswordsBubbleCocoa(
 
 ManagePasswordsBubbleCocoa::~ManagePasswordsBubbleCocoa() {
   [[NSNotificationCenter defaultCenter] removeObserver:bridge_];
-  // Clear the global instance pointer.
+  // Clear the global bubble_ pointer.
   bubble_ = NULL;
   if (icon_)
     icon_->SetActive(false);
@@ -130,11 +97,28 @@ void ManagePasswordsBubbleCocoa::OnClose() {
 }
 
 // static
-void ManagePasswordsBubbleCocoa::ShowBubble(content::WebContents* webContents,
-                                            DisplayReason displayReason,
-                                            ManagePasswordsIcon* icon) {
+void ManagePasswordsBubbleCocoa::Show(content::WebContents* webContents,
+                                      bool user_action) {
+  if (bubble_ && (bubble_->webContents_ != webContents)) {
+    // The bubble is currently shown for some other tab. We should close it now
+    // and open for |webContents|.
+    bubble_->Close();
+  }
   if (bubble_)
     return;
-  bubble_ = new ManagePasswordsBubbleCocoa(webContents, displayReason, icon);
+
+  NSWindow* window = [webContents->GetNativeView() window];
+  if (!window) {
+    // The tab isn't active right now.
+    return;
+  }
+  BrowserWindowController* bwc =
+      [BrowserWindowController browserWindowControllerForWindow:window];
+  bubble_ = new ManagePasswordsBubbleCocoa(
+      webContents,
+      user_action ? ManagePasswordsBubble::USER_ACTION
+                  : ManagePasswordsBubble::AUTOMATIC,
+      [bwc locationBarBridge]->manage_passwords_decoration()->icon());
+
   bubble_->Show();
 }

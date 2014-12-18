@@ -14,10 +14,6 @@ namespace content {
 class WebContents;
 }
 
-namespace chrome {
-void ShowManagePasswordsBubble(content::WebContents* webContents);
-}
-
 @class ManagePasswordsBubbleController;
 @class ManagePasswordsBubbleCocoaNotificationBridge;
 class ManagePasswordsIcon;
@@ -27,9 +23,7 @@ class ManagePasswordsBubbleCocoa : public ManagePasswordsBubble {
  public:
   // Creates and shows the bubble, which owns itself. Does nothing if the bubble
   // is already shown.
-  static void ShowBubble(content::WebContents* webContents,
-                         DisplayReason displayReason,
-                         ManagePasswordsIcon* icon);
+  static void Show(content::WebContents* webContents, bool user_action);
 
   // Closes and deletes the bubble.
   void Close();
@@ -43,8 +37,6 @@ class ManagePasswordsBubbleCocoa : public ManagePasswordsBubble {
  private:
   friend class ManagePasswordsBubbleCocoaTest;
   friend class ManagePasswordsBubbleTest;
-  friend void chrome::ShowManagePasswordsBubble(
-      content::WebContents* webContents);
 
   // Instance-specific logic. Clients should use the static interface.
   ManagePasswordsBubbleCocoa(content::WebContents* webContents,
