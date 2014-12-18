@@ -5,10 +5,12 @@
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
 
 #include "ui/events/event.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
 #include "ui/events/ozone/evdev/event_modifiers_evdev.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/events/ozone/layout/layout_util.h"
 
 namespace ui {
 
@@ -19,35 +21,33 @@ const int kXkbKeycodeOffset = 8;
 const int kRepeatDelayMs = 500;
 const int kRepeatIntervalMs = 50;
 
-int ModifierFromEvdevKey(unsigned int code) {
-  switch (code) {
-    case KEY_CAPSLOCK:
+int EventFlagToEvdevModifier(int flag) {
+  switch (flag) {
+    case EF_CAPS_LOCK_DOWN:
       return EVDEV_MODIFIER_CAPS_LOCK;
-    case KEY_LEFTSHIFT:
-    case KEY_RIGHTSHIFT:
+    case EF_SHIFT_DOWN:
       return EVDEV_MODIFIER_SHIFT;
-    case KEY_LEFTCTRL:
-    case KEY_RIGHTCTRL:
+    case EF_CONTROL_DOWN:
       return EVDEV_MODIFIER_CONTROL;
-    case KEY_LEFTALT:
-    case KEY_RIGHTALT:
+    case EF_ALT_DOWN:
       return EVDEV_MODIFIER_ALT;
-    case BTN_LEFT:
+    case EF_ALTGR_DOWN:
+      return EVDEV_MODIFIER_ALTGR;
+    case EF_LEFT_MOUSE_BUTTON:
       return EVDEV_MODIFIER_LEFT_MOUSE_BUTTON;
-    case BTN_MIDDLE:
+    case EF_MIDDLE_MOUSE_BUTTON:
       return EVDEV_MODIFIER_MIDDLE_MOUSE_BUTTON;
-    case BTN_RIGHT:
+    case EF_RIGHT_MOUSE_BUTTON:
       return EVDEV_MODIFIER_RIGHT_MOUSE_BUTTON;
-    case KEY_LEFTMETA:
-    case KEY_RIGHTMETA:
+    case EF_COMMAND_DOWN:
       return EVDEV_MODIFIER_COMMAND;
     default:
       return EVDEV_MODIFIER_NONE;
   }
 }
 
-bool IsModifierLockKeyFromEvdevKey(unsigned int code) {
-  return code == KEY_CAPSLOCK;
+bool IsModifierLock(int evdev_modifier) {
+  return evdev_modifier == EVDEV_MODIFIER_CAPS_LOCK;
 }
 
 }  // namespace
@@ -80,7 +80,6 @@ void KeyboardEvdev::OnKeyChange(unsigned int key, bool down) {
   else
     key_state_.reset(key);
 
-  UpdateModifier(key, down);
   UpdateKeyRepeat(key, down);
   DispatchKey(key, down, false /* repeat */);
 }
@@ -105,14 +104,15 @@ void KeyboardEvdev::GetAutoRepeatRate(base::TimeDelta* delay,
   *interval = repeat_interval_;
 }
 
-void KeyboardEvdev::UpdateModifier(unsigned int key, bool down) {
-  int modifier = ModifierFromEvdevKey(key);
-  int locking = IsModifierLockKeyFromEvdevKey(key);
+void KeyboardEvdev::UpdateModifier(int modifier_flag, bool down) {
+  if (modifier_flag == EF_NONE)
+    return;
 
+  int modifier = EventFlagToEvdevModifier(modifier_flag);
   if (modifier == EVDEV_MODIFIER_NONE)
     return;
 
-  if (locking)
+  if (IsModifierLock(modifier))
     modifiers_->UpdateModifierLock(modifier, down);
   else
     modifiers_->UpdateModifier(modifier, down);
@@ -170,6 +170,8 @@ void KeyboardEvdev::DispatchKey(unsigned int key, bool down, bool repeat) {
                                        &key_code, &platform_keycode)) {
     return;
   }
+  if (!down || !repeat)
+    UpdateModifier(ModifierDomKeyToEventFlag(dom_key), down);
 
   KeyEvent* event =
       new KeyEvent(down ? ET_KEY_PRESSED : ET_KEY_RELEASED, key_code, dom_code,
