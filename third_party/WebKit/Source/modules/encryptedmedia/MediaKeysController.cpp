@@ -20,11 +20,10 @@ MediaKeysController::MediaKeysController(MediaKeysClient* client)
 {
 }
 
-PassOwnPtr<WebContentDecryptionModule> MediaKeysController::createContentDecryptionModule(ExecutionContext* context, const String& keySystem)
+WebEncryptedMediaClient* MediaKeysController::encryptedMediaClient(ExecutionContext* context)
 {
-    return m_client->createContentDecryptionModule(context, keySystem);
+    return m_client->encryptedMediaClient(context);
 }
-
 
 void MediaKeysController::provideMediaKeysTo(Page& page, MediaKeysClient* client)
 {

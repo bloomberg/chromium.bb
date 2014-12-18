@@ -19,8 +19,7 @@ template <typename T> class WebVector;
 
 class WebEncryptedMediaRequest {
 public:
-    WebEncryptedMediaRequest();
-    explicit WebEncryptedMediaRequest(const WebEncryptedMediaRequest&);
+    WebEncryptedMediaRequest(const WebEncryptedMediaRequest&);
     BLINK_EXPORT ~WebEncryptedMediaRequest();
 
     BLINK_EXPORT WebString keySystem() const;

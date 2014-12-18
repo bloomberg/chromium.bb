@@ -46,7 +46,7 @@ class WebContentDecryptionModule;
 class MediaKeys : public GarbageCollectedFinalized<MediaKeys>, public ContextLifecycleObserver, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    MediaKeys(ExecutionContext*, const String& keySystem, PassOwnPtr<blink::WebContentDecryptionModule>);
+    MediaKeys(ExecutionContext*, const String& keySystem, PassOwnPtr<WebContentDecryptionModule>);
     virtual ~MediaKeys();
 
     // FIXME: This should be removed after crbug.com/425186 is fully

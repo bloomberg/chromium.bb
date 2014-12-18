@@ -13,11 +13,12 @@ namespace blink {
 class ExecutionContext;
 class MediaKeysClient;
 class WebContentDecryptionModule;
+class WebEncryptedMediaClient;
 
 class MediaKeysController final : public NoBaseWillBeGarbageCollected<MediaKeysController>, public WillBeHeapSupplement<Page> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaKeysController);
 public:
-    PassOwnPtr<WebContentDecryptionModule> createContentDecryptionModule(ExecutionContext*, const String& keySystem);
+    WebEncryptedMediaClient* encryptedMediaClient(ExecutionContext*);
 
     static void provideMediaKeysTo(Page&, MediaKeysClient*);
     static MediaKeysController* from(Page* page) { return static_cast<MediaKeysController*>(WillBeHeapSupplement<Page>::from(page, supplementName())); }

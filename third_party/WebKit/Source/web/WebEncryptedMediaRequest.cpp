@@ -16,10 +16,6 @@
 
 namespace blink {
 
-WebEncryptedMediaRequest::WebEncryptedMediaRequest()
-{
-}
-
 WebEncryptedMediaRequest::WebEncryptedMediaRequest(const WebEncryptedMediaRequest& request)
 {
     assign(request);

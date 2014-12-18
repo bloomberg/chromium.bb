@@ -8,125 +8,117 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMException.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "modules/encryptedmedia/EncryptedMediaRequest.h"
 #include "modules/encryptedmedia/MediaKeySystemAccess.h"
-#include "platform/ContentType.h"
+#include "modules/encryptedmedia/MediaKeysController.h"
 #include "platform/Logging.h"
 #include "platform/MIMETypeRegistry.h"
-#include "platform/heap/Handle.h"
+#include "public/platform/WebEncryptedMediaClient.h"
+#include "public/platform/WebEncryptedMediaRequest.h"
+#include "public/platform/WebMediaKeySystemConfiguration.h"
+#include "public/platform/WebMediaKeySystemMediaCapability.h"
+#include "public/platform/WebVector.h"
+#include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
+
+namespace blink {
 
 namespace {
 
-static bool isKeySystemSupportedWithContentType(const String& keySystem, const String& contentType)
+static bool isKeySystemSupported(const String& keySystem)
 {
     ASSERT(!keySystem.isEmpty());
+    return MIMETypeRegistry::isSupportedEncryptedMediaMIMEType(keySystem, String(), String());
+}
 
-    blink::ContentType type(contentType);
-    String codecs = type.parameter("codecs");
-    return blink::MIMETypeRegistry::isSupportedEncryptedMediaMIMEType(keySystem, type.type(), codecs);
+static WebVector<WebString> convertInitDataTypes(const Vector<String>& initDataTypes)
+{
+    WebVector<WebString> result(initDataTypes.size());
+    for (size_t i = 0; i < initDataTypes.size(); ++i)
+        result[i] = initDataTypes[i];
+    return result;
+}
+
+static WebVector<WebMediaKeySystemMediaCapability> convertCapabilities(const Vector<MediaKeySystemMediaCapability>& capabilities)
+{
+    WebVector<WebMediaKeySystemMediaCapability> result(capabilities.size());
+    for (size_t i = 0; i < capabilities.size(); ++i) {
+        result[i].contentType = capabilities[i].contentType();
+        result[i].robustness = capabilities[i].robustness();
+    }
+    return result;
+}
+
+static WebMediaKeySystemConfiguration::Requirement convertMediaKeysRequirement(const String& requirement)
+{
+    if (requirement == "required")
+        return WebMediaKeySystemConfiguration::Requirement::Required;
+    if (requirement == "optional")
+        return WebMediaKeySystemConfiguration::Requirement::Optional;
+    if (requirement == "not-allowed")
+        return WebMediaKeySystemConfiguration::Requirement::NotAllowed;
+
+    // Everything else gets the default value.
+    ASSERT_NOT_REACHED();
+    return WebMediaKeySystemConfiguration::Requirement::Optional;
 }
 
 // This class allows capabilities to be checked and a MediaKeySystemAccess
 // object to be created asynchronously.
-class MediaKeySystemAccessInitializer final : public blink::ScriptPromiseResolver {
+class MediaKeySystemAccessInitializer final : public EncryptedMediaRequest {
     WTF_MAKE_NONCOPYABLE(MediaKeySystemAccessInitializer);
 
 public:
-    static blink::ScriptPromise create(blink::ScriptState*, const String& keySystem, const Vector<blink::MediaKeySystemConfiguration>& supportedConfigurations);
-    virtual ~MediaKeySystemAccessInitializer();
+    MediaKeySystemAccessInitializer(ScriptState*, const String& keySystem, const Vector<MediaKeySystemConfiguration>& supportedConfigurations);
+    virtual ~MediaKeySystemAccessInitializer() { }
+
+    // EncryptedMediaRequest implementation.
+    virtual WebString keySystem() const override { return m_keySystem; }
+    virtual const WebVector<WebMediaKeySystemConfiguration>& supportedConfigurations() const override { return m_supportedConfigurations; }
+    virtual SecurityOrigin* securityOrigin() const override { return m_resolver->executionContext()->securityOrigin(); }
+    virtual void requestSucceeded(WebContentDecryptionModuleAccess*) override;
+    virtual void requestNotSupported(const WebString& errorMessage) override;
+
+    ScriptPromise promise() { return m_resolver->promise(); }
 
 private:
-    MediaKeySystemAccessInitializer(blink::ScriptState*, const String& keySystem, const Vector<blink::MediaKeySystemConfiguration>& supportedConfigurations);
-    void timerFired(blink::Timer<MediaKeySystemAccessInitializer>*);
-
+    RefPtr<ScriptPromiseResolver> m_resolver;
     const String m_keySystem;
-    const Vector<blink::MediaKeySystemConfiguration> m_supportedConfigurations;
-    blink::Timer<MediaKeySystemAccessInitializer> m_timer;
+    WebVector<WebMediaKeySystemConfiguration> m_supportedConfigurations;
 };
 
-blink::ScriptPromise MediaKeySystemAccessInitializer::create(blink::ScriptState* scriptState, const String& keySystem, const Vector<blink::MediaKeySystemConfiguration>& supportedConfigurations)
-{
-    RefPtrWillBeRawPtr<MediaKeySystemAccessInitializer> initializer = blink::adoptRefWillBeNoop(new MediaKeySystemAccessInitializer(scriptState, keySystem, supportedConfigurations));
-    initializer->suspendIfNeeded();
-    initializer->keepAliveWhilePending();
-    return initializer->promise();
-}
-
-MediaKeySystemAccessInitializer::MediaKeySystemAccessInitializer(blink::ScriptState* scriptState, const String& keySystem, const Vector<blink::MediaKeySystemConfiguration>& supportedConfigurations)
-    : blink::ScriptPromiseResolver(scriptState)
+MediaKeySystemAccessInitializer::MediaKeySystemAccessInitializer(ScriptState* scriptState, const String& keySystem, const Vector<MediaKeySystemConfiguration>& supportedConfigurations)
+    : m_resolver(ScriptPromiseResolver::create(scriptState))
     , m_keySystem(keySystem)
-    , m_supportedConfigurations(supportedConfigurations)
-    , m_timer(this, &MediaKeySystemAccessInitializer::timerFired)
+    , m_supportedConfigurations(supportedConfigurations.size())
 {
-    // Start the timer so that MediaKeySystemAccess can be created
-    // asynchronously.
-    // FIXME: If creating MediaKeySystemAccess or
-    // isKeySystemSupportedWithContentType() is replaced with something
-    // asynchronous, wait for the event rather than using a timer.
-    m_timer.startOneShot(0, FROM_HERE);
+    for (size_t i = 0; i < supportedConfigurations.size(); ++i) {
+        const MediaKeySystemConfiguration& config = supportedConfigurations[i];
+        WebMediaKeySystemConfiguration webConfig;
+        webConfig.initDataTypes = convertInitDataTypes(config.initDataTypes());
+        webConfig.audioCapabilities = convertCapabilities(config.audioCapabilities());
+        webConfig.videoCapabilities = convertCapabilities(config.videoCapabilities());
+        webConfig.distinctiveIdentifier = convertMediaKeysRequirement(config.distinctiveIdentifier());
+        webConfig.persistentState = convertMediaKeysRequirement(config.persistentState());
+        m_supportedConfigurations[i] = webConfig;
+    }
 }
 
-MediaKeySystemAccessInitializer::~MediaKeySystemAccessInitializer()
+void MediaKeySystemAccessInitializer::requestSucceeded(WebContentDecryptionModuleAccess* access)
 {
+    m_resolver->resolve(new MediaKeySystemAccess(m_keySystem, adoptPtr(access)));
+    m_resolver.clear();
 }
 
-void MediaKeySystemAccessInitializer::timerFired(blink::Timer<MediaKeySystemAccessInitializer>*)
+void MediaKeySystemAccessInitializer::requestNotSupported(const WebString& errorMessage)
 {
-    // Continued from requestMediaKeySystemAccess().
-    // 5.1 If keySystem is not supported or not allowed in the origin of the
-    //     calling context's Document, return a promise rejected with a new
-    //     DOMException whose name is NotSupportedError.
-    //     (Handled by Chromium.)
-
-    // 5.2 If supportedConfigurations was not provided, resolve the promise
-    //     with a new MediaKeySystemAccess object, execute the following steps:
-    if (!m_supportedConfigurations.size()) {
-        // 5.2.1 Let access be a new MediaKeySystemAccess object, and initialize
-        //       it as follows:
-        // 5.2.1.1 Set the keySystem attribute to keySystem.
-        blink::MediaKeySystemAccess* access = new blink::MediaKeySystemAccess(m_keySystem);
-
-        // 5.2.2 Resolve promise with access and abort these steps.
-        resolve(access);
-        return;
-    }
-
-    // 5.3 For each element of supportedConfigurations:
-    // 5.3.1 Let combination be the element.
-    // 5.3.2 For each dictionary member in combination:
-    for (const auto& combination : m_supportedConfigurations) {
-        // 5.3.2.1 If the member's value cannot be satisfied together in
-        //         combination with the previous members, continue to the next
-        //         iteration of the loop.
-        // 5.3.3 If keySystem is supported and allowed in the origin of the
-        //       calling context's Document in the configuration specified by
-        //       the combination of the values in combination, execute the
-        //       following steps:
-        // FIXME: This test needs to be enhanced to use more values from
-        //        combination.
-        for (const auto& initDataType : combination.initDataTypes()) {
-            if (isKeySystemSupportedWithContentType(m_keySystem, initDataType)) {
-                // 5.3.3.1 Let access be a new MediaKeySystemAccess object, and
-                //         initialize it as follows:
-                // 5.3.3.1.1 Set the keySystem attribute to keySystem.
-                blink::MediaKeySystemAccess* access = new blink::MediaKeySystemAccess(m_keySystem);
-
-                // 5.3.3.2 Resolve promise with access and abort these steps.
-                resolve(access);
-                return;
-            }
-        }
-    }
-
-    // 5.4 Reject promise with a new DOMException whose name is
-    //     NotSupportedError.
-    reject(blink::DOMException::create(blink::NotSupportedError, "There were no supported combinations in supportedConfigurations."));
+    m_resolver->reject(DOMException::create(NotSupportedError, errorMessage));
+    m_resolver.clear();
 }
 
 } // namespace
-
-namespace blink {
 
 NavigatorRequestMediaKeySystemAccess::NavigatorRequestMediaKeySystemAccess()
 {
@@ -202,20 +194,30 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
     const String& keySystem,
     const Vector<MediaKeySystemConfiguration>& supportedConfigurations)
 {
+    WTF_LOG(Media, "NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess()");
+
     // Continued from above.
     // 3. If keySystem is not one of the Key Systems supported by the user
     //    agent, return a promise rejected with a new DOMException whose name
     //    is NotSupportedError. String comparison is case-sensitive.
-    if (!isKeySystemSupportedWithContentType(keySystem, "")) {
+    if (!isKeySystemSupported(keySystem)) {
         return ScriptPromise::rejectWithDOMException(
             scriptState, DOMException::create(NotSupportedError, "The key system specified is not supported."));
     }
 
     // 4. Let promise be a new promise.
+    MediaKeySystemAccessInitializer* initializer = new MediaKeySystemAccessInitializer(scriptState, keySystem, supportedConfigurations);
+    ScriptPromise promise = initializer->promise();
+
     // 5. Asynchronously determine support, and if allowed, create and
     //    initialize the MediaKeySystemAccess object.
+    Document* document = toDocument(scriptState->executionContext());
+    MediaKeysController* controller = MediaKeysController::from(document->page());
+    WebEncryptedMediaClient* mediaClient = controller->encryptedMediaClient(scriptState->executionContext());
+    mediaClient->requestMediaKeySystemAccess(WebEncryptedMediaRequest(initializer));
+
     // 6. Return promise.
-    return MediaKeySystemAccessInitializer::create(scriptState, keySystem, supportedConfigurations);
+    return promise;
 }
 
 const char* NavigatorRequestMediaKeySystemAccess::supplementName()

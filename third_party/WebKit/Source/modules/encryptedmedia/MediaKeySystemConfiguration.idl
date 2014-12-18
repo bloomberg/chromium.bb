@@ -16,6 +16,6 @@ enum MediaKeysRequirement {
     sequence<DOMString> initDataTypes;
     sequence<MediaKeySystemMediaCapability> audioCapabilities;
     sequence<MediaKeySystemMediaCapability> videoCapabilities;
-    MediaKeysRequirement persistentUniqueIdentifier = "optional";
+    MediaKeysRequirement distinctiveIdentifier = "optional";
     MediaKeysRequirement persistentState = "optional";
 };
