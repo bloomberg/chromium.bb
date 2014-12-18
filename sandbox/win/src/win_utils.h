@@ -105,6 +105,9 @@ bool ResolveRegistryName(base::string16 name, base::string16* resolved_name);
 bool WriteProtectedChildMemory(HANDLE child_process, void* address,
                                const void* buffer, size_t length);
 
+// Returns true if the provided path points to a pipe.
+bool IsPipe(const base::string16& path);
+
 }  // namespace sandbox
 
 // Resolves a function name in NTDLL to a function pointer. The second parameter

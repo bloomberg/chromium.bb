@@ -191,7 +191,7 @@ bool RegistryPolicy::CreateKeyAction(EvalResult eval_result,
   UNICODE_STRING uni_name = {0};
   OBJECT_ATTRIBUTES obj_attributes = {0};
   InitObjectAttribs(key, attributes, root_directory, &obj_attributes,
-                    &uni_name);
+                    &uni_name, NULL);
   *nt_status = NtCreateKeyInTarget(handle, desired_access, &obj_attributes,
                                    title_index, NULL, create_options,
                                    disposition, client_info.process);
@@ -216,7 +216,7 @@ bool RegistryPolicy::OpenKeyAction(EvalResult eval_result,
   UNICODE_STRING uni_name = {0};
   OBJECT_ATTRIBUTES obj_attributes = {0};
   InitObjectAttribs(key, attributes, root_directory, &obj_attributes,
-                    &uni_name);
+                    &uni_name, NULL);
   *nt_status = NtOpenKeyInTarget(handle, desired_access, &obj_attributes,
                                 client_info.process);
   return true;

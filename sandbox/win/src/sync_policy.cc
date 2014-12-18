@@ -41,7 +41,7 @@ NTSTATUS ResolveSymbolicLink(const base::string16& directory_name,
   UNICODE_STRING symbolic_link_directory_string = {};
   InitObjectAttribs(directory_name, OBJ_CASE_INSENSITIVE, NULL,
                     &symbolic_link_directory_attributes,
-                    &symbolic_link_directory_string);
+                    &symbolic_link_directory_string, NULL);
 
   HANDLE symbolic_link_directory = NULL;
   NTSTATUS status = NtOpenDirectoryObject(&symbolic_link_directory,
@@ -56,7 +56,7 @@ NTSTATUS ResolveSymbolicLink(const base::string16& directory_name,
   OBJECT_ATTRIBUTES symbolic_link_attributes = {};
   UNICODE_STRING name_string = {};
   InitObjectAttribs(name, OBJ_CASE_INSENSITIVE, symbolic_link_directory,
-                    &symbolic_link_attributes, &name_string);
+                    &symbolic_link_attributes, &name_string, NULL);
 
   HANDLE symbolic_link = NULL;
   status = NtOpenSymbolicLinkObject(&symbolic_link, GENERIC_READ,
@@ -121,7 +121,7 @@ NTSTATUS GetBaseNamedObjectsDirectory(HANDLE* directory) {
   UNICODE_STRING directory_name = {};
   OBJECT_ATTRIBUTES object_attributes = {};
   InitObjectAttribs(base_named_objects_path, OBJ_CASE_INSENSITIVE, NULL,
-                    &object_attributes, &directory_name);
+                    &object_attributes, &directory_name, NULL);
   status = NtOpenDirectoryObject(&base_named_objects_handle,
                                  DIRECTORY_ALL_ACCESS,
                                  &object_attributes);
@@ -198,7 +198,7 @@ NTSTATUS SyncPolicy::CreateEventAction(EvalResult eval_result,
   UNICODE_STRING unicode_event_name = {};
   OBJECT_ATTRIBUTES object_attributes = {};
   InitObjectAttribs(event_name, OBJ_CASE_INSENSITIVE, object_directory,
-                    &object_attributes, &unicode_event_name);
+                    &object_attributes, &unicode_event_name, NULL);
 
   HANDLE local_handle = NULL;
   status = NtCreateEvent(&local_handle, EVENT_ALL_ACCESS, &object_attributes,
@@ -236,7 +236,7 @@ NTSTATUS SyncPolicy::OpenEventAction(EvalResult eval_result,
   UNICODE_STRING unicode_event_name = {};
   OBJECT_ATTRIBUTES object_attributes = {};
   InitObjectAttribs(event_name, OBJ_CASE_INSENSITIVE, object_directory,
-                    &object_attributes, &unicode_event_name);
+                    &object_attributes, &unicode_event_name, NULL);
 
   HANDLE local_handle = NULL;
   status = NtOpenEvent(&local_handle, desired_access, &object_attributes);

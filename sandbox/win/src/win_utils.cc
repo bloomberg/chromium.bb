@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_util.h"
 #include "base/win/pe_image.h"
 #include "sandbox/win/src/internal_types.h"
 #include "sandbox/win/src/nt_internals.h"
@@ -33,19 +34,20 @@ const KnownReservedKey kKnownKey[] = {
     { L"HKEY_DYN_DATA", HKEY_DYN_DATA}
 };
 
-// Returns true if the provided path points to a pipe.
-bool IsPipe(const base::string16& path) {
-  size_t start = 0;
-  if (0 == path.compare(0, sandbox::kNTPrefixLen, sandbox::kNTPrefix))
-    start = sandbox::kNTPrefixLen;
-
-  const wchar_t kPipe[] = L"pipe\\";
-  return (0 == path.compare(start, arraysize(kPipe) - 1, kPipe));
-}
-
 }  // namespace
 
 namespace sandbox {
+
+// Returns true if the provided path points to a pipe.
+bool IsPipe(const base::string16& path) {
+  base::string16 lower_path = base::StringToLowerASCII(path);
+  size_t start = 0;
+  if (0 == lower_path.compare(0, sandbox::kNTPrefixLen, sandbox::kNTPrefix))
+    start = sandbox::kNTPrefixLen;
+
+  const wchar_t kPipe[] = L"pipe\\";
+  return (0 == lower_path.compare(start, arraysize(kPipe) - 1, kPipe));
+}
 
 HKEY GetReservedKeyFromName(const base::string16& name) {
   for (size_t i = 0; i < arraysize(kKnownKey); ++i) {

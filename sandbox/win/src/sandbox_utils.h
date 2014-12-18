@@ -18,7 +18,8 @@ void InitObjectAttribs(const base::string16& name,
                        ULONG attributes,
                        HANDLE root,
                        OBJECT_ATTRIBUTES* obj_attr,
-                       UNICODE_STRING* uni_name);
+                       UNICODE_STRING* uni_name,
+                       SECURITY_QUALITY_OF_SERVICE* security_qos);
 
 }  // namespace sandbox
 
