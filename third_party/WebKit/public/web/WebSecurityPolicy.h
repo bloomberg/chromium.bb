@@ -57,8 +57,12 @@ public:
     // hyperlinks to URLs with the scheme.
     BLINK_EXPORT static void registerURLSchemeAsDisplayIsolated(const WebString&);
 
+    // Registers a URL scheme to generate mixed content warnings when resources whose
+    // schemes are not registered as "secure" are embedded.
+    BLINK_EXPORT static void registerURLSchemeAsRestrictingMixedContent(const WebString&);
+
     // Registers a URL scheme to not generate mixed content warnings when
-    // included by an HTTPS page.
+    // included by page whose scheme is registed as restricting mixed content.
     BLINK_EXPORT static void registerURLSchemeAsSecure(const WebString&);
 
     // Registers a non-HTTP URL scheme which can be sent CORS requests.

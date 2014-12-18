@@ -48,6 +48,9 @@ public:
 
     static bool shouldTreatURLSchemeAsLocal(const String&);
 
+    static void registerURLSchemeAsRestrictingMixedContent(const String&);
+    static bool shouldTreatURLSchemeAsRestrictingMixedContent(const String&);
+
     // Secure schemes do not trigger mixed content warnings. For example,
     // https and data are secure schemes because they cannot be corrupted by
     // active network attackers.

@@ -48,6 +48,16 @@ static URLSchemesSet& displayIsolatedURLSchemes()
     return displayIsolatedSchemes;
 }
 
+static URLSchemesSet& mixedContentRestrictingSchemes()
+{
+    DEFINE_STATIC_LOCAL(URLSchemesSet, mixedContentRestrictingSchemes, ());
+
+    if (mixedContentRestrictingSchemes.isEmpty())
+        mixedContentRestrictingSchemes.add("https");
+
+    return mixedContentRestrictingSchemes;
+}
+
 static URLSchemesSet& secureSchemes()
 {
     DEFINE_STATIC_LOCAL(URLSchemesSet, secureSchemes, ());
@@ -189,6 +199,18 @@ bool SchemeRegistry::shouldTreatURLSchemeAsDisplayIsolated(const String& scheme)
     if (scheme.isEmpty())
         return false;
     return displayIsolatedURLSchemes().contains(scheme);
+}
+
+void SchemeRegistry::registerURLSchemeAsRestrictingMixedContent(const String& scheme)
+{
+    mixedContentRestrictingSchemes().add(scheme);
+}
+
+bool SchemeRegistry::shouldTreatURLSchemeAsRestrictingMixedContent(const String& scheme)
+{
+    if (scheme.isEmpty())
+        return false;
+    return mixedContentRestrictingSchemes().contains(scheme);
 }
 
 void SchemeRegistry::registerURLSchemeAsSecure(const String& scheme)

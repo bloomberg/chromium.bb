@@ -55,6 +55,11 @@ void WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(const WebString& sche
     SchemeRegistry::registerURLSchemeAsDisplayIsolated(scheme);
 }
 
+void WebSecurityPolicy::registerURLSchemeAsRestrictingMixedContent(const WebString& scheme)
+{
+    SchemeRegistry::registerURLSchemeAsRestrictingMixedContent(scheme);
+}
+
 void WebSecurityPolicy::registerURLSchemeAsSecure(const WebString& scheme)
 {
     SchemeRegistry::registerURLSchemeAsSecure(scheme);

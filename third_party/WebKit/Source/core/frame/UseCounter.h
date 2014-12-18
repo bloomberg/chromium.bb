@@ -599,6 +599,8 @@ public:
         RemoveEventListenerNoArguments = 658,
         RemoveEventListenerOneArgument = 659,
         SRIElementWithNonMatchingIntegrityType = 660,
+        MixedContentInNonHTTPSFrameThatRestrictsMixedContent = 661,
+        MixedContentInSecureFrameThatDoesNotRestrictMixedContent = 662,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

@@ -55,11 +55,26 @@ FrameLoaderClient* MixedContentChecker::client() const
     return m_frame->loader().client();
 }
 
+static void measureStricterVersionOfIsMixedContent(LocalFrame* frame, const KURL& url)
+{
+    // We're currently only checking for mixed content in `https://*` contexts.
+    // What about other "secure" contexts the SchemeRegistry knows about? We'll
+    // use this method to measure the occurance of non-webby mixed content to
+    // make sure we're not breaking the world without realizing it.
+    SecurityOrigin* origin = frame->document()->securityOrigin();
+    if (MixedContentChecker::isMixedContent(origin, url)) {
+        if (frame->document()->securityOrigin()->protocol() != "https")
+            UseCounter::count(frame, UseCounter::MixedContentInNonHTTPSFrameThatRestrictsMixedContent);
+    } else if (!SecurityOrigin::isSecure(url) && SchemeRegistry::shouldTreatURLSchemeAsSecure(origin->protocol())) {
+        UseCounter::count(frame, UseCounter::MixedContentInSecureFrameThatDoesNotRestrictMixedContent);
+    }
+}
+
 // static
 bool MixedContentChecker::isMixedContent(SecurityOrigin* securityOrigin, const KURL& url)
 {
-    if (securityOrigin->protocol() != "https")
-        return false; // We only care about HTTPS security origins.
+    if (!SchemeRegistry::shouldTreatURLSchemeAsRestrictingMixedContent(securityOrigin->protocol()))
+        return false;
 
     // We're in a secure context, so |url| is mixed content if it's insecure.
     return !SecurityOrigin::isSecure(url);
@@ -281,6 +296,7 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, WebURLRequest::Req
         return false;
 
     // No mixed content, no problem.
+    measureStricterVersionOfIsMixedContent(frame, url);
     if (!isMixedContent(frame->document()->securityOrigin(), url))
         return false;
 
