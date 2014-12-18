@@ -4,6 +4,8 @@
 
 #include "ui/views/test/views_test_helper_mac.h"
 
+#import <Cocoa/Cocoa.h>
+
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/views/test/event_generator_delegate_mac.h"
 
@@ -19,6 +21,11 @@ ViewsTestHelperMac::ViewsTestHelperMac()
     : zero_duration_mode_(new ui::ScopedAnimationDurationScaleMode(
           ui::ScopedAnimationDurationScaleMode::ZERO_DURATION)) {
   test::InitializeMacEventGeneratorDelegate();
+
+  // Unbundled applications (those without Info.plist) default to
+  // NSApplicationActivationPolicyProhibited, which prohibits the application
+  // obtaining key status or activating windows without user interaction.
+  [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
 }
 
 ViewsTestHelperMac::~ViewsTestHelperMac() {

@@ -14,6 +14,28 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
+namespace {
+
+// Convert a |point| in |source_window|'s AppKit coordinate system (origin at
+// the bottom left of the window) to |target_window|'s content rect, with the
+// origin at the top left of the content area.
+// If |source_window| is nil, |point| will be treated as screen coordinates.
+gfx::Point MovePointToWindow(const NSPoint& point,
+                             NSWindow* source_window,
+                             NSWindow* target_window) {
+  NSPoint point_in_screen = source_window
+      ? [source_window convertBaseToScreen:point]
+      : point;
+
+  NSPoint point_in_window = [target_window convertScreenToBase:point_in_screen];
+  NSRect content_rect =
+      [target_window contentRectForFrameRect:[target_window frame]];
+  return gfx::Point(point_in_window.x,
+                    NSHeight(content_rect) - point_in_window.y);
+}
+
+}
+
 @interface BridgedContentView ()
 
 // Translates the location of |theEvent| to toolkit-views coordinates and passes
@@ -57,6 +79,26 @@
   hostedView_ = NULL;
   [trackingArea_.get() clearOwner];
   [self removeTrackingArea:trackingArea_.get()];
+}
+
+- (void)processCapturedMouseEvent:(NSEvent*)theEvent {
+  if (!hostedView_)
+    return;
+
+  NSWindow* source = [theEvent window];
+  NSWindow* target = [self window];
+  DCHECK(target);
+
+  // If it's the view's window, process normally.
+  if ([target isEqual:source]) {
+    [self handleMouseEvent:theEvent];
+    return;
+  }
+
+  ui::MouseEvent event(theEvent);
+  event.set_location(
+      MovePointToWindow([theEvent locationInWindow], source, target));
+  hostedView_->GetWidget()->OnMouseEvent(&event);
 }
 
 // BridgedContentView private implementation.

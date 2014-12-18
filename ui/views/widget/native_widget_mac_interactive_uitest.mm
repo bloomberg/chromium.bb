@@ -28,15 +28,6 @@ class NativeWidgetMacInteractiveUITest
                       : CreateTopLevelPlatformWidget();
   }
 
-  // Overridden form testing::Test:
-  virtual void SetUp() {
-    // Unbundled applications (those without Info.plist) default to
-    // NSApplicationActivationPolicyProhibited, which prohibits the application
-    // obtaining key status.
-    [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-    WidgetTest::SetUp();
-  }
-
  protected:
   scoped_ptr<Observer> observer_;
   int activationCount_;

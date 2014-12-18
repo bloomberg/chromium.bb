@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/compositor/layer_owner.h"
 #import "ui/accelerated_widget_mac/accelerated_widget_mac.h"
+#import "ui/views/cocoa/cocoa_mouse_capture_delegate.h"
 #import "ui/views/focus/focus_manager.h"
 #include "ui/views/ime/input_method_delegate.h"
 #include "ui/views/views_export.h"
@@ -26,6 +27,7 @@ class InputMethod;
 
 namespace views {
 
+class CocoaMouseCapture;
 class InputMethod;
 class NativeWidgetMac;
 class View;
@@ -36,6 +38,7 @@ class View;
 class VIEWS_EXPORT BridgedNativeWidget : public ui::LayerDelegate,
                                          public ui::LayerOwner,
                                          public internal::InputMethodDelegate,
+                                         public CocoaMouseCaptureDelegate,
                                          public FocusChangeListener,
                                          public ui::AcceleratedWidgetMacNSView {
  public:
@@ -69,6 +72,12 @@ class VIEWS_EXPORT BridgedNativeWidget : public ui::LayerDelegate,
   // Sets the desired visibility of the window and updates the visibility of
   // descendant windows where necessary.
   void SetVisibilityState(WindowVisibilityState new_state);
+
+  // Acquiring mouse capture first steals capture from any existing
+  // CocoaMouseCaptureDelegate, then captures all mouse events until released.
+  void AcquireCapture();
+  void ReleaseCapture();
+  bool HasCapture();
 
   // Called internally by the NSWindowDelegate when the window is closing.
   void OnWindowWillClose();
@@ -158,6 +167,10 @@ class VIEWS_EXPORT BridgedNativeWidget : public ui::LayerDelegate,
   // scale factor.
   void UpdateLayerProperties();
 
+  // Overridden from CocoaMouseCaptureDelegate:
+  void PostCapturedEvent(NSEvent* event) override;
+  void OnMouseCaptureLost() override;
+
   // Overridden from FocusChangeListener:
   void OnWillChangeFocus(View* focused_before,
                          View* focused_now) override;
@@ -182,6 +195,7 @@ class VIEWS_EXPORT BridgedNativeWidget : public ui::LayerDelegate,
   base::scoped_nsobject<ViewsNSWindowDelegate> window_delegate_;
   base::scoped_nsobject<BridgedContentView> bridged_view_;
   scoped_ptr<ui::InputMethod> input_method_;
+  scoped_ptr<CocoaMouseCapture> mouse_capture_;
   FocusManager* focus_manager_;  // Weak. Owned by our Widget.
 
   BridgedNativeWidget* parent_;  // Weak. If non-null, owns this.

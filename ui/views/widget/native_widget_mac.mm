@@ -209,16 +209,17 @@ TooltipManager* NativeWidgetMac::GetTooltipManager() const {
 }
 
 void NativeWidgetMac::SetCapture() {
-  NOTIMPLEMENTED();
+  if (bridge_ && !bridge_->HasCapture())
+    bridge_->AcquireCapture();
 }
 
 void NativeWidgetMac::ReleaseCapture() {
-  NOTIMPLEMENTED();
+  if (bridge_)
+    bridge_->ReleaseCapture();
 }
 
 bool NativeWidgetMac::HasCapture() const {
-  NOTIMPLEMENTED();
-  return false;
+  return bridge_ && bridge_->HasCapture();
 }
 
 InputMethod* NativeWidgetMac::CreateInputMethod() {

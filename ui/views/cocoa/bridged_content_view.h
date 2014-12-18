@@ -42,6 +42,9 @@ class View;
 // Clear the hosted view. For example, if it is about to be destroyed.
 - (void)clearView;
 
+// Process a mouse event captured while the widget had global mouse capture.
+- (void)processCapturedMouseEvent:(NSEvent*)theEvent;
+
 @end
 
 #endif  // UI_VIEWS_COCOA_BRIDGED_CONTENT_VIEW_H_
