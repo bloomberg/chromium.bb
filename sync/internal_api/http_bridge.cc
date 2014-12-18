@@ -5,6 +5,7 @@
 #include "sync/internal_api/public/http_bridge.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -20,6 +21,20 @@
 #include "sync/internal_api/public/base/cancelation_signal.h"
 
 namespace syncer {
+
+namespace {
+
+// It's possible for an http request to be silently stalled. We set a time
+// limit for all http requests, beyond which the request is cancelled and
+// treated as a transient failure.
+const int kMaxHttpRequestTimeSeconds = 60 * 5;  // 5 minutes.
+
+// Helper method for logging timeouts via UMA.
+void LogTimeout(bool timed_out) {
+  UMA_HISTOGRAM_BOOLEAN("Sync.URLFetchTimedOut", timed_out);
+}
+
+}  // namespace
 
 HttpBridge::RequestContextGetter::RequestContextGetter(
     net::URLRequestContextGetter* baseline_context_getter,
@@ -171,12 +186,14 @@ HttpBridge::RequestContext::~RequestContext() {
   delete http_transaction_factory();
 }
 
-HttpBridge::URLFetchState::URLFetchState() : url_poster(NULL),
-                                             aborted(false),
-                                             request_completed(false),
-                                             request_succeeded(false),
-                                             http_response_code(-1),
-                                             error_code(-1) {}
+HttpBridge::URLFetchState::URLFetchState()
+    : url_poster(NULL),
+      aborted(false),
+      request_completed(false),
+      request_succeeded(false),
+      http_response_code(-1),
+      error_code(-1) {
+}
 HttpBridge::URLFetchState::~URLFetchState() {}
 
 HttpBridge::HttpBridge(
@@ -271,10 +288,19 @@ bool HttpBridge::MakeSynchronousPost(int* error_code, int* response_code) {
 
 void HttpBridge::MakeAsynchronousPost() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
+
   base::AutoLock lock(fetch_state_lock_);
   DCHECK(!fetch_state_.request_completed);
   if (fetch_state_.aborted)
     return;
+
+  // Start the timer on the network thread (the same thread progress is made
+  // on, and on which the url fetcher lives).
+  DCHECK(!fetch_state_.http_request_timeout_timer.get());
+  fetch_state_.http_request_timeout_timer.reset(new base::Timer(false, false));
+  fetch_state_.http_request_timeout_timer->Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(kMaxHttpRequestTimeSeconds),
+      base::Bind(&HttpBridge::OnURLFetchTimedOut, this));
 
   DCHECK(context_getter_for_request_.get());
   fetch_state_.url_poster = net::URLFetcher::Create(
@@ -284,6 +310,7 @@ void HttpBridge::MakeAsynchronousPost() {
   fetch_state_.url_poster->SetExtraRequestHeaders(extra_headers_);
   fetch_state_.url_poster->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES);
   fetch_state_.start_time = base::Time::Now();
+
   fetch_state_.url_poster->Start();
 }
 
@@ -328,7 +355,8 @@ void HttpBridge::Abort() {
   if (!network_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&HttpBridge::DestroyURLFetcherOnIOThread, this,
-                     fetch_state_.url_poster))) {
+                     fetch_state_.url_poster,
+                     fetch_state_.http_request_timeout_timer.release()))) {
     // Madness ensues.
     NOTREACHED() << "Could not post task to delete URLFetcher";
   }
@@ -338,14 +366,24 @@ void HttpBridge::Abort() {
   http_post_completed_.Signal();
 }
 
-void HttpBridge::DestroyURLFetcherOnIOThread(net::URLFetcher* fetcher) {
+void HttpBridge::DestroyURLFetcherOnIOThread(
+    net::URLFetcher* fetcher,
+    base::Timer* fetch_timer) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
+  if (fetch_timer)
+    delete fetch_timer;
   delete fetcher;
 }
 
 void HttpBridge::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
+
   base::AutoLock lock(fetch_state_lock_);
+
+  // Stop the request timer now that the request completed.
+  if (fetch_state_.http_request_timeout_timer.get())
+    fetch_state_.http_request_timeout_timer.reset();
+
   if (fetch_state_.aborted)
     return;
 
@@ -355,6 +393,11 @@ void HttpBridge::OnURLFetchComplete(const net::URLFetcher* source) {
       (net::URLRequestStatus::SUCCESS == source->GetStatus().status());
   fetch_state_.http_response_code = source->GetResponseCode();
   fetch_state_.error_code = source->GetStatus().error();
+
+  if (fetch_state_.request_succeeded)
+    LogTimeout(false);
+  UMA_HISTOGRAM_LONG_TIMES("Sync.URLFetchTime",
+                           fetch_state_.end_time - fetch_state_.start_time);
 
   // Use a real (non-debug) log to facilitate troubleshooting in the wild.
   VLOG(2) << "HttpBridge::OnURLFetchComplete for: "
@@ -377,6 +420,53 @@ void HttpBridge::OnURLFetchComplete(const net::URLFetcher* source) {
   http_post_completed_.Signal();
 }
 
+void HttpBridge::OnURLFetchDownloadProgress(const net::URLFetcher* source,
+                                            int64 current, int64 total) {
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
+  // Reset the delay when forward progress is made.
+  base::AutoLock lock(fetch_state_lock_);
+  if (fetch_state_.http_request_timeout_timer.get())
+    fetch_state_.http_request_timeout_timer->Reset();
+}
+
+void HttpBridge::OnURLFetchUploadProgress(const net::URLFetcher* source,
+                                          int64 current, int64 total) {
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
+  // Reset the delay when forward progress is made.
+  base::AutoLock lock(fetch_state_lock_);
+  if (fetch_state_.http_request_timeout_timer.get())
+    fetch_state_.http_request_timeout_timer->Reset();
+}
+
+void HttpBridge::OnURLFetchTimedOut() {
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
+
+  base::AutoLock lock(fetch_state_lock_);
+  if (!fetch_state_.url_poster)
+    return;
+
+  LogTimeout(true);
+  DVLOG(1) << "Sync url fetch timed out. Canceling.";
+
+  fetch_state_.end_time = base::Time::Now();
+  fetch_state_.request_completed = true;
+  fetch_state_.request_succeeded = false;
+  fetch_state_.http_response_code = -1;
+  fetch_state_.error_code = net::URLRequestStatus::FAILED;
+
+  // This method is called by the timer, not the url fetcher implementation,
+  // so it's safe to delete the fetcher here.
+  delete fetch_state_.url_poster;
+  fetch_state_.url_poster = NULL;
+
+  // Timer is smart enough to handle being deleted as part of the invoked task.
+  fetch_state_.http_request_timeout_timer.reset();
+
+  // Wake the blocked syncer thread in MakeSynchronousPost.
+  // WARNING: DONT DO ANYTHING AFTER THIS CALL! |this| may be deleted!
+  http_post_completed_.Signal();
+}
+
 net::URLRequestContextGetter* HttpBridge::GetRequestContextGetterForTest()
     const {
   base::AutoLock lock(fetch_state_lock_);
@@ -387,6 +477,7 @@ void HttpBridge::UpdateNetworkTime() {
   std::string sane_time_str;
   if (!fetch_state_.request_succeeded || fetch_state_.start_time.is_null() ||
       fetch_state_.end_time < fetch_state_.start_time ||
+      !fetch_state_.response_headers ||
       !fetch_state_.response_headers->EnumerateHeader(NULL, "Sane-Time-Millis",
                                                       &sane_time_str)) {
     return;

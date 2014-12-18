@@ -37375,6 +37375,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Sync.URLFetchTime" units="milliseconds">
+  <owner>zea@chromium.org</owner>
+  <summary>
+    Time spent waiting for a sync cycle to complete the url fetch.
+  </summary>
+</histogram>
+
+<histogram name="Sync.URLFetchTimedOut" enum="BooleanTimedOut">
+  <owner>zea@chromium.org</owner>
+  <summary>
+    Whether a url fetch timed out or not. Timing out implies the fetch was
+    stalled for an unknown reason.
+  </summary>
+</histogram>
+
 <histogram name="Sync.UserPerceivedAuthorizationTime" units="milliseconds">
   <owner>zea@chromium.org</owner>
   <summary>Time the user spends looking at the authorization dialog.</summary>
@@ -42685,6 +42700,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanTablet" type="int">
   <int value="0" label="Non tablet"/>
   <int value="1" label="Tablet"/>
+</enum>
+
+<enum name="BooleanTimedOut" type="int">
+  <int value="0" label="Did not time out"/>
+  <int value="1" label="Timed out"/>
 </enum>
 
 <enum name="BooleanUsage" type="int">
