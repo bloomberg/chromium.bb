@@ -47,7 +47,7 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
   void GetAutoRepeatRate(base::TimeDelta* delay, base::TimeDelta* interval);
 
  private:
-  void UpdateModifier(int modifier_flag, bool down);
+  void UpdateModifier(unsigned int key, bool down);
   void UpdateKeyRepeat(unsigned int key, bool down);
   void StartKeyRepeat(unsigned int key);
   void StopKeyRepeat();

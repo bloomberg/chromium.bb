@@ -46,10 +46,6 @@ EVENTS_OZONE_LAYOUT_EXPORT bool LookupControlCharacter(DomCode dom_code,
                                                        base::char16* character,
                                                        KeyboardCode* key_code);
 
-// Returns the ui::EventFlags value associated with a modifier key,
-// or 0 (EF_NONE) if the key is not a modifier.
-EVENTS_OZONE_LAYOUT_EXPORT int ModifierDomKeyToEventFlag(DomKey key);
-
 }  // namespace ui
 
 #endif  // UI_EVENTS_OZONE_LAYOUT_LAYOUT_UTIL_H_
