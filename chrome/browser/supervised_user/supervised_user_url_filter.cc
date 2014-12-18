@@ -208,6 +208,12 @@ int SupervisedUserURLFilter::GetBlockMessageID(FilteringBehaviorReason reason) {
 }
 
 // static
+bool SupervisedUserURLFilter::ReasonIsAutomatic(
+    FilteringBehaviorReason reason) {
+  return reason == ASYNC_CHECKER || reason == BLACKLIST;
+}
+
+// static
 GURL SupervisedUserURLFilter::Normalize(const GURL& url) {
   GURL normalized_url = url;
   GURL::Replacements replacements;

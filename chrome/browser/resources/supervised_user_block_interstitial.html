@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width">
 <meta charset="utf-8">
 <title i18n-content="blockPageTitle"></title>
-<link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
+<link rel="stylesheet" href="../../../ui/webui/resources/css/chrome_shared.css">
 <link rel="stylesheet" href="supervised_user_block_interstitial.css">
 <script src="../../../ui/webui/resources/js/cr.js"></script>
 <script src="../../../ui/webui/resources/js/util.js"></script>
@@ -25,10 +25,14 @@
         <div id="request-sent-message" i18n-content="requestSentMessage" hidden>
         </div>
         <div id="block-reason-message" i18n-content="blockReasonMessage"></div>
+        <a id="feedback-link" is="action-link" i18n-content="feedbackLink"></a>
       </h1>
       <div id="button-container">
-        <button id="back-button" i18n-content="backButton"></button>
-        <button id="request-access-button" i18n-content="requestAccessButton">
+        <button id="back-button" class="custom-appearance"
+            i18n-content="backButton">
+        </button>
+        <button id="request-access-button" class="custom-appearance"
+            i18n-content="requestAccessButton">
         </button>
       </div>
     </div>

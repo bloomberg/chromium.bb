@@ -34,6 +34,7 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #endif
 
@@ -223,6 +224,15 @@ std::string SupervisedUserInterstitial::GetHTMLContents() {
           SupervisedUserURLFilter::GetBlockMessageID(reason_))
       : base::string16());
 
+  bool show_feedback = false;
+#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_ANDROID)
+  show_feedback = is_child_account &&
+                  SupervisedUserURLFilter::ReasonIsAutomatic(reason_);
+#endif
+  strings.SetBoolean("showFeedbackLink", show_feedback);
+  strings.SetString("feedbackLink",
+      l10n_util::GetStringUTF16(IDS_BLOCK_INTERSTITIAL_SEND_FEEDBACK));
+
   strings.SetString("backButton", l10n_util::GetStringUTF16(IDS_BACK_BUTTON));
   strings.SetString("requestAccessButton", l10n_util::GetStringUTF16(
       is_child_account
@@ -285,6 +295,22 @@ void SupervisedUserInterstitial::CommandReceived(const std::string& command) {
                          weak_ptr_factory_.GetWeakPtr()));
     return;
   }
+
+#if !defined(OS_ANDROID)
+  if (command == "\"feedback\"") {
+    std::string bucket;
+#if defined(OS_CHROMEOS)
+    bucket = "UnicornCrOS";
+#else
+    bucket = "UnicornDesktop";
+#endif
+    chrome::ShowFeedbackPage(
+        chrome::FindBrowserWithWebContents(web_contents_),
+        l10n_util::GetStringUTF8(IDS_BLOCK_INTERSTITIAL_DEFAULT_FEEDBACK_TEXT),
+        bucket);
+    return;
+  }
+#endif
 
   NOTREACHED();
 }

@@ -41,6 +41,13 @@ function initialize() {
   $('back-button').onclick = function(event) {
     sendCommand('back');
   };
+  if (loadTimeData.getBoolean('showFeedbackLink')) {
+    $('feedback-link').onclick = function(event) {
+      sendCommand('feedback');
+    };
+  } else {
+    $('feedback-link').style.display = 'none';
+  }
 }
 
 /**

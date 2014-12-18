@@ -7890,6 +7890,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SUPERVISED_USER_BLOCK_MESSAGE_MANUAL" desc="Message to be shown when a site was blocked due to a manual blacklist entry.">
         This site was blocked due to a manual blacklist entry.
       </message>
+      <message name="IDS_BLOCK_INTERSTITIAL_SEND_FEEDBACK" desc="The text for a link to submit feedback about a blocked site.">
+        Was this unexpected? Tell us about it!
+      </message>
+      <message name="IDS_BLOCK_INTERSTITIAL_DEFAULT_FEEDBACK_TEXT" desc="The default text for feedback about a blocked site.">
+        I don't think this site should be blocked!
+      </message>
 
       <!-- Content Settings dialog data -->
       <message name="IDS_CONTENT_SETTINGS_TITLE" desc="Title for content settings dialog">

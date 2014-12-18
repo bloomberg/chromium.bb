@@ -68,6 +68,10 @@ a {
   margin-top: 5px;
 }
 
+#feedback-link {
+  font-size: 80%;
+}
+
 button {
   -webkit-user-select: none;
   background-image: linear-gradient(rgb(246, 246, 246) 5%,

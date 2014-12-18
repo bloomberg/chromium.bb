@@ -76,6 +76,8 @@ class SupervisedUserURLFilter
 
   static int GetBlockMessageID(FilteringBehaviorReason reason);
 
+  static bool ReasonIsAutomatic(FilteringBehaviorReason reason);
+
   // Normalizes a URL for matching purposes.
   static GURL Normalize(const GURL& url);
 
