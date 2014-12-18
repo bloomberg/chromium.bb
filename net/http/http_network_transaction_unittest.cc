@@ -516,32 +516,30 @@ class CaptureGroupNameSocketPool : public ParentPool {
     return last_group_name_;
   }
 
-  virtual int RequestSocket(const std::string& group_name,
-                            const void* socket_params,
-                            RequestPriority priority,
-                            ClientSocketHandle* handle,
-                            const CompletionCallback& callback,
-                            const BoundNetLog& net_log) {
+  int RequestSocket(const std::string& group_name,
+                    const void* socket_params,
+                    RequestPriority priority,
+                    ClientSocketHandle* handle,
+                    const CompletionCallback& callback,
+                    const BoundNetLog& net_log) override {
     last_group_name_ = group_name;
     return ERR_IO_PENDING;
   }
-  virtual void CancelRequest(const std::string& group_name,
-                             ClientSocketHandle* handle) {}
-  virtual void ReleaseSocket(const std::string& group_name,
-                             scoped_ptr<StreamSocket> socket,
-                             int id) {}
-  virtual void CloseIdleSockets() {}
-  virtual int IdleSocketCount() const {
+  void CancelRequest(const std::string& group_name,
+                     ClientSocketHandle* handle) override {}
+  void ReleaseSocket(const std::string& group_name,
+                     scoped_ptr<StreamSocket> socket,
+                     int id) override {}
+  void CloseIdleSockets() override {}
+  int IdleSocketCount() const override { return 0; }
+  int IdleSocketCountInGroup(const std::string& group_name) const override {
     return 0;
   }
-  virtual int IdleSocketCountInGroup(const std::string& group_name) const {
-    return 0;
-  }
-  virtual LoadState GetLoadState(const std::string& group_name,
-                                 const ClientSocketHandle* handle) const {
+  LoadState GetLoadState(const std::string& group_name,
+                         const ClientSocketHandle* handle) const override {
     return LOAD_STATE_IDLE;
   }
-  virtual base::TimeDelta ConnectionTimeout() const {
+  base::TimeDelta ConnectionTimeout() const override {
     return base::TimeDelta();
   }
 

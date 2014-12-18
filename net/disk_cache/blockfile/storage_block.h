@@ -34,9 +34,9 @@ class StorageBlock : public FileBlock {
   virtual ~StorageBlock();
 
   // FileBlock interface.
-  virtual void* buffer() const;
-  virtual size_t size() const;
-  virtual int offset() const;
+  void* buffer() const override;
+  size_t size() const override;
+  int offset() const override;
 
   // Allows the overide of dummy values passed on the constructor.
   bool LazyInit(MappedFile* file, Addr address);

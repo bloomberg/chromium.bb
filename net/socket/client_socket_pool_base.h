@@ -859,7 +859,7 @@ class ClientSocketPoolBase {
           group_name, casted_request, delegate);
     }
 
-    virtual base::TimeDelta ConnectionTimeout() const {
+    base::TimeDelta ConnectionTimeout() const override {
       return connect_job_factory_->ConnectionTimeout();
     }
 
