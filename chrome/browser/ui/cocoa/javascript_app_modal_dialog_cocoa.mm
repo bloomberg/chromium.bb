@@ -149,6 +149,8 @@ enum AlertAction {
       NOTREACHED();
     }
   }
+
+  delete nativeDialog_;  // Careful, this will delete us.
 }
 
 - (void)playOrQueueAction:(AlertAction)action {
