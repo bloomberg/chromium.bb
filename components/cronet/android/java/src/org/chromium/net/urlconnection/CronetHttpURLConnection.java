@@ -14,6 +14,7 @@ import org.chromium.net.UrlRequestListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 
@@ -31,6 +32,7 @@ public class CronetHttpURLConnection extends HttpURLConnection {
     private CronetInputStream mInputStream;
     private ResponseInfo mResponseInfo;
     private ByteBuffer mResponseByteBuffer;
+    private boolean mOnRedirectCalled = false;
 
     protected CronetHttpURLConnection(URL url,
             UrlRequestContext urlRequestContext) {
@@ -107,6 +109,12 @@ public class CronetHttpURLConnection extends HttpURLConnection {
     @Override
     public InputStream getInputStream() throws IOException {
         connect();
+        if (mResponseInfo == null) {
+            throw new IOException();
+        }
+        if (!instanceFollowRedirects && mOnRedirectCalled) {
+            throw new IOException("Cannot read response body of a redirect.");
+        }
         return mInputStream;
     }
 
@@ -176,7 +184,18 @@ public class CronetHttpURLConnection extends HttpURLConnection {
         @Override
         public void onRedirect(UrlRequest request, ResponseInfo info,
                 String newLocationUrl) {
-            // TODO(xunjieli): Handle redirect and test it.
+            mOnRedirectCalled = true;
+            if (instanceFollowRedirects) {
+                try {
+                    url = new URL(newLocationUrl);
+                } catch (MalformedURLException e) {
+                    // Ignored.
+                }
+            } else {
+                mResponseInfo = info;
+                mRequest.cancel();
+                setResponseDataCompleted();
+            }
         }
 
         @Override

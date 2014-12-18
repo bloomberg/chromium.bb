@@ -121,7 +121,7 @@ public class MockUrlRequestJobTest extends CronetTestBase {
         assertEquals("header-value", entry.get(0));
         List<String> location = listener.mResponseHeaders.get("Location");
         assertEquals(1, location.size());
-        assertEquals("http://mock.http/success.txt", location.get(0));
+        assertEquals("/success.txt", location.get(0));
         assertEquals("Request failed because there were too many redirects or "
                          + "redirects have been disabled",
                      listener.mException.getMessage());

@@ -13,6 +13,7 @@ import org.chromium.cronet_test_apk.MockUrlRequestJobFactory;
 import org.chromium.cronet_test_apk.UploadTestServer;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -316,6 +317,91 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
             assertEquals(testInputBytes[firstPart.length + i], secondPart[i]);
         }
         urlConnection.disconnect();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @CompareDefaultWithCronet
+    public void testFollowRedirects() throws Exception {
+        URL url = new URL(UploadTestServer.getFileURL("/redirect.html"));
+        HttpURLConnection connection =
+                (HttpURLConnection) url.openConnection();
+        connection.setInstanceFollowRedirects(true);
+        assertEquals(200, connection.getResponseCode());
+        assertEquals("OK", connection.getResponseMessage());
+        assertEquals(UploadTestServer.getFileURL("/success.txt"),
+                connection.getURL().toString());
+        assertEquals("this is a text file\n", getResponseAsString(connection));
+        connection.disconnect();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @CompareDefaultWithCronet
+    public void testDisableRedirects() throws Exception {
+        URL url = new URL(UploadTestServer.getFileURL("/redirect.html"));
+        HttpURLConnection connection =
+                (HttpURLConnection) url.openConnection();
+        connection.setInstanceFollowRedirects(false);
+        assertEquals(302, connection.getResponseCode());
+        assertEquals("Found", connection.getResponseMessage());
+        assertEquals(UploadTestServer.getFileURL("/redirect.html"),
+                connection.getURL().toString());
+        connection.disconnect();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @CompareDefaultWithCronet
+    public void testDisableRedirectsGlobal() throws Exception {
+        HttpURLConnection.setFollowRedirects(false);
+        URL url = new URL(UploadTestServer.getFileURL("/redirect.html"));
+        HttpURLConnection connection =
+                (HttpURLConnection) url.openConnection();
+        assertEquals(302, connection.getResponseCode());
+        assertEquals("Found", connection.getResponseMessage());
+        assertEquals(UploadTestServer.getFileURL("/redirect.html"),
+                connection.getURL().toString());
+        connection.disconnect();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @CompareDefaultWithCronet
+    public void testDisableRedirectsGlobalAfterConnectionIsCreated()
+            throws Exception {
+        HttpURLConnection.setFollowRedirects(true);
+        URL url = new URL(UploadTestServer.getFileURL("/redirect.html"));
+        HttpURLConnection connection =
+                (HttpURLConnection) url.openConnection();
+        // Disabling redirects globally after creating the HttpURLConnection
+        // object should have no effect on the request.
+        HttpURLConnection.setFollowRedirects(false);
+        assertEquals(200, connection.getResponseCode());
+        assertEquals("OK", connection.getResponseMessage());
+        assertEquals(UploadTestServer.getFileURL("/success.txt"),
+                connection.getURL().toString());
+        assertEquals("this is a text file\n", getResponseAsString(connection));
+        connection.disconnect();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunCronetHttpURLConnection
+    // Cronet does not support reading response body of a 302 response.
+    public void testDisableRedirectsTryReadBody() throws Exception {
+        URL url = new URL(UploadTestServer.getFileURL("/redirect.html"));
+        HttpURLConnection connection =
+                (HttpURLConnection) url.openConnection();
+        connection.setInstanceFollowRedirects(false);
+        try {
+            connection.getInputStream();
+            fail();
+        } catch (IOException e) {
+            // Expected.
+        }
+        // TODO(xunjieli): Test that error stream should null here.
+        connection.disconnect();
     }
 
     /**
