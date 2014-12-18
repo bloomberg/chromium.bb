@@ -42,7 +42,7 @@ async_test(function(test) {
         .then(function(pushRegistration) {
             assert_equals(previousPushRegistration.endPoint, pushRegistration.endPoint,
                           "Both registration objects should have the same endpoint.");
-            assert_equals(previousPushRegistration.id, pushRegistration.id,
+            assert_equals(previousPushRegistration.registrationId, pushRegistration.registrationId,
                           "Both registration objects should have the same registration id.");
             return pushRegistration.unregister();
         })
