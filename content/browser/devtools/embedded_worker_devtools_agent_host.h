@@ -21,20 +21,8 @@ class EmbeddedWorkerDevToolsAgentHost : public IPCDevToolsAgentHost,
   typedef EmbeddedWorkerDevToolsManager::ServiceWorkerIdentifier
       ServiceWorkerIdentifier;
 
-  EmbeddedWorkerDevToolsAgentHost(WorkerId worker_id,
-                                  const SharedWorkerInstance& shared_worker);
-
-  EmbeddedWorkerDevToolsAgentHost(WorkerId worker_id,
-                                  const ServiceWorkerIdentifier& service_worker,
-                                  bool debug_service_worker_on_start);
-
   // DevToolsAgentHost override.
   bool IsWorker() const override;
-  Type GetType() override;
-  std::string GetTitle() override;
-  GURL GetURL() override;
-  bool Activate() override;
-  bool Close() override;
   BrowserContext* GetBrowserContext() override;
 
   // IPCDevToolsAgentHost implementation.
@@ -49,13 +37,16 @@ class EmbeddedWorkerDevToolsAgentHost : public IPCDevToolsAgentHost,
   void WorkerReadyForInspection();
   void WorkerRestarted(WorkerId worker_id);
   void WorkerDestroyed();
-  bool Matches(const SharedWorkerInstance& other);
-  bool Matches(const ServiceWorkerIdentifier& other);
   bool IsTerminated();
 
- private:
+  // TODO(kinuko): Remove these virtual methods after we split devtools manager.
+  virtual bool Matches(const SharedWorkerInstance& other);
+  virtual bool Matches(const ServiceWorkerIdentifier& other);
+
+ protected:
   friend class EmbeddedWorkerDevToolsManagerTest;
 
+  EmbeddedWorkerDevToolsAgentHost(WorkerId worker_id);
   ~EmbeddedWorkerDevToolsAgentHost() override;
 
   enum WorkerState {
@@ -73,8 +64,10 @@ class EmbeddedWorkerDevToolsAgentHost : public IPCDevToolsAgentHost,
                                      uint32 total_size);
   void OnSaveAgentRuntimeState(const std::string& state);
 
-  scoped_ptr<SharedWorkerInstance> shared_worker_;
-  scoped_ptr<ServiceWorkerIdentifier> service_worker_;
+  void set_state(WorkerState state) { state_ = state; }
+  const WorkerId& worker_id() const { return worker_id_; }
+
+ private:
   WorkerState state_;
   WorkerId worker_id_;
   std::string saved_agent_state_;

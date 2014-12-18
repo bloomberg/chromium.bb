@@ -5,8 +5,9 @@
 #include "content/browser/devtools/embedded_worker_devtools_manager.h"
 
 #include "content/browser/devtools/devtools_manager.h"
-#include "content/browser/devtools/embedded_worker_devtools_agent_host.h"
 #include "content/browser/devtools/ipc_devtools_agent_host.h"
+#include "content/browser/devtools/service_worker_devtools_agent_host.h"
+#include "content/browser/devtools/shared_worker_devtools_agent_host.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -102,7 +103,7 @@ bool EmbeddedWorkerDevToolsManager::SharedWorkerCreated(
   const WorkerId id(worker_process_id, worker_route_id);
   AgentHostMap::iterator it = FindExistingSharedWorkerAgentHost(instance);
   if (it == workers_.end()) {
-    workers_[id] = new EmbeddedWorkerDevToolsAgentHost(id, instance);
+    workers_[id] = new SharedWorkerDevToolsAgentHost(id, instance);
     DevToolsManager::GetInstance()->AgentHostChanged(workers_[id]);
     return false;
   }
@@ -119,7 +120,7 @@ bool EmbeddedWorkerDevToolsManager::ServiceWorkerCreated(
   AgentHostMap::iterator it =
       FindExistingServiceWorkerAgentHost(service_worker_id);
   if (it == workers_.end()) {
-    workers_[id] = new EmbeddedWorkerDevToolsAgentHost(
+    workers_[id] = new ServiceWorkerDevToolsAgentHost(
         id, service_worker_id, debug_service_worker_on_start_);
     DevToolsManager::GetInstance()->AgentHostChanged(workers_[id]);
     return debug_service_worker_on_start_;

@@ -4,114 +4,20 @@
 
 #include "content/browser/devtools/embedded_worker_devtools_agent_host.h"
 
-#include "base/strings/utf_string_conversions.h"
 #include "content/browser/devtools/protocol/devtools_protocol_handler.h"
-#include "content/browser/service_worker/service_worker_context_core.h"
-#include "content/browser/service_worker/service_worker_version.h"
-#include "content/browser/shared_worker/shared_worker_service_impl.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 
 namespace content {
 
-namespace {
-
-void TerminateSharedWorkerOnIO(
-    EmbeddedWorkerDevToolsAgentHost::WorkerId worker_id) {
-  SharedWorkerServiceImpl::GetInstance()->TerminateWorker(
-      worker_id.first, worker_id.second);
-}
-
-void StatusNoOp(ServiceWorkerStatusCode status) {
-}
-
-void TerminateServiceWorkerOnIO(
-    base::WeakPtr<ServiceWorkerContextCore> context_weak,
-    int64 version_id) {
-  if (ServiceWorkerContextCore* context = context_weak.get()) {
-    if (ServiceWorkerVersion* version = context->GetLiveVersion(version_id))
-      version->StopWorker(base::Bind(&StatusNoOp));
-  }
-}
-
-void SetDevToolsAttachedOnIO(
-    base::WeakPtr<ServiceWorkerContextCore> context_weak,
-    int64 version_id,
-    bool attached) {
-  if (ServiceWorkerContextCore* context = context_weak.get()) {
-    if (ServiceWorkerVersion* version = context->GetLiveVersion(version_id))
-      version->SetDevToolsAttached(attached);
-  }
-}
-
-}  // namespace
-
-EmbeddedWorkerDevToolsAgentHost::EmbeddedWorkerDevToolsAgentHost(
-    WorkerId worker_id,
-    const SharedWorkerInstance& shared_worker)
-    : shared_worker_(new SharedWorkerInstance(shared_worker)),
-      state_(WORKER_UNINSPECTED),
-      worker_id_(worker_id) {
-  WorkerCreated();
-}
-
-EmbeddedWorkerDevToolsAgentHost::EmbeddedWorkerDevToolsAgentHost(
-    WorkerId worker_id,
-    const ServiceWorkerIdentifier& service_worker,
-    bool debug_service_worker_on_start)
-    : service_worker_(new ServiceWorkerIdentifier(service_worker)),
-      state_(WORKER_UNINSPECTED),
-      worker_id_(worker_id) {
-  if (debug_service_worker_on_start)
-    state_ = WORKER_PAUSED_FOR_DEBUG_ON_START;
-  WorkerCreated();
-}
-
 bool EmbeddedWorkerDevToolsAgentHost::IsWorker() const {
   return true;
 }
 
-DevToolsAgentHost::Type EmbeddedWorkerDevToolsAgentHost::GetType() {
-  return shared_worker_ ? TYPE_SHARED_WORKER : TYPE_SERVICE_WORKER;
-}
-
-std::string EmbeddedWorkerDevToolsAgentHost::GetTitle() {
-  if (shared_worker_ && shared_worker_->name().length())
-    return base::UTF16ToUTF8(shared_worker_->name());
-  if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first)) {
-    return base::StringPrintf("Worker pid:%d",
-                              base::GetProcId(host->GetHandle()));
-  }
-  return "";
-}
-
-GURL EmbeddedWorkerDevToolsAgentHost::GetURL() {
-  if (shared_worker_)
-    return shared_worker_->url();
-  if (service_worker_)
-    return service_worker_->url();
-  return GURL();
-}
-
-bool EmbeddedWorkerDevToolsAgentHost::Activate() {
-  return false;
-}
-
-bool EmbeddedWorkerDevToolsAgentHost::Close() {
-  if (shared_worker_) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-        base::Bind(&TerminateSharedWorkerOnIO, worker_id_));
-    return true;
-  }
-  if (service_worker_) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-        base::Bind(&TerminateServiceWorkerOnIO,
-                   service_worker_->context_weak(),
-                   service_worker_->version_id()));
-    return true;
-  }
-  return false;
+BrowserContext* EmbeddedWorkerDevToolsAgentHost::GetBrowserContext() {
+  RenderProcessHost* rph = RenderProcessHost::FromID(worker_id_.first);
+  return rph ? rph->GetBrowserContext() : nullptr;
 }
 
 void EmbeddedWorkerDevToolsAgentHost::SendMessageToAgent(
@@ -135,13 +41,6 @@ void EmbeddedWorkerDevToolsAgentHost::Attach() {
 
 void EmbeddedWorkerDevToolsAgentHost::OnClientAttached() {
   DevToolsAgentHostImpl::NotifyCallbacks(this, true);
-  if (service_worker_) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-        base::Bind(&SetDevToolsAttachedOnIO,
-                   service_worker_->context_weak(),
-                   service_worker_->version_id(),
-                   true));
-  }
 }
 
 void EmbeddedWorkerDevToolsAgentHost::OnClientDetached() {
@@ -152,13 +51,6 @@ void EmbeddedWorkerDevToolsAgentHost::OnClientDetached() {
     state_ = WORKER_UNINSPECTED;
   }
   DevToolsAgentHostImpl::NotifyCallbacks(this, false);
-  if (service_worker_) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-        base::Bind(&SetDevToolsAttachedOnIO,
-                   service_worker_->context_weak(),
-                   service_worker_->version_id(),
-                   false));
-  }
 }
 
 bool EmbeddedWorkerDevToolsAgentHost::OnMessageReceived(
@@ -208,21 +100,28 @@ void EmbeddedWorkerDevToolsAgentHost::WorkerDestroyed() {
     DetachFromWorker();
   }
   state_ = WORKER_TERMINATED;
-  Release();  // Balanced in WorkerCreated()
-}
-
-bool EmbeddedWorkerDevToolsAgentHost::Matches(
-    const SharedWorkerInstance& other) {
-  return shared_worker_ && shared_worker_->Matches(other);
-}
-
-bool EmbeddedWorkerDevToolsAgentHost::Matches(
-    const ServiceWorkerIdentifier& other) {
-  return service_worker_ && service_worker_->Matches(other);
+  Release();  // Balanced in WorkerCreated().
 }
 
 bool EmbeddedWorkerDevToolsAgentHost::IsTerminated() {
   return state_ == WORKER_TERMINATED;
+}
+
+bool EmbeddedWorkerDevToolsAgentHost::Matches(
+    const SharedWorkerInstance& other) {
+  return false;
+}
+
+bool EmbeddedWorkerDevToolsAgentHost::Matches(
+    const ServiceWorkerIdentifier& other) {
+  return false;
+}
+
+EmbeddedWorkerDevToolsAgentHost::EmbeddedWorkerDevToolsAgentHost(
+    WorkerId worker_id)
+    : state_(WORKER_UNINSPECTED),
+      worker_id_(worker_id) {
+  WorkerCreated();
 }
 
 EmbeddedWorkerDevToolsAgentHost::~EmbeddedWorkerDevToolsAgentHost() {
@@ -252,11 +151,6 @@ void EmbeddedWorkerDevToolsAgentHost::OnDispatchOnInspectorFrontend(
     return;
 
   ProcessChunkedMessageFromAgent(message, total_size);
-}
-
-BrowserContext* EmbeddedWorkerDevToolsAgentHost::GetBrowserContext() {
-  RenderProcessHost* rph = RenderProcessHost::FromID(worker_id_.first);
-  return rph ? rph->GetBrowserContext() : nullptr;
 }
 
 void EmbeddedWorkerDevToolsAgentHost::OnSaveAgentRuntimeState(
