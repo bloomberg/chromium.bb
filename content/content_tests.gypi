@@ -1257,7 +1257,6 @@
             'browser/frame_host/frame_tree_browsertest.cc',
             'browser/frame_host/render_frame_host_manager_browsertest.cc',
             'browser/frame_host/navigation_controller_impl_browsertest.cc',
-            'browser/gpu/compositor_util_browsertest.cc',
             'browser/gpu/gpu_ipc_browsertests.cc',
             'browser/indexed_db/indexed_db_browsertest.cc',
             'browser/indexed_db/mock_browsertest_indexed_db_class_factory.cc',
