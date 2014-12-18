@@ -353,27 +353,15 @@ bool PictureLayerTilingSet::UpdateTilePriorities(
     double current_frame_time_in_seconds,
     const Occlusion& occlusion_in_layer_space,
     bool can_require_tiles_for_activation) {
-  bool tiling_needs_update = false;
-  // TODO(vmpstr): Check if we have to early out here, or if we can just do it
-  // as part of computing tile priority rects for tilings.
-  for (auto* tiling : tilings_) {
-    if (tiling->NeedsUpdateForFrameAtTimeAndViewport(
-            current_frame_time_in_seconds, required_rect_in_layer_space)) {
-      tiling_needs_update = true;
-      break;
-    }
-  }
-  if (!tiling_needs_update)
-    return false;
-
+  bool updated = false;
   for (auto* tiling : tilings_) {
     tiling->set_can_require_tiles_for_activation(
         can_require_tiles_for_activation);
-    tiling->ComputeTilePriorityRects(
+    updated |= tiling->ComputeTilePriorityRects(
         required_rect_in_layer_space, ideal_contents_scale,
         current_frame_time_in_seconds, occlusion_in_layer_space);
   }
-  return true;
+  return updated;
 }
 
 void PictureLayerTilingSet::GetAllTilesForTracing(

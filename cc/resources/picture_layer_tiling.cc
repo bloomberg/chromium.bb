@@ -581,7 +581,7 @@ gfx::Rect PictureLayerTiling::ComputeSkewport(
   return skewport;
 }
 
-void PictureLayerTiling::ComputeTilePriorityRects(
+bool PictureLayerTiling::ComputeTilePriorityRects(
     const gfx::Rect& viewport_in_layer_space,
     float ideal_contents_scale,
     double current_frame_time_in_seconds,
@@ -590,7 +590,7 @@ void PictureLayerTiling::ComputeTilePriorityRects(
                                             viewport_in_layer_space)) {
     // This should never be zero for the purposes of has_ever_been_updated().
     DCHECK_NE(current_frame_time_in_seconds, 0.0);
-    return;
+    return false;
   }
 
   gfx::Rect visible_rect_in_content_space =
@@ -600,7 +600,7 @@ void PictureLayerTiling::ComputeTilePriorityRects(
     last_impl_frame_time_in_seconds_ = current_frame_time_in_seconds;
     last_viewport_in_layer_space_ = viewport_in_layer_space;
     last_visible_rect_in_content_space_ = visible_rect_in_content_space;
-    return;
+    return false;
   }
 
   // Calculate the skewport.
@@ -638,6 +638,7 @@ void PictureLayerTiling::ComputeTilePriorityRects(
   UpdateTilePriorityRects(
       content_to_screen_scale, visible_rect_in_content_space, skewport,
       soon_border_rect, eventually_rect, occlusion_in_layer_space);
+  return true;
 }
 
 void PictureLayerTiling::UpdateTilePriorityRects(

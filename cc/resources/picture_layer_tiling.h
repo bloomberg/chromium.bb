@@ -236,17 +236,10 @@ class CC_EXPORT PictureLayerTiling {
 
   void Reset();
 
-  void ComputeTilePriorityRects(const gfx::Rect& viewport_in_layer_space,
+  bool ComputeTilePriorityRects(const gfx::Rect& viewport_in_layer_space,
                                 float ideal_contents_scale,
                                 double current_frame_time_in_seconds,
                                 const Occlusion& occlusion_in_layer_space);
-
-  bool NeedsUpdateForFrameAtTimeAndViewport(
-      double frame_time_in_seconds,
-      const gfx::Rect& viewport_in_layer_space) {
-    return frame_time_in_seconds != last_impl_frame_time_in_seconds_ ||
-           viewport_in_layer_space != last_viewport_in_layer_space_;
-  }
 
   void GetAllTilesForTracing(std::set<const Tile*>* tiles) const;
   void AsValueInto(base::debug::TracedValue* array) const;
@@ -313,6 +306,12 @@ class CC_EXPORT PictureLayerTiling {
 
   void UpdateTileAndTwinPriority(Tile* tile) const;
   void UpdateTilePriority(Tile* tile) const;
+  bool NeedsUpdateForFrameAtTimeAndViewport(
+      double frame_time_in_seconds,
+      const gfx::Rect& viewport_in_layer_space) {
+    return frame_time_in_seconds != last_impl_frame_time_in_seconds_ ||
+           viewport_in_layer_space != last_viewport_in_layer_space_;
+  }
 
   const size_t max_tiles_for_interest_area_;
   const float skewport_target_time_in_seconds_;
