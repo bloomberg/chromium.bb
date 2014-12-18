@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "9.14",
+  "version": "9.15",
   "entries": [
     {
       "id": 1,
@@ -808,15 +808,14 @@ LONG_STRING_CONST(
     {
       "id": 78,
       "description": "Accelerated video decode interferes with GPU sandbox on older Intel drivers",
-      "cr_bugs": [180695],
+      "cr_bugs": [180695, 298968, 436968],
       "os": {
         "type": "win"
       },
       "vendor_id": "0x8086",
       "driver_version": {
-        "op": "between",
-        "value": "8.15.10.1883",
-        "value2": "8.15.10.2702"
+        "op": "<=",
+        "value": "8.15.10.2702"
       },
       "features": [
         "accelerated_video_decode"
