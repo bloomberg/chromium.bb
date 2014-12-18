@@ -51,6 +51,7 @@ public:
     void trace(Visitor*);
 
     TreeScope& treeScope() const { return *m_treeScope; }
+    Node& rootNode() const { return *m_rootNode; }
 
     EventTarget* target() const { return m_target.get(); }
     void setTarget(PassRefPtrWillBeRawPtr<EventTarget>);
@@ -78,6 +79,7 @@ private:
 #endif
 
     RawPtrWillBeMember<TreeScope> m_treeScope;
+    RefPtrWillBeMember<Node> m_rootNode; // Prevents TreeScope from being freed. TreeScope itself isn't RefCounted.
     RefPtrWillBeMember<EventTarget> m_target;
     RefPtrWillBeMember<EventTarget> m_relatedTarget;
     RefPtrWillBeMember<StaticNodeList> m_eventPath;

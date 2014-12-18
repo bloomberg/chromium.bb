@@ -42,8 +42,8 @@ PassRefPtrWillBeRawPtr<StaticNodeList> TreeScopeEventContext::ensureEventPath(Ev
     WillBeHeapVector<RefPtrWillBeMember<Node>> nodes;
     nodes.reserveInitialCapacity(path.size());
     for (size_t i = 0; i < path.size(); ++i) {
-        TreeScope& treeScope = path[i].treeScopeEventContext().treeScope();
-        if (treeScope.rootNode().isShadowRoot() && toShadowRoot(treeScope).type() == ShadowRoot::AuthorShadowRoot)
+        Node& rootNode = path[i].treeScopeEventContext().rootNode();
+        if (rootNode.isShadowRoot() && toShadowRoot(rootNode).type() == ShadowRoot::AuthorShadowRoot)
             nodes.append(path[i].node());
         else if (path[i].treeScopeEventContext().isInclusiveAncestorOf(*this))
             nodes.append(path[i].node());
@@ -66,6 +66,7 @@ PassRefPtrWillBeRawPtr<TreeScopeEventContext> TreeScopeEventContext::create(Tree
 
 TreeScopeEventContext::TreeScopeEventContext(TreeScope& treeScope)
     : m_treeScope(treeScope)
+    , m_rootNode(treeScope.rootNode())
     , m_preOrder(-1)
     , m_postOrder(-1)
 {
@@ -76,6 +77,7 @@ DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(TreeScopeEventContext)
 void TreeScopeEventContext::trace(Visitor* visitor)
 {
     visitor->trace(m_treeScope);
+    visitor->trace(m_rootNode);
     visitor->trace(m_target);
     visitor->trace(m_relatedTarget);
     visitor->trace(m_eventPath);
