@@ -5,11 +5,7 @@
 import argparse
 import os
 import sys
-
-from distutils import sysconfig
-from distutils.command import build_ext
-from distutils.dist import Distribution
-from distutils.extension import Extension
+import sysconfig
 
 def main():
   """Command line utility to retrieve compilation options for python modules'
@@ -24,21 +20,22 @@ def main():
                       action='store_true')
   opts = parser.parse_args()
 
-  ext = Extension('Dummy', [])
-  b = build_ext.build_ext(Distribution())
-  b.initialize_options()
-  b.finalize_options()
   result = []
+
   if opts.libraries:
-    libraries = b.get_libraries(ext)
-    if sys.platform == 'darwin':
-      libraries.append('python%s' % sys.version[:3])
-    result.extend(libraries)
+    python_lib = sysconfig.get_config_var('LDLIBRARY')
+    if python_lib.endswith(".so"):
+      python_lib = python_lib[:-3]
+    if python_lib.startswith("lib"):
+      python_lib = python_lib[3:]
+
+    result.append(python_lib)
+
   if opts.includes:
-    result = result  + b.include_dirs
+    result.append(sysconfig.get_config_var('INCLUDEPY'))
+
   if opts.library_dirs:
-    if sys.platform == 'darwin':
-      result.append('%s/lib' % sysconfig.get_config_vars('prefix')[0])
+    result.append(sysconfig.get_config_var('BINLIBDEST'))
 
   for x in result:
     print x
