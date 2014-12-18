@@ -99,10 +99,9 @@ void URLCollectionFeedbackSender::SendFeedback() {
 
 void RecordURLsCollectionExperimentStatistics(
     content::WebContents* web_contents) {
+  DCHECK(web_contents);
   Profile* profile = GetProfileFromWebContents(web_contents);
-  if (!profile)
-    return;
-  password_manager::urls_collection_experiment::RecordBubbleClosed(
+  password_manager::urls_collection_experiment::RecordBubbleOpened(
       profile->GetPrefs());
 }
 
@@ -177,6 +176,8 @@ void ManagePasswordsBubbleModel::OnBubbleShown(
       display_disposition_ = metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING;
     }
   }
+  if (password_manager::ui::IsAskSubmitURLState(state_))
+    RecordURLsCollectionExperimentStatistics(web_contents());
   metrics_util::LogUIDisplayDisposition(display_disposition_);
 
   // Default to a dismissal reason of "no interaction". If the user interacts
@@ -204,7 +205,6 @@ void ManagePasswordsBubbleModel::OnBubbleHidden() {
 
   if (password_manager::ui::IsAskSubmitURLState(state_)) {
     state_ = password_manager::ui::ASK_USER_REPORT_URL_BUBBLE_SHOWN_STATE;
-    RecordURLsCollectionExperimentStatistics(web_contents());
   }
   metrics_util::LogUIDismissalReason(dismissal_reason_);
   // Other use cases have been reported in the callbacks like OnSaveClicked().

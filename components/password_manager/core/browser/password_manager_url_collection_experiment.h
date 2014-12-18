@@ -28,9 +28,10 @@ base::Time DetermineStartOfActivityPeriod(PrefService* prefs,
 // "Allow to collect URL?" bubble and should be called before showing it.
 // The default value is false.
 bool ShouldShowBubble(PrefService* prefs);
-// Should be called when user dismisses the "Allow to collect URL?" bubble.
-// It stores the statistics about interactions with the bubble in |prefs|.
-void RecordBubbleClosed(PrefService* prefs);
+
+// Should be called when the "Allow to collect URL?" bubble was shown.
+// It stores the fact that bubble was shown in |prefs|.
+void RecordBubbleOpened(PrefService* prefs);
 
 // The name of the finch experiment controlling the algorithm.
 extern const char kExperimentName[];

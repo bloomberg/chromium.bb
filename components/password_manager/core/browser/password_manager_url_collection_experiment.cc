@@ -105,7 +105,7 @@ bool ShouldShowBubble(PrefService* prefs) {
   return ShouldShowBubbleWithClock(prefs, &clock);
 }
 
-void RecordBubbleClosed(PrefService* prefs) {
+void RecordBubbleOpened(PrefService* prefs) {
   prefs->SetBoolean(password_manager::prefs::kAllowToCollectURLBubbleWasShown,
                     true);
 }

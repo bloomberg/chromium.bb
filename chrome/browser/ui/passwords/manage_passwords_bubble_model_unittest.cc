@@ -11,6 +11,8 @@
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_url_collection_experiment.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
@@ -36,9 +38,15 @@ class ManagePasswordsBubbleModelTest : public testing::Test {
 
   void TearDown() override { model_.reset(); }
 
+  PrefService* prefs() { return profile_.GetPrefs(); }
+
   void PretendNeedToAskUserToSubmitURL() {
     model_->set_state(password_manager::ui::ASK_USER_REPORT_URL_STATE);
+    EXPECT_FALSE(prefs()->GetBoolean(
+        password_manager::prefs::kAllowToCollectURLBubbleWasShown));
     model_->OnBubbleShown(ManagePasswordsBubble::AUTOMATIC);
+    EXPECT_TRUE(prefs()->GetBoolean(
+        password_manager::prefs::kAllowToCollectURLBubbleWasShown));
     controller()->SetState(
         password_manager::ui::ASK_USER_REPORT_URL_BUBBLE_SHOWN_STATE);
   }
