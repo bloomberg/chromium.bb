@@ -41533,6 +41533,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="WebsiteSettings.PermissionChanged" enum="ContentType">
+  <obsolete>
+    Deprecated 12/2014 in Issue 433776, and replaced by
+    WebsiteSettings.OriginInfo.PermissionChanged.
+  </obsolete>
   <owner>lgarron@chromium.org</owner>
   <owner>sashab@chromium.org</owner>
   <summary>
