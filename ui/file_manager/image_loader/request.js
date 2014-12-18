@@ -148,6 +148,12 @@ Request.prototype.downloadAndProcess = function(callback) {
 Request.prototype.loadFromCache_ = function(onSuccess, onFailure) {
   var cacheKey = Cache.createKey(this.request_);
 
+  if (!cacheKey) {
+    // Cache key is not provided for the request.
+    onFailure();
+    return;
+  }
+
   if (!this.request_.cache) {
     // Cache is disabled for this request; therefore, remove it from cache
     // if existed.
@@ -181,6 +187,11 @@ Request.prototype.saveToCache_ = function(data) {
   }
 
   var cacheKey = Cache.createKey(this.request_);
+  if (!cacheKey) {
+    // Cache key is not provided for the request.
+    return;
+  }
+
   this.cache_.saveImage(cacheKey,
                         data,
                         this.request_.timestamp);

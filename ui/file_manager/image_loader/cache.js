@@ -50,9 +50,12 @@ Cache.EVICTION_CHUNK_SIZE = 50 * 1024 * 1024;  // 50 MB.
  * Creates a cache key.
  *
  * @param {Object} request Request options.
- * @return {string} Cache key.
+ * @return {?string} Cache key. It may be null if the cache does not support
+ *     |request|. e.g. Data URI.
  */
 Cache.createKey = function(request) {
+  if (/^data:/i.test(request.url))
+    return null;
   return JSON.stringify({
     url: request.url,
     scale: request.scale,

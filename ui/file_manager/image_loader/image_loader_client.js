@@ -229,7 +229,7 @@ ImageLoaderClient.CACHE_MEMORY_LIMIT = 20 * 1024 * 1024;  // 20 MB.
  *     caches for the URL. (e.g. Data URL)
  */
 ImageLoaderClient.createKey = function(url, opt_options) {
-  if (/^data:/.test(url))
+  if (/^data:/i.test(url))
     return null;
   opt_options = opt_options || {};
   return JSON.stringify({
