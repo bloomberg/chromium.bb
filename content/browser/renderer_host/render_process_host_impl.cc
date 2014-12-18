@@ -157,6 +157,7 @@
 #if defined(OS_ANDROID)
 #include "content/browser/android/child_process_launcher_android.h"
 #include "content/browser/media/android/browser_demuxer_android.h"
+#include "content/browser/mojo/service_registrar_android.h"
 #include "content/browser/screen_orientation/screen_orientation_message_filter_android.h"
 #endif
 
@@ -903,6 +904,11 @@ void RenderProcessHostImpl::RegisterMojoServices() {
   mojo_application_host_->service_registry()->AddService(
       base::Bind(&PermissionServiceContext::CreateService,
                  base::Unretained(permission_service_context_.get())));
+
+#if defined(OS_ANDROID)
+  ServiceRegistrarAndroid::RegisterProcessHostServices(
+      mojo_application_host_->service_registry_android());
+#endif
 
   GetContentClient()->browser()->OverrideRenderProcessMojoServices(
       mojo_application_host_->service_registry());

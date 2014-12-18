@@ -57,10 +57,8 @@ static jobject CreateServiceRegistryPair(JNIEnv* env,
       new ServiceRegistryAndroid(registry_b);
   test_environment->wrappers.push_back(wrapper_b);
 
-  return Java_ShellMojoTestUtils_makePair(env,
-                                          wrapper_a->GetObjForTesting().obj(),
-                                          wrapper_b->GetObjForTesting().obj())
-      .Release();
+  return Java_ShellMojoTestUtils_makePair(env, wrapper_a->GetObj().obj(),
+                                          wrapper_b->GetObj().obj()).Release();
 }
 
 static void RunLoop(JNIEnv* env, jclass jcaller, jlong timeout_ms) {

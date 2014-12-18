@@ -20,6 +20,35 @@
       ],
     },
     {
+      # This is needed only for a build within Android tree. TODO(ppi): remove
+      # when Android tree build is deprecated.
+      'target_name': 'device_battery_mojo_bindings_for_webview',
+      'type': 'none',
+      'dependencies': [
+        'device_battery_mojo_bindings',
+      ],
+      'actions': [
+        {
+          # Dummy action that triggers the bindings generation and explicitly
+          # declares the java outputs, so that they are discoverable to make.
+          'action_name': 'device_battery_mojo_bindings_dummy_action',
+          'inputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/device/battery/battery_monitor.mojom.h',
+            '<(SHARED_INTERMEDIATE_DIR)/device/battery/battery_status.mojom.h',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/java_mojo/device_battery_mojo_bindings/src/org/chromium/mojom/device/BatteryMonitor.java',
+            '<(SHARED_INTERMEDIATE_DIR)/java_mojo/device_battery_mojo_bindings/src/org/chromium/mojom/device/BatteryMonitor_Internal.java',
+            '<(SHARED_INTERMEDIATE_DIR)/java_mojo/device_battery_mojo_bindings/src/org/chromium/mojom/device/BatteryStatusObserver.java',
+            '<(SHARED_INTERMEDIATE_DIR)/java_mojo/device_battery_mojo_bindings/src/org/chromium/mojom/device/BatteryStatusObserver_Internal.java',
+            '<(SHARED_INTERMEDIATE_DIR)/java_mojo/device_battery_mojo_bindings/src/org/chromium/mojom/device/BatteryStatus.java',
+          ],
+          'action': ['touch', '<@(_outputs)'],
+        },
+      ],
+      'hard_dependency': 1,
+    },
+    {
       # GN version: //device/battery
       'target_name': 'device_battery',
       'type': '<(component)',
@@ -35,12 +64,8 @@
         'DEVICE_BATTERY_IMPLEMENTATION',
       ],
       'sources': [
-        'android/battery_jni_registrar.cc',
-        'android/battery_jni_registrar.h',
         'battery_monitor_impl.cc',
         'battery_monitor_impl.h',
-        'battery_status_manager_android.cc',
-        'battery_status_manager_android.h',
         'battery_status_manager_chromeos.cc',
         'battery_status_manager_default.cc',
         'battery_status_manager_linux.cc',
@@ -53,14 +78,6 @@
         'battery_status_service.h',
       ],
       'conditions': [
-        ['OS == "android"', {
-          'dependencies': [
-            'device_battery_jni_headers',
-          ],
-          'sources!': [
-            'battery_status_manager_default.cc',
-          ],
-        }],
         ['chromeos==1', {
           'dependencies': [
             '../../build/linux/system.gyp:dbus',
@@ -101,21 +118,12 @@
     ['OS == "android"', {
       'targets': [
         {
-          'target_name': 'device_battery_jni_headers',
-          'type': 'none',
-          'sources': [
-            'android/java/src/org/chromium/device/battery/BatteryStatusManager.java',
-          ],
-          'variables': {
-            'jni_gen_package': 'device_battery',
-          },
-          'includes': [ '../../build/jni_generator.gypi' ],
-        },
-        {
           'target_name': 'device_battery_java',
           'type': 'none',
           'dependencies': [
             '../../base/base.gyp:base',
+            '../../mojo/mojo_public.gyp:mojo_bindings_java',
+            'device_battery_mojo_bindings',
           ],
           'variables': {
             'java_in_dir': '../../device/battery/android/java',

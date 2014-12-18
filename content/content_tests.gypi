@@ -1381,6 +1381,9 @@
               'sources': [
                 'shell/android/browsertests_apk/content_browser_tests_android.cc',
               ],
+              'sources!': [
+                'browser/battery_status/battery_monitor_impl_browsertest.cc',
+              ],
               'dependencies': [
                 'content_shell_jni_headers',
                 'content_shell_lib',

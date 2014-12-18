@@ -4,25 +4,49 @@
 
 package org.chromium.device.battery;
 
-import android.content.Context;
 import android.content.Intent;
-
 import android.os.BatteryManager;
-
 import android.test.AndroidTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
+
+import org.chromium.mojom.device.BatteryStatus;
 
 /**
  * Test suite for BatteryStatusManager.
  */
 public class BatteryStatusManagerTest extends AndroidTestCase {
+    // Values reported in the most recent callback from |mManager|.
+    private boolean mCharging = false;
+    private double mChargingTime = 0;
+    private double mDischargingTime = 0;
+    private double mLevel = 0;
 
-    private BatteryStatusManagerForTests mBatteryStatusManager;
+    private BatteryStatusManager.BatteryStatusCallback mCallback =
+            new BatteryStatusManager.BatteryStatusCallback() {
+        @Override
+        public void onBatteryStatusChanged(BatteryStatus batteryStatus) {
+            mCharging = batteryStatus.charging;
+            mChargingTime = batteryStatus.chargingTime;
+            mDischargingTime = batteryStatus.dischargingTime;
+            mLevel = batteryStatus.level;
+        }
+    };
+
+    private BatteryStatusManager mManager;
+
+    private void verifyValues(
+            boolean charging, double chargingTime, double dischargingTime, double level) {
+        assertEquals(charging, mCharging);
+        assertEquals(chargingTime, mChargingTime);
+        assertEquals(dischargingTime, mDischargingTime);
+        assertEquals(level, mLevel);
+    }
 
     @Override
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         super.setUp();
-        mBatteryStatusManager = BatteryStatusManagerForTests.getInstance(getContext());
+        mManager =
+                BatteryStatusManager.createBatteryStatusManagerForTesting(getContext(), mCallback);
     }
 
     @SmallTest
@@ -34,11 +58,8 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
         intent.putExtra(BatteryManager.EXTRA_SCALE, 100);
         intent.putExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_NOT_CHARGING);
 
-        mBatteryStatusManager.onReceive(intent);
-
-        mBatteryStatusManager.verifyCalls("gotBatteryStatus");
-        mBatteryStatusManager.verifyValues(false, Double.POSITIVE_INFINITY,
-                Double.POSITIVE_INFINITY, 0.1);
+        mManager.onReceive(intent);
+        verifyValues(false, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, 0.1);
     }
 
     @SmallTest
@@ -50,11 +71,8 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
         intent.putExtra(BatteryManager.EXTRA_SCALE, 100);
         intent.putExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_CHARGING);
 
-        mBatteryStatusManager.onReceive(intent);
-
-        mBatteryStatusManager.verifyCalls("gotBatteryStatus");
-        mBatteryStatusManager.verifyValues(true, Double.POSITIVE_INFINITY,
-                Double.POSITIVE_INFINITY, 0.5);
+        mManager.onReceive(intent);
+        verifyValues(true, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, 0.5);
     }
 
     @SmallTest
@@ -66,11 +84,8 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
         intent.putExtra(BatteryManager.EXTRA_SCALE, 100);
         intent.putExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_NOT_CHARGING);
 
-        mBatteryStatusManager.onReceive(intent);
-
-        mBatteryStatusManager.verifyCalls("gotBatteryStatus");
-        mBatteryStatusManager.verifyValues(true, Double.POSITIVE_INFINITY,
-                Double.POSITIVE_INFINITY, 0.5);
+        mManager.onReceive(intent);
+        verifyValues(true, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, 0.5);
     }
 
     @SmallTest
@@ -82,10 +97,8 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
         intent.putExtra(BatteryManager.EXTRA_SCALE, 100);
         intent.putExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_FULL);
 
-        mBatteryStatusManager.onReceive(intent);
-
-        mBatteryStatusManager.verifyCalls("gotBatteryStatus");
-        mBatteryStatusManager.verifyValues(true, 0, Double.POSITIVE_INFINITY, 1);
+        mManager.onReceive(intent);
+        verifyValues(true, 0, Double.POSITIVE_INFINITY, 1);
     }
 
     @SmallTest
@@ -94,10 +107,8 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
         intent.putExtra(BatteryManager.EXTRA_PRESENT, false);
         intent.putExtra(BatteryManager.EXTRA_PLUGGED, BatteryManager.BATTERY_PLUGGED_USB);
 
-        mBatteryStatusManager.onReceive(intent);
-
-        mBatteryStatusManager.verifyCalls("gotBatteryStatus");
-        mBatteryStatusManager.verifyValues(true, 0, Double.POSITIVE_INFINITY, 1);
+        mManager.onReceive(intent);
+        verifyValues(true, 0, Double.POSITIVE_INFINITY, 1);
     }
 
     @SmallTest
@@ -105,62 +116,13 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
         Intent intent = new Intent(Intent.ACTION_BATTERY_CHANGED);
         intent.putExtra(BatteryManager.EXTRA_PRESENT, true);
 
-        mBatteryStatusManager.onReceive(intent);
-
-        mBatteryStatusManager.verifyCalls("gotBatteryStatus");
-        mBatteryStatusManager.verifyValues(true, 0, Double.POSITIVE_INFINITY, 1);
+        mManager.onReceive(intent);
+        verifyValues(true, 0, Double.POSITIVE_INFINITY, 1);
     }
 
     @SmallTest
     public void testStartStopSucceeds() {
-        assertTrue(mBatteryStatusManager.start(0));
-        mBatteryStatusManager.stop();
+        assertTrue(mManager.start());
+        mManager.stop();
     }
-
-    // Helper class for testing.
-
-    private static class BatteryStatusManagerForTests extends BatteryStatusManager {
-
-        private boolean mCharging = false;
-        private double mChargingTime = 0;
-        private double mDischargingTime = 0;
-        private double mLevel = 0;
-        private String mCalls = "";
-
-        private BatteryStatusManagerForTests(Context context) {
-            super(context);
-        }
-
-        static BatteryStatusManagerForTests getInstance(Context context) {
-            return new BatteryStatusManagerForTests(context);
-        }
-
-        private void verifyValues(boolean charging, double chargingTime,
-                double dischargingTime, double level) {
-            assertEquals(charging, mCharging);
-            assertEquals(chargingTime, mChargingTime);
-            assertEquals(dischargingTime, mDischargingTime);
-            assertEquals(level, mLevel);
-        }
-
-        private void verifyCalls(String names) {
-            assertEquals(mCalls, names);
-        }
-
-        @Override
-        protected boolean ignoreBatteryPresentState() {
-            return false;
-        }
-
-        @Override
-        protected void gotBatteryStatus(boolean charging, double chargingTime,
-                double dischargingTime, double level) {
-            mCharging = charging;
-            mChargingTime = chargingTime;
-            mDischargingTime = dischargingTime;
-            mLevel = level;
-            mCalls = mCalls.concat("gotBatteryStatus");
-        }
-    }
-
 }

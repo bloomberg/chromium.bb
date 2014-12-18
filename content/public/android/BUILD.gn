@@ -32,6 +32,8 @@ android_library("content_java") {
   deps = [
     ":content_java_resources",
     "//base:base_java",
+    "//device/battery/android:battery_monitor_android",
+    "//device/battery:mojo_bindings_java",
     "//media/base/android:media_java",
     "//mojo/android:system_java",
     "//mojo/public/java:bindings",

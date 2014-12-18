@@ -937,6 +937,8 @@
       'browser/mime_registry_message_filter.h',
       'browser/mojo/mojo_application_host.cc',
       'browser/mojo/mojo_application_host.h',
+      'browser/mojo/service_registrar_android.cc',
+      'browser/mojo/service_registrar_android.h',
       'browser/mojo/service_registry_android.cc',
       'browser/mojo/service_registry_android.h',
       'browser/navigator_connect/navigator_connect_dispatcher_host.cc',

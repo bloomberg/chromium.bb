@@ -12,8 +12,6 @@ component("battery") {
     "battery_export.h",
     "battery_monitor_impl.cc",
     "battery_monitor_impl.h",
-    "battery_status_manager_android.cc",
-    "battery_status_manager_android.h",
     "battery_status_manager_chromeos.cc",
     "battery_status_manager_default.cc",
     "battery_status_manager_linux.cc",
@@ -35,15 +33,6 @@ component("battery") {
     "//mojo/public/cpp/bindings",
     "//mojo/edk/system",
   ]
-
-  if (is_android) {
-    deps += [ "//device/battery/android:battery_jni_headers" ]
-    sources += [
-      "android/battery_jni_registrar.h",
-      "android/battery_jni_registrar.cc",
-    ]
-    sources -= [ "battery_status_manager_default.cc" ]
-  }
 
   if (is_chromeos) {
     configs += [ "//build/config/linux:dbus" ]

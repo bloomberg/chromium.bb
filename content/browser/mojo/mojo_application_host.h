@@ -41,6 +41,12 @@ class CONTENT_EXPORT MojoApplicationHost {
 
   ServiceRegistry* service_registry() { return &service_registry_; }
 
+#if defined(OS_ANDROID)
+  ServiceRegistryAndroid* service_registry_android() {
+    return service_registry_android_.get();
+  }
+#endif
+
  private:
   mojo::embedder::ChannelInit channel_init_;
   mojo::embedder::ScopedPlatformHandle client_handle_;

@@ -37,9 +37,7 @@ class CONTENT_EXPORT ServiceRegistryAndroid {
                               jstring j_name,
                               jint handle);
 
-  const base::android::ScopedJavaGlobalRef<jobject>& GetObjForTesting() {
-    return obj_;
-  }
+  const base::android::ScopedJavaGlobalRef<jobject>& GetObj() { return obj_; }
 
  private:
   ServiceRegistryImpl* service_registry_;
