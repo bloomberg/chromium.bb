@@ -54,6 +54,8 @@ public:
     static RTCDataChannel* create(ExecutionContext*, RTCPeerConnection*, WebRTCPeerConnectionHandler*, const String& label, const WebRTCDataChannelInit&, ExceptionState&);
     virtual ~RTCDataChannel();
 
+    ReadyState getHandlerState() const;
+
     String label() const;
 
     // DEPRECATED
@@ -92,6 +94,12 @@ public:
     void clearWeakMembers(Visitor*);
     virtual void trace(Visitor*) override;
 
+    // WebRTCDataChannelHandlerClient
+    virtual void didChangeReadyState(WebRTCDataChannelHandlerClient::ReadyState) override;
+    virtual void didReceiveStringData(const WebString&) override;
+    virtual void didReceiveRawData(const char*, size_t) override;
+    virtual void didDetectError() override;
+
 private:
     RTCDataChannel(ExecutionContext*, RTCPeerConnection*, PassOwnPtr<WebRTCDataChannelHandler>);
 
@@ -99,12 +107,6 @@ private:
     void scheduledEventTimerFired(Timer<RTCDataChannel>*);
 
     ExecutionContext* m_executionContext;
-
-    // WebRTCDataChannelHandlerClient
-    virtual void didChangeReadyState(WebRTCDataChannelHandlerClient::ReadyState) override;
-    virtual void didReceiveStringData(const WebString&) override;
-    virtual void didReceiveRawData(const char*, size_t) override;
-    virtual void didDetectError() override;
 
     OwnPtr<WebRTCDataChannelHandler> m_handler;
 

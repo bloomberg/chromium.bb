@@ -27,11 +27,10 @@
 
 #include "WebCommon.h"
 #include "WebPrivatePtr.h"
+#include "WebRTCDataChannelHandlerClient.h"
 #include "WebString.h"
 
 namespace blink {
-
-class WebRTCDataChannelHandlerClient;
 
 class WebRTCDataChannelHandler {
 public:
@@ -51,6 +50,7 @@ public:
     virtual bool negotiated() const = 0;
     virtual unsigned short id() const = 0;
 
+    virtual WebRTCDataChannelHandlerClient::ReadyState state() const = 0;
     virtual unsigned long bufferedAmount() = 0;
     virtual bool sendStringData(const WebString&) = 0;
     virtual bool sendRawData(const char*, size_t) = 0;

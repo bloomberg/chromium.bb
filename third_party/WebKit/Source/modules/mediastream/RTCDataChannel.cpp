@@ -89,6 +89,11 @@ RTCDataChannel::~RTCDataChannel()
         m_handler->setClient(0);
 }
 
+RTCDataChannel::ReadyState RTCDataChannel::getHandlerState() const
+{
+    return m_handler->state();
+}
+
 String RTCDataChannel::label() const
 {
     return m_handler->label();

@@ -567,6 +567,11 @@ RTCDataChannel* RTCPeerConnection::createDataChannel(String label, const Diction
     if (exceptionState.hadException())
         return nullptr;
     m_dataChannels.append(channel);
+    RTCDataChannel::ReadyState handlerState = channel->getHandlerState();
+    if (handlerState != RTCDataChannel::ReadyStateConnecting) {
+        // There was an early state transition.  Don't miss it!
+        channel->didChangeReadyState(handlerState);
+    }
     return channel;
 }
 
