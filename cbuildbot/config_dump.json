@@ -22281,6 +22281,7 @@
         "build_type": "paladin",
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue",
+        "important": true,
         "manifest_version": true,
         "name": "mipsel-o32-generic-paladin",
         "paladin_builder_name": "mipsel-o32-generic paladin",

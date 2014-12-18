@@ -1954,6 +1954,7 @@ _paladin_important_boards = frozenset([
   'leon',
   'link',
   'lumpy',
+  'mipsel-o32-generic',
   'monroe',
   'nyan',
   'panther',
