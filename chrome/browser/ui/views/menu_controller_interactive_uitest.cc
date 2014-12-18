@@ -23,7 +23,7 @@ class MenuControllerMnemonicTest : public MenuTestBase {
     menu->AppendMenuItemWithLabel(2, base::ASCIIToUTF16("Two"));
   }
 
-  virtual void DoTestWithMenuOpen() {
+  void DoTestWithMenuOpen() override {
     ASSERT_TRUE(menu()->GetSubmenu()->IsShowing());
     KeyPress(KEYCODE,
              CreateEventTask(this, &MenuControllerMnemonicTest::Step2));

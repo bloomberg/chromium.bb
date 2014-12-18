@@ -120,7 +120,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
 
   virtual void Close() override { device_ = NULL; }
 
-  bool ClaimInterface(int interface_number) {
+  bool ClaimInterface(int interface_number) override {
     if (device_->claimed_interfaces_.find(interface_number) !=
         device_->claimed_interfaces_.end())
       return false;
@@ -129,7 +129,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
     return true;
   }
 
-  bool ReleaseInterface(int interface_number) {
+  bool ReleaseInterface(int interface_number) override {
     if (device_->claimed_interfaces_.find(interface_number) ==
         device_->claimed_interfaces_.end())
       return false;
@@ -144,7 +144,8 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
   }
 
   virtual bool ResetDevice() override { return true; }
-  virtual bool GetStringDescriptor(uint8_t string_id, base::string16* content) {
+  bool GetStringDescriptor(uint8_t string_id,
+                           base::string16* content) override {
     return false;
   }
 

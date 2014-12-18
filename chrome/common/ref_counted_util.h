@@ -20,6 +20,10 @@ class RefCountedVector
 
   std::vector<T> data;
 
+ private:
+  friend class base::RefCountedThreadSafe<RefCountedVector<T>>;
+  ~RefCountedVector() {}
+
   DISALLOW_COPY_AND_ASSIGN(RefCountedVector<T>);
 };
 
