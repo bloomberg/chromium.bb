@@ -44,8 +44,6 @@ class AudioManagerImpl final : public AudioManager {
   void StopRecording(AudioType type) override;
   void SetToken(AudioType type, const std::string& url_unsafe_token) override;
   const std::string GetToken(AudioType type) override;
-  bool IsRecording(AudioType type) override;
-  bool IsPlaying(AudioType type) override;
   bool IsPlayingTokenHeard(AudioType type) override;
 
   void set_player_for_testing(AudioType type, AudioPlayer* player) {
@@ -72,6 +70,8 @@ class AudioManagerImpl final : public AudioManager {
   // should already be in the samples cache.
   void UpdateToken(AudioType type, const std::string& token);
 
+  void RestartPlaying(AudioType type);
+
   WhispernetClient* whispernet_client_;
 
   // Callbacks to send tokens back to the CopresenceManager.
@@ -87,8 +87,8 @@ class AudioManagerImpl final : public AudioManager {
   static_assert(INAUDIBLE == 1, "AudioType::INAUDIBLE should be 1.");
 
   // Indexed using enum AudioType.
-  bool playing_[2];
-  bool recording_[2];
+  bool should_be_playing_[2];
+  bool should_be_recording_[2];
 
   // AudioPlayer and AudioRecorder objects are self-deleting. When we call
   // Finalize on them, they clean themselves up on the Audio thread.

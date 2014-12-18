@@ -23,17 +23,16 @@ class AudioPlayer {
   virtual void Initialize() = 0;
 
   // Play the given samples. These samples will keep on being played in a loop
-  // till we explicitly tell the player to stop playing.
+  // till we explicitly tell the player to stop playing. If we are already
+  // playing, this call will be ignored.
   virtual void Play(
       const scoped_refptr<media::AudioBusRefCounted>& samples) = 0;
 
-  // Stop playing.
+  // Stop playing. If we're already stopped, this call will be ignored.
   virtual void Stop() = 0;
 
   // Cleans up and deletes this object. Do not use object after this call.
   virtual void Finalize() = 0;
-
-  virtual bool IsPlaying() = 0;
 
  protected:
   virtual ~AudioPlayer() {}

@@ -85,10 +85,6 @@ void AudioRecorderImpl::Stop() {
                  base::Unretained(this)));
 }
 
-bool AudioRecorderImpl::IsRecording() {
-  return is_recording_;
-}
-
 void AudioRecorderImpl::Finalize() {
   media::AudioManager::Get()->GetTaskRunner()->PostTask(
       FROM_HERE,

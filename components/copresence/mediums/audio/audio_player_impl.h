@@ -33,7 +33,6 @@ class AudioPlayerImpl final
   void Play(const scoped_refptr<media::AudioBusRefCounted>& samples) override;
   void Stop() override;
   void Finalize() override;
-  bool IsPlaying() override;
 
   // Takes ownership of the stream.
   void set_output_stream_for_testing(

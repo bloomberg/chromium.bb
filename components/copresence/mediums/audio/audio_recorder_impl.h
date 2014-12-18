@@ -40,7 +40,6 @@ class AudioRecorderImpl final
   void Record() override;
   void Stop() override;
   void Finalize() override;
-  bool IsRecording() override;
 
   // Takes ownership of the stream.
   void set_input_stream_for_testing(

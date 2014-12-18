@@ -57,10 +57,6 @@ void AudioPlayerImpl::Stop() {
       base::Bind(&AudioPlayerImpl::StopOnAudioThread, base::Unretained(this)));
 }
 
-bool AudioPlayerImpl::IsPlaying() {
-  return is_playing_;
-}
-
 void AudioPlayerImpl::Finalize() {
   media::AudioManager::Get()->GetTaskRunner()->PostTask(
       FROM_HERE,
@@ -97,17 +93,13 @@ void AudioPlayerImpl::InitializeOnAudioThread() {
 void AudioPlayerImpl::PlayOnAudioThread(
     const scoped_refptr<media::AudioBusRefCounted>& samples) {
   DCHECK(media::AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
-  if (!stream_)
+  if (!stream_ || is_playing_)
     return;
 
   {
     base::AutoLock al(state_lock_);
-
     samples_ = samples;
     frame_index_ = 0;
-
-    if (is_playing_)
-      return;
   }
 
   VLOG(3) << "Starting playback.";
@@ -117,7 +109,7 @@ void AudioPlayerImpl::PlayOnAudioThread(
 
 void AudioPlayerImpl::StopOnAudioThread() {
   DCHECK(media::AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
-  if (!stream_)
+  if (!stream_ || !is_playing_)
     return;
 
   VLOG(3) << "Stopping playback.";
@@ -130,12 +122,9 @@ void AudioPlayerImpl::StopAndCloseOnAudioThread() {
   if (!stream_)
     return;
 
-  if (is_playing_)
-    stream_->Stop();
+  StopOnAudioThread();
   stream_->Close();
   stream_ = nullptr;
-
-  is_playing_ = false;
 }
 
 void AudioPlayerImpl::FinalizeOnAudioThread() {

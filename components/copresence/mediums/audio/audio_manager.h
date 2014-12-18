@@ -33,9 +33,6 @@ class AudioManager {
 
   virtual const std::string GetToken(AudioType type) = 0;
 
-  virtual bool IsRecording(AudioType type) = 0;
-  virtual bool IsPlaying(AudioType type) = 0;
-
   virtual bool IsPlayingTokenHeard(AudioType type) = 0;
 };
 

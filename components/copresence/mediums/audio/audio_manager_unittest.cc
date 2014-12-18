@@ -27,7 +27,8 @@ class AudioPlayerStub final : public AudioPlayer {
   }
   void Stop() override { is_playing_ = false; }
   void Finalize() override { delete this; }
-  bool IsPlaying() override { return is_playing_; }
+
+  bool IsPlaying() { return is_playing_; }
 
  private:
   bool is_playing_;
@@ -44,7 +45,8 @@ class AudioRecorderStub final : public AudioRecorder {
   void Record() override { is_recording_ = true; }
   void Stop() override { is_recording_ = false; }
   void Finalize() override { delete this; }
-  bool IsRecording() override { return is_recording_; }
+
+  bool IsRecording() { return is_recording_; }
 
   void TriggerDecodeRequest() {
     if (!cb_.is_null())
@@ -109,22 +111,6 @@ class AudioManagerTest : public testing::Test {
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioManagerTest);
 };
-
-TEST_F(AudioManagerTest, Basic) {
-  audio_manager_->StartPlaying(AUDIBLE);
-  EXPECT_TRUE(audio_manager_->IsPlaying(AUDIBLE));
-  EXPECT_FALSE(audio_manager_->IsPlaying(INAUDIBLE));
-
-  audio_manager_->StopPlaying(AUDIBLE);
-  EXPECT_FALSE(audio_manager_->IsPlaying(AUDIBLE));
-
-  audio_manager_->StartRecording(INAUDIBLE);
-  EXPECT_TRUE(audio_manager_->IsRecording(INAUDIBLE));
-  EXPECT_FALSE(audio_manager_->IsRecording(AUDIBLE));
-
-  audio_manager_->StopRecording(INAUDIBLE);
-  EXPECT_FALSE(audio_manager_->IsRecording(INAUDIBLE));
-}
 
 TEST_F(AudioManagerTest, EncodeToken) {
   audio_manager_->StartPlaying(AUDIBLE);
