@@ -426,13 +426,7 @@ void SingleThreadProxy::DidActivateSyncTree() {
     // the pending tree is not actually ready in the SingleThreadProxy.
     layer_tree_host_impl_->SetRequiresHighResToDraw();
 
-    // Since activation could cause tasks to run, post CommitComplete
-    // separately so that it runs after these tasks.  This is the loose
-    // equivalent of blocking commit until activation and also running
-    // all tasks posted during commit/activation before CommitComplete.
-    MainThreadTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(&SingleThreadProxy::CommitComplete,
-                              weak_factory_.GetWeakPtr()));
+    CommitComplete();
   }
 
   timing_history_.DidActivateSyncTree();
