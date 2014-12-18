@@ -80,7 +80,8 @@ def main():
     if os.path.exists(dll_path):
       print 'Tallying %s...' % dll_path
       json_path = dll_path + '.json'
-      Run(os.path.join(BASE_DIR, 'code_tally.exe'),
+      Run(os.path.join(BASE_DIR, '..', '..', '..', 'third_party', 'syzygy',
+                       'binaries', 'exe', 'experimental', 'code_tally.exe'),
           '--input-image=' + dll_path,
           '--input-pdb=' + dll_path + '.pdb',
           '--output-file=' + json_path)
