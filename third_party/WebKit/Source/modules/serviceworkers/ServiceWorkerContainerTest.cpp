@@ -241,15 +241,6 @@ TEST_F(ServiceWorkerContainerTest, Register_CrossOriginScopeIsRejected)
         ExpectDOMException("SecurityError", "The scope must match the current origin."));
 }
 
-TEST_F(ServiceWorkerContainerTest, Register_DifferentDirectoryThanScript)
-{
-    setPageURL("https://www.example.com/");
-    testRegisterRejected(
-        "https://www.example.com/js/worker.js",
-        "https://www.example.com/",
-        ExpectDOMException("SecurityError", "The scope must be under the directory of the script URL."));
-}
-
 TEST_F(ServiceWorkerContainerTest, GetRegistration_NonSecureOriginIsRejected)
 {
     setPageURL("http://www.example.com/");

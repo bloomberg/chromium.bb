@@ -184,4 +184,156 @@ promise_test(function(t) {
         'Registration of script importing non-existent script should fail.');
   }, 'Registering script importing non-existent script');
 
+promise_test(function(t) {
+    // URL-encoded full-width 'scope'.
+    var name = '%ef%bd%93%ef%bd%83%ef%bd%8f%ef%bd%90%ef%bd%85';
+    var script = 'resources/empty-worker.js';
+    var scope = 'resources/' + name + '/escaped-multibyte-character-scope';
+    return navigator.serviceWorker.register(script, {scope: scope})
+      .then(function(registration) {
+          assert_equals(
+            registration.scope,
+            normalizeURL(scope),
+            'URL-encoded multibyte characters should be available.');
+          service_worker_unregister_and_done(t, scope);
+        });
+  }, 'Scope including URL-encoded multibyte characters');
+
+promise_test(function(t) {
+    // Non-URL-encoded full-width "scope".
+    var name = String.fromCodePoint(0xff53, 0xff43, 0xff4f, 0xff50, 0xff45);
+    var script = 'resources/empty-worker.js';
+    var scope = 'resources/' + name  + '/non-escaped-multibyte-character-scope';
+    return navigator.serviceWorker.register(script, {scope: scope})
+      .then(function(registration) {
+          assert_equals(
+            registration.scope,
+            normalizeURL(scope),
+            'Non-URL-encoded multibyte characters should be available.');
+          service_worker_unregister_and_done(t, scope);
+        });
+  }, 'Scope including non-escaped multibyte characters');
+
+promise_test(function(t) {
+    var script = 'resources%2fempty-worker.js';
+    var scope = 'resources/scope/encoded-slash-in-script-url';
+    return assert_promise_rejects(
+        navigator.serviceWorker.register(script, {scope: scope}),
+        'SecurityError',
+        'URL-encoded slash in the script URL should be rejected.');
+  }, 'Script URL including URL-encoded slash');
+
+promise_test(function(t) {
+    var script = 'resources/empty-worker.js';
+    var scope = 'resources/scope%2fencoded-slash-in-scope';
+    return assert_promise_rejects(
+        navigator.serviceWorker.register(script, {scope: scope}),
+        'SecurityError',
+        'URL-encoded slash in the scope should be rejected.');
+  }, 'Scope including URL-encoded slash');
+
+promise_test(function(t) {
+    var script = 'resources%5cempty-worker.js';
+    var scope = 'resources/scope/encoded-slash-in-script-url';
+    return assert_promise_rejects(
+        navigator.serviceWorker.register(script, {scope: scope}),
+        'SecurityError',
+        'URL-encoded backslash in the script URL should be rejected.');
+  }, 'Script URL including URL-encoded backslash');
+
+promise_test(function(t) {
+    var script = 'resources/empty-worker.js';
+    var scope = 'resources/scope%5cencoded-slash-in-scope';
+    return assert_promise_rejects(
+        navigator.serviceWorker.register(script, {scope: scope}),
+        'SecurityError',
+        'URL-encoded backslash in the scope should be rejected.');
+  }, 'Scope including URL-encoded backslash');
+
+promise_test(function(t) {
+    var script = 'resources/././empty-worker.js';
+    var scope = 'resources/scope/parent-reference-in-script-url';
+    return navigator.serviceWorker.register(script, {scope: scope})
+      .then(function(registration) {
+          assert_equals(
+            registration.installing.scriptURL,
+            normalizeURL('resources/empty-worker.js'),
+            'Script URL including self-reference should be normalized.');
+          service_worker_unregister_and_done(t, scope);
+        });
+  }, 'Script URL including self-reference');
+
+promise_test(function(t) {
+    var script = 'resources/empty-worker.js';
+    var scope = 'resources/././scope/self-reference-in-scope';
+    return navigator.serviceWorker.register(script, {scope: scope})
+      .then(function(registration) {
+          assert_equals(
+            registration.scope,
+            normalizeURL('resources/scope/self-reference-in-scope'),
+            'Scope including self-reference should be normalized.');
+          service_worker_unregister_and_done(t, scope);
+        });
+  }, 'Scope including self-reference');
+
+promise_test(function(t) {
+    var script = 'resources/../resources/empty-worker.js';
+    var scope = 'resources/scope/parent-reference-in-script-url';
+    return navigator.serviceWorker.register(script, {scope: scope})
+      .then(function(registration) {
+          assert_equals(
+            registration.installing.scriptURL,
+            normalizeURL('resources/empty-worker.js'),
+            'Script URL including parent-reference should be normalized.');
+          service_worker_unregister_and_done(t, scope);
+        });
+  }, 'Script URL including parent-reference');
+
+promise_test(function(t) {
+    var script = 'resources/empty-worker.js';
+    var scope = 'resources/../resources/scope/parent-reference-in-scope';
+    return navigator.serviceWorker.register(script, {scope: scope})
+      .then(function(registration) {
+          assert_equals(
+            registration.scope,
+            normalizeURL('resources/scope/parent-reference-in-scope'),
+            'Scope including parent-reference should be normalized.');
+          service_worker_unregister_and_done(t, scope);
+        });
+  }, 'Scope including parent-reference');
+
+promise_test(function(t) {
+    var script = 'resources/empty-worker.js';
+    var scope = 'resources/../scope/parent-reference-in-scope';
+    return assert_promise_rejects(
+        navigator.serviceWorker.register(script, {scope: scope}),
+        'SecurityError',
+        'Scope not under the script directory should be rejected.');
+  }, 'Scope including parent-reference and not under the script directory');
+
+promise_test(function(t) {
+    var script = 'resources////empty-worker.js';
+    var scope = 'resources/scope/consecutive-slashes-in-script-url';
+    return assert_promise_rejects(
+        navigator.serviceWorker.register(script, {scope: scope}),
+        'SecurityError',
+        'Consecutive slashes in the script url should not be unified.');
+  }, 'Script URL including consecutive slashes');
+
+promise_test(function(t) {
+    var script = 'resources/empty-worker.js';
+    var scope = 'resources/scope////consecutive-slashes-in-scope';
+    return navigator.serviceWorker.register(script, {scope: scope})
+      .then(function(registration) {
+          // Although consecutive slashes in the scope are not unified, the
+          // scope is under the script directory and registration should
+          // succeed.
+          assert_equals(
+            registration.scope,
+            normalizeURL(scope),
+            'Should successfully be registered.');
+          service_worker_unregister_and_done(t, scope);
+        })
+  }, 'Scope including consecutive slashes');
+
 </script>
