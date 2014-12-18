@@ -1,6 +1,6 @@
 android.webkit.WebView focusable focused scrollable
-    android.widget.Button focusable
-    android.widget.ToggleButton checkable checked focusable
-    android.widget.ToggleButton checkable focusable
-    android.widget.Spinner focusable
-    android.widget.Button focusable
+    android.widget.Button clickable focusable
+    android.widget.ToggleButton checkable checked clickable focusable
+    android.widget.ToggleButton checkable clickable focusable
+    android.widget.Spinner clickable focusable
+    android.widget.Button clickable focusable

@@ -1,2 +1,2 @@
 android.webkit.WebView focusable focused scrollable
-    android.widget.EditText focusable range_current_value=5
+    android.widget.EditText clickable focusable range_current_value=5

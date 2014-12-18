@@ -137,7 +137,10 @@ bool BrowserAccessibilityAndroid::IsChecked() const {
 }
 
 bool BrowserAccessibilityAndroid::IsClickable() const {
-  return (PlatformIsLeaf() && !GetText().empty());
+  if (!PlatformIsLeaf())
+    return false;
+
+  return IsFocusable() || !GetText().empty();
 }
 
 bool BrowserAccessibilityAndroid::IsCollection() const {
