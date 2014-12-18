@@ -20,6 +20,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 #if defined(OS_WIN)
 #include "base/prefs/pref_registry_simple.h"
@@ -95,6 +96,16 @@ bool URLsEqualUpToHttpHttpsSubstitution(const GURL& a, const GURL& b) {
     return URLsEqualUpToScheme(a, b);
 
   return false;
+}
+
+// Helper UMA reporting function for differences in URLs during form submission.
+void RecordWhetherTargetDomainDiffers(const GURL& src, const GURL& target) {
+  bool target_domain_differs =
+      !net::registry_controlled_domains::SameDomainOrHost(
+          src, target,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  UMA_HISTOGRAM_BOOLEAN("PasswordManager.SubmitNavigatesToDifferentDomain",
+                        target_domain_differs);
 }
 
 }  // namespace
@@ -309,6 +320,11 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   }
   manager->ProvisionallySave(provisionally_saved_form, action);
   provisional_save_manager_.swap(manager);
+
+  // Cache the user-visible URL (i.e., the one seen in the omnibox). Once the
+  // post-submit navigation concludes, we compare the landing URL against the
+  // cached and report the difference through UMA.
+  main_frame_url_ = client_->GetMainFrameURL();
 }
 
 void PasswordManager::RecordFailure(ProvisionalSaveFailure failure,
@@ -573,6 +589,8 @@ void PasswordManager::AskUserOrSavePassword() {
     logger->LogMessage(Logger::STRING_ON_ASK_USER_OR_SAVE_PASSWORD);
   }
   provisional_save_manager_->SubmitPassed();
+
+  RecordWhetherTargetDomainDiffers(main_frame_url_, client_->GetMainFrameURL());
 
   if (ShouldPromptUserToSavePassword()) {
     if (logger)

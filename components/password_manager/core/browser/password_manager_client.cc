@@ -80,4 +80,8 @@ PasswordManagerClient::GetAutofillManagerForMainFrame() {
   return nullptr;
 }
 
+const GURL& PasswordManagerClient::GetMainFrameURL() {
+  return GURL::EmptyGURL();
+}
+
 }  // namespace password_manager

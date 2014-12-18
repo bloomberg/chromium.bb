@@ -23098,6 +23098,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.SubmitNavigatesToDifferentDomain"
+    enum="PostSubmitNavigation">
+  <owner>vabr@chromium.org</owner>
+  <summary>
+    Indicates whether submitting a password login form changes the registry
+    controlled domain of the main frame.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.SyncCredentialFiltered" enum="Boolean">
   <owner>gcasto@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
@@ -53296,6 +53305,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5" label="Verification failed"/>
   <int value="6" label="Connection failed"/>
   <int value="7" label="Overflow"/>
+</enum>
+
+<enum name="PostSubmitNavigation" type="int">
+  <int value="0" label="Same domain"/>
+  <int value="1" label="Different domain"/>
 </enum>
 
 <enum name="PowerBrightnessAdjust" type="int">

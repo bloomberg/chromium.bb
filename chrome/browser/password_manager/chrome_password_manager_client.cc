@@ -585,3 +585,7 @@ void ChromePasswordManagerClient::SetUpAutofillSyncState() {
     autofill_sync_state_ = ALLOW_SYNC_CREDENTIALS;
   }
 }
+
+const GURL& ChromePasswordManagerClient::GetMainFrameURL() {
+  return web_contents()->GetVisibleURL();
+}

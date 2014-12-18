@@ -209,6 +209,9 @@ class PasswordManager : public LoginModel {
   // (to see if the login was a failure), and clears the vector.
   std::vector<autofill::PasswordForm> all_visible_forms_;
 
+  // The user-visible URL from the last time a password was provisionally saved.
+  GURL main_frame_url_;
+
   DISALLOW_COPY_AND_ASSIGN(PasswordManager);
 };
 

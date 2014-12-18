@@ -160,6 +160,9 @@ class PasswordManagerClient {
   // Returns the AutofillManager for the main frame.
   virtual autofill::AutofillManager* GetAutofillManagerForMainFrame();
 
+  // Returns the main frame URL.
+  virtual const GURL& GetMainFrameURL();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);
 };
