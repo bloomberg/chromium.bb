@@ -865,7 +865,8 @@ class ParamDeserializer : public MessageReplyDeserializer {
  public:
   explicit ParamDeserializer(const RefTuple& out) : out_(out) { }
 
-  bool SerializeOutputParameters(const IPC::Message& msg, PickleIterator iter) {
+  bool SerializeOutputParameters(const IPC::Message& msg,
+                                 PickleIterator iter) override {
     return ReadParam(&msg, &iter, &out_);
   }
 
