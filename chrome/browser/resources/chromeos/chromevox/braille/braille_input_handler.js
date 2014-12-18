@@ -16,9 +16,11 @@ goog.require('cvox.ExpandingBrailleTranslator');
 
 
 /**
+ * @param {cvox.BrailleTranslatorManager} translatorManager Keeps track of
+ *     the current braille translator(s).
  * @constructor
  */
-cvox.BrailleInputHandler = function() {
+cvox.BrailleInputHandler = function(translatorManager) {
   /**
    * Port of the connected IME if any.
    * @type {Port}
@@ -40,15 +42,10 @@ cvox.BrailleInputHandler = function() {
    */
   this.inputContext_ = null;
   /**
-   * @type {cvox.LibLouis.Translator}
+   * @type {cvox.BrailleTranslatorManager}
    * @private
    */
-  this.defaultTranslator_ = null;
-  /**
-   * @type {cvox.LibLouis.Translator}
-   * @private
-   */
-  this.uncontractedTranslator_ = null;
+  this.translatorManager_ = translatorManager;
   /**
    * The translator currently used for typing, if
    * {@code this.cells_.length > 0}.
@@ -98,6 +95,8 @@ cvox.BrailleInputHandler = function() {
    * @private
    */
   this.pendingCells_ = [];
+
+  this.translatorManager_.addChangeListener(this.resetText_.bind(this));
 };
 
 
@@ -128,21 +127,6 @@ cvox.BrailleInputHandler.prototype.init = function() {
 
 
 /**
- * Sets the translator(s) to be used for input.
- * @param {cvox.LibLouis.Translator} defaultTranslator Translator to use by
- *     default from now on.
- * @param {cvox.LibLouis.Translator=} opt_uncontractedTranslator Translator
- *     to be used inside a word (non-whitespace).
- */
-cvox.BrailleInputHandler.prototype.setTranslator = function(
-    defaultTranslator, opt_uncontractedTranslator) {
-  this.defaultTranslator_ = defaultTranslator;
-  this.uncontractedTranslator_ = opt_uncontractedTranslator || null;
-  this.resetText_();
-};
-
-
-/**
  * Called when the content on the braille display is updated.  Modifies the
  * input state according to the new content.
  * @param {cvox.Spannable} text Text, optionally with value and selection
@@ -167,7 +151,6 @@ cvox.BrailleInputHandler.prototype.onDisplayContentChanged = function(text) {
     return;
   }
   var oldTextBefore = this.currentTextBefore_;
-  var oldTextAfter = this.currentTextAfter_;
   this.currentTextBefore_ = text.toString().substring(
       valueStart, selectionStart);
   this.currentTextAfter_ = text.toString().substring(selectionEnd, valueEnd);
@@ -235,7 +218,8 @@ cvox.BrailleInputHandler.prototype.getExpansionType = function() {
     return cvox.ExpandingBrailleTranslator.ExpansionType.ALL;
   }
   if (this.cells_.length > 0 &&
-      this.activeTranslator_ === this.defaultTranslator_) {
+      this.activeTranslator_ ===
+      this.translatorManager_.getDefaultTranslator()) {
     return cvox.ExpandingBrailleTranslator.ExpansionType.NONE;
   }
   return cvox.ExpandingBrailleTranslator.ExpansionType.SELECTION;
@@ -338,9 +322,9 @@ cvox.BrailleInputHandler.prototype.updateText_ = function() {
       // Send the replace operation to be performed asynchronously by
       // the IME.
       this.postImeMessage_({type: 'replaceText',
-                       contextID: this.inputContext_.contextID,
-                       deleteBefore: deleteLength,
-                       newText: toInsert});
+                            contextID: this.inputContext_.contextID,
+                            deleteBefore: deleteLength,
+                            newText: toInsert});
     }
   }, this));
 };
@@ -363,14 +347,16 @@ cvox.BrailleInputHandler.prototype.resetText_ = function() {
  * @private
  */
 cvox.BrailleInputHandler.prototype.updateActiveTranslator_ = function() {
-  this.activeTranslator_ = this.defaultTranslator_;
-  if (this.uncontractedTranslator_) {
+  this.activeTranslator_ = this.translatorManager_.getDefaultTranslator();
+  var uncontractedTranslator =
+      this.translatorManager_.getUncontractedTranslator();
+  if (uncontractedTranslator) {
     var textBefore = this.currentTextBefore_;
     var textAfter = this.currentTextAfter_;
     if (this.inAlwaysUncontractedContext_() ||
         (textBefore.length > 0 && /\S$/.test(textBefore)) ||
         (textAfter.length > 0 && /^\S/.test(textAfter))) {
-      this.activeTranslator_ = this.uncontractedTranslator_;
+      this.activeTranslator_ = uncontractedTranslator;
     }
   }
 };

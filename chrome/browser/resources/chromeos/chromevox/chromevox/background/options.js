@@ -9,8 +9,8 @@
 
 goog.provide('cvox.OptionsPage');
 
-goog.require('cvox.BrailleBackground');
 goog.require('cvox.BrailleTable');
+goog.require('cvox.BrailleTranslatorManager');
 goog.require('cvox.ChromeEarcons');
 goog.require('cvox.ChromeHost');
 goog.require('cvox.ChromeTts');
@@ -24,12 +24,6 @@ goog.require('cvox.KeySequence');
 goog.require('cvox.Msgs');
 goog.require('cvox.PlatformFilter');
 goog.require('cvox.PlatformUtil');
-
-/**
- * This object is exported by the main background page.
- */
-window.braille;
-
 
 /**
  * Class to manage the options page.
@@ -360,7 +354,6 @@ cvox.OptionsPage.populateVoicesSelect = function() {
 
 /**
  * Populates the braille select control.
- * @this {cvox.OptionsPage}
  */
 cvox.OptionsPage.populateBrailleTablesSelect = function() {
   if (!cvox.ChromeVox.isChromeOS) {
@@ -400,9 +393,7 @@ cvox.OptionsPage.populateBrailleTablesSelect = function() {
       var sel = node.options[selIndex];
       localStorage['brailleTable'] = sel.id;
       localStorage[node.id] = sel.id;
-      /** @type {cvox.BrailleBackground} */
-      var braille = chrome.extension.getBackgroundPage().braille;
-      braille.refreshTranslator();
+      cvox.OptionsPage.getBrailleTranslatorManager().refresh();
     };
   };
 
@@ -441,8 +432,7 @@ cvox.OptionsPage.populateBrailleTablesSelect = function() {
       tableTypeButton.textContent =
           cvox.ChromeVox.msgs.getMsg('options_braille_table_type_8');
     }
-    var braille = chrome.extension.getBackgroundPage().braille;
-    braille.refreshTranslator();
+    cvox.OptionsPage.getBrailleTranslatorManager().refresh();
   };
   updateTableType(false);
 
@@ -511,7 +501,7 @@ cvox.OptionsPage.eventListener = function(event) {
 
 /**
  * Refreshes all dynamic content on the page.
-This includes all key related information.
+ * This includes all key related information.
  */
 cvox.OptionsPage.reset = function() {
   var selectKeyMap = $('cvox_keymaps');
@@ -564,6 +554,13 @@ cvox.OptionsPage.speak = function(textString, queueMode, properties) {
   var speak =
       /** @type Function} */ (chrome.extension.getBackgroundPage()['speak']);
   speak.apply(null, arguments);
+};
+
+/**
+ * @return {cvox.BrailleTranslatorManager}
+ */
+cvox.OptionsPage.getBrailleTranslatorManager = function() {
+  return chrome.extension.getBackgroundPage()['braille_translator_manager'];
 };
 
 document.addEventListener('DOMContentLoaded', function() {

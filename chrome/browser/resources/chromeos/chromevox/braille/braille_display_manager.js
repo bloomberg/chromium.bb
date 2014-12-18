@@ -17,14 +17,16 @@ goog.require('cvox.NavBraille');
 
 
 /**
+ * @param {!cvox.BrailleTranslatorManager} translatorManager Keeps track
+ *     of the current translator to use.
  * @constructor
  */
-cvox.BrailleDisplayManager = function() {
+cvox.BrailleDisplayManager = function(translatorManager) {
   /**
-   * @type {cvox.ExpandingBrailleTranslator}
+   * @type {!cvox.BrailleTranslatorManager}
    * @private
    */
-  this.translator_ = null;
+  this.translatorManager_ = translatorManager;
   /**
    * @type {!cvox.NavBraille}
    * @private
@@ -73,10 +75,14 @@ cvox.BrailleDisplayManager = function() {
    */
   this.textToBraille_ = [];
   /**
-   * @type {Array.<number>}
+   * @type {!Array.<number>}
    * @private
    */
   this.brailleToText_ = [];
+
+  translatorManager.addChangeListener(function() {
+    this.translateContent_(this.content_, this.expansionType_);
+  }.bind(this));
 
   cvox.BrailleCaptionsBackground.init(goog.bind(
       this.onCaptionsStateChanged_, this));
@@ -126,30 +132,6 @@ cvox.BrailleDisplayManager.prototype.setContent = function(
  */
 cvox.BrailleDisplayManager.prototype.setCommandListener = function(func) {
   this.commandListener_ = func;
-};
-
-
-/**
- * Sets the translator to be used for the braille content and refreshes the
- * braille display with the current content using the new translator.
- * @param {cvox.LibLouis.Translator} defaultTranslator Translator to use by
- *     default from now on.
- * @param {cvox.LibLouis.Translator=} opt_uncontractedTranslator Translator
- *     to use around text selection end-points.
- */
-cvox.BrailleDisplayManager.prototype.setTranslator =
-    function(defaultTranslator, opt_uncontractedTranslator) {
-  var hadTranslator = (this.translator_ != null);
-  if (defaultTranslator) {
-    this.translator_ = new cvox.ExpandingBrailleTranslator(
-        defaultTranslator, opt_uncontractedTranslator);
-  } else {
-    this.translator_ = null;
-  }
-  this.translateContent_(this.content_, this.expansionType_);
-  if (hadTranslator && !this.translator_) {
-    this.refresh_();
-  }
 };
 
 
@@ -212,58 +194,57 @@ cvox.BrailleDisplayManager.prototype.refresh_ = function() {
  */
 cvox.BrailleDisplayManager.prototype.translateContent_ = function(
     newContent, newExpansionType) {
-  if (!this.translator_) {
+  var writeTranslatedContent = function(cells, textToBraille, brailleToText) {
     this.content_ = newContent;
     this.expansionType_ = newExpansionType;
-    this.translatedContent_ = new ArrayBuffer(0);
-    this.textToBraille_.length = 0;
-    this.brailleToText_.length = 0;
-    return;
+    var startIndex = this.content_.startIndex;
+    var endIndex = this.content_.endIndex;
+    this.panPosition_ = 0;
+    if (startIndex >= 0) {
+      var translatedStartIndex;
+      var translatedEndIndex;
+      if (startIndex >= textToBraille.length) {
+        // Allow the cells to be extended with one extra cell for
+        // a carret after the last character.
+        var extCells = new ArrayBuffer(cells.byteLength + 1);
+        var extCellsView = new Uint8Array(extCells);
+        extCellsView.set(new Uint8Array(cells));
+        // Last byte is initialized to 0.
+        cells = extCells;
+        translatedStartIndex = cells.byteLength - 1;
+      } else {
+        translatedStartIndex = textToBraille[startIndex];
+      }
+      if (endIndex >= textToBraille.length) {
+        // endIndex can't be past-the-end of the last cell unless
+        // startIndex is too, so we don't have to do another
+        // extension here.
+        translatedEndIndex = cells.byteLength;
+      } else {
+        translatedEndIndex = textToBraille[endIndex];
+      }
+      this.writeCursor_(cells, translatedStartIndex, translatedEndIndex);
+      if (this.displayState_.available) {
+        var textCells = this.displayState_.textCellCount;
+        this.panPosition_ = Math.floor(translatedStartIndex / textCells) *
+            textCells;
+      }
+    }
+    this.translatedContent_ = cells;
+    this.textToBraille_ = textToBraille;
+    this.brailleToText_ = brailleToText;
+    this.refresh_();
+  }.bind(this);
+
+  var translator = this.translatorManager_.getExpandingTranslator();
+  if (!translator) {
+    writeTranslatedContent(new ArrayBuffer(0), [], []);
+  } else {
+    translator.translate(
+        newContent.text,
+        newExpansionType,
+        writeTranslatedContent);
   }
-  this.translator_.translate(
-      newContent.text,
-      newExpansionType,
-      goog.bind(function(cells, textToBraille, brailleToText) {
-        this.content_ = newContent;
-        this.expansionType_ = newExpansionType;
-        var startIndex = this.content_.startIndex;
-        var endIndex = this.content_.endIndex;
-        this.panPosition_ = 0;
-        if (startIndex >= 0) {
-          var translatedStartIndex;
-          var translatedEndIndex;
-          if (startIndex >= textToBraille.length) {
-            // Allow the cells to be extended with one extra cell for
-            // a carret after the last character.
-            var extCells = new ArrayBuffer(cells.byteLength + 1);
-            var extCellsView = new Uint8Array(extCells);
-            extCellsView.set(new Uint8Array(cells));
-            // Last byte is initialized to 0.
-            cells = extCells;
-            translatedStartIndex = cells.byteLength - 1;
-          } else {
-            translatedStartIndex = textToBraille[startIndex];
-          }
-          if (endIndex >= textToBraille.length) {
-            // endIndex can't be past-the-end of the last cell unless
-            // startIndex is too, so we don't have to do another
-            // extension here.
-            translatedEndIndex = cells.byteLength;
-          } else {
-            translatedEndIndex = textToBraille[endIndex];
-          }
-          this.writeCursor_(cells, translatedStartIndex, translatedEndIndex);
-          if (this.displayState_.available) {
-            var textCells = this.displayState_.textCellCount;
-            this.panPosition_ = Math.floor(translatedStartIndex / textCells) *
-                textCells;
-          }
-        }
-        this.translatedContent_ = cells;
-        this.brailleToText_ = brailleToText;
-        this.textToBraille_ = textToBraille;
-        this.refresh_();
-      }, this));
 };
 
 

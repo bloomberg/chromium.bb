@@ -12,9 +12,7 @@ goog.require('cvox.AbstractBraille');
 goog.require('cvox.BrailleDisplayManager');
 goog.require('cvox.BrailleInputHandler');
 goog.require('cvox.BrailleKeyEvent');
-goog.require('cvox.BrailleTable');
-goog.require('cvox.ChromeVox');
-goog.require('cvox.LibLouis');
+goog.require('cvox.BrailleTranslatorManager');
 
 
 /**
@@ -23,27 +21,26 @@ goog.require('cvox.LibLouis');
  *        Display manager (for mocking in tests).
  * @param {cvox.BrailleInputHandler=} opt_inputHandlerForTest Input handler
  *        (for mocking in tests).
+ * @param {cvox.BrailleTranslatorManager=} opt_translatorManagerForTest
+ *        Braille translator manager (for mocking in tests)
  * @extends {cvox.AbstractBraille}
  */
 cvox.BrailleBackground = function(opt_displayManagerForTest,
-                                  opt_inputHandlerForTest) {
+                                  opt_inputHandlerForTest,
+                                  opt_translatorManagerForTest) {
   goog.base(this);
+  /**
+   * @type {!cvox.BrailleTranslatorManager}
+   * @private*/
+  this.translatorManager_ = opt_translatorManagerForTest ||
+      new cvox.BrailleTranslatorManager();
   /**
    * @type {cvox.BrailleDisplayManager}
    * @private
    */
   this.displayManager_ = opt_displayManagerForTest ||
-      new cvox.BrailleDisplayManager();
-  cvox.BrailleTable.getAll(goog.bind(function(tables) {
-    /**
-     * @type {!Array.<cvox.BrailleTable.Table>}
-     * @private
-     */
-    this.tables_ = tables;
-    this.initialize_(0);
-  }, this));
-  this.displayManager_.setCommandListener(
-      goog.bind(this.onBrailleKeyEvent_, this));
+      new cvox.BrailleDisplayManager(this.translatorManager_);
+  this.displayManager_.setCommandListener(this.onBrailleKeyEvent_.bind(this));
   /**
    * @type {cvox.NavBraille}
    * @private
@@ -59,7 +56,7 @@ cvox.BrailleBackground = function(opt_displayManagerForTest,
    * @private
    */
   this.inputHandler_ = opt_inputHandlerForTest ||
-      new cvox.BrailleInputHandler();
+      new cvox.BrailleInputHandler(this.translatorManager_);
   this.inputHandler_.init();
 };
 goog.inherits(cvox.BrailleBackground, cvox.AbstractBraille);
@@ -83,83 +80,11 @@ cvox.BrailleBackground.prototype.setCommandListener = function(func) {
 
 
 /**
- * Refreshes the braille translator used for output.  This should be
- * called when something changed (such as a preference) to make sure that
- * the correct translator is used.
+ * @return {cvox.BrailleTranslatorManager} The translator manager used by this
+ *     instance.
  */
-cvox.BrailleBackground.prototype.refreshTranslator = function() {
-  if (!this.liblouis_) {
-    return;
-  }
-  // First, see if we have a braille table set previously.
-  var tables = this.tables_;
-  var table = cvox.BrailleTable.forId(tables, localStorage['brailleTable']);
-  if (!table) {
-    // Match table against current locale.
-    var currentLocale = chrome.i18n.getMessage('@@ui_locale').split(/[_-]/);
-    var major = currentLocale[0];
-    var minor = currentLocale[1];
-    var firstPass = tables.filter(function(table) {
-      return table.locale.split(/[_-]/)[0] == major;
-    });
-    if (firstPass.length > 0) {
-      table = firstPass[0];
-      if (minor) {
-        var secondPass = firstPass.filter(function(table) {
-          return table.locale.split(/[_-]/)[1] == minor;
-        });
-        if (secondPass.length > 0) {
-          table = secondPass[0];
-        }
-      }
-    }
-  }
-  if (!table) {
-    table = cvox.BrailleTable.forId(tables, 'en-US-comp8');
-  }
-  // TODO(plundblad): ONly update when user explicitly chooses a table
-  // so that switching locales changes table by default.
-  localStorage['brailleTable'] = table.id;
-  if (table.dots == '6') {
-    localStorage['brailleTableType'] = 'brailleTable6';
-    localStorage['brailleTable6'] = table.id;
-  } else {
-    localStorage['brailleTableType'] = 'brailleTable8';
-    localStorage['brailleTable8'] = table.id;
-  }
-
-  // Initialize all other defaults.
-  // TODO(plundblad): Stop doing this here.
-  if (!localStorage['brailleTable6']) {
-    localStorage['brailleTable6'] = 'en-US-g1';
-  }
-  if (!localStorage['brailleTable8']) {
-    localStorage['brailleTable8'] = 'en-US-comp8';
-  }
-
-  // If the user explicitly set an 8 dot table, use that when looking
-  // for an uncontracted table.  Otherwise, use the current table and let
-  // getUncontracted find an appropriate corresponding table.
-  var table8Dot = cvox.BrailleTable.forId(tables,
-                                          localStorage['brailleTable8']);
-  var uncontractedTable = cvox.BrailleTable.getUncontracted(
-      tables,
-      table8Dot ? table8Dot : table);
-  this.liblouis_.getTranslator(table.fileNames, goog.bind(
-      function(translator) {
-        if (uncontractedTable.id === table.id) {
-          this.displayManager_.setTranslator(translator);
-          this.inputHandler_.setTranslator(translator);
-        } else {
-          this.liblouis_.getTranslator(uncontractedTable.fileNames, goog.bind(
-              function(uncontractedTranslator) {
-                this.displayManager_.setTranslator(
-                    translator, uncontractedTranslator);
-                this.inputHandler_.setTranslator(
-                    translator, uncontractedTranslator);
-              }, this));
-        }
-      }, this));
+cvox.BrailleBackground.prototype.getTranslatorManager = function() {
+  return this.translatorManager_;
 };
 
 
@@ -174,45 +99,6 @@ cvox.BrailleBackground.prototype.onBrailleMessage = function(msg) {
     this.inputHandler_.onDisplayContentChanged(this.lastContent_.text);
     this.displayManager_.setContent(
         this.lastContent_, this.inputHandler_.getExpansionType());
-  }
-};
-
-
-/**
- * @return {cvox.LibLouis} The liblouis instance used by this object, or null
- * if not initialized yet.
- */
-cvox.BrailleBackground.prototype.getLibLouisForTest = function() {
-  return this.liblouis_;
-};
-
-
-/**
- * Initialization to be done after part of the background page's DOM has been
- * constructed. Currently only used on ChromeOS.
- * @param {number} retries Number of retries.
- * @private
- */
-cvox.BrailleBackground.prototype.initialize_ = function(retries) {
-  if (retries > 5) {
-    console.error(
-        'Timeout waiting for document.body; not initializing braille.');
-    return;
-  }
-  if (!document.body) {
-    window.setTimeout(goog.bind(this.initialize_, this, ++retries), 500);
-  } else {
-    /**
-     * @type {cvox.LibLouis}
-     * @private
-     */
-    this.liblouis_ = new cvox.LibLouis(
-        chrome.extension.getURL(
-            'braille/liblouis_nacl.nmf'),
-        chrome.extension.getURL(
-            'braille/tables'));
-    this.liblouis_.attachToElement(document.body);
-    this.refreshTranslator();
   }
 };
 

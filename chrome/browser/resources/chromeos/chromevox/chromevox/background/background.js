@@ -545,8 +545,9 @@ cvox.ChromeVoxBackground.prototype.onLoadStateChanged = function(
   // Export the prefs object for access by the options page.
   window['prefs'] = background.prefs;
 
-  // Export the braille object for access by the options page.
-  window['braille'] = cvox.ChromeVox.braille;
+  // Export the braille translator manager for access by the options page.
+  window['braille_translator_manager'] =
+      background.backgroundBraille_.getTranslatorManager();
 
   // Export injection for ChromeVox Next.
   cvox.ChromeVox.injectChromeVoxIntoTabs =

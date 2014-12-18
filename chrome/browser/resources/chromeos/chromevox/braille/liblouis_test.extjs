@@ -20,12 +20,17 @@ function CvoxLibLouisTest() {}
 CvoxLibLouisTest.prototype = {
   __proto__: ChromeVoxE2ETest.prototype,
 
-  /** @override */
-  setUp: function() {
-    // Avoid loading a second liblouis instance and get the one that chromevox
-    // is already creating.
-    this.instance = cvox.ChromeVox.braille.getLibLouisForTest();
+  createLiblouis: function() {
+    return new cvox.LibLouis(
+        chrome.extension.getURL('braille/liblouis_nacl.nmf'),
+        chrome.extension.getURL('braille/tables'));
   },
+
+  createAndAttachLiblouis: function() {
+    var liblouis = this.createLiblouis();
+    liblouis.attachToElement(document.body);
+    return liblouis;
+  }
 };
 
 function assertEqualsUint8Array(expected, actual) {
@@ -38,12 +43,13 @@ function assertEqualsUint8Array(expected, actual) {
 }
 
 TEST_F('CvoxLibLouisTest', 'checkAllTables', function() {
-  cvox.BrailleTable.getAll(function(all_tables) {
+  var liblouis = this.createAndAttachLiblouis();
+  cvox.BrailleTable.getAll(function(allTables) {
     var i = 0;
     var checkNextTable = function() {
-      var table = all_tables[i++];
+      var table = allTables[i++];
       if (table) {
-        this.instance.getTranslator(table.fileNames, function(translator) {
+        liblouis.getTranslator(table.fileNames, function(translator) {
           assertNotEquals(null, translator,
                              'Table ' + table + ' should be valid');
           checkNextTable();
@@ -51,13 +57,14 @@ TEST_F('CvoxLibLouisTest', 'checkAllTables', function() {
       } else {
         testDone();
       }
-    }.bind(this);
+    };
     checkNextTable();
-  }.bind(this));
+  });
 });
 
 TEST_F('CvoxLibLouisTest', 'testTranslateComputerBraille', function () {
-  this.instance.getTranslator('en-us-comp8.ctb', function(translator) {
+  var liblouis = this.createAndAttachLiblouis();
+  liblouis.getTranslator('en-us-comp8.ctb', function(translator) {
     translator.translate(
         'Hello!', function(cells, textToBraille, brailleToText) {
           assertEqualsUint8Array([0x53, 0x11, 0x07, 0x07, 0x15, 0x2e], cells);
@@ -69,7 +76,8 @@ TEST_F('CvoxLibLouisTest', 'testTranslateComputerBraille', function () {
 });
 
 TEST_F('CvoxLibLouisTest', 'testBackTranslateComputerBraille', function() {
-  this.instance.getTranslator('en-us-comp8.ctb', function(translator) {
+  var liblouis = this.createAndAttachLiblouis();
+  liblouis.getTranslator('en-us-comp8.ctb', function(translator) {
     var cells = new Uint8Array([0x53, 0x11, 0x07, 0x07, 0x15, 0x2e]);
     translator.backTranslate(cells.buffer, function(text) {
       assertEquals('Hello!', text);
@@ -79,8 +87,9 @@ TEST_F('CvoxLibLouisTest', 'testBackTranslateComputerBraille', function() {
 });
 
 TEST_F('CvoxLibLouisTest', 'testTranslateGermanGrade2Braille', function() {
+  var liblouis = this.createAndAttachLiblouis();
   // This is one of the moderately large tables.
-  this.instance.getTranslator('de-de-g2.ctb', function(translator) {
+  liblouis.getTranslator('de-de-g2.ctb', function(translator) {
     translator.translate(
          'München', function(cells, textToBraille, brailleToText) {
            assertEqualsUint8Array([0x0d, 0x33, 0x1d, 0x39, 0x09], cells);
@@ -92,7 +101,8 @@ TEST_F('CvoxLibLouisTest', 'testTranslateGermanGrade2Braille', function() {
 });
 
 TEST_F('CvoxLibLouisTest', 'testBackTranslateGermanComputerBraille', function() {
-  this.instance.getTranslator('de-de-comp8.ctb', function(translator) {
+  var liblouis = this.createAndAttachLiblouis();
+  liblouis.getTranslator('de-de-comp8.ctb', function(translator) {
     var cells = new Uint8Array([0xb3]);
     translator.backTranslate(cells.buffer, function(text) {
       assertEquals('ü', text);
@@ -102,7 +112,8 @@ TEST_F('CvoxLibLouisTest', 'testBackTranslateGermanComputerBraille', function() 
 });
 
 TEST_F('CvoxLibLouisTest', 'testBackTranslateEmptyCells', function() {
-  this.instance.getTranslator('de-de-comp8.ctb', function(translator) {
+  var liblouis = this.createAndAttachLiblouis();
+  liblouis.getTranslator('de-de-comp8.ctb', function(translator) {
     var cells = new Uint8Array();
     translator.backTranslate(cells.buffer, function(text) {
       assertNotEquals(null, text);
@@ -113,17 +124,18 @@ TEST_F('CvoxLibLouisTest', 'testBackTranslateEmptyCells', function() {
 });
 
 TEST_F('CvoxLibLouisTest', 'testGetTranslatorBeforeAttach', function() {
-  this.instance.detach();
-   assertFalse(this.instance.isAttached());
-  this.instance.getTranslator('en-us-comp8.ctb', function(translator) {
+  var liblouis = this.createLiblouis();
+  assertFalse(liblouis.isAttached());
+  liblouis.getTranslator('en-us-comp8.ctb', function(translator) {
     assertNotEquals(null, translator);
     testDone();
   });
-  this.instance.attachToElement(document.body);
+  liblouis.attachToElement(document.body);
 });
 
 TEST_F('CvoxLibLouisTest', 'testGetInvalidTranslator', function() {
-  this.instance.getTranslator('nonexistant-table', function(translator) {
+  var liblouis = this.createAndAttachLiblouis();
+  liblouis.getTranslator('nonexistant-table', function(translator) {
     assertEquals(null, translator);
     testDone();
   });

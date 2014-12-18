@@ -31,12 +31,12 @@ CvoxBrailleIntegrationUnitTest.prototype = {
 
   /** @override */
   setUp: function() {
-    cvox.BrailleTable.getAll = function() {}
     this.displayManager = new FakeDisplayManager();
     this.inputHandler = new FakeInputHandler();
+    this.translatorManager = new FakeTranslatorManager();
 
     this.brailleBackground = new cvox.BrailleBackground(
-        this.displayManager, this.inputHandler);
+        this.displayManager, this.inputHandler, this.translatorManager);
 
     cvox.ExtensionBridge = new FakeExtensionBridge(this.brailleBackground);
 
@@ -135,6 +135,10 @@ FakeInputHandler.prototype = {
     return cvox.ExpandingBrailleTranslator.ExpansionType.SELECTION;
   }
 };
+
+/** @extends {cvox.BrailleTranslatorManager} */
+function FakeTranslatorManager() {
+}        
 
 TEST_F('CvoxBrailleIntegrationUnitTest', 'Write', function() {
   this.braille.write(this.content1);

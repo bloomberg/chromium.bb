@@ -1,0 +1,110 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Include test fixture.
+GEN_INCLUDE(['../testing/chromevox_e2e_test_base.js',
+             '../testing/assert_additions.js']);
+
+/**
+ * Test fixture for cvox.BrailleTranslatorManager tests.
+ * This is an E2E test because there's no easy way to load a data file in
+ * a webui-style test.
+ * @constructor
+ * @extends {ChromeVoxE2ETest}
+ */
+function CvoxBrailleTranslatorManagerTest() {}
+
+CvoxBrailleTranslatorManagerTest.prototype = {
+  __proto__: ChromeVoxE2ETest.prototype,
+
+  /** @override */
+  setUp: function() {
+    this.liblouis = new FakeLibLouis();
+    this.manager = new cvox.BrailleTranslatorManager(this.liblouis);
+    this.liblouis.translator_manager = this.manager;
+  },
+};
+
+/** @extends {cvox.LibLouis} */
+function FakeLibLouis() {
+}
+
+FakeLibLouis.prototype = {
+  /** @override */
+  attachToElement: function() {},
+
+  /** @override */
+  getTranslator: function(fileNames, callback) {
+    var tables = this.translator_manager.getTablesForTest();
+    var result = null;
+    if (tables != null) {
+      var found = tables.filter(function(table) {
+        return table.fileNames === fileNames;
+      })[0];
+      if (found) {
+        result = new FakeTranslator(found);
+      }
+    }
+    callback(result);
+  }
+};
+
+/**
+ * @extends {cvox.LibLouis.Translator}
+ * @param {cvox.BrailleTable.Table} table
+ * @constructor
+ */
+function FakeTranslator(table) {
+  this.table = table;
+}
+
+function callOnce(callback) {
+  var called = false;
+  return function() {
+    if (!called) {
+      callback.apply(null, arguments);
+      called = true;
+    }
+  };
+}
+
+TEST_F('CvoxBrailleTranslatorManagerTest', 'testInitial', function() {
+  assertEquals(null, this.manager.getExpandingTranslator());
+  assertEquals(null, this.manager.getDefaultTranslator());
+  assertEquals(null, this.manager.getUncontractedTranslator());
+  this.manager.addChangeListener(function() {
+    assertNotEquals(null, this.manager.getExpandingTranslator());
+    assertEquals('en-US-comp8', this.manager.getDefaultTranslator().table.id);
+    assertEquals(null, this.manager.getUncontractedTranslator());
+    testDone();
+  }.bind(this));
+});
+
+TEST_F('CvoxBrailleTranslatorManagerTest', 'testRefreshWithoutChange',
+       function() {
+  this.manager.addChangeListener(callOnce(function() {
+    assertNotEquals(null, this.manager.getExpandingTranslator());
+    // This works because the fake liblouis is actually not synchonous.
+    this.manager.addChangeListener(function() {
+      throw Error('Should not be called.');
+    });
+    this.manager.refresh();
+    testDone();
+  }.bind(this)));
+});
+
+TEST_F('CvoxBrailleTranslatorManagerTest', 'testRefreshWithChange',
+       function() {
+  this.manager.addChangeListener(callOnce(function() {
+    assertNotEquals(null, this.manager.getExpandingTranslator());
+    this.manager.addChangeListener(function() {
+      assertEquals('en-UEB-g2', this.manager.getDefaultTranslator().table.id);
+      assertEquals('en-US-comp8',
+                   this.manager.getUncontractedTranslator().table.id);
+      testDone();
+    }.bind(this));
+    localStorage['brailleTable'] = 'en-UEB-g2';
+    this.manager.refresh();
+  }.bind(this)));
+});

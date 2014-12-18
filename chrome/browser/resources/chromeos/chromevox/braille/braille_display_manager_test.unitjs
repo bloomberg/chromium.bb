@@ -30,6 +30,7 @@ CvoxBrailleDisplayManagerUnitTest.prototype = {
     this.NAV_BRAILLE = new cvox.NavBraille({ text: 'Hello, world!' });
     this.EMPTY_NAV_BRAILLE = new cvox.NavBraille({ text: '' });
     this.translator = new FakeTranslator();
+    this.translatorManager = new FakeTranslatorManager();
     /** @const */
     this.DISPLAY_SIZE = 12;
   },
@@ -67,8 +68,9 @@ CvoxBrailleDisplayManagerUnitTest.prototype = {
     assertEquals(1, this.writtenCells.length);
     var a = new Uint8Array(this.writtenCells[0]);
     this.writtenCells.length = 0;
-    assertEquals(start, a[0] & ~cvox.BrailleDisplayManager.CURSOR_DOTS_,
-                 'Start mismatch: ' + start + ' vs. ' + a[0]);
+    var firstCell = a[0] & ~cvox.BrailleDisplayManager.CURSOR_DOTS_;
+    assertEquals(start, firstCell,
+                 'Start mismatch: ' + start + ' vs. ' + firstCell);
     if (opt_selStart !== undefined) {
       for (var i = opt_selStart; i < opt_selEnd; ++i) {
         assertEquals(cvox.BrailleDisplayManager.CURSOR_DOTS_,
@@ -92,16 +94,17 @@ CvoxBrailleDisplayManagerUnitTest.prototype = {
   }
 };
 
-/** @extends {cvox.LibLouis.Translator} */
+/** @extends {cvox.ExpandingBrailleTranslator} */
 function FakeTranslator() {
 }
 
 FakeTranslator.prototype = {
   /**
    * Does a translation where every other character becomes two cells.
-  * @override
-  */
-  translate: function(text, callback) {
+   * @override
+   */
+  translate: function(spannable, expansionType, callback) {
+    text = spannable.toString();
     var buf = new Uint8Array(text.length + text.length / 2);
     var textToBraille = [];
     var brailleToText = [];
@@ -121,13 +124,38 @@ FakeTranslator.prototype = {
   }
 };
 
+/** @extends {cvox.BrailleTranslatorManager} */
+function FakeTranslatorManager() {
+}
+
+FakeTranslatorManager.prototype = {
+  changeListener: null,
+  translator: null,
+
+  setTranslator: function(translator) {
+    this.translator = translator;
+    if (this.changeListener) {
+      this.changeListener();
+    }
+  },
+
+  addChangeListener: function(listener) {
+    assertEquals(null, this.changeListener);
+    this.changeListener = listener;
+  },
+
+  getExpandingTranslator: function() {
+    return this.translator;
+  }
+};
+
 var chrome = {};
 
 
 TEST_F('CvoxBrailleDisplayManagerUnitTest', 'NoApi', function() {
-  var manager = new cvox.BrailleDisplayManager();
+  var manager = new cvox.BrailleDisplayManager(this.translatorManager);
   manager.setContent(this.NAV_BRAILLE);
-  manager.setTranslator(this.translator);
+  this.translatorManager.setTranslator(this.translator);
   manager.setContent(this.NAV_BRAILLE);
 });
 
@@ -139,9 +167,9 @@ TEST_F('CvoxBrailleDisplayManagerUnitTest', 'NoDisplay', function() {
   this.addFakeApi();
   this.displayState = {available: false};
 
-  var manager = new cvox.BrailleDisplayManager();
+  var manager = new cvox.BrailleDisplayManager(this.translatorManager);
   manager.setContent(this.NAV_BRAILLE);
-  manager.setTranslator(this.translator);
+  this.translatorManager.setTranslator(this.translator);
   manager.setContent(this.NAV_BRAILLE);
   assertEquals(0, this.writtenCells.length);
 });
@@ -153,10 +181,11 @@ TEST_F('CvoxBrailleDisplayManagerUnitTest', 'NoDisplay', function() {
 TEST_F('CvoxBrailleDisplayManagerUnitTest', 'BasicSetContent', function() {
   this.addFakeApi();
   this.displayAvailable();
-  var manager = new cvox.BrailleDisplayManager();
+  var manager = new cvox.BrailleDisplayManager(this.translatorManager);
   this.assertEmptyDisplayAndClear();
   manager.setContent(this.NAV_BRAILLE);
-  manager.setTranslator(this.translator);
+  this.assertEmptyDisplayAndClear();
+  this.translatorManager.setTranslator(this.translator);
   this.assertDisplayPositionAndClear(0);
   manager.setContent(this.NAV_BRAILLE);
   this.assertDisplayPositionAndClear(0);
@@ -171,10 +200,11 @@ TEST_F('CvoxBrailleDisplayManagerUnitTest', 'SetEmptyContentWithTranslator',
   this.addFakeApi();
   this.displayAvailable();
 
-  var manager = new cvox.BrailleDisplayManager();
+  var manager = new cvox.BrailleDisplayManager(this.translatorManager);
   this.assertEmptyDisplayAndClear();
   manager.setContent(this.NAV_BRAILLE);
-  manager.setTranslator(this.translator);
+  this.assertEmptyDisplayAndClear();
+  this.translatorManager.setTranslator(this.translator);
   this.assertDisplayPositionAndClear(0);
   manager.setContent(this.EMPTY_NAV_BRAILLE);
   this.assertEmptyDisplayAndClear();
@@ -193,9 +223,9 @@ TEST_F('CvoxBrailleDisplayManagerUnitTest', 'CursorAndPanning', function() {
   this.addFakeApi();
   this.displayAvailable();
 
-  var manager = new cvox.BrailleDisplayManager();
+  var manager = new cvox.BrailleDisplayManager(this.translatorManager);
   this.assertEmptyDisplayAndClear();
-  manager.setTranslator(this.translator);
+  this.translatorManager.setTranslator(this.translator);
   this.assertEmptyDisplayAndClear();
 
   // Cursor at beginning of line.

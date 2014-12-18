@@ -156,6 +156,7 @@
         'braille/braille_display_manager_test.unitjs',
         'braille/braille_input_handler_test.unitjs',
         'braille/braille_table_test.extjs',
+        'braille/braille_translator_manager_test.extjs',
         'braille/expanding_braille_translator_test.unitjs',
         'braille/liblouis_test.extjs',
         'common/aria_util_test.unitjs',

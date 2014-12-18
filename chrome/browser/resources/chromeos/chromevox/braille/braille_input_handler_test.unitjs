@@ -319,6 +319,39 @@ FakeTranslator.prototype.backTranslate = function(cells, callback) {
   callback(result);
 };
 
+/** @extends {cvox.BrailleTranslatorManager} */
+function FakeTranslatorManager() {
+}
+
+FakeTranslatorManager.prototype = {
+  defaultTranslator: null,
+  uncontractedTranslator: null,
+  changeListener: null,
+
+  /** @override */
+  getDefaultTranslator: function() {
+    return this.defaultTranslator;
+  },
+
+  /** @override */
+  getUncontractedTranslator: function() {
+    return this.uncontractedTranslator;
+  },
+
+  /** @override */
+  addChangeListener: function(listener) {
+    assertEquals(null, this.changeListener);
+  },
+
+  setTranslators: function(defaultTranslator, uncontractedTranslator) {
+    this.defaultTranslator = defaultTranslator;
+    this.uncontractedTranslator = uncontractedTranslator;
+    if (this.changeListener) {
+      this.changeListener();
+    }
+  }
+};
+
 /**
  * Converts a list of cells, represented as a string, to an array.
  * @param {string} cells A string with space separated groups of digits.
@@ -438,7 +471,8 @@ CvoxBrailleInputHandlerUnitTest.prototype = {
   setUp: function() {
     chrome.runtime.onConnectExternal = new FakeChromeEvent();
     this.port = new FakePort();
-    this.inputHandler = new cvox.BrailleInputHandler();
+    this.translatorManager = new FakeTranslatorManager();
+    this.inputHandler = new cvox.BrailleInputHandler(this.translatorManager);
     this.inputHandler.init();
     this.uncontractedTranslator = new FakeTranslator(UNCONTRACTED_TABLE);
     this.contractedTranslator = new FakeTranslator(CONTRACTED_TABLE, true);
@@ -469,7 +503,7 @@ TEST_F('CvoxBrailleInputHandlerUnitTest', 'NoTranslator', function() {
 
 
 TEST_F('CvoxBrailleInputHandlerUnitTest', 'InputUncontracted', function() {
-  this.inputHandler.setTranslator(this.uncontractedTranslator);
+  this.translatorManager.setTranslators(this.uncontractedTranslator, null);
   var editor = this.createEditor();
   editor.setActive(true);
 
@@ -497,8 +531,8 @@ TEST_F('CvoxBrailleInputHandlerUnitTest', 'InputUncontracted', function() {
 
 TEST_F('CvoxBrailleInputHandlerUnitTest', 'InputContracted', function() {
   var editor = this.createEditor();
-  this.inputHandler.setTranslator(this.contractedTranslator,
-                                  this.uncontractedTranslator);
+  this.translatorManager.setTranslators(this.contractedTranslator,
+                                        this.uncontractedTranslator);
   editor.setActive(true);
   editor.focus('text');
   this.assertExpandingSelection();
@@ -550,8 +584,8 @@ TEST_F('CvoxBrailleInputHandlerUnitTest', 'InputContracted', function() {
 TEST_F('CvoxBrailleInputHandlerUnitTest', 'TypingUrlWithContracted',
        function() {
   var editor = this.createEditor();
-  this.inputHandler.setTranslator(this.contractedTranslator,
-                                  this.uncontractedTranslator);
+  this.translatorManager.setTranslators(this.contractedTranslator,
+                                        this.uncontractedTranslator);
   editor.setActive(true);
   editor.focus('url');
   this.assertExpandingAll();
@@ -573,8 +607,8 @@ TEST_F('CvoxBrailleInputHandlerUnitTest', 'TypingUrlWithContracted',
 
 TEST_F('CvoxBrailleInputHandlerUnitTest', 'Backspace', function() {
   var editor = this.createEditor();
-  this.inputHandler.setTranslator(this.contractedTranslator,
-                                  this.uncontractedTranslator);
+  this.translatorManager.setTranslators(this.contractedTranslator,
+                                        this.uncontractedTranslator);
   editor.setActive(true);
   editor.focus('text');
 
