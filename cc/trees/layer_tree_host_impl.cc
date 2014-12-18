@@ -474,7 +474,8 @@ LayerTreeHostImpl::CreateLatencyInfoSwapPromiseMonitor(
 
 ScrollElasticityHelper* LayerTreeHostImpl::CreateScrollElasticityHelper() {
   DCHECK(!scroll_elasticity_helper_);
-  scroll_elasticity_helper_.reset(new ScrollElasticityHelper(this));
+  scroll_elasticity_helper_.reset(
+      ScrollElasticityHelper::CreateForLayerTreeHostImpl(this));
   return scroll_elasticity_helper_.get();
 }
 

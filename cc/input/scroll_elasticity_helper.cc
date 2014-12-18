@@ -10,33 +10,51 @@
 
 namespace cc {
 
-ScrollElasticityHelper::ScrollElasticityHelper(LayerTreeHostImpl* layer_tree)
-    : layer_tree_host_impl_(layer_tree), timer_active_(false) {
+class ScrollElasticityHelperImpl : public ScrollElasticityHelper {
+ public:
+  explicit ScrollElasticityHelperImpl(LayerTreeHostImpl* layer_tree_host_impl);
+  virtual ~ScrollElasticityHelperImpl();
+
+  // The amount that the view is stretched past the normal allowable bounds.
+  // The "overhang" amount.
+  gfx::Vector2dF StretchAmount() override;
+  void SetStretchAmount(const gfx::Vector2dF& stretch_amount) override;
+  bool PinnedInDirection(const gfx::Vector2dF& direction) override;
+  bool CanScrollHorizontally() override;
+  bool CanScrollVertically() override;
+  void RequestAnimate() override;
+
+ private:
+  LayerTreeHostImpl* layer_tree_host_impl_;
+};
+
+ScrollElasticityHelperImpl::ScrollElasticityHelperImpl(
+    LayerTreeHostImpl* layer_tree)
+    : layer_tree_host_impl_(layer_tree) {
 }
 
-ScrollElasticityHelper::~ScrollElasticityHelper() {
+ScrollElasticityHelperImpl::~ScrollElasticityHelperImpl() {
 }
 
-bool ScrollElasticityHelper::AllowsHorizontalStretching() {
-  // The WebKit implementation has this interface because it is written in terms
-  // of overscrolling on a per-layer basis, not for the whole layer tree. In
-  // that implementation, this always returns true for the frame view's
-  // scrollable area.
-  // TODO(ccameron): This is function is redundant and may be removed.
-  return true;
+gfx::Vector2dF ScrollElasticityHelperImpl::StretchAmount() {
+  return -layer_tree_host_impl_->active_tree()->elastic_overscroll()->Current(
+      true);
 }
 
-bool ScrollElasticityHelper::AllowsVerticalStretching() {
-  // TODO(ccameron): This is function is redundant and may be removed.
-  return true;
+void ScrollElasticityHelperImpl::SetStretchAmount(
+    const gfx::Vector2dF& stretch_amount) {
+  if (stretch_amount == StretchAmount())
+    return;
+
+  layer_tree_host_impl_->active_tree()->elastic_overscroll()->SetCurrent(
+      -stretch_amount);
+  layer_tree_host_impl_->active_tree()->set_needs_update_draw_properties();
+  layer_tree_host_impl_->SetNeedsCommit();
+  layer_tree_host_impl_->SetNeedsRedraw();
+  layer_tree_host_impl_->SetFullRootLayerDamage();
 }
 
-gfx::Vector2dF ScrollElasticityHelper::StretchAmount() {
-  // TODO(ccameron): Use the value of active_tree->elastic_overscroll directly
-  return stretch_offset_;
-}
-
-bool ScrollElasticityHelper::PinnedInDirection(
+bool ScrollElasticityHelperImpl::PinnedInDirection(
     const gfx::Vector2dF& direction) {
   gfx::ScrollOffset scroll_offset =
       layer_tree_host_impl_->active_tree()->TotalScrollOffset();
@@ -54,55 +72,22 @@ bool ScrollElasticityHelper::PinnedInDirection(
   return result;
 }
 
-bool ScrollElasticityHelper::CanScrollHorizontally() {
+bool ScrollElasticityHelperImpl::CanScrollHorizontally() {
   return layer_tree_host_impl_->active_tree()->TotalMaxScrollOffset().x() > 0;
 }
 
-bool ScrollElasticityHelper::CanScrollVertically() {
+bool ScrollElasticityHelperImpl::CanScrollVertically() {
   return layer_tree_host_impl_->active_tree()->TotalMaxScrollOffset().y() > 0;
 }
 
-gfx::Vector2dF ScrollElasticityHelper::AbsoluteScrollPosition() {
-  // TODO(ccameron): This is function is redundant and may be removed.
-  return StretchAmount();
-}
-
-void ScrollElasticityHelper::ImmediateScrollBy(const gfx::Vector2dF& scroll) {
-  // TODO(ccameron): This is function is redundant and may be removed.
-}
-
-void ScrollElasticityHelper::ImmediateScrollByWithoutContentEdgeConstraints(
-    const gfx::Vector2dF& scroll) {
-  stretch_offset_ += scroll;
-  // TODO(ccameron): Use the value of active_tree->elastic_overscroll directly
-  // Note that this assumes that this property's true value is ever changed
-  // by the impl thread. While this is true, it is redundant state.
-  layer_tree_host_impl_->active_tree()->elastic_overscroll()->SetCurrent(
-      -stretch_offset_);
-  layer_tree_host_impl_->active_tree()->set_needs_update_draw_properties();
-  layer_tree_host_impl_->SetNeedsCommit();
-  layer_tree_host_impl_->SetNeedsRedraw();
-  layer_tree_host_impl_->SetFullRootLayerDamage();
-}
-
-void ScrollElasticityHelper::StartSnapRubberbandTimer() {
-  if (timer_active_)
-    return;
-  timer_active_ = true;
+void ScrollElasticityHelperImpl::RequestAnimate() {
   layer_tree_host_impl_->SetNeedsAnimate();
 }
 
-void ScrollElasticityHelper::StopSnapRubberbandTimer() {
-  timer_active_ = false;
-}
-
-void ScrollElasticityHelper::SnapRubberbandTimerFired() {
-  if (timer_active_)
-    layer_tree_host_impl_->SetNeedsAnimate();
-}
-
-void ScrollElasticityHelper::AdjustScrollPositionToBoundsIfNecessary() {
-  // TODO(ccameron): This is function is redundant and may be removed.
+// static
+ScrollElasticityHelper* ScrollElasticityHelper::CreateForLayerTreeHostImpl(
+    LayerTreeHostImpl* layer_tree_host_impl) {
+  return new ScrollElasticityHelperImpl(layer_tree_host_impl);
 }
 
 }  // namespace cc

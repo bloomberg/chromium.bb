@@ -406,6 +406,9 @@ void RenderWidgetCompositor::Initialize() {
   settings.scrollbar_fade_delay_ms = 500;
   settings.scrollbar_fade_resize_delay_ms = 500;
   settings.scrollbar_fade_duration_ms = 300;
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  if (cmd->HasSwitch(switches::kEnableThreadedEventHandlingMac))
+    settings.report_overscroll_only_for_scrollable_axes = false;
 #endif
 
   if (cmd->HasSwitch(switches::kEnableLowResTiling))

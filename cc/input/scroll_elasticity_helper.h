@@ -46,37 +46,27 @@ class LayerTreeHostImpl;
 // of logic and state held directly inside LayerTreeHostImpl.
 class CC_EXPORT ScrollElasticityHelper {
  public:
-  explicit ScrollElasticityHelper(LayerTreeHostImpl* layer_tree);
-  ~ScrollElasticityHelper();
+  static ScrollElasticityHelper* CreateForLayerTreeHostImpl(
+      LayerTreeHostImpl* layer_tree_host_impl);
 
-  bool AllowsHorizontalStretching();
-  bool AllowsVerticalStretching();
+  virtual ~ScrollElasticityHelper() {}
+
   // The amount that the view is stretched past the normal allowable bounds.
-  // The "overhang" amount.
-  gfx::Vector2dF StretchAmount();
-  bool PinnedInDirection(const gfx::Vector2dF& direction);
-  bool CanScrollHorizontally();
-  bool CanScrollVertically();
-
-  // Return the absolute scroll position, not relative to the scroll origin.
-  gfx::Vector2dF AbsoluteScrollPosition();
-
-  void ImmediateScrollBy(const gfx::Vector2dF& scroll);
-  void ImmediateScrollByWithoutContentEdgeConstraints(
-      const gfx::Vector2dF& scroll);
-  void StartSnapRubberbandTimer();
-  void StopSnapRubberbandTimer();
-  void SnapRubberbandTimerFired();
-
-  // If the current scroll position is within the overhang area, this function
-  // will cause
-  // the page to scroll to the nearest boundary point.
-  void AdjustScrollPositionToBoundsIfNecessary();
-
- private:
-  LayerTreeHostImpl* layer_tree_host_impl_;
-  gfx::Vector2dF stretch_offset_;
-  bool timer_active_;
+  virtual gfx::Vector2dF StretchAmount() = 0;
+  virtual void SetStretchAmount(const gfx::Vector2dF& stretch_amount) = 0;
+  // Returns true if either component of |direction| is pointing in a direction
+  // in which it is not possible to scroll any farther. It is only in this
+  // circumstance that an overscroll in that direction may begin.
+  // TODO(ccameron): Note that it is possible for a scroll to occur against a
+  // previous over-scroll. Such a scroll needs to first cancel out the
+  // over-scroll, and only then may it start scrolling away from the edge.
+  virtual bool PinnedInDirection(const gfx::Vector2dF& direction) = 0;
+  // Whether or not the content of the page is scrollable in each direction.
+  virtual bool CanScrollHorizontally() = 0;
+  virtual bool CanScrollVertically() = 0;
+  // Request that the controller have its Animate method called for the next
+  // frame.
+  virtual void RequestAnimate() = 0;
 };
 
 }  // namespace cc

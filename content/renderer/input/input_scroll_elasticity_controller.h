@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/input/scroll_elasticity_helper.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 // InputScrollElasticityController is based on
@@ -43,80 +44,81 @@ struct InputHandlerScrollResult;
 
 namespace content {
 
-class InputScrollElasticityController {
+class CONTENT_EXPORT InputScrollElasticityController {
  public:
   explicit InputScrollElasticityController(cc::ScrollElasticityHelper* helper);
   virtual ~InputScrollElasticityController();
 
   base::WeakPtr<InputScrollElasticityController> GetWeakPtr();
+
+  // Update the overscroll state based a wheel event that has been processed.
+  // Note that this assumes that all events are coming from a single input
+  // device. If the user simultaneously uses multiple input devices, Cocoa may
+  // not correctly pass all the gesture begin and end events. In this case,
+  // this class may disregard some scrolls that come in at unexpected times.
   void ObserveWheelEventAndResult(
       const blink::WebMouseWheelEvent& wheel_event,
       const cc::InputHandlerScrollResult& scroll_result);
-
   void Animate(base::TimeTicks time);
 
  private:
-  // This method is responsible for both scrolling and rubber-banding.
-  //
-  // Events are passed by IPC from the embedder. Events on Mac are grouped
-  // into "gestures". If this method returns 'true', then this object has
-  // handled the event. It expects the embedder to continue to forward events
-  // from the gesture.
-  //
-  // This method makes the assumption that there is only 1 input device being
-  // used at a time. If the user simultaneously uses multiple input devices,
-  // Cocoa does not correctly pass all the gestureBegin/End events. The state
-  // of this class is guaranteed to become eventually consistent, once the
-  // user stops using multiple input devices.
-  bool HandleWheelEvent(const blink::WebMouseWheelEvent& wheel_event);
-  void SnapRubberbandTimerFired();
+  enum State {
+    // The initial state, during which the overscroll amount is zero and
+    // there are no active or momentum scroll events coming in. This state
+    // is briefly returned to between the active and momentum phases of a
+    // scroll (if there is no overscroll).
+    kStateInactive,
+    // The state between receiving PhaseBegan/MayBegin and PhaseEnd/Cancelled,
+    // corresponding to the period during which the user has fingers on the
+    // trackpad. The overscroll amount is updated as input events are received.
+    // When PhaseEnd is received, the state transitions to Inactive if there is
+    // no overscroll and MomentumAnimated if there is non-zero overscroll.
+    kStateActiveScroll,
+    // The state between receiving a momentum PhaseBegan and PhaseEnd, while
+    // there is no overscroll. The overscroll amount is updated as input events
+    // are received. If the overscroll is ever non-zero then the state
+    // immediately transitions to kStateMomentumAnimated.
+    kStateMomentumScroll,
+    // The state while the overscroll amount is updated by an animation. If
+    // the user places fingers on the trackpad (a PhaseMayBegin is received)
+    // then the state transition to kStateActiveScroll. Otherwise the state
+    // transitions to Inactive when the overscroll amount becomes zero.
+    kStateMomentumAnimated,
+  };
 
-  bool IsRubberbandInProgress() const;
-
-  void StopSnapRubberbandTimer();
-  void SnapRubberband();
-
-  // This method determines whether a given event should be handled. The
-  // logic for control events of gestures (PhaseBegan, PhaseEnded) is handled
-  // elsewhere.
-  //
-  // This class handles almost all wheel events. All of the following
-  // conditions must be met for this class to ignore an event:
-  // + No previous events in this gesture have caused any scrolling or rubber
-  // banding.
-  // + The event contains a horizontal component.
-  // + The helper's view is pinned in the horizontal direction of the event.
-  // + The wheel event disallows rubber banding in the horizontal direction
-  // of the event.
-  bool ShouldHandleEvent(const blink::WebMouseWheelEvent& wheel_event);
+  void UpdateVelocity(const gfx::Vector2dF& event_delta,
+                      const base::TimeTicks& event_timestamp);
+  void Overscroll(const gfx::Vector2dF& input_delta,
+                  const gfx::Vector2dF& overscroll_delta);
+  void EnterStateMomentumAnimated(
+      const base::TimeTicks& triggering_event_timestamp);
+  void EnterStateInactive();
 
   cc::ScrollElasticityHelper* helper_;
+  State state_;
 
-  // There is an active scroll gesture event. This parameter only gets set to
-  // false after the rubber band has been snapped, and before a new gesture
-  // has begun. A careful audit of the code may deprecate the need for this
-  // parameter.
-  bool in_scroll_gesture_;
-  // At least one event in the current gesture has been consumed and has
-  // caused the view to scroll or rubber band. All future events in this
-  // gesture will be consumed and overscrolls will cause rubberbanding.
-  bool has_scrolled_;
-  bool momentum_scroll_in_progress_;
-  bool ignore_momentum_scrolls_;
+  // If there is no overscroll, require a minimum overscroll delta before
+  // starting the rubber-band effect. Track the amount of scrolling that has
+  // has occurred but has not yet caused rubber-band stretching in
+  // |pending_overscroll_delta_|.
+  gfx::Vector2dF pending_overscroll_delta_;
 
-  // Used with blink::WebInputEvent::timeStampSeconds, in seconds since epoch.
-  double last_momentum_scroll_timestamp_;
-  gfx::Vector2dF overflow_scroll_delta_;
+  // Maintain a calculation of the velocity of the scroll, based on the input
+  // scroll delta divide by the time between input events. Track this velocity
+  // in |scroll_velocity| and the previous input event timestamp for finite
+  // differencing in |last_scroll_event_timestamp_|.
+  gfx::Vector2dF scroll_velocity;
+  base::TimeTicks last_scroll_event_timestamp_;
+
+  // The force of the rubber-band spring. This is reset to zero only when in
+  // the Inactive state.
   gfx::Vector2dF stretch_scroll_force_;
-  gfx::Vector2dF momentum_velocity_;
 
-  // Rubber band state.
-  base::Time start_time_;
-  gfx::Vector2dF start_stretch_;
-  gfx::Vector2dF orig_origin_;
-  gfx::Vector2dF orig_velocity_;
-
-  bool snap_rubberband_timer_is_active_;
+  // Momentum animation state. This state is valid only while the state is
+  // MomentumAnimated, and is initialized in EnterStateMomentumAnimated.
+  base::TimeTicks momentum_animation_start_time_;
+  gfx::Vector2dF momentum_animation_initial_stretch_;
+  gfx::Vector2dF momentum_animation_initial_velocity_;
 
   base::WeakPtrFactory<InputScrollElasticityController> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(InputScrollElasticityController);
