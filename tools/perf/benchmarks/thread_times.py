@@ -33,7 +33,7 @@ class ThreadTimesKeyHitTestCases(_ThreadTimes):
 class LegacySilkBenchmark(ThreadTimesKeySilkCases):
   """Same as thread_times.key_silk_cases but with the old name."""
   @classmethod
-  def GetName(cls):
+  def Name(cls):
     return "silk.key_silk_cases"
 
 
