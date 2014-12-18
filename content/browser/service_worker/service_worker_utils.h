@@ -24,6 +24,13 @@ class ServiceWorkerUtils {
 
   // Returns true if |scope| matches |url|.
   CONTENT_EXPORT static bool ScopeMatches(const GURL& scope, const GURL& url);
+
+  // Returns true if |scope| and |script_url| are satisfied with the
+  // ServiceWorker's path restriction.
+  CONTENT_EXPORT static bool IsPathRestrictionSatisfied(
+      const GURL& scope,
+      const GURL& script_url,
+      std::string* error_message);
 };
 
 class CONTENT_EXPORT LongestScopeMatcher {

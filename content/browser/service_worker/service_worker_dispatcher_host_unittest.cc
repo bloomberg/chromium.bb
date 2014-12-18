@@ -204,34 +204,6 @@ TEST_F(ServiceWorkerDispatcherHostTest, Register_NonSecureTransportLocalhost) {
            ServiceWorkerMsg_ServiceWorkerRegistered::ID);
 }
 
-TEST_F(ServiceWorkerDispatcherHostTest,
-       Register_DifferentDirectoryThanScriptShouldFail) {
-  const int64 kProviderId = 99;  // Dummy value
-  scoped_ptr<ServiceWorkerProviderHost> host(
-      CreateServiceWorkerProviderHost(kProviderId));
-  host->SetDocumentUrl(GURL("https://www.example.com/foo"));
-  context()->AddProviderHost(host.Pass());
-
-  SendRegister(kProviderId,
-               GURL("https://www.example.com/hoge/piyo"),
-               GURL("https://www.example.com/bar/hoge.js"));
-  EXPECT_EQ(1, dispatcher_host_->bad_messages_received_count_);
-}
-
-TEST_F(ServiceWorkerDispatcherHostTest,
-       Register_SameDirectoryAsScriptButNoSlashShouldFail) {
-  const int64 kProviderId = 99;  // Dummy value
-  scoped_ptr<ServiceWorkerProviderHost> host(
-      CreateServiceWorkerProviderHost(kProviderId));
-  host->SetDocumentUrl(GURL("https://www.example.com/foo"));
-  context()->AddProviderHost(host.Pass());
-
-  SendRegister(kProviderId,
-               GURL("https://www.example.com/bar"),
-               GURL("https://www.example.com/bar/hoge.js"));
-  EXPECT_EQ(1, dispatcher_host_->bad_messages_received_count_);
-}
-
 TEST_F(ServiceWorkerDispatcherHostTest, Register_InvalidScopeShouldFail) {
   const int64 kProviderId = 99;  // Dummy value
   scoped_ptr<ServiceWorkerProviderHost> host(

@@ -7,6 +7,17 @@
 
 namespace content {
 
+namespace {
+
+bool IsPathRestrictionSatisfied(
+    const GURL& scope, const GURL& script_url) {
+  std::string error_message;
+  return ServiceWorkerUtils::IsPathRestrictionSatisfied(
+      scope, script_url, &error_message);
+}
+
+}  // namespace
+
 TEST(ServiceWorkerUtilsTest, ScopeMatches) {
   ASSERT_TRUE(ServiceWorkerUtils::ScopeMatches(
       GURL("http://www.example.com/"), GURL("http://www.example.com/")));
@@ -83,6 +94,267 @@ TEST(ServiceWorkerUtilsTest, FindLongestScopeMatch) {
   ASSERT_TRUE(matcher.MatchLongest(GURL("http://www.example.com/xxx")));
 
   ASSERT_FALSE(matcher.MatchLongest(GURL("http://www.example.com/xxxx")));
+}
+
+TEST(ServiceWorkerUtilsTest, PathRestriction_Basic) {
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/"),
+      GURL("http://example.com/sw.js")));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/"),
+      GURL("http://example.com/sw.js")));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/"),
+      GURL("http://example.com/foo/sw.js")));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/bar"),
+      GURL("http://example.com/foo/sw.js")));
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/"),
+      GURL("http://example.com/foo/sw.js")));
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/bar/"),
+      GURL("http://example.com/foo/sw.js")));
+
+  // The scope is under the script directory, but that doesn't have the trailing
+  // slash. In this case, the check should be failed.
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo"),
+      GURL("http://example.com/foo/sw.js")));
+
+  // Query parameters should not affect the path restriction.
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/?query"),
+      GURL("http://example.com/sw.js")));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/?query"),
+      GURL("http://example.com/sw.js")));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/?query"),
+      GURL("http://example.com/foo/sw.js")));
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/?query"),
+      GURL("http://example.com/foo/sw.js")));
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/bar/query?"),
+      GURL("http://example.com/foo/sw.js")));
+
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/"),
+      GURL("http://example.com/sw.js?query")));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/"),
+      GURL("http://example.com/sw.js?query")));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/"),
+      GURL("http://example.com/foo/sw.js?query")));
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/"),
+      GURL("http://example.com/foo/sw.js?query")));
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/bar/"),
+      GURL("http://example.com/foo/sw.js?query")));
+
+  // Query parameter including a slash should not affect.
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/bar?key/value"),
+      GURL("http://example.com/foo/sw.js?key=value")));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/bar?key=value"),
+      GURL("http://example.com/foo/sw.js?key/value")));
+}
+
+TEST(ServiceWorkerUtils, PathRestriction_SelfReference) {
+  // Self reference is canonicalized.
+  ASSERT_EQ(GURL("http://example.com/foo/bar"),
+            GURL("http://example.com/././foo/bar"));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/"),
+      GURL("http://example.com/././foo/sw.js")));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/././foo/"),
+      GURL("http://example.com/foo/sw.js")));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/./"),
+      GURL("http://example.com/./foo/sw.js")));
+
+  // URL-encoded dot ('%2e') is also canonicalized.
+  ASSERT_EQ(GURL("http://example.com/foo/././bar"),
+            GURL("http://example.com/foo/%2e/%2e/bar"));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/%2e/%2e/bar"),
+      GURL("http://example.com/foo/%2e/%2e/sw.js")));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/bar"),
+      GURL("http://example.com/foo/%2e/%2e/sw.js")));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/%2e/%2e/bar"),
+      GURL("http://example.com/foo/sw.js")));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/%2e/bar"),
+      GURL("http://example.com/%2e/foo/sw.js")));
+
+  // URL-encoded dot ('%2E') is also canonicalized.
+  ASSERT_EQ(GURL("http://example.com/foo/././bar"),
+            GURL("http://example.com/foo/%2E/%2e/bar"));
+}
+
+TEST(ServiceWorkerUtilsTest, PathRestriction_ParentReference) {
+  // Parent reference is canonicalized.
+  ASSERT_EQ(GURL("http://example.com/foo/bar"),
+            GURL("http://example.com/foo/../foo/bar"));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/bar"),
+      GURL("http://example.com/foo/../foo/sw.js")));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/../foo/bar"),
+      GURL("http://example.com/foo/sw.js")));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/bar/../bar"),
+      GURL("http://example.com/../foo/sw.js")));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/../../../foo/bar"),
+      GURL("http://example.com/foo/sw.js")));
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/../bar"),
+      GURL("http://example.com/foo/sw.js")));
+
+  // URL-encoded dot ('%2e') is also canonicalized.
+  ASSERT_EQ(GURL("http://example.com/foo/../foo/bar"),
+            GURL("http://example.com/foo/%2e%2e/foo/bar"));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/bar"),
+      GURL("http://example.com/foo/%2e%2e/foo/sw.js")));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/%2e%2e/foo/bar"),
+      GURL("http://example.com/foo/sw.js")));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/%2e%2e/foo/bar"),
+      GURL("http://example.com/%2e%2e/foo/sw.js")));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/%2e%2e/%2e%2e/%2e%2e/foo/bar"),
+      GURL("http://example.com/foo/sw.js")));
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/%2e%2e/bar"),
+      GURL("http://example.com/foo/sw.js")));
+
+  // URL-encoded dot ('%2E') is also canonicalized.
+  ASSERT_EQ(GURL("http://example.com/foo/../foo/bar"),
+            GURL("http://example.com/foo/%2E%2E/foo/bar"));
+}
+
+TEST(ServiceWorkerUtilsTest, PathRestriction_ConsecutiveSlashes) {
+  // Consecutive slashes are not unified.
+  ASSERT_NE(GURL("http://example.com/foo/bar"),
+            GURL("http://example.com/foo///bar"));
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/bar"),
+      GURL("http://example.com/foo///sw.js")));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo///bar"),
+      GURL("http://example.com/foo/sw.js")));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo///bar"),
+      GURL("http://example.com/foo///sw.js")));
+}
+
+TEST(ServiceWorkerUtilsTest, PathRestriction_BackSlash) {
+  // A backslash is converted to a slash.
+  ASSERT_EQ(GURL("http://example.com/foo/bar"),
+            GURL("http://example.com/foo\\bar"));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo\\bar"),
+      GURL("http://example.com/foo/sw.js")));
+
+  // Consecutive back slashes should not unified.
+  ASSERT_NE(GURL("http://example.com/foo\\\\\\bar"),
+            GURL("http://example.com/foo\\bar"));
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo\\bar"),
+      GURL("http://example.com/foo\\\\\\sw.js")));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo\\\\\\bar"),
+      GURL("http://example.com/foo\\sw.js")));
+}
+
+TEST(ServiceWorkerUtilsTest, PathRestriction_DisallowedCharacter) {
+  // URL-encoded slash ('%2f') is not canonicalized.
+  ASSERT_NE(GURL("http://example.com/foo///bar"),
+            GURL("http://example.com/foo/%2f/bar"));
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo%2fbar/"),
+      GURL("http://example.com/foo/bar/sw.js")));
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/bar%2f"),
+      GURL("http://example.com/foo/bar/sw.js")));
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/bar/"),
+      GURL("http://example.com/foo/bar%2fsw.js")));
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/"),
+      GURL("http://example.com/foo/bar%2fsw.js")));
+
+  // URL-encoded slash ('%2F') is also not canonicalized.
+  ASSERT_NE(GURL("http://example.com/foo///bar"),
+            GURL("http://example.com/foo/%2F/bar"));
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo%2Fbar/"),
+      GURL("http://example.com/foo/bar/sw.js")));
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/bar%2F"),
+      GURL("http://example.com/foo/bar/sw.js")));
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/bar/"),
+      GURL("http://example.com/foo/bar%2Fsw.js")));
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/"),
+      GURL("http://example.com/foo/bar%2Fsw.js")));
+
+  // URL-encoded backslash ('%5c') is not canonicalized.
+  ASSERT_NE(GURL("http://example.com/foo/\\/bar"),
+            GURL("http://example.com/foo/%5c/bar"));
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo%5cbar/"),
+      GURL("http://example.com/foo/bar/sw.js")));
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/bar%5c"),
+      GURL("http://example.com/foo/bar/sw.js")));
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/bar/"),
+      GURL("http://example.com/foo/bar%5csw.js")));
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/"),
+      GURL("http://example.com/foo/bar%5csw.js")));
+
+  // URL-encoded backslash ('%5C') is also not canonicalized.
+  ASSERT_NE(GURL("http://example.com/foo/\\/bar"),
+            GURL("http://example.com/foo/%5C/bar"));
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo%5Cbar/"),
+      GURL("http://example.com/foo/bar/sw.js")));
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/bar%5C"),
+      GURL("http://example.com/foo/bar/sw.js")));
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/bar/"),
+      GURL("http://example.com/foo/bar%5Csw.js")));
+  EXPECT_FALSE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/"),
+      GURL("http://example.com/foo/bar%5Csw.js")));
+
+  // Query parameter should be able to have escaped characters.
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/bar?key%2fvalue"),
+      GURL("http://example.com/foo/sw.js?key/value")));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/bar?key/value"),
+      GURL("http://example.com/foo/sw.js?key%2fvalue")));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/bar?key%5cvalue"),
+      GURL("http://example.com/foo/sw.js?key\\value")));
+  EXPECT_TRUE(IsPathRestrictionSatisfied(
+      GURL("http://example.com/foo/bar?key\\value"),
+      GURL("http://example.com/foo/sw.js?key%5cvalue")));
 }
 
 }  // namespace content
