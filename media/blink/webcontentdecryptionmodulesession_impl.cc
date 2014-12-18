@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/blink/webcontentdecryptionmodulesession_impl.h"
+#include "webcontentdecryptionmodulesession_impl.h"
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"

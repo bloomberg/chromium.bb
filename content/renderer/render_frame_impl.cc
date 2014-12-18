@@ -97,6 +97,7 @@
 #include "media/base/audio_renderer_mixer_input.h"
 #include "media/base/media_log.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
+#include "media/blink/webencryptedmediaclient_impl.h"
 #include "media/blink/webmediaplayer_impl.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "media/filters/default_renderer_factory.h"
@@ -573,6 +574,7 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       handling_select_range_(false),
       notification_permission_dispatcher_(NULL),
       web_user_media_client_(NULL),
+      web_encrypted_media_client_(NULL),
       midi_dispatcher_(NULL),
 #if defined(OS_ANDROID)
       media_player_manager_(NULL),
@@ -1824,6 +1826,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
 #endif  // defined(OS_ANDROID)
 }
 
+// TODO(jrummell): remove once blink uses encryptedMediaClient().
 blink::WebContentDecryptionModule*
 RenderFrameImpl::createContentDecryptionModule(
     blink::WebLocalFrame* frame,
@@ -3259,6 +3262,23 @@ blink::WebUserMediaClient* RenderFrameImpl::userMediaClient() {
   if (!web_user_media_client_)
     InitializeUserMediaClient();
   return web_user_media_client_;
+}
+
+blink::WebEncryptedMediaClient* RenderFrameImpl::encryptedMediaClient() {
+  if (!web_encrypted_media_client_) {
+#if defined(ENABLE_PEPPER_CDMS)
+    scoped_ptr<media::CdmFactory> cdm_factory(
+        new RenderCdmFactory(base::Bind(PepperCdmWrapperImpl::Create, frame_)));
+#elif defined(ENABLE_BROWSER_CDMS)
+    scoped_ptr<media::CdmFactory> cdm_factory(
+        new RenderCdmFactory(GetCdmManager()));
+#else
+    scoped_ptr<media::CdmFactory> cdm_factory(new RenderCdmFactory());
+#endif
+    web_encrypted_media_client_ =
+        new media::WebEncryptedMediaClientImpl(cdm_factory.Pass());
+  }
+  return web_encrypted_media_client_;
 }
 
 blink::WebMIDIClient* RenderFrameImpl::webMIDIClient() {

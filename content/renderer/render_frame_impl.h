@@ -64,6 +64,10 @@ class Range;
 class Rect;
 }
 
+namespace media {
+class WebEncryptedMediaClientImpl;
+}
+
 namespace content {
 
 class ChildFrameCompositingHelper;
@@ -320,6 +324,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebURL& url,
       blink::WebMediaPlayerClient* client,
       blink::WebContentDecryptionModule* initial_cdm);
+  // TODO(jrummell): remove once blink uses encryptedMediaClient().
   virtual blink::WebContentDecryptionModule* createContentDecryptionModule(
       blink::WebLocalFrame* frame,
       const blink::WebSecurityOrigin& security_origin,
@@ -463,6 +468,7 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebLocalFrame* frame,
       blink::WebRTCPeerConnectionHandler* handler);
   virtual blink::WebUserMediaClient* userMediaClient();
+  virtual blink::WebEncryptedMediaClient* encryptedMediaClient();
   virtual blink::WebMIDIClient* webMIDIClient();
   virtual bool willCheckAndDispatchMessageEvent(
       blink::WebLocalFrame* source_frame,
@@ -776,6 +782,9 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Destroyed via the RenderFrameObserver::OnDestruct() mechanism.
   UserMediaClientImpl* web_user_media_client_;
+
+  // EncryptedMediaClient attached to this frame; lazily initialized.
+  media::WebEncryptedMediaClientImpl* web_encrypted_media_client_;
 
   // MidiClient attached to this frame; lazily initialized.
   MidiDispatcher* midi_dispatcher_;
