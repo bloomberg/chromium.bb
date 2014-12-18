@@ -9,7 +9,7 @@
 
 // Configurable service data.
 const char kDirectoryBaseUrl[] = "https://www.googleapis.com/chromoting/v1";
-const char kXmppServerAddress[] = "talk.google.com:5222";
+const char kXmppServerAddress[] = "talk.google.com:443";
 const bool kXmppServerUseTls = true;
 const char kDirectoryBotJid[] = "remoting@bot.talk.google.com";
 
