@@ -42,7 +42,7 @@ class ThreadTimesFastPathMobileSites(_ThreadTimes):
   """Measures timeline metrics while performing smoothness action on
   key mobile sites labeled with fast-path tag.
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
-  page_set = page_sets.KeyMobileSitesSmoothPageSet
+  page_set = page_sets.KeyMobileSitesPageSet
   options = {'page_label_filter' : 'fastpath'}
 
 

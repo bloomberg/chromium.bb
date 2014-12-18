@@ -101,7 +101,7 @@ class PageCyclerTop10Mobile(_PageCycler):
 
 @benchmark.Disabled
 class PageCyclerKeyMobileSites(_PageCycler):
-  page_set = page_sets.KeyMobileSitesSmoothPageSet
+  page_set = page_sets.KeyMobileSitesPageSet
 
 
 @benchmark.Disabled('android')  # crbug.com/357326

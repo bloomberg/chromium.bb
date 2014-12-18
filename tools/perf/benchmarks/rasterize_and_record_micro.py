@@ -50,7 +50,7 @@ class RasterizeAndRecordMicroKeyMobileSites(_RasterizeAndRecordMicro):
   """Measures rasterize and record performance on the key mobile sites.
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
-  page_set = page_sets.KeyMobileSitesSmoothPageSet
+  page_set = page_sets.KeyMobileSitesPageSet
 
 
 @benchmark.Disabled('mac', 'win')

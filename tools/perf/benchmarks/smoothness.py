@@ -46,7 +46,7 @@ class SmoothnessKeyMobileSites(benchmark.Benchmark):
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   test = smoothness.Smoothness
-  page_set = page_sets.KeyMobileSitesSmoothPageSet
+  page_set = page_sets.KeyMobileSitesPageSet
 
 
 class SmoothnessToughAnimationCases(benchmark.Benchmark):
@@ -81,7 +81,7 @@ class SmoothnessGpuRasterizationKeyMobileSites(benchmark.Benchmark):
   """
   tag = 'gpu_rasterization'
   test = smoothness.Smoothness
-  page_set = page_sets.KeyMobileSitesSmoothPageSet
+  page_set = page_sets.KeyMobileSitesPageSet
   def CustomizeBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
 
@@ -93,7 +93,7 @@ class SmoothnessSyncScrollKeyMobileSites(benchmark.Benchmark):
   """
   tag = 'sync_scroll'
   test = smoothness.Smoothness
-  page_set = page_sets.KeyMobileSitesSmoothPageSet
+  page_set = page_sets.KeyMobileSitesPageSet
   def CustomizeBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForSyncScrolling(options)
 

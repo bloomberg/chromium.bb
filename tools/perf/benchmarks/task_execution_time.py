@@ -12,7 +12,7 @@ class TaskExecutionTimeKeyMobileSites(benchmark.Benchmark):
   """Measures task execution statistics while scrolling down key mobile sites.
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   test = task_execution_time.TaskExecutionTime
-  page_set = page_sets.KeyMobileSitesSmoothPageSet
+  page_set = page_sets.KeyMobileSitesPageSet
 
 
 @benchmark.Enabled('android')
