@@ -1331,7 +1331,7 @@ crbug.com/422846 [ Linux ] virtual/slimmingpaint/fast/text/shaping/same-script-d
 crbug.com/424648 editing/selection/deleteFromDocument-crash.html [ Pass ImageOnlyFailure ]
 
 crbug.com/425345 [ Mac ] fast/text/line-break-after-question-mark.html [ Failure ]
-crbug.com/425345 [ XP Mac ] virtual/slimmingpaint/fast/text/line-break-after-question-mark.html [ Failure ]
+crbug.com/425345 [ Mac ] virtual/slimmingpaint/fast/text/line-break-after-question-mark.html [ Failure ]
 
 crbug.com/401377 [ XP ] http/tests/serviceworker/fetch-mixed-content-to-inscope.html [ Pass Timeout ]
 
