@@ -14,6 +14,7 @@ import cloud_storage_test_base
 import maps_expectations
 
 from telemetry import benchmark
+from telemetry.core import bitmap
 from telemetry.core import util
 from telemetry.page import page
 from telemetry.page import page_set
@@ -32,7 +33,7 @@ class _MapsValidator(cloud_storage_test_base.ValidatorBase):
     if not tab.screenshot_supported:
       raise page_test.Failure('Browser does not support screenshot capture')
     screenshot = tab.Screenshot(5)
-    if screenshot is None:
+    if not screenshot:
       raise page_test.Failure('Could not capture screenshot')
 
     dpr = tab.EvaluateJavaScript('window.devicePixelRatio')

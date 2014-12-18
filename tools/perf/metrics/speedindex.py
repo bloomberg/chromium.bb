@@ -5,8 +5,7 @@
 import collections
 
 from metrics import Metric
-from telemetry.image_processing import image_util
-from telemetry.image_processing import rgba_color
+from telemetry.core import bitmap
 from telemetry.value import scalar
 
 
@@ -138,17 +137,15 @@ class SpeedIndexImpl(object):
 
 class VideoSpeedIndexImpl(SpeedIndexImpl):
 
-  def __init__(self, image_util_module=image_util):
-    # Allow image_util to be passed in so we can fake it out for testing.
+  def __init__(self):
     super(VideoSpeedIndexImpl, self).__init__()
     self._time_completeness_list = None
-    self._image_util_module = image_util_module
 
   def Start(self, tab):
     assert tab.video_capture_supported
     # Blank out the current page so it doesn't count towards the new page's
     # completeness.
-    tab.Highlight(rgba_color.WHITE)
+    tab.Highlight(bitmap.WHITE)
     # TODO(tonyg): Bitrate is arbitrary here. Experiment with screen capture
     # overhead vs. speed index accuracy and set the bitrate appropriately.
     tab.StartVideoCapture(min_bitrate_mbps=4)
@@ -160,9 +157,9 @@ class VideoSpeedIndexImpl(SpeedIndexImpl):
     # video capture at 4mbps. We should keep this as low as possible with
     # supported video compression settings.
     video_capture = tab.StopVideoCapture()
-    histograms = [(time, self._image_util_module.GetColorHistogram(
-                       image, ignore_color=rgba_color.WHITE, tolerance=8))
-                  for time, image in video_capture.GetVideoFrameIter()]
+    histograms = [(time, bmp.ColorHistogram(ignore_color=bitmap.WHITE,
+                                            tolerance=8))
+                  for time, bmp in video_capture.GetVideoFrameIter()]
 
     start_histogram = histograms[0][1]
     final_histogram = histograms[-1][1]

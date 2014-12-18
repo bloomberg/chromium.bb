@@ -12,7 +12,7 @@ import page_sets
 import pixel_expectations
 
 from telemetry import benchmark
-from telemetry.image_processing import image_util
+from telemetry.core import bitmap
 from telemetry.page import page_test
 from telemetry.util import cloud_storage
 
@@ -62,12 +62,12 @@ class _PixelValidator(cloud_storage_test_base.ValidatorBase):
 
     screenshot = tab.Screenshot(5)
 
-    if screenshot is None:
+    if not screenshot:
       raise page_test.Failure('Could not capture screenshot')
 
     if hasattr(page, 'test_rect'):
-      screenshot = image_util.Crop(
-          screenshot, page.test_rect[0], page.test_rect[1],
+      screenshot = screenshot.Crop(
+          page.test_rect[0], page.test_rect[1],
           page.test_rect[2], page.test_rect[3])
 
     image_name = self._UrlToImageName(page.display_name)
@@ -104,7 +104,7 @@ class _PixelValidator(cloud_storage_test_base.ValidatorBase):
           image_name, page.revision, screenshot)
 
     # Test new snapshot against existing reference image
-    if not image_util.AreEqual(ref_png, screenshot, tolerance=2):
+    if not ref_png.IsEqual(screenshot, tolerance=2):
       if self.options.test_machine_name:
         self._UploadErrorImagesToCloudStorage(image_name, screenshot, ref_png)
       else:
@@ -134,11 +134,11 @@ class _PixelValidator(cloud_storage_test_base.ValidatorBase):
     image_path = image_path + '_' + str(cur_revision) + '.png'
 
     try:
-      ref_png = image_util.FromPngFile(image_path)
+      ref_png = bitmap.Bitmap.FromPngFile(image_path)
     except IOError:
       ref_png = None
 
-    if ref_png is not None:
+    if ref_png:
       return ref_png
 
     print 'Reference image not found. Writing tab contents as reference.'
