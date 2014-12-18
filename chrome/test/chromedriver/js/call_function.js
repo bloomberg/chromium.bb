@@ -101,7 +101,7 @@ Cache.prototype = {
     if (nodeRoot == document)
       return true;
     else if (SHADOW_DOM_ENABLED && nodeRoot instanceof ShadowRoot)
-      return true;
+      return this.isNodeReachable_(nodeRoot.host);
 
     return false;
   }
@@ -148,7 +148,7 @@ function wrap(value) {
         || (SHADOW_DOM_ENABLED && value instanceof ShadowRoot)) {
       var wrapped = {};
       var root = getNodeRoot(value);
-      wrapped[ELEMENT_KEY] = getPageCache(root).storeItem(value);
+      wrapped[ELEMENT_KEY] = getPageCache().storeItem(value);
       return wrapped;
     }
 

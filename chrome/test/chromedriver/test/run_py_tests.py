@@ -743,6 +743,96 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     lots_of_data = self._driver.ExecuteScript(script)
     self.assertEquals('0'.zfill(int(10e6)), lots_of_data)
 
+  def testShadowDomFindElementWithSlashDeep(self):
+    """Checks that chromedriver can find elements in a shadow DOM using /deep/
+    css selectors."""
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/shadow_dom_test.html'))
+    self.assertTrue(self._driver.FindElement("css", "* /deep/ #olderTextBox"))
+
+  def testShadowDomFindChildElement(self):
+    """Checks that chromedriver can find child elements from a shadow DOM
+    element."""
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/shadow_dom_test.html'))
+    elem = self._driver.FindElement("css", "* /deep/ #olderChildDiv")
+    self.assertTrue(elem.FindElement("id", "olderTextBox"))
+
+  def testShadowDomFindElementFailsFromRootWithoutSlashDeep(self):
+    """Checks that chromedriver can't find elements in a shadow DOM without
+    /deep/."""
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/shadow_dom_test.html'))
+    # can't find element from the root without /deep/
+    with self.assertRaises(chromedriver.NoSuchElement):
+      self._driver.FindElement("id", "#olderTextBox")
+
+  def testShadowDomFindElementFailsBetweenShadowRoots(self):
+    """Checks that chromedriver can't find elements in other shadow DOM
+    trees."""
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/shadow_dom_test.html'))
+    elem = self._driver.FindElement("css", "* /deep/ #youngerChildDiv")
+    with self.assertRaises(chromedriver.NoSuchElement):
+      elem.FindElement("id", "#olderTextBox")
+
+  def testShadowDomText(self):
+    """Checks that chromedriver can find extract the text from a shadow DOM
+    element."""
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/shadow_dom_test.html'))
+    elem = self._driver.FindElement("css", "* /deep/ #olderHeading")
+    self.assertEqual("Older Child", elem.GetText())
+
+  def testShadowDomSendKeys(self):
+    """Checks that chromedriver can call SendKeys on a shadow DOM element."""
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/shadow_dom_test.html'))
+    elem = self._driver.FindElement("css", "* /deep/ #olderTextBox")
+    elem.SendKeys("bar")
+    self.assertEqual("foobar", self._driver.ExecuteScript(
+        'return document.querySelector("* /deep/ #olderTextBox").value;'))
+
+  def testShadowDomClear(self):
+    """Checks that chromedriver can call Clear on a shadow DOM element."""
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/shadow_dom_test.html'))
+    elem = self._driver.FindElement("css", "* /deep/ #olderTextBox")
+    elem.Clear()
+    self.assertEqual("", self._driver.ExecuteScript(
+        'return document.querySelector("* /deep/ #olderTextBox").value;'))
+
+  def testShadowDomClick(self):
+    """Checks that chromedriver can call Click on an element in a shadow DOM."""
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/shadow_dom_test.html'))
+    elem = self._driver.FindElement("css", "* /deep/ #olderButton")
+    elem.Click()
+    # the butotn's onClicked handler changes the text box's value
+    self.assertEqual("Button Was Clicked", self._driver.ExecuteScript(
+        'return document.querySelector("* /deep/ #olderTextBox").value;'))
+
+  def testShadowDomStaleReference(self):
+    """Checks that trying to manipulate shadow DOM elements that are detached
+    from the document raises a StaleElementReference exception"""
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/shadow_dom_test.html'))
+    elem = self._driver.FindElement("css", "* /deep/ #olderButton")
+    self._driver.ExecuteScript(
+        'document.querySelector("#outerDiv").innerHTML="<div/>";')
+    with self.assertRaises(chromedriver.StaleElementReference):
+      elem.Click()
+
+  def testShadowDomDisplayed(self):
+    """Checks that trying to manipulate shadow DOM elements that are detached
+    from the document raises a StaleElementReference exception"""
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/shadow_dom_test.html'))
+    elem = self._driver.FindElement("css", "* /deep/ #olderButton")
+    self.assertTrue(elem.IsDisplayed())
+    self._driver.ExecuteScript(
+        'document.querySelector("#outerDiv").style.display="None";')
+    self.assertFalse(elem.IsDisplayed())
 
 class ChromeDriverAndroidTest(ChromeDriverBaseTest):
   """End to end tests for Android-specific tests."""
