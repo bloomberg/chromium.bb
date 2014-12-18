@@ -31,11 +31,12 @@ namespace content {
 
 namespace {
 
-const char kShutdownErrorMessage[] =
-    "The Service Worker system has shutdown.";
-const char kDisabledErrorMessage[] = "The browser has disabled Service Worker.";
 const char kNoDocumentURLErrorMessage[] =
     "No URL is associated with the caller's document.";
+const char kShutdownErrorMessage[] =
+    "The Service Worker system has shutdown.";
+const char kUserDeniedPermissionMessage[] =
+    "The user denied permission to use Service Worker.";
 
 const uint32 kFilteredMessageClasses[] = {
   ServiceWorkerMsgStart,
@@ -314,8 +315,8 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
     Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
         thread_id,
         request_id,
-        WebServiceWorkerError::ErrorTypeDisabled,
-        base::ASCIIToUTF16(kDisabledErrorMessage)));
+        WebServiceWorkerError::ErrorTypeUnknown,
+        base::ASCIIToUTF16(kUserDeniedPermissionMessage)));
     return;
   }
 
@@ -390,8 +391,8 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
     Send(new ServiceWorkerMsg_ServiceWorkerUnregistrationError(
         thread_id,
         request_id,
-        WebServiceWorkerError::ErrorTypeDisabled,
-        base::ASCIIToUTF16(kDisabledErrorMessage)));
+        WebServiceWorkerError::ErrorTypeUnknown,
+        base::ASCIIToUTF16(kUserDeniedPermissionMessage)));
     return;
   }
 
@@ -465,8 +466,8 @@ void ServiceWorkerDispatcherHost::OnGetRegistration(
     Send(new ServiceWorkerMsg_ServiceWorkerGetRegistrationError(
         thread_id,
         request_id,
-        WebServiceWorkerError::ErrorTypeDisabled,
-        base::ASCIIToUTF16(kDisabledErrorMessage)));
+        WebServiceWorkerError::ErrorTypeUnknown,
+        base::ASCIIToUTF16(kUserDeniedPermissionMessage)));
     return;
   }
 
