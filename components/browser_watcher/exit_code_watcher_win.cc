@@ -27,8 +27,7 @@ base::string16 GetValueName(const base::Time creation_time,
 const char ExitCodeWatcher::kParenthHandleSwitch[] = "parent-handle";
 
 ExitCodeWatcher::ExitCodeWatcher(const base::char16* registry_path) :
-    registry_path_(registry_path),
-    process_pid_(0) {
+    registry_path_(registry_path) {
 }
 
 ExitCodeWatcher::~ExitCodeWatcher() {
@@ -63,8 +62,7 @@ bool ExitCodeWatcher::ParseArguments(const base::CommandLine& cmd_line) {
   }
 
   // Success, take ownership of the process handle.
-  process_.Set(process_handle);
-  process_pid_ = process_pid;
+  process_ = base::Process(process_handle);
   process_creation_time_ = base::Time::FromFileTime(creation_time);
 
   // Start by writing the value STILL_ACTIVE to registry, to allow detection
@@ -75,12 +73,10 @@ bool ExitCodeWatcher::ParseArguments(const base::CommandLine& cmd_line) {
 
 void ExitCodeWatcher::WaitForExit() {
   int exit_code = 0;
-  if (!base::WaitForExitCode(process_.Get(), &exit_code)) {
+  if (!process_.WaitForExit(&exit_code)) {
     LOG(ERROR) << "Failed to wait for process.";
     return;
   }
-  // WaitForExitCode closes the handle on success.
-  process_.Take();
 
   WriteProcessExitCode(exit_code);
 }
@@ -89,7 +85,8 @@ bool ExitCodeWatcher::WriteProcessExitCode(int exit_code) {
   base::win::RegKey key(HKEY_CURRENT_USER,
                         registry_path_.c_str(),
                         KEY_WRITE);
-  base::string16 value_name(GetValueName(process_creation_time_, process_pid_));
+  base::string16 value_name(
+      GetValueName(process_creation_time_, process_.pid()));
 
   ULONG result = key.WriteValue(value_name.c_str(), exit_code);
   if (result != ERROR_SUCCESS) {

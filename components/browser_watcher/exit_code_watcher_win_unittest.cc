@@ -5,7 +5,7 @@
 #include "components/browser_watcher/exit_code_watcher_win.h"
 
 #include "base/command_line.h"
-#include "base/process/kill.h"
+#include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -33,42 +33,43 @@ MULTIPROCESS_TEST_MAIN(Sleeper) {
 
 class ScopedSleeperProcess {
  public:
-   ScopedSleeperProcess() :
-      process_(base::kNullProcessHandle),
-      process_id_(base::kNullProcessId),
-      is_killed_(false) {
+   ScopedSleeperProcess() : is_killed_(false) {
   }
 
   ~ScopedSleeperProcess() {
-    if (process_ != base::kNullProcessHandle) {
-      base::KillProcess(process_, -1, true);
-      base::CloseProcessHandle(process_);
+    if (process_.IsValid()) {
+      process_.Terminate(-1);
+      int exit_code = 0;
+      EXPECT_TRUE(process_.WaitForExit(&exit_code));
     }
   }
 
   void Launch() {
-    ASSERT_EQ(base::kNullProcessHandle, process_);
+    ASSERT_FALSE(process_.IsValid());
 
     base::CommandLine cmd_line(base::GetMultiProcessTestChildBaseCommandLine());
     base::LaunchOptions options;
     options.start_hidden = true;
-    process_ = base::SpawnMultiProcessTestChild("Sleeper", cmd_line, options);
-    process_id_ = base::GetProcId(process_);
-    ASSERT_NE(base::kNullProcessHandle, process_);
+    process_ = base::Process(
+        base::SpawnMultiProcessTestChild("Sleeper", cmd_line, options));
+    ASSERT_TRUE(process_.IsValid());
   }
 
   void Kill(int exit_code, bool wait) {
-    ASSERT_NE(process_, base::kNullProcessHandle);
+    ASSERT_TRUE(process_.IsValid());
     ASSERT_FALSE(is_killed_);
-    ASSERT_TRUE(base::KillProcess(process_, exit_code, wait));
+    process_.Terminate(exit_code);
+    int seen_exit_code = 0;
+    EXPECT_TRUE(process_.WaitForExit(&seen_exit_code));
+    EXPECT_EQ(exit_code, seen_exit_code);
     is_killed_ = true;
   }
 
   void GetNewHandle(base::ProcessHandle* output) {
-    ASSERT_NE(process_, base::kNullProcessHandle);
+    ASSERT_TRUE(process_.IsValid());
 
     ASSERT_TRUE(DuplicateHandle(::GetCurrentProcess(),
-                                process_,
+                                process_.Handle(),
                                 ::GetCurrentProcess(),
                                 output,
                                 0,
@@ -76,12 +77,10 @@ class ScopedSleeperProcess {
                                 DUPLICATE_SAME_ACCESS));
   }
 
-  base::ProcessHandle process() const { return process_; }
-  base::ProcessId process_id() const { return process_id_; }
+  const base::Process& process() const { return process_; }
 
  private:
-  base::ProcessHandle process_;
-  base::ProcessId process_id_;
+  base::Process process_;
   bool is_killed_;
 };
 
@@ -190,7 +189,7 @@ TEST_F(BrowserWatcherTest, ExitCodeWatcherSucceedsInit) {
                               base::StringPrintf("%d", process_));
   EXPECT_TRUE(watcher.ParseArguments(cmd_line_));
 
-  ASSERT_EQ(process_, watcher.process());
+  ASSERT_EQ(process_, watcher.process().Handle());
 
   // The watcher takes ownership of the handle, make sure it's not
   // double-closed.
@@ -204,7 +203,7 @@ TEST_F(BrowserWatcherTest, ExitCodeWatcherOnExitedProcess) {
   // Create a new handle to the sleeper process. This handle will leak in
   // the case this test fails. A ScopedHandle cannot be used here, as the
   // ownership would momentarily be held by two of them, which is disallowed.
-  base::ProcessHandle sleeper_handle;
+  base::ProcessHandle sleeper_handle = base::kNullProcessHandle;
   sleeper.GetNewHandle(&sleeper_handle);
 
   ExitCodeWatcher watcher(kRegistryPath);
@@ -212,17 +211,17 @@ TEST_F(BrowserWatcherTest, ExitCodeWatcherOnExitedProcess) {
   cmd_line_.AppendSwitchASCII(ExitCodeWatcher::kParenthHandleSwitch,
                               base::StringPrintf("%d", sleeper_handle));
   EXPECT_TRUE(watcher.ParseArguments(cmd_line_));
-  ASSERT_EQ(sleeper_handle, watcher.process());
+  ASSERT_EQ(sleeper_handle, watcher.process().Handle());
 
   // Verify that the watcher wrote a sentinel for the process.
-  VerifyWroteExitCode(sleeper.process_id(), STILL_ACTIVE);
+  VerifyWroteExitCode(sleeper.process().pid(), STILL_ACTIVE);
 
   // Kill the sleeper, and make sure it's exited before we continue.
   ASSERT_NO_FATAL_FAILURE(sleeper.Kill(kExitCode, true));
 
   watcher.WaitForExit();
 
-  VerifyWroteExitCode(sleeper.process_id(), kExitCode);
+  VerifyWroteExitCode(sleeper.process().pid(), kExitCode);
 }
 
 }  // namespace browser_watcher
