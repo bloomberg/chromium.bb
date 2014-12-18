@@ -259,6 +259,7 @@ WebViewEvents.prototype.setupWebRequestEvents = function() {
     );
   }
 
+  request = this.webViewImpl.maybeSetupExperimentalChromeWebViewEvents(request);
   this.webViewImpl.setRequestPropertyOnWebViewElement(request);
 };
 
