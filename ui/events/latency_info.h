@@ -104,7 +104,7 @@ struct EVENTS_BASE_EXPORT LatencyInfo {
   };
 
   // Empirically determined constant based on a typical scroll sequence.
-  enum { kTypicalMaxComponentsPerLatencyInfo = 6 };
+  enum { kTypicalMaxComponentsPerLatencyInfo = 7 };
 
   enum { kMaxInputCoordinates = 2 };
 
