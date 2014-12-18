@@ -12,8 +12,8 @@ Getting an error page instead of login page navigating back in gmail.</p>
 
 function submitForm()
 {
-    // Submit form in a RAF to make sure that we create a new back/forward list item.
-    requestAnimationFrame(function() {document.forms[0].submit()});
+    // Submit form in a timeout to make sure that we create a new back/forward list item.
+    setTimeout(function() {document.forms[0].submit()}, 0);
 }
 
 if (window.testRunner) {

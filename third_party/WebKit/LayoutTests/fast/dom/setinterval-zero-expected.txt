@@ -1,5 +1,0 @@
-Checks the behaviour of setInterval(..., 0); It should be called repeatedly in a 100ms interval.
-
-
-PASS: All tests passed.
-

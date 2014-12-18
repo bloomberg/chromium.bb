@@ -4,7 +4,7 @@ if (window.testRunner) {
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
 }
-requestAnimationFrame(function(){
+setTimeout(function(){
     document.body.scrollLeft;
     // Check that ignoreLayoutWithPendingStylesheets will return true if we did a
     // forced repaint after the access to scrollLeft. We should not since the delayed
@@ -16,7 +16,6 @@ requestAnimationFrame(function(){
     document.close();
     if (window.testRunner)
         testRunner.notifyDone();
-});
+}, 0);
 </script>
-
 <link rel="stylesheet" href="/resources/slow-script.pl?delay=100">
