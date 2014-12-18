@@ -137,6 +137,9 @@ crbug.com/311482 virtual/threaded/animations/keyframes-unprefixed-03.html [ Slow
 
 crbug.com/258896 animations/animation-direction-reverse-fill-mode.html [ Slow ]
 
+# This test has to generate >250MB of data which takes ~6s in both release and debug.
+crbug.com/420240 http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Slow ]
+
 # FIXME: These tests might still be buggy and time out. They were marked as Slow on 9/20/2013.
 # Double-check the data after they've been running another week or so.
 webkit.org/b/58193 [ Win7 ] http/tests/local/fileapi/send-sliced-dragged-file.html [ Slow ]

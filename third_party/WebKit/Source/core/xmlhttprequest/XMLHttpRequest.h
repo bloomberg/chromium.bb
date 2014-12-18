@@ -307,6 +307,7 @@ private:
     // True iff the ongoing resource loading is using the downloadToFile
     // option.
     bool m_downloadingToFile;
+    bool m_responseTextOverflow;
 };
 
 } // namespace blink
