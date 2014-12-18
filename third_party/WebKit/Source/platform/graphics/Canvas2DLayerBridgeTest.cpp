@@ -115,7 +115,7 @@ protected:
     {
         MockCanvasContext mainMock;
         OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock));
-        RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterPMColor(300, 150));
+        RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterN32Premul(300, 150));
         OwnPtr<SkDeferredCanvas> canvas = adoptPtr(SkDeferredCanvas::Create(surface.get()));
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
@@ -139,7 +139,7 @@ protected:
     {
         MockCanvasContext mainMock;
         OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock));
-        RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterPMColor(300, 150));
+        RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterN32Premul(300, 150));
         OwnPtr<SkDeferredCanvas> canvas = adoptPtr(SkDeferredCanvas::Create(surface.get()));
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
@@ -171,7 +171,7 @@ protected:
     void prepareMailboxWithBitmapTest()
     {
         MockCanvasContext mainMock;
-        RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterPMColor(300, 150));
+        RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterN32Premul(300, 150));
         OwnPtr<SkDeferredCanvas> canvas = adoptPtr(SkDeferredCanvas::Create(surface.get()));
         OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock));
         Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(mainMockProvider.release(), canvas.release(), surface, 0, NonOpaque)));
@@ -185,7 +185,7 @@ protected:
     void prepareMailboxAndLoseResourceTest()
     {
         MockCanvasContext mainMock;
-        RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterPMColor(300, 150));
+        RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterN32Premul(300, 150));
         bool lostResource = true;
 
         // Prepare a mailbox, then report the resource as lost.
