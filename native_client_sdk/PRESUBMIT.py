@@ -15,6 +15,7 @@ def CommonChecks(input_api, output_api):
     'F0401',  # Unable to import module
     'R0401',  # Cyclic import
     'W0613',  # Unused argument
+    'W0403',  # relative import warnings
     'E1103',  # subprocess.communicate() generates these :(
     'R0201',  # method could be function (doesn't reference self)
   ]
