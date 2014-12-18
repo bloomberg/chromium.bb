@@ -21,8 +21,12 @@
 #include "sandbox/linux/services/arm_linux_syscalls.h"
 #endif
 
-#if defined(__mips__) && defined(_ABIO32)
+#if defined(__mips__) && (_MIPS_SIM == _ABIO32)
 #include "sandbox/linux/services/mips_linux_syscalls.h"
+#endif
+
+#if defined(__mips__) && (_MIPS_SIM == _ABI64)
+#include "sandbox/linux/services/mips64_linux_syscalls.h"
 #endif
 
 #if defined(__aarch64__)
