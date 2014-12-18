@@ -268,6 +268,24 @@ crbug.com/318978 [ Linux ] plugins/ [ Skip ]
 crbug.com/380217 [ Linux Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-large-radius.html [ Skip ]
 crbug.com/380217 [ Linux Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-bottom-left.html [ Skip ]
 
+crbug.com/405389 imported/csswg-test/css-shapes-1/shape-outside/supported-shapes/polygon/shape-outside-polygon-017.html [ ImageOnlyFailure ]
+crbug.com/424365 imported/csswg-test/css-shapes-1/shape-outside/shape-image/shape-image-010.html [ ImageOnlyFailure ]
+crbug.com/424365 imported/csswg-test/css-shapes-1/shape-outside/shape-image/shape-image-024.html [ ImageOnlyFailure ]
+crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-margin-001.html [ Failure ]
+crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-circle-004.html [ Failure ]
+crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-circle-005.html [ Failure ]
+crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-ellipse-004.html [ Failure ]
+crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-ellipse-005.html [ Failure ]
+crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-inset-003.html [ Failure ]
+crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-polygon-004.html [ Failure ]
+crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-shape-arguments-000.html [ Failure ]
+
+crbug.com/443615 [ Linux Win ] imported/csswg-test/css-shapes-1/shape-outside/supported-shapes/circle/shape-outside-circle-027.html [ ImageOnlyFailure ]
+
+crbug.com/443379 imported/web-platform-tests/gamepad/idlharness.html [ Failure Timeout ]
+
+crbug.com/443382 imported/web-platform-tests/subresource-integrity/subresource-integrity.html [ Failure ]
+
 crbug.com/389648 fast/text-autosizing/table-inflation-crash.html [ Pass Crash ]
 
 crbug.com/396775 compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]

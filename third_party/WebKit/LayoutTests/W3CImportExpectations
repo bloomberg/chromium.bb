@@ -25,7 +25,7 @@ imported/csswg-test/css-namespaces-1 [ Skip ]
 imported/csswg-test/css-page-3 [ Skip ]
 imported/csswg-test/css-regions-1 [ Skip ]
 imported/csswg-test/css-ruby-1 [ Skip ]
-imported/csswg-test/css-shapes-1 [ Skip ]
+# imported/csswg-test/css-shapes-1 [ Pass ]
 imported/csswg-test/css-speech-1 [ Skip ]
 imported/csswg-test/css-style-attr-1 [ Skip ]
 imported/csswg-test/css-syntax-3 [ Skip ]
@@ -163,3 +163,9 @@ imported/web-platform-tests/shadow-dom/styles/not-apply-in-shadow-root-001.html 
 # Uses custom request handler
 imported/web-platform-tests/encoding/single-byte-decoder.html [ Skip ]
 imported/web-platform-tests/encoding/resources/single-byte-raw.py [ Skip ]
+
+# http://crbug.com/443386 : Skip manual tests explicitly until the import script knows how to do it
+imported/web-platform-tests/gamepad/events-manual.html [ Skip ]
+imported/web-platform-tests/gamepad/getgamepads-polling-manual.html [ Skip ]
+imported/web-platform-tests/gamepad/idlharness-manual.html [ Skip ]
+imported/web-platform-tests/gamepad/timestamp-manual.html [ Skip ]
