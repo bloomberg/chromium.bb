@@ -19,11 +19,11 @@ bool isCSPDirectiveValueCharacter(UChar c)
     return isASCIISpace(c) || (c >= 0x21 && c <= 0x7e); // Whitespace + VCHAR
 }
 
-// Only checks for general Base64 encoded chars, not '=' chars since '=' is
+// Only checks for general Base64(url) encoded chars, not '=' chars since '=' is
 // positional and may only appear at the end of a Base64 encoded string.
 bool isBase64EncodedCharacter(UChar c)
 {
-    return isASCIIAlphanumeric(c) || c == '+' || c == '/';
+    return isASCIIAlphanumeric(c) || c == '+' || c == '/' || c == '-' || c == '_';
 }
 
 bool isNonceCharacter(UChar c)
