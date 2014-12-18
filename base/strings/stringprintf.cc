@@ -6,6 +6,8 @@
 
 #include <errno.h>
 
+#include <vector>
+
 #include "base/scoped_clear_errno.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -27,7 +29,7 @@ inline int vsnprintfT(char* buffer,
   return base::vsnprintf(buffer, buf_size, format, argptr);
 }
 
-#if !defined(OS_ANDROID)
+#if defined(OS_WIN)
 inline int vsnprintfT(wchar_t* buffer,
                       size_t buf_size,
                       const wchar_t* format,
@@ -117,7 +119,7 @@ std::string StringPrintf(const char* format, ...) {
   return result;
 }
 
-#if !defined(OS_ANDROID)
+#if defined(OS_WIN)
 std::wstring StringPrintf(const wchar_t* format, ...) {
   va_list ap;
   va_start(ap, format);
@@ -143,7 +145,7 @@ const std::string& SStringPrintf(std::string* dst, const char* format, ...) {
   return *dst;
 }
 
-#if !defined(OS_ANDROID)
+#if defined(OS_WIN)
 const std::wstring& SStringPrintf(std::wstring* dst,
                                   const wchar_t* format, ...) {
   va_list ap;
@@ -162,7 +164,7 @@ void StringAppendF(std::string* dst, const char* format, ...) {
   va_end(ap);
 }
 
-#if !defined(OS_ANDROID)
+#if defined(OS_WIN)
 void StringAppendF(std::wstring* dst, const wchar_t* format, ...) {
   va_list ap;
   va_start(ap, format);
@@ -175,7 +177,7 @@ void StringAppendV(std::string* dst, const char* format, va_list ap) {
   StringAppendVT(dst, format, ap);
 }
 
-#if !defined(OS_ANDROID)
+#if defined(OS_WIN)
 void StringAppendV(std::wstring* dst, const wchar_t* format, va_list ap) {
   StringAppendVT(dst, format, ap);
 }
