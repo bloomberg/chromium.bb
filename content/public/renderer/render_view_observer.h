@@ -73,10 +73,6 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
       blink::WebLocalFrame* frame,
       const blink::WebVector<blink::WebString>& newly_matching_selectors,
       const blink::WebVector<blink::WebString>& stopped_matching_selectors) {}
-  virtual void WillSendSubmitEvent(blink::WebLocalFrame* frame,
-                                   const blink::WebFormElement& form) {}
-  virtual void WillSubmitForm(blink::WebLocalFrame* frame,
-                              const blink::WebFormElement& form) {}
   virtual void DidCreateDataSource(blink::WebLocalFrame* frame,
                                    blink::WebDataSource* ds) {}
   virtual void PrintPage(blink::WebLocalFrame* frame, bool user_initiated) {}

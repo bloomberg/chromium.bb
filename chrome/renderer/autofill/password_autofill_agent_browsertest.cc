@@ -1515,8 +1515,8 @@ TEST_F(PasswordAutofillAgentTest,
   // site's JavaScript before submit.
   username_element_.setValue(WebString());
   password_element_.setValue(WebString());
-  static_cast<content::RenderViewObserver*>(&password_autofill_agent_->legacy_)
-      ->WillSubmitForm(GetMainFrame(), username_element_.form());
+  static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+      ->WillSubmitForm(username_element_.form());
 
   // Observe that the PasswordAutofillAgent still remembered the last non-empty
   // username and password and sent that to the browser.
@@ -1539,8 +1539,8 @@ TEST_F(PasswordAutofillAgentTest,
                                 true);
   SimulateInputChangeForElement(
       "", true, GetMainFrame(), password_element_, true);
-  static_cast<content::RenderViewObserver*>(&password_autofill_agent_->legacy_)
-      ->WillSubmitForm(GetMainFrame(), username_element_.form());
+  static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+      ->WillSubmitForm(username_element_.form());
 
   // Observe that the PasswordAutofillAgent respects the user having cleared the
   // password.
@@ -1569,8 +1569,8 @@ TEST_F(PasswordAutofillAgentTest,
   // the site's JavaScript before submit.
   username_element_.setValue(WebString());
   password_element_.setValue(WebString());
-  static_cast<content::RenderViewObserver*>(&password_autofill_agent_->legacy_)
-      ->WillSubmitForm(GetMainFrame(), username_element_.form());
+  static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+      ->WillSubmitForm(username_element_.form());
 
   // Observe that the PasswordAutofillAgent still remembered the last non-empty
   // password and sent that to the browser.

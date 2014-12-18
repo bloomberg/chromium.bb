@@ -2128,8 +2128,7 @@ void RenderFrameImpl::willSendSubmitEvent(blink::WebLocalFrame* frame,
                                           const blink::WebFormElement& form) {
   DCHECK(!frame_ || frame_ == frame);
 
-  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
-                    WillSendSubmitEvent(frame, form));
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, WillSendSubmitEvent(form));
 }
 
 void RenderFrameImpl::willSubmitForm(blink::WebLocalFrame* frame,
@@ -2152,8 +2151,7 @@ void RenderFrameImpl::willSubmitForm(blink::WebLocalFrame* frame,
   internal_data->set_searchable_form_encoding(
       web_searchable_form_data.encoding().utf8());
 
-  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
-                    WillSubmitForm(frame, form));
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, WillSubmitForm(form));
 }
 
 void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,

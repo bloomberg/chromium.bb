@@ -194,11 +194,7 @@ void AutofillAgent::FrameDetached(WebFrame* frame) {
   form_cache_.Reset();
 }
 
-void AutofillAgent::WillSubmitForm(WebLocalFrame* frame,
-                                   const WebFormElement& form) {
-  if (frame != render_frame()->GetWebFrame())
-    return;
-
+void AutofillAgent::WillSubmitForm(const WebFormElement& form) {
   FormData form_data;
   if (WebFormElementToFormData(form,
                                WebFormControlElement(),
@@ -807,12 +803,6 @@ void AutofillAgent::LegacyAutofillAgent::OnDestruct() {
 
 void AutofillAgent::LegacyAutofillAgent::FrameDetached(WebFrame* frame) {
   agent_->FrameDetached(frame);
-}
-
-void AutofillAgent::LegacyAutofillAgent::WillSubmitForm(
-    WebLocalFrame* frame,
-    const WebFormElement& form) {
-  agent_->WillSubmitForm(frame, form);
 }
 
 void AutofillAgent::LegacyAutofillAgent::FocusedNodeChanged(

@@ -14,6 +14,7 @@
 #include "v8/include/v8.h"
 
 namespace blink {
+class WebFormElement;
 class WebFrame;
 struct WebURLError;
 }
@@ -55,6 +56,8 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void DidChangeName(const base::string16& name) {}
   virtual void DidChangeManifest() {}
   virtual void DidChangeScrollOffset() {}
+  virtual void WillSendSubmitEvent(const blink::WebFormElement& form) {}
+  virtual void WillSubmitForm(const blink::WebFormElement& form) {}
 
   // Called when the frame will soon be closed. This is the last opportunity to
   // send messages to the host (e.g., for clean-up, shutdown, etc.).

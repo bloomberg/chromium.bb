@@ -148,10 +148,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
     void DidStopLoading() override;
     void DidStartProvisionalLoad(blink::WebLocalFrame* frame) override;
     void FrameDetached(blink::WebFrame* frame) override;
-    void WillSendSubmitEvent(blink::WebLocalFrame* frame,
-                             const blink::WebFormElement& form) override;
-    void WillSubmitForm(blink::WebLocalFrame* frame,
-                        const blink::WebFormElement& form) override;
 
    private:
     PasswordAutofillAgent* agent_;
@@ -159,15 +155,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
     DISALLOW_COPY_AND_ASSIGN(LegacyPasswordAutofillAgent);
   };
   friend class LegacyPasswordAutofillAgent;
-  FRIEND_TEST_ALL_PREFIXES(
-      PasswordAutofillAgentTest,
-      RememberLastNonEmptyUsernameAndPasswordOnSubmit_ScriptCleared);
-  FRIEND_TEST_ALL_PREFIXES(
-      PasswordAutofillAgentTest,
-      RememberLastNonEmptyUsernameAndPasswordOnSubmit_UserCleared);
-  FRIEND_TEST_ALL_PREFIXES(
-      PasswordAutofillAgentTest,
-      RememberLastNonEmptyUsernameAndPasswordOnSubmit_New);
 
   // RenderFrameObserver:
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -175,16 +162,14 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   void DidFinishLoad() override;
   void FrameWillClose() override;
   void DidCommitProvisionalLoad(bool is_new_navigation) override;
+  void WillSendSubmitEvent(const blink::WebFormElement& form) override;
+  void WillSubmitForm(const blink::WebFormElement& form) override;
 
   // Legacy RenderViewObserver:
   void DidStartLoading();
   void DidStopLoading();
   void LegacyDidStartProvisionalLoad(blink::WebLocalFrame* frame);
   void FrameDetached(blink::WebFrame* frame);
-  void WillSendSubmitEvent(blink::WebLocalFrame* frame,
-                           const blink::WebFormElement& form);
-  void WillSubmitForm(blink::WebLocalFrame* frame,
-                      const blink::WebFormElement& form);
 
   // RenderView IPC handlers:
   void OnFillPasswordForm(int key, const PasswordFormFillData& form_data);

@@ -934,10 +934,7 @@ void PasswordAutofillAgent::FrameDetached(blink::WebFrame* frame) {
 }
 
 void PasswordAutofillAgent::WillSendSubmitEvent(
-    blink::WebLocalFrame* frame,
     const blink::WebFormElement& form) {
-  if (frame != render_frame()->GetWebFrame())
-    return;
   // Forms submitted via XHR are not seen by WillSubmitForm if the default
   // onsubmit handler is overridden. Such submission first gets detected in
   // DidStartProvisionalLoad, which no longer knows about the particular form,
@@ -954,11 +951,7 @@ void PasswordAutofillAgent::WillSendSubmitEvent(
   ProvisionallySavePassword(form, RESTRICTION_NON_EMPTY_PASSWORD);
 }
 
-void PasswordAutofillAgent::WillSubmitForm(blink::WebLocalFrame* frame,
-                                           const blink::WebFormElement& form) {
-  if (frame != render_frame()->GetWebFrame())
-    return;
-
+void PasswordAutofillAgent::WillSubmitForm(const blink::WebFormElement& form) {
   scoped_ptr<RendererSavePasswordProgressLogger> logger;
   if (logging_state_active_) {
     logger.reset(new RendererSavePasswordProgressLogger(this, routing_id()));
@@ -1328,18 +1321,6 @@ void PasswordAutofillAgent::LegacyPasswordAutofillAgent::
 void PasswordAutofillAgent::LegacyPasswordAutofillAgent::FrameDetached(
     blink::WebFrame* frame) {
   agent_->FrameDetached(frame);
-}
-
-void PasswordAutofillAgent::LegacyPasswordAutofillAgent::WillSendSubmitEvent(
-    blink::WebLocalFrame* frame,
-    const blink::WebFormElement& form) {
-  agent_->WillSendSubmitEvent(frame, form);
-}
-
-void PasswordAutofillAgent::LegacyPasswordAutofillAgent::WillSubmitForm(
-    blink::WebLocalFrame* frame,
-    const blink::WebFormElement& form) {
-  agent_->WillSubmitForm(frame, form);
 }
 
 }  // namespace autofill
