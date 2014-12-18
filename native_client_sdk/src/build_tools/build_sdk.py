@@ -529,6 +529,7 @@ def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets,
         gyp_env['AS'] = 'arm-linux-gnueabihf-as'
         gyp_env['CC_host'] = 'cc'
         gyp_env['CXX_host'] = 'c++'
+        gyp_defines += ['clang=0', 'host_clang=0']
       gyp_defines += ['armv7=1', 'arm_thumb=0', 'arm_neon=1',
           'arm_float_abi=hard']
       if force_arm_gcc:
@@ -562,6 +563,13 @@ def NinjaBuild(targets, out_dir):
 
 def BuildStepBuildToolchains(pepperdir, toolchains):
   buildbot_common.BuildStep('SDK Items')
+
+  # Remove all gypbuild-* dirs.
+  buildbot_common.RemoveDir(os.path.join(OUT_DIR, GYPBUILD_DIR))
+  buildbot_common.RemoveDir(os.path.join(OUT_DIR, GYPBUILD_DIR) + '-arm')
+  buildbot_common.RemoveDir(os.path.join(OUT_DIR, GYPBUILD_DIR) + '-64')
+  buildbot_common.RemoveDir(os.path.join(OUT_DIR, GYPBUILD_DIR) + '-pnacl-ia32')
+  buildbot_common.RemoveDir(os.path.join(OUT_DIR, GYPBUILD_DIR) + '-pnacl-arm')
 
   GypNinjaBuild_NaCl(GYPBUILD_DIR)
   GypNinjaBuild_Breakpad(GYPBUILD_DIR)
