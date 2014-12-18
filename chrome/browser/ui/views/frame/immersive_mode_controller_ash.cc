@@ -8,7 +8,7 @@
 #include "ash/wm/immersive_revealed_lock.h"
 #include "ash/wm/window_state.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"

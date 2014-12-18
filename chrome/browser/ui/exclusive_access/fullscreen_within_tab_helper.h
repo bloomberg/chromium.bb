@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_WITHIN_TAB_HELPER_H_
-#define CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_WITHIN_TAB_HELPER_H_
+#ifndef CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_FULLSCREEN_WITHIN_TAB_HELPER_H_
+#define CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_FULLSCREEN_WITHIN_TAB_HELPER_H_
 
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -43,4 +43,4 @@ class FullscreenWithinTabHelper
   DISALLOW_COPY_AND_ASSIGN(FullscreenWithinTabHelper);
 };
 
-#endif  // CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_WITHIN_TAB_HELPER_H_
+#endif  // CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_FULLSCREEN_WITHIN_TAB_HELPER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/fullscreen/exclusive_access_bubble_type.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_type.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/url_constants.h"

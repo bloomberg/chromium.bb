@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
-#include "chrome/browser/ui/fullscreen/fullscreen_controller_test.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/test/base/in_process_browser_test.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_FULLSCREEN_EXCLUSIVE_ACCESS_BUBBLE_TYPE_H_
-#define CHROME_BROWSER_UI_FULLSCREEN_EXCLUSIVE_ACCESS_BUBBLE_TYPE_H_
+#ifndef CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_EXCLUSIVE_ACCESS_BUBBLE_TYPE_H_
+#define CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_EXCLUSIVE_ACCESS_BUBBLE_TYPE_H_
 
 #include "base/strings/string16.h"
 #include "url/gurl.h"
@@ -21,7 +21,7 @@ enum ExclusiveAccessBubbleType {
 
   // For tab fullscreen mode.
   // More comments about tab and browser fullscreen mode can be found in
-  // chrome/browser/ui/fullscreen/fullscreen_controller.h.
+  // chrome/browser/ui/exclusive_access/fullscreen_controller.h.
   EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_BUTTONS,
   EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS,
   EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_BUTTONS,
@@ -47,4 +47,4 @@ void PermissionRequestedByType(ExclusiveAccessBubbleType type,
 
 }  // namespace exclusive_access_bubble
 
-#endif  // CHROME_BROWSER_UI_FULLSCREEN_EXCLUSIVE_ACCESS_BUBBLE_TYPE_H_
+#endif  // CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_EXCLUSIVE_ACCESS_BUBBLE_TYPE_H_

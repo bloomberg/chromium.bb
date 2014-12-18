@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/fullscreen/exclusive_access_bubble.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_bubble.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/views/widget/widget_observer.h"

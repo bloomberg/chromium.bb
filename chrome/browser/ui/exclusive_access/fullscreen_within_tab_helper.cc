@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/fullscreen/fullscreen_within_tab_helper.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_within_tab_helper.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(FullscreenWithinTabHelper);
 

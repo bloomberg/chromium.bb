@@ -6,9 +6,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
-#include "chrome/browser/ui/fullscreen/fullscreen_controller_state_test.h"
-#include "chrome/browser/ui/fullscreen/fullscreen_controller_test.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller_state_test.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -78,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerStateInteractiveTest,
     // Progress of tests can be examined by inserting the following line:
     // LOG(INFO) << GetAndClearDebugLog(); }
 
-#include "chrome/browser/ui/fullscreen/fullscreen_controller_state_tests.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller_state_tests.h"
 
 
 // Specific one-off tests for known issues -------------------------------------

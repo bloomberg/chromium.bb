@@ -6,8 +6,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
-#include "chrome/browser/ui/fullscreen/fullscreen_controller_state_test.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller_state_test.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/web_contents.h"
@@ -346,7 +346,7 @@ TEST_F(FullscreenControllerStateUnitTest, TransitionsForEachState) {
     // Progress of tests can be examined by inserting the following line:
     // LOG(INFO) << GetAndClearDebugLog(); }
 
-#include "chrome/browser/ui/fullscreen/fullscreen_controller_state_tests.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller_state_tests.h"
 
 
 // Specific one-off tests for known issues -------------------------------------

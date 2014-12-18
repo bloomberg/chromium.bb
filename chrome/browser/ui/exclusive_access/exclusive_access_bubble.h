@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_FULLSCREEN_EXCLUSIVE_ACCESS_BUBBLE_H_
-#define CHROME_BROWSER_UI_FULLSCREEN_EXCLUSIVE_ACCESS_BUBBLE_H_
+#ifndef CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_EXCLUSIVE_ACCESS_BUBBLE_H_
+#define CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_EXCLUSIVE_ACCESS_BUBBLE_H_
 
 #include "base/timer/timer.h"
-#include "chrome/browser/ui/fullscreen/exclusive_access_bubble_type.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_type.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/point.h"
 #include "url/gurl.h"
@@ -115,4 +115,4 @@ class ExclusiveAccessBubble : public gfx::AnimationDelegate {
   DISALLOW_COPY_AND_ASSIGN(ExclusiveAccessBubble);
 };
 
-#endif  // CHROME_BROWSER_UI_FULLSCREEN_EXCLUSIVE_ACCESS_BUBBLE_H_
+#endif  // CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_EXCLUSIVE_ACCESS_BUBBLE_H_

@@ -9,7 +9,7 @@
 #include "chrome/browser/fullscreen.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/common/chrome_switches.h"
 
 namespace chrome {

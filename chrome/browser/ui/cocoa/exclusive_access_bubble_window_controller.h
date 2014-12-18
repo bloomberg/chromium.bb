@@ -5,7 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
-#include "chrome/browser/ui/fullscreen/exclusive_access_bubble_type.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_type.h"
 #include "url/gurl.h"
 
 @class BrowserWindowController;

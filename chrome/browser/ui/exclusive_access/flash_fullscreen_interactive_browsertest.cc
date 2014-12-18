@@ -8,7 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/ppapi/ppapi_test.h"

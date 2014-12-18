@@ -19,7 +19,8 @@
 // the Pepper APIs.  Instead, this is a simulated Flash plugin, used to place
 // the browser window and other UI elements into Flash Fullscreen mode for
 // layout, event, focus, etc. testing.  See
-// chrome/browser/ui/fullscreen/flash_fullscreen_interactive_browsertest.cc.
+// chrome/browser/ui/exclusive_access/
+//      flash_fullscreen_interactive_browsertest.cc.
 //
 // At start, this simulated Flash plugin will enter fullscreen and paint a green
 // color fill.  From there, it will respond to mouse clicks or key presses by

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_CONTROLLER_H_
-#define CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_FULLSCREEN_CONTROLLER_H_
+#define CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_FULLSCREEN_CONTROLLER_H_
 
 #include <set>
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/fullscreen/exclusive_access_bubble_type.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_type.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -257,4 +257,4 @@ class FullscreenController : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(FullscreenController);
 };
 
-#endif  // CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_FULLSCREEN_CONTROLLER_H_
