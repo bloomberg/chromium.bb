@@ -101,18 +101,31 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         LibraryLoader.ensureInitialized();
-        createTestNotifier();
+        createTestNotifier(WatchForChanges.ONLY_WHEN_APP_IN_FOREGROUND);
     }
 
     private NetworkChangeNotifierAutoDetect mReceiver;
     private MockConnectivityManagerDelegate mConnectivityDelegate;
     private MockWifiManagerDelegate mWifiDelegate;
 
-    private void createTestNotifier() {
+    private static enum WatchForChanges {
+        ALWAYS,
+        ONLY_WHEN_APP_IN_FOREGROUND,
+    }
+
+    /**
+     * Helper method to create a notifier and delegates for testing.
+     * @param watchForChanges indicates whether app wants to watch for changes always or only when
+     *            it is in the foreground.
+     */
+    private void createTestNotifier(WatchForChanges watchForChanges) {
         Context context = getInstrumentation().getTargetContext();
         NetworkChangeNotifier.resetInstanceForTests(context);
-        NetworkChangeNotifier.setAutoDetectConnectivityState(true);
-
+        if (watchForChanges == WatchForChanges.ALWAYS) {
+            NetworkChangeNotifier.registerToReceiveNotificationsAlways();
+        } else {
+            NetworkChangeNotifier.setAutoDetectConnectivityState(true);
+        }
         mReceiver = NetworkChangeNotifier.getAutoDetectorForTest();
         assertNotNull(mReceiver);
 
@@ -278,6 +291,23 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         // background, but when we get back to the foreground the state changed should be detected
         // and a notification sent.
         mReceiver.onApplicationStateChange(ApplicationState.HAS_RUNNING_ACTIVITIES);
+        assertTrue(observer.hasReceivedNotification());
+    }
+
+    /**
+     * Tests that when setting {@code registerToReceiveNotificationsAlways()},
+     * a NetworkChangeNotifierAutoDetect object is successfully created.
+     */
+    @UiThreadTest
+    @MediumTest
+    @Feature({"Android-AppBase"})
+    public void testCreateNetworkChangeNotifierAlwaysWatchForChanges() throws InterruptedException {
+        createTestNotifier(WatchForChanges.ALWAYS);
+        // Make sure notifications can be received.
+        NetworkChangeNotifierTestObserver observer = new NetworkChangeNotifierTestObserver();
+        NetworkChangeNotifier.addConnectionTypeObserver(observer);
+        Intent connectivityIntent = new Intent(ConnectivityManager.CONNECTIVITY_ACTION);
+        mReceiver.onReceive(getInstrumentation().getTargetContext(), connectivityIntent);
         assertTrue(observer.hasReceivedNotification());
     }
 }
