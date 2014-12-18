@@ -30,7 +30,7 @@ float device_scale_factor_for_internal_display = 1.0f;
 #endif
 
 // Number of recent GetFontRenderParams() results to cache.
-const size_t kCacheSize = 20;
+const size_t kCacheSize = 64;
 
 // Cached result from a call to GetFontRenderParams().
 struct QueryResult {
