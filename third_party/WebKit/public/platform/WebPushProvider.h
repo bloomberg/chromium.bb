@@ -37,14 +37,7 @@ public:
 
     // Takes ownership if the WebPushUnregisterCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.
-    virtual void unregister(WebServiceWorkerRegistration*, WebPushUnregisterCallbacks* callback)
-    {
-        // FIXME: this should call BLINK_ASSERT_NOT_REACHED() when Chromium will
-        // have an implementation.
-        bool result = true;
-        callback->onSuccess(&result);
-        delete callback;
-    }
+    virtual void unregister(WebServiceWorkerRegistration*, WebPushUnregisterCallbacks* callback) { BLINK_ASSERT_NOT_REACHED(); }
 };
 
 } // namespace blink
