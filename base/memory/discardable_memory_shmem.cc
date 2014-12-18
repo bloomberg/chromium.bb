@@ -93,7 +93,7 @@ void* DiscardableMemoryShmem::Memory() const {
 }
 
 bool DiscardableMemoryShmem::AllocateAndAcquireLock() {
-  if (shared_memory_ && shared_memory_->Lock())
+  if (shared_memory_ && shared_memory_->Lock(0, 0))
     return true;
 
   // TODO(reveman): Allocate fixed size memory segments and use a free list to
@@ -105,7 +105,7 @@ bool DiscardableMemoryShmem::AllocateAndAcquireLock() {
 }
 
 void DiscardableMemoryShmem::ReleaseLock() {
-  shared_memory_->Unlock();
+  shared_memory_->Unlock(0, 0);
 }
 
 void DiscardableMemoryShmem::Purge() {

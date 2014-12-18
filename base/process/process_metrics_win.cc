@@ -284,4 +284,8 @@ size_t GetSystemCommitCharge() {
   return (info.CommitTotal * system_info.dwPageSize) / 1024;
 }
 
+size_t GetPageSize() {
+  return PAGESIZE_KB * 1024;
+}
+
 }  // namespace base

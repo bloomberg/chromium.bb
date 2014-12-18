@@ -76,11 +76,11 @@ TEST_F(HostDiscardableSharedMemoryManagerTest, AllocateForChild) {
 
   memcpy(memory.memory(), data, kDataSize);
   memory.SetNow(base::Time::FromDoubleT(1));
-  memory.Unlock();
+  memory.Unlock(0, 0);
 
-  ASSERT_TRUE(memory.Lock());
+  ASSERT_TRUE(memory.Lock(0, 0));
   EXPECT_EQ(memcmp(data, memory.memory(), kDataSize), 0);
-  memory.Unlock();
+  memory.Unlock(0, 0);
 }
 
 TEST_F(HostDiscardableSharedMemoryManagerTest, Purge) {
@@ -109,9 +109,9 @@ TEST_F(HostDiscardableSharedMemoryManagerTest, Purge) {
   manager_->SetMemoryLimit(memory1.mapped_size() + memory2.mapped_size());
 
   memory1.SetNow(base::Time::FromDoubleT(2));
-  memory1.Unlock();
+  memory1.Unlock(0, 0);
   memory2.SetNow(base::Time::FromDoubleT(2));
-  memory2.Unlock();
+  memory2.Unlock(0, 0);
 
   // Manager should not have to schedule another call to EnforceMemoryPolicy().
   manager_->SetNow(base::Time::FromDoubleT(3));
@@ -122,15 +122,15 @@ TEST_F(HostDiscardableSharedMemoryManagerTest, Purge) {
   EXPECT_TRUE(memory1.IsMemoryResident());
   EXPECT_TRUE(memory2.IsMemoryResident());
 
-  rv = memory1.Lock();
+  rv = memory1.Lock(0, 0);
   EXPECT_TRUE(rv);
-  rv = memory2.Lock();
+  rv = memory2.Lock(0, 0);
   EXPECT_TRUE(rv);
 
   memory1.SetNow(base::Time::FromDoubleT(4));
-  memory1.Unlock();
+  memory1.Unlock(0, 0);
   memory2.SetNow(base::Time::FromDoubleT(5));
-  memory2.Unlock();
+  memory2.Unlock(0, 0);
 
   // Just enough memory for one allocation.
   manager_->SetNow(base::Time::FromDoubleT(6));
@@ -141,9 +141,9 @@ TEST_F(HostDiscardableSharedMemoryManagerTest, Purge) {
   EXPECT_FALSE(memory1.IsMemoryResident());
   EXPECT_TRUE(memory2.IsMemoryResident());
 
-  rv = memory1.Lock();
+  rv = memory1.Lock(0, 0);
   EXPECT_FALSE(rv);
-  rv = memory2.Lock();
+  rv = memory2.Lock(0, 0);
   EXPECT_TRUE(rv);
 }
 
@@ -173,7 +173,7 @@ TEST_F(HostDiscardableSharedMemoryManagerTest, EnforceMemoryPolicy) {
   EXPECT_TRUE(manager_->enforce_memory_policy_pending());
 
   memory.SetNow(base::Time::FromDoubleT(3));
-  memory.Unlock();
+  memory.Unlock(0, 0);
 
   manager_->set_enforce_memory_policy_pending(false);
   manager_->SetNow(base::Time::FromDoubleT(4));
@@ -181,7 +181,7 @@ TEST_F(HostDiscardableSharedMemoryManagerTest, EnforceMemoryPolicy) {
   // Memory policy should have successfully been enforced.
   EXPECT_FALSE(manager_->enforce_memory_policy_pending());
 
-  EXPECT_FALSE(memory.Lock());
+  EXPECT_FALSE(memory.Lock(0, 0));
 }
 
 }  // namespace

@@ -68,4 +68,8 @@ void SetFdLimit(unsigned int max_descriptors) {
   }
 }
 
+size_t GetPageSize() {
+  return getpagesize();
+}
+
 }  // namespace base

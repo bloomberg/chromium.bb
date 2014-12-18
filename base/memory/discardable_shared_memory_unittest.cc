@@ -4,6 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/discardable_shared_memory.h"
+#include "base/process/process_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -20,7 +21,7 @@ class TestDiscardableSharedMemory : public DiscardableSharedMemory {
 
  private:
   // Overriden from DiscardableSharedMemory:
-  virtual Time Now() const override { return now_; }
+  Time Now() const override { return now_; }
 
   Time now_;
 };
@@ -60,13 +61,17 @@ TEST(DiscardableSharedMemoryTest, LockAndUnlock) {
 
   // Memory is initially locked. Unlock it.
   memory1.SetNow(Time::FromDoubleT(1));
-  memory1.Unlock();
+  memory1.Unlock(0, 0);
 
   // Lock and unlock memory.
-  rv = memory1.Lock();
+  rv = memory1.Lock(0, 0);
   EXPECT_TRUE(rv);
   memory1.SetNow(Time::FromDoubleT(2));
-  memory1.Unlock();
+  memory1.Unlock(0, 0);
+
+  // Lock again before duplicating and passing ownership to new instance.
+  rv = memory1.Lock(0, 0);
+  EXPECT_TRUE(rv);
 
   SharedMemoryHandle shared_handle;
   ASSERT_TRUE(
@@ -77,35 +82,21 @@ TEST(DiscardableSharedMemoryTest, LockAndUnlock) {
   rv = memory2.Map(kDataSize);
   ASSERT_TRUE(rv);
 
-  // Lock first instance again.
-  rv = memory1.Lock();
-  EXPECT_TRUE(rv);
-
   // Unlock second instance.
   memory2.SetNow(Time::FromDoubleT(3));
-  memory2.Unlock();
+  memory2.Unlock(0, 0);
 
-  // Lock and unlock second instance.
-  rv = memory2.Lock();
+  // Lock second instance before passing ownership back to first instance.
+  rv = memory2.Lock(0, 0);
   EXPECT_TRUE(rv);
-  memory2.SetNow(Time::FromDoubleT(4));
-  memory2.Unlock();
-
-  // Try to lock first instance again. Should fail as first instance has an
-  // incorrect last know usage time.
-  rv = memory1.Lock();
-  EXPECT_FALSE(rv);
 
   // Memory should still be resident.
   rv = memory1.IsMemoryResident();
   EXPECT_TRUE(rv);
 
-  // Second attempt to lock first instance should succeed as last known usage
-  // time is now correct.
-  rv = memory1.Lock();
-  EXPECT_TRUE(rv);
-  memory1.SetNow(Time::FromDoubleT(5));
-  memory1.Unlock();
+  // Unlock first instance.
+  memory1.SetNow(Time::FromDoubleT(4));
+  memory1.Unlock(0, 0);
 }
 
 TEST(DiscardableSharedMemoryTest, Purge) {
@@ -129,7 +120,7 @@ TEST(DiscardableSharedMemoryTest, Purge) {
   EXPECT_FALSE(rv);
 
   memory2.SetNow(Time::FromDoubleT(2));
-  memory2.Unlock();
+  memory2.Unlock(0, 0);
 
   ASSERT_TRUE(memory2.IsMemoryResident());
 
@@ -144,7 +135,7 @@ TEST(DiscardableSharedMemoryTest, Purge) {
   EXPECT_TRUE(rv);
 
   // Lock should fail as memory has been purged.
-  rv = memory2.Lock();
+  rv = memory2.Lock(0, 0);
   EXPECT_FALSE(rv);
 
   ASSERT_FALSE(memory2.IsMemoryResident());
@@ -167,11 +158,11 @@ TEST(DiscardableSharedMemoryTest, LastUsed) {
   ASSERT_TRUE(rv);
 
   memory2.SetNow(Time::FromDoubleT(1));
-  memory2.Unlock();
+  memory2.Unlock(0, 0);
 
   EXPECT_EQ(memory2.last_known_usage(), Time::FromDoubleT(1));
 
-  rv = memory2.Lock();
+  rv = memory2.Lock(0, 0);
   EXPECT_TRUE(rv);
 
   // This should fail as memory is locked.
@@ -182,7 +173,7 @@ TEST(DiscardableSharedMemoryTest, LastUsed) {
   EXPECT_EQ(memory1.last_known_usage(), Time::FromDoubleT(2));
 
   memory2.SetNow(Time::FromDoubleT(3));
-  memory2.Unlock();
+  memory2.Unlock(0, 0);
 
   // Usage time should be correct for |memory2| instance.
   EXPECT_EQ(memory2.last_known_usage(), Time::FromDoubleT(3));
@@ -235,16 +226,65 @@ TEST(DiscardableSharedMemoryTest, LockShouldAlwaysFailAfterSuccessfulPurge) {
   ASSERT_TRUE(rv);
 
   memory2.SetNow(Time::FromDoubleT(1));
-  memory2.Unlock();
+  memory2.Unlock(0, 0);
 
   rv = memory2.Purge(Time::FromDoubleT(2));
   EXPECT_TRUE(rv);
 
   // Lock should fail as memory has been purged.
-  rv = memory2.Lock();
+  rv = memory2.Lock(0, 0);
   EXPECT_FALSE(rv);
-  rv = memory1.Lock();
+  rv = memory1.Lock(0, 0);
   EXPECT_FALSE(rv);
+}
+
+TEST(DiscardableSharedMemoryTest, LockAndUnlockRange) {
+  const uint32 kDataSize = 32;
+
+  uint32 data_size_in_bytes = kDataSize * base::GetPageSize();
+
+  TestDiscardableSharedMemory memory1;
+  bool rv = memory1.CreateAndMap(data_size_in_bytes);
+  ASSERT_TRUE(rv);
+
+  SharedMemoryHandle shared_handle;
+  ASSERT_TRUE(
+      memory1.ShareToProcess(GetCurrentProcessHandle(), &shared_handle));
+  ASSERT_TRUE(SharedMemory::IsHandleValid(shared_handle));
+
+  TestDiscardableSharedMemory memory2(shared_handle);
+  rv = memory2.Map(data_size_in_bytes);
+  ASSERT_TRUE(rv);
+
+  // Unlock first page.
+  memory2.SetNow(Time::FromDoubleT(1));
+  memory2.Unlock(0, base::GetPageSize());
+
+  rv = memory1.Purge(Time::FromDoubleT(2));
+  EXPECT_FALSE(rv);
+
+  // Unlock second page.
+  memory2.SetNow(Time::FromDoubleT(3));
+  memory2.Unlock(base::GetPageSize(), base::GetPageSize());
+
+  rv = memory1.Purge(Time::FromDoubleT(4));
+  EXPECT_FALSE(rv);
+
+  // Unlock anything onwards.
+  memory2.SetNow(Time::FromDoubleT(5));
+  memory2.Unlock(2 * base::GetPageSize(), 0);
+
+  // Memory is unlocked, but our usage timestamp is incorrect.
+  rv = memory1.Purge(Time::FromDoubleT(6));
+  EXPECT_FALSE(rv);
+
+  // The failed purge attempt should have updated usage time to the correct
+  // value.
+  EXPECT_EQ(Time::FromDoubleT(5), memory1.last_known_usage());
+
+  // Purge should now succeed.
+  rv = memory1.Purge(Time::FromDoubleT(7));
+  EXPECT_TRUE(rv);
 }
 
 }  // namespace
