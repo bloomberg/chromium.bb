@@ -265,10 +265,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_IGNORE_GPU_DITHER
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_TEXTRENDERMODE
-#   define SK_SUPPORT_LEGACY_TEXTRENDERMODE
-#endif
-
 #ifndef SK_IGNORE_GPU_LAYER_HOISTING
 #   define SK_IGNORE_GPU_LAYER_HOISTING
 #endif
