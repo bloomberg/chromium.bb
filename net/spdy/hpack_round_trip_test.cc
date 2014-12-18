@@ -103,7 +103,7 @@ TEST_F(HpackRoundTripTest, RequestFixtures) {
     headers[":path"] = "/";
     headers[":scheme"] = "http";
     headers["cache-control"] = "no-cache";
-    headers["cookie"] = "foo=bar; fizzle=fazzle";
+    headers["cookie"] = "foo=bar; spam=eggs";
     EXPECT_TRUE(RoundTrip(headers));
   }
   {

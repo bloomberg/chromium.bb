@@ -319,17 +319,14 @@ TEST_F(HpackEncoderTest, MultipleEncodingPasses) {
   // Pass 2.
   {
     map<string, string> headers;
-    headers["key1"] = "value1";
     headers["key2"] = "value2";
     headers["cookie"] = "c=dd; e=ff";
 
     ExpectIndex(IndexOf(cookie_c_));
-    // key1 by index.
-    ExpectIndex(65);
-    // key2 by index.
-    ExpectIndex(64);
-    // This cookie evicts |key1| from the header table.
+    // This cookie evicts |key1| from the dynamic table.
     ExpectIndexedLiteral(peer_.table()->GetByName("cookie"), "e=ff");
+    // "key2: value2"
+    ExpectIndex(65);
 
     CompareWithExpectedEncoding(headers);
   }
@@ -341,14 +338,17 @@ TEST_F(HpackEncoderTest, MultipleEncodingPasses) {
   // Pass 3.
   {
     map<string, string> headers;
-    headers["key1"] = "value1";
-    headers["key3"] = "value3";
-    headers["cookie"] = "e=ff";
+    headers["key2"] = "value2";
+    headers["cookie"] = "a=bb; b=cc; c=dd";
 
-    // cookie: e=ff by index.
-    ExpectIndex(62);
-    ExpectIndexedLiteral("key1", "value1");
-    ExpectIndexedLiteral("key3", "value3");
+    // "cookie: a=bb"
+    ExpectIndex(64);
+    // This cookie evicts |key2| from the dynamic table.
+    ExpectIndexedLiteral(peer_.table()->GetByName("cookie"), "b=cc");
+    // "cookie: c=dd"
+    ExpectIndex(64);
+    // "key2: value2"
+    ExpectIndexedLiteral("key2", "value2");
 
     CompareWithExpectedEncoding(headers);
   }
@@ -367,13 +367,14 @@ TEST_F(HpackEncoderTest, PseudoHeadersFirst) {
   headers["cookie"] = "c=dd";
 
   // Pseudo-headers are encoded in alphabetical order.
+  // This entry pushes "cookie: a=bb" back to 63.
   ExpectIndexedLiteral(peer_.table()->GetByName(":authority"),
                        "www.example.com");
   ExpectNonIndexedLiteral(":path", "/spam/eggs.html");
-  // Regular headers in the header table are encoded first.
-  ExpectIndex(IndexOf(cookie_a_));
-  // Regular headers not in the header table are encoded, in alphabetical order.
+  // Regular headers are endoded in alphabetical order.
+  // This entry pushes "cookie: a=bb" back to 64.
   ExpectIndexedLiteral("-foo", "bar");
+  ExpectIndex(64);
   ExpectIndexedLiteral("foo", "bar");
   CompareWithExpectedEncoding(headers);
 }

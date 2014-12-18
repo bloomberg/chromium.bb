@@ -64,10 +64,7 @@ bool HpackEncoder::EncodeHeaderSet(const std::map<string, string>& header_set,
     }
   }
 
-  // Encode regular headers that are already in the header table first,
-  // save the rest into another vector.  This way we avoid evicting an entry
-  // from the header table before it can be used.
-  Representations literal_headers;
+  // Encode regular headers.
   for (Representations::const_iterator it = regular_headers.begin();
        it != regular_headers.end(); ++it) {
     const HpackEntry* entry =
@@ -75,15 +72,8 @@ bool HpackEncoder::EncodeHeaderSet(const std::map<string, string>& header_set,
     if (entry != NULL) {
       EmitIndex(entry);
     } else {
-      literal_headers.push_back(*it);
+      EmitIndexedLiteral(*it);
     }
-  }
-
-  // Encode the remaining header fields, while inserting them in the header
-  // table.
-  for (Representations::const_iterator it = literal_headers.begin();
-       it != literal_headers.end(); ++it) {
-    EmitIndexedLiteral(*it);
   }
 
   output_stream_.TakeString(output);
