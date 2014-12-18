@@ -340,6 +340,11 @@ void BrowserCommandController::LoadingStateChanged(bool is_loading,
   UpdateReloadStopState(is_loading, force);
 }
 
+void BrowserCommandController::ExtensionStateChanged() {
+  // Extensions may disable the bookmark editing commands.
+  UpdateCommandsForBookmarkEditing();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserCommandController, CommandUpdaterDelegate implementation:
 

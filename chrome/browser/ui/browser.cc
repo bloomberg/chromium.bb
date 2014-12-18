@@ -2015,28 +2015,14 @@ void Browser::OnExtensionUninstalled(content::BrowserContext* browser_context,
 
 void Browser::OnExtensionLoaded(content::BrowserContext* browser_context,
                                 const extensions::Extension* extension) {
-  chrome::UpdateCommandEnabled(
-      this,
-      IDC_BOOKMARK_PAGE,
-      !chrome::ShouldRemoveBookmarkThisPageUI(profile_));
-  chrome::UpdateCommandEnabled(
-      this,
-      IDC_BOOKMARK_ALL_TABS,
-      !chrome::ShouldRemoveBookmarkOpenPagesUI(profile_));
+  command_controller_->ExtensionStateChanged();
 }
 
 void Browser::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     extensions::UnloadedExtensionInfo::Reason reason) {
-  chrome::UpdateCommandEnabled(
-      this,
-      IDC_BOOKMARK_PAGE,
-      !chrome::ShouldRemoveBookmarkThisPageUI(profile_));
-  chrome::UpdateCommandEnabled(
-      this,
-      IDC_BOOKMARK_ALL_TABS,
-      !chrome::ShouldRemoveBookmarkOpenPagesUI(profile_));
+  command_controller_->ExtensionStateChanged();
   if (window()->GetLocationBar())
     window()->GetLocationBar()->UpdatePageActions();
 

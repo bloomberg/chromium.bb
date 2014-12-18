@@ -61,6 +61,7 @@ class BrowserCommandController : public CommandUpdaterDelegate,
   void FullscreenStateChanged();
   void PrintingStateChanged();
   void LoadingStateChanged(bool is_loading, bool force);
+  void ExtensionStateChanged();
 
   // Shared state updating: these functions are static and public to share with
   // outside code.
