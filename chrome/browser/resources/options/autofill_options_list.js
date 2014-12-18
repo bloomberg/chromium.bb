@@ -430,7 +430,7 @@ cr.define('options.autofillOptions', function() {
     },
 
     /** @override */
-    shouldFocusPlaceholder: function() {
+    shouldFocusPlaceholderOnEditCommit: function() {
       return false;
     },
 
@@ -514,8 +514,7 @@ cr.define('options.autofillOptions', function() {
           this.validationPromiseResolvers_.pop()();
         }
         // List has been repopulated. Focus the placeholder.
-        this.getInitialFocusableItem().setStaticValuesFocusable(false);
-        this.selectionModel.selectedIndex = this.dataModel.length - 1;
+        this.focusPlaceholder();
       }
     },
 

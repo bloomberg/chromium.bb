@@ -230,7 +230,7 @@ cr.define('options.dictionary_words', function() {
     },
 
     /** @override */
-    shouldFocusPlaceholder: function() {
+    shouldFocusPlaceholderOnEditCommit: function() {
       return false;
     },
 

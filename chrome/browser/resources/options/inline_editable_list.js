@@ -153,8 +153,10 @@ cr.define('options', function() {
       } else {
         if (!this.editCancelled_ && this.hasBeenEdited &&
             this.currentInputIsValid) {
-          if (this.isPlaceholder)
-            this.parentNode.focusPlaceholder = true;
+          if (this.isPlaceholder &&
+              this.parentNode.shouldFocusPlaceholderOnEditCommit()) {
+            this.parentNode.needsToFocusPlaceholder_ = true;
+          }
 
           this.updateStaticValues_();
           cr.dispatchSimpleEvent(this, 'commitedit', true);
@@ -335,21 +337,8 @@ cr.define('options', function() {
       var inputEl = this.ownerDocument.createElement('input');
       inputEl.type = 'text';
       inputEl.value = text;
-      if (!this.isPlaceholder) {
+      if (!this.isPlaceholder)
         inputEl.setAttribute('displaymode', 'edit');
-      } else {
-        // At this point |this| is not attached to the parent list yet, so give
-        // a short timeout in order for the attachment to occur.
-        var self = this;
-        window.setTimeout(function() {
-          var list = self.parentNode;
-          if (list && list.focusPlaceholder) {
-            list.focusPlaceholder = false;
-            if (list.shouldFocusPlaceholder())
-              inputEl.focus();
-          }
-        }, 50);
-      }
 
       // In some cases 'focus' event may arrive before 'input'.
       // To make sure revalidation is triggered we postpone 'focus' handling.
@@ -591,8 +580,9 @@ cr.define('options', function() {
     /**
      * Focuses the input element of the placeholder if true.
      * @type {boolean}
+     * @private
      */
-    focusPlaceholder: false,
+    needsToFocusPlaceholder_: false,
 
     /** @override */
     decorate: function() {
@@ -660,12 +650,40 @@ cr.define('options', function() {
     onSetDataModelComplete: function() {
       DeletableItemList.prototype.onSetDataModelComplete.call(this);
 
+      if (this.needsToFocusPlaceholder_) {
+        this.focusPlaceholder();
+        this.needsToFocusPlaceholder_ = false;
+      } else {
+        var item = this.getInitialFocusableItem();
+        if (item) {
+          item.setStaticValuesFocusable(true);
+          item.setCloseButtonFocusable(true);
+          if (item.isPlaceholder)
+            item.setEditableValuesFocusable(true);
+        }
+      }
+    },
+
+    /**
+     * Focus the placeholder's first input field.
+     * Should only be called immediately after the list has been repopulated.
+     */
+    focusPlaceholder: function() {
+      // Remove focusability from initial item.
       var item = this.getInitialFocusableItem();
       if (item) {
-        item.setStaticValuesFocusable(true);
-        item.setCloseButtonFocusable(true);
-        if (item.isPlaceholder)
+        item.setStaticValuesFocusable(false);
+        item.setCloseButtonFocusable(false);
+      }
+      // Find placeholder and focus it.
+      for (var i = 0; i < this.dataModel.length; i++) {
+        var item = this.getListItemByIndex(i);
+        if (item.isPlaceholder) {
           item.setEditableValuesFocusable(true);
+          item.setCloseButtonFocusable(true);
+          item.querySelector('input').focus();
+          return;
+        }
       }
     },
 
@@ -673,8 +691,9 @@ cr.define('options', function() {
      * May be overridden by subclasses to disable focusing the placeholder.
      * @return {boolean} True if the placeholder element should be focused on
      *     edit commit.
+     * @protected
      */
-    shouldFocusPlaceholder: function() {
+    shouldFocusPlaceholderOnEditCommit: function() {
       return true;
     },
 
