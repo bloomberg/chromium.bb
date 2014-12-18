@@ -68,6 +68,9 @@ class MEDIA_EXPORT VideoRendererImpl
   void ThreadMain() override;
 
  private:
+  // Creates a dedicated |thread_| for video rendering.
+  void CreateVideoThread();
+
   // Callback for |video_frame_stream_| initialization.
   void OnVideoFrameStreamInitialized(bool success);
 

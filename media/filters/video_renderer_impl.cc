@@ -142,6 +142,18 @@ void VideoRendererImpl::Initialize(
       set_decryptor_ready_cb, statistics_cb);
 }
 
+void VideoRendererImpl::CreateVideoThread() {
+  // This may fail and cause a crash if there are too many threads created in
+  // the current process. See http://crbug.com/443291
+  CHECK(base::PlatformThread::Create(0, this, &thread_));
+
+#if defined(OS_WIN)
+  // Bump up our priority so our sleeping is more accurate.
+  // TODO(scherkus): find out if this is necessary, but it seems to help.
+  ::SetThreadPriority(thread_.platform_handle(), THREAD_PRIORITY_ABOVE_NORMAL);
+#endif  // defined(OS_WIN)
+}
+
 void VideoRendererImpl::OnVideoFrameStreamInitialized(bool success) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
@@ -159,14 +171,8 @@ void VideoRendererImpl::OnVideoFrameStreamInitialized(bool success) {
   // have not populated any buffers yet.
   state_ = kFlushed;
 
-  // Create our video thread.
-  CHECK(base::PlatformThread::Create(0, this, &thread_));
+  CreateVideoThread();
 
-#if defined(OS_WIN)
-  // Bump up our priority so our sleeping is more accurate.
-  // TODO(scherkus): find out if this is necessary, but it seems to help.
-  ::SetThreadPriority(thread_.platform_handle(), THREAD_PRIORITY_ABOVE_NORMAL);
-#endif  // defined(OS_WIN)
   base::ResetAndReturn(&init_cb_).Run(PIPELINE_OK);
 }
 
