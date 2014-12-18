@@ -36,7 +36,7 @@
       ['OS != "ios" and OS != "android"', {
         # New paks should be added here by default.
         'pak_inputs': [
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',
+          '<(SHARED_INTERMEDIATE_DIR)/blink/devtools_resources.pak',
           '<(grit_out_dir)/webrtc_device_provider_resources.pak',
           '<(grit_out_dir)/component_extension_resources.pak',
           '<(grit_out_dir)/options_resources.pak',

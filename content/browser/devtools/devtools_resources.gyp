@@ -11,7 +11,7 @@
         '../../../third_party/WebKit/public/blink_devtools.gyp:blink_generate_devtools_grd',
       ],
       'variables': {
-        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/webkit',
+        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/blink',
       },
       'actions': [
         {

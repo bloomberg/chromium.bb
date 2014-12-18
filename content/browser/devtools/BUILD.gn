@@ -18,7 +18,7 @@ grit("devtools_resources") {
 
   # TOOD(brettw) remove this so the output file goes into the target_gen_dir,
   # but keep this for not for GYP compat.
-  output_dir = "$root_gen_dir/webkit"
+  output_dir = "$root_gen_dir/blink"
   outputs = [
     "grit/devtools_resources.h",
     "devtools_resources.pak",

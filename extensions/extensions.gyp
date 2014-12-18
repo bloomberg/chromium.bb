@@ -1148,7 +1148,7 @@
               '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_resources_100_percent.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/strings/app_locale_settings_en-US.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/strings/ui_strings_en-US.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/blink/devtools_resources.pak',
             ],
             'pak_output': '<(PRODUCT_DIR)/extensions_shell_and_test.pak',
           },

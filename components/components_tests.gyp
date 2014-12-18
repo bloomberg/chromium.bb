@@ -1050,7 +1050,6 @@
             ['OS=="win"', {
               'resource_include_dirs': [
                 '<(SHARED_INTERMEDIATE_DIR)/content/app/resources',
-                '<(SHARED_INTERMEDIATE_DIR)/webkit',
               ],
               'sources': [
                 '../content/shell/app/resource.h',
