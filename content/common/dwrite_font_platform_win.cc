@@ -1025,12 +1025,18 @@ IDWriteFontCollection* GetCustomFontCollection(IDWriteFactory* factory) {
 
   bool cache_file_loaded = g_font_loader->LoadCacheFile();
 
+  // Arbitrary threshold to stop loading enormous number of fonts. Usual
+  // side effect of loading large number of fonts results in renderer getting
+  // killed as it appears to hang.
+  const UINT32 kMaxFontThreshold = 1750;
   HRESULT hr = E_FAIL;
-  g_font_loader->EnableCollectionBuildingMode(true);
-  hr = factory->CreateCustomFontCollection(
-      g_font_loader.Get(), NULL, 0, g_font_collection.GetAddressOf());
-  g_font_loader->EnableCollectionBuildingMode(false);
-
+  if (cache_file_loaded ||
+      g_font_loader->GetFontMapSize() < kMaxFontThreshold) {
+    g_font_loader->EnableCollectionBuildingMode(true);
+    hr = factory->CreateCustomFontCollection(
+        g_font_loader.Get(), NULL, 0, g_font_collection.GetAddressOf());
+    g_font_loader->EnableCollectionBuildingMode(false);
+  }
   bool loading_restricted = false;
   if (FAILED(hr) || !g_font_collection.Get()) {
     loading_restricted = true;
