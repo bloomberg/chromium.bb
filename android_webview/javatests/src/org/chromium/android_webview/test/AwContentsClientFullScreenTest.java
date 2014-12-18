@@ -4,12 +4,16 @@
 
 package org.chromium.android_webview.test;
 
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.chromium.android_webview.ExternalVideoSurfaceContainer.NoPunchingSurfaceView;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
+import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentViewCore;
@@ -182,6 +186,84 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
+    public void testHolePunchingSurfaceNotCreatedForClearVideo()
+            throws Throwable {
+        loadTestPage(VIDEO_TEST_URL);
+        assertFalse(DOMUtils.isFullscreen(getWebContentsOnUiThread()));
+
+        // Play and verify that a surface view for hole punching is not created.
+        // Note that VIDEO_TEST_URL contains clear video.
+        tapPlayButton();
+        assertTrue(DOMUtils.waitForVideoPlay(getWebContentsOnUiThread(), VIDEO_ID));
+        assertContainsHolePunchingSurfaceView(mTestContainerView, false);
+    }
+
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testOnShowCustomViewTransfersHolePunchingSurfaceForVideoInsideDiv()
+            throws Throwable {
+        forceUseHolePunchingExternalSurface();
+
+        loadTestPage(VIDEO_INSIDE_DIV_TEST_URL);
+        assertFalse(DOMUtils.isFullscreen(getWebContentsOnUiThread()));
+
+        // Play and verify that there is a surface view for hole punching.
+        tapPlayButton();
+        assertTrue(DOMUtils.waitForVideoPlay(getWebContentsOnUiThread(), VIDEO_ID));
+        assertContainsHolePunchingSurfaceView(mTestContainerView, true);
+
+        // Enter fullscreen and verify that the hole punching surface is transferred. Note
+        // that VIDEO_INSIDE_DIV_TEST_URL goes fullscreen on a <div> element, so in fullscreen
+        // the video will still be embedded in the page and the hole punching surface required.
+        // We need to transfer the external surface so that scrolling is synchronized with the
+        // new container view.
+        DOMUtils.clickNode(this, mContentViewCore, CUSTOM_FULLSCREEN_CONTROL_ID);
+        mContentsClient.waitForCustomViewShown();
+        View customView = mContentsClient.getCustomView();
+        assertContainsHolePunchingSurfaceView(mTestContainerView, false);
+        // Wait to ensure that the surface view stays there after being transfered and not
+        // removed asynchronously.
+        waitAndAssertContainsHolePunchingSurfaceView(customView, true);
+    }
+
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testOnShowCustomViewRemovesHolePunchingSurfaceForVideo()
+            throws Throwable {
+        forceUseHolePunchingExternalSurface();
+
+        loadTestPage(VIDEO_TEST_URL);
+        assertFalse(DOMUtils.isFullscreen(getWebContentsOnUiThread()));
+
+        // Play and verify that there is a surface view for hole punching.
+        tapPlayButton();
+        assertTrue(DOMUtils.waitForVideoPlay(getWebContentsOnUiThread(), VIDEO_ID));
+        assertContainsHolePunchingSurfaceView(mTestContainerView, true);
+
+        // Enter fullscreen and verify that the surface view is removed. Note that
+        // VIDEO_TEST_URL goes fullscreen on the <video> element, so in fullscreen
+        // the video will not be embedded in the page and the external surface
+        // not longer required.
+        DOMUtils.clickNode(this, mContentViewCore, CUSTOM_FULLSCREEN_CONTROL_ID);
+        mContentsClient.waitForCustomViewShown();
+        View customView = mContentsClient.getCustomView();
+        assertContainsHolePunchingSurfaceView(mTestContainerView, false);
+        // We need to wait because the surface view is first transfered, and then removed
+        // asynchronously.
+        waitAndAssertContainsHolePunchingSurfaceView(customView, false);
+    }
+
+    /**
+     * Force the use of the hole punching external surface (see VIDEO_HOLE). If this method is
+     * called the external surface will also be created for clear video (that this test class uses)
+     * and not just for encrypted video.
+     */
+    private void forceUseHolePunchingExternalSurface() {
+        CommandLine.getInstance().appendSwitch("force-use-overlay-embedded-video");
+    }
+
+    @MediumTest
+    @Feature({"AndroidWebView"})
     public void testFullscreenNotSupported_video() throws Throwable {
         doTestFullscreenNotSupported(VIDEO_TEST_URL);
     }
@@ -228,11 +310,11 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
         // Play and verify that there is an active power save blocker.
         tapPlayButton();
-        assertKeepScreenOnActive(customView, true);
+        assertWaitForKeepScreenOnActive(customView, true);
 
         // Stop the video and verify that the power save blocker is gone.
         DOMUtils.pauseVideo(getWebContentsOnUiThread(), VIDEO_ID);
-        assertKeepScreenOnActive(customView, false);
+        assertWaitForKeepScreenOnActive(customView, false);
     }
 
     @MediumTest
@@ -247,11 +329,11 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
         // Play and verify that there is an active power save blocker.
         tapPlayButton();
-        assertKeepScreenOnActive(mTestContainerView, true);
+        assertWaitForKeepScreenOnActive(mTestContainerView, true);
 
         // Stop the video and verify that the power save blocker is gone.
         DOMUtils.pauseVideo(getWebContentsOnUiThread(), VIDEO_ID);
-        assertKeepScreenOnActive(mTestContainerView, false);
+        assertWaitForKeepScreenOnActive(mTestContainerView, false);
     }
 
     @MediumTest
@@ -263,7 +345,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
         // Play and verify that there is an active power save blocker.
         tapPlayButton();
-        assertKeepScreenOnActive(mTestContainerView, true);
+        assertWaitForKeepScreenOnActive(mTestContainerView, true);
 
         // Enter fullscreen and verify that the power save blocker is
         // still there.
@@ -274,7 +356,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
         // Pause the video and the power save blocker is gone.
         DOMUtils.pauseVideo(getWebContentsOnUiThread(), VIDEO_ID);
-        assertKeepScreenOnActive(customView, false);
+        assertWaitForKeepScreenOnActive(customView, false);
 
         // Exit fullscreen and the power save blocker is still gone.
         DOMUtils.exitFullscreen(getWebContentsOnUiThread());
@@ -293,7 +375,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         // Play and verify that there is an active power save blocker
         // in fullscreen.
         tapPlayButton();
-        assertKeepScreenOnActive(customView, true);
+        assertWaitForKeepScreenOnActive(customView, true);
 
         // Exit fullscreen and verify that the power save blocker is
         // still there.
@@ -304,18 +386,17 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     private void tapPlayButton() throws Exception {
         String testUrl = mTestContainerView.getAwContents().getUrl();
-        if (VIDEO_INSIDE_DIV_TEST_URL.equals(testUrl)) {
-            // VIDEO_INSIDE_DIV_TEST_URL uses a custom play control with known id.
-            DOMUtils.clickNode(this, mContentViewCore, CUSTOM_PLAY_CONTROL_ID);
-        } else if (VIDEO_TEST_URL.equals(testUrl)
+        if (VIDEO_TEST_URL.equals(testUrl)
                 && DOMUtils.isFullscreen(getWebContentsOnUiThread())) {
-            // VIDEO_TEST_URL uses the standard html5 video controls. The standard
-            // html5 controls are shadow html elements without any ids. In fullscreen we can still
-            // tap the play button because this is rendered in the center of the custom view.
-            // In embedded mode we don't have an easy way of retrieving its location.
+            // The VIDEO_TEST_URL page goes fullscreen on the <video> element. In fullscreen
+            // the button with id CUSTOM_PLAY_CONTROL_ID will not be visible, but the standard
+            // html5 video controls are. The standard html5 controls are shadow html elements
+            // without any ids so it is difficult to retrieve its precise location. However,
+            // a large play control is rendered in the center of the custom view
+            // (containing the fullscreen <video>) so we just rely on that fact here.
             TouchCommon.singleClickView(mContentsClient.getCustomView());
         } else {
-            fail("Unable to tap standard html5 play control in embedded mode");
+            DOMUtils.clickNode(this, mContentViewCore, CUSTOM_PLAY_CONTROL_ID);
         }
     }
 
@@ -323,7 +404,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
      * Asserts that the keep screen on property in the given {@code view} is active as
      * {@code expected}. It also verifies that it is only active when the video is playing.
      */
-    private void assertKeepScreenOnActive(final View view, final boolean expected)
+    private void assertWaitForKeepScreenOnActive(final View view, final boolean expected)
             throws InterruptedException {
         // We need to poll because it takes time to synchronize the state between the android
         // views and Javascript.
@@ -342,6 +423,12 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         }));
     }
 
+    private void assertKeepScreenOnActive(final View view, final boolean expected)
+            throws Exception {
+        assertTrue(getKeepScreenOn(view) == expected
+                && DOMUtils.isVideoPaused(getWebContentsOnUiThread(), VIDEO_ID) != expected);
+    }
+
     private boolean getKeepScreenOn(View view) {
         // The power save blocker is added to a child anchor view,
         // so we need to traverse the hierarchy.
@@ -356,7 +443,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         return view.getKeepScreenOn();
     }
 
-    private void assertIsFullscreen() throws InterruptedException {
+    private void assertWaitForIsFullscreen() throws InterruptedException {
         // We need to poll because the Javascript state is updated asynchronously
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
@@ -371,35 +458,41 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         }));
     }
 
-    private void assertContainsContentVideoView()
-            throws InterruptedException {
-        // We need to poll because the ContentVideoView is added to the customView asynchronously
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                try {
-                    return runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
-                        @Override
-                        public Boolean call() throws Exception {
-                            return containsVideoView(mContentsClient.getCustomView());
-                        }
-                    });
-                } catch (Exception e) {
-                    fail(e.getMessage());
-                    return false;
-                }
-            }
-        }));
+    private void assertContainsContentVideoView() throws Exception {
+        assertTrue(containsChildOfType(mContentsClient.getCustomView(),
+                ContentVideoView.class));
     }
 
-    private boolean containsVideoView(View view) {
-        if (view instanceof ContentVideoView) {
+    private void assertContainsHolePunchingSurfaceView(View view, boolean expected)
+            throws Exception {
+        assertEquals(containsChildOfType(view, NoPunchingSurfaceView.class), expected);
+    }
+
+    private void waitAndAssertContainsHolePunchingSurfaceView(View view, boolean expected)
+            throws Exception {
+        Thread.sleep(scaleTimeout(100));
+        assertEquals(expected, containsChildOfType(view, NoPunchingSurfaceView.class));
+    }
+
+    private boolean containsChildOfType(final View view, final Class<? extends View> childType)
+            throws Exception {
+        return runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return containsChildOfTypeOnUiThread(view, childType);
+            }
+        });
+    }
+
+    private boolean containsChildOfTypeOnUiThread(final View view,
+            final Class<? extends View> childType) throws Exception {
+        if (childType.isInstance(view)) {
             return true;
         }
         if (view instanceof ViewGroup) {
             ViewGroup viewGroup = (ViewGroup) view;
             for (int i = 0; i < viewGroup.getChildCount(); i++) {
-                if (containsVideoView(viewGroup.getChildAt(i))) {
+                if (containsChildOfTypeOnUiThread(viewGroup.getChildAt(i), childType)) {
                     return true;
                 }
             }
@@ -428,7 +521,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
     private void doOnShowCustomViewTest(String videoTestUrl) throws Exception {
         loadTestPageAndClickFullscreen(videoTestUrl);
         mContentsClient.waitForCustomViewShown();
-        assertIsFullscreen();
+        assertWaitForIsFullscreen();
         if (videoTestUrl.equals(VIDEO_TEST_URL)) {
             // We only create a ContentVideoView (ie. a hardware accelerated surface) when going
             // fullscreen on a video element.

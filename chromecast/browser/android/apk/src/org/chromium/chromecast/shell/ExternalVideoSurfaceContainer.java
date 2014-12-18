@@ -14,11 +14,13 @@ import android.view.ViewGroup;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.content.browser.ContainerViewObserver;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.RenderCoordinates;
 
 import java.lang.ref.WeakReference;
 
+//TODO(gunsch): componentize this class.
 /**
  * This is a container for external video surfaces.
  * The object is owned by the native peer and it is owned by WebContents.
@@ -47,10 +49,13 @@ import java.lang.ref.WeakReference;
 public class ExternalVideoSurfaceContainer implements SurfaceHolder.Callback {
     protected static final int INVALID_PLAYER_ID = -1;
 
-    // Because WebView does hole-punching by itself, instead, the hole-punching logic
-    // in SurfaceView can clear out some web elements like media control or subtitle.
-    // So we need to disable its hole-punching logic.
-    private static class NoPunchingSurfaceView extends SurfaceView {
+    /**
+     * Because WebView does hole-punching by itself, instead, the hole-punching logic
+     * in SurfaceView can clear out some web elements like media control or subtitle.
+     * So we need to disable its hole-punching logic.
+     */
+    @VisibleForTesting
+    public static class NoPunchingSurfaceView extends SurfaceView {
         public NoPunchingSurfaceView(Context context) {
             super(context);
         }
@@ -70,6 +75,8 @@ public class ExternalVideoSurfaceContainer implements SurfaceHolder.Callback {
 
     private final long mNativeExternalVideoSurfaceContainer;
     private final ContentViewCore mContentViewCore;
+    private ViewGroup mContainerView;
+    private ContainerViewObserver mContainerViewObserver;
     private int mPlayerId = INVALID_PLAYER_ID;
     private SurfaceView mSurfaceView;
 
@@ -174,18 +181,39 @@ public class ExternalVideoSurfaceContainer implements SurfaceHolder.Callback {
 
     private void createSurfaceView() {
         assert mSurfaceView == null;
+        assert mContainerView == null;
+        assert mContainerViewObserver == null;
+
         mSurfaceView = new NoPunchingSurfaceView(mContentViewCore.getContext());
         mSurfaceView.getHolder().addCallback(this);
         // SurfaceHoder.surfaceCreated() will be called after the SurfaceView is attached to
         // the Window and becomes visible.
-        mContentViewCore.getContainerView().addView(mSurfaceView);
+        mContainerView = mContentViewCore.getContainerView();
+        mContainerView.addView(mSurfaceView);
+        mContainerViewObserver = new ContainerViewObserver() {
+            @Override
+            public void onContainerViewChanged(ViewGroup newContainerView) {
+                mContainerView.removeView(mSurfaceView);
+                mContainerView = newContainerView;
+                mContainerView.addView(mSurfaceView);
+            }
+        };
+        mContentViewCore.addContainerViewObserver(mContainerViewObserver);
     }
 
     private void removeSurfaceView() {
+        assert mSurfaceView != null;
+        assert mContainerView != null;
+        assert mContainerViewObserver != null;
+
         // SurfaceHoder.surfaceDestroyed() will be called in ViewGroup.removeView()
         // as soon as the SurfaceView is detached from the Window.
-        mContentViewCore.getContainerView().removeView(mSurfaceView);
+        mContentViewCore.removeContainerViewObserver(mContainerViewObserver);
+        mContainerView.removeView(mSurfaceView);
+
+        mContainerViewObserver = null;
         mSurfaceView = null;
+        mContainerView = null;
     }
 
     /**
