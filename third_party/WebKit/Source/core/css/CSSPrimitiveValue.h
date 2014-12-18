@@ -66,8 +66,7 @@ template<> inline float roundForImpreciseConversion(double value)
 
 // CSSPrimitiveValues are immutable. This class has manual ref-counting
 // of unioned types and does not have the code necessary
-// to handle any kind of mutations. All DOM-exposed "setters" just throw
-// exceptions.
+// to handle any kind of mutations.
 class CSSPrimitiveValue : public CSSValue {
 public:
     enum UnitType {
