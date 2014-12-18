@@ -567,7 +567,7 @@ class MediaCodecBridge {
             } else if (indexOrStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                 status = MEDIA_CODEC_OUTPUT_FORMAT_CHANGED;
                 MediaFormat newFormat = mMediaCodec.getOutputFormat();
-                if (newFormat.containsKey(MediaFormat.KEY_SAMPLE_RATE)) {
+                if (mAudioTrack != null && newFormat.containsKey(MediaFormat.KEY_SAMPLE_RATE)) {
                     int newSampleRate = newFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE);
                     if (newSampleRate != mSampleRate && !reconfigureAudioTrack(newFormat)) {
                         status = MEDIA_CODEC_ERROR;
