@@ -84,7 +84,7 @@ const AlgorithmNameMapping algorithmNameMappings[] = {
 
 // Reminder to update the table mapping names to IDs whenever adding a new
 // algorithm ID.
-COMPILE_ASSERT(WebCryptoAlgorithmIdLast + 1 == WTF_ARRAY_LENGTH(algorithmNameMappings), UPDATE_algorithmNameMappings);
+static_assert(WebCryptoAlgorithmIdLast + 1 == WTF_ARRAY_LENGTH(algorithmNameMappings), "algorithmNameMappings needs to be updated");
 
 #if ENABLE(ASSERT)
 
@@ -684,7 +684,7 @@ const CurveNameMapping curveNameMappings[] = {
 };
 
 // Reminder to update curveNameMappings when adding a new curve.
-COMPILE_ASSERT(WebCryptoNamedCurveLast + 1 == WTF_ARRAY_LENGTH(curveNameMappings), UPDATE_curveNameMappings);
+static_assert(WebCryptoNamedCurveLast + 1 == WTF_ARRAY_LENGTH(curveNameMappings), "curveNameMappings needs to be updated");
 
 bool parseNamedCurve(const Dictionary& raw, WebCryptoNamedCurve& namedCurve, ErrorContext context, AlgorithmError* error)
 {

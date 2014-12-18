@@ -97,7 +97,7 @@ void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(DOMWindow& windowArg, 
     LocalFileSystem::from(*document)->resolveURL(document, completedURL, ResolveURICallbacks::create(successCallback, errorCallback, document));
 }
 
-COMPILE_ASSERT(static_cast<int>(DOMWindowFileSystem::TEMPORARY) == static_cast<int>(FileSystemTypeTemporary), enum_mismatch);
-COMPILE_ASSERT(static_cast<int>(DOMWindowFileSystem::PERSISTENT) == static_cast<int>(FileSystemTypePersistent), enum_mismatch);
+static_assert(static_cast<int>(DOMWindowFileSystem::TEMPORARY) == static_cast<int>(FileSystemTypeTemporary), "DOMWindowFileSystem::TEMPORARY should match FileSystemTypeTemporary");
+static_assert(static_cast<int>(DOMWindowFileSystem::PERSISTENT) == static_cast<int>(FileSystemTypePersistent), "DOMWindowFileSystem::PERSISTENT should match FileSystemTypePersistent");
 
 } // namespace blink

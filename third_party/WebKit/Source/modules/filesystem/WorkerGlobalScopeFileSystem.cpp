@@ -124,7 +124,7 @@ EntrySync* WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemSyncURL(Work
     return resolveURLHelper->getResult(exceptionState);
 }
 
-COMPILE_ASSERT(static_cast<int>(WorkerGlobalScopeFileSystem::TEMPORARY) == static_cast<int>(FileSystemTypeTemporary), enum_mismatch);
-COMPILE_ASSERT(static_cast<int>(WorkerGlobalScopeFileSystem::PERSISTENT) == static_cast<int>(FileSystemTypePersistent), enum_mismatch);
+static_assert(static_cast<int>(WorkerGlobalScopeFileSystem::TEMPORARY) == static_cast<int>(FileSystemTypeTemporary), "WorkerGlobalScopeFileSystem::TEMPORARY should match FileSystemTypeTemporary");
+static_assert(static_cast<int>(WorkerGlobalScopeFileSystem::PERSISTENT) == static_cast<int>(FileSystemTypePersistent), "WorkerGlobalScopeFileSystem::PERSISTENT should match FileSystemTypePersistent");
 
 } // namespace blink

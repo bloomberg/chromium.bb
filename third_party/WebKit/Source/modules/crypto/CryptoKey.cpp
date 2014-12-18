@@ -75,7 +75,7 @@ const KeyUsageMapping keyUsageMappings[] = {
     { WebCryptoKeyUsageUnwrapKey, "unwrapKey" },
 };
 
-COMPILE_ASSERT(EndOfWebCryptoKeyUsage == (1 << 7) + 1, update_keyUsageMappings);
+static_assert(EndOfWebCryptoKeyUsage == (1 << 7) + 1, "keyUsageMappings needs to be updated");
 
 const char* keyUsageToString(WebCryptoKeyUsage usage)
 {

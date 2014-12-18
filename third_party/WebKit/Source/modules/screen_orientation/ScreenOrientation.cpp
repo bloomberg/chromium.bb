@@ -17,12 +17,12 @@
 #include "public/platform/WebScreenOrientationType.h"
 
 // This code assumes that WebScreenOrientationType values are included in WebScreenOrientationLockType.
-#define COMPILE_ASSERT_MATCHING_ENUM(enum1, enum2) \
-    COMPILE_ASSERT(static_cast<unsigned>(blink::enum1) == static_cast<unsigned>(blink::enum2), mismatching_types)
-COMPILE_ASSERT_MATCHING_ENUM(WebScreenOrientationPortraitPrimary, WebScreenOrientationLockPortraitPrimary);
-COMPILE_ASSERT_MATCHING_ENUM(WebScreenOrientationPortraitSecondary, WebScreenOrientationLockPortraitSecondary);
-COMPILE_ASSERT_MATCHING_ENUM(WebScreenOrientationLandscapePrimary, WebScreenOrientationLockLandscapePrimary);
-COMPILE_ASSERT_MATCHING_ENUM(WebScreenOrientationLandscapeSecondary, WebScreenOrientationLockLandscapeSecondary);
+#define STATIC_ASSERT_MATCHING_ENUM(enum1, enum2) \
+    static_assert(static_cast<unsigned>(blink::enum1) == static_cast<unsigned>(blink::enum2), "mismatching enum values")
+STATIC_ASSERT_MATCHING_ENUM(WebScreenOrientationPortraitPrimary, WebScreenOrientationLockPortraitPrimary);
+STATIC_ASSERT_MATCHING_ENUM(WebScreenOrientationPortraitSecondary, WebScreenOrientationLockPortraitSecondary);
+STATIC_ASSERT_MATCHING_ENUM(WebScreenOrientationLandscapePrimary, WebScreenOrientationLockLandscapePrimary);
+STATIC_ASSERT_MATCHING_ENUM(WebScreenOrientationLandscapeSecondary, WebScreenOrientationLockLandscapeSecondary);
 
 namespace blink {
 
