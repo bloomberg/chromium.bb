@@ -52,6 +52,9 @@ var y12 = centerY(box12);
 var x22 = centerX(box22);
 var y22 = centerY(box22);
 
+shouldThrow('shadowRoot.elementFromPoint()');
+shouldThrow('shadowRoot.elementFromPoint(0)');
+
 shouldBe('shadowRoot.elementFromPoint(x12, y12)', 'box12');
 shouldBe('nestedShadowRoot.elementFromPoint(x22, y22)', 'box22');
 

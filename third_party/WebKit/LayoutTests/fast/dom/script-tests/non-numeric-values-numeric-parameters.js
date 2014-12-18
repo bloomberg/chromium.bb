@@ -205,7 +205,7 @@ shouldBe("nonNumericPolicy('createCSSStyleSheet().removeRule(x)')", "'any type a
 // Document
 
 shouldBe("nonNumericPolicy('document.elementFromPoint(x, 0)')", "'any type allowed'");
-shouldBe("nonNumericPolicy('document.elementFromPoint(0, x)')", "'any type allowed'");
+shouldBe("nonNumericPolicy('document.elementFromPoint(0, x)')", "'any type allowed (but not omitted)'");
 
 // Element
 
