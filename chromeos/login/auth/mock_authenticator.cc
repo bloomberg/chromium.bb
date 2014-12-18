@@ -50,12 +50,6 @@ void MockAuthenticator::LoginAsSupervisedUser(const UserContext& user_context) {
   consumer_->OnAuthSuccess(new_user_context);
 }
 
-void MockAuthenticator::LoginRetailMode() {
-  UserContext user_context("demo-mode");
-  user_context.SetUserIDHash("demo-mode");
-  consumer_->OnRetailModeAuthSuccess(user_context);
-}
-
 void MockAuthenticator::LoginOffTheRecord() {
   consumer_->OnOffTheRecordAuthSuccess();
 }
@@ -71,12 +65,6 @@ void MockAuthenticator::LoginAsKioskAccount(const std::string& app_user_id,
   UserContext user_context(expected_user_context_.GetUserID());
   user_context.SetUserIDHash(expected_user_context_.GetUserID());
   consumer_->OnAuthSuccess(user_context);
-}
-
-void MockAuthenticator::OnRetailModeAuthSuccess() {
-  UserContext user_context(expected_user_context_.GetUserID());
-  user_context.SetUserIDHash(expected_user_context_.GetUserID());
-  consumer_->OnRetailModeAuthSuccess(user_context);
 }
 
 void MockAuthenticator::OnAuthSuccess() {

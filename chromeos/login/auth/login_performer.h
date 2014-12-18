@@ -73,9 +73,6 @@ class CHROMEOS_EXPORT LoginPerformer : public AuthStatusConsumer,
   // Performs supervised user login with a given |user_context|.
   void LoginAsSupervisedUser(const UserContext& user_context);
 
-  // Performs retail mode login.
-  void LoginRetailMode();
-
   // Performs actions to prepare guest mode login.
   void LoginOffTheRecord();
 
@@ -88,8 +85,6 @@ class CHROMEOS_EXPORT LoginPerformer : public AuthStatusConsumer,
 
   // AuthStatusConsumer implementation:
   virtual void OnAuthFailure(const AuthFailure& error) override;
-  virtual void OnRetailModeAuthSuccess(
-      const UserContext& user_context) override;
   virtual void OnAuthSuccess(const UserContext& user_context) override;
   virtual void OnOffTheRecordAuthSuccess() override;
   virtual void OnPasswordChangeDetected() override;

@@ -23,7 +23,6 @@
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager_client.h"
 #include "components/pairing/controller_pairing_controller.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
@@ -193,15 +192,6 @@ void EnrollmentScreen::OnCancel() {
 }
 
 void EnrollmentScreen::OnConfirmationClosed() {
-  // If the machine has been put in KIOSK mode we have to restart the session
-  // here to go in the proper KIOSK mode login screen.
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (connector->GetDeviceMode() == policy::DEVICE_MODE_RETAIL_KIOSK) {
-    DBusThreadManager::Get()->GetSessionManagerClient()->StopSession();
-    return;
-  }
-
   ClearAuth(base::Bind(&EnrollmentScreen::Finish, base::Unretained(this),
                        BaseScreenDelegate::ENTERPRISE_ENROLLMENT_COMPLETED));
 }

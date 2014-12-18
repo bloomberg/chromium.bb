@@ -76,19 +76,18 @@ class CHROMEOS_EXPORT CryptohomeAuthenticator
     HAVE_NEW_PW = 11,        // Obsolete (ClientLogin): We have verified new pw,
                              // time to migrate key.
     OFFLINE_LOGIN = 12,      // Login succeeded offline.
-    DEMO_LOGIN = 13,         // Logged in as the demo user.
-    ONLINE_LOGIN = 14,       // Offline and online login succeeded.
-    UNLOCK = 15,             // Screen unlock succeeded.
-    ONLINE_FAILED = 16,      // Obsolete (ClientLogin): Online login disallowed,
+    ONLINE_LOGIN = 13,       // Offline and online login succeeded.
+    UNLOCK = 14,             // Screen unlock succeeded.
+    ONLINE_FAILED = 15,      // Obsolete (ClientLogin): Online login disallowed,
                              // but offline succeeded.
-    GUEST_LOGIN = 17,        // Logged in guest mode.
-    PUBLIC_ACCOUNT_LOGIN = 18,        // Logged into a public account.
-    SUPERVISED_USER_LOGIN = 19,       // Logged in as a supervised user.
-    LOGIN_FAILED = 20,                // Login denied.
-    OWNER_REQUIRED = 21,              // Login is restricted to the owner only.
-    FAILED_USERNAME_HASH = 22,        // Failed GetSanitizedUsername request.
-    KIOSK_ACCOUNT_LOGIN = 23,         // Logged into a kiosk account.
-    REMOVED_DATA_AFTER_FAILURE = 24,  // Successfully removed the user's
+    GUEST_LOGIN = 16,        // Logged in guest mode.
+    PUBLIC_ACCOUNT_LOGIN = 17,        // Logged into a public account.
+    SUPERVISED_USER_LOGIN = 18,       // Logged in as a supervised user.
+    LOGIN_FAILED = 19,                // Login denied.
+    OWNER_REQUIRED = 20,              // Login is restricted to the owner only.
+    FAILED_USERNAME_HASH = 21,        // Failed GetSanitizedUsername request.
+    KIOSK_ACCOUNT_LOGIN = 22,         // Logged into a kiosk account.
+    REMOVED_DATA_AFTER_FAILURE = 23,  // Successfully removed the user's
                                       // cryptohome after a login failure.
   };
 
@@ -121,10 +120,6 @@ class CHROMEOS_EXPORT CryptohomeAuthenticator
   // notifies consumer on the success/failure.
   virtual void LoginAsSupervisedUser(const UserContext& user_context) override;
 
-  // Initiates retail mode login.
-  // Mounts tmpfs and notifies consumer on the success/failure.
-  virtual void LoginRetailMode() override;
-
   // Initiates incognito ("browse without signing in") login.
   // Mounts tmpfs and notifies consumer on the success/failure.
   virtual void LoginOffTheRecord() override;
@@ -144,7 +139,6 @@ class CHROMEOS_EXPORT CryptohomeAuthenticator
 
   // These methods must be called on the UI thread, as they make DBus calls
   // and also call back to the login UI.
-  virtual void OnRetailModeAuthSuccess() override;
   virtual void OnAuthSuccess() override;
   virtual void OnAuthFailure(const AuthFailure& error) override;
   virtual void RecoverEncryptedData(const std::string& old_password) override;

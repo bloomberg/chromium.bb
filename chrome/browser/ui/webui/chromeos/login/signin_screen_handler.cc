@@ -29,7 +29,6 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
@@ -409,9 +408,6 @@ void SigninScreenHandler::DeclareLocalizedValues(
                IDS_ENTERPRISE_ENROLLMENT_AUTH_FATAL_ERROR);
   builder->Add("insecureURLEnrollmentError",
                IDS_ENTERPRISE_ENROLLMENT_AUTH_INSECURE_URL_ERROR);
-
-  if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
-    builder->Add("demoLoginMessage", IDS_KIOSK_MODE_LOGIN_MESSAGE);
 }
 
 void SigninScreenHandler::Show(const LoginScreenContext& context) {
@@ -432,10 +428,6 @@ void SigninScreenHandler::Show(const LoginScreenContext& context) {
   gaia_screen_handler_->PopulateEmail(email);
   ShowImpl();
   histogram_helper_->OnScreenShow();
-}
-
-void SigninScreenHandler::ShowRetailModeLoginSpinner() {
-  CallJS("showLoginSpinner");
 }
 
 void SigninScreenHandler::SetDelegate(SigninScreenHandlerDelegate* delegate) {
@@ -733,7 +725,6 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("authenticateUser", &SigninScreenHandler::HandleAuthenticateUser);
   AddCallback("attemptUnlock", &SigninScreenHandler::HandleAttemptUnlock);
   AddCallback("getUsers", &SigninScreenHandler::HandleGetUsers);
-  AddCallback("launchDemoUser", &SigninScreenHandler::HandleLaunchDemoUser);
   AddCallback("launchIncognito", &SigninScreenHandler::HandleLaunchIncognito);
   AddCallback("showSupervisedUserCreationScreen",
               &SigninScreenHandler::HandleShowSupervisedUserCreationScreen);
@@ -1057,12 +1048,6 @@ void SigninScreenHandler::HandleAttemptUnlock(const std::string& username) {
   if (!service)
     return;
   service->AttemptAuth(username);
-}
-
-void SigninScreenHandler::HandleLaunchDemoUser() {
-  UserContext context(user_manager::USER_TYPE_RETAIL_MODE, std::string());
-  if (delegate_)
-    delegate_->Login(context, SigninSpecifics());
 }
 
 void SigninScreenHandler::HandleLaunchIncognito() {

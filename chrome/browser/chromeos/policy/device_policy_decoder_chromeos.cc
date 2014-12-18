@@ -13,7 +13,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
-#include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/update_engine_client.h"
@@ -288,93 +287,11 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
   }
 }
 
-void DecodeKioskPolicies(const em::ChromeDeviceSettingsProto& policy,
-                         PolicyMap* policies,
-                         EnterpriseInstallAttributes* install_attributes) {
-  // No policies if this is not KIOSK.
-  if (install_attributes->GetMode() != DEVICE_MODE_RETAIL_KIOSK)
-    return;
-
-  if (policy.has_forced_logout_timeouts()) {
-    const em::ForcedLogoutTimeoutsProto& container(
-        policy.forced_logout_timeouts());
-    if (container.has_idle_logout_timeout()) {
-      policies->Set(
-          key::kDeviceIdleLogoutTimeout,
-          POLICY_LEVEL_MANDATORY,
-          POLICY_SCOPE_MACHINE,
-          DecodeIntegerValue(container.idle_logout_timeout()).release(),
-          NULL);
-    }
-    if (container.has_idle_logout_warning_duration()) {
-      policies->Set(key::kDeviceIdleLogoutWarningDuration,
-                    POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_MACHINE,
-                    DecodeIntegerValue(container.idle_logout_warning_duration())
-                        .release(),
-                    NULL);
-    }
-  }
-
-  if (policy.has_login_screen_saver()) {
-    const em::ScreenSaverProto& container(
-        policy.login_screen_saver());
-    if (container.has_screen_saver_extension_id()) {
-      policies->Set(key::kDeviceLoginScreenSaverId,
-                    POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_MACHINE,
-                    new base::StringValue(
-                        container.screen_saver_extension_id()),
-                    NULL);
-    }
-    if (container.has_screen_saver_timeout()) {
-      policies->Set(
-          key::kDeviceLoginScreenSaverTimeout,
-          POLICY_LEVEL_MANDATORY,
-          POLICY_SCOPE_MACHINE,
-          DecodeIntegerValue(container.screen_saver_timeout()).release(),
-          NULL);
-    }
-  }
-
-  if (policy.has_app_pack()) {
-    const em::AppPackProto& container(policy.app_pack());
-    base::ListValue* app_pack_list = new base::ListValue();
-    for (int i = 0; i < container.app_pack_size(); ++i) {
-      const em::AppPackEntryProto& entry(container.app_pack(i));
-      if (entry.has_extension_id() && entry.has_update_url()) {
-        base::DictionaryValue* dict = new base::DictionaryValue();
-        dict->SetString(chromeos::kAppPackKeyExtensionId, entry.extension_id());
-        dict->SetString(chromeos::kAppPackKeyUpdateUrl, entry.update_url());
-        app_pack_list->Append(dict);
-      }
-    }
-    policies->Set(key::kDeviceAppPack,
-                  POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_MACHINE,
-                  app_pack_list,
-                  NULL);
-  }
-
-  if (policy.has_pinned_apps()) {
-    const em::PinnedAppsProto& container(policy.pinned_apps());
-    base::ListValue* pinned_apps_list = new base::ListValue();
-    for (int i = 0; i < container.app_id_size(); ++i) {
-      pinned_apps_list->Append(
-          new base::StringValue(container.app_id(i)));
-    }
-
-    policies->Set(key::kPinnedLauncherApps,
-                  POLICY_LEVEL_RECOMMENDED,
-                  POLICY_SCOPE_MACHINE,
-                  pinned_apps_list,
-                  NULL);
-  }
-}
-
 void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,
-                           PolicyMap* policies,
-                           EnterpriseInstallAttributes* install_attributes) {
+                           PolicyMap* policies) {
+  // TODO(bartfab): Once the retail mode removal CL lands, remove this policy
+  // completely since it was only used from retail mode.
+  // http://crbug.com/442466
   if (policy.has_device_proxy_settings()) {
     const em::DeviceProxySettingsProto& container(
         policy.device_proxy_settings());
@@ -390,17 +307,9 @@ void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,
                                 container.proxy_bypass_list());
     }
 
-    // Figure out the level. Proxy policy is mandatory in kiosk mode.
-    PolicyLevel level = POLICY_LEVEL_RECOMMENDED;
-    if (install_attributes->GetMode() == DEVICE_MODE_RETAIL_KIOSK)
-      level = POLICY_LEVEL_MANDATORY;
-
     if (!proxy_settings->empty()) {
-      policies->Set(key::kProxySettings,
-                    level,
-                    POLICY_SCOPE_MACHINE,
-                    proxy_settings.release(),
-                    NULL);
+      policies->Set(key::kProxySettings, POLICY_LEVEL_RECOMMENDED,
+                    POLICY_SCOPE_MACHINE, proxy_settings.release(), nullptr);
     }
   }
 
@@ -670,22 +579,6 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     }
   }
 
-  if (policy.has_start_up_urls()) {
-    const em::StartUpUrlsProto& container(policy.start_up_urls());
-    base::ListValue* urls = new base::ListValue();
-    RepeatedPtrField<std::string>::const_iterator entry;
-    for (entry = container.start_up_urls().begin();
-         entry != container.start_up_urls().end();
-         ++entry) {
-      urls->Append(new base::StringValue(*entry));
-    }
-    policies->Set(key::kDeviceStartUpUrls,
-                  POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_MACHINE,
-                  urls,
-                  NULL);
-  }
-
   if (policy.has_system_timezone()) {
     if (policy.system_timezone().has_timezone()) {
       policies->Set(key::kSystemTimezone,
@@ -813,15 +706,13 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
 }  // namespace
 
 void DecodeDevicePolicy(const em::ChromeDeviceSettingsProto& policy,
-                        PolicyMap* policies,
-                        EnterpriseInstallAttributes* install_attributes) {
+                        PolicyMap* policies) {
   // TODO(achuith): Remove this once crbug.com/263527 is resolved.
   VLOG(2) << "DecodeDevicePolicy " << policy.SerializeAsString();
 
   // Decode the various groups of policies.
   DecodeLoginPolicies(policy, policies);
-  DecodeKioskPolicies(policy, policies, install_attributes);
-  DecodeNetworkPolicies(policy, policies, install_attributes);
+  DecodeNetworkPolicies(policy, policies);
   DecodeReportingPolicies(policy, policies);
   DecodeAutoUpdatePolicies(policy, policies);
   DecodeAccessibilityPolicies(policy, policies);

@@ -339,28 +339,14 @@ UserCardView::UserCardView(user::LoginStatus login_status,
                            int multiprofile_index) {
   SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal, 0, 0, kTrayPopupPaddingBetweenItems));
-  switch (login_status) {
-    case user::LOGGED_IN_RETAIL_MODE:
-      AddRetailModeUserContent();
-      break;
-    case user::LOGGED_IN_PUBLIC:
-      AddPublicModeUserContent(max_width);
-      break;
-    default:
-      AddUserContent(login_status, multiprofile_index);
-      break;
+  if (login_status == user::LOGGED_IN_PUBLIC) {
+    AddPublicModeUserContent(max_width);
+  } else {
+    AddUserContent(login_status, multiprofile_index);
   }
 }
 
 UserCardView::~UserCardView() {}
-
-void UserCardView::AddRetailModeUserContent() {
-  views::Label* details = new views::Label;
-  details->SetText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_KIOSK_LABEL));
-  details->SetBorder(views::Border::CreateEmptyBorder(0, 4, 0, 1));
-  details->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  AddChildView(details);
-}
 
 void UserCardView::AddPublicModeUserContent(int max_width) {
   views::View* icon = CreateIcon(user::LOGGED_IN_PUBLIC, 0);

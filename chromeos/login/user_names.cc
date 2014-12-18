@@ -18,8 +18,6 @@ const char* kGuestUserName = "$guest";
 
 const char* kSupervisedUserDomain = "locally-managed.localhost";
 
-const char* kRetailModeUserName = "demouser@";
-
 std::string CanonicalizeUserID(const std::string& user_id) {
   if (user_id == chromeos::login::kGuestUserName)
     return user_id;

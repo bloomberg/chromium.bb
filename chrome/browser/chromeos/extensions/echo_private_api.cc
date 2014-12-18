@@ -17,7 +17,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/ui/echo_dialog_view.h"
 #include "chrome/browser/ui/browser.h"
@@ -61,12 +60,6 @@ EchoPrivateGetRegistrationCodeFunction::
 
 void EchoPrivateGetRegistrationCodeFunction::GetRegistrationCode(
     const std::string& type) {
-  if (!chromeos::KioskModeSettings::Get()->is_initialized()) {
-    chromeos::KioskModeSettings::Get()->Initialize(base::Bind(
-        &EchoPrivateGetRegistrationCodeFunction::GetRegistrationCode,
-        this, type));
-    return;
-  }
   // Possible ECHO code type and corresponding key name in StatisticsProvider.
   const std::string kCouponType = "COUPON_CODE";
   const std::string kGroupType = "GROUP_CODE";
@@ -74,16 +67,12 @@ void EchoPrivateGetRegistrationCodeFunction::GetRegistrationCode(
   chromeos::system::StatisticsProvider* provider =
       chromeos::system::StatisticsProvider::GetInstance();
   std::string result;
-  if (!chromeos::KioskModeSettings::Get()->IsKioskModeEnabled()) {
-    // In Kiosk mode, we effectively disable the registration API
-    // by always returning an empty code.
-    if (type == kCouponType) {
-      provider->GetMachineStatistic(chromeos::system::kOffersCouponCodeKey,
-                                    &result);
-    } else if (type == kGroupType) {
-      provider->GetMachineStatistic(chromeos::system::kOffersGroupCodeKey,
-                                    &result);
-    }
+  if (type == kCouponType) {
+    provider->GetMachineStatistic(chromeos::system::kOffersCouponCodeKey,
+                                  &result);
+  } else if (type == kGroupType) {
+    provider->GetMachineStatistic(chromeos::system::kOffersGroupCodeKey,
+                                  &result);
   }
 
   results_ = echo_api::GetRegistrationCode::Results::Create(result);

@@ -16,7 +16,6 @@ enum LoginStatus {
   LOGGED_IN_USER,             // A regular user is logged in
   LOGGED_IN_OWNER,            // The owner of the device is logged in
   LOGGED_IN_GUEST,            // A guest is logged in (i.e. incognito)
-  LOGGED_IN_RETAIL_MODE,      // Is in retail mode
   LOGGED_IN_PUBLIC,           // A public account is logged in
   LOGGED_IN_SUPERVISED,       // A supervised user is logged in
   LOGGED_IN_KIOSK_APP         // Is in kiosk app mode

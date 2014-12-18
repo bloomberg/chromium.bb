@@ -1000,26 +1000,13 @@ void UserSessionManager::ActivateWizard(const std::string& screen_name) {
 void UserSessionManager::InitializeStartUrls() const {
   std::vector<std::string> start_urls;
 
-  const base::ListValue *urls;
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   bool can_show_getstarted_guide =
       user_manager->GetActiveUser()->GetType() ==
           user_manager::USER_TYPE_REGULAR &&
       !user_manager->IsCurrentUserNonCryptohomeDataEphemeral();
-  if (user_manager->IsLoggedInAsDemoUser()) {
-    if (CrosSettings::Get()->GetList(kStartUpUrls, &urls)) {
-      // The retail mode user will get start URLs from a special policy if it is
-      // set.
-      for (base::ListValue::const_iterator it = urls->begin();
-           it != urls->end(); ++it) {
-        std::string url;
-        if ((*it)->GetAsString(&url))
-          start_urls.push_back(url);
-      }
-    }
-    can_show_getstarted_guide = false;
   // Skip the default first-run behavior for public accounts.
-  } else if (!user_manager->IsLoggedInAsPublicAccount()) {
+  if (!user_manager->IsLoggedInAsPublicAccount()) {
     if (AccessibilityManager::Get()->IsSpokenFeedbackEnabled()) {
       const char* url = kChromeVoxTutorialURLPattern;
       PrefService* prefs = g_browser_process->local_state();

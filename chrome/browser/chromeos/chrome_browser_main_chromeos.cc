@@ -40,11 +40,9 @@
 #include "chrome/browser/chromeos/events/event_rewriter_controller.h"
 #include "chrome/browser/chromeos/events/keyboard_driven_event_rewriter.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
-#include "chrome/browser/chromeos/extensions/extension_system_event_observer.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
@@ -119,7 +117,6 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/power_save_blocker.h"
 #include "content/public/common/main_function_params.h"
 #include "media/audio/sounds/sounds_manager.h"
 #include "net/base/network_change_notifier.h"
@@ -139,8 +136,6 @@
 #endif
 
 #if !defined(USE_ATHENA)
-#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_idle_logout.h"
-#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_screensaver.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #endif
 
@@ -271,11 +266,6 @@ ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
 }
 
 ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
-#if !defined(USE_ATHENA)
-  if (KioskModeSettings::Get()->IsKioskModeEnabled())
-    ShutdownKioskModeScreensaver();
-#endif
-
   // To be precise, logout (browser shutdown) is not yet done, but the
   // remaining work is negligible, hence we say LogoutDone here.
   BootTimesLoader::Get()->AddLogoutTimeMarker("LogoutDone", false);
@@ -395,16 +385,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   g_browser_process->platform_part()->InitializeChromeUserManager();
 
-#if defined(USE_ATHENA)
   ScreenLocker::InitClass();
-#else
-  // Initialize the screen locker now so that it can receive
-  // LOGIN_USER_CHANGED notification from UserManager.
-  if (KioskModeSettings::Get()->IsKioskModeEnabled())
-    KioskModeIdleLogout::Initialize();
-  else
-    ScreenLocker::InitClass();
-#endif
 
   // This forces the ProfileManager to be created and register for the
   // notification it needs to track the logged in user.
@@ -602,15 +583,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   if (user_manager::UserManager::Get()->IsLoggedInAsGuest())
     SetGuestLocale(profile());
 
-  // These observers must be initialized after the profile because
-  // they use the profile to dispatch extension events.
-  extension_system_event_observer_.reset(new ExtensionSystemEventObserver());
-  if (KioskModeSettings::Get()->IsKioskModeEnabled()) {
-    retail_mode_power_save_blocker_ = content::PowerSaveBlocker::Create(
-        content::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
-        "Retail mode");
-  }
-
   peripheral_battery_observer_.reset(new PeripheralBatteryObserver());
 
   renderer_freezer_.reset(
@@ -731,19 +703,12 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   // We should remove observers attached to D-Bus clients before
   // DBusThreadManager is shut down.
-  extension_system_event_observer_.reset();
-  retail_mode_power_save_blocker_.reset();
   peripheral_battery_observer_.reset();
   power_prefs_.reset();
   renderer_freezer_.reset();
   light_bar_.reset();
   wake_on_wifi_manager_.reset();
-
-  // Let the ScreenLocker unregister itself from SessionManagerClient before
-  // DBusThreadManager is shut down.
-  if (!KioskModeSettings::Get()->IsKioskModeEnabled())
-    ScreenLocker::ShutDownClass();
-
+  ScreenLocker::ShutDownClass();
   keyboard_event_rewriters_.reset();
 #if defined(USE_X11)
   // The XInput2 event listener needs to be shut down earlier than when

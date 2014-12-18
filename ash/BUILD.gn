@@ -119,8 +119,6 @@ component("ash_with_content") {
     "content_support/ash_with_content_export.h",
     "content_support/gpu_support_impl.cc",
     "content_support/gpu_support_impl.h",
-    "screensaver/screensaver_view.cc",
-    "screensaver/screensaver_view.h",
     "keyboard_overlay/keyboard_overlay_delegate.cc",
     "keyboard_overlay/keyboard_overlay_delegate.h",
     "keyboard_overlay/keyboard_overlay_view.cc",

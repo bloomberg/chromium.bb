@@ -53,7 +53,8 @@ class SessionManagerOperationTest : public testing::Test {
   }
 
   virtual void SetUp() override {
-    policy_.payload().mutable_pinned_apps()->add_app_id("fake-app");
+    policy_.payload().mutable_user_whitelist()->add_user_whitelist(
+        "fake-whitelist");
     policy_.Build();
 
     profile_.reset(new TestingProfile());

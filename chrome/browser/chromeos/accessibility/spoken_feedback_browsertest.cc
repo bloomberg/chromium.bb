@@ -364,7 +364,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateSystemTray) {
       MatchPattern(speech_monitor_.GetNextUtterance(), "*Bluetooth* Button"));
 }
 
-IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ScreenBrightness) {
+// See http://crbug.com/443608
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_ScreenBrightness) {
   EnableChromeVox();
 
   EXPECT_TRUE(PerformAcceleratorAction(ash::BRIGHTNESS_UP));

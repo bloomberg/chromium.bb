@@ -5,7 +5,6 @@
 #include "ash/shell/window_type_launcher.h"
 
 #include "ash/root_window_controller.h"
-#include "ash/screensaver/screensaver_view.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -17,10 +16,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/test/child_modal_window.h"
-#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
@@ -208,8 +204,6 @@ WindowTypeLauncher::WindowTypeLauncher()
           this, base::ASCIIToUTF16("Open Views Examples Window"))),
       show_hide_window_button_(new views::LabelButton(
           this, base::ASCIIToUTF16("Show/Hide a Window"))),
-      show_screensaver_(new views::LabelButton(
-          this, base::ASCIIToUTF16("Show the Screensaver [for 5 seconds]"))),
       show_web_notification_(new views::LabelButton(
           this, base::ASCIIToUTF16("Show a web/app notification"))) {
   create_button_->SetStyle(views::Button::STYLE_BUTTON);
@@ -224,7 +218,6 @@ WindowTypeLauncher::WindowTypeLauncher()
   transient_button_->SetStyle(views::Button::STYLE_BUTTON);
   examples_button_->SetStyle(views::Button::STYLE_BUTTON);
   show_hide_window_button_->SetStyle(views::Button::STYLE_BUTTON);
-  show_screensaver_->SetStyle(views::Button::STYLE_BUTTON);
   show_web_notification_->SetStyle(views::Button::STYLE_BUTTON);
 
   views::GridLayout* layout = new views::GridLayout(this);
@@ -249,7 +242,6 @@ WindowTypeLauncher::WindowTypeLauncher()
   AddViewToLayout(layout, transient_button_);
   AddViewToLayout(layout, examples_button_);
   AddViewToLayout(layout, show_hide_window_button_);
-  AddViewToLayout(layout, show_screensaver_);
   AddViewToLayout(layout, show_web_notification_);
   set_context_menu_controller(this);
 }
@@ -316,13 +308,6 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
     NonModalTransient::OpenNonModalTransient(GetWidget()->GetNativeView());
   } else if (sender == show_hide_window_button_) {
     NonModalTransient::ToggleNonModalTransient(GetWidget()->GetNativeView());
-  } else if (sender == show_screensaver_) {
-    ash::ShowScreensaver(GURL("http://www.google.com"));
-    content::BrowserThread::PostDelayedTask(content::BrowserThread::UI,
-                                            FROM_HERE,
-                                            base::Bind(&ash::CloseScreensaver),
-                                            base::TimeDelta::FromSeconds(5));
-
   } else if (sender == show_web_notification_) {
     scoped_ptr<message_center::Notification> notification;
     notification.reset(new message_center::Notification(

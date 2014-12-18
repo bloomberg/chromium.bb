@@ -142,7 +142,6 @@ class ChromeUserManagerImpl
   virtual void RegularUserLoggedIn(const std::string& user_id) override;
   virtual void RegularUserLoggedInAsEphemeral(
       const std::string& user_id) override;
-  virtual void RetailModeUserLoggedIn() override;
   virtual void SupervisedUserLoggedIn(const std::string& user_id) override;
 
  private:

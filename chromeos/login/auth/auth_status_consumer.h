@@ -111,10 +111,6 @@ class CHROMEOS_EXPORT AuthStatusConsumer {
   // The current login attempt has ended in failure, with error |error|.
   virtual void OnAuthFailure(const AuthFailure& error) = 0;
 
-  // The current retail mode login attempt has succeeded.
-  // Unless overridden for special processing, this should always call
-  // OnLoginSuccess with the magic |kRetailModeUserEMail| constant.
-  virtual void OnRetailModeAuthSuccess(const UserContext& user_context);
   // The current login attempt has succeeded for |user_context|.
   virtual void OnAuthSuccess(const UserContext& user_context) = 0;
   // The current guest login attempt has succeeded.

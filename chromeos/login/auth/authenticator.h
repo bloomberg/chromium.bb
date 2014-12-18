@@ -50,9 +50,6 @@ class CHROMEOS_EXPORT Authenticator
   // Initiates supervised user login.
   virtual void LoginAsSupervisedUser(const UserContext& user_context) = 0;
 
-  // Initiates retail mode login.
-  virtual void LoginRetailMode() = 0;
-
   // Initiates incognito ("browse without signing in") login.
   virtual void LoginOffTheRecord() = 0;
 
@@ -65,9 +62,6 @@ class CHROMEOS_EXPORT Authenticator
   // guest mount. If this is false, we use mount a public cryptohome.
   virtual void LoginAsKioskAccount(const std::string& app_user_id,
                                    bool use_guest_mount) = 0;
-
-  // Completes retail mode login.
-  virtual void OnRetailModeAuthSuccess() = 0;
 
   // Notifies caller that login was successful. Must be called on the UI thread.
   virtual void OnAuthSuccess() = 0;

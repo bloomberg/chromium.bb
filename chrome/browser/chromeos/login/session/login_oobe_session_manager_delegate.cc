@@ -7,14 +7,9 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/common/pref_names.h"
-
-#if !defined(USE_ATHENA)
-#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_screensaver.h"
-#endif
 
 namespace chromeos {
 
@@ -27,11 +22,6 @@ LoginOobeSessionManagerDelegate::~LoginOobeSessionManagerDelegate() {
 void LoginOobeSessionManagerDelegate::Start() {
   // State will be defined once out-of-box/login branching is complete.
   ShowLoginWizard(std::string());
-
-#if !defined(USE_ATHENA)
-  if (KioskModeSettings::Get()->IsKioskModeEnabled())
-    InitializeKioskModeScreensaver();
-#endif
 
   // Reset reboot after update flag when login screen is shown.
   policy::BrowserPolicyConnectorChromeOS* connector =

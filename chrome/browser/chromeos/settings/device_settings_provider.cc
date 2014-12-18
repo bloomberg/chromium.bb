@@ -53,12 +53,9 @@ const char* const kKnownSettings[] = {
     kAccountsPrefUsers,
     kAllowRedeemChromeOsRegistrationOffers,
     kAllowedConnectionTypesForUpdate,
-    kAppPack,
     kAttestationForContentProtectionEnabled,
     kDeviceAttestationEnabled,
     kDeviceOwner,
-    kIdleLogoutTimeout,
-    kIdleLogoutWarningDuration,
     kPolicyMissingMitigationMode,
     kReleaseChannel,
     kReleaseChannelDelegated,
@@ -69,12 +66,9 @@ const char* const kKnownSettings[] = {
     kReportDeviceUsers,
   kReportDeviceHardwareStatus,
     kReportDeviceVersionInfo,
-    kScreenSaverExtensionId,
-    kScreenSaverTimeout,
     kServiceAccountIdentity,
     kSignedDataRoamingEnabled,
     kStartUpFlags,
-    kStartUpUrls,
     kStatsReportingPref,
     kSystemTimezonePolicy,
     kSystemUse24HourClock,
@@ -246,69 +240,6 @@ void DecodeLoginPolicies(
     new_values_cache->SetBoolean(
         kAccountsPrefTransferSAMLCookies,
         policy.saml_settings().transfer_saml_cookies());
-  }
-}
-
-void DecodeKioskPolicies(
-    const em::ChromeDeviceSettingsProto& policy,
-    PrefValueMap* new_values_cache) {
-  if (policy.has_forced_logout_timeouts()) {
-    if (policy.forced_logout_timeouts().has_idle_logout_timeout()) {
-      new_values_cache->SetInteger(
-          kIdleLogoutTimeout,
-          policy.forced_logout_timeouts().idle_logout_timeout());
-    }
-
-    if (policy.forced_logout_timeouts().has_idle_logout_warning_duration()) {
-      new_values_cache->SetInteger(
-          kIdleLogoutWarningDuration,
-          policy.forced_logout_timeouts().idle_logout_warning_duration());
-    }
-  }
-
-  if (policy.has_login_screen_saver()) {
-    if (policy.login_screen_saver().has_screen_saver_timeout()) {
-      new_values_cache->SetInteger(
-          kScreenSaverTimeout,
-          policy.login_screen_saver().screen_saver_timeout());
-    }
-
-    if (policy.login_screen_saver().has_screen_saver_extension_id()) {
-      new_values_cache->SetString(
-          kScreenSaverExtensionId,
-          policy.login_screen_saver().screen_saver_extension_id());
-    }
-  }
-
-  if (policy.has_app_pack()) {
-    typedef RepeatedPtrField<em::AppPackEntryProto> proto_type;
-    base::ListValue* list = new base::ListValue;
-    const proto_type& app_pack = policy.app_pack().app_pack();
-    for (proto_type::const_iterator it = app_pack.begin();
-         it != app_pack.end(); ++it) {
-      base::DictionaryValue* entry = new base::DictionaryValue;
-      if (it->has_extension_id()) {
-        entry->SetStringWithoutPathExpansion(kAppPackKeyExtensionId,
-                                             it->extension_id());
-      }
-      if (it->has_update_url()) {
-        entry->SetStringWithoutPathExpansion(kAppPackKeyUpdateUrl,
-                                             it->update_url());
-      }
-      list->Append(entry);
-    }
-    new_values_cache->SetValue(kAppPack, list);
-  }
-
-  if (policy.has_start_up_urls()) {
-    base::ListValue* list = new base::ListValue();
-    const em::StartUpUrlsProto& urls_proto = policy.start_up_urls();
-    const RepeatedPtrField<std::string>& urls = urls_proto.start_up_urls();
-    for (RepeatedPtrField<std::string>::const_iterator it = urls.begin();
-         it != urls.end(); ++it) {
-      list->Append(new base::StringValue(*it));
-    }
-    new_values_cache->SetValue(kStartUpUrls, list);
   }
 }
 
@@ -641,7 +572,6 @@ void DeviceSettingsProvider::UpdateValuesCache(
   }
 
   DecodeLoginPolicies(settings, &new_values_cache);
-  DecodeKioskPolicies(settings, &new_values_cache);
   DecodeNetworkPolicies(settings, &new_values_cache);
   DecodeAutoUpdatePolicies(settings, &new_values_cache);
   DecodeReportingPolicies(settings, &new_values_cache);

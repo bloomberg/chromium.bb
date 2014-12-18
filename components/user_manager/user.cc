@@ -88,18 +88,6 @@ class SupervisedUser : public User {
   DISALLOW_COPY_AND_ASSIGN(SupervisedUser);
 };
 
-class RetailModeUser : public User {
- public:
-  RetailModeUser();
-  virtual ~RetailModeUser();
-
-  // Overridden from User:
-  virtual UserType GetType() const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RetailModeUser);
-};
-
 class PublicAccountUser : public User {
  public:
   explicit PublicAccountUser(const std::string& email);
@@ -201,10 +189,6 @@ User* User::CreateKioskAppUser(const std::string& kiosk_app_username) {
 
 User* User::CreateSupervisedUser(const std::string& username) {
   return new SupervisedUser(username);
-}
-
-User* User::CreateRetailModeUser() {
-  return new RetailModeUser;
 }
 
 User* User::CreatePublicAccountUser(const std::string& email) {
@@ -313,17 +297,6 @@ std::string SupervisedUser::display_email() const {
   return base::UTF16ToUTF8(display_name());
 }
 
-RetailModeUser::RetailModeUser() : User(chromeos::login::kRetailModeUserName) {
-  set_display_email(std::string());
-}
-
-RetailModeUser::~RetailModeUser() {
-}
-
-UserType RetailModeUser::GetType() const {
-  return user_manager::USER_TYPE_RETAIL_MODE;
-}
-
 PublicAccountUser::PublicAccountUser(const std::string& email) : User(email) {
 }
 
@@ -341,7 +314,6 @@ bool User::has_gaia_account() const {
     case user_manager::USER_TYPE_CHILD:
       return true;
     case user_manager::USER_TYPE_GUEST:
-    case user_manager::USER_TYPE_RETAIL_MODE:
     case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
     case user_manager::USER_TYPE_SUPERVISED:
     case user_manager::USER_TYPE_KIOSK_APP:

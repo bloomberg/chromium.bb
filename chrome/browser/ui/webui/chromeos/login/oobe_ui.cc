@@ -10,10 +10,11 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen_actor.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
@@ -52,6 +53,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
@@ -76,7 +78,6 @@ const char kStringsJSPath[] = "strings.js";
 const char kLoginJSPath[] = "login.js";
 const char kOobeJSPath[] = "oobe.js";
 const char kKeyboardUtilsJSPath[] = "keyboard_utils.js";
-const char kDemoUserLoginJSPath[] = "demo_user_login.js";
 const char kCustomElementsHTMLPath[] = "custom_elements.html";
 const char kCustomElementsJSPath[] = "custom_elements.js";
 
@@ -107,12 +108,6 @@ content::WebUIDataSource* CreateOobeUIDataSource(
       content::WebUIDataSource::Create(chrome::kChromeUIOobeHost);
   source->AddLocalizedStrings(localized_strings);
   source->SetJsonPath(kStringsJSPath);
-
-  if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled()) {
-    source->SetDefaultResource(IDR_DEMO_USER_LOGIN_HTML);
-    source->AddResourcePath(kDemoUserLoginJSPath, IDR_DEMO_USER_LOGIN_JS);
-    return source;
-  }
 
   if (display_type == OobeUI::kOobeDisplay) {
     source->SetDefaultResource(IDR_OOBE_HTML);
@@ -583,13 +578,20 @@ void OobeUI::ShowOobeUI(bool show) {
   core_handler_->ShowOobeUI(show);
 }
 
-void OobeUI::ShowRetailModeLoginSpinner() {
-  signin_screen_handler_->ShowRetailModeLoginSpinner();
-}
-
 void OobeUI::ShowSigninScreen(const LoginScreenContext& context,
                               SigninScreenHandlerDelegate* delegate,
                               NativeWindowDelegate* native_window_delegate) {
+  // Check our device mode.
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (connector->GetDeviceMode() == policy::DEVICE_MODE_LEGACY_RETAIL_MODE) {
+    // If we're in legacy retail mode, the best thing we can do is launch the
+    // new offline demo mode.
+    LoginDisplayHost* host = LoginDisplayHostImpl::default_host();
+    host->StartDemoAppLaunch();
+    return;
+  }
+
   signin_screen_handler_->SetDelegate(delegate);
   signin_screen_handler_->SetNativeWindowDelegate(native_window_delegate);
 

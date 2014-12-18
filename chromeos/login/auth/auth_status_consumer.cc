@@ -6,11 +6,6 @@
 
 namespace chromeos {
 
-void AuthStatusConsumer::OnRetailModeAuthSuccess(
-    const UserContext& user_context) {
-  OnAuthSuccess(user_context);
-}
-
 void AuthStatusConsumer::OnPasswordChangeDetected() {
   NOTREACHED();
 }

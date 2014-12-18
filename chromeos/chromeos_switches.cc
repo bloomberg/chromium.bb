@@ -178,9 +178,6 @@ const char kHostPairingOobe[] = "host-pairing-oobe";
 const char kIgnoreUserProfileMappingForTests[] =
     "ignore-user-profile-mapping-for-tests";
 
-// Path for the screensaver used in Kiosk mode
-const char kKioskModeScreensaverPath[] = "kiosk-mode-screensaver-path";
-
 // Enables Chrome-as-a-login-manager behavior.
 const char kLoginManager[] = "login-manager";
 

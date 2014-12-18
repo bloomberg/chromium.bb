@@ -21,9 +21,6 @@ base::string16 GetLocalizedSignOutStringForStatus(LoginStatus status,
     case LOGGED_IN_GUEST:
       message_id = IDS_ASH_STATUS_TRAY_EXIT_GUEST;
       break;
-    case LOGGED_IN_RETAIL_MODE:
-      message_id = IDS_ASH_STATUS_TRAY_EXIT_KIOSK;
-      break;
     case LOGGED_IN_PUBLIC:
       message_id = IDS_ASH_STATUS_TRAY_EXIT_PUBLIC;
       break;

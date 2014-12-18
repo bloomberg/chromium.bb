@@ -226,12 +226,6 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_EXIT_GUEST" desc="The label used for the button in the status tray to terminate a guest session.">
         Exit guest
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_KIOSK_LABEL" desc="The label used in the system tray's user card to indicate that the current session is running in demo mode.">
-        Demo mode
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_EXIT_KIOSK" desc="The label used for the button in the status tray to terminate a session kiosk mode.">
-        Exit session
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_EXIT_PUBLIC" desc="The label used for the button in the status tray to terminate a public account session. If the label is long, indicate where it may be broken into two lines by inserting \n instead of a whitespace.">
         Exit session
       </message>

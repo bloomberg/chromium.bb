@@ -27,7 +27,7 @@ DeviceMode TranslateProtobufDeviceMode(
     case em::DeviceRegisterResponse::ENTERPRISE:
       return DEVICE_MODE_ENTERPRISE;
     case em::DeviceRegisterResponse::RETAIL:
-      return DEVICE_MODE_RETAIL_KIOSK;
+      return DEVICE_MODE_LEGACY_RETAIL_MODE;
   }
   LOG(ERROR) << "Unknown enrollment mode in registration response: " << mode;
   return DEVICE_MODE_NOT_SET;

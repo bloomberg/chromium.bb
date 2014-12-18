@@ -118,7 +118,6 @@ void OpenSettings() {
     case user::LOGGED_IN_USER:
     case user::LOGGED_IN_OWNER:
     case user::LOGGED_IN_GUEST:
-    case user::LOGGED_IN_RETAIL_MODE:
     case user::LOGGED_IN_PUBLIC:
     case user::LOGGED_IN_SUPERVISED:
     case user::LOGGED_IN_KIOSK_APP:

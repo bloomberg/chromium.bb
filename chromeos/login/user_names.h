@@ -30,9 +30,6 @@ CHROMEOS_EXPORT extern const char* kGuestUserName;
 // Domain that is used for all supervised users.
 CHROMEOS_EXPORT extern const char* kSupervisedUserDomain;
 
-// The retail mode user has a magic, domainless e-mail address.
-CHROMEOS_EXPORT extern const char* kRetailModeUserName;
-
 // Canonicalizes a GAIA user ID, accounting for the legacy guest mode user ID
 // which does trips up gaia::CanonicalizeEmail() because it does not contain an
 // @ symbol.

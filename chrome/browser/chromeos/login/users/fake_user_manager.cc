@@ -280,10 +280,6 @@ bool FakeUserManager::IsLoggedInAsUserWithGaiaAccount() const {
   return true;
 }
 
-bool FakeUserManager::IsLoggedInAsDemoUser() const {
-  return false;
-}
-
 bool FakeUserManager::IsLoggedInAsPublicAccount() const {
   return false;
 }

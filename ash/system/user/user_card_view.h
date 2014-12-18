@@ -23,9 +23,6 @@ class UserCardView : public views::View {
   ~UserCardView() override;
 
  private:
-  // Creates the content for the retail logged in mode.
-  void AddRetailModeUserContent();
-
   // Creates the content for the public mode.
   void AddPublicModeUserContent(int max_width);
 

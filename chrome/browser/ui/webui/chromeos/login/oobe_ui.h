@@ -138,11 +138,6 @@ class OobeUI : public OobeDisplay,
   // Shows or hides OOBE UI elements.
   void ShowOobeUI(bool show);
 
-  // TODO(rkc): Create a separate retail mode login UI and move this method
-  // there - see crbug.com/157671.
-  // Shows a login spinner for retail mode logins.
-  void ShowRetailModeLoginSpinner();
-
   // Shows the signin screen.
   void ShowSigninScreen(const LoginScreenContext& context,
                         SigninScreenHandlerDelegate* delegate,

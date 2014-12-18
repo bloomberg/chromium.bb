@@ -1405,9 +1405,6 @@ Press any key to continue exploring.
   <message name="IDS_APP_START_BAILOUT_SHORTCUT_FORMAT" desc="Message displayed at the bottom of app launch splash screen to show user the shortcut key to bailout the launch.">
   Press Ctrl + Alt + S to switch to <ph name="IDS_SHORT_PRODUCT_OS_NAME">$1<ex>Chrome OS</ex></ph>
   </message>
-  <message name="IDS_KIOSK_MODE_LOGIN_MESSAGE">
-    Click to start
-  </message>
   <message name="IDS_LOGIN_CHANGE_PHOTO">
     Change picture
   </message>
@@ -3841,9 +3838,6 @@ Battery full
   </message>
   <message name="IDS_CHROMEOS_ACC_LOGIN_SIGNIN_OFFRECORD" desc="Status when signing in incognito.">
     Entering as Guest.
-  </message>
-  <message name="IDS_CHROMEOS_ACC_LOGIN_SIGNIN_DEMOUSER" desc="Status when signing in the demo user.">
-    Entering Demo.
   </message>
   <message name="IDS_CHROMEOS_ACC_LOGIN_SIGNIN_PUBLIC_ACCOUNT" desc="Status when signing in into a public account.">
     Entering public session.

@@ -384,10 +384,8 @@ void ScreenLocker::Show() {
 
   // Check whether the currently logged in user is a guest account and if so,
   // refuse to lock the screen (crosbug.com/23764).
-  // For a demo user, we should never show the lock screen (crosbug.com/27647).
-  if (user_manager::UserManager::Get()->IsLoggedInAsGuest() ||
-      user_manager::UserManager::Get()->IsLoggedInAsDemoUser()) {
-    VLOG(1) << "Refusing to lock screen for guest/demo account";
+  if (user_manager::UserManager::Get()->IsLoggedInAsGuest()) {
+    VLOG(1) << "Refusing to lock screen for guest account";
     return;
   }
 
@@ -421,10 +419,9 @@ void ScreenLocker::Show() {
 // static
 void ScreenLocker::Hide() {
   DCHECK(base::MessageLoopForUI::IsCurrent());
-  // For a guest/demo user, screen_locker_ would have never been initialized.
-  if (user_manager::UserManager::Get()->IsLoggedInAsGuest() ||
-      user_manager::UserManager::Get()->IsLoggedInAsDemoUser()) {
-    VLOG(1) << "Refusing to hide lock screen for guest/demo account";
+  // For a guest user, screen_locker_ would have never been initialized.
+  if (user_manager::UserManager::Get()->IsLoggedInAsGuest()) {
+    VLOG(1) << "Refusing to hide lock screen for guest account";
     return;
   }
 

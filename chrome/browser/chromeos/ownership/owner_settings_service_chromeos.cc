@@ -602,11 +602,8 @@ void OwnerSettingsServiceChromeOS::UpdateDeviceSettings(
     // The remaining settings don't support Set(), since they are not
     // intended to be customizable by the user:
     //   kAccountsPrefTransferSAMLCookies
-    //   kAppPack
     //   kDeviceAttestationEnabled
     //   kDeviceOwner
-    //   kIdleLogoutTimeout
-    //   kIdleLogoutWarningDuration
     //   kReleaseChannelDelegated
     //   kReportDeviceActivityTimes
     //   kReportDeviceBootMode
@@ -615,10 +612,7 @@ void OwnerSettingsServiceChromeOS::UpdateDeviceSettings(
     //   kReportDeviceNetworkInterfaces
     //   kReportDeviceUsers
     //   kReportDeviceHardwareStatus
-    //   kScreenSaverExtensionId
-    //   kScreenSaverTimeout
     //   kServiceAccountIdentity
-    //   kStartUpUrls
     //   kSystemTimezonePolicy
     //   kVariationsRestrictParameter
     //   kDeviceDisabled

@@ -115,7 +115,7 @@ class EnterpriseInstallAttributes {
   // Constants for the possible device modes that can be stored in the lockbox.
   static const char kConsumerDeviceMode[];
   static const char kEnterpriseDeviceMode[];
-  static const char kRetailKioskDeviceMode[];
+  static const char kLegacyRetailDeviceMode[];
   static const char kConsumerKioskDeviceMode[];
   static const char kUnknownDeviceMode[];
 

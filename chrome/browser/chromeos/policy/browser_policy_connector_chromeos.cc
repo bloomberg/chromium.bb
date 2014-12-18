@@ -17,7 +17,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/chromeos/policy/app_pack_updater.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_invalidator.h"
@@ -198,12 +197,6 @@ void BrowserPolicyConnectorChromeOS::Init(
   device_local_account_policy_service_->Connect(device_management_service());
   device_cloud_policy_invalidator_.reset(new DeviceCloudPolicyInvalidator);
 
-  // request_context is NULL in unit tests.
-  if (request_context.get() && install_attributes_) {
-    app_pack_updater_.reset(
-        new AppPackUpdater(request_context.get(), install_attributes_.get()));
-  }
-
   SetTimezoneIfPolicyAvailable();
 
   network_configuration_updater_ =
@@ -226,10 +219,6 @@ void BrowserPolicyConnectorChromeOS::PreShutdown() {
 void BrowserPolicyConnectorChromeOS::Shutdown() {
   // Verify that PreShutdown() has been called first.
   DCHECK(!device_cloud_policy_invalidator_);
-
-  // The AppPackUpdater may be observing the |device_cloud_policy_manager_|.
-  // Delete it first.
-  app_pack_updater_.reset();
 
   network_configuration_updater_.reset();
 
@@ -283,10 +272,6 @@ UserAffiliation BrowserPolicyConnectorChromeOS::GetUserAffiliation(
   }
 
   return USER_AFFILIATION_NONE;
-}
-
-AppPackUpdater* BrowserPolicyConnectorChromeOS::GetAppPackUpdater() {
-  return app_pack_updater_.get();
 }
 
 void BrowserPolicyConnectorChromeOS::SetUserPolicyDelegate(

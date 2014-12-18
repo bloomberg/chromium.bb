@@ -11,15 +11,13 @@ class ChromeDeviceSettingsProto;
 
 namespace policy {
 
-class EnterpriseInstallAttributes;
 class PolicyMap;
 
 // Decodes device policy in ChromeDeviceSettingsProto representation into the a
 // PolicyMap.
 void DecodeDevicePolicy(
     const enterprise_management::ChromeDeviceSettingsProto& policy,
-    PolicyMap* policies,
-    EnterpriseInstallAttributes* install_attributes);
+    PolicyMap* policies);
 
 }  // namespace policy
 

@@ -304,7 +304,7 @@ DeviceMode EnterpriseInstallAttributes::GetMode() {
 // that all changes to the constants are reflected there as well.
 const char EnterpriseInstallAttributes::kConsumerDeviceMode[] = "consumer";
 const char EnterpriseInstallAttributes::kEnterpriseDeviceMode[] = "enterprise";
-const char EnterpriseInstallAttributes::kRetailKioskDeviceMode[] = "kiosk";
+const char EnterpriseInstallAttributes::kLegacyRetailDeviceMode[] = "kiosk";
 const char EnterpriseInstallAttributes::kConsumerKioskDeviceMode[] =
     "consumer_kiosk";
 const char EnterpriseInstallAttributes::kUnknownDeviceMode[] = "unknown";
@@ -328,8 +328,8 @@ std::string EnterpriseInstallAttributes::GetDeviceModeString(DeviceMode mode) {
       return EnterpriseInstallAttributes::kConsumerDeviceMode;
     case DEVICE_MODE_ENTERPRISE:
       return EnterpriseInstallAttributes::kEnterpriseDeviceMode;
-    case DEVICE_MODE_RETAIL_KIOSK:
-      return EnterpriseInstallAttributes::kRetailKioskDeviceMode;
+    case DEVICE_MODE_LEGACY_RETAIL_MODE:
+      return EnterpriseInstallAttributes::kLegacyRetailDeviceMode;
     case DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH:
       return EnterpriseInstallAttributes::kConsumerKioskDeviceMode;
     case DEVICE_MODE_PENDING:
@@ -346,8 +346,8 @@ DeviceMode EnterpriseInstallAttributes::GetDeviceModeFromString(
     return DEVICE_MODE_CONSUMER;
   else if (mode == EnterpriseInstallAttributes::kEnterpriseDeviceMode)
     return DEVICE_MODE_ENTERPRISE;
-  else if (mode == EnterpriseInstallAttributes::kRetailKioskDeviceMode)
-    return DEVICE_MODE_RETAIL_KIOSK;
+  else if (mode == EnterpriseInstallAttributes::kLegacyRetailDeviceMode)
+    return DEVICE_MODE_LEGACY_RETAIL_MODE;
   else if (mode == EnterpriseInstallAttributes::kConsumerKioskDeviceMode)
     return DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH;
   NOTREACHED() << "Unknown device mode string: " << mode;

@@ -104,7 +104,6 @@ class FakeUserManager : public ChromeUserManager {
   virtual bool CanCurrentUserLock() const override;
   virtual bool IsUserLoggedIn() const override;
   virtual bool IsLoggedInAsUserWithGaiaAccount() const override;
-  virtual bool IsLoggedInAsDemoUser() const override;
   virtual bool IsLoggedInAsPublicAccount() const override;
   virtual bool IsLoggedInAsGuest() const override;
   virtual bool IsLoggedInAsSupervisedUser() const override;
@@ -142,7 +141,6 @@ class FakeUserManager : public ChromeUserManager {
   virtual void DemoAccountLoggedIn() override {}
   virtual void KioskAppLoggedIn(const std::string& app_id) override {}
   virtual void PublicAccountUserLoggedIn(user_manager::User* user) override {}
-  virtual void RetailModeUserLoggedIn() override {}
   virtual void SupervisedUserLoggedIn(const std::string& user_id) override {}
 
   void set_owner_email(const std::string& owner_email) {

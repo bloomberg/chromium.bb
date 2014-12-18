@@ -457,22 +457,6 @@ void CryptohomeAuthenticator::LoginAsSupervisedUser(
              false /* create_if_nonexistent */);
 }
 
-void CryptohomeAuthenticator::LoginRetailMode() {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  // Note: |kRetailModeUserEMail| is used in other places to identify a retail
-  // mode session.
-  current_state_.reset(
-      new AuthAttemptState(UserContext(chromeos::login::kRetailModeUserName),
-                           user_manager::USER_TYPE_RETAIL_MODE,
-                           false,    // unlock
-                           false,    // online_complete
-                           false));  // user_is_new
-  remove_user_data_on_failure_ = false;
-  ephemeral_mount_attempted_ = true;
-  MountGuestAndGetHash(current_state_.get(),
-                       scoped_refptr<CryptohomeAuthenticator>(this));
-}
-
 void CryptohomeAuthenticator::LoginOffTheRecord() {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   current_state_.reset(
@@ -527,14 +511,6 @@ void CryptohomeAuthenticator::LoginAsKioskAccount(
     MountGuestAndGetHash(current_state_.get(),
                          scoped_refptr<CryptohomeAuthenticator>(this));
   }
-}
-
-void CryptohomeAuthenticator::OnRetailModeAuthSuccess() {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  VLOG(1) << "Retail mode login success";
-  chromeos::LoginEventRecorder::Get()->RecordAuthenticationSuccess();
-  if (consumer_)
-    consumer_->OnRetailModeAuthSuccess(current_state_->user_context);
 }
 
 void CryptohomeAuthenticator::OnAuthSuccess() {
@@ -730,13 +706,6 @@ void CryptohomeAuthenticator::Resolve() {
       task_runner_->PostTask(
           FROM_HERE, base::Bind(&CryptohomeAuthenticator::OnAuthSuccess, this));
       break;
-    case DEMO_LOGIN:
-      VLOG(2) << "Retail mode login";
-      current_state_->user_context.SetIsUsingOAuth(false);
-      task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&CryptohomeAuthenticator::OnRetailModeAuthSuccess, this));
-      break;
     case GUEST_LOGIN:
       task_runner_->PostTask(
           FROM_HERE,
@@ -884,8 +853,6 @@ CryptohomeAuthenticator::ResolveCryptohomeSuccessState() {
 
   if (current_state_->user_type == user_manager::USER_TYPE_GUEST)
     return GUEST_LOGIN;
-  if (current_state_->user_type == user_manager::USER_TYPE_RETAIL_MODE)
-    return DEMO_LOGIN;
   if (current_state_->user_type == user_manager::USER_TYPE_PUBLIC_ACCOUNT)
     return PUBLIC_ACCOUNT_LOGIN;
   if (current_state_->user_type == user_manager::USER_TYPE_KIOSK_APP)

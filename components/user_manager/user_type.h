@@ -13,9 +13,7 @@ typedef enum {
   USER_TYPE_REGULAR = 0,
   // Guest user, logs in without authentication.
   USER_TYPE_GUEST = 1,
-  // Retail mode user, logs in without authentication. This is a special user
-  // type used in retail mode only.
-  USER_TYPE_RETAIL_MODE = 2,
+  /* USER_TYPE_RETAIL_MODE = 2, // deprecated */
   // Public account user, logs in without authentication. Available only if
   // enabled through policy.
   USER_TYPE_PUBLIC_ACCOUNT = 3,

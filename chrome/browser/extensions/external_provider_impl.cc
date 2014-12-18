@@ -37,13 +37,11 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
-#include "chrome/browser/chromeos/policy/app_pack_updater.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "components/user_manager/user.h"
-#include "components/user_manager/user_manager.h"
 #else
 #include "chrome/browser/extensions/default_apps.h"
 #endif
@@ -464,19 +462,14 @@ void ExternalProviderImpl::CreateExternalProviders(
   check_admin_permissions_on_mac = ExternalPrefLoader::NONE;
 #endif
 
-  bool is_chromeos_demo_session = false;
 #if !defined(OS_WIN)
   int bundled_extension_creation_flags = Extension::NO_FLAGS;
 #endif
 #if defined(OS_CHROMEOS)
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  is_chromeos_demo_session =
-      user_manager && user_manager->IsLoggedInAsDemoUser() &&
-      connector->GetDeviceMode() == policy::DEVICE_MODE_RETAIL_KIOSK;
   bundled_extension_creation_flags = Extension::FROM_WEBSTORE |
       Extension::WAS_INSTALLED_BY_DEFAULT;
 
-  if (!is_chromeos_demo_session && !is_chrome_os_public_session) {
+  if (!is_chrome_os_public_session) {
     int external_apps_path_id = profile->IsSupervised() ?
         chrome::DIR_SUPERVISED_USERS_DEFAULT_APPS :
         chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS;
@@ -507,20 +500,6 @@ void ExternalProviderImpl::CreateExternalProviders(
                                  Manifest::EXTERNAL_PREF_DOWNLOAD,
                                  oem_extension_creation_flags)));
   }
-
-  policy::AppPackUpdater* app_pack_updater = connector->GetAppPackUpdater();
-  if (is_chromeos_demo_session && app_pack_updater &&
-      !app_pack_updater->created_external_loader()) {
-    provider_list->push_back(
-        linked_ptr<ExternalProviderInterface>(
-          new ExternalProviderImpl(
-              service,
-              app_pack_updater->CreateExternalLoader(),
-              profile,
-              Manifest::EXTERNAL_PREF,
-              Manifest::INVALID_LOCATION,
-              Extension::NO_FLAGS)));
-  }
 #elif defined(OS_LINUX)
   if (!profile->IsSupervised()) {
     provider_list->push_back(
@@ -538,7 +517,7 @@ void ExternalProviderImpl::CreateExternalProviders(
   }
 #endif
 
-  if (!profile->IsSupervised() && !is_chromeos_demo_session) {
+  if (!profile->IsSupervised()) {
 #if defined(OS_WIN)
     provider_list->push_back(
         linked_ptr<ExternalProviderInterface>(

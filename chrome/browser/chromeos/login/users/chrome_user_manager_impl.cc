@@ -798,18 +798,6 @@ void ChromeUserManagerImpl::DemoAccountLoggedIn() {
       wm::switches::kWindowAnimationsDisabled);
 }
 
-void ChromeUserManagerImpl::RetailModeUserLoggedIn() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  SetIsCurrentUserNew(true);
-  active_user_ = user_manager::User::CreateRetailModeUser();
-  GetUserImageManager(chromeos::login::kRetailModeUserName)
-      ->UserLoggedIn(IsCurrentUserNew(), true);
-#if !defined(USE_ATHENA)
-  WallpaperManager::Get()->SetUserWallpaperNow(
-      chromeos::login::kRetailModeUserName);
-#endif
-}
-
 void ChromeUserManagerImpl::NotifyOnLogin() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

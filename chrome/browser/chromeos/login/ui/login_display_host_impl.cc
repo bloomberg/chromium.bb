@@ -25,7 +25,6 @@
 #include "chrome/browser/chromeos/first_run/drive_first_run_controller.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
@@ -366,10 +365,6 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
   if (!StartupUtils::IsOobeCompleted())
     initialize_webui_hidden_ = false;
 
-  // There is no wallpaper for KioskMode, don't initialize the webui hidden.
-  if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
-    initialize_webui_hidden_ = false;
-
 #if !defined(USE_ATHENA)
   if (waiting_for_wallpaper_load_) {
     registrar_.Add(this,
@@ -673,8 +668,6 @@ void LoginDisplayHostImpl::StartSignInScreen(
   GetOobeUI()->ShowSigninScreen(context,
                                 webui_login_display_,
                                 webui_login_display_);
-  if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
-    SetStatusAreaVisible(false);
   TRACE_EVENT_ASYNC_STEP_INTO0("ui",
                                "ShowLoginWebUI",
                                kShowLoginWebUIid,

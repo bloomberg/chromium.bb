@@ -209,7 +209,7 @@ void DeviceCloudPolicyStoreChromeOS::UpdateFromService() {
       PolicyMap new_policy_map;
       if (is_enterprise_managed && is_managed()) {
         DecodeDevicePolicy(*device_settings_service_->device_settings(),
-                           &new_policy_map, install_attributes_);
+                           &new_policy_map);
       }
       policy_map_.Swap(&new_policy_map);
 

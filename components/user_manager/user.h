@@ -179,7 +179,6 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   static User* CreateGuestUser();
   static User* CreateKioskAppUser(const std::string& kiosk_app_username);
   static User* CreateSupervisedUser(const std::string& username);
-  static User* CreateRetailModeUser();
   static User* CreatePublicAccountUser(const std::string& email);
 
   explicit User(const std::string& email);

@@ -108,51 +108,51 @@ message EphemeralUsersEnabledProto {
 }
 
 // Details of an extension to install as part of the AppPack.
-message AppPackEntryProto {
-  optional string extension_id = 1;
-  optional string update_url = 2;
+message OBSOLETE_AppPackEntryProto {
+  optional string OBSOLETE_extension_id = 1 [deprecated = true];
+  optional string OBSOLETE_update_url = 2 [deprecated = true];
 
   // This field was added but never used and there are no plans to support it
   // eventually either.
   optional bool OBSOLETE_online_only = 3 [deprecated = true];
 }
 
-message AppPackProto {
+message OBSOLETE_AppPackProto {
   // List of extensions to install as part of the AppPack.
-  repeated AppPackEntryProto app_pack = 1;
+  repeated OBSOLETE_AppPackEntryProto app_pack = 1 [deprecated = true];
 }
 
 // This is a special policy for kiosk/retail mode that specifies what apps
 // should be pinned to the launcher. For regular accounts, pinned apps are
 // controlled through user policy.
-message PinnedAppsProto {
+message OBSOLETE_PinnedAppsProto {
   // App IDs for the apps to pin.
-  repeated string app_id = 1;
+  repeated string OBSOLETE_app_id = 1 [deprecated = true];
 }
 
-message ForcedLogoutTimeoutsProto {
+message OBSOLETE_ForcedLogoutTimeoutsProto {
   // All timeouts are specified in milliseconds.
 
   // Specifies the timeout before an idle user session is terminated.
   // If this field is omitted or set to 0, no logout on idle will be performed.
-  optional int64 idle_logout_timeout = 1;
+  optional int64 OBSOLETE_idle_logout_timeout = 1 [deprecated = true];
 
   // Specifies the duration of a warning countdown before the user is logged out
   // because of idleness as specified by the |idle_logout_timeout| value.
   // This field is only used if |idle_logout_timeout| != 0 is specified.
-  optional int64 idle_logout_warning_duration = 2;
+  optional int64 OBSOLETE_idle_logout_warning_duration = 2 [deprecated = true];
 }
 
-message ScreenSaverProto {
+message OBSOLETE_ScreenSaverProto {
   // Specifies the extension ID which is to be used as a screen saver on the
   // login screen if no user activity is present. Only respected if the device
   // is in RETAIL mode.
-  optional string screen_saver_extension_id = 1;
+  optional string OBSOLETE_screen_saver_extension_id = 1 [deprecated = true];
 
   // Specifies the timeout before the screen saver is activated. If this field
   // is omitted or set to 0, no screen-saver will be started.
   // Measured in milliseconds.
-  optional int64 screen_saver_timeout = 2;
+  optional int64 OBSOLETE_screen_saver_timeout = 2 [deprecated = true];
 }
 
 // Enterprise controls for auto-update behavior of Chrome OS.
@@ -227,10 +227,10 @@ message AutoUpdateSettingsProto {
   optional bool p2p_enabled = 9 [default = false];
 }
 
-message StartUpUrlsProto {
+message OBSOLETE_StartUpUrlsProto {
   // Specifies the URLs to be loaded on login to the anonymous account used if
   // the device is in RETAIL mode.
-  repeated string start_up_urls = 1;
+  repeated string OBSOLETE_start_up_urls = 1 [deprecated = true];
 }
 
 message SystemTimezoneProto {
@@ -608,12 +608,14 @@ message ChromeDeviceSettingsProto {
   optional DeviceOpenNetworkConfigurationProto open_network_configuration = 11;
   optional DeviceReportingProto device_reporting = 12;
   optional EphemeralUsersEnabledProto ephemeral_users_enabled = 13;
-  optional AppPackProto app_pack = 14;
-  optional ForcedLogoutTimeoutsProto forced_logout_timeouts = 15;
-  optional ScreenSaverProto login_screen_saver = 16;
+  optional OBSOLETE_AppPackProto app_pack = 14 [deprecated = true];
+  optional OBSOLETE_ForcedLogoutTimeoutsProto forced_logout_timeouts = 15
+      [deprecated = true];
+  optional OBSOLETE_ScreenSaverProto login_screen_saver = 16
+      [deprecated = true];
   optional AutoUpdateSettingsProto auto_update_settings = 17;
-  optional StartUpUrlsProto start_up_urls = 18;
-  optional PinnedAppsProto pinned_apps = 19;
+  optional OBSOLETE_StartUpUrlsProto start_up_urls = 18 [deprecated = true];
+  optional OBSOLETE_PinnedAppsProto pinned_apps = 19 [deprecated = true];
   optional SystemTimezoneProto system_timezone = 20;
   optional DeviceLocalAccountsProto device_local_accounts = 21;
   optional AllowRedeemChromeOsRegistrationOffersProto allow_redeem_offers = 22;

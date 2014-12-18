@@ -185,8 +185,6 @@ void UserManagerBase::UserLoggedIn(const std::string& user_id,
 
   if (user_id == chromeos::login::kGuestUserName) {
     GuestUserLoggedIn();
-  } else if (user_id == chromeos::login::kRetailModeUserName) {
-    RetailModeUserLoggedIn();
   } else if (IsKioskApp(user_id)) {
     KioskAppLoggedIn(user_id);
   } else if (IsDemoApp(user_id)) {
@@ -586,11 +584,6 @@ bool UserManagerBase::IsLoggedInAsChildUser() const {
   return IsUserLoggedIn() && active_user_->GetType() == USER_TYPE_CHILD;
 }
 
-bool UserManagerBase::IsLoggedInAsDemoUser() const {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  return IsUserLoggedIn() && active_user_->GetType() == USER_TYPE_RETAIL_MODE;
-}
-
 bool UserManagerBase::IsLoggedInAsPublicAccount() const {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   return IsUserLoggedIn() &&
@@ -625,10 +618,8 @@ bool UserManagerBase::IsSessionStarted() const {
 
 bool UserManagerBase::IsUserNonCryptohomeDataEphemeral(
     const std::string& user_id) const {
-  // Data belonging to the guest, retail mode and stub users is always
-  // ephemeral.
+  // Data belonging to the guest and stub users is always ephemeral.
   if (user_id == chromeos::login::kGuestUserName ||
-      user_id == chromeos::login::kRetailModeUserName ||
       user_id == chromeos::login::kStubUser) {
     return true;
   }
@@ -1015,8 +1006,6 @@ void UserManagerBase::UpdateLoginState() {
     login_user_type = chromeos::LoginState::LOGGED_IN_USER_OWNER;
   else if (active_user_->GetType() == USER_TYPE_GUEST)
     login_user_type = chromeos::LoginState::LOGGED_IN_USER_GUEST;
-  else if (active_user_->GetType() == USER_TYPE_RETAIL_MODE)
-    login_user_type = chromeos::LoginState::LOGGED_IN_USER_RETAIL_MODE;
   else if (active_user_->GetType() == USER_TYPE_PUBLIC_ACCOUNT)
     login_user_type = chromeos::LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT;
   else if (active_user_->GetType() == USER_TYPE_SUPERVISED)

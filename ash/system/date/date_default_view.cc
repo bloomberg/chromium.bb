@@ -62,8 +62,7 @@ DateDefaultView::DateDefaultView(ash::user::LoginStatus login)
   view->AddButton(help_);
 
 #if !defined(OS_WIN)
-  if (login != ash::user::LOGGED_IN_LOCKED &&
-      login != ash::user::LOGGED_IN_RETAIL_MODE) {
+  if (login != ash::user::LOGGED_IN_LOCKED) {
     shutdown_ = new TrayPopupHeaderButton(this,
                                           IDR_AURA_UBER_TRAY_SHUTDOWN,
                                           IDR_AURA_UBER_TRAY_SHUTDOWN,

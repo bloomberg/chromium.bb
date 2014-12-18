@@ -229,9 +229,6 @@ class SigninScreenHandler
   // Shows the sign in screen.
   void Show(const LoginScreenContext& context);
 
-  // Shows the login spinner UI for retail mode logins.
-  void ShowRetailModeLoginSpinner();
-
   // Sets delegate to be used by the handler. It is guaranteed that valid
   // delegate is set before Show() method will be called.
   void SetDelegate(SigninScreenHandlerDelegate* delegate);
@@ -347,7 +344,6 @@ class SigninScreenHandler
   void HandleAuthenticateUser(const std::string& username,
                               const std::string& password);
   void HandleAttemptUnlock(const std::string& username);
-  void HandleLaunchDemoUser();
   void HandleLaunchIncognito();
   void HandleLaunchPublicSession(const std::string& user_id,
                                  const std::string& locale,

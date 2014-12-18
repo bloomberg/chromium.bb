@@ -205,13 +205,6 @@ class CryptohomeAuthenticatorTest : public testing::Test {
         .WillByDefault(Invoke(MockAuthStatusConsumer::OnFailQuitAndFail));
   }
 
-  // Allow test to fail and exit gracefully, even if
-  // OnRetailModeAuthSuccess() wasn't supposed to happen.
-  void FailOnRetailModeLoginSuccess() {
-    ON_CALL(consumer_, OnRetailModeAuthSuccess(_)).WillByDefault(
-        Invoke(MockAuthStatusConsumer::OnRetailModeSuccessQuitAndFail));
-  }
-
   // Allow test to fail and exit gracefully, even if OnAuthSuccess()
   // wasn't supposed to happen.
   void FailOnLoginSuccess() {
@@ -229,12 +222,6 @@ class CryptohomeAuthenticatorTest : public testing::Test {
   void ExpectLoginFailure(const AuthFailure& failure) {
     EXPECT_CALL(consumer_, OnAuthFailure(failure))
         .WillOnce(Invoke(MockAuthStatusConsumer::OnFailQuit))
-        .RetiresOnSaturation();
-  }
-
-  void ExpectRetailModeLoginSuccess() {
-    EXPECT_CALL(consumer_, OnRetailModeAuthSuccess(_))
-        .WillOnce(Invoke(MockAuthStatusConsumer::OnRetailModeSuccessQuit))
         .RetiresOnSaturation();
   }
 
@@ -578,32 +565,6 @@ TEST_F(CryptohomeAuthenticatorTest, DriveGuestLoginButFail) {
   EXPECT_CALL(*mock_caller_, AsyncMountGuest(_)).Times(1).RetiresOnSaturation();
 
   auth_->LoginOffTheRecord();
-  base::MessageLoop::current()->Run();
-}
-
-TEST_F(CryptohomeAuthenticatorTest, DriveRetailModeUserLogin) {
-  ExpectRetailModeLoginSuccess();
-  FailOnLoginFailure();
-
-  // Set up mock async method caller to respond as though a tmpfs mount
-  // attempt has occurred and succeeded.
-  mock_caller_->SetUp(true, cryptohome::MOUNT_ERROR_NONE);
-  EXPECT_CALL(*mock_caller_, AsyncMountGuest(_)).Times(1).RetiresOnSaturation();
-
-  auth_->LoginRetailMode();
-  base::MessageLoop::current()->Run();
-}
-
-TEST_F(CryptohomeAuthenticatorTest, DriveRetailModeLoginButFail) {
-  FailOnRetailModeLoginSuccess();
-  ExpectLoginFailure(AuthFailure(AuthFailure::COULD_NOT_MOUNT_TMPFS));
-
-  // Set up mock async method caller to respond as though a tmpfs mount
-  // attempt has occurred and failed.
-  mock_caller_->SetUp(false, cryptohome::MOUNT_ERROR_NONE);
-  EXPECT_CALL(*mock_caller_, AsyncMountGuest(_)).Times(1).RetiresOnSaturation();
-
-  auth_->LoginRetailMode();
   base::MessageLoop::current()->Run();
 }
 

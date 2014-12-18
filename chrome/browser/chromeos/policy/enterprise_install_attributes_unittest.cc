@@ -175,12 +175,9 @@ TEST_F(EnterpriseInstallAttributesTest, GetMode) {
   install_attributes_->ReadCacheFile(GetTempPath());
   EXPECT_EQ(DEVICE_MODE_PENDING, install_attributes_->GetMode());
   ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
-            LockDeviceAndWaitForResult(
-                kTestUser,
-                DEVICE_MODE_RETAIL_KIOSK,
-                kTestDeviceId));
-  EXPECT_EQ(DEVICE_MODE_RETAIL_KIOSK,
-            install_attributes_->GetMode());
+            LockDeviceAndWaitForResult(kTestUser, DEVICE_MODE_ENTERPRISE,
+                                       kTestDeviceId));
+  EXPECT_EQ(DEVICE_MODE_ENTERPRISE, install_attributes_->GetMode());
 }
 
 TEST_F(EnterpriseInstallAttributesTest, ConsumerDevice) {

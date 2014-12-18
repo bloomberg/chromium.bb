@@ -73,12 +73,6 @@ void LoginPerformer::OnAuthFailure(const AuthFailure& failure) {
   }
 }
 
-void LoginPerformer::OnRetailModeAuthSuccess(const UserContext& user_context) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  base::RecordAction(UserMetricsAction("Login_DemoUserLoginSuccess"));
-  AuthStatusConsumer::OnRetailModeAuthSuccess(user_context);
-}
-
 void LoginPerformer::OnAuthSuccess(const UserContext& user_context) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   base::RecordAction(UserMetricsAction("Login_Success"));
@@ -232,13 +226,6 @@ void LoginPerformer::LoginAsPublicSession(const UserContext& user_context) {
                          base::Bind(&Authenticator::LoginAsPublicSession,
                                     authenticator_.get(),
                                     user_context));
-}
-
-void LoginPerformer::LoginRetailMode() {
-  EnsureAuthenticator();
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&Authenticator::LoginRetailMode, authenticator_.get()));
 }
 
 void LoginPerformer::LoginOffTheRecord() {
