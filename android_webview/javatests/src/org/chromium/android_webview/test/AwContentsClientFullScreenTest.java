@@ -35,6 +35,14 @@ import java.util.concurrent.TimeoutException;
  * very common use case.
  */
 public class AwContentsClientFullScreenTest extends AwTestBase {
+    /**
+     * MAX_WAIT_FOR_HOLE_PUNCHING_SURFACE_ATTACHED is used so that
+     * {@link #testHolePunchingSurfaceNotCreatedForClearVideo} provides a high level
+     * of confidence that the hole punching surface is not attached. By
+     * {@link #testOnShowCustomViewTransfersHolePunchingSurfaceForVideoInsideDiv}
+     * we know that it takes less that this time for the surface to be attached.
+     */
+    private static final long MAX_WAIT_FOR_HOLE_PUNCHING_SURFACE_ATTACHED = scaleTimeout(100);
     private static final String VIDEO_TEST_URL =
             "file:///android_asset/full_screen_video_test.html";
     private static final String VIDEO_INSIDE_DIV_TEST_URL =
@@ -195,7 +203,8 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         // Note that VIDEO_TEST_URL contains clear video.
         tapPlayButton();
         assertTrue(DOMUtils.waitForVideoPlay(getWebContentsOnUiThread(), VIDEO_ID));
-        assertContainsHolePunchingSurfaceView(mTestContainerView, false);
+        // Wait to ensure that the surface view is not added asynchronously.
+        waitAndAssertContainsHolePunchingSurfaceView(mTestContainerView, false);
     }
 
     @MediumTest
@@ -210,7 +219,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         // Play and verify that there is a surface view for hole punching.
         tapPlayButton();
         assertTrue(DOMUtils.waitForVideoPlay(getWebContentsOnUiThread(), VIDEO_ID));
-        assertContainsHolePunchingSurfaceView(mTestContainerView, true);
+        assertWaitForContainsHolePunchingSurfaceView(mTestContainerView, true);
 
         // Enter fullscreen and verify that the hole punching surface is transferred. Note
         // that VIDEO_INSIDE_DIV_TEST_URL goes fullscreen on a <div> element, so in fullscreen
@@ -238,7 +247,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         // Play and verify that there is a surface view for hole punching.
         tapPlayButton();
         assertTrue(DOMUtils.waitForVideoPlay(getWebContentsOnUiThread(), VIDEO_ID));
-        assertContainsHolePunchingSurfaceView(mTestContainerView, true);
+        assertWaitForContainsHolePunchingSurfaceView(mTestContainerView, true);
 
         // Enter fullscreen and verify that the surface view is removed. Note that
         // VIDEO_TEST_URL goes fullscreen on the <video> element, so in fullscreen
@@ -468,9 +477,25 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         assertEquals(containsChildOfType(view, NoPunchingSurfaceView.class), expected);
     }
 
+    private void assertWaitForContainsHolePunchingSurfaceView(
+            final View view, final boolean expected) throws InterruptedException {
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                try {
+                    return containsChildOfType(view, NoPunchingSurfaceView.class) == expected;
+                } catch (Exception e) {
+                    fail(e.getMessage());
+                    return false;
+                }
+            }
+        }, MAX_WAIT_FOR_HOLE_PUNCHING_SURFACE_ATTACHED,
+        MAX_WAIT_FOR_HOLE_PUNCHING_SURFACE_ATTACHED / 10));
+    }
+
     private void waitAndAssertContainsHolePunchingSurfaceView(View view, boolean expected)
             throws Exception {
-        Thread.sleep(scaleTimeout(100));
+        Thread.sleep(MAX_WAIT_FOR_HOLE_PUNCHING_SURFACE_ATTACHED);
         assertEquals(expected, containsChildOfType(view, NoPunchingSurfaceView.class));
     }
 
