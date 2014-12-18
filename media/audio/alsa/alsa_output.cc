@@ -215,25 +215,25 @@ bool AlsaPcmOutputStream::Open() {
     stop_stream_ = true;
     TransitionTo(kInError);
     return false;
-  } else {
-    bytes_per_output_frame_ = channel_mixer_ ?
-        mixed_audio_bus_->channels() * bytes_per_sample_ : bytes_per_frame_;
-    uint32 output_packet_size = frames_per_packet_ * bytes_per_output_frame_;
-    buffer_.reset(new media::SeekableBuffer(0, output_packet_size));
+  }
+  bytes_per_output_frame_ =
+      channel_mixer_ ? mixed_audio_bus_->channels() * bytes_per_sample_
+                     : bytes_per_frame_;
+  uint32 output_packet_size = frames_per_packet_ * bytes_per_output_frame_;
+  buffer_.reset(new media::SeekableBuffer(0, output_packet_size));
 
-    // Get alsa buffer size.
-    snd_pcm_uframes_t buffer_size;
-    snd_pcm_uframes_t period_size;
-    int error = wrapper_->PcmGetParams(playback_handle_, &buffer_size,
-                                       &period_size);
-    if (error < 0) {
-      LOG(ERROR) << "Failed to get playback buffer size from ALSA: "
-                 << wrapper_->StrError(error);
-      // Buffer size is at least twice of packet size.
-      alsa_buffer_frames_ = frames_per_packet_ * 2;
-    } else {
-      alsa_buffer_frames_ = buffer_size;
-    }
+  // Get alsa buffer size.
+  snd_pcm_uframes_t buffer_size;
+  snd_pcm_uframes_t period_size;
+  int error =
+      wrapper_->PcmGetParams(playback_handle_, &buffer_size, &period_size);
+  if (error < 0) {
+    LOG(ERROR) << "Failed to get playback buffer size from ALSA: "
+               << wrapper_->StrError(error);
+    // Buffer size is at least twice of packet size.
+    alsa_buffer_frames_ = frames_per_packet_ * 2;
+  } else {
+    alsa_buffer_frames_ = buffer_size;
   }
 
   return true;
@@ -351,7 +351,7 @@ void AlsaPcmOutputStream::BufferPacket(bool* source_exhausted) {
   *source_exhausted = false;
 
   // Request more data only when we run out of data in the buffer, because
-  // WritePacket() comsumes only the current chunk of data.
+  // WritePacket() consumes only the current chunk of data.
   if (!buffer_->forward_bytes()) {
     // Before making a request to source for data we need to determine the
     // delay (in bytes) for the requested data to be played.
