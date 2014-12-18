@@ -4,12 +4,6 @@
 
 'use strict';
 
-<include src="../../../../ui/webui/resources/js/util.js">
-<include src="open_pdf_params_parser.js">
-<include src="pdf.js">
-<include src="pdf_scripting_api.js">
-<include src="viewport.js">
-
 /**
  * Global PDFViewer object, accessible for testing.
  * @type Object

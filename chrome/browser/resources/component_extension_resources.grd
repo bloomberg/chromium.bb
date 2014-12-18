@@ -159,9 +159,31 @@
       </if>
       <if expr="enable_plugins">
         <include name="IDR_PDF_INDEX_HTML" file="pdf/index.html" allowexternalscript="true" type="BINDATA" flattenhtml="true" />
-        <include name="IDR_PDF_MAIN_JS" file="pdf/main.js" type="BINDATA" flattenhtml="true" />
+        <include name="IDR_PDF_MAIN_JS" file="pdf/main.js" type="BINDATA" />
+        <include name="IDR_PDF_PDF_JS" file="pdf/pdf.js" type="BINDATA" />
         <include name="IDR_PDF_BACKGROUND_JS" file="pdf/background.js" type="BINDATA" />
-        <include name="IDR_PDF_INCLUDES_JS" file="pdf/includes.js" type="BINDATA" flattenhtml="true" />
+        <include name="IDR_PDF_VIEWPORT_JS" file="pdf/viewport.js" type="BINDATA" />
+        <include name="IDR_PDF_OPEN_PDF_PARAMS_PARSER_JS" file="pdf/open_pdf_params_parser.js" type="BINDATA" />
+        <include name="IDR_PDF_PDF_SCRIPTING_API_JS" file="pdf/pdf_scripting_api.js" type="BINDATA" />
+
+        <include name="IDR_PDF_VIEWER_BUTTON_CSS" file="pdf/html_office/elements/viewer-button/viewer-button.css" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_BUTTON_HTML" file="pdf/html_office/elements/viewer-button/viewer-button.html" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_BUTTON_JS" file="pdf/html_office/elements/viewer-button/viewer-button.js" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_ERROR_SCREEN_CSS" file="pdf/html_office/elements/viewer-error-screen/viewer-error-screen.css" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_ERROR_SCREEN_HTML" file="pdf/html_office/elements/viewer-error-screen/viewer-error-screen.html" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_ERROR_SCREEN_JS" file="pdf/html_office/elements/viewer-error-screen/viewer-error-screen.js" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_PAGE_INDICATOR_CSS" file="pdf/html_office/elements/viewer-page-indicator/viewer-page-indicator.css" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_PAGE_INDICATOR_HTML" file="pdf/html_office/elements/viewer-page-indicator/viewer-page-indicator.html" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_PAGE_INDICATOR_JS" file="pdf/html_office/elements/viewer-page-indicator/viewer-page-indicator.js" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_PASSWORD_SCREEN_CSS" file="pdf/html_office/elements/viewer-password-screen/viewer-password-screen.css" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_PASSWORD_SCREEN_HTML" file="pdf/html_office/elements/viewer-password-screen/viewer-password-screen.html" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_PASSWORD_SCREEN_JS" file="pdf/html_office/elements/viewer-password-screen/viewer-password-screen.js" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_PROGRESS_BAR_CSS" file="pdf/html_office/elements/viewer-progress-bar/viewer-progress-bar.css" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_PROGRESS_BAR_HTML" file="pdf/html_office/elements/viewer-progress-bar/viewer-progress-bar.html" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_PROGRESS_BAR_JS" file="pdf/html_office/elements/viewer-progress-bar/viewer-progress-bar.js" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_TOOLBAR_CSS" file="pdf/html_office/elements/viewer-toolbar/viewer-toolbar.css" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_TOOLBAR_HTML" file="pdf/html_office/elements/viewer-toolbar/viewer-toolbar.html" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_TOOLBAR_JS" file="pdf/html_office/elements/viewer-toolbar/viewer-toolbar.js" type="BINDATA" />
 
         <!-- Button images. -->
         <include name="IDR_PDF_BUTTON_LOW_1" file="pdf/html_office/elements/viewer-button/img/lowDPI/button_fit_page.png" type="BINDATA" />

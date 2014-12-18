@@ -27,5 +27,5 @@
   "web_accessible_resources": [
     "index.html"
   ],
-  "content_security_policy": "script-src 'self'; object-src *; plugin-types application/x-google-chrome-pdf"
+  "content_security_policy": "script-src 'self' chrome://resources; object-src *; plugin-types application/x-google-chrome-pdf"
 }
