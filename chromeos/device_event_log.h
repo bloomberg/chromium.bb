@@ -9,6 +9,7 @@
 #include <sstream>
 
 #include "base/basictypes.h"
+#include "base/timer/elapsed_timer.h"
 #include "chromeos/chromeos_export.h"
 
 namespace chromeos {
@@ -33,11 +34,22 @@ namespace chromeos {
   DEVICE_LOG(::chromeos::device_event_log::LOG_TYPE_LOGIN, \
              ::chromeos::device_event_log::LOG_LEVEL_##level)
 
-// Generally prefer the above macros unless |level| is not constant.
+// Generally prefer the above macros unless |type| or  |level| is not constant.
 
 #define DEVICE_LOG(type, level)                                   \
   ::chromeos::device_event_log::internal::DeviceEventLogInstance( \
       __FILE__, __LINE__, type, level).stream()
+
+// Declare {Type_LOG_IF_SLOW() at the top of a method to log slow methods
+// where "slow" is defined by kSlowMethodThresholdMs in the .cc file.
+#define SCOPED_NET_LOG_IF_SLOW() \
+  SCOPED_DEVICE_LOG_IF_SLOW(::chromeos::device_event_log::LOG_TYPE_NETWORK)
+
+// Generally prefer the above macros unless |type| is not constant.
+
+#define SCOPED_DEVICE_LOG_IF_SLOW(type)                         \
+  ::chromeos::device_event_log::internal::ScopedDeviceLogIfSlow \
+      scoped_device_log_if_slow(type, __FILE__, __func__)
 
 namespace device_event_log {
 
@@ -117,6 +129,9 @@ CHROMEOS_EXPORT extern const LogLevel kDefaultLogLevel;
 
 namespace internal {
 
+// Implementation class for DEVICE_LOG macros. Provides a stream for creating
+// a log string and adds the event using device_event_log::AddEntry on
+// destruction.
 class CHROMEOS_EXPORT DeviceEventLogInstance {
  public:
   DeviceEventLogInstance(const char* file,
@@ -135,6 +150,23 @@ class CHROMEOS_EXPORT DeviceEventLogInstance {
   std::ostringstream stream_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceEventLogInstance);
+};
+
+// Implementation class for SCOPED_LOG_IF_SLOW macros. Tests the elapsed time on
+// destruction and adds a Debug or Error log entry if it exceeds the
+// corresponding expected maximum elapsed time.
+class CHROMEOS_EXPORT ScopedDeviceLogIfSlow {
+ public:
+  ScopedDeviceLogIfSlow(LogType type,
+                        const char* file,
+                        const std::string& name);
+  ~ScopedDeviceLogIfSlow();
+
+ private:
+  const char* file_;
+  LogType type_;
+  std::string name_;
+  base::ElapsedTimer timer_;
 };
 
 }  // namespace internal

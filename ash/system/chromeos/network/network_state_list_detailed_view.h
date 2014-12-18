@@ -38,31 +38,24 @@ class NetworkStateListDetailedView
       public ui::NetworkListDelegate,
       public base::SupportsWeakPtr<NetworkStateListDetailedView> {
  public:
-  enum ListType {
-    LIST_TYPE_NETWORK,
-    LIST_TYPE_VPN
-  };
+  enum ListType { LIST_TYPE_NETWORK, LIST_TYPE_VPN };
 
   NetworkStateListDetailedView(SystemTrayItem* owner,
                                ListType list_type,
                                user::LoginStatus login);
-  virtual ~NetworkStateListDetailedView();
+  ~NetworkStateListDetailedView() override;
 
   // Overridden from NetworkDetailedView:
-  virtual void Init() override;
-  virtual DetailedViewType GetViewType() const override;
-  virtual void ManagerChanged() override;
-  virtual void NetworkListChanged() override;
-  virtual void NetworkServiceChanged(
-      const chromeos::NetworkState* network) override;
+  void Init() override;
+  DetailedViewType GetViewType() const override;
+  void Update() override;
 
  protected:
   // Overridden from ButtonListener.
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Overridden from ViewClickListener.
-  virtual void OnViewClicked(views::View* sender) override;
+  void OnViewClicked(views::View* sender) override;
 
  private:
   class InfoBubble;
@@ -100,14 +93,13 @@ class NetworkStateListDetailedView
   void ToggleMobile();
 
   // ui::NetworkListDelegate:
-  virtual views::View* CreateViewForNetwork(
-      const ui::NetworkInfo& info) override;
-  virtual bool IsViewHovered(views::View* view) override;
-  virtual chromeos::NetworkTypePattern GetNetworkTypePattern() const override;
-  virtual void UpdateViewForNetwork(views::View* view,
-                                    const ui::NetworkInfo& info) override;
-  virtual views::Label* CreateInfoLabel() override;
-  virtual void RelayoutScrollList() override;
+  views::View* CreateViewForNetwork(const ui::NetworkInfo& info) override;
+  bool IsViewHovered(views::View* view) override;
+  chromeos::NetworkTypePattern GetNetworkTypePattern() const override;
+  void UpdateViewForNetwork(views::View* view,
+                            const ui::NetworkInfo& info) override;
+  views::Label* CreateInfoLabel() override;
+  void RelayoutScrollList() override;
 
   // Type of list (all networks or vpn)
   ListType list_type_;

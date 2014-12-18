@@ -24,6 +24,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/device_event_log.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_state.h"
@@ -82,7 +83,6 @@ views::View* CreateInfoBubbleLine(const base::string16& text_label,
 
 }  // namespace
 
-
 //------------------------------------------------------------------------------
 
 // A bubble which displays network info.
@@ -102,9 +102,7 @@ class NetworkStateListDetailedView::InfoBubble
     AddChildView(content);
   }
 
-  virtual ~InfoBubble() {
-    detailed_view_->OnInfoBubbleDestroyed();
-  }
+  ~InfoBubble() override { detailed_view_->OnInfoBubbleDestroyed(); }
 
  private:
   // Not owned.
@@ -141,23 +139,10 @@ NetworkStateListDetailedView::~NetworkStateListDetailedView() {
     info_bubble_->GetWidget()->CloseNow();
 }
 
-void NetworkStateListDetailedView::ManagerChanged() {
+void NetworkStateListDetailedView::Update() {
   UpdateNetworkList();
   UpdateHeaderButtons();
   UpdateNetworkExtra();
-  Layout();
-}
-
-void NetworkStateListDetailedView::NetworkListChanged() {
-  UpdateNetworkList();
-  UpdateHeaderButtons();
-  UpdateNetworkExtra();
-  Layout();
-}
-
-void NetworkStateListDetailedView::NetworkServiceChanged(
-    const NetworkState* network) {
-  UpdateNetworkList();
   Layout();
 }
 
@@ -181,7 +166,7 @@ void NetworkStateListDetailedView::Init() {
   CreateHeaderButtons();
 
   network_list_view_.set_content_view(scroll_content());
-  NetworkListChanged();
+  Update();
 
   CallRequestScan();
 }
@@ -207,22 +192,19 @@ void NetworkStateListDetailedView::ButtonPressed(views::Button* sender,
   ash::SystemTrayDelegate* delegate =
       ash::Shell::GetInstance()->system_tray_delegate();
   if (sender == button_wifi_) {
-    bool enabled = handler->IsTechnologyEnabled(
-        NetworkTypePattern::WiFi());
-    handler->SetTechnologyEnabled(NetworkTypePattern::WiFi(),
-                                  !enabled,
+    bool enabled = handler->IsTechnologyEnabled(NetworkTypePattern::WiFi());
+    handler->SetTechnologyEnabled(NetworkTypePattern::WiFi(), !enabled,
                                   chromeos::network_handler::ErrorCallback());
   } else if (sender == turn_on_wifi_) {
-    handler->SetTechnologyEnabled(NetworkTypePattern::WiFi(),
-                                  true,
+    handler->SetTechnologyEnabled(NetworkTypePattern::WiFi(), true,
                                   chromeos::network_handler::ErrorCallback());
   } else if (sender == button_mobile_) {
     ToggleMobile();
   } else if (sender == settings_) {
     Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-        list_type_ == LIST_TYPE_VPN ?
-        ash::UMA_STATUS_AREA_VPN_SETTINGS_CLICKED :
-        ash::UMA_STATUS_AREA_NETWORK_SETTINGS_CLICKED);
+        list_type_ == LIST_TYPE_VPN
+            ? ash::UMA_STATUS_AREA_VPN_SETTINGS_CLICKED
+            : ash::UMA_STATUS_AREA_NETWORK_SETTINGS_CLICKED);
     delegate->ShowNetworkSettings("");
   } else if (sender == proxy_settings_) {
     delegate->ChangeProxySettings();
@@ -257,20 +239,21 @@ void NetworkStateListDetailedView::OnViewClicked(views::View* sender) {
   if (!network_list_view_.IsViewInList(sender, &service_path))
     return;
 
-  const NetworkState* network = NetworkHandler::Get()->network_state_handler()->
-      GetNetworkState(service_path);
+  const NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->GetNetworkState(
+          service_path);
   if (!network || network->IsConnectedState() || network->IsConnectingState()) {
     Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-        list_type_ == LIST_TYPE_VPN ?
-        ash::UMA_STATUS_AREA_SHOW_NETWORK_CONNECTION_DETAILS :
-        ash::UMA_STATUS_AREA_SHOW_VPN_CONNECTION_DETAILS);
+        list_type_ == LIST_TYPE_VPN
+            ? ash::UMA_STATUS_AREA_SHOW_NETWORK_CONNECTION_DETAILS
+            : ash::UMA_STATUS_AREA_SHOW_VPN_CONNECTION_DETAILS);
     Shell::GetInstance()->system_tray_delegate()->ShowNetworkSettings(
         service_path);
   } else {
     Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-        list_type_ == LIST_TYPE_VPN ?
-        ash::UMA_STATUS_AREA_CONNECT_TO_VPN :
-        ash::UMA_STATUS_AREA_CONNECT_TO_CONFIGURED_NETWORK);
+        list_type_ == LIST_TYPE_VPN
+            ? ash::UMA_STATUS_AREA_CONNECT_TO_VPN
+            : ash::UMA_STATUS_AREA_CONNECT_TO_CONFIGURED_NETWORK);
     ui::NetworkConnect::Get()->ConnectToNetwork(service_path);
   }
 }
@@ -284,25 +267,21 @@ void NetworkStateListDetailedView::CreateHeaderEntry() {
 void NetworkStateListDetailedView::CreateHeaderButtons() {
   if (list_type_ != LIST_TYPE_VPN) {
     button_wifi_ = new TrayPopupHeaderButton(
-        this,
-        IDR_AURA_UBER_TRAY_WIFI_ENABLED,
-        IDR_AURA_UBER_TRAY_WIFI_DISABLED,
+        this, IDR_AURA_UBER_TRAY_WIFI_ENABLED, IDR_AURA_UBER_TRAY_WIFI_DISABLED,
         IDR_AURA_UBER_TRAY_WIFI_ENABLED_HOVER,
-        IDR_AURA_UBER_TRAY_WIFI_DISABLED_HOVER,
-        IDS_ASH_STATUS_TRAY_WIFI);
+        IDR_AURA_UBER_TRAY_WIFI_DISABLED_HOVER, IDS_ASH_STATUS_TRAY_WIFI);
     button_wifi_->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISABLE_WIFI));
     button_wifi_->SetToggledTooltipText(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ENABLE_WIFI));
     footer()->AddButton(button_wifi_);
 
-    button_mobile_ = new TrayPopupHeaderButton(
-        this,
-        IDR_AURA_UBER_TRAY_CELLULAR_ENABLED,
-        IDR_AURA_UBER_TRAY_CELLULAR_DISABLED,
-        IDR_AURA_UBER_TRAY_CELLULAR_ENABLED_HOVER,
-        IDR_AURA_UBER_TRAY_CELLULAR_DISABLED_HOVER,
-        IDS_ASH_STATUS_TRAY_CELLULAR);
+    button_mobile_ =
+        new TrayPopupHeaderButton(this, IDR_AURA_UBER_TRAY_CELLULAR_ENABLED,
+                                  IDR_AURA_UBER_TRAY_CELLULAR_DISABLED,
+                                  IDR_AURA_UBER_TRAY_CELLULAR_ENABLED_HOVER,
+                                  IDR_AURA_UBER_TRAY_CELLULAR_DISABLED_HOVER,
+                                  IDS_ASH_STATUS_TRAY_CELLULAR);
     button_mobile_->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISABLE_MOBILE));
     button_mobile_->SetToggledTooltipText(
@@ -311,12 +290,9 @@ void NetworkStateListDetailedView::CreateHeaderButtons() {
   }
 
   info_icon_ = new TrayPopupHeaderButton(
-      this,
-      IDR_AURA_UBER_TRAY_NETWORK_INFO,
-      IDR_AURA_UBER_TRAY_NETWORK_INFO,
+      this, IDR_AURA_UBER_TRAY_NETWORK_INFO, IDR_AURA_UBER_TRAY_NETWORK_INFO,
       IDR_AURA_UBER_TRAY_NETWORK_INFO_HOVER,
-      IDR_AURA_UBER_TRAY_NETWORK_INFO_HOVER,
-      IDS_ASH_STATUS_TRAY_NETWORK_INFO);
+      IDR_AURA_UBER_TRAY_NETWORK_INFO_HOVER, IDS_ASH_STATUS_TRAY_NETWORK_INFO);
   info_icon_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_INFO));
   footer()->AddButton(info_icon_);
@@ -330,10 +306,8 @@ void NetworkStateListDetailedView::CreateNetworkExtra() {
 
   views::View* bottom_row = new views::View();
   views::BoxLayout* layout = new views::BoxLayout(
-      views::BoxLayout::kHorizontal,
-      kTrayMenuBottomRowPadding,
-      kTrayMenuBottomRowPadding,
-      kTrayMenuBottomRowPaddingBetweenItems);
+      views::BoxLayout::kHorizontal, kTrayMenuBottomRowPadding,
+      kTrayMenuBottomRowPadding, kTrayMenuBottomRowPaddingBetweenItems);
   layout->SetDefaultFlex(1);
   bottom_row->SetLayoutManager(layout);
 
@@ -351,9 +325,8 @@ void NetworkStateListDetailedView::CreateNetworkExtra() {
     bottom_row->AddChildView(other_mobile_);
   } else {
     other_vpn_ = new TrayPopupLabelButton(
-        this,
-        ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-            IDS_ASH_STATUS_TRAY_OTHER_VPN));
+        this, ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+                  IDS_ASH_STATUS_TRAY_OTHER_VPN));
     bottom_row->AddChildView(other_vpn_);
   }
 
@@ -466,8 +439,8 @@ void NetworkStateListDetailedView::UpdateNetworkExtra() {
     }
     if (show_other_mobile) {
       other_mobile_->SetVisible(true);
-      other_mobile_->SetEnabled(
-          state == NetworkStateHandler::TECHNOLOGY_ENABLED);
+      other_mobile_->SetEnabled(state ==
+                                NetworkStateHandler::TECHNOLOGY_ENABLED);
     } else {
       other_mobile_->SetVisible(false);
     }
@@ -481,8 +454,8 @@ void NetworkStateListDetailedView::UpdateNetworkExtra() {
 
 void NetworkStateListDetailedView::CreateSettingsEntry() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  bool show_settings = ash::Shell::GetInstance()->
-      system_tray_delegate()->ShouldShowSettings();
+  bool show_settings =
+      ash::Shell::GetInstance()->system_tray_delegate()->ShouldShowSettings();
   if (login_ != user::LOGGED_IN_NONE) {
     // Allow user access settings only if user is logged in
     // and showing settings is allowed. There're situations (supervised user
@@ -492,7 +465,7 @@ void NetworkStateListDetailedView::CreateSettingsEntry() {
       settings_ = new TrayPopupLabelButton(
           this, rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS));
     }
-  } else  {
+  } else {
     // Allow users to change proxy settings only when not logged in.
     proxy_settings_ = new TrayPopupLabelButton(
         this,
@@ -504,8 +477,7 @@ void NetworkStateListDetailedView::ToggleInfoBubble() {
   if (ResetInfoBubble())
     return;
 
-  info_bubble_ = new InfoBubble(
-      info_icon_, CreateNetworkInfoView(), this);
+  info_bubble_ = new InfoBubble(info_icon_, CreateNetworkInfoView(), this);
   views::BubbleDelegateView::CreateBubble(info_bubble_)->Show();
 }
 
@@ -547,27 +519,28 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
   }
 
   if (!ip_address.empty()) {
-    container->AddChildView(CreateInfoBubbleLine(bundle.GetLocalizedString(
-        IDS_ASH_STATUS_TRAY_IP), ip_address));
+    container->AddChildView(CreateInfoBubbleLine(
+        bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_IP), ip_address));
   }
   if (!ethernet_address.empty()) {
-    container->AddChildView(CreateInfoBubbleLine(bundle.GetLocalizedString(
-        IDS_ASH_STATUS_TRAY_ETHERNET), ethernet_address));
+    container->AddChildView(CreateInfoBubbleLine(
+        bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_ETHERNET),
+        ethernet_address));
   }
   if (!wifi_address.empty()) {
-    container->AddChildView(CreateInfoBubbleLine(bundle.GetLocalizedString(
-        IDS_ASH_STATUS_TRAY_WIFI), wifi_address));
+    container->AddChildView(CreateInfoBubbleLine(
+        bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_WIFI), wifi_address));
   }
   if (!vpn_address.empty()) {
-    container->AddChildView(CreateInfoBubbleLine(bundle.GetLocalizedString(
-        IDS_ASH_STATUS_TRAY_VPN), vpn_address));
+    container->AddChildView(CreateInfoBubbleLine(
+        bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_VPN), vpn_address));
   }
 
   // Avoid an empty bubble in the unlikely event that there is no network
   // information at all.
   if (!container->has_children()) {
-    container->AddChildView(CreateInfoBubbleLabel(bundle.GetLocalizedString(
-        IDS_ASH_STATUS_TRAY_NO_NETWORKS)));
+    container->AddChildView(CreateInfoBubbleLabel(
+        bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_NO_NETWORKS)));
   }
 
   return container;
@@ -585,8 +558,7 @@ void NetworkStateListDetailedView::CallRequestScan() {
 
 void NetworkStateListDetailedView::ToggleMobile() {
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-  bool enabled =
-      handler->IsTechnologyEnabled(NetworkTypePattern::Mobile());
+  bool enabled = handler->IsTechnologyEnabled(NetworkTypePattern::Mobile());
   ui::NetworkConnect::Get()->SetTechnologyEnabled(NetworkTypePattern::Mobile(),
                                                   !enabled);
 }
@@ -622,11 +594,9 @@ void NetworkStateListDetailedView::UpdateViewForNetwork(
 
 views::Label* NetworkStateListDetailedView::CreateInfoLabel() {
   views::Label* label = new views::Label();
-  label->SetBorder(
-      views::Border::CreateEmptyBorder(ash::kTrayPopupPaddingBetweenItems,
-                                       ash::kTrayPopupPaddingHorizontal,
-                                       ash::kTrayPopupPaddingBetweenItems,
-                                       0));
+  label->SetBorder(views::Border::CreateEmptyBorder(
+      ash::kTrayPopupPaddingBetweenItems, ash::kTrayPopupPaddingHorizontal,
+      ash::kTrayPopupPaddingBetweenItems, 0));
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetEnabledColor(SkColorSetARGB(192, 0, 0, 0));
   return label;

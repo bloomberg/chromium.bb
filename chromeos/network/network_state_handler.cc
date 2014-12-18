@@ -542,6 +542,7 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
     const std::string& service_path,
     const std::string& key,
     const base::Value& value) {
+  SCOPED_NET_LOG_IF_SLOW();
   bool changed = false;
   NetworkState* network = GetModifiableNetworkState(service_path);
   if (!network)
@@ -601,6 +602,7 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
 void NetworkStateHandler::UpdateDeviceProperty(const std::string& device_path,
                                                const std::string& key,
                                                const base::Value& value) {
+  SCOPED_NET_LOG_IF_SLOW();
   DeviceState* device = GetModifiableDeviceState(device_path);
   if (!device)
     return;
@@ -678,6 +680,7 @@ void NetworkStateHandler::TechnologyListChanged() {
 
 void NetworkStateHandler::ManagedStateListChanged(
     ManagedState::ManagedType type) {
+  SCOPED_NET_LOG_IF_SLOW();
   if (type == ManagedState::MANAGED_TYPE_NETWORK) {
     SortNetworkList();
     UpdateNetworkStats();
@@ -817,6 +820,7 @@ void NetworkStateHandler::UpdateGuid(NetworkState* network) {
 }
 
 void NetworkStateHandler::NotifyDeviceListChanged() {
+  SCOPED_NET_LOG_IF_SLOW();
   NET_LOG_DEBUG("NOTIFY:DeviceListChanged",
                 base::StringPrintf("Size:%" PRIuS, device_list_.size()));
   FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
@@ -866,6 +870,7 @@ NetworkStateHandler::ManagedStateList* NetworkStateHandler::GetManagedList(
 
 void NetworkStateHandler::OnNetworkConnectionStateChanged(
     NetworkState* network) {
+  SCOPED_NET_LOG_IF_SLOW();
   DCHECK(network);
   std::string event = "NetworkConnectionStateChanged";
   if (network->path() == default_network_path_) {
@@ -889,6 +894,7 @@ void NetworkStateHandler::OnNetworkConnectionStateChanged(
 
 void NetworkStateHandler::NotifyDefaultNetworkChanged(
     const NetworkState* default_network) {
+  SCOPED_NET_LOG_IF_SLOW();
   NET_LOG_EVENT("NOTIFY:DefaultNetworkChanged", GetLogName(default_network));
   FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
                     DefaultNetworkChanged(default_network));
@@ -896,6 +902,7 @@ void NetworkStateHandler::NotifyDefaultNetworkChanged(
 
 void NetworkStateHandler::NotifyNetworkPropertiesUpdated(
     const NetworkState* network) {
+  SCOPED_NET_LOG_IF_SLOW();
   NET_LOG_DEBUG("NOTIFY:NetworkPropertiesUpdated", GetLogName(network));
   FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
                     NetworkPropertiesUpdated(network));
@@ -903,12 +910,14 @@ void NetworkStateHandler::NotifyNetworkPropertiesUpdated(
 
 void NetworkStateHandler::NotifyDevicePropertiesUpdated(
     const DeviceState* device) {
+  SCOPED_NET_LOG_IF_SLOW();
   NET_LOG_DEBUG("NOTIFY:DevicePropertiesUpdated", GetLogName(device));
   FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
                     DevicePropertiesUpdated(device));
 }
 
 void NetworkStateHandler::NotifyScanCompleted(const DeviceState* device) {
+  SCOPED_NET_LOG_IF_SLOW();
   NET_LOG_DEBUG("NOTIFY:ScanCompleted", GetLogName(device));
   FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
                     ScanCompleted(device));

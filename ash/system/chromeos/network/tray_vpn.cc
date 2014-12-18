@@ -13,6 +13,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_popup_label_button.h"
+#include "chromeos/device_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "grit/ash_strings.h"
@@ -38,7 +39,7 @@ class VpnDefaultView : public TrayItemMore,
     Update();
   }
 
-  virtual ~VpnDefaultView() {
+  ~VpnDefaultView() override {
     ui::network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
   }
 
@@ -67,9 +68,7 @@ class VpnDefaultView : public TrayItemMore,
   }
 
   // ui::network_icon::AnimationObserver
-  virtual void NetworkIconChanged() override {
-    Update();
-  }
+  void NetworkIconChanged() override { Update(); }
 
  private:
   void GetNetworkStateHandlerImageAndLabel(gfx::ImageSkia* image,
@@ -83,8 +82,8 @@ class VpnDefaultView : public TrayItemMore,
       *image = ui::network_icon::GetImageForDisconnectedNetwork(
           ui::network_icon::ICON_TYPE_DEFAULT_VIEW, shill::kTypeVPN);
       if (label) {
-        *label = l10n_util::GetStringUTF16(
-            IDS_ASH_STATUS_TRAY_VPN_DISCONNECTED);
+        *label =
+            l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_VPN_DISCONNECTED);
       }
       *animating = false;
       return;
@@ -104,9 +103,7 @@ class VpnDefaultView : public TrayItemMore,
 }  // namespace tray
 
 TrayVPN::TrayVPN(SystemTray* system_tray)
-    : SystemTrayItem(system_tray),
-      default_(NULL),
-      detailed_(NULL) {
+    : SystemTrayItem(system_tray), default_(NULL), detailed_(NULL) {
   network_state_observer_.reset(new TrayNetworkStateObserver(this));
 }
 
@@ -166,20 +163,11 @@ void TrayVPN::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 void TrayVPN::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
 }
 
-void TrayVPN::NetworkStateChanged(bool list_changed) {
+void TrayVPN::NetworkStateChanged() {
   if (default_)
     default_->Update();
-  if (detailed_) {
-    if (list_changed)
-      detailed_->NetworkListChanged();
-    else
-      detailed_->ManagerChanged();
-  }
-}
-
-void TrayVPN::NetworkServiceChanged(const chromeos::NetworkState* network) {
   if (detailed_)
-    detailed_->NetworkServiceChanged(network);
+    detailed_->Update();
 }
 
 }  // namespace ash
