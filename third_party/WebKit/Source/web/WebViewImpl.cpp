@@ -335,11 +335,6 @@ void WebViewImpl::setMainFrame(WebFrame* frame)
         toWebRemoteFrameImpl(frame)->initializeCoreFrame(&page()->frameHost(), 0, nullAtom);
 }
 
-void WebViewImpl::setAutofillClient(WebAutofillClient* autofillClient)
-{
-    m_autofillClient = autofillClient;
-}
-
 void WebViewImpl::setCredentialManagerClient(WebCredentialManagerClient* webCredentialManagerClient)
 {
     ASSERT(m_page);
@@ -367,7 +362,6 @@ void WebViewImpl::setSpellCheckClient(WebSpellCheckClient* spellCheckClient)
 
 WebViewImpl::WebViewImpl(WebViewClient* client)
     : m_client(client)
-    , m_autofillClient(0)
     , m_spellCheckClient(0)
     , m_chromeClientImpl(this)
     , m_contextMenuClientImpl(this)
@@ -2014,8 +2008,7 @@ static String inputTypeToName(WebInputEvent::Type type)
 
 bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
 {
-    WebAutofillClient* autofillClient = m_autofillClient ? m_autofillClient :
-        mainFrameImpl() ? mainFrameImpl()->autofillClient() : 0;
+    WebAutofillClient* autofillClient = mainFrameImpl() ? mainFrameImpl()->autofillClient() : 0;
     UserGestureNotifier notifier(autofillClient, &m_userGestureObserved);
     // On the first input event since page load, |notifier| instructs the
     // autofill client to unblock values of password input fields of any forms
@@ -2145,8 +2138,7 @@ void WebViewImpl::setFocus(bool enable)
         if (focusedFrame && focusedFrame->isLocalFrame()) {
             // Finish an ongoing composition to delete the composition node.
             if (toLocalFrame(focusedFrame.get())->inputMethodController().hasComposition()) {
-                WebAutofillClient* autofillClient = m_autofillClient ? m_autofillClient :
-                    WebLocalFrameImpl::fromFrame(toLocalFrame(focusedFrame.get()))->autofillClient();
+                WebAutofillClient* autofillClient = WebLocalFrameImpl::fromFrame(toLocalFrame(focusedFrame.get()))->autofillClient();
 
                 if (autofillClient)
                     autofillClient->setIgnoreTextChanges(true);
@@ -3563,8 +3555,7 @@ void WebViewImpl::dragTargetDrop(const WebPoint& clientPoint,
 {
     ASSERT(m_currentDragData);
 
-    WebAutofillClient* autofillClient =  m_autofillClient ? m_autofillClient :
-        mainFrameImpl() ? mainFrameImpl()->autofillClient() : 0;
+    WebAutofillClient* autofillClient = mainFrameImpl() ? mainFrameImpl()->autofillClient() : 0;
     UserGestureNotifier notifier(autofillClient, &m_userGestureObserved);
 
     // If this webview transitions from the "drop accepting" state to the "not

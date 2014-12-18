@@ -157,7 +157,6 @@ public:
     // WebView methods:
     virtual bool isWebView() const { return true; }
     virtual void setMainFrame(WebFrame*) override;
-    virtual void setAutofillClient(WebAutofillClient*) override;
     virtual void setCredentialManagerClient(WebCredentialManagerClient*) override;
     virtual void setDevToolsAgentClient(WebDevToolsAgentClient*) override;
     virtual void setPrerendererClient(WebPrerendererClient*) override;
@@ -305,11 +304,6 @@ public:
     WebViewClient* client()
     {
         return m_client;
-    }
-
-    WebAutofillClient* autofillClient()
-    {
-        return m_autofillClient;
     }
 
     WebSpellCheckClient* spellCheckClient()
@@ -605,7 +599,6 @@ private:
     WebPlugin* focusedPluginIfInputMethodSupported(LocalFrame*);
 
     WebViewClient* m_client; // Can be 0 (e.g. unittests, shared workers, etc.)
-    WebAutofillClient* m_autofillClient;
     WebSpellCheckClient* m_spellCheckClient;
 
     ChromeClientImpl m_chromeClientImpl;
