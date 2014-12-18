@@ -114,8 +114,6 @@
       <include name="IDR_GALLERY_JS" file="gallery/js/gallery_scripts.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_GALLERY_BKGND_JS" file="gallery/js/background.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_GALLERY_METADATA_WORKER_JS" file="gallery/js/metadata_worker.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_GALLERY_TEST_UTIL_JS" file="gallery/js/test_util.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_GALLERY_ERROR_UTIL_JS" file="gallery/js/error_util.js" flattenhtml="false" type="BINDATA" />
 
       <!-- Custom cursors (which grit cannot inline). -->
       <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_CROP" file="gallery/images/100/cursor_crop.png" type="BINDATA" />
