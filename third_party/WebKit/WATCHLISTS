@@ -283,14 +283,9 @@
                   '|LayoutTests/css3/flexbox/' \
                   '|LayoutTests/ietestcenter/css3/flexbox/'
     },
-    'fragment_layout': {
-      'filepath': 'Source/core/rendering/.*(FlowThread|MultiCol|Region)' \
-                  '|Source/core/rendering/ColumnInfo' \
-                  '|LayoutTests/.*/multicol/' \
-                  '|LayoutTests/.*/regions/'
-    },
-    'table_layout': {
-      'filepath': 'Source/core/rendering/.*Table'
+    'css_fragmentation_tests': {
+      'filepath': '|LayoutTests/fast/multicol/' \
+                  '|LayoutTests/fast/pagination/'
     },
     'battery_status': {
       'filepath': 'Source/modules/battery/' \
@@ -440,6 +435,7 @@
               'vikasa@google.com' ],
     'css_grid_layout': [ 'svillar@igalia.com', 'jfernandez@igalia.com', 'rego@igalia.com' ],
     'css_flexbox': [ 'cbiesinger@chromium.org' ],
+    'css_fragmentation_tests': [ 'mstensho@opera.com' ],
     'battery_status': [ 'timvolodine@chromium.org',
                         'mlamouri+watch-blink@chromium.org' ],
     'out_of_process_frames': [ 'dcheng@chromium.org',
