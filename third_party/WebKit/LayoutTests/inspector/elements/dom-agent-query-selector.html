@@ -45,7 +45,7 @@ function test()
             return;
         }
 
-        if (!(nodeIds instanceof Array))
+        if (!(nodeIds && nodeIds.constructor && nodeIds.constructor.name === "Array"))
             nodeIds = [nodeIds];
 
         for (var i = 0; i < nodeIds.length; ++i) {
