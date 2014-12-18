@@ -78,6 +78,7 @@ private:
     virtual void detach(const AttachContext& = AttachContext()) override;
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    virtual void didNotifySubtreeInsertionsToDocument() override;
     virtual void removedFrom(ContainerNode*) override;
     virtual void accessKeyAction(bool) override;
     virtual void childrenChanged(const ChildrenChange&) override;

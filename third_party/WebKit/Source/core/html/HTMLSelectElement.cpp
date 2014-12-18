@@ -84,7 +84,6 @@ HTMLSelectElement::HTMLSelectElement(Document& document, HTMLFormElement* form)
     , m_shouldRecalcListItems(false)
     , m_suggestedIndex(-1)
     , m_isAutofilledByPreview(false)
-    , m_scrollToSelectionLater(false)
 {
 }
 
@@ -419,11 +418,6 @@ void HTMLSelectElement::childrenChanged(const ChildrenChange& change)
     m_lastOnChangeSelection.clear();
 
     HTMLFormControlElementWithState::childrenChanged(change);
-
-    if (m_scrollToSelectionLater) {
-        m_scrollToSelectionLater = false;
-        scrollToSelection();
-    }
 }
 
 void HTMLSelectElement::optionElementChildrenChanged()
@@ -928,7 +922,7 @@ void HTMLSelectElement::optionInserted(const HTMLOptionElement& option, bool opt
 {
     ASSERT(option.ownerSelectElement() == this);
     if (optionIsSelected)
-        selectOption(option.index(), DelayScrollToSelection);
+        selectOption(option.index());
 }
 
 void HTMLSelectElement::optionRemoved(const HTMLOptionElement& option)
@@ -973,11 +967,7 @@ void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
     if (RenderObject* renderer = this->renderer())
         renderer->updateFromElement();
 
-    if (flags & DelayScrollToSelection)
-        m_scrollToSelectionLater = true;
-    else
-        scrollToSelection();
-
+    scrollToSelection();
     setNeedsValidityCheck();
 
     if (usesMenuList()) {

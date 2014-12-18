@@ -1569,6 +1569,7 @@ void Element::recalcStyle(StyleRecalcChange change, Text* nextTextSibling)
 {
     ASSERT(document().inStyleRecalc());
     ASSERT(!parentOrShadowHostNode()->needsStyleRecalc());
+    ASSERT(inActiveDocument());
 
     if (hasCustomStyleCallbacks())
         willRecalcStyle(change);

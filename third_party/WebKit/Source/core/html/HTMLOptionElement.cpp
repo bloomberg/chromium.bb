@@ -331,11 +331,15 @@ bool HTMLOptionElement::isDisabledFormControl() const
 Node::InsertionNotificationRequest HTMLOptionElement::insertedInto(ContainerNode* insertionPoint)
 {
     HTMLElement::insertedInto(insertionPoint);
+    return InsertionShouldCallDidNotifySubtreeInsertions;
+}
+
+void HTMLOptionElement::didNotifySubtreeInsertionsToDocument()
+{
     if (HTMLSelectElement* select = ownerSelectElement()) {
         select->setRecalcListItems();
         select->optionInserted(*this, m_isSelected);
     }
-    return InsertionDone;
 }
 
 void HTMLOptionElement::removedFrom(ContainerNode* insertionPoint)
