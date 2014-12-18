@@ -134,6 +134,9 @@ void UIResourceLayer::SetUIResourceId(UIResourceId resource_id) {
   if (ui_resource_holder_ && ui_resource_holder_->id() == resource_id)
     return;
 
+  if (!bitmap_.isNull())
+    bitmap_.reset();
+
   if (resource_id)
     ui_resource_holder_ = SharedUIResourceHolder::Create(resource_id);
   else

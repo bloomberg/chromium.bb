@@ -128,5 +128,23 @@ TEST_F(UIResourceLayerTest, SetUIResourceId) {
   EXPECT_TRUE(test_layer->DrawsContent());
 }
 
+TEST_F(UIResourceLayerTest, BitmapClearedOnSetUIResourceId) {
+  scoped_refptr<UIResourceLayer> test_layer = TestUIResourceLayer::Create();
+  ASSERT_TRUE(test_layer.get());
+  test_layer->SetBounds(gfx::Size(100, 100));
+
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(10, 10);
+  bitmap.setImmutable();
+  ASSERT_FALSE(bitmap.isNull());
+  ASSERT_TRUE(bitmap.pixelRef()->unique());
+
+  test_layer->SetBitmap(bitmap);
+  ASSERT_FALSE(bitmap.pixelRef()->unique());
+
+  test_layer->SetUIResourceId(0);
+  EXPECT_TRUE(bitmap.pixelRef()->unique());
+}
+
 }  // namespace
 }  // namespace cc
