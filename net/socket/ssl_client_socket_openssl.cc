@@ -927,12 +927,12 @@ int SSLClientSocketOpenSSL::DoHandshake() {
   int net_error = OK;
   int rv = SSL_do_handshake(ssl_);
 
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "424386 SSLClientSocketOpenSSL::DoHandshake2"));
-
   if (client_auth_cert_needed_) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "424386 SSLClientSocketOpenSSL::DoHandshake2"));
+
     net_error = ERR_SSL_CLIENT_AUTH_CERT_NEEDED;
     // If the handshake already succeeded (because the server requests but
     // doesn't require a client cert), we need to invalidate the SSL session
@@ -948,6 +948,11 @@ int SSLClientSocketOpenSSL::DoHandshake() {
       }
     }
   } else if (rv == 1) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+    tracked_objects::ScopedTracker tracking_profile3(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "424386 SSLClientSocketOpenSSL::DoHandshake3"));
+
     if (trying_cached_session_ && logging::DEBUG_MODE) {
       DVLOG(2) << "Result of session reuse for " << host_and_port_.ToString()
                << " is: " << (SSL_session_reused(ssl_) ? "Success" : "Fail");
@@ -995,6 +1000,11 @@ int SSLClientSocketOpenSSL::DoHandshake() {
     UpdateServerCert();
     GotoState(STATE_VERIFY_CERT);
   } else {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+    tracked_objects::ScopedTracker tracking_profile4(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "424386 SSLClientSocketOpenSSL::DoHandshake4"));
+
     int ssl_error = SSL_get_error(ssl_, rv);
 
     if (ssl_error == SSL_ERROR_WANT_CHANNEL_ID_LOOKUP) {
@@ -1200,6 +1210,11 @@ void SSLClientSocketOpenSSL::DoConnectCallback(int rv) {
 }
 
 void SSLClientSocketOpenSSL::UpdateServerCert() {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "424386 SSLClientSocketOpenSSL::UpdateServerCert"));
+
   server_cert_chain_->Reset(SSL_get_peer_cert_chain(ssl_));
   server_cert_ = server_cert_chain_->AsOSChain();
 

@@ -13,6 +13,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/synchronization/lock.h"
 
 namespace net {
@@ -156,6 +157,11 @@ class SSLSessionCacheOpenSSLImpl {
   SSLSessionCacheOpenSSLImpl(SSL_CTX* ctx,
                              const SSLSessionCacheOpenSSL::Config& config)
       : ctx_(ctx), config_(config), expiration_check_(0) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "424386 SSLSessionCacheOpenSSLImpl::SSLSessionCacheOpenSSLImpl"));
+
     DCHECK(ctx);
 
     // NO_INTERNAL_STORE disables OpenSSL's builtin cache, and
@@ -196,6 +202,11 @@ class SSLSessionCacheOpenSSLImpl {
   //
   // Return true if a cached session ID was found, false otherwise.
   bool SetSSLSession(SSL* ssl) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "424386 SSLSessionCacheOpenSSLImpl::SetSSLSession"));
+
     std::string cache_key = config_.key_func(ssl);
     if (cache_key.empty())
       return false;
@@ -206,6 +217,11 @@ class SSLSessionCacheOpenSSLImpl {
   // Variant of SetSSLSession to be used when the client already has computed
   // the cache key. Avoid a call to the configuration's |key_func| function.
   bool SetSSLSessionWithKey(SSL* ssl, const std::string& cache_key) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "424386 SSLSessionCacheOpenSSLImpl::SetSSLSessionWithKey"));
+
     base::AutoLock locked(lock_);
 
     DCHECK_EQ(config_.key_func(ssl), cache_key);
@@ -239,6 +255,11 @@ class SSLSessionCacheOpenSSLImpl {
 
   // Return true iff a cached session was associated with the given |cache_key|.
   bool SSLSessionIsInCache(const std::string& cache_key) const {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "424386 SSLSessionCacheOpenSSLImpl::SSLSessionIsInCache"));
+
     base::AutoLock locked(lock_);
     KeyIndex::const_iterator it = key_index_.find(cache_key);
     if (it == key_index_.end())
@@ -254,6 +275,11 @@ class SSLSessionCacheOpenSSLImpl {
   }
 
   void MarkSSLSessionAsGood(SSL* ssl) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "424386 SSLSessionCacheOpenSSLImpl::MarkSSLSessionAsGood"));
+
     SSL_SESSION* session = SSL_get_session(ssl);
     CHECK(session);
 
@@ -264,6 +290,11 @@ class SSLSessionCacheOpenSSLImpl {
 
   // Flush all entries from the cache.
   void Flush() {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "424386 SSLSessionCacheOpenSSLImpl::Flush"));
+
     base::AutoLock lock(lock_);
     id_index_.clear();
     key_index_.clear();
@@ -358,6 +389,11 @@ class SSLSessionCacheOpenSSLImpl {
   // to indicate that it took ownership of the session, i.e. that the caller
   // should not decrement its reference count after completion.
   static int NewSessionCallbackStatic(SSL* ssl, SSL_SESSION* session) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "424386 SSLSessionCacheOpenSSLImpl::NewSessionCallbackStatic"));
+
     SSLSessionCacheOpenSSLImpl* cache = GetCache(ssl->ctx);
     cache->OnSessionAdded(ssl, session);
     return 1;
@@ -366,6 +402,11 @@ class SSLSessionCacheOpenSSLImpl {
   // Called by OpenSSL to indicate that a session must be removed from the
   // cache. This happens when SSL_CTX is destroyed.
   static void RemoveSessionCallbackStatic(SSL_CTX* ctx, SSL_SESSION* session) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "424386 SSLSessionCacheOpenSSLImpl::RemoveSessionCallbackStatic"));
+
     GetCache(ctx)->OnSessionRemoved(session);
   }
 
@@ -387,6 +428,11 @@ class SSLSessionCacheOpenSSLImpl {
   static int GenerateSessionIdStatic(const SSL* ssl,
                                      unsigned char* id,
                                      unsigned* id_len) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "424386 SSLSessionCacheOpenSSLImpl::GenerateSessionIdStatic"));
+
     if (!GetCache(ssl->ctx)->OnGenerateSessionId(id, *id_len))
       return 0;
 
