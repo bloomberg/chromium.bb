@@ -687,6 +687,12 @@ void FFmpegDemuxer::Initialize(DemuxerHost* host,
   // available, so add a metadata entry to ensure some is always present.
   av_dict_set(&format_context->metadata, "skip_id3v1_tags", "", 0);
 
+  // Ensure ffmpeg doesn't give up too early while looking for stream params;
+  // this does not increase the amount of data downloaded.  The default value
+  // is 5 AV_TIME_BASE units (1 second each), which prevents some oddly muxed
+  // streams from being detected properly; this value was chosen arbitrarily.
+  format_context->max_analyze_duration2 = 60 * AV_TIME_BASE;
+
   // Open the AVFormatContext using our glue layer.
   CHECK(blocking_thread_.Start());
   base::PostTaskAndReplyWithResult(
