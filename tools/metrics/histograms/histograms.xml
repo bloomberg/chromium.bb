@@ -47142,6 +47142,63 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="596" label="UIEventCharCode"/>
   <int value="597" label="UIEventKeyCode"/>
   <int value="598" label="UIEventWhich"/>
+  <int value="599" label="TextWholeText"/>
+  <int value="600" label="AttrChildAccess"/>
+  <int value="601" label="AttrChildChange"/>
+  <int value="602" label="DocumentGetOverrideStyle"/>
+  <int value="603" label="NotificationCloseEvent"/>
+  <int value="604" label="CSSKeyframesRuleAppendRule"/>
+  <int value="605" label="CSSKeyframesRuleInsertRule"/>
+  <int value="606" label="StyleMedia"/>
+  <int value="607" label="StyleMediaType"/>
+  <int value="608" label="StyleMediaMatchMedium"/>
+  <int value="609" label="MixedContentPresent"/>
+  <int value="610" label="MixedContentBlockable"/>
+  <int value="611" label="MixedContentAudio"/>
+  <int value="612" label="MixedContentDownload"/>
+  <int value="613" label="MixedContentFavicon"/>
+  <int value="614" label="MixedContentImage"/>
+  <int value="615" label="MixedContentInternal"/>
+  <int value="616" label="MixedContentPlugin"/>
+  <int value="617" label="MixedContentPrefetch"/>
+  <int value="618" label="MixedContentVideo"/>
+  <int value="619" label="CORSCredentialedNullOriginAccessAllowed"/>
+  <int value="620" label="AudioListenerDopplerFactor"/>
+  <int value="621" label="AudioListenerSpeedOfSound"/>
+  <int value="622" label="AudioListenerSetVelocity"/>
+  <int value="623" label="ShadowRootGetElementsByClassName"/>
+  <int value="624" label="ShadowRootGetElementsByTagName"/>
+  <int value="625" label="ShadowRootGetElementsByTagNameNS"/>
+  <int value="626" label="SVGSMILAnimationInImage"/>
+  <int value="627" label="CSSSelectorPseudoFullScreenDocument"/>
+  <int value="628" label="CSSSelectorPseudoFullScreenAncestor"/>
+  <int value="629" label="CSSSelectorPseudoFullScreen"/>
+  <int value="630" label="WebKitCSSMatrix"/>
+  <int value="631" label="AudioContextCreateAnalyser"/>
+  <int value="632" label="AudioContextCreateBiquadFilter"/>
+  <int value="633" label="AudioContextCreateBufferSource"/>
+  <int value="634" label="AudioContextCreateChannelMerger"/>
+  <int value="635" label="AudioContextCreateChannelSplitter"/>
+  <int value="636" label="AudioContextCreateConvolver"/>
+  <int value="637" label="AudioContextCreateDelay"/>
+  <int value="638" label="AudioContextCreateDynamicsCompressor"/>
+  <int value="639" label="AudioContextCreateGain"/>
+  <int value="640" label="AudioContextCreateMediaElementSource"/>
+  <int value="641" label="AudioContextCreateMediaStreamDestination"/>
+  <int value="642" label="AudioContextCreateMediaStreamSource"/>
+  <int value="643" label="AudioContextCreateOscillator"/>
+  <int value="644" label="AudioContextCreatePanner"/>
+  <int value="645" label="AudioContextCreatePeriodicWave"/>
+  <int value="646" label="AudioContextCreateScriptProcessor"/>
+  <int value="647" label="AudioContextCreateStereoPanner"/>
+  <int value="648" label="AudioContextCreateWaveShaper"/>
+  <int value="649" label="AudioContextDecodeAudioData"/>
+  <int value="650" label="AudioContextResume"/>
+  <int value="651" label="AudioContextSuspend"/>
+  <int value="652" label="AudioContext"/>
+  <int value="653" label="OfflineAudioContext"/>
+  <int value="654" label="PrefixedAudioContext"/>
+  <int value="655" label="PrefixedOfflineAudioContext"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
