@@ -15,6 +15,7 @@ GFX_EXPORT bool ShouldUseDirectWrite();
 
 GFX_EXPORT void MaybeInitializeDirectWrite();
 
+// Returns true if we are using DirectWrite for font metrics and rendering.
 GFX_EXPORT bool IsDirectWriteEnabled();
 
 }  // namespace win

@@ -73,8 +73,13 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
   // from skia and DirectWrite.
   static void SetDirectWriteFactory(IDWriteFactory* factory);
 
+  // Returns the GDI metrics for the font passed in.
+  static void GetTextMetricsForFont(HDC hdc,
+                                    HFONT font,
+                                    TEXTMETRIC* text_metrics);
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_UniscribeFallback);
+  FRIEND_TEST_ALL_PREFIXES(PlatformFontWinTest, Metrics_SkiaVersusGDI);
 
   virtual ~PlatformFontWin() {}
 
@@ -119,6 +124,7 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
    private:
     friend class base::RefCounted<HFontRef>;
     FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_UniscribeFallback);
+    FRIEND_TEST_ALL_PREFIXES(PlatformFontWinTest, Metrics_SkiaVersusGDI);
 
     ~HFontRef();
 
@@ -159,7 +165,8 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
 
   // Creates and returns a new HFontRef from the specified HFONT. Uses provided
   // |font_metrics| instead of calculating new one.
-  static HFontRef* CreateHFontRef(HFONT font, const TEXTMETRIC& font_metrics);
+  static HFontRef* CreateHFontRefFromGDI(HFONT font,
+                                         const TEXTMETRIC& font_metrics);
 
   // Returns a largest derived Font whose height does not exceed the height of
   // |base_font|.
@@ -169,7 +176,15 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
   // from skia. Currently this is only used if we use DirectWrite for font
   // metrics.
   // |gdi_font| : Handle to the GDI font created via CreateFontIndirect.
-  static PlatformFontWin::HFontRef* CreateHFontRefFromSkia(HFONT gdi_font);
+  // |font_metrics| : The GDI font metrics retrieved via the GetTextMetrics
+  // API. This is currently used to calculate the correct height of the font
+  // in case we get a font created with a positive height.
+  // A positive height represents the cell height (ascent + descent).
+  // A negative height represents the character Em height which is cell
+  // height minus the internal leading value.
+  static PlatformFontWin::HFontRef* CreateHFontRefFromSkia(
+      HFONT gdi_font,
+      const TEXTMETRIC& font_metrics);
 
   // Creates a new PlatformFontWin with the specified HFontRef. Used when
   // constructing a Font from a HFONT we don't want to copy.
