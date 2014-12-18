@@ -24,19 +24,103 @@
 
 namespace media {
 
-static bool HasUsableFormats(int fd) {
+static bool HasUsableFormats(int fd, uint32 capabilities) {
   const std::list<int>& usable_fourccs =
       VideoCaptureDeviceLinux::GetListOfUsableFourCCs(false);
 
-  v4l2_fmtdesc fmtdesc = {};
-  fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  for (; HANDLE_EINTR(ioctl(fd, VIDIOC_ENUM_FMT, &fmtdesc)) == 0;
-       ++fmtdesc.index) {
-    if (std::find(usable_fourccs.begin(), usable_fourccs.end(),
-                  fmtdesc.pixelformat) != usable_fourccs.end())
-      return true;
+  static const struct {
+    int capability;
+    v4l2_buf_type buf_type;
+  } kCapabilityAndBufferTypes[] = {
+    {V4L2_CAP_VIDEO_CAPTURE, V4L2_BUF_TYPE_VIDEO_CAPTURE},
+    {V4L2_CAP_VIDEO_CAPTURE_MPLANE, V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE}
+  };
+
+  for (const auto& capability_and_buffer_type : kCapabilityAndBufferTypes) {
+    v4l2_fmtdesc fmtdesc = {};
+    if (capabilities & capability_and_buffer_type.capability) {
+      fmtdesc.type = capability_and_buffer_type.buf_type;
+      for (; HANDLE_EINTR(ioctl(fd, VIDIOC_ENUM_FMT, &fmtdesc)) == 0;
+           ++fmtdesc.index) {
+        if (std::find(usable_fourccs.begin(), usable_fourccs.end(),
+                      fmtdesc.pixelformat) != usable_fourccs.end())
+          return true;
+      }
+    }
   }
   return false;
+}
+
+static std::list<float> GetFrameRateList(int fd,
+                                         uint32 fourcc,
+                                         uint32 width,
+                                         uint32 height) {
+  std::list<float> frame_rates;
+
+  v4l2_frmivalenum frame_interval = {};
+  frame_interval.pixel_format = fourcc;
+  frame_interval.width = width;
+  frame_interval.height = height;
+  for (; HANDLE_EINTR(ioctl(fd, VIDIOC_ENUM_FRAMEINTERVALS,
+       &frame_interval)) == 0; ++frame_interval.index) {
+    if (frame_interval.type == V4L2_FRMIVAL_TYPE_DISCRETE) {
+      if (frame_interval.discrete.numerator != 0) {
+        frame_rates.push_back(frame_interval.discrete.denominator /
+            static_cast<float>(frame_interval.discrete.numerator));
+      }
+    } else if (frame_interval.type == V4L2_FRMIVAL_TYPE_CONTINUOUS ||
+               frame_interval.type == V4L2_FRMIVAL_TYPE_STEPWISE) {
+      // TODO(mcasas): see http://crbug.com/249953, support these devices.
+      NOTIMPLEMENTED();
+      break;
+    }
+  }
+  // Some devices, e.g. Kinect, do not enumerate any frame rates, see
+  // http://crbug.com/412284. Set their frame_rate to zero.
+  if (frame_rates.empty())
+    frame_rates.push_back(0);
+  return frame_rates;
+}
+
+static void GetSupportedFormatsForV4L2BufferType(
+    int fd,
+    v4l2_buf_type buf_type,
+    media::VideoCaptureFormats* supported_formats) {
+  v4l2_fmtdesc v4l2_format = {};
+  v4l2_format.type = buf_type;
+  for (; HANDLE_EINTR(ioctl(fd, VIDIOC_ENUM_FMT, &v4l2_format)) == 0;
+       ++v4l2_format.index) {
+    VideoCaptureFormat supported_format;
+    supported_format.pixel_format =
+        VideoCaptureDeviceLinux::V4l2FourCcToChromiumPixelFormat(
+            v4l2_format.pixelformat);
+
+    if (supported_format.pixel_format == PIXEL_FORMAT_UNKNOWN)
+      continue;
+
+    v4l2_frmsizeenum frame_size = {};
+    frame_size.pixel_format = v4l2_format.pixelformat;
+    for (; HANDLE_EINTR(ioctl(fd, VIDIOC_ENUM_FRAMESIZES, &frame_size)) == 0;
+         ++frame_size.index) {
+      if (frame_size.type == V4L2_FRMSIZE_TYPE_DISCRETE) {
+        supported_format.frame_size.SetSize(frame_size.discrete.width,
+                                            frame_size.discrete.height);
+      } else if (frame_size.type == V4L2_FRMSIZE_TYPE_STEPWISE ||
+                 frame_size.type == V4L2_FRMSIZE_TYPE_CONTINUOUS) {
+        // TODO(mcasas): see http://crbug.com/249953, support these devices.
+        NOTIMPLEMENTED();
+      }
+
+      const std::list<float> frame_rates = GetFrameRateList(
+          fd, v4l2_format.pixelformat, frame_size.discrete.width,
+          frame_size.discrete.height);
+      for (const auto& frame_rate : frame_rates) {
+        supported_format.frame_rate = frame_rate;
+        supported_formats->push_back(supported_format);
+        DVLOG(1) << supported_format.ToString();
+      }
+    }
+  }
 }
 
 VideoCaptureDeviceFactoryLinux::VideoCaptureDeviceFactoryLinux(
@@ -63,7 +147,7 @@ scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryLinux::Create(
   // allocates the camera.
   base::ScopedFD fd(HANDLE_EINTR(open(device_name.id().c_str(), O_RDONLY)));
   if (!fd.is_valid()) {
-    DVLOG(1) << "Cannot open device";
+    DLOG(ERROR) << "Cannot open device";
     delete self;
     return scoped_ptr<VideoCaptureDevice>();
   }
@@ -93,11 +177,14 @@ void VideoCaptureDeviceFactoryLinux::GetDeviceNames(
     // http://crbug.com/139356.
     v4l2_capability cap;
     if ((HANDLE_EINTR(ioctl(fd.get(), VIDIOC_QUERYCAP, &cap)) == 0) &&
-        (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE &&
-        !(cap.capabilities & V4L2_CAP_VIDEO_OUTPUT)) &&
-        HasUsableFormats(fd.get())) {
-      device_names->push_front(VideoCaptureDevice::Name(
-          base::StringPrintf("%s", cap.card), unique_id));
+        ((cap.capabilities & V4L2_CAP_VIDEO_CAPTURE ||
+         cap.capabilities & V4L2_CAP_VIDEO_CAPTURE_MPLANE) &&
+         !(cap.capabilities & V4L2_CAP_VIDEO_OUTPUT &&
+         cap.capabilities & V4L2_CAP_VIDEO_OUTPUT_MPLANE)) &&
+        HasUsableFormats(fd.get(), cap.capabilities)) {
+      VideoCaptureDevice::Name device_name(base::StringPrintf("%s", cap.card),
+                                           unique_id);
+      device_names->push_back(device_name);
     }
   }
 }
@@ -113,65 +200,10 @@ void VideoCaptureDeviceFactoryLinux::GetDeviceSupportedFormats(
     return;
   supported_formats->clear();
 
-  // Retrieve the caps one by one, first get pixel format, then sizes, then
-  // frame rates.
-  v4l2_fmtdesc pixel_format = {};
-  pixel_format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  for (; HANDLE_EINTR(ioctl(fd.get(), VIDIOC_ENUM_FMT, &pixel_format)) == 0;
-       ++pixel_format.index) {
-    VideoCaptureFormat supported_format;
-    supported_format.pixel_format =
-        VideoCaptureDeviceLinux::V4l2FourCcToChromiumPixelFormat(
-            pixel_format.pixelformat);
-    if (supported_format.pixel_format == PIXEL_FORMAT_UNKNOWN)
-      continue;
-
-    v4l2_frmsizeenum frame_size = {};
-    frame_size.pixel_format = pixel_format.pixelformat;
-    for (; HANDLE_EINTR(ioctl(fd.get(), VIDIOC_ENUM_FRAMESIZES,
-                        &frame_size)) == 0;
-         ++frame_size.index) {
-      if (frame_size.type == V4L2_FRMSIZE_TYPE_DISCRETE) {
-        supported_format.frame_size.SetSize(
-            frame_size.discrete.width, frame_size.discrete.height);
-      } else if (frame_size.type == V4L2_FRMSIZE_TYPE_STEPWISE ||
-                 frame_size.type == V4L2_FRMSIZE_TYPE_CONTINUOUS) {
-        // TODO(mcasas): see http://crbug.com/249953, support these devices.
-        NOTIMPLEMENTED();
-      }
-
-      v4l2_frmivalenum frame_interval = {};
-      frame_interval.pixel_format = pixel_format.pixelformat;
-      frame_interval.width = frame_size.discrete.width;
-      frame_interval.height = frame_size.discrete.height;
-      std::list<float> frame_rates;
-      for (; HANDLE_EINTR(ioctl(fd.get(), VIDIOC_ENUM_FRAMEINTERVALS,
-                          &frame_interval)) == 0;
-           ++frame_interval.index) {
-        if (frame_interval.type == V4L2_FRMIVAL_TYPE_DISCRETE) {
-          if (frame_interval.discrete.numerator != 0) {
-            frame_rates.push_back(frame_interval.discrete.denominator /
-                static_cast<float>(frame_interval.discrete.numerator));
-          }
-        } else if (frame_interval.type == V4L2_FRMIVAL_TYPE_CONTINUOUS ||
-                   frame_interval.type == V4L2_FRMIVAL_TYPE_STEPWISE) {
-          // TODO(mcasas): see http://crbug.com/249953, support these devices.
-          NOTIMPLEMENTED();
-          break;
-        }
-      }
-      // Some devices, e.g. Kinect, do not enumerate any frame rates, see
-      // http://crbug.com/412284. Set their frame_rate to zero.
-      if (frame_rates.empty())
-        frame_rates.push_back(0.0f);
-
-      for (const auto& it : frame_rates) {
-        supported_format.frame_rate = it;
-        supported_formats->push_back(supported_format);
-        DVLOG(1) << device.name() << " " << supported_format.ToString();
-      }
-    }
-  }
+  const v4l2_buf_type kCaptureTypes[] = {V4L2_BUF_TYPE_VIDEO_CAPTURE,
+                                         V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE};
+  for (const auto& buf_type : kCaptureTypes)
+    GetSupportedFormatsForV4L2BufferType(fd.get(), buf_type, supported_formats);
   return;
 }
 
