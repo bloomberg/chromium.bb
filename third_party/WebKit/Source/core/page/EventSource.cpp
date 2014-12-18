@@ -87,12 +87,7 @@ PassRefPtrWillBeRawPtr<EventSource> EventSource::create(ExecutionContext* contex
     }
 
     // FIXME: Convert this to check the isolated world's Content Security Policy once webkit.org/b/104520 is solved.
-    bool shouldBypassMainWorldCSP = false;
-    if (context->isDocument()) {
-        Document* document = toDocument(context);
-        shouldBypassMainWorldCSP = document->frame()->script().shouldBypassMainWorldCSP();
-    }
-    if (!shouldBypassMainWorldCSP && !context->contentSecurityPolicy()->allowConnectToSource(fullURL)) {
+    if (!ContentSecurityPolicy::shouldBypassMainWorld(context) && !context->contentSecurityPolicy()->allowConnectToSource(fullURL)) {
         // We can safely expose the URL to JavaScript, as this exception is generate synchronously before any redirects take place.
         exceptionState.throwSecurityError("Refused to connect to '" + fullURL.elidedString() + "' because it violates the document's Content Security Policy.");
         return nullptr;

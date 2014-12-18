@@ -297,12 +297,7 @@ void DOMWebSocket::connect(const String& url, const Vector<String>& protocols, E
     }
 
     // FIXME: Convert this to check the isolated world's Content Security Policy once webkit.org/b/104520 is solved.
-    bool shouldBypassMainWorldCSP = false;
-    if (executionContext()->isDocument()) {
-        Document* document = toDocument(executionContext());
-        shouldBypassMainWorldCSP = document->frame()->script().shouldBypassMainWorldCSP();
-    }
-    if (!shouldBypassMainWorldCSP && !executionContext()->contentSecurityPolicy()->allowConnectToSource(m_url)) {
+    if (!ContentSecurityPolicy::shouldBypassMainWorld(executionContext()) && !executionContext()->contentSecurityPolicy()->allowConnectToSource(m_url)) {
         m_state = CLOSED;
         // The URL is safe to expose to JavaScript, as this check happens synchronously before redirection.
         exceptionState.throwSecurityError("Refused to connect to '" + m_url.elidedString() + "' because it violates the document's Content Security Policy.");
