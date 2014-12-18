@@ -112,6 +112,12 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
   void AddFilter(MessageFilter* filter);
   void RemoveFilter(MessageFilter* filter);
 
+  // Set the task runner on which dispatched messages are posted. Both the new
+  // task runner and the existing task runner must run on the same thread, and
+  // must belong to the calling thread.
+  void SetListenerTaskRunner(
+    scoped_refptr<base::SingleThreadTaskRunner> listener_task_runner);
+
   // Called to clear the pointer to the IPC task runner when it's going away.
   void ClearIPCTaskRunner();
 
@@ -142,6 +148,8 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
     Context(Listener* listener,
             const scoped_refptr<base::SingleThreadTaskRunner>& ipc_thread);
     void ClearIPCTaskRunner();
+    void SetListenerTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> listener_task_runner);
     base::SingleThreadTaskRunner* ipc_task_runner() const {
       return ipc_task_runner_.get();
     }

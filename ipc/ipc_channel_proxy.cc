@@ -50,6 +50,14 @@ void ChannelProxy::Context::ClearIPCTaskRunner() {
   ipc_task_runner_ = NULL;
 }
 
+void ChannelProxy::Context::SetListenerTaskRunner(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  DCHECK(ipc_task_runner_.get() != task_runner.get());
+  DCHECK(listener_task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner->BelongsToCurrentThread());
+  listener_task_runner_ = task_runner;
+}
+
 void ChannelProxy::Context::CreateChannel(scoped_ptr<ChannelFactory> factory) {
   DCHECK(!channel_);
   channel_id_ = factory->GetName();
@@ -426,6 +434,13 @@ void ChannelProxy::RemoveFilter(MessageFilter* filter) {
   context_->ipc_task_runner()->PostTask(
       FROM_HERE, base::Bind(&Context::OnRemoveFilter, context_.get(),
                             make_scoped_refptr(filter)));
+}
+
+void ChannelProxy::SetListenerTaskRunner(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  DCHECK(CalledOnValidThread());
+
+  context()->SetListenerTaskRunner(task_runner);
 }
 
 void ChannelProxy::ClearIPCTaskRunner() {

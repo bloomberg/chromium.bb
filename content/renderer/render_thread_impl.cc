@@ -464,6 +464,7 @@ void RenderThreadImpl::Init() {
   main_thread_indexed_db_dispatcher_.reset(new IndexedDBDispatcher(
       thread_safe_sender()));
   renderer_scheduler_ = RendererScheduler::Create();
+  channel()->SetListenerTaskRunner(renderer_scheduler_->DefaultTaskRunner());
   embedded_worker_dispatcher_.reset(new EmbeddedWorkerDispatcher());
 
   media_stream_center_ = NULL;
