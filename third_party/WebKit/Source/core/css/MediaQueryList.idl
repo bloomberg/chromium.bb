@@ -20,7 +20,6 @@
 // http://dev.w3.org/csswg/cssom-view/#mediaquerylist
 [
     ActiveDOMObject,
-    NoInterfaceObject,
 ] interface MediaQueryList : EventTarget {
     readonly attribute DOMString media;
     readonly attribute boolean matches;
@@ -29,8 +28,8 @@
     // exist as aliases for addEventListener for backwards compatibility
     // with older versions of this interface. See the note at
     // http://dev.w3.org/csswg/cssom-view/#dom-mediaquerylist-removelistener
-    [ImplementedAs=addDeprecatedListener] void addListener([Default=Undefined] optional EventListener listener);
-    [ImplementedAs=removeDeprecatedListener]void removeListener([Default=Undefined] optional EventListener listener);
+    [ImplementedAs=addDeprecatedListener] void addListener(EventListener? listener);
+    [ImplementedAs=removeDeprecatedListener]void removeListener(EventListener? listener);
 
     attribute EventHandler onchange;
 };
