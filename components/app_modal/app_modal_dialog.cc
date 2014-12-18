@@ -44,15 +44,11 @@ AppModalDialog::~AppModalDialog() {
 }
 
 void AppModalDialog::ShowModalDialog() {
+  native_dialog_ = CreateNativeDialog();
   web_contents_->GetDelegate()->ActivateContents(web_contents_);
-  CreateAndShowDialog();
+  native_dialog_->ShowAppModalDialog();
   if (app_modal_dialog_observer)
     app_modal_dialog_observer->Notify(this);
-}
-
-void AppModalDialog::CreateAndShowDialog() {
-  native_dialog_ = CreateNativeDialog();
-  native_dialog_->ShowAppModalDialog();
 }
 
 bool AppModalDialog::IsValid() {

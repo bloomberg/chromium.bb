@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
@@ -25,6 +26,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/app_modal/javascript_app_modal_dialog.h"
+#include "components/app_modal/native_app_modal_dialog.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/omnibox/autocomplete_match.h"
 #include "components/omnibox/autocomplete_result.h"
@@ -87,6 +90,41 @@ class CloseObserver : public content::WebContentsObserver {
   base::RunLoop close_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(CloseObserver);
+};
+
+class BrowserActivationObserver : public chrome::BrowserListObserver {
+ public:
+  explicit BrowserActivationObserver(chrome::HostDesktopType desktop_type)
+      : browser_(chrome::FindLastActiveWithHostDesktopType(desktop_type)),
+        observed_(false) {
+    BrowserList::AddObserver(this);
+  }
+  virtual ~BrowserActivationObserver() { BrowserList::RemoveObserver(this); }
+
+  void WaitForActivation() {
+    if (observed_)
+      return;
+    message_loop_runner_ = new content::MessageLoopRunner;
+    message_loop_runner_->Run();
+  }
+
+ private:
+  // chrome::BrowserListObserver:
+  virtual void OnBrowserSetLastActive(Browser* browser) override {
+    if (browser == browser_)
+      return;
+    if (browser->host_desktop_type() != browser_->host_desktop_type())
+      return;
+    observed_ = true;
+    if (message_loop_runner_.get() && message_loop_runner_->loop_running())
+      message_loop_runner_->Quit();
+  }
+
+  Browser* browser_;
+  bool observed_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserActivationObserver);
 };
 
 class PopupBlockerBrowserTest : public InProcessBrowserTest {
@@ -510,6 +548,41 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, Regress427477) {
 
   // The popup from the unload event handler should not show up for about:blank.
   ASSERT_EQ(0, GetBlockedContentsCount());
+}
+
+// Verify that app modal prompts can't be used to create pop unders.
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnder) {
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  GURL url(
+      embedded_test_server()->GetURL("/popup_blocker/popup-window-open.html"));
+  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURL(url), ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_POPUPS, std::string(), CONTENT_SETTING_ALLOW);
+
+  NavigateAndCheckPopupShown(url, ExpectPopup);
+
+  Browser* popup_browser =
+      chrome::FindLastActiveWithHostDesktopType(browser()->host_desktop_type());
+  ASSERT_NE(popup_browser, browser());
+
+  // Showing an alert will raise the tab over the popup.
+  tab->GetMainFrame()->ExecuteJavaScript(base::UTF8ToUTF16("alert()"));
+  app_modal::AppModalDialog* dialog = ui_test_utils::WaitForAppModalDialog();
+
+  // Verify that after the dialog was closed, the popup is in front again.
+  ASSERT_TRUE(dialog->IsJavaScriptModalDialog());
+  app_modal::JavaScriptAppModalDialog* js_dialog =
+      static_cast<app_modal::JavaScriptAppModalDialog*>(dialog);
+
+  BrowserActivationObserver activation_observer(browser()->host_desktop_type());
+  js_dialog->native_dialog()->AcceptAppModalDialog();
+
+  if (popup_browser != chrome::FindLastActiveWithHostDesktopType(
+                           popup_browser->host_desktop_type())) {
+    activation_observer.WaitForActivation();
+  }
+  ASSERT_EQ(popup_browser, chrome::FindLastActiveWithHostDesktopType(
+                               popup_browser->host_desktop_type()));
 }
 
 }  // namespace

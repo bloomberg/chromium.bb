@@ -542,6 +542,9 @@ class WebContents : public PageNavigator,
   // Does this have an opener associated with it?
   virtual bool HasOpener() const = 0;
 
+  // Returns the opener if HasOpener() is true, or NULL otherwise.
+  virtual WebContents* GetOpener() const = 0;
+
   typedef base::Callback<void(
       int, /* id */
       int, /* HTTP status code */

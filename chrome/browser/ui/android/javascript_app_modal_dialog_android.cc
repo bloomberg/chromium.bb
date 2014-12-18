@@ -118,6 +118,10 @@ void JavascriptAppModalDialogAndroid::CancelAppModalDialog() {
   delete this;
 }
 
+bool JavascriptAppModalDialogAndroid::IsShowing() const {
+  return true;
+}
+
 void JavascriptAppModalDialogAndroid::DidCancelAppModalDialog(
     JNIEnv* env, jobject, bool should_suppress_js_dialogs) {
   dialog_->OnCancel(should_suppress_js_dialogs);

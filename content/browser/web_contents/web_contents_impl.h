@@ -315,6 +315,7 @@ class CONTENT_EXPORT WebContentsImpl
   gfx::Size GetPreferredSize() const override;
   bool GotResponseToLockMouseRequest(bool allowed) override;
   bool HasOpener() const override;
+  WebContents* GetOpener() const override;
   void DidChooseColorInColorChooser(SkColor color) override;
   void DidEndColorChooser() override;
   int DownloadImage(const GURL& url,

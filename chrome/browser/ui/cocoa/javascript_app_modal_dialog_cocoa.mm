@@ -12,6 +12,7 @@
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/ui/app_modal/chrome_javascript_native_dialog_factory.h"
+#include "chrome/browser/ui/blocked_content/app_modal_dialog_helper.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/app_modal/javascript_dialog_manager.h"
 #include "components/app_modal/javascript_native_dialog_factory.h"
@@ -223,7 +224,8 @@ enum AlertAction {
 JavaScriptAppModalDialogCocoa::JavaScriptAppModalDialogCocoa(
     app_modal::JavaScriptAppModalDialog* dialog)
     : dialog_(dialog),
-      helper_(NULL) {
+      popup_helper_(new AppModalDialogHelper(dialog->web_contents())),
+      is_showing_(false) {
   // Determine the names of the dialog buttons based on the flags. "Default"
   // is the OK button. "Other" is the cancel button. We don't use the
   // "Alternate" button in NSRunAlertPanel.
@@ -415,6 +417,8 @@ int JavaScriptAppModalDialogCocoa::GetAppModalDialogButtons() const {
 }
 
 void JavaScriptAppModalDialogCocoa::ShowAppModalDialog() {
+  is_showing_ = true;
+
   // Dispatch the method to show the alert back to the top of the CFRunLoop.
   // This fixes an interaction bug with NSSavePanel. http://crbug.com/375785
   // When this object is destroyed, outstanding performSelector: requests
@@ -437,6 +441,10 @@ void JavaScriptAppModalDialogCocoa::AcceptAppModalDialog() {
 
 void JavaScriptAppModalDialogCocoa::CancelAppModalDialog() {
   [helper_ playOrQueueAction:ACTION_CANCEL];
+}
+
+bool JavaScriptAppModalDialogCocoa::IsShowing() const {
+  return is_showing_;
 }
 
 namespace {

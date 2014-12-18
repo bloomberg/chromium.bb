@@ -13,6 +13,8 @@ class JavaScriptAppModalDialog;
 
 class NativeAppModalDialog {
  public:
+  virtual ~NativeAppModalDialog() {}
+
   // Returns the buttons to be shown. See ui::DialogButton for which buttons can
   // be returned.
   virtual int GetAppModalDialogButtons() const = 0;
@@ -29,6 +31,9 @@ class NativeAppModalDialog {
   // Accepts or cancels the dialog.
   virtual void AcceptAppModalDialog() = 0;
   virtual void CancelAppModalDialog() = 0;
+
+  // Should return true when the dialog is being shown.
+  virtual bool IsShowing() const = 0;
 };
 
 }  // namespace app_modal

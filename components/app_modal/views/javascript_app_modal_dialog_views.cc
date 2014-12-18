@@ -73,6 +73,10 @@ void JavaScriptAppModalDialogViews::CancelAppModalDialog() {
   GetDialogClientView()->CancelWindow();
 }
 
+bool JavaScriptAppModalDialogViews::IsShowing() const {
+  return GetWidget()->IsVisible();
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // JavaScriptAppModalDialogViews, views::DialogDelegate implementation:
 

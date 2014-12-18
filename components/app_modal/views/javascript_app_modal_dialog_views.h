@@ -30,6 +30,7 @@ class JavaScriptAppModalDialogViews : public NativeAppModalDialog,
   void CloseAppModalDialog() override;
   void AcceptAppModalDialog() override;
   void CancelAppModalDialog() override;
+  bool IsShowing() const override;
 
   // Overridden from views::DialogDelegate:
   int GetDefaultDialogButton() const override;

@@ -10,6 +10,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/app_modal/native_app_modal_dialog.h"
 
+class AppModalDialogHelper;
+
 #if __OBJC__
 @class NSAlert;
 @class JavaScriptAppModalDialogHelper;
@@ -18,8 +20,7 @@ class NSAlert;
 class JavaScriptAppModalDialogHelper;
 #endif
 
-class JavaScriptAppModalDialogCocoa
-    : public app_modal::NativeAppModalDialog {
+class JavaScriptAppModalDialogCocoa : public app_modal::NativeAppModalDialog {
  public:
   explicit JavaScriptAppModalDialogCocoa(
       app_modal::JavaScriptAppModalDialog* dialog);
@@ -32,6 +33,7 @@ class JavaScriptAppModalDialogCocoa
   void CloseAppModalDialog() override;
   void AcceptAppModalDialog() override;
   void CancelAppModalDialog() override;
+  bool IsShowing() const override;
 
   app_modal::JavaScriptAppModalDialog* dialog() const {
     return dialog_.get();
@@ -42,9 +44,12 @@ class JavaScriptAppModalDialogCocoa
   NSAlert* GetAlert() const;
 
   scoped_ptr<app_modal::JavaScriptAppModalDialog> dialog_;
+  scoped_ptr<AppModalDialogHelper> popup_helper_;
 
   // Created in the constructor and destroyed in the destructor.
   base::scoped_nsobject<JavaScriptAppModalDialogHelper> helper_;
+
+  bool is_showing_;
 
   DISALLOW_COPY_AND_ASSIGN(JavaScriptAppModalDialogCocoa);
 };

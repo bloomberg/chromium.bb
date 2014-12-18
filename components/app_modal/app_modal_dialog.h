@@ -45,13 +45,6 @@ class AppModalDialog {
   NativeAppModalDialog* native_dialog() const { return native_dialog_; }
   content::WebContents* web_contents() const { return web_contents_; }
 
-  // Creates an implementation of NativeAppModalDialog and shows it.
-  // When the native dialog is closed, the implementation of
-  // NativeAppModalDialog should call OnAccept or OnCancel to notify the
-  // renderer of the user's action. The NativeAppModalDialog is also
-  // expected to delete the AppModalDialog associated with it.
-  void CreateAndShowDialog();
-
   // Returns true if the dialog is still valid. As dialogs are created they are
   // added to the AppModalDialogQueue. When the current modal dialog finishes
   // and it's time to show the next dialog in the queue IsValid is invoked.

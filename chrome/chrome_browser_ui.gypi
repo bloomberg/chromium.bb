@@ -105,6 +105,8 @@
       'browser/ui/autofill/password_generation_popup_view.h',
       'browser/ui/autofill/popup_controller_common.cc',
       'browser/ui/autofill/popup_controller_common.h',
+      'browser/ui/blocked_content/app_modal_dialog_helper.cc',
+      'browser/ui/blocked_content/app_modal_dialog_helper.h',
       'browser/ui/blocked_content/blocked_window_params.cc',
       'browser/ui/blocked_content/blocked_window_params.h',
       'browser/ui/blocked_content/popup_blocker_tab_helper.cc',

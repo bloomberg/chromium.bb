@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/app_modal/views/javascript_app_modal_dialog_views.h"
 
+class AppModalDialogHelper;
 class JavascriptAppModalEventBlockerX11;
 
 // JavaScriptAppModalDialog implmentation for linux desktop.
@@ -27,6 +28,8 @@ class JavaScriptAppModalDialogViewsX11
  private:
   // Blocks events to other browser windows while the dialog is open.
   scoped_ptr<JavascriptAppModalEventBlockerX11> event_blocker_x11_;
+
+  scoped_ptr<AppModalDialogHelper> helper_;
 
   DISALLOW_COPY_AND_ASSIGN(JavaScriptAppModalDialogViewsX11);
 };

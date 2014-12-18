@@ -2376,6 +2376,10 @@ bool WebContentsImpl::HasOpener() const {
   return opener_ != NULL;
 }
 
+WebContents* WebContentsImpl::GetOpener() const {
+  return static_cast<WebContents*>(opener_);
+}
+
 void WebContentsImpl::DidChooseColorInColorChooser(SkColor color) {
   if (!color_chooser_info_.get())
     return;

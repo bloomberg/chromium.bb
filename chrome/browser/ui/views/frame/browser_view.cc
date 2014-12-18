@@ -100,6 +100,7 @@
 #include "chrome/grit/locale_settings.h"
 #include "components/app_modal/app_modal_dialog.h"
 #include "components/app_modal/app_modal_dialog_queue.h"
+#include "components/app_modal/native_app_modal_dialog.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/translate/core/browser/language_state.h"
 #include "content/app/resources/grit/content_resources.h"
@@ -1594,8 +1595,10 @@ bool BrowserView::CanMinimize() const {
 bool BrowserView::CanActivate() const {
   app_modal::AppModalDialogQueue* queue =
       app_modal::AppModalDialogQueue::GetInstance();
-  if (!queue->active_dialog() || !queue->active_dialog()->native_dialog())
+  if (!queue->active_dialog() || !queue->active_dialog()->native_dialog() ||
+      !queue->active_dialog()->native_dialog()->IsShowing()) {
     return true;
+  }
 
 #if defined(USE_AURA) && defined(OS_CHROMEOS)
   // On Aura window manager controls all windows so settings focus via PostTask

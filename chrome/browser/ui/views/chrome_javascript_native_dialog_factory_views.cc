@@ -11,10 +11,29 @@
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/javascript_app_modal_dialog_views_x11.h"
 #else
+#include "chrome/browser/ui/blocked_content/app_modal_dialog_helper.h"
+#include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/app_modal/views/javascript_app_modal_dialog_views.h"
 #endif
 
 namespace {
+
+#if !defined(USE_X11) || defined(OS_CHROMEOS)
+class ChromeJavaScriptAppModalDialogViews
+    : public app_modal::JavaScriptAppModalDialogViews {
+ public:
+  explicit ChromeJavaScriptAppModalDialogViews(
+      app_modal::JavaScriptAppModalDialog* parent)
+      : app_modal::JavaScriptAppModalDialogViews(parent),
+        helper_(new AppModalDialogHelper(parent->web_contents())) {}
+  virtual ~ChromeJavaScriptAppModalDialogViews() {}
+
+ private:
+  scoped_ptr<AppModalDialogHelper> helper_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeJavaScriptAppModalDialogViews);
+};
+#endif
 
 class ChromeJavaScriptNativeDialogViewsFactory
     : public app_modal::JavaScriptNativeDialogFactory {
@@ -30,7 +49,7 @@ class ChromeJavaScriptNativeDialogViewsFactory
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
     d = new JavaScriptAppModalDialogViewsX11(dialog);
 #else
-    d = new app_modal::JavaScriptAppModalDialogViews(dialog);
+    d = new ChromeJavaScriptAppModalDialogViews(dialog);
 #endif
     constrained_window::CreateBrowserModalDialogViews(d, parent_window);
     return d;

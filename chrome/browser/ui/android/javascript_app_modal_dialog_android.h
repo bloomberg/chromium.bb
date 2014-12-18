@@ -27,6 +27,7 @@ class JavascriptAppModalDialogAndroid
   virtual void CloseAppModalDialog() override;
   virtual void AcceptAppModalDialog() override;
   virtual void CancelAppModalDialog() override;
+  virtual bool IsShowing() const override;
 
   // Called when java confirms or cancels the dialog.
   void DidAcceptAppModalDialog(JNIEnv* env,

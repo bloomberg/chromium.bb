@@ -4,12 +4,16 @@
 
 #include "chrome/browser/ui/views/javascript_app_modal_dialog_views_x11.h"
 
+#include "chrome/browser/ui/blocked_content/app_modal_dialog_helper.h"
 #include "chrome/browser/ui/views/javascript_app_modal_event_blocker_x11.h"
+#include "components/app_modal/javascript_app_modal_dialog.h"
 #include "ui/views/widget/widget.h"
 
 JavaScriptAppModalDialogViewsX11::JavaScriptAppModalDialogViewsX11(
     app_modal::JavaScriptAppModalDialog* parent)
-    : app_modal::JavaScriptAppModalDialogViews(parent) {}
+    : app_modal::JavaScriptAppModalDialogViews(parent),
+      helper_(new AppModalDialogHelper(parent->web_contents())) {
+}
 
 JavaScriptAppModalDialogViewsX11::~JavaScriptAppModalDialogViewsX11() {
 }
