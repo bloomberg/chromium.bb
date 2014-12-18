@@ -1400,8 +1400,9 @@ class BisectPerformanceMetrics(object):
   def ShouldSkipRevision(depot, revision):
     """Checks whether a particular revision can be safely skipped.
 
-    Some commits can be safely skipped (such as a DEPS roll), since the tool
-    is git based those changes would have no effect.
+    Some commits can be safely skipped (such as a DEPS roll for the repos
+    still using .DEPS.git), since the tool is git based those changes
+    would have no effect.
 
     Args:
       depot: The depot being bisected.
@@ -1410,7 +1411,8 @@ class BisectPerformanceMetrics(object):
     Returns:
       True if we should skip building/testing this revision.
     """
-    if depot == 'chromium':
+    # Skips revisions with DEPS on android-chrome.
+    if depot == 'android-chrome':
       cmd = ['diff-tree', '--no-commit-id', '--name-only', '-r', revision]
       output = bisect_utils.CheckRunGit(cmd)
 
