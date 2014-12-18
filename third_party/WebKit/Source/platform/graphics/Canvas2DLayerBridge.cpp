@@ -91,10 +91,12 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider
     , m_framesPending(0)
     , m_destructionInProgress(false)
     , m_rateLimitingEnabled(false)
+    , m_filterLevel(SkPaint::kLow_FilterLevel)
     , m_isHidden(false)
     , m_next(0)
     , m_prev(0)
     , m_lastImageId(0)
+    , m_lastFilter(GL_LINEAR)
     , m_opacityMode(opacityMode)
 {
     ASSERT(m_canvas);
@@ -107,6 +109,7 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider
     m_layer->setBlendBackgroundColor(opacityMode != Opaque);
     GraphicsLayer::registerContentsLayer(m_layer->layer());
     m_layer->setRateLimitContext(m_rateLimitingEnabled);
+    m_layer->setNearestNeighbor(m_filterLevel == SkPaint::kNone_FilterLevel);
     m_canvas->setNotificationClient(this);
 #ifndef NDEBUG
     canvas2DLayerBridgeInstanceCounter.increment();
@@ -145,6 +148,13 @@ void Canvas2DLayerBridge::beginDestruction()
     // To anyone who ever hits this assert: Please update crbug.com/344666
     // with repro steps.
     ASSERT(!m_bytesAllocated);
+}
+
+void Canvas2DLayerBridge::setFilterLevel(SkPaint::FilterLevel filterLevel)
+{
+    ASSERT(!m_destructionInProgress);
+    m_filterLevel = filterLevel;
+    m_layer->setNearestNeighbor(m_filterLevel == SkPaint::kNone_FilterLevel);
 }
 
 void Canvas2DLayerBridge::setIsHidden(bool hidden)
@@ -361,9 +371,11 @@ bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, 
     RefPtr<SkImage> image = adoptRef(m_canvas->newImageSnapshot());
 
     // Early exit if canvas was not drawn to since last prepareMailbox
-    if (image->uniqueID() == m_lastImageId)
+    GLenum filter = m_filterLevel == SkPaint::kNone_FilterLevel ? GL_NEAREST : GL_LINEAR;
+    if (image->uniqueID() == m_lastImageId && filter == m_lastFilter)
         return false;
     m_lastImageId = image->uniqueID();
+    m_lastFilter = filter;
 
     {
         MailboxInfo tmp;
@@ -372,6 +384,8 @@ bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, 
         m_mailboxes.prepend(tmp);
     }
     MailboxInfo& mailboxInfo = m_mailboxes.first();
+
+    mailboxInfo.m_mailbox.nearestNeighbor = filter == GL_NEAREST;
 
     GrContext* grContext = m_contextProvider->grContext();
     if (!grContext)
@@ -385,8 +399,8 @@ bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, 
     mailboxInfo.m_image->getTexture()->textureParamsModified();
 
     webContext->bindTexture(GL_TEXTURE_2D, mailboxInfo.m_image->getTexture()->getTextureHandle());
-    webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+    webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
     webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 

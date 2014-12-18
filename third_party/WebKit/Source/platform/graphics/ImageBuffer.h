@@ -37,6 +37,7 @@
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/graphics/ImageBufferSurface.h"
 #include "platform/transforms/AffineTransform.h"
+#include "third_party/skia/include/core/SkPaint.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -89,6 +90,7 @@ public:
     bool restoreSurface() const;
     bool needsClipTracking() const { return m_surface->needsClipTracking(); }
 
+    void setFilterLevel(SkPaint::FilterLevel filterLevel) { m_surface->setFilterLevel(filterLevel); }
     void setIsHidden(bool hidden) { m_surface->setIsHidden(hidden); }
 
     // Called by subclasses of ImageBufferSurface to install a new canvas object
@@ -105,6 +107,8 @@ public:
     bool isDirty();
 
     const SkBitmap& bitmap() const;
+
+    void willAccessPixels() { m_surface->willAccessPixels(); }
 
     PassRefPtr<Image> copyImage(BackingStoreCopy = CopyBackingStore, ScaleBehavior = Scaled) const;
     // Give hints on the faster copyImage Mode, return DontCopyBackingStore if it supports the DontCopyBackingStore behavior

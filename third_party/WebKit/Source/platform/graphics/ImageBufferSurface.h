@@ -35,6 +35,7 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/GraphicsTypes3D.h"
+#include "third_party/skia/include/core/SkPaint.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
@@ -75,6 +76,7 @@ public:
     virtual const SkBitmap& cachedBitmap() const;
     virtual void invalidateCachedBitmap() { }
     virtual void updateCachedBitmapIfNeeded() { }
+    virtual void setFilterLevel(SkPaint::FilterLevel) { }
     virtual void setIsHidden(bool) { }
     virtual void setImageBuffer(ImageBuffer*) { }
     virtual PassRefPtr<SkPicture> getPicture();

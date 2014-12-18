@@ -149,9 +149,11 @@ RenderObject* HTMLCanvasElement::createRenderer(RenderStyle* style)
 void HTMLCanvasElement::didRecalcStyle(StyleRecalcChange)
 {
     SkPaint::FilterLevel filterLevel = computedStyle()->imageRendering() == ImageRenderingPixelated ? SkPaint::kNone_FilterLevel : SkPaint::kLow_FilterLevel;
-    if (m_context && m_context->is3d()) {
+    if (is3D()) {
         toWebGLRenderingContext(m_context.get())->setFilterLevel(filterLevel);
         setNeedsCompositingUpdate();
+    } else if (hasImageBuffer()) {
+        m_imageBuffer->setFilterLevel(filterLevel);
     }
 }
 
@@ -627,6 +629,10 @@ void HTMLCanvasElement::createImageBufferInternal()
     m_imageBuffer = ImageBuffer::create(surface.release());
     m_imageBuffer->setClient(this);
 
+    document().updateRenderTreeIfNeeded();
+    RenderStyle* style = computedStyle();
+    m_imageBuffer->setFilterLevel((style && (style->imageRendering() == ImageRenderingPixelated)) ? SkPaint::kNone_FilterLevel : SkPaint::kLow_FilterLevel);
+
     m_didFailToCreateImageBuffer = false;
 
     updateExternallyAllocatedMemory();
@@ -812,6 +818,8 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(SourceImageMode mod
         *status = NormalSourceImageStatus;
         return createTransparentImage(size());
     }
+
+    m_imageBuffer->willAccessPixels();
 
     if (m_context->is3d()) {
         m_context->paintRenderingResultsToCanvas(BackBuffer);
