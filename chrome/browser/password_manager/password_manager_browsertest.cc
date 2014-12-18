@@ -1372,7 +1372,9 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   WaitForElementValue("username_id", "temp");
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, PromptForPushState) {
+// TODO(dvadym): This is flaky. http://crbug.com/443475
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       DISABLED_PromptForPushState) {
   NavigateToFile("/password/password_push_state.html");
 
   // Verify that we show the save password prompt if 'history.pushState()'
