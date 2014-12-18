@@ -42,9 +42,15 @@ class SimpleFeature : public Feature {
   // Accessors defined for testing. See comment above about not directly using
   // SimpleFeature in production code.
   std::set<std::string>* blacklist() { return &blacklist_; }
+  const std::set<std::string>* blacklist() const { return &blacklist_; }
   std::set<std::string>* whitelist() { return &whitelist_; }
+  const std::set<std::string>* whitelist() const { return &whitelist_; }
   std::set<Manifest::Type>* extension_types() { return &extension_types_; }
+  const std::set<Manifest::Type>* extension_types() const {
+    return &extension_types_;
+  }
   std::set<Context>* contexts() { return &contexts_; }
+  const std::set<Context>* contexts() const { return &contexts_; }
   Location location() const { return location_; }
   void set_location(Location location) { location_ = location; }
   int min_manifest_version() const { return min_manifest_version_; }

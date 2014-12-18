@@ -44,8 +44,8 @@ const char kExtensionAllowedOnAllUrlsPrefName[] =
 
 // Returns true if |extension| should always be enabled in incognito mode.
 bool IsWhitelistedForIncognito(const Extension* extension) {
-  return FeatureProvider::GetBehaviorFeatures()
-      ->GetFeature(BehaviorFeature::kWhitelistedForIncognito)
+  return FeatureProvider::GetBehaviorFeature(
+             BehaviorFeature::kWhitelistedForIncognito)
       ->IsAvailableToExtension(extension)
       .is_available();
 }

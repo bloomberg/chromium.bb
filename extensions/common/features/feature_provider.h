@@ -18,6 +18,31 @@ class FeatureProvider {
   FeatureProvider() {}
   virtual ~FeatureProvider() {}
 
+  //
+  // Static helpers.
+  //
+
+  // Gets a FeatureProvider for a specific type, like "permission".
+  static const FeatureProvider* GetByName(const std::string& name);
+
+  // Directly access the common FeatureProvider types.
+  // Each is equivalent to GetByName('featuretype').
+  static const FeatureProvider* GetAPIFeatures();
+  static const FeatureProvider* GetManifestFeatures();
+  static const FeatureProvider* GetPermissionFeatures();
+  static const FeatureProvider* GetBehaviorFeatures();
+
+  // Directly get Features from the common FeatureProvider types.
+  // Each is equivalent to GetByName('featuretype')->GetFeature(name).
+  static const Feature* GetAPIFeature(const std::string& name);
+  static const Feature* GetManifestFeature(const std::string& name);
+  static const Feature* GetPermissionFeature(const std::string& name);
+  static const Feature* GetBehaviorFeature(const std::string& name);
+
+  //
+  // Instance methods.
+  //
+
   // Returns the feature with the specified name.
   virtual Feature* GetFeature(const std::string& name) const = 0;
 
@@ -29,15 +54,6 @@ class FeatureProvider {
 
   // Returns all features described by this instance, in asciibetical order.
   virtual const std::vector<std::string>& GetAllFeatureNames() const = 0;
-
-  // Gets a feature provider for a specific feature type, like "permission".
-  static const FeatureProvider* GetByName(const std::string& name);
-
-  // Directly access the common feature types.
-  static const FeatureProvider* GetAPIFeatures();
-  static const FeatureProvider* GetManifestFeatures();
-  static const FeatureProvider* GetPermissionFeatures();
-  static const FeatureProvider* GetBehaviorFeatures();
 };
 
 }  // namespace extensions

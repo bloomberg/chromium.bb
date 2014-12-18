@@ -19,13 +19,12 @@ namespace extensions {
 // Tests that a real manifest feature is available for the correct types of
 // extensions and apps.
 TEST(BaseFeatureProviderTest, ManifestFeatureTypes) {
-  const FeatureProvider* provider = BaseFeatureProvider::GetByName("manifest");
   // NOTE: This feature cannot have multiple rules, otherwise it is not a
   // SimpleFeature.
-  SimpleFeature* feature =
-      static_cast<SimpleFeature*>(provider->GetFeature("description"));
+  const SimpleFeature* feature = static_cast<const SimpleFeature*>(
+      FeatureProvider::GetManifestFeature("description"));
   ASSERT_TRUE(feature);
-  std::set<Manifest::Type>* extension_types = feature->extension_types();
+  const std::set<Manifest::Type>* extension_types = feature->extension_types();
   EXPECT_EQ(6u, extension_types->size());
   EXPECT_EQ(1u, extension_types->count(Manifest::TYPE_EXTENSION));
   EXPECT_EQ(1u, extension_types->count(Manifest::TYPE_LEGACY_PACKAGED_APP));
@@ -75,14 +74,12 @@ TEST(BaseFeatureProviderTest, ManifestFeatureAvailability) {
 // Tests that a real permission feature is available for the correct types of
 // extensions and apps.
 TEST(BaseFeatureProviderTest, PermissionFeatureTypes) {
-  const FeatureProvider* provider =
-      BaseFeatureProvider::GetByName("permission");
   // NOTE: This feature cannot have multiple rules, otherwise it is not a
   // SimpleFeature.
-  SimpleFeature* feature =
-      static_cast<SimpleFeature*>(provider->GetFeature("power"));
+  const SimpleFeature* feature = static_cast<const SimpleFeature*>(
+      BaseFeatureProvider::GetPermissionFeature("power"));
   ASSERT_TRUE(feature);
-  std::set<Manifest::Type>* extension_types = feature->extension_types();
+  const std::set<Manifest::Type>* extension_types = feature->extension_types();
   EXPECT_EQ(3u, extension_types->size());
   EXPECT_EQ(1u, extension_types->count(Manifest::TYPE_EXTENSION));
   EXPECT_EQ(1u, extension_types->count(Manifest::TYPE_LEGACY_PACKAGED_APP));

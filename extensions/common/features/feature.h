@@ -131,7 +131,7 @@ class Feature {
                                              Platform platform) const = 0;
 
   // Returns true if the feature is available to |extension|.
-  Availability IsAvailableToExtension(const Extension* extension);
+  Availability IsAvailableToExtension(const Extension* extension) const;
 
   // Returns true if the feature is available to be used in the specified
   // extension and context.

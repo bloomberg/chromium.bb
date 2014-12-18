@@ -37,7 +37,7 @@ Feature::Availability Feature::CreateAvailability(AvailabilityResult result,
 }
 
 Feature::Availability Feature::IsAvailableToExtension(
-    const Extension* extension) {
+    const Extension* extension) const {
   return IsAvailableToManifest(extension->id(),
                                extension->GetType(),
                                extension->location(),

@@ -157,8 +157,7 @@ void GuestViewBase::Init(const std::string& owner_extension_id,
     return;
   initialized_ = true;
 
-  Feature* feature = FeatureProvider::GetAPIFeatures()->GetFeature(
-      GetAPINamespace());
+  const Feature* feature = FeatureProvider::GetAPIFeature(GetAPINamespace());
   CHECK(feature);
 
   ProcessMap* process_map = ProcessMap::Get(browser_context());
