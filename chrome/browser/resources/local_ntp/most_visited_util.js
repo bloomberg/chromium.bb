@@ -171,7 +171,10 @@ function createMostVisitedLink(params, href, title, text, direction, provider) {
       window.parent.postMessage('tileBlacklisted,' + params.pos, DOMAIN_ORIGIN);
     } else if (event.keyCode == 13 /* ENTER */ ||
                event.keyCode == 32 /* SPACE */) {
-      navigateFunction(event);
+      // Event target is the <a> tag. Send a click event on it, which will
+      // trigger the 'click' event registered above.
+      event.preventDefault();
+      event.target.click();
     }
   });
 
