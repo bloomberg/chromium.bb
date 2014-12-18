@@ -40,7 +40,7 @@ enum FontWidthVariant {
 
 const unsigned FontWidthVariantWidth = 2;
 
-COMPILE_ASSERT(LastFontWidthVariant >> FontWidthVariantWidth == 0, FontWidthVariantWidth_is_correct);
+static_assert(LastFontWidthVariant >> FontWidthVariantWidth == 0, "FontWidthVariantWidth must be correct");
 
 } // namespace blink
 

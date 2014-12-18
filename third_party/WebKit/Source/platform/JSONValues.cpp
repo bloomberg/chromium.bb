@@ -265,7 +265,7 @@ JSONObjectBase::~JSONObjectBase()
 
 bool JSONObjectBase::asObject(RefPtr<JSONObject>* output)
 {
-    COMPILE_ASSERT(sizeof(JSONObject) == sizeof(JSONObjectBase), cannot_cast);
+    static_assert(sizeof(JSONObject) == sizeof(JSONObjectBase), "cannot cast");
     *output = static_cast<JSONObject*>(this);
     return true;
 }
@@ -313,7 +313,7 @@ void JSONObjectBase::setArray(const String& name, PassRefPtr<JSONArray> value)
 
 JSONObject* JSONObjectBase::openAccessors()
 {
-    COMPILE_ASSERT(sizeof(JSONObject) == sizeof(JSONObjectBase), cannot_cast);
+    static_assert(sizeof(JSONObject) == sizeof(JSONObjectBase), "cannot cast");
     return static_cast<JSONObject*>(this);
 }
 
@@ -424,14 +424,14 @@ JSONArrayBase::~JSONArrayBase()
 
 bool JSONArrayBase::asArray(RefPtr<JSONArray>* output)
 {
-    COMPILE_ASSERT(sizeof(JSONArrayBase) == sizeof(JSONArray), cannot_cast);
+    static_assert(sizeof(JSONArrayBase) == sizeof(JSONArray), "cannot cast");
     *output = static_cast<JSONArray*>(this);
     return true;
 }
 
 PassRefPtr<JSONArray> JSONArrayBase::asArray()
 {
-    COMPILE_ASSERT(sizeof(JSONArrayBase) == sizeof(JSONArray), cannot_cast);
+    static_assert(sizeof(JSONArrayBase) == sizeof(JSONArray), "cannot cast");
     return static_cast<JSONArray*>(this);
 }
 

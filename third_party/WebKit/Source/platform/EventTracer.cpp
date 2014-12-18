@@ -38,7 +38,7 @@
 
 namespace blink {
 
-COMPILE_ASSERT(sizeof(Platform::TraceEventHandle) == sizeof(TraceEvent::TraceEventHandle), TraceEventHandle_types_must_be_compatible);
+static_assert(sizeof(Platform::TraceEventHandle) == sizeof(TraceEvent::TraceEventHandle), "TraceEventHandle types must be compatible");
 
 // The dummy variable is needed to avoid a crash when someone updates the state variables
 // before EventTracer::initialize() is called.

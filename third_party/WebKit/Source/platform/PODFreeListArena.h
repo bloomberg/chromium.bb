@@ -119,7 +119,7 @@ private:
     };
     FixedSizeMemoryChunk* m_freeList;
 
-    COMPILE_ASSERT(sizeof(T) >= sizeof(FixedSizeMemoryChunk), PODFreeListArena_type_should_be_larger);
+    static_assert(sizeof(T) >= sizeof(FixedSizeMemoryChunk), "PODFreeListArena type should be larger");
 
     friend class WTF::RefCounted<PODFreeListArena>;
     friend class PODFreeListArenaTest;

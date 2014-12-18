@@ -174,12 +174,12 @@ static inline SkFontStyle fontStyle(const FontDescription& fontDescription)
     return SkFontStyle(weight, width, slant);
 }
 
-COMPILE_ASSERT(static_cast<int>(FontStretchUltraCondensed) == static_cast<int>(SkFontStyle::kUltraCondensed_Width),
-    FontStretchUltraCondensedMapsTokUltraCondensed_Width);
-COMPILE_ASSERT(static_cast<int>(FontStretchNormal) == static_cast<int>(SkFontStyle::kNormal_Width),
-    FontStretchNormalMapsTokNormal_Width);
-COMPILE_ASSERT(static_cast<int>(FontStretchUltraExpanded) == static_cast<int>(SkFontStyle::kUltaExpanded_Width),
-    FontStretchUltraExpandedMapsTokUltaExpanded_Width);
+static_assert(static_cast<int>(FontStretchUltraCondensed) == static_cast<int>(SkFontStyle::kUltraCondensed_Width),
+    "FontStretchUltraCondensed should map to kUltraCondensed_Width");
+static_assert(static_cast<int>(FontStretchNormal) == static_cast<int>(SkFontStyle::kNormal_Width),
+    "FontStretchNormal should map to kNormal_Width");
+static_assert(static_cast<int>(FontStretchUltraExpanded) == static_cast<int>(SkFontStyle::kUltaExpanded_Width),
+    "FontStretchUltraExpanded should map to kUltaExpanded_Width");
 #endif
 
 PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDescription, const FontFaceCreationParams& creationParams, CString& name)

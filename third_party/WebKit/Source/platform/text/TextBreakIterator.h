@@ -81,33 +81,33 @@ public:
 
     UChar lastCharacter() const
     {
-        COMPILE_ASSERT(WTF_ARRAY_LENGTH(m_priorContext) == 2, TextBreakIterator_unexpected_prior_context_length);
+        static_assert(WTF_ARRAY_LENGTH(m_priorContext) == 2, "TextBreakIterator has unexpected prior context length");
         return m_priorContext[1];
     }
 
     UChar secondToLastCharacter() const
     {
-        COMPILE_ASSERT(WTF_ARRAY_LENGTH(m_priorContext) == 2, TextBreakIterator_unexpected_prior_context_length);
+        static_assert(WTF_ARRAY_LENGTH(m_priorContext) == 2, "TextBreakIterator has unexpected prior context length");
         return m_priorContext[0];
     }
 
     void setPriorContext(UChar last, UChar secondToLast)
     {
-        COMPILE_ASSERT(WTF_ARRAY_LENGTH(m_priorContext) == 2, TextBreakIterator_unexpected_prior_context_length);
+        static_assert(WTF_ARRAY_LENGTH(m_priorContext) == 2, "TextBreakIterator has unexpected prior context length");
         m_priorContext[0] = secondToLast;
         m_priorContext[1] = last;
     }
 
     void updatePriorContext(UChar last)
     {
-        COMPILE_ASSERT(WTF_ARRAY_LENGTH(m_priorContext) == 2, TextBreakIterator_unexpected_prior_context_length);
+        static_assert(WTF_ARRAY_LENGTH(m_priorContext) == 2, "TextBreakIterator has unexpected prior context length");
         m_priorContext[0] = m_priorContext[1];
         m_priorContext[1] = last;
     }
 
     void resetPriorContext()
     {
-        COMPILE_ASSERT(WTF_ARRAY_LENGTH(m_priorContext) == 2, TextBreakIterator_unexpected_prior_context_length);
+        static_assert(WTF_ARRAY_LENGTH(m_priorContext) == 2, "TextBreakIterator has unexpected prior context length");
         m_priorContext[0] = 0;
         m_priorContext[1] = 0;
     }
@@ -115,7 +115,7 @@ public:
     unsigned priorContextLength() const
     {
         unsigned priorContextLength = 0;
-        COMPILE_ASSERT(WTF_ARRAY_LENGTH(m_priorContext) == 2, TextBreakIterator_unexpected_prior_context_length);
+        static_assert(WTF_ARRAY_LENGTH(m_priorContext) == 2, "TextBreakIterator has unexpected prior context length");
         if (m_priorContext[1]) {
             ++priorContextLength;
             if (m_priorContext[0])

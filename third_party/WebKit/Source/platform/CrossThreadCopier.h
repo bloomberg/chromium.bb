@@ -82,10 +82,10 @@ namespace blink {
         typedef typename WTF::RemovePointer<TypeWithoutPassRefPtr>::Type RefCountedType;
 
         // Verify that only one of the above did a change.
-        COMPILE_ASSERT((WTF::IsSameType<RefPtr<RefCountedType>, T>::value
+        static_assert((WTF::IsSameType<RefPtr<RefCountedType>, T>::value
                         || WTF::IsSameType<PassRefPtr<RefCountedType>, T>::value
                         || WTF::IsSameType<RefCountedType*, T>::value),
-                       OnlyAllowOneTypeModification);
+                        "only one type modification should be allowed");
 
         typedef PassRefPtr<RefCountedType> Type;
         static Type copy(const T& refPtr)

@@ -55,7 +55,7 @@ struct SameSizeAsScrollableArea {
     IntPoint origin;
 };
 
-COMPILE_ASSERT(sizeof(ScrollableArea) == sizeof(SameSizeAsScrollableArea), ScrollableArea_should_stay_small);
+static_assert(sizeof(ScrollableArea) == sizeof(SameSizeAsScrollableArea), "ScrollableArea should stay small");
 
 int ScrollableArea::pixelsPerLineStep()
 {

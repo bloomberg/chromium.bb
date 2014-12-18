@@ -250,6 +250,6 @@ struct SameSizeAsLength {
     int32_t value;
     int32_t metaData;
 };
-COMPILE_ASSERT(sizeof(Length) == sizeof(SameSizeAsLength), length_should_stay_small);
+static_assert(sizeof(Length) == sizeof(SameSizeAsLength), "length should stay small");
 
 } // namespace blink

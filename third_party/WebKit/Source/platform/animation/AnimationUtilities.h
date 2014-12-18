@@ -44,7 +44,7 @@ inline int blend(int from, int to, double progress)
 template <typename T>
 inline T blend(T from, T to, double progress)
 {
-    COMPILE_ASSERT(WTF::IsInteger<T>::value, BlendForUnsignedTypes);
+    static_assert(WTF::IsInteger<T>::value, "blend can only be used with integer types");
     return clampTo<T>(round(to > from ? from + (to - from) * progress : from - (from - to) * progress));
 }
 

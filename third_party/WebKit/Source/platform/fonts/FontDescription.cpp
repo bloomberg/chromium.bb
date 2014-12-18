@@ -46,7 +46,7 @@ struct SameSizeAsFontDescription {
     uint32_t bitfields2 : 7;
 };
 
-COMPILE_ASSERT(sizeof(FontDescription) == sizeof(SameSizeAsFontDescription), FontDescription_should_stay_small);
+static_assert(sizeof(FontDescription) == sizeof(SameSizeAsFontDescription), "FontDescription should stay small");
 
 TypesettingFeatures FontDescription::s_defaultTypesettingFeatures = 0;
 

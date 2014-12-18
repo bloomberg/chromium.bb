@@ -802,7 +802,7 @@ static const uint16_t* toUint16(const UChar* src)
     // FIXME: This relies on undefined behavior however it works on the
     // current versions of all compilers we care about and avoids making
     // a copy of the string.
-    COMPILE_ASSERT(sizeof(UChar) == sizeof(uint16_t), UChar_is_the_same_size_as_uint16_t);
+    static_assert(sizeof(UChar) == sizeof(uint16_t), "UChar should be the same size as uint16_t");
     return reinterpret_cast<const uint16_t*>(src);
 }
 

@@ -65,10 +65,10 @@ template<typename T> class WeakMember;
 class Visitor;
 
 template <typename T> struct IsGarbageCollectedType;
-#define COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, ErrorMessage) \
-    COMPILE_ASSERT(IsGarbageCollectedType<T>::value, ErrorMessage)
-#define COMPILE_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, ErrorMessage) \
-    COMPILE_ASSERT(!IsGarbageCollectedType<T>::value, ErrorMessage)
+#define STATIC_ASSERT_IS_GARBAGE_COLLECTED(T, ErrorMessage) \
+    static_assert(IsGarbageCollectedType<T>::value, ErrorMessage)
+#define STATIC_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, ErrorMessage) \
+    static_assert(!IsGarbageCollectedType<T>::value, ErrorMessage)
 
 template<bool needsTracing, WTF::WeakHandlingFlag weakHandlingFlag, WTF::ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits> struct CollectionBackingTraceTrait;
 
@@ -284,7 +284,7 @@ public:
 #endif
         TraceTrait<T>::mark(toDerived(), t);
 
-        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, AttemptedToMarkNonGarbageCollectedObject);
+        STATIC_ASSERT_IS_GARBAGE_COLLECTED(T, "attempted to mark non garbage collected object");
     }
 
     // Member version of the one-argument templated trace method.
@@ -318,9 +318,9 @@ public:
     void trace(const WeakMember<T>& t)
     {
         // Check that we actually know the definition of T when tracing.
-        COMPILE_ASSERT(sizeof(T), WeNeedToKnowTheDefinitionOfTheTypeWeAreTracing);
+        static_assert(sizeof(T), "we need to know the definition of the type we are tracing");
         registerWeakCell(const_cast<WeakMember<T>&>(t).cell());
-        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, AttemptedToWeakTraceNonGarbageCollectedObject);
+        STATIC_ASSERT_IS_GARBAGE_COLLECTED(T, "cannot weak trace non garbage collected object");
     }
 
     template<typename T>
@@ -394,35 +394,35 @@ public:
     // those off-heap collection backing stores.
     template<typename T, size_t inlineCapacity> void trace(const Vector<OwnPtr<T>, inlineCapacity>& vector)
     {
-        COMPILE_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, AttemptedToTraceGarbageCollectedObjectInsideVector);
+        STATIC_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, "cannot trace garbage collected object inside Vector");
     }
     template<typename T, size_t inlineCapacity> void trace(const Vector<RefPtr<T>, inlineCapacity>& vector)
     {
-        COMPILE_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, AttemptedToTraceGarbageCollectedObjectInsideVector);
+        STATIC_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, "cannot trace garbage collected object inside Vector");
     }
     template<typename T, size_t inlineCapacity> void trace(const Vector<RawPtr<T>, inlineCapacity>& vector)
     {
-        COMPILE_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, AttemptedToTraceGarbageCollectedObjectInsideVector);
+        STATIC_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, "cannot trace garbage collected object inside Vector");
     }
     template<typename T, size_t inlineCapacity> void trace(const Vector<WeakPtr<T>, inlineCapacity>& vector)
     {
-        COMPILE_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, AttemptedToTraceGarbageCollectedObjectInsideVector);
+        STATIC_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, "cannot trace garbage collected object inside Vector");
     }
     template<typename T, size_t N> void trace(const Deque<OwnPtr<T>, N>& deque)
     {
-        COMPILE_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, AttemptedToTraceGarbageCollectedObjectInsideDeque);
+        STATIC_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, "cannot trace garbage collected object inside Deque");
     }
     template<typename T, size_t N> void trace(const Deque<RefPtr<T>, N>& deque)
     {
-        COMPILE_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, AttemptedToTraceGarbageCollectedObjectInsideDeque);
+        STATIC_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, "cannot trace garbage collected object inside Deque");
     }
     template<typename T, size_t N> void trace(const Deque<RawPtr<T>, N>& deque)
     {
-        COMPILE_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, AttemptedToTraceGarbageCollectedObjectInsideDeque);
+        STATIC_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, "cannot trace garbage collected object inside Deque");
     }
     template<typename T, size_t N> void trace(const Deque<WeakPtr<T>, N>& deque)
     {
-        COMPILE_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, AttemptedToTraceGarbageCollectedObjectInsideDeque);
+        STATIC_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, "cannot trace garbage collected object inside Deque");
     }
 #endif
 
@@ -434,7 +434,7 @@ public:
     template<typename T> inline bool isAlive(T* obj)
     {
         // Check that we actually know the definition of T when tracing.
-        COMPILE_ASSERT(sizeof(T), WeNeedToKnowTheDefinitionOfTheTypeWeAreTracing);
+        static_assert(sizeof(T), "T must be fully defined");
         // The strongification of collections relies on the fact that once a
         // collection has been strongified, there is no way that it can contain
         // non-live entries, so no entries will be removed. Since you can't set
@@ -758,7 +758,7 @@ public: \
     virtual void adjustAndMark(blink::Visitor* visitor) const override \
     { \
         typedef WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<TYPE>::Type, blink::GarbageCollected> IsSubclassOfGarbageCollected; \
-        COMPILE_ASSERT(IsSubclassOfGarbageCollected::value, OnlyGarbageCollectedObjectsCanHaveGarbageCollectedMixins);                  \
+        static_assert(IsSubclassOfGarbageCollected::value, "only garbage collected objects can have garbage collected mixins");         \
         if (TraceEagerlyTrait<TYPE>::value) {                                           \
             if (visitor->ensureMarked(static_cast<const TYPE*>(this)))                  \
                 TraceTrait<TYPE>::trace(visitor, const_cast<TYPE*>(this));              \

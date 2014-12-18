@@ -358,7 +358,7 @@ public:
 
     void trace(Visitor* visitor)
     {
-        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInPersistent);
+        STATIC_ASSERT_IS_GARBAGE_COLLECTED(T, "non-garbage collected object should not be in Persistent");
 #if ENABLE(GC_PROFILE_MARKING)
         visitor->setHostInfo(this, m_tracingName.isEmpty() ? "Persistent" : m_tracingName);
 #endif
@@ -819,14 +819,14 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 template<typename T> T* adoptRefWillBeNoop(T* ptr)
 {
     static const bool notRefCounted = !WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, RefCounted>::value;
-    COMPILE_ASSERT(notRefCounted, youMustAdopt);
+    static_assert(notRefCounted, "you must adopt");
     return ptr;
 }
 
 template<typename T> T* adoptPtrWillBeNoop(T* ptr)
 {
     static const bool notRefCounted = !WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, RefCounted>::value;
-    COMPILE_ASSERT(notRefCounted, youMustAdopt);
+    static_assert(notRefCounted, "you must adopt");
     return ptr;
 }
 

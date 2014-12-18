@@ -5284,26 +5284,26 @@ class TraceTypeNonEagerly4 : public TraceTypeNonEagerly3 { };
 
 TEST(HeapTest, TraceTypesEagerly)
 {
-    COMPILE_ASSERT(TraceEagerlyTrait<TraceTypeEagerly1>::value, ShouldBeTrue);
-    COMPILE_ASSERT(TraceEagerlyTrait<Member<TraceTypeEagerly1>>::value, ShouldBeTrue);
-    COMPILE_ASSERT(TraceEagerlyTrait<WeakMember<TraceTypeEagerly1>>::value, ShouldBeTrue);
-    COMPILE_ASSERT(TraceEagerlyTrait<RawPtr<TraceTypeEagerly1>>::value == MARKER_EAGER_TRACING, ShouldBeTrue);
-    COMPILE_ASSERT(TraceEagerlyTrait<HeapVector<Member<TraceTypeEagerly1>>>::value, ShouldBeTrue);
-    COMPILE_ASSERT(TraceEagerlyTrait<HeapVector<WeakMember<TraceTypeEagerly1>>>::value, ShouldBeTrue);
-    COMPILE_ASSERT(TraceEagerlyTrait<HeapHashSet<Member<TraceTypeEagerly1>>>::value, ShouldBeTrue);
-    COMPILE_ASSERT(TraceEagerlyTrait<HeapHashSet<Member<TraceTypeEagerly1>>>::value, ShouldBeTrue);
+    static_assert(TraceEagerlyTrait<TraceTypeEagerly1>::value, "should be true");
+    static_assert(TraceEagerlyTrait<Member<TraceTypeEagerly1>>::value, "should be true");
+    static_assert(TraceEagerlyTrait<WeakMember<TraceTypeEagerly1>>::value, "should be true");
+    static_assert(TraceEagerlyTrait<RawPtr<TraceTypeEagerly1>>::value == MARKER_EAGER_TRACING, "should be true");
+    static_assert(TraceEagerlyTrait<HeapVector<Member<TraceTypeEagerly1>>>::value, "should be true");
+    static_assert(TraceEagerlyTrait<HeapVector<WeakMember<TraceTypeEagerly1>>>::value, "should be true");
+    static_assert(TraceEagerlyTrait<HeapHashSet<Member<TraceTypeEagerly1>>>::value, "should be true");
+    static_assert(TraceEagerlyTrait<HeapHashSet<Member<TraceTypeEagerly1>>>::value, "should be true");
     using HashMapIntToObj = HeapHashMap<int, Member<TraceTypeEagerly1>>;
-    COMPILE_ASSERT(TraceEagerlyTrait<HashMapIntToObj>::value, ShouldBeTrue);
+    static_assert(TraceEagerlyTrait<HashMapIntToObj>::value, "should be true");
     using HashMapObjToInt = HeapHashMap<Member<TraceTypeEagerly1>, int>;
-    COMPILE_ASSERT(TraceEagerlyTrait<HashMapObjToInt>::value, ShouldBeTrue);
+    static_assert(TraceEagerlyTrait<HashMapObjToInt>::value, "should be true");
 
-    COMPILE_ASSERT(TraceEagerlyTrait<TraceTypeEagerly2>::value, ShouldBeTrue);
-    COMPILE_ASSERT(TraceEagerlyTrait<Member<TraceTypeEagerly2>>::value, ShouldBeTrue);
+    static_assert(TraceEagerlyTrait<TraceTypeEagerly2>::value, "should be true");
+    static_assert(TraceEagerlyTrait<Member<TraceTypeEagerly2>>::value, "should be true");
 
-    COMPILE_ASSERT(!TraceEagerlyTrait<TraceTypeNonEagerly1>::value, ShouldBeTrue);
-    COMPILE_ASSERT(!TraceEagerlyTrait<TraceTypeNonEagerly2>::value, ShouldBeTrue);
-    COMPILE_ASSERT(!TraceEagerlyTrait<TraceTypeNonEagerly3>::value, ShouldBeTrue);
-    COMPILE_ASSERT(TraceEagerlyTrait<TraceTypeNonEagerly4>::value == MARKER_EAGER_TRACING, ShouldBeTrue);
+    static_assert(!TraceEagerlyTrait<TraceTypeNonEagerly1>::value, "should be true");
+    static_assert(!TraceEagerlyTrait<TraceTypeNonEagerly2>::value, "should be true");
+    static_assert(!TraceEagerlyTrait<TraceTypeNonEagerly3>::value, "should be true");
+    static_assert(TraceEagerlyTrait<TraceTypeNonEagerly4>::value == MARKER_EAGER_TRACING, "should be true");
 }
 
 class DeepEagerly final : public GarbageCollected<DeepEagerly> {

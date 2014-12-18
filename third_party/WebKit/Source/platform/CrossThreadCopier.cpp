@@ -65,27 +65,27 @@ CrossThreadCopierBase<false, false, false, ResourceResponse>::Type CrossThreadCo
     return response.copyData();
 }
 
-// Test CrossThreadCopier using COMPILE_ASSERT.
+// Test CrossThreadCopier using static_assert.
 
 // Verify that ThreadSafeRefCounted objects get handled correctly.
 class CopierThreadSafeRefCountedTest : public ThreadSafeRefCounted<CopierThreadSafeRefCountedTest> {
 };
 
-COMPILE_ASSERT((WTF::IsSameType<
-                  PassRefPtr<CopierThreadSafeRefCountedTest>,
-                  CrossThreadCopier<PassRefPtr<CopierThreadSafeRefCountedTest> >::Type
-                  >::value),
-               PassRefPtrTest);
-COMPILE_ASSERT((WTF::IsSameType<
-                  PassRefPtr<CopierThreadSafeRefCountedTest>,
-                  CrossThreadCopier<RefPtr<CopierThreadSafeRefCountedTest> >::Type
-                  >::value),
-               RefPtrTest);
-COMPILE_ASSERT((WTF::IsSameType<
-                  PassRefPtr<CopierThreadSafeRefCountedTest>,
-                  CrossThreadCopier<CopierThreadSafeRefCountedTest*>::Type
-                  >::value),
-               RawPointerTest);
+static_assert((WTF::IsSameType<
+    PassRefPtr<CopierThreadSafeRefCountedTest>,
+    CrossThreadCopier<PassRefPtr<CopierThreadSafeRefCountedTest>>::Type
+    >::value),
+    "PassRefPtr test");
+static_assert((WTF::IsSameType<
+    PassRefPtr<CopierThreadSafeRefCountedTest>,
+    CrossThreadCopier<RefPtr<CopierThreadSafeRefCountedTest>>::Type
+    >::value),
+    "RefPtr test");
+static_assert((WTF::IsSameType<
+    PassRefPtr<CopierThreadSafeRefCountedTest>,
+    CrossThreadCopier<CopierThreadSafeRefCountedTest*>::Type
+    >::value),
+    "RawPointer test");
 
 
 // Add a generic specialization which will let's us verify that no other template matches.
@@ -97,36 +97,36 @@ template<typename T> struct CrossThreadCopierBase<false, false, false, T> {
 class CopierRefCountedTest : public RefCounted<CopierRefCountedTest> {
 };
 
-COMPILE_ASSERT((WTF::IsSameType<
-                  int,
-                  CrossThreadCopier<PassRefPtr<CopierRefCountedTest> >::Type
-                  >::value),
-               PassRefPtrRefCountedTest);
+static_assert((WTF::IsSameType<
+    int,
+    CrossThreadCopier<PassRefPtr<CopierRefCountedTest>>::Type
+    >::value),
+    "PassRefPtr<RefCountedTest> test");
 
-COMPILE_ASSERT((WTF::IsSameType<
-                  int,
-                  CrossThreadCopier<RefPtr<CopierRefCountedTest> >::Type
-                  >::value),
-               RefPtrRefCountedTest);
+static_assert((WTF::IsSameType<
+    int,
+    CrossThreadCopier<RefPtr<CopierRefCountedTest>>::Type
+    >::value),
+    "RefPtr<RefCounted> test");
 
-COMPILE_ASSERT((WTF::IsSameType<
-                  int,
-                  CrossThreadCopier<CopierRefCountedTest*>::Type
-                  >::value),
-               RawPointerRefCountedTest);
+static_assert((WTF::IsSameType<
+    int,
+    CrossThreadCopier<CopierRefCountedTest*>::Type
+    >::value),
+    "Raw pointer RefCounted test");
 
 // Verify that PassOwnPtr gets passed through.
-COMPILE_ASSERT((WTF::IsSameType<
-                  PassOwnPtr<float>,
-                  CrossThreadCopier<PassOwnPtr<float> >::Type
-                  >::value),
-               PassOwnPtrTest);
+static_assert((WTF::IsSameType<
+    PassOwnPtr<float>,
+    CrossThreadCopier<PassOwnPtr<float>>::Type
+    >::value),
+    "PassOwnPtr test");
 
 // Verify that PassOwnPtr does not get passed through.
-COMPILE_ASSERT((WTF::IsSameType<
-                  int,
-                  CrossThreadCopier<OwnPtr<float> >::Type
-                  >::value),
-               OwnPtrTest);
+static_assert((WTF::IsSameType<
+    int,
+    CrossThreadCopier<OwnPtr<float>>::Type
+    >::value),
+    "OwnPtr test");
 
 } // namespace blink

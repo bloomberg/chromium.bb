@@ -180,7 +180,7 @@ public:
         // allocationGranurarity, because HeapObjectHeader is used as a header
         // for an freed entry.  Given that the smallest entry size is
         // allocationGranurarity, HeapObjectHeader must fit into the size.
-        COMPILE_ASSERT(sizeof(HeapObjectHeader) <= allocationGranularity, SizeOfHeapObjectHeaderMustBeSmallerThanAllocationGranularity);
+        static_assert(sizeof(HeapObjectHeader) <= allocationGranularity, "size of HeapObjectHeader must be smaller than allocationGranularity");
     }
 
     NO_SANITIZE_ADDRESS
@@ -190,7 +190,7 @@ public:
         , m_magic(magic)
 #endif
     {
-        COMPILE_ASSERT(sizeof(HeapObjectHeader) <= allocationGranularity, SizeOfHeapObjectHeaderMustBeSmallerThanAllocationGranularity);
+        static_assert(sizeof(HeapObjectHeader) <= allocationGranularity, "size of HeapObjectHeader must be smaller than allocationGranularity");
     }
 
     static size_t freeListEncodedSize(size_t size) { return size | freeListMask; }
@@ -541,7 +541,7 @@ class LargeObject final : public BaseHeapPage {
 public:
     LargeObject(PageMemory* storage, const GCInfo* gcInfo, ThreadState* state) : BaseHeapPage(storage, gcInfo, state)
     {
-        COMPILE_ASSERT(!(sizeof(LargeObject<Header>) & allocationMask), large_heap_object_header_misaligned);
+        static_assert(!(sizeof(LargeObject<Header>) & allocationMask), "LargeObject<Header> misaligned");
     }
 
     virtual void checkAndMarkPointer(Visitor*, Address) override;
@@ -1647,7 +1647,9 @@ public:
     // pointer will always be null.
     void* allocateNode()
     {
-        COMPILE_ASSERT(!WTF::IsWeak<ValueArg>::value, WeakPointersInAListHashSetWillJustResultInNullEntriesInTheSetThatsNotWhatYouWantConsiderUsingLinkedHashSetInstead);
+        // Consider using a LinkedHashSet instead if this compile-time assert fails:
+        static_assert(!WTF::IsWeak<ValueArg>::value, "weak pointers in a ListHashSet will result in null entries in the set");
+
         return malloc<void*, Node>(sizeof(Node));
     }
 
@@ -2136,7 +2138,7 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Hea
         // payloadSize call below, since there is nowhere to store the
         // originally allocated memory.  This assert ensures that visiting the
         // last bit of memory can't cause trouble.
-        COMPILE_ASSERT(!ShouldBeTraced<Traits>::value || sizeof(T) > blink::allocationGranularity || Traits::canInitializeWithMemset, HeapOverallocationCanCauseSpuriousVisits);
+        static_assert(!ShouldBeTraced<Traits>::value || sizeof(T) > blink::allocationGranularity || Traits::canInitializeWithMemset, "heap overallocation can cause spurious visits");
 
         T* array = reinterpret_cast<T*>(self);
         blink::GeneralHeapObjectHeader* header = blink::GeneralHeapObjectHeader::fromPayload(self);
@@ -2232,7 +2234,7 @@ struct TraceInCollectionTrait<WeakHandlingInCollections, strongify, KeyValuePair
         const bool valueIsWeak = Traits::ValueTraits::weakHandlingFlag == WeakHandlingInCollections;
         const bool keyHasStrongRefs = ShouldBeTraced<typename Traits::KeyTraits>::value;
         const bool valueHasStrongRefs = ShouldBeTraced<typename Traits::ValueTraits>::value;
-        COMPILE_ASSERT(!keyIsWeak || !valueIsWeak || !keyHasStrongRefs || !valueHasStrongRefs, ThisConfigurationWasDisallowedToAvoidUnexpectedLeaks);
+        static_assert(!keyIsWeak || !valueIsWeak || !keyHasStrongRefs || !valueHasStrongRefs, "this configuration is disallowed to avoid unexpected leaks");
         if ((valueIsWeak && !keyIsWeak) || (valueIsWeak && keyIsWeak && !valueHasStrongRefs)) {
             // Check value first.
             bool deadWeakObjectsFoundOnValueSide = blink::CollectionBackingTraceTrait<ShouldBeTraced<typename Traits::ValueTraits>::value, Traits::ValueTraits::weakHandlingFlag, strongify, Value, typename Traits::ValueTraits>::trace(visitor, self.value);
@@ -2306,7 +2308,7 @@ static void verifyGarbageCollectedIfMember(T*)
 template<typename T>
 static void verifyGarbageCollectedIfMember(Member<T>* t)
 {
-    COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInMember);
+    STATIC_ASSERT_IS_GARBAGE_COLLECTED(T, "non garbage collected object in member");
 }
 
 // Specialization for things that either need marking or have weak pointers or
@@ -2351,7 +2353,7 @@ struct TraceTrait<HeapVectorBacking<T, Traits>> {
     using Backing = HeapVectorBacking<T, Traits>;
     static void trace(Visitor* visitor, void* self)
     {
-        COMPILE_ASSERT(!WTF::IsWeak<T>::value, WeDontSupportWeaknessInHeapVectorsOrDeques);
+        static_assert(!WTF::IsWeak<T>::value, "weakness in HeapVectors and Deques are not supported");
         if (WTF::ShouldBeTraced<Traits>::value)
             WTF::TraceInCollectionTrait<WTF::NoWeakHandlingInCollections, WTF::WeakPointersActWeak, HeapVectorBacking<T, Traits>, void>::trace(visitor, self);
     }

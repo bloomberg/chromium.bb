@@ -34,7 +34,7 @@ struct SameSizeAsBidiContext : public RefCounted<SameSizeAsBidiContext> {
     void* parent;
 };
 
-COMPILE_ASSERT(sizeof(BidiContext) == sizeof(SameSizeAsBidiContext), BidiContext_should_stay_small);
+static_assert(sizeof(BidiContext) == sizeof(SameSizeAsBidiContext), "BidiContext should stay small");
 
 inline PassRefPtr<BidiContext> BidiContext::createUncached(unsigned char level, Direction direction, bool override, BidiEmbeddingSource source, BidiContext* parent)
 {

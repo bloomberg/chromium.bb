@@ -1583,7 +1583,7 @@ HeapPage<Header>::HeapPage(PageMemory* storage, ThreadHeap<Header>* heap, const 
     : BaseHeapPage(storage, gcInfo, heap->threadState())
     , m_next(nullptr)
 {
-    COMPILE_ASSERT(!(sizeof(HeapPage<Header>) & allocationMask), page_header_incorrectly_aligned);
+    static_assert(!(sizeof(HeapPage<Header>) & allocationMask), "page header incorrectly aligned");
     m_objectStartBitMapComputed = false;
     ASSERT(isPageHeaderAddress(reinterpret_cast<Address>(this)));
 }
@@ -2112,7 +2112,8 @@ public:
     {                                                                                           \
         if (!objectPointer)                                                                     \
             return false;                                                                       \
-        COMPILE_ASSERT(!NeedsAdjustAndMark<Type>::value, CanOnlyUseIsMarkedOnNonAdjustedTypes); \
+        static_assert(!NeedsAdjustAndMark<Type>::value,                                         \
+            "ensureMarked can only be used on non adjusted types");                             \
         if (Mode == ThreadLocalMarking && !objectInTerminatingThreadHeap(objectPointer))        \
             return false;                                                                       \
         if (isMarked(objectPointer))                                                            \

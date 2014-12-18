@@ -40,7 +40,7 @@ struct ExpectedTextRunSize {
     RefPtr<TextRun::RenderingContext> renderingContext;
 };
 
-COMPILE_ASSERT(sizeof(TextRun) == sizeof(ExpectedTextRunSize), TextRun_is_not_of_expected_size);
+static_assert(sizeof(TextRun) == sizeof(ExpectedTextRunSize), "TextRun should have expected size");
 
 void TextRun::setText(const String& string)
 {

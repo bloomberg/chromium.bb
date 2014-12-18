@@ -402,8 +402,8 @@ enum {
 template<typename Operation>
 Region::Shape Region::Shape::shapeOperation(const Shape& shape1, const Shape& shape2)
 {
-    COMPILE_ASSERT(!(!Operation::shouldAddRemainingSegmentsFromSpan1 && Operation::shouldAddRemainingSegmentsFromSpan2), invalid_segment_combination);
-    COMPILE_ASSERT(!(!Operation::shouldAddRemainingSpansFromShape1 && Operation::shouldAddRemainingSpansFromShape2), invalid_span_combination);
+    static_assert(!(!Operation::shouldAddRemainingSegmentsFromSpan1 && Operation::shouldAddRemainingSegmentsFromSpan2), "invalid segment combination");
+    static_assert(!(!Operation::shouldAddRemainingSpansFromShape1 && Operation::shouldAddRemainingSpansFromShape2), "invalid span combination");
 
     size_t segmentsCapacity = shape1.segmentsSize() + shape2.segmentsSize();
     size_t spansCapacity = shape1.spansSize() + shape2.spansSize();
