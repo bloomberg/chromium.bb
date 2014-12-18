@@ -236,19 +236,11 @@ GdkEvent* X11InputMethodContextImplGtk2::GdkEventFromNativeEvent(
   g_free(keyvals);
   keyvals = NULL;
   // Get a GdkWindow.
-#if GTK_CHECK_VERSION(2,24,0)
   GdkWindow* window = gdk_x11_window_lookup_for_display(display, xkey.window);
-#else
-  GdkWindow* window = gdk_window_lookup_for_display(display, xkey.window);
-#endif
   if (window)
     g_object_ref(window);
   else
-#if GTK_CHECK_VERSION(2,24,0)
     window = gdk_x11_window_foreign_new_for_display(display, xkey.window);
-#else
-    window = gdk_window_foreign_new_for_display(display, xkey.window);
-#endif
   if (!window) {
     LOG(ERROR) << "Cannot get a GdkWindow for a key event.";
     return NULL;
@@ -356,11 +348,7 @@ void X11InputMethodContextImplGtk2::OnPreeditStart(GtkIMContext* context) {
 
 X11InputMethodContextImplGtk2::GtkCommitSignalTrap::GtkCommitSignalTrap()
     : is_trap_enabled_(false),
-#if GTK_CHECK_VERSION (2,22,0)
       gdk_event_key_keyval_(GDK_KEY_VoidSymbol),
-#else
-      gdk_event_key_keyval_(GDK_VoidSymbol),
-#endif
       is_signal_caught_(false) {}
 
 void X11InputMethodContextImplGtk2::GtkCommitSignalTrap::StartTrap(
