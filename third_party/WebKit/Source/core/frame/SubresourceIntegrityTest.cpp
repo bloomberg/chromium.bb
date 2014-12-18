@@ -18,11 +18,11 @@
 namespace blink {
 
 static const char kBasicScript[] = "alert('test');";
-static const char kSha256Integrity[] = "ni:///sha256;GAF48QOoxRvu0gZAmQivUdJPyBacqznBAXwnkfpmQX4=";
-static const char kSha384Integrity[] = "ni:///sha384;nep3XpvhUxpCMOVXIFPecThAqdY/uVeiD4kXSqXpx0YJUWU4fTTaFgciTuZk7fmE";
-static const char kSha512Integrity[] = "ni:///sha512;TXkJw18PqlVlEUXXjeXbGetop1TKB3wYQIp1/ihxCOFGUfG9TYOaA1MlkpTAqSV6yaevLO8Tj5pgH1JmZ++ItA==";
-static const char kSha384IntegrityLabeledAs256[] = "ni:///sha256;nep3XpvhUxpCMOVXIFPecThAqdY/uVeiD4kXSqXpx0YJUWU4fTTaFgciTuZk7fmE";
-static const char kUnsupportedHashFunctionIntegrity[] = "ni:///sha1;JfLW308qMPKfb4DaHpUBEESwuPc=";
+static const char kSha256Integrity[] = "ni:///sha-256;GAF48QOoxRvu0gZAmQivUdJPyBacqznBAXwnkfpmQX4=";
+static const char kSha384Integrity[] = "ni:///sha-384;nep3XpvhUxpCMOVXIFPecThAqdY_uVeiD4kXSqXpx0YJUWU4fTTaFgciTuZk7fmE";
+static const char kSha512Integrity[] = "ni:///sha-512;TXkJw18PqlVlEUXXjeXbGetop1TKB3wYQIp1_ihxCOFGUfG9TYOaA1MlkpTAqSV6yaevLO8Tj5pgH1JmZ--ItA==";
+static const char kSha384IntegrityLabeledAs256[] = "ni:///sha-256;nep3XpvhUxpCMOVXIFPecThAqdY_uVeiD4kXSqXpx0YJUWU4fTTaFgciTuZk7fmE";
+static const char kUnsupportedHashFunctionIntegrity[] = "ni:///sha-1;JfLW308qMPKfb4DaHpUBEESwuPc=";
 
 class SubresourceIntegrityTest : public ::testing::Test {
 public:
@@ -147,6 +147,8 @@ TEST_F(SubresourceIntegrityTest, ParseDigest)
 {
     expectDigest("abcdefg", "abcdefg");
     expectDigest("abcdefg?", "abcdefg");
+    expectDigest("ab+de/g", "ab+de/g");
+    expectDigest("ab-de_g", "ab+de/g");
 
     expectDigestFailure("?");
     expectDigestFailure("&&&foobar&&&");
@@ -160,7 +162,7 @@ TEST_F(SubresourceIntegrityTest, ParseDigest)
 TEST_F(SubresourceIntegrityTest, Parsing)
 {
     expectParseFailure("");
-    expectParseFailure("not/really/a/valid/anything");
+    expectParseFailure("not_really_a_valid_anything");
     expectParseFailure("foobar:///sha256;abcdefg");
     expectParseFailure("ni://sha256;abcdefg");
     expectParseFailure("ni:///not-sha256-at-all;abcdefg");
@@ -183,24 +185,32 @@ TEST_F(SubresourceIntegrityTest, Parsing)
         HashAlgorithmSha256);
 
     expectParse(
-        "ni:///sha384;XVVXBGoYw6AJOh9J/Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr",
+        "ni:///sha384;XVVXBGoYw6AJOh9J-Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup_tA1v5GPr",
+        "XVVXBGoYw6AJOh9J+Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr",
+        HashAlgorithmSha384);
+
+    expectParse(
+        "ni:///sha-384;XVVXBGoYw6AJOh9J_Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup_tA1v5GPr",
         "XVVXBGoYw6AJOh9J/Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr",
         HashAlgorithmSha384);
 
     expectParse(
-        "ni:///sha-384;XVVXBGoYw6AJOh9J/Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr",
-        "XVVXBGoYw6AJOh9J/Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr",
+        "ni:///sha512;tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ-07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
+        "tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
+        HashAlgorithmSha512);
+
+    expectParse(
+        "ni:///sha-512;tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ-07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
+        "tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
+        HashAlgorithmSha512);
+}
+
+TEST_F(SubresourceIntegrityTest, ParsingBase64)
+{
+    expectParse(
+        "ni:///sha384;XVVXBGoYw6AJOh9J+Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr",
+        "XVVXBGoYw6AJOh9J+Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr",
         HashAlgorithmSha384);
-
-    expectParse(
-        "ni:///sha512;tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
-        "tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
-        HashAlgorithmSha512);
-
-    expectParse(
-        "ni:///sha-512;tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
-        "tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
-        HashAlgorithmSha512);
 }
 
 //

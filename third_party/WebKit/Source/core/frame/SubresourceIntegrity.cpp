@@ -30,8 +30,9 @@ static bool isIntegrityCharacter(UChar c)
 {
     // FIXME: This should be checking base64url encoding, not base64 encoding.
 
-    // Check if it's a base64 encoded value.
-    return isASCIIAlphanumeric(c) || c == '+' || c == '/' || c == '=';
+    // Check if it's a base64 encoded value. We're pretty loose here, as there's
+    // not much risk in it, and it'll make it simpler for developers.
+    return isASCIIAlphanumeric(c) || c == '_' || c == '-' || c == '+' || c == '/' || c == '=';
 }
 
 static void logErrorToConsole(const String& message, Document& document)
@@ -74,7 +75,9 @@ static String algorithmToString(HashAlgorithm algorithm)
 
 static String digestToString(const DigestValue& digest)
 {
-    return base64Encode(reinterpret_cast<const char*>(digest.data()), digest.size(), Base64DoNotInsertLFs);
+    // We always output base64url encoded data, even though we use base64 internally.
+    String output = base64Encode(reinterpret_cast<const char*>(digest.data()), digest.size(), Base64DoNotInsertLFs);
+    return output.replace('+', '-').replace('/', '_');
 }
 
 bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, const String& source, const KURL& resourceUrl)
@@ -205,7 +208,8 @@ bool SubresourceIntegrity::parseDigest(const UChar*& position, const UChar* end,
         return false;
     }
 
-    digest = String(begin, position - begin);
+    // We accept base64url encoding, but normalize to "normal" base64 internally:
+    digest = String(begin, position - begin).replace('-', '+').replace('_', '/');
     return true;
 }
 
