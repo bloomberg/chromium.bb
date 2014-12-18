@@ -135,7 +135,11 @@ def parse_args():
   parser.add_argument('--target', default=DEFAULT_BIN_DIR)
   parser.add_argument('args', nargs=argparse.REMAINDER)
 
-  args = parser.parse_args()
+  args, extras = parser.parse_known_args()
+  if args.args and args.args[0] == '--':
+    args.args.pop(0)
+  if extras:
+    args.args = extras + args.args
   return args.force_version, args.fallback, args.target, args.args
 
 
