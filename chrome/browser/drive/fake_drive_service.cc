@@ -1017,7 +1017,7 @@ CancelCallback FakeDriveService::InitiateUploadNewFile(
     int64 content_length,
     const std::string& parent_resource_id,
     const std::string& title,
-    const InitiateUploadNewFileOptions& options,
+    const UploadNewFileOptions& options,
     const InitiateUploadCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -1055,7 +1055,7 @@ CancelCallback FakeDriveService::InitiateUploadExistingFile(
     const std::string& content_type,
     int64 content_length,
     const std::string& resource_id,
-    const InitiateUploadExistingFileOptions& options,
+    const UploadExistingFileOptions& options,
     const InitiateUploadCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -1227,6 +1227,37 @@ CancelCallback FakeDriveService::ResumeUpload(
       FROM_HERE,
       base::Bind(&FakeDriveService::NotifyObservers,
                  weak_ptr_factory_.GetWeakPtr()));
+  return CancelCallback();
+}
+
+CancelCallback FakeDriveService::MultipartUploadNewFile(
+    const std::string& content_type,
+    int64 content_length,
+    const std::string& parent_resource_id,
+    const std::string& title,
+    const base::FilePath& local_file_path,
+    const UploadNewFileOptions& options,
+    const FileResourceCallback& callback,
+    const google_apis::ProgressCallback& progress_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  NOTIMPLEMENTED();
+  return CancelCallback();
+}
+
+CancelCallback FakeDriveService::MultipartUploadExistingFile(
+    const std::string& content_type,
+    int64 content_length,
+    const std::string& resource_id,
+    const base::FilePath& local_file_path,
+    const UploadExistingFileOptions& options,
+    const FileResourceCallback& callback,
+    const google_apis::ProgressCallback& progress_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  NOTIMPLEMENTED();
   return CancelCallback();
 }
 

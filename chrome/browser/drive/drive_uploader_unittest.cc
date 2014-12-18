@@ -80,7 +80,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
       int64 content_length,
       const std::string& parent_resource_id,
       const std::string& title,
-      const InitiateUploadNewFileOptions& options,
+      const UploadNewFileOptions& options,
       const InitiateUploadCallback& callback) override {
     EXPECT_EQ(kTestDocumentTitle, title);
     EXPECT_EQ(kTestMimeType, content_type);
@@ -98,7 +98,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
       const std::string& content_type,
       int64 content_length,
       const std::string& resource_id,
-      const InitiateUploadExistingFileOptions& options,
+      const UploadExistingFileOptions& options,
       const InitiateUploadCallback& callback) override {
     EXPECT_EQ(kTestMimeType, content_type);
     EXPECT_EQ(expected_content_length_, content_length);
@@ -211,7 +211,7 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
       int64 content_length,
       const std::string& parent_resource_id,
       const std::string& title,
-      const InitiateUploadNewFileOptions& options,
+      const UploadNewFileOptions& options,
       const InitiateUploadCallback& callback) override {
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback, GDATA_NO_CONNECTION, GURL()));
@@ -222,7 +222,7 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
       const std::string& content_type,
       int64 content_length,
       const std::string& resource_id,
-      const InitiateUploadExistingFileOptions& options,
+      const UploadExistingFileOptions& options,
       const InitiateUploadCallback& callback) override {
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback, GDATA_NO_CONNECTION, GURL()));
@@ -252,7 +252,7 @@ class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
       int64 content_length,
       const std::string& parent_resource_id,
       const std::string& title,
-      const InitiateUploadNewFileOptions& options,
+      const UploadNewFileOptions& options,
       const InitiateUploadCallback& callback) override {
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback, HTTP_SUCCESS, GURL(kTestUploadNewFileURL)));
@@ -263,7 +263,7 @@ class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
       const std::string& content_type,
       int64 content_length,
       const std::string& resource_id,
-      const InitiateUploadExistingFileOptions& options,
+      const UploadExistingFileOptions& options,
       const InitiateUploadCallback& callback) override {
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback, HTTP_SUCCESS, GURL(kTestUploadExistingFileURL)));

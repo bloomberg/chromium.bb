@@ -12,20 +12,16 @@ DriveServiceInterface::AddNewDirectoryOptions::AddNewDirectoryOptions() {
 DriveServiceInterface::AddNewDirectoryOptions::~AddNewDirectoryOptions() {
 }
 
-DriveServiceInterface::InitiateUploadNewFileOptions::
-    InitiateUploadNewFileOptions() {
+DriveServiceInterface::UploadNewFileOptions::UploadNewFileOptions() {
 }
 
-DriveServiceInterface::InitiateUploadNewFileOptions::
-    ~InitiateUploadNewFileOptions() {
+DriveServiceInterface::UploadNewFileOptions::~UploadNewFileOptions() {
 }
 
-DriveServiceInterface::InitiateUploadExistingFileOptions::
-    InitiateUploadExistingFileOptions() {
+DriveServiceInterface::UploadExistingFileOptions::UploadExistingFileOptions() {
 }
 
-DriveServiceInterface::InitiateUploadExistingFileOptions::
-    ~InitiateUploadExistingFileOptions() {
+DriveServiceInterface::UploadExistingFileOptions::~UploadExistingFileOptions() {
 }
 
 }  // namespace drive

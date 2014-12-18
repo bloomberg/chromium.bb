@@ -338,7 +338,7 @@ google_apis::CancelCallback DriveServiceOnWorker::InitiateUploadNewFile(
     int64 content_length,
     const std::string& parent_resource_id,
     const std::string& title,
-    const InitiateUploadNewFileOptions& options,
+    const UploadNewFileOptions& options,
     const google_apis::InitiateUploadCallback& callback) {
   NOTREACHED();
   return google_apis::CancelCallback();
@@ -348,7 +348,7 @@ google_apis::CancelCallback DriveServiceOnWorker::InitiateUploadExistingFile(
     const std::string& content_type,
     int64 content_length,
     const std::string& resource_id,
-    const InitiateUploadExistingFileOptions& options,
+    const UploadExistingFileOptions& options,
     const google_apis::InitiateUploadCallback& callback) {
   NOTREACHED();
   return google_apis::CancelCallback();
@@ -371,6 +371,31 @@ google_apis::CancelCallback DriveServiceOnWorker::GetUploadStatus(
     const GURL& upload_url,
     int64 content_length,
     const google_apis::drive::UploadRangeCallback& callback) {
+  NOTREACHED();
+  return google_apis::CancelCallback();
+}
+
+google_apis::CancelCallback DriveServiceOnWorker::MultipartUploadNewFile(
+    const std::string& content_type,
+    int64 content_length,
+    const std::string& parent_resource_id,
+    const std::string& title,
+    const base::FilePath& local_file_path,
+    const UploadNewFileOptions& options,
+    const google_apis::FileResourceCallback& callback,
+    const google_apis::ProgressCallback& progress_callback) {
+  NOTREACHED();
+  return google_apis::CancelCallback();
+}
+
+google_apis::CancelCallback DriveServiceOnWorker::MultipartUploadExistingFile(
+    const std::string& content_type,
+    int64 content_length,
+    const std::string& parent_resource_id,
+    const base::FilePath& local_file_path,
+    const UploadExistingFileOptions& options,
+    const google_apis::FileResourceCallback& callback,
+    const google_apis::ProgressCallback& progress_callback) {
   NOTREACHED();
   return google_apis::CancelCallback();
 }

@@ -1632,11 +1632,8 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile_Offline) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadNewFile(
-      "test/foo",
-      13,
-      "1_folder_resource_id",
-      "new file.foo",
-      FakeDriveService::InitiateUploadNewFileOptions(),
+      "test/foo", 13, "1_folder_resource_id", "new file.foo",
+      FakeDriveService::UploadNewFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1650,11 +1647,8 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile_NotFound) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadNewFile(
-      "test/foo",
-      13,
-      "non_existent",
-      "new file.foo",
-      FakeDriveService::InitiateUploadNewFileOptions(),
+      "test/foo", 13, "non_existent", "new file.foo",
+      FakeDriveService::UploadNewFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1668,11 +1662,8 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadNewFile(
-      "test/foo",
-      13,
-      "1_folder_resource_id",
-      "new file.foo",
-      FakeDriveService::InitiateUploadNewFileOptions(),
+      "test/foo", 13, "1_folder_resource_id", "new file.foo",
+      FakeDriveService::UploadNewFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1689,10 +1680,8 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_Offline) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadExistingFile(
-      "test/foo",
-      13,
-      "2_file_resource_id",
-      FakeDriveService::InitiateUploadExistingFileOptions(),
+      "test/foo", 13, "2_file_resource_id",
+      FakeDriveService::UploadExistingFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1709,10 +1698,8 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_Forbidden) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadExistingFile(
-      "test/foo",
-      13,
-      "2_file_resource_id",
-      FakeDriveService::InitiateUploadExistingFileOptions(),
+      "test/foo", 13, "2_file_resource_id",
+      FakeDriveService::UploadExistingFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1726,10 +1713,8 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_NotFound) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadExistingFile(
-      "test/foo",
-      13,
-      "non_existent",
-      FakeDriveService::InitiateUploadExistingFileOptions(),
+      "test/foo", 13, "non_existent",
+      FakeDriveService::UploadExistingFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1740,7 +1725,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_NotFound) {
 TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_WrongETag) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  FakeDriveService::InitiateUploadExistingFileOptions options;
+  FakeDriveService::UploadExistingFileOptions options;
   options.etag = "invalid_etag";
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -1763,7 +1748,7 @@ TEST_F(FakeDriveServiceTest, InitiateUpload_ExistingFile) {
   scoped_ptr<FileResource> entry = FindEntry("2_file_resource_id");
   ASSERT_TRUE(entry);
 
-  FakeDriveService::InitiateUploadExistingFileOptions options;
+  FakeDriveService::UploadExistingFileOptions options;
   options.etag = entry->etag();
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -1786,11 +1771,8 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_Offline) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadNewFile(
-      "test/foo",
-      15,
-      "1_folder_resource_id",
-      "new file.foo",
-      FakeDriveService::InitiateUploadNewFileOptions(),
+      "test/foo", 15, "1_folder_resource_id", "new file.foo",
+      FakeDriveService::UploadNewFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1821,11 +1803,8 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NotFound) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadNewFile(
-      "test/foo",
-      15,
-      "1_folder_resource_id",
-      "new file.foo",
-      FakeDriveService::InitiateUploadNewFileOptions(),
+      "test/foo", 15, "1_folder_resource_id", "new file.foo",
+      FakeDriveService::UploadNewFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1858,7 +1837,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
   scoped_ptr<FileResource> entry = FindEntry("2_file_resource_id");
   ASSERT_TRUE(entry);
 
-  FakeDriveService::InitiateUploadExistingFileOptions options;
+  FakeDriveService::UploadExistingFileOptions options;
   options.etag = entry->etag();
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -1928,11 +1907,8 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadNewFile(
-      "test/foo",
-      contents.size(),
-      "1_folder_resource_id",
-      "new file.foo",
-      FakeDriveService::InitiateUploadNewFileOptions(),
+      "test/foo", contents.size(), "1_folder_resource_id", "new file.foo",
+      FakeDriveService::UploadNewFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 

@@ -40,9 +40,8 @@ typedef base::Callback<void(
 
 class DriveUploaderInterface {
  public:
-  typedef DriveServiceInterface::InitiateUploadNewFileOptions
-      UploadNewFileOptions;
-  typedef DriveServiceInterface::InitiateUploadExistingFileOptions
+  typedef DriveServiceInterface::UploadNewFileOptions UploadNewFileOptions;
+  typedef DriveServiceInterface::UploadExistingFileOptions
       UploadExistingFileOptions;
 
   virtual ~DriveUploaderInterface() {}
