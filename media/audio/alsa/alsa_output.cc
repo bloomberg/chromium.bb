@@ -632,10 +632,12 @@ snd_pcm_t* AlsaPcmOutputStream::AutoSelectDevice(unsigned int latency) {
   //   1) Attempt to open a device that best matches the number of channels
   //      requested.
   //   2) If that fails, attempt the "plug:" version of it in case ALSA can
-  //      remap do some software conversion to make it work.
-  //   3) Fallback to kDefaultDevice.
-  //   4) If that fails too, try the "plug:" version of kDefaultDevice.
-  //   5) Give up.
+  //      remap and do some software conversion to make it work.
+  //   3) If that fails, attempt the "plug:" version of the guessed name in
+  //      case ALSA can remap and do some software conversion to make it work.
+  //   4) Fallback to kDefaultDevice.
+  //   5) If that fails too, try the "plug:" version of kDefaultDevice.
+  //   6) Give up.
   snd_pcm_t* handle = NULL;
   device_name_ = FindDeviceForChannels(channels_);
 
@@ -656,6 +658,17 @@ snd_pcm_t* AlsaPcmOutputStream::AutoSelectDevice(unsigned int latency) {
                                                 latency)) != NULL) {
       return handle;
     }
+
+    // Step 3.
+    device_name_ = GuessSpecificDeviceName(channels_);
+    if (!device_name_.empty()) {
+      device_name_ = kPlugPrefix + device_name_;
+      if ((handle = alsa_util::OpenPlaybackDevice(
+               wrapper_, device_name_.c_str(), channels_, sample_rate_,
+               pcm_format_, latency)) != NULL) {
+        return handle;
+      }
+    }
   }
 
   // For the kDefaultDevice device, we can only reliably depend on 2-channel
@@ -671,7 +684,7 @@ snd_pcm_t* AlsaPcmOutputStream::AutoSelectDevice(unsigned int latency) {
         default_channels, audio_bus_->frames());
   }
 
-  // Step 3.
+  // Step 4.
   device_name_ = kDefaultDevice;
   if ((handle = alsa_util::OpenPlaybackDevice(
       wrapper_, device_name_.c_str(), default_channels, sample_rate_,
@@ -679,7 +692,7 @@ snd_pcm_t* AlsaPcmOutputStream::AutoSelectDevice(unsigned int latency) {
     return handle;
   }
 
-  // Step 4.
+  // Step 5.
   device_name_ = kPlugPrefix + device_name_;
   if ((handle = alsa_util::OpenPlaybackDevice(
       wrapper_, device_name_.c_str(), default_channels, sample_rate_,

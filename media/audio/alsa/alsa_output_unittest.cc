@@ -163,6 +163,7 @@ class AlsaPcmOutputStreamTest : public testing::Test {
   static char kSurround70[];
   static char kSurround71[];
   static void* kFakeHints[];
+  static char kGenericSurround50[];
 
   StrictMock<MockAlsaWrapper> mock_alsa_wrapper_;
   scoped_ptr<StrictMock<MockAudioManagerAlsa> > mock_manager_;
@@ -202,6 +203,7 @@ char AlsaPcmOutputStreamTest::kSurround71[] = "surround71:CARD=foo,DEV=0";
 void* AlsaPcmOutputStreamTest::kFakeHints[] = {
     kSurround40, kSurround41, kSurround50, kSurround51,
     kSurround70, kSurround71, NULL };
+char AlsaPcmOutputStreamTest::kGenericSurround50[] = "surround50";
 
 // Custom action to clear a memory buffer.
 ACTION(ClearBuffer) {
@@ -746,18 +748,21 @@ TEST_F(AlsaPcmOutputStreamTest, AutoSelectDevice_FallbackDevices) {
   // operations should be as follows.  Assume the multi-channel device name is
   // surround50:
   //
-  //   1) Try open "surround50"
-  //   2) Try open "plug:surround50".
-  //   3) Try open "default".
-  //   4) Try open "plug:default".
-  //   5) Give up trying to open.
+  //   1) Try open "surround50:CARD=foo,DEV=0"
+  //   2) Try open "plug:surround50:CARD=foo,DEV=0".
+  //   3) Try open "plug:surround50".
+  //   4) Try open "default".
+  //   5) Try open "plug:default".
+  //   6) Give up trying to open.
   //
   const string first_try = kSurround50;
   const string second_try = string(AlsaPcmOutputStream::kPlugPrefix) +
                             kSurround50;
-  const string third_try = AlsaPcmOutputStream::kDefaultDevice;
-  const string fourth_try = string(AlsaPcmOutputStream::kPlugPrefix) +
-                            AlsaPcmOutputStream::kDefaultDevice;
+  const string third_try = string(AlsaPcmOutputStream::kPlugPrefix) +
+                           kGenericSurround50;
+  const string fourth_try = AlsaPcmOutputStream::kDefaultDevice;
+  const string fifth_try = string(AlsaPcmOutputStream::kPlugPrefix) +
+                           AlsaPcmOutputStream::kDefaultDevice;
 
   EXPECT_CALL(mock_alsa_wrapper_, DeviceNameHint(_, _, _))
       .WillOnce(DoAll(SetArgumentPointee<2>(&kFakeHints[0]), Return(0)));
@@ -778,6 +783,8 @@ TEST_F(AlsaPcmOutputStreamTest, AutoSelectDevice_FallbackDevices) {
   EXPECT_CALL(mock_alsa_wrapper_, PcmOpen(_, StrEq(third_try.c_str()), _, _))
       .WillOnce(Return(kTestFailedErrno));
   EXPECT_CALL(mock_alsa_wrapper_, PcmOpen(_, StrEq(fourth_try.c_str()), _, _))
+      .WillOnce(Return(kTestFailedErrno));
+  EXPECT_CALL(mock_alsa_wrapper_, PcmOpen(_, StrEq(fifth_try.c_str()), _, _))
       .WillOnce(Return(kTestFailedErrno));
 
   AlsaPcmOutputStream* test_stream = CreateStream(CHANNEL_LAYOUT_5_0);
