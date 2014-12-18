@@ -29,11 +29,10 @@
 // IO_MAINLOOP will use a MessageLoopForIO for the main MessageLoop.
 // Most of the time, this avoids needing to use a REAL_IO_THREAD.
 
-#ifndef CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_TEST_BUNDLE_H_
-#define CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_TEST_BUNDLE_H_
+#ifndef CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_BUNDLE_H_
+#define CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_BUNDLE_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
 class MessageLoop;
@@ -81,4 +80,4 @@ class TestBrowserThreadBundle {
 
 }  // namespace content
 
-#endif /* CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_TEST_BUNDLE_H_ */
+#endif  // CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_BUNDLE_H_
