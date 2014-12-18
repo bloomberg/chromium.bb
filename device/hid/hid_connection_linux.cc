@@ -76,10 +76,15 @@ class HidConnectionLinux::Helper : public base::MessagePumpLibevent::Watcher {
 
     ssize_t bytes_read = HANDLE_EINTR(read(platform_file_, data, length));
     if (bytes_read < 0) {
-      if (errno == EAGAIN) {
-        return;
+      if (errno != EAGAIN) {
+        VPLOG(1) << "Read failed";
+        // This assumes that the error is unrecoverable and disables reading
+        // from the device until it has been re-opened.
+        // TODO(reillyg): Investigate starting and stopping the file descriptor
+        // watcher in response to pending read requests so that per-request
+        // errors can be returned to the client.
+        file_watcher_.StopWatchingFileDescriptor();
       }
-      VPLOG(1) << "Read failed";
       return;
     }
     if (!has_report_id_) {
