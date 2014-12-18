@@ -432,6 +432,10 @@ public:
     virtual void pushGroupMarkerEXT(const WGC3Dchar* marker) { }
     virtual void popGroupMarkerEXT(void) { }
 
+    // GL_CHROMIUM_trace_marker
+    virtual void traceBeginCHROMIUM(const WGC3Dchar* category, const WGC3Dchar* trace) { }
+    virtual void traceEndCHROMIUM() { }
+
     // GL_OES_vertex_array_object
     virtual WebGLId createVertexArrayOES() { return 0; }
     virtual void deleteVertexArrayOES(WebGLId array) { }
