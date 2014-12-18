@@ -1315,8 +1315,6 @@ crbug.com/435867 [ Linux Debug ] webaudio/scriptprocessornode-detached-no-crash.
 crbug.com/422278 [ XP ] http/tests/serviceworker/fetch-canvas-tainting.html [ Pass Timeout ]
 crbug.com/422278 [ XP ] http/tests/serviceworker/fetch-cors-xhr.html [ Pass Timeout ]
 
-crbug.com/435232 http/tests/misc/webtiming-buffer-full-no-event.html [ Pass Failure ]
-
 crbug.com/422846 [ Linux ] fast/text/shaping/same-script-different-lang.html [ Pass Failure ]
 crbug.com/422846 [ Linux ] virtual/slimmingpaint/fast/text/shaping/same-script-different-lang.html [ Pass Failure ]
 
