@@ -37,7 +37,6 @@
 
 namespace blink {
 
-class MediaQueryEvaluator;
 class PageRuleCollector;
 class StyleResolver;
 class StyleSheetContents;

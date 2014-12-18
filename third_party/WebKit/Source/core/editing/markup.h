@@ -41,7 +41,6 @@ class Element;
 class ExceptionState;
 class KURL;
 class Node;
-class QualifiedName;
 class Range;
 
 enum EChildrenOnly { IncludeNode, ChildrenOnly };

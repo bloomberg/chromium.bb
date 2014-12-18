@@ -49,7 +49,6 @@ class GeolocationClientProxy;
 class IntSize;
 class KURL;
 class Range;
-class ScriptSourceCode;
 class SharedWorkerRepositoryClientImpl;
 class TextFinder;
 class WebAutofillClient;

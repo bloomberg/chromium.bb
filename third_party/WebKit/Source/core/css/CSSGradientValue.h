@@ -35,7 +35,6 @@ namespace blink {
 
 class FloatPoint;
 class Gradient;
-class TextLinkColors;
 
 enum CSSGradientType {
     CSSDeprecatedLinearGradient,

@@ -35,7 +35,6 @@
 namespace blink {
 
 class FontPlatformData;
-class GlyphPage;
 class SimpleFontData;
 
 class PLATFORM_EXPORT OpenTypeVerticalData : public RefCounted<OpenTypeVerticalData> {

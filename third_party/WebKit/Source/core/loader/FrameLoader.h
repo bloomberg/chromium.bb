@@ -52,12 +52,9 @@
 namespace blink {
 
 class DocumentLoader;
-class Event;
 class FetchContext;
-class FormState;
 class Frame;
 class FrameLoaderClient;
-class NavigationAction;
 class ProgressTracker;
 class ResourceError;
 class SerializedScriptValue;

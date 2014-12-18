@@ -49,7 +49,6 @@ class CSSFontFace;
 class CSSValueList;
 class DOMArrayBuffer;
 class DOMArrayBufferView;
-class Dictionary;
 class Document;
 class ExceptionState;
 class FontFaceDescriptors;

@@ -38,7 +38,6 @@
 
 namespace blink {
 
-class LocalDOMWindow;
 class InjectedScript;
 class InjectedScriptHost;
 class ScriptValue;

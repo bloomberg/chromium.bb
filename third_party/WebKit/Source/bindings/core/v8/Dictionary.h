@@ -43,9 +43,6 @@
 
 namespace blink {
 
-class Element;
-class Path2D;
-
 // Dictionary class provides ways to retrieve property values as C++ objects
 // from a V8 object. Instances of this class must not outlive V8's handle scope
 // because they hold a V8 value without putting it on persistent handles.

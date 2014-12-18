@@ -19,7 +19,6 @@ namespace blink {
 class Blob;
 class BodyStreamBuffer;
 class DOMArrayBuffer;
-class DOMArrayBufferView;
 class ExceptionState;
 class ResponseInit;
 class WebServiceWorkerResponse;

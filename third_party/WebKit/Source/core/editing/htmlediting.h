@@ -36,7 +36,6 @@ namespace blink {
 
 class Document;
 class Element;
-class ExceptionState;
 class HTMLBRElement;
 class HTMLElement;
 class HTMLLIElement;

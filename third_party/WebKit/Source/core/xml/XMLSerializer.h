@@ -28,7 +28,6 @@
 
 namespace blink {
 
-class ExceptionState;
 class Node;
 
 class XMLSerializer final : public RefCountedWillBeGarbageCollected<XMLSerializer>, public ScriptWrappable {

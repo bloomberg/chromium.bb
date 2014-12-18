@@ -32,7 +32,6 @@ typedef unsigned AXID;
 
 namespace blink {
 class AXObject;
-class AbstractInlineTextBox;
 class FrameView;
 class Page;
 class RenderMenuList;

@@ -40,7 +40,6 @@ namespace blink {
 class LineLayoutState;
 struct PaintInfo;
 class RenderInline;
-class RenderText;
 class WordMeasurement;
 
 typedef WTF::ListHashSet<RenderBox*, 16> TrackedRendererListHashSet;

@@ -12,8 +12,6 @@
 namespace blink {
 
 class Blob;
-class DOMArrayBufferView;
-class DOMFormData;
 class ExceptionState;
 class ExecutionContext;
 class KURL;

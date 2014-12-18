@@ -30,7 +30,6 @@
 
 namespace blink {
 
-class CSSSelectorList;
 class DescendantInvalidationSet;
 class QualifiedName;
 class RuleData;

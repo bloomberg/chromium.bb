@@ -36,7 +36,6 @@
 
 namespace blink {
 
-class ContainerNode;
 class RenderObject;
 class RenderStyle;
 

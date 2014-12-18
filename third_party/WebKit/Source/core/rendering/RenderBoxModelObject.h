@@ -49,7 +49,6 @@ enum ContentChangeType {
 };
 
 class InlineFlowBox;
-class RenderTextFragment;
 
 // This class is the base for all objects that adhere to the CSS box model as described
 // at http://www.w3.org/TR/CSS21/box.html

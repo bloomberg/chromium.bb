@@ -30,6 +30,7 @@
 namespace blink {
 
 class Document;
+class RenderTextFragment;
 
 class RenderQuote final : public RenderInline {
 public:

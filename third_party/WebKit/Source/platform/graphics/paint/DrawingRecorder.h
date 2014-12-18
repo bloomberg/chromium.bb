@@ -17,7 +17,6 @@
 namespace blink {
 
 class GraphicsContext;
-class RenderObject;
 
 class PLATFORM_EXPORT DrawingRecorder {
 public:

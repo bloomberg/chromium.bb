@@ -49,7 +49,6 @@ class HTTPHeaderMap;
 class InspectorDebuggerAgent;
 class KURL;
 class MutationObserver;
-class ScriptValue;
 class ThreadableLoaderClient;
 class XMLHttpRequest;
 

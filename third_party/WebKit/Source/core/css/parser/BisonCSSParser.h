@@ -49,8 +49,6 @@ namespace blink {
 
 class CSSSelectorList;
 class CSSValue;
-class CSSValueList;
-class Document;
 class Element;
 class ImmutableStylePropertySet;
 class MediaQueryExp;

@@ -11,8 +11,6 @@
 
 namespace blink {
 
-class CSSPrimitiveValue;
-
 class CSSPathValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSPathValue> create(const String& pathString)

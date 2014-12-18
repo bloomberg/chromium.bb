@@ -58,7 +58,6 @@ class StyleKeyframe;
 class StylePropertySet;
 class StyleResolverStats;
 class StyleRule;
-class StyleRuleKeyframes;
 class StyleRulePage;
 class ViewportStyleResolver;
 

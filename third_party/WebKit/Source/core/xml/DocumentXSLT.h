@@ -12,8 +12,6 @@
 namespace blink {
 
 class Document;
-class EventListener;
-class ExecutionContext;
 class ProcessingInstruction;
 
 class DocumentXSLT final : public NoBaseWillBeGarbageCollected<DocumentXSLT>, public DocumentSupplement {

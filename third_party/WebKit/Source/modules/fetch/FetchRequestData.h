@@ -17,7 +17,6 @@
 namespace blink {
 
 class BlobDataHandle;
-class ExecutionContext;
 class FetchHeaderList;
 class SecurityOrigin;
 class WebServiceWorkerRequest;

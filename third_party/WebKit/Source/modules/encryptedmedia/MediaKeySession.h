@@ -38,9 +38,7 @@
 namespace blink {
 
 class GenericEventQueue;
-class MediaKeyError;
 class MediaKeys;
-class WebString;
 
 // References are held by JS only. However, even if all JS references are
 // dropped, it won't be garbage collected until close event received or

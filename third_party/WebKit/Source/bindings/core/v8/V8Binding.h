@@ -50,7 +50,6 @@
 namespace blink {
 
 class DOMWindow;
-class Document;
 class EventListener;
 class ExecutionContext;
 class ExceptionState;
