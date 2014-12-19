@@ -864,6 +864,7 @@ wl_display_disconnect(struct wl_display *display)
 	wl_connection_destroy(display->connection);
 	wl_map_release(&display->objects);
 	wl_event_queue_release(&display->default_queue);
+	wl_event_queue_release(&display->display_queue);
 	pthread_mutex_destroy(&display->mutex);
 	pthread_cond_destroy(&display->reader_cond);
 	close(display->fd);
