@@ -137,6 +137,9 @@ protected:
     // Properties of interactive elements.
     virtual AccessibilityButtonState checkboxOrRadioValue() const override final;
     virtual void colorValue(int& r, int& g, int& b) const override final;
+    virtual InvalidState invalidState() const override final;
+    // Only used when invalidState() returns InvalidStateOther.
+    virtual String ariaInvalidValue() const override final;
     virtual String valueDescription() const override;
     virtual float valueForRange() const override;
     virtual float maxValueForRange() const override;

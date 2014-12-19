@@ -631,6 +631,23 @@ void WebAXObject::colorValue(int& r, int& g, int& b) const
     m_private->colorValue(r, g, b);
 }
 
+WebAXInvalidState WebAXObject::invalidState() const
+{
+    if (isDetached())
+        return WebAXInvalidStateUndefined;
+
+    return static_cast<WebAXInvalidState>(m_private->invalidState());
+}
+
+// Only used when invalidState() returns WebAXInvalidStateOther.
+WebString WebAXObject::ariaInvalidValue() const
+{
+    if (isDetached())
+        return WebString();
+
+    return m_private->ariaInvalidValue();
+}
+
 double WebAXObject::estimatedLoadingProgress() const
 {
     if (isDetached())

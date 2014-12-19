@@ -125,6 +125,9 @@ public:
     BLINK_EXPORT bool canvasHasFallbackContent() const;
     BLINK_EXPORT WebPoint clickPoint() const;
     BLINK_EXPORT void colorValue(int& r, int& g, int& b) const;
+    BLINK_EXPORT WebAXInvalidState invalidState() const;
+    // Only used when invalidState() returns WebAXInvalidStateOther.
+    BLINK_EXPORT WebString ariaInvalidValue() const;
     BLINK_EXPORT double estimatedLoadingProgress() const;
     BLINK_EXPORT WebString helpText() const;
     BLINK_EXPORT int headingLevel() const;

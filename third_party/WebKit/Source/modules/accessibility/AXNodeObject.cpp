@@ -1036,6 +1036,44 @@ void AXNodeObject::colorValue(int& r, int& g, int& b) const
     b = color.blue();
 }
 
+InvalidState AXNodeObject::invalidState() const
+{
+    if (hasAttribute(aria_invalidAttr)) {
+        const AtomicString& attributeValue = getAttribute(aria_invalidAttr);
+        if (equalIgnoringCase(attributeValue, "false"))
+            return InvalidStateFalse;
+        if (equalIgnoringCase(attributeValue, "true"))
+            return InvalidStateTrue;
+        if (equalIgnoringCase(attributeValue, "spelling"))
+            return InvalidStateSpelling;
+        if (equalIgnoringCase(attributeValue, "grammar"))
+            return InvalidStateGrammar;
+        // A yet unknown value.
+        if (!attributeValue.isEmpty())
+            return InvalidStateOther;
+    }
+
+    if (node() && node()->isElementNode()
+        && toElement(node())->isFormControlElement()) {
+        HTMLFormControlElement* element = toHTMLFormControlElement(node());
+        WillBeHeapVector<RefPtrWillBeMember<HTMLFormControlElement>>
+            invalidControls;
+        bool isInvalid = !element->checkValidity(
+            &invalidControls, CheckValidityDispatchNoEvent);
+        return isInvalid ? InvalidStateTrue : InvalidStateFalse;
+    }
+
+    return InvalidStateUndefined;
+}
+
+String AXNodeObject::ariaInvalidValue() const
+{
+    if (invalidState() == InvalidStateOther)
+        return getAttribute(aria_invalidAttr);
+
+    return String();
+}
+
 String AXNodeObject::valueDescription() const
 {
     if (!supportsRangeValue())

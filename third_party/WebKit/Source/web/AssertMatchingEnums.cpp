@@ -326,6 +326,13 @@ COMPILE_ASSERT_MATCHING_ENUM(WebAXOrientationUndefined, AccessibilityOrientation
 COMPILE_ASSERT_MATCHING_ENUM(WebAXOrientationVertical, AccessibilityOrientationVertical);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXOrientationHorizontal, AccessibilityOrientationHorizontal);
 
+COMPILE_ASSERT_MATCHING_ENUM(WebAXInvalidStateUndefined, InvalidStateUndefined);
+COMPILE_ASSERT_MATCHING_ENUM(WebAXInvalidStateFalse, InvalidStateFalse);
+COMPILE_ASSERT_MATCHING_ENUM(WebAXInvalidStateTrue, InvalidStateTrue);
+COMPILE_ASSERT_MATCHING_ENUM(WebAXInvalidStateSpelling, InvalidStateSpelling);
+COMPILE_ASSERT_MATCHING_ENUM(WebAXInvalidStateGrammar, InvalidStateGrammar);
+COMPILE_ASSERT_MATCHING_ENUM(WebAXInvalidStateOther, InvalidStateOther);
+
 COMPILE_ASSERT_MATCHING_ENUM(WebApplicationCacheHost::Uncached, ApplicationCacheHost::UNCACHED);
 COMPILE_ASSERT_MATCHING_ENUM(WebApplicationCacheHost::Idle, ApplicationCacheHost::IDLE);
 COMPILE_ASSERT_MATCHING_ENUM(WebApplicationCacheHost::Checking, ApplicationCacheHost::CHECKING);

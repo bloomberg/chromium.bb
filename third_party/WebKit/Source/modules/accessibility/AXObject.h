@@ -257,6 +257,15 @@ enum AccessibilityOptionalBool {
     OptionalBoolFalse
 };
 
+enum InvalidState {
+    InvalidStateUndefined = 0,
+    InvalidStateFalse,
+    InvalidStateTrue,
+    InvalidStateSpelling,
+    InvalidStateGrammar,
+    InvalidStateOther
+};
+
 class AXObject : public RefCounted<AXObject> {
 public:
     typedef Vector<RefPtr<AXObject> > AccessibilityChildrenVector;
@@ -427,6 +436,9 @@ public:
     virtual String actionVerb() const;
     virtual AccessibilityButtonState checkboxOrRadioValue() const;
     virtual void colorValue(int& r, int& g, int& b) const { r = 0; g = 0; b = 0; }
+    virtual InvalidState invalidState() const { return InvalidStateUndefined; }
+    // Only used when invalidState() returns InvalidStateOther.
+    virtual String ariaInvalidValue() const { return String(); }
     virtual String valueDescription() const { return String(); }
     virtual float valueForRange() const { return 0.0f; }
     virtual float maxValueForRange() const { return 0.0f; }

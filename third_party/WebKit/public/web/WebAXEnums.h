@@ -246,6 +246,17 @@ enum WebAXOrientation {
     WebAXOrientationHorizontal,
 };
 
+// Only used by HTML form controls and any other element that has
+// an aria-invalid attribute specified.
+enum WebAXInvalidState {
+    WebAXInvalidStateUndefined = 0,
+    WebAXInvalidStateFalse,
+    WebAXInvalidStateTrue,
+    WebAXInvalidStateSpelling,
+    WebAXInvalidStateGrammar,
+    WebAXInvalidStateOther
+};
+
 } // namespace blink
 
 #endif
