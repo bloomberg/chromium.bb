@@ -102,7 +102,7 @@ CdmLogMessage::CdmLogMessage(const char* file, int line) {
   // Time and tick count.
   time_t t = time(NULL);
   struct tm local_time = {0};
-#if _MSC_VER >= 1400
+#ifdef _MSC_VER
   localtime_s(&local_time, &t);
 #else
   localtime_r(&t, &local_time);

@@ -659,7 +659,7 @@ void LogMessage::Init(const char* file, int line) {
   if (log_timestamp) {
     time_t t = time(NULL);
     struct tm local_time = {0};
-#if _MSC_VER >= 1400
+#ifdef _MSC_VER
     localtime_s(&local_time, &t);
 #else
     localtime_r(&t, &local_time);

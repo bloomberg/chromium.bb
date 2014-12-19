@@ -4,11 +4,6 @@
 
 #include "components/crash/app/hard_error_handler_win.h"
 
-#if defined(_WIN32_WINNT_WIN8) && _MSC_VER < 1700
-// The Windows 8 SDK defines FACILITY_VISUALCPP in winerror.h, and in
-// delayimp.h previous to VS2012.
-#undef FACILITY_VISUALCPP
-#endif
 #include <DelayIMP.h>
 #include <winternl.h>
 

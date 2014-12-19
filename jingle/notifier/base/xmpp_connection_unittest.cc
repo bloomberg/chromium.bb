@@ -103,7 +103,7 @@ TEST_F(XmppConnectionTest, CreateDestroy) {
                                  &mock_xmpp_connection_delegate_, NULL);
 }
 
-#if !defined(_MSC_VER) || _MSC_VER < 1700 // http://crbug.com/158570
+#if !defined(_MSC_VER) // http://crbug.com/158570
 TEST_F(XmppConnectionTest, ImmediateFailure) {
   // ChromeAsyncSocket::Connect() will always return false since we're
   // not setting a valid host, but this gets bubbled up as ERROR_NONE
@@ -210,7 +210,7 @@ TEST_F(XmppConnectionTest, MultipleConnect) {
   }, "more than once");
 }
 
-#if !defined(_MSC_VER) || _MSC_VER < 1700 // http://crbug.com/158570
+#if !defined(_MSC_VER) // http://crbug.com/158570
 TEST_F(XmppConnectionTest, ConnectThenError) {
   base::WeakPtr<rtc::Task> weak_ptr;
   EXPECT_CALL(mock_xmpp_connection_delegate_, OnConnect(_)).
