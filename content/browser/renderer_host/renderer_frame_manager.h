@@ -9,10 +9,13 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/singleton.h"
 #include "content/common/content_export.h"
 
 namespace content {
+
+class RenderWidgetHostViewAuraTest;
 
 class CONTENT_EXPORT RendererFrameManagerClient {
  public:
@@ -35,19 +38,28 @@ class CONTENT_EXPORT RendererFrameManager {
   void LockFrame(RendererFrameManagerClient*);
   void UnlockFrame(RendererFrameManagerClient*);
 
-  size_t max_number_of_saved_frames() const {
-    return max_number_of_saved_frames_;
-  }
+  size_t GetMaxNumberOfSavedFrames() const;
 
   // For testing only
   void set_max_handles(float max_handles) { max_handles_ = max_handles; }
 
  private:
+  // Please remove when crbug.com/443824 has been fixed.
+  friend class RenderWidgetHostViewAuraTest;
+
   RendererFrameManager();
   ~RendererFrameManager();
-  void CullUnlockedFrames();
+  void CullUnlockedFrames(size_t saved_frame_limit);
+
+  // React on memory pressure events to adjust the number of cached frames.
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
   friend struct DefaultSingletonTraits<RendererFrameManager>;
+
+  // Listens for system under pressure notifications and adjusts number of
+  // cached frames accordingly.
+  base::MemoryPressureListener memory_pressure_listener_;
 
   std::map<RendererFrameManagerClient*, size_t> locked_frames_;
   std::list<RendererFrameManagerClient*> unlocked_frames_;
