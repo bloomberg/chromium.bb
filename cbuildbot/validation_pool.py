@@ -1020,8 +1020,8 @@ class ValidationPool(object):
 
   def __init__(self, overlays, build_root, build_number, builder_name,
                is_master, dryrun, changes=None, non_os_changes=None,
-               conflicting_changes=None, pre_cq_trybot=False, builder_run=None,
-               tree_was_open=True):
+               conflicting_changes=None, pre_cq_trybot=False,
+               tree_was_open=True, builder_run=None):
     """Initializes an instance by setting default variables to instance vars.
 
     Generally use AcquirePool as an entry pool to a pool rather than this
@@ -1042,9 +1042,10 @@ class ValidationPool(object):
         because they conflict with other changes in flight.
       pre_cq_trybot: If set to True, this is a Pre-CQ trybot. (Note: The Pre-CQ
         launcher is NOT considered a Pre-CQ trybot.)
-      builder_run: Optional BuilderRun instance used to fetch cidb handle and
-        metadata instance.
       tree_was_open: Whether the tree was open when the pool was created.
+      builder_run: Optional BuilderRun instance used to fetch cidb handle and
+        metadata instance. Please note due to the pickling logic, this MUST be
+        the last kwarg listed.
     """
 
     self.build_root = build_root
