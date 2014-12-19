@@ -41,6 +41,7 @@ class ExitCodeWatcher {
   void WaitForExit();
 
   const base::Process& process() const { return process_; }
+  int exit_code() const { return exit_code_; }
 
  private:
   // Writes |exit_code| to registry, returns true on success.
@@ -49,9 +50,12 @@ class ExitCodeWatcher {
   // The registry path the exit codes are written to.
   base::string16 registry_path_;
 
-  // Handle, PID, and creation time of the watched process.
+  // Watched process and its creation time.
   base::Process process_;
   base::Time process_creation_time_;
+
+  // The exit code of the watched process. Valid after WaitForExit.
+  int exit_code_;
 
   DISALLOW_COPY_AND_ASSIGN(ExitCodeWatcher);
 };

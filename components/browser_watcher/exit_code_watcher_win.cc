@@ -27,7 +27,7 @@ base::string16 GetValueName(const base::Time creation_time,
 const char ExitCodeWatcher::kParenthHandleSwitch[] = "parent-handle";
 
 ExitCodeWatcher::ExitCodeWatcher(const base::char16* registry_path) :
-    registry_path_(registry_path) {
+    registry_path_(registry_path), exit_code_(STILL_ACTIVE) {
 }
 
 ExitCodeWatcher::~ExitCodeWatcher() {
@@ -72,13 +72,12 @@ bool ExitCodeWatcher::ParseArguments(const base::CommandLine& cmd_line) {
 }
 
 void ExitCodeWatcher::WaitForExit() {
-  int exit_code = 0;
-  if (!process_.WaitForExit(&exit_code)) {
+  if (!process_.WaitForExit(&exit_code_)) {
     LOG(ERROR) << "Failed to wait for process.";
     return;
   }
 
-  WriteProcessExitCode(exit_code);
+  WriteProcessExitCode(exit_code_);
 }
 
 bool ExitCodeWatcher::WriteProcessExitCode(int exit_code) {

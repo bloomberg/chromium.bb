@@ -220,6 +220,7 @@ TEST_F(BrowserWatcherTest, ExitCodeWatcherOnExitedProcess) {
   ASSERT_NO_FATAL_FAILURE(sleeper.Kill(kExitCode, true));
 
   watcher.WaitForExit();
+  EXPECT_EQ(kExitCode, watcher.exit_code());
 
   VerifyWroteExitCode(sleeper.process().pid(), kExitCode);
 }
