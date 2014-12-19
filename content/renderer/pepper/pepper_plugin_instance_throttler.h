@@ -43,6 +43,16 @@ namespace content {
 // representative keyframe.
 class CONTENT_EXPORT PepperPluginInstanceThrottler {
  public:
+  // How the throttled power saver is unthrottled, if ever.
+  // These numeric values are used in UMA logs; do not change them.
+  enum PowerSaverUnthrottleMethod {
+    UNTHROTTLE_METHOD_NEVER = 0,
+    UNTHROTTLE_METHOD_BY_CLICK = 1,
+    UNTHROTTLE_METHOD_BY_WHITELIST = 2,
+    UNTHROTTLE_METHOD_BY_AUDIO = 3,
+    UNTHROTTLE_METHOD_NUM_ITEMS
+  };
+
   PepperPluginInstanceThrottler(
       RenderFrame* frame,
       const blink::WebRect& bounds,
@@ -57,6 +67,10 @@ class CONTENT_EXPORT PepperPluginInstanceThrottler {
     return needs_representative_keyframe_;
   }
 
+  bool power_saver_enabled() const {
+    return power_saver_enabled_;
+  }
+
   // Called when the plugin flushes it's graphics context. Supplies the
   // throttler with a candidate to use as the representative keyframe.
   void OnImageFlush(const SkBitmap* bitmap);
@@ -69,11 +83,13 @@ class CONTENT_EXPORT PepperPluginInstanceThrottler {
   // Returns true if |event| was handled and shouldn't be further processed.
   bool ConsumeInputEvent(const blink::WebInputEvent& event);
 
+  // Disables Power Saver and unthrottles the plugin if already throttled.
+  void DisablePowerSaver(PowerSaverUnthrottleMethod method);
+
  private:
   friend class PepperPluginInstanceThrottlerTest;
 
   void SetPluginThrottled(bool throttled);
-  void DisablePowerSaverByRetroactiveWhitelist();
 
   // Plugin's bounds in view space.
   blink::WebRect bounds_;

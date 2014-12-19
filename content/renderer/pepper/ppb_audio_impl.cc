@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "content/renderer/pepper/pepper_platform_audio_output.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
+#include "content/renderer/pepper/pepper_plugin_instance_throttler.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "media/audio/audio_output_controller.h"
@@ -83,6 +84,13 @@ int32_t PPB_Audio_Impl::Open(PP_Resource config,
       PepperPluginInstance::Get(pp_instance()));
   if (!instance)
     return PP_ERROR_FAILED;
+
+  // Prevent any throttling since we are playing audio. This stopgap prevents
+  // video from appearing 'frozen' while the audio track plays.
+  if (instance->throttler() && instance->throttler()->power_saver_enabled()) {
+    instance->throttler()->DisablePowerSaver(
+        PepperPluginInstanceThrottler::UNTHROTTLE_METHOD_BY_AUDIO);
+  }
 
   // When the stream is created, we'll get called back on StreamCreated().
   DCHECK(!audio_);

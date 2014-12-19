@@ -53259,6 +53259,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Never Unthrottled"/>
   <int value="1" label="Unthrottled by Click"/>
   <int value="2" label="Unthrottled by Retroactive Whitelist"/>
+  <int value="3" label="Unthrottled by Audio Playback"/>
 </enum>
 
 <enum name="PNaClOptionsOptLevelEnum" type="int">

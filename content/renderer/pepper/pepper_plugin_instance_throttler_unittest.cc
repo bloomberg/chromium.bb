@@ -45,7 +45,8 @@ class PepperPluginInstanceThrottlerTest : public testing::Test {
   }
 
   void DisablePowerSaverByRetroactiveWhitelist() {
-    throttler()->DisablePowerSaverByRetroactiveWhitelist();
+    throttler()->DisablePowerSaver(
+        PepperPluginInstanceThrottler::UNTHROTTLE_METHOD_BY_WHITELIST);
   }
 
   int change_callback_calls() { return change_callback_calls_; }

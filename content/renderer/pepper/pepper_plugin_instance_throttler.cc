@@ -32,15 +32,6 @@ enum PluginFlashTinyContentSize {
   TINY_CONTENT_SIZE_NUM_ITEMS
 };
 
-// How the throttled power saver is unthrottled, if ever.
-// These numeric values are used in UMA logs; do not change them.
-enum PowerSaverUnthrottleMethod {
-  UNTHROTTLE_METHOD_NEVER = 0,
-  UNTHROTTLE_METHOD_BY_CLICK = 1,
-  UNTHROTTLE_METHOD_BY_WHITELIST = 2,
-  UNTHROTTLE_METHOD_NUM_ITEMS
-};
-
 const char kFlashClickSizeAspectRatioHistogram[] =
     "Plugin.Flash.ClickSize.AspectRatio";
 const char kFlashClickSizeHeightHistogram[] = "Plugin.Flash.ClickSize.Height";
@@ -63,9 +54,11 @@ void RecordFlashSizeMetric(int width, int height) {
                             TINY_CONTENT_SIZE_NUM_ITEMS);
 }
 
-void RecordUnthrottleMethodMetric(PowerSaverUnthrottleMethod method) {
-  UMA_HISTOGRAM_ENUMERATION(kPowerSaverUnthrottleHistogram, method,
-                            UNTHROTTLE_METHOD_NUM_ITEMS);
+void RecordUnthrottleMethodMetric(
+    PepperPluginInstanceThrottler::PowerSaverUnthrottleMethod method) {
+  UMA_HISTOGRAM_ENUMERATION(
+      kPowerSaverUnthrottleHistogram, method,
+      PepperPluginInstanceThrottler::UNTHROTTLE_METHOD_NUM_ITEMS);
 }
 
 // Records size metrics for Flash instances that are clicked.
@@ -136,9 +129,9 @@ PepperPluginInstanceThrottler::PepperPluginInstanceThrottler(
   // To collect UMAs, register peripheral content even if power saver disabled.
   if (frame) {
     frame->RegisterPeripheralPlugin(
-        content_origin, base::Bind(&PepperPluginInstanceThrottler::
-                                       DisablePowerSaverByRetroactiveWhitelist,
-                                   weak_factory_.GetWeakPtr()));
+        content_origin,
+        base::Bind(&PepperPluginInstanceThrottler::DisablePowerSaver,
+                   weak_factory_.GetWeakPtr(), UNTHROTTLE_METHOD_BY_WHITELIST));
   }
 
   if (power_saver_enabled_) {
@@ -179,6 +172,7 @@ bool PepperPluginInstanceThrottler::ConsumeInputEvent(
   if (event.type == blink::WebInputEvent::MouseUp && is_peripheral_content_) {
     is_peripheral_content_ = false;
     power_saver_enabled_ = false;
+    needs_representative_keyframe_ = false;
 
     RecordUnthrottleMethodMetric(UNTHROTTLE_METHOD_BY_CLICK);
 
@@ -191,6 +185,18 @@ bool PepperPluginInstanceThrottler::ConsumeInputEvent(
   return plugin_throttled_;
 }
 
+void PepperPluginInstanceThrottler::DisablePowerSaver(
+    PowerSaverUnthrottleMethod method) {
+  if (!is_peripheral_content_)
+    return;
+
+  is_peripheral_content_ = false;
+  power_saver_enabled_ = false;
+  SetPluginThrottled(false);
+
+  RecordUnthrottleMethodMetric(method);
+}
+
 void PepperPluginInstanceThrottler::SetPluginThrottled(bool throttled) {
   // Do not throttle if we've already disabled power saver.
   if (!power_saver_enabled_ && throttled)
@@ -201,17 +207,6 @@ void PepperPluginInstanceThrottler::SetPluginThrottled(bool throttled) {
 
   plugin_throttled_ = throttled;
   throttle_change_callback_.Run();
-}
-
-void PepperPluginInstanceThrottler::DisablePowerSaverByRetroactiveWhitelist() {
-  if (!is_peripheral_content_)
-    return;
-
-  is_peripheral_content_ = false;
-  power_saver_enabled_ = false;
-  SetPluginThrottled(false);
-
-  RecordUnthrottleMethodMetric(UNTHROTTLE_METHOD_BY_WHITELIST);
 }
 
 }  // namespace content
