@@ -30,6 +30,27 @@ class CLActionTest(cros_test_lib.TestCase):
     pass
 
 
+class IntervalsTest(cros_test_lib.TestCase):
+  """Placeholder for clactions unit tests."""
+  def testIntervals(self):
+    self.assertEqual([], clactions.IntersectIntervals([]))
+    self.assertEqual([(1, 2)], clactions.IntersectIntervals([[(1, 2)]]))
+
+    test_group_0 = [(1, 10)]
+    test_group_1 = [(2, 5), (7, 10)]
+    test_group_2 = [(2, 8), (9, 12)]
+    self.assertEqual(
+        [(2, 5), (7, 8), (9, 10)],
+        clactions.IntersectIntervals([test_group_0, test_group_1, test_group_2])
+        )
+
+    test_group_0 = [(1, 3), (10, 12)]
+    test_group_1 = [(2, 5)]
+    self.assertEqual(
+        [(2, 3)],
+        clactions.IntersectIntervals([test_group_0, test_group_1]))
+
+
 class TestCLActionHistory(cros_test_lib.TestCase):
   """Tests various methods related to CL action history."""
 

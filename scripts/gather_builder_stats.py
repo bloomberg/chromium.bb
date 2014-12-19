@@ -1304,12 +1304,25 @@ class CLStats(StatsManager):
     submitted_changes = {k: v for k, v, in self.per_cl_actions.iteritems()
                          if any(a.action == constants.CL_ACTION_SUBMITTED
                                 for a in v)}
-    submitted_patches = {k: v for k, v, in self.per_patch_actions.iteritems()
-                         if any(a.action == constants.CL_ACTION_SUBMITTED
-                                for a in v)}
+    submitted_patches = {
+        k: v for k, v, in self.per_patch_actions.iteritems()
+        if any(a.action == constants.CL_ACTION_SUBMITTED and
+               a.build_config == constants.CQ_MASTER for a in v)}
 
     patch_handle_times = [
         clactions.GetCLHandlingTime(patch, actions) for
+        (patch, actions) in submitted_patches.iteritems()]
+
+    pre_cq_handle_times = [
+        clactions.GetPreCQTime(patch, actions) for
+        (patch, actions) in submitted_patches.iteritems()]
+
+    cq_wait_times = [
+        clactions.GetCQWaitTime(patch, actions) for
+        (patch, actions) in submitted_patches.iteritems()]
+
+    cq_handle_times = [
+        clactions.GetCQRunTime(patch, actions) for
         (patch, actions) in submitted_patches.iteritems()]
 
     # Count CLs that were rejected, then a subsequent patch was submitted.
@@ -1422,9 +1435,55 @@ class CLStats(StatsManager):
 
     for x, p in summary['good_patch_rejection_breakdown']:
       logging.info('%d good patches were rejected %d times.', p, x)
-    logging.info('     Median good patch')
-    logging.info('         handling time: %.2f hours',
-                 summary['median_handling_time']/3600.0)
+    logging.info('')
+    logging.info('Good patch handling time:')
+    logging.info('  10th percentile: %.2f hours',
+                 numpy.percentile(patch_handle_times, 10) / 3600.0)
+    logging.info('  25th percentile: %.2f hours',
+                 numpy.percentile(patch_handle_times, 25) / 3600.0)
+    logging.info('  50th percentile: %.2f hours',
+                 summary['median_handling_time'] / 3600.0)
+    logging.info('  75th percentile: %.2f hours',
+                 numpy.percentile(patch_handle_times, 75) / 3600.0)
+    logging.info('  90th percentile: %.2f hours',
+                 numpy.percentile(patch_handle_times, 90) / 3600.0)
+    logging.info('')
+    logging.info('Time spent in Pre-CQ:')
+    logging.info('  10th percentile: %.2f hours',
+                 numpy.percentile(pre_cq_handle_times, 10) / 3600.0)
+    logging.info('  25th percentile: %.2f hours',
+                 numpy.percentile(pre_cq_handle_times, 25) / 3600.0)
+    logging.info('  50th percentile: %.2f hours',
+                 numpy.percentile(pre_cq_handle_times, 50) / 3600.0)
+    logging.info('  75th percentile: %.2f hours',
+                 numpy.percentile(pre_cq_handle_times, 75) / 3600.0)
+    logging.info('  90th percentile: %.2f hours',
+                 numpy.percentile(pre_cq_handle_times, 90) / 3600.0)
+    logging.info('')
+    logging.info('Time spent waiting for CQ:')
+    logging.info('  10th percentile: %.2f hours',
+                 numpy.percentile(cq_wait_times, 10) / 3600.0)
+    logging.info('  25th percentile: %.2f hours',
+                 numpy.percentile(cq_wait_times, 25) / 3600.0)
+    logging.info('  50th percentile: %.2f hours',
+                 numpy.percentile(cq_wait_times, 50) / 3600.0)
+    logging.info('  75th percentile: %.2f hours',
+                 numpy.percentile(cq_wait_times, 75) / 3600.0)
+    logging.info('  90th percentile: %.2f hours',
+                 numpy.percentile(cq_wait_times, 90) / 3600.0)
+    logging.info('')
+    logging.info('Time spent in CQ:')
+    logging.info('  10th percentile: %.2f hours',
+                 numpy.percentile(cq_handle_times, 10) / 3600.0)
+    logging.info('  25th percentile: %.2f hours',
+                 numpy.percentile(cq_handle_times, 25) / 3600.0)
+    logging.info('  50th percentile: %.2f hours',
+                 numpy.percentile(cq_handle_times, 50) / 3600.0)
+    logging.info('  75th percentile: %.2f hours',
+                 numpy.percentile(cq_handle_times, 75) / 3600.0)
+    logging.info('  90th percentile: %.2f hours',
+                 numpy.percentile(cq_handle_times, 90) / 3600.0)
+    logging.info('')
 
     for bot_type, patches in summary['bad_cl_candidates'].items():
       logging.info('%d bad patch candidates were rejected by the %s',

@@ -8,6 +8,8 @@
 
 from __future__ import print_function
 
+import datetime
+import itertools
 import collections
 from chromite.cbuildbot import constants
 
@@ -220,39 +222,6 @@ def GetRequeuedOrSpeculative(change, action_history, is_speculative):
   return None
 
 
-def GetCLHandlingTime(change, action_history):
-  """Returns the handling time of |change|, in seconds.
-
-  This method computes a CL's handling time, not including the time spent
-  waiting for a developer to mark or re-mark their change as ready.
-
-  Args:
-    change: GerritPatch instance of a submitted change.
-    action_history: List of CL actions.
-  """
-  actions_for_patch = ActionsForPatch(change, action_history)
-
-  elapsed_time = 0
-  last_timestamp = None
-  counting = True
-
-  for a in actions_for_patch:
-    interval = 0
-    if last_timestamp is not None:
-      interval = (a.timestamp - last_timestamp).seconds
-    last_timestamp = a.timestamp
-    if counting:
-      elapsed_time += interval
-
-    if a.action in (constants.CL_ACTION_KICKED_OUT,
-                    constants.CL_ACTION_SPECULATIVE):
-      counting = False
-    if a.action == constants.CL_ACTION_REQUEUED:
-      counting = True
-
-  return elapsed_time
-
-
 def GetCLActionCount(change, configs, action, action_history,
                      latest_patchset_only=True):
   """Return how many times |action| has occured on |change|.
@@ -428,6 +397,153 @@ def GetPreCQConfigsToTest(changes, progress_map):
       if status in to_test_states:
         configs_to_test.add(config)
   return configs_to_test
+
+
+def IntersectIntervals(intervals):
+  """Gets the intersection of a set of intervals.
+
+  Args:
+    intervals: A list of interval groups, where each interval group is itself
+               a list of (start, stop) tuples (ordered by start time and
+               non-overlapping).
+
+  Returns:
+    An interval group, as a list of (start, stop) tuples, corresponding to the
+    intersection (i.e. overlap) of the given |intervals|.
+  """
+  if not intervals:
+    return []
+
+  intersection = []
+  indices = [0] * len(intervals)
+  lengths = [len(i) for i in intervals]
+  while all(i < l for i, l in zip(indices, lengths)):
+    current_intervals = [intervals[i][j] for (i, j) in
+                         zip(itertools.count(), indices)]
+    start = max([s[0] for s in current_intervals])
+    end, end_index = min([(e[1], i)  for e, i in
+                          zip(current_intervals, itertools.count())])
+    if start < end:
+      intersection.append((start, end))
+    indices[end_index] += 1
+
+  return intersection
+
+
+def MeasureTimestampIntervals(intervals):
+  """Gets the length of a set of invervals.
+
+  Args:
+    intervals: A list of (start, stop) timestamp tuples.
+
+  Returns:
+    The total length of the given intervals, in seconds.
+  """
+  lengths = [e-s for s, e in intervals]
+  return sum(lengths, datetime.timedelta(0)).total_seconds()
+
+
+def GetIntervals(change, action_history, start_actions, stop_actions,
+                 start_at_beginning=False):
+  """Get intervals corresponding to given start and stop actions.
+
+  Args:
+    change: GerritPatch instance of a submitted change.
+    action_history: list of CL actions.
+    start_actions: list of action types to be considered as start actions for
+                   intervals.
+    stop_actions: list of action types to be considered as stop actions for
+                  intervals.
+    start_at_beginning: optional boolean, default False. If true, consider the
+                        first action to be a start action.
+  """
+  actions_for_patch = ActionsForPatch(change, action_history)
+  if not actions_for_patch:
+    return []
+
+  intervals = []
+  in_interval = start_at_beginning
+  if in_interval:
+    start_time = actions_for_patch[0].timestamp
+  for a in actions_for_patch:
+    if in_interval and a.action in stop_actions:
+      if start_time < a.timestamp:
+        intervals.append((start_time, a.timestamp))
+      in_interval = False
+    elif not in_interval and a.action in start_actions:
+      start_time = a.timestamp
+      in_interval = True
+
+  if in_interval and start_time < actions_for_patch[-1].timestamp:
+    intervals.append((start_time, actions_for_patch[-1].timestamp))
+
+  return intervals
+
+
+def GetReadyIntervals(change, action_history):
+  """Gets the time intervals in which |change| was fully ready.
+
+  Args:
+    change: GerritPatch instance of a submitted change.
+    action_history: list of CL actions.
+  """
+  start = (constants.CL_ACTION_REQUEUED,)
+  stop = (constants.CL_ACTION_SPECULATIVE, constants.CL_ACTION_KICKED_OUT)
+  return GetIntervals(change, action_history, start, stop, True)
+
+
+def GetCLHandlingTime(change, action_history):
+  """Returns the handling time of |change|, in seconds.
+
+  This method computes a CL's handling time, not including the time spent
+  waiting for a developer to mark or re-mark their change as ready.
+
+  Args:
+    change: GerritPatch instance of a submitted change.
+    action_history: List of CL actions.
+  """
+  ready_intervals = GetReadyIntervals(change, action_history)
+  return MeasureTimestampIntervals(ready_intervals)
+
+
+def GetPreCQTime(change, action_history):
+  """Returns the time spent waiting for the pre-cq to finish."""
+  ready_intervals = GetReadyIntervals(change, action_history)
+  start = (constants.CL_ACTION_SCREENED_FOR_PRE_CQ,)
+  stop = (constants.CL_ACTION_PRE_CQ_FULLY_VERIFIED,)
+  precq_intervals = GetIntervals(change, action_history, start, stop)
+  return MeasureTimestampIntervals(
+      IntersectIntervals([ready_intervals, precq_intervals]))
+
+
+def GetCQWaitTime(change, action_history):
+  """Returns the time spent waiting for a CL to be picked up by the CQ."""
+  ready_intervals = GetReadyIntervals(change, action_history)
+  precq_passed_interval = GetIntervals(
+      change, action_history, (constants.CL_ACTION_PRE_CQ_PASSED,), ())
+  relevant_configs = (constants.PRE_CQ_LAUNCHER_CONFIG, constants.CQ_MASTER)
+  relevant_config_actions = [a for a in action_history
+                             if a.build_config in relevant_configs]
+  start = (constants.CL_ACTION_REQUEUED, constants.CL_ACTION_FORGIVEN)
+  stop = (constants.CL_ACTION_PICKED_UP,)
+  waiting_intervals = GetIntervals(change, relevant_config_actions, start, stop)
+  return MeasureTimestampIntervals(
+      IntersectIntervals([ready_intervals, waiting_intervals,
+                          precq_passed_interval]))
+
+
+def GetCQRunTime(change, action_history):
+  """Returns the time spent testing a CL in the CQ."""
+  ready_intervals = GetReadyIntervals(change, action_history)
+  relevant_configs = (constants.CQ_MASTER,)
+  relevant_config_actions = [a for a in action_history
+                             if a.build_config in relevant_configs]
+  start = (constants.CL_ACTION_PICKED_UP,)
+  stop = (constants.CL_ACTION_FORGIVEN, constants.CL_ACTION_KICKED_OUT,
+          constants.CL_ACTION_SUBMITTED)
+  testing_intervals = GetIntervals(change, relevant_config_actions, start, stop)
+  return MeasureTimestampIntervals(
+      IntersectIntervals([ready_intervals, testing_intervals]))
 
 
 def GetRelevantChangesForBuilds(changes, action_history, build_ids):
