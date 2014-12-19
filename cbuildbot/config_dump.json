@@ -11197,6 +11197,74 @@
         "use_lkgm": true,
         "vm_tests": []
     },
+    "daisy_winter-chrome-pfq": {
+        "boards": [
+            "daisy_winter"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "latest_release",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Preflight Chrome Uprev & Build (internal)",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "daisy_winter-chrome-pfq",
+        "overlays": "both",
+        "prebuilts": "private",
+        "tests_supported": false,
+        "unittests": false,
+        "uprev": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "daisy_winter-chromium-pfq": {
+        "boards": [
+            "daisy_winter"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "latest_release",
+        "chrome_sdk": true,
+        "chroot_replace": true,
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "daisy_winter-chromium-pfq",
+        "overlays": "both",
+        "prebuilts": "public",
+        "tests_supported": false,
+        "unittests": false,
+        "uprev": false,
+        "vm_tests": []
+    },
+    "daisy_winter-full": {
+        "archive_build_debug": true,
+        "boards": [
+            "daisy_winter"
+        ],
+        "build_type": "full",
+        "chrome_sdk": true,
+        "chroot_replace": true,
+        "description": "Full Builds",
+        "git_sync": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "name": "daisy_winter-full",
+        "prebuilts": "public",
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "usepkg_build_packages": false,
+        "vm_tests": []
+    },
     "daisy_winter-no-vmtest-pre-cq": {
         "archive": false,
         "boards": [
@@ -11251,6 +11319,21 @@
         ],
         "vm_tests": []
     },
+    "daisy_winter-payloads": {
+        "boards": [
+            "daisy_winter"
+        ],
+        "build_type": "payloads",
+        "description": "Regenerate release payloads.",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "daisy_winter-payloads",
+        "overlays": "both",
+        "paygen": true,
+        "upload_hw_test_artifacts": false,
+        "vm_tests": []
+    },
     "daisy_winter-pre-cq": {
         "archive": false,
         "boards": [
@@ -11280,6 +11363,368 @@
         ],
         "vm_tests": []
     },
+    "daisy_winter-release": {
+        "afdo_use": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "daisy_winter"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "dev_installer_prebuilts": true,
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "daisy_winter-release",
+        "overlays": "both",
+        "paygen": true,
+        "push_image": true,
+        "signer_tests": true,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_symbols": true,
+        "useflags": [
+            "chrome_internal",
+            "-cros-debug",
+            "-highdpi"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
+    },
+    "daisy_winter-release-afdo": {
+        "afdo_generate_min": true,
+        "afdo_update_ebuild": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "daisy_winter"
+        ],
+        "build_type": "canary",
+        "child_configs": [
+            {
+                "afdo_generate_min": true,
+                "afdo_update_ebuild": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "daisy_winter"
+                ],
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "daisy_winter-release-afdo-generate",
+                "overlays": "both",
+                "signer_tests": true,
+                "tests_supported": false,
+                "unittests": false,
+                "upload_symbols": true,
+                "useflags": [
+                    "chrome_internal",
+                    "-cros-debug",
+                    "-highdpi"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": []
+            },
+            {
+                "afdo_use": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "daisy_winter"
+                ],
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "daisy_winter-release-afdo-use",
+                "overlays": "both",
+                "signer_tests": true,
+                "tests_supported": false,
+                "unittests": false,
+                "upload_symbols": true,
+                "useflags": [
+                    "chrome_internal",
+                    "-cros-debug",
+                    "-highdpi"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": []
+            }
+        ],
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "daisy_winter-release-afdo",
+        "overlays": "both",
+        "signer_tests": true,
+        "tests_supported": false,
+        "unittests": false,
+        "upload_symbols": true,
+        "useflags": [
+            "chrome_internal",
+            "-cros-debug",
+            "-highdpi"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
+    },
+    "daisy_winter-release-afdo-generate": {
+        "afdo_generate_min": true,
+        "afdo_update_ebuild": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "daisy_winter"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "daisy_winter-release-afdo-generate",
+        "overlays": "both",
+        "signer_tests": true,
+        "tests_supported": false,
+        "unittests": false,
+        "upload_symbols": true,
+        "useflags": [
+            "chrome_internal",
+            "-cros-debug",
+            "-highdpi"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
+    },
+    "daisy_winter-release-afdo-use": {
+        "afdo_use": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "daisy_winter"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "daisy_winter-release-afdo-use",
+        "overlays": "both",
+        "signer_tests": true,
+        "tests_supported": false,
+        "unittests": false,
+        "upload_symbols": true,
+        "useflags": [
+            "chrome_internal",
+            "-cros-debug",
+            "-highdpi"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
+    },
+    "daisy_winter-tot-chrome-pfq-informational": {
+        "boards": [
+            "daisy_winter"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "tot",
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Informational Chrome Uprev & Build (internal)",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "daisy_winter-tot-chrome-pfq-informational",
+        "overlays": "both",
+        "tests_supported": false,
+        "unittests": false,
+        "uprev": false,
+        "use_lkgm": true,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "daisy_winter-tot-chromium-pfq-informational": {
+        "boards": [
+            "daisy_winter"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "tot",
+        "chroot_replace": true,
+        "description": "Informational Chromium Uprev & Build (public)",
+        "name": "daisy_winter-tot-chromium-pfq-informational",
+        "tests_supported": false,
+        "unittests": false,
+        "uprev": false,
+        "use_lkgm": true,
+        "vm_tests": []
+    },
+    "duck-chrome-pfq": {
+        "boards": [
+            "duck"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "latest_release",
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Preflight Chrome Uprev & Build (internal)",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "duck-chrome-pfq",
+        "overlays": "both",
+        "prebuilts": "private",
+        "sync_chrome": false,
+        "uprev": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "duck-chromium-pfq": {
+        "boards": [
+            "duck"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "latest_release",
+        "chrome_sdk": true,
+        "chroot_replace": true,
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "duck-chromium-pfq",
+        "overlays": "both",
+        "prebuilts": "public",
+        "uprev": false
+    },
     "duck-deprecated-pre-cq": {
         "archive": false,
         "boards": [
@@ -11307,6 +11752,27 @@
             "chrome_internal"
         ],
         "vm_tests": []
+    },
+    "duck-full": {
+        "archive_build_debug": true,
+        "boards": [
+            "duck"
+        ],
+        "build_type": "full",
+        "chrome_sdk": true,
+        "chroot_replace": true,
+        "description": "Full Builds",
+        "git_sync": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "name": "duck-full",
+        "prebuilts": "public",
+        "trybot_list": true,
+        "usepkg_build_packages": false
     },
     "duck-grouped-pre-cq": {
         "archive": false,
@@ -11472,6 +11938,289 @@
         ],
         "usepkg_build_packages": false,
         "vm_tests": []
+    },
+    "duck-release-afdo": {
+        "afdo_generate_min": true,
+        "afdo_update_ebuild": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "duck"
+        ],
+        "build_type": "canary",
+        "child_configs": [
+            {
+                "afdo_generate_min": true,
+                "afdo_update_ebuild": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "duck"
+                ],
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "duck-release-afdo-generate",
+                "overlays": "both",
+                "signer_tests": true,
+                "upload_symbols": true,
+                "useflags": [
+                    "chrome_internal",
+                    "-cros-debug",
+                    "-highdpi"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
+            },
+            {
+                "afdo_use": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "duck"
+                ],
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "duck-release-afdo-use",
+                "overlays": "both",
+                "signer_tests": true,
+                "upload_symbols": true,
+                "useflags": [
+                    "chrome_internal",
+                    "-cros-debug",
+                    "-highdpi"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
+            }
+        ],
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "duck-release-afdo",
+        "overlays": "both",
+        "signer_tests": true,
+        "upload_symbols": true,
+        "useflags": [
+            "chrome_internal",
+            "-cros-debug",
+            "-highdpi"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "duck-release-afdo-generate": {
+        "afdo_generate_min": true,
+        "afdo_update_ebuild": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "duck"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "duck-release-afdo-generate",
+        "overlays": "both",
+        "signer_tests": true,
+        "upload_symbols": true,
+        "useflags": [
+            "chrome_internal",
+            "-cros-debug",
+            "-highdpi"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "duck-release-afdo-use": {
+        "afdo_use": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "duck"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "duck-release-afdo-use",
+        "overlays": "both",
+        "signer_tests": true,
+        "upload_symbols": true,
+        "useflags": [
+            "chrome_internal",
+            "-cros-debug",
+            "-highdpi"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "duck-tot-chrome-pfq-informational": {
+        "boards": [
+            "duck"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "tot",
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Informational Chrome Uprev & Build (internal)",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "duck-tot-chrome-pfq-informational",
+        "overlays": "both",
+        "sync_chrome": false,
+        "uprev": false,
+        "use_lkgm": true,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "duck-tot-chromium-pfq-informational": {
+        "boards": [
+            "duck"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "tot",
+        "chroot_replace": true,
+        "description": "Informational Chromium Uprev & Build (public)",
+        "name": "duck-tot-chromium-pfq-informational",
+        "uprev": false,
+        "use_lkgm": true,
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "enguarde-chrome-pfq": {
         "boards": [
@@ -13658,6 +14407,65 @@
             "smoke_suite"
         ]
     },
+    "fox_wtm2-chrome-pfq": {
+        "boards": [
+            "fox_wtm2"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "latest_release",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Preflight Chrome Uprev & Build (internal)",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "fox_wtm2-chrome-pfq",
+        "overlays": "both",
+        "prebuilts": "private",
+        "uprev": false,
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "fox_wtm2-chromium-pfq": {
+        "boards": [
+            "fox_wtm2"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "latest_release",
+        "chrome_sdk": true,
+        "chroot_replace": true,
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "fox_wtm2-chromium-pfq",
+        "overlays": "both",
+        "prebuilts": "public",
+        "uprev": false
+    },
+    "fox_wtm2-full": {
+        "archive_build_debug": true,
+        "boards": [
+            "fox_wtm2"
+        ],
+        "build_type": "full",
+        "chrome_sdk": true,
+        "chroot_replace": true,
+        "description": "Full Builds",
+        "git_sync": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "name": "fox_wtm2-full",
+        "prebuilts": "public",
+        "trybot_list": true,
+        "usepkg_build_packages": false
+    },
     "fox_wtm2-no-vmtest-pre-cq": {
         "archive": false,
         "boards": [
@@ -13791,6 +14599,290 @@
         ],
         "usepkg_build_packages": false,
         "vm_tests": []
+    },
+    "fox_wtm2-release-afdo": {
+        "afdo_generate_min": true,
+        "afdo_update_ebuild": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "fox_wtm2"
+        ],
+        "build_type": "canary",
+        "child_configs": [
+            {
+                "afdo_generate_min": true,
+                "afdo_update_ebuild": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "fox_wtm2"
+                ],
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "fox_wtm2-release-afdo-generate",
+                "overlays": "both",
+                "signer_tests": true,
+                "upload_symbols": true,
+                "useflags": [
+                    "chrome_internal",
+                    "-cros-debug",
+                    "-highdpi"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
+            },
+            {
+                "afdo_use": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "fox_wtm2"
+                ],
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "fox_wtm2-release-afdo-use",
+                "overlays": "both",
+                "signer_tests": true,
+                "upload_symbols": true,
+                "useflags": [
+                    "chrome_internal",
+                    "-cros-debug",
+                    "-highdpi"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
+            }
+        ],
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "fox_wtm2-release-afdo",
+        "overlays": "both",
+        "signer_tests": true,
+        "upload_symbols": true,
+        "useflags": [
+            "chrome_internal",
+            "-cros-debug",
+            "-highdpi"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "fox_wtm2-release-afdo-generate": {
+        "afdo_generate_min": true,
+        "afdo_update_ebuild": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "fox_wtm2"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "fox_wtm2-release-afdo-generate",
+        "overlays": "both",
+        "signer_tests": true,
+        "upload_symbols": true,
+        "useflags": [
+            "chrome_internal",
+            "-cros-debug",
+            "-highdpi"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "fox_wtm2-release-afdo-use": {
+        "afdo_use": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "fox_wtm2"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "fox_wtm2-release-afdo-use",
+        "overlays": "both",
+        "signer_tests": true,
+        "upload_symbols": true,
+        "useflags": [
+            "chrome_internal",
+            "-cros-debug",
+            "-highdpi"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "fox_wtm2-tot-chrome-pfq-informational": {
+        "boards": [
+            "fox_wtm2"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "tot",
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Informational Chrome Uprev & Build (internal)",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "fox_wtm2-tot-chrome-pfq-informational",
+        "overlays": "both",
+        "uprev": false,
+        "use_lkgm": true,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
+    "fox_wtm2-tot-chromium-pfq-informational": {
+        "boards": [
+            "fox_wtm2"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "tot",
+        "chroot_replace": true,
+        "description": "Informational Chromium Uprev & Build (public)",
+        "name": "fox_wtm2-tot-chromium-pfq-informational",
+        "uprev": false,
+        "use_lkgm": true,
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "gizmo-chromium-pfq": {
         "boards": [
@@ -37893,6 +38985,50 @@
             "smoke_suite"
         ]
     },
+    "storm-chrome-pfq": {
+        "boards": [
+            "storm"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "latest_release",
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Preflight Chrome Uprev & Build (internal)",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "storm-chrome-pfq",
+        "overlays": "both",
+        "prebuilts": "private",
+        "sync_chrome": false,
+        "tests_supported": false,
+        "unittests": false,
+        "uprev": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "storm-chromium-pfq": {
+        "boards": [
+            "storm"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "latest_release",
+        "chrome_sdk": true,
+        "chroot_replace": true,
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "storm-chromium-pfq",
+        "overlays": "both",
+        "prebuilts": "public",
+        "tests_supported": false,
+        "unittests": false,
+        "uprev": false,
+        "vm_tests": []
+    },
     "storm-firmware": {
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
@@ -37927,6 +39063,30 @@
             "-cros-debug",
             "-highdpi"
         ],
+        "vm_tests": []
+    },
+    "storm-full": {
+        "archive_build_debug": true,
+        "boards": [
+            "storm"
+        ],
+        "build_type": "full",
+        "chrome_sdk": true,
+        "chroot_replace": true,
+        "description": "Full Builds",
+        "git_sync": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "name": "storm-full",
+        "prebuilts": "public",
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "usepkg_build_packages": false,
         "vm_tests": []
     },
     "storm-no-vmtest-pre-cq": {
@@ -38070,6 +39230,281 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
+        "vm_tests": []
+    },
+    "storm-release-afdo": {
+        "afdo_generate_min": true,
+        "afdo_update_ebuild": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "storm"
+        ],
+        "build_type": "canary",
+        "child_configs": [
+            {
+                "afdo_generate_min": true,
+                "afdo_update_ebuild": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "storm"
+                ],
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "storm-release-afdo-generate",
+                "overlays": "both",
+                "signer_tests": true,
+                "tests_supported": false,
+                "unittests": false,
+                "upload_symbols": true,
+                "useflags": [
+                    "chrome_internal",
+                    "-cros-debug",
+                    "-highdpi"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": []
+            },
+            {
+                "afdo_use": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "storm"
+                ],
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "storm-release-afdo-use",
+                "overlays": "both",
+                "signer_tests": true,
+                "tests_supported": false,
+                "unittests": false,
+                "upload_symbols": true,
+                "useflags": [
+                    "chrome_internal",
+                    "-cros-debug",
+                    "-highdpi"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": []
+            }
+        ],
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "storm-release-afdo",
+        "overlays": "both",
+        "signer_tests": true,
+        "tests_supported": false,
+        "unittests": false,
+        "upload_symbols": true,
+        "useflags": [
+            "chrome_internal",
+            "-cros-debug",
+            "-highdpi"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
+    },
+    "storm-release-afdo-generate": {
+        "afdo_generate_min": true,
+        "afdo_update_ebuild": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "storm"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "storm-release-afdo-generate",
+        "overlays": "both",
+        "signer_tests": true,
+        "tests_supported": false,
+        "unittests": false,
+        "upload_symbols": true,
+        "useflags": [
+            "chrome_internal",
+            "-cros-debug",
+            "-highdpi"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
+    },
+    "storm-release-afdo-use": {
+        "afdo_use": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "storm"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "storm-release-afdo-use",
+        "overlays": "both",
+        "signer_tests": true,
+        "tests_supported": false,
+        "unittests": false,
+        "upload_symbols": true,
+        "useflags": [
+            "chrome_internal",
+            "-cros-debug",
+            "-highdpi"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
+    },
+    "storm-tot-chrome-pfq-informational": {
+        "boards": [
+            "storm"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "tot",
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Informational Chrome Uprev & Build (internal)",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "storm-tot-chrome-pfq-informational",
+        "overlays": "both",
+        "sync_chrome": false,
+        "tests_supported": false,
+        "unittests": false,
+        "uprev": false,
+        "use_lkgm": true,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "storm-tot-chromium-pfq-informational": {
+        "boards": [
+            "storm"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "tot",
+        "chroot_replace": true,
+        "description": "Informational Chromium Uprev & Build (public)",
+        "name": "storm-tot-chromium-pfq-informational",
+        "tests_supported": false,
+        "unittests": false,
+        "uprev": false,
+        "use_lkgm": true,
         "vm_tests": []
     },
     "stout-chrome-pfq": {
@@ -39137,6 +40572,66 @@
             "smoke_suite"
         ]
     },
+    "stumpy_moblab-chrome-pfq": {
+        "boards": [
+            "stumpy_moblab"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "latest_release",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Preflight Chrome Uprev & Build (internal)",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "stumpy_moblab-chrome-pfq",
+        "overlays": "both",
+        "prebuilts": "private",
+        "uprev": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "stumpy_moblab-chromium-pfq": {
+        "boards": [
+            "stumpy_moblab"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "latest_release",
+        "chrome_sdk": true,
+        "chroot_replace": true,
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "stumpy_moblab-chromium-pfq",
+        "overlays": "both",
+        "prebuilts": "public",
+        "uprev": false
+    },
+    "stumpy_moblab-full": {
+        "archive_build_debug": true,
+        "boards": [
+            "stumpy_moblab"
+        ],
+        "build_type": "full",
+        "chrome_sdk": true,
+        "chroot_replace": true,
+        "description": "Full Builds",
+        "git_sync": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "name": "stumpy_moblab-full",
+        "prebuilts": "public",
+        "trybot_list": true,
+        "usepkg_build_packages": false
+    },
     "stumpy_moblab-no-vmtest-pre-cq": {
         "archive": false,
         "boards": [
@@ -39275,6 +40770,288 @@
         ],
         "usepkg_build_packages": false,
         "vm_tests": []
+    },
+    "stumpy_moblab-release-afdo": {
+        "afdo_generate_min": true,
+        "afdo_update_ebuild": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "stumpy_moblab"
+        ],
+        "build_type": "canary",
+        "child_configs": [
+            {
+                "afdo_generate_min": true,
+                "afdo_update_ebuild": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "stumpy_moblab"
+                ],
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "stumpy_moblab-release-afdo-generate",
+                "overlays": "both",
+                "signer_tests": true,
+                "upload_symbols": true,
+                "useflags": [
+                    "chrome_internal",
+                    "-cros-debug",
+                    "-highdpi"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
+            },
+            {
+                "afdo_use": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "stumpy_moblab"
+                ],
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "stumpy_moblab-release-afdo-use",
+                "overlays": "both",
+                "signer_tests": true,
+                "upload_symbols": true,
+                "useflags": [
+                    "chrome_internal",
+                    "-cros-debug",
+                    "-highdpi"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
+            }
+        ],
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "stumpy_moblab-release-afdo",
+        "overlays": "both",
+        "signer_tests": true,
+        "upload_symbols": true,
+        "useflags": [
+            "chrome_internal",
+            "-cros-debug",
+            "-highdpi"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "stumpy_moblab-release-afdo-generate": {
+        "afdo_generate_min": true,
+        "afdo_update_ebuild": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "stumpy_moblab"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "stumpy_moblab-release-afdo-generate",
+        "overlays": "both",
+        "signer_tests": true,
+        "upload_symbols": true,
+        "useflags": [
+            "chrome_internal",
+            "-cros-debug",
+            "-highdpi"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "stumpy_moblab-release-afdo-use": {
+        "afdo_use": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "stumpy_moblab"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "stumpy_moblab-release-afdo-use",
+        "overlays": "both",
+        "signer_tests": true,
+        "upload_symbols": true,
+        "useflags": [
+            "chrome_internal",
+            "-cros-debug",
+            "-highdpi"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "stumpy_moblab-tot-chrome-pfq-informational": {
+        "boards": [
+            "stumpy_moblab"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "tot",
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Informational Chrome Uprev & Build (internal)",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "stumpy_moblab-tot-chrome-pfq-informational",
+        "overlays": "both",
+        "uprev": false,
+        "use_lkgm": true,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "stumpy_moblab-tot-chromium-pfq-informational": {
+        "boards": [
+            "stumpy_moblab"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "tot",
+        "chroot_replace": true,
+        "description": "Informational Chromium Uprev & Build (public)",
+        "name": "stumpy_moblab-tot-chromium-pfq-informational",
+        "uprev": false,
+        "use_lkgm": true,
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "swanky-chrome-pfq": {
         "boards": [
@@ -40917,6 +42694,74 @@
             "smoke_suite"
         ]
     },
+    "urara-chrome-pfq": {
+        "boards": [
+            "urara"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "latest_release",
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Preflight Chrome Uprev & Build (internal)",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "urara-chrome-pfq",
+        "overlays": "both",
+        "prebuilts": "private",
+        "sync_chrome": false,
+        "tests_supported": false,
+        "unittests": false,
+        "uprev": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "urara-chromium-pfq": {
+        "boards": [
+            "urara"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "latest_release",
+        "chrome_sdk": true,
+        "chroot_replace": true,
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "urara-chromium-pfq",
+        "overlays": "both",
+        "prebuilts": "public",
+        "tests_supported": false,
+        "unittests": false,
+        "uprev": false,
+        "vm_tests": []
+    },
+    "urara-full": {
+        "archive_build_debug": true,
+        "boards": [
+            "urara"
+        ],
+        "build_type": "full",
+        "chrome_sdk": true,
+        "chroot_replace": true,
+        "description": "Full Builds",
+        "git_sync": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "name": "urara-full",
+        "prebuilts": "public",
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "usepkg_build_packages": false,
+        "vm_tests": []
+    },
     "urara-no-vmtest-pre-cq": {
         "archive": false,
         "boards": [
@@ -41039,6 +42884,281 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
+        "vm_tests": []
+    },
+    "urara-release-afdo": {
+        "afdo_generate_min": true,
+        "afdo_update_ebuild": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "urara"
+        ],
+        "build_type": "canary",
+        "child_configs": [
+            {
+                "afdo_generate_min": true,
+                "afdo_update_ebuild": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "urara"
+                ],
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "urara-release-afdo-generate",
+                "overlays": "both",
+                "signer_tests": true,
+                "tests_supported": false,
+                "unittests": false,
+                "upload_symbols": true,
+                "useflags": [
+                    "chrome_internal",
+                    "-cros-debug",
+                    "-highdpi"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": []
+            },
+            {
+                "afdo_use": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "urara"
+                ],
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "urara-release-afdo-use",
+                "overlays": "both",
+                "signer_tests": true,
+                "tests_supported": false,
+                "unittests": false,
+                "upload_symbols": true,
+                "useflags": [
+                    "chrome_internal",
+                    "-cros-debug",
+                    "-highdpi"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": []
+            }
+        ],
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "urara-release-afdo",
+        "overlays": "both",
+        "signer_tests": true,
+        "tests_supported": false,
+        "unittests": false,
+        "upload_symbols": true,
+        "useflags": [
+            "chrome_internal",
+            "-cros-debug",
+            "-highdpi"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
+    },
+    "urara-release-afdo-generate": {
+        "afdo_generate_min": true,
+        "afdo_update_ebuild": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "urara"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "urara-release-afdo-generate",
+        "overlays": "both",
+        "signer_tests": true,
+        "tests_supported": false,
+        "unittests": false,
+        "upload_symbols": true,
+        "useflags": [
+            "chrome_internal",
+            "-cros-debug",
+            "-highdpi"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
+    },
+    "urara-release-afdo-use": {
+        "afdo_use": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "urara"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "urara-release-afdo-use",
+        "overlays": "both",
+        "signer_tests": true,
+        "tests_supported": false,
+        "unittests": false,
+        "upload_symbols": true,
+        "useflags": [
+            "chrome_internal",
+            "-cros-debug",
+            "-highdpi"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
+    },
+    "urara-tot-chrome-pfq-informational": {
+        "boards": [
+            "urara"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "tot",
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Informational Chrome Uprev & Build (internal)",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "urara-tot-chrome-pfq-informational",
+        "overlays": "both",
+        "sync_chrome": false,
+        "tests_supported": false,
+        "unittests": false,
+        "uprev": false,
+        "use_lkgm": true,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "urara-tot-chromium-pfq-informational": {
+        "boards": [
+            "urara"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "tot",
+        "chroot_replace": true,
+        "description": "Informational Chromium Uprev & Build (public)",
+        "name": "urara-tot-chromium-pfq-informational",
+        "tests_supported": false,
+        "unittests": false,
+        "uprev": false,
+        "use_lkgm": true,
         "vm_tests": []
     },
     "veyron-b-full-group": {

@@ -1210,6 +1210,7 @@ _arm_internal_release_boards = frozenset([
   'daisy_freon',
   'daisy_skate',
   'daisy_spring',
+  'daisy_winter',
   'kayle',
   'nyan',
   'nyan_big',
@@ -1218,6 +1219,7 @@ _arm_internal_release_boards = frozenset([
   'nyan_kitty',
   'peach_pi',
   'peach_pit',
+  'storm',
   'rush',
   'rush_ryu',
   'veyron_jerry',
@@ -1233,10 +1235,7 @@ _arm_external_boards = frozenset([
   'arm64-generic',
 ])
 
-# TODO(akeshet) eliminate the need for this.
 _arm_internal_non_release_boards = frozenset([
-  'daisy_winter',
-  'storm',
 ])
 
 _x86_internal_release_boards = frozenset([
@@ -1252,10 +1251,12 @@ _x86_internal_release_boards = frozenset([
   'candy',
   'cranky',
   'clapper',
+  'duck',
   'enguarde',
   'expresso',
   'falco',
   'falco_li',
+  'fox_wtm2',
   'glimmer',
   'gnawty',
   'kip',
@@ -1283,6 +1284,7 @@ _x86_internal_release_boards = frozenset([
   'squawks',
   'stout',
   'stumpy',
+  'stumpy_moblab',
   'swanky',
   'tricky',
   'tricky_freon',
@@ -1308,12 +1310,10 @@ _x86_external_boards = frozenset([
 
 # TODO(akeshet) eliminate the need for this.
 _x86_internal_non_release_boards = frozenset([
-  'fox_wtm2',
-  'duck',
-  'stumpy_moblab',
 ])
 
 _mips_internal_release_boards = frozenset([
+  'urara',
 ])
 
 _mips_external_boards = frozenset([
@@ -1327,7 +1327,6 @@ _mips_external_boards = frozenset([
 
 # TODO(akeshet) eliminate the need for this.
 _mips_internal_non_release_boards = frozenset([
-  'urara',
 ])
 
 # Every board should be in only 1 of the above sets.
