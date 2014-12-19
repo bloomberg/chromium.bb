@@ -11,8 +11,8 @@
 #include <jni.h>
 #endif
 
-// FIXME: This covers more than just touches. Rename to input_device?
-// crbug.com/438794
+// TODO(mustaq@chromium.org): This covers more than just touches. Rename to
+// input_device? crbug.com/438794
 
 namespace ui {
 

@@ -17,22 +17,22 @@ int MaxTouchPoints() {
 }
 
 int GetAvailablePointerTypes() {
-  // Assume a non-touch-device with a keyboard and a mouse
-  return POINTER_TYPE_FINE | POINTER_TYPE_NONE;
+  // Assume a non-touch-device with a mouse
+  return POINTER_TYPE_FINE;
 }
 
 PointerType GetPrimaryPointerType() {
-  // Assume a non-touch-device with a keyboard and a mouse
+  // Assume a non-touch-device with a mouse
   return POINTER_TYPE_FINE;
 }
 
 int GetAvailableHoverTypes() {
-  // Assume a non-touch-device with a keyboard and a mouse
-  return HOVER_TYPE_HOVER | HOVER_TYPE_NONE;
+  // Assume a non-touch-device with a mouse
+  return HOVER_TYPE_HOVER;
 }
 
 HoverType GetPrimaryHoverType() {
-  // Assume a non-touch-device with a keyboard and a mouse
+  // Assume a non-touch-device with a mouse
   return HOVER_TYPE_HOVER;
 }
 

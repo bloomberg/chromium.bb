@@ -34,7 +34,7 @@ PointerType GetPrimaryPointerType() {
     return POINTER_TYPE_COARSE;
   if (available_pointer_types & POINTER_TYPE_FINE)
     return POINTER_TYPE_FINE;
-  DCHECK(available_pointer_types & POINTER_TYPE_NONE);
+  DCHECK_EQ(available_pointer_types, POINTER_TYPE_NONE);
   return POINTER_TYPE_NONE;
 }
 
@@ -52,7 +52,7 @@ HoverType GetPrimaryHoverType() {
     return HOVER_TYPE_ON_DEMAND;
   if (available_hover_types & HOVER_TYPE_HOVER)
     return HOVER_TYPE_HOVER;
-  DCHECK(available_hover_types & HOVER_TYPE_NONE);
+  DCHECK_EQ(available_hover_types, HOVER_TYPE_NONE);
   return HOVER_TYPE_NONE;
 }
 

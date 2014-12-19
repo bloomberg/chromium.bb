@@ -30,7 +30,6 @@ int GetAvailablePointerTypes() {
       GetSystemMetrics(SM_CMOUSEBUTTONS) > 0)
     available_pointer_types |= POINTER_TYPE_FINE;
 
-  // When no types are found, assume there's a POINTER_TYPE_NONE
   if (available_pointer_types == 0)
     available_pointer_types = POINTER_TYPE_NONE;
 
@@ -43,7 +42,7 @@ PointerType GetPrimaryPointerType() {
     return POINTER_TYPE_FINE;
   if (available_pointer_types & POINTER_TYPE_COARSE)
     return POINTER_TYPE_COARSE;
-  DCHECK(available_pointer_types & POINTER_TYPE_NONE);
+  DCHECK_EQ(available_pointer_types, POINTER_TYPE_NONE);
   return POINTER_TYPE_NONE;
 }
 
@@ -54,7 +53,6 @@ int GetAvailableHoverTypes() {
   if (GetSystemMetrics(SM_MOUSEPRESENT) != 0)
     available_hover_types |= HOVER_TYPE_HOVER;
 
-  // When no types are found, assume there's a HOVER_TYPE_NONE
   if (available_hover_types == 0)
     available_hover_types = HOVER_TYPE_NONE;
 
@@ -67,7 +65,7 @@ HoverType GetPrimaryHoverType() {
     return HOVER_TYPE_HOVER;
   if (available_hover_types & HOVER_TYPE_ON_DEMAND)
     return HOVER_TYPE_ON_DEMAND;
-  DCHECK(available_hover_types & HOVER_TYPE_NONE);
+  DCHECK_EQ(available_hover_types, HOVER_TYPE_NONE);
   return HOVER_TYPE_NONE;
 }
 

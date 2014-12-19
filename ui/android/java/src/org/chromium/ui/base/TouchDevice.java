@@ -66,13 +66,13 @@ public class TouchDevice {
                 pointerTypesVal |= PointerType.FINE;
             } else if (hasSource(sources, InputDevice.SOURCE_TOUCHSCREEN)) {
                 pointerTypesVal |= PointerType.COARSE;
-            } else {
-                // The remaining InputDevice sources:
-                // SOURCE_DPAD, SOURCE_GAMEPAD, SOURCE_JOYSTICK, SOURCE_KEYBOARD,
-                // SOURCE_TOUCH_NAVIGATION, SOURCE_UNKNOWN
-                pointerTypesVal |= PointerType.NONE;
             }
+            // Remaining InputDevice sources: SOURCE_DPAD, SOURCE_GAMEPAD, SOURCE_JOYSTICK,
+            // SOURCE_KEYBOARD, SOURCE_TOUCH_NAVIGATION, SOURCE_UNKNOWN
         }
+
+        if (pointerTypesVal == 0)
+            pointerTypesVal = PointerType.NONE;
 
         return pointerTypesVal;
     }
@@ -94,13 +94,13 @@ public class TouchDevice {
             } else if (hasSource(sources, InputDevice.SOURCE_STYLUS)
                     || hasSource(sources, InputDevice.SOURCE_TOUCHSCREEN)) {
                 hoverTypesVal |= HoverType.ON_DEMAND;
-            } else {
-                // The remaining InputDevice sources:
-                // SOURCE_DPAD, SOURCE_GAMEPAD, SOURCE_JOYSTICK,
-                // SOURCE_KEYBOARD, SOURCE_TOUCH_NAVIGATION, SOURCE_UNKNOWN
-                hoverTypesVal |= HoverType.NONE;
             }
+            // Remaining InputDevice sources: SOURCE_DPAD, SOURCE_GAMEPAD, SOURCE_JOYSTICK,
+            // SOURCE_KEYBOARD, SOURCE_TOUCH_NAVIGATION, SOURCE_UNKNOWN
         }
+
+        if (hoverTypesVal == 0)
+            hoverTypesVal = HoverType.NONE;
 
         return hoverTypesVal;
     }

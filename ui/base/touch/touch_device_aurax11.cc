@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/base/touch/touch_device.h"
+
 #include "base/logging.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
@@ -10,25 +11,19 @@
 namespace ui {
 
 bool IsTouchDevicePresent() {
-  return ui::TouchFactory::GetInstance()->IsTouchDevicePresent();
+  return ui::DeviceDataManager::GetInstance()->touchscreen_devices().size() > 0;
 }
 
 int MaxTouchPoints() {
   return ui::TouchFactory::GetInstance()->GetMaxTouchPoints();
 }
 
-// FIXME: Use mouse detection logic. crbug.com/440503
+// TODO(mustaq@chromium.org): Use mouse detection logic. crbug.com/440503
 int GetAvailablePointerTypes() {
-  int available_pointer_types = 0;
-
-  if (ui::DeviceDataManager::GetInstance()->keyboard_devices().size() > 0)
-      available_pointer_types |= POINTER_TYPE_NONE;
-
-  // Assume either a touch-device or a mouse is there
+  // Assume a mouse is there
+  int available_pointer_types = POINTER_TYPE_FINE;
   if (IsTouchDevicePresent())
     available_pointer_types |= POINTER_TYPE_COARSE;
-  else
-    available_pointer_types |= POINTER_TYPE_FINE;
 
   DCHECK(available_pointer_types);
   return available_pointer_types;
@@ -36,26 +31,20 @@ int GetAvailablePointerTypes() {
 
 PointerType GetPrimaryPointerType() {
   int available_pointer_types = GetAvailablePointerTypes();
-  if (available_pointer_types & POINTER_TYPE_COARSE)
-    return POINTER_TYPE_COARSE;
   if (available_pointer_types & POINTER_TYPE_FINE)
     return POINTER_TYPE_FINE;
-  DCHECK(available_pointer_types & POINTER_TYPE_NONE);
+  if (available_pointer_types & POINTER_TYPE_COARSE)
+    return POINTER_TYPE_COARSE;
+  DCHECK_EQ(available_pointer_types, POINTER_TYPE_NONE);
   return POINTER_TYPE_NONE;
 }
 
-// FIXME: Use mouse detection logic. crbug.com/440503
+// TODO(mustaq@chromium.org): Use mouse detection logic. crbug.com/440503
 int GetAvailableHoverTypes() {
-  int available_hover_types = 0;
-
-  if (ui::DeviceDataManager::GetInstance()->keyboard_devices().size() > 0)
-      available_hover_types |= HOVER_TYPE_NONE;
-
-  // Assume either a touch-device or a mouse is there
+  // Assume a mouse is there
+  int available_hover_types = HOVER_TYPE_HOVER;
   if (IsTouchDevicePresent())
     available_hover_types |= HOVER_TYPE_ON_DEMAND;
-  else
-    available_hover_types |= HOVER_TYPE_HOVER;
 
   DCHECK(available_hover_types);
   return available_hover_types;
@@ -63,11 +52,11 @@ int GetAvailableHoverTypes() {
 
 HoverType GetPrimaryHoverType() {
   int available_hover_types = GetAvailableHoverTypes();
-  if (available_hover_types & HOVER_TYPE_ON_DEMAND)
-    return HOVER_TYPE_ON_DEMAND;
   if (available_hover_types & HOVER_TYPE_HOVER)
     return HOVER_TYPE_HOVER;
-  DCHECK(available_hover_types & HOVER_TYPE_NONE);
+  if (available_hover_types & HOVER_TYPE_ON_DEMAND)
+    return HOVER_TYPE_ON_DEMAND;
+  DCHECK_EQ(available_hover_types, HOVER_TYPE_NONE);
   return HOVER_TYPE_NONE;
 }
 
