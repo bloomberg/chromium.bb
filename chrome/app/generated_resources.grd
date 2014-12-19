@@ -6526,11 +6526,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_RESET_APP_LIST_INSTALL_STATE_DESCRIPTION" desc="Description of the flag to reset the app launcher install state.">
         Reset the App Launcher install state on every restart. While this flag is set, Chrome will forget the launcher has been installed each time it starts. This is used for testing the App Launcher install flow.
       </message>
-      <message name="IDS_FLAGS_ENABLE_WORKER_FRAME_NAME" desc="Name of the flag to enable the &lt;workerframe&gt; element.">
-        Enable the experimental &lt;workerframe&gt; element.
+      <message name="IDS_FLAGS_ENABLE_SURFACE_WORKER_NAME" desc="Name of the flag to enable the SurfaceWorker prototype.">
+        Enable the experimental SurfaceWorker feature.
       </message>
-      <message name="IDS_FLAGS_ENABLE_WORKER_FRAME_DESCRIPTION" desc="Description of the flag to enable the &lt;workerframe&gt; element.">
-        This will allow the use of the experimental &lt;workerframe&gt; element.
+      <message name="IDS_FLAGS_ENABLE_SURFACE_WORKER_DESCRIPTION" desc="Description of the flag to enable the SurfaceWorker.">
+        This will allow the use of the experimental SurfaceWorker feature.
       </message>
       <if expr="enable_app_list">
         <message name="IDS_FLAGS_ENABLE_APP_LIST_NAME" desc="Name of the flag to enable the app launcher.">

@@ -2,30 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This module implements the WorkerFrame prototype.
+// This module implements the SurfaceView prototype.
 
 var GuestView = require('guestView').GuestView;
 var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
 
-function WorkerFrameImpl(workerFrameElement) {
-  GuestViewContainer.call(this, workerFrameElement, 'workerframe');
+function SurfaceViewImpl(surfaceviewElement) {
+  GuestViewContainer.call(this, surfaceviewElement, 'surfaceview');
 }
 
-WorkerFrameImpl.prototype.__proto__ = GuestViewContainer.prototype;
+SurfaceViewImpl.prototype.__proto__ = GuestViewContainer.prototype;
 
-WorkerFrameImpl.VIEW_TYPE = 'WorkerFrame';
+SurfaceViewImpl.VIEW_TYPE = 'SurfaceView';
 
 // Add extra functionality to |this.element|.
-WorkerFrameImpl.setupElement = function(proto) {
+SurfaceViewImpl.setupElement = function(proto) {
   var apiMethods = [
     'connect'
   ];
 
-  // Forward proto.foo* method calls to WorkerFrameImpl.foo*.
+  // Forward proto.foo* method calls to SurfaceViewImpl.foo*.
   GuestViewContainer.forwardApiMethods(proto, apiMethods);
 }
 
-WorkerFrameImpl.prototype.connect = function(url, callback) {
+SurfaceViewImpl.prototype.connect = function(url, callback) {
   if (!this.elementAttached) {
     if (callback) {
       callback(false);
@@ -47,4 +47,4 @@ WorkerFrameImpl.prototype.connect = function(url, callback) {
   }.bind(this));
 };
 
-GuestViewContainer.registerElement(WorkerFrameImpl);
+GuestViewContainer.registerElement(SurfaceViewImpl);

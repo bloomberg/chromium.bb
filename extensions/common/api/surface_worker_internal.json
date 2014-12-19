@@ -4,7 +4,7 @@
 
 [
   {
-    "namespace": "workerFrameInternal",
+    "namespace": "surfaceWorkerInternal",
     "description": "none"
   }
 ]

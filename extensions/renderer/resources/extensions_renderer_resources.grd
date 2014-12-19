@@ -48,7 +48,7 @@
       <include name="IDR_WEB_VIEW_EXPERIMENTAL_JS" file="guest_view/web_view_experimental.js" type="BINDATA" />
       <include name="IDR_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS" file="guest_view/web_view_internal.js" type="BINDATA" />
       <include name="IDR_WEB_VIEW_JS" file="guest_view/web_view.js" type="BINDATA" />
-      <include name="IDR_WORKER_FRAME_JS" file="guest_view/worker_frame.js" type="BINDATA" />
+      <include name="IDR_SURFACE_VIEW_JS" file="guest_view/surface_view.js" type="BINDATA" />
 
       <!-- Custom bindings for APIs. -->
       <include name="IDR_APP_RUNTIME_CUSTOM_BINDINGS_JS" file="app_runtime_custom_bindings.js" type="BINDATA" />

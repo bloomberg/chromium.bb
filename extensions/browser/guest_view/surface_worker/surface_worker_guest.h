@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_GUEST_VIEW_WORKER_FRAME_WORKER_FRAME_GUEST_H_
-#define EXTENSIONS_BROWSER_GUEST_VIEW_WORKER_FRAME_WORKER_FRAME_GUEST_H_
+#ifndef EXTENSIONS_BROWSER_GUEST_VIEW_SURFACE_WORKER_SURFACE_WORKER_GUEST_H_
+#define EXTENSIONS_BROWSER_GUEST_VIEW_SURFACE_WORKER_SURFACE_WORKER_GUEST_H_
 
 #include "extensions/browser/guest_view/guest_view.h"
 
@@ -11,9 +11,9 @@ namespace extensions {
 class Extension;
 class ExtensionHost;
 
-// An WorkerFrameGuest provides the browser-side implementation of the
+// An SurfaceWorkerGuest provides the browser-side implementation of the
 // prototype <wtframe> API.
-class WorkerFrameGuest : public GuestView<WorkerFrameGuest> {
+class SurfaceWorkerGuest : public GuestView<SurfaceWorkerGuest> {
  public:
   static const char Type[];
 
@@ -32,21 +32,21 @@ class WorkerFrameGuest : public GuestView<WorkerFrameGuest> {
   void DidAttachToEmbedder() override;
 
  private:
-  WorkerFrameGuest(content::BrowserContext* browser_context,
+  SurfaceWorkerGuest(content::BrowserContext* browser_context,
                    content::WebContents* owner_web_contents,
                    int guest_instance_id);
 
-  ~WorkerFrameGuest() override;
+  ~SurfaceWorkerGuest() override;
 
   GURL url_;
 
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.
-  base::WeakPtrFactory<WorkerFrameGuest> weak_ptr_factory_;
+  base::WeakPtrFactory<SurfaceWorkerGuest> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(WorkerFrameGuest);
+  DISALLOW_COPY_AND_ASSIGN(SurfaceWorkerGuest);
 };
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_GUEST_VIEW_WORKER_FRAME_WORKER_FRAME_GUEST_H_
+#endif  // EXTENSIONS_BROWSER_GUEST_VIEW_SURFACE_WORKER_SURFACE_WORKER_GUEST_H_

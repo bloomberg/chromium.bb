@@ -391,8 +391,8 @@
       <message name="IDS_EXTENSION_TASK_MANAGER_WEBVIEW_TAG_PREFIX" desc="The prefix for a guest page loaded in a webview tag in the Task Manager">
         Webview: <ph name="WEBVIEW_TAG_NAME">$1<ex>Google</ex></ph>
       </message>
-      <message name="IDS_EXTENSION_TASK_MANAGER_WORKER_FRAME_TAG_PREFIX" desc="The prefix for a guest page loaded in an appview tag in the Task Manager">
-        WorkerFrame: <ph name="WORKER_FRAME_TAG_NAME">$1<ex>Google Hangouts</ex></ph>
+      <message name="IDS_EXTENSION_TASK_MANAGER_SURFACEWORKER_TAG_PREFIX" desc="The prefix for a guest page loaded in an appview tag in the Task Manager">
+        SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME">$1<ex>Google Hangouts</ex></ph>
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_SERIAL" desc="Permission string for accessing a USB device with a known vendor name, product name and serial number.">
         <ph name="PRODUCT_NAME">$1<ex>Nexus 5</ex></ph> from <ph name="VENDOR_NAME">$2<ex>Google Inc.</ex></ph> (serial number <ph name="SERIAL_NUMBER">$3<ex>ABCDEF123456</ex></ph>)

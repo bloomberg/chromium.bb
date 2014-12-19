@@ -266,6 +266,12 @@
     "dependencies": ["permission:storage"],
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
   },
+  "surfaceWorkerInternal": {
+    "internal": true,
+    "channel": "trunk",
+    "contexts": "all",
+    "matches": ["<all_urls>"]
+  },
   "system.cpu": {
     "dependencies": ["permission:system.cpu"],
     "contexts": ["blessed_extension"]
@@ -380,11 +386,5 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": ["chrome://chrome-signin/*", "chrome://oobe/*"]
-  }],
-  "workerFrameInternal": {
-    "internal": true,
-    "channel": "trunk",
-    "contexts": "all",
-    "matches": ["<all_urls>"]
-  }
+  }]
 }

@@ -21,8 +21,8 @@
 #include "extensions/browser/guest_view/extension_options/extension_options_guest.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
+#include "extensions/browser/guest_view/surface_worker/surface_worker_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
-#include "extensions/browser/guest_view/worker_frame/worker_frame_guest.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/features/feature.h"
@@ -588,8 +588,8 @@ void GuestViewBase::RegisterGuestViewTypes() {
   AppViewGuest::Register();
   ExtensionOptionsGuest::Register();
   MimeHandlerViewGuest::Register();
+  SurfaceWorkerGuest::Register();
   WebViewGuest::Register();
-  WorkerFrameGuest::Register();
 }
 
 }  // namespace extensions

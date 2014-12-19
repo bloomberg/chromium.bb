@@ -24,8 +24,8 @@ const char kDisableExtensionInfoDialog[] = "disable-extension-info-dialog";
 // a new tab.
 const char kEmbeddedExtensionOptions[] = "embedded-extension-options";
 
-// Enables the WorkerFrame experiment.
-const char kWorkerFrame[] = "worker-frame";
+// Enables the SurfaceWorker experiment.
+const char kSurfaceWorker[] = "surface-worker";
 
 // Show apps windows after the first paint. Windows will be shown significantly
 // later for heavy apps loading resources synchronously but it will be
@@ -40,8 +40,8 @@ const char kEnableAppWindowControls[] = "enable-app-window-controls";
 const char kEnableEmbeddedExtensionOptions[] =
     "enable-embedded-extension-options";
 
-// Enables the experimental feature <workerframe>.
-const char kEnableWorkerFrame[] = "enable-worker-frame";
+// Enables the experimental feature SurfaceWorker.
+const char kEnableSurfaceWorker[] = "enable-surface-worker";
 
 // Enables extension APIs that are in development.
 const char kEnableExperimentalExtensionApis[] =

@@ -1438,11 +1438,11 @@ const Experiment kExperiments[] = {
 #endif
 #if defined(ENABLE_EXTENSIONS)
   {
-    "enable-worker-frame",
-    IDS_FLAGS_ENABLE_WORKER_FRAME_NAME,
-    IDS_FLAGS_ENABLE_WORKER_FRAME_DESCRIPTION,
+    "enable-surface-worker",
+    IDS_FLAGS_ENABLE_SURFACE_WORKER_NAME,
+    IDS_FLAGS_ENABLE_SURFACE_WORKER_DESCRIPTION,
     kOsDesktop,
-    SINGLE_VALUE_TYPE(extensions::switches::kEnableWorkerFrame)
+    SINGLE_VALUE_TYPE(extensions::switches::kEnableSurfaceWorker)
   },
 #endif
   {

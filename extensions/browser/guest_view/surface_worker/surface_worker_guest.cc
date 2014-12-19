@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/guest_view/worker_frame/worker_frame_guest.h"
+#include "extensions/browser/guest_view/surface_worker/surface_worker_guest.h"
 
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
-#include "extensions/browser/guest_view/worker_frame/worker_frame_constants.h"
+#include "extensions/browser/guest_view/surface_worker/surface_worker_constants.h"
 #include "extensions/strings/grit/extensions_strings.h"
 #include "ipc/ipc_message_macros.h"
 
@@ -16,49 +16,49 @@ using content::WebContents;
 namespace extensions {
 
 // static.
-const char WorkerFrameGuest::Type[] = "workerframe";
+const char SurfaceWorkerGuest::Type[] = "surfaceview";
 
 // static
-GuestViewBase* WorkerFrameGuest::Create(
+GuestViewBase* SurfaceWorkerGuest::Create(
     content::BrowserContext* browser_context,
     content::WebContents* owner_web_contents,
     int guest_instance_id) {
-  return new WorkerFrameGuest(browser_context,
-                              owner_web_contents,
-                              guest_instance_id);
+  return new SurfaceWorkerGuest(browser_context,
+                                owner_web_contents,
+                                guest_instance_id);
 }
 
-WorkerFrameGuest::WorkerFrameGuest(
+SurfaceWorkerGuest::SurfaceWorkerGuest(
     content::BrowserContext* browser_context,
     content::WebContents* owner_web_contents,
     int guest_instance_id)
-    : GuestView<WorkerFrameGuest>(browser_context,
-                                        owner_web_contents,
-                                        guest_instance_id),
+    : GuestView<SurfaceWorkerGuest>(browser_context,
+                                    owner_web_contents,
+                                    guest_instance_id),
       weak_ptr_factory_(this) {
 }
 
-WorkerFrameGuest::~WorkerFrameGuest() {
+SurfaceWorkerGuest::~SurfaceWorkerGuest() {
 }
 
-bool WorkerFrameGuest::HandleContextMenu(
+bool SurfaceWorkerGuest::HandleContextMenu(
     const content::ContextMenuParams& params) {
   return false;
 }
 
-const char* WorkerFrameGuest::GetAPINamespace() const {
-  return worker_frame::kEmbedderAPINamespace;
+const char* SurfaceWorkerGuest::GetAPINamespace() const {
+  return surface_worker::kEmbedderAPINamespace;
 }
 
-int WorkerFrameGuest::GetTaskPrefix() const {
-  return IDS_EXTENSION_TASK_MANAGER_WORKER_FRAME_TAG_PREFIX;
+int SurfaceWorkerGuest::GetTaskPrefix() const {
+  return IDS_EXTENSION_TASK_MANAGER_SURFACEWORKER_TAG_PREFIX;
 }
 
-void WorkerFrameGuest::CreateWebContents(
+void SurfaceWorkerGuest::CreateWebContents(
     const base::DictionaryValue& create_params,
     const WebContentsCreatedCallback& callback) {
   std::string url;
-  if (!create_params.GetString(worker_frame::kURL, &url)) {
+  if (!create_params.GetString(surface_worker::kURL, &url)) {
     callback.Run(NULL);
     return;
   }
@@ -69,7 +69,7 @@ void WorkerFrameGuest::CreateWebContents(
     return;
   }
 
-  GURL guest_site(base::StringPrintf("%s://wtf-%s",
+  GURL guest_site(base::StringPrintf("%s://surface-%s",
                                      content::kGuestScheme,
                                      GetOwnerSiteURL().host().c_str()));
 
@@ -85,7 +85,7 @@ void WorkerFrameGuest::CreateWebContents(
   callback.Run(WebContents::Create(params));
 }
 
-void WorkerFrameGuest::DidAttachToEmbedder() {
+void SurfaceWorkerGuest::DidAttachToEmbedder() {
   web_contents()->GetController().LoadURL(
       url_, content::Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
   url_ = GURL();

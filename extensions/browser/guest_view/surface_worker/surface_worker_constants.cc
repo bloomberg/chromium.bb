@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/guest_view/worker_frame/worker_frame_constants.h"
+#include "extensions/browser/guest_view/surface_worker/surface_worker_constants.h"
 
-namespace worker_frame {
+namespace surface_worker {
 
 // API namespace for the embedder.
-const char kEmbedderAPINamespace[] = "workerFrameInternal";
+const char kEmbedderAPINamespace[] = "surfaceWorkerInternal";
 
 const char kURL[] = "url";
 
-}  // namespace worker_frame
+}  // namespace surface_worker
