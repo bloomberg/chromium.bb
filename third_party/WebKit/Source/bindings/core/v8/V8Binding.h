@@ -909,25 +909,33 @@ enum DeleteResult {
 
 class V8IsolateInterruptor : public ThreadState::Interruptor {
 public:
-    explicit V8IsolateInterruptor(v8::Isolate* isolate) : m_isolate(isolate) { }
+    explicit V8IsolateInterruptor(v8::Isolate* isolate)
+        : m_isolate(isolate)
+        , m_canceled(false)
+    {
+    }
 
     static void onInterruptCallback(v8::Isolate* isolate, void* data)
     {
-        reinterpret_cast<V8IsolateInterruptor*>(data)->onInterrupted();
+        V8IsolateInterruptor* interruptor = reinterpret_cast<V8IsolateInterruptor*>(data);
+        if (!interruptor->m_canceled)
+            interruptor->onInterrupted();
     }
 
     virtual void requestInterrupt() override
     {
+        m_canceled = false;
         m_isolate->RequestInterrupt(&onInterruptCallback, this);
     }
 
     virtual void clearInterrupt() override
     {
-        m_isolate->ClearInterrupt();
+        m_canceled = true;
     }
 
 private:
     v8::Isolate* m_isolate;
+    bool m_canceled;
 };
 
 class V8TestingScope {
