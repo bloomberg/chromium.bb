@@ -30,6 +30,47 @@ source_set("converters") {
   ]
 }
 
+source_set("cdm_proxy") {
+  deps = [
+    ":converters",
+    "//base",
+    "//media",
+    "//media/mojo/interfaces",
+    "//mojo/public/interfaces/application",
+    "//mojo/common",
+    "//mojo/environment:chromium",
+    "//mojo/public/c/system:for_component",
+    "//mojo/public/cpp/application",
+  ]
+
+  sources = [
+    "mojo_cdm.cc",
+    "mojo_cdm.h",
+    "mojo_type_trait.h",
+  ]
+}
+
+source_set("cdm_service") {
+  deps = [
+    ":converters",
+    "//base",
+    "//media",
+    "//media/mojo/interfaces",
+    "//mojo/public/interfaces/application",
+    "//mojo/common",
+    "//mojo/environment:chromium",
+    "//mojo/public/c/system:for_component",
+  ]
+
+  sources = [
+    "mojo_cdm_promise.cc",
+    "mojo_cdm_promise.h",
+    "mojo_cdm_service.cc",
+    "mojo_cdm_service.h",
+    "mojo_type_trait.h",
+  ]
+}
+
 # media::Renderer implementation using mojo::MediaRenderer.
 source_set("renderer_proxy") {
   sources = [
@@ -150,6 +191,7 @@ if (!is_component_build) {
 
 group("services") {
   deps = [
+    ":cdm_proxy",
     ":renderer_proxy",
   ]
 

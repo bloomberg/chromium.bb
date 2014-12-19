@@ -1,0 +1,74 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo;
+
+import "media/mojo/interfaces/demuxer_stream.mojom";
+import "media/mojo/interfaces/media_types.mojom";
+
+// TODO(xhwang): Add mojo types for AudioBuffer and VideoFrame.
+struct AudioBuffer {};
+struct VideoFrame {};
+
+// Interface for decrypting (and decoding) encrypted streams.
+// See media/base/decryptor.h for details.
+[Client=DecryptorClient]
+interface Decryptor {
+  // Status of a decrypt or decrypt-and-decode operation. The returned
+  // buffer/frame of such an operation is NOT null iff the status is SUCCESS.
+  enum Status {
+    SUCCESS,  // Successfully completed. Decrypted buffer ready.
+    NO_KEY,  // No key is available to decrypt.
+    NEED_MORE_DATA,  // Decoder needs more data to produce an output.
+    ERROR  // Key is available but an error occurred during decryption.
+  };
+
+  // Decrypts the |encrypted| buffer and returns the decrypt |status| and
+  // decrypted |buffer|.
+  // At most one decrypt call is allowed at any time for a |stream_type|.
+  Decrypt(DemuxerStream.Type stream_type, MediaDecoderBuffer encrypted)
+      => (Status status, MediaDecoderBuffer? buffer);
+
+  // Cancels any pending decrypt for |stream_type| with SUCCESS.
+  CancelDecrypt(DemuxerStream.Type stream_type);
+
+  // Initializes a decoder with the given |config|. Returns whether the
+  // initialization succeeded.
+  InitializeAudioDecoder(AudioDecoderConfig config) => (bool success);
+  InitializeVideoDecoder(VideoDecoderConfig config) => (bool success);
+
+  // Decrypts and decodes the |encrypted| buffer and returns the |status| and
+  // the decrypted |audio_buffers| or |video_frame|.
+  // At end-of-stream, this method should be called repeatedly with
+  // end-of-stream |encrypted| until no buffer/frame can be produced.
+  // These methods can only be called after the corresponding decoder has
+  // been successfully initialized.
+  // At most one decrypt-and-decode call is allowed at any time for a
+  // |stream_type|.
+  DecryptAndDecodeAudio(MediaDecoderBuffer encrypted)
+      => (Status status, array<AudioBuffer>? audio_buffers);
+  DecryptAndDecodeVideo(
+      MediaDecoderBuffer encrypted) => (Status status, VideoFrame? video_frame);
+
+  // Resets the decoder for |stream_type| to a clean initialized state and
+  // cancels any pending decrypt-and-decode operations immediately with ERROR.
+  // This method can only be called after the corresponding decoder has been
+  // successfully initialized.
+  ResetDecoder(DemuxerStream.Type stream_type);
+
+  // Releases decoder resources, deinitializes the decoder, aborts any pending
+  // initialization (with false) or decrypt-and-decode (with ERROR) for
+  // |stream_type| immediately.
+  // This method can be called any time after Initialize{Audio|Video}Decoder()
+  // has been called (with the correct stream type).
+  // After this operation, the decoder is set to an uninitialized state.
+  // The decoder can be reinitialized after it is deinitialized.
+  DeinitializeDecoder(DemuxerStream.Type stream_type);
+};
+
+interface DecryptorClient {
+  // Indicates that a new usable key is available in the CDM associated with the
+  // Decryptor.
+  OnNewUsableKey();
+};

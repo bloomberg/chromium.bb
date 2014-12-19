@@ -1,0 +1,112 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo;
+
+import "media/mojo/interfaces/decryptor.mojom";
+
+// Transport layer of media::MediaKeys::Exception (see media/base/media_keys.h).
+// This is used for ContentDecryptionModule (CDM) promise rejections.
+// Note: This can also be used for session errors in prefixed API.
+enum CdmException {
+  NOT_SUPPORTED_ERROR,
+  INVALID_STATE_ERROR,
+  INVALID_ACCESS_ERROR,
+  QUOTA_EXCEEDED_ERROR,
+  UNKNOWN_ERROR,
+  CLIENT_ERROR,
+  OUTPUT_ERROR
+};
+
+// Transport layer of media::CdmPromise (see media/base/cdm_promise.h).
+// - When |success| is true, the promise is resolved and all other fields should
+//   be ignored.
+// - When |success| is false, the promise is rejected with |exception|,
+//   |system_code| and |error_message|.
+struct CdmPromiseResult {
+  bool success;
+  CdmException exception;
+  uint32 system_code;
+  string error_message;
+};
+
+// An interface that represents a CDM in the Encrypted Media Extensions (EME)
+// spec (https://w3c.github.io/encrypted-media/). See media/base/media_keys.h.
+[Client=ContentDecryptionModuleClient]
+interface ContentDecryptionModule {
+  // See media::MediaKeys::SessionType.
+  enum SessionType {
+    TEMPORARY_SESSION,
+    PERSISTENT_SESSION
+  };
+
+  // Provides a server certificate to be used to encrypt messages to the
+  // license server.
+  SetServerCertificate(array<uint8> certificate_data)
+      => (CdmPromiseResult result);
+
+  // Creates a session with the |init_data_type|, |init_data| and |session_type|
+  // provided. If |result.success| is false, the output |session_id| will be
+  // null.
+  CreateSession(string init_data_type,
+                array<uint8> init_data,
+                SessionType session_type)
+      => (CdmPromiseResult result, string? session_id);
+
+  // Loads the session associated with |session_id|. Combinations of
+  // |result.success| and |session_id| means:
+  //   (true, non-null) : Session successfully loaded.
+  //   (true, null) : Session not found.
+  //   (false, non-null): N/A; this combination is not allowed.
+  //   (false, null) : Unexpected error. See other fields in |result|.
+  LoadSession(string session_id)
+      => (CdmPromiseResult result, string? session_id);
+
+  // Updates a session specified by |session_id| with |response|.
+  UpdateSession(string session_id, array<uint8> response)
+      => (CdmPromiseResult result);
+
+  // Closes the session specified by |session_id|.
+  CloseSession(string session_id) => (CdmPromiseResult result);
+
+  // Removes stored session data associated with the active session specified by
+  // |session_id|.
+  RemoveSession(string session_id) => (CdmPromiseResult result);
+
+  // Retrieves the key IDs for keys in the session that the CDM knows are
+  // currently usable to decrypt media data. If |result.success| is
+  // false, the |usable_key_ids| will be null.
+  GetUsableKeyIds(string session_id)
+      => (CdmPromiseResult result, array<array<uint8>>? usable_key_ids);
+
+  // Assigns the |cdm_id| to the CDM, and retrieves the |decryptor| associated
+  // with this CDM instance.
+  // A CDM implementation must choose to support either an explicit or implicit
+  // decryptor:
+  // - Explicit (non-null) decryptor: The client (e.g. media pipeline) will use
+  //   the |decryptor| directly to decrypt (and decode) encrypted buffers.
+  // - Implicit (null) decryptor: The client (e.g. media pipeline) will use the
+  //   |cdm_id| to locate a decryptor and associate it with the client.
+  // Note: In Chromium GetCdmContext() is a sync call. But we don't have an easy
+  // way to support sync calls on a mojo interface. Instead the client should
+  // generate a client side ID and pass it to the service.
+  GetCdmContext(int32 cdm_id, Decryptor&? decryptor);
+};
+
+// Session callbacks. See media/base/media_keys.h for details.
+interface ContentDecryptionModuleClient {
+  OnSessionMessage(string session_id, array<uint8> message,
+                   string destination_url);
+
+  OnSessionReady(string session_id);
+
+  OnSessionClosed(string session_id);
+
+  OnSessionError(string session_id, CdmException exception,
+                 uint32 system_code, string error_message);
+
+  OnSessionKeysChange(string session_id, bool has_additional_usable_key);
+
+  OnSessionExpirationUpdate(string session_id, int64 new_expiry_time_usec);
+};

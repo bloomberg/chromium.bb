@@ -6,9 +6,11 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
   sources = [
-    "media_types.mojom",
-    "media_renderer.mojom",
+    "content_decryption_module.mojom",
+    "decryptor.mojom",
     "demuxer_stream.mojom",
+    "media_renderer.mojom",
+    "media_types.mojom",
   ]
 
   deps = [

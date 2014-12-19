@@ -9,7 +9,9 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/media_keys.h"
 #include "media/base/video_decoder_config.h"
+#include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/interfaces/demuxer_stream.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 
@@ -208,6 +210,29 @@ ASSERT_ENUM_EQ(VideoCodecProfile,
                VIDEO_CODEC_PROFILE_,
                VIDEO_CODEC_PROFILE_MAX);
 
+// CdmException
+#define ASSERT_CDM_EXCEPTION(value)                                        \
+  static_assert(                                                           \
+      media::MediaKeys::value ==                                           \
+          static_cast<media::MediaKeys::Exception>(CDM_EXCEPTION_##value), \
+      "Mismatched CDM Exception")
+ASSERT_CDM_EXCEPTION(NOT_SUPPORTED_ERROR);
+ASSERT_CDM_EXCEPTION(INVALID_STATE_ERROR);
+ASSERT_CDM_EXCEPTION(INVALID_ACCESS_ERROR);
+ASSERT_CDM_EXCEPTION(QUOTA_EXCEEDED_ERROR);
+ASSERT_CDM_EXCEPTION(UNKNOWN_ERROR);
+ASSERT_CDM_EXCEPTION(CLIENT_ERROR);
+ASSERT_CDM_EXCEPTION(OUTPUT_ERROR);
+
+// CDM Session Type
+#define ASSERT_CDM_SESSION_TYPE(value)                                  \
+  static_assert(media::MediaKeys::value ==                              \
+                    static_cast<media::MediaKeys::SessionType>(         \
+                        ContentDecryptionModule::SESSION_TYPE_##value), \
+                "Mismatched CDM Session Type")
+ASSERT_CDM_SESSION_TYPE(TEMPORARY_SESSION);
+ASSERT_CDM_SESSION_TYPE(PERSISTENT_SESSION);
+
 // static
 SubsampleEntryPtr
 TypeConverter<SubsampleEntryPtr, media::SubsampleEntry>::Convert(
@@ -268,8 +293,8 @@ MediaDecoderBufferPtr TypeConverter<MediaDecoderBufferPtr,
       input->splice_timestamp().InMicroseconds();
 
   // Note: The side data is always small, so this copy is okay.
-  std::vector<uint8> side_data(input->side_data(),
-                               input->side_data() + input->side_data_size());
+  std::vector<uint8_t> side_data(input->side_data(),
+                                 input->side_data() + input->side_data_size());
   mojo_buffer->side_data.Swap(&side_data);
 
   if (input->decrypt_config())
@@ -333,8 +358,8 @@ TypeConverter<AudioDecoderConfigPtr, media::AudioDecoderConfig>::Convert(
       static_cast<ChannelLayout>(input.channel_layout());
   config->samples_per_second = input.samples_per_second();
   if (input.extra_data()) {
-    std::vector<uint8> data(input.extra_data(),
-                            input.extra_data() + input.extra_data_size());
+    std::vector<uint8_t> data(input.extra_data(),
+                              input.extra_data() + input.extra_data_size());
     config->extra_data.Swap(&data);
   }
   config->seek_preroll_usec = input.seek_preroll().InMicroseconds();
@@ -373,8 +398,8 @@ TypeConverter<VideoDecoderConfigPtr, media::VideoDecoderConfig>::Convert(
   config->visible_rect = Rect::From(input.visible_rect());
   config->natural_size = Size::From(input.natural_size());
   if (input.extra_data()) {
-    std::vector<uint8> data(input.extra_data(),
-                            input.extra_data() + input.extra_data_size());
+    std::vector<uint8_t> data(input.extra_data(),
+                              input.extra_data() + input.extra_data_size());
     config->extra_data.Swap(&data);
   }
   config->is_encrypted = input.is_encrypted();
