@@ -56,11 +56,15 @@ div.intro-text {
 #start-container div.buttonbar {
   background-color: rgb(51, 103, 214);
   height: 56px;
+  padding: 0;
   text-align: center;
 }
 
 #start-container .buttonbar button {
+  height: 100%;
+  margin: 0;
   padding: 0 8px;
+  width: 100%;
 }
 
 a {
