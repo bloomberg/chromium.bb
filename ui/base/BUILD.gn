@@ -602,7 +602,10 @@ component("base") {
       "cursor/ozone/bitmap_cursor_factory_ozone.h",
     ]
 
-    deps += [ "//ui/ozone:ozone_base" ]
+    deps += [
+      "//ui/ozone:ozone_base",
+      "//ui/events/ozone:events_ozone_layout",
+    ]
   }
 
   if (!toolkit_views) {
