@@ -85,9 +85,9 @@ InjectedScript InjectedScriptManager::injectedScriptForId(int id)
     IdToInjectedScriptMap::iterator it = m_idToInjectedScript.find(id);
     if (it != m_idToInjectedScript.end())
         return it->value;
-    for (ScriptStateToId::iterator it = m_scriptStateToId.begin(); it != m_scriptStateToId.end(); ++it) {
-        if (it->value == id)
-            return injectedScriptFor(it->key.get());
+    for (auto& state : m_scriptStateToId) {
+        if (state.value == id)
+            return injectedScriptFor(state.key.get());
     }
     return InjectedScript();
 }
@@ -139,8 +139,8 @@ void InjectedScriptManager::releaseObjectGroup(const String& objectGroup)
 {
     Vector<int> keys;
     keys.appendRange(m_idToInjectedScript.keys().begin(), m_idToInjectedScript.keys().end());
-    for (Vector<int>::iterator k = keys.begin(); k != keys.end(); ++k) {
-        IdToInjectedScriptMap::iterator s = m_idToInjectedScript.find(*k);
+    for (auto& key : keys) {
+        IdToInjectedScriptMap::iterator s = m_idToInjectedScript.find(key);
         if (s != m_idToInjectedScript.end())
             s->value.releaseObjectGroup(objectGroup); // m_idToInjectedScript may change here.
     }

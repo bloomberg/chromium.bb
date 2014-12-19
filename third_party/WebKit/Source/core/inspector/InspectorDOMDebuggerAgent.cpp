@@ -563,9 +563,9 @@ void InspectorDOMDebuggerAgent::willSendXMLHttpRequest(const String& url)
         breakpointURL = "";
     else {
         RefPtr<JSONObject> xhrBreakpoints = m_state->getObject(DOMDebuggerAgentState::xhrBreakpoints);
-        for (JSONObject::iterator it = xhrBreakpoints->begin(); it != xhrBreakpoints->end(); ++it) {
-            if (url.contains(it->key)) {
-                breakpointURL = it->key;
+        for (auto& breakpoint : *xhrBreakpoints) {
+            if (url.contains(breakpoint.key)) {
+                breakpointURL = breakpoint.key;
                 break;
             }
         }

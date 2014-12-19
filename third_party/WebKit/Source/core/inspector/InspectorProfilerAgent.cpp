@@ -264,9 +264,8 @@ void InspectorProfilerAgent::idleFinished()
 
     double idleTime = WTF::monotonicallyIncreasingTime() - m_idleStartTime;
     m_idleStartTime = 0.0;
-    ProfileNameIdleTimeMap::iterator end = m_profileNameIdleTimeMap->end();
-    for (ProfileNameIdleTimeMap::iterator it = m_profileNameIdleTimeMap->begin(); it != end; ++it)
-        it->value += idleTime;
+    for (auto& map : *m_profileNameIdleTimeMap)
+        map.value += idleTime;
 }
 
 void InspectorProfilerAgent::idleStarted()

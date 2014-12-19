@@ -222,9 +222,8 @@ void InspectorRevalidateDOMTask::onTimer(Timer<InspectorRevalidateDOMTask>*)
 {
     // The timer is stopped on m_domAgent destruction, so this method will never be called after m_domAgent has been destroyed.
     WillBeHeapVector<RawPtrWillBeMember<Element> > elements;
-    WillBePersistentHeapHashSet<RefPtrWillBeMember<Element> >::iterator it;
-    for (it = m_styleAttrInvalidatedElements.begin(); it != m_styleAttrInvalidatedElements.end(); ++it)
-        elements.append(it->get());
+    for (auto& attribute : m_styleAttrInvalidatedElements)
+        elements.append(attribute.get());
     m_domAgent->styleAttributeInvalidated(elements);
 
     m_styleAttrInvalidatedElements.clear();
@@ -843,14 +842,13 @@ void InspectorDOMAgent::setAttributesAsText(ErrorString* errorString, int elemen
     }
 
     bool foundOriginalAttribute = false;
-    AttributeCollection::iterator end = attributes.end();
-    for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it) {
+    for (auto& attribute : attributes) {
         // Add attribute pair
-        String attributeName = it->name().toString();
+        String attributeName = attribute.name().toString();
         if (shouldIgnoreCase)
             attributeName = attributeName.lower();
         foundOriginalAttribute |= name && attributeName == caseAdjustedName;
-        if (!m_domEditor->setAttribute(element, attributeName, it->value(), errorString))
+        if (!m_domEditor->setAttribute(element, attributeName, attribute.value(), errorString))
             return;
     }
 
@@ -1111,8 +1109,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
     WillBeHeapVector<RawPtrWillBeMember<Document> > docs = documents();
     WillBeHeapListHashSet<RawPtrWillBeMember<Node> > resultCollector;
 
-    for (WillBeHeapVector<RawPtrWillBeMember<Document> >::iterator it = docs.begin(); it != docs.end(); ++it) {
-        Document* document = *it;
+    for (Document* document : docs) {
         Node* documentElement = document->documentElement();
         Node* node = documentElement;
         if (!node)
@@ -1140,16 +1137,15 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
                 // Go through all attributes and serialize them.
                 const Element* element = toElement(node);
                 AttributeCollection attributes = element->attributes();
-                AttributeCollection::iterator end = attributes.end();
-                for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it) {
+                for (auto& attribute : attributes) {
                     // Add attribute pair
-                    if (it->localName().find(whitespaceTrimmedQuery, 0, false) != kNotFound) {
+                    if (attribute.localName().find(whitespaceTrimmedQuery, 0, false) != kNotFound) {
                         resultCollector.add(node);
                         break;
                     }
-                    size_t foundPosition = it->value().find(attributeQuery, 0, false);
+                    size_t foundPosition = attribute.value().find(attributeQuery, 0, false);
                     if (foundPosition != kNotFound) {
-                        if (!exactAttributeMatch || (!foundPosition && it->value().length() == attributeQuery.length())) {
+                        if (!exactAttributeMatch || (!foundPosition && attribute.value().length() == attributeQuery.length())) {
                             resultCollector.add(node);
                             break;
                         }
@@ -1163,8 +1159,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
         }
 
         // XPath evaluation
-        for (WillBeHeapVector<RawPtrWillBeMember<Document> >::iterator it = docs.begin(); it != docs.end(); ++it) {
-            Document* document = *it;
+        for (Document* document : docs) {
             ASSERT(document);
             TrackExceptionState exceptionState;
             RefPtrWillBeRawPtr<XPathResult> result = DocumentXPathEvaluator::evaluate(*document, whitespaceTrimmedQuery, document, nullptr, XPathResult::ORDERED_NODE_SNAPSHOT_TYPE, 0, exceptionState);
@@ -1184,8 +1179,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
         }
 
         // Selector evaluation
-        for (WillBeHeapVector<RawPtrWillBeMember<Document> >::iterator it = docs.begin(); it != docs.end(); ++it) {
-            Document* document = *it;
+        for (Document* document : docs) {
             TrackExceptionState exceptionState;
             RefPtrWillBeRawPtr<StaticElementList> elementList = document->querySelectorAll(AtomicString(whitespaceTrimmedQuery), exceptionState);
             if (exceptionState.hadException() || !elementList)
@@ -1200,8 +1194,8 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
     *searchId = IdentifiersFactory::createIdentifier();
     WillBeHeapVector<RefPtrWillBeMember<Node> >* resultsIt = &m_searchResults.add(*searchId, WillBeHeapVector<RefPtrWillBeMember<Node> >()).storedValue->value;
 
-    for (WillBeHeapListHashSet<RawPtrWillBeMember<Node> >::iterator it = resultCollector.begin(); it != resultCollector.end(); ++it)
-        resultsIt->append(*it);
+    for (auto& result : resultCollector)
+        resultsIt->append(result);
 
     *resultCount = resultsIt->size();
 }
@@ -1543,9 +1537,9 @@ void InspectorDOMAgent::setFileInputFiles(ErrorString* errorString, int nodeId, 
     }
 
     FileList* fileList = FileList::create();
-    for (JSONArray::const_iterator iter = files->begin(); iter != files->end(); ++iter) {
+    for (const auto& file : *files) {
         String path;
-        if (!(*iter)->asString(&path)) {
+        if (!(file)->asString(&path)) {
             *errorString = "Files must be strings";
             return;
         }
@@ -1761,11 +1755,10 @@ PassRefPtr<TypeBuilder::Array<String> > InspectorDOMAgent::buildArrayForElementA
     RefPtr<TypeBuilder::Array<String> > attributesValue = TypeBuilder::Array<String>::create();
     // Go through all attributes and serialize them.
     AttributeCollection attributes = element->attributes();
-    AttributeCollection::iterator end = attributes.end();
-    for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it) {
+    for (auto& attribute : attributes) {
         // Add attribute pair
-        attributesValue->addItem(it->name().toString());
-        attributesValue->addItem(it->value());
+        attributesValue->addItem(attribute.name().toString());
+        attributesValue->addItem(attribute.value());
     }
     return attributesValue.release();
 }
@@ -2234,10 +2227,10 @@ void InspectorDOMAgent::pushNodeByPathToFrontend(ErrorString* errorString, const
 void InspectorDOMAgent::pushNodesByBackendIdsToFrontend(ErrorString* errorString, const RefPtr<JSONArray>& backendNodeIds, RefPtr<TypeBuilder::Array<int> >& result)
 {
     result = TypeBuilder::Array<int>::create();
-    for (JSONArray::const_iterator it = backendNodeIds->begin(); it != backendNodeIds->end(); ++it) {
+    for (const auto& backendNode : *backendNodeIds) {
         int backendNodeId;
 
-        if (!(*it)->asNumber(&backendNodeId)) {
+        if (!(backendNode)->asNumber(&backendNodeId)) {
             *errorString = "Invalid argument type";
             return;
         }

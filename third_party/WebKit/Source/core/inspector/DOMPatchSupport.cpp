@@ -199,10 +199,8 @@ bool DOMPatchSupport::innerPatchNode(Digest* oldDigest, Digest* newDigest, Excep
         }
 
         // FIXME: Create a function in Element for copying properties. cloneDataFromElement() is close but not enough for this case.
-        AttributeCollection attributes = newElement->attributesWithoutUpdate();
-        AttributeCollection::iterator end = attributes.end();
-        for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it) {
-            if (!m_domEditor->setAttribute(oldElement, it->name().localName(), it->value(), exceptionState))
+        for (auto& attribute : newElement->attributesWithoutUpdate()) {
+            if (!m_domEditor->setAttribute(oldElement, attribute.name().localName(), attribute.value(), exceptionState))
                 return false;
         }
     }
@@ -256,16 +254,16 @@ DOMPatchSupport::diff(const Vector<OwnPtr<Digest> >& oldList, const Vector<OwnPt
         oldTable.add(oldList[i]->m_sha1, Vector<size_t>()).storedValue->value.append(i);
     }
 
-    for (DiffTable::iterator newIt = newTable.begin(); newIt != newTable.end(); ++newIt) {
-        if (newIt->value.size() != 1)
+    for (auto& newIt : newTable) {
+        if (newIt.value.size() != 1)
             continue;
 
-        DiffTable::iterator oldIt = oldTable.find(newIt->key);
+        DiffTable::iterator oldIt = oldTable.find(newIt.key);
         if (oldIt == oldTable.end() || oldIt->value.size() != 1)
             continue;
 
-        newMap[newIt->value[0]] = std::make_pair(newList[newIt->value[0]].get(), oldIt->value[0]);
-        oldMap[oldIt->value[0]] = std::make_pair(oldList[oldIt->value[0]].get(), newIt->value[0]);
+        newMap[newIt.value[0]] = std::make_pair(newList[newIt.value[0]].get(), oldIt->value[0]);
+        oldMap[oldIt->value[0]] = std::make_pair(oldList[oldIt->value[0]].get(), newIt.value[0]);
     }
 
     for (size_t i = 0; newList.size() > 0 && i < newList.size() - 1; ++i) {
@@ -372,8 +370,8 @@ bool DOMPatchSupport::innerPatchChildren(ContainerNode* parentNode, const Vector
     }
 
     // 2. Patch nodes marked for merge.
-    for (HashMap<Digest*, Digest*>::iterator it = merges.begin(); it != merges.end(); ++it) {
-        if (!innerPatchNode(it->value, it->key, exceptionState))
+    for (auto& merge: merges) {
+        if (!innerPatchNode(merge.value, merge.key, exceptionState))
             return false;
     }
 
@@ -432,10 +430,9 @@ PassOwnPtr<DOMPatchSupport::Digest> DOMPatchSupport::createDigest(Node* node, Un
         AttributeCollection attributes = element.attributesWithoutUpdate();
         if (!attributes.isEmpty()) {
             OwnPtr<blink::WebCryptoDigestor> attrsDigestor = createDigestor(HashAlgorithmSha1);
-            AttributeCollection::iterator end = attributes.end();
-            for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it) {
-                addStringToDigestor(attrsDigestor.get(), it->name().toString());
-                addStringToDigestor(attrsDigestor.get(), it->value().string());
+            for (auto& attribute : attributes) {
+                addStringToDigestor(attrsDigestor.get(), attribute.name().toString());
+                addStringToDigestor(attrsDigestor.get(), attribute.value().string());
             }
             finishDigestor(attrsDigestor.get(), digestResult);
             digest->m_attrsSHA1 = base64Encode(reinterpret_cast<const char*>(digestResult.data()), 10);

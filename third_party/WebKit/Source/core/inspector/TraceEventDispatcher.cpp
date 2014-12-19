@@ -123,8 +123,8 @@ void TraceEventDispatcher::removeAllListeners(void* eventTarget, InspectorClient
         MutexLocker locker(m_mutex);
 
         ListenersMap remainingListeners;
-        for (ListenersMap::iterator it = m_listeners->begin(); it != m_listeners->end(); ++it) {
-            WillBeHeapVector<OwnPtrWillBeMember<TraceEventListener> >& listeners = *it->value.get();
+        for (auto& listener : *m_listeners) {
+            WillBeHeapVector<OwnPtrWillBeMember<TraceEventListener> >& listeners = *listener.value.get();
             for (size_t j = 0; j < listeners.size();) {
                 if (listeners[j]->target() == eventTarget)
                     listeners.remove(j);
@@ -132,7 +132,7 @@ void TraceEventDispatcher::removeAllListeners(void* eventTarget, InspectorClient
                     ++j;
             }
             if (!listeners.isEmpty())
-                remainingListeners.add(it->key, it->value.release());
+                remainingListeners.add(listener.key, listener.value.release());
         }
         m_listeners->swap(remainingListeners);
     }

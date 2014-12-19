@@ -101,8 +101,8 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::Page::SearchMatch> > searchInTextByLi
     OwnPtr<ScriptRegexp> regex = ContentSearchUtils::createSearchRegex(query, caseSensitive, isRegex);
     Vector<pair<int, String> > matches = getScriptRegexpMatchesByLines(regex.get(), text);
 
-    for (Vector<pair<int, String> >::const_iterator it = matches.begin(); it != matches.end(); ++it)
-        result->addItem(buildObjectForSearchMatch(it->first, it->second));
+    for (const auto& match : matches)
+        result->addItem(buildObjectForSearchMatch(match.first, match.second));
 
     return result;
 }

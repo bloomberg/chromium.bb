@@ -380,10 +380,10 @@ void InspectorDebuggerAgent::setBreakpointByUrl(ErrorString* errorString, int li
     m_state->setObject(DebuggerAgentState::javaScriptBreakpoints, breakpointsCookie);
 
     ScriptBreakpoint breakpoint(lineNumber, columnNumber, condition);
-    for (ScriptsMap::iterator it = m_scripts.begin(); it != m_scripts.end(); ++it) {
-        if (!matches(it->value.sourceURL(), url, isRegex))
+    for (auto& script : m_scripts) {
+        if (!matches(script.value.sourceURL(), url, isRegex))
             continue;
-        RefPtr<TypeBuilder::Debugger::Location> location = resolveBreakpoint(breakpointId, it->key, breakpoint, UserBreakpointSource);
+        RefPtr<TypeBuilder::Debugger::Location> location = resolveBreakpoint(breakpointId, script.key, breakpoint, UserBreakpointSource);
         if (location)
             locations->addItem(location);
     }
@@ -1383,8 +1383,8 @@ void InspectorDebuggerAgent::didParseSource(const String& scriptId, const Script
         return;
 
     RefPtr<JSONObject> breakpointsCookie = m_state->getObject(DebuggerAgentState::javaScriptBreakpoints);
-    for (JSONObject::iterator it = breakpointsCookie->begin(); it != breakpointsCookie->end(); ++it) {
-        RefPtr<JSONObject> breakpointObject = it->value->asObject();
+    for (auto& cookie : *breakpointsCookie) {
+        RefPtr<JSONObject> breakpointObject = cookie.value->asObject();
         bool isRegex;
         breakpointObject->getBoolean(DebuggerAgentState::isRegex, &isRegex);
         String url;
@@ -1395,9 +1395,9 @@ void InspectorDebuggerAgent::didParseSource(const String& scriptId, const Script
         breakpointObject->getNumber(DebuggerAgentState::lineNumber, &breakpoint.lineNumber);
         breakpointObject->getNumber(DebuggerAgentState::columnNumber, &breakpoint.columnNumber);
         breakpointObject->getString(DebuggerAgentState::condition, &breakpoint.condition);
-        RefPtr<TypeBuilder::Debugger::Location> location = resolveBreakpoint(it->key, scriptId, breakpoint, UserBreakpointSource);
+        RefPtr<TypeBuilder::Debugger::Location> location = resolveBreakpoint(cookie.key, scriptId, breakpoint, UserBreakpointSource);
         if (location)
-            m_frontend->breakpointResolved(it->key, location);
+            m_frontend->breakpointResolved(cookie.key, location);
     }
 }
 
@@ -1437,8 +1437,8 @@ ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::didPause(ScriptSta
 
     RefPtr<Array<String> > hitBreakpointIds = Array<String>::create();
 
-    for (Vector<String>::const_iterator i = hitBreakpoints.begin(); i != hitBreakpoints.end(); ++i) {
-        DebugServerBreakpointToBreakpointIdAndSourceMap::iterator breakpointIterator = m_serverBreakpoints.find(*i);
+    for (const auto& point : hitBreakpoints) {
+        DebugServerBreakpointToBreakpointIdAndSourceMap::iterator breakpointIterator = m_serverBreakpoints.find(point);
         if (breakpointIterator != m_serverBreakpoints.end()) {
             const String& localId = breakpointIterator->value.first;
             hitBreakpointIds->addItem(localId);

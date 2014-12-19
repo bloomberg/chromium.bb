@@ -341,8 +341,7 @@ Resource* InspectorPageAgent::cachedResource(LocalFrame* frame, const KURL& url)
     Resource* cachedResource = document->fetcher()->cachedResource(url);
     if (!cachedResource) {
         Vector<Document*> allImports = InspectorPageAgent::importsForFrame(frame);
-        for (Vector<Document*>::const_iterator it = allImports.begin(); it != allImports.end(); ++it) {
-            Document* import = *it;
+        for (Document* import : allImports) {
             cachedResource = import->fetcher()->cachedResource(url);
             if (cachedResource)
                 break;
@@ -628,9 +627,8 @@ static PassRefPtr<TypeBuilder::Array<TypeBuilder::Page::Cookie> > buildArrayForC
 static void cachedResourcesForDocument(Document* document, Vector<Resource*>& result, bool skipXHRs)
 {
     const ResourceFetcher::DocumentResourceMap& allResources = document->fetcher()->allResources();
-    ResourceFetcher::DocumentResourceMap::const_iterator end = allResources.end();
-    for (ResourceFetcher::DocumentResourceMap::const_iterator it = allResources.begin(); it != end; ++it) {
-        Resource* cachedResource = it->value.get();
+    for (const auto& resource : allResources) {
+        Resource* cachedResource = resource.value.get();
 
         switch (cachedResource->type()) {
         case Resource::Image:
@@ -692,8 +690,8 @@ static Vector<KURL> allResourcesURLsForFrame(LocalFrame* frame)
     result.append(urlWithoutFragment(frame->loader().documentLoader()->url()));
 
     Vector<Resource*> allResources = cachedResourcesForFrame(frame, false);
-    for (Vector<Resource*>::const_iterator it = allResources.begin(); it != allResources.end(); ++it)
-        result.append(urlWithoutFragment((*it)->url()));
+    for (const auto& resource : allResources)
+        result.append(urlWithoutFragment(resource->url()));
 
     return result;
 }
@@ -707,9 +705,9 @@ void InspectorPageAgent::getCookies(ErrorString*, RefPtr<TypeBuilder::Array<Type
             continue;
         Document* document = toLocalFrame(frame)->document();
         Vector<KURL> allURLs = allResourcesURLsForFrame(toLocalFrame(frame));
-        for (Vector<KURL>::const_iterator it = allURLs.begin(); it != allURLs.end(); ++it) {
+        for (const auto& url : allURLs) {
             Vector<Cookie> docCookiesList;
-            getRawCookies(document, *it, docCookiesList);
+            getRawCookies(document, url, docCookiesList);
             int cookiesSize = docCookiesList.size();
             for (int i = 0; i < cookiesSize; i++) {
                 if (!rawCookiesList.contains(docCookiesList[i]))
@@ -989,10 +987,9 @@ void InspectorPageAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
 
     RefPtr<JSONObject> scripts = m_state->getObject(PageAgentState::pageAgentScriptsToEvaluateOnLoad);
     if (scripts) {
-        JSONObject::const_iterator end = scripts->end();
-        for (JSONObject::const_iterator it = scripts->begin(); it != end; ++it) {
+        for (const auto& script : *scripts) {
             String scriptText;
-            if (it->value->asString(&scriptText))
+            if (script.value->asString(&scriptText))
                 frame->script().executeScriptInMainWorld(scriptText);
         }
     }
@@ -1297,9 +1294,7 @@ PassRefPtr<TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::buildObject
          .setResources(subresources);
 
     Vector<Resource*> allResources = cachedResourcesForFrame(frame, true);
-    for (Vector<Resource*>::const_iterator it = allResources.begin(); it != allResources.end(); ++it) {
-        Resource* cachedResource = *it;
-
+    for (Resource* cachedResource : allResources) {
         RefPtr<TypeBuilder::Page::FrameResourceTree::Resources> resourceObject = TypeBuilder::Page::FrameResourceTree::Resources::create()
             .setUrl(urlWithoutFragment(cachedResource->url()).string())
             .setType(cachedResourceTypeJson(*cachedResource))
@@ -1312,8 +1307,7 @@ PassRefPtr<TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::buildObject
     }
 
     Vector<Document*> allImports = InspectorPageAgent::importsForFrame(frame);
-    for (Vector<Document*>::const_iterator it = allImports.begin(); it != allImports.end(); ++it) {
-        Document* import = *it;
+    for (Document* import : allImports) {
         RefPtr<TypeBuilder::Page::FrameResourceTree::Resources> resourceObject = TypeBuilder::Page::FrameResourceTree::Resources::create()
             .setUrl(urlWithoutFragment(import->url()).string())
             .setType(resourceTypeJson(InspectorPageAgent::DocumentResource))

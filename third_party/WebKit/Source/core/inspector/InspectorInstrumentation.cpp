@@ -118,9 +118,7 @@ void willDestroyResourceImpl(Resource* cachedResource)
 {
     if (!instrumentingAgentsSet)
         return;
-    HashSet<InstrumentingAgents*>::iterator end = instrumentingAgentsSet->end();
-    for (HashSet<InstrumentingAgents*>::iterator it = instrumentingAgentsSet->begin(); it != end; ++it) {
-        InstrumentingAgents* instrumentingAgents = *it;
+    for (InstrumentingAgents* instrumentingAgents: *instrumentingAgentsSet) {
         if (InspectorResourceAgent* inspectorResourceAgent = instrumentingAgents->inspectorResourceAgent())
             inspectorResourceAgent->willDestroyResource(cachedResource);
     }

@@ -130,8 +130,8 @@ void InspectorCanvasAgent::hasUninstrumentedCanvases(ErrorString* errorString, b
 {
     if (!checkIsEnabled(errorString))
         return;
-    for (FramesWithUninstrumentedCanvases::const_iterator it = m_framesWithUninstrumentedCanvases.begin(); it != m_framesWithUninstrumentedCanvases.end(); ++it) {
-        if (it->value) {
+    for (const auto& frame : m_framesWithUninstrumentedCanvases) {
+        if (frame.value) {
             *result = true;
             return;
         }
@@ -297,8 +297,8 @@ void InspectorCanvasAgent::findFramesWithUninstrumentedCanvases()
     ScriptProfiler::visitNodeWrappers(&nodeVisitor);
 
     if (m_frontend) {
-        for (FramesWithUninstrumentedCanvases::const_iterator it = m_framesWithUninstrumentedCanvases.begin(); it != m_framesWithUninstrumentedCanvases.end(); ++it) {
-            String frameId = m_pageAgent->frameId(it->key);
+        for (const auto& frame : m_framesWithUninstrumentedCanvases) {
+            String frameId = m_pageAgent->frameId(frame.key);
             if (!frameId.isEmpty())
                 m_frontend->contextCreated(frameId);
         }
@@ -319,8 +319,8 @@ void InspectorCanvasAgent::didCommitLoad(LocalFrame*, DocumentLoader* loader)
         return;
     Frame* frame = loader->frame();
     if (frame == m_pageAgent->mainFrame()) {
-        for (FramesWithUninstrumentedCanvases::iterator it = m_framesWithUninstrumentedCanvases.begin(); it != m_framesWithUninstrumentedCanvases.end(); ++it)
-            it->value = false;
+        for (auto& frame : m_framesWithUninstrumentedCanvases)
+            frame.value = false;
         m_frontend->traceLogsRemoved(0, 0);
     } else {
         while (frame) {
@@ -349,8 +349,8 @@ void InspectorCanvasAgent::didBeginFrame()
     if (!m_enabled)
         return;
     ErrorString error;
-    for (FramesWithUninstrumentedCanvases::const_iterator it = m_framesWithUninstrumentedCanvases.begin(); it != m_framesWithUninstrumentedCanvases.end(); ++it) {
-        InjectedScriptCanvasModule module = injectedScriptCanvasModule(&error, ScriptState::forMainWorld(it->key));
+    for (const auto& frame : m_framesWithUninstrumentedCanvases) {
+        InjectedScriptCanvasModule module = injectedScriptCanvasModule(&error, ScriptState::forMainWorld(frame.key));
         if (!module.isEmpty())
             module.markFrameEnd();
     }

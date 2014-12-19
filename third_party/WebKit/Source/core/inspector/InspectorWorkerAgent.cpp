@@ -213,8 +213,8 @@ void InspectorWorkerAgent::setTracingSessionId(const String& sessionId)
     m_tracingSessionId = sessionId;
     if (sessionId.isEmpty())
         return;
-    for (WorkerInfos::iterator it = m_workerInfos.begin(); it != m_workerInfos.end(); ++it)
-        it->key->writeTimelineStartedEvent(sessionId, it->value.id);
+    for (auto& info : m_workerInfos)
+        info.key->writeTimelineStartedEvent(sessionId, info.value.id);
 }
 
 bool InspectorWorkerAgent::shouldPauseDedicatedWorkerOnStart()
@@ -247,15 +247,15 @@ void InspectorWorkerAgent::workerTerminated(WorkerInspectorProxy* proxy)
 
 void InspectorWorkerAgent::createWorkerAgentClientsForExistingWorkers()
 {
-    for (WorkerInfos::iterator it = m_workerInfos.begin(); it != m_workerInfos.end(); ++it)
-        createWorkerAgentClient(it->key, it->value.url, it->value.id);
+    for (auto& info : m_workerInfos)
+        createWorkerAgentClient(info.key, info.value.url, info.value.id);
 }
 
 void InspectorWorkerAgent::destroyWorkerAgentClients()
 {
-    for (WorkerClients::iterator it = m_idToClient.begin(); it != m_idToClient.end(); ++it) {
-        it->value->disconnectFromWorker();
-        delete it->value;
+    for (auto& client : m_idToClient) {
+        client.value->disconnectFromWorker();
+        delete client.value;
     }
     m_idToClient.clear();
 }

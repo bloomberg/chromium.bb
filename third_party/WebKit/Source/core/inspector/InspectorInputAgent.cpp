@@ -200,13 +200,12 @@ void InspectorInputAgent::dispatchTouchEvent(ErrorString* error, const String& t
     SyntheticInspectorTouchEvent event(convertedType, convertedModifiers, timestamp ? *timestamp : currentTime());
 
     int autoId = 0;
-    JSONArrayBase::iterator iter;
-    for (iter = touchPoints->begin(); iter != touchPoints->end(); ++iter) {
+    for (auto& touchPoint : *touchPoints) {
         RefPtr<JSONObject> pointObj;
         String state;
         int x, y, radiusX, radiusY, id;
         double rotationAngle, force;
-        (*iter)->asObject(&pointObj);
+        touchPoint->asObject(&pointObj);
         if (!pointObj->getString("state", &state)) {
             *error = "TouchPoint missing 'state'";
             return;

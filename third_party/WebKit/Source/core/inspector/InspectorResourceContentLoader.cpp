@@ -91,8 +91,7 @@ void InspectorResourceContentLoader::start()
         documents.append(localFrame->document());
         documents.appendVector(InspectorPageAgent::importsForFrame(localFrame));
     }
-    for (Vector<Document*>::const_iterator documentIt = documents.begin(); documentIt != documents.end(); ++documentIt) {
-        Document* document = *documentIt;
+    for (Document* document : documents) {
         HashSet<String> urlsToFetch;
 
         ResourceRequest resourceRequest;
@@ -120,8 +119,7 @@ void InspectorResourceContentLoader::start()
 
         WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet> > styleSheets;
         InspectorCSSAgent::collectAllDocumentStyleSheets(document, styleSheets);
-        for (WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet> >::const_iterator stylesheetIt = styleSheets.begin(); stylesheetIt != styleSheets.end(); ++stylesheetIt) {
-            CSSStyleSheet* styleSheet = *stylesheetIt;
+        for (CSSStyleSheet* styleSheet : styleSheets) {
             if (styleSheet->isInline() || !styleSheet->contents()->loadCompleted())
                 continue;
             String url = styleSheet->baseURL().string();
@@ -173,8 +171,8 @@ void InspectorResourceContentLoader::stop()
 {
     HashSet<ResourceClient*> pendingResourceClients;
     m_pendingResourceClients.swap(pendingResourceClients);
-    for (HashSet<ResourceClient*>::const_iterator it = pendingResourceClients.begin(); it != pendingResourceClients.end(); ++it)
-        (*it)->m_loader = 0;
+    for (const auto& client : pendingResourceClients)
+        client->m_loader = 0;
     m_resources.clear();
     // Make sure all callbacks are called to prevent infinite waiting time.
     checkDone();
@@ -191,8 +189,8 @@ void InspectorResourceContentLoader::checkDone()
         return;
     PersistentHeapVectorWillBeHeapVector<Member<VoidCallback> > callbacks;
     callbacks.swap(m_callbacks);
-    for (PersistentHeapVectorWillBeHeapVector<Member<VoidCallback> >::const_iterator it = callbacks.begin(); it != callbacks.end(); ++it)
-        (*it)->handleEvent();
+    for (const auto& callback : callbacks)
+        callback->handleEvent();
 }
 
 void InspectorResourceContentLoader::resourceFinished(ResourceClient* client)

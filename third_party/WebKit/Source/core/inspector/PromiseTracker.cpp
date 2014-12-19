@@ -280,8 +280,8 @@ PassRefPtr<Array<PromiseDetails> > PromiseTracker::promises()
     ASSERT(isEnabled());
 
     RefPtr<Array<PromiseDetails> > result = Array<PromiseDetails>::create();
-    for (PromiseDataMap::iterator it = m_promiseDataMap.begin(); it != m_promiseDataMap.end(); ++it) {
-        PromiseDataVector* vector = &it->value;
+    for (auto& data : m_promiseDataMap) {
+        PromiseDataVector* vector = &data.value;
         for (size_t index = 0; index < vector->size(); ++index) {
             RefPtrWillBeRawPtr<PromiseData> data = vector->at(index);
             PromiseDetails::Status::Enum status;

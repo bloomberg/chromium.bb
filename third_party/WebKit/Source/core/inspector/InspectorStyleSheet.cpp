@@ -560,8 +560,8 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty> > Insp
     WillBeHeapVector<InspectorStyleProperty> properties;
     populateAllProperties(properties);
 
-    for (WillBeHeapVector<InspectorStyleProperty>::iterator it = properties.begin(), itEnd = properties.end(); it != itEnd; ++it) {
-        const CSSPropertySourceData& propertyEntry = it->sourceData;
+    for (auto& property : properties) {
+        const CSSPropertySourceData& propertyEntry = property.sourceData;
         RefPtr<TypeBuilder::CSS::CSSComputedStyleProperty> entry = TypeBuilder::CSS::CSSComputedStyleProperty::create()
             .setName(propertyEntry.name)
             .setValue(propertyEntry.value);
@@ -670,12 +670,12 @@ void InspectorStyle::populateAllProperties(WillBeHeapVector<InspectorStyleProper
     RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = extractSourceData();
     if (sourceData && sourceData->styleSourceData) {
         WillBeHeapVector<CSSPropertySourceData>& sourcePropertyData = sourceData->styleSourceData->propertyData;
-        for (WillBeHeapVector<CSSPropertySourceData>::const_iterator it = sourcePropertyData.begin(); it != sourcePropertyData.end(); ++it) {
-            InspectorStyleProperty p(*it, true);
+        for (const auto& data : sourcePropertyData) {
+            InspectorStyleProperty p(data, true);
             bool isPropertyTextKnown = textForRange(p.sourceData.range, &p.rawText);
             ASSERT_UNUSED(isPropertyTextKnown, isPropertyTextKnown);
             result.append(p);
-            sourcePropertyNames.add(it->name.lower());
+            sourcePropertyNames.add(data.name.lower());
         }
     }
 
@@ -701,8 +701,8 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties() con
     WillBeHeapVector<InspectorStyleProperty> properties;
     populateAllProperties(properties);
 
-    for (WillBeHeapVector<InspectorStyleProperty>::iterator it = properties.begin(), itEnd = properties.end(); it != itEnd; ++it) {
-        const CSSPropertySourceData& propertyEntry = it->sourceData;
+    for (auto& styleProperty : properties) {
+        const CSSPropertySourceData& propertyEntry = styleProperty.sourceData;
         const String& name = propertyEntry.name;
 
         RefPtr<TypeBuilder::CSS::CSSProperty> property = TypeBuilder::CSS::CSSProperty::create()
@@ -713,12 +713,12 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties() con
         // Default "parsedOk" == true.
         if (!propertyEntry.parsedOk)
             property->setParsedOk(false);
-        if (it->hasRawText())
-            property->setText(it->rawText);
+        if (styleProperty.hasRawText())
+            property->setText(styleProperty.rawText);
 
         if (propertyEntry.important)
             property->setImportant(true);
-        if (it->hasSource) {
+        if (styleProperty.hasSource) {
             property->setRange(buildSourceRangeObject(propertyEntry.range, m_parentStyleSheet ? m_parentStyleSheet->lineEndings() : nullptr));
             if (!propertyEntry.disabled) {
                 ASSERT_UNUSED(sourceData, sourceData);
