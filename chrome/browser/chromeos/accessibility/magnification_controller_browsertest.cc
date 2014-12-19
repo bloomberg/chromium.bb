@@ -8,6 +8,7 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -62,6 +63,32 @@ gfx::Rect GetViewPort() {
   return GetMagnificationController()->GetViewportRect();
 }
 
+class MagnifierAnimationWaiter {
+ public:
+  explicit MagnifierAnimationWaiter(ash::MagnificationController* controller)
+      : controller_(controller) {}
+
+  void Wait() {
+    base::RepeatingTimer<MagnifierAnimationWaiter> check_timer;
+    check_timer.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(10), this,
+                      &MagnifierAnimationWaiter::OnTimer);
+    runner_ = new content::MessageLoopRunner;
+    runner_->Run();
+  }
+
+ private:
+  void OnTimer() {
+    DCHECK(runner_.get());
+    if (!controller_->IsOnAnimationForTesting()) {
+      runner_->Quit();
+    }
+  }
+
+  ash::MagnificationController* controller_;  // not owned
+  scoped_refptr<content::MessageLoopRunner> runner_;
+  DISALLOW_COPY_AND_ASSIGN(MagnifierAnimationWaiter);
+};
+
 }  // namespace
 
 class MagnificationControllerTest : public InProcessBrowserTest {
@@ -73,6 +100,22 @@ class MagnificationControllerTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUpCommandLine(command_line);
     // Make screens sufficiently wide to host 2 browsers side by side.
     command_line->AppendSwitchASCII("ash-host-window-bounds", "1200x800");
+  }
+
+  void SetUpOnMainThread() override {
+    SetMagnifierEnabled(true);
+
+    // Confirms that magnifier is enabled.
+    EXPECT_TRUE(IsMagnifierEnabled());
+    EXPECT_EQ(2.0f, GetMagnificationController()->GetScale());
+
+    // MagnificationController moves the magnifier window with animation
+    // when the magnifier is set to be enabled. It will move the mouse cursor
+    // when the animation completes. Wait until the animation completes, so that
+    // the mouse movement won't affect the position of magnifier window later.
+    MagnifierAnimationWaiter waiter(GetMagnificationController());
+    waiter.Wait();
+    base::RunLoop().RunUntilIdle();
   }
 
   content::WebContents* GetWebContents() {
@@ -122,70 +165,61 @@ class MagnificationControllerTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(MagnificationControllerTest,
                        FollowFocusOnWebPageButtonNotIntersected) {
+  DCHECK(IsMagnifierEnabled());
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
       browser(), GURL(std::string(kDataURIPrefix) + kTestHtmlContent1)));
-  const gfx::Rect button_bounds = GetControlBoundsInRoot("test_button");
-
-  // Enable magnifier.
-  SetMagnifierEnabled(true);
-  // Confirms that magnifier is enabled.
-  EXPECT_TRUE(IsMagnifierEnabled());
-  EXPECT_EQ(2.0f, GetMagnificationController()->GetScale());
 
   // Move the magnifier window to not intersect with the button.
-  MoveMagnifierWindow(button_bounds.right() + 200,
-                      button_bounds.bottom() + 200);
+  const gfx::Rect button_bounds = GetControlBoundsInRoot("test_button");
+  MoveMagnifierWindow(button_bounds.right() + 100,
+                      button_bounds.bottom() + 100);
   EXPECT_FALSE(GetViewPort().Intersects(button_bounds));
 
   // Set the focus on the button.
   SetFocusOnElement("test_button");
-  // Verify the magnifier window is moved to contain the focused button.
+
+  // Verify the magnifier window is moved to contain the focused button,
+  // and the button is centered at the magnifier window.
   EXPECT_TRUE(GetViewPort().Contains(button_bounds));
+  EXPECT_EQ(GetViewPort().CenterPoint(), button_bounds.CenterPoint());
 }
 
 IN_PROC_BROWSER_TEST_F(MagnificationControllerTest,
                        FollowFocusOnWebPageButtonIntersected) {
+  DCHECK(IsMagnifierEnabled());
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
       browser(), GURL(std::string(kDataURIPrefix) + kTestHtmlContent1)));
-  const gfx::Rect button_bounds = GetControlBoundsInRoot("test_button");
-
-  // Enable magnifier.
-  SetMagnifierEnabled(true);
-  // Confirm that magnifier is enabled.
-  EXPECT_TRUE(IsMagnifierEnabled());
-  EXPECT_EQ(2.0f, GetMagnificationController()->GetScale());
 
   // Move the magnifier window to intersect with the button.
+  const gfx::Rect button_bounds = GetControlBoundsInRoot("test_button");
   MoveMagnifierWindow(button_bounds.CenterPoint().x(),
                       button_bounds.CenterPoint().y());
   EXPECT_TRUE(GetViewPort().Intersects(button_bounds));
 
   // Set the focus on the button.
   SetFocusOnElement("test_button");
-  // Verify the magnifier window is moved to contain the focused button.
+
+  // Verify the magnifier window is moved to contain the focused button,
+  // and the button is centered at the magnifier window.
   EXPECT_TRUE(GetViewPort().Contains(button_bounds));
+  EXPECT_EQ(GetViewPort().CenterPoint(), button_bounds.CenterPoint());
 }
 
-// Flaky, see crbug.com/442695.
 IN_PROC_BROWSER_TEST_F(MagnificationControllerTest,
-                       DISABLED_FollowFocusOnWebButtonContained) {
+                       FollowFocusOnWebButtonContained) {
+  DCHECK(IsMagnifierEnabled());
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
       browser(), GURL(std::string(kDataURIPrefix) + kTestHtmlContent2)));
-  const gfx::Rect button_bounds = GetControlBoundsInRoot("test_button");
-
-  // Enable magnifier.
-  SetMagnifierEnabled(true);
-  // Confirm that magnifier is enabled.
-  EXPECT_TRUE(IsMagnifierEnabled());
-  EXPECT_EQ(2.0f, GetMagnificationController()->GetScale());
 
   // Move magnifier window to contain the button.
+  const gfx::Rect button_bounds = GetControlBoundsInRoot("test_button");
   MoveMagnifierWindow(button_bounds.x() - 100, button_bounds.y() - 100);
   const gfx::Rect view_port_before_focus = GetViewPort();
   EXPECT_TRUE(view_port_before_focus.Contains(button_bounds));
 
   // Set the focus on the button.
   SetFocusOnElement("test_button");
+
   // Verify the magnifier window is not moved and still contains the button.
   const gfx::Rect view_port_after_focus = GetViewPort();
   EXPECT_TRUE(view_port_after_focus.Contains(button_bounds));

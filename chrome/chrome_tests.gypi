@@ -95,7 +95,6 @@
       'browser/chrome_service_worker_browsertest.cc',
       'browser/chrome_switches_browsertest.cc',
       'browser/chromeos/accessibility/accessibility_manager_browsertest.cc',
-      'browser/chromeos/accessibility/magnification_controller_browsertest.cc',
       'browser/chromeos/accessibility/magnification_manager_browsertest.cc',
       'browser/chromeos/accessibility/speech_monitor.cc',
       'browser/chromeos/accessibility/speech_monitor.h',
@@ -977,6 +976,7 @@
       'browser/notifications/message_center_notifications_browsertest.cc',
     ],
     'chrome_interactive_ui_test_chromeos_sources': [
+      'browser/chromeos/accessibility/magnification_controller_browsertest.cc',
       'browser/chromeos/accessibility/speech_monitor.cc',
       'browser/chromeos/accessibility/speech_monitor.h',
       'browser/chromeos/accessibility/spoken_feedback_browsertest.cc',

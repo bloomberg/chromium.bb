@@ -67,6 +67,10 @@ class ASH_EXPORT MagnificationController {
   // location. This method is only for test purpose.
   virtual gfx::Point GetPointOfInterestForTesting() = 0;
 
+  // Returns true if magnifier is still on animation for moving viewport.
+  // This is only used for testing purpose.
+  virtual bool IsOnAnimationForTesting() const = 0;
+
  protected:
   MagnificationController() {}
 

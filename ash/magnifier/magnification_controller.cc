@@ -99,6 +99,8 @@ class MagnificationControllerImpl : virtual public MagnificationController,
     return point_of_interest_;
   }
 
+  bool IsOnAnimationForTesting() const override { return is_on_animation_; }
+
  private:
   // ui::ImplicitAnimationObserver overrides:
   void OnImplicitAnimationsCompleted() override;
