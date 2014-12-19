@@ -628,16 +628,16 @@ class MatchCriteria {
 class MatchProduct : public MatchCriteria {
  public:
   explicit MatchProduct(const std::string& arg);
-  virtual ~MatchProduct() {}
-  virtual bool Match(const DevicePtr device);
+  ~MatchProduct() override {}
+  bool Match(const DevicePtr device) override;
 };
 
 // Math a device based on its device node path.
 class MatchDevicePath : public MatchCriteria {
  public:
   explicit MatchDevicePath(const std::string& arg);
-  virtual ~MatchDevicePath() {}
-  virtual bool Match(const DevicePtr device);
+  ~MatchDevicePath() override {}
+  bool Match(const DevicePtr device) override;
 };
 
 // Math a USB device based on its USB vid and pid.
@@ -645,8 +645,8 @@ class MatchDevicePath : public MatchCriteria {
 class MatchUSBID : public MatchCriteria {
  public:
   explicit MatchUSBID(const std::string& arg);
-  virtual ~MatchUSBID() {}
-  virtual bool Match(const DevicePtr device);
+  ~MatchUSBID() override {}
+  bool Match(const DevicePtr device) override;
 
  private:
   bool IsValidPattern(const std::string& pattern);
@@ -658,7 +658,7 @@ class MatchUSBID : public MatchCriteria {
 class MatchDeviceType : public MatchCriteria {
  public:
   explicit MatchDeviceType(const std::string& arg);
-  virtual ~MatchDeviceType() {}
+  ~MatchDeviceType() override {}
   virtual bool Match(const DevicePtr device) = 0;
 
  protected:
@@ -670,24 +670,24 @@ class MatchDeviceType : public MatchCriteria {
 class MatchIsPointer : public MatchDeviceType {
  public:
   explicit MatchIsPointer(const std::string& arg);
-  virtual ~MatchIsPointer() {}
-  virtual bool Match(const DevicePtr device);
+  ~MatchIsPointer() override {}
+  bool Match(const DevicePtr device) override;
 };
 
 // Check if a device is a touchpad.
 class MatchIsTouchpad : public MatchDeviceType {
  public:
   explicit MatchIsTouchpad(const std::string& arg);
-  virtual ~MatchIsTouchpad() {}
-  virtual bool Match(const DevicePtr device);
+  ~MatchIsTouchpad() override {}
+  bool Match(const DevicePtr device) override;
 };
 
 // Check if a device is a touchscreen.
 class MatchIsTouchscreen : public MatchDeviceType {
  public:
   explicit MatchIsTouchscreen(const std::string& arg);
-  virtual ~MatchIsTouchscreen() {}
-  virtual bool Match(const DevicePtr device);
+  ~MatchIsTouchscreen() override {}
+  bool Match(const DevicePtr device) override;
 };
 
 // Struct for sections in xorg conf files.

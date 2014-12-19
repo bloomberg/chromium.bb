@@ -9,7 +9,7 @@
 #include "base/timer/timer.h"
 
 // libgestures requires that this be in the top level namespace.
-class GesturesTimer {
+struct GesturesTimer {
  public:
   GesturesTimer() : callback_(NULL), callback_data_(NULL) {}
   ~GesturesTimer() {}

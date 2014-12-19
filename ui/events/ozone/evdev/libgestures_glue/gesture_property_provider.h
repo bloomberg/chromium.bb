@@ -269,7 +269,7 @@ std::ostream& operator<<(std::ostream& os, const GesturesProp& prop);
 // libgestures requires that this be in the top level namespace. We have also
 // to put it in the header file so that other classes will be able to use the
 // gesture property objects.
-class GesturesProp {
+struct GesturesProp {
  public:
   typedef ui::GesturePropertyProvider::PropertyType PropertyType;
 

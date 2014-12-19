@@ -23,7 +23,7 @@ class EventModifiersEvdev;
 class MouseButtonMapEvdev;
 class CursorDelegateEvdev;
 class KeyboardEvdev;
-class GestureDeviceProperties;
+struct GestureDeviceProperties;
 class GesturePropertyProvider;
 
 // Convert libevdev-cros events to ui::Events using libgestures.
