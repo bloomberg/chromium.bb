@@ -1083,11 +1083,6 @@ class ValidationPool(object):
     self.is_master = bool(is_master)
     self.pre_cq_trybot = pre_cq_trybot
     self._run = builder_run
-    self.build_log = None
-    if self._run:
-      waterfall = self._run.attrs.metadata.GetValue('buildbot-master-name')
-      self.build_log = tree_status.ConstructDashboardURL(
-          waterfall, builder_name, build_number)
     self.dryrun = bool(dryrun) or self.GLOBAL_DRYRUN
     if pre_cq_trybot:
       self.queue = 'A trybot'
@@ -1105,12 +1100,19 @@ class ValidationPool(object):
     # reason we can't try these again in the next run.
     self.changes_that_failed_to_apply_earlier = conflicting_changes or []
 
-    # Private vars only used for pickling.
+    # Private vars only used for pickling and self._build_log.
     self._overlays = overlays
     self._build_number = build_number
     self._builder_name = builder_name
 
     self.tree_was_open = tree_was_open
+
+  @property
+  def build_log(self):
+    if self._run:
+      waterfall = self._run.attrs.metadata.GetValue('buildbot-master-name')
+      return tree_status.ConstructDashboardURL(
+          waterfall, self._builder_name, self._build_number)
 
   @staticmethod
   def GetGerritHelpersForOverlays(overlays):
