@@ -5,36 +5,35 @@
 #ifndef CHROMEOS_AUDIO_AUDIO_DEVICES_PREF_HANDLER_STUB_H_
 #define CHROMEOS_AUDIO_AUDIO_DEVICES_PREF_HANDLER_STUB_H_
 
-#include "chromeos/audio/audio_devices_pref_handler.h"
-
 #include <map>
 
-namespace chromeos {
+#include "base/macros.h"
+#include "chromeos/audio/audio_devices_pref_handler.h"
 
-struct AudioDevice;
+namespace chromeos {
 
 // Stub class for AudioDevicesPrefHandler, used for testing.
 class CHROMEOS_EXPORT AudioDevicesPrefHandlerStub
     : public AudioDevicesPrefHandler {
  public:
-  typedef std::map<uint64, bool> AudioDeviceMute;
-  typedef std::map<uint64, int> AudioDeviceVolumeGain;
+  using AudioDeviceMute = std::map<uint64_t, bool>;
+  using AudioDeviceVolumeGain = std::map<uint64_t, int>;
 
   AudioDevicesPrefHandlerStub();
 
-  virtual double GetOutputVolumeValue(const AudioDevice* device) override;
-  virtual double GetInputGainValue(const AudioDevice* device) override;
-  virtual void SetVolumeGainValue(const AudioDevice& device,
-                                  double value) override;
-  virtual bool GetMuteValue(const AudioDevice& device) override;
-  virtual void SetMuteValue(const AudioDevice& device, bool mute_on) override;
-  virtual bool GetAudioCaptureAllowedValue() override;
-  virtual bool GetAudioOutputAllowedValue() override;
-  virtual void AddAudioPrefObserver(AudioPrefObserver* observer) override;
-  virtual void RemoveAudioPrefObserver(AudioPrefObserver* observer) override;
+  // AudioDevicesPrefHandler:
+  double GetOutputVolumeValue(const AudioDevice* device) override;
+  double GetInputGainValue(const AudioDevice* device) override;
+  void SetVolumeGainValue(const AudioDevice& device, double value) override;
+  bool GetMuteValue(const AudioDevice& device) override;
+  void SetMuteValue(const AudioDevice& device, bool mute_on) override;
+  bool GetAudioCaptureAllowedValue() override;
+  bool GetAudioOutputAllowedValue() override;
+  void AddAudioPrefObserver(AudioPrefObserver* observer) override;
+  void RemoveAudioPrefObserver(AudioPrefObserver* observer) override;
 
  protected:
-  virtual ~AudioDevicesPrefHandlerStub();
+  ~AudioDevicesPrefHandlerStub() override;
 
  private:
   AudioDeviceMute audio_device_mute_map_;

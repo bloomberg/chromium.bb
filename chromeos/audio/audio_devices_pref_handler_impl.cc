@@ -18,9 +18,6 @@
 
 namespace {
 
-const double kDefaultOutputVolume = 75.0;
-const double kDefaultHDMIOutputVolume = 100.0;
-
 // Values used for muted preference.
 const int kPrefMuteOff = 0;
 const int kPrefMuteOn = 1;
@@ -50,7 +47,7 @@ namespace chromeos {
 double AudioDevicesPrefHandlerImpl::GetOutputVolumeValue(
     const AudioDevice* device) {
   if (!device)
-    return kDefaultOutputVolume;
+    return kDefaultOutputVolumePercent;
   else
     return GetVolumeGainPrefValue(*device);
 }
@@ -132,9 +129,9 @@ double AudioDevicesPrefHandlerImpl::GetVolumeGainPrefValue(
 double AudioDevicesPrefHandlerImpl::GetDeviceDefaultOutputVolume(
     const AudioDevice& device) {
   if (device.type == AUDIO_TYPE_HDMI)
-    return kDefaultHDMIOutputVolume;
+    return kDefaultHdmiOutputVolumePercent;
   else
-    return kDefaultOutputVolume;
+    return kDefaultOutputVolumePercent;
 }
 
 AudioDevicesPrefHandlerImpl::AudioDevicesPrefHandlerImpl(
@@ -194,7 +191,7 @@ void AudioDevicesPrefHandlerImpl::SaveDevicesVolumePref() {
                                    prefs::kAudioDevicesVolumePercent);
   base::DictionaryValue::Iterator it(*device_volume_settings_);
   while (!it.IsAtEnd()) {
-    double volume = kDefaultOutputVolume;
+    double volume = kDefaultOutputVolumePercent;
     bool success = it.value().GetAsDouble(&volume);
     DCHECK(success);
     dict_update->SetDouble(it.key(), volume);
@@ -242,7 +239,7 @@ void AudioDevicesPrefHandlerImpl::RegisterPrefs(
 
   // Register the legacy audio prefs for migration.
   registry->RegisterDoublePref(prefs::kAudioVolumePercent,
-                               kDefaultOutputVolume);
+                               kDefaultOutputVolumePercent);
   registry->RegisterIntegerPref(prefs::kAudioMute, kPrefMuteOff);
 }
 

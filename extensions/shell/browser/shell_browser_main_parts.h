@@ -82,7 +82,8 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
 #endif
   scoped_ptr<DesktopController> desktop_controller_;
   scoped_ptr<ShellBrowserContext> browser_context_;
-  scoped_ptr<PrefService> pref_service_;
+  scoped_ptr<PrefService> local_state_;
+  scoped_ptr<PrefService> user_pref_service_;
   scoped_ptr<ShellDeviceClient> device_client_;
   scoped_ptr<AppWindowClient> app_window_client_;
   scoped_ptr<ExtensionsClient> extensions_client_;

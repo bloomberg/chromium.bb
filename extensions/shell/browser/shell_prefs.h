@@ -5,10 +5,13 @@
 #ifndef EXTENSIONS_SHELL_BROWSER_SHELL_PREFS_H_
 #define EXTENSIONS_SHELL_BROWSER_SHELL_PREFS_H_
 
-#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 class PrefService;
+
+namespace base {
+class FilePath;
+}
 
 namespace content {
 class BrowserContext;
@@ -16,16 +19,17 @@ class BrowserContext;
 
 namespace extensions {
 
-// Support for PrefService initialization and management.
-class ShellPrefs {
- public:
-  // Creates a pref service that loads user prefs.
-  static scoped_ptr<PrefService> CreatePrefService(
-      content::BrowserContext* browser_context);
+// Support for preference initialization and management.
+namespace shell_prefs {
 
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ShellPrefs);
-};
+// Creates a pref service for device-wide preferences stored in |data_dir|.
+scoped_ptr<PrefService> CreateLocalState(const base::FilePath& data_dir);
+
+// Creates a pref service that loads user preferences for |browser_context|.
+scoped_ptr<PrefService> CreateUserPrefService(
+    content::BrowserContext* browser_context);
+
+}  // namespace shell_prefs
 
 }  // namespace extensions
 

@@ -44,6 +44,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chromeos/audio/audio_devices_pref_handler_impl.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
@@ -127,14 +128,16 @@ int ShellBrowserMainParts::PreCreateThreads() {
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // Initialize our "profile" equivalent.
   browser_context_.reset(new ShellBrowserContext);
-  pref_service_ = ShellPrefs::CreatePrefService(browser_context_.get());
+
+  // app_shell only supports a single user, so all preferences live in the user
+  // data directory, including the device-wide local state.
+  local_state_ = shell_prefs::CreateLocalState(browser_context_->GetPath());
+  user_pref_service_ =
+      shell_prefs::CreateUserPrefService(browser_context_.get());
 
 #if defined(OS_CHROMEOS)
-  // TODO(jamescook): Use a real chromeos::AudioDevicesPrefHandler hooked up
-  // to |pref_service_|. This requires refactoring some of the Chrome OS audio
-  // code. http://crbug.com/442401
   chromeos::CrasAudioHandler::Initialize(
-      new ShellAudioController::PrefHandler());
+      new chromeos::AudioDevicesPrefHandlerImpl(local_state_.get(), ""));
   audio_controller_.reset(new ShellAudioController());
 #endif
 
@@ -154,7 +157,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   ExtensionsClient::Set(extensions_client_.get());
 
   extensions_browser_client_.reset(CreateExtensionsBrowserClient(
-      browser_context_.get(), pref_service_.get()));
+      browser_context_.get(), user_pref_service_.get()));
   ExtensionsBrowserClient::Set(extensions_browser_client_.get());
 
   omaha_query_params_delegate_.reset(new ShellOmahaQueryParamsDelegate);
@@ -253,8 +256,11 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   chromeos::CrasAudioHandler::Shutdown();
 #endif
 
-  pref_service_->CommitPendingWrite();
-  pref_service_.reset();
+  user_pref_service_->CommitPendingWrite();
+  user_pref_service_.reset();
+  local_state_->CommitPendingWrite();
+  local_state_.reset();
+
   browser_context_.reset();
 }
 

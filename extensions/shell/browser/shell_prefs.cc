@@ -6,6 +6,7 @@
 
 #include "base/prefs/json_pref_store.h"
 #include "base/prefs/pref_filter.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_service_factory.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -14,24 +15,60 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_prefs.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/audio/audio_devices_pref_handler_impl.h"
+#endif
+
+using base::FilePath;
 using user_prefs::PrefRegistrySyncable;
 
 namespace extensions {
+namespace {
 
-// static
-scoped_ptr<PrefService> ShellPrefs::CreatePrefService(
-    content::BrowserContext* browser_context) {
-  base::PrefServiceFactory factory;
+void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
+#if defined(OS_CHROMEOS)
+  chromeos::AudioDevicesPrefHandlerImpl::RegisterPrefs(registry, "");
+#endif
+}
 
-  base::FilePath filename =
-      browser_context->GetPath().AppendASCII("user_prefs.json");
+// Creates a JsonPrefStore from a file at |filepath| and synchronously loads
+// the preferences.
+scoped_refptr<JsonPrefStore> CreateAndLoadPrefStore(const FilePath& filepath) {
   scoped_refptr<base::SequencedTaskRunner> task_runner =
       JsonPrefStore::GetTaskRunnerForFile(
-          filename, content::BrowserThread::GetBlockingPool());
-  scoped_refptr<JsonPrefStore> user_prefs =
-      new JsonPrefStore(filename, task_runner, scoped_ptr<PrefFilter>());
-  user_prefs->ReadPrefs();  // Synchronous.
-  factory.set_user_prefs(user_prefs);
+          filepath, content::BrowserThread::GetBlockingPool());
+  scoped_refptr<JsonPrefStore> pref_store =
+      new JsonPrefStore(filepath, task_runner, scoped_ptr<PrefFilter>());
+  pref_store->ReadPrefs();  // Synchronous.
+  return pref_store;
+}
+
+}  // namespace
+
+namespace shell_prefs {
+
+scoped_ptr<PrefService> CreateLocalState(const FilePath& data_dir) {
+  FilePath filepath = data_dir.AppendASCII("local_state.json");
+  scoped_refptr<JsonPrefStore> pref_store = CreateAndLoadPrefStore(filepath);
+
+  // Local state is considered "user prefs" from the factory's perspective.
+  base::PrefServiceFactory factory;
+  factory.set_user_prefs(pref_store);
+
+  // Local state preferences are not syncable.
+  PrefRegistrySimple* registry = new PrefRegistrySimple;
+  RegisterLocalStatePrefs(registry);
+
+  return factory.Create(registry);
+}
+
+scoped_ptr<PrefService> CreateUserPrefService(
+    content::BrowserContext* browser_context) {
+  FilePath filepath = browser_context->GetPath().AppendASCII("user_prefs.json");
+  scoped_refptr<JsonPrefStore> pref_store = CreateAndLoadPrefStore(filepath);
+
+  base::PrefServiceFactory factory;
+  factory.set_user_prefs(pref_store);
 
   // TODO(jamescook): If we want to support prefs that are set by extensions
   // via ChromeSettings properties (e.g. chrome.accessibilityFeatures or
@@ -47,5 +84,7 @@ scoped_ptr<PrefService> ShellPrefs::CreatePrefService(
   user_prefs::UserPrefs::Set(browser_context, pref_service.get());
   return pref_service;
 }
+
+}  // namespace shell_prefs
 
 }  // namespace extensions

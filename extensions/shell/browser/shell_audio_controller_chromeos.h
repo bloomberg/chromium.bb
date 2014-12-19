@@ -6,7 +6,6 @@
 #define EXTENSIONS_SHELL_BROWSER_SHELL_AUDIO_CONTROLLER_CHROMEOS_H_
 
 #include "base/macros.h"
-#include "chromeos/audio/audio_devices_pref_handler.h"
 #include "chromeos/audio/cras_audio_handler.h"
 
 namespace extensions {
@@ -14,41 +13,6 @@ namespace extensions {
 // Ensures that the "best" input and output audio devices are always active.
 class ShellAudioController : public chromeos::CrasAudioHandler::AudioObserver {
  public:
-  // Simple handler that supports one input and one output device, starts with
-  // max voume and doesn't bother saving prefs.
-  // TODO(jamescook): Remove this and use a real one. http://crbug.com/442401
-  class PrefHandler : public chromeos::AudioDevicesPrefHandler {
-   public:
-    PrefHandler();
-
-    // chromeos::AudioDevicesPrefHandler implementation:
-    virtual double GetOutputVolumeValue(
-        const chromeos::AudioDevice* device) override;
-    virtual double GetInputGainValue(
-        const chromeos::AudioDevice* device) override;
-    virtual void SetVolumeGainValue(const chromeos::AudioDevice& device,
-                                    double value) override;
-    virtual bool GetMuteValue(const chromeos::AudioDevice& device) override;
-    virtual void SetMuteValue(const chromeos::AudioDevice& device,
-                              bool mute_on) override;
-    virtual bool GetAudioCaptureAllowedValue() override;
-    virtual bool GetAudioOutputAllowedValue() override;
-    virtual void AddAudioPrefObserver(
-        chromeos::AudioPrefObserver* observer) override;
-    virtual void RemoveAudioPrefObserver(
-        chromeos::AudioPrefObserver* observer) override;
-
-   protected:
-    virtual ~PrefHandler();
-
-   private:
-    double output_volume_percent_;  // 0.0 to 100.0 inclusive.
-    double input_gain_percent_;  //  0.0 to 100.0 inclusive.
-    bool mute_;
-
-    DISALLOW_COPY_AND_ASSIGN(PrefHandler);
-  };
-
   ShellAudioController();
   virtual ~ShellAudioController();
 

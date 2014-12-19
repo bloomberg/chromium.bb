@@ -12,6 +12,7 @@
 #include "extensions/common/extension_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace extensions {
 namespace {
 
 // A BrowserContext that uses a test data directory as its data path.
@@ -31,17 +32,34 @@ class PrefsTestBrowserContext : public content::TestBrowserContext {
   DISALLOW_COPY_AND_ASSIGN(PrefsTestBrowserContext);
 };
 
-}  // namespace
+class ShellPrefsTest : public testing::Test {
+ public:
+  ShellPrefsTest() {}
+  ~ShellPrefsTest() override {}
 
-namespace extensions {
+ protected:
+  content::TestBrowserThreadBundle thread_bundle_;
+  PrefsTestBrowserContext browser_context_;
+};
 
-TEST(ShellPrefsTest, CreatePrefService) {
-  content::TestBrowserThreadBundle thread_bundle;
-  PrefsTestBrowserContext browser_context;
+TEST_F(ShellPrefsTest, CreateLocalState) {
+  scoped_ptr<PrefService> local_state =
+      shell_prefs::CreateLocalState(browser_context_.GetPath());
+  ASSERT_TRUE(local_state);
 
+#if defined(OS_CHROMEOS)
+  // Verify prefs were registered.
+  EXPECT_TRUE(local_state->FindPreference("hardware.audio_output_enabled"));
+
+  // Verify the test values were read.
+  EXPECT_FALSE(local_state->GetBoolean("hardware.audio_output_enabled"));
+#endif
+}
+
+TEST_F(ShellPrefsTest, CreateUserPrefService) {
   // Create the pref service. This loads the test pref file.
   scoped_ptr<PrefService> service =
-      ShellPrefs::CreatePrefService(&browser_context);
+      shell_prefs::CreateUserPrefService(&browser_context_);
 
   // Some basic extension preferences are registered.
   EXPECT_TRUE(service->FindPreference("extensions.settings"));
@@ -53,7 +71,8 @@ TEST(ShellPrefsTest, CreatePrefService) {
   EXPECT_EQ(123, service->GetInteger("extensions.toolbarsize"));
 
   // The user prefs system has been initialized.
-  EXPECT_EQ(service.get(), user_prefs::UserPrefs::Get(&browser_context));
+  EXPECT_EQ(service.get(), user_prefs::UserPrefs::Get(&browser_context_));
 }
 
+}  // namespace
 }  // namespace extensions

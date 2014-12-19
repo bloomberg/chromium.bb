@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "chromeos/audio/audio_device.h"
+#include "chromeos/audio/audio_devices_pref_handler.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/audio_node.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -29,8 +30,7 @@ class ShellAudioControllerTest : public testing::Test {
     audio_client_->SetAudioNodesForTesting(AudioNodeList());
     dbus_setter->SetCrasAudioClient(make_scoped_ptr(audio_client_));
 
-    chromeos::CrasAudioHandler::Initialize(
-        new ShellAudioController::PrefHandler());
+    chromeos::CrasAudioHandler::InitializeForTesting();
     audio_handler_ = chromeos::CrasAudioHandler::Get();
 
     controller_.reset(new ShellAudioController());
@@ -117,8 +117,8 @@ TEST_F(ShellAudioControllerTest, SelectBestDevices) {
   EXPECT_EQ(external_mic.id, audio_handler_->GetPrimaryActiveInputNode());
 }
 
-// Tests that active audio devices are unmuted and set to 100% volume.
-TEST_F(ShellAudioControllerTest, MaxVolume) {
+// Tests that active audio devices are unmuted and have correct initial volume.
+TEST_F(ShellAudioControllerTest, InitialVolume) {
   AudioNodeList nodes;
   nodes.push_back(CreateNode(chromeos::AUDIO_TYPE_INTERNAL_SPEAKER));
   nodes.push_back(CreateNode(chromeos::AUDIO_TYPE_INTERNAL_MIC));
@@ -126,8 +126,12 @@ TEST_F(ShellAudioControllerTest, MaxVolume) {
 
   EXPECT_FALSE(audio_handler_->IsOutputMuted());
   EXPECT_FALSE(audio_handler_->IsInputMuted());
-  EXPECT_EQ(100, audio_handler_->GetOutputVolumePercent());
-  EXPECT_EQ(100, audio_handler_->GetInputGainPercent());
+  EXPECT_EQ(static_cast<double>(
+                chromeos::AudioDevicesPrefHandler::kDefaultOutputVolumePercent),
+            audio_handler_->GetOutputVolumePercent());
+
+  // TODO(rkc): The default value for gain is wrong. http://crbug.com/442489
+  EXPECT_EQ(75.0, audio_handler_->GetInputGainPercent());
 }
 
 }  // namespace extensions

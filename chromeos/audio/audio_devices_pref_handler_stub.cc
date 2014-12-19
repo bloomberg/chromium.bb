@@ -4,6 +4,7 @@
 
 #include "chromeos/audio/audio_devices_pref_handler_stub.h"
 
+#include "base/stl_util.h"
 #include "chromeos/audio/audio_device.h"
 
 namespace chromeos {
@@ -16,15 +17,16 @@ AudioDevicesPrefHandlerStub::~AudioDevicesPrefHandlerStub() {
 
 double AudioDevicesPrefHandlerStub::GetOutputVolumeValue(
     const AudioDevice* device) {
-  if (!device)
-    return 75.0;
+  if (!device || !ContainsKey(audio_device_volume_gain_map_, device->id))
+    return kDefaultOutputVolumePercent;
   return audio_device_volume_gain_map_[device->id];
 }
 
 double AudioDevicesPrefHandlerStub::GetInputGainValue(
     const AudioDevice* device) {
-  if (!device)
-    return 0.0;
+  // TODO(rkc): The default value for gain is wrong. http://crbug.com/442489
+  if (!device || !ContainsKey(audio_device_volume_gain_map_, device->id))
+    return 75.0;
   return audio_device_volume_gain_map_[device->id];
 }
 
