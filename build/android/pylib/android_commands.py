@@ -177,7 +177,8 @@ def GetAttachedDevices(hardware=True, emulator=True, offline=False):
   re_device = re.compile('^(emulator-[0-9]+)\tdevice', re.MULTILINE)
   emulator_devices = re_device.findall(adb_devices_output)
 
-  re_device = re.compile('^([a-zA-Z0-9_:.-]+)\toffline$', re.MULTILINE)
+  re_device = re.compile('^([a-zA-Z0-9_:.-]+)\t(?:offline|unauthorized)$',
+                         re.MULTILINE)
   offline_devices = re_device.findall(adb_devices_output)
 
   devices = []
