@@ -10,13 +10,6 @@ for more details on the presubmit API built into gcl.
 
 import sys
 
-def GetPreferredTryMasters(project, change):
-  return {
-    'tryserver.chromium.linux': {
-      'linux_chromium_chromeos_rel': set(['defaulttests']),
-    }
-  }
-
 def _CreateHistogramValueChecker(input_api, output_api):
   original_sys_path = sys.path
 

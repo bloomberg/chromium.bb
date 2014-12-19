@@ -1626,112 +1626,15 @@ def GetTryServerMasterForBot(bot):
   return master
 
 
-def GetDefaultTryConfigs(bots=None):
-  """Returns a list of ('bot', set(['tests']), optionally filtered by [bots].
-
-  To add tests to this list, they MUST be in the the corresponding master's
-  gatekeeper config. For example, anything on master.chromium would be closed by
-  tools/build/masters/master.chromium/master_gatekeeper_cfg.py.
-
-  If 'bots' is specified, will only return configurations for bots in that list.
+def GetDefaultTryConfigs(bots):
+  """Returns a list of ('bot', set(['tests']), filtered by [bots].
   """
 
-  standard_tests = [
-      'base_unittests',
-      'browser_tests',
-      'cacheinvalidation_unittests',
-      'check_deps',
-      'check_deps2git',
-      'content_browsertests',
-      'content_unittests',
-      'crypto_unittests',
-      'gpu_unittests',
-      'interactive_ui_tests',
-      'ipc_tests',
-      'jingle_unittests',
-      'media_unittests',
-      'net_unittests',
-      'ppapi_unittests',
-      'printing_unittests',
-      'sql_unittests',
-      'sync_unit_tests',
-      'unit_tests',
-      # Broken in release.
-      #'url_unittests',
-      #'webkit_unit_tests',
-  ]
-
-  builders_and_tests = {
-      # TODO(maruel): Figure out a way to run 'sizes' where people can
-      # effectively update the perf expectation correctly.  This requires a
-      # clobber=True build running 'sizes'. 'sizes' is not accurate with
-      # incremental build. Reference:
-      # http://chromium.org/developers/tree-sheriffs/perf-sheriffs.
-      # TODO(maruel): An option would be to run 'sizes' but not count a failure
-      # of this step as a try job failure.
-      'android_aosp': ['compile'],
-      'android_arm64_dbg_recipe': ['slave_steps'],
-      'android_chromium_gn_compile_dbg': ['compile'],
-      'android_chromium_gn_compile_rel': ['compile'],
-      'android_clang_dbg_recipe': ['slave_steps'],
-      'android_dbg_tests_recipe': ['slave_steps'],
-      'ios_dbg_simulator': [
-          'compile',
-          'base_unittests',
-          'content_unittests',
-          'crypto_unittests',
-          'url_unittests',
-          'net_unittests',
-          'sql_unittests',
-          'ui_base_unittests',
-      ],
-      'ios_rel_device': ['compile'],
-      'ios_rel_device_ninja': ['compile'],
-      'mac_asan': ['compile'],
-      #TODO(stip): Change the name of this builder to reflect that it's release.
-      'linux_gtk': standard_tests,
-      'linux_chromeos_asan': ['compile'],
-      'linux_chromium_asan_rel': ['defaulttests'],
-      'linux_chromium_chromeos_clang_dbg': ['defaulttests'],
-      'linux_chromium_chromeos_compile_dbg_ng': ['defaulttests'],
-      'linux_chromium_chromeos_rel': ['defaulttests'],
-      'linux_chromium_chromeos_rel_ng': ['defaulttests'],
-      'linux_chromium_compile_dbg': ['defaulttests'],
-      'linux_chromium_compile_dbg_32_ng': ['compile'],
-      'linux_chromium_gn_dbg': ['compile'],
-      'linux_chromium_gn_rel': ['defaulttests'],
-      'linux_chromium_rel': ['defaulttests'],
-      'linux_chromium_rel_ng': ['defaulttests'],
-      'linux_chromium_clang_dbg': ['defaulttests'],
-      'linux_gpu': ['defaulttests'],
-      'linux_nacl_sdk_build': ['compile'],
-      'mac_chromium_compile_dbg': ['defaulttests'],
-      'mac_chromium_compile_dbg_ng': ['defaulttests'],
-      'mac_chromium_rel': ['defaulttests'],
-      'mac_chromium_rel_ng': ['defaulttests'],
-      'mac_nacl_sdk_build': ['compile'],
-      'win_chromium_compile_dbg': ['defaulttests'],
-      'win_chromium_dbg': ['defaulttests'],
-      'win_chromium_rel': ['defaulttests'],
-      'win_chromium_rel_ng': ['defaulttests'],
-      'win_chromium_x64_rel': ['defaulttests'],
-      'win_chromium_x64_rel_ng': ['defaulttests'],
-      'win_gpu': ['defaulttests'],
-      'win_nacl_sdk_build': ['compile'],
-      'win8_chromium_rel': ['defaulttests'],
-  }
-
-  if bots:
-    filtered_builders_and_tests = dict((bot, set(builders_and_tests[bot]))
-                                       for bot in bots)
-  else:
-    filtered_builders_and_tests = dict(
-        (bot, set(tests))
-        for bot, tests in builders_and_tests.iteritems())
+  builders_and_tests = dict((bot, set(['defaulttests'])) for bot in bots)
 
   # Build up the mapping from tryserver master to bot/test.
   out = dict()
-  for bot, tests in filtered_builders_and_tests.iteritems():
+  for bot, tests in builders_and_tests.iteritems():
     out.setdefault(GetTryServerMasterForBot(bot), {})[bot] = tests
   return out
 
@@ -1815,7 +1718,7 @@ def GetPreferredTryMasters(project, change):
   # Same for chromeos.
   if any(re.search(r'[\\\/_](aura|chromeos)', f) for f in files):
     builders.extend([
-        'linux_chromeos_asan',
+        'linux_chromium_chromeos_asan_rel_ng',
     ])
 
   return GetDefaultTryConfigs(builders)
