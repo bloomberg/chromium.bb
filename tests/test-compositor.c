@@ -33,6 +33,7 @@
 
 #define WL_HIDE_DEPRECATED
 
+#include "test-runner.h"
 #include "test-compositor.h"
 
 /* --- Protocol --- */
@@ -135,6 +136,7 @@ static void
 run_client(void (*client_main)(void), int wayland_sock, int client_pipe)
 {
 	char s[8];
+	int cur_alloc, cur_fds;
 	int can_continue = 0;
 
 	/* Wait until display signals that client can continue */
@@ -147,7 +149,20 @@ run_client(void (*client_main)(void), int wayland_sock, int client_pipe)
 	snprintf(s, sizeof s, "%d", wayland_sock);
 	setenv("WAYLAND_SOCKET", s, 0);
 
+	cur_alloc = get_current_alloc_num();
+	cur_fds = count_open_fds();
+
 	client_main();
+
+	/* Clients using wl_display_connect() will end up closing the socket
+	 * passed in through the WAYLAND_SOCKET environment variable. When
+	 * doing this, it clears the environment variable, so if it's been
+	 * unset, then we assume the client consumed the file descriptor and
+	 * do not count it towards leak checking. */
+	if (!getenv("WAYLAND_SOCKET"))
+		cur_fds--;
+
+	check_leaks(cur_alloc, cur_fds);
 }
 
 static struct client_info *
