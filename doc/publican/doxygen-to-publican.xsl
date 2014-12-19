@@ -37,20 +37,16 @@
     </para>
 
     <xsl:if test="/doxygen/compounddef[@kind='class']">
-      <para>
-        <variablelist>
-          <xsl:apply-templates select="/doxygen/compounddef" />
-        </variablelist>
-      </para>
+      <variablelist>
+        <xsl:apply-templates select="/doxygen/compounddef" />
+      </variablelist>
     </xsl:if>
 
     <para>Methods for the respective classes.</para>
 
-    <para>
     <variablelist>
-    <xsl:apply-templates select="/doxygen/compounddef/sectiondef/memberdef" />
+      <xsl:apply-templates select="/doxygen/compounddef/sectiondef/memberdef" />
     </variablelist>
-    </para>
   </appendix>
 </xsl:template>
 
@@ -60,7 +56,7 @@
           <xsl:apply-templates select="parameternamelist/parametername"/>
         </term>
       <listitem>
-        <xsl:apply-templates select="parameterdescription"/>
+        <simpara><xsl:apply-templates select="parameterdescription"/></simpara>
       </listitem>
     </varlistentry>
 </xsl:template>
@@ -74,7 +70,7 @@
 </xsl:template>
 
 <xsl:template match="ref">
-  <link linkend="{@refid}"><xsl:value-of select="." /></link>
+  <link linkend="{$which}{@refid}"><xsl:value-of select="." /></link>
 </xsl:template>
 
 <xsl:template match="simplesect[@kind='return']">
@@ -82,22 +78,18 @@
     <varlistentry>
       <term>Returns:</term>
       <listitem>
-        <xsl:apply-templates />
+        <simpara><xsl:apply-templates /></simpara>
       </listitem>
     </varlistentry>
   </variablelist>
 </xsl:template>
 
 <xsl:template match="simplesect[@kind='see']">
-  <para>
-    See also: <xsl:apply-templates />
-  </para>
+  See also: <xsl:apply-templates />
 </xsl:template>
 
 <xsl:template match="simplesect[@kind='since']">
-  <para>
-    Since: <xsl:apply-templates />
-  </para>
+  Since: <xsl:apply-templates />
 </xsl:template>
 
 <xsl:template match="simplesect[@kind='note']">
@@ -131,7 +123,7 @@
 <!-- methods -->
 <xsl:template match="memberdef" >
   <xsl:if test="@kind = 'function' and @static = 'no'">
-    <varlistentry id="{@id}">
+    <varlistentry id="{$which}{@id}">
         <term>
           <xsl:value-of select="name"/>
           <xsl:if test="normalize-space(briefdescription) != ''">
@@ -139,21 +131,19 @@
           </xsl:if>
         </term>
         <listitem>
-          <para>
-            <synopsis>
-              <xsl:apply-templates select="definition"/><xsl:apply-templates select="argsstring"/>
-            </synopsis>
-          </para>
+          <synopsis>
+            <xsl:apply-templates select="definition"/><xsl:apply-templates select="argsstring"/>
+          </synopsis>
           <xsl:apply-templates select="detaileddescription" />
         </listitem>
     </varlistentry>
-    </xsl:if>
+  </xsl:if>
 </xsl:template>
 
 <!-- classes -->
 <xsl:template match="compounddef" >
-    <xsl:if test="@kind = 'class'">
-    <varlistentry id="{@id}">
+  <xsl:if test="@kind = 'class'">
+    <varlistentry id="{$which}{@id}">
         <term>
             <xsl:value-of select="compoundname" />
             <xsl:if test="normalize-space(briefdescription) != ''">
@@ -165,6 +155,6 @@
           <xsl:apply-templates select="detaileddescription" />
         </listitem>
     </varlistentry>
-    </xsl:if>
+  </xsl:if>
 </xsl:template>
 </xsl:stylesheet>

@@ -37,11 +37,13 @@
   <term>
     <link linkend="protocol-spec-interface-{@name}">
       <xsl:value-of select="@name" />
-      <xsl:if test="description/@summary">
-        - <xsl:value-of select="description/@summary" />
-      </xsl:if>
     </link>
   </term>
+  <listitem>
+    <simpara>
+      <xsl:value-of select="description/@summary" />
+    </simpara>
+  </listitem>
 </varlistentry>
 </xsl:template>
 
