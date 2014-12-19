@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
@@ -74,6 +75,11 @@ void DomainReliabilityMonitor::MoveToNetworkThread() {
 
 void DomainReliabilityMonitor::InitURLRequestContext(
     net::URLRequestContext* url_request_context) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436671 DomainReliabilityMonitor::InitURLRequestContext"));
+
   DCHECK(OnNetworkThread());
   DCHECK(moved_to_network_thread_);
 
@@ -98,6 +104,11 @@ void DomainReliabilityMonitor::InitURLRequestContext(
 }
 
 void DomainReliabilityMonitor::AddBakedInConfigs() {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436671 DomainReliabilityMonitor::AddBakedInConfigs"));
+
   DCHECK(OnNetworkThread());
   DCHECK(moved_to_network_thread_);
 
