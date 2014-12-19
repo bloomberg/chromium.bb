@@ -115,7 +115,6 @@ bool HardwareDisplayController::SchedulePageFlip() {
 
   for (const auto& planes : owned_hardware_planes_) {
     if (!planes.first->plane_manager()->Commit(planes.second)) {
-      LOG(ERROR) << "Failed to commit planes";
       status = false;
     }
   }

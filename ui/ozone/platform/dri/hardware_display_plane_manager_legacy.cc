@@ -24,12 +24,13 @@ bool HardwareDisplayPlaneManagerLegacy::Commit(
   for (const auto& flip : plane_list->legacy_page_flips) {
     // Permission Denied is a legitimate error
     if (!drm_->PageFlip(flip.crtc_id, flip.framebuffer, flip.crtc)) {
-      if (errno == EACCES)
-        continue;
-      LOG(ERROR) << "Cannot page flip: error='" << strerror(errno) << "'"
-                 << " crtc=" << flip.crtc_id
-                 << " framebuffer=" << flip.framebuffer;
-      ret = false;
+      if (errno != EACCES) {
+        LOG(ERROR) << "Cannot page flip: error='" << strerror(errno) << "'"
+                   << " crtc=" << flip.crtc_id
+                   << " framebuffer=" << flip.framebuffer;
+        LOG(ERROR) << "Failed to commit planes";
+        ret = false;
+      }
       flip.crtc->PageFlipFailed();
     } else {
       for (const auto& plane : flip.planes) {
