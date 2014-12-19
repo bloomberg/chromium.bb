@@ -533,6 +533,78 @@ StringOrDouble NativeValueTraits<StringOrDouble>::nativeValue(const v8::Local<v8
     return impl;
 }
 
+StringOrStringSequence::StringOrStringSequence()
+    : m_type(SpecificTypeNone)
+{
+}
+
+String StringOrStringSequence::getAsString() const
+{
+    ASSERT(isString());
+    return m_string;
+}
+
+void StringOrStringSequence::setString(String value)
+{
+    ASSERT(isNull());
+    m_string = value;
+    m_type = SpecificTypeString;
+}
+
+const Vector<String>& StringOrStringSequence::getAsStringSequence() const
+{
+    ASSERT(isStringSequence());
+    return m_stringSequence;
+}
+
+void StringOrStringSequence::setStringSequence(const Vector<String>& value)
+{
+    ASSERT(isNull());
+    m_stringSequence = value;
+    m_type = SpecificTypeStringSequence;
+}
+
+void V8StringOrStringSequence::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, StringOrStringSequence& impl, ExceptionState& exceptionState)
+{
+    if (v8Value.IsEmpty())
+        return;
+
+    if (v8Value->IsArray()) {
+        TONATIVE_VOID_EXCEPTIONSTATE(Vector<String>, cppValue, toImplArray<String>(v8Value, 0, isolate, exceptionState), exceptionState);
+        impl.setStringSequence(cppValue);
+        return;
+    }
+
+    {
+        TOSTRING_VOID_EXCEPTIONSTATE(V8StringResource<>, cppValue, v8Value, exceptionState);
+        impl.setString(cppValue);
+        return;
+    }
+
+}
+
+v8::Local<v8::Value> toV8(const StringOrStringSequence& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    switch (impl.m_type) {
+    case StringOrStringSequence::SpecificTypeNone:
+        return v8::Null(isolate);
+    case StringOrStringSequence::SpecificTypeString:
+        return v8String(isolate, impl.getAsString());
+    case StringOrStringSequence::SpecificTypeStringSequence:
+        return toV8(impl.getAsStringSequence(), creationContext, isolate);
+    default:
+        ASSERT_NOT_REACHED();
+    }
+    return v8::Local<v8::Value>();
+}
+
+StringOrStringSequence NativeValueTraits<StringOrStringSequence>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+{
+    StringOrStringSequence impl;
+    V8StringOrStringSequence::toImpl(isolate, value, impl, exceptionState);
+    return impl;
+}
+
 TestInterface2OrUint8Array::TestInterface2OrUint8Array()
     : m_type(SpecificTypeNone)
 {

@@ -64,6 +64,7 @@ def container_context(union_type, interfaces_info):
     # corresponding types. They are used for V8 -> impl conversion.
     array_buffer_type = None
     array_buffer_view_type = None
+    array_or_sequence_type = None
     boolean_type = None
     dictionary_type = None
     interface_types = []
@@ -85,6 +86,10 @@ def container_context(union_type, interfaces_info):
             if dictionary_type:
                 raise Exception('%s is ambiguous.' % union_type.name)
             dictionary_type = context
+        elif member.is_array_or_sequence_type:
+            if array_or_sequence_type:
+                raise Exception('%s is ambiguous.' % union_type.name)
+            array_or_sequence_type = context
         elif member.is_interface_type:
             interface_types.append(context)
         elif member is union_type.boolean_member_type:
@@ -106,6 +111,7 @@ def container_context(union_type, interfaces_info):
     return {
         'array_buffer_type': array_buffer_type,
         'array_buffer_view_type': array_buffer_view_type,
+        'array_or_sequence_type': array_or_sequence_type,
         'boolean_type': boolean_type,
         'cpp_class': union_type.cpp_type,
         'dictionary_type': dictionary_type,

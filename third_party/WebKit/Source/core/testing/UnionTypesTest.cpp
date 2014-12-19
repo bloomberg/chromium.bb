@@ -9,32 +9,38 @@
 
 namespace blink {
 
-void UnionTypesTest::doubleOrStringAttribute(DoubleOrString& doubleOrString)
+void UnionTypesTest::doubleOrStringOrStringArrayAttribute(DoubleOrStringOrStringArray& doubleOrStringOrStringArray)
 {
     switch (m_attributeType) {
     case SpecificTypeNone:
         // Default value is zero (of double).
-        doubleOrString.setDouble(0);
+        doubleOrStringOrStringArray.setDouble(0);
         break;
     case SpecificTypeDouble:
-        doubleOrString.setDouble(m_attributeDouble);
+        doubleOrStringOrStringArray.setDouble(m_attributeDouble);
         break;
     case SpecificTypeString:
-        doubleOrString.setString(m_attributeString);
+        doubleOrStringOrStringArray.setString(m_attributeString);
+        break;
+    case SpecificTypeStringArray:
+        doubleOrStringOrStringArray.setStringArray(m_attributeStringArray);
         break;
     default:
         ASSERT_NOT_REACHED();
     }
 }
 
-void UnionTypesTest::setDoubleOrStringAttribute(const DoubleOrString& doubleOrString)
+void UnionTypesTest::setDoubleOrStringOrStringArrayAttribute(const DoubleOrStringOrStringArray& doubleOrStringOrStringArray)
 {
-    if (doubleOrString.isDouble()) {
-        m_attributeDouble = doubleOrString.getAsDouble();
+    if (doubleOrStringOrStringArray.isDouble()) {
+        m_attributeDouble = doubleOrStringOrStringArray.getAsDouble();
         m_attributeType = SpecificTypeDouble;
-    } else if (doubleOrString.isString()) {
-        m_attributeString = doubleOrString.getAsString();
+    } else if (doubleOrStringOrStringArray.isString()) {
+        m_attributeString = doubleOrStringOrStringArray.getAsString();
         m_attributeType = SpecificTypeString;
+    } else if (doubleOrStringOrStringArray.isStringArray()) {
+        m_attributeStringArray = doubleOrStringOrStringArray.getAsStringArray();
+        m_attributeType = SpecificTypeStringArray;
     } else {
         ASSERT_NOT_REACHED();
     }
@@ -92,6 +98,56 @@ String UnionTypesTest::nodeListOrElementOrNullArg(NodeListOrElement& nodeListOrE
         return "element is passed";
     ASSERT_NOT_REACHED();
     return String();
+}
+
+String UnionTypesTest::doubleOrStringOrStringArrayArg(const DoubleOrStringOrStringArray& doubleOrStringOrStringArray)
+{
+    if (doubleOrStringOrStringArray.isNull())
+        return "null";
+
+    if (doubleOrStringOrStringArray.isDouble())
+        return "double: " + String::numberToStringECMAScript(doubleOrStringOrStringArray.getAsDouble());
+
+    if (doubleOrStringOrStringArray.isString())
+        return "string: " + doubleOrStringOrStringArray.getAsString();
+
+    ASSERT(doubleOrStringOrStringArray.isStringArray());
+    const Vector<String>& array = doubleOrStringOrStringArray.getAsStringArray();
+    if (!array.size())
+        return "array: []";
+    StringBuilder builder;
+    builder.append("array: [");
+    for (const String& item : array) {
+        ASSERT(!item.isNull());
+        builder.append(item);
+        builder.append(", ");
+    }
+    return builder.substring(0, builder.length() - 2) + "]";
+}
+
+String UnionTypesTest::doubleOrStringOrStringSequenceArg(const DoubleOrStringOrStringSequence& doubleOrStringOrStringSequence)
+{
+    if (doubleOrStringOrStringSequence.isNull())
+        return "null";
+
+    if (doubleOrStringOrStringSequence.isDouble())
+        return "double: " + String::numberToStringECMAScript(doubleOrStringOrStringSequence.getAsDouble());
+
+    if (doubleOrStringOrStringSequence.isString())
+        return "string: " + doubleOrStringOrStringSequence.getAsString();
+
+    ASSERT(doubleOrStringOrStringSequence.isStringSequence());
+    const Vector<String>& sequence = doubleOrStringOrStringSequence.getAsStringSequence();
+    if (!sequence.size())
+        return "sequence: []";
+    StringBuilder builder;
+    builder.append("sequence: [");
+    for (const String& item : sequence) {
+        ASSERT(!item.isNull());
+        builder.append(item);
+        builder.append(", ");
+    }
+    return builder.substring(0, builder.length() - 2) + "]";
 }
 
 }

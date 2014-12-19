@@ -19,8 +19,8 @@ public:
     }
     virtual ~UnionTypesTest() { }
 
-    void doubleOrStringAttribute(DoubleOrString&);
-    void setDoubleOrStringAttribute(const DoubleOrString&);
+    void doubleOrStringOrStringArrayAttribute(DoubleOrStringOrStringArray&);
+    void setDoubleOrStringOrStringArrayAttribute(const DoubleOrStringOrStringArray&);
 
     String doubleOrStringArg(DoubleOrString&);
     String doubleOrStringArrayArg(Vector<DoubleOrString>&);
@@ -28,6 +28,9 @@ public:
 
     String nodeListOrElementArg(NodeListOrElement&);
     String nodeListOrElementOrNullArg(NodeListOrElement&);
+
+    String doubleOrStringOrStringArrayArg(const DoubleOrStringOrStringArray&);
+    String doubleOrStringOrStringSequenceArg(const DoubleOrStringOrStringSequence&);
 
     void trace(Visitor*) { }
 
@@ -41,10 +44,12 @@ private:
         SpecificTypeNone,
         SpecificTypeDouble,
         SpecificTypeString,
+        SpecificTypeStringArray,
     };
     AttributeSpecificType m_attributeType;
     double m_attributeDouble;
     String m_attributeString;
+    Vector<String> m_attributeStringArray;
 };
 
 } // namespace blink

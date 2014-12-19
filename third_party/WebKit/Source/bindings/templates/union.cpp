@@ -89,6 +89,18 @@ void V8{{container.cpp_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value
     }
 
     {% endif %}
+    {% if container.array_or_sequence_type %}
+    {# 13. Arrays/Sequences #}
+    {# FIXME: This should also check "object but not Date or RegExp". Add checks
+       when we implement conversions for Date and RegExp. #}
+    {# FIXME: Should check for sequences too, not just Array instances. #}
+    if (v8Value->IsArray()) {
+        {{container.array_or_sequence_type.v8_value_to_local_cpp_value}};
+        impl.set{{container.array_or_sequence_type.type_name}}(cppValue);
+        return;
+    }
+
+    {% endif %}
     {# FIXME: In some cases, we can omit boolean and numeric type checks because
        we have fallback conversions. (step 17 and 18) #}
     {% if container.boolean_type %}

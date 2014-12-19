@@ -213,10 +213,6 @@ class IdlType(IdlTypeBase):
         return self.name in STRING_TYPES
 
     @property
-    def is_union_type(self):
-        return isinstance(self, IdlUnionType)
-
-    @property
     def name(self):
         """Return type name
 
@@ -344,6 +340,10 @@ class IdlArrayOrSequenceType(IdlTypeBase):
     def resolve_typedefs(self, typedefs):
         self.element_type = self.element_type.resolve_typedefs(typedefs)
         return self
+
+    @property
+    def is_array_or_sequence_type(self):
+        return True
 
 
 class IdlArrayType(IdlArrayOrSequenceType):

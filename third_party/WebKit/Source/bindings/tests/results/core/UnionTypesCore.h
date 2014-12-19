@@ -322,6 +322,52 @@ struct NativeValueTraits<StringOrDouble> {
     static StringOrDouble nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
 };
 
+class StringOrStringSequence final {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
+    StringOrStringSequence();
+    bool isNull() const { return m_type == SpecificTypeNone; }
+
+    bool isString() const { return m_type == SpecificTypeString; }
+    String getAsString() const;
+    void setString(String);
+
+    bool isStringSequence() const { return m_type == SpecificTypeStringSequence; }
+    const Vector<String>& getAsStringSequence() const;
+    void setStringSequence(const Vector<String>&);
+
+private:
+    enum SpecificTypes {
+        SpecificTypeNone,
+        SpecificTypeString,
+        SpecificTypeStringSequence,
+    };
+    SpecificTypes m_type;
+
+    String m_string;
+    Vector<String> m_stringSequence;
+
+    friend v8::Local<v8::Value> toV8(const StringOrStringSequence&, v8::Local<v8::Object>, v8::Isolate*);
+};
+
+class V8StringOrStringSequence final {
+public:
+    static void toImpl(v8::Isolate*, v8::Local<v8::Value>, StringOrStringSequence&, ExceptionState&);
+};
+
+v8::Local<v8::Value> toV8(const StringOrStringSequence&, v8::Local<v8::Object>, v8::Isolate*);
+
+template <class CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, StringOrStringSequence& impl)
+{
+    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+}
+
+template <>
+struct NativeValueTraits<StringOrStringSequence> {
+    static StringOrStringSequence nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
+};
+
 class TestInterface2OrUint8Array final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
