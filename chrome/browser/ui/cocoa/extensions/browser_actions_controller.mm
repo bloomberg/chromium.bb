@@ -73,6 +73,12 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 // position of the button.
 - (void)updateButtonOpacity;
 
+// When the container is resizing, there's a chance that the buttons' frames
+// need to be adjusted (for instance, if an action is added to the left, the
+// frames of the actions to the right should gradually move right in the
+// container). Adjust the frames accordingly.
+- (void)updateButtonPositions;
+
 // Returns the existing button associated with the given id; nil if it cannot be
 // found.
 - (BrowserActionButton*)buttonForId:(const std::string&)id;
@@ -99,6 +105,9 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 // when _any_ Browser Action button is done dragging to keep all open windows in
 // sync visually.
 - (void)actionButtonDragFinished:(NSNotification*)notification;
+
+// Returns the frame that the button with the given |index| should have.
+- (NSRect)frameForIndex:(NSUInteger)index;
 
 // Moves the given button both visually and within the toolbar model to the
 // specified index.
@@ -549,6 +558,25 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
   }
 }
 
+- (void)updateButtonPositions {
+  for (NSUInteger index = 0; index < [buttons_ count]; ++index) {
+    BrowserActionButton* button = [buttons_ objectAtIndex:index];
+    NSRect buttonFrame = [self frameForIndex:index];
+
+    // If the button is at the proper position (or animating to it), then we
+    // don't need to update its position.
+    if (NSMinX([button frameAfterAnimation]) == NSMinX(buttonFrame))
+      continue;
+
+    // We set the x-origin by calculating the proper distance from the right
+    // edge in the container so that, if the container is animating, the
+    // button appears stationary.
+    buttonFrame.origin.x = NSWidth([containerView_ frame]) -
+        (toolbarActionsBar_->GetPreferredSize().width() - NSMinX(buttonFrame));
+    [button setFrame:buttonFrame animate:NO];
+  }
+}
+
 - (BrowserActionButton*)buttonForId:(const std::string&)id {
   for (BrowserActionButton* button in buttons_.get()) {
     if ([button viewController]->GetId() == id)
@@ -558,6 +586,7 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
 }
 
 - (void)containerFrameChanged:(NSNotification*)notification {
+  [self updateButtonPositions];
   [self updateButtonOpacity];
   [[containerView_ window] invalidateCursorRectsForView:containerView_];
   [self updateChevronPositionInFrame:[containerView_ frame]];
@@ -632,8 +661,7 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
   [self redraw];
 }
 
-- (void)moveButton:(BrowserActionButton*)button
-           toIndex:(NSUInteger)index {
+- (NSRect)frameForIndex:(NSUInteger)index {
   const ToolbarActionsBar::PlatformSettings& platformSettings =
       toolbarActionsBar_->platform_settings();
   int icons_per_overflow_row = platformSettings.icons_per_overflow_menu_row;
@@ -642,11 +670,34 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
 
   CGFloat xOffset = platformSettings.left_padding +
       (indexInRow * ToolbarActionsBar::IconWidth(true));
-
-  NSRect buttonFrame = [button frame];
-  buttonFrame.origin.x = xOffset;
-  buttonFrame.origin.y = NSMaxY([containerView_ frame]) -
+  CGFloat yOffset = NSHeight([containerView_ frame]) -
        (ToolbarActionsBar::IconHeight() * (rowIndex + 1));
+
+  return NSMakeRect(xOffset,
+                    yOffset,
+                    ToolbarActionsBar::IconWidth(false),
+                    ToolbarActionsBar::IconHeight());
+}
+
+- (void)moveButton:(BrowserActionButton*)button
+           toIndex:(NSUInteger)index {
+  NSRect buttonFrame = [self frameForIndex:index];
+
+  CGFloat currentX = NSMinX([button frame]);
+  CGFloat xLeft = toolbarActionsBar_->GetPreferredSize().width() -
+      NSMinX(buttonFrame);
+  // We check if the button is already in the correct place for the toolbar's
+  // current size. This could mean that the button could be the correct distance
+  // from the left or from the right edge. If it has the correct distance, we
+  // don't move it, and it will be updated when the container frame changes.
+  // This way, if the user has extensions A and C installed, and installs
+  // extension B between them, extension C appears to stay stationary on the
+  // screen while the toolbar expands to the left (even though C's bounds within
+  // the container change).
+  if ((currentX == NSMinX(buttonFrame) ||
+       currentX == NSWidth([containerView_ frame]) - xLeft) &&
+      NSMinY([button frame]) == NSMinY(buttonFrame))
+    return;
 
   // It's possible the button is already animating to the right place. Don't
   // call move again, because it will stop the current animation.
