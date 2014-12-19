@@ -12,7 +12,6 @@ with the prefix "UserAct".
 from __future__ import print_function
 
 import inspect
-import os
 import pprint
 import re
 
@@ -20,6 +19,7 @@ from chromite.cbuildbot import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import gerrit
+from chromite.lib import git
 from chromite.lib import gob_util
 from chromite.lib import terminal
 
@@ -154,9 +154,13 @@ def PrintCl(opts, cls, lims, show_approvals=True):
 
 
 def _MyUserInfo():
-  username = os.environ['USER']
-  emails = ['%s@%s' % (username, domain)
-            for domain in ('google.com', 'chromium.org')]
+  email = git.GetProjectUserEmail(constants.CHROMITE_DIR)
+  [username, _, domain] = email.partition('@')
+  if domain in ('google.com', 'chromium.org'):
+    emails = ['%s@%s' % (username, domain)
+              for domain in ('google.com', 'chromium.org')]
+  else:
+    emails = [email]
   reviewers = ['reviewer:%s' % x for x in emails]
   owners = ['owner:%s' % x for x in emails]
   return emails, reviewers, owners
