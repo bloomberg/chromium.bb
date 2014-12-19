@@ -76,9 +76,6 @@ class CONTENT_EXPORT PepperPluginInstanceThrottler {
   void OnImageFlush(const SkBitmap* bitmap);
 
   bool is_throttled() const { return plugin_throttled_; }
-  const ppapi::ViewData& throttled_view_data() const {
-    return empty_view_data_;
-  }
 
   // Returns true if |event| was handled and shouldn't be further processed.
   bool ConsumeInputEvent(const blink::WebInputEvent& event);
@@ -119,9 +116,6 @@ class CONTENT_EXPORT PepperPluginInstanceThrottler {
 
   // Indicates if the plugin is currently throttled.
   bool plugin_throttled_;
-
-  // Fake view data used by the Power Saver feature to throttle plugins.
-  const ppapi::ViewData empty_view_data_;
 
   base::WeakPtrFactory<PepperPluginInstanceThrottler> weak_factory_;
 
