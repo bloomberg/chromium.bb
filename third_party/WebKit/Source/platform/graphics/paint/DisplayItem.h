@@ -72,7 +72,8 @@ public:
         EndTransform,
         ScrollbarCorner,
         Scrollbar,
-        Resizer
+        Resizer,
+        ColumnRules
     };
 
     // Create a dummy display item which just holds the id but has no display operation.
