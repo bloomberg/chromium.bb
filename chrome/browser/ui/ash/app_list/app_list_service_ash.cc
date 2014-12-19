@@ -10,7 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/app_list/app_list_controller_ash.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "ui/app_list/app_list_model.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/contents_view.h"
@@ -28,19 +28,8 @@ AppListServiceAsh::AppListServiceAsh()
 AppListServiceAsh::~AppListServiceAsh() {
 }
 
-base::FilePath AppListServiceAsh::GetProfilePath(
-    const base::FilePath& user_data_dir) {
-  return ChromeLauncherController::instance()->profile()->GetPath();
-}
-
-void AppListServiceAsh::ShowForProfile(Profile* default_profile) {
-  // This may not work correctly if the profile passed in is different from the
-  // one the ash Shell is currently using.
-  // TODO(ananta): Handle profile changes correctly when !defined(OS_CHROMEOS).
-  ash::Shell::GetInstance()->ShowAppList(NULL);
-}
-
-void AppListServiceAsh::ShowForCustomLauncherPage(Profile* profile) {
+void AppListServiceAsh::ShowAndSwitchToState(
+    app_list::AppListModel::State state) {
   bool app_list_was_open = true;
   app_list::AppListView* app_list_view =
       ash::Shell::GetInstance()->GetAppListView();
@@ -54,12 +43,39 @@ void AppListServiceAsh::ShowForCustomLauncherPage(Profile* profile) {
     DCHECK(app_list_view);
   }
 
+  if (state == app_list::AppListModel::INVALID_STATE)
+    return;
+
   app_list::ContentsView* contents_view =
       app_list_view->app_list_main_view()->contents_view();
-  contents_view->SetActivePage(
-      contents_view->GetPageIndexForState(
-          app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE),
-      app_list_was_open  /* animate */);
+  contents_view->SetActivePage(contents_view->GetPageIndexForState(state),
+                               app_list_was_open /* animate */);
+}
+
+base::FilePath AppListServiceAsh::GetProfilePath(
+    const base::FilePath& user_data_dir) {
+  return ChromeLauncherController::instance()->profile()->GetPath();
+}
+
+void AppListServiceAsh::ShowForProfile(Profile* /*default_profile*/) {
+  // This may not work correctly if the profile passed in is different from the
+  // one the ash Shell is currently using.
+  // TODO(ananta): Handle profile changes correctly when !defined(OS_CHROMEOS).
+  ash::Shell::GetInstance()->ShowAppList(NULL);
+}
+
+void AppListServiceAsh::ShowForAppInstall(Profile* profile,
+                                          const std::string& extension_id,
+                                          bool start_discovery_tracking) {
+  if (app_list::switches::IsExperimentalAppListEnabled())
+    ShowAndSwitchToState(app_list::AppListModel::STATE_APPS);
+
+  AppListServiceImpl::ShowForAppInstall(profile, extension_id,
+                                        start_discovery_tracking);
+}
+
+void AppListServiceAsh::ShowForCustomLauncherPage(Profile* /*profile*/) {
+  ShowAndSwitchToState(app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
 }
 
 bool AppListServiceAsh::IsAppListVisible() const {

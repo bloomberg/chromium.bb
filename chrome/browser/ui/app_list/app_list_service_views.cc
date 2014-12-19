@@ -6,6 +6,7 @@
 
 #include "chrome/browser/apps/scoped_keep_alive.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/contents_view.h"
@@ -31,6 +32,16 @@ void AppListServiceViews::Init(Profile* initial_profile) {
 void AppListServiceViews::ShowForProfile(Profile* requested_profile) {
   ShowForProfileInternal(requested_profile,
                          app_list::AppListModel::INVALID_STATE);
+}
+
+void AppListServiceViews::ShowForAppInstall(Profile* profile,
+                                            const std::string& extension_id,
+                                            bool start_discovery_tracking) {
+  if (app_list::switches::IsExperimentalAppListEnabled())
+    ShowForProfileInternal(profile, app_list::AppListModel::STATE_APPS);
+
+  AppListServiceImpl::ShowForAppInstall(profile, extension_id,
+                                        start_discovery_tracking);
 }
 
 void AppListServiceViews::ShowForCustomLauncherPage(Profile* profile) {

@@ -17,7 +17,9 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "ui/app_list/app_list_switches.h"
+#include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/app_list_view.h"
+#include "ui/app_list/views/contents_view.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
 
@@ -122,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(AppListServiceViewsBrowserTest, AcceleratorClose) {
 
 // Browser Test for AppListController that ensures the App Info dialog opens
 // correctly.
-typedef ExtensionBrowserTest AppListControllerAppInfoDialogBrowserTest;
+using AppListControllerAppInfoDialogBrowserTest = ExtensionBrowserTest;
 
 // Test the DoShowAppInfoFlow function of the controller delegate.
 // flaky: http://crbug.com/378251
@@ -174,4 +176,32 @@ IN_PROC_BROWSER_TEST_F(AppListControllerAppInfoDialogBrowserTest,
   views::Widget::GetAllOwnedWidgets(native_view, &owned_widgets);
   EXPECT_EQ(0U, owned_widgets.size());
   EXPECT_FALSE(test_api.is_overlay_visible());
+}
+
+using AppListServiceViewsExtensionBrowserTest = ExtensionBrowserTest;
+
+IN_PROC_BROWSER_TEST_F(AppListServiceViewsExtensionBrowserTest,
+                       ShowForAppInstall) {
+  // Install an extension to open the dialog for.
+  base::FilePath test_extension_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_extension_path));
+  test_extension_path = test_extension_path.AppendASCII("extensions")
+                            .AppendASCII("platform_apps")
+                            .AppendASCII("minimal");
+  const extensions::Extension* extension = InstallExtension(
+      test_extension_path, 1 /* expected_change: new install */);
+  ASSERT_TRUE(extension);
+
+  // Open the app list window for the app.
+  AppListService* service = test::GetAppListService();
+  EXPECT_FALSE(service->GetAppListWindow());
+
+  service->ShowForAppInstall(browser()->profile(), extension->id(), false);
+  app_list::AppListView* app_list_view = GetAppListView(service);
+  ASSERT_TRUE(app_list_view);
+
+  app_list::ContentsView* contents_view =
+      app_list_view->app_list_main_view()->contents_view();
+
+  EXPECT_TRUE(contents_view->IsStateActive(app_list::AppListModel::STATE_APPS));
 }

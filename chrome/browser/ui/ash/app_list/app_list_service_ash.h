@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
+#include "ui/app_list/app_list_model.h"
 
 class AppListControllerDelegateAsh;
 template <typename T> struct DefaultSingletonTraits;
@@ -23,9 +24,16 @@ class AppListServiceAsh : public AppListServiceImpl {
   AppListServiceAsh();
   ~AppListServiceAsh() override;
 
+  // Shows the app list if it isn't already showing and Switches to |state|,
+  // unless it is |INVALID_STATE| (in which case, opens on the default state).
+  void ShowAndSwitchToState(app_list::AppListModel::State state);
+
   // AppListService overrides:
   base::FilePath GetProfilePath(const base::FilePath& user_data_dir) override;
   void ShowForProfile(Profile* default_profile) override;
+  void ShowForAppInstall(Profile* profile,
+                         const std::string& extension_id,
+                         bool start_discovery_tracking) override;
   void ShowForCustomLauncherPage(Profile* profile) override;
   bool IsAppListVisible() const override;
   void DismissAppList() override;

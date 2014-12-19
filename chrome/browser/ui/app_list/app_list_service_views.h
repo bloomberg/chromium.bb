@@ -34,6 +34,9 @@ class AppListServiceViews : public AppListServiceImpl,
   // AppListService overrides:
   void Init(Profile* initial_profile) override;
   void ShowForProfile(Profile* requested_profile) override;
+  void ShowForAppInstall(Profile* profile,
+                         const std::string& extension_id,
+                         bool start_discovery_tracking) override;
   void ShowForCustomLauncherPage(Profile* profile) override;
   void DismissAppList() override;
   bool IsAppListVisible() const override;
