@@ -55,7 +55,7 @@ private:
     {
     }
 
-    virtual void append(PassRefPtr<StringImpl>) override
+    virtual void append(const String&) override
     {
         ASSERT_NOT_REACHED();
     }

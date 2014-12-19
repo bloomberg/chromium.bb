@@ -1235,7 +1235,7 @@ KURL Document::baseURI() const
 void Document::setContent(const String& content)
 {
     open();
-    m_parser->append(content.impl());
+    m_parser->append(content);
     close();
 }
 

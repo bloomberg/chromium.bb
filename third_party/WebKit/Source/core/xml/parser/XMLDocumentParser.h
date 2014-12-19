@@ -108,7 +108,7 @@ private:
 
     // From DocumentParser
     virtual void insert(const SegmentedString&) override;
-    virtual void append(PassRefPtr<StringImpl>) override;
+    virtual void append(const String&) override;
     virtual void finish() override;
     virtual bool isWaitingForScripts() const override;
     virtual void stopParsing() override;

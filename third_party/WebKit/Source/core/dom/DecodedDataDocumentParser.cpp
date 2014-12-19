@@ -98,7 +98,7 @@ void DecodedDataDocumentParser::updateDocument(String& decodedData)
     document()->setEncodingData(DocumentEncodingData(*m_decoder.get()));
 
     if (!decodedData.isEmpty())
-        append(decodedData.releaseImpl());
+        append(decodedData);
 }
 
 };

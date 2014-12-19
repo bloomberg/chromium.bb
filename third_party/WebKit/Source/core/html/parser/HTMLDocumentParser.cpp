@@ -755,7 +755,7 @@ void HTMLDocumentParser::stopBackgroundParser()
     m_weakFactory.revokeAll();
 }
 
-void HTMLDocumentParser::append(PassRefPtr<StringImpl> inputSource)
+void HTMLDocumentParser::append(const String& inputSource)
 {
     if (isStopped())
         return;
@@ -767,8 +767,8 @@ void HTMLDocumentParser::append(PassRefPtr<StringImpl> inputSource)
     // pumpTokenizer can cause this parser to be detached from the Document,
     // but we need to ensure it isn't deleted yet.
     RefPtrWillBeRawPtr<HTMLDocumentParser> protect(this);
-    TRACE_EVENT1("net", "HTMLDocumentParser::append", "size", inputSource->length());
-    String source(inputSource);
+    TRACE_EVENT1("net", "HTMLDocumentParser::append", "size", inputSource.length());
+    const SegmentedString source(inputSource);
 
     if (m_preloadScanner) {
         if (m_input.current().isEmpty() && !isWaitingForScripts()) {
@@ -1006,7 +1006,7 @@ void HTMLDocumentParser::executeScriptsWaitingForResources()
 void HTMLDocumentParser::parseDocumentFragment(const String& source, DocumentFragment* fragment, Element* contextElement, ParserContentPolicy parserContentPolicy)
 {
     RefPtrWillBeRawPtr<HTMLDocumentParser> parser = HTMLDocumentParser::create(fragment, contextElement, parserContentPolicy);
-    parser->append(source.impl());
+    parser->append(source);
     parser->finish();
     ASSERT(!parser->processingData()); // Make sure we're done. <rdar://problem/3963151>
     parser->detach(); // Allows ~DocumentParser to assert it was detached before destruction.

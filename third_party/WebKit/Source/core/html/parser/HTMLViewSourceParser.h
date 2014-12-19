@@ -48,7 +48,7 @@ private:
 
     // DocumentParser
     virtual void insert(const SegmentedString&) override { ASSERT_NOT_REACHED(); }
-    virtual void append(PassRefPtr<StringImpl>) override;
+    virtual void append(const String&) override;
     virtual void finish() override;
 
     HTMLViewSourceDocument* document() const { return static_cast<HTMLViewSourceDocument*>(DecodedDataDocumentParser::document()); }

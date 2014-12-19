@@ -111,7 +111,7 @@ public:
 
 protected:
     virtual void insert(const SegmentedString&) override final;
-    virtual void append(PassRefPtr<StringImpl>) override;
+    virtual void append(const String&) override;
     virtual void finish() override final;
 
     HTMLDocumentParser(HTMLDocument&, bool reportErrors, ParserSynchronizationPolicy);

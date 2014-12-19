@@ -96,7 +96,7 @@ void DOMPatchSupport::patchDocument(const String& markup)
     newDocument->setContextFeatures(document().contextFeatures());
     if (!document().isHTMLDocument()) {
         RefPtrWillBeRawPtr<DocumentParser> parser = XMLDocumentParser::create(*newDocument, nullptr);
-        parser->append(markup.impl());
+        parser->append(markup);
         parser->finish();
         parser->detach();
 
