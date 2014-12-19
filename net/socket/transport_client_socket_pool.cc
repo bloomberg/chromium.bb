@@ -280,6 +280,11 @@ int TransportConnectJob::DoTransportConnect() {
       interval_between_connects_ = CONNECT_INTERVAL_GT_20MS;
   }
 
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436634 TransportConnectJob::DoTransportConnect1"));
+
   helper_.set_next_state(
       TransportConnectJobHelper::STATE_TRANSPORT_CONNECT_COMPLETE);
   transport_socket_ =
@@ -302,7 +307,18 @@ int TransportConnectJob::DoTransportConnect() {
     transport_socket_->EnableTCPFastOpenIfSupported();
   }
 
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436634 TransportConnectJob::DoTransportConnect2"));
+
   int rv = transport_socket_->Connect(helper_.on_io_complete());
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436634 TransportConnectJob::DoTransportConnect3"));
+
   if (rv == ERR_IO_PENDING && try_ipv6_connect_with_ipv4_fallback) {
     fallback_timer_.Start(
         FROM_HERE,
