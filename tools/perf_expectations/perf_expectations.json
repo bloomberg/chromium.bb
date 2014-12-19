@@ -735,9 +735,9 @@
  "win-release/media_tests_av_perf/ttp/Wifi_dartmoor2.ogg": {"reva": 17420, "revb": 174996, "type": "absolute", "better": "lower", "improve": 12396.55, "regress": 14062.125, "sha1": "9ca7f6b1"},
  "win-release/media_tests_av_perf/ttp/Wifi_dartmoor2.wav": {"reva": 17420, "revb": 174996, "type": "absolute", "better": "lower", "improve": 6859.95, "regress": 24904.425, "sha1": "0e5625a5"},
  "win-release/media_tests_av_perf/ttp/Wifi_roller.webm": {"reva": 175328, "revb": 176157, "type": "absolute", "better": "lower", "improve": 906.775, "regress": 1184.925, "sha1": "d49e638f"},
- "xp-release/sizes/chrome.dll/chrome.dll": {"reva": 294897, "revb": 294948, "type": "absolute", "better": "lower", "improve": 37547161, "regress": 41570458, "sha1": "363fa5bf"},
- "xp-release/sizes/chrome.exe/chrome.exe": {"reva": 242400, "revb": 242432, "type": "absolute", "better": "lower", "improve": 679014, "regress": 750490, "sha1": "1dafcad6"},
+ "xp-release/sizes/chrome.dll/chrome.dll": {"reva": 309071, "revb": 309081, "type": "absolute", "better": "lower", "improve": 36382233, "regress": 40213018, "sha1": "af511cf1"},
+ "xp-release/sizes/chrome.exe/chrome.exe": {"reva": 309071, "revb": 309081, "type": "absolute", "better": "lower", "improve": 612377, "regress": 676839, "sha1": "63dbfdc5"},
  "xp-release/sizes/mini_installer.exe/mini_installer.exe": {"reva": 296771, "revb": 296791, "type": "absolute", "better": "lower", "improve": 32967219, "regress": 36469709, "sha1": "f4744be2"},
- "xp-release/sizes/setup.exe/setup.exe": {"reva": 255987, "revb": 256040, "type": "absolute", "better": "lower", "improve": 959180, "regress": 1060148, "sha1": "d113e5dd"},
+ "xp-release/sizes/setup.exe/setup.exe": {"reva": 309071, "revb": 309081, "type": "absolute", "better": "lower", "improve": 933888, "regress": 1032192, "sha1": "a257fcad"},
  "load": true
 }
