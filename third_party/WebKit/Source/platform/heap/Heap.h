@@ -1504,7 +1504,6 @@ public:
         return allocateHashTableBacking<T, HashTable>(size);
     }
     PLATFORM_EXPORT static void freeHashTableBacking(void* address);
-    PLATFORM_EXPORT static bool expandHashTableBacking(void*, size_t);
 
     template <typename Return, typename Metadata>
     static Return malloc(size_t size)

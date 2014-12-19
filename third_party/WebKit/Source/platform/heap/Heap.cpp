@@ -2718,14 +2718,6 @@ bool HeapAllocator::expandInlineVectorBacking(void* address, size_t newSize)
     return backingExpand<HeapTraits, HeapTraits::HeapType, HeapTraits::HeaderType>(address, newSize);
 }
 
-bool HeapAllocator::expandHashTableBacking(void* address, size_t newSize)
-{
-    typedef HeapIndexTrait<HashTableBackingHeap> HeapTraits;
-    typedef HeapTraits::HeapType HeapType;
-    typedef HeapTraits::HeaderType HeaderType;
-    return backingExpand<HeapTraits, HeapType, HeaderType>(address, newSize);
-}
-
 template<typename HeapTraits>
 void HeapAllocator::backingShrink(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
 {
