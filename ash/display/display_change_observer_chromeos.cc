@@ -15,6 +15,7 @@
 #include "ash/display/display_info.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/display_util.h"
 #include "ash/shell.h"
 #include "ash/touch/touchscreen_util.h"
 #include "base/command_line.h"
@@ -72,7 +73,7 @@ std::vector<DisplayMode> DisplayChangeObserver::GetInternalDisplayModeList(
                           true);
   native_mode.device_scale_factor = display_info.device_scale_factor();
 
-  return DisplayManager::CreateInternalDisplayModeList(native_mode);
+  return CreateInternalDisplayModeList(native_mode);
 }
 
 // static

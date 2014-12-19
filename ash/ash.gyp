@@ -79,6 +79,8 @@
       'display/display_manager.cc',
       'display/display_manager.h',
       'display/display_pref_util.h',
+      'display/display_util.cc',
+      'display/display_util.h',
       'display/event_transformation_handler.cc',
       'display/event_transformation_handler.h',
       'display/mirror_window_controller.cc',

@@ -14,6 +14,7 @@
 #include "ash/debug.h"
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/display_util.h"
 #include "ash/focus_cycler.h"
 #include "ash/gpu_support.h"
 #include "ash/ime_control_delegate.h"
@@ -345,7 +346,7 @@ void HandleScaleUI(bool up) {
   }
 
   const DisplayInfo& display_info = display_manager->GetDisplayInfo(display_id);
-  float next_scale = DisplayManager::GetNextUIScale(display_info, up);
+  float next_scale = GetNextUIScale(display_info, up);
   display_manager->SetDisplayUIScale(display_id, next_scale);
 }
 

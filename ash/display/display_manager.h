@@ -77,21 +77,6 @@ class ASH_EXPORT DisplayManager
     MIRRORING
   };
 
-  // Creates the display modes list for internal display given
-  // by |native_mode|.
-  static std::vector<DisplayMode> CreateInternalDisplayModeList(
-      const DisplayMode& native_mode);
-
-  // Returns next valid UI scale.
-  static float GetNextUIScale(const DisplayInfo& info, bool up);
-
-  // Updates the bounds of the display given by |secondary_display_id|
-  // according to |layout|.
-  static void UpdateDisplayBoundsForLayoutById(
-      const DisplayLayout& layout,
-      const gfx::Display& primary_display,
-      int64 secondary_display_id);
-
   DisplayManager();
   virtual ~DisplayManager();
 

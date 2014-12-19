@@ -8,6 +8,7 @@
 #include "ash/display/display_controller.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_layout_store.h"
+#include "ash/display/display_util.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -1089,8 +1090,7 @@ TEST_F(DisplayManagerTest, UIScaleWithDisplayMode) {
       CreateDisplayInfo(display_id, gfx::Rect(0, 0, 1280, 800));
   std::vector<DisplayMode> display_modes;
   const DisplayMode base_mode(gfx::Size(1280, 800), 60.0f, false, false);
-  std::vector<DisplayMode> mode_list =
-      DisplayManager::CreateInternalDisplayModeList(base_mode);
+  std::vector<DisplayMode> mode_list = CreateInternalDisplayModeList(base_mode);
   native_display_info.SetDisplayModes(mode_list);
 
   std::vector<DisplayInfo> display_info_list;
