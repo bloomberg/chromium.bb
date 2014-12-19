@@ -651,11 +651,10 @@ class AsyncServiceRequest : protected BlockingUIThreadAsyncRequest {
 class FaviconServiceTask : public AsyncServiceRequest<FaviconService> {
  public:
   FaviconServiceTask(base::CancelableTaskTracker* cancelable_tracker,
-                     Profile* profile)
-      : AsyncServiceRequest<FaviconService>(
-            FaviconServiceFactory::GetForProfile(profile,
-                                                 Profile::EXPLICIT_ACCESS),
-            cancelable_tracker),
+                     Profile* profile,
+                     FaviconService* favicon_service)
+      : AsyncServiceRequest<FaviconService>(favicon_service,
+                                            cancelable_tracker),
         profile_(profile) {}
 
   Profile* profile() const { return profile_; }
@@ -670,8 +669,9 @@ class FaviconServiceTask : public AsyncServiceRequest<FaviconService> {
 class BookmarkIconFetchTask : public FaviconServiceTask {
  public:
   BookmarkIconFetchTask(base::CancelableTaskTracker* cancelable_tracker,
-                        Profile* profile)
-      : FaviconServiceTask(cancelable_tracker, profile) {}
+                        Profile* profile,
+                        FaviconService* favicon_service)
+      : FaviconServiceTask(cancelable_tracker, profile, favicon_service) {}
 
   favicon_base::FaviconRawBitmapResult Run(const GURL& url) {
     float max_scale = ui::GetScaleForScaleFactor(
@@ -1166,6 +1166,8 @@ ChromeBrowserProvider::ChromeBrowserProvider(JNIEnv* env, jobject obj)
   profile_ = g_browser_process->profile_manager()->GetLastUsedProfile();
   bookmark_model_ = BookmarkModelFactory::GetForProfile(profile_);
   top_sites_ = profile_->GetTopSites();
+  favicon_service_ = FaviconServiceFactory::GetForProfile(
+      profile_, Profile::EXPLICIT_ACCESS),
   service_.reset(new AndroidHistoryProviderService(profile_));
 
   // Registers the notifications we are interested.
@@ -1553,7 +1555,8 @@ ScopedJavaLocalRef<jbyteArray> ChromeBrowserProvider::GetFaviconOrTouchIcon(
     return ScopedJavaLocalRef<jbyteArray>();
 
   GURL url = GURL(ConvertJavaStringToUTF16(env, jurl));
-  BookmarkIconFetchTask favicon_task(&cancelable_task_tracker_, profile_);
+  BookmarkIconFetchTask favicon_task(&cancelable_task_tracker_, profile_,
+                                     favicon_service_);
   favicon_base::FaviconRawBitmapResult bitmap_result = favicon_task.Run(url);
 
   if (!bitmap_result.is_valid() || !bitmap_result.bitmap_data.get())
