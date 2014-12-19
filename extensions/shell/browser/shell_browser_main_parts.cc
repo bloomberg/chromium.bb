@@ -52,6 +52,10 @@
 #include "extensions/shell/browser/shell_network_controller_chromeos.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "extensions/shell/browser/shell_browser_main_parts_mac.h"
+#endif
+
 #if !defined(DISABLE_NACL)
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/nacl_process_host.h"
@@ -91,6 +95,9 @@ ShellBrowserMainParts::~ShellBrowserMainParts() {
 
 void ShellBrowserMainParts::PreMainMessageLoopStart() {
   // TODO(jamescook): Initialize touch here?
+#if defined(OS_MACOSX)
+  MainPartsPreMainMessageLoopStartMac();
+#endif
 }
 
 void ShellBrowserMainParts::PostMainMessageLoopStart() {

@@ -15,6 +15,10 @@
 #include "extensions/shell/browser/shell_desktop_controller_aura.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "extensions/shell/browser/shell_desktop_controller_mac.h"
+#endif
+
 namespace extensions {
 
 DefaultShellBrowserMainDelegate::DefaultShellBrowserMainDelegate() {
@@ -67,6 +71,8 @@ void DefaultShellBrowserMainDelegate::Shutdown() {
 DesktopController* DefaultShellBrowserMainDelegate::CreateDesktopController() {
 #if defined(USE_AURA)
   return new ShellDesktopControllerAura();
+#elif defined(OS_MACOSX)
+  return new ShellDesktopControllerMac();
 #else
   return NULL;
 #endif

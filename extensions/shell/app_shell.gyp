@@ -4,6 +4,11 @@
 
 {
   'variables': {
+    # Product name is used for Mac bundle.
+    'app_shell_product_name': 'App Shell',
+    # The version is high enough to be supported by Omaha (at least 31)
+    # but fake enough to be obviously not a Chrome release.
+    'app_shell_version': '38.1234.5678.9',
     'chromium_code': 1,
   },
   'targets': [
@@ -46,6 +51,8 @@
         '<(SHARED_INTERMEDIATE_DIR)/extensions/shell',
       ],
       'sources': [
+        'app/paths_mac.h',
+        'app/paths_mac.mm',
         'app/shell_main_delegate.cc',
         'app/shell_main_delegate.h',
         'browser/api/identity/identity_api.cc',
@@ -62,6 +69,7 @@
         'browser/shell_app_delegate.h',
         'browser/shell_app_window_client.cc',
         'browser/shell_app_window_client.h',
+        'browser/shell_app_window_client_mac.mm',
         'browser/shell_audio_controller_chromeos.cc',
         'browser/shell_audio_controller_chromeos.h',
         'browser/shell_browser_context.cc',
@@ -69,8 +77,12 @@
         'browser/shell_browser_main_delegate.h',
         'browser/shell_browser_main_parts.cc',
         'browser/shell_browser_main_parts.h',
+        'browser/shell_browser_main_parts_mac.h',
+        'browser/shell_browser_main_parts_mac.mm',
         'browser/shell_content_browser_client.cc',
         'browser/shell_content_browser_client.h',
+        'browser/shell_desktop_controller_mac.h',
+        'browser/shell_desktop_controller_mac.mm',
         'browser/shell_device_client.cc',
         'browser/shell_device_client.h',
         'browser/shell_display_info_provider.cc',
@@ -87,6 +99,8 @@
         'browser/shell_extensions_browser_client.h',
         'browser/shell_native_app_window.cc',
         'browser/shell_native_app_window.h',
+        'browser/shell_native_app_window_mac.h',
+        'browser/shell_native_app_window_mac.mm',
         'browser/shell_network_controller_chromeos.cc',
         'browser/shell_network_controller_chromeos.h',
         'browser/shell_network_delegate.cc',
@@ -99,8 +113,6 @@
         'browser/shell_prefs.h',
         'browser/shell_runtime_api_delegate.cc',
         'browser/shell_runtime_api_delegate.h',
-        'browser/shell_screen.cc',
-        'browser/shell_screen.h',
         'browser/shell_special_storage_policy.cc',
         'browser/shell_special_storage_policy.h',
         'browser/shell_speech_recognition_manager_delegate.cc',
@@ -132,6 +144,8 @@
             'browser/shell_desktop_controller_aura.h',
             'browser/shell_native_app_window_aura.cc',
             'browser/shell_native_app_window_aura.h',
+            'browser/shell_screen.cc',
+            'browser/shell_screen.h',
           ],
         }],
         ['chromeos==1', {
@@ -169,6 +183,7 @@
     {
       'target_name': 'app_shell',
       'type': 'executable',
+      'mac_bundle': 1,
       'dependencies': [
         'app_shell_lib',
         '<(DEPTH)/extensions/extensions.gyp:extensions_shell_and_test_pak',
@@ -195,8 +210,78 @@
             '<(DEPTH)/base/allocator/allocator.gyp:allocator',
           ],
         }],
+        ['OS=="mac"', {
+          'product_name': '<(app_shell_product_name)',
+          'dependencies!': [
+            'app_shell_lib',
+          ],
+          'dependencies': [
+            'app_shell_framework',
+            'app_shell_helper',
+          ],
+          'mac_bundle_resources': [
+            'app/app-Info.plist',
+          ],
+          # TODO(mark): Come up with a fancier way to do this.  It should only
+          # be necessary to list app-Info.plist once, not the three times it is
+          # listed here.
+          'mac_bundle_resources!': [
+            'app/app-Info.plist',
+          ],
+          'xcode_settings': {
+            'INFOPLIST_FILE': 'app/app-Info.plist',
+          },
+          'copies': [{
+              'destination': '<(PRODUCT_DIR)/<(app_shell_product_name).app/Contents/Frameworks',
+              'files': [
+                '<(PRODUCT_DIR)/<(app_shell_product_name) Helper.app',
+              ],
+          }],
+          'postbuilds': [
+            {
+              'postbuild_name': 'Copy <(app_shell_product_name) Framework.framework',
+              'action': [
+                '../../build/mac/copy_framework_unversioned.sh',
+                '${BUILT_PRODUCTS_DIR}/<(app_shell_product_name) Framework.framework',
+                '${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Frameworks',
+              ],
+            },
+            {
+              # Modify the Info.plist as needed.
+              'postbuild_name': 'Tweak Info.plist',
+              'action': ['../../build/mac/tweak_info_plist.py',
+                         '--scm=1',
+                         '--version=<(app_shell_version)'],
+            },
+            {
+              # This postbuild step is responsible for creating the following
+              # helpers:
+              #
+              # App Shell Helper EH.app and App Shell Helper NP.app are
+              # created from App Shell Helper.app.
+              #
+              # The EH helper is marked for an executable heap. The NP helper
+              # is marked for no PIE (ASLR).
+              'postbuild_name': 'Make More Helpers',
+              'action': [
+                '../../build/mac/make_more_helpers.sh',
+                'Frameworks',
+                '<(app_shell_product_name)',
+              ],
+            },
+            {
+              # Make sure there isn't any Objective-C in the shell's
+              # executable.
+              'postbuild_name': 'Verify No Objective-C',
+              'action': [
+                '../../build/mac/verify_no_objc.sh',
+              ],
+            },
+          ],
+        }],
       ],
     },
+
     {
       'target_name': 'app_shell_browsertests',
       'type': '<(gtest_target_type)',
@@ -253,6 +338,11 @@
             '<(DEPTH)/base/allocator/allocator.gyp:allocator',
           ],
         }],
+        ['OS=="mac"', {
+          'dependencies': [
+            'app_shell',  # Needed for App Shell.app's Helper.
+          ],
+        }],
       ],
     },
     {
@@ -267,16 +357,12 @@
         '<(DEPTH)/extensions/extensions.gyp:extensions_shell_and_test_pak',
         '<(DEPTH)/extensions/extensions.gyp:extensions_test_support',
         '<(DEPTH)/testing/gtest.gyp:gtest',
-        '<(DEPTH)/ui/aura/aura.gyp:aura_test_support',
       ],
       'sources': [
         '../test/extensions_unittests_main.cc',
         'browser/api/identity/identity_api_unittest.cc',
-        'browser/shell_audio_controller_chromeos_unittest.cc',
-        'browser/shell_native_app_window_aura_unittest.cc',
         'browser/shell_oauth2_token_service_unittest.cc',
         'browser/shell_prefs_unittest.cc',
-        'browser/shell_screen_unittest.cc',
         'common/shell_content_client_unittest.cc'
       ],
       'conditions': [
@@ -288,6 +374,11 @@
         ['use_aura==1', {
           'sources': [
             'browser/shell_desktop_controller_aura_unittest.cc',
+            'browser/shell_native_app_window_aura_unittest.cc',
+            'browser/shell_screen_unittest.cc',
+          ],
+          'dependencies': [
+            '<(DEPTH)/ui/aura/aura.gyp:aura_test_support',
           ],
         }],
         ['chromeos==1', {
@@ -296,6 +387,7 @@
           ],
           'sources': [
             'browser/api/shell_gcd/shell_gcd_api_unittest.cc',
+            'browser/shell_audio_controller_chromeos_unittest.cc',
           ],
         }],
         ['OS=="win" and win_use_allocator_shim==1', {
@@ -343,4 +435,144 @@
       ],
     },
   ],  # targets
+
+  'conditions': [
+    ['OS=="mac"', {
+      'targets': [
+        {
+          'target_name': 'app_shell_framework',
+          'type': 'shared_library',
+          'product_name': '<(app_shell_product_name) Framework',
+          'mac_bundle': 1,
+          'mac_bundle_resources': [
+            '<(PRODUCT_DIR)/extensions_shell_and_test.pak',
+            'app/framework-Info.plist',
+          ],
+          'mac_bundle_resources!': [
+            'app/framework-Info.plist',
+          ],
+          'xcode_settings': {
+            # The framework is placed within the .app's Framework
+            # directory.  DYLIB_INSTALL_NAME_BASE and
+            # LD_DYLIB_INSTALL_NAME affect -install_name.
+            'DYLIB_INSTALL_NAME_BASE':
+                '@executable_path/../Frameworks',
+            # See /build/mac/copy_framework_unversioned.sh for
+            # information on LD_DYLIB_INSTALL_NAME.
+            'LD_DYLIB_INSTALL_NAME':
+                '$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(WRAPPER_NAME)/$(PRODUCT_NAME)',
+
+            'INFOPLIST_FILE': 'app/framework-Info.plist',
+          },
+          'dependencies': [
+            'app_shell_lib',
+          ],
+          'include_dirs': [
+            '../..',
+          ],
+          'sources': [
+            'app/shell_main_mac.h',
+            'app/shell_main_mac.cc',
+          ],
+          'postbuilds': [
+            {
+              # Modify the Info.plist as needed.  The script explains why
+              # this is needed.  This is also done in the chrome target.
+              # The framework needs the Breakpad keys if this feature is
+              # enabled.  It does not need the Keystone keys; these always
+              # come from the outer application bundle.  The framework
+              # doesn't currently use the SCM keys for anything,
+              # but this seems like a really good place to store them.
+              'postbuild_name': 'Tweak Info.plist',
+              'action': ['../../build/mac/tweak_info_plist.py',
+                         '--breakpad=1',
+                         '--keystone=0',
+                         '--scm=1',
+                         '--version=<(app_shell_version)',
+                         '--branding=<(app_shell_product_name)'],
+            },
+          ],
+          'conditions': [
+            ['icu_use_data_file_flag==1', {
+              'mac_bundle_resources': [
+                '<(PRODUCT_DIR)/icudtl.dat',
+              ],
+            }],
+            ['v8_use_external_startup_data==1', {
+              'mac_bundle_resources': [
+                '<(PRODUCT_DIR)/natives_blob.bin',
+                '<(PRODUCT_DIR)/snapshot_blob.bin',
+              ],
+            }],
+          ],
+        },  # target app_shell_framework
+        {
+          'target_name': 'app_shell_helper',
+          'type': 'executable',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'product_name': '<(app_shell_product_name) Helper',
+          'mac_bundle': 1,
+          'dependencies': [
+            'app_shell_framework',
+          ],
+          'sources': [
+            'app/shell_main.cc',
+            'app/helper-Info.plist',
+          ],
+          # TODO(mark): Come up with a fancier way to do this.  It should only
+          # be necessary to list helper-Info.plist once, not the three times it
+          # is listed here.
+          'mac_bundle_resources!': [
+            'app/helper-Info.plist',
+          ],
+          # TODO(mark): For now, don't put any resources into this app.  Its
+          # resources directory will be a symbolic link to the browser app's
+          # resources directory.
+          'mac_bundle_resources/': [
+            ['exclude', '.*'],
+          ],
+          'xcode_settings': {
+            'INFOPLIST_FILE': 'app/helper-Info.plist',
+          },
+          'postbuilds': [
+            {
+              # The framework defines its load-time path
+              # (DYLIB_INSTALL_NAME_BASE) relative to the main executable
+              # (chrome).  A different relative path needs to be used in
+              # helper_app.
+              'postbuild_name': 'Fix Framework Link',
+              'action': [
+                'install_name_tool',
+                '-change',
+                '@executable_path/../Frameworks/<(app_shell_product_name) Framework.framework/<(app_shell_product_name) Framework',
+                '@executable_path/../../../<(app_shell_product_name) Framework.framework/<(app_shell_product_name) Framework',
+                '${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}'
+              ],
+            },
+            {
+              # Modify the Info.plist as needed.  The script explains why this
+              # is needed.  This is also done in the chrome and chrome_dll
+              # targets.  In this case, --breakpad=0, --keystone=0, and --scm=0
+              # are used because Breakpad, Keystone, and SCM keys are
+              # never placed into the helper.
+              'postbuild_name': 'Tweak Info.plist',
+              'action': ['../../build/mac/tweak_info_plist.py',
+                         '--breakpad=0',
+                         '--keystone=0',
+                         '--scm=0',
+                         '--version=<(app_shell_version)'],
+            },
+            {
+              # Make sure there isn't any Objective-C in the helper app's
+              # executable.
+              'postbuild_name': 'Verify No Objective-C',
+              'action': [
+                '../../build/mac/verify_no_objc.sh',
+              ],
+            },
+          ],
+        },  # target app_shell_helper
+      ],
+    }],  # OS=="mac"
+  ],
 }

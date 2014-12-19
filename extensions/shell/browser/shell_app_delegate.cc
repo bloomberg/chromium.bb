@@ -91,7 +91,6 @@ bool ShellAppDelegate::IsWebContentsVisible(
 void ShellAppDelegate::SetTerminatingCallback(const base::Closure& callback) {
   // TODO(jamescook): Should app_shell continue to close the app window
   // manually or should it use a browser termination callback like Chrome?
-  NOTIMPLEMENTED();
 }
 
 void ShellAppDelegate::RenderViewCreated(
