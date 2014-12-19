@@ -1510,6 +1510,15 @@ const Experiment kExperiments[] = {
     kOsWin | kOsCrOS | kOsLinux | kOsMac,
     SINGLE_VALUE_TYPE(switches::kDisableNewBookmarkApps)
   },
+#if defined(OS_MACOSX)
+  {
+    "enable-hosted-app-shim-creation",
+    IDS_FLAGS_ENABLE_HOSTED_APP_SHIM_CREATION_NAME,
+    IDS_FLAGS_ENABLE_HOSTED_APP_SHIM_CREATION_DESCRIPTION,
+    kOsMac,
+    SINGLE_VALUE_TYPE(switches::kEnableHostedAppShimCreation)
+  },
+#endif
   {
     "enable-ephemeral-apps-in-webstore",
     IDS_FLAGS_ENABLE_EPHEMERAL_APPS_IN_WEBSTORE_NAME,

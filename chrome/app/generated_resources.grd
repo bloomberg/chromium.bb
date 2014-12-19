@@ -6590,6 +6590,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_NEW_BOOKMARK_APPS_DESCRIPTION" desc="Description for the flag to disable the new bookmark app system.">
         Disables the new system for creating bookmark apps.
       </message>
+      <message name="IDS_FLAGS_ENABLE_HOSTED_APP_SHIM_CREATION_NAME" desc="Name of the flag to enable creation of app shims for hosted apps on Mac.">
+        Enable creation of app shims for hosted apps on Mac.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_HOSTED_APP_SHIM_CREATION_DESCRIPTION" desc="Description for the flag to enable creation of app shims for hosted apps on Mac.">
+        Enables the creation of app shims on Mac when creating a hosted app.
+      </message>
       <message name="IDS_FLAGS_ENABLE_EPHEMERAL_APPS_IN_WEBSTORE_NAME" desc="Name of the flag to enable ephemeral apps in the webstore.">
         Enable experimental ephemeral apps from the webstore.
       </message>

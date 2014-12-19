@@ -370,6 +370,7 @@ extern const char kMigrateDataDirForSxS[];
 #if defined(OS_MACOSX)
 extern const char kAppsKeepChromeAliveInTests[];
 extern const char kDisableSystemFullscreenForTesting[];
+extern const char kEnableHostedAppShimCreation[];
 extern const char kRelauncherProcess[];
 #endif
 

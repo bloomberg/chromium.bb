@@ -574,12 +574,16 @@ void BrowserWindowCocoa::ShowBookmarkAppBubble(
       extensions::CreateOrUpdateBookmarkApp(service, &new_web_app_info);
     }
 
-    extensions::ExtensionRegistry* registry =
-        extensions::ExtensionRegistry::Get(profile);
-    const extensions::Extension* app = registry->GetExtensionById(
-        extension_id, extensions::ExtensionRegistry::ENABLED);
+    // If we're not creating app shims, no need to reveal it in Finder.
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableHostedAppShimCreation)) {
+      extensions::ExtensionRegistry* registry =
+          extensions::ExtensionRegistry::Get(profile);
+      const extensions::Extension* app = registry->GetExtensionById(
+          extension_id, extensions::ExtensionRegistry::ENABLED);
 
-    web_app::RevealAppShimInFinderForApp(profile, app);
+      web_app::RevealAppShimInFinderForApp(profile, app);
+    }
   } else {
     service->UninstallExtension(extension_id,
                                 extensions::UNINSTALL_REASON_INSTALL_CANCELED,

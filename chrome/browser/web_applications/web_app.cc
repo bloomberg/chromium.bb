@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/prefs/pref_service.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
@@ -288,8 +290,11 @@ bool ShouldCreateShortcutFor(Profile* profile,
 // An additional check here for OS X. We need app shims to be
 // able to show them in the dock.
 #if defined(OS_MACOSX)
-  app_type_requires_shortcut =
-      app_type_requires_shortcut || extension->is_hosted_app();
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableHostedAppShimCreation)) {
+    app_type_requires_shortcut =
+        app_type_requires_shortcut || extension->is_hosted_app();
+  }
 #endif
 
   return (app_type_requires_shortcut &&
