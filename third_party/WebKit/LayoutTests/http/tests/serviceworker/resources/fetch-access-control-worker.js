@@ -84,6 +84,11 @@ self.addEventListener('fetch', function(event) {
                       // Send the result to fetch-access-control.html.
                       port.postMessage(
                         {
+                          // Setting a comment will fail the test and show the
+                          // comment in the result. Use this for debugging
+                          // tests.
+                          comment: undefined,
+
                           fetchResult: 'resolved',
                           body: body,
                           headers: headersToArray(response.headers),
