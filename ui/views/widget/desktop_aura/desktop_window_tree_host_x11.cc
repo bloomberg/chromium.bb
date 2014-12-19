@@ -53,8 +53,6 @@
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/window_util.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(views::DesktopWindowTreeHostX11*);
-
 namespace views {
 
 DesktopWindowTreeHostX11* DesktopWindowTreeHostX11::g_current_capture =

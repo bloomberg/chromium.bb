@@ -46,8 +46,6 @@ DEFINE_OWNED_WINDOW_PROPERTY_KEY(WindowTouchDetails,
                                  NULL);
 }
 
-DECLARE_WINDOW_PROPERTY_TYPE(WindowTouchDetails*);
-
 namespace ash {
 
 // static

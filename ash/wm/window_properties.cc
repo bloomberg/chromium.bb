@@ -8,6 +8,8 @@
 #include "ui/aura/window_property.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(ash::wm::WindowState*);
+DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(ASH_EXPORT, gfx::Rect*)
+DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(ASH_EXPORT, ui::WindowShowState)
 
 namespace ash {
 

@@ -17,8 +17,6 @@
 
 using aura::Window;
 
-DECLARE_WINDOW_PROPERTY_TYPE(wm::TransientWindowManager*);
-
 namespace wm {
 namespace {
 

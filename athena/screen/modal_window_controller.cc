@@ -13,8 +13,6 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/wm/core/window_animations.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(athena::ModalWindowController*);
-
 namespace athena {
 namespace {
 

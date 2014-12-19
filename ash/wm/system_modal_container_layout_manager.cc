@@ -30,6 +30,8 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/compound_event_filter.h"
 
+DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(ASH_EXPORT, bool);
+
 namespace ash {
 
 // If this is set to true, the window will get centered.

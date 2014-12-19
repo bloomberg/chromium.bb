@@ -52,10 +52,6 @@ class WindowTreeHost;
 template<typename T>
 struct WindowProperty;
 
-namespace subtle {
-class PropertyHelper;
-}
-
 namespace test {
 class WindowTestApi;
 }
@@ -336,7 +332,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   friend class test::WindowTestApi;
   friend class LayoutManager;
   friend class WindowTargeter;
-  friend class subtle::PropertyHelper;
+
   // Called by the public {Set,Get,Clear}Property functions.
   int64 SetPropertyInternal(const void* key,
                             const char* name,
