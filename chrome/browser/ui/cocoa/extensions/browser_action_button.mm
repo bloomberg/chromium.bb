@@ -269,14 +269,12 @@ void ToolbarActionViewDelegateBridge::SetContextMenuController(
     if ([moveAnimation_ isAnimating])
       [moveAnimation_ stopAnimation];
 
-    NSDictionary* animationDictionary =
-        [NSDictionary dictionaryWithObjectsAndKeys:
-            self, NSViewAnimationTargetKey,
-            [NSValue valueWithRect:[self frame]], NSViewAnimationStartFrameKey,
-            [NSValue valueWithRect:frameRect], NSViewAnimationEndFrameKey,
-            nil];
-    [moveAnimation_ setViewAnimations:
-        [NSArray arrayWithObject:animationDictionary]];
+    NSDictionary* animationDictionary = @{
+      NSViewAnimationTargetKey : self,
+      NSViewAnimationStartFrameKey : [NSValue valueWithRect:[self frame]],
+      NSViewAnimationEndFrameKey : [NSValue valueWithRect:frameRect]
+    };
+    [moveAnimation_ setViewAnimations: @[ animationDictionary ]];
     [moveAnimation_ startAnimation];
   }
 }

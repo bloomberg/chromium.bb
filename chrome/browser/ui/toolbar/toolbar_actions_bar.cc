@@ -146,13 +146,32 @@ class ToolbarActionsBar::TabOrderHelper
                       ToolbarActionsBar::DragType drag_type,
                       int tab_id);
 
+  void notify_overflow_bar(ToolbarActionsBar* overflow_bar,
+                           bool should_notify) {
+    // There's a possibility that a new overflow bar can be constructed before
+    // the first is fully destroyed. Only un-register the |overflow_bar_| if
+    // it's the one making the request.
+    if (should_notify)
+      overflow_bar_ = overflow_bar;
+    else if (overflow_bar_ == overflow_bar)
+      overflow_bar_ = nullptr;
+  }
+
  private:
   // TabStripModelObserver:
   void TabInsertedAt(content::WebContents* web_contents,
                      int index,
                      bool foreground) override;
   void TabDetachedAt(content::WebContents* web_contents, int index) override;
+  void ActiveTabChanged(content::WebContents* old_contents,
+                        content::WebContents* new_contents,
+                        int index,
+                        int reason) override;
   void TabStripModelDeleted() override;
+
+  // Notifies the main |toolbar_| and, if present, the |overflow_bar_| that
+  // actions need to be reordered.
+  void NotifyReorderActions();
 
   // The set of tabs for the given action (the key) is currently "popped out".
   // "Popped out" actions are those that were in the overflow menu normally, but
@@ -165,6 +184,9 @@ class ToolbarActionsBar::TabOrderHelper
 
   // The owning ToolbarActionsBar.
   ToolbarActionsBar* toolbar_;
+
+  // The overflow bar, if one is present.
+  ToolbarActionsBar* overflow_bar_;
 
   // The associated toolbar model.
   extensions::ExtensionToolbarModel* model_;
@@ -235,7 +257,7 @@ void ToolbarActionsBar::TabOrderHelper::HandleResize(size_t resized_count,
   resized_count -= extra;
   model_->SetVisibleIconCount(resized_count);
   if (reorder_necessary)
-    toolbar_->ReorderActions();
+    NotifyReorderActions();
 }
 
 void ToolbarActionsBar::TabOrderHelper::HandleDragDrop(
@@ -298,7 +320,7 @@ void ToolbarActionsBar::TabOrderHelper::SetActionWantsToRun(
     reorder_necessary = true;
   }
   if (reorder_necessary)
-    toolbar_->ReorderActions();
+    NotifyReorderActions();
 }
 
 void ToolbarActionsBar::TabOrderHelper::ActionRemoved(
@@ -340,7 +362,7 @@ void ToolbarActionsBar::TabOrderHelper::TabInsertedAt(
     int index,
     bool foreground) {
   if (foreground)
-    toolbar_->ReorderActions();
+    NotifyReorderActions();
 }
 
 void ToolbarActionsBar::TabOrderHelper::TabDetachedAt(
@@ -352,8 +374,28 @@ void ToolbarActionsBar::TabOrderHelper::TabDetachedAt(
   tabs_checked_for_pop_out_.erase(tab_id);
 }
 
+void ToolbarActionsBar::TabOrderHelper::ActiveTabChanged(
+    content::WebContents* old_contents,
+    content::WebContents* new_contents,
+    int index,
+    int reason) {
+  // When we do a bulk-refresh by switching tabs, we don't animate the
+  // difference. We only animate when it's a change driven by the action or the
+  // user.
+  base::AutoReset<bool> animation_reset(&toolbar_->suppress_animation_, true);
+  NotifyReorderActions();
+}
+
 void ToolbarActionsBar::TabOrderHelper::TabStripModelDeleted() {
   tab_strip_observer_.RemoveAll();
+}
+
+void ToolbarActionsBar::TabOrderHelper::NotifyReorderActions() {
+  // Reorder the reference toolbar first (since we use its actions in
+  // GetActionOrder()).
+  toolbar_->ReorderActions();
+  if (overflow_bar_)
+    overflow_bar_->ReorderActions();
 }
 
 ToolbarActionsBar::PlatformSettings::PlatformSettings(bool in_overflow_mode)
@@ -372,17 +414,19 @@ ToolbarActionsBar::ToolbarActionsBar(ToolbarActionsBarDelegate* delegate,
       browser_(browser),
       model_(extensions::ExtensionToolbarModel::Get(browser_->profile())),
       main_bar_(main_bar),
-      overflow_bar_(nullptr),
       platform_settings_(main_bar != nullptr),
       model_observer_(this),
       suppress_layout_(false),
       suppress_animation_(true) {
   if (model_)  // |model_| can be null in unittests.
     model_observer_.Add(model_);
-  if (in_overflow_mode())
-    main_bar_->overflow_bar_ = this;
-  else if (pop_out_actions_to_run_)
-    tab_order_helper_.reset(new TabOrderHelper(this, browser_, model_));
+
+  if (pop_out_actions_to_run_) {
+    if (in_overflow_mode())
+      main_bar_->tab_order_helper_->notify_overflow_bar(this, true);
+    else
+      tab_order_helper_.reset(new TabOrderHelper(this, browser_, model_));
+  }
 }
 
 ToolbarActionsBar::~ToolbarActionsBar() {
@@ -390,9 +434,8 @@ ToolbarActionsBar::~ToolbarActionsBar() {
   // the order of deletion between the views and the ToolbarActionsBar.
   DCHECK(toolbar_actions_.empty()) <<
       "Must call DeleteActions() before destruction.";
-  if (in_overflow_mode())
-    main_bar_->overflow_bar_ = nullptr;
-  DCHECK(overflow_bar_ == nullptr) << "Overflow bar cannot outlive main bar";
+  if (in_overflow_mode() && pop_out_actions_to_run_)
+    main_bar_->tab_order_helper_->notify_overflow_bar(this, false);
 }
 
 // static
@@ -546,12 +589,8 @@ void ToolbarActionsBar::CreateActions() {
       component_actions.weak_clear();
     }
 
-    if (!toolbar_actions_.empty()) {
-      if (in_overflow_mode())
-        CopyActionOrder();
-      else
-        ReorderActions();
-    }
+    if (!toolbar_actions_.empty())
+      ReorderActions();
 
     for (size_t i = 0; i < toolbar_actions_.size(); ++i)
       delegate_->AddViewForAction(toolbar_actions_[i], i);
@@ -569,11 +608,6 @@ void ToolbarActionsBar::DeleteActions() {
 void ToolbarActionsBar::Update() {
   if (toolbar_actions_.empty())
     return;  // Nothing to do.
-
-  // When we do a bulk-refresh (such as when we switch tabs), we don't
-  // animate the difference. We only animate when it's a change driven by the
-  // action.
-  base::AutoReset<bool> animation_resetter(&suppress_animation_, true);
 
   {
     // Don't layout until the end.
@@ -610,7 +644,10 @@ void ToolbarActionsBar::OnDragDrop(int dragged_index,
                                    int dropped_index,
                                    DragType drag_type) {
   // All drag-and-drop commands should go to the main bar.
-  DCHECK(!in_overflow_mode());
+  if (in_overflow_mode()) {
+    main_bar_->OnDragDrop(dragged_index, dropped_index, drag_type);
+    return;
+  }
 
   if (tab_order_helper_) {
     tab_order_helper_->HandleDragDrop(
@@ -784,7 +821,7 @@ Browser* ToolbarActionsBar::GetBrowser() {
 }
 
 void ToolbarActionsBar::ReorderActions() {
-  if (toolbar_actions_.empty() || in_overflow_mode())
+  if (toolbar_actions_.empty())
     return;
 
   // First, reset the order to that of the model.
@@ -796,12 +833,14 @@ void ToolbarActionsBar::ReorderActions() {
 
   // Only adjust the order if the model isn't highlighting a particular
   // subset (and the specialized tab order is enabled).
-  if (!model_->is_highlighting() && tab_order_helper_) {
+  TabOrderHelper* tab_order_helper = in_overflow_mode() ?
+      main_bar_->tab_order_helper_.get() : tab_order_helper_.get();
+  if (!model_->is_highlighting() && tab_order_helper) {
     WeakToolbarActions new_order =
-        tab_order_helper_->GetActionOrder(GetCurrentWebContents());
+        tab_order_helper->GetActionOrder(GetCurrentWebContents());
     auto compare = [](ToolbarActionViewController* const& first,
                       ToolbarActionViewController* const& second) {
-      return first == second;
+      return first->GetId() == second->GetId();
     };
     SortContainer(
         &toolbar_actions_.get(), new_order, compare);
@@ -812,25 +851,6 @@ void ToolbarActionsBar::ReorderActions() {
   if (!suppress_layout_) {
     ResizeDelegate(gfx::Tween::EASE_OUT, false);
     delegate_->Redraw(true);
-  }
-
-  if (overflow_bar_)
-    overflow_bar_->CopyActionOrder();
-}
-
-void ToolbarActionsBar::CopyActionOrder() {
-  DCHECK(in_overflow_mode());
-  if (!main_bar_->toolbar_actions().empty()) {
-    auto compare = [](ToolbarActionViewController* const& first,
-                      ToolbarActionViewController* const& second) {
-      return first->GetId() == second->GetId();
-    };
-    SortContainer(
-        &toolbar_actions_.get(), main_bar_->toolbar_actions(), compare);
-    if (!suppress_layout_) {
-      ResizeDelegate(gfx::Tween::EASE_OUT, false);
-      delegate_->Redraw(true);
-    }
   }
 }
 

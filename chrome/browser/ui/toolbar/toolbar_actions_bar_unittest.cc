@@ -226,10 +226,6 @@ void ToolbarActionsBarUnitTest::TearDown() {
 void ToolbarActionsBarUnitTest::ActivateTab(int index) {
   ASSERT_NE(nullptr, browser()->tab_strip_model()->GetWebContentsAt(index));
   browser()->tab_strip_model()->ActivateTabAt(index, true);
-  // Normally, the toolbar view would (indirectly) tell the toolbar actions
-  // bar to update itself on tab change. Since this is a unittest, we have tell
-  // it to.
-  toolbar_actions_bar()->Update();
 }
 
 scoped_refptr<const extensions::Extension>

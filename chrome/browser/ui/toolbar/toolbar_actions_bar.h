@@ -172,9 +172,6 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
   // value of |pop_out_actions_to_run|.
   void ReorderActions();
 
-  // Copies the action order from the main bar (only called for the overflow).
-  void CopyActionOrder();
-
   bool in_overflow_mode() const { return main_bar_ != nullptr; }
 
   // The delegate for this object (in a real build, this is the view).
@@ -189,10 +186,6 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
   // The controller for the main toolbar actions bar. This will be null if this
   // is the main bar.
   ToolbarActionsBar* main_bar_;
-
-  // The controller for the overflow toolbar actions bar; this can be null
-  // even if this is the main bar, since the overflow is not always open.
-  ToolbarActionsBar* overflow_bar_;
 
   // Platform-specific settings for dimensions and the overflow chevron.
   PlatformSettings platform_settings_;

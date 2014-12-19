@@ -648,8 +648,12 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
   buttonFrame.origin.y = NSMaxY([containerView_ frame]) -
        (ToolbarActionsBar::IconHeight() * (rowIndex + 1));
 
-  [button setFrame:buttonFrame
-           animate:!toolbarActionsBar_->suppress_animation()];
+  // It's possible the button is already animating to the right place. Don't
+  // call move again, because it will stop the current animation.
+  if (!NSEqualRects(buttonFrame, [button frameAfterAnimation])) {
+    [button setFrame:buttonFrame
+             animate:!toolbarActionsBar_->suppress_animation() && !isOverflow_];
+  }
 }
 
 - (BOOL)browserActionClicked:(BrowserActionButton*)button {
