@@ -25,63 +25,6 @@ function setUp() {
 }
 
 /**
- * Creates a subdirectory within a temporary file system for testing.
- *
- * @param {string} directoryName Name of the test directory to create.  Must be
- *     unique within this test suite.
- */
-function makeTestFileSystemRoot(directoryName) {
-  function makeTestFilesystem() {
-    return new Promise(function(resolve, reject) {
-      window.webkitRequestFileSystem(
-          window.TEMPORARY,
-          1024 * 1024,
-          resolve,
-          reject);
-    });
-  }
-
-  return makeTestFilesystem()
-      .then(
-          // Create a directory, pretend that's the root.
-          function(fs) {
-            return new Promise(function(resolve, reject) {
-              fs.root.getDirectory(
-                    directoryName,
-                    {
-                      create: true,
-                      exclusive: true
-                    },
-                  resolve,
-                  reject);
-            });
-          });
-}
-
-/**
- * Creates a set of files in the given directory.
- * @param {!Array<!Array|string>} filenames A (potentially nested) array of
- *     strings, reflecting a directory structure.
- * @param {!DirectoryEntry} dir The root of the directory tree.
- * @return {!Promise.<!DirectoryEntry>} The root of the newly populated
- *     directory tree.
- */
-function populateDir(filenames, dir) {
-  return Promise.all(
-      filenames.map(function(filename) {
-        if (filename instanceof Array) {
-          return new Promise(function(resolve, reject) {
-            dir.getDirectory(filename[0], {create: true}, resolve, reject);
-          }).then(populateDir.bind(null, filename));
-        } else {
-          return new Promise(function(resolve, reject) {
-            dir.getFile(filename, {create: true}, resolve, reject);
-          });
-        }
-      })).then(function() { return dir; });
-}
-
-/**
  * Verifies that scanning an empty filesystem produces an empty list.
  */
 function testEmptySourceList() {
@@ -89,6 +32,57 @@ function testEmptySourceList() {
     function() {
       scanner.scan([]);
     });
+}
+
+function testIsScanning(callback) {
+  var filenames = [
+    'happy',
+    'thoughts'
+  ];
+  reportPromise(
+      makeTestFileSystemRoot('testIsScanning')
+          .then(populateDir.bind(null, filenames))
+          .then(
+              /**
+               * Scans the directory.
+               * @param {!DirectoryEntry} root
+               */
+              function(root) {
+                var results = scanner.scan([root]);
+                assertFalse(results.isFinal());
+              }),
+      callback);
+}
+
+function testObserverNotifiedOnScanFinish(callback) {
+  var filenames = [
+    'happy',
+    'thoughts'
+  ];
+  makeTestFileSystemRoot('testObserverNotifiedOnScanFinish')
+      .then(populateDir.bind(null, filenames))
+      .then(
+          /**
+           * Scans the directory.
+           * @param {!DirectoryEntry} root
+           */
+          function(root) {
+            // Kick off a scan so we can get notified of a scan being finished.
+            // We kick this off first so we can capture the result for
+            // use in an assert. Promises ensure the scan won't finish
+            // until after our funciton is fully processed.
+            var result = scanner.scan([root]);
+            scanner.addObserver(
+                function(eventType, scanResult) {
+                  assertEquals(importer.ScanEvent.FINALIZED, eventType);
+                  assertEquals(result, scanResult);
+                  callback(false);
+                });
+          })
+      .catch(
+          function() {
+            callback(true);
+          });
 }
 
 /**
@@ -108,7 +102,7 @@ function testEmptyScanResults(callback) {
                * @param {!DirectoryEntry} root
                */
               function(root) {
-                return scanner.scan([root]).whenFinished();
+                return scanner.scan([root]).whenFinal();
               })
           .then(assertResults.bind(null, [])),
       callback);
@@ -140,7 +134,7 @@ function testSingleLevel(callback) {
                * @param {!DirectoryEntry} root
                */
               function(root) {
-                return scanner.scan([root]).whenFinished();
+                return scanner.scan([root]).whenFinal();
               })
           .then(assertResults.bind(null, expectedFiles)),
       callback);
@@ -173,7 +167,7 @@ function testIgnoresPreviousImports(callback) {
                * @param {!DirectoryEntry} root
                */
               function(root) {
-                return scanner.scan([root]).whenFinished();
+                return scanner.scan([root]).whenFinal();
               })
           .then(assertResults.bind(null, expectedFiles)),
       callback);
@@ -212,7 +206,7 @@ function testMultiLevel(callback) {
                * @param {!DirectoryEntry} root
                */
               function(root) {
-                return scanner.scan([root]).whenFinished();
+                return scanner.scan([root]).whenFinal();
               })
           .then(assertResults.bind(null, expectedFiles)),
       callback);
@@ -257,7 +251,7 @@ function testMultipleDirectories(callback) {
                 return Promise.all(['foo.0', 'foo.1'].map(
                     getDirectory.bind(null, root))).then(
                         function(directories) {
-                          return scanner.scan(directories).whenFinished();
+                          return scanner.scan(directories).whenFinal();
                         });
               })
           .then(assertResults.bind(null, expectedFiles)),
@@ -266,9 +260,78 @@ function testMultipleDirectories(callback) {
 
 /**
  * Verifies the results of the media scan are as expected.
+ * @param {!Array.<string>} expected
  * @param {!impoter.ScanResults} results
  */
 function assertResults(expected, results) {
   assertFileEntryPathsEqual(expected, results.getFileEntries());
   // TODO(smckay): Add coverage for getScanDurationMs && getTotalBytes.
+}
+
+/**
+ * Creates a subdirectory within a temporary file system for testing.
+ *
+ * @param {string} directoryName Name of the test directory to create.  Must be
+ *     unique within this test suite.
+ */
+function makeTestFileSystemRoot(directoryName) {
+  function makeTestFilesystem() {
+    return new Promise(function(resolve, reject) {
+      window.webkitRequestFileSystem(
+          window.TEMPORARY,
+          1024 * 1024,
+          resolve,
+          reject);
+    });
+  }
+
+  return makeTestFilesystem()
+      .then(
+          // Create a directory, pretend that's the root.
+          function(fs) {
+            return new Promise(function(resolve, reject) {
+              fs.root.getDirectory(
+                    directoryName,
+                    {
+                      create: true,
+                      exclusive: true
+                    },
+                  resolve,
+                  reject);
+            });
+          });
+}
+
+/**
+ * Creates a set of files in the given directory.
+ * @param {!Array<!Array|string>} filenames A (potentially nested) array of
+ *     strings, reflecting a directory structure.
+ * @param {!DirectoryEntry} dir The root of the directory tree.
+ * @return {!Promise.<!DirectoryEntry>} The root of the newly populated
+ *     directory tree.
+ */
+function populateDir(filenames, dir) {
+  return Promise.all(
+      filenames.map(
+          function(filename) {
+            if (filename instanceof Array) {
+              return new Promise(
+                  function(resolve, reject) {
+                    dir.getDirectory(
+                        filename[0],
+                        {create: true},
+                        resolve,
+                        reject);
+                  })
+                  .then(populateDir.bind(null, filename));
+            } else {
+              return new Promise(
+                  function(resolve, reject) {
+                    dir.getFile(filename, {create: true}, resolve, reject);
+                  });
+            }
+          })).then(
+              function() {
+                return dir;
+              });
 }

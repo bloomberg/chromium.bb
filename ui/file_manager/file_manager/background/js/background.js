@@ -81,14 +81,19 @@ function FileBrowserBackground() {
       function() { this.tryClose(); }.bind(this));
 
   /**
+   * Provides support for scaning media devices as part of Cloud Import.
+   * @type {!importer.MediaScanner}
+   */
+  this.mediaScanner = new importer.DefaultMediaScanner(this.historyLoader);
+
+  /**
    * Handles importing of user media (e.g. photos, videos) from removable
    * devices.
    * @type {!importer.MediaImportHandler}
    */
   this.mediaImportHandler =
       new importer.MediaImportHandler(
-          this.fileOperationManager,
-          new importer.DefaultMediaScanner(this.historyLoader));
+          this.fileOperationManager);
 
   /**
    * Promise of string data.

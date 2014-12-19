@@ -2,24 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @type {!MockFileOperationManager}
- */
+/** @type {!MockFileOperationManager} */
 var fileOperationManager;
 
-/**
- * @type {!TestMediaScanner}
- */
+/** @type {!TestMediaScanner} */
 var mediaScanner;
 
-/**
- * @type {!importer.MediaImportHandler}
- */
+/** @type {!importer.MediaImportHandler} */
 var mediaImporter;
 
-/**
- * @type {!VolumeInfo}
- */
+/** @type {!VolumeInfo} */
 var drive;
 
 /**
@@ -61,8 +53,7 @@ function setUp() {
 
   mediaScanner = new TestMediaScanner();
   mediaImporter = new importer.MediaImportHandler(
-      fileOperationManager,
-      mediaScanner);
+      fileOperationManager);
 }
 
 function testImportMedia(callback) {
@@ -85,36 +76,43 @@ function testImportMedia(callback) {
   var media = filenames.map(function(filename) {
     return fileSystem.entries[filename];
   });
-  mediaScanner.fileEntries = media;
 
-  var importTask = mediaImporter.importMedia(fileSystem.root, destination);
-  var whenImportDone = new Promise(function(resolve, reject) {
-    importTask.addObserver(
-        /**
-         * @param {!importer.TaskQueue.UpdateType} updateType
-         * @param {!importer.TaskQueue.Task} task
-         */
-        function(updateType, task) {
-          switch (updateType) {
-          case importer.TaskQueue.UpdateType.SUCCESS:
-            resolve(importedMedia);
-            break;
-          case importer.TaskQueue.UpdateType.ERROR:
-            reject(new Error(importer.TaskQueue.UpdateType.ERROR));
-            break;
-          }
-        });
-  });
+  var scanResult = new TestScanResult(media);
+  var importTask = mediaImporter.importFromScanResult(scanResult, destination);
+  var whenImportDone = new Promise(
+      function(resolve, reject) {
+        importTask.addObserver(
+            /**
+             * @param {!importer.TaskQueue.UpdateType} updateType
+             * @param {!importer.TaskQueue.Task} task
+             */
+            function(updateType, task) {
+              switch (updateType) {
+                case importer.TaskQueue.UpdateType.SUCCESS:
+                  resolve(importedMedia);
+                  break;
+                case importer.TaskQueue.UpdateType.ERROR:
+                  reject(new Error(importer.TaskQueue.UpdateType.ERROR));
+                  break;
+              }
+            });
+      });
 
-  reportPromise(whenImportDone.then(
-      /** @param {!Array<!FileEntry>} importedMedia */
-      function(importedMedia) {
-        assertEquals(media.length, importedMedia.length);
-        importedMedia.forEach(function(imported) {
-          // Verify that the copied file exists is one of the expected files.
-          assertTrue(media.indexOf(imported.source) >= 0);
-          // Verify that the files are being copied to the right locations.
-          assertEquals(destination(), imported.destination);
-        });
-      }), callback);
+  reportPromise(
+      whenImportDone.then(
+        /** @param {!Array<!FileEntry>} importedMedia */
+        function(importedMedia) {
+          assertEquals(media.length, importedMedia.length);
+          importedMedia.forEach(
+            /** @param {!FileEntry} imported */
+            function(imported) {
+              // Verify the copied file is one of the expected files.
+              assertTrue(media.indexOf(imported.source) >= 0);
+              // Verify that the files are being copied to the right locations.
+              assertEquals(destination(), imported.destination);
+            });
+        }),
+      callback);
+
+  scanResult.finalize();
 }

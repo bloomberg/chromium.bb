@@ -9,12 +9,14 @@
 function MockVolumeManager() {
   this.volumeInfoList = new cr.ui.ArrayDataModel([]);
 
-  this.volumeInfoList.push(MockVolumeManager.createMockVolumeInfo(
-      VolumeManagerCommon.VolumeType.DRIVE, 'drive',
-      str('DRIVE_DIRECTORY_LABEL')));
-  this.volumeInfoList.push(MockVolumeManager.createMockVolumeInfo(
-      VolumeManagerCommon.VolumeType.DOWNLOADS, 'downloads',
-      str('DOWNLOADS_DIRECTORY_LABEL')));
+  this.createVolumeInfo(
+      VolumeManagerCommon.VolumeType.DRIVE,
+      'drive',
+      str('DRIVE_DIRECTORY_LABEL'));
+  this.createVolumeInfo(
+      VolumeManagerCommon.VolumeType.DOWNLOADS,
+      'downloads',
+      str('DOWNLOADS_DIRECTORY_LABEL'));
 }
 
 /**
@@ -32,6 +34,23 @@ MockVolumeManager.installMockSingleton = function(opt_singleton) {
   VolumeManager.getInstance = function() {
     return Promise.resolve(MockVolumeManager.instance_);
   };
+};
+
+/**
+ * Creates, installs and returns a mock VolumeInfo instance.
+ *
+ * @param {!VolumeType} type
+ * @param {string} volumeId
+ * @param {string} label
+ *
+ * @return {!VolumeInfo}
+ */
+MockVolumeManager.prototype.createVolumeInfo =
+    function(type, volumeId, label) {
+  var volumeInfo =
+      MockVolumeManager.createMockVolumeInfo(type, volumeId, label);
+  this.volumeInfoList.push(volumeInfo);
+  return volumeInfo;
 };
 
 /**

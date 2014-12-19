@@ -19,6 +19,20 @@ importer.MediaScanner = function() {};
 importer.MediaScanner.prototype.scan;
 
 /**
+ * Adds an observer, which will be notified on scan events.
+ *
+ * @param {!importer.ScanObserver} observer
+ */
+importer.MediaScanner.prototype.addObserver;
+
+/**
+ * Remove a previously registered observer.
+ *
+ * @param {!importer.ScanObserver} observer
+ */
+importer.MediaScanner.prototype.removeObserver;
+
+/**
  * Class representing the results of a scan operation.
  *
  * @interface
@@ -26,8 +40,13 @@ importer.MediaScanner.prototype.scan;
 importer.ScanResult = function() {};
 
 /**
+ * @return {boolean} true if scanning is complete.
+ */
+importer.ScanResult.prototype.isFinal;
+
+/**
  * Returns all files entries discovered so far. The list will be
- * complete only after scanning has completed and {@code isFinished}
+ * complete only after scanning has completed and {@code isFinal}
  * returns {@code true}.
  *
  * @return {!Array.<!FileEntry>}
@@ -54,7 +73,7 @@ importer.ScanResult.prototype.getScanDurationMs;
  *
  * @return {!Promise.<!importer.ScanResult>}
  */
-importer.ScanResult.prototype.whenFinished;
+importer.ScanResult.prototype.whenFinal;
 
 /**
  * Recursively scans through a list of given files and directories, and creates
@@ -69,6 +88,24 @@ importer.ScanResult.prototype.whenFinished;
 importer.DefaultMediaScanner = function(historyLoader) {
   /** @private {!importer.HistoryLoader} */
   this.historyLoader_ = historyLoader;
+
+  /** @private {!Array.<!importer.ScanObserver>} */
+  this.observers_ = [];
+};
+
+/** @override */
+importer.DefaultMediaScanner.prototype.addObserver = function(observer) {
+  this.observers_.push(observer);
+};
+
+/** @override */
+importer.DefaultMediaScanner.prototype.removeObserver = function(observer) {
+  var index = this.observers_.indexOf(observer);
+  if (index > -1) {
+    this.observers_.splice(index, 1);
+  } else {
+    console.warn('Ignoring request to remove observer that is not registered.');
+  }
 };
 
 /** @override */
@@ -84,7 +121,27 @@ importer.DefaultMediaScanner.prototype.scan = function(entries) {
       .then(scanResult.resolveScan.bind(scanResult))
       .catch(scanResult.rejectScan.bind(scanResult));
 
+  scanResult.whenFinal()
+      .then(
+          function() {
+            this.onScanFinished_(scanResult);
+          }.bind(this));
+
   return scanResult;
+};
+
+/**
+ * Called when a scan is finished.
+ *
+ * @param {!importer.DefaultScanResult} result
+ * @private
+ */
+importer.DefaultMediaScanner.prototype.onScanFinished_ = function(result) {
+  this.observers_.forEach(
+      /** @param {!importer.ScanObserver} observer */
+      function(observer) {
+        observer(importer.ScanEvent.FINALIZED, result);
+      });
 };
 
 /**
@@ -137,7 +194,7 @@ importer.DefaultMediaScanner.prototype.scanDirectory_ =
  * will change as the scan operation discovers files.
  *
  * <p>The scan is complete, and the object will become static once the
- * {@code whenFinished} promise resolves.
+ * {@code whenFinal} promise resolves.
  *
  * @constructor
  * @struct
@@ -170,6 +227,9 @@ importer.DefaultScanResult = function(historyLoader) {
    */
   this.lastScanActivity_ = this.scanStarted_;
 
+  /** @private {boolean} */
+  this.settled_ = false;
+
   /** @type {function()} */
   this.resolveScan;
 
@@ -180,10 +240,20 @@ importer.DefaultScanResult = function(historyLoader) {
   this.finishedPromise_ = new Promise(
       function(resolve, reject) {
         this.resolveScan = function() {
+          this.settled_ = true;
           resolve(this);
         }.bind(this);
-        this.rejectScan = reject;
+
+        this.rejectScan = function() {
+          this.settled_ = true;
+          reject();
+        };
       }.bind(this));
+};
+
+/** @override */
+importer.DefaultScanResult.prototype.isFinal = function() {
+  return this.settled_;
 };
 
 /** @override */
@@ -202,7 +272,7 @@ importer.DefaultScanResult.prototype.getScanDurationMs = function() {
 };
 
 /** @override */
-importer.DefaultScanResult.prototype.whenFinished = function() {
+importer.DefaultScanResult.prototype.whenFinal = function() {
   return this.finishedPromise_;
 };
 

@@ -1036,59 +1036,26 @@ CommandHandler.COMMANDS_['share'] = /** @type {Command} */ ({
 CommandHandler.COMMANDS_['cloud-import'] = /** @type {Command} */ ({
   /**
    * @param {!Event} event Command event.
-   * @param {!FileManager} fileManager FileManager to use.
+   * @param {!FileManager} fileManager
    */
   execute: function(event, fileManager) {
-    metrics.recordEnum('CloudImport.UserAction', 'IMPORT_INITIATED');
-    var importer = fileManager.mediaImportHandler;
-    importer.importMedia(
-        /** @type {!DirectoryEntry} */ (
-            fileManager.getCurrentDirectoryEntry()));
+    console.assert(fileManager.importController !== null);
+      fileManager.importController.execute();
   },
   /**
    * @param {!Event} event Command event.
-   * @param {!FileManager} fileManager FileManager to use.
+   * @param {!FileManager} fileManager
    */
   canExecute: function(event, fileManager) {
-
-    /**
-     * @return {boolean} True if CloudImport is enabled and
-     *     applicable to the current location and/or selection.
-     */
-    var isCloudImportEnabled = function() {
-      if (!importer.lastKnownImportEnabled) {
-        return false;
-      }
-
-      // If there is no Google Drive mount, Drive may be disabled
-      // or the machine may be running in guest mode.
-      var drive = fileManager.volumeManager.getCurrentProfileVolumeInfo(
-          VolumeManagerCommon.VolumeType.DRIVE);
-      if (!drive) {
-        return false;
-      }
-
-      var entries = fileManager.getSelection().entries;
-
-      // Enabled if user has a selection and it consists entirely of files
-      // that:
-      // 1) are of a recognized media type
-      // 2) reside on a removable media device
-      // 3) in the DCIM dir
-      if (entries.length) {
-        return entries.every(
-            importer.isEligibleEntry.bind(null, fileManager.volumeManager));
-      }
-
-      // Enabled if the current dir is the DCIM dir on a removable media device.
-      return importer.isMediaDirectory(
-          fileManager.getCurrentDirectoryEntry(),
-          fileManager.volumeManager);
-    };
-
-    event.command.label = str('CLOUD_IMPORT_BUTTON_LABEL');
-    event.canExecute = isCloudImportEnabled();
-    event.command.setHidden(!event.canExecute);
+    if (fileManager.importController) {
+      var response = fileManager.importController.update();
+      event.command.label = str(response.label_id);
+      event.canExecute = response.executable;
+      event.command.setHidden(!response.visible);
+    } else {
+      event.canExecute = false;
+      event.command.setHidden(true);
+    }
   }
 });
 

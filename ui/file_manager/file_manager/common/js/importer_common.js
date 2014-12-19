@@ -5,6 +5,17 @@
 // Shared cloud importer namespace
 var importer = importer || {};
 
+/** @enum {string} */
+importer.ScanEvent = {
+  FINALIZED: 'finalized'
+};
+
+/**
+ * @typedef {function(
+ *     !importer.ScanEvent, importer.ScanResult)}
+ */
+importer.ScanObserver;
+
 /**
  * Volume types eligible for the affections of Cloud Import.
  * @private @const {!Array.<!VolumeManagerCommon.VolumeType>}
@@ -95,20 +106,7 @@ importer.importEnabled = function() {
             'enable-cloud-backup',
             /** @param {boolean} enabled */
             function(enabled) {
-              importer.lastKnownImportEnabled = enabled;
               resolve(enabled);
             });
       });
 };
-
-/**
- * The last known state for the cloud import feature being enabled.
- *
- * <p>NOTE: The "command" framework is fully synchronous, meaning
- * we have to answer questions, like "can execute" synchronously.
- * For this reason we cache the last result from importer.importEnabled().
- * It might be wrong once, but it won't be wrong for long.
- *
- * @type {boolean}
- */
-importer.lastKnownImportEnabled = false;

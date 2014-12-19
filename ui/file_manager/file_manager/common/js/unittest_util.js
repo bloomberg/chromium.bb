@@ -87,7 +87,7 @@ function assertFileEntryPathsEqual(expectedPaths, fileEntries) {
  * <p>Example:
  * <pre>
  *   var recorder = new TestCallRecorder();
- *   someClass.addListener(recorder.callable);
+ *   someClass.addListener(recorder.callback);
  *   // do stuff ...
  *   recorder.assertCallCount(1);
  *   assertEquals(recorder.getListCall()[0], 'hammy');

@@ -54,7 +54,7 @@ MockFileSystem.prototype.populate = function(paths) {
 
     // If the path doesn't end in a slash, create a file.
     if (!/\/$/.test(path))
-    this.entries[path] = new MockFileEntry(this, path, {size: 0});
+      this.entries[path] = new MockFileEntry(this, path, {size: 0});
   }.bind(this));
 };
 

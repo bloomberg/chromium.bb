@@ -80,6 +80,11 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, TaskQueueTest) {
       FILE_PATH_LITERAL("background/js/task_queue_unittest.html")));
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ImportControllerTest) {
+  RunTest(base::FilePath(
+      FILE_PATH_LITERAL("foreground/js/import_controller_unittest.html")));
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, AsyncUtilTest) {
   RunTest(base::FilePath(
       FILE_PATH_LITERAL("common/js/async_util_unittest.html")));

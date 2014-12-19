@@ -81,6 +81,7 @@
           './file_watcher.js',
           './folder_shortcuts_data_model.js',
           './gear_menu_controller.js',
+          './import_controller.js',
           './launch_param.js',
           './metadata/metadata_cache.js',
           './metadata_update_controller.js',

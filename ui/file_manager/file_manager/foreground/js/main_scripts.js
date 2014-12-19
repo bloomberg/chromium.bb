@@ -97,6 +97,7 @@
 //<include src="file_watcher.js">
 //<include src="folder_shortcuts_data_model.js">
 //<include src="gear_menu_controller.js">
+//<include src="import_controller.js">
 //<include src="launch_param.js">
 //<include src="metadata/metadata_cache.js">
 //<include src="metadata_update_controller.js">

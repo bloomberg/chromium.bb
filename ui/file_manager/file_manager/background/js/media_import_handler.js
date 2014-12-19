@@ -6,29 +6,38 @@
 var importer = importer || {};
 
 /**
+ * Interface providing access to information about active import processes.
+ *
+ * @interface
+ */
+importer.ImportRunner = function() {};
+
+/**
+ * Imports all media identified by scanResult.
+ *
+ * @param {!importer.ScanResult} scanResult
+ * @param {!importer.MediaImportHandler.DestinationFactory=} opt_destination A
+ *     function that returns the directory into which media will be imported.
+ *     The function will be executed only when the import task actually runs.
+ * @return {!importer.MediaImportHandler.ImportTask} The resulting import task.
+ */
+importer.ImportRunner.prototype.importFromScanResult;
+
+/**
  * Handler for importing media from removable devices into the user's Drive.
  *
  * @constructor
+ * @implements {importer.ImportRunner}
  * @struct
  *
  * @param {!FileOperationManager} fileOperationManager
- * @param {!importer.MediaScanner} scanner
  */
-importer.MediaImportHandler = function(fileOperationManager, scanner) {
+importer.MediaImportHandler = function(fileOperationManager) {
   /** @private {!FileOperationManager} */
   this.fileOperationManager_ = fileOperationManager;
 
   /** @private {!importer.TaskQueue} */
   this.queue_ = new importer.TaskQueue();
-
-  /** @private {!importer.MediaScanner} */
-  this.scanner_ = scanner;
-
-  /**
-   * If there is an active scan, this field will be set to a non-null value.
-   * @type {?importer.ScanResult}
-   */
-  this.activeScanResult_ = null;
 
   /** @private {number} */
   this.nextTaskId_ = 0;
@@ -39,24 +48,9 @@ importer.MediaImportHandler = function(fileOperationManager, scanner) {
  */
 importer.MediaImportHandler.DestinationFactory;
 
-/**
- * Import all media found in a given subdirectory tree.
- * @param {!DirectoryEntry} source The directory to import media from.
- * @param {!importer.MediaImportHandler.DestinationFactory=} opt_destination A
- *     function that returns the directory into which media will be imported.
- *     The function will be executed only when the import task actually runs.
- * @return {!importer.MediaImportHandler.ImportTask} The resulting import task.
- */
-importer.MediaImportHandler.prototype.importMedia =
-    function(source, opt_destination) {
-
-  var scanResult = this.scanner_.scan([source]);
-  this.activeScanResult_ = scanResult;
-  scanResult.whenFinished()
-      .then(
-          function() {
-            this.activeScanResult_ = null;
-          }.bind(this));
+/** @override */
+importer.MediaImportHandler.prototype.importFromScanResult =
+    function(scanResult, opt_destination) {
 
   var destination = opt_destination ||
       importer.MediaImportHandler.defaultDestination.getImportDestination;
@@ -65,7 +59,6 @@ importer.MediaImportHandler.prototype.importMedia =
       this.generateTaskId_(),
       this.fileOperationManager_,
       scanResult,
-      source,
       destination);
 
   this.queue_.queueTask(task);
@@ -98,17 +91,12 @@ importer.MediaImportHandler.prototype.generateTaskId_ = function() {
  * @param {string} taskId
  * @param {!FileOperationManager} fileOperationManager
  * @param {!importer.ScanResult} scanResult
- * @param {!DirectoryEntry} source Source dir containing media for import.
  * @param {!importer.MediaImportHandler.DestinationFactory} destination A
  *     function that returns the directory into which media will be imported.
  */
 importer.MediaImportHandler.ImportTask =
-    function(taskId, fileOperationManager, scanResult, source, destination) {
+    function(taskId, fileOperationManager, scanResult, destination) {
   importer.TaskQueue.BaseTask.call(this, taskId);
-
-  /** @private {!DirectoryEntry} */
-  this.source_ = source;
-
   /** @private {string} */
   this.taskId_ = taskId;
 
@@ -133,9 +121,10 @@ importer.MediaImportHandler.ImportTask.prototype.__proto__ =
 
 /** @override */
 importer.MediaImportHandler.ImportTask.prototype.run = function() {
+
   // Wait for the scan to finish, then get the destination entry, then start the
   // import.
-  this.scanResult_.whenFinished()
+  this.scanResult_.whenFinal()
       .then(this.getDestination_.bind(this))
       .then(this.importTo_.bind(this));
 };

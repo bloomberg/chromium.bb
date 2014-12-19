@@ -35,7 +35,7 @@ importer.ImportHistory.prototype.markImported;
 importer.ImportHistory.prototype.addObserver;
 
 /**
- * Adds an observer, which will be notified when cloud import history changes.
+ * Remove a previously registered observer.
  *
  * @param {!importer.ImportHistory.Observer} observer
  */

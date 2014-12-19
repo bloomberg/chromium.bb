@@ -23,11 +23,7 @@ function FileManager() {
    */
   this.volumeManager_ = null;
 
-  /**
-   * History loader. Gimme summa 'dat history!
-   * @type {importer.HistoryLoader}
-   * @private
-   */
+  /** @private {importer.HistoryLoader} */
   this.historyLoader_ = null;
 
   /**
@@ -47,6 +43,15 @@ function FileManager() {
    * @private {function(!importer.ImportHistory.ChangedEvent)}
    */
   this.onHistoryChangedBound_ = this.onHistoryChanged_.bind(this);
+
+  /** @private {importer.MediaScanner} */
+  this.mediaScanner_ = null;
+
+  /** @private {importer.ImportController} */
+  this.importController_ = null;
+
+  /** @private {importer.MediaImportHandler} */
+  this.mediaImportHandler_ = null;
 
   /**
    * Metadata cache.
@@ -102,11 +107,6 @@ function FileManager() {
    * @private
    */
   this.selectionHandler_ = null;
-
-  /**
-   * @private {importer.MediaImportHandler}
-   */
-  this.mediaImportHandler_ = null;
 
   /**
    * UI management class of file manager.
@@ -319,22 +319,28 @@ FileManager.prototype = /** @struct */ {
     return this.volumeManager_;
   },
   /**
+   * @return {importer.ImportController}
+   */
+  get importController() {
+    return this.importController_;
+  },
+  /**
    * @return {importer.HistoryLoader}
    */
   get historyLoader() {
     return this.historyLoader_;
   },
   /**
-   * @return {MetadataCache}
-   */
-  get metadataCache() {
-    return this.metadataCache_;
-  },
-  /**
    * @return {importer.MediaImportHandler}
    */
   get mediaImportHandler() {
     return this.mediaImportHandler_;
+  },
+  /**
+   * @return {MetadataCache}
+   */
+  get metadataCache() {
+    return this.metadataCache_;
   },
   /**
    * @return {FileManagerUI}
@@ -531,6 +537,23 @@ Object.freeze(DialogType);
 
     this.commandHandler = new CommandHandler(this);
 
+    // Kick the import enabled promise to be sure it is loaded
+    // (and cached) for use by code that requires synchronous
+    // access (e.g. Commands).
+    importer.importEnabled().then(
+        function(enabled) {
+          if (enabled) {
+            this.importController_ = new importer.ImportController(
+                new importer.RuntimeControllerEnvironment(this),
+                /** @type {!importer.MediaScanner} */ (
+                    this.mediaScanner_),
+                /** @type {!importer.ImportRunner} */ (
+                    this.mediaImportHandler_),
+                this.commandHandler.updateAvailability.bind(
+                    this.commandHandler));
+          }
+        }.bind(this));
+
     // TODO(hirono): Move the following block to the UI part.
     var commandButtons = this.dialogDom_.querySelectorAll('button[command]');
     for (var j = 0; j < commandButtons.length; j++)
@@ -639,10 +662,6 @@ Object.freeze(DialogType);
     // Initialize the member variables that depend this.launchParams_.
     this.dialogType = this.launchParams_.type;
 
-    // Kick the import enabled promise to be sure it is loaded
-    // (and cached) for use by code that requires synchronous
-    // access (e.g. Commands).
-    importer.importEnabled();
     callback();
   };
 
@@ -665,6 +684,8 @@ Object.freeze(DialogType);
                 this.backgroundPage_.background.fileOperationManager;
             this.mediaImportHandler_ =
                 this.backgroundPage_.background.mediaImportHandler;
+            this.mediaScanner_ =
+                this.backgroundPage_.background.mediaScanner;
             this.historyLoader_ = this.backgroundPage_.background.historyLoader;
             callback();
           }.bind(this));
