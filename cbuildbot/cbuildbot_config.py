@@ -1235,9 +1235,6 @@ _arm_external_boards = frozenset([
   'arm64-generic',
 ])
 
-_arm_internal_non_release_boards = frozenset([
-])
-
 _x86_internal_release_boards = frozenset([
   'auron',
   'auron_cid',
@@ -1308,10 +1305,6 @@ _x86_external_boards = frozenset([
   'x86-pineview',
 ])
 
-# TODO(akeshet) eliminate the need for this.
-_x86_internal_non_release_boards = frozenset([
-])
-
 _mips_internal_release_boards = frozenset([
   'urara',
 ])
@@ -1325,21 +1318,14 @@ _mips_external_boards = frozenset([
   'mipsel-o32-generic',
 ])
 
-# TODO(akeshet) eliminate the need for this.
-_mips_internal_non_release_boards = frozenset([
-])
-
 # Every board should be in only 1 of the above sets.
 _distinct_board_sets = [
     _arm_internal_release_boards,
     _arm_external_boards,
-    _arm_internal_non_release_boards,
     _x86_internal_release_boards,
     _x86_external_boards,
-    _x86_internal_non_release_boards,
     _mips_internal_release_boards,
     _mips_external_boards,
-    _mips_internal_non_release_boards,
 ]
 
 _arm_full_boards = (_arm_internal_release_boards |
@@ -1349,9 +1335,9 @@ _x86_full_boards = (_x86_internal_release_boards |
 _mips_full_boards = (_mips_internal_release_boards |
                      _mips_external_boards)
 
-_arm_boards = (_arm_full_boards | _arm_internal_non_release_boards)
-_x86_boards = (_x86_full_boards | _x86_internal_non_release_boards)
-_mips_boards = (_mips_full_boards | _mips_internal_non_release_boards)
+_arm_boards = _arm_full_boards
+_x86_boards = _x86_full_boards
+_mips_boards = _mips_full_boards
 
 _all_release_boards = (
     _arm_internal_release_boards |
@@ -1391,13 +1377,7 @@ _arm_release_boards = _arm_internal_release_boards
 _x86_release_boards = _x86_internal_release_boards
 _mips_release_boards = _mips_internal_release_boards
 
-# TODO(akeshet) eliminate non-release internal sets.
-_internal_boards = (
-    _all_release_boards |
-    _arm_internal_non_release_boards |
-    _x86_internal_non_release_boards |
-    _mips_internal_non_release_boards
-)
+_internal_boards = _all_release_boards
 
 # Board can appear in 1 or more of the following sets.
 _brillo_boards = frozenset([
