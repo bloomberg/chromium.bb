@@ -203,14 +203,6 @@ crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-loca
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/getusermedia-trivial-constraint.html [ Failure ]
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/unknownkey-option-param.html [ Failure ]
 
-# We now opt into composited scrolling on low-DPI if we're already promoted.
-# This causes some text changes (no pixel changes) due to new scrollbars or
-# missing invalidations (we don't need to invalidate for comp-scroll).
-Bug(vollick) compositing/overflow/content-gains-scrollbars.html [ NeedsRebaseline ]
-Bug(vollick) compositing/overflow/overflow-scrollbar-layers.html [ NeedsRebaseline ]
-Bug(vollick) inspector/layers/layer-scroll-rects-get.html [ NeedsRebaseline ]
-Bug(vollick) fast/layers/scroll-with-transform-composited-layer.html [ NeedsRebaseline ]
-
 # V8 Allowed eval in contexts after navigation, which changed the error of the test.
 crbug.com/439458 http/tests/security/xss-eval.html [ NeedsManualRebaseline ]
 
