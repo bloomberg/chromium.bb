@@ -25,13 +25,19 @@ const char kPortForwardingTestPage[] =
     "files/devtools/port_forwarding/main.html";
 
 const int kDefaultDebuggingPort = 9223;
+const int kAlternativeDebuggingPort = 9224;
+
 }
 
 class PortForwardingTest: public InProcessBrowserTest {
+  virtual int GetRemoteDebuggingPort() {
+    return kDefaultDebuggingPort;
+  }
+
   void SetUpCommandLine(CommandLine* command_line) override {
     InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kRemoteDebuggingPort,
-        base::IntToString(kDefaultDebuggingPort));
+        base::IntToString(GetRemoteDebuggingPort()));
   }
 
  protected:
@@ -128,13 +134,19 @@ IN_PROC_BROWSER_TEST_F(PortForwardingTest,
   content::RunMessageLoop();
 }
 
-IN_PROC_BROWSER_TEST_F(PortForwardingTest, DisconnectOnRelease) {
+class PortForwardingDisconnectTest : public PortForwardingTest {
+  int GetRemoteDebuggingPort() override {
+    return kAlternativeDebuggingPort;
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(PortForwardingDisconnectTest, DisconnectOnRelease) {
   Profile* profile = browser()->profile();
 
   AndroidDeviceManager::DeviceProviders device_providers;
 
   scoped_refptr<SelfAsDeviceProvider> self_provider(
-      new SelfAsDeviceProvider(kDefaultDebuggingPort));
+      new SelfAsDeviceProvider(kAlternativeDebuggingPort));
   device_providers.push_back(self_provider);
 
   DevToolsAndroidBridge::Factory::GetForProfile(profile)->
