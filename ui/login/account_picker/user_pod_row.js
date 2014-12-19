@@ -635,6 +635,8 @@ cr.define('login', function() {
      * @private
      */
     isParentPodFocused_: function() {
+      if ($('account-picker').hidden)
+        return false;
       var parentPod = this.parentNode;
       while (parentPod && !parentPod.classList.contains('pod'))
         parentPod = parentPod.parentNode;
