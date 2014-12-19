@@ -1,0 +1,88 @@
+// Copyright 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "ios/chrome/browser/infobars/infobar.h"
+
+#include "base/logging.h"
+#include "components/infobars/core/confirm_infobar_delegate.h"
+#include "components/translate/core/browser/translate_infobar_delegate.h"
+#import "ios/chrome/browser/infobars/confirm_infobar_controller.h"
+
+using infobars::InfoBar;
+using infobars::InfoBarDelegate;
+
+InfoBarIOS::InfoBarIOS(scoped_ptr<InfoBarDelegate> delegate)
+    : InfoBar(delegate.Pass()) {
+}
+
+InfoBarIOS::~InfoBarIOS() {
+  DCHECK(controller_);
+  [controller_ detachView];
+  controller_.reset();
+}
+
+void InfoBarIOS::SetController(InfoBarController* controller) {
+  controller_.reset([controller retain]);
+}
+
+void InfoBarIOS::Layout(CGRect container_bounds) {
+  DCHECK(controller_);
+  if ([controller_ view]) {
+    [[controller_ view] setFrame:container_bounds];
+  } else {
+    [controller_ layoutForDelegate:delegate() frame:container_bounds];
+  }
+  SetBarTargetHeight([controller_ barHeight]);
+}
+
+UIView* InfoBarIOS::view() {
+  DCHECK(controller_);
+  return [controller_ view];
+}
+
+void InfoBarIOS::RemoveView() {
+  DCHECK(controller_);
+  [controller_ removeView];
+}
+
+void InfoBarIOS::PlatformSpecificOnHeightsRecalculated() {
+  DCHECK(controller_);
+  [controller_ onHeightsRecalculated:bar_height()];
+}
+
+#pragma mark - InfoBarViewDelegate
+
+void InfoBarIOS::SetInfoBarTargetHeight(int height) {
+  SetBarTargetHeight(height);
+}
+
+// Some infobar button was pressed.
+void InfoBarIOS::InfoBarButtonDidPress(NSUInteger button_id) {
+  // Do not add new logic for specific info bar delegates.
+  // TODO(droger): Move the logic elsewhere, http://crbug.com/307552.
+  // If not owned, the infobar has already been removed.
+  if (!owner())
+    return;
+  if (delegate()->AsConfirmInfoBarDelegate()) {
+    ConfirmInfoBarDelegate* confirmDelegate =
+        delegate()->AsConfirmInfoBarDelegate();
+    if ((button_id == ConfirmInfoBarDelegate::BUTTON_OK &&
+         confirmDelegate->Accept()) ||
+        (button_id == ConfirmInfoBarDelegate::BUTTON_CANCEL &&
+         delegate()->AsConfirmInfoBarDelegate()->Cancel())) {
+      RemoveSelf();
+    }
+  } else if (delegate()->AsTranslateInfoBarDelegate()) {
+    // TODO(droger): Upstream Translate infobars.
+    NOTREACHED() << "Translate infobars not upstreamed yet.";
+  }
+}
+
+void InfoBarIOS::InfoBarDidCancel() {
+  // If not owned, the infobar has already been removed.
+  if (!owner())
+    return;
+  delegate()->InfoBarDismissed();
+  RemoveSelf();
+}

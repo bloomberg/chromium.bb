@@ -1,11 +1,14 @@
 include_rules = [
+  "+components/infobars/core",
   "+components/keyed_service/core",
   "+components/keyed_service/ios",
   "+components/leveldb_proto",
   "+components/suggestions",
+  "+components/translate/core",
   "+ios/public/provider/chrome",
   "+ios/web/public",
   "+net",
+  "+ui",
 
   # Only parts of skia are compiled on iOS, so we explicitly list the
   # files that can be included to avoid bringing in more code.
