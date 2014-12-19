@@ -423,7 +423,7 @@ deps_os = {
 
     # For Linux and Chromium OS.
     'src/third_party/cros_system_api':
-     Var('chromium_git') + '/chromiumos/platform/system_api.git' + '@' + 'de6277abbb3f88ee6c4be5bd83367772bd1c18e1',
+     Var('chromium_git') + '/chromiumos/platform/system_api.git' + '@' + 'eb5b6c3152ddf0b8212cc35d384c231e20aaeb62',
 
     # Note that this is different from Android's freetype repo.
     'src/third_party/freetype2/src':

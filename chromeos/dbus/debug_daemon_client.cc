@@ -35,15 +35,6 @@ void EmptyStopSystemTracingCallbackBody(
 
 }  // namespace
 
-// TODO(zelidrag): Move this to ChromeOS wherever place...
-namespace debugd {
-
-const char kEnableDebuggingFeatures[] = "EnableChromeDevFeatures";
-const char kQueryDevFeatures[] = "QueryDevFeatures";
-const char kRemoveRootfsVerification[] = "RemoveRootfsVerification";
-
-}  // namespace debugd
-
 namespace chromeos {
 
 // The DebugDaemonClient implementation used in production.
@@ -315,7 +306,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       const std::string& password,
       const EnableDebuggingCallback& callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
-                                 debugd::kEnableDebuggingFeatures);
+                                 debugd::kEnableChromeDevFeatures);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(password);
     debugdaemon_proxy_->CallMethod(
