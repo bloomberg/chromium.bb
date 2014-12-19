@@ -1513,6 +1513,7 @@ crbug.com/442285 virtual/slimmingpaint/fast/text/decorations-transformed.html [ 
 
 crbug.com/444020 fast/dom/shadow/import-rule-in-shadow-tree-needs-document-style-recalc.html [ Pass Failure ]
 crbug.com/444022 svg/wicd/test-scalable-background-image1.xhtml [ Pass Failure ]
+crbug.com/444095 svg/wicd/test-rightsizing-b.xhtml [ Pass Failure ]
 
 # Rebaseline after ES6 classes are in.
 crbug.com/442340 webexposed/global-interface-listing.html [ NeedsManualRebaseline ]
