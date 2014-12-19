@@ -85,9 +85,9 @@ void KillHandler(int signal_number) {
 class HostControllersManager {
  public:
   HostControllersManager()
-      : weak_ptr_factory_(this),
-        controllers_(new HostControllerMap()),
-        has_failed_(false) {
+      : controllers_(new HostControllerMap()),
+        has_failed_(false),
+        weak_ptr_factory_(this) {
   }
 
   ~HostControllersManager() {
@@ -291,12 +291,12 @@ class HostControllersManager {
     return result;
   }
 
-  base::WeakPtrFactory<HostControllersManager> weak_ptr_factory_;
   base::hash_map<std::string, int> device_serial_to_adb_port_map_;
   scoped_ptr<HostControllerMap> controllers_;
   bool has_failed_;
   scoped_ptr<base::AtExitManager> at_exit_manager_;  // Needed by base::Thread.
   scoped_ptr<base::Thread> thread_;
+  base::WeakPtrFactory<HostControllersManager> weak_ptr_factory_;
 };
 
 class ServerDelegate : public Daemon::ServerDelegate {
