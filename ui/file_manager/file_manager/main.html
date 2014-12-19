@@ -224,54 +224,54 @@
       <command id="inspect-background" shortcut="U+0042-Shift-Ctrl">
     </commands>
 
-    <menu id="file-context-menu" class="chrome-menu" showShortcuts>
-      <menuitem id="default-action"
-                visibleif="full-page" hidden></menuitem>
-      <menuitem command="#open-with"
-                visibleif="full-page" hidden></menuitem>
+    <cr-menu id="file-context-menu" class="chrome-menu" showShortcuts>
+      <cr-menu-item id="default-action"
+                visibleif="full-page" hidden></cr-menu-item>
+      <cr-menu-item command="#open-with"
+                visibleif="full-page" hidden></cr-menu-item>
       <hr id="default-action-separator" visibleif="full-page" hidden>
-      <menuitem command="#toggle-pinned" checkable></menuitem>
-      <menuitem command="#share"></menuitem>
-      <menuitem command="#create-folder-shortcut"></menuitem>
+      <cr-menu-item command="#toggle-pinned" checkable></cr-menu-item>
+      <cr-menu-item command="#share"></cr-menu-item>
+      <cr-menu-item command="#create-folder-shortcut"></cr-menu-item>
       <hr command="#share">
-      <menuitem command="#cut" visibleif="full-page"></menuitem>
-      <menuitem command="#copy" visibleif="full-page"></menuitem>
-      <menuitem command="#paste" visibleif="full-page"></menuitem>
-      <menuitem command="#paste-into-folder" visibleif="full-page"></menuitem>
+      <cr-menu-item command="#cut" visibleif="full-page"></cr-menu-item>
+      <cr-menu-item command="#copy" visibleif="full-page"></cr-menu-item>
+      <cr-menu-item command="#paste" visibleif="full-page"></cr-menu-item>
+      <cr-menu-item command="#paste-into-folder" visibleif="full-page"></cr-menu-item>
       <hr visibleif="full-page">
-      <menuitem command="#rename"></menuitem>
-      <menuitem command="#delete" i18n-content="DELETE_BUTTON_LABEL"></menuitem>
-      <menuitem command="#zip-selection"></menuitem>
+      <cr-menu-item command="#rename"></cr-menu-item>
+      <cr-menu-item command="#delete" i18n-content="DELETE_BUTTON_LABEL"></cr-menu-item>
+      <cr-menu-item command="#zip-selection"></cr-menu-item>
       <hr visibleif="saveas-file full-page">
-      <menuitem command="#new-folder"
-                visibleif="saveas-file full-page"></menuitem>
-    </menu>
+      <cr-menu-item command="#new-folder"
+                visibleif="saveas-file full-page"></cr-menu-item>
+    </cr-menu>
 
-    <menu id="roots-context-menu" class="chrome-menu" >
-      <menuitem command="#unmount"></menuitem>
-      <menuitem command="#format"></menuitem>
-      <menuitem command="#remove-folder-shortcut"></menuitem>
-    </menu>
+    <cr-menu id="roots-context-menu" class="chrome-menu" >
+      <cr-menu-item command="#unmount"></cr-menu-item>
+      <cr-menu-item command="#format"></cr-menu-item>
+      <cr-menu-item command="#remove-folder-shortcut"></cr-menu-item>
+    </cr-menu>
 
-    <menu id="directory-tree-context-menu" class="chrome-menu" >
-      <menuitem command="#create-folder-shortcut"></menuitem>
-    </menu>
+    <cr-menu id="directory-tree-context-menu" class="chrome-menu" >
+      <cr-menu-item command="#create-folder-shortcut"></cr-menu-item>
+    </cr-menu>
 
-    <menu id="gear-menu" class="chrome-menu" showShortcuts>
-      <menuitem id="gear-menu-newwindow" command="#new-window"></menuitem>
-      <menuitem id="gear-menu-newfolder" command="#new-folder"></menuitem>
+    <cr-menu id="gear-menu" class="chrome-menu" showShortcuts>
+      <cr-menu-item id="gear-menu-newwindow" command="#new-window"></cr-menu-item>
+      <cr-menu-item id="gear-menu-newfolder" command="#new-folder"></cr-menu-item>
       <hr id="drive-separator">
-      <menuitem id="gear-menu-drive-sync-settings"
-                command="#drive-sync-settings"></menuitem>
-      <menuitem id="gear-menu-drive-hosted-settings"
-                command="#drive-hosted-settings"></menuitem>
+      <cr-menu-item id="gear-menu-drive-sync-settings"
+                command="#drive-sync-settings"></cr-menu-item>
+      <cr-menu-item id="gear-menu-drive-hosted-settings"
+                command="#drive-hosted-settings"></cr-menu-item>
       <hr id="help-separator">
-      <menuitem id="gear-menu-drive-buy-more-space"
-                command="#drive-buy-more-space"></menuitem>
-      <menuitem id="gear-menu-drive-go-to-drive"
-                command="#drive-go-to-drive"></menuitem>
-      <menuitem id="gear-menu-volume-help"
-                command="#volume-help"></menuitem>
+      <cr-menu-item id="gear-menu-drive-buy-more-space"
+                command="#drive-buy-more-space"></cr-menu-item>
+      <cr-menu-item id="gear-menu-drive-go-to-drive"
+                command="#drive-go-to-drive"></cr-menu-item>
+      <cr-menu-item id="gear-menu-volume-help"
+                command="#volume-help"></cr-menu-item>
       <hr id="volume-space-info-separator">
       <div id="volume-space-info">
         <div id="volume-space-info-contents">
@@ -281,17 +281,17 @@
           </div>
         </div>
       </div>
-    </menu>
+    </cr-menu>
 
-    <menu id="tasks-menu" class="chrome-menu">
-    </menu>
+    <cr-menu id="tasks-menu" class="chrome-menu">
+    </cr-menu>
 
-    <menu id="text-context-menu" class="chrome-menu" showShortcuts>
-        <menuitem command="#cut"></menuitem>
-        <menuitem command="#copy"></menuitem>
-        <menuitem command="#paste"></menuitem>
-        <menuitem command="#delete" i18n-content="DELETE_BUTTON_LABEL"></menuitem>
-    </menu>
+    <cr-menu id="text-context-menu" class="chrome-menu" showShortcuts>
+      <cr-menu-item command="#cut"></cr-menu-item>
+      <cr-menu-item command="#copy"></cr-menu-item>
+      <cr-menu-item command="#paste"></cr-menu-item>
+      <cr-menu-item command="#delete" i18n-content="DELETE_BUTTON_LABEL"></cr-menu-item>
+    </cr-menu>
 
     <div class="dialog-container">
       <div class="dialog-navigation-list">

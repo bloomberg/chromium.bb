@@ -76,7 +76,7 @@ function GearMenu(element) {
   this.spaceInfoPromise_ = null;
 
   // Initialize attributes.
-  element.menuItemSelector = 'menuitem, hr';
+  element.menuItemSelector = 'cr-menu-item, hr';
   this.syncButton.checkable = true;
   this.hostedButton.checkable = true;
 }

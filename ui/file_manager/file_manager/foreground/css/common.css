@@ -162,7 +162,7 @@ span.disclosureindicator {
 /* "chrome-menu" class overrides some standard menu.css styles, to make custom
    menus in FileBrowser look like native ChromeOS menus. */
 
-menu.chrome-menu {
+cr-menu.chrome-menu {
   background-color: rgb(250, 250, 250);
   border-radius: 3px;
   box-shadow: 0 1px 4px 0 rgba(0, 0, 0, .5);
@@ -174,19 +174,19 @@ menu.chrome-menu {
   z-index: 600;  /* Must be below the overlay pane (1000). */
 }
 
-menu.chrome-menu[hidden] {
+cr-menu.chrome-menu[hidden] {
   display: block !important;  /* Overrides default [hidden] for animation. */
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
 }
 
-menu.chrome-menu.hide-delayed[hidden] {
+cr-menu.chrome-menu.hide-delayed[hidden] {
   transition-delay: 120ms;
   transition-property: opacity, visibility;
 }
 
-menu.chrome-menu > :not(hr) {
+cr-menu.chrome-menu > :not(hr) {
   background-position: right 10px center;
   background-repeat: no-repeat;
   line-height: 30px;
@@ -194,11 +194,11 @@ menu.chrome-menu > :not(hr) {
   padding-right: 20px;
 }
 
-html[dir='rtl'] menu.chrome-menu > :not(hr) {
+html[dir='rtl'] cr-menu.chrome-menu > :not(hr) {
   background-position: left 10px center;
 }
 
-menu.chrome-menu > .menuitem-button {
+cr-menu.chrome-menu > .menuitem-button {
   background-position: center;
   background-repeat: no-repeat;
   border: 1px solid rgb(235, 235, 235);
@@ -210,55 +210,56 @@ menu.chrome-menu > .menuitem-button {
   width: 60px;
 }
 
-menu.chrome-menu > .menuitem-button[checked] {
+cr-menu.chrome-menu > .menuitem-button[checked] {
   background-color: rgb(235, 235, 235);
 }
 
-menu.chrome-menu > .menuitem-button.left {
+cr-menu.chrome-menu > .menuitem-button.left {
   right: 59px;
 }
 
-html[dir='rtl'] menu.chrome-menu > .menuitem-button.left {
+html[dir='rtl'] cr-menu.chrome-menu > .menuitem-button.left {
   left: 59px;
   right: auto;
 }
 
-menu.chrome-menu > .menuitem-button.right {
+cr-menu.chrome-menu > .menuitem-button.right {
   right: 0;
 }
 
-html[dir='rtl'] menu.chrome-menu > .menuitem-button.right {
+html[dir='rtl'] cr-menu.chrome-menu > .menuitem-button.right {
   left: 0;
   right: auto;
 }
 
-menu.chrome-menu > menuitem[disabled] {
+cr-menu.chrome-menu > cr-menu-item[disabled] {
   color: rgb(153, 153, 153);
 }
 
-menu.chrome-menu > menuitem:not([disabled])[selected],
-menu.chrome-menu > menuitem:not([disabled]):active {
+cr-menu.chrome-menu > cr-menu-item:not([disabled])[selected],
+cr-menu.chrome-menu > cr-menu-item:not([disabled]):active {
   background-color: rgb(66, 129, 244);
   color: white;
 }
 
-menu.chrome-menu > hr {
+cr-menu.chrome-menu > hr {
   background: rgb(235, 235, 235);
   height: 1px;
   margin: 5px 0;
 }
 
-menu.chrome-menu > menuitem[checked] {
+cr-menu.chrome-menu > cr-menu-item[checked] {
   background-image: -webkit-image-set(
     url(../images/common/check_no_box.png) 1x,
     url(../images/common/2x/check_no_box.png) 2x);
 }
 
-menu.chrome-menu > [checked]::before {
+cr-menu.chrome-menu > [checked]::before {
   display: none;
 }
 
-menu[showShortcuts] > menuitem[shortcutText][selected]:not([disabled])::after {
+cr-menu[showShortcuts] >
+cr-menu-item[shortcutText][selected]:not([disabled])::after {
   color: white;
 }
 

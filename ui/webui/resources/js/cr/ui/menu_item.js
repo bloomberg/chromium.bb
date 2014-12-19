@@ -9,10 +9,10 @@ cr.define('cr.ui', function() {
    * Creates a new menu item element.
    * @param {Object=} opt_propertyBag Optional properties.
    * @constructor
-   * @extends {HTMLButtonElement}
+   * @extends {HTMLElement}
    * @implements {EventListener}
    */
-  var MenuItem = cr.ui.define('div');
+  var MenuItem = cr.ui.define('cr-menu-item');
 
   /**
    * Creates a new menu separator element.
@@ -25,7 +25,7 @@ cr.define('cr.ui', function() {
   };
 
   MenuItem.prototype = {
-    __proto__: HTMLButtonElement.prototype,
+    __proto__: HTMLElement.prototype,
 
     /**
      * Initializes the menu item.

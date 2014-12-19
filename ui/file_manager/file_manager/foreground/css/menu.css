@@ -4,39 +4,39 @@
 
 /* Derived from /ui/webui/resources/css/menu.css. */
 
-menu {
+cr-menu {
   position: fixed;
   white-space: nowrap;
   z-index: 3;
 }
 
-menu:not(.decorated) {
+cr-menu:not(.decorated) {
   display: none;
 }
 
-menu > * {
+cr-menu > * {
   box-sizing: border-box;
   display: block;
   text-align: start;
   width: 100%;
 }
 
-menu > hr {
+cr-menu > hr {
   border: 0;
   height: 1px;
 }
 
-menu > [hidden] {
+cr-menu > [hidden] {
   display: none;
 }
 
-menu > [shortcutText]::after {
+cr-menu > [shortcutText]::after {
   -webkit-padding-start: 30px;
   color: #999;
   content: attr(shortcutText);
   float: right;
 }
 
-html[dir='rtl'] menu > [shortcutText]::after {
+html[dir='rtl'] cr-menu > [shortcutText]::after {
   float: left;
 }

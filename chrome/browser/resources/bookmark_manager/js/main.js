@@ -1412,7 +1412,7 @@ function continueInitializeBookmarkManager(localizedStrings) {
 
   bmm.treeLookup[searchTreeItem.bookmarkId] = searchTreeItem;
 
-  cr.ui.decorate('menu', Menu);
+  cr.ui.decorate('cr-menu', Menu);
   cr.ui.decorate('button[menu]', MenuButton);
   cr.ui.decorate('command', Command);
   BookmarkList.decorate($('list'));

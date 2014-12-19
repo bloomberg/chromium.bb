@@ -1131,7 +1131,7 @@ li[renaming=''] .filename-label {
   display: none;
 }
 
-#tasks-menu menuitem:not(.change-default) {
+#tasks-menu cr-menu-item:not(.change-default) {
   background-position: left 10px center;
   padding-left: 32px;
 }
@@ -1239,11 +1239,11 @@ body[drive] .dialog-container[connection='offline'] .dim-offline {
   white-space: nowrap;
 }
 
-menu.file-context-menu {
+cr-menu.file-context-menu {
   z-index: 600;  /* Must be below the overlay pane (1000). */
 }
 
-menu.chrome-menu hr {
+cr-menu.chrome-menu hr {
   color: transparent;
   font-size: 0;
 }
@@ -1519,7 +1519,7 @@ list.autocomplete-suggestions > [lead] > div.detail-text em {
   margin-top: 8px;
 }
 
-#gear-menu > menuitem:not(.menuitem-button) {
+#gear-menu > cr-menu-item:not(.menuitem-button) {
   -webkit-margin-end: 50px;
 }
 

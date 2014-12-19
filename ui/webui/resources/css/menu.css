@@ -2,7 +2,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-menu {
+cr-menu {
   -webkit-box-shadow: 0 2px 4px rgba(0, 0, 0, .50);
   background: white;
   border-radius: 2px;
@@ -17,11 +17,11 @@ menu {
   z-index: 3;
 }
 
-menu:not(.decorated) {
+cr-menu:not(.decorated) {
   display: none;
 }
 
-menu > * {
+cr-menu > * {
   box-sizing: border-box;
   display: block;
   margin: 0;
@@ -29,7 +29,7 @@ menu > * {
   width: 100%;
 }
 
-menu > :not(hr) {
+cr-menu > :not(hr) {
   -webkit-appearance: none;
   background: transparent;
   border: 0;
@@ -42,7 +42,7 @@ menu > :not(hr) {
   text-overflow: ellipsis;
 }
 
-menu > hr {
+cr-menu > hr {
   background: -webkit-linear-gradient(left,
                                       rgba(0, 0, 0, .10),
                                       rgba(0, 0, 0, .02) 96%);
@@ -51,19 +51,19 @@ menu > hr {
   margin: 8px 0;
 }
 
-menu > [disabled] {
+cr-menu > [disabled] {
   color: rgba(0, 0, 0, .3);
 }
 
-menu > [hidden] {
+cr-menu > [hidden] {
   display: none;
 }
 
-menu > :not(hr):-webkit-any([selected], :active) {
+cr-menu > :not(hr):-webkit-any([selected], :active) {
   background-color: rgba(0, 0, 0, .06);
 }
 
-menu > [checked]::before {
+cr-menu > [checked]::before {
   content: url(../images/checkbox_black.png);
   display: inline-block;
   height: 9px;
@@ -71,18 +71,18 @@ menu > [checked]::before {
   width: 9px;
 }
 
-menu > [checked] {
+cr-menu > [checked] {
   -webkit-padding-start: 0;
 }
 
-menu > [selected][checked]:active::before {
+cr-menu > [selected][checked]:active::before {
   content: url(../images/checkbox_white.png);
 }
 
 /* TODO(zvorygin) menu > [shortcutText]::after - this selector is much better,
  * but it's buggy in current webkit revision, so I have to use [showShortcuts].
  */
-menu[showShortcuts] > ::after {
+cr-menu[showShortcuts] > ::after {
   -webkit-padding-start: 30px;
   color: #999;
   content: attr(shortcutText);

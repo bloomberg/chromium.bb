@@ -12,12 +12,12 @@ cr.define('cr.ui', function() {
    *
    * @param {Object=} opt_propertyBag Optional properties.
    * @constructor
-   * @extends {HTMLMenuElement}
+   * @extends {HTMLElement}
    */
-  var Menu = cr.ui.define('menu');
+  var Menu = cr.ui.define('cr-menu');
 
   Menu.prototype = {
-    __proto__: HTMLMenuElement.prototype,
+    __proto__: HTMLElement.prototype,
 
     selectedIndex_: -1,
 
@@ -55,7 +55,7 @@ cr.define('cr.ui', function() {
      * @return {cr.ui.MenuItem} The created menu item.
      */
     addMenuItem: function(item) {
-      var menuItem = this.ownerDocument.createElement('menuitem');
+      var menuItem = this.ownerDocument.createElement('cr-menu-item');
       this.appendChild(menuItem);
 
       cr.ui.decorate(menuItem, MenuItem);

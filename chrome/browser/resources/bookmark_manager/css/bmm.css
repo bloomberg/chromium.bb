@@ -365,7 +365,7 @@ html[dir=rtl] #organize-button {
 
 @media (pointer:coarse) {
   list > *,
-  menu > button,
+  cr-menu > button,
   .tree-item > .tree-row {
     line-height: 28px;
   }
