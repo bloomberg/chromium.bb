@@ -49,9 +49,7 @@
 
 <!-- Interface descriptions -->
 <xsl:template match="interface" >
-  <section>
-    <xsl:attribute name="id">protocol-spec-<xsl:value-of select="name()"/>-<xsl:value-of select="@name" />
-    </xsl:attribute>
+  <section id="protocol-spec-{@name}">
     <title>
       <xsl:value-of select="@name" />
       <!-- only show summary if it exists -->
@@ -103,8 +101,7 @@
 
 <!-- Request/event list -->
 <xsl:template match="request|event|enum">
-  <section>
-    <xsl:attribute name="id">protocol-spec-interface-<xsl:value-of select="../@name"/>-<xsl:value-of select="name()"/>-<xsl:value-of select="@name"/></xsl:attribute>
+  <section id="protocol-spec-{../@name}-{name()}-{@name}">
     <title>
       <xsl:value-of select="../@name"/>::<xsl:value-of select="@name" />
       <xsl:if test="description/@summary">

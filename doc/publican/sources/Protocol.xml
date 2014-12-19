@@ -275,7 +275,7 @@
       The compositor is a global object, advertised at connect time.
     </para>
     <para>
-      See <xref linkend="protocol-spec-interface-wl_compositor"/> for the
+      See <xref linkend="protocol-spec-wl_compositor"/> for the
       protocol description.
     </para>
   </section>
@@ -287,7 +287,7 @@
       cannot access other clients surfaces.
     </para>
     <para>
-      See <xref linkend="protocol-spec-interface-wl_surface"/> for the protocol
+      See <xref linkend="protocol-spec-wl_surface"/> for the protocol
       description.
     </para>
   </section>
@@ -324,7 +324,7 @@
       or triple clicks.
     </para>
     <para>
-      See <xref linkend="protocol-spec-interface-wl_seat"/> for the
+      See <xref linkend="protocol-spec-wl_seat"/> for the
       protocol description.
     </para>
     <para>
@@ -383,7 +383,7 @@
       comes and goes.
     </para>
     <para>
-      See <xref linkend="protocol-spec-interface-wl_output"/> for the protocol
+      See <xref linkend="protocol-spec-wl_output"/> for the protocol
       description.
     </para>
     <para>
@@ -432,10 +432,10 @@
       that implements copy-paste and drag-and-drop support.
     </para>
     <para>
-      See <xref linkend="protocol-spec-interface-wl_data_offer"/>,
-      <xref linkend="protocol-spec-interface-wl_data_source"/>,
-      <xref linkend="protocol-spec-interface-wl_data_device"/> and
-      <xref linkend="protocol-spec-interface-wl_data_device_manager"/> for
+      See <xref linkend="protocol-spec-wl_data_offer"/>,
+      <xref linkend="protocol-spec-wl_data_source"/>,
+      <xref linkend="protocol-spec-wl_data_device"/> and
+      <xref linkend="protocol-spec-wl_data_device_manager"/> for
       protocol descriptions.
     </para>
     <para>

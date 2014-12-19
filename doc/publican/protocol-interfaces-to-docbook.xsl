@@ -23,10 +23,10 @@
     </para>
 
     <para>
-    Core interfaces:
-    <variablelist>
-    <xsl:apply-templates select="protocol/interface" />
-    </variablelist>
+      Core interfaces:
+      <variablelist>
+        <xsl:apply-templates select="protocol/interface" />
+      </variablelist>
     </para>
   </section>
 </xsl:template>
@@ -35,7 +35,7 @@
 <xsl:template match="interface" >
 <varlistentry>
   <term>
-    <link linkend="protocol-spec-interface-{@name}">
+    <link linkend="protocol-spec-{@name}">
       <xsl:value-of select="@name" />
     </link>
   </term>

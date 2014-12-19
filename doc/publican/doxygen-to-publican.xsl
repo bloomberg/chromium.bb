@@ -70,7 +70,7 @@
 </xsl:template>
 
 <xsl:template match="ref">
-  <link linkend="{$which}{@refid}"><xsl:value-of select="." /></link>
+  <link linkend="{$which}-{@refid}"><xsl:value-of select="." /></link>
 </xsl:template>
 
 <xsl:template match="simplesect[@kind='return']">
@@ -123,7 +123,7 @@
 <!-- methods -->
 <xsl:template match="memberdef" >
   <xsl:if test="@kind = 'function' and @static = 'no'">
-    <varlistentry id="{$which}{@id}">
+    <varlistentry id="{$which}-{@id}">
         <term>
           <xsl:value-of select="name"/>
           <xsl:if test="normalize-space(briefdescription) != ''">
@@ -143,7 +143,7 @@
 <!-- classes -->
 <xsl:template match="compounddef" >
   <xsl:if test="@kind = 'class'">
-    <varlistentry id="{$which}{@id}">
+    <varlistentry id="{$which}-{@id}">
         <term>
             <xsl:value-of select="compoundname" />
             <xsl:if test="normalize-space(briefdescription) != ''">
