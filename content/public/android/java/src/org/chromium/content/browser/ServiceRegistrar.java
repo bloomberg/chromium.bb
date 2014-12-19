@@ -4,6 +4,8 @@
 
 package org.chromium.content.browser;
 
+import android.content.Context;
+
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.content.browser.ServiceRegistry.ImplementationFactory;
@@ -19,7 +21,11 @@ class ServiceRegistrar {
     // /content in /device. Hence we use BatteryMonitorImplementationFactory as a wrapper.
     private static class BatteryMonitorImplementationFactory
             implements ImplementationFactory<BatteryMonitor> {
-        private final BatteryMonitorFactory mFactory = new BatteryMonitorFactory();
+        private final BatteryMonitorFactory mFactory;
+
+        BatteryMonitorImplementationFactory(Context applicationContext) {
+            mFactory = new BatteryMonitorFactory(applicationContext);
+        }
 
         @Override
         public BatteryMonitor createImpl() {
@@ -28,7 +34,9 @@ class ServiceRegistrar {
     }
 
     @CalledByNative
-    static void registerProcessHostServices(ServiceRegistry registry) {
-        registry.addService(BatteryMonitor.MANAGER, new BatteryMonitorImplementationFactory());
+    static void registerProcessHostServices(ServiceRegistry registry, Context applicationContext) {
+        assert applicationContext != null;
+        registry.addService(BatteryMonitor.MANAGER,
+                new BatteryMonitorImplementationFactory(applicationContext));
     }
 }

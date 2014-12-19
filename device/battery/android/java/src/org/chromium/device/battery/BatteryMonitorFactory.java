@@ -7,7 +7,6 @@ package org.chromium.device.battery;
 import android.content.Context;
 import android.util.Log;
 
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.device.battery.BatteryStatusManager.BatteryStatusCallback;
 import org.chromium.mojom.device.BatteryMonitor;
@@ -39,8 +38,7 @@ public class BatteryMonitorFactory {
         }
     };
 
-    public BatteryMonitorFactory() {
-        Context applicationContext = ApplicationStatus.getApplicationContext();
+    public BatteryMonitorFactory(Context applicationContext) {
         assert applicationContext != null;
         mManager = new BatteryStatusManager(applicationContext, mCallback);
     }

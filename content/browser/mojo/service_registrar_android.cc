@@ -19,8 +19,8 @@ bool ServiceRegistrarAndroid::Register(JNIEnv* env) {
 void ServiceRegistrarAndroid::RegisterProcessHostServices(
     ServiceRegistryAndroid* registry) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ServiceRegistrar_registerProcessHostServices(env,
-                                                    registry->GetObj().obj());
+  Java_ServiceRegistrar_registerProcessHostServices(
+      env, registry->GetObj().obj(), base::android::GetApplicationContext());
 }
 
 }  // namespace content
