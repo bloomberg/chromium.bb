@@ -4,6 +4,11 @@
 
 #include "ash/wm/overview/window_grid.h"
 
+#include <algorithm>
+#include <functional>
+#include <set>
+#include <vector>
+
 #include "ash/ash_switches.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
@@ -11,8 +16,6 @@
 #include "ash/wm/overview/scoped_transform_overview_window.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_item.h"
-#include "ash/wm/overview/window_selector_panels.h"
-#include "ash/wm/overview/window_selector_window.h"
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"
 #include "base/i18n/string_search.h"
@@ -30,6 +33,8 @@
 
 namespace ash {
 namespace {
+
+typedef std::vector<aura::Window*> Windows;
 
 // An observer which holds onto the passed widget until the animation is
 // complete.
@@ -136,7 +141,11 @@ WindowGrid::WindowGrid(aura::Window* root_window,
                        WindowSelector* window_selector)
     : root_window_(root_window),
       window_selector_(window_selector) {
-  WindowSelectorPanels* panels_item = NULL;
+  WindowSelectorItem* panels_item = nullptr;
+
+  std::set<aura::Window*> panels_item_windows;
+  aura::Window* panels_parent = nullptr;
+
   for (aura::Window::Windows::const_iterator iter = windows.begin();
        iter != windows.end(); ++iter) {
     if ((*iter)->GetRootWindow() != root_window)
@@ -149,16 +158,32 @@ WindowGrid::WindowGrid(aura::Window* root_window,
       // Attached panel windows are grouped into a single overview item per
       // grid.
       if (!panels_item) {
-        panels_item = new WindowSelectorPanels(root_window_);
+        panels_item = new WindowSelectorItem(root_window_);
         window_list_.push_back(panels_item);
       }
-      panels_item->AddWindow(*iter);
+      DCHECK(panels_parent == nullptr || panels_parent == (*iter)->parent());
+      panels_parent = (*iter)->parent();
+      panels_item_windows.insert(*iter);
     } else {
-      window_list_.push_back(new WindowSelectorWindow(*iter));
+      WindowSelectorItem* selector_item = new WindowSelectorItem(root_window_);
+      window_list_.push_back(selector_item);
+      selector_item->AddWindow(*iter);
     }
   }
-  if (window_list_.empty())
-    return;
+
+  if (panels_item) {
+    // Sort and add panel windows in reverse z order to the WindowSelectorItem
+    // so that the transparent overlays are in the proper order.
+
+    CHECK_GT(panels_item_windows.size(), 0u);
+
+    const Windows& children = panels_parent->children();
+    for (Windows::const_reverse_iterator iter = children.rbegin();
+        iter != children.rend(); ++iter) {
+      if (panels_item_windows.find(*iter) != panels_item_windows.end())
+        panels_item->AddWindow(*iter);
+    }
+  }
 }
 
 WindowGrid::~WindowGrid() {
@@ -222,7 +247,9 @@ void WindowGrid::PositionWindows(bool animate) {
                             window_size.height() * row + y_offset,
                             window_size.width(),
                             window_size.height());
-    window_list_[i]->SetBounds(root_window_, target_bounds, animate);
+    window_list_[i]->SetBounds(root_window_, target_bounds, animate ?
+        OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS :
+        OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
   }
 
   // If we have less than |kMinCardsMajor| windows, adjust the column_ value to
@@ -315,7 +342,7 @@ void WindowGrid::FilterItems(const base::string16& pattern) {
   base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents finder(pattern);
   for (ScopedVector<WindowSelectorItem>::iterator iter = window_list_.begin();
        iter != window_list_.end(); iter++) {
-    if (finder.Search((*iter)->SelectionWindow()->title(), NULL, NULL)) {
+    if (finder.Search((*iter)->SelectionWindow()->title(), nullptr, nullptr)) {
       (*iter)->SetDimmed(false);
     } else {
       (*iter)->SetDimmed(true);

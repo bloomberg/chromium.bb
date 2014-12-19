@@ -6,33 +6,51 @@
 #define ASH_WM_OVERVIEW_TRANSPARENT_ACTIVATE_WINDOW_BUTTON_H_
 
 #include "base/macros.h"
-#include "ui/views/controls/button/button.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
+#include "ui/gfx/geometry/rect.h"
+
+namespace aura {
+class Window;
+}  // namespace aura
+
+namespace views {
+class Button;
+class Widget;
+}  // namespace views
 
 namespace ash {
 
+class TransparentActivateWindowButtonDelegate;
+
 // Transparent window that covers window selector items and handles mouse and
 // gestures on overview mode for them.
-class TransparentActivateWindowButton : public views::ButtonListener {
+class TransparentActivateWindowButton {
  public:
-  explicit TransparentActivateWindowButton(aura::Window* activate_window);
-  ~TransparentActivateWindowButton() override;
+  TransparentActivateWindowButton(
+      aura::Window* root_window,
+      TransparentActivateWindowButtonDelegate* delegate);
+  ~TransparentActivateWindowButton();
+
+  // Sets the accessibility name.
+  void SetAccessibleName(const base::string16& name);
 
   // Sets the bounds of the transparent window.
   void SetBounds(const gfx::Rect& bounds);
 
-  // Sends an a11y focus alert so that if chromevox is enabled, the window title
-  // is read.
+  // Sends an accessibility focus alert so that if chromevox is enabled, the
+  // window title is read.
   void SendFocusAlert() const;
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  // Stacks |this| above |activate_button| in the window z-ordering.
+  void StackAbove(TransparentActivateWindowButton* activate_button);
 
  private:
   // The transparent window event handler widget itself.
   scoped_ptr<views::Widget> event_handler_widget_;
 
-  // Pointer to the window that the button activates.
-  aura::Window* activate_window_;
+  // The transparent button view that handles user input. Not owned.
+  views::Button* transparent_button_;
 
   DISALLOW_COPY_AND_ASSIGN(TransparentActivateWindowButton);
 };

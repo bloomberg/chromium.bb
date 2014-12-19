@@ -42,8 +42,10 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/transform.h"
+#include "ui/gfx/transform_util.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -52,6 +54,9 @@
 
 namespace ash {
 namespace {
+
+typedef std::vector<aura::Window*> WindowList;
+typedef std::map<const aura::Window*, int> WindowIndexMap;
 
 class NonActivatableActivationDelegate
     : public aura::client::ActivationDelegate {
@@ -63,6 +68,17 @@ void CancelDrag(DragDropController* controller, bool* canceled) {
   if (controller->IsDragDropInProgress()) {
     *canceled = true;
     controller->DragCancel();
+  }
+}
+
+// Fills the |index_map| with (window*, list index) entries based on each
+// windows index in the |windows| list.
+void GetWindowIndexMap(const WindowList& windows,
+                       WindowIndexMap* index_map) {
+  int index = 0;
+  for (auto window : windows) {
+    (*index_map)[window] = index;
+    ++index;
   }
 }
 
@@ -99,7 +115,7 @@ class WindowSelectorTest : public test::AshTestBase {
 
   aura::Window* CreatePanelWindow(const gfx::Rect& bounds) {
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
-        NULL, ui::wm::WINDOW_TYPE_PANEL, 0, bounds);
+        nullptr, ui::wm::WINDOW_TYPE_PANEL, 0, bounds);
     test::TestShelfDelegate::instance()->AddShelfItem(window);
     shelf_view_test()->RunMessageLoopUntilAnimationsDone();
     return window;
@@ -127,19 +143,11 @@ class WindowSelectorTest : public test::AshTestBase {
     ash::Shell::GetInstance()->window_selector_controller()->ToggleOverview();
   }
 
-  gfx::Transform GetTransformRelativeTo(gfx::PointF origin,
-                                        const gfx::Transform& transform) {
-    gfx::Transform t;
-    t.Translate(origin.x(), origin.y());
-    t.PreconcatTransform(transform);
-    t.Translate(-origin.x(), -origin.y());
-    return t;
-  }
-
   gfx::RectF GetTransformedBounds(aura::Window* window) {
     gfx::RectF bounds(ScreenUtil::ConvertRectToScreen(
         window->parent(), window->layer()->bounds()));
-    gfx::Transform transform(GetTransformRelativeTo(bounds.origin(),
+    gfx::Transform transform(gfx::TransformAboutPivot(
+        gfx::ToFlooredPoint(bounds.origin()),
         window->layer()->transform()));
     transform.TransformRect(&bounds);
     return bounds;
@@ -148,7 +156,8 @@ class WindowSelectorTest : public test::AshTestBase {
   gfx::RectF GetTransformedTargetBounds(aura::Window* window) {
     gfx::RectF bounds(ScreenUtil::ConvertRectToScreen(
         window->parent(), window->layer()->GetTargetBounds()));
-    gfx::Transform transform(GetTransformRelativeTo(bounds.origin(),
+    gfx::Transform transform(gfx::TransformAboutPivot(
+        gfx::ToFlooredPoint(bounds.origin()),
         window->layer()->GetTargetTransform()));
     transform.TransformRect(&bounds);
     return bounds;
@@ -216,7 +225,7 @@ class WindowSelectorTest : public test::AshTestBase {
   }
 
   views::Widget* GetCloseButton(ash::WindowSelectorItem* window) {
-    return window->close_button_.get();
+    return &(window->close_button_widget_);
   }
 
   views::Label* GetLabelView(ash::WindowSelectorItem* window) {
@@ -228,7 +237,7 @@ class WindowSelectorTest : public test::AshTestBase {
   // screen.
   void IsWindowAndCloseButtonInScreen(aura::Window* window,
                                       WindowSelectorItem* window_item) {
-    aura::Window* root_window = window_item->GetRootWindow();
+    aura::Window* root_window = window_item->root_window();
     EXPECT_TRUE(window_item->Contains(window));
     EXPECT_TRUE(root_window->GetBoundsInScreen().Contains(
         ToEnclosingRect(GetTransformedTargetBounds(window))));
@@ -240,7 +249,7 @@ class WindowSelectorTest : public test::AshTestBase {
   void FilterItems(const base::StringPiece& pattern) {
     ash::Shell::GetInstance()->
         window_selector_controller()->window_selector_.get()->
-            ContentsChanged(NULL, base::UTF8ToUTF16(pattern));
+            ContentsChanged(nullptr, base::UTF8ToUTF16(pattern));
   }
 
   test::ShelfViewTestAPI* shelf_view_test() {
@@ -455,6 +464,40 @@ TEST_F(WindowSelectorTest, CloseButton) {
   EXPECT_TRUE(widget->IsClosed());
 }
 
+// Tests that clicking on the close button on a secondary display effectively
+// closes the window.
+TEST_F(WindowSelectorTest, CloseButtonOnMultipleDisplay) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("600x400,600x400");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+
+  scoped_ptr<aura::Window> window1(CreateWindow(gfx::Rect(650, 300, 250, 450)));
+
+  // We need a widget for the close button to work, a bare window will crash.
+  scoped_ptr<views::Widget> widget(new views::Widget);
+  views::Widget::InitParams params;
+  params.bounds = gfx::Rect(650, 0, 400, 400);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.parent = window1->parent();
+  widget->Init(params);
+  widget->Show();
+
+  ASSERT_EQ(root_windows[1], window1->GetRootWindow());
+
+  ToggleOverview();
+
+  aura::Window* window2 = widget->GetNativeWindow();
+  gfx::RectF bounds = GetTransformedBoundsInRootWindow(window2);
+  gfx::Point point(bounds.top_right().x() - 1, bounds.top_right().y() - 1);
+  ui::test::EventGenerator event_generator(window2->GetRootWindow(), point);
+
+  EXPECT_FALSE(widget->IsClosed());
+  event_generator.ClickLeftButton();
+  EXPECT_TRUE(widget->IsClosed());
+}
+
 // Tests entering overview mode with two windows and selecting one.
 TEST_F(WindowSelectorTest, FullscreenWindow) {
   gfx::Rect bounds(0, 0, 400, 400);
@@ -550,7 +593,7 @@ TEST_F(WindowSelectorTest, SelectingHidesAppList) {
   gfx::Rect bounds(0, 0, 400, 400);
   scoped_ptr<aura::Window> window1(CreateWindow(bounds));
   scoped_ptr<aura::Window> window2(CreateWindow(bounds));
-  Shell::GetInstance()->ShowAppList(NULL);
+  Shell::GetInstance()->ShowAppList(nullptr);
   EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
   ToggleOverview();
   EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());
@@ -1215,38 +1258,38 @@ TEST_F(WindowSelectorTest, BasicTextFiltering) {
 // Tests selecting in the overview with dimmed and undimmed items.
 TEST_F(WindowSelectorTest, TextFilteringSelection) {
   gfx::Rect bounds(0, 0, 100, 100);
-   scoped_ptr<aura::Window> window2(CreateWindow(bounds));
-   scoped_ptr<aura::Window> window1(CreateWindow(bounds));
-   scoped_ptr<aura::Window> window0(CreateWindow(bounds));
-   base::string16 window2_title = base::UTF8ToUTF16("Rock and roll");
-   base::string16 window1_title = base::UTF8ToUTF16("Rock and");
-   base::string16 window0_title = base::UTF8ToUTF16("Rock");
-   window0->SetTitle(window0_title);
-   window1->SetTitle(window1_title);
-   window2->SetTitle(window2_title);
-   ToggleOverview();
-   SendKey(ui::VKEY_RIGHT);
-   EXPECT_TRUE(selection_widget_active());
-   EXPECT_EQ(GetSelectedWindow(), window0.get());
+  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  scoped_ptr<aura::Window> window0(CreateWindow(bounds));
+  base::string16 window2_title = base::UTF8ToUTF16("Rock and roll");
+  base::string16 window1_title = base::UTF8ToUTF16("Rock and");
+  base::string16 window0_title = base::UTF8ToUTF16("Rock");
+  window0->SetTitle(window0_title);
+  window1->SetTitle(window1_title);
+  window2->SetTitle(window2_title);
+  ToggleOverview();
+  SendKey(ui::VKEY_RIGHT);
+  EXPECT_TRUE(selection_widget_active());
+  EXPECT_EQ(GetSelectedWindow(), window0.get());
 
-   // Dim the first item, the selection should jump to the next item.
-   std::vector<WindowSelectorItem*> items = GetWindowItemsForRoot(0);
-   FilterItems("Rock and");
-   EXPECT_EQ(GetSelectedWindow(), window1.get());
+  // Dim the first item, the selection should jump to the next item.
+  std::vector<WindowSelectorItem*> items = GetWindowItemsForRoot(0);
+  FilterItems("Rock and");
+  EXPECT_EQ(GetSelectedWindow(), window1.get());
 
-   // Cycle the selection, the dimmed window should not be selected.
-   SendKey(ui::VKEY_RIGHT);
-   EXPECT_EQ(GetSelectedWindow(), window2.get());
-   SendKey(ui::VKEY_RIGHT);
-   EXPECT_EQ(GetSelectedWindow(), window1.get());
+  // Cycle the selection, the dimmed window should not be selected.
+  SendKey(ui::VKEY_RIGHT);
+  EXPECT_EQ(GetSelectedWindow(), window2.get());
+  SendKey(ui::VKEY_RIGHT);
+  EXPECT_EQ(GetSelectedWindow(), window1.get());
 
-   // Dimming all the items should hide the selection widget.
-   FilterItems("Pop");
-   EXPECT_FALSE(selection_widget_active());
+  // Dimming all the items should hide the selection widget.
+  FilterItems("Pop");
+  EXPECT_FALSE(selection_widget_active());
 
-   // Undimming one window should automatically select it.
-   FilterItems("Rock and roll");
-   EXPECT_EQ(GetSelectedWindow(), window2.get());
+  // Undimming one window should automatically select it.
+  FilterItems("Rock and roll");
+  EXPECT_EQ(GetSelectedWindow(), window2.get());
 }
 
 // Tests clicking on the desktop itself to cancel overview mode.
@@ -1304,6 +1347,87 @@ TEST_F(WindowSelectorTest, CancelOverviewOnTap) {
   // Tap should now exit overview mode.
   generator.GestureTapAt(point_in_background_page);
   EXPECT_FALSE(IsSelecting());
+}
+
+// Tests that the transparent overlays z-order matches the windows z-order.
+TEST_F(WindowSelectorTest, PanelStackOrdering) {
+  gfx::Rect bounds1(0, 0, 100, 100);
+  gfx::Rect bounds2(10, 0, 100, 100);
+  gfx::Rect bounds3(20, 0, 100, 100);
+  scoped_ptr<aura::Window> panel1(CreatePanelWindow(bounds1));
+  scoped_ptr<aura::Window> panel2(CreatePanelWindow(bounds2));
+  scoped_ptr<aura::Window> panel3(CreatePanelWindow(bounds3));
+
+  wm::ActivateWindow(panel2.get());
+  wm::ActivateWindow(panel3.get());
+  wm::ActivateWindow(panel1.get());
+
+  WindowIndexMap z_order;
+  GetWindowIndexMap(panel1->parent()->children(), &z_order);
+  ASSERT_GT(z_order[panel1.get()], z_order[panel2.get()]);
+  ASSERT_GT(z_order[panel2.get()], z_order[panel3.get()]);
+
+  WindowList mru_windows = ash::Shell::GetInstance()->mru_window_tracker()->
+      BuildMruWindowList();
+  WindowIndexMap mru_rank;
+  GetWindowIndexMap(mru_windows, &mru_rank);
+  ASSERT_LT(mru_rank[panel1.get()], mru_rank[panel3.get()]);
+  ASSERT_LT(mru_rank[panel3.get()], mru_rank[panel2.get()]);
+
+  ToggleOverview();
+
+  gfx::Rect panel1_transformed_bounds(
+      gfx::ToEnclosingRect(GetTransformedTargetBounds(panel1.get())));
+  gfx::Rect panel2_transformed_bounds(
+      gfx::ToEnclosingRect(GetTransformedTargetBounds(panel2.get())));
+  gfx::Rect panel3_transformed_bounds(
+      gfx::ToEnclosingRect(GetTransformedTargetBounds(panel3.get())));
+
+  gfx::Rect target_rect(panel2_transformed_bounds);
+  target_rect.Intersect(panel3_transformed_bounds);
+  target_rect.Subtract(panel1_transformed_bounds);
+  gfx::Point tap_target(target_rect.CenterPoint());
+
+  ASSERT_TRUE(panel3_transformed_bounds.Contains(tap_target));
+
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  generator.GestureTapAt(tap_target);
+  EXPECT_EQ(panel2.get(), GetFocusedWindow());
+}
+
+// Tests that individual panels can be selected on a secondary display.
+TEST_F(WindowSelectorTest, PanelSelectionOnSecondaryDisplay) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("600x400,600x400");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+
+  gfx::Rect bounds1(700, 0, 100, 100);
+  gfx::Rect bounds2(710, 0, 100, 100);
+  scoped_ptr<aura::Window> panel1(CreatePanelWindow(bounds1));
+  scoped_ptr<aura::Window> panel2(CreatePanelWindow(bounds2));
+
+  wm::ActivateWindow(panel2.get());
+  wm::ActivateWindow(panel1.get());
+
+  WindowList mru_windows = ash::Shell::GetInstance()->mru_window_tracker()->
+      BuildMruWindowList();
+  WindowIndexMap mru_rank;
+  GetWindowIndexMap(mru_windows, &mru_rank);
+  ASSERT_LT(mru_rank[panel1.get()], mru_rank[panel2.get()]);
+  ASSERT_EQ(panel1.get(), GetFocusedWindow());
+
+  ToggleOverview();
+
+  gfx::Rect panel2_transformed_bounds(
+      gfx::ToEnclosingRect(GetTransformedBoundsInRootWindow(panel2.get())));
+  gfx::Point tap_target(panel2_transformed_bounds.right() - 2,
+                        panel2_transformed_bounds.bottom() - 2);
+
+  ui::test::EventGenerator generator(root_windows[1]);
+  generator.GestureTapAt(tap_target);
+  EXPECT_EQ(panel2.get(), GetFocusedWindow());
 }
 
 }  // namespace ash

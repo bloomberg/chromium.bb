@@ -19,6 +19,9 @@ enum OverviewAnimationType {
   OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS,
   // Used to hide non-overview mode windows.
   OVERVIEW_ANIMATION_HIDE_WINDOW,
+  // Used to restore windows to their original position when exiting overview
+  // mode.
+  OVERVIEW_ANIMATION_RESTORE_WINDOW
 };
 
 }  // namespace ash

@@ -27,6 +27,7 @@ base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
     case OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN:
       return base::TimeDelta::FromMilliseconds(kFadeInMilliseconds);
     case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS:
+    case OVERVIEW_ANIMATION_RESTORE_WINDOW:
     case OVERVIEW_ANIMATION_HIDE_WINDOW:
       return base::TimeDelta::FromMilliseconds(kTransitionMilliseconds);
   }
@@ -55,6 +56,7 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
           ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
       break;
     case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS:
+    case OVERVIEW_ANIMATION_RESTORE_WINDOW:
       animation_settings_.SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
       animation_settings_.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);

@@ -20,6 +20,7 @@
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector_delegate.h"
 #include "ash/wm/overview/window_selector_item.h"
+#include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
@@ -105,7 +106,7 @@ struct WindowSelectorItemForRoot
   }
 
   bool operator()(WindowSelectorItem* item) const {
-    return item->GetRootWindow() == root_window;
+    return item->root_window() == root_window;
   }
 
   const aura::Window* root_window;
@@ -247,6 +248,13 @@ WindowSelector::WindowSelector(const WindowList& windows,
       container->AddObserver(this);
       observed_windows_.insert(container);
     }
+
+    // Hide the callout widgets for panels. It is safe to call this for
+    // root windows that don't contain any panel windows.
+    static_cast<PanelLayoutManager*>(
+        Shell::GetContainer(*iter, kShellWindowId_PanelContainer)
+            ->layout_manager())->SetShowCalloutWidgets(false);
+
     scoped_ptr<WindowGrid> grid(new WindowGrid(*iter, windows, this));
     if (grid->empty())
       continue;
@@ -290,7 +298,16 @@ WindowSelector::~WindowSelector() {
     (*iter)->RemoveObserver(this);
   }
   shell->activation_client()->RemoveObserver(this);
+
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  for (aura::Window::Windows::const_iterator iter = root_windows.begin();
+       iter != root_windows.end(); iter++) {
+    // Un-hide the callout widgets for panels. It is safe to call this for
+    // root_windows that don't contain any panel windows.
+    static_cast<PanelLayoutManager*>(
+        Shell::GetContainer(*iter, kShellWindowId_PanelContainer)
+            ->layout_manager())->SetShowCalloutWidgets(true);
+  }
 
   const aura::WindowTracker::Windows hidden_windows(hidden_windows_.windows());
   for (aura::WindowTracker::Windows::const_iterator iter =
@@ -434,7 +451,7 @@ void WindowSelector::OnWindowDestroying(aura::Window* window) {
   window->RemoveObserver(this);
   observed_windows_.erase(window);
   if (window == restore_focus_window_)
-    restore_focus_window_ = NULL;
+    restore_focus_window_ = nullptr;
 }
 
 void WindowSelector::OnWindowActivated(aura::Window* gained_active,
@@ -569,7 +586,7 @@ void WindowSelector::ResetFocusRestoreWindow(bool focus) {
           observed_windows_.end()) {
     restore_focus_window_->RemoveObserver(this);
   }
-  restore_focus_window_ = NULL;
+  restore_focus_window_ = nullptr;
 }
 
 void WindowSelector::Move(Direction direction, bool animate) {

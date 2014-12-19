@@ -412,6 +412,9 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_OVERVIEW_BUTTON_ACCESSIBLE_NAME" desc="The accessible name for the Overview button in the system tray.">
         Toggle window overview
       </message>
+      <message name="IDS_ASH_OVERVIEW_CLOSE_ITEM_BUTTON_ACCESSIBLE_NAME" desc="The accessible name for the close button on windows while in Overview mode.">
+        Close <ph name="WINDOW_TITLE">$1</ph>
+      </message>
 
       <!-- ChromeOS-specific strings -->
       <if expr="chromeos">
