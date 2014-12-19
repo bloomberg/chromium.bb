@@ -152,7 +152,7 @@ Status Status::ErrorGenerateAesKeyLength() {
 }
 
 Status Status::ErrorAes192BitUnsupported() {
-  return Status(blink::WebCryptoErrorTypeNotSupported,
+  return Status(blink::WebCryptoErrorTypeOperation,
                 "192-bit AES keys are not supported");
 }
 
@@ -227,7 +227,7 @@ Status Status::ErrorImportRsaEmptyModulus() {
 }
 
 Status Status::ErrorGenerateRsaUnsupportedModulus() {
-  return Status(blink::WebCryptoErrorTypeNotSupported,
+  return Status(blink::WebCryptoErrorTypeOperation,
                 "The modulus length must be a multiple of 8 bits and >= 256 "
                 "and <= 16384");
 }

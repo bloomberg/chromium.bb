@@ -312,7 +312,7 @@
   {
     "key_format": "raw",
     "key": "5377656574205369787465656e2049560000000000000000",
-    "import_error": "NotSupported: 192-bit AES keys are not supported"
+    "import_error": "OperationError: 192-bit AES keys are not supported"
   },
 
   // JWK: AES 192-bit is not allowed: http://crbug.com/381829
@@ -323,6 +323,6 @@
       "alg": "A192CBC",
       "k": "YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFh"
     },
-    "import_error": "NotSupported: 192-bit AES keys are not supported"
+    "import_error": "OperationError: 192-bit AES keys are not supported"
   }
 ]
