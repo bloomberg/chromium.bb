@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/files/file_util.h"
+#include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/commands.h"
@@ -15,22 +16,23 @@ bool FormatFileToString(Setup* setup,
                         std::string* output);
 }  // namespace commands
 
-#define FORMAT_TEST(n)                                                 \
-  TEST(Format, n) {                                                    \
-    ::Setup setup;                                                     \
-    std::string out;                                                   \
-    std::string expected;                                              \
-    EXPECT_TRUE(commands::FormatFileToString(                          \
-        &setup,                                                        \
-        SourceFile("//tools/gn/format_test_data/" #n ".gn"),           \
-        false,                                                         \
-        &out));                                                        \
-    ASSERT_TRUE(base::ReadFileToString(                                \
-        base::FilePath(FILE_PATH_LITERAL("tools/gn/format_test_data/") \
-                           FILE_PATH_LITERAL(#n)                       \
-                               FILE_PATH_LITERAL(".golden")),          \
-        &expected));                                                   \
-    EXPECT_EQ(expected, out);                                          \
+#define FORMAT_TEST(n)                                                      \
+  TEST(Format, n) {                                                         \
+    ::Setup setup;                                                          \
+    std::string out;                                                        \
+    std::string expected;                                                   \
+    base::FilePath src_dir;                                                 \
+    PathService::Get(base::DIR_SOURCE_ROOT, &src_dir);                      \
+    base::SetCurrentDirectory(src_dir);                                     \
+    EXPECT_TRUE(commands::FormatFileToString(                               \
+        &setup, SourceFile("//tools/gn/format_test_data/" #n ".gn"), false, \
+        &out));                                                             \
+    ASSERT_TRUE(base::ReadFileToString(                                     \
+        base::FilePath(FILE_PATH_LITERAL("tools/gn/format_test_data/")      \
+                           FILE_PATH_LITERAL(#n)                            \
+                               FILE_PATH_LITERAL(".golden")),               \
+        &expected));                                                        \
+    EXPECT_EQ(expected, out);                                               \
   }
 
 // These are expanded out this way rather than a runtime loop so that
