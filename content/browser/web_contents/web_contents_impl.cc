@@ -2739,6 +2739,13 @@ void WebContentsImpl::OnDidStartLoading(bool to_different_document) {
       static_cast<RenderFrameHostImpl*>(render_frame_message_source_);
   int64 render_frame_id = rfh->frame_tree_node()->frame_tree_node_id();
 
+  // Any main frame load to a new document should reset the load progress, since
+  // it will replace the current page and any frames.
+  if (to_different_document && !rfh->GetParent()) {
+    ResetLoadProgressState();
+    loading_frames_in_progress_ = 0;
+  }
+
   // It is possible to get multiple calls to OnDidStartLoading that don't have
   // corresponding calls to OnDidStopLoading:
   // - With "swappedout://" URLs, this happens when a RenderView gets swapped

@@ -7,6 +7,7 @@
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
+#include "content/common/frame_messages.h"
 #include "content/public/browser/load_notification_details.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_details.h"
@@ -19,6 +20,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
@@ -534,6 +536,68 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, LoadProgress) {
   ASSERT_GE(progresses.size(), 1U)
       << "There should be at least one progress update";
   EXPECT_EQ(1.0, *progresses.rbegin());
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, LoadProgressWithFrames) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  scoped_ptr<LoadProgressDelegateAndObserver> delegate(
+      new LoadProgressDelegateAndObserver(shell()));
+
+  NavigateToURL(shell(),
+                embedded_test_server()->GetURL("/frame_tree/top.html"));
+
+  const std::vector<double>& progresses = delegate->progresses;
+  // All updates should be in order ...
+  if (std::adjacent_find(progresses.begin(),
+                         progresses.end(),
+                         std::greater<double>()) != progresses.end()) {
+    ADD_FAILURE() << "Progress values should be in order: "
+                  << ::testing::PrintToString(progresses);
+  }
+
+  // ... and the last one should be 1.0, meaning complete.
+  ASSERT_GE(progresses.size(), 1U)
+      << "There should be at least one progress update";
+  EXPECT_EQ(1.0, *progresses.rbegin());
+}
+
+// Ensure that a new navigation that interrupts a pending one will still fire
+// a DidStopLoading.  See http://crbug.com/429399.
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       LoadProgressAfterInterruptedNav) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  // Start at a real page.
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
+
+  // Simulate a navigation that has not completed.
+  scoped_ptr<LoadProgressDelegateAndObserver> delegate(
+      new LoadProgressDelegateAndObserver(shell()));
+  RenderFrameHost* main_frame = shell()->web_contents()->GetMainFrame();
+  FrameHostMsg_DidStartLoading start_msg(main_frame->GetRoutingID(), true);
+  static_cast<WebContentsImpl*>(shell()->web_contents())->OnMessageReceived(
+      main_frame, start_msg);
+  EXPECT_TRUE(delegate->did_start_loading);
+  EXPECT_FALSE(delegate->did_stop_loading);
+
+  // Also simulate a DidChangeLoadProgress, but not a DidStopLoading.
+  FrameHostMsg_DidChangeLoadProgress progress_msg(main_frame->GetRoutingID(),
+                                                  1.0);
+  static_cast<WebContentsImpl*>(shell()->web_contents())->OnMessageReceived(
+      main_frame, progress_msg);
+  EXPECT_TRUE(delegate->did_start_loading);
+  EXPECT_FALSE(delegate->did_stop_loading);
+
+  // Now interrupt with a new cross-process navigation.
+  TestNavigationObserver tab_observer(shell()->web_contents(), 1);
+  GURL url(embedded_test_server()->GetURL("foo.com", "/title2.html"));
+  shell()->LoadURL(url);
+  tab_observer.Wait();
+  EXPECT_EQ(url, shell()->web_contents()->GetLastCommittedURL());
+
+  // We should have gotten to DidStopLoading.
+  EXPECT_TRUE(delegate->did_stop_loading);
 }
 
 struct FirstVisuallyNonEmptyPaintObserver : public WebContentsObserver {
