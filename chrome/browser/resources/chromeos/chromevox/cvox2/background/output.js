@@ -458,13 +458,24 @@ Output.prototype = {
         this.format_(formatPrevNode, roleBlock.leave, buff, opt_exclude);
     }
 
-    for (var j = 0, formatNode;
-         (formatNode = uniqueAncestors[j]) && formatNode !== node;
-         j++) {
+    var enterOutput = [];
+    var enterRole = {};
+    for (var j = uniqueAncestors.length - 2, formatNode;
+         (formatNode = uniqueAncestors[j]);
+         j--) {
       var roleBlock = eventBlock[formatNode.role] || eventBlock['default'];
-      if (roleBlock.enter)
-        this.format_(formatNode, roleBlock.enter, buff, opt_exclude);
+      if (roleBlock.enter) {
+        if (enterRole[formatNode.role])
+          continue;
+        enterRole[formatNode.role] = true;
+        var tempBuff = new cvox.Spannable('');
+        this.format_(formatNode, roleBlock.enter, tempBuff, opt_exclude);
+        enterOutput.unshift(tempBuff);
+      }
     }
+    enterOutput.forEach(function(c) {
+      this.addToSpannable_(buff, c);
+    }.bind(this));
 
     if (!opt_exclude.stay) {
       var commonFormatNode = uniqueAncestors[0];

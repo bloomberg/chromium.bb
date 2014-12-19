@@ -256,7 +256,7 @@ Chrome supports. -->
         Chrome
       </message>
       <message name="IDS_ACCNAME_TOOLBAR" desc="The accessible name for the application's toolbar.">
-        Google Chrome Toolbar
+        main
       </message>
       <!-- Hung Browser Detector -->
       <if expr="is_win">

@@ -265,7 +265,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, FocusToolbar) {
   chrome::ExecuteCommand(browser(), IDC_FOCUS_TOOLBAR);
   EXPECT_TRUE(
       MatchPattern(speech_monitor_.GetNextUtterance(),
-                   "about:blank about:blank*Toolbar toolbar Reload Button"));
+                   "about:blank*toolbar Reload Button"));
 }
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TypeInOmnibox) {
@@ -547,7 +547,7 @@ IN_PROC_BROWSER_TEST_F(GuestSpokenFeedbackTest, FocusToolbar) {
 
   EXPECT_TRUE(
       MatchPattern(speech_monitor_.GetNextUtterance(),
-                   "about:blank about:blank*Toolbar toolbar Reload Button"));
+                   "about:blank*toolbar Reload Button"));
 }
 
 //

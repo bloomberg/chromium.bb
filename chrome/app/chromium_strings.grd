@@ -333,7 +333,7 @@ be available for now. -->
         Chromium
       </message>
       <message name="IDS_ACCNAME_TOOLBAR" desc="The accessible name for the application's toolbar.">
-        Chromium Toolbar
+        main
       </message>
       <!-- Hung Browser Detector -->
       <if expr="is_win">
