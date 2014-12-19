@@ -82,8 +82,12 @@ class RemoteDeviceEnvironment(environment.Environment):
 
   def __enter__(self):
     """Set up the test run when used as a context manager."""
-    self.SetUp()
-    return self
+    try:
+      self.SetUp()
+      return self
+    except:
+      self.__exit__(*sys.exc_info())
+      raise
 
   def __exit__(self, exc_type, exc_val, exc_tb):
     """Tears down the test run when used as a context manager."""
@@ -118,9 +122,25 @@ class RemoteDeviceEnvironment(environment.Environment):
       if (device['name'] == self._remote_device
           and device['os_version'] == self._remote_device_os):
         return device['device_type_id']
-    raise remote_device_helper.RemoteDeviceError(
-        'No device found: %s %s' % (self._remote_device,
-        self._remote_device_os))
+    self._NoDeviceFound(device_list)
+
+  def _PrintAvailableDevices(self, device_list):
+    def compare_devices(a,b):
+      for key in ('os_version', 'name'):
+        c = cmp(a[key], b[key])
+        if c:
+          return c
+      return 0
+
+    logging.critical('Available Android Devices:')
+    android_devices = (d for d in device_list if d['os_name'] == 'Android')
+    for d in sorted(android_devices, compare_devices):
+      logging.critical('  %s %s', d['os_version'].ljust(7), d['name'])
+
+  def _NoDeviceFound(self, device_list):
+    self._PrintAvailableDevices(device_list)
+    raise remote_device_helper.RemoteDeviceError('No device found: %s %s' %
+        (self._remote_device, self._remote_device_os))
 
   @property
   def device(self):
