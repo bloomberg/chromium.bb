@@ -37,7 +37,6 @@ class ScriptWrappable;
     V(port2) \
     V(state) \
     V(stringData) \
-    V(scriptState) \
     V(thenableHiddenPromise) \
     V(toStringString) \
     SCRIPT_PROMISE_PROPERTIES(V, Promise)  \
