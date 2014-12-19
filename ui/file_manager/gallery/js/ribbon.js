@@ -15,52 +15,74 @@
  * @struct
  */
 function Ribbon(document, dataModel, selectionModel) {
-  var self = assertInstanceof(document.createElement('div'), HTMLElement);
-  Ribbon.decorate(self, dataModel, selectionModel);
-  return self;
+  if (this instanceof Ribbon) {
+    return Ribbon.call(/** @type {Ribbon} */ (document.createElement('div')),
+        document, dataModel, selectionModel);
+  }
+
+  this.__proto__ = Ribbon.prototype;
+
+  /**
+   * @type {!cr.ui.ArrayDataModel}
+   * @private
+   */
+  this.dataModel_ = dataModel;
+
+  /**
+   * @type {!cr.ui.ListSelectionModel}
+   * @private
+   */
+  this.selectionModel_ = selectionModel;
+
+  /**
+   * @type {!Object}
+   * @private
+   */
+  this.renderCache_ = {};
+
+  /**
+   * @type {number}
+   * @private
+   */
+  this.firstVisibleIndex_ = 0;
+
+  /**
+   * @type {number}
+   * @private
+   */
+  this.lastVisibleIndex_ = -1;
+
+  /**
+   * @type {?function(!Event)}
+   * @private
+   */
+  this.onContentBound_ = null;
+
+  /**
+   * @type {?function(!Event)}
+   * @private
+   */
+  this.onSpliceBound_ = null;
+
+  /**
+   * @type {?function(!Event)}
+   * @private
+   */
+  this.onSelectionBound_ = null;
+
+  /**
+   * @type {?number}
+   * @private
+   */
+  this.removeTimeout_ = null;
+
+  return this;
 }
 
 /**
  * Inherit from HTMLDivElement.
  */
 Ribbon.prototype.__proto__ = HTMLDivElement.prototype;
-
-/**
- * Decorate a Ribbon instance.
- *
- * @param {!HTMLElement} self Self pointer.
- * @param {!cr.ui.ArrayDataModel} dataModel Data model.
- * @param {!cr.ui.ListSelectionModel} selectionModel Selection model.
- */
-Ribbon.decorate = function(self, dataModel, selectionModel) {
-  self.__proto__ = Ribbon.prototype;
-  self = /** @type {!Ribbon} */ (self);
-  self.dataModel_ = dataModel;
-  self.selectionModel_ = selectionModel;
-
-  /** @type {!Object} */
-  self.renderCache_ = {};
-
-  /** @type {number} */
-  self.firstVisibleIndex_ = 0;
-
-  /** @type {number} */
-  self.lastVisibleIndex_ = -1;
-
-  /** @type {?function(!Event)} */
-  self.onContentBound_ = null;
-
-  /** @type {?function(!Event)} */
-  self.onSpliceBound_ = null;
-
-  /** @type {?function(!Event)} */
-  self.onSelectionBound_ = null;
-
-  /** @type {?number} */
-  self.removeTimeout_ = null;
-
-  self.className = 'ribbon';
-};
 
 /**
  * Max number of thumbnails in the ribbon.
@@ -328,7 +350,7 @@ Ribbon.prototype.removeVanishing_ = function() {
  * @private
  */
 Ribbon.prototype.renderThumbnail_ = function(index) {
-  var item = this.dataModel_.item(index);
+  var item = assertInstanceof(this.dataModel_.item(index), Gallery.Item);
   var url = item.getEntry().toURL();
 
   var cached = this.renderCache_[url];
