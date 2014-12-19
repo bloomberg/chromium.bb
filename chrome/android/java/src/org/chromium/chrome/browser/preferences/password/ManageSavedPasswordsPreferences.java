@@ -51,6 +51,12 @@ public class ManageSavedPasswordsPreferences extends PreferenceFragment
 
     private static final String PREF_CATEGORY_SAVED_PASSWORDS = "saved_passwords";
     private static final String PREF_CATEGORY_EXCEPTIONS = "exceptions";
+    private static final String PREF_MANAGE_ACCOUNT_LINK = "manage_account_link";
+
+    private static final int ORDER_SWITCH = 0;
+    private static final int ORDER_MANAGE_ACCOUNT_LINK = 1;
+    private static final int ORDER_SAVED_PASSWORDS = 2;
+    private static final int ORDER_EXCEPTIONS = 3;
 
     public static final int RESULT_DELETE_PASSWORD = 1;
 
@@ -98,29 +104,32 @@ public class ManageSavedPasswordsPreferences extends PreferenceFragment
         mPasswordManagerHandler.updatePasswordLists();
     }
 
+    private void resetList(String preferenceCategoryKey) {
+        PreferenceCategory profileCategory =
+                (PreferenceCategory) getPreferenceScreen().findPreference(preferenceCategoryKey);
+        if (profileCategory != null) {
+            profileCategory.removeAll();
+            getPreferenceScreen().removePreference(profileCategory);
+        }
+
+        mEmptyView.setVisibility(View.GONE);
+    }
+
     @Override
     public void passwordListAvailable(int count) {
+        resetList(PREF_CATEGORY_SAVED_PASSWORDS);
         mNoPasswords = count == 0;
         if (mNoPasswords) {
             if (mNoPasswordExceptions) displayEmptyScreenMessage();
             return;
         }
 
-        if (PasswordUIView.shouldDisplayManageAccountLink()) {
-            ForegroundColorSpan colorSpan = new ForegroundColorSpan(
-                    getResources().getColor(R.color.pref_accent_color));
-            SpannableString title = SpanApplier.applySpans(
-                    getString(R.string.manage_passwords_text),
-                    new SpanApplier.SpanInfo("<link>", "</link>", colorSpan));
-            mLinkPref = new ChromeBasePreference(getActivity());
-            mLinkPref.setTitle(title);
-            mLinkPref.setOnPreferenceClickListener(this);
-            getPreferenceScreen().addPreference(mLinkPref);
-        }
+        displayManageAccountLink();
 
         PreferenceCategory profileCategory = new PreferenceCategory(getActivity());
         profileCategory.setKey(PREF_CATEGORY_SAVED_PASSWORDS);
         profileCategory.setTitle(R.string.section_saved_passwords);
+        profileCategory.setOrder(ORDER_SAVED_PASSWORDS);
         getPreferenceScreen().addPreference(profileCategory);
         for (int i = 0; i < count; i++) {
             PasswordUIView.SavedPasswordEntry saved =
@@ -141,15 +150,19 @@ public class ManageSavedPasswordsPreferences extends PreferenceFragment
 
     @Override
     public void passwordExceptionListAvailable(int count) {
+        resetList(PREF_CATEGORY_EXCEPTIONS);
         mNoPasswordExceptions = count == 0;
         if (mNoPasswordExceptions) {
             if (mNoPasswords) displayEmptyScreenMessage();
             return;
         }
 
+        displayManageAccountLink();
+
         PreferenceCategory profileCategory = new PreferenceCategory(getActivity());
         profileCategory.setKey(PREF_CATEGORY_EXCEPTIONS);
         profileCategory.setTitle(R.string.section_saved_passwords_exceptions);
+        profileCategory.setOrder(ORDER_EXCEPTIONS);
         getPreferenceScreen().addPreference(profileCategory);
         for (int i = 0; i < count; i++) {
             String exception = mPasswordManagerHandler.getSavedPasswordException(i);
@@ -228,6 +241,7 @@ public class ManageSavedPasswordsPreferences extends PreferenceFragment
         ChromeSwitchPreference savePasswordsSwitch =
                 new ChromeSwitchPreference(getActivity(), null);
         savePasswordsSwitch.setKey(PREF_SAVE_PASSWORDS_SWITCH);
+        savePasswordsSwitch.setOrder(ORDER_SWITCH);
         savePasswordsSwitch.setSummaryOn(R.string.text_on);
         savePasswordsSwitch.setSummaryOff(R.string.text_off);
         savePasswordsSwitch.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
@@ -252,5 +266,24 @@ public class ManageSavedPasswordsPreferences extends PreferenceFragment
         // (e.g. the switch will say "On" when save passwords is really turned off), so
         // .setChecked() should be called after .addPreference()
         savePasswordsSwitch.setChecked(isEnabled);
+    }
+
+    private void displayManageAccountLink() {
+        if (PasswordUIView.shouldDisplayManageAccountLink()
+                && getPreferenceScreen().findPreference(PREF_MANAGE_ACCOUNT_LINK) == null) {
+            if (mLinkPref == null) {
+                ForegroundColorSpan colorSpan = new ForegroundColorSpan(
+                        getResources().getColor(R.color.pref_accent_color));
+                SpannableString title = SpanApplier.applySpans(
+                        getString(R.string.manage_passwords_text),
+                        new SpanApplier.SpanInfo("<link>", "</link>", colorSpan));
+                mLinkPref = new ChromeBasePreference(getActivity());
+                mLinkPref.setKey(PREF_MANAGE_ACCOUNT_LINK);
+                mLinkPref.setTitle(title);
+                mLinkPref.setOnPreferenceClickListener(this);
+                mLinkPref.setOrder(ORDER_MANAGE_ACCOUNT_LINK);
+            }
+            getPreferenceScreen().addPreference(mLinkPref);
+        }
     }
 }
