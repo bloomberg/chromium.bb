@@ -291,11 +291,6 @@ while (0)
 
 #endif
 
-/* COMPILE_ASSERT */
-#ifndef COMPILE_ASSERT // also defined in base/macros.h
-#define COMPILE_ASSERT(exp, msg) static_assert((exp), #msg)
-#endif
-
 /* FATAL */
 
 #if FATAL_DISABLED
