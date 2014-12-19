@@ -185,25 +185,19 @@ source_set("test_support") {
   ]
 
   if (is_win) {
+    sources += [ "test/ui_controls_factory_aurawin.cc" ]
+
     cflags = [ "/wd4267" ]  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   }
 
   if (use_x11) {
+    sources += [
+      "test/ui_controls_factory_aurax11.cc",
+      "test/x11_event_sender.cc",
+      "test/x11_event_sender.h",
+    ]
+
     deps += [ "//ui/gfx/x" ]
-  }
-
-  if (use_aura) {
-    if (is_win) {
-      sources += [ "test/ui_controls_factory_aurawin.cc" ]
-    }
-
-    if (use_x11) {
-      sources += [
-        "test/ui_controls_factory_aurax11.cc",
-        "test/x11_event_sender.cc",
-        "test/x11_event_sender.h",
-      ]
-    }
   }
 }
 
