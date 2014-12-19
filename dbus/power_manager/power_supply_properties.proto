@@ -52,8 +52,9 @@ message PowerSupplyProperties {
     // Opaque ID corresponding to the device; see |external_power_source_id|.
     optional string id = 1;
 
-    // User-friendly name describing the device.
-    optional string name = 2;
+    // Raw strings read from |manufacturer| and |model_name| files in sysfs.
+    optional string manufacturer_id = 4;
+    optional string model_id = 5;
 
     // True if the power source will automatically deliver charge to the system
     // when connected (assuming there isn't another |active_by_default| source
@@ -61,7 +62,7 @@ message PowerSupplyProperties {
     // to do so by the user.
     optional bool active_by_default = 3;
 
-    // Next ID to use: 4
+    // Next ID to use: 6
   }
 
   // Current state of the external power source.
