@@ -969,13 +969,17 @@ static bool testScriptObjectInvoke(PluginObject* obj,
                   &object_result);
 
   // Script object returned
-  NPObject* script_object = object_result.value.objectValue;
+  if (!NPVARIANT_IS_OBJECT(object_result)) {
+    browser->releasevariantvalue(&object_result);
+    return false;
+  }
+  NPObject* script_object = NPVARIANT_TO_OBJECT(object_result);
 
   // Arg2 is the name of the method to be called on the script object
-  NPUTF8* object_mehod_string = createCStringFromNPVariant(&args[1]);
+  NPUTF8* object_method_string = createCStringFromNPVariant(&args[1]);
   NPIdentifier object_method =
-      browser->getstringidentifier(object_mehod_string);
-  free(object_mehod_string);
+      browser->getstringidentifier(object_method_string);
+  free(object_method_string);
 
   // Create a fresh NPObject to be passed as an argument
   NPObject* object_arg = browser->createobject(obj->npp, obj->header._class);
