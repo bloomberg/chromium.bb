@@ -1328,16 +1328,7 @@ TEST_F(PinchViewportTest, ElementBoundsInRootViewSpaceAccountsForViewport)
 
 // Tests that when a new frame is created, it is created with the intended
 // size (i.e. the contentWidth).
-#if defined(ADDRESS_SANITIZER) && defined(WTF_OS_MACOSX)
-// AddressSanitizer reports a use-after-free in this test,
-// http://crbug.com/439932.
-#define MAYBE_TestMainFrameInitializationSizing \
-    DISABLED_TestMainFrameInitializationSizing
-#else
-#define MAYBE_TestMainFrameInitializationSizing \
-    TestMainFrameInitializationSizing
-#endif
-TEST_F(PinchViewportTest, MAYBE_TestMainFrameInitializationSizing)
+TEST_F(PinchViewportTest, TestMainFrameInitializationSizing)
 {
     initializeWithAndroidSettings();
 
@@ -1348,9 +1339,9 @@ TEST_F(PinchViewportTest, MAYBE_TestMainFrameInitializationSizing)
     navigateTo(m_baseURL + "content-width-1000.html");
 
     WebLocalFrameImpl* localFrame = webViewImpl()->mainFrameImpl();
-    FrameView& frameView = *localFrame->frameView();
     localFrame->createFrameView();
 
+    FrameView& frameView = *localFrame->frameView();
     EXPECT_SIZE_EQ(IntSize(200, 400), frameView.frameRect().size());
 }
 
