@@ -102,7 +102,7 @@ class BrowserContextKeyedAPIFactory : public BrowserContextKeyedServiceFactory {
 
  private:
   // BrowserContextKeyedServiceFactory implementation.
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override {
     return new T(context);
   }
