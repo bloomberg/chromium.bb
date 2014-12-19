@@ -133,6 +133,7 @@ TEST_F(IOThreadTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_FALSE(params.quic_always_require_handshake_confirmation);
   EXPECT_FALSE(params.quic_disable_connection_pooling);
   EXPECT_EQ(0, params.quic_load_server_info_timeout_ms);
+  EXPECT_FALSE(params.quic_disable_loading_server_info_for_new_servers);
 }
 
 TEST_F(IOThreadTest, EnableQuicFromCommandLine) {
@@ -142,6 +143,7 @@ TEST_F(IOThreadTest, EnableQuicFromCommandLine) {
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_TRUE(params.enable_quic);
+  EXPECT_FALSE(params.quic_disable_loading_server_info_for_new_servers);
 }
 
 TEST_F(IOThreadTest, EnablePacingFromCommandLine) {
@@ -154,6 +156,7 @@ TEST_F(IOThreadTest, EnablePacingFromCommandLine) {
   net::QuicTagVector options;
   options.push_back(net::kPACE);
   EXPECT_EQ(options, params.quic_connection_options);
+  EXPECT_FALSE(params.quic_disable_loading_server_info_for_new_servers);
 }
 
 TEST_F(IOThreadTest, EnablePacingFromFieldTrialParams) {
@@ -166,6 +169,7 @@ TEST_F(IOThreadTest, EnablePacingFromFieldTrialParams) {
   net::QuicTagVector options;
   options.push_back(net::kPACE);
   EXPECT_EQ(options, params.quic_connection_options);
+  EXPECT_FALSE(params.quic_disable_loading_server_info_for_new_servers);
 }
 
 TEST_F(IOThreadTest, PacketLengthFromCommandLine) {
@@ -176,6 +180,7 @@ TEST_F(IOThreadTest, PacketLengthFromCommandLine) {
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_EQ(1450u, params.quic_max_packet_length);
+  EXPECT_FALSE(params.quic_disable_loading_server_info_for_new_servers);
 }
 
 TEST_F(IOThreadTest, PacketLengthFromFieldTrialParams) {
@@ -186,6 +191,7 @@ TEST_F(IOThreadTest, PacketLengthFromFieldTrialParams) {
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_EQ(1450u, params.quic_max_packet_length);
+  EXPECT_FALSE(params.quic_disable_loading_server_info_for_new_servers);
 }
 
 TEST_F(IOThreadTest, QuicVersionFromCommandLine) {
@@ -199,8 +205,8 @@ TEST_F(IOThreadTest, QuicVersionFromCommandLine) {
   InitializeNetworkSessionParams(&params);
   net::QuicVersionVector supported_versions;
   supported_versions.push_back(net::QuicSupportedVersions().back());
-  EXPECT_EQ(supported_versions,
-            params.quic_supported_versions);
+  EXPECT_EQ(supported_versions, params.quic_supported_versions);
+  EXPECT_FALSE(params.quic_disable_loading_server_info_for_new_servers);
 }
 
 TEST_F(IOThreadTest, QuicVersionFromFieldTrialParams) {
@@ -213,8 +219,8 @@ TEST_F(IOThreadTest, QuicVersionFromFieldTrialParams) {
   InitializeNetworkSessionParams(&params);
   net::QuicVersionVector supported_versions;
   supported_versions.push_back(net::QuicSupportedVersions().back());
-  EXPECT_EQ(supported_versions,
-            params.quic_supported_versions);
+  EXPECT_EQ(supported_versions, params.quic_supported_versions);
+  EXPECT_FALSE(params.quic_disable_loading_server_info_for_new_servers);
 }
 
 TEST_F(IOThreadTest, QuicConnectionOptionsFromCommandLine) {
@@ -232,6 +238,7 @@ TEST_F(IOThreadTest, QuicConnectionOptionsFromCommandLine) {
   options.push_back(net::kTBBR);
   options.push_back(net::kREJ);
   EXPECT_EQ(options, params.quic_connection_options);
+  EXPECT_FALSE(params.quic_disable_loading_server_info_for_new_servers);
 }
 
 TEST_F(IOThreadTest, QuicConnectionOptionsFromFieldTrialParams) {
@@ -248,6 +255,7 @@ TEST_F(IOThreadTest, QuicConnectionOptionsFromFieldTrialParams) {
   options.push_back(net::kTBBR);
   options.push_back(net::kREJ);
   EXPECT_EQ(options, params.quic_connection_options);
+  EXPECT_FALSE(params.quic_disable_loading_server_info_for_new_servers);
 }
 
 TEST_F(IOThreadTest, QuicConnectionOptionsFromDeprecatedFieldTrialParams) {
@@ -264,6 +272,7 @@ TEST_F(IOThreadTest, QuicConnectionOptionsFromDeprecatedFieldTrialParams) {
   options.push_back(net::kTBBR);
   options.push_back(net::kREJ);
   EXPECT_EQ(options, params.quic_connection_options);
+  EXPECT_FALSE(params.quic_disable_loading_server_info_for_new_servers);
 }
 
 TEST_F(IOThreadTest,
@@ -274,6 +283,7 @@ TEST_F(IOThreadTest,
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_TRUE(params.quic_always_require_handshake_confirmation);
+  EXPECT_FALSE(params.quic_disable_loading_server_info_for_new_servers);
 }
 
 TEST_F(IOThreadTest,
@@ -284,6 +294,7 @@ TEST_F(IOThreadTest,
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_TRUE(params.quic_disable_connection_pooling);
+  EXPECT_FALSE(params.quic_disable_loading_server_info_for_new_servers);
 }
 
 TEST_F(IOThreadTest, QuicLoadServerInfoTimeoutFromFieldTrialParams) {
@@ -293,6 +304,16 @@ TEST_F(IOThreadTest, QuicLoadServerInfoTimeoutFromFieldTrialParams) {
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_EQ(50, params.quic_load_server_info_timeout_ms);
+  EXPECT_FALSE(params.quic_disable_loading_server_info_for_new_servers);
+}
+
+TEST_F(IOThreadTest, QuicDisableLoadingServerInfoForNewServers) {
+  field_trial_group_ = "Enabled";
+  field_trial_params_["disable_loading_server_info_for_new_servers"] = "true";
+  ConfigureQuicGlobals();
+  net::HttpNetworkSession::Params params;
+  InitializeNetworkSessionParams(&params);
+  EXPECT_TRUE(params.quic_disable_loading_server_info_for_new_servers);
 }
 
 TEST_F(IOThreadTest,

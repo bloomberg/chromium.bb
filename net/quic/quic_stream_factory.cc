@@ -545,6 +545,7 @@ QuicStreamFactory::QuicStreamFactory(
     bool always_require_handshake_confirmation,
     bool disable_connection_pooling,
     int load_server_info_timeout,
+    bool disable_loading_server_info_for_new_servers,
     const QuicTagVector& connection_options)
     : require_confirmation_(true),
       host_resolver_(host_resolver),
@@ -563,6 +564,8 @@ QuicStreamFactory::QuicStreamFactory(
           always_require_handshake_confirmation),
       disable_connection_pooling_(disable_connection_pooling),
       load_server_info_timeout_ms_(load_server_info_timeout),
+      disable_loading_server_info_for_new_servers_(
+          disable_loading_server_info_for_new_servers),
       port_seed_(random_generator_->RandUint64()),
       check_persisted_supports_quic_(true),
       task_runner_(nullptr),
@@ -623,11 +626,25 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
 
   QuicServerInfo* quic_server_info = nullptr;
   if (quic_server_info_factory_) {
-    QuicCryptoClientConfig::CachedState* cached =
-        crypto_config_.LookupOrCreate(server_id);
-    DCHECK(cached);
-    if (cached->IsEmpty()) {
-      quic_server_info = quic_server_info_factory_->GetForServer(server_id);
+    bool load_from_disk_cache = true;
+    if (disable_loading_server_info_for_new_servers_) {
+      const AlternateProtocolMap& alternate_protocol_map =
+          http_server_properties_->alternate_protocol_map();
+      AlternateProtocolMap::const_iterator it =
+          alternate_protocol_map.Peek(server_id.host_port_pair());
+      if (it == alternate_protocol_map.end() || it->second.protocol != QUIC) {
+        // If there is no entry for QUIC, consider that as a new server and
+        // don't wait for Cache thread to load the data for that server.
+        load_from_disk_cache = false;
+      }
+    }
+    if (load_from_disk_cache) {
+      QuicCryptoClientConfig::CachedState* cached =
+          crypto_config_.LookupOrCreate(server_id);
+      DCHECK(cached);
+      if (cached->IsEmpty()) {
+        quic_server_info = quic_server_info_factory_->GetForServer(server_id);
+      }
     }
   }
   // TODO(rtenneti): Initialize task_runner_ in the constructor after
