@@ -125,10 +125,13 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
   // cleanup thread, in case it quits before Cancel() is called.
   void WillDestroyCurrentMessageLoop() override;
 
-  // Inotify watches are installed for all directory components of |target_|. A
-  // WatchEntry instance holds the watch descriptor for a component and the
-  // subdirectory for that identifies the next component. If a symbolic link
-  // is being watched, the target of the link is also kept.
+  // Inotify watches are installed for all directory components of |target_|.
+  // A WatchEntry instance holds:
+  // - |watch|: the watch descriptor for a component.
+  // - |subdir|: the subdirectory that identifies the next component.
+  //   - For the last component, there is no next component, so it is empty.
+  // - |linkname|: the target of the symlink.
+  //   - Only if the target being watched is a symbolic link.
   struct WatchEntry {
     explicit WatchEntry(const FilePath::StringType& dirname)
         : watch(InotifyReader::kInvalidWatch),
@@ -381,11 +384,31 @@ void FilePathWatcherImpl::OnFilePathChanged(InotifyReader::Watch fired_watch,
         (child == watch_entry.subdir);
 
     // Check if the change references |target_| or a direct child of |target_|.
-    bool is_watch_for_target = watch_entry.subdir.empty();
-    bool target_changed =
-        (is_watch_for_target && (child == watch_entry.linkname)) ||
-        (is_watch_for_target && watch_entry.linkname.empty()) ||
-        (watch_entry.subdir == child && watches_[i + 1].subdir.empty());
+    bool target_changed;
+    if (watch_entry.subdir.empty()) {
+      // The fired watch is for a WatchEntry without a subdir. Thus for a given
+      // |target_| = "/path/to/foo", this is for "foo". Here, check either:
+      // - the target has no symlink: it is the target and it changed.
+      // - the target has a symlink, and it matches |child|.
+      target_changed = (watch_entry.linkname.empty() ||
+                        child == watch_entry.linkname);
+    } else {
+      // The fired watch is for a WatchEntry with a subdir. Thus for a given
+      // |target_| = "/path/to/foo", this is for {"/", "/path", "/path/to"}.
+      // So we can safely access the next WatchEntry since we have not reached
+      // the end yet. Check |watch_entry| is for "/path/to", i.e. the next
+      // element is "foo".
+      bool next_watch_may_be_for_target = watches_[i + 1].subdir.empty();
+      if (next_watch_may_be_for_target) {
+        // The current |watch_entry| is for "/path/to", so check if the |child|
+        // that changed is "foo".
+        target_changed = watch_entry.subdir == child;
+      } else {
+        // The current |watch_entry| is not for "/path/to", so the next entry
+        // cannot be "foo". Thus |target_| has not changed.
+        target_changed = false;
+      }
+    }
 
     // Update watches if a directory component of the |target_| path
     // (dis)appears. Note that we don't add the additional restriction of
