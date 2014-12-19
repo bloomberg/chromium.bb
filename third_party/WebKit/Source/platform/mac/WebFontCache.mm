@@ -7,13 +7,13 @@
  * are met:
  *
  * 1.  Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer. 
+ *     notice, this list of conditions and the following disclaimer.
  * 2.  Redistributions in binary form must reproduce the above copyright
  *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution. 
+ *     documentation and/or other materials provided with the distribution.
  * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
  *     its contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission. 
+ *     from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -33,6 +33,8 @@
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 #import <math.h>
+#import <wtf/HashSet.h>
+#import <wtf/text/AtomicStringHash.h>
 
 #define SYNTHESIZED_FONT_TRAITS (NSBoldFontMask | NSItalicFontMask)
 
@@ -45,6 +47,55 @@
     | NSPosterFontMask \
     | NSSmallCapsFontMask \
 )
+
+// A set of font families that have been auto-activated via +[NSFont
+// fontWithName:size:].
+static HashSet<AtomicString>* autoActivatedFontFamilyCache = nullptr;
+
+// The maximum size allowed for |autoActivatedFontFamilyCache|.
+static const unsigned maxFontFamilyCacheSize = 128;
+
+#ifndef NDEBUG
+// The thread on which |autoActivatedFontFamilyCache| was first accessed.
+static ThreadIdentifier fontFamilyCacheThreadId = 0;
+#endif
+
+// Whether |family| has been auto-activated.
+static bool hasAutoActivatedFontFamily(const AtomicString& family) {
+#ifndef NDEBUG
+    // Check that the cache is always accessed from the same thread.
+    if (!fontFamilyCacheThreadId)
+        fontFamilyCacheThreadId = currentThread();
+    ASSERT(currentThread() == fontFamilyCacheThreadId);
+#endif
+
+    if (!autoActivatedFontFamilyCache)
+        autoActivatedFontFamilyCache = new HashSet<AtomicString>;
+
+    return autoActivatedFontFamilyCache->contains(family);
+}
+
+// Updates |autoActivatedFontFamilyCache| with the information that |family|
+// has been auto-activated.
+static void didAutoActivateFontFamily(const AtomicString& family) {
+#ifndef NDEBUG
+    // Check that the cache is always accessed from the same thread.
+    if (!fontFamilyCacheThreadId)
+        fontFamilyCacheThreadId = currentThread();
+    ASSERT(currentThread() == fontFamilyCacheThreadId);
+#endif
+
+    if (!autoActivatedFontFamilyCache)
+        autoActivatedFontFamilyCache = new HashSet<AtomicString>;
+
+    ASSERT(autoActivatedFontFamilyCache->size() <= maxFontFamilyCacheSize);
+    if (autoActivatedFontFamilyCache->size() == maxFontFamilyCacheSize) {
+        autoActivatedFontFamilyCache->remove(
+            autoActivatedFontFamilyCache->begin());
+    }
+
+    autoActivatedFontFamilyCache->add(family);
+}
 
 static BOOL acceptableChoice(NSFontTraitMask desiredTraits, NSFontTraitMask candidateTraits)
 {
@@ -125,7 +176,7 @@ static BOOL betterChoice(NSFontTraitMask desiredTraits, int desiredWeight,
             if ([desiredFamily caseInsensitiveCompare:availableFont] == NSOrderedSame) {
                 nameMatchedFont = [NSFont fontWithName:availableFont size:size];
 
-                // Special case Osaka-Mono.  According to <rdar://problem/3999467>, we need to 
+                // Special case Osaka-Mono.  According to <rdar://problem/3999467>, we need to
                 // treat Osaka-Mono as fixed pitch.
                 if ([desiredFamily caseInsensitiveCompare:@"Osaka-Mono"] == NSOrderedSame && desiredTraitsForNameMatch == 0)
                     return nameMatchedFont;
@@ -146,7 +197,7 @@ static BOOL betterChoice(NSFontTraitMask desiredTraits, int desiredWeight,
     NSFontTraitMask chosenTraits = 0;
     NSString *chosenFullName = 0;
 
-    NSArray *fonts = [fontManager availableMembersOfFontFamily:availableFamily];    
+    NSArray *fonts = [fontManager availableMembersOfFontFamily:availableFamily];
     unsigned n = [fonts count];
     unsigned i;
     for (i = 0; i < n; i++) {
@@ -192,9 +243,9 @@ static BOOL betterChoice(NSFontTraitMask desiredTraits, int desiredWeight,
     bool syntheticItalic = (desiredTraits & NSFontItalicTrait) && !(actualTraits & NSFontItalicTrait);
 
     // There are some malformed fonts that will be correctly returned by -fontWithFamily:traits:weight:size: as a match for a particular trait,
-    // though -[NSFontManager traitsOfFont:] incorrectly claims the font does not have the specified trait. This could result in applying 
+    // though -[NSFontManager traitsOfFont:] incorrectly claims the font does not have the specified trait. This could result in applying
     // synthetic bold on top of an already-bold font, as reported in <http://bugs.webkit.org/show_bug.cgi?id=6146>. To work around this
-    // problem, if we got an apparent exact match, but the requested traits aren't present in the matched font, we'll try to get a font from 
+    // problem, if we got an apparent exact match, but the requested traits aren't present in the matched font, we'll try to get a font from
     // the same family without those traits (to apply the synthetic traits to later).
     NSFontTraitMask nonSyntheticTraits = desiredTraits;
 
@@ -219,9 +270,15 @@ static BOOL betterChoice(NSFontTraitMask desiredTraits, int desiredWeight,
     if (font)
         return font;
 
-    // Auto activate the font before looking for it a second time.
-    // Ignore the result because we want to use our own algorithm to actually find the font.
+    AtomicString family(desiredFamily);
+    if (hasAutoActivatedFontFamily(family))
+        return nil;
+
+    // Auto-activate the font before looking for it a second time. Ignore the
+    // result because we want to use our own algorithm to actually find the
+    // font.
     [NSFont fontWithName:desiredFamily size:size];
+    didAutoActivateFontFamily(family);
 
     return [self internalFontWithFamily:desiredFamily traits:desiredTraits weight:desiredWeight size:size];
 }
