@@ -211,7 +211,8 @@
     "contexts": ["blessed_extension"]
   },
   "cryptotokenPrivate": {
-    "dependencies": ["permission:cryptotokenPrivate"]
+    "dependencies": ["permission:cryptotokenPrivate"],
+    "contexts": ["blessed_extension"]
   },
   "dataReductionProxy": {
     "dependencies": ["permission:dataReductionProxy"],
