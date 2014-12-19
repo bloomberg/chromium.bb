@@ -53,6 +53,7 @@ class ThreadTimesSimpleMobileSites(_ThreadTimes):
   page_set = page_sets.SimpleMobileSitesPageSet
 
 
+@benchmark.Disabled('win') # crbug.com/443781
 class ThreadTimesCompositorCases(_ThreadTimes):
   """Measures timeline metrics while performing smoothness action on
   tough compositor cases, using software rasterization.
