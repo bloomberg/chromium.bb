@@ -20,6 +20,7 @@ import android.view.inputmethod.EditorInfo;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.ui.base.ime.TextInputType;
 import org.chromium.ui.picker.InputDialogContainer;
 
 import java.lang.CharSequence;
@@ -88,7 +89,7 @@ public class ImeAdapter {
         @Override
         public void run() {
             if (mNativeImeAdapter != 0) {
-                attach(mNativeImeAdapter, sTextInputTypeNone, sTextInputFlagNone);
+                attach(mNativeImeAdapter, TextInputType.NONE, sTextInputFlagNone);
             }
             dismissInput(true);
         }
@@ -108,16 +109,6 @@ public class ImeAdapter {
     static int sEventTypeRawKeyDown;
     static int sEventTypeKeyUp;
     static int sEventTypeChar;
-    static int sTextInputTypeNone;
-    static int sTextInputTypeText;
-    static int sTextInputTypeTextArea;
-    static int sTextInputTypePassword;
-    static int sTextInputTypeSearch;
-    static int sTextInputTypeUrl;
-    static int sTextInputTypeEmail;
-    static int sTextInputTypeTel;
-    static int sTextInputTypeNumber;
-    static int sTextInputTypeContentEditable;
     static int sTextInputFlagNone = 0;
     static int sTextInputFlagAutocompleteOn;
     static int sTextInputFlagAutocompleteOff;
@@ -214,13 +205,6 @@ public class ImeAdapter {
         return mTextInputFlags;
     }
 
-    /**
-     * @return Constant representing that a focused node is not an input field.
-     */
-    public static int getTextInputTypeNone() {
-        return sTextInputTypeNone;
-    }
-
     private static int getModifiers(int metaState) {
         int modifiers = 0;
         if ((metaState & KeyEvent.META_SHIFT_ON) != 0) {
@@ -253,14 +237,14 @@ public class ImeAdapter {
 
         // If current input type is none and showIfNeeded is false, IME should not be shown
         // and input type should remain as none.
-        if (mTextInputType == sTextInputTypeNone && !showIfNeeded) {
+        if (mTextInputType == TextInputType.NONE && !showIfNeeded) {
             return;
         }
 
         if (mNativeImeAdapterAndroid != nativeImeAdapter || mTextInputType != textInputType) {
             // Set a delayed task to perform unfocus. This avoids hiding the keyboard when tabbing
             // through text inputs or when JS rapidly changes focus to another text element.
-            if (textInputType == sTextInputTypeNone) {
+            if (textInputType == TextInputType.NONE) {
                 mDismissInput = new DelayedDismissInput(nativeImeAdapter);
                 mHandler.postDelayed(mDismissInput, INPUT_DISMISS_DELAY);
                 return;
@@ -288,7 +272,7 @@ public class ImeAdapter {
         if (nativeImeAdapter != 0) {
             nativeAttachImeAdapter(mNativeImeAdapterAndroid);
         }
-        if (mTextInputType == sTextInputTypeNone) {
+        if (mTextInputType == TextInputType.NONE) {
             dismissInput(false);
         }
     }
@@ -299,7 +283,7 @@ public class ImeAdapter {
      * @param nativeImeAdapter The pointer to the native ImeAdapter object.
      */
     public void attach(long nativeImeAdapter) {
-        attach(nativeImeAdapter, sTextInputTypeNone, sTextInputFlagNone);
+        attach(nativeImeAdapter, TextInputType.NONE, sTextInputFlagNone);
     }
 
     private void showKeyboard() {
@@ -319,11 +303,11 @@ public class ImeAdapter {
     }
 
     private boolean hasInputType() {
-        return mTextInputType != sTextInputTypeNone;
+        return mTextInputType != TextInputType.NONE;
     }
 
     private static boolean isTextInputType(int type) {
-        return type != sTextInputTypeNone && !InputDialogContainer.isDialogInputType(type);
+        return type != TextInputType.NONE && !InputDialogContainer.isDialogInputType(type);
     }
 
     public boolean hasTextInputType() {
@@ -334,7 +318,7 @@ public class ImeAdapter {
      * @return true if the selected text is of password.
      */
     public boolean isSelectionPassword() {
-        return mTextInputType == sTextInputTypePassword;
+        return mTextInputType == TextInputType.PASSWORD;
     }
 
     public boolean dispatchKeyEvent(KeyEvent event) {
@@ -642,23 +626,6 @@ public class ImeAdapter {
         sModifierCtrl = modifierCtrl;
         sModifierCapsLockOn = modifierCapsLockOn;
         sModifierNumLockOn = modifierNumLockOn;
-    }
-
-    @CalledByNative
-    private static void initializeTextInputTypes(int textInputTypeNone, int textInputTypeText,
-            int textInputTypeTextArea, int textInputTypePassword, int textInputTypeSearch,
-            int textInputTypeUrl, int textInputTypeEmail, int textInputTypeTel,
-            int textInputTypeNumber, int textInputTypeContentEditable) {
-        sTextInputTypeNone = textInputTypeNone;
-        sTextInputTypeText = textInputTypeText;
-        sTextInputTypeTextArea = textInputTypeTextArea;
-        sTextInputTypePassword = textInputTypePassword;
-        sTextInputTypeSearch = textInputTypeSearch;
-        sTextInputTypeUrl = textInputTypeUrl;
-        sTextInputTypeEmail = textInputTypeEmail;
-        sTextInputTypeTel = textInputTypeTel;
-        sTextInputTypeNumber = textInputTypeNumber;
-        sTextInputTypeContentEditable = textInputTypeContentEditable;
     }
 
     @CalledByNative

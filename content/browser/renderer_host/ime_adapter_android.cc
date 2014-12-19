@@ -57,6 +57,8 @@ NativeWebKeyboardEvent NativeWebKeyboardEventFromKeyEvent(
     type = blink::WebInputEvent::RawKeyDown;
   else if (action == AKEY_EVENT_ACTION_UP)
     type = blink::WebInputEvent::KeyUp;
+  else
+    NOTREACHED() << "Invalid Android key event action: " << action;
   return NativeWebKeyboardEvent(java_key_event, type, modifiers,
       time_ms / 1000.0, key_code, unicode_char, is_system_key);
 }
@@ -76,18 +78,6 @@ bool RegisterImeAdapter(JNIEnv* env) {
                                            blink::WebInputEvent::ControlKey,
                                            blink::WebInputEvent::CapsLockOn,
                                            blink::WebInputEvent::NumLockOn);
-  Java_ImeAdapter_initializeTextInputTypes(
-      env,
-      ui::TEXT_INPUT_TYPE_NONE,
-      ui::TEXT_INPUT_TYPE_TEXT,
-      ui::TEXT_INPUT_TYPE_TEXT_AREA,
-      ui::TEXT_INPUT_TYPE_PASSWORD,
-      ui::TEXT_INPUT_TYPE_SEARCH,
-      ui::TEXT_INPUT_TYPE_URL,
-      ui::TEXT_INPUT_TYPE_EMAIL,
-      ui::TEXT_INPUT_TYPE_TELEPHONE,
-      ui::TEXT_INPUT_TYPE_NUMBER,
-      ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE);
   Java_ImeAdapter_initializeTextInputFlags(
       env,
       blink::WebTextInputFlagAutocompleteOn,
@@ -107,8 +97,8 @@ void AppendBackgroundColorSpan(JNIEnv*,
                                jint start,
                                jint end,
                                jint background_color) {
-  DCHECK(start >= 0);
-  DCHECK(end >= 0);
+  DCHECK_GE(start, 0);
+  DCHECK_GE(end, 0);
   // Do not check |background_color|.
   std::vector<blink::WebCompositionUnderline>* underlines =
       reinterpret_cast<std::vector<blink::WebCompositionUnderline>*>(
@@ -128,8 +118,8 @@ void AppendUnderlineSpan(JNIEnv*,
                          jlong underlines_ptr,
                          jint start,
                          jint end) {
-  DCHECK(start >= 0);
-  DCHECK(end >= 0);
+  DCHECK_GE(start, 0);
+  DCHECK_GE(end, 0);
   std::vector<blink::WebCompositionUnderline>* underlines =
       reinterpret_cast<std::vector<blink::WebCompositionUnderline>*>(
           underlines_ptr);

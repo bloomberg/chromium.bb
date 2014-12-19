@@ -80,6 +80,7 @@ import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.ViewAndroid;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.base.ime.TextInputType;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 import org.chromium.ui.touch_selection.SelectionEventType;
 
@@ -1502,7 +1503,7 @@ public class ContentViewCore
             if (newConfig.keyboard != Configuration.KEYBOARD_NOKEYS) {
                 if (mNativeContentViewCore != 0) {
                     mImeAdapter.attach(nativeGetNativeImeAdapter(mNativeContentViewCore),
-                            ImeAdapter.getTextInputTypeNone(), 0 /* no flags */);
+                            TextInputType.NONE, 0 /* no flags */);
                 }
                 mInputMethodManagerWrapper.restartInput(mContainerView);
             }
@@ -2270,7 +2271,7 @@ public class ContentViewCore
             boolean isNonImeChange) {
         try {
             TraceEvent.begin("ContentViewCore.updateImeAdapter");
-            mFocusedNodeEditable = (textInputType != ImeAdapter.getTextInputTypeNone());
+            mFocusedNodeEditable = (textInputType != TextInputType.NONE);
             if (!mFocusedNodeEditable) hidePastePopup();
 
             mImeAdapter.updateKeyboardVisibility(
