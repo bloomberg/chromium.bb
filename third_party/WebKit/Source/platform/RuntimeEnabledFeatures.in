@@ -63,7 +63,7 @@ Geofencing status=experimental
 GeometryInterfaces status=test
 ImageColorProfiles
 ImageDataConstructor status=experimental
-ImageRenderingPixelated status=experimental
+ImageRenderingPixelated status=stable
 IMEAPI status=experimental
 IndexedDBExperimental status=experimental
 InputModeAttribute status=experimental
