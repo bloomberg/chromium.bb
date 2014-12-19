@@ -289,7 +289,6 @@ bool WallpaperPrivateGetStringsFunction::RunSync() {
     dict->SetString("wallpaperAppName", app_name);
 
   dict->SetBoolean("isOEMDefaultWallpaper", IsOEMDefaultWallpaper());
-  dict->SetBoolean("isExperimental", true);
   dict->SetString("canceledWallpaper",
                   wallpaper_api_util::kCancelWallpaperMessage);
   return true;

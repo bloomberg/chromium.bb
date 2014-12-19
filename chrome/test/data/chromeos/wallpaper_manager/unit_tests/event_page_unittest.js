@@ -5,10 +5,6 @@
 
 var mockController;
 
-WallpaperUtil.enabledExperimentalFeatureCallback = function(callback) {
-  callback();
-};
-
 WallpaperUtil.enabledSyncThemesCallback = function(callback) {
   callback();
 };

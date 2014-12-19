@@ -89,24 +89,6 @@ WallpaperUtil.deleteWallpaperFromSyncFS = function(wallpaperFilename) {
 };
 
 /**
- * Executes callback if experimental flag is set to true.
- * @param {function} callback The callback will be executed if 'isExperimental'
- *     flag is set to true.
- */
-WallpaperUtil.enabledExperimentalFeatureCallback = function(callback) {
-  if (WallpaperUtil.strings) {
-    if (WallpaperUtil.strings.isExperimental)
-      callback();
-  } else {
-    chrome.wallpaperPrivate.getStrings(function(strings) {
-      WallpaperUtil.strings = strings;
-      if (WallpaperUtil.strings.isExperimental)
-        callback();
-    });
-  }
-};
-
-/**
  * Executes callback if sync theme is enabled.
  * @param {function} callback The callback will be executed if sync themes is
  *     enabled.

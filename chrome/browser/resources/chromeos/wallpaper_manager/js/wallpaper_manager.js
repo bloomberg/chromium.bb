@@ -522,15 +522,12 @@ function WallpaperManager(dialogDom) {
                     function(thumbnailData) {
                       self.onWallpaperChanged_(selectedItem,
                           selectedItem.baseURL, thumbnailData);
-                      WallpaperUtil.enabledExperimentalFeatureCallback(
-                          function() {
-                            WallpaperUtil.storeWallpaperToSyncFS(
-                                selectedItem.baseURL, e.target.result);
-                            WallpaperUtil.storeWallpaperToSyncFS(
-                                selectedItem.baseURL +
-                                    Constants.CustomWallpaperThumbnailSuffix,
-                                thumbnailData);
-                          });
+                      WallpaperUtil.storeWallpaperToSyncFS(
+                          selectedItem.baseURL, e.target.result);
+                      WallpaperUtil.storeWallpaperToSyncFS(
+                          selectedItem.baseURL +
+                              Constants.CustomWallpaperThumbnailSuffix,
+                          thumbnailData);
                     },
                     errorHandler);
               });
@@ -846,12 +843,10 @@ function WallpaperManager(dialogDom) {
             Constants.WallpaperDirNameEnum.THUMBNAIL, success, errorHandler);
       };
       var onCustomWallpaperSuccess = function(thumbnailData, wallpaperData) {
-        WallpaperUtil.enabledExperimentalFeatureCallback(function() {
-          WallpaperUtil.storeWallpaperToSyncFS(fileName, wallpaperData);
-          WallpaperUtil.storeWallpaperToSyncFS(
-              fileName + Constants.CustomWallpaperThumbnailSuffix,
-              thumbnailData);
-        });
+        WallpaperUtil.storeWallpaperToSyncFS(fileName, wallpaperData);
+        WallpaperUtil.storeWallpaperToSyncFS(
+            fileName + Constants.CustomWallpaperThumbnailSuffix,
+            thumbnailData);
         saveThumbnail(thumbnailData);
       };
       var success = function(dirEntry) {
@@ -896,9 +891,7 @@ function WallpaperManager(dialogDom) {
       var success = function(dirEntry) {
         dirEntry.getFile(fileName, {create: false}, function(fileEntry) {
           fileEntry.remove(function() {
-            WallpaperUtil.enabledExperimentalFeatureCallback(function() {
-              WallpaperUtil.deleteWallpaperFromSyncFS(fileName);
-            });
+            WallpaperUtil.deleteWallpaperFromSyncFS(fileName);
           }, errorHandler);
         }, errorHandler);
       };
