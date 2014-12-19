@@ -39,9 +39,9 @@ s.selectAllChildren(test);
 shouldBe('window.getSelection().toString()', '"foobar"');
 
 // call with types other than Node
-shouldNotThrow('s.selectAllChildren(null)');
-shouldNotThrow('s.selectAllChildren(window)');
-shouldNotThrow('s.selectAllChildren("")');
+shouldThrow('s.selectAllChildren(null)');
+shouldThrow('s.selectAllChildren(window)');
+shouldThrow('s.selectAllChildren("")');
 </script>
 </body>
 </html>

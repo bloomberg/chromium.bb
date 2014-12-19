@@ -493,8 +493,7 @@ bool DOMSelection::containsNode(const Node* n, bool allowPartial) const
 
 void DOMSelection::selectAllChildren(Node* n, ExceptionState& exceptionState)
 {
-    if (!n)
-        return;
+    ASSERT(n);
 
     // This doesn't (and shouldn't) select text node characters.
     setBaseAndExtent(n, 0, n, n->countChildren(), exceptionState);

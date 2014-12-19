@@ -53,7 +53,7 @@
     // http://crbug.com/384966
     [RaisesException, TypeChecking=Interface] void extend(Node node, optional long offset = 0);
 
-    [RaisesException] void selectAllChildren(Node node);
+    [RaisesException, TypeChecking=Interface] void selectAllChildren(Node node);
     [CustomElementCallbacks] void deleteFromDocument();
 
     readonly attribute long rangeCount;
