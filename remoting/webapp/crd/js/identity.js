@@ -99,30 +99,9 @@ remoting.Identity.prototype.removeCachedAuthToken = function(onDone) {
 };
 
 /**
- * Get the user's email address.
- *
- * @param {function(string):void} onOk Callback invoked when the email
- *     address is available.
- * @param {function(remoting.Error):void} onError Callback invoked if an
- *     error occurs.
- * @return {void} Nothing.
- */
-remoting.Identity.prototype.getEmail = function(onOk, onError) {
-  /** @type {remoting.Identity} */
-  var that = this;
-  /** @param {string} email */
-  var onResponse = function(email) {
-    that.email_ = email;
-    that.fullName_ = null;
-    onOk(email);
-  };
-
-  this.callWithToken(
-      remoting.OAuth2Api.getEmail.bind(null, onResponse, onError), onError);
-};
-
-/**
  * Get the user's email address and full name.
+ * The full name will be null unless the webapp has requested and been
+ * granted the userinfo.profile permission.
  *
  * @param {function(string,string):void} onOk Callback invoked when the user's
  *     email address and full name are available.
@@ -148,8 +127,8 @@ remoting.Identity.prototype.getUserInfo = function(onOk, onError) {
 };
 
 /**
- * Get the user's email address, or null if no successful call to getEmail
- * or getUserInfo has been made.
+ * Get the user's email address, or null if no successful call to getUserInfo
+ * has been made.
  *
  * @return {?string} The cached email address, if available.
  */
@@ -158,8 +137,10 @@ remoting.Identity.prototype.getCachedEmail = function() {
 };
 
 /**
- * Get the user's full name, or null if no successful call to getUserInfo
- * has been made.
+ * Get the user's full name.
+ * This will return null if either:
+ *   No successful call to getUserInfo has been made, or
+ *   The webapp doesn't have permission to access this value.
  *
  * @return {?string} The cached user's full name, if available.
  */

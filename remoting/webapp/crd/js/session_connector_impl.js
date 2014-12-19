@@ -366,15 +366,21 @@ remoting.SessionConnectorImpl.prototype.connectSignaling_ = function() {
 
   /** @param {string} token */
   function connectSignalingWithToken(token) {
-    remoting.identity.getEmail(
-        connectSignalingWithTokenAndEmail.bind(null, token), that.onError_);
+    remoting.identity.getUserInfo(
+        connectSignalingWithTokenAndUserInfo.bind(null, token), that.onError_);
   }
 
   /**
+   * Success callback for when the email and fullName have been retrieved
+   * for this user.
+   * Note that the full name will be null unless the webapp has requested
+   * and been granted the userinfo.profile permission.
+   *
    * @param {string} token
    * @param {string} email
+   * @param {string} fullName
    */
-  function connectSignalingWithTokenAndEmail(token, email) {
+  function connectSignalingWithTokenAndUserInfo(token, email, fullName) {
     that.signalStrategy_.connect(
         remoting.settings.XMPP_SERVER_FOR_CLIENT, email, token);
   }
