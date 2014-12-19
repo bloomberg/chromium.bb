@@ -105,7 +105,10 @@ public:
 
     virtual void completeWithError(blink::WebContentDecryptionModuleException code, unsigned long systemCode, const blink::WebString& message) override
     {
-        (*m_failureCallback)(WebCdmExceptionToExceptionCode(code), message);
+        // The error string is in the format of: OriginalMessage (systemCode)
+        String errorString = message;
+        errorString.append(" (" + String::number(systemCode) + ")");
+        (*m_failureCallback)(WebCdmExceptionToExceptionCode(code), errorString);
     }
 
 private:

@@ -67,7 +67,10 @@ void ContentDecryptionModuleResultPromise::completeWithSession(WebContentDecrypt
 
 void ContentDecryptionModuleResultPromise::completeWithError(WebContentDecryptionModuleException exceptionCode, unsigned long systemCode, const WebString& errorMessage)
 {
-    reject(WebCdmExceptionToExceptionCode(exceptionCode), errorMessage);
+    // The error string is in the format of: OriginalMessage (systemCode)
+    String errorString = errorMessage;
+    errorString.append(" (" + String::number(systemCode) + ")");
+    reject(WebCdmExceptionToExceptionCode(exceptionCode), errorString);
 }
 
 ScriptPromise ContentDecryptionModuleResultPromise::promise()

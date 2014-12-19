@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Invalid Clear Key License.</title>
+        <script src="encrypted-media-utils.js"></script>
+        <script src="../../resources/testharness.js"></script>
+        <script src="../../resources/testharnessreport.js"></script>
+    </head>
+    <body>
+        <div id="log"></div>
+        <script>
+            async_test(function(test)
+            {
+                var invalidLicense = new Uint8Array(
+                    [0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77]);
+
+                function handleMessage(event) {
+                    event.target.update(invalidLicense).then(function(event) {
+                        assert_unreached('Error: update() succeeded unexpectedly.');
+                        test.done();
+                    }).catch(function(error) {
+                        assert_equals(error.name, 'InvalidAccessError');
+                        // Make sure we have system code appended.
+                        // Note: This is not required by the spec. Extract this
+                        // out before we upstream this to W3C tests.
+                        assert_true(error.message.endsWith(' (0)'));
+                        test.done();
+                    });
+                }
+
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                    return access.createMediaKeys();
+                }).then(function(mediaKeys) {
+                    var keySession = mediaKeys.createSession();
+                    keySession.addEventListener('message', handleMessage, false);
+                    keySession.generateRequest(getInitDataType(), getInitData(getInitDataType()));
+                }).catch(function(error) {
+                    forceTestFailureFromPromise(test, error);
+                });
+            }, 'Invalid Clear Key License.');
+        </script>
+    </body>
+</html>

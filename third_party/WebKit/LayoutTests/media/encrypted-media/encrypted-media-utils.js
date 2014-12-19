@@ -102,13 +102,6 @@ function stringToUint8Array(str)
     return result;
 }
 
-// For Clear Key, MediaKeySession.update() takes a JSON Web Key (JWK) Set,
-// which contains a set of cryptographic keys represented by JSON. These helper
-// functions help wrap raw keys into a JWK set.
-// See:
-// https://dvcs.w3.org/hg/html-media/raw-file/tip/encrypted-media/encrypted-media.html#simple-decryption-clear-key
-// http://tools.ietf.org/html/draft-ietf-jose-json-web-key
-
 // Encodes data into base64 string without trailing '='.
 function base64Encode(data)
 {
@@ -116,6 +109,13 @@ function base64Encode(data)
     return result.replace(/=+$/g, '');
 }
 
+// For Clear Key, the License Format is a JSON Web Key (JWK) Set, which contains
+// a set of cryptographic keys represented by JSON. These helper functions help
+// wrap raw keys into a JWK set.
+// See:
+// https://w3c.github.io/encrypted-media/#clear-key-license-format
+// http://tools.ietf.org/html/draft-ietf-jose-json-web-key
+//
 // Creates a JWK from raw key ID and key.
 // |keyId| and |key| are expected to be ArrayBufferViews, not base64-encoded.
 function createJWK(keyId, key)
