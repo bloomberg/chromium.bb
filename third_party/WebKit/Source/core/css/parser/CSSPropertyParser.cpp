@@ -5700,7 +5700,7 @@ public:
     , m_allowImageSlice(true)
     , m_allowRepeat(true)
     , m_allowForwardSlashOperator(false)
-    , m_requireWidth(false)
+    , m_allowWidth(false)
     , m_requireOutset(false)
     {}
 
@@ -5713,7 +5713,7 @@ public:
     bool allowRepeat() const { return m_allowRepeat; }
     bool allowForwardSlashOperator() const { return m_allowForwardSlashOperator; }
 
-    bool requireWidth() const { return m_requireWidth; }
+    bool allowWidth() const { return m_allowWidth; }
     bool requireOutset() const { return m_requireOutset; }
 
     void commitImage(PassRefPtrWillBeRawPtr<CSSValue> image)
@@ -5721,7 +5721,10 @@ public:
         m_image = image;
         m_canAdvance = true;
         m_allowCommit = true;
-        m_allowImage = m_allowForwardSlashOperator = m_requireWidth = m_requireOutset = false;
+        m_allowImage = false;
+        m_allowForwardSlashOperator = false;
+        m_allowWidth = false;
+        m_requireOutset = false;
         m_allowImageSlice = !m_imageSlice;
         m_allowRepeat = !m_repeat;
     }
@@ -5729,29 +5732,40 @@ public:
     {
         m_imageSlice = slice;
         m_canAdvance = true;
-        m_allowCommit = m_allowForwardSlashOperator = true;
-        m_allowImageSlice = m_requireWidth = m_requireOutset = false;
+        m_allowCommit = true;
+        m_allowForwardSlashOperator = true;
+        m_allowImageSlice = false;
+        m_allowWidth = false;
+        m_requireOutset = false;
         m_allowImage = !m_image;
         m_allowRepeat = !m_repeat;
     }
     void commitForwardSlashOperator()
     {
         m_canAdvance = true;
-        m_allowCommit = m_allowImage = m_allowImageSlice = m_allowRepeat = m_allowForwardSlashOperator = false;
-        if (!m_borderWidth) {
-            m_requireWidth = true;
+        m_allowCommit = false;
+        m_allowImage = false;
+        m_allowImageSlice = false;
+        m_allowRepeat = false;
+        if (!m_borderWidth && !m_allowWidth) {
+            m_allowForwardSlashOperator = true;
+            m_allowWidth = true;
             m_requireOutset = false;
         } else {
+            m_allowForwardSlashOperator = false;
             m_requireOutset = true;
-            m_requireWidth = false;
+            m_allowWidth = false;
         }
     }
     void commitBorderWidth(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> width)
     {
         m_borderWidth = width;
         m_canAdvance = true;
-        m_allowCommit = m_allowForwardSlashOperator = true;
-        m_allowImageSlice = m_requireWidth = m_requireOutset = false;
+        m_allowCommit = true;
+        m_allowForwardSlashOperator = true;
+        m_allowImageSlice = false;
+        m_allowWidth = false;
+        m_requireOutset = false;
         m_allowImage = !m_image;
         m_allowRepeat = !m_repeat;
     }
@@ -5760,7 +5774,10 @@ public:
         m_outset = outset;
         m_canAdvance = true;
         m_allowCommit = true;
-        m_allowImageSlice = m_allowForwardSlashOperator = m_requireWidth = m_requireOutset = false;
+        m_allowImageSlice = false;
+        m_allowForwardSlashOperator = false;
+        m_allowWidth = false;
+        m_requireOutset = false;
         m_allowImage = !m_image;
         m_allowRepeat = !m_repeat;
     }
@@ -5769,7 +5786,10 @@ public:
         m_repeat = repeat;
         m_canAdvance = true;
         m_allowCommit = true;
-        m_allowRepeat = m_allowForwardSlashOperator = m_requireWidth = m_requireOutset = false;
+        m_allowRepeat = false;
+        m_allowForwardSlashOperator = false;
+        m_allowWidth = false;
+        m_requireOutset = false;
         m_allowImageSlice = !m_imageSlice;
         m_allowImage = !m_image;
     }
@@ -5815,7 +5835,7 @@ public:
     bool m_allowRepeat;
     bool m_allowForwardSlashOperator;
 
-    bool m_requireWidth;
+    bool m_allowWidth;
     bool m_requireOutset;
 
     RefPtrWillBeMember<CSSValue> m_image;
@@ -5866,7 +5886,7 @@ bool BorderImageParseContext::buildFromParser(CSSPropertyParser& parser, CSSProp
                 context.commitRepeat(repeat.release());
         }
 
-        if (!context.canAdvance() && context.requireWidth()) {
+        if (!context.canAdvance() && context.allowWidth()) {
             RefPtrWillBeRawPtr<CSSPrimitiveValue> borderWidth = nullptr;
             if (parser.parseBorderImageWidth(borderWidth))
                 context.commitBorderWidth(borderWidth.release());

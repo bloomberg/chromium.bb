@@ -349,6 +349,7 @@ inline static CSSParserValue makeIdentValue(CSSParserString string)
 %type <integer> unary_operator
 %type <integer> maybe_unary_operator
 %type <character> operator
+%type <character> slash_operator
 
 %type <valueList> expr
 %type <value> term
@@ -1596,6 +1597,12 @@ expr:
         $$ = $1;
         $$->addValue(parser->sinkFloatingValue($2));
     }
+     | expr slash_operator slash_operator term {
+         $$ = $1;
+         $$->addValue(makeOperatorValue($2));
+         $$->addValue(makeOperatorValue($3));
+         $$->addValue(parser->sinkFloatingValue($4));
+     }
   ;
 
 expr_recovery:
@@ -1604,10 +1611,14 @@ expr_recovery:
     }
   ;
 
+slash_operator:
+      '/' maybe_space {
+          $$ = '/';
+      }
+   ;
+ 
 operator:
-    '/' maybe_space {
-        $$ = '/';
-    }
+    slash_operator
   | ',' maybe_space {
         $$ = ',';
     }
