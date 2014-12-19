@@ -36,13 +36,13 @@
       'SC', 'sc')"/>.
     </para>
 
-    <xsl:apply-templates select="/doxygen/compounddef[@kind='class']" />
+    <xsl:apply-templates select="/doxygen/compounddef[@kind!='file' and @kind!='dir']" />
 
     <section id="{$which}-Functions">
       <title>Functions</title>
       <para />
       <variablelist>
-        <xsl:apply-templates select="/doxygen/compounddef[@kind!='class']/sectiondef/memberdef" />
+        <xsl:apply-templates select="/doxygen/compounddef[@kind='file']/sectiondef/memberdef" />
       </variablelist>
     </section>
 
@@ -146,7 +146,6 @@
 
 <!-- classes -->
 <xsl:template match="compounddef" >
-  <xsl:if test="@kind = 'class'">
     <section id="{$which}-{@id}">
         <title>
             <xsl:value-of select="compoundname" />
@@ -154,13 +153,19 @@
                 - <xsl:apply-templates select="briefdescription" />
             </xsl:if>
         </title>
-
-        <xsl:apply-templates select="detaileddescription" />
-
-        <variablelist>
-          <xsl:apply-templates select="sectiondef/memberdef" />
-        </variablelist>
+        <xsl:choose>
+          <xsl:when test="normalize-space(detaileddescription) != ''">
+            <xsl:apply-templates select="detaileddescription" />
+          </xsl:when>
+          <xsl:otherwise>
+            <para />
+          </xsl:otherwise>
+        </xsl:choose>
+        <xsl:if test="sectiondef/memberdef[@kind='function' and @static='no']">
+          <variablelist>
+            <xsl:apply-templates select="sectiondef/memberdef" />
+          </variablelist>
+        </xsl:if>
     </section>
-  </xsl:if>
 </xsl:template>
 </xsl:stylesheet>
