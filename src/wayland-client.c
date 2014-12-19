@@ -218,14 +218,58 @@ wl_event_queue_init(struct wl_event_queue *queue, struct wl_display *display)
 }
 
 static void
+decrease_closure_args_refcount(struct wl_closure *closure)
+{
+	const char *signature;
+	struct argument_details arg;
+	int i, count;
+	struct wl_proxy *proxy;
+
+	signature = closure->message->signature;
+	count = arg_count_for_signature(signature);
+	for (i = 0; i < count; i++) {
+		signature = get_next_argument(signature, &arg);
+		switch (arg.type) {
+		case 'n':
+		case 'o':
+			proxy = (struct wl_proxy *) closure->args[i].o;
+			if (proxy) {
+				if (proxy->flags & WL_PROXY_FLAG_DESTROYED)
+					closure->args[i].o = NULL;
+
+				proxy->refcount--;
+				if (!proxy->refcount)
+					free(proxy);
+			}
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+void
+proxy_destroy(struct wl_proxy *proxy);
+
+static void
 wl_event_queue_release(struct wl_event_queue *queue)
 {
 	struct wl_closure *closure;
+	struct wl_proxy *proxy;
 
 	while (!wl_list_empty(&queue->event_list)) {
 		closure = container_of(queue->event_list.next,
 				       struct wl_closure, link);
 		wl_list_remove(&closure->link);
+
+		decrease_closure_args_refcount(closure);
+
+		proxy = closure->proxy;
+		if (proxy->refcount == 1)
+			proxy_destroy(proxy);
+		else
+			--proxy->refcount;
+
 		wl_closure_destroy(closure);
 	}
 }
@@ -355,19 +399,9 @@ wl_proxy_create_for_id(struct wl_proxy *factory,
 	return proxy;
 }
 
-/** Destroy a proxy object
- *
- * \param proxy The proxy to be destroyed
- *
- * \memberof wl_proxy
- */
-WL_EXPORT void
-wl_proxy_destroy(struct wl_proxy *proxy)
+void
+proxy_destroy(struct wl_proxy *proxy)
 {
-	struct wl_display *display = proxy->display;
-
-	pthread_mutex_lock(&display->mutex);
-
 	if (proxy->flags & WL_PROXY_FLAG_ID_DELETED)
 		wl_map_remove(&proxy->display->objects, proxy->object.id);
 	else if (proxy->object.id < WL_SERVER_ID_START)
@@ -383,7 +417,21 @@ wl_proxy_destroy(struct wl_proxy *proxy)
 	proxy->refcount--;
 	if (!proxy->refcount)
 		free(proxy);
+}
 
+/** Destroy a proxy object
+ *
+ * \param proxy The proxy to be destroyed
+ *
+ * \memberof wl_proxy
+ */
+WL_EXPORT void
+wl_proxy_destroy(struct wl_proxy *proxy)
+{
+	struct wl_display *display = proxy->display;
+
+	pthread_mutex_lock(&display->mutex);
+	proxy_destroy(proxy);
 	pthread_mutex_unlock(&display->mutex);
 }
 
@@ -1074,37 +1122,6 @@ queue_event(struct wl_display *display, int len)
 	wl_list_insert(queue->event_list.prev, &closure->link);
 
 	return size;
-}
-
-static void
-decrease_closure_args_refcount(struct wl_closure *closure)
-{
-	const char *signature;
-	struct argument_details arg;
-	int i, count;
-	struct wl_proxy *proxy;
-
-	signature = closure->message->signature;
-	count = arg_count_for_signature(signature);
-	for (i = 0; i < count; i++) {
-		signature = get_next_argument(signature, &arg);
-		switch (arg.type) {
-		case 'n':
-		case 'o':
-			proxy = (struct wl_proxy *) closure->args[i].o;
-			if (proxy) {
-				if (proxy->flags & WL_PROXY_FLAG_DESTROYED)
-					closure->args[i].o = NULL;
-
-				proxy->refcount--;
-				if (!proxy->refcount)
-					free(proxy);
-			}
-			break;
-		default:
-			break;
-		}
-	}
 }
 
 static void
