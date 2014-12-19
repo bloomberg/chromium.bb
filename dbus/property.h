@@ -376,17 +376,17 @@ class CHROME_DBUS_EXPORT Property : public PropertyBase {
   // Method used by PropertySet to retrieve the value from a MessageReader,
   // no knowledge of the contained type is required, this method returns
   // true if its expected type was found, false if not.
-  virtual bool PopValueFromReader(MessageReader*);
+  bool PopValueFromReader(MessageReader*) override;
 
   // Method used by PropertySet to append the set value to a MessageWriter,
   // no knowledge of the contained type is required.
   // Implementation provided by specialization.
-  virtual void AppendSetValueToWriter(MessageWriter* writer);
+  void AppendSetValueToWriter(MessageWriter* writer) override;
 
   // Method used by test and stub implementations of dbus::PropertySet::Set
   // to replace the property value with the set value without using a
   // dbus::MessageReader.
-  virtual void ReplaceValueWithSetValue() {
+  void ReplaceValueWithSetValue() override {
     value_ = set_value_;
     property_set()->NotifyPropertyChanged(name());
   }
