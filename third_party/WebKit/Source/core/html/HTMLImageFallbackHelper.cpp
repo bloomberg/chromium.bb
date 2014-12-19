@@ -73,6 +73,10 @@ PassRefPtr<RenderStyle> HTMLImageFallbackHelper::customStyleForAltText(Element& 
         return newStyle;
 
     Element* placeHolder = element.userAgentShadowRoot()->getElementById("alttext-container");
+    // Input elements have a UA shadow root of their own. We may not have replaced it with fallback content yet.
+    if (!placeHolder)
+        return newStyle;
+
     Element* brokenImage = element.userAgentShadowRoot()->getElementById("alttext-image");
 
     if (element.document().inQuirksMode()) {
