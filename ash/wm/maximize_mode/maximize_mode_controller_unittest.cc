@@ -6,7 +6,6 @@
 
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 
-#include "ash/accelerometer/accelerometer_controller.h"
 #include "ash/ash_switches.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
@@ -17,6 +16,7 @@
 #include "ash/test/test_volume_control_delegate.h"
 #include "base/command_line.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "chromeos/accelerometer/accelerometer_reader.h"
 #include "ui/accelerometer/accelerometer_types.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/test/event_generator.h"
@@ -57,7 +57,7 @@ class MaximizeModeControllerTest : public test::AshTestBase {
 
   void SetUp() override {
     test::AshTestBase::SetUp();
-    Shell::GetInstance()->accelerometer_controller()->RemoveObserver(
+    Shell::GetInstance()->accelerometer_reader()->RemoveObserver(
         maximize_mode_controller());
 
     // Set the first display to be the internal display for the accelerometer
@@ -67,7 +67,7 @@ class MaximizeModeControllerTest : public test::AshTestBase {
   }
 
   void TearDown() override {
-    Shell::GetInstance()->accelerometer_controller()->AddObserver(
+    Shell::GetInstance()->accelerometer_reader()->AddObserver(
         maximize_mode_controller());
     test::AshTestBase::TearDown();
   }
@@ -132,7 +132,6 @@ class MaximizeModeControllerTest : public test::AshTestBase {
     TriggerBaseAndLidUpdate(base_vector, lid_vector);
   }
 
-#if defined(OS_CHROMEOS)
   void OpenLid() {
     maximize_mode_controller()->LidEventReceived(true /* open */,
         maximize_mode_controller()->tick_clock_->NowTicks());
@@ -142,7 +141,6 @@ class MaximizeModeControllerTest : public test::AshTestBase {
     maximize_mode_controller()->LidEventReceived(false /* open */,
         maximize_mode_controller()->tick_clock_->NowTicks());
   }
-#endif  // OS_CHROMEOS
 
   bool WasLidOpenedRecently() {
     return maximize_mode_controller()->WasLidOpenedRecently();
@@ -153,8 +151,6 @@ class MaximizeModeControllerTest : public test::AshTestBase {
 
   DISALLOW_COPY_AND_ASSIGN(MaximizeModeControllerTest);
 };
-
-#if defined(OS_CHROMEOS)
 
 // Verify that closing the lid will exit maximize mode.
 TEST_F(MaximizeModeControllerTest, CloseLidWhileInMaximizeMode) {
@@ -206,12 +202,8 @@ TEST_F(MaximizeModeControllerTest,
   EXPECT_TRUE(IsMaximizeModeStarted());
 }
 
-#endif  // OS_CHROMEOS
-
 // Verify the WasLidOpenedRecently signal with respect to time.
 TEST_F(MaximizeModeControllerTest, WasLidOpenedRecentlyOverTime) {
-#if defined(OS_CHROMEOS)
-
   AttachTickClockForTest();
 
   // No lid open time initially.
@@ -230,12 +222,6 @@ TEST_F(MaximizeModeControllerTest, WasLidOpenedRecentlyOverTime) {
   // 3 seconds after lid open.
   AdvanceTickClock(base::TimeDelta::FromSeconds(2));
   EXPECT_FALSE(WasLidOpenedRecently());
-
-#else
-
-  EXPECT_FALSE(WasLidOpenedRecently());
-
-#endif  // OS_CHROMEOS
 }
 
 // Verify the maximize mode enter/exit thresholds for stable angles.
@@ -526,7 +512,6 @@ TEST_F(MaximizeModeControllerTest, ExitingMaximizeModeClearRotationLock) {
 
 // The TrayDisplay class that is responsible for adding/updating MessageCenter
 // notifications is only added to the SystemTray on ChromeOS.
-#if defined(OS_CHROMEOS)
 // Tests that the screen rotation notifications are suppressed when
 // triggered by the accelerometer.
 TEST_F(MaximizeModeControllerTest, BlockRotationNotifications) {
@@ -584,7 +569,6 @@ TEST_F(MaximizeModeControllerTest, BlockRotationNotifications) {
   EXPECT_EQ(0u, message_center->NotificationCount());
   EXPECT_FALSE(message_center->HasPopupNotifications());
 }
-#endif
 
 // Tests that if a user has set a display rotation that it is restored upon
 // exiting maximize mode.

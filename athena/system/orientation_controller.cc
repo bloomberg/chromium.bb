@@ -24,18 +24,21 @@ OrientationController::OrientationController() {
 
 void OrientationController::InitWith(
     scoped_refptr<base::TaskRunner> blocking_task_runner) {
-  accelerometer_reader_.reset(
-      new chromeos::AccelerometerReader(blocking_task_runner, this));
+  accelerometer_reader_.reset(new chromeos::AccelerometerReader());
+  accelerometer_reader_->Initialize(blocking_task_runner);
+  accelerometer_reader_->AddObserver(this);
 }
 
 OrientationController::~OrientationController() {
+  DCHECK(!accelerometer_reader_.get());
 }
 
 void OrientationController::Shutdown() {
+  accelerometer_reader_->RemoveObserver(this);
   accelerometer_reader_.reset();
 }
 
-void OrientationController::HandleAccelerometerUpdate(
+void OrientationController::OnAccelerometerUpdated(
     const ui::AccelerometerUpdate& update) {
   if (!update.has(ui::ACCELEROMETER_SOURCE_SCREEN))
     return;

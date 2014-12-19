@@ -6,7 +6,6 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
-#include "ash/accelerometer/accelerometer_controller.h"
 #include "ash/ash_switches.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
@@ -55,9 +54,6 @@ const float kMaxStableAngle = 340.0f;
 const base::TimeDelta kLidRecentlyOpenedDuration =
     base::TimeDelta::FromSeconds(2);
 
-// The mean acceleration due to gravity on Earth in m/s^2.
-const float kMeanGravity = 9.80665f;
-
 // When the device approaches vertical orientation (i.e. portrait orientation)
 // the accelerometers for the base and lid approach the same values (i.e.
 // gravity pointing in the direction of the hinge). When this happens we cannot
@@ -65,6 +61,10 @@ const float kMeanGravity = 9.80665f;
 // This is the minimum acceleration perpendicular to the hinge under which to
 // detect hinge angle in m/s^2.
 const float kHingeAngleDetectionThreshold = 2.5f;
+
+#if defined(OS_CHROMEOS)
+// The mean acceleration due to gravity on Earth in m/s^2.
+const float kMeanGravity = 9.80665f;
 
 // The maximum deviation from the acceleration expected due to gravity under
 // which to detect hinge angle and screen rotation in m/s^2
@@ -75,6 +75,7 @@ const float kDeviationFromGravityThreshold = 1.0f;
 // accelerometers are attached to the same physical device and so should be
 // under the same acceleration.
 const float kNoisyMagnitudeDeviation = 1.0f;
+#endif
 
 // The angle which the screen has to be rotated past before the display will
 // rotate to match it (i.e. 45.0f is no stickiness).
@@ -124,9 +125,9 @@ MaximizeModeController::MaximizeModeController()
       last_touchview_transition_time_(base::Time::Now()),
       tick_clock_(new base::DefaultTickClock()),
       lid_is_closed_(false) {
-  Shell::GetInstance()->accelerometer_controller()->AddObserver(this);
   Shell::GetInstance()->AddShellObserver(this);
 #if defined(OS_CHROMEOS)
+  Shell::GetInstance()->accelerometer_reader()->AddObserver(this);
   chromeos::DBusThreadManager::Get()->
       GetPowerManagerClient()->AddObserver(this);
 #endif  // OS_CHROMEOS
@@ -134,8 +135,8 @@ MaximizeModeController::MaximizeModeController()
 
 MaximizeModeController::~MaximizeModeController() {
   Shell::GetInstance()->RemoveShellObserver(this);
-  Shell::GetInstance()->accelerometer_controller()->RemoveObserver(this);
 #if defined(OS_CHROMEOS)
+  Shell::GetInstance()->accelerometer_reader()->RemoveObserver(this);
   chromeos::DBusThreadManager::Get()->
       GetPowerManagerClient()->RemoveObserver(this);
 #endif  // OS_CHROMEOS
@@ -202,6 +203,24 @@ void MaximizeModeController::Shutdown() {
   LeaveMaximizeMode();
 }
 
+void MaximizeModeController::OnDisplayConfigurationChanged() {
+  if (ignore_display_configuration_updates_)
+    return;
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  gfx::Display::Rotation user_rotation =
+      display_manager->GetDisplayInfo(gfx::Display::InternalDisplayId())
+          .rotation();
+  if (user_rotation != current_rotation_) {
+    // A user may change other display configuration settings. When the user
+    // does change the rotation setting, then lock rotation to prevent the
+    // accelerometer from erasing their change.
+    SetRotationLocked(true);
+    user_rotation_ = user_rotation;
+    current_rotation_ = user_rotation;
+  }
+}
+
+#if defined(OS_CHROMEOS)
 void MaximizeModeController::OnAccelerometerUpdated(
     const ui::AccelerometerUpdate& update) {
   bool first_accelerometer_update = !have_seen_accelerometer_data_;
@@ -248,23 +267,6 @@ void MaximizeModeController::OnAccelerometerUpdated(
   }
 }
 
-void MaximizeModeController::OnDisplayConfigurationChanged() {
-  if (ignore_display_configuration_updates_)
-    return;
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  gfx::Display::Rotation user_rotation = display_manager->
-      GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
-  if (user_rotation != current_rotation_) {
-    // A user may change other display configuration settings. When the user
-    // does change the rotation setting, then lock rotation to prevent the
-    // accelerometer from erasing their change.
-    SetRotationLocked(true);
-    user_rotation_ = user_rotation;
-    current_rotation_ = user_rotation;
-  }
-}
-
-#if defined(OS_CHROMEOS)
 void MaximizeModeController::LidEventReceived(bool open,
                                               const base::TimeTicks& time) {
   if (open)

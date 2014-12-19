@@ -30,9 +30,6 @@
       'accelerators/magnifier_key_scroller.h',
       'accelerators/spoken_feedback_toggler.cc',
       'accelerators/spoken_feedback_toggler.h',
-      'accelerometer/accelerometer_controller.cc',
-      'accelerometer/accelerometer_controller.h',
-      'accelerometer/accelerometer_observer.h',
       'accessibility_delegate.h',
       'audio/sounds.cc',
       'audio/sounds.h',
@@ -1108,6 +1105,7 @@
             'wm/drag_window_resizer_unittest.cc',
             # Can't resize on Windows Ash. http://crbug.com/165962
             'magnifier/magnification_controller_unittest.cc',
+            'wm/maximize_mode/maximize_mode_controller_unittest.cc',
             'wm/workspace/workspace_window_resizer_unittest.cc',
             'sticky_keys/sticky_keys_overlay_unittest.cc',
             'sticky_keys/sticky_keys_unittest.cc',

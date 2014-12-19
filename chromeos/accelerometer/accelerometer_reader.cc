@@ -4,6 +4,8 @@
 
 #include "chromeos/accelerometer/accelerometer_reader.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -181,24 +183,33 @@ AccelerometerReader::ConfigurationData::ConfigurationData()
 AccelerometerReader::ConfigurationData::~ConfigurationData() {
 }
 
-AccelerometerReader::AccelerometerReader(
-    scoped_refptr<base::TaskRunner> blocking_task_runner,
-    AccelerometerReader::Delegate* delegate)
-    : task_runner_(blocking_task_runner),
-      delegate_(delegate),
-      configuration_(new AccelerometerReader::Configuration()),
+AccelerometerReader::AccelerometerReader()
+    : configuration_(new AccelerometerReader::Configuration()),
       weak_factory_(this) {
-  DCHECK(task_runner_.get());
-  DCHECK(delegate_);
+}
+
+AccelerometerReader::~AccelerometerReader() {
+}
+
+void AccelerometerReader::Initialize(
+    scoped_refptr<base::TaskRunner> blocking_task_runner) {
+  DCHECK(blocking_task_runner.get());
+  task_runner_ = blocking_task_runner;
   // Asynchronously detect and initialize the accelerometer to avoid delaying
   // startup.
-  base::PostTaskAndReplyWithResult(task_runner_.get(), FROM_HERE,
+  base::PostTaskAndReplyWithResult(
+      task_runner_.get(), FROM_HERE,
       base::Bind(&DetectAndReadAccelerometerConfiguration, configuration_),
       base::Bind(&AccelerometerReader::OnInitialized,
                  weak_factory_.GetWeakPtr(), configuration_));
 }
 
-AccelerometerReader::~AccelerometerReader() {
+void AccelerometerReader::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void AccelerometerReader::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void AccelerometerReader::OnInitialized(
@@ -241,7 +252,7 @@ void AccelerometerReader::OnDataRead(
                   values[configuration_->data.index[i][2]] *
                       configuration_->data.scale[i][2]);
     }
-    delegate_->HandleAccelerometerUpdate(update_);
+    FOR_EACH_OBSERVER(Observer, observers_, OnAccelerometerUpdated(update_));
   }
 
   // Trigger another read after the current sampling delay.

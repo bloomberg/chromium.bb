@@ -5,7 +5,6 @@
 #ifndef ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_CONTROLLER_H_
 #define ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_CONTROLLER_H_
 
-#include "ash/accelerometer/accelerometer_observer.h"
 #include "ash/ash_export.h"
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
@@ -16,6 +15,7 @@
 #include "ui/gfx/display.h"
 
 #if defined(OS_CHROMEOS)
+#include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/dbus/power_manager_client.h"
 #endif  // OS_CHROMEOS
 
@@ -41,11 +41,11 @@ class MultiUserWindowManagerChromeOSTest;
 // enters and exits maximize mode when the lid is opened beyond the triggering
 // angle and rotates the display to match the device when in maximize mode.
 class ASH_EXPORT MaximizeModeController
-    : public AccelerometerObserver,
+    : public ShellObserver,
 #if defined(OS_CHROMEOS)
+      public chromeos::AccelerometerReader::Observer,
       public chromeos::PowerManagerClient::Observer,
 #endif  // OS_CHROMEOS
-      public ShellObserver,
       public DisplayController::Observer {
  public:
   // Observer that reports changes to the state of MaximizeModeController's
@@ -113,9 +113,6 @@ class ASH_EXPORT MaximizeModeController
   // Shuts down down the MaximizeModeWindowManager and notifies all observers.
   void Shutdown();
 
-  // AccelerometerObserver:
-  void OnAccelerometerUpdated(const ui::AccelerometerUpdate& update) override;
-
   // ShellObserver:
   void OnAppTerminating() override;
   void OnMaximizeModeStarted() override;
@@ -125,11 +122,13 @@ class ASH_EXPORT MaximizeModeController
   void OnDisplayConfigurationChanged() override;
 
 #if defined(OS_CHROMEOS)
+  // chromeos::AccelerometerReader::Observer:
+  void OnAccelerometerUpdated(const ui::AccelerometerUpdate& update) override;
+
   // PowerManagerClient::Observer:
-  virtual void LidEventReceived(bool open,
-                                const base::TimeTicks& time) override;
-  virtual void SuspendImminent() override;
-  virtual void SuspendDone(const base::TimeDelta& sleep_duration) override;
+  void LidEventReceived(bool open, const base::TimeTicks& time) override;
+  void SuspendImminent() override;
+  void SuspendDone(const base::TimeDelta& sleep_duration) override;
 #endif  // OS_CHROMEOS
 
  private:

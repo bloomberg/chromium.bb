@@ -42,6 +42,12 @@ class FocusClient;
 }
 }
 
+#if defined(OS_CHROMEOS)
+namespace chromeos {
+class AccelerometerReader;
+}
+#endif
+
 namespace gfx {
 class ImageSkia;
 class Point;
@@ -75,7 +81,6 @@ class WindowModalityController;
 namespace ash {
 
 class AcceleratorController;
-class AccelerometerController;
 class AccessibilityDelegate;
 class AppListController;
 class AshNativeCursorManager;
@@ -508,15 +513,15 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Starts the animation that occurs on first login.
   void DoInitialWorkspaceAnimation();
 
-  AccelerometerController* accelerometer_controller() {
-    return accelerometer_controller_.get();
-  }
-
   MaximizeModeController* maximize_mode_controller() {
     return maximize_mode_controller_.get();
   }
 
 #if defined(OS_CHROMEOS)
+  chromeos::AccelerometerReader* accelerometer_reader() {
+    return accelerometer_reader_.get();
+  }
+
   // TODO(oshima): Move these objects to DisplayController.
   ui::DisplayConfigurator* display_configurator() {
     return display_configurator_.get();
@@ -709,9 +714,8 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   scoped_ptr<LocaleNotificationController> locale_notification_controller_;
 
-  scoped_ptr<AccelerometerController> accelerometer_controller_;
-
 #if defined(OS_CHROMEOS)
+  scoped_ptr<chromeos::AccelerometerReader> accelerometer_reader_;
   scoped_ptr<PowerEventObserver> power_event_observer_;
   scoped_ptr<ui::UserActivityPowerManagerNotifier> user_activity_notifier_;
   scoped_ptr<VideoActivityNotifier> video_activity_notifier_;

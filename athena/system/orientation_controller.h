@@ -20,8 +20,7 @@ namespace athena {
 
 // Monitors accelerometers, detecting orientation changes. When a change is
 // detected rotates the root window to match.
-class OrientationController
-    : public chromeos::AccelerometerReader::Delegate {
+class OrientationController : public chromeos::AccelerometerReader::Observer {
  public:
   OrientationController();
   ~OrientationController() override;
@@ -29,9 +28,8 @@ class OrientationController
   void InitWith(scoped_refptr<base::TaskRunner> blocking_task_runner);
   void Shutdown();
 
-  // chromeos::AccelerometerReader::Delegate
-  virtual void HandleAccelerometerUpdate(
-      const ui::AccelerometerUpdate& update) override;
+  // chromeos::AccelerometerReader::Observer:
+  void OnAccelerometerUpdated(const ui::AccelerometerUpdate& update) override;
 
  private:
   // The last configured rotation.

@@ -45,17 +45,23 @@ class CHROMEOS_EXPORT AccelerometerReader {
   typedef base::RefCountedData<char[12]> Reading;
 
   // An interface to receive data from the AccelerometerReader.
-  class Delegate {
+  class Observer {
    public:
-    virtual ~Delegate() {}
-
-    virtual void HandleAccelerometerUpdate(
+    virtual void OnAccelerometerUpdated(
         const ui::AccelerometerUpdate& update) = 0;
+
+   protected:
+    virtual ~Observer() {}
   };
 
-  AccelerometerReader(scoped_refptr<base::TaskRunner> blocking_task_runner,
-                      Delegate* delegate);
+  AccelerometerReader();
   ~AccelerometerReader();
+
+  void Initialize(scoped_refptr<base::TaskRunner> blocking_task_runner);
+
+  // Add/Remove observers.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
  private:
   // Dispatched when initialization is complete. If |success|, |configuration|
@@ -74,14 +80,13 @@ class CHROMEOS_EXPORT AccelerometerReader {
   // The task runner to use for blocking tasks.
   scoped_refptr<base::TaskRunner> task_runner_;
 
-  // A weak pointer to the delegate to send accelerometer readings to.
-  Delegate* delegate_;
-
   // The last seen accelerometer data.
   ui::AccelerometerUpdate update_;
 
   // The accelerometer configuration.
   scoped_refptr<Configuration> configuration_;
+
+  ObserverList<Observer, true> observers_;
 
   base::WeakPtrFactory<AccelerometerReader> weak_factory_;
 

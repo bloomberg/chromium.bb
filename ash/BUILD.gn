@@ -277,6 +277,9 @@ test("ash_unittests") {
       # All tests for multiple displays: not supported on Windows Ash.
       "wm/drag_window_resizer_unittest.cc",
 
+      # Accelerometer is only available on Chrome OS.
+      "wm/maximize_mode/maximize_mode_controller_unittest.cc",
+
       # Can't resize on Windows Ash. http://crbug.com/165962
       "magnifier/magnification_controller_unittest.cc",
       "wm/workspace/workspace_window_resizer_unittest.cc",
