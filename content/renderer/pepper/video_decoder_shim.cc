@@ -437,7 +437,7 @@ void VideoDecoderShim::Reset() {
 }
 
 void VideoDecoderShim::Destroy() {
-  // This will be called, but our destructor does the actual work.
+  delete this;
 }
 
 void VideoDecoderShim::OnInitializeComplete(int32_t result,
