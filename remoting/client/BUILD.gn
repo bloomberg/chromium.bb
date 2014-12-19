@@ -21,6 +21,5 @@ static_library("client") {
     "//remoting/protocol",
     "//third_party/libyuv",
     "//third_party/webrtc/modules/desktop_capture",
-    "//third_party/libwebm",
   ]
 }

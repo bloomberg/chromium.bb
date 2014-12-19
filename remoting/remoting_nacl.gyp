@@ -106,7 +106,6 @@
         '../net/net_nacl.gyp:net_nacl',
         '../third_party/libjingle/libjingle_nacl.gyp:libjingle_nacl',
         '../third_party/libvpx/libvpx_nacl.gyp:libvpx_nacl',
-        '../third_party/libwebm/libwebm_nacl.gyp:libwebm_nacl',
         '../third_party/libyuv/libyuv_nacl.gyp:libyuv_nacl',
         '../third_party/boringssl/boringssl_nacl.gyp:boringssl_nacl',
         '../third_party/opus/opus_nacl.gyp:opus_nacl',
@@ -170,7 +169,6 @@
           '>(tc_lib_dir_pnacl_newlib)/libremoting_webrtc_nacl.a',
           '>(tc_lib_dir_pnacl_newlib)/liburl_nacl.a',
           '>(tc_lib_dir_pnacl_newlib)/libvpx_nacl.a',
-          '>(tc_lib_dir_pnacl_newlib)/libwebm_nacl.a',
           '>(tc_lib_dir_pnacl_newlib)/libyuv_nacl.a',
         ],
       },
@@ -191,7 +189,6 @@
         '../third_party/icu/icu_nacl.gyp:icui18n_nacl',
         '../third_party/icu/icu_nacl.gyp:icuuc_nacl',
         '../third_party/libjingle/libjingle_nacl.gyp:libjingle_nacl',
-        '../third_party/libwebm/libwebm_nacl.gyp:libwebm_nacl',
         '../third_party/libyuv/libyuv_nacl.gyp:libyuv_nacl',
         '../third_party/modp_b64/modp_b64_nacl.gyp:modp_b64_nacl',
         '../third_party/boringssl/boringssl_nacl.gyp:boringssl_nacl',
@@ -230,7 +227,6 @@
         '-licuuc_nacl',
         '-licudata_nacl',
         '-lprotobuf_lite_nacl',
-        '-lwebm_nacl',
 
         # Base NaCl libraries.
         '-lppapi_cpp',
