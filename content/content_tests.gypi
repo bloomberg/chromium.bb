@@ -1226,6 +1226,7 @@
             'app/mojo/mojo_browsertest.cc',
             'browser/accessibility/accessibility_event_recorder.cc',
             'browser/accessibility/accessibility_event_recorder.h',
+            'browser/accessibility/accessibility_event_recorder_mac.mm',
             'browser/accessibility/accessibility_event_recorder_win.cc',
             'browser/accessibility/accessibility_ipc_error_browsertest.cc',
             'browser/accessibility/accessibility_mode_browsertest.cc',

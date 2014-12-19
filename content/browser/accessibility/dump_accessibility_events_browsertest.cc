@@ -132,7 +132,7 @@ void DumpAccessibilityEventsTest::OnDiffFailed() {
 }
 
 // TODO(dmazzoni): port these tests to run on all platforms.
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        AccessibilityEventsCheckedStateChanged) {

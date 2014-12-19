@@ -15,7 +15,7 @@ AccessibilityEventRecorder::AccessibilityEventRecorder(
 AccessibilityEventRecorder::~AccessibilityEventRecorder() {
 }
 
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
 // static
 AccessibilityEventRecorder* AccessibilityEventRecorder::Create(
     BrowserAccessibilityManager* manager) {
