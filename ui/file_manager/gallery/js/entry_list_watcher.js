@@ -6,14 +6,14 @@
  * Watcher for entry lists.
  * It watches entries and remove the item if the entry is removed from file
  * system.
- * @param {cr.ui.ArrayDataModel} list
+ * @param {!cr.ui.ArrayDataModel} list
  * @constructor
  * @struct
  */
 function EntryListWatcher(list) {
   /**
    * Watched list.
-   * @type {cr.ui.ArrayDataModel}
+   * @type {!cr.ui.ArrayDataModel}
    * @const
    * @private
    */
@@ -22,17 +22,16 @@ function EntryListWatcher(list) {
   /**
    * Set of watched URL.
    * Key is watched entry URL. Value is always true.
-   * @type {Object.<string, boolean>}
-   * @const
+   * @type {!Object.<string, boolean>}
    * @private
    */
   this.watchers_ = {};
 
-  list.addEventListener('splice', this.onSplice_.bind(this));
+  this.list_.addEventListener('splice', this.onSplice_.bind(this));
   chrome.fileManagerPrivate.onDirectoryChanged.addListener(
       this.onDirectoryChanged_.bind(this));
 
-  this.onSplice_();
+  this.onSplice_(null);
 }
 
 /**
@@ -42,14 +41,14 @@ function EntryListWatcher(list) {
  * @return {!FileEntry}
  */
 EntryListWatcher.prototype.getEntry = function(item) {
-  return item;
+  return /** @type {!FileEntry} */ (item);
 };
 
 /**
  * @param {Event} event
  * @private
  */
-EntryListWatcher.prototype.onSplice_ = function() {
+EntryListWatcher.prototype.onSplice_ = function(event) {
   // Mark all existing watchers as candidates to be removed.
   var diff = {};
   for (var url in this.watchers_) {
@@ -95,7 +94,7 @@ EntryListWatcher.prototype.onSplice_ = function() {
 };
 
 /**
- * @param {Event} event
+ * @param {!FileWatchEvent} event
  * @private
  */
 EntryListWatcher.prototype.onDirectoryChanged_ = function(event) {
