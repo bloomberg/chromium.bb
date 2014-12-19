@@ -32,9 +32,6 @@
 #include "platform/graphics/ImageDecodingStore.h"
 #include "platform/image-decoders/ImageDecoder.h"
 
-#include "skia/ext/image_operations.h"
-#include "third_party/skia/include/core/SkMallocPixelRef.h"
-
 namespace blink {
 
 // Creates a SkPixelRef such that the memory for pixels is given by an external body.
