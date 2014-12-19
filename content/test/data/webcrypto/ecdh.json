@@ -347,28 +347,6 @@
     "error": "OperationError: Length specified for ECDH key derivation is too large. Maximum allowed is 256 bits"
   },
 
-  // The public key parameter is in fact a private key
-  // (not allowed by web crypto), even though it could in practice work.
-  {
-    "private_key": {
-      "kty":"EC",
-      "crv":"P-256",
-      "x":"u6dWhaRHrvFF0CiFVuUUFafU6ixveQf9trHDXJ8hgV8",
-      "y":"thSm4LIY35vDD-5LE454eB7TShn919DVVGZ_7tWdjTE",
-      "d":"CQ8uF_-zB1NftLO6ytwKM3Cnuol64PQw5qOuCzQJeFU"
-    },
-    "public_key": {
-      "kty":"EC",
-      "crv":"P-256",
-      "d":"uN2YSQvxuxhQQ9Y1XXjYi1vr2ZTdzuoDX18PYu4LU-0",
-      "x":"S2S3tjygMB0DkM-N9jYUgGLt_9_H6km5P9V6V_KS4_4",
-      "y":"03j8Tyqgrc4R4FAUV2C7-im96yMmfmO_5Om6Kr8YP3o"
-    },
-
-    "length_bits": 256,
-    "error": "InvalidAccess: The public parameter for ECDH key derivation is not a public EC key"
-  },
-
   // Curve mismatch (public key is for P-521 however private key was for P-256).
   {
     "private_key": {

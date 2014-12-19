@@ -304,7 +304,7 @@ Status RsaHashedAlgorithm::ImportKeyJwk(
   // Once the key type is known, verify the usages.
   status = CheckKeyCreationUsages(
       jwk.is_private_key ? all_private_key_usages_ : all_public_key_usages_,
-      usages);
+      usages, !jwk.is_private_key);
   if (status.IsError())
     return status;
 

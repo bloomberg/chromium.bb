@@ -374,7 +374,7 @@ Status EcAlgorithm::ImportKeyJwk(const CryptoData& key_data,
   // Now that the key type is known, verify the usages.
   status = CheckKeyCreationUsages(
       is_private_key ? all_private_key_usages_ : all_public_key_usages_,
-      usages);
+      usages, !is_private_key);
   if (status.IsError())
     return status;
 

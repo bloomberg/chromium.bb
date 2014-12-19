@@ -26,9 +26,6 @@ Status GenerateSecretKeyNss(const blink::WebCryptoKeyAlgorithm& algorithm,
                             GenerateKeyResult* result) {
   DCHECK_NE(CKM_INVALID_MECHANISM, mechanism);
 
-  if (usages == 0)
-    return Status::ErrorCreateKeyEmptyUsages();
-
   crypto::ScopedPK11Slot slot(PK11_GetInternalKeySlot());
   if (!slot)
     return Status::OperationError();

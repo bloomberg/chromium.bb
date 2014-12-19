@@ -69,7 +69,7 @@ class HmacImplementation : public AlgorithmImplementation {
                      bool extractable,
                      blink::WebCryptoKeyUsageMask usages,
                      GenerateKeyResult* result) const override {
-    Status status = CheckKeyCreationUsages(kAllKeyUsages, usages);
+    Status status = CheckKeyCreationUsages(kAllKeyUsages, usages, false);
     if (status.IsError())
       return status;
 
@@ -92,7 +92,7 @@ class HmacImplementation : public AlgorithmImplementation {
     switch (format) {
       case blink::WebCryptoKeyFormatRaw:
       case blink::WebCryptoKeyFormatJwk:
-        return CheckKeyCreationUsages(kAllKeyUsages, usages);
+        return CheckKeyCreationUsages(kAllKeyUsages, usages, false);
       default:
         return Status::ErrorUnsupportedImportKeyFormat();
     }

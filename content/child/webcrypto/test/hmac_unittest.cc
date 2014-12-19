@@ -208,6 +208,18 @@ TEST(WebCryptoHmacTest, Generate1BitKey) {
   EXPECT_FALSE(raw_key[0] & 0x7F);
 }
 
+TEST(WebCryptoHmacTest, ImportKeyEmptyUsage) {
+  blink::WebCryptoKey key;
+  std::string key_raw_hex_in = "025a8cf3f08b4f6c5f33bbc76a471939";
+  EXPECT_EQ(
+      Status::ErrorCreateKeyEmptyUsages(),
+      ImportKey(blink::WebCryptoKeyFormatRaw,
+                CryptoData(HexStringToBytes(key_raw_hex_in)),
+                CreateHmacImportAlgorithmNoLength(
+                    blink::WebCryptoAlgorithmIdSha1),
+                true, 0, &key));
+}
+
 TEST(WebCryptoHmacTest, ImportKeyJwkKeyOpsSignVerify) {
   blink::WebCryptoKey key;
   base::DictionaryValue dict;
@@ -457,11 +469,6 @@ TEST(WebCryptoHmacTest, ImportExportJwk) {
   ImportExportJwkSymmetricKey(
       512, CreateHmacImportAlgorithmNoLength(blink::WebCryptoAlgorithmIdSha512),
       blink::WebCryptoKeyUsageVerify, "HS512");
-
-  // Zero usage value
-  ImportExportJwkSymmetricKey(
-      512, CreateHmacImportAlgorithmNoLength(blink::WebCryptoAlgorithmIdSha512),
-      0, "HS512");
 }
 
 TEST(WebCryptoHmacTest, ExportJwkEmptyKey) {

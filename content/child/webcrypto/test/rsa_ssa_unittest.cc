@@ -823,6 +823,66 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairEmptyUsages) {
                             true, 0, &public_key, &private_key));
 }
 
+TEST(WebCryptoRsaSsaTest, ImportKeyEmptyUsages) {
+  if (!SupportsRsaPrivateKeyImport())
+    return;
+
+  blink::WebCryptoKey public_key;
+  blink::WebCryptoKey private_key;
+
+  // Public without usage does not throw an error.
+  ASSERT_EQ(Status::Success(),
+            ImportKey(blink::WebCryptoKeyFormatSpki,
+                      CryptoData(HexStringToBytes(kPublicKeySpkiDerHex)),
+                      CreateRsaHashedImportAlgorithm(
+                          blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                          blink::WebCryptoAlgorithmIdSha256),
+                      true, 0, &public_key));
+  EXPECT_EQ(0, public_key.usages());
+
+  // Private empty usage will throw an error.
+  ASSERT_EQ(Status::ErrorCreateKeyEmptyUsages(),
+            ImportKey(blink::WebCryptoKeyFormatPkcs8,
+                      CryptoData(HexStringToBytes(kPrivateKeyPkcs8DerHex)),
+                      CreateRsaHashedImportAlgorithm(
+                          blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                          blink::WebCryptoAlgorithmIdSha1),
+                      true, 0, &private_key));
+
+  std::vector<uint8_t> public_jwk;
+  ASSERT_EQ(Status::Success(),
+            ExportKey(blink::WebCryptoKeyFormatJwk, public_key, &public_jwk));
+
+  ASSERT_EQ(Status::Success(),
+            ImportKey(blink::WebCryptoKeyFormatJwk,
+                      CryptoData(public_jwk),
+                      CreateRsaHashedImportAlgorithm(
+                          blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                          blink::WebCryptoAlgorithmIdSha256),
+                      true, 0, &public_key));
+  EXPECT_EQ(0, public_key.usages());
+
+  // With correct usage to get correct imported private_key
+  std::vector<uint8_t> private_jwk;
+  ImportKey(blink::WebCryptoKeyFormatPkcs8,
+            CryptoData(HexStringToBytes(kPrivateKeyPkcs8DerHex)),
+            CreateRsaHashedImportAlgorithm(
+                 blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                 blink::WebCryptoAlgorithmIdSha1),
+            true, blink::WebCryptoKeyUsageSign, &private_key);
+
+  ASSERT_EQ(Status::Success(),
+            ExportKey(blink::WebCryptoKeyFormatJwk, private_key, &private_jwk));
+
+  ASSERT_EQ(Status::ErrorCreateKeyEmptyUsages(),
+            ImportKey(blink::WebCryptoKeyFormatJwk,
+                CryptoData(private_jwk),
+                CreateRsaHashedImportAlgorithm(
+                    blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                    blink::WebCryptoAlgorithmIdSha1),
+                true, 0, &private_key));
+}
+
 TEST(WebCryptoRsaSsaTest, ImportExportJwkRsaPublicKey) {
   struct TestCase {
     const blink::WebCryptoAlgorithmId hash;

@@ -267,7 +267,11 @@ Status VerifyAesKeyLengthForImport(unsigned int keylen_bytes) {
 }
 
 Status CheckKeyCreationUsages(blink::WebCryptoKeyUsageMask all_possible_usages,
-                              blink::WebCryptoKeyUsageMask actual_usages) {
+                              blink::WebCryptoKeyUsageMask actual_usages,
+                              bool allow_empty_usages) {
+  if (!allow_empty_usages && actual_usages == 0)
+    return Status::ErrorCreateKeyEmptyUsages();
+
   if (!ContainsKeyUsages(all_possible_usages, actual_usages))
     return Status::ErrorCreateKeyBadUsages();
   return Status::Success();
@@ -307,15 +311,17 @@ Status VerifyUsagesBeforeImportAsymmetricKey(
     blink::WebCryptoKeyUsageMask usages) {
   switch (format) {
     case blink::WebCryptoKeyFormatSpki:
-      return CheckKeyCreationUsages(all_public_key_usages, usages);
+      return CheckKeyCreationUsages(all_public_key_usages, usages, true);
     case blink::WebCryptoKeyFormatPkcs8:
-      return CheckKeyCreationUsages(all_private_key_usages, usages);
+      return CheckKeyCreationUsages(all_private_key_usages, usages, false);
     case blink::WebCryptoKeyFormatJwk: {
       // The JWK could represent either a public key or private key. The usages
       // must make sense for one of the two. The usages will be checked again by
       // ImportKeyJwk() once the key type has been determined.
-      if (CheckKeyCreationUsages(all_public_key_usages, usages).IsError() &&
-          CheckKeyCreationUsages(all_private_key_usages, usages).IsError()) {
+      if (CheckKeyCreationUsages(
+              all_public_key_usages, usages, true).IsError() &&
+          CheckKeyCreationUsages(
+              all_private_key_usages, usages, false).IsError()) {
         return Status::ErrorCreateKeyBadUsages();
       }
       return Status::Success();
@@ -384,7 +390,7 @@ Status GetUsagesForGenerateAsymmetricKey(
     blink::WebCryptoKeyUsageMask* public_usages,
     blink::WebCryptoKeyUsageMask* private_usages) {
   Status status = CheckKeyCreationUsages(all_public_usages | all_private_usages,
-                                         combined_usages);
+                                         combined_usages, true);
   if (status.IsError())
     return status;
 

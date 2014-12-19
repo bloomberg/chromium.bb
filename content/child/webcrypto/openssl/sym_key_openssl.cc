@@ -26,9 +26,6 @@ Status GenerateSecretKeyOpenSsl(const blink::WebCryptoKeyAlgorithm& algorithm,
                                 GenerateKeyResult* result) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  if (usages == 0)
-    return Status::ErrorCreateKeyEmptyUsages();
-
   unsigned int keylen_bytes = NumBitsToBytes(keylen_bits);
   std::vector<unsigned char> random_bytes(keylen_bytes, 0);
 

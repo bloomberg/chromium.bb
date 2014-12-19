@@ -29,8 +29,8 @@ TEST(WebCryptoAesKwTest, GenerateKeyBadLength) {
   for (size_t i = 0; i < arraysize(kKeyLen); ++i) {
     SCOPED_TRACE(i);
     EXPECT_EQ(Status::ErrorGenerateAesKeyLength(),
-              GenerateSecretKey(CreateAesKwKeyGenAlgorithm(kKeyLen[i]), true, 0,
-                                &key));
+              GenerateSecretKey(CreateAesKwKeyGenAlgorithm(kKeyLen[i]), true,
+                  blink::WebCryptoKeyUsageWrapKey, &key));
   }
 }
 
@@ -38,6 +38,15 @@ TEST(WebCryptoAesKwTest, GenerateKeyEmptyUsage) {
   blink::WebCryptoKey key;
   EXPECT_EQ(Status::ErrorCreateKeyEmptyUsages(),
             GenerateSecretKey(CreateAesKwKeyGenAlgorithm(256), true, 0, &key));
+}
+
+TEST(WebCryptoAesKwTest, ImportKeyEmptyUsage) {
+  blink::WebCryptoKey key;
+  EXPECT_EQ(Status::ErrorCreateKeyEmptyUsages(),
+            ImportKey(blink::WebCryptoKeyFormatRaw,
+                      CryptoData(std::vector<uint8_t>(16)),
+                      CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw),
+                      true, 0, &key));
 }
 
 TEST(WebCryptoAesKwTest, ImportKeyJwkKeyOpsWrapUnwrap) {

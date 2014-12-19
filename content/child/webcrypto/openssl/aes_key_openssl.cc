@@ -34,7 +34,7 @@ Status AesAlgorithm::GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
                                  bool extractable,
                                  blink::WebCryptoKeyUsageMask usages,
                                  GenerateKeyResult* result) const {
-  Status status = CheckKeyCreationUsages(all_key_usages_, usages);
+  Status status = CheckKeyCreationUsages(all_key_usages_, usages, false);
   if (status.IsError())
     return status;
 
@@ -54,7 +54,7 @@ Status AesAlgorithm::VerifyKeyUsagesBeforeImportKey(
   switch (format) {
     case blink::WebCryptoKeyFormatRaw:
     case blink::WebCryptoKeyFormatJwk:
-      return CheckKeyCreationUsages(all_key_usages_, usages);
+      return CheckKeyCreationUsages(all_key_usages_, usages, false);
     default:
       return Status::ErrorUnsupportedImportKeyFormat();
   }

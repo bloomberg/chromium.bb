@@ -316,6 +316,40 @@ TEST(WebCryptoEcdhTest, DeriveKeyAes128) {
   EXPECT_EQ(16u, raw_key.size());
 }
 
+TEST(WebCryptoEcdhTest, ImportKeyEmptyUsage) {
+  if (!SupportsEcdh())
+    return;
+
+  blink::WebCryptoKey key;
+
+  scoped_ptr<base::ListValue> tests;
+  ASSERT_TRUE(ReadJsonTestFileToList("ecdh.json", &tests));
+
+  const base::DictionaryValue* test;
+  ASSERT_TRUE(tests->GetDictionary(0, &test));
+
+  // Import the public key.
+  const base::DictionaryValue* public_key_json = NULL;
+  EXPECT_TRUE(test->GetDictionary("public_key", &public_key_json));
+  blink::WebCryptoNamedCurve curve =
+      GetCurveNameFromDictionary(public_key_json, "crv");
+  ASSERT_EQ(Status::Success(),
+            ImportKey(blink::WebCryptoKeyFormatJwk,
+                      CryptoData(MakeJsonVector(*public_key_json)),
+                      CreateEcdhImportAlgorithm(curve), true, 0, &key));
+  EXPECT_EQ(0, key.usages());
+
+  // Import the private key.
+  const base::DictionaryValue* private_key_json = NULL;
+  EXPECT_TRUE(test->GetDictionary("private_key", &private_key_json));
+  curve = GetCurveNameFromDictionary(private_key_json, "crv");
+  ASSERT_EQ(Status::ErrorCreateKeyEmptyUsages(),
+            ImportKey(blink::WebCryptoKeyFormatJwk,
+                      CryptoData(MakeJsonVector(*private_key_json)),
+                      CreateEcdhImportAlgorithm(curve), true,
+                      0, &key));
+}
+
 }  // namespace
 
 }  // namespace webcrypto

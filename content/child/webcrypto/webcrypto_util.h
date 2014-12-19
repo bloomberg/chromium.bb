@@ -79,7 +79,8 @@ Status GetHmacImportKeyLengthBits(
 Status VerifyAesKeyLengthForImport(unsigned int keylen_bytes);
 
 Status CheckKeyCreationUsages(blink::WebCryptoKeyUsageMask all_possible_usages,
-                              blink::WebCryptoKeyUsageMask actual_usages);
+                              blink::WebCryptoKeyUsageMask actual_usages,
+                              bool allow_empty_usages);
 
 // Extracts the public exponent and modulus length from the Blink parameters.
 // On success it is guaranteed that:
