@@ -54,7 +54,6 @@
 #include "web/PopupContainer.h"
 #include "web/PopupMenuChromium.h"
 #include "web/WebInputEventConversion.h"
-#include <skia/ext/platform_canvas.h>
 
 namespace blink {
 

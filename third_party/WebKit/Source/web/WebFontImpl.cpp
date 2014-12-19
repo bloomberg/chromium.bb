@@ -40,7 +40,6 @@
 #include "public/platform/WebRect.h"
 #include "public/web/WebFontDescription.h"
 #include "public/web/WebTextRun.h"
-#include <skia/ext/platform_canvas.h>
 
 namespace blink {
 
