@@ -97,7 +97,7 @@ rect: style.getPropertyValue(unicode-bidi) : normal
 rect: style.getPropertyValue(vertical-align) : baseline
 rect: style.getPropertyValue(visibility) : visible
 rect: style.getPropertyValue(white-space) : normal
-rect: style.getPropertyValue(widows) : auto
+rect: style.getPropertyValue(widows) : 1
 rect: style.getPropertyValue(width) : auto
 rect: style.getPropertyValue(word-break) : normal
 rect: style.getPropertyValue(word-spacing) : 0px
@@ -330,7 +330,7 @@ g: style.getPropertyValue(unicode-bidi) : normal
 g: style.getPropertyValue(vertical-align) : baseline
 g: style.getPropertyValue(visibility) : visible
 g: style.getPropertyValue(white-space) : normal
-g: style.getPropertyValue(widows) : auto
+g: style.getPropertyValue(widows) : 1
 g: style.getPropertyValue(width) : auto
 g: style.getPropertyValue(word-break) : normal
 g: style.getPropertyValue(word-spacing) : 0px

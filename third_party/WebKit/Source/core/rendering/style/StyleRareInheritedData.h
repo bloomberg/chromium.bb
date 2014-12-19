@@ -97,7 +97,6 @@ public:
     // Paged media properties.
     short widows;
     short orphans;
-    unsigned m_hasAutoWidows : 1;
     unsigned m_hasAutoOrphans : 1;
 
     unsigned m_textStrokeColorIsCurrentColor : 1;

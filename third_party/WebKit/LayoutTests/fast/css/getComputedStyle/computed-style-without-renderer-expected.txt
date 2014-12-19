@@ -98,7 +98,7 @@ unicode-bidi: normal
 vertical-align: baseline
 visibility: visible
 white-space: normal
-widows: auto
+widows: 1
 width: 50%
 word-break: normal
 word-spacing: 0px
