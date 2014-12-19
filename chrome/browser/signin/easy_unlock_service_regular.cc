@@ -11,13 +11,19 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/easy_unlock_toggle_flow.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/proximity_auth/cryptauth/cryptauth_account_token_fetcher.h"
+#include "components/proximity_auth/cryptauth/cryptauth_client.h"
+#include "components/proximity_auth/switches.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
@@ -39,9 +45,6 @@ const char kKeyPermitAccess[] = "permitAccess";
 
 // Key name of the remote device list in kEasyUnlockPairing.
 const char kKeyDevices[] = "devices";
-
-// Key name of the phone public key in a device dictionary.
-const char kKeyPhoneId[] = "permitRecord.id";
 
 }  // namespace
 
@@ -196,37 +199,31 @@ void EasyUnlockServiceRegular::SetRemoteDevices(
 void EasyUnlockServiceRegular::RunTurnOffFlow() {
   if (turn_off_flow_status_ == PENDING)
     return;
+  DCHECK(!cryptauth_client_);
 
   SetTurnOffFlowStatus(PENDING);
+  scoped_ptr<proximity_auth::CryptAuthAccessTokenFetcher> access_token_fetcher(
+      new proximity_auth::CryptAuthAccountTokenFetcher(
+          ProfileOAuth2TokenServiceFactory::GetForProfile(profile()),
+          SigninManagerFactory::GetForProfile(profile())
+              ->GetAuthenticatedAccountId()));
 
-  // Currently there should only be one registered phone.
-  // TODO(xiyuan): Revisit this when server supports toggle for all or
-  // there are multiple phones.
-  const base::DictionaryValue* pairing_dict =
-      profile()->GetPrefs()->GetDictionary(prefs::kEasyUnlockPairing);
-  const base::ListValue* devices_list = NULL;
-  const base::DictionaryValue* first_device = NULL;
-  std::string phone_public_key;
-  if (!pairing_dict || !pairing_dict->GetList(kKeyDevices, &devices_list) ||
-      !devices_list || !devices_list->GetDictionary(0, &first_device) ||
-      !first_device ||
-      !first_device->GetString(kKeyPhoneId, &phone_public_key)) {
-    LOG(WARNING) << "Bad easy unlock pairing data, wiping out local data";
-    OnTurnOffFlowFinished(true);
-    return;
-  }
+  cryptauth_client_.reset(new proximity_auth::CryptAuthClient(
+      access_token_fetcher.Pass(), profile()->GetRequestContext()));
 
-  turn_off_flow_.reset(new EasyUnlockToggleFlow(
-      profile(),
-      phone_public_key,
-      false,
-      base::Bind(&EasyUnlockServiceRegular::OnTurnOffFlowFinished,
-                 base::Unretained(this))));
-  turn_off_flow_->Start();
+  cryptauth::ToggleEasyUnlockRequest request;
+  request.set_enable(false);
+  request.set_apply_to_all(true);
+  cryptauth_client_->ToggleEasyUnlock(
+      request,
+      base::Bind(&EasyUnlockServiceRegular::OnToggleEasyUnlockApiComplete,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&EasyUnlockServiceRegular::OnToggleEasyUnlockApiFailed,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EasyUnlockServiceRegular::ResetTurnOffFlow() {
-  turn_off_flow_.reset();
+  cryptauth_client_.reset();
   SetTurnOffFlowStatus(IDLE);
 }
 
@@ -268,7 +265,6 @@ void EasyUnlockServiceRegular::ShutdownInternal() {
   short_lived_user_context_.reset();
 #endif
 
-  turn_off_flow_.reset();
   turn_off_flow_status_ = EasyUnlockService::IDLE;
   registrar_.RemoveAll();
 }
@@ -300,15 +296,17 @@ void EasyUnlockServiceRegular::SetTurnOffFlowStatus(TurnOffFlowStatus status) {
   NotifyTurnOffOperationStatusChanged();
 }
 
-void EasyUnlockServiceRegular::OnTurnOffFlowFinished(bool success) {
-  turn_off_flow_.reset();
-
-  if (!success) {
-    SetTurnOffFlowStatus(FAIL);
-    return;
-  }
+void EasyUnlockServiceRegular::OnToggleEasyUnlockApiComplete(
+    const cryptauth::ToggleEasyUnlockResponse& response) {
+  cryptauth_client_.reset();
 
   SetRemoteDevices(base::ListValue());
   SetTurnOffFlowStatus(IDLE);
   ReloadApp();
+}
+
+void EasyUnlockServiceRegular::OnToggleEasyUnlockApiFailed(
+    const std::string& error_message) {
+  LOG(WARNING) << "Failed to turn off Smart Lock: " << error_message;
+  SetTurnOffFlowStatus(FAIL);
 }

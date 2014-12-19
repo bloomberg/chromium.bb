@@ -21,6 +21,14 @@ class DictionaryValue;
 class ListValue;
 }
 
+namespace cryptauth {
+class ToggleEasyUnlockResponse;
+}
+
+namespace proximity_auth {
+class CryptAuthClient;
+}
+
 class EasyUnlockToggleFlow;
 class Profile;
 
@@ -62,8 +70,10 @@ class EasyUnlockServiceRegular : public EasyUnlockService {
   // Sets the new turn-off flow status.
   void SetTurnOffFlowStatus(TurnOffFlowStatus status);
 
-  // Callback invoked when turn off flow has finished.
-  void OnTurnOffFlowFinished(bool success);
+  // Callback for ToggleEasyUnlock CryptAuth API.
+  void OnToggleEasyUnlockApiComplete(
+      const cryptauth::ToggleEasyUnlockResponse& response);
+  void OnToggleEasyUnlockApiFailed(const std::string& error_message);
 
 #if defined(OS_CHROMEOS)
   // Called with the user's credentials (e.g. username and password) after the
@@ -82,7 +92,7 @@ class EasyUnlockServiceRegular : public EasyUnlockService {
   PrefChangeRegistrar registrar_;
 
   TurnOffFlowStatus turn_off_flow_status_;
-  scoped_ptr<EasyUnlockToggleFlow> turn_off_flow_;
+  scoped_ptr<proximity_auth::CryptAuthClient> cryptauth_client_;
 
   base::WeakPtrFactory<EasyUnlockServiceRegular> weak_ptr_factory_;
 
