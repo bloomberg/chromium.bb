@@ -1635,6 +1635,31 @@ TEST_F(PasswordAutofillAgentTest,
   CheckTextFieldsDOMState(kAliceUsername, true, kAlicePassword, true);
 }
 
+// The user types in a username and a password, but then just before sending
+// the form off, a script changes them. This test checks that
+// PasswordAutofillAgent can still remember the username and the password
+// typed by the user.
+TEST_F(PasswordAutofillAgentTest,
+       RememberLastTypedUsernameAndPasswordOnSubmit_ScriptChanged) {
+  SimulateInputChangeForElement("temp", true, GetMainFrame(), username_element_,
+                                true);
+  SimulateInputChangeForElement("random", true, GetMainFrame(),
+                                password_element_, true);
+
+  // Simulate that the username and the password value was changed by the
+  // site's JavaScript before submit.
+  username_element_.setValue(WebString("new username"));
+  password_element_.setValue(WebString("new password"));
+  static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+      ->WillSendSubmitEvent(username_element_.form());
+  static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+      ->WillSubmitForm(username_element_.form());
+
+  // Observe that the PasswordAutofillAgent still remembered the last typed
+  // username and password and sent that to the browser.
+  ExpectFormSubmittedWithUsernameAndPasswords("temp", "random", "");
+}
+
 TEST_F(PasswordAutofillAgentTest, FormFillDataMustHaveUsername) {
   ClearUsernameAndPasswordFields();
 

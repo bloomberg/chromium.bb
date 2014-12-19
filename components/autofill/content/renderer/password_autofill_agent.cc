@@ -569,6 +569,9 @@ bool PasswordAutofillAgent::TextDidChangeInTextField(
   // TODO(vabr): Get a mutable argument instead. http://crbug.com/397083
   blink::WebInputElement mutable_element = element;  // We need a non-const.
 
+  if (element.isTextField())
+    user_modified_elements_[element] = element.value();
+
   DCHECK_EQ(element.document().frame(), render_frame()->GetWebFrame());
 
   if (element.isPasswordField()) {
@@ -842,7 +845,7 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
     if (only_visible && !is_form_visible)
       continue;
 
-    scoped_ptr<PasswordForm> password_form(CreatePasswordForm(form));
+    scoped_ptr<PasswordForm> password_form(CreatePasswordForm(form, nullptr));
     if (password_form.get()) {
       if (logger) {
         logger->LogPasswordForm(Logger::STRING_FORM_IS_PASSWORD,
@@ -959,7 +962,7 @@ void PasswordAutofillAgent::WillSubmitForm(const blink::WebFormElement& form) {
     LogHTMLForm(logger.get(), Logger::STRING_HTML_FORM_FOR_SUBMIT, form);
   }
 
-  scoped_ptr<PasswordForm> submitted_form = CreatePasswordForm(form);
+  scoped_ptr<PasswordForm> submitted_form = CreatePasswordForm(form, nullptr);
 
   // If there is a provisionally saved password, copy over the previous
   // password value so we get the user's typed password, not the value that
@@ -1043,7 +1046,7 @@ void PasswordAutofillAgent::LegacyDidStartProvisionalLoad(
                       form_element);
         }
         scoped_ptr<PasswordForm> password_form(
-            CreatePasswordForm(form_element));
+            CreatePasswordForm(form_element, &user_modified_elements_));
         if (password_form.get() && !password_form->username_value.empty() &&
             FormContainsNonDefaultPasswordValue(*password_form, form_element)) {
           password_forms_found = true;
@@ -1244,6 +1247,7 @@ void PasswordAutofillAgent::FrameClosing() {
   }
   login_to_password_info_.clear();
   provisionally_saved_form_.reset();
+  user_modified_elements_.clear();
 }
 
 bool PasswordAutofillAgent::FindLoginInfo(const blink::WebNode& node,
@@ -1280,7 +1284,8 @@ void PasswordAutofillAgent::ClearPreview(
 void PasswordAutofillAgent::ProvisionallySavePassword(
     const blink::WebFormElement& form,
     ProvisionallySaveRestriction restriction) {
-  scoped_ptr<PasswordForm> password_form(CreatePasswordForm(form));
+  scoped_ptr<PasswordForm> password_form(
+      CreatePasswordForm(form, &user_modified_elements_));
   if (!password_form || (restriction == RESTRICTION_NON_EMPTY_PASSWORD &&
                          password_form->password_value.empty() &&
                          password_form->new_password_value.empty())) {

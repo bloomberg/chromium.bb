@@ -5,10 +5,14 @@
 #ifndef COMPONENTS_AUTOFILL_CONTENT_RENDERER_PASSWORD_FORM_CONVERSION_UTILS_H_
 #define COMPONENTS_AUTOFILL_CONTENT_RENDERER_PASSWORD_FORM_CONVERSION_UTILS_H_
 
+#include <map>
+
 #include "base/memory/scoped_ptr.h"
 
 namespace blink {
 class WebFormElement;
+class WebInputElement;
+class WebString;
 }
 
 namespace autofill {
@@ -19,8 +23,13 @@ struct PasswordForm;
 // custom metadata to DOM nodes, so we have to do this every time an event
 // happens with a given form and compare against previously Create'd forms
 // to identify..which sucks.
+// If an element of |form| has an entry in |user_modified_elements|, the
+// associated string is used instead of the element's value to create
+// the PasswordForm.
 scoped_ptr<PasswordForm> CreatePasswordForm(
-    const blink::WebFormElement& form);
+    const blink::WebFormElement& form,
+    const std::map<const blink::WebInputElement, blink::WebString>*
+        user_modified_elements);
 
 }  // namespace autofill
 
