@@ -103,6 +103,14 @@
   <programlisting><xsl:apply-templates /></programlisting>
 </xsl:template>
 
+<xsl:template match="itemizedlist">
+  <itemizedlist><xsl:apply-templates select="listitem" /></itemizedlist>
+</xsl:template>
+
+<xsl:template match="listitem">
+  <listitem><simpara><xsl:apply-templates /></simpara></listitem>
+</xsl:template>
+
 <!-- stops cross-references in the section titles -->
 <xsl:template match="briefdescription">
   <xsl:value-of select="." />
