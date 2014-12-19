@@ -30,6 +30,7 @@ content_app_deps = [
   "//base/allocator",
   "//content:export",
   "//content/public/common:common_sources",
+  "//content/public/common:mojo_bindings",
   "//crypto",
   "//ui/base",
   "//ui/gfx",
