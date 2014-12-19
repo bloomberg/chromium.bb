@@ -10,8 +10,8 @@
 #include "base/location.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/task_runner.h"
+#include "components/webp_transcode/webp_decoder.h"
 #include "ios/web/public/web_thread.h"
-#include "ios/web/public/webp_decoder.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
@@ -19,7 +19,7 @@
 
 namespace {
 
-class WebpDecoderDelegate : public web::WebpDecoder::Delegate {
+class WebpDecoderDelegate : public webp_transcode::WebpDecoder::Delegate {
  public:
   NSData* data() const { return decoded_image_; }
 
@@ -30,7 +30,7 @@ class WebpDecoderDelegate : public web::WebpDecoder::Delegate {
   }
   void SetImageFeatures(
       size_t total_size,
-      web::WebpDecoder::DecodedImageFormat format) override {
+      webp_transcode::WebpDecoder::DecodedImageFormat format) override {
     decoded_image_.reset([[NSMutableData alloc] initWithCapacity:total_size]);
   }
   void OnDataDecoded(NSData* data) override {
@@ -50,7 +50,8 @@ static const char kWEBPMimeType[] = "image/webp";
 base::scoped_nsobject<NSData> DecodeWebpImage(
     const base::scoped_nsobject<NSData>& webp_image) {
   scoped_refptr<WebpDecoderDelegate> delegate(new WebpDecoderDelegate);
-  scoped_refptr<web::WebpDecoder> decoder(new web::WebpDecoder(delegate.get()));
+  scoped_refptr<webp_transcode::WebpDecoder> decoder(
+      new webp_transcode::WebpDecoder(delegate.get()));
   decoder->OnDataReceived(webp_image);
   DLOG_IF(ERROR, !delegate->data()) << "WebP image decoding failed.";
   return base::scoped_nsobject<NSData>([delegate->data() retain]);

@@ -5,6 +5,7 @@ include_rules = [
   "+components/leveldb_proto",
   "+components/suggestions",
   "+components/translate/core",
+  "+components/webp_transcode",
   "+ios/public/provider/chrome",
   "+ios/web/public",
   "+net",

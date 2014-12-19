@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/webp_decoder.h"
+#include "components/webp_transcode/webp_decoder.h"
 
 #import <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
@@ -18,13 +18,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace web {
+namespace webp_transcode {
 namespace {
 
 class WebpDecoderDelegate : public WebpDecoder::Delegate {
  public:
-  WebpDecoderDelegate() : image_([[NSMutableData alloc] init]) {
-  }
+  WebpDecoderDelegate() : image_([[NSMutableData alloc] init]) {}
 
   NSData* GetImage() const { return image_; }
 
@@ -32,7 +31,7 @@ class WebpDecoderDelegate : public WebpDecoder::Delegate {
   MOCK_METHOD1(OnFinishedDecoding, void(bool success));
   MOCK_METHOD2(SetImageFeatures,
                void(size_t total_size, WebpDecoder::DecodedImageFormat format));
-  virtual void OnDataDecoded(NSData* data) { [image_ appendData:data]; }
+  void OnDataDecoded(NSData* data) override { [image_ appendData:data]; }
 
  private:
   virtual ~WebpDecoderDelegate() {}
@@ -49,7 +48,8 @@ class WebpDecoderTest : public testing::Test {
   NSData* LoadImage(const base::FilePath& filename) {
     base::FilePath path;
     PathService::Get(base::DIR_SOURCE_ROOT, &path);
-    path = path.AppendASCII("ios/web/test/data").Append(filename);
+    path = path.AppendASCII("components/test/data/webp_transcode")
+               .Append(filename);
     return
         [NSData dataWithContentsOfFile:base::SysUTF8ToNSString(path.value())];
   }
@@ -62,11 +62,11 @@ class WebpDecoderTest : public testing::Test {
     switch (format) {
       case WebpDecoder::JPEG:
         image.reset(CGImageCreateWithJPEGDataProvider(
-            provider, NULL, false, kCGRenderingIntentDefault));
+            provider, nullptr, false, kCGRenderingIntentDefault));
         break;
       case WebpDecoder::PNG:
         image.reset(CGImageCreateWithPNGDataProvider(
-            provider, NULL, false, kCGRenderingIntentDefault));
+            provider, nullptr, false, kCGRenderingIntentDefault));
         break;
       case WebpDecoder::TIFF:
         ADD_FAILURE() << "Data already decompressed";
@@ -115,9 +115,9 @@ class WebpDecoderTest : public testing::Test {
   bool CheckCompressedImagesEqual(NSData* data_1,
                                   NSData* data_2,
                                   WebpDecoder::DecodedImageFormat format) {
-    scoped_ptr<std::vector<uint8_t> > uncompressed_1(
+    scoped_ptr<std::vector<uint8_t>> uncompressed_1(
         DecompressData(data_1, format));
-    scoped_ptr<std::vector<uint8_t> > uncompressed_2(
+    scoped_ptr<std::vector<uint8_t>> uncompressed_2(
         DecompressData(data_2, format));
     if (uncompressed_1->size() != uncompressed_2->size()) {
       DLOG(ERROR) << "Image sizes don't match";
@@ -167,8 +167,8 @@ TEST_F(WebpDecoderTest, DecodeToJpeg) {
   ASSERT_TRUE(jpg_image != nil);
   // Convert to JPEG.
   EXPECT_CALL(*delegate_, OnFinishedDecoding(true)).Times(1);
-  EXPECT_CALL(*delegate_,
-              SetImageFeatures(testing::_, WebpDecoder::JPEG)).Times(1);
+  EXPECT_CALL(*delegate_, SetImageFeatures(testing::_, WebpDecoder::JPEG))
+      .Times(1);
   decoder_->OnDataReceived(webp_image);
   // Compare to reference image.
   EXPECT_TRUE(CheckCompressedImagesEqual(jpg_image, delegate_->GetImage(),
@@ -186,8 +186,8 @@ TEST_F(WebpDecoderTest, DecodeToPng) {
   ASSERT_TRUE(png_image != nil);
   // Convert to PNG.
   EXPECT_CALL(*delegate_, OnFinishedDecoding(true)).Times(1);
-  EXPECT_CALL(*delegate_,
-              SetImageFeatures(testing::_, WebpDecoder::PNG)).Times(1);
+  EXPECT_CALL(*delegate_, SetImageFeatures(testing::_, WebpDecoder::PNG))
+      .Times(1);
   decoder_->OnDataReceived(webp_image);
   // Compare to reference image.
   EXPECT_TRUE(CheckCompressedImagesEqual(png_image, delegate_->GetImage(),
@@ -223,16 +223,17 @@ TEST_F(WebpDecoderTest, StreamedDecode) {
   ASSERT_TRUE(jpg_image != nil);
   // Convert to JPEG in chunks.
   EXPECT_CALL(*delegate_, OnFinishedDecoding(true)).Times(1);
-  EXPECT_CALL(*delegate_,
-              SetImageFeatures(testing::_, WebpDecoder::JPEG)).Times(1);
+  EXPECT_CALL(*delegate_, SetImageFeatures(testing::_, WebpDecoder::JPEG))
+      .Times(1);
   const size_t kChunkSize = 10;
   unsigned int num_chunks = 0;
   while ([webp_image length] > kChunkSize) {
     base::scoped_nsobject<NSData> chunk(
         [[webp_image subdataWithRange:NSMakeRange(0, kChunkSize)] retain]);
     decoder_->OnDataReceived(chunk);
-    webp_image.reset([[webp_image subdataWithRange:NSMakeRange(
-        kChunkSize, [webp_image length] - kChunkSize)] retain]);
+    webp_image.reset([[webp_image
+        subdataWithRange:NSMakeRange(kChunkSize, [webp_image length] -
+                                                     kChunkSize)] retain]);
     ++num_chunks;
   }
   if ([webp_image length] > 0u) {
@@ -260,4 +261,4 @@ TEST_F(WebpDecoderTest, DecodeAborted) {
   EXPECT_EQ(0u, [delegate_->GetImage() length]);
 }
 
-}  // namespace web
+}  // namespace webp_transcode

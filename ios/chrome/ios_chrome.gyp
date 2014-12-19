@@ -21,6 +21,7 @@
         '../../components/components.gyp:leveldb_proto',
         '../../components/components.gyp:suggestions',
         '../../components/components.gyp:translate_core_browser',
+        '../../components/components.gyp:webp_transcode',
         '../../net/net.gyp:net',
         '../../skia/skia.gyp:skia',
         '../../url/url.gyp:url_lib',

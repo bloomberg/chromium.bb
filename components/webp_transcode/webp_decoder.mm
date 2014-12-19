@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/webp_decoder.h"
+#include "components/webp_transcode/webp_decoder.h"
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
@@ -37,8 +37,8 @@ void WriteTiffHeader(uint8_t* dst,
                      int bytes_per_px,
                      bool has_alpha) {
   // For non-alpha case, we omit tag 0x152 (ExtraSamples).
-  const uint8_t num_ifd_entries = has_alpha ? kNumIfdEntries
-                                            : kNumIfdEntries - 1;
+  const uint8_t num_ifd_entries =
+      has_alpha ? kNumIfdEntries : kNumIfdEntries - 1;
   uint8_t tiff_header[kHeaderSize] = {
     0x49, 0x49, 0x2a, 0x00,   // little endian signature
     8, 0, 0, 0,               // offset to the unique IFD that follows
@@ -83,7 +83,7 @@ void WriteTiffHeader(uint8_t* dst,
 
 }  // namespace
 
-namespace web {
+namespace webp_transcode {
 
 // static
 size_t WebpDecoder::GetHeaderSize() {
@@ -184,9 +184,9 @@ void WebpDecoder::DoReadData(NSData* data) {
   DCHECK_EQ(READING_DATA, state_);
   DCHECK(incremental_decoder_);
   DCHECK(data);
-  VP8StatusCode status = WebPIAppend(incremental_decoder_.get(),
-                                     static_cast<const uint8_t*>([data bytes]),
-                                     [data length]);
+  VP8StatusCode status =
+      WebPIAppend(incremental_decoder_.get(),
+                  static_cast<const uint8_t*>([data bytes]), [data length]);
   switch (status) {
     case VP8_STATUS_SUSPENDED:
       // Do nothing: re-compression to JPEG or PNG cannot be done incrementally.
@@ -210,8 +210,8 @@ void WebpDecoder::DoReadData(NSData* data) {
 bool WebpDecoder::DoSendData() {
   DCHECK_EQ(READING_DATA, state_);
   int width, height;
-  uint8_t* data_ptr =
-      WebPIDecGetRGB(incremental_decoder_.get(), NULL, &width, &height, NULL);
+  uint8_t* data_ptr = WebPIDecGetRGB(incremental_decoder_.get(), nullptr,
+                                     &width, &height, nullptr);
   if (!data_ptr)
     return false;
   DCHECK_EQ(static_cast<const uint8_t*>([output_buffer_ bytes]) + kHeaderSize,
@@ -240,12 +240,12 @@ bool WebpDecoder::DoSendData() {
   } else {
     result_data.reset([output_buffer_ retain]);
   }
-  UMA_HISTOGRAM_ENUMERATION(
-      "WebP.DecodedImageFormat", format, DECODED_FORMAT_COUNT);
+  UMA_HISTOGRAM_ENUMERATION("WebP.DecodedImageFormat", format,
+                            DECODED_FORMAT_COUNT);
   delegate_->SetImageFeatures([result_data length], format);
   delegate_->OnDataDecoded(result_data);
   output_buffer_.reset();
   return true;
 }
 
-}  // namespace web
+}  // namespace webp_transcode

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_WEBP_DECODER_H_
-#define IOS_WEB_PUBLIC_WEBP_DECODER_H_
+#ifndef COMPONENTS_WEBP_TRANSCODE_WEBP_DECODER_H_
+#define COMPONENTS_WEBP_TRANSCODE_WEBP_DECODER_H_
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
@@ -12,7 +12,7 @@
 
 @class NSData;
 
-namespace web {
+namespace webp_transcode {
 
 // Decodes a WebP image into either JPEG, PNG or uncompressed TIFF.
 class WebpDecoder : public base::RefCountedThreadSafe<WebpDecoder> {
@@ -20,12 +20,7 @@ class WebpDecoder : public base::RefCountedThreadSafe<WebpDecoder> {
   // Format of the decoded image.
   // This enum is used for UMA reporting, keep it in sync with the histogram
   // definition.
-  enum DecodedImageFormat {
-    JPEG = 1,
-    PNG,
-    TIFF,
-    DECODED_FORMAT_COUNT
-  };
+  enum DecodedImageFormat { JPEG = 1, PNG, TIFF, DECODED_FORMAT_COUNT };
 
   class Delegate : public base::RefCountedThreadSafe<WebpDecoder::Delegate> {
    public:
@@ -55,11 +50,7 @@ class WebpDecoder : public base::RefCountedThreadSafe<WebpDecoder> {
     inline void operator()(WebPIDecoder* ptr) const { WebPIDelete(ptr); }
   };
 
-  enum State {
-    READING_FEATURES,
-    READING_DATA,
-    DONE
-  };
+  enum State { READING_FEATURES, READING_DATA, DONE };
 
   friend class base::RefCountedThreadSafe<WebpDecoder>;
   virtual ~WebpDecoder();
@@ -78,6 +69,6 @@ class WebpDecoder : public base::RefCountedThreadSafe<WebpDecoder> {
   int has_alpha_;
 };
 
-}  // namespace web
+}  // namespace webp_transcode
 
-#endif  // IOS_WEB_PUBLIC_WEBP_DECODER_H_
+#endif  // COMPONENTS_WEBP_TRANSCODE_WEBP_DECODER_H_

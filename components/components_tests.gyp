@@ -598,6 +598,9 @@
               ],
             }, { # 'OS == "ios"'
               'includes': ['../chrome/chrome_ios_bundle_resources.gypi'],
+              'sources': [
+                'webp_transcode/webp_decoder_unittest.mm',
+              ],
               'sources/': [
                 ['exclude', '\\.cc$'],
                 ['exclude', '\\.mm$'],
@@ -635,6 +638,7 @@
                 ['include', '^translate/'],
                 ['include', '^url_fixer/'],
                 ['include', '^variations/'],
+                ['include', '^webp_transcode/'],
               ],
               'dependencies': [
                 # Dependencies of sessions
@@ -645,6 +649,9 @@
 
                 # Dependencies of translate
                 'components.gyp:translate_ios_browser',
+
+                # Dependencies of webp_transcode
+                'components.gyp:webp_transcode',
 
                 '../ios/ios_tests.gyp:test_support_ios',
                 '../ios/web/ios_web.gyp:test_support_ios_web',

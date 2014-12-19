@@ -1,0 +1,10 @@
+include_rules = [
+  "+net",
+  # Only WebP decoding is allowed (no encoding).
+  "+third_party/libwebp/webp/decode.h",
+
+  # webp_transcode should not depend on //ios for library size reasons.
+  "-ios",
+  # webp_transcode is only used by iOS.
+  "-content",
+]

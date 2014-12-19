@@ -81,6 +81,11 @@
         'web_modal.gypi',
       ],
     }],
+    ['OS == "ios"', {
+      'includes': [
+        'webp_transcode.gypi',
+      ],
+    }],
     ['OS != "android"', {
       'includes': [
         'feedback.gypi',
