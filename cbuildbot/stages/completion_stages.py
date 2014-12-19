@@ -169,7 +169,9 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       if not builder_names:
         # Master has no slaves.
         return {}
-      elif len(builder_names) == 1 and self._run.config.name in builder_names:
+      elif (len(builder_names) == 1 and self._run.config.name in builder_names
+            or not self._run.options.mock_slave_status and
+            self._run.options.debug):
         # Master with only itself as the slave should not wait.
         return self._GetLocalBuildStatus()
       else:
