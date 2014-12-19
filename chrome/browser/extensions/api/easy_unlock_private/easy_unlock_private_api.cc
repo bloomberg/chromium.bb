@@ -168,7 +168,6 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
       l10n_util::GetStringFUTF16(
           IDS_EASY_UNLOCK_PAIRING_CHANGED_NOTIFICATION_MESSAGE,
           device_type));
-  // TODO(isherman): Remove this string.
   strings->SetString(
       "phoneChangedNotificationUpdateButton",
       l10n_util::GetStringUTF16(
