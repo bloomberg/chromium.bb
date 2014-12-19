@@ -23,7 +23,10 @@
   ],
   "externally_connectable": {
     "matches": [
-      "<all_urls>"
+      "https://login.corp.google.com/*",
+      "https://accounts.google.com/*",
+      "https://myaccount.google.com/*",
+      "https://security.google.com/*"
     ],
     "ids": [
       "fjajfjhkeibgmiggdfehjplbhmfkialk"
