@@ -10,21 +10,18 @@
 #include "content/browser/browser_url_handler_impl.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
-#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/stream_handle.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_state.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "content/test/browser_side_navigation_test_utils.h"
-#include "content/test/test_navigation_url_loader.h"
 #include "content/test/test_render_view_host.h"
 #include "ui/base/page_transition_types.h"
 
@@ -127,34 +124,12 @@ WebContents* TestWebContents::Clone() {
 }
 
 void TestWebContents::NavigateAndCommit(const GURL& url) {
-  bool has_live_renderer = GetMainFrame()->IsRenderFrameLive();
   GetController().LoadURL(
       url, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
   GURL loaded_url(url);
   bool reverse_on_redirect = false;
   BrowserURLHandlerImpl::GetInstance()->RewriteURLIfNecessary(
       &loaded_url, GetBrowserContext(), &reverse_on_redirect);
-
-  // PlzNavigate
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
-    // Simulate the renderer response if there was a live renderer when the
-    // navigation started. Otherwise, it will have been sent directly to the
-    // network stack.
-    if (has_live_renderer)
-      GetMainFrame()->SendBeginNavigationWithURL(url);
-
-    // Now simulate the network stack commit without any redirects. This will
-    // cause the navigation to commit at the same url.
-    FrameTreeNode* frame_tree_node = GetMainFrame()->frame_tree_node();
-    NavigationRequest* request =
-        static_cast<NavigatorImpl*>(frame_tree_node->navigator())
-            ->GetNavigationRequestForNodeForTesting(frame_tree_node);
-    TestNavigationURLLoader* url_loader =
-        static_cast<TestNavigationURLLoader*>(request->loader_for_testing());
-    scoped_refptr<ResourceResponse> response(new ResourceResponse);
-    url_loader->CallOnResponseStarted(response, MakeEmptyStream());
-  }
 
   // LoadURL created a navigation entry, now simulate the RenderView sending
   // a notification that it actually navigated.
@@ -166,17 +141,23 @@ void TestWebContents::TestSetIsLoading(bool value) {
 }
 
 void TestWebContents::CommitPendingNavigation() {
-  // If we are doing a cross-site navigation, this simulates the current RVH
-  // notifying that it has unloaded so the pending RVH is resumed and can
+  // If we are doing a cross-site navigation, this simulates the current RFH
+  // notifying that it has unloaded so the pending RFH is resumed and can
   // navigate.
-  ProceedWithCrossSiteNavigation();
   TestRenderFrameHost* old_rfh = GetMainFrame();
+  const NavigationEntry* entry = GetController().GetPendingEntry();
+  DCHECK(entry);
+
+  // Simulate the BeforeUnload ACK if necessary.
+  // PlzNavigate: the pending RFH is not created before the navigation commit,
+  // so it is necessary to simulate the IO thread response here to commit in the
+  // proper renderer.
+  old_rfh->PrepareForCommit(entry->GetURL());
+
   TestRenderFrameHost* rfh = GetPendingMainFrame();
   if (!rfh)
     rfh = old_rfh;
 
-  const NavigationEntry* entry = GetController().GetPendingEntry();
-  DCHECK(entry);
   int page_id = entry->GetPageID();
   if (page_id == -1) {
     // It's a new navigation, assign a never-seen page id to it.
@@ -184,8 +165,8 @@ void TestWebContents::CommitPendingNavigation() {
   }
 
   rfh->SendNavigate(page_id, entry->GetURL());
-  // Simulate the SwapOut_ACK. This is needed when cross-site navigation happens
-  // (old_rfh != rfh).
+  // Simulate the SwapOut_ACK. This is needed when cross-site navigation
+  // happens.
   if (old_rfh != rfh)
     old_rfh->OnSwappedOut();
 }

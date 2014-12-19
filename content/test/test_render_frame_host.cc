@@ -4,9 +4,16 @@
 
 #include "content/test/test_render_frame_host.h"
 
+#include "base/command_line.h"
 #include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/navigation_request.h"
+#include "content/browser/frame_host/navigator.h"
+#include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
-#include "content/common/frame_messages.h"
+#include "content/public/browser/stream_handle.h"
+#include "content/public/common/content_switches.h"
+#include "content/test/browser_side_navigation_test_utils.h"
+#include "content/test/test_navigation_url_loader.h"
 #include "content/test/test_render_view_host.h"
 #include "net/base/load_flags.h"
 #include "third_party/WebKit/public/web/WebPageVisibilityState.h"
@@ -188,6 +195,45 @@ void TestRenderFrameHost::SendBeginNavigationWithURL(const GURL& url) {
 
 void TestRenderFrameHost::DidDisownOpener() {
   OnDidDisownOpener();
+}
+
+void TestRenderFrameHost::PrepareForCommit(const GURL& url) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    SendBeforeUnloadACK(true);
+    return;
+  }
+
+  // PlzNavigate
+  // Simulate the network stack commit without any redirects.
+  NavigationRequest* request =
+      static_cast<NavigatorImpl*>(frame_tree_node_->navigator())
+          ->GetNavigationRequestForNodeForTesting(frame_tree_node_);
+
+  // We are simulating a renderer-initiated navigation.
+  if (!request) {
+    SendBeginNavigationWithURL(url);
+    request = static_cast<NavigatorImpl*>(frame_tree_node_->navigator())
+        ->GetNavigationRequestForNodeForTesting(frame_tree_node_);
+  }
+  ASSERT_TRUE(request);
+
+  // We may not have simulated the renderer response to the navigation request.
+  // Do that now.
+  if (request->state() == NavigationRequest::WAITING_FOR_RENDERER_RESPONSE)
+    SendBeginNavigationWithURL(url);
+
+  // We have already simulated the IO thread commit. Only the
+  // DidCommitProvisionalLoad from the renderer is missing.
+  if (request->state() == NavigationRequest::RESPONSE_STARTED)
+    return;
+
+  ASSERT_TRUE(request->state() == NavigationRequest::STARTED);
+  TestNavigationURLLoader* url_loader =
+      static_cast<TestNavigationURLLoader*>(request->loader_for_testing());
+  ASSERT_TRUE(url_loader);
+  scoped_refptr<ResourceResponse> response(new ResourceResponse);
+  url_loader->CallOnResponseStarted(response, MakeEmptyStream());
 }
 
 }  // namespace content

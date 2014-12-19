@@ -27,6 +27,28 @@ struct NavigationRequestInfo;
 // the navigation following its refactoring.
 class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
  public:
+  // Keeps track of the various stages of a NavigationRequest.
+  enum NavigationState {
+    // Initial state.
+    NOT_STARTED = 0,
+
+    // Waiting for a BeginNavigation IPC from the renderer in a
+    // browser-initiated navigation. If there is no live renderer when the
+    // request is created, this stage is skipped.
+    WAITING_FOR_RENDERER_RESPONSE,
+
+    // The request was sent to the IO thread.
+    STARTED,
+
+    // The response started on the IO thread and is ready to be committed. This
+    // is one of the two final states for the request.
+    RESPONSE_STARTED,
+
+    // The request failed on the IO thread and an error page should be
+    // displayed. This is one of the two final states for the request.
+    FAILED,
+  };
+
   NavigationRequest(FrameTreeNode* frame_tree_node,
                     const CommonNavigationParams& common_params,
                     const CommitNavigationParams& commit_params);
@@ -44,6 +66,13 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   const CommitNavigationParams& commit_params() const { return commit_params_; }
 
   NavigationURLLoader* loader_for_testing() const { return loader_.get(); }
+
+  NavigationState state() const { return state_; }
+
+  void SetWaitingForRendererResponse() {
+    DCHECK(state_ == NOT_STARTED);
+    state_ = WAITING_FOR_RENDERER_RESPONSE;
+  }
 
  private:
   // NavigationURLLoaderDelegate implementation.
@@ -63,6 +92,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // redirects.
   CommonNavigationParams common_params_;
   const CommitNavigationParams commit_params_;
+
+  NavigationState state_;
 
   scoped_ptr<NavigationURLLoader> loader_;
 

@@ -21,7 +21,8 @@ NavigationRequest::NavigationRequest(
     const CommitNavigationParams& commit_params)
     : frame_tree_node_(frame_tree_node),
       common_params_(common_params),
-      commit_params_(commit_params) {
+      commit_params_(commit_params),
+      state_(NOT_STARTED) {
 }
 
 NavigationRequest::~NavigationRequest() {
@@ -31,6 +32,8 @@ void NavigationRequest::BeginNavigation(
     scoped_ptr<NavigationRequestInfo> info,
     scoped_refptr<ResourceRequestBody> request_body) {
   DCHECK(!loader_);
+  DCHECK(state_ == NOT_STARTED || state_ == WAITING_FOR_RENDERER_RESPONSE);
+  state_ = STARTED;
   loader_ = NavigationURLLoader::Create(
       frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
       frame_tree_node_->frame_tree_node_id(), common_params_, info.Pass(),
@@ -55,11 +58,15 @@ void NavigationRequest::OnRequestRedirected(
 void NavigationRequest::OnResponseStarted(
     const scoped_refptr<ResourceResponse>& response,
     scoped_ptr<StreamHandle> body) {
+  DCHECK(state_ == STARTED);
+  state_ = RESPONSE_STARTED;
   frame_tree_node_->navigator()->CommitNavigation(frame_tree_node_,
                                                   response.get(), body.Pass());
 }
 
 void NavigationRequest::OnRequestFailed(int net_error) {
+  DCHECK(state_ == STARTED);
+  state_ = FAILED;
   // TODO(davidben): Network failures should display a network error page.
   NOTIMPLEMENTED();
 }

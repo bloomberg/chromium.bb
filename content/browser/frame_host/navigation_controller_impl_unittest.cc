@@ -4,6 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
@@ -25,6 +26,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -211,6 +213,27 @@ class NavigationControllerTest
     return static_cast<NavigationControllerImpl&>(controller());
   }
 
+  const IPC::Message* GetLastNavigationRequest() {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableBrowserSideNavigation)) {
+      return process()->sink().GetFirstMessageMatching(
+          FrameMsg_RequestNavigation::ID);
+    }
+    return process()->sink().GetFirstMessageMatching(FrameMsg_Navigate::ID);
+  }
+
+  const GURL GetNavigationURLFromIPC(const IPC::Message* message) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableBrowserSideNavigation)) {
+      Tuple2<CommonNavigationParams, RequestNavigationParams> nav_params;
+      FrameMsg_RequestNavigation::Read(message, &nav_params);
+      return nav_params.a.url;
+    }
+    Tuple1<FrameMsg_Navigate_Params> nav_params;
+    FrameMsg_Navigate::Read(message, &nav_params);
+    return nav_params.a.common_params.url;
+  }
+
  protected:
   GURL navigated_url_;
   size_t navigation_entry_committed_counter_;
@@ -374,6 +397,7 @@ TEST_F(NavigationControllerTest, LoadURL) {
   // We should have gotten no notifications from the preceeding checks.
   EXPECT_EQ(0U, notifications.size());
 
+  main_test_rfh()->PrepareForCommit(url1);
   main_test_rfh()->SendNavigate(0, url1);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
@@ -414,7 +438,7 @@ TEST_F(NavigationControllerTest, LoadURL) {
 
   // Simulate the beforeunload ack for the cross-site transition, and then the
   // commit.
-  main_test_rfh()->SendBeforeUnloadACK(true);
+  main_test_rfh()->PrepareForCommit(url2);
   contents()->GetPendingMainFrame()->SendNavigate(1, url2);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
@@ -752,9 +776,9 @@ TEST_F(NavigationControllerTest, LoadURL_NewPending) {
   EXPECT_EQ(0U, notifications.size());
 
   // After the beforeunload but before it commits, do a new navigation.
-  main_test_rfh()->SendBeforeUnloadACK(true);
+  main_test_rfh()->PrepareForCommit(kExistingURL2);
   const GURL kNewURL("http://see");
-  contents()->GetPendingMainFrame()->SendNavigate(3, kNewURL);
+  contents()->GetMainFrame()->SendNavigate(3, kNewURL);
 
   // There should no longer be any pending entry, and the third navigation we
   // just made should be committed.
@@ -797,7 +821,6 @@ TEST_F(NavigationControllerTest, LoadURL_ExistingPending) {
 
   // Before that commits, do a new navigation.
   const GURL kNewURL("http://foo/see");
-  LoadCommittedDetails details;
   main_test_rfh()->SendNavigate(3, kNewURL);
 
   // There should no longer be any pending entry, and the third navigation we
@@ -823,6 +846,7 @@ TEST_F(NavigationControllerTest, LoadURL_PrivilegedPending) {
       kExistingURL1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   // Pretend it has bindings so we can tell if we incorrectly copy it.
   main_test_rfh()->GetRenderViewHost()->AllowBindings(2);
+  main_test_rfh()->PrepareForCommit(kExistingURL1);
   main_test_rfh()->SendNavigate(0, kExistingURL1);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
@@ -831,7 +855,7 @@ TEST_F(NavigationControllerTest, LoadURL_PrivilegedPending) {
   const GURL kExistingURL2("http://foo/eh");
   controller.LoadURL(
       kExistingURL2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  main_test_rfh()->SendBeforeUnloadACK(true);
+  main_test_rfh()->PrepareForCommit(kExistingURL2);
   TestRenderFrameHost* foo_rfh = contents()->GetPendingMainFrame();
   foo_rfh->SendNavigate(1, kExistingURL2);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
@@ -849,7 +873,6 @@ TEST_F(NavigationControllerTest, LoadURL_PrivilegedPending) {
 
   // Before that commits, do a new navigation.
   const GURL kNewURL("http://foo/bee");
-  LoadCommittedDetails details;
   foo_rfh->SendNavigate(3, kNewURL);
 
   // There should no longer be any pending entry, and the third navigation we
@@ -1085,6 +1108,7 @@ TEST_F(NavigationControllerTest, LoadURL_WithBindings) {
 
   // Commit.
   TestRenderFrameHost* orig_rfh = contents()->GetMainFrame();
+  orig_rfh->PrepareForCommit(url1);
   orig_rfh->SendNavigate(0, url1);
   EXPECT_EQ(controller.GetEntryCount(), 1);
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
@@ -1102,7 +1126,7 @@ TEST_F(NavigationControllerTest, LoadURL_WithBindings) {
   // privileged url.
   controller.LoadURL(
       url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  orig_rfh->SendBeforeUnloadACK(true);
+  orig_rfh->PrepareForCommit(url2);
   TestRenderFrameHost* new_rfh = contents()->GetPendingMainFrame();
   new_rfh->GetRenderViewHost()->AllowBindings(1);
   new_rfh->SendNavigate(1, url2);
@@ -3895,6 +3919,7 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
   NavigateAndCommit(url3);
   controller.GoBack();
   contents()->CommitPendingNavigation();
+  process()->sink().ClearMessages();
 
   // Simulate the page calling history.back(). It should create a pending entry.
   contents()->OnGoToEntryAtOffset(-1);
@@ -3903,12 +3928,10 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
   // it unloaded, simulate that.
   contents()->ProceedWithCrossSiteNavigation();
   // Also make sure we told the page to navigate.
-  const IPC::Message* message =
-      process()->sink().GetFirstMessageMatching(FrameMsg_Navigate::ID);
+  const IPC::Message* message = GetLastNavigationRequest();
   ASSERT_TRUE(message != NULL);
-  Tuple1<FrameMsg_Navigate_Params> nav_params;
-  FrameMsg_Navigate::Read(message, &nav_params);
-  EXPECT_EQ(url1, nav_params.a.common_params.url);
+  GURL nav_url = GetNavigationURLFromIPC(message);
+  EXPECT_EQ(url1, nav_url);
   process()->sink().ClearMessages();
 
   // Now test history.forward()
@@ -3917,10 +3940,10 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
   // The actual cross-navigation is suspended until the current RVH tells us
   // it unloaded, simulate that.
   contents()->ProceedWithCrossSiteNavigation();
-  message = process()->sink().GetFirstMessageMatching(FrameMsg_Navigate::ID);
+  message = GetLastNavigationRequest();
   ASSERT_TRUE(message != NULL);
-  FrameMsg_Navigate::Read(message, &nav_params);
-  EXPECT_EQ(url3, nav_params.a.common_params.url);
+  nav_url = GetNavigationURLFromIPC(message);
+  EXPECT_EQ(url3, nav_url);
   process()->sink().ClearMessages();
 
   controller.DiscardNonCommittedEntries();
@@ -3928,7 +3951,7 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
   // Make sure an extravagant history.go() doesn't break.
   contents()->OnGoToEntryAtOffset(120);  // Out of bounds.
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
-  message = process()->sink().GetFirstMessageMatching(FrameMsg_Navigate::ID);
+  message = GetLastNavigationRequest();
   EXPECT_TRUE(message == NULL);
 }
 
@@ -4315,6 +4338,10 @@ TEST_F(NavigationControllerTest, ClearHistoryList) {
   EXPECT_TRUE(entry->should_clear_history_list());
 
   // Assume that the RF correctly cleared its history and commit the navigation.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    contents()->GetMainFrame()->PrepareForCommit(entry->GetURL());
+  }
   contents()->GetPendingMainFrame()->
       set_simulate_history_list_was_cleared(true);
   contents()->CommitPendingNavigation();

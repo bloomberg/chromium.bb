@@ -95,6 +95,13 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
     simulate_history_list_was_cleared_ = cleared;
   }
 
+  // Advances the RenderFrameHost (and through it the RenderFrameHostManager) to
+  // a state where a new navigation can be committed by a renderer. Currently,
+  // this simulates a BeforeUnload ACK from the renderer.
+  // PlzNavigate: this simulates a BeforeUnload ACK from the renderer, and the
+  // interaction with the IO thread up until the response is ready to commit.
+  void PrepareForCommit(const GURL& url);
+
  private:
   TestRenderFrameHostCreationObserver child_creation_observer_;
 
