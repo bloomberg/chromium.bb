@@ -50,6 +50,7 @@ class PermissionServiceImpl : public mojo::InterfaceImpl<PermissionService> {
   void RequestPermission(
       PermissionName permission,
       const mojo::String& origin,
+      bool user_gesture,
       const mojo::Callback<void(PermissionStatus)>& callback) override;
 
   // mojo::InterfaceImpl.

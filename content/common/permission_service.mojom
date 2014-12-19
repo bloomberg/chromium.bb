@@ -18,6 +18,6 @@ enum PermissionName {
 interface PermissionService {
   HasPermission(PermissionName permission, string origin)
     => (PermissionStatus status);
-  RequestPermission(PermissionName permission, string origin)
+  RequestPermission(PermissionName permission, string origin, bool user_gesture)
     => (PermissionStatus status);
 };

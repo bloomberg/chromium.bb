@@ -84,6 +84,7 @@ void GeolocationDispatcher::requestPermission(
   permission_service_->RequestPermission(
       PERMISSION_NAME_GEOLOCATION,
       permissionRequest.securityOrigin().toString().utf8(),
+      blink::WebUserGestureIndicator::isProcessingUserGesture(),
       base::Bind(&GeolocationDispatcher::OnPermissionSet,
                  base::Unretained(this),
                  permission_request_id));

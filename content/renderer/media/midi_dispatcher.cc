@@ -10,6 +10,7 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebMIDIPermissionRequest.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
+#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 
 using blink::WebMIDIPermissionRequest;
 using blink::WebSecurityOrigin;
@@ -35,6 +36,7 @@ void MidiDispatcher::requestSysexPermission(
   permission_service_->RequestPermission(
       PERMISSION_NAME_MIDI_SYSEX,
       request.securityOrigin().toString().utf8(),
+      blink::WebUserGestureIndicator::isProcessingUserGesture(),
       base::Bind(&MidiDispatcher::OnSysExPermissionSet,
                  base::Unretained(this),
                  permission_request_id));

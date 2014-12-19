@@ -10,6 +10,7 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebNotificationPermissionCallback.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
+#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 
 namespace content {
 
@@ -33,6 +34,7 @@ void NotificationPermissionDispatcher::RequestPermission(
   permission_service_->RequestPermission(
       PERMISSION_NAME_NOTIFICATIONS,
       origin.toString().utf8(),
+      blink::WebUserGestureIndicator::isProcessingUserGesture(),
       base::Bind(&NotificationPermissionDispatcher::OnPermissionRequestComplete,
                  base::Unretained(this),
                  request_id));
