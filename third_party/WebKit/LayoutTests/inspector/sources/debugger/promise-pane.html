@@ -88,7 +88,7 @@ function test()
     function step5()
     {
         var result = InspectorTest.dumpDataGridIntoString(promisePane._dataGrid);
-        result = result.replace(/\s+\d+\s*ms\s*/g, " <number> ms ");
+        result = result.replace(/\|\s+\d+\s+\w*\s*\|/g, "| <number> ms |");
         InspectorTest.addResult(result);
         InspectorTest.completeDebuggerTest();
     }
