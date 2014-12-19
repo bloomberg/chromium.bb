@@ -284,7 +284,7 @@
                   '|LayoutTests/ietestcenter/css3/flexbox/'
     },
     'css_fragmentation_tests': {
-      'filepath': '|LayoutTests/fast/multicol/' \
+      'filepath': 'LayoutTests/fast/multicol/' \
                   '|LayoutTests/fast/pagination/'
     },
     'battery_status': {
