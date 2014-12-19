@@ -31,9 +31,11 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <poll.h>
 
 #include "wayland-private.h"
 #include "test-runner.h"
+#include "test-compositor.h"
 
 static const char message[] = "Hello, world";
 
@@ -570,4 +572,81 @@ suu_handler(void *data, struct wl_object *object,
 TEST(invoke_closure)
 {
 	marshal_helper("suu", suu_handler, "foo", 500, 404040);
+}
+
+static void
+leak_closure(void)
+{
+	struct wl_callback *cb;
+	struct pollfd pfd;
+	struct client *c = client_connect();
+
+	cb = wl_display_sync(c->wl_display);
+	assert(cb);
+	assert(wl_display_flush(c->wl_display) > 0);
+
+	/* we don't need it, it is referenced */
+	wl_callback_destroy(cb);
+
+	pfd.fd = wl_display_get_fd(c->wl_display);
+	pfd.events = POLLIN;
+
+	test_set_timeout(2);
+	assert(poll(&pfd, 1, -1) == 1);
+
+	/* read events, but do not dispatch them */
+	assert(wl_display_prepare_read(c->wl_display) == 0);
+	assert(wl_display_read_events(c->wl_display) == 0);
+
+	/*
+	 * now we have wl_callback.done and wl_display.delete_id queued;
+	 * if we now release the queue (in wl_display_disconnect())
+	 * we should not leak memory
+	 */
+
+	client_disconnect(c);
+}
+
+TEST(closure_leaks)
+{
+	struct display *d = display_create();
+
+	client_create(d, leak_closure);
+	display_run(d);
+
+	display_destroy(d);
+}
+
+static void
+leak_after_error(void)
+{
+	struct client *c = client_connect();
+
+	/* this should return -1, because we'll send error
+	 * from server. */
+	assert(stop_display(c, 1) == -1);
+	assert(wl_display_dispatch_pending(c->wl_display) == -1);
+	assert(wl_display_get_error(c->wl_display) == ENOMEM);
+
+	/* after we got error, we have display_resume event
+	 * in the queue. It should be freed in wl_display_disconnect().
+	 * Let's see! */
+
+	wl_proxy_destroy((struct wl_proxy *) c->tc);
+	wl_display_disconnect(c->wl_display);
+	free(c);
+}
+
+TEST(closure_leaks_after_error)
+{
+	struct display *d = display_create();
+	struct client_info *cl;
+
+	cl = client_create(d, leak_after_error);
+	display_run(d);
+
+	wl_client_post_no_memory(cl->wl_client);
+	display_resume(d);
+
+	display_destroy(d);
 }
