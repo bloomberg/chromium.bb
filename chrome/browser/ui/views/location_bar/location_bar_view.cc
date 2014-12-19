@@ -184,7 +184,8 @@ LocationBarView::LocationBarView(Browser* browser,
       starting_omnibox_leading_inset_(0),
       current_omnibox_leading_inset_(0),
       current_omnibox_width_(0),
-      ending_omnibox_width_(0) {
+      ending_omnibox_width_(0),
+      web_contents_null_at_last_refresh_(true) {
   edit_bookmarks_enabled_.Init(
       bookmarks::prefs::kEditBookmarksEnabled, profile->GetPrefs(),
       base::Bind(&LocationBarView::Update, base::Unretained(this),
@@ -1078,6 +1079,7 @@ bool LocationBarView::RefreshPageActionViews() {
         extensions_tab_helper->location_bar_controller();
     new_page_actions = controller->GetCurrentActions();
   }
+  web_contents_null_at_last_refresh_ = web_contents == NULL;
 
   // On startup we sometimes haven't loaded any extensions. This makes sure
   // we catch up when the extensions (and any page actions) load.
@@ -1315,7 +1317,12 @@ bool LocationBarView::ShowPageActionPopup(
   CHECK(extension_action);
   PageActionWithBadgeView* page_action_view =
       GetPageActionView(extension_action);
-  CHECK(page_action_view);
+  if (!page_action_view) {
+    CHECK(!web_contents_null_at_last_refresh_);
+    CHECK(!is_popup_mode_);
+    CHECK(!extensions::FeatureSwitch::extension_action_redesign()->IsEnabled());
+    CHECK(false);
+  }
   PageActionImageView* page_action_image_view = page_action_view->image_view();
   CHECK(page_action_image_view);
   ExtensionActionViewController* extension_action_view_controller =

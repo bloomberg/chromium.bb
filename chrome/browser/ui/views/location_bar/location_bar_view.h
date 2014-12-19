@@ -549,6 +549,10 @@ class LocationBarView : public LocationBar,
   int current_omnibox_width_;
   int ending_omnibox_width_;
 
+  // This is a debug state variable that stores if the WebContents was null
+  // during the last RefreshPageAction.
+  bool web_contents_null_at_last_refresh_;
+
   DISALLOW_COPY_AND_ASSIGN(LocationBarView);
 };
 
