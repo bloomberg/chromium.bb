@@ -12,22 +12,30 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_window_registry_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/google_chrome_strings.h"
+#include "content/public/browser/notification_service.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "grit/chrome_unscaled_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
+
+using extensions::ExtensionRegistry;
 
 const char kQuitWithAppsOriginUrl[] = "chrome://quit-with-apps";
 const int kQuitAllAppsButtonIndex = 0;
@@ -40,17 +48,22 @@ QuitWithAppsController::QuitWithAppsController()
     : notification_profile_(NULL), suppress_for_session_(false) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  hosted_app_quit_notification_ = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kHostedAppQuitNotification);
+
   // There is only ever one notification to replace, so use the same replace_id
   // each time.
   base::string16 replace_id = base::UTF8ToUTF16(id());
 
   message_center::ButtonInfo quit_apps_button_info(
       l10n_util::GetStringUTF16(IDS_QUIT_WITH_APPS_QUIT_LABEL));
-  message_center::ButtonInfo suppression_button_info(
-      l10n_util::GetStringUTF16(IDS_QUIT_WITH_APPS_SUPPRESSION_LABEL));
   message_center::RichNotificationData rich_notification_data;
   rich_notification_data.buttons.push_back(quit_apps_button_info);
-  rich_notification_data.buttons.push_back(suppression_button_info);
+  if (!hosted_app_quit_notification_) {
+    message_center::ButtonInfo suppression_button_info(
+        l10n_util::GetStringUTF16(IDS_QUIT_WITH_APPS_SUPPRESSION_LABEL));
+    rich_notification_data.buttons.push_back(suppression_button_info);
+  }
 
   notification_.reset(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
@@ -73,8 +86,9 @@ QuitWithAppsController::~QuitWithAppsController() {}
 void QuitWithAppsController::Display() {}
 
 void QuitWithAppsController::Close(bool by_user) {
-  if (by_user)
-    suppress_for_session_ = true;
+  if (by_user) {
+    suppress_for_session_ = hosted_app_quit_notification_ ? false : true;
+  }
 }
 
 void QuitWithAppsController::Click() {
@@ -85,9 +99,18 @@ void QuitWithAppsController::Click() {
 void QuitWithAppsController::ButtonClick(int button_index) {
   g_browser_process->notification_ui_manager()->CancelById(
       id(), NotificationUIManager::GetProfileID(notification_profile_));
+
   if (button_index == kQuitAllAppsButtonIndex) {
+    if (hosted_app_quit_notification_) {
+      content::NotificationService::current()->Notify(
+          chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
+          content::NotificationService::AllSources(),
+          content::NotificationService::NoDetails());
+      chrome::CloseAllBrowsers();
+    }
     AppWindowRegistryUtil::CloseAllAppWindows();
-  } else if (button_index == kDontShowAgainButtonIndex) {
+  } else if (button_index == kDontShowAgainButtonIndex &&
+             !hosted_app_quit_notification_) {
     g_browser_process->local_state()->SetBoolean(
         prefs::kNotifyWhenAppsKeepChromeAlive, false);
   }
@@ -107,10 +130,36 @@ bool QuitWithAppsController::ShouldQuit() {
     return true;
   }
 
-  // Quit immediately if there are no windows or the confirmation has been
-  // suppressed.
-  if (!AppWindowRegistryUtil::IsAppWindowRegisteredInAnyProfile(0))
-    return true;
+  if (hosted_app_quit_notification_) {
+    bool hosted_apps_open = false;
+    const BrowserList* browser_list =
+        BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
+    for (Browser* browser : *browser_list) {
+      if (!browser->is_app())
+        continue;
+
+      ExtensionRegistry* registry = ExtensionRegistry::Get(browser->profile());
+      const extensions::Extension* extension = registry->GetExtensionById(
+          web_app::GetExtensionIdFromApplicationName(browser->app_name()),
+          ExtensionRegistry::ENABLED);
+      if (extension->is_hosted_app()) {
+        hosted_apps_open = true;
+        break;
+      }
+    }
+
+    // Quit immediately if there are no windows/hosted apps open or
+    // the confirmation has been suppressed.
+    if (!AppWindowRegistryUtil::IsAppWindowRegisteredInAnyProfile(0) &&
+        !hosted_apps_open) {
+      return true;
+    }
+  } else {
+    // Quit immediately if there are no windows or the confirmation has been
+    // suppressed.
+    if (!AppWindowRegistryUtil::IsAppWindowRegisteredInAnyProfile(0))
+      return true;
+  }
 
   // If there are browser windows, and this notification has been suppressed for
   // this session or permanently, then just return false to prevent Chrome from

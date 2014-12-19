@@ -47,6 +47,9 @@ class QuitWithAppsController : public NotificationDelegate {
   // Whether to suppress showing the notification for the rest of the session.
   bool suppress_for_session_;
 
+  // Display a notification when quitting Chrome with hosted apps running?
+  bool hosted_app_quit_notification_;
+
   DISALLOW_COPY_AND_ASSIGN(QuitWithAppsController);
 };
 

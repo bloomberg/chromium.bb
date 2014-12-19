@@ -1518,6 +1518,13 @@ const Experiment kExperiments[] = {
     kOsMac,
     SINGLE_VALUE_TYPE(switches::kEnableHostedAppShimCreation)
   },
+  {
+    "enable-hosted-app-quit-notification",
+    IDS_FLAGS_ENABLE_HOSTED_APP_QUIT_NOTIFICATION_NAME,
+    IDS_FLAGS_ENABLE_HOSTED_APP_QUIT_NOTIFICATION_DESCRIPTION,
+    kOsMac,
+    SINGLE_VALUE_TYPE(switches::kHostedAppQuitNotification)
+  },
 #endif
   {
     "enable-ephemeral-apps-in-webstore",

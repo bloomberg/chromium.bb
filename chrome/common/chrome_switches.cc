@@ -1306,6 +1306,10 @@ const char kMigrateDataDirForSxS[]          = "migrate-data-dir-for-sxs";
 // Prevents Chrome from quitting when Chrome Apps are open.
 const char kAppsKeepChromeAliveInTests[]    = "apps-keep-chrome-alive-in-tests";
 
+// Shows a notification when quitting Chrome with hosted apps running. Default
+// behavior is to also quit all hosted apps.
+const char kHostedAppQuitNotification[] = "enable-hosted-app-quit-notification";
+
 // Forcibly disables Lion-style on newer OSes, to allow developers to test the
 // older, SnowLeopard-style fullscreen.
 const char kDisableSystemFullscreenForTesting[] =

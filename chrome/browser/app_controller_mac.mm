@@ -430,6 +430,11 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   // sessions.
   if (!browser_shutdown::IsTryingToQuit() && quitWithAppsController_.get() &&
       !quitWithAppsController_->ShouldQuit()) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kHostedAppQuitNotification)) {
+      return NO;
+    }
+
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
         content::NotificationService::AllSources(),
