@@ -69,6 +69,12 @@ RenderFrameHostManager::~RenderFrameHostManager() {
   if (pending_render_frame_host_)
     UnsetPendingRenderFrameHost();
 
+  if (render_frame_host_ &&
+      render_frame_host_->GetSiteInstance()->active_frame_count() <= 1U) {
+    ShutdownRenderFrameProxyHostsInSiteInstance(
+        render_frame_host_->GetSiteInstance()->GetId());
+  }
+
   // We should always have a current RenderFrameHost except in some tests.
   SetRenderFrameHost(scoped_ptr<RenderFrameHostImpl>());
 

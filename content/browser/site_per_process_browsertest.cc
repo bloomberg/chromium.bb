@@ -399,6 +399,107 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateRemoteFrame) {
             child->current_frame_host()->GetSiteInstance());
 }
 
+// In A-embed-B-embed-C scenario, verify that killing process B clears proxies
+// of C from the tree.
+//
+//     1          A                  A
+//    / \        / \                / \    .
+//   2   3 ->   B   A -> Kill B -> B*  A
+//  /          /
+// 4          C
+//
+// node1 is the root.
+// Initially, both node1.proxy_hosts_ and node3.proxy_hosts_ contain C.
+// After we kill B, make sure proxies for C are cleared.
+//
+// TODO(lazyboy): Once http://crbug.com/432107 is fixed, we should also make
+// sure that proxies for B are not cleared when we kill B.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       KillingRendererClearsDescendantProxies) {
+  GURL main_url(
+      embedded_test_server()->GetURL("/frame_tree/page_with_two_frames.html"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(shell()->web_contents())->
+          GetFrameTree()->root();
+  SitePerProcessWebContentsObserver observer(shell()->web_contents());
+
+  ASSERT_EQ(2U, root->child_count());
+
+  // Navigate the second subframe (node3) to a local frame.
+  GURL site_a_url(embedded_test_server()->GetURL("/title1.html"));
+  NavigateFrameToURL(root->child_at(1), site_a_url);
+
+  // Navigate the first subframe (node2) to a cross-site page with two
+  // subframes.
+  // NavigateFrameToURL can't be used here because it doesn't guarantee that
+  // FrameTreeNodes will have been created for child frames when it returns.
+  RenderFrameHostCreatedObserver frame_observer(shell()->web_contents(), 2);
+  GURL site_b_url(
+      embedded_test_server()->GetURL(
+          "bar.com", "/frame_tree/page_with_one_frame.html"));
+  NavigationController::LoadURLParams params_b(site_b_url);
+  params_b.transition_type = ui::PAGE_TRANSITION_LINK;
+  params_b.frame_tree_node_id = root->child_at(0)->frame_tree_node_id();
+  root->child_at(0)->navigator()->GetController()->LoadURLWithParams(params_b);
+  frame_observer.Wait();
+
+  // We can't use a SitePerProcessWebContentsObserver to verify the URL here,
+  // since the frame has children that may have clobbered it in the observer.
+  EXPECT_EQ(site_b_url, root->child_at(0)->current_url());
+
+  // Ensure that a new process is created for node2.
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            root->child_at(0)->current_frame_host()->GetSiteInstance());
+  // Ensure that a new process is *not* created for node3.
+  EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
+            root->child_at(1)->current_frame_host()->GetSiteInstance());
+
+  ASSERT_EQ(1U, root->child_at(0)->child_count());
+
+  // Navigate node4 to cross-site-page.
+  FrameTreeNode* node4 = root->child_at(0)->child_at(0);
+  GURL site_c_url(embedded_test_server()->GetURL("baz.com", "/title2.html"));
+  NavigateFrameToURL(node4, site_c_url);
+  EXPECT_TRUE(observer.navigation_succeeded());
+  EXPECT_EQ(site_c_url, observer.navigation_url());
+
+  // |site_instance_c| is expected to go away once we kill |child_process_b|
+  // below, so create a local scope so we can extend the lifetime of
+  // |site_instance_c| with a refptr.
+  {
+    SiteInstance* site_instance_b =
+        root->child_at(0)->current_frame_host()->GetSiteInstance();
+    scoped_refptr<SiteInstanceImpl> site_instance_c =
+        node4->current_frame_host()->GetSiteInstance();
+
+    // Initially proxies for both B and C will be present in the root.
+    EXPECT_TRUE(root->render_manager()->GetRenderFrameProxyHost(
+                    site_instance_b));
+    EXPECT_TRUE(root->render_manager()->GetRenderFrameProxyHost(
+                    site_instance_c.get()));
+
+    // Kill process B.
+    RenderProcessHost* child_process_b =
+        root->child_at(0)->current_frame_host()->GetProcess();
+    RenderProcessHostWatcher crash_observer(
+        child_process_b, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+    child_process_b->Shutdown(0, false);
+    crash_observer.Wait();
+
+    // Make sure proxy C has gone from root.
+    EXPECT_FALSE(root->render_manager()->GetRenderFrameProxyHost(
+                     site_instance_c.get()));
+    // Make sure proxy C has gone from node3 as well.
+    EXPECT_FALSE(root->child_at(1)->render_manager()->GetRenderFrameProxyHost(
+                     site_instance_c.get()));
+    // TODO(lazyboy): Once http://crbug.com/432107 is fixed, we should also
+    // check that proxy B exists in both root and node3.
+  }
+}
+
 // Crash a subframe and ensures its children are cleared from the FrameTree.
 // See http://crbug.com/338508.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrashSubframe) {
