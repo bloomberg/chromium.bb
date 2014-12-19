@@ -23,9 +23,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    NoInterfaceObject,
-] interface RadioNodeList : NodeList {
+// https://html.spec.whatwg.org/#radionodelist
+
+interface RadioNodeList : NodeList {
     attribute DOMString value;
     [ImplementedAs=item] getter Node (unsigned long index);
 };

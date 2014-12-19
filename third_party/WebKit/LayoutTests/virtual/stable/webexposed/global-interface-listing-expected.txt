@@ -681,6 +681,8 @@ interface HTMLDListElement
     method constructor
 interface HTMLDataListElement
     method constructor
+interface HTMLDetailsElement
+    method constructor
 interface HTMLDialogElement
     method close
     method constructor
@@ -1291,6 +1293,8 @@ interface Promise
 interface RTCIceCandidate
     method constructor
 interface RTCSessionDescription
+    method constructor
+interface RadioNodeList
     method constructor
 interface Range
     attribute END_TO_END
